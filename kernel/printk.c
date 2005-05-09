@@ -249,6 +249,10 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
 static char *log_buf = __log_buf;
 static u32 log_buf_len = __LOG_BUF_LEN;
 
+#ifdef	CONFIG_DEBUG_LL
+	extern void printascii(char *);
+#endif
+
 /* cpu currently holding logbuf_lock */
 static volatile unsigned int logbuf_cpu = UINT_MAX;
 
@@ -1480,6 +1484,10 @@ asmlinkage int vprintk_emit(int facility, int level,
 	 * prefix which might be passed-in as a parameter.
 	 */
 	text_len = vscnprintf(text, sizeof(textbuf), fmt, args);
+
+#ifdef CONFIG_DEBUG_LL
+	printascii(text);
+#endif
 
 	/* mark and strip a trailing newline */
 	if (text_len && text[text_len-1] == '\n') {
