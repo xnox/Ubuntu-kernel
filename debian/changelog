@@ -1,0 +1,5 @@
+linux-source-2.6.24 (2.6.24-1.1) hardy; urgency=low
+
+  * Initial debian files
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Sun, 14 Oct 2007 20:30:09 +0000
