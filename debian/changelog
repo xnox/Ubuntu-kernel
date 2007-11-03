@@ -1,4 +1,4 @@
-linux-source-2.6.24 (2.6.24-1.1) hardy; urgency=low
+linux-source-2.6.24 (2.6.24-0.1) hardy; urgency=low
 
   * Initial debian files
 
