@@ -1277,7 +1277,6 @@ raid456
 raid_class
 raw1394
 ray_cs
-rc80211_simple
 rdma_cm
 rdma_ucm
 redboot
