@@ -959,7 +959,7 @@ CONFIG_DM_MULTIPATH_RDAC=m
 CONFIG_DM_MULTIPATH_HP=m
 # CONFIG_DM_DELAY is not set
 # CONFIG_DM_UEVENT is not set
-# CONFIG_FUSION is not set
+CONFIG_FUSION=m
 
 #
 # IEEE 1394 (FireWire) support
@@ -1016,7 +1016,7 @@ CONFIG_NE2K_PCI=m
 CONFIG_NETDEV_1000=y
 # CONFIG_ACENIC is not set
 # CONFIG_DL2K is not set
-# CONFIG_E1000 is not set
+CONFIG_E1000=m
 # CONFIG_E1000E is not set
 # CONFIG_NS83820 is not set
 # CONFIG_HAMACHI is not set
