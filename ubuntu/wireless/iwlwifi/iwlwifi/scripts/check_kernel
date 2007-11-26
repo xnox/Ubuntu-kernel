@@ -1,0 +1,38 @@
+#!/usr/bin/env /bin/bash
+#
+# Copyright (C) 2006 - 2007 Intel Corporation
+#
+# This script checks the specified kernel sources for mac80211
+
+function check_params()
+{
+    if [ "$1" ]; then
+	DEST="$1"
+	export DEST=${DEST/%\//}/
+	return 0
+    fi
+
+    cat <<EOF
+Usage: check_kernel /PATH/TO/KERNEL
+eg: check_kernel /lib/modules/\$(uname -r)/source
+EOF
+}
+
+function check_installed()
+{
+	[ -e "$DEST"/net/mac80211/Kconfig ] && return 0
+
+	cat <<EOF
+The mac80211 subsystem was not found in:
+
+     $DEST
+
+In order to patch the kernel to support the driver, you must first 
+patch the kernel to include the mac80211 subsystem.
+
+Aborting.
+EOF
+	return 1
+}
+
+check_installed $@

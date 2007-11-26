@@ -1,0 +1,44 @@
+diff -Nupr origin/iwl-base.c post/iwl-base.c
+--- origin/iwl-base.c	2007-02-22 13:19:21.000000000 -0800
++++ post/iwl-base.c	2007-02-22 13:22:26.000000000 -0800
+@@ -9884,8 +9884,11 @@ static int iwl_up(struct iwl_priv *priv)
+ 		}
+ 
+ 		memcpy(priv->net_dev->dev_addr, priv->mac_addr, ETH_ALEN);
++#ifndef D80211_API_V2
++		memcpy(priv->ieee->perm_addr, priv->mac_addr, ETH_ALEN);
++#else
+ 		memcpy(priv->ieee->wiphy->perm_addr, priv->mac_addr, ETH_ALEN);
+-
++#endif
+ 		return 0;
+ 	}
+ 
+@@ -12011,7 +12014,12 @@ static int iwl_pci_probe(struct pci_dev 
+ 		goto out;
+ 	}
+         SET_IEEE80211_DEV(ieee, &pdev->dev);
++
++#ifndef D80211_API_V2
++	ieee->maxssi = 60;
++#else
+ 	ieee->max_rssi = 60;
++#endif
+ 
+ 	local = hw_to_local(ieee);
+ 
+diff -Nupr origin/iwlwifi.h post/iwlwifi.h
+--- origin/iwlwifi.h	2007-02-21 10:10:00.000000000 -0800
++++ post/iwlwifi.h	2007-02-22 13:21:08.000000000 -0800
+@@ -53,6 +53,11 @@
+ 
+ #include "iwlwifi_hw.h"
+ 
++#ifndef D80211_API_V2
++#define SET_IEEE80211_DEV(x, y) x->dev = y
++#define wdev_priv(x) x
++#endif
++
+ #define DRV_NAME	"iwlwifi"
+ 
+ /* Debug and printf string expansion helpers for printing bitfields */

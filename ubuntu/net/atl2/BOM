@@ -1,0 +1,13 @@
+Bill of Materials
+
+This driver comes from the Launchpad bug #77725. The version from 
+http://42.pl/u/qMH_Attansic_L2_Linux and the emailed copy in the report from
+Huang Xiong (from Attansic) are identical. Chuck Short (zul) unrar'ed
+this archive and applied the patch at
+http://launchpadlibrarian.net/9262194/attansic_l2_2.6.22.patch
+in order to get the driver to compile under 2.6.22. I further modified
+the driver to clean up some compile warnings about DBG.
+
+Tim Gardner
+Sept 19, 2007
+

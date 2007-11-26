@@ -1,0 +1,16 @@
+diff -r -u --new-file mac80211-10.0.0/origin/net/mac80211/debugfs_netdev.c mac80211-10.0.0-debug-fs/origin/net/mac80211/debugfs_netdev.c
+--- mac80211-10.0.0/origin/net/mac80211/debugfs_netdev.c	2007-08-22 21:18:43.000000000 -0600
++++ mac80211-10.0.0-debug-fs/origin/net/mac80211/debugfs_netdev.c	2007-09-14 08:16:31.000000000 -0600
+@@ -412,12 +412,6 @@
+ 	if (dev->ieee80211_ptr->wiphy->privid != mac80211_wiphy_privid)
+ 		return 0;
+ 
+-	sprintf(buf, "netdev:%s", dev->name);
+-	dir = sdata->debugfsdir;
+-	if (!debugfs_rename(dir->d_parent, dir, dir->d_parent, buf))
+-		printk(KERN_ERR "mac80211: debugfs: failed to rename debugfs "
+-		       "dir to %s\n", buf);
+-
+ 	return 0;
+ }
+ 

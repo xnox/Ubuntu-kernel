@@ -1,0 +1,37 @@
+diff -upr linux-2.6.18-gentoo-r6/net/wireless/wext.c linux-2.6.18-gentoo-r6-building/net/wireless/wext.c
+--- linux-2.6.18-gentoo-r6/net/wireless/wext.c	2007-06-04 15:39:37.000000000 -0700
++++ linux-2.6.18-gentoo-r6-building/net/wireless/wext.c	2007-06-04 15:37:31.000000000 -0700
+@@ -1100,6 +1100,7 @@ int wext_handle_ioctl(struct ifreq *ifr,
+  * Netlink, so there is no possibility of dealock.
+  * Jean II
+  */
++#if 0
+ 
+ static struct sk_buff_head wireless_nlevent_queue;
+ 
+@@ -1119,6 +1120,7 @@ static void wireless_nlevent_process(uns
+ 		netlink_broadcast(rtnl, skb, 0, RTNLGRP_LINK, GFP_ATOMIC);
+ }
+ 
++
+ static DECLARE_TASKLET(wireless_nlevent_tasklet, wireless_nlevent_process, 0);
+ 
+ /* ---------------------------------------------------------------- */
+@@ -1182,6 +1184,8 @@ static void rtmsg_iwinfo(struct net_devi
+ 	tasklet_schedule(&wireless_nlevent_tasklet);
+ }
+ 
++#endif
++
+ /* ---------------------------------------------------------------- */
+ /*
+  * Main event dispatcher. Called from other parts and drivers.
+@@ -1261,7 +1265,7 @@ void wireless_send_event(struct net_devi
+ 		memcpy(((char *) event) + hdr_len, extra, extra_len);
+ 
+ 	/* Send via the RtNetlink event channel */
+-	rtmsg_iwinfo(dev, (char *) event, event_len);
++/*	rtmsg_iwinfo(dev, (char *) event, event_len); */
+ 
+ 	/* Cleanup */
+ 	kfree(event);

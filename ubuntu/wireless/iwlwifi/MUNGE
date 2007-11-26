@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+# Run this script when you update from one version of iwlwifi
+# to the next.
+#
+# The current Intel iwlwifi driver depends on a version
+# of the mac80211 stack that conflicts with the version
+# that exists in the kernel. Therefore, the fix is to modify
+# the public symbols in Intel's version and run both softmac
+# stacks.
+
+cd `dirname $0`
+
+#
+# Get the current tarballs and prepare them for munging.
+#
+./BOM
+
+#
+# Here is the algorithm I followed to munge the iwlwifi and mac80211
+# tarballs. Hopefully the next update will be close enough that you can
+# just run this script.
+#
+
+#
+# Insert the include path into the mac80211 Makefile
+#
+MF=Makefile.mac80211
+echo CONFIG_MAC80211=m > ${MF}
+echo "EXTRA_CFLAGS += -I\$(src)/../.." >> ${MF}
+cat mac80211/origin/net/mac80211/Makefile >> ${MF}
+sed -i -e 's/mac80211\.o/iwlwifi_mac80211\.o/' -e 's/mac80211-objs/iwlwifi_mac80211-objs/g' -e 's/rc80211_simple/iwlwifi_rc80211_simple/g' ${MF}
+mv ${MF} mac80211/origin/net/mac80211/Makefile
+mv  mac80211/origin/net/mac80211/rc80211_simple.c mac80211/origin/net/mac80211/iwlwifi_rc80211_simple.c
+
+#
+# Since radiotap is isolated, just build it into the mac80211 module.
+#
+mv mac80211/origin/net/wireless/radiotap.c mac80211/origin/net/mac80211
+echo "iwlwifi_mac80211-objs += radiotap.o" >> mac80211/origin/net/mac80211/Makefile
+
+#
+# Remove calls to debugfs_rename.
+#
+patch -d mac80211 -p1 < 0001-debugfs.diff
+
+#
+# Munge the iwlwifi Makefile
+#
+MF=Makefile.iwlwifi
+echo CONFIG_IWL4965=m > ${MF}
+echo CONFIG_IWL3945=m >> ${MF}
+echo "EXTRA_CFLAGS += -I\$(src)/../../mac80211/origin" >> ${MF}
+echo "EXTRA_CFLAGS += -I\$(src)/../../mac80211/origin/net" >> ${MF}
+echo "EXTRA_CFLAGS += -DCONFIG_IWLWIFI_QOS=1" >> ${MF}
+cat iwlwifi/origin/Makefile >> ${MF}
+mv ${MF} iwlwifi/origin/Makefile
+
+#
+# Do not auto-load iwl3945. ipw3945 gets precedence.
+#
+sed -i '/MODULE_DEVICE_TABLE/d' iwlwifi/origin/iwl-3945.c
+
+#
+# Munge include file paths since there are some duplicates.
+# The differences appear to be a superset, so using these versions instead of what
+# is in the kernel tree ought to be OK.
+#
+IF="linux/nl80211.h linux/ieee80211.h linux/wireless.h net/cfg80211.h"
+IF="${IF} net/ieee80211_radiotap.h net/mac80211.h net/wext.h"
+IF="${IF} net/iw_handler.h net/wireless.h"
+
+for i in ${IF}
+do
+	find . -name "*.[ch]" | while read f
+	do
+		sed -i "s;<$i>;<include/$i>;" "${f}"
+	done
+done
+
+#
+# Isolate the mac80211 exported symbols and munge every occurence such that
+# there is no possibility of conflict with the main kernel.
+#
+TL=token_list
+find mac80211/origin/net/mac80211 -name "*.[ch]" | \
+xargs grep EXPORT_SYMBOL | \
+sed -e 's/^.*EXPORT_SYMBOL(//' -e 's/);//' > ${TL}
+
+cat ${TL} | while read token
+do
+	find . -name "*.[ch]" | while read f
+	do
+		sed -i "s/${token}/iwlwifi_${token}/g" "${f}"
+	done
+done
+rm -f ${TL}
+
+#
+# Build the top level makefile
+#
+echo "obj-m += mac80211/origin/net/mac80211/" > Makefile
+echo "obj-m += iwlwifi/origin/" >> Makefile
+

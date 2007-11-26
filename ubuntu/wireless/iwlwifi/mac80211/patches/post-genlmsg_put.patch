@@ -1,0 +1,13 @@
+API changes for genlmsg_put
+---
+--- a/net/wireless/nl80211.c	2007-07-05 11:53:26.000000000 +0800
++++ b/net/wireless/nl80211.c	2007-07-05 14:15:32.000000000 +0800
+@@ -922,7 +922,7 @@ static struct genl_ops nl80211_ops[] = {
+ void *nl80211hdr_put(struct sk_buff *skb, u32 pid, u32 seq, int flags, u8 cmd)
+ {
+ 	/* since there is no private header just add the generic one */
+-	return genlmsg_put(skb, pid, seq, &nl80211_fam, flags, cmd);
++	return genlmsg_put(skb, pid, seq, GENL_ID_GENERATE, 0, flags, cmd, 1);
+ }
+ EXPORT_SYMBOL_GPL(nl80211hdr_put);
+ 

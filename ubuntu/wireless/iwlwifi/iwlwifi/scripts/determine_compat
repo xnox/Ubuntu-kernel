@@ -1,0 +1,146 @@
+#!/usr/bin/env /bin/bash
+# Copyright (C) 2007 Intel Corporation
+function determine_compat {
+MAC80211_INC=${MAC80211_INC/%\//}/
+
+[ -z "$KSRC" ] && {
+    cat <<EOF
+KSRC must be defined
+EOF
+    return 1
+}
+
+[ ! -e "${KSRC}/Makefile" ] && 
+	die 1 "Kernel Makefile not found at '$KSRC'"
+
+echo -e "Checking kernel compatibility in:\n\t$KSRC"
+
+export has_mac80211=0
+[ -e ${MAC80211_INC}mac80211.h ] ||
+	die 2 "\nmac80211 headers not found in:\n\n"\
+"\t${MAC80211_INC}\n\n"\
+"Please install the mac80211 subsystem.\n\n"\
+"Terminating."
+
+export has_mac80211_v2=0
+grep -q -e "struct[[:space:]]*wiphy" ${MAC80211_INC}mac80211.h &&
+	export has_mac80211_v2=1
+
+export has_wlan_80211=0
+grep -q -e WLAN_80211 ${KSRC}/drivers/net/wireless/Kconfig &&
+	export has_wlan_80211=1
+
+# ----------------
+
+export has_delayed_work=0
+grep -q "INIT_DELAYED_WORK" ${KSRC}/include/linux/workqueue.h &&
+	export has_delayed_work=1
+
+# ----------------
+
+export has_new_request_irq=1
+grep -A1 request_irq ${KSRC}/include/linux/interrupt.h | 
+	grep -q "^[[:space:]]*irqreturn_t.*struct pt_regs" &&
+	export has_new_request_irq=0
+# ----------------
+
+export has_rx_flag_radiotap=0
+grep -q RX_FLAG_RADIOTAP ${KSRC}/include/net/mac80211.h &&
+	export has_rx_flag_radiotap=1
+
+export has_csa_conf=0
+grep -q IEEE80211_CONF_CHANNEL_SWITCH ${KSRC}/include/net/mac80211.h &&
+	export has_csa_conf=1
+
+# ----------------
+
+export has_mac80211_ht=0
+grep -q ieee80211_ht_capability ${KSRC}/include/linux/ieee80211.h &&
+	export has_mac80211_ht=1
+
+export has_mac80211_ht_agg=0
+grep -q sta_ht_agg_info ${KSRC}/net/mac80211/sta_info.h &&
+	export has_mac80211_ht_agg=1
+
+# ----------------
+
+(( $has_delayed_work )) && {
+    export has_delayed_work_define=1
+} || {
+    export has_delayed_work_define=0
+    grep -q __kcompat_delayed_work_h__ \
+    ${KSRC}/net/mac80211/kcompat-delayed_work.h &&
+    export has_delayed_work_define=1
+}
+
+# ----------------
+
+export has_hex_dump=0
+grep -q "hex_dump_to_buffer" ${KSRC}/lib/hexdump.c &&
+	export has_hex_dump=1
+
+# ----------------
+
+export has_is_power_of_2=0
+grep -q "is_power_of_2" ${KSRC}/include/linux/log2.h &&
+	export has_is_power_of_2=1
+
+# ----------------
+
+export has_cancel_work_sync=0
+grep -q "cancel_work_sync" ${KSRC}/kernel/workqueue.c &&
+	export has_cancel_work_sync=1
+
+# ----------------
+
+export has_preferred_rate_control=0
+grep -q "preferred_rate_control" ${KSRC}/include/net/mac80211.h &&
+	export has_preferred_rate_control=1
+
+# ----------------
+
+export requires_compat=0
+(( !$has_preferred_rate_control )) &&
+(( $has_cancel_work_sync )) && 
+(( $has_hex_dump )) && 
+(( $has_mac80211_ht_agg )) && 
+(( $has_mac80211_ht )) && 
+(( $has_csa_conf )) && 
+(( $has_wlan_80211 )) && 
+(( $has_rx_flag_radiotap )) && 
+(( $has_delayed_work_define )) && 
+(( $has_mac80211_v2 )) && 
+(( $has_delayed_work )) && 
+(( $has_new_request_irq )) && {
+	echo " * Kernel supports required features for 'tip' version."
+	return 0
+}
+
+export requires_compat=1
+echo " * Kernel requires compatibility version:"
+(( !$has_mac80211_v2 )) &&
+echo "   - mac80211 API v2 compat"
+(( !$has_delayed_work )) && 
+echo "   - Requires delayed_work compat"
+(( !$has_new_request_irq )) && 
+echo "   - Requires old request_irq syntax compat"
+(( !$has_rx_flag_radiotap )) && 
+echo "   - Requires RX FLAG RADIOTAP compat"
+(( !$has_delayed_work_define )) && 
+echo "   - Requires old __kcompat_h__ compat"
+(( !$has_wlan_80211 )) && 
+echo "   - Requires WLAN_80211 compat in Kconfig"
+(( !$has_csa_conf )) && 
+echo "   - Requires IEEE80211_CONF_CHANNEL_SWITCH compat."
+(( !$has_mac80211_ht )) && 
+echo "   - Remove CONFIG_IWLWIFI_HT option if defined"
+(( !$has_mac80211_ht_agg )) && 
+echo "   - Remove CONFIG_IWLWIFI_HT_AGG option if defined"
+(( !$has_hex_dump )) && 
+echo "   - Requires hex_dump compat"
+(( !$has_cancel_work_sync )) && 
+echo "   - Requires cancel_work_sync avoidance"
+(( $has_preferred_rate_control )) && 
+echo "   - Uses preferred_rate_control feature"
+return 0
+}

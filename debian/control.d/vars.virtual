@@ -1,0 +1,3 @@
+desc="virtualised hardware"
+provides="apparmor-modules-2.1"
+arch="i386"

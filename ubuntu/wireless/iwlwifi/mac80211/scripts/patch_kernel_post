@@ -1,0 +1,88 @@
+#!/usr/bin/env /bin/bash
+# Copyright (C) 2007 Intel Corporation
+script=patch_kernel_post
+prog=$0
+[ "${prog/*$script/$script}" = "$script" ] || {
+    echo "This script must not be sourced."
+    return 1
+} || return 1
+
+function die() {
+        ret=$1
+        shift
+        echo -e $@ >&2
+        exit $ret
+}
+
+DEBUG=0
+
+[ -z "$KSRC" ] && 
+KSRC="/lib/modules/$(uname -r)/build"
+
+[ ! -e "${KSRC}/Makefile" ] && 
+die 1 "Kernel Makefile not found at '$KSRC'"
+
+SRC=patches
+DST=${KSRC}
+
+SRC=${SRC/%\/}/
+DST=${DST/%\/}/
+
+[ -w "$DST" ] || die 6 " ! Insufficient access to write to $DST."
+echo "Patching from $SRC to $DST:"
+
+. scripts/determine_compat 
+determine_kernel_compat || 
+die $? "\nCould not provide compatible version. Try 2.6.18 or newer.\n\nTerminating."
+
+(( DEBUG )) && {
+	OUT=post/
+} || {
+	OUT=$DST
+}
+
+
+function do_patch {
+    (( DEBUG )) && 
+	rsync --delete -aprl post/ pre/ > /dev/null
+    
+    [ -e patches/"$1" ] ||
+    die 3 "patches/$1 does not exist.  Terminating."
+    echo -ne " + Applying: patches/$1\n\t"
+    cat "patches/$1" | while read command rest; do
+	case $command in
+	    "Commit:" | "Author:" | "")
+		;;
+	    *) echo "$command $rest"
+		break
+		;;
+	esac
+    done
+
+    patch -p1 -d $OUT < patches/"$1" > .patch.output || {
+	echo "-----patch failure output-----"
+	cat .patch.output
+	echo ""
+	die 1 "patches/$1 failed.  Terminating."
+    }
+    [ -e .patch.output ] && rm .patch.output
+    return 0
+}
+
+(( !$has_nla_nul_string )) && {
+	do_patch post-nla_nul_string.patch ||
+	die $? "Failure nla_nul_string compat"
+}
+(( !$has_nla_binary )) && {
+	do_patch post-nla_binary.patch ||
+	die $? "Failure nla_binary compat"
+}
+(( !$has_new_genlmsg_put )) && {
+	do_patch post-genlmsg_put.patch ||
+	die $? "Failure genlmsg_put compat"
+}
+
+(( DEBUG )) || exit 0
+
+rsync --delete -avprl post/ $DST > /dev/null && 
+rm -rf pre/ post/

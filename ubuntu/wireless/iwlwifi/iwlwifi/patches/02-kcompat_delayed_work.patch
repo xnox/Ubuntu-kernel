@@ -1,0 +1,54 @@
+Add kcompat-delayed_work to define delayed_work compatibility code
+diff -Nupr compatible/iwlwifi.h post/iwlwifi.h
+--- compatible/iwlwifi.h	2007-05-16 11:46:31.000000000 -0700
++++ post/iwlwifi.h	2007-05-16 11:47:38.000000000 -0700
+@@ -29,6 +29,7 @@
+ #ifndef __iwlwifi_h__
+ #define __iwlwifi_h__
+ 
++#include "kcompat-delayed_work.h"
+ #include <linux/pci.h> /* for struct pci_device_id */
+ #include <net/ieee80211_radiotap.h>
+ 
+diff -Nupr compatible/kcompat-delayed_work.h post/kcompat-delayed_work.h
+--- compatible/kcompat-delayed_work.h	1969-12-31 16:00:00.000000000 -0800
++++ post/kcompat-delayed_work.h	2007-05-16 11:47:14.000000000 -0700
+@@ -0,0 +1,38 @@
++#ifndef __kcompat_delayed_work_h__
++#define __kcompat_delayed_work_h__
++
++/* Out-of-tree / in-tree kernel compatibility */
++#include <linux/version.h>
++struct delayed_work {
++	struct work_struct work;
++};
++#define INIT_DELAYED_WORK(_work, _func) \
++        INIT_WORK(&(_work)->work, _func)
++#undef INIT_WORK
++
++#define INIT_WORK(_work, _func)                                 \
++	do {							\
++		INIT_LIST_HEAD(&(_work)->entry);		\
++		(_work)->pending = 0;				\
++		PREPARE_WORK((_work), (void *)(_func), (_work));\
++		init_timer(&(_work)->timer);			\
++	} while (0)
++
++static inline int compat_schedule_delayed_work(
++	struct delayed_work *work, unsigned long delay)
++{
++	return schedule_delayed_work(&work->work, delay);
++}
++
++static inline int compat_queue_delayed_work(struct workqueue_struct *queue,
++	struct delayed_work *work, unsigned long delay)
++{
++	return queue_delayed_work(queue, &work->work, delay);
++}
++
++static inline int compat_cancel_delayed_work(
++	struct delayed_work *work)
++{
++	return cancel_delayed_work(&work->work);
++}
++#endif

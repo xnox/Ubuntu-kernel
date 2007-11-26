@@ -1,0 +1,21 @@
+diff -urp origin/iwl-base.c b/iwl-base.c
+--- origin/iwl-base.c	2007-08-10 13:46:42.000000000 +0800
++++ b/iwl-base.c	2007-08-10 14:20:52.000000000 +0800
+@@ -266,6 +266,17 @@ static inline u8 get_next_cmd_index(stru
+ 	return index & (q->n_window - 1);
+ }
+ 
++#ifndef is_power_of_2
++#ifndef bool
++#define bool int
++#endif
++static inline __attribute__((const))
++bool is_power_of_2(unsigned long n)
++{
++	        return (n != 0 && ((n & (n - 1)) == 0));
++}
++#endif
++
+ static int iwl_queue_init(struct iwl_priv *priv, struct iwl_queue *q,
+ 			  int count, int slots_num, u32 id)
+ {

@@ -1,0 +1,3 @@
+arch="lpia"
+desc="lpia"
+provides="ndiswrapper-modules-1.9, apparmor-modules-2.1"

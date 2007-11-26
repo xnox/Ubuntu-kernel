@@ -1,0 +1,61 @@
+/* This file contains the list of files that are placed into the actual 
+ * snapshots pushed to the SourceForge project. */
+
+/* License files... */
+LICENSE
+LICENSE.GPL
+LICENSE.BSD
+
+/* Documentation collateral */
+README.iwlwifi
+INSTALL
+ISSUES
+CHANGES
+
+/* Backword compatibility patches for building compat */
+patches/
+
+/* uCode / HW definitions */
+origin/iwl-hw.h
+origin/iwl-3945-hw.h
+origin/iwl-4965-hw.h
+origin/iwl-commands.h
+origin/iwl-eeprom.h
+origin/iwl-prph.h
+
+/* iwlwifi implementation */
+Makefile
+origin/iwlwifi.h
+origin/iwl-base.c
+origin/iwl-priv.h
+origin/iwl-debug.h
+origin/iwl-3945-rs.c
+origin/iwl-3945-rs.h
+origin/iwl-4965-rs.c
+origin/iwl-4965-rs.h
+origin/Kconfig
+origin/Makefile
+origin/iwl-3945.c
+origin/iwl-3945.h
+origin/iwl-4965.c
+origin/iwl-4965.h
+origin/iwl-channel.h
+origin/iwl-helpers.h
+origin/iwl-io.h
+origin/iwl-spectrum.h
+
+/* Advanced Makefile assistance scripts */
+scripts/patch_kernel
+scripts/check_kernel
+scripts/determine_compat
+scripts/generate_compatible
+scripts/make_snapshot
+
+/* helper scripts */
+load   /* Used to load the module */
+unload /* Used to unload the module */
+dvals  /* Used to display debug levels */
+
+/* This file... */
+FILES
+

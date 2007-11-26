@@ -1,0 +1,3 @@
+desc="Embedded/Mobile"
+provides="ndiswrapper-modules-1.9, apparmor-modules-2.1"
+arch="i386"

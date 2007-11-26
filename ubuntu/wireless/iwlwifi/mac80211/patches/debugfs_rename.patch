@@ -1,0 +1,15 @@
+diff -urp origin/net/mac80211/debugfs_netdev.c new/net/mac80211/debugfs_netdev.c
+--- origin/net/mac80211/debugfs_netdev.c	2007-08-23 10:34:02.000000000 +0800
++++ new/net/mac80211/debugfs_netdev.c	2007-08-23 11:05:20.000000000 +0800
+@@ -414,9 +414,11 @@ static int netdev_notify(struct notifier
+ 
+ 	sprintf(buf, "netdev:%s", dev->name);
+ 	dir = sdata->debugfsdir;
++#if 0
+ 	if (!debugfs_rename(dir->d_parent, dir, dir->d_parent, buf))
+ 		printk(KERN_ERR "mac80211: debugfs: failed to rename debugfs "
+ 		       "dir to %s\n", buf);
++#endif
+ 
+ 	return 0;
+ }

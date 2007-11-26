@@ -1,0 +1,381 @@
+ 
+Intel Wireless Link Wifi (iwlwifi) driver for Linux* in support of:
+
+Intel(R) Wireless WiFi Link 4965AGN
+Intel(R) PRO/Wireless 3945ABG/BG Network Connection Adapter
+
+Copyright (C) 2005 - 2007, Intel Corporation
+
+INSTALL
+
+Version: 1.1.0
+Date   : September 19, 2007
+
+
+Index
+-----------------------------------------------
+0.  IMPORTANT INFORMATION BEFORE USING THIS DRIVER
+1.  QUICK INSTALL STEPS
+2.  INSTALLING IN YOUR DISTRIBUTION
+4.  BUILD/INSTALLATION OVERVIEW
+5.  GETTING THE SOURCE
+6.  KERNEL REQUIREMENTS - 2.6.18+
+7.  KERNEL REQUIREMENTS - Configuration
+10. BUILDING EXTERNAL (outside of the kernel tree)
+11. INSTALLING MICROCODE
+13. LOADING THE DRIVER
+
+
+0.   IMPORTANT INFORMATION BEFORE USING THIS DRIVER
+-----------------------------------------------
+
+Important Notice FOR ALL USERS OR DISTRIBUTORS!!!!
+
+Intel wireless LAN adapters are engineered, manufactured, tested, and
+quality checked to ensure that they meet all necessary local and
+governmental regulatory agency requirements for the regions that they
+are designated and/or marked to ship into. Since wireless LANs are
+generally unlicensed devices that share spectrum with radars,
+satellites, and other licensed and unlicensed devices, it is sometimes
+necessary to dynamically detect, avoid, and limit usage to avoid
+interference with these devices. In many instances Intel is required to
+provide test data to prove regional and local compliance to regional and
+governmental regulations before certification or approval to use the
+product is granted. Intel's wireless LAN's EEPROM, firmware, and
+software driver are designed to carefully control parameters that affect
+radio operation and to ensure electromagnetic compliance (EMC). These
+parameters include, without limitation, RF power, spectrum usage,
+channel scanning, and human exposure.
+
+For these reasons Intel cannot permit any manipulation by third parties
+of the software provided in binary format with the wireless WLAN
+adapters (e.g., the EEPROM and firmware). Furthermore, if you use any
+patches, utilities, or code with the Intel wireless LAN adapters that
+have been manipulated by an unauthorized party (i.e., patches,
+utilities, or code (including open source code modifications) which have
+not been validated by Intel), (i) you will be solely responsible for
+ensuring the regulatory compliance of the products, (ii) Intel will bear
+no liability, under any theory of liability for any issues associated
+with the modified products, including without limitation, claims under
+the warranty and/or issues arising from regulatory non-compliance, and
+(iii) Intel will not provide or be required to assist in providing
+support to any third parties for such modified products.
+
+Note: Many regulatory agencies consider Wireless LAN adapters to be
+modules, and accordingly, condition system-level regulatory approval
+upon receipt and review of test data documenting that the antennas and
+system configuration do not cause the EMC and radio operation to be
+non-compliant.
+
+The drivers available for download from SourceForge are provided as a
+part of a development project.  Conformance to local regulatory
+requirements is the responsibility of the individual developer.  As
+such, if you are interested in deploying or shipping a driver as part of
+solution intended to be used for purposes other than development, please
+obtain a tested driver from Intel Customer Support at:
+
+http://support.intel.com/support/notebook/sb/CS-006408.htm
+
+
+1. QUICK INSTALL STEPS
+-----------------------------------------------
+
+The following provides steps that can be used to manually install and 
+load the driver.  
+
+Lines beginning with % can be run as any user.  Lines beginning with # 
+must be run as root.
+
+First, you build and install the mac80211 subsystem.  See:
+
+	http://intellinuxwireless.org/mac80211
+	
+After you download and patch the tree you need to build the kernel, 
+making sure all options under mac80211 are enabled.  
+
+Once the mac80211 kernel is installed and running, you build the 
+iwlwifi.ko module:
+
+	% tar xzvf iwlwifi-1.1.0.tgz
+	% cd iwlwifi-1.1.0
+	% make
+
+Now you install the firmware.  First, determine where to install the 
+file.  You can look in the hotplug script '/etc/hotplug/firmware.agent' 
+to determine which directory FIRMWARE_DIR is set to when the script 
+runs.  The following command will determine that for you:
+
+	% DIR=$(sed -ne "s:^FIRMWARE_DIR=\([^, ]*\).*:\1:p" \
+		/etc/hotplug/firmware.agent)
+
+NOTE:  'DIR' above typically works out to /lib/firmware.
+
+To see what the above command found, type:
+
+	% echo 
+
+Now you can fetch and install the uCode (below example is for 3945,
+you should be able to do the same for 4965):
+
+	% wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-3945-ucode-2.14.1.5.tgz .
+	% tar xzvf iwlwifi-3945-ucode-2.14.1.5.tgz 
+	% less iwlwifi-3945-ucode-2.14.1.5/LICENSE.iwlwifi-3945-ucode
+	% less iwlwifi-3945-ucode-2.14.1.5/README.iwlwifi-3945-ucode
+	% cp iwlwifi-3945-ucode-2.14.1.5/iwlwifi-3945.ucode $DIR
+
+And now you can try to load the module, first clearing the kernel log:
+
+	% ./load debug=0
+
+Finally you can check to see if things worked:
+
+	% ifconfig wlan0 up
+	% iwconfig wlan0
+
+You should see something like:
+
+wlan0      unassociated  ESSID:off/any
+          Mode:Managed  Channel=0  Access Point: 00:00:00:00:00:00
+          Bit Rate=0 kb/s   Tx-Power=20 dBm
+          RTS thr:off   Fragment thr:off
+          Encryption key:off
+          Power Management:off
+          Link Quality:0  Signal level:0  Noise level:0
+          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+
+And now you are ready to go.  
+
+First, find your AP:
+
+	% iwlist scan
+
+Configure to use AP using iwconfig:
+
+	% iwconfig wlan0 channel <channel>
+	% iwconfig wlan0 key <key>
+	% iwconfig wlan0 essid <name>
+	% iwconfig wlan0 ap <mac>
+
+wlan0      IEEE 802.11g  ESSID:"......."
+          Mode:Managed  Frequency:.....  Access Point: ..:..:..:..:..:..
+          Bit Rate=54 Mb/s   Tx-Power=20 dBm
+          RTS thr:off   Fragment thr:off
+          Encryption key:....-....-..   Security mode:open
+          Power Management:off
+          Link Quality=98/100  Signal level=-53 dBm  Noise level=-81 dBm
+          Rx invalid nwid:0  Rx invalid crypt:0  Rx invalid frag:0
+          Tx excessive retries:0  Invalid misc:0   Missed beacon:0
+
+The specifics of how to bring up the interface is heavily dependent on 
+the specific distribution you are using from here on out.
+
+If things don't work, try loading the driver with the debug level 
+turned, retry the operation, and check the kernel log:
+
+	% ./load debug=0x43fff
+	< misc. commands >
+	% dmesg -c | less -S
+
+
+2.  INSTALLING IN YOUR LINUX DISTRIBUTION
+-----------------------------------------------
+Since each distribution is different, you can not cover all of the steps that
+may be required to install and configure your device for the particular 
+distribution you are using.
+
+Please refer to your distribution's documentation for information on how
+to configure a wireless network driver within your environment.
+
+
+3.  BUILD/INSTALLATION OVERVIEW 
+-----------------------------------------------
+
+Installation of the current Intel PRO/Wireless 3945ABG Network Connection
+driver for Linux involves several steps:
+
+1)  Get the iwlwifi source and microcode.  See:
+	http://intellinuxwireless.org/?p=iwlwifi
+
+2)  Get mac80211 subsystem.  Follow its README for installation 
+    steps.  See:
+	http://intellinuxwireless.org/?p=mac80211
+
+3)  Check for certain capabilities in your kernel, and rebuild the kernel
+    if necessary.
+
+4)  Build and install the kernel with mac80211 kernel.
+
+5)  Build and install the current iwlwifi module.
+
+6)  Download and install current microcode.
+
+7)  Read README.iwlwifi for much helpful information on how to use the
+    Intel PRO/Wireless 3945ABG Network Connection driver for Linux.
+
+
+4.  GETTING THE SOURCE AND FIRMWARE
+-----------------------------------------------
+
+You can get the latest driver source code tarball and microcode from:
+
+	http://intellinuxwireless.org/iwlwifi
+
+You must also obtain and install the mac80211 subsystem:
+
+	http://intellinuxwireless.org/mac80211
+
+Each package contains installation steps on how to install the files 
+onto your system.  You'll need to unpack the tarballs and then you 
+can view the INSTALL files. (Below example is for 3945, you should be
+able to do the same for 4965):
+
+	% tar xzvf iwlwifi-1.1.0.tgz
+	% tar xzvf iwlwifi-3945-ucode-2.14.1.5.tgz
+	% less iwlwifi-1.1.0/INSTALL  
+	% less iwlwifi-3945-ucode-2.14.1.5/INSTALL  
+
+
+
+6.  KERNEL REQUIREMENTS - 2.6.18+
+-----------------------------------------------
+
+The Intel PRO/Wireless 3945ABG Network Connection driver for Linux is 
+currently maintained only for 2.6.18+ versions of the Linux kernel, 
+but may work in older versions.  We try (when possible) to provide 
+backward compatibility patches to the driver to keep it working for as 
+long as possible with legacy kernels.
+
+
+7.  KERNEL REQUIREMENTS - Configuration
+-----------------------------------------------
+
+Your kernel must be configured and compiled to provide certain capabilities
+needed by the mac80211 and iwlwifi source files.
+
+You can verify that your running kernel is configured properly by
+searching the following file for the #define entries described below:
+
+	/lib/modules/$(uname -r)/build/include/linux/autoconf.h
+
+If you need to change anything in your kernel configuration (e.g. using
+make menuconfig), make sure that you also rebuild, install, and reboot to the
+new kernel image before proceding with your iwlwifi driver upgrade.  For help
+or instructions on configuring and building the kernel, please consult the
+documentation contained in your distribution.
+
+MAKE SURE THAT THE FOLLOWING CAPABILITIES ARE ENABLED:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#define CONFIG_FW_LOADER 1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The driver loads the microcode image via the Linux firmware hotplug 
+capability (see later section on loading microcode).  This is enabled 
+via menuconfig:
+
+        Device Drivers ->
+           Generic Driver Options ->
+              Hotplug firmware loading support
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#define CONFIG_MAC80211 1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The driver requires the mac80211 subsystem be enabled in your kernel.
+This is enabled via menuconfig:
+
+        Networking ->
+	   Generic IEEE 802.11 Networking Stack (mac80211)
+
+
+10.  BUILDING EXTERNAL (outside kernel source tree)
+-----------------------------------------------
+
+Unpack the iwlwifi-1.1.0.tgz archive:
+
+	% tar xzvf iwlwifi-1.1.0.tgz
+	% cd iwlwifi-1.1.0
+
+The driver package contains a Makefile that can be used for building the 
+driver outside of the kernel tree.  To build it for the currently running 
+kernel, simply type:
+
+	% make  <--- You may need to run this as root
+
+To build it for a different kernel than the running one, use the KSRC
+parameter:
+
+	% make KSRC=/path/to/kernel
+
+If you wish to install the modules into your currently running kernel you can
+do so via:
+
+	# make install <--- You need to run this as root
+
+If you wish to install the modules into other place, you can do so via:
+
+	# make install KMISC=/path/to/install <--- You need to run as root
+
+
+
+11. INSTALLING MICROCODE
+-----------------------------------------------
+
+Before you can load the driver, you need the microcode image.  You can find
+instructions for obtaining the microcode by going to:
+
+	http://intellinuxwireless.org/?p=iwlwifi&n=downloads
+
+(Below example is for 3945, you should be able to do the same for 4965.)
+
+Once you have the microcode archive, untar it:
+
+	% tar xzvf iwlwifi-3945-ucode-2.14.1.5.tgz
+
+This will create a new directory.  In it you should find three files:
+
+	LICENSE.iwlwifi-3945-ucode   A copy of the microcode license
+	README.iwlwifi-3945-ucode    Information about the microcode
+	iwlwifi-3945.ucode           Binary microcode file
+
+You need to place the iwlwifi-3945.ucode file into the hotplug firmware 
+directory, e.g. /usr/lib/hotplug/firmware/  or  /lib/firmware/.  Check the 
+contents of the /etc/hotplug/firmware.agent to determine the specific location 
+for your distribution.  Most newer systems default to /lib/firmware.
+
+If you do not have /etc/hotplug/firmware.agent, then you need to upgrade your
+hotplug scripts to something later than 2003_10_07.  You can obtain the latest
+hotplug scripts via the following link (look for hotplug,
+not firmwarehotplug): 
+
+	http://sourceforge.net/project/showfiles.php?group_id=17679
+
+Also, make sure that your kernel supports the hotplug firmware loader.  
+See the section above, KERNEL REQUIREMENTS -- Configuration, on 
+CONFIG_FW_LOADER .
+
+NOTE:  Loading this microcode image will not affect the hardware in any other
+operating systems you may boot.  Each OS keeps its own copy of the microcode,
+and loads its own copy onto the hardware each time the OS initializes the
+card.
+
+
+12.  LOADING THE DRIVER
+-----------------------------------------------
+
+See the README.iwlwifi for instructions on loading and using the driver.
+
+------------------------------
+Copyright (C) 2005 - 2007, Intel Corporation
+
+INFORMATION IN THIS DOCUMENT IS PROVIDED IN CONNECTION WITH INTEL PRODUCTS.  
+EXCEPT AS PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE FOR SUCH PRODUCTS, 
+INTEL ASSUMES NO LIABILITY WHATSOEVER, AND INTEL DISCLAIMS ANY EXPRESS OR 
+IMPLIED WARRANTY RELATING TO SALE AND/OR USE OF INTEL PRODUCTS, INCLUDING 
+LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A PARTICULAR PURPOSE, 
+MERCHANTABILITY, OR INFRINGEMENT OF ANY PATENT, COPYRIGHT, OR OTHER 
+INTELLECTUAL PROPERTY RIGHT. 
+
+This document is subject to change without notice. 
+
+* Other names and brands may be claimed as the property of others.
+

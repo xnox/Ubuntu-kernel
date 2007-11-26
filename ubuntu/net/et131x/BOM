@@ -1,0 +1,6 @@
+http://umn.dl.sourceforge.net/sourceforge/et131x/et131x-1.2.3.tar.gz
+
+After downloading, then apply et131x-1.2.3.diff to cleanup the build.
+
+Tim Gardner
+Sept 2007

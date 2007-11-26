@@ -1,0 +1,288 @@
+#!/usr/bin/env /bin/bash
+# Copyright (C) 2007 Intel Corporation
+function determine_compat {
+
+    [ -z "$KSRC" ] && {
+cat <<EOF
+	KSRC must be defined
+EOF
+	return 1
+    }
+
+    KSRC=${KSRC/\%//}/
+    
+    [ ! -e "${KSRC}Makefile" ] && 
+	    die 1 "Kernel Makefile not found at '$KSRC'"
+    
+    echo -e "Checking kernel compatibility in:\n\t$KSRC"
+    
+# ----------------
+# 2.6.17 doesn't define netif_tx_{un,}lock_bh
+# We don't currently have compatibility patches for that, so bail
+    export has_netif_tx_lock_bh=0
+    grep -q "netif_tx_lock_bh" ${KSRC}include/linux/netdevice.h &&
+    export has_netif_tx_lock_bh=1
+    (( !$has_netif_tx_lock_bh )) && 
+    echo "   ! Requires netif_tx_lock_bh ! No compatiblity patch available." &&
+    return 1
+# ----------------
+
+
+    
+# ----------------
+# 2.6.19 or so added block ciphers which are used by the
+# wireless crypto subsystems.  
+#
+    export has_block_cipher=0
+    grep -q "CRYPT.*ASYNC" ${KSRC}include/linux/crypto.h &&
+    export has_block_cipher=1
+   
+# ----------------
+# 2.6.19 or .20 changed work_struct to have a specific delayed_work 
+# type    
+    export has_delayed_work=0
+    grep -q "INIT_DELAYED_WORK" ${KSRC}include/linux/workqueue.h &&
+    export has_delayed_work=1
+    
+# ----------------
+# wireless-dev added ieee80211_ptr to net_device
+  
+    export has_ieee80211_ptr=0
+    grep -q "ieee80211_ptr" ${KSRC}include/linux/netdevice.h &&
+    export has_ieee80211_ptr=1
+    
+# ----------------
+# qdisc API changed in 2.6.19/2.6.20 timeframe
+    
+    export has_new_qdisc=0
+    grep -A 1 "qdisc_create_dflt" ${KSRC}include/net/sch_generic.h |
+    grep -q "u32 parentid" &&
+    export has_new_qdisc=1
+    
+# ----------------
+# wireless-dev wext compat code in cfg80211 uses rtnl_notify vs. 
+# netlink_broadcast    
+    export has_rtnl_notify=0
+    grep -q "^extern int rtnl_notify(" ${KSRC}include/linux/rtnetlink.h &&
+    export has_rtnl_notify=1
+    
+
+# ----------------
+
+    export has_new_genlmsg=0
+    grep -A 1 -e "^static.*genlmsg_put(" ${KSRC}include/net/genetlink.h |
+    grep -q "struct genl_family.*" &&
+	export has_new_genlmsg=1
+
+# ----------------
+    
+#    export has_nla_policy_len=0
+#    grep -A 2 "^struct nla_policy" ${KSRC}include/net/netlink.h |
+#    grep -q "u16[[:space:]]*len;" &&
+#    export has_nla_policy_len=1
+    
+# ----------------
+# 2.6.21-rc1 changes net_device->class_dev -> dev
+	export has_class_dev_removed=0
+	grep -A 1 "/. class/net/name entry ./" \
+		${KSRC}include/linux/netdevice.h |
+	grep -q "struct device[[:space:]]*dev;" &&
+		export has_class_dev_removed=1
+
+# changed added more device callbacks; recent wireless-dev started using 
+# them
+	export has_dev_release=0
+	grep -q "dev_release" \
+		${KSRC}include/linux/device.h &&
+		export has_dev_release=1
+
+# 2.6.21-rc4 exported device_rename; we can't use it before then
+	export has_device_rename=0
+	grep -q "EXPORT_SYMBOL_GPL(device_rename)" \
+		${KSRC}drivers/base/core.c &&
+		export has_device_rename=1
+
+# ----------------
+# 2.6.20-rc2 added sch_fifo as explicit buildable
+	export has_net_sch_fifo=0
+	grep -q "CONFIG_NET_SCH_FIFO" \
+		${KSRC}net/sched/Makefile &&
+		export has_net_sch_fifo=1
+
+# 2.6.22 adds skb_{mac,network,transport}_header
+	export has_skb_mac_header=0
+	grep -q "skb_mac_header" ${KSRC}include/linux/skbuff.h &&
+		export has_skb_mac_header=1
+
+# 2.6.20 adds ilog2
+	export has_ilog2=0
+	[ -e ${KSRC}include/linux/ilog2.h ] &&
+		export has_ilog2=1
+
+# DIV_ROUND_UP was added to kernel.h at some point...
+	export has_div_round_up=0
+	grep -q "DIV_ROUND_UP" ${KSRC}include/linux/kernel.h &&
+		export has_div_round_up=1
+
+# 2.6.19? changed seq_open to take a const
+	export has_seq_open_const=0
+	grep -q "seq_open(.*const struct" \
+		${KSRC}include/linux/seq_file.h &&
+		export has_seq_open_const=1
+
+	export has_nlmsg_trim=0
+	grep -q "nlmsg_trim" \
+		${KSRC}include/net/netlink.h && {
+		export has_nlmsg_trim=1
+	} || {
+		grep -q "^CONFIG_NET_WIRELESS_RTNETLINK=[ym]" \
+			${KSRC}.config && {
+			echo "  ! CONFIG_NET_WIRELESS_NETLINK can not be set in .config!"
+			exit 1
+		}
+	}
+	
+	export has_tcf_destroy_chain=0
+	grep -q "tcf_destroy_chain" ${KSRC}include/net/sch_generic.h &&
+		export has_tcf_destroy_chain=1
+
+# ----------------
+# wireless-dev removes to_net_dev once it was in netdevice.h
+	export has_to_net_dev=0
+	grep -q "^#define to_net_dev" ${KSRC}include/linux/netdevice.h &&
+		export has_to_net_dev=1
+# ----------------
+
+	export has_new_nla_policy=1
+	grep -A2 'nla_policy {' ${KSRC}include/net/netlink.h |grep -q minlen &&
+		export has_new_nla_policy=0
+    
+	export has_new_nla_put_flag=1
+	grep -q 'NLA_PUT_FLAG.*value)' ${KSRC}include/net/netlink.h &&
+		export has_new_nla_put_flag=0
+
+	export has_new_nlmsg_new=0
+	grep -q 'nlmsg_new.*gfp_t' ${KSRC}include/net/netlink.h &&
+		export has_new_nlmsg_new=1
+
+	export has_debugfs_rename=0
+	grep -q 'debugfs_rename' ${KSRC}fs/debugfs/inode.c &&
+		export has_debugfs_rename=1
+
+
+    (( $has_debugfs_rename )) &&
+    (( $has_new_nlmsg_new )) &&
+    (( $has_new_nla_put_flag )) &&
+    (( $has_new_nla_policy )) &&
+    (( $has_tcf_destroy_chain )) &&
+    (( $has_nlmsg_trim )) &&
+    (( $has_seq_open_const )) &&
+    (( $has_div_round_up )) &&
+    (( $has_ilog2 )) &&
+    (( $has_skb_mac_header )) &&
+    (( $has_net_sch_fifo )) &&
+    (( $has_device_rename )) &&
+    (( $has_class_dev_removed )) &&
+    (( $has_rtnl_notify )) && 
+    (( $has_new_qdisc )) && 
+    (( $has_block_cipher )) && 
+    (( $has_delayed_work )) && 
+    (( $has_new_genlmsg )) &&
+    (( $has_ieee80211_ptr )) && {
+	echo " * Kernel supports required features for 'modified' version."
+	return 0
+    }
+    
+    echo " * Kernel requires compatibility version:"
+    (( !$has_new_qdisc )) && 
+    echo "   - Requires qdisc API compat"
+    (( !$has_block_cipher )) && 
+    echo "   - Requires non-block crypto compat"
+    (( !$has_delayed_work )) && 
+    echo "   - Requires delayed_work compat"
+    (( !$has_ieee80211_ptr )) && 
+    echo "   - Requires net_device::ieee80211_ptr compat"
+    (( !$has_rtnl_notify )) && 
+    echo "   - Requires rtnl_notify API compat"
+#    (( !$has_nla_policy_len )) && 
+#    echo "   - Requires nla_policy::len compat"
+    (( !$has_class_dev_removed )) &&
+    echo "   - Requires class_dev -> dev API compat"
+    (( !$has_to_net_dev )) &&
+    echo "   - Requires to_net_dev API compat"
+    (( !$has_dev_release )) &&
+    echo "   - Requires dev_release API compat"
+    (( !$has_new_genlmsg )) &&
+    echo "   - Requires genetlink removal compat"
+    (( !$has_device_rename )) &&
+    echo "   - Requires device_rename compat"
+    (( !$has_net_sch_fifo )) &&
+    echo "   - Requires net_sch_fifo compat"
+    (( !$has_skb_mac_header )) &&
+    echo "   - Requires skb_{mac,transport,network}_header compat"
+    (( !$has_ilog2 )) &&
+    echo "   - Requires ilog2 compat"
+    (( !$has_div_round_up )) &&
+    echo "   - Requires DIV_ROUND_UP compat"
+    (( !$has_seq_open_const )) &&
+    echo "   - Requires seq_open() const parameter compat"
+    (( !$has_nlmsg_trim )) &&
+    echo "   - Requires nlmsg_trim() removal compat"
+    (( !$has_tcf_destroy_chain )) &&
+    echo "   - Requires tcf_destroy_chain() compat"
+    (( !$has_new_nla_policy )) &&
+    echo "   - Requires new nal_policy compat"
+    (( !$has_new_nla_put_flag )) &&
+    echo "   - Requires old NLA_PUT_FLAG compat"
+    (( !$has_new_nlmsg_new )) &&
+    echo "   - Requires old nlmsg_new() compat"
+    (( !$has_debugfs_rename )) &&
+    echo "   - Requires debugfs_rename() compat"
+
+    return 0
+}
+
+function determine_kernel_compat {
+
+    [ -z "$KSRC" ] && {
+cat <<EOF
+	KSRC must be defined
+EOF
+	return 1
+    }
+
+    KSRC=${KSRC/\%//}/
+    
+    [ ! -e "${KSRC}Makefile" ] && 
+	    die 1 "Kernel Makefile not found at '$KSRC'"
+    
+    echo -e "Checking kernel compatibility in:\n\t$KSRC"
+    
+	export has_nla_nul_string=0
+	grep -q "NLA_NUL_STRING" ${KSRC}include/net/netlink.h &&
+		export has_nla_nul_string=1
+
+	export has_nla_binary=0
+	grep -q "NLA_BINARY" ${KSRC}include/net/netlink.h &&
+		export has_nla_binary=1
+
+	export has_new_genlmsg_put=1
+	grep -A2 'genlmsg_put(' ${KSRC}include/net/genetlink.h |grep -q version &&
+		export has_new_genlmsg_put=0
+
+    (( $has_new_genlmsg_put )) &&
+    (( $has_nla_binary )) &&
+    (( $has_nla_nul_string )) && {
+	echo " * Kernel supports required features for 'modified' version."
+	return 0
+    }
+
+    (( !$has_nla_binary )) &&
+    echo "   - Requires NLA_NUL_STRING compat"
+    (( !$has_nla_nul_string )) &&
+    echo "   - Requires NLA_BINARY compat"
+    (( !$has_new_genlmsg_put )) &&
+    echo "   - Requires old genlmsg_put() compat"
+
+    return 0
+}

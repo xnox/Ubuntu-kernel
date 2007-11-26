@@ -1,0 +1,17 @@
+Add compatibility with request_irq from older (pre-2.6.19) kernels.
+diff --git a/iwl-base.c b/iwl-base.c
+index d52a759..6082b39 100644
+--- a/iwl-base.c
++++ b/iwl-base.c
+@@ -9291,7 +9290,11 @@ static int iwl_net_set_mac_address(struc
+ }
+ #endif
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
++static irqreturn_t iwl_isr(int irq, void *data, struct pt_regs *regs)
++#else
+ static irqreturn_t iwl_isr(int irq, void *data)
++#endif
+ {
+ 	struct iwl_priv *priv = data;
+ 	u32 inta, inta_mask;

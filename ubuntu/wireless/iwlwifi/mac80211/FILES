@@ -1,0 +1,32 @@
+Package Manifest
+
+The following are part of the distribution:
+
+origin/    <--- Original sources pulled from wireless-dev
+pending/   <--- Patches and modification scripts that have not been merged
+		into the main GIT repository from which tip/ was pulled.
+patches/   <--- Compatibility patches and scripts used to make a build that
+		is compatible with legacy kernels.
+scripts/   <--- Miscellaneous scripts used in the build and distribution 
+		process.
+stubs/	   <--- Used by the distribution process to generate updated 
+		README documentation (with correct time/date and version
+		information)
+Makefile   <--- Used by build (see README for Makefile targets)
+README	   <--- Provides the Who, What, Why, and How for this packages...
+FILES      <--- General distribution manifest
+TODO	   <--- Sometimes not there; a general list of work items to be done
+CHANGES	   <--- High level change history of the package releases
+
+
+The following are generated as part of the build process:
+
+modified/   <-- Tip sources with 'pending/' patches and scripts executed
+		or applied.  This should build with latest kernels.
+compatible/ <-- modified/ sources with 'patches/' patches and scripts
+		executed or applied.  This version is compatible
+		with legacy kernels (see README for specific versions)
+distros/    <-- Holds .tgz generated if 'make dist' is run.
+
+NOTE:   latest/ and compat/ are completely rebuilt any time any files
+	are updated or touched in the origin/ directory.

@@ -1,0 +1,46 @@
+struct nla_policy used to has .minlen instead of .len
+---
+diff -urp old/net/wireless/nl80211.c compatible/net/wireless/nl80211.c
+--- old/net/wireless/nl80211.c	2007-07-05 14:51:22.000000000 +0800
++++ compatible/net/wireless/nl80211.c	2007-07-05 14:56:32.000000000 +0800
+@@ -70,14 +70,14 @@ static int get_drv_dev_by_info_ifindex(s
+ /* policy for the attributes */
+ static struct nla_policy nl80211_policy[NL80211_ATTR_MAX+1] __read_mostly = {
+ 	[NL80211_ATTR_IFINDEX] = { .type = NLA_U32 },
+-	[NL80211_ATTR_IFNAME] = { .type = NLA_NUL_STRING, .len = IFNAMSIZ-1 },
++	[NL80211_ATTR_IFNAME] = { .type = NLA_NUL_STRING, .minlen = IFNAMSIZ-1 },
+ 	[NL80211_ATTR_WIPHY] = { .type = NLA_U32 },
+ 	[NL80211_ATTR_WIPHY_NAME] = { .type = NLA_NUL_STRING,
+-				      .len = BUS_ID_SIZE-1 },
++				      .minlen = BUS_ID_SIZE-1 },
+ 	[NL80211_ATTR_IFTYPE] = { .type = NLA_U32 },
+-	[NL80211_ATTR_BSSID] = { .len = ETH_ALEN },
++	[NL80211_ATTR_BSSID] = { .minlen = ETH_ALEN },
+ 	[NL80211_ATTR_SSID] = { .type = NLA_BINARY,
+-				.len = IEEE80211_MAX_SSID_LEN },
++				.minlen = IEEE80211_MAX_SSID_LEN },
+ 	[NL80211_ATTR_CHANNEL] = { .type = NLA_U32 },
+ 	[NL80211_ATTR_PHYMODE] = { .type = NLA_U32 },
+ 	[NL80211_ATTR_CHANNEL_LIST] = { .type = NLA_NESTED },
+@@ -86,7 +86,7 @@ static struct nla_policy nl80211_policy[
+ 	[NL80211_ATTR_BEACON_PERIOD] = { .type = NLA_U32 },
+ 	[NL80211_ATTR_DTIM_PERIOD] = { .type = NLA_U32 },
+ 	[NL80211_ATTR_TIMESTAMP] = { .type = NLA_U64 },
+-	[NL80211_ATTR_IE] = { .type = NLA_BINARY, .len = NL80211_MAX_IE_LEN },
++	[NL80211_ATTR_IE] = { .type = NLA_BINARY, .minlen = NL80211_MAX_IE_LEN },
+ 	[NL80211_ATTR_AUTH_ALGORITHM] = { .type = NLA_U32 },
+ 	[NL80211_ATTR_TIMEOUT_TU] = { .type = NLA_U32 },
+ 	[NL80211_ATTR_REASON_CODE] = { .type = NLA_U32 },
+@@ -99,10 +99,10 @@ static struct nla_policy nl80211_policy[
+ 	[NL80211_ATTR_BEACON_HEAD] = { .type = NLA_BINARY },
+ 	[NL80211_ATTR_BEACON_TAIL] = { .type = NLA_BINARY },
+ 	[NL80211_ATTR_KEY_DATA] = { .type = NLA_BINARY,
+-				    .len = WLAN_MAX_KEY_LEN },
++				    .minlen = WLAN_MAX_KEY_LEN },
+ 	[NL80211_ATTR_KEY_ID] = { .type = NLA_U32 },
+ 	[NL80211_ATTR_KEY_TYPE] = { .type = NLA_U32 },
+-	[NL80211_ATTR_MAC] = { .len = ETH_ALEN },
++	[NL80211_ATTR_MAC] = { .minlen = ETH_ALEN },
+ 	[NL80211_ATTR_KEY_CIPHER] = { .type = NLA_U32 },
+ };
+ 

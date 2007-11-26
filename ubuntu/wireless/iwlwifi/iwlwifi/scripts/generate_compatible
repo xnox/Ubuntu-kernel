@@ -1,0 +1,159 @@
+#!/usr/bin/env /bin/bash
+# Copyright (C) 2007 Intel Corporation
+script=generate_compatible
+prog=$0
+[ "${prog/*$script/$script}" = "$script" ] || {
+    echo "This script must not be sourced."
+    return 1
+} || return 1
+
+function die() {
+    ret=$1
+    shift
+    echo -e $@ >&2
+    exit $ret
+}
+
+[ -z "$KSRC" ] && 
+die 1 "KSRC must be defined."
+
+[ ! -e "${KSRC}/Makefile" ] && 
+die 1 "Kernel Makefile not found at '$KSRC'"
+
+. scripts/determine_compat 
+determine_compat || 
+die $? "\nCould not provide compatible version. Try 2.6.18 or newer.\n\nTerminating."
+
+SRC=$1
+DST=compatible
+
+[ -d "$SRC" ] ||
+die 5 "\n$SRC/ tree does not exist.  Run 'make $SRC' to build the\n$SRC directory."
+
+SRC=${SRC/%\/}/
+DST=${DST/%\/}/
+
+[ ! -e $DST ] || {
+    die 1 "$DST already exists.  You must remove it before continuing."
+}
+
+echo "Building compatibility version in '$DST' directory:"
+
+mkdir $DST
+echo -n "Copying $DST from $SRC..."
+cp -r ${SRC}* $DST || die $? "Copy failed."
+echo "done"
+
+(( !$requires_compat )) && exit 0
+
+function do_patch {
+    [ -e "$2" ] ||
+    die 3 "$2 does not exist.  Terminating."
+    echo -ne " + Applying: $2\n\t"
+    cat "$2" | while read command rest; do
+	case $command in
+	    "Commit:" | "Author:" | "")
+		;;
+	    *) echo "$command $rest"
+		break
+		;;
+	esac
+    done
+
+    patch -p1 -d $1 < "$2" > .patch.output || {
+	echo "-----patch failure output-----"
+	cat .patch.output
+	echo ""
+	die 1 "$2 failed.  Terminating."
+    } 
+    [ -e .patch.output ] && rm .patch.output
+    return 0
+}
+
+function do_script {
+    [ -x "$2" ] ||
+    die 3 "$2 does not exist.  Terminating."
+    echo -ne " + Running: $2\n\t"
+    head -n 2 "$2" | tail -n 1 | sed -e 's,^#[[:space:]]*,,g' || 
+    die $? "Terminating."
+    $2 $1 || return 1
+    return 0
+}
+
+(( !$has_mac80211_v2 )) && {
+	do_patch $DST patches/mac80211-v1.patch || die $? "Failed."
+}
+
+(( !$has_delayed_work )) && {
+	do_script $DST patches/01-queue_delayed_work.sh &&
+	do_script $DST patches/02-cancel_delayed_work.sh &&
+	do_patch $DST patches/02-kcompat_delayed_work.patch ||
+		die $? "Failed."
+}
+
+(( !$has_new_request_irq )) && {
+	do_patch $DST patches/03-isr.patch || die $? "Failed."
+}
+
+(( !$has_rx_flag_radiotap )) && {
+	do_patch $DST patches/04-rx_flag_radiotap.patch || die $? "Failed."
+}
+
+(( !$has_delayed_work_define )) && {
+	do_patch $DST patches/05-delayed_work_define.patch || die $? "Failed."
+}
+
+(( !$has_wlan_80211 )) && {
+	do_patch $DST patches/wlan_80211.patch || 
+		die $? "Failed."
+}
+
+(( !$has_csa_conf )) && {
+	do_patch $DST patches/06-csa.patch ||
+		die $? "Failed."
+}
+
+(( !$has_hex_dump )) && {
+	do_patch $DST patches/07-hex_dump.patch ||
+		die $? "Failed."
+}
+
+(( !$has_is_power_of_2 )) && {
+	do_patch $DST patches/08-is_power_of_2.patch ||
+		die $? "Failed."
+}
+
+(( !$has_cancel_work_sync )) && {
+	do_patch $DST patches/09-cancel_work_sync.patch ||
+		die $? "Failed."
+}
+
+(( $has_preferred_rate_control )) && {
+	do_patch $DST patches/10-preferred_rate_control.patch ||
+		die $? "Failed."
+}
+
+makefile_modified=0
+(( !$has_mac80211_ht )) && {
+	grep -q 'export CONFIG_IWLWIFI_HT ?= y' Makefile
+	if [ $? -eq 0 ]; then
+		sed -i -e \
+		's/export CONFIG_IWLWIFI_HT[^_].*$/export CONFIG_IWLWIFI_HT ?= n/' \
+		Makefile
+		makefile_modified=1
+	fi
+}
+
+(( !$has_mac80211_ht_agg )) && {
+	grep -q 'export CONFIG_IWLWIFI_HT_AGG ?= y' Makefile
+	if [ $? -eq 0 ]; then
+		sed -i -e \
+		's/export CONFIG_IWLWIFI_HT_AGG.*$/export CONFIG_IWLWIFI_HT_AGG ?= n/' \
+		Makefile
+		makefile_modified=1
+	fi
+}
+
+(( $makefile_modified )) && exit 1
+
+exit 0

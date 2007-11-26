@@ -1,0 +1,90 @@
+From 454d6bf4ab1a52a73fe9d5c7940588c84e7fbf5b Mon Sep 17 00:00:00 2001
+From: Tomas Winkler <tomas.winkler@intel.com>
+Date: Sat, 30 Jun 2007 08:36:01 +0800
+Subject: [PATCH] mac80211: [HT] add addtional type parameter for ieee80211_get_bssid()
+
+add addtional type parameter for ieee80211_get_bssid() for
+IEEE 802.11n RX aggregation support.
+
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/ieee80211.c |   26 ++++++++++++++++++++------
+ 1 files changed, 20 insertions(+), 6 deletions(-)
+
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index 3c27d91..7cbc665 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -258,13 +258,11 @@ static void ieee80211_key_threshold_notify(struct net_device *dev,
+ }
+ 
+ 
+-static u8 * ieee80211_get_bssid(struct ieee80211_hdr *hdr, size_t len)
++static u8 * ieee80211_get_bssid(struct ieee80211_hdr *hdr, size_t len,
++				unsigned int type)
+ {
+ 	u16 fc;
+ 
+-	if (len < 24)
+-		return NULL;
+-
+ 	fc = le16_to_cpu(hdr->frame_control);
+ 
+ 	switch (fc & IEEE80211_FCTL_FTYPE) {
+@@ -285,8 +283,18 @@ static u8 * ieee80211_get_bssid(struct ieee80211_hdr *hdr, size_t len)
+ 	case IEEE80211_FTYPE_CTL:
+ 		if ((fc & IEEE80211_FCTL_STYPE) == IEEE80211_STYPE_PSPOLL)
+ 			return hdr->addr1;
++		else if ((fc & IEEE80211_FCTL_STYPE) ==
++			 IEEE80211_STYPE_BACK_REQ) {
++			switch (type) {
++				case IEEE80211_IF_TYPE_STA:
++					return hdr->addr2;
++				case IEEE80211_IF_TYPE_AP:
++					return hdr->addr1;
++			}
++		}
+ 		else
+ 			return NULL;
++		break;
+ 	}
+ 
+ 	return NULL;
+@@ -3810,7 +3818,7 @@ ieee80211_rx_h_sta_process(struct ieee80211_txrx_data *rx)
+ 	 * BSSID to avoid keeping the current IBSS network alive in cases where
+ 	 * other STAs are using different BSSID. */
+ 	if (rx->sdata->type == IEEE80211_IF_TYPE_IBSS) {
+-		u8 *bssid = ieee80211_get_bssid(hdr, rx->skb->len);
++		u8 *bssid = ieee80211_get_bssid(hdr, rx->skb->len,IEEE80211_IF_TYPE_IBSS);
+ 		if (compare_ether_addr(bssid, rx->sdata->u.sta.bssid) == 0)
+ 			sta->last_rx = jiffies;
+ 	} else
+@@ -4215,10 +4223,13 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
+ 	} else {
+ 		struct ieee80211_sub_if_data *prev = NULL;
+ 		struct sk_buff *skb_new;
+-		u8 *bssid = ieee80211_get_bssid(hdr, skb->len - radiotap_len);
++		u8 *bssid;
+ 
+ 		read_lock(&local->sub_if_lock);
+ 		list_for_each_entry(sdata, &local->sub_if_list, list) {
++			bssid = ieee80211_get_bssid(hdr,
++						    skb->len - radiotap_len,
++						    sdata->type);
+ 			rx.u.rx.ra_match = 1;
+ 			switch (sdata->type) {
+ 			case IEEE80211_IF_TYPE_STA:
+@@ -4282,6 +4293,9 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
+ 						       hdr->addr2) != 0)
+ 					continue;
+ 				break;
++			default:
++					continue;
++				break;
+ 			}
+ 
+ 			if (prev) {
+-- 
+1.5.2
+

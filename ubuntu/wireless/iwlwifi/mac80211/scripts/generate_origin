@@ -1,0 +1,72 @@
+#!/usr/bin/env /bin/bash
+script=generate_origin
+prog=$0
+[ "${prog/*$script/$script}" = "$script" ] || {
+    echo "This script must not be sourced."
+    return 1
+} || return 1
+
+function die() {
+        ret=$1
+        shift
+        echo -e $@ >&2
+        exit $ret
+}
+
+SRC=${BASE/%\//}/
+
+[ -d ${SRC}net/mac80211 ] ||
+die 1 "${SRC}net/mac80211 not found.  Terminating"
+
+find . -name '*rej' -exec rm {} \;
+find . -name '*orig' -exec rm {} \;
+
+DST=origin
+
+SRC=${SRC/%\/}/
+DST=${DST/%\/}/
+
+[ ! -e $DST ] || {
+    die 1 "$DST already exists.  You must remove it before continuing."
+}
+
+echo "Updating $DST from $SRC."
+
+files=($(cat ORIGIN_FILES | grep -v '^#'))
+count=${#files[*]}
+for i in $(seq 0 $((count-1))); do
+    file="${SRC}${files[$i]}"
+    [ -e "$file" ] ||
+    die 3 "'$file' does not exist.\n\nUpdate of ORIGIN_FILES required."
+
+    dir=${DST}$(dirname "${files[$i]}")
+    [ ! -d "$dir" ] && {
+	mkdir -p "$dir" || die 7 "Could not mkdir $dir."
+    }
+
+    cp -f "$file" "${DST}${files[$i]}" || exit 1
+done || exit $?
+echo " + Copied $count files."
+
+# Cache the .git HEAD if it exists so we know the commit in
+# the main tree that created this tip.
+[ ! -e "$DST/GIT" ] || {
+    rm "$DST/GIT" &&
+    echo "Existing GIT head cache deleted."
+}
+
+[ -e "${SRC}.git/HEAD" ] && {
+    cp "${SRC}.git/HEAD" "$DST/GIT" && {
+	head=$(cat "$DST/GIT")
+	tmp=${head/ref: }
+	if [ "$tmp" == "$head" ]; then
+	    echo "GIT head cached: " $(cat "$DST/GIT")
+	else
+	    cp "${SRC}.git/$tmp" "$DST/GIT" &&
+		    echo "GIT head cached: " $(cat "$DST/GIT")
+	fi
+    }
+} || {
+	echo "${SRC}.git/HEAD does not exist!"
+}
+

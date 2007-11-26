@@ -1,0 +1,14 @@
+diff -urp origin/iwl-base.c compatible/iwl-base.c
+--- origin/iwl-base.c	2007-08-20 14:27:53.000000000 +0800
++++ compatible/iwl-base.c	2007-08-20 16:37:21.000000000 +0800
+@@ -9091,6 +9091,10 @@ static void iwl_setup_deferred_work(stru
+ 		     iwl_irq_tasklet, (unsigned long)priv);
+ }
+ 
++#ifndef cancel_work_sync
++#define cancel_work_sync(x)
++#endif
++
+ static void iwl_cancel_deferred_work(struct iwl_priv *priv)
+ {
+ 	iwl_hw_cancel_deferred_work(priv);

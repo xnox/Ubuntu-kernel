@@ -1,0 +1,163 @@
+From 0d1fde009eb108f3f379e0868b600c12f7cd943d Mon Sep 17 00:00:00 2001
+From: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Date: Sat, 30 Jun 2007 07:27:10 +0800
+Subject: [PATCH] mac80211: [HT] IEEE 802.11n block ack support
+
+Implemented interface for starting and stopping a
+BA Session on specified sta and tid.
+
+Signed-of-by: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Signed-of-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-of-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/ieee80211.c |  134 ++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 134 insertions(+), 0 deletions(-)
+
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index 4e03ffd..9473b42 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -5386,6 +5386,140 @@ void ieee80211_wake_queues(struct ieee80211_hw *hw)
+ }
+ EXPORT_SYMBOL(ieee80211_wake_queues);
+ 
++int ieee80211_start_BA_session(struct ieee80211_hw *hw, u8 *da, u16 tid)
++{
++	struct ieee80211_local *local = hw_to_local(hw);
++	struct sta_info *sta;
++	struct net_device *dev;
++	struct ieee80211_sub_if_data *sdata;
++	u16 start_seq_num=0;
++	int rc = -EAGAIN;
++
++	if (tid >= STA_TID_NUM)
++		return -EINVAL;
++	else
++		printk (KERN_DEBUG "Open a BA session requested on DA " MAC_FMT " tid %d\n",MAC_ARG(da),tid);
++
++	sta = sta_info_get(local, da);
++	if (!sta)
++		return -ENOENT;
++	/* check if the TID is not in aggregation flow already */
++	spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++	if (sta->ht_ba_mlme.tid_agg_info_tx[tid].state == HT_AGG_STATE_IDLE)
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_START_BA;
++	else {
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		printk (KERN_DEBUG "BA request denied - aggregation is not idle on tid %d\n",tid);
++		goto start_BA_exit;
++	}
++	spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++
++	/* create a new queue for this aggregation */
++	rc = ieee80211_ht_agg_queue_add(local,da,tid);
++
++	/* case no queue is available to aggregation don't switch to aggregation */
++	if(rc) {
++		printk (KERN_DEBUG "BA request denied - no queue available for tid %d\n",tid);
++	} else { /* try to move HW to aggregation */
++		rc = -EAGAIN;
++		dev = sta->dev;
++		sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++		start_seq_num = sdata->sequence >> 4; /* this default value can be changed by driver */
++		if (local->ops->ht_tx_agg_start)
++			rc = local->ops->ht_tx_agg_start(hw,da,tid,&start_seq_num);
++		if(rc)
++			/* remove the queue for this aggregation */
++			ieee80211_ht_agg_queue_remove(local,da,tid);
++	}
++
++	/* case we denied aggregation go back to legacy */
++	if(rc) {
++		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_IDLE;
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		printk (KERN_DEBUG "BA request denied - HW or queue unavailable for tid %d\n",tid);
++		goto start_BA_exit;
++	}
++
++	/* send an addBA request */
++	spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++	sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_ADDBA_REQUESTED;
++	sta->ht_ba_mlme.dialog_token_allocator++;
++	sta->ht_ba_mlme.tid_agg_info_tx[tid].dialog_token = sta->ht_ba_mlme.dialog_token_allocator;
++	sta->ht_ba_mlme.tid_agg_info_tx[tid].start_seq_num = start_seq_num;
++	spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++
++	ieee80211_send_addba_request(sta->dev, da, tid,
++								 sta->ht_ba_mlme.tid_agg_info_tx[tid].dialog_token,
++								 sta->ht_ba_mlme.tid_agg_info_tx[tid].start_seq_num,
++								 0x40,5000);
++
++	/* activate the timer for the recipient's addBA response */
++	sta->ht_ba_mlme.tid_agg_info_tx[tid].addba_resp_timer.expires = jiffies + ADDBA_RESP_INTERVAL;
++	add_timer(&sta->ht_ba_mlme.tid_agg_info_tx[tid].addba_resp_timer);
++	printk(KERN_DEBUG "activated addBA response timer on tid %d\n",tid);
++
++	rc = 0;
++start_BA_exit:
++	sta_info_put(sta);
++	return rc;
++}
++EXPORT_SYMBOL(ieee80211_start_BA_session);
++
++int ieee80211_stop_BA_session(struct ieee80211_hw *hw, u8 *da, u16 tid)
++{
++	struct ieee80211_local *local = hw_to_local(hw);
++	struct sta_info *sta;
++	int rc = -EAGAIN;
++
++	if (tid >= STA_TID_NUM)
++		return -EINVAL;
++	else
++		printk (KERN_DEBUG "Stop a BA session requested on DA " MAC_FMT " tid %d\n",MAC_ARG(da),tid);
++
++	sta = sta_info_get(local, da);
++	if (!sta)
++		return -ENOENT;
++
++	/* check if the TID is in aggregation */
++	spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++	if (sta->ht_ba_mlme.tid_agg_info_tx[tid].state == HT_AGG_STATE_OPERATIONAL)
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_INITIATOR_REQ_STOP_BA;
++	else {
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		printk (KERN_DEBUG "request denied - aggregation is not opertional yet on tid %d\n",tid);
++		goto stop_BA_exit;
++	}
++	spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++
++	if (local->ops->ht_tx_agg_stop)
++		rc = local->ops->ht_tx_agg_stop(hw,da,tid,1 /*WLAN_BACK_INITIATOR*/);
++
++	/* case HW denied going back to legacy */
++	if(rc) {
++		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_OPERATIONAL;
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		printk (KERN_ERR "HW problem - can not stop aggergation for tid %d\n",tid);
++		goto stop_BA_exit;
++	}
++
++	/* remove the queue for this aggregation */
++	ieee80211_ht_agg_queue_remove(local,da,tid);
++
++	/* send a delBA */
++	ieee80211_send_delba(sta->dev, da, tid, 1 /*WLAN_BACK_INITIATOR*/, WLAN_REASON_QSTA_NOT_USE);
++	spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++	sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_IDLE;
++	spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++
++	rc = 0;
++stop_BA_exit:
++	sta_info_put(sta);
++	return rc;
++}
++EXPORT_SYMBOL(ieee80211_stop_BA_session);
++
+ struct net_device_stats *ieee80211_dev_stats(struct net_device *dev)
+ {
+ 	struct ieee80211_sub_if_data *sdata;
+-- 
+1.5.2
+

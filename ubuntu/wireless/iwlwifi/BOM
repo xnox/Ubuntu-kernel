@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# Retrieve the iwlwifi bill of materials and extract the contents. You
+# only need to do this when you are updating from one version
+# if iwlwifi to the next.
+#
+IVER=1.1.0
+MVER=10.0.0
+FW3945_VER=2.14.4
+FW4965_VER=4.44.17
+
+if [ ! -f iwlwifi-${IVER}.tgz ] ; then wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-${IVER}.tgz; fi
+if [ ! -f mac80211-${MVER}.tgz ] ; then wget http://intellinuxwireless.org/mac80211/downloads/mac80211-${MVER}.tgz; fi
+if [ ! -f iwlwifi-3945-ucode-${FW3945_VER}.tgz ] ; then wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-3945-ucode-${FW3945_VER}.tgz; fi
+if [ ! -f iwlwifi-4965-ucode-${FW4965_VER}.tgz ] ; then wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-4965-ucode-${FW4965_VER}.tgz; fi
+
+#
+# Untar and normalize the directory names.
+#
+rm -rf iwlwifi; tar xzf iwlwifi-${IVER}.tgz; mv iwlwifi-${IVER} iwlwifi
+rm -rf mac80211; tar xzf mac80211-${MVER}.tgz; mv  mac80211-${MVER} mac80211
+
+#
+# Note the '-1' in the new firmware file name.
+#
+tar xzf iwlwifi-3945-ucode-${FW3945_VER}.tgz
+mv iwlwifi-3945-ucode-${FW3945_VER}/iwlwifi-3945.ucode ../../../ubuntu-firmware/iwlwifi/iwlwifi-3945-1.ucode
+rm -rf iwlwifi-3945-ucode-${FW3945_VER}
+
+#
+# Note the '-1' in the new firmware file name.
+#
+tar xzf iwlwifi-4965-ucode-${FW4965_VER}.tgz
+mv iwlwifi-4965-ucode-${FW4965_VER}/iwlwifi-4965.ucode ../../../ubuntu-firmware/iwlwifi/iwlwifi-4965-1.ucode
+rm -rf iwlwifi-4965-ucode-${FW4965_VER}
+

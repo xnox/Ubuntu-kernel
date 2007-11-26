@@ -1,0 +1,3 @@
+desc="32-bit PowerPC"
+arch="powerpc"
+provides="apparmor-modules-2.1"

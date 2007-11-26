@@ -1,0 +1,6 @@
+#!/usr/bin/env /bin/bash
+git-fsck-objects --unreachable | 
+	while read unrechable type sha1; do 
+		rm .git/objects/${sha1::2}/${sha1/??}
+	done
+

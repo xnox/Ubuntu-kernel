@@ -1,0 +1,178 @@
+
+
+Intel Wireless Link Wifi (iwlwifi) drivers for Linux* in support 
+of:
+
+iwl4965.ko - Intel(R) Wireless WiFi Link 4965AGN
+iwl3945.ko - Intel(R) PRO/Wireless 3945ABG/BG Network Connection Adapter
+
+Copyright (C) 2005 - 2007, Intel Corporation
+
+README.iwlwifi
+
+Version: 1.1.0
+Date   : September 19, 2007
+
+
+Index
+-----------------------------------------------
+0.   IMPORTANT INFORMATION BEFORE USING THIS DRIVER
+1.   Introduction
+2.   Loading the Driver
+3.   Feature Details
+4.   Configuring the driver
+5.   Wireless Tools Details
+6.   Support
+
+
+===============================================
+0.   IMPORTANT INFORMATION BEFORE USING THIS DRIVER
+===============================================
+
+Important Notice FOR ALL USERS OR DISTRIBUTORS!!!! 
+
+Intel wireless LAN adapters are engineered, manufactured, tested, and
+quality checked to ensure that they meet all necessary local and
+governmental regulatory agency requirements for the regions that they
+are designated and/or marked to ship into. Since wireless LANs are
+generally unlicensed devices that share spectrum with radars,
+satellites, and other licensed and unlicensed devices, it is sometimes
+necessary to dynamically detect, avoid, and limit usage to avoid
+interference with these devices. In many instances Intel is required to
+provide test data to prove regional and local compliance to regional and
+governmental regulations before certification or approval to use the
+product is granted. Intel's wireless LAN's EEPROM, firmware, and
+software driver are designed to carefully control parameters that affect
+radio operation and to ensure electromagnetic compliance (EMC). These
+parameters include, without limitation, RF power, spectrum usage,
+channel scanning, and human exposure. 
+
+For these reasons Intel cannot permit any manipulation by third parties
+of the software provided in binary format with the wireless WLAN
+adapters (e.g., the EEPROM and firmware). Furthermore, if you use any
+patches, utilities, or code with the Intel wireless LAN adapters that
+have been manipulated by an unauthorized party (i.e., patches,
+utilities, or code (including open source code modifications) which have
+not been validated by Intel), (i) you will be solely responsible for
+ensuring the regulatory compliance of the products, (ii) Intel will bear
+no liability, under any theory of liability for any issues associated
+with the modified products, including without limitation, claims under
+the warranty and/or issues arising from regulatory non-compliance, and
+(iii) Intel will not provide or be required to assist in providing
+support to any third parties for such modified products.  
+
+Note: Many regulatory agencies consider Wireless LAN adapters to be
+modules, and accordingly, condition system-level regulatory approval
+upon receipt and review of test data documenting that the antennas and
+system configuration do not cause the EMC and radio operation to be
+non-compliant.
+
+The drivers available for download from SourceForge are provided as a 
+part of a development project.  Conformance to local regulatory 
+requirements is the responsibility of the individual developer.  As 
+such, if you are interested in deploying or shipping a driver as part of 
+solution intended to be used for purposes other than development, please 
+obtain a tested driver from Intel Customer Support at:
+
+http://support.intel.com/support/notebook/sb/CS-006408.htm
+
+
+===============================================
+1.   Introduction
+===============================================
+The following sections attempt to provide a brief introduction to using 
+the iwlwifi drivers for Linux.
+
+This document is not meant to be a comprehensive manual on 
+understanding or using wireless technologies, but should be sufficient 
+to get you moving without wires on Linux.
+
+For information on building and installing the driver, see the INSTALL
+file.
+
+The iwlwifi project builds two kernel modules:
+
+	iwl3945.ko	iwl4965.ko
+
+The modules are built using as much common code as possible.
+
+===============================================
+2. Loading the Driver
+===============================================
+
+See the INSTALL document for information on installing the driver.
+
+Once installed, a typical method for launching the driver and the 
+is via the load script provided in the source package:
+
+	# ./load debug=0x43fff   <--- You need to be root for this
+
+If you followed the steps of the INSTALL document, you can load the 
+module simply by running:
+
+	# modprobe iwl3945       <--- You need to be root for this
+	(Or modprobe iwl4965 depending on your hardware)
+
+If you want to unload the module you can simply use the unload script:
+
+	# ./unload               <--- You need to be root for this
+
+or:
+
+	# modprobe -r iwl3945       <--- You need to be root for this
+	(Or modprobe -r iwl4965 depending on your hardware)
+
+
+===============================================
+3. Feature Details
+===============================================
+
+TODO: Document features.
+
+===============================================
+4. Configuring the driver
+===============================================
+
+4.1. Command Line Parameters
+-----------------------------------------------
+
+TODO:  Document module parameters
+
+4.3. Sysfs Helper Files:
+-----------------------------------------------
+
+TODO: Document sysfs attributes
+
+===============================================
+5. Wireless Tools Details
+===============================================
+
+TODO: Document wireless tools, mac80211, userspace MLMEs, etc.
+
+short_preamble -- set by PRISM2_PARAM_PREAMBLE in ieee80211_ioctl.c
+IEEE80211_SCAN_EXTRA_INFO -- set by PRISM2_PARAM_SCAN_FLAGS
+
+6. Support
+-----------------------------------------------
+
+For general development information and support, go to:
+	
+    http://intellinuxwireless.org/
+
+
+------------------------------
+Copyright (C) 2005 - 2007, Intel Corporation
+
+INFORMATION IN THIS DOCUMENT IS PROVIDED IN CONNECTION WITH INTEL PRODUCTS.  
+EXCEPT AS PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE FOR SUCH PRODUCTS, 
+INTEL ASSUMES NO LIABILITY WHATSOEVER, AND INTEL DISCLAIMS ANY EXPRESS OR 
+IMPLIED WARRANTY RELATING TO SALE AND/OR USE OF INTEL PRODUCTS, INCLUDING 
+LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A PARTICULAR PURPOSE, 
+MERCHANTABILITY, OR INFRINGEMENT OF ANY PATENT, COPYRIGHT, OR OTHER 
+INTELLECTUAL PROPERTY RIGHT. 
+
+This document is subject to change without notice. 
+
+* Other names and brands may be claimed as the property of others.
+
+

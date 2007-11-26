@@ -1,0 +1,170 @@
+README: Release Notes for ET1310 Linux Driver v1.2.2
+-------------------------------------------------------------
+
+The ET1310 Linux Driver v1.2.2 is a driver which supports the ET1310 Customer Evaluation Board (Revision 1.1) This driver is subject to change with subsequent releases.
+
+This driver has been tested on Revision 1.1 of ET1310 Customer Evaluation Board (ET1310 Rev 1.1).  The supported silicon on this adapter can be identified by the model number MET1310R1M or MLET1310R1M located on the Agere Systems device.
+
+The following is included in Release v1.2.2:
+
+    README     - This readme file
+    README.doc - This readme file in Microsoft Word Doc format
+    Makefile   - The file used by the toolchain to build the driver
+    *.c/*.h    - The Linux source code for the driver
+
+The following is included in the release notes :
+
+    Supported Operating System environments
+    List of supported features in the device driver
+    Driver Errata
+    Installation notes
+    Performance Data
+    Additional Notes
+
+
+SUPPORTED OPERATING SYSTEM ENVIRONMENTS
+
+This driver has been tested on 32-bit builds and 64-bit builds (where supported) of the following distributions and corresponding linux kernel versions:
+
+    Red Hat 9.0 (kernel version 2.4.20)
+    Suse 9.0 (kernel version 2.4.21-99)
+    Suse 9.0 (with a kernel upgrade to version 2.4.29 for native PCI-Express support) 
+    Suse 9.0 (with a kernel upgrade to version 2.4.30 for native PCI-Express support)
+    Suse 9.1 (kernel version 2.6.4-52)
+    Suse 9.2 (kernel version 2.6.8)
+    Suse 9.3 (kernel version 2.6.11.4)
+    Red Hat Fedora Core 3
+    Red Hat Fedora Core 4
+
+Other distributions of Linux using the aforementioned linux kernels may work, but were not evaluated. In addition, this driver may work with other versions of the Linux kernel, but were not evaluated.
+
+
+FEATURES
+
+The device driver for the ET1310 Customer Evaluation Board (ET1310 Rev 1.1) provides the following features :
+
+1. Autonegotiation.
+2. Support for 32-bit and 64-bit linux kernel builds.
+3. Jumbo Packet Support.
+4. Link speed is now indicated in LED. The LED behavior is determined by the contents of the EEPROM (for vendor customizations), but the default behavior is defined in Table 1.
+
+ 
+TABLE 1: LED LINK RECOGNITION
+
+Speed	Activity LED (amber)	                        Link LED (green)
+-----   ---------------------------------------------   ----------------
+1000    ON (no activity), FLASHING (activity present)   ON
+100     ON (no activity), FLASHING (activity present)   FLASHING
+10      ON (no activity), FLASHING (activity present)   OFF
+
+			
+ERRATA
+
+1.  The 1310 will occasionally send out zero duration flow-control requests when connected to a switch that does not support flow-control.  This is managed in this release of the driver.
+2.  Currently, link speed cannot be forced; the fastest speed possible on the hub/switch to which the device is connected will be used.
+
+
+INSTALLATION
+
+This version of the ET1310 Linux driver is designed for the ET1310 Customer Evaluation Board Rev 1.1.  After installing the Agere Systems adapter into the PC, 
+
+1.  Boot and log into Linux.
+2.  If any "Found New Hardware" notifications pop-up upon login, click "Cancel" for now.
+3.  Open a terminal window.
+4.  From within the terminal window, change to the directory where the driver package is located.
+5.  This driver is packaged as a gzip-compressed tarball (.tar.gz). To unpack the file, type the following command:
+
+        tar -xzvf et131x_20050801_v1-2-2.tar.gz
+    
+    For more information on the 'tar' command, please refer to the man pages. This can be done by typing:
+
+        man tar
+
+    at the command line.
+
+6.  Once unpackaged, change directory to /et131x/linux/driver:
+
+        cd et131x/linux/driver
+
+7.  Build the driver source code by executing the following command:
+
+        make
+
+    The resulting driver binary is named et131x.o on 2.4.x kernels, and et131x.ko on 2.6.x kernels. For more information on 'make' and the C toolchain for Linux, refer to the man pages. This can be done by typing:
+
+        man make
+
+8.  Install the driver by executing the following command:
+
+        make modules_install
+
+9.	Once installed, the device must be configured. The configuration of network devices is not uniform across distributions, as each Linux distribution provides a different user interface for setting up network devices. The following steps are provided for those using Suse distributions containing the ‘YaST’ system configuration application:
+
+        a.	Start 'yast'. This can be done by typing 'yast' (as superuser) from a terminal, or selecting 'System->YaST' from the K Menu (the Start Menu equivalent in KDE).
+        b.	Once the main YaST dialog is displayed, select 'Network Devices' on the left.
+        c.	Select 'Network Card' on the right. Another dialog will pop up which will state that the current network configuration is being examined, and when complete, will display the network devices in the system.
+        d.	In the "Network Cards to Configure" window, select "Agere Systems (former Lucent Microelectronics) Ethernet Controller", then click "Configure".
+        e.	In the "Network Address Setup" window, in the "Setup" section, select the desired IP addressing method.
+        f.	In the "Network Address Setup" window, in the "Detailed Settings" section, select Advanced->Hardware Details.
+        g.	In the window which opens, enter 'et131x' under "Module Name".
+        h.	Click "Next", then click "Finish".
+ 
+Once complete, the device is configured, should autoload on boot, and can be controlled by the 'ifup' and 'ifdown' scripts.
+
+10.	Once the device is up and running, it can be used like any other Ethernet device.
+
+NOTE: Aside from the installation/configuration above, the driver can also be manually installed and configured if necessary as follows:
+
+1.	Follow steps 1-7 above.
+2.	Once the driver is built, install the driver:
+
+        insmod et131x.o
+
+   	        For more information on 'insmod', refer to the man pages. This can be done by typing:
+
+        man insmod
+        
+3.	Once installed, use 'ifconfig' to enable the device:
+
+        ifconfig eth1 up
+
+        OR
+
+        ifconfig eth1 <IP addr>
+
+where <IP addr> is the desired static IP address to be assigned to the interface. Note that if the IP address is not statically specified, the DHCP client daemon will need to be run on this interface in order to obtain an IP address from a DHCP server. For more information on 'insmod', refer to the man pages. This can be done by typing:
+
+        man ifconfig
+
+4.	Once the device is up and running, it can be used like any other Ethernet device.   
+
+
+
+PERFORMANCE DATA
+
+Performance data is available in Microsoft Excel spreadsheet form on the Agere website at http://www.agere.com/ethernet/et1310.html.  The test platform used to measure performance is as follows:
+
+Test Suite         : IxChariot v6.0
+Chariot Endpoint 1 : Linux (Suse 9.3, kernel 2.6.4.11) running on a Dell Precision 470
+Chariot Endpoint 2 : Windows XP running on an Asus A8N-SLI motherboard, Intel 945 chipset, AMD 64 Athlon 3500+.
+
+Agere ET1310 to Agere ET1310 performance data:
+
+CPU Utilization		: ~61% (for combined throughput test) measured through IxChariot
+
+Throughput on Gigabit Link	:   Rx	: 938 Mbps
+                                Tx	: 940 Mbps
+				  	            FDx	: 1380 Mbps
+
+
+
+ADDITIONAL NOTES
+
+With certain distributions, like Suse 9.0 for example, it may be necessary to upgrade the kernel in order to obtain PCI Express support and other relevant bugfixes or features that have been incorporated into the Linux kernel. Please note, however, that building the Linux kernel is a detailed process, and is not discussed in the scope of this README. A corresponding document in HTML format, named Kernel-Build-HOWTO.html, has been provided with this release which details the process of building the Linux kernel.
+
+In addition to the Kernel Build HOWTO, the following website:
+
+http://www.digitalhermit.com/linux/Kernel-Build-HOWTO.html
+
+is where the included Kernel Build HOWTO is maintained, and should be checked periodically for any updates.
+

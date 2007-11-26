@@ -1,0 +1,56 @@
+The ability to rename devices requires device_rename so we can't use it.
+diff --git a/net/wireless/core.c b/net/wireless/core.c
+index baff815..eca68c8 100644
+--- a/net/wireless/core.c
++++ b/net/wireless/core.c
+@@ -141,38 +137,6 @@ void cfg80211_put_dev(struct cfg80211_registered_device *drv)
+ 	mutex_unlock(&drv->mtx);
+ }
+ 
+-int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
+-			char *newname)
+-{
+-	int idx, taken = -1, result, digits;
+-
+-	/* prohibit calling the thing phy%d when %d is not its number */
+-	sscanf(newname, PHY_NAME "%d%n", &idx, &taken);
+-	if (taken == strlen(newname) && idx != rdev->idx) {
+-		/* count number of places needed to print idx */
+-		digits = 1;
+-		while (idx /= 10)
+-			digits++;
+-		/*
+-		 * deny the name if it is phy<idx> where <idx> is printed
+-		 * without leading zeroes. taken == strlen(newname) here
+-		 */
+-		if (taken == strlen(PHY_NAME) + digits)
+-			return -EINVAL;
+-	}
+-
+-	/* this will check for collisions */
+-	result = device_rename(&rdev->wiphy.dev, newname);
+-	if (!result)
+-		return result;
+-
+-	/* TODO: do debugfs rename! */
+-
+-	nl80211_notify_dev_rename(rdev);
+-
+-	return 0;
+-}
+-
+ /* exported functions */
+ 
+ struct wiphy *wiphy_new(struct cfg80211_ops *ops, int sizeof_priv)
+diff --git a/net/wireless/core.h b/net/wireless/core.h
+index e7e6c5b..0e8d141 100644
+--- a/net/wireless/core.h
++++ b/net/wireless/core.h
+@@ -74,7 +74,4 @@ extern void cfg80211_put_dev(struct cfg80211_registered_device *drv);
+ /* free object */
+ extern void cfg80211_dev_free(struct cfg80211_registered_device *drv);
+ 
+-extern int cfg80211_dev_rename(struct cfg80211_registered_device *drv,
+-			       char *newname);
+-
+ #endif /* __NET_WIRELESS_CORE_H */

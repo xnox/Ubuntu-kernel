@@ -1,0 +1,53 @@
+
+Intel Wireless Link Wifi (iwlwifi) driver for Linux* in support 
+of:
+
+Intel(R) Wireless WiFi Link 4965AGN
+Intel(R) PRO/Wireless 3945ABG/BG Network Connection Adapter
+
+Copyright (C) 2005 - 2007, Intel Corporation
+
+ISSUES
+
+Version: 1.1.0
+Date   : September 19, 2007
+------------------------------
+
+The following are the most common issues reported by users at the time of
+this release.  
+
+Additional details may be found at http://bughost.org by entering in the bug
+number referenced.
+
+Problems summarized below:
+
+1. 802.11n 40MHz (FAT) Channel speeds are not stepping up or are stalling
+
+Issue summaries:
+
+1. 802.11n 40MHz (FAT) Channel speeds are not stepping up or are
+   stalling (Bug #1422)
+
+While using the driver on 802.11n FAT channels (FAT channel is 40MHz,
+normal channel is 20MHz), sometimes the tranfer will stall and the
+connection will drop. The driver also doesn't perform well on FAT
+channels (especially for TX). This is a know issue and we are fixing
+it. The problem doesn't happen on 20MHz 802.11n channel or
+802.11 a/b/g modes.
+
+
+------------------------------
+Copyright (C) 2005 - 2007, Intel Corporation
+
+INFORMATION IN THIS DOCUMENT IS PROVIDED IN CONNECTION WITH INTEL PRODUCTS.  
+EXCEPT AS PROVIDED IN INTEL'S TERMS AND CONDITIONS OF SALE FOR SUCH PRODUCTS, 
+INTEL ASSUMES NO LIABILITY WHATSOEVER, AND INTEL DISCLAIMS ANY EXPRESS OR 
+IMPLIED WARRANTY RELATING TO SALE AND/OR USE OF INTEL PRODUCTS, INCLUDING 
+LIABILITY OR WARRANTIES RELATING TO FITNESS FOR A PARTICULAR PURPOSE, 
+MERCHANTABILITY, OR INFRINGEMENT OF ANY PATENT, COPYRIGHT, OR OTHER 
+INTELLECTUAL PROPERTY RIGHT. 
+
+This document is subject to change without notice. 
+
+* Other names and brands may be claimed as the property of others.
+

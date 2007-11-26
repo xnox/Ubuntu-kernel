@@ -1,0 +1,28 @@
+From 465d7fb3ee021c8fe50a49432dfc461a4e4595d9 Mon Sep 17 00:00:00 2001
+From: Zhu Yi <yi.zhu@intel.com>
+Date: Thu, 23 Aug 2007 10:04:13 +0800
+Subject: [PATCH] mac80211: fix an printk warning for size_t
+
+Use %zd instead of %d.
+
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/ieee80211_sta.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 64f7752..324ace0 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -2573,7 +2573,7 @@ static void sta_process_csa(struct ieee80211_local *local,
+ 	u8 csa_mode;
+ 
+ 	if (len < 24 + 7) {
+-		printk(KERN_DEBUG "csa frame len:%d too short\n", len);
++		printk(KERN_DEBUG "csa frame len:%zd too short\n", len);
+ 		return;
+ 	}
+ 
+-- 
+1.5.2
+

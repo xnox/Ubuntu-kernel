@@ -1,0 +1,222 @@
+Changes in 10.0.0
+
+* add patch 0032 to fix a kernel panic issue during IBSS shutdown
+* add debugfs_rename compact
+* add patch 0031 to fix a compile warning for size_t
+* Add patch 0030 to fix monitor mode
+* add patch 0029 for rate scaling algorithm selection
+* resync with Linus' linux-2.6 GIT
+* mac80211: rebased with stock kernel linus-2.6 GIT
+* mac80211: [HT] RX aggregation zero buffer size fix
+* mac80211: [HT] update pending patch 0025
+
+Changes in 9.0.4
+
+* back port wireless-dev patch rtnl-lock-remove to fix a dead lock bug
+
+Changes in 9.0.3
+
+* fix compile error if CONFIG_NET_SCHED is not defined
+
+Changes in 9.0.2
+
+* add 802.11h channel switch packet handling
+* add rssi averaging filter
+* remove HT debugging message
+
+Changes in 9.0.1
+
+* remove patch remove_debugfs.patch
+* add debugfs_netdev.c to patches/ieee80211_ptr.sh to
+
+Changes in 9.0.0
+
+* 9.x.x is based on wireless-dev GIT tree commit id:
+	3b10e31493718ff1ee7673ebd359e169c2fff013
+* Several patches and changes to make mac80211 from wireless-dev
+  GIT apply to kernels back to 2.6.18
+* IEEE 802.11n (HT) patches merged
+
+Changes in 8.0.2
+
+* add wext support patches back to pending/ directory
+* Fix compile error with CONFIG_WIRELESS_RTNETLINK
+
+Changes in 8.0.1
+
+* Fix problem if CONFIG_NET_SCHED=y
+
+Changes in 8.0.0
+
+* 8.x.x is based on Linus' tree commit id:
+	c1a13ff57ab1ce52a0aae9984594dbfcfbaf68c0
+* Several patches and changest to make mac80211 from Linus' tree apply
+  to kernels back to 2.6.18
+
+Changes in 7.0.11
+
+* [PATCH] Fix path to ieee80211.c in 50-fix-memory_leak_during_fragmentation.patch
+
+Changes in 7.0.10
+
+* Added out-of-memory fix patch from Hong.
+
+Changes in 7.0.9
+
+* Added Yi's latest QoS patches to fix module unload problem
+
+Changes in 7.0.8
+
+* Fixed make_change_log to use git-tag vs. ls .git/tags/
+* Add pending patch to fix auto AP association
+
+Changes in 7.0.7
+
+* Added patch to fixup SIOGIWRATE to return the correct rate
+
+Changes in 7.0.6
+
+* Add 21-fix_qos_entries_not_found.patch
+
+Changes in 7.0.5
+
+* Fixed 'make unmodified' to skip add_to_net_dev patch required for pending/
+
+Changes in 7.0.4
+
+* cfg80211_dev_rename requires device_rename support
+
+Changes in 7.0.3
+
+* Fixed pfifo_qdisc support to work if CONFIG_NET_SCH_FIFO not available
+
+Changes in 7.0.2
+
+* Updated to add QoS sysfs support to pre 2.6.21-rc1
+
+Changes in 7.0.1
+
+* Fixed pending/20-wireless-dev-qos to work with 00-fix-build
+
+Changes in 7.0.0
+
+* 7.x.x is based on wireless-dev commit id:
+	5363171f929bc62290a1119e492f3ae7d9636c5e
+* pending/ contains:
+	00: James' fix for mac80211 not including fifo_qdisc
+	09-10: Hong's patches for WE compatibility
+	20: Yi's QoS enabling 
+* Added scripts/make_change_log for automatic CHANGES creation
+* Updated to build when installed into 2.6.18.
+
+Changes in 6.0.0
+
+* 6.x.x is based on wireless-dev commit id:
+	356f78c6de1ee9d887794e6bc3db41da575ba1fa
+* pending/ contains:
+	02-10: Hong's patches for WE compatibility
+	30: Mohamed's patches for 802.11n
+* Compatibility work arounds added for:
+	device_rename
+	debugfs (depends on class_dev change)
+
+Changes in 5.1.0
+
+* Added patch to fix problem with iwconfig txpower not working
+* Added Mohamed's 802.11n patches that were submitted to linux-wireless.
+
+Changes in 5.0.0
+
+* 5.x.x is based on wirelss-dev commit id:
+	72bc18d52c57c56c4f6a9b50e42b9e6f2400c38f
+* pending/ contains Hong's patches submitted to linux-wireless for
+
+Changes in 4.1.0
+
+* Added several patches from Intel to fix wireless extension 
+  compatibility and add 802.11n declarations
+
+Changes in 4.0.4
+
+* Added patch to remove nl80211 option from kernel if genlmsg is too old.
+
+Changes in 4.0.3
+
+* Added missing net/wireless/Kconfig
+
+Changes in 4.0.2
+
+* Fixed compatibility patches if ieee80211_ptr and class_dev compat are 
+  needed.
+
+Changes in 4.0.1
+
+* Fixed dev_release compatibility patch so it actually works :)
+
+Changes in 4.0.0
+
+* 4.x.x is based on wireless-dev commit id:
+	96f93b6fbd8b2cd454ede3a9b75bbd98415164d8
+* NOTE:  d80211 was renamed to mac80211 to sync with wireless-dev 
+  changes
+* Additional kernel compatibility changes for net/wireless/ usage of 
+  device callbacks.
+
+Changes in 3.0.2
+
+* Corrected the dev -> class_dev compatibility patch
+
+Changes in 3.0.1
+
+* Added pending patch for 'optional nl8021l' ifdef fixes
+
+Changes in 3.0.0
+
+* 3.x.x is based on wireless-dev commit id:
+	db1eee24ed04ea33587f899b00dde9be8cd2e7e1
+* Added API compatibility for the following changes:
+	+ change dev -> class_dev in struct net_device
+	+ add to_net_dev if not in netdevice.h
+
+Changes in 2.0.1
+
+* Fixed searching for rtnetlink in wrong directory (include/linux vs 
+  include/net).
+
+Changes in 2.0.0
+
+* 2.x.x is based on wireless-dev commit id:
+	17e0264113fcf465d0712ce492c6a546d207d786
+* Added net/wireless/ (required for wiphy which is required for mac80211)
+* Updated patch_kernel to remove net/core/wireless.o built-in which 
+  would otherwise conflict with the wireless extension built-in provided 
+  by net/wireless/wext-{common,old}
+* Removed the majority of the pending/ patches until they are rebased
+  on 2.x.x (if they are still required)
+
+NOTE:  Due to the built-in change, you must rebuild your static kernel 
+image and not simply rebuild your modules.  You must also reboot into 
+that new kernel before loading the 80211 subsystem.
+
+Changes in 1.0.2
+
+* Added code to Makefile to warn users if the shell used for make is not
+  /bin/bash (current Makefile has some bashisms that fail with /bin/sh)
+
+Changes in 1.0.1
+
+* Modified default KSRC target from /lib/modules/$(uname -r)/build to
+  /lib/modules/$(uname -r)/source
+
+Changes in 1.0.0
+
+* 1.x.x is based on wireless-dev commit id:
+	f7a58d929d6e85638bcf0f03a71605951d1ecab9
+* Initial public release.
+* Reworked the build ordering so that it goes from the GIT repository
+  into the 'origin' directory (which is part of the tarball).  The
+  build process then applies out-of-tree patches to create the 
+  'modified' directory.  From there the compatibility patches are 
+  applied to create the 'compatible' directory.
+* Added several Intel patches (see pending/)
+* Initial version compile tested against 2.6.18

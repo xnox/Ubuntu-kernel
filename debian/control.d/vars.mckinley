@@ -1,0 +1,3 @@
+desc="Itanium II SMP"
+arch="ia64"
+provides="apparmor-modules-2.1"

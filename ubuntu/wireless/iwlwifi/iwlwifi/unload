@@ -1,0 +1,35 @@
+#!/bin/sh
+if [ $# == 0 ]; then
+	module=$(lsmod | sed -ne 's,^iwl\([^[:space:]]*\).*,iwl\1,p')
+	module=${module//_/-}
+else	
+	module=$@
+fi
+
+function check_root()
+{
+	[ $(whoami) != "root" ] && 
+		echo "You must be root to run this script." &&
+		return 1
+
+	return 0
+}
+
+function unload()
+{
+	unset UNLOADED
+	[ -d compatible ] && dir=compatible || dir=origin
+	for i in ${module} mac80211 cfg80211; do
+		if lsmod | grep -q ${i/-/.}; then
+			UNLOADED="${UNLOADED}${i} "
+			rmmod "$dir/$i"
+		fi
+	done
+	if [ -z "${UNLOADED}" ]; then
+		echo "No modules unloaded."
+	else
+		echo "Unloaded: $UNLOADED"
+	fi
+}
+
+check_root && unload

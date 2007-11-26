@@ -1,0 +1,236 @@
+#!/usr/bin/env /bin/bash
+# Copyright (C) 2007 Intel Corporation
+script=generate_compatible
+prog=$0
+[ "${prog/*$script/$script}" = "$script" ] || {
+    echo "This script must not be sourced."
+    return 1
+} || return 1
+
+DEBUG=1
+
+function die() {
+    ret=$1
+    shift
+    echo -e $@ >&2
+	(( DEBUG )) && 
+		echo "If patch or script failed, check pre/ and post/ for current stage." ||
+		echo "Try setting DEBUG=1 to maintain pre/ and post/ staging."
+    exit $ret
+}
+
+[ -z "$KSRC" ] && 
+KSRC="/lib/modules/$(uname -r)/build"
+
+[ ! -e "${KSRC}/Makefile" ] && 
+die 1 "Kernel Makefile not found at '$KSRC'"
+
+. scripts/determine_compat 
+determine_compat || 
+die $? "\nCould not provide compatible version. Try 2.6.18 or newer.\n\nTerminating."
+
+SRC=$1
+DST=compatible
+
+[ -d "$SRC" ] ||
+die 5 "\n$SRC/ tree does not exist.  Run 'make $SRC' to build the\n$SRC directory."
+
+SRC=${SRC/%\/}/
+DST=${DST/%\/}/
+
+[ ! -e $DST ] || {
+    die 1 "$DST already exists.  You must remove it before continuing."
+}
+
+echo "Building compatibility version in '$DST' directory:"
+
+mkdir "$DST"
+echo -n "Copying $DST from $SRC..."
+cp -r ${SRC}* $DST || die $? "Copy failed."
+echo "done"
+
+(( DEBUG )) && rsync --delete -aprl $DST post/ > /dev/null
+
+(( DEBUG )) && {
+	OUT=post/
+} || {
+	OUT=$DST
+}
+
+
+function do_patch {
+    (( DEBUG )) && 
+	rsync --delete -aprl post/ pre/ > /dev/null
+    
+    [ -e patches/"$1" ] ||
+    die 3 "patches/$1 does not exist.  Terminating."
+    echo -ne " + Applying: patches/$1\n\t"
+    cat "patches/$1" | while read command rest; do
+	case $command in
+	    "Commit:" | "Author:" | "")
+		;;
+	    *) echo "$command $rest"
+		break
+		;;
+	esac
+    done
+
+    patch -p1 -d $OUT < patches/"$1" > .patch.output || {
+	echo "-----patch failure output-----"
+	cat .patch.output
+	echo ""
+	die 1 "patches/$1 failed.  Terminating."
+    }
+    [ -e .patch.output ] && rm .patch.output
+    return 0
+}
+
+function do_script {
+    [ -x "patches/$1" ] ||
+    die 3 "patches/$1 does not exist.  Terminating."
+    echo -ne " + Running: $1\n\t"
+    head -n 2 "patches/$1" | tail -n 1 | sed -e 's,^#[[:space:]]*,,g' ||
+    die $? "Terminating."
+
+    (( DEBUG )) && 
+	rsync --delete -aprl post/ pre/ > /dev/null
+
+    patches/$1 $OUT || return 1
+    return 0
+}
+
+
+(( !$has_new_qdisc )) && {
+    do_patch qdisc-api.patch ||
+    die $? "Failure creating new qdisc compatibility."
+}
+
+(( !$has_block_cipher )) && {
+    do_patch block-cipher.patch ||
+    die $? "Failure creating block cipher compatibility."
+}
+
+(( !$has_ieee80211_ptr )) && {
+    do_patch ieee80211_ptr.patch ||
+    die $? "Failure creating ieee80211_ptr compatibility."
+    do_script ieee80211_ptr.sh ||
+    die $? "Failure creating ieee80211_ptr compatibility."
+}
+
+(( !$has_delayed_work )) && {
+    do_patch delayed_work.patch &&
+    do_script delayed_work.sh &&
+    (( DEBUG )) && {
+	cp patches/kcompat-delayed_work.h post/net/mac80211/ ||
+	die $? "Failure creating delayed work compatibility."
+    } || {
+	cp patches/kcompat-delayed_work.h $DST/net/mac80211/ ||
+	die $? "Failure creating delayed work compatibility."
+    }
+}
+
+(( !$has_rtnl_notify )) && {
+    do_patch rtnl_notify.patch ||
+    die $? "Failure creating rtnl_notify compatiblity."
+}
+
+(( ! $has_class_dev_removed )) && {
+	(( ! $has_ieee80211_ptr )) && {
+	    do_patch class_dev_to_dev-wireless-ieee80211_ptr.patch ||
+	    die $? "Failure creating class_dev compatiblity."
+	} || {
+	    do_patch class_dev_to_dev-wireless.patch ||
+	    die $? "Failure creating class_dev compatiblity."
+	}
+}
+
+(( ! $has_dev_release )) && {
+    do_patch dev_release.patch ||
+    die $? "Failure creating dev_release compatiblity."
+}
+
+# The nl code isn't in Linus' tree as of commit-id:
+# c1a13ff57ab1ce52a0aae9984594dbfcfbaf68c0
+#
+#(( !$has_new_genlmsg )) && {
+#    do_patch nl80211-remove-kconfig.patch ||
+#    die $? "Failure removing nl80211 from config"
+#}
+
+# The cfg80211 files aren't in Linus' tree as of commit-id:
+# c1a13ff57ab1ce52a0aae9984594dbfcfbaf68c0
+#
+#(( !$has_device_rename )) && {
+#	(( $has_new_genlmsg )) && {
+#	    do_patch nl80211-remove-kconfig.patch ||
+#	    die $? "Failure removing nl80211 from config (req. since no device_rename)"
+#	}
+#	do_patch device_rename.patch ||
+#	die $? "Failure removing device_rename usage"
+#}
+
+(( !$has_net_sch_fifo )) && {
+	do_patch net_sch_fifo.patch ||
+	die $? "Failure adding net_sch_fifo compatibility."
+}
+
+(( !$has_skb_mac_header )) && {
+    do_patch skb_mac_header.patch
+    (( DEBUG )) && {
+	cp patches/kcompat-skb_mac_header.h post/net/mac80211/ ||
+	die $? "Failure creating delayed work compatibility."
+    } || {
+	cp patches/kcompat-skb_mac_header.h $DST/net/mac80211/ ||
+	die $? "Failure creating delayed work compatibility."
+    }
+}
+
+(( !$has_ilog2 )) && {
+	do_script ilog2.sh ||
+	die $? "Failure running ilog2 compat script"
+}
+
+(( !$has_div_round_up )) && {
+	do_patch div_round_up.patch ||
+	die $? "Failure adding DIV_ROUND_UP compat"
+}
+
+(( !$has_seq_open_const )) && {
+	do_patch seq_open_const.patch ||
+	die $? "Failure adding seq_open() const compat"
+}
+
+(( !$has_nlmsg_trim )) && {
+	do_patch nlmsg_trim.patch ||
+	die $? "Failure nlmsg_trim removal compat"
+}
+
+(( !$has_tcf_destroy_chain )) && {
+	do_patch tcf_destroy_chain.patch ||
+	die $? "Failure tcf_destroy_chain compat"
+}
+
+(( !$has_new_nla_policy )) && {
+	do_patch nla_policy.patch ||
+	die $? "Failure old nla_policy compat"
+}
+
+(( !$has_new_nla_put_flag )) && {
+	do_patch nla_put_flag.patch ||
+	die $? "Failure old NLA_PUT_FLAG compat"
+}
+
+(( !$has_new_nlmsg_new )) && {
+	do_patch nlmsg_new.patch ||
+	die $? "Failure old nlmsg_new() compat"
+}
+
+(( !$has_debugfs_rename )) && {
+	do_patch debugfs_rename.patch ||
+	die $? "Failure debugfs_rename() compat"
+}
+
+(( DEBUG )) || exit 0
+
+rsync --delete -avprl post/ $DST > /dev/null && 
+rm -rf pre/ post/

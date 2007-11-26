@@ -1,0 +1,20 @@
+Add tcf_destroy_chain to mac80211's wme.c
+--- origin/net/mac80211/wme.c	2007-06-07 13:25:22.000000000 +0800
+--- update/net/mac80211/wme.c	2007-06-07 13:25:22.000000000 +0800
+@@ -85,6 +85,16 @@ ieee80211_rx_h_remove_qos_control(struct
+ /* maximum number of hardware queues we support. */
+ #define TC_80211_MAX_QUEUES 8
+ 
++void tcf_destroy_chain(struct tcf_proto *fl)
++{
++	struct tcf_proto *tp;
++
++	while ((tp = fl) != NULL) {
++		fl = tp->next;
++		tcf_destroy(tp);
++	}
++}
++
+ struct ieee80211_sched_data
+ {
+ 	struct tcf_proto *filter_list;

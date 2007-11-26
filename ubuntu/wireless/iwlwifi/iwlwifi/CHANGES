@@ -1,0 +1,741 @@
+Changes in 1.1.0
+
+* Fix out of tree compile configuration
+* fix compile error when CONFIG_IWLWIFI_QOS is not defined
+* Update stubs/ISSUES for PV 1.1.0
+
+Changes in 0.1.15
+
+* workaournd REPLY_COMPRESSED_BA command in iwl_rx_handle
+* remove iwl4965_set_rxon_chain from add station
+* Fix TX queue to TX fifo mapping
+* fix setting SW rf-kill failure
+* Control channel fix for FAT channel
+* FAT channel bug fix for zero relevant bits
+* fixing LQ command changes in AP mode
+* avoid kernel oops in monitor mode with debug enabled
+
+Changes in 0.1.14
+
+* fix aggregation tx status
+* fix IBSS connection problem caused by LinkQuality cmd change
+
+Changes in 0.1.13
+
+* AP setup qos and tx_conf bug fix
+* setting RAxTID endianity fix
+* iwl_mac_conf_tx remove casting to restricted
+* add Makefile sparse target
+* CSR registers cleanup
+* add iwl-prph.h into FILES
+* add file iwl-prph.h
+* move 4965 Rx API stuff into iwl-commands.h
+* remove unused definitions in iwl-4965-hw.h
+* unify definitions (3945/4965) of struct iwl_txpowertable_cmd
+* kill __iwl_send_cmd
+* kill legacy fields from iwl_cmd_meta
+* fix assert when calling LinkQuality command
+* make "ipw going down" debug message depends on IWL_DL_INFO
+* iwl-base.c bugfixes
+
+Changes in 0.1.12
+
+* fix aggregation problem
+* fix 11n connection problem
+* fix rs_get_best_rate to pick up the right rate
+* rate scale quality command fix
+* fix iwl_send_cmd_async return value bug
+* remove atheros turbo modes
+
+Changes in 0.1.11
+
+* rate scaling - up scaling fix
+* remove unused code
+* typo fix for CONFIG_IWLWIFI_SPECTRUM_MEASUREMENY
+* Fix a Makefile problem for double error messages
+* add 10-preferred_rate_control.patch compatibility support
+* add a parameter to functions iwl_rate_control_[un]register
+* fix iwl-3945-rs.c typo
+* removing while loop from iwl_print_hex_dump
+* simplifying reclaim flow
+
+Changes in 0.1.10
+
+* fix iwl_grab_restricted_access return code
+* add cancel_work_sync compatibility patch for kernels < 2.6.22
+
+Changes in 0.1.9
+
+* fix priv->hcmd_lock uninitialized problem
+* iwl_mac_set_key cleanup
+* split priv->hcmd_lock from priv->lock to protect hcmd queue
+* kill iwl_rate union
+* AP mode beacon update
+* replace lock_flags into simpler flags
+* add BSM_DRAM_INST_LOAD definition
+* add struct iwl_card_state_cmd as documentation
+* replace iwl_scanstart_notification with iwl_scanreq_notification
+* move all uCode API structs into iwl-command.h
+* remove unused 3945-only struct from 4965 build
+* EEPROM band 5 endianity fix
+* iwl_get_sta_id AP mode fix
+* adding queues_num module parameter
+* fix some checkpatch.pl warnings
+* protect iwl_enqueue_hcmd by spinlock
+* iwilwifi: General endianity fixes
+* EEPROM endianity fix
+* TX temperature endianity fix
+* AP mode intialization fix
+* update iwlwifi.todo
+* remove unnecessary spinlocks
+* create iwl_scan_cancel_timeout
+* replace priv->status with bit operations
+* make iwl_down hold mutex
+* [HT] remove the need_to_lock option since it is never used
+* iwl_send_cmd rework
+* iwl_send_cmd synchronous syntax rework
+* rename get_next_cmd_index to get_cmd_index
+* iwiwifi: Endian fixes in rxon host command
+* type missmatch fix in power vector
+* Endianity fix in iwl4965_fill_txpower_tbl function
+* fixing compilation error e24875
+* fix stats->flags invalid value in monitor mode
+* enhance rtc valid data address check
+* Endianity fix for 3945 rate scaling
+* add compatibility patch for is_power_of_2
+* Move uCode API structures from iwl-hw.h to iwl-commands.h
+* reorganize iwl-commands.h to prepare for documentation
+* remove 2 unsupported commands
+* remove more unused structures from iwl-hw.h
+* remove unused structures from iwl-hw.h
+* define macro for default noise level
+* Endianity fix for TX power host command
+* MSI support (rev3)
+* fix gcc warning when CONFIG_IWLWIFI_DEBUG is not defined
+* update iwlwifi.todo
+* Streamline irq_tasklet() when ISR debug not used
+* Correct missing hardware detection in iwl_isr()
+* Enhance ISR/RX/CMD debug messages
+* add compatibility patch for hex_dump_xxx
+* remove unused snprint_line
+* Endianity fix for ct kill configuration
+* Endianity fix for frame control
+* replace private snprint_line with common hex_dump_xxx
+* remove WLAN_FC_GET_TYPE macros
+* remove BIT_FMT and BIT_ARG
+* make iwl_get_bits inline function from macro
+* shorten more function names
+* Endianity fix for channel number
+* Endianity fix for beacon host command
+* Endianity fix for rxon host commands
+* remove redundant quotes
+* updated iwlwifi.todo
+* define iwl_rx_reply_scan only when CONFIG_IWLWIFI_DEBUG enabled
+* shorten some structure and function names
+* add name for some PCI configuration space registers
+* remove priv stuff zeroing in iwl_pci_probe
+* replace unnecessary GFP_ATOMIC with GFP_KERNEL
+* fix gcc warning for the previous change
+* some coding styles cleanup
+* make local functions static
+* use mask operation to replace '%' for index calculation
+* optimize iwl_queue_{inc|dec}_wrap implementation
+* Endianity fix for 4965 rx chain selection
+* Endianity fix for 4965 rate scaling
+* fix a lot of checkpatch.pl warnings
+* replace IPW with IWL in dvals
+* Fix scripts/make_snapshot
+
+Changes in 0.1.8
+
+* TX aggregation fix
+* Revert "add smooth HT AGG QoS queues support"
+
+Changes in 0.1.7
+
+* add smooth HT AGG QoS queues support
+* Endianity fix in iwl4965_calc_rssi function
+* Endianity fix for iwl4965_handle_data_packet function
+* Endian fix for rate setting in 3945
+* Endianity fix for tx configuration
+* Endianity fixes for 3945
+* Endainity fix for rx configuration
+* Endianity fix for TX host command
+* fix rate setting in beacon command
+
+Changes in 0.1.6
+
+* workaround uCode REPLY_4965_RX cmd bug
+* fix compile error when CONFIG_IWLWIFI_HT is not selected
+* Fix compilation conditional
+* iwliwif: Eidianity fix for calibration host commands
+* Endainity Fix for scan host command
+* call QoS command on QoS data change
+* avoid ucode assert for LQ cmd call
+
+Changes in 0.1.5
+
+* update documentations uCode version
+* clean white space
+* Add uCode/driver compatibility version number
+* fix scaing watchdog time out
+* fix channel switch assert
+* fix 11n on 2.4 channel
+* endianity cleanup for power table host command
+* endianity cleanup for QoS host command
+* endianity cleaning of iwl_print_rx_config_cmd
+* EEPROM reading fix
+* QoS control endianity fixes
+* iwilwifi: removed unused constant
+
+Changes in 0.1.4
+
+* rxon filter_flags endianity fix
+* cleanup tx queue allocation
+* modify station fix
+* Calculate and report noise level while associated
+* provide frequency to radiotap monitor not channel index
+* rename base.c to iwl-base.c to comply with upstream change
+
+Changes in 0.1.3
+
+* update document files
+* white space fix for Kconfig and Makefile
+* workaround firmware STATISTICS_NOTIFICATION cmd bug
+* IBSS connection fix
+* rate scaling enabling SGI in MIMO
+* Fix aggregation disable locking issue
+* fix iwl_mac_ht_tx_agg_stop
+* fix iwl3945 not usable when loading with hw rfkill on
+* fix iwl_hw_nic_reset in iwl3945
+* prompt users to try make again if Makefile is changed
+* fix incorrect debug message
+* iwl4965_rx_reply_rx endianity fix
+* fix power save for AP mode
+* pass BAR to mac80211
+* tx_skb QoS control endianity fix
+* switch channel only if IEEE80211_CONF_CHANNEL_SWITCH is defined
+* fixing addsta host command endinianity
+* iwl4965 kill rate setting in sta host command
+* mac80211 HT and HT_AGG features auto detection
+* update README
+* fix firmware error after switch txpower in A band
+* modify INSTALL template to update ucode download links
+
+Changes in 0.1.2
+
+* fix gcc warning for printf resource_size_t
+* protect rxb->list by spinlock
+* Rate Scaling peer rates mask checking (legacy rates)
+* fix cannot ping AP after rfkill on->off
+* fix firmware error after txpower off->on
+* fix driver unusable when loading with HW RFKILL on
+* Set RX queue size for 4965 to 256
+* Restore full operation of the chain_noise algorithm
+* Temporary workaround to fix Rx stop issue
+* Move iwl_get_antenna_flags() to 3945-specific function
+* Fix 4965 A-band scans showing incorrect channels
+* fix a kernel panic bug during module unload
+* Fix bug in iwl4965_sens_energy_cck(), improves performance
+* fix post association for 3945
+* fix post association for 4965
+* initialize post assoction data
+* fix sensitivity calibration
+* Update INSTALL files
+* Allocate scan buffer only for host command queue
+* remove module param `mode'
+* Rate Scaling fixing typo
+* fix no 6/9Mbps rates in TX
+* replace d_ prefix with iwl_mac_ for mac80211 callbacks
+* Enianity fix: Alive command conversion
+* Rate Scaling: set HT retry num to 3
+* Rate Scaling debug fixes
+* Rate scaling: fixing SGI to LGI switching
+* ratio2dB make it static
+* introducing IWL_DEBUG_LIMIT (net_ratelimit) macro
+* Fixing aggregation enable locking
+* Endianity cleaning up for iwl4965_tx_queue_agg_enable
+* Endianity fix removed for iwl4965_sched_queue2ratid
+* Fix iwl4965_tx_queue_set_status endianity issues and collaterals
+* Enianity fix: Alive command conversion
+* HT retry number to 3
+* Rate Scaling: debug fixes
+* preventing unnecessary SGI to LGI switches
+* ratio2dB make it static
+* introducing IWL_DEBUG_LIMIT (net_ratelimit) macro
+* Fixing aggregation enable locking
+* Endianity cleaning up iwl4965_tx_queue_agg_enable
+* Endianity fix removed iwl4965_sched_queue2ratid
+* Fixing iwl4965_tx_queue_set_status endianity issues and collaterals
+* Add support for iwl3945 to build with older mac80211
+* many coding style cleanups
+* replace with GLOBAL_ARRAY_SIZE with ARRAY_SIZE
+* Fix edianity tagging for rx bd
+* Endianity fix: skb buffer pointer was swtiched twice
+* Removed todoG comment
+* Update iwlwifi.todo
+* add iwl_hw prefix to reg_* functions
+* Don't use sensitivity data for SNR during SCAN
+* Compact debug output for false alarms.
+* Refactor sensitivity algorithms
+* remove useless call for iwl_rx_queue_space
+
+Changes in 0.1.1
+
+* add void channel switch handling function in iwl3945
+* add channel switch cmd handling for iwl4965
+* replace todoG with TODO
+* remove braces for single line of code
+* update iwlwifi.todo
+* replace ieee80211_is_* macros with inline functions
+* use mask instead of % in iwl-4965.c
+* use pci_iomap rather than ioremap_nocache
+* move include to top of the file in iwl-helpers.h
+* add iwl_ prefix to module param variables
+* remove unneded locking in iwl_nic_start
+* Tx/Rx aggregation support for IEEE 802.11n
+* fix add station error on scanning
+* QoS support
+* Update version base.c stamp to 0.0.36
+* Committing collateral updates to 0.0.36
+* Updated CHANGES
+* Enable full ssi/noise/signal quality reporting to mac80211
+* Fix endianity issue in loading BSM image
+* set ready flag after post assoc
+* fix scan problems
+* fix assert after switching to 2.4 from 5.2 fat channel
+* fix post assoc on 4965
+* uCode load endinanity fix
+* remove warning message when loading the module
+
+Changes in 0.0.36
+
+* Enable full ssi/noise/signal quality reporting to mac80211
+* Fix endianity issue in loading BSM image
+* set ready flag after post assoc
+* fix scan problems
+* fix assert after switching to 2.4 from 5.2 fat channel
+* fix post assoc on 4965
+* uCode load endinanity fix
+* remove warning message when loading the module
+
+Changes in 0.0.35
+
+* remove grabs restricted access from iwl_verify_bsm
+* Fix default values for device id 0x4230
+* switch to use G mode by default
+
+Changes in 0.0.34
+
+* Fix iwl4965 stability issue
+
+Changes in 0.0.33
+
+* clean fill link quall cmd
+* fix legacy counter
+* fix scaning while calling d_config_interface
+* fix rate scaling issues
+* fix sinsitivity error
+* Unify and streamline 3945 and 4965 uCode load and launch
+* iwl4965: Fix possible sign/endian problem with voltage compensation
+* iwl3945: Fix problem with limited Tx power
+* Fixed some issues while porting to a PowerPC Platform
+* rs_rate_scale_perform cleanup
+* add 8086:4230 pci id for iwl4965
+* Fix beacon interval difference between 3945 and 4965
+* Fix iwl4965_kw_init coding style
+
+Changes in 0.0.32
+
+* Fix X can't start after iwl4965 is loaded
+
+Changes in 0.0.31
+
+* switch between antenna's when transmitting management frames
+* Fix firmware assert when switch from 11n AP to none
+* add 11n modes checkups
+* Fix 60M rate problem
+* Fix power management
+
+Changes in 0.0.30
+
+* Make build detect if WLAN_80211 exists and act accordingly
+* Fix compile problem if CONFIG_IWLWIFI_DEBUG is unset
+* sensitivity calibration from STATISTICS_NOTIFICATION only
+* fix 11n rate scaling and more sinsitivity fixes
+* Fix scripts/determine_compat for WLAN_80211 checking
+
+Changes in 0.0.29
+
+* Fix compilation when HT is enabled
+* Fix rate index for 11B
+* Fix a driver stability issue
+* Add CONFIG_IWLWIFI_SENSITIVITY option to enable/disable sensitivity
+
+Changes in 0.0.28
+
+* Fix IRQ handle bit checking issue
+* Fix queue_delayed_work compatability issue
+
+Changes in 0.0.27
+
+* Stabilize and streamline interrupts
+* Clean up interrupt support for 3945
+* Fix suspend/resume problem
+
+Changes in 0.0.26
+
+* Add iwl_full_rxon_required assocation
+* Add 'AcceptingPatches' text
+* Add misc. documents on the SCM process
+* Read FAT channel information from eeprom
+* Fix association problem
+
+Changes in 0.0.25
+
+* add ibss connection support
+* add sensitivity calibration
+* reset 11n data on startup
+* fix stabilty with switching between AP
+* Resolve style issues reported by checkpatch.pl
+* Removed iwl_link_up and repurposed iwl_link_down
+* Updated clean_patch to fixup any trailing whitespace issues.
+* Fixed problem with building when CONFIG_IWLWIFI_HT=n
+* iwl_dma_addr2rbd_ptr - commit
+* ieee80211_get_qos_ctrl - corrected
+* add 11n connection support
+* add iwl4965 rate scaling
+* Fix problem with MAC80211_INC not following KSRC
+* Fixed clean_whitespace to correctly restructure leading tab/space sequences
+* Fixed leading space vs. tab inconsistencies
+* Fixed clean_whitespace to correct leading spaces vs. tabs
+* whitespace fixes for labels incorrectly indented
+* Fixed clean_labels with 'make whitespace' to work on labels containing _
+* Added 'make check' and associated scripts to facilitate style enforcement
+* Fix Makefile to build both 3945 and 4965 modules; other cleanups
+* Improve readability and content of 4965 error log.
+* Removed old comment about iwl-4965.c not being functional
+* Fix warning in iwl_set_bits on 32-bit boundary bit-fields
+
+Changes in 0.0.24
+
+* Modify the make_snapshot script to not run codingstyle
+
+Changes in 0.0.23
+
+* Modified iwl-3945-rs to detect if it is not the rate control algo
+
+Changes in 0.0.22
+
+* Updated load to work with iwl3945 and iwl4965
+* Updated to build with mac80211-7.x.x, Linus' tree, and wireless-dev
+* remove FREE_FRAME_THRESHOLD reference
+* Updated kcompat patch to apply w/ latest code.
+* Added comment indicating why pci.h is needed in iwlwifi.h
+* fix iwl_read_ucode endian issue
+* Updated kcompat_delayed_work patch to work with latest code
+* remove IWL == 3945 block in iwl-4965.c
+* free ucode_data_backup
+* Add 3945 specific rate control algorithm back in
+* iwl4965_kw_free fix
+* kill magic nums in iwl_eeprom_init
+* replace warn_unused_result with __must_check
+* reformat function iwl_sync_staion
+* station manipulation functions cleanup
+* remove unused func iwl_hw_tx_queue_alloc
+* whitespace cleanup
+* correct tx cmd byte count constants
+* RTS_DEFAULT_RETRY_LIMIT FIX (4965)
+* removed unused constant MAX_REAL_TX_QUEUE_NUM
+* fix wireless interface missing after resume
+* rf-kill resume fix
+* fix rf-kill problem
+* remove priv->down and add priv->restart
+* Replace "-", which could easily be misread as a negative sign, with ":"
+* Calculate 4965 temperature immediately after "initialize" alive
+* Updated TODO list in iwlwifi.todo
+
+Changes in 0.0.21
+
+NOTE:  This version corresponds to the v3 patch sent to wireless-dev.
+
+* Fix OOPS in d_stop during module unload
+* Set CONFIG_IWL4965 to default to =m.  Disabled =y configurations.
+* Fixed a couple > 80 column width lines
+* Removed Tx cmd message spam on iwl4965
+* Updated iwlwifi.todo based on current sources
+* Replace flush_scheduled_work in d_stop with flush_workqueue
+* Removed CONFIG_IWLWIFI_QOS blocks until they are buildable.
+* Removed several deprecated CFG_ and CAP_ declarations and use
+* Removed all direct bitfield usage
+* Fixed build for CONFIG_IWL4965=m
+* [PATCH] remove unnecessary in_interrupt() checks according to the ieee80211_ops comments
+* [PATCH] reformat iwl4965_rx_reply_rx
+* [PATCH] ieee80211chan2mhz is defined in ieee80211_radiotap.h
+* [PATCH] set RX_FLAG_RADIOTAP in iwl_handle_data_packet_monitor
+* [PATCH] remove CONFIG_IWLWIFI_MONITOR and CONFIG_IWLWIFI_RADIOTAP in iwl4965_handle_data_packet
+* [PATCH] remove unused callback reset set_multicast_list
+* [PATCH] rename queueId to queue in iwl_hw_txq_ctx_stop
+* [PATCH] remove param_channel module parameter
+* [PATCH] Fix volatile usage
+* Remove old comment from Makefile about the build being broken.
+* Changed iwl_send_cmd BUG_ONs to printk errors and return -EINVAL.
+* Added comments to BUG_ON code, and removed two BUG_ONs
+* Whitespace and added line to todo
+* Removed several unnecessary variable initializers.
+* Fixed printk() w/out KERN_ level
+* Whitespace fixups.
+* Fixed iwl4965_get_dma_hi_address to work on all architectures
+* Moved struct iwl_txpower_comp_entry out of iwl-4965-hw.h
+* u16, u32, u64 -> __le16, __le32, __le64 in iwl-4965-hw.h (hardware/uCode API
+* Set check to BUILD_BUG_ON(sizeof(priv->eeprom) != IWL_EEPROM_IMAGE_SIZE)
+* Updated iwlwifi.todo to list review feedback
+* Fixed trailing whitespace (again)
+* Change show_power_level to not prefix text before the power_level attr.
+* Removed unused static function iwl4965_toggle_antennta from iwl-4965.c
+* Modified tune sysfs attribute to show/store a single value.
+* Removed inline on non-trivial (>~3 lines) functions
+* [PATCH] Add missing linebreak in pci_driver declrataion for suspend/resume
+* [PATCH] Converted existing comment blocks into kernel-doc format
+* Removed usage of IWL_NOP and IWL_NOP_RET
+* Fix > 80 column problems in .c files (still have to do it in .h files)
+* Trailing whitespace cleanup
+* Whitespace, some 80-column, kernel doc, and other non-functional changes
+* Comment typo adwances -> advances
+* Fixed indentation in is_duplicate_packet
+* Removed // style comments
+* Updated block comments to conform to kernel style
+* Removed is_broadast_ether_addr redundancy with is_multicast_ether_addr
+* Fixed up some usage of magic numbers to #defines, etc.
+* Updated some function kernel-doc info; removed usage of /** for non kdoc
+* Fixed indentation of non-case labels
+* Fixed Kconfig help indentation to be {tab}{sp}{sp}
+
+Changes in 0.0.20
+
+NOTE:  This version corresponds to the v2 patch sent to wireless-dev.
+
+* Added delayed_work kcompat support for older kernels. 
+* [PATCH] Reverse logic for the IRQ API check to fix Linux 2.6.22-rc1 support 
+* [PATCH] generate_compatible should exit with code 0 at the end 
+* [PATCH] KSRC_OUTPUT should be set in the top-level Makefile 
+* Add 'DEVMODE' to Makefile to build out of origin 
+* Hold spin lock priv->lock before doing any I/O. 
+* Filter broadcast BSSID 
+* Cleaned up sparse warnings (minus the lock context balance warning) 
+* Changed IWL_CMD_REPLY to just use IWL_CMD (fixes make codingstyle issue) 
+* Fixed build problem with non CONFIG_IWLWIFI_DEBUG 
+* Updated IO debug code to better allow tracking of IO regressions 
+* Fixed dvals to work with both iwl3945 and iwl4965 modules
+* Moved MODULE_DEVICE_TABLE into iwl-XXXX.c 
+* Removed iwl3945 specific rate control algorithm (will be 
+  re-merged post upstream)
+* Removed LED and STATISTICS related functionality (unused or broken)
+* Removed usage of ieee80211_local, net_device, and other cleanups. 
+* Removed CONFIG_IWLWIFI_PROMISCUOUS (rtap_iface) support 
+* Pruned out the contents of README.iwlwifi 
+* [MERGE] Added Intel Wireleess WiFi Link 4965AGN driver to code base
+
+Changes in 0.0.19
+
+* [PATCH] Added Link Quality reporting back in
+
+Changes in 0.0.18
+
+* [PATCH] Fix problem with POWER_TABLE_CMD
+* [PATCH] Fixed tab -> space which was breaking patches/04...
+* Added missing files to git
+
+Changes in 0.0.17
+
+* [PATCH] fix warning "left shift count >= width of type"
+* Major code restructure and partial add of iwl-4965 code
+* [PATCH] Updated make {un,}install and usage of list-m
+* [PATCH] Added ipw_get_prev_ieee_rate()
+* [PATCH] Add Makefile warning if a different SHELL other than bash is used
+* [PATCH] Modified rs_window to order rate info sequentially
+* [PATCH] Fixed rate table setup to order rates between CCK/OFDM correctly
+* [PATCH] Fix typo when building for 4965
+* [PATCH] Fixed rate scaling to correctly walk retries to prior rate
+* Updated hw/uCode headers to latest dual licensed version available
+* [PATCH] Added entry/exit debug output for more mac80211 callbacks.
+* [PATCH] Fix compilation errors introduced with commit 56e5067ea32~
+* [PATCH] compatibility fixes, added skb_set_mac_address
+* Fix out of tree compiling.
+* Added ian to user commit file
+* [PATCH] Cleaned out some duplicate definitions
+* [PATCH] More rate scaling fixups--added rs_window sysfs entry
+* [PATCH] Cleaned up some structure field names used with QoS
+* [PATCH] Fixed spurious 'printk: XX messages supressed' output
+* [PATCH] Updated rate scaling flush logic
+* [PATCH] Fixed build configuration issues (CONFIG_IWLWIFI_DEBUG, etc.)
+* Updated copyright blast at the start of the source files.
+* Set iwl4965 to default to 'N' in Kconfig (since it is currently not there)
+* Kconfig updates (typo and some rewording)
+* Updated dvals to work with new iwl-debug and iwl3945 module name.
+* Moved iwl-3945-rs.c to be built correctly (vs. include "iwl-3945-rs.c")
+* Misc. cleanups (non-functional) - copyright, comments, etc.
+* Added new files to FILES list.
+* Updated driver base to report which hardware it is built for.
+* Added iwl-4965.c stub file to allow build to complete.
+* Updated patch_kernel to work with new build structure
+* Updated load script to load iwl3945 vs. iwlwifi
+* Overhauled build; module now named iwl3945.ko
+* Fixed potentialy problem with rxon/rxon_assoc command selection
+* Updated load/unload to allow you to specify the module to use
+* Fix 'local_bh_enable' warning while calling sta_info_get
+* Simplify quality check for determining current rate vs. max rate
+* Hook up signal level reporting to mac80211
+* Fix patch_kernel to install into dri./net/wireless/Makefile correctly
+* [PATCH] Fix problems with RF KILL
+* [PATCH] eliminate "expression < 0 is always false" warning
+* [PATCH] IPW_WARNING should use KERN_WARNING
+* [PATCH] elliminate some "inline" warnings
+* Removed dependency on WLAN_80211 for in-tree build.
+* Fixed make_change_log to sort tags numerically
+
+Changes in 0.0.16
+
+* Cleaned up d_config and set so RXON isn't called w/ same data
+* Collapse the code related to configuring the active_{basic_,}rate
+* Fix problem with Tx dying if a NULL data frame is sent.
+* [PATCH] cleaning tx flow
+
+Changes in 0.0.15
+
+* Added make_change_log
+* Fix QoS sequence numbers
+* [PATCH] Fix can not alloc skb problem
+* [PATCH] Fix kernel panic when removing module in fw error
+* [PATCH] Fix dma-mapping bug due to size == 0 with ieee80211_send_nullfunc
+* [PATCH] Fix stats.flag misuse for hardware dependent data
+* [PATCH] Fix endianess warnings reported by sparse
+* Several CamelCase style fixups
+
+Changes in 0.0.14
+
+* Hooked mac80211 hw_scan back up (speeds up scanning by ~54%)
+* Fixed build if CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT=n
+* Modified Makefile so CONFIG options can be specified via cmd line
+* Remove code letting stack set short slot
+* Modifed short slot configuration to set the short slot mask flag
+* [PATCH] netif_oper(..) is now private
+* Fixed IEEE PLCP rate encoding used for displaying rates.
+* Added 'rate' sysfs entry to view current Tx rate
+* Continued cleanup of rate scaling
+* Fixed lock held during free if uCode fails to load from disc.
+* Restructuring of the rate scaling code
+* Updated load to modprobe required kernel crypto modules
+* Fix reporting of supported rates
+* Added measurement sysfs entry for invoking a spectrum measurement request
+* Updated make_snapshot to only tag the release once.
+
+Changes in 0.0.13
+
+* Added users and commit file to make comitting other authors easier
+* Updated to work with lateset mac80211 rates API
+* Added code to add the AP transmit ID after an RXON command is sent.
+* Removed use of uninitialized work_struct 'associate_timeout'
+* Fixed spelling typo of collatoral -> collateral
+
+Changes in 0.0.12
+
+* Updated CHANGES
+* Fixed problem with Tx rtap packets using the Rx radiotap structure
+* [PATCH] Spell Hz and dBm in a consistent way
+* Fix problem with channel flags not being set correctly.
+* iwlwifi: adjust for the changes in wireless-dev
+* [PATCH] Fix some basic errors found by sparse
+* Modified uCode error handler to restart vs. just go down
+* Added sysfs attributes for channel and phymode
+* Removed definition for ipw_is_broadcast_ether_addr
+* Modified temperature sysfs attribute to report in "human readable" scale.
+* Simplified station table lookups for broadcast
+* Restructured RXON handling
+* Updated unload to use mac80211 vs. 80211
+* Fix problem with the state of the HW vs. mac80211 getting our of sync
+* Modified rtap_iface Tx path to add rate, antenna, and power level fields.
+* Changed 80211 to mac80211 in load script.
+* Added rtap_iface for raw 802.11 Rx while associated.
+* Add additional code to support short preamble mask.
+* Fixed problem with fragmentation not working.
+* Fix problem with incorrectly checking NO ACK bit
+* Updated collateral to rename d80211 -> mac80211
+
+Changes in 0.0.11
+
+* Compatible with mac80211-4.x.x
+* Fix patching unconfigured kernels (thanks to Pavel Roskin)
+* Fix 1210 association failure due to reason 19 (short preamble)
+* Misc. typo fixes (thanks to Pavel Roskin)
+* Updated build to support KSRC and KSRC_OUTPUT build allowing you
+  to build with non-default kernel source location and build output
+ 
+Changes in 0.0.10
+
+* Fixed weak transmit power problem
+* Switched ieee80211_netif_oper() to ieee80211_stop_queue
+
+Changes in 0.0.9
+
+* pci_module_init -> pci_register_driver kernel API compatibility fix
+* Updated to work with latest in-tree d80211 version as well as 
+  d80211-1.0.0 and d80211-2.0.0
+* Fixed several build warnings.
+* Fixed CONFIG_IWLWIFI_DEBUG declaration type-o in Makefile
+* Changed KERN_ERR to KERN_DEBUG for debug macro printk
+
+Changes in 0.0.8
+
+* Remove calls to module_put() and try_module_get() - they were
+  counteracting the self-locking, which is fixed properly now 
+  (thanks to Pavel Roskin)
+* Fix oops in master mode (thanks to Pavel Roskin)
+* Modified Makefile to default to turning CONFIG_IWLWIFI_DEBUG on if 
+  built out-of-tree (defaulted to on if you were building in-tree via
+  'make patch_kernel' and the kernel build process)
+* Fixed dvals script to grep the debug values from the correct location.
+
+Changes in 0.0.7
+
+* Renamed escape_essid -> iwl_escape_essid to keep from 
+  colliding with ieee80211
+
+Changes in 0.0.6
+
+* Fixed compilation for kernels built outside the source tree
+  (thanks to Pavel Roskin)
+* Reworked 'make patch_kernel' so it will actually install the 
+  driver into the kernel sources specified by KSRC (defaults
+  to "/lib/modules/$(uname -r)/source"
+
+Changes in 0.0.5
+
+* Added original ipw3945's rate scaling algorithm
+* Removed loading and use of rs80211_simple module
+* Renamed tip/ -> origin/
+* Added extra scan information flag for more detailed scan results.
+
+Changes in 0.0.4
+
+* Added backward compatibility to 2.6.18
+* Added new build system to build either the tip/ version or the 
+  compat/ version based on the target kernel capabilities
+
+Changes in 0.0.3
+
+* Updated to compile and run with latest wireless-dev (may require the 
+  shutdown patch available at http://bughost.org/iwlwifi/patches/)
+
+Changes in 0.0.2
+
+* Added post associate callback code.  
+* Removed driver STATUS_ASSOC* states.
+* Fixed MAC address not being set during load.
+* Disconnected HW based scanning and hooked in d80211 SW based scanning
+
+Changes in 0.0.1
+
+* Initial public release
+* Module loads and unloads
+* Some functionality starting to take shape; scanning is broken

@@ -1,0 +1,33 @@
+From a8f8bdd27fbac5f91aabe206f829592facb486a3 Mon Sep 17 00:00:00 2001
+From: Zhu Yi <yi.zhu@intel.com>
+Date: Thu, 23 Aug 2007 17:07:07 +0800
+Subject: [PATCH] mac80211: fix kernel panic during shutdown time
+
+Fix mac80211 kernel panic if shutdown the interface immeditely after
+setup an IBSS network.
+
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/ieee80211_sta.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 324ace0..575ae68 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -4076,8 +4076,10 @@ static int ieee80211_sta_find_ibss(struct net_device *dev,
+ 			interval = IEEE80211_SCAN_INTERVAL_SLOW;
+ 		}
+ 
+-		ifsta->state = IEEE80211_IBSS_SEARCH;
+-		mod_timer(&ifsta->timer, jiffies + interval);
++		if (ifsta->state != IEEE80211_DISABLED) {
++			ifsta->state = IEEE80211_IBSS_SEARCH;
++			mod_timer(&ifsta->timer, jiffies + interval);
++		}
+ 		return 0;
+ 	}
+ 
+-- 
+1.5.2
+

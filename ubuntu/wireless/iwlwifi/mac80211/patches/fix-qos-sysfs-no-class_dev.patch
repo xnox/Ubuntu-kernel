@@ -1,0 +1,182 @@
+diff -upr pre/net/mac80211/ieee80211_sysfs.c post/net/mac80211/ieee80211_sysfs.c
+--- pre/net/mac80211/ieee80211_sysfs.c	2007-04-18 09:03:57.000000000 -0700
++++ post/net/mac80211/ieee80211_sysfs.c	2007-04-18 09:04:28.000000000 -0700
+@@ -20,14 +20,14 @@ static u8 _dls_mac[ETH_ALEN];
+ #define to_net_dev(class) container_of(class, struct net_device, class_dev)
+ 
+ /* QoS attributes */
+-static ssize_t show_ts_info(struct device *dev, struct device_attribute *attr,
++static ssize_t show_ts_info(struct class_device *dev,
+ 			    char *buf)
+ {
+ 	/* TSID, Direction, UP */
+ 	return sprintf(buf, "%u %u %u\n", TSID, TSDIR, TSUP);
+ }
+ 
+-static ssize_t store_ts_info(struct device *dev, struct device_attribute *attr,
++static ssize_t store_ts_info(struct class_device *dev,
+ 			     const char *buf, size_t len)
+ {
+ 	unsigned int id, index, up;
+@@ -54,9 +54,9 @@ static ssize_t store_ts_info(struct devi
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(ts_info, S_IWUSR|S_IRUGO, show_ts_info, store_ts_info);
++static CLASS_DEVICE_ATTR(ts_info, S_IWUSR|S_IRUGO, show_ts_info, store_ts_info);
+ 
+-static ssize_t show_tspec(struct device *dev, struct device_attribute *attr,
++static ssize_t show_tspec(struct class_device *dev, 
+ 			  char *buf)
+ {
+ 	/* Nominal MSDU, Max MSDU, Min int, Max int, Inact int,
+@@ -80,7 +80,7 @@ static ssize_t show_tspec(struct device 
+ 		       _tspec.medium_time);
+ }
+ 
+-static ssize_t store_tspec(struct device *dev, struct device_attribute *attr,
++static ssize_t store_tspec(struct class_device *dev, 
+ 			   const char *buf, size_t len)
+ {
+ 	if (sscanf(buf, "%hu %hu %u %u %u %u %u %u %u %u %u %u %u %hu %hu",
+@@ -109,9 +109,9 @@ static ssize_t store_tspec(struct device
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(tspec, S_IWUSR|S_IRUGO, show_tspec, store_tspec);
++static CLASS_DEVICE_ATTR(tspec, S_IWUSR|S_IRUGO, show_tspec, store_tspec);
+ 
+-static ssize_t store_addts(struct device *dev, struct device_attribute *attr,
++static ssize_t store_addts(struct class_device *dev, 
+ 			   const char *buf, size_t len)
+ {
+ 	struct net_device *netdev;
+@@ -121,10 +121,10 @@ static ssize_t store_addts(struct device
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(addts, S_IWUSR, NULL, store_addts);
++static CLASS_DEVICE_ATTR(addts, S_IWUSR, NULL, store_addts);
+ 
+-static ssize_t store_addts_wmm(struct device *dev,
+-			       struct device_attribute *attr,
++static ssize_t store_addts_wmm(struct class_device *dev,
++			       
+ 			       const char *buf, size_t len)
+ {
+ 	struct net_device *netdev;
+@@ -134,9 +134,9 @@ static ssize_t store_addts_wmm(struct de
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(addts_wmm, S_IWUSR, NULL, store_addts_wmm);
++static CLASS_DEVICE_ATTR(addts_wmm, S_IWUSR, NULL, store_addts_wmm);
+ 
+-static ssize_t store_delts(struct device *dev, struct device_attribute *attr,
++static ssize_t store_delts(struct class_device *dev, 
+ 			   const char *buf, size_t len)
+ {
+ 	struct net_device *netdev;
+@@ -146,10 +146,9 @@ static ssize_t store_delts(struct device
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(delts, S_IWUSR, NULL, store_delts);
++static CLASS_DEVICE_ATTR(delts, S_IWUSR, NULL, store_delts);
+ 
+-static ssize_t store_delts_wmm(struct device *dev,
+-			       struct device_attribute *attr,
++static ssize_t store_delts_wmm(struct class_device *dev,
+ 			       const char *buf, size_t len)
+ {
+ 	struct net_device *netdev;
+@@ -159,9 +158,9 @@ static ssize_t store_delts_wmm(struct de
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(delts_wmm, S_IWUSR, NULL, store_delts_wmm);
++static CLASS_DEVICE_ATTR(delts_wmm, S_IWUSR, NULL, store_delts_wmm);
+ 
+-static ssize_t show_dls_mac(struct device *dev, struct device_attribute *attr,
++static ssize_t show_dls_mac(struct class_device *dev, 
+ 			    char *buf)
+ {
+ 	return sprintf(buf, "%02X:%02X:%02X:%02X:%02X:%02X\n",
+@@ -169,7 +168,7 @@ static ssize_t show_dls_mac(struct devic
+ 		       _dls_mac[3], _dls_mac[4], _dls_mac[5]);
+ }
+ 
+-static ssize_t store_dls_mac(struct device *dev, struct device_attribute *attr,
++static ssize_t store_dls_mac(struct class_device *dev, 
+ 			     const char *buf, size_t len)
+ {
+ 	if (sscanf(buf, "%x:%x:%x:%x:%x:%x",
+@@ -182,15 +181,15 @@ static ssize_t store_dls_mac(struct devi
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(dls_mac, S_IWUSR|S_IRUGO, show_dls_mac, store_dls_mac);
++static CLASS_DEVICE_ATTR(dls_mac, S_IWUSR|S_IRUGO, show_dls_mac, store_dls_mac);
+ 
+-static ssize_t show_dls_op(struct device *dev, struct device_attribute *attr,
++static ssize_t show_dls_op(struct class_device *dev, 
+ 			   char *buf)
+ {
+ 	return sprintf(buf, "DLS Operation: Setup = 1; Teardown = 2\n");
+ }
+ 
+-static ssize_t store_dls_op(struct device *dev, struct device_attribute *attr,
++static ssize_t store_dls_op(struct class_device *dev, 
+ 			    const char *buf, size_t len)
+ {
+ 	struct ieee80211_local *local;
+@@ -230,7 +229,7 @@ static ssize_t store_dls_op(struct devic
+ 	return len;
+ }
+ 
+-static DEVICE_ATTR(dls_op, S_IWUSR|S_IRUGO, show_dls_op, store_dls_op);
++static CLASS_DEVICE_ATTR(dls_op, S_IWUSR|S_IRUGO, show_dls_op, store_dls_op);
+ 
+ static void __ieee80211_remove_if_group(struct kobject *kobj,
+ 					struct ieee80211_sub_if_data *sdata)
+@@ -242,14 +241,14 @@ static void __ieee80211_remove_if_group(
+ }
+ 
+ static struct attribute *ieee80211_qos_attrs[] = {
+-	&dev_attr_ts_info.attr,
+-	&dev_attr_tspec.attr,
+-	&dev_attr_addts.attr,
+-	&dev_attr_addts_wmm.attr,
+-	&dev_attr_delts.attr,
+-	&dev_attr_delts_wmm.attr,
+-	&dev_attr_dls_mac.attr,
+-	&dev_attr_dls_op.attr,
++	&class_device_attr_ts_info.attr,
++	&class_device_attr_tspec.attr,
++	&class_device_attr_addts.attr,
++	&class_device_attr_addts_wmm.attr,
++	&class_device_attr_delts.attr,
++	&class_device_attr_delts_wmm.attr,
++	&class_device_attr_dls_mac.attr,
++	&class_device_attr_dls_op.attr,
+ 	NULL
+ };
+ 	
+@@ -260,7 +259,7 @@ static struct attribute_group ieee80211_
+ 
+ int ieee80211_sysfs_add_netdevice(struct net_device *dev)
+ {
+-	struct kobject *kobj = &dev->dev.kobj;
++	struct kobject *kobj = &dev->class_dev.kobj;
+ 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+ 	int res = 0;
+ 
+@@ -282,7 +281,7 @@ static inline void ieee80211_remove_if_g
+ 
+ void ieee80211_sysfs_remove_netdevice(struct net_device *dev)
+ {
+-	ieee80211_remove_if_group(&dev->dev.kobj, dev);
++	ieee80211_remove_if_group(&dev->class_dev.kobj, dev);
+ }
+ 
+ 

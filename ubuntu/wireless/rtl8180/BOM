@@ -1,0 +1,11 @@
+Bill of Materials
+
+This driver was forward ported from the Feisty kernel
+tree, e.g., ubuntu/net/rtl_ieee80211 and ubuntu/wireless/rtl818x.
+As such, there is much duplication of code and functionality with
+the Gutsy kernel. The Gutsy kernel already has a softmac and
+IEEE80211 layer as well as encyption support. This driver
+should definitely be ported to use those in-kernel components.
+
+Tim Gardner <tim.gardner@canonical.com>
+Sept 19, 2007

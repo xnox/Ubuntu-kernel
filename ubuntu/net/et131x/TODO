@@ -1,0 +1,5 @@
+blux 2007.01.25
+
++ Add power saving functionality (suspend, sleep, resume)
++ Implement a few more kernel Parameter (set mac )
+

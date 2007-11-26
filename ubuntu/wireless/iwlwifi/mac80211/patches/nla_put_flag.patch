@@ -1,0 +1,29 @@
+NLA_PUT_FLAG used to has 3 parameters instead of 2
+---
+diff -urp old/net/wireless/nl80211.c compatible/net/wireless/nl80211.c
+--- old/net/wireless/nl80211.c	2007-07-05 15:30:01.000000000 +0800
++++ compatible/net/wireless/nl80211.c	2007-07-05 15:31:38.000000000 +0800
+@@ -110,7 +110,7 @@ static struct nla_policy nl80211_policy[
+ 
+ #define CHECK_CMD(ptr, cmd)				\
+ 	if (drv->ops->ptr)				\
+-		NLA_PUT_FLAG(msg, NL80211_CMD_##cmd);
++		NLA_PUT_FLAG(msg, NL80211_CMD_##cmd, 0);
+ 
+ static int nl80211_get_cmdlist(struct sk_buff *skb, struct genl_info *info)
+ {
+@@ -139,10 +139,10 @@ static int nl80211_get_cmdlist(struct sk
+ 
+ 	/* unconditionally allow some common commands we handle centrally
+ 	 * or where we require the implementation */
+-	NLA_PUT_FLAG(msg, NL80211_CMD_GET_CMDLIST);
+-	NLA_PUT_FLAG(msg, NL80211_CMD_GET_WIPHYS);
+-	NLA_PUT_FLAG(msg, NL80211_CMD_GET_INTERFACES);
+-	NLA_PUT_FLAG(msg, NL80211_CMD_RENAME_WIPHY);
++	NLA_PUT_FLAG(msg, NL80211_CMD_GET_CMDLIST, 0);
++	NLA_PUT_FLAG(msg, NL80211_CMD_GET_WIPHYS, 0);
++	NLA_PUT_FLAG(msg, NL80211_CMD_GET_INTERFACES, 0);
++	NLA_PUT_FLAG(msg, NL80211_CMD_RENAME_WIPHY, 0);
+ 
+ 	CHECK_CMD(add_virtual_intf, ADD_VIRTUAL_INTERFACE);
+ 	CHECK_CMD(del_virtual_intf, DEL_VIRTUAL_INTERFACE);

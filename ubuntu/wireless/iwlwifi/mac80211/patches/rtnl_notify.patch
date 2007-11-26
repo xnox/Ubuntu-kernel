@@ -1,0 +1,17 @@
+Use netlink_broadcast vs. rtnl_notify
+---
+ net/wireless/wext.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+---
+diff -Nupr modified/net/wireless/wext.c post/net/wireless/wext.c
+--- modified/net/wireless/wext.c	2007-02-22 12:29:54.000000000 -0800
++++ post/net/wireless/wext.c	2007-02-22 12:35:19.000000000 -0800
+@@ -458,7 +458,7 @@ static void wireless_nlevent_process(uns
+ 	struct sk_buff *skb;
+ 
+ 	while ((skb = skb_dequeue(&wireless_nlevent_queue)))
+-		rtnl_notify(skb, 0, RTNLGRP_LINK, NULL, GFP_ATOMIC);
++		netlink_broadcast(rtnl, skb, 0, RTNLGRP_LINK, GFP_ATOMIC);
+ }
+ 
+ static DECLARE_TASKLET(wireless_nlevent_tasklet, wireless_nlevent_process, 0);

@@ -1,0 +1,30 @@
+Re-use ax25_ptr in net_device for ieee80211_ptr
+
+Signed-off-by: James Ketrenos <jketreno@linux.intel.com>
+diff -Nupr orig/net/mac80211/ieee80211_i.h tip/net/mac80211/ieee80211_i.h
+--- orig/net/mac80211/ieee80211_i.h	2007-01-29 14:27:55.000000000 -0800
++++ tip/net/mac80211/ieee80211_i.h	2007-01-29 14:29:24.000000000 -0800
+@@ -26,6 +26,8 @@
+ /* ieee80211.o internal definitions, etc. These are not included into
+  * low-level drivers. */
+ 
++#define ieee80211_ptr ax25_ptr
++
+ #ifndef ETH_P_PAE
+ #define ETH_P_PAE 0x888E /* Port Access Entity (IEEE 802.1X) */
+ #endif /* ETH_P_PAE */
+diff -upr origin/net/wireless/core.c update/net/wireless/core.c
+--- origin/net/wireless/core.c	2007-06-01 13:44:01.000000000 -0700
++++ update/net/wireless/core.c	2007-06-01 13:48:43.000000000 -0700
+@@ -20,6 +20,10 @@
+ #include "core.h"
+ #include "sysfs.h"
+ 
++#ifndef ieee80211_ptr
++#define ieee80211_ptr ax25_ptr
++#endif
++
+ /* name for sysfs, %d is appended */
+ #define PHY_NAME "phy"
+ 
+Only in update/net/wireless: wext-mod.c

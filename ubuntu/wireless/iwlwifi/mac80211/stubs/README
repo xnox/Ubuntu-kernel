@@ -1,0 +1,338 @@
+cat << EOF
+README for external mac80211 subsystem package
+Copyright (c) 2007, Intel Corporation
+
+version: mac80211-${MAC80211_VERSION}
+date   : $(date)
+
+
+This archive provides a package for the mac80211 subsystem, 
+installable into most kernels with a version of 2.6.18 or
+later.  You can determine your kernel version by running:
+
+	% uname -r
+
+
+NOTE:  The mac80211 subsystem is being developed by a group of
+community developers.  Intel put together this packaging system
+in order to better facilitate the widespread availability and
+adoption of the subsystem.
+
+This file provides an overview of why the mac80211 package exists,
+what it does, and how it does it.
+
+Index
+	Quick steps
+	Why?
+	What?
+	How?
+	What is in a release?
+	Makefile targets
+	Updating compatiblity
+	Version numbering
+
+Quick steps
+
+If you're a user that just wants to try and get up and running
+as quickly as possible, here are the simplest steps we have so
+far:
+
+	% make patch_kernel
+
+The above, if it succeeds, should patch your current running 
+kernel source tree to contain the mac80211 subsystem sources.  Now
+you need to configure your kernel build to build the mac80211
+modules:
+
+	% cd /lib/modules/\$(uname -r)/build
+	% make menuconfig
+
+You will want to set the following to <M>:
+
+CONFIG_MAC80211=m
+
+        Networking --->
+	   Generic IEEE 802.11 Networking Stack (dscape)
+
+You can turn on the sub-options for that subsystem if you want.
+
+Select 'Exit' until it prompts to save your kernel configuration
+and select 'Yes'.  Now you can build the module:
+
+	% make modules
+	% make modules_install
+
+NOTE:  As of mac80211-2.0.0 you must also enable CONFIG_CFG80211 and 
+rebuild your main kernel image.  This is because the latest mac80211 
+changes re-implement the kernel built-in from net/core/wireless.c as 
+part of the net/wireless/ sources.
+
+	% make all
+	% make install
+
+You will then need to reboot into the new kernel (vs. just loading the 
+new 80211 modules)
+
+
+Why?
+
+The network community for the Linux kernel typically has an 
+approach of focusing purely on the 'tip'.  To the average 
+user that means that bug fixes, patches, and enhancements will
+only be available to you if you can upgrade to the latest
+development kernel.  For some, this is acceptable.  For others,
+it is not.
+
+This package is created in order to try and provide the user (you)
+with fixes and enhancements that affect *just* the wireless 
+subsystem required for use with your hardware.  
+
+As with any software, new changes may introduce new bugs.  
+Upgrading from one version of the mac80211 subsystem to the 
+next might regress a problem, or even introduce a new one -- 
+if it does, and you find it, please file a bug at 
+http://bughost.org under the project 'mac80211'.
+
+
+What?
+
+So what does this package contain?  It represents the latest
+version of the mac80211 as available via the GIT repository 
+hosted at:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-dev.git
+
+In addition to the above, any patches submitted by the mac80211 subsystem 
+developers which are deemed to be bug fixes or improve existing 
+functionality which have not been made available in the GIT repository.
+
+When you run make on your system, the build scripts will examine your 
+target kernel to determine which backward compatibility changes are 
+required to compile on your system.  A side effect of the mac80211 
+developers using the latest kernel tip as their baseline is that the 
+subsystem itself emerges to use whichever new features or APIs may have 
+been made available in the rest of the kernel.  This will typically 
+break building and running on kernels released prior to those changes.  
+The build system for this package attempts to correct that behavior.
+
+
+How?
+
+When you run the build, it runs a series of scripts against the 
+target kernel. The target is specified via KSRC=/patch/to/kernel.
+If no KSRC is provided, it will default to looking in:
+
+	/lib/modules/\$(uname -r)/build
+
+Each of the scripts attempts to determine if a given set of
+kernel functionality is present.  In the good old days, a module
+could do something simple like:
+
+	#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
+	/* some code */
+	#else
+	/* some other code */
+	#endif
+
+Over the last few years, however, this approach has broken due
+to a number of reasons.  The two most prominent causes are:
+
+	* Kernel API and structure changes occurring within
+	  an -rc update (which can not be checked with the 
+	  KERNEL_VERSION macro)
+
+	* Distributions backporting new kernel features into
+	  older kernels such that the older vanilla kernel 
+	  (as originally provided by Linus) does not have the
+	  feature but the distributor does.
+
+An example of what a script might do is perform a grep operation
+on a particular header file to determine if the parameters
+passed to a function have changed, or if a particular definition
+exists.
+
+
+What is in a release?
+
+The details of how a typical release cycle is as follows:
+
+1.  Latest files are obtained from Jiri's GIT
+    repository into a local GIT tree (eg., /repos/jbenc)
+
+2.  mac80211 subsystem files are copied from the GIT tree into
+    the 'origin' directory via:
+
+	% make BASE=/repos/jbenc origin
+
+3.  The patches in the 'pending' directory are applied to the
+    'origin' in numerical sequence to build a new tree stored
+    in the 'modified' directory.
+
+4.  Miscellaneous testing is performed (build iwlwifi, associate, 
+    etc.)
+
+5.  The files in 'stubs' are sourced with the following 
+    environment variables defined:
+	MAC80211_VERSION=versionstring
+    with the output of that sourcing going into the base
+    directory as a file with the same name (eg., stubs/README
+    creates README).  This is used to update the documentation
+    to contain the latest version fields.
+
+6.  The package is tarballed up with a version stamp named:
+	mac80211-\${MAC80211_VERSION}.tgz
+
+7*. A test system performs a tinderbox build of the package 
+    against:
+	* Linus' vanilla kernels > 2.6.18
+	* Latest kernel sources version available as a 'stable' 
+	  package from the following distributions (alphabetical):
+
+		Fedora Core
+		Gentoo
+		OpenSuse
+		Ubuntu
+
+  * This is not yet done.  Currently I have to do the smoke test
+    build by hand, which means I'm only building against the latest
+    Gentoo kernel and a couple other random kernel images I have on
+    my system.
+
+
+Makefile targets
+
+The build supports multiple targets depending on what you 
+are trying to do.  This section provides an overview of each
+of those targets.
+
+clean
+	Removes *.ko, *.o, and *.mod.c from the tree.  This
+	also deletes the compat directory (built with the 
+	source target)
+
+	See Makefile
+
+
+origin
+	Updates the tip sources.  Specify the source repository
+	via BASE= on the make command line.  
+
+	NOTE:  The script will not perform any GIT fetching 
+	from the Internet and will only copy the mac80211 related 
+	files from the directory specified.  If you want to 
+	update to the latest GIT version you would need to 
+	first obtain Jiri Benc's GIT repository and then direct
+	the make to that directory via BASE.  By default,
+	the script will look in /home/repos/mac80211/
+
+	Once the tip files are copied, the patches in 'pending'
+	are applied in sequential order.
+
+	See scripts/generate_origin
+
+
+modified
+	Creates a modified 'tip' applying all of the patches
+	from the 'pending' directory.
+
+	See scripts/generate_modified
+
+
+source
+	Examines if the target kernel can be used without
+	any changes to the modified mac80211 sources provided in the
+	tip directory and creates a compatible version of the
+	sources from 'modified' in the 'compatitble' directory.
+
+	See scripts/generate_source
+
+
+unmodified
+	Examines if the target kernel can be used without
+	any changes to the modified mac80211 sources provided in the
+	tip directory and creates a compatible version of the
+	sources from 'origin' in the 'compatitble' directory.
+
+	You would typically use this if you want a "pure" version
+	of mac80211 compatible with your kernel.
+
+	See scripts/generate_source
+
+
+patch_kernel
+	Transfers the generated or tip sources into the target
+	kernel.  This will also patch the required kernel
+	build files (Makefile, Kconfig, etc.) as needed in order
+	to add the mac80211 subsystem to the build.
+
+	See scripts/patch_kernel
+
+
+dist
+	Builds a distribution tarball and places it in the
+	distros directory.  The filename for the tarball is
+	mac80211-\${MAC80211_VERSION}.tgz.
+	
+	NOTE:  MAC80211_VERSION defaults to 'test'.
+
+	See Makefile
+
+Updating compatibility
+
+Ok -- you're developing, or you just moved to a new kernel and
+*WHAM* the kernel build breaks.  Once the root cause of the
+build failure is determined, a patch is required in order
+to support making that kernel 'just work' for everyone else.
+
+The following are the typical steps performed:
+
+	% make source
+	% mv compatible old
+	% make source
+	
+Now, edit the sources in the compatible/ directory.  You can test
+your sources by running:
+
+	% make patch_kernel
+	% cd /lib/modules/\$(uname -r)/build
+	% make menuconfig <-- If you haven't already enabled mac80211
+	% make modules 
+
+Once you are satisfied the build problems are fixed, create 
+the patch:
+
+	% diff -Nupr old compatible > compatible-\$(uname -r).patch
+
+The work to this point is a huge help to others in the community
+so go ahead and send the patch to the mac80211-devel mailing list.
+
+If you want to figure out how to modify the mac80211 package so
+that it will automatically apply your patch if needed, look
+in the following scripts:
+
+	scripts/determine_compat
+	scripts/generate_compatible
+
+
+Version numbering
+
+The mac80211 package uses a three field versioning scheme:
+
+	mac80211-x.y.z.tgz
+
+X will increase whenever a new base/tip is taken from the kernel.
+You can see tip/GIT for the commit ID head cached when the
+'make update' target was used.
+
+Y will increase as snapshots are made available in the external
+package that may contain code which has not yet been merged into
+the kernel itself.
+
+Z will increase only as bug or compatibility patches are made
+available against a given snapshot.  Z increases will not contain
+new functionality and are intended to only provide stability
+fixes.
+
+EOF
+
+

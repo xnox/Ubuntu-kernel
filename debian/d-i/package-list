@@ -1,0 +1,14 @@
+Package: ubuntu-modules
+Priority: standard
+Section: debian-installer
+Description: Ubuntu supplied kernel modules
+
+Package: nic-firmware
+Priority: standard
+Section: debian-installer
+Description: Ubuntu-supplied external firmware for NIC drivers
+
+Package: scsi-firmware
+Priority: standard
+Section: debian-installer
+Description: Ubuntu-supplied external firmware for SCSI drivers
