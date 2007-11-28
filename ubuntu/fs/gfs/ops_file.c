@@ -1598,11 +1598,11 @@ gfs_lock(struct file *file, int cmd, struct file_lock *fl)
 }
 
 /**
- * gfs_sendfile - Send bytes to a file or socket
+ * gfs_splice_read - Send bytes to a file or socket
  * @in_file: The file to read from
  * @out_file: The file to write to
  * @count: The amount of data
- * @offset: The beginning file offset
+ * @ppos: The beginning file offset
  *
  * Outputs: offset - updated according to number of bytes read
  *
@@ -1610,7 +1610,7 @@ gfs_lock(struct file *file, int cmd, struct file_lock *fl)
  */
 
 static ssize_t
-gfs_sendfile(struct file *in_file, loff_t *offset, size_t count, read_actor_t actor, void __user *target)
+gfs_splice_read(struct file *in_file, loff_t *ppos, struct pipe_inode_info *pipe, size_t count, unsigned int flags)
 {
 	struct gfs_inode *ip = get_v2ip(in_file->f_mapping->host);
 	struct gfs_holder gh;
@@ -1627,7 +1627,7 @@ gfs_sendfile(struct file *in_file, loff_t *offset, size_t count, read_actor_t ac
 	if (gfs_is_jdata(ip))
 		retval = -ENOSYS;
 	else 
-		retval = generic_file_sendfile(in_file, offset, count, actor, target);
+		retval = generic_file_splice_read(in_file, ppos, pipe, count, flags);
 
 	gfs_glock_dq(&gh);
 
@@ -1761,7 +1761,7 @@ struct file_operations gfs_file_fops = {
 	.release = gfs_close,
 	.fsync = gfs_fsync,
 	.lock = gfs_lock,
-	.sendfile = gfs_sendfile,
+	.splice_read = gfs_splice_read,
 	.flock = gfs_flock,
 };
 
