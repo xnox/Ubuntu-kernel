@@ -97,9 +97,10 @@ gfs_private_nopage(struct vm_area_struct *area,
  */
 
 static int
-alloc_page_backing(struct gfs_inode *ip, unsigned long index)
+alloc_page_backing(struct gfs_inode *ip, struct page *page)
 {
 	struct gfs_sbd *sdp = ip->i_sbd;
+	unsigned long index = page->index;
 	uint64_t lblock = index << (PAGE_CACHE_SHIFT - sdp->sd_sb.sb_bsize_shift);
 	unsigned int blocks = PAGE_CACHE_SIZE >> sdp->sd_sb.sb_bsize_shift;
 	struct gfs_alloc *al;
