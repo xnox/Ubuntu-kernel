@@ -2526,7 +2526,6 @@ static struct video_device spca50x_template = {
 	.owner = THIS_MODULE,
 	.name = "GSPCA USB Camera",
 	.type = VID_TYPE_CAPTURE,
-	.hardware = VID_HARDWARE_GSPCA,
 	.fops = &spca5xx_fops,
 	.release = video_device_release,
 	.minor = -1,
@@ -2573,31 +2572,31 @@ spca50x_configure(struct usb_spca50x *spca50x)
 *  sysfs
 ***************************************************************************/
 static inline struct usb_spca50x *
-cd_to_spca50x(struct class_device *cd)
+cd_to_spca50x(struct device *cd)
 {
 	struct video_device *vdev = to_video_device(cd);
 	return video_get_drvdata(vdev);
 }
 
 static ssize_t
-show_stream_id(struct class_device *cd, char *buf)
+show_stream_id(struct device *cd, struct device_attribute *attr, char *buf)
 {
 	struct usb_spca50x *spca50x = cd_to_spca50x(cd);
 	return snprintf(buf, 5, "%s\n", Plist[spca50x->cameratype].name);
 }
 
-static CLASS_DEVICE_ATTR(stream_id, S_IRUGO, show_stream_id, NULL);
+static DEVICE_ATTR(stream_id, S_IRUGO, show_stream_id, NULL);
 static ssize_t
-show_model(struct class_device *cd, char *buf)
+show_model(struct device *cd, struct device_attribute *attr, char *buf)
 {
 	struct usb_spca50x *spca50x = cd_to_spca50x(cd);
 	return snprintf(buf, 32, "%s\n", (spca50x->desc) ?
 			clist[spca50x->desc].description : " Unknow ");
 }
 
-static CLASS_DEVICE_ATTR(model, S_IRUGO, show_model, NULL);
+static DEVICE_ATTR(model, S_IRUGO, show_model, NULL);
 static ssize_t
-show_pictsetting(struct class_device *cd, char *buf)
+show_pictsetting(struct device *cd, struct device_attribute *attr, char *buf)
 {
 	struct usb_spca50x *spca50x = cd_to_spca50x(cd);
 	struct pictparam *gcorrect = &spca50x->pictsetting;
@@ -2608,13 +2607,13 @@ show_pictsetting(struct class_device *cd, char *buf)
 			gcorrect->GBlue, gcorrect->GGreen);
 }
 
-static CLASS_DEVICE_ATTR(pictsetting, S_IRUGO, show_pictsetting, NULL);
+static DEVICE_ATTR(pictsetting, S_IRUGO, show_pictsetting, NULL);
 static void
 spca50x_create_sysfs(struct video_device *vdev)
 {
-	video_device_create_file(vdev, &class_device_attr_stream_id);
-	video_device_create_file(vdev, &class_device_attr_model);
-	video_device_create_file(vdev, &class_device_attr_pictsetting);
+	video_device_create_file(vdev, &dev_attr_stream_id);
+	video_device_create_file(vdev, &dev_attr_model);
+	video_device_create_file(vdev, &dev_attr_pictsetting);
 }
 
 /****************************************************************************
