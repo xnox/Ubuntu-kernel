@@ -427,7 +427,7 @@ static void asfs_destroy_inode(struct inode *inode)
 	kmem_cache_free(asfs_inode_cachep, ASFS_I(inode));
 }
 
-static void init_once(void * foo, struct kmem_cache * cachep, unsigned long flags)
+static void init_once(struct kmem_cache * cachep, void *foo)
 {
 	struct asfs_inode_info *ei = (struct asfs_inode_info *) foo;
 
@@ -439,7 +439,7 @@ static int init_inodecache(void)
 	asfs_inode_cachep = kmem_cache_create("asfs_inode_cache",
 					     sizeof(struct asfs_inode_info),
 					     0, SLAB_HWCACHE_ALIGN|SLAB_RECLAIM_ACCOUNT,
-					     init_once, NULL);
+					     init_once);
 	if (asfs_inode_cachep == NULL)
 		return -ENOMEM;
 	return 0;
