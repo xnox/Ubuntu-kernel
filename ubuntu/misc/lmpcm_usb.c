@@ -31,6 +31,11 @@
 #include <linux/init.h>
 #include <linux/usb.h>
 
+#ifdef BIT
+#undef BIT
+#endif
+#define BIT(x)	(1UL<<((x)%BITS_PER_LONG))
+#define LONG(x) ((x)/BITS_PER_LONG)
 
 #define DRIVER_VERSION	"v0.5.5"
 #define DRIVER_AUTHOR	"David Oliveira <d.oliveira@prozone.org>"
