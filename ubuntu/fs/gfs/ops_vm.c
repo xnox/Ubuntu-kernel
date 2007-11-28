@@ -53,45 +53,44 @@ pfault_be_greedy(struct gfs_inode *ip)
 }
 
 /**
- * gfs_private_nopage -
+ * gfs_private_fault -
  * @area:
- * @address:
- * @type:
+ * @vmf:
  *
  * Returns: the page
  */
 
-static struct page *
-gfs_private_nopage(struct vm_area_struct *area,
-		   unsigned long address, int *type)
+static int
+gfs_private_fault(struct vm_area_struct *area, struct vm_fault *vmf)
 {
 	struct gfs_inode *ip = get_v2ip(area->vm_file->f_mapping->host);
 	struct gfs_holder i_gh;
-	struct page *result;
+	int result = 0;
 	int error;
 
 	atomic_inc(&ip->i_sbd->sd_ops_vm);
 
 	error = gfs_glock_nq_init(ip->i_gl, LM_ST_SHARED, 0, &i_gh);
 	if (error)
-		return NULL;
+		goto out;
 
 	set_bit(GIF_PAGED, &ip->i_flags);
 
-	result = filemap_nopage(area, address, type);
+	result = filemap_fault(area, vmf);
 
-	if (result && result != NOPAGE_OOM)
+	if ((result & VM_FAULT_ERROR) == 0)
 		pfault_be_greedy(ip);
 
 	gfs_glock_dq_uninit(&i_gh);
 
+out:
 	return result;
 }
 
 /**
  * alloc_page_backing -
  * @ip:
- * @index:
+ * @page:
  *
  * Returns: errno
  */
@@ -171,7 +170,7 @@ alloc_page_backing(struct gfs_inode *ip, struct page *page)
 }
 
 /**
- * gfs_sharewrite_nopage -
+ * gfs_sharewrite_fault -
  * @area:
  * @address:
  * @type:
@@ -179,14 +178,12 @@ alloc_page_backing(struct gfs_inode *ip, struct page *page)
  * Returns: the page
  */
 
-static struct page *
-gfs_sharewrite_nopage(struct vm_area_struct *area,
-		      unsigned long address, int *type)
+static int
+gfs_sharewrite_fault(struct vm_area_struct *area, struct vm_fault *vmf)
 {
 	struct gfs_inode *ip = get_v2ip(area->vm_file->f_mapping->host);
 	struct gfs_holder i_gh;
-	struct page *result = NULL;
-	unsigned long index = ((address - area->vm_start) >> PAGE_CACHE_SHIFT) + area->vm_pgoff;
+	int result = 0;
 	int alloc_required;
 	int error;
 
@@ -194,7 +191,7 @@ gfs_sharewrite_nopage(struct vm_area_struct *area,
 
 	error = gfs_glock_nq_init(ip->i_gl, LM_ST_EXCLUSIVE, 0, &i_gh);
 	if (error)
-		return NULL;
+		goto out2;
 
 	if (gfs_is_jdata(ip))
 		goto out;
@@ -202,38 +199,43 @@ gfs_sharewrite_nopage(struct vm_area_struct *area,
 	set_bit(GIF_PAGED, &ip->i_flags);
 	set_bit(GIF_SW_PAGED, &ip->i_flags);
 
-	error = gfs_write_alloc_required(ip, (uint64_t)index << PAGE_CACHE_SHIFT,
+	error = gfs_write_alloc_required(ip, (uint64_t)vmf->pgoff << PAGE_CACHE_SHIFT,
 					 PAGE_CACHE_SIZE, &alloc_required);
-	if (error)
+	if (error) {
+		result = VM_FAULT_OOM;
 		goto out;
+	}
 
-	result = filemap_nopage(area, address, type);
-	if (!result || result == NOPAGE_OOM)
+	result = filemap_fault(area, vmf);
+	if (result & VM_FAULT_ERROR)
 		goto out;
 
 	if (alloc_required) {
-		error = alloc_page_backing(ip, index);
+		error = alloc_page_backing(ip, vmf->page);
 		if (error) {
-			page_cache_release(result);
-			result = NULL;
+			if (result & VM_FAULT_LOCKED)
+				unlock_page(vmf->page);
+			page_cache_release(vmf->page);
+			result = VM_FAULT_OOM;
 			goto out;
 		}
-		set_page_dirty(result);
+		set_page_dirty(vmf->page);
 	}
 
 	pfault_be_greedy(ip);
 
- out:
+out:
 	gfs_glock_dq_uninit(&i_gh);
 
+out2:
 	return result;
 }
 
 struct vm_operations_struct gfs_vm_ops_private = {
-	.nopage = gfs_private_nopage,
+	.fault = gfs_private_fault,
 };
 
 struct vm_operations_struct gfs_vm_ops_sharewrite = {
-	.nopage = gfs_sharewrite_nopage,
+	.fault = gfs_sharewrite_fault,
 };
 
