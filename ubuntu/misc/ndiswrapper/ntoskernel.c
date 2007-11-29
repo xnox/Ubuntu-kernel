@@ -2589,7 +2589,7 @@ int ntoskernel_init(void)
 	}
 	mdl_cache = kmem_cache_create("wrap_mdl",
 				      sizeof(struct wrap_mdl) + MDL_CACHE_SIZE,
-				      0, 0, NULL, NULL);
+				      0, 0, NULL);
 	TRACE2("%p", mdl_cache);
 	if (!mdl_cache) {
 		ERROR("couldn't allocate MDL cache");

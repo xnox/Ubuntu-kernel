@@ -14,6 +14,7 @@
  */
 #include <linux/proc_fs.h>
 #include <linux/module.h>
+#include <net/net_namespace.h>
 #include <asm/uaccess.h>
 
 #include "ndis.h"
@@ -503,7 +504,7 @@ int wrap_procfs_init(void)
 {
 	struct proc_dir_entry *procfs_entry;
 
-	wrap_procfs_entry = proc_mkdir(DRIVER_NAME, proc_net);
+	wrap_procfs_entry = proc_mkdir(DRIVER_NAME, init_net.proc_net);
 	if (wrap_procfs_entry == NULL) {
 		ERROR("couldn't create procfs directory");
 		return -ENOMEM;
@@ -530,5 +531,5 @@ void wrap_procfs_remove(void)
 	if (wrap_procfs_entry == NULL)
 		return;
 	remove_proc_entry("debug", wrap_procfs_entry);
-	remove_proc_entry(DRIVER_NAME, proc_net);
+	remove_proc_entry(DRIVER_NAME, init_net.proc_net);
 }
