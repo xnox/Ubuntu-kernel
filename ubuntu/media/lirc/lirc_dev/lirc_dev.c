@@ -41,6 +41,7 @@
 #include <linux/fs.h>
 #include <linux/poll.h>
 #include <linux/smp_lock.h>
+#include <linux/completion.h>
 #include <asm/uaccess.h>
 #include <asm/semaphore.h>
 #include <asm/errno.h>
@@ -81,8 +82,8 @@ struct irctl
 	struct lirc_buffer *buf;
 
 	int tpid;
-	struct semaphore *t_notify;
-	struct semaphore *t_notify2;
+	struct completion *t_notify;
+	struct completion *t_notify2;
 	int shutdown;
 	long jiffies_to_wait;
 
@@ -190,7 +191,7 @@ static int lirc_thread(void *irctl)
 	daemonize("lirc_dev");
 	
 	if (ir->t_notify != NULL) {
-		up(ir->t_notify);
+		complete(ir->t_notify);
 	}
 	
 	dprintk(LOGHEAD "poll thread started\n", ir->p.name, ir->p.minor);
@@ -217,12 +218,12 @@ static int lirc_thread(void *irctl)
 	} while (!ir->shutdown);
 	
 	if (ir->t_notify2 != NULL) {
-		down(ir->t_notify2);
+		wait_for_completion(ir->t_notify2);
 	}
 
 	ir->tpid = -1;
 	if (ir->t_notify != NULL) {
-		up(ir->t_notify);
+		complete(ir->t_notify);
 	}
 	
 	dprintk(LOGHEAD "poll thread ended\n", ir->p.name, ir->p.minor);
@@ -242,7 +243,7 @@ int lirc_register_plugin(struct lirc_plugin *p)
 #ifdef LIRC_HAVE_DEVFS_24
 	char name[16];
 #endif
-	DECLARE_MUTEX_LOCKED(tn);
+	DECLARE_COMPLETION(tn);
 
 	if (!p) {
 		printk("lirc_dev: lirc_register_plugin: "
@@ -393,7 +394,7 @@ int lirc_register_plugin(struct lirc_plugin *p)
 			err = -ECHILD;
 			goto out_sysfs;
 		}
-		down(&tn);
+		wait_for_completion(&tn);
 		ir->t_notify = NULL;
 	}
 	ir->attached = 1;
@@ -431,8 +432,8 @@ out:
 int lirc_unregister_plugin(int minor)
 {
 	struct irctl *ir;
-	DECLARE_MUTEX_LOCKED(tn);
-	DECLARE_MUTEX_LOCKED(tn2);
+	DECLARE_COMPLETION(tn);
+	DECLARE_COMPLETION(tn2);
 
 	if (minor < 0 || minor >= MAX_IRCTL_DEVICES) {
 		printk("lirc_dev: lirc_unregister_plugin: "
@@ -468,8 +469,8 @@ int lirc_unregister_plugin(int minor)
 		/* 2.2.x does not export wake_up_process() */
 		wake_up_interruptible(ir->p.get_queue(ir->p.data));
 #endif
-		up(&tn2);
-		down(&tn);
+		complete(&tn2);
+		wait_for_completion(&tn);
 		ir->t_notify = NULL;
 		ir->t_notify2 = NULL;
 	}
@@ -880,8 +881,8 @@ static int lirc_dev_init(void)
 	return SUCCESS;
 
 out_unregister:
-	if(unregister_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME))
-		printk(KERN_ERR "lirc_dev: unregister_chrdev failed!\n");
+	unregister_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME);
+
 out:
 	return -1;
 }
@@ -905,15 +906,10 @@ int init_module(void)
  */
 void cleanup_module(void)
 {
-	int ret;
-
-	ret = unregister_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME);
+	unregister_chrdev(IRCTL_DEV_MAJOR, IRCTL_DEV_NAME);
 	class_destroy(lirc_class);
 
-	if(ret)
-		printk("lirc_dev: error in module_unregister_chrdev: %d\n", ret);
-	else
-		dprintk("lirc_dev: module successfully unloaded\n");
+	dprintk("lirc_dev: module successfully unloaded\n");
 }
 
 MODULE_DESCRIPTION("LIRC base driver module");

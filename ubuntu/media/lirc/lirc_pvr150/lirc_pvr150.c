@@ -57,6 +57,7 @@
 #include <linux/i2c-algo-bit.h>
 #include <linux/firmware.h>
 #include <linux/vmalloc.h>
+#include <linux/completion.h>
 
 #include <asm/semaphore.h>
 
@@ -84,8 +85,8 @@ struct IR
 	struct semaphore   buf_sem;
 	
 	/* RX polling thread data */
-	struct semaphore   *t_notify;
-	struct semaphore   *t_notify2;
+	struct completion  *t_notify;
+	struct completion  *t_notify2;
 	int                shutdown;
 	int                tpid;
 	
@@ -259,7 +260,7 @@ static int lirc_thread(void *arg)
 	daemonize("lirc_pvr150");
 	
 	if (ir->t_notify != NULL) {
-		up(ir->t_notify);
+		complete(ir->t_notify);
 	}
 	
 	dprintk("poll thread started\n");
@@ -294,12 +295,12 @@ static int lirc_thread(void *arg)
 	} while (!ir->shutdown);
 	
 	if (ir->t_notify2 != NULL) {
-		down(ir->t_notify2);
+		wait_for_completion(ir->t_notify2);
 	}
 
 	ir->tpid = -1;
 	if (ir->t_notify != NULL) {
-		up(ir->t_notify);
+		complete(ir->t_notify);
 	}
 	
 	dprintk("poll thread ended\n");
@@ -1240,7 +1241,7 @@ static int ir_attach(struct i2c_adapter *adap, int have_rx, int have_tx)
         client_template.adapter = adap;
        	memcpy(&ir->c_rx,&client_template,sizeof(struct i2c_client));
         if (have_rx) {
-		DECLARE_MUTEX_LOCKED(tn);
+		DECLARE_COMPLETION(tn);
 		
         	/* I2C attach to device */
        	        ir->c_rx.addr = 0x71;
@@ -1258,7 +1259,7 @@ static int ir_attach(struct i2c_adapter *adap, int have_rx, int have_tx)
 			ret = -ECHILD;
 			goto err;
 		}
-		down(&tn);
+		wait_for_completion(&tn);
 		ir->t_notify = NULL;
 	}
 	
@@ -1320,8 +1321,8 @@ static int ir_detach(struct i2c_client *client)
 	down(&ir->lock);
 
 	if (client == &ir->c_rx) {
-		DECLARE_MUTEX_LOCKED(tn);
-		DECLARE_MUTEX_LOCKED(tn2);
+		DECLARE_COMPLETION(tn);
+		DECLARE_COMPLETION(tn2);
 	
 		/* end up polling thread */
 		if (ir->tpid >= 0) {
@@ -1334,8 +1335,8 @@ static int ir_detach(struct i2c_client *client)
 				p = find_task_by_pid(ir->tpid);
 				wake_up_process(p);
 			}
-			up(&tn2);
-			down(&tn);
+			complete(&tn2);
+			wait_for_completion(&tn);
 			ir->t_notify = NULL;
 			ir->t_notify2 = NULL;
 		}
