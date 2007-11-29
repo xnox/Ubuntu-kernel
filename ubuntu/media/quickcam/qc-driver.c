@@ -821,7 +821,6 @@ static int qc_i2c_init(struct quickcam *qc)
 	if (!cr) goto fail2;
 	urb->transfer_buffer = kmalloc(qc_i2c_maxbufsize*sizeof(u8), GFP_KERNEL);	/* Allocate maximum ever needed */
 	if (!urb->transfer_buffer) goto fail3;
-	spin_lock_init(&urb->lock);
 	urb->complete = qc_i2c_handler;
 	urb->context  = qc;
 #if (LINUX_VERSION_CODE<KERNEL_VERSION(2,6,9) && !defined(CONFIG_SUSE_KERNEL)) || LINUX_VERSION_CODE<KERNEL_VERSION(2,6,8)
@@ -3006,7 +3005,6 @@ static struct file_operations qc_v4l_fops = {
 static struct video_device qc_v4l_template = {
 	name:		"QuickCam USB",
 	type:		VID_TYPE_CAPTURE | VID_TYPE_SUBCAPTURE,
-	hardware:	VID_HARDWARE_QCAM_USB,
 	minor:		-1,
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
 	release:	qc_v4l_release,
