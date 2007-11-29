@@ -65,7 +65,6 @@
 
 /* #define HAVE_XC3028 1 */
 
-#include <media/ivtv.h>
 
 #define IVTV_ENCODER_OFFSET	0x00000000
 #define IVTV_ENCODER_SIZE	0x00800000	/* Last half isn't needed 0x01000000 */
