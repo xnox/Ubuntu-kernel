@@ -1001,7 +1001,7 @@ static int set_use_inc(void* data)
 	do_gettimeofday(&lasttv);
 
 	result=request_irq(irq,irq_handler,
-			   SA_INTERRUPT | (share_irq ? SA_SHIRQ:0),
+			   IRQF_DISABLED | (share_irq ? IRQF_SHARED:0),
 			   LIRC_DRIVER_NAME,(void *)&hardware);
 
 	switch(result)
