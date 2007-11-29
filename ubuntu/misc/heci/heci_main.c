@@ -83,16 +83,10 @@ DEF_PARM(int, debug, 0, 0644, "Debug enabled or not");
 #endif
 
 /* heci char device for registration */
-static struct cdev heci_cdev = {
-	.kobj = {.name = "heci", },
-	.owner = THIS_MODULE,
-};
+static struct cdev heci_cdev;
 
 /* iamt legacy char device for registration */
-static struct cdev iamt_legacy_cdev = {
-	.kobj = {.name = "iamt_legacy", },
-	.owner = THIS_MODULE,
-};
+static struct cdev iamt_legacy_cdev;
 
 /* major number for device */
 static int heci_major;
