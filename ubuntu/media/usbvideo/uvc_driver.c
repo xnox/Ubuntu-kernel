@@ -1433,7 +1433,6 @@ static int uvc_register_video(struct uvc_device *dev)
 	vdev->dev = &dev->udev->dev;
 	vdev->type = 0;
 	vdev->type2 = 0;
-	vdev->hardware = 0;
 	vdev->minor = -1;
 	vdev->fops = &uvc_fops;
 	vdev->release = video_device_release;
