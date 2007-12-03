@@ -48,8 +48,6 @@ obj-$(CONFIG_IVTV_FB)		+= media/ivtv/
 # obj-$(CONFIG_E1000_ICH9)	+= net/e1000-ich9/
 # obj-$(CONFIG_NET_ATL2)		+= net/atl2/
 
-# obj-$(CONFIG_SECURITY_APPARMOR)	+= security/apparmor/
-
 # obj-$(CONFIG_NET_ACX)		+= wireless/acx/
 # obj-$(CONFIG_IPW3945)		+= wireless/ipw3945/
 # obj-$(CONFIG_IWLWIFI)		+= wireless/iwlwifi/
