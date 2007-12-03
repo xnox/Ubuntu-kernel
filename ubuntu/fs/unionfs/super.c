@@ -283,7 +283,7 @@ static void unionfs_destroy_inode(struct inode *inode)
 	print_exit_location();
 }
 
-static void init_once(void *v, struct kmem_cache * cachep, unsigned long flags)
+static void init_once(struct kmem_cache * cachep, void *v)
 {
 	struct unionfs_inode_container *c = (struct unionfs_inode_container *)v;
 
@@ -303,7 +303,7 @@ int init_inode_cache(void)
 	unionfs_inode_cachep =
 	    kmem_cache_create("unionfs_inode_cache",
 			      sizeof(struct unionfs_inode_container), 0,
-			      SLAB_RECLAIM_ACCOUNT, init_once, NULL);
+			      SLAB_RECLAIM_ACCOUNT, init_once);
 	if (!unionfs_inode_cachep)
 		err = -ENOMEM;
 	print_exit_status(err);

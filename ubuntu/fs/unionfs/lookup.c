@@ -398,7 +398,7 @@ int init_dentry_cache(void)
 	unionfs_dentry_cachep =
 	    kmem_cache_create("unionfs_dentry",
 			      sizeof(struct unionfs_dentry_info), 0,
-			      SLAB_RECLAIM_ACCOUNT, NULL, NULL);
+			      SLAB_RECLAIM_ACCOUNT, NULL);
 
 	if (!unionfs_dentry_cachep)
 		return -ENOMEM;

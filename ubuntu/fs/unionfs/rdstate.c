@@ -35,7 +35,7 @@ int init_filldir_cache(void)
 {
 	unionfs_filldir_cachep =
 	    kmem_cache_create("unionfs_filldir", sizeof(struct filldir_node), 0,
-			      SLAB_RECLAIM_ACCOUNT, NULL, NULL);
+			      SLAB_RECLAIM_ACCOUNT, NULL);
 
 	if (!unionfs_filldir_cachep)
 		return -ENOMEM;
