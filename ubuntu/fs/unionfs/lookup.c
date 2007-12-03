@@ -25,7 +25,7 @@
 static int is_opaque_dir(struct dentry *dentry, int bindex);
 static int is_validname(const char *name);
 
-struct dentry *unionfs_lookup_backend(struct dentry *dentry, struct nameidata *nd, int lookupmode)
+struct dentry *unionfs_lookup_backend(struct dentry *dentry, int lookupmode)
 {
 	int err = 0;
 	struct dentry *hidden_dentry = NULL;
@@ -156,12 +156,8 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry, struct nameidata *n
 		wh_hidden_dentry = NULL;
 
 		/* Now do regular lookup; lookup foo */
-		nd->dentry = dtohd_index(dentry, bindex);
-		/* FIXME: fix following line for mount point crossing */
-		nd->mnt = stohiddenmnt_index(parent_dentry->d_sb, bindex);
-
-		hidden_dentry = lookup_one_len_nd(name, hidden_dir_dentry,
-									   namelen, nd);
+		hidden_dentry = LOOKUP_ONE_LEN(name, hidden_dir_dentry,
+					       namelen);
 		print_dentry("hidden result", hidden_dentry);
 		if (IS_ERR(hidden_dentry)) {
 			DPUT(first_hidden_dentry);
@@ -236,13 +232,8 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry, struct nameidata *n
 	}
 	/* This should only happen if we found a whiteout. */
 	if (first_dentry_offset == -1) {
-		nd->dentry = dentry;
-		/* FIXME: fix following line for mount point crossing */
-		nd->mnt = stohiddenmnt_index(parent_dentry->d_sb, bindex);
-
-		first_hidden_dentry = lookup_one_len_nd(name, hidden_dir_dentry,
-											 namelen, nd);
-
+		first_hidden_dentry = LOOKUP_ONE_LEN(name, hidden_dir_dentry,
+						     namelen);
 		first_dentry_offset = bindex;
 		if (IS_ERR(first_hidden_dentry)) {
 			err = PTR_ERR(first_hidden_dentry);
@@ -328,9 +319,8 @@ struct dentry *unionfs_lookup_backend(struct dentry *dentry, struct nameidata *n
 int unionfs_partial_lookup(struct dentry *dentry)
 {
 	struct dentry *tmp;
-	struct nameidata nd = { .flags = 0 };
 
-	tmp = unionfs_lookup_backend(dentry, &nd, INTERPOSE_PARTIAL);
+	tmp = unionfs_lookup_backend(dentry, INTERPOSE_PARTIAL);
 	if (!tmp)
 		return 0;
 	if (IS_ERR(tmp))
