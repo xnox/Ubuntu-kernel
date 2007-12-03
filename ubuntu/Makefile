@@ -40,7 +40,6 @@ obj-$(CONFIG_QUICKCAM)		+= media/quickcam/
 obj-$(CONFIG_USB_UVCCAM)	+= media/usbvideo/
 obj-$(CONFIG_USB_ISIGHT)	+= media/isight/
 obj-$(CONFIG_LIRC_DEV)		+= media/lirc/
-#obj-$(CONFIG_SND_HDA_INTEL)	+= media/snd-hda-intel/
 obj-$(CONFIG_DRM_PSB)		+= media/drm-poulsbo/
 obj-$(CONFIG_IVTV_FB)		+= media/ivtv/
 
