@@ -20,7 +20,7 @@ obj-$(CONFIG_PACKARDBELL_E5)	+= misc/pbe5.o
 obj-$(CONFIG_LMPCM_USB)		+= misc/lmpcm_usb.o
 obj-$(CONFIG_NOZOMI)		+= misc/nozomi.o
 
-#obj-$(CONFIG_NDISWRAPPER)	+= misc/ndiswrapper/
+obj-$(CONFIG_NDISWRAPPER)	+= misc/ndiswrapper/
 obj-$(CONFIG_MOL)		+= misc/mol/
 # obj-$(CONFIG_TIFM)		+= misc/tifm/
 
@@ -30,7 +30,7 @@ CFLAGS_dm-bbr.o			+= -I$(srctree)/drivers/md
 obj-$(CONFIG_ASFS_FS)		+= fs/asfs/
 obj-$(CONFIG_GFS_FS)		+= fs/gfs/
 obj-$(CONFIG_SQUASHFS)		+= fs/squashfs/
-#obj-$(CONFIG_UNION_FS)		+= fs/unionfs/
+obj-$(CONFIG_UNION_FS)		+= fs/unionfs/
 
 obj-$(CONFIG_USB_APPLEIR)	+= mactel/appleir.o
 
