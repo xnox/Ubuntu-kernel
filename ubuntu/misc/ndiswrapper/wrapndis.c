@@ -834,14 +834,16 @@ static int ndis_net_dev_open(struct net_device *net_dev)
 		return -ENODEV;
 	}
 	netif_wake_queue(net_dev);
-	netif_poll_enable(net_dev);
+	napi_enable(&wnd->napi);
 	EXIT1(return 0);
 }
 
 static int ndis_net_dev_close(struct net_device *net_dev)
 {
-	ENTER1("%p", netdev_priv(net_dev));
-	netif_poll_disable(net_dev);
+	struct wrap_ndis_device *wnd = netdev_priv(net_dev);
+
+	ENTER1("%p", wnd);
+	napi_disable(&wnd->napi);
 	netif_tx_disable(net_dev);
 	EXIT1(return 0);
 }
@@ -2056,7 +2058,6 @@ static wstdcall NTSTATUS NdisAddDevice(struct driver_object *drv_obj,
 	}
 	wd = pdo->reserved;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
-	SET_MODULE_OWNER(net_dev);
 	if (wrap_is_pci_bus(wd->dev_bus))
 		SET_NETDEV_DEV(net_dev, &wd->pci.pdev->dev);
 	if (wrap_is_usb_bus(wd->dev_bus))

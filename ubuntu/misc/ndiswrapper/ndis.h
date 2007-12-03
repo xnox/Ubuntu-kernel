@@ -825,6 +825,7 @@ struct wrap_ndis_device {
 	struct ndis_mp_block *nmb;
 	struct wrap_device *wd;
 	struct net_device *net_dev;
+	struct napi_struct napi;
 	void *shutdown_ctx;
 	struct ndis_mp_interrupt *mp_interrupt;
 	struct kdpc irq_kdpc;
