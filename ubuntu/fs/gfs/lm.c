@@ -13,8 +13,8 @@
 #include <linux/completion.h>
 #include <linux/buffer_head.h>
 #include <linux/delay.h>
-#include "gfs_ondisk.h"
 
+#include "gfs_ondisk.h"
 #include "gfs.h"
 #include "incore.h"
 #include "glock.h"

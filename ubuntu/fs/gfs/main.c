@@ -21,7 +21,6 @@
 #include <linux/proc_fs.h>
 #include <linux/module.h>
 #include <linux/init.h>
-#include <linux/time.h>
 
 #include "gfs.h"
 #include "ops_fstype.h"
@@ -37,7 +36,6 @@
 int __init init_gfs_fs(void)
 {
 	int error;
-	struct timespec tv;
 
 /*	gfs2_init_lmh(); gfs2 should do this for us*/
 
@@ -48,8 +46,7 @@ int __init init_gfs_fs(void)
 	if (error)
 		goto fail;
 
-	getnstimeofday(&tv);
-	gfs_random_number = tv.tv_nsec; 
+	gfs_random_number = xtime.tv_nsec;
 
 	gfs_glock_cachep = kmem_cache_create("gfs_glock", sizeof(struct gfs_glock),
 					     0, 0,
@@ -84,7 +81,7 @@ int __init init_gfs_fs(void)
 		goto fail;
 
 	printk("GFS %s (built %s %s) installed\n",
-	       GFS_RELEASE_NAME, __DATE__, __TIME__);
+	       RELEASE_VERSION, __DATE__, __TIME__);
 
 	return 0;
 
@@ -128,7 +125,7 @@ exit_gfs_fs(void)
 	gfs_sys_uninit();
 }
 
-MODULE_DESCRIPTION("Global File System " GFS_RELEASE_NAME);
+MODULE_DESCRIPTION("Global File System " RELEASE_VERSION);
 MODULE_AUTHOR("Red Hat, Inc.");
 MODULE_LICENSE("GPL");
 
