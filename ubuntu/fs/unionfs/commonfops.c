@@ -624,9 +624,6 @@ long unionfs_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	default:
 		hidden_file = ftohf(file);
 
-		err = security_file_ioctl(hidden_file, cmd, arg);
-		if (err)
-			goto out;
 		err = -ENOTTY;
 		if (!hidden_file || !hidden_file->f_op)
 			goto out;

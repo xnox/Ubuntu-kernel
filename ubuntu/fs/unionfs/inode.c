@@ -828,7 +828,14 @@ static int inode_permission(struct inode *inode, int mask, struct nameidata *nd,
 	if (retval && retval != -EROFS) /* ignore EROFS */
 		return retval;
 
-	retval = security_inode_permission(inode, mask, nd);
+	/*
+	 * skip the LSM permission check.  This means unionfs will wrongly
+	 * copy up a LSM non-writable/non-readable file on a readonly branch
+	 * to a read-write branch leading to odd behaviour.  Until the mess
+	 * of the LSM interface changes are resolved, there's nothing else
+	 * that can be done.
+	 *	retval = security_inode_permission(inode, mask, nd);
+	 */
 	return ((retval == -EROFS) ? 0 : retval); /* ignore EROFS */
 }
 
