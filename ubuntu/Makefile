@@ -43,8 +43,8 @@ obj-$(CONFIG_LIRC_DEV)		+= media/lirc/
 obj-$(CONFIG_DRM_PSB)		+= media/drm-poulsbo/
 obj-$(CONFIG_IVTV_FB)		+= media/ivtv/
 
-# obj-$(CONFIG_NET_IPG)		+= net/ipg/
-# obj-$(CONFIG_NET_ATL2)		+= net/atl2/
+obj-$(CONFIG_NET_IPG)		+= net/ipg/
+obj-$(CONFIG_NET_ATL2)		+= net/atl2/
 
 # obj-$(CONFIG_NET_ACX)		+= wireless/acx/
 # obj-$(CONFIG_IPW3945)		+= wireless/ipw3945/
@@ -68,7 +68,7 @@ obj-$(CONFIG_IPW2100_FS_AMILO_M7400) += wireless/fsam7400.o
 # obj-$(CONFIG_MARVELL_8686)	+= wireless/sd8686/
 # obj-$(CONFIG_NET_RTL818X)	+= wireless/rtl8180/rtl_ieee80211/
 # obj-$(CONFIG_NET_RTL818X)	+= wireless/rtl8180/rtl8180/
-# obj-$(CONFIG_ET131X)		+= net/et131x/
+obj-$(CONFIG_ET131X)		+= net/et131x/
 
 obj-$(CONFIG_VMWARE) += vmblock/ vmhgfs/ vmmemctl/ vmxnet/
 
