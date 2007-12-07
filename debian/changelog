@@ -1,5 +1,46 @@
-linux-ubuntu-modules-2.6.24 (2.6.24-1.1) UNRELEASED; urgency=low
+linux-ubuntu-modules-2.6.24 (2.6.24-1.5) hardy; urgency=low
 
-  *
+  [Phillip Lougher]
 
- -- Phillip Lougher <phillip@canonical.com>  Mon, 26 Nov 2007 15:41:44 +0000
+  * fix ubuntu/fs/asfs to build on 2.6.24
+  * fixup ubuntu/fs/gfs kmem_cache_create to build on 2.6.24
+  * Fixup gfs for export op changes etc.
+  * fix gfs for the removal of sendfile and helper functions
+  * convert gfs to use filemap_fault rather than filemap_nopage
+  * Update squashfs to 3.3 release, and fix for linux 2.6.24 changes
+  * fix gnbd
+  * fix lmpcm_usb
+  * fix ubuntu/misc/nozomi
+  * fixup ubuntu/media/gspcav1
+  * fixup ubuntu/media/isight
+  * fixup ubuntu/media/ivtv
+  * Fixup ubuntu/media/lirc, convert inverted semaphores to completions
+  * Fixup ubuntu/media/lirc, replace deprecated irq flags
+  * fixup ubuntu/media/quickcam
+  * fixup ubuntu/media/usbvideo
+  * Fixup ubuntu/misc/heci
+  * fixup ubuntu/media/ov511
+  * ubuntu/misc/ndiswrapper fixups
+  * Update ubuntu/fs/gfs to latest version in CVS
+  * Fixup gfs for export op changes etc.
+  * fix gfs for the removal of sendfile and helper functions
+  * fixup ubuntu/fs/unionfs kmem_cache_create to build on 2.6.24
+  * Remove lookup_one_len_nd() changes to ubuntu/fs/unionfs
+  * Fix ubuntu/misc/ndiswrapper to build on 2.6.24
+  * Update ubuntu/Makefile enabling building of unionfs and ndiswrapper
+  * Remove ubuntu/security/apparmor
+  * Remove ubuntu/media/snd-hda-intel
+  * Remove LSM interface calls from ubuntu/fs/unionfs
+  * Remove ubuntu/net/e1000-ich9
+  * Fix net/ipg
+  * Fix ubuntu/net/atl2
+  * Fix ubuntu/net/atl2
+  * Fixup ubuntu/net/et131x
+  * update ubuntu/Makefile enabling build of et131x/atl2/ipg
+  * Fix ubuntu/wireless/acx/usb.c
+  * Fixup ubuntu/wireless/ipw3945
+  * Fixup ubuntu/wireless/prism2_usb
+  * Fix ubuntu/wireless/p80211
+  * update ubuntu/Makefile
+
+ -- Phillip Lougher <phillip@canonical.com>  Fri, 07 Dec 2007 19:26:13 +0000
