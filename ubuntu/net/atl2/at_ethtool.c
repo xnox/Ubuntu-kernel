@@ -418,9 +418,6 @@ static struct ethtool_ops at_ethtool_ops = {
 #ifdef NETIF_F_TSO
 	.get_tso                = ethtool_op_get_tso,
 #endif
-#ifdef ETHTOOL_GPERMADDR
-	.get_perm_addr          = ethtool_op_get_perm_addr,
-#endif
 };
 
 void at_set_ethtool_ops(struct net_device *netdev)
