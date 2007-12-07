@@ -1945,7 +1945,7 @@ int	ipg_nic_open(IPG_DEVICE_TYPE *ipg_ethernet_device)
 	 */
 	if ((error = request_irq(sp->ipg_pci_device->irq,
 	                         &ipg_interrupt_handler,
-	                         SA_SHIRQ,
+	                         IRQF_SHARED,
 	                         ipg_ethernet_device->name,
 	                         ipg_ethernet_device)) < 0)
 	{
@@ -4023,7 +4023,6 @@ int ipg_pciprobe_linux2_4(struct pci_dev *ipg_pci_device,
 		return -ENODEV;
 	}
 	ipg_ethernet_device=root_ipg_ethernet_device;
-   SET_MODULE_OWNER(ipg_ethernet_device);
    pci_request_regions(ipg_pci_device,DRV_NAME);
 //   if(pci_request_regions(ipg_pci_device,DRV_NAME)=err) goto xxx;
 
