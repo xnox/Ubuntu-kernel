@@ -323,7 +323,6 @@ at_probe(struct pci_dev *pdev,
     if(!netdev)
         goto err_alloc_etherdev;
     
-    SET_MODULE_OWNER(netdev);
     SET_NETDEV_DEV(netdev, &pdev->dev);
 
     pci_set_drvdata(pdev, netdev);
@@ -2160,10 +2159,7 @@ at_intr_rx(struct at_adapter* adapter)
 	    
             skb_reserve(skb, NET_IP_ALIGN);
             skb->dev = netdev;
-	    	eth_copy_and_sum(
-	        	skb, 
-				rxd->packet,
-				rx_size, 0);
+		skb_copy_to_linear_data(skb, rxd->packet, rx_size);
 	    	skb_put(skb, rx_size);
 	    /*
             memcpy(skb_put(skb, rx_size), 
