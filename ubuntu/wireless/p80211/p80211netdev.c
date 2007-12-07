@@ -70,6 +70,7 @@
 #include <linux/wireless.h>
 #include <linux/sockios.h>
 #include <linux/etherdevice.h>
+#include <net/net_namespace.h>
 
 #include <asm/bitops.h>
 #include <asm/uaccess.h>
@@ -167,11 +168,11 @@ void p80211netdev_startup(void)
 	DBFENTER;
 
 #ifdef CONFIG_PROC_FS
-	if (proc_net != NULL) {
+	if (init_net.proc_net != NULL) {
 		proc_p80211 = create_proc_entry(
 				"p80211", 
 				(S_IFDIR|S_IRUGO|S_IXUGO),
-				proc_net);
+				init_net.proc_net);
 	}
 #endif
 	DBFEXIT;
@@ -196,7 +197,7 @@ p80211netdev_shutdown(void)
 	DBFENTER;
 #ifdef CONFIG_PROC_FS
 	if (proc_p80211 != NULL) {
-		remove_proc_entry("p80211", proc_net);
+		remove_proc_entry("p80211", init_net.proc_net);
 	}
 #endif
 	DBFEXIT;
