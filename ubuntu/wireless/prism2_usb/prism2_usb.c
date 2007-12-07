@@ -131,7 +131,6 @@ static int prism2sta_probe_usb(
 	/* Register the wlandev, this gets us a name and registers the
 	 * linux netdevice.
 	 */
-	SET_MODULE_OWNER(wlandev->netdev);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0))
 	SET_NETDEV_DEV(wlandev->netdev, &(interface->dev));
 #endif
