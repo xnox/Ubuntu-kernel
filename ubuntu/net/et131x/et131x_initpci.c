@@ -1452,7 +1452,6 @@ int et131x_pci_setup( struct pci_dev *pdev )
      *************************************************************************/
     DBG_TRACE( et131x_dbginfo, "Setting fundamental net_device info...\n" );
 
-    SET_MODULE_OWNER( netdev );
     SET_NETDEV_DEV( netdev, &pdev->dev );
 
     if( pci_using_dac )

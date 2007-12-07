@@ -532,7 +532,6 @@ int et131x_rx_dma_memory_alloc( ET131X_ADAPTER *adapter )
                                                 0,
                                                 SLAB_CACHE_DMA |
                                                 SLAB_HWCACHE_ALIGN, 
-                                                NULL,
                                                 NULL );
 
 
