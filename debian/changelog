@@ -1,4 +1,4 @@
-linux-ubuntu-modules-2.6.24 (2.6.24-1.5) hardy; urgency=low
+linux-ubuntu-modules-2.6.24 (2.6.24-1.1) hardy; urgency=low
 
   [Phillip Lougher]
 
@@ -43,4 +43,4 @@ linux-ubuntu-modules-2.6.24 (2.6.24-1.5) hardy; urgency=low
   * Fix ubuntu/wireless/p80211
   * update ubuntu/Makefile
 
- -- Phillip Lougher <phillip@canonical.com>  Fri, 07 Dec 2007 19:26:13 +0000
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 10 Dec 2007 09:57:51 -0500
