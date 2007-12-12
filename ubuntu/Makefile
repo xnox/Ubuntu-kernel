@@ -47,7 +47,6 @@ obj-$(CONFIG_NET_IPG)		+= net/ipg/
 obj-$(CONFIG_NET_ATL2)		+= net/atl2/
 
 obj-$(CONFIG_NET_ACX)		+= wireless/acx/
-obj-$(CONFIG_IPW3945)		+= wireless/ipw3945/
 # obj-$(CONFIG_IWLWIFI)		+= wireless/iwlwifi/
 obj-$(CONFIG_USB_ATMEL)		+= wireless/at76/
 # obj-$(CONFIG_RTL8187)		+= wireless/rtl818x/
