@@ -1,0 +1,4 @@
+# Ubuntu config
+
+ifneq ($(filter generic rt,$(UBUNTU_FLAVOUR)),)
+endif

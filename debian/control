@@ -1,0 +1,218 @@
+Source: linux-backports-modules-2.6.24
+Section: base
+Priority: optional
+Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Standards-Version: 3.6.1
+Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), gcc-4.1-hppa64 [hppa], binutils-hppa64 [hppa], linux-headers-2.6.24-2-386 [i386], linux-headers-2.6.24-2-generic [i386 amd64], linux-headers-2.6.24-2-hppa32 [hppa], linux-headers-2.6.24-2-hppa64 [hppa], linux-headers-2.6.24-2-itanium [ia64], linux-headers-2.6.24-2-lpia [lpia], linux-headers-2.6.24-2-lpiacompat [lpia], linux-headers-2.6.24-2-mckinley [ia64], linux-headers-2.6.24-2-powerpc [powerpc], linux-headers-2.6.24-2-powerpc-smp [powerpc], linux-headers-2.6.24-2-powerpc64-smp [powerpc], linux-headers-2.6.24-2-server [i386 amd64], linux-headers-2.6.24-2-sparc64 [sparc], linux-headers-2.6.24-2-sparc64-smp [sparc]
+
+
+Package: linux-backports-modules-2.6.24-2-386
+Architecture: i386
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-386
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on i386
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ i386.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-386 meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-generic
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-generic
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ x86/x86_64.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-generic meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-hppa32
+Architecture: hppa
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-hppa32
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit HP PA-RISC SMP
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ 32-bit HP PA-RISC SMP.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-hppa32 meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-hppa64
+Architecture: hppa
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-hppa64
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit HP PA-RISC SMP
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ 64-bit HP PA-RISC SMP.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-hppa64 meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-itanium
+Architecture: ia64
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-itanium
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on Itanium SMP
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ Itanium SMP.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-itanium meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-lpia
+Architecture: lpia
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-lpia
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on lpia
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ lpia.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-lpia meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-lpiacompat
+Architecture: lpia
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-lpiacompat
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on lpiacompat
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ lpiacompat.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-lpiacompat meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-mckinley
+Architecture: ia64
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-mckinley
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on Itanium II SMP
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ Itanium II SMP.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-mckinley meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-powerpc
+Architecture: powerpc
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-powerpc
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ 32-bit PowerPC.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-powerpc meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-powerpc64-smp
+Architecture: powerpc
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-powerpc64-smp
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit PowerPC SMP
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ 64-bit PowerPC SMP.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-powerpc64-smp meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-powerpc-smp
+Architecture: powerpc
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-powerpc-smp
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC SMP
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ 32-bit PowerPC SMP.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-powerpc-smp meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-server
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-server
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ x86/x86_64.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-server meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-sparc64
+Architecture: sparc
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-sparc64
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPARC
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ 64-bit UltraSPARC.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-sparc64 meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-2-sparc64-smp
+Architecture: sparc
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-2-sparc64-smp
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPARC SMP
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ 64-bit UltraSPARC SMP.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-sparc64-smp meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
