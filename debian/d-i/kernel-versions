@@ -1,11 +1,13 @@
 # arch	version		flavour		installedname			suffix	bdep
 amd64	2.6.24-2	generic		2.6.24-2-generic		-	
+amd64	2.6.24-2	rt		2.6.24-2-rt		-	
 
 hppa	2.6.24-2	hppa32		2.6.24-2-hppa32		y	
 hppa	2.6.24-2	hppa64		2.6.24-2-hppa64		y	
 
 i386	2.6.24-2	386		2.6.24-2-386		-	
 i386	2.6.24-2	generic		2.6.24-2-generic		-	
+i386	2.6.24-2	rt		2.6.24-2-rt		-	
 
 lpia	2.6.24-2	lpia		2.6.24-2-lpia		-
 

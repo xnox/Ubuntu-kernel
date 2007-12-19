@@ -1,3 +1,3 @@
 build_arch	= x86_64
 
-flavours	= generic server
+flavours	= generic server rt
