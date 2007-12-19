@@ -24,8 +24,27 @@ builddir	:= $(CURDIR)/debian/build
 stampdir	:= $(CURDIR)/debian/stamps
 udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 
-# taget_flavour is filled in for each step
-kmake = make -C /lib/modules/$(release)-$(abinum)-$(target_flavour)/build \
+# Override KDIR if you want to use a non-standard kernel location.
+# You really should use a kernel of the same version as is in changelog or complete
+# horkage will ensue. KDIR is typically used on a buildd where you don't have
+# privileges to install kernel headers, e.g., test builds after an ABI bump.
+#
+# You should also note that whatever kernel you point at must have at least
+# had 'make silentoldconfig prepare scripts' run. Furthermore, you have to
+# do it for each flavour. For example:
+#
+#	cd ~/ubuntu-hardy
+#	cat debian/config/i386/config debian/config/i386/config.generic > .config
+#	make silentoldconfig prepare scripts
+#
+#	cd ~/ubuntu-hardy-lum
+#	fakeroot debian/rules binary-debs flavours=generic KDIR=~/ubuntu-hardy
+#
+
+KDIR		= /lib/modules/$(release)-$(abinum)-$(target_flavour)/build
+
+# target_flavour is filled in for each step
+kmake = make -C $(KDIR) \
 	ARCH=$(build_arch_t) M=$(builddir)/build-$(target_flavour) \
 	UBUNTU_FLAVOUR=$(target_flavour)
 
