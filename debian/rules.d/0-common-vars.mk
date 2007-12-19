@@ -47,8 +47,13 @@ endif
 
 conc_level		= -j$(CONCURRENCY_LEVEL)
 
+# See ubuntu-hardy-lum debian/rules.d/0-common-vars.mk for an explanation
+# of the use of this variable.
+
+KDIR		= /lib/modules/$(release)-$(abinum)-$(target_flavour)/build
+
 # target_flavour is filled in for each step
-kmake = make -C /lib/modules/$(release)-$(abinum)-$(target_flavour)/build \
+kmake = make -C $(KDIR) \
 	ARCH=$(build_arch_t) M=$(builddir)/build-$(target_flavour) \
 	UBUNTU_FLAVOUR=$(target_flavour)
 
