@@ -3,7 +3,7 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), gcc-4.1-hppa64 [hppa], binutils-hppa64 [hppa], linux-headers-2.6.24-2-386 [i386], linux-headers-2.6.24-2-cell [powerpc], linux-headers-2.6.24-2-generic [i386 amd64], linux-headers-2.6.24-2-hppa32 [hppa], linux-headers-2.6.24-2-hppa64 [hppa], linux-headers-2.6.24-2-itanium [ia64], linux-headers-2.6.24-2-lpia [lpia], linux-headers-2.6.24-2-lpiacompat [lpia], linux-headers-2.6.24-2-mckinley [ia64], linux-headers-2.6.24-2-powerpc [powerpc], linux-headers-2.6.24-2-powerpc-smp [powerpc], linux-headers-2.6.24-2-powerpc64-smp [powerpc], linux-headers-2.6.24-2-rt [i386 amd64], linux-headers-2.6.24-2-server [i386 amd64], linux-headers-2.6.24-2-sparc64 [sparc], linux-headers-2.6.24-2-sparc64-smp [sparc], linux-headers-2.6.24-2-ume [i386], linux-headers-2.6.24-2-virtual [i386], linux-headers-2.6.24-2-xen [i386 amd64]
+Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), gcc-4.1-hppa64 [hppa], binutils-hppa64 [hppa], gcc-4.1 [powerpc], linux-headers-2.6.24-2-386 [i386], linux-headers-2.6.24-2-generic [i386 amd64], linux-headers-2.6.24-2-hppa32 [hppa], linux-headers-2.6.24-2-hppa64 [hppa], linux-headers-2.6.24-2-itanium [ia64], linux-headers-2.6.24-2-lpia [lpia], linux-headers-2.6.24-2-mckinley [ia64], linux-headers-2.6.24-2-powerpc [powerpc], linux-headers-2.6.24-2-powerpc-smp [powerpc], linux-headers-2.6.24-2-powerpc64-smp [powerpc], linux-headers-2.6.24-2-rt [i386 amd64], linux-headers-2.6.24-2-server [i386 amd64], linux-headers-2.6.24-2-sparc64 [sparc], linux-headers-2.6.24-2-sparc64-smp [sparc], linux-headers-2.6.24-2-virtual [i386]
 
 
 Package: linux-ubuntu-modules-2.6.24-2-386
@@ -19,21 +19,6 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on i386
  .
  You likely do not want to install this package directly. Instead, install
  the linux-386 meta-package, which will ensure that upgrades work
- correctly, and that supporting packages are also installed.
-
-Package: linux-ubuntu-modules-2.6.24-2-cell
-Architecture: powerpc
-Section: base
-Priority: optional
-Provides: 
-Depends: linux-image-2.6.24-2-cell
-Pre-Depends: dpkg (>= 1.10.24)
-Description: Ubuntu supplied Linux modules for version 2.6.24 on PowerPC Cell
- This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
- PowerPC Cell.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-cell meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-ubuntu-modules-2.6.24-2-generic
@@ -109,21 +94,6 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on lpia
  .
  You likely do not want to install this package directly. Instead, install
  the linux-lpia meta-package, which will ensure that upgrades work
- correctly, and that supporting packages are also installed.
-
-Package: linux-ubuntu-modules-2.6.24-2-lpiacompat
-Architecture: lpia
-Section: base
-Priority: optional
-Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-2-lpiacompat
-Pre-Depends: dpkg (>= 1.10.24)
-Description: Ubuntu supplied Linux modules for version 2.6.24 on lpia
- This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
- lpia.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-lpiacompat meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-ubuntu-modules-2.6.24-2-mckinley
@@ -246,21 +216,6 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPA
  the linux-sparc64-smp meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-ubuntu-modules-2.6.24-2-ume
-Architecture: i386
-Section: base
-Priority: optional
-Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-2-ume
-Pre-Depends: dpkg (>= 1.10.24)
-Description: Ubuntu supplied Linux modules for version 2.6.24 on Embedded/Mobile
- This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
- Embedded/Mobile.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-ume meta-package, which will ensure that upgrades work
- correctly, and that supporting packages are also installed.
-
 Package: linux-ubuntu-modules-2.6.24-2-virtual
 Architecture: i386
 Section: base
@@ -274,19 +229,4 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on virtualised har
  .
  You likely do not want to install this package directly. Instead, install
  the linux-virtual meta-package, which will ensure that upgrades work
- correctly, and that supporting packages are also installed.
-
-Package: linux-ubuntu-modules-2.6.24-2-xen
-Architecture: i386 amd64
-Section: base
-Priority: optional
-Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-2-xen
-Pre-Depends: dpkg (>= 1.10.24)
-Description: Ubuntu supplied Linux modules for version 2.6.24 on x86
- This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
- x86.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-xen meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.

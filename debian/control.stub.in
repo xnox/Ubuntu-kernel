@@ -3,5 +3,5 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), gcc-4.1-hppa64 [hppa], binutils-hppa64 [hppa]HEADER_DEPS
+Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), gcc-4.1-hppa64 [hppa], binutils-hppa64 [hppa], gcc-4.1 [powerpc]HEADER_DEPS
 

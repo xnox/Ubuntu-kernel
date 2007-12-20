@@ -1,3 +1,0 @@
-arch="lpia"
-desc="lpia"
-provides="ndiswrapper-modules-1.9"
