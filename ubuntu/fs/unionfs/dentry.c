@@ -42,6 +42,13 @@ int unionfs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
 	int restart = 0;
 	int interpose_flag;
 
+	struct nameidata lowernd;
+
+	if(nd)
+		memcpy(&lowernd, nd, sizeof(struct nameidata));
+	else
+		memset(&lowernd, 0, sizeof(struct nameidata));
+
 	print_util_entry_location();
 
       restart:
@@ -130,7 +137,7 @@ int unionfs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
 			mutex_unlock(&dentry->d_inode->i_mutex);
 		}
 
-		result = unionfs_lookup_backend(dentry, interpose_flag);
+		result = unionfs_lookup_backend(dentry, &lowernd, interpose_flag);
 		if (result) {
 			if (IS_ERR(result)) {
 				valid = 0;

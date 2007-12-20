@@ -141,7 +141,7 @@ static void unionfs_print_generic_file(const char *prefix, const char *prefix2,
 	printk(KERN_DEBUG UNIONFS_NAME ": PF:%s%s: f_pos=0x%llu\n", prefix, prefix2, file->f_pos);
 	printk(KERN_DEBUG UNIONFS_NAME ": PF:%s%s: f_count=%u\n", prefix, prefix2, atomic_read(&file->f_count));
 	printk(KERN_DEBUG UNIONFS_NAME ": PF:%s%s: f_flags=0x%x\n", prefix, prefix2, file->f_flags);
-	printk(KERN_DEBUG UNIONFS_NAME ": PF:%s%s: f_version=%lu\n", prefix, prefix2, file->f_version);
+	printk(KERN_DEBUG UNIONFS_NAME ": PF:%s%s: f_version=%llu\n", prefix, prefix2, file->f_version);
 }
 
 void unionfs_print_file(const unsigned int req, const char *prefix, const struct file *file)

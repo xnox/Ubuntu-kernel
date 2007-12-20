@@ -523,7 +523,7 @@ static inline void fist_copy_attr_all(struct inode *dest,
 	print_exit_location();
 }
 
-struct dentry *unionfs_lookup_backend(struct dentry *dentry, int lookupmode);
+struct dentry *unionfs_lookup_backend(struct dentry *dentry, struct nameidata *nd, int lookupmode);
 int is_stale_inode(struct inode *inode);
 void make_stale_inode(struct inode *inode);
 

@@ -79,7 +79,7 @@ static int unionfs_create(struct inode *parent, struct dentry *dentry,
 		struct iattr newattrs;
 
 		mutex_lock(&whiteout_dentry->d_inode->i_mutex);
-		newattrs.ia_valid = ATTR_CTIME | ATTR_MODE | ATTR_ATIME
+		newattrs.ia_valid = ATTR_CTIME | ATTR_ATIME
 		    | ATTR_MTIME | ATTR_UID | ATTR_GID | ATTR_FORCE
 		    | ATTR_KILL_SUID | ATTR_KILL_SGID;
 
@@ -211,8 +211,15 @@ static int unionfs_create(struct inode *parent, struct dentry *dentry,
 struct dentry *unionfs_lookup(struct inode *parent, struct dentry *dentry,
 			      struct nameidata *nd)
 {
+	struct nameidata lowernd;
+
+	if(nd)
+		memcpy(&lowernd, nd, sizeof(struct nameidata));
+	else
+		memset(&lowernd, 0, sizeof(struct nameidata));
+
 	/* The locking is done by unionfs_lookup_backend. */
-	return unionfs_lookup_backend(dentry, INTERPOSE_LOOKUP);
+	return unionfs_lookup_backend(dentry, &lowernd, INTERPOSE_LOOKUP);
 }
 
 static int unionfs_link(struct dentry *old_dentry, struct inode *dir,
