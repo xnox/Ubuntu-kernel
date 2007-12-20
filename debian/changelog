@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-2.3) hardy; urgency=low
+
+  * Enabled -rt for x86/x86_64
+  * Disabled Fujitsu button driver
+  * Removed ipw3945
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 20 Dec 2007 08:18:31 -0700
+
 linux-ubuntu-modules-2.6.24 (2.6.24-2.2) hardy; urgency=low
 
   * Kernel ABI bump.
