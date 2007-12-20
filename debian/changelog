@@ -1,10 +1,15 @@
 linux-ubuntu-modules-2.6.24 (2.6.24-2.3) hardy; urgency=low
 
+  [ Tim Gardner ]
   * Enabled -rt for x86/x86_64
   * Disabled Fujitsu button driver
   * Removed ipw3945
 
- -- Tim Gardner <tim.gardner@canonical.com>  Thu, 20 Dec 2007 08:18:31 -0700
+  [ Ben Collins ]
+  * Fix unionfs crash:
+    - LP: #177666
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 20 Dec 2007 16:04:58 -0500
 
 linux-ubuntu-modules-2.6.24 (2.6.24-2.2) hardy; urgency=low
 
