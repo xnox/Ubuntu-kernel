@@ -1,3 +1,9 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-2.5) gutsy; urgency=low
+
+  * Disable -rt build
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 20 Dec 2007 19:57:12 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-2.4) hardy; urgency=low
 
   [Ben Collins]
