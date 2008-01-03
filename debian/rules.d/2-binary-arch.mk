@@ -28,7 +28,7 @@ $(stampdir)/stamp-build-%: target_flavour = $*
 $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
-	$(kmake) modules
+	$(kmake) $(conc_level) modules
 	@touch $@
 
 # Install the finished build
@@ -55,7 +55,7 @@ install-%: $(stampdir)/stamp-build-%
 		cpio -dumpl $(moddir)/ubuntu
 
 ifeq ($(no_image_strip),)
-	find $(pkgdir)/ -name \*.ko -print | xargs strip --strip-debug
+	find $(pkgdir)/ -name \*.ko -print | while read f ; do strip --strip-debug "$$f"; done
 endif
 
 	install -d $(pkgdir)/DEBIAN

@@ -24,6 +24,29 @@ builddir	:= $(CURDIR)/debian/build
 stampdir	:= $(CURDIR)/debian/stamps
 udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 
+# Support parallel=<n> in DEB_BUILD_OPTIONS
+COMMA=,
+ifneq (,$(filter parallel=%,$(subst $(COMMA), ,$(DEB_BUILD_OPTIONS))))
+  CONCURRENCY_LEVEL := $(subst parallel=,,$(filter parallel=%,$(subst $(COMMA), ,$(DEB_BUILD_OPTIONS))))
+endif
+
+ifeq ($(CONCURRENCY_LEVEL),)
+  # Check the environment
+  CONCURRENCY_LEVEL := $(shell echo $$CONCURRENCY_LEVEL)
+  # No? Check if this is on a buildd
+  ifeq ($(CONCURRENCY_LEVEL),)
+    ifneq ($(wildcard /CurrentlyBuilding),)
+      CONCURRENCY_LEVEL := $(shell expr `getconf _NPROCESSORS_ONLN` \* 2)
+    endif
+  endif
+  # Oh hell, give 'em one
+  ifeq ($(CONCURRENCY_LEVEL),)
+    CONCURRENCY_LEVEL := 1
+  endif
+endif
+
+conc_level      = -j$(CONCURRENCY_LEVEL)
+
 # Override KDIR if you want to use a non-standard kernel location.
 # You really should use a kernel of the same version as is in changelog or complete
 # horkage will ensue. KDIR is typically used on a buildd where you don't have
