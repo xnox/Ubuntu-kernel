@@ -47,7 +47,6 @@ endif
 obj-$(CONFIG_DRM_PSB)		+= media/drm-poulsbo/
 obj-$(CONFIG_IVTV_FB)		+= media/ivtv/
 
-obj-$(CONFIG_NET_IPG)		+= net/ipg/
 obj-$(CONFIG_NET_ATL2)		+= net/atl2/
 
 obj-$(CONFIG_NET_ACX)		+= wireless/acx/
