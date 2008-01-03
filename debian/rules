@@ -43,6 +43,7 @@ clean: debian/control.stub
 	rm -rf $(udebdir)
 	rm -rf $(builddir)
 	rm -f $(stampdir)/stamp-*
+	rm -rf debian/*-di debian/linux-ubuntu-modules*
 
 	# This gets rid of the d-i packages in control
 	cp -f debian/control.stub debian/control
