@@ -28,7 +28,9 @@ snd-bt-sco-objs			:= misc/btsco.o
 CFLAGS_dm-bbr.o			+= -I$(srctree)/drivers/md
 
 obj-$(CONFIG_ASFS_FS)		+= fs/asfs/
+ifneq ($(UBUNTU_FLAVOUR),rt)
 obj-$(CONFIG_GFS_FS)		+= fs/gfs/
+endif
 obj-$(CONFIG_SQUASHFS)		+= fs/squashfs/
 obj-$(CONFIG_UNION_FS)		+= fs/unionfs/
 
@@ -71,5 +73,8 @@ obj-$(CONFIG_IPW2100_FS_AMILO_M7400) += wireless/fsam7400.o
 # obj-$(CONFIG_NET_RTL818X)	+= wireless/rtl8180/rtl8180/
 obj-$(CONFIG_ET131X)		+= net/et131x/
 
-obj-$(CONFIG_VMWARE) += vmblock/ vmhgfs/ vmmemctl/ vmxnet/
+#obj-$(CONFIG_VMWARE) += vmblock/ 
+#obj-$(CONFIG_VMWARE) += vmhgfs/
+#obj-$(CONFIG_VMWARE) += vmmemctl/
+#obj-$(CONFIG_VMWARE) += vmxnet/
 
