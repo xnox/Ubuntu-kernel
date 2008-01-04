@@ -1,6 +1,5 @@
-/* ************************************************************************
- * Copyright 2006 VMware, Inc.  All rights reserved. 
- * ***********************************************************************
+/*********************************************************
+ * Copyright (C) 2006 VMware, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -14,7 +13,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- */
+ *
+ *********************************************************/
 
 /*
  * kernelStubs.h
@@ -28,10 +28,10 @@
 #define __KERNELSTUBS_H__
 
 #ifdef linux
-#include "vm_basic_types.h"
 #include "driver-config.h"
 #include <linux/kernel.h>
 #include <linux/string.h>
+#include "vm_basic_types.h"
 #elif defined(_WIN32)
 #include "vm_basic_types.h"
 #include <ntddk.h>   /* kernel memory APIs */
@@ -39,10 +39,22 @@
 #include <stdarg.h>  /* for va_start stuff */
 #include <stdlib.h>  /* for min macro. */
 #include "vm_assert.h"  /* Our assert macros */
-#endif /* _WIN32 */
+#elif defined(__FreeBSD__)
+#   ifndef _KERNEL
+#      error "_KERNEL is not defined"
+#   endif
+#   include "vm_basic_types.h"
+#   include <sys/types.h>
+#   include <sys/malloc.h>
+#   include <sys/param.h>
+#   include <sys/kernel.h>
+#   include <machine/stdarg.h>
+#   include <sys/libkern.h>
+#   include "vm_assert.h"
+#endif
 
 
-#ifdef linux
+#ifdef linux                                    /* if (linux) { */
 char *strdup(const char *source);
 
 void *malloc(size_t size);
@@ -50,7 +62,7 @@ void free(void *mem);
 void *calloc(size_t num, size_t len);
 void *realloc(void *ptr, size_t newSize);
 
-#elif defined(_WIN32)
+#elif defined(_WIN32)                           /* } else if (Win32) { */
 
 #if (_WIN32_WINNT == 0x0400)
 /* The following declarations are missing on NT4. */
@@ -66,7 +78,34 @@ typedef unsigned int SIZE_T;
 NTKERNELAPI VOID ExFreePoolWithTag(IN PVOID  P, IN ULONG  Tag);
 #endif /* _WIN32_WINNT */
 
-#endif /* _WIN32 */
+#elif defined(__FreeBSD__)                      /* } else if (FreeBSD) { */
+
+/* Kernel memory on FreeBSD is tagged for statistics and sanity checking. */
+MALLOC_DECLARE(M_VMWARE_TEMP);
+
+/*
+ * On FreeBSD, the general memory allocator for both userland and the kernel is named
+ * malloc, but the kernel malloc() takes more arguments.  The following alias & macros
+ * work around this, to provide the standard malloc() API for userspace code that is
+ * being used in the kernel.
+ */
+
+#   undef malloc
+
+static INLINE void *
+__compat_malloc(unsigned long size, struct malloc_type *type, int flags) {
+   return malloc(size, type, flags);
+}
+
+#   define malloc(size)         __compat_malloc(size, M_VMWARE_TEMP, M_NOWAIT)
+#   define calloc(count, size)  __compat_malloc((count) * (size),       \
+                                                M_VMWARE_TEMP, M_NOWAIT|M_ZERO)
+#   define realloc(buf, size)   realloc(buf, size, M_VMWARE_TEMP, M_NOWAIT)
+#   define free(buf)            free(buf, M_VMWARE_TEMP)
+#   define strchr(s,c)          index(s,c)
+#   define strrchr(s,c)         rindex(s,c)
+
+#endif                                          /* } */
 
 /*
  * Stub functions we provide.
@@ -77,7 +116,7 @@ uint64 System_Uptime(void);
 char *Str_Strcpy(char *buf, const char *src, size_t maxSize);
 int Str_Vsnprintf(char *str, size_t size, const char *format,
                   va_list arguments);
-char *Str_Vasprintf(size_t *length, const char *format, 
+char *Str_Vasprintf(size_t *length, const char *format,
                     va_list arguments);
 char *Str_Asprintf(size_t *length, const char *Format, ...);
 char *StrUtil_GetNextToken(unsigned int *index,

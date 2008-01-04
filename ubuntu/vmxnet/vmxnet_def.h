@@ -1,7 +1,5 @@
-/* **********************************************************
- * Copyright 1999 VMware, Inc.  All rights reserved. 
- * 
- * **********************************************************
+/*********************************************************
+ * Copyright (C) 1999 VMware, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,7 +13,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- */
+ *
+ *********************************************************/
 
 #ifndef _VMXNET_DEF_H_
 #define _VMXNET_DEF_H_
@@ -121,6 +120,7 @@
 #define VMXNET_FEATURE_TSO                      0x02
 #define VMXNET_FEATURE_JUMBO_FRAME              0x04
 #define VMXNET_FEATURE_LPD                      0x08
+#define VMXNET_FEATURE_BPF                      0x10
 
 /*
  * Define the set of capabilities required by each feature above
@@ -128,6 +128,7 @@
 #define VMXNET_FEATURE_ZERO_COPY_TX_CAPS        VMXNET_CAP_SG
 #define VMXNET_FEATURE_TSO_CAPS                 VMXNET_CAP_TSO
 #define VMXNET_HIGHEST_FEATURE_BIT              VMXNET_FEATURE_TSO
+#define VMXNET_FEATURE_BPF_CAPS                 VMNET_CAP_BPF
 
 #define VMXNET_INC(val, max)     \
    val++;                        \

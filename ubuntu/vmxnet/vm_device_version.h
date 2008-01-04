@@ -1,6 +1,5 @@
-/* **********************************************************
- * Copyright 1998 VMware, Inc.  All rights reserved. 
- * **********************************************************
+/*********************************************************
+ * Copyright (C) 1998 VMware, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -14,7 +13,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- */
+ *
+ *********************************************************/
 
 #ifndef VM_DEVICE_VERSION_H
 #define VM_DEVICE_VERSION_H
@@ -37,6 +37,7 @@
  *    VMware vmxscsi (Abortive idealized SCSI controller)
  *    VMware chipset (Subsystem ID for our motherboards)
  *    VMware e1000 (Subsystem ID)
+ *    VMware vmxnet3 (Uniform Pass Through NIC)
  */
 #define PCI_VENDOR_ID_VMWARE            0x15AD
 #define PCI_DEVICE_ID_VMWARE_SVGA2      0x0405
@@ -51,6 +52,7 @@
 #define PCI_DEVICE_ID_VMWARE_1394       0x0780
 #define PCI_DEVICE_ID_VMWARE_BRIDGE     0x0790
 #define PCI_DEVICE_ID_VMWARE_ROOTPORT   0x07A0
+#define PCI_DEVICE_ID_VMWARE_VMXNET3    0x07B0
 
 /* The hypervisor device might grow.  Please leave room
  * for 7 more subfunctions.

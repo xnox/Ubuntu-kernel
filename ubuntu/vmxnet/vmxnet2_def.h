@@ -1,7 +1,5 @@
-/* **********************************************************
- * Copyright 2004 VMware, Inc.  All rights reserved. 
- * 
- * **********************************************************
+/*********************************************************
+ * Copyright (C) 2004 VMware, Inc. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,7 +13,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
- */
+ *
+ *********************************************************/
 
 #ifndef _VMXNET2_DEF_H_
 #define _VMXNET2_DEF_H_
@@ -108,6 +107,10 @@ typedef struct Vmxnet2_RxRingEntry {
 #define VMXNET2_RX_HW_XSUM_OK  0x01
 #define VMXNET2_RX_WITH_FRAG   0x02
 #define VMXNET2_RX_FRAG_EOP    0x04
+
+#ifdef BPF_SUPPORT_ENABLED
+#define VMXNET2_RX_BPF_TRAILER 0x08
+#endif /* BPF_SUPPORT_ENABLED */
 
 typedef struct Vmxnet2_TxRingEntry {
    uint16		flags;		/* Flags as defined below. */
