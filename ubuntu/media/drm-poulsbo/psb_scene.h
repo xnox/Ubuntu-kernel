@@ -40,7 +40,7 @@
 struct psb_hw_scene;
 struct psb_hw_bin_mem;
 
-struct psb_scene_pool{
+struct psb_scene_pool {
 	struct drm_device *dev;
 	struct drm_user_object user;
 	uint32_t ref_count;
@@ -48,11 +48,10 @@ struct psb_scene_pool{
 	uint32_t h;
 	uint32_t cur_scene;
 	struct psb_scene *scenes[PSB_MAX_NUM_SCENES];
-        uint32_t num_scenes;
+	uint32_t num_scenes;
 };
-	
 
-struct psb_scene{
+struct psb_scene {
 	struct drm_device *dev;
 	atomic_t ref_count;
 	uint32_t hw_cookie[PSB_SCENE_HW_COOKIE_SIZE];
@@ -63,21 +62,19 @@ struct psb_scene{
 	struct psb_hw_scene *hw_scene;
 	struct drm_buffer_object *hw_data;
 	uint32_t flags;
-        uint32_t clear_p_start;
-        uint32_t clear_num_pages;
+	uint32_t clear_p_start;
+	uint32_t clear_num_pages;
 };
-
 
 struct psb_scene_entry {
 	struct list_head head;
 	struct psb_scene *scene;
 };
 
-struct psb_user_scene{
+struct psb_user_scene {
 	struct drm_device *dev;
 	struct drm_user_object user;
 };
-	
 
 struct psb_bin_mem {
 	struct drm_device *dev;
@@ -91,31 +88,28 @@ struct psb_bin_mem {
 	int deallocating_scheduled;
 };
 
-extern struct psb_scene_pool *psb_scene_pool_alloc(struct drm_file *priv, 
+extern struct psb_scene_pool *psb_scene_pool_alloc(struct drm_file *priv,
 						   int shareable,
 						   uint32_t num_scenes,
 						   uint32_t w, uint32_t h);
 extern void psb_scene_pool_unref_devlocked(struct psb_scene_pool **pool);
-extern struct psb_scene_pool *psb_scene_pool_lookup_devlocked(struct drm_file *priv,
-							      uint32_t handle, 
+extern struct psb_scene_pool *psb_scene_pool_lookup_devlocked(struct drm_file
+							      *priv,
+							      uint32_t handle,
 							      int check_owner);
-extern int psb_validate_scene_pool(struct psb_scene_pool *pool, 
-				   uint64_t flags,
-				   uint64_t mask, 
-				   uint32_t hint,
-				   uint32_t w,
-				   uint32_t h,
-				   int final_pass,
+extern int psb_validate_scene_pool(struct psb_scene_pool *pool, uint64_t flags,
+				   uint64_t mask, uint32_t hint, uint32_t w,
+				   uint32_t h, int final_pass,
 				   struct psb_scene **scene_p);
-extern void psb_scene_unref_devlocked(struct psb_scene ** scene);
+extern void psb_scene_unref_devlocked(struct psb_scene **scene);
 extern struct psb_scene *psb_scene_ref(struct psb_scene *src);
-
+extern int drm_psb_scene_unref_ioctl(struct drm_device *dev, 
+				     void *data,
+				     struct drm_file *file_priv);
 
 static inline uint32_t psb_scene_pool_handle(struct psb_scene_pool *pool)
 {
 	return pool->user.hash.key;
 }
-
-
 
 #endif

@@ -79,4 +79,7 @@ extern struct drm_crtc *intel_get_crtc_from_pipe(struct drm_device *dev, int pip
 extern int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc);
 
+extern void intel_modeset_init(struct drm_device *dev);
+extern void intel_modeset_cleanup(struct drm_device *dev);
+
 #endif /* __INTEL_DRV_H__ */

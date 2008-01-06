@@ -430,7 +430,6 @@ struct drm_file {
 	 */
 
 	struct list_head refd_objects;
-	struct list_head user_objects;
 
 	struct drm_open_hash refd_object_hash[_DRM_NO_REF_TYPES];
 	struct file *filp;
@@ -591,6 +590,15 @@ struct drm_vbl_sig {
 	struct task_struct *task;
 };
 
+/**
+ * Drawable information.
+ */
+struct drm_drawable_info {
+	unsigned int num_rects;
+	struct drm_clip_rect *rects;
+};
+
+
 /* location of GART table */
 #define DRM_ATI_GART_MAIN 1
 #define DRM_ATI_GART_FB   2
@@ -626,6 +634,8 @@ struct drm_driver {
 	void (*postclose) (struct drm_device *, struct drm_file *);
 	void (*lastclose) (struct drm_device *);
 	int (*unload) (struct drm_device *);
+	int (*suspend) (struct drm_device *);
+	int (*resume) (struct drm_device *);
 	int (*dma_ioctl) (struct drm_device *dev, void *data, struct drm_file *file_priv);
 	void (*dma_ready) (struct drm_device *);
 	int (*dma_quiescent) (struct drm_device *);
@@ -708,6 +718,7 @@ struct drm_head {
  * may contain multiple heads.
  */
 struct drm_device {
+	struct device dev;		/**< Linux device */
 	char *unique;			/**< Unique identifier: e.g., busid */
 	int unique_len;			/**< Length of unique field */
 	char *devname;			/**< For /proc/interrupts */
@@ -852,6 +863,17 @@ struct drm_agp_ttm_backend {
 };
 #endif
 
+typedef struct ati_pcigart_ttm_backend {
+	struct drm_ttm_backend backend;
+	int populated;
+	void (*gart_flush_fn)(struct drm_device *dev);
+	struct ati_pcigart_info *gart_info;
+	unsigned long offset;
+	struct page **pages;
+	int num_pages;
+	int bound;
+	struct drm_device *dev;
+} ati_pcigart_ttm_backend_t;
 
 static __inline__ int drm_core_check_feature(struct drm_device *dev,
 					     int feature)
@@ -1135,6 +1157,7 @@ extern int drm_agp_free_memory(DRM_AGP_MEM * handle);
 extern int drm_agp_bind_memory(DRM_AGP_MEM * handle, off_t start);
 extern int drm_agp_unbind_memory(DRM_AGP_MEM * handle);
 extern struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev);
+extern void drm_agp_chipset_flush(struct drm_device *dev);
 				/* Stub support (drm_stub.h) */
 extern int drm_get_dev(struct pci_dev *pdev, const struct pci_device_id *ent,
 		     struct drm_driver *driver);
@@ -1143,7 +1166,7 @@ extern int drm_put_head(struct drm_head * head);
 extern unsigned int drm_debug; /* 1 to enable debug output */
 extern unsigned int drm_cards_limit;
 extern struct drm_head **drm_heads;
-extern struct drm_sysfs_class *drm_class;
+extern struct class *drm_class;
 extern struct proc_dir_entry *drm_proc_root;
 
 extern drm_local_map_t *drm_getsarea(struct drm_device *dev);
@@ -1168,6 +1191,7 @@ extern int drm_sg_free(struct drm_device *dev, void *data,
 			       /* ATI PCIGART support (ati_pcigart.h) */
 extern int drm_ati_pcigart_init(struct drm_device *dev, struct ati_pcigart_info *gart_info);
 extern int drm_ati_pcigart_cleanup(struct drm_device *dev, struct ati_pcigart_info *gart_info);
+extern struct drm_ttm_backend *ati_pcigart_init_ttm(struct drm_device *dev, struct ati_pcigart_info *info, void (*gart_flush_fn)(struct drm_device *dev));
 
 extern drm_dma_handle_t *drm_pci_alloc(struct drm_device *dev, size_t size,
 			   size_t align, dma_addr_t maxaddr);
@@ -1176,12 +1200,10 @@ extern void drm_pci_free(struct drm_device *dev, drm_dma_handle_t *dmah);
 
 			       /* sysfs support (drm_sysfs.c) */
 struct drm_sysfs_class;
-extern struct drm_sysfs_class *drm_sysfs_create(struct module *owner,
-						char *name);
-extern void drm_sysfs_destroy(struct drm_sysfs_class *cs);
-extern struct class_device *drm_sysfs_device_add(struct drm_sysfs_class *cs,
-						 struct drm_head * head);
-extern void drm_sysfs_device_remove(struct class_device *class_dev);
+extern struct class *drm_sysfs_create(struct module *owner, char *name);
+extern void drm_sysfs_destroy(void);
+extern int drm_sysfs_device_add(struct drm_device *dev, struct drm_head * head);
+extern void drm_sysfs_device_remove(struct drm_device *dev);
 
 /*
  * Basic memory manager support (drm_mm.c)
@@ -1290,20 +1312,6 @@ static inline void drm_ctl_free(void *pt, size_t size, int area)
 }
 
 /*@}*/
-
-/** Type for the OS's non-sleepable mutex lock */
-#define DRM_SPINTYPE		spinlock_t
-/**
- * Initialize the lock for use.  name is an optional string describing the
- * lock
- */
-#define DRM_SPININIT(l,name)	spin_lock_init(l)
-#define DRM_SPINUNINIT(l)
-#define DRM_SPINLOCK(l)		spin_lock(l)
-#define DRM_SPINUNLOCK(l)	spin_unlock(l)
-#define DRM_SPINLOCK_IRQSAVE(l, _flags)	spin_lock_irqsave(l, _flags);
-#define DRM_SPINUNLOCK_IRQRESTORE(l, _flags) spin_unlock_irqrestore(l, _flags);
-#define DRM_SPINLOCK_ASSERT(l)		do {} while (0) 
 
 #endif				/* __KERNEL__ */
 #endif

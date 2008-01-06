@@ -38,11 +38,8 @@
 
 /*
  * clflush on one processor only:
- * If I've received the correct information from Intel engineers, clflush only
- * flushes the cache line of the current processor. Therefore modifications 
- * to memory and the following clflush needs to be encapsulated either in a 
- * spinlocked region or using preempt_disable / preempt_enable. This guarantees
- * that the write and the following clflush executes on the same processor.
+ * clflush should apparently flush the cache line on all processors in an 
+ * SMP system.
  */
 
 /*
@@ -75,9 +72,9 @@ struct psb_mmu_driver {
 	spinlock_t lock;
 
 	atomic_t needs_tlbflush;
-	u8 __iomem *register_map;
+	uint8_t __iomem *register_map;
 	struct psb_mmu_pd *default_pd;
-	u32 bif_ctrl;
+	uint32_t bif_ctrl;
 	int has_clflush;
 	int clflush_add;
 	unsigned long clflush_mask;
@@ -87,10 +84,10 @@ struct psb_mmu_pd;
 
 struct psb_mmu_pt {
 	struct psb_mmu_pd *pd;
-	u32 index;
-	u32 count;
+	uint32_t index;
+	uint32_t count;
 	struct page *p;
-	u32 *v;
+	uint32_t *v;
 };
 
 struct psb_mmu_pd {
@@ -98,14 +95,18 @@ struct psb_mmu_pd {
 	int hw_context;
 	struct psb_mmu_pt **tables;
 	struct page *p;
-	u32 pd_mask;
+        struct page *dummy_pt;
+        struct page *dummy_page;
+	uint32_t pd_mask;
+	uint32_t invalid_pde;
+	uint32_t invalid_pte;
 };
 
-static inline u32 psb_mmu_pt_index(__u32 offset)
+static inline uint32_t psb_mmu_pt_index(uint32_t offset)
 {
 	return (offset >> PSB_PTE_SHIFT) & 0x3FF;
 }
-static inline u32 psb_mmu_pd_index(__u32 offset)
+static inline uint32_t psb_mmu_pd_index(uint32_t offset)
 {
 	return (offset >> PSB_PDE_SHIFT);
 }
@@ -134,12 +135,13 @@ static inline void psb_mmu_clflush(struct psb_mmu_driver *driver, void *addr)
 #endif
 
 static inline void psb_iowrite32(const struct psb_mmu_driver *d,
-				 u32 val, __u32 offset)
+				 uint32_t val, uint32_t offset)
 {
 	iowrite32(val, d->register_map + offset);
 }
 
-static inline u32 psb_ioread32(const struct psb_mmu_driver *d, __u32 offset)
+static inline uint32_t psb_ioread32(const struct psb_mmu_driver *d,
+				    uint32_t offset)
 {
 	return ioread32(d->register_map + offset);
 }
@@ -147,10 +149,12 @@ static inline u32 psb_ioread32(const struct psb_mmu_driver *d, __u32 offset)
 static void psb_mmu_flush_pd_locked(struct psb_mmu_driver *driver, int force)
 {
 	if (atomic_read(&driver->needs_tlbflush) || force) {
-		u32 val = psb_ioread32(driver, PSB_CR_BIF_CTRL);
-		psb_iowrite32(driver, val | _PSB_CB_CTRL_INVALDC, PSB_CR_BIF_CTRL);
+		uint32_t val = psb_ioread32(driver, PSB_CR_BIF_CTRL);
+		psb_iowrite32(driver, val | _PSB_CB_CTRL_INVALDC,
+			      PSB_CR_BIF_CTRL);
 		wmb();
-		psb_iowrite32(driver, val & ~_PSB_CB_CTRL_INVALDC, PSB_CR_BIF_CTRL);
+		psb_iowrite32(driver, val & ~_PSB_CB_CTRL_INVALDC,
+			      PSB_CR_BIF_CTRL);
 		(void)psb_ioread32(driver, PSB_CR_BIF_CTRL);
 	}
 	atomic_set(&driver->needs_tlbflush, 0);
@@ -165,16 +169,19 @@ static void psb_mmu_flush_pd(struct psb_mmu_driver *driver, int force)
 
 void psb_mmu_flush(struct psb_mmu_driver *driver)
 {
-	u32 val;
+	uint32_t val;
 
 	down_write(&driver->sem);
 	val = psb_ioread32(driver, PSB_CR_BIF_CTRL);
 	if (atomic_read(&driver->needs_tlbflush))
-		psb_iowrite32(driver, val | _PSB_CB_CTRL_INVALDC, PSB_CR_BIF_CTRL);
+		psb_iowrite32(driver, val | _PSB_CB_CTRL_INVALDC,
+			      PSB_CR_BIF_CTRL);
 	else
-		psb_iowrite32(driver, val | _PSB_CB_CTRL_FLUSH, PSB_CR_BIF_CTRL);
+		psb_iowrite32(driver, val | _PSB_CB_CTRL_FLUSH,
+			      PSB_CR_BIF_CTRL);
 	wmb();
-	psb_iowrite32(driver, val & ~(_PSB_CB_CTRL_FLUSH | _PSB_CB_CTRL_INVALDC),
+	psb_iowrite32(driver,
+		      val & ~(_PSB_CB_CTRL_FLUSH | _PSB_CB_CTRL_INVALDC),
 		      PSB_CR_BIF_CTRL);
 	(void)psb_ioread32(driver, PSB_CR_BIF_CTRL);
 	atomic_set(&driver->needs_tlbflush, 0);
@@ -183,7 +190,7 @@ void psb_mmu_flush(struct psb_mmu_driver *driver)
 
 void psb_mmu_set_pd_context(struct psb_mmu_pd *pd, int hw_context)
 {
-	u32 offset = (hw_context == 0) ? PSB_CR_BIF_DIR_LIST_BASE0 :
+	uint32_t offset = (hw_context == 0) ? PSB_CR_BIF_DIR_LIST_BASE0 :
 	    PSB_CR_BIF_DIR_LIST_BASE1 + hw_context * 4;
 
 	drm_ttm_cache_flush();
@@ -204,21 +211,74 @@ static inline unsigned long psb_pd_addr_end(unsigned long addr,
 	return (addr < end) ? addr : end;
 }
 
-struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver)
+static inline uint32_t psb_mmu_mask_pte(uint32_t pfn, int type)
+{
+	uint32_t mask = PSB_PTE_VALID;
+
+	if (type & PSB_MMU_CACHED_MEMORY)
+		mask |= PSB_PTE_CACHED;
+	if (type & PSB_MMU_RO_MEMORY)
+		mask |= PSB_PTE_RO;
+	if (type & PSB_MMU_WO_MEMORY)
+		mask |= PSB_PTE_WO;
+
+	return (pfn << PAGE_SHIFT) | mask;
+}
+
+
+struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver,
+				    int trap_pagefaults,
+				    int invalid_type)
 {
 	struct psb_mmu_pd *pd = kmalloc(sizeof(*pd), GFP_KERNEL);
+	uint32_t *v;
+	int i;
 
 	if (!pd)
 		return NULL;
 
 	pd->p = alloc_page(GFP_DMA32);
-
 	if (!pd->p)
 		goto out_err1;
+	pd->dummy_pt = alloc_page(GFP_DMA32);
+	if (!pd->dummy_pt)
+		goto out_err2;
+	pd->dummy_page = alloc_page(GFP_DMA32);
+	if (!pd->dummy_page)
+		goto out_err3;
+
+	if (!trap_pagefaults) {
+		pd->invalid_pde = psb_mmu_mask_pte(page_to_pfn(pd->dummy_pt),
+						   invalid_type |
+						   PSB_MMU_CACHED_MEMORY);
+		pd->invalid_pte = psb_mmu_mask_pte(page_to_pfn(pd->dummy_page),
+						   invalid_type |
+						   PSB_MMU_CACHED_MEMORY);
+	} else {
+		pd->invalid_pde = 0;
+		pd->invalid_pte = 0;
+	}
+	DRM_INFO("invalid pde / pte is 0x%08x / 0x%08x\n",
+		 pd->invalid_pde, pd->invalid_pte);
+	
+	v = kmap(pd->dummy_pt);
+	for (i=0; i<(PAGE_SIZE / sizeof(uint32_t)); ++i) {
+		v[i] = pd->invalid_pte;
+	}
+	kunmap(pd->dummy_pt);
+
+	v = kmap(pd->p);
+	for (i=0; i<(PAGE_SIZE / sizeof(uint32_t)); ++i) {
+		v[i] = pd->invalid_pde;
+	}
+	kunmap(pd->p);
+
+	clear_page(kmap(pd->dummy_page));
+	kunmap(pd->dummy_page);		
 
 	pd->tables = vmalloc_user(sizeof(struct psb_mmu_pt *) * 1024);
 	if (!pd->tables)
-		goto out_err2;
+		goto out_err4;
 
 	pd->hw_context = -1;
 	pd->pd_mask = PSB_PTE_VALID;
@@ -226,6 +286,10 @@ struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver)
 
 	return pd;
 
+out_err4:
+	__free_page(pd->dummy_page);
+out_err3:
+	__free_page(pd->dummy_pt);
       out_err2:
 	__free_page(pd->p);
       out_err1:
@@ -262,6 +326,8 @@ void psb_mmu_free_pagedir(struct psb_mmu_pd *pd)
 	}
 
 	vfree(pd->tables);
+	__free_page(pd->dummy_page);
+	__free_page(pd->dummy_pt);
 	__free_page(pd->p);
 	kfree(pd);
 	up_write(&driver->sem);
@@ -270,6 +336,13 @@ void psb_mmu_free_pagedir(struct psb_mmu_pd *pd)
 static struct psb_mmu_pt *psb_mmu_alloc_pt(struct psb_mmu_pd *pd)
 {
 	struct psb_mmu_pt *pt = kmalloc(sizeof(*pt), GFP_KERNEL);
+	void *v;
+	uint32_t clflush_add = pd->driver->clflush_add >> PAGE_SHIFT;
+	uint32_t clflush_count = PAGE_SIZE / clflush_add;
+	spinlock_t *lock = &pd->driver->lock;
+	uint8_t *clf;
+	uint32_t *ptes;
+	int i;
 
 	if (!pt)
 		return NULL;
@@ -279,8 +352,29 @@ static struct psb_mmu_pt *psb_mmu_alloc_pt(struct psb_mmu_pd *pd)
 		kfree(pt);
 		return NULL;
 	}
-	clear_page(kmap(pt->p));
-	kunmap(pt->p);
+	
+	spin_lock(lock);
+
+	v = kmap_atomic(pt->p, KM_USER0);
+	clf = (uint8_t *) v;
+	ptes = (uint32_t *) v;
+	for (i=0; i<(PAGE_SIZE / sizeof(uint32_t)); ++i) {
+		*ptes++ = pd->invalid_pte;
+	}
+
+#if defined(CONFIG_X86)
+	if (pd->driver->has_clflush && pd->hw_context != -1) {
+		mb();
+		for (i=0; i<clflush_count; ++i) {
+			psb_clflush(clf);
+			clf += clflush_add;
+		}
+		mb();
+	}
+#endif	
+	kunmap_atomic(v, KM_USER0);
+	spin_unlock(lock);
+
 	pt->count = 0;
 	pt->pd = pd;
 	pt->index = 0;
@@ -291,9 +385,9 @@ static struct psb_mmu_pt *psb_mmu_alloc_pt(struct psb_mmu_pd *pd)
 struct psb_mmu_pt *psb_mmu_pt_alloc_map_lock(struct psb_mmu_pd *pd,
 					     unsigned long addr)
 {
-	u32 index = psb_mmu_pd_index(addr);
+	uint32_t index = psb_mmu_pd_index(addr);
 	struct psb_mmu_pt *pt;
-	volatile u32 *v;
+	volatile uint32_t *v;
 	spinlock_t *lock = &pd->driver->lock;
 
 	spin_lock(lock);
@@ -331,7 +425,7 @@ struct psb_mmu_pt *psb_mmu_pt_alloc_map_lock(struct psb_mmu_pd *pd,
 static struct psb_mmu_pt *psb_mmu_pt_map_lock(struct psb_mmu_pd *pd,
 					      unsigned long addr)
 {
-	u32 index = psb_mmu_pd_index(addr);
+	uint32_t index = psb_mmu_pd_index(addr);
 	struct psb_mmu_pt *pt;
 	spinlock_t *lock = &pd->driver->lock;
 
@@ -348,12 +442,12 @@ static struct psb_mmu_pt *psb_mmu_pt_map_lock(struct psb_mmu_pd *pd,
 static void psb_mmu_pt_unmap_unlock(struct psb_mmu_pt *pt)
 {
 	struct psb_mmu_pd *pd = pt->pd;
-	volatile u32 *v;
+	volatile uint32_t *v;
 
 	kunmap_atomic(pt->v, KM_USER0);
 	if (pt->count == 0) {
 		v = kmap_atomic(pd->p, KM_USER0);
-		v[pt->index] &= ~PSB_PTE_VALID;
+		v[pt->index] = pd->invalid_pde;
 		pd->tables[pt->index] = NULL;
 
 		if (pd->hw_context != -1) {
@@ -369,7 +463,7 @@ static void psb_mmu_pt_unmap_unlock(struct psb_mmu_pt *pt)
 }
 
 static inline void psb_mmu_set_pte(struct psb_mmu_pt *pt, unsigned long addr,
-				   u32 pte)
+				   uint32_t pte)
 {
 	pt->v[psb_mmu_pt_index(addr)] = pte;
 }
@@ -377,14 +471,15 @@ static inline void psb_mmu_set_pte(struct psb_mmu_pt *pt, unsigned long addr,
 static inline void psb_mmu_invalidate_pte(struct psb_mmu_pt *pt,
 					  unsigned long addr)
 {
-	pt->v[psb_mmu_pt_index(addr)] &= ~PSB_PTE_VALID;
+	pt->v[psb_mmu_pt_index(addr)] = pt->pd->invalid_pte;
 }
 
 #if 0
-static u32 psb_mmu_check_pte_locked(struct psb_mmu_pd *pd, __u32 mmu_offset)
+static uint32_t psb_mmu_check_pte_locked(struct psb_mmu_pd *pd,
+					 uint32_t mmu_offset)
 {
-	u32 *v;
-	u32 pfn;
+	uint32_t *v;
+	uint32_t pfn;
 
 	v = kmap_atomic(pd->p, KM_USER0);
 	if (!v) {
@@ -414,10 +509,10 @@ static u32 psb_mmu_check_pte_locked(struct psb_mmu_pd *pd, __u32 mmu_offset)
 }
 
 static void psb_mmu_check_mirrored_gtt(struct psb_mmu_pd *pd,
-				       u32 mmu_offset, __u32 gtt_pages)
+				       uint32_t mmu_offset, uint32_t gtt_pages)
 {
-	u32 start;
-	u32 next;
+	uint32_t start;
+	uint32_t next;
 
 	printk(KERN_INFO "Checking mirrored gtt 0x%08x %d\n",
 	       mmu_offset, gtt_pages);
@@ -440,10 +535,11 @@ static void psb_mmu_check_mirrored_gtt(struct psb_mmu_pd *pd,
 #endif
 
 void psb_mmu_mirror_gtt(struct psb_mmu_pd *pd,
-			u32 mmu_offset, __u32 gtt_start, __u32 gtt_pages)
+			uint32_t mmu_offset, uint32_t gtt_start,
+			uint32_t gtt_pages)
 {
-	u32 *v;
-	u32 start = psb_mmu_pd_index(mmu_offset);
+	uint32_t *v;
+	uint32_t start = psb_mmu_pd_index(mmu_offset);
 	struct psb_mmu_driver *driver = pd->driver;
 
 	down_read(&driver->sem);
@@ -480,10 +576,10 @@ struct psb_mmu_pd *psb_mmu_get_default_pd(struct psb_mmu_driver *driver)
 }
 
 /* Returns the physical address of the PD shared by sgx/msvdx */
-u32 psb_get_default_pd_addr(struct psb_mmu_driver *driver)
+uint32_t psb_get_default_pd_addr(struct psb_mmu_driver * driver)
 {
 	struct psb_mmu_pd *pd;
-	
+
 	pd = psb_mmu_get_default_pd(driver);
 	return ((page_to_pfn(pd->p) << PAGE_SHIFT));
 }
@@ -495,7 +591,9 @@ void psb_mmu_driver_takedown(struct psb_mmu_driver *driver)
 	kfree(driver);
 }
 
-struct psb_mmu_driver *psb_mmu_driver_init(u8 __iomem * registers)
+struct psb_mmu_driver *psb_mmu_driver_init(uint8_t __iomem * registers,
+					   int trap_pagefaults, 
+					   int invalid_type)
 {
 	struct psb_mmu_driver *driver;
 
@@ -504,7 +602,8 @@ struct psb_mmu_driver *psb_mmu_driver_init(u8 __iomem * registers)
 	if (!driver)
 		return NULL;
 
-	driver->default_pd = psb_mmu_alloc_pd(driver);
+	driver->default_pd = psb_mmu_alloc_pd(driver, trap_pagefaults,
+					      invalid_type);
 	if (!driver->default_pd)
 		goto out_err1;
 
@@ -524,7 +623,7 @@ struct psb_mmu_driver *psb_mmu_driver_init(u8 __iomem * registers)
 
 #if defined(CONFIG_X86)
 	if (boot_cpu_has(X86_FEATURE_CLFLSH)) {
-		u32 tfms, misc, cap0, cap4, clflush_size;
+		uint32_t tfms, misc, cap0, cap4, clflush_size;
 
 		/*
 		 * clflush size is determined at kernel setup for x86_64 but not for
@@ -534,8 +633,9 @@ struct psb_mmu_driver *psb_mmu_driver_init(u8 __iomem * registers)
 		cpuid(0x00000001, &tfms, &misc, &cap0, &cap4);
 		clflush_size = ((misc >> 8) & 0xff) * 8;
 		driver->has_clflush = 1;
-		driver->clflush_add = PAGE_SIZE * clflush_size / sizeof(u32);
-		driver->clflush_mask = driver->clflush_add -1;
+		driver->clflush_add =
+		    PAGE_SIZE * clflush_size / sizeof(uint32_t);
+		driver->clflush_mask = driver->clflush_add - 1;
 		driver->clflush_mask = ~driver->clflush_mask;
 	}
 #endif
@@ -548,28 +648,14 @@ struct psb_mmu_driver *psb_mmu_driver_init(u8 __iomem * registers)
 	return NULL;
 }
 
-static inline u32 psb_mmu_mask_pte(__u32 pfn, int type)
-{
-	u32 mask = PSB_PTE_VALID;
-
-	if (type & PSB_MMU_CACHED_MEMORY)
-		mask |= PSB_PTE_CACHED;
-	if (type & PSB_MMU_RO_MEMORY)
-		mask |= PSB_PTE_RO;
-	if (type & PSB_MMU_WO_MEMORY)
-		mask |= PSB_PTE_WO;
-
-	return (pfn << PAGE_SHIFT) | mask;
-}
-
 #if defined(CONFIG_X86)
 static void psb_mmu_flush_ptes(struct psb_mmu_pd *pd, unsigned long address,
-			       u32 num_pages, __u32 desired_tile_stride,
-			       u32 hw_tile_stride)
+			       uint32_t num_pages, uint32_t desired_tile_stride,
+			       uint32_t hw_tile_stride)
 {
 	struct psb_mmu_pt *pt;
-	u32 rows = 1;
-	u32 i;
+	uint32_t rows = 1;
+	uint32_t i;
 	unsigned long addr;
 	unsigned long end;
 	unsigned long next;
@@ -603,7 +689,7 @@ static void psb_mmu_flush_ptes(struct psb_mmu_pd *pd, unsigned long address,
 				continue;
 			do {
 				psb_clflush(&pt->v[psb_mmu_pt_index(addr)]);
-			} while (addr += clflush_add, 
+			} while (addr += clflush_add,
 				 (addr & clflush_mask) < next);
 
 			psb_mmu_pt_unmap_unlock(pt);
@@ -614,16 +700,15 @@ static void psb_mmu_flush_ptes(struct psb_mmu_pd *pd, unsigned long address,
 }
 #else
 static void psb_mmu_flush_ptes(struct psb_mmu_pd *pd, unsigned long address,
-			       u32 num_pages, __u32 desired_tile_stride,
-			       u32 hw_tile_stride)
+			       uint32_t num_pages, uint32_t desired_tile_stride,
+			       uint32_t hw_tile_stride)
 {
 	drm_ttm_cache_flush();
 }
 #endif
 
 void psb_mmu_remove_pfn_sequence(struct psb_mmu_pd *pd,
-				 unsigned long address,
-				 uint32_t num_pages)
+				 unsigned long address, uint32_t num_pages)
 {
 	struct psb_mmu_pt *pt;
 	unsigned long addr;
@@ -632,7 +717,6 @@ void psb_mmu_remove_pfn_sequence(struct psb_mmu_pd *pd,
 	unsigned long f_address = address;
 
 	down_read(&pd->driver->sem);
-	preempt_disable();
 
 	addr = address;
 	end = addr + (num_pages << PAGE_SHIFT);
@@ -654,7 +738,6 @@ void psb_mmu_remove_pfn_sequence(struct psb_mmu_pd *pd,
 	if (pd->hw_context != -1)
 		psb_mmu_flush_ptes(pd, f_address, num_pages, 1, 1);
 
-	preempt_enable_no_resched();
 	up_read(&pd->driver->sem);
 
 	if (pd->hw_context != -1)
@@ -664,12 +747,12 @@ void psb_mmu_remove_pfn_sequence(struct psb_mmu_pd *pd,
 }
 
 void psb_mmu_remove_pages(struct psb_mmu_pd *pd, unsigned long address,
-			  u32 num_pages, __u32 desired_tile_stride,
-			  u32 hw_tile_stride)
+			  uint32_t num_pages, uint32_t desired_tile_stride,
+			  uint32_t hw_tile_stride)
 {
 	struct psb_mmu_pt *pt;
-	u32 rows = 1;
-	u32 i;
+	uint32_t rows = 1;
+	uint32_t i;
 	unsigned long addr;
 	unsigned long end;
 	unsigned long next;
@@ -688,8 +771,6 @@ void psb_mmu_remove_pages(struct psb_mmu_pd *pd, unsigned long address,
 	down_read(&pd->driver->sem);
 
 	/* Make sure we only need to flush this processor's cache */
-
-	preempt_disable();
 
 	for (i = 0; i < rows; ++i) {
 
@@ -712,10 +793,9 @@ void psb_mmu_remove_pages(struct psb_mmu_pd *pd, unsigned long address,
 		address += row_add;
 	}
 	if (pd->hw_context != -1)
-		psb_mmu_flush_ptes(pd, f_address, num_pages, desired_tile_stride,
-				   hw_tile_stride);
+		psb_mmu_flush_ptes(pd, f_address, num_pages,
+				   desired_tile_stride, hw_tile_stride);
 
-	preempt_enable_no_resched();
 	up_read(&pd->driver->sem);
 
 	if (pd->hw_context != -1)
@@ -723,11 +803,11 @@ void psb_mmu_remove_pages(struct psb_mmu_pd *pd, unsigned long address,
 }
 
 int psb_mmu_insert_pfn_sequence(struct psb_mmu_pd *pd, uint32_t start_pfn,
-				 unsigned long address, uint32_t num_pages,
-				 int type)
+				unsigned long address, uint32_t num_pages,
+				int type)
 {
 	struct psb_mmu_pt *pt;
-	u32 pte;
+	uint32_t pte;
 	unsigned long addr;
 	unsigned long end;
 	unsigned long next;
@@ -735,7 +815,6 @@ int psb_mmu_insert_pfn_sequence(struct psb_mmu_pd *pd, uint32_t start_pfn,
 	int ret = -ENOMEM;
 
 	down_read(&pd->driver->sem);
-	preempt_disable();
 
 	addr = address;
 	end = addr + (num_pages << PAGE_SHIFT);
@@ -761,7 +840,6 @@ int psb_mmu_insert_pfn_sequence(struct psb_mmu_pd *pd, uint32_t start_pfn,
 	if (pd->hw_context != -1)
 		psb_mmu_flush_ptes(pd, f_address, num_pages, 1, 1);
 
-	preempt_enable_no_resched();
 	up_read(&pd->driver->sem);
 
 	if (pd->hw_context != -1)
@@ -770,15 +848,15 @@ int psb_mmu_insert_pfn_sequence(struct psb_mmu_pd *pd, uint32_t start_pfn,
 	return 0;
 }
 
-
 int psb_mmu_insert_pages(struct psb_mmu_pd *pd, struct page **pages,
-			 unsigned long address, u32 num_pages,
-			 u32 desired_tile_stride, u32 hw_tile_stride, int type)
+			 unsigned long address, uint32_t num_pages,
+			 uint32_t desired_tile_stride, uint32_t hw_tile_stride,
+			 int type)
 {
 	struct psb_mmu_pt *pt;
-	u32 rows = 1;
-	u32 i;
-	u32 pte;
+	uint32_t rows = 1;
+	uint32_t i;
+	uint32_t pte;
 	unsigned long addr;
 	unsigned long end;
 	unsigned long next;
@@ -799,7 +877,6 @@ int psb_mmu_insert_pages(struct psb_mmu_pd *pd, struct page **pages,
 	row_add = hw_tile_stride << PAGE_SHIFT;
 
 	down_read(&pd->driver->sem);
-	preempt_disable();
 
 	for (i = 0; i < rows; ++i) {
 
@@ -826,10 +903,9 @@ int psb_mmu_insert_pages(struct psb_mmu_pd *pd, struct page **pages,
 	ret = 0;
       out:
 	if (pd->hw_context != -1)
-		psb_mmu_flush_ptes(pd, f_address, num_pages, desired_tile_stride,
-				   hw_tile_stride);
+		psb_mmu_flush_ptes(pd, f_address, num_pages,
+				   desired_tile_stride, hw_tile_stride);
 
-	preempt_enable_no_resched();
 	up_read(&pd->driver->sem);
 
 	if (pd->hw_context != -1)
@@ -838,7 +914,7 @@ int psb_mmu_insert_pages(struct psb_mmu_pd *pd, struct page **pages,
 	return 0;
 }
 
-void psb_mmu_enable_requestor(struct psb_mmu_driver *driver, u32 mask)
+void psb_mmu_enable_requestor(struct psb_mmu_driver *driver, uint32_t mask)
 {
 	mask &= _PSB_MMU_ER_MASK;
 	psb_iowrite32(driver, psb_ioread32(driver, PSB_CR_BIF_CTRL) & ~mask,
@@ -846,7 +922,7 @@ void psb_mmu_enable_requestor(struct psb_mmu_driver *driver, u32 mask)
 	(void)psb_ioread32(driver, PSB_CR_BIF_CTRL);
 }
 
-void psb_mmu_disable_requestor(struct psb_mmu_driver *driver, u32 mask)
+void psb_mmu_disable_requestor(struct psb_mmu_driver *driver, uint32_t mask)
 {
 	mask &= _PSB_MMU_ER_MASK;
 	psb_iowrite32(driver, psb_ioread32(driver, PSB_CR_BIF_CTRL) | mask,
@@ -854,14 +930,56 @@ void psb_mmu_disable_requestor(struct psb_mmu_driver *driver, u32 mask)
 	(void)psb_ioread32(driver, PSB_CR_BIF_CTRL);
 }
 
-void psb_mmu_test(struct psb_mmu_driver *driver, u32 offset)
+int psb_mmu_virtual_to_pfn(struct psb_mmu_pd *pd, uint32_t virtual,
+			   unsigned long *pfn)
+{
+	int ret;
+	struct psb_mmu_pt *pt;
+	uint32_t tmp;
+	spinlock_t *lock = &pd->driver->lock;
+
+	down_read(&pd->driver->sem);
+	pt = psb_mmu_pt_map_lock(pd, virtual);
+	if (!pt) {
+	        uint32_t *v;
+
+	        spin_lock(lock);
+		v = kmap_atomic(pd->p, KM_USER0);
+		tmp = v[psb_mmu_pd_index(virtual)];
+		kunmap_atomic(v, KM_USER0);
+		spin_unlock(lock);
+
+		if (tmp != pd->invalid_pde || !(tmp & PSB_PTE_VALID) ||
+		    !(pd->invalid_pte & PSB_PTE_VALID)) {
+			ret = -EINVAL;
+			goto out;
+		}	       
+		ret = 0;
+		*pfn = pd->invalid_pte >> PAGE_SHIFT;
+		goto out;
+	}
+	tmp = pt->v[psb_mmu_pt_index(virtual)];
+	if (!(tmp & PSB_PTE_VALID)) {
+		ret = -EINVAL;
+	} else {
+		ret = 0;
+		*pfn = tmp >> PAGE_SHIFT;
+	}
+	psb_mmu_pt_unmap_unlock(pt);
+out:
+	up_read(&pd->driver->sem);
+	return ret;
+}
+
+
+void psb_mmu_test(struct psb_mmu_driver *driver, uint32_t offset)
 {
 	struct page *p;
 	unsigned long pfn;
 	int ret = 0;
 	struct psb_mmu_pd *pd;
-	u32 *v;
-	u32 *vmmu;
+	uint32_t *v;
+	uint32_t *vmmu;
 
 	pd = driver->default_pd;
 	if (!pd) {

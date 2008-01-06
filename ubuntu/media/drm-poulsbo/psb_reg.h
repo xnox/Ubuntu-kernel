@@ -170,6 +170,7 @@
 #define PSB_CR_BIF_DIR_LIST_BASE0        0x0C84
 
 #define PSB_CR_BIF_TWOD_REQ_BASE         0x0C88
+#define PSB_CR_BIF_3D_REQ_BASE           0x0CAC
 
 #define PSB_CR_2D_SOCIF                  0x0E18
 #define _PSB_C2_SOCIF_FREESPACE_SHIFT    (0)

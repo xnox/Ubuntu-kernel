@@ -1,7 +1,7 @@
 /*
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -9,11 +9,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -21,7 +21,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 #ifndef _I915_DRM_H_
@@ -39,7 +39,7 @@
 				 * of chars for next/prev indices */
 #define I915_LOG_MIN_TEX_REGION_SIZE 14
 
-typedef struct _drm_i915_init {
+typedef struct drm_i915_init {
 	enum {
 		I915_INIT_DMA = 0x01,
 		I915_CLEANUP_DMA = 0x02,
@@ -63,7 +63,7 @@ typedef struct _drm_i915_init {
 	unsigned int chipset;
 } drm_i915_init_t;
 
-typedef struct _drm_i915_sarea {
+typedef struct drm_i915_sarea {
 	struct drm_tex_region texList[I915_NR_TEX_REGIONS + 1];
 	int last_upload;	/* last time texture was uploaded */
 	int last_enqueue;	/* last time a buffer was enqueued */
@@ -160,6 +160,7 @@ typedef struct _drm_i915_sarea {
 #define DRM_I915_VBLANK_SWAP	0x0f
 #define DRM_I915_MMIO		0x10
 #define DRM_I915_HWS_ADDR	0x11
+#define DRM_I915_EXECBUFFER	0x12
 
 #define DRM_IOCTL_I915_INIT		DRM_IOW( DRM_COMMAND_BASE + DRM_I915_INIT, drm_i915_init_t)
 #define DRM_IOCTL_I915_FLUSH		DRM_IO ( DRM_COMMAND_BASE + DRM_I915_FLUSH)
@@ -177,18 +178,24 @@ typedef struct _drm_i915_sarea {
 #define DRM_IOCTL_I915_SET_VBLANK_PIPE	DRM_IOW( DRM_COMMAND_BASE + DRM_I915_SET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
 #define DRM_IOCTL_I915_GET_VBLANK_PIPE	DRM_IOR( DRM_COMMAND_BASE + DRM_I915_GET_VBLANK_PIPE, drm_i915_vblank_pipe_t)
 #define DRM_IOCTL_I915_VBLANK_SWAP	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_VBLANK_SWAP, drm_i915_vblank_swap_t)
-
+#define DRM_IOCTL_I915_EXECBUFFER	DRM_IOWR(DRM_COMMAND_BASE + DRM_I915_EXECBUFFER, struct drm_i915_execbuffer)
 
 /* Asynchronous page flipping:
  */
 typedef struct drm_i915_flip {
-	int planes;
+	/*
+	 * This is really talking about planes, and we could rename it
+	 * except for the fact that some of the duplicated i915_drm.h files
+	 * out there check for HAVE_I915_FLIP and so might pick up this
+	 * version.
+	 */
+	int pipes;
 } drm_i915_flip_t;
 
 /* Allow drivers to submit batchbuffers directly to hardware, relying
  * on the security mechanisms provided by hardware.
  */
-typedef struct _drm_i915_batchbuffer {
+typedef struct drm_i915_batchbuffer {
 	int start;		/* agp offset */
 	int used;		/* nr bytes in use */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
@@ -200,7 +207,7 @@ typedef struct _drm_i915_batchbuffer {
 /* As above, but pass a pointer to userspace buffer which can be
  * validated by the kernel prior to sending to hardware.
  */
-typedef struct _drm_i915_cmdbuffer {
+typedef struct drm_i915_cmdbuffer {
 	char __user *buf;	/* pointer to userspace command buffer */
 	int sz;			/* nr bytes in buf */
 	int DR1;		/* hw flags for GFX_OP_DRAWRECT_INFO */
@@ -287,11 +294,11 @@ typedef struct drm_i915_vblank_swap {
 	unsigned int sequence;
 } drm_i915_vblank_swap_t;
 
-#define I915_MMIO_READ 	0
+#define I915_MMIO_READ	0
 #define I915_MMIO_WRITE 1
 
-#define I915_MMIO_MAY_READ  	0x1
-#define I915_MMIO_MAY_WRITE  	0x2
+#define I915_MMIO_MAY_READ	0x1
+#define I915_MMIO_MAY_WRITE	0x2
 
 #define MMIO_REGS_IA_PRIMATIVES_COUNT		0
 #define MMIO_REGS_IA_VERTICES_COUNT		1
@@ -312,11 +319,47 @@ typedef struct drm_i915_mmio_entry {
 typedef struct drm_i915_mmio {
 	unsigned int read_write:1;
 	unsigned int reg:31;
-	void __user *data;	
+	void __user *data;
 } drm_i915_mmio_t;
 
 typedef struct drm_i915_hws_addr {
 	uint64_t addr;
 } drm_i915_hws_addr_t;
+
+/*
+ * Relocation header is 4 uint32_ts
+ * 0 - (16-bit relocation type << 16)| 16 bit reloc count
+ * 1 - buffer handle for another list of relocs
+ * 2-3 - spare.
+ */
+#define I915_RELOC_HEADER 4
+
+/*
+ * type 0 relocation has 4-uint32_t stride
+ * 0 - offset into buffer
+ * 1 - delta to add in
+ * 2 - index into buffer list
+ * 3 - reserved (for optimisations later).
+ */
+#define I915_RELOC_TYPE_0 0
+#define I915_RELOC0_STRIDE 4
+
+struct drm_i915_op_arg {
+	uint64_t next;
+	uint32_t reloc_handle;
+	int handled;
+	union {
+		struct drm_bo_op_req req;
+		struct drm_bo_arg_rep rep;
+	} d;
+
+};
+
+struct drm_i915_execbuffer {
+	uint64_t ops_list;
+	uint32_t num_buffers;
+	struct drm_i915_batchbuffer batch;
+	struct drm_fence_arg fence_arg;
+};
 
 #endif				/* _I915_DRM_H_ */

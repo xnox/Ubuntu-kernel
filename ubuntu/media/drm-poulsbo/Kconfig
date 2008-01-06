@@ -55,6 +55,7 @@ choice
 
 config DRM_I915
 	tristate "i915 driver"
+	depends on DRM && AGP && AGP_INTEL
 	help
 	  Choose this option if you have a system that has Intel 830M, 845G,
 	  852GM, 855GM, 865G, 915G, 915GM, 945G, 945GM and 965G integrated 
@@ -95,4 +96,8 @@ config DRM_MACH64
 	  If M is selected, the module will be called mach64.  AGP support for
 	  this card is strongly suggested (unless you have a PCI version).
 
-
+config DRM_PSB
+	tristate "Intel Poulsbo"
+	depends on DRM && PCI && I2C_ALGOBIT
+	help
+	  Choose

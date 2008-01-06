@@ -167,7 +167,6 @@ struct drm_mm_node *drm_mm_get_block(struct drm_mm_node * parent,
 
 	return child;
 }
-EXPORT_SYMBOL(drm_mm_get_block);
 
 /*
  * Put a block. Merge with the previous and / or next block if they are free.
@@ -236,12 +235,12 @@ struct drm_mm_node *drm_mm_search_free(const struct drm_mm * mm,
 		entry = list_entry(list, struct drm_mm_node, fl_entry);
 		wasted = 0;
 
-		if (entry->size < size) 
+		if (entry->size < size)
 			continue;
 
 		if (alignment) {
 			register unsigned tmp = entry->start % alignment;
-			if (tmp) 
+			if (tmp)
 				wasted += alignment - tmp;
 		}
 
@@ -258,7 +257,6 @@ struct drm_mm_node *drm_mm_search_free(const struct drm_mm * mm,
 
 	return best;
 }
-EXPORT_SYMBOL(drm_mm_search_free);
 
 int drm_mm_clean(struct drm_mm * mm)
 {
@@ -266,7 +264,6 @@ int drm_mm_clean(struct drm_mm * mm)
 
 	return (head->next->next == head);
 }
-EXPORT_SYMBOL(drm_mm_clean);
 
 int drm_mm_init(struct drm_mm * mm, unsigned long start, unsigned long size)
 {

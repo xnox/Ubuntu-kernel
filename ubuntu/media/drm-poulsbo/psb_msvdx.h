@@ -29,9 +29,6 @@
 #ifndef _PSB_MSVDX_H_
 #define _PSB_MSVDX_H_
 
-
-
-
 #define assert(expr) \
         if(unlikely(!(expr))) {                                   \
         printk(KERN_ERR "Assertion failed! %s,%s,%s,line=%d\n", \
@@ -44,12 +41,15 @@
 #include "psb_drv.h"
 
 void psb_msvdx_mtx_interrupt(struct drm_device *dev);
+//void psb_msvdx_mtx_interrupt(unsigned long ptr);
 int psb_msvdx_init(struct drm_device *dev);
 int psb_msvdx_uninit(struct drm_device *dev);
 int psb_msvdx_reset(struct drm_psb_private *dev_priv);
 uint32_t psb_get_default_pd_addr(struct psb_mmu_driver *driver);
-void psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg);
-
+int psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg);
+void psb_msvdx_irq_preinstall(struct drm_psb_private *dev_priv);
+void psb_msvdx_irq_postinstall(struct drm_psb_private *dev_priv);
+void psb_msvdx_flush_cmd_queue(struct drm_device *dev);
 
 #define MTX_CODE_BASE		(0x80900000)
 #define MTX_DATA_BASE		(0x82880000)
@@ -61,13 +61,11 @@ void psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg);
 #define MTX_INTERNAL_REG( R_SPECIFIER , U_SPECIFIER )		( ((R_SPECIFIER)<<4) | (U_SPECIFIER) )
 #define MTX_PC			MTX_INTERNAL_REG( 0 , 5 )
 
-
 #define RENDEC_A_SIZE	( 1024 * 1024 )
 #define RENDEC_B_SIZE	( 1024 * 1024 )
 
-
 #define MEMIO_READ_FIELD(vpMem, field)																				    \
-	((uint32_t)(((*((field##_TYPE *)(((uint32_t)vpMem) + field##_OFFSET))) & field##_MASK) >> field##_SHIFT))   	
+	((uint32_t)(((*((field##_TYPE *)(((uint32_t)vpMem) + field##_OFFSET))) & field##_MASK) >> field##_SHIFT))
 
 #define MEMIO_WRITE_FIELD(vpMem, field, ui32Value)														\
 	(*((field##_TYPE *)(((uint32_t)vpMem) + field##_OFFSET))) =										\
@@ -112,7 +110,7 @@ void psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg);
 /* MSVDX registers */
 #define MSVDX_CONTROL			(0x0600)
 #define MSVDX_INTERRUPT_CLEAR		(0x060C)
-#define MSVDX_INTERRUPT_STATUS		(0x0608)	
+#define MSVDX_INTERRUPT_STATUS		(0x0608)
 #define MSVDX_HOST_INTERRUPT_ENABLE	(0x0610)
 #define MSVDX_MMU_CONTROL0		(0x0680)
 #define MSVDX_MTX_RAM_BANK		(0x06F0)
@@ -132,12 +130,12 @@ void psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg);
 #define MSVDX_RENDEC_CONTEXT4		(0x0960)
 #define MSVDX_RENDEC_CONTEXT5		(0x0964)
 
-/* 
+/*
  * This defines the MSVDX communication buffer
  */
 #define MSVDX_COMMS_SIGNATURE_VALUE	(0xA5A5A5A5)	/*!< Signature value */
-#define NUM_WORDS_HOST_BUF		(100)		/*!< Host buffer size (in 32-bit words) */
-#define NUM_WORDS_MTX_BUF		(100)		/*!< MTX buffer size (in 32-bit words) */
+#define NUM_WORDS_HOST_BUF		(100)	/*!< Host buffer size (in 32-bit words) */
+#define NUM_WORDS_MTX_BUF		(100)	/*!< MTX buffer size (in 32-bit words) */
 
 #define MSVDX_COMMS_AREA_ADDR (0x02cc0)
 
@@ -157,7 +155,6 @@ void psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg);
 #if (MSVDX_COMMS_AREA_END != 0x03000)
 #error
 #endif
-
 
 #define MSVDX_MTX_REGISTER_READ_WRITE_REQUEST_MTX_DREADY_MASK		(0x80000000)
 #define MSVDX_MTX_REGISTER_READ_WRITE_REQUEST_MTX_DREADY_SHIFT		(31)
@@ -219,8 +216,8 @@ void psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg);
 #define MSVDX_RENDEC_CONTROL0_RENDEC_INITIALISE_MASK		(0x00000001)
 #define MSVDX_RENDEC_CONTROL0_RENDEC_INITIALISE_SHIFT		(0)
 
-#define	FWRK_MSGID_START_PSR_HOSTMTX_MSG	(0x80)	/*!< Start of parser specific Host->MTX messages.*/
-#define	FWRK_MSGID_START_PSR_MTXHOST_MSG	(0xC0)	/*!< Start of parser specific MTX->Host messages.*/
+#define	FWRK_MSGID_START_PSR_HOSTMTX_MSG	(0x80)	/*!< Start of parser specific Host->MTX messages. */
+#define	FWRK_MSGID_START_PSR_MTXHOST_MSG	(0xC0)	/*!< Start of parser specific MTX->Host messages. */
 #define FWRK_MSGID_PADDING					( 0 )
 
 #define FWRK_GENMSG_SIZE_TYPE		uint8_t
@@ -237,14 +234,13 @@ void psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg);
 ******************************************************************************
  This type defines the framework specified message ids
 ******************************************************************************/
-enum
-{
+enum {
 	/*! Sent by the DXVA driver on the host to the mtx firmware.
 	 */
-	VA_MSGID_INIT				= FWRK_MSGID_START_PSR_HOSTMTX_MSG, 
-	VA_MSGID_RENDER, 
-	VA_MSGID_DEBLOCK, 
-	VA_MSGID_BUBBLE, 
+	VA_MSGID_INIT = FWRK_MSGID_START_PSR_HOSTMTX_MSG,
+	VA_MSGID_RENDER,
+	VA_MSGID_DEBLOCK,
+	VA_MSGID_BUBBLE,
 
 	/* Test Messages */
 	VA_MSGID_TEST1,
@@ -252,11 +248,11 @@ enum
 
 	/*! Sent by the mtx firmware to itself.
 	 */
-	VA_MSGID_RENDER_MC_INTERRUPT, 
+	VA_MSGID_RENDER_MC_INTERRUPT,
 
 	/*! Sent by the DXVA firmware on the MTX to the host.
 	 */
-	VA_MSGID_CMD_COMPLETED	= FWRK_MSGID_START_PSR_MTXHOST_MSG, 
+	VA_MSGID_CMD_COMPLETED = FWRK_MSGID_START_PSR_MTXHOST_MSG,
 	VA_MSGID_CMD_COMPLETED_BATCH,
 	VA_MSGID_DEBLOCK_REQUIRED,
 	VA_MSGID_TEST_RESPONCE,
@@ -264,8 +260,6 @@ enum
 
 	VA_MSGID_CMD_FAILED,
 };
-
-
 
 /* MSVDX Firmware interface */
 #define FW_VA_INIT_SIZE		(8)
@@ -276,7 +270,6 @@ enum
 #define FW_VA_DEBUG_TEST2_MSG_SIZE_MASK		(0xFF)
 #define FW_VA_DEBUG_TEST2_MSG_SIZE_OFFSET		(0x0000)
 #define FW_VA_DEBUG_TEST2_MSG_SIZE_SHIFT		(0)
-
 
 /* FW_VA_DEBUG_TEST2     ID */
 #define FW_VA_DEBUG_TEST2_ID_TYPE		uint8_t
@@ -302,13 +295,11 @@ enum
 #define FW_VA_CMD_COMPLETED_FENCE_VALUE_OFFSET		(0x0004)
 #define FW_VA_CMD_COMPLETED_FENCE_VALUE_SHIFT		(0)
 
-
 /* FW_VA_CMD_COMPLETED     NO_TICKS */
 #define FW_VA_CMD_COMPLETED_NO_TICKS_TYPE		uint16_t
 #define FW_VA_CMD_COMPLETED_NO_TICKS_MASK		(0xFFFF)
 #define FW_VA_CMD_COMPLETED_NO_TICKS_OFFSET		(0x0002)
 #define FW_VA_CMD_COMPLETED_NO_TICKS_SHIFT		(0)
-
 
 /* FW_VA_DEBLOCK_REQUIRED     CONTEXT */
 #define FW_VA_DEBLOCK_REQUIRED_CONTEXT_TYPE		uint32_t

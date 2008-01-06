@@ -37,10 +37,13 @@
 #include "i915_reg.h"
 #include "psb_msvdx.h"
 #include "drm_pciids.h"
+#include "psb_scene.h"
 
-int drm_psb_debug = 1;
+int drm_psb_debug = 0;
 EXPORT_SYMBOL(drm_psb_debug);
+static int drm_psb_trap_pagefaults = 0;
 static int drm_psb_disable_cg = 1;
+int drm_psb_disable_vsync = 0;
 int drm_psb_no_fb = 0;
 
 /*
@@ -50,11 +53,13 @@ int drm_psb_no_fb = 0;
 MODULE_PARM_DESC(debug, "Enable debug output");
 MODULE_PARM_DESC(disable_clockgating, "Disable clock gating");
 MODULE_PARM_DESC(no_fb, "Disable FBdev");
+MODULE_PARM_DESC(trap_pagefaults, "Error and reset on MMU pagefaults");
+MODULE_PARM_DESC(disable_vsync, "Disable vsync interrupts");
 module_param_named(debug, drm_psb_debug, int, 0600);
 module_param_named(disable_clockgating, drm_psb_disable_cg, int, 0600);
 module_param_named(no_fb, drm_psb_no_fb, int, 0600);
-
-
+module_param_named(trap_pagefaults, drm_psb_trap_pagefaults, int, 0600);
+module_param_named(disable_vsync, drm_psb_disable_vsync, int, 0600);
 
 static struct pci_device_id pciidlist[] = {
 	psb_PCI_IDS
@@ -66,10 +71,16 @@ static struct pci_device_id pciidlist[] = {
 					struct drm_psb_xhw_init_arg)
 #define DRM_PSB_XHW_IOCTL       DRM_IO(DRM_PSB_XHW)
 
+#define DRM_PSB_SCENE_UNREF_IOCTL DRM_IOWR(DRM_PSB_SCENE_UNREF, \
+					   struct drm_psb_scene)
+
 static struct drm_ioctl_desc psb_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_PSB_CMDBUF_IOCTL, psb_cmdbuf_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_PSB_XHW_INIT_IOCTL, psb_xhw_init_ioctl, DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_PSB_XHW_IOCTL, psb_xhw_ioctl, DRM_ROOT_ONLY)
+	DRM_IOCTL_DEF(DRM_PSB_XHW_INIT_IOCTL, psb_xhw_init_ioctl,
+		      DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_PSB_XHW_IOCTL, psb_xhw_ioctl, DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_PSB_SCENE_UNREF_IOCTL, drm_psb_scene_unref_ioctl, 
+		      DRM_AUTH),
 };
 static int psb_max_ioctl = DRM_ARRAY_SIZE(psb_ioctls);
 
@@ -80,42 +91,22 @@ static int dri_library_name(struct drm_device *dev, char *buf)
 	return snprintf(buf, PAGE_SIZE, "psb\n");
 }
 
-static void psb_set_uopt(struct drm_psb_uopt * uopt)
+static void psb_set_uopt(struct drm_psb_uopt *uopt)
 {
 	uopt->disable_clock_gating = drm_psb_disable_cg;
 }
 
-static void psb_sgx_save(struct drm_psb_private * dev_priv)
+static void psb_do_takedown(struct drm_device *dev)
 {
-	unsigned i;
-	u32 *save = dev_priv->sgx_save;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 
-	for (i = 0; i < PSB_SGX_SAVE_SIZE; i += 4) {
-		*save++ = PSB_RSGX32(i);
-	}
-}
-
-static void psb_sgx_restore(struct drm_psb_private * dev_priv)
-{
-	unsigned i;
-	u32 *restore = dev_priv->sgx_save;
-
-	for (i = 0; i < PSB_SGX_SAVE_SIZE; i += 4) {
-		PSB_WSGX32(*restore++, i);
-	}
-}
-
-static void psb_do_takedown(struct drm_device * dev)
-{
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
-
-	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
 	if (dev->bm.initialized) {
 		if (dev_priv->have_mem_rastgeom) {
 			drm_bo_clean_mm(dev, DRM_PSB_MEM_RASTGEOM);
 			dev_priv->have_mem_rastgeom = 0;
-		}			
+		}
 		if (dev_priv->have_mem_mmu) {
 			drm_bo_clean_mm(dev, DRM_PSB_MEM_MMU);
 			dev_priv->have_mem_mmu = 0;
@@ -134,10 +125,9 @@ static void psb_do_takedown(struct drm_device * dev)
 		}
 	}
 	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
 
-	 if (dev_priv->has_msvdx)
-                psb_msvdx_uninit(dev);
+	if (dev_priv->has_msvdx)
+		psb_msvdx_uninit(dev);
 
 	if (dev_priv->comm) {
 		kunmap(dev_priv->comm_page);
@@ -188,17 +178,19 @@ void psb_clockgating(struct drm_psb_private *dev_priv)
 	(void)PSB_RSGX32(PSB_CR_CLKGATECTL);
 }
 
-static int psb_do_init(struct drm_device * dev)
+static int psb_do_init(struct drm_device *dev)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct psb_gtt *pg = dev_priv->pg;
 
-	u32 stolen_gtt;
-	u32 tt_start;
-	u32 tt_pages;
+	uint32_t stolen_gtt;
+	uint32_t tt_start;
+	uint32_t tt_pages;
 
 	int ret = -ENOMEM;
 
+	DRM_ERROR("Debug is 0x%08x\n", drm_psb_debug);
 
 	dev_priv->comm_page = alloc_page(GFP_KERNEL);
 	if (!dev_priv->comm_page)
@@ -206,10 +198,10 @@ static int psb_do_init(struct drm_device * dev)
 
 	dev_priv->comm = kmap(dev_priv->comm_page);
 	memset((void *)dev_priv->comm, 0, PAGE_SIZE);
-	
-	 dev_priv->has_msvdx = 1;
-        if (psb_msvdx_init(dev))
-                dev_priv->has_msvdx = 0;
+
+	dev_priv->has_msvdx = 1;
+	if (psb_msvdx_init(dev))
+		dev_priv->has_msvdx = 0;
 
 	/*
 	 * Initialize sequence numbers for the different command
@@ -220,13 +212,13 @@ static int psb_do_init(struct drm_device * dev)
 	dev_priv->sequence[PSB_ENGINE_RASTERIZER] = 0;
 	dev_priv->sequence[PSB_ENGINE_TA] = 0;
 	dev_priv->sequence[PSB_ENGINE_HPRAST] = 0;
-	
+
 	if (pg->gatt_start & 0x0FFFFFFF) {
 		DRM_ERROR("Gatt must be 256M aligned. This is a bug.\n");
 		ret = -EINVAL;
 		goto out_err;
 	}
-			
+
 	stolen_gtt = (pg->stolen_size >> PAGE_SHIFT) * 4;
 	stolen_gtt = (stolen_gtt + PAGE_SIZE - 1) >> PAGE_SHIFT;
 	stolen_gtt = (stolen_gtt < pg->gtt_pages) ? stolen_gtt : pg->gtt_pages;
@@ -250,22 +242,21 @@ static int psb_do_init(struct drm_device * dev)
 	if (ret)
 		goto out_err;
 
-
-
-	if (1||drm_debug) {
-		u32 core_id = PSB_RSGX32(PSB_CR_CORE_ID);
-		u32 core_rev = PSB_RSGX32(PSB_CR_CORE_REVISION);
+	if (1 || drm_debug) {
+		uint32_t core_id = PSB_RSGX32(PSB_CR_CORE_ID);
+		uint32_t core_rev = PSB_RSGX32(PSB_CR_CORE_REVISION);
 		DRM_INFO("SGX core id = 0x%08x\n", core_id);
 		DRM_INFO("SGX core rev major = 0x%02x, minor = 0x%02x\n",
-			(core_rev & _PSB_CC_REVISION_MAJOR_MASK) >>
-			_PSB_CC_REVISION_MAJOR_SHIFT,
-			(core_rev & _PSB_CC_REVISION_MINOR_MASK) >>
-			_PSB_CC_REVISION_MINOR_SHIFT);
-		DRM_INFO("SGX core rev maintenance = 0x%02x, designer = 0x%02x\n",
-			(core_rev & _PSB_CC_REVISION_MAINTENANCE_MASK) >>
-			_PSB_CC_REVISION_MAINTENANCE_SHIFT,
-			(core_rev & _PSB_CC_REVISION_DESIGNER_MASK) >>
-			_PSB_CC_REVISION_DESIGNER_SHIFT);
+			 (core_rev & _PSB_CC_REVISION_MAJOR_MASK) >>
+			 _PSB_CC_REVISION_MAJOR_SHIFT,
+			 (core_rev & _PSB_CC_REVISION_MINOR_MASK) >>
+			 _PSB_CC_REVISION_MINOR_SHIFT);
+		DRM_INFO
+		    ("SGX core rev maintenance = 0x%02x, designer = 0x%02x\n",
+		     (core_rev & _PSB_CC_REVISION_MAINTENANCE_MASK) >>
+		     _PSB_CC_REVISION_MAINTENANCE_SHIFT,
+		     (core_rev & _PSB_CC_REVISION_DESIGNER_MASK) >>
+		     _PSB_CC_REVISION_DESIGNER_SHIFT);
 	}
 
 	dev_priv->irqmask_lock = SPIN_LOCK_UNLOCKED;
@@ -276,7 +267,6 @@ static int psb_do_init(struct drm_device * dev)
 	tt_start = dev_priv->gatt_free_offset - pg->gatt_start;
 	tt_pages -= tt_start >> PAGE_SHIFT;
 
-	mutex_lock(&dev->bm.init_mutex);
 	mutex_lock(&dev->struct_mutex);
 
 	if (!drm_bo_init_mm(dev, DRM_BO_MEM_VRAM, 0,
@@ -290,15 +280,16 @@ static int psb_do_init(struct drm_device * dev)
 	}
 
 	if (!drm_bo_init_mm(dev, DRM_PSB_MEM_MMU, 0x00000000,
-			    (pg->gatt_start - PSB_MEM_MMU_START) >> PAGE_SHIFT)) {
+			    (pg->gatt_start -
+			     PSB_MEM_MMU_START) >> PAGE_SHIFT)) {
 		dev_priv->have_mem_mmu = 1;
 	}
 
 	if (!drm_bo_init_mm(dev, DRM_PSB_MEM_RASTGEOM, 0x00000000,
-			    (PSB_MEM_MMU_START-PSB_MEM_RASTGEOM_START) >> PAGE_SHIFT)) {
+			    (PSB_MEM_MMU_START -
+			     PSB_MEM_RASTGEOM_START) >> PAGE_SHIFT)) {
 		dev_priv->have_mem_rastgeom = 1;
 	}
-
 #if 0
 	if (pg->gatt_pages > PSB_TT_PRIV0_PLIMIT) {
 		if (!drm_bo_init_mm(dev, DRM_PSB_MEM_APER, PSB_TT_PRIV0_PLIMIT,
@@ -309,22 +300,26 @@ static int psb_do_init(struct drm_device * dev)
 #endif
 
 	mutex_unlock(&dev->struct_mutex);
-	mutex_unlock(&dev->bm.init_mutex);
 	return 0;
       out_err:
 	psb_do_takedown(dev);
 	return ret;
 }
 
-static int psb_driver_unload(struct drm_device * dev)
+static int psb_driver_unload(struct drm_device *dev)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
-	
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
+
 	intel_modeset_cleanup(dev);
 
+
 	if (dev_priv) {
+		psb_watchdog_takedown(dev_priv);
 		psb_do_takedown(dev);
 		psb_xhw_takedown(dev_priv);
+		psb_scheduler_takedown(&dev_priv->scheduler);
+
 		if (dev_priv->have_mem_pds) {
 			drm_bo_clean_mm(dev, DRM_PSB_MEM_PDS);
 			dev_priv->have_mem_pds = 0;
@@ -341,9 +336,11 @@ static int psb_driver_unload(struct drm_device * dev)
 			struct psb_gtt *pg = dev_priv->pg;
 
 			down_read(&pg->sem);
-			psb_mmu_remove_pfn_sequence(psb_mmu_get_default_pd(dev_priv->mmu),
-						     pg->gatt_start,
-						     pg->stolen_size >> PAGE_SHIFT);
+			psb_mmu_remove_pfn_sequence(psb_mmu_get_default_pd
+						    (dev_priv->mmu),
+						    pg->gatt_start,
+						    pg->
+						    stolen_size >> PAGE_SHIFT);
 			up_read(&pg->sem);
 			psb_mmu_driver_takedown(dev_priv->mmu);
 			dev_priv->mmu = NULL;
@@ -354,11 +351,6 @@ static int psb_driver_unload(struct drm_device * dev)
 			dev_priv->scratch_page = NULL;
 		}
 		psb_takedown_use_base(dev_priv);
-		if (dev_priv->sgx_save) {
-			psb_sgx_restore(dev_priv);
-			drm_free(dev_priv->sgx_save, PSB_SGX_SIZE, DRM_MEM_DRIVER);
-			dev_priv->sgx_save = NULL;
-		}
 		if (dev_priv->vdc_reg) {
 			iounmap(dev_priv->vdc_reg);
 			dev_priv->vdc_reg = NULL;
@@ -371,16 +363,14 @@ static int psb_driver_unload(struct drm_device * dev)
 			iounmap(dev_priv->msvdx_reg);
 			dev_priv->msvdx_reg = NULL;
 		}
-		
-		psb_scheduler_takedown(&dev_priv->scheduler);
-		psb_watchdog_takedown(dev_priv);
+
 		drm_free(dev_priv, sizeof(*dev_priv), DRM_MEM_DRIVER);
 		dev->dev_private = NULL;
 	}
 	return 0;
 }
 
-static int psb_driver_load(struct drm_device * dev, unsigned long chipset)
+static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 {
 	struct drm_psb_private *dev_priv;
 	unsigned long resource_start;
@@ -394,8 +384,10 @@ static int psb_driver_load(struct drm_device * dev, unsigned long chipset)
 	mutex_init(&dev_priv->temp_mem);
 	mutex_init(&dev_priv->cmdbuf_mutex);
 	mutex_init(&dev_priv->reset_mutex);
+	mutex_init(&dev_priv->msvdx_mutex);
 
 	spin_lock_init(&dev_priv->reloc_lock);
+	spin_lock_init(&dev_priv->msvdx_lock);
 
 	DRM_INIT_WAITQUEUE(&dev_priv->rel_mapped_queue);
 	DRM_INIT_WAITQUEUE(&dev_priv->event_2d_queue);
@@ -409,7 +401,6 @@ static int psb_driver_load(struct drm_device * dev, unsigned long chipset)
 
 	resource_start = pci_resource_start(dev->pdev, PSB_MMIO_RESOURCE);
 
-	/*MSVDX MMIO region*/
 	dev_priv->msvdx_reg =
 	    ioremap(resource_start + PSB_MSVDX_OFFSET, PSB_MSVDX_SIZE);
 	if (!dev_priv->msvdx_reg)
@@ -425,11 +416,6 @@ static int psb_driver_load(struct drm_device * dev, unsigned long chipset)
 	if (!dev_priv->sgx_reg)
 		goto out_err;
 
-	dev_priv->sgx_save = drm_calloc(1, PSB_SGX_SIZE, DRM_MEM_DRIVER);
-	if (!dev_priv->sgx_save)
-		goto out_err;
-
-	psb_sgx_save(dev_priv);	
 	psb_clockgating(dev_priv);
 	if (psb_init_use_base(dev_priv, 3, 13))
 		goto out_err;
@@ -446,7 +432,9 @@ static int psb_driver_load(struct drm_device * dev, unsigned long chipset)
 	if (ret)
 		goto out_err;
 
-	dev_priv->mmu = psb_mmu_driver_init(dev_priv->sgx_reg);
+	dev_priv->mmu = psb_mmu_driver_init(dev_priv->sgx_reg,
+					    drm_psb_trap_pagefaults,
+					    0);
 	if (!dev_priv->mmu)
 		goto out_err;
 
@@ -455,18 +443,18 @@ static int psb_driver_load(struct drm_device * dev, unsigned long chipset)
 	/*
 	 * Make sgx MMU aware of the stolen memory area we call VRAM.
 	 */
-	
+
 	down_read(&pg->sem);
 	ret =
-	  psb_mmu_insert_pfn_sequence(psb_mmu_get_default_pd(dev_priv->mmu),
-				      pg->stolen_base >> PAGE_SHIFT,
-				      pg->gatt_start,
-				      pg->stolen_size >> PAGE_SHIFT, 0);
+	    psb_mmu_insert_pfn_sequence(psb_mmu_get_default_pd(dev_priv->mmu),
+					pg->stolen_base >> PAGE_SHIFT,
+					pg->gatt_start,
+					pg->stolen_size >> PAGE_SHIFT, 0);
 	up_read(&pg->sem);
 	if (ret)
 		goto out_err;
-	
-	dev_priv->pf_pd = psb_mmu_alloc_pd(dev_priv->mmu);
+
+	dev_priv->pf_pd = psb_mmu_alloc_pd(dev_priv->mmu, 1, 0);
 	if (!dev_priv->pf_pd)
 		goto out_err;
 
@@ -490,17 +478,17 @@ static int psb_driver_load(struct drm_device * dev, unsigned long chipset)
 		goto out_err;
 
 	ret = drm_bo_init_mm(dev, DRM_PSB_MEM_KERNEL, 0x00000000,
-			     (PSB_MEM_PDS_START - PSB_MEM_KERNEL_START) 
+			     (PSB_MEM_PDS_START - PSB_MEM_KERNEL_START)
 			     >> PAGE_SHIFT);
-	if (ret) 
-		goto out_err;	
+	if (ret)
+		goto out_err;
 	dev_priv->have_mem_kernel = 1;
 
 	ret = drm_bo_init_mm(dev, DRM_PSB_MEM_PDS, 0x00000000,
-			     (PSB_MEM_RASTGEOM_START - PSB_MEM_PDS_START) 
+			     (PSB_MEM_RASTGEOM_START - PSB_MEM_PDS_START)
 			     >> PAGE_SHIFT);
-	if (ret) 
-		goto out_err;	
+	if (ret)
+		goto out_err;
 	dev_priv->have_mem_pds = 1;
 
 	ret = psb_do_init(dev);
@@ -512,99 +500,153 @@ static int psb_driver_load(struct drm_device * dev, unsigned long chipset)
 		return ret;
 
 	PSB_WSGX32(PSB_MEM_PDS_START, PSB_CR_PDS_EXEC_BASE);
+	PSB_WSGX32(PSB_MEM_RASTGEOM_START, PSB_CR_BIF_3D_REQ_BASE);
 
 	intel_modeset_init(dev);
 	drm_initial_config(dev, false);
 
 	return 0;
-out_err:
-	psb_driver_unload(dev);	
+      out_err:
+	psb_driver_unload(dev);
 	return ret;
 }
 
-
-int psb_driver_device_is_agp(struct drm_device * dev)
+int psb_driver_device_is_agp(struct drm_device *dev)
 {
 	return 0;
 }
 
 static int psb_prepare_msvdx_suspend(struct drm_device *dev)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_class_manager *fc = &fm->class[PSB_ENGINE_VIDEO];
+	struct drm_fence_class_manager *fc = &fm->fence_class[PSB_ENGINE_VIDEO];
 	struct drm_fence_object *fence;
 	int ret = 0;
 	int signaled = 0;
 	int count = 0;
-	unsigned long _end = jiffies + 3*DRM_HZ;
+	unsigned long _end = jiffies + 3 * DRM_HZ;
 
 	PSB_DEBUG_GENERAL("MSVDXACPI Entering psb_prepare_msvdx_suspend....\n");
 
-	/*set the msvdx-reset flag here..*/
+	/*set the msvdx-reset flag here.. */
 	dev_priv->msvdx_needs_reset = 1;
-	
+
 	/*Ensure that all pending IRQs are serviced, */
-	list_for_each_entry(fence, &fc->ring, ring) 
-	{
+	list_for_each_entry(fence, &fc->ring, ring) {
 		count++;
-		do
-		{		
+		do {
 			DRM_WAIT_ON(ret, fc->fence_queue, 3 * DRM_HZ,
-			    (signaled = drm_fence_object_signaled(fence, DRM_FENCE_TYPE_EXE, 1)));
+				    (signaled =
+				     drm_fence_object_signaled(fence,
+							       DRM_FENCE_TYPE_EXE,
+							       1)));
 			if (signaled)
-				break;		
+				break;
 			if (time_after_eq(jiffies, _end))
-				PSB_DEBUG_GENERAL("MSVDXACPI: fence 0x%x didn't get signaled for 3 secs; we will suspend anyways\n", 
-					(unsigned int) fence);
+				PSB_DEBUG_GENERAL
+				    ("MSVDXACPI: fence 0x%x didn't get signaled for 3 secs; we will suspend anyways\n",
+				     (unsigned int)fence);
 		} while (ret == -EINTR);
 
 	}
-	PSB_DEBUG_GENERAL("MSVDXACPI: All MSVDX IRQs (%d) serviced...\n", count);
+	PSB_DEBUG_GENERAL("MSVDXACPI: All MSVDX IRQs (%d) serviced...\n",
+			  count);
 	return 0;
 }
 
 static int psb_suspend(struct pci_dev *pdev, pm_message_t state)
 {
-    struct drm_device *dev = pci_get_drvdata(pdev);
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
-	
-	psb_sgx_save(dev_priv);
+	struct drm_device *dev = pci_get_drvdata(pdev);
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 
-	psb_prepare_msvdx_suspend(dev);	
+	/*
+	 * FIXME: This doesn't really guarantee that the
+	 * scheduler queue is empty, but that's very likely
+	 * since we're VT switched and all TT / VRAM buffers
+	 * have been moved out.
+	 */
 
+	psb_scheduler_pause(dev_priv);
+	(void)wait_event_timeout(dev_priv->scheduler.idle_queue,
+				 psb_scheduler_idle(dev_priv), DRM_HZ);
+	(void)drm_psb_idle(dev);
+	flush_scheduled_work();
+
+	psb_takedown_use_base(dev_priv);
+
+	if (dev_priv->has_msvdx)
+		psb_prepare_msvdx_suspend(dev);
 	return 0;
 }
 
 static int psb_resume(struct pci_dev *pdev)
 {
-        struct drm_device *dev = pci_get_drvdata(pdev);
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_device *dev = pci_get_drvdata(pdev);
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct psb_gtt *pg = dev_priv->pg;
 	struct drm_output *output;
+
+	dev_priv->msvdx_needs_reset = 1;
 
 #ifdef USE_PAT_WC
 #warning Init pat
 	drm_init_pat();
 #endif
-	/*set the msvdx-reset flag here as well..*/
-	dev_priv->msvdx_needs_reset = 1;
-	
+
 	PSB_WVDC32(pg->pge_ctl | _PSB_PGETBL_ENABLED, PSB_PGETBL_CTL);
-	pci_write_config_word(pdev, PSB_GMCH_CTRL, 
+	pci_write_config_word(pdev, PSB_GMCH_CTRL,
 			      pg->gmch_ctrl | _PSB_GMCH_ENABLED);
+
+	/*
+	 * The GTT page tables are probably not saved. 
+	 * However, TT and VRAM is empty at this point.
+	 */
 
 	psb_gtt_init(dev_priv->pg, 1);
 
-	psb_sgx_restore(dev_priv);
-	psb_clockgating(dev_priv);
+	/*
+	 * The SGX loses it's register contents.
+	 * Restore BIF registers. The MMU page tables are
+	 * "normal" pages, so their contents should be kept.
+	 */
 
+	psb_clockgating(dev_priv);
+	PSB_WSGX32(0x00000000, PSB_CR_BIF_BANK0);
+	PSB_WSGX32(0x00000000, PSB_CR_BIF_BANK1);
+	PSB_RSGX32(PSB_CR_BIF_BANK1);
+
+	psb_mmu_set_pd_context(psb_mmu_get_default_pd(dev_priv->mmu), 0);
+	psb_mmu_set_pd_context(dev_priv->pf_pd, 1);
+	psb_mmu_enable_requestor(dev_priv->mmu, _PSB_MMU_ER_MASK);
+
+	/*
+	 * 2D Base registers..
+	 */
 	psb_init_2d(dev_priv);
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head)
-		drm_crtc_set_mode(output->crtc, &output->crtc->mode,
-		       			output->crtc->x, output->crtc->y);
+	    drm_crtc_set_mode(output->crtc, &output->crtc->mode,
+			      output->crtc->x, output->crtc->y);
 
+	/*
+	 * Persistant 3D base registers and USSE base registers..
+	 */
+
+	PSB_WSGX32(PSB_MEM_PDS_START, PSB_CR_PDS_EXEC_BASE);
+	PSB_WSGX32(PSB_MEM_RASTGEOM_START, PSB_CR_BIF_3D_REQ_BASE);
+	psb_init_use_base(dev_priv, 3, 13);
+
+	/*
+	 * Now, re-initialize the 3D engine.
+	 */
+
+	psb_xhw_resume(dev_priv, &dev_priv->resume_buf);
+	psb_scheduler_restart(dev_priv);
+	
 	return 0;
 }
 
@@ -616,12 +658,11 @@ static unsigned int psb_poll(struct file *filp, struct poll_table_struct *wait)
 
 static int psb_release(struct inode *inode, struct file *filp)
 {
-	struct drm_file *file_priv = 
-		(struct drm_file *) filp->private_data;
+	struct drm_file *file_priv = (struct drm_file *)filp->private_data;
 	struct drm_device *dev = file_priv->head->dev;
-	struct drm_psb_private *dev_priv = 
-		(struct drm_psb_private *) dev->dev_private;
-	
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
+
 	if (dev_priv && dev_priv->xhw_file) {
 		psb_xhw_init_takedown(dev_priv, file_priv, 1);
 	}
@@ -679,8 +720,8 @@ static struct drm_bo_driver psb_bo_driver = {
 };
 
 static struct drm_driver driver = {
-	.driver_features = DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED | 
-	DRIVER_IRQ_VBL | DRIVER_IRQ_VBL2,
+	.driver_features = DRIVER_HAVE_IRQ | DRIVER_IRQ_SHARED |
+	    DRIVER_IRQ_VBL | DRIVER_IRQ_VBL2,
 	.load = psb_driver_load,
 	.unload = psb_driver_unload,
 	.dri_library_name = dri_library_name,
@@ -695,8 +736,8 @@ static struct drm_driver driver = {
 	.irq_handler = psb_irq_handler,
 	.fb_probe = psbfb_probe,
 	.fb_remove = psbfb_remove,
-	.firstopen = NULL, /* psb_do_init,*/
-	.lastclose = NULL, /*psb_do_takedown,*/
+	.firstopen = NULL,	/* psb_do_init, */
+	.lastclose = NULL,	/* psb_do_takedown, */
 	.fops = {
 		 .owner = THIS_MODULE,
 		 .open = drm_open,
@@ -724,7 +765,6 @@ static struct drm_driver driver = {
 	.patchlevel = PSB_DRM_DRIVER_PATCHLEVEL
 };
 
-
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 {
 	return drm_get_dev(pdev, ent, &driver);
@@ -733,7 +773,7 @@ static int probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 static int __init psb_init(void)
 {
 	driver.num_ioctls = psb_max_ioctl;
-	
+
 	return drm_init(&driver, pciidlist);
 }
 

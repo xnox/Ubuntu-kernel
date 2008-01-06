@@ -42,43 +42,47 @@ enum psb_task_type {
 	psb_freescene_task
 };
 
-
-#define PSB_MAX_TA_CMDS 48
-#define PSB_MAX_RASTER_CMDS 48
+#define PSB_MAX_TA_CMDS 60
+#define PSB_MAX_RASTER_CMDS 60
 
 struct psb_xhw_buf {
 	struct list_head head;
-	int issue_irq;
 	int copy_back;
 	atomic_t done;
 	struct drm_psb_xhw_arg arg;
-	
+
+};
+
+struct psb_feedback_info {
+	struct drm_buffer_object *bo;
+	struct page *page;
+	uint32_t offset;
 };
 
 struct psb_task {
-	enum psb_task_type task_type;
-        uint32_t engine;
-	uint32_t sequence;
 	struct list_head head;
 	struct psb_scene *scene;
+	struct psb_feedback_info feedback;
+	enum psb_task_type task_type;
+	uint32_t engine;
+	uint32_t sequence;
 	uint32_t ta_cmds[PSB_MAX_TA_CMDS];
-        uint32_t raster_cmds[PSB_MAX_RASTER_CMDS];
+	uint32_t raster_cmds[PSB_MAX_RASTER_CMDS];
 	uint32_t ta_cmd_size;
 	uint32_t raster_cmd_size;
-
-        struct drm_buffer_object *scene_buffer;
+	uint32_t feedback_offset;
 	uint32_t ta_complete_action;
 	uint32_t raster_complete_action;
 	uint32_t hw_cookie;
 	uint32_t flags;
-        struct psb_xhw_buf buf;
+	struct psb_xhw_buf buf;
 };
 
-struct psb_hw_scene{
+struct psb_hw_scene {
 	struct list_head head;
 	uint32_t context_number;
 
-        /*
+	/*
 	 * This pointer does not refcount the last_scene_buffer,
 	 * so we must make sure it is set to NULL before destroying
 	 * the corresponding task.
@@ -97,51 +101,57 @@ struct psb_scheduler_seq {
 
 struct psb_scheduler {
 	struct drm_device *dev;
-        struct psb_scheduler_seq seq[_PSB_ENGINE_TA_FENCE_TYPES];
+	struct psb_scheduler_seq seq[_PSB_ENGINE_TA_FENCE_TYPES];
 	struct psb_hw_scene hs[PSB_NUM_HW_SCENES];
-        struct mutex lp_mutex;
-        struct mutex hp_mutex;
+	struct mutex task_wq_mutex;
 	spinlock_t lock;
 	struct list_head hw_scenes;
 	struct list_head ta_queue;
 	struct list_head raster_queue;
 	struct list_head hp_raster_queue;
-        struct list_head task_done_queue;
+	struct list_head task_done_queue;
 	struct psb_task *current_task[PSB_SCENE_NUM_ENGINES];
+	struct psb_task *feedback_task;
 	int ta_state;
 	struct psb_hw_scene *pending_hw_scene;
 	uint32_t pending_hw_scene_seq;
-        struct work_struct wq;
-        struct psb_scene_pool *pool;
+	struct delayed_work wq;
+	struct psb_scene_pool *pool;
 	uint32_t idle_count;
 	int idle;
-        wait_queue_head_t idle_queue;
-        unsigned long ta_end_jiffies;
-        unsigned long raster_end_jiffies;
+	wait_queue_head_t idle_queue;
+	unsigned long ta_end_jiffies;
+	unsigned long raster_end_jiffies;
 };
 
-extern struct psb_scene_pool *psb_alloc_scene_pool(struct drm_file *priv, int shareable,
-				  uint32_t w, uint32_t h);
+extern struct psb_scene_pool *psb_alloc_scene_pool(struct drm_file *priv,
+						   int shareable, uint32_t w,
+						   uint32_t h);
 extern uint32_t psb_scene_handle(struct psb_scene *scene);
-extern int psb_scheduler_init(struct drm_device *dev, struct psb_scheduler *scheduler);
+extern int psb_scheduler_init(struct drm_device *dev,
+			      struct psb_scheduler *scheduler);
 extern void psb_scheduler_takedown(struct psb_scheduler *scheduler);
 extern int psb_cmdbuf_ta(struct drm_file *priv,
-			     struct drm_psb_cmdbuf_arg *arg,
-			     struct drm_buffer_object *cmd_buffer,
-			     struct drm_buffer_object *ta_buffer,
-			     struct psb_scene *scene,
-			     struct drm_fence_arg *fence_arg);
+			 struct drm_psb_cmdbuf_arg *arg,
+			 struct drm_buffer_object *cmd_buffer,
+			 struct drm_buffer_object *ta_buffer,
+			 struct psb_scene *scene,
+			 struct psb_feedback_info *feedback,
+			 struct drm_fence_arg *fence_arg);
 extern int psb_cmdbuf_raster(struct drm_file *priv,
 			     struct drm_psb_cmdbuf_arg *arg,
 			     struct drm_buffer_object *cmd_buffer,
 			     struct drm_fence_arg *fence_arg);
-extern void psb_scheduler_handler(struct drm_psb_private *dev_priv, uint32_t status);
+extern void psb_scheduler_handler(struct drm_psb_private *dev_priv,
+				  uint32_t status);
 extern void psb_scheduler_pause(struct drm_psb_private *dev_priv);
 extern void psb_scheduler_restart(struct drm_psb_private *dev_priv);
 extern int psb_scheduler_idle(struct drm_psb_private *dev_priv);
 void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
 			  int *lockup, int *msvdx_lockup,
-			  int *idle, int* msvdx_idle);
+			  int *idle, int *msvdx_idle);
 extern void psb_scheduler_reset(struct drm_psb_private *dev_priv,
 				int error_condition);
+extern int psb_forced_user_interrupt(struct drm_psb_private *dev_priv);
+
 #endif

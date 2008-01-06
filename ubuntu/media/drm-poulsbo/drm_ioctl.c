@@ -229,26 +229,23 @@ int drm_getclient(struct drm_device *dev, void *data,
 
 	idx = client->idx;
 	mutex_lock(&dev->struct_mutex);
-	
-	if (list_empty(&dev->filelist)) {
-		mutex_unlock(&dev->struct_mutex);
-		return -EINVAL;
-	}
 
 	i = 0;
 	list_for_each_entry(pt, &dev->filelist, lhead) {
-		if (i++ >= idx)
-			break;
-	}
+		if (i++ >= idx) {
+			client->auth = pt->authenticated;
+			client->pid = pt->pid;
+			client->uid = pt->uid;
+			client->magic = pt->magic;
+			client->iocs = pt->ioctl_count;
+			mutex_unlock(&dev->struct_mutex);
 
-	client->auth = pt->authenticated;
-	client->pid = pt->pid;
-	client->uid = pt->uid;
-	client->magic = pt->magic;
-	client->iocs = pt->ioctl_count;
+			return 0;
+		}
+	}
 	mutex_unlock(&dev->struct_mutex);
 
-	return 0;
+	return -EINVAL;
 }
 
 /**
@@ -267,7 +264,7 @@ int drm_getstats(struct drm_device *dev, void *data,
 	struct drm_stats *stats = data;
 	int i;
 
-	memset(stats, 0, sizeof(stats));
+	memset(stats, 0, sizeof(*stats));
 
 	mutex_lock(&dev->struct_mutex);
 

@@ -48,7 +48,7 @@ static void psb_flush_ta_fence(struct psb_scheduler *scheduler,
 
 	if (fc->pending_exe_flush) {
 		if (!seq->reported) {
-			drm_fence_handler(scheduler->dev, PSB_ENGINE_TA, 
+			drm_fence_handler(scheduler->dev, PSB_ENGINE_TA,
 					  seq->sequence, DRM_FENCE_TYPE_EXE, 0);
 			seq->reported = 1;
 		}
@@ -60,54 +60,55 @@ static void psb_flush_ta_fence(struct psb_scheduler *scheduler,
 		if (!(mask & cur_flag))
 			goto skip;
 		if (seq->reported)
-		  goto skip;
+			goto skip;
 		if (flags == 0)
 			sequence = seq->sequence;
 		else if (sequence != seq->sequence) {
-			drm_fence_handler(scheduler->dev, PSB_ENGINE_TA, sequence, 
-					  flags, 0);
+			drm_fence_handler(scheduler->dev, PSB_ENGINE_TA,
+					  sequence, flags, 0);
 			sequence = seq->sequence;
 			flags = 0;
 		}
 		flags |= cur_flag;
 		seq->reported = 1;
-	skip:
+	      skip:
 		mask = fc->pending_flush;
 		cur_flag <<= 1;
 		remaining <<= 1;
 		seq++;
 	}
 
-	if (flags) 
-		drm_fence_handler(scheduler->dev, PSB_ENGINE_TA, sequence, 
-				  flags, 0);	
+	if (flags)
+		drm_fence_handler(scheduler->dev, PSB_ENGINE_TA, sequence,
+				  flags, 0);
 }
 
-static void psb_perform_flush(struct drm_device * dev, u32 class)
+static void psb_perform_flush(struct drm_device *dev, uint32_t fence_class)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
-	struct drm_fence_class_manager *fc = &fm->class[class];
+	struct drm_fence_class_manager *fc = &fm->fence_class[fence_class];
 	struct drm_fence_driver *driver = dev->driver->fence_driver;
 	uint32_t diff;
 	uint32_t sequence;
 
 	if (!dev_priv)
 		return;
-	
-	/*PSB_DEBUG_GENERAL("MSVDXFENCE: pending_exe_flush=%d last_exe_flush=%d sequence=%d wrap_diff=%d\n", 
-		fc->pending_exe_flush, fc->last_exe_flush, sequence, driver->wrap_diff);*/
 
-	if (class == PSB_ENGINE_TA) {
+	/*PSB_DEBUG_GENERAL("MSVDXFENCE: pending_exe_flush=%d last_exe_flush=%d sequence=%d wrap_diff=%d\n",
+	   fc->pending_exe_flush, fc->last_exe_flush, sequence, driver->wrap_diff); */
+
+	if (fence_class == PSB_ENGINE_TA) {
 		psb_flush_ta_fence(&dev_priv->scheduler, fc);
 		return;
 	}
 
 	if (fc->pending_exe_flush) {
-	        if(class == PSB_ENGINE_VIDEO)
+		if (fence_class == PSB_ENGINE_VIDEO)
 			sequence = dev_priv->msvdx_current_sequence;
 		else
-			sequence = dev_priv->comm[class << 4];
+			sequence = dev_priv->comm[fence_class << 4];
 
 		/*
 		 * First update fences with the current breadcrumb.
@@ -115,162 +116,142 @@ static void psb_perform_flush(struct drm_device * dev, u32 class)
 
 		diff = sequence - fc->last_exe_flush;
 		if (diff < driver->wrap_diff && diff != 0) {
-		        drm_fence_handler(dev, class, sequence, 
+			drm_fence_handler(dev, fence_class, sequence,
 					  DRM_FENCE_TYPE_EXE, 0);
 		}
 
-		switch(class)
-		{
+		switch (fence_class) {
 		case PSB_ENGINE_2D:
 			if (dev_priv->fence0_irq_on && !fc->pending_exe_flush) {
-			psb_2D_irq_off(dev_priv);
-			dev_priv->fence0_irq_on = 0;
-			} else if (!dev_priv->fence0_irq_on && fc->pending_exe_flush) {
-			psb_2D_irq_on(dev_priv);
-			dev_priv->fence0_irq_on = 1;
+				psb_2D_irq_off(dev_priv);
+				dev_priv->fence0_irq_on = 0;
+			} else if (!dev_priv->fence0_irq_on
+				   && fc->pending_exe_flush) {
+				psb_2D_irq_on(dev_priv);
+				dev_priv->fence0_irq_on = 1;
 			}
 			break;
 		case PSB_ENGINE_VIDEO:
-		/*TBD fix this for video...!!!*/
-		if (dev_priv->fence2_irq_on && !fc->pending_exe_flush) {
+			/*TBD fix this for video...!!! */
+			if (dev_priv->fence2_irq_on && !fc->pending_exe_flush) {
 /*			psb_msvdx_irq_off(dev_priv);*/
-			dev_priv->fence2_irq_on = 0;
-			} else if (!dev_priv->fence2_irq_on && fc->pending_exe_flush) {
+				dev_priv->fence2_irq_on = 0;
+			} else if (!dev_priv->fence2_irq_on
+				   && fc->pending_exe_flush) {
 /*			psb_msvdx_irq_on(dev_priv);*/
-			dev_priv->fence2_irq_on = 1;
+				dev_priv->fence2_irq_on = 1;
 			}
 			break;
 		default:
 			return;
-		}		
+		}
 	}
 }
 
 void psb_fence_error(struct drm_device *dev,
-		     uint32_t class,
-		     uint32_t sequence,
-		     uint32_t type,
-		     int error)
+		     uint32_t fence_class,
+		     uint32_t sequence, uint32_t type, int error)
 {
 	struct drm_fence_manager *fm = &dev->fm;
 	unsigned long irq_flags;
 
-  	BUG_ON(class >= PSB_NUM_ENGINES);
+	BUG_ON(fence_class >= PSB_NUM_ENGINES);
 	write_lock_irqsave(&fm->lock, irq_flags);
-	drm_fence_handler(dev, class, sequence, type, error);
+	drm_fence_handler(dev, fence_class, sequence, type, error);
 	write_unlock_irqrestore(&fm->lock, irq_flags);
 }
 
-void psb_poke_flush(struct drm_device * dev, uint32_t class)
+void psb_poke_flush(struct drm_device *dev, uint32_t fence_class)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_fence_manager *fm = &dev->fm;
 	unsigned long flags;
 
-	BUG_ON(class >= PSB_NUM_ENGINES);
+	BUG_ON(fence_class >= PSB_NUM_ENGINES);
 	spin_lock_irqsave(&dev_priv->scheduler.lock, flags);
 	write_lock(&fm->lock);
-	psb_perform_flush(dev, class);
+	psb_perform_flush(dev, fence_class);
 	write_unlock(&fm->lock);
 	spin_unlock_irqrestore(&dev_priv->scheduler.lock, flags);
 }
 
-int psb_fence_emit_sequence(struct drm_device * dev, uint32_t class, uint32_t flags,
-			    uint32_t * sequence, uint32_t * native_type)
+int psb_fence_emit_sequence(struct drm_device *dev, uint32_t fence_class,
+			    uint32_t flags, uint32_t * sequence,
+			    uint32_t * native_type)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
+	uint32_t seq = 0;
 	int ret;
 
 	if (!dev_priv)
 		return -EINVAL;
-	
-	if (class >= PSB_NUM_ENGINES)
+
+	if (fence_class >= PSB_NUM_ENGINES)
 		return -EINVAL;
 
-	switch(class)
-	{
-	  case PSB_ENGINE_2D:
-		++dev_priv->sequence[class];
-		ret = psb_blit_sequence(dev_priv);
+	switch (fence_class) {
+	case PSB_ENGINE_2D:
+		spin_lock(&dev_priv->sequence_lock);
+		seq = ++dev_priv->sequence[fence_class];
+		spin_unlock(&dev_priv->sequence_lock);
+		ret = psb_blit_sequence(dev_priv, seq);
 		if (ret)
 			return ret;
 		break;
-	  case PSB_ENGINE_VIDEO: /*MSVDX*/
-		++dev_priv->sequence[class];
+	case PSB_ENGINE_VIDEO:
+		spin_lock(&dev_priv->sequence_lock);
+		seq = ++dev_priv->sequence[fence_class];
+		spin_unlock(&dev_priv->sequence_lock);
 		break;
+	default:
+		spin_lock(&dev_priv->sequence_lock);
+		seq = dev_priv->sequence[fence_class];
+		spin_unlock(&dev_priv->sequence_lock);
 	}
 
-	*sequence = dev_priv->sequence[class];
+	*sequence = seq;
 	*native_type = DRM_FENCE_TYPE_EXE;
 
 	return 0;
 }
 
-uint32_t psb_fence_advance_sequence(struct drm_device *dev, uint32_t class)
+uint32_t psb_fence_advance_sequence(struct drm_device * dev,
+				    uint32_t fence_class)
 {
-	struct drm_psb_private *dev_priv = 
-		(struct drm_psb_private *) dev->dev_private;
-	struct drm_fence_manager *fm = &dev->fm;
-	unsigned long flags;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	uint32_t sequence;
 
-	write_lock_irqsave(&fm->lock, flags);
-	sequence = ++dev_priv->sequence[class];
-	write_unlock_irqrestore(&fm->lock, flags);
+	spin_lock(&dev_priv->sequence_lock);
+	sequence = ++dev_priv->sequence[fence_class];
+	spin_unlock(&dev_priv->sequence_lock);
+
 	return sequence;
 }
 
-void psb_fence_handler(struct drm_device * dev, uint32_t class)
+void psb_fence_handler(struct drm_device *dev, uint32_t fence_class)
 {
 	struct drm_fence_manager *fm = &dev->fm;
 
 	write_lock(&fm->lock);
-	psb_perform_flush(dev, class);
+	psb_perform_flush(dev, fence_class);
 	write_unlock(&fm->lock);
 }
 
-
-int psb_fence_has_irq(struct drm_device * dev, uint32_t class, uint32_t flags)
+int psb_fence_has_irq(struct drm_device *dev, uint32_t fence_class,
+		      uint32_t flags)
 {
 	/*
 	 * We have an irq that tells us when we have a new breadcrumb,
 	 */
 
-  if (((class == PSB_ENGINE_2D) ||
-       (class == PSB_ENGINE_RASTERIZER) ||
-       (class == PSB_ENGINE_TA) ||
-	   (class == PSB_ENGINE_VIDEO)))
-      return 1;
+	if (((fence_class == PSB_ENGINE_2D) ||
+	     (fence_class == PSB_ENGINE_RASTERIZER) ||
+	     (fence_class == PSB_ENGINE_TA)
+	     || (fence_class == PSB_ENGINE_VIDEO)))
+		return 1;
 
 	return 0;
-}
-
-int psb_fence_timeout(struct drm_fence_object *fence)
-{
-	int ret = 0;
-	struct drm_device *dev = fence->dev;
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
-
-	switch(fence->class)
-	{
-	case PSB_ENGINE_VIDEO:
-		PSB_DEBUG_GENERAL("MSVDXFENCE: need to reset MSVDX hardware.....\n");
-		dev_priv->msvdx_needs_reset = 1;
-		if (dev_priv->msvdx_current_sequence < dev_priv->sequence[fence->class])
-		{			
-			dev_priv->msvdx_current_sequence++;
-
-			PSB_DEBUG_GENERAL("MSVDXFENCE: incremented msvdx_current_sequence to :%d for faulting fence:0x%x, handle:0x%08lx\n", 
-				dev_priv->msvdx_current_sequence, fence, fence->base.hash.key);
-		}
-		psb_fence_error(dev,PSB_ENGINE_VIDEO, dev_priv->msvdx_current_sequence, DRM_FENCE_TYPE_EXE, DRM_CMD_HANG);
-		/*ret = -EAGAIN;*/
-		ret = -EBUSY;
-		break;
-	case PSB_ENGINE_2D:
-		break;
-	default:
-		break;
-	}
-	return ret;
 }

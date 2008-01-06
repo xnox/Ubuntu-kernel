@@ -40,13 +40,14 @@
  * Video display controller interrupt.
  */
 
-static void psb_vdc_interrupt(struct drm_device * dev, u32 vdc_stat)
+static void psb_vdc_interrupt(struct drm_device *dev, uint32_t vdc_stat)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
-	u32 pipe_stats;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
+	uint32_t pipe_stats;
 	int wake = 0;
 
-	if (vdc_stat & _PSB_VSYNC_PIPEA_FLAG) {
+	if (!drm_psb_disable_vsync && (vdc_stat & _PSB_VSYNC_PIPEA_FLAG)) {
 		pipe_stats = PSB_RVDC32(PSB_PIPEASTAT);
 		atomic_inc(&dev->vbl_received);
 		wake = 1;
@@ -54,7 +55,7 @@ static void psb_vdc_interrupt(struct drm_device * dev, u32 vdc_stat)
 			   _PSB_VBLANK_CLEAR, PSB_PIPEASTAT);
 	}
 
-	if (vdc_stat & _PSB_VSYNC_PIPEB_FLAG) {
+	if (!drm_psb_disable_vsync && (vdc_stat & _PSB_VSYNC_PIPEB_FLAG)) {
 		pipe_stats = PSB_RVDC32(PSB_PIPEBSTAT);
 		atomic_inc(&dev->vbl_received2);
 		wake = 1;
@@ -76,12 +77,13 @@ static void psb_vdc_interrupt(struct drm_device * dev, u32 vdc_stat)
  * SGX interrupt source 1.
  */
 
-static void psb_sgx_interrupt(struct drm_device * dev, u32 sgx_stat)
+static void psb_sgx_interrupt(struct drm_device *dev, uint32_t sgx_stat)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 
 	if (sgx_stat & _PSB_CE_TWOD_COMPLETE) {
-	        DRM_WAKEUP(&dev_priv->event_2d_queue);
+		DRM_WAKEUP(&dev_priv->event_2d_queue);
 		psb_fence_handler(dev, 0);
 	}
 	psb_scheduler_handler(dev_priv, sgx_stat);
@@ -90,33 +92,37 @@ static void psb_sgx_interrupt(struct drm_device * dev, u32 sgx_stat)
 /*
  * MSVDX interrupt.
  */
-static void psb_msvdx_interrupt(struct drm_device * dev, __u32 msvdx_stat)
+static void psb_msvdx_interrupt(struct drm_device *dev, uint32_t msvdx_stat)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 
-	if(msvdx_stat & MSVDX_INTERRUPT_STATUS_CR_MMU_FAULT_IRQ_MASK)
-	{	
-		/*Ideally we should we should never get to this*/
-		PSB_DEBUG_GENERAL("******MSVDX: msvdx_stat: 0x%x fence2_irq_on=%d ***** (MMU FAULT)\n", msvdx_stat, dev_priv->fence2_irq_on);
+	if (msvdx_stat & MSVDX_INTERRUPT_STATUS_CR_MMU_FAULT_IRQ_MASK) {
+		/*Ideally we should we should never get to this */
+		PSB_DEBUG_GENERAL
+		    ("******MSVDX: msvdx_stat: 0x%x fence2_irq_on=%d ***** (MMU FAULT)\n",
+		     msvdx_stat, dev_priv->fence2_irq_on);
 
 		/* Pause MMU */
-		PSB_WMSVDX32( MSVDX_MMU_CONTROL0_CR_MMU_PAUSE_MASK, MSVDX_MMU_CONTROL0 );
+		PSB_WMSVDX32(MSVDX_MMU_CONTROL0_CR_MMU_PAUSE_MASK,
+			     MSVDX_MMU_CONTROL0);
 		DRM_WRITEMEMORYBARRIER();
 
 		/* Clear this interupt bit only */
-		PSB_WMSVDX32( MSVDX_INTERRUPT_STATUS_CR_MMU_FAULT_IRQ_MASK, MSVDX_INTERRUPT_CLEAR );
-		PSB_RMSVDX32( MSVDX_INTERRUPT_CLEAR );
+		PSB_WMSVDX32(MSVDX_INTERRUPT_STATUS_CR_MMU_FAULT_IRQ_MASK,
+			     MSVDX_INTERRUPT_CLEAR);
+		PSB_RMSVDX32(MSVDX_INTERRUPT_CLEAR);
 		DRM_READMEMORYBARRIER();
 
 		dev_priv->msvdx_needs_reset = 1;
-	}
-	else if(msvdx_stat & MSVDX_INTERRUPT_STATUS_CR_MTX_IRQ_MASK)
-	{
-		PSB_DEBUG_GENERAL("******MSVDX: msvdx_stat: 0x%x fence2_irq_on=%d ***** (MTX)\n", msvdx_stat, dev_priv->fence2_irq_on);
+	} else if (msvdx_stat & MSVDX_INTERRUPT_STATUS_CR_MTX_IRQ_MASK) {
+		PSB_DEBUG_GENERAL
+		    ("******MSVDX: msvdx_stat: 0x%x fence2_irq_on=%d ***** (MTX)\n",
+		     msvdx_stat, dev_priv->fence2_irq_on);
 
 		/* Clear all interupt bits */
-		PSB_WMSVDX32( 0xffff, MSVDX_INTERRUPT_CLEAR );
-		PSB_RMSVDX32( MSVDX_INTERRUPT_CLEAR );
+		PSB_WMSVDX32(0xffff, MSVDX_INTERRUPT_CLEAR);
+		PSB_RMSVDX32(MSVDX_INTERRUPT_CLEAR);
 		DRM_READMEMORYBARRIER();
 
 		psb_msvdx_mtx_interrupt(dev);
@@ -125,12 +131,13 @@ static void psb_msvdx_interrupt(struct drm_device * dev, __u32 msvdx_stat)
 
 irqreturn_t psb_irq_handler(DRM_IRQ_ARGS)
 {
-	struct drm_device *dev = (struct drm_device *) arg;
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
-	
-	u32 vdc_stat;
-	u32 sgx_stat;
-	u32 msvdx_stat;
+	struct drm_device *dev = (struct drm_device *)arg;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
+
+	uint32_t vdc_stat;
+	uint32_t sgx_stat;
+	uint32_t msvdx_stat;
 	int handled = 0;
 
 	spin_lock(&dev_priv->irqmask_lock);
@@ -139,22 +146,18 @@ irqreturn_t psb_irq_handler(DRM_IRQ_ARGS)
 	sgx_stat = PSB_RSGX32(PSB_CR_EVENT_STATUS);
 	msvdx_stat = PSB_RMSVDX32(MSVDX_INTERRUPT_STATUS);
 
-	if (!(vdc_stat & dev_priv->vdc_irq_mask)) {
-		spin_unlock(&dev_priv->irqmask_lock);
-		return IRQ_NONE;
-	}
-
 	sgx_stat &= dev_priv->sgx_irq_mask;
 	PSB_WSGX32(sgx_stat, PSB_CR_EVENT_HOST_CLEAR);
-	(void) PSB_RSGX32(PSB_CR_EVENT_HOST_CLEAR);
+	(void)PSB_RSGX32(PSB_CR_EVENT_HOST_CLEAR);
 
 	vdc_stat &= dev_priv->vdc_irq_mask;
 	spin_unlock(&dev_priv->irqmask_lock);
 
-	if(msvdx_stat) {
+	if (msvdx_stat) {
 		psb_msvdx_interrupt(dev, msvdx_stat);
 		handled = 1;
 	}
+
 	if (vdc_stat) {
 		/* MSVDX IRQ status is part of vdc_irq_mask */
 		psb_vdc_interrupt(dev, vdc_stat);
@@ -166,16 +169,27 @@ irqreturn_t psb_irq_handler(DRM_IRQ_ARGS)
 		handled = 1;
 	}
 
-	if (!handled) 
-	        PSB_DEBUG_IRQ("Unhandled irq\n");
-
+	if (!handled) {
+		return IRQ_NONE;
+	}
 
 	return IRQ_HANDLED;
 }
 
-void psb_irq_preinstall(struct drm_device * dev)
+void psb_msvdx_irq_preinstall(struct drm_psb_private * dev_priv)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+        unsigned long mtx_int = 0;
+        dev_priv->vdc_irq_mask |= _PSB_IRQ_MSVDX_FLAG;
+
+        /*Clear MTX interrupt */
+        REGIO_WRITE_FIELD_LITE(mtx_int, MSVDX_INTERRUPT_STATUS, CR_MTX_IRQ, 1);
+        PSB_WMSVDX32(mtx_int, MSVDX_INTERRUPT_CLEAR);
+}
+
+void psb_irq_preinstall(struct drm_device *dev)
+{
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	spin_lock(&dev_priv->irqmask_lock);
 	PSB_WVDC32(0xFFFFFFFF, PSB_HWSTAM);
 	PSB_WVDC32(0x00000000, PSB_INT_MASK_R);
@@ -184,29 +198,42 @@ void psb_irq_preinstall(struct drm_device * dev)
 	(void)PSB_RSGX32(PSB_CR_EVENT_HOST_ENABLE);
 
 	dev_priv->sgx_irq_mask = _PSB_CE_PIXELBE_END_RENDER |
-		_PSB_CE_DPM_3D_MEM_FREE |
-		_PSB_CE_TA_FINISHED |
-	        _PSB_CE_DPM_REACHED_MEM_THRESH |
-	        _PSB_CE_DPM_OUT_OF_MEMORY_GBL |
-	        _PSB_CE_DPM_OUT_OF_MEMORY_MT |
-	        _PSB_CE_SW_EVENT;
-	dev_priv->vdc_irq_mask = _PSB_VSYNC_PIPEA_FLAG | 
-		_PSB_VSYNC_PIPEB_FLAG |
-		_PSB_IRQ_SGX_FLAG |
-		_PSB_IRQ_MSVDX_FLAG;
-	
-	/*Clear MTX interrupt*/
+	    _PSB_CE_DPM_3D_MEM_FREE |
+	    _PSB_CE_TA_FINISHED |
+	    _PSB_CE_DPM_REACHED_MEM_THRESH |
+	    _PSB_CE_DPM_OUT_OF_MEMORY_GBL |
+	    _PSB_CE_DPM_OUT_OF_MEMORY_MT | _PSB_CE_SW_EVENT;
+
+	dev_priv->vdc_irq_mask = _PSB_IRQ_SGX_FLAG |
+	                         _PSB_IRQ_MSVDX_FLAG;
+
+	if (!drm_psb_disable_vsync)
+	    dev_priv->vdc_irq_mask |= _PSB_VSYNC_PIPEA_FLAG |
+	                              _PSB_VSYNC_PIPEB_FLAG;
+
+	/*Clear MTX interrupt */
 	{
-		unsigned long MtxInt = 0;
-		REGIO_WRITE_FIELD_LITE(MtxInt, MSVDX_INTERRUPT_STATUS, CR_MTX_IRQ, 1 );
-		PSB_WMSVDX32( MtxInt, MSVDX_INTERRUPT_CLEAR );
-	}	
+		unsigned long mtx_int = 0;
+		REGIO_WRITE_FIELD_LITE(mtx_int, MSVDX_INTERRUPT_STATUS,
+				       CR_MTX_IRQ, 1);
+		PSB_WMSVDX32(mtx_int, MSVDX_INTERRUPT_CLEAR);
+	}
 	spin_unlock(&dev_priv->irqmask_lock);
 }
 
-void psb_irq_postinstall(struct drm_device * dev)
+void psb_msvdx_irq_postinstall(struct drm_psb_private * dev_priv)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+        /* Enable Mtx Interupt to host */
+        unsigned long enables = 0;
+        PSB_DEBUG_GENERAL("Setting up MSVDX IRQs.....\n");
+        REGIO_WRITE_FIELD_LITE(enables, MSVDX_INTERRUPT_STATUS, CR_MTX_IRQ, 1);
+        PSB_WMSVDX32(enables, MSVDX_HOST_INTERRUPT_ENABLE);
+}
+
+void psb_irq_postinstall(struct drm_device *dev)
+{
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	unsigned long irqflags;
 
 	spin_lock_irqsave(&dev_priv->irqmask_lock, irqflags);
@@ -216,18 +243,20 @@ void psb_irq_postinstall(struct drm_device * dev)
 	/****MSVDX IRQ Setup...*****/
 	/* Enable Mtx Interupt to host */
 	{
-		unsigned long ui32Enables = 0;
-		PSB_DEBUG_GENERAL("Setting up MSVDX IRQs.....\n");		
-		REGIO_WRITE_FIELD_LITE(ui32Enables, MSVDX_INTERRUPT_STATUS, CR_MTX_IRQ,	1);
-		PSB_WMSVDX32( ui32Enables, MSVDX_HOST_INTERRUPT_ENABLE );
+		unsigned long enables = 0;
+		PSB_DEBUG_GENERAL("Setting up MSVDX IRQs.....\n");
+		REGIO_WRITE_FIELD_LITE(enables, MSVDX_INTERRUPT_STATUS,
+				       CR_MTX_IRQ, 1);
+		PSB_WMSVDX32(enables, MSVDX_HOST_INTERRUPT_ENABLE);
 	}
 	dev_priv->irq_enabled = 1;
 	spin_unlock_irqrestore(&dev_priv->irqmask_lock, irqflags);
 }
 
-void psb_irq_uninstall(struct drm_device * dev)
+void psb_irq_uninstall(struct drm_device *dev)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	unsigned long irqflags;
 
 	spin_lock_irqsave(&dev_priv->irqmask_lock, irqflags);
@@ -244,28 +273,28 @@ void psb_irq_uninstall(struct drm_device * dev)
 
 	/****MSVDX IRQ Setup...*****/
 	/* Clear interrupt enabled flag */
-	PSB_WMSVDX32( 0, MSVDX_HOST_INTERRUPT_ENABLE );
-	
+	PSB_WMSVDX32(0, MSVDX_HOST_INTERRUPT_ENABLE);
+
 	dev_priv->irq_enabled = 0;
 	spin_unlock_irqrestore(&dev_priv->irqmask_lock, irqflags);
 
 }
 
-void psb_2D_irq_off(struct drm_psb_private * dev_priv)
+void psb_2D_irq_off(struct drm_psb_private *dev_priv)
 {
 	unsigned long irqflags;
-	u32 old_mask;
-	u32 cleared_mask;
+	uint32_t old_mask;
+	uint32_t cleared_mask;
 
 	spin_lock_irqsave(&dev_priv->irqmask_lock, irqflags);
 	--dev_priv->irqen_count_2d;
 	if (dev_priv->irq_enabled && dev_priv->irqen_count_2d == 0) {
-		
+
 		old_mask = dev_priv->sgx_irq_mask;
 		dev_priv->sgx_irq_mask &= ~_PSB_CE_TWOD_COMPLETE;
 		PSB_WSGX32(dev_priv->sgx_irq_mask, PSB_CR_EVENT_HOST_ENABLE);
 		(void)PSB_RSGX32(PSB_CR_EVENT_HOST_ENABLE);
-		
+
 		cleared_mask = (old_mask ^ dev_priv->sgx_irq_mask) & old_mask;
 		PSB_WSGX32(cleared_mask, PSB_CR_EVENT_HOST_CLEAR);
 		(void)PSB_RSGX32(PSB_CR_EVENT_HOST_CLEAR);
@@ -273,7 +302,7 @@ void psb_2D_irq_off(struct drm_psb_private * dev_priv)
 	spin_unlock_irqrestore(&dev_priv->irqmask_lock, irqflags);
 }
 
-void psb_2D_irq_on(struct drm_psb_private * dev_priv)
+void psb_2D_irq_on(struct drm_psb_private *dev_priv)
 {
 	unsigned long irqflags;
 
@@ -288,16 +317,15 @@ void psb_2D_irq_on(struct drm_psb_private * dev_priv)
 }
 
 static int psb_vblank_do_wait(struct drm_device *dev, unsigned int *sequence,
-			      atomic_t *counter)
+			      atomic_t * counter)
 {
 	unsigned int cur_vblank;
 	int ret = 0;
 
-
 	DRM_WAIT_ON(ret, dev->vbl_queue, 3 * DRM_HZ,
 		    (((cur_vblank = atomic_read(counter))
-		      - *sequence) <= (1<<23)));
-	
+		      - *sequence) <= (1 << 23)));
+
 	*sequence = cur_vblank;
 
 	return ret;
@@ -305,7 +333,7 @@ static int psb_vblank_do_wait(struct drm_device *dev, unsigned int *sequence,
 
 int psb_vblank_wait(struct drm_device *dev, unsigned int *sequence)
 {
-        int ret;	
+	int ret;
 
 	ret = psb_vblank_do_wait(dev, sequence, &dev->vbl_received);
 	return ret;
@@ -313,13 +341,13 @@ int psb_vblank_wait(struct drm_device *dev, unsigned int *sequence)
 
 int psb_vblank_wait2(struct drm_device *dev, unsigned int *sequence)
 {
-	int ret;	
+	int ret;
 
 	ret = psb_vblank_do_wait(dev, sequence, &dev->vbl_received2);
 	return ret;
 }
 
-void psb_msvdx_irq_off(struct drm_psb_private * dev_priv)
+void psb_msvdx_irq_off(struct drm_psb_private *dev_priv)
 {
 	unsigned long irqflags;
 
@@ -332,7 +360,7 @@ void psb_msvdx_irq_off(struct drm_psb_private * dev_priv)
 	spin_unlock_irqrestore(&dev_priv->irqmask_lock, irqflags);
 }
 
-void psb_msvdx_irq_on(struct drm_psb_private * dev_priv)
+void psb_msvdx_irq_on(struct drm_psb_private *dev_priv)
 {
 	unsigned long irqflags;
 

@@ -459,7 +459,7 @@ struct drm_mode_config_funcs {
  *
  */
 struct drm_mode_config {
-	spinlock_t config_lock; /* protects configuration and IDR */
+	struct mutex mutex; /* protects configuration and IDR */
 	struct idr crtc_idr; /* use this idr for all IDs, fb, crtc, output, modes - just makes life easier */
 	/* this is limited to one for now */
 	int num_fb;
@@ -527,28 +527,29 @@ extern bool drm_crtc_set_mode(struct drm_crtc *crtc, struct drm_display_mode *mo
 		       int x, int y);
 
 /* IOCTLs */
-extern int drm_mode_getresources(struct drm_device *dev, void *data,
-			    	 struct drm_file *file_priv);
-extern int drm_mode_getcrtc(struct drm_device *dev, void *data,
-			    struct drm_file *file_priv);
-extern int drm_mode_getoutput(struct drm_device *dev, void *data,
-			      struct drm_file *file_priv);
-extern int drm_mode_setcrtc(struct drm_device *dev, void *data,
-			    struct drm_file *file_priv);
-extern int drm_mode_addfb(struct drm_device *dev, void *data,
-			  struct drm_file *file_priv);
-extern int drm_mode_rmfb(struct drm_device *dev, void *data,
-			 struct drm_file *file_priv);
-extern int drm_mode_getfb(struct drm_device *dev, void *data,
-			  struct drm_file *file_priv);
-extern int drm_mode_addmode(struct drm_device *dev, void *data,
-			    struct drm_file *file_priv);
-extern int drm_mode_rmmode(struct drm_device *dev, void *data,
-			   struct drm_file *file_priv);
-extern int drm_mode_attachmode(struct drm_device *dev, void *data,
-			       struct drm_file *file_priv);
-extern int drm_mode_detachmode(struct drm_device *dev, void *data,
-			       struct drm_file *file_priv);
+extern int drm_mode_getresources(struct drm_device *dev,
+				 void *data, struct drm_file *file_priv);
+
+extern int drm_mode_getcrtc(struct drm_device *dev,
+			    void *data, struct drm_file *file_priv);
+extern int drm_mode_getoutput(struct drm_device *dev,
+			      void *data, struct drm_file *file_priv);
+extern int drm_mode_setcrtc(struct drm_device *dev,
+			    void *data, struct drm_file *file_priv);
+extern int drm_mode_addfb(struct drm_device *dev,
+			  void *data, struct drm_file *file_priv);
+extern int drm_mode_rmfb(struct drm_device *dev,
+			 void *data, struct drm_file *file_priv);
+extern int drm_mode_getfb(struct drm_device *dev,
+			  void *data, struct drm_file *file_priv);
+extern int drm_mode_addmode(struct drm_device *dev,
+			    void *data, struct drm_file *file_priv);
+extern int drm_mode_rmmode(struct drm_device *dev,
+			   void *data, struct drm_file *file_priv);
+extern int drm_mode_attachmode(struct drm_device *dev,
+			       void *data, struct drm_file *file_priv);
+extern int drm_mode_detachmode(struct drm_device *dev,
+			       void *data, struct drm_file *file_priv);
 
 #endif /* __DRM_CRTC_H__ */
 

@@ -1,4 +1,5 @@
 #define BLC_PWM_CTL		0x61254
+#define BLC_PWM_CTL2		0x61250
 #define BACKLIGHT_MODULATION_FREQ_SHIFT		(17)
 /**
  * This is the most significant 15 bits of the number of backlight cycles in a
@@ -462,16 +463,24 @@
 #define IS_I915GM(dev) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82915GM_IG)
 #define IS_I945G(dev) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82945G_IG)
 #define IS_I945GM(dev) ((dev)->pci_device == PCI_DEVICE_ID_INTEL_82945GM_IG)
-#define IS_POULSBO(dev) ((dev)->pci_device == 0x8108)
 
 #define IS_I965G(dev) ((dev)->pci_device == 0x2972 || \
 		       (dev)->pci_device == 0x2982 || \
 		       (dev)->pci_device == 0x2992 || \
-		       (dev)->pci_device == 0x29A2)
+		       (dev)->pci_device == 0x29A2 || \
+		       (dev)->pci_device == 0x2A02 || \
+		       (dev)->pci_device == 0x2A12)
 
+#define IS_I965GM(dev) ((dev)->pci_device == 0x2A02)
+
+#define IS_G33(dev)    ((dev)->pci_device == 0x29C2 ||	\
+		   	(dev)->pci_device == 0x29B2 ||	\
+			(dev)->pci_device == 0x29D2)
 
 #define IS_I9XX(dev) (IS_I915G(dev) || IS_I915GM(dev) || IS_I945G(dev) || \
 		      IS_I945GM(dev) || IS_I965G(dev) || IS_POULSBO(dev))
 
 #define IS_MOBILE(dev) (IS_I830(dev) || IS_I85X(dev) || IS_I915GM(dev) || \
-			IS_I945GM(dev) || IS_POULSBO(dev))
+			IS_I945GM(dev) || IS_I965GM(dev) || IS_POULSBO(dev))
+
+#define IS_POULSBO(dev) ((dev)->pci_device == 0x8108)

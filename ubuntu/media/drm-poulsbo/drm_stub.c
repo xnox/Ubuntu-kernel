@@ -51,7 +51,7 @@ module_param_named(cards_limit, drm_cards_limit, int, 0444);
 module_param_named(debug, drm_debug, int, 0600);
 
 struct drm_head **drm_heads;
-struct drm_sysfs_class *drm_class;
+struct class *drm_class;
 struct proc_dir_entry *drm_proc_root;
 
 static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
@@ -72,11 +72,10 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 	init_timer(&dev->timer);
 	mutex_init(&dev->struct_mutex);
 	mutex_init(&dev->ctxlist_mutex);
-	mutex_init(&dev->bm.init_mutex);
 	mutex_init(&dev->bm.evict_mutex);
 
 	idr_init(&dev->drw_idr);
-	
+
 	dev->pdev = pdev;
 	dev->pci_device = pdev->device;
 	dev->pci_vendor = pdev->vendor;
@@ -86,9 +85,9 @@ static int drm_fill_in_dev(struct drm_device * dev, struct pci_dev *pdev,
 #endif
 	dev->irq = pdev->irq;
 
-	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER)) {
+	if (drm_ht_create(&dev->map_hash, DRM_MAP_HASH_ORDER))
 		return -ENOMEM;
-	}
+
 	if (drm_mm_init(&dev->offset_manager, DRM_FILE_PAGE_OFFSET_START,
 			DRM_FILE_PAGE_OFFSET_SIZE)) {
 		drm_ht_remove(&dev->map_hash);
@@ -184,11 +183,10 @@ static int drm_get_head(struct drm_device * dev, struct drm_head * head)
 				goto err_g1;
 			}
 
-			head->dev_class = drm_sysfs_device_add(drm_class, head);
-			if (IS_ERR(head->dev_class)) {
+			ret = drm_sysfs_device_add(dev, head);
+			if (ret) {
 				printk(KERN_ERR
 				       "DRM: Error sysfs_device_add.\n");
-				ret = PTR_ERR(head->dev_class);
 				goto err_g2;
 			}
 			*heads = head;
@@ -317,7 +315,7 @@ int drm_put_head(struct drm_head * head)
 	DRM_DEBUG("release secondary minor %d\n", minor);
 
 	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
-	drm_sysfs_device_remove(head->dev_class);
+	drm_sysfs_device_remove(head->dev);
 
 	*head = (struct drm_head){.dev = NULL};
 

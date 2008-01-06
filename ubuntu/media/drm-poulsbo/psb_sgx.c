@@ -37,15 +37,16 @@
 
 #include "psb_msvdx.h"
 
-int psb_submit_video_cmdbuf(struct drm_device * dev,
-		     struct drm_buffer_object * cmd_buffer,
-		     unsigned long cmd_offset, unsigned long cmd_size, struct drm_fence_object *fence);
+int psb_submit_video_cmdbuf(struct drm_device *dev,
+			    struct drm_buffer_object *cmd_buffer,
+			    unsigned long cmd_offset, unsigned long cmd_size,
+			    struct drm_fence_object *fence);
 
 struct psb_dstbuf_cache {
 	unsigned int dst;
 	uint32_t *use_page;
 	unsigned int use_index;
-	uint32_t use_background; 
+	uint32_t use_background;
 	struct drm_buffer_object *dst_buf;
 	unsigned long dst_offset;
 	uint32_t *dst_page;
@@ -54,12 +55,13 @@ struct psb_dstbuf_cache {
 	int dst_is_iomem;
 };
 
-static int psb_2d_wait_available(struct drm_psb_private * dev_priv, unsigned size)
+static int psb_2d_wait_available(struct drm_psb_private *dev_priv,
+				 unsigned size)
 {
-	u32 avail = PSB_RSGX32(PSB_CR_2D_SOCIF);
+	uint32_t avail = PSB_RSGX32(PSB_CR_2D_SOCIF);
 	int ret = 0;
 
-retry:
+      retry:
 	if (avail < size) {
 #if 0
 		psb_2D_irq_on(dev_priv);
@@ -80,7 +82,8 @@ retry:
 	return ret;
 }
 
-int psb_2d_submit(struct drm_psb_private * dev_priv, u32 * cmdbuf, unsigned size)
+int psb_2d_submit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
+		  unsigned size)
 {
 	int ret = 0;
 	int i;
@@ -103,10 +106,11 @@ int psb_2d_submit(struct drm_psb_private * dev_priv, u32 * cmdbuf, unsigned size
 	return 0;
 }
 
-int psb_blit_sequence(struct drm_psb_private * dev_priv)
+int psb_blit_sequence(struct drm_psb_private *dev_priv, uint32_t sequence)
 {
-	u32 buffer[8];
-	u32 *bufp = buffer;
+	uint32_t buffer[8];
+	uint32_t *bufp = buffer;
+	int ret;
 
 	*bufp++ = PSB_2D_FENCE_BH;
 
@@ -120,29 +124,34 @@ int psb_blit_sequence(struct drm_psb_private * dev_priv)
 	    PSB_2D_DSTCK_DISABLE |
 	    PSB_2D_SRCCK_DISABLE | PSB_2D_USE_FILL | PSB_2D_ROP3_PATCOPY;
 
-	*bufp++ = dev_priv->sequence[PSB_ENGINE_2D] << PSB_2D_FILLCOLOUR_SHIFT;
+	*bufp++ = sequence << PSB_2D_FILLCOLOUR_SHIFT;
 	*bufp++ = (0 << PSB_2D_DST_XSTART_SHIFT) |
 	    (0 << PSB_2D_DST_YSTART_SHIFT);
 	*bufp++ = (1 << PSB_2D_DST_XSIZE_SHIFT) | (1 << PSB_2D_DST_YSIZE_SHIFT);
 
 	*bufp++ = PSB_2D_FLUSH_BH;
 
-	return psb_2d_submit(dev_priv, buffer, bufp - buffer);
+	mutex_lock(&dev_priv->mutex_2d);
+	ret = psb_2d_submit(dev_priv, buffer, bufp - buffer);
+	mutex_unlock(&dev_priv->mutex_2d);
+	if (!ret)
+		psb_schedule_watchdog(dev_priv);
+	return ret;
 }
 
-int psb_emit_2d_copy_blit(struct drm_device * dev,
-			  u32 src_offset,
-			  u32 dst_offset, __u32 pages, int direction)
+int psb_emit_2d_copy_blit(struct drm_device *dev,
+			  uint32_t src_offset,
+			  uint32_t dst_offset, uint32_t pages, int direction)
 {
 	uint32_t cur_pages;
 	struct drm_psb_private *dev_priv = dev->dev_private;
-	u32 buf[10];
-	u32 *bufp;
-	u32 xstart;
-	u32 ystart;
-	u32 blit_cmd;
-	u32 pg_add;
-	int ret;
+	uint32_t buf[10];
+	uint32_t *bufp;
+	uint32_t xstart;
+	uint32_t ystart;
+	uint32_t blit_cmd;
+	uint32_t pg_add;
+	int ret = 0;
 
 	if (!dev_priv)
 		return 0;
@@ -162,6 +171,7 @@ int psb_emit_2d_copy_blit(struct drm_device * dev,
 	    (direction ? PSB_2D_COPYORDER_BR2TL : PSB_2D_COPYORDER_TL2BR);
 	xstart = (direction) ? ((PAGE_SIZE - 1) >> 2) : 0;
 
+	mutex_lock(&dev_priv->mutex_2d);
 	while (pages > 0) {
 		cur_pages = pages;
 		if (cur_pages > 2048)
@@ -189,31 +199,35 @@ int psb_emit_2d_copy_blit(struct drm_device * dev,
 
 		ret = psb_2d_submit(dev_priv, buf, bufp - buf);
 		if (ret)
-			return ret;
+			goto out;
 		pg_add = (cur_pages << PAGE_SHIFT) * ((direction) ? -1 : 1);
 		src_offset += pg_add;
 		dst_offset += pg_add;
 	}
-	return 0;
+      out:
+	mutex_unlock(&dev_priv->mutex_2d);
+	return ret;
 }
 
-void psb_init_2d(struct drm_psb_private * dev_priv)
+void psb_init_2d(struct drm_psb_private *dev_priv)
 {
-        psb_reset(dev_priv, 1);
+	mutex_init(&dev_priv->mutex_2d);
+	dev_priv->sequence_lock = SPIN_LOCK_UNLOCKED;
+	psb_reset(dev_priv, 1);
 	dev_priv->mmu_2d_offset = dev_priv->pg->gatt_start;
 	PSB_WSGX32(dev_priv->mmu_2d_offset, PSB_CR_BIF_TWOD_REQ_BASE);
 	(void)PSB_RSGX32(PSB_CR_BIF_TWOD_REQ_BASE);
 }
 
-int drm_psb_idle(struct drm_device * dev)
+int drm_psb_idle(struct drm_device *dev)
 {
 	struct drm_psb_private *dev_priv = dev->dev_private;
 	unsigned long _end = jiffies + DRM_HZ;
 	int busy;
 	int ret;
 
-	//	psb_pause_scheduler(dev_priv);
-	
+	//      psb_pause_scheduler(dev_priv);
+
 	if ((PSB_RSGX32(PSB_CR_2D_SOCIF) == _PSB_C2_SOCIF_EMPTY) &&
 	    ((PSB_RSGX32(PSB_CR_2D_BLIT_STATUS) & _PSB_C2B_STATUS_BUSY) == 0))
 		return 0;
@@ -222,7 +236,7 @@ int drm_psb_idle(struct drm_device * dev)
 		return -EBUSY;
 
 	if (dev->lock.hw_lock)
-	  drm_idlelock_take(&dev->lock);
+		drm_idlelock_take(&dev->lock);
 
 	do {
 		busy = (PSB_RSGX32(PSB_CR_2D_SOCIF) != _PSB_C2_SOCIF_EMPTY);
@@ -247,8 +261,8 @@ int drm_psb_idle(struct drm_device * dev)
 	ret = (busy) ? -EBUSY : 0;
       out:
 	if (dev->lock.hw_lock)
-	  
-	  drm_idlelock_release(&dev->lock);
+
+		drm_idlelock_release(&dev->lock);
 
 	if (ret == -EBUSY) {
 		dev_priv->engine_lockup_2d = 1;
@@ -260,7 +274,7 @@ int drm_psb_idle(struct drm_device * dev)
 	return ret;
 }
 
-static void psb_dereference_buffers_locked(struct psb_buflist_item * buffers,
+static void psb_dereference_buffers_locked(struct psb_buflist_item *buffers,
 					   unsigned num_buffers)
 {
 	while (num_buffers--)
@@ -268,17 +282,18 @@ static void psb_dereference_buffers_locked(struct psb_buflist_item * buffers,
 
 }
 
-static int psb_validate_buffer_list(struct drm_file * file_priv,
+static int psb_validate_buffer_list(struct drm_file *file_priv,
 				    unsigned fence_class,
 				    unsigned long data,
-				    struct psb_buflist_item * buffers,
+				    struct psb_buflist_item *buffers,
 				    unsigned *num_buffers)
 {
-        struct drm_bo_op_arg arg;
+	struct drm_bo_op_arg arg;
+	struct drm_device *dev = file_priv->head->dev;
 	struct drm_bo_op_req *req = &arg.d.req;
 	int ret = 0;
 	unsigned buf_count = 0;
-        struct psb_buflist_item *item = buffers;
+	struct psb_buflist_item *item = buffers;
 
 	do {
 		if (buf_count >= *num_buffers) {
@@ -293,14 +308,17 @@ static int psb_validate_buffer_list(struct drm_file * file_priv,
 			ret = -EFAULT;
 			DRM_ERROR("Error copying validate list.\n"
 				  "\tbuffer %d, user addr 0x%08lx %d\n",
-				  buf_count, (unsigned long) data, sizeof(arg));
+				  buf_count, (unsigned long)data, sizeof(arg));
 			goto out_err;
 		}
 
 		if (arg.handled) {
 			data = arg.next;
+			mutex_lock(&dev->struct_mutex);
 			item->bo =
-			    drm_lookup_buffer_object(file_priv, req->bo_req.handle, 1);
+			    drm_lookup_buffer_object(file_priv,
+						     req->bo_req.handle, 1);
+			mutex_unlock(&dev->struct_mutex);
 			buf_count++;
 			continue;
 		}
@@ -316,15 +334,14 @@ static int psb_validate_buffer_list(struct drm_file * file_priv,
 		PSB_DEBUG_GENERAL("validate Fence class is %d\n", fence_class);
 
 		item->ret = 0;
-		item->data = (void *) __user data;
-		ret = drm_bo_handle_validate(file_priv, 
-					     req->bo_req.handle, 
+		item->data = (void *)__user data;
+		ret = drm_bo_handle_validate(file_priv,
+					     req->bo_req.handle,
 					     fence_class,
 					     req->bo_req.flags,
 					     req->bo_req.mask,
 					     req->bo_req.hint,
-					     &item->rep, 
-					     &item->bo);
+					     0, &item->rep, &item->bo);
 		if (ret)
 			goto out_err;
 
@@ -346,12 +363,9 @@ static int psb_validate_buffer_list(struct drm_file * file_priv,
 	return ret;
 }
 
-
-
-
-
-int 
-psb_reg_submit(struct drm_psb_private *dev_priv, u32 *regs, unsigned int cmds)
+int
+psb_reg_submit(struct drm_psb_private *dev_priv, uint32_t * regs,
+	       unsigned int cmds)
 {
 	int i;
 	unsigned int offs;
@@ -359,54 +373,52 @@ psb_reg_submit(struct drm_psb_private *dev_priv, u32 *regs, unsigned int cmds)
 	/*
 	 * cmds is 32-bit words.
 	 */
-	
+
 	cmds >>= 1;
-	for (i=0; i<cmds; ++i) {
+	for (i = 0; i < cmds; ++i) {
 		offs = regs[0];
 
 		/*
 		 * Don't allow user-space to write to arbitrary registers.
 		 */
 
-		PSB_DEBUG_RENDER("Submit 0x%08x 0x%08x\n",
-				  regs[0], regs[1]);
+		PSB_DEBUG_RENDER("Submit 0x%08x 0x%08x\n", regs[0], regs[1]);
 #if 0
 		if (offs < PSB_LOW_REG_OFFS || offs >= PSB_HIGH_REG_OFFS) {
 			DRM_ERROR("Invalid register offset.\n");
 			return -EPERM;
 		}
 #endif
-		
+
 		PSB_WSGX32(regs[1], offs);
-		regs +=2;
+		regs += 2;
 	}
 	wmb();
 	return 0;
 }
-		
 
-
-	
 int
-psb_submit_copy_cmdbuf(struct drm_device * dev,
-		       struct drm_buffer_object * cmd_buffer,
-		       unsigned long cmd_offset, 
+psb_submit_copy_cmdbuf(struct drm_device *dev,
+		       struct drm_buffer_object *cmd_buffer,
+		       unsigned long cmd_offset,
 		       unsigned long cmd_size,
-		       int engine,
-		       uint32_t *copy_buffer)
+		       int engine, uint32_t * copy_buffer)
 {
 	unsigned long cmd_end = cmd_offset + (cmd_size << 2);
 	struct drm_psb_private *dev_priv = dev->dev_private;
 	unsigned long cmd_page_offset = cmd_offset - (cmd_offset & PAGE_MASK);
 	unsigned long cmd_next;
 	struct drm_bo_kmap_obj cmd_kmap;
-	u32 *cmd_page;
+	uint32_t *cmd_page;
 	unsigned cmds;
 	int is_iomem;
-	int ret;
+	int ret = 0;
 
 	if (cmd_size == 0)
 		return 0;
+
+	if (engine == PSB_ENGINE_2D)
+		mutex_lock(&dev_priv->mutex_2d);
 
 	do {
 		cmd_next = drm_bo_offset_end(cmd_offset, cmd_end);
@@ -419,16 +431,17 @@ psb_submit_copy_cmdbuf(struct drm_device * dev,
 		cmd_page_offset = (cmd_offset & ~PAGE_MASK) >> 2;
 		cmds = (cmd_next - cmd_offset) >> 2;
 
-		switch(engine) {
+		switch (engine) {
 		case PSB_ENGINE_2D:
-			ret = psb_2d_submit(dev_priv, cmd_page + cmd_page_offset, 
-					    cmds);
+			ret =
+			    psb_2d_submit(dev_priv, cmd_page + cmd_page_offset,
+					  cmds);
 			break;
 		case PSB_ENGINE_RASTERIZER:
 		case PSB_ENGINE_TA:
 		case PSB_ENGINE_HPRAST:
 			PSB_DEBUG_GENERAL("Reg copy.\n");
-			memcpy(copy_buffer, cmd_page + cmd_page_offset, 
+			memcpy(copy_buffer, cmd_page + cmd_page_offset,
 			       cmds * sizeof(uint32_t));
 			copy_buffer += cmds;
 			break;
@@ -437,9 +450,13 @@ psb_submit_copy_cmdbuf(struct drm_device * dev,
 		}
 		drm_bo_kunmap(&cmd_kmap);
 		if (ret)
-			return ret;
+			break;
 	} while (cmd_offset = cmd_next, cmd_offset != cmd_end);
-	return 0;
+
+	if (engine == PSB_ENGINE_2D)
+		mutex_unlock(&dev_priv->mutex_2d);
+
+	return ret;
 }
 
 static void psb_clear_dstbuf_cache(struct psb_dstbuf_cache *dst_cache)
@@ -455,8 +472,7 @@ static void psb_clear_dstbuf_cache(struct psb_dstbuf_cache *dst_cache)
 
 static int psb_update_dstbuf_cache(struct psb_dstbuf_cache *dst_cache,
 				   struct psb_buflist_item *buffers,
-				   unsigned int dst,
-				   unsigned long dst_offset)
+				   unsigned int dst, unsigned long dst_offset)
 {
 	int ret;
 
@@ -474,7 +490,7 @@ static int psb_update_dstbuf_cache(struct psb_dstbuf_cache *dst_cache,
 			drm_bo_kunmap(&dst_cache->dst_kmap);
 			dst_cache->dst_page = NULL;
 		}
-	
+
 		ret = drm_bo_kmap(dst_cache->dst_buf, dst_offset >> PAGE_SHIFT,
 				  1, &dst_cache->dst_kmap);
 		if (ret) {
@@ -482,28 +498,27 @@ static int psb_update_dstbuf_cache(struct psb_dstbuf_cache *dst_cache,
 				  "relocation.\n");
 			return ret;
 		}
-	
+
 		dst_cache->dst_page = drm_bmo_virtual(&dst_cache->dst_kmap,
-						     &dst_cache->dst_is_iomem);
+						      &dst_cache->dst_is_iomem);
 		dst_cache->dst_offset = dst_offset & PAGE_MASK;
 		dst_cache->dst_page_offset =
-			((dst_cache->dst_offset & PAGE_MASK) >> 2);
+		    ((dst_cache->dst_offset & PAGE_MASK) >> 2);
 	}
 	return 0;
 }
-	
+
 static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 			   uint32_t fence_class,
-			   const struct drm_psb_reloc * reloc,
-			   struct psb_buflist_item * buffers,
-			   int num_buffers, 
+			   const struct drm_psb_reloc *reloc,
+			   struct psb_buflist_item *buffers,
+			   int num_buffers,
 			   struct psb_dstbuf_cache *dst_cache,
-			   int no_wait,
-			   int interruptible)
+			   int no_wait, int interruptible)
 {
-        int reg;
-	u32 val;
-	u32 background;
+	int reg;
+	uint32_t val;
+	uint32_t background;
 	unsigned int index;
 	int ret;
 	unsigned int shift;
@@ -514,7 +529,6 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 		DRM_ERROR("Illegal relocation buffer %d\n", reloc->buffer);
 		return -EINVAL;
 	}
-
 #if 0
 	PSB_DEBUG_GENERAL("Reloc type %d\n"
 			  "\t where 0x%04x\n"
@@ -533,9 +547,7 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 			  reloc->shift,
 			  reloc->pre_add,
 			  reloc->background,
-			  reloc->dst_buffer,
-			  reloc->arg0,
-			  reloc->arg1);
+			  reloc->dst_buffer, reloc->arg0, reloc->arg1);
 #endif
 	/*
 	 * Fixme: Check buffer size.
@@ -551,17 +563,17 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 		val = buffers[reloc->buffer].bo->offset + reloc->pre_add;
 		break;
 	case PSB_RELOC_OP_2D_OFFSET:
-		val = buffers[reloc->buffer].bo->offset + reloc->pre_add - 
-			dev_priv->mmu_2d_offset;
-		if (val >=  PSB_2D_SIZE) {
+		val = buffers[reloc->buffer].bo->offset + reloc->pre_add -
+		    dev_priv->mmu_2d_offset;
+		if (val >= PSB_2D_SIZE) {
 			DRM_ERROR("2D relocation out of bounds\n");
 			return -EINVAL;
 		}
-		break;		
+		break;
 	case PSB_RELOC_OP_PDS_OFFSET:
-		val = buffers[reloc->buffer].bo->offset + reloc->pre_add - 
-			PSB_MEM_PDS_START;
-		if (val >=  (PSB_MEM_MMU_START - PSB_MEM_PDS_START)) {
+		val = buffers[reloc->buffer].bo->offset + reloc->pre_add -
+		    PSB_MEM_PDS_START;
+		if (val >= (PSB_MEM_MMU_START - PSB_MEM_PDS_START)) {
 			DRM_ERROR("PDS relocation out of bounds\n");
 			return -EINVAL;
 		}
@@ -569,27 +581,25 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 	case PSB_RELOC_OP_USE_OFFSET:
 	case PSB_RELOC_OP_USE_REG:
 		fence_type = buffers[reloc->buffer].bo->fence_type;
-		ret = psb_grab_use_base(dev_priv, 
-					buffers[reloc->buffer].bo->offset + 
+		ret = psb_grab_use_base(dev_priv,
+					buffers[reloc->buffer].bo->offset +
 					reloc->pre_add, reloc->arg0,
 					reloc->arg1, fence_class,
 					fence_type, no_wait,
-					interruptible,
-					&reg, &val);
+					interruptible, &reg, &val);
 		if (ret)
 			return ret;
 
-		val = (reloc->reloc_op == PSB_RELOC_OP_USE_REG) ? reg:val;
+		val = (reloc->reloc_op == PSB_RELOC_OP_USE_REG) ? reg : val;
 		break;
 	default:
 		DRM_ERROR("Unimplemented relocation.\n");
 		return -EINVAL;
 	}
 
-	shift = (reloc->shift & PSB_RELOC_SHIFT_MASK) >>
-		PSB_RELOC_SHIFT_SHIFT;
+	shift = (reloc->shift & PSB_RELOC_SHIFT_MASK) >> PSB_RELOC_SHIFT_SHIFT;
 	align_shift = (reloc->shift & PSB_RELOC_ALSHIFT_MASK) >>
-		PSB_RELOC_ALSHIFT_SHIFT;
+	    PSB_RELOC_ALSHIFT_SHIFT;
 
 	val = ((val >> align_shift) << shift);
 	index = reloc->where - dst_cache->dst_page_offset;
@@ -598,16 +608,16 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 
 	if (reloc->reloc_op == PSB_RELOC_OP_USE_OFFSET) {
 		if (dst_cache->use_page == dst_cache->dst_page &&
-		    dst_cache->use_index == index) 
+		    dst_cache->use_index == index)
 			background = dst_cache->use_background;
 		else
 			background = dst_cache->dst_page[index];
 	}
-#if 0	
+#if 0
 	if (dst_cache->dst_page[index] != PSB_RELOC_MAGIC &&
 	    reloc->reloc_op != PSB_RELOC_OP_USE_OFFSET)
-		DRM_ERROR("Inconsistent relocation 0x%08lx.\n", 
-			  (unsigned long) dst_cache->dst_page[index]);
+		DRM_ERROR("Inconsistent relocation 0x%08lx.\n",
+			  (unsigned long)dst_cache->dst_page[index]);
 #endif
 
 	val = (background & ~reloc->mask) | (val & reloc->mask);
@@ -620,7 +630,7 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 		dst_cache->use_background = val;
 	}
 
-        PSB_DEBUG_GENERAL("Reloc buffer %d index 0x%08x, value 0x%08x\n",
+	PSB_DEBUG_GENERAL("Reloc buffer %d index 0x%08x, value 0x%08x\n",
 			  reloc->dst_buffer, index, dst_cache->dst_page[index]);
 
 	return 0;
@@ -630,30 +640,28 @@ static int psb_ok_to_map_reloc(struct drm_psb_private *dev_priv,
 			       unsigned int num_pages)
 {
 	int ret = 0;
-    
+
 	spin_lock(&dev_priv->reloc_lock);
-	if (dev_priv->rel_mapped_pages + num_pages <= 
-	    PSB_MAX_RELOC_PAGES) {
+	if (dev_priv->rel_mapped_pages + num_pages <= PSB_MAX_RELOC_PAGES) {
 		dev_priv->rel_mapped_pages += num_pages;
 		ret = 1;
-	} 
+	}
 	spin_unlock(&dev_priv->reloc_lock);
 	return ret;
 }
 
-
-static int psb_fixup_relocs(struct drm_file * file_priv,
+static int psb_fixup_relocs(struct drm_file *file_priv,
 			    uint32_t fence_class,
 			    unsigned int num_relocs,
 			    unsigned int reloc_offset,
 			    uint32_t reloc_handle,
-			    struct psb_buflist_item * buffers,
+			    struct psb_buflist_item *buffers,
 			    unsigned int num_buffers,
-			    int no_wait,
-			    int interruptible)
+			    int no_wait, int interruptible)
 {
-	struct drm_psb_private *dev_priv = 
-		(struct drm_psb_private *) file_priv->head->dev->dev_private;
+	struct drm_device *dev = file_priv->head->dev;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_buffer_object *reloc_buffer = NULL;
 	unsigned int reloc_num_pages;
 	unsigned int reloc_first_page;
@@ -666,20 +674,22 @@ static int psb_fixup_relocs(struct drm_file * file_priv,
 	int ret = 0;
 	int registered = 0;
 
-
 	memset(&dst_cache, 0, sizeof(dst_cache));
 	memset(&reloc_kmap, 0, sizeof(reloc_kmap));
 
 	if (num_relocs == 0)
 		goto out;
 
+	mutex_lock(&dev->struct_mutex);
 	reloc_buffer = drm_lookup_buffer_object(file_priv, reloc_handle, 1);
+	mutex_unlock(&dev->struct_mutex);
 	if (!reloc_buffer)
 		goto out;
 
-
 	reloc_first_page = reloc_offset >> PAGE_SHIFT;
-	reloc_last_page = (reloc_offset + num_relocs * sizeof(struct drm_psb_reloc)) >> PAGE_SHIFT;
+	reloc_last_page =
+	    (reloc_offset +
+	     num_relocs * sizeof(struct drm_psb_reloc)) >> PAGE_SHIFT;
 	reloc_num_pages = reloc_last_page - reloc_first_page + 1;
 	reloc_offset &= ~PAGE_MASK;
 
@@ -689,8 +699,9 @@ static int psb_fixup_relocs(struct drm_file * file_priv,
 		goto out;
 	}
 
-	DRM_WAIT_ON(ret, dev_priv->rel_mapped_queue, 3*DRM_HZ,
-		    (registered = psb_ok_to_map_reloc(dev_priv, reloc_num_pages)));
+	DRM_WAIT_ON(ret, dev_priv->rel_mapped_queue, 3 * DRM_HZ,
+		    (registered =
+		     psb_ok_to_map_reloc(dev_priv, reloc_num_pages)));
 
 	if (ret == -EINTR) {
 		ret = -EAGAIN;
@@ -702,7 +713,7 @@ static int psb_fixup_relocs(struct drm_file * file_priv,
 		goto out;
 	}
 
-	ret = drm_bo_kmap(reloc_buffer, reloc_first_page, 
+	ret = drm_bo_kmap(reloc_buffer, reloc_first_page,
 			  reloc_num_pages, &reloc_kmap);
 
 	if (ret) {
@@ -710,13 +721,12 @@ static int psb_fixup_relocs(struct drm_file * file_priv,
 			  "\tReloc buffer id 0x%08x.\n"
 			  "\tReloc first page %d.\n"
 			  "\tReloc num pages %d.\n",
-			  reloc_handle,
-			  reloc_first_page,
-			  reloc_num_pages);
+			  reloc_handle, reloc_first_page, reloc_num_pages);
 		goto out;
 	}
-	reloc = (struct drm_psb_reloc *) 
-		((unsigned long) drm_bmo_virtual(&reloc_kmap, &reloc_is_iomem) + reloc_offset);
+	reloc = (struct drm_psb_reloc *)
+	    ((unsigned long)drm_bmo_virtual(&reloc_kmap, &reloc_is_iomem) +
+	     reloc_offset);
 
 	for (count = 0; count < num_relocs; ++count) {
 		ret = psb_apply_reloc(dev_priv, fence_class,
@@ -726,11 +736,11 @@ static int psb_fixup_relocs(struct drm_file * file_priv,
 		if (ret)
 			goto out1;
 		reloc++;
-	} 
+	}
 
-out1:
+      out1:
 	drm_bo_kunmap(&reloc_kmap);
-out:
+      out:
 	if (registered) {
 		spin_lock(&dev_priv->reloc_lock);
 		dev_priv->rel_mapped_pages -= reloc_num_pages;
@@ -751,7 +761,7 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 {
 	struct drm_device *dev = priv->head->dev;
 	struct drm_psb_private *dev_priv =
-		(struct drm_psb_private *) dev->dev_private;
+	    (struct drm_psb_private *)dev->dev_private;
 	int ret;
 
 	ret = mutex_lock_interruptible(&dev_priv->reset_mutex);
@@ -759,8 +769,7 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 		return -EAGAIN;
 
 	ret = psb_submit_copy_cmdbuf(dev, cmd_buffer, arg->cmdbuf_offset,
-				     arg->cmdbuf_size,
-				     PSB_ENGINE_2D, NULL);
+				     arg->cmdbuf_size, PSB_ENGINE_2D, NULL);
 	if (ret)
 		goto out_unlock;
 
@@ -770,7 +779,7 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 	if (cmd_buffer->fence != NULL)
 		drm_fence_usage_deref_unlocked(&cmd_buffer->fence);
 	mutex_unlock(&cmd_buffer->mutex);
-out_unlock:
+      out_unlock:
 	mutex_unlock(&dev_priv->reset_mutex);
 	return ret;
 }
@@ -781,24 +790,24 @@ static int psb_dump_page(struct drm_buffer_object *bo,
 {
 	struct drm_bo_kmap_obj kmobj;
 	int is_iomem;
-	u32 *p;
+	uint32_t *p;
 	int ret;
 	unsigned int i;
 
 	ret = drm_bo_kmap(bo, page_offset, 1, &kmobj);
 	if (ret)
 		return ret;
-	
+
 	p = drm_bmo_virtual(&kmobj, &is_iomem);
-	for (i=0; i<num; ++i)
+	for (i = 0; i < num; ++i)
 		PSB_DEBUG_GENERAL("0x%04x: 0x%08x\n", i, *p++);
-	
+
 	drm_bo_kunmap(&kmobj);
 	return 0;
 }
 #endif
 
-int psb_fence_for_errors(struct drm_file *priv, 
+int psb_fence_for_errors(struct drm_file *priv,
 			 struct drm_psb_cmdbuf_arg *arg,
 			 struct drm_fence_arg *fence_arg,
 			 struct drm_fence_object **fence_p)
@@ -812,7 +821,7 @@ int psb_fence_for_errors(struct drm_file *priv,
 	if (ret) {
 		DRM_ERROR("Could not fence buffer objects. "
 			  "Idling all engines.\n");
-		(void) drm_psb_idle(dev);
+		(void)drm_psb_idle(dev);
 		return ret;
 	}
 
@@ -826,22 +835,23 @@ int psb_fence_for_errors(struct drm_file *priv,
 		else {
 			DRM_ERROR("Could not create a fence user object. "
 				  "Idling all engines.\n");
-			(void) drm_psb_idle(dev);
+			(void)drm_psb_idle(dev);
 		}
 	}
 
-	if (fence_p) 
+	if (fence_p)
 		*fence_p = fence;
-	else 
+	else
 		drm_fence_usage_deref_unlocked(&fence);
 	return ret;
 }
-	
-int psb_handle_copyback(struct drm_device *dev, struct psb_buflist_item *buffers,
+
+int psb_handle_copyback(struct drm_device *dev,
+			struct psb_buflist_item *buffers,
 			unsigned int num_buffers, int ret, void *data)
 {
-        struct drm_psb_private *dev_priv =
-		(struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_bo_op_arg arg;
 	struct psb_buflist_item *item = buffers;
 	int err = ret;
@@ -857,7 +867,7 @@ int psb_handle_copyback(struct drm_device *dev, struct psb_buflist_item *buffers
 	}
 
 	if (ret != -EAGAIN) {
-		for (i=0; i<num_buffers; ++i) {
+		for (i = 0; i < num_buffers; ++i) {
 			arg.handled = 1;
 			arg.d.rep.ret = item->ret;
 			arg.d.rep.bo_info = item->rep;
@@ -871,10 +881,10 @@ int psb_handle_copyback(struct drm_device *dev, struct psb_buflist_item *buffers
 }
 
 static int psb_cmdbuf_video(struct drm_file *priv,
-			 struct drm_psb_cmdbuf_arg *arg,
-			 unsigned int num_buffers,
-			 struct drm_buffer_object *cmd_buffer, 
-			 struct drm_fence_arg *fence_arg)			 
+			    struct drm_psb_cmdbuf_arg *arg,
+			    unsigned int num_buffers,
+			    struct drm_buffer_object *cmd_buffer,
+			    struct drm_fence_arg *fence_arg)
 {
 	struct drm_device *dev = priv->head->dev;
 	struct drm_fence_object *fence;
@@ -882,23 +892,101 @@ static int psb_cmdbuf_video(struct drm_file *priv,
 
 	ret = psb_fence_for_errors(priv, arg, fence_arg, &fence);
 	ret = psb_submit_video_cmdbuf(dev, cmd_buffer, arg->cmdbuf_offset,
-			   arg->cmdbuf_size, fence);
+				      arg->cmdbuf_size, fence);
 
 	if (ret)
-		return ret;	
+		return ret;
 
 	drm_fence_usage_deref_unlocked(&fence);
 	mutex_lock(&cmd_buffer->mutex);
-	if (cmd_buffer->fence != NULL) 
+	if (cmd_buffer->fence != NULL)
 		drm_fence_usage_deref_unlocked(&cmd_buffer->fence);
 	mutex_unlock(&cmd_buffer->mutex);
 	return 0;
 }
-	
-int psb_cmdbuf_ioctl(struct drm_device *dev, void *data, 
+
+int psb_feedback_buf(struct drm_file *file_priv,
+		     uint32_t feedback_ops,
+		     uint32_t handle,
+		     uint32_t offset,
+		     uint32_t feedback_breakpoints,
+		     uint32_t feedback_size, struct psb_feedback_info *feedback)
+{
+	struct drm_buffer_object *bo;
+	struct page *page;
+	uint32_t page_no;
+	uint32_t page_offset;
+	int ret;
+
+	if (feedback_ops & ~PSB_FEEDBACK_OP_VISTEST) {
+		DRM_ERROR("Illegal feedback op.\n");
+		return -EINVAL;
+	}
+
+	if (feedback_breakpoints != 0) {
+		DRM_ERROR("Feedback breakpoints not implemented yet.\n");
+		return -EINVAL;
+	}
+
+	if (feedback_size < PSB_HW_FEEDBACK_SIZE * sizeof(uint32_t)) {
+		DRM_ERROR("Feedback buffer size too small.\n");
+		return -EINVAL;
+	}
+
+	page_offset = offset & ~PAGE_MASK;
+	if ((PAGE_SIZE - PSB_HW_FEEDBACK_SIZE * sizeof(uint32_t))
+	    < page_offset) {
+		DRM_ERROR("Illegal feedback buffer alignment.\n");
+		return -EINVAL;
+	}
+
+	ret = drm_bo_handle_validate(file_priv,
+				     handle,
+				     PSB_ENGINE_TA,
+				     DRM_BO_FLAG_MEM_LOCAL |
+				     DRM_BO_FLAG_CACHED |
+				     DRM_BO_FLAG_WRITE |
+				     PSB_BO_FLAG_FEEDBACK,
+				     DRM_BO_MASK_MEM |
+				     DRM_BO_FLAG_CACHED |
+				     DRM_BO_FLAG_WRITE |
+				     PSB_BO_FLAG_FEEDBACK, 0, 0, NULL, &bo);
+	if (ret)
+		return ret;
+
+	page_no = offset >> PAGE_SHIFT;
+	if (page_no >= bo->num_pages) {
+		ret = -EINVAL;
+		DRM_ERROR("Illegal feedback buffer offset.\n");
+		goto out_unref;
+	}
+
+	if (bo->ttm == NULL) {
+		ret = -EINVAL;
+		DRM_ERROR("Vistest buffer without TTM.\n");
+		goto out_unref;
+	}
+
+	page = drm_ttm_get_page(bo->ttm, page_no);
+	if (!page) {
+		ret = -ENOMEM;
+		goto out_unref;
+	}
+
+	feedback->page = page;
+	feedback->bo = bo;
+	feedback->offset = page_offset;
+	return 0;
+
+      out_unref:
+	drm_bo_usage_deref_unlocked(&bo);
+	return ret;
+}
+
+int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 		     struct drm_file *file_priv)
 {
-        drm_psb_cmdbuf_arg_t *arg = data;
+	drm_psb_cmdbuf_arg_t *arg = data;
 	int ret = 0;
 	unsigned num_buffers;
 	struct drm_buffer_object *cmd_buffer = NULL;
@@ -907,57 +995,56 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 	struct drm_psb_scene user_scene;
 	struct psb_scene_pool *pool = NULL;
 	struct psb_scene *scene = NULL;
-	struct drm_psb_private *dev_priv = 
-		(struct drm_psb_private *) file_priv->head->dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)file_priv->head->dev->dev_private;
 	int engine;
-	static int againcount = 0;
+	struct psb_feedback_info feedback;
 
 	if (!dev_priv)
 		return -EINVAL;
 
 	LOCK_TEST_WITH_RETURN(dev, file_priv);
-	
+
 	num_buffers = PSB_NUM_VALIDATE_BUFFERS;
 
 	ret = mutex_lock_interruptible(&dev_priv->cmdbuf_mutex);
 	if (ret)
 		return -EAGAIN;
 
-	engine = (arg->engine == PSB_ENGINE_RASTERIZER) ? 
-		PSB_ENGINE_TA : arg->engine;
+	engine = (arg->engine == PSB_ENGINE_RASTERIZER) ?
+	    PSB_ENGINE_TA : arg->engine;
 
-	ret = psb_validate_buffer_list(file_priv, engine, (unsigned long) arg->buffer_list,
-				       dev_priv->buffers, &num_buffers);
-	if (ret) 
+	ret =
+	    psb_validate_buffer_list(file_priv, engine,
+				     (unsigned long)arg->buffer_list,
+				     dev_priv->buffers, &num_buffers);
+	if (ret)
 		goto out_err0;
 
-	ret = psb_fixup_relocs(file_priv, engine, arg->num_relocs, 
+	ret = psb_fixup_relocs(file_priv, engine, arg->num_relocs,
 			       arg->reloc_offset, arg->reloc_handle,
 			       dev_priv->buffers, num_buffers, 0, 1);
 	if (ret)
 		goto out_err0;
 
-#if 0
-	if (engine == PSB_ENGINE_TA && (++againcount % 10) != 0) {
-	  ret = -EAGAIN;
-	  goto out_err0;
-	}
-#endif
-
+	mutex_lock(&dev->struct_mutex);
 	cmd_buffer = drm_lookup_buffer_object(file_priv, arg->cmdbuf_handle, 1);
+	mutex_unlock(&dev->struct_mutex);
 	if (!cmd_buffer) {
 		ret = -EINVAL;
 		goto out_err0;
 	}
 
-	switch(arg->engine) {
+	switch (arg->engine) {
 	case PSB_ENGINE_2D:
 		ret = psb_cmdbuf_2d(file_priv, arg, cmd_buffer, &fence_arg);
 		if (ret)
 			goto out_err0;
 		break;
 	case PSB_ENGINE_VIDEO:
-		ret = psb_cmdbuf_video(file_priv, arg, num_buffers, cmd_buffer, &fence_arg);
+		ret =
+		    psb_cmdbuf_video(file_priv, arg, num_buffers, cmd_buffer,
+				     &fence_arg);
 		break;
 	case PSB_ENGINE_RASTERIZER:
 		ret = psb_cmdbuf_raster(file_priv, arg, cmd_buffer, &fence_arg);
@@ -971,25 +1058,27 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 			ta_buffer = cmd_buffer;
 			mutex_unlock(&dev->struct_mutex);
 		} else {
-			ta_buffer = drm_lookup_buffer_object(file_priv, arg->cmdbuf_handle, 1);
+			mutex_lock(&dev->struct_mutex);
+			ta_buffer =
+			    drm_lookup_buffer_object(file_priv,
+						     arg->cmdbuf_handle, 1);
+			mutex_unlock(&dev->struct_mutex);
 			if (!ta_buffer) {
 				ret = -EINVAL;
 				goto out_err0;
 			}
 		}
 
-		ret = copy_from_user(&user_scene, 
-				     (void __user *) 
-				     ((unsigned long) arg->scene_arg), 
+		ret = copy_from_user(&user_scene, (void __user *)
+				     ((unsigned long)arg->scene_arg),
 				     sizeof(user_scene));
 		if (ret)
 			goto out_err0;
 
 		if (!user_scene.handle_valid) {
-			pool = psb_scene_pool_alloc(file_priv, 0, 
+			pool = psb_scene_pool_alloc(file_priv, 0,
 						    user_scene.num_buffers,
-						    user_scene.w,
-						    user_scene.h);
+						    user_scene.w, user_scene.h);
 			if (!pool) {
 				ret = -ENOMEM;
 				goto out_err0;
@@ -997,18 +1086,17 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 
 			user_scene.handle = psb_scene_pool_handle(pool);
 			user_scene.handle_valid = 1;
-			ret = copy_to_user((void __user *) 
-					   ((unsigned long) arg->scene_arg), 
-					   &user_scene,
-					   sizeof(user_scene));
-					      
+			ret = copy_to_user((void __user *)
+					   ((unsigned long)arg->scene_arg),
+					   &user_scene, sizeof(user_scene));
+
 			if (ret)
 				goto out_err0;
 		} else {
 			mutex_lock(&dev->struct_mutex);
-			pool = psb_scene_pool_lookup_devlocked(file_priv, 
-							       user_scene.handle,
-							       1);
+			pool = psb_scene_pool_lookup_devlocked(file_priv,
+							       user_scene.
+							       handle, 1);
 			mutex_unlock(&dev->struct_mutex);
 			if (!pool) {
 				ret = -EINVAL;
@@ -1019,43 +1107,53 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 		ret = psb_validate_scene_pool(pool, 0, 0, 0,
 					      user_scene.w,
 					      user_scene.h,
-					      arg->ta_flags & 
-					      PSB_TA_FLAG_LASTPASS,
-					      &scene);
+					      arg->ta_flags &
+					      PSB_TA_FLAG_LASTPASS, &scene);
 		if (ret)
 			goto out_err0;
 
-	        ret = psb_cmdbuf_ta(file_priv, arg, cmd_buffer, ta_buffer, 
-					scene, &fence_arg);
+		memset(&feedback, 0, sizeof(feedback));
+		if (arg->feedback_ops) {
+			ret = psb_feedback_buf(file_priv,
+					       arg->feedback_ops,
+					       arg->feedback_handle,
+					       arg->feedback_offset,
+					       arg->feedback_breakpoints,
+					       arg->feedback_size, &feedback);
+			if (ret)
+				goto out_err0;
+		}
+		ret = psb_cmdbuf_ta(file_priv, arg, cmd_buffer, ta_buffer,
+				    scene, &feedback, &fence_arg);
 		if (ret)
 			goto out_err0;
 		break;
 	default:
-		DRM_ERROR("Unimplemented command submission mechanism (%x).\n", arg->engine);
+		DRM_ERROR("Unimplemented command submission mechanism (%x).\n",
+			  arg->engine);
 		ret = -EINVAL;
 		goto out_err0;
 	}
-	
-	if (!(arg->fence_flags & DRM_FENCE_FLAG_NO_USER))
-	{
+
+	if (!(arg->fence_flags & DRM_FENCE_FLAG_NO_USER)) {
 		ret = copy_to_user((void __user *)
-				   ((unsigned long) arg->fence_arg),
-				   &fence_arg,
-				   sizeof(fence_arg));
+				   ((unsigned long)arg->fence_arg),
+				   &fence_arg, sizeof(fence_arg));
 	}
-		
-out_err0:
-	ret = psb_handle_copyback(dev, dev_priv->buffers, num_buffers, ret, data);
+
+      out_err0:
+	ret =
+	    psb_handle_copyback(dev, dev_priv->buffers, num_buffers, ret, data);
 	mutex_lock(&dev->struct_mutex);
-	if (scene) 
+	if (scene)
 		psb_scene_unref_devlocked(&scene);
 	if (pool)
 		psb_scene_pool_unref_devlocked(&pool);
 	if (cmd_buffer)
 		drm_bo_usage_deref_locked(&cmd_buffer);
 	if (ta_buffer)
-	        drm_bo_usage_deref_locked(&ta_buffer);
-	
+		drm_bo_usage_deref_locked(&ta_buffer);
+
 	psb_dereference_buffers_locked(dev_priv->buffers, num_buffers);
 	mutex_unlock(&dev->struct_mutex);
 	mutex_unlock(&dev_priv->cmdbuf_mutex);

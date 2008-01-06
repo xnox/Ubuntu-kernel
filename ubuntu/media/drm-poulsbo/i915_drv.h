@@ -1,10 +1,10 @@
 /* i915_drv.h -- Private header for the I915 driver -*- linux-c -*-
  */
 /*
- * 
+ *
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the
  * "Software"), to deal in the Software without restriction, including
@@ -12,11 +12,11 @@
  * distribute, sub license, and/or sell copies of the Software, and to
  * permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice (including the
  * next paragraph) shall be included in all copies or substantial portions
  * of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
@@ -24,7 +24,7 @@
  * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
  * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- * 
+ *
  */
 
 #ifndef _I915_DRV_H_
@@ -58,18 +58,23 @@
  * 1.8: New ioctl for ARB_Occlusion_Query
  * 1.9: Usable page flipping and triple buffering
  * 1.10: Plane/pipe disentangling
+ * 1.11: TTM superioctl
  */
 #define DRIVER_MAJOR		1
 #if defined(I915_HAVE_FENCE) && defined(I915_HAVE_BUFFER)
-#define DRIVER_MINOR		10
+#define DRIVER_MINOR		11
 #else
 #define DRIVER_MINOR		6
 #endif
 #define DRIVER_PATCHLEVEL	0
 
-#define DRM_DRIVER_PRIVATE_T drm_i915_private_t
+#define DRM_DRIVER_PRIVATE_T struct drm_i915_private
 
-typedef struct _drm_i915_ring_buffer {
+#ifdef I915_HAVE_BUFFER
+#define I915_MAX_VALIDATE_BUFFERS 4096
+#endif
+
+struct drm_i915_ring_buffer {
 	int tail_mask;
 	unsigned long Start;
 	unsigned long End;
@@ -79,7 +84,7 @@ typedef struct _drm_i915_ring_buffer {
 	int tail;
 	int space;
 	drm_local_map_t map;
-} drm_i915_ring_buffer_t;
+};
 
 struct mem_block {
 	struct mem_block *next;
@@ -89,26 +94,26 @@ struct mem_block {
 	struct drm_file *file_priv; /* NULL: free, -1: heap, other: real files */
 };
 
-typedef struct _drm_i915_vbl_swap {
+struct drm_i915_vbl_swap {
 	struct list_head head;
 	drm_drawable_t drw_id;
 	unsigned int plane;
 	unsigned int sequence;
 	int flip;
-} drm_i915_vbl_swap_t;
+};
 
-typedef struct drm_i915_private {
-	drm_buffer_object_t *ring_buffer;
+struct drm_i915_private {
+	struct drm_buffer_object *ring_buffer;
 	drm_local_map_t *sarea;
 	drm_local_map_t *mmio_map;
 
 	unsigned long mmiobase;
 	unsigned long mmiolen;
 
-	drm_i915_sarea_t *sarea_priv;
-	drm_i915_ring_buffer_t ring;
+	struct drm_i915_sarea *sarea_priv;
+	struct drm_i915_ring_buffer ring;
 
-	drm_dma_handle_t *status_page_dmah;
+	struct drm_dma_handle *status_page_dmah;
 	void *hw_status_page;
 	dma_addr_t dma_status_page;
 	uint32_t counter;
@@ -141,9 +146,12 @@ typedef struct drm_i915_private {
 #endif
 #ifdef I915_HAVE_BUFFER
 	void *agp_iomap;
+	unsigned int max_validate_buffers;
+	struct mutex cmdbuf_mutex;
 #endif
+
 	DRM_SPINTYPE swaps_lock;
-	drm_i915_vbl_swap_t vbl_swaps;
+	struct drm_i915_vbl_swap vbl_swaps;
 	unsigned int swaps_pending;
 
 	/* LVDS info */
@@ -151,7 +159,8 @@ typedef struct drm_i915_private {
 	bool panel_wants_dither;
 	struct drm_display_mode *panel_fixed_mode;
 
-	/* Register state */
+ 	/* Register state */
+	u8 saveLBB;
 	u32 saveDSPACNTR;
 	u32 saveDSPBCNTR;
 	u32 savePIPEACONF;
@@ -168,11 +177,16 @@ typedef struct drm_i915_private {
 	u32 saveVTOTAL_A;
 	u32 saveVBLANK_A;
 	u32 saveVSYNC_A;
+	u32 saveBCLRPAT_A;
 	u32 saveDSPASTRIDE;
 	u32 saveDSPASIZE;
 	u32 saveDSPAPOS;
 	u32 saveDSPABASE;
 	u32 saveDSPASURF;
+	u32 saveDSPATILEOFF;
+	u32 savePFIT_PGM_RATIOS;
+	u32 saveBLC_PWM_CTL;
+	u32 saveBLC_PWM_CTL2;
 	u32 saveFPB0;
 	u32 saveFPB1;
 	u32 saveDPLL_B;
@@ -183,17 +197,21 @@ typedef struct drm_i915_private {
 	u32 saveVTOTAL_B;
 	u32 saveVBLANK_B;
 	u32 saveVSYNC_B;
+	u32 saveBCLRPAT_B;
 	u32 saveDSPBSTRIDE;
 	u32 saveDSPBSIZE;
 	u32 saveDSPBPOS;
 	u32 saveDSPBBASE;
 	u32 saveDSPBSURF;
+	u32 saveDSPBTILEOFF;
 	u32 saveVCLK_DIVISOR_VGA0;
 	u32 saveVCLK_DIVISOR_VGA1;
 	u32 saveVCLK_POST_DIV;
 	u32 saveVGACNTRL;
 	u32 saveADPA;
 	u32 saveLVDS;
+	u32 saveLVDSPP_ON;
+	u32 saveLVDSPP_OFF;
 	u32 saveDVOA;
 	u32 saveDVOB;
 	u32 saveDVOC;
@@ -202,11 +220,24 @@ typedef struct drm_i915_private {
 	u32 savePP_CONTROL;
 	u32 savePP_CYCLE;
 	u32 savePFIT_CONTROL;
-	u32 savePaletteA[256];
-	u32 savePaletteB[256];
-	u32 saveSWF[17];
-	u32 saveBLC_PWM_CTL;
-} drm_i915_private_t;
+	u32 save_palette_a[256];
+	u32 save_palette_b[256];
+	u32 saveFBC_CFB_BASE;
+	u32 saveFBC_LL_BASE;
+	u32 saveFBC_CONTROL;
+	u32 saveFBC_CONTROL2;
+	u32 saveSWF0[16];
+	u32 saveSWF1[16];
+	u32 saveSWF2[3];
+	u8 saveMSR;
+	u8 saveSR[8];
+	u8 saveGR[24];
+	u8 saveAR_INDEX;
+	u8 saveAR[20];
+	u8 saveDACMASK;
+	u8 saveDACDATA[256*3]; /* 256 3-byte colors */
+	u8 saveCR[36];
+};
 
 enum intel_chip_family {
 	CHIP_I8XX = 0x01,
@@ -222,6 +253,7 @@ extern int i915_max_ioctl;
 				/* i915_dma.c */
 extern void i915_kernel_lost_context(struct drm_device * dev);
 extern int i915_driver_load(struct drm_device *, unsigned long flags);
+extern int i915_driver_unload(struct drm_device *dev);
 extern void i915_driver_lastclose(struct drm_device * dev);
 extern void i915_driver_preclose(struct drm_device *dev,
 				 struct drm_file *file_priv);
@@ -232,7 +264,8 @@ extern void i915_emit_breadcrumb(struct drm_device *dev);
 extern void i915_dispatch_flip(struct drm_device * dev, int pipes, int sync);
 extern int i915_emit_mi_flush(struct drm_device *dev, uint32_t flush);
 extern int i915_driver_firstopen(struct drm_device *dev);
-extern int i915_dma_cleanup(drm_device_t * dev);
+extern int i915_do_cleanup_pageflip(struct drm_device *dev);
+extern int i915_dma_cleanup(struct drm_device *dev);
 
 /* i915_irq.c */
 extern int i915_irq_emit(struct drm_device *dev, void *data,
@@ -240,6 +273,7 @@ extern int i915_irq_emit(struct drm_device *dev, void *data,
 extern int i915_irq_wait(struct drm_device *dev, void *data,
 			 struct drm_file *file_priv);
 
+extern void i915_driver_wait_next_vblank(struct drm_device *dev, int pipe);
 extern int i915_driver_vblank_wait(struct drm_device *dev, unsigned int *sequence);
 extern int i915_driver_vblank_wait2(struct drm_device *dev, unsigned int *sequence);
 extern irqreturn_t i915_driver_irq_handler(DRM_IRQ_ARGS);
@@ -251,8 +285,9 @@ extern int i915_vblank_pipe_set(struct drm_device *dev, void *data,
 extern int i915_vblank_pipe_get(struct drm_device *dev, void *data,
 				struct drm_file *file_priv);
 extern int i915_emit_irq(struct drm_device * dev);
-extern void i915_user_irq_on(drm_i915_private_t *dev_priv);
-extern void i915_user_irq_off(drm_i915_private_t *dev_priv);
+extern void i915_user_irq_on(struct drm_i915_private *dev_priv);
+extern void i915_user_irq_off(struct drm_i915_private *dev_priv);
+extern void i915_enable_interrupt (struct drm_device *dev);
 extern int i915_vblank_swap(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
 
@@ -276,7 +311,7 @@ extern void i915_mem_release(struct drm_device * dev,
 extern void i915_fence_handler(struct drm_device *dev);
 extern int i915_fence_emit_sequence(struct drm_device *dev, uint32_t class,
 				    uint32_t flags,
-				    uint32_t *sequence, 
+				    uint32_t *sequence,
 				    uint32_t *native_type);
 extern void i915_poke_flush(struct drm_device *dev, uint32_t class);
 extern int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t flags);
@@ -285,26 +320,31 @@ extern int i915_fence_has_irq(struct drm_device *dev, uint32_t class, uint32_t f
 #ifdef I915_HAVE_BUFFER
 /* i915_buffer.c */
 extern struct drm_ttm_backend *i915_create_ttm_backend_entry(struct drm_device *dev);
-extern int i915_fence_types(struct drm_buffer_object *bo, uint32_t *fclass, 
-	                    uint32_t *type);
+extern int i915_fence_types(struct drm_buffer_object *bo, uint32_t *fclass,
+			    uint32_t *type);
 extern int i915_invalidate_caches(struct drm_device *dev, uint64_t buffer_flags);
 extern int i915_init_mem_type(struct drm_device *dev, uint32_t type,
 			       struct drm_mem_type_manager *man);
 extern uint32_t i915_evict_mask(struct drm_buffer_object *bo);
 extern int i915_move(struct drm_buffer_object *bo, int evict,
-	      	int no_wait, struct drm_bo_mem_reg *new_mem);
+		int no_wait, struct drm_bo_mem_reg *new_mem);
+void i915_flush_ttm(struct drm_ttm *ttm);
+#endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
+extern void intel_init_chipset_flush_compat(struct drm_device *dev);
+extern void intel_fini_chipset_flush_compat(struct drm_device *dev);
 #endif
 
 
 /* modesetting */
-extern void intel_modeset_init(drm_device_t *dev);
-extern void intel_modeset_cleanup(drm_device_t *dev);
+extern void intel_modeset_init(struct drm_device *dev);
+extern void intel_modeset_cleanup(struct drm_device *dev);
 
 
 #define I915_READ(reg)          DRM_READ32(dev_priv->mmio_map, (reg))
 #define I915_WRITE(reg,val)     DRM_WRITE32(dev_priv->mmio_map, (reg), (val))
-#define I915_READ16(reg) 	DRM_READ16(dev_priv->mmio_map, (reg))
+#define I915_READ16(reg)	DRM_READ16(dev_priv->mmio_map, (reg))
 #define I915_WRITE16(reg,val)	DRM_WRITE16(dev_priv->mmio_map, (reg), (val))
 
 #define I915_VERBOSE 0
@@ -339,6 +379,8 @@ extern void intel_modeset_cleanup(drm_device_t *dev);
 	I915_WRITE(LP_RING + RING_TAIL, outring);			\
 } while(0)
 
+#define MI_NOOP	(0x00 << 23)
+
 extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 
 /*
@@ -362,7 +404,51 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define INTEL_915G_GMCH_GMS_STOLEN_48M	(0x6 << 4)
 #define INTEL_915G_GMCH_GMS_STOLEN_64M	(0x7 << 4)
 
-#define GFX_OP_USER_INTERRUPT 		((0<<29)|(2<<23))
+/* Extended config space */
+#define LBB 0xf4
+
+/* VGA stuff */
+
+#define VGA_ST01_MDA 0x3ba
+#define VGA_ST01_CGA 0x3da
+
+#define VGA_MSR_WRITE 0x3c2
+#define VGA_MSR_READ 0x3cc
+#define   VGA_MSR_MEM_EN (1<<1)
+#define   VGA_MSR_CGA_MODE (1<<0)
+
+#define VGA_SR_INDEX 0x3c4
+#define VGA_SR_DATA 0x3c5
+
+#define VGA_AR_INDEX 0x3c0
+#define   VGA_AR_VID_EN (1<<5)
+#define VGA_AR_DATA_WRITE 0x3c0
+#define VGA_AR_DATA_READ 0x3c1
+
+#define VGA_GR_INDEX 0x3ce
+#define VGA_GR_DATA 0x3cf
+/* GR05 */
+#define   VGA_GR_MEM_READ_MODE_SHIFT 3
+#define     VGA_GR_MEM_READ_MODE_PLANE 1
+/* GR06 */
+#define   VGA_GR_MEM_MODE_MASK 0xc
+#define   VGA_GR_MEM_MODE_SHIFT 2
+#define   VGA_GR_MEM_A0000_AFFFF 0
+#define   VGA_GR_MEM_A0000_BFFFF 1
+#define   VGA_GR_MEM_B0000_B7FFF 2
+#define   VGA_GR_MEM_B0000_BFFFF 3
+
+#define VGA_DACMASK 0x3c6
+#define VGA_DACRX 0x3c7
+#define VGA_DACWX 0x3c8
+#define VGA_DACDATA 0x3c9
+
+#define VGA_CR_INDEX_MDA 0x3b4
+#define VGA_CR_DATA_MDA 0x3b5
+#define VGA_CR_INDEX_CGA 0x3d4
+#define VGA_CR_DATA_CGA 0x3d5
+
+#define GFX_OP_USER_INTERRUPT		((0<<29)|(2<<23))
 #define GFX_OP_BREAKPOINT_INTERRUPT	((0<<29)|(1<<23))
 #define CMD_REPORT_HEAD			(7<<23)
 #define CMD_STORE_DWORD_IDX		((0x21<<23) | 0x1)
@@ -372,7 +458,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define MI_NO_WRITE_FLUSH    (1 << 2)
 #define MI_READ_FLUSH        (1 << 0)
 #define MI_EXE_FLUSH         (1 << 1)
-#define MI_END_SCENE         (1 << 4) /* flush ta and incr scene count */
+#define MI_END_SCENE         (1 << 4) /* flush binner and incr scene count */
 #define MI_SCENE_COUNT       (1 << 3) /* just increment scene count */
 
 /* Packet to load a register value from the ring/batch command stream:
@@ -384,16 +470,49 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define BB1_UNPROTECTED       (0<<0)
 #define BB2_END_ADDR_MASK     (~0x7)
 
+#define I915REG_HWS_PGA		0x02080
+
+/* Framebuffer compression */
+#define FBC_CFB_BASE		0x03200 /* 4k page aligned */
+#define FBC_LL_BASE		0x03204 /* 4k page aligned */
+#define FBC_CONTROL		0x03208
+#define   FBC_CTL_EN		(1<<31)
+#define   FBC_CTL_PERIODIC	(1<<30)
+#define   FBC_CTL_INTERVAL_SHIFT (16)
+#define   FBC_CTL_UNCOMPRESSIBLE (1<<14)
+#define   FBC_CTL_STRIDE_SHIFT	(5)
+#define   FBC_CTL_FENCENO	(1<<0)
+#define FBC_COMMAND		0x0320c
+#define   FBC_CMD_COMPRESS	(1<<0)
+#define FBC_STATUS		0x03210
+#define   FBC_STAT_COMPRESSING	(1<<31)
+#define   FBC_STAT_COMPRESSED	(1<<30)
+#define   FBC_STAT_MODIFIED	(1<<29)
+#define   FBC_STAT_CURRENT_LINE	(1<<0)
+#define FBC_CONTROL2		0x03214
+#define   FBC_CTL_FENCE_DBL	(0<<4)
+#define   FBC_CTL_IDLE_IMM	(0<<2)
+#define   FBC_CTL_IDLE_FULL	(1<<2)
+#define   FBC_CTL_IDLE_LINE	(2<<2)
+#define   FBC_CTL_IDLE_DEBUG	(3<<2)
+#define   FBC_CTL_CPU_FENCE	(1<<1)
+#define   FBC_CTL_PLANEA	(0<<0)
+#define   FBC_CTL_PLANEB	(1<<0)
+#define FBC_FENCE_OFF		0x0321b
+
+#define FBC_LL_SIZE		(1536)
+#define FBC_LL_PAD		(32)
+
 /* Interrupt bits:
  */
 #define USER_INT_FLAG    (1<<1)
 #define VSYNC_PIPEB_FLAG (1<<5)
 #define VSYNC_PIPEA_FLAG (1<<7)
-#define HWB_OOM_FLAG     (1<<13) /* ta out of memory */
+#define HWB_OOM_FLAG     (1<<13) /* binner out of memory */
 
 #define I915REG_HWSTAM		0x02098
 #define I915REG_INT_IDENTITY_R	0x020a4
-#define I915REG_INT_MASK_R 	0x020a8
+#define I915REG_INT_MASK_R	0x020a8
 #define I915REG_INT_ENABLE_R	0x020a0
 #define I915REG_INSTPM	        0x020c0
 
@@ -463,7 +582,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define SRX_INDEX		0x3c4
 #define SRX_DATA		0x3c5
 #define SR01			1
-#define SR01_SCREEN_OFF 	(1<<5)
+#define SR01_SCREEN_OFF		(1<<5)
 
 #define PPCR			0x61204
 #define PPCR_ON			(1<<0)
@@ -485,29 +604,29 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define ADPA_DPMS_OFF		(3<<10)
 
 #define NOPID                   0x2094
-#define LP_RING     		0x2030
-#define HP_RING     		0x2040
-/* The ta has its own ring buffer:
+#define LP_RING			0x2030
+#define HP_RING			0x2040
+/* The binner has its own ring buffer:
  */
 #define HWB_RING		0x2400
 
-#define RING_TAIL      		0x00
+#define RING_TAIL		0x00
 #define TAIL_ADDR		0x001FFFF8
-#define RING_HEAD      		0x04
-#define HEAD_WRAP_COUNT     	0xFFE00000
-#define HEAD_WRAP_ONE       	0x00200000
-#define HEAD_ADDR           	0x001FFFFC
-#define RING_START     		0x08
-#define START_ADDR          	0x0xFFFFF000
-#define RING_LEN       		0x0C
-#define RING_NR_PAGES       	0x001FF000
-#define RING_REPORT_MASK    	0x00000006
-#define RING_REPORT_64K     	0x00000002
-#define RING_REPORT_128K    	0x00000004
-#define RING_NO_REPORT      	0x00000000
-#define RING_VALID_MASK     	0x00000001
-#define RING_VALID          	0x00000001
-#define RING_INVALID        	0x00000000
+#define RING_HEAD		0x04
+#define HEAD_WRAP_COUNT		0xFFE00000
+#define HEAD_WRAP_ONE		0x00200000
+#define HEAD_ADDR		0x001FFFFC
+#define RING_START		0x08
+#define START_ADDR		0x0xFFFFF000
+#define RING_LEN		0x0C
+#define RING_NR_PAGES		0x001FF000
+#define RING_REPORT_MASK	0x00000006
+#define RING_REPORT_64K		0x00000002
+#define RING_REPORT_128K	0x00000004
+#define RING_NO_REPORT		0x00000000
+#define RING_VALID_MASK		0x00000001
+#define RING_VALID		0x00000001
+#define RING_INVALID		0x00000000
 
 /* Instruction parser error reg:
  */
@@ -525,7 +644,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
  */
 #define DMA_FADD_S		0x20d4
 
-/* Cache mode 0 reg.  
+/* Cache mode 0 reg.
  *  - Manipulating render cache behaviour is central
  *    to the concept of zone rendering, tuning this reg can help avoid
  *    unnecessary render cache reads and even writes (for z/stencil)
@@ -554,7 +673,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define BINCTL			0x2420
 #define BC_MASK			(1 << 9)
 
-/* Binned scene info.  
+/* Binned scene info.
  */
 #define BINSCENE		0x2428
 #define BS_OP_LOAD		(1 << 8)
@@ -572,7 +691,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
  */
 #define BDCD			0x2488
 
-/* Binner pointer cache debug reg: 
+/* Binner pointer cache debug reg:
  */
 #define BPCD			0x248c
 
@@ -591,7 +710,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define BMP_BUFFER_SIZE_SHIFT	1
 #define BMP_ENABLE		(1 << 0)
 
-/* Get/put memory from the ta memory pool:
+/* Get/put memory from the binner memory pool:
  */
 #define BMP_GET			0x2438
 #define BMP_PUT			0x2440
@@ -635,9 +754,9 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define   BLT_DEPTH_32			(3<<24)
 #define   BLT_ROP_GXCOPY		(0xcc<<16)
 
-#define MI_BATCH_BUFFER 	((0x30<<23)|1)
-#define MI_BATCH_BUFFER_START 	(0x31<<23)
-#define MI_BATCH_BUFFER_END 	(0xA<<23)
+#define MI_BATCH_BUFFER		((0x30<<23)|1)
+#define MI_BATCH_BUFFER_START	(0x31<<23)
+#define MI_BATCH_BUFFER_END	(0xA<<23)
 #define MI_BATCH_NON_SECURE	(1)
 
 #define MI_BATCH_NON_SECURE_I965 (1<<8)
@@ -659,7 +778,7 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define DSPBCNTR                0x71180
 #define DISPPLANE_SEL_PIPE_MASK                 (1<<24)
 
-/* Define the region of interest for the ta:
+/* Define the region of interest for the binner:
  */
 #define CMD_OP_BIN_CONTROL	 ((0x3<<29)|(0x1d<<24)|(0x84<<16)|4)
 
@@ -671,6 +790,8 @@ extern int i915_wait_ring(struct drm_device * dev, int n, const char *caller);
 #define READ_BREADCRUMB(dev_priv)  (((volatile u32*)(dev_priv->hw_status_page))[5])
 #define READ_HWSP(dev_priv, reg)  (((volatile u32*)(dev_priv->hw_status_page))[reg])
 
-#define PRIMARY_RINGBUFFER_SIZE         (128*1024)
+#define PRIMARY_RINGBUFFER_SIZE		(128*1024)
+
+#define BLC_PWM_CTL2		0x61250
 
 #endif

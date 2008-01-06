@@ -38,9 +38,7 @@ int drm_regs_alloc(struct drm_reg_manager *manager,
 		   const void *data,
 		   uint32_t fence_class,
 		   uint32_t fence_type,
-		   int interruptible,
-		   int no_wait,
-		   struct drm_reg **reg)
+		   int interruptible, int no_wait, struct drm_reg **reg)
 {
 	struct drm_reg *entry, *next_entry;
 	int ret;
@@ -61,10 +59,10 @@ int drm_regs_alloc(struct drm_reg_manager *manager,
 	/*
 	 * Search the lru list.
 	 */
-	
+
 	list_for_each_entry_safe(entry, next_entry, &manager->lru, head) {
 		struct drm_fence_object *fence = entry->fence;
-		if (fence->class == fence_class &&
+		if (fence->fence_class == fence_class &&
 		    (entry->fence_type & fence_type) == entry->fence_type &&
 		    manager->reg_reusable(entry, data)) {
 			list_del(&entry->head);
@@ -77,21 +75,21 @@ int drm_regs_alloc(struct drm_reg_manager *manager,
 	/*
 	 * Search the free list.
 	 */
-	
+
 	list_for_each_entry(entry, &manager->free, head) {
 		list_del(&entry->head);
 		entry->new_fence_type = fence_type;
 		list_add_tail(&entry->head, &manager->unfenced);
 		goto out;
 	}
-	
-	if (no_wait) 
-		return -EBUSY;	
-	
+
+	if (no_wait)
+		return -EBUSY;
+
 	/*
 	 * Go back to the lru list and try to expire fences.
 	 */
-	
+
 	list_for_each_entry_safe(entry, next_entry, &manager->lru, head) {
 		BUG_ON(!entry->fence);
 		ret = drm_fence_object_wait(entry->fence, 0, !interruptible,
@@ -111,10 +109,11 @@ int drm_regs_alloc(struct drm_reg_manager *manager,
 	 */
 
 	return -EBUSY;
-out:
+      out:
 	*reg = entry;
 	return 0;
 }
+
 EXPORT_SYMBOL(drm_regs_alloc);
 
 void drm_regs_fence(struct drm_reg_manager *manager,
@@ -126,23 +125,22 @@ void drm_regs_fence(struct drm_reg_manager *manager,
 	if (!fence) {
 
 		/*
-		 * Old fence (if any) is still valid. 
+		 * Old fence (if any) is still valid.
 		 * Put back on free and lru lists.
 		 */
 
-		list_for_each_entry_safe_reverse(entry, next_entry, 
-					 &manager->unfenced, head) {
+		list_for_each_entry_safe_reverse(entry, next_entry,
+						 &manager->unfenced, head) {
 			list_del(&entry->head);
-			list_add(&entry->head, (entry->fence) ? 
-				 &manager->lru :
-				 &manager->free);
+			list_add(&entry->head, (entry->fence) ?
+				 &manager->lru : &manager->free);
 		}
 	} else {
 
 		/*
 		 * Fence with a new fence and put on lru list.
 		 */
-		
+
 		list_for_each_entry_safe(entry, next_entry, &manager->unfenced,
 					 head) {
 			list_del(&entry->head);
@@ -158,6 +156,7 @@ void drm_regs_fence(struct drm_reg_manager *manager,
 		}
 	}
 }
+
 EXPORT_SYMBOL(drm_regs_fence);
 
 void drm_regs_free(struct drm_reg_manager *manager)
@@ -167,22 +166,21 @@ void drm_regs_free(struct drm_reg_manager *manager)
 
 	drm_regs_fence(manager, NULL);
 
-	list_for_each_entry_safe(entry, next_entry, &manager->free,
-				 head) {
+	list_for_each_entry_safe(entry, next_entry, &manager->free, head) {
 		list_del(&entry->head);
 		manager->reg_destroy(entry);
 	}
-	
-	list_for_each_entry_safe(entry, next_entry, &manager->lru,
-				 head) {		
-		
-		(void) drm_fence_object_wait(entry->fence, 1, 1,
-					     entry->fence_type);
+
+	list_for_each_entry_safe(entry, next_entry, &manager->lru, head) {
+
+		(void)drm_fence_object_wait(entry->fence, 1, 1,
+					    entry->fence_type);
 		list_del(&entry->head);
 		drm_fence_usage_deref_unlocked(&entry->fence);
 		manager->reg_destroy(entry);
 	}
 }
+
 EXPORT_SYMBOL(drm_regs_free);
 
 void drm_regs_add(struct drm_reg_manager *manager, struct drm_reg *reg)
@@ -190,11 +188,12 @@ void drm_regs_add(struct drm_reg_manager *manager, struct drm_reg *reg)
 	reg->fence = NULL;
 	list_add_tail(&reg->head, &manager->free);
 }
+
 EXPORT_SYMBOL(drm_regs_add);
 
 void drm_regs_init(struct drm_reg_manager *manager,
-		   int (*reg_reusable)(const struct drm_reg *, const void *),
-		   void (*reg_destroy)(struct drm_reg *))
+		   int (*reg_reusable) (const struct drm_reg *, const void *),
+		   void (*reg_destroy) (struct drm_reg *))
 {
 	INIT_LIST_HEAD(&manager->free);
 	INIT_LIST_HEAD(&manager->lru);
@@ -202,5 +201,5 @@ void drm_regs_init(struct drm_reg_manager *manager,
 	manager->reg_reusable = reg_reusable;
 	manager->reg_destroy = reg_destroy;
 }
+
 EXPORT_SYMBOL(drm_regs_init);
-		   

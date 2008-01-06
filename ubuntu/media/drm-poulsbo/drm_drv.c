@@ -115,9 +115,7 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 
 	DRM_IOCTL_DEF(DRM_IOCTL_SG_ALLOC, drm_sg_alloc_ioctl, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_SG_FREE, drm_sg_free, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
-
 	DRM_IOCTL_DEF(DRM_IOCTL_WAIT_VBLANK, drm_wait_vblank, 0),
-
 	DRM_IOCTL_DEF(DRM_IOCTL_UPDATE_DRAW, drm_update_drawable_info, DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETRESOURCES, drm_mode_getresources, DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_GETCRTC, drm_mode_getcrtc, DRM_MASTER|DRM_ROOT_ONLY),
@@ -131,13 +129,16 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_ATTACHMODE, drm_mode_attachmode, DRM_MASTER|DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_IOCTL_MODE_DETACHMODE, drm_mode_detachmode, DRM_MASTER|DRM_ROOT_ONLY),
 
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_INIT, drm_mm_init_ioctl,
+		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_TAKEDOWN, drm_mm_takedown_ioctl,
+		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_LOCK, drm_mm_lock_ioctl,
+		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_IOCTL_MM_UNLOCK, drm_mm_unlock_ioctl,
+		      DRM_AUTH|DRM_MASTER|DRM_ROOT_ONLY),
 
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_CREATE, drm_fence_create_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_DESTROY, drm_fence_destroy_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_REFERENCE, drm_fence_reference_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_UNREFERENCE, drm_fence_unreference_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_SIGNALED, drm_fence_signaled_ioctl, DRM_AUTH),
@@ -147,14 +148,14 @@ static struct drm_ioctl_desc drm_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_IOCTL_FENCE_BUFFERS, drm_fence_buffers_ioctl, DRM_AUTH),
 
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_CREATE, drm_bo_create_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_DESTROY, drm_bo_destroy_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_MAP, drm_bo_map_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNMAP, drm_bo_unmap_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_REFERENCE, drm_bo_reference_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_UNREFERENCE, drm_bo_unreference_ioctl, DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_IOCTL_BO_OP, drm_bo_op_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_IOCTL_BO_SETSTATUS, drm_bo_setstatus_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_INFO, drm_bo_info_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_IOCTL_BO_WAIT_IDLE, drm_bo_wait_idle_ioctl, DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_IOCTL_BO_VERSION, drm_bo_version_ioctl, 0),
 };
 
 #define DRM_CORE_IOCTL_COUNT	ARRAY_SIZE( drm_ioctls )
@@ -243,7 +244,7 @@ int drm_lastclose(struct drm_device * dev)
 		list_del(&vma->head);
 		drm_ctl_free(vma, sizeof(*vma), DRM_MEM_VMAS);
 	}
-	
+
 	list_for_each_entry_safe(r_list, list_t, &dev->maplist, head) {
 		drm_rmmap_locked(dev, r_list->map);
 		r_list = NULL;
@@ -322,6 +323,11 @@ int drm_init(struct drm_driver *driver,
 		while ((pdev =
 			pci_get_subsys(pid->vendor, pid->device, pid->subvendor,
 				       pid->subdevice, pdev))) {
+			/* Are there device class requirements? */
+			if ((pid->class != 0)
+				&& ((pdev->class & pid->class_mask) != pid->class)) {
+				continue;
+			}
 			/* is there already a driver loaded, or (short circuit saves work) */
 			/* does something like VesaFB have control of the memory region? */
 			if (pci_dev_driver(pdev)
@@ -348,6 +354,11 @@ int drm_init(struct drm_driver *driver,
 				pci_get_subsys(pid->vendor, pid->device,
 					       pid->subvendor, pid->subdevice,
 					       pdev))) {
+				/* Are there device class requirements? */
+				if ((pid->class != 0)
+					&& ((pdev->class & pid->class_mask) != pid->class)) {
+					continue;
+				}
 				/* stealth mode requires a manual probe */
 				pci_dev_get(pdev);
 				if ((rc = drm_get_dev(pdev, &pciidlist[i], driver))) {
@@ -379,17 +390,7 @@ static void drm_cleanup(struct drm_device * dev)
 	}
 
 	drm_lastclose(dev);
-
-	if (!drm_fb_loaded)
-		pci_disable_device(dev->pdev);
-
 	drm_ctxbitmap_cleanup(dev);
-	drm_bo_driver_finish(dev);
-	drm_fence_manager_takedown(dev);
-
-	drm_ht_remove(&dev->map_hash);
-	drm_mm_takedown(&dev->offset_manager);
-	drm_ht_remove(&dev->object_hash);
 
 	if (drm_core_has_MTRR(dev) && drm_core_has_AGP(dev) && dev->agp
 	    && dev->agp->agp_mtrr >= 0) {
@@ -403,10 +404,20 @@ static void drm_cleanup(struct drm_device * dev)
 	if (dev->driver->unload)
 		dev->driver->unload(dev);
         
+	drm_bo_driver_finish(dev);
+	drm_fence_manager_takedown(dev);
+
+	drm_ht_remove(&dev->map_hash);
+	drm_mm_takedown(&dev->offset_manager);
+	drm_ht_remove(&dev->object_hash);
+
 	if (drm_core_has_AGP(dev) && dev->agp) {
 		drm_free(dev->agp, sizeof(*dev->agp), DRM_MEM_AGPLISTS);
 		dev->agp = NULL;
 	}
+
+	if (!drm_fb_loaded)
+		pci_disable_device(dev->pdev);
 
 	drm_put_head(&dev->primary);
 	if (drm_put_dev(dev))
@@ -463,19 +474,19 @@ static int __init drm_core_init(void)
 	drm_init_pat();
 #endif
 	si_meminfo(&si);
-	
+
 	/*
 	 * AGP only allows low / DMA32 memory ATM.
 	 */
 
 	avail_memctl_mem = si.totalram - si.totalhigh;
 
-	/* 
-	 * Avoid overflows 
+	/*
+	 * Avoid overflows
 	 */
 
 	max_memctl_mem = 1UL << (32 - PAGE_SHIFT);
-	max_memctl_mem = (max_memctl_mem / si.mem_unit) * PAGE_SIZE; 
+	max_memctl_mem = (max_memctl_mem / si.mem_unit) * PAGE_SIZE;
 
 	if (avail_memctl_mem >= max_memctl_mem)
 		avail_memctl_mem = max_memctl_mem;
@@ -513,7 +524,7 @@ static int __init drm_core_init(void)
 		 CORE_MAJOR, CORE_MINOR, CORE_PATCHLEVEL, CORE_DATE);
 	return 0;
 err_p3:
-	drm_sysfs_destroy(drm_class);
+	drm_sysfs_destroy();
 err_p2:
 	unregister_chrdev(DRM_MAJOR, "drm");
 	drm_free(drm_heads, sizeof(*drm_heads) * drm_cards_limit, DRM_MEM_STUB);
@@ -524,7 +535,7 @@ err_p1:
 static void __exit drm_core_exit(void)
 {
 	remove_proc_entry("dri", NULL);
-	drm_sysfs_destroy(drm_class);
+	drm_sysfs_destroy();
 
 	unregister_chrdev(DRM_MAJOR, "drm");
 
@@ -651,7 +662,7 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 		retcode = func(dev, kdata, file_priv);
 	}
 
-	if (cmd & IOC_OUT) {
+	if ((retcode == 0) && (cmd & IOC_OUT)) {
 		if (copy_to_user((void __user *)arg, kdata,
 				 _IOC_SIZE(cmd)) != 0)
 			retcode = -EACCES;
@@ -660,7 +671,7 @@ long drm_unlocked_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 err_i1:
 	atomic_dec(&dev->ioctl_count);
 	if (retcode)
-		DRM_DEBUG("ret = %x\n", retcode);
+		DRM_DEBUG("ret = %d\n", retcode);
 	return retcode;
 }
 EXPORT_SYMBOL(drm_unlocked_ioctl);

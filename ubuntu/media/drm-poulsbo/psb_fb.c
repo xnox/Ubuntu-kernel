@@ -51,12 +51,11 @@ struct psbfb_par {
 #define CMAP_TOHW(_val, _width) ((((_val) << (_width)) + 0x7FFF - (_val)) >> 16)
 
 static int psbfb_setcolreg(unsigned regno, unsigned red, unsigned green,
-			   unsigned blue, unsigned transp,
-			   struct fb_info *info)
+			   unsigned blue, unsigned transp, struct fb_info *info)
 {
 	struct psbfb_par *par = info->par;
 	struct drm_crtc *crtc = par->crtc;
-	u32 v;
+	uint32_t v;
 
 	if (regno > 255)
 		return 1;
@@ -76,32 +75,31 @@ static int psbfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 
 	switch (crtc->fb->bits_per_pixel) {
 	case 16:
-		((u32 *) info->pseudo_palette)[regno] = v;
+		((uint32_t *) info->pseudo_palette)[regno] = v;
 		break;
 	case 24:
 	case 32:
-		((u32 *) info->pseudo_palette)[regno] = v;
+		((uint32_t *) info->pseudo_palette)[regno] = v;
 		break;
 	}
 
 	return 0;
 }
 
-static int psbfb_check_var(struct fb_var_screeninfo *var,
-			     struct fb_info *info)
+static int psbfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 {
-        struct psbfb_par *par = info->par;
-        struct drm_device *dev = par->dev;
+	struct psbfb_par *par = info->par;
+	struct drm_device *dev = par->dev;
 	struct drm_framebuffer *fb = par->crtc->fb;
-        struct drm_display_mode *drm_mode;
-        struct drm_output *output;
-        int depth;
+	struct drm_display_mode *drm_mode;
+	struct drm_output *output;
+	int depth;
 	int pitch;
 	int bpp = var->bits_per_pixel;
 
-        if (!var->pixclock)
-                return -EINVAL;
-	
+	if (!var->pixclock)
+		return -EINVAL;
+
 	/* don't support virtuals for now */
 	if (var->xres_virtual > var->xres)
 		return -EINVAL;
@@ -109,29 +107,29 @@ static int psbfb_check_var(struct fb_var_screeninfo *var,
 	if (var->yres_virtual > var->yres)
 		return -EINVAL;
 
-        switch (bpp) {
+	switch (bpp) {
 	case 8:
 		depth = 8;
 		break;
-        case 16:
-                depth = (var->green.length == 6) ? 16 : 15;
-                break;
-	case 24: /* assume this is 32bpp / depth 24 */
+	case 16:
+		depth = (var->green.length == 6) ? 16 : 15;
+		break;
+	case 24:		/* assume this is 32bpp / depth 24 */
 		bpp = 32;
 		/* fallthrough */
-        case 32:
-                depth = (var->transp.length > 0) ? 32 : 24;
-                break;
-        default:
+	case 32:
+		depth = (var->transp.length > 0) ? 32 : 24;
+		break;
+	default:
 		return -EINVAL;
-        }
+	}
 
 	pitch = ((var->xres * ((bpp + 1) / 8)) + 0x3f) & ~0x3f;
 
 	/* Check that we can resize */
-        if ((pitch * var->yres) > (fb->bo->num_pages << PAGE_SHIFT)) {
+	if ((pitch * var->yres) > (fb->bo->num_pages << PAGE_SHIFT)) {
 #if 1
-        	/* Need to resize the fb object.
+		/* Need to resize the fb object.
 		 * But the generic fbdev code doesn't really understand
 		 * that we can do this. So disable for now.
 		 */
@@ -145,19 +143,18 @@ static int psbfb_check_var(struct fb_var_screeninfo *var,
 		/* a temporary BO to check if we could resize in setpar.
 		 * Therefore no need to set NO_EVICT.
 		 */
-		ret = drm_buffer_object_create(dev, 
-			       pitch * var->yres, 
-			       drm_bo_type_kernel,
-			       DRM_BO_FLAG_READ |
-			       DRM_BO_FLAG_WRITE |
-			       DRM_BO_FLAG_MEM_TT |
-			       DRM_BO_FLAG_MEM_VRAM, 
-			       DRM_BO_HINT_DONT_FENCE,
-			       0, 0,
-			       &fbo);
+		ret = drm_buffer_object_create(dev,
+					       pitch * var->yres,
+					       drm_bo_type_kernel,
+					       DRM_BO_FLAG_READ |
+					       DRM_BO_FLAG_WRITE |
+					       DRM_BO_FLAG_MEM_TT |
+					       DRM_BO_FLAG_MEM_VRAM,
+					       DRM_BO_HINT_DONT_FENCE,
+					       0, 0, &fbo);
 		if (ret || !fbo)
 			return -ENOMEM;
-	
+
 		ret = drm_bo_kmap(fbo, 0, fbo->num_pages, &tmp_kmap);
 		if (ret) {
 			drm_bo_usage_deref_unlocked(&fbo);
@@ -169,82 +166,85 @@ static int psbfb_check_var(struct fb_var_screeninfo *var,
 		drm_bo_usage_deref_unlocked(&fbo);
 #endif
 	}
-                
-        switch (depth) {
-        case 8:
-                var->red.offset = 0;
-                var->green.offset = 0;
-                var->blue.offset = 0;
-                var->red.length = 8;
-                var->green.length = 8;
-                var->blue.length = 8;
-                var->transp.length = 0;
-                var->transp.offset = 0;
-                break;
-        case 15:
-                var->red.offset = 10;
-                var->green.offset = 5;
-                var->blue.offset = 0;
-                var->red.length = 5;
-                var->green.length = 5;
-                var->blue.length = 5;
-                var->transp.length = 1;
-                var->transp.offset = 15;
-                break;
-        case 16:
-                var->red.offset = 11;
-                var->green.offset = 6;
-                var->blue.offset = 0;
-                var->red.length = 5;
-                var->green.length = 6;
-                var->blue.length = 5;
-                var->transp.length = 0;
-                var->transp.offset = 0;
-                break;
-        case 24:
-                var->red.offset = 16;
-                var->green.offset = 8;
-                var->blue.offset = 0;
-                var->red.length = 8;
-                var->green.length = 8;
-                var->blue.length = 8;
-                var->transp.length = 0;
-                var->transp.offset = 0;
-                break;
-        case 32:
-                var->red.offset = 16;
-                var->green.offset = 8;
-                var->blue.offset = 0;
-                var->red.length = 8;
-                var->green.length = 8;
-                var->blue.length = 8;
-                var->transp.length = 8;
-                var->transp.offset = 24;
-                break;
-        default:
-                return -EINVAL; 
-        }
+
+	switch (depth) {
+	case 8:
+		var->red.offset = 0;
+		var->green.offset = 0;
+		var->blue.offset = 0;
+		var->red.length = 8;
+		var->green.length = 8;
+		var->blue.length = 8;
+		var->transp.length = 0;
+		var->transp.offset = 0;
+		break;
+	case 15:
+		var->red.offset = 10;
+		var->green.offset = 5;
+		var->blue.offset = 0;
+		var->red.length = 5;
+		var->green.length = 5;
+		var->blue.length = 5;
+		var->transp.length = 1;
+		var->transp.offset = 15;
+		break;
+	case 16:
+		var->red.offset = 11;
+		var->green.offset = 6;
+		var->blue.offset = 0;
+		var->red.length = 5;
+		var->green.length = 6;
+		var->blue.length = 5;
+		var->transp.length = 0;
+		var->transp.offset = 0;
+		break;
+	case 24:
+		var->red.offset = 16;
+		var->green.offset = 8;
+		var->blue.offset = 0;
+		var->red.length = 8;
+		var->green.length = 8;
+		var->blue.length = 8;
+		var->transp.length = 0;
+		var->transp.offset = 0;
+		break;
+	case 32:
+		var->red.offset = 16;
+		var->green.offset = 8;
+		var->blue.offset = 0;
+		var->red.length = 8;
+		var->green.length = 8;
+		var->blue.length = 8;
+		var->transp.length = 8;
+		var->transp.offset = 24;
+		break;
+	default:
+		return -EINVAL;
+	}
 
 #if 0
-        /* Here we walk the output mode list and look for modes. If we haven't
-         * got it, then bail. Not very nice, so this is disabled.
-         * In the set_par code, we create our mode based on the incoming
-         * parameters. Nicer, but may not be desired by some.
-         */
-        list_for_each_entry(output, &dev->mode_config.output_list, head) {
-                if (output->crtc == par->crtc)
-                        break;
-        }
-    
-        list_for_each_entry(drm_mode, &output->modes, head) {
-                if (drm_mode->hdisplay == var->xres &&
-                    drm_mode->vdisplay == var->yres &&
-                    drm_mode->clock != 0)
+	/* Here we walk the output mode list and look for modes. If we haven't
+	 * got it, then bail. Not very nice, so this is disabled.
+	 * In the set_par code, we create our mode based on the incoming
+	 * parameters. Nicer, but may not be desired by some.
+	 */
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+		if (output->crtc == par->crtc)
 			break;
 	}
- 
-        if (!drm_mode)
-                return -EINVAL;
+
+	list_for_each_entry(drm_mode, &output->modes, head) {
+		if (drm_mode->hdisplay == var->xres &&
+		    drm_mode->vdisplay == var->yres && drm_mode->clock != 0)
+			break;
+	}
+
+	if (!drm_mode)
+		return -EINVAL;
+#else
+	(void)dev;		/* silence warnings */
+	(void)output;
+	(void)drm_mode;
 #endif
 
 	return 0;
@@ -256,36 +256,36 @@ static int psbfb_set_par(struct fb_info *info)
 	struct psbfb_par *par = info->par;
 	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_device *dev = par->dev;
-        struct drm_display_mode *drm_mode;
-        struct fb_var_screeninfo *var = &info->var;
+	struct drm_display_mode *drm_mode;
+	struct fb_var_screeninfo *var = &info->var;
 	struct drm_psb_private *dev_priv = dev->dev_private;
-        struct drm_output *output;
+	struct drm_output *output;
 	int pitch;
 	int depth;
 	int bpp = var->bits_per_pixel;
 
-        switch (bpp) {
+	switch (bpp) {
 	case 8:
 		depth = 8;
 		break;
-        case 16:
-                depth = (var->green.length == 6) ? 16 : 15;
-                break;
-	case 24: /* assume this is 32bpp / depth 24 */
+	case 16:
+		depth = (var->green.length == 6) ? 16 : 15;
+		break;
+	case 24:		/* assume this is 32bpp / depth 24 */
 		bpp = 32;
 		/* fallthrough */
-        case 32:
-                depth = (var->transp.length > 0) ? 32 : 24;
-                break;
-        default:
+	case 32:
+		depth = (var->transp.length > 0) ? 32 : 24;
+		break;
+	default:
 		return -EINVAL;
-        }
+	}
 
 	pitch = ((var->xres * ((bpp + 1) / 8)) + 0x3f) & ~0x3f;
 
-        if ((pitch * var->yres) > (fb->bo->num_pages << PAGE_SHIFT)) {
+	if ((pitch * var->yres) > (fb->bo->num_pages << PAGE_SHIFT)) {
 #if 1
-        	/* Need to resize the fb object.
+		/* Need to resize the fb object.
 		 * But the generic fbdev code doesn't really understand
 		 * that we can do this. So disable for now.
 		 */
@@ -296,22 +296,22 @@ static int psbfb_set_par(struct fb_info *info)
 		struct drm_buffer_object *fbo = NULL, *tfbo;
 		struct drm_bo_kmap_obj tmp_kmap, tkmap;
 
-		ret = drm_buffer_object_create(dev, 
-			       pitch * var->yres, 
-			       drm_bo_type_kernel,
-			       DRM_BO_FLAG_READ |
-			       DRM_BO_FLAG_WRITE |
-			       DRM_BO_FLAG_MEM_TT |
-			       DRM_BO_FLAG_MEM_VRAM |
-			       DRM_BO_FLAG_NO_EVICT,
-			       DRM_BO_HINT_DONT_FENCE,
-			       0, 0,
-			       &fbo);
+		ret = drm_buffer_object_create(dev,
+					       pitch * var->yres,
+					       drm_bo_type_kernel,
+					       DRM_BO_FLAG_READ |
+					       DRM_BO_FLAG_WRITE |
+					       DRM_BO_FLAG_MEM_TT |
+					       DRM_BO_FLAG_MEM_VRAM |
+					       DRM_BO_FLAG_NO_EVICT,
+					       DRM_BO_HINT_DONT_FENCE,
+					       0, 0, &fbo);
 		if (ret || !fbo) {
-			DRM_ERROR("failed to allocate new resized framebuffer\n");
+			DRM_ERROR
+			    ("failed to allocate new resized framebuffer\n");
 			return -ENOMEM;
 		}
-	
+
 		ret = drm_bo_kmap(fbo, 0, fbo->num_pages, &tmp_kmap);
 		if (ret) {
 			DRM_ERROR("failed to kmap framebuffer.\n");
@@ -320,7 +320,7 @@ static int psbfb_set_par(struct fb_info *info)
 		}
 
 		DRM_DEBUG("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
-			       fb->height, fb->offset, fbo);
+			  fb->height, fb->offset, fbo);
 
 		/* set new screen base */
 		info->screen_base = tmp_kmap.virtual;
@@ -333,121 +333,313 @@ static int psbfb_set_par(struct fb_info *info)
 		fb->bo = fbo;
 		drm_bo_usage_deref_unlocked(&tfbo);
 #endif
-        } 
-	else 
-	{
-		drm_bo_do_validate(fb->bo, 
-			   DRM_BO_FLAG_READ |
-			   DRM_BO_FLAG_WRITE |
-			   DRM_BO_FLAG_MEM_TT |
-			   DRM_BO_FLAG_MEM_VRAM |
-			   DRM_BO_FLAG_NO_EVICT,
-			   DRM_BO_FLAG_READ |
-			   DRM_BO_FLAG_WRITE |
-			   DRM_BO_FLAG_MEM_TT |
-			   DRM_BO_FLAG_MEM_VRAM |
-			   DRM_BO_FLAG_NO_EVICT,
-			   DRM_BO_HINT_DONT_FENCE,
-			   0, 1, NULL);
+	} else {
+		drm_bo_do_validate(fb->bo,
+				   DRM_BO_FLAG_READ |
+				   DRM_BO_FLAG_WRITE |
+				   DRM_BO_FLAG_MEM_TT |
+				   DRM_BO_FLAG_MEM_VRAM |
+				   DRM_BO_FLAG_NO_EVICT,
+				   DRM_BO_FLAG_READ |
+				   DRM_BO_FLAG_WRITE |
+				   DRM_BO_FLAG_MEM_TT |
+				   DRM_BO_FLAG_MEM_VRAM |
+				   DRM_BO_FLAG_NO_EVICT,
+				   DRM_BO_HINT_DONT_FENCE, 0, 1, NULL);
 	}
 
 	fb->offset = fb->bo->offset - dev_priv->pg->gatt_start;
 	fb->width = var->xres;
 	fb->height = var->yres;
-        fb->bits_per_pixel = bpp;
+	fb->bits_per_pixel = bpp;
 	fb->pitch = pitch;
 	fb->depth = depth;
 
-        info->fix.line_length = fb->pitch;
-        info->fix.visual = (fb->depth == 8) ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
+	info->fix.line_length = fb->pitch;
+	info->fix.visual =
+	    (fb->depth == 8) ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
 
 	/* some fbdev's apps don't want these to change */
 	info->fix.smem_start = dev->mode_config.fb_base + fb->offset;
 
 #if 0
 	/* relates to resize - disable */
-        info->fix.smem_len = info->fix.line_length * var->yres;
-        info->screen_size = info->fix.smem_len; /* ??? */
+	info->fix.smem_len = info->fix.line_length * var->yres;
+	info->screen_size = info->fix.smem_len;	/* ??? */
 #endif
 
-        /* Should we walk the output's modelist or just create our own ???
-         * For now, we create and destroy a mode based on the incoming 
-         * parameters. But there's commented out code below which scans 
-         * the output list too.
-         */
+	/* Should we walk the output's modelist or just create our own ???
+	 * For now, we create and destroy a mode based on the incoming 
+	 * parameters. But there's commented out code below which scans 
+	 * the output list too.
+	 */
 #if 0
-        list_for_each_entry(output, &dev->mode_config.output_list, head) {
-                if (output->crtc == par->crtc)
-                        break;
-        }
-    
-        list_for_each_entry(drm_mode, &output->modes, head) {
-                if (drm_mode->hdisplay == var->xres &&
-                    drm_mode->vdisplay == var->yres &&
-                    drm_mode->clock != 0)
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+		if (output->crtc == par->crtc)
 			break;
-        }
+	}
+
+	list_for_each_entry(drm_mode, &output->modes, head) {
+		if (drm_mode->hdisplay == var->xres &&
+		    drm_mode->vdisplay == var->yres && drm_mode->clock != 0)
+			break;
+	}
 #else
-        drm_mode = drm_mode_create(dev);
-        drm_mode->hdisplay = var->xres;
-        drm_mode->hsync_start = drm_mode->hdisplay + var->right_margin;
-        drm_mode->hsync_end = drm_mode->hsync_start + var->hsync_len;
-        drm_mode->htotal = drm_mode->hsync_end + var->left_margin;
-        drm_mode->vdisplay = var->yres;
-        drm_mode->vsync_start = drm_mode->vdisplay + var->lower_margin;
-        drm_mode->vsync_end = drm_mode->vsync_start + var->vsync_len;
-        drm_mode->vtotal = drm_mode->vsync_end + var->upper_margin;
-        drm_mode->clock = PICOS2KHZ(var->pixclock);
-        drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
-        drm_mode_set_name(drm_mode);
+	(void)output;		/* silence warning */
+
+	drm_mode = drm_mode_create(dev);
+	drm_mode->hdisplay = var->xres;
+	drm_mode->hsync_start = drm_mode->hdisplay + var->right_margin;
+	drm_mode->hsync_end = drm_mode->hsync_start + var->hsync_len;
+	drm_mode->htotal = drm_mode->hsync_end + var->left_margin;
+	drm_mode->vdisplay = var->yres;
+	drm_mode->vsync_start = drm_mode->vdisplay + var->lower_margin;
+	drm_mode->vsync_end = drm_mode->vsync_start + var->vsync_len;
+	drm_mode->vtotal = drm_mode->vsync_end + var->upper_margin;
+	drm_mode->clock = PICOS2KHZ(var->pixclock);
+	drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
+	drm_mode_set_name(drm_mode);
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
 #endif
 
-        if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
-                return -EINVAL;
+	if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
+		return -EINVAL;
 
-        /* Have to destroy our created mode if we're not searching the mode
-         * list for it.
-         */
-#if 1 
-        drm_mode_destroy(dev, drm_mode);
+	/* Have to destroy our created mode if we're not searching the mode
+	 * list for it.
+	 */
+#if 1
+	drm_mode_destroy(dev, drm_mode);
 #endif
 
 	return 0;
 }
 
-static void psbfb_fillrect (struct fb_info *info, const struct fb_fillrect *rect)
+/* TODO hack */
+extern int psb_2d_submit(struct drm_psb_private *, uint32_t *, uint32_t);;
+
+static int psb_accel_2d_fillrect(struct drm_psb_private *dev_priv,
+	uint32_t dst_offset, uint32_t dst_stride, uint32_t dst_format,
+	uint16_t dst_x, uint16_t dst_y, uint16_t size_x, uint16_t size_y,
+	uint32_t fill)
+{
+	uint32_t buffer[10];
+	uint32_t *buf;
+	int ret;
+
+	buf = buffer;
+
+	*buf++ = PSB_2D_FENCE_BH;
+
+	*buf++ = PSB_2D_DST_SURF_BH | dst_format | (dst_stride << PSB_2D_DST_STRIDE_SHIFT);
+	*buf++ = dst_offset;
+
+	*buf++ =
+		PSB_2D_BLIT_BH |
+		PSB_2D_ROT_NONE |
+		PSB_2D_COPYORDER_TL2BR |
+		PSB_2D_DSTCK_DISABLE |
+		PSB_2D_SRCCK_DISABLE |
+		PSB_2D_USE_FILL |
+		PSB_2D_ROP3_PATCOPY;
+
+	*buf++ = fill << PSB_2D_FILLCOLOUR_SHIFT;
+	*buf++ = (dst_x << PSB_2D_DST_XSTART_SHIFT) | (dst_y << PSB_2D_DST_YSTART_SHIFT);
+	*buf++ = (size_x << PSB_2D_DST_XSIZE_SHIFT) | (size_y << PSB_2D_DST_YSIZE_SHIFT);
+	*buf++ = PSB_2D_FLUSH_BH;
+
+	mutex_lock(&dev_priv->mutex_2d);
+	ret = psb_2d_submit(dev_priv, buffer, buf - buffer);
+	mutex_unlock(&dev_priv->mutex_2d);
+
+	return ret;
+}
+
+static void psbfb_fillrect_accel(struct fb_info *info, const struct fb_fillrect *r)
+{
+	struct psbfb_par *par = info->par;
+	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_psb_private *dev_priv = par->dev->dev_private;
+	uint32_t offset = fb->offset;
+	uint32_t stride = fb->pitch;
+	uint32_t format;
+
+	switch (fb->depth) {
+	case 8:
+		format = PSB_2D_DST_332RGB;
+		break;
+	case 15:
+		format = PSB_2D_DST_555RGB;
+		break;
+	case 16:
+		format = PSB_2D_DST_565RGB;
+		break;
+	case 24:
+	case 32:
+		/* this is wrong but since we don't do blending its okay */
+		format = PSB_2D_DST_8888ARGB;
+		break;
+	default:
+		/* software fallback */
+		cfb_fillrect(info, r);
+		return;
+	}
+
+	psb_accel_2d_fillrect(dev_priv,
+		offset, stride, format,
+		r->dx, r->dy, r->width, r->height,
+		r->color);
+}
+
+static void psbfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
 {
 	if (info->state != FBINFO_STATE_RUNNING)
-                return;
-        if (info->flags & FBINFO_HWACCEL_DISABLED) {
-                cfb_fillrect(info, rect);
-                return;
-        }
-        cfb_fillrect(info, rect);
+		return;
+	if (info->flags & FBINFO_HWACCEL_DISABLED) {
+		cfb_fillrect(info, rect);
+		return;
+	}
+	psbfb_fillrect_accel(info, rect);
+}
+
+uint32_t psb_accel_2d_copy_direction(int xdir, int ydir)
+{
+	if (xdir < 0)
+		return ((ydir < 0) ? PSB_2D_COPYORDER_BR2TL : PSB_2D_COPYORDER_TR2BL);
+	else
+		return ((ydir < 0) ? PSB_2D_COPYORDER_BL2TR : PSB_2D_COPYORDER_TL2BR);
+}
+
+/*
+ * @srcOffset in bytes
+ * @srcStride in bytes
+ * @srcFormat psb 2D format defines
+ * @dstOffset in bytes
+ * @dstStride in bytes
+ * @dstFormat psb 2D format defines
+ * @srcX offset in pixels
+ * @srcY offset in pixels
+ * @dstX offset in pixels
+ * @dstY offset in pixels
+ * @sizeX of the copied area
+ * @sizeY of the copied area
+ */
+static int psb_accel_2d_copy(struct drm_psb_private *dev_priv,
+	uint32_t src_offset, uint32_t src_stride, uint32_t src_format,
+	uint32_t dst_offset, uint32_t dst_stride, uint32_t dst_format,
+	uint16_t src_x, uint16_t src_y, uint16_t dst_x, uint16_t dst_y,
+	uint16_t size_x, uint16_t size_y)
+{
+	uint32_t blit_cmd;
+	uint32_t buffer[10];
+	uint32_t *buf;
+	uint32_t direction;
+	int ret;
+
+	buf = buffer;
+
+	direction = psb_accel_2d_copy_direction(src_x - dst_x, src_y - dst_y);
+
+	blit_cmd =
+		PSB_2D_BLIT_BH |
+		PSB_2D_ROT_NONE |
+		PSB_2D_DSTCK_DISABLE |
+		PSB_2D_SRCCK_DISABLE |
+		PSB_2D_USE_PAT |
+		PSB_2D_ROP3_SRCCOPY |
+		direction;
+
+	/* *buf++ = PSB_2D_FENCE_BH;*/
+	*buf++ = PSB_2D_DST_SURF_BH | dst_format | (dst_stride << PSB_2D_DST_STRIDE_SHIFT);
+	*buf++ = dst_offset;
+	*buf++ = PSB_2D_SRC_SURF_BH | src_format | (src_stride << PSB_2D_SRC_STRIDE_SHIFT);
+	*buf++ = src_offset;
+	*buf++ = PSB_2D_SRC_OFF_BH | (src_x << PSB_2D_SRCOFF_XSTART_SHIFT) | (src_y << PSB_2D_SRCOFF_YSTART_SHIFT);
+	*buf++ = blit_cmd;
+	*buf++ = (dst_x << PSB_2D_DST_XSTART_SHIFT) | (dst_y << PSB_2D_DST_YSTART_SHIFT);
+	*buf++ = (size_x << PSB_2D_DST_XSIZE_SHIFT) | (size_y << PSB_2D_DST_YSIZE_SHIFT);
+
+	mutex_lock(&dev_priv->mutex_2d);
+	ret = psb_2d_submit(dev_priv, buffer, buf - buffer);
+	mutex_unlock(&dev_priv->mutex_2d);
+	return ret;
+}
+
+static void psbfb_copyarea_accel(struct fb_info *info,
+			const struct fb_copyarea *a)
+{
+	struct psbfb_par *par = info->par;
+	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_psb_private *dev_priv = par->dev->dev_private;
+	uint32_t offset = fb->offset;
+	uint32_t stride = fb->pitch;
+	uint32_t src_format;
+	uint32_t dst_format;
+
+	if (a->width == 8 || a->height == 8) {
+		drm_psb_idle(par->dev);
+		cfb_copyarea(info, a);
+		return;
+	}
+
+	switch (fb->depth) {
+	case 8:
+		src_format = PSB_2D_SRC_332RGB;
+		dst_format = PSB_2D_DST_332RGB;
+		break;
+	case 15:
+		src_format = PSB_2D_SRC_555RGB;
+		dst_format = PSB_2D_DST_555RGB;
+		break;
+	case 16:
+		src_format = PSB_2D_SRC_565RGB;
+		dst_format = PSB_2D_DST_565RGB;
+		break;
+	case 24:
+	case 32:
+		/* this is wrong but since we don't do blending its okay */
+		src_format = PSB_2D_SRC_8888ARGB;
+		dst_format = PSB_2D_DST_8888ARGB;
+		break;
+	default:
+		/* software fallback */
+		cfb_copyarea(info, a);
+		return;
+	}
+
+	/* Maybe we should check fb_copyarea so its valid */
+	psb_accel_2d_copy(dev_priv,
+		offset, stride, src_format,
+		offset, stride, dst_format,
+		a->sx, a->sy, a->dx, a->dy,
+		a->width, a->height);
+
+	/* we should fence the buffer here */
 }
 
 static void psbfb_copyarea(struct fb_info *info,
-			     const struct fb_copyarea *region)
+			   const struct fb_copyarea *region)
 {
 	if (info->state != FBINFO_STATE_RUNNING)
-                return;
-        if (info->flags & FBINFO_HWACCEL_DISABLED) {
-                cfb_copyarea(info, region);
-                return;
-        }
-        cfb_copyarea(info, region);
+		return;
+	if (info->flags & FBINFO_HWACCEL_DISABLED) {
+		cfb_copyarea(info, region);
+		return;
+	}
+	psbfb_copyarea_accel(info, region);
 }
 
 void psbfb_imageblit(struct fb_info *info, const struct fb_image *image)
 {
+	struct psbfb_par *par = info->par;
 	if (info->state != FBINFO_STATE_RUNNING)
-                return;
-        if (info->flags & FBINFO_HWACCEL_DISABLED) {
-                cfb_imageblit(info, image);
-                return;
-        }
-        cfb_imageblit(info, image);
+		return;
+	if (info->flags & FBINFO_HWACCEL_DISABLED) {
+		cfb_imageblit(info, image);
+		return;
+	}
+	drm_psb_idle(par->dev);
+	cfb_imageblit(info, image);
 }
 
 static struct fb_ops psbfb_ops = {
@@ -464,10 +656,11 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct fb_info *info;
 	struct psbfb_par *par;
-	struct device *device = &dev->pdev->dev; 
+	struct device *device = &dev->pdev->dev;
 	struct drm_framebuffer *fb;
 	struct drm_display_mode *mode = crtc->desired_mode;
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_buffer_object *fbo = NULL;
 	int ret;
 
@@ -478,7 +671,7 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	}
 
 	info = framebuffer_alloc(sizeof(struct psbfb_par), device);
-	if (!info){
+	if (!info) {
 		return -ENOMEM;
 	}
 
@@ -495,19 +688,18 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 
 	fb->bits_per_pixel = 32;
 	fb->depth = 24;
-	fb->pitch = ((fb->width * ((fb->bits_per_pixel + 1) / 8)) + 0x3f) & ~0x3f;
+	fb->pitch =
+	    ((fb->width * ((fb->bits_per_pixel + 1) / 8)) + 0x3f) & ~0x3f;
 
-	ret = drm_buffer_object_create(dev, 
-				       fb->pitch * fb->height, 
+	ret = drm_buffer_object_create(dev,
+				       fb->pitch * fb->height,
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ |
 				       DRM_BO_FLAG_WRITE |
-			       	       DRM_BO_FLAG_MEM_TT |
+				       DRM_BO_FLAG_MEM_TT |
 				       DRM_BO_FLAG_MEM_VRAM |
-			       	       DRM_BO_FLAG_NO_EVICT,
-				       DRM_BO_HINT_DONT_FENCE,
-				       0, 0,
-				       &fbo);
+				       DRM_BO_FLAG_NO_EVICT,
+				       DRM_BO_HINT_DONT_FENCE, 0, 0, &fbo);
 	if (ret || !fbo) {
 		DRM_ERROR("failed to allocate framebuffer\n");
 		drm_framebuffer_destroy(fb);
@@ -518,10 +710,10 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	fb->offset = fbo->offset - dev_priv->pg->gatt_start;
 	fb->bo = fbo;
 	DRM_DEBUG("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
-		       fb->height, fb->offset, fbo);
+		  fb->height, fb->offset, fbo);
 
 	fb->fbdev = info;
-		
+
 	par = info->par;
 
 	par->dev = dev;
@@ -536,7 +728,7 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	info->fix.xpanstep = 1;
 	info->fix.ypanstep = 1;
 	info->fix.ywrapstep = 0;
-	info->fix.accel = FB_ACCEL_NONE; /* ??? */
+	info->fix.accel = FB_ACCEL_NONE;	/* ??? */
 	info->fix.type_aux = 0;
 	info->fix.mmio_start = 0;
 	info->fix.mmio_len = 0;
@@ -545,8 +737,8 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	info->fix.smem_len = info->fix.line_length * fb->height;
 
 	info->flags = FBINFO_DEFAULT |
-			FBINFO_PARTIAL_PAN_OK /*| FBINFO_MISC_ALWAYS_SETPAR*/;
-	
+	    FBINFO_PARTIAL_PAN_OK /*| FBINFO_MISC_ALWAYS_SETPAR */ ;
+
 	ret = drm_bo_kmap(fb->bo, 0, fb->bo->num_pages, &fb->kmap);
 	if (ret) {
 		DRM_ERROR("error mapping fb: %d\n", ret);
@@ -557,7 +749,7 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	}
 
 	info->screen_base = fb->kmap.virtual;
-	info->screen_size = info->fix.smem_len; /* FIXME */
+	info->screen_size = info->fix.smem_len;	/* FIXME */
 	info->pseudo_palette = fb->pseudo_palette;
 	info->var.xres_virtual = fb->width;
 	info->var.yres_virtual = fb->height;
@@ -569,20 +761,20 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	info->var.width = -1;
 	info->var.vmode = FB_VMODE_NONINTERLACED;
 
-        info->var.xres = mode->hdisplay;
-        info->var.right_margin = mode->hsync_start - mode->hdisplay;
-        info->var.hsync_len = mode->hsync_end - mode->hsync_start;
-        info->var.left_margin = mode->htotal - mode->hsync_end;
-        info->var.yres = mode->vdisplay;
-        info->var.lower_margin = mode->vsync_start - mode->vdisplay;
-        info->var.vsync_len = mode->vsync_end - mode->vsync_start;
+	info->var.xres = mode->hdisplay;
+	info->var.right_margin = mode->hsync_start - mode->hdisplay;
+	info->var.hsync_len = mode->hsync_end - mode->hsync_start;
+	info->var.left_margin = mode->htotal - mode->hsync_end;
+	info->var.yres = mode->vdisplay;
+	info->var.lower_margin = mode->vsync_start - mode->vdisplay;
+	info->var.vsync_len = mode->vsync_end - mode->vsync_start;
 	info->var.upper_margin = mode->vtotal - mode->vsync_end;
-        info->var.pixclock = 10000000 / mode->htotal * 1000 /
-		mode->vtotal * 100;
+	info->var.pixclock = 10000000 / mode->htotal * 1000 /
+	    mode->vtotal * 100;
 	/* avoid overflow */
 	info->var.pixclock = info->var.pixclock * 1000 / mode->vrefresh;
 
-	info->pixmap.size = 64*1024;
+	info->pixmap.size = 64 * 1024;
 	info->pixmap.buf_align = 8;
 	info->pixmap.access_align = 32;
 	info->pixmap.flags = FB_PIXMAP_SYSTEM;
@@ -590,41 +782,41 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 
 	DRM_DEBUG("fb depth is %d\n", fb->depth);
 	DRM_DEBUG("   pitch is %d\n", fb->pitch);
-	switch(fb->depth) {
+	switch (fb->depth) {
 	case 8:
-                info->var.red.offset = 0;
-                info->var.green.offset = 0;
-                info->var.blue.offset = 0;
-                info->var.red.length = 8; /* 8bit DAC */
-                info->var.green.length = 8;
-                info->var.blue.length = 8;
-                info->var.transp.offset = 0;
-                info->var.transp.length = 0;
-                break;
- 	case 15:
-                info->var.red.offset = 10;
-                info->var.green.offset = 5;
-                info->var.blue.offset = 0;
-                info->var.red.length = info->var.green.length =
-                        info->var.blue.length = 5;
-                info->var.transp.offset = 15;
-                info->var.transp.length = 1;
-                break;
+		info->var.red.offset = 0;
+		info->var.green.offset = 0;
+		info->var.blue.offset = 0;
+		info->var.red.length = 8;	/* 8bit DAC */
+		info->var.green.length = 8;
+		info->var.blue.length = 8;
+		info->var.transp.offset = 0;
+		info->var.transp.length = 0;
+		break;
+	case 15:
+		info->var.red.offset = 10;
+		info->var.green.offset = 5;
+		info->var.blue.offset = 0;
+		info->var.red.length = info->var.green.length =
+		    info->var.blue.length = 5;
+		info->var.transp.offset = 15;
+		info->var.transp.length = 1;
+		break;
 	case 16:
-                info->var.red.offset = 11;
-                info->var.green.offset = 5;
-                info->var.blue.offset = 0;
-                info->var.red.length = 5;
-                info->var.green.length = 6;
-                info->var.blue.length = 5;
-                info->var.transp.offset = 0;
- 		break;
+		info->var.red.offset = 11;
+		info->var.green.offset = 5;
+		info->var.blue.offset = 0;
+		info->var.red.length = 5;
+		info->var.green.length = 6;
+		info->var.blue.length = 5;
+		info->var.transp.offset = 0;
+		break;
 	case 24:
 		info->var.red.offset = 16;
 		info->var.green.offset = 8;
 		info->var.blue.offset = 0;
 		info->var.red.length = info->var.green.length =
-			info->var.blue.length = 8;
+		    info->var.blue.length = 8;
 		info->var.transp.offset = 0;
 		info->var.transp.length = 0;
 		break;
@@ -633,7 +825,7 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 		info->var.green.offset = 8;
 		info->var.blue.offset = 0;
 		info->var.red.length = info->var.green.length =
-			info->var.blue.length = 8;
+		    info->var.blue.length = 8;
 		info->var.transp.offset = 24;
 		info->var.transp.length = 8;
 		break;
@@ -648,19 +840,19 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 		return -EINVAL;
 	}
 
-        if (psbfb_check_var(&info->var, info) < 0) {
+	if (psbfb_check_var(&info->var, info) < 0) {
 		drm_framebuffer_destroy(fb);
 		framebuffer_release(info);
 		crtc->fb = NULL;
 		return -EINVAL;
 	}
 
-        psbfb_set_par(info);
+	psbfb_set_par(info);
 
-	DRM_INFO("fb%d: %s frame buffer device\n", info->node,
-	       info->fix.id);
+	DRM_INFO("fb%d: %s frame buffer device\n", info->node, info->fix.id);
 	return 0;
 }
+
 EXPORT_SYMBOL(psbfb_probe);
 
 int psbfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
@@ -673,13 +865,15 @@ int psbfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 
 	fb = crtc->fb;
 	info = fb->fbdev;
-	
+
 	if (info) {
 		unregister_framebuffer(info);
 		framebuffer_release(info);
 		drm_bo_kunmap(&fb->kmap);
 		drm_bo_usage_deref_unlocked(&fb->bo);
+		drm_framebuffer_destroy(fb);
 	}
 	return 0;
 }
+
 EXPORT_SYMBOL(psbfb_remove);

@@ -381,18 +381,19 @@ intel_pipe_set_base(struct drm_crtc *crtc, int x, int y)
 		I915_WRITE(dspbase, Start + Offset);
 		I915_READ(dspbase);
 	}
+	
 
 	if (!dev_priv->sarea_priv) 
 		return;
 		
 	switch (pipe) {
 	case 0:
-		dev_priv->sarea_priv->pipeA_x = x;
-		dev_priv->sarea_priv->pipeA_y = y;
+		dev_priv->sarea_priv->planeA_x = x;
+		dev_priv->sarea_priv->planeA_y = y;
 		break;
 	case 1:
-		dev_priv->sarea_priv->pipeB_x = x;
-		dev_priv->sarea_priv->pipeB_y = y;
+		dev_priv->sarea_priv->planeB_x = x;
+		dev_priv->sarea_priv->planeB_y = y;
 		break;
 	default:
 		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
@@ -508,12 +509,12 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	
 	switch (pipe) {
 	case 0:
-		dev_priv->sarea_priv->pipeA_w = enabled ? crtc->mode.hdisplay : 0;
-		dev_priv->sarea_priv->pipeA_h = enabled ? crtc->mode.vdisplay : 0;
+		dev_priv->sarea_priv->planeA_w = enabled ? crtc->mode.hdisplay : 0;
+		dev_priv->sarea_priv->planeA_h = enabled ? crtc->mode.vdisplay : 0;
 		break;
 	case 1:
-		dev_priv->sarea_priv->pipeB_w = enabled ? crtc->mode.hdisplay : 0;
-		dev_priv->sarea_priv->pipeB_h = enabled ? crtc->mode.vdisplay : 0;
+		dev_priv->sarea_priv->planeB_w = enabled ? crtc->mode.hdisplay : 0;
+		dev_priv->sarea_priv->planeB_h = enabled ? crtc->mode.vdisplay : 0;
 		break;
 	default:
 		DRM_ERROR("Can't update pipe %d in SAREA\n", pipe);
@@ -1215,6 +1216,7 @@ void intel_modeset_init(struct drm_device *dev)
 	dev->mode_config.max_width = 4096;
 	dev->mode_config.max_height = 4096;
 
+	/* set memory base */
 	if (IS_I9XX(dev))
 		dev->mode_config.fb_base = pci_resource_start(dev->pdev, 2);
 	else

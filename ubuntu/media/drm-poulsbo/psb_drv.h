@@ -35,6 +35,7 @@
 #include "psb_drm.h"
 #include "psb_reg.h"
 #include "psb_schedule.h"
+#include "intel_drv.h"
 
 enum {
 	CHIP_PSB_8108 = 0
@@ -44,15 +45,13 @@ enum {
 #define DRIVER_DESC "drm driver for the Intel Poulsbo chipset"
 #define DRIVER_AUTHOR "Tungsten Graphics Inc."
 
-#define PSB_DRM_DRIVER_DATE "20071017"
-#define PSB_DRM_DRIVER_MAJOR 0
-#define PSB_DRM_DRIVER_MINOR 9 
+#define PSB_DRM_DRIVER_DATE "20071113"
+#define PSB_DRM_DRIVER_MAJOR 2
+#define PSB_DRM_DRIVER_MINOR 3
 #define PSB_DRM_DRIVER_PATCHLEVEL 0
-
 
 #define PSB_VDC_OFFSET           0x00000000
 #define PSB_VDC_SIZE             0x000080000
-#define PSB_SGX_SAVE_SIZE        0x1000
 #define PSB_SGX_SIZE             0x8000
 #define PSB_SGX_OFFSET           0x00040000
 #define PSB_MMIO_RESOURCE        0
@@ -79,8 +78,8 @@ enum {
  * Flags for external memory type field.
  */
 
-#define PSB_MSVDX_OFFSET        0x50000         /*MSVDX Base offset*/
-#define PSB_MSVDX_SIZE          0x8000          /*MSVDX MMIO region is 0x50000 - 0x57fff ==> 32KB*/
+#define PSB_MSVDX_OFFSET        0x50000	/*MSVDX Base offset */
+#define PSB_MSVDX_SIZE          0x8000	/*MSVDX MMIO region is 0x50000 - 0x57fff ==> 32KB */
 
 #define PSB_MMU_CACHED_MEMORY     0x0001	/* Bind to MMU only */
 #define PSB_MMU_RO_MEMORY         0x0002	/* MMU RO memory */
@@ -155,8 +154,12 @@ enum {
 #define PSB_COMM_3D (PSB_ENGINE_3D << 4)
 #define PSB_COMM_TA (PSB_ENGINE_TA << 4)
 #define PSB_COMM_HP (PSB_ENGINE_HP << 4)
+#define PSB_COMM_USER_IRQ (1024 >> 2)
+#define PSB_COMM_USER_IRQ_LOST (PSB_COMM_USER_IRQ + 1)
 #define PSB_COMM_FW (2048 >> 2)
 
+#define PSB_UIRQ_VISTEST       1
+#define PSB_UIRQ_OOM_REPLY     2
 
 #define PSB_2D_SIZE (256*1024*1024)
 #define PSB_MAX_RELOC_PAGES 1024
@@ -171,7 +174,6 @@ enum {
 #define PSB_COMM_TA (PSB_ENGINE_TA << 4)
 #define PSB_COMM_HP (PSB_ENGINE_HP << 4)
 #define PSB_COMM_FW (2048 >> 2)
-
 
 #define PSB_2D_SIZE (256*1024*1024)
 #define PSB_MAX_RELOC_PAGES 1024
@@ -188,24 +190,23 @@ enum {
  * User options.
  */
 
-struct drm_psb_uopt{
+struct drm_psb_uopt {
 	int disable_clock_gating;
 };
 
-
-struct psb_gtt{
-        struct drm_device *dev;
-        int initialized;
-	u32 gatt_start;
-	u32 gtt_start;
-	u32 gtt_phys_start;
+struct psb_gtt {
+	struct drm_device *dev;
+	int initialized;
+	uint32_t gatt_start;
+	uint32_t gtt_start;
+	uint32_t gtt_phys_start;
 	unsigned gtt_pages;
-        unsigned gatt_pages;
-	u32 stolen_base;
-	u32 pge_ctl;
+	unsigned gatt_pages;
+	uint32_t stolen_base;
+	uint32_t pge_ctl;
 	u16 gmch_ctrl;
 	unsigned long stolen_size;
-	u32 *gtt_map;
+	uint32_t *gtt_map;
 	struct rw_semaphore sem;
 };
 
@@ -224,9 +225,18 @@ struct psb_buflist_item {
 	int ret;
 };
 
+struct psb_msvdx_cmd_queue
+{
+	struct list_head head;
+	void *cmd;	
+	unsigned long cmd_size;
+	uint32_t sequence;
+};
+
 struct drm_psb_private {
 	unsigned long chipset;
-  
+
+	struct psb_xhw_buf resume_buf;
 	struct drm_psb_dev_info_arg dev_info;
 	struct drm_psb_uopt uopt;
 
@@ -235,48 +245,51 @@ struct drm_psb_private {
 	struct page *scratch_page;
 	struct page *comm_page;
 
-	volatile u32 *comm;
-	u32 comm_mmu_offset;
-	u32 mmu_2d_offset;
-	u32 sequence[PSB_NUM_ENGINES];
-        u32 last_submitted_seq[PSB_NUM_ENGINES];
-	u32 *sgx_save;
+	volatile uint32_t *comm;
+	uint32_t comm_mmu_offset;
+	uint32_t mmu_2d_offset;
+	uint32_t sequence[PSB_NUM_ENGINES];
+	uint32_t last_sequence[PSB_NUM_ENGINES];
+	int idle[PSB_NUM_ENGINES];
+	uint32_t last_submitted_seq[PSB_NUM_ENGINES];
 	int engine_lockup_2d;
 
 	struct psb_mmu_driver *mmu;
 	struct psb_mmu_pd *pf_pd;
 
-	u8 *sgx_reg;
-	u8 *vdc_reg;
-	u8 *msvdx_reg; /*MSVDX*/
-        int msvdx_needs_reset;
+	uint8_t *sgx_reg;
+	uint8_t *vdc_reg;
+	uint8_t *msvdx_reg;
+	 /*MSVDX*/ int msvdx_needs_reset;
 	int has_msvdx;
-	u32 gatt_free_offset;
+	uint32_t gatt_free_offset;
 
 	/*
 	 * Fencing / irq.
 	 */
 
-	u32 sgx_irq_mask;
-	u32 vdc_irq_mask;
-       
+	uint32_t sgx_irq_mask;
+	uint32_t vdc_irq_mask;
+
 	spinlock_t irqmask_lock;
+	spinlock_t sequence_lock;
 	int fence0_irq_on;
 	int irq_enabled;
-    unsigned int irqen_count_2d;
+	unsigned int irqen_count_2d;
 	wait_queue_head_t event_2d_queue;
-	
-	u32 msvdx_current_sequence;
-	u32 msvdx_last_sequence;
-    int fence2_irq_on;
 
-    /*
-     * MSVDX Rendec Memory
-     */
-    struct drm_buffer_object *ccb0;
-    u32 base_addr0;
-    struct drm_buffer_object *ccb1;
-    u32 base_addr1;
+	uint32_t msvdx_current_sequence;
+	uint32_t msvdx_last_sequence;
+	int fence2_irq_on;
+	struct mutex mutex_2d;
+
+	/*
+	 * MSVDX Rendec Memory
+	 */
+	struct drm_buffer_object *ccb0;
+	uint32_t base_addr0;
+	struct drm_buffer_object *ccb1;
+	uint32_t base_addr1;
 
 	/*
 	 * Memory managers
@@ -287,8 +300,8 @@ struct drm_psb_private {
 	int have_mem_mmu;
 	int have_mem_aper;
 	int have_mem_kernel;
-        int have_mem_pds;
-        int have_mem_rastgeom;
+	int have_mem_pds;
+	int have_mem_rastgeom;
 	struct mutex temp_mem;
 
 	/*
@@ -299,7 +312,6 @@ struct drm_psb_private {
 	unsigned int rel_mapped_pages;
 	wait_queue_head_t rel_mapped_queue;
 
-
 	/*
 	 * SAREA
 	 */
@@ -308,73 +320,73 @@ struct drm_psb_private {
 	/*
 	 * LVDS info 
 	 */
-	int backlight_duty_cycle;  /* restore backlight to this value */
+	int backlight_duty_cycle;	/* restore backlight to this value */
 	bool panel_wants_dither;
 	struct drm_display_mode *panel_fixed_mode;
 
 	/* 
 	 * Register state 
 	 */
-	u32 saveDSPACNTR;
-	u32 saveDSPBCNTR;
-	u32 savePIPEACONF;
-	u32 savePIPEBCONF;
-	u32 savePIPEASRC;
-	u32 savePIPEBSRC;
-	u32 saveFPA0;
-	u32 saveFPA1;
-	u32 saveDPLL_A;
-	u32 saveDPLL_A_MD;
-	u32 saveHTOTAL_A;
-	u32 saveHBLANK_A;
-	u32 saveHSYNC_A;
-	u32 saveVTOTAL_A;
-	u32 saveVBLANK_A;
-	u32 saveVSYNC_A;
-	u32 saveDSPASTRIDE;
-	u32 saveDSPASIZE;
-	u32 saveDSPAPOS;
-	u32 saveDSPABASE;
-	u32 saveDSPASURF;
-	u32 saveFPB0;
-	u32 saveFPB1;
-	u32 saveDPLL_B;
-	u32 saveDPLL_B_MD;
-	u32 saveHTOTAL_B;
-	u32 saveHBLANK_B;
-	u32 saveHSYNC_B;
-	u32 saveVTOTAL_B;
-	u32 saveVBLANK_B;
-	u32 saveVSYNC_B;
-	u32 saveDSPBSTRIDE;
-	u32 saveDSPBSIZE;
-	u32 saveDSPBPOS;
-	u32 saveDSPBBASE;
-	u32 saveDSPBSURF;
-	u32 saveVCLK_DIVISOR_VGA0;
-	u32 saveVCLK_DIVISOR_VGA1;
-	u32 saveVCLK_POST_DIV;
-	u32 saveVGACNTRL;
-	u32 saveADPA;
-	u32 saveLVDS;
-	u32 saveDVOA;
-	u32 saveDVOB;
-	u32 saveDVOC;
-	u32 savePP_ON;
-	u32 savePP_OFF;
-	u32 savePP_CONTROL;
-	u32 savePP_CYCLE;
-	u32 savePFIT_CONTROL;
-	u32 savePaletteA[256];
-	u32 savePaletteB[256];
-	u32 saveBLC_PWM_CTL;
+	uint32_t saveDSPACNTR;
+	uint32_t saveDSPBCNTR;
+	uint32_t savePIPEACONF;
+	uint32_t savePIPEBCONF;
+	uint32_t savePIPEASRC;
+	uint32_t savePIPEBSRC;
+	uint32_t saveFPA0;
+	uint32_t saveFPA1;
+	uint32_t saveDPLL_A;
+	uint32_t saveDPLL_A_MD;
+	uint32_t saveHTOTAL_A;
+	uint32_t saveHBLANK_A;
+	uint32_t saveHSYNC_A;
+	uint32_t saveVTOTAL_A;
+	uint32_t saveVBLANK_A;
+	uint32_t saveVSYNC_A;
+	uint32_t saveDSPASTRIDE;
+	uint32_t saveDSPASIZE;
+	uint32_t saveDSPAPOS;
+	uint32_t saveDSPABASE;
+	uint32_t saveDSPASURF;
+	uint32_t saveFPB0;
+	uint32_t saveFPB1;
+	uint32_t saveDPLL_B;
+	uint32_t saveDPLL_B_MD;
+	uint32_t saveHTOTAL_B;
+	uint32_t saveHBLANK_B;
+	uint32_t saveHSYNC_B;
+	uint32_t saveVTOTAL_B;
+	uint32_t saveVBLANK_B;
+	uint32_t saveVSYNC_B;
+	uint32_t saveDSPBSTRIDE;
+	uint32_t saveDSPBSIZE;
+	uint32_t saveDSPBPOS;
+	uint32_t saveDSPBBASE;
+	uint32_t saveDSPBSURF;
+	uint32_t saveVCLK_DIVISOR_VGA0;
+	uint32_t saveVCLK_DIVISOR_VGA1;
+	uint32_t saveVCLK_POST_DIV;
+	uint32_t saveVGACNTRL;
+	uint32_t saveADPA;
+	uint32_t saveLVDS;
+	uint32_t saveDVOA;
+	uint32_t saveDVOB;
+	uint32_t saveDVOC;
+	uint32_t savePP_ON;
+	uint32_t savePP_OFF;
+	uint32_t savePP_CONTROL;
+	uint32_t savePP_CYCLE;
+	uint32_t savePFIT_CONTROL;
+	uint32_t savePaletteA[256];
+	uint32_t savePaletteB[256];
+	uint32_t saveBLC_PWM_CTL;
 
 	/*
 	 * USE code base register management.
 	 */
-        
+
 	struct drm_reg_manager use_manager;
-  
+
 	/*
 	 * Xhw
 	 */
@@ -384,90 +396,108 @@ struct drm_psb_private {
 	struct drm_bo_kmap_obj xhw_kmap;
 	struct list_head xhw_in;
 	spinlock_t xhw_lock;
-        atomic_t xhw_client;
-        struct drm_file *xhw_file;
+	atomic_t xhw_client;
+	struct drm_file *xhw_file;
 	wait_queue_head_t xhw_queue;
 	wait_queue_head_t xhw_caller_queue;
 	struct mutex xhw_mutex;
 	struct psb_xhw_buf *xhw_cur_buf;
-        int xhw_submit_ok;
-        int xhw_on;
+	int xhw_submit_ok;
+	int xhw_on;
 
 	/*
 	 * Scheduling.
 	 */
 
-        struct mutex reset_mutex;
-		struct mutex cmdbuf_mutex;
-        struct psb_scheduler scheduler;
-        struct psb_buflist_item buffers[PSB_NUM_VALIDATE_BUFFERS];
+	struct mutex reset_mutex;
+	struct mutex cmdbuf_mutex;
+	struct psb_scheduler scheduler;
+	struct psb_buflist_item buffers[PSB_NUM_VALIDATE_BUFFERS];
 
 	/*
 	 * Watchdog
 	 */
-	
+
 	spinlock_t watchdog_lock;
 	struct timer_list watchdog_timer;
 	struct work_struct watchdog_wq;
 	struct work_struct msvdx_watchdog_wq;
 	int timer_available;
+	
+	/*
+	 * msvdx command queue
+	 */
+	spinlock_t msvdx_lock;
+	struct mutex msvdx_mutex;
+	struct list_head msvdx_queue;
+	int msvdx_busy;
 };
 
 struct psb_mmu_driver;
 
-extern struct psb_mmu_driver *psb_mmu_driver_init(u8 __iomem * registers);
+extern struct psb_mmu_driver *psb_mmu_driver_init(uint8_t __iomem * registers,
+						  int trap_pagefaults,
+						  int invalid_type);
 extern void psb_mmu_driver_takedown(struct psb_mmu_driver *driver);
 extern struct psb_mmu_pd *psb_mmu_get_default_pd(struct psb_mmu_driver *driver);
-extern void psb_mmu_mirror_gtt(struct psb_mmu_pd *pd, u32 mmu_offset,
-			       u32 gtt_start, __u32 gtt_pages);
-extern void psb_mmu_test(struct psb_mmu_driver *driver, u32 offset);
-extern struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver);
+extern void psb_mmu_mirror_gtt(struct psb_mmu_pd *pd, uint32_t mmu_offset,
+			       uint32_t gtt_start, uint32_t gtt_pages);
+extern void psb_mmu_test(struct psb_mmu_driver *driver, uint32_t offset);
+extern struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver,
+					   int trap_pagefaults,
+					   int invalid_type);
 extern void psb_mmu_free_pagedir(struct psb_mmu_pd *pd);
 extern void psb_mmu_flush(struct psb_mmu_driver *driver);
 extern void psb_mmu_remove_pfn_sequence(struct psb_mmu_pd *pd,
-					 unsigned long address,
-					 uint32_t num_pages);
-extern int psb_mmu_insert_pfn_sequence(struct psb_mmu_pd *pd, uint32_t start_pfn,
-				       unsigned long address, uint32_t num_pages,
-				       int type);
+					unsigned long address,
+					uint32_t num_pages);
+extern int psb_mmu_insert_pfn_sequence(struct psb_mmu_pd *pd,
+				       uint32_t start_pfn,
+				       unsigned long address,
+				       uint32_t num_pages, int type);
+extern int psb_mmu_virtual_to_pfn(struct psb_mmu_pd *pd, uint32_t virtual,
+				  unsigned long *pfn);
 
 /*
  * Enable / disable MMU for different requestors.
  */
 
-extern void psb_mmu_enable_requestor(struct psb_mmu_driver *driver, u32 mask);
+extern void psb_mmu_enable_requestor(struct psb_mmu_driver *driver,
+				     uint32_t mask);
 extern void psb_mmu_disable_requestor(struct psb_mmu_driver *driver,
-				      u32 mask);
+				      uint32_t mask);
 extern void psb_mmu_set_pd_context(struct psb_mmu_pd *pd, int hw_context);
 extern int psb_mmu_insert_pages(struct psb_mmu_pd *pd, struct page **pages,
-				unsigned long address, u32 num_pages,
-				u32 desired_tile_stride, u32 hw_tile_stride,
-				int type);
+				unsigned long address, uint32_t num_pages,
+				uint32_t desired_tile_stride,
+				uint32_t hw_tile_stride, int type);
 extern void psb_mmu_remove_pages(struct psb_mmu_pd *pd, unsigned long address,
-				 u32 num_pages, __u32 desired_tile_stride,
-				 u32 hw_tile_stride);
+				 uint32_t num_pages,
+				 uint32_t desired_tile_stride,
+				 uint32_t hw_tile_stride);
 /*
  * psb_sgx.c 
  */
 
-extern int psb_blit_sequence(struct drm_psb_private * dev_priv);
-extern void psb_init_2d(struct drm_psb_private * dev_priv);
-extern int drm_psb_idle(struct drm_device * dev);
-extern int psb_emit_2d_copy_blit(struct drm_device * dev,
-				 u32 src_offset,
-				 u32 dst_offset, __u32 pages, int direction);
-extern int psb_cmdbuf_ioctl(struct drm_device *dev, void *data, 
+extern int psb_blit_sequence(struct drm_psb_private *dev_priv,
+			     uint32_t sequence);
+extern void psb_init_2d(struct drm_psb_private *dev_priv);
+extern int drm_psb_idle(struct drm_device *dev);
+extern int psb_emit_2d_copy_blit(struct drm_device *dev,
+				 uint32_t src_offset,
+				 uint32_t dst_offset, uint32_t pages,
+				 int direction);
+extern int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 			    struct drm_file *file_priv);
-extern int psb_reg_submit(struct drm_psb_private *dev_priv, 
-			  u32 *regs, unsigned int cmds);
-extern int psb_submit_copy_cmdbuf(struct drm_device * dev,
-			     struct drm_buffer_object * cmd_buffer,
-			     unsigned long cmd_offset, 
-			     unsigned long cmd_size,
-			     int engine,
-			     uint32_t *copy_buffer);
+extern int psb_reg_submit(struct drm_psb_private *dev_priv, uint32_t * regs,
+			  unsigned int cmds);
+extern int psb_submit_copy_cmdbuf(struct drm_device *dev,
+				  struct drm_buffer_object *cmd_buffer,
+				  unsigned long cmd_offset,
+				  unsigned long cmd_size, int engine,
+				  uint32_t * copy_buffer);
 
-extern int psb_fence_for_errors(struct drm_file *priv, 
+extern int psb_fence_for_errors(struct drm_file *priv,
 				struct drm_psb_cmdbuf_arg *arg,
 				struct drm_fence_arg *fence_arg,
 				struct drm_fence_object **fence_p);
@@ -477,9 +507,9 @@ extern int psb_fence_for_errors(struct drm_file *priv,
  */
 
 extern irqreturn_t psb_irq_handler(DRM_IRQ_ARGS);
-extern void psb_irq_preinstall(struct drm_device * dev);
-extern void psb_irq_postinstall(struct drm_device * dev);
-extern void psb_irq_uninstall(struct drm_device * dev);
+extern void psb_irq_preinstall(struct drm_device *dev);
+extern void psb_irq_postinstall(struct drm_device *dev);
+extern void psb_irq_uninstall(struct drm_device *dev);
 extern int psb_vblank_wait2(struct drm_device *dev, unsigned int *sequence);
 extern int psb_vblank_wait(struct drm_device *dev, unsigned int *sequence);
 
@@ -487,22 +517,20 @@ extern int psb_vblank_wait(struct drm_device *dev, unsigned int *sequence);
  * psb_fence.c
  */
 
-extern void psb_poke_flush(struct drm_device * dev, uint32_t class);
-extern int psb_fence_emit_sequence(struct drm_device * dev, uint32_t class,
+extern void psb_poke_flush(struct drm_device *dev, uint32_t class);
+extern int psb_fence_emit_sequence(struct drm_device *dev, uint32_t class,
 				   uint32_t flags, uint32_t * sequence,
 				   uint32_t * native_type);
-extern void psb_fence_handler(struct drm_device * dev, uint32_t class);
-extern int psb_fence_has_irq(struct drm_device * dev, uint32_t class,
+extern void psb_fence_handler(struct drm_device *dev, uint32_t class);
+extern int psb_fence_has_irq(struct drm_device *dev, uint32_t class,
 			     uint32_t flags);
-extern void psb_2D_irq_off(struct drm_psb_private * dev_priv);
-extern void psb_2D_irq_on(struct drm_psb_private * dev_priv);
+extern void psb_2D_irq_off(struct drm_psb_private *dev_priv);
+extern void psb_2D_irq_on(struct drm_psb_private *dev_priv);
 extern uint32_t psb_fence_advance_sequence(struct drm_device *dev,
-				       uint32_t class);
+					   uint32_t class);
 extern void psb_fence_error(struct drm_device *dev,
 			    uint32_t class,
-			    uint32_t sequence,
-			    uint32_t type,
-			    int error);
+			    uint32_t sequence, uint32_t type, int error);
 
 /*MSVDX stuff*/
 extern void psb_msvdx_irq_off(struct drm_psb_private * dev_priv);
@@ -511,15 +539,15 @@ extern void psb_msvdx_irq_on(struct drm_psb_private * dev_priv);
 /*
  * psb_buffer.c
  */
-extern drm_ttm_backend_t *drm_psb_tbe_init(struct drm_device * dev);
-extern int psb_fence_types(struct drm_buffer_object * bo, uint32_t * class,
+extern struct drm_ttm_backend *drm_psb_tbe_init(struct drm_device *dev);
+extern int psb_fence_types(struct drm_buffer_object *bo, uint32_t * class,
 			   uint32_t * type);
-extern uint32_t psb_evict_mask(struct drm_buffer_object * bo);
-extern int psb_invalidate_caches(struct drm_device * dev, uint64_t flags);
-extern int psb_init_mem_type(struct drm_device * dev, uint32_t type,
-			     struct drm_mem_type_manager * man);
-extern int psb_move(struct drm_buffer_object * bo,
-		    int evict, int no_wait, struct drm_bo_mem_reg * new_mem);
+extern uint32_t psb_evict_mask(struct drm_buffer_object *bo);
+extern int psb_invalidate_caches(struct drm_device *dev, uint64_t flags);
+extern int psb_init_mem_type(struct drm_device *dev, uint32_t type,
+			     struct drm_mem_type_manager *man);
+extern int psb_move(struct drm_buffer_object *bo,
+		    int evict, int no_wait, struct drm_bo_mem_reg *new_mem);
 
 /*
  * psb_gtt.c 
@@ -527,11 +555,11 @@ extern int psb_move(struct drm_buffer_object * bo,
 extern int psb_gtt_init(struct psb_gtt *pg, int resume);
 extern int psb_gtt_insert_pages(struct psb_gtt *pg, struct page **pages,
 				unsigned offset_pages, unsigned num_pages,
-				unsigned desired_tile_stride, 
-				unsigned hw_tile_stride, 
-				int type);
-extern int psb_gtt_remove_pages(struct psb_gtt *pg, unsigned offset_pages, 
-				unsigned num_pages, unsigned desired_tile_stride, 
+				unsigned desired_tile_stride,
+				unsigned hw_tile_stride, int type);
+extern int psb_gtt_remove_pages(struct psb_gtt *pg, unsigned offset_pages,
+				unsigned num_pages,
+				unsigned desired_tile_stride,
 				unsigned hw_tile_stride);
 
 extern struct psb_gtt *psb_gtt_alloc(struct drm_device *dev);
@@ -547,7 +575,7 @@ extern int psbfb_remove(struct drm_device *dev, struct drm_crtc *crtc);
  * psb_reset.c
  */
 
-extern void psb_reset(struct drm_psb_private * dev_priv, int reset_2d);
+extern void psb_reset(struct drm_psb_private *dev_priv, int reset_2d);
 extern void psb_schedule_watchdog(struct drm_psb_private *dev_priv);
 extern void psb_watchdog_init(struct drm_psb_private *dev_priv);
 extern void psb_watchdog_takedown(struct drm_psb_private *dev_priv);
@@ -565,11 +593,9 @@ extern int psb_grab_use_base(struct drm_psb_private *dev_priv,
 			     uint32_t fence_type,
 			     int no_wait,
 			     int ignore_signals,
-			     int *r_reg,
-			     u32 *r_offset);
-extern int psb_init_use_base(struct drm_psb_private *dev_priv, 
-			     unsigned int reg_start,
-			     unsigned int reg_num);
+			     int *r_reg, uint32_t * r_offset);
+extern int psb_init_use_base(struct drm_psb_private *dev_priv,
+			     unsigned int reg_start, unsigned int reg_num);
 
 /*
  * psb_xhw.c
@@ -582,48 +608,41 @@ extern int psb_xhw_init_ioctl(struct drm_device *dev, void *data,
 extern int psb_xhw_init(struct drm_device *dev);
 extern void psb_xhw_takedown(struct drm_psb_private *dev_priv);
 extern void psb_xhw_init_takedown(struct drm_psb_private *dev_priv,
-				  struct drm_file *file_priv,
-				  int closing);
+				  struct drm_file *file_priv, int closing);
 extern int psb_xhw_scene_bind_fire(struct drm_psb_private *dev_priv,
 				   struct psb_xhw_buf *buf,
 				   uint32_t fire_flags,
 				   uint32_t hw_context,
-				   uint32_t *cookie,
+				   uint32_t * cookie,
 				   uint32_t offset,
-				   uint32_t engine,
-				   uint32_t flags);
+				   uint32_t engine, uint32_t flags);
 extern int psb_xhw_fire_raster(struct drm_psb_private *dev_priv,
-			       struct psb_xhw_buf *buf,
-			       uint32_t fire_flags);
+			       struct psb_xhw_buf *buf, uint32_t fire_flags);
 extern int psb_xhw_scene_info(struct drm_psb_private *dev_priv,
 			      struct psb_xhw_buf *buf,
-			      uint32_t w, 
+			      uint32_t w,
 			      uint32_t h,
-			      uint32_t *hw_cookie,
-			      uint32_t *bo_size,
-			      uint32_t *clear_p_start,
-			      uint32_t *clear_num_pages);
+			      uint32_t * hw_cookie,
+			      uint32_t * bo_size,
+			      uint32_t * clear_p_start,
+			      uint32_t * clear_num_pages);
 
 extern int psb_xhw_reset_dpm(struct drm_psb_private *dev_priv,
 			     struct psb_xhw_buf *buf);
 extern int psb_xhw_bin_mem_info(struct drm_psb_private *dev_priv,
 				struct psb_xhw_buf *buf,
-				uint32_t pages, 
-				uint32_t *hw_cookie,
-				uint32_t *size);
+				uint32_t pages,
+				uint32_t * hw_cookie, uint32_t * size);
 extern int psb_xhw_ta_oom(struct drm_psb_private *dev_priv,
-			      struct psb_xhw_buf *buf,
-			      uint32_t *cookie);
+			  struct psb_xhw_buf *buf, uint32_t * cookie);
 extern void psb_xhw_ta_oom_reply(struct drm_psb_private *dev_priv,
-				     struct psb_xhw_buf *buf,
-				     uint32_t *cookie,
-				     uint32_t *bca,
-				     uint32_t *rca,
-				     uint32_t *flags);
-
-
-
-
+				 struct psb_xhw_buf *buf,
+				 uint32_t * cookie,
+				 uint32_t * bca,
+				 uint32_t * rca, uint32_t * flags);
+extern int psb_xhw_vistest(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf);
+extern int psb_xhw_handler(struct drm_psb_private *dev_priv);
+extern int psb_xhw_resume(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf);
 
 /*
  * Utilities
@@ -649,17 +668,15 @@ extern void psb_xhw_ta_oom_reply(struct drm_psb_private *dev_priv,
 #define PSB_ALPLM(_val, _base)			\
   ((((_val) >> (_base ## _ALIGNSHIFT)) << (_base ## _SHIFT)) & (_base ## _MASK))
 
-
-
 static inline psb_fixed psb_mul_fixed(psb_fixed a, psb_fixed b)
 {
 	s64 tmp;
 	s64 a64 = (s64) a;
 	s64 b64 = (s64) b;
 
-	tmp = a64*b64;
-	return tmp / (1ULL << PSB_FIXED_SHIFT) + 
-		((tmp & 0x80000000ULL) ? 1 : 0);
+	tmp = a64 * b64;
+	return tmp / (1ULL << PSB_FIXED_SHIFT) +
+	    ((tmp & 0x80000000ULL) ? 1 : 0);
 }
 
 static inline psb_fixed psb_mul_ufixed(psb_ufixed a, psb_fixed b)
@@ -668,32 +685,31 @@ static inline psb_fixed psb_mul_ufixed(psb_ufixed a, psb_fixed b)
 	u64 a64 = (u64) a;
 	u64 b64 = (u64) b;
 
-	tmp = a64*b64;
-	return (tmp >> PSB_FIXED_SHIFT) + 
-		((tmp & 0x80000000ULL) ? 1 : 0);
+	tmp = a64 * b64;
+	return (tmp >> PSB_FIXED_SHIFT) + ((tmp & 0x80000000ULL) ? 1 : 0);
 }
 
-static inline u32 psb_ufixed_to_float32(psb_ufixed a)
+static inline uint32_t psb_ufixed_to_float32(psb_ufixed a)
 {
-	u32 exp = 0x7f + 7;
-	u32 mantissa = (u32) a;
-	
+	uint32_t exp = 0x7f + 7;
+	uint32_t mantissa = (uint32_t) a;
+
 	if (a == 0)
 		return 0;
-	while((mantissa & 0xff800000) == 0) {
+	while ((mantissa & 0xff800000) == 0) {
 		exp -= 1;
 		mantissa <<= 1;
 	}
-	while((mantissa & 0xff800000) > 0x00800000) {
+	while ((mantissa & 0xff800000) > 0x00800000) {
 		exp += 1;
 		mantissa >>= 1;
 	}
 	return (mantissa & ~0xff800000) | (exp << 23);
 }
 
-static inline u32 psb_fixed_to_float32(psb_fixed a)
+static inline uint32_t psb_fixed_to_float32(psb_fixed a)
 {
-	if (a < 0) 
+	if (a < 0)
 		return psb_ufixed_to_float32(-a) | 0x80000000;
 	else
 		return psb_ufixed_to_float32(a);
@@ -706,10 +722,11 @@ static inline u32 psb_fixed_to_float32(psb_fixed a)
 #define PSB_D_IRQ     (1 << 2)
 #define PSB_D_FW      (1 << 3)
 #define PSB_D_PERF    (1 << 4)
-#define PSB_D_TMP    (1 << 5)  
+#define PSB_D_TMP    (1 << 5)
 
 extern int drm_psb_debug;
 extern int drm_psb_no_fb;
+extern int drm_psb_disable_vsync;
 
 #define PSB_DEBUG_FW(_fmt, _arg...) \
 	PSB_DEBUG(PSB_D_FW, _fmt, ##_arg)
@@ -734,7 +751,7 @@ extern int drm_psb_no_fb;
 			       "[psb:0x%02x:%s] " _fmt , _flag,	\
 			       __FUNCTION__ , ##_arg);			\
 	} while (0)
-#else 
+#else
 #define PSB_DEBUG(_fmt, _arg...)     do { } while (0)
 #endif
 

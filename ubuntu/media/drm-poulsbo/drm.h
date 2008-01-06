@@ -135,14 +135,6 @@ struct drm_clip_rect {
 };
 
 /**
- * Drawable information.
- */
-struct drm_drawable_info {
-	unsigned int num_rects;
-	struct drm_clip_rect *rects;
-};
-
-/**
  * Texture region,
  */
 struct drm_tex_region {
@@ -649,12 +641,14 @@ struct drm_set_version {
 
 struct drm_fence_arg {
 	unsigned int handle;
-	unsigned int class;
+	unsigned int fence_class;
 	unsigned int type;
 	unsigned int flags;
 	unsigned int signaled;
 	unsigned int error;
-	uint64_t expand_pad[3]; /*Future expansion */
+	unsigned int sequence;
+        unsigned int pad64;
+	uint64_t expand_pad[2]; /*Future expansion */
 };
 
 /* Buffer permissions, referring to how the GPU uses the buffers.
@@ -707,10 +701,14 @@ struct drm_fence_arg {
  */
 #define DRM_BO_FLAG_NO_MOVE     (1ULL << 8)
 
-/* Mask: Make sure the buffer is in cached memory when mapped for reading.
+/* Mask: Make sure the buffer is in cached memory when mapped
  * Flags: Acknowledge.
+ * Buffers allocated with this flag should not be used for suballocators
+ * This type may have issues on CPUs with over-aggressive caching
+ * http://marc.info/?l=linux-kernel&m=102376926732464&w=2
  */
-#define DRM_BO_FLAG_READ_CACHED    (1ULL << 19)
+#define DRM_BO_FLAG_CACHED_MAPPED    (1ULL << 19)
+
 
 /* Mask: Force DRM_BO_FLAG_CACHED flag strictly also if it is set.
  * Flags: Acknowledge.
@@ -722,6 +720,7 @@ struct drm_fence_arg {
  * Flags: Acknowledge.
  */
 #define DRM_BO_FLAG_FORCE_MAPPABLE (1ULL << 14)
+#define DRM_BO_FLAG_TILE           (1ULL << 15)
 
 /*
  * Memory type flags that can be or'ed together in the mask, but only
@@ -744,7 +743,7 @@ struct drm_fence_arg {
 
 /* Memory flag mask */
 #define DRM_BO_MASK_MEM         0x00000000FF000000ULL
-#define DRM_BO_MASK_MEMTYPE     0x00000000FF0000A0ULL
+#define DRM_BO_MASK_MEMTYPE     0x00000000FF0800A0ULL
 
 /* Driver-private flags */
 #define DRM_BO_MASK_DRIVER      0xFFFF000000000000ULL
@@ -754,19 +753,12 @@ struct drm_fence_arg {
 /* Don't place this buffer on the unfenced list.*/
 #define DRM_BO_HINT_DONT_FENCE  0x00000004
 #define DRM_BO_HINT_WAIT_LAZY   0x00000008
-#define DRM_BO_HINT_ALLOW_UNFENCED_MAP 0x00000010
 
 #define DRM_BO_INIT_MAGIC 0xfe769812
-#define DRM_BO_INIT_MAJOR 0
-#define DRM_BO_INIT_MINOR 1
+#define DRM_BO_INIT_MAJOR 1
+#define DRM_BO_INIT_MINOR 0
+#define DRM_BO_INIT_PATCH 0
 
-
-enum drm_bo_type {
-	drm_bo_type_dc,
-	drm_bo_type_user,
-	drm_bo_type_fake,
-	drm_bo_type_kernel, /* for initial kernel allocations */
-};
 
 struct drm_bo_info_req {
 	uint64_t mask;
@@ -774,6 +766,8 @@ struct drm_bo_info_req {
 	unsigned int handle;
 	unsigned int hint;
 	unsigned int fence_class;
+	unsigned int desired_tile_stride;
+	unsigned int tile_info;
 	unsigned int pad64;
 };
 
@@ -783,19 +777,8 @@ struct drm_bo_create_req {
 	uint64_t buffer_start;
 	unsigned int hint;
 	unsigned int page_alignment;
-	enum drm_bo_type type;
-	unsigned int pad64;
 };
 
-struct drm_bo_op_req {
-	enum {
-		drm_bo_validate,
-		drm_bo_fence,
-		drm_bo_ref_fence,
-	} op;
-	unsigned int arg_handle;
-	struct drm_bo_info_req bo_req;
-};
 
 /*
  * Reply flags
@@ -852,6 +835,17 @@ struct drm_bo_map_wait_idle_arg {
 	} d;
 };
 
+struct drm_bo_op_req {
+	enum {
+		drm_bo_validate,
+		drm_bo_fence,
+		drm_bo_ref_fence,
+	} op;
+	unsigned int arg_handle;
+	struct drm_bo_info_req bo_req;
+};
+
+
 struct drm_bo_op_arg {
 	uint64_t next;
 	union {
@@ -861,6 +855,7 @@ struct drm_bo_op_arg {
 	int handled;
 	unsigned int pad64;
 };
+
 
 #define DRM_BO_MEM_LOCAL 0
 #define DRM_BO_MEM_TT 1
@@ -873,8 +868,18 @@ struct drm_bo_op_arg {
 
 #define DRM_BO_MEM_TYPES 8 /* For now. */
 
+#define DRM_BO_LOCK_UNLOCK_BM       (1 << 0)
+#define DRM_BO_LOCK_IGNORE_NO_EVICT (1 << 1)
+
+struct drm_bo_version_arg {
+	uint32_t major;
+	uint32_t minor;
+	uint32_t patchlevel;
+};
+
 struct drm_mm_type_arg {
 	unsigned int mem_type;
+        unsigned int lock_flags;
 };
 
 struct drm_mm_init_arg {
@@ -1014,7 +1019,7 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_RM_MAP		DRM_IOW( 0x1b, struct drm_map)
 
 #define DRM_IOCTL_SET_SAREA_CTX		DRM_IOW( 0x1c, struct drm_ctx_priv_map)
-#define DRM_IOCTL_GET_SAREA_CTX 	DRM_IOWR(0x1d, struct drm_ctx_priv_map)
+#define DRM_IOCTL_GET_SAREA_CTX		DRM_IOWR(0x1d, struct drm_ctx_priv_map)
 
 #define DRM_IOCTL_ADD_CTX		DRM_IOWR(0x20, struct drm_ctx)
 #define DRM_IOCTL_RM_CTX		DRM_IOWR(0x21, struct drm_ctx)
@@ -1052,7 +1057,6 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_MM_UNLOCK             DRM_IOWR(0xc3, struct drm_mm_type_arg)
 
 #define DRM_IOCTL_FENCE_CREATE          DRM_IOWR(0xc4, struct drm_fence_arg)
-#define DRM_IOCTL_FENCE_DESTROY         DRM_IOWR(0xc5, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_REFERENCE       DRM_IOWR(0xc6, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_UNREFERENCE     DRM_IOWR(0xc7, struct drm_fence_arg)
 #define DRM_IOCTL_FENCE_SIGNALED        DRM_IOWR(0xc8, struct drm_fence_arg)
@@ -1062,14 +1066,14 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_FENCE_BUFFERS         DRM_IOWR(0xcc, struct drm_fence_arg)
 
 #define DRM_IOCTL_BO_CREATE             DRM_IOWR(0xcd, struct drm_bo_create_arg)
-#define DRM_IOCTL_BO_DESTROY            DRM_IOWR(0xce, struct drm_bo_handle_arg)
 #define DRM_IOCTL_BO_MAP                DRM_IOWR(0xcf, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_UNMAP              DRM_IOWR(0xd0, struct drm_bo_handle_arg)
 #define DRM_IOCTL_BO_REFERENCE          DRM_IOWR(0xd1, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_UNREFERENCE        DRM_IOWR(0xd2, struct drm_bo_handle_arg)
-#define DRM_IOCTL_BO_OP                 DRM_IOWR(0xd3, struct drm_bo_op_arg)
+#define DRM_IOCTL_BO_SETSTATUS          DRM_IOWR(0xd3, struct drm_bo_map_wait_idle_arg)
 #define DRM_IOCTL_BO_INFO               DRM_IOWR(0xd4, struct drm_bo_reference_info_arg)
 #define DRM_IOCTL_BO_WAIT_IDLE          DRM_IOWR(0xd5, struct drm_bo_map_wait_idle_arg)
+#define DRM_IOCTL_BO_VERSION          DRM_IOR(0xd6, struct drm_bo_version_arg)
 
 
 #define DRM_IOCTL_MODE_GETRESOURCES     DRM_IOWR(0xA0, struct drm_mode_card_res)
@@ -1080,10 +1084,10 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_MODE_RMFB             DRM_IOWR(0xA5, unsigned int)
 #define DRM_IOCTL_MODE_GETFB            DRM_IOWR(0xA6, struct drm_mode_fb_cmd)
 
-#define DRM_IOCTL_MODE_ADDMODE          DRM_IOWR(0xA7, struct drm_mode_modeinfo)
-#define DRM_IOCTL_MODE_RMMODE           DRM_IOWR(0xA8, unsigned int)
-#define DRM_IOCTL_MODE_ATTACHMODE       DRM_IOWR(0xA9, struct drm_mode_mode_cmd)
-#define DRM_IOCTL_MODE_DETACHMODE       DRM_IOWR(0xAA, struct drm_mode_mode_cmd)
+#define DRM_IOCTL_MODE_ADDMODE         DRM_IOWR(0xA7, struct drm_mode_modeinfo)
+#define DRM_IOCTL_MODE_RMMODE          DRM_IOWR(0xA8, unsigned int)
+#define DRM_IOCTL_MODE_ATTACHMODE      DRM_IOWR(0xA9, struct drm_mode_mode_cmd)
+#define DRM_IOCTL_MODE_DETACHMODE      DRM_IOWR(0xAA, struct drm_mode_mode_cmd)
 /*@}*/
 
 /**
@@ -1100,7 +1104,6 @@ struct drm_mode_mode_cmd {
 /* typedef area */
 #if !defined(__KERNEL__) || defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__)
 typedef struct drm_clip_rect drm_clip_rect_t;
-typedef struct drm_drawable_info drm_drawable_info_t;
 typedef struct drm_tex_region drm_tex_region_t;
 typedef struct drm_hw_lock drm_hw_lock_t;
 typedef struct drm_version drm_version_t;

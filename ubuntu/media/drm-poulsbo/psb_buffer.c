@@ -11,21 +11,22 @@ struct drm_psb_ttm_backend {
 	unsigned long offset;
 	unsigned long num_pages;
 };
-	
-int psb_fence_types(struct drm_buffer_object * bo, uint32_t * class, uint32_t * type)
+
+int psb_fence_types(struct drm_buffer_object *bo, uint32_t * class,
+		    uint32_t * type)
 {
 	switch (*class) {
 	case PSB_ENGINE_TA:
-		*type = DRM_FENCE_TYPE_EXE | 
-			_PSB_FENCE_TYPE_TA_DONE | 
-			_PSB_FENCE_TYPE_RASTER_DONE;
+		*type = DRM_FENCE_TYPE_EXE |
+		    _PSB_FENCE_TYPE_TA_DONE | _PSB_FENCE_TYPE_RASTER_DONE;
 		if (bo->mem.mask & PSB_BO_FLAG_TA)
 			*type &= ~_PSB_FENCE_TYPE_RASTER_DONE;
-		if (bo->mem.mask & PSB_BO_FLAG_SCENE) {
+		if (bo->mem.mask & PSB_BO_FLAG_SCENE)
 			*type |= _PSB_FENCE_TYPE_SCENE_DONE;
-		}
+		if (bo->mem.mask & PSB_BO_FLAG_FEEDBACK)
+			*type |= _PSB_FENCE_TYPE_FEEDBACK;
 		break;
-	default:		    
+	default:
 		*type = DRM_FENCE_TYPE_EXE;
 	}
 	return 0;
@@ -57,10 +58,11 @@ int psb_fence_types(struct drm_buffer_object * bo, uint32_t * class, uint32_t * 
  * gatt_end ->   0xffffffff Currently unused.
  */
 
-int psb_init_mem_type(struct drm_device * dev, uint32_t type,
-		      struct drm_mem_type_manager * man)
+int psb_init_mem_type(struct drm_device *dev, uint32_t type,
+		      struct drm_mem_type_manager *man)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct psb_gtt *pg = dev_priv->pg;
 
 	switch (type) {
@@ -75,37 +77,37 @@ int psb_init_mem_type(struct drm_device * dev, uint32_t type,
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_TTM;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-			_DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
 		man->gpu_offset = PSB_MEM_KERNEL_START;
 		break;
-	case DRM_PSB_MEM_MMU:	
+	case DRM_PSB_MEM_MMU:
 		man->io_offset = 0x00000000;
 		man->io_size = 0x00000000;
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_TTM;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-			_DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
 		man->gpu_offset = PSB_MEM_MMU_START;
-		break;	
-	case DRM_PSB_MEM_PDS:	
+		break;
+	case DRM_PSB_MEM_PDS:
 		man->io_offset = 0x00000000;
 		man->io_size = 0x00000000;
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_TTM;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-			_DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
 		man->gpu_offset = PSB_MEM_PDS_START;
 		break;
-	case DRM_PSB_MEM_RASTGEOM:	
+	case DRM_PSB_MEM_RASTGEOM:
 		man->io_offset = 0x00000000;
 		man->io_size = 0x00000000;
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_TTM;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-			_DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
 		man->gpu_offset = PSB_MEM_RASTGEOM_START;
 		break;
-        case DRM_BO_MEM_VRAM:
+	case DRM_BO_MEM_VRAM:
 		man->io_addr = NULL;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
 		    _DRM_FLAG_MEMTYPE_FIXED | _DRM_FLAG_NEEDS_IOREMAP;
@@ -135,7 +137,7 @@ int psb_init_mem_type(struct drm_device * dev, uint32_t type,
 #endif
 		man->gpu_offset = pg->gatt_start;
 		break;
-	case DRM_PSB_MEM_APER:  /*MMU memory. Mappable. Not usable for 2D. */
+	case DRM_PSB_MEM_APER:	/*MMU memory. Mappable. Not usable for 2D. */
 		man->io_offset = pg->gatt_start;
 		man->io_size = pg->gatt_pages << PAGE_SHIFT;
 		man->io_addr = NULL;
@@ -167,13 +169,13 @@ uint32_t psb_evict_mask(struct drm_buffer_object * bo)
 	}
 }
 
-int psb_invalidate_caches(struct drm_device * dev, uint64_t flags)
+int psb_invalidate_caches(struct drm_device *dev, uint64_t flags)
 {
 	return 0;
 }
 
-static int psb_move_blit(struct drm_buffer_object * bo,
-			 int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
+static int psb_move_blit(struct drm_buffer_object *bo,
+			 int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 	int dir = 0;
@@ -198,8 +200,8 @@ static int psb_move_blit(struct drm_buffer_object * bo,
  * then blit and subsequently move out again.
  */
 
-static int psb_move_flip(struct drm_buffer_object * bo,
-			 int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
+static int psb_move_flip(struct drm_buffer_object *bo,
+			 int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_device *dev = bo->dev;
 	struct drm_bo_mem_reg tmp_mem;
@@ -232,8 +234,8 @@ static int psb_move_flip(struct drm_buffer_object * bo,
 	return ret;
 }
 
-int psb_move(struct drm_buffer_object * bo,
-	     int evict, int no_wait, struct drm_bo_mem_reg * new_mem)
+int psb_move(struct drm_buffer_object *bo,
+	     int evict, int no_wait, struct drm_bo_mem_reg *new_mem)
 {
 	struct drm_bo_mem_reg *old_mem = &bo->mem;
 
@@ -249,34 +251,30 @@ int psb_move(struct drm_buffer_object * bo,
 	return 0;
 }
 
-
-static int drm_psb_tbe_nca(drm_ttm_backend_t *backend)
+static int drm_psb_tbe_nca(struct drm_ttm_backend * backend)
 {
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
 
-static int drm_psb_tbe_populate(drm_ttm_backend_t *backend,
-				unsigned long num_pages,
-				struct page **pages)
+static int drm_psb_tbe_populate(struct drm_ttm_backend * backend,
+				unsigned long num_pages, struct page **pages)
 {
-	struct drm_psb_ttm_backend *psb_be = 
-		container_of(backend, struct drm_psb_ttm_backend, base);
-	
+	struct drm_psb_ttm_backend *psb_be =
+	    container_of(backend, struct drm_psb_ttm_backend, base);
+
 	psb_be->pages = pages;
 	return 0;
 }
 
-static int drm_psb_tbe_unbind(drm_ttm_backend_t *backend)
+static int drm_psb_tbe_unbind(struct drm_ttm_backend * backend)
 {
 	struct drm_device *dev = backend->dev;
 	struct drm_psb_private *dev_priv =
-		(struct drm_psb_private *) dev->dev_private;
+	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_psb_ttm_backend *psb_be =
-		container_of(backend, struct drm_psb_ttm_backend, base);
-	struct psb_mmu_pd *pd =
-		psb_mmu_get_default_pd(dev_priv->mmu);
-	struct drm_mem_type_manager *man =
-		&dev->bm.man[psb_be->mem_type];
+	    container_of(backend, struct drm_psb_ttm_backend, base);
+	struct psb_mmu_pd *pd = psb_mmu_get_default_pd(dev_priv->mmu);
+	struct drm_mem_type_manager *man = &dev->bm.man[psb_be->mem_type];
 
 	PSB_DEBUG_RENDER("MMU unbind.\n");
 
@@ -284,13 +282,13 @@ static int drm_psb_tbe_unbind(drm_ttm_backend_t *backend)
 
 	if (psb_be->mem_type == DRM_BO_MEM_TT) {
 		uint32_t gatt_p_offset = (psb_be->offset - man->gpu_offset) >>
-			PAGE_SHIFT;
+		    PAGE_SHIFT;
 
-		(void) drm_psb_idle(dev);
-		(void) psb_gtt_remove_pages(dev_priv->pg, gatt_p_offset,
-					    psb_be->num_pages,
-					    psb_be->desired_tile_stride,
-					    psb_be->hw_tile_stride);
+		(void)drm_psb_idle(dev);
+		(void)psb_gtt_remove_pages(dev_priv->pg, gatt_p_offset,
+					   psb_be->num_pages,
+					   psb_be->desired_tile_stride,
+					   psb_be->hw_tile_stride);
 	}
 
 	/*
@@ -298,10 +296,9 @@ static int drm_psb_tbe_unbind(drm_ttm_backend_t *backend)
 	 * flushing the MMU.
 	 */
 
-	(void) wait_event_timeout(dev_priv->scheduler.idle_queue,
-				 psb_scheduler_idle(dev_priv),
-				 DRM_HZ);
-	(void) drm_psb_idle(dev);
+	(void)wait_event_timeout(dev_priv->scheduler.idle_queue,
+				 psb_scheduler_idle(dev_priv), DRM_HZ);
+	(void)drm_psb_idle(dev);
 
 	psb_mmu_remove_pages(pd, psb_be->offset,
 			     psb_be->num_pages,
@@ -313,18 +310,16 @@ static int drm_psb_tbe_unbind(drm_ttm_backend_t *backend)
 	return 0;
 }
 
-static int drm_psb_tbe_bind(drm_ttm_backend_t *backend,
+static int drm_psb_tbe_bind(struct drm_ttm_backend * backend,
 			    struct drm_bo_mem_reg *bo_mem)
 {
 	struct drm_device *dev = backend->dev;
-	struct drm_psb_private *dev_priv = 
-		(struct drm_psb_private *) dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_psb_ttm_backend *psb_be =
-		container_of(backend, struct drm_psb_ttm_backend, base);
-	struct psb_mmu_pd *pd =
-		psb_mmu_get_default_pd(dev_priv->mmu);
-	struct drm_mem_type_manager *man =
-		&dev->bm.man[bo_mem->mem_type];
+	    container_of(backend, struct drm_psb_ttm_backend, base);
+	struct psb_mmu_pd *pd = psb_mmu_get_default_pd(dev_priv->mmu);
+	struct drm_mem_type_manager *man = &dev->bm.man[bo_mem->mem_type];
 	int type;
 	int ret = 0;
 
@@ -335,24 +330,22 @@ static int drm_psb_tbe_bind(drm_ttm_backend_t *backend,
 	psb_be->desired_tile_stride = 0;
 	psb_be->hw_tile_stride = 0;
 	psb_be->offset = (bo_mem->mm_node->start << PAGE_SHIFT) +
-		man->gpu_offset;
+	    man->gpu_offset;
 
-	type = (bo_mem->flags & DRM_BO_FLAG_CACHED) ?
-		PSB_MMU_CACHED_MEMORY : 0;
+	type = (bo_mem->flags & DRM_BO_FLAG_CACHED) ? PSB_MMU_CACHED_MEMORY : 0;
 
 	PSB_DEBUG_RENDER("MMU bind.\n");
 
 	psb_scheduler_pause(dev_priv);
 	if (psb_be->mem_type == DRM_BO_MEM_TT) {
 		uint32_t gatt_p_offset = (psb_be->offset - man->gpu_offset) >>
-			PAGE_SHIFT;
+		    PAGE_SHIFT;
 
 		ret = psb_gtt_insert_pages(dev_priv->pg, psb_be->pages,
 					   gatt_p_offset,
 					   psb_be->num_pages,
 					   psb_be->desired_tile_stride,
-					   psb_be->hw_tile_stride,
-					   type);
+					   psb_be->hw_tile_stride, type);
 	}
 
 	/*
@@ -360,64 +353,59 @@ static int drm_psb_tbe_bind(drm_ttm_backend_t *backend,
 	 * flushing the MMU.
 	 */
 
-	(void) wait_event_timeout(dev_priv->scheduler.idle_queue,
-				 psb_scheduler_idle(dev_priv),
-				 DRM_HZ);
-	(void) drm_psb_idle(dev);
+	(void)wait_event_timeout(dev_priv->scheduler.idle_queue,
+				 psb_scheduler_idle(dev_priv), DRM_HZ);
+	(void)drm_psb_idle(dev);
 	if (ret)
 		goto out_err;
 	ret = psb_mmu_insert_pages(pd, psb_be->pages,
 				   psb_be->offset, psb_be->num_pages,
 				   psb_be->desired_tile_stride,
-				   psb_be->hw_tile_stride,
-				   type);
+				   psb_be->hw_tile_stride, type);
 	if (ret)
 		goto out_err;
 
 	psb_scheduler_restart(dev_priv);
 
 	DRM_FLAG_MASKED(backend->flags, (bo_mem->flags & DRM_BO_FLAG_CACHED) ?
-			DRM_BE_FLAG_BOUND_CACHED : 0,
-			DRM_BE_FLAG_BOUND_CACHED);
+			DRM_BE_FLAG_BOUND_CACHED : 0, DRM_BE_FLAG_BOUND_CACHED);
 
 	return 0;
- out_err:
+      out_err:
 	drm_psb_tbe_unbind(backend);
 	psb_scheduler_restart(dev_priv);
 	return ret;
 
 }
 
-
-static void drm_psb_tbe_clear(drm_ttm_backend_t *backend)
+static void drm_psb_tbe_clear(struct drm_ttm_backend * backend)
 {
-	struct drm_psb_ttm_backend *psb_be = 
-		container_of(backend, struct drm_psb_ttm_backend, base);
+	struct drm_psb_ttm_backend *psb_be =
+	    container_of(backend, struct drm_psb_ttm_backend, base);
 
 	psb_be->pages = NULL;
 	return;
 }
 
-static void drm_psb_tbe_destroy(drm_ttm_backend_t *backend) 
+static void drm_psb_tbe_destroy(struct drm_ttm_backend * backend)
 {
-	struct drm_psb_ttm_backend *psb_be = 
-		container_of(backend, struct drm_psb_ttm_backend, base);
-	
+	struct drm_psb_ttm_backend *psb_be =
+	    container_of(backend, struct drm_psb_ttm_backend, base);
+
 	if (backend)
-		drm_ctl_free(psb_be, sizeof(*psb_be), DRM_MEM_TTM);	
+		drm_ctl_free(psb_be, sizeof(*psb_be), DRM_MEM_TTM);
 }
 
-static struct drm_ttm_backend_func psb_ttm_backend = 
-{
+static struct drm_ttm_backend_func psb_ttm_backend = {
 	.needs_ub_cache_adjust = drm_psb_tbe_nca,
 	.populate = drm_psb_tbe_populate,
 	.clear = drm_psb_tbe_clear,
 	.bind = drm_psb_tbe_bind,
 	.unbind = drm_psb_tbe_unbind,
-	.destroy =  drm_psb_tbe_destroy,
+	.destroy = drm_psb_tbe_destroy,
 };
-	
-drm_ttm_backend_t *drm_psb_tbe_init(struct drm_device *dev)
+
+struct drm_ttm_backend *drm_psb_tbe_init(struct drm_device *dev)
 {
 	struct drm_psb_ttm_backend *psb_be;
 
@@ -430,4 +418,3 @@ drm_ttm_backend_t *drm_psb_tbe_init(struct drm_device *dev)
 
 	return &psb_be->base;
 }
-

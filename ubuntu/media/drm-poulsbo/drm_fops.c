@@ -263,7 +263,6 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	priv->lock_count = 0;
 
 	INIT_LIST_HEAD(&priv->lhead);
-	INIT_LIST_HEAD(&priv->user_objects);
 	INIT_LIST_HEAD(&priv->refd_objects);
 	INIT_LIST_HEAD(&priv->fbs);
 
@@ -274,9 +273,8 @@ static int drm_open_helper(struct inode *inode, struct file *filp,
 	}
 
 	if (ret) {
-		for(j=0; j<i; ++j) {
+		for(j = 0; j < i; ++j)
 			drm_ht_remove(&priv->refd_object_hash[j]);
-		}
 		goto out_free;
 	}
 
@@ -335,11 +333,10 @@ int drm_fasync(int fd, struct file *filp, int on)
 }
 EXPORT_SYMBOL(drm_fasync);
 
-static void drm_object_release(struct file *filp) {
-
+static void drm_object_release(struct file *filp)
+{
 	struct drm_file *priv = filp->private_data;
 	struct list_head *head;
-	struct drm_user_object *user_object;
 	struct drm_ref_object *ref_object;
 	int i;
 
@@ -358,18 +355,7 @@ static void drm_object_release(struct file *filp) {
 		head = &priv->refd_objects;
 	}
 
-	/*
-	 * Free leftover user objects created by me.
-	 */
-
-	head = &priv->user_objects;
-	while (head->next != head) {
-		user_object = list_entry(head->next, struct drm_user_object, list);
-		drm_remove_user_object(priv, user_object);
-		head = &priv->user_objects;
-	}
-
-	for(i=0; i<_DRM_NO_REF_TYPES; ++i) {
+	for(i = 0; i < _DRM_NO_REF_TYPES; ++i) {
 		drm_ht_remove(&priv->refd_object_hash[i]);
 	}
 }
@@ -543,4 +529,3 @@ unsigned int drm_poll(struct file *filp, struct poll_table_struct *wait)
 	return 0;
 }
 EXPORT_SYMBOL(drm_poll);
-

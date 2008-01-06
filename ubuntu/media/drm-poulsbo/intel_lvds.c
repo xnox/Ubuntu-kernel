@@ -37,21 +37,6 @@ int drm_intel_ignore_acpi = 0;
 MODULE_PARM_DESC(ignore_acpi, "Ignore ACPI");
 module_param_named(ignore_acpi, drm_intel_ignore_acpi, int, 0600);
 
-int drm_intel_no_panel = 0;
-MODULE_PARM_DESC(no_panel, "No Panel");
-module_param_named(no_panel, drm_intel_no_panel, int, 0600);
-
-/**
- * Returns the maximum level of the backlight duty cycle field.
- */
-static u32 intel_lvds_get_max_backlight(struct drm_device *dev)
-{
-        DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
-
-        return ((I915_READ(BLC_PWM_CTL) & BACKLIGHT_MODULATION_FREQ_MASK) >>
-                BACKLIGHT_MODULATION_FREQ_SHIFT) * 2;
-}
-
 /**
  * Sets the backlight level.
  *
@@ -61,14 +46,21 @@ static void intel_lvds_set_backlight(struct drm_device *dev, int level)
 {
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
 	u32 blc_pwm_ctl;
-        u32 blc_pwm_max = intel_lvds_get_max_backlight(dev);
 
-        if (1) { /* Add polarity check later*/
-          level = blc_pwm_max - level;
-        }
 	blc_pwm_ctl = I915_READ(BLC_PWM_CTL) & ~BACKLIGHT_DUTY_CYCLE_MASK;
 	I915_WRITE(BLC_PWM_CTL, (blc_pwm_ctl |
 				 (level << BACKLIGHT_DUTY_CYCLE_SHIFT)));
+}
+
+/**
+ * Returns the maximum level of the backlight duty cycle field.
+ */
+static u32 intel_lvds_get_max_backlight(struct drm_device *dev)
+{
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
+    
+	return ((I915_READ(BLC_PWM_CTL) & BACKLIGHT_MODULATION_FREQ_MASK) >>
+		BACKLIGHT_MODULATION_FREQ_SHIFT) * 2;
 }
 
 /**
@@ -424,8 +416,7 @@ void intel_lvds_init(struct drm_device *dev)
 	u32 lvds;
 	int pipe;
 
-	if (drm_intel_no_panel || (!drm_intel_ignore_acpi 
-                               && !intel_get_acpi_dod(ACPI_DOD)))
+	if (!drm_intel_ignore_acpi && !intel_get_acpi_dod(ACPI_DOD))
 		return;
 
 	output = drm_output_create(dev, &intel_lvds_output_funcs, "LVDS");

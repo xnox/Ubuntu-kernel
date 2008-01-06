@@ -35,38 +35,37 @@
 #include "psb_drv.h"
 #include "psb_reg.h"
 
+#define PSB_2D_TIMEOUT_MSEC 100
 
-
-void psb_reset(struct drm_psb_private * dev_priv, int reset_2d)
+void psb_reset(struct drm_psb_private *dev_priv, int reset_2d)
 {
 	uint32_t val;
 
 	val = _PSB_CS_RESET_BIF_RESET |
-		_PSB_CS_RESET_DPM_RESET |
-		_PSB_CS_RESET_TA_RESET  |
-		_PSB_CS_RESET_USE_RESET |
-		_PSB_CS_RESET_ISP_RESET |
-		_PSB_CS_RESET_TSP_RESET;
+	    _PSB_CS_RESET_DPM_RESET |
+	    _PSB_CS_RESET_TA_RESET |
+	    _PSB_CS_RESET_USE_RESET |
+	    _PSB_CS_RESET_ISP_RESET | _PSB_CS_RESET_TSP_RESET;
 
 	if (reset_2d)
 		val |= _PSB_CS_RESET_TWOD_RESET;
 
 	PSB_WSGX32(val, PSB_CR_SOFT_RESET);
-	(void) PSB_RSGX32(PSB_CR_SOFT_RESET);
+	(void)PSB_RSGX32(PSB_CR_SOFT_RESET);
 
 	msleep(1);
-	
+
 	PSB_WSGX32(0, PSB_CR_SOFT_RESET);
 	wmb();
 	PSB_WSGX32(PSB_RSGX32(PSB_CR_BIF_CTRL) | _PSB_CB_CTRL_CLEAR_FAULT,
 		   PSB_CR_BIF_CTRL);
 	wmb();
-	(void) PSB_RSGX32(PSB_CR_BIF_CTRL);
+	(void)PSB_RSGX32(PSB_CR_BIF_CTRL);
 
 	msleep(1);
 	PSB_WSGX32(PSB_RSGX32(PSB_CR_BIF_CTRL) & ~_PSB_CB_CTRL_CLEAR_FAULT,
 		   PSB_CR_BIF_CTRL);
-	(void) PSB_RSGX32(PSB_CR_BIF_CTRL);
+	(void)PSB_RSGX32(PSB_CR_BIF_CTRL);
 }
 
 static void psb_print_pagefault(struct drm_psb_private *dev_priv)
@@ -103,71 +102,136 @@ static void psb_print_pagefault(struct drm_psb_private *dev_priv)
 		if (val & _PSB_CBI_STAT_FAULT_HOST)
 			DRM_ERROR("\tHost requestor.\n");
 
-		DRM_ERROR("\tMMU failing address is 0x%08x.\n", 
-			  (unsigned) addr);
+		DRM_ERROR("\tMMU failing address is 0x%08x.\n", (unsigned)addr);
 	}
 }
 
 void psb_schedule_watchdog(struct drm_psb_private *dev_priv)
 {
 	struct timer_list *wt = &dev_priv->watchdog_timer;
+	unsigned long irq_flags;
 
-	spin_lock(&dev_priv->watchdog_lock);
+	spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 	if (dev_priv->timer_available && !timer_pending(wt)) {
 		wt->expires = jiffies + PSB_WATCHDOG_DELAY;
 		add_timer(wt);
 	}
-	spin_unlock(&dev_priv->watchdog_lock);
+	spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
 }
 
+#if 0
+static void psb_seq_lockup_idle(struct drm_psb_private *dev_priv,
+				unsigned int engine, int *lockup, int *idle)
+{
+	uint32_t received_seq;
+
+	received_seq = dev_priv->comm[engine << 4];
+	spin_lock(&dev_priv->sequence_lock);
+	*idle = (received_seq == dev_priv->sequence[engine]);
+	spin_unlock(&dev_priv->sequence_lock);
+
+	if (*idle) {
+		dev_priv->idle[engine] = 1;
+		*lockup = 0;
+		return;
+	}
+
+	if (dev_priv->idle[engine]) {
+		dev_priv->idle[engine] = 0;
+		dev_priv->last_sequence[engine] = received_seq;
+		*lockup = 0;
+		return;
+	}
+
+	*lockup = (dev_priv->last_sequence[engine] == received_seq);
+}
+
+#endif
 static void psb_watchdog_func(unsigned long data)
 {
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) data;
+	struct drm_psb_private *dev_priv = (struct drm_psb_private *)data;
 	int lockup;
 	int msvdx_lockup;
-	int idle;
 	int msvdx_idle;
+	int lockup_2d;
+	int idle_2d;
+	int idle;
+	unsigned long irq_flags;
 
-	psb_scheduler_lockup(dev_priv, &lockup, &msvdx_lockup, &idle, &msvdx_idle);
-
-	if (lockup || msvdx_lockup) {
+	psb_scheduler_lockup(dev_priv, &lockup, &msvdx_lockup,
+			     &idle, &msvdx_idle);
+#if 0
+	psb_seq_lockup_idle(dev_priv, PSB_ENGINE_2D, &lockup_2d, &idle_2d);
+#else
+	lockup_2d = FALSE;
+	idle_2d = TRUE;
+#endif
+	if (lockup || msvdx_lockup || lockup_2d) {
 		DRM_ERROR("Detected Poulsbo Scheduler Lockup.\n");
-		spin_lock(&dev_priv->watchdog_lock);
+		spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 		dev_priv->timer_available = 0;
-		spin_unlock(&dev_priv->watchdog_lock);
-		if(lockup)
-		{
+		spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
+		if (lockup) {
 			psb_print_pagefault(dev_priv);
 			schedule_work(&dev_priv->watchdog_wq);
 		}
-		if(msvdx_lockup)
+		if (msvdx_lockup)
 			schedule_work(&dev_priv->msvdx_watchdog_wq);
 	}
-
-	if (!idle || !msvdx_idle)
+	if (!idle || !msvdx_idle || !idle_2d)
 		psb_schedule_watchdog(dev_priv);
+}
+
+void psb_msvdx_flush_cmd_queue(struct drm_device *dev)
+{
+	struct drm_psb_private *dev_priv = dev->dev_private;
+	struct psb_msvdx_cmd_queue *msvdx_cmd;
+	struct list_head *list, *next;
+	/*Flush the msvdx cmd queue and signal all fences in the queue*/
+	list_for_each_safe(list, next, &dev_priv->msvdx_queue)
+	{
+		msvdx_cmd = list_entry(list, struct psb_msvdx_cmd_queue, head);
+		PSB_DEBUG_GENERAL("MSVDXQUE: flushing sequence:%d\n", msvdx_cmd->sequence);
+		dev_priv->msvdx_current_sequence = msvdx_cmd->sequence;
+		psb_fence_error(dev, PSB_ENGINE_VIDEO,
+				dev_priv->msvdx_current_sequence, DRM_FENCE_TYPE_EXE,
+				DRM_CMD_HANG);
+		list_del(list);
+		kfree(msvdx_cmd->cmd);
+		drm_free(msvdx_cmd, sizeof(struct psb_msvdx_cmd_queue), DRM_MEM_DRIVER);			
+	}
 }
 
 static void psb_msvdx_reset_wq(struct work_struct *work)
 {
-	struct drm_psb_private *dev_priv = 
-		container_of(work, struct drm_psb_private, msvdx_watchdog_wq);
-	
-	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	struct drm_psb_private *dev_priv =
+	    container_of(work, struct drm_psb_private, msvdx_watchdog_wq);
 
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	unsigned long irq_flags;
+
+	mutex_lock(&dev_priv->msvdx_mutex);
 	dev_priv->msvdx_needs_reset = 1;
 	dev_priv->msvdx_current_sequence++;
-	PSB_DEBUG_GENERAL("MSVDXFENCE: incremented msvdx_current_sequence to :%d\n", 
-		dev_priv->msvdx_current_sequence);
+	PSB_DEBUG_GENERAL
+	    ("MSVDXFENCE: incremented msvdx_current_sequence to :%d\n",
+	     dev_priv->msvdx_current_sequence);
 
-	psb_fence_error(scheduler->dev,PSB_ENGINE_VIDEO, 
-		dev_priv->msvdx_current_sequence, DRM_FENCE_TYPE_EXE, DRM_CMD_HANG);
+	psb_fence_error(scheduler->dev, PSB_ENGINE_VIDEO,
+			dev_priv->msvdx_current_sequence, DRM_FENCE_TYPE_EXE,
+			DRM_CMD_HANG);
 
-	spin_lock(&dev_priv->watchdog_lock);
+	spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 	dev_priv->timer_available = 1;
-	spin_unlock(&dev_priv->watchdog_lock);
-}
+	spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
 
+	spin_lock_irqsave(&dev_priv->msvdx_lock, irq_flags);
+	psb_msvdx_flush_cmd_queue(scheduler->dev);
+	spin_unlock_irqrestore(&dev_priv->msvdx_lock, irq_flags);
+	
+	psb_schedule_watchdog(dev_priv);
+	mutex_unlock(&dev_priv->msvdx_mutex);
+}
 
 /*
  * Block command submission and reset hardware and schedulers.
@@ -175,54 +239,75 @@ static void psb_msvdx_reset_wq(struct work_struct *work)
 
 static void psb_reset_wq(struct work_struct *work)
 {
-	struct drm_psb_private *dev_priv = 
-		container_of(work, struct drm_psb_private, watchdog_wq);
+	struct drm_psb_private *dev_priv =
+	    container_of(work, struct drm_psb_private, watchdog_wq);
 	struct psb_xhw_buf buf;
-	
-	DRM_INFO("Reset\n");
+	int lockup_2d;
+	int idle_2d;
+	unsigned long irq_flags;
 
 	/*
 	 * Block command submission.
 	 */
 
 	mutex_lock(&dev_priv->reset_mutex);
+	mutex_lock(&dev_priv->mutex_2d);
+#if 0
+	msleep(PSB_2D_TIMEOUT_MSEC);
 
+	psb_seq_lockup_idle(dev_priv, PSB_ENGINE_2D, &lockup_2d, &idle_2d);
+
+	if (lockup_2d) {
+		uint32_t seq_2d;
+		spin_lock(&dev_priv->sequence_lock);
+		seq_2d = dev_priv->sequence[PSB_ENGINE_2D];
+		spin_unlock(&dev_priv->sequence_lock);
+		psb_fence_error(dev_priv->scheduler.dev,
+				PSB_ENGINE_2D,
+				seq_2d, DRM_FENCE_TYPE_EXE, -EBUSY);
+		DRM_INFO("Resetting 2D engine.\n");
+	}
+
+	psb_reset(dev_priv, lockup_2d);
+#else
+	(void) lockup_2d;
+	(void) idle_2d;
 	psb_reset(dev_priv, 0);
-
-	(void )psb_xhw_reset_dpm(dev_priv, &buf);
+#endif
+	(void)psb_xhw_reset_dpm(dev_priv, &buf);
 
 	DRM_INFO("Reset scheduler.\n");
-
 	psb_scheduler_reset(dev_priv, -EBUSY);
-
-	spin_lock(&dev_priv->watchdog_lock);
+	spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 	dev_priv->timer_available = 1;
-	spin_unlock(&dev_priv->watchdog_lock);
-	mutex_unlock(&dev_priv->reset_mutex);	
+	spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
+	mutex_unlock(&dev_priv->mutex_2d);
+	mutex_unlock(&dev_priv->reset_mutex);
+
 }
 
 void psb_watchdog_init(struct drm_psb_private *dev_priv)
 {
 	struct timer_list *wt = &dev_priv->watchdog_timer;
+	unsigned long irq_flags;
 
 	dev_priv->watchdog_lock = SPIN_LOCK_UNLOCKED;
-	spin_lock(&dev_priv->watchdog_lock);
+	spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 	init_timer(wt);
-
 	INIT_WORK(&dev_priv->watchdog_wq, &psb_reset_wq);
 	INIT_WORK(&dev_priv->msvdx_watchdog_wq, &psb_msvdx_reset_wq);
-	wt->data = (unsigned long) dev_priv;
+	wt->data = (unsigned long)dev_priv;
 	wt->function = &psb_watchdog_func;
 	dev_priv->timer_available = 1;
-
-	spin_unlock(&dev_priv->watchdog_lock);
+	spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
 }
 
 void psb_watchdog_takedown(struct drm_psb_private *dev_priv)
 {
-	spin_lock(&dev_priv->watchdog_lock);
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 	dev_priv->timer_available = 0;
-	spin_unlock(&dev_priv->watchdog_lock);
-	(void) del_timer_sync(&dev_priv->watchdog_timer);
-}	
-	
+	spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
+	(void)del_timer_sync(&dev_priv->watchdog_timer);
+}
