@@ -14,7 +14,6 @@
  */
 #include <linux/proc_fs.h>
 #include <linux/module.h>
-#include <net/net_namespace.h>
 #include <asm/uaccess.h>
 
 #include "ndis.h"
@@ -157,8 +156,9 @@ static int procfs_read_ndis_hw(char *page, char **start, off_t off,
 	}
 
 	res = mp_query_int(wnd, OID_GEN_HARDWARE_STATUS, &n);
-	if (res >= 0 && res < sizeof(hw_status) / sizeof(hw_status[0]))
-		p += sprintf(p, "status=%s\n", hw_status[res]);
+	if (res == NDIS_STATUS_SUCCESS &&
+	    n >= 0 && n < sizeof(hw_status) / sizeof(hw_status[0]))
+		p += sprintf(p, "status=%s\n", hw_status[n]);
 
 	res = mp_query(wnd, OID_802_3_CURRENT_ADDRESS, mac, sizeof(mac));
 	if (!res)
@@ -272,6 +272,10 @@ static int procfs_read_ndis_settings(char *page, char **start, off_t off,
 		p += sprintf(p, "%s=%s\n", setting->name, setting->value);
 	}
 
+	list_for_each_entry(setting, &wnd->wd->driver->settings, list) {
+		p += sprintf(p, "%s=%s\n", setting->name, setting->value);
+	}
+
 	return (p - page);
 }
 
@@ -353,6 +357,33 @@ static int procfs_write_ndis_settings(struct file *file, const char *buf,
 		res = mp_set_int(wnd, OID_GEN_CURRENT_PACKET_FILTER, i);
 		if (res)
 			WARNING("setting packet_filter failed: %08X", res);
+	} else if (!strcmp(setting, "reinit")) {
+		if (ndis_reinit(wnd) != NDIS_STATUS_SUCCESS)
+			return -EFAULT;
+	} else {
+		struct ndis_configuration_parameter param;
+		struct unicode_string key;
+		struct ansi_string ansi;
+
+		if (!p)
+			return -EINVAL;
+		p++;
+		RtlInitAnsiString(&ansi, p);
+		if (RtlAnsiStringToUnicodeString(&param.data.string, &ansi,
+						 TRUE) != STATUS_SUCCESS)
+			EXIT1(return -EFAULT);
+		param.type = NdisParameterString;
+		RtlInitAnsiString(&ansi, setting);
+		if (RtlAnsiStringToUnicodeString(&key, &ansi,
+						 TRUE) != STATUS_SUCCESS) {
+			RtlFreeUnicodeString(&param.data.string);
+			EXIT1(return -EINVAL);
+		}
+		NdisWriteConfiguration(&res, wnd->nmb, &key, &param);
+		RtlFreeUnicodeString(&key);
+		RtlFreeUnicodeString(&param.data.string);
+		if (res != NDIS_STATUS_SUCCESS)
+			return -EFAULT;
 	}
 	return count;
 }
@@ -504,7 +535,7 @@ int wrap_procfs_init(void)
 {
 	struct proc_dir_entry *procfs_entry;
 
-	wrap_procfs_entry = proc_mkdir(DRIVER_NAME, init_net.proc_net);
+	wrap_procfs_entry = proc_mkdir(DRIVER_NAME, proc_net_root);
 	if (wrap_procfs_entry == NULL) {
 		ERROR("couldn't create procfs directory");
 		return -ENOMEM;
@@ -531,5 +562,5 @@ void wrap_procfs_remove(void)
 	if (wrap_procfs_entry == NULL)
 		return;
 	remove_proc_entry("debug", wrap_procfs_entry);
-	remove_proc_entry(DRIVER_NAME, init_net.proc_net);
+	remove_proc_entry(DRIVER_NAME, proc_net_root);
 }

@@ -18,6 +18,8 @@
 
 #include "ntoskernel.h"
 
+//#define ALLOW_POOL_OVERFLOW 1
+
 #define NDIS_DMA_24BITS 0
 #define NDIS_DMA_32BITS 1
 #define NDIS_DMA_64BITS 2
@@ -41,6 +43,8 @@ typedef ULONG ndis_fragmentation_threshold;
 typedef ULONG ndis_rts_threshold;
 typedef ULONG ndis_antenna;
 typedef ULONG ndis_oid;
+
+typedef UCHAR ndis_pmkid_vavlue[16];
 
 typedef uint64_t NDIS_PHY_ADDRESS;
 
@@ -73,7 +77,8 @@ typedef struct mdl ndis_buffer;
 
 struct ndis_buffer_pool {
 	ndis_buffer *free_descr;
-	NT_SPIN_LOCK lock;
+//	NT_SPIN_LOCK lock;
+	spinlock_t lock;
 	UINT max_descr;
 	UINT num_allocated_descr;
 };
@@ -203,6 +208,18 @@ struct ndis_task_tcp_large_send {
 	BOOLEAN ip_opts;
 };
 
+struct ndis_packet;
+
+struct ndis_packet_pool {
+	struct ndis_packet *free_descr;
+//	NT_SPIN_LOCK lock;
+	spinlock_t lock;
+	UINT max_descr;
+	UINT num_allocated_descr;
+	UINT num_used_descr;
+	UINT proto_rsvd_length;
+};
+
 struct ndis_packet_stack {
 	ULONG_PTR IM_reserved[2];
 	ULONG_PTR ndis_reserved[4];
@@ -224,7 +241,7 @@ struct ndis_packet_private {
 	UINT len;
 	ndis_buffer *buffer_head;
 	ndis_buffer *buffer_tail;
-	void *pool;
+	struct ndis_packet_pool *pool;
 	UINT count;
 	ULONG flags;
 	BOOLEAN valid_counts;
@@ -290,15 +307,6 @@ struct ndis_packet_oob_data {
 #define NDIS_PACKET_OOB_DATA(packet)					\
 	(struct ndis_packet_oob_data *)(((void *)(packet)) +		\
 					(packet)->private.oob_offset)
-
-struct ndis_packet_pool {
-	struct ndis_packet *free_descr;
-	NT_SPIN_LOCK lock;
-	UINT max_descr;
-	UINT num_allocated_descr;
-	UINT num_used_descr;
-	UINT proto_rsvd_length;
-};
 
 enum ndis_device_pnp_event {
 	NdisDevicePnPEventQueryRemoved, NdisDevicePnPEventRemoved,
@@ -412,7 +420,7 @@ struct miniport {
 			    enum ndis_medium medium[], UINT medium_array_size,
 			    void *handle, void *conf_handle) wstdcall;
 	ndis_isr_handler isr;
-	NDIS_STATUS (*query)(void *ctx, ndis_oid oid, void *buffer,
+	NDIS_STATUS (*queryinfo)(void *ctx, ndis_oid oid, void *buffer,
 			     ULONG buflen, ULONG *written,
 			     ULONG *needed) wstdcall;
 	void *reconfig;
@@ -505,7 +513,6 @@ struct ndis_mp_block;
 /* this is opaque to drivers, so we can use it as we please */
 struct ndis_mp_interrupt {
 	struct kinterrupt *kinterrupt;
-	/* Taken by ISR, DisableInterrupt and SynchronizeWithInterrupt */
 	NT_SPIN_LOCK lock;
 	union {
 		void *reserved;
@@ -604,8 +611,8 @@ enum ndis_media_stream_mode {
 };
 
 enum wrapper_work {
-	LINK_STATUS_CHANGED, SET_MULTICAST_LIST, COLLECT_IW_STATS,
-	HANGCHECK, SHUTDOWN
+	LINK_STATUS_OFF, LINK_STATUS_ON, SET_MULTICAST_LIST, COLLECT_IW_STATS,
+	HANGCHECK, NETIF_WAKEQ,
 };
 
 struct encr_info {
@@ -621,7 +628,7 @@ struct ndis_essid {
 	UCHAR essid[NDIS_ESSID_MAX_SIZE];
 };
 
-enum network_infrastructure {
+enum ndis_infrastructure_mode {
 	Ndis802_11IBSS, Ndis802_11Infrastructure, Ndis802_11AutoUnknown,
 	Ndis802_11InfrastructureMax
 };
@@ -722,7 +729,16 @@ struct auth_encr_capa {
 	unsigned long encr;
 };
 
-enum driver_type { DRIVER_WIRELESS = 1, DRIVER_ETHERNET, };
+struct ndis_pmkid_candidate {
+	mac_address bssid;
+	DWORD flags;
+};
+
+struct ndis_pmkid_candidate_list {
+	ULONG version;
+	ULONG num_candidates;
+	struct ndis_pmkid_candidate candidates[1];
+};
 
 /*
  * This struct contains function pointers that the drivers references
@@ -812,8 +828,8 @@ struct ndis_mp_block {
 	void *status_complete;
 	void *td_complete;
 
-	void *query_complete;
-	void *set_complete;
+	void *queryinfo_complete;
+	void *setinfo_complete;
 	void *wan_tx_complete;
 	void *wan_rx;
 	void *wan_rx_complete;
@@ -825,7 +841,6 @@ struct wrap_ndis_device {
 	struct ndis_mp_block *nmb;
 	struct wrap_device *wd;
 	struct net_device *net_dev;
-	struct napi_struct napi;
 	void *shutdown_ctx;
 	struct ndis_mp_interrupt *mp_interrupt;
 	struct kdpc irq_kdpc;
@@ -842,13 +857,13 @@ struct wrap_ndis_device {
 	u8 tx_ring_start;
 	u8 tx_ring_end;
 	u8 is_tx_ring_full;
-	NT_SPIN_LOCK tx_ring_lock;
+	u8 tx_ok;
+	spinlock_t tx_ring_lock;
 	struct semaphore tx_ring_mutex;
 	unsigned int max_tx_packets;
-	u8 tx_ok;
 	struct semaphore ndis_req_mutex;
 	struct task_struct *ndis_req_task;
-	s8 ndis_req_done;
+	int ndis_req_done;
 	NDIS_STATUS ndis_req_status;
 	ULONG packet_filter;
 
@@ -865,22 +880,21 @@ struct wrap_ndis_device {
 	char nick[IW_ESSID_MAX_SIZE];
 	struct ndis_essid essid;
 	struct auth_encr_capa capa;
-	enum authentication_mode auth_mode;
-	enum encryption_status encr_mode;
-	enum network_infrastructure infrastructure_mode;
+	enum ndis_infrastructure_mode infrastructure_mode;
+	int max_pmkids;
 	int num_pmkids;
+	struct ndis_pmkid *pmkids;
 	mac_address mac;
 	struct proc_dir_entry *procfs_iface;
 
 	work_struct_t wrap_ndis_work;
 	unsigned long wrap_ndis_pending_work;
 	UINT attributes;
-	int iw_auth_set;
 	int iw_auth_wpa_version;
 	int iw_auth_cipher_pairwise;
 	int iw_auth_cipher_group;
 	int iw_auth_key_mgmt;
-	int iw_auth_80211_auth_alg;
+	int iw_auth_80211_alg;
 	struct ndis_packet_pool *tx_packet_pool;
 	struct ndis_buffer_pool *tx_buffer_pool;
 	int multicast_size;
@@ -889,20 +903,9 @@ struct wrap_ndis_device {
 	enum ndis_physical_medium physical_medium;
 	ULONG ndis_wolopts;
 	struct nt_slist wrap_timer_slist;
-	char netdev_name[IFNAMSIZ];
 	int drv_ndis_version;
 	struct ndis_pnp_capabilities pnp_capa;
-};
-
-struct ndis_pmkid_candidate {
-	mac_address bssid;
-	unsigned long flags;
-};
-
-struct ndis_pmkid_candidate_list {
-	unsigned long version;
-	unsigned long num_candidates;
-	struct ndis_pmkid_candidate candidates[1];
+	char netdev_name[IFNAMSIZ];
 };
 
 BOOLEAN ndis_isr(struct kinterrupt *kinterrupt, void *ctx) wstdcall;

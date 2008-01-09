@@ -19,20 +19,21 @@
 #include "usb.h"
 #include "loader.h"
 
-extern NT_SPIN_LOCK ntoskernel_lock;
-extern NT_SPIN_LOCK irp_cancel_lock;
+extern spinlock_t ntoskernel_lock;
+extern spinlock_t irp_cancel_lock;
 extern struct nt_list object_list;
 
 wstdcall void WIN_FUNC(IoAcquireCancelSpinLock,1)
 	(KIRQL *irql)
 {
-	*irql = nt_spin_lock_irql(&irp_cancel_lock, DISPATCH_LEVEL);
+	spin_lock_bh(&irp_cancel_lock);
+	*irql = 0;
 }
 
 wstdcall void WIN_FUNC(IoReleaseCancelSpinLock,1)
 	(KIRQL irql)
 {
-	nt_spin_unlock_irql(&irp_cancel_lock, irql);
+	spin_unlock_bh(&irp_cancel_lock);
 }
 
 wstdcall int WIN_FUNC(IoIsWdmVersionAvailable,2)
@@ -341,13 +342,13 @@ wfastcall NTSTATUS WIN_FUNC(IofCallDriver,2)
 	driver_dispatch_t *major_func;
 	struct driver_object *drv_obj;
 
-	IOTRACE("%p, %p, %p, %d, %d, %p", dev_obj, irp, dev_obj->drv_obj,
-		irp->current_location, irp->stack_count,
-		IoGetCurrentIrpStackLocation(irp));
 	if (irp->current_location <= 0) {
 		ERROR("invalid irp: %p, %d", irp, irp->current_location);
 		return STATUS_INVALID_PARAMETER;
 	}
+	IOTRACE("%p, %p, %p, %d, %d, %p", dev_obj, irp, dev_obj->drv_obj,
+		irp->current_location, irp->stack_count,
+		IoGetCurrentIrpStackLocation(irp));
 	IoSetNextIrpStackLocation(irp);
 	DUMP_IRP(irp);
 	irp_sl = IoGetCurrentIrpStackLocation(irp);
@@ -368,6 +369,7 @@ wfastcall NTSTATUS WIN_FUNC(IofCallDriver,2)
 wfastcall void WIN_FUNC(IofCompleteRequest,2)
 	(struct irp *irp, CHAR prio_boost)
 {
+	struct io_stack_location *irp_sl;
 
 #ifdef IO_DEBUG
 	DUMP_IRP(irp);
@@ -375,17 +377,17 @@ wfastcall void WIN_FUNC(IofCompleteRequest,2)
 		ERROR("invalid irp: %p, STATUS_PENDING", irp);
 		return;
 	}
-	if (irp->current_location < 0) {
+	if (irp->current_location < 0 ||
+	    irp->current_location >= irp->stack_count) {
 		ERROR("invalid irp: %p, %d", irp, irp->current_location);
 		return;
 	}
 #endif
-	while (irp->current_location < irp->stack_count) {
-		struct io_stack_location *irp_sl;
+	for (irp_sl = IoGetCurrentIrpStackLocation(irp);
+	     irp->current_location < irp->stack_count; irp_sl++) {
 		struct device_object *dev_obj;
 		NTSTATUS status;
 
-		irp_sl = IoGetCurrentIrpStackLocation(irp);
 		DUMP_IRP(irp);
 		if (irp_sl->control & SL_PENDING_RETURNED)
 			irp->pending_returned = TRUE;
@@ -396,7 +398,6 @@ wfastcall void WIN_FUNC(IofCompleteRequest,2)
 		 * is what we are going to call below; so we set
 		 * current_location and dev_obj for the previous
 		 * (higher) location */
-
 		IoSkipCurrentIrpStackLocation(irp);
 		if (irp->current_location < irp->stack_count)
 			dev_obj = IoGetCurrentIrpStackLocation(irp)->dev_obj;
@@ -524,11 +525,9 @@ static irqreturn_t io_irq_isr(int irq, void *data ISR_PT_REGS_PARAM_DECL)
 	BOOLEAN ret;
 
 	TRACE6("%p", interrupt);
-	/* use nt_spin_lock_warp_preempt so ISR runs at IRQL
-	 * DISPATCH_LEVEL */
-	nt_spin_lock_warp_preempt(interrupt->actual_lock);
+	nt_spin_lock(interrupt->actual_lock);
 	ret = LIN2WIN2(interrupt->isr, interrupt, interrupt->isr_ctx);
-	nt_spin_unlock_warp_preempt(interrupt->actual_lock);
+	nt_spin_unlock(interrupt->actual_lock);
 	if (ret == TRUE)
 		EXIT6(return IRQ_HANDLED);
 	else
@@ -543,10 +542,9 @@ wstdcall NTSTATUS WIN_FUNC(IoConnectInterrupt,11)
 {
 	struct kinterrupt *interrupt;
 	IOENTER("");
-	interrupt = kmalloc(sizeof(*interrupt), GFP_KERNEL);
+	interrupt = kzalloc(sizeof(*interrupt), GFP_KERNEL);
 	if (!interrupt)
 		IOEXIT(return STATUS_INSUFFICIENT_RESOURCES);
-	memset(interrupt, 0, sizeof(*interrupt));
 	interrupt->vector = vector;
 	interrupt->cpu_mask = cpu_mask;
 	nt_spin_lock_init(&interrupt->lock);
@@ -653,7 +651,6 @@ wstdcall NTSTATUS WIN_FUNC(IoAllocateDriverObjectExtension,4)
 	 void **ext)
 {
 	struct custom_ext *ce;
-	KIRQL irql;
 
 	IOENTER("%p, %p", drv_obj, client_id);
 	ce = kmalloc(sizeof(*ce) + extlen, irql_gfp());
@@ -662,9 +659,9 @@ wstdcall NTSTATUS WIN_FUNC(IoAllocateDriverObjectExtension,4)
 
 	IOTRACE("custom_ext: %p", ce);
 	ce->client_id = client_id;
-	irql = nt_spin_lock_irql(&ntoskernel_lock, DISPATCH_LEVEL);
+	spin_lock_bh(&ntoskernel_lock);
 	InsertTailList(&drv_obj->drv_ext->custom_ext, &ce->list);
-	nt_spin_unlock_irql(&ntoskernel_lock, irql);
+	spin_unlock_bh(&ntoskernel_lock);
 
 	*ext = (void *)ce + sizeof(*ce);
 	IOTRACE("ext: %p", *ext);
@@ -676,18 +673,17 @@ wstdcall void *WIN_FUNC(IoGetDriverObjectExtension,2)
 {
 	struct custom_ext *ce;
 	void *ret;
-	KIRQL irql;
 
 	IOENTER("drv_obj: %p, client_id: %p", drv_obj, client_id);
 	ret = NULL;
-	irql = nt_spin_lock_irql(&ntoskernel_lock, DISPATCH_LEVEL);
+	spin_lock_bh(&ntoskernel_lock);
 	nt_list_for_each_entry(ce, &drv_obj->drv_ext->custom_ext, list) {
 		if (ce->client_id == client_id) {
 			ret = (void *)ce + sizeof(*ce);
 			break;
 		}
 	}
-	nt_spin_unlock_irql(&ntoskernel_lock, irql);
+	spin_unlock_bh(&ntoskernel_lock);
 	IOTRACE("ret: %p", ret);
 	return ret;
 }
@@ -695,13 +691,12 @@ wstdcall void *WIN_FUNC(IoGetDriverObjectExtension,2)
 void free_custom_extensions(struct driver_extension *drv_ext)
 {
 	struct nt_list *ent;
-	KIRQL irql;
 
 	IOENTER("%p", drv_ext);
-	irql = nt_spin_lock_irql(&ntoskernel_lock, DISPATCH_LEVEL);
+	spin_lock_bh(&ntoskernel_lock);
 	while ((ent = RemoveHeadList(&drv_ext->custom_ext)))
 		kfree(ent);
-	nt_spin_unlock_irql(&ntoskernel_lock, irql);
+	spin_unlock_bh(&ntoskernel_lock);
 	IOEXIT(return);
 }
 
@@ -821,7 +816,6 @@ wstdcall void WIN_FUNC(IoDetachDevice,1)
 	(struct device_object *tgt)
 {
 	struct device_object *tail;
-	KIRQL irql;
 
 	IOENTER("%p", tgt);
 	if (!tgt)
@@ -831,29 +825,27 @@ wstdcall void WIN_FUNC(IoDetachDevice,1)
 		IOEXIT(return);
 	IOTRACE("tail: %p", tail);
 
-	irql = nt_spin_lock_irql(&ntoskernel_lock, DISPATCH_LEVEL);
+	spin_lock_bh(&ntoskernel_lock);
 	tgt->attached = tail->attached;
 	IOTRACE("attached:%p", tgt->attached);
 	for ( ; tail; tail = tail->attached) {
 		IOTRACE("tail:%p", tail);
 		tail->stack_count--;
 	}
-	nt_spin_unlock_irql(&ntoskernel_lock, irql);
+	spin_unlock_bh(&ntoskernel_lock);
 	IOEXIT(return);
 }
 
 wstdcall struct device_object *WIN_FUNC(IoGetAttachedDevice,1)
 	(struct device_object *dev)
 {
-	KIRQL irql;
-
 	IOENTER("%p", dev);
 	if (!dev)
 		IOEXIT(return NULL);
-	irql = nt_spin_lock_irql(&ntoskernel_lock, DISPATCH_LEVEL);
+	spin_lock_bh(&ntoskernel_lock);
 	while (dev->attached)
 		dev = dev->attached;
-	nt_spin_unlock_irql(&ntoskernel_lock, irql);
+	spin_unlock_bh(&ntoskernel_lock);
 	IOEXIT(return dev);
 }
 
@@ -874,19 +866,17 @@ wstdcall struct device_object *WIN_FUNC(IoAttachDeviceToDeviceStack,2)
 	struct device_object *attached;
 	struct dev_obj_ext *src_dev_ext;
 
-	KIRQL irql;
-
 	IOENTER("%p, %p", src, tgt);
 	attached = IoGetAttachedDevice(tgt);
 	IOTRACE("%p", attached);
 	src_dev_ext = src->dev_obj_ext;
-	irql = nt_spin_lock_irql(&ntoskernel_lock, DISPATCH_LEVEL);
+	spin_lock_bh(&ntoskernel_lock);
 	if (attached)
 		attached->attached = src;
 	src->attached = NULL;
 	src->stack_count = attached->stack_count + 1;
 	src_dev_ext->attached_to = attached;
-	nt_spin_unlock_irql(&ntoskernel_lock, irql);
+	spin_unlock_bh(&ntoskernel_lock);
 	IOTRACE("stack_count: %d -> %d", attached->stack_count,
 		src->stack_count);
 	IOEXIT(return attached);
@@ -937,13 +927,12 @@ wstdcall NTSTATUS WIN_FUNC(IoGetDeviceObjectPointer,4)
 	(struct unicode_string *name, ACCESS_MASK desired_access,
 	 void *file_obj, struct device_object *dev_obj)
 {
-	KIRQL irql;
 	struct common_object_header *coh;
 
 	dev_obj = NULL;
 	/* TODO: access is not checked and file_obj is set to NULL */
 	file_obj = NULL;
-	irql = nt_spin_lock_irql(&ntoskernel_lock, DISPATCH_LEVEL);
+	spin_lock_bh(&ntoskernel_lock);
 	nt_list_for_each_entry(coh, &object_list, list) {
 		TRACE5("header: %p, type: %d", coh, coh->type);
 		if (coh->type != OBJECT_TYPE_DEVICE)
@@ -954,7 +943,7 @@ wstdcall NTSTATUS WIN_FUNC(IoGetDeviceObjectPointer,4)
 			break;
 		}
 	}
-	nt_spin_unlock_irql(&ntoskernel_lock, irql);
+	spin_unlock_bh(&ntoskernel_lock);
 	if (dev_obj)
 		IOEXIT(return STATUS_SUCCESS);
 	else

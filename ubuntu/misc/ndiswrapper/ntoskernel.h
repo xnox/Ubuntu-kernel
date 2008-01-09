@@ -44,9 +44,10 @@
 #include <linux/if_arp.h>
 #include <linux/rtnetlink.h>
 #include <linux/highmem.h>
-#include <linux/percpu.h>
 
-#include "winnt_types.h"
+#if !defined(CONFIG_X86) && !defined(CONFIG_X86_64)
+#error "this module is for x86 or x86_64 architectures only"
+#endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,7)
 #include <linux/kthread.h>
@@ -82,6 +83,7 @@
 	dma_map_sg(&pci_dev->dev, sglist, nents, direction)
 #define UNMAP_SG(pci_dev, sglist, nents, direction)		\
 	dma_unmap_sg(&pci_dev->dev, sglist, nents, direction)
+#define PCI_DMA_MAP_ERROR(dma_addr) dma_mapping_error(dma_addr)
 
 #else // linux version <= 2.5.41
 
@@ -97,8 +99,7 @@
 	pci_map_sg(dev, sglist, nents, direction)
 #define UNMAP_SG(dev, sglist, nents, direction)		\
 	pci_unmap_sg(dev, sglist, nents, direction)
-
-#define pci_set_consistent_dma_mask(dev,mask) do { } while (0)
+#define PCI_DMA_MAP_ERROR(dma_addr) pci_dma_mapping_error(dma_addr)
 
 #include <linux/smp_lock.h>
 
@@ -251,7 +252,7 @@ typedef void *worker_param_t;
 
 struct nt_thread *wrap_worker_init(workqueue_struct_t *wq);
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,9)
+#ifdef module_param
 #define WRAP_MODULE_PARM_INT(name, perm) module_param(name, int, perm)
 #define WRAP_MODULE_PARM_STRING(name, perm) module_param(name, charp, perm)
 #else
@@ -390,19 +391,34 @@ typedef u32 pm_message_t;
 #define DMA_30BIT_MASK 0x000000003fffffffULL
 #endif
 
+#ifndef DMA_31BIT_MASK
+#define DMA_31BIT_MASK 0x000000007fffffffULL
+#endif
+
 #ifndef DMA_32BIT_MASK
 #define DMA_32BIT_MASK 0x00000000ffffffffULL
 #endif
 
+#ifndef __GFP_DMA32
+#define __GFP_DMA32 GFP_DMA
+#endif
+
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22)
+#define wrap_kmem_cache_create(name, size, align, flags)	\
+	kmem_cache_create(name, size, align, flags, NULL, NULL)
+#else
+#define wrap_kmem_cache_create(name, size, align, flags)	\
+	kmem_cache_create(name, size, align, flags, NULL)
+#endif
+
+#include "winnt_types.h"
 #include "ndiswrapper.h"
 #include "pe_linker.h"
 #include "wrapmem.h"
 #include "lin2win.h"
 #include "loader.h"
 
-#ifdef DEBUG
-#define DEBUG_IRQL 1
-#endif
+#include "compat.h"
 
 #if !defined(CONFIG_USB) && defined(CONFIG_USB_MODULE)
 #define CONFIG_USB 1
@@ -419,6 +435,8 @@ typedef u32 pm_message_t;
 #define SECSPERDAY		86400
 #define TICKSPERJIFFY		((TICKSPERSEC + HZ - 1) / HZ)
 
+#define int_div_round(x, y) (((x) + (y - 1)) / (y))
+
 /* 1601 to 1970 is 369 years plus 89 leap days */
 #define SECS_1601_TO_1970	((369 * 365 + 89) * (u64)SECSPERDAY)
 #define TICKS_1601_TO_1970	(SECS_1601_TO_1970 * TICKSPERSEC)
@@ -426,11 +444,12 @@ typedef u32 pm_message_t;
 /* 100ns units to HZ; if sys_time is negative, relative to current
  * clock, otherwise from year 1601 */
 #define SYSTEM_TIME_TO_HZ(sys_time)					\
-	((((sys_time) <= 0) ? (((u64)HZ * (-(sys_time))) / TICKSPERSEC) : \
-	  (((s64)HZ * ((sys_time) - ticks_1601())) / TICKSPERSEC)))
+	(((sys_time) <= 0) ? \
+	 int_div_round(((u64)HZ * (-(sys_time))), TICKSPERSEC) :	\
+	 int_div_round(((s64)HZ * ((sys_time) - ticks_1601())), TICKSPERSEC))
 
-#define MSEC_TO_HZ(ms) (((ms * HZ) + 999) / 1000)
-#define USEC_TO_HZ(us) (((us * HZ) + 999999) / 1000000)
+#define MSEC_TO_HZ(ms) int_div_round((ms * HZ), 1000)
+#define USEC_TO_HZ(us) int_div_round((us * HZ), 1000000)
 
 extern u64 wrap_ticks_to_boot;
 
@@ -448,7 +467,7 @@ struct wrap_export {
 
 #ifdef CONFIG_X86_64
 
-#define WIN_SYMBOL(name, argc)						\
+#define WIN_SYMBOL(name, argc)					\
 	{#name, (generic_func) win2lin_ ## name ## _ ## argc}
 #define WIN_WIN_SYMBOL(name, argc)					\
 	{#name, (generic_func) win2lin__win_ ## name ## _ ## argc}
@@ -593,7 +612,9 @@ struct wrap_device {
 #define NTOS_WQ 1
 #endif
 
+#ifndef NTOS_WQ
 #define NTOS_WQ 1
+#endif
 
 #ifdef NTOS_WQ
 extern workqueue_struct_t *ntos_wq;
@@ -653,124 +674,11 @@ do {									\
 #define in_atomic() in_interrupt()
 #endif
 
-/* if either PREEMPT is not available or PREEMPT_RT is used, we fake
- * preempt so that the driver gets IRQL as required. When PREEMPT is
- * not available, kernel won't preempt unless a sleep function is
- * called, so we keep track of (fake) preemption with a variable. With
- * PREEMPT_RT, we allow only one of the ndiswrapper threads to be at
- * DISPATCH_LEVEL on each cpu - the kernel is free to preempt any of
- * these threads */
-
-#if !defined(inc_preempt_count)
-#define WARP_PREEMPT 1
-#endif
-
-#ifdef WARP_PREEMPT
-
-extern int warp_preempt_count;
-#define warp_preempt_disable() atomic_inc_var(warp_preempt_count)
-#define warp_preempt_enable() atomic_dec_var(warp_preempt_count)
-#define warp_preempt_enable_no_resched() warp_preempt_enable()
-#define warp_in_atomic() (warp_preempt_count || in_atomic())
-
-#elif defined(CONFIG_PREEMPT_RT)
-
-DECLARE_PER_CPU(int, warp_preempt_count);
-DECLARE_PER_CPU(spinlock_t, warp_preempt_lock);
-#define warp_preempt_disable()						\
-do {									\
-	int count = get_cpu_var(warp_preempt_count)++;			\
-	spinlock_t *lock = &__get_cpu_var(warp_preempt_lock);		\
-	if (count == 0) {						\
-		assert(!spin_is_locked(lock));				\
-		rt_spin_lock(lock);					\
-	}								\
-	put_cpu_var(warp_preempt_count);				\
-} while (0)
-#define warp_preempt_enable()						\
-do {									\
-	int count = --(get_cpu_var(warp_preempt_count));		\
-	spinlock_t *lock = &__get_cpu_var(warp_preempt_lock);		\
-	if (count == 0) {						\
-		assert(spin_is_locked(lock));				\
-		rt_spin_unlock(lock);					\
-	}								\
-	put_cpu_var(warp_preempt_count);				\
-} while (0)
-#define warp_preempt_enable_no_resched() warp_preempt_enable()
-#define warp_in_atomic()						\
-({									\
-	int count = get_cpu_var(warp_preempt_count);			\
-	put_cpu_var(warp_preempt_count);				\
-	count || in_atomic();						\
-})
-
-#elif defined(CONFIG_PREEMPT)
-
 #ifndef preempt_enable_no_resched
 #define preempt_enable_no_resched() preempt_enable()
 #endif
 
-#define warp_preempt_disable() preempt_disable()
-#define warp_preempt_enable() preempt_enable()
-#define warp_preempt_enable_no_resched() preempt_enable_no_resched()
-#define warp_in_atomic() in_atomic()
-
-#else
-
-#define warp_preempt_disable() inc_preempt_count()
-#define warp_preempt_enable() dec_preempt_count()
-#define warp_preempt_enable_no_resched() warp_preempt_enable()
-#define warp_in_atomic() in_atomic()
-
-#endif
-
-static inline KIRQL current_irql(void)
-{
-#ifdef DEBUG_IRQL
-	if (in_irq() || irqs_disabled())
-		EXIT4(return DIRQL);
-	if (in_interrupt())
-		EXIT4(return SOFT_IRQL);
-#endif
-	if (warp_in_atomic())
-		EXIT6(return DISPATCH_LEVEL);
-	else
-		EXIT6(return PASSIVE_LEVEL);
-}
-
-static inline KIRQL raise_irql(KIRQL newirql)
-{
-	KIRQL irql = current_irql();
-	TRACE6("%d, %d", irql, newirql);
-#ifdef DEBUG_IRQL
-	if (newirql > DISPATCH_LEVEL || irql > newirql) {
-		WARNING("invalid irql: %d, %d", irql, newirql);
-		DBG_BLOCK(4) {
-			dump_stack();
-		}
-	}
-#endif
-	warp_preempt_disable();
-	return irql;
-}
-
-static inline void lower_irql(KIRQL oldirql)
-{									
-#ifdef DEBUG_IRQL
-	KIRQL irql = current_irql();
-	TRACE6("%d, %d", irql, oldirql);
-	if (irql > DISPATCH_LEVEL || oldirql > irql) {
-		WARNING("invalid irql: %d, %d", irql, oldirql);
-		DBG_BLOCK(4) {
-			dump_stack();
-		}
-	}
-#endif
-	warp_preempt_enable();
-}
-
-#define irql_gfp() (in_atomic() ? GFP_ATOMIC : GFP_KERNEL)
+//#define DEBUG_IRQL 1
 
 #ifdef DEBUG_IRQL
 #define assert_irql(cond)						\
@@ -778,7 +686,7 @@ do {									\
 	KIRQL _irql_ = current_irql();					\
 	if (!(cond)) {							\
 		WARNING("assertion '%s' failed: %d", #cond, _irql_);	\
-		DBG_BLOCK(1) {						\
+		DBG_BLOCK(4) {						\
 			dump_stack();					\
 		}							\
 	}								\
@@ -786,6 +694,138 @@ do {									\
 #else
 #define assert_irql(cond) do { } while (0)
 #endif
+
+/* When preempt is enabled, we should preempt_disable to raise IRQL to
+ * DISPATCH_LEVEL, to be consistent with the semantics. However, using
+ * a mutex instead, so that only ndiswrapper threads run one at a time
+ * on a processor when at DISPATCH_LEVEL seems to be enough. So that
+ * is what we will use until we learn otherwise. If
+ * preempt_(en|dis)able is required for some reason, comment out
+ * following #define. */
+
+#define WRAP_PREEMPT 1
+
+#if !defined(CONFIG_PREEMPT) || defined(CONFIG_PREEMPT_RT)
+#ifndef WRAP_PREEMPT
+#define WRAP_PREEMPT 1
+#endif
+#endif
+
+#ifdef WRAP_PREEMPT
+
+typedef struct {
+	int count;
+	struct mutex lock;
+#ifdef CONFIG_SMP
+	typeof(current->cpus_allowed) cpus_allowed;
+#endif
+	struct task_struct *task;
+} irql_info_t;
+
+DECLARE_PER_CPU(irql_info_t, irql_info);
+
+static inline KIRQL raise_irql(KIRQL newirql)
+{
+	irql_info_t *info;
+
+	assert(newirql == DISPATCH_LEVEL);
+	info = &get_cpu_var(irql_info);
+	if (info->task == current) {
+		assert(info->count > 0);
+		assert(mutex_is_locked(&info->lock));
+#if defined(CONFIG_SMP) && defined(DEBUG)
+		do {
+			cpumask_t cpumask;
+			cpumask = cpumask_of_cpu(smp_processor_id());
+			cpus_xor(cpumask, cpumask, current->cpus_allowed);
+			assert(cpus_empty(cpumask));
+		} while (0);
+#endif
+		info->count++;
+		put_cpu_var(irql_info);
+		return DISPATCH_LEVEL;
+	}
+	/* TODO: is this enough to pin down to current cpu? */
+#ifdef CONFIG_SMP
+	assert(task_cpu(current) == smp_processor_id());
+	info->cpus_allowed = current->cpus_allowed;
+	current->cpus_allowed = cpumask_of_cpu(smp_processor_id());
+#endif
+	put_cpu_var(irql_info);
+	mutex_lock(&info->lock);
+	assert(info->count == 0);
+	assert(info->task == NULL);
+	info->count = 1;
+	info->task = current;
+	return PASSIVE_LEVEL;
+}
+
+static inline void lower_irql(KIRQL oldirql)
+{									
+	irql_info_t *info;
+
+	assert(oldirql <= DISPATCH_LEVEL);
+	info = &get_cpu_var(irql_info);
+	assert(info->task == current);
+	assert(mutex_is_locked(&info->lock));
+	assert(info->count > 0);
+	if (--info->count == 0) {
+		info->task = NULL;
+#ifdef CONFIG_SMP
+		current->cpus_allowed = info->cpus_allowed;
+#endif
+		mutex_unlock(&info->lock);
+	}
+	put_cpu_var(irql_info);
+}
+
+static inline KIRQL current_irql(void)
+{
+	int count;
+	if (in_irq() || irqs_disabled())
+		EXIT4(return DIRQL);
+	if (in_atomic() || in_interrupt())
+		EXIT4(return SOFT_IRQL);
+	count = get_cpu_var(irql_info).count;
+	put_cpu_var(irql_info);
+	if (count)
+		EXIT6(return DISPATCH_LEVEL);
+	else
+		EXIT6(return PASSIVE_LEVEL);
+}
+
+#else
+
+static inline KIRQL current_irql(void)
+{
+	if (in_irq() || irqs_disabled())
+		EXIT4(return DIRQL);
+	if (in_interrupt())
+		EXIT4(return SOFT_IRQL);
+	if (in_atomic())
+		EXIT6(return DISPATCH_LEVEL);
+	else
+		EXIT6(return PASSIVE_LEVEL);
+}
+
+static inline KIRQL raise_irql(KIRQL newirql)
+{
+	KIRQL ret = in_atomic() ? DISPATCH_LEVEL : PASSIVE_LEVEL;
+	assert(newirql == DISPATCH_LEVEL);
+	assert(current_irql() <= DISPATCH_LEVEL);
+	preempt_disable();
+	return ret;
+}
+
+static inline void lower_irql(KIRQL oldirql)
+{
+	assert(current_irql() == DISPATCH_LEVEL);
+	preempt_enable();
+}
+
+#endif
+
+#define irql_gfp() (in_atomic() ? GFP_ATOMIC : GFP_KERNEL)
 
 /* Windows spinlocks are of type ULONG_PTR which is not big enough to
  * store Linux spinlocks; so we implement Windows spinlocks using
@@ -811,12 +851,12 @@ static inline void nt_spin_lock(NT_SPIN_LOCK *lock)
 		"1:\t"
 		"  xchgl %1, %0\n\t"
 		"  testl %1, %1\n\t"
-		"  je 3f\n"
+		"  jz 3f\n"
 		"2:\t"
 		"  rep; nop\n\t"
 		"  cmpl %2, %0\n\t"
-		"  jne 2b\n\t"
-		"  jmp 1b\n"
+		"  je 1b\n\t"
+		"  jmp 2b\n"
 		"3:\n\t"
 		: "+m" (*lock)
 		: "r" (NT_SPIN_LOCK_LOCKED), "i" (NT_SPIN_LOCK_UNLOCKED));
@@ -839,49 +879,6 @@ static inline void nt_spin_unlock(NT_SPIN_LOCK *lock)
  * handlers), we need to fake preempt so driver thinks it is running
  * at right IRQL */
 
-#if defined(WARP_PREEMPT)
-
-#define nt_spin_lock_warp_preempt(lock)		\
-do {						\
-	atomic_inc_var(warp_preempt_count);	\
-	nt_spin_lock(lock);			\
-} while (0)
-#define nt_spin_unlock_warp_preempt(lock)	\
-do {						\
-	nt_spin_unlock(lock);			\
-	atomic_dec_var(warp_preempt_count);	\
-} while (0)
-
-#elif defined(CONFIG_PREEMPT_RT)
-
-#define nt_spin_lock_warp_preempt(lock)		\
-do {						\
-	get_cpu_var(warp_preempt_count)++;	\
-	put_cpu_var(warp_preempt_count);	\
-	nt_spin_lock(lock);			\
-} while (0)
-#define nt_spin_unlock_warp_preempt(lock)	\
-do {						\
-	nt_spin_unlock(lock);			\
-	get_cpu_var(warp_preempt_count)--;	\
-	put_cpu_var(warp_preempt_count);	\
-} while (0)
-
-#else
-
-#define nt_spin_lock_warp_preempt(lock) nt_spin_lock(lock)
-#define nt_spin_unlock_warp_preempt(lock) nt_spin_unlock(lock)
-
-#endif
-
-#ifdef CONFIG_PREEMPT_RT
-#define save_local_irq(flags) local_irq_save(flags)
-#define restore_local_irq(flags) local_irq_restore(flags)
-#else
-#define save_local_irq(flags) local_irq_save(flags)
-#define restore_local_irq(flags) local_irq_restore(flags)
-#endif
-
 /* raise IRQL to given (higher) IRQL if necessary before locking */
 static inline KIRQL nt_spin_lock_irql(NT_SPIN_LOCK *lock, KIRQL newirql)
 {
@@ -897,49 +894,19 @@ static inline void nt_spin_unlock_irql(NT_SPIN_LOCK *lock, KIRQL oldirql)
 	lower_irql(oldirql);
 }
 
-static inline void nt_spin_lock_bh(NT_SPIN_LOCK *lock)
-{
-	local_bh_disable();
-	warp_preempt_disable();
-	nt_spin_lock(lock);
-}
-
-static inline void nt_spin_unlock_bh(NT_SPIN_LOCK *lock)
-{
-	nt_spin_unlock(lock);
-	warp_preempt_enable_no_resched();
-	local_bh_enable();
-}
-
 #define nt_spin_lock_irqsave(lock, flags)				\
 do {									\
-	save_local_irq(flags);						\
-	warp_preempt_disable();						\
+	preempt_disable();						\
+	local_irq_save(flags);						\
 	nt_spin_lock(lock);						\
 } while (0)
 
 #define nt_spin_unlock_irqrestore(lock, flags)				\
 do {									\
 	nt_spin_unlock(lock);						\
-	warp_preempt_enable_no_resched();				\
-	restore_local_irq(flags);					\
+	local_irq_restore(flags);					\
+	preempt_enable();						\
 } while (0)
-
-#define atomic_insert_list_head(oldhead, head, newhead)			\
-do {									\
-	oldhead = (typeof(oldhead))head;				\
-} while (cmpxchg(&(head), oldhead, newhead) != (typeof(head))oldhead)
-
-#define atomic_remove_list_head(head, newhead)				\
-({									\
-	typeof(head) oldhead;						\
-	do {								\
-		oldhead = head;						\
-		if (!oldhead)						\
-			break;						\
-	} while (cmpxchg(&(head), oldhead, newhead) != oldhead);	\
-	oldhead;							\
-})
 
 static inline ULONG SPAN_PAGES(void *ptr, SIZE_T length)
 {
@@ -1218,6 +1185,9 @@ LONG RtlCompareUnicodeString(const struct unicode_string *s1,
 			     BOOLEAN case_insensitive) wstdcall;
 void RtlCopyUnicodeString(struct unicode_string *dst,
 			  struct unicode_string *src) wstdcall;
+NTSTATUS RtlUpcaseUnicodeString(struct unicode_string *dst,
+				struct unicode_string *src,
+				BOOLEAN alloc) wstdcall;
 void KeInitializeTimer(struct nt_timer *nt_timer) wstdcall;
 void KeInitializeTimerEx(struct nt_timer *nt_timer,
 			 enum timer_type type) wstdcall;

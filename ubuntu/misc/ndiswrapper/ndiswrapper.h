@@ -16,7 +16,7 @@
 #ifndef _NDISWRAPPER_H_
 #define _NDISWRAPPER_H_
 
-#define DRIVER_VERSION "1.45"
+#define DRIVER_VERSION "1.51"
 #define UTILS_VERSION "1.9"
 
 #define DRIVER_NAME "ndiswrapper"
@@ -202,7 +202,7 @@ do {								       \
 #define WORKEXIT(stmt) stmt
 #endif
 
-#if defined DEBUG
+#ifdef DEBUG
 #define assert(expr)							\
 do {									\
 	if (!(expr)) {							\
