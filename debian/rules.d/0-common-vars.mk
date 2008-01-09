@@ -24,6 +24,13 @@ builddir	:= $(CURDIR)/debian/build
 stampdir	:= $(CURDIR)/debian/stamps
 udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 
+#
+# Set this variable to 'true' in the arch makefile in order to
+# avoid building udebs for the debian installer. see lpia.mk as
+# an example of an architecture specific override.
+#
+disable_d_i    = no
+
 # Support parallel=<n> in DEB_BUILD_OPTIONS
 COMMA=,
 ifneq (,$(filter parallel=%,$(subst $(COMMA), ,$(DEB_BUILD_OPTIONS))))

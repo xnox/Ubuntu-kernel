@@ -1,4 +1,4 @@
-binary-udebs: binary-debs debian/control
+do-binary-udebs:
 	dh_testdir
 	dh_testroot
 
@@ -23,3 +23,8 @@ binary-udebs: binary-debs debian/control
 	done
 
 	mv debian/*.udeb ../
+
+binary-udebs: binary-debs debian/control
+	if [ "$(disable_d_i)" != "true" ]; then \
+		debian/rules do-binary-udebs; \
+	fi
