@@ -231,10 +231,19 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPA
  the linux-sparc64-smp meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: updates-modules-2.6.24-4-386-di
+XC-Package-Type: udeb
+Provides: updates-modules
+Architecture: i386
+XB-Kernel-Version: 2.6.24-4-386
+Section: debian-installer
+Priority: standard
+Description: Ubuntu supplied kernel modules
+
 Package: updates-modules-2.6.24-4-generic-di
 XC-Package-Type: udeb
 Provides: updates-modules
-Architecture: amd64
+Architecture: i386
 XB-Kernel-Version: 2.6.24-4-generic
 Section: debian-installer
 Priority: standard
