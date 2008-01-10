@@ -1,0 +1,49 @@
+Package: linux-headers-rt
+Architecture: i386 amd64
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-rt
+Description: rt Linux kernel headers
+ This package will always depend on the latest rt kernel headers
+ available.
+
+Package: linux-image-rt
+Architecture: i386 amd64
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-rt, linux-ubuntu-modules-${kernel-abi-version}-rt
+Description: Real time Linux kernel image
+ This package will always depend on the latest rt kernel image
+ available.
+
+Package: linux-restricted-modules-rt
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-rt
+Description: Restricted Linux modules for rt kernels
+ This package will always depend on the latest restricted modules available
+ for rt kernels.
+
+Package: linux-rt
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-rt (= ${binary:Version}), linux-restricted-modules-rt (= ${binary:Version})
+Description: Complete rt Linux kernel
+ This package will always depend on the latest complete rt Linux kernel
+ available.
+
+Package: linux-backports-modules-RELEASE_NAME-rt
+Architecture: amd64 i386
+Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-rt
+Description: Backported drivers for rt kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-image-debug-rt
+Architecture: amd64 i386
+Section: devel
+Depends: linux-image-debug-${kernel-abi-version}-rt
+Description: Linux kernel debug image for rt kernel image
+ This package will always depend on the latest rt kernel debug image.
