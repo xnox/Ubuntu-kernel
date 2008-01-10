@@ -1,0 +1,163 @@
+Package: linux-headers-powerpc64-smp
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-powerpc64-smp
+Description: Linux kernel headers on PowerPC64 SMP
+ This package will always depend on the latest kernel headers available
+ for PowerPC64 with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-image-powerpc64-smp
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-powerpc64-smp, linux-ubuntu-modules-${kernel-abi-version}-powerpc64-smp
+Description: Linux kernel image on PowerPC64 SMP.
+ This package will always depend on the latest kernel image available
+ for PowerPC64 with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-powerpc64-smp
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-powerpc64-smp (= ${binary:Version}), linux-restricted-modules-powerpc64-smp (= ${binary:Version})
+Description: Complete Linux kernel on PowerPC64 SMP.
+ This package will always depend on the latest complete Linux kernel available
+ for PowerPC64 with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-headers-powerpc
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-powerpc
+Description: Linux kernel headers on PowerPC
+ This package will always depend on the latest kernel headers available
+ for PowerPC.
+
+Package: linux-image-powerpc
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-powerpc, linux-ubuntu-modules-${kernel-abi-version}-powerpc
+Description: Linux kernel image on PowerPC.
+ This package will always depend on the latest kernel image available
+ for PowerPC.
+
+Package: linux-restricted-modules-powerpc
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-powerpc
+Description: Restricted Linux modules on PowerPC.
+ This package will always depend on the latest restricted modules available
+ for PowerPC.
+
+Package: linux-powerpc
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-powerpc (= ${binary:Version}), linux-restricted-modules-powerpc (= ${binary:Version})
+Description: Complete Linux kernel on PowerPC.
+ This package will always depend on the latest complete Linux kernel available
+ for PowerPC.
+
+Package: linux-headers-powerpc-smp
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-powerpc-smp
+Description: Linux kernel headers on PowerPC SMP
+ This package will always depend on the latest kernel headers available
+ for PowerPC with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-image-powerpc-smp
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-powerpc-smp, linux-ubuntu-modules-${kernel-abi-version}-powerpc-smp
+Description: Linux kernel image on PowerPC SMP.
+ This package will always depend on the latest kernel image available
+ for PowerPC with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-restricted-modules-powerpc-smp
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-powerpc-smp
+Description: Restricted Linux modules on PowerPC SMP.
+ This package will always depend on the latest restricted modules available
+ for PowerPC with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-restricted-modules-powerpc64-smp
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-powerpc64-smp
+Description: Restricted Linux modules on PowerPC 64-bit SMP.
+ This package will always depend on the latest restricted modules available
+ for PowerPC 64-bit with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-headers-cell
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-cell
+Description: Linux kernel headers on Cell
+ This package will always depend on the latest kernel headers available
+ for Cell.
+
+Package: linux-image-cell
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-cell, linux-ubuntu-modules-${kernel-abi-version}-cell
+Description: Linux kernel image on Cell
+ This package will always depend on the latest kernel image available
+ for Cell.
+
+Package: linux-cell
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-cell (= ${binary:Version})
+Description: Complete Linux kernel on Cell.
+ This package will always depend on the latest complete Linux kernel available
+ for Cell.
+
+Package: linux-backports-modules-RELEASE_NAME-powerpc
+Architecture: powerpc
+Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-powerpc
+Description: Backported drivers for powerpc kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-RELEASE_NAME-powerpc-smp
+Architecture: powerpc
+Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-powerpc-smp
+Description: Backported drivers for powerpc-smp kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-RELEASE_NAME-powerpc64-smp
+Architecture: powerpc
+Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-powerpc64-smp
+Description: Backported drivers for powerpc64-smp kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-powerpc-smp
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-powerpc-smp (= ${binary:Version}), linux-restricted-modules-powerpc-smp (= ${binary:Version})
+Description: Complete Linux kernel on PowerPC SMP.
+ This package will always depend on the latest complete Linux kernel available
+ for PowerPC with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.

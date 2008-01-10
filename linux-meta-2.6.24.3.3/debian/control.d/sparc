@@ -1,0 +1,85 @@
+Package: linux-sparc64
+Architecture: sparc
+Section: metapackages
+Priority: optional
+Depends: linux-image-sparc64 (= ${binary:Version}), linux-restricted-modules-sparc64 (= ${binary:Version})
+Description: Complete Linux kernel on sparc64.
+ This package will always depend on the latest complete Linux kernel available
+ for the UltraSparc architecture.
+
+Package: linux-headers-sparc64
+Architecture: sparc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-sparc64
+Description: Linux kernel headers on UltraSparc
+ This package will always depend on the latest kernel headers available
+ for UltraSparc.
+
+Package: linux-image-sparc64
+Architecture: sparc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-sparc64, linux-ubuntu-modules-${kernel-abi-version}-sparc64
+Description: Linux kernel image on UltraSparc
+ This package will always depend on the latest kernel image available
+ for UltraSparc.
+
+Package: linux-restricted-modules-sparc64
+Architecture: sparc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-sparc64
+Description: Restricted Linux modules on UltraSparc
+ This package will always depend on the latest restricted modules available
+ for UltraSparc.
+
+Package: linux-backports-modules-RELEASE_NAME-sparc64
+Architecture: sparc
+Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-sparc64
+Description: Backported drivers for sparc64 kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-sparc64-smp
+Architecture: sparc
+Section: metapackages
+Priority: optional
+Depends: linux-image-sparc64-smp (= ${binary:Version}), linux-restricted-modules-sparc64-smp (= ${binary:Version})
+Description: Complete Linux kernel on UltraSparc (SMP)
+ This package will always depend on the latest complete Linux kernel available
+ for the UltraSparc (SMP) architecture.
+
+Package: linux-headers-sparc64-smp
+Architecture: sparc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-sparc64-smp
+Description: Linux kernel headers on UltraSparc (SMP)
+ This package will always depend on the latest kernel headers available
+ for UltraSparc (SMP).
+
+Package: linux-image-sparc64-smp
+Architecture: sparc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-sparc64-smp, linux-ubuntu-modules-${kernel-abi-version}-sparc64-smp
+Description: Linux kernel image on UltraSparc (SMP)
+ This package will always depend on the latest kernel image available
+ for UltraSparc (SMP).
+
+Package: linux-restricted-modules-sparc64-smp
+Architecture: sparc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-sparc64-smp
+Description: Restricted Linux modules on UltraSparc (SMP)
+ This package will always depend on the latest restricted modules available
+ for UltraSparc (SMP).
+
+Package: linux-backports-modules-RELEASE_NAME-sparc64-smp
+Architecture: sparc
+Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-sparc64-smp
+Description: Backported drivers for sparc64-smp kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.

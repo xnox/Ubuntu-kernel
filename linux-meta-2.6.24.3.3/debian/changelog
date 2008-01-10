@@ -1,0 +1,2534 @@
+linux-meta (2.6.24.3.3) hardy; urgency=low
+
+  * Kernel ABI bump to -3
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 04 Jan 2008 11:39:27 -0700
+
+linux-meta (2.6.24.2.2) hardy; urgency=low
+
+  * Tighten dependencies between metapackages further.  All dependencies
+    should now be versioned, either by the metapackage version number or the
+    kernel abi version number.  This prevents linux-restricted-modules from
+    going MIA during upgrades when things are out of sync
+
+    debian/control.common:
+    - linux depends on matching linux-image and linux-restricted-modules
+    - linux-image likewise
+    - linux-restricted-modules likewise
+    - linux-modules-backports-RELEASE_NAME likewise
+    debian/control.d/generic:
+    - linux-generic likewise
+    debian/control:
+    - Regenerate
+
+  * Rename ${generic-depends} to ${generic-flavour} as it's just a string
+    name, not a full dependency clause
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed, 19 Dec 2007 11:46:56 +0000
+
+linux-meta (2.6.24.2.1) hardy; urgency=low
+
+  * First Hardy release, ABI==2
+  * Renamed linux-backports-modules to break the upgrade dependencies
+    from Gutsy to Hardy.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 17 Dec 2007 07:37:41 -0700
+
+linux-meta (2.6.22.14.21) gutsy; urgency=low
+
+  * control.d/powerpc: Add l-ubuntu-modules-cell dependency to
+    linux-image-cell.
+  * debian/control.d/i386: Add l-ubuntu-modules-virtual dependency to
+    linux-image-virtual.
+
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Mon, 15 Oct 2007 12:11:36 +0200
+
+linux-meta (2.6.22.14.20) gutsy; urgency=low
+
+  * ABI bump for -14.
+
+ -- Kyle McMartin <kyle@ubuntu.com>  Mon, 08 Oct 2007 10:35:18 -0400
+
+linux-meta (2.6.22.13.19) gutsy; urgency=low
+
+  * Add lpiacompat bits.
+
+ -- Kyle McMartin <kyle@ubuntu.com>  Sat,  6 Oct 2007 01:49:27 -0400
+
+linux-meta (2.6.22.13.18) gutsy; urgency=low
+
+  * ABI bump for -13.
+
+ -- Kyle McMartin <kyle@ubuntu.com>  Fri,  5 Oct 2007 14:04:17 -0400
+
+linux-meta (2.6.22.12.17) gutsy; urgency=low
+
+  * Forgot to update debian/control
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue,  2 Oct 2007 08:24:29 -0600
+
+linux-meta (2.6.22.12.16) gutsy; urgency=low
+
+  * Added debug image meta packages for generic, 386, ume and server.
+    Pär Andersson <paran@lysator.liu.se>
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 01 Oct 2007 12:16:17 -0600
+
+linux-meta (2.6.22.12.15) gutsy; urgency=low
+
+  * Add cell flavour on powerpc.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Sun, 23 Sep 2007 21:47:42 +0100
+
+linux-meta (2.6.22.12.14) gutsy; urgency=low
+
+  * ABI bump for -12.
+  * Add virtual flavour on i386.
+  * Add xen flavour on amd64.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 21 Sep 2007 13:12:09 +0100
+
+linux-meta (2.6.22.11.13) gutsy; urgency=low
+
+  * Add linux-image, linux-restricted-modules, and linux-backports-modules
+    metapackages, paralleling the existing linux.
+  * Add linux-restricted-modules-lpia and linux-backports-modules-lpia. Make
+    linux-lpia depend on linux-restricted-modules-lpia too (even though the
+    underlying package is currently empty).
+  * Make linux-image-lpia depend on
+    linux-ubuntu-modules-${kernel-abi-version}-lpia too (LP: #139583).
+  * Move everything to Section: metapackages (LP: #114662).
+  * Use ${binary:Version} rather than ${Source-Version} to keep lintian
+    happy. Update Build-Depends to cope.
+  * Update FSF address in copyright file.
+  * Use debian/compat rather than DH_COMPAT.
+  * Fix Build-Depends to match debhelper compatibility level.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue, 18 Sep 2007 18:17:30 +0100
+
+linux-meta (2.6.22.11.12) gutsy; urgency=low
+
+  * ABI bump for -11
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat, 08 Sep 2007 11:57:02 -0400
+
+linux-meta (2.6.22.10.11) gutsy; urgency=low
+
+  * Bump ABI to -10
+
+ -- Kyle McMartin <kyle@ubuntu.com>  Thu, 16 Aug 2007 13:10:18 -0400
+
+linux-meta (2.6.22.9.10) gutsy; urgency=low
+
+  * Add -lpia metapackages 
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri,  3 Aug 2007 15:33:59 +1000
+
+linux-meta (2.6.22.9.9) gutsy; urgency=low
+
+  * Bump ABI to -9
+  * Add -rt and -xen metapackages
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun, 29 Jul 2007 09:43:01 -0400
+
+linux-meta (2.6.22.8.8) gutsy; urgency=low
+
+  * Yes, we actually have to bump the ABI Ben
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri, 13 Jul 2007 11:18:10 +0100
+
+linux-meta (2.6.22.8.7) gutsy; urgency=low
+
+  * ABI bump for -8
+  * Add xen and ume meta packages
+    - Xen - Basic pkgs
+    - UME - no LRM
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri, 13 Jul 2007 09:28:01 +0100
+
+linux-meta (2.6.22.7.6) gutsy; urgency=low
+
+  * ABI bump
+  * Remove bigiron
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 26 Jun 2007 00:57:44 -0400
+
+linux-meta (2.6.22.6.5) gutsy; urgency=low
+
+  * ABI bump
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 04 Jun 2007 00:38:31 -0400
+
+linux-meta (2.6.22.5.4) gutsy; urgency=low
+
+  * Really bump ABI for -5.
+  * Fix avm-fritz-firmware's section from restricted to restricted/misc.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Wed, 30 May 2007 14:26:02 +0100
+
+linux-meta (2.6.22.5.3) gutsy; urgency=low
+
+  * ABI bump for -5.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 21 May 2007 11:35:50 -0400
+
+linux-meta (2.6.22.4.2) gutsy; urgency=low
+
+  * ABI bump for -4.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 17 May 2007 13:48:39 -0400
+
+linux-meta (2.6.22.3.1) gutsy; urgency=low
+
+  * Initial gutst release, ABI == 3
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 15 May 2007 14:23:19 -0400
+
+linux-meta (2.6.20.15.14) feisty; urgency=low
+
+  * Add linux-backports-modules-server package for amd64 and i386.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 13 Apr 2007 14:41:38 +0100
+
+linux-meta (2.6.20.15.13) feisty; urgency=low
+
+  * ABI bump for -15.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri, 13 Apr 2007 08:54:40 -0400
+
+linux-meta (2.6.20.14.12) feisty; urgency=low
+
+  * Make ps3 meta packages pull in the now preferred powerpc64-smp ones.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu,  5 Apr 2007 11:18:32 -0400
+
+linux-meta (2.6.20.14.11) feisty; urgency=low
+
+  * ABI bump for -14.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu,  5 Apr 2007 12:51:10 +0100
+
+linux-meta (2.6.20.13.10) feisty; urgency=low
+
+  * ABI bump for -13
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun, 25 Mar 2007 10:45:16 -0400
+
+linux-meta (2.6.20.12.9) feisty; urgency=low
+
+  * Don't build linux-backports-modules-386 on amd64.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue, 20 Mar 2007 11:13:38 +0000
+
+linux-meta (2.6.20.12.8) feisty; urgency=low
+
+  * ABI bump for -12
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun, 18 Mar 2007 00:23:19 -0400
+
+linux-meta (2.6.20.11.7) feisty; urgency=low
+
+  * ABI bump for -11
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 15 Mar 2007 08:46:58 -0400
+
+linux-meta (2.6.20.10.6) feisty; urgency=low
+
+  * ABI bump for -10.17
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 12 Mar 2007 21:38:17 -0400
+
+linux-meta (2.6.20.9.5) feisty; urgency=low
+
+  * ABI bump for -9
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 26 Feb 2007 17:56:24 -0500
+
+linux-meta (2.6.20.8.4) feisty; urgency=low
+
+  * For interdependencies between metapackages, use a versioned dependency.
+    This should avoid some strange corner cases, and also do what the user
+    expects when upgrading a linux-<flavour> metapackage.
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed, 14 Feb 2007 16:19:29 -0800
+
+linux-meta (2.6.20.8.3) feisty; urgency=low
+
+  * ABI bump for 8.14
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 12 Feb 2007 17:59:01 -0500
+
+linux-meta (2.6.20.6.2) feisty; urgency=low
+
+  * ABI bump for 2.6.20-7.13
+  * Add linux-backports-modules meta packages.
+  * Add ps3 meta packages.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 10 Jan 2007 20:00:06 -0500
+
+linux-meta (2.6.20.5.1) feisty; urgency=low
+  
+  * Bump the ABI for real.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Mon, 08 Jan 2007 07:20:36 +0100
+
+linux-meta (2.6.20.5) feisty; urgency=low
+
+  * ABI bump for 2.6.20-5.7
+  * Probably makes sense if we keep the first version number after the kernel
+    version the same as the ABI. Use minors on that for non-ABI changing
+    uploads.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat,  6 Jan 2007 12:06:45 -0500
+
+linux-meta (2.6.20.3) feisty; urgency=low
+
+  * ABI bump for 2.6.20-4.6.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri,  5 Jan 2007 01:29:36 -0500
+
+linux-meta (2.6.20.2) feisty; urgency=low
+
+  * ABI bump for 2.6.20-3.4
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue,  2 Jan 2007 11:33:06 -0500
+
+linux-meta (2.6.20.1) feisty; urgency=low
+
+  * Make 2.6.20 the default now.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun, 17 Dec 2006 08:52:03 -0500
+
+linux-meta (2.6.19.2) feisty; urgency=low
+
+  * ABI Bump to 2.6.19-7.
+  * Add low latency meta packages.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 27 Nov 2006 23:32:38 -0500
+
+linux-meta (2.6.19.1) feisty; urgency=low
+
+  * Update for 2.6.19 kernel.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri,  3 Nov 2006 15:59:59 -0500
+
+linux-meta (2.6.17.10) edgy; urgency=low
+
+  * Add powerpc64-smp restricted modules.
+    - Malone #63197
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun,  1 Oct 2006 12:12:01 -0400
+
+linux-meta (2.6.17.9) edgy; urgency=low
+
+  * ABI bump to -10.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 26 Sep 2006 10:20:55 -0400
+
+linux-meta (2.6.17.8) edgy; urgency=low
+
+  * Kernel ABI bump.
+
+ -- Tollef Fog Heen <tfheen@ubuntu.com>  Fri, 22 Sep 2006 13:43:36 +0200
+
+linux-meta (2.6.17.7) edgy; urgency=low
+
+  * No, really, kernel ABI bump for linux-source-2.6.17 version 2.6.17-8.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 20 Sep 2006 08:27:45 +1000
+
+linux-meta (2.6.17.6) edgy; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.17 version 2.6.17-8.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 19 Sep 2006 09:03:37 -0400
+
+linux-meta (2.6.17.5) edgy; urgency=low
+
+  * ABI bump
+  * Lots of packages renamed to match latest kernel.
+  * Removed old power[34] upgrade packages.
+  * Split control file into control.d/* and control.common, to make editing
+    easier. REMEMBER THIS WHEN CHANGING THINGS.
+  * Add vmware-player-kernel-modules meta package.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 15 Aug 2006 13:25:31 -0400
+
+linux-meta (2.6.17.4) edgy; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.17 version 2.6.17-6.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Sat, 12 Aug 2006 15:01:37 +1000
+
+linux-meta (2.6.17.3) edgy; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.17 version 2.6.17-5.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 17 Jul 2006 19:29:14 +1000
+
+linux-meta (2.6.17.2) edgy; urgency=low
+
+  * Kernel change to 2.6.17-4
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon,  3 Jul 2006 13:01:43 -0400
+
+linux-meta (2.6.17.1) edgy; urgency=low
+
+  * Kernel change to 2.6.17-3
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 27 Jun 2006 21:09:22 -0400
+
+linux-meta (2.6.15.22) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 version 2.6.15-23.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 18 May 2006 12:31:19 -0400
+
+linux-meta (2.6.15.21) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 version 2.6.15-22.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon,  8 May 2006 12:58:14 +1000
+
+linux-meta (2.6.15.20) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 version 2.6.15-21.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 24 Apr 2006 02:00:21 +1000
+
+linux-meta (2.6.15.19) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-20.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed,  5 Apr 2006 19:45:06 +1000
+
+linux-meta (2.6.15.18) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-19.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 20 Mar 2006 16:17:57 -0500
+
+linux-meta (2.6.15.17) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-18.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 10 Mar 2006 14:41:28 +1100
+
+linux-meta (2.6.15.16) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-17.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri,  3 Mar 2006 07:38:03 -0500
+
+linux-meta (2.6.15.15) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-16.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue, 21 Feb 2006 23:17:37 +0000
+
+linux-meta (2.6.15.14) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-15.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu,  9 Feb 2006 00:25:16 +1100
+
+linux-meta (2.6.15.13) dapper; urgency=low
+
+  * Add a linux-source metapackage.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri,  3 Feb 2006 15:49:02 +0000
+
+linux-meta (2.6.15.12) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-14.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 25 Jan 2006 22:05:58 -0500
+
+linux-meta (2.6.15.11) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-13.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 19 Jan 2006 17:54:12 -0500
+
+linux-meta (2.6.15.10) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-12.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 13 Jan 2006 10:39:31 +0000
+
+linux-meta (2.6.15.9) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-11.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed,  4 Jan 2006 07:41:03 -0500
+
+linux-meta (2.6.15.8) dapper; urgency=low
+
+  * Really bump ABI.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 27 Dec 2005 18:00:29 -0500
+
+linux-meta (2.6.15.7) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-10
+  * Amd64, -k8-smp target gone, should pull -k8 now. All amd64 targets are SMP
+    enabled now.
+  * Cleanup obsolete -smp targets. No reason to have the lrm, headers and
+    image meta packages. Just have the linux-foo-smp target depend on the
+    right non-smp versions.
+  * Bump DH_COMPAT level to 4
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 27 Dec 2005 11:24:51 -0500
+
+linux-meta (2.6.15.6) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-9
+  * Add metapackages for the new linux-amd64-server variant.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 21 Dec 2005 08:24:34 +1100
+
+linux-meta (2.6.15.5) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-8
+  * Rename -server-{highend,lowend} to -server-bigiron and -server.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 13 Dec 2005 20:01:00 +1100
+
+linux-meta (2.6.15.4) dapper; urgency=low
+
+  * No, really, kernel ABI bump for linux-source-2.6.15 2.6.15-7, we mean it.
+  * Drop the linux-tree metapackage, since kernel source is no longer done
+    in a source+patch method, but is maintained as a native tree in git.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed,  7 Dec 2005 14:16:48 +1100
+
+linux-meta (2.6.15.3) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-7
+  * Added meta packages for server-lowend and server-highend on i386
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue,  6 Dec 2005 11:30:30 -0500
+
+linux-meta (2.6.15.2) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-6
+  * Enable linux-restricted-modules for sparc64/sparc64-smp
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri,  2 Dec 2005 03:08:37 +1100
+
+linux-meta (2.6.15.1) dapper; urgency=low
+
+  * Drop i386 -smp variants, making them depend on their non-smp cousins
+    for a smooth transition to the new UP/SMP unified kernels.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu,  1 Dec 2005 11:05:26 +1100
+
+linux-meta (2.6.15.0) dapper; urgency=low
+
+  * Update to 2.6.15-5
+
+ -- Scott James Remnant <scott@ubuntu.com>  Wed, 30 Nov 2005 19:11:13 +0000
+
+linux-meta (2.6.12.16) breezy; urgency=low
+
+  * Need to have linux-restricted-modules-* for ia64/hppa.
+
+ -- LaMont Jones <lamont@ubuntu.com>  Sat, 24 Sep 2005 16:19:37 -0600
+
+linux-meta (2.6.12.15) breezy; urgency=low
+
+  * Bump Kernel ABI to 2.6.12-9.
+
+ -- Ben Collins <bcollins@phunnypharm.org>  Thu, 22 Sep 2005 17:36:22 -0400
+
+linux-meta (2.6.12.14) breezy; urgency=low
+
+  * ppc64 has no linux-restricted-modules.
+  (Closes: #15292)
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Tue, 13 Sep 2005 06:23:23 +0200
+
+linux-meta (2.6.12.13) breezy; urgency=low
+
+  * Sparc has no linux-restricted-modules.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Mon, 12 Sep 2005 10:42:51 +0200
+
+linux-meta (2.6.12.12) breezy; urgency=low
+
+  * Bump Kernel ABI to 2.6.12-8.
+
+ -- Ben Collins <bcollins@localhost.localdomain>  Tue, 30 Aug 2005 17:00:12 -0400
+
+linux-meta (2.6.12.11) breezy; urgency=low
+
+  * Bump Kernel ABI to 2.6.12-7.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Fri, 19 Aug 2005 07:50:59 +0200
+
+linux-meta (2.6.12.10) breezy; urgency=low
+
+  * debian/control:
+    - linux-686-smp: Fix section name.
+    - avm-fritz-firmware: Add architecture amd64.
+
+ -- Matthias Klose <doko@ubuntu.com>  Thu, 11 Aug 2005 18:51:39 +0200
+
+linux-meta (2.6.12.9) breezy; urgency=low
+
+  * There is no linux-restricted-modules for powerpc64-smp; remove the
+    dependencies on it
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Mon,  8 Aug 2005 15:01:01 -0700
+
+linux-meta (2.6.12.8) breezy; urgency=low
+
+  * Use a substitution variable for the kernel version number, so that it only
+    needs to be changed in one place (debian/rules) rather than
+    search-and-replacing debian/control
+  * Remove debian/make-substvars and incorporate its logic into debian/rules
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed,  3 Aug 2005 14:11:58 -0700
+
+linux-meta (2.6.12.7) breezy; urgency=low
+
+  * Restore linux-<flavour> dependencies on linux-restricted-modules-<flavour>
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed,  3 Aug 2005 13:24:53 -0700
+
+linux-meta (2.6.12.6) breezy; urgency=low
+
+  * Update to 2.6.12-6.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Fri, 29 Jul 2005 12:08:12 +0200
+
+linux-meta (2.6.12.5) breezy; urgency=low
+
+  * Update to 2.6.12-5.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Thu, 28 Jul 2005 09:39:20 +0200
+
+linux-meta (2.6.12.4) breezy; urgency=low
+
+  * Update to 2.6.12-4.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 22 Jul 2005 16:13:17 +0100
+
+linux-meta (2.6.12.3) breezy; urgency=low
+
+  * Update linux-doc and linux-tree to 2.6.12.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 14 Jul 2005 13:39:33 +0100
+
+linux-meta (2.6.12.2) breezy; urgency=low
+
+  * Update to 2.6.12-3.
+  * Add linux metapackage for i386/amd64/ia64/sparc.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Tue, 28 Jun 2005 08:06:46 +0200
+
+linux-meta (2.6.12.1) breezy; urgency=low
+
+  * Update to 2.6.12-2.
+  * Add *-powerpc64-smp metapackages.
+  * Turn *-power3, *-power3-smp, *-power4, and *-power4-smp metapackages
+    into transitional packages depending on *-powerpc64-smp.
+  * Temporarily drop linux-restricted-modules-<flavour> dependencies from
+    linux-<flavour> metapackages.
+  * Use a version number to which dpkg-source 1.13 doesn't object.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 23 Jun 2005 12:58:47 +0100
+
+linux-meta (2.6.10-7) hoary; urgency=low
+
+  * Update to 2.6.10-5
+
+ -- LaMont Jones <lamont@ubuntu.com>  Tue, 15 Mar 2005 18:11:43 -0700
+
+linux-meta (2.6.10-6) hoary; urgency=low
+
+  * Add a avm-fritz-firmware package.
+
+ -- Matthias Klose <doko@ubuntu.com>  Tue,  1 Mar 2005 14:33:41 +0100
+
+linux-meta (2.6.10-5) hoary; urgency=low
+
+  * Update to 2.6.10-4.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Wed, 23 Feb 2005 09:53:47 +0000
+
+linux-meta (2.6.10-4) hoary; urgency=low
+
+  * Update to 2.6.10-3.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue,  8 Feb 2005 10:43:53 +0000
+
+linux-meta (2.6.10-3) hoary; urgency=low
+
+  * Add hppa kernels (hppa{32,64} and hppa{32,64}-smp)
+
+ -- LaMont Jones <lamont@ubuntu.com>  Tue, 18 Jan 2005 18:45:20 -0700
+
+linux-meta (2.6.10-2) hoary; urgency=low
+
+  * Update to 2.6.10-2.
+
+ -- Colin Watson <cjwatson@canonical.com>  Thu, 13 Jan 2005 16:48:06 +0000
+
+linux-meta (2.6.10-1) hoary; urgency=low
+
+  * Update to 2.6.10
+
+ -- Matt Zimmerman <mdz@canonical.com>  Thu,  6 Jan 2005 10:09:25 -0800
+
+linux-meta (2.6.9-4) hoary; urgency=low
+
+  * Update linux-doc and linux-tree to 2.6.9
+
+ -- Matt Zimmerman <mdz@canonical.com>  Wed, 15 Dec 2004 06:23:38 -0800
+
+linux-meta (2.6.9-3) hoary; urgency=low
+
+  * amd64 and powerpc now have linux-restricted-modules, so make the
+    linux-<arch> metapackages on those architectures depend on it again.
+
+ -- Colin Watson <cjwatson@canonical.com>  Fri, 10 Dec 2004 13:24:29 +0100
+
+linux-meta (2.6.9-2) hoary; urgency=low
+
+  * Add itanium, itanium-smp, mckinley, and mckinley-smp.
+
+ -- Colin Watson <cjwatson@canonical.com>  Thu,  9 Dec 2004 14:31:34 +0100
+
+linux-meta (2.6.9-1) hoary; urgency=low
+
+  * Update to 2.6.9-1
+  * Add sparc64 and sparc64-smp
+
+ -- Matt Zimmerman <mdz@canonical.com>  Wed,  8 Dec 2004 11:21:37 -0800
+
+linux-meta (2.6.8.1-14) hoary; urgency=low
+
+  * Remove -2.6- metapackages
+  * Add linux-tree metapackage
+
+ -- Matt Zimmerman <mdz@canonical.com>  Wed, 10 Nov 2004 11:27:58 -0800
+
+linux-meta (2.6.8.1-13) warty; urgency=low
+
+  * Update linux-<arch> metapackages for amd64 and powerpc to not depend on
+    linux-restricted-modules, since it doesn't exist for those architectures
+
+ -- Matt Zimmerman <mdz@canonical.com>  Thu, 30 Sep 2004 21:37:20 -0700
+
+linux-meta (2.6.8.1-12) warty; urgency=low
+
+  * Add a linux-doc metapackage
+
+ -- Matt Zimmerman <mdz@canonical.com>  Tue, 28 Sep 2004 23:05:52 -0700
+
+linux-meta (2.6.8.1-11) warty; urgency=low
+
+  * Fix a couple of places where I modified Priority rather than Section
+
+ -- Matt Zimmerman <mdz@canonical.com>  Tue, 28 Sep 2004 15:54:39 -0700
+
+linux-meta (2.6.8.1-10) warty; urgency=low
+
+  * Move metapackages which depend on restricted packages to Section:
+    restricted/foo
+
+ -- Matt Zimmerman <mdz@canonical.com>  Tue, 28 Sep 2004 14:12:06 -0700
+
+linux-meta (2.6.8.1-9.1) warty; urgency=low
+
+  * Bump version number to supersede the metapackages built by linux-source
+
+ -- Matt Zimmerman <mdz@canonical.com>  Mon, 27 Sep 2004 12:22:26 -0700
+
+linux-meta (2.6.8.1-5) warty; urgency=low
+
+  * Incremented ABI.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Thu, 23 Sep 2004 21:48:40 +1000
+
+linux-meta (2.6.8.1-4) warty; urgency=low
+
+  * Split off meta packages from linux-source.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Thu, 16 Sep 2004 20:14:08 +1000
+
+linux-source-2.6.8.1 (2.6.8.1-3) warty; urgency=low
+
+  * Set subarch to pmac on powerpc.
+  * Added atmel firmware 1.1.
+  * Updated ipw2200 driver to 0.7.
+  * Commented out debian purge rule in scripts/package/Makefile.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Thu,  9 Sep 2004 19:21:35 +1000
+
+linux-source-2.6.8.1 (2.6.8.1-2) unstable; urgency=low
+
+  * Fixed low-level ISDN CAPI drivers skb free
+    (Carsten Paeth, Armin Schindler):
+    . drivers/isdn/capi/capidrv.c
+    . drivers/isdn/hardware/avm/b1.c
+    . drivers/isdn/hardware/avm/b1dma.c
+    . drivers/isdn/hardware/avm/c4.c
+    . drivers/isdn/hardware/avm/t1isa.c
+    . drivers/isdn/hardware/eicon/capifunc.c
+  * Merged powerpc patches from Debian:
+    . drivers/serial/8250.c
+    . drivers/ide/pci/via82cxxx.c
+  * Added build-dependency on sharutils for uudecode.
+  * Added misdn driver (Karsten Keil):
+    . drivers/isdn/hardware/Kconfig
+    . drivers/isdn/hardware/Makefile
+    . drivers/isdn/hardware/misdn/*
+  * Added TI ACX100 support (ACX100 Open Source Project):
+    . drivers/net/wireless/Kconfig
+    . drivers/net/wireless/Makefile
+    . drivers/net/wireless/acx/*
+  * Kill floating-point operations in acx100 in drivers/net/wireless/acx/idma.c
+    (me).
+  * Corrected typo in description of SMP packages.
+  * Fixed ipw2100 build problem on powerpc in
+    drivers/net/wireless/ipw2100/ipw2100_fw.c (me).
+  * Added PowerPC packages.
+  * Added AMD64 packages.
+  * Fixed acx100 build problem on amd64 in
+    drivers/net/wireless/acx/wlan_compat.h (me).
+  * Updated kernel-package dependency for ubuntu.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Sat,  4 Sep 2004 20:06:07 +1000
+
+linux-source-2.6.8.1 (2.6.8.1-1) unstable; urgency=low
+
+  * Initial release based on Debian 2.6.8-2.
+  * Fixed bio memory leak in fs/bio.c (bk).
+  * Reverted bd_claim check on partition/device in fs/block_dev.c (unknown).
+  * Added mppe support (unknown):
+    . drivers/net/Kconfig
+    . drivers/net/Makefile
+    . drivers/net/arcfour.c
+    . drivers/net/arcfour.h
+    . drivers/net/ppp_generic.c
+    . drivers/net/ppp_mppe_compress.c
+    . drivers/net/sha1.c
+    . drivers/net/sha1.h
+    . include/linux/ppp-comp.h
+  * Allow mlock as user (Chris Wright):
+    . fs/hugetlbfs/inode.c
+    . include/asm-alpha/resource.h
+    . include/asm-arm/resource.h
+    . include/asm-arm26/resource.h
+    . include/asm-cris/resource.h
+    . include/asm-h8300/resource.h
+    . include/asm-i386/resource.h
+    . include/asm-ia64/resource.h
+    . include/asm-m68k/resource.h
+    . include/asm-parisc/resource.h
+    . include/asm-ppc/resource.h
+    . include/asm-ppc64/resource.h
+    . include/asm-s390/resource.h
+    . include/asm-sh/resource.h
+    . include/asm-sparc/resource.h
+    . include/asm-sparc64/resource.h
+    . include/asm-v850/resource.h
+    . include/asm-x86_64/resource.h
+    . include/linux/mm.h
+    . include/linux/sched.h
+    . include/linux/shm.h
+    . ipc/shm.c
+    . kernel/user.c
+    . mm/mlock.c
+    . mm/mmap.c
+    . mm/mremap.c
+    . mm/shmem.c
+  * Automatically compute tcp_default_win_scale (Stephen Hemminger):
+    . include/net/tcp.h
+    . net/ipv4/sysctl_net_ipv4.c
+    . net/ipv4/tcp.c
+    . net/ipv4/tcp_output.c
+  * Added generic IEEE 80211 layer (Intel):
+    . drivers/net/wireless/Kconfig
+    . drivers/net/wireless/Makefile
+    . drivers/net/wireless/ieee80211/*
+  * Added ipw2100 driver (Intel):
+    . Documentation/networking/README.ipw2100
+    . drivers/net/wireless/Kconfig
+    . drivers/net/wireless/Makefile
+    . drivers/net/wireless/ipw2100/*
+  * Added ipw2200 driver (Intel):
+    . drivers/net/wireless/Kconfig
+    . drivers/net/wireless/Makefile
+    . drivers/net/wireless/ipw2200/*
+  * Added prism2_usb driver (AbsoluteValue Systems):
+    . drivers/net/wireless/Kconfig
+    . drivers/net/wireless/Makefile
+    . drivers/net/wireless/prism2/*
+    . drivers/net/wireless/wlan-ng/*
+    . include/wlan/*
+    . include/prism2/*
+  * Cacheline-align qdisc data in qdisc_create() in net/sched/sch_api.c
+    (Patrick McHardy).
+  * Fix class leak in CBQ scheduler in net/sched/sch_cbq.c (Patrick McHardy).
+  * Updated kernel-patch-debian description (Debian 2.6.8-3).
+  * Add a comment about the Adaptec firmware rebuild situation to README.Debian
+    (Debian 2.6.8-3).
+  * Suggest libqt3-dev for xconfig (Debian 2.6.8-3).
+  * Added patches from Debian 2.6.8-4:
+    . Added patch by Alex Clausen to stop spurious mouse button events
+      on older ADB using pmac notebooks (Sven Luther).
+    . Added g4-errata followup patch that clears the BTIC bit, instead of
+      just not setting it (Sven Luther).
+    . Update list of safe SCSI commands for SG_IO to match 2.6.9-rc1
+      (Christoph Hellwig).
+    . Added two SCSI commands, namely VERIFY_16 and GPCMD_SEND_CUE_SHEET,
+      that were mentioned in the list from 2.6.9-rc1 but missing from the
+      corresponding header files (Jens Schmalzing).
+    . Replace the drivers-scsi-sym53c8xx_revert workaround with
+      drivers-scsi-sym_2-dv-hang, which is a proper fix for the hang
+      (dann frazier).
+    . Update scsi blacklist for USB multi card readers (Christoph Hellwig).
+    . Claim we're Windows (TM) to ACPI to work around broken BIOSes
+      (Christoph Hellwig).
+    . Enter ACPI mode earlier (Christoph Hellwig).
+    . Add small ACPI fix that makes speedstep work on some Centrino Laptops
+      (Christoph Hellwig).
+    . Fix oldworld pmacs that don't have an OF stdout.
+    . Update CCISS driver (Christoph Hellwig).
+    . Add minix block accounting fix (Christoph Hellwig).
+    . Fix nfsd to not errornously return ESTALE on failed permission check
+      (Christoph Hellwig).
+    . Fix SHM segment count limit off by one (Christoph Hellwig).
+    . Add some Sparc64 backports to make Josh happy (Christoph Hellwig).
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Sat, 21 Aug 2004 15:04:28 +1000
+
+kernel-source-2.6.8 (2.6.8-2) unstable; urgency=high
+
+  * Add updated fix for generic UP kernel builds on IA64 (dann frazier).
+  * Added g4 l2 flush and MSR patch from Jacob Pan (Sven Luther).
+  * Added marvell gigabit ethernet driver errata patch from Nicolas Det
+    (Sven Luther).
+  * Added UP build fixes for sn_console & cyclone on ia64 (dann frazier).
+
+ -- Sven Luther <luther@debian.org>  Tue, 17 Aug 2004 15:34:59 +0200
+
+kernel-source-2.6.8 (2.6.8-1) unstable; urgency=high
+
+  * New upstream release.
+  
+  * Nuke tg3.c properly in prune-non-free; rely on patch to supply driver
+    (Andres Salomon).
+
+  * The following patches have been merged upstream (Andres Salomon):
+    . acpi-typo
+    . chown-gid-check
+    . chown-procfs
+    . dont-dereference-netdev.name-before-register_netdev
+      (partially applied; this is a broken patch)
+    . drivers-atkbd-quiten
+    . drivers-dpt_i2o-fixup
+    . drivers-isdn-io_funcs-fixup
+    . drivers-net-irda-dma_api
+    . drivers-net-via_rhine-avoid_bitfield
+    . drivers-sb-pnp_unregister
+    . drivers-scsi-advansys-dma_api
+    . drivers-scsi-sd-NO_SENSE
+    . drivers-usb-net-pegasus-startstop_queue
+    . envp
+    . fs-isofs-acorn
+    . fs-isofs-dont-check-period
+    . fs-jfs-compile
+    . include-linux-mca.h-fixups
+    . netfilter-signedcharbug
+    . netlink-macro-fixups
+    . powerpc-g4-errata
+    . xfs-update
+
+  * The following patches have been modified (Andres Salomon):
+    . drivers-input-hiddev-HIDIOCGUCODE
+      (sparse fixes; s/(void *) arg/user_arg/g)
+    . remove-references-to-removed-drivers
+      (upstream now considers SMCTR a broken and legacy driver)
+    . drivers-net-tg3-readd
+      (forward port firmware changes to new tg3; from version 3.3
+      of driver to version 3.8)
+
+  * Stop the kernel distclean from nuking the debian directory by
+    having the clean rule check for debian/official (Andres Salomon).
+
+  * Fix typo in alpha-termbits patch naming (Christoph Hellwig).
+
+  * Drop two unneeded patches (Christoph Hellwig):
+    . fs-cramfs-constify
+    . include-thread_info-ifdefs
+
+  * Remove -2 postfixes from patches, this is a new upstream release
+    (Christoph Hellwig).
+
+  * Add NFS OOPS fix (Christoph Hellwig).
+
+  * Add SG_IO WRITE_BUFFER capability check (Christoph Hellwig).
+
+  * Fix IA64 generic kernel compile on UP (Christoph Hellwig).
+
+  * Add pty leak fix from Al Viro (Christoph Hellwig).
+
+  * Add patch from Gustavo Barbier to support IBM RS/6000 7043-240 and -E30
+    (Christoph Hellwig).
+
+  * Add 32bit ioctl translation support to XFS (closes: Bug#257265)
+    (Christoph Hellwig).
+
+  * Revert sym53c8xx driver (dann frazier).
+
+ -- Andres Salomon <dilinger@voxel.net>  Sat, 14 Aug 2004 02:40:50 -0400
+
+kernel-source-2.6.7 (2.6.7-4) unstable; urgency=high
+
+  * Migrated pegasos patch from the powerpc package, as it will be accepted
+    upstream (Sven Luther).
+
+  * Added a errata fix for some recent G4 processors (Sven Luther).
+
+  * Fixed the Powerpc/Pegasos marvell discovery II builtin gigabit ethernet
+    driver to use the MAC address set by the firmware, instead of reading the
+    value from the prom in a way specific to the mips board (Sven Luther).
+
+ -- Jens Schmalzing <jensen@debian.org>  Thu,  5 Aug 2004 18:32:00 +0200
+
+kernel-source-2.6.7 (2.6.7-3) unstable; urgency=low
+
+  * Upgraded the fs-asfs patch to 1.0beta7 (Jens Schmalzing).
+
+  * Updated README.NMU to explain the new build process based on split
+    patches and dpatch (Jens Schmalzing).
+
+  * Added chown security fixes (closes: Bug#257504) (Christoph Hellwig).
+
+  * Dropped modular-swsusp, doesn't work and unmaintained (Christoph Hellwig).
+
+  * Added 3ware SATA-RAID driver, backported from mainline (Christoph Hellwig).
+
+  * Update XFS to most current upstream BK version (Christoph Hellwig).
+
+  * Added Marvell Ethernet driver (closes: Bug#256064) (Christoph Hellwig).
+
+  * Added a backport of the netfilter signed char fix (Christoph Hellwig).
+
+ -- Sven Luther <luther@debian.org>  Wed,  7 Jul 2004 18:12:20 +0200
+
+kernel-source-2.6.7 (2.6.7-2) unstable; urgency=low
+
+  * Removed another tainted driver (closes: Bug#242895), and amended
+    remove-references-to-removed-drivers.dpatch accordingly.  Actually,
+    this was done in the previous revision, but we forgot the changelog
+    entry (Christoph Hellwig, Jens Schmalzing).
+
+  * Renamed debian/revision back to version.Debian.  Having it outside the
+    debian/ directory is mandatory for kernel-tree to work (Jens Schmalzing).
+
+  * Added the drivers-net-tg3 patch.  It only adds firmware loading
+    support, contrary to the drivers-net-tg3-readd patch which re-adds the
+    whole driver.  As a consequence, the Debian patch also applies to the
+    vanilla kernel again.  Note that this patch is only kept here for
+    reference for the time being and will not be activated until the next
+    upstream release (Jens Schmalzing).
+
+  * Added the fs-asfs patch by Marek Szyprowski, containing support for
+    the Amiga Smart Filesystem.  Actually, the patch was already part of
+    the kernel-patch-powerpc package and has been moved over from there
+    (Jens Schmalzing).
+
+ -- Jens Schmalzing <jensen@debian.org>  Thu, 24 Jun 2004 09:56:13 +0200
+
+kernel-source-2.6.7 (2.6.7-1) unstable; urgency=low
+
+  * New upstream release.
+
+  * Added split patches in dpatch format (Christoph Hellwig and Sven Luther).
+
+  * Lots of patches merged upstream:
+    . acpi-link
+    . console-refcounting
+    . doc-sound
+    . drivers-hotplug-acpi-unregister
+    . drivers-i810-update
+    . drivers-ide-CONFIG_IDE_STROKE-at-runtime (slight changes, allows drops
+      the config option completely)
+    . drivers-mca_53c9x-needs_mca_legacy
+    . drivers-mtd-sharp-missing-includes
+    . drivers-mtd-uclinux-rootfs
+    . drivers-neomagic-ids
+    . drivers-neomagic-oss-ids
+    . drivers-paride-epat (with minor updates)
+    . drivers-pnp-needs-x86
+    . drivers-scsi-aic7xxx-fixes (slightly different)
+    . drivers-usb-storage-new-sony-device
+    . drivers-video-tgafb-needs-selection.h
+    . drivers-watchdog-missing-includes
+    . fs-isofs-remove-unused
+    . include-linux-mca.h-fixups (only partially)
+    . makefile-wc-fixup
+    . sparc64-NR_CPUS
+    . x86-dma-mapping.h-fixups
+
+  * Dropped some patches (Christoph Hellwig):
+    . alpha_cia_window - incorrect (closes: #253787)
+    . doc-initrd_devfs - incorrect, devfs names for initrd are okay
+    . drivers-mwave_paper_over_sysfs_crap - buggy driver model integration
+      removed completely upstream
+    . drivers-net-ns83820-needs-FW_LOADER - incorrect, ns83820 doesn't
+      load firmware at all
+    . drivers-scsi-3w-xxxx-no_unregister - incorrect
+    . export-proc_get_inode - the symbol is internal for a reason.  buggy
+      drivers using it removed in 2.6.7
+    . fs-msdos-dontbug - rejected upstream
+    . fs-umsdosfs-crapola - umdos is disconnected from the build in 2.6
+    . ppc-higher-binutils-requirement - upstream disagrees, Debian uses
+      dpkg build depencies anyway
+    . 00_doc-README.Debian - now handled differently by the packaging
+  
+  * Renamed version.Debian to debian/revision, in order to have all Debian
+    specific bits in the debian directory (Jens Schmalzing).
+
+  * Added the prune target to debian/rules.  It unpacks the vanilla
+    kernel, removes the tainted bits, and creates a free .orig.tar.gz
+    (Jens Schmalzing).
+
+  * Added the monolith target to debian/rules.  It saves a copy of the
+    original kernel tree, then for each revision applies the split patches
+    via dpatch and creates a monolithic patch (Jens Schmalzing).
+
+  * Add fs-jfs-compile to fix JFS compilation (Christoph Hellwig).
+
+  * Package the upstream changelog file, taken from ChangeLog-<release>,
+    into kernel-tree.  The rationale of this being that we should
+    distribute the upstream changelog in the usual location, but it is
+    enough to do this once (Jens Schmalzing).
+
+ -- Jens Schmalzing <jensen@debian.org>  Mon, 21 Jun 2004 12:55:48 +0200
+
+kernel-source-2.6.6 (2.6.6-2) unstable; urgency=low
+
+  * Fix i386 FPU bug.
+  * Transfer control of package to debian kernel team.
+
+ -- William Lee Irwin III <wli@debian.org>  Tue, 15 Jun 2004 11:06:35 -0700
+
+kernel-source-2.6.6 (2.6.6-1) unstable; urgency=low
+
+  * New upstream release (closes: #243084, #244728, #245959, #247486).
+  * Deleted unused exit prototype in drivers/scsi/aic7xxx/aic7xxx_osm.c.
+  * Unregister properly if no devices are found in
+    drivers/scsi/aic7xxx/aic79xx_osm.c (closes: #246277, #247298).
+  * Fixed GUCODE type check in drivers/usb/input/hiddev.c (Sergey Vlasov).
+  * Added basic highmem support in drivers/scsi/advansys.c (closes: #245238).
+  * Changed all occurrences herbert@debian.org:
+    . arch/i386/power/swsusp_syms.c
+    . arch/x86_64/kernel/swsusp_syms.c
+    . kernel/power/swsusp-core.c
+    . kernel/power/swsusp.h
+  * Reverted broken "VIA KT400-8235" change in arch/i386/kernel/dmi_scan.c.
+  * Fixed IRQ assignment in drivers/acpi/pci_link.c (Len Brown).
+  * Fixed resume device check (Sau Dan Lee):
+    . kernel/power/swsusp-core.c
+    . kernel/power/swsusp.c
+    . kernel/power/swsusp.h
+  * Restored driver without firmware:
+    . drivers/net/Kconfig
+    . drivers/net/Makefile
+    . drivers/net/tg3.c
+  * Added firmware loading support (Nathaneal Nerode):
+    . drivers/net/Kconfig
+    . drivers/net/tg3.c
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 11 May 2004 19:42:16 +1000
+
+kernel-source-2.6.5 (2.6.5-4) unstable; urgency=high
+
+  * Unregister PCI driver in drivers/pci/hotplug/acpiphp_glue.c.
+  * Fixed print_pirt NULL deref in drivers/pci/hotplug/shpchprm_acpi.c
+    (closes: #246149).
+  * Reverted radeon/r128 firmware changes (closes: #246587, #246594, #246627):
+    . drivers/char/drm/Kconfig
+    . drivers/char/drm/Makefile
+    . drivers/char/drm/r128_cce.c
+    . drivers/char/drm/r128_drv.h
+    . drivers/char/drm/r128_firmware_loader.c
+    . drivers/char/drm/radeon_cp.c
+    . drivers/char/drm/radeon_drv.h
+    . drivers/char/drm/radeon_firmware_loader.c
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 30 Apr 2004 09:05:39 +1000
+
+kernel-source-2.6.5 (2.6.5-3) unstable; urgency=medium
+
+  * Added firmware loading support (Nathaneal Nerode):
+    . drivers/char/drm/Kconfig
+    . drivers/char/drm/Makefile
+    . drivers/char/drm/r128_cce.c
+    . drivers/char/drm/r128_drv.h
+    . drivers/char/drm/r128_firmware_loader.c
+    . drivers/char/drm/radeon_cp.c
+    . drivers/char/drm/radeon_drv.h
+    . drivers/char/drm/radeon_firmware_loader.c
+  * Removed non-free firmware:
+    . R128 firmware: drivers/char/drm/r128_cce.c
+    . Radeon firmware: drivers/char/drm/radeon_cp.c
+  * Read .extraversion if it exists in Makefile.
+  * Added support for removal in drivers/ide/ide-generic.c.
+  * Set GPL license in arch/i386/kernel/cpu/mcheck/non-fatal.c.
+  * Copy pages in reverse (closes: #234976):
+    . arch/i386/power/pmdisk.S
+    . arch/i386/power/swsusp.S
+  * Lowered maximum NR_CPUS to 32 in arch/sparc64/Kconfig (closes: #245971).
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 27 Apr 2004 20:31:41 +1000
+
+kernel-source-2.6.5 (2.6.5-2) unstable; urgency=low
+
+  * Reverted pid == 1 change in kernel/fork.c.
+  * Allow PCI IDE drivers to be unloaded if probing fails in
+    drivers/ide/pci/atiixp.c.
+  * Fixed single word src misalign > dest misalign case in
+    arch/alpha/lib/stxncpy.S (glibc).
+  * Removed obsolete gcc workaround in sound/core/oss/Makefile.
+  * Fixed boundary checks for GUSAGE/SUSAGE in drivers/usb/input/hiddev.c.
+  * Fake inquiry for Sony Clie PEG-TJ25 in drivers/usb/storage/unusual_devs.h
+    (closes: #243650).
+  * Strip quotes from parameters in kernel/params.c (bk, closes: #243588).
+  * Added device release function in drivers/char/mwave/mwavedd.c
+    (closes: #244207).
+  * Set __exit tags on module_exit in drivers/ide/pci/*.
+  * Partially modularised software suspend:
+    . arch/i386/power/Makefile
+    . arch/i386/power/swsusp_syms.c
+    . arch/x86_64/kernel/Makefile
+    . arch/x86_64/kernel/swsusp_syms.c
+    . drivers/acpi/sleep/proc.c
+    . fs/buffer.c
+    . include/linux/suspend.h
+    . kernel/sys.c
+    . kernel/power/Kconfig
+    . kernel/power/Makefile
+    . kernel/power/console.c
+    . kernel/power/process.c
+    . kernel/power/swsusp-core.c
+    . kernel/power/swsusp.c
+    . kernel/power/swsusp.h
+    . mm/vmscan.c
+  * Fixed illegal __exit reference:
+    . drivers/scsi/aic7xxx/aic7xxx_osm.c
+    . drivers/scsi/aic7xxx/aic7xxx_osm.h
+  * Fixed local root exploit in fs/isofs/rock.c (Ernie Petrides).
+  * Clear b_data in journal_get_descriptor_buffer in fs/jbd/journal.c
+    (Ted Ts'o).
+  * Added module option parsing in drivers/video/vesafb.c (closes: #244031).
+  * Fixed vesafb_exit leaks in drivers/video/vesafb.c.
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 23 Apr 2004 21:50:18 +1000
+
+kernel-source-2.6.5 (2.6.5-1) unstable; urgency=low
+
+  * New upstream release (closes: #235419, #238569).
+  * Applied SCSI Media Changer patch (closes: #238476).
+  * Fixed strcmp in sysfs store (closes: #234446):
+    . kernel/power/main.c
+    . kernel/power/disk.c
+  * Do not unshare files for pid == 1 in kernel/fork.c (closes: #239029).
+  * Removed ide-detect in favour of ide-generic:
+    . drivers/ide/Makefile
+    . drivers/ide/ide-default.c
+    . drivers/ide/ide-generic.c
+    . drivers/ide/ide-io.c
+    . drivers/ide/ide-probe.c
+    . drivers/ide/ide-probe-mini.c
+  * Check __HAVE_THREAD_FUNCTIONS in include/linux/thread_info.h (m68k).
+  * Unregister properly if no devices are found (closes: #237477):
+    . drivers/scsi/aic7xxx/aic7770_osm.c
+    . drivers/scsi/aic7xxx/aic7xxx_osm.c
+    . drivers/scsi/aic7xxx/aic7xxx_osm.h
+  * Fixed X86_PM_TIMER description in drivers/acpi/Kconfig (Jochen Voss,
+    closes: #241941).
+  * Removed non-free firmware and disabled their drivers (see #239952):
+    . QLA2XXX: drivers/scsi/qla2xxx/*_fw.c
+    . TIGON3: drivers/net/tg3.c
+    . Unused: sound/oss/724hwmcode.h
+    . Unused: sound/oss/Hwmcode.h
+  * Lowered priority of "too many keys" message in
+    drivers/input/keyboard/atkbd.c (closes: #239036).
+  * Made %docs depend on scripts_basic instead of scripts in Makefile.
+  * Fixed syntax error in Documentation/DocBook/parportbook.tmpl.
+  * Include linux/init.h for __init in sound/pcmcia/pdaudiocf/pdaudiocf.c
+  * Fixed bashism in Makefile.
+
+ -- Herbert Xu <herbert@debian.org>  Tue,  6 Apr 2004 20:42:02 +1000
+
+kernel-source-2.6.4 (2.6.4-1) unstable; urgency=low
+
+  * New upstream release (closes: #234631, #234754, #236570).
+  * Added vmlinux.syms:
+    . scripts/Makefile.modpost
+    . scripts/modpost.c
+  * Allow X86_MCE_NONFATAL to be a module:
+    . arch/i386/Kconfig
+    . arch/i386/kernel/cpu/mcheck/mce.c (Andrew Morton)
+  * Black listed "TOSHIBA CD-ROM XM-1702BC" in drivers/ide/ide-dma.c.
+  * Black listed "VIA KT400-8235" for broken_pirq in
+    arch/i386/kernel/dmi_scan.c (closes: #235188).
+  * Handle NO_SENSE in sd_rw_intr in drivers/scsi/sd.c (Alan Stern,
+    closes: #232494).
+  * Reverted tasklet change in drivers/usb/host/uhci-hcd.*.
+  * Fixed ThinkPad lock up problem in drivers/usb/host/uhci-hcd.c (Alan Stern).
+  * Put __modpost under MODVERDIR in scripts/Makefile.modpost.
+  * Provide *-2.6 instead of *-2.4 (closes: #236779).
+  * Fixed IDE CD capacity detection in drivers/ide/ide-cd.c (Jens Axboe,
+    closes: #216581).
+  * Removed dev->name lookups before register_netdev (closes: #234817):
+    . drivers/net/3c501.c
+    . drivers/net/3c503.c
+    . drivers/net/8390.c
+    . drivers/net/8390.h
+    . drivers/net/ac3200.c
+    . drivers/net/apne.c
+    . drivers/net/e2100.c
+    . drivers/net/es3210.c
+    . drivers/net/hp-plus.c
+    . drivers/net/hp.c
+    . drivers/net/hydra.c
+    . drivers/net/lne390.c
+    . drivers/net/mac8390.c
+    . drivers/net/ne.c
+    . drivers/net/ne2.c
+    . drivers/net/ne2k-pci.c
+    . drivers/net/ne2k_cbus.c
+    . drivers/net/ne3210.c
+    . drivers/net/oaknet.c
+    . drivers/net/smc-mca.c
+    . drivers/net/smc-ultra.c
+    . drivers/net/smc-ultra32.c
+    . drivers/net/stnic.c
+    . drivers/net/wd.c
+    . drivers/net/zorro8390.c
+  * Set MODVERDIR based on SUBDIRS in Makefile (Andreas Gruenbacher,
+    closes: #236626).
+  * Remove reference to drivers/parport/init.c in
+    Documentation/DocBook/parportbook.tmp.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 13 Mar 2004 14:13:45 +1100
+
+kernel-source-2.6.3 (2.6.3-2) unstable; urgency=low
+
+  * Rebuilt to fix tarball in kernel-source package.
+  * Really added the Post-Halloween document.
+
+ -- Herbert Xu <herbert@debian.org>  Mon, 23 Feb 2004 08:01:24 +1100
+
+kernel-source-2.6.3 (2.6.3-1) unstable; urgency=low
+
+  * New upstream release.
+  * Replaced irq_resource usage:
+    . drivers/isdn/hardware/avm/b1isa.c
+    . drivers/isdn/hardware/avm/t1isa.c
+    . drivers/isdn/hisax/hisax_fcclassic.c
+  * Added Post-Halloween document.
+  * Allow PCI IDE drivers to be unloaded if probing fails (closes: #202828):
+    . drivers/ide/arm/*.c
+    . drivers/ide/pci/*.c
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 20 Feb 2004 20:48:48 +1100
+
+kernel-source-2.6.2 (2.6.2-2) unstable; urgency=high
+
+  * Added build-dependency on gs (closes: #232631).
+  * Restored generic SCSI proc_info function in drivers/scsi/scsi_proc.c
+    (closes: #232533).
+  * Fixed early chip programming in tg3_setup_copper_phy() in drivers/net/tg3.c
+    (David Miller).
+  * Fixed dev timer SMP deadlock in drivers/scsi/aic7xxx/aic7xxx_osm.c
+    (Andrew Morton).
+  * Check return value of do_munmap in do_mremap in mm/mremap.c (2.6.3).
+
+ -- Herbert Xu <herbert@debian.org>  Wed, 18 Feb 2004 21:29:09 +1100
+
+kernel-source-2.6.2 (2.6.2-1) unstable; urgency=low
+
+  * New upstream release (closes: #227071, #229745, #227240, #231466).
+  * Made PDC202XX_{BURST,FORCE} available even if it is a module in
+    drivers/ide/Kconfig.
+  * Fixed dead lock in drain_dac in sound/oss/i810_audio.c.
+  * Added drivers/ide/ide-probe-mini.c (2.4, closes: #224082, #227317, #228906,
+    #230195, #230755).
+  * Updated kernel-source description from kernel-package (closes: #226816).
+  * Added upstream changelog (closes: #230183).
+  * Added build-dependency on docbook-utils and transfig.
+  * Put kernel_thread_helper in right segment in arch/i386/kernel/process.c
+    (bk).
+
+ -- Herbert Xu <herbert@debian.org>  Sat,  7 Feb 2004 10:36:58 +1100
+
+kernel-source-2.6.0 (2.6.0-2) unstable; urgency=low
+
+  * Don't allow mremap of zero-sized areas in mm/mremap.c (2.6.1,
+    closes: #226542).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 11 Jan 2004 16:34:27 +1100
+
+kernel-source-2.6.0 (2.6.0-1) unstable; urgency=low
+
+  * New upstream release.
+  * Documented psmouse/mousedev in README.Debian (closes: #223596).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 21 Dec 2003 16:16:02 +1100
+
+kernel-source-2.6.0-test11 (2.6.0-test11-1) unstable; urgency=low
+
+  * New upstream release (closes: #212831, #215530, #217908, #218749, #218768,
+    #219239, #219944, #220432).
+  * Reverted set_blocksize change in fs/block_dev.c (closes: #214131).
+  * Removed libqt-dev suggestion in kernel-source.
+  * Added Freecom FX-5/FX-50 in drivers/usb/storage/unusual_devs.h
+    (Luke Kenneth Casson Leighton, closes: #218781).
+  * Unregister driver if probing fails in sound/oss/sb_card.c
+    (closes: #218845).
+  * Work around gcc bug in sound/core/oss/Makefile (closes: #203195).
+  * Use page cache for cramfs_read in fs/cramfs/inode.c (Al Viro).
+  * Fixed DMA overruns/bugs in sound/oss/i810_audio.c.
+  * Include asm/io.h and asm/scatterlist.h in include/asm-i386/dma-mapping.h.
+  * Removed uses of isa_vir_to_bus (closes: #218878):
+    . drivers/net/irda/ali-ircc.c
+    . drivers/net/irda/nsc-ircc.c
+    . drivers/net/irda/smsc-ircc2.c
+    . drivers/net/irda/via-ircc.c
+    . drivers/net/irda/via-ircc.h
+    . drivers/net/irda/w83977af_ir.c
+    . include/net/irda/ali-ircc.h
+    . include/net/irda/irda_device.h
+    . include/net/irda/nsc-ircc.h
+    . include/net/irda/w83977af_ir.h
+    . net/irda/irda_device.c
+  * Fixed Tekram DC390 driver (Guennadi Liakhovetski, closes: #221865):
+    . drivers/scsi/Kconfig
+    . drivers/scsi/dc390.h
+    . drivers/scsi/scsiiom.c
+    . drivers/scsi/tmscsim.c
+    . drivers/scsi/tmscsim.h
+  * Flush bundles when devices go down:
+    . include/net/xfrm.h
+    . net/xfrm/xfrm_policy.c
+    . net/xfrm/xfrm_state.c
+  * Fixed inclusion loop with include/net/sctp/sm.h:
+    . include/net/sctp/sctp.h
+    . net/sctp/associola.c
+    . net/sctp/outqueue.c
+    . net/sctp/socket.c
+    . net/sctp/transport.c
+  * Fixed connect/disconnect race in drivers/usb/core/hub.c (2.4,
+    closes: #218670).
+  * Initialise state for /proc/net/tcp in net/ipv4/tcp_ipv4.c (bk).
+  * Cleaned up debian/rules a little.
+  * Schedule tasklets for async removal in drivers/usb/host/uhci-hcd.*.
+
+ -- Herbert Xu <herbert@debian.org>  Mon,  8 Dec 2003 20:23:22 +1100
+
+kernel-source-2.6.0-test9 (2.6.0-test9-1) unstable; urgency=low
+
+  * New upstream release (closes: #216972).
+  * Applied x86/64bit fix in drivers/char/ftape/lowlevel/ftape-calibr.c (2.4).
+  * Include linux/fs.h for struct file:
+    . drivers/char/watchdog/scx200_wdt.c
+    . drivers/char/watchdog/wdt_pci.c
+    . drivers/char/watchdog/i810-tco.c
+    . drivers/char/watchdog/alim7101_wdt.c
+    . drivers/char/watchdog/alim1535_wdt.c
+    . drivers/char/watchdog/sc1200wdt.c
+    . drivers/char/watchdog/amd7xx_tco.c
+    . drivers/char/applicom.c
+  * Include linux/init.h for __init:
+    . drivers/char/moxa.c
+    . drivers/char/mxser.c
+    . drivers/mtd/chips/jedec_probe.c
+    . drivers/mtd/chips/sharp.c
+    . drivers/net/sb1000.c
+    . drivers/net/wan/sealevel.c
+    . drivers/net/wan/cosa.c
+  * Removed unnecessary asm/setup.h in drivers/mtd/cmdlinepart.c.
+  * Support architectures without asm/mca.h:
+    . include/linux/mca.h
+    . include/linux/mca-legacy.h
+  * Made PNPBIOS X86 only in drivers/pnp/Kconfig.
+  * Added CIBAUD/CMSPAR in include/asm-alpha/termbits.h.
+  * Include linux/selection.h for color_table in drivers/video/tgafb.c.
+  * Added optimise by size option:
+    . Makefile
+    . init/Kconfig
+  * Fixed reference count bug in net/xfrm/xfrm_policy.c.
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 26 Oct 2003 16:16:43 +1100
+
+kernel-source-2.6.0-test7 (2.6.0-test7-1) unstable; urgency=low
+
+  * Fixed NLMSG_OK and RTA_OK:
+    . include/linux/netlink.h
+    . include/linux/rtnetlink.h
+  * Reverted process group accessor change (bk):
+    . arch/ia64/kernel/unaligned.c
+    . arch/sparc64/solaris/misc.c
+    . drivers/char/n_tty.c
+    . drivers/char/rocket.c
+    . drivers/char/tty_io.c
+    . drivers/char/vt.c
+    . drivers/char/vt_ioctl.c
+    . drivers/net/slip.c
+    . fs/binfmt_elf.c
+    . fs/compat_ioctl.c
+    . fs/dquot.c
+    . fs/exec.c
+    . fs/open.c
+    . fs/proc/array.c
+    . include/linux/sched.h
+    . kernel/acct.c
+    . kernel/exit.c
+    . kernel/fork.c
+    . kernel/pid.c
+    . kernel/signal.c
+    . kernel/sys.c
+    . net/ipv4/netfilter/ipt_owner.c
+    . net/ipv6/netfilter/ip6t_owner.c
+  * Export blk_queue_activity_fn for ide-probe in drivers/block/ll_rw_blk.c.
+    This change did not make it into the package (closes: #215223).
+  * Include mca-legacy.h for MCA_NOTFOUND in drivers/isdn/eicon/eicon_mod.c.
+  * Use gcc-2.95 compatible variadic macro in
+    drivers/media/video/saa7134/saa7134-core.c.
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 12 Oct 2003 09:51:18 +1000
+
+kernel-source-2.6.0-test6 (2.6.0-test6-2) unstable; urgency=low
+
+  * Export blk_queue_activity_fn for ide-probe in drivers/block/ll_rw_blk.c.
+
+ -- Herbert Xu <herbert@debian.org>  Sat,  4 Oct 2003 13:45:40 +1000
+
+kernel-source-2.6.0-test6 (2.6.0-test6-1) unstable; urgency=low
+
+  * New upstream release (closes: #209307).
+  * Use mac_len for move ll headers:
+    . include/linux/skbuff.h
+    . net/core/dev.c
+    . net/ipv4/xfrm4_input.c
+    . net/ipv6/xfrm6_input.c
+  * Removed ACENIC/DGRS/DABUSB in arch/*/defconfig (closes: #211852).
+  * Fixed double request_region:
+    . drivers/net/arcnet/com20020.c
+    . drivers/net/arcnet/com20020-isa.c
+    . drivers/net/arcnet/com20020-pci.c
+  * Forbid unspecified tunnel mode SAs in net/xfrm/xfrm_policy.c.
+  * Removed duplicate policy checks for ipip tunnels:
+    . net/ipv4/ipip.c
+    . net/ipv4/xfrm4_tunnel.c
+  * Restored err_tty_modem label in drivers/isdn/i4l/isdn_common.c.
+  * Added probe declaration in drivers/net/wireless/arlan-main.c.
+  * Include linux/termios.h for TCGETS in fs/intermezzo/dir.c
+    (Kalle Olavi Niemitalo, closes: #208966).
+
+ -- Herbert Xu <herbert@debian.org>  Fri,  3 Oct 2003 19:38:37 +1000
+
+kernel-source-2.6.0-test4 (2.6.0-test4-3) unstable; urgency=low
+
+  * Fixed fatal bug in xfrm ll header patch:
+    . net/ipv4/xfrm4_input.c
+    . net/ipv6/xfrm6_input.c
+
+ -- Herbert Xu <herbert@debian.org>  Thu,  4 Sep 2003 20:51:57 +1000
+
+kernel-source-2.6.0-test4 (2.6.0-test4-2) unstable; urgency=low
+
+  * Added MODULE_LICENSE to net/xfrm/xfrm_user.c.
+  * Export idedefault_driver in drivers/ide/ide-default.c.
+
+ -- Herbert Xu <herbert@debian.org>  Mon,  1 Sep 2003 21:16:07 +1000
+
+kernel-source-2.6.0-test4 (2.6.0-test4-1) unstable; urgency=low
+
+  * New upstream release (closes: #206656).
+  * Fixed ll header of tunnel packets:
+    . include/linux/skbuff.h
+    . net/ipv4/xfrm4_input.c
+    . net/ipv6/xfrm6_input.c
+  * Fixed gcc 3 declaration in drivers/net/sis190.c.
+  * Fixed synchronize_irq() call in drivers/net/sis190.c.
+  * Fixed freenet_devtypo in drivers/net/wan/cosa.c.
+  * Fixed device name setting in drivers/net/3c509.c.
+  * Removed release timer in sound/pcmcia/vx/vx_entry.c.
+  * Always define cmpxchg in include/asm-i386/system.h (closes: #206956).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 31 Aug 2003 13:41:55 +1000
+
+kernel-source-2.6.0-test2 (2.6.0-test2-1) unstable; urgency=low
+
+  * Cope with exit status 2 from md5sum in drivers/isdn/hisax/cert.c.
+  * Fixed binutils test in scripts/ver_linux.
+  * Wrapped long line in kernel-source description.
+  * Marked IDE PCI proc entries as __devinitdata (closes: #202412):
+    . drivers/ide/pci/*.h
+  * Fixed binutils version recommendation in arch/ppc/Makefile.
+  * Added per-SA ECN flag:
+    . include/linux/pfkeyv2.h
+    . include/linux/xfrm.h
+    . include/net/inet_ecn.h
+    . include/net/xfrm.h
+    . net/ipv4/ah4.c
+    . net/ipv4/esp4.c
+    . net/ipv4/ipcomp.c
+    . net/ipv4/xfrm4_input.c
+    . net/ipv6/ah6.c
+    . net/ipv6/esp6.c
+    . net/ipv6/ipcomp.c
+    . net/ipv6/xfrm6_input.c
+    . net/key/af_key.c
+    . net/xfrm/xfrm_user.c
+  * Fixed secpath xfrm state leak:
+    . include/net/xfrm.h
+    . net/ipv4/xfrm4_input.c
+    . net/ipv4/xfrm4_policy.c
+    . net/ipv6/xfrm6_input.c
+    . net/ipv6/xfrm6_policy.c
+    . net/netsyms.c
+    . net/xfrm/xfrm_input.c
+    . net/xfrm/xfrm_policy.c
+  * Fixed owner setting in drivers/net/arcnet/com20020-isa.c.
+  * Fixed module refcounting in drivers/net/pcmcia/com20020_cs.c.
+  * Fixed hdlc proto type:
+    . drivers/net/wan/dscc4.c
+    . drivers/net/wan/pc300_drv.c
+  * Use gcc-2.95 compatible variadic macro in drivers/net/wireless/wl3501_cs.c.
+  * Applied 486 emulation patch (Willy Tarreau):
+    . arch/i386/Kconfig
+    . arch/i386/kernel/Makefile
+    . arch/i386/kernel/emu.c
+    . arch/i386/kernel/entry.S
+
+ -- Herbert Xu <herbert@debian.org>  Thu, 31 Jul 2003 20:01:30 +1000
+
+kernel-source-2.6.0-test1 (2.6.0-test1-1) unstable; urgency=low
+
+  * New upstream release (closes: #194242, #199893).
+  * Fixed size of default_port in drivers/net/via-rhine.c.
+  * Added general notes from 2.4 README.Debian file.
+  * Removed cmd640 from drivers/ide/pci/Makefile (closes: #195286).
+  * Made MCA_53C9X depend on MCA_LEGACY in drivers/scsi/Kconfig.
+  * Setup two 1G mappings if cia_rev == 1 in arch/alpha/kernel/core_cia.c.
+  * Added inclusion of linux/stddef.h due to NULL in linux/timer.h.
+  * Fixed multiline string literals in drivers/net/wan/sdla_chdlc.c.
+  * Suggest libqt-dev in kernel-source package (closes: #196296).
+  * Fixed IDE PCI proc entries for modules in drivers/ide/ide-proc.c.
+  * Fixed assembly specification in drivers/net/wan/sbni.c.
+  * Enable hw_resend_irq if io_apic is on (ac):
+    . include/asm-i386/hw_irq.h
+    . arch/i386/kernel/io_apic.c
+  * Include linux/skbuff.h for skb_put in include/linux/netlink.h.
+  * Include linux/spinlock.h for rwlock_t in include/net/ip6_fib.h.
+  * Include linux/ipv6.h for inet6_sk in include/net/ip6_route.h.
+  * Include net/sock.h for struct sock in include/net/ip6_route.h.
+  * Include linux/netdevice.h for MAX_ADDR_LEN in include/net/neighbour.h.
+  * Added forward declaration for struct neighbour in include/net/neighbour.h.
+  * Include linux/types.h for __u32 in include/linux/watchdog.h.
+  * Added forward declaration for struct net_device in include/linux/skbuff.h.
+  * Wake up km_waitq after policy changes in net/xfrm/xfrm_policy.c.
+  * Restored mdio_sem that replaced rtnl_lock in drivers/net/8139too.c.
+  * Include linux/root_dev.h for ROOT_DEV in drivers/mtd/maps/uclinux.c.
+  * Removed bogus devfs references in Documentation/initrd.txt (Nikolaus Rath).
+  * Kill temp addresses and regen timer on shutdown in net/ipv6/addrconf.c.
+  * Fixed optional choice setting in scripts/kconfig/confdata.c.
+  * Made CONFIG_IDEDISK_STROKE a runtime option (Joerg Platte):
+    . include/linux/ide.h
+    . drivers/ide/ide.c
+    . drivers/ide/ide-disk.c
+  * Export blk_rq_prep_restart for ide-disk in drivers/block/ll_rw_blk.c.
+  * Fixed IDE modularisation:
+    . drivers/ide/Kconfig
+    . drivers/ide/Makefile
+    . drivers/ide/ide.c
+    . drivers/ide/ide-io.c
+    . drivers/ide/ide-pnp.c
+    . drivers/ide/ide-probe.c
+    . drivers/ide/pci/*
+    . drivers/ide/setup-pci.c
+    . include/linux/ide.h
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 15 Jul 2003 21:36:05 +1000
+
+kernel-source-2.5.69 (2.5.69-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Wed,  7 May 2003 20:54:36 +1000
+
+kernel-source-2.4.20 (2.4.20-6) unstable; urgency=low
+
+  * Documented mem= change in README.Debian.
+  * Fixed printk warnings in init/do_mounts.c.
+  * Fixed printk warnings in fs/fat/file.c (closes: #178355).
+  * Commented out non-TeX heading in Documentation/smp.tex (Daniel van Eeden,
+    closes: #174554).
+  * Fixed dupliate detection problem in drivers/net/tokenring/ibmtr.c
+    (closes: #178874).
+  * Close old_fd and root_fd in init/do_mounts.c (Brian May, closes: #180934).
+  * Ignore errors from tw_setfeature in drivers/scsi/3w-xxxx.c
+    (closes: #181581).
+  * Changed all occurances of infobox+sleep to msgbox in scripts/Menuconfig
+    (closes: #181640).
+  * Use rq->special instead of rq->buffer in drivers/scsi/ide-scsi.c
+    (closes: #180125).
+  * Fixed precedence bug in drivers/sound/trident.c (John Levon).
+  * Documented AMD 768 erratum (closes: #177139).
+  * Fixed initialisation error handling in drivers/block/cciss.c.
+  * Fixed initialisation error handling in drivers/block/cpqarray.c.
+  * Fixed ptrace security hole (closes: #185375).
+  * Work around broken Toshiba keyboards (2.4.21pre, closes: #121335).
+  * Fixed sock address length check (2.4.21pre, closes: #171983).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 22 Mar 2003 10:05:53 +1100
+
+kernel-source-2.4.20 (2.4.20-5) unstable; urgency=high
+
+  * Fixed ethernet packet padding information leak (2.4ac, see #176178):
+    . via-rhine
+  * Added sk_padto function (closes: #176487).
+
+ -- Herbert Xu <herbert@debian.org>  Mon, 13 Jan 2003 19:17:48 +1100
+
+kernel-source-2.4.20 (2.4.20-4) unstable; urgency=high
+
+  * Added missing printk newlines in net/sched/sch_htb.c
+    (Alexandra N. Kossovsky, closes: #174152).
+  * Removed bogus VIA KT266 IO-APIC check.  It is a useful warning.
+  * Removed bogus ip_conntrack_{ftp,irc} check.
+  * Fixed a typo in Documentation/sound/Introduction (Daniel van Eeden,
+    closes: #174944).
+  * Reverted CONFIG_VIDEO_VESA change (closes: #175614).
+  * Fixed ethernet packet padding information leak (2.4ac, see #176178):
+    . 3c501
+    . 3c505
+    . 3c507
+    . 3c523
+    . 3c527
+    . 7990
+    . 8139too
+    . 82596
+    . 8390
+    . a2065
+    . am79c961a
+    . ariadne
+    . at1700
+    . atarilance
+    . atp
+    . bagetlance
+    . de600
+    . de620
+    . declance
+    . depca
+    . eepro
+    . eexpress
+    . epic100
+    . eth16i
+    . fmv18x
+    . hp100
+    . lance
+    . lasi_82596
+    . lp486e
+    . ni5010
+    . ni52
+    . ni65
+    . axnet_cs
+    . fmvj18x_cs
+    . ray_cs
+    . xirc2ps_cs
+    . xircom_tulip_cb
+    . seeq8005
+    . sgiseeq
+    . sk_g16
+    . smc9194
+    . sun3_82586
+    . sun3lance
+    . wavelan
+    . yellowfin
+    . znet
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 11 Jan 2003 17:31:43 +1100
+
+kernel-source-2.4.20 (2.4.20-3) unstable; urgency=low
+
+  * Fixed ext3 remount deadlock added in 2.4.20-2 (Andrew Morton).
+  * Fixed ext3 use-after-free bug (Andrew Morton).
+  * Fixed i845G AGP Gart initialisation (Michael Milligan, closes: #172724).
+  * Updated i810_audio driver (2.4.21pre1, closes: #172194).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 21 Dec 2002 13:49:15 +1100
+
+kernel-source-2.4.20 (2.4.20-2) unstable; urgency=low
+
+  * Include acpidrv.o in the kernel (Mario Holbe, closes: #168439).
+  * Removed CONFIG_INET_ECN_DISABLED option.
+  * Removed CONFIG_INET_ECN check in net/ipv4/tcp_diag.c.
+  * Fixed stxncpy on alpha (2.4.21pre).
+  * Fixed ext3 data=journal umount problem (2.4.21pre1, closes: #171632).
+  * Added dependency on MTD_CONCAT for sc520cdp (closes: #173045).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 15 Dec 2002 14:53:05 +1100
+
+kernel-source-2.4.20 (2.4.20-1) unstable; urgency=low
+
+  * New upstream release (closes: #164065, #164204, #165478, #166312, #168141,
+    #168190, #170962).
+  * Disable CONFIG_VIDEO_VESA unless VESA FB support is turned on.
+  * Mention Debian changes in kernel-source package description.
+  * Fixed a bug where ACPI is always compiled as a module (closes: #168439).
+  * CONFIG_VIDEO_SELECT is always on again.
+  * Modularised VESA FB.
+  * Added coreutils as an alternative to fileutils (closes: #170459).
+  * Replaced BUG() with printk() in fs/fat/file.c (closes: #168886).
+  * Fixed circular dependency in include/linux/netfilter_ipv4/ip_conntrack.h.
+  * Do not get seqno if we will not use it in fs/isofs/inode.c.
+  * Fixed HID name fix so that produce id is actually read.
+  * Added missing semicolons in drivers/scsi/aic7xxx/aicasm/aicasm_gram.y
+    (Michael Osamu Shiobara, closes: #165375).
+  * Made CONFIG_PARIDE_EPATC8 into a runtime option.
+  * Fixed double PCI unregistration in drivers/char/joystick/pcigame.c.
+  * Include linux/init.h in drivers/char/amd76x_pm.c.
+  * Include linux/init.h in drivers/scsi/cpqfcTSinit.c.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 30 Nov 2002 16:39:30 +1100
+
+kernel-source-2.4.19 (2.4.19-5) unstable; urgency=high
+
+  * Fixed i386 lcall DoS (Petr Vandrovec).
+
+ -- Herbert Xu <herbert@debian.org>  Mon, 18 Nov 2002 21:22:02 +1100
+
+kernel-source-2.4.19 (2.4.19-4) unstable; urgency=low
+
+  * Added missing headers in drivers/isdn/hisax/avma1_cs.c.
+  * Added missing headers in drivers/net/wan/comx-hw-munich.c.
+
+ -- Herbert Xu <herbert@debian.org>  Wed, 16 Oct 2002 22:42:01 +1000
+
+kernel-source-2.4.19 (2.4.19-3) unstable; urgency=low
+
+  * Fixed more ACPI module building problems.
+  * Fixed initialisation oops in drivers/scsi/aic7xxx/aic7770.c
+    (closes: #162347).
+  * Made CONFIG_VIDEO_SELECT conditional in drivers/video.
+
+ -- Herbert Xu <herbert@debian.org>  Sun,  6 Oct 2002 16:33:04 +1000
+
+kernel-source-2.4.19 (2.4.19-2) unstable; urgency=low
+
+  * Inlucde pagemap.h for unlock_page in drivers/char/drm/i810_dma.c
+    (closes: #144971).
+  * Set ?time to zero in fs/cramfs/inode.c.
+  * Allow ACPI to be compiled as a module.
+  * Fixed umsdos_solve_hlink oops in fs/umsdos/dir.c (closes: #159772).
+  * Honour ide?=dma in drivers/ide/via82cxxx.c (Arne Nordmark,
+    closes: #157925).
+  * Restored priority of invalidate messages in fs/buffer.c.  The submitter of
+    #131419 did a badblocks -f.
+  * Wait before flushing in drivers/char/drm/mga_dma.c (ac, closes: #161100).
+  * Applied SCSI Media Changer patch (closes: #144850).
+  * Applied Big Physical Area Reservation patch (closes: #144849).
+  * Removed period check for executables in fs/isofs/inode.c (closes: #162190).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 28 Sep 2002 16:53:27 +1000
+
+kernel-source-2.4.19 (2.4.19-1) unstable; urgency=low
+
+  * New upstream release (closes: #139617, #146349).
+  * ip_nat_{ftp,irc} cannot be m if ip_conntrack_{ftp,irc} is y, respectively
+    (closes: #142532).
+  * Removed volume checks in fs/isofs/inode.c (closes: #138384).
+  * Removed gsem from drivers/usb/pegasus.c.
+  * Always call complete after unlinking an urb in drivers/usb/usb-ohci.c.
+  * Set hardsect size to 512 in drivers/scsi/sr.c (closes: #154510).
+  * Removed non-free firmware and disabled their drivers (closes: #150052):
+   . SMC Token Ring
+   . ACENIC
+   . DGRS
+   . DABUSB
+  * Lowed invalidate messages to priority DEBUG in fs/buffer.c
+    (closes: #131349).
+
+ -- Herbert Xu <herbert@debian.org>  Wed,  7 Aug 2002 21:12:03 +1000
+
+kernel-source-2.4.18 (2.4.18-5) unstable; urgency=low
+
+  * Corrected AdvWriteDWordLramNoSwap in drivers/scsi/advansys.c
+    (Jerome L. Quinn, closes: #128080).
+  * Added check for VIA KT266 IO-APIC, version == 2 (closes: #136163).
+  * Updated pegasus driver (2.4.19pre6).
+  * Added ATARAID device names to main.c (Eduard Bloch, closes: #139604).
+  * Updated uhci driver (Johannes Erdfelt, closes: #135785).
+  * Translate slashes in broken Acorn ISO9660 file systems (Darren Salt,
+    closes: #141660).
+  * Added newline to printk in drivers/sound/i810_audio.c
+    (handler-case@gmx.net, closes: #142214).
+  * Updated parport driver (2.4.19pre6).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 13 Apr 2002 22:07:22 +1000
+
+kernel-source-2.4.18 (2.4.18-4) unstable; urgency=high
+
+  * Fixed remaining double free in
+     drivers/net/zlib.c
+     fs/jffs2/zlib.c
+
+ -- Herbert Xu <herbert@debian.org>  Wed, 20 Mar 2002 20:02:18 +1100
+
+kernel-source-2.4.18 (2.4.18-3) unstable; urgency=high
+
+  * Fixed double free in
+     drivers/net/zlib.c
+     fs/jffs2/zlib.c
+
+ -- Herbert Xu <herbert@debian.org>  Wed, 13 Mar 2002 20:24:09 +1100
+
+kernel-source-2.4.18 (2.4.18-2) unstable; urgency=low
+
+  * Removed -g from driviers/atm/Makefile.
+  * Added missing personality patch to fs/binfmt_elf.c.
+  * Export est_cycle_freq (needed for removing CONFIG_FT_ALPHA_CLOCK).
+  * Extern inline -> static inline in
+     drivers/char/specialx.c
+     drivers/net/hamradio/soundmodem
+  * Added asm/io.h for in*/out* to
+     drivers/isdn/hisax/hisax_fcpcipnp.c
+     drivers/net/wan/farsync.c
+
+ -- Herbert Xu <herbert@debian.org>  Wed,  6 Mar 2002 19:53:30 +1100
+
+kernel-source-2.4.18 (2.4.18-1) unstable; urgency=low
+
+  * New upstream release (closes: #126391, #135156).
+  * Reverted tulip BMCR_FULLDPLX patch.
+  * Moved mkcramfs to the cramfs source package.
+  * CONFIG_SERIAL_ACPI now depends on CONFIG_SERIAL == y (closes: #132038).
+  * Fixed negative inodes in /proc/net (Arnaud Giersch, closes: #134704).
+  * pcnet32_purge_tx_ring may be called from IRQ context (Darren Salt,
+    closes: #134930).
+  * Check old_bbpnt in drivers/scsi/sr.c (2.5).
+  * Removed CONFIG_FT_ALPHA_CLOCK.
+  * Fixed the use of return values from mem*_io in drivers/isdn/sc.
+  * Added missing headers in drivers/pcmcia/i82092.c.
+  * Fixed compile error in drivers/scsi/dpt_i2o.c on alpha.
+
+ -- Herbert Xu <herbert@debian.org>  Thu, 28 Feb 2002 19:40:29 +1100
+
+kernel-source-2.4.17 (2.4.17-1) unstable; urgency=low
+
+  * New upstream release (closes: #122168, #123471).
+  * Only set startup to 0 for 21143 (rev 65) in tulip.
+  * Don't clear BMCR_FULLDPLX bit in tulip_find_mii as it breaks some cards
+    (closes: #100624).
+  * Fixed atyfb compilation problem (Tobias Ringstrom).
+  * Removed obsolete vfat patch.
+  * Fixed double cache allocation in mount_devfs_fs.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 22 Dec 2001 13:41:46 +1100
+
+kernel-source-2.4.16 (2.4.16-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Wed, 28 Nov 2001 07:30:44 +1100
+
+kernel-source-2.4.15 (2.4.15-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 24 Nov 2001 13:34:51 +1100
+
+kernel-source-2.4.14 (2.4.14-1) unstable; urgency=low
+
+  * New upstream release (closes: #117368, #118111).
+  * Made mkcramfs more verbose about write errors.
+  * Fixed compilation problem in loopback driver.
+  * Fixed compilation problem in ps2esdi.c.
+  * Fixed compilation problem in i2c-core.c.
+
+ -- Herbert Xu <herbert@debian.org>  Fri,  9 Nov 2001 20:15:49 +1100
+
+kernel-source-2.4.13 (2.4.13-1) unstable; urgency=low
+
+  * New upstream release.
+  * Updated kernel-source suggests (closes: #115716).
+  * Added support for nm256xl+ (Mattia Monga, closes: #116378).
+  * Fixed comment about epochs in arch/alpha/kernel/time.c.
+  * Fixed symlink size bug on tmpfs.
+  * Fixed handling of HIDs with product strings bug no manufacturer.
+  * Work around tmpfs symlink size bug in mkcramfs.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 27 Oct 2001 17:39:07 +1000
+
+kernel-source-2.4.12 (2.4.12-1) unstable; urgency=low
+
+  * New upstream release.
+  * Fixed typo in debian/rules (closes: #114065).
+  * Fixed ECN compilation problem (closes: #114192).
+  * Fixed typo in Documentation/sound/OPL3-SA
+    (Marius Gedminas, closes: #114760).
+  * Fixed typo in drivers/parport/ieee1284_ops.c (Tim Waugh).
+  * Don't kill page cache entries in set_blocksize.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 13 Oct 2001 11:41:03 +1000
+
+kernel-source-2.4.10 (2.4.10-1) unstable; urgency=low
+
+  * New upstream release.
+  * Added support for EPAT C7/C8 chips.
+  * Fixed dead lock on shutdown in 8139too (closes: #107779).
+  * Removed const from drivers/net/irda/smc-ircc.c
+    (Keith Owens, closes: #110193).
+  * Allow ECN to be compiled in but disabled.
+  * Removed non-free Keyspan firmware.  We're no longer pristine.
+  * Fixed list_del bug in usb-uhci (ac patches).
+  * Fixed apm argument processing (ac patches).
+  * Added ioctl defines for cpq (ac patches).
+  * Included linux/init.h in drivers/net/aironet4500_card.c.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 29 Sep 2001 16:05:20 +1000
+
+kernel-source-2.4.9 (2.4.9-1) unstable; urgency=low
+
+  * New upstream release (closes: #63393).
+  * Fixed highmem CramFS bug (closes: #108893).
+  * Added missing include in fs/ntfs/unistr.c.
+  * Reverted startup==1 patch from drivers/net/tulip/21142.c.
+  * Fixed obsolete use of min: drivers/net/rrunner.c.
+  * Exported snprintf/vsnprintf (ac patches).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 18 Aug 2001 21:23:07 +1000
+
+kernel-source-2.4.8 (2.4.8-1) unstable; urgency=low
+
+  * New upstream release.
+  * Menuconfig now exits with 1 if screen is too small (closes: #106510).
+  * Applied NFS client seekdir patch (closes: #63063, #107045).
+  * Build-depend on kernel-package >= 7.48 (closes: #107545).
+  * Applied emu10k fixes (ac patches).
+  * Fixed ldm macros (ac patches).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 12 Aug 2001 09:04:44 +1000
+
+kernel-source-2.4.7 (2.4.7-1) unstable; urgency=low
+
+  * New upstream release (closes: #97516, #104141, #104267).
+  * Applied ReiserFS umount patch (closes: #100740).
+  * Applied DAC960 completion patch (Jens Axboe).
+  * Restricted CONFIG_FB_PVR2 to SH (ac patches).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 22 Jul 2001 11:52:29 +1000
+
+kernel-source-2.4.6 (2.4.6-1) unstable; urgency=low
+
+  * New upstream release (closes: #102864).
+  * Fixed pegasus_set_multicast lockup.
+  * Reverted sysinfo patch.
+
+ -- Herbert Xu <herbert@debian.org>  Thu,  5 Jul 2001 19:24:12 +1000
+
+kernel-source-2.4.5 (2.4.5-1) unstable; urgency=low
+
+  * New upstream release (closes: #78761, #96443).
+  * Fixed set_blocksize() on RAMDISKs.
+  * Removed flavour patch from Makefile as it is now obsolete.
+  * Fixed typo in drivers/usb/ov511.c (ac patches).
+  * Fixed race in fs/super.c (Alexander Viro).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 27 May 2001 10:25:42 +1000
+
+kernel-source-2.4.4 (2.4.4-2) unstable; urgency=low
+
+  * Hacked ide_xlate_1024 to work when IDE is modularised (closes: #94853).
+  * Fixed typo in pci2220i.c (ac patches).
+  * Treat files that begin with FD_FILL_BYTE correctly in vfat
+    (closes: #75413).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 13 May 2001 09:33:09 +1000
+
+kernel-source-2.4.4 (2.4.4-1) unstable; urgency=low
+
+  * New upstream release.
+  * Fixed a typo in Documentation/sound/OPL3-SA (Carlos Valdivia Yague,
+    closes: #95255).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 29 Apr 2001 10:32:51 +1000
+
+kernel-source-2.4.3 (2.4.3-4) unstable; urgency=low
+
+  * ip_conntrack_ftp fix (netfilter, closes: #94216).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 22 Apr 2001 11:15:02 +1000
+
+kernel-source-2.4.3 (2.4.3-3) unstable; urgency=low
+
+  * Added missing SIEMENS PCI ID (ac patches).
+  * Exported proc_get_inode (ac patches).
+
+ -- Herbert Xu <herbert@debian.org>  Mon, 16 Apr 2001 08:42:17 +1000
+
+kernel-source-2.4.3 (2.4.3-2) unstable; urgency=low
+
+  * Correct devfs path name in scsi-generic.txt (closes: #93405).
+  * Fixed negative padding in struct sysinfo.
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 13 Apr 2001 19:42:42 +1000
+
+kernel-source-2.4.3 (2.4.3-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Sun,  8 Apr 2001 16:50:40 +1000
+
+kernel-source-2.4.2 (2.4.2-3) unstable; urgency=low
+
+  * Added build-time dependency on libz-dev (closes: #89722).
+  * Compilation fixes in 6pack.c and genhd.h (closes: #90646).
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 23 Mar 2001 20:30:03 +1100
+
+kernel-source-2.4.2 (2.4.2-2) unstable; urgency=low
+
+  * Added initrd support for cramfs.
+  * Fixed bug that prevented initrd from being freed (ac patches).
+  * Fixed a typo in Documentation/sound/VIBRA16 (Carlos Valdivia,
+    closes: #88018).
+  * Removed misleading securetty note in devfs README files (closes: #89148).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 11 Mar 2001 08:56:27 +1100
+
+kernel-source-2.4.2 (2.4.2-1) unstable; urgency=low
+
+  * New upstream release.
+  * Created mkcramfs package.
+  * Accomodate option change in binutils (closes: #87009).
+  * Applied loopback patch by Jens Axobe.
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 23 Feb 2001 20:19:31 +1100
+
+kernel-source-2.4.1 (2.4.1-3) unstable; urgency=low
+
+  * Applied tmpfs patch by Christoph Rohland.
+  * Fixed incorrect conditional check in struct sysinfo (closes: #85603).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 11 Feb 2001 21:08:05 +1100
+
+kernel-source-2.4.1 (2.4.1-2) unstable; urgency=low
+
+  * Fixed the struct sysinfo warning properly (closes: #84234).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 10 Feb 2001 23:10:44 +1100
+
+kernel-source-2.4.1 (2.4.1-1) unstable; urgency=low
+
+  * New upstream release.
+  * Added support for flavours to Makefile.
+  * Only include asm/bitops.h if __KERNEL__ is defined in linux/fs.h
+    (closes: #84238).
+  * Added padding to struct sysinfo so that it's identical to 2.2 (#84234).
+  * Fixed typos in asm/socket.h (closes: #39168).
+  * Updated IrDA URL in asm/termios.h (closes: #42222).
+
+ -- Herbert Xu <herbert@debian.org>  Sun,  4 Feb 2001 10:11:47 +1100
+
+kernel-source-2.4.0 (2.4.0-1) unstable; urgency=low
+
+  * New upstream release (closes: #71874, #79490).
+  * Added missing build-time dependencies (closes: #81728).
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 16 Jan 2001 11:14:16 +1100
+
+kernel-source-2.4.0-test11 (2.4.0-test11-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Sat,  9 Dec 2000 11:34:37 +1100
+
+kernel-source-2.4.0-test5 (2.4.0-test5-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 29 Jul 2000 17:55:37 +1000
+
+kernel-source-2.4.0-test4 (2.4.0-test4-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Wed, 19 Jul 2000 18:37:17 +1000
+
+kernel-source-2.4.0-test3 (2.4.0-test3-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Wed, 12 Jul 2000 09:49:57 +1000
+
+kernel-source-2.4.0-test2 (2.4.0-test2-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Mon, 10 Jul 2000 19:24:59 +1000
+
+kernel-source-2.2.17 (2.2.17pre6-1) frozen unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 24 Jun 2000 21:53:40 +1000
+
+kernel-source-2.2.16 (2.2.16-1) frozen unstable; urgency=high
+
+  * New upstream release (closes: #65745).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 18 Jun 2000 12:42:37 +1000
+
+kernel-source-2.2.15 (1:2.2.15-3) frozen unstable; urgency=low
+
+  * Bring capabilities closer to POSIX spec (Andrew Morgan)
+    | Note. This subtly changes cap_bset behaviour.
+
+ -- Herbert Xu <herbert@debian.org>  Thu,  1 Jun 2000 09:32:11 +1000
+
+kernel-source-2.2.15 (1:2.2.15-2) frozen unstable; urgency=low
+
+  * AIC7XXX 5.1.29 (closes: #63946).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 13 May 2000 09:29:50 +1000
+
+kernel-source-2.2.15 (1:2.2.15-1) frozen unstable; urgency=low
+
+  * New upstream release (closes: #63675).
+  * Built with kernel-package 7.04.potato.1 (closes: #63290).
+
+ -- Herbert Xu <herbert@debian.org>  Tue,  9 May 2000 12:54:09 +1000
+
+kernel-source-2.2.15pre19 (2.2.15pre19-2) frozen unstable; urgency=low
+
+  * New upstream release (pre20).
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 25 Apr 2000 15:31:03 +1000
+
+kernel-source-2.2.15pre19 (2.2.15pre19-1) frozen unstable; urgency=low
+
+  * New upstream release (closes: #55383).
+  * Applied patch from Chris Evans.
+  * Applied patch from David Miller.
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 21 Apr 2000 12:15:30 +1000
+
+kernel-source-2.2.14 (2.2.14-5) frozen unstable; urgency=low
+
+  * Delete my copy of the control file before calling make-kpkg
+    (closes: #62269).
+
+ -- Herbert Xu <herbert@debian.org>  Thu, 13 Apr 2000 08:33:18 +1000
+
+kernel-source-2.2.14 (2.2.14-4) frozen unstable; urgency=medium
+
+  * Applied patch from Alexey Kuznetsov that fixes the AF_UNIX socket crash
+    (closes: #61335).
+  * Rebuilt with new kernel-package (closes: #61261).
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 31 Mar 2000 14:12:43 +1000
+
+kernel-source-2.2.14 (2.2.14-3) frozen unstable; urgency=low
+
+  * Rebuilt with new kernel-package (closes: #60001).
+  * Included a patch from Eric Delaunay <delaunay@lix.polytechnique.fr> that
+    fixes a couple of argument parsing bugs in main.c (closes: #58566).
+
+ -- Herbert Xu <herbert@debian.org>  Thu, 23 Mar 2000 19:05:11 +1100
+
+kernel-source-2.2.14 (2.2.14-2) unstable; urgency=low
+
+  * Fixed incorrect assembly code for i386.
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 16 Jan 2000 12:36:59 +1100
+
+kernel-source-2.2.14 (2.2.14-1) unstable; urgency=low
+
+  * New upstream release.
+  * Fixed a typo in aha152x.c (closes: #12636).
+
+ -- Herbert Xu <herbert@debian.org>  Thu, 13 Jan 2000 12:09:06 +1100
+
+kernel-source-2.2.13 (2.2.13-2) unstable; urgency=low
+
+  * Updated version number in README.Debian (closes: #49033).
+  * Removed kernel-image as it will be generated by the kernel-image source
+    package.
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 19 Nov 1999 19:41:45 +1100
+
+kernel-source-2.2.13 (2.2.13-1) unstable; urgency=low
+
+  * New upstream release.
+  * Enabled ServeRAID (closes: #47653).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 24 Oct 1999 14:22:49 +1000
+
+kernel-source-2.2.12 (2.2.12-4) unstable; urgency=low
+
+  * Fixed a typo in tgafb.c.
+  * Added CONFIG_APM_DISABLE_BY_DEFAULT.
+  * Call make-kpkg to clean up (closes: #45603).
+
+ -- Herbert Xu <herbert@debian.org>  Thu, 14 Oct 1999 09:06:57 +1000
+
+kernel-source-2.2.12 (2.2.12-3) unstable; urgency=low
+
+  * Compiled with stacks aligned on dwords.
+  * Enabled serial consoles (closes: #46152).
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 28 Sep 1999 17:39:34 +1000
+
+kernel-source-2.2.12 (2.2.12-2) unstable; urgency=low
+
+  * Rewrote the kmod patch to only bail out when the other side is our parent.
+  * Use the VFS patch rather than the autofs patch.
+  * Enabled Joliet extensions (fixes #42006).
+  * Enabled APM (fixes #42258).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 11 Sep 1999 23:51:00 +1000
+
+kernel-source-2.2.12 (2.2.12-1) unstable; urgency=low
+
+  * New upstream release (fixes #43865).
+  * Fixed an nlink update problem in nfs.
+  * New rules file from Hartmut Koptein.
+  * Fixed an overflow bug in the stallion driver.
+  * Fixed an autofs deadlock.
+  * Don't load a module that we're already trying to load (Chris Butler) (fixes
+    #39910).
+
+ -- Herbert Xu <herbert@debian.org>  Wed,  1 Sep 1999 09:12:15 +1000
+
+kernel-source-2.2.10 (2.2.10-1) unstable; urgency=low
+
+  * New upsream release.
+  * Moved default.config to new kernel-patch for i386.
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 15 Jun 1999 21:59:48 +1000
+
+kernel-source-2.2.9 (2.2.9-2) unstable; urgency=high
+
+  * Fixed a network DoS attack.
+
+ -- Herbert Xu <herbert@debian.org>  Fri,  4 Jun 1999 21:06:28 +1000
+
+kernel-source-2.2.9 (2.2.9-1) unstable; urgency=low
+
+  * New upstream relesae.
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 18 May 1999 10:20:08 +1000
+
+kernel-source-2.2.7 (2.2.7-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Fri,  7 May 1999 22:19:56 +1000
+
+kernel-source-2.2.5 (1:2.2.5-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 16 Apr 1999 13:56:45 +1000
+
+kernel-source-2.0.36 (2.0.36-3) frozen unstable; urgency=low
+
+  * Upgraded AIC7XXX to 5.1.11 which should make some owners of Adaptec cards
+    able to install Debian.
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 21 Feb 1999 14:56:42 +1100
+
+kernel-source-2.0.36 (2.0.36-2) frozen unstable; urgency=low
+
+  * Applied ISDN patch from Paul Slootman that enables idle timeouts in the
+    manual dialmode and allows callback syncPPP connections to be made
+    (fixes #31516).
+  * Enlarged kernel message buffer so that all messages are caught by klogd.
+  * Included module for TLAN based network cards (fixes #31623).
+  * Include EtherExpressPro and FMV0181/182/183/184 as modules.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 16 Jan 1999 16:39:01 +1100
+
+kernel-source-2.0.36 (2.0.36-1) unstable; urgency=low
+
+  * New upstream release.
+  * Enabled ETH16I.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 28 Nov 1998 17:40:21 +1100
+
+kernel-source-2.0.35 (2.0.35-3) frozen; urgency=low
+
+  * Upgraded to aic7xxx 5.1.4 (fixes #29480, #27859, #28946).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 22 Nov 1998 15:41:44 +1100
+
+kernel-source-2.0.35 (2.0.35-2) unstable; urgency=low
+
+  * Upgraded to aic7xxx 5.1.0.
+  * Removed spurious definition in 3c523.c (fixes #25370).
+  * Built with kernel-package 5.11 (fixes #25623).
+  * Enabled autofs (fixes #22338, #27860).
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 24 Oct 1998 17:32:06 +1000
+
+kernel-source-2.0.35 (2.0.35-1) unstable; urgency=low
+
+  * New upstream release.
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 19 Jul 1998 08:59:44 +1000
+
+kernel-source-2.0.34 (2.0.34-4) frozen unstable; urgency=high
+
+  * Updated to aic7xxx 5.0.19 (fixes #24252).
+
+ -- Herbert Xu <herbert@debian.org>  Wed,  8 Jul 1998 20:06:08 +1000
+
+kernel-source-2.0.34 (2.0.34-3) frozen unstable; urgency=high
+
+  * Reversed euid test in fs/fcntl.c.
+
+ -- Herbert Xu <herbert@debian.org>  Tue, 30 Jun 1998 16:27:49 +1000
+
+kernel-source-2.0.34 (2.0.34-2) frozen unstable; urgency=low
+
+  * Upload to hamm as well.
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 21 Jun 1998 16:48:13 +1000
+
+kernel-source-2.0.34 (2.0.34-1) unstable; urgency=low
+
+  * New upstream release (fixes #17651, #18788, #21231, #22330).
+
+ -- Herbert Xu <herbert@debian.org>  Sun,  7 Jun 1998 12:29:27 +1000
+
+kernel-source-2.0.33 (2.0.33-9) frozen unstable; urgency=low
+
+  * Disabled certain MCA NIC drivers (fixes #22254).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 10 May 1998 15:59:32 +1000
+
+kernel-source-2.0.33 (2.0.33-8) frozen unstable; urgency=low
+
+  * Disabled experimental drivers.
+  * Reapplied joliet patch (fixes #19160, #21537).
+  * Built with kernel-package 4.07 (fixes #21229).
+  * Replaced NO_PCI with !CONFIG_PCI in 3c59x.c (fixes #21916).
+
+ -- Herbert Xu <herbert@debian.org>  Fri,  1 May 1998 18:29:03 +1000
+
+kernel-source-2.0.33 (2.0.33-7) frozen unstable; urgency=high
+
+  * Applied IP fragmentation patch from Alan Cox.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 18 Apr 1998 12:57:56 +1000
+
+kernel-source-2.0.33 (2.0.33-6) frozen unstable; urgency=low
+
+  * Disabled scc since we don't support ax25 by default (fixes #20307).
+
+ -- Herbert Xu <herbert@debian.org>  Wed,  1 Apr 1998 19:21:05 +1000
+
+kernel-source-2.0.33 (2.0.33-5) unstable; urgency=low
+
+  * Turned rst cookies off.
+
+ -- Herbert Xu <herbert@debian.org>  Wed, 18 Mar 1998 20:41:27 +1100
+
+kernel-source-2.0.33 (2.0.33-4) unstable; urgency=low
+
+  * Applied patch from Paul Slootman (fixes #18787).
+
+ -- Herbert Xu <herbert@debian.org>  Fri,  6 Mar 1998 11:30:44 +1100
+
+kernel-source-2.0.33 (2.0.33-3) stable unstable; urgency=low
+
+  * Built with new kernel-package (3.61).
+  * Added support for fat32 (fixes #14042).
+
+ -- Herbert Xu <herbert@debian.org>  Fri, 20 Feb 1998 16:33:40 +1100
+
+kernel-source-2.0.33 (2.0.33-2) stable unstable; urgency=low
+
+  * built with new kernel-package (3.57)
+
+ -- Herbert Xu <herbert@debian.org>  Mon, 16 Feb 1998 08:59:11 +1100
+
+kernel-source-2.0.33 (2.0.33-1) stable unstable; urgency=high
+
+  * New upstream release (fixes #15736).
+
+ -- Herbert Xu <herbert@debian.org>  Sat,  7 Feb 1998 15:06:57 +1100
+
+kernel-source-2.0.32 (2.0.32-3) stable unstable; urgency=low
+
+  * Built with new kernel-package (3.49).
+
+ -- Herbert Xu <herbert@debian.org>  Mon, 15 Dec 1997 12:22:45 +1100
+
+kernel-source-2.0.32 (2.0.32-2) stable unstable; urgency=low
+
+  * Removed teles driver which was accidentally left in.
+  * Applied patch from Andreas Jaeger.
+  * Built with new kernel-package (3.48) for use by libc6.
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 14 Dec 1997 09:29:26 +1100
+
+kernel-source-2.0.32 (2.0.32-1) unstable; urgency=low
+
+  * New upstream release.
+  * Pristine source.
+  * Bugs fixed (#6132, #6133, #8647, #11823, #13705).
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 23 Nov 1997 18:34:38 +1100
+
+kernel-source-2.0.29 (1:2.0.29-10) unstable; urgency=low
+
+  * NCR53C8XX driver updates.
+  * Installed 3c59x 0.46C (#10902).
+  * Modified scc.c to compile with libc6 (#14367).
+
+ -- Herbert Xu <herbert@debian.org>  Mon, 17 Nov 1997 20:46:57 +1100
+
+kernel-source-2.0.29 (1:2.0.29-9) unstable; urgency=low
+
+  * Slight mod to pci.c to ignore bridges that the kernel can't handle (#11865).
+  * Removed sound module support.
+
+ -- Herbert Xu <herbert@debian.org>  Fri,  3 Oct 1997 11:17:02 +1000
+
+kernel-source-2.0.29 (1:2.0.29-8) unstable; urgency=low
+
+  * Used epoch numbers to deal with old kernel-source releases.
+  * Enabled support for NCPFS.
+  * Added sound support.
+  * Enabled IP firewalls, forwarding, and aliasing.
+  * Applied ne2000 patch from Paul Gortmaker.
+
+ -- Herbert Xu <herbert@debian.org>  Fri,  4 Jul 1997 22:01:16 +1000
+
+kernel-source-2.0.29 (2.0.29-7) frozen unstable; urgency=high
+
+  * Applied security patch from Alan Cox.
+  * Applied patch from Andreas Jellinghaus.
+
+ -- Herbert Xu <herbert@debian.org>  Sat, 31 May 1997 11:59:56 +1000
+
+kernel-source-2.0.29 (2.0.29-6) frozen unstable; urgency=medium
+
+  * Merged Debian changes from 2.0.30.
+
+ -- Herbert Xu <herbert@debian.org>  Sun, 25 May 1997 22:26:30 +1000
+

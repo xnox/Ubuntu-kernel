@@ -1,0 +1,755 @@
+Source: linux-meta
+Section: devel
+Priority: optional
+Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Standards-Version: 3.6.1
+Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3)
+
+Package: linux
+Architecture: i386 amd64 sparc ia64 lpia
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image (= ${binary:Version}), linux-restricted-modules (= ${binary:Version})
+Description: Generic complete Linux kernel.
+ This package will always depend on the latest generic complete Linux kernel
+ available.
+
+Package: linux-image
+Architecture: i386 amd64 sparc ia64 lpia
+Section: metapackages
+Priority: optional
+Depends: linux-image-${generic-depends} (= ${binary:Version})
+Description: Generic Linux kernel image.
+ This package will always depend on the latest generic Linux kernel image
+ available.
+
+Package: linux-restricted-modules
+Architecture: i386 amd64 sparc ia64 lpia
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${generic-depends} (= ${binary:Version})
+Description: Generic Linux restricted modules.
+ This package will always depend on the latest generic Linux restricted
+ modules available.
+
+Package: linux-backports-modules-hardy
+Architecture: i386 amd64 sparc ia64 lpia
+Section: metapackages
+Priority: optional
+Depends: linux-backports-modules-hardy-${generic-depends} (= ${binary:Version})
+Description: Generic Linux backported drivers.
+ This package will always depend on the latest generic Linux backported
+ drivers available.
+
+Package: avm-fritz-firmware
+Architecture: i386 amd64
+Section: restricted/misc
+Priority: optional
+Depends: avm-fritz-firmware-${kernel-abi-version}
+Description: Firmware for AVM Fritz! ISDN hardware
+ This package will always depend on the firmware package for the latest
+ complete Linux kernel available.
+
+Package: linux-source
+Architecture: all
+Section: devel
+Priority: optional
+Depends: linux-source-${kernel-version}
+Description: Linux kernel source with Ubuntu patches
+ This package will always depend on the latest Linux kernel source code
+ available. The Ubuntu patches have been applied.
+
+Package: linux-doc
+Architecture: all
+Section: doc
+Priority: optional
+Depends: linux-doc-${kernel-version}
+Description: Linux kernel documentation
+ This package will always depend on the latest Linux kernel documentation
+ available.
+
+Package: linux-headers-generic
+Architecture: i386 amd64
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-generic
+Description: Generic Linux kernel headers
+ This package will always depend on the latest generic kernel headers
+ available.
+
+Package: linux-image-generic
+Architecture: i386 amd64
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-generic, linux-ubuntu-modules-${kernel-abi-version}-generic
+Description: Generic Linux kernel image
+ This package will always depend on the latest generic kernel image
+ available.
+
+Package: linux-restricted-modules-generic
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-generic
+Description: Restricted Linux modules for generic kernels
+ This package will always depend on the latest restricted modules available
+ for generic kernels.
+
+Package: linux-generic
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-generic (= ${binary:Version}), linux-restricted-modules-generic (= ${binary:Version})
+Description: Complete Generic Linux kernel
+ This package will always depend on the latest complete generic Linux kernel
+ available.
+
+Package: linux-backports-modules-hardy-generic
+Architecture: amd64 i386
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-generic
+Description: Backported drivers for generic kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-image-debug-generic
+Architecture: amd64 i386
+Section: devel
+Depends: linux-image-debug-${kernel-abi-version}-generic
+Description: Linux kernel debug image for generic kernel image
+ This package will always depend on the latest generic kernel debug image.
+
+Package: linux-hppa32
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-image-hppa32 (= ${binary:Version}), linux-restricted-modules-hppa32 (= ${binary:Version})
+Description: Complete Linux kernel on 32-bit PA-RISC.
+ This package will always depend on the latest complete Linux kernel available
+ for 32-bit PA-RISC.
+
+Package: linux-restricted-modules-hppa32
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-hppa32
+Description: Restricted Linux modules on 32-bit PA-RISC.
+ This package will always depend on the latest restricted modules available
+ for 32-bit PA-RISC.
+
+Package: linux-backports-modules-hardy-hppa32
+Architecture: hppa
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-hppa32
+Description: Backported drivers for hppa32 kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-headers-hppa32
+Architecture: hppa
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-hppa32
+Description: Linux kernel headers on 32-bit PA-RISC
+ This package will always depend on the latest kernel headers available
+ for 32-bit PA-RISC.
+
+Package: linux-image-hppa32
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-hppa32, linux-ubuntu-modules-${kernel-abi-version}-hppa32
+Description: Linux kernel image on 32-bit PA-RISC
+ This package will always depend on the latest kernel image available
+ for 32-bit PA-RISC.
+
+Package: linux-hppa64
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-image-hppa64 (= ${binary:Version}), linux-restricted-modules-hppa64 (= ${binary:Version})
+Description: Complete Linux kernel on 64-bit PA-RISC.
+ This package will always depend on the latest complete Linux kernel available
+ for 64-bit PA-RISC.
+
+Package: linux-restricted-modules-hppa64
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-hppa64
+Description: Restricted Linux modules on 64-bit PA-RISC.
+ This package will always depend on the latest restricted modules available
+ for 64-bit PA-RISC.
+
+Package: linux-backports-modules-hardy-hppa64
+Architecture: hppa
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-hppa64
+Description: Backported drivers for hppa64 kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-headers-hppa64
+Architecture: hppa
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-hppa64
+Description: Linux kernel headers on 64-bit PA-RISC
+ This package will always depend on the latest kernel headers available
+ for 64-bit PA-RISC.
+
+Package: linux-image-hppa64
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-hppa64, linux-ubuntu-modules-${kernel-abi-version}-hppa64
+Description: Linux kernel image on 64-bit PA-RISC
+ This package will always depend on the latest kernel image available
+ for 64-bit PA-RISC.
+
+Package: linux-headers-386
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-386
+Description: Linux kernel headers on 386
+ This package will always depend on the latest kernel headers available
+ for 386.
+
+Package: linux-image-386
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-386, linux-ubuntu-modules-${kernel-abi-version}-386
+Description: Linux kernel image on 386.
+ This package will always depend on the latest kernel image available
+ for 386.
+
+Package: linux-restricted-modules-386
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-386
+Description: Restricted Linux modules on 386.
+ This package will always depend on the latest restricted modules available
+ for 386.
+
+Package: linux-backports-modules-hardy-386
+Architecture: i386
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-386
+Description: Backported drivers for 386 kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-386
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-386 (= ${binary:Version}), linux-restricted-modules-386 (= ${binary:Version})
+Description: Complete Linux kernel on 386.
+ This package will always depend on the latest complete Linux kernel available
+ for 386.
+
+Package: linux-headers-virtual
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-virtual
+Description: Linux kernel headers for the virtual flavour
+ This package will always depend on the latest kernel headers available
+ for the virtual flavour.
+
+Package: linux-image-virtual
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-virtual, linux-ubuntu-modules-${kernel-abi-version}-virtual
+Description: Linux kernel image geared towards virtualised hardware
+ This package will always depend on the latest kernel image available
+ for virtualised hardware. (You can also use the generic kernel image on
+ such systems.)
+
+Package: linux-backports-modules-hardy-virtual
+Architecture: i386
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-virtual
+Description: Backported drivers for virtual kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-virtual
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-virtual (= ${binary:Version})
+Description: Complete Linux kernel geared towards virtualised hardware
+ This package will always depend on the latest complete Linux kernel
+ available for virtualised hardware. (You can also use the generic kernel on
+ such systems.)
+
+Package: linux-image-debug-386
+Architecture: i386
+Section: devel
+Depends: linux-image-debug-${kernel-abi-version}-386
+Description: Linux kernel debug image for 386 kernel image
+ This package will always depend on the latest 386 kernel debug image.
+
+Package: linux-itanium
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-itanium (= ${binary:Version}), linux-restricted-modules-itanium (= ${binary:Version})
+Description: Complete Linux kernel on Itanium.
+ This package will always depend on the latest complete Linux kernel available
+ for Itanium.
+
+Package: linux-restricted-modules-itanium
+Architecture: ia64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-itanium
+Description: Restricted Linux modules on Itanium
+ This package will always depend on the latest restricted modules available
+ for Itanium.
+
+Package: linux-backports-modules-hardy-itanium
+Architecture: ia64
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-itanium
+Description: Backported drivers for itanium kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-headers-itanium
+Architecture: ia64
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-itanium
+Description: Linux kernel headers on Itanium
+ This package will always depend on the latest kernel headers available
+ for Itanium.
+
+Package: linux-image-itanium
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-itanium, linux-ubuntu-modules-${kernel-abi-version}-itanium
+Description: Linux kernel image on Itanium
+ This package will always depend on the latest kernel image available
+ for Itanium.
+
+Package: linux-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-mckinley (= ${binary:Version}), linux-restricted-modules-mckinley (= ${binary:Version})
+Description: Complete Linux kernel on Itanium II.
+ This package will always depend on the latest complete Linux kernel available
+ for Itanium II (also known as McKinley).
+
+Package: linux-restricted-modules-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-mckinley
+Description: Restricted Linux modules on Itanium II.
+ This package will always depend on the latest restricted modules available
+ for Itanium II.
+
+Package: linux-backports-modules-hardy-mckinley
+Architecture: ia64
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-mckinley
+Description: Backported drivers for mckinley kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-headers-mckinley
+Architecture: ia64
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-mckinley
+Description: Linux kernel headers on Itanium II
+ This package will always depend on the latest kernel headers available
+ for Itanium II (also known as McKinley).
+
+Package: linux-image-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-mckinley, linux-ubuntu-modules-${kernel-abi-version}-mckinley
+Description: Linux kernel image on Itanium II
+ This package will always depend on the latest kernel image available
+ for Itanium II (also known as McKinley).
+
+Package: linux-headers-lpia
+Architecture: lpia
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-lpia
+Description: Generic Linux kernel headers for LPIA.
+ This package will always depend on the latest generic kernel headers
+ available for LPIA.
+
+Package: linux-image-lpia
+Architecture: lpia
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-lpia, linux-ubuntu-modules-${kernel-abi-version}-lpia
+Description: Generic Linux kernel image for LPIA
+ This package will always depend on the latest generic kernel image
+ available for LPIA.
+
+Package: linux-restricted-modules-lpia
+Architecture: lpia
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-lpia
+Description: Restricted Linux modules for LPIA
+ This package will always depend on the latest restricted modules available
+ for LPIA.
+
+Package: linux-backports-modules-hardy-lpia
+Architecture: lpia
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-lpia
+Description: Backported drivers for LPIA kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-lpia
+Architecture: lpia
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-lpia (= ${binary:Version}), linux-restricted-modules-lpia (= ${binary:Version})
+Description: Complete Generic Linux kernel for LPIA
+ This package will always depend on the latest complete generic Linux kernel
+ available for LPIA.
+
+Package: linux-headers-lpiacompat
+Architecture: lpia
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-lpiacompat
+Description: Generic Linux kernel headers for LPIA (i386 compat).
+ This package will always depend on the latest generic kernel headers
+ available for LPIA (i386 compat).
+
+Package: linux-image-lpiacompat
+Architecture: lpia
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-lpiacompat, linux-ubuntu-modules-${kernel-abi-version}-lpiacompat
+Description: Generic Linux kernel image for LPIA (i386 compat)
+ This package will always depend on the latest generic kernel image
+ available for LPIA (i386 compat).
+
+Package: linux-restricted-modules-lpiacompat
+Architecture: lpia
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-lpiacompat
+Description: Restricted Linux modules for LPIA (i386 compat)
+ This package will always depend on the latest restricted modules available
+ for LPIA (i386 compat).
+
+Package: linux-backports-modules-hardy-lpiacompat
+Architecture: lpia
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-lpiacompat
+Description: Backported drivers for LPIA (i386 compat) kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-lpiacompat
+Architecture: lpia
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-lpiacompat (= ${binary:Version}), linux-restricted-modules-lpiacompat (= ${binary:Version})
+Description: Complete Generic Linux kernel for LPIA (i386 compat)
+ This package will always depend on the latest complete generic Linux kernel
+ available for LPIA (i386 compat).
+
+Package: linux-headers-powerpc64-smp
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-powerpc64-smp
+Description: Linux kernel headers on PowerPC64 SMP
+ This package will always depend on the latest kernel headers available
+ for PowerPC64 with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-image-powerpc64-smp
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-powerpc64-smp, linux-ubuntu-modules-${kernel-abi-version}-powerpc64-smp
+Description: Linux kernel image on PowerPC64 SMP.
+ This package will always depend on the latest kernel image available
+ for PowerPC64 with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-powerpc64-smp
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-powerpc64-smp (= ${binary:Version}), linux-restricted-modules-powerpc64-smp (= ${binary:Version})
+Description: Complete Linux kernel on PowerPC64 SMP.
+ This package will always depend on the latest complete Linux kernel available
+ for PowerPC64 with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-headers-powerpc
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-powerpc
+Description: Linux kernel headers on PowerPC
+ This package will always depend on the latest kernel headers available
+ for PowerPC.
+
+Package: linux-image-powerpc
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-powerpc, linux-ubuntu-modules-${kernel-abi-version}-powerpc
+Description: Linux kernel image on PowerPC.
+ This package will always depend on the latest kernel image available
+ for PowerPC.
+
+Package: linux-restricted-modules-powerpc
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-powerpc
+Description: Restricted Linux modules on PowerPC.
+ This package will always depend on the latest restricted modules available
+ for PowerPC.
+
+Package: linux-powerpc
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-powerpc (= ${binary:Version}), linux-restricted-modules-powerpc (= ${binary:Version})
+Description: Complete Linux kernel on PowerPC.
+ This package will always depend on the latest complete Linux kernel available
+ for PowerPC.
+
+Package: linux-headers-powerpc-smp
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-powerpc-smp
+Description: Linux kernel headers on PowerPC SMP
+ This package will always depend on the latest kernel headers available
+ for PowerPC with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-image-powerpc-smp
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-powerpc-smp, linux-ubuntu-modules-${kernel-abi-version}-powerpc-smp
+Description: Linux kernel image on PowerPC SMP.
+ This package will always depend on the latest kernel image available
+ for PowerPC with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-restricted-modules-powerpc-smp
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-powerpc-smp
+Description: Restricted Linux modules on PowerPC SMP.
+ This package will always depend on the latest restricted modules available
+ for PowerPC with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-restricted-modules-powerpc64-smp
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-powerpc64-smp
+Description: Restricted Linux modules on PowerPC 64-bit SMP.
+ This package will always depend on the latest restricted modules available
+ for PowerPC 64-bit with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-headers-cell
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-cell
+Description: Linux kernel headers on Cell
+ This package will always depend on the latest kernel headers available
+ for Cell.
+
+Package: linux-image-cell
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-cell, linux-ubuntu-modules-${kernel-abi-version}-cell
+Description: Linux kernel image on Cell
+ This package will always depend on the latest kernel image available
+ for Cell.
+
+Package: linux-cell
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-cell (= ${binary:Version})
+Description: Complete Linux kernel on Cell.
+ This package will always depend on the latest complete Linux kernel available
+ for Cell.
+
+Package: linux-backports-modules-hardy-powerpc
+Architecture: powerpc
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-powerpc
+Description: Backported drivers for powerpc kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-hardy-powerpc-smp
+Architecture: powerpc
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-powerpc-smp
+Description: Backported drivers for powerpc-smp kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-hardy-powerpc64-smp
+Architecture: powerpc
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-powerpc64-smp
+Description: Backported drivers for powerpc64-smp kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-powerpc-smp
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-powerpc-smp (= ${binary:Version}), linux-restricted-modules-powerpc-smp (= ${binary:Version})
+Description: Complete Linux kernel on PowerPC SMP.
+ This package will always depend on the latest complete Linux kernel available
+ for PowerPC with SMP support.
+ SMP (symmetric multi-processing) is needed if you have multiple processors.
+
+Package: linux-headers-server
+Architecture: i386 amd64
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-server
+Description: Linux kernel headers on Server Equipment.
+ This package will always depend on the latest kernel headers available
+ for Server Equipment.
+
+Package: linux-image-server
+Architecture: i386 amd64
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-server, linux-ubuntu-modules-${kernel-abi-version}-server
+Description: Linux kernel image on Server Equipment.
+ This package will always depend on the latest kernel image available
+ for Server Equipment.
+
+Package: linux-server
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-server (= ${binary:Version})
+Description: Complete Linux kernel on Server Equipment.
+ This package will always depend on the latest complete Linux kernel available
+ for Server Equipment.
+
+Package: linux-backports-modules-hardy-server
+Architecture: amd64 i386
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-server
+Description: Backported drivers for server kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-image-debug-server
+Architecture: amd64 i386
+Section: devel
+Depends: linux-image-debug-${kernel-abi-version}-server
+Description: Linux kernel debug image for server kernel image
+ This package will always depend on the latest server kernel debug image.
+
+Package: linux-sparc64
+Architecture: sparc
+Section: metapackages
+Priority: optional
+Depends: linux-image-sparc64 (= ${binary:Version}), linux-restricted-modules-sparc64 (= ${binary:Version})
+Description: Complete Linux kernel on sparc64.
+ This package will always depend on the latest complete Linux kernel available
+ for the UltraSparc architecture.
+
+Package: linux-headers-sparc64
+Architecture: sparc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-sparc64
+Description: Linux kernel headers on UltraSparc
+ This package will always depend on the latest kernel headers available
+ for UltraSparc.
+
+Package: linux-image-sparc64
+Architecture: sparc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-sparc64, linux-ubuntu-modules-${kernel-abi-version}-sparc64
+Description: Linux kernel image on UltraSparc
+ This package will always depend on the latest kernel image available
+ for UltraSparc.
+
+Package: linux-restricted-modules-sparc64
+Architecture: sparc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-sparc64
+Description: Restricted Linux modules on UltraSparc
+ This package will always depend on the latest restricted modules available
+ for UltraSparc.
+
+Package: linux-backports-modules-hardy-sparc64
+Architecture: sparc
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-sparc64
+Description: Backported drivers for sparc64 kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-sparc64-smp
+Architecture: sparc
+Section: metapackages
+Priority: optional
+Depends: linux-image-sparc64-smp (= ${binary:Version}), linux-restricted-modules-sparc64-smp (= ${binary:Version})
+Description: Complete Linux kernel on UltraSparc (SMP)
+ This package will always depend on the latest complete Linux kernel available
+ for the UltraSparc (SMP) architecture.
+
+Package: linux-headers-sparc64-smp
+Architecture: sparc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-sparc64-smp
+Description: Linux kernel headers on UltraSparc (SMP)
+ This package will always depend on the latest kernel headers available
+ for UltraSparc (SMP).
+
+Package: linux-image-sparc64-smp
+Architecture: sparc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-sparc64-smp, linux-ubuntu-modules-${kernel-abi-version}-sparc64-smp
+Description: Linux kernel image on UltraSparc (SMP)
+ This package will always depend on the latest kernel image available
+ for UltraSparc (SMP).
+
+Package: linux-restricted-modules-sparc64-smp
+Architecture: sparc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-sparc64-smp
+Description: Restricted Linux modules on UltraSparc (SMP)
+ This package will always depend on the latest restricted modules available
+ for UltraSparc (SMP).
+
+Package: linux-backports-modules-hardy-sparc64-smp
+Architecture: sparc
+Depends: linux-backports-modules-hardy-${kernel-abi-version}-sparc64-smp
+Description: Backported drivers for sparc64-smp kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+

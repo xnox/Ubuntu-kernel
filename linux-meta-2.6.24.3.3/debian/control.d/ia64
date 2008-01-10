@@ -1,0 +1,85 @@
+Package: linux-itanium
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-itanium (= ${binary:Version}), linux-restricted-modules-itanium (= ${binary:Version})
+Description: Complete Linux kernel on Itanium.
+ This package will always depend on the latest complete Linux kernel available
+ for Itanium.
+
+Package: linux-restricted-modules-itanium
+Architecture: ia64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-itanium
+Description: Restricted Linux modules on Itanium
+ This package will always depend on the latest restricted modules available
+ for Itanium.
+
+Package: linux-backports-modules-RELEASE_NAME-itanium
+Architecture: ia64
+Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-itanium
+Description: Backported drivers for itanium kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-headers-itanium
+Architecture: ia64
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-itanium
+Description: Linux kernel headers on Itanium
+ This package will always depend on the latest kernel headers available
+ for Itanium.
+
+Package: linux-image-itanium
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-itanium, linux-ubuntu-modules-${kernel-abi-version}-itanium
+Description: Linux kernel image on Itanium
+ This package will always depend on the latest kernel image available
+ for Itanium.
+
+Package: linux-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-mckinley (= ${binary:Version}), linux-restricted-modules-mckinley (= ${binary:Version})
+Description: Complete Linux kernel on Itanium II.
+ This package will always depend on the latest complete Linux kernel available
+ for Itanium II (also known as McKinley).
+
+Package: linux-restricted-modules-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-mckinley
+Description: Restricted Linux modules on Itanium II.
+ This package will always depend on the latest restricted modules available
+ for Itanium II.
+
+Package: linux-backports-modules-RELEASE_NAME-mckinley
+Architecture: ia64
+Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-mckinley
+Description: Backported drivers for mckinley kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-headers-mckinley
+Architecture: ia64
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-mckinley
+Description: Linux kernel headers on Itanium II
+ This package will always depend on the latest kernel headers available
+ for Itanium II (also known as McKinley).
+
+Package: linux-image-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-mckinley, linux-ubuntu-modules-${kernel-abi-version}-mckinley
+Description: Linux kernel image on Itanium II
+ This package will always depend on the latest kernel image available
+ for Itanium II (also known as McKinley).
