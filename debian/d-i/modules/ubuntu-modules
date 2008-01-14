@@ -3,6 +3,7 @@ fsam7400 ?
 ipw3945 ?
 acx ?
 e1000-ich9 ?
+igb ?
 iwl3945 ?
 iwl4965 ?
 atl2 ?
