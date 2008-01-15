@@ -7,7 +7,7 @@ drm-objs := drm_auth.o drm_bufs.o drm_context.o drm_dma.o drm_drawable.o \
 		drm_sysfs.o drm_pci.o drm_agpsupport.o drm_scatter.o \
 		drm_memory_debug.o ati_pcigart.o drm_sman.o \
 		drm_hashtab.o drm_mm.o drm_object.o drm_compat.o \
-		drm_fence.o drm_ttm.o drm_bo.o drm_bo_move.o \
+		drm_fence.o drm_ttm.o drm_bo.o drm_bo_move.o drm_bo_lock.o \
 		drm_crtc.o drm_edid.o drm_modes.o drm_regman.o
 
 psb-objs := psb_drv.o psb_mmu.o psb_sgx.o psb_irq.o psb_fence.o psb_buffer.o \
