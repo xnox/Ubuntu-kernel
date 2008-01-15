@@ -3101,7 +3101,12 @@ static struct quickcam *qc_usb_init(struct usb_device *usbdev, unsigned int ifac
 PDEBUG("poisoning qc in qc_usb_init");
 		POISON(*qc);
 		if (qcdebug&QC_DEBUGMUTEX) PDEBUG("init down(%p) in qc_usb_init()", qc);
+#ifdef CONFIG_PREEMPT_RT
+		init_MUTEX(&qc->lock);
+		down(&qc->lock);
+#else
 		init_MUTEX_LOCKED(&qc->lock);
+#endif
 		qc->users = 0;
 		if ((r=qc_i2c_init(qc))<0) goto fail2;
 	}

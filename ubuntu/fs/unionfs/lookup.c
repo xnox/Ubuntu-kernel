@@ -430,7 +430,13 @@ int new_dentry_private_data(struct dentry *dentry)
 		    kmem_cache_alloc(unionfs_dentry_cachep, GFP_ATOMIC);
 		if (!dtopd_nocheck(dentry))
 			goto out;
+#ifdef CONFIG_PREEMPT_RT
+		init_MUTEX(&dtopd_nocheck(dentry)->udi_sem);
+		down(&dtopd_nocheck(dentry)->udi_sem);
+#else
 		init_MUTEX_LOCKED(&dtopd_nocheck(dentry)->udi_sem);
+#endif
+
 #ifdef TRACKLOCK
 		printk("INITLOCK:%p\n", dentry);
 #endif
