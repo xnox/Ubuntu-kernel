@@ -1,0 +1,22 @@
+
+Management of this package is a little funky since the version
+changes each time, and therefore the source directory name. This
+make git management a little more difficult. For example, assume the
+current version is 2.6.24.4.4 and you are upating to 2.6.24.4.5.
+
+	make version_update
+
+is going to rename the source directory from linux-meta-2.6.24.4.4
+to linux-meta-2.6.24.4.5. This means that when you  must remove the
+original directory and add the new one:
+
+	git rm -r linux-meta-2.6.24.4.4
+	git add linux-meta-2.6.24.4.5
+
+After commiting don't forget to create a tag:
+
+	git tag -m Ubuntu-2.6.24.4.5 Ubuntu-2.6.24.4.5
+
+Finally, you can create an upload set:
+
+	make source
