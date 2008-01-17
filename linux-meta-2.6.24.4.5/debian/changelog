@@ -1,9 +1,14 @@
-linux-meta (2.6.24.4.4) feisty; urgency=low
+linux-meta (2.6.24.4.5) hardy; urgency=low
 
-  * Added rt meta dependencies
-  * Kernel ABI bump to -4
+  * Added -rt meta dependencies
 
- -- Tim Gardner <tim.gardner@canonical.com>  Thu, 10 Jan 2008 09:58:52 -0700
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 17 Jan 2008 08:30:49 -0700
+
+linux-meta (2.6.24.4.4) hardy; urgency=low
+
+  * Kernel ABI bump (to -4).
+
+ -- Tollef Fog Heen <tfheen@ubuntu.com>  Tue, 15 Jan 2008 10:34:21 +0100
 
 linux-meta (2.6.24.3.3) hardy; urgency=low
 
