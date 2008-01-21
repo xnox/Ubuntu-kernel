@@ -41,9 +41,3 @@ Description: Backported drivers for rt kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-image-debug-rt
-Architecture: amd64 i386
-Section: devel
-Depends: linux-image-debug-${kernel-abi-version}-rt
-Description: Linux kernel debug image for rt kernel image
- This package will always depend on the latest rt kernel debug image.
