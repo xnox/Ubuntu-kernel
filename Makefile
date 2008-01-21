@@ -8,5 +8,5 @@ version_update:
 	cd linux*; dch -i
 
 clean:
-	rm -f *.dsc *.changes *.gz
+	rm -f *.dsc *.changes *.gz *.deb *.build
 
