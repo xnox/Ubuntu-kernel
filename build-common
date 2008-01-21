@@ -1,0 +1,120 @@
+while [ $# != 0 ]; do
+	case "$1" in
+		-a)
+			AUTOBUILD=1
+			shift
+			;;
+		-v)
+			VERBOSE=1
+			shift
+			;;
+		*)
+			break
+			;;
+	esac
+done
+export AUTOBUILD VERBOSE
+
+system=$1
+
+if [ "$DIST" = "" ]; then
+	export DIST=gutsy
+fi
+
+if [ "$AUTOBUILD" = "1" ]; then
+	auto=" (autobuild)"
+	systems="ronne-i386 ronne-amd64 davis faure"
+else
+	auto=""
+	systems="amd64 i386 sparc powerpc"
+fi
+
+if [ "$BUILD_DIST_PRINTED" = "" ]; then
+	echo "Distribution: $DIST$auto"
+	export BUILD_DIST_PRINTED=1
+fi
+
+BASE=/org
+FAKEROOT=
+
+case "$system" in
+	ronne-i386)
+		ARCH=i386
+		ROOTCMD="linux32 dchroot -c $DIST-$ARCH -- fakeroot"
+		HOST=ronne.ubuntu.com
+		system=ronne-i386
+		BASE=/home/bcollins
+		;;
+	ronne-amd64)
+		ARCH=amd64
+		ROOTCMD="dchroot -c $DIST -- fakeroot"
+		HOST=ronne.ubuntu.com
+		system=ronne-amd64
+		BASE=/home/bcollins
+		;;
+	davis)
+		ARCH=powerpc
+		ROOTCMD="dchroot -c $DIST -- fakeroot"
+		HOST=davis.ubuntu.com
+		system=davis
+		BASE=/home/bcollins
+		;;
+	powder|powerpc)
+		ARCH=powerpc
+		HOST=powder
+		system=powder
+		ROOTCMD="linux32 dchroot -c $DIST-powerpc -- fakeroot"
+		;;
+	faure)
+		ARCH=sparc
+		ROOTCMD="dchroot -c $DIST -- fakeroot"
+		HOST=faure.ubuntu.com
+		system=faure
+		BASE=/home/bcollins
+		;;
+	amd64|huffy-amd64)
+		ARCH=amd64
+		FAKEROOT=fakeroot
+		HOST=huffy
+		system=huffy-amd64
+		;;
+	i386|huffy-i386)
+		ARCH=i386
+		FAKEROOT=fakeroot
+		HOST=huffy
+		system=huffy-i386
+		;;
+	sparc|buddy)
+		ARCH=sparc
+		ROOTCMD="sparc32 dchroot -c $DIST-sparc -- fakeroot"
+		HOST=buddy
+		system=buddy
+		;;
+	ia64|frag)
+		ARCH=ia64
+		HOST=frag
+		system=frag
+		FAKEROOT=fakeroot
+		;;
+	hppa|hippo)
+		ARCH=hppa
+		HOST=hippo
+		system=hippo
+		;;
+	*)
+		HOST=$system
+		;;
+esac
+
+if [ "$AUTOBUILD" != "" ]; then
+	AUTO="-a"
+fi
+
+if [ "$ROOTCMD" = "" ]; then
+	ROOTCMD="dchroot -c $DIST-$ARCH -- $FAKEROOT"
+fi
+
+BASEDIR="$BASE/$DIST-$ARCH"
+DOBUILD="$ROOTCMD do_build $AUTO $DIST $ARCH $BASEDIR"
+DOCLEAN="$ROOTCMD do_clean $DIST $ARCH $BASEDIR"
+BUILDING="$BASEDIR/BuildInProgress"

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+for arch in hippo colorless zachery frag root@phoenix root@huffy; do
+	ssh -t $arch dchroot -a -- $@
+done

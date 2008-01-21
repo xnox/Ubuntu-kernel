@@ -1,0 +1,7 @@
+#!/bin/bash
+
+DIST=edgy
+DATE=$(date "+%Y-%m-%d")
+
+echo "Transfering debs..."
+ssh -t people.ubuntu.com get-daily $DATE $DIST

@@ -1,0 +1,27 @@
+#!/bin/bash
+
+DIST=$1
+ARCH=$2
+BASE=$3
+
+BUILDING=$BASE/BuildInProgress
+
+if [ -f $BUILDING ]; then
+	echo "Build in progress, quitting"
+	exit 1
+fi
+
+cd $BASE
+
+if [ -d ubuntu-2.6-old ]; then
+	echo "Cleanup in progress"
+	exit 1
+fi
+
+rm -f build.log *deb
+
+mv ubuntu-2.6 ubuntu-2.6-old
+mkdir ubuntu-2.6
+mv ubuntu-2.6-old/.git ubuntu-2.6/
+(cd ubuntu-2.6 && git-checkout -f)
+rm -rf ubuntu-2.6-old

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+. ~/bin/build-common
+
+if [ "$system" = "" ]; then
+	echo "Usage: $0 <system>"
+	exit 1
+fi
+
+status=$(build-check $system)
+
+if [ $status != "idle" ]; then
+	echo "$system: $status"
+	exit 1
+fi
+
+if [ "$DIST" = "dapper" ]; then
+	cd /srv/kernel-security/dapper/linux-source-2.6.15-2.6.15
+elif [ "$DIST" = "edgy" ]; then
+	cd /srv/kernel-security/edgy/linux-source-2.6.17-2.6.17.1
+elif [ "$DIST" = "feisty" ]; then 
+	cd /srv/kernel-security/feisty/linux-source-2.6.20-2.6.20
+else
+	cd /srv/linux-source-2.6.22-2.6.22
+fi
+
+echo "$system:"
+
+echo "    pushing current tree ..."
+git-send-pack --force $system:$BASEDIR/ubuntu-2.6 master > /dev/null 2>&1
+
+echo "    cleaning up build area ..."
+ssh $system $DOCLEAN > /dev/null 2>&1

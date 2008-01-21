@@ -1,0 +1,9 @@
+#!/bin/bash
+
+. ~/bin/build-common
+
+command=$(echo $0 | sed 's/-all//')
+
+for system in $systems; do
+	$command $@ $system;
+done

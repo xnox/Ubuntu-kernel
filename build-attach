@@ -1,0 +1,15 @@
+#!/bin/bash
+
+if [ "$1" = "" ]; then
+	echo "Usage: $0 <system>"
+	exit 1
+fi
+
+system=$1
+status=$(build-check $system)
+
+if [ $status = "building" ]; then
+	ssh -t $system screen -r
+else
+	echo "$system: $status"
+fi

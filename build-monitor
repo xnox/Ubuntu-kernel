@@ -1,0 +1,36 @@
+#!/bin/bash
+
+clear
+date -R
+
+ARGS=""
+
+while [ $# != 0 ]; do
+	case "$1" in
+		-a|-v)
+			ARGS="$1 $ARGS"
+			shift
+			;;
+		*)
+			break
+			;;
+	esac
+done
+
+TMP=$(mktemp)
+
+trap 'rm -f $TMP; exit' 0 INT QUIT TRAP USR1 PIPE TERM
+
+while true; do
+	if [ "$1" = '' ]; then
+		build-status-all $ARGS > $TMP 2>&1
+	else
+		build-status $ARGS $@ > $TMP 2>&1
+		sleep 3
+	fi
+	clear
+	date -R
+	cat $TMP
+
+	# No reason to sleep, the whole process takes a bit anyway
+done

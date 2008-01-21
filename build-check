@@ -1,0 +1,21 @@
+#!/bin/bash
+
+export BUILD_DIST_PRINTED=1
+. ~/bin/build-common
+
+if [ "$system" = "" ]; then
+        echo "Usage: $0 <system>"
+        exit 1
+fi
+
+if ping -c 1 $HOST > /dev/null 2>&1; then
+	if ssh $system test -f $BUILDING 2> /dev/null; then
+		echo building
+	else
+		echo idle
+	fi
+else
+	echo offline
+fi
+
+exit 0

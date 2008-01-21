@@ -1,0 +1,68 @@
+#!/bin/bash
+
+if [ "$1" = "-v" ]; then
+	VERBOSE=1
+	shift;
+fi
+
+if [ "$1" = "" ]; then
+	echo "Usage: $0 [-v] <system> [systems ...]"
+	exit 1
+fi
+
+while ! [ "$1" = '' ]; do
+	. ~/bin/build-common
+	shift
+
+	status=$(build-check $system)
+
+	if [ "$VERBOSE" = 1 -a "$status" = "building" ]; then
+		building=""
+		unbuilt=""
+		packaged=""
+
+		flavours=$(ssh $system cat $BASEDIR/ubuntu-2.6/debian/stamps/stamp-flavours)
+
+		all_stamps=$(ssh $system ls -d \
+			$BASEDIR/{ubuntu-2.6/debian/{build/{custom-,}build-*/vmlinux,stamps/stamp-*},*.deb} 2>/dev/null)
+
+		for flavour in $flavours; do
+			stamps=$(echo $all_stamps | xargs -n1 echo | \
+			  grep "stamps/.*-$flavour\$")
+			debs=$(echo $all_stamps | xargs -n1 echo | \
+			  grep -- "linux-image-2.*-${flavour}_" | grep '\.deb$')
+
+			if echo $stamps | grep -q 'stamp-.*prepare'; then
+				if echo $stamps | grep -q 'stamp-.*build'; then
+					if [ "$debs" != "" ]; then
+						packaged="$flavour $packaged"
+					else
+						building="$flavour(packaging)"
+					fi
+				else
+					phase=kernel
+					if echo $all_stamps | \
+					  grep -q build-$flavour/vmlinux; then
+						phase=modules
+					fi
+					building="$flavour($phase)"
+				fi
+			else
+				unbuilt="$flavour $unbuilt"
+			fi
+		done
+
+		printf "%-15s=> $building\n" $system
+		if [ "$packaged" != "" ]; then
+			echo "  packaged \- $packaged"
+		fi
+		if [ "$built" != "" ]; then
+			echo "     built \- $built"
+		fi
+		if [ "$unbuilt" != "" ]; then
+			echo "   unbuilt \- $unbuilt"
+		fi
+	else
+		 printf "%-15s: $status\n" $system
+	fi
+done

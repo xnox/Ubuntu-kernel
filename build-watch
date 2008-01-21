@@ -1,0 +1,10 @@
+#!/bin/bash
+
+. ~/bin/build-common
+
+if [ "$system" = "" ]; then
+	echo "Usage: $0 <system>"
+	exit 1
+fi
+
+ssh $system tail -n 70 -f $BASEDIR/build.log

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+if [ "$1" = "-a" ]; then
+	export AUTOBUILD=1
+	shift
+fi
+
+DIST=$1
+ARCH=$2
+BASE=$3
+CONC=$4
+
+export PATH=/usr/lib/ccache:$PATH
+
+BUILDING=$BASE/BuildInProgress
+
+export CCACHE_DIR=$BASE/ccache
+
+test -d $CCACHE_DIR || mkdir $CCACHE_DIR
+
+trap 'rm -f $BUILDING; exit' 0 INT QUIT TRAP USR1 PIPE TERM
+
+touch $BUILDING
+
+if [ -z "$CONC" ]; then
+	CONC=1
+fi
+
+cd $BASE/ubuntu-2.6
+
+debian/rules binary-arch CONCURRENCY_LEVEL=$CONC 2>&1 | tee ../build.log

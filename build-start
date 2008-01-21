@@ -1,0 +1,33 @@
+#!/bin/bash
+
+. ~/bin/build-common
+
+if [ "$system" = "" ]; then
+	echo "Usage: $0 <system>"
+	exit 1
+fi
+
+conc_level=4
+
+case $system in
+	zachery)
+		conc_level=12
+		;;
+	frag)
+		conc_level=6
+		;;
+	hippo)
+		conc_level=6
+		;;
+esac
+
+status=$(build-check $system)
+
+if [ $status != "idle" ]; then
+	printf "%-15s: $status\n" $system
+	exit 1
+fi
+
+ssh $system screen -d -m $DOBUILD $conc_level
+
+printf "%-15s: build started\n" $system

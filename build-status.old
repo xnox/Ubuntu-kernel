@@ -1,0 +1,74 @@
+#!/bin/bash
+
+if [ "$1" = "-v" ]; then
+	VERBOSE=1
+	shift;
+fi
+
+if [ "$1" = "" ]; then
+	echo "Usage: $0 [-v] <system> [systems ...]"
+	exit 1
+fi
+
+while ! [ "$1" = '' ]; do
+	. ~/bin/build-common
+	shift
+
+	status=$(build-check $system)
+
+	if [ "$VERBOSE" = 1 -a "$status" = "building" ]; then
+		built=""
+		building=""
+		unbuilt=""
+		packaged=""
+
+		all_stamps=$(ssh $system ls -d \
+			$BASEDIR/ubuntu-2.6/debian/build/{build-*{/stamp-*,/vmlinux,},*.deb} 2>/dev/null)
+		builds=$((echo $all_stamps | xargs -n1 echo) | egrep -v '(stamp|vmlinux|\.deb$)')
+
+		for build in $builds; do
+			flavour=$(basename $build | sed 's/build-//')
+			stamps=$((echo $all_stamps | xargs -n1 echo) | grep $build/)
+			debs=$((echo $all_stamps | xargs -n1 echo) | \
+				grep -- "linux-image-2.*-${flavour}_" | grep '\.deb$')
+
+			if echo $stamps | grep -qE 'stamp-(configure|arch-conf)'; then
+				if echo $stamps | grep -q stamp-build; then
+					if [ "$debs" != "" ]; then
+						# Once we hit here, we are
+						# packaging
+						if echo $stamps | grep -q stamp-kernel-image; then
+							packaged="$flavour $packaged"
+						else
+							building="$flavour(packaging)"
+							built="$flavour $built"
+						fi
+					else
+						built="$flavour $built"
+					fi
+				else
+					phase=kernel
+					if echo $stamps | grep -q vmlinux; then
+						phase=modules
+					fi
+					building="$flavour($phase)"
+				fi
+			else
+				unbuilt="$flavour $unbuilt"
+			fi
+		done
+
+		printf "%-15s=> $building\n" $system
+		if [ "$packaged" != "" ]; then
+			echo "  packaged \- $packaged"
+		fi
+		if [ "$built" != "" ]; then
+			echo "     built \- $built"
+		fi
+		if [ "$unbuilt" != "" ]; then
+			echo "   unbuilt \- $unbuilt"
+		fi
+	else
+		 printf "%-15s: $status\n" $system
+	fi
+done

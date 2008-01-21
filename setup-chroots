@@ -1,0 +1,30 @@
+#!/bin/bash
+
+base="/org/chroots"
+
+dists="dapper edgy feisty gutsy"
+archs="$(dpkg-architecture -qDEB_BUILD_ARCH)"
+if [ "$archs" = "amd64" ]; then
+	archs="$archs i386"
+fi
+
+binds="home org root dev sys proc usr/local/bin dev/pts tmp var/tmp"
+etc="passwd group shadow gshadow sudoers resolv.conf hosts"
+
+for dist in $dists; do
+	for arch in $archs; do
+		echo "Mounts for $dist-$arch..."
+		root="$base/$dist-$arch"
+
+		for file in $etc; do
+			cp -a /etc/$file $root/etc/$file
+		done
+
+		for bind in $binds; do
+			if ! grep -q $root/$bind /proc/mounts; then
+				echo "    $root/$bind"
+				mount -o bind /$bind $root/$bind
+			fi
+		done
+	done
+done
