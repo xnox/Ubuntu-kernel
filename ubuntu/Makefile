@@ -6,11 +6,6 @@ include $(src)/.config
 
 obj-$(CONFIG_LUM_ALSA) += sound/
 
-# obj-$(CONFIG_ACPI_DEV)		+= acpi/dev_acpi.o
-# obj-$(CONFIG_ACPI_PCC)		+= acpi/pcc_acpi.o
-# obj-$(CONFIG_ACPI_SONY)		+= acpi/sony_acpi.o
-# obj-$(CONFIG_ACPI_TC1100)	+= acpi/tc1100-wmi.o
-
 obj-$(CONFIG_AMT_HECI)		+= misc/heci/
 obj-$(CONFIG_BLK_DEV_GNBD)	+= misc/gnbd.o
 obj-$(CONFIG_BLK_DEV_DM_BBR)	+= misc/dm-bbr.o
@@ -55,9 +50,6 @@ obj-$(CONFIG_PRISM2_USB)	+= wireless/prism2_usb/
 
 ifneq ($(CONFIG_PRISM2_USB),)
 obj-m				+= wireless/p80211/
-endif
-ifneq ($(CONFIG_RTL8187),)
-obj-m				+= misc/eeprom_93cx6.o
 endif
 
 obj-$(CONFIG_IPW2100_FS_AMILO_M7400) += wireless/fsam7400.o
