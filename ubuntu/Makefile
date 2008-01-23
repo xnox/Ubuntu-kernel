@@ -4,8 +4,6 @@
 
 include $(src)/.config
 
-obj-$(CONFIG_LUM_ALSA) += sound/
-
 obj-$(CONFIG_AMT_HECI)		+= misc/heci/
 obj-$(CONFIG_BLK_DEV_GNBD)	+= misc/gnbd.o
 obj-$(CONFIG_BLK_DEV_DM_BBR)	+= misc/dm-bbr.o

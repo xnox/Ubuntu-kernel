@@ -3,7 +3,6 @@
 ifeq ($(UBUNTU_FLAVOUR),virtual)
 CONFIG_VMWARE=m
 else
-CONFIG_LUM_ALSA=m
 
 CONFIG_BLK_DEV_GNBD=m
 

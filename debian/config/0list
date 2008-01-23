@@ -1,5 +1,4 @@
 # Ubuntu config
-CONFIG_LUM_ALSA=m
 
 CONFIG_BLK_DEV_GNBD=m
 
