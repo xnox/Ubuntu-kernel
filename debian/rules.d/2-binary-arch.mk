@@ -19,6 +19,10 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
+	cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` all-deps
+	cd $(builddir)/build-$*/sound/alsa-driver && aclocal && autoconf
+	cd $(builddir)/build-$*/sound/alsa-driver && ./configure --with-kernel=/lib/modules/$(release)-$(abinum)-$(target_flavour)/build
+	cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` dep
 	touch $@
 
 # Do the actual build, including image and modules

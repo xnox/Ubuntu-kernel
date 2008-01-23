@@ -4,6 +4,8 @@
 
 include $(src)/.config
 
+obj-$(CONFIG_LUM_ALSA) += sound/
+
 # obj-$(CONFIG_ACPI_DEV)		+= acpi/dev_acpi.o
 # obj-$(CONFIG_ACPI_PCC)		+= acpi/pcc_acpi.o
 # obj-$(CONFIG_ACPI_SONY)		+= acpi/sony_acpi.o
