@@ -15,11 +15,11 @@
 #include <linux/skbuff.h>
 #include <linux/etherdevice.h>
 #include <linux/if_arp.h>
-#include <include/linux/wireless.h>
-#include <include/net/iw_handler.h>
+#include <linux/wireless.h>
+#include <net/iw_handler.h>
 #include <asm/uaccess.h>
 
-#include <include/net/mac80211.h>
+#include <net/mac80211.h>
 #include "ieee80211_i.h"
 #include "hostapd_ioctl.h"
 #include "ieee80211_rate.h"

@@ -15,7 +15,7 @@
 #include <linux/skbuff.h>
 #include <linux/compiler.h>
 
-#include <include/net/mac80211.h>
+#include <net/mac80211.h>
 #include "ieee80211_i.h"
 #include "ieee80211_rate.h"
 #include "debugfs.h"

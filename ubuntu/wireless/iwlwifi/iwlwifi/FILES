@@ -26,7 +26,8 @@ origin/iwl-prph.h
 /* iwlwifi implementation */
 Makefile
 origin/iwlwifi.h
-origin/iwl-base.c
+origin/iwl3945-base.c
+origin/iwl4965-base.c
 origin/iwl-priv.h
 origin/iwl-debug.h
 origin/iwl-3945-rs.c

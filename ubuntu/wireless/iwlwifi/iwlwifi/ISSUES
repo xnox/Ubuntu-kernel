@@ -9,8 +9,8 @@ Copyright (C) 2005 - 2007, Intel Corporation
 
 ISSUES
 
-Version: 1.1.0
-Date   : September 19, 2007
+Version: 1.2.0
+Date   : November 21, 2007
 ------------------------------
 
 The following are the most common issues reported by users at the time of
@@ -21,19 +21,17 @@ number referenced.
 
 Problems summarized below:
 
-1. 802.11n 40MHz (FAT) Channel speeds are not stepping up or are stalling
+1. Transfer large file stalls on some 11N AP (i.e. D-LINK DIR-635 model)
 
 Issue summaries:
 
-1. 802.11n 40MHz (FAT) Channel speeds are not stepping up or are
-   stalling (Bug #1422)
+1. Transfer large file stalls on some 11N AP
 
-While using the driver on 802.11n FAT channels (FAT channel is 40MHz,
-normal channel is 20MHz), sometimes the tranfer will stall and the
-connection will drop. The driver also doesn't perform well on FAT
-channels (especially for TX). This is a know issue and we are fixing
-it. The problem doesn't happen on 20MHz 802.11n channel or
-802.11 a/b/g modes.
+We observed transfer stall issue when copy large files (~2G) between
+STAs with the driver. This only happens with some 11N APs (N only mode),
+for example D-LINK DIR-635 model. The connection will probably be
+reestablished afterward. So ping(1) still works but the transfer
+process stalls.
 
 
 ------------------------------

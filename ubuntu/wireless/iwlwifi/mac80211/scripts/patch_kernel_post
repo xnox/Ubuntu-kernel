@@ -77,10 +77,10 @@ function do_patch {
 	do_patch post-nla_binary.patch ||
 	die $? "Failure nla_binary compat"
 }
-(( !$has_new_genlmsg_put )) && {
-	do_patch post-genlmsg_put.patch ||
-	die $? "Failure genlmsg_put compat"
-}
+#(( !$has_new_genlmsg_put )) && {
+#	do_patch post-genlmsg_put.patch ||
+#	die $? "Failure genlmsg_put compat"
+#}
 
 (( DEBUG )) || exit 0
 

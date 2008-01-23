@@ -8,8 +8,8 @@
  * published by the Free Software Foundation.
  */
 
-#include <include/net/mac80211.h>
-#include <include/net/ieee80211_radiotap.h>
+#include <net/mac80211.h>
+#include <net/ieee80211_radiotap.h>
 #include <linux/module.h>
 #include <linux/init.h>
 #include <linux/netdevice.h>
@@ -18,12 +18,12 @@
 #include <linux/skbuff.h>
 #include <linux/etherdevice.h>
 #include <linux/if_arp.h>
-#include <include/linux/wireless.h>
+#include <linux/wireless.h>
 #include <linux/rtnetlink.h>
-#include <include/net/iw_handler.h>
+#include <net/iw_handler.h>
 #include <linux/compiler.h>
 #include <linux/bitmap.h>
-#include <include/net/cfg80211.h>
+#include <net/cfg80211.h>
 #include <asm/unaligned.h>
 
 #include "ieee80211_common.h"

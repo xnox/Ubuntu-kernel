@@ -33,12 +33,14 @@
 #include <linux/delay.h>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
-#include <include/linux/wireless.h>
+#include <linux/wireless.h>
 #include <linux/firmware.h>
-#include <include/net/mac80211.h>
+#include <net/mac80211.h>
 
 #include <linux/etherdevice.h>
 #include <linux/delay.h>
+
+#define IWL 3945
 
 #include "iwlwifi.h"
 #include "iwl-helpers.h"
@@ -93,7 +95,7 @@ const struct iwl_rate_info iwl_rates[IWL_RATE_COUNT] = {
  *   ... and set IWL_EVT_DISABLE to 1. */
 void iwl_disable_events(struct iwl_priv *priv)
 {
-	int rc;
+	int ret;
 	int i;
 	u32 base;		/* SRAM address of event log header */
 	u32 disable_ptr;	/* SRAM address of event-disable bitmap array */
@@ -154,27 +156,26 @@ void iwl_disable_events(struct iwl_priv *priv)
 		return;
 	}
 
-	rc = iwl_grab_restricted_access(priv);
-	if (rc) {
+	ret = iwl_grab_nic_access(priv);
+	if (ret) {
 		IWL_WARNING("Can not read from adapter at this time.\n");
 		return;
 	}
 
-	disable_ptr = iwl_read_restricted_mem(priv, base + (4 * sizeof(u32)));
-	array_size = iwl_read_restricted_mem(priv, base + (5 * sizeof(u32)));
-	iwl_release_restricted_access(priv);
+	disable_ptr = iwl_read_targ_mem(priv, base + (4 * sizeof(u32)));
+	array_size = iwl_read_targ_mem(priv, base + (5 * sizeof(u32)));
+	iwl_release_nic_access(priv);
 
 	if (IWL_EVT_DISABLE && (array_size == IWL_EVT_DISABLE_SIZE)) {
 		IWL_DEBUG_INFO("Disabling selected uCode log events at 0x%x\n",
 			       disable_ptr);
-		rc = iwl_grab_restricted_access(priv);
+		ret = iwl_grab_nic_access(priv);
 		for (i = 0; i < IWL_EVT_DISABLE_SIZE; i++)
-			iwl_write_restricted_mem(priv,
-						 disable_ptr +
-						 (i * sizeof(u32)),
-						 evt_disable[i]);
+			iwl_write_targ_mem(priv,
+					   disable_ptr + (i * sizeof(u32)),
+					   evt_disable[i]);
 
-		iwl_release_restricted_access(priv);
+		iwl_release_nic_access(priv);
 	} else {
 		IWL_DEBUG_INFO("Selected uCode log events may be disabled\n");
 		IWL_DEBUG_INFO("  by writing \"1\"s into disable bitmap\n");
@@ -286,6 +287,8 @@ static void iwl3945_handle_data_packet(struct iwl_priv *priv, int is_data,
 	rxb->skb = NULL;
 }
 
+#define IWL_DELAY_NEXT_SCAN_AFTER_ASSOC (HZ*6)
+
 static void iwl3945_rx_reply_rx(struct iwl_priv *priv,
 				struct iwl_rx_mem_buffer *rxb)
 {
@@ -298,7 +301,7 @@ static void iwl3945_rx_reply_rx(struct iwl_priv *priv,
 	u16 rx_stats_sig_avg = le16_to_cpu(rx_stats->sig_avg);
 	u16 rx_stats_noise_diff = le16_to_cpu(rx_stats->noise_diff);
 	struct ieee80211_rx_status stats = {
-		.mactime = le32_to_cpu(rx_end->beacon_timestamp),
+		.mactime = le64_to_cpu(rx_end->timestamp),
 		.freq = ieee80211chan2mhz(le16_to_cpu(rx_hdr->channel)),
 		.channel = le16_to_cpu(rx_hdr->channel),
 		.phymode = (rx_hdr->phy_flags & RX_RES_PHY_FLAGS_BAND_24_MSK) ?
@@ -443,6 +446,13 @@ static void iwl3945_rx_reply_rx(struct iwl_priv *priv,
 		case IEEE80211_STYPE_REASSOC_RESP:{
 				struct ieee80211_mgmt *mgnt =
 				    (struct ieee80211_mgmt *)header;
+
+				/* We have just associated, give some
+				 * time for the 4-way handshake if
+				 * any. Don't start scan too early. */
+				priv->next_scan_jiffies = jiffies +
+					IWL_DELAY_NEXT_SCAN_AFTER_ASSOC;
+
 				priv->assoc_id = (~((1 << 15) | (1 << 14)) &
 						  le16_to_cpu(mgnt->u.
 							      assoc_resp.aid));
@@ -516,14 +526,14 @@ int iwl_hw_txq_attach_buf_to_tfd(struct iwl_priv *priv, void *ptr,
 }
 
 /**
- * iwl_hw_txq_free_tfd - Free one TFD, those at index [txq->q.last_used]
+ * iwl_hw_txq_free_tfd - Free one TFD, those at index [txq->q.read_ptr]
  *
  * Does NOT advance any indexes
  */
 int iwl_hw_txq_free_tfd(struct iwl_priv *priv, struct iwl_tx_queue *txq)
 {
 	struct iwl_tfd_frame *bd_tmp = (struct iwl_tfd_frame *)&txq->bd[0];
-	struct iwl_tfd_frame *bd = &bd_tmp[txq->q.last_used];
+	struct iwl_tfd_frame *bd = &bd_tmp[txq->q.read_ptr];
 	struct pci_dev *dev = priv->pci_dev;
 	int i;
 	int counter;
@@ -546,42 +556,42 @@ int iwl_hw_txq_free_tfd(struct iwl_priv *priv, struct iwl_tx_queue *txq)
 	for (i = 1; i < counter; i++) {
 		pci_unmap_single(dev, le32_to_cpu(bd->pa[i].addr),
 				 le32_to_cpu(bd->pa[i].len), PCI_DMA_TODEVICE);
-		if (txq->txb[txq->q.last_used].skb[0]) {
-			struct sk_buff *skb = txq->txb[txq->q.last_used].skb[0];
-			if (txq->txb[txq->q.last_used].skb[0]) {
+		if (txq->txb[txq->q.read_ptr].skb[0]) {
+			struct sk_buff *skb = txq->txb[txq->q.read_ptr].skb[0];
+			if (txq->txb[txq->q.read_ptr].skb[0]) {
 				/* Can be called from interrupt context */
 				dev_kfree_skb_any(skb);
-				txq->txb[txq->q.last_used].skb[0] = NULL;
+				txq->txb[txq->q.read_ptr].skb[0] = NULL;
 			}
 		}
 	}
 	return 0;
 }
 
-u8 iwl_hw_find_station(struct iwl_priv *priv, const u8 *bssid)
+u8 iwl_hw_find_station(struct iwl_priv *priv, const u8 *addr)
 {
 	int i;
 	int ret = IWL_INVALID_STATION;
 	unsigned long flags;
 
 	spin_lock_irqsave(&priv->sta_lock, flags);
-	for (i = IWL_STA_ID; i < (IWL_STA_ID + priv->num_stations); i++)
+	for (i = IWL_STA_ID; i < priv->hw_setting.max_stations; i++)
 		if ((priv->stations[i].used) &&
 		    (!compare_ether_addr
-		     (priv->stations[i].sta.sta.addr, bssid))) {
+		     (priv->stations[i].sta.sta.addr, addr))) {
 			ret = i;
 			goto out;
 		}
 
 	IWL_DEBUG_INFO("can not find STA " MAC_FMT " (total %d)\n",
-		       MAC_ARG(bssid), priv->num_stations);
+		       MAC_ARG(addr), priv->num_stations);
  out:
 	spin_unlock_irqrestore(&priv->sta_lock, flags);
 	return ret;
 }
 
 /**
- * iwl_hw_build_tx_cmd_rate - Add rate portion to TX_CMD
+ * iwl_hw_build_tx_cmd_rate - Add rate portion to TX_CMD:
  *
 */
 void iwl_hw_build_tx_cmd_rate(struct iwl_priv *priv,
@@ -610,7 +620,8 @@ void iwl_hw_build_tx_cmd_rate(struct iwl_priv *priv,
 	priv->stations[sta_id].current_rate.rate_n_flags = rate;
 
 	if ((priv->iw_mode == IEEE80211_IF_TYPE_IBSS) &&
-	    (sta_id != IWL_BROADCAST_ID) && (sta_id != IWL_MULTICAST_ID))
+	    (sta_id != IWL3945_BROADCAST_ID) &&
+		(sta_id != IWL_MULTICAST_ID))
 		priv->stations[IWL_STA_ID].current_rate.rate_n_flags = rate;
 
 	spin_unlock_irqrestore(&priv->sta_lock, flags);
@@ -687,28 +698,13 @@ u8 iwl3945_sync_sta(struct iwl_priv *priv, int sta_id, u16 tx_rate, u8 flags)
 	return sta_id;
 }
 
-void iwl_hw_card_show_info(struct iwl_priv *priv)
-{
-	IWL_DEBUG_INFO("3945ABG HW Version %u.%u.%u\n",
-		       ((priv->eeprom.board_revision >> 8) & 0x0F),
-		       ((priv->eeprom.board_revision >> 8) >> 4),
-		       (priv->eeprom.board_revision & 0x00FF));
-
-	IWL_DEBUG_INFO("3945ABG PBA Number %.*s\n",
-		       (int)sizeof(priv->eeprom.board_pba_number),
-		       priv->eeprom.board_pba_number);
-
-	IWL_DEBUG_INFO("EEPROM_ANTENNA_SWITCH_TYPE is 0x%02X\n",
-		       priv->eeprom.antenna_switch_type);
-}
-
 static int iwl3945_nic_set_pwr_src(struct iwl_priv *priv, int pwr_max)
 {
 	int rc;
 	unsigned long flags;
 
 	spin_lock_irqsave(&priv->lock, flags);
-	rc = iwl_grab_restricted_access(priv);
+	rc = iwl_grab_nic_access(priv);
 	if (rc) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		return rc;
@@ -720,22 +716,22 @@ static int iwl3945_nic_set_pwr_src(struct iwl_priv *priv, int pwr_max)
 		rc = pci_read_config_dword(priv->pci_dev,
 				PCI_POWER_SOURCE, &val);
 		if (val & PCI_CFG_PMC_PME_FROM_D3COLD_SUPPORT) {
-			iwl_set_bits_mask_restricted_reg(priv, ALM_APMG_PS_CTL,
-					APMG_PS_CTRL_REG_VAL_POWER_SRC_VAUX,
-					~APMG_PS_CTRL_REG_MSK_POWER_SRC);
-			iwl_release_restricted_access(priv);
+			iwl_set_bits_mask_prph(priv, APMG_PS_CTRL_REG,
+					APMG_PS_CTRL_VAL_PWR_SRC_VAUX,
+					~APMG_PS_CTRL_MSK_PWR_SRC);
+			iwl_release_nic_access(priv);
 
 			iwl_poll_bit(priv, CSR_GPIO_IN,
 				     CSR_GPIO_IN_VAL_VAUX_PWR_SRC,
 				     CSR_GPIO_IN_BIT_AUX_POWER, 5000);
 		} else
-			iwl_release_restricted_access(priv);
+			iwl_release_nic_access(priv);
 	} else {
-		iwl_set_bits_mask_restricted_reg(priv, ALM_APMG_PS_CTL,
-				APMG_PS_CTRL_REG_VAL_POWER_SRC_VMAIN,
-				~APMG_PS_CTRL_REG_MSK_POWER_SRC);
+		iwl_set_bits_mask_prph(priv, APMG_PS_CTRL_REG,
+				APMG_PS_CTRL_VAL_PWR_SRC_VMAIN,
+				~APMG_PS_CTRL_MSK_PWR_SRC);
 
-		iwl_release_restricted_access(priv);
+		iwl_release_nic_access(priv);
 		iwl_poll_bit(priv, CSR_GPIO_IN, CSR_GPIO_IN_VAL_VMAIN_PWR_SRC,
 			     CSR_GPIO_IN_BIT_AUX_POWER, 5000);	/* uS */
 	}
@@ -750,18 +746,18 @@ static int iwl3945_rx_init(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
 	unsigned long flags;
 
 	spin_lock_irqsave(&priv->lock, flags);
-	rc = iwl_grab_restricted_access(priv);
+	rc = iwl_grab_nic_access(priv);
 	if (rc) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		return rc;
 	}
 
-	iwl_write_restricted(priv, FH_RCSR_RBD_BASE(0), rxq->dma_addr);
-	iwl_write_restricted(priv, FH_RCSR_RPTR_ADDR(0),
+	iwl_write_direct32(priv, FH_RCSR_RBD_BASE(0), rxq->dma_addr);
+	iwl_write_direct32(priv, FH_RCSR_RPTR_ADDR(0),
 			     priv->hw_setting.shared_phys +
 			     offsetof(struct iwl_shared, rx_read_ptr[0]));
-	iwl_write_restricted(priv, FH_RCSR_WPTR(0), 0);
-	iwl_write_restricted(priv, FH_RCSR_CONFIG(0),
+	iwl_write_direct32(priv, FH_RCSR_WPTR(0), 0);
+	iwl_write_direct32(priv, FH_RCSR_CONFIG(0),
 		ALM_FH_RCSR_RX_CONFIG_REG_VAL_DMA_CHNL_EN_ENABLE |
 		ALM_FH_RCSR_RX_CONFIG_REG_VAL_RDRBD_EN_ENABLE |
 		ALM_FH_RCSR_RX_CONFIG_REG_BIT_WR_STTS_EN |
@@ -772,9 +768,9 @@ static int iwl3945_rx_init(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
 		ALM_FH_RCSR_RX_CONFIG_REG_VAL_MSG_MODE_FH);
 
 	/* fake read to flush all prev I/O */
-	iwl_read_restricted(priv, FH_RSSR_CTRL);
+	iwl_read_direct32(priv, FH_RSSR_CTRL);
 
-	iwl_release_restricted_access(priv);
+	iwl_release_nic_access(priv);
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	return 0;
@@ -786,30 +782,30 @@ static int iwl3945_tx_reset(struct iwl_priv *priv)
 	unsigned long flags;
 
 	spin_lock_irqsave(&priv->lock, flags);
-	rc = iwl_grab_restricted_access(priv);
+	rc = iwl_grab_nic_access(priv);
 	if (rc) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		return rc;
 	}
 
 	/* bypass mode */
-	iwl_write_restricted_reg(priv, SCD_MODE_REG, 0x2);
+	iwl_write_prph(priv, ALM_SCD_MODE_REG, 0x2);
 
 	/* RA 0 is active */
-	iwl_write_restricted_reg(priv, SCD_ARASTAT_REG, 0x01);
+	iwl_write_prph(priv, ALM_SCD_ARASTAT_REG, 0x01);
 
 	/* all 6 fifo are active */
-	iwl_write_restricted_reg(priv, SCD_TXFACT_REG, 0x3f);
+	iwl_write_prph(priv, ALM_SCD_TXFACT_REG, 0x3f);
 
-	iwl_write_restricted_reg(priv, SCD_SBYP_MODE_1_REG, 0x010000);
-	iwl_write_restricted_reg(priv, SCD_SBYP_MODE_2_REG, 0x030002);
-	iwl_write_restricted_reg(priv, SCD_TXF4MF_REG, 0x000004);
-	iwl_write_restricted_reg(priv, SCD_TXF5MF_REG, 0x000005);
+	iwl_write_prph(priv, ALM_SCD_SBYP_MODE_1_REG, 0x010000);
+	iwl_write_prph(priv, ALM_SCD_SBYP_MODE_2_REG, 0x030002);
+	iwl_write_prph(priv, ALM_SCD_TXF4MF_REG, 0x000004);
+	iwl_write_prph(priv, ALM_SCD_TXF5MF_REG, 0x000005);
 
-	iwl_write_restricted(priv, FH_TSSR_CBB_BASE,
+	iwl_write_direct32(priv, FH_TSSR_CBB_BASE,
 			     priv->hw_setting.shared_phys);
 
-	iwl_write_restricted(priv, FH_TSSR_MSG_CONFIG,
+	iwl_write_direct32(priv, FH_TSSR_MSG_CONFIG,
 		ALM_FH_TSSR_TX_MSG_CONFIG_REG_VAL_SNOOP_RD_TXPD_ON |
 		ALM_FH_TSSR_TX_MSG_CONFIG_REG_VAL_ORDER_RD_TXPD_ON |
 		ALM_FH_TSSR_TX_MSG_CONFIG_REG_VAL_MAX_FRAG_SIZE_128B |
@@ -818,7 +814,7 @@ static int iwl3945_tx_reset(struct iwl_priv *priv)
 		ALM_FH_TSSR_TX_MSG_CONFIG_REG_VAL_ORDER_RSP_WAIT_TH |
 		ALM_FH_TSSR_TX_MSG_CONFIG_REG_VAL_RSP_WAIT_TH);
 
-	iwl_release_restricted_access(priv);
+	iwl_release_nic_access(priv);
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	return 0;
@@ -884,18 +880,18 @@ int iwl_hw_nic_init(struct iwl_priv *priv)
 		return rc;
 	}
 
-	rc = iwl_grab_restricted_access(priv);
+	rc = iwl_grab_nic_access(priv);
 	if (rc) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		return rc;
 	}
-	iwl_write_restricted_reg(priv, ALM_APMG_CLK_EN,
-				 APMG_CLK_REG_VAL_DMA_CLK_RQT |
-				 APMG_CLK_REG_VAL_BSM_CLK_RQT);
+	iwl_write_prph(priv, APMG_CLK_EN_REG,
+				 APMG_CLK_VAL_DMA_CLK_RQT |
+				 APMG_CLK_VAL_BSM_CLK_RQT);
 	udelay(20);
-	iwl_set_bits_restricted_reg(priv, ALM_APMG_PCIDEV_STT,
-				    APMG_DEV_STATE_REG_VAL_L1_ACTIVE_DISABLE);
-	iwl_release_restricted_access(priv);
+	iwl_set_bits_prph(priv, APMG_PCIDEV_STT_REG,
+				    APMG_PCIDEV_STT_VAL_L1_ACT_DIS);
+	iwl_release_nic_access(priv);
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	/* Determine HW type */
@@ -986,13 +982,13 @@ int iwl_hw_nic_init(struct iwl_priv *priv)
 	iwl_rx_queue_update_write_ptr(priv, rxq);
 	*/
 
-	rc = iwl_grab_restricted_access(priv);
+	rc = iwl_grab_nic_access(priv);
 	if (rc) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		return rc;
 	}
-	iwl_write_restricted(priv, FH_RCSR_WPTR(0), rxq->write & ~7);
-	iwl_release_restricted_access(priv);
+	iwl_write_direct32(priv, FH_RCSR_WPTR(0), rxq->write & ~7);
+	iwl_release_nic_access(priv);
 
 	spin_unlock_irqrestore(&priv->lock, flags);
 
@@ -1025,24 +1021,24 @@ void iwl_hw_txq_ctx_stop(struct iwl_priv *priv)
 	unsigned long flags;
 
 	spin_lock_irqsave(&priv->lock, flags);
-	if (iwl_grab_restricted_access(priv)) {
+	if (iwl_grab_nic_access(priv)) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		iwl_hw_txq_ctx_free(priv);
 		return;
 	}
 
 	/* stop SCD */
-	iwl_write_restricted_reg(priv, SCD_MODE_REG, 0);
+	iwl_write_prph(priv, ALM_SCD_MODE_REG, 0);
 
 	/* reset TFD queues */
 	for (queue = TFD_QUEUE_MIN; queue < TFD_QUEUE_MAX; queue++) {
-		iwl_write_restricted(priv, FH_TCSR_CONFIG(queue), 0x0);
-		iwl_poll_restricted_bit(priv, FH_TSSR_TX_STATUS,
+		iwl_write_direct32(priv, FH_TCSR_CONFIG(queue), 0x0);
+		iwl_poll_direct_bit(priv, FH_TSSR_TX_STATUS,
 				ALM_FH_TSSR_TX_STATUS_REG_MSK_CHNL_IDLE(queue),
 				1000);
 	}
 
-	iwl_release_restricted_access(priv);
+	iwl_release_nic_access(priv);
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	iwl_hw_txq_ctx_free(priv);
@@ -1096,31 +1092,32 @@ int iwl_hw_nic_reset(struct iwl_priv *priv)
 			  CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY,
 			  CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
 
-	rc = iwl_grab_restricted_access(priv);
+	rc = iwl_grab_nic_access(priv);
 	if (!rc) {
-		iwl_write_restricted_reg(priv, APMG_CLK_CTRL_REG,
-					 APMG_CLK_REG_VAL_BSM_CLK_RQT);
+		iwl_write_prph(priv, APMG_CLK_CTRL_REG,
+					 APMG_CLK_VAL_BSM_CLK_RQT);
 
 		udelay(10);
 
 		iwl_set_bit(priv, CSR_GP_CNTRL,
 			    CSR_GP_CNTRL_REG_FLAG_INIT_DONE);
 
-		iwl_write_restricted_reg(priv, ALM_APMG_LARC_INT_MSK, 0x0);
-		iwl_write_restricted_reg(priv, ALM_APMG_LARC_INT, 0xFFFFFFFF);
+		iwl_write_prph(priv, APMG_RTC_INT_MSK_REG, 0x0);
+		iwl_write_prph(priv, APMG_RTC_INT_STT_REG,
+					0xFFFFFFFF);
 
 		/* enable DMA */
-		iwl_write_restricted_reg(priv, ALM_APMG_CLK_EN,
-					 APMG_CLK_REG_VAL_DMA_CLK_RQT |
-					 APMG_CLK_REG_VAL_BSM_CLK_RQT);
+		iwl_write_prph(priv, APMG_CLK_EN_REG,
+					 APMG_CLK_VAL_DMA_CLK_RQT |
+					 APMG_CLK_VAL_BSM_CLK_RQT);
 		udelay(10);
 
-		iwl_set_bits_restricted_reg(priv, ALM_APMG_PS_CTL,
-				APMG_PS_CTRL_REG_VAL_ALM_R_RESET_REQ);
+		iwl_set_bits_prph(priv, APMG_PS_CTRL_REG,
+				APMG_PS_CTRL_VAL_RESET_REQ);
 		udelay(5);
-		iwl_clear_bits_restricted_reg(priv, ALM_APMG_PS_CTL,
-				APMG_PS_CTRL_REG_VAL_ALM_R_RESET_REQ);
-		iwl_release_restricted_access(priv);
+		iwl_clear_bits_prph(priv, APMG_PS_CTRL_REG,
+				APMG_PS_CTRL_VAL_RESET_REQ);
+		iwl_release_nic_access(priv);
 	}
 
 	/* Clear the 'host command active' bit... */
@@ -1133,8 +1130,9 @@ int iwl_hw_nic_reset(struct iwl_priv *priv)
 }
 
 /**
- * iwl_hw_reg_adjust_power_by_temp - return index delta into power gain settings table
- */
+ * iwl_hw_reg_adjust_power_by_temp
+ * return index delta into power gain settings table
+*/
 static int iwl_hw_reg_adjust_power_by_temp(int new_reading, int old_reading)
 {
 	return (new_reading - old_reading) * (-11) / 100;
@@ -1154,8 +1152,9 @@ int iwl_hw_get_temperature(struct iwl_priv *priv)
 }
 
 /**
- * iwl_hw_reg_txpower_get_temperature - get current temperature by reading from NIC
- */
+ * iwl_hw_reg_txpower_get_temperature
+ * get the current temperature by reading from NIC
+*/
 static int iwl_hw_reg_txpower_get_temperature(struct iwl_priv *priv)
 {
 	int temperature;
@@ -1749,7 +1748,7 @@ void iwl3945_reg_txpower_periodic(struct iwl_priv *priv)
 			   &priv->thermal_periodic, REG_RECALIB_PERIOD * HZ);
 }
 
-void iwl3945_bg_reg_txpower_periodic(struct work_struct *work)
+static void iwl3945_bg_reg_txpower_periodic(struct work_struct *work)
 {
 	struct iwl_priv *priv = container_of(work, struct iwl_priv,
 					     thermal_periodic.work);
@@ -2065,18 +2064,18 @@ int iwl_hw_rxq_stop(struct iwl_priv *priv)
 	unsigned long flags;
 
 	spin_lock_irqsave(&priv->lock, flags);
-	rc = iwl_grab_restricted_access(priv);
+	rc = iwl_grab_nic_access(priv);
 	if (rc) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		return rc;
 	}
 
-	iwl_write_restricted(priv, FH_RCSR_CONFIG(0), 0);
-	rc = iwl_poll_restricted_bit(priv, FH_RSSR_STATUS, (1 << 24), 1000);
+	iwl_write_direct32(priv, FH_RCSR_CONFIG(0), 0);
+	rc = iwl_poll_direct_bit(priv, FH_RSSR_STATUS, (1 << 24), 1000);
 	if (rc < 0)
 		IWL_ERROR("Can't stop Rx DMA.\n");
 
-	iwl_release_restricted_access(priv);
+	iwl_release_nic_access(priv);
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	return 0;
@@ -2093,21 +2092,21 @@ int iwl_hw_tx_queue_init(struct iwl_priv *priv, struct iwl_tx_queue *txq)
 	shared_data->tx_base_ptr[txq_id] = cpu_to_le32((u32)txq->q.dma_addr);
 
 	spin_lock_irqsave(&priv->lock, flags);
-	rc = iwl_grab_restricted_access(priv);
+	rc = iwl_grab_nic_access(priv);
 	if (rc) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		return rc;
 	}
-	iwl_write_restricted(priv, FH_CBCC_CTRL(txq_id), 0);
-	iwl_write_restricted(priv, FH_CBCC_BASE(txq_id), 0);
+	iwl_write_direct32(priv, FH_CBCC_CTRL(txq_id), 0);
+	iwl_write_direct32(priv, FH_CBCC_BASE(txq_id), 0);
 
-	iwl_write_restricted(priv, FH_TCSR_CONFIG(txq_id),
+	iwl_write_direct32(priv, FH_TCSR_CONFIG(txq_id),
 		ALM_FH_TCSR_TX_CONFIG_REG_VAL_CIRQ_RTC_NOINT |
 		ALM_FH_TCSR_TX_CONFIG_REG_VAL_MSG_MODE_TXF |
 		ALM_FH_TCSR_TX_CONFIG_REG_VAL_CIRQ_HOST_IFTFD |
 		ALM_FH_TCSR_TX_CONFIG_REG_VAL_DMA_CREDIT_ENABLE_VAL |
 		ALM_FH_TCSR_TX_CONFIG_REG_VAL_DMA_CHNL_ENABLE);
-	iwl_release_restricted_access(priv);
+	iwl_release_nic_access(priv);
 
 	/* fake read to flush all prev. writes */
 	iwl_read32(priv, FH_TSSR_CBB_BASE);
@@ -2207,7 +2206,8 @@ int iwl_hw_set_hw_setting(struct iwl_priv *priv)
 	priv->hw_setting.tx_cmd_len = sizeof(struct iwl_tx_cmd);
 	priv->hw_setting.max_rxq_size = RX_QUEUE_SIZE;
 	priv->hw_setting.max_rxq_log = RX_QUEUE_SIZE_LOG;
-	priv->hw_setting.cck_flag = 0;
+	priv->hw_setting.max_stations = IWL3945_STATION_COUNT;
+	priv->hw_setting.bcast_sta_id = IWL3945_BROADCAST_ID;
 	return 0;
 }
 
@@ -2220,7 +2220,7 @@ unsigned int iwl_hw_get_beacon_cmd(struct iwl_priv *priv,
 	tx_beacon_cmd = (struct iwl_tx_beacon_cmd *)&frame->u;
 	memset(tx_beacon_cmd, 0, sizeof(*tx_beacon_cmd));
 
-	tx_beacon_cmd->tx.sta_id = IWL_BROADCAST_ID;
+	tx_beacon_cmd->tx.sta_id = IWL3945_BROADCAST_ID;
 	tx_beacon_cmd->tx.stop_time.life_time = TX_CMD_LIFE_TIME_INFINITE;
 
 	frame_size = iwl_fill_beacon_frame(priv,
@@ -2272,12 +2272,12 @@ void iwl_hw_cancel_deferred_work(struct iwl_priv *priv)
 }
 
 struct pci_device_id iwl_hw_card_ids[] = {
-	{0x8086, 0x4222, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-	{0x8086, 0x4227, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4222)},
+	{PCI_DEVICE(PCI_VENDOR_ID_INTEL, 0x4227)},
 	{0}
 };
 
-inline int iwl_eeprom_aqcuire_semaphore(struct iwl_priv *priv)
+inline int iwl_eeprom_acquire_semaphore(struct iwl_priv *priv)
 {
 	_iwl_clear_bit(priv, CSR_EEPROM_GP, CSR_EEPROM_GP_IF_OWNER_MSK);
 	return 0;

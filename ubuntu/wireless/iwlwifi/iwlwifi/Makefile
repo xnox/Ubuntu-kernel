@@ -12,8 +12,8 @@ export CONFIG_IWL3945 ?= m
 export CONFIG_IWL4965 ?= m
 export CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT ?= y
 export CONFIG_IWLWIFI_DEBUG ?= y
-export CONFIG_IWLWIFI_HT ?= y
-export CONFIG_IWLWIFI_HT_AGG ?= y
+export CONFIG_IWLWIFI_HT ?= n
+export CONFIG_IWLWIFI_HT_AGG ?= n
 export CONFIG_IWLWIFI_SENSITIVITY ?= y
 export CONFIG_IWLWIFI_QOS ?= y
 export IWLWIFI_VERSION ?= test
@@ -133,7 +133,7 @@ sparse: check_inc source
 
 ifeq ($(DEVMODE),y)
 modules:
-	@echo "Warning: In DEVMOD: No compatability checks are performed!!!"
+	@echo "Warning: In DEVMODE: No compatability checks are performed!!!"
 	$(MAKE) -C $(KSRC) O=$(KSRC_OUTPUT) M=$(PWD)/${DIR} EXTRA_CFLAGS="$(EXTRA_CFLAGS)" modules
 else
 modules: check_inc source

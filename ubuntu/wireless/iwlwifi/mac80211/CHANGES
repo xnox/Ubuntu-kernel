@@ -1,3 +1,13 @@
+Changes in 10.0.1
+
+* mac80211: add two patches for pending/
+* add file patches/i_private.sh
+* mac80211: looking for ilog2 in log2.h
+* mac80211: fixing typo in i_private compat
+* mac80211 compatibility fix for i_private
+* mac80211 compatibility for nl80211 removal
+* picks John Linville's IPv6 fix from wireless-dev ML
+
 Changes in 10.0.0
 
 * add patch 0032 to fix a kernel panic issue during IBSS shutdown

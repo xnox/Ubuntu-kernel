@@ -1,2 +1,2 @@
-obj-m += mac80211/origin/net/mac80211/
-obj-m += iwlwifi/origin/
+obj-m += mac80211/compatible/net/mac80211/
+obj-m += iwlwifi/compatible/

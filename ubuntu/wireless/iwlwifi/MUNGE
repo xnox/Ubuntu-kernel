@@ -23,26 +23,27 @@ cd `dirname $0`
 #
 
 #
+# Apply all applicable patches
+#
+make -C mac80211 SHELL=/bin/bash KSRC=/lib/modules/2.6.24-5-generic/build source
+make -C iwlwifi SHELL=/bin/bash KSRC=/lib/modules/2.6.24-5-generic/build source
+
+#
 # Insert the include path into the mac80211 Makefile
 #
 MF=Makefile.mac80211
 echo CONFIG_MAC80211=m > ${MF}
-echo "EXTRA_CFLAGS += -I\$(src)/../.." >> ${MF}
-cat mac80211/origin/net/mac80211/Makefile >> ${MF}
+echo "NOSTDINC_FLAGS += -I\$(src)/../../include" >> ${MF}
+cat mac80211/compatible/net/mac80211/Makefile >> ${MF}
 sed -i -e 's/mac80211\.o/iwlwifi_mac80211\.o/' -e 's/mac80211-objs/iwlwifi_mac80211-objs/g' -e 's/rc80211_simple/iwlwifi_rc80211_simple/g' ${MF}
-mv ${MF} mac80211/origin/net/mac80211/Makefile
-mv  mac80211/origin/net/mac80211/rc80211_simple.c mac80211/origin/net/mac80211/iwlwifi_rc80211_simple.c
+mv -f ${MF} mac80211/compatible/net/mac80211/Makefile
+mv  mac80211/compatible/net/mac80211/rc80211_simple.c mac80211/compatible/net/mac80211/iwlwifi_rc80211_simple.c
 
 #
 # Since radiotap is isolated, just build it into the mac80211 module.
 #
-mv mac80211/origin/net/wireless/radiotap.c mac80211/origin/net/mac80211
-echo "iwlwifi_mac80211-objs += radiotap.o" >> mac80211/origin/net/mac80211/Makefile
-
-#
-# Remove calls to debugfs_rename.
-#
-patch -d mac80211 -p1 < 0001-debugfs.diff
+mv mac80211/compatible/net/wireless/radiotap.c mac80211/compatible/net/mac80211
+echo "iwlwifi_mac80211-objs += radiotap.o" >> mac80211/compatible/net/mac80211/Makefile
 
 #
 # Munge the iwlwifi Makefile
@@ -50,11 +51,10 @@ patch -d mac80211 -p1 < 0001-debugfs.diff
 MF=Makefile.iwlwifi
 echo CONFIG_IWL4965=m > ${MF}
 echo CONFIG_IWL3945=m >> ${MF}
-echo "EXTRA_CFLAGS += -I\$(src)/../../mac80211/origin" >> ${MF}
-echo "EXTRA_CFLAGS += -I\$(src)/../../mac80211/origin/net" >> ${MF}
+echo "NOSTDINC_FLAGS += -I\$(src)/../../mac80211/compatible/include" >> ${MF}
 echo "EXTRA_CFLAGS += -DCONFIG_IWLWIFI_QOS=1" >> ${MF}
-cat iwlwifi/origin/Makefile >> ${MF}
-mv ${MF} iwlwifi/origin/Makefile
+cat iwlwifi/compatible/Makefile >> ${MF}
+mv -f ${MF} iwlwifi/compatible/Makefile
 
 #
 # Do not auto-load iwl3945. ipw3945 gets precedence.
@@ -62,28 +62,11 @@ mv ${MF} iwlwifi/origin/Makefile
 sed -i '/MODULE_DEVICE_TABLE/d' iwlwifi/origin/iwl-3945.c
 
 #
-# Munge include file paths since there are some duplicates.
-# The differences appear to be a superset, so using these versions instead of what
-# is in the kernel tree ought to be OK.
-#
-IF="linux/nl80211.h linux/ieee80211.h linux/wireless.h net/cfg80211.h"
-IF="${IF} net/ieee80211_radiotap.h net/mac80211.h net/wext.h"
-IF="${IF} net/iw_handler.h net/wireless.h"
-
-for i in ${IF}
-do
-	find . -name "*.[ch]" | while read f
-	do
-		sed -i "s;<$i>;<include/$i>;" "${f}"
-	done
-done
-
-#
 # Isolate the mac80211 exported symbols and munge every occurence such that
 # there is no possibility of conflict with the main kernel.
 #
 TL=token_list
-find mac80211/origin/net/mac80211 -name "*.[ch]" | \
+find mac80211/compatible/net/mac80211 -name "*.[ch]" | \
 xargs grep EXPORT_SYMBOL | \
 sed -e 's/^.*EXPORT_SYMBOL(//' -e 's/);//' > ${TL}
 
@@ -99,6 +82,6 @@ rm -f ${TL}
 #
 # Build the top level makefile
 #
-echo "obj-m += mac80211/origin/net/mac80211/" > Makefile
-echo "obj-m += iwlwifi/origin/" >> Makefile
+echo "obj-m += mac80211/compatible/net/mac80211/" > Makefile
+echo "obj-m += iwlwifi/compatible/" >> Makefile
 

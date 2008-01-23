@@ -1,8 +1,110 @@
-Changes in 1.1.0
+Changes in 1.2.0
 
+* Update ISSUES file
+* avoid firmware command sending if rfkill is enabled
+* fix ucode assertion for RX queue overrun
+* enhance WPA authenication stability
+* iwl3945: re-align 3945 event log data
+
+Changes in 1.1.20
+
+* Disable interrupts in the iwlwifi before calling request_irq() for
+* replace 0x8086 with PCI_VENDOR_ID_INTEL
+* iwl4965: fix cannot find a suitable rate issue
+* set correct base rate for A band in rs_dbgfs_set_mcs
+* mark more functions/variables static
+
+Changes in 1.1.19
+
+* iwl3945: fix direct scan problem
+* iwl3945: cancel scan on rxon command
+* iwl4965: fix scan problem
+
+Changes in 1.1.18
+
+* iwl4965: fix driver hang related to hardware scan
+* iwl4965: exclude 60M rate from probe request
+* Renames struct fw_image_desc to struct fw_desc
+* add 5965 SCD registers to iwl-prph.h
+* move 3945 SCD registers to iwl-prph.h
+* iwlwifi-ht: move 4965 SCD registers to iwl-prph.h
+* Fix rate setting in probe request for HW sacn
+* replacing wording restricted to nic access in iwl-io
+* rename restricted_mem to targ_mem
+* replace restricted_reg with prph
+* accept up to 4K frame size on Rx side to fit A-MSDU frame
+* fix sending probe request in iwl 4965
+* iwl4965-base.c: fix off-by-one errors
+* using PCI_DEVICE macro
+* remove cck_power_index_compensation
+* Fix tiny typo in Makefile
+* remove late null-check and duplicate bug_on
+* Beautify by removing superfluous newlines and code
+* Fix commit script
+* Two comments in iwl-3945.c were longer than 80 columns
+* remove cck_flag from iwl_driver_hw_info
+* add TGN flag to qos parameters
+* rs-4965 fix return values
+* renaming last_used and first_empty
+* fix fixed rate debugfs for A phymode
+* rename iwl_eeprom_aqcuire_semaphore to _acquire_
+* fix various spelling and typos
+
+Changes in 1.1.17
+
+* add inode->i_private compatibility patch for iwlwifi driver
+* fixing make_chang_log script
+* add debugfs rate scale stats
+* set fixed rate through debugfs
+* rs_rate_scale_perform clean up
+* add supp_rates to rate scale sta private data
+* limit printouts on hot path
+* add read rate scale table debugfs function
+* add debugfs framework to rate scale
+* removing unnecessary memset in 4965 rate scale
+* partially revert add_station to avoid FW error
+* Fix typo in rate sacling algorithm
+* clear station table in rxon unconditionally
+* Correction for sending beacon in config_ap
+
+Changes in 0.1.16
+
+* workaournd REPLY_COMPRESSED_BA command in iwl_rx_handle
+* replacing IPW with IWL in error messages
+* remove assoc_station_added for 3945
+* iwl_bg_post_associate should not be called in AP context
+* add hwcrypto clear key support
 * Fix out of tree compile configuration
+* cleanup upstream Makefile
+* fix ieee80211_rx_status->mactime update
+* rename iwl4965_sign_extend and simplify its implementation
+* remove old bogus comments for qos queues
 * fix compile error when CONFIG_IWLWIFI_QOS is not defined
-* Update stubs/ISSUES for PV 1.1.0
+* use mac80211's indication for packet ACK when hwcrypto=1
+* fix alignment of rate scaling function
+* Fix station management
+* set number of packets in aggregation to maximum: 64
+* rename ipw to iwl
+* enable HT setting for AP associated stations
+* remove iwl4965_set_rxon_chain from add station
+* Fix AP QoS also for 3945
+* Fix TX queue to TX fifo mapping
+* fix setting SW rf-kill failure
+* removes unused variable from pci_probe function
+* removing IWL ifdefs from STA ID fields
+* fix rate scale unloading
+* remove duplicated definitions of IWL_ACTION_LIMIT
+* update patches for the iwl-base.c split
+* remove unused constants from iwl-hw.h
+* Merge with branch `split'
+* move macros defines from *.c to *.h
+* move APMG registers to Periphery section
+* Control channel fix for FAT channel
+* FAT channel bug fix for zero relevant bits
+* fixing LQ command changes in AP mode
+* remove unnecessary condition check
+* avoid kernel oops in monitor mode with debug enabled
+* move defines from iwl-4965.c to iwl-commands.h
 
 Changes in 0.1.15
 

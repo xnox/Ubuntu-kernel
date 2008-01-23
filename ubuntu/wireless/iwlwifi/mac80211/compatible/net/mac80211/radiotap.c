@@ -4,8 +4,8 @@
  * Copyright 2007		Andy Green <andy@warmcat.com>
  */
 
-#include <include/net/cfg80211.h>
-#include <include/net/ieee80211_radiotap.h>
+#include <net/cfg80211.h>
+#include <net/ieee80211_radiotap.h>
 #include <asm/unaligned.h>
 
 /* function prototypes and related defs are in include/net/cfg80211.h */

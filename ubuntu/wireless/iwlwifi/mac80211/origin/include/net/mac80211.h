@@ -14,11 +14,11 @@
 #include <linux/kernel.h>
 #include <linux/if_ether.h>
 #include <linux/skbuff.h>
-#include <include/linux/wireless.h>
+#include <linux/wireless.h>
 #include <linux/device.h>
-#include <include/linux/ieee80211.h>
-#include <include/net/wireless.h>
-#include <include/net/cfg80211.h>
+#include <linux/ieee80211.h>
+#include <net/wireless.h>
+#include <net/cfg80211.h>
 
 /* Note! Only iwlwifi_iwlwifi_ieee80211_tx_status_irqsafe() and iwlwifi_ieee80211_rx_irqsafe() can be
  * called in hardware interrupt context. The low-level driver must not call any

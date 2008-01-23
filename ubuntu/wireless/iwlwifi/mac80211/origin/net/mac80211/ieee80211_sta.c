@@ -22,13 +22,13 @@
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
 #include <linux/if_arp.h>
-#include <include/linux/wireless.h>
+#include <linux/wireless.h>
 #include <linux/random.h>
 #include <linux/etherdevice.h>
-#include <include/net/iw_handler.h>
+#include <net/iw_handler.h>
 #include <asm/types.h>
 
-#include <include/net/mac80211.h>
+#include <net/mac80211.h>
 #include "ieee80211_i.h"
 #include "ieee80211_rate.h"
 #include "hostapd_ioctl.h"

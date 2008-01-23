@@ -1,0 +1,21 @@
+diff --git a/net/mac80211/sta_info.c b/net/mac80211/sta_info.c
+index ff8d484..a450ad0 100644
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -205,6 +205,7 @@ struct sta_info * sta_info_add(struct ieee80211_local *local,
+ 		sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer.data = (unsigned long)&sta->timer_to_tid[i];
+ 		init_timer(&sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer);
+ 
++		sta->ht_ba_mlme.tid_agg_info_tx[i].state = HT_AGG_STATE_IDLE;
+ 		/* net sched tx queue id: initialize to max (0 is valid one)*/
+        		sta->tx_queue_id[i] = local->hw.queues;
+ 
+@@ -212,6 +213,8 @@ struct sta_info * sta_info_add(struct ieee80211_local *local,
+ 		sta->ht_ba_mlme.tid_agg_info_rx[i].session_timer.function = sta_rx_agg_session_timer_expired;
+ 		sta->ht_ba_mlme.tid_agg_info_rx[i].session_timer.data = (unsigned long)&sta->timer_to_tid[i];
+ 		init_timer(&sta->ht_ba_mlme.tid_agg_info_rx[i].session_timer);
++
++		sta->ht_ba_mlme.tid_agg_info_rx[i].state = HT_AGG_STATE_IDLE;
+ 	}
+ 
+ 	skb_queue_head_init(&sta->ps_tx_buf);

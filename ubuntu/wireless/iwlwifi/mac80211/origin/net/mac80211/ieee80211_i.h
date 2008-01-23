@@ -21,7 +21,7 @@
 #include <linux/workqueue.h>
 #include <linux/types.h>
 #include <linux/spinlock.h>
-#include <include/net/wireless.h>
+#include <net/wireless.h>
 #include "ieee80211_key.h"
 #include "sta_info.h"
 

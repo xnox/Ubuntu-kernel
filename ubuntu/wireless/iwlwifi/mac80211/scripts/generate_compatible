@@ -105,6 +105,11 @@ function do_script {
     die $? "Failure creating new qdisc compatibility."
 }
 
+(( !$has_i_private )) && {
+	do_script i_private.sh ||
+	die $? "Failure creating i_private rename compatibility."
+}
+
 (( !$has_block_cipher )) && {
     do_patch block-cipher.patch ||
     die $? "Failure creating block cipher compatibility."
@@ -210,20 +215,20 @@ function do_script {
 	die $? "Failure tcf_destroy_chain compat"
 }
 
-(( !$has_new_nla_policy )) && {
-	do_patch nla_policy.patch ||
-	die $? "Failure old nla_policy compat"
-}
-
-(( !$has_new_nla_put_flag )) && {
-	do_patch nla_put_flag.patch ||
-	die $? "Failure old NLA_PUT_FLAG compat"
-}
-
-(( !$has_new_nlmsg_new )) && {
-	do_patch nlmsg_new.patch ||
-	die $? "Failure old nlmsg_new() compat"
-}
+#(( !$has_new_nla_policy )) && {
+#	do_patch nla_policy.patch ||
+#	die $? "Failure old nla_policy compat"
+#}
+#
+#(( !$has_new_nla_put_flag )) && {
+#	do_patch nla_put_flag.patch ||
+#	die $? "Failure old NLA_PUT_FLAG compat"
+#}
+#
+#(( !$has_new_nlmsg_new )) && {
+#	do_patch nlmsg_new.patch ||
+#	die $? "Failure old nlmsg_new() compat"
+#}
 
 (( !$has_debugfs_rename )) && {
 	do_patch debugfs_rename.patch ||

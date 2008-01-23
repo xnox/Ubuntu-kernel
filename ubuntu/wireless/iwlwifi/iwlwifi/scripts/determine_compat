@@ -99,6 +99,12 @@ grep -q "preferred_rate_control" ${KSRC}/include/net/mac80211.h &&
 
 # ----------------
 
+export has_i_private=0
+grep -q "i_private" ${KSRC}/include/linux/fs.h &&
+	export has_i_private=1
+
+# ----------------
+
 export requires_compat=0
 (( !$has_preferred_rate_control )) &&
 (( $has_cancel_work_sync )) && 
@@ -111,6 +117,7 @@ export requires_compat=0
 (( $has_delayed_work_define )) && 
 (( $has_mac80211_v2 )) && 
 (( $has_delayed_work )) && 
+(( $has_i_private )) && 
 (( $has_new_request_irq )) && {
 	echo " * Kernel supports required features for 'tip' version."
 	return 0
@@ -142,5 +149,7 @@ echo "   - Requires hex_dump compat"
 echo "   - Requires cancel_work_sync avoidance"
 (( $has_preferred_rate_control )) && 
 echo "   - Uses preferred_rate_control feature"
+(( !$has_i_private )) &&
+echo "   - Requires i_private rename compat"
 return 0
 }

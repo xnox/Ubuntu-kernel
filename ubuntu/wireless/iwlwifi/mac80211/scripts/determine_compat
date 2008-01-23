@@ -28,7 +28,14 @@ EOF
 # ----------------
 
 
-    
+#-----------------
+# 2.6.19 as part of the "inode_diet" patches removed the union
+# ennclosing generic_ip and renamed the pointer to i_private
+#
+    export has_i_private=0
+    grep -q "i_private" ${KSRC}include/linux/fs.h &&
+    export has_i_private=1
+ 
 # ----------------
 # 2.6.19 or so added block ciphers which are used by the
 # wireless crypto subsystems.  
@@ -116,7 +123,7 @@ EOF
 
 # 2.6.20 adds ilog2
 	export has_ilog2=0
-	[ -e ${KSRC}include/linux/ilog2.h ] &&
+	[ -e ${KSRC}include/linux/log2.h ] &&
 		export has_ilog2=1
 
 # DIV_ROUND_UP was added to kernel.h at some point...
@@ -153,27 +160,27 @@ EOF
 		export has_to_net_dev=1
 # ----------------
 
-	export has_new_nla_policy=1
-	grep -A2 'nla_policy {' ${KSRC}include/net/netlink.h |grep -q minlen &&
-		export has_new_nla_policy=0
-    
-	export has_new_nla_put_flag=1
-	grep -q 'NLA_PUT_FLAG.*value)' ${KSRC}include/net/netlink.h &&
-		export has_new_nla_put_flag=0
-
-	export has_new_nlmsg_new=0
-	grep -q 'nlmsg_new.*gfp_t' ${KSRC}include/net/netlink.h &&
-		export has_new_nlmsg_new=1
-
+#	export has_new_nla_policy=1
+#	grep -A2 'nla_policy {' ${KSRC}include/net/netlink.h |grep -q minlen &&
+#		export has_new_nla_policy=0
+#
+#	export has_new_nla_put_flag=1
+#	grep -q 'NLA_PUT_FLAG.*value)' ${KSRC}include/net/netlink.h &&
+#		export has_new_nla_put_flag=0
+#
+#	export has_new_nlmsg_new=0
+#	grep -q 'nlmsg_new.*gfp_t' ${KSRC}include/net/netlink.h &&
+#		export has_new_nlmsg_new=1
+#
 	export has_debugfs_rename=0
 	grep -q 'debugfs_rename' ${KSRC}fs/debugfs/inode.c &&
 		export has_debugfs_rename=1
 
 
     (( $has_debugfs_rename )) &&
-    (( $has_new_nlmsg_new )) &&
-    (( $has_new_nla_put_flag )) &&
-    (( $has_new_nla_policy )) &&
+#    (( $has_new_nlmsg_new )) &&
+#    (( $has_new_nla_put_flag )) &&
+#    (( $has_new_nla_policy )) &&
     (( $has_tcf_destroy_chain )) &&
     (( $has_nlmsg_trim )) &&
     (( $has_seq_open_const )) &&
@@ -186,6 +193,7 @@ EOF
     (( $has_rtnl_notify )) && 
     (( $has_new_qdisc )) && 
     (( $has_block_cipher )) && 
+    (( $has_i_private )) && 
     (( $has_delayed_work )) && 
     (( $has_new_genlmsg )) &&
     (( $has_ieee80211_ptr )) && {
@@ -196,6 +204,8 @@ EOF
     echo " * Kernel requires compatibility version:"
     (( !$has_new_qdisc )) && 
     echo "   - Requires qdisc API compat"
+    (( !$has_i_private )) && 
+    echo "   - Requires i_private rename compat"
     (( !$has_block_cipher )) && 
     echo "   - Requires non-block crypto compat"
     (( !$has_delayed_work )) && 
@@ -230,12 +240,12 @@ EOF
     echo "   - Requires nlmsg_trim() removal compat"
     (( !$has_tcf_destroy_chain )) &&
     echo "   - Requires tcf_destroy_chain() compat"
-    (( !$has_new_nla_policy )) &&
-    echo "   - Requires new nal_policy compat"
-    (( !$has_new_nla_put_flag )) &&
-    echo "   - Requires old NLA_PUT_FLAG compat"
-    (( !$has_new_nlmsg_new )) &&
-    echo "   - Requires old nlmsg_new() compat"
+#    (( !$has_new_nla_policy )) &&
+#    echo "   - Requires new nal_policy compat"
+#    (( !$has_new_nla_put_flag )) &&
+#    echo "   - Requires old NLA_PUT_FLAG compat"
+#    (( !$has_new_nlmsg_new )) &&
+#    echo "   - Requires old nlmsg_new() compat"
     (( !$has_debugfs_rename )) &&
     echo "   - Requires debugfs_rename() compat"
 
@@ -266,11 +276,11 @@ EOF
 	grep -q "NLA_BINARY" ${KSRC}include/net/netlink.h &&
 		export has_nla_binary=1
 
-	export has_new_genlmsg_put=1
-	grep -A2 'genlmsg_put(' ${KSRC}include/net/genetlink.h |grep -q version &&
-		export has_new_genlmsg_put=0
+#	export has_new_genlmsg_put=1
+#	grep -A2 'genlmsg_put(' ${KSRC}include/net/genetlink.h |grep -q version &&
+#		export has_new_genlmsg_put=0
 
-    (( $has_new_genlmsg_put )) &&
+#    (( $has_new_genlmsg_put )) &&
     (( $has_nla_binary )) &&
     (( $has_nla_nul_string )) && {
 	echo " * Kernel supports required features for 'modified' version."
@@ -281,8 +291,8 @@ EOF
     echo "   - Requires NLA_NUL_STRING compat"
     (( !$has_nla_nul_string )) &&
     echo "   - Requires NLA_BINARY compat"
-    (( !$has_new_genlmsg_put )) &&
-    echo "   - Requires old genlmsg_put() compat"
+#    (( !$has_new_genlmsg_put )) &&
+#    echo "   - Requires old genlmsg_put() compat"
 
     return 0
 }

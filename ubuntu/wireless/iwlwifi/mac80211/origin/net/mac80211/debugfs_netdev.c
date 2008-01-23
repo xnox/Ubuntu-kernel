@@ -14,8 +14,8 @@
 #include <linux/netdevice.h>
 #include <linux/rtnetlink.h>
 #include <linux/notifier.h>
-#include <include/net/mac80211.h>
-#include <include/net/cfg80211.h>
+#include <net/mac80211.h>
+#include <net/cfg80211.h>
 #include "ieee80211_i.h"
 #include "ieee80211_rate.h"
 #include "debugfs.h"
@@ -411,6 +411,12 @@ static int netdev_notify(struct notifier_block * nb,
 
 	if (dev->ieee80211_ptr->wiphy->privid != mac80211_wiphy_privid)
 		return 0;
+
+	sprintf(buf, "netdev:%s", dev->name);
+	dir = sdata->debugfsdir;
+	if (!debugfs_rename(dir->d_parent, dir, dir->d_parent, buf))
+		printk(KERN_ERR "mac80211: debugfs: failed to rename debugfs "
+		       "dir to %s\n", buf);
 
 	return 0;
 }

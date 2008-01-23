@@ -133,6 +133,11 @@ function do_script {
 		die $? "Failed."
 }
 
+(( !$has_i_private )) && {
+	do_script $DST patches/i_private.sh ||
+		die $? "Failure creating i_private rename compatibility."
+}
+
 makefile_modified=0
 (( !$has_mac80211_ht )) && {
 	grep -q 'export CONFIG_IWLWIFI_HT ?= y' Makefile

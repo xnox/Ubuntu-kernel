@@ -15,7 +15,7 @@
 #include <linux/skbuff.h>
 #include <linux/if_arp.h>
 
-#include <include/net/mac80211.h>
+#include <net/mac80211.h>
 #include "ieee80211_i.h"
 #include "ieee80211_rate.h"
 #include "sta_info.h"
