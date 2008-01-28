@@ -1,0 +1,7 @@
+#CFLAGS_drbd_sizeof_sanity_check.o = -Wpadded # -Werror
+
+drbd-objs  :=	drbd_buildtag.o drbd_bitmap.o drbd_proc.o \
+		drbd_worker.o drbd_receiver.o drbd_req.o drbd_actlog.o \
+		lru_cache.o drbd_main.o drbd_strings.o drbd_nl.o
+
+obj-m     += drbd.o
