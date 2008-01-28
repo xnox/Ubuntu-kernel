@@ -33,7 +33,6 @@ obj-$(CONFIG_GSPCA)		+= media/gspcav1/
 obj-$(CONFIG_USB_OV511_NEW)	+= media/ov511/
 obj-$(CONFIG_QUICKCAM)		+= media/quickcam/
 obj-$(CONFIG_USB_UVCCAM)	+= media/usbvideo/
-obj-$(CONFIG_USB_ISIGHT)	+= media/isight/
 ifeq ($(CONFIG_PPC64),)
 obj-$(CONFIG_LIRC_DEV)		+= media/lirc/
 endif
