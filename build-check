@@ -1,21 +1,28 @@
 #!/bin/bash
 
 export BUILD_DIST_PRINTED=1
-. ~/bin/build-common
+. $(dirname $0)/build-common
 
-if [ "$system" = "" ]; then
-        echo "Usage: $0 <system>"
+if [ "$1" = "" ]; then
+        echo "Usage: $(basename $0) <system>"
         exit 1
 fi
 
-if ping -c 1 $HOST > /dev/null 2>&1; then
-	if ssh $system test -f $BUILDING 2> /dev/null; then
+GetHostEnvironment $1 || exit 1
+
+ssh -oConnectTimeout=5 $HOST test -f $BUILDING >/dev/null 2>&1
+case $? in
+	0)
 		echo building
-	else
+		exit 1
+		;;
+	1)
 		echo idle
-	fi
-else
-	echo offline
-fi
+		;;
+	*)
+		echo ${HOST} is offline
+		exit 1
+		;;
+esac
 
 exit 0

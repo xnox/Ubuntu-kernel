@@ -4,7 +4,6 @@ clear
 date -R
 
 ARGS=""
-
 while [ $# != 0 ]; do
 	case "$1" in
 		-a|-v)
@@ -17,20 +16,21 @@ while [ $# != 0 ]; do
 	esac
 done
 
-TMP=$(mktemp)
-
-trap 'rm -f $TMP; exit' 0 INT QUIT TRAP USR1 PIPE TERM
-
 while true; do
+	START=$(date +%s)
 	if [ "$1" = '' ]; then
-		build-status-all $ARGS > $TMP 2>&1
+		INFO=$($(dirname $0)/build-status-all $ARGS 2>&1)
 	else
-		build-status $ARGS $@ > $TMP 2>&1
+		INFO=$($(dirname $0)/build-status $ARGS $@ 2>&1)
 		sleep 3
 	fi
 	clear
 	date -R
-	cat $TMP
+	echo "$INFO"
+	STOP="$(date +%s)"
 
-	# No reason to sleep, the whole process takes a bit anyway
+	let "STOP=30-(STOP-START)"
+	if [ ${STOP} -gt 0 ]; then
+		sleep ${STOP}
+	fi
 done

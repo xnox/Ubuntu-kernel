@@ -1,120 +1,255 @@
-while [ $# != 0 ]; do
-	case "$1" in
-		-a)
-			AUTOBUILD=1
+if [ "${DIST}" = "" ]; then
+	export DIST="hardy"
+fi
+if [ "${UBUILDDIR}" = "" ]; then
+	export CONFDIR="${HOME}/.ubuild"
+else
+	export CONFDIR="${UBUILDDIR}"
+fi
+if [ ! -d "${CONFDIR}" ]; then
+	echo "Config directory (${CONFDIR}) not found!" >&2
+	exit 1
+fi
+if [ -r "${CONFDIR}/config" ]; then
+	. "${CONFDIR}/config"
+fi
+if [ "${AUTOBUILD}" = "" ]; then
+	AUTOBUILD=false
+fi
+if [ "${VERBOSE}" = "" ]; then
+	VERBOSE=false
+fi
+#export HOSTARCH CHROOTCMD CHROOTS FAKEROOT BASE ARCHS HOST
+
+while [ $# -gt 0 ]; do
+	case $1 in
+		-a|--auto)
+			AUTOBUILD=true
+			;;
+		-d|--dist)
+			DIST="$2"
 			shift
 			;;
-		-v)
-			VERBOSE=1
-			shift
+		-v|--verbose)
+			VERBOSE=true
 			;;
 		*)
 			break
 			;;
 	esac
+	shift
 done
 export AUTOBUILD VERBOSE
 
-system=$1
-
-if [ "$DIST" = "" ]; then
-	export DIST=gutsy
-fi
-
-if [ "$AUTOBUILD" = "1" ]; then
-	auto=" (autobuild)"
-	systems="ronne-i386 ronne-amd64 davis faure"
-else
-	auto=""
-	systems="amd64 i386 sparc powerpc"
-fi
-
 if [ "$BUILD_DIST_PRINTED" = "" ]; then
-	echo "Distribution: $DIST$auto"
+	if ${AUTOBUILD}; then
+		echo "Distribution: $DIST (autobuild)"
+	else
+		echo "Distribution: $DIST"
+	fi
 	export BUILD_DIST_PRINTED=1
 fi
 
-BASE=/org
-FAKEROOT=
+function QueryChroots()
+{
+	local HOST="$1"
 
-case "$system" in
-	ronne-i386)
-		ARCH=i386
-		ROOTCMD="linux32 dchroot -c $DIST-$ARCH -- fakeroot"
-		HOST=ronne.ubuntu.com
-		system=ronne-i386
-		BASE=/home/bcollins
-		;;
-	ronne-amd64)
-		ARCH=amd64
-		ROOTCMD="dchroot -c $DIST -- fakeroot"
-		HOST=ronne.ubuntu.com
-		system=ronne-amd64
-		BASE=/home/bcollins
-		;;
-	davis)
-		ARCH=powerpc
-		ROOTCMD="dchroot -c $DIST -- fakeroot"
-		HOST=davis.ubuntu.com
-		system=davis
-		BASE=/home/bcollins
-		;;
-	powder|powerpc)
-		ARCH=powerpc
-		HOST=powder
-		system=powder
-		ROOTCMD="linux32 dchroot -c $DIST-powerpc -- fakeroot"
-		;;
-	faure)
-		ARCH=sparc
-		ROOTCMD="dchroot -c $DIST -- fakeroot"
-		HOST=faure.ubuntu.com
-		system=faure
-		BASE=/home/bcollins
-		;;
-	amd64|huffy-amd64)
-		ARCH=amd64
-		FAKEROOT=fakeroot
-		HOST=huffy
-		system=huffy-amd64
-		;;
-	i386|huffy-i386)
-		ARCH=i386
-		FAKEROOT=fakeroot
-		HOST=huffy
-		system=huffy-i386
-		;;
-	sparc|buddy)
-		ARCH=sparc
-		ROOTCMD="sparc32 dchroot -c $DIST-sparc -- fakeroot"
-		HOST=buddy
-		system=buddy
-		;;
-	ia64|frag)
-		ARCH=ia64
-		HOST=frag
-		system=frag
-		FAKEROOT=fakeroot
-		;;
-	hppa|hippo)
-		ARCH=hppa
-		HOST=hippo
-		system=hippo
-		;;
-	*)
-		HOST=$system
-		;;
-esac
+	cat <<-EOD | ssh ${HOST}
+	if [ "\`type -p schroot\`" != "" ]; then
+		CMD="schroot"
+	elif [ "\`type -p dchroot\`" != "" ]; then
+		CMD="dchroot"
+	else
+		exit 1
+	fi
+	\$CMD -l | sed -e 's/^.*: //' -e 's/ *\[default\]//' \
+		-e 's/, */ /g' | tr '\n' ' '
+	EOD
 
-if [ "$AUTOBUILD" != "" ]; then
-	AUTO="-a"
-fi
+	return $?
+}
 
-if [ "$ROOTCMD" = "" ]; then
-	ROOTCMD="dchroot -c $DIST-$ARCH -- $FAKEROOT"
-fi
+function GetChrootLocation()
+{
+	local HOST="$1"
+	local CHROOT="$2"
 
-BASEDIR="$BASE/$DIST-$ARCH"
-DOBUILD="$ROOTCMD do_build $AUTO $DIST $ARCH $BASEDIR"
-DOCLEAN="$ROOTCMD do_clean $DIST $ARCH $BASEDIR"
-BUILDING="$BASEDIR/BuildInProgress"
+	cat <<-EOD | ssh ${HOST}
+	if [ "\`type -p schroot\`" != "" ]; then
+		schroot -i -c${CHROOT}|awk '/Location/{print \$2}'
+	elif [ "\`type -p dchroot\`" != "" ]; then
+		dchroot -p${CHROOT}
+	fi
+	EOD
+}
+
+function FindHostByArch()
+{
+	local HOSTFILE
+	local ARCH="$1"
+
+	for HOSTFILE in $(find "${CONFDIR}/hosts" -type f); do
+		local ARCHS="$(grep ARCHS ${HOSTFILE})"
+
+		if echo ${ARCHS}|grep -q "${ARCH}"; then
+			echo "$(basename ${HOSTFILE})"
+			return 0
+		fi
+	done
+
+	return 1
+}
+
+function GetHostEnvironment()
+{
+	local HOSTFILE="$1"
+	local TESTARCH
+
+	if [ -f "${CONFDIR}/hosts/${HOSTFILE}" ]; then
+		export SYSNAME="${HOSTFILE}"
+		. "${CONFDIR}/hosts/${HOSTFILE}"
+		export ARCH="${HOSTARCH}"
+	else
+		HOSTFILE="$(echo $1 | cut -d- -f1)"
+		if [ -f "${CONFDIR}/hosts/${HOSTFILE}" ]; then
+			export SYSNAME="$HOSTFILE"
+			export ARCH=$(echo $1 | cut -d- -f2)
+		else
+			ARCH="$1"
+			HOSTFILE="$(FindHostByArch $1)"
+			if [ $? -ne 0 ]; then
+				echo "Host $1 not configured!" >&2
+				return 1
+			fi
+			export SYSNAME="$(basename ${HOSTFILE})"
+		fi
+		. "${CONFDIR}/hosts/${HOSTFILE}"
+	fi
+	for TESTARCH in $ARCHS; do
+		if [ "${ARCH}" = "${TESTARCH}" ]; then
+			break
+		fi
+	done
+	if [ "${TESTARCH}" != "${ARCH}" ]; then
+		echo "Host $HOST does not support $ARCH" >&2
+		return 1
+	fi
+	if [ "${HOSTARCH}" != "${ARCH}" ]; then
+		if [ "${HOSTARCH}" = "amd64" ]; then
+			case ${ARCH} in
+				i386|lpia)
+					ARCHCMD="linux32"
+					;;
+				*)
+					;;
+			esac
+		fi
+		if [ "${ARCHCMD}" != "" ]; then
+			CHROOTCMD="${ARCHCMD} ${CHROOTCMD}"
+		fi
+		CHROOT="${DIST}-${ARCH}"
+	else
+		if [ "${ARCHCMD}" != "" ]; then
+			CHROOTCMD="${ARCHCMD} ${CHROOTCMD}"
+		fi
+		CHROOT="${DIST}"
+	fi
+	CHROOTCMD="${CHROOTCMD} -q -c${CHROOT}"
+	if ${AUTOBUILD}; then
+		AUTO="-a"
+	fi
+	export HOSTARCH CHROOTCMD FAKEROOT BASE ARCHS HOST CHROOT
+	export BASEDIR="$BASE/$DIST-$HOSTARCH"
+	export BUILDING="/tmp/${CHROOT}-buildstatus"
+	export BUILDDIR="$BASEDIR/ubuntu-2.6"
+
+	return 0
+}
+
+function GetDistroEnvironment()
+{
+	if [ ! -f "${CONFDIR}/distros/${DIST}" ]; then
+		echo "No distro configuration file for $1!" >&2
+		return 1
+	fi
+	. "${CONFDIR}/distros/$1"
+
+	return 0
+}
+
+function EmitDoClean()
+{
+	cat <<-EOD
+	#!/bin/bash
+
+	if [ -f $BUILDING ]; then
+		echo "Build in progress, quitting"
+		exit 1
+	fi
+
+	echo cleanup >$BUILDING
+
+	cd "$(dirname "$BUILDDIR")"
+	DIR="$(basename "$BUILDDIR")"
+
+	rm -f build.log *deb
+	if [ -d \$DIR -a \$DIR/.git ]; then
+		mv \$DIR \$DIR.old
+		mkdir \$DIR
+		mv \$DIR.old/.git \$DIR/ && rm -rf \$DIR.old
+		(cd \$DIR && git-checkout -f)
+	fi
+
+	rm $BUILDING
+	exit 0
+	EOD
+}
+
+function EmitDoBuild()
+{
+	local CONC="$1"
+
+	if [ "${CONC}" = "" -o "${CONC}" -lt 1 ]; then
+		echo "Invalid concurrency level ${CONC}" >&2
+		return 1
+	fi
+
+	cat <<-EOD
+	#!/bin/bash
+
+	if ${AUTOBUILD}; then
+		export AUTOBUILD=1
+	fi
+
+	LOG=/tmp/${CHROOT}-build.log
+
+	export PATH=/usr/lib/ccache:\$PATH
+
+	export CCACHE_DIR=$BASEDIR/ccache
+
+	test -d	 \$CCACHE_DIR || mkdir \$CCACHE_DIR
+
+	function Cleanup()
+	{
+		if [ "\$1" = "1" ]; then
+			echo "Aborted!" >>\$LOG
+		fi
+		rm -f $BUILDING
+		wait
+		exit 0
+	}
+	trap 'Cleanup 1' INT QUIT TRAP USR1 PIPE TERM
+
+	echo building >$BUILDING
+
+	cd $BUILDDIR
+	$FAKEROOT debian/rules clean
+	$FAKEROOT debian/rules binary-arch CONCURRENCY_LEVEL=$CONC \
+		2>&1 | tee \$LOG
+	echo "RC=$?" >>\$LOG
+
+	Cleanup 0
+	exit 0
+	EOD
+}
+

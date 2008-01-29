@@ -1,9 +1,23 @@
 #!/bin/bash
-
-. ~/bin/build-common
-
 command=$(echo $0 | sed 's/-all//')
 
-for system in $systems; do
+. $(dirname $0)/build-common
+
+if [ "$1" = "" ]; then
+	if ${AUTOBUILD}; then
+		HOSTGROUP="autobuild"
+	else
+		HOSTGROUP="default"
+	fi
+else
+	HOSTGROUP="$1"
+fi
+
+if [ ! -f "${CONFDIR}/groups/${HOSTGROUP}" ]; then
+	echo "Group '${HOSTGROUP} not found!" >&2
+	exit 1
+fi
+
+for system in $(cat "${CONFDIR}/groups/${HOSTGROUP}"); do
 	$command $@ $system;
 done

@@ -1,15 +1,16 @@
 #!/bin/bash
+. $(dirname $0)/build-common
 
 if [ "$1" = "" ]; then
 	echo "Usage: $0 <system>"
 	exit 1
 fi
 
-system=$1
-status=$(build-check $system)
+GetHostEnvironment "$1"
+status="$($(dirname $0)/build-check ${SYSNAME})"
 
-if [ $status = "building" ]; then
-	ssh -t $system screen -r
+if [ "$status" = "building" ]; then
+	ssh -t ${HOST} screen -r
 else
-	echo "$system: $status"
+	echo "${SYSNAME}: $status"
 fi

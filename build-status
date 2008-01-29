@@ -1,4 +1,5 @@
 #!/bin/bash
+. $(dirname $0)/build-common
 
 if [ "$1" = "-v" ]; then
 	VERBOSE=1
@@ -10,59 +11,104 @@ if [ "$1" = "" ]; then
 	exit 1
 fi
 
-while ! [ "$1" = '' ]; do
-	. ~/bin/build-common
+while [ "$1" != "" ]; do
+	GetHostEnvironment $1
 	shift
+	if [ $? -ne 0 ]; then
+		continue
+	fi
 
-	status=$(build-check $system)
+	status=$($(dirname $0)/build-check $SYSNAME)
 
-	if [ "$VERBOSE" = 1 -a "$status" = "building" ]; then
+	if [ "$VERBOSE" = "true" -a "$status" = "building" ]; then
 		building=""
 		unbuilt=""
 		packaged=""
 
-		flavours=$(ssh $system cat $BASEDIR/ubuntu-2.6/debian/stamps/stamp-flavours)
+		all_stamps=$(cat <<-EOD | ssh ${HOST} ${CHROOTCMD}
+			BUILDS=$BUILDDIR/debian/build
+			STAMPS=$BUILDDIR/debian/stamps
 
-		all_stamps=$(ssh $system ls -d \
-			$BASEDIR/{ubuntu-2.6/debian/{build/{custom-,}build-*/vmlinux,stamps/stamp-*},*.deb} 2>/dev/null)
+			for i in \`cat \$STAMPS/stamp-flavours 2>/dev/null\`; do
+				echo FLAVOUR \$i
+			done
+			ls -d \$STAMPS/stamp-prepare-* \
+				\$STAMPS/stamp-build-* \
+				$BASEDIR/*.deb \
+				\$BUILDS/build-*/vmlinux \
+				\$BUILDS/custom-build/build-*/vmlinux \
+				2>/dev/null
+		EOD)
 
-		for flavour in $flavours; do
-			stamps=$(echo $all_stamps | xargs -n1 echo | \
-			  grep "stamps/.*-$flavour\$")
-			debs=$(echo $all_stamps | xargs -n1 echo | \
-			  grep -- "linux-image-2.*-${flavour}_" | grep '\.deb$')
+		echo "$all_stamps" | awk -v sysname="${SYSNAME}" '
+			$1 == "FLAVOUR"{
+				flavours[$2] = 0
+				unbuild[$2] = $2
+				next
+			}
+			/stamps\/stamp-prepare-/{
+				sub(/.*stamp-prepare-/, "")
+				if (flavours[$0] < 1) {
+					flavours[$0] = 1
+					building[$0] = $0 "(kernel)"
+					delete unbuild[$0]
+				}
+				next
+			}
+			/stamps\/stamp-build-/{
+				sub(/.*stamp-build-/, "")
+				if (flavours[$0] < 2) {
+					flavours[$0] = 2
+					delete unbuild[$0]
+					delete building[$0]
+					building[$0] = $0 "(packaging)"
+				}
+				next
+			}
+			/linux-image/{
+				sub(/.*linux-image-[^-]+-[^-]+-/, "")
+				sub(/_.*$/, "")
+				flavours[$0] = 3
+				delete unbuild[$0]
+				delete building[$0]
+				packaged[$0] = $0
+				next
+			}
+			/vmlinux/{
+				sub(/.*\/debian\/build\/build-/, "")
+				sub(/\/vmlinux$/, "")
+				if (flavours[$0] <= 1) {
+					flavours[$0] = 1
+					delete unbuild[$0]
+					building[$0] = $0 "(modules)"
+				}
+				next
+			}
+			END{
+				waitlist=""
+				buildmsg=""
+				packagelist=""
+				
+				for (i in flavours) {
+					if (i in packaged) {
+						packagelist = packagelist " " i
+						continue
+					}
+					if (i in unbuild) {
+						waitlist = waitlist " " i
+						continue
+					}
+					buildmsg = building[i]
+				}
+				printf("%-15s=> %s\n", sysname, buildmsg)
+				if (waitlist != "")
+					print "   unbuild \\-" waitlist
+				if (packagelist != "")
+					print "  packaged \\-" packagelist
+			}
+		'
 
-			if echo $stamps | grep -q 'stamp-.*prepare'; then
-				if echo $stamps | grep -q 'stamp-.*build'; then
-					if [ "$debs" != "" ]; then
-						packaged="$flavour $packaged"
-					else
-						building="$flavour(packaging)"
-					fi
-				else
-					phase=kernel
-					if echo $all_stamps | \
-					  grep -q build-$flavour/vmlinux; then
-						phase=modules
-					fi
-					building="$flavour($phase)"
-				fi
-			else
-				unbuilt="$flavour $unbuilt"
-			fi
-		done
-
-		printf "%-15s=> $building\n" $system
-		if [ "$packaged" != "" ]; then
-			echo "  packaged \- $packaged"
-		fi
-		if [ "$built" != "" ]; then
-			echo "     built \- $built"
-		fi
-		if [ "$unbuilt" != "" ]; then
-			echo "   unbuilt \- $unbuilt"
-		fi
 	else
-		 printf "%-15s: $status\n" $system
+		 printf "%-15s: $status\n" $SYSNAME
 	fi
 done
