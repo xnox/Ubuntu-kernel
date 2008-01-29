@@ -35,6 +35,7 @@ clean: debian/control
 	dh_testdir
 	dh_testroot
 	dh_clean
+	rm -rf linux-*
 
 debian/control: $(control_files)
 	rm -f debian/control.tmp
