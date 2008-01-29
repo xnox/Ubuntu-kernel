@@ -22,6 +22,7 @@ snd-bt-sco-objs			:= misc/btsco.o
 CFLAGS_dm-bbr.o			+= -I$(srctree)/drivers/md
 
 obj-$(CONFIG_ASFS_FS)		+= fs/asfs/
+obj-$(CONFIG_AUFS)		+= fs/aufs/
 ifneq ($(UBUNTU_FLAVOUR),rt)
 obj-$(CONFIG_GFS_FS)		+= fs/gfs/
 endif
