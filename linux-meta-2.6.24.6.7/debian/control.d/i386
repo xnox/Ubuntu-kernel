@@ -25,9 +25,9 @@ Description: Restricted Linux modules on 386.
  This package will always depend on the latest restricted modules available
  for 386.
 
-Package: linux-backports-modules-RELEASE_NAME-386
+Package: linux-backports-modules-386
 Architecture: i386
-Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-386
+Depends: linux-backports-modules-${kernel-abi-version}-386
 Description: Backported drivers for 386 kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
@@ -60,9 +60,9 @@ Description: Linux kernel image geared towards virtualised hardware
  for virtualised hardware. (You can also use the generic kernel image on
  such systems.)
 
-Package: linux-backports-modules-RELEASE_NAME-virtual
+Package: linux-backports-modules-virtual
 Architecture: i386
-Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-virtual
+Depends: linux-backports-modules-${kernel-abi-version}-virtual
 Description: Backported drivers for virtual kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.

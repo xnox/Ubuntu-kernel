@@ -16,9 +16,9 @@ Description: Restricted Linux modules on Itanium
  This package will always depend on the latest restricted modules available
  for Itanium.
 
-Package: linux-backports-modules-RELEASE_NAME-itanium
+Package: linux-backports-modules-itanium
 Architecture: ia64
-Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-itanium
+Depends: linux-backports-modules-${kernel-abi-version}-itanium
 Description: Backported drivers for itanium kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
@@ -59,9 +59,9 @@ Description: Restricted Linux modules on Itanium II.
  This package will always depend on the latest restricted modules available
  for Itanium II.
 
-Package: linux-backports-modules-RELEASE_NAME-mckinley
+Package: linux-backports-modules-mckinley
 Architecture: ia64
-Depends: linux-backports-modules-RELEASE_NAME-${kernel-abi-version}-mckinley
+Depends: linux-backports-modules-${kernel-abi-version}-mckinley
 Description: Backported drivers for mckinley kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
