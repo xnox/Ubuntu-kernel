@@ -49,7 +49,7 @@ int __init init_gfs_fs(void)
 		goto fail;
 
 	getnstimeofday(&tv);
-	gfs_random_number = tv.tv_nsec; 
+	gfs_random_number = tv.tv_nsec;
 
 	gfs_glock_cachep = kmem_cache_create("gfs_glock", sizeof(struct gfs_glock),
 					     0, 0,
