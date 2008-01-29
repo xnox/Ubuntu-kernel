@@ -82,4 +82,9 @@ CONFIG_IGB=m
 
 CONFIG_IVTV_FB=m
 CONFIG_BLK_DEV_DRBD=m
+
+ifneq ($(UBUNTU_FLAVOUR),rt)
+CONFIG_AUFS=m
+endif
+
 endif
