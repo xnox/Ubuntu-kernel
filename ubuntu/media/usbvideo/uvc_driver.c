@@ -1527,6 +1527,11 @@ static int uvc_probe(struct usb_interface *intf,
 	if ((dev = kzalloc(sizeof *dev, GFP_KERNEL)) == NULL)
 		return -ENOMEM;
 
+	/* load firmware for isight */
+	if(id->driver_info & UVC_QUIRK_ISIGHT_NEED_FIRMWARE)
+		if(uvc_load_firmware(udev) < 0)
+			return -ENODEV;
+
 	INIT_LIST_HEAD(&dev->entities);
 	INIT_LIST_HEAD(&dev->streaming);
 	kref_init(&dev->kref);
@@ -1739,6 +1744,13 @@ static struct usb_device_id uvc_ids[] = {
 	  .idProduct		= 0x8501,
 	  .driver_info 		= UVC_QUIRK_PROBE_MINMAX
 	                        | UVC_QUIRK_BUILTIN_ISIGHT },
+	/* Apple Built-In iSight */
+	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE,
+	  .idVendor		= 0x05ac,
+	  .idProduct		= 0x8300,
+	  .driver_info 		= UVC_QUIRK_PROBE_MINMAX
+	                        | UVC_QUIRK_BUILTIN_ISIGHT
+				| UVC_QUIRK_ISIGHT_NEED_FIRMWARE },
 	/* Silicon Motion SM371 */
 	{ .match_flags		= USB_DEVICE_ID_MATCH_DEVICE
 				| USB_DEVICE_ID_MATCH_INT_INFO,

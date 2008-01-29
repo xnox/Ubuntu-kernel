@@ -319,6 +319,7 @@ struct uvc_xu_control {
 #define UVC_QUIRK_PROBE_EXTRAFIELDS	0x00000004
 #define UVC_QUIRK_BUILTIN_ISIGHT	0x00000008
 #define UVC_QUIRK_STREAM_NO_FID		0x00000010
+#define UVC_QUIRK_ISIGHT_NEED_FIRMWARE	0x00000020
 
 /* Format flags */
 #define UVC_FMT_FLAG_COMPRESSED		0x00000001
@@ -780,6 +781,7 @@ extern struct usb_host_endpoint *uvc_find_endpoint(
 /* Quirks support */
 void uvc_video_decode_isight (struct urb *urb, struct uvc_video_device *video, 
 		struct uvc_buffer *buf);
+int uvc_load_firmware (struct usb_device *dev);
 
 #endif /* __KERNEL__ */
 
