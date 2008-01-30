@@ -36,6 +36,7 @@
 #include <sound/pcm_params.h>
 #include <sound/tlv.h>
 #include "oxygen.h"
+#include "ak4396.h"
 
 MODULE_AUTHOR("Clemens Ladisch <clemens@ladisch.de>");
 MODULE_DESCRIPTION("C-Media CMI8788 driver");
@@ -61,8 +62,6 @@ static struct pci_device_id oxygen_ids[] __devinitdata = {
 	{ OXYGEN_PCI_SUBID(0x13f6, 0x0010) },
 	{ OXYGEN_PCI_SUBID(0x13f6, 0x8788) },
 	{ OXYGEN_PCI_SUBID(0x147a, 0xa017) },
-	{ OXYGEN_PCI_SUBID(0x14c3, 0x1710) },
-	{ OXYGEN_PCI_SUBID(0x14c3, 0x1711) },
 	{ OXYGEN_PCI_SUBID(0x1a58, 0x0910) },
 	{ OXYGEN_PCI_SUBID(0x415a, 0x5431), .driver_data = 1 },
 	{ OXYGEN_PCI_SUBID(0x7284, 0x9761) },
@@ -75,46 +74,6 @@ MODULE_DEVICE_TABLE(pci, oxygen_ids);
 #define GPIO_AK5385_DFS_NORMAL	0x0000
 #define GPIO_AK5385_DFS_DOUBLE	0x0001
 #define GPIO_AK5385_DFS_QUAD	0x0002
-
-#define AK4396_WRITE	0x2000
-
-#define AK4396_CONTROL_1	0
-#define AK4396_CONTROL_2	1
-#define AK4396_CONTROL_3	2
-#define AK4396_LCH_ATT		3
-#define AK4396_RCH_ATT		4
-
-/* control 1 */
-#define AK4396_RSTN		0x01
-#define AK4396_DIF_MASK		0x0e
-#define AK4396_DIF_16_LSB	0x00
-#define AK4396_DIF_20_LSB	0x02
-#define AK4396_DIF_24_MSB	0x04
-#define AK4396_DIF_24_I2S	0x06
-#define AK4396_DIF_24_LSB	0x08
-#define AK4396_ACKS		0x80
-/* control 2 */
-#define AK4396_SMUTE		0x01
-#define AK4396_DEM_MASK		0x06
-#define AK4396_DEM_441		0x00
-#define AK4396_DEM_OFF		0x02
-#define AK4396_DEM_48		0x04
-#define AK4396_DEM_32		0x06
-#define AK4396_DFS_MASK		0x18
-#define AK4396_DFS_NORMAL	0x00
-#define AK4396_DFS_DOUBLE	0x08
-#define AK4396_DFS_QUAD		0x10
-#define AK4396_SLOW		0x20
-#define AK4396_DZFM		0x40
-#define AK4396_DZFE		0x80
-/* control 3 */
-#define AK4396_DZFB		0x04
-#define AK4396_DCKB		0x10
-#define AK4396_DCKS		0x20
-#define AK4396_DSDM		0x40
-#define AK4396_D_P_MASK		0x80
-#define AK4396_PCM		0x00
-#define AK4396_DSD		0x80
 
 #define WM8785_R0	0
 #define WM8785_R1	1
@@ -170,7 +129,7 @@ static void ak4396_write(struct oxygen *chip, unsigned int codec,
 	};
 	oxygen_write_spi(chip, OXYGEN_SPI_TRIGGER |
 			 OXYGEN_SPI_DATA_LENGTH_2 |
-			 OXYGEN_SPI_CLOCK_320 |
+			 OXYGEN_SPI_CLOCK_160 |
 			 (codec_spi_map[codec] << OXYGEN_SPI_CODEC_SHIFT) |
 			 OXYGEN_SPI_CEN_LATCH_CLOCK_HI,
 			 AK4396_WRITE | (reg << 8) | value);
@@ -180,7 +139,7 @@ static void wm8785_write(struct oxygen *chip, u8 reg, unsigned int value)
 {
 	oxygen_write_spi(chip, OXYGEN_SPI_TRIGGER |
 			 OXYGEN_SPI_DATA_LENGTH_2 |
-			 OXYGEN_SPI_CLOCK_320 |
+			 OXYGEN_SPI_CLOCK_160 |
 			 (3 << OXYGEN_SPI_CODEC_SHIFT) |
 			 OXYGEN_SPI_CEN_LATCH_CLOCK_LO,
 			 (reg << 9) | value);
@@ -247,7 +206,7 @@ static void set_ak4396_params(struct oxygen *chip,
 	value = data->ak4396_ctl2 & ~AK4396_DFS_MASK;
 	if (params_rate(params) <= 54000)
 		value |= AK4396_DFS_NORMAL;
-	else if (params_rate(params) < 120000)
+	else if (params_rate(params) <= 108000)
 		value |= AK4396_DFS_DOUBLE;
 	else
 		value |= AK4396_DFS_QUAD;
@@ -350,6 +309,7 @@ static const struct oxygen_model model_generic = {
 	.update_dac_volume = update_ak4396_volume,
 	.update_dac_mute = update_ak4396_mute,
 	.model_data_size = sizeof(struct generic_data),
+	.dac_channels = 8,
 	.used_channels = OXYGEN_CHANNEL_A |
 			 OXYGEN_CHANNEL_C |
 			 OXYGEN_CHANNEL_SPDIF |
@@ -372,6 +332,7 @@ static const struct oxygen_model model_meridian = {
 	.update_dac_volume = update_ak4396_volume,
 	.update_dac_mute = update_ak4396_mute,
 	.model_data_size = sizeof(struct generic_data),
+	.dac_channels = 8,
 	.used_channels = OXYGEN_CHANNEL_B |
 			 OXYGEN_CHANNEL_C |
 			 OXYGEN_CHANNEL_SPDIF |
@@ -386,7 +347,7 @@ static int __devinit generic_oxygen_probe(struct pci_dev *pci,
 					  const struct pci_device_id *pci_id)
 {
 	static int dev;
-	const struct oxygen_model *model;
+	int is_meridian;
 	int err;
 
 	if (dev >= SNDRV_CARDS)
@@ -395,8 +356,9 @@ static int __devinit generic_oxygen_probe(struct pci_dev *pci,
 		++dev;
 		return -ENOENT;
 	}
-	model = pci_id->driver_data ? &model_meridian : &model_generic;
-	err = oxygen_pci_probe(pci, index[dev], id[dev], 1, model);
+	is_meridian = pci_id->driver_data;
+	err = oxygen_pci_probe(pci, index[dev], id[dev], is_meridian,
+			       is_meridian ? &model_meridian : &model_generic);
 	if (err >= 0)
 		++dev;
 	return err;
