@@ -4,4 +4,3 @@
 
 include $(src)/.config
 
-obj-$(CONFIG_ALSA) += sound/

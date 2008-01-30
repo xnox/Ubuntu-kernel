@@ -1,5 +1,4 @@
 # Ubuntu config
 
-CONFIG_ALSA=m
 ifneq ($(filter 386 generic rt,$(UBUNTU_FLAVOUR)),)
 endif
