@@ -1,6 +1,11 @@
 #!/usr/bin/make -f
 # Makefile for building the aufs module in Debian
-
+# hack for l-u-m
+ifndef KSRC
+ifdef srctree
+KSRC=$(srctree)
+endif
+endif
 # Parts from conf.mk
 # Configuration for aufs in Debian
 export CONFIG_AUFS                = m
@@ -40,8 +45,8 @@ export EXTRA_CFLAGS        += -DCONFIG_AUFS_SYSFS_GET_DENTRY_PATCH
 endif
 # put_filp patch
 ifneq (,$(shell grep '^.*[[:space:]]put_filp[[:space:]]vmlinux[[:space:]]EXPORT_SYMBOL' $(KSRC)/Module.symvers))
-export CONFIG_AUFS_PUT_FLIP_PATCH = y
-export EXTRA_CFLAGS        += -DCONFIG_AUFS_PUT_FLIP_PATCH
+export CONFIG_AUFS_PUT_FILP_PATCH = y
+export EXTRA_CFLAGS        += -DCONFIG_AUFS_PUT_FILP_PATCH
 DISABLE_FAKE_DM=y
 endif
 # Check for sec_perm patch
