@@ -1,0 +1,74 @@
+#!/bin/bash
+CMDNAME=$(basename $0)
+
+. $(dirname $0)/build-common
+
+function PrintUsage()
+{
+	echo "Usage: ${CMDNAME} "'<system>'
+}
+
+HOST="$1"
+if [ "${HOST}" = "" ]; then
+	PrintUsage
+	exit 1
+fi
+
+HOSTINFO="$(cat <<EOD | ssh ${HOST} -oConnectTimeout=60
+if [ "\`type -p dpkg-architecture\`" != "" ]; then
+	echo HOSTARCH="\`dpkg-architecture -qDEB_BUILD_ARCH\`"
+else
+	echo HOSTARCH="\`dpkg --print-architecture\`"
+fi
+if [ "\`type -p schroot\`" != "" ]; then
+	CHROOTCMD="schroot"
+elif [ "\`type -p dchroot\`" != "" ]; then
+	CHROOTCMD="dchroot"
+else
+	exit 1
+fi
+echo "CHROOTCMD=\$CHROOTCMD"
+
+if [ \`id -u\` -ne 0 ]; then
+	echo "FAKEROOT=fakeroot"
+else
+	echo "FAKEROOT=''"
+fi
+echo "BASE=\$HOME"
+EOD)"
+
+case $? in
+	255)
+		echo "Connection to ${HOST} faile (timeout)!" >&2
+		exit 1
+		;;
+	1)
+		echo "No supported chroot command found!" >&2
+		exit 1
+		;;
+	0)
+		;;
+	*)
+		echo "Unknown error on ${HOST}!" >&2
+		exit 1
+		;;
+esac
+
+eval "$HOSTINFO"
+case $HOSTARCH in
+	amd64)
+		ARCHS='amd64 i386 lpia'
+	;;
+	i?86)
+		ARCHS='i386 lpia'
+		;;
+	*)
+		ARCHS=$HOSTARCH
+		;;
+esac
+
+cat <<EOD >"${CONFDIR}/hosts/$(echo ${HOST}|cut -d. -f1)"
+$HOSTINFO
+ARCHS='$ARCHS'
+HOST=$HOST
+EOD

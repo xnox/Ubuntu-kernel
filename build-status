@@ -65,6 +65,9 @@ while [ "$1" != "" ]; do
 				}
 				next
 			}
+			/linux-image-debug/{
+				next
+			}
 			/linux-image/{
 				sub(/.*linux-image-[^-]+-[^-]+-/, "")
 				sub(/_.*$/, "")

@@ -112,8 +112,8 @@ function GetHostEnvironment()
 	else
 		HOSTFILE="$(echo $1 | cut -d- -f1)"
 		if [ -f "${CONFDIR}/hosts/${HOSTFILE}" ]; then
-			export SYSNAME="$HOSTFILE"
 			export ARCH=$(echo $1 | cut -d- -f2)
+			export SYSNAME="$HOSTFILE-$ARCH"
 		else
 			ARCH="$1"
 			HOSTFILE="$(FindHostByArch $1)"
@@ -121,7 +121,7 @@ function GetHostEnvironment()
 				echo "Host $1 not configured!" >&2
 				return 1
 			fi
-			export SYSNAME="$(basename ${HOSTFILE})"
+			export SYSNAME="$(basename ${HOSTFILE}-${ARCH})"
 		fi
 		. "${CONFDIR}/hosts/${HOSTFILE}"
 	fi

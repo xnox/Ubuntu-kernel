@@ -1,0 +1,25 @@
+#!/bin/bash
+. $(dirname $0)/build-common
+
+if [ "$1" = "" ]; then
+	echo "Usage: $(basename $0) <system>"
+	exit
+fi
+
+GetHostEnvironment $1 || exit
+
+cat <<EOD
+SYSNAME:   $SYSNAME
+HOST:      $HOST
+HOSTARCH:  $HOSTARCH
+ARCH:      $ARCH
+ARCHS:     $ARCHS
+BASEDIR:   $BASEDIR
+BUILDING:  $BUILDING
+BUILDDIR:  $BUILDDIR
+CHROOTCMD: $CHROOTCMD
+CHROOTS:   $(QueryChroots $HOST)
+$(EmitDoClean)
+EOD
+
+exit 0
