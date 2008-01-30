@@ -1,5 +1,6 @@
 # Ubuntu config
 
+CONFIG_ALSA=m
 
 # XXX temporary, till linux-headers on ppc gets fixed.
 #CONFIG_BLK_DEV_GNBD=m
