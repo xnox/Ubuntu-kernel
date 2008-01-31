@@ -6,6 +6,7 @@ include $(src)/.config
 
 obj-$(CONFIG_ALSA)      	+= sound/
 obj-$(CONFIG_BLK_DEV_DRBD)      += block/drbd/
+obj-$(CONFIG_BLK_ISCSITARGET)	+= block/iscsitarget/
 obj-$(CONFIG_AMT_HECI)		+= misc/heci/
 obj-$(CONFIG_BLK_DEV_GNBD)	+= misc/gnbd.o
 obj-$(CONFIG_BLK_DEV_DM_BBR)	+= misc/dm-bbr.o
