@@ -1,29 +1,22 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 
@@ -46,6 +39,7 @@
 struct psbfb_par {
 	struct drm_device *dev;
 	struct drm_crtc *crtc;
+	struct drm_output *output;
 };
 
 #define CMAP_TOHW(_val, _width) ((((_val) << (_width)) + 0x7FFF - (_val)) >> 16)
@@ -56,6 +50,9 @@ static int psbfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 	struct psbfb_par *par = info->par;
 	struct drm_crtc *crtc = par->crtc;
 	uint32_t v;
+
+	if (!crtc->fb)
+		return -ENOMEM;
 
 	if (regno > 255)
 		return 1;
@@ -96,6 +93,9 @@ static int psbfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 	int depth;
 	int pitch;
 	int bpp = var->bits_per_pixel;
+
+	if (!fb)
+		return -ENOMEM;
 
 	if (!var->pixclock)
 		return -EINVAL;
@@ -264,6 +264,9 @@ static int psbfb_set_par(struct fb_info *info)
 	int depth;
 	int bpp = var->bits_per_pixel;
 
+	if (!fb)
+		return -ENOMEM;
+
 	switch (bpp) {
 	case 8:
 		depth = 8;
@@ -369,8 +372,8 @@ static int psbfb_set_par(struct fb_info *info)
 #endif
 
 	/* Should we walk the output's modelist or just create our own ???
-	 * For now, we create and destroy a mode based on the incoming 
-	 * parameters. But there's commented out code below which scans 
+	 * For now, we create and destroy a mode based on the incoming
+	 * parameters. But there's commented out code below which scans
 	 * the output list too.
 	 */
 #if 0
@@ -415,13 +418,13 @@ static int psbfb_set_par(struct fb_info *info)
 	return 0;
 }
 
-/* TODO hack */
 extern int psb_2d_submit(struct drm_psb_private *, uint32_t *, uint32_t);;
 
 static int psb_accel_2d_fillrect(struct drm_psb_private *dev_priv,
-	uint32_t dst_offset, uint32_t dst_stride, uint32_t dst_format,
-	uint16_t dst_x, uint16_t dst_y, uint16_t size_x, uint16_t size_y,
-	uint32_t fill)
+				 uint32_t dst_offset, uint32_t dst_stride,
+				 uint32_t dst_format, uint16_t dst_x,
+				 uint16_t dst_y, uint16_t size_x,
+				 uint16_t size_y, uint32_t fill)
 {
 	uint32_t buffer[10];
 	uint32_t *buf;
@@ -431,21 +434,25 @@ static int psb_accel_2d_fillrect(struct drm_psb_private *dev_priv,
 
 	*buf++ = PSB_2D_FENCE_BH;
 
-	*buf++ = PSB_2D_DST_SURF_BH | dst_format | (dst_stride << PSB_2D_DST_STRIDE_SHIFT);
+	*buf++ =
+	    PSB_2D_DST_SURF_BH | dst_format | (dst_stride <<
+					       PSB_2D_DST_STRIDE_SHIFT);
 	*buf++ = dst_offset;
 
 	*buf++ =
-		PSB_2D_BLIT_BH |
-		PSB_2D_ROT_NONE |
-		PSB_2D_COPYORDER_TL2BR |
-		PSB_2D_DSTCK_DISABLE |
-		PSB_2D_SRCCK_DISABLE |
-		PSB_2D_USE_FILL |
-		PSB_2D_ROP3_PATCOPY;
+	    PSB_2D_BLIT_BH |
+	    PSB_2D_ROT_NONE |
+	    PSB_2D_COPYORDER_TL2BR |
+	    PSB_2D_DSTCK_DISABLE |
+	    PSB_2D_SRCCK_DISABLE | PSB_2D_USE_FILL | PSB_2D_ROP3_PATCOPY;
 
 	*buf++ = fill << PSB_2D_FILLCOLOUR_SHIFT;
-	*buf++ = (dst_x << PSB_2D_DST_XSTART_SHIFT) | (dst_y << PSB_2D_DST_YSTART_SHIFT);
-	*buf++ = (size_x << PSB_2D_DST_XSIZE_SHIFT) | (size_y << PSB_2D_DST_YSIZE_SHIFT);
+	*buf++ =
+	    (dst_x << PSB_2D_DST_XSTART_SHIFT) | (dst_y <<
+						  PSB_2D_DST_YSTART_SHIFT);
+	*buf++ =
+	    (size_x << PSB_2D_DST_XSIZE_SHIFT) | (size_y <<
+						  PSB_2D_DST_YSIZE_SHIFT);
 	*buf++ = PSB_2D_FLUSH_BH;
 
 	mutex_lock(&dev_priv->mutex_2d);
@@ -455,14 +462,21 @@ static int psb_accel_2d_fillrect(struct drm_psb_private *dev_priv,
 	return ret;
 }
 
-static void psbfb_fillrect_accel(struct fb_info *info, const struct fb_fillrect *r)
+static void psbfb_fillrect_accel(struct fb_info *info,
+				 const struct fb_fillrect *r)
 {
 	struct psbfb_par *par = info->par;
 	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_psb_private *dev_priv = par->dev->dev_private;
-	uint32_t offset = fb->offset;
-	uint32_t stride = fb->pitch;
+	uint32_t offset;
+	uint32_t stride;
 	uint32_t format;
+
+	if (!fb)
+		return;
+
+	offset = fb->offset;
+	stride = fb->pitch;
 
 	switch (fb->depth) {
 	case 8:
@@ -486,9 +500,8 @@ static void psbfb_fillrect_accel(struct fb_info *info, const struct fb_fillrect 
 	}
 
 	psb_accel_2d_fillrect(dev_priv,
-		offset, stride, format,
-		r->dx, r->dy, r->width, r->height,
-		r->color);
+			      offset, stride, format,
+			      r->dx, r->dy, r->width, r->height, r->color);
 }
 
 static void psbfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
@@ -499,15 +512,24 @@ static void psbfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
 		cfb_fillrect(info, rect);
 		return;
 	}
+	if (in_interrupt() || in_atomic()) {
+		/*
+		 * Catch case when we're shutting down.
+		 */
+		cfb_fillrect(info, rect);
+		return;
+	}
 	psbfb_fillrect_accel(info, rect);
 }
 
 uint32_t psb_accel_2d_copy_direction(int xdir, int ydir)
 {
 	if (xdir < 0)
-		return ((ydir < 0) ? PSB_2D_COPYORDER_BR2TL : PSB_2D_COPYORDER_TR2BL);
+		return ((ydir <
+			 0) ? PSB_2D_COPYORDER_BR2TL : PSB_2D_COPYORDER_TR2BL);
 	else
-		return ((ydir < 0) ? PSB_2D_COPYORDER_BL2TR : PSB_2D_COPYORDER_TL2BR);
+		return ((ydir <
+			 0) ? PSB_2D_COPYORDER_BL2TR : PSB_2D_COPYORDER_TL2BR);
 }
 
 /*
@@ -525,10 +547,11 @@ uint32_t psb_accel_2d_copy_direction(int xdir, int ydir)
  * @sizeY of the copied area
  */
 static int psb_accel_2d_copy(struct drm_psb_private *dev_priv,
-	uint32_t src_offset, uint32_t src_stride, uint32_t src_format,
-	uint32_t dst_offset, uint32_t dst_stride, uint32_t dst_format,
-	uint16_t src_x, uint16_t src_y, uint16_t dst_x, uint16_t dst_y,
-	uint16_t size_x, uint16_t size_y)
+			     uint32_t src_offset, uint32_t src_stride,
+			     uint32_t src_format, uint32_t dst_offset,
+			     uint32_t dst_stride, uint32_t dst_format,
+			     uint16_t src_x, uint16_t src_y, uint16_t dst_x,
+			     uint16_t dst_y, uint16_t size_x, uint16_t size_y)
 {
 	uint32_t blit_cmd;
 	uint32_t buffer[10];
@@ -541,23 +564,32 @@ static int psb_accel_2d_copy(struct drm_psb_private *dev_priv,
 	direction = psb_accel_2d_copy_direction(src_x - dst_x, src_y - dst_y);
 
 	blit_cmd =
-		PSB_2D_BLIT_BH |
-		PSB_2D_ROT_NONE |
-		PSB_2D_DSTCK_DISABLE |
-		PSB_2D_SRCCK_DISABLE |
-		PSB_2D_USE_PAT |
-		PSB_2D_ROP3_SRCCOPY |
-		direction;
+	    PSB_2D_BLIT_BH |
+	    PSB_2D_ROT_NONE |
+	    PSB_2D_DSTCK_DISABLE |
+	    PSB_2D_SRCCK_DISABLE |
+	    PSB_2D_USE_PAT | PSB_2D_ROP3_SRCCOPY | direction;
 
-	/* *buf++ = PSB_2D_FENCE_BH;*/
-	*buf++ = PSB_2D_DST_SURF_BH | dst_format | (dst_stride << PSB_2D_DST_STRIDE_SHIFT);
+	/* *buf++ = PSB_2D_FENCE_BH; */
+	*buf++ =
+	    PSB_2D_DST_SURF_BH | dst_format | (dst_stride <<
+					       PSB_2D_DST_STRIDE_SHIFT);
 	*buf++ = dst_offset;
-	*buf++ = PSB_2D_SRC_SURF_BH | src_format | (src_stride << PSB_2D_SRC_STRIDE_SHIFT);
+	*buf++ =
+	    PSB_2D_SRC_SURF_BH | src_format | (src_stride <<
+					       PSB_2D_SRC_STRIDE_SHIFT);
 	*buf++ = src_offset;
-	*buf++ = PSB_2D_SRC_OFF_BH | (src_x << PSB_2D_SRCOFF_XSTART_SHIFT) | (src_y << PSB_2D_SRCOFF_YSTART_SHIFT);
+	*buf++ =
+	    PSB_2D_SRC_OFF_BH | (src_x << PSB_2D_SRCOFF_XSTART_SHIFT) | (src_y
+									 <<
+									 PSB_2D_SRCOFF_YSTART_SHIFT);
 	*buf++ = blit_cmd;
-	*buf++ = (dst_x << PSB_2D_DST_XSTART_SHIFT) | (dst_y << PSB_2D_DST_YSTART_SHIFT);
-	*buf++ = (size_x << PSB_2D_DST_XSIZE_SHIFT) | (size_y << PSB_2D_DST_YSIZE_SHIFT);
+	*buf++ =
+	    (dst_x << PSB_2D_DST_XSTART_SHIFT) | (dst_y <<
+						  PSB_2D_DST_YSTART_SHIFT);
+	*buf++ =
+	    (size_x << PSB_2D_DST_XSIZE_SHIFT) | (size_y <<
+						  PSB_2D_DST_YSIZE_SHIFT);
 
 	mutex_lock(&dev_priv->mutex_2d);
 	ret = psb_2d_submit(dev_priv, buffer, buf - buffer);
@@ -566,15 +598,21 @@ static int psb_accel_2d_copy(struct drm_psb_private *dev_priv,
 }
 
 static void psbfb_copyarea_accel(struct fb_info *info,
-			const struct fb_copyarea *a)
+				 const struct fb_copyarea *a)
 {
 	struct psbfb_par *par = info->par;
 	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_psb_private *dev_priv = par->dev->dev_private;
-	uint32_t offset = fb->offset;
-	uint32_t stride = fb->pitch;
+	uint32_t offset;
+	uint32_t stride;
 	uint32_t src_format;
 	uint32_t dst_format;
+
+	if (!fb)
+		return;
+
+	offset = fb->offset;
+	stride = fb->pitch;
 
 	if (a->width == 8 || a->height == 8) {
 		drm_psb_idle(par->dev);
@@ -607,14 +645,10 @@ static void psbfb_copyarea_accel(struct fb_info *info,
 		return;
 	}
 
-	/* Maybe we should check fb_copyarea so its valid */
 	psb_accel_2d_copy(dev_priv,
-		offset, stride, src_format,
-		offset, stride, dst_format,
-		a->sx, a->sy, a->dx, a->dy,
-		a->width, a->height);
-
-	/* we should fence the buffer here */
+			  offset, stride, src_format,
+			  offset, stride, dst_format,
+			  a->sx, a->sy, a->dx, a->dy, a->width, a->height);
 }
 
 static void psbfb_copyarea(struct fb_info *info,
@@ -626,6 +660,14 @@ static void psbfb_copyarea(struct fb_info *info,
 		cfb_copyarea(info, region);
 		return;
 	}
+	if (in_interrupt() || in_atomic()) {
+		/*
+		 * Catch case when we're shutting down.
+		 */
+		cfb_copyarea(info, region);
+		return;
+	}
+
 	psbfb_copyarea_accel(info, region);
 }
 
@@ -638,9 +680,84 @@ void psbfb_imageblit(struct fb_info *info, const struct fb_image *image)
 		cfb_imageblit(info, image);
 		return;
 	}
+	if (in_interrupt() || in_atomic()) {
+		/*
+		 * Catch case when we're shutting down.
+		 */
+		cfb_imageblit(info, image);
+		return;
+	}
+
 	drm_psb_idle(par->dev);
 	cfb_imageblit(info, image);
 }
+
+int psbfb_kms_off_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	struct drm_framebuffer *fb = 0;
+	struct drm_buffer_object *bo = 0;
+	int ret;
+
+	DRM_DEBUG("psbfb_kms_off_ioctl\n");
+	drm_psb_idle(dev);
+
+	mutex_lock(&dev->mode_config.mutex);
+	list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
+		bo = fb->bo;
+
+		if (!bo)
+			continue;
+
+		ret = drm_bo_do_validate(bo,
+				DRM_BO_FLAG_MEM_LOCAL,
+				DRM_BO_MASK_MEM |
+				DRM_BO_FLAG_NO_EVICT,
+				DRM_BO_HINT_DONT_FENCE, 0, 1, NULL);
+
+		if (ret)
+			DRM_ERROR("Bo error %i\n", -ret);
+	}
+
+	mutex_unlock(&dev->mode_config.mutex);
+
+	return 0;
+}
+
+int psbfb_kms_on_ioctl(struct drm_device *dev, void *data,
+		    struct drm_file *file_priv)
+{
+	struct drm_framebuffer *fb = 0;
+	struct drm_buffer_object *bo = 0;
+	int ret;
+
+	DRM_DEBUG("psbfb_kms_on_ioctl\n");
+	drm_psb_idle(dev);
+
+	mutex_lock(&dev->mode_config.mutex);
+	list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
+		bo = fb->bo;
+
+		if (!bo)
+			continue;
+
+		ret = drm_bo_do_validate(bo,
+			DRM_BO_FLAG_MEM_TT |
+			DRM_BO_FLAG_MEM_VRAM |
+			DRM_BO_FLAG_NO_EVICT,
+			DRM_BO_MASK_MEM |
+			DRM_BO_FLAG_NO_EVICT,
+			DRM_BO_HINT_DONT_FENCE, 0, 1, NULL);
+
+		if (ret)
+			DRM_ERROR("Bo error %i\n", -ret);
+	}
+
+	mutex_unlock(&dev->mode_config.mutex);
+
+	return 0;
+}
+
 
 static struct fb_ops psbfb_ops = {
 	.owner = THIS_MODULE,

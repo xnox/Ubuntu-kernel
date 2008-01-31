@@ -1,33 +1,24 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  **************************************************************************/
-/*
- */
 #include "drmP.h"
 #include "psb_drv.h"
 #include "psb_reg.h"
@@ -38,7 +29,7 @@
 
 /*
  * clflush on one processor only:
- * clflush should apparently flush the cache line on all processors in an 
+ * clflush should apparently flush the cache line on all processors in an
  * SMP system.
  */
 
@@ -55,19 +46,19 @@
  * TODO: Inserting ptes from an interrupt handler:
  * This may be desirable for some SGX functionality where the GPU can fault in
  * needed pages. For that, we need to make an atomic insert_pages function, that
- * may fail. 
+ * may fail.
  * If it fails, the caller need to insert the page using a workqueue function,
  * but on average it should be fast.
  */
 
 struct psb_mmu_driver {
 	/* protects driver- and pd structures. Always take in read mode
-	 * before taking the page table spinlock. 
+	 * before taking the page table spinlock.
 	 */
 	struct rw_semaphore sem;
 
 	/* protects page tables, directory tables and pt tables.
-	 * and pt structures. 
+	 * and pt structures.
 	 */
 	spinlock_t lock;
 
@@ -95,8 +86,8 @@ struct psb_mmu_pd {
 	int hw_context;
 	struct psb_mmu_pt **tables;
 	struct page *p;
-        struct page *dummy_pt;
-        struct page *dummy_page;
+	struct page *dummy_pt;
+	struct page *dummy_page;
 	uint32_t pd_mask;
 	uint32_t invalid_pde;
 	uint32_t invalid_pte;
@@ -225,10 +216,8 @@ static inline uint32_t psb_mmu_mask_pte(uint32_t pfn, int type)
 	return (pfn << PAGE_SHIFT) | mask;
 }
 
-
 struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver,
-				    int trap_pagefaults,
-				    int invalid_type)
+				    int trap_pagefaults, int invalid_type)
 {
 	struct psb_mmu_pd *pd = kmalloc(sizeof(*pd), GFP_KERNEL);
 	uint32_t *v;
@@ -258,23 +247,21 @@ struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver,
 		pd->invalid_pde = 0;
 		pd->invalid_pte = 0;
 	}
-	DRM_INFO("invalid pde / pte is 0x%08x / 0x%08x\n",
-		 pd->invalid_pde, pd->invalid_pte);
-	
+
 	v = kmap(pd->dummy_pt);
-	for (i=0; i<(PAGE_SIZE / sizeof(uint32_t)); ++i) {
+	for (i = 0; i < (PAGE_SIZE / sizeof(uint32_t)); ++i) {
 		v[i] = pd->invalid_pte;
 	}
 	kunmap(pd->dummy_pt);
 
 	v = kmap(pd->p);
-	for (i=0; i<(PAGE_SIZE / sizeof(uint32_t)); ++i) {
+	for (i = 0; i < (PAGE_SIZE / sizeof(uint32_t)); ++i) {
 		v[i] = pd->invalid_pde;
 	}
 	kunmap(pd->p);
 
 	clear_page(kmap(pd->dummy_page));
-	kunmap(pd->dummy_page);		
+	kunmap(pd->dummy_page);
 
 	pd->tables = vmalloc_user(sizeof(struct psb_mmu_pt *) * 1024);
 	if (!pd->tables)
@@ -286,9 +273,9 @@ struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver,
 
 	return pd;
 
-out_err4:
+      out_err4:
 	__free_page(pd->dummy_page);
-out_err3:
+      out_err3:
 	__free_page(pd->dummy_pt);
       out_err2:
 	__free_page(pd->p);
@@ -352,26 +339,26 @@ static struct psb_mmu_pt *psb_mmu_alloc_pt(struct psb_mmu_pd *pd)
 		kfree(pt);
 		return NULL;
 	}
-	
+
 	spin_lock(lock);
 
 	v = kmap_atomic(pt->p, KM_USER0);
 	clf = (uint8_t *) v;
 	ptes = (uint32_t *) v;
-	for (i=0; i<(PAGE_SIZE / sizeof(uint32_t)); ++i) {
+	for (i = 0; i < (PAGE_SIZE / sizeof(uint32_t)); ++i) {
 		*ptes++ = pd->invalid_pte;
 	}
 
 #if defined(CONFIG_X86)
 	if (pd->driver->has_clflush && pd->hw_context != -1) {
 		mb();
-		for (i=0; i<clflush_count; ++i) {
+		for (i = 0; i < clflush_count; ++i) {
 			psb_clflush(clf);
 			clf += clflush_add;
 		}
 		mb();
 	}
-#endif	
+#endif
 	kunmap_atomic(v, KM_USER0);
 	spin_unlock(lock);
 
@@ -592,7 +579,7 @@ void psb_mmu_driver_takedown(struct psb_mmu_driver *driver)
 }
 
 struct psb_mmu_driver *psb_mmu_driver_init(uint8_t __iomem * registers,
-					   int trap_pagefaults, 
+					   int trap_pagefaults,
 					   int invalid_type)
 {
 	struct psb_mmu_driver *driver;
@@ -941,9 +928,9 @@ int psb_mmu_virtual_to_pfn(struct psb_mmu_pd *pd, uint32_t virtual,
 	down_read(&pd->driver->sem);
 	pt = psb_mmu_pt_map_lock(pd, virtual);
 	if (!pt) {
-	        uint32_t *v;
+		uint32_t *v;
 
-	        spin_lock(lock);
+		spin_lock(lock);
 		v = kmap_atomic(pd->p, KM_USER0);
 		tmp = v[psb_mmu_pd_index(virtual)];
 		kunmap_atomic(v, KM_USER0);
@@ -953,7 +940,7 @@ int psb_mmu_virtual_to_pfn(struct psb_mmu_pd *pd, uint32_t virtual,
 		    !(pd->invalid_pte & PSB_PTE_VALID)) {
 			ret = -EINVAL;
 			goto out;
-		}	       
+		}
 		ret = 0;
 		*pfn = pd->invalid_pte >> PAGE_SHIFT;
 		goto out;
@@ -966,11 +953,10 @@ int psb_mmu_virtual_to_pfn(struct psb_mmu_pd *pd, uint32_t virtual,
 		*pfn = tmp >> PAGE_SHIFT;
 	}
 	psb_mmu_pt_unmap_unlock(pt);
-out:
+      out:
 	up_read(&pd->driver->sem);
 	return ret;
 }
-
 
 void psb_mmu_test(struct psb_mmu_driver *driver, uint32_t offset)
 {

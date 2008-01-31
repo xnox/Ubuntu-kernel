@@ -1,17 +1,6 @@
-/**
- * \file drm_memory.h
- * Memory management wrappers for DRM
- *
- * \author Rickard E. (Rik) Faith <faith@valinux.com>
- * \author Gareth Hughes <gareth@valinux.com>
- */
-
 /*
- * Created: Thu Feb  4 14:00:34 1999 by faith@valinux.com
- *
- * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
- * Copyright 2000 VA Linux Systems, Inc., Sunnyvale, California.
- * All Rights Reserved.
+ * Copyright 2007 Red Hat, Inc
+ * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -33,29 +22,19 @@
  * OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <linux/highmem.h>
-#include <linux/vmalloc.h>
-#include "drmP.h"
+/* This header file holds function prototypes and data types that are
+ * internal to the drm (not exported to user space) but shared across
+ * drivers and platforms */
+
+#ifndef __DRM_INTERNAL_H__
+#define __DRM_INTERNAL_H__
 
 /**
- * Cut down version of drm_memory_debug.h, which used to be called
- * drm_memory.h.
+ * Drawable information.
  */
-
-#if __OS_HAS_AGP
-
-#include <linux/vmalloc.h>
-
-#ifdef HAVE_PAGE_AGP
-#include <asm/agp.h>
-#else
-# ifdef __powerpc__
-#  define PAGE_AGP	__pgprot(_PAGE_KERNEL | _PAGE_NO_CACHE)
-# else
-#  define PAGE_AGP	PAGE_KERNEL
-# endif
-#endif
-
-#else				/* __OS_HAS_AGP */
+struct drm_drawable_info {
+	unsigned int num_rects;
+	struct drm_clip_rect *rects;
+};
 
 #endif

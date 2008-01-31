@@ -1,31 +1,22 @@
 /**************************************************************************
- *
- * Copyright (c) 2006 Tungsten Graphics Inc. Cedar Park, TX. USA. 
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
  *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
- * develop this code.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * develop this driver.
  *
  **************************************************************************/
 /*
@@ -176,14 +167,14 @@ irqreturn_t psb_irq_handler(DRM_IRQ_ARGS)
 	return IRQ_HANDLED;
 }
 
-void psb_msvdx_irq_preinstall(struct drm_psb_private * dev_priv)
+void psb_msvdx_irq_preinstall(struct drm_psb_private *dev_priv)
 {
-        unsigned long mtx_int = 0;
-        dev_priv->vdc_irq_mask |= _PSB_IRQ_MSVDX_FLAG;
+	unsigned long mtx_int = 0;
+	dev_priv->vdc_irq_mask |= _PSB_IRQ_MSVDX_FLAG;
 
-        /*Clear MTX interrupt */
-        REGIO_WRITE_FIELD_LITE(mtx_int, MSVDX_INTERRUPT_STATUS, CR_MTX_IRQ, 1);
-        PSB_WMSVDX32(mtx_int, MSVDX_INTERRUPT_CLEAR);
+	/*Clear MTX interrupt */
+	REGIO_WRITE_FIELD_LITE(mtx_int, MSVDX_INTERRUPT_STATUS, CR_MTX_IRQ, 1);
+	PSB_WMSVDX32(mtx_int, MSVDX_INTERRUPT_CLEAR);
 }
 
 void psb_irq_preinstall(struct drm_device *dev)
@@ -202,14 +193,14 @@ void psb_irq_preinstall(struct drm_device *dev)
 	    _PSB_CE_TA_FINISHED |
 	    _PSB_CE_DPM_REACHED_MEM_THRESH |
 	    _PSB_CE_DPM_OUT_OF_MEMORY_GBL |
-	    _PSB_CE_DPM_OUT_OF_MEMORY_MT | _PSB_CE_SW_EVENT;
+	    _PSB_CE_DPM_OUT_OF_MEMORY_MT |
+	    _PSB_CE_TA_TERMINATE | _PSB_CE_SW_EVENT;
 
-	dev_priv->vdc_irq_mask = _PSB_IRQ_SGX_FLAG |
-	                         _PSB_IRQ_MSVDX_FLAG;
+	dev_priv->vdc_irq_mask = _PSB_IRQ_SGX_FLAG | _PSB_IRQ_MSVDX_FLAG;
 
 	if (!drm_psb_disable_vsync)
-	    dev_priv->vdc_irq_mask |= _PSB_VSYNC_PIPEA_FLAG |
-	                              _PSB_VSYNC_PIPEB_FLAG;
+		dev_priv->vdc_irq_mask |= _PSB_VSYNC_PIPEA_FLAG |
+		    _PSB_VSYNC_PIPEB_FLAG;
 
 	/*Clear MTX interrupt */
 	{
@@ -221,13 +212,13 @@ void psb_irq_preinstall(struct drm_device *dev)
 	spin_unlock(&dev_priv->irqmask_lock);
 }
 
-void psb_msvdx_irq_postinstall(struct drm_psb_private * dev_priv)
+void psb_msvdx_irq_postinstall(struct drm_psb_private *dev_priv)
 {
-        /* Enable Mtx Interupt to host */
-        unsigned long enables = 0;
-        PSB_DEBUG_GENERAL("Setting up MSVDX IRQs.....\n");
-        REGIO_WRITE_FIELD_LITE(enables, MSVDX_INTERRUPT_STATUS, CR_MTX_IRQ, 1);
-        PSB_WMSVDX32(enables, MSVDX_HOST_INTERRUPT_ENABLE);
+	/* Enable Mtx Interupt to host */
+	unsigned long enables = 0;
+	PSB_DEBUG_GENERAL("Setting up MSVDX IRQs.....\n");
+	REGIO_WRITE_FIELD_LITE(enables, MSVDX_INTERRUPT_STATUS, CR_MTX_IRQ, 1);
+	PSB_WMSVDX32(enables, MSVDX_HOST_INTERRUPT_ENABLE);
 }
 
 void psb_irq_postinstall(struct drm_device *dev)

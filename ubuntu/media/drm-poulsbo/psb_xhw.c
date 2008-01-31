@@ -1,37 +1,44 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
  **************************************************************************/
 /*
- * Make calls into closed source X server code. Ugh....
+ * Make calls into closed source X server code. 
  */
 
 #include "drmP.h"
 #include "psb_drv.h"
+
+void
+psb_xhw_clean_buf(struct drm_psb_private *dev_priv,
+		  struct psb_xhw_buf *buf)
+{
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&dev_priv->xhw_lock, irq_flags);
+	list_del_init(&buf->head);
+	if (dev_priv->xhw_cur_buf == buf) 
+		dev_priv->xhw_cur_buf = NULL;
+	atomic_set(&buf->done, 1);
+	spin_unlock_irqrestore(&dev_priv->xhw_lock, irq_flags);
+}
 
 static inline int psb_xhw_add(struct drm_psb_private *dev_priv,
 			      struct psb_xhw_buf *buf)
@@ -45,8 +52,13 @@ static inline int psb_xhw_add(struct drm_psb_private *dev_priv,
 		DRM_ERROR("No Xpsb 3D extension available.\n");
 		return -EINVAL;
 	}
+	if (!list_empty(&buf->head)) {
+		DRM_ERROR("Recursive list adding.\n");
+		goto out;
+	}
 	list_add_tail(&buf->head, &dev_priv->xhw_in);
 	wake_up_interruptible(&dev_priv->xhw_queue);
+      out:
 	spin_unlock_irqrestore(&dev_priv->xhw_lock, irq_flags);
 	return 0;
 }
@@ -76,8 +88,10 @@ int psb_xhw_scene_info(struct drm_psb_private *dev_priv,
 	(void)wait_event_timeout(dev_priv->xhw_caller_queue,
 				 atomic_read(&buf->done), DRM_HZ);
 
-	if (!atomic_read(&buf->done))
+	if (!atomic_read(&buf->done)) {
+		psb_xhw_clean_buf(dev_priv, buf);
 		return -EBUSY;
+	}
 
 	if (!xa->ret) {
 		memcpy(hw_cookie, xa->cookie, sizeof(xa->cookie));
@@ -121,20 +135,30 @@ int psb_xhw_scene_bind_fire(struct drm_psb_private *dev_priv,
 			    uint32_t fire_flags,
 			    uint32_t hw_context,
 			    uint32_t * cookie,
+			    uint32_t * oom_cmds,
+			    uint32_t num_oom_cmds,
 			    uint32_t offset, uint32_t engine, uint32_t flags)
 {
 	struct drm_psb_xhw_arg *xa = &buf->arg;
 
-	buf->copy_back = 0;
+	buf->copy_back = (fire_flags & PSB_FIRE_FLAG_XHW_OOM);
 	xa->op = PSB_XHW_SCENE_BIND_FIRE;
-	xa->issue_irq = 0;
+	xa->issue_irq = (buf->copy_back) ? 1 : 0;
+	if (unlikely(buf->copy_back))
+		xa->irq_op = (engine == PSB_SCENE_ENGINE_TA) ?
+		    PSB_UIRQ_FIRE_TA_REPLY : PSB_UIRQ_FIRE_RASTER_REPLY;
+	else
+		xa->irq_op = 0;
 	xa->arg.sb.fire_flags = fire_flags;
 	xa->arg.sb.hw_context = hw_context;
 	xa->arg.sb.offset = offset;
 	xa->arg.sb.engine = engine;
 	xa->arg.sb.flags = flags;
+	xa->arg.sb.num_oom_cmds = num_oom_cmds;
 	memcpy(xa->cookie, cookie, sizeof(xa->cookie));
-
+	if (num_oom_cmds)
+		memcpy(xa->arg.sb.oom_cmds, oom_cmds,
+		       sizeof(uint32_t) * num_oom_cmds);
 	return psb_xhw_add(dev_priv, buf);
 }
 
@@ -153,10 +177,12 @@ int psb_xhw_reset_dpm(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf)
 		return ret;
 
 	(void)wait_event_timeout(dev_priv->xhw_caller_queue,
-				 atomic_read(&buf->done), DRM_HZ);
+				 atomic_read(&buf->done), 3*DRM_HZ);
 
-	if (!atomic_read(&buf->done))
+	if (!atomic_read(&buf->done)) {
+		psb_xhw_clean_buf(dev_priv, buf);
 		return -EBUSY;
+	}
 
 	return xa->ret;
 }
@@ -174,7 +200,12 @@ static int psb_xhw_terminate(struct drm_psb_private *dev_priv,
 	spin_lock_irqsave(&dev_priv->xhw_lock, irq_flags);
 	dev_priv->xhw_submit_ok = 0;
 	atomic_set(&buf->done, 0);
+	if (!list_empty(&buf->head)) {
+		DRM_ERROR("Recursive list adding.\n");
+		goto out;
+	}
 	list_add_tail(&buf->head, &dev_priv->xhw_in);
+      out:
 	spin_unlock_irqrestore(&dev_priv->xhw_lock, irq_flags);
 	wake_up_interruptible(&dev_priv->xhw_queue);
 
@@ -183,13 +214,14 @@ static int psb_xhw_terminate(struct drm_psb_private *dev_priv,
 
 	if (!atomic_read(&buf->done)) {
 		DRM_ERROR("Xpsb terminate timeout.\n");
+		psb_xhw_clean_buf(dev_priv, buf);
 		return -EBUSY;
 	}
 
 	return 0;
 }
 
-int psb_xhw_bin_mem_info(struct drm_psb_private *dev_priv,
+int psb_xhw_ta_mem_info(struct drm_psb_private *dev_priv,
 			 struct psb_xhw_buf *buf,
 			 uint32_t pages, uint32_t * hw_cookie, uint32_t * size)
 {
@@ -197,7 +229,7 @@ int psb_xhw_bin_mem_info(struct drm_psb_private *dev_priv,
 	int ret;
 
 	buf->copy_back = 1;
-	xa->op = PSB_XHW_BIN_MEM_INFO;
+	xa->op = PSB_XHW_TA_MEM_INFO;
 	xa->issue_irq = 0;
 	xa->irq_op = 0;
 	xa->arg.bi.pages = pages;
@@ -209,13 +241,52 @@ int psb_xhw_bin_mem_info(struct drm_psb_private *dev_priv,
 	(void)wait_event_timeout(dev_priv->xhw_caller_queue,
 				 atomic_read(&buf->done), DRM_HZ);
 
-	if (!atomic_read(&buf->done))
+	if (!atomic_read(&buf->done)) {
+		psb_xhw_clean_buf(dev_priv, buf);
 		return -EBUSY;
-
-	if (!xa->ret) {
-		memcpy(hw_cookie, xa->cookie, sizeof(xa->cookie));
-		*size = xa->arg.bi.size;
 	}
+
+	if (!xa->ret)
+		memcpy(hw_cookie, xa->cookie, sizeof(xa->cookie));
+
+	*size = xa->arg.bi.size;
+	return xa->ret;
+}
+
+int psb_xhw_ta_mem_load(struct drm_psb_private *dev_priv,
+			 struct psb_xhw_buf *buf,
+			 uint32_t flags, 
+			 uint32_t param_offset, 
+			 uint32_t pt_offset,
+			 uint32_t *hw_cookie)
+{
+	struct drm_psb_xhw_arg *xa = &buf->arg;
+	int ret;
+
+	buf->copy_back = 1;
+	xa->op = PSB_XHW_TA_MEM_LOAD;
+	xa->issue_irq = 0;
+	xa->irq_op = 0;
+	xa->arg.bl.flags = flags;
+	xa->arg.bl.param_offset = param_offset;
+	xa->arg.bl.pt_offset = pt_offset;
+	memcpy(xa->cookie, hw_cookie, sizeof(xa->cookie));
+
+	ret = psb_xhw_add(dev_priv, buf);
+	if (ret)
+		return ret;
+
+	(void)wait_event_timeout(dev_priv->xhw_caller_queue,
+				 atomic_read(&buf->done), 3*DRM_HZ);
+
+	if (!atomic_read(&buf->done)) {
+		psb_xhw_clean_buf(dev_priv, buf);
+		return -EBUSY;
+	}
+
+	if (!xa->ret) 
+		memcpy(hw_cookie, xa->cookie, sizeof(xa->cookie));
+
 	return xa->ret;
 }
 
@@ -224,10 +295,8 @@ int psb_xhw_ta_oom(struct drm_psb_private *dev_priv,
 {
 	struct drm_psb_xhw_arg *xa = &buf->arg;
 
-	DRM_ERROR("TA OOM\n");
-
 	/*
-	 * This calls the extensive closed source 
+	 * This calls the extensive closed source
 	 * OOM handler, which resolves the condition and
 	 * sends a reply telling the scheduler what to do
 	 * with the task.
@@ -257,6 +326,14 @@ void psb_xhw_ta_oom_reply(struct drm_psb_private *dev_priv,
 	*bca = xa->arg.oom.bca;
 	*rca = xa->arg.oom.rca;
 	*flags = xa->arg.oom.flags;
+}
+
+void psb_xhw_fire_reply(struct drm_psb_private *dev_priv,
+			struct psb_xhw_buf *buf, uint32_t * cookie)
+{
+	struct drm_psb_xhw_arg *xa = &buf->arg;
+
+	memcpy(cookie, xa->cookie, sizeof(xa->cookie));
 }
 
 int psb_xhw_resume(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf)
@@ -379,6 +456,7 @@ void psb_xhw_init_takedown(struct drm_psb_private *dev_priv,
 			psb_xhw_queue_empty(dev_priv);
 		else {
 			struct psb_xhw_buf buf;
+			INIT_LIST_HEAD(&buf.head);
 
 			psb_xhw_terminate(dev_priv, &buf);
 			psb_xhw_queue_empty(dev_priv);
@@ -471,10 +549,10 @@ int psb_xhw_ioctl(struct drm_device *dev, void *data,
 	spin_lock_irqsave(&dev_priv->xhw_lock, irq_flags);
 	while (list_empty(&dev_priv->xhw_in)) {
 		spin_unlock_irqrestore(&dev_priv->xhw_lock, irq_flags);
-
-		DRM_WAIT_ON(ret, dev_priv->xhw_queue, DRM_HZ,
-			    !psb_xhw_in_empty(dev_priv));
-		if (ret) {
+		ret = wait_event_interruptible_timeout(dev_priv->xhw_queue,
+						       !psb_xhw_in_empty(dev_priv), 
+						       DRM_HZ);
+		if (ret == -ERESTARTSYS || ret == 0) {
 			mutex_unlock(&dev_priv->xhw_mutex);
 			return -EAGAIN;
 		}

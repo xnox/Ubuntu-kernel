@@ -498,8 +498,10 @@ int psb_msvdx_init(struct drm_device *dev)
 
 	PSB_DEBUG_GENERAL("MSVDX: psb_msvdx_init\n");
 
-	/*Initialize msvdx queue*/
+	/*Initialize comand msvdx queueing */
 	INIT_LIST_HEAD(&dev_priv->msvdx_queue);
+	mutex_init(&dev_priv->msvdx_mutex);
+	spin_lock_init(&dev_priv->msvdx_lock);
 	dev_priv->msvdx_busy = 0;
 
 	/* Enable Clocks */

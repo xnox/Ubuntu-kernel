@@ -46,7 +46,7 @@
 static int get_clock(void *data)
 {
 	struct intel_i2c_chan *chan = data;
-	drm_i915_private_t *dev_priv = chan->drm_dev->dev_private;
+	struct drm_i915_private *dev_priv = chan->drm_dev->dev_private;
 	u32 val;
 
 	val = I915_READ(chan->reg);
@@ -56,7 +56,7 @@ static int get_clock(void *data)
 static int get_data(void *data)
 {
 	struct intel_i2c_chan *chan = data;
-	drm_i915_private_t *dev_priv = chan->drm_dev->dev_private;
+	struct drm_i915_private *dev_priv = chan->drm_dev->dev_private;
 	u32 val;
 
 	val = I915_READ(chan->reg);
@@ -66,8 +66,8 @@ static int get_data(void *data)
 static void set_clock(void *data, int state_high)
 {
 	struct intel_i2c_chan *chan = data;
-	drm_device_t *dev = chan->drm_dev;
-	drm_i915_private_t *dev_priv = chan->drm_dev->dev_private;
+	struct drm_device *dev = chan->drm_dev;
+	struct drm_i915_private *dev_priv = chan->drm_dev->dev_private;
 	u32 reserved = 0, clock_bits;
 
 	/* On most chips, these bits must be preserved in software. */
@@ -87,8 +87,8 @@ static void set_clock(void *data, int state_high)
 static void set_data(void *data, int state_high)
 {
 	struct intel_i2c_chan *chan = data;
-	drm_device_t *dev = chan->drm_dev;
-	drm_i915_private_t *dev_priv = chan->drm_dev->dev_private;
+	struct drm_device *dev = chan->drm_dev;
+	struct drm_i915_private *dev_priv = chan->drm_dev->dev_private;
 	u32 reserved = 0, data_bits;
 
 	/* On most chips, these bits must be preserved in software. */
@@ -127,7 +127,7 @@ static void set_data(void *data, int state_high)
  *   %GPIOH
  * see PRM for details on how these different busses are used.
  */
-struct intel_i2c_chan *intel_i2c_create(drm_device_t *dev, const u32 reg,
+struct intel_i2c_chan *intel_i2c_create(struct drm_device *dev, const u32 reg,
 					const char *name)
 {
 	struct intel_i2c_chan *chan;
@@ -140,6 +140,9 @@ struct intel_i2c_chan *intel_i2c_create(drm_device_t *dev, const u32 reg,
 	chan->reg = reg;
 	snprintf(chan->adapter.name, I2C_NAME_SIZE, "intel drm %s", name);
 	chan->adapter.owner = THIS_MODULE;
+#ifndef I2C_HW_B_INTELFB
+#define I2C_HW_B_INTELFB I2C_HW_B_I810
+#endif
 	chan->adapter.id = I2C_HW_B_INTELFB;
 	chan->adapter.algo_data	= &chan->algo;
 	chan->adapter.dev.parent = &dev->pdev->dev;

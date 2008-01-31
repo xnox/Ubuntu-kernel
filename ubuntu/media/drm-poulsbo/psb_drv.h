@@ -1,29 +1,22 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 /*
@@ -38,16 +31,17 @@
 #include "intel_drv.h"
 
 enum {
-	CHIP_PSB_8108 = 0
+	CHIP_PSB_8108 = 0,
+	CHIP_PSB_8109 = 1
 };
 
 #define DRIVER_NAME "psb"
-#define DRIVER_DESC "drm driver for the Intel Poulsbo chipset"
+#define DRIVER_DESC "drm driver for the Intel GMA500"
 #define DRIVER_AUTHOR "Tungsten Graphics Inc."
 
-#define PSB_DRM_DRIVER_DATE "20071113"
-#define PSB_DRM_DRIVER_MAJOR 2
-#define PSB_DRM_DRIVER_MINOR 3
+#define PSB_DRM_DRIVER_DATE "20080107"
+#define PSB_DRM_DRIVER_MAJOR 4 
+#define PSB_DRM_DRIVER_MINOR 1
 #define PSB_DRM_DRIVER_PATCHLEVEL 0
 
 #define PSB_VDC_OFFSET           0x00000000
@@ -65,10 +59,9 @@ enum {
 #define PSB_SGX_2D_SLAVE_PORT    0x4000
 #define PSB_TT_PRIV0_LIMIT       (256*1024*1024)
 #define PSB_TT_PRIV0_PLIMIT      (PSB_TT_PRIV0_LIMIT >> PAGE_SHIFT)
-#define PSB_NUM_VALIDATE_BUFFERS 512
+#define PSB_NUM_VALIDATE_BUFFERS 640
 #define PSB_MEM_KERNEL_START     0x10000000
 #define PSB_MEM_PDS_START        0x20000000
-#define PSB_MEM_RASTGEOM_START   0x30000000
 #define PSB_MEM_MMU_START        0x40000000
 
 #define DRM_PSB_MEM_KERNEL       DRM_BO_MEM_PRIV0
@@ -158,8 +151,10 @@ enum {
 #define PSB_COMM_USER_IRQ_LOST (PSB_COMM_USER_IRQ + 1)
 #define PSB_COMM_FW (2048 >> 2)
 
-#define PSB_UIRQ_VISTEST       1
-#define PSB_UIRQ_OOM_REPLY     2
+#define PSB_UIRQ_VISTEST               1
+#define PSB_UIRQ_OOM_REPLY             2
+#define PSB_UIRQ_FIRE_TA_REPLY         3
+#define PSB_UIRQ_FIRE_RASTER_REPLY     4
 
 #define PSB_2D_SIZE (256*1024*1024)
 #define PSB_MAX_RELOC_PAGES 1024
@@ -183,8 +178,6 @@ enum {
 
 #define PSB_NUM_VBLANKS 2
 #define PSB_WATCHDOG_DELAY (DRM_HZ / 10)
-
-#define PSB_RASTER_DEALLOC (1 << 0)
 
 /*
  * User options.
@@ -225,10 +218,9 @@ struct psb_buflist_item {
 	int ret;
 };
 
-struct psb_msvdx_cmd_queue
-{
+struct psb_msvdx_cmd_queue {
 	struct list_head head;
-	void *cmd;	
+	void *cmd;
 	unsigned long cmd_size;
 	uint32_t sequence;
 };
@@ -318,14 +310,29 @@ struct drm_psb_private {
 	struct drm_psb_sarea *sarea_priv;
 
 	/*
-	 * LVDS info 
+	 * LVDS info
 	 */
+	uint8_t blc_type;
+	uint8_t blc_pol;
+	uint8_t blc_freq;
+	uint8_t blc_minbrightness;
+	uint8_t blc_i2caddr;
+	uint8_t blc_brightnesscmd;
+	int backlight;	/* restore backlight to this value */
+
+	struct intel_i2c_chan *i2c_bus; 
+	u32 CoreClock;
+	u32 PWMControlRegFreq;
+
+	unsigned char * OpRegion;
+	unsigned int OpRegionSize;
+
 	int backlight_duty_cycle;	/* restore backlight to this value */
 	bool panel_wants_dither;
 	struct drm_display_mode *panel_fixed_mode;
 
-	/* 
-	 * Register state 
+	/*
+	 * Register state
 	 */
 	uint32_t saveDSPACNTR;
 	uint32_t saveDSPBCNTR;
@@ -413,6 +420,9 @@ struct drm_psb_private {
 	struct mutex cmdbuf_mutex;
 	struct psb_scheduler scheduler;
 	struct psb_buflist_item buffers[PSB_NUM_VALIDATE_BUFFERS];
+        uint32_t ta_mem_pages;
+        struct psb_ta_mem *ta_mem;
+        int force_ta_mem_load;
 
 	/*
 	 * Watchdog
@@ -423,7 +433,7 @@ struct drm_psb_private {
 	struct work_struct watchdog_wq;
 	struct work_struct msvdx_watchdog_wq;
 	int timer_available;
-	
+
 	/*
 	 * msvdx command queue
 	 */
@@ -476,7 +486,7 @@ extern void psb_mmu_remove_pages(struct psb_mmu_pd *pd, unsigned long address,
 				 uint32_t desired_tile_stride,
 				 uint32_t hw_tile_stride);
 /*
- * psb_sgx.c 
+ * psb_sgx.c
  */
 
 extern int psb_blit_sequence(struct drm_psb_private *dev_priv,
@@ -533,8 +543,8 @@ extern void psb_fence_error(struct drm_device *dev,
 			    uint32_t sequence, uint32_t type, int error);
 
 /*MSVDX stuff*/
-extern void psb_msvdx_irq_off(struct drm_psb_private * dev_priv);
-extern void psb_msvdx_irq_on(struct drm_psb_private * dev_priv);
+extern void psb_msvdx_irq_off(struct drm_psb_private *dev_priv);
+extern void psb_msvdx_irq_on(struct drm_psb_private *dev_priv);
 
 /*
  * psb_buffer.c
@@ -550,7 +560,7 @@ extern int psb_move(struct drm_buffer_object *bo,
 		    int evict, int no_wait, struct drm_bo_mem_reg *new_mem);
 
 /*
- * psb_gtt.c 
+ * psb_gtt.c
  */
 extern int psb_gtt_init(struct psb_gtt *pg, int resume);
 extern int psb_gtt_insert_pages(struct psb_gtt *pg, struct page **pages,
@@ -570,6 +580,10 @@ extern void psb_gtt_takedown(struct psb_gtt *pg, int free);
  */
 extern int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc);
 extern int psbfb_remove(struct drm_device *dev, struct drm_crtc *crtc);
+extern int psbfb_kms_off_ioctl(struct drm_device *dev, void *data,
+			       struct drm_file *file_priv);
+extern int psbfb_kms_on_ioctl(struct drm_device *dev, void *data,
+			      struct drm_file *file_priv);
 
 /*
  * psb_reset.c
@@ -614,6 +628,8 @@ extern int psb_xhw_scene_bind_fire(struct drm_psb_private *dev_priv,
 				   uint32_t fire_flags,
 				   uint32_t hw_context,
 				   uint32_t * cookie,
+				   uint32_t * oom_cmds,
+				   uint32_t num_oom_cmds,
 				   uint32_t offset,
 				   uint32_t engine, uint32_t flags);
 extern int psb_xhw_fire_raster(struct drm_psb_private *dev_priv,
@@ -629,7 +645,7 @@ extern int psb_xhw_scene_info(struct drm_psb_private *dev_priv,
 
 extern int psb_xhw_reset_dpm(struct drm_psb_private *dev_priv,
 			     struct psb_xhw_buf *buf);
-extern int psb_xhw_bin_mem_info(struct drm_psb_private *dev_priv,
+extern int psb_xhw_ta_mem_info(struct drm_psb_private *dev_priv,
 				struct psb_xhw_buf *buf,
 				uint32_t pages,
 				uint32_t * hw_cookie, uint32_t * size);
@@ -640,9 +656,21 @@ extern void psb_xhw_ta_oom_reply(struct drm_psb_private *dev_priv,
 				 uint32_t * cookie,
 				 uint32_t * bca,
 				 uint32_t * rca, uint32_t * flags);
-extern int psb_xhw_vistest(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf);
+extern int psb_xhw_vistest(struct drm_psb_private *dev_priv,
+			   struct psb_xhw_buf *buf);
 extern int psb_xhw_handler(struct drm_psb_private *dev_priv);
-extern int psb_xhw_resume(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf);
+extern int psb_xhw_resume(struct drm_psb_private *dev_priv,
+			  struct psb_xhw_buf *buf);
+extern void psb_xhw_fire_reply(struct drm_psb_private *dev_priv,
+			       struct psb_xhw_buf *buf, uint32_t * cookie);
+extern int psb_xhw_ta_mem_load(struct drm_psb_private *dev_priv,
+				struct psb_xhw_buf *buf,
+				uint32_t flags, 
+				uint32_t param_offset, 
+				uint32_t pt_offset,
+				uint32_t *hw_cookie);
+extern void psb_xhw_clean_buf(struct drm_psb_private *dev_priv,
+			      struct psb_xhw_buf *buf);
 
 /*
  * Utilities

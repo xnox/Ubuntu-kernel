@@ -461,34 +461,59 @@ unsigned char *drm_ddc_read(struct i2c_adapter *adapter)
 EXPORT_SYMBOL(drm_ddc_read);
 
 /**
+ * drm_get_edid - get EDID data, if available
+ * @output: output we're probing
+ * @adapter: i2c adapter to use for DDC
+ *
+ * Poke the given output's i2c channel to grab EDID data if possible.
+ * 
+ * Return edid data or NULL if we couldn't find any.
+ */
+struct edid *drm_get_edid(struct drm_output *output,
+			  struct i2c_adapter *adapter)
+{
+	struct edid *edid;
+
+	edid = (struct edid *)drm_ddc_read(adapter);
+	if (!edid) {
+		dev_warn(&output->dev->pdev->dev, "%s: no EDID data\n",
+			 output->name);
+		return NULL;
+	}
+	if (!edid_valid(edid)) {
+		dev_warn(&output->dev->pdev->dev, "%s: EDID invalid.\n",
+			 output->name);
+		kfree(edid);
+		return NULL;
+	}
+	return edid;
+}
+EXPORT_SYMBOL(drm_get_edid);
+
+/**
  * drm_add_edid_modes - add modes from EDID data, if available
  * @output: output we're probing
- * @edid: edid provided data
+ * @edid: edid data
  *
- * Return number of modes added or 0 if there are none.
+ * Add the specified modes to the output's mode list.
+ *
+ * Return number of modes added or 0 if we couldn't find any.
  */
 int drm_add_edid_modes(struct drm_output *output, struct edid *edid)
 {
 	int num_modes = 0;
 
-	if (!edid) {
-		DRM_INFO("%s: no EDID data\n", output->name);
-		goto out_err;
+	if (edid == NULL) {
+		return 0;
 	}
-
 	if (!edid_valid(edid)) {
-		DRM_INFO("%s: EDID invalid.\n", output->name);
-		goto out_err;
+		dev_warn(&output->dev->pdev->dev, "%s: EDID invalid.\n",
+			 output->name);
+		return 0;
 	}
-
 	num_modes += add_established_modes(output, edid);
 	num_modes += add_standard_modes(output, edid);
 	num_modes += add_detailed_info(output, edid);
-
 	return num_modes;
-
-out_err:
-	kfree(edid);
-	return 0;
 }
 EXPORT_SYMBOL(drm_add_edid_modes);

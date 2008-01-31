@@ -331,9 +331,11 @@ extern int i915_move(struct drm_buffer_object *bo, int evict,
 void i915_flush_ttm(struct drm_ttm *ttm);
 #endif
 
+#ifdef __linux__
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)
 extern void intel_init_chipset_flush_compat(struct drm_device *dev);
 extern void intel_fini_chipset_flush_compat(struct drm_device *dev);
+#endif
 #endif
 
 

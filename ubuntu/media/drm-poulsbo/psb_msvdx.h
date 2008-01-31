@@ -41,7 +41,6 @@
 #include "psb_drv.h"
 
 void psb_msvdx_mtx_interrupt(struct drm_device *dev);
-//void psb_msvdx_mtx_interrupt(unsigned long ptr);
 int psb_msvdx_init(struct drm_device *dev);
 int psb_msvdx_uninit(struct drm_device *dev);
 int psb_msvdx_reset(struct drm_psb_private *dev_priv);
@@ -150,7 +149,7 @@ void psb_msvdx_flush_cmd_queue(struct drm_device *dev);
 #define MSVDX_COMMS_TO_HOST_BUF			(MSVDX_COMMS_AREA_ADDR + 0x20)
 #define MSVDX_COMMS_TO_MTX_BUF			(MSVDX_COMMS_TO_HOST_BUF + (NUM_WORDS_HOST_BUF << 2))
 
-#define MSVDX_COMMS_AREA_END 			(MSVDX_COMMS_TO_MTX_BUF + (NUM_WORDS_HOST_BUF << 2))
+#define MSVDX_COMMS_AREA_END			(MSVDX_COMMS_TO_MTX_BUF + (NUM_WORDS_HOST_BUF << 2))
 
 #if (MSVDX_COMMS_AREA_END != 0x03000)
 #error

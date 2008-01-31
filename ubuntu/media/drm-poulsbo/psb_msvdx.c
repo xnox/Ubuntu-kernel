@@ -55,23 +55,23 @@ int psb_msvdx_dequeue_send(struct drm_device *dev)
 	struct psb_msvdx_cmd_queue *msvdx_cmd = NULL;
 	int ret = 0;
 
-	if(list_empty(&dev_priv->msvdx_queue))
-	{
+	if (list_empty(&dev_priv->msvdx_queue)) {
 		PSB_DEBUG_GENERAL("MSVDXQUE: msvdx list empty.\n");
 		dev_priv->msvdx_busy = 0;
 		return -EINVAL;
 	}
-	msvdx_cmd = list_first_entry(&dev_priv->msvdx_queue, struct psb_msvdx_cmd_queue, head);
+	msvdx_cmd =
+	    list_first_entry(&dev_priv->msvdx_queue, struct psb_msvdx_cmd_queue,
+			     head);
 	PSB_DEBUG_GENERAL("MSVDXQUE: Queue has id %08x\n", msvdx_cmd->sequence);
 	ret = psb_msvdx_send(dev, msvdx_cmd->cmd, msvdx_cmd->cmd_size);
-	if(ret)
-	{
+	if (ret) {
 		PSB_DEBUG_GENERAL("MSVDXQUE: psb_msvdx_send failed\n");
 		ret = -EINVAL;
 	}
 	list_del(&msvdx_cmd->head);
 	kfree(msvdx_cmd->cmd);
-	drm_free(msvdx_cmd, sizeof(struct psb_msvdx_cmd_queue), DRM_MEM_DRIVER);			
+	drm_free(msvdx_cmd, sizeof(struct psb_msvdx_cmd_queue), DRM_MEM_DRIVER);
 	return ret;
 }
 
@@ -181,12 +181,10 @@ int psb_submit_video_cmdbuf(struct drm_device *dev,
 	psb_schedule_watchdog(dev_priv);
 
 	spin_lock_irqsave(&dev_priv->msvdx_lock, irq_flags);
-	if (dev_priv->msvdx_needs_reset)
-	{
+	if (dev_priv->msvdx_needs_reset) {
 		spin_unlock_irqrestore(&dev_priv->msvdx_lock, irq_flags);
 		PSB_DEBUG_GENERAL("MSVDX: Needs reset\n");
-		if (psb_msvdx_reset(dev_priv))
-		{
+		if (psb_msvdx_reset(dev_priv)) {
 			mutex_unlock(&dev_priv->msvdx_mutex);
 			ret = -EBUSY;
 			PSB_DEBUG_GENERAL("MSVDX: Reset failed\n");
@@ -195,7 +193,7 @@ int psb_submit_video_cmdbuf(struct drm_device *dev,
 		PSB_DEBUG_GENERAL("MSVDX: Reset ok\n");
 		dev_priv->msvdx_needs_reset = 0;
 		dev_priv->msvdx_busy = 0;
-		
+
 		psb_msvdx_init(dev);
 		psb_msvdx_irq_preinstall(dev_priv);
 		psb_msvdx_irq_postinstall(dev_priv);
@@ -203,50 +201,55 @@ int psb_submit_video_cmdbuf(struct drm_device *dev,
 		spin_lock_irqsave(&dev_priv->msvdx_lock, irq_flags);
 	}
 
-	if(!dev_priv->msvdx_busy)
-	{
+	if (!dev_priv->msvdx_busy) {
 		dev_priv->msvdx_busy = 1;
 		spin_unlock_irqrestore(&dev_priv->msvdx_lock, irq_flags);
-		PSB_DEBUG_GENERAL("MSVDXQUE: nothing in the queue sending sequence:%08x..\n", sequence);
-		ret = psb_msvdx_map_command(dev, cmd_buffer, cmd_offset, cmd_size, NULL, sequence, 0);
-		if(ret)
-		{
+		PSB_DEBUG_GENERAL
+		    ("MSVDXQUE: nothing in the queue sending sequence:%08x..\n",
+		     sequence);
+		ret =
+		    psb_msvdx_map_command(dev, cmd_buffer, cmd_offset, cmd_size,
+					  NULL, sequence, 0);
+		if (ret) {
 			mutex_unlock(&dev_priv->msvdx_mutex);
-			PSB_DEBUG_GENERAL("MSVDXQUE: Failed to extract cmd...\n");
+			PSB_DEBUG_GENERAL
+			    ("MSVDXQUE: Failed to extract cmd...\n");
 			return ret;
 		}
-	}
-	else
-	{
+	} else {
 		struct psb_msvdx_cmd_queue *msvdx_cmd;
 		void *cmd = NULL;
 
 		spin_unlock_irqrestore(&dev_priv->msvdx_lock, irq_flags);
-		/*queue the command to be sent when the h/w is ready*/
-		PSB_DEBUG_GENERAL("MSVDXQUE: queueing sequence:%08x..\n", sequence);
-		msvdx_cmd = drm_calloc(1, sizeof(struct psb_msvdx_cmd_queue), DRM_MEM_DRIVER);
-		if (msvdx_cmd == NULL)
-		{
+		/*queue the command to be sent when the h/w is ready */
+		PSB_DEBUG_GENERAL("MSVDXQUE: queueing sequence:%08x..\n",
+				  sequence);
+		msvdx_cmd =
+		    drm_calloc(1, sizeof(struct psb_msvdx_cmd_queue),
+			       DRM_MEM_DRIVER);
+		if (msvdx_cmd == NULL) {
 			mutex_unlock(&dev_priv->msvdx_mutex);
 			PSB_DEBUG_GENERAL("MSVDXQUE: Out of memory...\n");
 			return -ENOMEM;
 		}
 
-		ret = psb_msvdx_map_command(dev, cmd_buffer, cmd_offset, cmd_size, &cmd, sequence, 1);
-		if(ret)
-		{
+		ret =
+		    psb_msvdx_map_command(dev, cmd_buffer, cmd_offset, cmd_size,
+					  &cmd, sequence, 1);
+		if (ret) {
 			mutex_unlock(&dev_priv->msvdx_mutex);
-			PSB_DEBUG_GENERAL("MSVDXQUE: Failed to extract cmd...\n");
-			drm_free(msvdx_cmd, sizeof(struct psb_msvdx_cmd_queue), DRM_MEM_DRIVER);
+			PSB_DEBUG_GENERAL
+			    ("MSVDXQUE: Failed to extract cmd...\n");
+			drm_free(msvdx_cmd, sizeof(struct psb_msvdx_cmd_queue),
+				 DRM_MEM_DRIVER);
 			return ret;
-		}		
-		msvdx_cmd->cmd = cmd;		
+		}
+		msvdx_cmd->cmd = cmd;
 		msvdx_cmd->cmd_size = cmd_size;
 		msvdx_cmd->sequence = sequence;
 		spin_lock_irqsave(&dev_priv->msvdx_lock, irq_flags);
 		list_add_tail(&msvdx_cmd->head, &dev_priv->msvdx_queue);
-		if (!dev_priv->msvdx_busy)
-		{
+		if (!dev_priv->msvdx_busy) {
 			dev_priv->msvdx_busy = 1;
 			PSB_DEBUG_GENERAL("MSVDXQUE: Need immediate dequeue\n");
 			psb_msvdx_dequeue_send(dev);
@@ -375,11 +378,12 @@ int psb_mtx_send(struct drm_psb_private *dev_priv, const void *pvMsg)
 void psb_msvdx_mtx_interrupt(struct drm_device *dev)
 {
 	static uint32_t msgBuffer[128];
-	uint32_t	readIndex, writeIndex;
-	uint32_t	msgNumWords, msgWordOffset;
- 	int	bBatch = 1;
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *) dev->dev_private;
-	
+	uint32_t readIndex, writeIndex;
+	uint32_t msgNumWords, msgWordOffset;
+	int bBatch = 1;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
+
 	PSB_DEBUG_GENERAL("Got an MSVDX MTX interrupt\n");
 
 	do {
@@ -414,136 +418,147 @@ void psb_msvdx_mtx_interrupt(struct drm_device *dev)
 			/* Update the Read index */
 			PSB_WMSVDX32(readIndex, MSVDX_COMMS_TO_HOST_RD_INDEX);
 
-			if (!dev_priv->msvdx_needs_reset) switch (MEMIO_READ_FIELD(msgBuffer, FWRK_GENMSG_ID))
-			{
+			if (!dev_priv->msvdx_needs_reset)
+				switch (MEMIO_READ_FIELD
+					(msgBuffer, FWRK_GENMSG_ID)) {
 				case VA_MSGID_CMD_FAILED:
-				{
-					uint32_t ui32Fence =
-					    MEMIO_READ_FIELD(msgBuffer,
-							     FW_VA_CMD_FAILED_FENCE_VALUE);
-					uint32_t ui32FaultStatus =
-					    MEMIO_READ_FIELD(msgBuffer,
-							     FW_VA_CMD_FAILED_IRQSTATUS);
+					{
+						uint32_t ui32Fence =
+						    MEMIO_READ_FIELD(msgBuffer,
+								     FW_VA_CMD_FAILED_FENCE_VALUE);
+						uint32_t ui32FaultStatus =
+						    MEMIO_READ_FIELD(msgBuffer,
+								     FW_VA_CMD_FAILED_IRQSTATUS);
 
-					PSB_DEBUG_GENERAL
-					    ("MSVDX: VA_MSGID_CMD_FAILED: Msvdx fault detected - Fence: %08x, Status: %08x - resetting and ignoring error\n",
-					     ui32Fence, ui32FaultStatus);
+						PSB_DEBUG_GENERAL
+						    ("MSVDX: VA_MSGID_CMD_FAILED: Msvdx fault detected - Fence: %08x, Status: %08x - resetting and ignoring error\n",
+						     ui32Fence,
+						     ui32FaultStatus);
 
-					dev_priv->msvdx_needs_reset = 1;
-					ui32Fence = 0;	/*MSVDX firmware reports incorrect fenceID in CMD_FAILED, so ignore for now */
-					if (ui32Fence) {
+						dev_priv->msvdx_needs_reset = 1;
+						ui32Fence = 0;	/*MSVDX firmware reports incorrect fenceID in CMD_FAILED, so ignore for now */
+						if (ui32Fence) {
+							dev_priv->
+							    msvdx_current_sequence
+							    = ui32Fence;
+						} else {
+							if (dev_priv->
+							    msvdx_current_sequence
+							    -
+							    dev_priv->
+							    sequence
+							    [PSB_ENGINE_VIDEO] >
+							    0x0FFFFFFF)
+								dev_priv->
+								    msvdx_current_sequence++;
+							PSB_DEBUG_GENERAL
+							    ("MSVDX: Fence ID missing, assuming %08x\n",
+							     dev_priv->
+							     msvdx_current_sequence);
+						}
+
+						psb_fence_error(dev,
+								PSB_ENGINE_VIDEO,
+								dev_priv->
+								msvdx_current_sequence,
+								DRM_FENCE_TYPE_EXE,
+								DRM_CMD_FAILED);
+
+						/* Flush the command queue */
+						psb_msvdx_flush_cmd_queue(dev);
+
+						break;
+					}
+				case VA_MSGID_CMD_COMPLETED:
+					{
+						uint32_t ui32Fence =
+						    MEMIO_READ_FIELD(msgBuffer,
+								     FW_VA_CMD_COMPLETED_FENCE_VALUE);
+						uint32_t ui32TickCount =
+						    MEMIO_READ_FIELD(msgBuffer,
+								     FW_VA_CMD_COMPLETED_NO_TICKS);
+
+						bBatch = 0;	/* This compleated  so return */
+
+						PSB_DEBUG_GENERAL
+						    ("msvdx VA_MSGID_CMD_COMPLETED: FenceID: %08x, TickCount: %08x\n",
+						     ui32Fence, ui32TickCount);
 						dev_priv->
 						    msvdx_current_sequence =
 						    ui32Fence;
-					} else {
-						if (dev_priv->
-						    msvdx_current_sequence -
-						    dev_priv->
-						    sequence[PSB_ENGINE_VIDEO] >
-						    0x0FFFFFFF)
-							dev_priv->
-							    msvdx_current_sequence++;
+
+						psb_fence_handler(dev,
+								  PSB_ENGINE_VIDEO);
+
+						/*Now send the next command from the msvdx cmd queue */
+						psb_msvdx_dequeue_send(dev);
+
+						break;
+					}
+				case VA_MSGID_CMD_COMPLETED_BATCH:
+					{
+						uint32_t ui32Fence =
+						    MEMIO_READ_FIELD(msgBuffer,
+								     FW_VA_CMD_COMPLETED_FENCE_VALUE);
+						uint32_t ui32TickCount =
+						    MEMIO_READ_FIELD(msgBuffer,
+								     FW_VA_CMD_COMPLETED_NO_TICKS);
+
+						/* we have the fence value in the message */
+
 						PSB_DEBUG_GENERAL
-						    ("MSVDX: Fence ID missing, assuming %08x\n",
-						     dev_priv->
-						     msvdx_current_sequence);
+						    ("msvdx VA_MSGID_CMD_COMPLETED_BATCH: FenceID: %08x, TickCount: %08x\n",
+						     ui32Fence, ui32TickCount);
+						dev_priv->
+						    msvdx_current_sequence =
+						    ui32Fence;
+
+						break;
+					}
+				case VA_MSGID_ACK:
+					PSB_DEBUG_GENERAL
+					    ("msvdx VA_MSGID_ACK\n");
+					break;
+
+				case VA_MSGID_TEST1:
+					PSB_DEBUG_GENERAL
+					    ("msvdx VA_MSGID_TEST1\n");
+					break;
+
+				case VA_MSGID_TEST2:
+					PSB_DEBUG_GENERAL
+					    ("msvdx VA_MSGID_TEST2\n");
+					break;
+					/* Don't need to do anything with these messages */
+
+				case VA_MSGID_DEBLOCK_REQUIRED:
+					{
+						uint32_t ui32ContextId =
+						    MEMIO_READ_FIELD(msgBuffer,
+								     FW_VA_DEBLOCK_REQUIRED_CONTEXT);
+
+						/* The BE we now be locked. */
+
+						/* Unblock rendec by reading the mtx2mtx end of slice */
+						(void)
+						    PSB_RMSVDX32
+						    (MSVDX_RENDEC_READ_DATA);
+
+						PSB_DEBUG_GENERAL
+						    ("msvdx VA_MSGID_DEBLOCK_REQUIRED Context=%08x\n",
+						     ui32ContextId);
+
+						break;
 					}
 
-					psb_fence_error(dev, PSB_ENGINE_VIDEO,
-							dev_priv->
-							msvdx_current_sequence,
-							DRM_FENCE_TYPE_EXE,
-							DRM_CMD_FAILED);
-
-					/* Flush the command queue */
-					psb_msvdx_flush_cmd_queue(dev);
-
+				default:
+					{
+						PSB_DEBUG_GENERAL
+						    ("ERROR: msvdx Unknown message from MTX \n");
+					}
 					break;
+
 				}
-			case VA_MSGID_CMD_COMPLETED:
-				{
-					uint32_t ui32Fence =
-					    MEMIO_READ_FIELD(msgBuffer,
-							     FW_VA_CMD_COMPLETED_FENCE_VALUE);
-					uint32_t ui32TickCount =
-					    MEMIO_READ_FIELD(msgBuffer,
-							     FW_VA_CMD_COMPLETED_NO_TICKS);
-
-					bBatch = 0;	/* This compleated  so return */
-
-					PSB_DEBUG_GENERAL
-					    ("msvdx VA_MSGID_CMD_COMPLETED: FenceID: %08x, TickCount: %08x\n",
-					     ui32Fence, ui32TickCount);
-					dev_priv->msvdx_current_sequence =
-					    ui32Fence;
-
-					psb_fence_handler(dev, PSB_ENGINE_VIDEO);
-
-					/*Now send the next command from the msvdx cmd queue */
-					psb_msvdx_dequeue_send(dev);
-
-					break;
-				}
-			case VA_MSGID_CMD_COMPLETED_BATCH:
-				{
-					uint32_t ui32Fence =
-					    MEMIO_READ_FIELD(msgBuffer,
-							     FW_VA_CMD_COMPLETED_FENCE_VALUE);
-					uint32_t ui32TickCount =
-					    MEMIO_READ_FIELD(msgBuffer,
-							     FW_VA_CMD_COMPLETED_NO_TICKS);
-
-					/* we have the fence value in the message */
-
-					PSB_DEBUG_GENERAL
-					    ("msvdx VA_MSGID_CMD_COMPLETED_BATCH: FenceID: %08x, TickCount: %08x\n",
-					     ui32Fence, ui32TickCount);
-					dev_priv->msvdx_current_sequence =
-					    ui32Fence;
-
-					break;
-				}
-			case VA_MSGID_ACK:
-				PSB_DEBUG_GENERAL("msvdx VA_MSGID_ACK\n");
-				break;
-
-			case VA_MSGID_TEST1:
-				PSB_DEBUG_GENERAL("msvdx VA_MSGID_TEST1\n");
-				break;
-
-			case VA_MSGID_TEST2 :
-				PSB_DEBUG_GENERAL("msvdx VA_MSGID_TEST2\n");
-				break;
-				/* Don't need to do anything with these messages */
-
-			case VA_MSGID_DEBLOCK_REQUIRED:
-				{
-					uint32_t ui32ContextId =
-					    MEMIO_READ_FIELD(msgBuffer,
-							     FW_VA_DEBLOCK_REQUIRED_CONTEXT);
-
-					/* The BE we now be locked. */
-
-					/* Unblock rendec by reading the mtx2mtx end of slice */
-					(void)
-					    PSB_RMSVDX32
-					    (MSVDX_RENDEC_READ_DATA);
-
-					PSB_DEBUG_GENERAL
-					    ("msvdx VA_MSGID_DEBLOCK_REQUIRED Context=%08x\n",
-					     ui32ContextId);
-
-					break;
-				}
-
-			default:
-				{
-					PSB_DEBUG_GENERAL
-					    ("ERROR: msvdx Unknown message from MTX \n");
-				}
-				break;
-
-			}
 			/*TBD: psISRInfo->bInterruptProcessed = IMG_TRUE; */
 		} else {
 			/* Get out of here if nothing */

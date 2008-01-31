@@ -1,29 +1,22 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 /*
@@ -34,11 +27,11 @@
 #define _PSB_SCENE_H_
 
 #define PSB_USER_OBJECT_SCENE_POOL    drm_driver_type0
-#define PSB_USER_OBJECT_BIN_MEM       drm_driver_type1
+#define PSB_USER_OBJECT_TA_MEM       drm_driver_type1
 #define PSB_MAX_NUM_SCENES            8
 
 struct psb_hw_scene;
-struct psb_hw_bin_mem;
+struct psb_hw_ta_mem;
 
 struct psb_scene_pool {
 	struct drm_device *dev;
@@ -58,7 +51,7 @@ struct psb_scene {
 	uint32_t bo_size;
 	uint32_t w;
 	uint32_t h;
-	struct psb_bin_mem *bin_mem;
+	struct psb_ta_mem *ta_mem;
 	struct psb_hw_scene *hw_scene;
 	struct drm_buffer_object *hw_data;
 	uint32_t flags;
@@ -76,13 +69,13 @@ struct psb_user_scene {
 	struct drm_user_object user;
 };
 
-struct psb_bin_mem {
+struct psb_ta_mem {
 	struct drm_device *dev;
 	struct drm_user_object user;
 	uint32_t ref_count;
-	uint32_t hw_cookie[PSB_BIN_MEM_HW_COOKIE_SIZE];
+	uint32_t hw_cookie[PSB_TA_MEM_HW_COOKIE_SIZE];
 	uint32_t bo_size;
-	struct drm_buffer_object *bin_memory;
+	struct drm_buffer_object *ta_memory;
 	struct drm_buffer_object *hw_data;
 	int is_deallocating;
 	int deallocating_scheduled;
@@ -103,13 +96,17 @@ extern int psb_validate_scene_pool(struct psb_scene_pool *pool, uint64_t flags,
 				   struct psb_scene **scene_p);
 extern void psb_scene_unref_devlocked(struct psb_scene **scene);
 extern struct psb_scene *psb_scene_ref(struct psb_scene *src);
-extern int drm_psb_scene_unref_ioctl(struct drm_device *dev, 
-				     void *data,
-				     struct drm_file *file_priv);
+extern int drm_psb_scene_unref_ioctl(struct drm_device *dev,
+				     void *data, struct drm_file *file_priv);
 
 static inline uint32_t psb_scene_pool_handle(struct psb_scene_pool *pool)
 {
 	return pool->user.hash.key;
 }
+extern struct psb_ta_mem *psb_alloc_ta_mem(struct drm_device *dev, 
+					     uint32_t pages);
+extern void psb_ta_mem_ref_devlocked(struct psb_ta_mem **dst,
+				      struct psb_ta_mem *src);
+extern void psb_ta_mem_unref_devlocked(struct psb_ta_mem **ta_mem);
 
 #endif

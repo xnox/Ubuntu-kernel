@@ -37,6 +37,242 @@ int drm_intel_ignore_acpi = 0;
 MODULE_PARM_DESC(ignore_acpi, "Ignore ACPI");
 module_param_named(ignore_acpi, drm_intel_ignore_acpi, int, 0600);
 
+#define BLC_DEBUG 1
+
+#ifdef BLC_DEBUG
+struct proc_dir_entry *proc_psb_dir = NULL;
+#endif
+
+#define BLC_I2C_TYPE 0x01
+#define BLC_PWM_TYPE 0x02
+#define BRIGHTNESS_MASK 0xff
+#define BRIGHTNESS_MAX_LEVEL 100
+#define BLC_POLARITY_NORMAL 0
+#define BLC_POLARITY_INVERSE 1
+#define BACKLIGHT_PWM_POLARITY_BIT_CLEAR (0xfffe)
+#define BACKLIGHT_PWM_CTL_SHIFT (16)
+#define BLC_MAX_PWM_REG_FREQ 0xfffe
+#define BLC_MIN_PWM_REG_FREQ 0x2
+#define BLC_PWM_LEGACY_MODE_ENABLE 0x0001
+#define BLC_PWM_PRECISION_FACTOR 10//10000000 
+#define BLC_PWM_FREQ_CALC_CONSTANT 32 
+#define MHz 1000000 
+#define OFFSET_OPREGION_VBT	0x400	
+
+typedef struct OpRegion_Header
+{
+	char sign[16];
+	u32 size;
+	u32 over;
+	char sver[32];
+	char vver[16];
+	char gver[16];
+	u32 mbox;
+	char rhd1[164];
+} OpRegionRec, *OpRegionPtr;
+
+struct vbt_header
+{
+	char signature[20];		/**< Always starts with 'VBT$' */
+	u16 version;			/**< decimal */
+	u16 header_size;		/**< in bytes */
+	u16 vbt_size;			/**< in bytes */
+	u8 vbt_checksum;
+	u8 reserved0;
+	u32 bdb_offset;			/**< from beginning of VBT */
+	u32 aim1_offset;		/**< from beginning of VBT */
+	u32 aim2_offset;		/**< from beginning of VBT */
+	u32 aim3_offset;		/**< from beginning of VBT */
+	u32 aim4_offset;		/**< from beginning of VBT */
+} __attribute__ ((packed));
+
+struct bdb_header
+{
+	char signature[16];		/**< Always 'BIOS_DATA_BLOCK' */
+	u16 version;			/**< decimal */
+	u16 header_size;		/**< in bytes */
+	u16 bdb_size;			/**< in bytes */
+} __attribute__ ((packed));	
+
+#define LVDS_CAP_EDID			(1 << 6)
+#define LVDS_CAP_DITHER			(1 << 5)
+#define LVDS_CAP_PFIT_AUTO_RATIO	(1 << 4)
+#define LVDS_CAP_PFIT_GRAPHICS_MODE	(1 << 3)
+#define LVDS_CAP_PFIT_TEXT_MODE		(1 << 2)
+#define LVDS_CAP_PFIT_GRAPHICS		(1 << 1)
+#define LVDS_CAP_PFIT_TEXT		(1 << 0)
+struct lvds_bdb_1
+{
+	u8 id;				/**< 40 */
+	u16 size;
+	u8 panel_type;
+	u8 reserved0;
+	u16 caps;
+} __attribute__ ((packed));
+
+struct lvds_bdb_2_fp_params
+{
+	u16 x_res;
+	u16 y_res;
+	u32 lvds_reg;
+	u32 lvds_reg_val;
+	u32 pp_on_reg;
+	u32 pp_on_reg_val;
+	u32 pp_off_reg;
+	u32 pp_off_reg_val;
+	u32 pp_cycle_reg;
+	u32 pp_cycle_reg_val;
+	u32 pfit_reg;
+	u32 pfit_reg_val;
+	u16 terminator;
+} __attribute__ ((packed));
+
+struct lvds_bdb_2_fp_edid_dtd
+{
+	u16 dclk;		/**< In 10khz */
+	u8 hactive;
+	u8 hblank;
+	u8 high_h;		/**< 7:4 = hactive 11:8, 3:0 = hblank 11:8 */
+	u8 vactive;
+	u8 vblank;
+	u8 high_v;		/**< 7:4 = vactive 11:8, 3:0 = vblank 11:8 */
+	u8 hsync_off;
+	u8 hsync_pulse_width;
+	u8 vsync_off;
+	u8 high_hsync_off;	/**< 7:6 = hsync off 9:8 */
+	u8 h_image;
+	u8 v_image;
+	u8 max_hv;
+	u8 h_border;
+	u8 v_border;
+	u8 flags;
+#define FP_EDID_FLAG_VSYNC_POSITIVE	(1 << 2)
+#define FP_EDID_FLAG_HSYNC_POSITIVE	(1 << 1)
+} __attribute__ ((packed));
+
+struct lvds_bdb_2_entry
+{
+	u16 fp_params_offset;		/**< From beginning of BDB */
+	u8 fp_params_size;
+	u16 fp_edid_dtd_offset;
+	u8 fp_edid_dtd_size;
+	u16 fp_edid_pid_offset;
+	u8 fp_edid_pid_size;
+} __attribute__ ((packed));
+
+struct lvds_bdb_2
+{
+	u8 id;				/**< 41 */
+	u16 size;
+	u8 table_size;		       /* not sure on this one */
+	struct lvds_bdb_2_entry panels[16];
+} __attribute__ ((packed));
+
+
+struct lvds_bdb_blc
+{
+	u8 id;				/**< 43 */
+	u16 size;
+	u8 table_size;
+} __attribute__ ((packed));
+
+struct lvds_blc
+{
+	u8 type:2;
+	u8 pol:1;
+	u8 gpio:3;
+	u8 gmbus:2;
+	u16 freq;
+	u8 minbrightness;
+	u8 i2caddr;
+	u8 brightnesscmd;
+	/* more... */
+} __attribute__ ((packed));
+
+
+/** Set BLC through I2C*/
+static int
+psbLVDSI2CSetBacklight(struct drm_device *dev, unsigned char ch)
+{
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
+	u8 out_buf[2];
+	struct i2c_msg msgs[] = {
+		{ 
+			.addr = dev_priv->i2c_bus->slave_addr,
+			.flags = 0,
+			.len = 2,
+			.buf = out_buf,
+		}
+	};
+
+	DRM_INFO("psbLVDSI2CSetBacklight: the slave_addr is 0x%x, the backlight value is %d\n", dev_priv->i2c_bus->slave_addr, ch);
+
+	out_buf[0] = dev_priv->blc_brightnesscmd;
+	out_buf[1] = ch;
+
+	if (i2c_transfer(&dev_priv->i2c_bus->adapter, msgs, 1) == 1)
+	{
+		DRM_INFO("psbLVDSI2CSetBacklight: i2c_transfer done\n");
+		return true;
+	}
+
+	DRM_ERROR("msg: i2c_transfer error\n");
+	return false;
+}
+
+/**
+ * Calculate PWM control register value.
+ */
+static int 
+psbLVDSCalculatePWMCtrlRegFreq(struct drm_device *dev)
+{
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
+	unsigned long value = 0;
+
+	DRM_INFO("Enter psbLVDSCalculatePWMCtrlRegFreq.\n");
+	if (dev_priv->blc_freq == 0) {
+		DRM_ERROR("psbLVDSCalculatePWMCtrlRegFreq:  Frequency Requested is 0.\n");
+		return FALSE;
+	}
+	value = (dev_priv->CoreClock * MHz);
+	value = (value / BLC_PWM_FREQ_CALC_CONSTANT);
+	value = (value * BLC_PWM_PRECISION_FACTOR);
+	value = (value / dev_priv->blc_freq);
+	value = (value / BLC_PWM_PRECISION_FACTOR);
+
+	DRM_INFO("RegFreg value is %l.\n", value);
+	if (value > (unsigned long)BLC_MAX_PWM_REG_FREQ ||
+			value < (unsigned long)BLC_MIN_PWM_REG_FREQ) {
+		return FALSE;
+	} else {
+		dev_priv->PWMControlRegFreq = ((u32)value & ~BLC_PWM_LEGACY_MODE_ENABLE);
+		return TRUE;
+	}
+}
+
+/**
+ * Returns the maximum level of the backlight duty cycle field.
+ */
+static u32
+psbLVDSGetPWMMaxBacklight(struct drm_device *dev)
+{
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
+	u32 max_pwm_blc = 0;
+
+	max_pwm_blc = ((I915_READ(BLC_PWM_CTL) & BACKLIGHT_MODULATION_FREQ_MASK) >> \
+			BACKLIGHT_MODULATION_FREQ_SHIFT) * 2;
+
+	if (!(max_pwm_blc & BLC_MAX_PWM_REG_FREQ)) {
+		if (psbLVDSCalculatePWMCtrlRegFreq(dev)) {
+			max_pwm_blc = dev_priv->PWMControlRegFreq;
+		}
+	}
+
+	DRM_INFO("psbLVDSGetPWMMaxBacklight: the max_pwm_blc is %d.\n", max_pwm_blc);
+	return max_pwm_blc;
+}
+
+
 /**
  * Sets the backlight level.
  *
@@ -45,11 +281,46 @@ module_param_named(ignore_acpi, drm_intel_ignore_acpi, int, 0600);
 static void intel_lvds_set_backlight(struct drm_device *dev, int level)
 {
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
-	u32 blc_pwm_ctl;
+	//u32 blc_pwm_ctl;
 
-	blc_pwm_ctl = I915_READ(BLC_PWM_CTL) & ~BACKLIGHT_DUTY_CYCLE_MASK;
+	/*           
+     	blc_pwm_ctl = I915_READ(BLC_PWM_CTL) & ~BACKLIGHT_DUTY_CYCLE_MASK;
 	I915_WRITE(BLC_PWM_CTL, (blc_pwm_ctl |
-				 (level << BACKLIGHT_DUTY_CYCLE_SHIFT)));
+		(level << BACKLIGHT_DUTY_CYCLE_SHIFT)));
+	 */
+	u32 newbacklight = 0;
+
+	DRM_INFO("intel_lvds_set_backlight: the level is %d\n", level);
+	if(dev_priv->blc_type == BLC_I2C_TYPE){
+		newbacklight = BRIGHTNESS_MASK & ((unsigned long)level * \
+				BRIGHTNESS_MASK /BRIGHTNESS_MAX_LEVEL);
+
+		if (dev_priv->blc_pol == BLC_POLARITY_INVERSE) {
+			newbacklight = BRIGHTNESS_MASK - newbacklight;
+		}
+
+		psbLVDSI2CSetBacklight(dev, newbacklight);
+
+	} else {
+		u32 max_pwm_blc = psbLVDSGetPWMMaxBacklight(dev);
+
+		u32 blc_pwm_duty_cycle;
+
+		/* Provent LVDS going to total black */
+		if ( level < 20) {
+			level = 20;
+		}
+		blc_pwm_duty_cycle = level * max_pwm_blc/BRIGHTNESS_MAX_LEVEL;
+
+		if (dev_priv->blc_pol == BLC_POLARITY_INVERSE) {
+			blc_pwm_duty_cycle = max_pwm_blc - blc_pwm_duty_cycle;
+		}
+
+		blc_pwm_duty_cycle &= BACKLIGHT_PWM_POLARITY_BIT_CLEAR;
+
+		I915_WRITE(BLC_PWM_CTL,
+				(max_pwm_blc << BACKLIGHT_PWM_CTL_SHIFT)| (blc_pwm_duty_cycle));
+	}
 }
 
 /**
@@ -57,10 +328,13 @@ static void intel_lvds_set_backlight(struct drm_device *dev, int level)
  */
 static u32 intel_lvds_get_max_backlight(struct drm_device *dev)
 {
+	return BRIGHTNESS_MAX_LEVEL;
+	/*
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
     
 	return ((I915_READ(BLC_PWM_CTL) & BACKLIGHT_MODULATION_FREQ_MASK) >>
 		BACKLIGHT_MODULATION_FREQ_SHIFT) * 2;
+	*/
 }
 
 /**
@@ -71,29 +345,85 @@ static void intel_lvds_set_power(struct drm_device *dev, bool on)
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
 	u32 pp_status;
 
+	DRM_INFO("intel_lvds_set_power: %d\n", on);
 	if (on) {
 		I915_WRITE(PP_CONTROL, I915_READ(PP_CONTROL) |
-			   POWER_TARGET_ON);
+				POWER_TARGET_ON);
 		do {
 			pp_status = I915_READ(PP_STATUS);
 		} while ((pp_status & PP_ON) == 0);
 
-		intel_lvds_set_backlight(dev, dev_priv->backlight_duty_cycle);
+		intel_lvds_set_backlight(dev, dev_priv->backlight);
 	} else {
 		intel_lvds_set_backlight(dev, 0);
 
 		I915_WRITE(PP_CONTROL, I915_READ(PP_CONTROL) &
-			   ~POWER_TARGET_ON);
+				~POWER_TARGET_ON);
 		do {
 			pp_status = I915_READ(PP_STATUS);
 		} while (pp_status & PP_ON);
 	}
 }
 
+#ifdef BLC_DEBUG
+static int intel_lvds_proc_read_backlight(char *buf, char **start, off_t offset,
+		int request, int *eof, void *data)
+{
+	struct drm_device *dev = (struct drm_device *)data;
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
+	int len = 0;
+	DRM_INFO("call intel_lvds_proc_read_backlight, %d\n", dev_priv->backlight);
+
+	if (offset > DRM_PROC_LIMIT) {
+		*eof = 1;
+		return 0;
+	}
+
+	*start = &buf[offset];
+	*eof = 0;
+
+	DRM_PROC_PRINT("the backlight is %d\n",dev_priv->backlight);
+
+	if (len > request + offset)
+		return request;
+
+	*eof = 1;
+	return len - offset;
+}
+
+static int intel_lvds_proc_write_backlight(struct file *file, const char * user_buffer,
+		unsigned long count, void *data)
+{
+	struct drm_device *dev = (struct drm_device *)data;
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
+	char buf[] = "00000000";
+	unsigned long len =
+		(sizeof(buf) -1) > count ? count : sizeof(buf) - 1;
+	int backlight=0;
+	char *p = (char *)buf;
+
+	DRM_INFO("call intel_lvds_proc_write_backlight\n");
+	if (copy_from_user(buf, user_buffer, len)) {
+		DRM_ERROR("intel_lvds_proc_write_backlight: can't copy data from userspace\n");
+		return count;
+	}
+
+	buf[len] = 0; 
+	backlight = simple_strtoul(p, &p, 0); 
+	if(backlight > BRIGHTNESS_MAX_LEVEL)
+		backlight = BRIGHTNESS_MAX_LEVEL;
+	dev_priv->backlight = backlight;
+	DRM_INFO("Set backlight by proc to %d\n", backlight);
+	intel_lvds_set_backlight(dev, dev_priv->backlight);
+	return count;
+}
+#endif
+
 static void intel_lvds_dpms(struct drm_output *output, int mode)
 {
 	struct drm_device *dev = output->dev;
 
+	DRM_INFO("intel_lvds_dpms: the mode is %d\n", mode);
 	if (mode == DPMSModeOn)
 		intel_lvds_set_power(dev, true);
 	else
@@ -119,7 +449,7 @@ static void intel_lvds_save(struct drm_output *output)
 	 * If the light is off at server startup, just make it full brightness
 	 */
 	if (dev_priv->backlight_duty_cycle == 0)
-		dev_priv->backlight_duty_cycle =
+		dev_priv->backlight=
 			intel_lvds_get_max_backlight(dev);
 }
 
@@ -217,6 +547,7 @@ static void intel_lvds_prepare(struct drm_output *output)
 	struct drm_device *dev = output->dev;
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
 
+	DRM_INFO("intel_lvds_prepare\n");
 	dev_priv->saveBLC_PWM_CTL = I915_READ(BLC_PWM_CTL);
 	dev_priv->backlight_duty_cycle = (dev_priv->saveBLC_PWM_CTL &
 				       BACKLIGHT_DUTY_CYCLE_MASK);
@@ -229,8 +560,10 @@ static void intel_lvds_commit( struct drm_output *output)
 	struct drm_device *dev = output->dev;
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
 
+	DRM_INFO("intel_lvds_commit\n");
 	if (dev_priv->backlight_duty_cycle == 0)
-		dev_priv->backlight_duty_cycle =
+		//dev_priv->backlight_duty_cycle =
+		dev_priv->backlight =
 			intel_lvds_get_max_backlight(dev);
 
 	intel_lvds_set_power(dev, true);
@@ -256,8 +589,13 @@ static void intel_lvds_mode_set(struct drm_output *output,
 	 * screen.  Should be enabled before the pipe is enabled, according to
 	 * register description and PRM.
 	 */
-	pfit_control = (PFIT_ENABLE | VERT_AUTO_SCALE | HORIZ_AUTO_SCALE |
-			VERT_INTERP_BILINEAR | HORIZ_INTERP_BILINEAR);
+	if (mode->hdisplay != adjusted_mode->hdisplay ||
+	    mode->vdisplay != adjusted_mode->vdisplay)
+		pfit_control = (PFIT_ENABLE | VERT_AUTO_SCALE |
+				HORIZ_AUTO_SCALE | VERT_INTERP_BILINEAR |
+				HORIZ_INTERP_BILINEAR);
+	else
+		pfit_control = 0;
 
 	if (!IS_I965G(dev)) {
 		if (dev_priv->panel_wants_dither)
@@ -340,9 +678,20 @@ out:
  */
 static void intel_lvds_destroy(struct drm_output *output)
 {
+	struct drm_device *dev = output->dev;
 	struct intel_output *intel_output = output->driver_private;
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
 
+#ifdef BLC_DEBUG
+	if(proc_psb_dir) {
+		remove_proc_entry("backlight", proc_psb_dir);
+		remove_proc_entry("dri/psb", NULL);
+	}
+#endif
+	if(dev_priv->OpRegion != NULL)
+		iounmap(dev_priv->OpRegion);
 	intel_i2c_destroy(intel_output->ddc_bus);
+	intel_i2c_destroy(dev_priv->i2c_bus);
 	kfree(output->driver_private);
 }
 
@@ -435,11 +784,183 @@ void intel_lvds_init(struct drm_device *dev)
 	output->interlace_allowed = FALSE;
 	output->doublescan_allowed = FALSE;
 
+	//initialize the I2C bus and BLC data
+	dev_priv->i2c_bus = intel_i2c_create(dev, GPIOB, "LVDSBLC_B");
+	if (!dev_priv->i2c_bus) {
+		dev_printk(KERN_ERR, &dev->pdev->dev, "i2c bus registration "
+			   "failed.\n");
+		return;
+	}
+	dev_priv->i2c_bus->slave_addr = 0x2c;//0x58;
+	dev_priv->backlight = BRIGHTNESS_MAX_LEVEL;
+	dev_priv->blc_type = 0;
+	dev_priv->blc_pol = 0;
+
+	if (1) { //get the BLC init data from VBT 
+		u32 OpRegion_Phys;
+		unsigned int OpRegion_Size = 0x100;
+		OpRegionPtr OpRegion;
+		char *OpRegion_String = "IntelGraphicsMem";
+
+		struct vbt_header *vbt;
+		struct bdb_header *bdb;
+		int vbt_off, bdb_off, bdb_block_off, block_size;
+		int panel_type = -1;
+		unsigned char *bios;
+		unsigned char *vbt_buf;
+
+		pci_read_config_dword(dev->pdev, 0xFC, &OpRegion_Phys);
+
+		//dev_priv->OpRegion =  phys_to_virt(OpRegion_Phys);
+		dev_priv->OpRegion = ioremap(OpRegion_Phys, OpRegion_Size);
+		dev_priv->OpRegionSize = OpRegion_Size;
+
+		OpRegion = (OpRegionPtr) dev_priv->OpRegion;
+
+		if (!memcmp(OpRegion->sign, OpRegion_String, 16)) {
+			unsigned int OpRegion_NewSize;
+
+			OpRegion_NewSize = OpRegion->size * 1024;
+
+			dev_priv->OpRegionSize = OpRegion_NewSize;
+			
+			iounmap(dev_priv->OpRegion);
+			dev_priv->OpRegion = ioremap(OpRegion_Phys, OpRegion_NewSize);
+		} else {
+			iounmap(dev_priv->OpRegion);
+			dev_priv->OpRegion = NULL;
+		}
+
+		if((dev_priv->OpRegion != NULL)&&(dev_priv->OpRegionSize >= OFFSET_OPREGION_VBT)) {
+			DRM_INFO("intel_lvds_init: OpRegion has the VBT address\n");
+			vbt_buf = dev_priv->OpRegion + OFFSET_OPREGION_VBT;
+			vbt = (struct vbt_header *)(dev_priv->OpRegion + OFFSET_OPREGION_VBT);
+		} else {		
+			DRM_INFO("intel_lvds_init: No OpRegion, use the bios at fixed address 0xc0000\n");
+			bios = phys_to_virt(0xC0000);
+			if(*((u16 *)bios) != 0xAA55){
+				bios = NULL;
+				DRM_ERROR("the bios is incorrect\n");
+				goto blc_out;		
+			}
+			vbt_off = bios[0x1a] | (bios[0x1a + 1] << 8);
+			DRM_INFO("intel_lvds_init: the vbt off is %x\n", vbt_off);
+			vbt_buf = bios + vbt_off;
+			vbt = (struct vbt_header *)(bios + vbt_off);
+		}
+
+		bdb_off = vbt->bdb_offset;
+		bdb = (struct bdb_header *)(vbt_buf + bdb_off);
+
+		DRM_INFO("intel_lvds_init: The bdb->signature is %s, the bdb_off is %d\n",bdb->signature, bdb_off);
+
+		if (memcmp(bdb->signature, "BIOS_DATA_BLOCK ", 16) != 0) {
+			DRM_ERROR("the vbt is error\n");
+			goto blc_out;
+		}
+
+		for (bdb_block_off = bdb->header_size; bdb_block_off < bdb->bdb_size;
+				bdb_block_off += block_size) {
+			int start = bdb_off + bdb_block_off;
+			int id, num_entries;
+			struct lvds_bdb_1 *lvds1;
+			struct lvds_blc *lvdsblc;
+			struct lvds_bdb_blc *bdbblc;
+
+			id = vbt_buf[start];
+			block_size = (vbt_buf[start + 1] | (vbt_buf[start + 2] << 8)) + 3;
+			switch (id) {
+				case 40:
+					lvds1 = (struct lvds_bdb_1 *)(vbt_buf+ start);
+					panel_type = lvds1->panel_type;
+					//if (lvds1->caps & LVDS_CAP_DITHER)
+					//	*panelWantsDither = TRUE;
+					break;
+
+				case 43:
+					bdbblc = (struct lvds_bdb_blc *)(vbt_buf + start);
+					num_entries = bdbblc->table_size? (bdbblc->size - \
+							sizeof(bdbblc->table_size))/bdbblc->table_size : 0;
+					if (num_entries << 16 && bdbblc->table_size == sizeof(struct lvds_blc)) {
+						lvdsblc = (struct lvds_blc *)(vbt_buf + start + sizeof(struct lvds_bdb_blc));
+						lvdsblc += panel_type;
+						dev_priv->blc_type = lvdsblc->type;
+						dev_priv->blc_pol = lvdsblc->pol;
+						dev_priv->blc_freq = lvdsblc->freq;
+						dev_priv->blc_minbrightness = lvdsblc->minbrightness;
+						dev_priv->blc_i2caddr = lvdsblc->i2caddr;
+						dev_priv->blc_brightnesscmd = lvdsblc->brightnesscmd;
+						DRM_INFO("intel_lvds_init: BLC Data in BIOS VBT tables: datasize=%d paneltype=%d \
+								type=0x%02x pol=0x%02x freq=0x%04x minlevel=0x%02x    \
+								i2caddr=0x%02x cmd=0x%02x \n",
+								0,
+								panel_type,
+								lvdsblc->type,
+								lvdsblc->pol,
+								lvdsblc->freq,
+								lvdsblc->minbrightness,
+								lvdsblc->i2caddr,
+								lvdsblc->brightnesscmd);
+					}
+					break;
+			}
+		}
+
+	}
+
+	if(1){//get the Core Clock for the calculating MAX PWM value
+		struct pci_dev * pci_root = pci_get_bus_and_slot(0, 0);
+		u32 clock;
+		unsigned int CoreClocks[] = {
+			100,
+			133,
+			150,
+			178,
+			200,
+			266,
+			266,
+			266
+		};
+		if(pci_root)
+		{
+			pci_write_config_dword(pci_root, 0xD0, 0xD0050300);
+			pci_read_config_dword(pci_root, 0xD4, &clock);
+			dev_priv->CoreClock = CoreClocks[clock & 0x07];
+			DRM_INFO("intel_lvds_init: the CoreClock is %d\n", dev_priv->CoreClock);
+		}
+	}
+
+#ifdef BLC_DEBUG
+	{
+		struct proc_dir_entry *ent;
+		char name[64] = "dri/psb";
+
+		proc_psb_dir = proc_mkdir(name, NULL);
+		if(!proc_psb_dir){
+			DRM_ERROR("Create /proc/dri/psb folder error\n");
+			goto blc_out;
+		}
+		ent = create_proc_entry("backlight",
+				S_IFREG | S_IRUGO | S_IWUSR, proc_psb_dir);
+		if(!ent){
+			DRM_ERROR("Create /proc/dri/psb/backlight error\n");
+			goto blc_out;
+		}
+		ent->read_proc = intel_lvds_proc_read_backlight;
+		ent->write_proc = intel_lvds_proc_write_backlight;
+		ent->data = dev;
+
+	}
+#endif
+
+blc_out:
+
 	/* Set up the DDC bus. */
 	intel_output->ddc_bus = intel_i2c_create(dev, GPIOC, "LVDSDDC_C");
 	if (!intel_output->ddc_bus) {
 		dev_printk(KERN_ERR, &dev->pdev->dev, "DDC bus registration "
 			   "failed.\n");
+		intel_i2c_destroy(dev_priv->i2c_bus);
 		return;
 	}
 

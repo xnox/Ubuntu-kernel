@@ -203,20 +203,24 @@ static int drm_bo_handle_move_mem(struct drm_buffer_object *bo,
 			if (ret)
 				goto out_err;
 		}
+
+		if (bo->mem.mem_type == DRM_BO_MEM_LOCAL) {
+
+			struct drm_bo_mem_reg *old_mem = &bo->mem;
+			uint64_t save_flags = old_mem->flags;
+			uint64_t save_mask = old_mem->mask;
+			
+			*old_mem = *mem;
+			mem->mm_node = NULL;
+			old_mem->mask = save_mask;
+			DRM_FLAG_MASKED(save_flags, mem->flags, 
+					DRM_BO_MASK_MEMTYPE);
+			goto moved;
+		}
+		
 	}
 
-	if ((bo->mem.mem_type == DRM_BO_MEM_LOCAL) && bo->ttm == NULL) {
-
-		struct drm_bo_mem_reg *old_mem = &bo->mem;
-		uint64_t save_flags = old_mem->flags;
-		uint64_t save_mask = old_mem->mask;
-
-		*old_mem = *mem;
-		mem->mm_node = NULL;
-		old_mem->mask = save_mask;
-		DRM_FLAG_MASKED(save_flags, mem->flags, DRM_BO_MASK_MEMTYPE);
-
-	} else if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
+	if (!(old_man->flags & _DRM_FLAG_MEMTYPE_FIXED) &&
 		   !(new_man->flags & _DRM_FLAG_MEMTYPE_FIXED)) {
 
 		ret = drm_bo_move_ttm(bo, evict, no_wait, mem);
@@ -233,6 +237,7 @@ static int drm_bo_handle_move_mem(struct drm_buffer_object *bo,
 	if (ret)
 		goto out_err;
 
+moved:
 	if (old_is_pci || new_is_pci)
 		drm_bo_vm_post_move(bo);
 
@@ -785,6 +790,11 @@ static int drm_bo_mem_force_space(struct drm_device *dev,
 	}
 
 	node = drm_mm_get_block(node, num_pages, mem->page_alignment);
+	if (!node) {
+		mutex_unlock(&dev->struct_mutex);
+		return -ENOMEM;
+	}
+
 	mutex_unlock(&dev->struct_mutex);
 	mem->mm_node = node;
 	mem->mem_type = mem_type;
@@ -925,7 +935,7 @@ int drm_bo_mem_space(struct drm_buffer_object *bo,
 
 		ret = drm_bo_mem_force_space(dev, mem, mem_type, no_wait);
 
-		if (ret == 0) {
+		if (ret == 0 && mem->mm_node) {
 			mem->flags = cur_flags;
 			return 0;
 		}
@@ -1433,6 +1443,8 @@ static int drm_buffer_object_validate(struct drm_buffer_object *bo,
 		if (ret) {
 			if (ret != -EAGAIN)
 				DRM_ERROR("Failed moving buffer.\n");
+			if (ret == -ENOMEM)
+				DRM_ERROR("Out of aperture space.\n");
 			return ret;
 		}
 	}
@@ -2213,9 +2225,7 @@ int drm_bo_driver_finish(struct drm_device *dev)
 	if (list_empty(&bm->unfenced))
 		DRM_DEBUG("Unfenced list was clean\n");
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
-	unlock_page(bm->dummy_read_page);
-#else
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	ClearPageReserved(bm->dummy_read_page);
 #endif
 	__free_page(bm->dummy_read_page);
@@ -2251,9 +2261,7 @@ int drm_bo_driver_init(struct drm_device *dev)
 		goto out_unlock;
 	}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15))
-	SetPageLocked(bm->dummy_read_page);
-#else
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	SetPageReserved(bm->dummy_read_page);
 #endif
 
@@ -2566,6 +2574,8 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 
 	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
 						  bo->mem.num_pages, 0);
+	if (!list->file_offset_node)
+		return -ENOMEM;
 
 	list->hash.key = list->file_offset_node->start;
 	if (drm_ht_insert_item(&dev->map_hash, &list->hash)) {
