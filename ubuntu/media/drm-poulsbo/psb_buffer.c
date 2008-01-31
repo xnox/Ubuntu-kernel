@@ -1,3 +1,27 @@
+/**************************************************************************
+ * Copyright (c) 2007, Intel Corporation.
+ * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
+ * develop this driver.
+ *
+ **************************************************************************/
+/*
+ * Authors: Thomas Hellstrom <thomas-at-tungstengraphics.com>
+ */
 #include "drmP.h"
 #include "psb_drv.h"
 #include "psb_schedule.h"
@@ -33,13 +57,13 @@ int psb_fence_types(struct drm_buffer_object *bo, uint32_t * class,
 }
 
 /*
- * Poulsbo GPU virtual space looks like this 
+ * Poulsbo GPU virtual space looks like this
  * (We currently use only one MMU context).
  *
  * gatt_start = Start of GATT aperture in bus space.
  * stolen_end = End of GATT populated by stolen memory in bus space.
  * gatt_end   = End of GATT
- * twod_end   = MIN(gatt_start + 256_MEM, gatt_end) 
+ * twod_end   = MIN(gatt_start + 256_MEM, gatt_end)
  *
  * 0x00000000 -> 0x10000000 Temporary mapping space for tiling- and copy operations.
  *                          This space is not managed and is protected by the
@@ -196,7 +220,7 @@ static int psb_move_blit(struct drm_buffer_object *bo,
 }
 
 /*
- * Flip destination ttm into cached-coherent GATT, 
+ * Flip destination ttm into cached-coherent GATT,
  * then blit and subsequently move out again.
  */
 
@@ -251,12 +275,12 @@ int psb_move(struct drm_buffer_object *bo,
 	return 0;
 }
 
-static int drm_psb_tbe_nca(struct drm_ttm_backend * backend)
+static int drm_psb_tbe_nca(struct drm_ttm_backend *backend)
 {
 	return ((backend->flags & DRM_BE_FLAG_BOUND_CACHED) ? 0 : 1);
 }
 
-static int drm_psb_tbe_populate(struct drm_ttm_backend * backend,
+static int drm_psb_tbe_populate(struct drm_ttm_backend *backend,
 				unsigned long num_pages, struct page **pages)
 {
 	struct drm_psb_ttm_backend *psb_be =
@@ -266,7 +290,7 @@ static int drm_psb_tbe_populate(struct drm_ttm_backend * backend,
 	return 0;
 }
 
-static int drm_psb_tbe_unbind(struct drm_ttm_backend * backend)
+static int drm_psb_tbe_unbind(struct drm_ttm_backend *backend)
 {
 	struct drm_device *dev = backend->dev;
 	struct drm_psb_private *dev_priv =
@@ -310,7 +334,7 @@ static int drm_psb_tbe_unbind(struct drm_ttm_backend * backend)
 	return 0;
 }
 
-static int drm_psb_tbe_bind(struct drm_ttm_backend * backend,
+static int drm_psb_tbe_bind(struct drm_ttm_backend *backend,
 			    struct drm_bo_mem_reg *bo_mem)
 {
 	struct drm_device *dev = backend->dev;
@@ -378,7 +402,7 @@ static int drm_psb_tbe_bind(struct drm_ttm_backend * backend,
 
 }
 
-static void drm_psb_tbe_clear(struct drm_ttm_backend * backend)
+static void drm_psb_tbe_clear(struct drm_ttm_backend *backend)
 {
 	struct drm_psb_ttm_backend *psb_be =
 	    container_of(backend, struct drm_psb_ttm_backend, base);
@@ -387,7 +411,7 @@ static void drm_psb_tbe_clear(struct drm_ttm_backend * backend)
 	return;
 }
 
-static void drm_psb_tbe_destroy(struct drm_ttm_backend * backend)
+static void drm_psb_tbe_destroy(struct drm_ttm_backend *backend)
 {
 	struct drm_psb_ttm_backend *psb_be =
 	    container_of(backend, struct drm_psb_ttm_backend, base);

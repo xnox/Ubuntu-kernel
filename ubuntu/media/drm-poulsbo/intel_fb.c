@@ -47,7 +47,19 @@
 struct intelfb_par {
 	struct drm_device *dev;
 	struct drm_crtc *crtc;
+        struct drm_display_mode *fb_mode;
 };
+
+static int
+var_to_refresh(const struct fb_var_screeninfo *var)
+{
+	int xtot = var->xres + var->left_margin + var->right_margin +
+		   var->hsync_len;
+	int ytot = var->yres + var->upper_margin + var->lower_margin +
+		   var->vsync_len;
+
+	return (1000000000 / var->pixclock * 1000 + 500) / xtot / ytot;
+}
 
 static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 			   unsigned blue, unsigned transp,
@@ -96,9 +108,8 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
         struct intelfb_par *par = info->par;
         struct drm_device *dev = par->dev;
 	struct drm_framebuffer *fb = par->crtc->fb;
-        struct drm_display_mode *drm_mode;
         struct drm_output *output;
-        int depth;
+        int depth, found = 0;
 
         if (!var->pixclock)
                 return -EINVAL;
@@ -191,11 +202,14 @@ static int intelfb_check_var(struct fb_var_screeninfo *var,
         list_for_each_entry(drm_mode, &output->modes, head) {
                 if (drm_mode->hdisplay == var->xres &&
                     drm_mode->vdisplay == var->yres &&
-                    drm_mode->clock != 0)
+                    (((PICOS2KHZ(var->pixclock))/1000) >= ((drm_mode->clock/1000)-1)) &&
+                    (((PICOS2KHZ(var->pixclock))/1000) <= ((drm_mode->clock/1000)+1))) {
+			found = 1;
 			break;
+		}
 	}
  
-        if (!drm_mode)
+        if (!found)
                 return -EINVAL;
 #endif
 
@@ -209,8 +223,10 @@ static int intelfb_set_par(struct fb_info *info)
 	struct intelfb_par *par = info->par;
 	struct drm_framebuffer *fb = par->crtc->fb;
 	struct drm_device *dev = par->dev;
-        struct drm_display_mode *drm_mode;
+        struct drm_display_mode *drm_mode, *search_mode;
+        struct drm_output *output;
         struct fb_var_screeninfo *var = &info->var;
+	int found = 0;
 
         switch (var->bits_per_pixel) {
         case 16:
@@ -232,24 +248,7 @@ static int intelfb_set_par(struct fb_info *info)
 
         info->screen_size = info->fix.smem_len; /* ??? */
 
-        /* Should we walk the output's modelist or just create our own ???
-         * For now, we create and destroy a mode based on the incoming 
-         * parameters. But there's commented out code below which scans 
-         * the output list too.
-         */
-#if 0
-        list_for_each_entry(output, &dev->mode_config.output_list, head) {
-                if (output->crtc == par->crtc)
-                        break;
-        }
-    
-        list_for_each_entry(drm_mode, &output->modes, head) {
-                if (drm_mode->hdisplay == var->xres &&
-                    drm_mode->vdisplay == var->yres &&
-                    drm_mode->clock != 0)
-			break;
-        }
-#else
+	/* create a drm mode */
         drm_mode = drm_mode_create(dev);
         drm_mode->hdisplay = var->xres;
         drm_mode->hsync_start = drm_mode->hdisplay + var->right_margin;
@@ -263,17 +262,39 @@ static int intelfb_set_par(struct fb_info *info)
         drm_mode->vrefresh = drm_mode_vrefresh(drm_mode);
         drm_mode_set_name(drm_mode);
 	drm_mode_set_crtcinfo(drm_mode, CRTC_INTERLACE_HALVE_V);
-#endif
+
+        list_for_each_entry(output, &dev->mode_config.output_list, head) {
+                if (output->crtc == par->crtc)
+                        break;
+        }
+
+	drm_mode_debug_printmodeline(dev, drm_mode);    
+        list_for_each_entry(search_mode, &output->modes, head) {
+		DRM_ERROR("mode %s : %s\n", drm_mode->name, search_mode->name);
+		drm_mode_debug_printmodeline(dev, search_mode);
+		if (drm_mode_equal(drm_mode, search_mode)) {
+			drm_mode_destroy(dev, drm_mode);
+			drm_mode = search_mode;
+			found = 1;
+			break;
+		}
+	}
+	
+	if (!found) {
+		drm_mode_addmode(dev, drm_mode);
+		if (par->fb_mode) {
+			drm_mode_detachmode_crtc(dev, par->fb_mode);
+			drm_mode_rmmode(dev, par->fb_mode);
+		}
+	
+		par->fb_mode = drm_mode;
+		drm_mode_debug_printmodeline(dev, drm_mode);
+		/* attach mode */
+		drm_mode_attachmode_crtc(dev, par->crtc, par->fb_mode);
+	}
 
         if (!drm_crtc_set_mode(par->crtc, drm_mode, 0, 0))
                 return -EINVAL;
-
-        /* Have to destroy our created mode if we're not searching the mode
-         * list for it.
-         */
-#if 1 
-        drm_mode_destroy(dev, drm_mode);
-#endif
 
 	return 0;
 }
@@ -446,7 +467,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	struct device *device = &dev->pdev->dev; 
 	struct drm_framebuffer *fb;
 	struct drm_display_mode *mode = crtc->desired_mode;
-	drm_buffer_object_t *fbo = NULL;
+	struct drm_buffer_object *fbo = NULL;
 	int ret;
 
 	info = framebuffer_alloc(sizeof(struct intelfb_par), device);
@@ -468,14 +489,14 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	fb->bits_per_pixel = 32;
 	fb->pitch = fb->width * ((fb->bits_per_pixel + 1) / 8);
 	fb->depth = 24;
-	ret = drm_buffer_object_create(dev, 
-				       fb->width * fb->height * 4, 
+	ret = drm_buffer_object_create(dev, fb->width * fb->height * 4, 
 				       drm_bo_type_kernel,
 				       DRM_BO_FLAG_READ |
 				       DRM_BO_FLAG_WRITE |
-				       DRM_BO_FLAG_MEM_VRAM | /* FIXME! */
-				       DRM_BO_FLAG_NO_MOVE,
-				       0, 0, 0,
+				       DRM_BO_FLAG_MEM_TT |
+				       DRM_BO_FLAG_MEM_VRAM |
+				       DRM_BO_FLAG_NO_EVICT,
+				       DRM_BO_HINT_DONT_FENCE, 0, 0,
 				       &fbo);
 	if (ret || !fbo) {
 		printk(KERN_ERR "failed to allocate framebuffer\n");
@@ -483,6 +504,7 @@ int intelfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 		framebuffer_release(info);
 		return -EINVAL;
 	}
+
 	fb->offset = fbo->offset;
 	fb->bo = fbo;
 	DRM_DEBUG("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
@@ -620,10 +642,11 @@ int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 	
 	if (info) {
 		unregister_framebuffer(info);
-		framebuffer_release(info);
-		drm_bo_kunmap(&fb->kmap);
-                drm_bo_usage_deref_unlocked(fb->bo);
-	}
+                framebuffer_release(info);
+                drm_bo_kunmap(&fb->kmap);
+                drm_bo_usage_deref_unlocked(&fb->bo);
+                drm_framebuffer_destroy(fb);
+        }
 	return 0;
 }
 EXPORT_SYMBOL(intelfb_remove);

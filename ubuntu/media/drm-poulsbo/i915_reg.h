@@ -483,4 +483,5 @@
 #define IS_MOBILE(dev) (IS_I830(dev) || IS_I85X(dev) || IS_I915GM(dev) || \
 			IS_I945GM(dev) || IS_I965GM(dev) || IS_POULSBO(dev))
 
-#define IS_POULSBO(dev) ((dev)->pci_device == 0x8108)
+#define IS_POULSBO(dev) (((dev)->pci_device == 0x8108) || \
+			 ((dev)->pci_device == 0x8109))

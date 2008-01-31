@@ -647,7 +647,7 @@ struct drm_fence_arg {
 	unsigned int signaled;
 	unsigned int error;
 	unsigned int sequence;
-        unsigned int pad64;
+	unsigned int pad64;
 	uint64_t expand_pad[2]; /*Future expansion */
 };
 
@@ -879,7 +879,7 @@ struct drm_bo_version_arg {
 
 struct drm_mm_type_arg {
 	unsigned int mem_type;
-        unsigned int lock_flags;
+	unsigned int lock_flags;
 };
 
 struct drm_mm_init_arg {
@@ -897,6 +897,15 @@ struct drm_mm_init_arg {
 #define DRM_DISPLAY_INFO_LEN 32
 #define DRM_OUTPUT_NAME_LEN 32
 #define DRM_DISPLAY_MODE_LEN 32
+#define DRM_PROP_NAME_LEN 32
+
+#define DRM_MODE_TYPE_BUILTIN	(1<<0)
+#define DRM_MODE_TYPE_CLOCK_C	((1<<1) | DRM_MODE_TYPE_BUILTIN)
+#define DRM_MODE_TYPE_CRTC_C	((1<<2) | DRM_MODE_TYPE_BUILTIN)
+#define DRM_MODE_TYPE_PREFERRED	(1<<3)
+#define DRM_MODE_TYPE_DEFAULT	(1<<4)
+#define DRM_MODE_TYPE_USERDEF	(1<<5)
+#define DRM_MODE_TYPE_DRIVER	(1<<6)
 
 struct drm_mode_modeinfo {
 
@@ -909,7 +918,7 @@ struct drm_mode_modeinfo {
 	unsigned int vrefresh; /* vertical refresh * 1000 */
 
 	unsigned int flags;
-
+	unsigned int type;
 	char name[DRM_DISPLAY_MODE_LEN];
 };
 
@@ -968,6 +977,32 @@ struct drm_mode_get_output {
 	int count_modes;
 	unsigned int __user *modes; /**< list of modes it supports */
 
+	int count_props;
+	unsigned int __user *props;
+	unsigned int __user *prop_values;
+};
+
+#define DRM_MODE_PROP_PENDING (1<<0)
+#define DRM_MODE_PROP_RANGE (1<<1)
+#define DRM_MODE_PROP_IMMUTABLE (1<<2)
+#define DRM_MODE_PROP_ENUM (1<<3) // enumerated type with text strings
+
+struct drm_mode_property_enum {
+	uint32_t value;
+	unsigned char name[DRM_PROP_NAME_LEN];
+};
+		
+struct drm_mode_get_property {
+
+	unsigned int prop_id;
+	unsigned int flags;
+	unsigned char name[DRM_PROP_NAME_LEN];
+
+	int count_values;
+	uint32_t __user *values;
+
+	int count_enums;
+	struct drm_mode_property_enum *enums;
 };
 
 struct drm_mode_fb_cmd {
@@ -1088,6 +1123,8 @@ struct drm_mode_mode_cmd {
 #define DRM_IOCTL_MODE_RMMODE          DRM_IOWR(0xA8, unsigned int)
 #define DRM_IOCTL_MODE_ATTACHMODE      DRM_IOWR(0xA9, struct drm_mode_mode_cmd)
 #define DRM_IOCTL_MODE_DETACHMODE      DRM_IOWR(0xAA, struct drm_mode_mode_cmd)
+
+#define DRM_IOCTL_MODE_GETPROPERTY     DRM_IOWR(0xAB, struct drm_mode_get_property)
 /*@}*/
 
 /**

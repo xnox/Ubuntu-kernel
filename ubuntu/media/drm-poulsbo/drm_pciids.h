@@ -312,6 +312,7 @@
 
 #define psb_PCI_IDS \
 	{0x8086, 0x8108, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CHIP_PSB_8108}, \
+	{0x8086, 0x8109, PCI_ANY_ID, PCI_ANY_ID, 0, 0, CHIP_PSB_8109}, \
 	{0, 0, 0}
 
 #define imagine_PCI_IDS \

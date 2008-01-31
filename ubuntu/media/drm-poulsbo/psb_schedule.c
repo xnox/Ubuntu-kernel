@@ -1,29 +1,22 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 /*
@@ -37,16 +30,15 @@
 #include "psb_scene.h"
 
 #define PSB_RASTER_TIMEOUT (DRM_HZ / 10)
-#define PSB_TA_TIMEOUT (DRM_HZ / 10)
+#define PSB_TA_TIMEOUT (DRM_HZ / 5)
 
 #undef PSB_SOFTWARE_WORKAHEAD
 
 #ifdef PSB_STABLE_SETTING
 
 /*
- * Stable setting that gives around 280 fps.
- * Software blocks completely while the engines are working so there can be no 
- * overlap. Similar to noEDM path.
+ * Software blocks completely while the engines are working so there can be no
+ * overlap. 
  */
 
 #define PSB_WAIT_FOR_RASTER_COMPLETION
@@ -54,9 +46,8 @@
 
 #elif defined(PSB_PARANOID_SETTING)
 /*
- * Stable setting.
- * Software blocks "almost" while the engines are working so there can be no 
- * overlap. Similar to noEDM path.
+ * Software blocks "almost" while the engines are working so there can be no
+ * overlap. 
  */
 
 #define PSB_WAIT_FOR_RASTER_COMPLETION
@@ -75,7 +66,7 @@
 #elif defined(PSB_SOFTWARE_WORKAHEAD)
 /*
  * Don't sync, but allow software to work ahead. and queue a number of jobs.
- * But block overlapping in the scheduler. 
+ * But block overlapping in the scheduler.
  */
 
 #define PSB_BLOCK_OVERLAP
@@ -86,6 +77,16 @@
 /*
  * Avoid pixelbe pagefaults on C0.
  */
+#if 0 
+#define PSB_BLOCK_OVERLAP
+#endif
+
+static void psb_dispatch_ta(struct drm_psb_private *dev_priv,
+			    struct psb_scheduler *scheduler,
+			    uint32_t reply_flag);
+static void psb_dispatch_raster(struct drm_psb_private *dev_priv,
+				struct psb_scheduler *scheduler,
+				uint32_t reply_flag);
 
 void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
 			  int *lockup, int *msvdx_lockup,
@@ -106,8 +107,7 @@ void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
 		*lockup = 1;
 	}
 	if (!*lockup
-	    && (scheduler->current_task[PSB_SCENE_ENGINE_RASTER] != NULL
-		|| scheduler->pending_hw_scene != NULL)
+	    && (scheduler->current_task[PSB_SCENE_ENGINE_RASTER] != NULL)
 	    && time_after_eq(jiffies, scheduler->raster_end_jiffies)) {
 		*lockup = 1;
 	}
@@ -151,8 +151,7 @@ static inline void psb_set_idle(struct psb_scheduler *scheduler)
 {
 	scheduler->idle =
 	    (scheduler->current_task[PSB_SCENE_ENGINE_RASTER] == NULL) &&
-	    (scheduler->current_task[PSB_SCENE_ENGINE_TA] == NULL) &&
-	    scheduler->pending_hw_scene == NULL;
+	    (scheduler->current_task[PSB_SCENE_ENGINE_TA] == NULL);
 
 	if (scheduler->idle)
 		wake_up(&scheduler->idle_queue);
@@ -160,7 +159,7 @@ static inline void psb_set_idle(struct psb_scheduler *scheduler)
 
 /*
  * Call with the scheduler spinlock held.
- * Assigns a scene context to either the ta or the rasterizer, 
+ * Assigns a scene context to either the ta or the rasterizer,
  * flushing out other scenes to memory if necessary.
  */
 
@@ -175,11 +174,10 @@ static int psb_set_scene_fire(struct psb_scheduler *scheduler,
 	    (struct drm_psb_private *)dev->dev_private;
 
 	hw_scene = scene->hw_scene;
-	if (engine == PSB_SCENE_ENGINE_RASTER &&
-	    hw_scene && hw_scene->last_scene == scene) {
+	if (hw_scene && hw_scene->last_scene == scene) {
 
 		/*
-		 * Reuse the last hw scene context and delete it from the 
+		 * Reuse the last hw scene context and delete it from the
 		 * free list.
 		 */
 
@@ -215,20 +213,21 @@ static int psb_set_scene_fire(struct psb_scheduler *scheduler,
 		list_del_init(list);
 	}
 	scene->hw_scene = hw_scene;
-
-	if (engine == PSB_SCENE_ENGINE_TA)
-		hw_scene->last_scene = scene;
+	hw_scene->last_scene = scene;
 
 	flags |= PSB_SCENE_FLAG_SETUP;
 
 	/*
 	 * Switch context and setup the engine.
 	 */
+
 	return psb_xhw_scene_bind_fire(dev_priv,
 				       &task->buf,
 				       task->flags,
 				       hw_scene->context_number,
 				       scene->hw_cookie,
+				       task->oom_cmds,
+				       task->oom_cmd_size,
 				       scene->hw_data->offset,
 				       engine, flags | scene->flags);
 }
@@ -264,8 +263,11 @@ static void psb_schedule_ta(struct drm_psb_private *dev_priv,
 	if (scheduler->current_task[PSB_SCENE_ENGINE_TA] != NULL)
 		return;
 
+	if (scheduler->ta_state)
+		return;
+
 	/*
-	 * Skip the ta stage for rasterization-only 
+	 * Skip the ta stage for rasterization-only
 	 * tasks. They arrive here to make sure we're rasterizing
 	 * tasks in the correct order.
 	 */
@@ -287,9 +289,6 @@ static void psb_schedule_ta(struct drm_psb_private *dev_priv,
 		psb_schedule_raster(dev_priv, scheduler);
 
 	if (!task)
-		return;
-
-	if (scheduler->ta_state)
 		return;
 
 	/*
@@ -315,50 +314,26 @@ static void psb_schedule_ta(struct drm_psb_private *dev_priv,
 	/*
 	 * Make sure rasterizer isn't doing anything.
 	 */
-	if (scheduler->current_task[PSB_SCENE_ENGINE_RASTER] != NULL ||
-	    scheduler->pending_hw_scene != NULL)
+	if (scheduler->current_task[PSB_SCENE_ENGINE_RASTER] != NULL)
 		return;
 #endif
 	if (list_empty(&scheduler->hw_scenes))
 		return;
 
 	list_del_init(&task->head);
+	if (task->flags & PSB_FIRE_FLAG_XHW_OOM)
+		scheduler->ta_state = 1;
+
 	scheduler->current_task[PSB_SCENE_ENGINE_TA] = task;
 	scheduler->idle = 0;
 	scheduler->ta_end_jiffies = jiffies + PSB_TA_TIMEOUT;
 
-	PSB_DEBUG_RENDER("Fire ta. %u\n", task->sequence);
+	task->reply_flags = (task->flags & PSB_FIRE_FLAG_XHW_OOM) ?
+	    0x00000000 : PSB_RF_FIRE_TA;
+
 	(void)psb_reg_submit(dev_priv, task->ta_cmds, task->ta_cmd_size);
 	psb_set_scene_fire(scheduler, task->scene, PSB_SCENE_ENGINE_TA, task);
 	psb_schedule_watchdog(dev_priv);
-}
-
-/*
- * Do a fast check if the hw scene context has released its memory.
- * In that case, put it on the available list and clear the flag.
- */
-
-static inline int psb_check_pending(struct drm_psb_private *dev_priv)
-{
-	struct psb_scheduler *scheduler = &dev_priv->scheduler;
-	uint32_t status = 0;
-
-	if (!scheduler->pending_hw_scene)
-		return 0;
-	status = PSB_RSGX32(PSB_CR_EVENT_STATUS) & _PSB_CE_DPM_3D_MEM_FREE;
-	if (status) {
-		list_add_tail(&scheduler->pending_hw_scene->head,
-			      &scheduler->hw_scenes);
-		scheduler->pending_hw_scene = NULL;
-		psb_report_fence(scheduler, PSB_ENGINE_TA,
-				 scheduler->pending_hw_scene_seq,
-				 _PSB_FENCE_SCENE_DONE_SHIFT, 1);
-		PSB_WSGX32(status, PSB_CR_EVENT_HOST_CLEAR);
-		psb_schedule_ta(dev_priv, scheduler);
-		psb_set_idle(scheduler);
-		return 0;
-	}
-	return -EBUSY;
 }
 
 static int psb_fire_raster(struct psb_scheduler *scheduler,
@@ -383,7 +358,6 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 {
 	struct psb_task *task;
 	struct list_head *list;
-	int ret;
 
 	if (scheduler->idle_count != 0)
 		return;
@@ -393,8 +367,7 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 		return;
 	}
 #ifdef PSB_BLOCK_OVERLAP
-	if (scheduler->current_task[PSB_SCENE_ENGINE_TA] != NULL ||
-	    scheduler->pending_hw_scene != NULL) {
+	if (scheduler->current_task[PSB_SCENE_ENGINE_TA] != NULL) {
 		PSB_DEBUG_RENDER("TA busy.\n");
 		return;
 	}
@@ -410,26 +383,34 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 	}
 
 	task = list_entry(list, struct psb_task, head);
-	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = task;
 
-	ret = psb_check_pending(dev_priv);
-	if (ret) {
-		PSB_DEBUG_RENDER("Check pending failure\n");
-		scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = NULL;
-		psb_set_idle(scheduler);
-		return;
-	}
+	/*
+	 * Sometimes changing ZLS format requires an ISP reset.
+	 * Doesn't seem to consume too much time.
+	 */
+
+	if (task->scene)
+		PSB_WSGX32(_PSB_CS_RESET_ISP_RESET, PSB_CR_SOFT_RESET);
+
+	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = task;
 
 	list_del_init(list);
 	scheduler->idle = 0;
 	scheduler->raster_end_jiffies = jiffies + PSB_RASTER_TIMEOUT;
 
+	if (task->scene) 
+		PSB_WSGX32(0, PSB_CR_SOFT_RESET);
+
 	(void)psb_reg_submit(dev_priv, task->raster_cmds,
 			     task->raster_cmd_size);
+
 	if (task->scene) {
+		task->reply_flags = (task->flags & PSB_FIRE_FLAG_XHW_OOM) ?
+		    0x00000000 : PSB_RF_FIRE_RASTER;
 		psb_set_scene_fire(scheduler,
 				   task->scene, PSB_SCENE_ENGINE_RASTER, task);
 	} else {
+		task->reply_flags = PSB_RF_DEALLOC | PSB_RF_FIRE_RASTER;
 		psb_fire_raster(scheduler, task);
 	}
 	psb_schedule_watchdog(dev_priv);
@@ -455,7 +436,6 @@ static void psb_ta_done(struct drm_psb_private *dev_priv,
 		list_add_tail(&task->head, &scheduler->raster_queue);
 		break;
 	case PSB_RASTER:
-		scheduler->ta_state = 0;
 		scene->flags |=
 		    (PSB_SCENE_FLAG_DIRTY | PSB_SCENE_FLAG_COMPLETE);
 		list_add_tail(&task->head, &scheduler->raster_queue);
@@ -469,10 +449,11 @@ static void psb_ta_done(struct drm_psb_private *dev_priv,
 	}
 
 	scheduler->current_task[PSB_SCENE_ENGINE_TA] = NULL;
-	psb_schedule_raster(dev_priv, scheduler);
-	psb_report_fence(scheduler, task->engine, task->sequence,
-			 _PSB_FENCE_TA_DONE_SHIFT, 1);
+	if (task->ta_complete_action != PSB_RASTER_BLOCK)
+		psb_report_fence(scheduler, task->engine, task->sequence,
+				 _PSB_FENCE_TA_DONE_SHIFT, 1);
 
+	psb_schedule_raster(dev_priv, scheduler);
 	psb_schedule_ta(dev_priv, scheduler);
 	psb_set_idle(scheduler);
 
@@ -493,8 +474,14 @@ static void psb_raster_done(struct drm_psb_private *dev_priv,
 	struct psb_task *task =
 	    scheduler->current_task[PSB_SCENE_ENGINE_RASTER];
 	struct psb_scene *scene = task->scene;
+	uint32_t complete_action = task->raster_complete_action;
 
 	PSB_DEBUG_RENDER("Raster done %u\n", task->sequence);
+
+	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = NULL;
+	
+	if (complete_action != PSB_RASTER)
+		psb_schedule_raster(dev_priv, scheduler);
 
 	if (scene) {
 		if (task->feedback.page) {
@@ -509,37 +496,41 @@ static void psb_raster_done(struct drm_psb_private *dev_priv,
 			scheduler->feedback_task = task;
 			psb_xhw_vistest(dev_priv, &task->buf);
 		}
-		switch (task->raster_complete_action) {
-		case PSB_TA:
-			scheduler->ta_state = 0;
-			list_add(&task->head, &scheduler->ta_queue);
-			psb_schedule_ta(dev_priv, scheduler);
-			break;
+		switch (complete_action) {
 		case PSB_RETURN:
 			scene->flags &=
 			    ~(PSB_SCENE_FLAG_DIRTY | PSB_SCENE_FLAG_COMPLETE);
-
-			/*
-			 * Wait until DPM memory is deallocated before releasing
-			 * the hw scenes.
-			 */
-
-			scheduler->pending_hw_scene = scene->hw_scene;
-			scene->hw_scene = NULL;
-			scheduler->pending_hw_scene_seq = task->sequence;
+			list_add_tail(&scene->hw_scene->head,
+				      &scheduler->hw_scenes);
+			psb_report_fence(scheduler, task->engine,
+					 task->sequence,
+					 _PSB_FENCE_SCENE_DONE_SHIFT, 1);
+			if (task->flags & PSB_FIRE_FLAG_XHW_OOM) {
+				scheduler->ta_state = 0;
+			}
 			break;
+		case PSB_RASTER:
+			list_add(&task->head, &scheduler->raster_queue);
+			task->raster_complete_action = PSB_RETURN;
+			psb_schedule_raster(dev_priv, scheduler);
+			break;
+		case PSB_TA:
+			list_add(&task->head, &scheduler->ta_queue);
+			scheduler->ta_state = 0;
+			task->raster_complete_action = PSB_RETURN;
+			task->ta_complete_action = PSB_RASTER;
+			break;
+
 		}
 	}
-	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = NULL;
 	psb_schedule_ta(dev_priv, scheduler);
-	psb_schedule_raster(dev_priv, scheduler);
 	psb_set_idle(scheduler);
 
-	if (task->raster_complete_action != PSB_TA) {
-		PSB_DEBUG_RENDER("Signal raster done fence type %u\n",
-				 task->sequence);
-		psb_report_fence(scheduler, task->engine, task->sequence,
-				 _PSB_FENCE_RASTER_DONE_SHIFT, 1);
+	if (complete_action == PSB_RETURN) {
+		if (task->scene == NULL) {
+			psb_report_fence(scheduler, task->engine, task->sequence,
+					 _PSB_FENCE_RASTER_DONE_SHIFT, 1);
+		}
 		if (!task->feedback.page) {
 			list_add_tail(&task->head, &scheduler->task_done_queue);
 			schedule_delayed_work(&scheduler->wq, 1);
@@ -589,6 +580,12 @@ static void psb_ta_oom(struct drm_psb_private *dev_priv,
 	if (!task)
 		return;
 
+	if (task->aborting)
+		return;
+	task->aborting = 1;
+
+	DRM_INFO("Info: TA out of parameter memory.\n");
+
 	(void)psb_xhw_ta_oom(dev_priv, &task->buf, task->scene->hw_cookie);
 }
 
@@ -606,9 +603,8 @@ static void psb_ta_oom_reply(struct drm_psb_private *dev_priv,
 			     &task->ta_complete_action,
 			     &task->raster_complete_action, &flags);
 	task->flags |= flags;
-
-	if (task->ta_complete_action == PSB_RASTER_BLOCK)
-		psb_ta_done(dev_priv, scheduler);
+	task->aborting = 0;
+	psb_dispatch_ta(dev_priv, scheduler, PSB_RF_OOM_REPLY);
 }
 
 static void psb_ta_hw_scene_freed(struct drm_psb_private *dev_priv,
@@ -651,7 +647,7 @@ static void psb_vistest_reply(struct drm_psb_private *dev_priv,
 	    (feedback_map + task->feedback.offset);
 
 	for (i = 0; i < PSB_HW_FEEDBACK_SIZE; ++i) {
-		add = task->buf.arg.arg.sb.feedback[i];
+		add = task->buf.arg.arg.feedback[i];
 		cur = vistest->vt[i];
 
 		/*
@@ -673,6 +669,38 @@ static void psb_vistest_reply(struct drm_psb_private *dev_priv,
 		schedule_delayed_work(&scheduler->wq, 1);
 	} else
 		psb_schedule_ta(dev_priv, scheduler);
+}
+
+static void psb_ta_fire_reply(struct drm_psb_private *dev_priv,
+			      struct psb_scheduler *scheduler)
+{
+	struct psb_task *task = scheduler->current_task[PSB_SCENE_ENGINE_TA];
+
+	psb_xhw_fire_reply(dev_priv, &task->buf, task->scene->hw_cookie);
+
+	psb_dispatch_ta(dev_priv, scheduler, PSB_RF_FIRE_TA);
+}
+
+static void psb_raster_fire_reply(struct drm_psb_private *dev_priv,
+				  struct psb_scheduler *scheduler)
+{
+	struct psb_task *task =
+	    scheduler->current_task[PSB_SCENE_ENGINE_RASTER];
+	uint32_t reply_flags;
+
+	if (!task) {
+		DRM_ERROR("Null task.\n");
+		return;
+	}
+
+	task->raster_complete_action = task->buf.arg.arg.sb.rca;
+	psb_xhw_fire_reply(dev_priv, &task->buf, task->scene->hw_cookie);
+
+	reply_flags = PSB_RF_FIRE_RASTER;
+	if (task->raster_complete_action == PSB_RASTER)
+		reply_flags |= PSB_RF_DEALLOC;
+
+	psb_dispatch_raster(dev_priv, scheduler, reply_flags);
 }
 
 static int psb_user_interrupt(struct drm_psb_private *dev_priv,
@@ -710,6 +738,12 @@ static int psb_user_interrupt(struct drm_psb_private *dev_priv,
 	case PSB_UIRQ_OOM_REPLY:
 		psb_ta_oom_reply(dev_priv, scheduler);
 		break;
+	case PSB_UIRQ_FIRE_TA_REPLY:
+		psb_ta_fire_reply(dev_priv, scheduler);
+		break;
+	case PSB_UIRQ_FIRE_RASTER_REPLY:
+		psb_raster_fire_reply(dev_priv, scheduler);
+		break;
 	default:
 		DRM_ERROR("Unknown Poulsbo hardware event. %d\n", type);
 	}
@@ -728,6 +762,78 @@ int psb_forced_user_interrupt(struct drm_psb_private *dev_priv)
 	return ret;
 }
 
+static void psb_dispatch_ta(struct drm_psb_private *dev_priv,
+			    struct psb_scheduler *scheduler,
+			    uint32_t reply_flag)
+{
+	struct psb_task *task = scheduler->current_task[PSB_SCENE_ENGINE_TA];
+	uint32_t flags;
+	uint32_t mask;
+
+	task->reply_flags |= reply_flag;
+	flags = task->reply_flags;
+	mask = PSB_RF_FIRE_TA;
+
+	if (!(flags & mask))
+		return;
+
+	mask = PSB_RF_TA_DONE;
+	if ((flags & mask) == mask) {
+		task->reply_flags &= ~mask;
+		psb_ta_done(dev_priv, scheduler);
+	}
+
+	mask = PSB_RF_OOM;
+	if ((flags & mask) == mask) {
+		task->reply_flags &= ~mask;
+		psb_ta_oom(dev_priv, scheduler);
+	}
+
+	mask = (PSB_RF_OOM_REPLY | PSB_RF_TERMINATE);
+	if ((flags & mask) == mask) {
+		task->reply_flags &= ~mask;
+		psb_ta_done(dev_priv, scheduler);
+	}
+}
+
+static void psb_dispatch_raster(struct drm_psb_private *dev_priv,
+				struct psb_scheduler *scheduler,
+				uint32_t reply_flag)
+{
+	struct psb_task *task =
+	    scheduler->current_task[PSB_SCENE_ENGINE_RASTER];
+	uint32_t flags;
+	uint32_t mask;
+
+	task->reply_flags |= reply_flag;
+	flags = task->reply_flags;
+	mask = PSB_RF_FIRE_RASTER;
+
+	if (!(flags & mask))
+		return;
+
+	/*
+	 * For rasterizer-only tasks, don't report fence done here,
+	 * as this is time consuming and the rasterizer wants a new
+	 * task immediately. For other tasks, the hardware is probably
+	 * still busy deallocating binner memory, so we can report
+	 * fence done in parallel.
+	 */
+
+	if (task->raster_complete_action == PSB_RETURN &&
+	    (flags & PSB_RF_RASTER_DONE) &&
+	    task->scene != NULL) {
+		psb_report_fence(scheduler, task->engine, task->sequence,
+				 _PSB_FENCE_RASTER_DONE_SHIFT, 1);
+	}
+
+	mask = PSB_RF_RASTER_DONE | PSB_RF_DEALLOC;
+	if ((flags & mask) == mask) {
+		task->reply_flags &= ~mask;
+		psb_raster_done(dev_priv, scheduler);
+	}
+}
+
 void psb_scheduler_handler(struct drm_psb_private *dev_priv, uint32_t status)
 {
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
@@ -735,32 +841,21 @@ void psb_scheduler_handler(struct drm_psb_private *dev_priv, uint32_t status)
 	spin_lock(&scheduler->lock);
 
 	if (status & _PSB_CE_PIXELBE_END_RENDER) {
-		psb_raster_done(dev_priv, scheduler);
+		psb_dispatch_raster(dev_priv, scheduler, PSB_RF_RASTER_DONE);
 	}
 	if (status & _PSB_CE_DPM_3D_MEM_FREE) {
-		if (scheduler->pending_hw_scene) {
-			PSB_DEBUG_RENDER("DPM memory freed %u.\n",
-					 scheduler->pending_hw_scene_seq);
-			list_add_tail(&scheduler->pending_hw_scene->head,
-				      &scheduler->hw_scenes);
-			scheduler->pending_hw_scene = NULL;
-			psb_report_fence(scheduler, PSB_ENGINE_TA,
-					 scheduler->pending_hw_scene_seq,
-					 _PSB_FENCE_SCENE_DONE_SHIFT, 1);
-			psb_schedule_raster(dev_priv, scheduler);
-			psb_schedule_ta(dev_priv, scheduler);
-			psb_set_idle(scheduler);
-		} else {
-			DRM_ERROR("Huh? No pending hw scene.\n");
-		}
+		psb_dispatch_raster(dev_priv, scheduler, PSB_RF_DEALLOC);
 	}
-	if (status & (_PSB_CE_TA_FINISHED | _PSB_CE_TA_TERMINATE)) {
-		psb_ta_done(dev_priv, scheduler);
+	if (status & _PSB_CE_TA_FINISHED) {
+		psb_dispatch_ta(dev_priv, scheduler, PSB_RF_TA_DONE);
+	}
+	if (status & _PSB_CE_TA_TERMINATE) {
+		psb_dispatch_ta(dev_priv, scheduler, PSB_RF_TERMINATE);
 	}
 	if (status & (_PSB_CE_DPM_REACHED_MEM_THRESH |
 		      _PSB_CE_DPM_OUT_OF_MEMORY_GBL |
 		      _PSB_CE_DPM_OUT_OF_MEMORY_MT)) {
-		psb_ta_oom(dev_priv, scheduler);
+		psb_dispatch_ta(dev_priv, scheduler, PSB_RF_OOM);
 	}
 	if (status & _PSB_CE_DPM_TA_MEM_FREE) {
 		psb_ta_hw_scene_freed(dev_priv, scheduler);
@@ -826,6 +921,39 @@ static void psb_free_task_wq(struct work_struct *work)
 	mutex_unlock(&scheduler->task_wq_mutex);
 }
 
+/*
+ * Check if any of the tasks in the queues is using a scene. 
+ * In that case we know the TA memory buffer objects are
+ * fenced and will not be evicted until that fence is signaled.
+ */
+
+void psb_scheduler_ta_mem_check(struct drm_psb_private *dev_priv)
+{
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	unsigned long irq_flags;
+	struct psb_task *task;
+	struct psb_task *next_task;
+
+	dev_priv->force_ta_mem_load = 1;
+	spin_lock_irqsave(&scheduler->lock, irq_flags);
+	list_for_each_entry_safe(task, next_task, &scheduler->ta_queue,
+				 head) {
+		if (task->scene) {
+			dev_priv->force_ta_mem_load = 0;
+			break;
+		}
+	}
+	list_for_each_entry_safe(task, next_task, &scheduler->raster_queue,
+				 head) {
+		if (task->scene) {
+			dev_priv->force_ta_mem_load = 0;
+			break;
+		}
+	}
+	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
+}
+
+
 void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 {
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
@@ -836,7 +964,6 @@ void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 	unsigned long irq_flags;
 
 	psb_scheduler_pause(dev_priv);
-
 	if (!psb_scheduler_idle(dev_priv)) {
 		spin_lock_irqsave(&scheduler->lock, irq_flags);
 
@@ -862,7 +989,6 @@ void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 		task = scheduler->current_task[PSB_SCENE_ENGINE_RASTER];
 		if (task) {
 			DRM_ERROR("Detected Poulsbo rasterizer lockup.\n");
-
 			if (task->engine == PSB_ENGINE_HPRAST) {
 				psb_fence_error(scheduler->dev,
 						PSB_ENGINE_HPRAST,
@@ -871,6 +997,7 @@ void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 						error_condition);
 
 				list_del(&task->head);
+				psb_xhw_clean_buf(dev_priv, &task->buf);
 				list_add_tail(&task->head,
 					      &scheduler->task_done_queue);
 			} else {
@@ -878,18 +1005,13 @@ void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 			}
 		}
 		scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = NULL;
-
 		task = scheduler->current_task[PSB_SCENE_ENGINE_TA];
 		if (task) {
 			DRM_ERROR("Detected Poulsbo ta lockup.\n");
 			list_add_tail(&task->head, &scheduler->raster_queue);
 		}
 		scheduler->current_task[PSB_SCENE_ENGINE_TA] = NULL;
-
-		if (scheduler->pending_hw_scene)
-			DRM_ERROR("Detected Poulsbo ta memory handler "
-				  "lockup.\n");
-
+		scheduler->ta_state = 0;
 		spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 	}
 
@@ -898,17 +1020,6 @@ void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 	 */
 
 	spin_lock_irqsave(&scheduler->lock, irq_flags);
-
-	if (scheduler->pending_hw_scene) {
-		psb_fence_error(scheduler->dev,
-				PSB_ENGINE_TA,
-				scheduler->pending_hw_scene_seq,
-				_PSB_FENCE_TYPE_SCENE_DONE, error_condition);
-		list_add_tail(&scheduler->pending_hw_scene->head,
-			      &scheduler->hw_scenes);
-		scheduler->pending_hw_scene = NULL;
-	}
-
 	list_for_each_entry_safe(task, next_task, &scheduler->raster_queue,
 				 head) {
 		struct psb_scene *scene = task->scene;
@@ -918,16 +1029,19 @@ void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 				task->sequence,
 				_PSB_FENCE_TYPE_TA_DONE |
 				_PSB_FENCE_TYPE_RASTER_DONE |
-				_PSB_FENCE_TYPE_SCENE_DONE, error_condition);
-
+				_PSB_FENCE_TYPE_SCENE_DONE |
+				_PSB_FENCE_TYPE_FEEDBACK, 
+				error_condition);
 		if (scene) {
 			scene->flags = 0;
 			if (scene->hw_scene) {
 				list_add_tail(&scene->hw_scene->head,
 					      &scheduler->hw_scenes);
+				scene->hw_scene = NULL;
 			}
 		}
 
+		psb_xhw_clean_buf(dev_priv, &task->buf);
 		list_del(&task->head);
 		list_add_tail(&task->head, &scheduler->task_done_queue);
 	}
@@ -973,6 +1087,31 @@ int psb_scheduler_init(struct drm_device *dev, struct psb_scheduler *scheduler)
 	return 0;
 }
 
+/*
+ * Scene references maintained by the scheduler are not refcounted.
+ * Remove all references to a particular scene here.
+ */
+
+void psb_scheduler_remove_scene_refs(struct psb_scene *scene)
+{
+	struct drm_psb_private *dev_priv = 
+		(struct drm_psb_private *) scene->dev->dev_private;
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	struct psb_hw_scene *hw_scene;
+	unsigned long irq_flags;
+	unsigned int i;
+
+	spin_lock_irqsave(&scheduler->lock, irq_flags);
+	for (i = 0; i < PSB_NUM_HW_SCENES; ++i) {
+		hw_scene = &scheduler->hs[i];
+		if (hw_scene->last_scene == scene) {
+			BUG_ON( list_empty(&hw_scene->head));
+			hw_scene->last_scene = NULL;
+		}
+	}
+	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
+}
+	
 void psb_scheduler_takedown(struct psb_scheduler *scheduler)
 {
 	flush_scheduled_work();
@@ -982,6 +1121,7 @@ static int psb_setup_task_devlocked(struct drm_device *dev,
 				    struct drm_psb_cmdbuf_arg *arg,
 				    struct drm_buffer_object *raster_cmd_buffer,
 				    struct drm_buffer_object *ta_cmd_buffer,
+				    struct drm_buffer_object *oom_cmd_buffer,
 				    struct psb_scene *scene,
 				    enum psb_task_type task_type,
 				    uint32_t engine,
@@ -998,6 +1138,10 @@ static int psb_setup_task_devlocked(struct drm_device *dev,
 		DRM_ERROR("Too many raster cmds %d.\n", arg->cmdbuf_size);
 		return -EINVAL;
 	}
+	if (oom_cmd_buffer && arg->oom_size > PSB_MAX_OOM_CMDS) {
+		DRM_ERROR("Too many raster cmds %d.\n", arg->oom_size);
+		return -EINVAL;
+	}
 
 	task = drm_calloc(1, sizeof(*task), DRM_MEM_DRIVER);
 	if (!task)
@@ -1006,7 +1150,8 @@ static int psb_setup_task_devlocked(struct drm_device *dev,
 	atomic_set(&task->buf.done, 1);
 	task->engine = engine;
 	INIT_LIST_HEAD(&task->head);
-	if (ta_cmd_buffer) {
+	INIT_LIST_HEAD(&task->buf.head);
+	if (ta_cmd_buffer && arg->ta_size != 0) {
 		task->ta_cmd_size = arg->ta_size;
 		ret = psb_submit_copy_cmdbuf(dev, ta_cmd_buffer,
 					     arg->ta_offset,
@@ -1021,6 +1166,15 @@ static int psb_setup_task_devlocked(struct drm_device *dev,
 					     arg->cmdbuf_offset,
 					     arg->cmdbuf_size,
 					     PSB_ENGINE_TA, task->raster_cmds);
+		if (ret)
+			goto out_err;
+	}
+	if (oom_cmd_buffer && arg->oom_size != 0) {
+		task->oom_cmd_size = arg->oom_size;
+		ret = psb_submit_copy_cmdbuf(dev, oom_cmd_buffer,
+					     arg->oom_offset,
+					     arg->oom_size,
+					     PSB_ENGINE_TA, task->oom_cmds);
 		if (ret)
 			goto out_err;
 	}
@@ -1041,6 +1195,7 @@ int psb_cmdbuf_ta(struct drm_file *priv,
 		  struct drm_psb_cmdbuf_arg *arg,
 		  struct drm_buffer_object *cmd_buffer,
 		  struct drm_buffer_object *ta_buffer,
+		  struct drm_buffer_object *oom_buffer,
 		  struct psb_scene *scene,
 		  struct psb_feedback_info *feedback,
 		  struct drm_fence_arg *fence_arg)
@@ -1060,9 +1215,10 @@ int psb_cmdbuf_ta(struct drm_file *priv,
 		return -EAGAIN;
 
 	mutex_lock(&dev->struct_mutex);
-	ret = psb_setup_task_devlocked(dev, arg, cmd_buffer, ta_buffer, scene,
+	ret = psb_setup_task_devlocked(dev, arg, cmd_buffer, ta_buffer,
+				       oom_buffer, scene,
 				       psb_ta_task, PSB_ENGINE_TA,
-				       PSB_RASTER_DEALLOC, &task);
+				       PSB_FIRE_FLAG_RASTER_DEALLOC, &task);
 	mutex_unlock(&dev->struct_mutex);
 
 	if (ret)
@@ -1071,7 +1227,7 @@ int psb_cmdbuf_ta(struct drm_file *priv,
 	task->feedback = *feedback;
 
 	/*
-	 * Hand the task over to the scheduler. 
+	 * Hand the task over to the scheduler.
 	 */
 
 	spin_lock_irqsave(&scheduler->lock, irq_flags);
@@ -1141,7 +1297,7 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 
 	mutex_lock(&dev->struct_mutex);
 	ret = psb_setup_task_devlocked(dev, arg, cmd_buffer, NULL, NULL,
-				       psb_raster_task,
+				       NULL, psb_raster_task,
 				       PSB_ENGINE_TA, 0, &task);
 	mutex_unlock(&dev->struct_mutex);
 
@@ -1149,7 +1305,7 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 		goto out_err;
 
 	/*
-	 * Hand the task over to the scheduler. 
+	 * Hand the task over to the scheduler.
 	 */
 
 	spin_lock_irqsave(&scheduler->lock, irq_flags);

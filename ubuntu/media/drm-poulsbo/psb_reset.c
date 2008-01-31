@@ -1,29 +1,22 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 /*
@@ -34,6 +27,7 @@
 #include "drmP.h"
 #include "psb_drv.h"
 #include "psb_reg.h"
+#include "psb_scene.h"
 
 #define PSB_2D_TIMEOUT_MSEC 100
 
@@ -187,18 +181,19 @@ void psb_msvdx_flush_cmd_queue(struct drm_device *dev)
 	struct drm_psb_private *dev_priv = dev->dev_private;
 	struct psb_msvdx_cmd_queue *msvdx_cmd;
 	struct list_head *list, *next;
-	/*Flush the msvdx cmd queue and signal all fences in the queue*/
-	list_for_each_safe(list, next, &dev_priv->msvdx_queue)
-	{
+	/*Flush the msvdx cmd queue and signal all fences in the queue */
+	list_for_each_safe(list, next, &dev_priv->msvdx_queue) {
 		msvdx_cmd = list_entry(list, struct psb_msvdx_cmd_queue, head);
-		PSB_DEBUG_GENERAL("MSVDXQUE: flushing sequence:%d\n", msvdx_cmd->sequence);
+		PSB_DEBUG_GENERAL("MSVDXQUE: flushing sequence:%d\n",
+				  msvdx_cmd->sequence);
 		dev_priv->msvdx_current_sequence = msvdx_cmd->sequence;
 		psb_fence_error(dev, PSB_ENGINE_VIDEO,
-				dev_priv->msvdx_current_sequence, DRM_FENCE_TYPE_EXE,
-				DRM_CMD_HANG);
+				dev_priv->msvdx_current_sequence,
+				DRM_FENCE_TYPE_EXE, DRM_CMD_HANG);
 		list_del(list);
 		kfree(msvdx_cmd->cmd);
-		drm_free(msvdx_cmd, sizeof(struct psb_msvdx_cmd_queue), DRM_MEM_DRIVER);			
+		drm_free(msvdx_cmd, sizeof(struct psb_msvdx_cmd_queue),
+			 DRM_MEM_DRIVER);
 	}
 }
 
@@ -228,11 +223,31 @@ static void psb_msvdx_reset_wq(struct work_struct *work)
 	spin_lock_irqsave(&dev_priv->msvdx_lock, irq_flags);
 	psb_msvdx_flush_cmd_queue(scheduler->dev);
 	spin_unlock_irqrestore(&dev_priv->msvdx_lock, irq_flags);
-	
+
 	psb_schedule_watchdog(dev_priv);
 	mutex_unlock(&dev_priv->msvdx_mutex);
 }
 
+
+static int psb_xhw_mmu_reset(struct drm_psb_private *dev_priv)
+{
+	struct psb_xhw_buf buf;
+	uint32_t bif_ctrl;
+
+	INIT_LIST_HEAD(&buf.head);
+	psb_mmu_set_pd_context(psb_mmu_get_default_pd(dev_priv->mmu), 0);
+	bif_ctrl = PSB_RSGX32(PSB_CR_BIF_CTRL);
+	PSB_WSGX32(bif_ctrl | 
+		   _PSB_CB_CTRL_CLEAR_FAULT |
+		   _PSB_CB_CTRL_INVALDC, 
+		   PSB_CR_BIF_CTRL);
+	(void)  PSB_RSGX32(PSB_CR_BIF_CTRL);
+	msleep(1);
+	PSB_WSGX32(bif_ctrl, PSB_CR_BIF_CTRL);
+	(void)  PSB_RSGX32(PSB_CR_BIF_CTRL);	
+	return psb_xhw_reset_dpm(dev_priv, &buf);
+}
+	
 /*
  * Block command submission and reset hardware and schedulers.
  */
@@ -241,10 +256,11 @@ static void psb_reset_wq(struct work_struct *work)
 {
 	struct drm_psb_private *dev_priv =
 	    container_of(work, struct drm_psb_private, watchdog_wq);
-	struct psb_xhw_buf buf;
 	int lockup_2d;
 	int idle_2d;
 	unsigned long irq_flags;
+	int ret;
+	int reset_count = 0;
 
 	/*
 	 * Block command submission.
@@ -270,20 +286,52 @@ static void psb_reset_wq(struct work_struct *work)
 
 	psb_reset(dev_priv, lockup_2d);
 #else
-	(void) lockup_2d;
-	(void) idle_2d;
+	(void)lockup_2d;
+	(void)idle_2d;
 	psb_reset(dev_priv, 0);
 #endif
-	(void)psb_xhw_reset_dpm(dev_priv, &buf);
-
-	DRM_INFO("Reset scheduler.\n");
+	(void) psb_xhw_mmu_reset(dev_priv);
+	DRM_INFO("Resetting scheduler.\n");
+	psb_scheduler_pause(dev_priv);
 	psb_scheduler_reset(dev_priv, -EBUSY);
+	psb_scheduler_ta_mem_check(dev_priv);
+
+	while(dev_priv->ta_mem &&
+	      !dev_priv->force_ta_mem_load && 
+	      ++reset_count < 10) {
+
+		/*
+		 * TA memory is currently fenced so offsets
+		 * are valid. Reload offsets into the dpm now.
+		 */
+
+		struct psb_xhw_buf buf;
+		INIT_LIST_HEAD(&buf.head);
+
+		msleep(100);
+		DRM_INFO("Trying to reload TA memory.\n");
+		ret = psb_xhw_ta_mem_load(dev_priv, &buf, 
+					   PSB_TA_MEM_FLAG_TA|
+					   PSB_TA_MEM_FLAG_RASTER|
+					   PSB_TA_MEM_FLAG_HOSTA|
+					   PSB_TA_MEM_FLAG_HOSTD|
+					   PSB_TA_MEM_FLAG_INIT,
+					   dev_priv->ta_mem->ta_memory->offset,
+					   dev_priv->ta_mem->hw_data->offset,
+					   dev_priv->ta_mem->hw_cookie);
+		if (!ret)
+			break;
+
+		psb_reset(dev_priv, 0);
+		(void) psb_xhw_mmu_reset(dev_priv);
+	}
+       
+	psb_scheduler_restart(dev_priv);
 	spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 	dev_priv->timer_available = 1;
 	spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
 	mutex_unlock(&dev_priv->mutex_2d);
 	mutex_unlock(&dev_priv->reset_mutex);
-
 }
 
 void psb_watchdog_init(struct drm_psb_private *dev_priv)

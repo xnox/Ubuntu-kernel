@@ -1,29 +1,22 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 /*
@@ -34,7 +27,30 @@
 #include "psb_drv.h"
 #include "psb_scene.h"
 
-static int psb_clear_scene(struct psb_scene *scene)
+void psb_clear_scene_atomic(struct psb_scene *scene)
+{
+	int i;
+	struct page *page;
+	void *v;
+
+	for (i = 0; i < scene->clear_num_pages; ++i) {
+		page = drm_ttm_get_page(scene->hw_data->ttm,
+					scene->clear_p_start + i);
+		if (in_irq())
+			v = kmap_atomic(page, KM_IRQ0);
+		else
+			v = kmap_atomic(page, KM_USER0);
+
+		memset(v, 0, PAGE_SIZE);
+
+		if (in_irq())
+			kunmap_atomic(v, KM_IRQ0);
+		else
+			kunmap_atomic(v, KM_USER0);
+	}
+}
+
+int psb_clear_scene(struct psb_scene *scene)
 {
 	struct drm_bo_kmap_obj bmo;
 	int is_iomem;
@@ -71,8 +87,10 @@ void psb_scene_unref_devlocked(struct psb_scene **scene)
 
 	PSB_DEBUG_RENDER("Scene unref\n");
 	*scene = NULL;
-	if (atomic_dec_and_test(&tmp_scene->ref_count))
+	if (atomic_dec_and_test(&tmp_scene->ref_count)) {
+		psb_scheduler_remove_scene_refs(tmp_scene);
 		psb_destroy_scene_devlocked(tmp_scene);
+	}
 }
 
 struct psb_scene *psb_scene_ref(struct psb_scene *src)
@@ -107,6 +125,7 @@ static struct psb_scene *psb_alloc_scene(struct drm_device *dev,
 	scene->hw_scene = NULL;
 	atomic_set(&scene->ref_count, 1);
 
+	INIT_LIST_HEAD(&buf.head);
 	ret = psb_xhw_scene_info(dev_priv, &buf, scene->w, scene->h,
 				 scene->hw_cookie, &bo_size,
 				 &scene->clear_p_start,
@@ -117,6 +136,7 @@ static struct psb_scene *psb_alloc_scene(struct drm_device *dev,
 	ret = drm_buffer_object_create(dev, bo_size, drm_bo_type_kernel,
 				       DRM_PSB_FLAG_MEM_MMU |
 				       DRM_BO_FLAG_READ |
+				       DRM_BO_FLAG_CACHED |
 				       PSB_BO_FLAG_SCENE |
 				       DRM_BO_FLAG_WRITE,
 				       DRM_BO_HINT_DONT_FENCE,
@@ -144,8 +164,24 @@ int psb_validate_scene_pool(struct psb_scene_pool *pool, uint64_t flags,
 	int ret;
 	unsigned long irq_flags;
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	uint32_t bin_pt_offset;
+	uint32_t bin_param_offset;
 
 	PSB_DEBUG_RENDER("Validate scene pool. Scene %u\n", pool->cur_scene);
+
+	if (unlikely(!dev_priv->ta_mem)) {
+		dev_priv->ta_mem =
+		    psb_alloc_ta_mem(dev, dev_priv->ta_mem_pages);
+		if (!dev_priv->ta_mem)
+			return -ENOMEM;
+
+		bin_pt_offset = ~0;
+		bin_param_offset = ~0;
+	} else {
+		bin_pt_offset = dev_priv->ta_mem->hw_data->offset;
+		bin_param_offset = dev_priv->ta_mem->ta_memory->offset;
+	}
+
 	pool->w = w;
 	pool->h = h;
 	if (scene && (scene->w != pool->w || scene->h != pool->h)) {
@@ -198,13 +234,44 @@ int psb_validate_scene_pool(struct psb_scene_pool *pool, uint64_t flags,
 
 	ret = drm_bo_do_validate(scene->hw_data, flags, mask, hint,
 				 PSB_ENGINE_TA, 0, NULL);
-
+	if (ret)
+		return ret;
+	ret = drm_bo_do_validate(dev_priv->ta_mem->hw_data, 0, 0, 0,
+				 PSB_ENGINE_TA, 0, NULL);
+	if (ret)
+		return ret;
+	ret = drm_bo_do_validate(dev_priv->ta_mem->ta_memory, 0, 0, 0,
+				 PSB_ENGINE_TA, 0, NULL);
 	if (ret)
 		return ret;
 
+	if (unlikely(bin_param_offset !=
+		     dev_priv->ta_mem->ta_memory->offset ||
+		     bin_pt_offset !=
+		     dev_priv->ta_mem->hw_data->offset ||
+		     dev_priv->force_ta_mem_load)) {
+
+		struct psb_xhw_buf buf;
+
+		INIT_LIST_HEAD(&buf.head);
+		ret = psb_xhw_ta_mem_load(dev_priv, &buf,
+					  PSB_TA_MEM_FLAG_TA |
+					  PSB_TA_MEM_FLAG_RASTER |
+					  PSB_TA_MEM_FLAG_HOSTA |
+					  PSB_TA_MEM_FLAG_HOSTD |
+					  PSB_TA_MEM_FLAG_INIT,
+					  dev_priv->ta_mem->ta_memory->offset,
+					  dev_priv->ta_mem->hw_data->offset,
+					  dev_priv->ta_mem->hw_cookie);
+		if (ret)
+			return ret;
+
+		dev_priv->force_ta_mem_load = 0;
+	}
+
 	if (final_pass) {
 
-		/* 
+		/*
 		 * Clear the scene on next use. Advance the scene counter.
 		 */
 
@@ -324,37 +391,33 @@ struct psb_scene_pool *psb_scene_pool_alloc(struct drm_file *priv,
 	return NULL;
 }
 
-#if 0
-
 /*
  * Code to support multiple ta memory buffers.
- * Not used yet.
  */
 
-static void psb_destroy_bin_mem_devlocked(struct psb_bin_mem *bin_mem)
+static void psb_destroy_ta_mem_devlocked(struct psb_ta_mem *ta_mem)
 {
-	if (!bin_mem)
+	if (!ta_mem)
 		return;
 
-	drm_bo_usage_deref_locked(&bin_mem->hw_data);
-	drm_bo_usage_deref_locked(&bin_mem->bin_memory);
-	drm_free(bin_mem, sizeof(*bin_mem), DRM_MEM_DRIVER);
+	drm_bo_usage_deref_locked(&ta_mem->hw_data);
+	drm_bo_usage_deref_locked(&ta_mem->ta_memory);
+	drm_free(ta_mem, sizeof(*ta_mem), DRM_MEM_DRIVER);
 }
 
-void psb_bin_mem_unref_devlocked(struct psb_bin_mem **bin_mem)
+void psb_ta_mem_unref_devlocked(struct psb_ta_mem **ta_mem)
 {
-	struct psb_bin_mem *tmp_bin_mem = *bin_mem;
-	struct drm_device *dev = tmp_bin_mem->dev;
+	struct psb_ta_mem *tmp_ta_mem = *ta_mem;
+	struct drm_device *dev = tmp_ta_mem->dev;
 
 	(void)dev;
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
-	*bin_mem = NULL;
-	if (--tmp_bin_mem->ref_count == 0)
-		psb_destroy_bin_mem_devlocked(tmp_bin_mem);
+	*ta_mem = NULL;
+	if (--tmp_ta_mem->ref_count == 0)
+		psb_destroy_ta_mem_devlocked(tmp_ta_mem);
 }
 
-void psb_bin_mem_ref_devlocked(struct psb_bin_mem **dst,
-			       struct psb_bin_mem *src)
+void psb_ta_mem_ref_devlocked(struct psb_ta_mem **dst, struct psb_ta_mem *src)
 {
 	struct drm_device *dev = src->dev;
 
@@ -364,47 +427,46 @@ void psb_bin_mem_ref_devlocked(struct psb_bin_mem **dst,
 	++src->ref_count;
 }
 
-/*
- * Callback for user object manager.
- */
-
-static void psb_bin_mem_object_destroy(struct drm_file *priv,
-				       struct drm_user_object *base)
+struct psb_ta_mem *psb_alloc_ta_mem(struct drm_device *dev, uint32_t pages)
 {
-	struct psb_bin_mem *bin_mem =
-	    drm_user_object_entry(base, struct psb_bin_mem, user);
-
-	psb_bin_mem_unref_devlocked(&bin_mem);
-}
-
-struct psb_bin_mem *psb_alloc_bin_mem(struct drm_file *priv, int shareable,
-				      uint64_t pages)
-{
-	struct drm_device *dev = priv->head->dev;
 	struct drm_psb_private *dev_priv =
 	    (struct drm_psb_private *)dev->dev_private;
 	int ret = -EINVAL;
-	struct psb_bin_mem *bin_mem;
+	struct psb_ta_mem *ta_mem;
 	uint32_t bo_size;
+	struct psb_xhw_buf buf;
 
-	bin_mem = drm_calloc(1, sizeof(*bin_mem), DRM_MEM_DRIVER);
+	INIT_LIST_HEAD(&buf.head);
 
-	if (!bin_mem) {
-		DRM_ERROR("Out of memory allocating bin memory.\n");
+	ta_mem = drm_calloc(1, sizeof(*ta_mem), DRM_MEM_DRIVER);
+
+	if (!ta_mem) {
+		DRM_ERROR("Out of memory allocating parameter memory.\n");
 		return NULL;
 	}
 
-	ret = psb_xhw_bin_mem_info(dev_priv, &buf, pages,
-				   bin_mem->hw_cookie, &bo_size);
+	ret = psb_xhw_ta_mem_info(dev_priv, &buf, pages,
+				  ta_mem->hw_cookie, &bo_size);
+	if (ret == -ENOMEM) {
+		DRM_ERROR("Parameter memory size is too small.\n");
+		DRM_INFO("Attempted to use %u kiB of parameter memory.\n",
+			 (unsigned int)(pages * (PAGE_SIZE / 1024)));
+		DRM_INFO("The Xpsb driver thinks this is too small and\n");
+		DRM_INFO("suggests %u kiB. Check the psb DRM\n",
+			 (unsigned int)(bo_size / 1024));
+		DRM_INFO("\"ta_mem_size\" parameter!\n");
+	}
 	if (ret)
 		goto out_err0;
 
-	bin_mem->dev = dev;
+	bo_size = pages * PAGE_SIZE;
+	ta_mem->dev = dev;
 	ret = drm_buffer_object_create(dev, bo_size, drm_bo_type_kernel,
 				       DRM_PSB_FLAG_MEM_MMU | DRM_BO_FLAG_READ |
-				       DRM_BO_FLAG_WRITE,
+				       DRM_BO_FLAG_WRITE |
+				       PSB_BO_FLAG_SCENE,
 				       DRM_BO_HINT_DONT_FENCE, 0, 0,
-				       &bin_mem->hw_data);
+				       &ta_mem->hw_data);
 	if (ret)
 		goto out_err0;
 
@@ -412,36 +474,28 @@ struct psb_bin_mem *psb_alloc_bin_mem(struct drm_file *priv, int shareable,
 	    drm_buffer_object_create(dev, pages << PAGE_SHIFT,
 				     drm_bo_type_kernel,
 				     DRM_PSB_FLAG_MEM_RASTGEOM |
-				     DRM_BO_FLAG_READ | DRM_BO_FLAG_WRITE,
-				     DRM_BO_HINT_DONT_FENCE, 0, 0,
-				     &bin_mem->bin_memory);
+				     DRM_BO_FLAG_READ |
+				     DRM_BO_FLAG_WRITE |
+				     PSB_BO_FLAG_SCENE,
+				     DRM_BO_HINT_DONT_FENCE, 0,
+				     1024 * 1024 >> PAGE_SHIFT,
+				     &ta_mem->ta_memory);
 	if (ret)
 		goto out_err1;
 
-	mutex_lock(&dev->struct_mutex);
-	ret = drm_add_user_object(priv, &bin_mem->user, shareable);
-	bin_mem->ref_count = 1;
-	if (ret) {
-		psb_destroy_bin_mem_devlocked(bin_mem);
-		bin_mem = NULL;
-	}
-	mutex_unlock(&dev->struct_mutex);
-
-	return bin_mem;
-      out_err0:
-	drm_bo_usage_deref_unlocked(&bin_mem->hw_data);
+	ta_mem->ref_count = 1;
+	return ta_mem;
       out_err1:
-	drm_free(bin_mem, sizeof(*bin_mem), DRM_MEM_DRIVER);
+	drm_bo_usage_deref_unlocked(&ta_mem->hw_data);
+      out_err0:
+	drm_free(ta_mem, sizeof(*ta_mem), DRM_MEM_DRIVER);
 	return NULL;
 }
 
-#endif
-
-int drm_psb_scene_unref_ioctl(struct drm_device *dev, 
-			      void *data,
-			      struct drm_file *file_priv)
+int drm_psb_scene_unref_ioctl(struct drm_device *dev,
+			      void *data, struct drm_file *file_priv)
 {
-	struct drm_psb_scene *scene = (struct drm_psb_scene *) data;
+	struct drm_psb_scene *scene = (struct drm_psb_scene *)data;
 	struct drm_user_object *uo;
 	struct drm_ref_object *ro;
 	int ret = 0;
@@ -471,7 +525,7 @@ int drm_psb_scene_unref_ioctl(struct drm_device *dev,
 	BUG_ON(!ro);
 	drm_remove_ref_object(file_priv, ro);
 
-out_unlock:
+      out_unlock:
 	mutex_unlock(&dev->struct_mutex);
 	return ret;
 }

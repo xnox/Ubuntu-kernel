@@ -1,29 +1,22 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 /*
@@ -43,9 +36,10 @@ int drm_psb_debug = 0;
 EXPORT_SYMBOL(drm_psb_debug);
 static int drm_psb_trap_pagefaults = 0;
 static int drm_psb_disable_cg = 1;
+static int drm_psb_ta_mem_size = 32*1024;
 int drm_psb_disable_vsync = 0;
 int drm_psb_no_fb = 0;
-
+int drm_psb_force_pipeb = 0;
 /*
  *
  */
@@ -55,11 +49,15 @@ MODULE_PARM_DESC(disable_clockgating, "Disable clock gating");
 MODULE_PARM_DESC(no_fb, "Disable FBdev");
 MODULE_PARM_DESC(trap_pagefaults, "Error and reset on MMU pagefaults");
 MODULE_PARM_DESC(disable_vsync, "Disable vsync interrupts");
+MODULE_PARM_DESC(force_pipeb, "Forces PIPEB to become primary fb");
+MODULE_PARM_DESC(ta_mem_size, "TA memory size in kiB");
 module_param_named(debug, drm_psb_debug, int, 0600);
 module_param_named(disable_clockgating, drm_psb_disable_cg, int, 0600);
 module_param_named(no_fb, drm_psb_no_fb, int, 0600);
 module_param_named(trap_pagefaults, drm_psb_trap_pagefaults, int, 0600);
 module_param_named(disable_vsync, drm_psb_disable_vsync, int, 0600);
+module_param_named(force_pipeb, drm_psb_force_pipeb, int, 0600);
+module_param_named(ta_mem_size, drm_psb_ta_mem_size, int, 0600);
 
 static struct pci_device_id pciidlist[] = {
 	psb_PCI_IDS
@@ -74,13 +72,18 @@ static struct pci_device_id pciidlist[] = {
 #define DRM_PSB_SCENE_UNREF_IOCTL DRM_IOWR(DRM_PSB_SCENE_UNREF, \
 					   struct drm_psb_scene)
 
+#define DRM_PSB_KMS_OFF_IOCTL	DRM_IO(DRM_PSB_KMS_OFF)
+#define DRM_PSB_KMS_ON_IOCTL	DRM_IO(DRM_PSB_KMS_ON)
+
 static struct drm_ioctl_desc psb_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_PSB_CMDBUF_IOCTL, psb_cmdbuf_ioctl, DRM_AUTH),
 	DRM_IOCTL_DEF(DRM_PSB_XHW_INIT_IOCTL, psb_xhw_init_ioctl,
 		      DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_PSB_XHW_IOCTL, psb_xhw_ioctl, DRM_ROOT_ONLY),
-	DRM_IOCTL_DEF(DRM_PSB_SCENE_UNREF_IOCTL, drm_psb_scene_unref_ioctl, 
+	DRM_IOCTL_DEF(DRM_PSB_SCENE_UNREF_IOCTL, drm_psb_scene_unref_ioctl,
 		      DRM_AUTH),
+	DRM_IOCTL_DEF(DRM_PSB_KMS_OFF_IOCTL, psbfb_kms_off_ioctl, DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_PSB_KMS_ON_IOCTL, psbfb_kms_on_ioctl, DRM_ROOT_ONLY),
 };
 static int psb_max_ioctl = DRM_ARRAY_SIZE(psb_ioctls);
 
@@ -95,6 +98,18 @@ static void psb_set_uopt(struct drm_psb_uopt *uopt)
 {
 	uopt->disable_clock_gating = drm_psb_disable_cg;
 }
+
+static void psb_lastclose(struct drm_device *dev)
+{
+	struct drm_psb_private *dev_priv =
+		(struct drm_psb_private *)dev->dev_private;
+
+	mutex_lock(&dev->struct_mutex);
+	if (dev_priv->ta_mem)
+		psb_ta_mem_unref_devlocked(&dev_priv->ta_mem);
+	mutex_unlock(&dev->struct_mutex);
+}
+
 
 static void psb_do_takedown(struct drm_device *dev)
 {
@@ -188,10 +203,16 @@ static int psb_do_init(struct drm_device *dev)
 	uint32_t tt_start;
 	uint32_t tt_pages;
 
+	uint32_t dspaconf;
+	uint32_t dspbconf;
+
 	int ret = -ENOMEM;
 
 	DRM_ERROR("Debug is 0x%08x\n", drm_psb_debug);
-
+	
+	dev_priv->ta_mem_pages = 
+		PSB_ALIGN_TO(drm_psb_ta_mem_size * 1024, 
+			     PAGE_SIZE) >> PAGE_SHIFT;
 	dev_priv->comm_page = alloc_page(GFP_KERNEL);
 	if (!dev_priv->comm_page)
 		goto out_err;
@@ -241,6 +262,7 @@ static int psb_do_init(struct drm_device *dev)
 
 	if (ret)
 		goto out_err;
+
 
 	if (1 || drm_debug) {
 		uint32_t core_id = PSB_RSGX32(PSB_CR_CORE_ID);
@@ -300,6 +322,12 @@ static int psb_do_init(struct drm_device *dev)
 #endif
 
 	mutex_unlock(&dev->struct_mutex);
+
+	DRM_DEBUG("reading PIPE*CONF\n");
+	dspaconf = I915_READ(PIPEACONF);
+	dspbconf = I915_READ(PIPEBCONF);
+	DRM_DEBUG("which is primary a = 0x%x, b = 0x%x\n", dspaconf, dspbconf);
+
 	return 0;
       out_err:
 	psb_do_takedown(dev);
@@ -313,13 +341,13 @@ static int psb_driver_unload(struct drm_device *dev)
 
 	intel_modeset_cleanup(dev);
 
-
 	if (dev_priv) {
 		psb_watchdog_takedown(dev_priv);
 		psb_do_takedown(dev);
 		psb_xhw_takedown(dev_priv);
 		psb_scheduler_takedown(&dev_priv->scheduler);
 
+		mutex_lock(&dev->struct_mutex);
 		if (dev_priv->have_mem_pds) {
 			drm_bo_clean_mm(dev, DRM_PSB_MEM_PDS);
 			dev_priv->have_mem_pds = 0;
@@ -328,6 +356,10 @@ static int psb_driver_unload(struct drm_device *dev)
 			drm_bo_clean_mm(dev, DRM_PSB_MEM_KERNEL);
 			dev_priv->have_mem_kernel = 0;
 		}
+		mutex_unlock(&dev->struct_mutex);
+
+		(void) drm_bo_driver_finish(dev);
+
 		if (dev_priv->pf_pd) {
 			psb_mmu_free_pagedir(dev_priv->pf_pd);
 			dev_priv->pf_pd = NULL;
@@ -370,6 +402,55 @@ static int psb_driver_unload(struct drm_device *dev)
 	return 0;
 }
 
+extern int drm_crtc_probe_output_modes(struct drm_device *dev, int, int);
+extern int drm_pick_crtcs(struct drm_device *dev);
+
+static int psb_initial_config(struct drm_device *dev, bool can_grow)
+{
+	struct drm_psb_private *dev_priv = dev->dev_private;
+	struct drm_output *output;
+	struct drm_crtc *crtc;
+	int ret = false;
+
+	mutex_lock(&dev->mode_config.mutex);
+
+	drm_crtc_probe_output_modes(dev, 2048, 2048);
+
+	drm_pick_crtcs(dev);
+
+	if ((I915_READ(PIPEACONF) & PIPEACONF_ENABLE) && !drm_psb_force_pipeb)
+		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
+			if (!crtc->desired_mode)
+				continue;
+
+			dev->driver->fb_probe(dev, crtc);
+		}
+	else
+		list_for_each_entry_reverse(crtc, &dev->mode_config.crtc_list, head) {
+			if (!crtc->desired_mode)
+				continue;
+
+			dev->driver->fb_probe(dev, crtc);
+		}
+
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+
+		if (!output->crtc || !output->crtc->desired_mode)
+			continue;
+
+		if (output->crtc->fb)
+			drm_crtc_set_mode(output->crtc,
+				output->crtc->desired_mode, 0, 0);
+	}
+
+	drm_disable_unused_functions(dev);
+
+	mutex_unlock(&dev->mode_config.mutex);
+
+	return ret;
+
+}
+
 static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 {
 	struct drm_psb_private *dev_priv;
@@ -377,6 +458,7 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	struct psb_gtt *pg;
 	int ret = -ENOMEM;
 
+	DRM_INFO("psb - %s\n", PSB_PACKAGE_VERSION);
 	dev_priv = drm_calloc(1, sizeof(*dev_priv), DRM_MEM_DRIVER);
 	if (dev_priv == NULL)
 		return -ENOMEM;
@@ -384,10 +466,8 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	mutex_init(&dev_priv->temp_mem);
 	mutex_init(&dev_priv->cmdbuf_mutex);
 	mutex_init(&dev_priv->reset_mutex);
-	mutex_init(&dev_priv->msvdx_mutex);
 
 	spin_lock_init(&dev_priv->reloc_lock);
-	spin_lock_init(&dev_priv->msvdx_lock);
 
 	DRM_INIT_WAITQUEUE(&dev_priv->rel_mapped_queue);
 	DRM_INIT_WAITQUEUE(&dev_priv->event_2d_queue);
@@ -433,8 +513,7 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 		goto out_err;
 
 	dev_priv->mmu = psb_mmu_driver_init(dev_priv->sgx_reg,
-					    drm_psb_trap_pagefaults,
-					    0);
+					    drm_psb_trap_pagefaults, 0);
 	if (!dev_priv->mmu)
 		goto out_err;
 
@@ -503,7 +582,7 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	PSB_WSGX32(PSB_MEM_RASTGEOM_START, PSB_CR_BIF_3D_REQ_BASE);
 
 	intel_modeset_init(dev);
-	drm_initial_config(dev, false);
+	psb_initial_config(dev, false);
 
 	return 0;
       out_err:
@@ -579,6 +658,7 @@ static int psb_suspend(struct pci_dev *pdev, pm_message_t state)
 
 	if (dev_priv->has_msvdx)
 		psb_prepare_msvdx_suspend(dev);
+
 	return 0;
 }
 
@@ -602,7 +682,7 @@ static int psb_resume(struct pci_dev *pdev)
 			      pg->gmch_ctrl | _PSB_GMCH_ENABLED);
 
 	/*
-	 * The GTT page tables are probably not saved. 
+	 * The GTT page tables are probably not saved.
 	 * However, TT and VRAM is empty at this point.
 	 */
 
@@ -645,8 +725,20 @@ static int psb_resume(struct pci_dev *pdev)
 	 */
 
 	psb_xhw_resume(dev_priv, &dev_priv->resume_buf);
+	psb_scheduler_ta_mem_check(dev_priv);
+
+	if (dev_priv->ta_mem && !dev_priv->force_ta_mem_load) {
+		psb_xhw_ta_mem_load(dev_priv, &dev_priv->resume_buf, 
+				     PSB_TA_MEM_FLAG_TA|
+				     PSB_TA_MEM_FLAG_RASTER|
+				     PSB_TA_MEM_FLAG_HOSTA|
+				     PSB_TA_MEM_FLAG_HOSTD|
+				     PSB_TA_MEM_FLAG_INIT,
+				     dev_priv->ta_mem->ta_memory->offset,
+				     dev_priv->ta_mem->hw_data->offset,
+				     dev_priv->ta_mem->hw_cookie);
+	}
 	psb_scheduler_restart(dev_priv);
-	
 	return 0;
 }
 
@@ -736,8 +828,8 @@ static struct drm_driver driver = {
 	.irq_handler = psb_irq_handler,
 	.fb_probe = psbfb_probe,
 	.fb_remove = psbfb_remove,
-	.firstopen = NULL,	/* psb_do_init, */
-	.lastclose = NULL,	/* psb_do_takedown, */
+	.firstopen = NULL,	
+	.lastclose = psb_lastclose,
 	.fops = {
 		 .owner = THIS_MODULE,
 		 .open = drm_open,
@@ -787,4 +879,4 @@ module_exit(psb_exit);
 
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPLV2");

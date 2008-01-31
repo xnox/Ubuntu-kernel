@@ -9,7 +9,7 @@
 
 /* Fixed name */
 #define ACPI_EDID_LCD	"\\_SB_.PCI0.GFX0.DD04._DDC"
-#define ACPI_DOD    	"\\_SB_.PCI0.GFX0._DOD"
+#define ACPI_DOD	"\\_SB_.PCI0.GFX0._DOD"
 
 #include "intel_lvds.c"
 #include "intel_sdvo.c"

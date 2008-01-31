@@ -42,7 +42,6 @@ static void drm_bo_free_old_node(struct drm_buffer_object *bo)
 	if (old_mem->mm_node && (old_mem->mm_node != bo->pinned_node)) {
 		mutex_lock(&bo->dev->struct_mutex);
 		drm_mm_put_block(old_mem->mm_node);
-		old_mem->mm_node = NULL;
 		mutex_unlock(&bo->dev->struct_mutex);
 	}
 	old_mem->mm_node = NULL;
@@ -57,7 +56,7 @@ int drm_bo_move_ttm(struct drm_buffer_object *bo,
 	uint64_t save_mask = old_mem->mask;
 	int ret;
 
-	if (old_mem->mem_type == DRM_BO_MEM_TT) {
+	if (old_mem->mem_type != DRM_BO_MEM_LOCAL) {
 		if (evict)
 			drm_ttm_evict(ttm);
 		else
@@ -304,7 +303,7 @@ int drm_buffer_object_transfer(struct drm_buffer_object *bo,
 	INIT_LIST_HEAD(&fbo->p_mm_list);
 #endif
 
-	drm_fence_reference_unlocked(&fbo->fence, bo->fence);
+	fbo->fence = drm_fence_reference_locked(bo->fence);
 	fbo->pinned_node = NULL;
 	fbo->mem.mm_node->private = (void *)fbo;
 	atomic_set(&fbo->usage, 1);

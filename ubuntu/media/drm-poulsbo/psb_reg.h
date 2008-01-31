@@ -1,31 +1,24 @@
 /**************************************************************************
- * 
+ *
  * Copyright (c) (2005-2007) Imagination Technologies Limited.
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE 
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 /*
@@ -190,30 +183,30 @@
  * 2D Slave Port Data : Block Header's Object Type
  */
 
-#define	PSB_2D_CLIP_BH                   (0x00000000)	
-#define	PSB_2D_PAT_BH                    (0x10000000)	
-#define	PSB_2D_CTRL_BH                   (0x20000000)	
-#define	PSB_2D_SRC_OFF_BH                (0x30000000)	
-#define	PSB_2D_MASK_OFF_BH               (0x40000000)	
-#define	PSB_2D_RESERVED1_BH              (0x50000000)	
-#define	PSB_2D_RESERVED2_BH              (0x60000000)	
-#define	PSB_2D_FENCE_BH                  (0x70000000)	
-#define	PSB_2D_BLIT_BH                   (0x80000000)	
-#define	PSB_2D_SRC_SURF_BH               (0x90000000)	
-#define	PSB_2D_DST_SURF_BH               (0xA0000000)	
-#define	PSB_2D_PAT_SURF_BH               (0xB0000000)	
-#define	PSB_2D_SRC_PAL_BH                (0xC0000000)	
-#define	PSB_2D_PAT_PAL_BH                (0xD0000000)	
-#define	PSB_2D_MASK_SURF_BH              (0xE0000000)	
-#define	PSB_2D_FLUSH_BH                  (0xF0000000)	
+#define	PSB_2D_CLIP_BH                   (0x00000000)
+#define	PSB_2D_PAT_BH                    (0x10000000)
+#define	PSB_2D_CTRL_BH                   (0x20000000)
+#define	PSB_2D_SRC_OFF_BH                (0x30000000)
+#define	PSB_2D_MASK_OFF_BH               (0x40000000)
+#define	PSB_2D_RESERVED1_BH              (0x50000000)
+#define	PSB_2D_RESERVED2_BH              (0x60000000)
+#define	PSB_2D_FENCE_BH                  (0x70000000)
+#define	PSB_2D_BLIT_BH                   (0x80000000)
+#define	PSB_2D_SRC_SURF_BH               (0x90000000)
+#define	PSB_2D_DST_SURF_BH               (0xA0000000)
+#define	PSB_2D_PAT_SURF_BH               (0xB0000000)
+#define	PSB_2D_SRC_PAL_BH                (0xC0000000)
+#define	PSB_2D_PAT_PAL_BH                (0xD0000000)
+#define	PSB_2D_MASK_SURF_BH              (0xE0000000)
+#define	PSB_2D_FLUSH_BH                  (0xF0000000)
 
 /*
  * Clip Definition block (PSB_2D_CLIP_BH)
  */
-#define PSB_2D_CLIPCOUNT_MAX             (1)	
-#define PSB_2D_CLIPCOUNT_MASK            (0x00000000)	
-#define PSB_2D_CLIPCOUNT_CLRMASK         (0xFFFFFFFF)	
-#define PSB_2D_CLIPCOUNT_SHIFT           (0)	
+#define PSB_2D_CLIPCOUNT_MAX             (1)
+#define PSB_2D_CLIPCOUNT_MASK            (0x00000000)
+#define PSB_2D_CLIPCOUNT_CLRMASK         (0xFFFFFFFF)
+#define PSB_2D_CLIPCOUNT_SHIFT           (0)
 // clip rectangle min & max
 #define PSB_2D_CLIP_XMAX_MASK            (0x00FFF000)
 #define PSB_2D_CLIP_XMAX_CLRMASK         (0xFF000FFF)
@@ -221,7 +214,7 @@
 #define PSB_2D_CLIP_XMIN_MASK            (0x00000FFF)
 #define PSB_2D_CLIP_XMIN_CLRMASK         (0x00FFF000)
 #define PSB_2D_CLIP_XMIN_SHIFT           (0)
-// clip rectangle offset 
+// clip rectangle offset
 #define PSB_2D_CLIP_YMAX_MASK            (0x00FFF000)
 #define PSB_2D_CLIP_YMAX_CLRMASK         (0xFF000FFF)
 #define PSB_2D_CLIP_YMAX_SHIFT           (12)
@@ -244,7 +237,7 @@
 /*
  * 2D Control block (PSB_2D_CTRL_BH)
  */
-// Present Flags  
+// Present Flags
 #define PSB_2D_SRCCK_CTRL                (0x00000001)
 #define PSB_2D_DSTCK_CTRL                (0x00000002)
 #define PSB_2D_ALPHA_CTRL                (0x00000004)
@@ -293,7 +286,7 @@
 /*
  *Source Offset (PSB_2D_SRC_OFF_BH)
  */
-#define PSB_2D_SRCOFF_XSTART_MASK        ((0x00000FFF) << 12)	
+#define PSB_2D_SRCOFF_XSTART_MASK        ((0x00000FFF) << 12)
 #define PSB_2D_SRCOFF_XSTART_SHIFT       (12)
 #define PSB_2D_SRCOFF_YSTART_MASK        (0x00000FFF)
 #define PSB_2D_SRCOFF_YSTART_SHIFT       (0)
@@ -301,7 +294,7 @@
 /*
  * Mask Offset (PSB_2D_MASK_OFF_BH)
  */
-#define PSB_2D_MASKOFF_XSTART_MASK       ((0x00000FFF) << 12)	
+#define PSB_2D_MASKOFF_XSTART_MASK       ((0x00000FFF) << 12)
 #define PSB_2D_MASKOFF_XSTART_SHIFT      (12)
 #define PSB_2D_MASKOFF_YSTART_MASK       (0x00000FFF)
 #define PSB_2D_MASKOFF_YSTART_SHIFT      (0)
@@ -541,21 +534,12 @@
  */
 
 #define PSB_SCENE_HW_COOKIE_SIZE 16
-#define PSB_BIN_MEM_HW_COOKIE_SIZE 16
+#define PSB_TA_MEM_HW_COOKIE_SIZE 16
 
 /*
  * Scene stuff.
  */
 
-#define PSB_SCENE_FLAG_DIRTY       (1 << 0)
-#define PSB_SCENE_FLAG_COMPLETE    (1 << 1)
-#define PSB_SCENE_FLAG_SETUP       (1 << 2)
-#define PSB_SCENE_FLAG_SETUP_ONLY  (1 << 3)
-#define PSB_SCENE_FLAG_CLEARED     (1 << 4)
-
-#define PSB_SCENE_ENGINE_TA    0
-#define PSB_SCENE_ENGINE_RASTER    1
-#define PSB_SCENE_NUM_ENGINES      2
 #define PSB_NUM_HW_SCENES          2
 
 /*
@@ -569,5 +553,3 @@
 
 
 #endif
-
-

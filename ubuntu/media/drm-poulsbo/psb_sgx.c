@@ -1,29 +1,22 @@
 /**************************************************************************
- * Copyright (c) Intel Corp. 2007.
+ * Copyright (c) 2007, Intel Corporation.
  * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify it
+ * under the terms and conditions of the GNU General Public License,
+ * version 2, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
+ *
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 
+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
  * develop this driver.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sub license, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- *
- * The above copyright notice and this permission notice (including the
- * next paragraph) shall be included in all copies or substantial portions
- * of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDERS, AUTHORS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM,
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
- * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  **************************************************************************/
 /*
@@ -724,6 +717,7 @@ static int psb_fixup_relocs(struct drm_file *file_priv,
 			  reloc_handle, reloc_first_page, reloc_num_pages);
 		goto out;
 	}
+
 	reloc = (struct drm_psb_reloc *)
 	    ((unsigned long)drm_bmo_virtual(&reloc_kmap, &reloc_is_iomem) +
 	     reloc_offset);
@@ -991,6 +985,7 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 	unsigned num_buffers;
 	struct drm_buffer_object *cmd_buffer = NULL;
 	struct drm_buffer_object *ta_buffer = NULL;
+	struct drm_buffer_object *oom_buffer = NULL;
 	struct drm_fence_arg fence_arg;
 	struct drm_psb_scene user_scene;
 	struct psb_scene_pool *pool = NULL;
@@ -1003,13 +998,17 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 	if (!dev_priv)
 		return -EINVAL;
 
-	LOCK_TEST_WITH_RETURN(dev, file_priv);
+	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+	if (ret)
+		return ret;
 
 	num_buffers = PSB_NUM_VALIDATE_BUFFERS;
 
 	ret = mutex_lock_interruptible(&dev_priv->cmdbuf_mutex);
-	if (ret)
+	if (ret) {
+		drm_bo_read_unlock(&dev->bm.bm_lock);
 		return -EAGAIN;
+	}
 
 	engine = (arg->engine == PSB_ENGINE_RASTERIZER) ?
 	    PSB_ENGINE_TA : arg->engine;
@@ -1061,11 +1060,30 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 			mutex_lock(&dev->struct_mutex);
 			ta_buffer =
 			    drm_lookup_buffer_object(file_priv,
-						     arg->cmdbuf_handle, 1);
+						     arg->ta_handle, 1);
 			mutex_unlock(&dev->struct_mutex);
 			if (!ta_buffer) {
 				ret = -EINVAL;
 				goto out_err0;
+			}
+		}
+		if (arg->oom_size != 0) {
+			if (arg->oom_handle == arg->cmdbuf_handle) {
+				mutex_lock(&dev->struct_mutex);
+				atomic_inc(&cmd_buffer->usage);
+				oom_buffer = cmd_buffer;
+				mutex_unlock(&dev->struct_mutex);
+			} else {
+				mutex_lock(&dev->struct_mutex);
+				oom_buffer =
+				    drm_lookup_buffer_object(file_priv,
+							     arg->oom_handle,
+							     1);
+				mutex_unlock(&dev->struct_mutex);
+				if (!oom_buffer) {
+					ret = -EINVAL;
+					goto out_err0;
+				}
 			}
 		}
 
@@ -1124,7 +1142,7 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 				goto out_err0;
 		}
 		ret = psb_cmdbuf_ta(file_priv, arg, cmd_buffer, ta_buffer,
-				    scene, &feedback, &fence_arg);
+				    oom_buffer, scene, &feedback, &fence_arg);
 		if (ret)
 			goto out_err0;
 		break;
@@ -1153,10 +1171,13 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 		drm_bo_usage_deref_locked(&cmd_buffer);
 	if (ta_buffer)
 		drm_bo_usage_deref_locked(&ta_buffer);
+	if (oom_buffer)
+		drm_bo_usage_deref_locked(&oom_buffer);
 
 	psb_dereference_buffers_locked(dev_priv->buffers, num_buffers);
 	mutex_unlock(&dev->struct_mutex);
 	mutex_unlock(&dev_priv->cmdbuf_mutex);
 
+	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
