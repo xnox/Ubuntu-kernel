@@ -1,5 +1,6 @@
 # Ubuntu config
 
+CONFIG_IWLWIFI=m
 CONFIG_ALSA=m
 
 # XXX temporary, till linux-headers on ppc gets fixed.
