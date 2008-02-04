@@ -1,0 +1,145 @@
+#!/usr/bin/env /bin/bash
+# Copyright (C) 2007 Intel Corporation
+script=patch_kernel
+prog=$0
+[ "${prog/*$script/$script}" = "$script" ] || {
+    echo "This script must not be sourced."
+    return 1
+} || return 1
+
+function die() {
+        ret=$1
+        shift
+        echo -e $@ >&2
+        exit $ret
+}
+
+[ -z "$KSRC" ] && 
+KSRC="/lib/modules/$(uname -r)/build"
+
+[ ! -e "${KSRC}/Makefile" ] && 
+die 1 "Kernel Makefile not found at '$KSRC'"
+
+SRC=compatible
+DST=${KSRC}
+
+[ -d $SRC ]  ||
+die 5 "\n$SRC/ tree does not exist.  Run 'make $SRC' to build the\n$SRC directory."
+
+SRC=${SRC/%\/}/
+DST=${DST/%\/}/
+
+[ -w "$DST" ] || die 6 " ! Insufficient access to write to $DST."
+echo "Patching from $SRC to $DST:"
+files=($(cd ${SRC} ; find * -type f \
+    -not -name '*orig' \
+    -not -name '*rej' \
+    -not -name 'GIT' \
+    -not -wholename 'CVS/*' \
+    -not -wholename '.svn/*'))
+count=${#files[*]}
+replaced=0
+copied=0
+for i in $(seq 0 $((count-1))); do
+    file="${DST}${files[$i]}"
+    dir=$(dirname "$file")
+    [ ! -d "$dir" ] && mkdir -p "$dir" 
+    [ -e "$file" ] && replaced=$((replaced+1)) || copied=$((copied+1))
+    cp -f "${SRC}${files[$i]}" "$file" || die $? "Copy failed."
+done
+(( copied != 0 )) &&
+echo " + Copied $copied files."
+(( replaced != 0 )) &&
+echo " + Replaced $replaced files."
+
+echo "Checking for required kernel build updates..."
+
+echo " - checking net/Kconfig and net/Makefile..."
+grep -q "^source.*mac80211" "${DST}net/Kconfig" || {
+    sed -i -e "s:^\(source \".*bluetooth/Kconfig\"\):\1\nsource \"net/mac80211/Kconfig\":g" "${DST}net/Kconfig"
+    echo " + Updated Kconfig for mac80211"
+}
+grep -q "mac80211" "${DST}net/Makefile" || {
+    sed -i -e "s:^\(obj.*TIPC.*/\):\1\nobj-\$(CONFIG_MAC80211)\t\t+= mac80211/:g" "${DST}net/Makefile"
+    echo " + Updated Makefile for mac80211"
+}
+grep -q "^source.*wireless/Kconfig" "${DST}net/Kconfig" || {
+    sed -i -e "s:^\(source \".*bluetooth/Kconfig\"\):\1\nsource \"net/wireless/Kconfig\":g" "${DST}net/Kconfig"
+    echo " + Updated ${DST}net/Kconfig for cfg80211"
+}
+grep -q "obj\-y.*wireless" "${DST}net/Makefile" || {
+    sed -i \
+	-e "s:^\(obj.*TIPC.*/\):\1\nobj-y\t\t+= wireless/:g" \
+		"${DST}net/Makefile"
+    sed -i \
+	-e "s:^.*WIRELESS_EXT.*::g" "${DST}net/Makefile" \
+		"${DST}net/Makefile"
+    echo " + Updated ${DST}net/Makefile for cfg80211"
+}
+
+echo " - checking net/core/Makefile for old 'wireless'..."
+grep -q "^obj-\$(CONFIG_WIRELESS_EXT).*" "${DST}net/core/Makefile" && {
+    sed -i -e "s:^\(obj\-\$(CONFIG_WIRELESS_EXT)\):#\1:g" "${DST}net/core/Makefile"
+    echo " + Removed legacy wireless from ${DST}net/core/Makefile"
+}
+
+echo " - checking net/core/dev.c for wireless_proc_init vs. wext_proc_init..."
+grep -q "wireless_proc_init" "${DST}net/core/dev.c" && {
+    sed -i -e "s:wireless_proc_init:wext_proc_init:g" \
+		"${DST}net/core/dev.c" 
+    echo " + Switched to new wext_proc_init in net/core/dev.c"
+}
+
+echo " - checking net/core/dev.c for wireless_process_ioctl v. wext_handle_ioctl..." 
+grep -q "wireless_process_ioctl" "${DST}net/core/dev.c" && {
+    sed -i \
+	-e "s:if (cmd >= SIOCIWFIRST && cmd <= SIOCIWLAST):if (cmd >= SIOCIWFIRST \&\& cmd <= SIOCIWLAST) return wext_handle_ioctl(\&ifr, cmd, arg);  if (0):g" \
+	-e 's,\([[:space:]]\)*ret = wireless_process_ioctl.*$,\1ret = 0;,g' \
+		"${DST}net/core/dev.c" 
+    echo " + Switched to new wext_handle_ioctl in net/core/dev.c"
+}
+
+echo " - checking net/core/dev.c for linxu/wireless.h v. net/wext.h..."
+grep -q "linux/wireless\.h" "${DST}net/core/dev.c" && {
+    sed -i \
+	-e "s:linux/wireless\.h:net/wext.h:g" \
+		"${DST}net/core/dev.c" 
+    echo " + Switched to new net/wext.h in net/core/dev.c"
+}
+
+echo " - checking net/core/dev.c for wireless_proc_init vs. wext_proc_init..."
+grep -q "wireless_proc_init" "${DST}net/core/dev.c" && {
+    sed -i -e "s:wireless_proc_init:wext_proc_init:g""${DST}net/core/dev.c"
+    echo " + Switched from old wireless_proc_init to new wext_proc_init"
+}
+
+echo " - checking net/Makefile and Kconfig for old 'd80211'..."
+grep -q "^obj-\$(CONFIG_D80211.*" "${DST}net/Makefile" && {
+    sed -i -e "s:^\(obj\-\$(CONFIG_D80211\):#\1:g" "${DST}net/Makefile"
+    echo " + Removed legacy d80211 from ${DST}net/Makefile"
+}
+grep -q "^source.*d80211/Kconfig.*" "${DST}net/Kconfig" && {
+    sed -i -e "s:^\(source.*d80211/Kconfig\):#\1:g" "${DST}net/Kconfig"
+    echo " + Removed legacy d80211 from ${DST}net/Kconfig"
+}
+
+echo " - checking drivers/net/wireless/Kconfig..."
+grep -q "^config.*WIRELESS_RTNETLINK" "${DST}drivers/net/wireless/Kconfig" && {
+	sed -i -e "/^config.*WIRELESS_RTNETLINK/,/^[^\t ]/ {
+		/^config.*WIRELESS_RTNETLINK/d;
+		/^[\t ]/d;
+		/^$/d }" "${DST}/drivers/net/wireless/Kconfig"
+	echo " + Removed NET_WIRELESS_RTNETLINK config option"
+}
+
+echo "Done."
+
+cat <<EOF
+
+NOTE:  As of mac80211-2.0.0, kernel built-ins for the wireless extension 
+handlers have been replaced with built-ins provided by mac80211.  This 
+requires you to rebuild your main kernel image and reboot to that 
+kernel in order to use the mac80211 subsystem.  We are looking for ways 
+to correct this in the future.
+
+EOF

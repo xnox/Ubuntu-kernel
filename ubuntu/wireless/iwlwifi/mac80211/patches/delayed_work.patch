@@ -1,0 +1,13 @@
+Add delayed_work structure compatibility.
+diff -Nupr orig/net/mac80211/ieee80211_i.h new/net/mac80211/ieee80211_i.h
+--- orig/net/mac80211/ieee80211_i.h	2007-01-26 03:05:18.000000000 -0800
++++ new/net/mac80211/ieee80211_i.h	2007-01-26 03:04:44.000000000 -0800
+@@ -23,6 +23,8 @@
+ #include "ieee80211_key.h"
+ #include "sta_info.h"
+
++#include "kcompat-delayed_work.h"
++
+ /* ieee80211.o internal definitions, etc. These are not included into
+  * low-level drivers. */
+ 

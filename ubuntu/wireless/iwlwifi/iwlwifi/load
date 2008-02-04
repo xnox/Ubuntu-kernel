@@ -1,0 +1,104 @@
+#!/bin/sh
+# Copyright (C) 2004-2005 Intel Corporation
+module="iwl3945 iwl4965"
+function check_root()
+{
+	[ `whoami` != "root" ] &&
+		echo "You must be root to run this script." &&
+		return 1
+}
+
+function unload()
+{ 
+        ./unload $module || return 1
+}
+
+function load_pre
+{
+    mod_dir=/lib/modules/$(uname -r)/kernel/crypto
+
+	prereq="blkcipher aes arc4 ecb cryptomgr crypto_algapi"
+	for i in ${prereq}; do
+		[ -e $mod_dir/$i.ko ] && {
+			grep -q $i /proc/modules || modprobe $i
+		}
+	done
+
+    for i in cfg80211 mac80211 firmware_class; do
+	if ! (lsmod | grep -q $i) && \
+	    ! (modprobe $i > /dev/null 2>&1 && LOADED="${LOADED}${i} ") && \
+	    ! (grep -q request_firmware /proc/kallsyms); then
+	    if [ ! -e /proc/kallsyms ]; then
+		echo "Could not be determine if ${i} is already loaded."
+		echo "Attempting to load driver anyway..."
+	    else
+		echo "${i} capabilities not found.  See INSTALL."
+		return 1
+	    fi
+	fi
+    done
+}
+
+
+function load_module
+{
+    I_DEBUG=""
+    [ -d compatible ] && dir=compatible || dir=origin
+    for i in ${module}; do 
+	[ ! -e $dir/${i}.ko ] && continue
+	insmod $dir/${i}.ko $@ && LOADED="${LOADED}${i} " ||
+		return 1
+    done
+}
+
+function load()
+{
+	load_pre && load_module $@ && {
+		if [ -z "${LOADED}" ]; then
+			echo "No modules loaded."
+		else
+			echo "Loaded: ${LOADED}"
+		fi
+
+		return 0
+	} 
+
+	echo "Load failed."
+
+	return 1
+}
+
+function parse_args()
+{
+        driver_args=
+        while [ "$1" ]; do
+                case $1 in
+		--module*)
+			module=$1
+			module=${module/#*=}
+			if [ "$module" = "$1" ]; then
+				shift
+				module=$1
+			fi
+			shift
+			;;
+
+                --)
+                        shift
+			break
+                        ;;
+
+                *)
+                        driver_args="$driver_args $1"
+                        shift
+                        ;;
+                esac
+        done
+}
+
+unset LOADED
+
+parse_args $@ &&
+unload && 
+load $driver_args
+

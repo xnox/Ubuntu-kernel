@@ -1,0 +1,80 @@
+From aa958786201069f0a857251a777f687fc9d42219 Mon Sep 17 00:00:00 2001
+From: Hong Liu <hong.liu@intel.com>
+Date: Sat, 30 Jun 2007 04:00:04 +0800
+Subject: [PATCH] mac80211: Fix user specified TXPOWER from being overridden by stack
+
+ieee80211_hw_config always use the channel->power_level to
+configure the hardware which overrides the user configured value.  This
+commit changes the code to use the min() power level specified either
+by the user or by channel->power_level.
+
+Signed-off-by: Hong Liu <hong.liu@intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/ieee80211.c       |    5 ++++-
+ net/mac80211/ieee80211_i.h     |    2 ++
+ net/mac80211/ieee80211_ioctl.c |    8 +++++---
+ 3 files changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index b1958b1..4e03ffd 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -2373,7 +2373,9 @@ int ieee80211_hw_config(struct ieee80211_local *local)
+ 
+ 	local->hw.conf.channel = chan->chan;
+ 	local->hw.conf.channel_val = chan->val;
+-	local->hw.conf.power_level = chan->power_level;
++	local->hw.conf.power_level =
++		(local->user_txpow < chan->power_level) ?
++			local->user_txpow : chan->power_level;
+ 	local->hw.conf.freq = chan->freq;
+ 	local->hw.conf.phymode = mode->mode;
+ 	local->hw.conf.antenna_max = chan->antenna_max;
+@@ -5161,6 +5163,7 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
+ 	if (local->hw.max_rssi < 0 || local->hw.max_noise < 0)
+ 		local->wstats_flags |= IW_QUAL_DBM;
+ 
++	local->user_txpow = IEEE80211_MAX_TXPOWER;
+ 	result = sta_info_start(local);
+ 	if (result < 0)
+ 		goto fail_sta_info;
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index e7d0c32..697aa77 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -548,6 +548,8 @@ struct ieee80211_local {
+ 	struct ieee80211_hw_mode *oper_hw_mode, *scan_hw_mode;
+ 	u8 scan_ssid[IEEE80211_MAX_SSID_LEN];
+ 	size_t scan_ssid_len;
++#define IEEE80211_MAX_TXPOWER 50
++	u8 user_txpow;
+ 	struct list_head sta_bss_list;
+ 	struct ieee80211_sta_bss *sta_bss_hash[STA_HASH_SIZE];
+ 	spinlock_t sta_bss_lock;
+diff --git a/net/mac80211/ieee80211_ioctl.c b/net/mac80211/ieee80211_ioctl.c
+index ed4e3ca..84db149 100644
+--- a/net/mac80211/ieee80211_ioctl.c
++++ b/net/mac80211/ieee80211_ioctl.c
+@@ -897,13 +897,15 @@ static int ieee80211_ioctl_siwtxpow(struct net_device *dev,
+ {
+ 	int rc = 0;
+         struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
+-        struct ieee80211_conf *conf = &local->hw.conf;
+ 
+ 
+ 	if (wrqu->txpower.flags != IW_TXPOW_DBM)
+ 		rc = -EINVAL;
+-	else
+-		conf->power_level = wrqu->txpower.value;
++	else if (!wrqu->txpower.disabled) {
++		if (wrqu->txpower.value < 0)
++			return -EINVAL;
++		local->user_txpow = wrqu->txpower.value;
++	}
+ 
+ 
+ 	ieee80211_ioctl_set_radio_enabled(dev, !wrqu->txpower.disabled);
+-- 
+1.5.2
+

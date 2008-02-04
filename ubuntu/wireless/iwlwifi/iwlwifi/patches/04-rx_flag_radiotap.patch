@@ -1,0 +1,12 @@
+diff -upr compatible/iwl-helpers.h post/iwl-helpers.h
+--- compatible/iwl-helpers.h	2007-06-05 10:44:04.000000000 -0700
++++ post/iwl-helpers.h	2007-06-05 10:44:09.000000000 -0700
+@@ -295,4 +295,8 @@ static inline void printk_buf(int level,
+ #define printk_buf(level, p, len) do {} while (0)
+ #endif
+ 
++#ifndef RX_FLAG_RADIOTAP
++#define RX_FLAG_RADIOTAP        (1<<2)
++#endif
++
+ #endif				/* __iwl_helpers_h__ */

@@ -1,0 +1,34 @@
+Remove nl80211 from being an option in Kconfig
+
+diff -upr compatible/net/wireless/Kconfig post/net/wireless/Kconfig
+--- compatible/net/wireless/Kconfig	2007-03-07 09:30:05.000000000 -0800
++++ post/net/wireless/Kconfig	2007-03-07 09:35:29.000000000 -0800
+@@ -16,16 +16,16 @@ config CFG80211_WEXT_COMPAT
+ 
+           If unsure, say Y.
+ 
+-config NL80211
+-	bool "nl80211 new netlink interface support"
+-	depends CFG80211
+-	default y
+-	---help---
+-         This option turns on the new netlink interface
+-         (nl80211) support in cfg80211.
+-
+-         If =n, drivers using mac80211 will be configured via
+-         wireless extension support provided by that subsystem.
+-
+-         If unsure, say Y.
++#config NL80211
++#	bool "nl80211 new netlink interface support"
++#	depends CFG80211
++#	default y
++#	---help---
++#         This option turns on the new netlink interface
++#         (nl80211) support in cfg80211.
++#
++#         If =n, drivers using mac80211 will be configured via
++#         wireless extension support provided by that subsystem.
++#
++#         If unsure, say Y.
+ 

@@ -1,0 +1,24 @@
+Reverse class_dev to dev changes when ieee80211_ptr is used
+ net/wireless/core.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+diff -upr pre/net/wireless/core.c post/net/wireless/core.c
+--- pre/net/wireless/core.c	2007-03-21 14:10:45.000000000 -0800
++++ post/net/wireless/core.c	2007-03-21 14:12:06.000000000 -0800
+@@ -255,7 +255,7 @@ static int cfg80211_netdev_notifier_call
+ 	case NETDEV_REGISTER:
+ 		mutex_lock(&rdev->devlist_mtx);
+ 		list_add(&((struct wireless_dev *)dev->ieee80211_ptr)->list, &rdev->netdev_list);
+-		if (sysfs_create_link(&dev->dev.kobj, &rdev->wiphy.dev.kobj,
++		if (sysfs_create_link(&dev->class_dev.kobj, &rdev->wiphy.dev.kobj,
+ 				      "phy80211")) {
+ 			printk(KERN_ERR "wireless: failed to add phy80211 symlink to netdev!\n");
+ 		}
+@@ -265,7 +265,7 @@ static int cfg80211_netdev_notifier_call
+ 	case NETDEV_UNREGISTER:
+ 		mutex_lock(&rdev->devlist_mtx);
+ 		if (!list_empty(&((struct wireless_dev *)dev->ieee80211_ptr)->list)) {
+-			sysfs_remove_link(&dev->dev.kobj, "phy80211");
++			sysfs_remove_link(&dev->class_dev.kobj, "phy80211");
+ 			list_del_init(&((struct wireless_dev *)dev->ieee80211_ptr)->list);
+ 		}
+ 		mutex_unlock(&rdev->devlist_mtx);

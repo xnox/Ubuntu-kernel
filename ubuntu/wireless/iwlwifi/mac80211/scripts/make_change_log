@@ -1,0 +1,46 @@
+#!/usr/bin/env /bin/bash
+prog=$0
+[ "${prog/*make_change_log/make_change_log}" = "make_change_log" ] || {
+    echo "This script must not be sourced."
+    return 1
+}  || return 1
+
+function die()
+{
+        ret=$1
+        shift
+        echo $@ >&2
+        exit $ret
+}
+
+(( $# == 1 )) && {
+	version="$1"
+	shift
+} || {
+	version="..."
+}
+
+(( $# == 1 )) && {
+	tag="$1"
+	shift
+} || {
+	tag=$(git-tag -l | tail -n 1)
+}
+
+echo "Building change log since: $tag..."
+
+echo -e "Changes in $version\n" > .tmp_CHANGES
+git-log --pretty=oneline "$tag".. | 
+	sed -e 's,[^[:space:]]*\([[:space:]].*\),*\1,g' >> .tmp_CHANGES
+echo "" >> .tmp_CHANGES
+cat CHANGES >> .tmp_CHANGES
+
+mv .tmp_CHANGES CHANGES
+
+cat << EOF
+
+Done.  Run 'cg-diff' to verify CHANGES have been updated correctly.
+
+NOTE:  You need to manually set the version number in the lead 
+line of the CHANGES file.
+EOF

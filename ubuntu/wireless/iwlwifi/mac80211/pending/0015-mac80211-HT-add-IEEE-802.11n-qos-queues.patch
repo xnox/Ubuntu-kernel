@@ -1,0 +1,343 @@
+From 1fa8243b4711e74d3158e396f3f3971ed103d482 Mon Sep 17 00:00:00 2001
+From: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Date: Sat, 30 Jun 2007 07:58:25 +0800
+Subject: [PATCH] mac80211: [HT] add IEEE 802.11n qos queues
+
+Adding queues for HT sechduling - work in progress
+
+Signed-of-by: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Signed-of-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-of-by: Zhu Yi <yi.zhu@intel.com>
+---
+ include/net/mac80211.h       |    6 ++-
+ net/mac80211/ieee80211.c     |   10 ++++--
+ net/mac80211/ieee80211_i.h   |    6 ++-
+ net/mac80211/ieee80211_sta.c |    6 ++--
+ net/mac80211/sta_info.c      |    4 ++
+ net/mac80211/sta_info.h      |    1 +
+ net/mac80211/wme.c           |   83 ++++++++++++++++++++++++++++++++++++++----
+ net/mac80211/wme.h           |    5 +++
+ 8 files changed, 103 insertions(+), 18 deletions(-)
+
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index 99d27ec..fcaa7fa 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -148,11 +148,12 @@ enum {
+  * this struct need to have fixed values. As soon as it is removed, we can
+  * fix these entries. */
+ 	IEEE80211_TX_QUEUE_AFTER_BEACON = 6,
+-	IEEE80211_TX_QUEUE_BEACON = 7
++	IEEE80211_TX_QUEUE_BEACON = 7,
++	NUM_TX_DATA_QUEUES_11N = 16 /* adding more data queues for 802.11n */
+ };
+ 
+ struct ieee80211_tx_queue_stats {
+-	struct ieee80211_tx_queue_stats_data data[NUM_TX_DATA_QUEUES];
++	struct ieee80211_tx_queue_stats_data data[NUM_TX_DATA_QUEUES_11N];
+ };
+ 
+ struct ieee80211_low_level_stats {
+@@ -192,6 +193,7 @@ struct ieee80211_tx_control {
+ #define IEEE80211_TXCTL_FIRST_FRAGMENT	(1<<8) /* this is a first fragment of
+ 						* the frame */
+ #define IEEE80211_TXCTL_TKIP_NEW_PHASE1_KEY (1<<9)
++#define IEEE80211_TXCTL_HT_MPDU_AGG	(1<<10) /* MPDU aggregation */
+ 	u32 flags;			       /* tx control flags defined
+ 						* above */
+ 	u8 retry_limit;		/* 1 = only first attempt, 2 = one retry, .. */
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index 9473b42..3c27d91 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -1678,6 +1678,9 @@ static int ieee80211_master_start_xmit(struct sk_buff *skb,
+ 		control.flags |= IEEE80211_TXCTL_DO_NOT_ENCRYPT;
+ 	if (pkt_data->requeue)
+ 		control.flags |= IEEE80211_TXCTL_REQUEUE;
++	if (pkt_data->ht_queue)
++		control.flags |= IEEE80211_TXCTL_HT_MPDU_AGG;
++
+ 	control.queue = pkt_data->queue;
+ 
+ 	ret = ieee80211_tx(odev, skb, &control,
+@@ -5403,6 +5406,7 @@ int ieee80211_start_BA_session(struct ieee80211_hw *hw, u8 *da, u16 tid)
+ 	sta = sta_info_get(local, da);
+ 	if (!sta)
+ 		return -ENOENT;
++
+ 	/* check if the TID is not in aggregation flow already */
+ 	spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
+ 	if (sta->ht_ba_mlme.tid_agg_info_tx[tid].state == HT_AGG_STATE_IDLE)
+@@ -5415,7 +5419,7 @@ int ieee80211_start_BA_session(struct ieee80211_hw *hw, u8 *da, u16 tid)
+ 	spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
+ 
+ 	/* create a new queue for this aggregation */
+-	rc = ieee80211_ht_agg_queue_add(local,da,tid);
++	rc = ieee80211_ht_agg_queue_add(local,sta,tid);
+ 
+ 	/* case no queue is available to aggregation don't switch to aggregation */
+ 	if(rc) {
+@@ -5429,7 +5433,7 @@ int ieee80211_start_BA_session(struct ieee80211_hw *hw, u8 *da, u16 tid)
+ 			rc = local->ops->ht_tx_agg_start(hw,da,tid,&start_seq_num);
+ 		if(rc)
+ 			/* remove the queue for this aggregation */
+-			ieee80211_ht_agg_queue_remove(local,da,tid);
++			ieee80211_ht_agg_queue_remove(local,sta,tid);
+ 	}
+ 
+ 	/* case we denied aggregation go back to legacy */
+@@ -5505,7 +5509,7 @@ int ieee80211_stop_BA_session(struct ieee80211_hw *hw, u8 *da, u16 tid)
+ 	}
+ 
+ 	/* remove the queue for this aggregation */
+-	ieee80211_ht_agg_queue_remove(local,da,tid);
++	ieee80211_ht_agg_queue_remove(local,sta,tid);
+ 
+ 	/* send a delBA */
+ 	ieee80211_send_delba(sta->dev, da, tid, 1 /*WLAN_BACK_INITIATOR*/, WLAN_REASON_QSTA_NOT_USE);
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index e98e50d..b66e854 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -172,6 +172,7 @@ struct ieee80211_tx_packet_data {
+ 	unsigned int requeue:1;
+ 	unsigned int mgmt_iface:1;
+ 	unsigned int queue:4;
++	unsigned int ht_queue:1;
+ };
+ 
+ struct ieee80211_tx_stored_packet {
+@@ -494,8 +495,8 @@ struct ieee80211_local {
+ 	struct sta_info *sta_hash[STA_HASH_SIZE];
+ 	struct timer_list sta_cleanup;
+ 
+-	unsigned long state[NUM_TX_DATA_QUEUES];
+-	struct ieee80211_tx_stored_packet pending_packet[NUM_TX_DATA_QUEUES];
++	unsigned long state[NUM_TX_DATA_QUEUES_11N];
++	struct ieee80211_tx_stored_packet pending_packet[NUM_TX_DATA_QUEUES_11N];
+ 	struct tasklet_struct tx_pending_tasklet;
+ 
+ 	int mc_count;	/* total count of multicast entries in all interfaces */
+@@ -726,6 +727,7 @@ static inline struct ieee80211_hw *local_to_hw(
+ enum ieee80211_link_state_t {
+ 	IEEE80211_LINK_STATE_XOFF = 0,
+ 	IEEE80211_LINK_STATE_PENDING,
++	IEEE80211_LINK_STATE_AGGREGATED,
+ };
+ 
+ struct sta_attribute {
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 71a93a5..a13d665 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -2641,7 +2641,7 @@ static void ieee80211_sta_process_addba_resp(struct net_device *dev,
+ 				printk (KERN_ERR "HW problem - can not stop aggergation "
+       					"for tid %d\n",tid);
+ 			/* remove the queue for this aggregation */
+-      		ieee80211_ht_agg_queue_remove(local,sta->addr,tid);
++      			ieee80211_ht_agg_queue_remove(local,sta->addr,tid);
+ 		}
+ 		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
+ 		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_IDLE;
+@@ -2722,7 +2722,7 @@ static void ieee80211_sta_process_delba(struct net_device *dev, struct ieee80211
+ 				printk (KERN_ERR "HW problem - can not stop"
+ 									" aggergation for tid %d\n",tid);
+ 			/* remove the queue for this aggregation */
+-			ieee80211_ht_agg_queue_remove(local,sta->addr,tid);
++			ieee80211_ht_agg_queue_remove(local,sta,tid);
+ 		}
+ 
+ 		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
+@@ -2772,7 +2772,7 @@ static void ieee80211_sta_process_delba(struct net_device *dev, struct ieee80211
+  		if(rc)
+  			printk (KERN_ERR "HW problem - can not stop aggergation for tid %d\n",tid);
+  		/* remove the queue for this aggregation */
+-		ieee80211_ht_agg_queue_remove(local,sta->addr,tid);
++		ieee80211_ht_agg_queue_remove(local,sta,tid);
+  	}
+  	/* send a delBA */
+  	ieee80211_send_delba(sta->dev, sta->addr, tid, 1 /* WLAN_BACK_INITIATOR */, WLAN_REASON_QSTA_NOT_USE);
+diff --git a/net/mac80211/sta_info.c b/net/mac80211/sta_info.c
+index 2f06b22..928208d 100644
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -200,6 +200,10 @@ struct sta_info * sta_info_add(struct ieee80211_local *local,
+ 		sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer.function = sta_addba_resp_timer_expired;
+ 		sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer.data = (unsigned long)&sta->timer_to_tid[i];
+ 		init_timer(&sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer);
++
++		/* net sched tx queue id: initialize to max (0 is valid one)*/
++       		sta->tx_queue_id[i] = local->hw.queues;
++
+ 	}
+ 	skb_queue_head_init(&sta->ps_tx_buf);
+ 	skb_queue_head_init(&sta->tx_filtered);
+diff --git a/net/mac80211/sta_info.h b/net/mac80211/sta_info.h
+index 881692a..48ebc76 100644
+--- a/net/mac80211/sta_info.h
++++ b/net/mac80211/sta_info.h
+@@ -150,6 +150,7 @@ struct sta_info {
+ 	u16 listen_interval;
+ 	struct sta_ht_agg_info ht_ba_mlme;
+ 	int timer_to_tid[STA_TID_NUM]; /* converts expired addba response timer */
++	int tx_queue_id[STA_TID_NUM];
+ 
+ 
+ #ifdef CONFIG_MAC80211_DEBUGFS
+diff --git a/net/mac80211/wme.c b/net/mac80211/wme.c
+index 9ff35e8..96e9969 100644
+--- a/net/mac80211/wme.c
++++ b/net/mac80211/wme.c
+@@ -91,13 +91,14 @@ ieee80211_rx_h_remove_qos_control(struct ieee80211_txrx_data *rx)
+ 
+ #ifdef CONFIG_NET_SCHED
+ /* maximum number of hardware queues we support. */
+-#define TC_80211_MAX_QUEUES 8
++#define TC_80211_MAX_QUEUES 16
+ 
+ struct ieee80211_sched_data
+ {
+ 	struct tcf_proto *filter_list;
+ 	struct Qdisc *queues[TC_80211_MAX_QUEUES];
+ 	struct sk_buff_head requeued[TC_80211_MAX_QUEUES];
++	unsigned long qdisc_pool;
+ };
+ 
+ 
+@@ -262,15 +263,33 @@ static int wme_qdiscop_enqueue(struct sk_buff *skb, struct Qdisc* qd)
+ 	/* now we know the 1d priority, fill in the QoS header if there is one
+ 	 */
+ 	if (WLAN_FC_IS_QOS_DATA(fc)) {
++		struct sta_info *sta;
+ 		u8 *p = skb->data + ieee80211_get_hdrlen(fc) - 2;
+-		u8 qos_hdr = skb->priority & QOS_CONTROL_TAG1D_MASK;
++		u8 tid = skb->priority & QOS_CONTROL_TAG1D_MASK;
++		u8 ack_policy = 0;
+ 		if (local->wifi_wme_noack_test)
+-			qos_hdr |= QOS_CONTROL_ACK_POLICY_NOACK <<
++			ack_policy |= QOS_CONTROL_ACK_POLICY_NOACK <<
+ 					QOS_CONTROL_ACK_POLICY_SHIFT;
+ 		/* qos header is 2 bytes, second reserved */
+-		*p = qos_hdr;
++		*p = ack_policy|tid;
+ 		p++;
+ 		*p = 0;
++
++		sta = sta_info_get(local, hdr->addr1);
++		if (sta) {
++			int ht_queue = sta->tx_queue_id[tid];
++			if ((ht_queue < local->hw.queues) &&
++				test_bit(ht_queue, &q->qdisc_pool)) {
++				queue = ht_queue;
++				pkt_data->ht_queue = 1;
++			}
++			printk(KERN_ERR "wme:%s ht_queue=%d,queue=%d pool=0x%lX qdisc=%p\n",
++				 __func__,ht_queue,queue,q->qdisc_pool,q);
++
++			sta_info_put(sta);
++		}
++
++
+ 	}
+ 
+ 	if (unlikely(queue >= local->hw.queues)) {
+@@ -288,6 +307,7 @@ static int wme_qdiscop_enqueue(struct sk_buff *skb, struct Qdisc* qd)
+ 			kfree_skb(skb);
+ 			err = NET_XMIT_DROP;
+ 	} else {
++
+ 		pkt_data->queue = (unsigned int) queue;
+ 		qdisc = q->queues[queue];
+ 		err = qdisc->enqueue(skb, qdisc);
+@@ -339,10 +359,9 @@ static struct sk_buff *wme_qdiscop_dequeue(struct Qdisc* qd)
+ 	/* check all the h/w queues in numeric/priority order */
+ 	for (queue = 0; queue < hw->queues; queue++) {
+ 		/* see if there is room in this hardware queue */
+-		if (test_bit(IEEE80211_LINK_STATE_XOFF,
+-			     &local->state[queue]) ||
+-		    test_bit(IEEE80211_LINK_STATE_PENDING,
+-			     &local->state[queue]))
++		if ((test_bit(IEEE80211_LINK_STATE_XOFF,&local->state[queue])) ||
++		    (test_bit(IEEE80211_LINK_STATE_PENDING,&local->state[queue])) ||
++			 (!test_bit(queue,&q->qdisc_pool)))
+ 			continue;
+ 
+ 		/* there is space - try and get a frame */
+@@ -464,6 +483,10 @@ static int wme_qdiscop_init(struct Qdisc *qd, struct rtattr *opt)
+ 		}
+ 	}
+ 
++	for (i = 0; i < 4; i++)
++		set_bit(i,&q->qdisc_pool);
++
++
+ 	return err;
+ }
+ 
+@@ -710,3 +733,47 @@ void ieee80211_wme_unregister(void)
+ 	unregister_qdisc(&wme_qdisc_ops);
+ }
+ #endif /* CONFIG_NET_SCHED */
++
++int ieee80211_ht_agg_queue_add(struct ieee80211_local *local, struct sta_info *sta, u16 tid)
++{
++	int i;
++	struct ieee80211_sched_data *q = qdisc_priv(local->mdev->qdisc_sleeping);
++
++	/* prepare the filter and save it for the SW queue
++	* matching the recieved HW queue
++	* (TODO - policy should be replaced for AP)*/
++
++	/* try to get a Qdisc from a pool */
++	/* FIXME: use test and set command */
++	for (i=7; i < local->hw.queues; i++)
++		if (!test_and_set_bit(i, &q->qdisc_pool)) {
++			sta->tx_queue_id[tid] = i;
++
++			/* IF there are already pending packets
++			 * on this tid first we need to drain them
++			 * on the previous queue
++			 * since HT is strict in order */
++#ifdef CONFIG_MAC80211_DEBUG
++			printk(KERN_ERR "mac80211:wme allocated ht agg queue %d"
++				"for tid=%d and sta " MAC_FMT "pool=0x%lX qdisc=%p\n",
++				i,tid,MAC_ARG(sta->addr),q->qdisc_pool,q);
++#endif /* CONFIG_MAC80211_DEBUG */
++			return 0;
++		}
++
++	return -EAGAIN;
++}
++
++int ieee80211_ht_agg_queue_remove(struct ieee80211_local *local, struct sta_info *sta, u16 tid)
++{
++       	int i;
++	struct ieee80211_sched_data *q = qdisc_priv(local->mdev->qdisc_sleeping);
++
++	/* return the qdisc to the pool */
++	i = sta->tx_queue_id[tid];
++	clear_bit(i, &q->qdisc_pool);
++	sta->tx_queue_id[tid] = local->hw.queues;
++
++	return 0;
++}
++
+diff --git a/net/mac80211/wme.h b/net/mac80211/wme.h
+index f0bff10..3aa2c96 100644
+--- a/net/mac80211/wme.h
++++ b/net/mac80211/wme.h
+@@ -30,6 +30,11 @@ ieee80211_rx_h_parse_qos(struct ieee80211_txrx_data *rx);
+ ieee80211_txrx_result
+ ieee80211_rx_h_remove_qos_control(struct ieee80211_txrx_data *rx);
+ 
++#define AGG_BASE_QUEUE 7  // TODO - remove when switching to dynamic queues
++
++int ieee80211_ht_agg_queue_add(struct ieee80211_local *local, struct sta_info *sta, u16 tid);
++int ieee80211_ht_agg_queue_remove(struct ieee80211_local *local, struct sta_info *sta, u16 tid);
++
+ #ifdef CONFIG_NET_SCHED
+ void ieee80211_install_qdisc(struct net_device *dev);
+ int ieee80211_qdisc_installed(struct net_device *dev);
+-- 
+1.5.2
+

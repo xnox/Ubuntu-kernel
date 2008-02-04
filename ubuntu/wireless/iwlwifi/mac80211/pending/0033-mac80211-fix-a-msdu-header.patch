@@ -1,0 +1,239 @@
+
+This patch fix A-MSDU handling in mac80211. Each subframe could have
+RFC1042 header which we need to handle in our A-MSDU frame.  I also added
+new code to reuse the passed skb for last sub-frame.
+
+Tomas; are you still in charge of our mac80211 patches, please add this 
+patch to the list.
+
+Signed-off-by: Mohamed Abbas <mabbas@linux.intel.com>
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index 3101ac2..01b8c2c 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -2817,10 +2817,14 @@ ieee80211_rx_h_data_agg(struct ieee80211_txrx_data *rx)
+ 	struct ieee80211_local *local = rx->local;
+ 	u16 fc, hdrlen, ethertype;
+ 	u8 *payload;
+-	struct sk_buff *skb = rx->skb, *skb2, *frame;
++	struct sk_buff *skb = rx->skb, *skb2, *frame = NULL;
+ 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+ 	const struct ethhdr* eth;
+ 	int remaining;
++	u8 dst[ETH_ALEN];
++	u8 src[ETH_ALEN];
++	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) rx->skb->data;
++
+ 
+ 	fc = rx->fc;
+ 	if (unlikely((fc & IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_DATA))
+@@ -2834,7 +2838,50 @@ ieee80211_rx_h_data_agg(struct ieee80211_txrx_data *rx)
+ 
+ 	hdrlen = ieee80211_get_hdrlen(fc);
+ 
+-	payload = skb->data + hdrlen;
++	switch (fc & (IEEE80211_FCTL_TODS | IEEE80211_FCTL_FROMDS)) {
++	case IEEE80211_FCTL_TODS:
++		/* BSSID SA DA */
++		if (unlikely(sdata->type != IEEE80211_IF_TYPE_AP &&
++		    sdata->type != IEEE80211_IF_TYPE_VLAN)) {
++			printk(KERN_DEBUG "%s: dropped ToDS frame (BSSID="
++			       MAC_FMT " SA=" MAC_FMT " DA=" MAC_FMT ")\n",
++			       dev->name, MAC_ARG(hdr->addr1),
++			       MAC_ARG(hdr->addr2), MAC_ARG(hdr->addr3));
++			return TXRX_DROP;
++		}
++		break;
++	case (IEEE80211_FCTL_TODS | IEEE80211_FCTL_FROMDS):
++		/* RA TA DA SA */
++		if (unlikely(sdata->type != IEEE80211_IF_TYPE_WDS)) {
++			printk(KERN_DEBUG "%s: dropped FromDS&ToDS frame (RA="
++			       MAC_FMT " TA=" MAC_FMT " DA=" MAC_FMT " SA="
++			       MAC_FMT ")\n",
++			       rx->dev->name, MAC_ARG(hdr->addr1),
++			       MAC_ARG(hdr->addr2), MAC_ARG(hdr->addr3),
++			       MAC_ARG(hdr->addr4));
++			return TXRX_DROP;
++		}
++		break;
++	case IEEE80211_FCTL_FROMDS:
++		/* DA BSSID SA */
++		if (sdata->type != IEEE80211_IF_TYPE_STA)
++			return TXRX_DROP;
++		break;
++	case 0:
++		/* DA SA BSSID */
++		if (sdata->type != IEEE80211_IF_TYPE_IBSS) {
++			if (net_ratelimit()) {
++				printk(KERN_DEBUG "%s: dropped IBSS frame (DA="
++				       MAC_FMT " SA=" MAC_FMT " BSSID=" MAC_FMT
++				       ")\n",
++				       dev->name, MAC_ARG(hdr->addr1),
++				       MAC_ARG(hdr->addr2),
++				       MAC_ARG(hdr->addr3));
++			}
++			return TXRX_DROP;
++		}
++		break;
++	}
+ 
+ 	if (unlikely((skb->len - hdrlen) < 8)) {
+ 		if (net_ratelimit())
+@@ -2843,40 +2890,82 @@ ieee80211_rx_h_data_agg(struct ieee80211_txrx_data *rx)
+ 		return TXRX_DROP;
+ 	}
+ 
++	eth = (struct ethhdr *) skb_pull(skb, hdrlen);
++
++	payload = skb->data;
+ 	ethertype = (payload[6] << 8) | payload[7];
+ 
+ 	if (likely((compare_ether_addr(payload, rfc1042_header) == 0 &&
+-		    ethertype != ETH_P_AARP && ethertype != ETH_P_IPX) ||
+-		   compare_ether_addr(payload, bridge_tunnel_header) == 0)) {
+-		/* remove RFC1042 or Bridge-Tunnel encapsulation and
+-		* replace EtherType */
+-		eth = (struct ethhdr*) (skb->data + hdrlen + 6);
+-		remaining = skb->len - (hdrlen + 6);
+-	} else {
+-		eth = (struct ethhdr*) (skb->data + hdrlen);
+-		remaining = skb->len - hdrlen;
+-	}
++	    ethertype != ETH_P_AARP && ethertype != ETH_P_IPX) ||
++	    compare_ether_addr(payload,
++	    bridge_tunnel_header) == 0))
++		eth = (struct ethhdr *) skb_pull(skb, 8);
+ 
+-	while ((u8*)eth < skb->data + skb->len) {
++	if (!eth)
++		return TXRX_DROP;
++
++	frame = NULL;
++	while (skb != frame) {
+ 		u8 padding;
+-		unsigned int subframe_len = sizeof(struct ethhdr) +
+-						   ntohs(eth->h_proto);
++		__be16 len = eth->h_proto;
++		unsigned int subframe_len = sizeof(struct ethhdr) + ntohs(len);
++
++		remaining = skb->len;
++		memcpy(dst, eth->h_dest, ETH_ALEN);
++		memcpy(src, eth->h_source, ETH_ALEN);
+ 
+ 		padding = calc_pad_len(subframe_len);
+ 		/* the last MSDU has no padding */
+-		if (subframe_len > remaining)
+-			return TXRX_DROP;
+-
+-		frame = dev_alloc_skb(local->hw.extra_tx_headroom +
+-				      subframe_len);
+-
+-		if (frame == NULL)
++		if (subframe_len > remaining) {
++			printk(KERN_DEBUG "%s: wrong buffer size", dev->name);
+ 			return TXRX_DROP;
++		}
++		
++		skb_pull(skb, sizeof(struct ethhdr));
++		/* if last subframe reuse skb */
++		if (remaining  <= subframe_len + padding)
++			frame = skb;
++		else {
++			frame = dev_alloc_skb(local->hw.extra_tx_headroom +
++					      subframe_len);
++
++			if (frame == NULL)
++				return TXRX_DROP;
+ 
+-		memcpy(skb_put(frame, subframe_len), (u8*)eth, subframe_len);
+-		skb_set_mac_header(frame, 0);
++			skb_reserve(frame, local->hw.extra_tx_headroom +
++				    sizeof(struct ethhdr));
++			memcpy(skb_put(frame, ntohs(len)), skb->data,
++				ntohs(len));
++
++			eth = (struct ethhdr *) skb_pull(skb, ntohs(len) +
++							padding);
++			if (!eth) {
++				printk(KERN_DEBUG "%s: wrong buffer size ",
++				       dev->name);
++				dev_kfree_skb(frame);
++				return TXRX_DROP;
++			}
++		}
+ 		skb2 = NULL;
+ 
++		payload = frame->data;
++		ethertype = (payload[6] << 8) | payload[7];
++
++		if (likely((compare_ether_addr(payload, rfc1042_header) == 0 &&
++			ethertype != ETH_P_AARP && ethertype != ETH_P_IPX) ||
++			compare_ether_addr(payload,
++					   bridge_tunnel_header) == 0)) {
++			/* remove RFC1042 or Bridge-Tunnel
++			 * encapsulation and replace EtherType */
++			skb_pull(frame, 6);
++			memcpy(skb_push(frame, ETH_ALEN), src, ETH_ALEN);
++			memcpy(skb_push(frame, ETH_ALEN), dst, ETH_ALEN);
++		} else {
++			memcpy(skb_push(frame, sizeof(__be16)), &len,
++				sizeof(__be16));
++			memcpy(skb_push(frame, ETH_ALEN), src, ETH_ALEN);
++			memcpy(skb_push(frame, ETH_ALEN), dst, ETH_ALEN);
++		}
+ 		sdata->stats.rx_packets++;
+ 		sdata->stats.rx_bytes += frame->len;
+ 
+@@ -2886,8 +2975,8 @@ ieee80211_rx_h_data_agg(struct ieee80211_txrx_data *rx)
+ 		     rx->u.rx.ra_match) {
+ 			if (is_multicast_ether_addr(frame->data)) {
+ 				/* send multicast frames both to higher layers
+-				* in local net stack and back to the wireless
+-				* media */
++				 * in local net stack and back to the wireless
++				 * media */
+ 				skb2 = skb_copy(frame, GFP_ATOMIC);
+ 				if (!skb2)
+ 					printk(KERN_DEBUG "%s: failed to clone"
+@@ -2901,10 +2990,10 @@ ieee80211_rx_h_data_agg(struct ieee80211_txrx_data *rx)
+ 					       "dev structure!\n");
+ 				else if (dsta && dsta->dev == dev) {
+ 					/* Destination station is associated
+-					* to this AP, so send the frame
+-					* directly to it and do not pass
+-					* the frame to local net stack.
+-					*/
++					 *to this AP, so send the frame
++					 * directly to it and do not pass
++					 * the frame to local net stack.
++					 */
+ 					skb2 = frame;
+ 					frame = NULL;
+ 				}
+@@ -2914,9 +3003,9 @@ ieee80211_rx_h_data_agg(struct ieee80211_txrx_data *rx)
+ 		}
+ 		if (frame) {
+ 			/* deliver to local stack */
++			skb_set_network_header(frame, 0);
+ 			frame->protocol = eth_type_trans(frame, dev);
+ 			frame->priority = skb->priority;
+-			frame->dev = dev;
+ 			netif_rx(frame);
+ 		}
+ 
+@@ -2930,12 +3019,7 @@ ieee80211_rx_h_data_agg(struct ieee80211_txrx_data *rx)
+ 			dev_queue_xmit(skb2);
+ 		}
+ 
+-		eth = (struct ethhdr*)((u8*)eth + subframe_len + padding);
+-
+-		remaining -= (subframe_len + padding);
+ 	}
+-
+-	dev_kfree_skb(skb);
+ 	return TXRX_QUEUED;
+ }
+ 
+
+
+

@@ -1,0 +1,39 @@
+diff -upr origin/net/mac80211/ieee80211.c update/net/mac80211/ieee80211.c
+--- origin/net/mac80211/ieee80211.c	2007-06-01 12:39:03.000000000 -0700
++++ update/net/mac80211/ieee80211.c	2007-06-01 12:58:49.000000000 -0700
+@@ -39,6 +39,8 @@
+ #include "debugfs_netdev.h"
+ #include "debugfs_key.h"
+ 
++#include "kcompat-skb_mac_header.h"
++
+ /* privid for wiphys to determine whether they belong to us or not */
+ void *mac80211_wiphy_privid = &mac80211_wiphy_privid;
+ 
+diff -upr origin/net/mac80211/ieee80211_sta.c update/net/mac80211/ieee80211_sta.c
+--- origin/net/mac80211/ieee80211_sta.c	2007-06-01 12:39:02.000000000 -0700
++++ update/net/mac80211/ieee80211_sta.c	2007-06-01 12:58:27.000000000 -0700
+@@ -34,6 +34,8 @@
+ #include "ieee80211_rate.h"
+ #include "hostapd_ioctl.h"
+ 
++#include "kcompat-skb_mac_header.h"
++
+ #define IEEE80211_AUTH_TIMEOUT (HZ / 5)
+ #define IEEE80211_AUTH_MAX_TRIES 3
+ #define IEEE80211_ASSOC_TIMEOUT (HZ / 5)
+Only in update/net/wireless: wext-mod.c
+diff -upr origin/net/wireless/wext.c update/net/wireless/wext.c
+--- origin/net/wireless/wext.c	2007-06-01 13:44:01.000000000 -0700
++++ update/net/wireless/wext.c	2007-06-01 13:52:34.000000000 -0700
+@@ -101,6 +101,10 @@
+ 
+ #include <asm/uaccess.h>		/* copy_to_user() */
+ 
++#include "../mac80211/kcompat-skb_mac_header.h"
++
++
++
+ /************************* GLOBAL VARIABLES *************************/
+ /*
+  * You should not use global variables, because of re-entrancy.

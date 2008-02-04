@@ -1,0 +1,352 @@
+From a2c09ed2b5cc19d3fdee0b4d3a25ac82c973cd77 Mon Sep 17 00:00:00 2001
+From: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Date: Sat, 30 Jun 2007 07:09:22 +0800
+Subject: [PATCH] mac80211: [HT] IEEE 802.11n TX AMPDU MLME implementation
+
+This patch implements TX AMPDU (ADDBA) MLME
+
+Signed-off-by: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/ieee80211_i.h   |    5 +
+ net/mac80211/ieee80211_sta.c |  188 +++++++++++++++++++++++++++++++++++++-----
+ net/mac80211/sta_info.c      |   17 ++++
+ 3 files changed, 188 insertions(+), 22 deletions(-)
+
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index 697aa77..e98e50d 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -862,6 +862,11 @@ struct sta_info * ieee80211_ibss_add_sta(struct net_device *dev,
+ 					 u8 *addr);
+ int ieee80211_sta_deauthenticate(struct net_device *dev, u16 reason);
+ int ieee80211_sta_disassociate(struct net_device *dev, u16 reason);
++void ieee80211_send_addba_request(struct net_device *dev, u8 *da, u16 tid,
++					u8 dialog_token, u16 start_seq_num,
++					u16 agg_size,u16 timeout);
++void ieee80211_send_delba(struct net_device *dev, u8 *da, u16 tid,
++				u16 initiator, u16 reason_code);
+ void ieee80211_send_addts(struct net_device *dev,
+ 			  struct ieee80211_if_sta *ifsta,
+ 			  struct ieee80211_elem_tspec *tspec);
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 08a4724..71a93a5 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -32,6 +32,7 @@
+ #include "ieee80211_i.h"
+ #include "ieee80211_rate.h"
+ #include "hostapd_ioctl.h"
++#include "wme.h"
+ 
+ #define IEEE80211_AUTH_TIMEOUT (HZ / 5)
+ #define IEEE80211_AUTH_MAX_TRIES 3
+@@ -60,6 +61,10 @@
+ 
+ /* mgmt header + 1 byte action code */
+ #define IEEE80211_MIN_ACTION_SIZE (24 + 1)
++#define IEEE80211_ADDBA_PARAM_TID_MASK 0x003C
++#define IEEE80211_DELBA_PARAM_TID_MASK 0xF000
++#define IEEE80211_DELBA_PARAM_INITIATOR_MASK 0x0800
++
+ 
+ static void ieee80211_send_probe_req(struct net_device *dev, u8 *dst,
+ 				     u8 *ssid, size_t ssid_len);
+@@ -2559,7 +2564,7 @@ void ieee80211_send_addba_request(struct net_device *dev, u8 *da, u16 tid,
+ 
+ 	if (!skb) {
+ 		printk(KERN_ERR "%s: failed to allocate buffer "
+-                                       "for addba request frame\n", dev->name);
++				"for addba request frame\n", dev->name);
+ 		return;
+ 	}
+ 	skb_reserve(skb, local->hw.extra_tx_headroom);
+@@ -2578,16 +2583,73 @@ void ieee80211_send_addba_request(struct net_device *dev, u8 *da, u16 tid,
+ 	mgmt->u.action.u.addba_req.dialog_token = dialog_token;
+ 	capab |= (u16)(1 << 1);				/* bit 1 aggregation policy (1 - immediate 0 - delayed )*/
+ 	capab |= (u16)(tid << 2); 			/* bit 5:2 TID number */
+-	capab |= (u16)(agg_size << 6);			/* bit 15:6 size of aggergation */
++	capab |= (u16)(agg_size << 6);		/* bit 15:6 max size of aggergation */
+ 
+ 	mgmt->u.action.u.addba_req.capab = cpu_to_le16(capab);
+ 
+ 	mgmt->u.action.u.addba_req.timeout = cpu_to_le16(timeout);
+-	mgmt->u.action.u.addba_req.start_seq_num = cpu_to_le16(start_seq_num);
++	mgmt->u.action.u.addba_req.start_seq_num = cpu_to_le16(start_seq_num << 4);
+ 
+ 	ieee80211_sta_tx(dev, skb, 0);
+ }
+ 
++
++static void ieee80211_sta_process_addba_resp(struct net_device *dev,
++						struct ieee80211_mgmt *mgmt,
++						size_t len)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_hw *hw = &local->hw;
++	struct sta_info *sta;
++	u16 capab=0;
++	u16 tid=0;
++
++	sta = sta_info_get(local,mgmt->sa);
++	if (!sta)
++		return;
++
++	capab = le16_to_cpu(mgmt->u.action.u.addba_resp.capab);
++	tid = (capab & IEEE80211_ADDBA_PARAM_TID_MASK) >> 2;
++
++	if ((sta->ht_ba_mlme.tid_agg_info_tx[tid].state != HT_AGG_STATE_ADDBA_REQUESTED) ||
++		(mgmt->u.action.u.addba_resp.dialog_token !=
++      		sta->ht_ba_mlme.tid_agg_info_tx[tid].dialog_token)) {
++		printk (KERN_DEBUG "unexpected addBA response on tid %d\n",tid);
++		sta_info_put(sta);
++		return;
++	} else {
++		del_timer_sync(&sta->ht_ba_mlme.tid_agg_info_tx[tid].addba_resp_timer);
++		printk (KERN_DEBUG "deleted the timer on tid %d \n",tid);
++	}
++
++	if (le16_to_cpu(mgmt->u.action.u.addba_resp.status) == WLAN_STATUS_SUCCESS) {
++		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_OPERATIONAL;
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		printk (KERN_DEBUG "recipient accepted aggregation on tid %d \n",tid);
++	} else {  /* recipient denied the addba request */
++		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_RECIPIENT_REQ_STOP_BA;
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++
++		printk (KERN_DEBUG "recipient rejected aggregation on tid %d \n",tid);
++
++		/* configuring the hw to stop aggregation */
++		if (local->ops->ht_tx_agg_stop) {
++			int rc = local->ops->ht_tx_agg_stop(hw,sta->addr,tid,0 /* WLAN_BACK_RECIPIENT */);
++			if(rc)
++				printk (KERN_ERR "HW problem - can not stop aggergation "
++      					"for tid %d\n",tid);
++			/* remove the queue for this aggregation */
++      		ieee80211_ht_agg_queue_remove(local,sta->addr,tid);
++		}
++		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_IDLE;
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++	}
++	sta_info_put(sta);
++}
++
+ void ieee80211_send_delba(struct net_device *dev, u8 *da, u16 tid,
+ 				u16 initiator, u16 reason_code)
+ {
+@@ -2619,9 +2681,8 @@ void ieee80211_send_delba(struct net_device *dev, u8 *da, u16 tid,
+ 
+ 	mgmt->u.action.category = WLAN_CATEGORY_BACK;
+ 	mgmt->u.action.u.delba.action_code = WLAN_ACTION_DELBA;
+-							// bit 10:0 reserved
+-	params |= (u16)(initiator << 11); 		// bit 11 initiator
+-	params |= (u16)(tid << 12);               	// bit 15:12 TID number
++	params |= (u16)(initiator << 11); 		/* bit 11 initiator */
++	params |= (u16)(tid << 12); 			/* bit 15:12 TID number */
+ 
+ 	mgmt->u.action.u.delba.params = cpu_to_le16(params);
+ 	mgmt->u.action.u.delba.reason_code = cpu_to_le16(reason_code);
+@@ -2629,6 +2690,101 @@ void ieee80211_send_delba(struct net_device *dev, u8 *da, u16 tid,
+ 	ieee80211_sta_tx(dev, skb, 0);
+ }
+ 
++static void ieee80211_sta_process_delba(struct net_device *dev, struct ieee80211_mgmt *mgmt, size_t len)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_hw *hw = &local->hw;
++	struct sta_info *sta;
++	u16 tid,params;
++	u16 initiator;
++
++	sta = sta_info_get(local,mgmt->sa);
++	if (!sta)
++		return;
++	params = le16_to_cpu(mgmt->u.action.u.delba.params);
++	tid = (params & IEEE80211_DELBA_PARAM_TID_MASK) >> 12;
++	initiator = (params & IEEE80211_DELBA_PARAM_INITIATOR_MASK) >> 11;
++
++	printk (KERN_DEBUG "received delBA from recipient "MAC_FMT" on tid %d, reason=%d\n",
++		MAC_ARG(mgmt->sa),tid,mgmt->u.action.u.delba.reason_code);
++
++	if(initiator == 0 /*WLAN_BACK_RECIPIENT*/) {
++
++		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_RECIPIENT_REQ_STOP_BA;
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++
++		del_timer_sync(&sta->ht_ba_mlme.tid_agg_info_tx[tid].addba_resp_timer);
++
++		if (local->ops->ht_tx_agg_stop) {
++			int rc = local->ops->ht_tx_agg_stop(hw,sta->addr,tid,0 /* WLAN_BACK_RECIPIENT */);
++			if (rc)
++				printk (KERN_ERR "HW problem - can not stop"
++									" aggergation for tid %d\n",tid);
++			/* remove the queue for this aggregation */
++			ieee80211_ht_agg_queue_remove(local,sta->addr,tid);
++		}
++
++		spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_IDLE;
++		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++	}
++
++	sta_info_put(sta);
++}
++
++ /*
++  * After sending add BA request we activated a timer until add BA response
++  * will arrive from the recipient. if this timer expires
++  * sta_addba_resp_timer_expired will be executed
++  */
++ void sta_addba_resp_timer_expired(unsigned long data)
++ {
++ 	/* timer argument is the address of the tid entry in the
++	 * sta_info's timer_to_tid table.  From it we can determine the
++	 * tid as well as the sta_info location */
++	u16 tid = *(int *)data;
++ 	struct sta_info *temp_sta = container_of((void *)data,
++		struct sta_info, timer_to_tid[tid]);
++
++ 	struct ieee80211_local *local = temp_sta->local;
++ 	struct ieee80211_hw *hw = &local->hw;
++ 	struct sta_info *sta;
++
++ 	sta = sta_info_get(local, temp_sta->addr);
++ 	if (!sta)
++ 		return;
++
++ 	/* check if the TID waits for addBA response */
++ 	spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++ 	if (sta->ht_ba_mlme.tid_agg_info_tx[tid].state == HT_AGG_STATE_ADDBA_REQUESTED)
++ 		sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_INITIATOR_REQ_STOP_BA;
++ 	else {
++ 		spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++ 		printk (KERN_DEBUG "timer expired on tid %d but we are not expecting addBA response there",tid);
++ 		goto timer_expired_exit;
++ 	}
++ 	spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++ 	printk (KERN_DEBUG "addBA response timer expired on tid %d\n",tid);
++
++ 	if (local->ops->ht_tx_agg_stop) {
++ 		int rc = local->ops->ht_tx_agg_stop(hw,sta->addr,tid,1 /*WLAN_BACK_INITIATOR */);
++ 		if(rc)
++ 			printk (KERN_ERR "HW problem - can not stop aggergation for tid %d\n",tid);
++ 		/* remove the queue for this aggregation */
++		ieee80211_ht_agg_queue_remove(local,sta->addr,tid);
++ 	}
++ 	/* send a delBA */
++ 	ieee80211_send_delba(sta->dev, sta->addr, tid, 1 /* WLAN_BACK_INITIATOR */, WLAN_REASON_QSTA_NOT_USE);
++ 	spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++ 	sta->ht_ba_mlme.tid_agg_info_tx[tid].state = HT_AGG_STATE_IDLE;
++ 	spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_tx);
++
++ timer_expired_exit:
++ 	sta_info_put(sta);
++ }
++
++
+ static void ieee80211_rx_mgmt_action(struct net_device *dev,
+ 				     struct ieee80211_if_sta *ifsta,
+ 				     struct ieee80211_mgmt *mgmt,
+@@ -2716,34 +2872,22 @@ static void ieee80211_rx_mgmt_action(struct net_device *dev,
+ 			if (len < (IEEE80211_MIN_ACTION_SIZE +
+ 				   sizeof(mgmt->u.action.u.addba_req)))
+ 				break;
+-			if (!local->ops->handle_ba_action ||
+-			    (local->ops->handle_ba_action(local_to_hw(local),
+-						      mgmt)))
+-				ieee80211_send_addba_resp(dev, mgmt, len,
+-						WLAN_STATUS_REQUEST_DECLINED);
+-			else
+-				ieee80211_send_addba_resp(dev, mgmt, len,
+-							WLAN_STATUS_SUCCESS);
++			ieee80211_sta_process_addba_request(dev,mgmt,len);
+ 			break;
+ 		case WLAN_ACTION_ADDBA_RESP:
+ 			if (len < (IEEE80211_MIN_ACTION_SIZE +
+ 				   sizeof(mgmt->u.action.u.addba_resp)))
+ 				break;
+-			if (!local->ops->handle_ba_action)
+-				break;
+-			local->ops->handle_ba_action(local_to_hw(local), mgmt);
++			ieee80211_sta_process_addba_resp(dev,mgmt,len);
+ 			break;
+ 		case WLAN_ACTION_DELBA:
+ 			if (len < (IEEE80211_MIN_ACTION_SIZE +
+ 				   sizeof(mgmt->u.action.u.delba)))
+ 				break;
+-
+-			 if (!local->ops->handle_ba_action)
+-				break;
+-
+-			local->ops->handle_ba_action(local_to_hw(local), mgmt);
++			ieee80211_sta_process_delba(dev,mgmt,len);
+ 			break;
+ 		default:
++			printk(KERN_DEBUG "%s: recieved unsupported BACK \n", dev->name);
+ 			break;
+ 		}
+ 		break;
+diff --git a/net/mac80211/sta_info.c b/net/mac80211/sta_info.c
+index 3d21ea0..2f06b22 100644
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -22,6 +22,9 @@
+ #include "debugfs_key.h"
+ #include "debugfs_sta.h"
+ 
++/* Need to find a better place for this */
++extern void sta_addba_resp_timer_expired(unsigned long data);
++
+ /* Caller must hold local->sta_lock */
+ static void sta_info_hash_add(struct ieee80211_local *local,
+ 			      struct sta_info *sta)
+@@ -134,6 +137,7 @@ static void sta_info_release(struct kref *kref)
+ 	struct sta_info *sta = container_of(kref, struct sta_info, kref);
+ 	struct ieee80211_local *local = sta->local;
+ 	struct sk_buff *skb;
++	int i;
+ 
+ 	/* free sta structure; it has already been removed from
+ 	 * hash table etc. external structures. Make sure that all
+@@ -146,6 +150,10 @@ static void sta_info_release(struct kref *kref)
+ 	while ((skb = skb_dequeue(&sta->tx_filtered)) != NULL) {
+ 		dev_kfree_skb_any(skb);
+ 	}
++
++	for (i=0; i< STA_TID_NUM; i++)
++		del_timer_sync(&sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer);
++
+ 	rate_control_free_sta(sta->rate_ctrl, sta->rate_ctrl_priv);
+ 	rate_control_put(sta->rate_ctrl);
+ 	if (sta->key)
+@@ -165,6 +173,7 @@ struct sta_info * sta_info_add(struct ieee80211_local *local,
+ 			       struct net_device *dev, u8 *addr, gfp_t gfp)
+ {
+ 	struct sta_info *sta;
++	int i;
+ 
+ 	sta = kzalloc(sizeof(*sta), gfp);
+ 	if (!sta)
+@@ -184,6 +193,14 @@ struct sta_info * sta_info_add(struct ieee80211_local *local,
+ 	memcpy(sta->addr, addr, ETH_ALEN);
+ 	sta->local = local;
+ 	sta->dev = dev;
++	spin_lock_init(&sta->ht_ba_mlme.agg_data_lock_tx);
++	for (i=0; i< STA_TID_NUM; i++) {
++		sta->timer_to_tid[i] = i;
++		/* tx timers */
++		sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer.function = sta_addba_resp_timer_expired;
++		sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer.data = (unsigned long)&sta->timer_to_tid[i];
++		init_timer(&sta->ht_ba_mlme.tid_agg_info_tx[i].addba_resp_timer);
++	}
+ 	skb_queue_head_init(&sta->ps_tx_buf);
+ 	skb_queue_head_init(&sta->tx_filtered);
+ 	__sta_info_get(sta);	/* sta used by caller, decremented by
+-- 
+1.5.2
+

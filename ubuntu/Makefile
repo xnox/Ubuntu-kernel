@@ -46,6 +46,7 @@ obj-$(CONFIG_IVTV_FB)		+= media/ivtv/
 obj-$(CONFIG_NET_ATL2)		+= net/atl2/
 
 obj-$(CONFIG_NET_ACX)		+= wireless/acx/
+obj-$(CONFIG_IWLWIFI)		+= wireless/iwlwifi/
 obj-$(CONFIG_USB_ATMEL)		+= wireless/at76/
 obj-$(CONFIG_PRISM2_USB)	+= wireless/prism2_usb/
 

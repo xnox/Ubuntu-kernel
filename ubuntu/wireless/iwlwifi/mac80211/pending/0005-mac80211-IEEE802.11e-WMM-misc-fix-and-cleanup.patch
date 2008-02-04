@@ -1,0 +1,426 @@
+From 503a88f99457be47979874f2a9a5c3454104519e Mon Sep 17 00:00:00 2001
+From: Zhu Yi <yi.zhu@intel.com>
+Date: Wed, 22 Aug 2007 15:17:13 +0800
+Subject: [PATCH] mac80211: IEEE802.11e/WMM misc fix and cleanup
+
+1. Use do { } while (0) for multi-line macros
+2. Add IEEE80211_ prefix to SET_TSINFO_{} macros
+3. Fix TSINFO macros endian issue
+4. Fix typo in net/mac80211/ieee80211_sta.c.
+5. remove global tsinfo debugfs variables
+6. Fix sparse errors
+
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ include/linux/ieee80211.h      |   42 +++++++++++--------
+ net/mac80211/debugfs_netdev.c  |   89 ++++++++++++++++++++-------------------
+ net/mac80211/ieee80211.c       |    2 +-
+ net/mac80211/ieee80211_i.h     |    6 ++-
+ net/mac80211/ieee80211_iface.c |    8 ++++
+ net/mac80211/ieee80211_sta.c   |   32 +++++++-------
+ 6 files changed, 100 insertions(+), 79 deletions(-)
+
+diff --git a/include/linux/ieee80211.h b/include/linux/ieee80211.h
+index fb566c0..5bd9672 100644
+--- a/include/linux/ieee80211.h
++++ b/include/linux/ieee80211.h
+@@ -124,28 +124,34 @@ struct ieee80211_ht_additional_info {
+ }__attribute__ ((packed));
+ 
+ 
+-#define IEEE80211_TSINFO_TYPE(a)	((a.short1 & 0x0001) >> 0)
+-#define IEEE80211_TSINFO_TSID(a)	((a.short1 & 0x001E) >> 1)
+-#define IEEE80211_TSINFO_DIR(a)		((a.short1 & 0x0060) >> 5)
+-#define IEEE80211_TSINFO_POLICY(a)	((a.short1 & 0x0180) >> 7)
+-#define IEEE80211_TSINFO_AGG(a)		((a.short1 & 0x0200) >> 9)
+-#define IEEE80211_TSINFO_APSD(a)	((a.short1 & 0x0400) >> 10)
+-#define IEEE80211_TSINFO_UP(a)		((a.short1 & 0x3800) >> 11)
+-#define IEEE80211_TSINFO_ACK(a)		((a.short1 & 0xC000) >> 14)
++#define IEEE80211_TSINFO_TYPE(a)	((a.byte1 & 0x01) >> 0)
++#define IEEE80211_TSINFO_TSID(a)	((a.byte1 & 0x1E) >> 1)
++#define IEEE80211_TSINFO_DIR(a)		((a.byte1 & 0x60) >> 5)
++#define IEEE80211_TSINFO_POLICY(a)	((a.byte1 & 0x80) >> 7 + \
++					 (a.byte2 & 0x01) << 1)
++#define IEEE80211_TSINFO_AGG(a)		((a.byte2 & 0x02) >> 1)
++#define IEEE80211_TSINFO_APSD(a)	((a.byte2 & 0x04) >> 2)
++#define IEEE80211_TSINFO_UP(a)		((a.byte2 & 0x38) >> 3)
++#define IEEE80211_TSINFO_ACK(a)		((a.byte2 & 0xC0) >> 6)
+ #define IEEE80211_TSINFO_SCHEDULE(a)	((a.byte3 & 0x01) >> 0)
+ 
+-#define SET_TSINFO_TYPE(i, d)		(i.short1 |= (d << 0) & 0x0001)
+-#define SET_TSINFO_TSID(i, d)		(i.short1 |= (d << 1) & 0x001E)
+-#define SET_TSINFO_DIR(i, d)		(i.short1 |= (d << 5) & 0x0060)
+-#define SET_TSINFO_POLICY(i, d)		(i.short1 |= (d << 7) & 0x0180)
+-#define SET_TSINFO_AGG(i, d)		(i.short1 |= (d << 9) & 0x0200)
+-#define SET_TSINFO_APSD(i, d)		(i.short1 |= (d << 10) & 0x0400)
+-#define SET_TSINFO_UP(i, d)		(i.short1 |= (d << 11) & 0x3800)
+-#define SET_TSINFO_ACK(i, d)		(i.short1 |= (d << 14) & 0xC000)
+-#define SET_TSINFO_SCHEDULE(i, d)	(i.byte3 |= (d << 0) & 0x01)
++#define IEEE80211_SET_TSINFO_TYPE(i, d)		(i.byte1 |= (d << 0) & 0x01)
++#define IEEE80211_SET_TSINFO_TSID(i, d)		(i.byte1 |= (d << 1) & 0x1E)
++#define IEEE80211_SET_TSINFO_DIR(i, d)		(i.byte1 |= (d << 5) & 0x60)
++#define IEEE80211_SET_TSINFO_POLICY(i, d)	\
++do {						\
++						i.byte1 |= (d & 0x01) << 7; \
++						i.byte2 |= (d & 0x02) >> 1; \
++} while(0)
++#define IEEE80211_SET_TSINFO_AGG(i, d)		(i.byte2 |= (d << 1) & 0x02)
++#define IEEE80211_SET_TSINFO_APSD(i, d)		(i.byte2 |= (d << 2) & 0x04)
++#define IEEE80211_SET_TSINFO_UP(i, d)		(i.byte2 |= (d << 3) & 0x38)
++#define IEEE80211_SET_TSINFO_ACK(i, d)		(i.byte2 |= (d << 6) & 0xC0)
++#define IEEE80211_SET_TSINFO_SCHEDULE(i, d)	(i.byte3 |= (d << 0) & 0x01)
+ 
+ struct ieee80211_ts_info {
+-	__le16 short1;
++	u8 byte1;
++	u8 byte2;
+ 	u8 byte3;
+ } __attribute__ ((packed));
+ 
+diff --git a/net/mac80211/debugfs_netdev.c b/net/mac80211/debugfs_netdev.c
+index c6f9861..806c5bd 100644
+--- a/net/mac80211/debugfs_netdev.c
++++ b/net/mac80211/debugfs_netdev.c
+@@ -87,16 +87,6 @@ static const struct file_operations name##_ops = {			\
+ 		IEEE80211_IF_FMT_##format(name, field)			\
+ 		__IEEE80211_IF_FILE(name)
+ 
+-static struct ieee80211_elem_tspec _tspec = {
+-	.nominal_msdu_size = 200,
+-	.inactivity_interval = 40,
+-	.mean_data_rate = 40000,
+-	.min_phy_rate = 6000000,
+-	.surplus_band_allow = 8192,
+-	.medium_time = 30,
+-};
+-static u8 _dls_mac[ETH_ALEN];
+-
+ #define DEBUGFS_QOS_FILE(name, f)					\
+ static ssize_t qos_ ##name## _write(struct file *file,			\
+ 				    const char __user *userbuf,		\
+@@ -104,7 +94,7 @@ static ssize_t qos_ ##name## _write(struct file *file,			\
+ {									\
+ 	struct ieee80211_sub_if_data *sdata = file->private_data;	\
+ 									\
+-	f(sdata->dev, &sdata->u.sta, &_tspec);				\
++	f(sdata->dev, &sdata->u.sta, &sdata->u.sta.tspec);		\
+ 									\
+ 	return count;							\
+ }									\
+@@ -119,8 +109,10 @@ static const struct file_operations qos_ ##name## _ops = {		\
+ 		sdata, &qos_ ##name## _ops);
+ 
+ #define DEBUGFS_QOS_DEL(name)						\
+-	debugfs_remove(sdata->debugfs.sta.qos.name);			\
+-	sdata->debugfs.sta.qos.name = NULL;
++	do {								\
++		debugfs_remove(sdata->debugfs.sta.qos.name);		\
++		sdata->debugfs.sta.qos.name = NULL;			\
++	} while (0)
+ 
+ DEBUGFS_QOS_FILE(addts_11e, ieee80211_send_addts);
+ DEBUGFS_QOS_FILE(addts_wmm, wmm_send_addts);
+@@ -130,7 +122,8 @@ DEBUGFS_QOS_FILE(delts_wmm, wmm_send_delts);
+ static ssize_t qos_if_dls_mac(const struct ieee80211_sub_if_data *sdata,
+ 			      char *buf, int buflen)
+ {
+-	return scnprintf(buf, buflen, MAC_FMT "\n", MAC_ARG(_dls_mac));
++	return scnprintf(buf, buflen, MAC_FMT "\n",
++			 MAC_ARG(sdata->u.sta.dls_mac));
+ }
+ 
+ static ssize_t qos_dls_mac_read(struct file *file,
+@@ -161,7 +154,7 @@ static ssize_t qos_dls_mac_write(struct file *file, const char __user *userbuf,
+ 		printk(KERN_ERR "%s: sscanf input error\n", sdata->dev->name);
+ 		return -EINVAL;
+ 	}
+-	memcpy(_dls_mac, m, ETH_ALEN);
++	memcpy(sdata->u.sta.dls_mac, m, ETH_ALEN);
+ 	return count;
+ }
+ 
+@@ -205,10 +198,12 @@ static ssize_t qos_dls_op_write(struct file *file, const char __user *userbuf,
+ 	}
+ 	switch (opt) {
+ 	case 1:
+-		ieee80211_send_dls_req(sdata->dev, &sdata->u.sta, _dls_mac, 0);
++		ieee80211_send_dls_req(sdata->dev, &sdata->u.sta,
++				       sdata->u.sta.dls_mac, 0);
+ 		break;
+ 	case 2:
+-		ieee80211_send_dls_teardown(sdata->dev, &sdata->u.sta, _dls_mac,
++		ieee80211_send_dls_teardown(sdata->dev, &sdata->u.sta,
++					    sdata->u.sta.dls_mac,
+ 					    WLAN_REASON_QSTA_NOT_USE);
+ 		break;
+ 	default:
+@@ -230,8 +225,9 @@ static ssize_t tsinfo_ ##_name## _read(struct file *file,		\
+ 				       size_t count, loff_t *ppos)	\
+ {									\
+ 	char buf[20];							\
++	struct ieee80211_sub_if_data *sdata = file->private_data;	\
+ 	int res = scnprintf(buf, count, "%u\n",				\
+-			IEEE80211_TSINFO_## _name (_tspec.ts_info));	\
++		IEEE80211_TSINFO_## _name (sdata->u.sta.tspec.ts_info));\
+ 	return simple_read_from_buffer(userbuf, count, ppos, buf, res);	\
+ }									\
+ 									\
+@@ -242,6 +238,7 @@ static ssize_t tsinfo_ ##_name## _write(struct file *file,		\
+ 	char buf[20];							\
+ 	size_t size;							\
+ 	int val;							\
++	struct ieee80211_sub_if_data *sdata = file->private_data;	\
+ 									\
+ 	size = min(sizeof(buf) - 1, count);				\
+ 	buf[size] = '\0';						\
+@@ -250,12 +247,11 @@ static ssize_t tsinfo_ ##_name## _write(struct file *file,		\
+ 									\
+ 	val = simple_strtoul(buf, NULL, 0);				\
+ 	if ((val < min_val) || (val > max_val)) {			\
+-		struct ieee80211_sub_if_data *sdata = file->private_data;\
+ 		printk(KERN_ERR "%s: set value (%u) out of range "	\
+ 		       "[%u, %u]\n",sdata->dev->name,val,min_val,max_val);\
+ 		return -EINVAL;						\
+ 	}								\
+-	SET_TSINFO_ ##_name (_tspec.ts_info, val);			\
++	IEEE80211_SET_TSINFO_ ##_name (sdata->u.sta.tspec.ts_info, val);\
+ 	return count;							\
+ }									\
+ 									\
+@@ -281,20 +277,24 @@ static const struct file_operations tsinfo_ ##_name## _ops = {		\
+ 				    sdata, &tsinfo_UP_ops);
+ 
+ #define DEBUGFS_TSINFO_DEL(name)					\
+-	debugfs_remove(sdata->debugfs.sta.tsinfo.name);			\
+-	sdata->debugfs.sta.tsinfo.name = NULL;
++	do {								\
++		debugfs_remove(sdata->debugfs.sta.tsinfo.name);		\
++		sdata->debugfs.sta.tsinfo.name = NULL;			\
++	} while (0)
+ 
+ DEBUGFS_TSINFO_FILE(TSID, 8, 15);
+ DEBUGFS_TSINFO_FILE(DIR, 0, 3);
+ DEBUGFS_TSINFO_FILE(UP, 0, 7);
+ 
+-#define DEBUGFS_TSPEC_FILE(name)					\
++#define DEBUGFS_TSPEC_FILE(name, format_string, endian_f1, endian_f2)	\
+ static ssize_t tspec_ ##name## _read(struct file *file,			\
+ 				      char __user *userbuf,		\
+ 				      size_t count, loff_t *ppos)	\
+ {									\
+ 	char buf[20];							\
+-	int res = scnprintf(buf, count, "%u\n", _tspec.name);		\
++	struct ieee80211_sub_if_data *sdata = file->private_data;	\
++	int res = scnprintf(buf, count, format_string "\n",		\
++			    endian_f1(sdata->u.sta.tspec.name));	\
+ 	return simple_read_from_buffer(userbuf, count, ppos, buf, res);	\
+ }									\
+ 									\
+@@ -304,13 +304,14 @@ static ssize_t tspec_ ##name## _write(struct file *file,		\
+ {									\
+ 	char buf[20];							\
+ 	size_t size;							\
++	struct ieee80211_sub_if_data *sdata = file->private_data;	\
+ 									\
+ 	size = min(sizeof(buf) - 1, count);				\
+ 	buf[size] = '\0';						\
+ 	if (copy_from_user(buf, userbuf, size))				\
+ 		return -EFAULT;						\
+ 									\
+-	_tspec.name = simple_strtoul(buf, NULL, 0);			\
++	sdata->u.sta.tspec.name = endian_f2(simple_strtoul(buf, NULL, 0));\
+ 	return count;							\
+ }									\
+ 									\
+@@ -325,24 +326,26 @@ static const struct file_operations tspec_ ##name## _ops = {		\
+ 		0444, tspecd, sdata, &tspec_ ##name## _ops);
+ 
+ #define DEBUGFS_TSPEC_DEL(name)						\
+-	debugfs_remove(sdata->debugfs.sta.tspec.name);			\
+-	sdata->debugfs.sta.tspec.name = NULL;
+-
+-DEBUGFS_TSPEC_FILE(nominal_msdu_size);
+-DEBUGFS_TSPEC_FILE(max_msdu_size);
+-DEBUGFS_TSPEC_FILE(min_service_interval);
+-DEBUGFS_TSPEC_FILE(max_service_interval);
+-DEBUGFS_TSPEC_FILE(inactivity_interval);
+-DEBUGFS_TSPEC_FILE(suspension_interval);
+-DEBUGFS_TSPEC_FILE(service_start_time);
+-DEBUGFS_TSPEC_FILE(min_data_rate);
+-DEBUGFS_TSPEC_FILE(mean_data_rate);
+-DEBUGFS_TSPEC_FILE(peak_data_rate);
+-DEBUGFS_TSPEC_FILE(burst_size);
+-DEBUGFS_TSPEC_FILE(delay_bound);
+-DEBUGFS_TSPEC_FILE(min_phy_rate);
+-DEBUGFS_TSPEC_FILE(surplus_band_allow);
+-DEBUGFS_TSPEC_FILE(medium_time);
++	do {								\
++		debugfs_remove(sdata->debugfs.sta.tspec.name);		\
++		sdata->debugfs.sta.tspec.name = NULL;			\
++	} while (0)
++
++DEBUGFS_TSPEC_FILE(nominal_msdu_size, "%hu", le16_to_cpu, cpu_to_le16);
++DEBUGFS_TSPEC_FILE(max_msdu_size, "%hu", le16_to_cpu, cpu_to_le16);
++DEBUGFS_TSPEC_FILE(min_service_interval, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(max_service_interval, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(inactivity_interval, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(suspension_interval, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(service_start_time, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(min_data_rate, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(mean_data_rate, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(peak_data_rate, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(burst_size, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(delay_bound, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(min_phy_rate, "%u", le32_to_cpu, cpu_to_le32);
++DEBUGFS_TSPEC_FILE(surplus_band_allow, "%hu", le16_to_cpu, cpu_to_le16);
++DEBUGFS_TSPEC_FILE(medium_time, "%hu", le16_to_cpu, cpu_to_le16);
+ 
+ 
+ /* common attributes */
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index d80f56d..3a44c6d 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -1786,7 +1786,7 @@ int ieee80211_subif_start_xmit(struct sk_buff *skb,
+ 		memcpy(hdr.addr4, skb->data + ETH_ALEN, ETH_ALEN);
+ 		hdrlen = 30;
+ 	} else if (sdata->type == IEEE80211_IF_TYPE_STA) {
+-		if (dls_link_status(local, skb->data) == DLS_STATUS_OK){
++		if (dls_link_status(local, skb->data) == DLS_STATUS_OK) {
+ 			/* DA SA BSSID */
+ 			memcpy(hdr.addr1, skb->data, ETH_ALEN);
+ 			memcpy(hdr.addr2, skb->data + ETH_ALEN, ETH_ALEN);
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index c16f8c1..af4b3bc 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -298,6 +298,10 @@ struct ieee80211_if_sta {
+ #define STA_TSDIR_NUM  2
+ 	/* EDCA: 0~7, HCCA: 8~15 */
+ 	struct sta_ts_data ts_data[STA_TSID_NUM][STA_TSDIR_NUM];
++#ifdef CONFIG_MAC80211_DEBUGFS
++	struct ieee80211_elem_tspec tspec;
++	u8 dls_mac[ETH_ALEN];
++#endif
+ };
+ 
+ 
+@@ -866,7 +870,7 @@ void wmm_send_delts(struct net_device *dev,
+ 		    struct ieee80211_elem_tspec *tp);
+ void ieee80211_send_dls_req(struct net_device *dev,
+ 			    struct ieee80211_if_sta *ifsta,
+-			    u8 *addr, u32 timeout);
++			    u8 *addr, u16 timeout);
+ void ieee80211_send_dls_teardown(struct net_device *dev,
+ 				 struct ieee80211_if_sta *ifsta,
+ 				 u8 *mac, u16 reason);
+diff --git a/net/mac80211/ieee80211_iface.c b/net/mac80211/ieee80211_iface.c
+index dedf9ea..9246a18 100644
+--- a/net/mac80211/ieee80211_iface.c
++++ b/net/mac80211/ieee80211_iface.c
+@@ -200,6 +200,14 @@ void ieee80211_if_set_type(struct net_device *dev, int type)
+ 		/* Initialize non-AP QSTA QoS Params */
+ 		ifsta->dot11EDCAAveragingPeriod = 5;
+ 		ifsta->MPDUExchangeTime = 0;
++#ifdef CONFIG_MAC80211_DEBUGFS
++		ifsta->tspec.nominal_msdu_size = cpu_to_le16(200),
++		ifsta->tspec.inactivity_interval = cpu_to_le32(40),
++		ifsta->tspec.mean_data_rate = cpu_to_le32(40000),
++		ifsta->tspec.min_phy_rate = cpu_to_le32(6000000),
++		ifsta->tspec.surplus_band_allow = cpu_to_le16(8192),
++		ifsta->tspec.medium_time = cpu_to_le16(30),
++#endif
+ 
+ 		msdata = IEEE80211_DEV_TO_SUB_IF(sdata->local->mdev);
+ 		sdata->bss = &msdata->u.ap;
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 5b38ca9..3bbc046 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -746,7 +746,7 @@ static void ieee80211_send_disassoc(struct net_device *dev,
+ }
+ 
+ 
+-int ieee80211_ts_index(u8 direction)
++static int ieee80211_ts_index(u8 direction)
+ {
+ 	if (direction == WLAN_TSINFO_DOWNLINK ||
+ 	    direction == WLAN_TSINFO_DIRECTLINK)
+@@ -854,11 +854,11 @@ void ieee80211_send_delts(struct net_device *dev,
+ 	struct sk_buff *skb;
+ 	u8 tsid = IEEE80211_TSINFO_TSID(tp->ts_info);
+ 	u8 direction = IEEE80211_TSINFO_DIR(tp->ts_info);
+-	u32 medium_time = tp->medium_time;
++	u16 medium_time = le16_to_cpu(tp->medium_time);
+ 	u8 index = ieee80211_ts_index(direction);
+ 
+ 	if (ifsta->ts_data[tsid][index].status == TS_STATUS_UNUSED) {
+-		printk(KERN_DEBUG "%s: Tring to delete an ACM disabled TS "
++		printk(KERN_DEBUG "%s: Trying to delete an ACM disabled TS "
+ 		       "(%u:%u)\n", dev->name, tsid, direction);
+ 		return;
+ 	}
+@@ -891,11 +891,11 @@ void ieee80211_send_delts(struct net_device *dev,
+ 	memset(&mgmt->u.action.u.delts.ts_info, 0,
+ 			sizeof(struct ieee80211_ts_info));
+ 
+-	SET_TSINFO_TSID(tp->ts_info, tsid);
+-	SET_TSINFO_DIR(tp->ts_info, direction);
+-	SET_TSINFO_POLICY(tp->ts_info, WLAN_TSINFO_EDCA);
+-	SET_TSINFO_APSD(tp->ts_info, WLAN_TSINFO_PSB_LEGACY);
+-	SET_TSINFO_UP(tp->ts_info, ifsta->ts_data[tsid][index].up);
++	IEEE80211_SET_TSINFO_TSID(tp->ts_info, tsid);
++	IEEE80211_SET_TSINFO_DIR(tp->ts_info, direction);
++	IEEE80211_SET_TSINFO_POLICY(tp->ts_info, WLAN_TSINFO_EDCA);
++	IEEE80211_SET_TSINFO_APSD(tp->ts_info, WLAN_TSINFO_PSB_LEGACY);
++	IEEE80211_SET_TSINFO_UP(tp->ts_info, ifsta->ts_data[tsid][index].up);
+ 
+ 	ieee80211_sta_tx(dev, skb, 0);
+ }
+@@ -910,7 +910,7 @@ void wmm_send_delts(struct net_device *dev,
+ 	struct sk_buff *skb;
+ 	u8 tsid = IEEE80211_TSINFO_TSID(tp->ts_info);
+ 	u8 direction = IEEE80211_TSINFO_DIR(tp->ts_info);
+-	u32 medium_time = tp->medium_time;
++	u16 medium_time = le16_to_cpu(tp->medium_time);
+ 	u8 index = ieee80211_ts_index(direction);
+ 	u8 *pos;
+ 
+@@ -962,11 +962,11 @@ void wmm_send_delts(struct net_device *dev,
+ 	tspec = (struct ieee80211_elem_tspec *)pos;
+ 	memset(tspec, 0, sizeof(*tspec));
+ 
+-	SET_TSINFO_TSID(tspec->ts_info, tsid);
+-	SET_TSINFO_DIR(tspec->ts_info, direction);
+-	SET_TSINFO_POLICY(tspec->ts_info, WLAN_TSINFO_EDCA);
+-	SET_TSINFO_APSD(tspec->ts_info, WLAN_TSINFO_PSB_LEGACY);
+-	SET_TSINFO_UP(tspec->ts_info, ifsta->ts_data[tsid][index].up);
++	IEEE80211_SET_TSINFO_TSID(tspec->ts_info, tsid);
++	IEEE80211_SET_TSINFO_DIR(tspec->ts_info, direction);
++	IEEE80211_SET_TSINFO_POLICY(tspec->ts_info, WLAN_TSINFO_EDCA);
++	IEEE80211_SET_TSINFO_APSD(tspec->ts_info, WLAN_TSINFO_PSB_LEGACY);
++	IEEE80211_SET_TSINFO_UP(tspec->ts_info, ifsta->ts_data[tsid][index].up);
+ 
+ 	ieee80211_sta_tx(dev, skb, 0);
+ }
+@@ -974,7 +974,7 @@ void wmm_send_delts(struct net_device *dev,
+ 
+ void ieee80211_send_dls_req(struct net_device *dev,
+ 			    struct ieee80211_if_sta *ifsta,
+-			    u8 *addr, u32 timeout)
++			    u8 *addr, u16 timeout)
+ {
+ 	struct ieee80211_hw_mode *mode;
+ 	struct sk_buff *skb;
+@@ -1004,7 +1004,7 @@ void ieee80211_send_dls_req(struct net_device *dev,
+ 	memcpy(mgmt->u.action.u.dls_req.dest, addr, ETH_ALEN);
+ 	memcpy(mgmt->u.action.u.dls_req.src, dev->dev_addr, ETH_ALEN);
+ 	mgmt->u.action.u.dls_req.capab_info = cpu_to_le16(ifsta->ap_capab);
+-	mgmt->u.action.u.dls_req.timeout = timeout;
++	mgmt->u.action.u.dls_req.timeout = cpu_to_le16(timeout);
+ 
+ 	/* Add supported rates and extended supported rates */
+ 	supp_rates = skb_put(skb, 2);
+-- 
+1.5.2
+

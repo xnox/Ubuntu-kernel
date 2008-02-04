@@ -1,0 +1,189 @@
+#!/usr/bin/env /bin/bash
+
+function check_params()
+{
+    if [ "$1" ]; then
+	DEST="$1"
+	export DEST=${DEST/%\//}/
+	export MAC80211=${DEST}drivers/net/wireless/mac80211/
+	return 0
+    fi
+
+    cat <<EOF
+Usage: patch_kernel /PATH/TO/KERNEL
+eg: patch_kernel /lib/modules/\$(uname -r)/source
+EOF
+}
+
+
+function verify_continue()
+{
+    cat << EOF
+This will install this driver into your kernel tree located here:
+
+  ${DEST}
+
+If you would like to install to a different location, run
+this as follows: 
+
+  make KSRC=/path/to/kernel patch_kernel
+
+EOF
+
+    read -p "Do you wish to continue? [Yn] " reply
+    case $reply in
+	Y|y|"") 
+	    return 0 
+	    ;;
+	*) echo "Terminating patch prcoess." 
+	    return 1 
+	    ;; 
+    esac
+    
+    if [ "$(shell whoami)" != "root" ]; then
+	cat << EOF
+If this fails, you may need to be root to patch the kernel.
+EOF
+    fi
+}
+
+
+function clean_tree()
+{
+cat <<EOF
+Setting 'iwlwifi' entries in:
+  ${MAC80211}Kconfig
+EOF
+    [ -e ${MAC80211}Kconfig ] &&
+    grep -v "^source.*iwlwifi" ${MAC80211}Kconfig > .tmp-Kconfig
+    echo "source \"drivers/net/wireless/mac80211/iwlwifi/Kconfig\"" >> \
+	.tmp-Kconfig
+
+cat <<EOF
+Setting 'iwlwifi' entries in:
+    ${MAC80211}Makefile
+EOF
+
+    [ -e ${MAC80211}Makefile ] &&
+    grep -v "CONFIG_IWLWIFI" \
+	${MAC80211}Makefile > .tmp-Makefile
+    echo 'obj-$(CONFIG_IWLWIFI)	+= iwlwifi/' >> .tmp-Makefile
+
+    if test -f ${DEST}.config; then
+	cat <<EOF
+Clearing 'iwlwifi' entries from:
+  ${DEST}.config
+EOF
+	grep -v "CONFIG_IWLWIFI" ${DEST}.config |
+		grep -v "CONFIG_IWL3945" |
+		grep -v "CONFIG_IWL4965" > .tmp-config
+    fi
+
+    if test -f ${DEST}include/linux/autoconf.h; then
+	cat <<EOF
+Clearing 'iwlwifi' entries from:
+  ${DEST}include/linux/autoconf.h
+EOF
+	grep -v "CONFIG_IWLWIFI" ${DEST}include/linux/autoconf.h |
+		grep -v "CONFIG_IWL3945" |
+		grep -v "CONFIG_IWL4965" > .tmp-autoconf
+    fi
+
+    grep -q mac80211 ${DEST}drivers/net/wireless/Kconfig || {
+cat <<EOF
+Adding mac80211/Kconfig to:
+  ${DEST}drivers/net/wireless
+EOF
+
+cp ${DEST}drivers/net/wireless/Kconfig .tmp-wireless-Kconfig
+sed -i -e "s,endmenu,source \"drivers/net/wireless/mac80211/Kconfig\"\nendmenu,g" .tmp-wireless-Kconfig
+    }
+
+    grep -q mac80211 ${DEST}drivers/net/wireless/Makefile || {
+cat <<EOF
+Adding mac80211/Makefile to:
+  ${DEST}drivers/net/wireless
+EOF
+
+cp ${DEST}drivers/net/wireless/Makefile .tmp-wireless-Makefile
+echo 'obj-y += mac80211/' >> .tmp-wireless-Makefile
+    }
+
+    return 0
+}
+
+function check_perms() 
+{
+    [ -d ${MAC80211}iwlwifi ] && [ -w ${MAC80211}iwlwifi ] && return 0
+    [ -d ${MAC80211} ] && [ -w ${MAC80211} ] && return 0
+    [ -d ${DEST}drivers/net/wireless/ ] &&
+    [ -w ${DEST}drivers/net/wireless/ ] && return 0
+
+cat <<EOF
+
+Insufficient permissions to write to:
+
+    ${MAC80211}iwlwifi
+
+Aborting.  Perhaps try running as root?
+EOF
+
+    return 1
+}
+    
+
+function copy_files()
+{
+    echo "Copying files..."
+    cp README.iwlwifi ${DEST}Documentation/networking
+    mkdir -p ${MAC80211}iwlwifi
+    cp compatible/{Kconfig,Makefile} ${MAC80211}iwlwifi/
+    cp compatible/*.{c,h} ${MAC80211}iwlwifi/
+}
+
+function add_to_tree() 
+{
+    echo "Installing potentially modified files..."
+    [ -e ${MAC80211}Kconfig ] && cp ${MAC80211}Kconfig ${MAC80211}Kconfig.bk
+    [ -e ${MAC80211}Makefile ] && cp ${MAC80211}Makefile ${MAC80211}Makefile.bk
+    if test -f ${DEST}include/linux/autoconf.h; then
+	cp ${DEST}include/linux/autoconf.h \
+	    ${DEST}include/linux/autoconf.h.bk
+	mv -f .tmp-autoconf ${DEST}include/linux/autoconf.h
+    fi
+    if test -f ${DEST}.config; then
+	cp ${DEST}.config ${DEST}.config.bk
+	mv -f .tmp-config ${DEST}.config
+    fi
+    
+    mv -f .tmp-Kconfig ${MAC80211}Kconfig
+    mv -f .tmp-Makefile ${MAC80211}Makefile
+    [ -e .tmp-wireless-Kconfig ] && 
+    mv -f .tmp-wireless-Kconfig ${DEST}drivers/net/wireless/Kconfig
+    [ -e .tmp-wireless-Makefile ] && 
+    mv -f .tmp-wireless-Makefile ${DEST}drivers/net/wireless/Makefile
+    return 0
+
+}
+
+function show_results()
+{
+    cat <<EOF
+
+Kernel has been updated to include:
+
+    iwlwifi drivers for Linux
+
+you can now edit your kernel's configuration via 'make menuconfig' and 
+build as you would any kernel image and set of modules.
+EOF
+}
+
+check_params $@ &&
+scripts/check_kernel "${DEST}" &&
+verify_continue && 
+check_perms &&
+clean_tree && 
+copy_files && 
+add_to_tree && 
+show_results

@@ -1,0 +1,29 @@
+From c334da6f6fe935e278ad5fde78e192d16d3c1603 Mon Sep 17 00:00:00 2001
+From: Zhu Yi <yi.zhu@intel.com>
+Date: Thu, 23 Aug 2007 09:45:26 +0800
+Subject: [PATCH] mac80211: fix monitor mode
+
+Fix __ieee80211_rx to let monitor packets go through.
+
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/ieee80211.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index b11b945..9e342fa 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -4348,9 +4348,6 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
+ 						       hdr->addr2) != 0)
+ 					continue;
+ 				break;
+-			default:
+-					continue;
+-				break;
+ 			}
+ 
+ 			if (prev) {
+-- 
+1.5.2
+

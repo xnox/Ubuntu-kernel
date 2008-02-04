@@ -1,0 +1,67 @@
+From 51bc2c9e296a5f6ec210eee04c882fdb4997c130 Mon Sep 17 00:00:00 2001
+From: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Date: Sat, 30 Jun 2007 05:20:16 +0800
+Subject: [PATCH] mac80211: [HT] add TX AMPDU MLME data
+
+This patch add supporting data for addba initialization mlme
+
+Signed-of-by: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Signed-of-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-of-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/sta_info.h |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
+
+diff --git a/net/mac80211/sta_info.h b/net/mac80211/sta_info.h
+index a54d35f..9dbada8 100644
+--- a/net/mac80211/sta_info.h
++++ b/net/mac80211/sta_info.h
+@@ -30,6 +30,35 @@
+ #define WLAN_STA_HT  BIT(10)
+ #define WLAN_STA_WDS BIT(27)
+ 
++#define STA_TID_NUM 16
++#define ADDBA_RESP_INTERVAL HZ
++
++enum ht_agg_state {
++	HT_AGG_STATE_IDLE = 0,
++	HT_AGG_STATE_START_BA,
++	HT_AGG_STATE_ADDBA_REQUESTED,
++	HT_AGG_STATE_OPERATIONAL,
++	HT_AGG_STATE_INITIATOR_REQ_STOP_BA,
++	HT_AGG_STATE_RECIPIENT_REQ_STOP_BA
++};
++
++struct tid_ht_agg_info_tx {
++	enum ht_agg_state state;
++	u8 dialog_token;
++	u16 start_seq_num;
++	struct timer_list addba_resp_timer; /* check if peer responds to addba request */
++};
++
++
++struct sta_ht_agg_info {
++	u8 dialog_token_allocator;
++	struct tid_ht_agg_info_tx tid_agg_info_tx[STA_TID_NUM];
++	spinlock_t agg_data_lock_tx;
++};
++
++
++
++
+ 
+ struct sta_info {
+ 	struct kref kref;
+@@ -119,6 +148,9 @@ struct sta_info {
+ 	int vlan_id;
+ 
+ 	u16 listen_interval;
++	struct sta_ht_agg_info ht_ba_mlme;
++	int timer_to_tid[STA_TID_NUM]; /* converts expired addba response timer */
++
+ 
+ #ifdef CONFIG_MAC80211_DEBUGFS
+ 	struct sta_info_debugfsdentries {
+-- 
+1.5.2
+

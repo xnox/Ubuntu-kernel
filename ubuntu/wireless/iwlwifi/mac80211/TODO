@@ -1,0 +1,29 @@
+* Fix CRYPTO_ECB warning during build if no crypto
+
+* Fix built-in wireless extensions added via cfg80211 and make it at 
+  most a module so that kernel-rebuilds are needed for *every* update
+
+* Add version tag to the mac80211 module so it advertises the version it 
+  was built from during load.  Update Makefile to auto-update that text 
+  in the 'modified/' version whenever the 'dist' target is used.
+
+  Example, '#define MAC80211_VERSION 1.2.0' added to ieee80211_i.h
+
+* Update such that if you have a .git repository, it will perform a 
+  commit when you run 'make commit' setting the version appropriately 
+  and building a dist target.  In other words, 'make dist' would not 
+  perform any GIT operations.  'make commit' would update the 
+  collatoral, perform a commit, cache the GIT head at the file GIT 
+  in the base and then create a 'dist'.
+
+	NOTE: The commit target must *require* an explicit version to be
+	set.
+
+* Add ability to build mac80211 modules in-location (supporting O=) so 
+  that patching the actual kernel sources is not required.  The 
+  following sequence would then be supported:
+
+	make [KSRC=/path/to/kernel] source
+	make [KSRC=/path/to/kernel] [O=/path/to/output] modules
+	make [KSRC=/path/to/kernel] [O=/path/to/output] modules_install
+

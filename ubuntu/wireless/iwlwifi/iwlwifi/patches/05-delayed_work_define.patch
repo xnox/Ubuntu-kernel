@@ -1,0 +1,12 @@
+mac80211 pre 8.x.x didn't have __kcompat_delayed_work_h__ defined
+diff -upr compatible/kcompat-delayed_work.h post/kcompat-delayed_work.h
+--- compatible/kcompat-delayed_work.h	2007-06-05 10:46:54.000000000 -0700
++++ post/kcompat-delayed_work.h	2007-06-05 10:52:01.000000000 -0700
+@@ -1,5 +1,5 @@
+-#ifndef __kcompat_delayed_work_h__
+-#define __kcompat_delayed_work_h__
++#ifndef __kcompat_h__
++#define __kcompat_h__
+ 
+ /* Out-of-tree / in-tree kernel compatibility */
+ #include <linux/version.h>

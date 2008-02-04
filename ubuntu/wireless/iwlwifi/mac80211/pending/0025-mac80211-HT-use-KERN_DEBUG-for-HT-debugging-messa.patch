@@ -1,0 +1,26 @@
+From f597c02bc8814aa0ba5b3b9fd1aa14d521b284b8 Mon Sep 17 00:00:00 2001
+From: Zhu Yi <yi.zhu@intel.com>
+Date: Mon, 9 Jul 2007 14:13:02 +0800
+Subject: [PATCH] mac80211: [HT] use KERN_DEBUG for HT debugging message
+
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/wme.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/net/mac80211/wme.c b/net/mac80211/wme.c
+index 96e9969..beb729d 100644
+--- a/net/mac80211/wme.c
++++ b/net/mac80211/wme.c
+@@ -283,7 +283,7 @@ static int wme_qdiscop_enqueue(struct sk_buff *skb, struct Qdisc* qd)
+ 				queue = ht_queue;
+ 				pkt_data->ht_queue = 1;
+ 			}
+-			printk(KERN_ERR "wme:%s ht_queue=%d,queue=%d pool=0x%lX qdisc=%p\n",
++			printk(KERN_DEBUG "wme:%s ht_queue=%d,queue=%d pool=0x%lX qdisc=%p\n",
+ 				 __func__,ht_queue,queue,q->qdisc_pool,q);
+ 
+ 			sta_info_put(sta);
+-- 
+1.5.2
+

@@ -1,0 +1,70 @@
+From 428ee27143824bc868a301bb46d9cc34e76a17b6 Mon Sep 17 00:00:00 2001
+From: Tomas Winkler <tomas.winkler@intel.com>
+Date: Sat, 30 Jun 2007 08:20:07 +0800
+Subject: [PATCH] mac80211: [HT] IEEE 802.11n RX aggregation API and MLME
+
+Add IEEE 802.11n RX aggregation API and MLME
+
+Signed-of-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-of-by: Zhu Yi <yi.zhu@intel.com>
+---
+ include/net/mac80211.h  |   13 +++++++++++++
+ net/mac80211/sta_info.h |   13 +++++++++++++
+ 2 files changed, 26 insertions(+), 0 deletions(-)
+
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index fcaa7fa..28f098e 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -760,6 +760,19 @@ struct ieee80211_ops {
+ 	 * requests to stop the aggregation - recipient (0) or initiator (1)
+ 	 */
+ 	int (*ht_tx_agg_stop)(struct ieee80211_hw *hw, u8 *da, u16 tid, int generator);
++
++	/* move to Rx aggregation for a certain DA/TID.
++	 * If aggregation can not be started on a certain TID return error,
++	 * else return success */
++	int (*ht_rx_agg_start)(struct ieee80211_hw *hw, u8 *da, u16 tid, u16 start_seq_num);
++
++	/* stop Rx aggregation for a certain DA/TID.
++	 * If aggregation can not be stopped on a certain TID return error,
++	 * else return success. generator field gives the HW an indication who
++	 * requests to stop the aggregation - recipient (0) or initiator (1)
++	 */
++	int (*ht_rx_agg_stop)(struct ieee80211_hw *hw, u8 *da, u16 tid, int generator);
++
+ };
+ 
+ /* Allocate a new hardware device. This must be called once for each
+diff --git a/net/mac80211/sta_info.h b/net/mac80211/sta_info.h
+index 48ebc76..78a50bc 100644
+--- a/net/mac80211/sta_info.h
++++ b/net/mac80211/sta_info.h
+@@ -49,11 +49,24 @@ struct tid_ht_agg_info_tx {
+ 	struct timer_list addba_resp_timer; /* check if peer responds to addba request */
+ };
+ 
++struct tid_ht_agg_info_rx {
++	enum ht_agg_state state;
++	u8 dialog_token;
++	u16 start_seq_num;
++	u16 head_seq_num;
++	u16 buf_size;
++	struct sk_buff** reordering_buf;
++	u16 stored_mpdu_num;			   /* number of mpdus in reordering buffer */
++	struct timer_list session_timer;   /* check if peer keeps Tx-ing on the TID */
++	u16 timeout;
++};
+ 
+ struct sta_ht_agg_info {
+ 	u8 dialog_token_allocator;
+ 	struct tid_ht_agg_info_tx tid_agg_info_tx[STA_TID_NUM];
++	struct tid_ht_agg_info_rx tid_agg_info_rx[STA_TID_NUM];
+ 	spinlock_t agg_data_lock_tx;
++	spinlock_t agg_data_lock_rx;
+ };
+ 
+ 
+-- 
+1.5.2
+

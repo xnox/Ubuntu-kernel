@@ -1,0 +1,13 @@
+Add NLA_BINARY type for netlink
+---
+diff -upr a/include/net/netlink.h b/include/net/netlink.h
+--- a/include/net/netlink.h	2007-07-05 09:57:18.000000000 +0800
++++ b/include/net/netlink.h	2007-04-29 10:26:19.000000000 +0800
+@@ -171,6 +171,7 @@ enum {
+ 	NLA_MSECS,
+ 	NLA_NESTED,
+ 	NLA_NUL_STRING,
++	NLA_BINARY,
+ 	__NLA_TYPE_MAX,
+ };
+ 

@@ -1,0 +1,85 @@
+From 18fcded749fc76222844afc055128da88dbc03d8 Mon Sep 17 00:00:00 2001
+From: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Date: Sat, 30 Jun 2007 07:35:17 +0800
+Subject: [PATCH] mac80211: [HT] IEEE 802.11n block ack debugfs support
+
+Establish BA session using debugfs interface write number
+of tid to agg_stats to toggle BA session.
+
+Signed-of-by: Ron Rindjunsky <ron.rindjunsky@intel.com>
+Signed-of-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-of-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/debugfs_sta.c |   49 +++++++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 48 insertions(+), 1 deletions(-)
+
+diff --git a/net/mac80211/debugfs_sta.c b/net/mac80211/debugfs_sta.c
+index 9733fa9..dbcbfe5 100644
+--- a/net/mac80211/debugfs_sta.c
++++ b/net/mac80211/debugfs_sta.c
+@@ -55,6 +55,13 @@ static const struct file_operations sta_ ##name## _ops = {		\
+ 	.open = mac80211_open_file_generic,				\
+ }
+ 
++#define STA_OPS_WR(name)							\
++static const struct file_operations sta_ ##name## _ops = {		\
++	.read = sta_##name##_read,					\
++	.write = sta_##name##_write,				\
++	.open = mac80211_open_file_generic,				\
++}
++
+ #define STA_FILE(name, field, format)					\
+ 		STA_READ_##format(name, field)				\
+ 		STA_OPS(name)
+@@ -225,7 +232,47 @@ static ssize_t sta_agg_status_read(struct file *file, char __user *userbuf,
+ 
+ 	return simple_read_from_buffer(userbuf, count, ppos, buf, p - buf);
+ }
+-STA_OPS(agg_status);
++// STA_OPS(agg_status);
++static ssize_t sta_agg_status_write(struct file *file,const char __user *user_buf, size_t count, loff_t *ppos)
++{
++	struct sta_info *sta = file->private_data;
++	struct net_device *dev = sta->dev;
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_hw *hw = &local->hw;
++	u8 *da = sta->addr;
++	static int tid_static[16]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
++	char *endp;
++	char buf[32];
++	int buf_size,rs;
++	unsigned int tid_num;
++	char state[4];
++
++	memset(buf, 0x00, sizeof(buf));
++	buf_size = min(count, (sizeof(buf)-1));
++	if (copy_from_user(buf, user_buf, buf_size))
++		return -EFAULT;
++
++	tid_num = simple_strtoul(buf, &endp, 0);
++	if (endp == buf || tid_num > 15)
++		return -EINVAL;
++
++	if(tid_static[tid_num] == 0) {
++		strcpy(state,"on ");
++		rs =  ieee80211_start_BA_session(hw, da, tid_num);
++		if (rs==0)
++			tid_static[tid_num] = 1;
++	} else {
++		strcpy(state,"off");
++		rs =  ieee80211_stop_BA_session(hw, da, tid_num);
++//		if (rs==0)
++			tid_static[tid_num] = 0;
++	}
++
++	printk(KERN_ERR "sta_agg_status_write tried switching tid=%ul %s, return=%d\n",tid_num,state,rs);
++
++	return count;
++}
++STA_OPS_WR(agg_status);
+ 
+ 
+ #define DEBUGFS_ADD(name) \
+-- 
+1.5.2
+
