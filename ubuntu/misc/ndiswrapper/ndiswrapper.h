@@ -16,7 +16,7 @@
 #ifndef _NDISWRAPPER_H_
 #define _NDISWRAPPER_H_
 
-#define DRIVER_VERSION "1.51"
+#define DRIVER_VERSION "1.52"
 #define UTILS_VERSION "1.9"
 
 #define DRIVER_NAME "ndiswrapper"
@@ -81,7 +81,7 @@
 #define WARNING(fmt, ...) MSG(KERN_WARNING, fmt, ## __VA_ARGS__)
 #define ERROR(fmt, ...) MSG(KERN_ERR, fmt , ## __VA_ARGS__)
 #define INFO(fmt, ...) MSG(KERN_INFO, fmt , ## __VA_ARGS__)
-#define TODO() ERROR("not fully implemented (yet)")
+#define TODO() WARNING("not fully implemented (yet)")
 
 #define TRACE(fmt, ...) do { } while (0)
 #define TRACE1(fmt, ...) do { } while (0)
