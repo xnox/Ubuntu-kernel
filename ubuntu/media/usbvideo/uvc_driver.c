@@ -1623,7 +1623,7 @@ static int uvc_suspend(struct usb_interface *intf, pm_message_t message)
 	if (dev->video.streaming->intf != intf) {
 		uvc_trace(UVC_TRACE_SUSPEND, "Suspend: video streaming USB "
 				"interface mismatch.\n");
-		return -EINVAL;
+		return 0;
 	}
 
 	return uvc_video_suspend(&dev->video);
@@ -1647,7 +1647,7 @@ static int uvc_resume(struct usb_interface *intf)
 	if (dev->video.streaming->intf != intf) {
 		uvc_trace(UVC_TRACE_SUSPEND, "Resume: video streaming USB "
 				"interface mismatch.\n");
-		return -EINVAL;
+		return 0;
 	}
 
 	return uvc_video_resume(&dev->video);
