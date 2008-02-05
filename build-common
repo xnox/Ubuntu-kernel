@@ -159,8 +159,8 @@ function GetHostEnvironment()
 		AUTO="-a"
 	fi
 	export HOSTARCH CHROOTCMD FAKEROOT BASE ARCHS HOST CHROOT
-	export BASEDIR="$BASE/$DIST-$HOSTARCH"
-	export BUILDING="/tmp/${CHROOT}-buildstatus"
+	export BASEDIR="$BASE/$DIST-$ARCH"
+	export BUILDING="$BASEDIR/build-status"
 	export BUILDDIR="$BASEDIR/ubuntu-2.6"
 
 	return 0
@@ -183,8 +183,17 @@ function EmitDoClean()
 	#!/bin/bash
 
 	if [ -f $BUILDING ]; then
-		echo "Build in progress, quitting"
-		exit 1
+		case "\$(cat $BUILDING)" in
+			failed)
+				;;
+			cleanup)
+				echo "cleanup in progress, quitting"
+				exit 1
+				;;
+			*)
+				echo "Build in progress, quitting"
+				exit 1
+		esac
 	fi
 
 	echo cleanup >$BUILDING
@@ -221,7 +230,9 @@ function EmitDoBuild()
 		export AUTOBUILD=1
 	fi
 
-	LOG=/tmp/${CHROOT}-build.log
+	LOG=$BASEDIR/build.log
+	BPID=0
+	LPID=0
 
 	export PATH=/usr/lib/ccache:\$PATH
 
@@ -231,24 +242,37 @@ function EmitDoBuild()
 
 	function Cleanup()
 	{
-		if [ "\$1" = "1" ]; then
-			echo "Aborted!" >>\$LOG
+		if ps hp\$BPID >/dev/null 2>&1; then
+			kill \$BPID
 		fi
-		rm -f $BUILDING
+		if ps hp\$LPID >/dev/null 2>&1; then
+			kill \$LPID
+		fi
+		if [ "\$1" != "0" ]; then
+			echo "Failure(\$1)" >>\$LOG
+			echo "failed" >$BUILDING
+		else
+			rm -f $BUILDING
+		fi
 		wait
 		exit 0
 	}
-	trap 'Cleanup 1' INT QUIT TRAP USR1 PIPE TERM
+	trap 'Cleanup 3' INT QUIT TRAP USR1 PIPE TERM
 
-	echo building >$BUILDING
+	echo \$\$ >$BUILDING
 
 	cd $BUILDDIR
-	$FAKEROOT debian/rules clean
+	echo "build started $(date)" >\$LOG
+	$FAKEROOT debian/rules clean >\$LOG 2>&1 || Cleanup \$?
 	$FAKEROOT debian/rules binary-arch CONCURRENCY_LEVEL=$CONC \
-		2>&1 | tee \$LOG
-	echo "RC=$?" >>\$LOG
+		>>\$LOG 2>&1 &
+	BPID=\$!
+	tail -f \$LOG &
+	LPID=\$!
 
-	Cleanup 0
+	wait \$BPID
+	Cleanup \$?
+
 	exit 0
 	EOD
 }

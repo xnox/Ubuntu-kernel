@@ -12,8 +12,7 @@ if [ "$CONCURRENCY" = "" ]; then
 fi
 
 status=$($(dirname $0)/build-check ${SYSNAME})
-
-if [ "$status" != "idle" ]; then
+if [ $? -ne 0 ]; then
 	printf "%-15s: $status\n" ${SYSNAME}
 	exit 1
 fi
@@ -28,6 +27,10 @@ case ${BASEDIR} in
 esac
 
 EmitDoBuild $CONCURRENCY | ssh ${HOST} \
-	"cd $TGTDIR && cat - >do-build && chmod 700 do-build"
-ssh ${HOST} screen -d -m $CHROOTCMD $BASEDIR/do-build
-printf "%-15s: build started\n" $SYSNAME
+	"cd $TGTDIR 2>/dev/null && cat - >do-build && chmod 700 do-build"
+if [ $? -eq 0 ]; then
+	ssh ${HOST} screen -d -m $CHROOTCMD $BASEDIR/do-build
+	printf "%-15s: build started\n" $SYSNAME
+else
+	printf "%-15s: %s not found\n" $SYSNAME $TGTDIR
+fi

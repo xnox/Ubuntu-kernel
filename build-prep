@@ -9,7 +9,7 @@ fi
 GetHostEnvironment $1
 
 status=$($(dirname $0)/build-check $1)
-if [ "$status" != "idle" ]; then
+if [ $? -ne 0 ]; then
 	echo "${SYSNAME}: $status"
 	exit 1
 fi

@@ -19,7 +19,12 @@ BUILDING:  $BUILDING
 BUILDDIR:  $BUILDDIR
 CHROOTCMD: $CHROOTCMD
 CHROOTS:   $(QueryChroots $HOST)
-$(EmitDoClean)
 EOD
+if ${VERBOSE}; then
+	echo "--- Cleanup Script ---"
+	$(EmitDoClean)
+	echo "--- Build Script ---"
+	$(EmitDoBuild)
+fi
 
 exit 0

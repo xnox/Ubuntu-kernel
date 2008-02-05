@@ -10,19 +10,51 @@ fi
 
 GetHostEnvironment $1 || exit 1
 
-ssh -oConnectTimeout=5 $HOST test -f $BUILDING >/dev/null 2>&1
-case $? in
-	0)
-		echo building
-		exit 1
+cat <<EOD | ssh -oConnectTimeout=5 $HOST
+if ! test -f "$BUILDING" 2>/dev/null; then
+	exit 1
+fi
+INFO="\`cat $BUILDING\`"
+
+case "\$INFO" in
+	cleanup)
+		exit 2
 		;;
-	1)
-		echo idle
+	failed)
+		exit 3
 		;;
 	*)
-		echo ${HOST} is offline
-		exit 1
+		if ps hp\$INFO >/dev/null; then
+			exit 0
+		fi
+		exit 3
+esac
+
+exit 4
+EOD
+
+#ssh -oConnectTimeout=5 $HOST test -f $BUILDING >/dev/null 2>&1
+case $? in
+	0)
+		echo "building"
+		;;
+	1)
+		echo "idle"
+		exit 0
+		;;
+	2)
+		echo "cleanup in progress"
+		;;
+	3)
+		echo "idle (last build failed)"
+		exit 0
+		;;
+	4)
+		echo "unexpected status"
+		;;
+	*)
+		echo "${HOST} is offline"
 		;;
 esac
 
-exit 0
+exit 1
