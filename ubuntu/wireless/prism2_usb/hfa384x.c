@@ -3645,7 +3645,7 @@ static void hfa384x_int_rx(wlandevice_t *wlandev)
 		/* the prism2 cards don't return the FCS */
 		datap = skb_put(skb, WLAN_CRC_LEN);
 		memset (datap, 0xff, WLAN_CRC_LEN);
-		skb->mac.raw = skb->data;
+		skb_reset_mac_header(skb);
 
 		/* Attach the rxmeta, set some stuff */
 		p80211skb_rxmeta_attach(wlandev, skb);

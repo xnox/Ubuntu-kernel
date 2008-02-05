@@ -497,8 +497,16 @@ int skb_p80211_to_ether( wlandevice_t *wlandev, UINT32 ethconv, struct sk_buff *
 
 	}
 
+        /*
+         * Note that eth_type_trans() expects an skb w/ skb->data pointing
+         * at the MAC header, it then sets the following skb members:
+         * skb->mac_header, 
+         * skb->data, and
+         * skb->pkt_type.
+         * It then _returns_ the value that _we're_ supposed to stuff in
+         * skb->protocol.  This is nuts.
+         */
 	skb->protocol = eth_type_trans(skb, netdev);
-	skb->mac_header = (unsigned char *) e_hdr; /* new MAC header */
 
         /* jkriegl: process signal and noise as set in hfa384x_int_rx() */
 	/* jkriegl: only process signal/noise if requested by iwspy */

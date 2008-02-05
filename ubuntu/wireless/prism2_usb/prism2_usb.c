@@ -13,6 +13,7 @@
            .driver_info = (unsigned long) name
 
 static struct usb_device_id usb_prism_tbl[] = {
+        {PRISM_USB_DEVICE(0x0707, 0xee04, "Intersil Americas USB 802.11b WLAN DEVICE")},
 	{PRISM_USB_DEVICE(0x04bb, 0x0922, "IOData AirPort WN-B11/USBS")},
 	{PRISM_USB_DEVICE(0x07aa, 0x0012, "Corega Wireless LAN USB Stick-11")},
 	{PRISM_USB_DEVICE(0x09aa, 0x3642, "Prism2.x 11Mbps WLAN USB Adapter")},
@@ -131,6 +132,7 @@ static int prism2sta_probe_usb(
 	/* Register the wlandev, this gets us a name and registers the
 	 * linux netdevice.
 	 */
+	SET_MODULE_OWNER(wlandev->netdev);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0))
 	SET_NETDEV_DEV(wlandev->netdev, &(interface->dev));
 #endif
@@ -164,6 +166,9 @@ static int prism2sta_probe_usb(
 #endif
 
 	wlandev->msdstate = WLAN_MSD_HWPRESENT;
+
+	if (wlan_wext_write)
+		prism2sta_ifstate(wlandev, P80211ENUM_ifstate_enable);
 
 	goto done;
 

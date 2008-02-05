@@ -63,7 +63,6 @@
 	#define WLAN_SPARC			8
 	#define WLAN_SH    			9
 	#define WLAN_x86_64                     10
-	#define WLAN_IA64			11
 /* WLAN_SYSARCH */
 	#define WLAN_PCAT			1
 	#define WLAN_MBX			2
@@ -100,9 +99,6 @@
 	#define WLAN_SYSARCH		WLAN_PCAT
 #elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__)
 	#define WLAN_CPU_FAMILY		WLAN_Ix86
-	#define WLAN_SYSARCH		WLAN_PCAT
-#elif defined(__ia64__)
-	#define WLAN_CPU_FAMILY		WLAN_IA64
 	#define WLAN_SYSARCH		WLAN_PCAT
 #elif defined(__ppc__)
 	#define WLAN_CPU_FAMILY		WLAN_PPC
@@ -432,6 +428,10 @@ static inline void list_splice_init(struct list_head *list,
 #endif  // LIST_H
 #endif
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24)
+#define SET_MODULE_OWNER(x)  do { } while (0)
+#endif
+
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,1,90))
 #define spin_lock(l)            do { } while (0)
 #define spin_unlock(l)          do { } while (0)
@@ -460,6 +460,13 @@ typedef int spinlock_t;
 #endif
 
 #ifdef _LINUX_PROC_FS_H
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+#define PROC_NET  proc_net
+#else
+#define PROC_NET  init_net.proc_net
+#endif
+
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,25))
 
 extern inline struct proc_dir_entry *
@@ -482,6 +489,18 @@ create_proc_read_entry(const char *name, mode_t mode,
 #endif
 #endif
 #endif /* _LINUX_PROC_FS_H */
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22)
+#define skb_reset_mac_header(__a)  (__a)->mac.raw = (__a)->data
+#define SKB_MAC_HEADER(__a) (__a)->mac.raw
+#else
+#define SKB_MAC_HEADER(__a) (__a)->mac_header
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18)
+#define IRQF_DISABLED SA_INTERRUPT
+#define IRQF_SHARED   SA_SHIRQ
+#endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0))
 #ifndef INIT_TQUEUE

@@ -70,7 +70,6 @@
 #include <linux/wireless.h>
 #include <linux/sockios.h>
 #include <linux/etherdevice.h>
-#include <net/net_namespace.h>
 
 #include <asm/bitops.h>
 #include <asm/uaccess.h>
@@ -168,11 +167,11 @@ void p80211netdev_startup(void)
 	DBFENTER;
 
 #ifdef CONFIG_PROC_FS
-	if (init_net.proc_net != NULL) {
+	if (PROC_NET != NULL) {
 		proc_p80211 = create_proc_entry(
 				"p80211", 
 				(S_IFDIR|S_IRUGO|S_IXUGO),
-				init_net.proc_net);
+				PROC_NET);
 	}
 #endif
 	DBFEXIT;
@@ -197,7 +196,7 @@ p80211netdev_shutdown(void)
 	DBFENTER;
 #ifdef CONFIG_PROC_FS
 	if (proc_p80211 != NULL) {
-		remove_proc_entry("p80211", init_net.proc_net);
+		remove_proc_entry("p80211", PROC_NET);
 	}
 #endif
 	DBFEXIT;
@@ -391,6 +390,7 @@ static void p80211netdev_rx_bh(unsigned long arg)
 				/* set up various data fields */
 				skb->dev = dev;
 				skb_reset_mac_header(skb);
+
 				skb->ip_summed = CHECKSUM_NONE;
 				skb->pkt_type = PACKET_OTHERHOST;
 				skb->protocol = htons(ETH_P_80211_RAW); 
@@ -931,14 +931,18 @@ int wlan_setup(wlandevice_t *wlandev)
 		dev->stop =		p80211knetdev_stop;
 
 #if defined(CONFIG_NET_WIRELESS) || defined(WIRELESS_EXT)
-#if ((WIRELESS_EXT < 17) && (WIRELESS_EXT < 21))
+#if (WIRELESS_EXT < 17)
 		dev->get_wireless_stats = p80211wext_get_wireless_stats;
 #endif
 #if WIRELESS_EXT > 12
 		dev->wireless_handlers = &p80211wext_handler_def;
 #endif
 #endif
-			
+	
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24) )
+		dev->nd_net = &init_net;
+#endif
+		
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,3,38) )
 		dev->tbusy = 1;
 		dev->start = 0;
@@ -1062,9 +1066,23 @@ int register_wlandev(wlandevice_t *wlandev)
 	}
 #endif
 
+	if (wlan_wext_write) {
+/*
+		// fake out a call to ifstate_enable!
+		p80211msg_lnxreq_ifstate_t msg;
+		memset(&msg, 0, sizeof(msg));
+		msg.msgcode = DIDmsg_lnxreq_ifstate;
+		msg.msglen = sizeof(msg);
+		msg.ifstate.status = P80211ENUM_msgitem_status_data_ok;
+		msg.ifstate.data = P80211ENUM_ifstate_enable;
+
+		p80211req_dorequest(wlandev, &msg);
+*/
+	} else {
 #ifdef CONFIG_HOTPLUG
-	p80211_run_sbin_hotplug(wlandev, WLAN_HOTPLUG_REGISTER);
+		p80211_run_sbin_hotplug(wlandev, WLAN_HOTPLUG_REGISTER);
 #endif
+	}
 
 	DBFEXIT;
 	return 0;

@@ -2279,8 +2279,8 @@ static int prism2sta_resume_pci (struct pci_dev *pdev)
 	wlandev = (wlandevice_t *) pci_get_drvdata(pdev);
 
 	if (wlandev) {
-		prism2sta_ifstate(wlandev, P80211ENUM_ifstate_disable);
 		p80211_resume(wlandev);
+		prism2sta_ifstate(wlandev, P80211ENUM_ifstate_enable);
 	}
 		
         return 0;
@@ -2385,7 +2385,7 @@ prism2sta_proc_read(
 	hwtype |= BIT2;
 #endif
 
-#define PRISM2_CVS_ID "$Id: prism2sta.c 1826 2007-03-19 15:37:00Z pizza $"
+#define PRISM2_CVS_ID "$Id: prism2sta.c 1844 2008-01-31 14:34:36Z pizza $"
 
 	p += sprintf(p, "# %s version %s (%s) '%s'\n\n", 
 		     dev_info,
