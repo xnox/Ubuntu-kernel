@@ -2,6 +2,7 @@ linux-meta (2.6.24.7.7) hardy; urgency=low
 
   * Kernel ABI bump (to -7). Skipped (-6)
     because of total FTBS.
+  * Removed -hardy- from linux-backports-modules name dependencies.
 
  -- Tim Gardner <tim.gardner@canonical.com>  Thu,  7 Feb 2008 08:53:04 -0700
 
