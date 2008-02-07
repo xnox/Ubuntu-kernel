@@ -166,6 +166,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_HDA_POWER_SAVE_DEFAULT=""
 	CONFIG_SND_HDSP=""
 	CONFIG_SND_HDSPM=""
+	CONFIG_SND_HIFIER=""
 	CONFIG_SND_ICE1712=""
 	CONFIG_SND_ICE1724=""
 	CONFIG_SND_INTEL8X0=""
@@ -330,22 +331,22 @@ AC_ARG_WITH(cards,
   [                          echo3g, indigo, indigoio, indigodj, emu10k1, ]
   [                          emu10k1x, ens1370, ens1371, es1938, es1968, ]
   [                          fm801, fm801-tea575x, hda-intel, hdsp, hdspm, ]
-  [                          ice1712, ice1724, intel8x0, intel8x0m, korg1212, ]
-  [                          maestro3, mixart, nm256, pcxhr, riptide, rme32, ]
-  [                          rme96, rme9652, sis7019, sonicvibes, trident, ]
-  [                          via82xx, via82xx-modem, virtuoso, vx222, ymfpci, ]
-  [                          pdplus, asihpi, powermac, ps3, aoa, ]
-  [                          aoa-fabric-layout, aoa-onyx, aoa-tas, aoa-toonie, ]
-  [                          aoa-soundbus, aoa-soundbus-i2s, sa11xx-uda1341, ]
-  [                          armaaci, s3c2410, pxa2xx-i2sound, at73c213, ]
-  [                          au1x00, aica, usb-audio, usb-usx2y, usb-caiaq, ]
-  [                          vxpocket, pdaudiocf, sun-amd7930, sun-cs4231, ]
-  [                          sun-dbri, harmony, soc, at91-soc, ]
-  [                          at91-soc-eti-b1-wm8731, pxa2xx-soc, ]
-  [                          pxa2xx-soc-corgi, pxa2xx-soc-spitz, ]
+  [                          hifier, ice1712, ice1724, intel8x0, intel8x0m, ]
+  [                          korg1212, maestro3, mixart, nm256, pcxhr, ]
+  [                          riptide, rme32, rme96, rme9652, sis7019, ]
+  [                          sonicvibes, trident, via82xx, via82xx-modem, ]
+  [                          virtuoso, vx222, ymfpci, pdplus, asihpi, ]
+  [                          powermac, ps3, aoa, aoa-fabric-layout, aoa-onyx, ]
+  [                          aoa-tas, aoa-toonie, aoa-soundbus, ]
+  [                          aoa-soundbus-i2s, sa11xx-uda1341, armaaci, ]
+  [                          s3c2410, pxa2xx-i2sound, at73c213, au1x00, aica, ]
+  [                          usb-audio, usb-usx2y, usb-caiaq, vxpocket, ]
+  [                          pdaudiocf, sun-amd7930, sun-cs4231, sun-dbri, ]
+  [                          harmony, soc, at91-soc, at91-soc-eti-b1-wm8731, ]
+  [                          pxa2xx-soc, pxa2xx-soc-corgi, pxa2xx-soc-spitz, ]
   [                          pxa2xx-soc-poodle, pxa2xx-soc-tosa, ]
-  [                          pxa2xx-soc-e800, s3c24xx-soc, s3c2412-soc-i2s, ]
-  [                          soc-pcm-sh7760, sh7760-ac97 ],
+  [                          pxa2xx-soc-e800, s3c24xx-soc, soc-pcm-sh7760, ]
+  [                          sh7760-ac97 ],
   cards="$withval", cards="all")
 SELECTED_CARDS=`echo $cards | sed 's/,/ /g'`
 for card in $SELECTED_CARDS; do
@@ -1630,6 +1631,20 @@ for card in $SELECTED_CARDS; do
       probed=0
     fi
   fi
+  if test "$card" = "all" -o "$card" = "hifier"; then
+    if ( test "$CONFIG_SOUND" = "y" -o "$CONFIG_SOUND" = "m" ) &&
+      ( test "$CONFIG_PCI" = "y" -o "$CONFIG_PCI" = "m" ); then
+      CONFIG_SND_TIMER="m"
+      CONFIG_SND_PCM="m"
+      CONFIG_SND_RAWMIDI="m"
+      CONFIG_SND_MPU401_UART="m"
+      CONFIG_SND_OXYGEN_LIB="m"
+      CONFIG_SND_HIFIER="m"
+      probed=1
+    elif test -z "$probed"; then
+      probed=0
+    fi
+  fi
   if test "$card" = "all" -o "$card" = "ice1712"; then
     if ( test "$CONFIG_SOUND" = "y" -o "$CONFIG_SOUND" = "m" ) &&
       ( test "$CONFIG_PCI" = "y" -o "$CONFIG_PCI" = "m" ); then
@@ -2397,12 +2412,9 @@ for card in $SELECTED_CARDS; do
       probed=0
     fi
   fi
-  if test "$card" = "all" -o "$card" = "s3c2412-soc-i2s"; then
-      CONFIG_SND_S3C2412_SOC_I2S="m"
-      probed=1
-  fi
   if test "$card" = "all" -o "$card" = "soc-pcm-sh7760"; then
     if ( test "$CONFIG_SOUND" = "y" -o "$CONFIG_SOUND" = "m" ) &&
+      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
       ( test "$CONFIG_CPU_SUBTYPE_SH7760" = "y" -o "$CONFIG_CPU_SUBTYPE_SH7760" = "m" ) &&
       ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( test "$CONFIG_SH_DMABRG" = "y" -o "$CONFIG_SH_DMABRG" = "m" ); then
@@ -2414,6 +2426,7 @@ for card in $SELECTED_CARDS; do
   fi
   if test "$card" = "all" -o "$card" = "sh7760-ac97"; then
     if ( test "$CONFIG_SOUND" = "y" -o "$CONFIG_SOUND" = "m" ) &&
+      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
       ( test "$CONFIG_CPU_SUBTYPE_SH7760" = "y" -o "$CONFIG_CPU_SUBTYPE_SH7760" = "m" ) &&
       ( test "$CONFIG_SND_SOC_PCM_SH7760" = "y" -o "$CONFIG_SND_SOC_PCM_SH7760" = "m" ); then
       test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
@@ -3233,6 +3246,9 @@ fi
 if test -n "$CONFIG_SND_HDSPM"; then
   AC_DEFINE(CONFIG_SND_HDSPM_MODULE)
 fi
+if test -n "$CONFIG_SND_HIFIER"; then
+  AC_DEFINE(CONFIG_SND_HIFIER_MODULE)
+fi
 if test -n "$CONFIG_SND_ICE1712"; then
   AC_DEFINE(CONFIG_SND_ICE1712_MODULE)
 fi
@@ -3762,6 +3778,7 @@ AC_SUBST(CONFIG_SND_HDA_POWER_SAVE)
 AC_SUBST(CONFIG_SND_HDA_POWER_SAVE_DEFAULT)
 AC_SUBST(CONFIG_SND_HDSP)
 AC_SUBST(CONFIG_SND_HDSPM)
+AC_SUBST(CONFIG_SND_HIFIER)
 AC_SUBST(CONFIG_SND_ICE1712)
 AC_SUBST(CONFIG_SND_ICE1724)
 AC_SUBST(CONFIG_SND_INTEL8X0)
