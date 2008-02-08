@@ -65,3 +65,7 @@ obj-$(CONFIG_VMWARE) += vmmemctl/
 obj-$(CONFIG_VMWARE) += vmxnet/
 obj-$(CONFIG_VMWARE) += vmsync/
 
+obj-$(CONFIG_TP_SMAPI) += misc/tp_smapi.o
+obj-$(CONFIG_TP_SMAPI_EC) += misc/thinkpad_ec.o
+obj-$(CONFIG_TP_SMAPI_HDAPS) += hwmon/hdaps_ec.o
+
