@@ -370,6 +370,7 @@ enum {
 	PcCam350,
 	PAC207,
 	QtecWb100,
+	Labtec1200,
 	GeniusGe111,
 	Vimicro303b,
 	CyberpixS550V,
@@ -568,6 +569,7 @@ static struct cam_list clist[] = {
 	{PcCam350, "PC-Cam350"},
 	{PAC207, "Pixart PAC207-BCA"},
 	{QtecWb100, "Qtec Webcam 100"},
+	{Labtec1200, "Labtec Webcam 1200"},
 	{GeniusGe111, "Genius VideoCam Ge111"},
 	{Vimicro303b, "Generic Vimicro 303b"},
 	{CyberpixS550V, "Mercury Cyberpix S550V"},
@@ -768,6 +770,7 @@ static __devinitdata struct usb_device_id device_table[] = {
 	{USB_DEVICE(0x093a, 0x2468)},	/* PAC207 */
 	{USB_DEVICE(0x093a, 0x2471)},	/* PAC207 Genius VideoCam ge111 */
 	{USB_DEVICE(0x093a, 0x2460)},	/* PAC207 Qtec Webcam 100 */
+	{USB_DEVICE(0x093a, 0x2464)},	/* Labtec Webcam 1200 */
 	{USB_DEVICE(0x0733, 0x3281)},	/* Cyberpix S550V */
 	{USB_DEVICE(0x093a, 0x2470)},	/* Genius GF112 */
 	{USB_DEVICE(0x046d, 0x08a6)},	/* Logitech QCim */
@@ -4112,6 +4115,11 @@ and should be a spca504b then overwrite that setting */
 			break;
 		case 0x2463:
 			spca50x->desc = PhilipsSPC220NC;
+			spca50x->bridge = BRIDGE_PAC207;
+			spca50x->sensor = SENSOR_PAC207;
+			break;
+		case 0x2464:
+			spca50x->desc = Labtec1200;
 			spca50x->bridge = BRIDGE_PAC207;
 			spca50x->sensor = SENSOR_PAC207;
 			break;
