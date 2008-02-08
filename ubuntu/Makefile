@@ -4,6 +4,7 @@
 
 include $(src)/.config
 
+obj-$(CONFIG_INPUT_FSC_BTNS)   += misc/fsc_btns.o
 obj-$(CONFIG_ALSA)      	+= sound/
 obj-$(CONFIG_BLK_DEV_DRBD)      += block/drbd/
 obj-$(CONFIG_BLK_ISCSITARGET)	+= block/iscsitarget/
