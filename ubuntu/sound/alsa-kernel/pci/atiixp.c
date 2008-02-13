@@ -297,6 +297,7 @@ MODULE_DEVICE_TABLE(pci, snd_atiixp_ids);
 
 static struct snd_pci_quirk atiixp_quirks[] __devinitdata = {
 	SND_PCI_QUIRK(0x15bd, 0x3100, "DFI RS482", 0),
+	SND_PCI_QUIRK(0x1462, 0x7031, "Fujitsu Siemens MS-7031", 0),
 	{ } /* terminator */
 };
 
