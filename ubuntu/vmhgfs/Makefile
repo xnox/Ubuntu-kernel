@@ -29,6 +29,7 @@ VM_CC=$(CC)
 VM_CCVER=$(shell $(CC) -dumpversion)
 
 HEADER_DIR = $(TOPDIR)/include
+
 BUILD_DIR = $(HEADER_DIR)/..
 
 DRIVER := vmhgfs

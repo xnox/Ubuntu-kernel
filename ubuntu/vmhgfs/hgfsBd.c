@@ -22,7 +22,7 @@
  *    Backdoor calls used by hgfs pserver. [bac]
  */
 
-#if defined(__KERNEL__) || defined(_KERNEL)
+#if defined(__KERNEL__) || defined(_KERNEL) || defined(KERNEL)
 #   include "kernelStubs.h"
 #else
 #   include <stdio.h>
@@ -33,10 +33,10 @@
 #   include "debug.h"
 #endif
 
+#include "vm_assert.h"
 #include "rpcout.h"
 #include "hgfs.h"     // for common HGFS definitions
 #include "hgfsBd.h"
-#include "vm_assert.h"
 
 
 /*

@@ -411,7 +411,7 @@ HgfsAttrV2;
  * Precomposed (normal form C) versus Decomposed (normal form D)
  * -------------------------------------------------------------
  * Certain Unicode characters can be encoded in more than one way. 
- * For example, an √Å (A acute) can be encoded either precomposed,
+ * For example, an ¡ (A acute) can be encoded either precomposed,
  * as U+00C1 (LATIN CAPITAL LETTER A WITH ACUTE), or decomposed, 
  * as U+0041 U+0301 (LATIN CAPITAL LETTER A followed by a COMBINING ACUTE ACCENT).
  * Precomposed characters are more common in the Windows world, 

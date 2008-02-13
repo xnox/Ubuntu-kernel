@@ -46,8 +46,8 @@
 #include "fsutil.h"
 #include "hgfsProto.h"
 #include "staticEscape.h"
-#include "vm_basic_types.h"
 #include "vm_assert.h"
+#include "vm_basic_types.h"
 
 static struct inode *HgfsInodeLookup(struct super_block *sb,
                                      ino_t ino);

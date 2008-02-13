@@ -16,38 +16,25 @@
  *
  *********************************************************/
 
+#include <linux/autoconf.h>
+#include <linux/version.h>
+
 /*
- * cpLiteName.h --
- *
- *    Cross-platform "lite" name format used by hgfs.
- *
+ * Between 2.6.23 and 2.6.24-rc1 ctor prototype was changed from
+ * ctor(ptr, cache, flags) to ctor(cache, ptr).  Unfortunately there
+ * is no typedef for ctor, so we have to redefine kmem_cache_create
+ * to find out ctor prototype.  This assumes that kmem_cache_create
+ * takes 5 arguments and not 6 - that change occured between
+ * 2.6.22 and 2.6.23-rc1.  If prototype matches, then this is old
+ * kernel.
  */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24)
+#error "This test intentionally fails on 2.6.24 and newer kernels."
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 23)
+#include <linux/slab.h>
 
-#ifndef __CP_NAME_LITE_H__
-#define __CP_NAME_LITE_H__
-
-#if defined(__KERNEL__) && defined(__linux__)
-#  include "driver-config.h"
-#  include <linux/string.h>
-#elif defined(_KERNEL) && defined(__FreeBSD__)
-#  include <sys/libkern.h>
-#  define strchr(s,c)       index(s,c)
-#else
-#  include <string.h>
+struct kmem_cache *kmem_cache_create(const char *, size_t, size_t,
+                        unsigned long,
+                        void (*)(void *, struct kmem_cache *, unsigned long));
+						
 #endif
-
-#include "vm_basic_types.h"
-
-void
-CPNameLite_ConvertTo(char *bufIn,      // IN/OUT: Input to convert
-                     size_t inSize,    // IN: Size of input buffer
-                     char pathSep);    // IN: Path separator
-
-void
-CPNameLite_ConvertFrom(char *bufIn,    // IN/OUT: Input to convert
-                       size_t inSize,  // IN: Size of input buffer
-                       char pathSep);  // IN: Path separator
-
-
-
-#endif /* __CP_NAME_LITE_H__ */
