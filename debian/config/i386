@@ -90,4 +90,6 @@ ifneq ($(UBUNTU_FLAVOUR),rt)
 CONFIG_AUFS=m
 endif
 
+CONFIG_STK11XX=m
+
 endif
