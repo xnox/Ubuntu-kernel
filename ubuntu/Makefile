@@ -70,3 +70,7 @@ obj-$(CONFIG_TP_SMAPI) += misc/tp_smapi.o
 obj-$(CONFIG_TP_SMAPI_EC) += misc/thinkpad_ec.o
 obj-$(CONFIG_TP_SMAPI_HDAPS) += hwmon/hdaps_ec.o
 
+dm-raid4-5-objs :=	md/dm-raid4-5.o md/dm-log.o md/dm-mem-cache.o \
+			md/dm-region_hash.o md/dm-message.o
+
+obj-$(CONFIG_DMRAID45) += dm-raid4-5.o
