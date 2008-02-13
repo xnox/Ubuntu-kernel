@@ -25,15 +25,15 @@ while [ "$1" != "" ]; do
 		unbuilt=""
 		packaged=""
 
-		all_stamps=$(cat <<-EOD | ssh ${HOST} ${CHROOTCMD}
+		all_stamps=$(cat <<-EOD | ssh ${HOST} ${CHROOTCMD} 2>/dev/null
 			BUILDS=$BUILDDIR/debian/build
 			STAMPS=$BUILDDIR/debian/stamps
 
 			for i in \`cat \$STAMPS/stamp-flavours 2>/dev/null\`; do
 				echo FLAVOUR \$i
 			done
-			ls -d \$STAMPS/stamp-prepare-* \
-				\$STAMPS/stamp-build-* \
+			ls -d \$STAMPS/stamp-*prepare-* \
+				\$STAMPS/stamp-*build-* \
 				$BASEDIR/*.deb \
 				\$BUILDS/build-*/vmlinux \
 				\$BUILDS/custom-build/build-*/vmlinux \
@@ -46,8 +46,8 @@ while [ "$1" != "" ]; do
 				unbuild[$2] = $2
 				next
 			}
-			/stamps\/stamp-prepare-/{
-				sub(/.*stamp-prepare-/, "")
+			/stamps\/stamp-(custom-)?prepare-/{
+				sub(/.*stamp-(custom-)?prepare-/, "")
 				if (flavours[$0] < 1) {
 					flavours[$0] = 1
 					building[$0] = $0 "(kernel)"
@@ -55,8 +55,8 @@ while [ "$1" != "" ]; do
 				}
 				next
 			}
-			/stamps\/stamp-build-/{
-				sub(/.*stamp-build-/, "")
+			/stamps\/stamp-(custom-)?build-/{
+				sub(/.*stamp-(custom-)?build-/, "")
 				if (flavours[$0] < 2) {
 					flavours[$0] = 2
 					delete unbuild[$0]
@@ -78,7 +78,7 @@ while [ "$1" != "" ]; do
 				next
 			}
 			/vmlinux/{
-				sub(/.*\/debian\/build\/build-/, "")
+				sub(/.*\/debian\/build\/build-(custom-)?/, "")
 				sub(/\/vmlinux$/, "")
 				if (flavours[$0] <= 1) {
 					flavours[$0] = 1
