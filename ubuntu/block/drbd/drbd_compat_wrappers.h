@@ -3,6 +3,9 @@
  */
 
 #include <linux/version.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
+# error "use a 2.6 kernel, please"
+#endif
 
 
 /* struct page has a union in 2.6.15 ...
@@ -47,53 +50,6 @@ static inline int drbd_sync_me(drbd_dev *mdev)
 
 #define drbd_bio_uptodate(bio) bio_flagged(bio,BIO_UPTODATE)
 
-#ifdef CONFIG_HIGHMEM
-/*
- * I don't know why there is no bvec_kmap, only bvec_kmap_irq ...
- *
- * we do a sock_recvmsg into the target buffer,
- * so we obviously cannot use the bvec_kmap_irq variant.	-lge
- *
- * Most likely it is only due to performance anyways:
-  * kmap_atomic/kunmap_atomic is significantly faster than kmap/kunmap because
-  * no global lock is needed and because the kmap code must perform a global TLB
-  * invalidation when the kmap pool wraps.
-  *
-  * However when holding an atomic kmap is is not legal to sleep, so atomic
-  * kmaps are appropriate for short, tight code paths only.
- */
-static inline char *drbd_bio_kmap(struct bio *bio)
-{
-	struct bio_vec *bvec = bio_iovec(bio);
-	unsigned long addr;
-
-	addr = (unsigned long) kmap(bvec->bv_page);
-
-	if (addr & ~PAGE_MASK)
-		BUG();
-
-	return (char *) addr + bvec->bv_offset;
-}
-
-static inline void drbd_bio_kunmap(struct bio *bio)
-{
-	struct bio_vec *bvec = bio_iovec(bio);
-
-	kunmap(bvec->bv_page);
-}
-
-#else
-static inline char *drbd_bio_kmap(struct bio *bio)
-{
-	struct bio_vec *bvec = bio_iovec(bio);
-	return page_address(bvec->bv_page) + bvec->bv_offset;
-}
-static inline void drbd_bio_kunmap(struct bio *bio)
-{
-	// do nothing.
-}
-#endif
-
 static inline int drbd_bio_has_active_page(struct bio *bio)
 {
 	struct bio_vec *bvec;
@@ -106,9 +62,18 @@ static inline int drbd_bio_has_active_page(struct bio *bio)
 	return 0;
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+/* Before Linux-2.6.24 bie_endio() had the size of the bio as second argument.
+   See 6712ecf8f648118c3363c142196418f89a510b90 */
+#define bio_endio(B,E) bio_endio(B, (B)->bi_size, E)
+#define BIO_ENDIO_FN(name) int name(struct bio *bio, unsigned int bytes_done, int error)
+#define BIO_ENDIO_FN_START if (bio->bi_size) return 1
+#define BIO_ENDIO_FN_RETURN return 0
+#else
 #define BIO_ENDIO_FN(name) void name(struct bio *bio, int error)
 #define BIO_ENDIO_FN_START while(0) {}
 #define BIO_ENDIO_FN_RETURN return
+#endif
 
 // bi_end_io handlers
 extern BIO_ENDIO_FN(drbd_md_io_complete);
@@ -116,14 +81,38 @@ extern BIO_ENDIO_FN(drbd_endio_read_sec);
 extern BIO_ENDIO_FN(drbd_endio_write_sec);
 extern BIO_ENDIO_FN(drbd_endio_pri);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)
+/* Before 2.6.23 (with 20c2df83d25c6a95affe6157a4c9cac4cf5ffaac) kmem_cache_create had a
+   ctor and a dtor */
+#define kmem_cache_create(N,S,A,F,C) kmem_cache_create(N,S,A,F,C,NULL)
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+static inline void sg_set_page(struct scatterlist *sg, struct page *page,
+			       unsigned int len, unsigned int offset)
+{
+	sg->page   = page;
+	sg->offset = offset;
+        sg->length = len;
+}
+
+#define sg_init_table(S,N) ({})
+
+#ifdef NEED_SG_SET_BUF
+static inline void sg_set_buf(struct scatterlist *sg, const void *buf,
+			      unsigned int buflen)
+{
+	sg_set_page(sg, virt_to_page(buf), buflen, offset_in_page(buf));
+}
+#endif
+
+#endif
 
 /*
  * used to submit our private bio
  */
-static inline void drbd_generic_make_request(drbd_dev *mdev, int rw, int fault_type, struct bio *bio)
+static inline void drbd_generic_make_request(drbd_dev *mdev, int fault_type, struct bio *bio)
 {
-	bio->bi_rw = rw; // on the receiver side, e->..rw was not yet defined.
-
 	if (!bio->bi_bdev) {
 		printk(KERN_ERR DEVICE_NAME "%d: drbd_generic_make_request: bio->bi_bdev == NULL\n",
 		       mdev_to_minor(mdev));
@@ -156,19 +145,6 @@ static inline void drbd_plug_device(drbd_dev *mdev)
 	spin_unlock_irq(q->queue_lock);
 }
 
-static inline int _drbd_send_bio(drbd_dev *mdev, struct bio *bio)
-{
-	struct bio_vec *bvec = bio_iovec(bio);
-	struct page *page = bvec->bv_page;
-	size_t size = bvec->bv_len;
-	int offset = bvec->bv_offset;
-	int ret;
-
-	ret = drbd_send(mdev, mdev->data.socket, kmap(page) + offset, size, 0);
-	kunmap(page);
-	return ret;
-}
-
 #ifdef DEFINE_SOCK_CREATE_KERN
 #define sock_create_kern sock_create
 #endif
@@ -177,7 +153,16 @@ static inline int _drbd_send_bio(drbd_dev *mdev, struct bio *bio)
 #define kmem_cache kmem_cache_s
 #endif
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)
+static inline void drbd_unregister_blkdev(unsigned int major, const char *name)
+{
+	int ret = unregister_blkdev(major,name);
+	if (ret)
+		printk(KERN_ERR DEVICE_NAME": unregister of device failed\n");
+}
+#else
 #define drbd_unregister_blkdev unregister_blkdev
+#endif
 
 #ifdef NEED_BACKPORT_OF_ATOMIC_ADD
 
@@ -242,6 +227,90 @@ static __inline__ int atomic_sub_return(int i, atomic_t *v)
 # error "for your architecture. (Hint: Kernels after 2.6.10 have those"
 # error "by default! Using a later kernel might be less effort!)"
 #endif
+
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
+/* With Linux-2.6.19 the crypto API changed! */
+/* This is not a generic backport of the new api, it just implements
+   the corner case of "hmac(xxx)".  */
+
+#define CRYPTO_ALG_ASYNC 4711
+#define CRYPTO_ALG_TYPE_HASH CRYPTO_ALG_TYPE_DIGEST
+
+struct crypto_hash {
+        struct crypto_tfm *base;
+	const u8 *key;
+	int keylen;
+};
+
+struct hash_desc {
+        struct crypto_hash *tfm;
+        u32 flags;
+};
+
+static inline struct crypto_hash *
+crypto_alloc_hash(char *alg_name, u32 type, u32 mask)
+{
+	struct crypto_hash *ch;
+	char *closing_bracket;
+
+	// "hmac(xxx)" is in alg_name we need that xxx.
+	closing_bracket = strchr(alg_name,')');
+	if(!closing_bracket) return ERR_PTR(-ENOENT);
+	if(closing_bracket-alg_name < 6) return ERR_PTR(-ENOENT);
+
+	ch = kmalloc(sizeof(struct crypto_hash),GFP_KERNEL);
+	if(!ch) return ERR_PTR(-ENOMEM);
+
+	*closing_bracket = 0;
+	ch->base = crypto_alloc_tfm(alg_name + 5, 0);
+	*closing_bracket = ')';
+
+	if (ch->base == NULL) {
+		kfree(ch);
+		return ERR_PTR(-ENOMEM);
+	}
+
+	return ch;
+}
+
+static inline int
+crypto_hash_setkey(struct crypto_hash *hash,const u8 *key,unsigned int keylen)
+{
+	hash->key = key;
+	hash->keylen = keylen;
+
+	return 0;
+}
+
+static inline int
+crypto_hash_digest(struct hash_desc *desc, struct scatterlist *sg,
+		   unsigned int nbytes, u8 *out)
+{
+
+	crypto_hmac(desc->tfm->base, (u8*)desc->tfm->key,
+		    &desc->tfm->keylen, sg, 1 /* ! */ , out);
+	/* ! this is not generic. Would need to convert nbytes -> nsg */
+
+	return 0;
+}
+
+static inline void crypto_free_hash(struct crypto_hash *tfm)
+{
+	crypto_free_tfm(tfm->base);
+	kfree(tfm);
+}
+
+static inline unsigned int crypto_hash_digestsize(struct crypto_hash *tfm)
+{
+	return crypto_tfm_alg_digestsize(tfm->base);
+}
+
+static inline struct crypto_tfm *crypto_hash_tfm(struct crypto_hash *tfm)
+{
+        return tfm->base;
+}
 
 #endif
 

@@ -5,9 +5,9 @@
 
    This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-   Copyright (C) 2003-2007, LINBIT Information Technologies GmbH.
-   Copyright (C) 2003-2007, Philipp Reisner <philipp.reisner@linbit.com>.
-   Copyright (C) 2003-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
+   Copyright (C) 2003-2008, LINBIT Information Technologies GmbH.
+   Copyright (C) 2003-2008, Philipp Reisner <philipp.reisner@linbit.com>.
+   Copyright (C) 2003-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 
    drbd is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -39,32 +39,47 @@ STATIC int _drbd_md_sync_page_io(drbd_dev *mdev,
 				 struct page *page, sector_t sector,
 				 int rw, int size)
 {
-	struct bio *bio = bio_alloc(GFP_NOIO, 1);
-	struct completion event;
+	struct bio *bio;
+	struct drbd_md_io md_io;
 	int ok;
 
+	md_io.mdev = mdev;
+	init_completion(&md_io.event);
+	md_io.error = 0;
+
+	if (rw == WRITE && !test_bit(MD_NO_BARRIER, &mdev->flags))
+	    rw |= (1<<BIO_RW_BARRIER);
+	rw |= (1 << BIO_RW_SYNC);
+
+ retry:
+	bio = bio_alloc(GFP_NOIO, 1);
 	bio->bi_bdev = bdev->md_bdev;
 	bio->bi_sector = sector;
 	ok = (bio_add_page(bio, page, size, 0) == size);
-	if(!ok) goto out;
-	init_completion(&event);
-	bio->bi_private = &event;
+	if (!ok)
+		goto out;
+	bio->bi_private = &md_io;
 	bio->bi_end_io = drbd_md_io_complete;
+	bio->bi_rw = rw;
 
-	if (FAULT_ACTIVE(mdev, (rw & WRITE)? DRBD_FAULT_MD_WR:DRBD_FAULT_MD_RD)) {
-		bio->bi_rw |= rw;
+	dump_internal_bio("Md", mdev, bio, 0);
+
+	if (FAULT_ACTIVE(mdev, (rw & WRITE)? DRBD_FAULT_MD_WR:DRBD_FAULT_MD_RD))
 		bio_endio(bio, -EIO);
-	}
-	else {
-#ifdef BIO_RW_SYNC
-		submit_bio(rw | (1 << BIO_RW_SYNC), bio);
-#else
+	else
 		submit_bio(rw, bio);
-		drbd_blk_run_queue(bdev_get_queue(bdev->md_bdev));
-#endif
+	wait_for_completion(&md_io.event);
+	ok = bio_flagged(bio, BIO_UPTODATE);
+
+	/* check for unsupported barrier op */
+	if (unlikely(md_io.error == -EOPNOTSUPP && bio_barrier(bio))) {
+		/* Try again with no barrier */
+		WARN("Barriers not supported on meta data device - disabling\n");
+		set_bit(MD_NO_BARRIER,&mdev->flags);
+		rw &= ~(1 << BIO_RW_BARRIER);
+		bio_put(bio);
+		goto retry;
 	}
-	wait_for_completion(&event);
-	ok = test_bit(BIO_UPTODATE, &bio->bi_flags);
  out:
 	bio_put(bio);
 	return ok;
@@ -541,6 +556,7 @@ STATIC BIO_ENDIO_FN(atodb_endio)
 		error = -EIO;
 	}
 
+	/* corresponding drbd_io_error is in drbd_al_to_on_disk_bm */
 	drbd_chk_io_error(mdev,error,TRUE);
 	if(error && wc->error == 0) wc->error=error;
 
@@ -678,18 +694,22 @@ void drbd_al_to_on_disk_bm(struct Drbd_Conf *mdev)
 		} else {
 			submit_bio(WRITE, bios[i]);
 		}
-
 	}
 
 	drbd_blk_run_queue(bdev_get_queue(mdev->bc->md_bdev));
 
-	// In case we did not submit a single IO do not wait for
-	// them to complete. ( Because we would wait forever here. )
-	//
-	// In case we had IOs and they are already complete, there
-	// is not point in waiting anyways.
-	// Therefore this if() ...
-	if(atomic_read(&wc.count)) wait_for_completion(&wc.io_done);
+	/* In case we did not submit a single IO do not wait for
+	 * them to complete. ( Because we would wait forever here. )
+	 *
+	 * In case we had IOs and they are already complete, there
+	 * is not point in waiting anyways.
+	 * Therefore this if () ... */
+	if (atomic_read(&wc.count)) {
+		wait_for_completion(&wc.io_done);
+		/* flush bitmap to stable storage */
+		if (!test_bit(MD_NO_BARRIER,&mdev->flags))
+			blkdev_issue_flush(mdev->bc->md_bdev, NULL);
+	}
 
 	dec_local(mdev);
 
@@ -702,7 +722,11 @@ void drbd_al_to_on_disk_bm(struct Drbd_Conf *mdev)
 	for(i=0;i<nr_elements;i++) {
 		if(bios[i]==NULL) break;
 		bios[i]->bi_size=0;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
+		atodb_endio(bios[i], MD_HARDSECT, 0);
+#else
 		atodb_endio(bios[i], 0);
+#endif
 	}
 	kfree(bios);
 
@@ -845,6 +869,7 @@ STATIC void drbd_try_clear_on_disk_bm(struct Drbd_Conf *mdev,sector_t sector,
 				     ext->lce.lc_number, ext->rs_left, ext->rs_failed, count);
 				dump_stack();
 				// FIXME brrrgs. should never happen!
+				lc_put(mdev->resync, &ext->lce);
 				drbd_force_state(mdev,NS(conn,Disconnecting));
 				return;
 			}
@@ -907,7 +932,7 @@ STATIC void drbd_try_clear_on_disk_bm(struct Drbd_Conf *mdev,sector_t sector,
 void __drbd_set_in_sync(drbd_dev* mdev, sector_t sector, int size, const char* file, const unsigned int line)
 {
 	/* Is called from worker and receiver context _only_ */
-	unsigned long sbnr,ebnr,lbnr,bnr;
+	unsigned long sbnr,ebnr,lbnr;
 	unsigned long count = 0;
 	sector_t esector, nr_sectors;
 	int wake_up=0;
@@ -950,9 +975,7 @@ void __drbd_set_in_sync(drbd_dev* mdev, sector_t sector, int size, const char* f
 	 * we count rs_{total,left} in bits, not sectors.
 	 */
 	spin_lock_irqsave(&mdev->al_lock,flags);
-	for(bnr=sbnr; bnr <= ebnr; bnr++) {
-		if (drbd_bm_clear_bit(mdev,bnr)) count++;
-	}
+	count = drbd_bm_clear_bits(mdev,sbnr,ebnr);
 	if (count) {
 		// we need the lock for drbd_try_clear_on_disk_bm
 		if(jiffies - mdev->rs_mark_time > HZ*10) {
@@ -988,34 +1011,21 @@ void __drbd_set_out_of_sync(drbd_dev* mdev, sector_t sector, int size, const cha
 	unsigned long sbnr,ebnr,lbnr;
 	sector_t esector, nr_sectors;
 
-	/*  Find codepoints that call set_out_of_sync()
-	unsigned long flags;
-	unsigned int enr;
-	struct bm_extent* ext;
-
-	if(inc_local(mdev)) {
-		enr = BM_SECT_TO_EXT(sector);
-		spin_lock_irqsave(&mdev->al_lock,flags);
-		ext = (struct bm_extent *) lc_find(mdev->resync,enr);
-		if (ext) {
-			WARN("BAD! things will happen, find this.\n");
-			dump_stack();
-		}
-		spin_unlock_irqrestore(&mdev->al_lock,flags);
-		dec_local(mdev);
-	}
-	*/
-
 	if (size <= 0 || (size & 0x1ff) != 0 || size > DRBD_MAX_SEGMENT_SIZE) {
 		ERR("sector: %llus, size: %d\n",(unsigned long long)sector,size);
 		return;
 	}
 
+	if (!inc_local(mdev))
+		return; /* no disk, no metadata, no bitmap to set bits in */
+
 	nr_sectors = drbd_get_capacity(mdev->this_bdev);
 	esector = sector + (size>>9) -1;
 
-	ERR_IF(sector >= nr_sectors) return;
-	ERR_IF(esector >= nr_sectors) esector = (nr_sectors-1);
+	ERR_IF(sector >= nr_sectors)
+		goto out;
+	ERR_IF(esector >= nr_sectors)
+		esector = (nr_sectors-1);
 
 	lbnr = BM_SECT_TO_BIT(nr_sectors-1);
 
@@ -1031,7 +1041,10 @@ void __drbd_set_out_of_sync(drbd_dev* mdev, sector_t sector, int size, const cha
 
 	/* ok, (capacity & 7) != 0 sometimes, but who cares...
 	 * we count rs_{total,left} in bits, not sectors.  */
-	drbd_bm_set_bits_in_irq(mdev,sbnr,ebnr);
+	drbd_bm_set_bits(mdev,sbnr,ebnr);
+
+out:
+	dec_local(mdev);
 }
 
 static inline
@@ -1398,8 +1411,8 @@ int drbd_rs_del_all(drbd_dev* mdev)
 void drbd_rs_failed_io(drbd_dev* mdev, sector_t sector, int size)
 {
 	/* Is called from worker and receiver context _only_ */
-	unsigned long sbnr,ebnr,lbnr,bnr;
-	unsigned long count = 0;
+	unsigned long sbnr, ebnr, lbnr;
+	unsigned long count;
 	sector_t esector, nr_sectors;
 	int wake_up=0;
 
@@ -1440,9 +1453,7 @@ void drbd_rs_failed_io(drbd_dev* mdev, sector_t sector, int size)
 	 * we count rs_{total,left} in bits, not sectors.
 	 */
 	spin_lock_irq(&mdev->al_lock);
-	for(bnr=sbnr; bnr <= ebnr; bnr++) {
-		if (drbd_bm_test_bit(mdev,bnr)>0) count++;
-	}
+	count = drbd_bm_count_bits(mdev,sbnr,ebnr);
 	if (count) {
 		mdev->rs_failed += count;
 

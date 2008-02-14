@@ -5,9 +5,9 @@
 
    This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-   Copyright (C) 2003-2007, LINBIT Information Technologies GmbH.
-   Copyright (C) 2003-2007, Philipp Reisner <philipp.reisner@linbit.com>.
-   Copyright (C) 2003-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
+   Copyright (C) 2003-2008, LINBIT Information Technologies GmbH.
+   Copyright (C) 2003-2008, Philipp Reisner <philipp.reisner@linbit.com>.
+   Copyright (C) 2003-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 
    drbd is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -57,8 +57,8 @@ struct lru_cache* lc_alloc(const char *name, unsigned int e_count,
 	bytes *= e_count;
 	bytes += sizeof(struct lru_cache);
 	lc     = vmalloc(bytes);
-	memset(lc, 0, bytes);
 	if (lc) {
+		memset(lc, 0, bytes);
 		INIT_LIST_HEAD(&lc->in_use);
 		INIT_LIST_HEAD(&lc->lru);
 		INIT_LIST_HEAD(&lc->free);

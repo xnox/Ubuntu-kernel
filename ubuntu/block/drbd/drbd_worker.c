@@ -5,9 +5,9 @@
 
    This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-   Copyright (C) 2001-2007, LINBIT Information Technologies GmbH.
-   Copyright (C) 1999-2007, Philipp Reisner <philipp.reisner@linbit.com>.
-   Copyright (C) 2002-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
+   Copyright (C) 2001-2008, LINBIT Information Technologies GmbH.
+   Copyright (C) 1999-2008, Philipp Reisner <philipp.reisner@linbit.com>.
+   Copyright (C) 2002-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 
    drbd is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -64,11 +64,19 @@
  */
 BIO_ENDIO_FN(drbd_md_io_complete)
 {
+	struct drbd_md_io *md_io;
+
 	BIO_ENDIO_FN_START;
 	/* error parameter ignored:
 	 * drbd_md_sync_page_io explicitly tests bio_uptodate(bio); */
 
-	complete((struct completion*)bio->bi_private);
+	md_io = (struct drbd_md_io *)bio->bi_private;
+
+	md_io->error = error;
+
+	dump_internal_bio("Md", md_io->mdev, bio, 1);
+
+	complete(&md_io->event);
 	BIO_ENDIO_FN_RETURN;
 }
 
@@ -98,6 +106,8 @@ BIO_ENDIO_FN(drbd_endio_read_sec)
 	}
 
 	D_ASSERT(e->block_id != ID_VACANT);
+
+	dump_internal_bio("Sec", mdev, bio, 1);
 
 	spin_lock_irqsave(&mdev->req_lock,flags);
 	mdev->read_cnt += e->size >> 9;
@@ -143,6 +153,8 @@ BIO_ENDIO_FN(drbd_endio_write_sec)
 	}
 
 	D_ASSERT(e->block_id != ID_VACANT);
+
+	dump_internal_bio("Sec", mdev, bio, 1);
 
 	spin_lock_irqsave(&mdev->req_lock,flags);
 	mdev->writ_cnt += e->size >> 9;
@@ -209,6 +221,8 @@ BIO_ENDIO_FN(drbd_endio_pri)
 		error = -EIO;
 	}
 
+	dump_internal_bio("Pri", mdev, bio, 1);
+
 	/* to avoid recursion in _req_mod */
 	what = error
 	       ? (bio_data_dir(bio) == WRITE)
@@ -239,8 +253,6 @@ int w_io_error(drbd_dev* mdev, struct drbd_work* w,int cancel)
 	 * when it is done and had a local write error, see comments there */
 	drbd_req_free(req);
 
-	if(unlikely(cancel)) return 1;
-
 	ok = drbd_io_error(mdev, FALSE);
 	if(unlikely(!ok)) ERR("Sending in w_io_error() failed\n");
 	return ok;
@@ -249,6 +261,11 @@ int w_io_error(drbd_dev* mdev, struct drbd_work* w,int cancel)
 int w_read_retry_remote(drbd_dev* mdev, struct drbd_work* w,int cancel)
 {
 	drbd_request_t *req = (drbd_request_t*)w;
+
+	/* FIXME this is ugly. we should not detach for read io-error,
+	 * but try to WRITE the DataReply to the failed location,
+	 * to give the disk the chance to relocate that block */
+	drbd_io_error(mdev,FALSE); /* tries to schedule a detach and notifies peer */
 
 	spin_lock_irq(&mdev->req_lock);
 	if ( cancel ||
@@ -262,10 +279,6 @@ int w_read_retry_remote(drbd_dev* mdev, struct drbd_work* w,int cancel)
 	}
 	spin_unlock_irq(&mdev->req_lock);
 
-	/* FIXME this is ugly. we should not detach for read io-error,
-	 * but try to WRITE the DataReply to the failed location,
-	 * to give the disk the chance to relocate that block */
-	drbd_io_error(mdev,FALSE); /* tries to schedule a detach and notifies peer */
 	return w_send_read_req(mdev,w,0);
 }
 
@@ -799,8 +812,7 @@ STATIC int _drbd_pause_after(drbd_dev *mdev)
 		if (!(odev = minor_to_mdev(i)) ||
 		    (odev->state.conn == StandAlone && odev->state.disk == Diskless) ) continue;
 		if (! _drbd_may_sync_now(odev)) {
-			rv |= ( _drbd_set_state(_NS(odev,aftr_isp,1),
-						ChgStateHard|ScheduleAfter)
+			rv |= ( _drbd_set_state(_NS(odev,aftr_isp,1),ChgStateHard)
 				!= SS_NothingToDo ) ;
 		}
 	}
@@ -823,8 +835,7 @@ STATIC int _drbd_resume_next(drbd_dev *mdev)
 		if( !(odev = minor_to_mdev(i)) ) continue;
 		if ( odev->state.aftr_isp ) {
 			if (_drbd_may_sync_now(odev)) {
-				rv |= ( _drbd_set_state(_NS(odev,aftr_isp,0),
-							ChgStateHard|ScheduleAfter)
+				rv |= ( _drbd_set_state(_NS(odev,aftr_isp,0),ChgStateHard)
 					!= SS_NothingToDo ) ;
 			}
 		}
@@ -871,7 +882,7 @@ void drbd_alter_sa(drbd_dev *mdev, int na)
  */
 void drbd_start_resync(drbd_dev *mdev, drbd_conns_t side)
 {
-	drbd_state_t os,ns;
+	drbd_state_t ns;
 	int r=0;
 
 	MTRACE(TraceTypeResync, TraceLvlSummary,
@@ -897,7 +908,7 @@ void drbd_start_resync(drbd_dev *mdev, drbd_conns_t side)
 	}
 
 	drbd_global_lock();
-	ns = os = mdev->state;
+	ns = mdev->state;
 
 	ns.aftr_isp = !_drbd_may_sync_now(mdev);
 
@@ -924,8 +935,6 @@ void drbd_start_resync(drbd_dev *mdev, drbd_conns_t side)
 	drbd_global_unlock();
 
 	if ( r == SS_Success ) {
-		after_state_ch(mdev,os,ns,ChgStateVerbose);
-
 		INFO("Began resync as %s (will sync %lu KB [%lu bits set]).\n",
 		     conns_to_name(ns.conn),
 		     (unsigned long) mdev->rs_total << (BM_BLOCK_SIZE_B-10),
@@ -1039,7 +1048,6 @@ int drbd_worker(struct Drbd_thread *thi)
 
 	D_ASSERT( mdev->state.disk == Diskless && mdev->state.conn == StandAlone );
 	drbd_mdev_cleanup(mdev);
-	module_put(THIS_MODULE);
 
 	INFO("worker terminated\n");
 

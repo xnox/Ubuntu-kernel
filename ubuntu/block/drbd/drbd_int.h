@@ -4,9 +4,9 @@
 
   This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-  Copyright (C) 2001-2007, LINBIT Information Technologies GmbH.
-  Copyright (C) 1999-2007, Philipp Reisner <philipp.reisner@linbit.com>.
-  Copyright (C) 2002-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
+  Copyright (C) 2001-2008, LINBIT Information Technologies GmbH.
+  Copyright (C) 1999-2008, Philipp Reisner <philipp.reisner@linbit.com>.
+  Copyright (C) 2002-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 
   drbd is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -193,7 +193,7 @@ extern void drbd_assert_breakpoint(drbd_dev*, char *, char *, int );
 #endif
 #define ERR_IF(exp) if (({ \
 	int _b = (exp)!=0; \
-	if (_b) ERR("%s: (" #exp ") in %s:%d\n", __func__, __FILE__,__LINE__); \
+	if (_b) ERR("%s: (%s) in %s:%d\n", __func__, #exp, __FILE__,__LINE__); \
 	 _b; \
 	}))
 
@@ -243,7 +243,12 @@ drbd_insert_fault(drbd_dev *mdev, unsigned int type) {
 #else
 # define MUST_HOLD(lock)
 #endif
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,8)
 # define HAVE_KERNEL_SENDMSG 1
+#else
+# define HAVE_KERNEL_SENDMSG 0
+#endif
 
 
 /*
@@ -287,7 +292,8 @@ typedef enum {
 	AuthResponse,
 	StateChgRequest,
 
-	Ping,         // These are sent on the meta socket...
+	FIRST_ASENDER_CMD,
+	Ping = FIRST_ASENDER_CMD,
 	PingAck,
 	RecvAck,      // Used in protocol B
 	WriteAck,     // Used in protocol C
@@ -298,6 +304,7 @@ typedef enum {
 	NegRSDReply,  // Local disk is broken...
 	BarrierAck,
 	StateChgReply,
+	LAST_ASENDER_CMD = StateChgReply,
 
 	MAX_CMD,
 	MayIgnore = 0x100, // Flag only to test if (cmd > MayIgnore) ...
@@ -676,7 +683,7 @@ enum {
 
 /* global flag bits */
 enum {
-	ISSUE_BARRIER,		// next Data is preceeded by a Barrier
+	CREATE_BARRIER,		// next write has to create a new drbd_barrier
 	SIGNAL_ASENDER,		// whether asender wants to be interrupted
 	SEND_PING,		// whether asender should send a ping asap
 	WRITE_ACK_PENDING,	// so BarrierAck won't overtake WriteAck
@@ -693,7 +700,14 @@ enum {
 	CRASHED_PRIMARY,	// This node was a crashed primary. Gets
 	                        // cleared when the state.conn  goes into
 	                        // Connected state.
-	WRITE_BM_AFTER_RESYNC	// A kmalloc() during resync failed
+	WRITE_BM_AFTER_RESYNC,	// A kmalloc() during resync failed
+	NO_BARRIER_SUPP,        // underlying block device doesn't implement barriers
+	CONSIDER_RESYNC,
+
+	LL_DEV_NO_FLUSH,	/* blkdev_issue_flush does not work,
+				   so don't even try */
+	MD_NO_BARRIER,		/* meta data device does not support barriers,
+				   so don't even try */
 };
 
 struct drbd_bitmap; // opaque for Drbd_Conf
@@ -760,6 +774,13 @@ struct drbd_backing_dev {
 	struct file *md_file;
 	struct drbd_md md;
 	struct disk_conf dc; /* The user provided config... */
+	sector_t known_size;
+};
+
+struct drbd_md_io {
+	struct Drbd_Conf *mdev;
+	struct completion event;
+	int error;
 };
 
 struct Drbd_Conf {
@@ -911,7 +932,6 @@ static inline void drbd_put_data_sock(drbd_dev *mdev)
 enum chg_state_flags {
 	ChgStateHard    = 1,
 	ChgStateVerbose = 2,
-	ScheduleAfter   = 4,
 };
 
 extern int drbd_change_state(drbd_dev* mdev, enum chg_state_flags f,
@@ -921,8 +941,6 @@ extern int _drbd_request_state(drbd_dev*, drbd_state_t, drbd_state_t,
 			       enum chg_state_flags);
 extern int _drbd_set_state(drbd_dev*, drbd_state_t, enum chg_state_flags );
 extern void print_st_err(drbd_dev*, drbd_state_t, drbd_state_t, int );
-extern void after_state_ch(drbd_dev* mdev, drbd_state_t os, drbd_state_t ns,
-			   enum chg_state_flags);
 extern int  drbd_thread_start(struct Drbd_thread *thi);
 extern void _drbd_thread_stop(struct Drbd_thread *thi, int restart, int wait);
 extern void drbd_thread_signal(struct Drbd_thread *thi);
@@ -930,14 +948,16 @@ extern void drbd_free_resources(drbd_dev *mdev);
 extern void tl_release(drbd_dev *mdev,unsigned int barrier_nr,
 		       unsigned int set_size);
 extern void tl_clear(drbd_dev *mdev);
-extern struct drbd_barrier *_tl_add_barrier(drbd_dev *,struct drbd_barrier *);
+extern void _tl_add_barrier(drbd_dev *, struct drbd_barrier *);
 extern void drbd_free_sock(drbd_dev *mdev);
 extern int drbd_send(drbd_dev *mdev, struct socket *sock,
 		     void* buf, size_t size, unsigned msg_flags);
 extern int drbd_send_protocol(drbd_dev *mdev);
+extern int _drbd_send_uuids(drbd_dev *mdev);
 extern int drbd_send_uuids(drbd_dev *mdev);
 extern int drbd_send_sync_uuid(drbd_dev *mdev, u64 val);
 extern int drbd_send_sizes(drbd_dev *mdev);
+extern int _drbd_send_state(drbd_dev *mdev);
 extern int drbd_send_state(drbd_dev *mdev);
 extern int _drbd_send_cmd(drbd_dev *mdev, struct socket *sock,
 			  Drbd_Packet_Cmd cmd, Drbd_Header *h,
@@ -979,6 +999,7 @@ extern int  drbd_md_read(drbd_dev *mdev, struct drbd_backing_dev * bdev);
 extern void drbd_uuid_set(drbd_dev *mdev,int idx, u64 val);
 extern void _drbd_uuid_set(drbd_dev *mdev, int idx, u64 val);
 extern void drbd_uuid_new_current(drbd_dev *mdev);
+extern void _drbd_uuid_new_current(drbd_dev *mdev);
 extern void drbd_uuid_set_bm(drbd_dev *mdev, u64 val);
 extern void drbd_md_set_flag(drbd_dev *mdev, int flags);
 extern void drbd_md_clear_flag(drbd_dev *mdev, int flags);
@@ -1119,15 +1140,13 @@ extern int  drbd_bm_init      (drbd_dev *mdev);
 extern int  drbd_bm_resize    (drbd_dev *mdev, sector_t sectors);
 extern void drbd_bm_cleanup   (drbd_dev *mdev);
 extern void drbd_bm_set_all   (drbd_dev *mdev);
-extern void drbd_bm_clear_all (drbd_dev *mdev);
 extern void drbd_bm_reset_find(drbd_dev *mdev);
-extern int  drbd_bm_set_bit   (drbd_dev *mdev, unsigned long bitnr);
-extern int  drbd_bm_set_bits_in_irq(
+extern int  drbd_bm_set_bits(
+		drbd_dev *mdev, unsigned long s, unsigned long e);
+extern int  drbd_bm_clear_bits(
 		drbd_dev *mdev, unsigned long s, unsigned long e);
 extern int  drbd_bm_test_bit  (drbd_dev *mdev, unsigned long bitnr);
-extern int  drbd_bm_clear_bit (drbd_dev *mdev, unsigned long bitnr);
 extern int  drbd_bm_e_weight  (drbd_dev *mdev, unsigned long enr);
-extern int  drbd_bm_read_sect (drbd_dev *mdev, unsigned long enr);
 extern int  drbd_bm_write_sect(drbd_dev *mdev, unsigned long enr);
 extern int  drbd_bm_read      (drbd_dev *mdev);
 extern int  drbd_bm_write     (drbd_dev *mdev);
@@ -1144,11 +1163,6 @@ extern void drbd_bm_merge_lel (drbd_dev *mdev, size_t offset, size_t number,
 // for _drbd_send_bitmap and drbd_bm_write_sect
 extern void drbd_bm_get_lel   (drbd_dev *mdev, size_t offset, size_t number,
 				unsigned long* buffer);
-/*
- * only used by drbd_bm_read_sect
-extern void drbd_bm_set_lel   (drbd_dev *mdev, size_t offset, size_t number,
-				unsigned long* buffer);
-*/
 
 extern void __drbd_bm_lock    (drbd_dev *mdev, char* file, int line);
 extern void drbd_bm_unlock    (drbd_dev *mdev);
@@ -1156,6 +1170,7 @@ extern void drbd_bm_unlock    (drbd_dev *mdev);
 
 extern void _drbd_bm_recount_bits(drbd_dev *mdev, char* file, int line);
 #define drbd_bm_recount_bits(mdev) _drbd_bm_recount_bits(mdev,  __FILE__, __LINE__ )
+extern int drbd_bm_count_bits(drbd_dev *mdev, const unsigned long s, const unsigned long e);
 // drbd_main.c
 
 /* needs to be included here,
@@ -1199,6 +1214,7 @@ enum {
 	TraceTypeUnplug = 0x00000020,
 	TraceTypeNl     = 0x00000040,
 	TraceTypeALExts = 0x00000080,
+	TraceTypeIntRq  = 0x00000100,
 };
 
 static inline int
@@ -1242,11 +1258,17 @@ extern void drbd_print_buffer(const char *prefix,unsigned int flags,int size,
 			      unsigned int length);
 
 // Bio printing support
-extern void _dump_bio(drbd_dev *mdev, struct bio *bio, int complete);
+extern void _dump_bio(const char *pfx, drbd_dev *mdev, struct bio *bio, int complete);
 
 static inline void dump_bio(drbd_dev *mdev, struct bio *bio, int complete) {
 	MTRACE(TraceTypeRq,TraceLvlSummary,
-	       _dump_bio(mdev, bio, complete);
+	       _dump_bio("Rq", mdev, bio, complete);
+		);
+}
+
+static inline void dump_internal_bio(const char *pfx, drbd_dev *mdev, struct bio *bio, int complete) {
+	MTRACE(TraceTypeIntRq,TraceLvlSummary,
+	       _dump_bio(pfx, mdev, bio, complete);
 		);
 }
 
@@ -1269,6 +1291,7 @@ dump_packet(drbd_dev *mdev, struct socket *sock,
 #define TRACE(ignored...) ((void)0)
 
 #define dump_bio(ignored...) ((void)0)
+#define dump_internal_bio(ignored...) ((void)0)
 #define dump_packet(ignored...) ((void)0)
 #endif
 
@@ -1282,7 +1305,7 @@ extern int is_valid_ar_handle(drbd_request_t *, sector_t);
 // drbd_nl.c
 extern char* ppsize(char* buf, unsigned long long size);
 extern sector_t drbd_new_dev_size(struct Drbd_Conf*, struct drbd_backing_dev*);
-enum determin_dev_size_enum { unchanged = 0, shrunk = 1, grew = 2 };
+enum determin_dev_size_enum { dev_size_error = -1, unchanged = 0, shrunk = 1, grew = 2 };
 extern enum determin_dev_size_enum drbd_determin_dev_size(drbd_dev*);
 extern void resync_after_online_grow(drbd_dev *mdev);
 extern void drbd_setup_queue_param(drbd_dev *mdev, unsigned int);
@@ -1412,7 +1435,7 @@ extern void drbd_al_shrink(struct Drbd_Conf *mdev);
 
 void drbd_nl_cleanup(void);
 int __init drbd_nl_init(void);
-void drbd_bcast_state(drbd_dev *mdev);
+void drbd_bcast_state(drbd_dev *mdev, drbd_state_t state);
 void drbd_bcast_sync_progress(drbd_dev *mdev);
 
 /*
@@ -1481,8 +1504,7 @@ static inline void __drbd_chk_io_error(drbd_dev* mdev, int forcedetach)
 	case Detach:
 	case CallIOEHelper:
 		if (mdev->state.disk > Failed) {
-			_drbd_set_state(_NS(mdev,disk,Failed),
-					ChgStateHard|ScheduleAfter);
+			_drbd_set_state(_NS(mdev,disk,Failed),ChgStateHard);
 			ERR("Local IO failed. Detaching...\n");
 		}
 		break;
@@ -1786,6 +1808,40 @@ static inline int inc_local(drbd_dev* mdev)
 {
 	return inc_local_if_state(mdev, Inconsistent);
 }
+
+/* you must have an "inc_local" reference */
+static inline void drbd_get_syncer_progress(drbd_dev* mdev,
+		unsigned long *bits_left, unsigned int *per_mil_done)
+{
+	/*
+	 * this is to break it at compile time when we change that
+	 * (we may feel 4TB maximum storage per drbd is not enough)
+	 */
+	typecheck(unsigned long, mdev->rs_total);
+
+	/* note: both rs_total and rs_left are in bits, i.e. in
+	 * units of BM_BLOCK_SIZE.
+	 * for the percentage, we don't care. */
+
+	*bits_left = drbd_bm_total_weight(mdev) - mdev->rs_failed;
+	/* >> 10 to prevent overflow,
+	 * +1 to prevent division by zero */
+	if (*bits_left > mdev->rs_total) {
+		/* doh. logic bug somewhere.
+		 * for now, just try to prevent in-kernel buffer overflow.
+		 */
+		ERR("logic bug? rs_left=%lu > rs_total=%lu (rs_failed %lu)\n",
+				*bits_left, mdev->rs_total, mdev->rs_failed);
+		*per_mil_done = 0;
+	} else {
+		/* make sure the calculation happens in long context */
+		unsigned long tmp = 1000UL -
+				(*bits_left >> 10)*1000UL
+				/ ((mdev->rs_total >> 10) + 1UL);
+		*per_mil_done = tmp;
+	}
+}
+
 
 /* this throttles on-the-fly application requests
  * according to max_buffers settings;

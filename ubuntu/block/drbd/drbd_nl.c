@@ -5,9 +5,9 @@
 
    This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-   Copyright (C) 2001-2007, LINBIT Information Technologies GmbH.
-   Copyright (C) 1999-2007, Philipp Reisner <philipp.reisner@linbit.com>.
-   Copyright (C) 2002-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
+   Copyright (C) 2001-2008, LINBIT Information Technologies GmbH.
+   Copyright (C) 1999-2008, Philipp Reisner <philipp.reisner@linbit.com>.
+   Copyright (C) 2002-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 
    drbd is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 #include <linux/fs.h>
 #include <linux/file.h>
 #include <linux/slab.h>
-#include <linux/connector.h>
+#include "linux/connector.h"
 #include "linux/drbd.h"
 #include <linux/blkpg.h>
 
@@ -186,13 +186,13 @@ drbd_disks_t drbd_try_outdate_peer(drbd_dev *mdev)
 
 	D_ASSERT(mdev->state.pdsk == DUnknown);
 
-	fp = DontCare;
-	if(inc_local(mdev)) {
+	if (inc_local_if_state(mdev,UpToDate)) {
 		fp = mdev->bc->dc.fencing;
 		dec_local(mdev);
+	} else {
+		WARN("Not outdating peer, since I am diskless.");
+		return mdev->state.pdsk;
 	}
-
-	D_ASSERT( fp > DontCare );
 
 	if( fp == Stonith ) drbd_request_state(mdev,NS(susp,1));
 
@@ -223,7 +223,6 @@ drbd_disks_t drbd_try_outdate_peer(drbd_dev *mdev)
 	default:
 		/* The script is broken ... */
 		nps = DUnknown;
-		drbd_request_state(mdev,NS(disk,Outdated));
 		ERR("outdate-peer helper broken, returned %d \n",(r>>8)&0xff);
 		return nps;
 	}
@@ -269,7 +268,7 @@ int drbd_set_role(drbd_dev *mdev, drbd_role_t new_role, int force)
 
 			val.pdsk = nps;
 			mask.pdsk = disk_mask;
-			
+
 			continue;
 		}
 
@@ -301,7 +300,7 @@ int drbd_set_role(drbd_dev *mdev, drbd_role_t new_role, int force)
 		break;
 	}
 
-	if(forced) WARN("Forced to conisder local data as UpToDate!\n");
+	if(forced) WARN("Forced to consider local data as UpToDate!\n");
 
 	drbd_sync_me(mdev);
 
@@ -462,7 +461,7 @@ enum determin_dev_size_enum drbd_determin_dev_size(drbd_dev* mdev)
 	char ppb[10];
 
 	int md_moved, la_size_changed;
-	int rv=unchanged;
+	enum determin_dev_size_enum rv=unchanged;
 
 	wait_event(mdev->al_wait, lc_try_lock(mdev->act_log));
 
@@ -491,7 +490,7 @@ enum determin_dev_size_enum drbd_determin_dev_size(drbd_dev* mdev)
 				    "Leaving size unchanged at size = %lu KB\n",
 				    (unsigned long)size);
 			}
-			rv = err;
+			rv = dev_size_error;
 		}
 		// racy, see comments above.
 		drbd_set_my_capacity(mdev,size);
@@ -499,7 +498,7 @@ enum determin_dev_size_enum drbd_determin_dev_size(drbd_dev* mdev)
 		INFO("size = %s (%llu KB)\n",ppsize(ppb,size>>1),
 		     (unsigned long long)size>>1);
 	}
-	if (rv < 0) goto out;
+	if (rv == dev_size_error) goto out;
 
 	la_size_changed = (la_size != mdev->bc->md.la_size_sect);
 
@@ -851,10 +850,13 @@ STATIC int drbd_nl_disk_conf(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 		goto release_bdev2_fail;
 	}
 
+	nbc->known_size = drbd_get_capacity(nbc->backing_bdev);
+
 	if((retcode = drbd_request_state(mdev,NS(disk,Attaching))) < SS_Success ) {
 		goto release_bdev2_fail;
 	}
 
+	drbd_thread_start(&mdev->worker);
 	drbd_md_set_sector_offsets(mdev,nbc);
 
 	retcode = drbd_md_read(mdev,nbc);
@@ -929,7 +931,7 @@ STATIC int drbd_nl_disk_conf(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 	}
 
 	drbd_bm_lock(mdev); // racy...
-	if (drbd_determin_dev_size(mdev) < 0) {
+	if (drbd_determin_dev_size(mdev) == dev_size_error) {
 		retcode = VMallocFailed;
 		goto unlock_bm;
 	}
@@ -1000,7 +1002,6 @@ STATIC int drbd_nl_disk_conf(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 	rv = _drbd_set_state(mdev, ns, ChgStateVerbose);
 	ns = mdev->state;
 	spin_unlock_irq(&mdev->req_lock);
-	if (rv==SS_Success) after_state_ch(mdev,os,ns,ChgStateVerbose);
 
 	if (rv < SS_Success) {
 		goto unlock_bm;
@@ -1014,6 +1015,11 @@ STATIC int drbd_nl_disk_conf(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 		dec_local(mdev);
 	}
 
+	/* Reset the "barriers don't work" bits here, then force meta data to
+	 * be written, to ensure we determine if barriers are supported. */
+	clear_bit(LL_DEV_NO_FLUSH,&mdev->flags);
+	clear_bit(MD_NO_BARRIER,&mdev->flags);
+	drbd_md_mark_dirty(mdev);
 	drbd_md_sync(mdev);
 
 	reply->ret_code = retcode;
@@ -1224,6 +1230,9 @@ FIXME LGE
 
 	retcode = drbd_request_state(mdev,NS(conn,Unconnected));
 
+	if (retcode >= SS_Success)
+		drbd_thread_start(&mdev->worker);
+
 	reply->ret_code = retcode;
 	return 0;
 
@@ -1254,11 +1263,12 @@ STATIC int drbd_nl_disconnect(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 		// The peer probabely wants to see us outdated.
 		retcode = _drbd_request_state(mdev,NS2(conn,Disconnecting,
 						       disk,Outdated),0);
-		if( retcode == SS_IsDiskLess ) {
+		if (retcode == SS_IsDiskLess || retcode == SS_LowerThanOutdated) {
 			// We are diskless and our peer wants to outdate us.
 			// So, simply go away, and let the peer try to
 			// outdate us with its 'outdate-peer' handler later.
-			retcode = drbd_request_state(mdev,NS(conn,StandAlone));
+			drbd_force_state(mdev, NS(conn, Disconnecting));
+			retcode = SS_Success;
 		}
 	}
 
@@ -1299,7 +1309,8 @@ STATIC int drbd_nl_resize(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 {
 	struct resize rs;
 	int retcode=NoError;
-	int dd;
+	int ldsc = 0; /* local disk size changed */
+	enum determin_dev_size_enum dd;
 
 	memset(&rs, 0, sizeof(struct resize));
 	if (!resize_from_tags(mdev,nlp->tag_list,&rs)) {
@@ -1323,18 +1334,23 @@ STATIC int drbd_nl_resize(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 		goto fail;
 	}
 
+	if (mdev->bc->known_size != drbd_get_capacity(mdev->bc->backing_bdev)) {
+		mdev->bc->known_size = drbd_get_capacity(mdev->bc->backing_bdev);
+		ldsc = 1;
+	}
+
 	mdev->bc->dc.disk_size = (sector_t)rs.resize_size;
 	drbd_bm_lock(mdev);
 	dd = drbd_determin_dev_size(mdev);
 	drbd_md_sync(mdev);
 	drbd_bm_unlock(mdev);
 	dec_local(mdev);
-	if (dd < 0) {
+	if (dd == dev_size_error) {
 		retcode = VMallocFailed;
 		goto fail;
 	}
 
-	if (mdev->state.conn == Connected && dd != unchanged) {
+	if (mdev->state.conn == Connected && ( dd != unchanged || ldsc) ) {
 		drbd_send_uuids(mdev);
 		drbd_send_sizes(mdev);
 		if (dd == grew)
@@ -1475,29 +1491,7 @@ STATIC int drbd_nl_resume_io(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 STATIC int drbd_nl_outdate(drbd_dev *mdev, struct drbd_nl_cfg_req *nlp,
 			   struct drbd_nl_cfg_reply *reply)
 {
-	int retcode;
-	drbd_state_t os,ns;
-
-	spin_lock_irq(&mdev->req_lock);
-	os = mdev->state;
-	if( mdev->state.disk < Outdated ) {
-		retcode = -999;
-	} else {
-		retcode = _drbd_set_state(_NS(mdev,disk,Outdated),ChgStateVerbose);
-	}
-	ns = mdev->state;
-	spin_unlock_irq(&mdev->req_lock);
-	if (retcode==SS_Success) after_state_ch(mdev,os,ns, ChgStateVerbose);
-
-	if( retcode == -999 ) {
-		retcode = DiskLowerThanOutdated;
-		goto fail;
-	}
-
-	drbd_md_sync(mdev);
-
- fail:
-	reply->ret_code = retcode;
+	reply->ret_code = drbd_request_state(mdev,NS(disk,Outdated));
 	return 0;
 }
 
@@ -1712,7 +1706,7 @@ void drbd_connector_callback(void *data)
 
 atomic_t drbd_nl_seq = ATOMIC_INIT(2); // two.
 
-void drbd_bcast_state(drbd_dev *mdev)
+void drbd_bcast_state(drbd_dev *mdev, drbd_state_t state)
 {
 	char buffer[sizeof(struct cn_msg)+
 		    sizeof(struct drbd_nl_cfg_reply)+
@@ -1724,7 +1718,7 @@ void drbd_bcast_state(drbd_dev *mdev)
 
 	// WARN("drbd_bcast_state() got called\n");
 
-	tl = get_state_to_tags(mdev,(struct get_state*)&mdev->state,tl);
+	tl = get_state_to_tags(mdev,(struct get_state*)&state,tl);
 	*tl++ = TT_END; /* Close the tag list */
 
 	cn_reply->id.idx = CN_IDX_DRBD;
@@ -1792,27 +1786,19 @@ void drbd_bcast_sync_progress(drbd_dev *mdev)
 	struct cn_msg *cn_reply = (struct cn_msg *) buffer;
 	struct drbd_nl_cfg_reply* reply = (struct drbd_nl_cfg_reply*)cn_reply->data;
 	unsigned short *tl = reply->tag_list;
-	int res;
 	unsigned long rs_left;
+	unsigned int res;
 
-	if (inc_local(mdev)) {
-		typecheck(unsigned long, mdev->rs_total);
+	/* no local ref, no bitmap, no syncer progress, no broadcast. */
+	if (!inc_local(mdev))
+		return;
+	drbd_get_syncer_progress(mdev, &rs_left, &res);
+	dec_local(mdev);
 
-		rs_left = drbd_bm_total_weight(mdev) - mdev->rs_failed;
-		if (rs_left > mdev->rs_total) {
-			ERR("logic bug? rs_left=%lu > rs_total=%lu (rs_failed %lu)\n",
-					rs_left, mdev->rs_total, mdev->rs_failed);
-			res = 1000;
-		} else {
-			res = (rs_left >> 10)*1000/((mdev->rs_total >> 10) + 1);
-		}
-		dec_local(mdev);
-		res = 1000L - res;
-		*tl++ = T_sync_progress;
-		*tl++ = sizeof(int);
-		memcpy(tl, &res, sizeof(int));
-		tl=(unsigned short*)((char*)tl + sizeof(int));
-	}
+	*tl++ = T_sync_progress;
+	*tl++ = sizeof(int);
+	memcpy(tl, &res, sizeof(int));
+	tl=(unsigned short*)((char*)tl + sizeof(int));
 	*tl++ = TT_END; /* Close the tag list */
 
 	cn_reply->id.idx = CN_IDX_DRBD;

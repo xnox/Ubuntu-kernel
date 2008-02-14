@@ -4,9 +4,9 @@
 
   This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-  Copyright (C) 2003-2007, LINBIT Information Technologies GmbH.
-  Copyright (C) 2003-2007, Philipp Reisner <philipp.reisner@linbit.com>.
-  Copyright (C) 2003-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
+  Copyright (C) 2003-2008, LINBIT Information Technologies GmbH.
+  Copyright (C) 2003-2008, Philipp Reisner <philipp.reisner@linbit.com>.
+  Copyright (C) 2003-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 
   drbd is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -81,7 +81,8 @@ static const char *drbd_state_sw_errors[] = {
 	[-SS_IsDiskLess] = 
 		"Device is diskless, the requesed operation requires a disk",
 	[-SS_DeviceInUse] = "Device is held open by someone",
-	[-SS_NoNetConfig] = "Have no net/connection configuration"
+	[-SS_NoNetConfig] = "Have no net/connection configuration",
+	[-SS_LowerThanOutdated] = "Disk state is lower than outdated"
 };
 
 const char* conns_to_name(drbd_conns_t s) {
@@ -101,7 +102,7 @@ const char* disks_to_name(drbd_disks_t s) {
 }
 
 const char* set_st_err_name(set_st_err_t err) {
-	return err < SS_NoNetConfig ? "TOO_SMALL" :
+	return err < SS_LowerThanOutdated ? "TOO_SMALL" :
 	       err > SS_TwoPrimaries ? "TOO_LARGE"
 		        : drbd_state_sw_errors[-err];
 }

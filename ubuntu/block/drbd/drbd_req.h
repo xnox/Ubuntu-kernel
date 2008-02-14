@@ -4,9 +4,9 @@
 
    This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-   Copyright (C) 2006-2007, LINBIT Information Technologies GmbH.
-   Copyright (C) 2006-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
-   Copyright (C) 2006-2007, Philipp Reisner <philipp.reisner@linbit.com>.
+   Copyright (C) 2006-2008, LINBIT Information Technologies GmbH.
+   Copyright (C) 2006-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
+   Copyright (C) 2006-2008, Philipp Reisner <philipp.reisner@linbit.com>.
 
    DRBD is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -221,7 +221,7 @@ static inline struct hlist_head* tl_hash_slot(drbd_dev *mdev, sector_t sector)
 		((unsigned int)(sector>>HT_SHIFT) % mdev->tl_hash_s);
 }
 
-/* when we receive the answer for a read request,
+/* when we receive the ACK for a write request,
  * verify that we actually know about it */
 static inline drbd_request_t* _ack_id_to_req(drbd_dev *mdev,u64 id, sector_t sector)
 {

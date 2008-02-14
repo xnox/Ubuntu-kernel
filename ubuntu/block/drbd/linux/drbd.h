@@ -4,9 +4,9 @@
 
   This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-  Copyright (C) 2001-2007, LINBIT Information Technologies GmbH.
-  Copyright (C) 2001-2007, Philipp Reisner <philipp.reisner@linbit.com>.
-  Copyright (C) 2001-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
+  Copyright (C) 2001-2008, LINBIT Information Technologies GmbH.
+  Copyright (C) 2001-2008, Philipp Reisner <philipp.reisner@linbit.com>.
+  Copyright (C) 2001-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 
   drbd is free software; you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,11 +31,27 @@
 
 #ifdef __KERNEL__
 #include <linux/types.h>
+#include <asm/byteorder.h>
 #else
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <limits.h>
+
+/* Altough the Linux source code makes a difference between 
+   generic endiness and the bitfields' endianess, there is no
+   architecture as of Linux-2.6.24-rc4 where the bitfileds' endianess
+   does not match the generic endianess. */
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define __LITTLE_ENDIAN_BITFIELD
+#elif __BYTE_ORDER == __BIG_ENDIAN
+#define __BIG_ENDIAN_BITFIELD
+#else
+# error "sorry, weird endianness on this box"
 #endif
+
+#endif
+
 
 enum io_error_handler {
 	PassOn, /* FIXME should the better be named "Ignore"? */
@@ -108,7 +124,7 @@ enum ret_codes {
 	SyncAfterCycle,
 	PauseFlagAlreadySet,
 	PauseFlagAlreadyClear,
-	DiskLowerThanOutdated,
+	DiskLowerThanOutdated, /* obsolete, now SS_LowerThanOutdated */
 	UnknownNetLinkPacket,
 	HaveNoDiskConfig,
 	ProtocolCRequired,
@@ -176,18 +192,41 @@ typedef enum {
 	disk_mask=15
 } drbd_disks_t;
 
+/* According to gcc's docs is the ...
+ * The order of allocation of bit-fields within a unit (C90 6.5.2.1, C99 6.7.2.1).
+ * Determined by ABI.
+ * pointed out by Maxim Uvarov q<muvarov@ru.mvista.com>
+ * even though we transmit as "cpu_to_be32(state)",
+ * the offsets of the bitfields still need to be swapped
+ * on different endianess.
+ */
 typedef union {
 	struct {
-		unsigned role : 2 ;   // 3/4      primary/secondary/unknown
-		unsigned peer : 2 ;   // 3/4      primary/secondary/unknown
-		unsigned conn : 5 ;   // 17/32    cstates
-		unsigned disk : 4 ;   // 8/16     from Diskless to UpToDate
-		unsigned pdsk : 4 ;   // 8/16     from Diskless to UpToDate
-		unsigned susp : 1 ;   // 2/2      IO suspended  no/yes
-		unsigned aftr_isp : 1 ; // isp .. imposed sync pause
+#if defined(__LITTLE_ENDIAN_BITFIELD)
+		unsigned role : 2 ;   /* 3/4	 primary/secondary/unknown */
+		unsigned peer : 2 ;   /* 3/4	 primary/secondary/unknown */
+		unsigned conn : 5 ;   /* 17/32	 cstates */
+		unsigned disk : 4 ;   /* 8/16	 from Diskless to UpToDate */
+		unsigned pdsk : 4 ;   /* 8/16	 from Diskless to UpToDate */
+		unsigned susp : 1 ;   /* 2/2	 IO suspended  no/yes */
+		unsigned aftr_isp : 1 ; /* isp .. imposed sync pause */
 		unsigned peer_isp : 1 ;
 		unsigned user_isp : 1 ;
-		unsigned _pad : 11;   // 0        unused
+		unsigned _pad : 11;   /* 0	 unused */
+#elif defined(__BIG_ENDIAN_BITFIELD)
+		unsigned _pad : 11;   /* 0	 unused */
+		unsigned user_isp : 1 ;
+		unsigned peer_isp : 1 ;
+		unsigned aftr_isp : 1 ; /* isp .. imposed sync pause */
+		unsigned susp : 1 ;   /* 2/2	 IO suspended  no/yes */
+		unsigned pdsk : 4 ;   /* 8/16	 from Diskless to UpToDate */
+		unsigned disk : 4 ;   /* 8/16	 from Diskless to UpToDate */
+		unsigned conn : 5 ;   /* 17/32	 cstates */
+		unsigned peer : 2 ;   /* 3/4	 primary/secondary/unknown */
+		unsigned role : 2 ;   /* 3/4	 primary/secondary/unknown */
+#else
+# error "this endianess is not supported"
+#endif
 	};
 	unsigned int i;
 } drbd_state_t;
@@ -209,7 +248,8 @@ typedef enum {
 	SS_CW_FailedByPeer=-10,
 	SS_IsDiskLess=-11,
 	SS_DeviceInUse=-12,
-	SS_NoNetConfig=-13
+	SS_NoNetConfig=-13,
+	SS_LowerThanOutdated=-14
 } set_st_err_t;
 
 /* from drbd_strings.c */

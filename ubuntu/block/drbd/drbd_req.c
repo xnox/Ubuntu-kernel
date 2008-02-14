@@ -5,9 +5,9 @@
 
    This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 
-   Copyright (C) 2001-2007, LINBIT Information Technologies GmbH.
-   Copyright (C) 1999-2007, Philipp Reisner <philipp.reisner@linbit.com>.
-   Copyright (C) 2002-2007, Lars Ellenberg <lars.ellenberg@linbit.com>.
+   Copyright (C) 2001-2008, LINBIT Information Technologies GmbH.
+   Copyright (C) 1999-2008, Philipp Reisner <philipp.reisner@linbit.com>.
+   Copyright (C) 2002-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
 
    drbd is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -182,67 +182,91 @@ static void _req_is_done(drbd_dev *mdev, drbd_request_t *req, const int rw)
 	}
 }
 
+static void queue_barrier(drbd_dev *mdev)
+{
+	struct drbd_barrier *b;
+
+	/* We are within the req_lock. Once we queued the barrier for sending,
+	 * we set the CREATE_BARRIER bit. It is cleared as soon as a new
+	 * barrier/epoch object is added. This is the only place this bit is
+	 * set. It indicates that the barrier for this epoch is already queued,
+	 * and no new epoch has been created yet. */
+	if (test_bit(CREATE_BARRIER, &mdev->flags))
+		return;
+
+	b = mdev->newest_barrier;
+	b->w.cb = w_send_barrier;
+	/* inc_ap_pending done here, so we won't
+	 * get imbalanced on connection loss.
+	 * dec_ap_pending will be done in got_BarrierAck
+	 * or (on connection loss) in tl_clear.  */
+	inc_ap_pending(mdev);
+	drbd_queue_work(&mdev->data.work, &b->w);
+	set_bit(CREATE_BARRIER, &mdev->flags);
+}
+
 static void _about_to_complete_local_write(drbd_dev *mdev, drbd_request_t *req)
 {
 	const unsigned long s = req->rq_state;
-			drbd_request_t *i;
-			struct Tl_epoch_entry *e;
-			struct hlist_node *n;
-			struct hlist_head *slot;
+	drbd_request_t *i;
+	struct Tl_epoch_entry *e;
+	struct hlist_node *n;
+	struct hlist_head *slot;
 
-			/* before we can signal completion to the upper layers,
-			 * we may need to close the current epoch */
-			if (req->epoch == mdev->newest_barrier->br_number)
-				set_bit(ISSUE_BARRIER,&mdev->flags);
+	/* before we can signal completion to the upper layers,
+	 * we may need to close the current epoch */
+	if (mdev->state.conn >= Connected &&
+	    req->epoch == mdev->newest_barrier->br_number)
+		queue_barrier(mdev);
 
-			/* we need to do the conflict detection stuff,
-			 * if we have the ee_hash (two_primaries) and
-			 * this has been on the network */
-			if ((s & RQ_NET_DONE) && mdev->ee_hash != NULL) {
-				const sector_t sector = req->sector;
-				const int size = req->size;
+	/* we need to do the conflict detection stuff,
+	 * if we have the ee_hash (two_primaries) and
+	 * this has been on the network */
+	if ((s & RQ_NET_DONE) && mdev->ee_hash != NULL) {
+		const sector_t sector = req->sector;
+		const int size = req->size;
 
-				/* ASSERT:
-				 * there must be no conflicting requests, since
-				 * they must have been failed on the spot */
+		/* ASSERT:
+		 * there must be no conflicting requests, since
+		 * they must have been failed on the spot */
 #define OVERLAPS overlaps(sector, size, i->sector, i->size)
-				slot = tl_hash_slot(mdev,sector);
-				hlist_for_each_entry(i, n, slot, colision) {
-					if (OVERLAPS) {
-						ALERT("LOGIC BUG: completed: %p %llus +%u; other: %p %llus +%u\n",
-						      req, (unsigned long long)sector, size,
-						      i,   (unsigned long long)i->sector, i->size);
-					}
-				}
+		slot = tl_hash_slot(mdev,sector);
+		hlist_for_each_entry(i, n, slot, colision) {
+			if (OVERLAPS) {
+				ALERT("LOGIC BUG: completed: %p %llus +%u; other: %p %llus +%u\n",
+				      req, (unsigned long long)sector, size,
+				      i,   (unsigned long long)i->sector, i->size);
+			}
+		}
 
-				/* maybe "wake" those conflicting epoch entries
-				 * that wait for this request to finish.
-				 *
-				 * currently, there can be only _one_ such ee
-				 * (well, or some more, which would be pending
-				 * DiscardAck not yet sent by the asender...),
-				 * since we block the receiver thread upon the
-				 * first conflict detection, which will wait on
-				 * misc_wait.  maybe we want to assert that?
-				 *
-				 * anyways, if we found one,
-				 * we just have to do a wake_up.  */
+		/* maybe "wake" those conflicting epoch entries
+		 * that wait for this request to finish.
+		 *
+		 * currently, there can be only _one_ such ee
+		 * (well, or some more, which would be pending
+		 * DiscardAck not yet sent by the asender...),
+		 * since we block the receiver thread upon the
+		 * first conflict detection, which will wait on
+		 * misc_wait.  maybe we want to assert that?
+		 *
+		 * anyways, if we found one,
+		 * we just have to do a wake_up.  */
 #undef OVERLAPS
 #define OVERLAPS overlaps(sector, size, e->sector, e->size)
-				slot = ee_hash_slot(mdev,req->sector);
-				hlist_for_each_entry(e, n, slot, colision) {
-					if (OVERLAPS) {
-						wake_up(&mdev->misc_wait);
-						break;
-					}
-				}
+		slot = ee_hash_slot(mdev,req->sector);
+		hlist_for_each_entry(e, n, slot, colision) {
+			if (OVERLAPS) {
+				wake_up(&mdev->misc_wait);
+				break;
 			}
+		}
+	}
 #undef OVERLAPS
 }
 
 static void _complete_master_bio(drbd_dev *mdev, drbd_request_t *req, int error)
 {
-	dump_bio(mdev,req->master_bio,1);
+	dump_bio(mdev, req->master_bio, 1);
 	bio_endio(req->master_bio, error);
 	req->master_bio = NULL;
 	dec_ap_bio(mdev);
@@ -512,10 +536,10 @@ void _req_mod(drbd_request_t *req, drbd_req_event_t what, int error)
 
 		bio_put(req->private_bio);
 		req->private_bio = NULL;
-		dec_local(mdev);
 		if (bio_rw(req->master_bio) == READA) {
 			/* it is legal to fail READA */
 			_req_may_be_done(req,error);
+			dec_local(mdev);
 			break;
 		}
 		/* else */
@@ -536,6 +560,14 @@ void _req_mod(drbd_request_t *req, drbd_req_event_t what, int error)
 		 * we get back enough data to be able to clear the bits again.
 		 */
 		__drbd_chk_io_error(mdev,FALSE);
+		dec_local(mdev);
+		/* NOTE: if we have no connection,
+		 * or know the peer has no good data either,
+		 * then we don't actually need to "queue_for_net_read",
+		 * but we do so anyways, since the drbd_io_error()
+		 * and the potential state change to "Diskless"
+		 * needs to be done from process context */
+
 		/* fall through: _req_mod(req,queue_for_net_read); */
 
 	case queue_for_net_read:
@@ -582,20 +614,24 @@ void _req_mod(drbd_request_t *req, drbd_req_event_t what, int error)
 		 * Add req to the (now) current epoch (barrier). */
 
 		/* see drbd_make_request_common just after it grabs the req_lock */
-		D_ASSERT(test_bit(ISSUE_BARRIER, &mdev->flags) == 0);
+		D_ASSERT(test_bit(CREATE_BARRIER, &mdev->flags) == 0);
 
 		req->epoch = mdev->newest_barrier->br_number;
 		list_add_tail(&req->tl_requests,&mdev->newest_barrier->requests);
 
-		/* mark the current epoch as closed,
-		 * in case it outgrew the limit */
-		if( ++mdev->newest_barrier->n_req >= mdev->net_conf->max_epoch_size )
-			set_bit(ISSUE_BARRIER,&mdev->flags);
+		/* increment size of current epoch */
+		mdev->newest_barrier->n_req++;
 
+		/* queue work item to send data */
 		D_ASSERT(req->rq_state & RQ_NET_PENDING);
 		req->rq_state |= RQ_NET_QUEUED;
 		req->w.cb =  w_send_dblock;
 		drbd_queue_work(&mdev->data.work, &req->w);
+
+		/* close the epoch, in case it outgrew the limit */
+		if (mdev->newest_barrier->n_req >= mdev->net_conf->max_epoch_size)
+			queue_barrier(mdev);
+
 		break;
 
 	/* FIXME
@@ -603,7 +639,10 @@ void _req_mod(drbd_request_t *req, drbd_req_event_t what, int error)
 	 * we may not finish the request just yet.
 	 */
 	case send_canceled:
-		/* for the request, this is the same thing */
+		/* may be a write, may be a remote read */
+		if (req->rq_state & RQ_NET_PENDING) dec_ap_pending(mdev);
+		req->rq_state &= ~(RQ_NET_OK|RQ_NET_PENDING);
+		/* fall through */
 	case send_failed:
 		/* real cleanup will be done from tl_clear.  just update flags so
 		 * it is no longer marked as on the worker queue */
@@ -660,12 +699,23 @@ void _req_mod(drbd_request_t *req, drbd_req_event_t what, int error)
 	case write_acked_by_peer_and_sis:
 		req->rq_state |= RQ_NET_SIS;
 	case conflict_discarded_by_peer:
-		/* interesstingly, this is the same thing! */
-	case write_acked_by_peer:
-		/* assert something? */
-		/* protocol C; successfully written on peer */
+		/* for discarded conflicting writes of multiple primarys,
+		 * there is no need to keep anything in the tl, potential
+		 * node crashes are covered by the activity log. */
 		req->rq_state |= RQ_NET_DONE;
-		/* rest is the same as for: */
+		/* fall through */
+	case write_acked_by_peer:
+		/* protocol C; successfully written on peer.
+		 * Nothing to do here.
+		 * We want to keep the tl in place for all protocols, to cater
+		 * for volatile write-back caches on lower level devices.
+		 *
+		 * A barrier request is expected to have forced all prior
+		 * requests onto stable storage, so completion of a barrier
+		 * request could set NET_DONE right here, and not wait for the
+		 * BarrierAck, but that is an unecessary optimisation. */
+
+		/* this makes it effectively the same as for: */
 	case recv_acked_by_peer:
 		/* protocol B; pretends to be sucessfully written on peer.
 		 * see also notes above in handed_over_to_network about
@@ -688,9 +738,6 @@ void _req_mod(drbd_request_t *req, drbd_req_event_t what, int error)
 		break;
 
 	case barrier_acked:
-		/* can even happen for protocol C,
-		 * when local io is still pending.
-		 * in which case it does nothing. */
 		if (req->rq_state & RQ_NET_PENDING) {
 			/* barrier came in before all requests have been acked.
 			 * this is bad, because if the connection is lost now,
@@ -721,7 +768,7 @@ void _req_mod(drbd_request_t *req, drbd_req_event_t what, int error)
  */
 STATIC int drbd_may_do_local_read(drbd_dev *mdev, sector_t sector, int size)
 {
-	unsigned long sbnr,ebnr,bnr;
+	unsigned long sbnr, ebnr;
 	sector_t esector, nr_sectors;
 
 	if (mdev->state.disk == UpToDate) return 1;
@@ -737,10 +784,7 @@ STATIC int drbd_may_do_local_read(drbd_dev *mdev, sector_t sector, int size)
 	sbnr = BM_SECT_TO_BIT(sector);
 	ebnr = BM_SECT_TO_BIT(esector);
 
-	for (bnr = sbnr; bnr <= ebnr; bnr++) {
-		if (drbd_bm_test_bit(mdev,bnr)) return 0;
-	}
-	return 1;
+	return (0 == drbd_bm_count_bits(mdev,sbnr,ebnr));
 }
 
 /*
@@ -762,9 +806,11 @@ STATIC int drbd_may_do_local_read(drbd_dev *mdev, sector_t sector, int size)
  */
 
 STATIC int
-drbd_make_request_common(drbd_dev *mdev, int rw, int size,
-			 sector_t sector, struct bio *bio)
+drbd_make_request_common(drbd_dev *mdev, struct bio *bio)
 {
+	const int rw = bio_rw(bio);
+	const int size = bio->bi_size;
+	const sector_t sector = bio->bi_sector;
 	struct drbd_barrier *b = NULL;
 	drbd_request_t *req;
 	int local, remote;
@@ -783,7 +829,7 @@ drbd_make_request_common(drbd_dev *mdev, int rw, int size,
 		return 0;
 	}
 
-	dump_bio(mdev,bio,0);
+	dump_bio(mdev, bio, 0);
 
 	local = inc_local(mdev);
 	if (!local) {
@@ -867,12 +913,12 @@ drbd_make_request_common(drbd_dev *mdev, int rw, int size,
 	 * if we lost that race, we retry.  */
 	if (rw == WRITE && remote &&
 	    mdev->unused_spare_barrier == NULL &&
-	    test_bit(ISSUE_BARRIER,&mdev->flags))
+	    test_bit(CREATE_BARRIER, &mdev->flags))
 	{
   allocate_barrier:
 		b = kmalloc(sizeof(struct drbd_barrier),GFP_NOIO);
 		if(!b) {
-			ERR("Failed to alloc barrier.");
+			ERR("Failed to alloc barrier.\n");
 			err = -ENOMEM;
 			goto fail_and_free_req;
 		}
@@ -902,7 +948,7 @@ drbd_make_request_common(drbd_dev *mdev, int rw, int size,
 	}
 	if (rw == WRITE && remote &&
 	    mdev->unused_spare_barrier == NULL &&
-	    test_bit(ISSUE_BARRIER,&mdev->flags)) {
+	    test_bit(CREATE_BARRIER, &mdev->flags)) {
 		/* someone closed the current epoch
 		 * while we were grabbing the spinlock */
 		spin_unlock_irq(&mdev->req_lock);
@@ -921,20 +967,13 @@ drbd_make_request_common(drbd_dev *mdev, int rw, int size,
 	 * make sure that, if this is a write request and it triggered a
 	 * barrier packet, this request is queued within the same spinlock. */
 	if (remote && mdev->unused_spare_barrier &&
-            test_and_clear_bit(ISSUE_BARRIER,&mdev->flags)) {
+            test_and_clear_bit(CREATE_BARRIER, &mdev->flags)) {
 		struct drbd_barrier *b = mdev->unused_spare_barrier;
-		b = _tl_add_barrier(mdev,b);
+		_tl_add_barrier(mdev, b);
 		mdev->unused_spare_barrier = NULL;
-		b->w.cb =  w_send_barrier;
-		/* inc_ap_pending done here, so we won't
-		 * get imbalanced on connection loss.
-		 * dec_ap_pending will be done in got_BarrierAck
-		 * or (on connection loss) in tl_clear.  */
-		inc_ap_pending(mdev);
-		drbd_queue_work(&mdev->data.work, &b->w);
 	} else {
 		D_ASSERT(!(remote && rw == WRITE &&
-			   test_bit(ISSUE_BARRIER,&mdev->flags)));
+			   test_bit(CREATE_BARRIER, &mdev->flags)));
 	}
 
 	/* NOTE
@@ -973,7 +1012,6 @@ drbd_make_request_common(drbd_dev *mdev, int rw, int size,
 			local = 0;
 		}
 		if (remote) dec_ap_pending(mdev);
-		dump_bio(mdev,req->master_bio,1);
 		/* THINK: do we want to fail it (-EIO), or pretend success? */
 		bio_endio(req->master_bio, 0);
 		req->master_bio = NULL;
@@ -1000,9 +1038,11 @@ drbd_make_request_common(drbd_dev *mdev, int rw, int size,
 		 * was not detached below us? */
 		req->private_bio->bi_bdev = mdev->bc->backing_bdev;
 
+		dump_internal_bio("Pri", mdev, req->private_bio, 0);
+
 		if (FAULT_ACTIVE(mdev, rw==WRITE ? DRBD_FAULT_DT_WR :
-				       ( rw==READ ? DRBD_FAULT_DT_RD :
-  				                   DRBD_FAULT_DT_RA ) ))
+				       (rw==READ ? DRBD_FAULT_DT_RD :
+				                   DRBD_FAULT_DT_RA) ))
 			bio_endio(req->private_bio, -EIO);
 		else
 			generic_make_request(req->private_bio);
@@ -1075,8 +1115,16 @@ int drbd_make_request_26(struct request_queue *q, struct bio *bio)
 		return 0;
 	}
 
-	/* Currently our BARRIER code is disabled. */
-	if(unlikely(bio_barrier(bio))) {
+	/* Reject barrier requests if we know the underlying device does
+	 * not support them.
+	 * XXX: Need to get this info from peer as well some how so we
+	 * XXX: reject if EITHER side/data/metadata area does not support them.
+	 *
+	 * because of those XXX, this is not yet enabled,
+	 * i.e. in drbd_init_set_defaults we set the NO_BARRIER_SUPP bit.
+	 */
+	if (unlikely(bio_barrier(bio) && test_bit(NO_BARRIER_SUPP, &mdev->flags))) {
+		/* WARN("Rejecting barrier request as underlying device does not support\n"); */
 		bio_endio(bio, -EOPNOTSUPP);
 		return 0;
 	}
@@ -1099,7 +1147,8 @@ int drbd_make_request_26(struct request_queue *q, struct bio *bio)
 		/* rather error out here than BUG in bio_split */
 		ERR("bio would need to, but cannot, be split: "
 		    "(vcnt=%u,idx=%u,size=%u,sector=%llu)\n",
-		    bio->bi_vcnt, bio->bi_idx, bio->bi_size, bio->bi_sector);
+		    bio->bi_vcnt, bio->bi_idx, bio->bi_size, 
+		    (unsigned long long)bio->bi_sector);
 		bio_endio(bio, -EINVAL);
 		return 0;
 	} else {
@@ -1124,8 +1173,7 @@ int drbd_make_request_26(struct request_queue *q, struct bio *bio)
 		return 0;
 	}}
 
-	return drbd_make_request_common(mdev,bio_rw(bio),bio->bi_size,
-					bio->bi_sector,bio);
+	return drbd_make_request_common(mdev,bio);
 }
 
 /* This is called by bio_add_page().  With this function we reduce
