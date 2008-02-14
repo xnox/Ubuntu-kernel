@@ -2,11 +2,6 @@
 
 CONFIG_IWLWIFI=m
 
-# Causes FTBS.
-ifneq ($(UBUNTU_FLAVOUR),powerpc64-smp)
-CONFIG_ALSA=m
-endif
-
 # XXX temporary, till linux-headers on ppc gets fixed.
 #CONFIG_BLK_DEV_GNBD=m
 
