@@ -4,7 +4,9 @@ ifeq ($(UBUNTU_FLAVOUR),virtual)
 CONFIG_VMWARE=m
 else
 
+ifeq ($(filter xen,$(UBUNTU_FLAVOUR)),)
 CONFIG_ALSA=m
+endif
 CONFIG_BLK_DEV_GNBD=m
 
 # Requires some headers from drivers/md
