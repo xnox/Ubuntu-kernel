@@ -2,7 +2,6 @@
 
 
 CONFIG_IWLWIFI=m
-CONFIG_ALSA=m
 CONFIG_BLK_DEV_GNBD=m
 
 # Requires some headers from drivers/md
