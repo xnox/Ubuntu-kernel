@@ -62,4 +62,4 @@ cd "${SRCDIR}"
 git-send-pack --force ${HOST}:${BUILDDIR} master || exit 1
 
 echo "  ${HOST}: cleaning up build area ..."
-EmitDoClean | ssh ${HOST} ${CHROOTCMD}
+EmitDoClean | ssh ${HOST} 2>/dev/null

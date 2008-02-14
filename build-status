@@ -25,7 +25,7 @@ while [ "$1" != "" ]; do
 		unbuilt=""
 		packaged=""
 
-		all_stamps=$(cat <<-EOD | ssh ${HOST} ${CHROOTCMD} 2>/dev/null
+		all_stamps=$(cat <<-EOD | ssh ${HOST} 2>/dev/null
 			BUILDS=$BUILDDIR/debian/build
 			STAMPS=$BUILDDIR/debian/stamps
 
