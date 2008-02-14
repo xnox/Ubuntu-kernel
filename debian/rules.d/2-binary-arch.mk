@@ -21,7 +21,7 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	touch $(builddir)/build-$*/ubuntu-config.h
 	cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` all-deps
 	cd $(builddir)/build-$*/sound/alsa-driver && aclocal && autoconf
-	cd $(builddir)/build-$*/sound/alsa-driver && ./configure --with-kernel=/lib/modules/$(release)-$(abinum)-$(target_flavour)/build 
+	cd $(builddir)/build-$*/sound/alsa-driver && ./configure --with-kernel=$(KDIR)
 	sed -i 's/CONFIG_SND_S3C2412_SOC_I2S=m/CONFIG_SND_S3C2412_SOC_I2S=/' $(builddir)/build-$*/sound/alsa-driver/toplevel.config
 	cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` dep
 	touch $@
