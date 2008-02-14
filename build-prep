@@ -37,37 +37,29 @@ if [ ! -d ${SRCDIR}/.git ]; then
 	exit 1
 fi
 
-#
-# For paths not located in /home the path is assumed to be under
-# the chroot tree.
-#
-case "${BUILDDIR}" in
-	/home/*|home/*)
-		INITDIR="${BUILDDIR}"
-		;;
-	*)
-		INITDIR="$(GetChrootLocation ${HOST} ${CHROOT})${BUILDDIR}"
-		;;
-esac
-
-cat <<EOD | ssh ${HOST} ${CHROOTCMD}
+cat <<EOD | ssh ${HOST} 2>/dev/null || exit 1
 if [ ! -d $BUILDDIR ]; then
 	echo "  remote: creating $BUILDDIR"
 	mkdir -p $BUILDDIR
+	if [ \$? -ne 0 ]; then
+		echo "  remote: failed to create directory!"
+		exit 1
+	fi
 fi
-if [ ! -d ${BUILDDIR}/.git ]; then
-	cd ${BUILDDIR}
+if [ ! -d "${BUILDDIR}/.git" ]; then
+	cd "${BUILDDIR}"
 	echo "  remote: creating empty git repos."
-	git-init >/dev/null 2>&1
+	git-init
+	if [ \$? -ne 0 ]; then
+		echo "  remote: failed to initialize git!"
+		exit 1
+	fi
 fi
 EOD
 
 echo "  local: using git to push..."
 cd "${SRCDIR}"
-git-send-pack --force ${HOST}:${INITDIR} master
-#	echo "  local: using tar to push..."
-#	tar -czf- --exclude=.git --exclude=.gitignore -C ${SRCDIR} . | \
-#		ssh ${HOST} ${CHROOTCMD} tar -xzf- -C ${BUILDDIR}
+git-send-pack --force ${HOST}:${BUILDDIR} master || exit 1
 
 echo "  ${HOST}: cleaning up build area ..."
 EmitDoClean | ssh ${HOST} ${CHROOTCMD}
