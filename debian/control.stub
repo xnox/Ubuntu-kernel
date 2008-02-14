@@ -3,7 +3,7 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: automake, autoconf, debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-8-386 [i386], linux-headers-2.6.24-8-generic [i386 amd64], linux-headers-2.6.24-8-hppa32 [hppa], linux-headers-2.6.24-8-hppa64 [hppa], linux-headers-2.6.24-8-itanium [ia64], linux-headers-2.6.24-8-lpia [lpia], linux-headers-2.6.24-8-lpiacompat [lpia], linux-headers-2.6.24-8-mckinley [ia64], linux-headers-2.6.24-8-powerpc [powerpc], linux-headers-2.6.24-8-powerpc-smp [powerpc], linux-headers-2.6.24-8-powerpc64-smp [powerpc], linux-headers-2.6.24-8-rt [i386 amd64], linux-headers-2.6.24-8-server [i386 amd64], linux-headers-2.6.24-8-sparc64 [sparc], linux-headers-2.6.24-8-sparc64-smp [sparc], linux-headers-2.6.24-8-virtual [i386]
+Build-Depends: automake, autoconf, debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-8-386 [i386], linux-headers-2.6.24-8-generic [i386 amd64], linux-headers-2.6.24-8-hppa32 [hppa], linux-headers-2.6.24-8-hppa64 [hppa], linux-headers-2.6.24-8-itanium [ia64], linux-headers-2.6.24-8-lpia [lpia], linux-headers-2.6.24-8-lpiacompat [lpia], linux-headers-2.6.24-8-mckinley [ia64], linux-headers-2.6.24-8-powerpc [powerpc], linux-headers-2.6.24-8-powerpc-smp [powerpc], linux-headers-2.6.24-8-powerpc64-smp [powerpc], linux-headers-2.6.24-8-rt [i386 amd64], linux-headers-2.6.24-8-server [i386 amd64], linux-headers-2.6.24-8-sparc64 [sparc], linux-headers-2.6.24-8-sparc64-smp [sparc], linux-headers-2.6.24-8-virtual [i386], linux-headers-2.6.24-8-xen [i386 amd64]
 
 
 Package: linux-ubuntu-modules-2.6.24-8-386
@@ -244,4 +244,19 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on virtualised har
  .
  You likely do not want to install this package directly. Instead, install
  the linux-virtual meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-ubuntu-modules-2.6.24-8-xen
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-8-xen
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ x86/x86_64.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-xen meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.

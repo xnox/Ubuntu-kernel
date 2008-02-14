@@ -5,7 +5,9 @@ CONFIG_VMWARE=m
 else
 
 CONFIG_INPUT_FSC_BTNS=m
+ifeq ($(filter virtual xen,$(UBUNTU_FLAVOUR)),)
 CONFIG_ALSA=m
+endif
 CONFIG_BLK_DEV_GNBD=m
 
 # Requires some headers from drivers/md
