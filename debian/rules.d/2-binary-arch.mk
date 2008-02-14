@@ -19,11 +19,13 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
-	cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` all-deps
-	cd $(builddir)/build-$*/sound/alsa-driver && aclocal && autoconf
-	cd $(builddir)/build-$*/sound/alsa-driver && ./configure --with-kernel=$(KDIR)
-	sed -i 's/CONFIG_SND_S3C2412_SOC_I2S=m/CONFIG_SND_S3C2412_SOC_I2S=/' $(builddir)/build-$*/sound/alsa-driver/toplevel.config
-	cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` dep
+	if grep 'CONFIG_ALSA=m' $(builddir)/build-$*/.config > /dev/null ; then \
+	  cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` all-deps; \
+	  cd $(builddir)/build-$*/sound/alsa-driver && aclocal && autoconf; \
+	  cd $(builddir)/build-$*/sound/alsa-driver && ./configure --with-kernel=$(KDIR); \
+	  sed -i 's/CONFIG_SND_S3C2412_SOC_I2S=m/CONFIG_SND_S3C2412_SOC_I2S=/' $(builddir)/build-$*/sound/alsa-driver/toplevel.config; \
+	  cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` dep; \
+	fi
 	touch $@
 
 # Do the actual build, including image and modules
