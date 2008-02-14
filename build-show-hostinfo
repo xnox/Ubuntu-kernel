@@ -7,6 +7,7 @@ if [ "$1" = "" ]; then
 fi
 
 GetHostEnvironment $1 || exit
+GetDistroEnvironment $DIST || exit
 
 cat <<EOD
 SYSNAME:   $SYSNAME
@@ -19,12 +20,13 @@ BUILDING:  $BUILDING
 BUILDDIR:  $BUILDDIR
 CHROOTCMD: $CHROOTCMD
 CHROOTS:   $(QueryChroots $HOST)
+SRCDIR:    $SRCDIR
 EOD
 if ${VERBOSE}; then
 	echo "--- Cleanup Script ---"
-	$(EmitDoClean)
+	echo "$(EmitDoClean)"
 	echo "--- Build Script ---"
-	$(EmitDoBuild)
+	echo "$(EmitDoBuild 1)"
 fi
 
 exit 0
