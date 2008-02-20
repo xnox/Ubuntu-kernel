@@ -4,6 +4,7 @@ ifeq ($(UBUNTU_FLAVOUR),virtual)
 CONFIG_VMWARE=m
 else
 
+CONFIG_ACER_ACPI=m
 CONFIG_INPUT_FSC_BTNS=m
 ifeq ($(filter virtual xen,$(UBUNTU_FLAVOUR)),)
 CONFIG_ALSA=m
