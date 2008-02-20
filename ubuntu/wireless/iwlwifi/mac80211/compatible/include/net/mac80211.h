@@ -802,6 +802,7 @@ int iwlwifi_ieee80211_register_hw(struct ieee80211_hw *hw);
  * has, that way the default behaviour will be as expected but
  * the user can still change it/turn off the LED etc.
  */
+#define CONFIG_MAC80211_LEDS 1
 #ifdef CONFIG_MAC80211_LEDS
 extern char *iwlwifi___ieee80211_get_tx_led_name(struct ieee80211_hw *hw);
 extern char *iwlwifi___ieee80211_get_rx_led_name(struct ieee80211_hw *hw);

@@ -1,4 +1,5 @@
 CONFIG_MAC80211=m
+CONFIG_MAC80211_LEDS=y
 NOSTDINC_FLAGS += -I$(src)/../../include
 obj-$(CONFIG_MAC80211) += iwlwifi_mac80211.o iwlwifi_rc80211_simple.o
 
