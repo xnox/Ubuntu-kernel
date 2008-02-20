@@ -1,0 +1,86 @@
+2008-02-08 Version 0.11.1
+	Fix backlight on AMW0
+
+2008-02-08 Version 0.11
+	Convert AMW0 V2 devices to use WMID methods
+	Enable Aspire 5020 quirks for all AMW0 (V1) laptops
+	Add different EC quirk for Medion MD 98000 (AMW0)
+	Add device/ feature autodetection
+	Remove all the EC quirks that are no longer needed after the AMW0 V2 and
+	autodetection changes.
+	Simplify some of the internal code handling for WMID and AMW0 devices
+	Fix build on OpenSuSE 10.3 with patched 2.6.22 kernel
+	Fix mail LED return value on WMID
+	Re-add INSTALL file
+
+2007-12-16 Version 0.10
+	Add ACPI-WMI mapper driver (wmi-acer)
+	Convert acer_acpi to a platform driver, and call the WMI mapper driver
+	Add EC support for Acer Aspire 5650, 3100, 5100 and 9420
+	Fix EC support for Acer Aspire 5630 and 9300
+	Fix build on 2.6.24 kernels
+	Add DMI based autoloading for Acer laptops in 2.6.23 and newer kernels
+
+2007-09-29 Version 0.9.1
+	Add EC support for Acer TravelMate 5620
+	Fix WMID
+	Fix more read/ write errors
+
+2007-09-27 Version 0.9.0
+	Fix compiling on older (pre 2.6.20) kernels
+	Add Acer Aspire 5560, TravelMate 2420 and TravelMate 5720 EC quirks
+	Cleanup of interface code
+
+2007-09-03 Version 0.8.2
+	Really fix backlight code on older kernels
+	Fix write errors with /proc/acpi/acer/brightness
+	Fix problem with driver registration on WMID
+
+2007-09-02 Version 0.8.1
+	Fix backlight code on older (pre 2.6.21) kernels
+
+2007-09-01 Version 0.8
+	Register backlight with backlight driver
+	Restored 3G support
+	Added new sysfs platform driver to /sys/devices/platform/acer_acpi
+	Added EC support for Aspire 3020, 3040, 5040, 5650 and 9300
+	Code clean up - switched C99 types to kernel types, removed typedefs
+
+2007-08-02 Version 0.7
+	Dropped 'enabled: X' support
+	Added limited direct EC support for Aspire 5020 and TravelMate 2490
+	Fixed broken AMW0 values on hibernate
+        Added new sysfs interface to /sys/devices/platform/acer_acpi
+
+2007-07-17 Version 0.6.3
+	Fix Bash 3.2 bug in Makefile (really fixes *buntu build bug)
+
+2007-07-15 Version 0.6.2
+	Fix packaging bug from 0.6.1 (directory name accidentally
+	dropped acer_acpi-)
+
+2007-07-13 Version 0.6.1
+	Remove 2.4 kernel check, as it breaks *buntu systems
+
+2007-07-06 Version 0.6
+	Cleaned up code
+	Added WMID support
+	Makefile no longer gives harmless errors on older 2.6 kernels
+
+2007-05-05 Version 0.5
+	New maintainer added: Carlos Corbacho <cathectic@gmail.com>
+	cat /proc/acpi/acer/{feature} now works - see ChangeLog for more
+
+2007-03-31 Version 0.4
+	Compiles under later 2.6 series kernels.
+	New home at code.google.com
+
+2005-08-30 Version 0.3
+	Fixed a bug in the call to acpi_bus_register_driver, so the module
+	no longer needs loading twice.
+
+2005-08-28 Version 0.2
+	First public release, this version actually does some useful things.
+
+2005-08-27 Version 0.1
+	Initial release that enables wireless on modprobe.  And that's it.
