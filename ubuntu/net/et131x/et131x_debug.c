@@ -73,7 +73,7 @@
 
 
 
-#if defined(ET131X_DBG)
+#if ET131X_DBG
 
 
 

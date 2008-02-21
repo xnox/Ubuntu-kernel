@@ -1147,6 +1147,8 @@ void et131x_tx_timeout( struct net_device *netdev )
             DumpDeviceBlock( DBG_WARNING_ON, pAdapter, 3 );
             DumpDeviceBlock( DBG_WARNING_ON, pAdapter, 5 );
 #endif
+            et131x_close( netdev );
+            et131x_open( netdev );
 
             return;
         }
@@ -1328,16 +1330,17 @@ int et131x_change_mtu( struct net_device *netdev, int new_mtu )
  *****************************************************************************/
 int et131x_set_mac_addr( struct net_device *netdev, void *new_mac )
 {
-    DBG_FUNC( "et131x_set_mac_addr" )
-    // begin blux
-    // DBG_VERBOSE( et131x_dbginfo, "Function not implemented!!\n" );
-
     int             result = 0;
     ET131X_ADAPTER *adapter = NULL;
     struct sockaddr *address = new_mac;
+
+    DBG_FUNC( "et131x_set_mac_addr" );
+    DBG_ENTER( et131x_dbginfo );
+    // begin blux
+    // DBG_VERBOSE( et131x_dbginfo, "Function not implemented!!\n" );
+
     /*-----------------------------------------------------------------------*/
 
-    DBG_ENTER( et131x_dbginfo );
 
     /**************************************************************************
        Get the private adapter structure
@@ -1602,7 +1605,7 @@ void et131x_vlan_rx_kill_vid( struct net_device *netdev, UINT16 vid )
 
     if( pAdapter->vlgrp )
     {
-        pAdapter->vlgrp->vlan_devices_arrays[vid] = NULL;
+        pAdapter->vlgrp->vlan_devices_arrays[vid] = NULL;    
     }
 
 

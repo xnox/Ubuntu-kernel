@@ -438,7 +438,7 @@ typedef struct _rx_ring_t
     /**************************************************************************
        lookaside lists
      *************************************************************************/
-    struct kmem_cache           *RecvLookaside;
+    struct kmem_cache        *RecvLookaside;
 }
 RX_RING_t, *PRX_RING_t;
 
