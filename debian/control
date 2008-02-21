@@ -3,7 +3,7 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), gcc-4.1-hppa64 [hppa], binutils-hppa64 [hppa], linux-headers-2.6.24-9-386 [i386], linux-headers-2.6.24-9-generic [i386 amd64], linux-headers-2.6.24-9-hppa32 [hppa], linux-headers-2.6.24-9-hppa64 [hppa], linux-headers-2.6.24-9-itanium [ia64], linux-headers-2.6.24-9-lpia [lpia], linux-headers-2.6.24-9-lpiacompat [lpia], linux-headers-2.6.24-9-mckinley [ia64], linux-headers-2.6.24-9-powerpc [powerpc], linux-headers-2.6.24-9-powerpc-smp [powerpc], linux-headers-2.6.24-9-powerpc64-smp [powerpc], linux-headers-2.6.24-9-rt [i386 amd64], linux-headers-2.6.24-9-server [i386 amd64], linux-headers-2.6.24-9-sparc64 [sparc], linux-headers-2.6.24-9-sparc64-smp [sparc]
+Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-9-386 [i386], linux-headers-2.6.24-9-generic [i386 amd64], linux-headers-2.6.24-9-hppa32 [hppa], linux-headers-2.6.24-9-hppa64 [hppa], linux-headers-2.6.24-9-itanium [ia64], linux-headers-2.6.24-9-lpia [lpia], linux-headers-2.6.24-9-lpiacompat [lpia], linux-headers-2.6.24-9-mckinley [ia64], linux-headers-2.6.24-9-powerpc [powerpc], linux-headers-2.6.24-9-powerpc-smp [powerpc], linux-headers-2.6.24-9-powerpc64-smp [powerpc], linux-headers-2.6.24-9-rt [i386 amd64], linux-headers-2.6.24-9-server [i386 amd64], linux-headers-2.6.24-9-sparc64 [sparc], linux-headers-2.6.24-9-sparc64-smp [sparc]
 
 
 Package: linux-backports-modules-2.6.24-9-386
