@@ -573,7 +573,7 @@ void et131x_error_timer_handler( unsigned long data )
     /**************************************************************************
        This is a periodic timer, so reschedule
      *************************************************************************/
-    add_timer( &pAdapter->ErrorTimer );
+    mod_timer(&pAdapter->ErrorTimer, jiffies+(5*HZ));
 
     return;
 }
