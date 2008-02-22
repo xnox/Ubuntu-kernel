@@ -261,19 +261,10 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  the linux-xen meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: updates-modules-2.6.24-10-386-di
-XC-Package-Type: udeb
-Provides: updates-modules
-Architecture: i386
-XB-Kernel-Version: 2.6.24-10-386
-Section: debian-installer
-Priority: standard
-Description: Ubuntu supplied kernel modules
-
 Package: updates-modules-2.6.24-10-generic-di
 XC-Package-Type: udeb
 Provides: updates-modules
-Architecture: i386
+Architecture: amd64
 XB-Kernel-Version: 2.6.24-10-generic
 Section: debian-installer
 Priority: standard
