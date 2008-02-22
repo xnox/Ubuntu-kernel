@@ -3,7 +3,7 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-10-386 [i386], linux-headers-2.6.24-10-generic [i386 amd64], linux-headers-2.6.24-10-hppa32 [hppa], linux-headers-2.6.24-10-hppa64 [hppa], linux-headers-2.6.24-10-itanium [ia64], linux-headers-2.6.24-10-lpia [lpia], linux-headers-2.6.24-10-lpiacompat [lpia], linux-headers-2.6.24-10-mckinley [ia64], linux-headers-2.6.24-10-powerpc [powerpc], linux-headers-2.6.24-10-powerpc-smp [powerpc], linux-headers-2.6.24-10-powerpc64-smp [powerpc], linux-headers-2.6.24-10-rt [i386 amd64], linux-headers-2.6.24-10-server [i386 amd64], linux-headers-2.6.24-10-sparc64 [sparc], linux-headers-2.6.24-10-sparc64-smp [sparc]
+Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-10-386 [i386], linux-headers-2.6.24-10-generic [i386 amd64], linux-headers-2.6.24-10-hppa32 [hppa], linux-headers-2.6.24-10-hppa64 [hppa], linux-headers-2.6.24-10-itanium [ia64], linux-headers-2.6.24-10-lpia [lpia], linux-headers-2.6.24-10-lpiacompat [lpia], linux-headers-2.6.24-10-mckinley [ia64], linux-headers-2.6.24-10-powerpc [powerpc], linux-headers-2.6.24-10-powerpc-smp [powerpc], linux-headers-2.6.24-10-powerpc64-smp [powerpc], linux-headers-2.6.24-10-rt [i386 amd64], linux-headers-2.6.24-10-server [i386 amd64], linux-headers-2.6.24-10-sparc64 [sparc], linux-headers-2.6.24-10-sparc64-smp [sparc], linux-headers-2.6.24-10-virtual [i386], linux-headers-2.6.24-10-xen [i386 amd64]
 
 
 Package: linux-backports-modules-2.6.24-10-386
@@ -229,4 +229,34 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPA
  .
  You likely do not want to install this package directly. Instead, install
  the linux-sparc64-smp meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-10-virtual
+Architecture: i386
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-10-virtual
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on x86
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ x86.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-virtual meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-2.6.24-10-xen
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-10-xen
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ x86/x86_64.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-xen meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
