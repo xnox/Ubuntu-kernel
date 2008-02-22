@@ -1,3 +1,9 @@
+linux-meta (2.6.24.10.8) hardy; urgency=low
+
+  * Bumped ABI to 10. 9 never saw the light of day.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 22 Feb 2008 08:09:40 -0700
+
 linux-meta (2.6.24.8.8) hardy; urgency=low
 
   * Kernel ABI bump (to -8).
