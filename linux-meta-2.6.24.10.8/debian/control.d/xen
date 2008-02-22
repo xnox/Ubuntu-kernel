@@ -1,42 +1,42 @@
-Package: linux-headers-rt
+Package: linux-headers-xen
 Architecture: i386 amd64
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-rt
+Depends: linux-headers-${kernel-abi-version}-xen
 Description: rt Linux kernel headers
  This package will always depend on the latest rt kernel headers
  available.
 
-Package: linux-image-rt
+Package: linux-image-xen
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-rt, linux-ubuntu-modules-${kernel-abi-version}-rt
+Depends: linux-image-${kernel-abi-version}-xen, linux-ubuntu-modules-${kernel-abi-version}-xen
 Description: Real time Linux kernel image
  This package will always depend on the latest rt kernel image
  available.
 
-Package: linux-restricted-modules-rt
+Package: linux-restricted-modules-xen
 Architecture: i386 amd64
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-restricted-modules-${kernel-abi-version}-rt
+Depends: linux-restricted-modules-${kernel-abi-version}-xen
 Description: Restricted Linux modules for rt kernels
  This package will always depend on the latest restricted modules available
  for rt kernels.
 
-Package: linux-rt
+Package: linux-xen
 Architecture: i386 amd64
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-image-rt (= ${binary:Version}), linux-restricted-modules-rt (= ${binary:Version})
+Depends: linux-image-xen (= ${binary:Version}), linux-restricted-modules-xen (= ${binary:Version})
 Description: Complete rt Linux kernel
  This package will always depend on the latest complete rt Linux kernel
  available.
 
-Package: linux-backports-modules-rt
+Package: linux-backports-modules-xen
 Architecture: amd64 i386
-Depends: linux-backports-modules-${kernel-abi-version}-rt
+Depends: linux-backports-modules-${kernel-abi-version}-xen
 Description: Backported drivers for rt kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.

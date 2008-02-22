@@ -41,42 +41,6 @@ Description: Complete Linux kernel on 386.
  This package will always depend on the latest complete Linux kernel available
  for 386.
 
-Package: linux-headers-virtual
-Architecture: i386
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-virtual
-Description: Linux kernel headers for the virtual flavour
- This package will always depend on the latest kernel headers available
- for the virtual flavour.
-
-Package: linux-image-virtual
-Architecture: i386
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-virtual, linux-ubuntu-modules-${kernel-abi-version}-virtual
-Description: Linux kernel image geared towards virtualised hardware
- This package will always depend on the latest kernel image available
- for virtualised hardware. (You can also use the generic kernel image on
- such systems.)
-
-Package: linux-backports-modules-virtual
-Architecture: i386
-Depends: linux-backports-modules-${kernel-abi-version}-virtual
-Description: Backported drivers for virtual kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
-Package: linux-virtual
-Architecture: i386
-Section: metapackages
-Priority: optional
-Depends: linux-image-virtual (= ${binary:Version})
-Description: Complete Linux kernel geared towards virtualised hardware
- This package will always depend on the latest complete Linux kernel
- available for virtualised hardware. (You can also use the generic kernel on
- such systems.)
-
 Package: linux-image-debug-386
 Architecture: i386
 Section: devel
