@@ -104,7 +104,7 @@ Description: Complete Generic Linux kernel
  This package will always depend on the latest complete generic Linux kernel
  available.
 
-Package: linux-backports-modules-generic
+Package: linux-backports-modules-hardy-generic
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-generic
 Description: Backported drivers for generic kernel image
@@ -136,7 +136,7 @@ Description: Restricted Linux modules on 32-bit PA-RISC.
  This package will always depend on the latest restricted modules available
  for 32-bit PA-RISC.
 
-Package: linux-backports-modules-hppa32
+Package: linux-backports-modules-hardy-hppa32
 Architecture: hppa
 Depends: linux-backports-modules-${kernel-abi-version}-hppa32
 Description: Backported drivers for hppa32 kernel image
@@ -179,7 +179,7 @@ Description: Restricted Linux modules on 64-bit PA-RISC.
  This package will always depend on the latest restricted modules available
  for 64-bit PA-RISC.
 
-Package: linux-backports-modules-hppa64
+Package: linux-backports-modules-hardy-hppa64
 Architecture: hppa
 Depends: linux-backports-modules-${kernel-abi-version}-hppa64
 Description: Backported drivers for hppa64 kernel image
@@ -231,7 +231,7 @@ Description: Restricted Linux modules on 386.
  This package will always depend on the latest restricted modules available
  for 386.
 
-Package: linux-backports-modules-386
+Package: linux-backports-modules-hardy-386
 Architecture: i386
 Depends: linux-backports-modules-${kernel-abi-version}-386
 Description: Backported drivers for 386 kernel image
@@ -272,7 +272,7 @@ Description: Restricted Linux modules on Itanium
  This package will always depend on the latest restricted modules available
  for Itanium.
 
-Package: linux-backports-modules-itanium
+Package: linux-backports-modules-hardy-itanium
 Architecture: ia64
 Depends: linux-backports-modules-${kernel-abi-version}-itanium
 Description: Backported drivers for itanium kernel image
@@ -315,7 +315,7 @@ Description: Restricted Linux modules on Itanium II.
  This package will always depend on the latest restricted modules available
  for Itanium II.
 
-Package: linux-backports-modules-mckinley
+Package: linux-backports-modules-hardy-mckinley
 Architecture: ia64
 Depends: linux-backports-modules-${kernel-abi-version}-mckinley
 Description: Backported drivers for mckinley kernel image
@@ -367,7 +367,7 @@ Description: Restricted Linux modules for LPIA
  This package will always depend on the latest restricted modules available
  for LPIA.
 
-Package: linux-backports-modules-lpia
+Package: linux-backports-modules-hardy-lpia
 Architecture: lpia
 Depends: linux-backports-modules-${kernel-abi-version}-lpia
 Description: Backported drivers for LPIA kernel image
@@ -410,7 +410,7 @@ Description: Restricted Linux modules for LPIA (i386 compat)
  This package will always depend on the latest restricted modules available
  for LPIA (i386 compat).
 
-Package: linux-backports-modules-lpiacompat
+Package: linux-backports-modules-hardy-lpiacompat
 Architecture: lpia
 Depends: linux-backports-modules-${kernel-abi-version}-lpiacompat
 Description: Backported drivers for LPIA (i386 compat) kernel image
@@ -559,21 +559,21 @@ Description: Complete Linux kernel on Cell.
  This package will always depend on the latest complete Linux kernel available
  for Cell.
 
-Package: linux-backports-modules-powerpc
+Package: linux-backports-modules-hardy-powerpc
 Architecture: powerpc
 Depends: linux-backports-modules-${kernel-abi-version}-powerpc
 Description: Backported drivers for powerpc kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-backports-modules-powerpc-smp
+Package: linux-backports-modules-hardy-powerpc-smp
 Architecture: powerpc
 Depends: linux-backports-modules-${kernel-abi-version}-powerpc-smp
 Description: Backported drivers for powerpc-smp kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-backports-modules-powerpc64-smp
+Package: linux-backports-modules-hardy-powerpc64-smp
 Architecture: powerpc
 Depends: linux-backports-modules-${kernel-abi-version}-powerpc64-smp
 Description: Backported drivers for powerpc64-smp kernel image
@@ -626,7 +626,7 @@ Description: Complete rt Linux kernel
  This package will always depend on the latest complete rt Linux kernel
  available.
 
-Package: linux-backports-modules-rt
+Package: linux-backports-modules-hardy-rt
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-rt
 Description: Backported drivers for rt kernel image
@@ -660,7 +660,7 @@ Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
-Package: linux-backports-modules-server
+Package: linux-backports-modules-hardy-server
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-server
 Description: Backported drivers for server kernel image
@@ -710,7 +710,7 @@ Description: Restricted Linux modules on UltraSparc
  This package will always depend on the latest restricted modules available
  for UltraSparc.
 
-Package: linux-backports-modules-sparc64
+Package: linux-backports-modules-hardy-sparc64
 Architecture: sparc
 Depends: linux-backports-modules-${kernel-abi-version}-sparc64
 Description: Backported drivers for sparc64 kernel image
@@ -753,7 +753,7 @@ Description: Restricted Linux modules on UltraSparc (SMP)
  This package will always depend on the latest restricted modules available
  for UltraSparc (SMP).
 
-Package: linux-backports-modules-sparc64-smp
+Package: linux-backports-modules-hardy-sparc64-smp
 Architecture: sparc
 Depends: linux-backports-modules-${kernel-abi-version}-sparc64-smp
 Description: Backported drivers for sparc64-smp kernel image
@@ -796,7 +796,7 @@ Description: Complete rt Linux kernel
  This package will always depend on the latest complete rt Linux kernel
  available.
 
-Package: linux-backports-modules-virtual
+Package: linux-backports-modules-hardy-virtual
 Architecture: i386
 Depends: linux-backports-modules-${kernel-abi-version}-virtual
 Description: Backported drivers for rt kernel image
@@ -839,7 +839,7 @@ Description: Complete rt Linux kernel
  This package will always depend on the latest complete rt Linux kernel
  available.
 
-Package: linux-backports-modules-xen
+Package: linux-backports-modules-hardy-xen
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-xen
 Description: Backported drivers for rt kernel image

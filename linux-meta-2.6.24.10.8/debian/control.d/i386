@@ -25,7 +25,7 @@ Description: Restricted Linux modules on 386.
  This package will always depend on the latest restricted modules available
  for 386.
 
-Package: linux-backports-modules-386
+Package: linux-backports-modules-RELEASE_NAME-386
 Architecture: i386
 Depends: linux-backports-modules-${kernel-abi-version}-386
 Description: Backported drivers for 386 kernel image

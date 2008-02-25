@@ -131,21 +131,21 @@ Description: Complete Linux kernel on Cell.
  This package will always depend on the latest complete Linux kernel available
  for Cell.
 
-Package: linux-backports-modules-powerpc
+Package: linux-backports-modules-RELEASE_NAME-powerpc
 Architecture: powerpc
 Depends: linux-backports-modules-${kernel-abi-version}-powerpc
 Description: Backported drivers for powerpc kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-backports-modules-powerpc-smp
+Package: linux-backports-modules-RELEASE_NAME-powerpc-smp
 Architecture: powerpc
 Depends: linux-backports-modules-${kernel-abi-version}-powerpc-smp
 Description: Backported drivers for powerpc-smp kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-backports-modules-powerpc64-smp
+Package: linux-backports-modules-RELEASE_NAME-powerpc64-smp
 Architecture: powerpc
 Depends: linux-backports-modules-${kernel-abi-version}-powerpc64-smp
 Description: Backported drivers for powerpc64-smp kernel image

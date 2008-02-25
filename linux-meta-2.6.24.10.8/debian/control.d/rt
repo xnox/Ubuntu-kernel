@@ -34,7 +34,7 @@ Description: Complete rt Linux kernel
  This package will always depend on the latest complete rt Linux kernel
  available.
 
-Package: linux-backports-modules-rt
+Package: linux-backports-modules-RELEASE_NAME-rt
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-rt
 Description: Backported drivers for rt kernel image

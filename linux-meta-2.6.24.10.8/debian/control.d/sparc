@@ -34,7 +34,7 @@ Description: Restricted Linux modules on UltraSparc
  This package will always depend on the latest restricted modules available
  for UltraSparc.
 
-Package: linux-backports-modules-sparc64
+Package: linux-backports-modules-RELEASE_NAME-sparc64
 Architecture: sparc
 Depends: linux-backports-modules-${kernel-abi-version}-sparc64
 Description: Backported drivers for sparc64 kernel image
@@ -77,7 +77,7 @@ Description: Restricted Linux modules on UltraSparc (SMP)
  This package will always depend on the latest restricted modules available
  for UltraSparc (SMP).
 
-Package: linux-backports-modules-sparc64-smp
+Package: linux-backports-modules-RELEASE_NAME-sparc64-smp
 Architecture: sparc
 Depends: linux-backports-modules-${kernel-abi-version}-sparc64-smp
 Description: Backported drivers for sparc64-smp kernel image

@@ -25,7 +25,7 @@ Description: Restricted Linux modules for LPIA
  This package will always depend on the latest restricted modules available
  for LPIA.
 
-Package: linux-backports-modules-lpia
+Package: linux-backports-modules-RELEASE_NAME-lpia
 Architecture: lpia
 Depends: linux-backports-modules-${kernel-abi-version}-lpia
 Description: Backported drivers for LPIA kernel image
@@ -68,7 +68,7 @@ Description: Restricted Linux modules for LPIA (i386 compat)
  This package will always depend on the latest restricted modules available
  for LPIA (i386 compat).
 
-Package: linux-backports-modules-lpiacompat
+Package: linux-backports-modules-RELEASE_NAME-lpiacompat
 Architecture: lpia
 Depends: linux-backports-modules-${kernel-abi-version}-lpiacompat
 Description: Backported drivers for LPIA (i386 compat) kernel image

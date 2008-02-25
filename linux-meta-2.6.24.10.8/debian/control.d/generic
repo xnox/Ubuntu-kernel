@@ -34,7 +34,7 @@ Description: Complete Generic Linux kernel
  This package will always depend on the latest complete generic Linux kernel
  available.
 
-Package: linux-backports-modules-generic
+Package: linux-backports-modules-RELEASE_NAME-generic
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-generic
 Description: Backported drivers for generic kernel image

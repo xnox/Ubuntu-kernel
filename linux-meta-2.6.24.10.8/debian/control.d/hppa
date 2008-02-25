@@ -16,7 +16,7 @@ Description: Restricted Linux modules on 32-bit PA-RISC.
  This package will always depend on the latest restricted modules available
  for 32-bit PA-RISC.
 
-Package: linux-backports-modules-hppa32
+Package: linux-backports-modules-RELEASE_NAME-hppa32
 Architecture: hppa
 Depends: linux-backports-modules-${kernel-abi-version}-hppa32
 Description: Backported drivers for hppa32 kernel image
@@ -59,7 +59,7 @@ Description: Restricted Linux modules on 64-bit PA-RISC.
  This package will always depend on the latest restricted modules available
  for 64-bit PA-RISC.
 
-Package: linux-backports-modules-hppa64
+Package: linux-backports-modules-RELEASE_NAME-hppa64
 Architecture: hppa
 Depends: linux-backports-modules-${kernel-abi-version}-hppa64
 Description: Backported drivers for hppa64 kernel image

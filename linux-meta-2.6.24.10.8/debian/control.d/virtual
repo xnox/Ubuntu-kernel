@@ -34,7 +34,7 @@ Description: Complete rt Linux kernel
  This package will always depend on the latest complete rt Linux kernel
  available.
 
-Package: linux-backports-modules-virtual
+Package: linux-backports-modules-RELEASE_NAME-virtual
 Architecture: i386
 Depends: linux-backports-modules-${kernel-abi-version}-virtual
 Description: Backported drivers for rt kernel image

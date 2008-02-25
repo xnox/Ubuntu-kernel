@@ -25,7 +25,7 @@ Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
-Package: linux-backports-modules-server
+Package: linux-backports-modules-RELEASE_NAME-server
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-server
 Description: Backported drivers for server kernel image
