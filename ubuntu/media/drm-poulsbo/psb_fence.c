@@ -225,6 +225,18 @@ void psb_fence_handler(struct drm_device *dev, uint32_t fence_class)
 {
 	struct drm_fence_manager *fm = &dev->fm;
 
+#ifdef FIX_TG_16
+	if (fence_class == 0) {
+		struct drm_psb_private *dev_priv =
+			(struct drm_psb_private *)dev->dev_private;
+
+		if ((atomic_read(&dev_priv->ta_wait_2d_irq) == 1) &&
+		    (PSB_RSGX32(PSB_CR_2D_SOCIF) == _PSB_C2_SOCIF_EMPTY) &&
+		    ((PSB_RSGX32(PSB_CR_2D_BLIT_STATUS) &
+		      _PSB_C2B_STATUS_BUSY) == 0))
+			psb_resume_ta_2d_idle(dev_priv);
+	}
+#endif
 	write_lock(&fm->lock);
 	psb_perform_flush(dev, fence_class);
 	write_unlock(&fm->lock);

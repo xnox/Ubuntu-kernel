@@ -302,34 +302,20 @@ static int drm_psb_tbe_unbind(struct drm_ttm_backend *backend)
 
 	PSB_DEBUG_RENDER("MMU unbind.\n");
 
-	psb_scheduler_pause(dev_priv);
-
 	if (psb_be->mem_type == DRM_BO_MEM_TT) {
 		uint32_t gatt_p_offset = (psb_be->offset - man->gpu_offset) >>
 		    PAGE_SHIFT;
 
-		(void)drm_psb_idle(dev);
 		(void)psb_gtt_remove_pages(dev_priv->pg, gatt_p_offset,
 					   psb_be->num_pages,
 					   psb_be->desired_tile_stride,
 					   psb_be->hw_tile_stride);
 	}
 
-	/*
-	 * Workaround for HW bug. We must idle the engines before
-	 * flushing the MMU.
-	 */
-
-	(void)wait_event_timeout(dev_priv->scheduler.idle_queue,
-				 psb_scheduler_idle(dev_priv), DRM_HZ);
-	(void)drm_psb_idle(dev);
-
 	psb_mmu_remove_pages(pd, psb_be->offset,
 			     psb_be->num_pages,
 			     psb_be->desired_tile_stride,
 			     psb_be->hw_tile_stride);
-
-	psb_scheduler_restart(dev_priv);
 
 	return 0;
 }
@@ -359,8 +345,6 @@ static int drm_psb_tbe_bind(struct drm_ttm_backend *backend,
 	type = (bo_mem->flags & DRM_BO_FLAG_CACHED) ? PSB_MMU_CACHED_MEMORY : 0;
 
 	PSB_DEBUG_RENDER("MMU bind.\n");
-
-	psb_scheduler_pause(dev_priv);
 	if (psb_be->mem_type == DRM_BO_MEM_TT) {
 		uint32_t gatt_p_offset = (psb_be->offset - man->gpu_offset) >>
 		    PAGE_SHIFT;
@@ -372,16 +356,6 @@ static int drm_psb_tbe_bind(struct drm_ttm_backend *backend,
 					   psb_be->hw_tile_stride, type);
 	}
 
-	/*
-	 * Workaround for HW bug. We must idle the engines before
-	 * flushing the MMU.
-	 */
-
-	(void)wait_event_timeout(dev_priv->scheduler.idle_queue,
-				 psb_scheduler_idle(dev_priv), DRM_HZ);
-	(void)drm_psb_idle(dev);
-	if (ret)
-		goto out_err;
 	ret = psb_mmu_insert_pages(pd, psb_be->pages,
 				   psb_be->offset, psb_be->num_pages,
 				   psb_be->desired_tile_stride,
@@ -389,15 +363,12 @@ static int drm_psb_tbe_bind(struct drm_ttm_backend *backend,
 	if (ret)
 		goto out_err;
 
-	psb_scheduler_restart(dev_priv);
-
 	DRM_FLAG_MASKED(backend->flags, (bo_mem->flags & DRM_BO_FLAG_CACHED) ?
 			DRM_BE_FLAG_BOUND_CACHED : 0, DRM_BE_FLAG_BOUND_CACHED);
 
 	return 0;
       out_err:
 	drm_psb_tbe_unbind(backend);
-	psb_scheduler_restart(dev_priv);
 	return ret;
 
 }

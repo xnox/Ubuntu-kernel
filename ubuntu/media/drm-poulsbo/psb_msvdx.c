@@ -270,8 +270,8 @@ int psb_msvdx_send(struct drm_device *dev, void *cmd, unsigned long cmd_size)
 		if (cur_cmd_size > cmd_size) {
 			ret = -EINVAL;
 			PSB_DEBUG_GENERAL
-			    ("MSVDX: cmd_size = %d cur_cmd_size = %d\n",
-			     cmd_size, cur_cmd_size);
+			    ("MSVDX: cmd_size = %lu cur_cmd_size = %lu\n",
+			     cmd_size, (unsigned long) cur_cmd_size);
 			goto out;
 		}
 		/* Send the message to h/w */

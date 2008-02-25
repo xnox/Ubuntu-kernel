@@ -763,6 +763,13 @@ out_err:
 	return ret;
 }
 
+char drm_init_mode[32];
+int drm_init_xres;
+int drm_init_yres;
+EXPORT_SYMBOL(drm_init_mode);
+EXPORT_SYMBOL(drm_init_xres);
+EXPORT_SYMBOL(drm_init_yres);
+
 /**
  * drm_pick_crtcs - pick crtcs for output devices
  * @dev: DRM device
@@ -798,12 +805,26 @@ static void drm_pick_crtcs (struct drm_device *dev)
 
 		des_mode = NULL;
 		list_for_each_entry(des_mode, &output->modes, head) {
-			if (des_mode->type & DRM_MODE_TYPE_PREFERRED)
+			if (/* !strcmp(des_mode->name, drm_init_mode) ||  */
+			    des_mode->hdisplay==drm_init_xres
+			    && des_mode->vdisplay==drm_init_yres) {
+				des_mode->type |= DRM_MODE_TYPE_USERDEF;
 				break;
+			}
+
+		}
+		/* No userdef mode (initial mode set from module parameter) */
+		if (!des_mode || !(des_mode->type & DRM_MODE_TYPE_USERDEF)) {
+			list_for_each_entry(des_mode, &output->modes, head) {
+				if (des_mode->type & DRM_MODE_TYPE_PREFERRED)
+					break;
+			}
 		}
 
-		/* No preferred mode, let's just select the first available */
-		if (!des_mode || !(des_mode->type & DRM_MODE_TYPE_PREFERRED)) {
+		/* No preferred mode, and no default mode, let's just
+		   select the first available */
+		if (!des_mode || !(des_mode->type & DRM_MODE_TYPE_PREFERRED)
+		    && !(des_mode->type & DRM_MODE_TYPE_USERDEF)) {
 			list_for_each_entry(des_mode, &output->modes, head) {
 				if (des_mode)
 					break;

@@ -48,6 +48,78 @@ struct psb_dstbuf_cache {
 	int dst_is_iomem;
 };
 
+#define PSB_REG_GRAN_SHIFT 2
+#define PSB_REG_GRANULARITY (1 << PSB_REG_GRAN_SHIFT)
+#define PSB_MAX_REG 0x1000
+
+static const uint32_t disallowed_ranges[][2] =
+{
+        {0x0000, 0x0200},
+        {0x0208, 0x0214},
+        {0x021C, 0x0224},
+        {0x0230, 0x0234},
+        {0x0248, 0x024C},
+	{0x0254, 0x0358},
+	{0x0428, 0x0428},
+	{0x0430, 0x043C},
+	{0x0498, 0x04B4},
+	{0x04CC, 0x04D8},
+	{0x04E0, 0x07FC},
+	{0x0804, 0x0A58},
+	{0x0A68, 0x0A80},
+	{0x0AA0, 0x0B1C},
+	{0x0B2C, 0x0CAC},
+	{0x0CB4, PSB_MAX_REG - PSB_REG_GRANULARITY}
+};
+
+static uint32_t psb_disallowed_regs[PSB_MAX_REG /
+				    (PSB_REG_GRANULARITY *
+				     (sizeof(uint32_t) << 3))];
+
+static inline int psb_disallowed(uint32_t reg) {
+	reg >>= PSB_REG_GRAN_SHIFT;
+	return ((psb_disallowed_regs[reg >> 5] & (1 << (reg & 31))) != 0);
+}
+
+void psb_init_disallowed(void)
+{
+	int i;
+	uint32_t reg, tmp;
+	static int initialized = 0;
+
+	if (initialized)
+		return;
+
+	initialized = 1;
+	memset(psb_disallowed_regs, 0, sizeof(psb_disallowed_regs));
+
+	for (i=0; i< (sizeof(disallowed_ranges) / (2*sizeof(uint32_t))); ++i) {
+		for (reg = disallowed_ranges[i][0];
+		     reg <= disallowed_ranges[i][1];
+		     reg += 4) {
+			tmp = reg >> 2;
+			psb_disallowed_regs[tmp >> 5] |= (1 << (tmp & 31));
+		}
+	}
+}
+
+static int psb_memcpy_check(uint32_t *dst, const uint32_t *src,
+			    uint32_t size)
+{
+	size >>= 3;
+	while(size--) {
+		if (unlikely((*src >= 0x1000) ||
+			     psb_disallowed(*src))) {
+			DRM_ERROR("Forbidden SGX register access: "
+				  "0x%04x.\n", *src);
+			return -EPERM;
+		}
+		*dst++ = *src++;
+		*dst++ = *src++;
+	}
+	return 0;
+}
+
 static int psb_2d_wait_available(struct drm_psb_private *dev_priv,
 				 unsigned size)
 {
@@ -57,6 +129,10 @@ static int psb_2d_wait_available(struct drm_psb_private *dev_priv,
       retry:
 	if (avail < size) {
 #if 0
+		/* We'd ideally 
+		 * like to have an IRQ-driven event here. 
+		 */
+
 		psb_2D_irq_on(dev_priv);
 		DRM_WAIT_ON(ret, dev_priv->event_2d_queue, DRM_HZ,
 			    ((avail = PSB_RSGX32(PSB_CR_2D_SOCIF)) >= size));
@@ -99,6 +175,8 @@ int psb_2d_submit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
 	return 0;
 }
 
+
+
 int psb_blit_sequence(struct drm_psb_private *dev_priv, uint32_t sequence)
 {
 	uint32_t buffer[8];
@@ -124,9 +202,10 @@ int psb_blit_sequence(struct drm_psb_private *dev_priv, uint32_t sequence)
 
 	*bufp++ = PSB_2D_FLUSH_BH;
 
-	mutex_lock(&dev_priv->mutex_2d);
+	psb_2d_lock(dev_priv);
 	ret = psb_2d_submit(dev_priv, buffer, bufp - buffer);
-	mutex_unlock(&dev_priv->mutex_2d);
+	psb_2d_unlock(dev_priv);
+
 	if (!ret)
 		psb_schedule_watchdog(dev_priv);
 	return ret;
@@ -164,7 +243,7 @@ int psb_emit_2d_copy_blit(struct drm_device *dev,
 	    (direction ? PSB_2D_COPYORDER_BR2TL : PSB_2D_COPYORDER_TL2BR);
 	xstart = (direction) ? ((PAGE_SIZE - 1) >> 2) : 0;
 
-	mutex_lock(&dev_priv->mutex_2d);
+	psb_2d_lock(dev_priv);
 	while (pages > 0) {
 		cur_pages = pages;
 		if (cur_pages > 2048)
@@ -198,13 +277,12 @@ int psb_emit_2d_copy_blit(struct drm_device *dev,
 		dst_offset += pg_add;
 	}
       out:
-	mutex_unlock(&dev_priv->mutex_2d);
+	psb_2d_unlock(dev_priv);
 	return ret;
 }
 
 void psb_init_2d(struct drm_psb_private *dev_priv)
 {
-	mutex_init(&dev_priv->mutex_2d);
 	dev_priv->sequence_lock = SPIN_LOCK_UNLOCKED;
 	psb_reset(dev_priv, 1);
 	dev_priv->mmu_2d_offset = dev_priv->pg->gatt_start;
@@ -212,60 +290,62 @@ void psb_init_2d(struct drm_psb_private *dev_priv)
 	(void)PSB_RSGX32(PSB_CR_BIF_TWOD_REQ_BASE);
 }
 
-int drm_psb_idle(struct drm_device *dev)
+int psb_idle_2d(struct drm_device *dev)
 {
 	struct drm_psb_private *dev_priv = dev->dev_private;
 	unsigned long _end = jiffies + DRM_HZ;
-	int busy;
-	int ret;
+	int busy = 0;
 
-	//      psb_pause_scheduler(dev_priv);
-
-	if ((PSB_RSGX32(PSB_CR_2D_SOCIF) == _PSB_C2_SOCIF_EMPTY) &&
-	    ((PSB_RSGX32(PSB_CR_2D_BLIT_STATUS) & _PSB_C2B_STATUS_BUSY) == 0))
-		return 0;
+	/*
+	 * First idle the 2D engine.
+	 */
 
 	if (dev_priv->engine_lockup_2d)
 		return -EBUSY;
 
-	if (dev->lock.hw_lock)
-		drm_idlelock_take(&dev->lock);
-
-	do {
-		busy = (PSB_RSGX32(PSB_CR_2D_SOCIF) != _PSB_C2_SOCIF_EMPTY);
-	} while (busy && !time_after_eq(jiffies, _end));
-	if (busy)
-		busy = (PSB_RSGX32(PSB_CR_2D_SOCIF) != _PSB_C2_SOCIF_EMPTY);
-	if (busy) {
-		ret = -EBUSY;
+	if ((PSB_RSGX32(PSB_CR_2D_SOCIF) == _PSB_C2_SOCIF_EMPTY) &&
+	    ((PSB_RSGX32(PSB_CR_2D_BLIT_STATUS) & _PSB_C2B_STATUS_BUSY) == 0))
 		goto out;
-	}
+
+	do {
+		busy = (PSB_RSGX32(PSB_CR_2D_SOCIF) != _PSB_C2_SOCIF_EMPTY);
+	} while (busy && !time_after_eq(jiffies, _end));
+
+	if (busy)
+		busy = (PSB_RSGX32(PSB_CR_2D_SOCIF) != _PSB_C2_SOCIF_EMPTY);
+	if (busy)
+		goto out;
 
 	do {
 		busy =
 		    ((PSB_RSGX32(PSB_CR_2D_BLIT_STATUS) & _PSB_C2B_STATUS_BUSY)
 		     != 0);
 	} while (busy && !time_after_eq(jiffies, _end));
-
 	if (busy)
 		busy =
 		    ((PSB_RSGX32(PSB_CR_2D_BLIT_STATUS) & _PSB_C2B_STATUS_BUSY)
 		     != 0);
-	ret = (busy) ? -EBUSY : 0;
-      out:
-	if (dev->lock.hw_lock)
 
-		drm_idlelock_release(&dev->lock);
-
-	if (ret == -EBUSY) {
+ out:
+	if (busy)
 		dev_priv->engine_lockup_2d = 1;
-		DRM_ERROR("Detected SGX 2D Engine lockup 0x%08x 0x%08x\n",
-			  PSB_RSGX32(PSB_CR_BIF_INT_STAT),
-			  PSB_RSGX32(PSB_CR_BIF_FAULT));
-	}
 
-	return ret;
+	return (busy) ? -EBUSY: 0;
 }
+
+int psb_idle_3d(struct drm_device *dev)
+{
+	struct drm_psb_private *dev_priv = dev->dev_private;
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	int ret;
+
+	ret = wait_event_timeout(scheduler->idle_queue,
+				 psb_scheduler_finished(dev_priv),
+				 DRM_HZ * 10);
+
+	return (ret < 1) ? -EBUSY: 0;
+}
+
 
 static void psb_dereference_buffers_locked(struct psb_buflist_item *buffers,
 					   unsigned num_buffers)
@@ -282,7 +362,6 @@ static int psb_validate_buffer_list(struct drm_file *file_priv,
 				    unsigned *num_buffers)
 {
 	struct drm_bo_op_arg arg;
-	struct drm_device *dev = file_priv->head->dev;
 	struct drm_bo_op_req *req = &arg.d.req;
 	int ret = 0;
 	unsigned buf_count = 0;
@@ -303,17 +382,6 @@ static int psb_validate_buffer_list(struct drm_file *file_priv,
 				  "\tbuffer %d, user addr 0x%08lx %d\n",
 				  buf_count, (unsigned long)data, sizeof(arg));
 			goto out_err;
-		}
-
-		if (arg.handled) {
-			data = arg.next;
-			mutex_lock(&dev->struct_mutex);
-			item->bo =
-			    drm_lookup_buffer_object(file_priv,
-						     req->bo_req.handle, 1);
-			mutex_unlock(&dev->struct_mutex);
-			buf_count++;
-			continue;
 		}
 
 		ret = 0;
@@ -361,7 +429,6 @@ psb_reg_submit(struct drm_psb_private *dev_priv, uint32_t * regs,
 	       unsigned int cmds)
 {
 	int i;
-	unsigned int offs;
 
 	/*
 	 * cmds is 32-bit words.
@@ -369,26 +436,23 @@ psb_reg_submit(struct drm_psb_private *dev_priv, uint32_t * regs,
 
 	cmds >>= 1;
 	for (i = 0; i < cmds; ++i) {
-		offs = regs[0];
-
-		/*
-		 * Don't allow user-space to write to arbitrary registers.
-		 */
-
-		PSB_DEBUG_RENDER("Submit 0x%08x 0x%08x\n", regs[0], regs[1]);
-#if 0
-		if (offs < PSB_LOW_REG_OFFS || offs >= PSB_HIGH_REG_OFFS) {
-			DRM_ERROR("Invalid register offset.\n");
-			return -EPERM;
-		}
-#endif
-
-		PSB_WSGX32(regs[1], offs);
+		PSB_WSGX32(regs[1], regs[0]);
 		regs += 2;
 	}
 	wmb();
 	return 0;
 }
+
+/*
+ * Security: Block user-space writing to MMU mapping registers.
+ * This is important for security and brings Poulsbo DRM
+ * up to par with the other DRM drivers. Using this,
+ * user-space should not be able to map arbitrary memory
+ * pages to graphics memory, but all user-space processes
+ * basically have access to all buffer objects mapped to
+ * graphics memory.
+ */
+
 
 int
 psb_submit_copy_cmdbuf(struct drm_device *dev,
@@ -411,7 +475,7 @@ psb_submit_copy_cmdbuf(struct drm_device *dev,
 		return 0;
 
 	if (engine == PSB_ENGINE_2D)
-		mutex_lock(&dev_priv->mutex_2d);
+		psb_2d_lock(dev_priv);
 
 	do {
 		cmd_next = drm_bo_offset_end(cmd_offset, cmd_end);
@@ -434,8 +498,9 @@ psb_submit_copy_cmdbuf(struct drm_device *dev,
 		case PSB_ENGINE_TA:
 		case PSB_ENGINE_HPRAST:
 			PSB_DEBUG_GENERAL("Reg copy.\n");
-			memcpy(copy_buffer, cmd_page + cmd_page_offset,
-			       cmds * sizeof(uint32_t));
+			ret = psb_memcpy_check(copy_buffer,
+					       cmd_page + cmd_page_offset,
+					       cmds * sizeof(uint32_t));
 			copy_buffer += cmds;
 			break;
 		default:
@@ -447,7 +512,7 @@ psb_submit_copy_cmdbuf(struct drm_device *dev,
 	} while (cmd_offset = cmd_next, cmd_offset != cmd_end);
 
 	if (engine == PSB_ENGINE_2D)
-		mutex_unlock(&dev_priv->mutex_2d);
+		psb_2d_unlock(dev_priv);
 
 	return ret;
 }
@@ -469,12 +534,18 @@ static int psb_update_dstbuf_cache(struct psb_dstbuf_cache *dst_cache,
 {
 	int ret;
 
-	PSB_DEBUG_GENERAL("Destination buffer is %d\n", dst);
+	PSB_DEBUG_GENERAL("Destination buffer is %d.\n", dst);
 
-	if (dst != dst_cache->dst || NULL == dst_cache->dst_buf) {
+	if (unlikely(dst != dst_cache->dst || NULL == dst_cache->dst_buf)) {
 		psb_clear_dstbuf_cache(dst_cache);
 		dst_cache->dst = dst;
 		dst_cache->dst_buf = buffers[dst].bo;
+	}
+
+	if (unlikely(dst_offset > 
+		     dst_cache->dst_buf->num_pages * PAGE_SIZE)) {
+		DRM_ERROR("Relocation destination out of bounds.\n");
+		return -EINVAL;
 	}
 
 	if (!drm_bo_same_page(dst_cache->dst_offset, dst_offset) ||
@@ -495,8 +566,7 @@ static int psb_update_dstbuf_cache(struct psb_dstbuf_cache *dst_cache,
 		dst_cache->dst_page = drm_bmo_virtual(&dst_cache->dst_kmap,
 						      &dst_cache->dst_is_iomem);
 		dst_cache->dst_offset = dst_offset & PAGE_MASK;
-		dst_cache->dst_page_offset =
-		    ((dst_cache->dst_offset & PAGE_MASK) >> 2);
+		dst_cache->dst_page_offset = dst_cache->dst_offset >> 2;
 	}
 	return 0;
 }
@@ -517,12 +587,8 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 	unsigned int shift;
 	unsigned int align_shift;
 	uint32_t fence_type;
+	struct drm_buffer_object *reloc_bo;
 
-	if (reloc->buffer >= num_buffers) {
-		DRM_ERROR("Illegal relocation buffer %d\n", reloc->buffer);
-		return -EINVAL;
-	}
-#if 0
 	PSB_DEBUG_GENERAL("Reloc type %d\n"
 			  "\t where 0x%04x\n"
 			  "\t buffer 0x%04x\n"
@@ -541,41 +607,70 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 			  reloc->pre_add,
 			  reloc->background,
 			  reloc->dst_buffer, reloc->arg0, reloc->arg1);
-#endif
-	/*
-	 * Fixme: Check buffer size.
-	 */
+
+	if (unlikely(reloc->buffer >= num_buffers)) {
+		DRM_ERROR("Illegal relocation buffer %d.\n", reloc->buffer);
+		return -EINVAL;
+	}
+
+	if (unlikely(reloc->dst_buffer >= num_buffers)) {
+		DRM_ERROR("Illegal destination buffer for relocation %d.\n",
+			reloc->dst_buffer);
+		return -EINVAL;
+	}
 
 	ret = psb_update_dstbuf_cache(dst_cache, buffers, reloc->dst_buffer,
 				      reloc->where << 2);
 	if (ret)
 		return ret;
 
+	reloc_bo = buffers[reloc->buffer].bo;
+
+	if (unlikely(reloc->pre_add > (reloc_bo->num_pages << PAGE_SHIFT))) {
+		DRM_ERROR("Illegal relocation offset add.\n");
+		return -EINVAL;
+	}
+
 	switch (reloc->reloc_op) {
 	case PSB_RELOC_OP_OFFSET:
-		val = buffers[reloc->buffer].bo->offset + reloc->pre_add;
+		val = reloc_bo->offset + reloc->pre_add;
 		break;
 	case PSB_RELOC_OP_2D_OFFSET:
-		val = buffers[reloc->buffer].bo->offset + reloc->pre_add -
+		val = reloc_bo->offset + reloc->pre_add -
 		    dev_priv->mmu_2d_offset;
-		if (val >= PSB_2D_SIZE) {
+		if (unlikely(val >= PSB_2D_SIZE)) {
 			DRM_ERROR("2D relocation out of bounds\n");
 			return -EINVAL;
 		}
 		break;
 	case PSB_RELOC_OP_PDS_OFFSET:
-		val = buffers[reloc->buffer].bo->offset + reloc->pre_add -
+		val = reloc_bo->offset + reloc->pre_add -
 		    PSB_MEM_PDS_START;
-		if (val >= (PSB_MEM_MMU_START - PSB_MEM_PDS_START)) {
+		if (unlikely(val >= (PSB_MEM_MMU_START - PSB_MEM_PDS_START))) {
 			DRM_ERROR("PDS relocation out of bounds\n");
 			return -EINVAL;
 		}
 		break;
 	case PSB_RELOC_OP_USE_OFFSET:
 	case PSB_RELOC_OP_USE_REG:
-		fence_type = buffers[reloc->buffer].bo->fence_type;
+
+		/*
+		 * Security:
+		 * Only allow VERTEX or PIXEL data masters, as 
+		 * shaders run under other data masters may in theory
+		 * alter MMU mappings.
+		 */
+
+		if (unlikely(reloc->arg1 != _PSB_CUC_DM_PIXEL &&
+			     reloc->arg1 != _PSB_CUC_DM_VERTEX)) {
+			DRM_ERROR("Invalid data master in relocation. %d\n",
+				  reloc->arg1);
+			return -EPERM;
+		}
+
+		fence_type = reloc_bo->fence_type;
 		ret = psb_grab_use_base(dev_priv,
-					buffers[reloc->buffer].bo->offset +
+					reloc_bo->offset +
 					reloc->pre_add, reloc->arg0,
 					reloc->arg1, fence_class,
 					fence_type, no_wait,
@@ -767,7 +862,7 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 	if (ret)
 		goto out_unlock;
 
-	ret = psb_fence_for_errors(priv, arg, fence_arg, NULL);
+	psb_fence_or_sync(priv, PSB_ENGINE_2D, arg, fence_arg, NULL);
 
 	mutex_lock(&cmd_buffer->mutex);
 	if (cmd_buffer->fence != NULL)
@@ -801,43 +896,109 @@ static int psb_dump_page(struct drm_buffer_object *bo,
 }
 #endif
 
-int psb_fence_for_errors(struct drm_file *priv,
-			 struct drm_psb_cmdbuf_arg *arg,
-			 struct drm_fence_arg *fence_arg,
-			 struct drm_fence_object **fence_p)
+static void psb_idle_engine(struct drm_device *dev,
+			   int engine)
+{
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)dev->dev_private;
+	uint32_t dummy;
+
+	switch (engine) {
+	case PSB_ENGINE_2D:
+
+		/*
+		 * Make sure we flush 2D properly using a dummy
+		 * fence sequence emit.
+		 */
+
+		(void)psb_fence_emit_sequence(dev, PSB_ENGINE_2D, 0, 
+					      &dummy, &dummy);
+		psb_2d_lock(dev_priv);
+		(void) psb_idle_2d(dev);
+		psb_2d_unlock(dev_priv);
+		break;
+	case PSB_ENGINE_TA:
+	case PSB_ENGINE_RASTERIZER:
+	case PSB_ENGINE_HPRAST:
+		(void) psb_idle_3d(dev);
+		break;
+	default:
+
+		/*
+		 * FIXME: Insert video engine idle command here.
+		 */
+
+		break;
+	}
+}
+
+void psb_fence_or_sync(struct drm_file *priv,
+		       int engine,
+		       struct drm_psb_cmdbuf_arg *arg,
+		       struct drm_fence_arg *fence_arg,
+		       struct drm_fence_object **fence_p)
 {
 	struct drm_device *dev = priv->head->dev;
 	int ret;
 	struct drm_fence_object *fence;
 
 	ret = drm_fence_buffer_objects(dev, NULL, arg->fence_flags,
-				       NULL, &fence);
+			NULL, &fence);
+
 	if (ret) {
-		DRM_ERROR("Could not fence buffer objects. "
-			  "Idling all engines.\n");
-		(void)drm_psb_idle(dev);
-		return ret;
+		
+		/*
+		 * Fence creation failed. 
+		 * Fall back to synchronous operation and idle the engine.
+		 */
+
+		psb_idle_engine(dev, engine);
+		if (!(arg->fence_flags & DRM_FENCE_FLAG_NO_USER)) {
+
+			/*
+			 * Communicate to user-space that
+			 * fence creation has failed and that 
+			 * the engine is idle.
+			 */
+
+			fence_arg->handle = ~0;
+			fence_arg->error = ret;
+		}
+
+		drm_putback_buffer_objects(dev);
+		if (fence_p)
+		    *fence_p = NULL;
+		return;
 	}
 
 	if (!(arg->fence_flags & DRM_FENCE_FLAG_NO_USER)) {
+
 		ret = drm_fence_add_user_object(priv, fence,
 						arg->fence_flags &
 						DRM_FENCE_FLAG_SHAREABLE);
 		if (!ret)
 			drm_fence_fill_arg(fence, fence_arg);
-
 		else {
-			DRM_ERROR("Could not create a fence user object. "
-				  "Idling all engines.\n");
-			(void)drm_psb_idle(dev);
+			/*
+			 * Fence user object creation failed.
+			 * We must idle the engine here as well, as user-
+			 * space expects a fence object to wait on. Since we
+			 * have a fence object we wait for it to signal
+			 * to indicate engine "sufficiently" idle.
+			 */
+
+			(void) drm_fence_object_wait(fence, 0, 1, 
+						     fence->type);
+			drm_fence_usage_deref_unlocked(&fence);
+			fence_arg->handle = ~0;
+			fence_arg->error = ret;
 		}
 	}
 
 	if (fence_p)
 		*fence_p = fence;
-	else
+	else if (fence)
 		drm_fence_usage_deref_unlocked(&fence);
-	return ret;
 }
 
 int psb_handle_copyback(struct drm_device *dev,
@@ -884,7 +1045,12 @@ static int psb_cmdbuf_video(struct drm_file *priv,
 	struct drm_fence_object *fence;
 	int ret;
 
-	ret = psb_fence_for_errors(priv, arg, fence_arg, &fence);
+	/*
+	 * Check this. Doesn't seem right. Have fencing done AFTER command 
+	 * submission and make sure drm_psb_idle idles the MSVDX completely.
+	 */
+
+	psb_fence_or_sync(priv, PSB_ENGINE_VIDEO, arg, fence_arg, &fence);
 	ret = psb_submit_video_cmdbuf(dev, cmd_buffer, arg->cmdbuf_offset,
 				      arg->cmdbuf_size, fence);
 

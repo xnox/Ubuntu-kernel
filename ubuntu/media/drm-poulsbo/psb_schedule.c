@@ -77,7 +77,7 @@
 /*
  * Avoid pixelbe pagefaults on C0.
  */
-#if 0 
+#if 0
 #define PSB_BLOCK_OVERLAP
 #endif
 
@@ -87,6 +87,14 @@ static void psb_dispatch_ta(struct drm_psb_private *dev_priv,
 static void psb_dispatch_raster(struct drm_psb_private *dev_priv,
 				struct psb_scheduler *scheduler,
 				uint32_t reply_flag);
+
+#ifdef FIX_TG_16
+
+static void psb_2d_atomic_unlock(struct drm_psb_private *dev_priv);
+static int psb_2d_trylock(struct drm_psb_private *dev_priv);
+static int psb_check_2d_idle(struct drm_psb_private *dev_priv);
+
+#endif
 
 void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
 			  int *lockup, int *msvdx_lockup,
@@ -150,9 +158,8 @@ void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
 static inline void psb_set_idle(struct psb_scheduler *scheduler)
 {
 	scheduler->idle =
-	    (scheduler->current_task[PSB_SCENE_ENGINE_RASTER] == NULL) &&
-	    (scheduler->current_task[PSB_SCENE_ENGINE_TA] == NULL);
-
+		(scheduler->current_task[PSB_SCENE_ENGINE_RASTER] == NULL) &&
+		(scheduler->current_task[PSB_SCENE_ENGINE_TA] == NULL);
 	if (scheduler->idle)
 		wake_up(&scheduler->idle_queue);
 }
@@ -320,6 +327,11 @@ static void psb_schedule_ta(struct drm_psb_private *dev_priv,
 	if (list_empty(&scheduler->hw_scenes))
 		return;
 
+#ifdef FIX_TG_16
+	if (psb_check_2d_idle(dev_priv))
+		return;
+#endif
+
 	list_del_init(&task->head);
 	if (task->flags & PSB_FIRE_FLAG_XHW_OOM)
 		scheduler->ta_state = 1;
@@ -449,6 +461,11 @@ static void psb_ta_done(struct drm_psb_private *dev_priv,
 	}
 
 	scheduler->current_task[PSB_SCENE_ENGINE_TA] = NULL;
+
+#ifdef FIX_TG_16
+	psb_2d_atomic_unlock(dev_priv);
+#endif
+
 	if (task->ta_complete_action != PSB_RASTER_BLOCK)
 		psb_report_fence(scheduler, task->engine, task->sequence,
 				 _PSB_FENCE_TA_DONE_SHIFT, 1);
@@ -568,6 +585,20 @@ int psb_scheduler_idle(struct drm_psb_private *dev_priv)
 	int ret;
 	spin_lock_irqsave(&scheduler->lock, irq_flags);
 	ret = scheduler->idle_count != 0 && scheduler->idle;
+	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
+	return ret;
+}
+
+int psb_scheduler_finished(struct drm_psb_private *dev_priv)
+{
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	unsigned long irq_flags;
+	int ret;
+	spin_lock_irqsave(&scheduler->lock, irq_flags);
+	ret = (scheduler->idle &&
+		list_empty(&scheduler->raster_queue) &&
+		list_empty(&scheduler->ta_queue) &&
+	       list_empty(&scheduler->hp_raster_queue));
 	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 	return ret;
 }
@@ -816,7 +847,7 @@ static void psb_dispatch_raster(struct drm_psb_private *dev_priv,
 	 * For rasterizer-only tasks, don't report fence done here,
 	 * as this is time consuming and the rasterizer wants a new
 	 * task immediately. For other tasks, the hardware is probably
-	 * still busy deallocating binner memory, so we can report
+	 * still busy deallocating TA memory, so we can report
 	 * fence done in parallel.
 	 */
 
@@ -1009,9 +1040,18 @@ void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 		if (task) {
 			DRM_ERROR("Detected Poulsbo ta lockup.\n");
 			list_add_tail(&task->head, &scheduler->raster_queue);
+#ifdef FIX_TG_16
+			psb_2d_atomic_unlock(dev_priv);
+#endif
 		}
 		scheduler->current_task[PSB_SCENE_ENGINE_TA] = NULL;
 		scheduler->ta_state = 0;
+
+#ifdef FIX_TG_16
+		atomic_set(&dev_priv->ta_wait_2d, 0);
+		atomic_set(&dev_priv->ta_wait_2d_irq, 0);
+		wake_up(&dev_priv->queue_2d);
+#endif
 		spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 	}
 
@@ -1244,10 +1284,7 @@ int psb_cmdbuf_ta(struct drm_file *priv,
 	psb_schedule_ta(dev_priv, scheduler);
 	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 
-	ret = psb_fence_for_errors(priv, arg, fence_arg, &fence);
-	if (ret)
-		goto out_err;
-
+	psb_fence_or_sync(priv, PSB_ENGINE_TA, arg, fence_arg, &fence);
 	drm_regs_fence(&dev_priv->use_manager, fence);
       out_err:
 	if (ret && ret != -EAGAIN)
@@ -1282,13 +1319,6 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
 	unsigned long irq_flags;
 
-	/*
-	 * We need to fence buffers here, since the fixup relocs
-	 * functions need a fence for the USE base address registers.
-	 * Re-emit the fence later with a new sequence number when we
-	 * are sure that the job will really be scheduled.
-	 */
-
 	PSB_DEBUG_RENDER("Cmdbuf Raster\n");
 
 	ret = mutex_lock_interruptible(&dev_priv->reset_mutex);
@@ -1319,10 +1349,7 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 	psb_schedule_ta(dev_priv, scheduler);
 	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 
-	ret = psb_fence_for_errors(priv, arg, fence_arg, &fence);
-	if (ret)
-		goto out_err;
-
+	psb_fence_or_sync(priv, PSB_ENGINE_TA, arg, fence_arg, &fence);
 	drm_regs_fence(&dev_priv->use_manager, fence);
       out_err:
 	if (ret && ret != -EAGAIN)
@@ -1339,3 +1366,95 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 
 	return ret;
 }
+
+#ifdef FIX_TG_16
+
+static int psb_check_2d_idle(struct drm_psb_private *dev_priv)
+{
+	if (psb_2d_trylock(dev_priv)) {
+		if ((PSB_RSGX32(PSB_CR_2D_SOCIF) == _PSB_C2_SOCIF_EMPTY) &&
+		    !((PSB_RSGX32(PSB_CR_2D_BLIT_STATUS) &
+		       _PSB_C2B_STATUS_BUSY))) {
+			return 0;
+		}
+		if (atomic_cmpxchg(&dev_priv->ta_wait_2d_irq, 0, 1) == 0)
+			psb_2D_irq_on(dev_priv);
+
+		PSB_WSGX32(PSB_2D_FENCE_BH, PSB_SGX_2D_SLAVE_PORT);
+		PSB_WSGX32(PSB_2D_FLUSH_BH, PSB_SGX_2D_SLAVE_PORT);
+		(void) PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT);
+
+		psb_2d_atomic_unlock(dev_priv);
+	}
+
+	atomic_set(&dev_priv->ta_wait_2d, 1);
+	return -EBUSY;
+}
+
+static void psb_atomic_resume_ta_2d_idle(struct drm_psb_private *dev_priv)
+{
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+
+	if (atomic_cmpxchg(&dev_priv->ta_wait_2d, 1, 0) == 1) {
+		psb_schedule_ta(dev_priv, scheduler);
+		if (atomic_read(&dev_priv->waiters_2d) != 0)
+			wake_up(&dev_priv->queue_2d);
+	}
+}
+
+void psb_resume_ta_2d_idle(struct drm_psb_private *dev_priv)
+{
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&scheduler->lock, irq_flags);
+	if (atomic_cmpxchg(&dev_priv->ta_wait_2d_irq, 1, 0) == 1) {
+		atomic_set(&dev_priv->ta_wait_2d, 0);
+		psb_2D_irq_off(dev_priv);
+		psb_schedule_ta(dev_priv, scheduler);
+		if (atomic_read(&dev_priv->waiters_2d) != 0)
+			wake_up(&dev_priv->queue_2d);
+	}
+	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
+}
+
+/*
+ * 2D locking functions. Can't use a mutex since the trylock() and
+ * unlock() methods need to be accessible from interrupt context.
+ */
+
+static int psb_2d_trylock(struct drm_psb_private *dev_priv)
+{
+	return (atomic_cmpxchg(&dev_priv->lock_2d, 0, 1) == 0);
+}
+
+static void psb_2d_atomic_unlock(struct drm_psb_private *dev_priv)
+{
+	atomic_set(&dev_priv->lock_2d, 0);
+	if (atomic_read(&dev_priv->waiters_2d) != 0)
+		wake_up(&dev_priv->queue_2d);
+}
+
+void psb_2d_unlock(struct drm_psb_private *dev_priv)
+{
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&scheduler->lock, irq_flags);
+	psb_2d_atomic_unlock(dev_priv);
+	if (atomic_read(&dev_priv->ta_wait_2d) != 0)
+		psb_atomic_resume_ta_2d_idle(dev_priv);
+	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
+}
+
+void psb_2d_lock(struct drm_psb_private *dev_priv)
+{
+	atomic_inc(&dev_priv->waiters_2d);
+	wait_event(dev_priv->queue_2d,
+		   atomic_read(&dev_priv->ta_wait_2d) == 0);
+	wait_event(dev_priv->queue_2d,
+		   psb_2d_trylock(dev_priv));
+	atomic_dec(&dev_priv->waiters_2d);
+}
+
+#endif

@@ -155,6 +155,8 @@ extern void psb_scheduler_handler(struct drm_psb_private *dev_priv,
 extern void psb_scheduler_pause(struct drm_psb_private *dev_priv);
 extern void psb_scheduler_restart(struct drm_psb_private *dev_priv);
 extern int psb_scheduler_idle(struct drm_psb_private *dev_priv);
+extern int psb_scheduler_finished(struct drm_psb_private *dev_priv);
+
 extern void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
 				 int *lockup, int *msvdx_lockup,
 				 int *idle, int *msvdx_idle);

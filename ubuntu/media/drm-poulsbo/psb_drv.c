@@ -40,6 +40,9 @@ static int drm_psb_ta_mem_size = 32*1024;
 int drm_psb_disable_vsync = 0;
 int drm_psb_no_fb = 0;
 int drm_psb_force_pipeb = 0;
+char* psb_init_mode;
+int psb_init_xres;
+int psb_init_yres;
 /*
  *
  */
@@ -51,6 +54,10 @@ MODULE_PARM_DESC(trap_pagefaults, "Error and reset on MMU pagefaults");
 MODULE_PARM_DESC(disable_vsync, "Disable vsync interrupts");
 MODULE_PARM_DESC(force_pipeb, "Forces PIPEB to become primary fb");
 MODULE_PARM_DESC(ta_mem_size, "TA memory size in kiB");
+MODULE_PARM_DESC(mode, "initial mode name");
+MODULE_PARM_DESC(xres, "initial mode width");
+MODULE_PARM_DESC(yres, "initial mode height");
+
 module_param_named(debug, drm_psb_debug, int, 0600);
 module_param_named(disable_clockgating, drm_psb_disable_cg, int, 0600);
 module_param_named(no_fb, drm_psb_no_fb, int, 0600);
@@ -58,6 +65,9 @@ module_param_named(trap_pagefaults, drm_psb_trap_pagefaults, int, 0600);
 module_param_named(disable_vsync, drm_psb_disable_vsync, int, 0600);
 module_param_named(force_pipeb, drm_psb_force_pipeb, int, 0600);
 module_param_named(ta_mem_size, drm_psb_ta_mem_size, int, 0600);
+module_param_named(mode, psb_init_mode, charp, 0600);
+module_param_named(xres, psb_init_xres, int, 0600);
+module_param_named(yres, psb_init_yres, int, 0600);
 
 static struct pci_device_id pciidlist[] = {
 	psb_PCI_IDS
@@ -103,6 +113,9 @@ static void psb_lastclose(struct drm_device *dev)
 {
 	struct drm_psb_private *dev_priv =
 		(struct drm_psb_private *)dev->dev_private;
+
+	if (!dev->dev_private)
+		return;
 
 	mutex_lock(&dev->struct_mutex);
 	if (dev_priv->ta_mem)
@@ -326,6 +339,7 @@ static int psb_do_init(struct drm_device *dev)
 	DRM_DEBUG("reading PIPE*CONF\n");
 	dspaconf = I915_READ(PIPEACONF);
 	dspbconf = I915_READ(PIPEBCONF);
+        dev_priv->primary_display = dspaconf; /* to enable TV by xiaolin */
 	DRM_DEBUG("which is primary a = 0x%x, b = 0x%x\n", dspaconf, dspbconf);
 
 	return 0;
@@ -404,6 +418,9 @@ static int psb_driver_unload(struct drm_device *dev)
 
 extern int drm_crtc_probe_output_modes(struct drm_device *dev, int, int);
 extern int drm_pick_crtcs(struct drm_device *dev);
+extern char drm_init_mode[32];
+extern int drm_init_xres;
+extern int drm_init_yres;
 
 static int psb_initial_config(struct drm_device *dev, bool can_grow)
 {
@@ -415,6 +432,10 @@ static int psb_initial_config(struct drm_device *dev, bool can_grow)
 	mutex_lock(&dev->mode_config.mutex);
 
 	drm_crtc_probe_output_modes(dev, 2048, 2048);
+	
+	/* strncpy(drm_init_mode, psb_init_mode, strlen(psb_init_mode)); */
+	drm_init_xres = psb_init_xres;
+	drm_init_yres = psb_init_yres;
 
 	drm_pick_crtcs(dev);
 
@@ -466,6 +487,17 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	mutex_init(&dev_priv->temp_mem);
 	mutex_init(&dev_priv->cmdbuf_mutex);
 	mutex_init(&dev_priv->reset_mutex);
+	psb_init_disallowed();
+
+#ifdef FIX_TG_16
+	atomic_set(&dev_priv->lock_2d, 0);
+	atomic_set(&dev_priv->ta_wait_2d, 0);
+	atomic_set(&dev_priv->ta_wait_2d_irq, 0);
+	atomic_set(&dev_priv->waiters_2d, 0);;
+	DRM_INIT_WAITQUEUE(&dev_priv->queue_2d);
+#else
+	mutex_init(&dev_priv->mutex_2d);
+#endif
 
 	spin_lock_init(&dev_priv->reloc_lock);
 
@@ -641,17 +673,8 @@ static int psb_suspend(struct pci_dev *pdev, pm_message_t state)
 	struct drm_psb_private *dev_priv =
 	    (struct drm_psb_private *)dev->dev_private;
 
-	/*
-	 * FIXME: This doesn't really guarantee that the
-	 * scheduler queue is empty, but that's very likely
-	 * since we're VT switched and all TT / VRAM buffers
-	 * have been moved out.
-	 */
-
-	psb_scheduler_pause(dev_priv);
-	(void)wait_event_timeout(dev_priv->scheduler.idle_queue,
-				 psb_scheduler_idle(dev_priv), DRM_HZ);
-	(void)drm_psb_idle(dev);
+	(void)psb_idle_3d(dev);
+	(void)psb_idle_2d(dev);
 	flush_scheduled_work();
 
 	psb_takedown_use_base(dev_priv);
@@ -669,7 +692,8 @@ static int psb_resume(struct pci_dev *pdev)
 	    (struct drm_psb_private *)dev->dev_private;
 	struct psb_gtt *pg = dev_priv->pg;
 	struct drm_output *output;
-
+	
+	INIT_LIST_HEAD(&dev_priv->resume_buf.head);
 	dev_priv->msvdx_needs_reset = 1;
 
 #ifdef USE_PAT_WC
@@ -708,9 +732,11 @@ static int psb_resume(struct pci_dev *pdev)
 	 */
 	psb_init_2d(dev_priv);
 
-	list_for_each_entry(output, &dev->mode_config.output_list, head)
-	    drm_crtc_set_mode(output->crtc, &output->crtc->mode,
+	list_for_each_entry(output, &dev->mode_config.output_list, head) {
+	    if(output->crtc != NULL)
+		drm_crtc_set_mode(output->crtc, &output->crtc->mode,
 			      output->crtc->x, output->crtc->y);
+	}
 
 	/*
 	 * Persistant 3D base registers and USSE base registers..
@@ -725,8 +751,8 @@ static int psb_resume(struct pci_dev *pdev)
 	 */
 
 	psb_xhw_resume(dev_priv, &dev_priv->resume_buf);
-	psb_scheduler_ta_mem_check(dev_priv);
 
+	psb_scheduler_ta_mem_check(dev_priv);
 	if (dev_priv->ta_mem && !dev_priv->force_ta_mem_load) {
 		psb_xhw_ta_mem_load(dev_priv, &dev_priv->resume_buf, 
 				     PSB_TA_MEM_FLAG_TA|
@@ -738,7 +764,8 @@ static int psb_resume(struct pci_dev *pdev)
 				     dev_priv->ta_mem->hw_data->offset,
 				     dev_priv->ta_mem->hw_cookie);
 	}
-	psb_scheduler_restart(dev_priv);
+
+
 	return 0;
 }
 
@@ -879,4 +906,4 @@ module_exit(psb_exit);
 
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
-MODULE_LICENSE("GPLV2");
+MODULE_LICENSE("GPL");

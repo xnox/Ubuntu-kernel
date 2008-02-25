@@ -267,7 +267,7 @@ static void psb_reset_wq(struct work_struct *work)
 	 */
 
 	mutex_lock(&dev_priv->reset_mutex);
-	mutex_lock(&dev_priv->mutex_2d);
+	psb_2d_lock(dev_priv);
 #if 0
 	msleep(PSB_2D_TIMEOUT_MSEC);
 
@@ -330,7 +330,7 @@ static void psb_reset_wq(struct work_struct *work)
 	spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 	dev_priv->timer_available = 1;
 	spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
-	mutex_unlock(&dev_priv->mutex_2d);
+	psb_2d_unlock(dev_priv);
 	mutex_unlock(&dev_priv->reset_mutex);
 }
 

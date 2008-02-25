@@ -572,7 +572,7 @@ static bool intel_crtc_mode_fixup(struct drm_crtc *crtc,
 
 
 /** Returns the core display clock speed for i830 - i945 */
-static int intel_get_core_clock_speed(struct drm_device *dev)
+int intel_get_core_clock_speed(struct drm_device *dev)
 {
 
 	/* Core clock values taken from the published datasheets.
@@ -632,7 +632,7 @@ static int intel_get_core_clock_speed(struct drm_device *dev)
  * Return the pipe currently connected to the panel fitter,
  * or -1 if the panel fitter is not present or not in use
  */
-static int intel_panel_fitter_pipe (struct drm_device *dev)
+int intel_panel_fitter_pipe (struct drm_device *dev)
 {
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
 	u32  pfit_control;
@@ -844,7 +844,10 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 
 	DRM_DEBUG("Mode for pipe %c:\n", pipe == 0 ? 'A' : 'B');
 	drm_mode_debug_printmodeline(dev, mode);
-	
+
+    psbPrintPll("chosen", &clock);
+    DRM_DEBUG("clock regs: 0x%08x, 0x%08x,dspntr is 0x%8x, pipeconf is 0x%8x\n", (int)dpll,
+	      (int)fp,(int)dspcntr,(int)pipeconf);	
 #if 0
 	if (!xf86ModesEqual(mode, adjusted_mode)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO,

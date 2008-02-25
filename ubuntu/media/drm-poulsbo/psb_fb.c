@@ -455,9 +455,9 @@ static int psb_accel_2d_fillrect(struct drm_psb_private *dev_priv,
 						  PSB_2D_DST_YSIZE_SHIFT);
 	*buf++ = PSB_2D_FLUSH_BH;
 
-	mutex_lock(&dev_priv->mutex_2d);
+	psb_2d_lock(dev_priv);
 	ret = psb_2d_submit(dev_priv, buffer, buf - buffer);
-	mutex_unlock(&dev_priv->mutex_2d);
+	psb_2d_unlock(dev_priv);
 
 	return ret;
 }
@@ -591,9 +591,9 @@ static int psb_accel_2d_copy(struct drm_psb_private *dev_priv,
 	    (size_x << PSB_2D_DST_XSIZE_SHIFT) | (size_y <<
 						  PSB_2D_DST_YSIZE_SHIFT);
 
-	mutex_lock(&dev_priv->mutex_2d);
+	psb_2d_lock(dev_priv);
 	ret = psb_2d_submit(dev_priv, buffer, buf - buffer);
-	mutex_unlock(&dev_priv->mutex_2d);
+	psb_2d_unlock(dev_priv);
 	return ret;
 }
 
@@ -615,7 +615,9 @@ static void psbfb_copyarea_accel(struct fb_info *info,
 	stride = fb->pitch;
 
 	if (a->width == 8 || a->height == 8) {
-		drm_psb_idle(par->dev);
+		psb_2d_lock(dev_priv);
+		psb_idle_2d(par->dev);
+		psb_2d_unlock(dev_priv);
 		cfb_copyarea(info, a);
 		return;
 	}
@@ -674,6 +676,8 @@ static void psbfb_copyarea(struct fb_info *info,
 void psbfb_imageblit(struct fb_info *info, const struct fb_image *image)
 {
 	struct psbfb_par *par = info->par;
+	struct drm_psb_private *dev_priv = par->dev->dev_private;
+
 	if (info->state != FBINFO_STATE_RUNNING)
 		return;
 	if (info->flags & FBINFO_HWACCEL_DISABLED) {
@@ -688,7 +692,10 @@ void psbfb_imageblit(struct fb_info *info, const struct fb_image *image)
 		return;
 	}
 
-	drm_psb_idle(par->dev);
+	psb_2d_lock(dev_priv);
+	psb_idle_2d(par->dev);
+	psb_2d_unlock(dev_priv);
+
 	cfb_imageblit(info, image);
 }
 
@@ -697,10 +704,13 @@ int psbfb_kms_off_ioctl(struct drm_device *dev, void *data,
 {
 	struct drm_framebuffer *fb = 0;
 	struct drm_buffer_object *bo = 0;
+	struct drm_psb_private *dev_priv = dev->dev_private;
 	int ret;
 
 	DRM_DEBUG("psbfb_kms_off_ioctl\n");
-	drm_psb_idle(dev);
+	psb_2d_lock(dev_priv);
+	psb_idle_2d(dev);
+	psb_2d_unlock(dev_priv);
 
 	mutex_lock(&dev->mode_config.mutex);
 	list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
@@ -729,10 +739,13 @@ int psbfb_kms_on_ioctl(struct drm_device *dev, void *data,
 {
 	struct drm_framebuffer *fb = 0;
 	struct drm_buffer_object *bo = 0;
+	struct drm_psb_private *dev_priv = dev->dev_private;
 	int ret;
 
 	DRM_DEBUG("psbfb_kms_on_ioctl\n");
-	drm_psb_idle(dev);
+	psb_2d_lock(dev_priv);
+	psb_idle_2d(dev);
+	psb_2d_unlock(dev_priv);
 
 	mutex_lock(&dev->mode_config.mutex);
 	list_for_each_entry(fb, &dev->mode_config.fb_list, head) {

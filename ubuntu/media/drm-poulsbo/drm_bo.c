@@ -2574,8 +2574,10 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 
 	list->file_offset_node = drm_mm_get_block(list->file_offset_node,
 						  bo->mem.num_pages, 0);
-	if (!list->file_offset_node)
+	if (!list->file_offset_node) {
+		drm_bo_takedown_vm_locked(bo);
 		return -ENOMEM;
+	}
 
 	list->hash.key = list->file_offset_node->start;
 	if (drm_ht_insert_item(&dev->map_hash, &list->hash)) {

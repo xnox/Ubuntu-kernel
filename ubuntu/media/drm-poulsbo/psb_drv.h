@@ -35,13 +35,15 @@ enum {
 	CHIP_PSB_8109 = 1
 };
 
+#define FIX_TG_16
+
 #define DRIVER_NAME "psb"
 #define DRIVER_DESC "drm driver for the Intel GMA500"
 #define DRIVER_AUTHOR "Tungsten Graphics Inc."
 
-#define PSB_DRM_DRIVER_DATE "20080107"
-#define PSB_DRM_DRIVER_MAJOR 4 
-#define PSB_DRM_DRIVER_MINOR 1
+#define PSB_DRM_DRIVER_DATE "20080125"
+#define PSB_DRM_DRIVER_MAJOR 4
+#define PSB_DRM_DRIVER_MINOR 0
 #define PSB_DRM_DRIVER_PATCHLEVEL 0
 
 #define PSB_VDC_OFFSET           0x00000000
@@ -59,7 +61,7 @@ enum {
 #define PSB_SGX_2D_SLAVE_PORT    0x4000
 #define PSB_TT_PRIV0_LIMIT       (256*1024*1024)
 #define PSB_TT_PRIV0_PLIMIT      (PSB_TT_PRIV0_LIMIT >> PAGE_SHIFT)
-#define PSB_NUM_VALIDATE_BUFFERS 640
+#define PSB_NUM_VALIDATE_BUFFERS 1024
 #define PSB_MEM_KERNEL_START     0x10000000
 #define PSB_MEM_PDS_START        0x20000000
 #define PSB_MEM_MMU_START        0x40000000
@@ -270,10 +272,18 @@ struct drm_psb_private {
 	unsigned int irqen_count_2d;
 	wait_queue_head_t event_2d_queue;
 
+#ifdef FIX_TG_16
+	wait_queue_head_t queue_2d;
+	atomic_t lock_2d;
+        atomic_t ta_wait_2d;
+        atomic_t ta_wait_2d_irq;
+	atomic_t waiters_2d;
+#else
+	struct mutex mutex_2d;
+#endif
 	uint32_t msvdx_current_sequence;
 	uint32_t msvdx_last_sequence;
 	int fence2_irq_on;
-	struct mutex mutex_2d;
 
 	/*
 	 * MSVDX Rendec Memory
@@ -312,21 +322,6 @@ struct drm_psb_private {
 	/*
 	 * LVDS info
 	 */
-	uint8_t blc_type;
-	uint8_t blc_pol;
-	uint8_t blc_freq;
-	uint8_t blc_minbrightness;
-	uint8_t blc_i2caddr;
-	uint8_t blc_brightnesscmd;
-	int backlight;	/* restore backlight to this value */
-
-	struct intel_i2c_chan *i2c_bus; 
-	u32 CoreClock;
-	u32 PWMControlRegFreq;
-
-	unsigned char * OpRegion;
-	unsigned int OpRegionSize;
-
 	int backlight_duty_cycle;	/* restore backlight to this value */
 	bool panel_wants_dither;
 	struct drm_display_mode *panel_fixed_mode;
@@ -441,6 +436,12 @@ struct drm_psb_private {
 	struct mutex msvdx_mutex;
 	struct list_head msvdx_queue;
 	int msvdx_busy;
+
+        /*
+        * support TV
+        */
+        uint32_t primary_display;
+    
 };
 
 struct psb_mmu_driver;
@@ -492,7 +493,8 @@ extern void psb_mmu_remove_pages(struct psb_mmu_pd *pd, unsigned long address,
 extern int psb_blit_sequence(struct drm_psb_private *dev_priv,
 			     uint32_t sequence);
 extern void psb_init_2d(struct drm_psb_private *dev_priv);
-extern int drm_psb_idle(struct drm_device *dev);
+extern int psb_idle_2d(struct drm_device *dev);
+extern int psb_idle_3d(struct drm_device *dev);
 extern int psb_emit_2d_copy_blit(struct drm_device *dev,
 				 uint32_t src_offset,
 				 uint32_t dst_offset, uint32_t pages,
@@ -506,11 +508,12 @@ extern int psb_submit_copy_cmdbuf(struct drm_device *dev,
 				  unsigned long cmd_offset,
 				  unsigned long cmd_size, int engine,
 				  uint32_t * copy_buffer);
-
-extern int psb_fence_for_errors(struct drm_file *priv,
-				struct drm_psb_cmdbuf_arg *arg,
-				struct drm_fence_arg *fence_arg,
-				struct drm_fence_object **fence_p);
+extern void psb_fence_or_sync(struct drm_file *priv,
+			      int engine,
+			      struct drm_psb_cmdbuf_arg *arg,
+			      struct drm_fence_arg *fence_arg,
+			      struct drm_fence_object **fence_p);
+extern void psb_init_disallowed(void);
 
 /*
  * psb_irq.c
@@ -673,6 +676,23 @@ extern void psb_xhw_clean_buf(struct drm_psb_private *dev_priv,
 			      struct psb_xhw_buf *buf);
 
 /*
+ * psb_schedule.c: HW bug fixing.
+ */
+
+#ifdef FIX_TG_16
+
+extern void psb_2d_unlock(struct drm_psb_private *dev_priv);
+extern void psb_2d_lock(struct drm_psb_private *dev_priv);
+extern void psb_resume_ta_2d_idle(struct drm_psb_private *dev_priv);
+
+#else
+
+#define psb_2d_lock(_dev_priv) mutex_lock(&(_dev_priv)->mutex_2d)
+#define psb_2d_unlock(_dev_priv) mutex_unlock(&(_dev_priv)->mutex_2d)
+
+#endif
+
+/*
  * Utilities
  */
 
@@ -774,7 +794,7 @@ extern int drm_psb_disable_vsync;
 #if DRM_DEBUG_CODE
 #define PSB_DEBUG(_flag, _fmt, _arg...)					\
 	do {								\
-		if ((_flag) & drm_psb_debug)				\
+	  if (unlikely((_flag) & drm_psb_debug))			\
 			printk(KERN_DEBUG				\
 			       "[psb:0x%02x:%s] " _fmt , _flag,	\
 			       __FUNCTION__ , ##_arg);			\
