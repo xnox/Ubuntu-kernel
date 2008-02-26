@@ -1,3 +1,4 @@
 desc="x86/x86_64"
 provides=""
 arch="i386 amd64"
+section_image="universe/base"
