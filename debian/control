@@ -173,7 +173,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC 
 
 Package: linux-backports-modules-2.6.24-10-rt
 Architecture: i386 amd64
-Section: base
+Section: universe/base
 Priority: optional
 Provides: 
 Depends: linux-image-2.6.24-10-rt
@@ -248,7 +248,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86
 
 Package: linux-backports-modules-2.6.24-10-xen
 Architecture: i386 amd64
-Section: base
+Section: universe/base
 Priority: optional
 Provides: 
 Depends: linux-image-2.6.24-10-xen
@@ -260,12 +260,3 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  You likely do not want to install this package directly. Instead, install
  the linux-xen meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
-
-Package: updates-modules-2.6.24-10-generic-di
-XC-Package-Type: udeb
-Provides: updates-modules
-Architecture: amd64
-XB-Kernel-Version: 2.6.24-10-generic
-Section: debian-installer
-Priority: standard
-Description: Ubuntu supplied kernel modules
