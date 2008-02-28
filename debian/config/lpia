@@ -1,7 +1,6 @@
 # Ubuntu config
 
 
-CONFIG_ALSA=m
 CONFIG_BLK_DEV_GNBD=m
 
 # Requires some headers from drivers/md
