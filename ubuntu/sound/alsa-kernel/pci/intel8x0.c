@@ -2497,6 +2497,11 @@ static int intel8x0_suspend(struct pci_dev *pci, pm_message_t state)
 	 * after S2RAM.  So, don't touch it.
 	 */
 	/* pci_set_power_state(pci, pci_choose_state(pci, state)); */
+
+	/* Quirk support for HP nw8240 and HP NC6220, LP #151111 */
+	if ((pci->subsystem_vendor == 0x103c) && (pci->subsystem_device == 0x0934)) {
+		pci_set_power_state(pci, pci_choose_state(pci, state));
+	}
 	return 0;
 }
 
