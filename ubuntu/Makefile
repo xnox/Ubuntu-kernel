@@ -43,7 +43,7 @@ ifeq ($(CONFIG_PPC64),)
 obj-$(CONFIG_LIRC_DEV)		+= media/lirc/
 endif
 obj-$(CONFIG_DRM_PSB)		+= media/drm-poulsbo/
-obj-$(CONFIG_IVTV_FB)		+= media/ivtv/
+#obj-$(CONFIG_IVTV_FB)		+= media/ivtv/
 obj-$(CONFIG_STK11XX)		+= media/stk11xx/
 
 obj-$(CONFIG_NET_ATL2)		+= net/atl2/
