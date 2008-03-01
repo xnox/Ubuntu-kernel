@@ -1,3 +1,9 @@
+linux-meta (2.6.24.11.10) hardy; urgency=low
+
+  * 11.9 did not contain the fixes for linux-backports-modules package naming. Oops.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Sat,  1 Mar 2008 10:17:52 -0700
+
 linux-meta (2.6.24.11.9) hardy; urgency=low
 
   * Bumped ABI to 11.
