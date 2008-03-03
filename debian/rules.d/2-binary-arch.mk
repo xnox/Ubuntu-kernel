@@ -19,6 +19,7 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
+	touch $(builddir)/build-$*/ubuntu-build
 	echo filtered target_flavour $(filter xen virtual,$(target_flavour))
 	if [ -z "$(filter xen virtual,$(target_flavour))" ] && grep 'CONFIG_ALSA=m' $(builddir)/build-$*/.config > /dev/null ; then \
 	  cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` all-deps; \
