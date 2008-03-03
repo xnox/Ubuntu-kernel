@@ -1,7 +1,7 @@
 build-indep:
 
 indep_hdrpkg = linux-headers-lum-$(release)$(debnum)
-indep_hdrdir = $(CURDIR)/debian/$(indep_hdrpkg)/lib/modules/$(release)$(debnum)/ubuntu-headers-lum
+indep_hdrdir = $(CURDIR)/debian/$(indep_hdrpkg)/usr/src/linux-headers-lum-$(release)$(debnum)
 snd_incl     = $(indep_hdrdir)/sound
 
 install-headers:
