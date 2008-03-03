@@ -17,6 +17,7 @@ endif
 
 abinum		:= $(shell echo $(revision) | sed -e 's/\..*//')$(abisuffix)
 prev_abinum	:= $(shell echo $(prev_revision) | sed -e 's/\..*//')$(abisuffix)
+debnum          := -$(abinum)
 
 arch		:= $(shell dpkg-architecture -qDEB_HOST_ARCH)
 confdir		:= $(CURDIR)/debian/config

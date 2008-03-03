@@ -35,9 +35,6 @@ include debian/rules.d/3-udebs.mk
 # Debian Build System targets
 binary: binary-indep binary-arch
 
-binary-indep:
-build-indep:
-
 build: build-arch build-indep
 
 clean: debian/control.stub
@@ -58,6 +55,9 @@ include debian/rules.d/2-binary-arch.mk
 
 # Rules for building the udebs (debian-installer)
 #include debian/rules.d/5-udebs.mk
+
+# Builds the source, doc and linux-headers indep packages
+include debian/rules.d/4-binary-indep.mk
 
 # Misc stuff
 debian/control.stub: debian/d-i/kernel-versions.in	\
