@@ -5,3 +5,13 @@ Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
 Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1)HEADER_DEPS
 
+Package: linux-headers-lbm-PKGVER-ABINUM
+Architecture: all
+Section: devel
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0)
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to Linux ubuntu-modules version PKGVER
+ This package provides linux-ubuntu-modules header files for version PKGVER, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-PKGVER-ABINUM/debian.README.gz for details

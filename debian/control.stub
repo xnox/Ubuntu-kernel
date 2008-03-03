@@ -5,6 +5,16 @@ Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
 Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-11-386 [i386], linux-headers-2.6.24-11-generic [i386 amd64], linux-headers-2.6.24-11-hppa32 [hppa], linux-headers-2.6.24-11-hppa64 [hppa], linux-headers-2.6.24-11-itanium [ia64], linux-headers-2.6.24-11-lpia [lpia], linux-headers-2.6.24-11-lpiacompat [lpia], linux-headers-2.6.24-11-mckinley [ia64], linux-headers-2.6.24-11-powerpc [powerpc], linux-headers-2.6.24-11-powerpc-smp [powerpc], linux-headers-2.6.24-11-powerpc64-smp [powerpc], linux-headers-2.6.24-11-rt [i386 amd64], linux-headers-2.6.24-11-server [i386 amd64], linux-headers-2.6.24-11-sparc64 [sparc], linux-headers-2.6.24-11-sparc64-smp [sparc], linux-headers-2.6.24-11-virtual [i386], linux-headers-2.6.24-11-xen [i386 amd64]
 
+Package: linux-headers-lbm-2.6.24-11
+Architecture: all
+Section: devel
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0)
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to Linux ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.24-11-386
 Architecture: i386
@@ -21,6 +31,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on i386
  the linux-386 meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-386
+Architecture: i386
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-386
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-generic
 Architecture: i386 amd64
 Section: base
@@ -35,6 +56,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  You likely do not want to install this package directly. Instead, install
  the linux-generic meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.24-11-generic
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-generic
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.24-11-hppa32
 Architecture: hppa
@@ -51,6 +83,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit HP PA-RI
  the linux-hppa32 meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-hppa32
+Architecture: hppa
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-hppa32
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-hppa64
 Architecture: hppa
 Section: base
@@ -65,6 +108,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit HP PA-RI
  You likely do not want to install this package directly. Instead, install
  the linux-hppa64 meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.24-11-hppa64
+Architecture: hppa
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-hppa64
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.24-11-itanium
 Architecture: ia64
@@ -81,6 +135,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on Itanium SMP
  the linux-itanium meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-itanium
+Architecture: ia64
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-itanium
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-lpia
 Architecture: lpia
 Section: base
@@ -95,6 +160,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on lpia
  You likely do not want to install this package directly. Instead, install
  the linux-lpia meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.24-11-lpia
+Architecture: lpia
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-lpia
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.24-11-lpiacompat
 Architecture: lpia
@@ -111,6 +187,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on lpiacompat
  the linux-lpiacompat meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-lpiacompat
+Architecture: lpia
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-lpiacompat
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-mckinley
 Architecture: ia64
 Section: base
@@ -125,6 +212,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on Itanium II SMP
  You likely do not want to install this package directly. Instead, install
  the linux-mckinley meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.24-11-mckinley
+Architecture: ia64
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-mckinley
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.24-11-powerpc
 Architecture: powerpc
@@ -141,6 +239,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC
  the linux-powerpc meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-powerpc
+Architecture: powerpc
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-powerpc
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-powerpc64-smp
 Architecture: powerpc
 Section: base
@@ -155,6 +264,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit PowerPC 
  You likely do not want to install this package directly. Instead, install
  the linux-powerpc64-smp meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.24-11-powerpc64-smp
+Architecture: powerpc
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-powerpc64-smp
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.24-11-powerpc-smp
 Architecture: powerpc
@@ -171,6 +291,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC 
  the linux-powerpc-smp meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-powerpc-smp
+Architecture: powerpc
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-powerpc-smp
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-rt
 Architecture: i386 amd64
 Section: universe/base
@@ -185,6 +316,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  You likely do not want to install this package directly. Instead, install
  the linux-rt meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.24-11-rt
+Architecture: i386 amd64
+Section: universe/base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-rt
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.24-11-server
 Architecture: i386 amd64
@@ -201,6 +343,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  the linux-server meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-server
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-server
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-sparc64
 Architecture: sparc
 Section: base
@@ -215,6 +368,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPA
  You likely do not want to install this package directly. Instead, install
  the linux-sparc64 meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.24-11-sparc64
+Architecture: sparc
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-sparc64
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.24-11-sparc64-smp
 Architecture: sparc
@@ -231,6 +395,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPA
  the linux-sparc64-smp meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-sparc64-smp
+Architecture: sparc
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-sparc64-smp
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-virtual
 Architecture: i386
 Section: base
@@ -246,6 +421,17 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86
  the linux-virtual meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
+Package: linux-headers-lbm-2.6.24-11-virtual
+Architecture: i386
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-virtual
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details
+
 Package: linux-backports-modules-2.6.24-11-xen
 Architecture: i386 amd64
 Section: universe/base
@@ -260,3 +446,14 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  You likely do not want to install this package directly. Instead, install
  the linux-xen meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.24-11-xen
+Architecture: i386 amd64
+Section: universe/base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-11-xen
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.24-11/debian.README.gz for details

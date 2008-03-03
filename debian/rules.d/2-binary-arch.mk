@@ -19,6 +19,7 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
+	touch $(builddir)/build-$*/ubuntu-build
 	touch $@
 
 # Do the actual build, including image and modules
@@ -35,6 +36,9 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 install-%: pkgdir = $(CURDIR)/debian/linux-backports-modules-$(release)-$(abinum)-$*
 install-%: moddir = $(pkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: firmdir = $(pkgdir)/lib/firmware/$(release)-$(abinum)-$*
+install-%: basehdrpkg = linux-headers-lbm-$(release)$(debnum)
+install-%: hdrpkg = $(basehdrpkg)-$*
+install-%: hdrdir = $(CURDIR)/debian/$(hdrpkg)/usr/src/$(hdrpkg)
 install-%: target_flavour = $*
 install-%: $(stampdir)/stamp-build-%
 	dh_testdir
@@ -55,6 +59,21 @@ endif
 	       debian/control-scripts/$$script > $(pkgdir)/DEBIAN/$$script;	\
 	  chmod 755 $(pkgdir)/DEBIAN/$$script;					\
 	done
+
+	# The flavour specific headers package
+	install -d $(hdrdir)/sound
+	# This is where you do the headers copy when the ALSA backport is done.
+	#cp `find $(builddir)/build-$*/sound/alsa-kernel/include -type f` $(hdrdir)/sound
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs -p$(hdrpkg)
+	dh_installdocs -p$(hdrpkg)
+	dh_compress -p$(hdrpkg)
+	dh_fixperms -p$(hdrpkg)
+	dh_installdeb -p$(hdrpkg)
+	dh_gencontrol -p$(hdrpkg)
+	dh_md5sums -p$(hdrpkg)
+	dh_builddeb -p$(hdrpkg)
 
 binary-modules-%: pkgimg = linux-backports-modules-$(release)-$(abinum)-$*
 binary-modules-%: install-%
