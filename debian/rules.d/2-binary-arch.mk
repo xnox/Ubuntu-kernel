@@ -58,7 +58,7 @@ install-%: $(stampdir)/stamp-build-%
 	cp -a ubuntu-firmware/zd1211 $(firmdir)/
 	for i in ubuntu-firmware/*/[[:lower:]]*; do \
 	  case $${i##*/} in \
-	    zd12*) ;; \
+	    zd121*) ;; \
 	    *) cp $$i "$(firmdir)/${i##*/}";; \
 	  esac; \
 	done
