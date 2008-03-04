@@ -25,6 +25,12 @@ builddir	:= $(CURDIR)/debian/build
 stampdir	:= $(CURDIR)/debian/stamps
 udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 
+#
+# Specifically exclude these flavours from creating a sound include directory in
+# the linux-headers-lum package.
+#
+no_alsa_flavours="xen virtual"
+
 # Support parallel=<n> in DEB_BUILD_OPTIONS (see #209008)
 COMMA=,
 ifneq (,$(filter parallel=%,$(subst $(COMMA), ,$(DEB_BUILD_OPTIONS))))
