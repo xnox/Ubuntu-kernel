@@ -58,6 +58,10 @@ endif
 
 obj-$(CONFIG_IPW2100_FS_AMILO_M7400) += wireless/fsam7400.o
 
+obj-$(CONFIG_MMC_SD8686)       += wireless/marvell/8686_v9/
+obj-$(CONFIG_MMC_SD8688)       += wireless/marvell/8688_wlan/
+obj-$(CONFIG_MMC_SD8688)       += wireless/marvell/8688_bt/
+
 obj-$(CONFIG_ET131X)		+= net/et131x/
 obj-$(CONFIG_IGB)		+= net/igb/
 obj-$(CONFIG_VMWARE) += vmblock/ 

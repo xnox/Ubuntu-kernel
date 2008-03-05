@@ -1,0 +1,89 @@
+===============================================================================
+			U S E R  M A N U A L
+
+ (c) Copyright © 2003-2007, Marvell International Ltd. 
+
+ This software file (the "File") is distributed by Marvell International 
+ Ltd. under the terms of the GNU General Public License Version 2, June 1991 
+ (the "License").  You may use, redistribute and/or modify this File in 
+ accordance with the terms and conditions of the License, a copy of which 
+ is available along with the File in the gpl.txt file or by writing to 
+ the Free Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 
+ 02111-1307 or on the worldwide web at http://www.gnu.org/licenses/gpl.txt.
+
+ THE FILE IS DISTRIBUTED AS-IS, WITHOUT WARRANTY OF ANY KIND, AND THE 
+ IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE 
+ ARE EXPRESSLY DISCLAIMED.  The License provides additional details about 
+ this warranty disclaimer.
+
+===============================================================================
+
+1) FOR DRIVER BUILD
+
+	Goto source code directory src_xxxx.
+		make [clean] build
+	The driver binaries can be found in ../bin_bt directory.
+
+2) FOR DRIVER INSTALL
+
+	a) Copy helper_sd.bin and sd8688.bin | sd8689.bin | ... to /lib/firmware/mrvl/ 
+	   directory, create the directory if it doesn't exist.
+	b) Install sdio bus driver and bluetooth driver,
+		./load sd8688 | sd8689 | ...
+	c) Uninstall bluetooth driver and sdio bus driver,
+		./unload
+3) cat /proc/net/mbt/hcix/config
+   This command is used to get the current driver settings. 
+
+4) cat /proc/net/mbt/hcix/status
+   This command is used to get driver status
+
+5) proc commands to config bluetooth parameters. 
+
+drvdbg=[n]
+   This command is used to set the bit masks of driver debug message control.
+
+   	bit 0:  MSG  		PRINTM(MSG,...)
+	bit 1:  FATAL		PRINTM(FATAL,...)
+	bit 2:  ERROR		PRINTM(ERROR,...)
+	bit 3:  CMD		PRINTM(CMD,...)
+	bit 27: DATA		DBG_HEXDUMP(DBG_DATA,...)
+	bit 28: ENTRY		PRINTM(ENTRY,...), ENTER(), LEAVE()
+	bit 29: WARN 		PRINTM(WARN,...)
+	bit 30: INFO 		PRINTM(INFO,...)
+
+	Usage:
+		echo "drvdbg=0x7" > /proc/net/mbt/hcix/config		#enable MSG,FATAL,ERROR messages
+
+gpio_gap=[n]
+   This command is used to configure the host sleep parameters.
+	bit 8:0  -- Gap
+	bit 16:8 -- GPIO
+
+	where GPIO is the pin number of GPIO used to wakeup the host. It could be any valid
+		GPIO pin# (e.g. 0-7) or 0xff (Interface, e.g. SDIO will be used instead).
+		
+	where Gap is the gap in milli seconds between wakeup signal and wakeup event 
+		or 0xff for special setting.
+	Usage:
+		echo "gpio_gap=0xff80" > /proc/net/mbt/hcix/config   	# use Interface (e.g. SDIO)
+		echo "hscfgcmd=1" > /proc/net/mbt/hcix/config		# gap = 0x80
+
+		echo "gpio_gap=0x03ff" > /proc/net/mbt/hcix/config   	# use gpio 3
+		echo "hscfgcmd=1" > /proc/net/mbt/hcix/config		# and special host sleep mode
+
+psmode=[n]
+    This command is used to enable/disable auto sleep mode
+	
+	where the option is:
+			1 	-- Enable auto sleep mode
+			0 	-- Disable auto sleep mode
+	Usage:
+		echo "psmode=1" > /proc/net/mbt/hcix/config		#enable power save mode
+		echo "pscmd=1" > /proc/net/mbt/hcix/config
+
+		echo "psmode=0" > /proc/net/mbt/hcix/config		#disable power save mode
+		echo "pscmd=1" > /proc/net/mbt/hcix/config
+		
+						
+==============================================================================
