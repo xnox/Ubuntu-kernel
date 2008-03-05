@@ -305,7 +305,7 @@ wlan_init_fw(wlan_private * priv)
 
     sbi_disable_host_int(priv);
 
-    umd_dbg("helper_name: %s, fw_name: %s", helper_name, fw_name);
+    //umd_dbg("helper_name: %s, fw_name: %s", helper_name, fw_name);
 
     /* Check if firmware is already running */
     if (sbi_check_fw_status(priv, 1) == WLAN_STATUS_SUCCESS) {
@@ -320,7 +320,7 @@ wlan_init_fw(wlan_private * priv)
             goto done;
         }
 
-	umd_dbg("start downloading helper");
+	//umd_dbg("start downloading helper");
         /* Download the helper */
         ret = sbi_prog_helper(priv);
 
@@ -339,7 +339,7 @@ wlan_init_fw(wlan_private * priv)
             goto done;
         }
 
-	umd_dbg("start downloading fw");
+	//umd_dbg("start downloading fw");
         /* Download the main firmware via the helper firmware */
         if (sbi_prog_fw_w_helper(priv)) {
             PRINTM(INFO, "Wlan FW download failed!\n");

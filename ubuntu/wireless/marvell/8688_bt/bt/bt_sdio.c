@@ -80,7 +80,7 @@ sd_read_firmware_status(bt_private * priv, u16 * dat)
 	u8 fws0;
 	u8 fws1;
 	struct sdio_mmc_card *card = (struct sdio_mmc_card *) priv->bt_dev.card;
-	umd_enter();
+	//umd_enter();
 	ENTER();
 	fws0 = sdio_readb(card->func, CARD_FW_STATUS0_REG, &ret);
 	if (ret < 0)
@@ -93,7 +93,7 @@ sd_read_firmware_status(bt_private * priv, u16 * dat)
 	*dat = (((u16) fws1) << 8) | fws0;
 
 	LEAVE();
-	umd_exit();
+	//umd_exit();
 	return BT_STATUS_SUCCESS;
 }
 
@@ -229,8 +229,8 @@ sd_probe_card(struct sdio_func *func, const struct sdio_device_id *id)
 	
 	PRINTM(INFO, "vendor=%x,device=%x,class=%d,fn=%d\n", id->vendor,
 		id->device, id->class, func->num);
-	umd_dbg("vendor=%x,device=%x,class=%d,fn=%d\n", id->vendor,
-		id->device, id->class, func->num);
+	//umd_dbg("vendor=%x,device=%x,class=%d,fn=%d\n", id->vendor,
+	//	id->device, id->class, func->num);
 	card = kzalloc(sizeof(struct sdio_mmc_card), GFP_KERNEL);
 	if (!card) {
 		ret = -ENOMEM;
@@ -279,7 +279,7 @@ sd_verify_fw_download(bt_private * priv, int pollnum)
 	
 	if (ret < 0) {
 		PRINTM(ERROR, "Timeout waiting for FW to become active\n");
-		umd_dbg("Timeout waiting for FW to become active\n");
+		//umd_dbg("Timeout waiting for FW to become active\n");
 		goto done;
 	}
 	ret = BT_STATUS_SUCCESS;
@@ -942,7 +942,7 @@ sbi_register_dev(bt_private * priv)
     }
     priv->adapter->chip_rev = chiprev;
     PRINTM(INFO, "revision=%#x\n", chiprev);
-    umd_dbg("revision=%#x\n", chiprev);
+    //umd_dbg("revision=%#x\n", chiprev);
 
     /* Read the IO port */
     reg = sdio_readb(func, IO_PORT_0_REG, &ret);
@@ -963,8 +963,8 @@ sbi_register_dev(bt_private * priv)
     else
         priv->bt_dev.ioport |= (reg << 16);
 
-    umd_dbg("SDIO FUNC%d IO port: 0x%x\n", priv->bt_dev.fn,
-           priv->bt_dev.ioport);
+    //umd_dbg("SDIO FUNC%d IO port: 0x%x\n", priv->bt_dev.fn,
+    //       priv->bt_dev.ioport);
     PRINTM(INFO, "SDIO FUNC%d IO port: 0x%x\n", priv->bt_dev.fn,
            priv->bt_dev.ioport);
     sdio_set_drvdata(func, card);
@@ -1119,7 +1119,7 @@ sbi_download_fw(bt_private * priv)
 
     ENTER();
 
-    umd_dbg("helper = %s, fw = %s", helper_name, fw_name); 
+    //umd_dbg("helper = %s, fw = %s", helper_name, fw_name); 
 
     if (!card || !card->func) {
         PRINTM(ERROR, "card or function is NULL!\n");
@@ -1134,17 +1134,17 @@ sbi_download_fw(bt_private * priv)
         goto done;
     }
 
-	umd_dbg("2222");
+	//umd_dbg("2222");
 
 
     if (priv->bt_dev.fn == FN2) {
         ret = BT_STATUS_FAILURE;
         PRINTM(INFO, "Firmware is not ready (FN2)!\n");
-        umd_dbg("Firmware is not ready (FN2)!\n");
+        //umd_dbg("Firmware is not ready (FN2)!\n");
         //goto done;
     }
 
-	umd_dbg("Will download helper");
+	//umd_dbg("Will download helper");
 
     /* Download the helper */
     ret = sd_dowload_helper(priv);
@@ -1154,7 +1154,7 @@ sbi_download_fw(bt_private * priv)
         goto done;
     }
 
-	umd_dbg("Will download main FW");
+	//umd_dbg("Will download main FW");
 
     /* Download the main firmware via the helper firmware */
     if (sd_download_firmware_w_helper(priv)) {
