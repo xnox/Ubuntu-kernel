@@ -2571,6 +2571,13 @@ wlan_get_range(struct net_device *dev, struct iw_request_info *info,
     range->num_txpower = 2;
     range->txpower_capa = IW_TXPOW_DBM | IW_TXPOW_RANGE;
 
+    if (FW_IS_WPA_ENABLED(Adapter)) {
+	range->enc_capa = IW_ENC_CAPA_WPA
+	    | IW_ENC_CAPA_WPA2
+	    | IW_ENC_CAPA_CIPHER_TKIP
+	    | IW_ENC_CAPA_CIPHER_CCMP;
+    }
+
     LEAVE();
     return WLAN_STATUS_SUCCESS;
 }

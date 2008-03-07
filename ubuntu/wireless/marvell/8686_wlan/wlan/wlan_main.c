@@ -965,8 +965,6 @@ wlan_add_card(void *card)
     priv->wlan_dev.card = card;
     wlanpriv = priv;
 
-    //SET_MODULE_OWNER(dev);
-
     /* Setup the OS Interface to our functions */
     dev->open = wlan_open;
     dev->hard_start_xmit = wlan_hard_start_xmit;

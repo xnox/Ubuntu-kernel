@@ -699,9 +699,6 @@ disable_host_int_mask(wlan_private * priv, u8 mask)
 		Global Functions
 ********************************************************/
 
-int start_bus_clock(mmc_controller_t);
-int stop_bus_clock_2(mmc_controller_t);
-
 void
 gpio_irq_callback(void *arg)
 {
@@ -787,7 +784,7 @@ done:
 static void sbi_dev_remove_func(struct sdio_func *func)
 {
 	if (!wlan_remove_callback)
-		return WLAN_STATUS_FAILURE;
+		return;
 	pwlanpriv = NULL;
 
 	wlan_remove_callback(func);
@@ -803,8 +800,6 @@ static const struct sdio_device_id sdio_8686_ids[] = {
 	{ SDIO_DEVICE_CLASS(SDIO_CLASS_WLAN)		},
 	{ /* end: all zeroes */				},
 };
-
-//MODULE_DEVICE_TABLE(sdio, sdio_8686_ids);
 
 static struct sdio_driver sdio8686_driver = {
 	.probe		= sbi_dev_probe_func,
