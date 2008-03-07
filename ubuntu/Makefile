@@ -58,7 +58,7 @@ endif
 
 obj-$(CONFIG_IPW2100_FS_AMILO_M7400) += wireless/fsam7400.o
 
-obj-$(CONFIG_MMC_SD8686)       += wireless/marvell/8686_v9/
+obj-$(CONFIG_MMC_SD8686)       += wireless/marvell/8686_wlan/
 obj-$(CONFIG_MMC_SD8688)       += wireless/marvell/8688_wlan/
 obj-$(CONFIG_MMC_SD8688)       += wireless/marvell/8688_bt/
 
