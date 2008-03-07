@@ -1,4 +1,4 @@
-CONFIG_DEBUG=0
+CONFIG_DEBUG=1
 
 # Proc in /proc/net/wlan
 CONFIG_PROC_DEBUG=y
@@ -54,7 +54,7 @@ ifeq ($(CONFIG_MFG_CMD_SUPPORT),y)
 	EXTRA_CFLAGS += -DMFG_CMD_SUPPORT
 endif
 
-8686_v9-objs =	wlan/wlan_main.o wlan/wlan_fw.o wlan/wlan_wext.o \
+sd8686-objs =	wlan/wlan_main.o wlan/wlan_fw.o wlan/wlan_wext.o \
 		wlan/wlan_rx.o wlan/wlan_tx.o \
 		wlan/wlan_cmd.o wlan/wlan_cmdresp.o \
 		wlan/wlan_proc.o wlan/wlan_scan.o wlan/wlan_join.o \
@@ -62,10 +62,10 @@ endif
 		if/if_sdio/if_sdio.o
 
 ifeq ($(CONFIG_PROC_DEBUG), y)
-8686_v9-objs += wlan/wlan_debug.o
+sd8686-objs += wlan/wlan_debug.o
 endif
 
-obj-$(CONFIG_MMC_SD8686) += 8686_v9.o
+obj-$(CONFIG_MMC_SD8686) += sd8686.o
 
 	EXTRA_CFLAGS += -DFPNUM='"13"'
 	EXTRA_CFLAGS += -DFB
