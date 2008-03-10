@@ -1,4 +1,4 @@
-linux-meta (2.6.24.12.11) hardy; urgency=low
+linux-meta (2.6.24.12.12) hardy; urgency=low
 
   * Add dapper upgrade meta packages for 686, k7,
     amd64-{generic,server,k8,xeon}
