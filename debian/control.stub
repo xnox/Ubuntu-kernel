@@ -5,17 +5,6 @@ Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
 Build-Depends: automake, autoconf, debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-12-386 [i386], linux-headers-2.6.24-12-generic [i386 amd64], linux-headers-2.6.24-12-hppa32 [hppa], linux-headers-2.6.24-12-hppa64 [hppa], linux-headers-2.6.24-12-itanium [ia64], linux-headers-2.6.24-12-lpia [lpia], linux-headers-2.6.24-12-lpiacompat [lpia], linux-headers-2.6.24-12-mckinley [ia64], linux-headers-2.6.24-12-powerpc [powerpc], linux-headers-2.6.24-12-powerpc-smp [powerpc], linux-headers-2.6.24-12-powerpc64-smp [powerpc], linux-headers-2.6.24-12-rt [i386 amd64], linux-headers-2.6.24-12-server [i386 amd64], linux-headers-2.6.24-12-sparc64 [sparc], linux-headers-2.6.24-12-sparc64-smp [sparc], linux-headers-2.6.24-12-virtual [i386], linux-headers-2.6.24-12-xen [i386 amd64]
 
-Package: linux-headers-lum-2.6.24-12
-Architecture: all
-Section: devel
-Priority: optional
-Depends: coreutils | fileutils (>= 4.0)
-Provides: linux-headers-lum, linux-headers-lum-2.6
-Description: Header files related to Linux ubuntu-modules version 2.6.24
- This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
- that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-12/debian.README.gz for details
-
 Package: linux-ubuntu-modules-2.6.24-12-386
 Architecture: i386
 Section: base

@@ -44,8 +44,7 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 install-%: pkgdir = $(CURDIR)/debian/linux-ubuntu-modules-$(release)-$(abinum)-$*
 install-%: moddir = $(pkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: firmdir = $(pkgdir)/lib/firmware/$(release)-$(abinum)-$*
-install-%: basehdrpkg = linux-headers-lum-$(release)$(debnum)
-install-%: hdrpkg = $(basehdrpkg)-$*
+install-%: hdrpkg = linux-headers-lum-$(release)-$(abinum)-$*
 install-%: hdrdir = $(CURDIR)/debian/$(hdrpkg)/usr/src/$(hdrpkg)
 install-%: target_flavour = $*
 install-%: $(stampdir)/stamp-build-%
@@ -81,18 +80,9 @@ endif
 	# The flavour specific headers package
 	install -d $(hdrdir)/sound
 	cp `find $(builddir)/build-$*/sound/alsa-kernel/include -type f` $(hdrdir)/sound
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs -p$(hdrpkg)
-	dh_installdocs -p$(hdrpkg)
-	dh_compress -p$(hdrpkg)
-	dh_fixperms -p$(hdrpkg)
-	dh_installdeb -p$(hdrpkg)
-	dh_gencontrol -p$(hdrpkg)
-	dh_md5sums -p$(hdrpkg)
-	dh_builddeb -p$(hdrpkg)
 
 binary-modules-%: pkgimg = linux-ubuntu-modules-$(release)-$(abinum)-$*
+binary-modules-%: hdrpkg = linux-headers-lum-$(release)-$(abinum)-$*
 binary-modules-%: install-%
 	dh_testdir
 	dh_testroot
@@ -105,6 +95,16 @@ binary-modules-%: install-%
 	dh_gencontrol -p$(pkgimg)
 	dh_md5sums -p$(pkgimg)
 	dh_builddeb -p$(pkgimg) -- -Zbzip2 -z9
+
+	dh_installchangelogs -p$(hdrpkg)
+	dh_installdocs -p$(hdrpkg)
+	dh_compress -p$(hdrpkg)
+	dh_fixperms -p$(hdrpkg)
+	dh_installdeb -p$(hdrpkg)
+	dh_gencontrol -p$(hdrpkg)
+	dh_md5sums -p$(hdrpkg)
+	dh_builddeb -p$(hdrpkg)
+
 
 binary-debs: $(addprefix binary-modules-,$(flavours))
 binary-arch: binary-debs binary-udebs
