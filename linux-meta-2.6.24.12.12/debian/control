@@ -68,6 +68,174 @@ Description: Linux kernel documentation
  This package will always depend on the latest Linux kernel documentation
  available.
 
+Package: linux-headers-686
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: linux-headers-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-686
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-restricted-modules-686
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-686
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-headers-amd64-generic
+Architecture: amd64
+Section: devel
+Priority: optional
+Depends: linux-headers-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-amd64-generic
+Architecture: amd64
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-restricted-modules-amd64-generic
+Architecture: amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-amd64-generic
+Architecture: amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-headers-amd64-k8
+Architecture: amd64
+Section: devel
+Priority: optional
+Depends: linux-headers-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-amd64-k8
+Architecture: amd64
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-restricted-modules-amd64-k8
+Architecture: amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-amd64-k8
+Architecture: amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-headers-amd64-server
+Architecture: amd64
+Section: devel
+Priority: optional
+Depends: linux-headers-server
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-amd64-server
+Architecture: amd64
+Section: metapackages
+Priority: optional
+Depends: linux-image-server
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-restricted-modules-amd64-server
+Architecture: amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-server
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-amd64-server
+Architecture: amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-server
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-headers-amd64-xeon
+Architecture: amd64
+Section: devel
+Priority: optional
+Depends: linux-headers-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-amd64-xeon
+Architecture: amd64
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-restricted-modules-amd64-xeon
+Architecture: amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-amd64-xeon
+Architecture: amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-headers-k7
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: linux-headers-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-k7
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-restricted-modules-k7
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-k7
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-generic
+Description: Upgrade dummy package. Can be removed
+
 Package: linux-headers-generic
 Architecture: i386 amd64
 Section: devel

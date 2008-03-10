@@ -1,0 +1,27 @@
+Package: linux-headers-686
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: linux-headers-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-686
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-restricted-modules-686
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-686
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-generic
+Description: Upgrade dummy package. Can be removed

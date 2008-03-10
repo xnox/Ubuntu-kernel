@@ -1,0 +1,27 @@
+Package: linux-headers-k7
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: linux-headers-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-k7
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-restricted-modules-k7
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-generic
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-k7
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-generic
+Description: Upgrade dummy package. Can be removed
