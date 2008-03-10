@@ -65,22 +65,8 @@ ifeq ($(CONFIG_PROC_DEBUG), y)
 sd8686-objs += wlan/wlan_debug.o
 endif
 
-obj-$(CONFIG_MMC_SD8686) += sd8686.o
-
+obj-m += sd8686.o
 	EXTRA_CFLAGS += -DFPNUM='"13"'
 	EXTRA_CFLAGS += -DFB
-
-ifdef CONFIG_MMC_SD8686
 	EXTRA_CFLAGS += -I$(src)/os/linux -I$(src)/wlan
-
-
-ifdef CONFIG_MMC_DEBUG
-#	EXTRA_CFLAGS += -DDEBUG_LEVEL1
-#	EXTRA_CFLAGS += -DDEBUG_LEVEL2
-#	EXTRA_CFLAGS += -DDEBUG_LEVEL3
-#	EXTRA_CFLAGS += -DDEBUG_LEVEL4
-#	DBG=    -dbg
-endif
-
-endif
 
