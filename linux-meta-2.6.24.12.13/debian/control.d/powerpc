@@ -104,33 +104,6 @@ Description: Restricted Linux modules on PowerPC 64-bit SMP.
  for PowerPC 64-bit with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-headers-cell
-Architecture: powerpc
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-cell
-Description: Linux kernel headers on Cell
- This package will always depend on the latest kernel headers available
- for Cell.
-
-Package: linux-image-cell
-Architecture: powerpc
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-cell, linux-ubuntu-modules-${kernel-abi-version}-cell
-Description: Linux kernel image on Cell
- This package will always depend on the latest kernel image available
- for Cell.
-
-Package: linux-cell
-Architecture: powerpc
-Section: metapackages
-Priority: optional
-Depends: linux-image-cell (= ${binary:Version})
-Description: Complete Linux kernel on Cell.
- This package will always depend on the latest complete Linux kernel available
- for Cell.
-
 Package: linux-backports-modules-RELEASE_NAME-powerpc
 Architecture: powerpc
 Depends: linux-backports-modules-${kernel-abi-version}-powerpc

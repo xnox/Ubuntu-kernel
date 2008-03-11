@@ -1,0 +1,20 @@
+Package: linux-headers-cell
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-powerpc64-smp
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-image-cell
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-powerpc64-smp
+Description: Upgrade dummy package. Can be removed
+
+Package: linux-cell
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-powerpc64-smp
+Description: Upgrade dummy package. Can be removed
