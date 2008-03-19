@@ -1,0 +1,12 @@
+-name bugs
+-o -regex ./conf.d/.*$
+-o -wholename ./cscope.files
+-o -wholename ./.hgignore
+-o -wholename ./.hgtags
+-o -wholename ./load.sh
+-o -wholename ./Makefile
+-o -wholename ./mk-config
+-o -wholename ./.modules
+-o -regex ./patches/.*$
+-o -wholename ./README
+-o -regex .*.o.d

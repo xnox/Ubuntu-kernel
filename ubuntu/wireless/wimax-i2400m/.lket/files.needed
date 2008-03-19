@@ -1,0 +1,4 @@
+# Make sure these files exist before continuing
+include/config.h
+drivers/net/wimax/bugs.h
+drivers/net/wimax/version.h

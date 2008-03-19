@@ -1,0 +1,15 @@
+.*\.ko
+.*\.o
+.*\.rej
+.*\mod$
+.*\mod\.c
+.*~
+.tmp_versions
+Module.symvers
+Modules.symvers
+TAGS
+\.tmp\.config\.mk
+cscope\..*
+drivers/net/wimax/bugs.h
+include/config.h
+drivers/net/wimax/version.h

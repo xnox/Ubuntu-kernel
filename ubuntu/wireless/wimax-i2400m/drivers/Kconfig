@@ -1,0 +1,6 @@
+# @lket@ignore-file
+
+# @lket@add-start drivers/Kconfig source "drivers/usb/Kconfig"
+
+source "drivers/uwb/Kconfig"
+# @lket@add-end

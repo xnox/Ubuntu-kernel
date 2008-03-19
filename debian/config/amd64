@@ -95,3 +95,4 @@ endif
 CONFIG_STK11XX=m
 
 endif
+CONFIG_WIMAX_I2400M=m

@@ -1,0 +1,15 @@
+#
+# Bug workaround tracking
+#
+# For each bug for which a workaround is active, declare the bug
+# number and if the workaround has to be 'enabled' or 'disabled' in
+# the compiled code. If you want different variants of the workaround,
+# add the variant code after the 'enabled' keyword.
+#
+#      State                             Qualifier
+# BUG# {enabled|disabled|/[A-Za-z0-9]+/} [/[A-Za-z0-9]+/]
+
+# FW >= v0.9306
+#45 enabled
+#78 disabled
+#238 enabled

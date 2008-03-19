@@ -1,0 +1,209 @@
+#! /bin/bash
+#
+# (C) 2007 Intel Corporation
+# Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License version
+# 2 as published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+# 02110-1301, USA.
+#
+#
+# Generate compilation time configuration variables for an external
+# module tree.
+#
+# See help() function for more help or run with -h
+
+
+# Now let's see if there is an existing configuraton file
+#
+# Update the destination files only if the new ones are different
+function update_file
+{
+    src=$1
+    dst=$2
+    if ! [ -e "$dst" ]
+    then
+        echo "I: Installed new build configuration file $dst"
+        mv $src $dst
+        return 0
+    fi
+    srcsig=$($sum $src | awk '{ print $1; }');
+    dstsig=$($sum $dst | awk '{ print $1; }');
+    if [ $srcsig != $dstsig ]
+    then
+        echo "I: updated build configuration file $dst"
+        [ $do_diff -eq 1 ] && diff -u $dst $src | sed 's/^/I: /'
+        mv $src $dst
+    fi
+}
+
+
+function help
+{
+    cat <<EOF
+Usage: $(basename $0) [OPTIONS] EXTERNAL_SOURCE_DIR KERNEL_SOURCE_DIR
+
+  EXTERNAL_SOURCE_DIR Directory where the external module tree is
+  KERNEL_SOURCE_DIR   Directory that contains the kernel source we are
+                      compiling against.
+
+OPTIONS:
+
+  -d   Show diff of changed files
+  -h   This help
+
+(C) 2007 Intel Corporation, <inaky.perez-gonzalez@intel.com>
+Released under the GPLv2.
+
+This is not end-user configuration, this is for an external Linux
+kernel module's source tree to see what's available at the kernel and
+what not so we know what stubs to compile in. The subdirectory .lket
+contains test scripts (.lket/ct-*.sh) that output lines in the form:
+
+[DIRNAME/]FILENAME:TEXT
+
+The outputs of all the scripts is collected up by file
+(DIRNAME/FILENAME). Then if that file doesn't exist or it does but the
+contents have change, we update it. Scripts have available the
+environment variables KSRC (for the kernel source dir) and ESRC (for
+the external module source dir).
+
+In your top level Makefile, you need to add at the bottom:
+
+src ?= $(PWD)
+.PHONY: \$(src)/.tmp.config.mk
+-include \$(src)/.tmp.config.mk
+\$(src)/.tmp.config.mk:: \$(src)/lket-ct-config
+      @\$(src)/lket-ct-config \$(src) \$(TOPDIR)
+
+This forces the compile-time configuration to be evaluated all the
+time we attempt to compile as part of the Linux Kernel (TOPDIR
+defined). It's a bad idea to depend on stuff into .tmp.config.mk in
+this top level makefile; normally you should not (your stuff should be
+in {include,drivers}/somewhere.
+
+In every lower level Makefile where variables defined in
+.tmp.config.mk are used. you need to add:
+
+-include \$(src)/.tmp.config.mk		# Somewhere at the top
+
+Stuff like EXTRA_CFLAGS global to the whole package also can go in
+there.
+
+If you have configuration variables that will be needed at the
+makefiles, you can add them to the .tmp.config.mk file by having your
+config scripts echo ".tmp.config.mk:TEXT".
+
+EOF
+}
+
+
+# Parse cmdline opts
+do_diff=0;
+case $1 in
+    -d) do_diff=1; shift;;
+    -h) help; exit 0;;
+    *)  ;;
+esac
+
+# If no KSRC (it means it's empty), we are not compiling under the
+# kernel, so we just ignore it.
+[ -z "$2" ] && exit 0
+
+if [ $# -ne 2 ]
+then
+    cat 1>&2 <<EOF
+Error: Bad number of arguments
+
+EOF
+    help 1>&2
+    exit 1
+fi
+
+export ESRC="$1"
+export KSRC="$2"
+
+# If we were given a build kernel directory, get the source dir
+if grep -qw KERNELSRC $KSRC/Makefile
+then
+    sourcedir="$(awk '/^KERNELSRC *:= */ { print $3; exit(0); }' $KSRC/Makefile)"
+    KSRC=$sourcedir
+    echo "I: real kernel source at $KSRC"
+fi
+
+set -e
+
+# Which sum program to use, do we have md5sum?
+if md5sum < /dev/null > /dev/null
+then
+    sum=md5sum
+else
+    sum=sum
+fi
+
+# Run the config scripts
+echo "I: executing compile-time config scripts" 1>&2
+#of=/tmp/of
+#rm -rf /tmp/of*
+of=$(mktemp ${TMPDIR:-/tmp}/$(basename "$0").XXXXXX)
+ofstderr=$of.stderr
+trap "rm -f $of*" 1 2 3 15 0
+cd "$ESRC"
+for scr in .lket/ct-*.sh
+do
+#    echo "I: executing config script $scr" 1>&2
+    if ! $scr >> $of
+    then
+        echo "E: execution of config script $scr failed" 1>&2
+        exit 1
+    fi
+    rm -f $ofstderr
+done
+
+# Split out the new configuration files
+cat $of | while read line
+do
+    real_file="$(echo "$line" | sed -e 's/:.*$//')"
+    file="$(echo "$real_file" | sed -e 's|/|__slash__|g')"
+    text="$(echo "$line" | sed 's/^[^:]*://')"
+
+    if ! [ -e "$of.content.$file" ]
+    then
+        case "$real_file" in
+            *.h)  echo "/* File autogenerated */" > "$of.content.$file";;
+            *.mk) echo "# File autogenerated" > "$of.content.$file";;
+            *)    echo "W: don't know how to make comments for file '$real_file'" 1>&2
+        esac
+        echo $real_file > "$of.name.$file"
+    fi
+    echo "$text" >> "$of.content.$file"
+done
+
+# Special rule for .tmp.config.mk, we need to add a dep on ourselves.
+echo .tmp.config.mk > "$of.name..tmp.config.mk"
+for cf in $of.name.*
+do
+    file_name="$(cat "$cf")";
+    echo "$file_name	\\" >> $of.content..tmp.config.mk
+done
+cat >> "$of.content..tmp.config.mk" <<EOF
+:: \$(src)/lket-ct-config
+	@\$(src)/lket-ct-config \$(src) \$(TOPDIR)
+EOF
+
+# See which do we have to update
+for cf in $of.content.*
+do
+    nf=$(echo "$cf" | sed 's/\.content\./.name./');
+    update_file "$cf" $(cat "$nf")
+done
