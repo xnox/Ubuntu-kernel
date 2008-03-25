@@ -265,10 +265,7 @@ int ieee80211_wep_decrypt(struct ieee80211_local *local, struct sk_buff *skb,
 	if (ieee80211_wep_decrypt_data(local->wep_rx_tfm, rc4key, klen,
 				       skb->data + hdrlen + WEP_IV_LEN,
 				       len)) {
-#ifdef CONFIG_MAC80211_DEBUG
-		if (net_ratelimit())
-			printk(KERN_DEBUG "WEP decrypt failed (ICV)\n");
-#endif /* CONFIG_MAC80211_DEBUG */
+		printk(KERN_DEBUG "WEP decrypt failed (ICV)\n");
 		ret = -1;
 	}
 

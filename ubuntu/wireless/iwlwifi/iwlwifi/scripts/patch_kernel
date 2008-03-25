@@ -1,5 +1,8 @@
 #!/usr/bin/env /bin/bash
 
+echo "Deprecated"
+exit 0
+
 function check_params()
 {
     if [ "$1" ]; then
