@@ -1,0 +1,9 @@
+Motorola_v2.0_BS
+
+ec0ae0dd3c05e1e9d527ae7912014868  DM_FPGA_USB.elf
+c43db2dfaf4df99b4c721d315ce2c299  DspsIniFile.elf
+e988da497345d5444f033f46c6e504e4  FW_DynamicConfig.elf
+a74f1fbbe36938e44cd4830e698e86e9  integCDMA.data.elf
+ad086e1b32c7432c1adbf065bd453e52  integCDMA.op.elf
+2a85a1490300b8950ca0324ae29d6e40  MacPhyIntegration.elf
+9a7f15912169ef1496ba13aeb224d751  Poke.elf
