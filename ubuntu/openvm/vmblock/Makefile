@@ -24,7 +24,7 @@
 ####
 #### SRCROOT _must_ be a relative path.
 ####
-SRCROOT = $(M)/vmblock
+SRCROOT = $(M)/openvm/vmblock
 VM_CC=$(CC)
 VM_CCVER=$(shell $(CC) -dumpversion)
 

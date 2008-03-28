@@ -24,7 +24,7 @@
 ####
 #### SRCROOT _must_ be a relative path.
 ####
-SRCROOT = $(M)/vmxnet
+SRCROOT = $(M)/openvm/vmxnet
 VM_CC=$(CC)
 VM_CCVER=$(shell $(CC) -dumpversion)
 
