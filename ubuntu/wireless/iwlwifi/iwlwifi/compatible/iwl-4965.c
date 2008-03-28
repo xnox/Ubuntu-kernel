@@ -3478,8 +3478,6 @@ void iwl4965_hw_rx_statistics(struct iwl4965_priv *priv, struct iwl4965_rx_mem_b
 #endif
 	}
 
-	iwl4965_led_background(priv);
-
 	/* If the hardware hasn't reported a change in
 	 * temperature then don't bother computing a
 	 * calibrated temperature value */
@@ -3588,9 +3586,9 @@ static void iwl4965_handle_data_packet(struct iwl4965_priv *priv, int is_data,
 	iwlwifi_ieee80211_rx_irqsafe(priv->hw, rxb->skb, stats);
 	priv->alloc_rxb_skb--;
 	rxb->skb = NULL;
-#ifdef CONFIG_IWL4965_LEDS
-	if (is_data)
-		priv->rxtxpackets += len;
+#ifdef LED
+	priv->led_packets += len;
+	iwl4965_setup_activity_timer(priv);
 #endif
 }
 

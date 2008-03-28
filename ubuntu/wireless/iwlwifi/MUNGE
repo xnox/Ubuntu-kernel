@@ -16,9 +16,6 @@ cd `dirname $0`
 #
 ./BOM
 
-#
-# Make iwlwifi build with 2.6.24
-#
 patch -p0 < 1.2.0.update.patch 
 
 #
@@ -62,24 +59,32 @@ echo "iwlwifi_mac80211-objs += radiotap.o" >> mac80211/compatible/net/mac80211/M
 MF=Makefile.iwlwifi
 echo CONFIG_IWL4965=m > ${MF}
 echo CONFIG_IWL3945=m >> ${MF}
-echo CONFIG_IWL3945_LEDS=y >> ${MF}
-echo CONFIG_IWL4965_LEDS=y >> ${MF}
 echo "NOSTDINC_FLAGS += -I\$(src)/../../mac80211/compatible/include" >> ${MF}
-echo "EXTRA_CFLAGS += -DCONFIG_IWL4965_QOS -DCONFIG_IWL3945_QOS" >> ${MF}
-echo "EXTRA_CFLAGS += -DCONFIG_IWL4965_LEDS -DCONFIG_IWL3945_LEDS" >> ${MF}
+echo "EXTRA_CFLAGS += -DCONFIG_IWLWIFI_QOS=1" >> ${MF}
 cat iwlwifi/compatible/Makefile >> ${MF}
 mv -f ${MF} iwlwifi/compatible/Makefile
 
 #
-# Apply anti-debug patch to mac80211
+# Do not auto-load iwl3945. ipw3945 gets precedence.
 #
-(cd mac80211/compatible; patch -p0) < mac80211-debug.patch
+sed -i '/MODULE_DEVICE_TABLE/d' iwlwifi/origin/iwl-3945.c
 
 #
-# Apply iwlwifi led support
+# Munge include file paths since there are some duplicates.
+# The differences appear to be a superset, so using these versions instead of what
+# is in the kernel tree ought to be OK.
 #
-(cd iwlwifi/compatible; patch -p1) < iwlwifi-led-support.patch
+#IF="linux/nl80211.h linux/ieee80211.h linux/wireless.h net/cfg80211.h"
+#IF="${IF} net/ieee80211_radiotap.h net/mac80211.h net/wext.h"
+#IF="${IF} net/iw_handler.h net/wireless.h"
 
+#for i in ${IF}
+#do
+#	find . -name "*.[ch]" | while read f
+#	do
+#		sed -i "s;<$i>;<include/$i>;" "${f}"
+#	done
+#done
 
 #
 # Isolate the mac80211 exported symbols and munge every occurence such that
@@ -105,7 +110,3 @@ rm -f ${TL}
 echo "obj-m += mac80211/compatible/net/mac80211/" > Makefile
 echo "obj-m += iwlwifi/compatible/" >> Makefile
 
-#
-# Get rid of cruft
-#
-find -name \*.orig | xargs rm -f

@@ -236,8 +236,6 @@ void iwl3945_hw_rx_statistics(struct iwl3945_priv *priv, struct iwl3945_rx_mem_b
 
 	memcpy(&priv->statistics, pkt->u.raw, sizeof(priv->statistics));
 
-	iwl3945_led_background(priv);
-
 	priv->last_statistics_time = jiffies;
 }
 
@@ -283,11 +281,6 @@ static void iwl3945_handle_data_packet(struct iwl3945_priv *priv, int is_data,
 	if (iwl3945_param_hwcrypto)
 		iwl3945_set_decrypted_flag(priv, rxb->skb,
 				       le32_to_cpu(rx_end->status), stats);
-
-#ifdef CONFIG_IWL3945_LEDS
-	if (is_data)
-		priv->rxtxpackets += len;
-#endif
 
 	iwlwifi_ieee80211_rx_irqsafe(priv->hw, rxb->skb, stats);
 	rxb->skb = NULL;

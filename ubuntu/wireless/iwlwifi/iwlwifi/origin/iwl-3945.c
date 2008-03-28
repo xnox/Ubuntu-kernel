@@ -2293,4 +2293,3 @@ inline int iwl3945_eeprom_acquire_semaphore(struct iwl3945_priv *priv)
 	return 0;
 }
 
-MODULE_DEVICE_TABLE(pci, iwl3945_hw_card_ids);

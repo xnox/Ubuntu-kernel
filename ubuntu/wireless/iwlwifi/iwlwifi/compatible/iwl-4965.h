@@ -43,7 +43,6 @@ extern struct pci_device_id iwl4965_hw_card_ids[];
 #include "iwl-4965-hw.h"
 #include "iwl-prph.h"
 #include "iwl-4965-debug.h"
-#include "iwl-4965-led.h"
 
 /* Default noise level to report when noise measurement is not available.
  *   This may be because we're:
@@ -1128,12 +1127,11 @@ struct iwl4965_priv {
 	struct iwl4965_init_alive_resp card_alive_init;
 	struct iwl4965_alive_resp card_alive;
 
-#ifdef CONFIG_IWL4965_LEDS
-	struct iwl4965_led led[IWL_LED_TRG_MAX];
-	unsigned long last_blink_time;
-	u8 last_blink_rate;
-	u8 allow_blinking;
-	unsigned int rxtxpackets;
+#ifdef LED
+	/* LED related variables */
+	struct iwl4965_activity_blink activity;
+	unsigned long led_packets;
+	int led_state;
 #endif
 
 	u16 active_rate;

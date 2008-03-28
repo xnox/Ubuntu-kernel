@@ -352,7 +352,6 @@ struct iwl3945_eeprom {
 #define CSR_UCODE_DRV_GP1_SET   (CSR_BASE+0x058)
 #define CSR_UCODE_DRV_GP1_CLR   (CSR_BASE+0x05c)
 #define CSR_UCODE_DRV_GP2       (CSR_BASE+0x060)
-#define CSR_LED_REG		(CSR_BASE+0x094)
 #define CSR_GIO_CHICKEN_BITS    (CSR_BASE+0x100)
 
 /* Analog phase-lock-loop configuration (3945 only)
@@ -457,11 +456,6 @@ struct iwl3945_eeprom {
 
 /* CSR_ANA_PLL_CFG */
 #define CSR_ANA_PLL_CFG_SH		(0x00880300)
-
-/* LED */
-#define CSR_LED_BSM_CTRL_MSK		(0xFFFFFFDF)
-#define CSR_LED_REG_TRUN_ON		(0x78)
-#define CSR_LED_REG_TRUN_OFF		(0x38)
 
 /*=== HBUS (Host-side Bus) ===*/
 #define HBUS_BASE	(0x400)

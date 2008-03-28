@@ -2757,7 +2757,7 @@ void ieee80211_send_addba_request(struct net_device *dev, u8 *da, u16 tid,
 	struct ieee80211_if_sta *ifsta = &sdata->u.sta;
 	struct sk_buff *skb;
 	struct ieee80211_mgmt *mgmt;
-	u16 capab;
+	u16 capab = 0;
 
 	skb = dev_alloc_skb(sizeof(*mgmt) + local->hw.extra_tx_headroom +
 			    sizeof(mgmt->u.action.category) +
