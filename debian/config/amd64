@@ -1,4 +1,5 @@
 # Ubuntu config
 
+CONFIG_IWLWIFI=m
 ifneq ($(filter generic rt,$(UBUNTU_FLAVOUR)),)
 endif
