@@ -58,6 +58,7 @@ obj-$(CONFIG_NET_ACX)		+= wireless/acx/
 obj-$(CONFIG_IWLWIFI)		+= wireless/iwlwifi/
 obj-$(CONFIG_USB_ATMEL)		+= wireless/at76/
 obj-$(CONFIG_PRISM2_USB)	+= wireless/prism2_usb/
+obj-$(CONFIG_WIMAX_I2400M)	+= wireless/wimax-i2400m/
 
 ifneq ($(CONFIG_PRISM2_USB),)
 obj-m				+= wireless/p80211/

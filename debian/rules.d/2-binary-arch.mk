@@ -55,9 +55,12 @@ install-%: $(stampdir)/stamp-build-%
 
 	install -d $(firmdir)
 	cp -a ubuntu-firmware/zd1211 $(firmdir)/
+	cp -a ubuntu-firmware/wimax_alvarion $(firmdir)/
+	cp -a ubuntu-firmware/wimax_motorola $(firmdir)/
 	for i in ubuntu-firmware/*/[[:lower:]]*; do \
 	  case $${i##*/} in \
 	    zd121*) ;; \
+	    wimax*) ;; \
 	    *) cp $$i "$(firmdir)/${i##*/}";; \
 	  esac; \
 	done
@@ -80,6 +83,10 @@ endif
 	# The flavour specific headers package
 	install -d $(hdrdir)/sound
 	cp `find $(builddir)/build-$*/sound/alsa-kernel/include -type f` $(hdrdir)/sound
+	# WiMAX headers
+	install -d $(hdrdir)/include/linux $(hdrdir)/include/net
+	cp `find $(builddir)/build-$*/wireless/wimax-i2400m/include/linux -type f` $(hdrdir)/include/linux
+	cp `find $(builddir)/build-$*/wireless/wimax-i2400m/include/net -type f` $(hdrdir)/include/net
 
 binary-modules-%: pkgimg = linux-ubuntu-modules-$(release)-$(abinum)-$*
 binary-modules-%: hdrpkg = linux-headers-lum-$(release)-$(abinum)-$*

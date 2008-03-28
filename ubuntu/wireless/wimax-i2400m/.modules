@@ -1,0 +1,2 @@
+10 drivers/net/wimax/wimax.ko 			wimax
+40 drivers/net/wimax/i2400m/i2400m.ko		i2400m
