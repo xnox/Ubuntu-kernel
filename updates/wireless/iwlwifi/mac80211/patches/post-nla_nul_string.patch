@@ -1,0 +1,12 @@
+Add NLA_NUL_STRING support for netlink
+---
+--- a/include/net/netlink.h	2007-07-05 14:43:43.000000000 +0800
++++ b/include/net/netlink.h	2007-07-05 14:46:25.000000000 +0800
+@@ -158,6 +158,7 @@ enum {
+ 	NLA_FLAG,
+ 	NLA_MSECS,
+ 	NLA_NESTED,
++	NLA_NUL_STRING,
+ 	__NLA_TYPE_MAX,
+ };
+ 

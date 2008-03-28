@@ -1,0 +1,4 @@
+#!/usr/bin/env /bin/bash
+scripts/git-clean-unreachable &&
+git-update-server-info &&
+rsync -e ssh -avpr --delete .git/ bughost.org:/home/repos/mac80211.git/

@@ -1,0 +1,246 @@
+From 37515341129948f6f8391cd0c8bb0028f7929c98 Mon Sep 17 00:00:00 2001
+From: Tomas Winkler <tomas.winkler@intel.com>
+Date: Wed, 22 Aug 2007 15:52:35 +0800
+Subject: [PATCH] mac80211: add WE nick, power and txpower capabilities
+
+Add WE nick, power and txpower capabilities
+
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ include/net/mac80211.h         |    2 +
+ net/mac80211/ieee80211.c       |   16 +++++
+ net/mac80211/ieee80211_i.h     |    4 +
+ net/mac80211/ieee80211_ioctl.c |  129 ++++++++++++++++++++++++++++++++++++++--
+ 4 files changed, 145 insertions(+), 6 deletions(-)
+
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index 73def65..e5be8d3 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -290,6 +290,8 @@ struct ieee80211_conf {
+ 	u8 antenna_max;			/* maximum antenna gain */
+ 	short tx_power_reduction; /* in 0.1 dBm */
+ 
++	u8 power_management_enable;     /* flag to enable/disable*/
++					/*power management*/
+ 	/* 0 = default/diversity, 1 = Ant0, 2 = Ant1 */
+ 	u8 antenna_sel_tx;
+ 	u8 antenna_sel_rx;
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index 3a44c6d..b1958b1 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -462,6 +462,21 @@ ieee80211_tx_h_rate_ctrl(struct ieee80211_txrx_data *tx)
+ 		tx->u.tx.control->tx_rate = tx->u.tx.rate->val2;
+ 	}
+ 
++	/* only data unicast frame */
++	if ((tx->u.tx.rate) && tx->skb && tx->sdata && tx->u.tx.unicast &&
++	    (tx->sdata->type == IEEE80211_IF_TYPE_STA ||
++	     tx->sdata->type == IEEE80211_IF_TYPE_IBSS )&& !extra.mgmt_data) {
++		struct ieee80211_hdr *hdr;
++		u16 fc;
++
++		hdr = (struct ieee80211_hdr *) tx->skb->data;
++		fc = le16_to_cpu(hdr->frame_control);
++
++		if ((fc & IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_DATA)
++			tx->sdata->u.sta.last_rate = tx->u.tx.rate->rate *
++								     100000;
++	}
++
+ 	return TXRX_CONTINUE;
+ }
+ 
+@@ -5061,6 +5076,7 @@ struct ieee80211_hw *ieee80211_alloc_hw(size_t priv_data_len,
+ 	local->short_retry_limit = 7;
+ 	local->long_retry_limit = 4;
+ 	local->hw.conf.radio_enabled = 1;
++	local->hw.conf.power_management_enable = 0;
+ 
+ 	local->enabled_modes = (unsigned int) -1;
+ 
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index af4b3bc..e7d0c32 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -250,6 +250,7 @@ struct ieee80211_if_sta {
+ 	u16 ap_capab, capab;
+ 	u8 *extra_ie; /* to be added to the end of AssocReq */
+ 	size_t extra_ie_len;
++	u8 nick[IW_ESSID_MAX_SIZE];
+ 
+ 	/* The last AssocReq/Resp IEs */
+ 	u8 *assocreq_ies, *assocresp_ies;
+@@ -290,6 +291,9 @@ struct ieee80211_if_sta {
+ 	struct sk_buff *probe_resp; /* ProbeResp template for IBSS */
+ 	u32 supp_rates_bits;
+ 
++	u32 last_rate; /* last tx data rate value. management and multi cast frame
++			* wont be used. */
++
+ 	int wmm_last_param_set;
+ 
+ 	u32 dot11EDCAAveragingPeriod;
+diff --git a/net/mac80211/ieee80211_ioctl.c b/net/mac80211/ieee80211_ioctl.c
+index e7904db..ed4e3ca 100644
+--- a/net/mac80211/ieee80211_ioctl.c
++++ b/net/mac80211/ieee80211_ioctl.c
+@@ -875,6 +875,123 @@ static int ieee80211_ioctl_giwfrag(struct net_device *dev,
+ 	return 0;
+ }
+ 
++static int ieee80211_ioctl_giwtxpow(struct net_device *dev,
++				    struct iw_request_info *info,
++				    union iwreq_data *wrqu,
++				    char *extra)
++{
++        struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++        struct ieee80211_conf *conf = &local->hw.conf;
++
++	wrqu->txpower.flags = IW_TXPOW_DBM;
++	wrqu->txpower.fixed = 1;
++	wrqu->txpower.disabled = (conf->radio_enabled) ? 0 : 1;
++	wrqu->txpower.value = conf->power_level;
++	return 0;
++}
++
++static int ieee80211_ioctl_siwtxpow(struct net_device *dev,
++				    struct iw_request_info *info,
++				    union iwreq_data *wrqu,
++				    char *extra)
++{
++	int rc = 0;
++        struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++        struct ieee80211_conf *conf = &local->hw.conf;
++
++
++	if (wrqu->txpower.flags != IW_TXPOW_DBM)
++		rc = -EINVAL;
++	else
++		conf->power_level = wrqu->txpower.value;
++
++
++	ieee80211_ioctl_set_radio_enabled(dev, !wrqu->txpower.disabled);
++	return rc;
++}
++
++static int ieee80211_ioctl_siwpower(struct net_device *dev,
++				    struct iw_request_info *info,
++				    union iwreq_data *wrqu,
++				    char *extra)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_conf *conf = &local->hw.conf;
++
++	if (wrqu->power.disabled) {
++		conf->power_management_enable = 0;
++		if (ieee80211_hw_config(local))
++			return -EINVAL;
++		return 0;
++	}
++
++	if (wrqu->power.flags & IW_POWER_TYPE)
++		return -EINVAL;
++
++	switch (wrqu->power.flags & IW_POWER_MODE) {
++	case IW_POWER_ON:       /* If not specified */
++	case IW_POWER_MODE:     /* If set all mask */
++	case IW_POWER_ALL_R:    /* If explicitely state all */
++		break;
++	default:                /* Otherwise we don't support it */
++		return -EINVAL;
++	}
++
++	conf->power_management_enable = 1;
++
++	if (ieee80211_hw_config(local))
++		return -EINVAL;
++
++	return 0;
++}
++
++static int ieee80211_ioctl_giwpower(struct net_device *dev,
++				    struct iw_request_info *info,
++				    union iwreq_data *wrqu,
++				    char *extra)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct ieee80211_conf *conf = &local->hw.conf;
++
++	if (!conf->power_management_enable)
++		wrqu->power.disabled = 1;
++	else
++		wrqu->power.disabled = 0;
++	return 0;
++}
++
++static int ieee80211_ioctl_siwnick(struct net_device *dev,
++				   struct iw_request_info *info,
++				   union iwreq_data *wrqu, char *extra)
++{
++	struct ieee80211_sub_if_data *sdata;
++	struct ieee80211_if_sta *ifsta;
++
++	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++	ifsta = &sdata->u.sta;
++	if (wrqu->data.length >= IW_ESSID_MAX_SIZE)
++		return -E2BIG;
++
++	memset(ifsta->nick, 0, sizeof(ifsta->nick));
++	memcpy(ifsta->nick, extra, wrqu->data.length);
++	return 0;
++}
++
++static int ieee80211_ioctl_giwnick(struct net_device *dev,
++				   struct iw_request_info *info,
++				   union iwreq_data *wrqu, char *extra)
++{
++	struct ieee80211_sub_if_data *sdata;
++	struct ieee80211_if_sta *ifsta;
++
++	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++	ifsta = &sdata->u.sta;
++
++	wrqu->data.length = strlen(ifsta->nick) + 1;
++	memcpy(extra, ifsta->nick, wrqu->data.length);
++	wrqu->data.flags = 1;   /* active */
++	return 0;
++}
+ 
+ static int ieee80211_ioctl_siwretry(struct net_device *dev,
+ 				    struct iw_request_info *info,
+@@ -1569,8 +1686,8 @@ static const iw_handler ieee80211_handler[] =
+ 	(iw_handler) ieee80211_ioctl_giwscan,		/* SIOCGIWSCAN */
+ 	(iw_handler) ieee80211_ioctl_siwessid,		/* SIOCSIWESSID */
+ 	(iw_handler) ieee80211_ioctl_giwessid,		/* SIOCGIWESSID */
+-	(iw_handler) NULL,				/* SIOCSIWNICKN */
+-	(iw_handler) NULL,				/* SIOCGIWNICKN */
++	(iw_handler) ieee80211_ioctl_siwnick,		/* SIOCSIWNICKN */
++	(iw_handler) ieee80211_ioctl_giwnick,		/* SIOCGIWNICKN */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) ieee80211_ioctl_siwrate,		/* SIOCSIWRATE */
+@@ -1579,14 +1696,14 @@ static const iw_handler ieee80211_handler[] =
+ 	(iw_handler) ieee80211_ioctl_giwrts,		/* SIOCGIWRTS */
+ 	(iw_handler) ieee80211_ioctl_siwfrag,		/* SIOCSIWFRAG */
+ 	(iw_handler) ieee80211_ioctl_giwfrag,		/* SIOCGIWFRAG */
+-	(iw_handler) NULL,				/* SIOCSIWTXPOW */
+-	(iw_handler) NULL,				/* SIOCGIWTXPOW */
++	(iw_handler) ieee80211_ioctl_siwtxpow,		/* SIOCSIWTXPOW */
++	(iw_handler) ieee80211_ioctl_giwtxpow,		/* SIOCGIWTXPOW */
+ 	(iw_handler) ieee80211_ioctl_siwretry,		/* SIOCSIWRETRY */
+ 	(iw_handler) ieee80211_ioctl_giwretry,		/* SIOCGIWRETRY */
+ 	(iw_handler) ieee80211_ioctl_siwencode,		/* SIOCSIWENCODE */
+ 	(iw_handler) ieee80211_ioctl_giwencode,		/* SIOCGIWENCODE */
+-	(iw_handler) NULL,				/* SIOCSIWPOWER */
+-	(iw_handler) NULL,				/* SIOCGIWPOWER */
++	(iw_handler) ieee80211_ioctl_siwpower,		/* SIOCSIWPOWER */
++	(iw_handler) ieee80211_ioctl_giwpower,		/* SIOCGIWPOWER */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) NULL,				/* -- hole -- */
+ 	(iw_handler) ieee80211_ioctl_siwgenie,		/* SIOCSIWGENIE */
+-- 
+1.5.2
+

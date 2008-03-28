@@ -1,0 +1,12 @@
+diff -upr linux-2.6.18-gentoo-r6/net/wireless/wext.c linux-2.6.18-gentoo-r6-building/net/wireless/wext.c
+--- linux-2.6.18-gentoo-r6/net/wireless/wext.c	2007-06-04 15:39:37.000000000 -0700
++++ linux-2.6.18-gentoo-r6-building/net/wireless/wext.c	2007-06-04 15:37:31.000000000 -0700
+@@ -676,7 +676,7 @@ static const struct seq_operations wirel
+ 
+ static int wireless_seq_open(struct inode *inode, struct file *file)
+ {
+-	return seq_open(file, &wireless_seq_ops);
++	return seq_open(file, (struct seq_operations *)&wireless_seq_ops);
+ }
+ 
+ static const struct file_operations wireless_seq_fops = {

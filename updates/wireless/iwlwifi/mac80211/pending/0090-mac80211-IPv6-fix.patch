@@ -1,0 +1,36 @@
+The patch below seems to work for me w/ an otherwise stock F-7 kernel
+w/ iwl3945.  Thoughts?
+
+From: John W. Linville <linville@tuxdriver.com>
+
+[PATCH] mac80211: filter locally-originated multicast frames
+
+In STA mode, the AP will echo our traffic.  This includes multicast
+traffice.
+
+Receiving these frames confuses some protocols and applications,
+notably IPv6 Duplicate Address Detection.
+
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+---
+
+ net/mac80211/ieee80211.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+Index: compatible/net/mac80211/ieee80211.c
+===================================================================
+--- compatible.orig/net/mac80211/ieee80211.c	2008-01-06 12:07:06.000000000 +0200
++++ compatible/net/mac80211/ieee80211.c	2008-01-06 12:08:49.000000000 +0200
+@@ -3090,9 +3090,10 @@
+ 		memcpy(dst, hdr->addr1, ETH_ALEN);
+ 		memcpy(src, hdr->addr3, ETH_ALEN);
+ 
+-		if (sdata->type != IEEE80211_IF_TYPE_STA) {
++		if (sdata->type != IEEE80211_IF_TYPE_STA ||
++		    (is_multicast_ether_addr(dst) &&
++		     !compare_ether_addr(src, dev->dev_addr)))
+ 			return TXRX_DROP;
+-		}
+ 		break;
+ 	case 0:
+ 		/* DA SA BSSID */

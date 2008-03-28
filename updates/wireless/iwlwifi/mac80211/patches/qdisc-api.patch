@@ -1,0 +1,23 @@
+Use older qdisc API for qdisc_create_dflt
+diff -upr pre/net/mac80211/wme.c post/net/mac80211/wme.c
+--- pre/net/mac80211/wme.c	2007-04-17 15:43:47.000000000 -0700
++++ post/net/mac80211/wme.c	2007-04-17 15:45:55.000000000 -0700
+@@ -445,8 +445,7 @@ static int wme_qdiscop_init(struct Qdisc
+ 	/* create child queues */
+ 	for (i = 0; i < queues; i++) {
+ 		skb_queue_head_init(&q->requeued[i]);
+-		q->queues[i] = qdisc_create_dflt(qd->dev, &pfifo_qdisc_ops,
+-						 qd->handle);
++		q->queues[i] = qdisc_create_dflt(qd->dev, &pfifo_qdisc_ops);
+ 		if (q->queues[i] == 0) {
+ 			q->queues[i] = &noop_qdisc;
+ 			printk(KERN_ERR "%s child qdisc %i creation failed", dev->name, i);
+@@ -672,7 +671,7 @@ void ieee80211_install_qdisc(struct net_
+ {
+ 	struct Qdisc *qdisc;
+ 
+-	qdisc = qdisc_create_dflt(dev, &wme_qdisc_ops, TC_H_ROOT);
++	qdisc = qdisc_create_dflt(dev, &wme_qdisc_ops);
+ 	if (!qdisc) {
+ 		printk(KERN_ERR "%s: qdisc installation failed\n", dev->name);
+ 		return;

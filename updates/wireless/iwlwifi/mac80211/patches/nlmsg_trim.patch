@@ -1,0 +1,30 @@
+diff -upr compatible/net/wireless/wext.c post/net/wireless/wext.c
+--- compatible/net/wireless/wext.c	2007-06-05 16:38:29.000000000 -0700
++++ post/net/wireless/wext.c	2007-06-05 16:39:21.000000000 -0700
+@@ -1101,6 +1101,8 @@ int wext_handle_ioctl(struct ifreq *ifr,
+  * Jean II
+  */
+ 
++#if 0
++
+ static struct sk_buff_head wireless_nlevent_queue;
+ 
+ static int __init wireless_nlevent_init(void)
+@@ -1182,6 +1184,8 @@ static void rtmsg_iwinfo(struct net_devi
+ 	tasklet_schedule(&wireless_nlevent_tasklet);
+ }
+ 
++#endif
++
+ /* ---------------------------------------------------------------- */
+ /*
+  * Main event dispatcher. Called from other parts and drivers.
+@@ -1261,7 +1265,7 @@ void wireless_send_event(struct net_devi
+ 		memcpy(((char *) event) + hdr_len, extra, extra_len);
+ 
+ 	/* Send via the RtNetlink event channel */
+-	rtmsg_iwinfo(dev, (char *) event, event_len);
++	/* rtmsg_iwinfo(dev, (char *) event, event_len); */
+ 
+ 	/* Cleanup */
+ 	kfree(event);

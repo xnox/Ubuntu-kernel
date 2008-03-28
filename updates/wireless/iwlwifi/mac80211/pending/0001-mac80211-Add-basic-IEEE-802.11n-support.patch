@@ -1,0 +1,700 @@
+From 26e77a5fef845edcb5c27db52f413e7558db0e20 Mon Sep 17 00:00:00 2001
+From: Mohamed Abbas <mabbas@linux.intel.com>
+Date: Wed, 22 Aug 2007 15:03:18 +0800
+Subject: [PATCH] mac80211: Add basic IEEE 802.11n support
+
+Cherry pick this patch from wireless-dev (before rebased with
+mac80211 GIT) and rebased it with upstream.
+
+Signed-off-by: Mohamed Abbas <mabbas@linux.intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ include/linux/ieee80211.h      |   61 +++++++++++++++
+ include/net/mac80211.h         |   16 ++++
+ net/mac80211/debugfs_sta.c     |    3 +-
+ net/mac80211/ieee80211.c       |  135 +++++++++++++++++++++++++++++++++
+ net/mac80211/ieee80211_i.h     |    5 +
+ net/mac80211/ieee80211_iface.c |    1 +
+ net/mac80211/ieee80211_sta.c   |  161 +++++++++++++++++++++++++++++++++++++++-
+ net/mac80211/sta_info.h        |    1 +
+ net/mac80211/wme.c             |   10 ++-
+ 9 files changed, 390 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/ieee80211.h b/include/linux/ieee80211.h
+index 272f8c8..8b9f183 100644
+--- a/include/linux/ieee80211.h
++++ b/include/linux/ieee80211.h
+@@ -106,6 +106,23 @@ struct ieee80211_hdr {
+ } __attribute__ ((packed));
+ 
+ 
++struct ieee80211_ht_capability {
++	__le16 capabilities_info;
++	u8 mac_ht_params_info;
++	u8 supported_mcs_set[16];
++	__le16 extended_ht_capability_info;
++	__le32 tx_BF_capability_info;
++	u8 antenna_selection_info;
++}__attribute__ ((packed));
++
++struct ieee80211_ht_additional_info {
++	u8 control_chan;
++	u8 ht_param;
++	__le16 operation_mode;
++	__le16 stbc_param;
++	u8 basic_set[16];
++}__attribute__ ((packed));
++
+ struct ieee80211_mgmt {
+ 	__le16 frame_control;
+ 	__le16 duration;
+@@ -184,6 +201,25 @@ struct ieee80211_mgmt {
+ 					u8 new_chan;
+ 					u8 switch_count;
+ 				} __attribute__((packed)) chan_switch;
++				struct{
++					u8 action_code;
++					u8 dialog_token;
++					__le16 capab;
++					__le16 timeout;
++					__le16 start_seq_num;
++				} __attribute__((packed)) addba_req;
++				struct{
++					u8 action_code;
++					u8 dialog_token;
++					__le16 status;
++					__le16 capab;
++					__le16 timeout;
++				} __attribute__((packed)) addba_resp;
++				struct{
++					u8 action_code;
++					__le16 params;
++					__le16 reason_code;
++				}__attribute__((packed)) delba;
+ 			} u;
+ 		} __attribute__ ((packed)) action;
+ 	} u;
+@@ -262,6 +298,8 @@ enum ieee80211_statuscode {
+ 	/* 802.11g */
+ 	WLAN_STATUS_ASSOC_DENIED_NOSHORTTIME = 25,
+ 	WLAN_STATUS_ASSOC_DENIED_NODSSSOFDM = 26,
++	/* 802.11e */
++	WLAN_STATUS_REQUEST_DECLINED = 37,
+ 	/* 802.11i */
+ 	WLAN_STATUS_INVALID_IE = 40,
+ 	WLAN_STATUS_INVALID_GROUP_CIPHER = 41,
+@@ -303,6 +341,23 @@ enum ieee80211_reasoncode {
+ };
+ 
+ 
++/* Category Code */
++enum ieee80211_category {
++	WLAN_CATEGORY_SPECTRUM_MGMT = 0,
++	WLAN_CATEGORY_QOS = 1,
++	WLAN_CATEGORY_DLS = 2,
++	WLAN_CATEGORY_BACK = 3,
++	WLAN_CATEGORY_WMM = 17,
++};
++
++
++/* BACK Action Code */
++enum ieee80211_back_actioncode {
++	WLAN_ACTION_ADDBA_REQ = 0,
++	WLAN_ACTION_ADDBA_RESP = 1,
++	WLAN_ACTION_DELBA = 2,
++};
++
+ /* Information Element IDs */
+ enum ieee80211_eid {
+ 	WLAN_EID_SSID = 0,
+@@ -332,6 +387,9 @@ enum ieee80211_eid {
+ 	/* 802.11g */
+ 	WLAN_EID_ERP_INFO = 42,
+ 	WLAN_EID_EXT_SUPP_RATES = 50,
++	/* 802.11n */
++	WLAN_EID_HT_CAPABILITY = 45,
++	WLAN_EID_HT_EXTRA_INFO = 61,
+ 	/* 802.11i */
+ 	WLAN_EID_RSN = 48,
+ 	WLAN_EID_WPA = 221,
+@@ -340,6 +398,9 @@ enum ieee80211_eid {
+ 	WLAN_EID_QOS_PARAMETER = 222
+ };
+ 
++/* 80211n */
++#define IEEE80211_QOS_CONTROL_A_MSDU_PRESENT 0x0080
++
+ /* cipher suite selectors */
+ #define WLAN_CIPHER_SUITE_USE_GROUP	0x000FAC00
+ #define WLAN_CIPHER_SUITE_WEP40		0x000FAC01
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index c34fd9a..73def65 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -521,6 +521,9 @@ struct ieee80211_hw {
+ 	 * per-packet RC4 key with each TX frame when doing hwcrypto */
+ #define IEEE80211_HW_TKIP_REQ_PHASE2_KEY (1<<14)
+ 
++	/* The device capable of supporting 11n */
++#define IEEE80211_HW_SUPPORT_HT_MODE (1<<15)
++
+ 	u32 flags;			/* hardware flags defined above */
+ 
+ 	/* Set to the size of a needed device specific skb headroom for TX skbs. */
+@@ -713,12 +716,25 @@ struct ieee80211_ops {
+ 	 * Must be atomic. */
+ 	u64 (*get_tsf)(struct ieee80211_hw *hw);
+ 
++	/* Call low level driver with 11n Block Ack action */
++	int (*handle_ba_action)(struct ieee80211_hw *hw,
++				struct ieee80211_mgmt *mgmt);
++
+ 	/* Reset the TSF timer and allow firmware/hardware to synchronize with
+ 	 * other STAs in the IBSS. This is only used in IBSS mode. This
+ 	 * function is optional if the firmware/hardware takes full care of
+ 	 * TSF synchronization. */
+ 	void (*reset_tsf)(struct ieee80211_hw *hw);
+ 
++	/* Configure ht parameters. */
++	int (*conf_ht)(struct ieee80211_hw *hw,
++		       struct ieee80211_ht_capability *ht_cap_param,
++		       struct ieee80211_ht_additional_info *ht_extra_param);
++
++	/* Get ht capabilities from the device */
++	void (*get_ht_capab)(struct ieee80211_hw *hw,
++			     struct ieee80211_ht_capability *ht_cap_param);
++
+ 	/* Setup beacon data for IBSS beacons. Unlike access point (Master),
+ 	 * IBSS uses a fixed beacon frame which is configured using this
+ 	 * function. This handler is required only for IBSS mode. */
+diff --git a/net/mac80211/debugfs_sta.c b/net/mac80211/debugfs_sta.c
+index da34ea7..6cfe35a 100644
+--- a/net/mac80211/debugfs_sta.c
++++ b/net/mac80211/debugfs_sta.c
+@@ -87,7 +87,7 @@ static ssize_t sta_flags_read(struct file *file, char __user *userbuf,
+ {
+ 	char buf[100];
+ 	struct sta_info *sta = file->private_data;
+-	int res = scnprintf(buf, sizeof(buf), "%s%s%s%s%s%s%s%s%s",
++	int res = scnprintf(buf, sizeof(buf), "%s%s%s%s%s%s%s%s%s%s",
+ 		sta->flags & WLAN_STA_AUTH ? "AUTH\n" : "",
+ 		sta->flags & WLAN_STA_ASSOC ? "ASSOC\n" : "",
+ 		sta->flags & WLAN_STA_PS ? "PS\n" : "",
+@@ -96,6 +96,7 @@ static ssize_t sta_flags_read(struct file *file, char __user *userbuf,
+ 		sta->flags & WLAN_STA_AUTHORIZED ? "AUTHORIZED\n" : "",
+ 		sta->flags & WLAN_STA_SHORT_PREAMBLE ? "SHORT PREAMBLE\n" : "",
+ 		sta->flags & WLAN_STA_WME ? "WME\n" : "",
++		sta->flags & WLAN_STA_HT ? "HT\n" : "",
+ 		sta->flags & WLAN_STA_WDS ? "WDS\n" : "");
+ 	return simple_read_from_buffer(userbuf, count, ppos, buf, res);
+ }
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index 7286c38..ddb2e9b 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -2769,6 +2769,140 @@ static inline int ieee80211_bssid_match(const u8 *raddr, const u8 *addr)
+ }
+ 
+ 
++inline static unsigned int calc_pad_len(unsigned int len)
++{
++	return ((4 - len) & 0x3);
++}
++
++static ieee80211_txrx_result
++ieee80211_rx_h_data_agg(struct ieee80211_txrx_data *rx)
++{
++	struct net_device *dev = rx->dev;
++	struct ieee80211_local *local = rx->local;
++	u16 fc, hdrlen, ethertype;
++	u8 *payload;
++	struct sk_buff *skb = rx->skb, *skb2, *frame;
++	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++	const struct ethhdr* eth;
++	int remaining;
++
++	fc = rx->fc;
++	if (unlikely((fc & IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_DATA))
++		return TXRX_CONTINUE;
++
++	if (unlikely(!WLAN_FC_DATA_PRESENT(fc)))
++		return TXRX_DROP;
++
++	if (!rx->u.rx.is_agg_frame)
++		return TXRX_CONTINUE;
++
++	hdrlen = ieee80211_get_hdrlen(fc);
++
++	payload = skb->data + hdrlen;
++
++	if (unlikely((skb->len - hdrlen) < 8)) {
++		if (net_ratelimit())
++			printk(KERN_DEBUG "%s: RX too short data frame "
++			       "payload\n", dev->name);
++		return TXRX_DROP;
++	}
++
++	ethertype = (payload[6] << 8) | payload[7];
++
++	if (likely((compare_ether_addr(payload, rfc1042_header) == 0 &&
++		    ethertype != ETH_P_AARP && ethertype != ETH_P_IPX) ||
++		   compare_ether_addr(payload, bridge_tunnel_header) == 0)) {
++		/* remove RFC1042 or Bridge-Tunnel encapsulation and
++		* replace EtherType */
++		eth = (struct ethhdr*) (skb->data + hdrlen + 6);
++		remaining = skb->len - (hdrlen + 6);
++	} else {
++		eth = (struct ethhdr*) (skb->data + hdrlen);
++		remaining = skb->len - hdrlen;
++	}
++
++	while ((u8*)eth < skb->data + skb->len) {
++		u8 padding;
++		unsigned int subframe_len = sizeof(struct ethhdr) +
++						   ntohs(eth->h_proto);
++
++		padding = calc_pad_len(subframe_len);
++		/* the last MSDU has no padding */
++		if (subframe_len > remaining)
++			return TXRX_DROP;
++
++		frame = dev_alloc_skb(local->hw.extra_tx_headroom +
++				      subframe_len);
++
++		if (frame == NULL)
++			return TXRX_DROP;
++
++		memcpy(skb_put(frame, subframe_len), (u8*)eth, subframe_len);
++		skb_set_mac_header(frame, 0);
++		skb2 = NULL;
++
++		sdata->stats.rx_packets++;
++		sdata->stats.rx_bytes += frame->len;
++
++		if (local->bridge_packets &&
++		    (sdata->type == IEEE80211_IF_TYPE_AP ||
++		     sdata->type == IEEE80211_IF_TYPE_VLAN) &&
++		     rx->u.rx.ra_match) {
++			if (is_multicast_ether_addr(frame->data)) {
++				/* send multicast frames both to higher layers
++				* in local net stack and back to the wireless
++				* media */
++				skb2 = skb_copy(frame, GFP_ATOMIC);
++				if (!skb2)
++					printk(KERN_DEBUG "%s: failed to clone"
++					       " multicast frame\n", dev->name);
++			} else {
++				struct sta_info *dsta;
++
++				dsta = sta_info_get(local, frame->data);
++				if (dsta && !dsta->dev)
++					printk(KERN_DEBUG "Station with null "
++					       "dev structure!\n");
++				else if (dsta && dsta->dev == dev) {
++					/* Destination station is associated
++					* to this AP, so send the frame
++					* directly to it and do not pass
++					* the frame to local net stack.
++					*/
++					skb2 = frame;
++					frame = NULL;
++				}
++				if (dsta)
++					sta_info_put(dsta);
++			}
++		}
++		if (frame) {
++			/* deliver to local stack */
++			frame->protocol = eth_type_trans(frame, dev);
++			frame->priority = skb->priority;
++			frame->dev = dev;
++			netif_rx(frame);
++		}
++
++		if (skb2) {
++			/* send to wireless media */
++			skb2->protocol = __constant_htons(ETH_P_802_3);
++			skb_set_network_header(skb2, 0);
++			skb_set_mac_header(skb2, 0);
++			skb2->priority = skb->priority;
++			skb2->dev = dev;
++			dev_queue_xmit(skb2);
++		}
++
++		eth = (struct ethhdr*)((u8*)eth + subframe_len + padding);
++
++		remaining -= (subframe_len + padding);
++	}
++
++	dev_kfree_skb(skb);
++	return TXRX_QUEUED;
++}
++
+ static ieee80211_txrx_result
+ ieee80211_rx_h_data(struct ieee80211_txrx_data *rx)
+ {
+@@ -4720,6 +4854,7 @@ static ieee80211_rx_handler ieee80211_rx_handlers[] =
+ 	ieee80211_rx_h_remove_qos_control,
+ 	ieee80211_rx_h_802_1x_pae,
+ 	ieee80211_rx_h_drop_unencrypted,
++	ieee80211_rx_h_data_agg,
+ 	ieee80211_rx_h_data,
+ 	ieee80211_rx_h_mgmt,
+ 	NULL
+diff --git a/net/mac80211/ieee80211_i.h b/net/mac80211/ieee80211_i.h
+index 6f7bae7..da9a7ec 100644
+--- a/net/mac80211/ieee80211_i.h
++++ b/net/mac80211/ieee80211_i.h
+@@ -90,6 +90,8 @@ struct ieee80211_sta_bss {
+ 	size_t rsn_ie_len;
+ 	u8 *wmm_ie;
+ 	size_t wmm_ie_len;
++	u8 *ht_ie;
++	size_t ht_ie_len;
+ #define IEEE80211_MAX_SUPP_RATES 32
+ 	u8 supp_rates[IEEE80211_MAX_SUPP_RATES];
+ 	size_t supp_rates_len;
+@@ -147,10 +149,12 @@ struct ieee80211_txrx_data {
+ 			int sent_ps_buffered;
+ 			int queue;
+ 			int load;
++			u16 qos_control;
+ 			unsigned int in_scan:1;
+ 			/* frame is destined to interface currently processed
+ 			 * (including multicast frames) */
+ 			unsigned int ra_match:1;
++			unsigned int is_agg_frame:1;
+ 		} rx;
+ 	} u;
+ };
+@@ -244,6 +248,7 @@ struct ieee80211_if_sta {
+ 	unsigned int create_ibss:1;
+ 	unsigned int mixed_cell:1;
+ 	unsigned int wmm_enabled:1;
++	unsigned int ht_enabled:1;
+ 	unsigned int auto_ssid_sel:1;
+ 	unsigned int auto_bssid_sel:1;
+ 	unsigned int auto_channel_sel:1;
+diff --git a/net/mac80211/ieee80211_iface.c b/net/mac80211/ieee80211_iface.c
+index 8532a5c..d27973f 100644
+--- a/net/mac80211/ieee80211_iface.c
++++ b/net/mac80211/ieee80211_iface.c
+@@ -189,6 +189,7 @@ void ieee80211_if_set_type(struct net_device *dev, int type)
+ 			IEEE80211_AUTH_ALG_SHARED_KEY;
+ 		ifsta->create_ibss = 1;
+ 		ifsta->wmm_enabled = 1;
++		ifsta->ht_enabled = 1;
+ 		ifsta->auto_channel_sel = 1;
+ 		ifsta->auto_bssid_sel = 1;
+ 
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 0d99b68..afec78d 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -58,6 +58,9 @@
+ 
+ #define ERP_INFO_USE_PROTECTION BIT(1)
+ 
++/* mgmt header + 1 byte action code */
++#define IEEE80211_MIN_ACTION_SIZE (24 + 1)
++
+ static void ieee80211_send_probe_req(struct net_device *dev, u8 *dst,
+ 				     u8 *ssid, size_t ssid_len);
+ static struct ieee80211_sta_bss *
+@@ -87,6 +90,10 @@ struct ieee802_11_elems {
+ 	u8 *wpa;
+ 	u8 *rsn;
+ 	u8 *erp_info;
++	u8 *ht_cap_param;
++	u8 ht_cap_param_len;
++	u8 *ht_extra_param;
++	u8 ht_extra_param_len;
+ 	u8 *ext_supp_rates;
+ 	u8 *wmm_info;
+ 	u8 *wmm_param;
+@@ -201,6 +208,14 @@ static ParseRes ieee802_11_parse_elems(u8 *start, size_t len,
+ 			elems->ext_supp_rates = pos;
+ 			elems->ext_supp_rates_len = elen;
+ 			break;
++		case WLAN_EID_HT_CAPABILITY:
++			elems->ht_cap_param = pos;
++			elems->ht_cap_param_len = elen;
++			break;
++		case WLAN_EID_HT_EXTRA_INFO:
++			elems->ht_extra_param = pos;
++			elems->ht_extra_param_len = elen;
++			break;
+ 		default:
+ #if 0
+ 			printk(KERN_DEBUG "IEEE 802.11 element parse ignored "
+@@ -234,7 +249,6 @@ static int ecw2cw(int ecw)
+ 	return cw - 1;
+ }
+ 
+-
+ static void ieee80211_sta_wmm_params(struct net_device *dev,
+ 				     struct ieee80211_if_sta *ifsta,
+ 				     u8 *wmm_param, size_t wmm_param_len)
+@@ -526,6 +540,7 @@ static void ieee80211_send_assoc(struct net_device *dev,
+ 	u16 capab;
+ 	struct ieee80211_sta_bss *bss;
+ 	int wmm = 0;
++	int ht_enabled = 0;
+ 
+ 	skb = dev_alloc_skb(local->hw.extra_tx_headroom +
+ 			    sizeof(*mgmt) + 200 + ifsta->extra_ie_len +
+@@ -549,6 +564,8 @@ static void ieee80211_send_assoc(struct net_device *dev,
+ 			capab |= WLAN_CAPABILITY_PRIVACY;
+ 		if (bss->wmm_ie) {
+ 			wmm = 1;
++
++			ht_enabled = 1;
+ 		}
+ 		ieee80211_rx_bss_put(dev, bss);
+ 	}
+@@ -624,6 +641,16 @@ static void ieee80211_send_assoc(struct net_device *dev,
+ 		*pos++ = 0;
+ 	}
+ 
++	/* if low level driver supports 11n, fill in 11n IE */
++	if (ht_enabled && ifsta->ht_enabled && local->ops->get_ht_capab) {
++		pos = skb_put(skb, sizeof(struct ieee80211_ht_capability)+2);
++		*pos++ = WLAN_EID_HT_CAPABILITY;
++		*pos++ = sizeof(struct ieee80211_ht_capability);
++		memset(pos, 0, sizeof(struct ieee80211_ht_capability));
++		local->ops->get_ht_capab(local_to_hw(local),
++			(struct ieee80211_ht_capability *)pos);
++	}
++
+ 	kfree(ifsta->assocreq_ies);
+ 	ifsta->assocreq_ies_len = (skb->data + skb->len) - ies;
+ 	ifsta->assocreq_ies = kmalloc(ifsta->assocreq_ies_len, GFP_ATOMIC);
+@@ -1273,6 +1300,20 @@ static void ieee80211_rx_mgmt_assoc_resp(struct net_device *dev,
+ 	}
+ 	sta->supp_rates = rates;
+ 
++	if (elems.ht_extra_param && elems.ht_cap_param && elems.wmm_param &&
++	    ifsta->ht_enabled && local->ops->conf_ht){
++		int rc;
++
++		rc = local->ops->conf_ht(local_to_hw(local),
++					 (struct ieee80211_ht_capability *)
++					 elems.ht_cap_param,
++					 (struct ieee80211_ht_additional_info *)
++					 elems.ht_extra_param);
++		if (!rc)
++			sta->flags |= WLAN_STA_HT;
++	}
++
++
+ 	rate_control_rate_init(sta, local);
+ 
+ 	if (elems.wmm_param && ifsta->wmm_enabled) {
+@@ -1367,6 +1408,7 @@ static void ieee80211_rx_bss_free(struct ieee80211_sta_bss *bss)
+ 	kfree(bss->wpa_ie);
+ 	kfree(bss->rsn_ie);
+ 	kfree(bss->wmm_ie);
++	kfree(bss->ht_ie);
+ 	kfree(bss);
+ }
+ 
+@@ -1619,6 +1661,23 @@ static void ieee80211_rx_bss_info(struct net_device *dev,
+ 		bss->wmm_ie_len = 0;
+ 	}
+ 
++	if (elems.ht_cap_param &&
++	    (!bss->ht_ie || bss->ht_ie_len != elems.ht_cap_param_len ||
++	     memcmp(bss->ht_ie, elems.ht_cap_param, elems.ht_cap_param_len))) {
++		if (bss->ht_ie)
++			kfree(bss->ht_ie);
++		bss->ht_ie = kmalloc(elems.ht_cap_param_len + 2, GFP_ATOMIC);
++		if (bss->ht_ie) {
++			memcpy(bss->ht_ie, elems.ht_cap_param - 2,
++			       elems.ht_cap_param_len + 2);
++			bss->ht_ie_len = elems.ht_cap_param_len + 2;
++		} else
++			bss->ht_ie_len = 0;
++	} else if (!elems.ht_cap_param && bss->ht_ie) {
++		kfree(bss->ht_ie);
++		bss->ht_ie = NULL;
++		bss->ht_ie_len = 0;
++	}
+ 
+ 	bss->hw_mode = rx_status->phymode;
+ 	bss->channel = channel;
+@@ -1764,6 +1823,102 @@ static void ieee80211_rx_mgmt_probe_req(struct net_device *dev,
+ 	ieee80211_sta_tx(dev, skb, 0);
+ }
+ 
++static void ieee80211_send_addba_resp(struct net_device *dev,
++				      struct ieee80211_mgmt *mgmt_src,
++				      size_t len,
++				      u16 status)
++{
++	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
++	struct ieee80211_if_sta *ifsta = &sdata->u.sta;
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++	struct sk_buff *skb;
++	struct ieee80211_mgmt *mgmt;
++
++	skb = dev_alloc_skb(sizeof(*mgmt) + local->hw.extra_tx_headroom);
++	if (!skb) {
++		printk(KERN_DEBUG "%s: failed to allocate buffer "
++		       "for addts frame\n", dev->name);
++		return;
++	}
++
++	skb_reserve(skb, local->hw.extra_tx_headroom);
++	mgmt = (struct ieee80211_mgmt *) skb_put(skb, 24);
++	memset(mgmt, 0, 24);
++	memcpy(mgmt->da, ifsta->bssid, ETH_ALEN);
++	memcpy(mgmt->sa, dev->dev_addr, ETH_ALEN);
++	memcpy(mgmt->bssid, ifsta->bssid, ETH_ALEN);
++	mgmt->frame_control = IEEE80211_FC(IEEE80211_FTYPE_MGMT,
++					   IEEE80211_STYPE_ACTION);
++
++	skb_put(skb, 1 + sizeof(mgmt->u.action.u.addba_resp));
++	mgmt->u.action.category = WLAN_CATEGORY_BACK;
++	mgmt->u.action.u.addba_resp.action_code = WLAN_ACTION_ADDBA_RESP;
++	mgmt->u.action.u.addba_resp.dialog_token =
++		mgmt_src->u.action.u.addba_req.dialog_token;
++	mgmt->u.action.u.addba_resp.capab =
++		mgmt_src->u.action.u.addba_req.capab;
++	mgmt->u.action.u.addba_resp.timeout =
++		mgmt_src->u.action.u.addba_req.timeout;
++	mgmt->u.action.u.addba_resp.status = cpu_to_le16(status);
++
++	ieee80211_sta_tx(dev, skb, 0);
++
++	return;
++}
++
++static void ieee80211_rx_mgmt_action(struct net_device *dev,
++				     struct ieee80211_if_sta *ifsta,
++				     struct ieee80211_mgmt *mgmt,
++				     size_t len)
++{
++	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
++
++	if (len < IEEE80211_MIN_ACTION_SIZE)
++		return;
++
++	switch (mgmt->u.action.category) {
++	case WLAN_CATEGORY_BACK:
++		switch (mgmt->u.action.u.addba_req.action_code) {
++		case WLAN_ACTION_ADDBA_REQ:
++			if (len < (IEEE80211_MIN_ACTION_SIZE +
++				   sizeof(mgmt->u.action.u.addba_req)))
++				break;
++			if (!local->ops->handle_ba_action ||
++			    (local->ops->handle_ba_action(local_to_hw(local),
++						      mgmt)))
++				ieee80211_send_addba_resp(dev, mgmt, len,
++						WLAN_STATUS_REQUEST_DECLINED);
++			else
++				ieee80211_send_addba_resp(dev, mgmt, len,
++							WLAN_STATUS_SUCCESS);
++			break;
++		case WLAN_ACTION_ADDBA_RESP:
++			if (len < (IEEE80211_MIN_ACTION_SIZE +
++				   sizeof(mgmt->u.action.u.addba_resp)))
++				break;
++			if (!local->ops->handle_ba_action)
++				break;
++			local->ops->handle_ba_action(local_to_hw(local), mgmt);
++			break;
++		case WLAN_ACTION_DELBA:
++			if (len < (IEEE80211_MIN_ACTION_SIZE +
++				   sizeof(mgmt->u.action.u.delba)))
++				break;
++
++			 if (!local->ops->handle_ba_action)
++				break;
++
++			local->ops->handle_ba_action(local_to_hw(local), mgmt);
++			break;
++		default:
++			break;
++		}
++		break;
++
++	default:
++		break;
++	}
++}
+ 
+ void ieee80211_sta_rx_mgmt(struct net_device *dev, struct sk_buff *skb,
+ 			   struct ieee80211_rx_status *rx_status)
+@@ -1793,6 +1948,7 @@ void ieee80211_sta_rx_mgmt(struct net_device *dev, struct sk_buff *skb,
+ 	case IEEE80211_STYPE_REASSOC_RESP:
+ 	case IEEE80211_STYPE_DEAUTH:
+ 	case IEEE80211_STYPE_DISASSOC:
++	case IEEE80211_STYPE_ACTION:
+ 		skb_queue_tail(&ifsta->skb_queue, skb);
+ 		queue_work(local->hw.workqueue, &ifsta->work);
+ 		return;
+@@ -1850,6 +2006,9 @@ static void ieee80211_sta_rx_queued_mgmt(struct net_device *dev,
+ 	case IEEE80211_STYPE_DISASSOC:
+ 		ieee80211_rx_mgmt_disassoc(dev, ifsta, mgmt, skb->len);
+ 		break;
++	case IEEE80211_STYPE_ACTION:
++		ieee80211_rx_mgmt_action(dev, ifsta, mgmt, skb->len);
++		break;
+ 	}
+ 
+ 	kfree_skb(skb);
+diff --git a/net/mac80211/sta_info.h b/net/mac80211/sta_info.h
+index b5591d2..e500c27 100644
+--- a/net/mac80211/sta_info.h
++++ b/net/mac80211/sta_info.h
+@@ -27,6 +27,7 @@
+ 				    */
+ #define WLAN_STA_SHORT_PREAMBLE BIT(7)
+ #define WLAN_STA_WME BIT(9)
++#define WLAN_STA_HT  BIT(10)
+ #define WLAN_STA_WDS BIT(27)
+ 
+ 
+diff --git a/net/mac80211/wme.c b/net/mac80211/wme.c
+index 89ce815..ef3b3b0 100644
+--- a/net/mac80211/wme.c
++++ b/net/mac80211/wme.c
+@@ -29,12 +29,18 @@ ieee80211_rx_h_parse_qos(struct ieee80211_txrx_data *rx)
+ {
+ 	u8 *data = rx->skb->data;
+ 	int tid;
++	unsigned int is_agg_frame = 0;
+ 
+ 	/* does the frame have a qos control field? */
+ 	if (WLAN_FC_IS_QOS_DATA(rx->fc)) {
+ 		u8 *qc = data + ieee80211_get_hdrlen(rx->fc) - QOS_CONTROL_LEN;
++
+ 		/* frame has qos control */
+-		tid = qc[0] & QOS_CONTROL_TID_MASK;
++		rx->u.rx.qos_control = le16_to_cpu(*((__le16*)qc));
++		tid = rx->u.rx.qos_control & QOS_CONTROL_TID_MASK;
++		if (rx->u.rx.qos_control &
++		    IEEE80211_QOS_CONTROL_A_MSDU_PRESENT)
++			is_agg_frame = 1;
+ 	} else {
+ 		if (unlikely((rx->fc & IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_MGMT)) {
+ 			/* Separate TID for management frames */
+@@ -43,6 +49,7 @@ ieee80211_rx_h_parse_qos(struct ieee80211_txrx_data *rx)
+ 			/* no qos control present */
+ 			tid = 0; /* 802.1d - Best Effort */
+ 		}
++		rx->u.rx.qos_control = 0;
+ 	}
+ #ifdef CONFIG_MAC80211_DEBUG_COUNTERS
+ 	I802_DEBUG_INC(rx->local->wme_rx_queue[tid]);
+@@ -52,6 +59,7 @@ ieee80211_rx_h_parse_qos(struct ieee80211_txrx_data *rx)
+ #endif /* CONFIG_MAC80211_DEBUG_COUNTERS */
+ 
+ 	rx->u.rx.queue = tid;
++	rx->u.rx.is_agg_frame = is_agg_frame;
+ 	/* Set skb->priority to 1d tag if highest order bit of TID is not set.
+ 	 * For now, set skb->priority to 0 for other cases. */
+ 	rx->skb->priority = (tid > 7) ? 0 : tid;
+-- 
+1.5.2
+

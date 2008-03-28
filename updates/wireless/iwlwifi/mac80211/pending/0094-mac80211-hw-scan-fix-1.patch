@@ -1,0 +1,24 @@
+Index: compatible/net/mac80211/ieee80211_sta.c
+===================================================================
+--- compatible.orig/net/mac80211/ieee80211_sta.c	2008-01-06 12:09:02.000000000 +0200
++++ compatible/net/mac80211/ieee80211_sta.c	2008-01-06 12:09:12.000000000 +0200
+@@ -3419,12 +3419,18 @@
+ 	struct ieee80211_mgmt *mgmt;
+ 	u16 fc;
+ 
+-	if (skb->len < 24)
++	if (skb->len < 2)
+ 		return TXRX_DROP;
+ 
+ 	mgmt = (struct ieee80211_mgmt *) skb->data;
+ 	fc = le16_to_cpu(mgmt->frame_control);
+ 
++	if ((fc & IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_CTL)
++		return TXRX_CONTINUE;
++
++	if (skb->len < 24)
++		return TXRX_DROP;
++
+ 	if ((fc & IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_MGMT) {
+ 		if ((fc & IEEE80211_FCTL_STYPE) == IEEE80211_STYPE_PROBE_RESP) {
+ 			ieee80211_rx_mgmt_probe_resp(dev, mgmt,

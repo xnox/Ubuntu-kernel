@@ -4,3 +4,4 @@
 
 include $(src)/.config
 
+obj-$(CONFIG_IWLWIFI)       += wireless/iwlwifi/

@@ -1,0 +1,42 @@
+diff -urp origin/iwl3945-base.c new/iwl3945-base.c
+--- origin/iwl3945-base.c	2007-09-03 14:30:59.000000000 +0800
++++ new/iwl3945-base.c	2007-09-04 11:12:57.000000000 +0800
+@@ -255,6 +255,17 @@ static inline u8 get_cmd_index(struct iw
+ 	return index & (q->n_window - 1);
+ }
+ 
++#ifndef is_power_of_2
++#ifndef bool
++#define bool int
++#endif
++static inline __attribute__((const))
++bool is_power_of_2(unsigned long n)
++{
++	        return (n != 0 && ((n & (n - 1)) == 0));
++}
++#endif
++
+ /**
+  * iwl3945_queue_init - Initialize queue's high/low-water and read/write indexes
+  */
+diff -urp origin/iwl4965-base.c new/iwl4965-base.c
+--- origin/iwl4965-base.c	2007-09-03 14:32:35.000000000 +0800
++++ new/iwl4965-base.c	2007-09-04 11:12:57.000000000 +0800
+@@ -254,6 +254,17 @@ static inline u8 get_cmd_index(struct iw
+ 	return index & (q->n_window - 1);
+ }
+ 
++#ifndef is_power_of_2
++#ifndef bool
++#define bool int
++#endif
++static inline __attribute__((const))
++bool is_power_of_2(unsigned long n)
++{
++	        return (n != 0 && ((n & (n - 1)) == 0));
++}
++#endif
++
+ /**
+  * iwl4965_queue_init - Initialize queue's high/low-water and read/write indexes
+  */

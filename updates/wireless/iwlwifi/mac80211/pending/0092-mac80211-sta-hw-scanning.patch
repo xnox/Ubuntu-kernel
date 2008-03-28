@@ -1,0 +1,263 @@
+Index: compatible/net/mac80211/ieee80211.c
+===================================================================
+--- compatible.orig/net/mac80211/ieee80211.c	2008-01-06 12:08:49.000000000 +0200
++++ compatible/net/mac80211/ieee80211.c	2008-01-06 12:09:02.000000000 +0200
+@@ -947,7 +947,7 @@
+ #endif /* CONFIG_MAC80211_VERBOSE_DEBUG */
+ 	u32 sta_flags;
+ 
+-	if (unlikely(tx->local->sta_scanning != 0) &&
++	if (unlikely(tx->local->sta_sw_scanning != 0) &&
+ 	    ((tx->fc & IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_MGMT ||
+ 	     (tx->fc & IEEE80211_FCTL_STYPE) != IEEE80211_STYPE_PROBE_REQ))
+ 		return TXRX_DROP;
+@@ -2328,8 +2328,7 @@
+ 	conf.type = sdata->type;
+ 	if (sdata->type == IEEE80211_IF_TYPE_STA ||
+ 	    sdata->type == IEEE80211_IF_TYPE_IBSS) {
+-		if (local->sta_scanning &&
+-		    local->scan_dev == dev)
++		if (local->sta_hw_scanning)
+ 			conf.bssid = scan_bssid;
+ 		else
+ 			conf.bssid = sdata->u.sta.bssid;
+@@ -2374,7 +2373,7 @@
+ 	struct ieee80211_channel *chan;
+ 	int ret = 0;
+ 
+-	if (local->sta_scanning) {
++	if (local->sta_sw_scanning) {
+ 		chan = local->scan_channel;
+ 		mode = local->scan_hw_mode;
+ 	} else {
+@@ -2549,7 +2548,7 @@
+ 		skb_queue_purge(&sdata->u.sta.skb_queue);
+ 		if (!local->ops->hw_scan &&
+ 		    local->scan_dev == sdata->dev) {
+-			local->sta_scanning = 0;
++			local->sta_sw_scanning = 0;
+ 			cancel_delayed_work(&local->scan_work);
+ 		}
+ 		flush_workqueue(local->hw.workqueue);
+@@ -4152,8 +4151,14 @@
+ 	struct ieee80211_local *local = rx->local;
+ 	struct sk_buff *skb = rx->skb;
+ 
+-	if (unlikely(local->sta_scanning != 0)) {
+-		ieee80211_sta_rx_scan(rx->dev, skb, rx->u.rx.status);
++	if (unlikely(local->sta_hw_scanning != 0))
++		return ieee80211_sta_rx_scan(rx->dev, skb, rx->u.rx.status);
++
++	if (unlikely(local->sta_sw_scanning != 0)) {
++		/* drop all the other packets during a software scan anyway */
++		if (ieee80211_sta_rx_scan(rx->dev, skb, rx->u.rx.status)
++		    != TXRX_QUEUED)
++			dev_kfree_skb(skb);
+ 		return TXRX_QUEUED;
+ 	}
+ 
+@@ -4346,7 +4351,7 @@
+ 		goto end;
+ 	}
+ 
+-	if (unlikely(local->sta_scanning))
++	if (unlikely(local->sta_sw_scanning || local->sta_hw_scanning))
+ 		rx.u.rx.in_scan = 1;
+ 
+ 	if (__ieee80211_invoke_rx_handlers(local, local->rx_pre_handlers, &rx,
+Index: compatible/net/mac80211/ieee80211_i.h
+===================================================================
+--- compatible.orig/net/mac80211/ieee80211_i.h	2008-01-06 12:07:06.000000000 +0200
++++ compatible/net/mac80211/ieee80211_i.h	2008-01-06 12:09:02.000000000 +0200
+@@ -541,7 +541,8 @@
+ 	rwlock_t sub_if_lock; /* Protects sub_if_list. Cannot be taken under
+ 			       * sta_bss_lock or sta_lock. */
+ 	struct list_head sub_if_list;
+-	int sta_scanning;
++	int sta_sw_scanning;
++	int sta_hw_scanning;
+ 	int scan_channel_idx;
+ 	enum { SCAN_SET_CHANNEL, SCAN_SEND_PROBE } scan_state;
+ 	unsigned long last_scan_completed;
+@@ -856,7 +857,8 @@
+ void ieee80211_sta_req_auth(struct net_device *dev,
+ 			    struct ieee80211_if_sta *ifsta);
+ int ieee80211_sta_scan_results(struct net_device *dev, char *buf, size_t len);
+-void ieee80211_sta_rx_scan(struct net_device *dev, struct sk_buff *skb,
++ieee80211_txrx_result ieee80211_sta_rx_scan(struct net_device *dev,
++					    struct sk_buff *skb,
+ 			   struct ieee80211_rx_status *rx_status);
+ void ieee80211_rx_bss_list_init(struct net_device *dev);
+ void ieee80211_rx_bss_list_deinit(struct net_device *dev);
+Index: compatible/net/mac80211/ieee80211_ioctl.c
+===================================================================
+--- compatible.orig/net/mac80211/ieee80211_ioctl.c	2008-01-06 12:08:57.000000000 +0200
++++ compatible/net/mac80211/ieee80211_ioctl.c	2008-01-06 12:09:02.000000000 +0200
+@@ -493,7 +493,7 @@
+ 	}
+ 
+ 	if (set) {
+-		if (local->sta_scanning)
++		if (local->sta_sw_scanning)
+ 			ret = 0;
+ 		else
+ 			ret = ieee80211_hw_config(local);
+@@ -733,7 +733,7 @@
+ {
+ 	int res;
+ 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
+-	if (local->sta_scanning)
++	if (local->sta_sw_scanning || local->sta_hw_scanning)
+ 		return -EAGAIN;
+ 	res = ieee80211_sta_scan_results(dev, extra, data->length);
+ 	if (res >= 0) {
+Index: compatible/net/mac80211/ieee80211_sta.c
+===================================================================
+--- compatible.orig/net/mac80211/ieee80211_sta.c	2008-01-06 12:08:57.000000000 +0200
++++ compatible/net/mac80211/ieee80211_sta.c	2008-01-06 12:09:02.000000000 +0200
+@@ -1893,7 +1893,7 @@
+ 		printk(KERN_ERR "DLS Parse support rates failed.\n");
+ 		return;
+ 	}
+-	mode = local->sta_scanning ?
++	mode = local->sta_sw_scanning ?
+ 	       local->scan_hw_mode : local->oper_hw_mode;
+ 	rates = mode->rates;
+ 	num_rates = mode->num_rates;
+@@ -1967,7 +1967,7 @@
+ 		printk(KERN_ERR "DLS Parse support rates failed.\n");
+ 		return;
+ 	}
+-	mode = local->sta_scanning ?
++	mode = local->sta_sw_scanning ?
+ 	       local->scan_hw_mode : local->oper_hw_mode;
+ 	rates = mode->rates;
+ 	num_rates = mode->num_rates;
+@@ -2201,7 +2201,7 @@
+ 		u32 supp_rates, prev_rates;
+ 		int i, j;
+ 
+-		mode = local->sta_scanning ?
++		mode = local->sta_sw_scanning ?
+ 		       local->scan_hw_mode : local->oper_hw_mode;
+ 		rates = mode->rates;
+ 		num_rates = mode->num_rates;
+@@ -3412,16 +3412,15 @@
+ }
+ 
+ 
+-void ieee80211_sta_rx_scan(struct net_device *dev, struct sk_buff *skb,
+-			   struct ieee80211_rx_status *rx_status)
++ieee80211_txrx_result
++ieee80211_sta_rx_scan(struct net_device *dev, struct sk_buff *skb,
++		      struct ieee80211_rx_status *rx_status)
+ {
+ 	struct ieee80211_mgmt *mgmt;
+ 	u16 fc;
+ 
+-	if (skb->len < 24) {
+-		dev_kfree_skb(skb);
+-		return;
+-	}
++	if (skb->len < 24)
++		return TXRX_DROP;
+ 
+ 	mgmt = (struct ieee80211_mgmt *) skb->data;
+ 	fc = le16_to_cpu(mgmt->frame_control);
+@@ -3430,13 +3429,16 @@
+ 		if ((fc & IEEE80211_FCTL_STYPE) == IEEE80211_STYPE_PROBE_RESP) {
+ 			ieee80211_rx_mgmt_probe_resp(dev, mgmt,
+ 						     skb->len, rx_status);
++			dev_kfree_skb(skb);
++			return TXRX_QUEUED;
+ 		} else if ((fc & IEEE80211_FCTL_STYPE) == IEEE80211_STYPE_BEACON) {
+ 			ieee80211_rx_mgmt_beacon(dev, mgmt, skb->len,
+ 						 rx_status);
++			dev_kfree_skb(skb);
++			return TXRX_QUEUED;
+ 		}
+ 	}
+-
+-	dev_kfree_skb(skb);
++	return TXRX_CONTINUE;
+ }
+ 
+ 
+@@ -3535,7 +3537,7 @@
+ 	if (!netif_running(dev))
+ 		return;
+ 
+-	if (local->sta_scanning)
++	if (local->sta_sw_scanning || local->sta_hw_scanning)
+ 		return;
+ 
+ 	if (sdata->type != IEEE80211_IF_TYPE_STA &&
+@@ -4226,7 +4228,8 @@
+ 
+ 	local->last_scan_completed = jiffies;
+ 	wmb();
+-	local->sta_scanning = 0;
++	local->sta_hw_scanning = 0;
++	local->sta_sw_scanning = 0;
+ 
+ 	if (ieee80211_hw_config(local))
+ 		printk(KERN_DEBUG "%s: failed to restore operational"
+@@ -4279,7 +4282,7 @@
+ 	int skip;
+ 	unsigned long next_delay = 0;
+ 
+-	if (!local->sta_scanning)
++	if (!local->sta_sw_scanning)
+ 		return;
+ 
+ 	switch (local->scan_state) {
+@@ -4342,7 +4345,7 @@
+ 		break;
+ 	}
+ 
+-	if (local->sta_scanning)
++	if (local->sta_sw_scanning)
+ 		queue_delayed_work(local->hw.workqueue, &local->scan_work,
+ 				   next_delay);
+ }
+@@ -4374,7 +4377,7 @@
+ 	  * ResultCode: SUCCESS, INVALID_PARAMETERS
+ 	 */
+ 
+-	if (local->sta_scanning) {
++	if (local->sta_sw_scanning) {
+ 		if (local->scan_dev == dev)
+ 			return 0;
+ 		return -EBUSY;
+@@ -4384,13 +4387,13 @@
+ 		int rc = local->ops->hw_scan(local_to_hw(local),
+ 					    ssid, ssid_len);
+ 		if (!rc) {
+-			local->sta_scanning = 1;
++			local->sta_hw_scanning = 1;
+ 			local->scan_dev = dev;
+ 		}
+ 		return rc;
+ 	}
+ 
+-	local->sta_scanning = 1;
++	local->sta_sw_scanning = 1;
+ 
+ 	read_lock(&local->sub_if_lock);
+ 	list_for_each_entry(sdata, &local->sub_if_list, list) {
+@@ -4441,11 +4444,11 @@
+ 	if (sdata->type != IEEE80211_IF_TYPE_STA)
+ 		return ieee80211_sta_start_scan(dev, ssid, ssid_len);
+ 
+-	if (local->sta_scanning) {
+-		if (local->scan_dev == dev)
+-			return 0;
++	if (local->sta_hw_scanning)
++		return 0;
++
++	if (local->sta_sw_scanning)
+ 		return -EBUSY;
+-	}
+ 
+ 	set_bit(IEEE80211_STA_REQ_SCAN, &ifsta->request);
+ 	queue_work(local->hw.workqueue, &ifsta->work);

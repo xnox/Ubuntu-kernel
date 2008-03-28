@@ -1,0 +1,23 @@
+nlmsg_new doesn't used to have the gfp_t flag
+---
+diff -urp old/net/wireless/nl80211.c compatible/net/wireless/nl80211.c
+--- old/net/wireless/nl80211.c	2007-07-05 15:44:46.000000000 +0800
++++ compatible/net/wireless/nl80211.c	2007-07-05 15:49:20.000000000 +0800
+@@ -930,7 +930,7 @@ void *nl80211msg_new(struct sk_buff **sk
+ {
+ 	void *hdr;
+ 
+-	*skb = nlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
++	*skb = nlmsg_new(NLMSG_GOODSIZE);
+ 	if (!*skb)
+ 		return ERR_PTR(-ENOBUFS);
+ 
+@@ -959,7 +959,7 @@ void nl80211_notify_dev_rename(struct cf
+ 	NLA_PUT_STRING(msg, NL80211_ATTR_WIPHY_NAME, wiphy_name(&rdev->wiphy));
+ 
+ 	genlmsg_end(msg, hdr);
+-	genlmsg_multicast(msg, 0, NL80211_GROUP_CONFIG, GFP_KERNEL);
++	genlmsg_multicast(msg, 0, NL80211_GROUP_CONFIG);
+ 
+ 	return;
+ 

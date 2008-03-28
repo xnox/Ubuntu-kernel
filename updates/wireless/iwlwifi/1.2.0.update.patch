@@ -1,0 +1,156 @@
+diff -urNa mac80211-10.0.2.orig/origin/net/mac80211/ieee80211.c mac80211/origin/net/mac80211/ieee80211.c
+--- mac80211-10.0.2.orig/origin/net/mac80211/ieee80211.c	2007-11-14 15:11:52.000000000 +0800
++++ mac80211/origin/net/mac80211/ieee80211.c	2008-02-03 15:30:01.000000000 +0800
+@@ -1350,7 +1350,7 @@
+ 	struct net_device *dev;
+ 
+ 	pkt_data = (struct ieee80211_tx_packet_data *)skb->cb;
+-	dev = dev_get_by_index(pkt_data->ifindex);
++	dev = dev_get_by_index(&init_net, pkt_data->ifindex);
+ 	if (unlikely(dev && !is_ieee80211_device(dev, mdev))) {
+ 		dev_put(dev);
+ 		dev = NULL;
+@@ -1631,7 +1631,7 @@
+ 	memset(&control, 0, sizeof(struct ieee80211_tx_control));
+ 
+ 	if (pkt_data->ifindex)
+-		odev = dev_get_by_index(pkt_data->ifindex);
++		odev = dev_get_by_index(&init_net, pkt_data->ifindex);
+ 	if (unlikely(odev && !is_ieee80211_device(odev, dev))) {
+ 		dev_put(odev);
+ 		odev = NULL;
+@@ -2053,7 +2053,7 @@
+ 	u8 *b_head, *b_tail;
+ 	int bh_len, bt_len;
+ 
+-	bdev = dev_get_by_index(if_id);
++	bdev = dev_get_by_index(&init_net, if_id);
+ 	if (bdev) {
+ 		sdata = IEEE80211_DEV_TO_SUB_IF(bdev);
+ 		ap = &sdata->u.ap;
+@@ -2220,7 +2220,7 @@
+ 	struct ieee80211_sub_if_data *sdata;
+ 	struct ieee80211_if_ap *bss = NULL;
+ 
+-	bdev = dev_get_by_index(if_id);
++	bdev = dev_get_by_index(&init_net, if_id);
+ 	if (bdev) {
+ 		sdata = IEEE80211_DEV_TO_SUB_IF(bdev);
+ 		bss = &sdata->u.ap;
+@@ -2756,7 +2756,7 @@
+ }
+ 
+ 
+-static int header_parse_80211(struct sk_buff *skb, unsigned char *haddr)
++static int header_parse_80211(const struct sk_buff *skb, unsigned char *haddr)
+ {
+ 	memcpy(haddr, skb_mac_header(skb) + 10, ETH_ALEN); /* addr2 */
+ 	return ETH_ALEN;
+@@ -4775,6 +4775,14 @@
+ 	return 0;
+ }
+ 
++static const struct header_ops ieee80211_header_ops = {
++        .create         = eth_header,
++        .parse          = header_parse_80211,
++        .rebuild        = eth_rebuild_header,
++        .cache          = eth_header_cache,
++        .cache_update   = eth_header_cache_update,
++};
++
+ /* Must not be called for mdev and apdev */
+ void ieee80211_if_setup(struct net_device *dev)
+ {
+@@ -4799,7 +4807,6 @@
+ 	dev->open = ieee80211_mgmt_open;
+ 	dev->stop = ieee80211_mgmt_stop;
+ 	dev->type = ARPHRD_IEEE80211_PRISM;
+-	dev->hard_header_parse = header_parse_80211;
+ 	dev->uninit = ieee80211_if_reinit;
+ 	dev->destructor = ieee80211_if_free;
+ }
+@@ -4938,7 +4945,7 @@
+ 	mdev->open = ieee80211_master_open;
+ 	mdev->stop = ieee80211_master_stop;
+ 	mdev->type = ARPHRD_IEEE80211;
+-	mdev->hard_header_parse = header_parse_80211;
++        mdev->header_ops = &ieee80211_header_ops;
+ 
+ 	sdata->type = IEEE80211_IF_TYPE_AP;
+ 	sdata->dev = mdev;
+diff -urNa mac80211-10.0.2.orig/origin/net/mac80211/ieee80211_cfg.c mac80211/origin/net/mac80211/ieee80211_cfg.c
+--- mac80211-10.0.2.orig/origin/net/mac80211/ieee80211_cfg.c	2007-11-14 15:11:52.000000000 +0800
++++ mac80211/origin/net/mac80211/ieee80211_cfg.c	2008-01-29 22:04:10.000000000 +0800
+@@ -50,7 +50,7 @@
+ 	if (unlikely(local->reg_state != IEEE80211_DEV_REGISTERED))
+ 		return -ENODEV;
+ 
+-	dev = dev_get_by_index(ifindex);
++	dev = dev_get_by_index(&init_net, ifindex);
+ 	if (!dev)
+ 		return 0;
+ 
+diff -urNa mac80211-10.0.2.orig/origin/net/mac80211/ieee80211_i.h mac80211/origin/net/mac80211/ieee80211_i.h
+--- mac80211-10.0.2.orig/origin/net/mac80211/ieee80211_i.h	2007-11-14 15:11:52.000000000 +0800
++++ mac80211/origin/net/mac80211/ieee80211_i.h	2008-01-30 19:27:29.000000000 +0800
+@@ -36,7 +36,6 @@
+ 
+ struct ieee80211_local;
+ 
+-#define BIT(x) (1 << (x))
+ 
+ #define IEEE80211_ALIGN32_PAD(a) ((4 - ((a) & 3)) & 3)
+ 
+diff -urNa mac80211-10.0.2.orig/origin/net/mac80211/wep.c mac80211/origin/net/mac80211/wep.c
+--- mac80211-10.0.2.orig/origin/net/mac80211/wep.c	2007-11-14 15:11:52.000000000 +0800
++++ mac80211/origin/net/mac80211/wep.c	2008-01-30 19:25:00.000000000 +0800
+@@ -16,7 +16,7 @@
+ #include <linux/crypto.h>
+ #include <linux/err.h>
+ #include <linux/mm.h>
+-#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ 
+ #include <net/mac80211.h>
+ #include "ieee80211_i.h"
+@@ -138,9 +138,7 @@
+ 	*icv = cpu_to_le32(~crc32_le(~0, data, data_len));
+ 
+ 	crypto_blkcipher_setkey(tfm, rc4key, klen);
+-	sg.page = virt_to_page(data);
+-	sg.offset = offset_in_page(data);
+-	sg.length = data_len + WEP_ICV_LEN;
++        sg_init_one(&sg, data, data_len + WEP_ICV_LEN);
+ 	crypto_blkcipher_encrypt(&desc, &sg, &sg, sg.length);
+ }
+ 
+@@ -204,9 +202,7 @@
+ 	__le32 crc;
+ 
+ 	crypto_blkcipher_setkey(tfm, rc4key, klen);
+-	sg.page = virt_to_page(data);
+-	sg.offset = offset_in_page(data);
+-	sg.length = data_len + WEP_ICV_LEN;
++        sg_init_one(&sg, data, data_len + WEP_ICV_LEN);
+ 	crypto_blkcipher_decrypt(&desc, &sg, &sg, sg.length);
+ 
+ 	crc = cpu_to_le32(~crc32_le(~0, data, data_len));
+diff -urNa mac80211-10.0.2.orig/origin/net/wireless/sysfs.c mac80211/origin/net/wireless/sysfs.c
+--- mac80211-10.0.2.orig/origin/net/wireless/sysfs.c	2007-11-14 15:11:52.000000000 +0800
++++ mac80211/origin/net/wireless/sysfs.c	2008-01-30 19:29:39.000000000 +0800
+@@ -52,12 +52,13 @@
+ 	cfg80211_dev_free(rdev);
+ }
+ 
+-static int wiphy_uevent(struct device *dev, char **envp,
+-			int num_envp, char *buf, int size)
++#ifdef CONFIG_HOTPLUG
++static int wiphy_uevent(struct device *dev, struct kobj_uevent_env *env)
+ {
+ 	/* TODO, we probably need stuff here */
+ 	return 0;
+ }
++#endif
+ 
+ struct class ieee80211_class = {
+ 	.name = "ieee80211",

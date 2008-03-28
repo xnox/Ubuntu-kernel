@@ -1,0 +1,92 @@
+From 4f10cf6269ce9a96d21dd220bf8991716d1be24f Mon Sep 17 00:00:00 2001
+From: Cahill, Ben M <ben.m.cahill@intel.com>
+Date: Tue, 10 Jul 2007 14:43:58 +0800
+Subject: [PATCH] mac80211: rssi averaging filter
+
+This patch adds a non-sticky averaging filter for the signal
+quality values (level, quality, noise). Without it, iwconfig
+signal quality numbers will appear frozen.
+
+Signed-off-by: Cahill, Ben M <ben.m.cahill@intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ net/mac80211/ieee80211.c     |   20 ++++++++++++++------
+ net/mac80211/ieee80211_sta.c |    7 +++++++
+ net/mac80211/sta_info.h      |    9 ++++++---
+ 3 files changed, 27 insertions(+), 9 deletions(-)
+
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index a4f2f67..63a1347 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -3836,12 +3836,20 @@ ieee80211_rx_h_sta_process(struct ieee80211_txrx_data *rx)
+ 
+ 	sta->rx_fragments++;
+ 	sta->rx_bytes += rx->skb->len;
+-	sta->last_rssi = (sta->last_rssi * 15 +
+-			  rx->u.rx.status->ssi) / 16;
+-	sta->last_signal = (sta->last_signal * 15 +
+-			    rx->u.rx.status->signal) / 16;
+-	sta->last_noise = (sta->last_noise * 15 +
+-			   rx->u.rx.status->noise) / 16;
++
++	/* Low pass filter:  15/16 current avg + new.
++	 * Accumulated values here are 16x values sent from driver. */
++	sta->accum_rssi = sta->accum_rssi - (sta->accum_rssi >> 4) +
++			  rx->u.rx.status->ssi;
++	sta->accum_signal = sta->accum_signal - (sta->accum_signal >> 4) +
++			  rx->u.rx.status->signal;
++	sta->accum_noise = sta->accum_noise - (sta->accum_noise >> 4) +
++			  rx->u.rx.status->noise;
++
++	/* Quantize the averages (divide by 16) */
++	sta->last_rssi = sta->accum_rssi >> 4;
++	sta->last_signal = sta->accum_signal >> 4;
++	sta->last_noise = sta->accum_noise >> 4;
+ 
+ 	if (!(rx->fc & IEEE80211_FCTL_MOREFRAGS)) {
+ 		/* Change STA power saving mode only in the end of a frame
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 924c871..1b093af 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -1699,9 +1699,16 @@ static void ieee80211_rx_mgmt_assoc_resp(struct net_device *dev,
+ 		}
+ 		bss = ieee80211_rx_bss_get(dev, ifsta->bssid);
+ 		if (bss) {
++			/* Init signal values from beacon or probe response. */
+ 			sta->last_rssi = bss->rssi;
+ 			sta->last_signal = bss->signal;
+ 			sta->last_noise = bss->noise;
++
++			/* Init averaging filter accumulators to 16x values. */
++			sta->accum_rssi = bss->rssi << 4;
++			sta->accum_signal = bss->signal << 4;
++			sta->accum_noise = bss->noise << 4;
++
+ 			ieee80211_rx_bss_put(dev, bss);
+ 		}
+ 	}
+diff --git a/net/mac80211/sta_info.h b/net/mac80211/sta_info.h
+index 78a50bc..3cb22d0 100644
+--- a/net/mac80211/sta_info.h
++++ b/net/mac80211/sta_info.h
+@@ -125,9 +125,12 @@ struct sta_info {
+ 	unsigned long rx_fragments; /* number of received MPDUs */
+ 	unsigned long rx_dropped; /* number of dropped MPDUs from this STA */
+ 
+-	int last_rssi; /* RSSI of last received frame from this STA */
+-	int last_signal; /* signal of last received frame from this STA */
+-	int last_noise; /* noise of last received frame from this STA */
++	int accum_rssi; /* hi-precision running average (rssi * 16) */
++	int accum_signal; /* hi-precision average (signal-quality * 16) */
++	int accum_noise; /* hi-precision running average (noise * 16) */
++	int last_rssi; /* average RSSI of recent frames from this STA */
++	int last_signal; /* average sig-qual of recent frames from this STA */
++	int last_noise; /* average noise of recent frames from this STA */
+ 	int last_ack_rssi[3]; /* RSSI of last received ACKs from this STA */
+ 	unsigned long last_ack;
+ 	int channel_use;
+-- 
+1.5.2
+

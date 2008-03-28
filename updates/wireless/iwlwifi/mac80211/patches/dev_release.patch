@@ -1,0 +1,57 @@
+Legacy device.h API (dev_uevent, dev_release, dev_attrs)
+
+Mainstream commit id: 
+	2620efef7029bb040430f50f0fc148f2d5e002ad
+Added the API.
+
+diff -upr pre/net/wireless/sysfs.c post/net/wireless/sysfs.c
+--- pre/net/wireless/sysfs.c	2007-03-06 11:54:57.000000000 -0800
++++ post/net/wireless/sysfs.c	2007-03-06 11:54:45.000000000 -0800
+@@ -16,6 +16,7 @@
+ #include "sysfs.h"
+ #include "core.h"
+ 
++#if 0
+ static inline struct cfg80211_registered_device *dev_to_rdev(
+ 	struct device *dev)
+ {
+@@ -89,29 +90,35 @@ static struct device_attribute ieee80211
+ 	__ATTR(remove_iface, S_IWUGO, NULL, _store_remove_iface),
+ 	{}
+ };
++#endif
+ 
+-static void wiphy_dev_release(struct device *dev)
++static void wiphy_dev_release(struct class_device *cdev)
+ {
+-	struct cfg80211_registered_device *rdev = dev_to_rdev(dev);
++	struct cfg80211_registered_device *rdev = container_of(cdev->dev, 
++		struct cfg80211_registered_device, wiphy.dev);
+ 
+ 	cfg80211_dev_free(rdev);
+ }
+ 
+-static int wiphy_uevent(struct device *dev, char **envp,
++#if 0
++static int wiphy_uevent(struct class_device *dev, char **envp,
+ 			int num_envp, char *buf, int size)
+ {
+ 	/* TODO, we probably need stuff here */
+ 	return 0;
+ }
++#endif
+ 
+ struct class ieee80211_class = {
+ 	.name = "ieee80211",
+ 	.owner = THIS_MODULE,
+-	.dev_release = wiphy_dev_release,
++	.release = wiphy_dev_release,
++#if 0
+ 	.dev_attrs = ieee80211_dev_attrs,
+ #ifdef CONFIG_HOTPLUG
+ 	.dev_uevent = wiphy_uevent,
+ #endif
++#endif
+ };
+ 
+ int wiphy_sysfs_init(void)

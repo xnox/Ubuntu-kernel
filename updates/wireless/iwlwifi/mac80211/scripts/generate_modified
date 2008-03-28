@@ -1,0 +1,112 @@
+#!/usr/bin/env /bin/bash
+script=generate_modified
+prog=$0
+[ "${prog/*$script/$script}" = "$script" ] || {
+    echo "This script must not be sourced."
+    return 1
+} || return 1
+
+DEBUG=1
+
+function die() {
+        ret=$1
+        shift
+        echo -e $@ >&2
+	(( DEBUG )) && 
+		echo "If patch or script failed, check pre/ and post/ for current stage." ||
+		echo "Try setting DEBUG=1 to maintain pre/ and post/ staging."
+        exit $ret
+}
+
+SRC=origin
+DST=modified
+
+[ -d $SRC ]  ||
+die 5 "\n$SRC/ tree does not exist.  Run 'make $SRC' to build the\n$SRC directory."
+
+SRC=${SRC/%\/}/
+DST=${DST/%\/}/
+
+[ ! -e $DST ] || {
+    die 1 "$DST already exists.  You must remove it before continuing."
+}
+
+echo "Building modified version in '$DST' directory:"
+
+mkdir $DST
+echo -n "Copying $DST from $SRC..."
+cp -r ${SRC}* $DST || die $? "Copy failed."
+echo "done"
+
+(( DEBUG != 0 )) && rsync --delete -aprl $DST post/ > /dev/null
+
+function do_patch {
+    [ -e "$2" ] ||
+    die 3 "$2 does not exist.  Terminating."
+    echo -ne " + Applying: $2\n\t"
+    cat "$2" | while read command rest; do
+	case $command in
+	    "Commit:" | "Author:" | "")
+		;;
+	    *) echo "$command $rest"
+		break
+		;;
+	esac
+    done
+
+    patch -p1 -d $1 < "$2" > .patch.output || {
+	echo "-----patch failure output-----"
+	cat .patch.output
+	echo ""
+	die 1 "$2 failed.  Terminating."
+    } 
+    [ -e .patch.output ] && rm .patch.output
+    return 0
+}
+
+function do_script {
+    [ -x "$2" ] ||
+    die 3 "$2 does not exist.  Terminating."
+    echo -ne " + Running: $2\n\t"
+    head -n 2 "$2" | tail -n 1 | sed -e 's,^#[[:space:]]*,,g' || 
+    die $? "Terminating."
+
+    $2 $1 || die 1 "$2 failed."
+
+    return 0
+}
+
+echo "Applying patches and scripts from pending/."
+for i in pending/*; do 
+	[ -d $i ] && continue
+    [ ! -e $i ] && break
+    file=${i/%.patch/}.patch
+    [ "$file" == "$i" ] && {
+	(( DEBUG != 0 )) && {
+		[ -d pre ] && rm -rf pre
+		rsync --delete -aprl --exclude "*.orig" --exclude "*.rej" post/ pre/ 
+		do_patch post/ $file
+		continue
+	} 
+	do_patch $DST $file || die 3 "Patch failed."
+	continue
+    }
+
+    file=${i/%.sh/}.sh
+    [ "$file" == "$i" ] && [ -x "$i" ] && {
+	(( DEBUG != 0 )) && {
+		[ -d pre ] && rm -rf pre
+		rsync --delete -aprl --exclude "*.orig" --exclude "*.rej" post/ pre/ 
+		do_script post/ $file
+		continue
+	} 
+	do_script $DST $file
+	continue
+    }
+    echo " ! Skipping $i..."
+done
+
+(( DEBUG )) || exit 0
+
+rsync --delete -avprl post/ $DST > /dev/null && 
+rm -rf pre/ post/

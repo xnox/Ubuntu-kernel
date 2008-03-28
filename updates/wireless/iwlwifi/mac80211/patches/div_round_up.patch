@@ -1,0 +1,13 @@
+diff -upr origin/net/mac80211/ieee80211.c update/net/mac80211/ieee80211.c
+--- origin/net/mac80211/ieee80211.c	2007-06-01 12:39:03.000000000 -0700
++++ update/net/mac80211/ieee80211.c	2007-06-01 13:19:22.000000000 -0700
+@@ -55,6 +55,9 @@ static const unsigned char bridge_tunnel
+ static const unsigned char eapol_header[] =
+ 	{ 0xaa, 0xaa, 0x03, 0x00, 0x00, 0x00, 0x88, 0x8e };
+ 
++#ifndef DIV_ROUND_UP
++#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
++#endif
+ 
+ static inline void ieee80211_include_sequence(struct ieee80211_sub_if_data *sdata,
+ 					      struct ieee80211_hdr *hdr)

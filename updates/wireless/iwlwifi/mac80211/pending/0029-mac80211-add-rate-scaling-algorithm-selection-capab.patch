@@ -1,0 +1,52 @@
+From 0f936737d9f8cc3a8886f4590c73b20918df213c Mon Sep 17 00:00:00 2001
+From: Tomas Winkler <tomas.winkler@intel.com>
+Date: Wed, 22 Aug 2007 17:13:13 +0800
+Subject: [PATCH] mac80211: add rate scaling algorithm selection capability
+
+This patch adds rate scaling selection capability.
+
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ include/net/mac80211.h   |    3 +++
+ net/mac80211/ieee80211.c |    9 ++++++---
+ 2 files changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index 8ca4a0f..12810b0 100644
+--- a/include/net/mac80211.h
++++ b/include/net/mac80211.h
+@@ -547,6 +547,9 @@ struct ieee80211_hw {
+ 	/* Number of available hardware TX queues for data packets.
+ 	 * WMM requires at least four queues. */
+ 	int queues;
++	/* Preferred rate control algorithm. Leave as NULL for stack
++	* to select algorithm */
++	char *preferred_rate_control;
+ };
+ 
+ static inline void SET_IEEE80211_DEV(struct ieee80211_hw *hw, struct device *dev)
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index 63a1347..b11b945 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -5314,10 +5314,13 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
+ 
+ 	ieee80211_debugfs_add_netdev(IEEE80211_DEV_TO_SUB_IF(local->mdev));
+ 
+-	result = ieee80211_init_rate_ctrl_alg(local, NULL);
++	result = ieee80211_init_rate_ctrl_alg(local,
++				hw->preferred_rate_control);
+ 	if (result < 0) {
+-		printk(KERN_DEBUG "%s: Failed to initialize rate control "
+-		       "algorithm\n", local->mdev->name);
++		printk(KERN_DEBUG "%s: Failed to initialize %s rate control "
++			"algorithm\n", local->mdev->name,
++			hw->preferred_rate_control ?
++			hw->preferred_rate_control : "default");
+ 		goto fail_rate;
+ 	}
+ 
+-- 
+1.5.2
+

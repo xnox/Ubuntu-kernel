@@ -1,0 +1,46 @@
+Index: compatible/net/mac80211/ieee80211_ioctl.c
+===================================================================
+--- compatible.orig/net/mac80211/ieee80211_ioctl.c	2008-01-06 12:07:06.000000000 +0200
++++ compatible/net/mac80211/ieee80211_ioctl.c	2008-01-06 12:08:57.000000000 +0200
+@@ -693,6 +693,7 @@
+ 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+ 	u8 *ssid = NULL;
+ 	size_t ssid_len = 0;
++	struct iw_scan_req* scan = (struct iw_scan_req*) extra;
+ 
+ 	if (!netif_running(dev))
+ 		return -ENETDOWN;
+@@ -700,9 +701,16 @@
+ 	switch (sdata->type) {
+ 	case IEEE80211_IF_TYPE_STA:
+ 	case IEEE80211_IF_TYPE_IBSS:
+-		if (local->scan_flags & IEEE80211_SCAN_MATCH_SSID) {
++		if (data->flags & IW_SCAN_THIS_ESSID) {
++			ssid = scan->essid;
++			ssid_len = scan->essid_len;
++			local->scan_ssid_len = ssid_len;
++			memcpy(local->scan_ssid, ssid, ssid_len);
++		} else if (local->scan_flags & IEEE80211_SCAN_MATCH_SSID) {
+ 			ssid = sdata->u.sta.ssid;
+ 			ssid_len = sdata->u.sta.ssid_len;
++			local->scan_ssid_len = ssid_len;
++			memcpy(local->scan_ssid, ssid, ssid_len);
+ 		}
+ 		break;
+ 	case IEEE80211_IF_TYPE_AP:
+Index: compatible/net/mac80211/ieee80211_sta.c
+===================================================================
+--- compatible.orig/net/mac80211/ieee80211_sta.c	2008-01-06 12:08:42.000000000 +0200
++++ compatible/net/mac80211/ieee80211_sta.c	2008-01-06 12:08:57.000000000 +0200
+@@ -3552,7 +3552,10 @@
+ 	if (ifsta->state != IEEE80211_AUTHENTICATE &&
+ 	    ifsta->state != IEEE80211_ASSOCIATE &&
+ 	    test_and_clear_bit(IEEE80211_STA_REQ_SCAN, &ifsta->request)) {
+-		ieee80211_sta_start_scan(dev, NULL, 0);
++		if (local->scan_ssid_len)
++			ieee80211_sta_start_scan(dev, local->scan_ssid, local->scan_ssid_len);
++		else
++			ieee80211_sta_start_scan(dev, NULL, 0);
+ 		return;
+ 	}
+ 

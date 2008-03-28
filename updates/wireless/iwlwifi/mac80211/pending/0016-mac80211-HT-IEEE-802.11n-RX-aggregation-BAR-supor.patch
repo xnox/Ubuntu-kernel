@@ -1,0 +1,45 @@
+From e410f6580a9462480cbf3a8f3ecc601e1d8b5fb5 Mon Sep 17 00:00:00 2001
+From: Tomas Winkler <tomas.winkler@intel.com>
+Date: Sat, 30 Jun 2007 08:12:42 +0800
+Subject: [PATCH] mac80211: [HT] IEEE 802.11n RX aggregation BAR suport
+
+This patch adds struct corresponding to block ack request
+and related STYPE constants.
+
+Signed-off-by: Tomas Winkler <tomas.winkler@intel.com>
+Signed-off-by: Zhu Yi <yi.zhu@intel.com>
+---
+ include/linux/ieee80211.h |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/ieee80211.h b/include/linux/ieee80211.h
+index 5bd9672..6315399 100644
+--- a/include/linux/ieee80211.h
++++ b/include/linux/ieee80211.h
+@@ -53,6 +53,8 @@
+ #define IEEE80211_STYPE_ACTION		0x00D0
+ 
+ /* control */
++#define IEEE80211_STYPE_BACK_REQ	0x0080
++#define IEEE80211_STYPE_BACK		0x0090
+ #define IEEE80211_STYPE_PSPOLL		0x00A0
+ #define IEEE80211_STYPE_RTS		0x00B0
+ #define IEEE80211_STYPE_CTS		0x00C0
+@@ -174,6 +176,14 @@ struct ieee80211_elem_tspec {
+ 	__le16 medium_time;
+ } __attribute__ ((packed));
+ 
++struct ieee80211_bar {
++	__le16 frame_control;
++	__le16 duration;
++	__u8 ra[6];
++	__u8 ta[6];
++	__u16 control;
++	__u16 start_seq_num;
++} __attribute__((packed));
+ 
+ struct ieee80211_mgmt {
+ 	__le16 frame_control;
+-- 
+1.5.2
+
