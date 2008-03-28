@@ -23,6 +23,13 @@ obj-$(CONFIG_NDISWRAPPER)	+= misc/ndiswrapper/
 obj-$(CONFIG_MOL)		+= misc/mol/
 
 snd-bt-sco-objs			:= misc/btsco.o
+#
+# The btsco driver should ultimately be incorportated into the ALSA tree
+# or deprecated. At the moment, we need to force the following build options to 
+# make sure that struct snd_pcm_str in pcm.h is in sync with the ALSA build configs.
+#
+CFLAGS_btsco.o += -I$(src)/sound/alsa-driver/include -DCONFIG_SND_VERBOSE_PROCFS -DCONFIG_SND_PCM_OSS_MODULE
+
 CFLAGS_dm-bbr.o			+= -I$(srctree)/drivers/md
 
 obj-$(CONFIG_ASFS_FS)		+= fs/asfs/
