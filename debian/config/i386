@@ -1,5 +1,5 @@
 # Ubuntu config
 
+ifeq ($(filter virtual,$(UBUNTU_FLAVOUR)),)
 CONFIG_IWLWIFI=m
-ifneq ($(filter 386 generic rt,$(UBUNTU_FLAVOUR)),)
 endif
