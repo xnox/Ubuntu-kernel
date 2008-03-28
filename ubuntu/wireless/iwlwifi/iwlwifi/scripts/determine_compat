@@ -140,9 +140,9 @@ echo "   - Requires WLAN_80211 compat in Kconfig"
 (( !$has_csa_conf )) && 
 echo "   - Requires IEEE80211_CONF_CHANNEL_SWITCH compat."
 (( !$has_mac80211_ht )) && 
-echo "   - Remove CONFIG_IWL4965_HT option if defined"
+echo "   - Remove CONFIG_IWLWIFI_HT option if defined"
 (( !$has_mac80211_ht_agg )) && 
-echo "   - Remove CONFIG_IWL4965_HT_AGG option if defined"
+echo "   - Remove CONFIG_IWLWIFI_HT_AGG option if defined"
 (( !$has_hex_dump )) && 
 echo "   - Requires hex_dump compat"
 (( !$has_cancel_work_sync )) && 

@@ -2698,6 +2698,8 @@ static int ieee80211_open(struct net_device *dev)
 
 	if (local->open_count == 0) {
 		res = 0;
+		tasklet_enable(&local->tx_pending_tasklet);
+		tasklet_enable(&local->tasklet);
 		if (local->ops->open)
 			res = local->ops->open(local_to_hw(local));
 		if (res == 0) {
@@ -2719,9 +2721,6 @@ static int ieee80211_open(struct net_device *dev)
 							    &conf);
 			return res;
 		}
-		/* enable tasklets only if all callbacks return correctly */
-		tasklet_enable(&local->tx_pending_tasklet);
-		tasklet_enable(&local->tasklet);
 	}
 	local->open_count++;
 

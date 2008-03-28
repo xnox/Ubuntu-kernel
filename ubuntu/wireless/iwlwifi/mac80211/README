@@ -1,8 +1,8 @@
 README for external mac80211 subsystem package
 Copyright (c) 2007, Intel Corporation
 
-version: mac80211-10.0.4
-date   : Mon Jan  7 18:42:07 PST 2008
+version: mac80211-10.0.2
+date   : Wed Nov 21 13:37:18 CST 2007
 
 
 This archive provides a package for the mac80211 subsystem, 

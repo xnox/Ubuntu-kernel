@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 if [ $# == 0 ]; then
 	[ -e "/sys/bus/pci/drivers/iwl3945/debug_level" ] && MODULE=iwl3945
 	[ -e "/sys/bus/pci/drivers/iwl4965/debug_level" ] && MODULE=iwl4965

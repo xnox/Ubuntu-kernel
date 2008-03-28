@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Copyright (C) 2004-2005 Intel Corporation
 module="iwl3945 iwl4965"
 function check_root()

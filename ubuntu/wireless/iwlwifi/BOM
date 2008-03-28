@@ -4,15 +4,15 @@
 # only need to do this when you are updating from one version
 # if iwlwifi to the next.
 #
-IVER=1.2.25
-MVER=10.0.4
+IVER=1.2.0
+MVER=10.0.2
 FW3945_VER=2.14.1.5
-FW4965_VER=4.44.1.20
+FW4965_VER=4.44.1.18
 
 if [ ! -f iwlwifi-${IVER}.tgz ] ; then wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-${IVER}.tgz; fi
 if [ ! -f mac80211-${MVER}.tgz ] ; then wget http://intellinuxwireless.org/mac80211/downloads/mac80211-${MVER}.tgz; fi
-if [ ! -f iwlwifi-3945-ucode-${FW3945_VER}.tgz ] ; then wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-3945-ucode-${FW3945_VER}.tgz; fi
-if [ ! -f iwlwifi-4965-ucode-${FW4965_VER}.tgz ] ; then wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-4965-ucode-${FW4965_VER}.tgz; fi
+#if [ ! -f iwlwifi-3945-ucode-${FW3945_VER}.tgz ] ; then wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-3945-ucode-${FW3945_VER}.tgz; fi
+#if [ ! -f iwlwifi-4965-ucode-${FW4965_VER}.tgz ] ; then wget http://intellinuxwireless.org/iwlwifi/downloads/iwlwifi-4965-ucode-${FW4965_VER}.tgz; fi
 
 #
 # Untar and normalize the directory names.

@@ -1,18 +1,3 @@
-Changes in 10.0.4
-
-* mac80211: Fix skb allocation size in ieee80211_send_probe_req
-* mac80211: Fix wrong memset after reordering buffer allocation
-
-Changes in 10.0.3
-
-* mac80211: add patch 0098 to fix mac80211 tasklet_enable bug
-* mac80211: add has_debugfs_symlink compatability patch
-* mac80211: fix checking for pfifo_scd compatability for 2.6.19 kernel
-
-Changes in 10.0.2
-
-* add patches for hw_scan and WPA reassoc workaround
-
 Changes in 10.0.1
 
 * mac80211: add two patches for pending/

@@ -1,8 +1,7 @@
-Index: compatible/net/mac80211/ieee80211.c
-===================================================================
---- compatible.orig/net/mac80211/ieee80211.c	2008-01-06 12:08:49.000000000 +0200
-+++ compatible/net/mac80211/ieee80211.c	2008-01-06 12:09:02.000000000 +0200
-@@ -947,7 +947,7 @@
+diff -urp mac80211/ieee80211.c /home/chuyee/mac80211/ieee80211.c
+--- a/net/mac80211/ieee80211.c	2007-11-15 22:35:13.000000000 +0800
++++ b/net/mac80211/ieee80211.c	2007-11-15 22:40:11.000000000 +0800
+@@ -947,7 +947,7 @@ ieee80211_tx_h_check_assoc(struct ieee80
  #endif /* CONFIG_MAC80211_VERBOSE_DEBUG */
  	u32 sta_flags;
  
@@ -11,7 +10,7 @@ Index: compatible/net/mac80211/ieee80211.c
  	    ((tx->fc & IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_MGMT ||
  	     (tx->fc & IEEE80211_FCTL_STYPE) != IEEE80211_STYPE_PROBE_REQ))
  		return TXRX_DROP;
-@@ -2328,8 +2328,7 @@
+@@ -2328,8 +2328,7 @@ static int __ieee80211_if_config(struct 
  	conf.type = sdata->type;
  	if (sdata->type == IEEE80211_IF_TYPE_STA ||
  	    sdata->type == IEEE80211_IF_TYPE_IBSS) {
@@ -21,7 +20,7 @@ Index: compatible/net/mac80211/ieee80211.c
  			conf.bssid = scan_bssid;
  		else
  			conf.bssid = sdata->u.sta.bssid;
-@@ -2374,7 +2373,7 @@
+@@ -2374,7 +2373,7 @@ int ieee80211_hw_config(struct ieee80211
  	struct ieee80211_channel *chan;
  	int ret = 0;
  
@@ -30,7 +29,7 @@ Index: compatible/net/mac80211/ieee80211.c
  		chan = local->scan_channel;
  		mode = local->scan_hw_mode;
  	} else {
-@@ -2549,7 +2548,7 @@
+@@ -2549,7 +2548,7 @@ static void ieee80211_if_shutdown(struct
  		skb_queue_purge(&sdata->u.sta.skb_queue);
  		if (!local->ops->hw_scan &&
  		    local->scan_dev == sdata->dev) {
@@ -39,7 +38,7 @@ Index: compatible/net/mac80211/ieee80211.c
  			cancel_delayed_work(&local->scan_work);
  		}
  		flush_workqueue(local->hw.workqueue);
-@@ -4152,8 +4151,14 @@
+@@ -4152,8 +4151,14 @@ ieee80211_rx_h_passive_scan(struct ieee8
  	struct ieee80211_local *local = rx->local;
  	struct sk_buff *skb = rx->skb;
  
@@ -56,7 +55,7 @@ Index: compatible/net/mac80211/ieee80211.c
  		return TXRX_QUEUED;
  	}
  
-@@ -4346,7 +4351,7 @@
+@@ -4346,7 +4351,7 @@ void __ieee80211_rx(struct ieee80211_hw 
  		goto end;
  	}
  
@@ -65,11 +64,10 @@ Index: compatible/net/mac80211/ieee80211.c
  		rx.u.rx.in_scan = 1;
  
  	if (__ieee80211_invoke_rx_handlers(local, local->rx_pre_handlers, &rx,
-Index: compatible/net/mac80211/ieee80211_i.h
-===================================================================
---- compatible.orig/net/mac80211/ieee80211_i.h	2008-01-06 12:07:06.000000000 +0200
-+++ compatible/net/mac80211/ieee80211_i.h	2008-01-06 12:09:02.000000000 +0200
-@@ -541,7 +541,8 @@
+diff -urp mac80211/ieee80211_i.h /home/chuyee/mac80211/ieee80211_i.h
+--- a/mac80211/ieee80211_i.h	2007-11-15 22:35:13.000000000 +0800
++++ b/net/mac80211/ieee80211_i.h	2007-11-15 19:04:04.000000000 +0800
+@@ -541,7 +541,8 @@ struct ieee80211_local {
  	rwlock_t sub_if_lock; /* Protects sub_if_list. Cannot be taken under
  			       * sta_bss_lock or sta_lock. */
  	struct list_head sub_if_list;
@@ -79,7 +77,7 @@ Index: compatible/net/mac80211/ieee80211_i.h
  	int scan_channel_idx;
  	enum { SCAN_SET_CHANNEL, SCAN_SEND_PROBE } scan_state;
  	unsigned long last_scan_completed;
-@@ -856,7 +857,8 @@
+@@ -856,7 +857,8 @@ int ieee80211_sta_req_scan(struct net_de
  void ieee80211_sta_req_auth(struct net_device *dev,
  			    struct ieee80211_if_sta *ifsta);
  int ieee80211_sta_scan_results(struct net_device *dev, char *buf, size_t len);
@@ -89,11 +87,10 @@ Index: compatible/net/mac80211/ieee80211_i.h
  			   struct ieee80211_rx_status *rx_status);
  void ieee80211_rx_bss_list_init(struct net_device *dev);
  void ieee80211_rx_bss_list_deinit(struct net_device *dev);
-Index: compatible/net/mac80211/ieee80211_ioctl.c
-===================================================================
---- compatible.orig/net/mac80211/ieee80211_ioctl.c	2008-01-06 12:08:57.000000000 +0200
-+++ compatible/net/mac80211/ieee80211_ioctl.c	2008-01-06 12:09:02.000000000 +0200
-@@ -493,7 +493,7 @@
+diff -urp mac80211/ieee80211_ioctl.c /home/chuyee/mac80211/ieee80211_ioctl.c
+--- a/mac80211/ieee80211_ioctl.c	2007-11-15 22:35:13.000000000 +0800
++++ b/net/mac80211/ieee80211_ioctl.c	2007-11-15 19:04:04.000000000 +0800
+@@ -493,7 +493,7 @@ int ieee80211_set_channel(struct ieee802
  	}
  
  	if (set) {
@@ -102,7 +99,7 @@ Index: compatible/net/mac80211/ieee80211_ioctl.c
  			ret = 0;
  		else
  			ret = ieee80211_hw_config(local);
-@@ -733,7 +733,7 @@
+@@ -733,7 +733,7 @@ static int ieee80211_ioctl_giwscan(struc
  {
  	int res;
  	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
@@ -111,11 +108,10 @@ Index: compatible/net/mac80211/ieee80211_ioctl.c
  		return -EAGAIN;
  	res = ieee80211_sta_scan_results(dev, extra, data->length);
  	if (res >= 0) {
-Index: compatible/net/mac80211/ieee80211_sta.c
-===================================================================
---- compatible.orig/net/mac80211/ieee80211_sta.c	2008-01-06 12:08:57.000000000 +0200
-+++ compatible/net/mac80211/ieee80211_sta.c	2008-01-06 12:09:02.000000000 +0200
-@@ -1893,7 +1893,7 @@
+diff -urp mac80211/ieee80211_sta.c /home/chuyee/mac80211/ieee80211_sta.c
+--- a/mac80211/ieee80211_sta.c	2007-11-15 22:35:13.000000000 +0800
++++ b/net/mac80211/ieee80211_sta.c	2007-11-15 22:31:59.000000000 +0800
+@@ -1893,7 +1893,7 @@ static void sta_process_dls_req(struct n
  		printk(KERN_ERR "DLS Parse support rates failed.\n");
  		return;
  	}
@@ -124,7 +120,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  	       local->scan_hw_mode : local->oper_hw_mode;
  	rates = mode->rates;
  	num_rates = mode->num_rates;
-@@ -1967,7 +1967,7 @@
+@@ -1967,7 +1967,7 @@ static void sta_process_dls_resp(struct 
  		printk(KERN_ERR "DLS Parse support rates failed.\n");
  		return;
  	}
@@ -133,7 +129,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  	       local->scan_hw_mode : local->oper_hw_mode;
  	rates = mode->rates;
  	num_rates = mode->num_rates;
-@@ -2201,7 +2201,7 @@
+@@ -2201,7 +2201,7 @@ static void ieee80211_rx_bss_info(struct
  		u32 supp_rates, prev_rates;
  		int i, j;
  
@@ -142,7 +138,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  		       local->scan_hw_mode : local->oper_hw_mode;
  		rates = mode->rates;
  		num_rates = mode->num_rates;
-@@ -3412,16 +3412,15 @@
+@@ -3408,16 +3408,15 @@ static void ieee80211_sta_rx_queued_mgmt
  }
  
  
@@ -164,7 +160,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  
  	mgmt = (struct ieee80211_mgmt *) skb->data;
  	fc = le16_to_cpu(mgmt->frame_control);
-@@ -3430,13 +3429,16 @@
+@@ -3426,13 +3425,16 @@ void ieee80211_sta_rx_scan(struct net_de
  		if ((fc & IEEE80211_FCTL_STYPE) == IEEE80211_STYPE_PROBE_RESP) {
  			ieee80211_rx_mgmt_probe_resp(dev, mgmt,
  						     skb->len, rx_status);
@@ -183,7 +179,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  }
  
  
-@@ -3535,7 +3537,7 @@
+@@ -3531,7 +3533,7 @@ void ieee80211_sta_work(struct work_stru
  	if (!netif_running(dev))
  		return;
  
@@ -192,7 +188,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  		return;
  
  	if (sdata->type != IEEE80211_IF_TYPE_STA &&
-@@ -4226,7 +4228,8 @@
+@@ -4222,7 +4224,8 @@ void ieee80211_scan_completed(struct iee
  
  	local->last_scan_completed = jiffies;
  	wmb();
@@ -202,7 +198,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  
  	if (ieee80211_hw_config(local))
  		printk(KERN_DEBUG "%s: failed to restore operational"
-@@ -4279,7 +4282,7 @@
+@@ -4275,7 +4278,7 @@ void ieee80211_sta_scan_work(struct work
  	int skip;
  	unsigned long next_delay = 0;
  
@@ -211,7 +207,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  		return;
  
  	switch (local->scan_state) {
-@@ -4342,7 +4345,7 @@
+@@ -4338,7 +4341,7 @@ void ieee80211_sta_scan_work(struct work
  		break;
  	}
  
@@ -220,7 +216,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  		queue_delayed_work(local->hw.workqueue, &local->scan_work,
  				   next_delay);
  }
-@@ -4374,7 +4377,7 @@
+@@ -4370,7 +4373,7 @@ static int ieee80211_sta_start_scan(stru
  	  * ResultCode: SUCCESS, INVALID_PARAMETERS
  	 */
  
@@ -229,7 +225,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  		if (local->scan_dev == dev)
  			return 0;
  		return -EBUSY;
-@@ -4384,13 +4387,13 @@
+@@ -4380,13 +4383,13 @@ static int ieee80211_sta_start_scan(stru
  		int rc = local->ops->hw_scan(local_to_hw(local),
  					    ssid, ssid_len);
  		if (!rc) {
@@ -245,7 +241,7 @@ Index: compatible/net/mac80211/ieee80211_sta.c
  
  	read_lock(&local->sub_if_lock);
  	list_for_each_entry(sdata, &local->sub_if_list, list) {
-@@ -4441,11 +4444,11 @@
+@@ -4437,11 +4440,11 @@ int ieee80211_sta_req_scan(struct net_de
  	if (sdata->type != IEEE80211_IF_TYPE_STA)
  		return ieee80211_sta_start_scan(dev, ssid, ssid_len);
  

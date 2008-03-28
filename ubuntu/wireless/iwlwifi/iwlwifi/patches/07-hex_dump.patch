@@ -41,13 +41,13 @@ diff -urp origin/iwl3945-base.c new/iwl3945-base.c
 +	return out;
 +}
 +
-+#ifdef CONFIG_IWL3945_DEBUG
++#ifdef CONFIG_IWLWIFI_DEBUG
 +static inline void printk_buf(int level, const void *p, u32 len)
 +{
 +	const u8 *data = p;
 +	char line[81];
 +	u32 ofs = 0;
-+	if (!(iwl3945_debug_level & level))
++	if (!(iwl_debug_level & level))
 +		return;
 +
 +	while (len) {
@@ -70,9 +70,9 @@ diff -urp origin/iwl3945-base.c new/iwl3945-base.c
 +
 +#endif /* hex_dump_to_buffer */
 +
- static void iwl3945_print_hex_dump(int level, void *p, u32 len)
+ static void iwl_print_hex_dump(int level, void *p, u32 len)
  {
- #ifdef CONFIG_IWL3945_DEBUG
+ #ifdef CONFIG_IWLWIFI_DEBUG
 diff -urp origin/iwl4965-base.c new/iwl4965-base.c
 --- origin/iwl4965-base.c	2007-09-03 14:32:35.000000000 +0800
 +++ new/iwl4965-base.c	2007-09-04 11:10:11.000000000 +0800
@@ -116,13 +116,13 @@ diff -urp origin/iwl4965-base.c new/iwl4965-base.c
 +	return out;
 +}
 +
-+#ifdef CONFIG_IWL4965_DEBUG
++#ifdef CONFIG_IWLWIFI_DEBUG
 +static inline void printk_buf(int level, const void *p, u32 len)
 +{
 +	const u8 *data = p;
 +	char line[81];
 +	u32 ofs = 0;
-+	if (!(iwl4965_debug_level & level))
++	if (!(iwl_debug_level & level))
 +		return;
 +
 +	while (len) {
@@ -145,6 +145,6 @@ diff -urp origin/iwl4965-base.c new/iwl4965-base.c
 +
 +#endif /* hex_dump_to_buffer */
 +
- static void iwl4965_print_hex_dump(int level, void *p, u32 len)
+ static void iwl_print_hex_dump(int level, void *p, u32 len)
  {
- #ifdef CONFIG_IWL4965_DEBUG
+ #ifdef CONFIG_IWLWIFI_DEBUG

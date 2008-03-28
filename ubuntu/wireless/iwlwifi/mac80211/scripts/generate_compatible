@@ -115,11 +115,6 @@ function do_script {
     die $? "Failure creating block cipher compatibility."
 }
 
-(( !$has_debugfs_symlink )) && {
-    do_patch debugfs_create_symlink.patch ||
-    die $? "Failure creating debugfs symlink compatibility."
-}
-
 (( !$has_ieee80211_ptr )) && {
     do_patch ieee80211_ptr.patch ||
     die $? "Failure creating ieee80211_ptr compatibility."

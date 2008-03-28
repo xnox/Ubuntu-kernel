@@ -9,8 +9,8 @@ Copyright (C) 2005 - 2007, Intel Corporation
 
 ISSUES
 
-Version: 1.2.25
-Date   : February 04, 2008
+Version: 1.2.0
+Date   : November 21, 2007
 ------------------------------
 
 The following are the most common issues reported by users at the time of
@@ -21,15 +21,17 @@ number referenced.
 
 Problems summarized below:
 
-1. Randomly association timeout
+1. Transfer large file stalls on some 11N AP (i.e. D-LINK DIR-635 model)
 
 Issue summaries:
 
-1. Randomly association timeout (Bug #1304)
+1. Transfer large file stalls on some 11N AP
 
-Sometimes when associating with AP, the driver might fail with
-association timeout error in dmesg. This is a random issue and
-usually can be recoved by retrying the association process again.
+We observed transfer stall issue when copy large files (~2G) between
+STAs with the driver. This only happens with some 11N APs (N only mode),
+for example D-LINK DIR-635 model. The connection will probably be
+reestablished afterward. So ping(1) still works but the transfer
+process stalls.
 
 
 ------------------------------

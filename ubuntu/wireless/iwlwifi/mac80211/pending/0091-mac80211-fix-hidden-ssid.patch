@@ -1,8 +1,8 @@
-Index: compatible/net/mac80211/ieee80211_ioctl.c
-===================================================================
---- compatible.orig/net/mac80211/ieee80211_ioctl.c	2008-01-06 12:07:06.000000000 +0200
-+++ compatible/net/mac80211/ieee80211_ioctl.c	2008-01-06 12:08:57.000000000 +0200
-@@ -693,6 +693,7 @@
+diff --git a/net/mac80211/ieee80211_ioctl.c b/net/mac80211/ieee80211_ioctl.c
+index e7904db..3320f12 100644
+--- a/net/mac80211/ieee80211_ioctl.c
++++ b/net/mac80211/ieee80211_ioctl.c
+@@ -693,6 +693,7 @@ static int ieee80211_ioctl_siwscan(struc
  	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
  	u8 *ssid = NULL;
  	size_t ssid_len = 0;
@@ -10,7 +10,7 @@ Index: compatible/net/mac80211/ieee80211_ioctl.c
  
  	if (!netif_running(dev))
  		return -ENETDOWN;
-@@ -700,9 +701,16 @@
+@@ -700,9 +701,16 @@ static int ieee80211_ioctl_siwscan(struc
  	switch (sdata->type) {
  	case IEEE80211_IF_TYPE_STA:
  	case IEEE80211_IF_TYPE_IBSS:
@@ -28,11 +28,11 @@ Index: compatible/net/mac80211/ieee80211_ioctl.c
  		}
  		break;
  	case IEEE80211_IF_TYPE_AP:
-Index: compatible/net/mac80211/ieee80211_sta.c
-===================================================================
---- compatible.orig/net/mac80211/ieee80211_sta.c	2008-01-06 12:08:42.000000000 +0200
-+++ compatible/net/mac80211/ieee80211_sta.c	2008-01-06 12:08:57.000000000 +0200
-@@ -3552,7 +3552,10 @@
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 0d99b68..7c7be49 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -1978,7 +1978,10 @@ void ieee80211_sta_work(struct work_stru
  	if (ifsta->state != IEEE80211_AUTHENTICATE &&
  	    ifsta->state != IEEE80211_ASSOCIATE &&
  	    test_and_clear_bit(IEEE80211_STA_REQ_SCAN, &ifsta->request)) {

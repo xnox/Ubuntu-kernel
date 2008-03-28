@@ -7,8 +7,6 @@ PROJECT="iwlwifi"
 DOCUMENTATION="README.${PROJECT} INSTALL ISSUES"
 unset VERSION
 unset SNAPSHOT
-unset DIFF
-unset COMMIT
 
 commit=1
 unset ignore_uncommitted
@@ -24,22 +22,6 @@ options:
     --leave-staging
 EOF
     return 1
-}
-
-function set_diff_commit()
-{
-
-    DIFF=`which cg-diff`
-    if [ ! -x "$DIFF" ]; then
-	    DIFF=git-diff
-    fi
-
-    COMMIT=`which cg-commit`
-    if [ ! -x "$COMMIT" ]; then
-	    COMMIT="git-commit -a"
-    fi
-
-    echo "Using DIFF=$DIFF, COMMIT=$COMMIT"
 }
 
 function check_args()
@@ -87,8 +69,6 @@ function check_args()
 
     SNAPSHOT="${PROJECT}-${VERSION}"
 
-    set_diff_commit
-
     return 0
 }
 
@@ -106,13 +86,13 @@ function update_version_stamp()
 	# 4965
 	sed -i -e "s#$ver \"[^\"]*\"#$ver \"${1}k\"#g" \
 	    origin/iwl4965-base.c || return 3
-	$DIFF origin/iwl4965-base.c > /dev/null
+	cg-diff origin/iwl4965-base.c > /dev/null
 	# 3945
 	sed -i -e "s#$ver \"[^\"]*\"#$ver \"${1}k\"#g" \
 	    origin/iwl3945-base.c || return 3
-	$DIFF origin/iwl3945-base.c > /dev/null
+	cg-diff origin/iwl3945-base.c > /dev/null
 	if [ "$(git-diff-files origin/iwl4965-base.c)" -a "$(git-diff-files origin/iwl3945-base.c)" ]; then
-	    $COMMIT -s -m"iwlwifi: Update iwlwifi version stamp to ${1}" \
+	    cg-commit -s -m"iwlwifi: Update iwlwifi version stamp to ${1}" \
 		origin/iwl4965-base.c origin/iwl3945-base.c || return 4
 	fi
     fi
@@ -126,14 +106,14 @@ function update_documentation()
 	VERSION="$1" . stubs/${i} > ${i}
     done
 
-    $DIFF ${DOCUMENTATION} > /dev/null
+    cg-diff ${DOCUMENTATION} > /dev/null
     changed=$(git-diff-files -q ${DOCUMENTATION} | 
 	while read mode_old mode_new sha1_old sha1_new mode file; do
 	    echo $file
 	    done)
 
     if [ "$changed" ] && [ "$commit" ]; then
-	$COMMIT -s -m"Committing collateral updates to ${1}" $changed ||
+	cg-commit -s -m"Committing collateral updates to ${1}" $changed ||
 	return 8
     fi
 
@@ -153,7 +133,7 @@ function build()
 {
     files=$(grep -r "^[^/[:space:]]" FILES | sed -e "s:\([^ \t]*\).*:\1:g")
     # Ensure that iwlwifi repository has been updated with any changes.
-    $DIFF $files > /dev/null
+    cg-diff $files > /dev/null
     changed=$(git-diff-files -q $files | 
 	while read mode_old mode_new sha1_old sha1_new mode file; do
 	    echo $file
@@ -184,16 +164,16 @@ directory.
 
 To see the current differences you can run:
 
-	% $DIFF $doc_changed
+	% cg-diff $doc_changed
 
 You can try to automatically apply the patches via:
 
-	% $DIFF $doc_changed | patch -p1 -d snapshot
+	% cg-diff $doc_changed | patch -p1 -d snapshot
 
 If that succeeds, you can revert the files in the currenct directory 
 via:
 
-	% $DIFF $doc_changed | patch -p1 -R
+	% cg-diff $doc_changed | patch -p1 -R
 
 Once you do the above, after creating a new snapshot you should check 
 the regenerated contents of the files.
@@ -259,7 +239,7 @@ function make_snapshot()
 
 	unset doc_updated
 	files=$(grep -r "^[^/ \t]" FILES | sed -e "s:\([^ \t]*\).*:\1:g")
-	$DIFF $files > /dev/null
+	cg-diff $files > /dev/null
 	changed=$(git-diff-files -q $files | 
 	    while read mode_old mode_new sha1_old sha1_new mode file; do
 		if [ "${DOCUMENTATION//${file}}" == "${DOCUMENTATION}" ]; then
@@ -284,7 +264,7 @@ EOF
 
 	[ "$doc_updated" ] && {
 	    echo "Comitting snapshot as ${SNAPSHOT}."
-	    $COMMIT -s -m"Auto-commit and tag as ${SNAPSHOT}." $changed || 
+	    cg-commit -s -m"Auto-commit and tag as ${SNAPSHOT}." $changed || 
 	    return 10
 	}
 

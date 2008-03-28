@@ -2531,11 +2531,9 @@ void ieee80211_send_addba_resp(struct net_device *dev, u8 *da, u16 tid,
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
 	struct sk_buff *skb;
 	struct ieee80211_mgmt *mgmt;
-	u16 capab;
+	u16 capab=0;
 
-	skb = dev_alloc_skb(sizeof(*mgmt) + local->hw.extra_tx_headroom +
-			    sizeof(mgmt->u.action.category) +
-			    sizeof(mgmt->u.action.u.addba_resp));
+	skb = dev_alloc_skb(sizeof(*mgmt) + local->hw.extra_tx_headroom);
 	if (!skb) {
 		printk(KERN_DEBUG "%s: failed to allocate buffer "
 		       "for addba resp frame\n", dev->name);
@@ -2554,13 +2552,12 @@ void ieee80211_send_addba_resp(struct net_device *dev, u8 *da, u16 tid,
 	mgmt->frame_control = IEEE80211_FC(IEEE80211_FTYPE_MGMT,
 					   IEEE80211_STYPE_ACTION);
 
-	skb_put(skb, sizeof(mgmt->u.action.category) +
-		sizeof(mgmt->u.action.u.addba_resp));
+	skb_put(skb, 1 + sizeof(mgmt->u.action.u.addba_resp));
 	mgmt->u.action.category = WLAN_CATEGORY_BACK;
 	mgmt->u.action.u.addba_resp.action_code = WLAN_ACTION_ADDBA_RESP;
 	mgmt->u.action.u.addba_resp.dialog_token = dialog_token;
 
-	capab = (u16)(policy << 1);		/* bit 1 aggregation policy (1 - immediate 0 - delayed )*/
+	capab |= (u16)(policy << 1);		/* bit 1 aggregation policy (1 - immediate 0 - delayed )*/
 	capab |= (u16)(tid << 2); 			/* bit 5:2 TID number */
 	capab |= (u16)(buf_size << 6);		/* bit 15:6 max size of aggergation */
 
@@ -2698,7 +2695,9 @@ static void ieee80211_sta_process_addba_request(struct net_device *dev,
  	/* prepare reordering buffer */
 	spin_lock_bh(&sta->ht_ba_mlme.agg_data_lock_rx);
 	sta->ht_ba_mlme.tid_agg_info_rx[tid].reordering_buf =
-			kzalloc(buf_size * sizeof(struct sk_buf *), GFP_ATOMIC);
+					kmalloc(buf_size * sizeof(struct sk_buf*), GFP_ATOMIC);
+	memset(sta->ht_ba_mlme.tid_agg_info_rx[tid].reordering_buf,0,
+			buf_size * sizeof(struct ieee80211_txre_data*));
 	spin_unlock_bh(&sta->ht_ba_mlme.agg_data_lock_rx);
 	if (!sta->ht_ba_mlme.tid_agg_info_rx[tid].reordering_buf) {
 		printk (KERN_ERR "can not allocate reordering buffer to tid %u\n",tid);
@@ -2757,11 +2756,11 @@ void ieee80211_send_addba_request(struct net_device *dev, u8 *da, u16 tid,
 	struct ieee80211_if_sta *ifsta = &sdata->u.sta;
 	struct sk_buff *skb;
 	struct ieee80211_mgmt *mgmt;
-	u16 capab = 0;
+	u16 capab=0;
 
-	skb = dev_alloc_skb(sizeof(*mgmt) + local->hw.extra_tx_headroom +
-			    sizeof(mgmt->u.action.category) +
-			    sizeof(mgmt->u.action.u.delba));
+	skb = dev_alloc_skb(sizeof(*mgmt) + local->hw.extra_tx_headroom + 1 +
+				sizeof(mgmt->u.action.u.addba_req));
+
 
 	if (!skb) {
 		printk(KERN_ERR "%s: failed to allocate buffer "
@@ -2781,8 +2780,7 @@ void ieee80211_send_addba_request(struct net_device *dev, u8 *da, u16 tid,
 	mgmt->frame_control = IEEE80211_FC(IEEE80211_FTYPE_MGMT,
 					IEEE80211_STYPE_ACTION);
 
-	skb_put(skb, sizeof(mgmt->u.action.category) +
-		sizeof(mgmt->u.action.u.addba_req));
+	skb_put(skb, 1 + sizeof(mgmt->u.action.u.addba_req));
 
 	mgmt->u.action.category = WLAN_CATEGORY_BACK;
 	mgmt->u.action.u.addba_req.action_code = WLAN_ACTION_ADDBA_REQ;
@@ -2867,9 +2865,8 @@ void ieee80211_send_delba(struct net_device *dev, u8 *da, u16 tid,
 	struct ieee80211_mgmt *mgmt;
 	u16 params=0;
 
-	skb = dev_alloc_skb(sizeof(*mgmt) + local->hw.extra_tx_headroom +
-			    sizeof(mgmt->u.action.category) +
-			    sizeof(mgmt->u.action.u.delba));
+	skb = dev_alloc_skb(sizeof(*mgmt) + local->hw.extra_tx_headroom + 1 +
+							sizeof(mgmt->u.action.u.delba));
 
 	if (!skb) {
 		printk(KERN_ERR "%s: failed to allocate buffer "
@@ -2888,8 +2885,7 @@ void ieee80211_send_delba(struct net_device *dev, u8 *da, u16 tid,
 		memcpy(mgmt->bssid, ifsta->bssid, ETH_ALEN);
 	mgmt->frame_control = IEEE80211_FC(IEEE80211_FTYPE_MGMT,IEEE80211_STYPE_ACTION);
 
-	skb_put(skb, sizeof(mgmt->u.action.category) +
-		sizeof(mgmt->u.action.u.delba));
+	skb_put(skb, 1 + sizeof(mgmt->u.action.u.delba));
 
 	mgmt->u.action.category = WLAN_CATEGORY_BACK;
 	mgmt->u.action.u.delba.action_code = WLAN_ACTION_DELBA;

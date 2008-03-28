@@ -37,13 +37,6 @@ EOF
     export has_i_private=1
  
 # ----------------
-# 2.6.21 or so added debugfs_create_symlink in the debugfs API
-#
-    export has_debugfs_symlink=0
-    grep -q "debugfs_create_symlink" ${KSRC}include/linux/debugfs.h &&
-    export has_debugfs_symlink=1
-
-#  ----------------
 # 2.6.19 or so added block ciphers which are used by the
 # wireless crypto subsystems.  
 #
@@ -119,8 +112,8 @@ EOF
 # ----------------
 # 2.6.20-rc2 added sch_fifo as explicit buildable
 	export has_net_sch_fifo=0
-	grep -q "CONFIG_NET_SCH_FIFO" ${KSRC}net/sched/Makefile ||
-	test -e ${KSRC}/net/sched/sch_fifo.c &&
+	grep -q "CONFIG_NET_SCH_FIFO" \
+		${KSRC}net/sched/Makefile &&
 		export has_net_sch_fifo=1
 
 # 2.6.22 adds skb_{mac,network,transport}_header
@@ -203,7 +196,6 @@ EOF
     (( $has_i_private )) && 
     (( $has_delayed_work )) && 
     (( $has_new_genlmsg )) &&
-    (( $has_debugfs_symlink )) &&
     (( $has_ieee80211_ptr )) && {
 	echo " * Kernel supports required features for 'modified' version."
 	return 0
@@ -216,8 +208,6 @@ EOF
     echo "   - Requires i_private rename compat"
     (( !$has_block_cipher )) && 
     echo "   - Requires non-block crypto compat"
-    (( !$has_debugfs_symlink )) && 
-    echo "   - Requires debugfs_create_symlink compat"
     (( !$has_delayed_work )) && 
     echo "   - Requires delayed_work compat"
     (( !$has_ieee80211_ptr )) && 

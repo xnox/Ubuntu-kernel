@@ -8,8 +8,8 @@ Copyright (C) 2005 - 2007, Intel Corporation
 
 INSTALL
 
-Version: 1.2.25
-Date   : February 04, 2008
+Version: 1.2.0
+Date   : November 21, 2007
 
 
 Index
@@ -96,8 +96,8 @@ making sure all options under mac80211 are enabled.
 Once the mac80211 kernel is installed and running, you build the 
 iwlwifi.ko module:
 
-	% tar xzvf iwlwifi-1.2.25.tgz
-	% cd iwlwifi-1.2.25
+	% tar xzvf iwlwifi-1.2.0.tgz
+	% cd iwlwifi-1.2.0
 	% make
 
 Now you install the firmware.  First, determine where to install the 
@@ -230,9 +230,9 @@ onto your system.  You'll need to unpack the tarballs and then you
 can view the INSTALL files. (Below example is for 3945, you should be
 able to do the same for 4965):
 
-	% tar xzvf iwlwifi-1.2.25.tgz
+	% tar xzvf iwlwifi-1.2.0.tgz
 	% tar xzvf iwlwifi-3945-ucode-2.14.1.5.tgz
-	% less iwlwifi-1.2.25/INSTALL  
+	% less iwlwifi-1.2.0/INSTALL  
 	% less iwlwifi-3945-ucode-2.14.1.5/INSTALL  
 
 
@@ -290,10 +290,10 @@ This is enabled via menuconfig:
 10.  BUILDING EXTERNAL (outside kernel source tree)
 -----------------------------------------------
 
-Unpack the iwlwifi-1.2.25.tgz archive:
+Unpack the iwlwifi-1.2.0.tgz archive:
 
-	% tar xzvf iwlwifi-1.2.25.tgz
-	% cd iwlwifi-1.2.25
+	% tar xzvf iwlwifi-1.2.0.tgz
+	% cd iwlwifi-1.2.0
 
 The driver package contains a Makefile that can be used for building the 
 driver outside of the kernel tree.  To build it for the currently running 

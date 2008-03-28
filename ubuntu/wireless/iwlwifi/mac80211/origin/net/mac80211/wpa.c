@@ -177,8 +177,11 @@ ieee80211_rx_h_michael_mic_verify(struct ieee80211_txrx_data *rx)
 		if (!rx->u.rx.ra_match)
 			return TXRX_DROP;
 
-		printk(KERN_DEBUG "%s: invalid Michael MIC in data frame from "
-		       MAC_FMT "\n", rx->dev->name, MAC_ARG(sa));
+#ifdef CONFIG_MAC80211_DEBUG
+		if (net_ratelimit())
+			printk(KERN_DEBUG "%s: invalid Michael MIC in data frame from "
+		       	MAC_FMT "\n", rx->dev->name, MAC_ARG(sa));
+#endif /* CONFIG_MAC80211_DEBUG */
 
 		do {
 			struct ieee80211_hdr *hdr;
@@ -368,9 +371,12 @@ ieee80211_rx_h_tkip_decrypt(struct ieee80211_txrx_data *rx)
 					  skb->len - hdrlen, rx->sta->addr,
 					  hwaccel, rx->u.rx.queue);
 	if (res != TKIP_DECRYPT_OK || wpa_test) {
-		printk(KERN_DEBUG "%s: TKIP decrypt failed for RX frame from "
-		       MAC_FMT " (res=%d)\n",
-		       rx->dev->name, MAC_ARG(rx->sta->addr), res);
+#ifdef CONFIG_MAC80211_DEBUG
+		if (net_ratelimit())
+			printk(KERN_DEBUG "%s: TKIP decrypt failed for RX frame from "
+		       	MAC_FMT " (res=%d)\n",
+		       	rx->dev->name, MAC_ARG(rx->sta->addr), res);
+#endif /* CONFIG_MAC80211_DEBUG */
 		return TXRX_DROP;
 	}
 
@@ -641,9 +647,12 @@ ieee80211_rx_h_ccmp_decrypt(struct ieee80211_txrx_data *rx)
 			    skb->data + hdrlen + CCMP_HDR_LEN, data_len,
 			    skb->data + skb->len - CCMP_MIC_LEN,
 			    skb->data + hdrlen + CCMP_HDR_LEN)) {
-			printk(KERN_DEBUG "%s: CCMP decrypt failed for RX "
-			       "frame from " MAC_FMT "\n", rx->dev->name,
-			       MAC_ARG(rx->sta->addr));
+#ifdef CONFIG_MAC80211_DEBUG
+			if (net_ratelimit())
+				printk(KERN_DEBUG "%s: CCMP decrypt failed for RX "
+			       	"frame from " MAC_FMT "\n", rx->dev->name,
+			       	MAC_ARG(rx->sta->addr));
+#endif /* CONFIG_MAC80211_DEBUG */
 			return TXRX_DROP;
 		}
 	}

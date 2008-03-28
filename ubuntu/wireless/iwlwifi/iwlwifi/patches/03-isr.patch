@@ -6,12 +6,12 @@ diff -urp origin/iwl3945-base.c new/iwl3945-base.c
  }
  
 +#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
-+static irqreturn_t iwl3945_isr(int irq, void *data, struct pt_regs *regs)
++static irqreturn_t iwl_isr(int irq, void *data, struct pt_regs *regs)
 +#else
- static irqreturn_t iwl3945_isr(int irq, void *data)
+ static irqreturn_t iwl_isr(int irq, void *data)
 +#endif
  {
- 	struct iwl3945_priv *priv = data;
+ 	struct iwl_priv *priv = data;
  	u32 inta, inta_mask;
 diff -urp origin/iwl4965-base.c new/iwl4965-base.c
 --- origin/iwl4965-base.c	2007-09-03 14:32:35.000000000 +0800
@@ -21,10 +21,10 @@ diff -urp origin/iwl4965-base.c new/iwl4965-base.c
  }
  
 +#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,19)
-+static irqreturn_t iwl4965_isr(int irq, void *data, struct pt_regs *regs)
++static irqreturn_t iwl_isr(int irq, void *data, struct pt_regs *regs)
 +#else
- static irqreturn_t iwl4965_isr(int irq, void *data)
+ static irqreturn_t iwl_isr(int irq, void *data)
 +#endif
  {
- 	struct iwl4965_priv *priv = data;
+ 	struct iwl_priv *priv = data;
  	u32 inta, inta_mask;

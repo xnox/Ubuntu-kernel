@@ -16,9 +16,9 @@ diff -urp origin/iwl3945-base.c new/iwl3945-base.c
 +}
 +#endif
 +
- /**
-  * iwl3945_queue_init - Initialize queue's high/low-water and read/write indexes
-  */
+ static int iwl_queue_init(struct iwl_priv *priv, struct iwl_queue *q,
+ 			  int count, int slots_num, u32 id)
+ {
 diff -urp origin/iwl4965-base.c new/iwl4965-base.c
 --- origin/iwl4965-base.c	2007-09-03 14:32:35.000000000 +0800
 +++ new/iwl4965-base.c	2007-09-04 11:12:57.000000000 +0800
@@ -37,6 +37,6 @@ diff -urp origin/iwl4965-base.c new/iwl4965-base.c
 +}
 +#endif
 +
- /**
-  * iwl4965_queue_init - Initialize queue's high/low-water and read/write indexes
-  */
+ static int iwl_queue_init(struct iwl_priv *priv, struct iwl_queue *q,
+ 			  int count, int slots_num, u32 id)
+ {

@@ -1,89 +1,10 @@
-Changes in 1.2.25
+Changes in 1.2.0
 
-* explicit call to bash instead of sh
-
-Changes in 1.2.24
-
-* update 08-is_power_of_2.patch
-
-Changes in 1.2.23
-
-* fix problem when rf_kill switch change during suspend/resume
-* fix possible priv->mutex deadlock during suspend
-* 3954 renames iwl3945_rate_scale_priv to iwl3945_rs_sta
-* 4965 unify rate scale variable names for station data
-* move uCode helper functions to iwl-helpers.h
-* Makefile: enable building using "make -C /path/to/iwlwifi"
-* fix iwl_mac_add_interface handler
-* Fix race conditional panic
-* remove redundant declaration of 'iwl3945_priv' and 'iwl4965_priv' structs
-* document scan command
-* remove iwl4965_tx_cmd
-* move iwl4965_get_dma_hi_address function to iwl-helpers.h
-* fix rate control algo reference leak
-* fix rf_kill state inconsistent during suspend and resume
-* fix priv->ucode_data_backup save problem
-* iwl4965: fix mutex_unlock missed problem in iwl_mac_config exit path
-* iwl4965: Remove redundant code in iwl4965_tx_cmd
-* fix compilation warnings
-* use pci_save_state() before calling pci_disable_device()
-* skip mac80211 conf during a hardware scan and replay it afterwards
-* delay firmware loading from pci_probe to network interface open
-* Makefile: enable HT and HT_AGG by default
-
-Changes in 1.2.22
-
+* Update ISSUES file
 * avoid firmware command sending if rfkill is enabled
 * fix ucode assertion for RX queue overrun
 * enhance WPA authenication stability
-* document 4965 rate scaling
-* add comments to Tx commands
-* add comments to QOS and ADD_STA commands
-* add comments to RXON command and txpower formats
-* document command header and "alive" responses
-* document 4965 Tx scheduler
-* document shared Tx structures
-* document Tx registers
-* document Rx registers
-* document keep-warm buffer
-* document txpower calculations
-* document temperature calculation
-* move HT_IE_EXT_CHANNEL_* driver definitions to iwl-4965.h
-* move uCode API definitions to iwl-4965-commands.h
-* clean up unused definitions in iwl-4965-hw.h
-* Clean up unused definitions in iwl-3945-hw.h
-* Makefile (top level): enable set KSRC_OUTPUT from command line
-* fix possibly NULL dereference in iwl_set_rate()
-* add comments to iwlXXXX-base.c
-* add comments, mostly on Tx queues
-* clean up some unused definitions in iwl-4965.h and iwl-3945.h
-* Partially clean-up, add comments to iwl-XXXX-hw.h
-* Document Rx calibration
-* Document 4965 rate_n_flags bits
-* Add comments to some driver data structures
-* Move is_legacy() macro family from iwl-4965-hw.h to iwl-4965-rs.h
-* fix incorrect error return due to hot unplug
-* clean up and clarify some comments after 3945/4965 split
-* iwl-4965-hw.h: clean up unused eeprom structures and definitions
-* add comments to EEPROM stuff
-* iwl4965: add comments to rate scaling code
 * iwl3945: re-align 3945 event log data
-* iwl3945: place CCK rates in front of OFDM for supported rates
-* continue namespace changes - fix CONFIG variables
-* Support for uCode without init and bsm section
-
-Changes in 1.1.21
-
-* iwl4965: fix deadlock introduced during namespace split
-* enable maintenance without Cogito
-* adjust patches for namespace split
-* adjust more patches for namespace split
-* adjust patches/07-hex_dump.patch for namespace split
-* adjust patches/wlan_80211.patch for namespace split
-* modify patches/10-preferred_rate_control.patch for namespace change
-* cleanup namespace
-* cleanup Kconfig and ifdefs to split 3945 and 4965
-* keep 3945 and 4965 headers separate
 
 Changes in 1.1.20
 

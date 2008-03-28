@@ -14,13 +14,13 @@ diff -urp origin/iwl-3945-rs.c new/iwl-3945-rs.c
 +++ new/iwl-3945-rs.c	2007-09-04 11:27:24.000000000 +0800
 @@ -957,11 +957,13 @@ void iwl_rate_scale_init(struct ieee8021
  
- void iwl3945_rate_control_register(struct ieee80211_hw *hw)
+ void iwl_rate_control_register(struct ieee80211_hw *hw)
  {
 +	hw->preferred_rate_control = (char *)rs_ops.name;
  	ieee80211_rate_control_register(&rs_ops);
  }
  
- void iwl3945_rate_control_unregister(struct ieee80211_hw *hw)
+ void iwl_rate_control_unregister(struct ieee80211_hw *hw)
  {
 +	hw->preferred_rate_control = NULL;
  	ieee80211_rate_control_unregister(&rs_ops);
@@ -34,21 +34,21 @@ diff -urp origin/iwl4965-base.c new/iwl4965-base.c
  
  	hw->queues = 4;
 +	hw->preferred_rate_control = NULL;
- #ifdef CONFIG_IWL4965_HT
- #ifdef CONFIG_IWL4965_HT_AGG
+ #ifdef CONFIG_IWLWIFI_HT
+ #ifdef CONFIG_IWLWIFI_HT_AGG
  	hw->queues = 16;
 diff -urp origin/iwl-4965-rs.c new/iwl-4965-rs.c
 --- origin/iwl-4965-rs.c	2007-09-03 14:30:59.000000000 +0800
 +++ new/iwl-4965-rs.c	2007-09-04 11:27:24.000000000 +0800
 @@ -2105,11 +2105,13 @@ void iwl_rate_scale_init(struct ieee8021
  
- void iwl4965_rate_control_register(struct ieee80211_hw *hw)
+ void iwl_rate_control_register(struct ieee80211_hw *hw)
  {
 +	hw->preferred_rate_control = (char *)rs_ops.name;
  	ieee80211_rate_control_register(&rs_ops);
  }
  
- void iwl4965_rate_control_unregister(struct ieee80211_hw *hw)
+ void iwl_rate_control_unregister(struct ieee80211_hw *hw)
  {
 +	hw->preferred_rate_control = NULL;
  	ieee80211_rate_control_unregister(&rs_ops);

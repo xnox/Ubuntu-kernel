@@ -40,13 +40,15 @@
 #include <net/mac80211.h>
 #include <linux/wireless.h>
 
+#define IWL 3945
+
 #include "../net/mac80211/ieee80211_rate.h"
 
-#include "iwl-3945.h"
+#include "iwlwifi.h"
 
 #define RS_NAME "iwl-3945-rs"
 
-struct iwl3945_rate_scale_data {
+struct iwl_rate_scale_data {
 	u64 data;
 	s32 success_counter;
 	s32 success_ratio;
@@ -55,7 +57,7 @@ struct iwl3945_rate_scale_data {
 	unsigned long stamp;
 };
 
-struct iwl3945_rs_sta {
+struct iwl_rate_scale_priv {
 	spinlock_t lock;
 	s32 *expected_tpt;
 	unsigned long last_partial_flush;
@@ -68,31 +70,31 @@ struct iwl3945_rs_sta {
 	u8 start_rate;
 	u8 ibss_sta_added;
 	struct timer_list rate_scale_flush;
-	struct iwl3945_rate_scale_data win[IWL_RATE_COUNT];
+	struct iwl_rate_scale_data win[IWL_RATE_COUNT];
 };
 
-static s32 iwl3945_expected_tpt_g[IWL_RATE_COUNT] = {
-	7, 13, 35, 58, 0, 0, 76, 104, 130, 168, 191, 202
+static s32 iwl_expected_tpt_g[IWL_RATE_COUNT] = {
+	0, 0, 76, 104, 130, 168, 191, 202, 7, 13, 35, 58
 };
 
-static s32 iwl3945_expected_tpt_g_prot[IWL_RATE_COUNT] = {
-	7, 13, 35, 58, 0, 0, 0, 80, 93, 113, 123, 125
+static s32 iwl_expected_tpt_g_prot[IWL_RATE_COUNT] = {
+	0, 0, 0, 80, 93, 113, 123, 125, 7, 13, 35, 58
 };
 
-static s32 iwl3945_expected_tpt_a[IWL_RATE_COUNT] = {
-	0, 0, 0, 0, 40, 57, 72, 98, 121, 154, 177, 186
+static s32 iwl_expected_tpt_a[IWL_RATE_COUNT] = {
+	40, 57, 72, 98, 121, 154, 177, 186, 0, 0, 0, 0
 };
 
-static s32 iwl3945_expected_tpt_b[IWL_RATE_COUNT] = {
-	7, 13, 35, 58, 0, 0, 0, 0, 0, 0, 0, 0
+static s32 iwl_expected_tpt_b[IWL_RATE_COUNT] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 7, 13, 35, 58
 };
 
-struct iwl3945_tpt_entry {
+struct iwl_tpt_entry {
 	s8 min_rssi;
 	u8 index;
 };
 
-static struct iwl3945_tpt_entry iwl3945_tpt_table_a[] = {
+static struct iwl_tpt_entry iwl_tpt_table_a[] = {
 	{-60, IWL_RATE_54M_INDEX},
 	{-64, IWL_RATE_48M_INDEX},
 	{-72, IWL_RATE_36M_INDEX},
@@ -103,7 +105,7 @@ static struct iwl3945_tpt_entry iwl3945_tpt_table_a[] = {
 	{-89, IWL_RATE_6M_INDEX}
 };
 
-static struct iwl3945_tpt_entry iwl3945_tpt_table_b[] = {
+static struct iwl_tpt_entry iwl_tpt_table_b[] = {
 	{-86, IWL_RATE_11M_INDEX},
 	{-88, IWL_RATE_5M_INDEX},
 	{-90, IWL_RATE_2M_INDEX},
@@ -111,7 +113,7 @@ static struct iwl3945_tpt_entry iwl3945_tpt_table_b[] = {
 
 };
 
-static struct iwl3945_tpt_entry iwl3945_tpt_table_g[] = {
+static struct iwl_tpt_entry iwl_tpt_table_g[] = {
 	{-60, IWL_RATE_54M_INDEX},
 	{-64, IWL_RATE_48M_INDEX},
 	{-68, IWL_RATE_36M_INDEX},
@@ -132,30 +134,30 @@ static struct iwl3945_tpt_entry iwl3945_tpt_table_g[] = {
 #define IWL_RATE_MIN_SUCCESS_TH       8
 #define IWL_RATE_DECREASE_TH       1920
 
-static u8 iwl3945_get_rate_index_by_rssi(s32 rssi, u8 mode)
+static u8 iwl_get_rate_index_by_rssi(s32 rssi, u8 mode)
 {
 	u32 index = 0;
 	u32 table_size = 0;
-	struct iwl3945_tpt_entry *tpt_table = NULL;
+	struct iwl_tpt_entry *tpt_table = NULL;
 
 	if ((rssi < IWL_MIN_RSSI_VAL) || (rssi > IWL_MAX_RSSI_VAL))
 		rssi = IWL_MIN_RSSI_VAL;
 
 	switch (mode) {
 	case MODE_IEEE80211G:
-		tpt_table = iwl3945_tpt_table_g;
-		table_size = ARRAY_SIZE(iwl3945_tpt_table_g);
+		tpt_table = iwl_tpt_table_g;
+		table_size = ARRAY_SIZE(iwl_tpt_table_g);
 		break;
 
 	case MODE_IEEE80211A:
-		tpt_table = iwl3945_tpt_table_a;
-		table_size = ARRAY_SIZE(iwl3945_tpt_table_a);
+		tpt_table = iwl_tpt_table_a;
+		table_size = ARRAY_SIZE(iwl_tpt_table_a);
 		break;
 
 	default:
 	case MODE_IEEE80211B:
-		tpt_table = iwl3945_tpt_table_b;
-		table_size = ARRAY_SIZE(iwl3945_tpt_table_b);
+		tpt_table = iwl_tpt_table_b;
+		table_size = ARRAY_SIZE(iwl_tpt_table_b);
 		break;
 	}
 
@@ -167,7 +169,7 @@ static u8 iwl3945_get_rate_index_by_rssi(s32 rssi, u8 mode)
 	return tpt_table[index].index;
 }
 
-static void iwl3945_clear_window(struct iwl3945_rate_scale_data *window)
+static void iwl_clear_window(struct iwl_rate_scale_data *window)
 {
 	window->data = 0;
 	window->success_counter = 0;
@@ -178,13 +180,13 @@ static void iwl3945_clear_window(struct iwl3945_rate_scale_data *window)
 }
 
 /**
- * iwl3945_rate_scale_flush_windows - flush out the rate scale windows
+ * iwl_rate_scale_flush_windows - flush out the rate scale windows
  *
  * Returns the number of windows that have gathered data but were
  * not flushed.  If there were any that were not flushed, then
  * reschedule the rate flushing routine.
  */
-static int iwl3945_rate_scale_flush_windows(struct iwl3945_rs_sta *rs_sta)
+static int iwl_rate_scale_flush_windows(struct iwl_rate_scale_priv *rs_priv)
 {
 	int unflushed = 0;
 	int i;
@@ -196,19 +198,19 @@ static int iwl3945_rate_scale_flush_windows(struct iwl3945_rs_sta *rs_sta)
 	 * since we flushed, clear out the gathered statistics
 	 */
 	for (i = 0; i < IWL_RATE_COUNT; i++) {
-		if (!rs_sta->win[i].counter)
+		if (!rs_priv->win[i].counter)
 			continue;
 
-		spin_lock_irqsave(&rs_sta->lock, flags);
-		if (time_after(jiffies, rs_sta->win[i].stamp +
+		spin_lock_irqsave(&rs_priv->lock, flags);
+		if (time_after(jiffies, rs_priv->win[i].stamp +
 			       IWL_RATE_WIN_FLUSH)) {
 			IWL_DEBUG_RATE("flushing %d samples of rate "
 				       "index %d\n",
-				       rs_sta->win[i].counter, i);
-			iwl3945_clear_window(&rs_sta->win[i]);
+				       rs_priv->win[i].counter, i);
+			iwl_clear_window(&rs_priv->win[i]);
 		} else
 			unflushed++;
-		spin_unlock_irqrestore(&rs_sta->lock, flags);
+		spin_unlock_irqrestore(&rs_priv->lock, flags);
 	}
 
 	return unflushed;
@@ -217,30 +219,30 @@ static int iwl3945_rate_scale_flush_windows(struct iwl3945_rs_sta *rs_sta)
 #define IWL_RATE_FLUSH_MAX              5000	/* msec */
 #define IWL_RATE_FLUSH_MIN              50	/* msec */
 
-static void iwl3945_bg_rate_scale_flush(unsigned long data)
+static void iwl_bg_rate_scale_flush(unsigned long data)
 {
-	struct iwl3945_rs_sta *rs_sta = (void *)data;
+	struct iwl_rate_scale_priv *rs_priv = (void *)data;
 	int unflushed = 0;
 	unsigned long flags;
 	u32 packet_count, duration, pps;
 
 	IWL_DEBUG_RATE("enter\n");
 
-	unflushed = iwl3945_rate_scale_flush_windows(rs_sta);
+	unflushed = iwl_rate_scale_flush_windows(rs_priv);
 
-	spin_lock_irqsave(&rs_sta->lock, flags);
+	spin_lock_irqsave(&rs_priv->lock, flags);
 
-	rs_sta->flush_pending = 0;
+	rs_priv->flush_pending = 0;
 
 	/* Number of packets Rx'd since last time this timer ran */
-	packet_count = (rs_sta->tx_packets - rs_sta->last_tx_packets) + 1;
+	packet_count = (rs_priv->tx_packets - rs_priv->last_tx_packets) + 1;
 
-	rs_sta->last_tx_packets = rs_sta->tx_packets + 1;
+	rs_priv->last_tx_packets = rs_priv->tx_packets + 1;
 
 	if (unflushed) {
 		duration =
-		    jiffies_to_msecs(jiffies - rs_sta->last_partial_flush);
-/*              duration = jiffies_to_msecs(rs_sta->flush_time); */
+		    jiffies_to_msecs(jiffies - rs_priv->last_partial_flush);
+/*              duration = jiffies_to_msecs(rs_priv->flush_time); */
 
 		IWL_DEBUG_RATE("Tx'd %d packets in %dms\n",
 			       packet_count, duration);
@@ -258,36 +260,36 @@ static void iwl3945_bg_rate_scale_flush(unsigned long data)
 		} else
 			duration = IWL_RATE_FLUSH_MAX;
 
-		rs_sta->flush_time = msecs_to_jiffies(duration);
+		rs_priv->flush_time = msecs_to_jiffies(duration);
 
 		IWL_DEBUG_RATE("new flush period: %d msec ave %d\n",
 			       duration, packet_count);
 
-		mod_timer(&rs_sta->rate_scale_flush, jiffies +
-			  rs_sta->flush_time);
+		mod_timer(&rs_priv->rate_scale_flush, jiffies +
+			  rs_priv->flush_time);
 
-		rs_sta->last_partial_flush = jiffies;
+		rs_priv->last_partial_flush = jiffies;
 	}
 
 	/* If there weren't any unflushed entries, we don't schedule the timer
 	 * to run again */
 
-	rs_sta->last_flush = jiffies;
+	rs_priv->last_flush = jiffies;
 
-	spin_unlock_irqrestore(&rs_sta->lock, flags);
+	spin_unlock_irqrestore(&rs_priv->lock, flags);
 
 	IWL_DEBUG_RATE("leave\n");
 }
 
 /**
- * iwl3945_collect_tx_data - Update the success/failure sliding window
+ * iwl_collect_tx_data - Update the success/failure sliding window
  *
  * We keep a sliding window of the last 64 packets transmitted
  * at this rate.  window->data contains the bitmask of successful
  * packets.
  */
-static void iwl3945_collect_tx_data(struct iwl3945_rs_sta *rs_sta,
-				struct iwl3945_rate_scale_data *window,
+static void iwl_collect_tx_data(struct iwl_rate_scale_priv *rs_priv,
+				struct iwl_rate_scale_data *window,
 				int success, int retries)
 {
 	unsigned long flags;
@@ -298,7 +300,7 @@ static void iwl3945_collect_tx_data(struct iwl3945_rs_sta *rs_sta,
 	}
 
 	while (retries--) {
-		spin_lock_irqsave(&rs_sta->lock, flags);
+		spin_lock_irqsave(&rs_priv->lock, flags);
 
 		/* If we have filled up the window then subtract one from the
 		 * success counter if the high-bit is counting toward
@@ -326,7 +328,7 @@ static void iwl3945_collect_tx_data(struct iwl3945_rs_sta *rs_sta,
 		/* Tag this window as having been updated */
 		window->stamp = jiffies;
 
-		spin_unlock_irqrestore(&rs_sta->lock, flags);
+		spin_unlock_irqrestore(&rs_priv->lock, flags);
 	}
 }
 
@@ -351,10 +353,6 @@ static void rs_rate_init(void *priv_rate, void *priv_sta,
 
 	sta->last_txrate = sta->txrate;
 
-	/* For MODE_IEEE80211A mode it start at IWL_FIRST_OFDM_RATE */
-        if (local->hw.conf.phymode == MODE_IEEE80211A)
-                sta->last_txrate += IWL_FIRST_OFDM_RATE;
-
 	IWL_DEBUG_RATE("leave\n");
 }
 
@@ -376,83 +374,56 @@ static void rs_clear(void *priv)
 
 static void *rs_alloc_sta(void *priv, gfp_t gfp)
 {
-	struct iwl3945_rs_sta *rs_sta;
+	struct iwl_rate_scale_priv *rs_priv;
 	int i;
 
 	IWL_DEBUG_RATE("enter\n");
 
-	rs_sta = kzalloc(sizeof(struct iwl3945_rs_sta), gfp);
-	if (!rs_sta) {
+	rs_priv = kzalloc(sizeof(struct iwl_rate_scale_priv), gfp);
+	if (!rs_priv) {
 		IWL_DEBUG_RATE("leave: ENOMEM\n");
 		return NULL;
 	}
 
-	spin_lock_init(&rs_sta->lock);
+	spin_lock_init(&rs_priv->lock);
 
-	rs_sta->start_rate = IWL_RATE_INVALID;
+	rs_priv->start_rate = IWL_RATE_INVALID;
 
 	/* default to just 802.11b */
-	rs_sta->expected_tpt = iwl3945_expected_tpt_b;
+	rs_priv->expected_tpt = iwl_expected_tpt_b;
 
-	rs_sta->last_partial_flush = jiffies;
-	rs_sta->last_flush = jiffies;
-	rs_sta->flush_time = IWL_RATE_FLUSH;
-	rs_sta->last_tx_packets = 0;
-	rs_sta->ibss_sta_added = 0;
+	rs_priv->last_partial_flush = jiffies;
+	rs_priv->last_flush = jiffies;
+	rs_priv->flush_time = IWL_RATE_FLUSH;
+	rs_priv->last_tx_packets = 0;
+	rs_priv->ibss_sta_added = 0;
 
-	init_timer(&rs_sta->rate_scale_flush);
-	rs_sta->rate_scale_flush.data = (unsigned long)rs_sta;
-	rs_sta->rate_scale_flush.function = &iwl3945_bg_rate_scale_flush;
+	init_timer(&rs_priv->rate_scale_flush);
+	rs_priv->rate_scale_flush.data = (unsigned long)rs_priv;
+	rs_priv->rate_scale_flush.function = &iwl_bg_rate_scale_flush;
 
 	for (i = 0; i < IWL_RATE_COUNT; i++)
-		iwl3945_clear_window(&rs_sta->win[i]);
+		iwl_clear_window(&rs_priv->win[i]);
 
 	IWL_DEBUG_RATE("leave\n");
 
-	return rs_sta;
+	return rs_priv;
 }
 
 static void rs_free_sta(void *priv, void *priv_sta)
 {
-	struct iwl3945_rs_sta *rs_sta = priv_sta;
+	struct iwl_rate_scale_priv *rs_priv = priv_sta;
 
 	IWL_DEBUG_RATE("enter\n");
-	del_timer_sync(&rs_sta->rate_scale_flush);
-	kfree(rs_sta);
+	del_timer_sync(&rs_priv->rate_scale_flush);
+	kfree(rs_priv);
 	IWL_DEBUG_RATE("leave\n");
 }
 
-
-/*
- * get ieee prev rate from rate scale table.
- * for A and B mode we need to overright prev
- * value
- */
-static int rs_adjust_next_rate(struct iwl3945_priv *priv, int rate)
-{
-	int next_rate = iwl3945_get_prev_ieee_rate(rate);
-
-	switch (priv->phymode) {
-	case MODE_IEEE80211A:
-		if (rate == IWL_RATE_12M_INDEX)
-			next_rate = IWL_RATE_9M_INDEX;
-		else if (rate == IWL_RATE_6M_INDEX)
-			next_rate = IWL_RATE_6M_INDEX;
-		break;
-	case MODE_IEEE80211B:
-		if (rate == IWL_RATE_11M_INDEX_TABLE)
-			next_rate = IWL_RATE_5M_INDEX_TABLE;
-		break;
-	default:
-		break;
-	}
-
-	return next_rate;
-}
 /**
  * rs_tx_status - Update rate control values based on Tx results
  *
- * NOTE: Uses iwl3945_priv->retry_rate for the # of retries attempted by
+ * NOTE: Uses iwl_priv->retry_rate for the # of retries attempted by
  * the hardware for each rate.
  */
 static void rs_tx_status(void *priv_rate,
@@ -465,9 +436,9 @@ static void rs_tx_status(void *priv_rate,
 	unsigned long flags;
 	struct sta_info *sta;
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
-	struct iwl3945_priv *priv = (struct iwl3945_priv *)priv_rate;
+	struct iwl_priv *priv = (struct iwl_priv *)priv_rate;
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
-	struct iwl3945_rs_sta *rs_sta;
+	struct iwl_rate_scale_priv *rs_priv;
 
 	IWL_DEBUG_RATE("enter\n");
 
@@ -488,9 +459,9 @@ static void rs_tx_status(void *priv_rate,
 		return;
 	}
 
-	rs_sta = (void *)sta->rate_ctrl_priv;
+	rs_priv = (void *)sta->rate_ctrl_priv;
 
-	rs_sta->tx_packets++;
+	rs_priv->tx_packets++;
 
 	scale_rate_index = first_index;
 	last_index = first_index;
@@ -511,14 +482,13 @@ static void rs_tx_status(void *priv_rate,
 			last_index = scale_rate_index;
 		} else {
 			current_count = priv->retry_rate;
-			last_index = rs_adjust_next_rate(priv,
-							 scale_rate_index);
+			last_index = iwl_get_prev_ieee_rate(scale_rate_index);
 		}
 
 		/* Update this rate accounting for as many retries
 		 * as was used for it (per current_count) */
-		iwl3945_collect_tx_data(rs_sta,
-				    &rs_sta->win[scale_rate_index],
+		iwl_collect_tx_data(rs_priv,
+				    &rs_priv->win[scale_rate_index],
 				    0, current_count);
 		IWL_DEBUG_RATE("Update rate %d for %d retries.\n",
 			       scale_rate_index, current_count);
@@ -527,34 +497,33 @@ static void rs_tx_status(void *priv_rate,
 
 		if (retries)
 			scale_rate_index =
-			    rs_adjust_next_rate(priv, scale_rate_index);
+			    iwl_get_prev_ieee_rate(scale_rate_index);
 	}
-
 
 	/* Update the last index window with success/failure based on ACK */
 	IWL_DEBUG_RATE("Update rate %d with %s.\n",
 		       last_index,
 		       (tx_resp->flags & IEEE80211_TX_STATUS_ACK) ?
 		       "success" : "failure");
-	iwl3945_collect_tx_data(rs_sta,
-			    &rs_sta->win[last_index],
+	iwl_collect_tx_data(rs_priv,
+			    &rs_priv->win[last_index],
 			    tx_resp->flags & IEEE80211_TX_STATUS_ACK, 1);
 
 	/* We updated the rate scale window -- if its been more than
 	 * flush_time since the last run, schedule the flush
 	 * again */
-	spin_lock_irqsave(&rs_sta->lock, flags);
+	spin_lock_irqsave(&rs_priv->lock, flags);
 
-	if (!rs_sta->flush_pending &&
-	    time_after(jiffies, rs_sta->last_partial_flush +
-		       rs_sta->flush_time)) {
+	if (!rs_priv->flush_pending &&
+	    time_after(jiffies, rs_priv->last_partial_flush +
+		       rs_priv->flush_time)) {
 
-		rs_sta->flush_pending = 1;
-		mod_timer(&rs_sta->rate_scale_flush,
-			  jiffies + rs_sta->flush_time);
+		rs_priv->flush_pending = 1;
+		mod_timer(&rs_priv->rate_scale_flush,
+			  jiffies + rs_priv->flush_time);
 	}
 
-	spin_unlock_irqrestore(&rs_sta->lock, flags);
+	spin_unlock_irqrestore(&rs_priv->lock, flags);
 
 	iwlwifi_sta_info_put(sta);
 
@@ -563,7 +532,7 @@ static void rs_tx_status(void *priv_rate,
 	return;
 }
 
-static struct ieee80211_rate *iwl3945_get_lowest_rate(struct ieee80211_local
+static struct ieee80211_rate *iwl_get_lowest_rate(struct ieee80211_local
 						  *local)
 {
 	struct ieee80211_hw_mode *mode = local->oper_hw_mode;
@@ -579,7 +548,7 @@ static struct ieee80211_rate *iwl3945_get_lowest_rate(struct ieee80211_local
 	return &mode->rates[0];
 }
 
-static u16 iwl3945_get_adjacent_rate(struct iwl3945_rs_sta *rs_sta,
+static u16 iwl_get_adjacent_rate(struct iwl_rate_scale_priv *rs_priv,
 				 u8 index, u16 rate_mask, int phymode)
 {
 	u8 high = IWL_RATE_INVALID;
@@ -614,10 +583,10 @@ static u16 iwl3945_get_adjacent_rate(struct iwl3945_rs_sta *rs_sta,
 
 	low = index;
 	while (low != IWL_RATE_INVALID) {
-		if (rs_sta->tgg)
-			low = iwl3945_rates[low].prev_rs_tgg;
+		if (rs_priv->tgg)
+			low = iwl_rates[low].prev_rs_tgg;
 		else
-			low = iwl3945_rates[low].prev_rs;
+			low = iwl_rates[low].prev_rs;
 		if (low == IWL_RATE_INVALID)
 			break;
 		if (rate_mask & (1 << low))
@@ -627,10 +596,10 @@ static u16 iwl3945_get_adjacent_rate(struct iwl3945_rs_sta *rs_sta,
 
 	high = index;
 	while (high != IWL_RATE_INVALID) {
-		if (rs_sta->tgg)
-			high = iwl3945_rates[high].next_rs_tgg;
+		if (rs_priv->tgg)
+			high = iwl_rates[high].next_rs_tgg;
 		else
-			high = iwl3945_rates[high].next_rs;
+			high = iwl_rates[high].next_rs;
 		if (high == IWL_RATE_INVALID)
 			break;
 		if (rate_mask & (1 << high))
@@ -666,8 +635,8 @@ static struct ieee80211_rate *rs_get_rate(void *priv_rate,
 	u8 high = IWL_RATE_INVALID;
 	u16 high_low;
 	int index;
-	struct iwl3945_rs_sta *rs_sta;
-	struct iwl3945_rate_scale_data *window = NULL;
+	struct iwl_rate_scale_priv *rs_priv;
+	struct iwl_rate_scale_data *window = NULL;
 	int current_tpt = IWL_INVALID_VALUE;
 	int low_tpt = IWL_INVALID_VALUE;
 	int high_tpt = IWL_INVALID_VALUE;
@@ -678,7 +647,7 @@ static struct ieee80211_rate *rs_get_rate(void *priv_rate,
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
 	struct sta_info *sta;
 	u16 fc, rate_mask;
-	struct iwl3945_priv *priv = (struct iwl3945_priv *)priv_rate;
+	struct iwl_priv *priv = (struct iwl_priv *)priv_rate;
 
 	IWL_DEBUG_RATE("enter\n");
 
@@ -693,7 +662,7 @@ static struct ieee80211_rate *rs_get_rate(void *priv_rate,
 		IWL_DEBUG_RATE("leave: lowest rate (not data or is "
 			       "multicast)\n");
 
-		return iwl3945_get_lowest_rate(local);
+		return iwl_get_lowest_rate(local);
 	}
 
 	sta = iwlwifi_sta_info_get(local, hdr->addr1);
@@ -705,42 +674,39 @@ static struct ieee80211_rate *rs_get_rate(void *priv_rate,
 	}
 
 	rate_mask = sta->supp_rates;
-	index = min(sta->last_txrate & 0xffff, IWL_RATE_COUNT - 1);
+	index = min(sta->txrate & 0xffff, IWL_RATE_COUNT - 1);
 
-	if (priv->phymode == (u8) MODE_IEEE80211A)
-		rate_mask = rate_mask << IWL_FIRST_OFDM_RATE;
-
-	rs_sta = (void *)sta->rate_ctrl_priv;
+	rs_priv = (void *)sta->rate_ctrl_priv;
 
 	if ((priv->iw_mode == IEEE80211_IF_TYPE_IBSS) &&
-	    !rs_sta->ibss_sta_added) {
-		u8 sta_id = iwl3945_hw_find_station(priv, hdr->addr1);
+	    !rs_priv->ibss_sta_added) {
+		u8 sta_id = iwl_hw_find_station(priv, hdr->addr1);
 
 		if (sta_id == IWL_INVALID_STATION) {
 			IWL_DEBUG_RATE("LQ: ADD station " MAC_FMT "\n",
 					MAC_ARG(hdr->addr1));
-			sta_id = iwl3945_add_station(priv,
+			sta_id = iwl_add_station(priv,
 				    hdr->addr1, 0, CMD_ASYNC);
 		}
 		if (sta_id != IWL_INVALID_STATION)
-			rs_sta->ibss_sta_added = 1;
+			rs_priv->ibss_sta_added = 1;
 	}
 
-	spin_lock_irqsave(&rs_sta->lock, flags);
+	spin_lock_irqsave(&rs_priv->lock, flags);
 
-	if (rs_sta->start_rate != IWL_RATE_INVALID) {
-		index = rs_sta->start_rate;
-		rs_sta->start_rate = IWL_RATE_INVALID;
+	if (rs_priv->start_rate != IWL_RATE_INVALID) {
+		index = rs_priv->start_rate;
+		rs_priv->start_rate = IWL_RATE_INVALID;
 	}
 
-	window = &(rs_sta->win[index]);
+	window = &(rs_priv->win[index]);
 
 	fail_count = window->counter - window->success_counter;
 
 	if (((fail_count <= IWL_RATE_MIN_FAILURE_TH) &&
 	     (window->success_counter < IWL_RATE_MIN_SUCCESS_TH))) {
 		window->average_tpt = IWL_INVALID_VALUE;
-		spin_unlock_irqrestore(&rs_sta->lock, flags);
+		spin_unlock_irqrestore(&rs_priv->lock, flags);
 
 		IWL_DEBUG_RATE("Invalid average_tpt on rate %d: "
 			       "counter: %d, success_counter: %d, "
@@ -748,27 +714,27 @@ static struct ieee80211_rate *rs_get_rate(void *priv_rate,
 			       index,
 			       window->counter,
 			       window->success_counter,
-			       rs_sta->expected_tpt ? "not " : "");
+			       rs_priv->expected_tpt ? "not " : "");
 		goto out;
 
 	}
 
 	window->average_tpt = ((window->success_ratio *
-				rs_sta->expected_tpt[index] + 64) / 128);
+				rs_priv->expected_tpt[index] + 64) / 128);
 	current_tpt = window->average_tpt;
 
-	high_low = iwl3945_get_adjacent_rate(rs_sta, index, rate_mask,
+	high_low = iwl_get_adjacent_rate(rs_priv, index, rate_mask,
 					 local->hw.conf.phymode);
 	low = high_low & 0xff;
 	high = (high_low >> 8) & 0xff;
 
 	if (low != IWL_RATE_INVALID)
-		low_tpt = rs_sta->win[low].average_tpt;
+		low_tpt = rs_priv->win[low].average_tpt;
 
 	if (high != IWL_RATE_INVALID)
-		high_tpt = rs_sta->win[high].average_tpt;
+		high_tpt = rs_priv->win[high].average_tpt;
 
-	spin_unlock_irqrestore(&rs_sta->lock, flags);
+	spin_unlock_irqrestore(&rs_priv->lock, flags);
 
 	scale_action = 1;
 
@@ -837,11 +803,7 @@ static struct ieee80211_rate *rs_get_rate(void *priv_rate,
  out:
 
 	sta->last_txrate = index;
-	if (priv->phymode == (u8) MODE_IEEE80211A)
-		sta->txrate = sta->last_txrate - IWL_FIRST_OFDM_RATE;
-	else
-		sta->txrate = sta->last_txrate;
-
+	sta->txrate = sta->last_txrate;
 	iwlwifi_sta_info_put(sta);
 
 	IWL_DEBUG_RATE("leave: %d\n", index);
@@ -862,11 +824,11 @@ static struct rate_control_ops rs_ops = {
 	.free_sta = rs_free_sta,
 };
 
-int iwl3945_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
+int iwl_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
-	struct iwl3945_priv *priv = hw->priv;
-	struct iwl3945_rs_sta *rs_sta;
+	struct iwl_priv *priv = hw->priv;
+	struct iwl_rate_scale_priv *rs_priv;
 	struct sta_info *sta;
 	unsigned long flags;
 	int count = 0, i;
@@ -884,29 +846,28 @@ int iwl3945_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 		return sprintf(buf, "station %d not found\n", sta_id);
 	}
 
-	rs_sta = (void *)sta->rate_ctrl_priv;
-	spin_lock_irqsave(&rs_sta->lock, flags);
+	rs_priv = (void *)sta->rate_ctrl_priv;
+	spin_lock_irqsave(&rs_priv->lock, flags);
 	i = IWL_RATE_54M_INDEX;
 	while (1) {
 		u64 mask;
 		int j;
 
 		count +=
-		    sprintf(&buf[count], " %2dMbs: ", iwl3945_rates[i].ieee / 2);
+		    sprintf(&buf[count], " %2dMbs: ", iwl_rates[i].ieee / 2);
 
 		mask = (1ULL << (IWL_RATE_MAX_WINDOW - 1));
 		for (j = 0; j < IWL_RATE_MAX_WINDOW; j++, mask >>= 1)
 			buf[count++] =
-			    (rs_sta->win[i].data & mask) ? '1' : '0';
+			    (rs_priv->win[i].data & mask) ? '1' : '0';
 
-		samples += rs_sta->win[i].counter;
-		good += rs_sta->win[i].success_counter;
-		success += rs_sta->win[i].success_counter *
-						iwl3945_rates[i].ieee;
+		samples += rs_priv->win[i].counter;
+		good += rs_priv->win[i].success_counter;
+		success += rs_priv->win[i].success_counter * iwl_rates[i].ieee;
 
-		if (rs_sta->win[i].stamp) {
+		if (rs_priv->win[i].stamp) {
 			int delta =
-			    jiffies_to_msecs(now - rs_sta->win[i].stamp);
+			    jiffies_to_msecs(now - rs_priv->win[i].stamp);
 
 			if (delta > max_time)
 				max_time = delta;
@@ -915,18 +876,18 @@ int iwl3945_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 		} else
 			buf[count++] = '\n';
 
-		j = iwl3945_get_prev_ieee_rate(i);
+		j = iwl_get_prev_ieee_rate(i);
 		if (j == i)
 			break;
 		i = j;
 	}
-	spin_unlock_irqrestore(&rs_sta->lock, flags);
+	spin_unlock_irqrestore(&rs_priv->lock, flags);
 	iwlwifi_sta_info_put(sta);
 
 	/* Display the average rate of all samples taken.
 	 *
 	 * NOTE:  We multiple # of samples by 2 since the IEEE measurement
-	 * added from iwl3945_rates is actually 2X the rate */
+	 * added from iwl_rates is actually 2X the rate */
 	if (samples)
 		count += sprintf(
 			&buf[count],
@@ -940,13 +901,13 @@ int iwl3945_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 	return count;
 }
 
-void iwl3945_rate_scale_init(struct ieee80211_hw *hw, s32 sta_id)
+void iwl_rate_scale_init(struct ieee80211_hw *hw, s32 sta_id)
 {
-	struct iwl3945_priv *priv = hw->priv;
+	struct iwl_priv *priv = hw->priv;
 	s32 rssi = 0;
 	unsigned long flags;
 	struct ieee80211_local *local = hw_to_local(hw);
-	struct iwl3945_rs_sta *rs_sta;
+	struct iwl_rate_scale_priv *rs_priv;
 	struct sta_info *sta;
 
 	IWL_DEBUG_RATE("enter\n");
@@ -966,33 +927,33 @@ void iwl3945_rate_scale_init(struct ieee80211_hw *hw, s32 sta_id)
 		return;
 	}
 
-	rs_sta = (void *)sta->rate_ctrl_priv;
+	rs_priv = (void *)sta->rate_ctrl_priv;
 
-	spin_lock_irqsave(&rs_sta->lock, flags);
+	spin_lock_irqsave(&rs_priv->lock, flags);
 
-	rs_sta->tgg = 0;
+	rs_priv->tgg = 0;
 	switch (priv->phymode) {
 	case MODE_IEEE80211G:
 		if (priv->active_rxon.flags & RXON_FLG_TGG_PROTECT_MSK) {
-			rs_sta->tgg = 1;
-			rs_sta->expected_tpt = iwl3945_expected_tpt_g_prot;
+			rs_priv->tgg = 1;
+			rs_priv->expected_tpt = iwl_expected_tpt_g_prot;
 		} else
-			rs_sta->expected_tpt = iwl3945_expected_tpt_g;
+			rs_priv->expected_tpt = iwl_expected_tpt_g;
 		break;
 
 	case MODE_IEEE80211A:
-		rs_sta->expected_tpt = iwl3945_expected_tpt_a;
+		rs_priv->expected_tpt = iwl_expected_tpt_a;
 		break;
 
 	default:
 		IWL_WARNING("Invalid phymode.  Defaulting to 802.11b\n");
 	case MODE_IEEE80211B:
-		rs_sta->expected_tpt = iwl3945_expected_tpt_b;
+		rs_priv->expected_tpt = iwl_expected_tpt_b;
 		break;
 	}
 
 	iwlwifi_sta_info_put(sta);
-	spin_unlock_irqrestore(&rs_sta->lock, flags);
+	spin_unlock_irqrestore(&rs_priv->lock, flags);
 
 	rssi = priv->last_rx_rssi;
 	if (rssi == 0)
@@ -1000,20 +961,19 @@ void iwl3945_rate_scale_init(struct ieee80211_hw *hw, s32 sta_id)
 
 	IWL_DEBUG(IWL_DL_INFO | IWL_DL_RATE, "Network RSSI: %d\n", rssi);
 
-	rs_sta->start_rate =
-			iwl3945_get_rate_index_by_rssi(rssi, priv->phymode);
+	rs_priv->start_rate = iwl_get_rate_index_by_rssi(rssi, priv->phymode);
 
 	IWL_DEBUG_RATE("leave: rssi %d assign rate index: "
-		       "%d (plcp 0x%x)\n", rssi, rs_sta->start_rate,
-		       iwl3945_rates[rs_sta->start_rate].plcp);
+		       "%d (plcp 0x%x)\n", rssi, rs_priv->start_rate,
+		       iwl_rates[rs_priv->start_rate].plcp);
 }
 
-void iwl3945_rate_control_register(struct ieee80211_hw *hw)
+void iwl_rate_control_register(struct ieee80211_hw *hw)
 {
 	iwlwifi_ieee80211_rate_control_register(&rs_ops);
 }
 
-void iwl3945_rate_control_unregister(struct ieee80211_hw *hw)
+void iwl_rate_control_unregister(struct ieee80211_hw *hw)
 {
 	iwlwifi_ieee80211_rate_control_unregister(&rs_ops);
 }

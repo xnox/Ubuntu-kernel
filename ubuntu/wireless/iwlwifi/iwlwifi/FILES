@@ -16,18 +16,20 @@ CHANGES
 patches/
 
 /* uCode / HW definitions */
+origin/iwl-hw.h
 origin/iwl-3945-hw.h
 origin/iwl-4965-hw.h
-origin/iwl-3945-commands.h
-origin/iwl-4965-commands.h
+origin/iwl-commands.h
+origin/iwl-eeprom.h
 origin/iwl-prph.h
 
 /* iwlwifi implementation */
 Makefile
+origin/iwlwifi.h
 origin/iwl3945-base.c
 origin/iwl4965-base.c
-origin/iwl-3945-debug.h
-origin/iwl-4965-debug.h
+origin/iwl-priv.h
+origin/iwl-debug.h
 origin/iwl-3945-rs.c
 origin/iwl-3945-rs.h
 origin/iwl-4965-rs.c
@@ -38,9 +40,9 @@ origin/iwl-3945.c
 origin/iwl-3945.h
 origin/iwl-4965.c
 origin/iwl-4965.h
+origin/iwl-channel.h
 origin/iwl-helpers.h
-origin/iwl-3945-io.h
-origin/iwl-4965-io.h
+origin/iwl-io.h
 origin/iwl-spectrum.h
 
 /* Advanced Makefile assistance scripts */

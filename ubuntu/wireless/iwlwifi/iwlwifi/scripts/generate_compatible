@@ -140,20 +140,20 @@ function do_script {
 
 makefile_modified=0
 (( !$has_mac80211_ht )) && {
-	grep -q 'export CONFIG_IWL4965_HT ?= y' Makefile
+	grep -q 'export CONFIG_IWLWIFI_HT ?= y' Makefile
 	if [ $? -eq 0 ]; then
 		sed -i -e \
-		's/export CONFIG_IWL4965_HT[^_].*$/export CONFIG_IWL4965_HT ?= n/' \
+		's/export CONFIG_IWLWIFI_HT[^_].*$/export CONFIG_IWLWIFI_HT ?= n/' \
 		Makefile
 		makefile_modified=1
 	fi
 }
 
 (( !$has_mac80211_ht_agg )) && {
-	grep -q 'export CONFIG_IWL4965_HT_AGG ?= y' Makefile
+	grep -q 'export CONFIG_IWLWIFI_HT_AGG ?= y' Makefile
 	if [ $? -eq 0 ]; then
 		sed -i -e \
-		's/export CONFIG_IWL4965_HT_AGG.*$/export CONFIG_IWL4965_HT_AGG ?= n/' \
+		's/export CONFIG_IWLWIFI_HT_AGG.*$/export CONFIG_IWLWIFI_HT_AGG ?= n/' \
 		Makefile
 		makefile_modified=1
 	fi

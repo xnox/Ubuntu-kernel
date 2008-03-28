@@ -1,20 +1,14 @@
-diff -urp origin/Kconfig new/Kconfig
---- origin/Kconfig	2007-10-30 14:34:26.000000000 +0800
-+++ new/Kconfig	2007-10-30 16:11:28.000000000 +0800
+iwlwifi: Remvoe WLAN_80211 dependency in Kconfig
+---
+diff --git a/Kconfig b/Kconfig
+index b20f937..010e583 100644
+--- a/Kconfig
++++ b/Kconfig
 @@ -1,6 +1,6 @@
- config IWL4965
- 	tristate "Intel Wireless WiFi 4965AGN"
+ config IWLWIFI
+ 	bool "Intel Wireless WiFi Link Drivers"
 -	depends on PCI && MAC80211 && WLAN_80211 && EXPERIMENTAL
 +	depends on PCI && MAC80211 && EXPERIMENTAL
  	select FW_LOADER
+ 	default n
  	---help---
- 	  Select to build the driver supporting the:
-@@ -82,7 +82,7 @@ config IWL4965_DEBUG
- 
- config IWL3945
- 	tristate "Intel PRO/Wireless 3945ABG/BG Network Connection"
--	depends on PCI && MAC80211 && WLAN_80211 && EXPERIMENTAL
-+	depends on PCI && MAC80211 && EXPERIMENTAL
- 	select FW_LOADER
- 	---help---
- 	  Select to build the driver supporting the:

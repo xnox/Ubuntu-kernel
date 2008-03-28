@@ -17,11 +17,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  net/mac80211/ieee80211.c |    5 +++--
  1 file changed, 3 insertions(+), 2 deletions(-)
 
-Index: compatible/net/mac80211/ieee80211.c
-===================================================================
---- compatible.orig/net/mac80211/ieee80211.c	2008-01-06 12:07:06.000000000 +0200
-+++ compatible/net/mac80211/ieee80211.c	2008-01-06 12:08:49.000000000 +0200
-@@ -3090,9 +3090,10 @@
+diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
+index a42e70e..0097b0a 100644
+--- a/net/mac80211/ieee80211.c
++++ b/net/mac80211/ieee80211.c
+@@ -3030,9 +3030,10 @@ ieee80211_rx_h_data(struct ieee80211_txrx_data *rx)
  		memcpy(dst, hdr->addr1, ETH_ALEN);
  		memcpy(src, hdr->addr3, ETH_ALEN);
  
@@ -34,3 +34,8 @@ Index: compatible/net/mac80211/ieee80211.c
  		break;
  	case 0:
  		/* DA SA BSSID */
+
+
+-- 
+John W. Linville
+linville@tuxdriver.com

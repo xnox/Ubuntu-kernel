@@ -7,17 +7,15 @@
 # The rest of the Makefile is Copyright (C) 2007 Intel Corporation
 #
 
+export CONFIG_IWLWIFI = y
 export CONFIG_IWL3945 ?= m
 export CONFIG_IWL4965 ?= m
-export CONFIG_IWL3945_SPECTRUM_MEASUREMENT ?= y
-export CONFIG_IWL4965_SPECTRUM_MEASUREMENT ?= y
-export CONFIG_IWL3945_DEBUG ?= y
-export CONFIG_IWL4965_DEBUG ?= y
-export CONFIG_IWL4965_HT ?= n
-export CONFIG_IWL4965_HT_AGG ?= n
-export CONFIG_IWL4965_SENSITIVITY ?= y
-export CONFIG_IWL3945_QOS  ?= y
-export CONFIG_IWL4965_QOS ?= y
+export CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT ?= y
+export CONFIG_IWLWIFI_DEBUG ?= y
+export CONFIG_IWLWIFI_HT ?= n
+export CONFIG_IWLWIFI_HT_AGG ?= n
+export CONFIG_IWLWIFI_SENSITIVITY ?= y
+export CONFIG_IWLWIFI_QOS ?= y
 export IWLWIFI_VERSION ?= test
 
 ifneq ('$(notdir $(if $(realpath /), $(realpath ${SHELL}), ${SHELL}))','bash')
@@ -28,13 +26,11 @@ $(warning 'make SHELL=/bin/bash'.)
 $(warning )
 endif
 
-ifeq ($(KSRC_OUTPUT),)
 ifeq ($(KSRC),)
-export KSRC_OUTPUT := /lib/modules/$(shell uname -r)/build
-endif #ifeq ($(KSRC),)
+export KSRC_OUTPUT ?= /lib/modules/$(shell uname -r)/build
 else
-export KSRC_OUTPUT ?= $(KSRC_OUTPUT)
-endif #ifeq ($(KSRC_OUTPUT),)
+export KSRC_OUTPUT ?= $(KSRC)
+endif
 export KSRC ?= /lib/modules/$(shell uname -r)/source
 export MAC80211_INC ?= $(KSRC)/include/net
 export KMISC ?= /lib/modules/$(shell uname -r)/kernel/drivers/net/wireless
@@ -57,40 +53,27 @@ ifeq ($(CONFIG_IWL3945),m)
 	list-m += iwl3945
 endif
 
-ifeq ($(CONFIG_IWL3945_DEBUG),y)
-	EXTRA_CFLAGS += -DCONFIG_IWL3945_DEBUG=y
+ifeq ($(CONFIG_IWLWIFI_DEBUG),y)
+	EXTRA_CFLAGS += -DCONFIG_IWLWIFI_DEBUG=y
 endif
 
-ifeq ($(CONFIG_IWL4965_DEBUG),y)
-	EXTRA_CFLAGS += -DCONFIG_IWL4965_DEBUG=y
+ifeq ($(CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT),y)
+	EXTRA_CFLAGS += -DCONFIG_IWLWIFI_SPECTRUM_MEASUREMENT=y
 endif
 
-ifeq ($(CONFIG_IWL3945_SPECTRUM_MEASUREMENT),y)
-	EXTRA_CFLAGS += -DCONFIG_IWL3945_SPECTRUM_MEASUREMENT=y
+ifeq ($(CONFIG_IWLWIFI_HT),y)
+	EXTRA_CFLAGS += -DCONFIG_IWLWIFI_HT=y
+endif
+ifeq ($(CONFIG_IWLWIFI_HT_AGG),y)
+	EXTRA_CFLAGS += -DCONFIG_IWLWIFI_HT_AGG=y
 endif
 
-ifeq ($(CONFIG_IWL4965_SPECTRUM_MEASUREMENT),y)
-	EXTRA_CFLAGS += -DCONFIG_IWL4965_SPECTRUM_MEASUREMENT=y
+ifeq ($(CONFIG_IWLWIFI_SENSITIVITY),y)
+	 EXTRA_CFLAGS += -DCONFIG_IWLWIFI_SENSITIVITY=y
 endif
 
-ifeq ($(CONFIG_IWL4965_HT),y)
-	EXTRA_CFLAGS += -DCONFIG_IWL4965_HT=y
-endif
-
-ifeq ($(CONFIG_IWL4965_HT_AGG),y)
-	EXTRA_CFLAGS += -DCONFIG_IWL4965_HT_AGG=y
-endif
-
-ifeq ($(CONFIG_IWL4965_SENSITIVITY),y)
-	 EXTRA_CFLAGS += -DCONFIG_IWL4965_SENSITIVITY=y
-endif
-
-ifeq ($(CONFIG_IWL3945_QOS),y)
-	EXTRA_CFLAGS += -DCONFIG_IWL3945_QOS=y
-endif
-
-ifeq ($(CONFIG_IWL4965_QOS),y)
-	EXTRA_CFLAGS += -DCONFIG_IWL4965_QOS=y
+ifeq ($(CONFIG_IWLWIFI_QOS),y)
+	EXTRA_CFLAGS += -DCONFIG_IWLWIFI_QOS=y
 endif
 
 export EXTRA_CFLAGS
@@ -146,21 +129,19 @@ distclean: clean
 
 sparse: check_inc source
 	@echo "Warning: Compiling in Check Mode!!!"
-	$(MAKE) C=2 CF="-Wall -D__CHECK_ENDIAN__" -C $(KSRC) O=$(KSRC_OUTPUT) M=$(shell pwd)/${DIR} modules
+	$(MAKE) C=2 CF="-Wall -D__CHECK_ENDIAN__" -C $(KSRC) O=$(KSRC_OUTPUT) M=$(PWD)/${DIR} modules
 
 ifeq ($(DEVMODE),y)
 modules:
 	@echo "Warning: In DEVMODE: No compatability checks are performed!!!"
-	$(MAKE) -C $(KSRC) O=$(KSRC_OUTPUT) M=$(shell pwd)/${DIR} EXTRA_CFLAGS="$(EXTRA_CFLAGS)" modules
+	$(MAKE) -C $(KSRC) O=$(KSRC_OUTPUT) M=$(PWD)/${DIR} EXTRA_CFLAGS="$(EXTRA_CFLAGS)" modules
 else
 modules: check_inc source
-	$(MAKE) -C $(KSRC) O=$(KSRC_OUTPUT) M=$(shell pwd)/${DIR} EXTRA_CFLAGS="$(EXTRA_CFLAGS)" modules
+	$(MAKE) -C $(KSRC) O=$(KSRC_OUTPUT) M=$(PWD)/${DIR} EXTRA_CFLAGS="$(EXTRA_CFLAGS)" modules
 endif
 
-patch_kernel:
-	@echo
-	@echo "This option is deprecated."
-	@echo
+patch_kernel: source
+	@scripts/patch_kernel $(KSRC)
 
 install: $(addprefix $(DIR),$(addsuffix .ko,$(list-m)))
 	@install -d $(KMISC)

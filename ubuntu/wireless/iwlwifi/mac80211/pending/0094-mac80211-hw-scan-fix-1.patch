@@ -1,8 +1,8 @@
-Index: compatible/net/mac80211/ieee80211_sta.c
-===================================================================
---- compatible.orig/net/mac80211/ieee80211_sta.c	2008-01-06 12:09:02.000000000 +0200
-+++ compatible/net/mac80211/ieee80211_sta.c	2008-01-06 12:09:12.000000000 +0200
-@@ -3419,12 +3419,18 @@
+diff --git a/net/mac80211/ieee80211_sta.c b/net/mac80211/ieee80211_sta.c
+index 0ae14e9..e0d1fbb 100644
+--- a/net/mac80211/ieee80211_sta.c
++++ b/net/mac80211/ieee80211_sta.c
+@@ -1878,12 +1878,18 @@ ieee80211_sta_rx_scan(struct net_device *dev, struct sk_buff *skb,
  	struct ieee80211_mgmt *mgmt;
  	u16 fc;
  
