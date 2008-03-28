@@ -3,7 +3,7 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: automake, autoconf, debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-13-386 [i386], linux-headers-2.6.24-13-generic [i386 amd64], linux-headers-2.6.24-13-hppa32 [hppa], linux-headers-2.6.24-13-hppa64 [hppa], linux-headers-2.6.24-13-itanium [ia64], linux-headers-2.6.24-13-lpia [lpia], linux-headers-2.6.24-13-lpiacompat [lpia], linux-headers-2.6.24-13-mckinley [ia64], linux-headers-2.6.24-13-powerpc [powerpc], linux-headers-2.6.24-13-powerpc-smp [powerpc], linux-headers-2.6.24-13-powerpc64-smp [powerpc], linux-headers-2.6.24-13-rt [i386 amd64], linux-headers-2.6.24-13-server [i386 amd64], linux-headers-2.6.24-13-sparc64 [sparc], linux-headers-2.6.24-13-sparc64-smp [sparc], linux-headers-2.6.24-13-virtual [i386], linux-headers-2.6.24-13-xen [i386 amd64]
+Build-Depends: automake, autoconf, debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-13-386 [i386], linux-headers-2.6.24-13-generic [i386 amd64], linux-headers-2.6.24-13-hppa32 [hppa], linux-headers-2.6.24-13-hppa64 [hppa], linux-headers-2.6.24-13-itanium [ia64], linux-headers-2.6.24-13-lpia [lpia], linux-headers-2.6.24-13-lpiacompat [lpia], linux-headers-2.6.24-13-mckinley [ia64], linux-headers-2.6.24-13-openvz [i386 amd64], linux-headers-2.6.24-13-powerpc [powerpc], linux-headers-2.6.24-13-powerpc-smp [powerpc], linux-headers-2.6.24-13-powerpc64-smp [powerpc], linux-headers-2.6.24-13-rt [i386 amd64], linux-headers-2.6.24-13-server [i386 amd64], linux-headers-2.6.24-13-sparc64 [sparc], linux-headers-2.6.24-13-sparc64-smp [sparc], linux-headers-2.6.24-13-virtual [i386], linux-headers-2.6.24-13-xen [i386 amd64]
 
 Package: linux-ubuntu-modules-2.6.24-13-386
 Architecture: i386
@@ -207,6 +207,32 @@ Architecture: ia64
 Section: base
 Priority: optional
 Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-13-mckinley
+Provides: linux-headers-lum, linux-headers-lum-2.6
+Description: Header files related to linux-ubuntu-modules version 2.6.24
+ This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lum-2.6.24-13/debian.README.gz for details
+
+Package: linux-ubuntu-modules-2.6.24-13-openvz
+Architecture: i386 amd64
+Section: universe/base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.24-13-openvz
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
+ x86/x86_64.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-openvz meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lum-2.6.24-13-openvz
+Architecture: i386 amd64
+Section: universe/base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-13-openvz
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites

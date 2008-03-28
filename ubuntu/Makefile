@@ -32,8 +32,11 @@ CFLAGS_btsco.o += -I$(src)/sound/alsa-driver/include -DCONFIG_SND_VERBOSE_PROCFS
 
 CFLAGS_dm-bbr.o			+= -I$(srctree)/drivers/md
 
-obj-$(CONFIG_ASFS_FS)		+= fs/asfs/
+ifneq ($(UBUNTU_FLAVOUR),openvz)
 obj-$(CONFIG_AUFS)		+= fs/aufs/
+endif
+
+obj-$(CONFIG_ASFS_FS)		+= fs/asfs/
 ifneq ($(UBUNTU_FLAVOUR),rt)
 obj-$(CONFIG_GFS_FS)		+= fs/gfs/
 endif
