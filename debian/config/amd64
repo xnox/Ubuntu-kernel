@@ -1,9 +1,5 @@
 # Ubuntu config
 
-ifeq ($(UBUNTU_FLAVOUR),virtual)
-CONFIG_VMWARE=m
-else
-
 ifeq ($(filter xen,$(UBUNTU_FLAVOUR)),)
 CONFIG_ALSA=m
 endif
@@ -94,6 +90,4 @@ endif
 
 CONFIG_STK11XX=m
 CONFIG_WIMAX_I2400M=m
-
-endif
 
