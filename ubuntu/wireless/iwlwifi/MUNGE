@@ -36,7 +36,6 @@ make -C iwlwifi KSRC=/lib/modules/`uname -r`/build source
 MF=Makefile.mac80211
 echo CONFIG_MAC80211=m > ${MF}
 echo "NOSTDINC_FLAGS += -I\$(src)/../../include" >> ${MF}
-echo "EXTRA_CFLAGS += -DCONFIG_MAC80211_LEDS" >> ${MF}
 cat mac80211/compatible/net/mac80211/Makefile >> ${MF}
 sed -i -e 's/mac80211\.o/iwlwifi_mac80211\.o/' -e 's/mac80211-objs/iwlwifi_mac80211-objs/g' -e 's/rc80211_simple/iwlwifi_rc80211_simple/g' ${MF}
 mv -f ${MF} mac80211/compatible/net/mac80211/Makefile
