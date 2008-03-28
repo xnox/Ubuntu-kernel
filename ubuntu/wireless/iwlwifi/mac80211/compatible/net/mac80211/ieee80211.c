@@ -3861,16 +3861,13 @@ ieee80211_rx_h_check(struct ieee80211_txrx_data *rx)
 			if (!rx->key) {
 				if (!rx->u.rx.ra_match)
 					return TXRX_DROP;
-#ifdef CONFIG_MAC80211_DEBUG
-				if (net_ratelimit())
-					printk(KERN_DEBUG "%s: RX WEP frame with "
-					       "unknown keyidx %d (A1=" MAC_FMT " A2="
-					       MAC_FMT " A3=" MAC_FMT ")\n",
-					       rx->dev->name, keyidx,
-					       MAC_ARG(hdr->addr1),
-					       MAC_ARG(hdr->addr2),
-					       MAC_ARG(hdr->addr3));
-#endif /* CONFIG_MAC80211_DEBUG */
+				printk(KERN_DEBUG "%s: RX WEP frame with "
+				       "unknown keyidx %d (A1=" MAC_FMT " A2="
+				       MAC_FMT " A3=" MAC_FMT ")\n",
+				       rx->dev->name, keyidx,
+				       MAC_ARG(hdr->addr1),
+				       MAC_ARG(hdr->addr2),
+				       MAC_ARG(hdr->addr3));
 				if (!rx->local->apdev)
 					return TXRX_DROP;
 				ieee80211_rx_mgmt(
