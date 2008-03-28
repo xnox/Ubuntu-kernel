@@ -1,6 +1,6 @@
 include $(src)/../../.config
 
-EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -I$(src)
+EXTRA_CFLAGS =-DIRCTL_DEV_MAJOR=61 -DLIRC_SERIAL_TRANSMITTER -DLIRC_SERIAL_SOFTCARRIER -I$(src)
 
 obj-$(CONFIG_LIRC_DEV)		+= lirc_dev/lirc_dev.o
 obj-$(CONFIG_LIRC_ATIUSB)	+= lirc_atiusb/lirc_atiusb.o
