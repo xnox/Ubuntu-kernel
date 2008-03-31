@@ -6,8 +6,8 @@
 # git tree gets removed and recreated.
 #
 LNAME=hardy-lum
-DAILY_BUILD_DIR=${KBDIR:=${HOME}/${LNAME}}
-LUM_GIT_REPO=${KREPO:=/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${LNAME}.git}
+DAILY_BUILD_DIR=${LUMBDIR:=${HOME}/${LNAME}}
+LUM_GIT_REPO=${LREPO:=/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${LNAME}.git}
 
 #
 # Nothing works unless there is a dput configuration.
