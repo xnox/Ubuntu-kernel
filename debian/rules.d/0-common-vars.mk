@@ -7,6 +7,19 @@ revision ?= $(word $(words $(revisions)),$(revisions))
 prev_revisions := $(filter-out $(revision),0.0 $(revisions))
 prev_revision := $(word $(words $(prev_revisions)),$(prev_revisions))
 
+# This is an internally used mechanism for the daily kernel builds. It
+# creates packages who's ABI is suffixed with a minimal representation of
+# the current git HEAD sha. If .git/HEAD is not present, then it uses the
+# uuidgen program,
+#
+# AUTOBUILD can also be used by anyone wanting to build a custom kernel
+# image, or rebuild the entire set of Ubuntu packages using custom patches
+# or configs.
+ppa_file    := $(CURDIR)/ppa_build_sha
+is_ppa_build    := $(shell if [ -f $(ppa_file) ] ; then echo yes; fi;)
+ifndef AUTOBUILD
+AUTOBUILD   := $(is_ppa_build)
+endif
 
 ifneq ($(NOKERNLOG),)
 ubuntu_log_opts += --no-kern-log
