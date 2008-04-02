@@ -1,3 +1,16 @@
+linux-backports-modules-2.6.24 (2.6.24-14.11) hardy; urgency=low
+
+  [Ben Collins]
+
+  * iwlwifi: Update to iwlwifi-1.2.25 and mac80211-10.0.4
+    - LP: #200950
+  * ubuntu: Slight cleanups to module hiearchy and Makefiles
+  * mac80211: Enable LED triggers
+  * iwlwifi: Add LED trigger support (rx and tx only)
+    - LP: #176090
+
+ --  <tim.gardner@canonical.com>  Wed, 02 Apr 2008 06:59:04 -0600
+
 linux-backports-modules-2.6.24 (2.6.24-13.10) hardy; urgency=low
 
   * Bump ABI to 13
