@@ -86,3 +86,4 @@ obj-$(CONFIG_TP_SMAPI_EC)	+= misc/thinkpad_ec.o
 obj-$(CONFIG_TP_SMAPI_HDAPS)	+= hwmon/hdaps_ec.o
 
 obj-$(CONFIG_DMRAID45)		+= md/
+obj-$(CONFIG_CX88)		+= media/cx88/
