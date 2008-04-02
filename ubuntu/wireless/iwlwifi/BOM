@@ -1,5 +1,24 @@
 #!/bin/sh
 #
+# This scruipt is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+
+#
+# Run this script when you update from one version of iwlwifi
+# to the next.
+#
+# The current Intel iwlwifi driver depends on a version
+# of the mac80211 stack that conflicts with the version
+# that exists in the kernel. Therefore, the fix is to modify
+# the public symbols in Intel's version and run both softmac
+# stacks.
+#
 # Retrieve the iwlwifi bill of materials and extract the contents. You
 # only need to do this when you are updating from one version
 # if iwlwifi to the next.
