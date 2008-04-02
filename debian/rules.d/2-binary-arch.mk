@@ -55,12 +55,9 @@ install-%: $(stampdir)/stamp-build-%
 
 	install -d $(firmdir)
 	cp -a ubuntu-firmware/zd1211 $(firmdir)/
-	cp -a ubuntu-firmware/wimax_alvarion $(firmdir)/
-	cp -a ubuntu-firmware/wimax_motorola $(firmdir)/
 	for i in ubuntu-firmware/*/[[:lower:]]*; do \
 	  case $${i##*/} in \
 	    zd121*) ;; \
-	    wimax*) ;; \
 	    *) cp $$i "$(firmdir)/${i##*/}";; \
 	  esac; \
 	done
