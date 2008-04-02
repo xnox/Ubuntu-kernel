@@ -35,11 +35,15 @@ patch -p0 < 1.2.0.update.patch
 # just run this script.
 #
 
+if [ -z "$KSRC" ]; then
+	KSRC=/lib/modules/`uname -r`/build
+fi
+
 #
 # Apply all applicable patches
 #
-make -C mac80211 KSRC=/lib/modules/`uname -r`/build source
-make -C iwlwifi KSRC=/lib/modules/`uname -r`/build source
+make -C mac80211 KSRC=${KSRC} source
+make -C iwlwifi KSRC=${KSRC} source
 
 #
 # Insert the include path into the mac80211 Makefile
