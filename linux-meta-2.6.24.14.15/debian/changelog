@@ -1,3 +1,10 @@
+linux-meta (2.6.24.14.15) hardy; urgency=low
+
+  * Bump ABI to -14
+  * Added openvz to i386/amd64 meta dependencies.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 02 Apr 2008 09:28:58 -0600
+
 linux-meta (2.6.24.12.14) hardy; urgency=low
 
   * Removed dependency to linux-restricted-modules from virtual.

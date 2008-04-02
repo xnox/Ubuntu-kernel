@@ -1,0 +1,42 @@
+Package: linux-headers-openvz
+Architecture: i386 amd64
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-openvz
+Description: rt Linux kernel headers
+ This package will always depend on the latest rt kernel headers
+ available.
+
+Package: linux-image-openvz
+Architecture: i386 amd64
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-openvz, linux-ubuntu-modules-${kernel-abi-version}-openvz
+Description: Real time Linux kernel image
+ This package will always depend on the latest rt kernel image
+ available.
+
+Package: linux-restricted-modules-openvz
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-openvz
+Description: Restricted Linux modules for rt kernels
+ This package will always depend on the latest restricted modules available
+ for rt kernels.
+
+Package: linux-openvz
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-openvz (= ${binary:Version}), linux-restricted-modules-openvz (= ${binary:Version})
+Description: Complete rt Linux kernel
+ This package will always depend on the latest complete rt Linux kernel
+ available.
+
+Package: linux-backports-modules-RELEASE_NAME-openvz
+Architecture: amd64 i386
+Depends: linux-backports-modules-${kernel-abi-version}-openvz
+Description: Backported drivers for rt kernel image
+ This empty package allows people to keep their backported modules
+ up-to-date when upgrading their Linux kernel.
