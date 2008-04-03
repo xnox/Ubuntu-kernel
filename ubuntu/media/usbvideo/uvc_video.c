@@ -113,9 +113,11 @@ static int uvc_get_video_ctrl(struct uvc_video_device *video,
 		struct uvc_format *format = NULL;
 		struct uvc_frame *frame = NULL;
 
-		if (ctrl->bFormatIndex <= video->streaming->nformats)
+		if (ctrl->bFormatIndex <= video->streaming->nformats &&
+			ctrl->bFormatIndex > 0)
 			format = &video->streaming->format[ctrl->bFormatIndex - 1];
-		if (format && ctrl->bFrameIndex <= format->nframes) {
+		if (format && ctrl->bFrameIndex <= format->nframes &&
+			ctrl->bFrameIndex > 0) {
 			frame = &format->frame[ctrl->bFrameIndex - 1];
 			ctrl->dwMaxVideoFrameSize = frame->dwMaxVideoFrameBufferSize;
 		}
