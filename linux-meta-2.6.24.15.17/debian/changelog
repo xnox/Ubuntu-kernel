@@ -1,3 +1,9 @@
+linux-meta (2.6.24.15.17) hardy; urgency=low
+
+  * Bump ABI to -17
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 03 Apr 2008 14:43:41 -0600
+
 linux-meta (2.6.24.14.16) hardy; urgency=low
 
   * Forgot to change the ABI in debian/rules.
