@@ -1,3 +1,16 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-14.19) hardy; urgency=low
+
+  [Amit Kucheria]
+
+  * LPIA: Remove firmware
+
+  [Tim Gardner]
+
+  * Build cx88 modules
+    - LP: #202065
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 03 Apr 2008 07:11:27 -0600
+
 linux-ubuntu-modules-2.6.24 (2.6.24-14.18) hardy; urgency=low
 
   [Amit Kucheria]
