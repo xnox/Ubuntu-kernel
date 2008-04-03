@@ -87,4 +87,4 @@ obj-$(CONFIG_TP_SMAPI_HDAPS)	+= hwmon/hdaps_ec.o
 
 obj-$(CONFIG_DMRAID45)		+= md/
 obj-$(CONFIG_CX88)		+= media/cx88/
-obj-$(CONFIG_CX88)		+= media/saa7134/
+obj-$(CONFIG_SAA7134)		+= media/saa7134/

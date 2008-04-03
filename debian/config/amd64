@@ -3,6 +3,7 @@
 ifeq ($(filter xen,$(UBUNTU_FLAVOUR)),)
 CONFIG_ALSA=m
 CONFIG_CX88=m
+CONFIG_SAA7134=m
 endif
 CONFIG_BLK_DEV_GNBD=m
 
