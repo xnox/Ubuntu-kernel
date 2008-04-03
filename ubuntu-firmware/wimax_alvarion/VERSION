@@ -1,9 +1,0 @@
-Alvarion_BS_v2.0.2.2
-
-31fb23f172cb7152e0e9dcfaf7704624  DM_FPGA_USB.elf
-bf2a3b4a2165f27377b614b44eb9801e  DspsIniFile.elf
-e988da497345d5444f033f46c6e504e4  FW_DynamicConfig.elf
-d8dc3bafbb62d9724cd098acba36a234  integCDMA.data.elf
-38613df9063b29b034dd34d52e2a3c65  integCDMA.op.elf
-ef879821773aa50296da78fea74b6925  MacPhyIntegration.elf
-9a7f15912169ef1496ba13aeb224d751  Poke.elf
