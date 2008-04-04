@@ -3,7 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3)
+Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3), gawk
 
 Package: linux
 Architecture: i386 amd64 sparc ia64 lpia
