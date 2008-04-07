@@ -283,8 +283,10 @@ static int wme_qdiscop_enqueue(struct sk_buff *skb, struct Qdisc* qd)
 				queue = ht_queue;
 				pkt_data->ht_queue = 1;
 			}
+#ifdef CONFIG_MAC80211_DEBUG
 			printk(KERN_DEBUG "wme:%s ht_queue=%d,queue=%d pool=0x%lX qdisc=%p\n",
 				 __func__,ht_queue,queue,q->qdisc_pool,q);
+#endif
 
 			iwlwifi_sta_info_put(sta);
 		}
