@@ -1,0 +1,28 @@
+#!/bin/bash
+export SRC=$(pwd)
+export RULES=$SRC/modify.rules
+
+cp /dev/null $RULES
+$SRC/scripts/create-config-rules $SRC/wireless >>$RULES
+$SRC/scripts/create-config-rules $SRC/mac80211 >>$RULES
+$SRC/scripts/create-config-rules $SRC/rt2x00   >>$RULES
+
+$SRC/scripts/create-export-rules $SRC/wireless >>$RULES
+$SRC/scripts/create-export-rules $SRC/mac80211 >>$RULES
+
+# Avoid double modifications
+echo "s/LBM_(LBM_)+/LBM_/g" >> $RULES
+echo "s/rt2x_(rt2x_)+/rt2x_/g" >>$RULES
+
+$SRC/scripts/modify-wireless
+$SRC/scripts/modify-mac80211
+$SRC/scripts/modify-rt2x00
+
+find . -name '*.[ch]' | while read file; do
+	echo "$Processing $file..."
+	sed -i -r -f $RULES $file
+done
+
+rm -f $RULES
+
+exit 0

@@ -1,0 +1,8 @@
+#!/bin/bash
+find $1 -type f -name Kconfig|while read file; do
+	awk '
+		$1 == "config"{
+			print "s/CONFIG_" $2 "/LBM_CONFIG_" $2 "/g"
+		}
+	' $file
+done | sort -u

@@ -1,0 +1,9 @@
+#!/bin/bash
+find $1 -type f -name Kconfig|while read file; do
+	awk '
+		$1 == "config"{
+			print "#LBM_CONFIG_" $2 "=y"
+			print "#NOSTDINC_FLAGS += -D\"LBM_CONFIG_" $2 "=y\""
+		}
+	' $file
+done

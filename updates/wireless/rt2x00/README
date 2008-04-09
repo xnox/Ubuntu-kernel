@@ -1,0 +1,13 @@
+ToDo:
+
+This might only work as long as no other mac80211 stack tries to register
+because the sysfs entry is still the same.
+
+LED support is turned of because this requires even more modules specially
+prepared (e.q. blink_set is unknown to the Hardy version of led.h).
+
+For debugging:
+
+There are several debug options (disabled by default) in te config file.
+It might be useful to enable some of them by uncommenting those line before
+compiling.

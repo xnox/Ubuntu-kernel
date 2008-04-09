@@ -1,0 +1,7 @@
+This are scripts to pull in a new version of the serialmonkey driver/kernel.
+
+get-src: (optionally) pulls remote git and copies files.
+modify-src: changes the source to use separate config options, fit into
+		external build and use private symbols.
+create-config: Creates ouput usable for config (use with care since only y
+		choices are created)

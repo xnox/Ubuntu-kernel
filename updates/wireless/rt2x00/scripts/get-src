@@ -1,0 +1,52 @@
+#!/bin/bash
+SRC=~/src/rt2x00
+GITSRC=git://git.kernel.org/pub/scm/linux/kernel/git/ivd/rt2x00.git
+DOWNLOAD=false
+
+while [ $# -ne 0 ]; do
+	case "$1" in
+		--download|-d)
+			DOWNLOAD=true
+			;;
+	esac
+	shift
+done
+
+if $DOWNLOAD; then
+	if [ ! -d $SRC ]; then
+		git clone $GITSRC $SRC
+	else
+		(cd $SRC && git pull)
+	fi
+fi
+
+echo "Recreating include..."
+rm -rf include
+mkdir -p include/net
+mkdir -p include/linux
+cp $SRC/include/net/mac80211.h include/net
+cp $SRC/include/net/cfg80211.h include/net
+cp $SRC/include/net/wireless.h include/net
+cp $SRC/include/net/iw_handler.h include/net
+cp $SRC/include/linux/nl80211.h include/linux
+cp $SRC/include/linux/ieee80211.h include/linux
+#cp $SRC/include/linux/leds.h include/linux
+cp $SRC/include/linux/wireless.h include/linux
+# Added later to remove incompatible pointer warning
+cp $SRC/include/linux/netlink.h include/linux
+cp $SRC/include/net/sch_generic.h include/net
+
+echo "Recreating rt2x00..."
+rm -rf rt2x00
+cp -R $SRC/drivers/net/wireless/rt2x00 .
+
+echo "Recreating mac80211..."
+rm -rf mac80211
+cp -R $SRC/net/mac80211 .
+
+echo "Recreating wireless..."
+rm -rf wireless
+cp -R $SRC/net/wireless .
+rm wireless/wext.c
+
+#./modify-src

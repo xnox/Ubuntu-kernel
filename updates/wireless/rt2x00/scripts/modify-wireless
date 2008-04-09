@@ -1,0 +1,25 @@
+#!/bin/bash
+
+DIR=wireless
+
+if [ ! -f $DIR/Makefile.save ]; then
+	cp $DIR/Makefile $DIR/Makefile.save
+fi
+
+cat << EOD >$DIR/Makefile
+include \$(src)/../config
+
+rt2x_wext-y	:= wext.o
+
+$(
+	cat $DIR/Makefile.save | sed -f $RULES \
+		-e 's/cfg80211/rt2x_cfg80211/' \
+		-e 's/wext\.o/rt2x_wext.o/'
+)
+EOD
+
+#
+# Special modifications to the wireless source code.
+#
+sed -i -e 's/cfg80211_init/rt2x_cfg80211_init/' $DIR/core.c
+#sed -i -e 's/\.name = "ieee80211",/.name = "rt2x_ieee80211",/' $DIR/sysfs.c

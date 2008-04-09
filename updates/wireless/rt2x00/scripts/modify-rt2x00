@@ -1,0 +1,17 @@
+#!/bin/bash
+
+DIR=rt2x00
+
+if [ ! -f $DIR/Makefile.save ]; then
+	cp $DIR/Makefile $DIR/Makefile.save
+fi
+
+cat << EOD >$DIR/Makefile
+include \$(src)/../config
+
+$(cat $DIR/Makefile.save | sed -r -f $RULES)
+EOD
+
+#
+# Special modifications to the wireless source code.
+#

@@ -1,0 +1,11 @@
+#!/bin/bash
+find $1 -name '*.[ch]' -exec cat {} \; |
+	awk '
+		/EXPORT_SYMBOL(_GPL)?/{
+			sub(/.*EXPORT_SYMBOL(_GPL)?\(/, "")
+			sub(/\);.*/, "")
+			if (substr($0, 1, 5) == "rt2x_")
+				next
+			print "s/" $0 "/rt2x_" $0 "/g"
+		}
+	'
