@@ -28,14 +28,9 @@ struct tio_work {
 	struct completion tio_complete;
 };
 
-static int
-blockio_bio_endio(struct bio *bio, unsigned int bytes_done, int error)
+static void blockio_bio_endio(struct bio *bio, int error)
 {
 	struct tio_work *tio_work = bio->bi_private;
-
-	/* Ignore partials */
-	if (bio->bi_size)
-		return 1;
 
 	error = test_bit(BIO_UPTODATE, &bio->bi_flags) ? error : -EIO;
 
@@ -47,8 +42,6 @@ blockio_bio_endio(struct bio *bio, unsigned int bytes_done, int error)
 		complete(&tio_work->tio_complete);
 
 	bio_put(bio);
-
-	return 0;
 }
 
 /*
@@ -169,8 +162,8 @@ blockio_open_path(struct iet_volume *volume, const char *path)
 
 	bdev = open_bdev_excl(path, flags, THIS_MODULE);
 	if (IS_ERR(bdev)) {
-		err = PTR_ERR (bdev);
-		eprintk("Can't open device %s \n", path);
+		err = PTR_ERR(bdev);
+		eprintk("Can't open device %s, error %d\n", path, err);
 		bio_data->bdev = NULL;
 	} else {
 		bio_data->bdev = bdev;
@@ -217,7 +210,7 @@ gen_scsiid(struct iet_volume *volume, struct inode *inode)
 	p = (u32 *) (volume->scsi_id + VENDOR_ID_LEN);
 	*(p + 0) = volume->target->trgt_param.target_type;
 	*(p + 1) = volume->target->tid;
-	*(p + 2) = (unsigned int) inode->i_ino;
+	*(p + 2) = volume->lun;
 	*(p + 3) = (unsigned int) inode->i_sb->s_dev;
 }
 
@@ -319,6 +312,7 @@ blockio_detach(struct iet_volume *volume)
 
 	if (bio_data->bdev)
 		close_bdev_excl(bio_data->bdev);
+	kfree(bio_data->path);
 
 	kfree(volume->private);
 }
