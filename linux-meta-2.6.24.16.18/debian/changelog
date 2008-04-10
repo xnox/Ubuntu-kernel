@@ -2,6 +2,10 @@ linux-meta (2.6.24.16.18) hardy; urgency=low
 
   * Bump ABI to -16
 
+  [Daniel Hahler]
+
+  * Fix references to "rt" in "xen" descriptions.
+
  -- Tim Gardner <tim.gardner@canonical.com>  Tue, 08 Apr 2008 12:27:04 -0600
 
 linux-meta (2.6.24.15.17) hardy; urgency=low

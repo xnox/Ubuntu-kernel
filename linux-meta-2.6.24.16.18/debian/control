@@ -1007,8 +1007,8 @@ Architecture: i386 amd64
 Section: devel
 Priority: optional
 Depends: linux-headers-${kernel-abi-version}-xen
-Description: rt Linux kernel headers
- This package will always depend on the latest rt kernel headers
+Description: Xen Linux kernel headers
+ This package will always depend on the latest xen kernel headers
  available.
 
 Package: linux-image-xen
@@ -1016,8 +1016,8 @@ Architecture: i386 amd64
 Section: metapackages
 Priority: optional
 Depends: linux-image-${kernel-abi-version}-xen, linux-ubuntu-modules-${kernel-abi-version}-xen
-Description: Real time Linux kernel image
- This package will always depend on the latest rt kernel image
+Description: Xen Linux kernel image
+ This package will always depend on the latest xen kernel image
  available.
 
 Package: linux-restricted-modules-xen
@@ -1025,23 +1025,23 @@ Architecture: i386 amd64
 Section: restricted/metapackages
 Priority: optional
 Depends: linux-restricted-modules-${kernel-abi-version}-xen
-Description: Restricted Linux modules for rt kernels
+Description: Restricted Linux modules for xen kernels
  This package will always depend on the latest restricted modules available
- for rt kernels.
+ for xen kernels.
 
 Package: linux-xen
 Architecture: i386 amd64
 Section: restricted/metapackages
 Priority: optional
 Depends: linux-image-xen (= ${binary:Version}), linux-restricted-modules-xen (= ${binary:Version})
-Description: Complete rt Linux kernel
- This package will always depend on the latest complete rt Linux kernel
+Description: Xen Linux kernel
+ This package will always depend on the latest complete xen Linux kernel
  available.
 
 Package: linux-backports-modules-hardy-xen
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-xen
-Description: Backported drivers for rt kernel image
+Description: Backported drivers for xen kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
