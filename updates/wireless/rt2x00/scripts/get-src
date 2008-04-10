@@ -14,7 +14,9 @@ done
 
 if $DOWNLOAD; then
 	if [ ! -d $SRC ]; then
-		git clone $GITSRC $SRC
+		cd $(dirname $SRC)
+		git clone $GITSRC $(basename $SRC)
+		cd -
 	else
 		(cd $SRC && git pull)
 	fi

@@ -1,3 +1,50 @@
+This directory contains the rt2x00 driver from http://rt2x00.serialmonkey.com
+
+Gutsy release of Ubuntu used to have this driver shipped with lbm. Since
+the driver got into mainline Hardy includes this in the kernel modules.
+Unfortunately the version of the rt2x00 driver that came with 2.6.24 was
+not working well. Even the current 2.6.25 version does not solve the problems,
+so we now include this alternative version with lbm.
+
+The git repository git://git.kernel.org/pub/scm/linux/kernel/git/ivd/rt2x00.git/
+contains basically an upstream kernel with the development version of the
+rt2x00 driver (Maybe the wireless stack is modified, too. But at least it is
+the latest kernel version).
+
+Since the wireless stack, which is used by the driver is more recent/different
+from the one that comes with the kernel, the driver needs to be modified so
+it uses a private mac80211 and wireless (cfg80211) module.
+
+To get the driver compiled there are several steps necessary:
+
+1. The script ./scripts/get-src is used to copy files from the git tree to
+   the current working directory. (-d should automaticall do a clone/pull)
+2. Then ./scripts/modify-src will adapt the sources by:
+   a) Changing all local config options (Makefile, .c and .h files) to be
+      prefixed LBM_.
+   b) Modifying the makefiles to create modules prefixed by rt2x_ and to
+      include the options file and the local headers.
+   c) Finding the exported functions (plus init functions) of the modified
+      libraries and also prefix them with rt2x_.
+3. The configuration options are in the config file.
+4. The makefile works from the debian build or can be started locally.
+
+Scripts:
+get-src:             Copies source (optionally cloning or pulling the git tree).
+modify-src:          Controls modifications by calling modify and create-rules
+                     scripts and the execute an sed with the created rules on
+                     every *.[ch] file.
+modify-mac80211:     Specific modifications in the mac80211 directory.
+modify-rt2x00:       Specific modifications in the rt2x00 directory.
+modify-wireless:     Specific modifications in the wireless directory.
+create-config:       A helper that scans Kconfig files in a given directory
+                     and creates output suitable for the config file (but
+                     the output has to be used with care).
+create-config-rules: This scans all Kconfig files in a given directory and
+                     creates sed rules (stdout) to prefix LBM_.
+create-export-rules: This scans all *.[ch] files in the given directory and
+                     creates sed rules (stdout) to prefix rt2x_.
+
 ToDo:
 
 This might only work as long as no other mac80211 stack tries to register
@@ -11,3 +58,5 @@ For debugging:
 There are several debug options (disabled by default) in te config file.
 It might be useful to enable some of them by uncommenting those line before
 compiling.
+
+Stefan Bader <stefan.bader@canonical.com>			     2008-04-10
