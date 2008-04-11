@@ -22,10 +22,7 @@
 #include <linux/slab.h>
 #include <linux/time.h>
 #include <linux/errno.h>
-#include <linux/mutex.h>
 #include <sound/core.h>
-
-static DEFINE_MUTEX(register_mutex);
 
 /**
  * snd_device_new - create an ALSA device component
@@ -56,16 +53,12 @@ int snd_device_new(struct snd_card *card, snd_device_type_t type,
 		snd_printk(KERN_ERR "Cannot allocate device\n");
 		return -ENOMEM;
 	}
-
 	dev->card = card;
 	dev->type = type;
 	dev->state = SNDRV_DEV_BUILD;
 	dev->device_data = device_data;
 	dev->ops = ops;
-
-	mutex_lock(&register_mutex);
 	list_add(&dev->list, &card->devices);	/* add to the head of list */
-	mutex_unlock(&register_mutex);
 	return 0;
 }
 
@@ -89,7 +82,6 @@ int snd_device_free(struct snd_card *card, void *device_data)
 	
 	snd_assert(card != NULL, return -ENXIO);
 	snd_assert(device_data != NULL, return -ENXIO);
-	mutex_lock(&register_mutex);
 	list_for_each_entry(dev, &card->devices, list) {
 		if (dev->device_data != device_data)
 			continue;
@@ -105,10 +97,8 @@ int snd_device_free(struct snd_card *card, void *device_data)
 				snd_printk(KERN_ERR "device free failure\n");
 		}
 		kfree(dev);
-		mutex_unlock(&register_mutex);
 		return 0;
 	}
-	mutex_unlock(&register_mutex);
 	snd_printd("device free %p (from %p), not found\n", device_data,
 		   __builtin_return_address(0));
 	return -ENXIO;
@@ -135,7 +125,6 @@ int snd_device_disconnect(struct snd_card *card, void *device_data)
 
 	snd_assert(card != NULL, return -ENXIO);
 	snd_assert(device_data != NULL, return -ENXIO);
-	mutex_lock(&register_mutex);
 	list_for_each_entry(dev, &card->devices, list) {
 		if (dev->device_data != device_data)
 			continue;
@@ -145,10 +134,8 @@ int snd_device_disconnect(struct snd_card *card, void *device_data)
 				snd_printk(KERN_ERR "device disconnect failure\n");
 			dev->state = SNDRV_DEV_DISCONNECTED;
 		}
-		mutex_unlock(&register_mutex);
 		return 0;
 	}
-	mutex_unlock(&register_mutex);
 	snd_printd("device disconnect %p (from %p), not found\n", device_data,
 		   __builtin_return_address(0));
 	return -ENXIO;
@@ -174,25 +161,18 @@ int snd_device_register(struct snd_card *card, void *device_data)
 
 	snd_assert(card != NULL, return -ENXIO);
 	snd_assert(device_data != NULL, return -ENXIO);
-
-	mutex_lock(&register_mutex);
 	list_for_each_entry(dev, &card->devices, list) {
 		if (dev->device_data != device_data)
 			continue;
 		if (dev->state == SNDRV_DEV_BUILD && dev->ops->dev_register) {
-			if ((err = dev->ops->dev_register(dev)) < 0) {
-				mutex_unlock(&register_mutex);
+			if ((err = dev->ops->dev_register(dev)) < 0)
 				return err;
-			}
 			dev->state = SNDRV_DEV_REGISTERED;
-			mutex_unlock(&register_mutex);
 			return 0;
 		}
-		mutex_unlock(&register_mutex);
 		snd_printd("snd_device_register busy\n");
 		return -EBUSY;
 	}
-	mutex_unlock(&register_mutex);
 	snd_BUG();
 	return -ENXIO;
 }
@@ -209,17 +189,13 @@ int snd_device_register_all(struct snd_card *card)
 	int err;
 	
 	snd_assert(card != NULL, return -ENXIO);
-	mutex_lock(&register_mutex);
 	list_for_each_entry(dev, &card->devices, list) {
 		if (dev->state == SNDRV_DEV_BUILD && dev->ops->dev_register) {
-			if ((err = dev->ops->dev_register(dev)) < 0) {
-				mutex_unlock(&register_mutex);
+			if ((err = dev->ops->dev_register(dev)) < 0)
 				return err;
-			}
 			dev->state = SNDRV_DEV_REGISTERED;
 		}
 	}
-	mutex_unlock(&register_mutex);
 	return 0;
 }
 
