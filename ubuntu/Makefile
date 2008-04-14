@@ -75,11 +75,6 @@ obj-$(CONFIG_MMC_SD8688)       += wireless/marvell/8688_bt/
 
 obj-$(CONFIG_ET131X)		+= net/et131x/
 obj-$(CONFIG_IGB)		+= net/igb/
-obj-$(CONFIG_VMWARE)		+= openvm/vmblock/ 
-obj-$(CONFIG_VMWARE)		+= openvm/vmhgfs/
-obj-$(CONFIG_VMWARE)		+= openvm/vmmemctl/
-obj-$(CONFIG_VMWARE)		+= openvm/vmxnet/
-obj-$(CONFIG_VMWARE)		+= openvm/vmsync/
 
 obj-$(CONFIG_TP_SMAPI)		+= misc/tp_smapi.o
 obj-$(CONFIG_TP_SMAPI_EC)	+= misc/thinkpad_ec.o
