@@ -720,8 +720,8 @@ EXPORT_SYMBOL(drm_mmap);
 
 #define DRM_NOPFN_EXTRA 15 /* Fault 16 pages at a time in */
 
-static unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
-				     unsigned long address)
+unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
+			      unsigned long address)
 {
 	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
 	unsigned long page_offset;
@@ -832,6 +832,7 @@ out_unlock:
 	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
+EXPORT_SYMBOL(drm_bo_vm_nopfn);
 #endif
 
 static void drm_bo_vm_open_locked(struct vm_area_struct *vma)

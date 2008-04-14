@@ -404,6 +404,9 @@ void i915_emit_breadcrumb(struct drm_device *dev)
 	RING_LOCALS;
 
 	if (++dev_priv->counter > BREADCRUMB_MASK) {
+#ifdef I915_HAVE_FENCE
+		i915_invalidate_reported_sequence(dev);
+#endif
 		 dev_priv->counter = 1;
 		 DRM_DEBUG("Breadcrumb counter wrapped around\n");
 	}
@@ -473,7 +476,8 @@ static int i915_dispatch_cmdbuffer(struct drm_device * dev,
 
 	i915_emit_breadcrumb( dev );
 #ifdef I915_HAVE_FENCE
-	drm_fence_flush_old(dev, 0, dev_priv->counter);
+	if (unlikely((dev_priv->counter & 0xFF) == 0))
+		drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
 	return 0;
 }
@@ -527,7 +531,8 @@ static int i915_dispatch_batchbuffer(struct drm_device * dev,
 
 	i915_emit_breadcrumb( dev );
 #ifdef I915_HAVE_FENCE
-	drm_fence_flush_old(dev, 0, dev_priv->counter);
+	if (unlikely((dev_priv->counter & 0xFF) == 0))
+		drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
 	return 0;
 }
@@ -601,7 +606,7 @@ void i915_dispatch_flip(struct drm_device * dev, int planes, int sync)
 
 	i915_emit_breadcrumb(dev);
 #ifdef I915_HAVE_FENCE
-	if (!sync)
+	if (unlikely(!sync && ((dev_priv->counter & 0xFF) == 0)))
 		drm_fence_flush_old(dev, 0, dev_priv->counter);
 #endif
 }
@@ -1049,7 +1054,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 			fence_arg->handle = fence->base.hash.key;
 			fence_arg->fence_class = fence->fence_class;
 			fence_arg->type = fence->type;
-			fence_arg->signaled = fence->signaled;
+			fence_arg->signaled = fence->signaled_types;
 		}
 	}
 	drm_fence_usage_deref_unlocked(&fence);

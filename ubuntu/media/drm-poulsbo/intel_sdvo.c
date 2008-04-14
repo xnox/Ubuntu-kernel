@@ -36,6 +36,9 @@
 #define MAX_VAL 1000
 #define DPLL_CLOCK_PHASE_9 (1<<9 | 1<<12)
 
+#define PCI_PORT5_REG80_FFUSE				0xD0058000
+#define PCI_PORT5_REG80_SDVO_DISABLE		0x0020
+
 typedef struct _EXTVDATA
 {
     u32 Value;
@@ -333,12 +336,14 @@ static bool intel_sdvo_read_byte(struct drm_output *output, u8 addr,
 }
 
 
+#if 0
 static bool intel_sdvo_read_byte_quiet(struct drm_output *output, int addr,
 				       u8 *ch)
 {
 	return true;
 
 }
+#endif
 
 static bool intel_sdvo_write_byte(struct drm_output *output, int addr,
 				  u8 ch)
@@ -771,6 +776,7 @@ static bool intel_sdvo_mode_fixup(struct drm_output *output,
 	return true;
 }
 
+#if 0
 static void i830_sdvo_map_hdtvstd_bitmask(struct drm_output * output)
 {
 	struct intel_output *intel_output = output->driver_private;
@@ -823,7 +829,7 @@ static void i830_sdvo_map_hdtvstd_bitmask(struct drm_output * output)
 	sdvo_priv->TVStdBitmask = SDVO_HDTV_STD_ITURBT601_576p50;
 	break;
     default:
-	PSB_DEBUG(PSB_D_GENERAL, "ERROR: Unknown TV Standard!!!\n");
+	DRM_DEBUG("ERROR: Unknown TV Standard!!!\n");
 	/*Invalid return 0 */
 	sdvo_priv->TVStdBitmask = 0;
     }
@@ -905,20 +911,21 @@ static void i830_sdvo_map_sdtvstd_bitmask(struct drm_output * output)
 	break;
 
     case TVSTANDARD_SECAM_L1:
-	PSB_DEBUG(PSB_D_GENERAL, "TVSTANDARD_SECAM_L1 not supported by encoder\n");
+	DRM_DEBUG("TVSTANDARD_SECAM_L1 not supported by encoder\n");
 	break;
 
     case TVSTANDARD_SECAM_H:
-	PSB_DEBUG(PSB_D_GENERAL, "TVSTANDARD_SECAM_H not supported by encoder\n");
+	DRM_DEBUG("TVSTANDARD_SECAM_H not supported by encoder\n");
 	break;
 
     default:
-	PSB_DEBUG(PSB_D_GENERAL, "ERROR: Unknown TV Standard\n");
+	DRM_DEBUG("ERROR: Unknown TV Standard\n");
 	/*Invalid return 0 */
 	sdvo_priv->TVStdBitmask = 0;
 	break;
     }
 }
+#endif 
 
 static bool i830_sdvo_set_tvoutputs_formats(struct drm_output * output)
 {
@@ -1003,7 +1010,7 @@ static bool i830_sdvo_create_preferred_input_timing(struct drm_output * output,
 }
 
 static bool i830_sdvo_get_preferred_input_timing(struct drm_output * output,
-				     struct i830_sdvo_dtd *output_dtd)
+				     struct intel_sdvo_dtd *output_dtd)
 {
     return intel_sdvo_get_timing(output,
 				SDVO_CMD_GET_PREFERRED_INPUT_TIMING_PART1,
@@ -1139,8 +1146,8 @@ static bool i830_sdvo_get_input_output_pixelclock_range(struct drm_output * outp
 	sdvo_priv->dwMinInDotClk = (sdvo_priv->dwMinInDotClk) * 10000;
 	sdvo_priv->dwMaxInDotClk = (sdvo_priv->dwMaxInDotClk) * 10000;
     }
-    PSB_DEBUG(PSB_D_GENERAL, "MinDotClk = 0x%lx\n", sdvo_priv->dwMinInDotClk);
-    PSB_DEBUG(PSB_D_GENERAL, "MaxDotClk = 0x%lx\n", sdvo_priv->dwMaxInDotClk);
+    DRM_DEBUG("MinDotClk = 0x%x\n", sdvo_priv->dwMinInDotClk);
+    DRM_DEBUG("MaxDotClk = 0x%x\n", sdvo_priv->dwMaxInDotClk);
 
     return TRUE;
 
@@ -1190,7 +1197,7 @@ static bool i830_sdvo_get_supported_tvoutput_formats(struct drm_output * output,
     *pTVStdFormat = (((u32) byRets[2] & 0xF8) |
 		     ((u32) byRets[3] << 8) |
 		     ((u32) byRets[4] << 16) | ((u32) byRets[5] << 24));	
-	DRM_DEBUG("BIOS TV format is %ld\n",*pTVStdFormat);
+	DRM_DEBUG("BIOS TV format is %d\n",*pTVStdFormat);
     return TRUE;
 
 }
@@ -1930,6 +1937,7 @@ static bool i830_sdvo_set_2D_flickerfilter(struct drm_output * output, u32 dwVal
     return TRUE;
 }
 
+#if 0
 static bool i830_sdvo_set_ancillary_video_information(struct drm_output * output)
 {
 
@@ -1977,7 +1985,7 @@ static bool i830_sdvo_set_ancillary_video_information(struct drm_output * output
 	dwAncillaryBits |= UAIM_PAR_16_9;
 	break;
     default:
-	PSB_DEBUG(PSB_D_GENERAL, "fail to set ancillary video info\n");
+	DRM_DEBUG("fail to set ancillary video info\n");
 	return FALSE;
 
     }
@@ -2000,7 +2008,7 @@ static bool i830_sdvo_set_ancillary_video_information(struct drm_output * output
     return TRUE;
 
 }
-
+#endif
 static bool i830_tv_program_display_params(struct drm_output * output)
 
 {
@@ -2652,7 +2660,7 @@ static bool i830_tv_get_max_min_dotclock(struct drm_output* output)
     /* Set Target Input/Outputs */
     status = i830_tv_set_target_io(output);
     if (!status) {
-	PSB_DEBUG(PSB_D_GENERAL,"SetTargetIO function FAILED!!! \n");
+	DRM_DEBUG("SetTargetIO function FAILED!!! \n");
 	return status;
     }
 
@@ -2681,7 +2689,7 @@ static bool i830_tv_get_max_min_dotclock(struct drm_output* output)
     status = i830_sdvo_get_input_output_pixelclock_range(output, FALSE);	/* input */
 
     if (!status) {
-	PSB_DEBUG(PSB_D_GENERAL, "SDVOGetInputPixelClockRange() FAILED!!! \n");
+	DRM_DEBUG("SDVOGetInputPixelClockRange() FAILED!!! \n");
 	return status;
     }
 
@@ -2689,7 +2697,7 @@ static bool i830_tv_get_max_min_dotclock(struct drm_output* output)
     status = i830_sdvo_get_input_output_pixelclock_range(output, TRUE);	/* output */
 
     if (!status) {
-	PSB_DEBUG(PSB_D_GENERAL, "SDVOGetOutputPixelClockRange() FAILED!!! \n");
+	DRM_DEBUG("SDVOGetOutputPixelClockRange() FAILED!!! \n");
 	return status;
     }
 
@@ -2707,7 +2715,7 @@ static bool i830_tv_get_max_min_dotclock(struct drm_output* output)
 	 (sdvo_priv->dwMinOutDotClk)) ? (sdvo_priv->dwMinInDotClk *
 				     dwMinClkRateMul) : (sdvo_priv->dwMinOutDotClk);
 
-    PSB_DEBUG(PSB_D_GENERAL, "leave, i830_tv_get_max_min_dotclock() !!! \n");
+    DRM_DEBUG("leave, i830_tv_get_max_min_dotclock() !!! \n");
 
     return TRUE;
 
@@ -2735,7 +2743,7 @@ bool i830_tv_mode_check_support(struct drm_output* output, struct drm_display_mo
     if (sdvo_priv->bGetClk) {
 	status = i830_tv_get_max_min_dotclock(output);
 	if (!status) {
-	    PSB_DEBUG(PSB_D_GENERAL, "get max min dotclok failed\n");
+	    DRM_DEBUG("get max min dotclok failed\n");
 	    return status;
 	}
 	sdvo_priv->bGetClk = false;
@@ -2744,22 +2752,25 @@ bool i830_tv_mode_check_support(struct drm_output* output, struct drm_display_mo
     /* Check the Dot clock first. If the requested Dot Clock should fall */
     /* in the supported range for the mode to be supported */
     if ((dwDotClk <= sdvo_priv->dwMinDotClk) || (dwDotClk >= sdvo_priv->dwMaxDotClk)) {
-	PSB_DEBUG(PSB_D_GENERAL, "dwDotClk value is out of range\n");
+	DRM_DEBUG("dwDotClk value is out of range\n");
 	/*TODO: now consider VBT add and Remove mode. */
 	/* This mode can't be supported */
 	return false;
     }
-    PSB_DEBUG(PSB_D_GENERAL, "i830_tv_mode_check_support leave\n");
+    DRM_DEBUG("i830_tv_mode_check_support leave\n");
     return true;
 
 }
 
-void psbPrintPll(char *prefix, ex_intel_clock_t * clock)
+void print_Pll(char *prefix, ex_intel_clock_t * clock)
 {
     DRM_DEBUG("%s: dotclock %d vco %d ((m %d, m1 %d, m2 %d), n %d, (p %d, p1 %d, p2 %d))\n",
 	      prefix, clock->dot, clock->vco, clock->m, clock->m1, clock->m2,
 	      clock->n, clock->p, clock->p1, clock->p2);
 }
+
+extern int intel_panel_fitter_pipe (struct drm_device *dev);
+extern int intel_get_core_clock_speed(struct drm_device *dev);
 
 void i830_sdvo_tv_settiming(struct drm_crtc *crtc, struct drm_display_mode * mode,
 		       struct drm_display_mode * adjusted_mode)
@@ -2767,13 +2778,10 @@ void i830_sdvo_tv_settiming(struct drm_crtc *crtc, struct drm_display_mode * mod
 
 	struct drm_device *dev = crtc->dev;
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
-	struct intel_crtc *intel_crtc = crtc->driver_private;
-
 
     int pipe = 0;
     int fp_reg = (pipe == 0) ? FPA0 : FPB0;
     int dpll_reg = (pipe == 0) ? DPLL_A : DPLL_B;
-	int dpll_md_reg = (intel_crtc->pipe == 0) ? DPLL_A_MD : DPLL_B_MD;
     int dspcntr_reg = (pipe == 0) ? DSPACNTR : DSPBCNTR;
     int pipeconf_reg = (pipe == 0) ? PIPEACONF : PIPEBCONF;
     int htot_reg = (pipe == 0) ? HTOTAL_A : HTOTAL_B;
@@ -2792,6 +2800,7 @@ void i830_sdvo_tv_settiming(struct drm_crtc *crtc, struct drm_display_mode * mod
     int centerX = 0, centerY = 0;
     u32 ulPortMultiplier, ulTemp, ulDotClock;
     int sdvo_pixel_multiply;
+	u32 dotclock;
 
     /* Set up some convenient bools for what outputs are connected to
      * our pipe, used in DPLL setup.
@@ -2814,8 +2823,8 @@ void i830_sdvo_tv_settiming(struct drm_crtc *crtc, struct drm_display_mode * mod
     }
     /* ulPortMultiplier is 2, dotclok is 1babc, fall into the first one case */
     /* add two to each m and n value -- optimizes (slightly) the search algo. */
-    u32 dotclock = ulPortMultiplier * (mode->clock * 1000) / 1000;
-	DRM_DEBUG("mode->clock is %lx, dotclock is %lx,!\n", mode->clock,dotclock);
+    dotclock = ulPortMultiplier * (mode->clock * 1000) / 1000;
+	DRM_DEBUG("mode->clock is %x, dotclock is %x,!\n", mode->clock,dotclock);
 
     if ((dotclock >= 100000) && (dotclock < 140500)) {
 	DRM_DEBUG("dotclock is between 10000 and 140500!\n");
@@ -2902,7 +2911,7 @@ void i830_sdvo_tv_settiming(struct drm_crtc *crtc, struct drm_display_mode * mod
     if (intel_panel_fitter_pipe(dev) == pipe)
 	I915_WRITE(PFIT_CONTROL, 0);
 
-    psbPrintPll("chosen", &clock);
+    print_Pll("chosen", &clock);
 	DRM_DEBUG("Mode for pipe %c:\n", pipe == 0 ? 'A' : 'B');
 	drm_mode_debug_printmodeline(dev, mode);	
 	DRM_DEBUG("Modeline %d:\"%s\" %d %d %d %d %d %d %d %d\n",
@@ -2991,9 +3000,7 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 	struct intel_crtc *intel_crtc = crtc->driver_private;
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
-	u16 width, height;
-	u16 h_blank_len, h_sync_len, v_blank_len, v_sync_len;
-	u16 h_sync_offset, v_sync_offset;
+
 	u32 sdvox;
 	struct intel_sdvo_dtd output_dtd;
 	int sdvo_pixel_multiply;
@@ -3006,13 +3013,13 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 
     if (sdvo_priv->ActiveDevice == SDVO_DEVICE_TV) {
 	if (!i830_tv_mode_check_support(output, mode)) {
-	    PSB_DEBUG(PSB_D_GENERAL, "mode setting failed, use the forced mode\n");
+	    DRM_DEBUG("mode setting failed, use the forced mode\n");
 	    mode = &tv_modes[0].mode_entry;
 		drm_mode_set_crtcinfo(mode, 0);
 	}
     }	
     save_mode = mode;
-#if 1
+#if 0
 	width = mode->crtc_hdisplay;
 	height = mode->crtc_vdisplay;
 
@@ -3068,8 +3075,6 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 	/* Set the input timing to the screen. Assume always input 0. */
 	intel_sdvo_set_target_output(output, sdvo_priv->active_outputs);
 	intel_sdvo_set_output_timing(output, &output_dtd);
-
-	/* Set the input timing to the screen. Assume always input 0. */
 	intel_sdvo_set_target_input(output, true, false);
 
     if (sdvo_priv->ActiveDevice == SDVO_DEVICE_TV) {
@@ -3112,6 +3117,7 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 		intel_sdvo_set_input_timing(output, &input_dtd);
 	}
 #else
+    /* Set input timing (in DTD) */
 	intel_sdvo_set_input_timing(output, &output_dtd);
 #endif	
     if (sdvo_priv->ActiveDevice == SDVO_DEVICE_TV) {
@@ -3131,7 +3137,7 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 		   && (mode->clock * 1000 < 200000000)) {
 	    intel_sdvo_set_clock_rate_mult(output, SDVO_CLOCK_RATE_MULT_1X);
 	} else
-	    PSB_DEBUG(PSB_D_GENERAL, "i830_sdvo_set_clock_rate is failed\n");
+	    DRM_DEBUG("i830_sdvo_set_clock_rate is failed\n");
 
 	i830_sdvo_tv_settiming(output->crtc, mode, adjusted_mode);
 	//intel_crtc_mode_set(output->crtc, mode,adjusted_mode,0,0);
@@ -3233,6 +3239,7 @@ static void intel_sdvo_dpms(struct drm_output *output, int mode)
 		if (0)
 			intel_sdvo_set_encoder_power_state(output, mode);
 		
+		DRM_DEBUG("xiaolin active output is %d\n",sdvo_priv->active_outputs);
 		intel_sdvo_set_active_outputs(output, sdvo_priv->active_outputs);
 	}	
 	return;
@@ -3244,7 +3251,7 @@ static void intel_sdvo_save(struct drm_output *output)
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
-	int o;
+
 	DRM_DEBUG("xxintel_sdvo_save\n");
 
 	sdvo_priv->save_sdvo_mult = intel_sdvo_get_clock_rate_mult(output);
@@ -3274,7 +3281,6 @@ static void intel_sdvo_restore(struct drm_output *output)
 	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
-	int o;
 	int i;
 	bool input1, input2;
 	u8 status;
@@ -3318,9 +3324,11 @@ static bool i830_tv_mode_find(struct drm_output * output,struct drm_display_mode
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;
 
-    PSB_DEBUG(PSB_D_GENERAL,"i830_tv_mode_find,0x%x\n", sdvo_priv->TVStandard);
     bool find = FALSE;
     int i;
+	
+    DRM_DEBUG("i830_tv_mode_find,0x%x\n", sdvo_priv->TVStandard);
+	
     for (i = 0; i < NUM_TV_MODES; i++) 
     {
        const tv_mode_t *tv_mode = &tv_modes[i];
@@ -3347,13 +3355,13 @@ static int intel_sdvo_mode_valid(struct drm_output *output,
 	   status = i830_tv_mode_check_support(output, mode);
 	   if (status) {
 		   if(i830_tv_mode_find(output,mode)) {
-			   PSB_DEBUG(PSB_D_GENERAL,"%s is ok\n", mode->name);
+			   DRM_DEBUG("%s is ok\n", mode->name);
 			   return MODE_OK;
 		   }
 		   else
 			   return MODE_CLOCK_RANGE;
 	   } else {
-		   PSB_DEBUG(PSB_D_GENERAL,"%s is failed\n",
+		   DRM_DEBUG("%s is failed\n",
 				 mode->name);
 		   return MODE_CLOCK_RANGE;
 	   }
@@ -3412,14 +3420,14 @@ static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
     char deviceName[256];
     char *name_suffix;
 	char *name_prefix;
+	unsigned char bytes[2];
         
-        struct drm_device *dev = output->dev;
-        struct drm_psb_private *psb_dev_priv =
-            (struct drm_psb_private *)dev->dev_private;
-        
-	DRM_DEBUG("xxintel_sdvo_detect\n");
+	struct drm_device *dev = output->dev;
+	
 	struct intel_output *intel_output = output->driver_private;
 	struct intel_sdvo_priv *sdvo_priv = intel_output->dev_priv;	
+	
+	DRM_DEBUG("xxintel_sdvo_detect\n");
     intel_sdvo_dpms(output, DPMSModeOn);
  
     if (!intel_sdvo_get_capabilities(output, &sdvo_priv->caps)) {
@@ -3495,18 +3503,17 @@ static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
 	} else if ((response[1] << 8 | response[0]) & SDVO_OUTPUT_CVBS1) {
 	    sdvo_priv->active_outputs = SDVO_OUTPUT_CVBS1;
 	} else {
-	    PSB_DEBUG(PSB_D_GENERAL,"no display attached\n");
-	    unsigned char bytes[2];
+	    DRM_DEBUG("no display attached\n");
 
 	    memcpy(bytes, &sdvo_priv->caps.output_flags, 2);
-	    PSB_DEBUG(PSB_D_GENERAL,"%s: No active TMDS or RGB outputs (0x%02x%02x) 0x%08x\n",
+	    DRM_DEBUG("%s: No active TMDS or RGB outputs (0x%02x%02x) 0x%08x\n",
 		       SDVO_NAME(sdvo_priv), bytes[0], bytes[1],
 		       sdvo_priv->caps.output_flags);
 	    name_prefix = "Unknown";
 	}
 
 	/* init para for TV connector */
-	if (psb_dev_priv->primary_display && sdvo_priv->active_outputs & SDVO_OUTPUT_TV0) {
+	if (sdvo_priv->active_outputs & SDVO_OUTPUT_TV0) {
 		DRM_INFO("TV is attaced\n");
 	    output->subpixel_order = SubPixelHorizontalRGB;
 	    name_prefix = "TV0";
@@ -3558,7 +3565,7 @@ static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
 	strcat(deviceName, name_suffix);
 
 	if(output->name && (strcmp(output->name,deviceName) != 0)){
-	    PSB_DEBUG(PSB_D_GENERAL,"change the output name to %s\n", deviceName);
+	    DRM_DEBUG("change the output name to %s\n", deviceName);
 	    if (!drm_output_rename(output, deviceName)) {
 		drm_output_destroy(output);
 		return output_status_disconnected;
@@ -3610,7 +3617,7 @@ static int intel_sdvo_get_modes(struct drm_output *output)
 	DRM_DEBUG("xxintel_sdvo_get_modes\n");
 
 	if (sdvo_priv->ActiveDevice == SDVO_DEVICE_TV) {
-		PSB_DEBUG(PSB_D_GENERAL,"SDVO_DEVICE_TV\n");
+		DRM_DEBUG("SDVO_DEVICE_TV\n");
 		i830_sdvo_get_tvmode_from_table(output);
 		if (list_empty(&output->probed_modes))
 			return 0;
@@ -3681,10 +3688,25 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
     int count = 3;
     u8 response[2];
     u8 status;	
-        struct drm_psb_private *psb_dev_priv =
-        (struct drm_psb_private *)dev->dev_private;
+	unsigned char bytes[2];
     
 	DRM_DEBUG("xxintel_sdvo_init\n");
+	
+		if (IS_POULSBO(dev)) {
+			struct pci_dev * pci_root = pci_get_bus_and_slot(0, 0);
+			u32 sku_value = 0;
+			bool sku_bSDVOEnable = true;
+			if(pci_root)
+			{
+				pci_write_config_dword(pci_root, 0xD0, PCI_PORT5_REG80_FFUSE);
+				pci_read_config_dword(pci_root, 0xD4, &sku_value);
+				sku_bSDVOEnable = (sku_value & PCI_PORT5_REG80_SDVO_DISABLE)?false : true;
+				DRM_INFO("intel_sdvo_init: sku_value is 0x%08x\n", sku_value);
+				DRM_INFO("intel_sdvo_init: sku_bSDVOEnable is %d\n", sku_bSDVOEnable);
+				if (sku_bSDVOEnable == false)
+						return;
+			}
+		}
 
 	output = drm_output_create(dev, &intel_sdvo_output_funcs, NULL);
 	if (!output)
@@ -3806,8 +3828,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
         } else if ((response[1] << 8 | response[0]) & SDVO_OUTPUT_CVBS1) {
             sdvo_priv->active_outputs = SDVO_OUTPUT_CVBS1;
         } else {
-            PSB_DEBUG(PSB_D_GENERAL, "no display attached\n");
-            unsigned char bytes[2];
+            DRM_DEBUG("no display attached\n");
 
             memcpy(bytes, &sdvo_priv->caps.output_flags, 2);
             DRM_INFO("%s: No active TMDS or RGB outputs (0x%02x%02x) 0x%08x\n",
@@ -3817,7 +3838,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
         }
 
          /* init para for TV connector */
-        if (psb_dev_priv->primary_display && sdvo_priv->active_outputs & SDVO_OUTPUT_TV0) {
+        if (sdvo_priv->active_outputs & SDVO_OUTPUT_TV0) {
 			DRM_INFO("TV is attaced\n");
             output->subpixel_order = SubPixelHorizontalRGB;
             name_prefix = "TV0";
@@ -3860,7 +3881,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
         strcat(name, name_suffix);
         if (!drm_output_rename(output, name)) {
             drm_output_destroy(output);
-            return NULL;
+            return;
         }
     } else {
         /*No SDVO display device attached */
@@ -3873,7 +3894,7 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
         strcat(name, name_suffix);
         if (!drm_output_rename(output, name)) {
             drm_output_destroy(output);
-            return NULL;
+            return;
         }
 
     }

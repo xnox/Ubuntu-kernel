@@ -321,6 +321,7 @@ unsigned long drm_bo_vm_nopfn(struct vm_area_struct * vma,
 
 	return 0;
 }
+EXPORT_SYMBOL(drm_bo_vm_nopfn);
 #endif
 
 

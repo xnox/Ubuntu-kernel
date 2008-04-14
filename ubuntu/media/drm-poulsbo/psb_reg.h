@@ -73,6 +73,13 @@
 
 #define PSB_CR_DESIGNER_REV_FIELD2       0x001C
 
+#define PSB_CR_EVENT_HOST_ENABLE2        0x0110
+
+#define PSB_CR_EVENT_STATUS2             0x0118
+
+#define PSB_CR_EVENT_HOST_CLEAR2         0x0114
+#define _PSB_CE2_BIF_REQUESTER_FAULT     (1 << 4)
+
 #define PSB_CR_EVENT_STATUS              0x012C
 
 #define PSB_CR_EVENT_HOST_ENABLE         0x0130

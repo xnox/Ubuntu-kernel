@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -28,6 +28,7 @@
 #include "psb_drv.h"
 #include "psb_reg.h"
 #include "psb_scene.h"
+#include "psb_msvdx.h"
 
 #define PSB_2D_TIMEOUT_MSEC 100
 
@@ -62,7 +63,7 @@ void psb_reset(struct drm_psb_private *dev_priv, int reset_2d)
 	(void)PSB_RSGX32(PSB_CR_BIF_CTRL);
 }
 
-static void psb_print_pagefault(struct drm_psb_private *dev_priv)
+void psb_print_pagefault(struct drm_psb_private *dev_priv)
 {
 	uint32_t val;
 	uint32_t addr;
@@ -152,8 +153,8 @@ static void psb_watchdog_func(unsigned long data)
 	int idle;
 	unsigned long irq_flags;
 
-	psb_scheduler_lockup(dev_priv, &lockup, &msvdx_lockup,
-			     &idle, &msvdx_idle);
+	psb_scheduler_lockup(dev_priv, &lockup, &idle);
+	psb_msvdx_lockup(dev_priv, &msvdx_lockup, &msvdx_idle);
 #if 0
 	psb_seq_lockup_idle(dev_priv, PSB_ENGINE_2D, &lockup_2d, &idle_2d);
 #else
@@ -161,7 +162,6 @@ static void psb_watchdog_func(unsigned long data)
 	idle_2d = TRUE;
 #endif
 	if (lockup || msvdx_lockup || lockup_2d) {
-		DRM_ERROR("Detected Poulsbo Scheduler Lockup.\n");
 		spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 		dev_priv->timer_available = 0;
 		spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
@@ -228,7 +228,6 @@ static void psb_msvdx_reset_wq(struct work_struct *work)
 	mutex_unlock(&dev_priv->msvdx_mutex);
 }
 
-
 static int psb_xhw_mmu_reset(struct drm_psb_private *dev_priv)
 {
 	struct psb_xhw_buf buf;
@@ -237,17 +236,16 @@ static int psb_xhw_mmu_reset(struct drm_psb_private *dev_priv)
 	INIT_LIST_HEAD(&buf.head);
 	psb_mmu_set_pd_context(psb_mmu_get_default_pd(dev_priv->mmu), 0);
 	bif_ctrl = PSB_RSGX32(PSB_CR_BIF_CTRL);
-	PSB_WSGX32(bif_ctrl | 
+	PSB_WSGX32(bif_ctrl |
 		   _PSB_CB_CTRL_CLEAR_FAULT |
-		   _PSB_CB_CTRL_INVALDC, 
-		   PSB_CR_BIF_CTRL);
-	(void)  PSB_RSGX32(PSB_CR_BIF_CTRL);
+		   _PSB_CB_CTRL_INVALDC, PSB_CR_BIF_CTRL);
+	(void)PSB_RSGX32(PSB_CR_BIF_CTRL);
 	msleep(1);
 	PSB_WSGX32(bif_ctrl, PSB_CR_BIF_CTRL);
-	(void)  PSB_RSGX32(PSB_CR_BIF_CTRL);	
+	(void)PSB_RSGX32(PSB_CR_BIF_CTRL);
 	return psb_xhw_reset_dpm(dev_priv, &buf);
 }
-	
+
 /*
  * Block command submission and reset hardware and schedulers.
  */
@@ -261,13 +259,30 @@ static void psb_reset_wq(struct work_struct *work)
 	unsigned long irq_flags;
 	int ret;
 	int reset_count = 0;
+	struct psb_xhw_buf buf;
+	uint32_t xhw_lockup;
 
 	/*
 	 * Block command submission.
 	 */
 
 	mutex_lock(&dev_priv->reset_mutex);
-	psb_2d_lock(dev_priv);
+
+	INIT_LIST_HEAD(&buf.head);
+	if (psb_xhw_check_lockup(dev_priv, &buf, &xhw_lockup) == 0) {
+		if (xhw_lockup == 0 && psb_extend_raster_timeout(dev_priv) == 0) {
+			/*
+			 * no lockup, just re-schedule
+			 */
+			spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
+			dev_priv->timer_available = 1;
+			spin_unlock_irqrestore(&dev_priv->watchdog_lock,
+					       irq_flags);
+			psb_schedule_watchdog(dev_priv);
+			mutex_unlock(&dev_priv->reset_mutex);
+			return;
+		}
+	}
 #if 0
 	msleep(PSB_2D_TIMEOUT_MSEC);
 
@@ -290,15 +305,14 @@ static void psb_reset_wq(struct work_struct *work)
 	(void)idle_2d;
 	psb_reset(dev_priv, 0);
 #endif
-	(void) psb_xhw_mmu_reset(dev_priv);
+	(void)psb_xhw_mmu_reset(dev_priv);
 	DRM_INFO("Resetting scheduler.\n");
 	psb_scheduler_pause(dev_priv);
 	psb_scheduler_reset(dev_priv, -EBUSY);
 	psb_scheduler_ta_mem_check(dev_priv);
 
-	while(dev_priv->ta_mem &&
-	      !dev_priv->force_ta_mem_load && 
-	      ++reset_count < 10) {
+	while (dev_priv->ta_mem &&
+	       !dev_priv->force_ta_mem_load && ++reset_count < 10) {
 
 		/*
 		 * TA memory is currently fenced so offsets
@@ -310,27 +324,26 @@ static void psb_reset_wq(struct work_struct *work)
 
 		msleep(100);
 		DRM_INFO("Trying to reload TA memory.\n");
-		ret = psb_xhw_ta_mem_load(dev_priv, &buf, 
-					   PSB_TA_MEM_FLAG_TA|
-					   PSB_TA_MEM_FLAG_RASTER|
-					   PSB_TA_MEM_FLAG_HOSTA|
-					   PSB_TA_MEM_FLAG_HOSTD|
-					   PSB_TA_MEM_FLAG_INIT,
-					   dev_priv->ta_mem->ta_memory->offset,
-					   dev_priv->ta_mem->hw_data->offset,
-					   dev_priv->ta_mem->hw_cookie);
+		ret = psb_xhw_ta_mem_load(dev_priv, &buf,
+					  PSB_TA_MEM_FLAG_TA |
+					  PSB_TA_MEM_FLAG_RASTER |
+					  PSB_TA_MEM_FLAG_HOSTA |
+					  PSB_TA_MEM_FLAG_HOSTD |
+					  PSB_TA_MEM_FLAG_INIT,
+					  dev_priv->ta_mem->ta_memory->offset,
+					  dev_priv->ta_mem->hw_data->offset,
+					  dev_priv->ta_mem->hw_cookie);
 		if (!ret)
 			break;
 
 		psb_reset(dev_priv, 0);
-		(void) psb_xhw_mmu_reset(dev_priv);
+		(void)psb_xhw_mmu_reset(dev_priv);
 	}
-       
+
 	psb_scheduler_restart(dev_priv);
 	spin_lock_irqsave(&dev_priv->watchdog_lock, irq_flags);
 	dev_priv->timer_available = 1;
 	spin_unlock_irqrestore(&dev_priv->watchdog_lock, irq_flags);
-	psb_2d_unlock(dev_priv);
 	mutex_unlock(&dev_priv->reset_mutex);
 }
 

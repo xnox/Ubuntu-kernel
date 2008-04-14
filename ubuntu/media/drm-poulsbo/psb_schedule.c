@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -29,7 +29,8 @@
 #include "psb_reg.h"
 #include "psb_scene.h"
 
-#define PSB_RASTER_TIMEOUT (DRM_HZ / 10)
+#define PSB_ALLOWED_RASTER_RUNTIME (DRM_HZ * 20)
+#define PSB_RASTER_TIMEOUT (DRM_HZ / 2)
 #define PSB_TA_TIMEOUT (DRM_HZ / 5)
 
 #undef PSB_SOFTWARE_WORKAHEAD
@@ -38,7 +39,7 @@
 
 /*
  * Software blocks completely while the engines are working so there can be no
- * overlap. 
+ * overlap.
  */
 
 #define PSB_WAIT_FOR_RASTER_COMPLETION
@@ -47,7 +48,7 @@
 #elif defined(PSB_PARANOID_SETTING)
 /*
  * Software blocks "almost" while the engines are working so there can be no
- * overlap. 
+ * overlap.
  */
 
 #define PSB_WAIT_FOR_RASTER_COMPLETION
@@ -97,16 +98,13 @@ static int psb_check_2d_idle(struct drm_psb_private *dev_priv);
 #endif
 
 void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
-			  int *lockup, int *msvdx_lockup,
-			  int *idle, int *msvdx_idle)
+			  int *lockup, int *idle)
 {
 	unsigned long irq_flags;
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
 
 	*lockup = 0;
-	*msvdx_lockup = 0;
 	*idle = 1;
-	*msvdx_idle = 1;
 
 	spin_lock_irqsave(&scheduler->lock, irq_flags);
 
@@ -122,44 +120,14 @@ void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
 	if (!*lockup)
 		*idle = scheduler->idle;
 
-	if (!dev_priv->has_msvdx) {
-		*msvdx_idle = 1;
-		*msvdx_lockup = 0;
-		goto out;
-	}
-
-	PSB_DEBUG_GENERAL("MSVDXTimer: current_sequence:%d "
-			  "last_sequence:%d and last_submitted_sequence :%d\n",
-			  dev_priv->msvdx_current_sequence,
-			  dev_priv->msvdx_last_sequence,
-			  dev_priv->sequence[PSB_ENGINE_VIDEO]);
-
-	if (dev_priv->msvdx_current_sequence -
-	    dev_priv->sequence[PSB_ENGINE_VIDEO] > 0x0FFFFFFF) {
-
-		if (dev_priv->msvdx_current_sequence ==
-		    dev_priv->msvdx_last_sequence) {
-			PSB_DEBUG_GENERAL
-			    ("MSVDXTimer: msvdx locked-up for sequence:%d\n",
-			     dev_priv->msvdx_current_sequence);
-			*msvdx_lockup = 1;
-		} else {
-			PSB_DEBUG_GENERAL
-			    ("MSVDXTimer: msvdx responded fine so far...\n");
-			dev_priv->msvdx_last_sequence =
-			    dev_priv->msvdx_current_sequence;
-			*msvdx_idle = 0;
-		}
-	}
-      out:
 	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 }
 
 static inline void psb_set_idle(struct psb_scheduler *scheduler)
 {
 	scheduler->idle =
-		(scheduler->current_task[PSB_SCENE_ENGINE_RASTER] == NULL) &&
-		(scheduler->current_task[PSB_SCENE_ENGINE_TA] == NULL);
+	    (scheduler->current_task[PSB_SCENE_ENGINE_RASTER] == NULL) &&
+	    (scheduler->current_task[PSB_SCENE_ENGINE_TA] == NULL);
 	if (scheduler->idle)
 		wake_up(&scheduler->idle_queue);
 }
@@ -409,8 +377,9 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 	list_del_init(list);
 	scheduler->idle = 0;
 	scheduler->raster_end_jiffies = jiffies + PSB_RASTER_TIMEOUT;
+	scheduler->total_raster_jiffies = 0;
 
-	if (task->scene) 
+	if (task->scene)
 		PSB_WSGX32(0, PSB_CR_SOFT_RESET);
 
 	(void)psb_reg_submit(dev_priv, task->raster_cmds,
@@ -426,6 +395,22 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 		psb_fire_raster(scheduler, task);
 	}
 	psb_schedule_watchdog(dev_priv);
+}
+
+int psb_extend_raster_timeout(struct drm_psb_private *dev_priv)
+{
+	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+	unsigned long irq_flags;
+	int ret;
+
+	spin_lock_irqsave(&scheduler->lock, irq_flags);
+	scheduler->total_raster_jiffies +=
+	    jiffies - scheduler->raster_end_jiffies + PSB_RASTER_TIMEOUT;
+	scheduler->raster_end_jiffies = jiffies + PSB_RASTER_TIMEOUT;
+	ret = (scheduler->total_raster_jiffies > PSB_ALLOWED_RASTER_RUNTIME) ?
+	    -EBUSY : 0;
+	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
+	return ret;
 }
 
 /*
@@ -496,7 +481,7 @@ static void psb_raster_done(struct drm_psb_private *dev_priv,
 	PSB_DEBUG_RENDER("Raster done %u\n", task->sequence);
 
 	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = NULL;
-	
+
 	if (complete_action != PSB_RASTER)
 		psb_schedule_raster(dev_priv, scheduler);
 
@@ -545,7 +530,8 @@ static void psb_raster_done(struct drm_psb_private *dev_priv,
 
 	if (complete_action == PSB_RETURN) {
 		if (task->scene == NULL) {
-			psb_report_fence(scheduler, task->engine, task->sequence,
+			psb_report_fence(scheduler, task->engine,
+					 task->sequence,
 					 _PSB_FENCE_RASTER_DONE_SHIFT, 1);
 		}
 		if (!task->feedback.page) {
@@ -596,8 +582,8 @@ int psb_scheduler_finished(struct drm_psb_private *dev_priv)
 	int ret;
 	spin_lock_irqsave(&scheduler->lock, irq_flags);
 	ret = (scheduler->idle &&
-		list_empty(&scheduler->raster_queue) &&
-		list_empty(&scheduler->ta_queue) &&
+	       list_empty(&scheduler->raster_queue) &&
+	       list_empty(&scheduler->ta_queue) &&
 	       list_empty(&scheduler->hp_raster_queue));
 	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 	return ret;
@@ -852,8 +838,7 @@ static void psb_dispatch_raster(struct drm_psb_private *dev_priv,
 	 */
 
 	if (task->raster_complete_action == PSB_RETURN &&
-	    (flags & PSB_RF_RASTER_DONE) &&
-	    task->scene != NULL) {
+	    (reply_flag & PSB_RF_RASTER_DONE) && task->scene != NULL) {
 		psb_report_fence(scheduler, task->engine, task->sequence,
 				 _PSB_FENCE_RASTER_DONE_SHIFT, 1);
 	}
@@ -953,7 +938,7 @@ static void psb_free_task_wq(struct work_struct *work)
 }
 
 /*
- * Check if any of the tasks in the queues is using a scene. 
+ * Check if any of the tasks in the queues is using a scene.
  * In that case we know the TA memory buffer objects are
  * fenced and will not be evicted until that fence is signaled.
  */
@@ -967,8 +952,7 @@ void psb_scheduler_ta_mem_check(struct drm_psb_private *dev_priv)
 
 	dev_priv->force_ta_mem_load = 1;
 	spin_lock_irqsave(&scheduler->lock, irq_flags);
-	list_for_each_entry_safe(task, next_task, &scheduler->ta_queue,
-				 head) {
+	list_for_each_entry_safe(task, next_task, &scheduler->ta_queue, head) {
 		if (task->scene) {
 			dev_priv->force_ta_mem_load = 0;
 			break;
@@ -983,7 +967,6 @@ void psb_scheduler_ta_mem_check(struct drm_psb_private *dev_priv)
 	}
 	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 }
-
 
 void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 {
@@ -1070,8 +1053,7 @@ void psb_scheduler_reset(struct drm_psb_private *dev_priv, int error_condition)
 				_PSB_FENCE_TYPE_TA_DONE |
 				_PSB_FENCE_TYPE_RASTER_DONE |
 				_PSB_FENCE_TYPE_SCENE_DONE |
-				_PSB_FENCE_TYPE_FEEDBACK, 
-				error_condition);
+				_PSB_FENCE_TYPE_FEEDBACK, error_condition);
 		if (scene) {
 			scene->flags = 0;
 			if (scene->hw_scene) {
@@ -1134,8 +1116,8 @@ int psb_scheduler_init(struct drm_device *dev, struct psb_scheduler *scheduler)
 
 void psb_scheduler_remove_scene_refs(struct psb_scene *scene)
 {
-	struct drm_psb_private *dev_priv = 
-		(struct drm_psb_private *) scene->dev->dev_private;
+	struct drm_psb_private *dev_priv =
+	    (struct drm_psb_private *)scene->dev->dev_private;
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
 	struct psb_hw_scene *hw_scene;
 	unsigned long irq_flags;
@@ -1145,13 +1127,13 @@ void psb_scheduler_remove_scene_refs(struct psb_scene *scene)
 	for (i = 0; i < PSB_NUM_HW_SCENES; ++i) {
 		hw_scene = &scheduler->hs[i];
 		if (hw_scene->last_scene == scene) {
-			BUG_ON( list_empty(&hw_scene->head));
+			BUG_ON(list_empty(&hw_scene->head));
 			hw_scene->last_scene = NULL;
 		}
 	}
 	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
 }
-	
+
 void psb_scheduler_takedown(struct psb_scheduler *scheduler)
 {
 	flush_scheduled_work();
@@ -1382,7 +1364,7 @@ static int psb_check_2d_idle(struct drm_psb_private *dev_priv)
 
 		PSB_WSGX32(PSB_2D_FENCE_BH, PSB_SGX_2D_SLAVE_PORT);
 		PSB_WSGX32(PSB_2D_FLUSH_BH, PSB_SGX_2D_SLAVE_PORT);
-		(void) PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT);
+		(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT);
 
 		psb_2d_atomic_unlock(dev_priv);
 	}
@@ -1450,10 +1432,8 @@ void psb_2d_unlock(struct drm_psb_private *dev_priv)
 void psb_2d_lock(struct drm_psb_private *dev_priv)
 {
 	atomic_inc(&dev_priv->waiters_2d);
-	wait_event(dev_priv->queue_2d,
-		   atomic_read(&dev_priv->ta_wait_2d) == 0);
-	wait_event(dev_priv->queue_2d,
-		   psb_2d_trylock(dev_priv));
+	wait_event(dev_priv->queue_2d, atomic_read(&dev_priv->ta_wait_2d) == 0);
+	wait_event(dev_priv->queue_2d, psb_2d_trylock(dev_priv));
 	atomic_dec(&dev_priv->waiters_2d);
 }
 

@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -63,6 +63,7 @@ struct psb_mmu_driver {
 	spinlock_t lock;
 
 	atomic_t needs_tlbflush;
+	atomic_t *msvdx_mmu_invaldc;
 	uint8_t __iomem *register_map;
 	struct psb_mmu_pd *default_pd;
 	uint32_t bif_ctrl;
@@ -147,6 +148,8 @@ static void psb_mmu_flush_pd_locked(struct psb_mmu_driver *driver, int force)
 		psb_iowrite32(driver, val & ~_PSB_CB_CTRL_INVALDC,
 			      PSB_CR_BIF_CTRL);
 		(void)psb_ioread32(driver, PSB_CR_BIF_CTRL);
+		if (driver->msvdx_mmu_invaldc)
+			atomic_set(driver->msvdx_mmu_invaldc, 1);
 	}
 	atomic_set(&driver->needs_tlbflush, 0);
 }
@@ -176,6 +179,8 @@ void psb_mmu_flush(struct psb_mmu_driver *driver)
 		      PSB_CR_BIF_CTRL);
 	(void)psb_ioread32(driver, PSB_CR_BIF_CTRL);
 	atomic_set(&driver->needs_tlbflush, 0);
+	if (driver->msvdx_mmu_invaldc)
+		atomic_set(driver->msvdx_mmu_invaldc, 1);
 	up_write(&driver->sem);
 }
 
@@ -580,7 +585,8 @@ void psb_mmu_driver_takedown(struct psb_mmu_driver *driver)
 
 struct psb_mmu_driver *psb_mmu_driver_init(uint8_t __iomem * registers,
 					   int trap_pagefaults,
-					   int invalid_type)
+					   int invalid_type,
+					   atomic_t *msvdx_mmu_invaldc)
 {
 	struct psb_mmu_driver *driver;
 
@@ -599,6 +605,7 @@ struct psb_mmu_driver *psb_mmu_driver_init(uint8_t __iomem * registers,
 	down_write(&driver->sem);
 	driver->register_map = registers;
 	atomic_set(&driver->needs_tlbflush, 1);
+	driver->msvdx_mmu_invaldc = msvdx_mmu_invaldc;
 
 	driver->bif_ctrl = psb_ioread32(driver, PSB_CR_BIF_CTRL);
 	psb_iowrite32(driver, driver->bif_ctrl | _PSB_CB_CTRL_CLEAR_FAULT,

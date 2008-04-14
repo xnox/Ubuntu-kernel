@@ -808,13 +808,13 @@ static void drm_pick_crtcs (struct drm_device *dev)
 			if (/* !strcmp(des_mode->name, drm_init_mode) ||  */
 			    des_mode->hdisplay==drm_init_xres
 			    && des_mode->vdisplay==drm_init_yres) {
-				des_mode->type |= DRM_MODE_TYPE_USERDEF;
+				des_mode->type |= DRM_MODE_TYPE_USERPREF;
 				break;
 			}
 
 		}
 		/* No userdef mode (initial mode set from module parameter) */
-		if (!des_mode || !(des_mode->type & DRM_MODE_TYPE_USERDEF)) {
+		if (!des_mode || !(des_mode->type & DRM_MODE_TYPE_USERPREF)) {
 			list_for_each_entry(des_mode, &output->modes, head) {
 				if (des_mode->type & DRM_MODE_TYPE_PREFERRED)
 					break;
@@ -823,8 +823,8 @@ static void drm_pick_crtcs (struct drm_device *dev)
 
 		/* No preferred mode, and no default mode, let's just
 		   select the first available */
-		if (!des_mode || !(des_mode->type & DRM_MODE_TYPE_PREFERRED)
-		    && !(des_mode->type & DRM_MODE_TYPE_USERDEF)) {
+		if (!des_mode || (!(des_mode->type & DRM_MODE_TYPE_PREFERRED)
+				  && !(des_mode->type & DRM_MODE_TYPE_USERPREF))) {
 			list_for_each_entry(des_mode, &output->modes, head) {
 				if (des_mode)
 					break;

@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -30,17 +30,57 @@
 #include <linux/delay.h>
 #include <linux/fb.h>
 #include <linux/init.h>
+#include <linux/console.h>
 
 #include "drmP.h"
 #include "drm.h"
 #include "drm_crtc.h"
 #include "psb_drv.h"
+#include "drm_compat.h"
+
+struct psbfb_vm_info {
+	struct drm_buffer_object *bo;
+	struct address_space *f_mapping;
+	struct mutex vm_mutex;
+	atomic_t refcount;
+};
 
 struct psbfb_par {
 	struct drm_device *dev;
 	struct drm_crtc *crtc;
 	struct drm_output *output;
+	struct psbfb_vm_info *vi;
+	int dpms_state;
 };
+
+static void psbfb_vm_info_deref(struct psbfb_vm_info **vi)
+{
+	struct psbfb_vm_info *tmp = *vi;
+	*vi = NULL;
+	if (atomic_dec_and_test(&tmp->refcount)) {
+		drm_bo_usage_deref_unlocked(&tmp->bo);
+		drm_free(tmp, sizeof(*tmp), DRM_MEM_MAPS);
+	}
+}
+
+static struct psbfb_vm_info *psbfb_vm_info_ref(struct psbfb_vm_info *vi)
+{
+	atomic_inc(&vi->refcount);
+	return vi;
+}
+
+static struct psbfb_vm_info *psbfb_vm_info_create(void)
+{
+	struct psbfb_vm_info *vi;
+
+	vi = drm_calloc(1, sizeof(*vi), DRM_MEM_MAPS);
+	if (!vi)
+		return NULL;
+
+	mutex_init(&vi->vm_mutex);
+	atomic_set(&vi->refcount, 1);
+	return vi;
+}
 
 #define CMAP_TOHW(_val, _width) ((((_val) << (_width)) + 0x7FFF - (_val)) >> 16)
 
@@ -250,6 +290,35 @@ static int psbfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 	return 0;
 }
 
+static int psbfb_move_fb_bo(struct fb_info *info, struct drm_buffer_object *bo,
+			    uint64_t mem_type_flags)
+{
+	struct psbfb_par *par;
+	loff_t holelen;
+	int ret;
+
+	/*
+	 * Kill all user-space mappings of this device. They will be
+	 * faulted back using nopfn when accessed.
+	 */
+
+	par = info->par;
+	holelen = ((loff_t) bo->mem.num_pages) << PAGE_SHIFT;
+	mutex_lock(&par->vi->vm_mutex);
+	if (par->vi->f_mapping) {
+		unmap_mapping_range(par->vi->f_mapping, 0, holelen, 1);
+	}
+
+	ret = drm_bo_do_validate(bo,
+				 mem_type_flags,
+				 DRM_BO_MASK_MEM |
+				 DRM_BO_FLAG_NO_EVICT,
+				 DRM_BO_HINT_DONT_FENCE, 0, 1, NULL);
+
+	mutex_unlock(&par->vi->vm_mutex);
+	return ret;
+}
+
 /* this will let fbcon do the mode init */
 static int psbfb_set_par(struct fb_info *info)
 {
@@ -336,19 +405,6 @@ static int psbfb_set_par(struct fb_info *info)
 		fb->bo = fbo;
 		drm_bo_usage_deref_unlocked(&tfbo);
 #endif
-	} else {
-		drm_bo_do_validate(fb->bo,
-				   DRM_BO_FLAG_READ |
-				   DRM_BO_FLAG_WRITE |
-				   DRM_BO_FLAG_MEM_TT |
-				   DRM_BO_FLAG_MEM_VRAM |
-				   DRM_BO_FLAG_NO_EVICT,
-				   DRM_BO_FLAG_READ |
-				   DRM_BO_FLAG_WRITE |
-				   DRM_BO_FLAG_MEM_TT |
-				   DRM_BO_FLAG_MEM_VRAM |
-				   DRM_BO_FLAG_NO_EVICT,
-				   DRM_BO_HINT_DONT_FENCE, 0, 1, NULL);
 	}
 
 	fb->offset = fb->bo->offset - dev_priv->pg->gatt_start;
@@ -364,6 +420,12 @@ static int psbfb_set_par(struct fb_info *info)
 
 	/* some fbdev's apps don't want these to change */
 	info->fix.smem_start = dev->mode_config.fb_base + fb->offset;
+
+	/* we have to align the output base address because the fb->bo
+	   may be moved in the previous drm_bo_do_validate().
+	   Otherwise the output screens may go black when exit the X
+	   window and re-enter the console */
+	info->screen_base = fb->kmap.virtual;
 
 #if 0
 	/* relates to resize - disable */
@@ -563,6 +625,17 @@ static int psb_accel_2d_copy(struct drm_psb_private *dev_priv,
 
 	direction = psb_accel_2d_copy_direction(src_x - dst_x, src_y - dst_y);
 
+	if (direction == PSB_2D_COPYORDER_BR2TL ||
+	    direction == PSB_2D_COPYORDER_TR2BL) {
+		src_x += size_x - 1;
+		dst_x += size_x - 1;
+	}
+	if (direction == PSB_2D_COPYORDER_BR2TL ||
+	    direction == PSB_2D_COPYORDER_BL2TR) {
+		src_y += size_y - 1;
+		dst_y += size_y - 1;
+	}
+
 	blit_cmd =
 	    PSB_2D_BLIT_BH |
 	    PSB_2D_ROT_NONE |
@@ -570,7 +643,7 @@ static int psb_accel_2d_copy(struct drm_psb_private *dev_priv,
 	    PSB_2D_SRCCK_DISABLE |
 	    PSB_2D_USE_PAT | PSB_2D_ROP3_SRCCOPY | direction;
 
-	/* *buf++ = PSB_2D_FENCE_BH; */
+	*buf++ = PSB_2D_FENCE_BH;
 	*buf++ =
 	    PSB_2D_DST_SURF_BH | dst_format | (dst_stride <<
 					       PSB_2D_DST_STRIDE_SHIFT);
@@ -590,6 +663,7 @@ static int psb_accel_2d_copy(struct drm_psb_private *dev_priv,
 	*buf++ =
 	    (size_x << PSB_2D_DST_XSIZE_SHIFT) | (size_y <<
 						  PSB_2D_DST_YSIZE_SHIFT);
+	*buf++ = PSB_2D_FLUSH_BH;
 
 	psb_2d_lock(dev_priv);
 	ret = psb_2d_submit(dev_priv, buffer, buf - buffer);
@@ -675,102 +749,310 @@ static void psbfb_copyarea(struct fb_info *info,
 
 void psbfb_imageblit(struct fb_info *info, const struct fb_image *image)
 {
+	if (in_interrupt() || in_atomic()) {
+		cfb_imageblit(info, image);
+		return;
+	}
+
+	cfb_imageblit(info, image);
+}
+
+static int psbfb_blank(int blank_mode, struct fb_info *info)
+{
+	int dpms_mode;
+	struct psbfb_par *par = info->par;
+	struct drm_output *output;
+
+	par->dpms_state = blank_mode;
+
+	switch(blank_mode) {
+	case FB_BLANK_UNBLANK:
+		dpms_mode = DPMSModeOn;
+		break;
+	case FB_BLANK_NORMAL:
+		if (!par->crtc)
+			return 0;
+		(*par->crtc->funcs->dpms)(par->crtc, DPMSModeStandby);
+		return 0;
+	case FB_BLANK_HSYNC_SUSPEND:
+	default:
+		dpms_mode = DPMSModeStandby;
+		break;
+	case FB_BLANK_VSYNC_SUSPEND:
+		dpms_mode = DPMSModeSuspend;
+		break;
+	case FB_BLANK_POWERDOWN:
+		dpms_mode = DPMSModeOff;
+		break;
+	}
+
+	if (!par->crtc)
+		return 0;
+
+	list_for_each_entry(output, &par->dev->mode_config.output_list, head) {
+		if (output->crtc == par->crtc)
+			(*output->funcs->dpms)(output, dpms_mode);
+	}
+
+	(*par->crtc->funcs->dpms)(par->crtc, dpms_mode);
+	return 0;
+}
+
+
+static int psbfb_kms_off(struct drm_device *dev, int suspend)
+{
+	struct drm_framebuffer *fb = 0;
+	struct drm_buffer_object *bo = 0;
+	struct drm_psb_private *dev_priv = dev->dev_private;
+	int ret = 0;
+
+	DRM_DEBUG("psbfb_kms_off_ioctl\n");
+
+	mutex_lock(&dev->mode_config.mutex);
+	list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
+		struct fb_info *info = fb->fbdev;
+		struct psbfb_par *par = info->par;
+		int save_dpms_state;
+
+		if (suspend)
+			fb_set_suspend(info, 1);
+		else
+			info->state &= ~FBINFO_STATE_RUNNING;
+
+		info->screen_base = NULL;
+
+		bo = fb->bo;
+
+		if (!bo)
+			continue;
+
+		drm_bo_kunmap(&fb->kmap);
+
+		/*
+		 * We don't take the 2D lock here as we assume that the
+		 * 2D engine will eventually idle anyway.
+		 */
+
+		if (!suspend) {
+			uint32_t dummy2 = 0;
+			(void) psb_fence_emit_sequence(dev, PSB_ENGINE_2D, 0,
+							&dummy2, &dummy2);
+			psb_2d_lock(dev_priv);
+			(void)psb_idle_2d(dev);
+			psb_2d_unlock(dev_priv);
+		} else
+			psb_idle_2d(dev);
+
+		save_dpms_state = par->dpms_state;
+		psbfb_blank(FB_BLANK_NORMAL, info);
+		par->dpms_state = save_dpms_state;
+
+		ret = psbfb_move_fb_bo(info, bo, DRM_BO_FLAG_MEM_LOCAL);
+
+		if (ret)
+			goto out_err;
+	}
+      out_err:
+	mutex_unlock(&dev->mode_config.mutex);
+
+	return ret;
+}
+
+int psbfb_kms_off_ioctl(struct drm_device *dev, void *data,
+			struct drm_file *file_priv)
+{
+	int ret;
+
+	acquire_console_sem();
+	ret = psbfb_kms_off(dev, 0);
+	release_console_sem();
+
+	return ret;
+}
+
+static int psbfb_kms_on(struct drm_device *dev, int resume)
+{
+	struct drm_framebuffer *fb = 0;
+	struct drm_buffer_object *bo = 0;
+	struct drm_psb_private *dev_priv = dev->dev_private;
+	int ret = 0;
+	int dummy;
+
+	DRM_DEBUG("psbfb_kms_on_ioctl\n");
+
+	if (!resume) {
+		uint32_t dummy2 = 0;
+		(void) psb_fence_emit_sequence(dev, PSB_ENGINE_2D, 0,
+						       &dummy2, &dummy2);
+		psb_2d_lock(dev_priv);
+		(void)psb_idle_2d(dev);
+		psb_2d_unlock(dev_priv);
+	} else
+		psb_idle_2d(dev);
+
+	mutex_lock(&dev->mode_config.mutex);
+	list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
+		struct fb_info *info = fb->fbdev;
+		struct psbfb_par *par = info->par;
+
+		bo = fb->bo;
+		if (!bo)
+			continue;
+
+		ret = psbfb_move_fb_bo(info, bo,
+				       DRM_BO_FLAG_MEM_TT |
+				       DRM_BO_FLAG_MEM_VRAM |
+				       DRM_BO_FLAG_NO_EVICT);
+		if (ret)
+			goto out_err;
+
+		ret = drm_bo_kmap(bo, 0, bo->num_pages, &fb->kmap);
+		if (ret)
+			goto out_err;
+
+		info->screen_base = drm_bmo_virtual(&fb->kmap, &dummy);
+		fb->offset = bo->offset - dev_priv->pg->gatt_start;
+
+		if (ret)
+			goto out_err;
+
+		if (resume)
+			fb_set_suspend(info, 0);
+		else
+			info->state |= FBINFO_STATE_RUNNING;
+
+		/*
+		 * Re-run modesetting here, since the VDS scanout offset may
+		 * have changed.
+		 */
+
+		if (par->crtc->enabled) {
+			psbfb_set_par(info);
+			psbfb_blank(par->dpms_state, info);
+		}
+	}
+      out_err:
+	mutex_unlock(&dev->mode_config.mutex);
+
+	return ret;
+}
+
+int psbfb_kms_on_ioctl(struct drm_device *dev, void *data,
+		       struct drm_file *file_priv)
+{
+	int ret;
+
+	acquire_console_sem();
+	ret = psbfb_kms_on(dev, 0);
+	release_console_sem();
+	drm_disable_unused_functions(dev);
+	return ret;
+}
+
+void psbfb_suspend(struct drm_device *dev)
+{
+	acquire_console_sem();
+	psbfb_kms_off(dev, 1);
+	release_console_sem();
+}
+
+void psbfb_resume(struct drm_device *dev)
+{
+	acquire_console_sem();
+	psbfb_kms_on(dev, 1);
+	release_console_sem();
+	drm_disable_unused_functions(dev);
+}
+
+/*
+ * FIXME: Before kernel inclusion, migrate nopfn to fault.
+ * Also, these should be the default vm ops for buffer object type fbs.
+ */
+
+extern unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
+				     unsigned long address);
+
+/*
+ * This wrapper is a bit ugly and is here because we need access to a mutex
+ * that we can lock both around nopfn and around unmap_mapping_range + move.
+ * Normally, this would've been done using the bo mutex, but unfortunately
+ * we cannot lock it around drm_bo_do_validate(), since that would imply
+ * recursive locking.
+ */
+
+static unsigned long psbfb_nopfn(struct vm_area_struct *vma,
+				 unsigned long address)
+{
+	struct psbfb_vm_info *vi = (struct psbfb_vm_info *)vma->vm_private_data;
+	struct vm_area_struct tmp_vma;
+	unsigned long ret;
+
+	mutex_lock(&vi->vm_mutex);
+	tmp_vma = *vma;
+	tmp_vma.vm_private_data = vi->bo;
+	ret = drm_bo_vm_nopfn(&tmp_vma, address);
+	mutex_unlock(&vi->vm_mutex);
+	return ret;
+}
+
+static void psbfb_vm_open(struct vm_area_struct *vma)
+{
+	struct psbfb_vm_info *vi = (struct psbfb_vm_info *)vma->vm_private_data;
+
+	atomic_inc(&vi->refcount);
+}
+
+static void psbfb_vm_close(struct vm_area_struct *vma)
+{
+	psbfb_vm_info_deref((struct psbfb_vm_info **)&vma->vm_private_data);
+}
+
+static struct vm_operations_struct psbfb_vm_ops = {
+	.nopfn = psbfb_nopfn,
+	.nopage = NULL,
+	.open = psbfb_vm_open,
+	.close = psbfb_vm_close,
+};
+
+static int psbfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+{
+	struct psbfb_par *par = info->par;
+	struct drm_framebuffer *fb = par->crtc->fb;
+	struct drm_buffer_object *bo = fb->bo;
+	unsigned long size = (vma->vm_end - vma->vm_start) >> PAGE_SHIFT;
+	unsigned long offset = vma->vm_pgoff;
+
+	if (vma->vm_pgoff != 0)
+		return -EINVAL;
+	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT))
+		return -EINVAL;
+	if (offset + size > bo->num_pages)
+		return -EINVAL;
+
+	mutex_lock(&par->vi->vm_mutex);
+	if (!par->vi->f_mapping)
+		par->vi->f_mapping = vma->vm_file->f_mapping;
+	mutex_unlock(&par->vi->vm_mutex);
+
+	vma->vm_private_data = psbfb_vm_info_ref(par->vi);
+
+	vma->vm_ops = &psbfb_vm_ops;
+	vma->vm_flags |= VM_PFNMAP;
+
+	return 0;
+}
+
+int psbfb_sync(struct fb_info *info)
+{
 	struct psbfb_par *par = info->par;
 	struct drm_psb_private *dev_priv = par->dev->dev_private;
-
-	if (info->state != FBINFO_STATE_RUNNING)
-		return;
-	if (info->flags & FBINFO_HWACCEL_DISABLED) {
-		cfb_imageblit(info, image);
-		return;
-	}
-	if (in_interrupt() || in_atomic()) {
-		/*
-		 * Catch case when we're shutting down.
-		 */
-		cfb_imageblit(info, image);
-		return;
-	}
 
 	psb_2d_lock(dev_priv);
 	psb_idle_2d(par->dev);
 	psb_2d_unlock(dev_priv);
 
-	cfb_imageblit(info, image);
-}
-
-int psbfb_kms_off_ioctl(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
-{
-	struct drm_framebuffer *fb = 0;
-	struct drm_buffer_object *bo = 0;
-	struct drm_psb_private *dev_priv = dev->dev_private;
-	int ret;
-
-	DRM_DEBUG("psbfb_kms_off_ioctl\n");
-	psb_2d_lock(dev_priv);
-	psb_idle_2d(dev);
-	psb_2d_unlock(dev_priv);
-
-	mutex_lock(&dev->mode_config.mutex);
-	list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
-		bo = fb->bo;
-
-		if (!bo)
-			continue;
-
-		ret = drm_bo_do_validate(bo,
-				DRM_BO_FLAG_MEM_LOCAL,
-				DRM_BO_MASK_MEM |
-				DRM_BO_FLAG_NO_EVICT,
-				DRM_BO_HINT_DONT_FENCE, 0, 1, NULL);
-
-		if (ret)
-			DRM_ERROR("Bo error %i\n", -ret);
-	}
-
-	mutex_unlock(&dev->mode_config.mutex);
-
 	return 0;
 }
-
-int psbfb_kms_on_ioctl(struct drm_device *dev, void *data,
-		    struct drm_file *file_priv)
-{
-	struct drm_framebuffer *fb = 0;
-	struct drm_buffer_object *bo = 0;
-	struct drm_psb_private *dev_priv = dev->dev_private;
-	int ret;
-
-	DRM_DEBUG("psbfb_kms_on_ioctl\n");
-	psb_2d_lock(dev_priv);
-	psb_idle_2d(dev);
-	psb_2d_unlock(dev_priv);
-
-	mutex_lock(&dev->mode_config.mutex);
-	list_for_each_entry(fb, &dev->mode_config.fb_list, head) {
-		bo = fb->bo;
-
-		if (!bo)
-			continue;
-
-		ret = drm_bo_do_validate(bo,
-			DRM_BO_FLAG_MEM_TT |
-			DRM_BO_FLAG_MEM_VRAM |
-			DRM_BO_FLAG_NO_EVICT,
-			DRM_BO_MASK_MEM |
-			DRM_BO_FLAG_NO_EVICT,
-			DRM_BO_HINT_DONT_FENCE, 0, 1, NULL);
-
-		if (ret)
-			DRM_ERROR("Bo error %i\n", -ret);
-	}
-
-	mutex_unlock(&dev->mode_config.mutex);
-
-	return 0;
-}
-
 
 static struct fb_ops psbfb_ops = {
 	.owner = THIS_MODULE,
@@ -780,6 +1062,9 @@ static struct fb_ops psbfb_ops = {
 	.fb_fillrect = psbfb_fillrect,
 	.fb_copyarea = psbfb_copyarea,
 	.fb_imageblit = psbfb_imageblit,
+	.fb_mmap = psbfb_mmap,
+	.fb_sync = psbfb_sync,
+	.fb_blank = psbfb_blank,
 };
 
 int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
@@ -793,6 +1078,7 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_buffer_object *fbo = NULL;
 	int ret;
+	int is_iomem;
 
 	if (drm_psb_no_fb) {
 		/* need to do this as the DRM will disable the output */
@@ -832,11 +1118,9 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 				       DRM_BO_HINT_DONT_FENCE, 0, 0, &fbo);
 	if (ret || !fbo) {
 		DRM_ERROR("failed to allocate framebuffer\n");
-		drm_framebuffer_destroy(fb);
-		framebuffer_release(info);
-		crtc->fb = NULL;
-		return -ENOMEM;
+		goto out_err0;
 	}
+
 	fb->offset = fbo->offset - dev_priv->pg->gatt_start;
 	fb->bo = fbo;
 	DRM_DEBUG("allocated %dx%d fb: 0x%08lx, bo %p\n", fb->width,
@@ -848,7 +1132,16 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 
 	par->dev = dev;
 	par->crtc = crtc;
+	par->vi = psbfb_vm_info_create();
+	if (!par->vi)
+		goto out_err1;
 
+	mutex_lock(&dev->struct_mutex);
+	par->vi->bo = fbo;
+	atomic_inc(&fbo->usage);
+	mutex_unlock(&dev->struct_mutex);
+
+	par->vi->f_mapping = NULL;
 	info->fbops = &psbfb_ops;
 
 	strcpy(info->fix.id, "psbfb");
@@ -872,13 +1165,11 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 	ret = drm_bo_kmap(fb->bo, 0, fb->bo->num_pages, &fb->kmap);
 	if (ret) {
 		DRM_ERROR("error mapping fb: %d\n", ret);
-		drm_framebuffer_destroy(fb);
-		framebuffer_release(info);
-		crtc->fb = NULL;
-		return -EINVAL;
+		goto out_err2;
 	}
 
-	info->screen_base = fb->kmap.virtual;
+	info->screen_base = drm_bmo_virtual(&fb->kmap, &is_iomem);
+	memset(info->screen_base, 0x00, fb->pitch*fb->height);
 	info->screen_size = info->fix.smem_len;	/* FIXME */
 	info->pseudo_palette = fb->pseudo_palette;
 	info->var.xres_virtual = fb->width;
@@ -963,24 +1254,30 @@ int psbfb_probe(struct drm_device *dev, struct drm_crtc *crtc)
 		break;
 	}
 
-	if (register_framebuffer(info) < 0) {
-		drm_framebuffer_destroy(fb);
-		framebuffer_release(info);
-		crtc->fb = NULL;
-		return -EINVAL;
-	}
+	if (register_framebuffer(info) < 0)
+		goto out_err3;
 
-	if (psbfb_check_var(&info->var, info) < 0) {
-		drm_framebuffer_destroy(fb);
-		framebuffer_release(info);
-		crtc->fb = NULL;
-		return -EINVAL;
-	}
+	if (psbfb_check_var(&info->var, info) < 0)
+		goto out_err4;
 
 	psbfb_set_par(info);
 
 	DRM_INFO("fb%d: %s frame buffer device\n", info->node, info->fix.id);
+
 	return 0;
+      out_err4:
+	unregister_framebuffer(info);
+      out_err3:
+	drm_bo_kunmap(&fb->kmap);
+      out_err2:
+	psbfb_vm_info_deref(&par->vi);
+      out_err1:
+	drm_bo_usage_deref_unlocked(&fb->bo);
+      out_err0:
+	drm_framebuffer_destroy(fb);
+	framebuffer_release(info);
+	crtc->fb = NULL;
+	return -EINVAL;
 }
 
 EXPORT_SYMBOL(psbfb_probe);
@@ -989,6 +1286,7 @@ int psbfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 {
 	struct drm_framebuffer *fb;
 	struct fb_info *info;
+	struct psbfb_par *par;
 
 	if (drm_psb_no_fb)
 		return 0;
@@ -998,12 +1296,16 @@ int psbfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 
 	if (info) {
 		unregister_framebuffer(info);
-		framebuffer_release(info);
 		drm_bo_kunmap(&fb->kmap);
+		par = info->par;
+		if (par)
+			psbfb_vm_info_deref(&par->vi);
 		drm_bo_usage_deref_unlocked(&fb->bo);
 		drm_framebuffer_destroy(fb);
+		framebuffer_release(info);
 	}
 	return 0;
 }
 
 EXPORT_SYMBOL(psbfb_remove);
+

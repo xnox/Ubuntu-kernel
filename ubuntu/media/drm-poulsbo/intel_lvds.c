@@ -28,6 +28,7 @@
  */
 
 #include <linux/i2c.h>
+#include <linux/backlight.h>
 #include "drm_crtc.h"
 #include "drm_edid.h"
 #include "intel_lvds.h"
@@ -58,6 +59,12 @@ u32 PWMControlRegFreq;
 
 unsigned char * dev_OpRegion = NULL;
 unsigned int dev_OpRegionSize;
+
+#define PCI_PORT5_REG80_FFUSE				0xD0058000
+#define PCI_PORT5_REG80_MAXRES_INT_EN		0x0040
+#define MAX_HDISPLAY 800
+#define MAX_VDISPLAY 480
+bool sku_bMaxResEnableInt = false;
 
 /** Set BLC through I2C*/
 static int
@@ -107,7 +114,6 @@ LVDSCalculatePWMCtrlRegFreq(struct drm_device *dev)
 	value = (value / blc_freq);
 	value = (value / BLC_PWM_PRECISION_FACTOR);
 
-	DRM_INFO("RegFreg value is %l.\n", value);
 	if (value > (unsigned long)BLC_MAX_PWM_REG_FREQ ||
 			value < (unsigned long)BLC_MIN_PWM_REG_FREQ) {
 		return FALSE;
@@ -236,7 +242,6 @@ static void intel_lvds_set_power(struct drm_device *dev, bool on)
 static int intel_lvds_proc_read_backlight(char *buf, char **start, off_t offset,
 		int request, int *eof, void *data)
 {
-	struct drm_device *dev = (struct drm_device *)data;
 	int len = 0;
 	DRM_INFO("call intel_lvds_proc_read_backlight, %d\n", lvds_backlight);
 
@@ -345,6 +350,13 @@ static int intel_lvds_mode_valid(struct drm_output *output,
 		if (mode->hdisplay > fixed_mode->hdisplay)
 			return MODE_PANEL;
 		if (mode->vdisplay > fixed_mode->vdisplay)
+			return MODE_PANEL;
+	}
+
+	if (IS_POULSBO(dev) && sku_bMaxResEnableInt) {
+		if (mode->hdisplay > MAX_HDISPLAY)
+			return MODE_PANEL;
+		if (mode->vdisplay > MAX_VDISPLAY)
 			return MODE_PANEL;
 	}
 
@@ -534,6 +546,34 @@ out:
 	return 0;
 }
 
+/* added by alek du to add /sys/class/backlight interface */
+static int update_bl_status(struct backlight_device *bd)
+{
+        int value = bd->props.brightness;
+	
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22)
+	struct drm_device *dev = class_get_devdata (&bd->class_dev);
+#else
+	struct drm_device *dev = bl_get_data(bd);
+#endif
+	lvds_backlight = value;
+	intel_lvds_set_backlight(dev, value);
+	/*value = (bd->props.power == FB_BLANK_UNBLANK) ? 1 : 0;
+	intel_lvds_set_power(dev,value);*/
+	return 0;
+}
+
+static int read_brightness(struct backlight_device *bd)
+{
+        return bd->props.brightness;
+}
+
+static struct backlight_device *psbbl_device;
+static struct backlight_ops psbbl_ops = {
+        .get_brightness = read_brightness,
+        .update_status = update_bl_status,
+};
+
 /**
  * intel_lvds_destroy - unregister and free LVDS structures
  * @output: output to free
@@ -543,7 +583,6 @@ out:
  */
 static void intel_lvds_destroy(struct drm_output *output)
 {
-	struct drm_device *dev = output->dev;
 	struct intel_output *intel_output = output->driver_private;
 
 #ifdef BLC_DEBUG
@@ -552,6 +591,9 @@ static void intel_lvds_destroy(struct drm_output *output)
 		remove_proc_entry("dri/lvds", NULL);
 	}
 #endif
+	if (psbbl_device){
+		backlight_device_unregister(psbbl_device);
+	}		
 	if(dev_OpRegion != NULL)
 		iounmap(dev_OpRegion);
 	intel_i2c_destroy(intel_output->ddc_bus);
@@ -772,9 +814,12 @@ void intel_lvds_init(struct drm_device *dev)
 
 	}
 
-	if(1){//get the Core Clock for the calculating MAX PWM value
+	if(1){
+		//get the Core Clock for calculating MAX PWM value
+		//check whether the MaxResEnableInt is 
 		struct pci_dev * pci_root = pci_get_bus_and_slot(0, 0);
 		u32 clock;
+		u32 sku_value = 0;
 		unsigned int CoreClocks[] = {
 			100,
 			133,
@@ -791,6 +836,12 @@ void intel_lvds_init(struct drm_device *dev)
 			pci_read_config_dword(pci_root, 0xD4, &clock);
 			CoreClock = CoreClocks[clock & 0x07];
 			DRM_INFO("intel_lvds_init: the CoreClock is %d\n", CoreClock);
+			
+			pci_write_config_dword(pci_root, 0xD0, PCI_PORT5_REG80_FFUSE);
+			pci_read_config_dword(pci_root, 0xD4, &sku_value);
+			sku_bMaxResEnableInt = (sku_value & PCI_PORT5_REG80_MAXRES_INT_EN)? true : false;
+			DRM_INFO("intel_lvds_init: sku_value is 0x%08x\n", sku_value);
+			DRM_INFO("intel_lvds_init: sku_bMaxResEnableInt is %d\n", sku_bMaxResEnableInt);
 		}
 	}
 
@@ -816,7 +867,15 @@ void intel_lvds_init(struct drm_device *dev)
 
 	}
 #endif
-
+	{	/* add /sys/class/backlight interface as standard */
+		psbbl_device = backlight_device_register("psblvds", &dev->pdev->dev, dev, &psbbl_ops);
+		if (psbbl_device){
+			psbbl_device->props.max_brightness = BRIGHTNESS_MAX_LEVEL;
+			psbbl_device->props.brightness = lvds_backlight;
+			psbbl_device->props.power = FB_BLANK_UNBLANK;
+			backlight_update_status(psbbl_device);
+		}
+	}
 blc_out:
 
 	/* Set up the DDC bus. */

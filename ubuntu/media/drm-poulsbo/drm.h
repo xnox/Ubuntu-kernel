@@ -906,6 +906,7 @@ struct drm_mm_init_arg {
 #define DRM_MODE_TYPE_DEFAULT	(1<<4)
 #define DRM_MODE_TYPE_USERDEF	(1<<5)
 #define DRM_MODE_TYPE_DRIVER	(1<<6)
+#define DRM_MODE_TYPE_USERPREF	(1<<7)
 
 struct drm_mode_modeinfo {
 

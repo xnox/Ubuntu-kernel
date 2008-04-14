@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -35,8 +35,8 @@
 int drm_psb_debug = 0;
 EXPORT_SYMBOL(drm_psb_debug);
 static int drm_psb_trap_pagefaults = 0;
-static int drm_psb_disable_cg = 1;
-static int drm_psb_ta_mem_size = 32*1024;
+static int drm_psb_clock_gating = 0;
+static int drm_psb_ta_mem_size = 32 * 1024;
 int drm_psb_disable_vsync = 0;
 int drm_psb_no_fb = 0;
 int drm_psb_force_pipeb = 0;
@@ -48,7 +48,7 @@ int psb_init_yres;
  */
 
 MODULE_PARM_DESC(debug, "Enable debug output");
-MODULE_PARM_DESC(disable_clockgating, "Disable clock gating");
+MODULE_PARM_DESC(clock_gating, "clock gating");
 MODULE_PARM_DESC(no_fb, "Disable FBdev");
 MODULE_PARM_DESC(trap_pagefaults, "Error and reset on MMU pagefaults");
 MODULE_PARM_DESC(disable_vsync, "Disable vsync interrupts");
@@ -59,7 +59,7 @@ MODULE_PARM_DESC(xres, "initial mode width");
 MODULE_PARM_DESC(yres, "initial mode height");
 
 module_param_named(debug, drm_psb_debug, int, 0600);
-module_param_named(disable_clockgating, drm_psb_disable_cg, int, 0600);
+module_param_named(clock_gating, drm_psb_clock_gating, int, 0600);
 module_param_named(no_fb, drm_psb_no_fb, int, 0600);
 module_param_named(trap_pagefaults, drm_psb_trap_pagefaults, int, 0600);
 module_param_named(disable_vsync, drm_psb_disable_vsync, int, 0600);
@@ -81,6 +81,8 @@ static struct pci_device_id pciidlist[] = {
 
 #define DRM_PSB_SCENE_UNREF_IOCTL DRM_IOWR(DRM_PSB_SCENE_UNREF, \
 					   struct drm_psb_scene)
+#define DRM_PSB_HW_INFO_IOCTL DRM_IOR(DRM_PSB_HW_INFO, \
+                                           struct drm_psb_hw_info)
 
 #define DRM_PSB_KMS_OFF_IOCTL	DRM_IO(DRM_PSB_KMS_OFF)
 #define DRM_PSB_KMS_ON_IOCTL	DRM_IO(DRM_PSB_KMS_ON)
@@ -92,8 +94,10 @@ static struct drm_ioctl_desc psb_ioctls[] = {
 	DRM_IOCTL_DEF(DRM_PSB_XHW_IOCTL, psb_xhw_ioctl, DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_PSB_SCENE_UNREF_IOCTL, drm_psb_scene_unref_ioctl,
 		      DRM_AUTH),
-	DRM_IOCTL_DEF(DRM_PSB_KMS_OFF_IOCTL, psbfb_kms_off_ioctl, DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_PSB_KMS_OFF_IOCTL, psbfb_kms_off_ioctl,
+		      DRM_ROOT_ONLY),
 	DRM_IOCTL_DEF(DRM_PSB_KMS_ON_IOCTL, psbfb_kms_on_ioctl, DRM_ROOT_ONLY),
+	DRM_IOCTL_DEF(DRM_PSB_HW_INFO_IOCTL, psb_hw_info_ioctl, DRM_AUTH),
 };
 static int psb_max_ioctl = DRM_ARRAY_SIZE(psb_ioctls);
 
@@ -106,13 +110,13 @@ static int dri_library_name(struct drm_device *dev, char *buf)
 
 static void psb_set_uopt(struct drm_psb_uopt *uopt)
 {
-	uopt->disable_clock_gating = drm_psb_disable_cg;
+	uopt->clock_gating = drm_psb_clock_gating;
 }
 
 static void psb_lastclose(struct drm_device *dev)
 {
 	struct drm_psb_private *dev_priv =
-		(struct drm_psb_private *)dev->dev_private;
+	    (struct drm_psb_private *)dev->dev_private;
 
 	if (!dev->dev_private)
 		return;
@@ -122,7 +126,6 @@ static void psb_lastclose(struct drm_device *dev)
 		psb_ta_mem_unref_devlocked(&dev_priv->ta_mem);
 	mutex_unlock(&dev->struct_mutex);
 }
-
 
 static void psb_do_takedown(struct drm_device *dev)
 {
@@ -169,40 +172,48 @@ static void psb_do_takedown(struct drm_device *dev)
 
 void psb_clockgating(struct drm_psb_private *dev_priv)
 {
-	if (dev_priv->uopt.disable_clock_gating) {
+	uint32_t clock_gating;
+
+	if (dev_priv->uopt.clock_gating == 1) {
 		PSB_DEBUG_INIT("Disabling clock gating.\n");
 
-		PSB_WSGX32((_PSB_C_CLKGATECTL_CLKG_DISABLED <<
-			    _PSB_C_CLKGATECTL_2D_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
-			    _PSB_C_CLKGATECTL_ISP_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
-			    _PSB_C_CLKGATECTL_TSP_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
-			    _PSB_C_CLKGATECTL_TA_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
-			    _PSB_C_CLKGATECTL_DPM_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
-			    _PSB_C_CLKGATECTL_USE_CLKG_SHIFT),
-			   PSB_CR_CLKGATECTL);
-	} else {
+		clock_gating = (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
+				_PSB_C_CLKGATECTL_2D_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
+		     _PSB_C_CLKGATECTL_ISP_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
+		     _PSB_C_CLKGATECTL_TSP_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
+		     _PSB_C_CLKGATECTL_TA_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
+		     _PSB_C_CLKGATECTL_DPM_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
+		     _PSB_C_CLKGATECTL_USE_CLKG_SHIFT);
+
+	} else if (dev_priv->uopt.clock_gating == 2) {
 		PSB_DEBUG_INIT("Enabling clock gating.\n");
 
-		PSB_WSGX32((_PSB_C_CLKGATECTL_CLKG_AUTO <<
-			    _PSB_C_CLKGATECTL_2D_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_AUTO <<
-			    _PSB_C_CLKGATECTL_ISP_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_AUTO <<
-			    _PSB_C_CLKGATECTL_TSP_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_AUTO <<
-			    _PSB_C_CLKGATECTL_TA_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_AUTO <<
-			    _PSB_C_CLKGATECTL_DPM_CLKG_SHIFT) |
-			   (_PSB_C_CLKGATECTL_CLKG_AUTO <<
-			    _PSB_C_CLKGATECTL_USE_CLKG_SHIFT),
-			   PSB_CR_CLKGATECTL);
+		clock_gating = (_PSB_C_CLKGATECTL_CLKG_AUTO <<
+				_PSB_C_CLKGATECTL_2D_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_AUTO <<
+		     _PSB_C_CLKGATECTL_ISP_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_AUTO <<
+		     _PSB_C_CLKGATECTL_TSP_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_AUTO <<
+		     _PSB_C_CLKGATECTL_TA_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_AUTO <<
+		     _PSB_C_CLKGATECTL_DPM_CLKG_SHIFT) |
+		    (_PSB_C_CLKGATECTL_CLKG_AUTO <<
+		     _PSB_C_CLKGATECTL_USE_CLKG_SHIFT);
+	} else
+		clock_gating = PSB_RSGX32(PSB_CR_CLKGATECTL);
 
-	}
+#ifdef FIX_TG_2D_CLOCKGATE
+	clock_gating &= ~_PSB_C_CLKGATECTL_2D_CLKG_MASK;
+	clock_gating |= (_PSB_C_CLKGATECTL_CLKG_DISABLED <<
+			 _PSB_C_CLKGATECTL_2D_CLKG_SHIFT);
+#endif
+	PSB_WSGX32(clock_gating, PSB_CR_CLKGATECTL);
 	(void)PSB_RSGX32(PSB_CR_CLKGATECTL);
 }
 
@@ -216,16 +227,12 @@ static int psb_do_init(struct drm_device *dev)
 	uint32_t tt_start;
 	uint32_t tt_pages;
 
-	uint32_t dspaconf;
-	uint32_t dspbconf;
-
 	int ret = -ENOMEM;
 
 	DRM_ERROR("Debug is 0x%08x\n", drm_psb_debug);
-	
-	dev_priv->ta_mem_pages = 
-		PSB_ALIGN_TO(drm_psb_ta_mem_size * 1024, 
-			     PAGE_SIZE) >> PAGE_SHIFT;
+
+	dev_priv->ta_mem_pages =
+	    PSB_ALIGN_TO(drm_psb_ta_mem_size * 1024, PAGE_SIZE) >> PAGE_SHIFT;
 	dev_priv->comm_page = alloc_page(GFP_KERNEL);
 	if (!dev_priv->comm_page)
 		goto out_err;
@@ -275,7 +282,6 @@ static int psb_do_init(struct drm_device *dev)
 
 	if (ret)
 		goto out_err;
-
 
 	if (1 || drm_debug) {
 		uint32_t core_id = PSB_RSGX32(PSB_CR_CORE_ID);
@@ -336,12 +342,6 @@ static int psb_do_init(struct drm_device *dev)
 
 	mutex_unlock(&dev->struct_mutex);
 
-	DRM_DEBUG("reading PIPE*CONF\n");
-	dspaconf = I915_READ(PIPEACONF);
-	dspbconf = I915_READ(PIPEBCONF);
-        dev_priv->primary_display = dspaconf; /* to enable TV by xiaolin */
-	DRM_DEBUG("which is primary a = 0x%x, b = 0x%x\n", dspaconf, dspbconf);
-
 	return 0;
       out_err:
 	psb_do_takedown(dev);
@@ -372,7 +372,7 @@ static int psb_driver_unload(struct drm_device *dev)
 		}
 		mutex_unlock(&dev->struct_mutex);
 
-		(void) drm_bo_driver_finish(dev);
+		(void)drm_bo_driver_finish(dev);
 
 		if (dev_priv->pf_pd) {
 			psb_mmu_free_pagedir(dev_priv->pf_pd);
@@ -441,17 +441,17 @@ static int psb_initial_config(struct drm_device *dev, bool can_grow)
 
 	if ((I915_READ(PIPEACONF) & PIPEACONF_ENABLE) && !drm_psb_force_pipeb)
 		list_for_each_entry(crtc, &dev->mode_config.crtc_list, head) {
-			if (!crtc->desired_mode)
-				continue;
+		if (!crtc->desired_mode)
+			continue;
 
-			dev->driver->fb_probe(dev, crtc);
-		}
-	else
-		list_for_each_entry_reverse(crtc, &dev->mode_config.crtc_list, head) {
-			if (!crtc->desired_mode)
-				continue;
+		dev->driver->fb_probe(dev, crtc);
+	} else
+		list_for_each_entry_reverse(crtc, &dev->mode_config.crtc_list,
+					    head) {
+		if (!crtc->desired_mode)
+			continue;
 
-			dev->driver->fb_probe(dev, crtc);
+		dev->driver->fb_probe(dev, crtc);
 		}
 
 	list_for_each_entry(output, &dev->mode_config.output_list, head) {
@@ -461,7 +461,7 @@ static int psb_initial_config(struct drm_device *dev, bool can_grow)
 
 		if (output->crtc->fb)
 			drm_crtc_set_mode(output->crtc,
-				output->crtc->desired_mode, 0, 0);
+					  output->crtc->desired_mode, 0, 0);
 	}
 
 	drm_disable_unused_functions(dev);
@@ -489,6 +489,8 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	mutex_init(&dev_priv->reset_mutex);
 	psb_init_disallowed();
 
+	atomic_set(&dev_priv->msvdx_mmu_invaldc, 0);
+
 #ifdef FIX_TG_16
 	atomic_set(&dev_priv->lock_2d, 0);
 	atomic_set(&dev_priv->ta_wait_2d, 0);
@@ -512,7 +514,7 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	psb_scheduler_init(dev, &dev_priv->scheduler);
 
 	resource_start = pci_resource_start(dev->pdev, PSB_MMIO_RESOURCE);
-
+	
 	dev_priv->msvdx_reg =
 	    ioremap(resource_start + PSB_MSVDX_OFFSET, PSB_MSVDX_SIZE);
 	if (!dev_priv->msvdx_reg)
@@ -545,7 +547,8 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 		goto out_err;
 
 	dev_priv->mmu = psb_mmu_driver_init(dev_priv->sgx_reg,
-					    drm_psb_trap_pagefaults, 0);
+					    drm_psb_trap_pagefaults, 0,
+					    &dev_priv->msvdx_mmu_invaldc);
 	if (!dev_priv->mmu)
 		goto out_err;
 
@@ -651,8 +654,7 @@ static int psb_prepare_msvdx_suspend(struct drm_device *dev)
 			DRM_WAIT_ON(ret, fc->fence_queue, 3 * DRM_HZ,
 				    (signaled =
 				     drm_fence_object_signaled(fence,
-							       DRM_FENCE_TYPE_EXE,
-							       1)));
+							       DRM_FENCE_TYPE_EXE)));
 			if (signaled)
 				break;
 			if (time_after_eq(jiffies, _end))
@@ -673,6 +675,10 @@ static int psb_suspend(struct pci_dev *pdev, pm_message_t state)
 	struct drm_psb_private *dev_priv =
 	    (struct drm_psb_private *)dev->dev_private;
 
+	if (drm_psb_no_fb == 0)
+		psbfb_suspend(dev);
+
+	dev_priv->saveCLOCKGATING = PSB_RSGX32(PSB_CR_CLKGATECTL);
 	(void)psb_idle_3d(dev);
 	(void)psb_idle_2d(dev);
 	flush_scheduled_work();
@@ -681,6 +687,10 @@ static int psb_suspend(struct pci_dev *pdev, pm_message_t state)
 
 	if (dev_priv->has_msvdx)
 		psb_prepare_msvdx_suspend(dev);
+
+	pci_save_state(pdev);
+	pci_disable_device(pdev);
+	pci_set_power_state(pdev, PCI_D3hot);
 
 	return 0;
 }
@@ -691,8 +701,15 @@ static int psb_resume(struct pci_dev *pdev)
 	struct drm_psb_private *dev_priv =
 	    (struct drm_psb_private *)dev->dev_private;
 	struct psb_gtt *pg = dev_priv->pg;
-	struct drm_output *output;
-	
+        struct drm_output *output;
+	int ret;
+
+	pci_set_power_state(pdev, PCI_D0);
+	pci_restore_state(pdev);
+	ret = pci_enable_device(pdev);
+	if (ret)
+		return ret;
+
 	INIT_LIST_HEAD(&dev_priv->resume_buf.head);
 	dev_priv->msvdx_needs_reset = 1;
 
@@ -718,7 +735,7 @@ static int psb_resume(struct pci_dev *pdev)
 	 * "normal" pages, so their contents should be kept.
 	 */
 
-	psb_clockgating(dev_priv);
+	PSB_WSGX32(dev_priv->saveCLOCKGATING, PSB_CR_CLKGATECTL);
 	PSB_WSGX32(0x00000000, PSB_CR_BIF_BANK0);
 	PSB_WSGX32(0x00000000, PSB_CR_BIF_BANK1);
 	PSB_RSGX32(PSB_CR_BIF_BANK1);
@@ -732,11 +749,11 @@ static int psb_resume(struct pci_dev *pdev)
 	 */
 	psb_init_2d(dev_priv);
 
-	list_for_each_entry(output, &dev->mode_config.output_list, head) {
-	    if(output->crtc != NULL)
-		drm_crtc_set_mode(output->crtc, &output->crtc->mode,
-			      output->crtc->x, output->crtc->y);
-	}
+        list_for_each_entry(output, &dev->mode_config.output_list, head) {
+            if(output->crtc != NULL)
+                drm_crtc_set_mode(output->crtc, &output->crtc->mode,
+                              output->crtc->x, output->crtc->y);
+        }
 
 	/*
 	 * Persistant 3D base registers and USSE base registers..
@@ -754,17 +771,19 @@ static int psb_resume(struct pci_dev *pdev)
 
 	psb_scheduler_ta_mem_check(dev_priv);
 	if (dev_priv->ta_mem && !dev_priv->force_ta_mem_load) {
-		psb_xhw_ta_mem_load(dev_priv, &dev_priv->resume_buf, 
-				     PSB_TA_MEM_FLAG_TA|
-				     PSB_TA_MEM_FLAG_RASTER|
-				     PSB_TA_MEM_FLAG_HOSTA|
-				     PSB_TA_MEM_FLAG_HOSTD|
-				     PSB_TA_MEM_FLAG_INIT,
-				     dev_priv->ta_mem->ta_memory->offset,
-				     dev_priv->ta_mem->hw_data->offset,
-				     dev_priv->ta_mem->hw_cookie);
+		psb_xhw_ta_mem_load(dev_priv, &dev_priv->resume_buf,
+				    PSB_TA_MEM_FLAG_TA |
+				    PSB_TA_MEM_FLAG_RASTER |
+				    PSB_TA_MEM_FLAG_HOSTA |
+				    PSB_TA_MEM_FLAG_HOSTD |
+				    PSB_TA_MEM_FLAG_INIT,
+				    dev_priv->ta_mem->ta_memory->offset,
+				    dev_priv->ta_mem->hw_data->offset,
+				    dev_priv->ta_mem->hw_cookie);
 	}
 
+	if (drm_psb_no_fb == 0)
+		psbfb_resume(dev);
 
 	return 0;
 }
@@ -788,16 +807,7 @@ static int psb_release(struct inode *inode, struct file *filp)
 	return drm_release(inode, filp);
 }
 
-static struct drm_fence_driver psb_fence_driver = {
-	.num_classes = PSB_NUM_ENGINES,
-	.wrap_diff = (1 << 30),
-	.flush_diff = (1 << 29),
-	.sequence_mask = 0xFFFFFFFFU,
-	.lazy_capable = 1,
-	.emit = psb_fence_emit_sequence,
-	.poke_flush = psb_poke_flush,
-	.has_irq = psb_fence_has_irq
-};
+extern struct drm_fence_driver psb_fence_driver;
 
 /*
  * Use this memory type priority if no eviction is needed.
@@ -835,7 +845,8 @@ static struct drm_bo_driver psb_bo_driver = {
 	.invalidate_caches = psb_invalidate_caches,
 	.init_mem_type = psb_init_mem_type,
 	.evict_mask = psb_evict_mask,
-	.move = psb_move
+	.move = psb_move,
+	.command_stream_barrier = NULL,
 };
 
 static struct drm_driver driver = {
@@ -855,7 +866,7 @@ static struct drm_driver driver = {
 	.irq_handler = psb_irq_handler,
 	.fb_probe = psbfb_probe,
 	.fb_remove = psbfb_remove,
-	.firstopen = NULL,	
+	.firstopen = NULL,
 	.lastclose = psb_lastclose,
 	.fops = {
 		 .owner = THIS_MODULE,

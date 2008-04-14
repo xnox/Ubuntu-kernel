@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -103,10 +103,10 @@ static inline uint32_t psb_scene_pool_handle(struct psb_scene_pool *pool)
 {
 	return pool->user.hash.key;
 }
-extern struct psb_ta_mem *psb_alloc_ta_mem(struct drm_device *dev, 
-					     uint32_t pages);
+extern struct psb_ta_mem *psb_alloc_ta_mem(struct drm_device *dev,
+					   uint32_t pages);
 extern void psb_ta_mem_ref_devlocked(struct psb_ta_mem **dst,
-				      struct psb_ta_mem *src);
+				     struct psb_ta_mem *src);
 extern void psb_ta_mem_unref_devlocked(struct psb_ta_mem **ta_mem);
 
 #endif

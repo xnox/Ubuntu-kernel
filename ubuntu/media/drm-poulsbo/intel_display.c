@@ -417,7 +417,7 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 	int dspcntr_reg = (pipe == 0) ? DSPACNTR : DSPBCNTR;
 	int dspbase_reg = (pipe == 0) ? DSPABASE : DSPBBASE;
 	int pipeconf_reg = (pipe == 0) ? PIPEACONF : PIPEBCONF;
-	u32 temp;
+	u32 temp, temp2;
 	bool enabled;
 
 	/* XXX: When our outputs are all unaware of DPMS modes other than off
@@ -448,11 +448,16 @@ static void intel_crtc_dpms(struct drm_crtc *crtc, int mode)
 		temp = I915_READ(pipeconf_reg);
 		if ((temp & PIPEACONF_ENABLE) == 0)
 			I915_WRITE(pipeconf_reg, temp | PIPEACONF_ENABLE);
-		
+
 		/* Enable the plane */
 		temp = I915_READ(dspcntr_reg);
-		if ((temp & DISPLAY_PLANE_ENABLE) == 0) {
-			I915_WRITE(dspcntr_reg, temp | DISPLAY_PLANE_ENABLE);
+		if (mode != DPMSModeOn)
+			temp2 = temp & ~DISPLAY_PLANE_ENABLE;
+		else
+			temp2 = temp | DISPLAY_PLANE_ENABLE;
+
+		if (temp != temp2) {
+			I915_WRITE(dspcntr_reg, temp2);
 			/* Flush the plane changes */
 			I915_WRITE(dspbase_reg, I915_READ(dspbase_reg));
 		}
@@ -845,7 +850,7 @@ static void intel_crtc_mode_set(struct drm_crtc *crtc,
 	DRM_DEBUG("Mode for pipe %c:\n", pipe == 0 ? 'A' : 'B');
 	drm_mode_debug_printmodeline(dev, mode);
 
-    psbPrintPll("chosen", &clock);
+        /*psbPrintPll("chosen", &clock);*/
     DRM_DEBUG("clock regs: 0x%08x, 0x%08x,dspntr is 0x%8x, pipeconf is 0x%8x\n", (int)dpll,
 	      (int)fp,(int)dspcntr,(int)pipeconf);	
 #if 0

@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -20,21 +20,20 @@
  *
  **************************************************************************/
 /*
- * Make calls into closed source X server code. 
+ * Make calls into closed source X server code.
  */
 
 #include "drmP.h"
 #include "psb_drv.h"
 
 void
-psb_xhw_clean_buf(struct drm_psb_private *dev_priv,
-		  struct psb_xhw_buf *buf)
+psb_xhw_clean_buf(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf)
 {
 	unsigned long irq_flags;
 
 	spin_lock_irqsave(&dev_priv->xhw_lock, irq_flags);
 	list_del_init(&buf->head);
-	if (dev_priv->xhw_cur_buf == buf) 
+	if (dev_priv->xhw_cur_buf == buf)
 		dev_priv->xhw_cur_buf = NULL;
 	atomic_set(&buf->done, 1);
 	spin_unlock_irqrestore(&dev_priv->xhw_lock, irq_flags);
@@ -177,12 +176,43 @@ int psb_xhw_reset_dpm(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf)
 		return ret;
 
 	(void)wait_event_timeout(dev_priv->xhw_caller_queue,
-				 atomic_read(&buf->done), 3*DRM_HZ);
+				 atomic_read(&buf->done), 3 * DRM_HZ);
 
 	if (!atomic_read(&buf->done)) {
 		psb_xhw_clean_buf(dev_priv, buf);
 		return -EBUSY;
 	}
+
+	return xa->ret;
+}
+
+int psb_xhw_check_lockup(struct drm_psb_private *dev_priv,
+			 struct psb_xhw_buf *buf, uint32_t * value)
+{
+	struct drm_psb_xhw_arg *xa = &buf->arg;
+	int ret;
+
+	*value = 0;
+
+	buf->copy_back = 1;
+	xa->op = PSB_XHW_CHECK_LOCKUP;
+	xa->issue_irq = 0;
+	xa->irq_op = 0;
+
+	ret = psb_xhw_add(dev_priv, buf);
+	if (ret)
+		return ret;
+
+	(void)wait_event_timeout(dev_priv->xhw_caller_queue,
+				 atomic_read(&buf->done), DRM_HZ * 3);
+
+	if (!atomic_read(&buf->done)) {
+		psb_xhw_clean_buf(dev_priv, buf);
+		return -EBUSY;
+	}
+
+	if (!xa->ret)
+		*value = xa->arg.cl.value;
 
 	return xa->ret;
 }
@@ -222,8 +252,8 @@ static int psb_xhw_terminate(struct drm_psb_private *dev_priv,
 }
 
 int psb_xhw_ta_mem_info(struct drm_psb_private *dev_priv,
-			 struct psb_xhw_buf *buf,
-			 uint32_t pages, uint32_t * hw_cookie, uint32_t * size)
+			struct psb_xhw_buf *buf,
+			uint32_t pages, uint32_t * hw_cookie, uint32_t * size)
 {
 	struct drm_psb_xhw_arg *xa = &buf->arg;
 	int ret;
@@ -254,11 +284,10 @@ int psb_xhw_ta_mem_info(struct drm_psb_private *dev_priv,
 }
 
 int psb_xhw_ta_mem_load(struct drm_psb_private *dev_priv,
-			 struct psb_xhw_buf *buf,
-			 uint32_t flags, 
-			 uint32_t param_offset, 
-			 uint32_t pt_offset,
-			 uint32_t *hw_cookie)
+			struct psb_xhw_buf *buf,
+			uint32_t flags,
+			uint32_t param_offset,
+			uint32_t pt_offset, uint32_t * hw_cookie)
 {
 	struct drm_psb_xhw_arg *xa = &buf->arg;
 	int ret;
@@ -277,14 +306,14 @@ int psb_xhw_ta_mem_load(struct drm_psb_private *dev_priv,
 		return ret;
 
 	(void)wait_event_timeout(dev_priv->xhw_caller_queue,
-				 atomic_read(&buf->done), 3*DRM_HZ);
+				 atomic_read(&buf->done), 3 * DRM_HZ);
 
 	if (!atomic_read(&buf->done)) {
 		psb_xhw_clean_buf(dev_priv, buf);
 		return -EBUSY;
 	}
 
-	if (!xa->ret) 
+	if (!xa->ret)
 		memcpy(hw_cookie, xa->cookie, sizeof(xa->cookie));
 
 	return xa->ret;
@@ -550,8 +579,8 @@ int psb_xhw_ioctl(struct drm_device *dev, void *data,
 	while (list_empty(&dev_priv->xhw_in)) {
 		spin_unlock_irqrestore(&dev_priv->xhw_lock, irq_flags);
 		ret = wait_event_interruptible_timeout(dev_priv->xhw_queue,
-						       !psb_xhw_in_empty(dev_priv), 
-						       DRM_HZ);
+						       !psb_xhw_in_empty
+						       (dev_priv), DRM_HZ);
 		if (ret == -ERESTARTSYS || ret == 0) {
 			mutex_unlock(&dev_priv->xhw_mutex);
 			return -EAGAIN;

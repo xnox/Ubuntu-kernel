@@ -25,7 +25,7 @@ __attribute__((section("__versions"))) = {
 	{ 0xf9a482f9, "msleep" },
 	{ 0x4e1ad69e, "agp_backend_release" },
 	{ 0x60253ab0, "up_read" },
-	{ 0xfde4fba5, "mem_map" },
+	{ 0x8aa66bdf, "mem_map" },
 	{ 0xd6ee688f, "vmalloc" },
 	{ 0xa5423cc4, "param_get_int" },
 	{ 0x98b1f5e8, "del_timer" },
@@ -40,7 +40,7 @@ __attribute__((section("__versions"))) = {
 	{ 0xdddf35af, "i2c_transfer" },
 	{ 0xd36f7bb0, "__tasklet_hi_schedule" },
 	{ 0x56179c5f, "mtrr_add" },
-	{ 0x8d0f65eb, "set_page_dirty_lock" },
+	{ 0x42fa7826, "set_page_dirty_lock" },
 	{ 0xc8be7b15, "_spin_lock" },
 	{ 0x9aa77e1c, "agp_copy_info" },
 	{ 0x67be6ddc, "remove_proc_entry" },
@@ -115,7 +115,7 @@ __attribute__((section("__versions"))) = {
 	{ 0x2da3173b, "kmap" },
 	{ 0x107d6ba3, "__get_free_pages" },
 	{ 0x5635a60a, "vmalloc_user" },
-	{ 0x869ee07c, "get_user_pages" },
+	{ 0x3fdc681c, "get_user_pages" },
 	{ 0xce06f37a, "schedule_delayed_work" },
 	{ 0x1fc91fb2, "request_irq" },
 	{ 0x4292364c, "schedule" },
@@ -138,8 +138,8 @@ __attribute__((section("__versions"))) = {
 	{ 0x272552e6, "add_wait_queue" },
 	{ 0x37a0cba, "kfree" },
 	{ 0xe7ead430, "vunmap" },
-	{ 0xf343aa02, "remap_pfn_range" },
-	{ 0x305e8808, "unmap_mapping_range" },
+	{ 0xf3405443, "remap_pfn_range" },
+	{ 0xf004a74d, "unmap_mapping_range" },
 	{ 0x2e60bace, "memcpy" },
 	{ 0x801678, "flush_scheduled_work" },
 	{ 0x53d2a017, "pci_request_regions" },
@@ -159,7 +159,7 @@ __attribute__((section("__versions"))) = {
 	{ 0xd5160963, "pci_dev_put" },
 	{ 0x43a4938f, "vm_get_page_prot" },
 	{ 0x25da070, "snprintf" },
-	{ 0xa282e079, "vmalloc_to_page" },
+	{ 0x8c745efd, "vmalloc_to_page" },
 	{ 0x1a8ccc79, "agp_bind_memory" },
 	{ 0xca12ddc0, "idr_init" },
 	{ 0x908aa9b2, "iowrite32" },
@@ -168,7 +168,7 @@ __attribute__((section("__versions"))) = {
 	{ 0xfcb8b131, "idr_find" },
 	{ 0xf2a644fb, "copy_from_user" },
 	{ 0x2241a928, "ioread32" },
-	{ 0x7f39951d, "vm_insert_pfn" },
+	{ 0xe382b183, "vm_insert_pfn" },
 	{ 0xf20dabd8, "free_irq" },
 	{ 0x3167ea19, "global_flush_tlb" },
 };
@@ -179,4 +179,4 @@ __attribute__((section(".modinfo"))) =
 "depends=agpgart,i2c-core,drm";
 
 
-MODULE_INFO(srcversion, "3F7471A88A3375B2A9A7501");
+MODULE_INFO(srcversion, "B4006E4F4B8786282C01ADF");

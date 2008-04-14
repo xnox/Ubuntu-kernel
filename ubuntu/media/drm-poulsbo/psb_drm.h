@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -34,7 +34,7 @@
  *
  */
 /* #define PSB_PACKAGE_VERSION "ED"__DATE__*/
-#define PSB_PACKAGE_VERSION "2.0.0.32L.0008"
+#define PSB_PACKAGE_VERSION "2.0.0.32L.0010"
 
 #define DRM_PSB_SAREA_MAJOR 0
 #define DRM_PSB_SAREA_MINOR 1
@@ -197,6 +197,12 @@ struct drm_psb_scene {
 	uint32_t num_buffers;
 };
 
+struct drm_psb_hw_info
+{
+        uint32_t rev_id;
+        uint32_t caps;
+};
+
 typedef struct drm_psb_cmdbuf_arg {
 	uint64_t buffer_list;	/* List of buffers to validate */
 	uint64_t clip_rects;	/* See i915 counterpart */
@@ -298,6 +304,9 @@ struct drm_psb_xhw_arg {
 			uint32_t param_offset;
 			uint32_t flags;
 		} bl;
+		struct {
+			uint32_t value;
+		} cl;
 		uint32_t feedback[PSB_HW_FEEDBACK_SIZE];
 	} arg;
 };
@@ -309,6 +318,7 @@ struct drm_psb_xhw_arg {
 /* Controlling the kernel modesetting buffers */
 #define DRM_PSB_KMS_OFF		0x04
 #define DRM_PSB_KMS_ON		0x05
+#define DRM_PSB_HW_INFO         0x06
 
 #define PSB_XHW_INIT            0x00
 #define PSB_XHW_TAKEDOWN        0x01
@@ -316,13 +326,14 @@ struct drm_psb_xhw_arg {
 #define PSB_XHW_FIRE_RASTER     0x00
 #define PSB_XHW_SCENE_INFO      0x01
 #define PSB_XHW_SCENE_BIND_FIRE 0x02
-#define PSB_XHW_TA_MEM_INFO    0x03
+#define PSB_XHW_TA_MEM_INFO     0x03
 #define PSB_XHW_RESET_DPM       0x04
 #define PSB_XHW_OOM             0x05
 #define PSB_XHW_TERMINATE       0x06
 #define PSB_XHW_VISTEST         0x07
 #define PSB_XHW_RESUME          0x08
-#define PSB_XHW_TA_MEM_LOAD    0x09
+#define PSB_XHW_TA_MEM_LOAD	0x09
+#define PSB_XHW_CHECK_LOCKUP    0x0a
 
 #define PSB_SCENE_FLAG_DIRTY       (1 << 0)
 #define PSB_SCENE_FLAG_COMPLETE    (1 << 1)

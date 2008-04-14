@@ -12,7 +12,7 @@
  * more details.
  *
  * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc., 
+ * this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
  *
  * Intel funded Tungsten Graphics (http://www.tungstengraphics.com) to
@@ -120,6 +120,7 @@ struct psb_scheduler {
 	wait_queue_head_t idle_queue;
 	unsigned long ta_end_jiffies;
 	unsigned long raster_end_jiffies;
+	unsigned long total_raster_jiffies;
 };
 
 #define PSB_RF_FIRE_TA       (1 << 0)
@@ -158,12 +159,12 @@ extern int psb_scheduler_idle(struct drm_psb_private *dev_priv);
 extern int psb_scheduler_finished(struct drm_psb_private *dev_priv);
 
 extern void psb_scheduler_lockup(struct drm_psb_private *dev_priv,
-				 int *lockup, int *msvdx_lockup,
-				 int *idle, int *msvdx_idle);
+				 int *lockup, int *idle);
 extern void psb_scheduler_reset(struct drm_psb_private *dev_priv,
 				int error_condition);
 extern int psb_forced_user_interrupt(struct drm_psb_private *dev_priv);
 extern void psb_scheduler_remove_scene_refs(struct psb_scene *scene);
 extern void psb_scheduler_ta_mem_check(struct drm_psb_private *dev_priv);
+extern int psb_extend_raster_timeout(struct drm_psb_private *dev_priv);
 
 #endif
