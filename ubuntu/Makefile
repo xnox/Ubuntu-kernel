@@ -45,15 +45,7 @@ obj-$(CONFIG_UNION_FS)		+= fs/unionfs/
 
 obj-$(CONFIG_USB_APPLEIR)	+= mactel/appleir.o
 
-obj-$(CONFIG_GSPCA)		+= media/gspcav1/
-obj-$(CONFIG_USB_OV511_NEW)	+= media/ov511/
-obj-$(CONFIG_QUICKCAM)		+= media/quickcam/
-obj-$(CONFIG_USB_UVCCAM)	+= media/usbvideo/
-ifeq ($(CONFIG_PPC64),)
-obj-$(CONFIG_LIRC_DEV)		+= media/lirc/
-endif
-obj-$(CONFIG_DRM_PSB)		+= media/drm-poulsbo/
-obj-$(CONFIG_STK11XX)		+= media/stk11xx/
+obj-m				+= media/
 
 obj-$(CONFIG_NET_ATL2)		+= net/atl2/
 
@@ -81,5 +73,3 @@ obj-$(CONFIG_TP_SMAPI_EC)	+= misc/thinkpad_ec.o
 obj-$(CONFIG_TP_SMAPI_HDAPS)	+= hwmon/hdaps_ec.o
 
 obj-$(CONFIG_DMRAID45)		+= md/
-obj-$(CONFIG_CX88)		+= media/cx88/
-obj-$(CONFIG_SAA7134)		+= media/saa7134/
