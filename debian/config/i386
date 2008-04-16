@@ -2,4 +2,5 @@
 
 ifeq ($(filter virtual,$(UBUNTU_FLAVOUR)),)
 CONFIG_IWLWIFI=m
+CONFIG_RT2X00=m
 endif

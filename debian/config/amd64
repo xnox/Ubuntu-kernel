@@ -1,3 +1,4 @@
 # Ubuntu config
 
 CONFIG_IWLWIFI=m
+CONFIG_RT2X00=m
