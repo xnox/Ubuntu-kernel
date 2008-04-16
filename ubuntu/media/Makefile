@@ -2,6 +2,7 @@
 # All media drivers should use the lum version of the alsa headers
 #
 NOSTDINC_FLAGS			+= -I$(src)/../sound/alsa-driver/include
+NOSTDINC_FLAGS			+= -include config.h
 
 include $(src)/../.config
 
