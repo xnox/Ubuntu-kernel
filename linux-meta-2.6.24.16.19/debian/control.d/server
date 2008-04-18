@@ -25,6 +25,15 @@ Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
+Package: linux-restricted-modules-server
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-server
+Description: Restricted Linux modules for server kernels
+ This package will always depend on the latest restricted modules available
+ for server kernels.
+
 Package: linux-backports-modules-RELEASE_NAME-server
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-server

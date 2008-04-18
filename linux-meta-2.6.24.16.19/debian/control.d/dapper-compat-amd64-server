@@ -12,13 +12,6 @@ Priority: optional
 Depends: linux-image-server
 Description: Upgrade dummy package. Can be removed
 
-Package: linux-restricted-modules-amd64-server
-Architecture: amd64
-Section: restricted/metapackages
-Priority: optional
-Depends: linux-restricted-modules-server
-Description: Upgrade dummy package. Can be removed
-
 Package: linux-amd64-server
 Architecture: amd64
 Section: restricted/metapackages

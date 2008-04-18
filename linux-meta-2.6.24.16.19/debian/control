@@ -166,13 +166,6 @@ Priority: optional
 Depends: linux-image-server
 Description: Upgrade dummy package. Can be removed
 
-Package: linux-restricted-modules-amd64-server
-Architecture: amd64
-Section: restricted/metapackages
-Priority: optional
-Depends: linux-restricted-modules-server
-Description: Upgrade dummy package. Can be removed
-
 Package: linux-amd64-server
 Architecture: amd64
 Section: restricted/metapackages
@@ -620,8 +613,8 @@ Architecture: i386 amd64
 Section: devel
 Priority: optional
 Depends: linux-headers-${kernel-abi-version}-openvz
-Description: rt Linux kernel headers
- This package will always depend on the latest rt kernel headers
+Description: openvz Linux kernel headers
+ This package will always depend on the latest openvz kernel headers
  available.
 
 Package: linux-image-openvz
@@ -630,7 +623,7 @@ Section: metapackages
 Priority: optional
 Depends: linux-image-${kernel-abi-version}-openvz, linux-ubuntu-modules-${kernel-abi-version}-openvz
 Description: Real time Linux kernel image
- This package will always depend on the latest rt kernel image
+ This package will always depend on the latest openvz kernel image
  available.
 
 Package: linux-restricted-modules-openvz
@@ -638,23 +631,23 @@ Architecture: i386 amd64
 Section: restricted/metapackages
 Priority: optional
 Depends: linux-restricted-modules-${kernel-abi-version}-openvz
-Description: Restricted Linux modules for rt kernels
+Description: Restricted Linux modules for openvz kernels
  This package will always depend on the latest restricted modules available
- for rt kernels.
+ for openvz kernels.
 
 Package: linux-openvz
 Architecture: i386 amd64
 Section: restricted/metapackages
 Priority: optional
 Depends: linux-image-openvz (= ${binary:Version}), linux-restricted-modules-openvz (= ${binary:Version})
-Description: Complete rt Linux kernel
- This package will always depend on the latest complete rt Linux kernel
+Description: Complete openvz Linux kernel
+ This package will always depend on the latest complete openvz Linux kernel
  available.
 
 Package: linux-backports-modules-hardy-openvz
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-openvz
-Description: Backported drivers for rt kernel image
+Description: Backported drivers for openvz kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
@@ -865,6 +858,15 @@ Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
+Package: linux-restricted-modules-server
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-server
+Description: Restricted Linux modules for server kernels
+ This package will always depend on the latest restricted modules available
+ for server kernels.
+
 Package: linux-backports-modules-hardy-server
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-server
@@ -1007,7 +1009,7 @@ Architecture: i386 amd64
 Section: devel
 Priority: optional
 Depends: linux-headers-${kernel-abi-version}-xen
-Description: Xen Linux kernel headers
+Description: xen Linux kernel headers
  This package will always depend on the latest xen kernel headers
  available.
 
@@ -1016,7 +1018,7 @@ Architecture: i386 amd64
 Section: metapackages
 Priority: optional
 Depends: linux-image-${kernel-abi-version}-xen, linux-ubuntu-modules-${kernel-abi-version}-xen
-Description: Xen Linux kernel image
+Description: Real time Linux kernel image
  This package will always depend on the latest xen kernel image
  available.
 
@@ -1034,7 +1036,7 @@ Architecture: i386 amd64
 Section: restricted/metapackages
 Priority: optional
 Depends: linux-image-xen (= ${binary:Version}), linux-restricted-modules-xen (= ${binary:Version})
-Description: Xen Linux kernel
+Description: Complete xen Linux kernel
  This package will always depend on the latest complete xen Linux kernel
  available.
 
