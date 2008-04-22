@@ -1,22 +1,18 @@
+The toplevel makefile in this directory is used to create the upload source
+for linux-meta. By convention the directory name is supposed to be the name
+of the package with version number attached.
+In order to fullfill that convention and prevent git from being useless
+(since the renaming produces big diffs), a soft-link is created before
+calling dpkk-buildpackage.
 
-Management of this package is a little funky since the version
-changes each time, and therefore the source directory name. This
-makes git management a little more difficult. For example, assume the
-current version is 2.6.24.4.4 and you are upating to 2.6.24.4.5.
+The versioning scheme in debian/changelog must be k.k.k.a.m, where
+k is the kernel version a is the ABI version and m is the version
+of the linux-meta package.
 
-	make version_update
-
-is going to rename the source directory from linux-meta-2.6.24.4.4
-to linux-meta-2.6.24.4.5. This means that when you commit you must remove the
-original directory and add the new one:
-
-	git rm -r linux-meta-2.6.24.4.4
-	git add linux-meta-2.6.24.4.5
-
-After commiting don't forget to create a tag:
-
-	git tag -m Ubuntu-2.6.24.4.5 Ubuntu-2.6.24.4.5
-
-Finally, you can create an upload set:
+You can create an upload set by calling:
 
 	make source
+
+Afterwards the temporary stuff can be removed by calling:
+
+	make clean

@@ -1,15 +1,20 @@
+LOG		:= meta-source/debian/changelog
+META_VERSION	:= $(shell head -1 $(LOG)|sed 's/.*(\(.*\)).*/\1/')
 
 all: source
 
 source: clean
-	cd linux*; dpkg-buildpackage -S -sa -rfakeroot -I.git -I.gitignore -i'\.git.*'
-
-version_update:
-	cd linux*; dch -i
+	ln -s meta-source linux-$(META_VERSION)
+	cd linux-$(META_VERSION); \
+	dpkg-buildpackage -S -sa -rfakeroot -I.git -I.gitignore -i'\.git.*'
 
 binary: clean
-	cd linux*; debuild -b
+	ln -s meta-source linux-$(META_VERSION)
+	cd linux-$(META_VERSION); \
+	debuild -b
 
 clean:
+	cd meta-source && fakeroot debian/rules clean
+	rm -f linux-$(META_VERSION)
 	rm -f *.dsc *.changes *.gz *.deb *.build
 

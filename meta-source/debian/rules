@@ -8,8 +8,9 @@
 #
 
 RELEASE_NAME=hardy
-KERNEL_VERSION=2.6.24
-KERNEL_ABI=$(shell head -n1 < debian/changelog | gawk '{n=split($$0,v,"."); print v[4];}')
+META_VERSION=$(shell head -1 debian/changelog | sed 's/.*(\(.*\)).*/\1/')
+KERNEL_VERSION=$(shell echo $(META_VERSION) | cut -d. -f1-3)
+KERNEL_ABI=$(shell echo $(META_VERSION) | cut -d. -f4)
 KERNEL_ABI_VERSION=$(KERNEL_VERSION)-$(KERNEL_ABI)
 
 GENERIC_i386=generic
