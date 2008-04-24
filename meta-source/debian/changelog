@@ -1,10 +1,16 @@
-linux-meta (2.6.24.16.19) hardy; urgency=low
+linux-meta (2.6.24.17.19) hardy; urgency=low
+
+  [Stefan Bader]
 
   * Remove linux-restricted-modules-amd64-server meta package.
   * Add linux-restricted-modules-server meta package.
   * Change descriptions for openvz and xen in the source files.
 
- -- Stefan Bader <stefan.bader@canonical.com>  Fri, 18 Apr 2008 14:59:42 +0000
+  [Tim Gardner]
+
+  * Bump ABI to -17
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 18 Apr 2008 14:59:42 +0000
 
 linux-meta (2.6.24.16.18) hardy; urgency=low
 
