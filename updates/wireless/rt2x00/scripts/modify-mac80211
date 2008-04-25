@@ -22,9 +22,17 @@ EOD
 #
 # Special modifications to the wireless source code.
 #
-sed -i -e 's/rc80211_pid_init/rt2x_rc80211_pid_init/g' \
-	$DIR/rc80211_pid_algo.c $DIR/ieee80211_rate.h $DIR/ieee80211.c
-sed -i -e 's/ieee80211_init)/rt2x_ieee80211_init)/g' \
-	-e 's/ieee80211_init(/rt2x_ieee80211_init(/g' \
-	$DIR/ieee80211.c
+if [ -f $DIR/ieee80211.c ]; then
+	sed -i -e 's/rc80211_pid_init/rt2x_rc80211_pid_init/g' \
+		$DIR/rc80211_pid_algo.c $DIR/ieee80211_rate.h $DIR/ieee80211.c
+	sed -i -e 's/ieee80211_init)/rt2x_ieee80211_init)/g' \
+		-e 's/ieee80211_init(/rt2x_ieee80211_init(/g' \
+		$DIR/ieee80211.c
+else
+	sed -i -e 's/rc80211_pid_init/rt2x_rc80211_pid_init/g' \
+		$DIR/main.c $DIR/rate.h $DIR/rc80211_pid_algo.c
+	sed -i -e 's/ieee80211_init)/rt2x_ieee80211_init)/g' \
+		-e 's/ieee80211_init(/rt2x_ieee80211_init(/g' \
+		$DIR/main.c
+fi
 

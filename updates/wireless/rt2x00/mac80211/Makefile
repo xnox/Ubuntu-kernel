@@ -14,14 +14,14 @@ rc-pid-m := rc80211_pid.o
 
 # mac80211 objects
 rt2x_mac80211-y := \
-	ieee80211.o \
-	ieee80211_ioctl.o \
+	main.o \
+	wext.o \
 	sta_info.o \
 	wep.o \
 	wpa.o \
-	ieee80211_sta.o \
-	ieee80211_iface.o \
-	ieee80211_rate.o \
+	mlme.o \
+	iface.o \
+	rate.o \
 	michael.o \
 	tkip.o \
 	aes_ccm.o \
@@ -32,7 +32,7 @@ rt2x_mac80211-y := \
 	util.o \
 	event.o
 
-rt2x_mac80211-$(LBM_CONFIG_MAC80211_LEDS) += ieee80211_led.o
+rt2x_mac80211-$(LBM_CONFIG_MAC80211_LEDS) += led.o
 rt2x_mac80211-$(CONFIG_NET_SCHED) += wme.o
 rt2x_mac80211-$(LBM_CONFIG_MAC80211_DEBUGFS) += \
 	debugfs.o \
