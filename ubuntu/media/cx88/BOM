@@ -1,12 +1,11 @@
 #
-# All of the CX88 sources were copied directly from the 2.6.24 kernel. 
+# The CX88 ALSA sources were copied directly from the 2.6.24 kernel. 
 #
 # The ALSA depedent modules must be built in LUM since ALSA is
-# disabled in the kernel. Not all of the CX88 modules are depedent on
-# ALSA, but it just seemed simpler to grab the whole pile.
+# disabled in the kernel.
 #
 # Note that the compilation of the CX88 sources is also dependent on
 # the kernel headers packages containing some internal header files
 # from the drivers/media directories.
 #
-# Tim Gardner Apr 2, 2008.
+# Tim Gardner Apr 28, 2008.
