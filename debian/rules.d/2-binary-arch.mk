@@ -79,6 +79,7 @@ endif
 
 	# The flavour specific headers package
 	install -d $(hdrdir)/sound
+	cp  $(builddir)/build-$*/sound/alsa-driver/include/config{,1}.h  $(hdrdir)/sound
 	cp `find $(builddir)/build-$*/sound/alsa-kernel/include -type f` $(hdrdir)/sound
 	# WiMAX headers
 	install -d $(hdrdir)/include/linux $(hdrdir)/include/net
