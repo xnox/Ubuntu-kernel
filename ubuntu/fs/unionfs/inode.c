@@ -943,6 +943,13 @@ static int unionfs_setattr(struct dentry *dentry, struct iattr *ia)
 			}
 
 		}
+		/*
+		 * mode change is for clearing setuid/setgid bits. Allow lower fs
+		 * to interpret this in its own way.
+		 */
+                if (ia->ia_valid & (ATTR_KILL_SUID | ATTR_KILL_SGID))
+                        ia->ia_valid &= ~ATTR_MODE;
+
 		err = notify_change(hidden_dentry, NULL, ia);
 		if (err)
 			goto out;
