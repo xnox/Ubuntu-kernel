@@ -2,7 +2,7 @@
  * Copyright 2002-2005, Instant802 Networks, Inc.
  * Copyright 2005-2006, Devicescape Software, Inc.
  * Copyright 2006-2007	Jiri Benc <jbenc@suse.cz>
- * Copyright 2007-2008	Johannes Berg <johannes@sipsolutions.net>
+ * Copyright 2007	Johannes Berg <johannes@sipsolutions.net>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -33,80 +33,16 @@
  * There is currently no way of knowing this except by looking into
  * debugfs.
  *
- * All key operations are protected internally so you can call them at
- * any time.
+ * All operations here are called under RTNL so no extra locking is
+ * required.
  *
- * Within mac80211, key references are, just as STA structure references,
- * protected by RCU. Note, however, that some things are unprotected,
- * namely the key->sta dereferences within the hardware acceleration
- * functions. This means that sta_info_destroy() must flush the key todo
- * list.
- *
- * All the direct key list manipulation functions must not sleep because
- * they can operate on STA info structs that are protected by RCU.
+ * NOTE: This code requires that sta info *destruction* is done under
+ *	 RTNL, otherwise it can try to access already freed STA structs
+ *	 when a STA key is being freed.
  */
 
 static const u8 bcast_addr[ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 static const u8 zero_addr[ETH_ALEN];
-
-/* key mutex: used to synchronise todo runners */
-static DEFINE_MUTEX(key_mutex);
-static DEFINE_SPINLOCK(todo_lock);
-static LIST_HEAD(todo_list);
-
-static void key_todo(struct work_struct *work)
-{
-	ieee80211_key_todo();
-}
-
-static DECLARE_WORK(todo_work, key_todo);
-
-/**
- * add_todo - add todo item for a key
- *
- * @key: key to add to do item for
- * @flag: todo flag(s)
- */
-static void add_todo(struct ieee80211_key *key, u32 flag)
-{
-	if (!key)
-		return;
-
-	spin_lock(&todo_lock);
-	key->flags |= flag;
-	/*
-	 * Remove again if already on the list so that we move it to the end.
-	 */
-	if (!list_empty(&key->todo))
-		list_del(&key->todo);
-	list_add_tail(&key->todo, &todo_list);
-	schedule_work(&todo_work);
-	spin_unlock(&todo_lock);
-}
-
-/**
- * ieee80211_key_lock - lock the mac80211 key operation lock
- *
- * This locks the (global) mac80211 key operation lock, all
- * key operations must be done under this lock.
- */
-static void ieee80211_key_lock(void)
-{
-	mutex_lock(&key_mutex);
-}
-
-/**
- * ieee80211_key_unlock - unlock the mac80211 key operation lock
- */
-static void ieee80211_key_unlock(void)
-{
-	mutex_unlock(&key_mutex);
-}
-
-static void assert_key_lock(void)
-{
-	WARN_ON(!mutex_is_locked(&key_mutex));
-}
 
 static const u8 *get_mac_for_key(struct ieee80211_key *key)
 {
@@ -134,11 +70,17 @@ static void ieee80211_key_enable_hw_accel(struct ieee80211_key *key)
 	int ret;
 	DECLARE_MAC_BUF(mac);
 
-	assert_key_lock();
-	might_sleep();
-
 	if (!key->local->ops->set_key)
 		return;
+
+	/*
+	 * This makes sure that all pending flushes have
+	 * actually completed prior to uploading new key
+	 * material to the hardware. That is necessary to
+	 * avoid races between flushing STAs and adding
+	 * new keys for them.
+	 */
+	__ieee80211_run_pending_flush(key->local);
 
 	addr = get_mac_for_key(key);
 
@@ -146,11 +88,8 @@ static void ieee80211_key_enable_hw_accel(struct ieee80211_key *key)
 				       key->sdata->dev->dev_addr, addr,
 				       &key->conf);
 
-	if (!ret) {
-		spin_lock(&todo_lock);
+	if (!ret)
 		key->flags |= KEY_FLAG_UPLOADED_TO_HARDWARE;
-		spin_unlock(&todo_lock);
-	}
 
 	if (ret && ret != -ENOSPC && ret != -EOPNOTSUPP)
 		printk(KERN_ERR "mac80211-%s: failed to set key "
@@ -159,24 +98,26 @@ static void ieee80211_key_enable_hw_accel(struct ieee80211_key *key)
 		       key->conf.keyidx, print_mac(mac, addr), ret);
 }
 
+static void ieee80211_key_mark_hw_accel_off(struct ieee80211_key *key)
+{
+	if (key->flags & KEY_FLAG_UPLOADED_TO_HARDWARE) {
+		key->flags &= ~KEY_FLAG_UPLOADED_TO_HARDWARE;
+		key->flags |= KEY_FLAG_REMOVE_FROM_HARDWARE;
+	}
+}
+
 static void ieee80211_key_disable_hw_accel(struct ieee80211_key *key)
 {
 	const u8 *addr;
 	int ret;
 	DECLARE_MAC_BUF(mac);
 
-	assert_key_lock();
-	might_sleep();
-
 	if (!key || !key->local->ops->set_key)
 		return;
 
-	spin_lock(&todo_lock);
-	if (!(key->flags & KEY_FLAG_UPLOADED_TO_HARDWARE)) {
-		spin_unlock(&todo_lock);
+	if (!(key->flags & KEY_FLAG_UPLOADED_TO_HARDWARE) &&
+	    !(key->flags & KEY_FLAG_REMOVE_FROM_HARDWARE))
 		return;
-	}
-	spin_unlock(&todo_lock);
 
 	addr = get_mac_for_key(key);
 
@@ -190,72 +131,8 @@ static void ieee80211_key_disable_hw_accel(struct ieee80211_key *key)
 		       wiphy_name(key->local->hw.wiphy),
 		       key->conf.keyidx, print_mac(mac, addr), ret);
 
-	spin_lock(&todo_lock);
-	key->flags &= ~KEY_FLAG_UPLOADED_TO_HARDWARE;
-	spin_unlock(&todo_lock);
-}
-
-static void __ieee80211_set_default_key(struct ieee80211_sub_if_data *sdata,
-					int idx)
-{
-	struct ieee80211_key *key = NULL;
-
-	if (idx >= 0 && idx < NUM_DEFAULT_KEYS)
-		key = sdata->keys[idx];
-
-	rcu_assign_pointer(sdata->default_key, key);
-
-	if (key)
-		add_todo(key, KEY_FLAG_TODO_DEFKEY);
-}
-
-void ieee80211_set_default_key(struct ieee80211_sub_if_data *sdata, int idx)
-{
-	unsigned long flags;
-
-	spin_lock_irqsave(&sdata->local->key_lock, flags);
-	__ieee80211_set_default_key(sdata, idx);
-	spin_unlock_irqrestore(&sdata->local->key_lock, flags);
-}
-
-
-static void __ieee80211_key_replace(struct ieee80211_sub_if_data *sdata,
-				    struct sta_info *sta,
-				    struct ieee80211_key *old,
-				    struct ieee80211_key *new)
-{
-	int idx, defkey;
-
-	if (new)
-		list_add(&new->list, &sdata->key_list);
-
-	if (sta) {
-		rcu_assign_pointer(sta->key, new);
-	} else {
-		WARN_ON(new && old && new->conf.keyidx != old->conf.keyidx);
-
-		if (old)
-			idx = old->conf.keyidx;
-		else
-			idx = new->conf.keyidx;
-
-		defkey = old && sdata->default_key == old;
-
-		if (defkey && !new)
-			__ieee80211_set_default_key(sdata, -1);
-
-		rcu_assign_pointer(sdata->keys[idx], new);
-		if (defkey && new)
-			__ieee80211_set_default_key(sdata, new->conf.keyidx);
-	}
-
-	if (old) {
-		/*
-		 * We'll use an empty list to indicate that the key
-		 * has already been removed.
-		 */
-		list_del_init(&old->list);
-	}
+	key->flags &= ~(KEY_FLAG_UPLOADED_TO_HARDWARE |
+			KEY_FLAG_REMOVE_FROM_HARDWARE);
 }
 
 struct ieee80211_key *ieee80211_key_alloc(enum ieee80211_key_alg alg,
@@ -283,7 +160,6 @@ struct ieee80211_key *ieee80211_key_alloc(enum ieee80211_key_alg alg,
 	key->conf.keylen = key_len;
 	memcpy(key->conf.key, key_data, key_len);
 	INIT_LIST_HEAD(&key->list);
-	INIT_LIST_HEAD(&key->todo);
 
 	if (alg == ALG_CCMP) {
 		/*
@@ -292,7 +168,7 @@ struct ieee80211_key *ieee80211_key_alloc(enum ieee80211_key_alg alg,
 		 */
 		key->u.ccmp.tfm = ieee80211_aes_key_setup_encrypt(key_data);
 		if (!key->u.ccmp.tfm) {
-			kfree(key);
+			ieee80211_key_free(key);
 			return NULL;
 		}
 	}
@@ -300,13 +176,55 @@ struct ieee80211_key *ieee80211_key_alloc(enum ieee80211_key_alg alg,
 	return key;
 }
 
+static void __ieee80211_key_replace(struct ieee80211_sub_if_data *sdata,
+				    struct sta_info *sta,
+				    struct ieee80211_key *key,
+				    struct ieee80211_key *new)
+{
+	int idx, defkey;
+
+	if (new)
+		list_add(&new->list, &sdata->key_list);
+
+	if (sta) {
+		rcu_assign_pointer(sta->key, new);
+	} else {
+		WARN_ON(new && key && new->conf.keyidx != key->conf.keyidx);
+
+		if (key)
+			idx = key->conf.keyidx;
+		else
+			idx = new->conf.keyidx;
+
+		defkey = key && sdata->default_key == key;
+
+		if (defkey && !new)
+			ieee80211_set_default_key(sdata, -1);
+
+		rcu_assign_pointer(sdata->keys[idx], new);
+		if (defkey && new)
+			ieee80211_set_default_key(sdata, new->conf.keyidx);
+	}
+
+	if (key) {
+		ieee80211_key_mark_hw_accel_off(key);
+		/*
+		 * We'll use an empty list to indicate that the key
+		 * has already been removed.
+		 */
+		list_del_init(&key->list);
+	}
+}
+
 void ieee80211_key_link(struct ieee80211_key *key,
 			struct ieee80211_sub_if_data *sdata,
 			struct sta_info *sta)
 {
 	struct ieee80211_key *old_key;
-	unsigned long flags;
 	int idx;
+
+	ASSERT_RTNL();
+	might_sleep();
 
 	BUG_ON(!sdata);
 	BUG_ON(!key);
@@ -316,28 +234,22 @@ void ieee80211_key_link(struct ieee80211_key *key,
 	key->sdata = sdata;
 	key->sta = sta;
 
+	ieee80211_debugfs_key_add(key->local, key);
+
 	if (sta) {
+		ieee80211_debugfs_key_sta_link(key, sta);
+
 		/*
 		 * some hardware cannot handle TKIP with QoS, so
 		 * we indicate whether QoS could be in use.
 		 */
 		if (sta->flags & WLAN_STA_WME)
 			key->conf.flags |= IEEE80211_KEY_FLAG_WMM_STA;
-
-		/*
-		 * This key is for a specific sta interface,
-		 * inform the driver that it should try to store
-		 * this key as pairwise key.
-		 */
-		key->conf.flags |= IEEE80211_KEY_FLAG_PAIRWISE;
 	} else {
 		if (sdata->vif.type == IEEE80211_IF_TYPE_STA) {
 			struct sta_info *ap;
 
-			/*
-			 * We're getting a sta pointer in,
-			 * so must be under RCU read lock.
-			 */
+			rcu_read_lock();
 
 			/* same here, the AP could be using QoS */
 			ap = rt2x_sta_info_get(key->local, key->sdata->u.sta.bssid);
@@ -346,10 +258,10 @@ void ieee80211_key_link(struct ieee80211_key *key,
 					key->conf.flags |=
 						IEEE80211_KEY_FLAG_WMM_STA;
 			}
+
+			rcu_read_unlock();
 		}
 	}
-
-	spin_lock_irqsave(&sdata->local->key_lock, flags);
 
 	if (sta)
 		old_key = sta->key;
@@ -358,86 +270,50 @@ void ieee80211_key_link(struct ieee80211_key *key,
 
 	__ieee80211_key_replace(sdata, sta, old_key, key);
 
-	spin_unlock_irqrestore(&sdata->local->key_lock, flags);
+	if (old_key) {
+		synchronize_rcu();
+		ieee80211_key_free(old_key);
+	}
 
-	/* free old key later */
-	add_todo(old_key, KEY_FLAG_TODO_DELETE);
-
-	add_todo(key, KEY_FLAG_TODO_ADD_DEBUGFS);
 	if (netif_running(sdata->dev))
-		add_todo(key, KEY_FLAG_TODO_HWACCEL_ADD);
-}
-
-static void __ieee80211_key_free(struct ieee80211_key *key)
-{
-	/*
-	 * Replace key with nothingness if it was ever used.
-	 */
-	if (key->sdata)
-		__ieee80211_key_replace(key->sdata, key->sta,
-					key, NULL);
-
-	add_todo(key, KEY_FLAG_TODO_DELETE);
+		ieee80211_key_enable_hw_accel(key);
 }
 
 void ieee80211_key_free(struct ieee80211_key *key)
 {
-	unsigned long flags;
-
-	if (!key)
-		return;
-
-	spin_lock_irqsave(&key->sdata->local->key_lock, flags);
-	__ieee80211_key_free(key);
-	spin_unlock_irqrestore(&key->sdata->local->key_lock, flags);
-}
-
-/*
- * To be safe against concurrent manipulations of the list (which shouldn't
- * actually happen) we need to hold the spinlock. But under the spinlock we
- * can't actually do much, so we defer processing to the todo list. Then run
- * the todo list to be sure the operation and possibly previously pending
- * operations are completed.
- */
-static void ieee80211_todo_for_each_key(struct ieee80211_sub_if_data *sdata,
-					u32 todo_flags)
-{
-	struct ieee80211_key *key;
-	unsigned long flags;
-
+	ASSERT_RTNL();
 	might_sleep();
 
-	spin_lock_irqsave(&sdata->local->key_lock, flags);
-	list_for_each_entry(key, &sdata->key_list, list)
-		add_todo(key, todo_flags);
-	spin_unlock_irqrestore(&sdata->local->key_lock, flags);
-
-	ieee80211_key_todo();
-}
-
-void ieee80211_enable_keys(struct ieee80211_sub_if_data *sdata)
-{
-	ASSERT_RTNL();
-
-	if (WARN_ON(!netif_running(sdata->dev)))
-		return;
-
-	ieee80211_todo_for_each_key(sdata, KEY_FLAG_TODO_HWACCEL_ADD);
-}
-
-void ieee80211_disable_keys(struct ieee80211_sub_if_data *sdata)
-{
-	ASSERT_RTNL();
-
-	ieee80211_todo_for_each_key(sdata, KEY_FLAG_TODO_HWACCEL_REMOVE);
-}
-
-static void __ieee80211_key_destroy(struct ieee80211_key *key)
-{
 	if (!key)
 		return;
 
-	ieee80211_key_disable_hw_accel(key);
+	if (key->sdata) {
+		/*
+		 * Replace key with nothingness.
+		 *
+		 * Because other code may have key reference (RCU protected)
+		 * right now, we then wait for a grace period before freeing
+		 * it.
+		 * An empty list indicates it was never added to the key list
+		 * or has been removed already. It may, however, still be in
+		 * hardware for acceleration.
+		 */
+		if (!list_empty(&key->list))
+			__ieee80211_key_replace(key->sdata, key->sta,
+						key, NULL);
+
+		/*
+		 * Do NOT remove this without looking at sta_info_destroy()
+		 */
+		synchronize_rcu();
+
+		/*
+		 * Remove from hwaccel if appropriate, this will
+		 * only happen when the key is actually unlinked,
+		 * it will already be done when the key was replaced.
+		 */
+		ieee80211_key_disable_hw_accel(key);
+	}
 
 	if (key->conf.alg == ALG_CCMP)
 		ieee80211_aes_key_free(key->u.ccmp.tfm);
@@ -446,82 +322,56 @@ static void __ieee80211_key_destroy(struct ieee80211_key *key)
 	kfree(key);
 }
 
-static void __ieee80211_key_todo(void)
+void ieee80211_set_default_key(struct ieee80211_sub_if_data *sdata, int idx)
 {
-	struct ieee80211_key *key;
-	bool work_done;
-	u32 todoflags;
+	struct ieee80211_key *key = NULL;
 
-	/*
-	 * NB: sta_info_destroy relies on this!
-	 */
-	synchronize_rcu();
+	if (idx >= 0 && idx < NUM_DEFAULT_KEYS)
+		key = sdata->keys[idx];
 
-	spin_lock(&todo_lock);
-	while (!list_empty(&todo_list)) {
-		key = list_first_entry(&todo_list, struct ieee80211_key, todo);
-		list_del_init(&key->todo);
-		todoflags = key->flags & (KEY_FLAG_TODO_ADD_DEBUGFS |
-					  KEY_FLAG_TODO_DEFKEY |
-					  KEY_FLAG_TODO_HWACCEL_ADD |
-					  KEY_FLAG_TODO_HWACCEL_REMOVE |
-					  KEY_FLAG_TODO_DELETE);
-		key->flags &= ~todoflags;
-		spin_unlock(&todo_lock);
+	if (sdata->default_key != key) {
+		ieee80211_debugfs_key_remove_default(sdata);
 
-		work_done = false;
+		rcu_assign_pointer(sdata->default_key, key);
 
-		if (todoflags & KEY_FLAG_TODO_ADD_DEBUGFS) {
-			ieee80211_debugfs_key_add(key);
-			work_done = true;
-		}
-		if (todoflags & KEY_FLAG_TODO_DEFKEY) {
-			ieee80211_debugfs_key_remove_default(key->sdata);
-			ieee80211_debugfs_key_add_default(key->sdata);
-			work_done = true;
-		}
-		if (todoflags & KEY_FLAG_TODO_HWACCEL_ADD) {
-			ieee80211_key_enable_hw_accel(key);
-			work_done = true;
-		}
-		if (todoflags & KEY_FLAG_TODO_HWACCEL_REMOVE) {
-			ieee80211_key_disable_hw_accel(key);
-			work_done = true;
-		}
-		if (todoflags & KEY_FLAG_TODO_DELETE) {
-			__ieee80211_key_destroy(key);
-			work_done = true;
-		}
-
-		WARN_ON(!work_done);
-
-		spin_lock(&todo_lock);
+		if (sdata->default_key)
+			ieee80211_debugfs_key_add_default(sdata);
 	}
-	spin_unlock(&todo_lock);
-}
-
-void ieee80211_key_todo(void)
-{
-	ieee80211_key_lock();
-	__ieee80211_key_todo();
-	ieee80211_key_unlock();
 }
 
 void ieee80211_free_keys(struct ieee80211_sub_if_data *sdata)
 {
 	struct ieee80211_key *key, *tmp;
-	unsigned long flags;
+	LIST_HEAD(tmp_list);
 
-	ieee80211_key_lock();
+	ASSERT_RTNL();
+	might_sleep();
 
-	ieee80211_debugfs_key_remove_default(sdata);
-
-	spin_lock_irqsave(&sdata->local->key_lock, flags);
 	list_for_each_entry_safe(key, tmp, &sdata->key_list, list)
-		__ieee80211_key_free(key);
-	spin_unlock_irqrestore(&sdata->local->key_lock, flags);
+		ieee80211_key_free(key);
+}
 
-	__ieee80211_key_todo();
+void ieee80211_enable_keys(struct ieee80211_sub_if_data *sdata)
+{
+	struct ieee80211_key *key;
 
-	ieee80211_key_unlock();
+	ASSERT_RTNL();
+	might_sleep();
+
+	if (WARN_ON(!netif_running(sdata->dev)))
+		return;
+
+	list_for_each_entry(key, &sdata->key_list, list)
+		ieee80211_key_enable_hw_accel(key);
+}
+
+void ieee80211_disable_keys(struct ieee80211_sub_if_data *sdata)
+{
+	struct ieee80211_key *key;
+
+	ASSERT_RTNL();
+	might_sleep();
+
+	list_for_each_entry(key, &sdata->key_list, list)
+		ieee80211_key_disable_hw_accel(key);
 }

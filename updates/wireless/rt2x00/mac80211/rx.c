@@ -19,7 +19,7 @@
 #include <net/ieee80211_radiotap.h>
 
 #include "ieee80211_i.h"
-#include "led.h"
+#include "ieee80211_led.h"
 #include "mesh.h"
 #include "wep.h"
 #include "wpa.h"
@@ -1077,9 +1077,12 @@ ieee80211_drop_unencrypted(struct ieee80211_rx_data *rx)
 	if (unlikely(!(rx->fc & IEEE80211_FCTL_PROTECTED) &&
 		     (rx->fc & IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_DATA &&
 		     (rx->fc & IEEE80211_FCTL_STYPE) != IEEE80211_STYPE_NULLFUNC &&
-		     (rx->key || rx->sdata->drop_unencrypted)))
+		     (rx->key || rx->sdata->drop_unencrypted))) {
+		if (net_ratelimit())
+			printk(KERN_DEBUG "%s: RX non-WEP frame, but expected "
+			       "encryption\n", rx->dev->name);
 		return -EACCES;
-
+	}
 	return 0;
 }
 

@@ -74,14 +74,6 @@
  */
 
 /**
- * enum ieee80211_notification_type - Low level driver notification
- * @IEEE80211_NOTIFY_RE_ASSOC: start the re-association sequence
- */
-enum ieee80211_notification_types {
-	IEEE80211_NOTIFY_RE_ASSOC,
-};
-
-/**
  * struct ieee80211_ht_bss_info - describing BSS's HT characteristics
  *
  * This structure describes most essential parameters needed
@@ -186,13 +178,11 @@ struct ieee80211_low_level_stats {
  *	also implies a change in the AID.
  * @BSS_CHANGED_ERP_CTS_PROT: CTS protection changed
  * @BSS_CHANGED_ERP_PREAMBLE: preamble changed
- * @BSS_CHANGED_HT: 802.11n parameters changed
  */
 enum ieee80211_bss_change {
 	BSS_CHANGED_ASSOC		= 1<<0,
 	BSS_CHANGED_ERP_CTS_PROT	= 1<<1,
 	BSS_CHANGED_ERP_PREAMBLE	= 1<<2,
-	BSS_CHANGED_HT                  = 1<<4,
 };
 
 /**
@@ -205,12 +195,6 @@ enum ieee80211_bss_change {
  * @aid: association ID number, valid only when @assoc is true
  * @use_cts_prot: use CTS protection
  * @use_short_preamble: use 802.11b short preamble
- * @timestamp: beacon timestamp
- * @beacon_int: beacon interval
- * @assoc_capability: capabbilities taken from assoc resp
- * @assoc_ht: association in HT mode
- * @ht_conf: ht capabilities
- * @ht_bss_conf: ht extended capabilities
  */
 struct ieee80211_bss_conf {
 	/* association related data */
@@ -219,13 +203,6 @@ struct ieee80211_bss_conf {
 	/* erp related data */
 	bool use_cts_prot;
 	bool use_short_preamble;
-	u16 beacon_int;
-	u16 assoc_capability;
-	u64 timestamp;
-	/* ht related data */
-	bool assoc_ht;
-	struct ieee80211_ht_info *ht_conf;
-	struct ieee80211_ht_bss_info *ht_bss_conf;
 };
 
 /**
@@ -286,17 +263,8 @@ enum mac80211_tx_control_flags {
 
 /* Transmit control fields. This data structure is passed to low-level driver
  * with each TX frame. The low-level driver is responsible for configuring
- * the hardware to use given values (depending on what is supported).
- *
- * NOTE: Be careful with using the pointers outside of the ieee80211_ops->tx()
- * context (i.e. when defering the work to a workqueue).
- * The vif pointer is valid until the it has been removed with the
- * ieee80211_ops->remove_interface() callback funtion.
- * The hw_key pointer is valid until it has been removed with the
- * ieee80211_ops->set_key() callback function.
- * The tx_rate and alt_retry_rate pointers are valid until the phy is
- * deregistered.
- */
+ * the hardware to use given values (depending on what is supported). */
+
 struct ieee80211_tx_control {
 	struct ieee80211_vif *vif;
 	struct ieee80211_rate *tx_rate;
@@ -307,11 +275,9 @@ struct ieee80211_tx_control {
 	/* retry rate for the last retries */
 	struct ieee80211_rate *alt_retry_rate;
 
-	/* Key used for hardware encryption
-	 * NULL if IEEE80211_TXCTL_DO_NOT_ENCRYPT is set */
-	struct ieee80211_key_conf *hw_key;
-
 	u32 flags;		/* tx control flags defined above */
+	u8 key_idx;		/* keyidx from hw->set_key(), undefined if
+				 * IEEE80211_TXCTL_DO_NOT_ENCRYPT is set */
 	u8 retry_limit;		/* 1 = only first attempt, 2 = one retry, ..
 				 * This could be used when set_retry_limit
 				 * is not implemented by the driver */
@@ -321,7 +287,6 @@ struct ieee80211_tx_control {
 	u8 iv_len;		/* length of the IV field in octets */
 	u8 queue;		/* hardware queue to use for this frame;
 				 * 0 = highest, hw->queues-1 = lowest */
-	u16 aid;		/* Station AID */
 	int type;	/* internal */
 };
 
@@ -621,14 +586,11 @@ enum ieee80211_key_alg {
  * @IEEE80211_KEY_FLAG_GENERATE_MMIC: This flag should be set by
  *	the driver for a TKIP key if it requires Michael MIC
  *	generation in software.
- * @IEEE80211_KEY_FLAG_PAIRWISE: Set by mac80211, this flag indicates
- *	that the key is pairwise rather then a shared key.
  */
 enum ieee80211_key_flags {
 	IEEE80211_KEY_FLAG_WMM_STA	= 1<<0,
 	IEEE80211_KEY_FLAG_GENERATE_IV	= 1<<1,
 	IEEE80211_KEY_FLAG_GENERATE_MMIC= 1<<2,
-	IEEE80211_KEY_FLAG_PAIRWISE	= 1<<3,
 };
 
 /**
@@ -1034,7 +996,8 @@ enum ieee80211_ampdu_mlme_action {
  *	level driver (e.g. assoc/disassoc status, erp parameters).
  *	This function should not be used if no BSS has been set, unless
  *	for association indication. The @changed parameter indicates which
- *	of the bss parameters has changed when a call is made.
+ *	of the bss parameters has changed when a call is made. This callback
+ *	has to be atomic.
  *
  * @configure_filter: Configure the device's RX filter.
  *	See the section "Frame filtering" for more information.
@@ -1169,6 +1132,7 @@ struct ieee80211_ops {
 			     struct sk_buff *skb,
 			     struct ieee80211_tx_control *control);
 	int (*tx_last_beacon)(struct ieee80211_hw *hw);
+	int (*conf_ht)(struct ieee80211_hw *hw, struct ieee80211_conf *conf);
 	int (*ampdu_action)(struct ieee80211_hw *hw,
 			    enum ieee80211_ampdu_mlme_action action,
 			    const u8 *addr, u16 tid, u16 *ssn);
@@ -1699,15 +1663,4 @@ void rt2x_ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid);
 void rt2x_ieee80211_stop_tx_ba_cb_irqsafe(struct ieee80211_hw *hw, const u8 *ra,
 				     u16 tid);
 
-/**
- * rt2x_ieee80211_notify_mac - low level driver notification
- * @hw: pointer as obtained from rt2x_ieee80211_alloc_hw().
- * @notification_types: enum ieee80211_notification_types
- *
- * This function must be called by low level driver to inform mac80211 of
- * low level driver status change or force mac80211 to re-assoc for low
- * level driver internal error that require re-assoc.
- */
-void rt2x_ieee80211_notify_mac(struct ieee80211_hw *hw,
-			  enum ieee80211_notification_types  notif_type);
 #endif /* MAC80211_H */

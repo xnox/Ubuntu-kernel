@@ -14,7 +14,7 @@
 #include <net/cfg80211.h>
 #include "ieee80211_i.h"
 #include "cfg.h"
-#include "rate.h"
+#include "ieee80211_rate.h"
 #include "mesh.h"
 
 static enum ieee80211_if_types
@@ -33,8 +33,6 @@ nl80211_type_to_mac80211_type(enum nl80211_iftype type)
 	case NL80211_IFTYPE_MESH_POINT:
 		return IEEE80211_IF_TYPE_MESH_POINT;
 #endif
-	case NL80211_IFTYPE_WDS:
-		return IEEE80211_IF_TYPE_WDS;
 	default:
 		return IEEE80211_IF_TYPE_INVALID;
 	}
@@ -137,7 +135,6 @@ static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
 	struct sta_info *sta = NULL;
 	enum ieee80211_key_alg alg;
 	struct ieee80211_key *key;
-	int err;
 
 	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 
@@ -160,24 +157,17 @@ static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
 	if (!key)
 		return -ENOMEM;
 
-	rcu_read_lock();
-
 	if (mac_addr) {
 		sta = rt2x_sta_info_get(sdata->local, mac_addr);
 		if (!sta) {
 			ieee80211_key_free(key);
-			err = -ENOENT;
-			goto out_unlock;
+			return -ENOENT;
 		}
 	}
 
 	ieee80211_key_link(key, sdata, sta);
 
-	err = 0;
- out_unlock:
-	rcu_read_unlock();
-
-	return err;
+	return 0;
 }
 
 static int ieee80211_del_key(struct wiphy *wiphy, struct net_device *dev,
@@ -189,37 +179,28 @@ static int ieee80211_del_key(struct wiphy *wiphy, struct net_device *dev,
 
 	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 
-	rcu_read_lock();
-
 	if (mac_addr) {
-		ret = -ENOENT;
-
 		sta = rt2x_sta_info_get(sdata->local, mac_addr);
 		if (!sta)
-			goto out_unlock;
+			return -ENOENT;
 
+		ret = 0;
 		if (sta->key) {
 			ieee80211_key_free(sta->key);
 			WARN_ON(sta->key);
-			ret = 0;
-		}
+		} else
+			ret = -ENOENT;
 
-		goto out_unlock;
+		return ret;
 	}
 
-	if (!sdata->keys[key_idx]) {
-		ret = -ENOENT;
-		goto out_unlock;
-	}
+	if (!sdata->keys[key_idx])
+		return -ENOENT;
 
 	ieee80211_key_free(sdata->keys[key_idx]);
 	WARN_ON(sdata->keys[key_idx]);
 
-	ret = 0;
- out_unlock:
-	rcu_read_unlock();
-
-	return ret;
+	return 0;
 }
 
 static int ieee80211_get_key(struct wiphy *wiphy, struct net_device *dev,
@@ -235,8 +216,6 @@ static int ieee80211_get_key(struct wiphy *wiphy, struct net_device *dev,
 	u32 iv32;
 	u16 iv16;
 	int err = -ENOENT;
-
-	rcu_read_lock();
 
 	if (mac_addr) {
 		sta = rt2x_sta_info_get(sdata->local, mac_addr);
@@ -301,7 +280,6 @@ static int ieee80211_get_key(struct wiphy *wiphy, struct net_device *dev,
 	err = 0;
 
  out:
-	rcu_read_unlock();
 	return err;
 }
 
@@ -311,12 +289,8 @@ static int ieee80211_config_default_key(struct wiphy *wiphy,
 {
 	struct ieee80211_sub_if_data *sdata;
 
-	rcu_read_lock();
-
 	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 	ieee80211_set_default_key(sdata, key_idx);
-
-	rcu_read_unlock();
 
 	return 0;
 }
@@ -720,18 +694,12 @@ static int ieee80211_del_station(struct wiphy *wiphy, struct net_device *dev,
 	struct sta_info *sta;
 
 	if (mac) {
-		rcu_read_lock();
-
 		/* XXX: get sta belonging to dev */
 		sta = rt2x_sta_info_get(local, mac);
-		if (!sta) {
-			rcu_read_unlock();
+		if (!sta)
 			return -ENOENT;
-		}
 
 		sta_info_unlink(&sta);
-		rcu_read_unlock();
-
 		sta_info_destroy(sta);
 	} else
 		sta_info_flush(local, sdata);
@@ -748,31 +716,23 @@ static int ieee80211_change_station(struct wiphy *wiphy,
 	struct sta_info *sta;
 	struct ieee80211_sub_if_data *vlansdata;
 
-	rcu_read_lock();
-
 	/* XXX: get sta belonging to dev */
 	sta = rt2x_sta_info_get(local, mac);
-	if (!sta) {
-		rcu_read_unlock();
+	if (!sta)
 		return -ENOENT;
-	}
 
 	if (params->vlan && params->vlan != sta->sdata->dev) {
 		vlansdata = IEEE80211_DEV_TO_SUB_IF(params->vlan);
 
 		if (vlansdata->vif.type != IEEE80211_IF_TYPE_VLAN ||
-		    vlansdata->vif.type != IEEE80211_IF_TYPE_AP) {
-			rcu_read_unlock();
+		    vlansdata->vif.type != IEEE80211_IF_TYPE_AP)
 			return -EINVAL;
-		}
 
 		sta->sdata = IEEE80211_DEV_TO_SUB_IF(params->vlan);
 		ieee80211_send_layer2_update(sta);
 	}
 
 	sta_apply_parameters(local, sta, params);
-
-	rcu_read_unlock();
 
 	return 0;
 }

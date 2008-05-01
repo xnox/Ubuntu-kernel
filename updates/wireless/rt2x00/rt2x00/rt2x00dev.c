@@ -114,7 +114,6 @@ int rt2x00lib_enable_radio(struct rt2x00_dev *rt2x00dev)
 		return status;
 
 	rt2x00leds_led_radio(rt2x00dev, true);
-	rt2x00led_led_activity(rt2x00dev, true);
 
 	__set_bit(DEVICE_ENABLED_RADIO, &rt2x00dev->flags);
 
@@ -158,7 +157,6 @@ void rt2x00lib_disable_radio(struct rt2x00_dev *rt2x00dev)
 	 * Disable radio.
 	 */
 	rt2x00dev->ops->lib->set_device_state(rt2x00dev, STATE_RADIO_OFF);
-	rt2x00led_led_activity(rt2x00dev, false);
 	rt2x00leds_led_radio(rt2x00dev, false);
 }
 
@@ -435,9 +433,11 @@ static void rt2x00lib_intf_scheduled_iter(void *data, u8 *mac,
 
 	if (delayed_flags & DELAYED_UPDATE_BEACON) {
 		skb = rt2x_ieee80211_beacon_get(rt2x00dev->hw, vif, &control);
-		if (skb && rt2x00dev->ops->hw->beacon_update(rt2x00dev->hw,
-							     skb, &control))
+		if (skb) {
+			rt2x00dev->ops->hw->beacon_update(rt2x00dev->hw, skb,
+							  &control);
 			dev_kfree_skb(skb);
+		}
 	}
 
 	if (delayed_flags & DELAYED_CONFIG_ERP)
@@ -687,7 +687,8 @@ void rt2x00lib_write_tx_desc(struct rt2x00_dev *rt2x00dev,
 	 * Beacons and probe responses require the tsf timestamp
 	 * to be inserted into the frame.
 	 */
-	if (txdesc.queue == QID_BEACON || is_probe_resp(frame_control))
+	if (control->queue == RT2X00_BCN_QUEUE_BEACON ||
+	    is_probe_resp(frame_control))
 		__set_bit(ENTRY_TXD_REQ_TIMESTAMP, &txdesc.flags);
 
 	/*
