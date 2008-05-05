@@ -121,7 +121,7 @@ linux-backports-modules-2.6.24 (2.6.24-3.2) hardy; urgency=low
 
 linux-backports-modules-2.6.24 (2.6.24-2.1) hardy; urgency=low
 
-  * Initial git repository.
+  * Initial git repository. 
 
  --  <tim.gardner@canonical.com>  Fri, 30 Nov 2007 07:56:58 -0700
 
