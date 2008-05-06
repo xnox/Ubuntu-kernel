@@ -1,5 +1,5 @@
 
-obj-$(m) += cx88-alsa.o
+obj-m += cx88-alsa.o
 
 EXTRA_CFLAGS += -Idrivers/media/video
 EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core

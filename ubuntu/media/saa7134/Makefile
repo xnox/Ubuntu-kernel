@@ -1,4 +1,4 @@
-obj-$(m) += saa7134-alsa.o
+obj-m += saa7134-alsa.o
 
 EXTRA_CFLAGS += -Idrivers/media/video
 EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core
