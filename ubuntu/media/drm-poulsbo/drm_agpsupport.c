@@ -512,19 +512,14 @@ static int drm_agp_populate(struct drm_ttm_backend *backend,
 	struct page **cur_page, **last_page = pages + num_pages;
 	DRM_AGP_MEM *mem;
 
-	if (drm_alloc_memctl(num_pages * sizeof(void *)))
-		return -1;
-
 	DRM_DEBUG("drm_agp_populate_ttm\n");
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11)
 	mem = drm_agp_allocate_memory(num_pages, AGP_USER_MEMORY);
 #else
 	mem = drm_agp_allocate_memory(agp_be->bridge, num_pages, AGP_USER_MEMORY);
 #endif
-	if (!mem) {
-		drm_free_memctl(num_pages * sizeof(void *));
-		return -1;
-	}
+	if (!mem)
+		return -ENOMEM;
 
 	DRM_DEBUG("Current page count is %ld\n", (long) mem->page_count);
 	mem->page_count = 0;
@@ -580,10 +575,8 @@ static void drm_agp_clear_ttm(struct drm_ttm_backend *backend)
 
 	DRM_DEBUG("drm_agp_clear_ttm\n");
 	if (mem) {
-		unsigned long num_pages = mem->page_count;
 		backend->func->unbind(backend);
 		agp_free_memory(mem);
-		drm_free_memctl(num_pages * sizeof(void *));
 	}
 	agp_be->mem = NULL;
 }
@@ -595,11 +588,8 @@ static void drm_agp_destroy_ttm(struct drm_ttm_backend *backend)
 	if (backend) {
 		DRM_DEBUG("drm_agp_destroy_ttm\n");
 		agp_be = container_of(backend, struct drm_agp_ttm_backend, backend);
-		if (agp_be) {
-			if (agp_be->mem)
-				backend->func->clear(backend);
-			drm_ctl_free(agp_be, sizeof(*agp_be), DRM_MEM_TTM);
-		}
+		if (agp_be && agp_be->mem)
+			backend->func->clear(backend);
 	}
 }
 
@@ -636,7 +626,7 @@ struct drm_ttm_backend *drm_agp_init_ttm(struct drm_device *dev)
 	}
 
 
-	agp_be = drm_ctl_calloc(1, sizeof(*agp_be), DRM_MEM_TTM);
+	agp_be = drm_calloc(1, sizeof(*agp_be), DRM_MEM_TTM);
 	if (!agp_be)
 		return NULL;
 

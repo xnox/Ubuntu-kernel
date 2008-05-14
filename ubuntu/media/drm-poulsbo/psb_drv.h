@@ -46,9 +46,9 @@ enum {
 #define DRIVER_DESC "drm driver for the Intel GMA500"
 #define DRIVER_AUTHOR "Tungsten Graphics Inc."
 
-#define PSB_DRM_DRIVER_DATE "20080312"
+#define PSB_DRM_DRIVER_DATE "20080422"
 #define PSB_DRM_DRIVER_MAJOR 4
-#define PSB_DRM_DRIVER_MINOR 4
+#define PSB_DRM_DRIVER_MINOR 8
 #define PSB_DRM_DRIVER_PATCHLEVEL 0
 
 #define PSB_VDC_OFFSET           0x00000000
@@ -218,12 +218,7 @@ struct psb_use_base {
 	unsigned int dm;
 };
 
-struct psb_buflist_item {
-	struct drm_buffer_object *bo;
-	void __user *data;
-	struct drm_bo_info_rep rep;
-	int ret;
-};
+struct psb_buflist_item;
 
 struct psb_msvdx_cmd_queue {
 	struct list_head head;
@@ -304,12 +299,6 @@ struct drm_psb_private {
 	uint32_t base_addr0;
 	struct drm_buffer_object *ccb1;
 	uint32_t base_addr1;
-
-        /*
-         * MSVDX command counters
-         */
-         volatile uint32_t msvdx_msgs_submitted;
-         volatile uint32_t msvdx_msgs_completed;
 
 	/*
 	 * Memory managers
@@ -433,7 +422,7 @@ struct drm_psb_private {
 	struct mutex reset_mutex;
 	struct mutex cmdbuf_mutex;
 	struct psb_scheduler scheduler;
-	struct psb_buflist_item buffers[PSB_NUM_VALIDATE_BUFFERS];
+        struct psb_buflist_item *buffers;
 	uint32_t ta_mem_pages;
 	struct psb_ta_mem *ta_mem;
 	int force_ta_mem_load;
@@ -575,6 +564,7 @@ extern int psb_init_mem_type(struct drm_device *dev, uint32_t type,
 			     struct drm_mem_type_manager *man);
 extern int psb_move(struct drm_buffer_object *bo,
 		    int evict, int no_wait, struct drm_bo_mem_reg *new_mem);
+extern int psb_tbe_size(struct drm_device *dev, unsigned long num_pages);
 
 /*
  * psb_gtt.c
@@ -742,6 +732,7 @@ extern void psb_resume_ta_2d_idle(struct drm_psb_private *dev_priv);
 #define PSB_D_FW      (1 << 3)
 #define PSB_D_PERF    (1 << 4)
 #define PSB_D_TMP    (1 << 5)
+#define PSB_D_RELOC   (1 << 6)
 
 extern int drm_psb_debug;
 extern int drm_psb_no_fb;
@@ -761,6 +752,8 @@ extern int drm_psb_disable_vsync;
 	PSB_DEBUG(PSB_D_PERF, _fmt, ##_arg)
 #define PSB_DEBUG_TMP(_fmt, _arg...) \
 	PSB_DEBUG(PSB_D_TMP, _fmt, ##_arg)
+#define PSB_DEBUG_RELOC(_fmt, _arg...) \
+	PSB_DEBUG(PSB_D_RELOC, _fmt, ##_arg)
 
 #if DRM_DEBUG_CODE
 #define PSB_DEBUG(_flag, _fmt, _arg...)					\

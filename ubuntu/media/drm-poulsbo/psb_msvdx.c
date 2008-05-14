@@ -347,12 +347,6 @@ psb_mtx_send (struct drm_psb_private *dev_priv, const void *pvMsg)
       goto out;
     }
 
-  /* Safely increment the number of Messages in flight counter */
-  if (MEMIO_READ_FIELD (pvMsg, FWRK_GENMSG_ID) != FWRK_MSGID_PADDING)
-    {
-      dev_priv->msvdx_msgs_submitted++;
-    }
-
   readIndex = PSB_RMSVDX32 (MSVDX_COMMS_TO_MTX_RD_INDEX);
   writeIndex = PSB_RMSVDX32 (MSVDX_COMMS_TO_MTX_WRT_INDEX);
 
@@ -405,6 +399,9 @@ psb_mtx_send (struct drm_psb_private *dev_priv, const void *pvMsg)
     }
   PSB_WMSVDX32 (writeIndex, MSVDX_COMMS_TO_MTX_WRT_INDEX);
 
+  /* Make sure clocks are enabled before we kick */
+  PSB_WMSVDX32 (clk_enable_all, MSVDX_MAN_CLK_ENABLE);
+
   /* signal an interrupt to let the mtx know there is a new message */
   PSB_WMSVDX32 (1, MSVDX_MTX_KICKI);
 
@@ -423,10 +420,6 @@ psb_msvdx_mtx_interrupt (struct drm_device *dev)
   uint32_t msgNumWords, msgWordOffset;
   struct drm_psb_private *dev_priv =
     (struct drm_psb_private *) dev->dev_private;
-
-  PSB_DEBUG_GENERAL
-    ("Got an MSVDX MTX interrupt (submitted = %d completed = %d)\n",
-     dev_priv->msvdx_msgs_submitted, dev_priv->msvdx_msgs_completed);
 
   /* Are clocks enabled  - If not enable before attempting to read from VLR */
   if (PSB_RMSVDX32 (MSVDX_MAN_CLK_ENABLE) != (clk_enable_all))
@@ -490,21 +483,19 @@ psb_msvdx_mtx_interrupt (struct drm_device *dev)
 		     ui32Fence, ui32FaultStatus);
 
 		  dev_priv->msvdx_needs_reset = 1;
-		  ui32Fence = 0;	/*MSVDX firmware reports incorrect fenceID in CMD_FAILED, so ignore for now */
-		  if (ui32Fence)
-		    {
-		      dev_priv->msvdx_current_sequence = ui32Fence;
-		    }
-		  else
-		    {
-		      if (dev_priv->
-			  msvdx_current_sequence
-			  - dev_priv->sequence[PSB_ENGINE_VIDEO] > 0x0FFFFFFF)
-			dev_priv->msvdx_current_sequence++;
-		      PSB_DEBUG_GENERAL
-			("MSVDX: Fence ID missing, assuming %08x\n",
-			 dev_priv->msvdx_current_sequence);
-		    }
+
+		 if(MEMIO_READ_FIELD (msgBuffer, FWRK_GENMSG_ID) == VA_MSGID_CMD_HW_PANIC)
+                   {
+                     if (dev_priv->
+                         msvdx_current_sequence
+                         - dev_priv->sequence[PSB_ENGINE_VIDEO] > 0x0FFFFFFF)
+                       dev_priv->msvdx_current_sequence++;
+                     PSB_DEBUG_GENERAL
+                       ("MSVDX: Fence ID missing, assuming %08x\n",
+                        dev_priv->msvdx_current_sequence);
+                   }
+		 else
+	           dev_priv->msvdx_current_sequence = ui32Fence;
 
 		  psb_fence_error (dev,
 				   PSB_ENGINE_VIDEO,
@@ -515,7 +506,6 @@ psb_msvdx_mtx_interrupt (struct drm_device *dev)
 		  /* Flush the command queue */
 		  psb_msvdx_flush_cmd_queue (dev);
 
-		  dev_priv->msvdx_msgs_completed++;
 		  goto isrExit;
 		  break;
 		}
@@ -533,7 +523,6 @@ psb_msvdx_mtx_interrupt (struct drm_device *dev)
 
 		  psb_fence_handler (dev, PSB_ENGINE_VIDEO);
 
-		  dev_priv->msvdx_msgs_completed++;
 
 		  if (ui32Flags & FW_VA_RENDER_HOST_INT)
 		    {
@@ -545,17 +534,14 @@ psb_msvdx_mtx_interrupt (struct drm_device *dev)
 		}
 	      case VA_MSGID_ACK:
 		PSB_DEBUG_GENERAL ("msvdx VA_MSGID_ACK\n");
-		dev_priv->msvdx_msgs_completed++;
 		break;
 
 	      case VA_MSGID_TEST1:
 		PSB_DEBUG_GENERAL ("msvdx VA_MSGID_TEST1\n");
-		dev_priv->msvdx_msgs_completed++;
 		break;
 
 	      case VA_MSGID_TEST2:
 		PSB_DEBUG_GENERAL ("msvdx VA_MSGID_TEST2\n");
-		dev_priv->msvdx_msgs_completed++;
 		break;
 		/* Don't need to do anything with these messages */
 
@@ -584,7 +570,6 @@ psb_msvdx_mtx_interrupt (struct drm_device *dev)
 		break;
 
 	      }
-	  /*TBD: psISRInfo->bInterruptProcessed = IMG_TRUE; */
 	}
       else
 	{
@@ -593,18 +578,27 @@ psb_msvdx_mtx_interrupt (struct drm_device *dev)
 	}
     }
 isrExit:
-  PSB_DEBUG_GENERAL
-    ("MSVDX MTX interrupt done (submitted = %d completed = %d)\n",
-     dev_priv->msvdx_msgs_submitted, dev_priv->msvdx_msgs_completed);
 
-  DRM_MEMORYBARRIER ();		/*TBD check this... */
 #if 0
-  /* If there are no messages in flight - disable clocks */
-  if (dev_priv->msvdx_msgs_submitted == dev_priv->msvdx_msgs_completed)
-    {
-      PSB_WMSVDX32 (clk_enable_minimal, MSVDX_MAN_CLK_ENABLE);
-    }
+  if (!dev_priv->msvdx_busy)
+  {
+    /* check that clocks are enabled before reading VLR */
+    if( PSB_RMSVDX32( MSVDX_MAN_CLK_ENABLE ) != (clk_enable_all) )
+        PSB_WMSVDX32 (clk_enable_all, MSVDX_MAN_CLK_ENABLE);
+
+   /* If the firmware says the hardware is idle and the CCB is empty then we can power down */
+   uint32_t ui32FWStatus = PSB_RMSVDX32( MSVDX_COMMS_FW_STATUS );
+   uint32_t ui32CCBRoff = PSB_RMSVDX32 ( MSVDX_COMMS_TO_MTX_RD_INDEX );
+   uint32_t ui32CCBWoff = PSB_RMSVDX32 ( MSVDX_COMMS_TO_MTX_WRT_INDEX );
+
+   if( (ui32FWStatus & MSVDX_FW_STATUS_HW_IDLE) && (ui32CCBRoff == ui32CCBWoff))
+   {
+	    PSB_DEBUG_GENERAL("MSVDX_CLOCK: Setting clock to minimal...\n");
+        PSB_WMSVDX32 (clk_enable_minimal, MSVDX_MAN_CLK_ENABLE);
+   }
+   }
 #endif
+  DRM_MEMORYBARRIER ();
 }
 
 void
@@ -616,13 +610,13 @@ psb_msvdx_lockup (struct drm_psb_private *dev_priv,
 
   if (!dev_priv->has_msvdx)
     return;
-
+#if 0
   PSB_DEBUG_GENERAL ("MSVDXTimer: current_sequence:%d "
 		     "last_sequence:%d and last_submitted_sequence :%d\n",
 		     dev_priv->msvdx_current_sequence,
 		     dev_priv->msvdx_last_sequence,
 		     dev_priv->sequence[PSB_ENGINE_VIDEO]);
-
+#endif
   if (dev_priv->msvdx_current_sequence -
       dev_priv->sequence[PSB_ENGINE_VIDEO] > 0x0FFFFFFF)
     {

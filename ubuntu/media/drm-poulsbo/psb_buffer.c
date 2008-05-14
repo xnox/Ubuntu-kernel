@@ -388,7 +388,7 @@ static void drm_psb_tbe_destroy(struct drm_ttm_backend *backend)
 	    container_of(backend, struct drm_psb_ttm_backend, base);
 
 	if (backend)
-		drm_ctl_free(psb_be, sizeof(*psb_be), DRM_MEM_TTM);
+		drm_free(psb_be, sizeof(*psb_be), DRM_MEM_TTM);
 }
 
 static struct drm_ttm_backend_func psb_ttm_backend = {
@@ -404,7 +404,7 @@ struct drm_ttm_backend *drm_psb_tbe_init(struct drm_device *dev)
 {
 	struct drm_psb_ttm_backend *psb_be;
 
-	psb_be = drm_ctl_calloc(1, sizeof(*psb_be), DRM_MEM_TTM);
+	psb_be = drm_calloc(1, sizeof(*psb_be), DRM_MEM_TTM);
 	if (!psb_be)
 		return NULL;
 	psb_be->pages = NULL;
@@ -412,4 +412,15 @@ struct drm_ttm_backend *drm_psb_tbe_init(struct drm_device *dev)
 	psb_be->base.dev = dev;
 
 	return &psb_be->base;
+}
+
+int psb_tbe_size(struct drm_device *dev, unsigned long num_pages)
+{
+	/*
+	 * Return the size of the structures themselves and the
+	 * estimated size of the pagedir and pagetable entries.
+	 */
+
+	return drm_size_align(sizeof(struct drm_psb_ttm_backend)) +
+		8*num_pages;
 }

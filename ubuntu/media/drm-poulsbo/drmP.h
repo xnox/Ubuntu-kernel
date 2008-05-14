@@ -1305,6 +1305,19 @@ static inline void drm_ctl_free(void *pt, size_t size, int area)
 	drm_free_memctl(size);
 }
 
+static inline size_t drm_size_align(size_t size)
+{
+	size_t tmpSize = 4;
+	if (size > PAGE_SIZE)
+		return PAGE_ALIGN(size);
+
+	while (tmpSize < size)
+		tmpSize <<= 1;
+
+	return (size_t) tmpSize;
+}
+
+
 /*@}*/
 
 #endif				/* __KERNEL__ */

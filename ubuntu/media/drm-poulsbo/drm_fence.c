@@ -445,6 +445,7 @@ int drm_fence_object_emit(struct drm_fence_object *fence, uint32_t fence_flags,
 	fence->type = type;
 	fence->waiting_types = 0;
 	fence->signaled_types = 0;
+	fence->error = 0;
 	fence->sequence = sequence;
 	fence->native_types = native_types;
 	if (list_empty(&fc->ring))
@@ -482,6 +483,7 @@ static int drm_fence_object_init(struct drm_device *dev, uint32_t fence_class,
 	fence->signaled_types = 0;
 	fence->waiting_types = 0;
 	fence->sequence = 0;
+	fence->error = 0;
 	fence->dev = dev;
 	write_unlock_irqrestore(&fm->lock, flags);
 	if (fence_flags & DRM_FENCE_FLAG_EMIT) {
@@ -521,7 +523,7 @@ int drm_fence_object_create(struct drm_device *dev, uint32_t fence_class,
 
 	fence = drm_ctl_calloc(1, sizeof(*fence), DRM_MEM_FENCE);
 	if (!fence) {
-		DRM_ERROR("Out of memory creating fence object\n");
+		DRM_INFO("Out of memory creating fence object.\n");
 		return -ENOMEM;
 	}
 	ret = drm_fence_object_init(dev, fence_class, type, flags, fence);

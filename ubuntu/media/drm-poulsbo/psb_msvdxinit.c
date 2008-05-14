@@ -47,7 +47,7 @@ struct msvdx_fw
   uint32_t data_location;
 };
 
-static int
+int
 psb_wait_for_register (struct drm_psb_private *dev_priv,
 		       uint32_t ui32Offset,
 		       uint32_t ui32Value, uint32_t ui32Enable)
@@ -295,24 +295,24 @@ psb_setup_fw (struct drm_device *dev)
   PSB_WMSVDX32 (MSVDX_MTX_SOFT_RESET_MTX_RESET_MASK, MSVDX_MTX_SOFT_RESET);
 
   /* Initialses Communication controll area to 0 */
-  PSB_WMSVDX32 (0, MSVDX_RTL_SYNC);
-  PSB_WMSVDX32 (0, MSVDX_COMMS_SIGNATURE);
-  PSB_WMSVDX32 (0, MSVDX_COMMS_TO_HOST_RD_INDEX);
-  PSB_WMSVDX32 (0, MSVDX_COMMS_TO_HOST_WRT_INDEX);
-  PSB_WMSVDX32 (0, MSVDX_COMMS_TO_MTX_RD_INDEX);
-  
   if(dev_priv->psb_rev_id >= POULSBO_D1)
    {
 	PSB_DEBUG_GENERAL("MSVDX: Detected Poulsbo D1 or later revision.\n");
-	PSB_WMSVDX32 (MSVDX_DEVICE_NODE_FLAGS_MMU_HW_INVALIDATION, MSVDX_COMMS_TO_MTX_CB_RD_INDEX);
+	PSB_WMSVDX32 (MSVDX_DEVICE_NODE_FLAGS_DEFAULT_D1, MSVDX_COMMS_OFFSET_FLAGS);
    }
   else 
    {
 	PSB_DEBUG_GENERAL("MSVDX: Detected Poulsbo D0 or earlier revision.\n");
-        PSB_WMSVDX32 (0, MSVDX_COMMS_TO_MTX_CB_RD_INDEX);
+        PSB_WMSVDX32 (MSVDX_DEVICE_NODE_FLAGS_DEFAULT_D0, MSVDX_COMMS_OFFSET_FLAGS);
    }
-  
+
+  PSB_WMSVDX32 (0, MSVDX_COMMS_MSG_COUNTER);
+  PSB_WMSVDX32 (0, MSVDX_COMMS_SIGNATURE);
+  PSB_WMSVDX32 (0, MSVDX_COMMS_TO_HOST_RD_INDEX);
+  PSB_WMSVDX32 (0, MSVDX_COMMS_TO_HOST_WRT_INDEX);
+  PSB_WMSVDX32 (0, MSVDX_COMMS_TO_MTX_RD_INDEX);
   PSB_WMSVDX32 (0, MSVDX_COMMS_TO_MTX_WRT_INDEX);
+  PSB_WMSVDX32 (0, MSVDX_COMMS_FW_STATUS);
 
   /* read register bank size */
   {
@@ -405,6 +405,13 @@ out:
   return ret;
 }
 
+static void
+psb_free_ccb (struct drm_buffer_object **ccb)
+{
+  drm_bo_usage_deref_unlocked (ccb);
+  *ccb = NULL;
+}
+
 /*******************************************************************************
 
  @Function	psb_msvdx_reset
@@ -433,12 +440,14 @@ psb_msvdx_reset (struct drm_psb_private *dev_priv)
 
   if (!ret)
     {
-      /* Clear interrupt enabled flag                                                                                                 */
+      /* Clear interrupt enabled flag */
       PSB_WMSVDX32 (0, MSVDX_HOST_INTERRUPT_ENABLE);
 
       /* Clear any pending interrupt flags                                                                                    */
       PSB_WMSVDX32 (0xFFFFFFFF, MSVDX_INTERRUPT_CLEAR);
     }
+  
+  mutex_destroy (&dev_priv->msvdx_mutex);
 
   return ret;
 }
@@ -481,13 +490,6 @@ psb_allocate_ccb (struct drm_device *dev,
   return 0;
 }
 
-static void
-psb_free_ccb (struct drm_buffer_object **ccb)
-{
-  drm_bo_usage_deref_unlocked (ccb);
-  *ccb = NULL;
-}
-
 int
 psb_msvdx_init (struct drm_device *dev)
 {
@@ -497,20 +499,14 @@ psb_msvdx_init (struct drm_device *dev)
 
   PSB_DEBUG_GENERAL ("MSVDX: psb_msvdx_init\n");
 
-  /*Initialize comand msvdx queueing */
+  /*Initialize command msvdx queueing */
   INIT_LIST_HEAD (&dev_priv->msvdx_queue);
   mutex_init (&dev_priv->msvdx_mutex);
   spin_lock_init (&dev_priv->msvdx_lock);
   dev_priv->msvdx_busy = 0;
-  dev_priv->msvdx_msgs_submitted = 0;
-  dev_priv->msvdx_msgs_completed = 0;
-
 
   /*figure out the stepping*/
   pci_read_config_byte(dev->pdev, PSB_REVID_OFFSET, &dev_priv->psb_rev_id );
-
-  PSB_WMSVDX32 (psb_get_default_pd_addr (dev_priv->mmu),
-		MSVDX_COMMS_VLR_WORD_MMUPTD);
 
   /* Enable Clocks */
   PSB_DEBUG_GENERAL ("Enabling clocks\n");
@@ -600,6 +596,7 @@ psb_msvdx_uninit (struct drm_device *dev)
 
   PSB_WMSVDX32 (clk_enable_minimal, MSVDX_MAN_CLK_ENABLE);
 
+  /*Clean up resources...*/
   if (dev_priv->ccb0)
     psb_free_ccb (&dev_priv->ccb0);
   if (dev_priv->ccb1)
@@ -613,11 +610,11 @@ int psb_hw_info_ioctl(struct drm_device *dev, void *data,
 {
     struct drm_psb_private *dev_priv = dev->dev_private;
     struct drm_psb_hw_info *hw_info = data;
-    printk(KERN_INFO "MSVDX: got a psb_hw_infoioctl call....\n");
+    struct pci_dev * pci_root = pci_get_bus_and_slot(0, 0);
+
     hw_info->rev_id = dev_priv->psb_rev_id;
    
     /*read the fuse info to determine the caps*/
-    struct pci_dev * pci_root = pci_get_bus_and_slot(0, 0);
     pci_write_config_dword(pci_root, 0xD0, PCI_PORT5_REG80_FFUSE);
     pci_read_config_dword(pci_root, 0xD4, &hw_info->caps);
 

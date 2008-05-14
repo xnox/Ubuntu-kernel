@@ -1268,6 +1268,9 @@ int psb_cmdbuf_ta(struct drm_file *priv,
 
 	psb_fence_or_sync(priv, PSB_ENGINE_TA, arg, fence_arg, &fence);
 	drm_regs_fence(&dev_priv->use_manager, fence);
+	if (fence)
+	  fence_arg->signaled |= 0x1;
+
       out_err:
 	if (ret && ret != -EAGAIN)
 		DRM_ERROR("TA task queue job failed.\n");
@@ -1333,6 +1336,8 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 
 	psb_fence_or_sync(priv, PSB_ENGINE_TA, arg, fence_arg, &fence);
 	drm_regs_fence(&dev_priv->use_manager, fence);
+	if (fence)
+	  fence_arg->signaled |= 0x1;
       out_err:
 	if (ret && ret != -EAGAIN)
 		DRM_ERROR("Raster task queue job failed.\n");

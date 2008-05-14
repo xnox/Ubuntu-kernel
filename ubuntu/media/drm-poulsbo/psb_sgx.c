@@ -48,6 +48,14 @@ struct psb_dstbuf_cache {
 	int dst_is_iomem;
 };
 
+struct psb_buflist_item {
+	struct drm_buffer_object *bo;
+	void __user *data;
+	int ret;
+	int presumed_offset_correct;
+};
+
+
 #define PSB_REG_GRAN_SHIFT 2
 #define PSB_REG_GRANULARITY (1 << PSB_REG_GRAN_SHIFT)
 #define PSB_MAX_REG 0x1000
@@ -349,6 +357,42 @@ static void psb_dereference_buffers_locked(struct psb_buflist_item *buffers,
 
 }
 
+static int psb_check_presumed(struct drm_bo_op_arg *arg,
+			      struct drm_buffer_object *bo,
+			      uint32_t __user * data, int *presumed_ok)
+{
+	struct drm_bo_op_req *req = &arg->d.req;
+	uint32_t hint_offset;
+	uint32_t hint = req->bo_req.hint;
+
+	*presumed_ok = 0;
+
+	if (!(hint & DRM_BO_HINT_PRESUMED_OFFSET))
+		return 0;
+	if (bo->mem.mem_type == DRM_BO_MEM_LOCAL) {
+		*presumed_ok = 1;
+		return 0;
+	}
+	if (bo->offset == req->bo_req.presumed_offset) {
+		*presumed_ok = 1;
+		return 0;
+	}
+
+	/*
+	 * We need to turn off the HINT_PRESUMED_OFFSET for this buffer in
+	 * the user-space IOCTL argument list, since the buffer has moved,
+	 * we're about to apply relocations and we might subsequently
+	 * hit an -EAGAIN. In that case the argument list will be reused by
+	 * user-space, but the presumed offset is no longer valid.
+	 *
+	 * Needless to say, this is a bit ugly.
+	 */
+
+	hint_offset = (uint32_t *) & req->bo_req.hint - (uint32_t *) arg;
+	hint &= ~DRM_BO_HINT_PRESUMED_OFFSET;
+	return __put_user(hint, data + hint_offset);
+}
+
 static int psb_validate_buffer_list(struct drm_file *file_priv,
 				    unsigned fence_class,
 				    unsigned long data,
@@ -386,8 +430,6 @@ static int psb_validate_buffer_list(struct drm_file *file_priv,
 			goto out_err;
 		}
 
-		PSB_DEBUG_GENERAL("validate Fence class is %d\n", fence_class);
-
 		item->ret = 0;
 		item->data = (void *)__user data;
 		ret = drm_bo_handle_validate(file_priv,
@@ -396,16 +438,25 @@ static int psb_validate_buffer_list(struct drm_file *file_priv,
 					     req->bo_req.flags,
 					     req->bo_req.mask,
 					     req->bo_req.hint,
-					     0, &item->rep, &item->bo);
+					     0, NULL, &item->bo);
 		if (ret)
 			goto out_err;
 
 		PSB_DEBUG_GENERAL("Validated buffer at 0x%08lx\n",
 				  buffers[buf_count].bo->offset);
 
-		data = arg.next;
 		buf_count++;
 
+
+		ret = psb_check_presumed(&arg, item->bo,
+					 (uint32_t __user *)
+					 (unsigned long) data,
+					 &item->presumed_offset_correct);
+
+		if (ret)
+			goto out_err;
+
+		data = arg.next;
 	} while (data);
 
 	*num_buffers = buf_count;
@@ -527,7 +578,7 @@ static int psb_update_dstbuf_cache(struct psb_dstbuf_cache *dst_cache,
 {
 	int ret;
 
-	PSB_DEBUG_GENERAL("Destination buffer is %d.\n", dst);
+	PSB_DEBUG_RELOC("Destination buffer is %d.\n", dst);
 
 	if (unlikely(dst != dst_cache->dst || NULL == dst_cache->dst_buf)) {
 		psb_clear_dstbuf_cache(dst_cache);
@@ -581,7 +632,7 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 	uint32_t fence_type;
 	struct drm_buffer_object *reloc_bo;
 
-	PSB_DEBUG_GENERAL("Reloc type %d\n"
+	PSB_DEBUG_RELOC("Reloc type %d\n"
 			  "\t where 0x%04x\n"
 			  "\t buffer 0x%04x\n"
 			  "\t mask 0x%08x\n"
@@ -604,6 +655,9 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 		DRM_ERROR("Illegal relocation buffer %d.\n", reloc->buffer);
 		return -EINVAL;
 	}
+
+	if (buffers[reloc->buffer].presumed_offset_correct)
+		return 0;
 
 	if (unlikely(reloc->dst_buffer >= num_buffers)) {
 		DRM_ERROR("Illegal destination buffer for relocation %d.\n",
@@ -709,7 +763,7 @@ static int psb_apply_reloc(struct drm_psb_private *dev_priv,
 		dst_cache->use_background = val;
 	}
 
-	PSB_DEBUG_GENERAL("Reloc buffer %d index 0x%08x, value 0x%08x\n",
+	PSB_DEBUG_RELOC("Reloc buffer %d index 0x%08x, value 0x%08x\n",
 			  reloc->dst_buffer, index, dst_cache->dst_page[index]);
 
 	return 0;
@@ -752,12 +806,24 @@ static int psb_fixup_relocs(struct drm_file *file_priv,
 	int count;
 	int ret = 0;
 	int registered = 0;
+	int short_circuit = 1;
+	int i;
+
+	if (num_relocs == 0)
+		return 0;
+
+	for (i=0; i<num_buffers; ++i) {
+		if (!buffers[i].presumed_offset_correct) {
+			short_circuit = 0;
+			break;
+		}
+	}
+
+	if (short_circuit)
+		return 0;
 
 	memset(&dst_cache, 0, sizeof(dst_cache));
 	memset(&reloc_kmap, 0, sizeof(reloc_kmap));
-
-	if (num_relocs == 0)
-		goto out;
 
 	mutex_lock(&dev->struct_mutex);
 	reloc_buffer = drm_lookup_buffer_object(file_priv, reloc_handle, 1);
@@ -998,6 +1064,7 @@ int psb_handle_copyback(struct drm_device *dev,
 	    (struct drm_psb_private *)dev->dev_private;
 	struct drm_bo_op_arg arg;
 	struct psb_buflist_item *item = buffers;
+	struct drm_buffer_object *bo;
 	int err = ret;
 	int i;
 
@@ -1014,7 +1081,10 @@ int psb_handle_copyback(struct drm_device *dev,
 		for (i = 0; i < num_buffers; ++i) {
 			arg.handled = 1;
 			arg.d.rep.ret = item->ret;
-			arg.d.rep.bo_info = item->rep;
+			bo = item->bo;
+			mutex_lock(&bo->mutex);
+			drm_bo_fill_rep_arg(bo, &arg.d.rep.bo_info);
+			mutex_unlock(&bo->mutex);
 			if (copy_to_user(item->data, &arg, sizeof(arg)))
 				err = -EFAULT;
 			++item;
@@ -1164,6 +1234,15 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 		drm_bo_read_unlock(&dev->bm.bm_lock);
 		return -EAGAIN;
 	}
+	if (unlikely(dev_priv->buffers == NULL)) {
+		dev_priv->buffers = vmalloc(PSB_NUM_VALIDATE_BUFFERS *
+					    sizeof(*dev_priv->buffers));
+		if (dev_priv->buffers == NULL) {
+			drm_bo_read_unlock(&dev->bm.bm_lock);
+			return -ENOMEM;
+		}
+	}
+
 
 	engine = (arg->engine == PSB_ENGINE_RASTERIZER) ?
 	    PSB_ENGINE_TA : arg->engine;

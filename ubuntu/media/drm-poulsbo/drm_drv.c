@@ -243,7 +243,7 @@ int drm_lastclose(struct drm_device * dev)
 	/* Clear vma list (only built for debugging) */
 	list_for_each_entry_safe(vma, vma_temp, &dev->vmalist, head) {
 		list_del(&vma->head);
-		drm_ctl_free(vma, sizeof(*vma), DRM_MEM_VMAS);
+		drm_free(vma, sizeof(*vma), DRM_MEM_VMAS);
 	}
 
 	list_for_each_entry_safe(r_list, list_t, &dev->maplist, head) {
@@ -474,6 +474,7 @@ static int __init drm_core_init(void)
 	unsigned long max_memctl_mem;
 
 #ifdef USE_PAT_WC
+#warning Init pat
 	drm_init_pat();
 #endif
 	si_meminfo(&si);

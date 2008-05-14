@@ -262,8 +262,6 @@ typedef struct {
     int	p;
 } ex_intel_clock_t;
 
-int intel_get_core_clock_speed(struct drm_device *dev);
-int intel_panel_fitter_pipe (struct drm_device *dev);
 
 /**
  * Writes the SDVOB or SDVOC with the given value, but always writes both
@@ -3189,6 +3187,7 @@ static void intel_sdvo_mode_set(struct drm_output *output,
 	}
 
 	intel_sdvo_write_sdvox(output, sdvox);
+	i830_sdvo_set_iomap(output);	
 }
 
 static void intel_sdvo_dpms(struct drm_output *output, int mode)

@@ -230,7 +230,7 @@ static int psbfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
 		break;
 	case 16:
 		var->red.offset = 11;
-		var->green.offset = 6;
+		var->green.offset = 5;
 		var->blue.offset = 0;
 		var->red.length = 5;
 		var->green.length = 6;
@@ -749,6 +749,12 @@ static void psbfb_copyarea(struct fb_info *info,
 
 void psbfb_imageblit(struct fb_info *info, const struct fb_image *image)
 {
+	if (info->state != FBINFO_STATE_RUNNING)
+		return;
+	if (info->flags & FBINFO_HWACCEL_DISABLED) {
+		cfb_imageblit(info, image);
+		return;
+	}
 	if (in_interrupt() || in_atomic()) {
 		cfb_imageblit(info, image);
 		return;

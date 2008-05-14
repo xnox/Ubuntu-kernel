@@ -39,12 +39,6 @@ int drm_intel_ignore_acpi = 0;
 MODULE_PARM_DESC(ignore_acpi, "Ignore ACPI");
 module_param_named(ignore_acpi, drm_intel_ignore_acpi, int, 0600);
 
-#define BLC_DEBUG 1
-
-#ifdef BLC_DEBUG
-struct proc_dir_entry *proc_lvds_dir = NULL;
-#endif
-
 uint8_t blc_type;
 uint8_t blc_pol;
 uint8_t blc_freq;
@@ -164,6 +158,7 @@ static void intel_lvds_set_backlight(struct drm_device *dev, int level)
 	u32 newbacklight = 0;
 
 	DRM_INFO("intel_lvds_set_backlight: the level is %d\n", level);
+
 	if(blc_type == BLC_I2C_TYPE){
 		newbacklight = BRIGHTNESS_MASK & ((unsigned long)level * \
 				BRIGHTNESS_MASK /BRIGHTNESS_MAX_LEVEL);
@@ -174,7 +169,7 @@ static void intel_lvds_set_backlight(struct drm_device *dev, int level)
 
 		LVDSI2CSetBacklight(dev, newbacklight);
 
-	} else {
+	} else if (blc_type == BLC_PWM_TYPE) {
 		u32 max_pwm_blc = LVDSGetPWMMaxBacklight(dev);
 
 		u32 blc_pwm_duty_cycle;
@@ -237,57 +232,6 @@ static void intel_lvds_set_power(struct drm_device *dev, bool on)
 		} while (pp_status & PP_ON);
 	}
 }
-
-#ifdef BLC_DEBUG
-static int intel_lvds_proc_read_backlight(char *buf, char **start, off_t offset,
-		int request, int *eof, void *data)
-{
-	int len = 0;
-	DRM_INFO("call intel_lvds_proc_read_backlight, %d\n", lvds_backlight);
-
-	if (offset > DRM_PROC_LIMIT) {
-		*eof = 1;
-		return 0;
-	}
-
-	*start = &buf[offset];
-	*eof = 0;
-
-	DRM_PROC_PRINT("the backlight is %d\n",lvds_backlight);
-
-	if (len > request + offset)
-		return request;
-
-	*eof = 1;
-	return len - offset;
-}
-
-static int intel_lvds_proc_write_backlight(struct file *file, const char * user_buffer,
-		unsigned long count, void *data)
-{
-	struct drm_device *dev = (struct drm_device *)data;
-	char buf[] = "00000000";
-	unsigned long len =
-		(sizeof(buf) -1) > count ? count : sizeof(buf) - 1;
-	int backlight=0;
-	char *p = (char *)buf;
-
-	DRM_INFO("call intel_lvds_proc_write_backlight\n");
-	if (copy_from_user(buf, user_buffer, len)) {
-		DRM_ERROR("intel_lvds_proc_write_backlight: can't copy data from userspace\n");
-		return count;
-	}
-
-	buf[len] = 0; 
-	backlight = simple_strtoul(p, &p, 0); 
-	if(backlight > BRIGHTNESS_MAX_LEVEL)
-		backlight = BRIGHTNESS_MAX_LEVEL;
-	lvds_backlight = backlight;
-	DRM_INFO("Set backlight by proc to %d\n", backlight);
-	intel_lvds_set_backlight(dev, lvds_backlight);
-	return count;
-}
-#endif
 
 static void intel_lvds_dpms(struct drm_output *output, int mode)
 {
@@ -549,7 +493,11 @@ out:
 /* added by alek du to add /sys/class/backlight interface */
 static int update_bl_status(struct backlight_device *bd)
 {
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,20)
+        int value = bd->props->brightness;
+#else
         int value = bd->props.brightness;
+#endif
 	
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22)
 	struct drm_device *dev = class_get_devdata (&bd->class_dev);
@@ -565,14 +513,26 @@ static int update_bl_status(struct backlight_device *bd)
 
 static int read_brightness(struct backlight_device *bd)
 {
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,20)
+        return bd->props->brightness;
+#else
         return bd->props.brightness;
+#endif
 }
 
-static struct backlight_device *psbbl_device;
+static struct backlight_device *psbbl_device = NULL;
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,20)
+static struct backlight_properties psbbl_ops = {
+        .get_brightness = read_brightness,
+        .update_status = update_bl_status,
+        .max_brightness = BRIGHTNESS_MAX_LEVEL, 
+};
+#else
 static struct backlight_ops psbbl_ops = {
         .get_brightness = read_brightness,
         .update_status = update_bl_status,
 };
+#endif
 
 /**
  * intel_lvds_destroy - unregister and free LVDS structures
@@ -585,12 +545,6 @@ static void intel_lvds_destroy(struct drm_output *output)
 {
 	struct intel_output *intel_output = output->driver_private;
 
-#ifdef BLC_DEBUG
-	if(proc_lvds_dir) {
-		remove_proc_entry("backlight", proc_lvds_dir);
-		remove_proc_entry("dri/lvds", NULL);
-	}
-#endif
 	if (psbbl_device){
 		backlight_device_unregister(psbbl_device);
 	}		
@@ -845,37 +799,26 @@ void intel_lvds_init(struct drm_device *dev)
 		}
 	}
 
-#ifdef BLC_DEBUG
-	{
-		struct proc_dir_entry *ent;
-		char name[64] = "dri/lvds";
-
-		proc_lvds_dir = proc_mkdir(name, NULL);
-		if(!proc_lvds_dir){
-			DRM_ERROR("Create /proc/dri/lvds folder error\n");
-			goto blc_out;
-		}
-		ent = create_proc_entry("backlight",
-				S_IFREG | S_IRUGO | S_IWUSR, proc_lvds_dir);
-		if(!ent){
-			DRM_ERROR("Create /proc/dri/lvds/backlight error\n");
-			goto blc_out;
-		}
-		ent->read_proc = intel_lvds_proc_read_backlight;
-		ent->write_proc = intel_lvds_proc_write_backlight;
-		ent->data = dev;
-
-	}
-#endif
-	{	/* add /sys/class/backlight interface as standard */
+	if ((blc_type == BLC_I2C_TYPE) || (blc_type == BLC_PWM_TYPE)){	
+		/* add /sys/class/backlight interface as standard */
 		psbbl_device = backlight_device_register("psblvds", &dev->pdev->dev, dev, &psbbl_ops);
 		if (psbbl_device){
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,20)
+			down(&psbbl_device->sem);
+			psbbl_device->props->max_brightness = BRIGHTNESS_MAX_LEVEL;
+			psbbl_device->props->brightness = lvds_backlight;
+			psbbl_device->props->power = FB_BLANK_UNBLANK;
+			psbbl_device->props->update_status(psbbl_device);
+			up(&psbbl_device->sem);
+#else
 			psbbl_device->props.max_brightness = BRIGHTNESS_MAX_LEVEL;
 			psbbl_device->props.brightness = lvds_backlight;
 			psbbl_device->props.power = FB_BLANK_UNBLANK;
 			backlight_update_status(psbbl_device);
+#endif
 		}
 	}
+
 blc_out:
 
 	/* Set up the DDC bus. */

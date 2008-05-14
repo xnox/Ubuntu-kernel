@@ -339,6 +339,10 @@ extern int drm_ttm_set_user(struct drm_ttm *ttm,
 			    unsigned long start,
 			    unsigned long num_pages,
 			    struct page *dummy_read_page);
+unsigned long drm_ttm_size(struct drm_device *dev,
+			   unsigned long num_pages,
+			   int user_bo);
+
 
 /*
  * Destroy a ttm. The user normally calls drmRmMap or a similar IOCTL to do
@@ -419,6 +423,7 @@ struct drm_buffer_object {
 	wait_queue_head_t event_queue;
 	struct mutex mutex;
 	unsigned long num_pages;
+	unsigned long reserved_size;
 
 	/* For pinned buffers */
 	struct drm_mm_node *pinned_node;
@@ -500,6 +505,8 @@ struct drm_bo_driver {
 	uint32_t num_mem_busy_prio;
 	struct drm_ttm_backend *(*create_ttm_backend_entry)
 	 (struct drm_device *dev);
+	int (*backend_size) (struct drm_device *dev,
+			     unsigned long num_pages);
 	int (*fence_type) (struct drm_buffer_object *bo, uint32_t *fclass,
 			   uint32_t *type);
 	int (*invalidate_caches) (struct drm_device *dev, uint64_t flags);
@@ -603,7 +610,8 @@ extern int drm_bo_do_validate(struct drm_buffer_object *bo,
 			      uint32_t fence_class,
 			      int no_wait,
 			      struct drm_bo_info_rep *rep);
-
+extern void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
+				struct drm_bo_info_rep *rep);
 /*
  * Buffer object memory move- and map helpers.
  * drm_bo_move.c

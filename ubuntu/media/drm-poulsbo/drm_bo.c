@@ -396,6 +396,11 @@ out:
 	return;
 }
 
+static void drm_bo_unreserve_size(unsigned long size)
+{
+	drm_free_memctl(size);
+}
+
 /*
  * Verify that refcount is 0 and that there are no internal references
  * to the buffer object. Then destroy it.
@@ -405,6 +410,7 @@ static void drm_bo_destroy_locked(struct drm_buffer_object *bo)
 {
 	struct drm_device *dev = bo->dev;
 	struct drm_buffer_manager *bm = &dev->bm;
+	unsigned long reserved_size;
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
 
@@ -430,7 +436,10 @@ static void drm_bo_destroy_locked(struct drm_buffer_object *bo)
 
 		atomic_dec(&bm->count);
 
-		drm_ctl_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
+		reserved_size = bo->reserved_size;
+
+		drm_free(bo, sizeof(*bo), DRM_MEM_BUFOBJ);
+		drm_bo_unreserve_size(reserved_size);
 
 		return;
 	}
@@ -1149,8 +1158,8 @@ static int drm_bo_wait_unfenced(struct drm_buffer_object *bo, int no_wait,
  * Bo locked.
  */
 
-static void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
-				struct drm_bo_info_rep *rep)
+void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
+			 struct drm_bo_info_rep *rep)
 {
 	if (!rep)
 		return;
@@ -1176,6 +1185,7 @@ static void drm_bo_fill_rep_arg(struct drm_buffer_object *bo,
 				DRM_BO_REP_BUSY);
 	}
 }
+EXPORT_SYMBOL(drm_bo_fill_rep_arg);
 
 /*
  * Wait for buffer idle and register that we've mapped the buffer.
@@ -1666,6 +1676,26 @@ out:
 	return ret;
 }
 
+static int drm_bo_reserve_size(struct drm_device *dev,
+			       int user_bo,
+			       unsigned long num_pages,
+			       unsigned long *size)
+{
+	struct drm_bo_driver *driver = dev->driver->bo_driver;
+
+	*size = drm_size_align(sizeof(struct drm_buffer_object)) +
+		/* Always account for a TTM, even for fixed memory types */
+		drm_ttm_size(dev, num_pages, user_bo) +
+		/* user space mapping structure */
+		drm_size_align(sizeof(drm_local_map_t)) +
+		/* file offset space, aperture space, pinned space */
+		3*drm_size_align(sizeof(struct drm_mm_node *)) +
+		/* ttm backend */
+		driver->backend_size(dev, num_pages);
+
+	return drm_alloc_memctl(*size);
+}
+
 int drm_buffer_object_create(struct drm_device *dev,
 			     unsigned long size,
 			     enum drm_bo_type type,
@@ -1679,6 +1709,7 @@ int drm_buffer_object_create(struct drm_device *dev,
 	struct drm_buffer_object *bo;
 	int ret = 0;
 	unsigned long num_pages;
+	unsigned long reserved_size;
 
 	size += buffer_start & ~PAGE_MASK;
 	num_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
@@ -1687,14 +1718,25 @@ int drm_buffer_object_create(struct drm_device *dev,
 		return -EINVAL;
 	}
 
-	bo = drm_ctl_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
+	ret = drm_bo_reserve_size(dev, type == drm_bo_type_user,
+				  num_pages, &reserved_size);
 
-	if (!bo)
+	if (ret) {
+		DRM_DEBUG("Failed reserving space for buffer object.\n");
+		return ret;
+	}
+
+	bo = drm_calloc(1, sizeof(*bo), DRM_MEM_BUFOBJ);
+
+	if (!bo) {
+		drm_bo_unreserve_size(num_pages);
 		return -ENOMEM;
+	}
 
 	mutex_init(&bo->mutex);
 	mutex_lock(&bo->mutex);
 
+	bo->reserved_size = reserved_size;
 	atomic_set(&bo->usage, 1);
 	atomic_set(&bo->mapped, -1);
 	DRM_INIT_WAITQUEUE(&bo->event_queue);
@@ -2560,7 +2602,7 @@ static void drm_bo_takedown_vm_locked(struct drm_buffer_object *bo)
 	if (!map)
 		return;
 
-	drm_ctl_free(map, sizeof(*map), DRM_MEM_BUFOBJ);
+	drm_free(map, sizeof(*map), DRM_MEM_BUFOBJ);
 	list->map = NULL;
 	list->user_token = 0ULL;
 	drm_bo_usage_deref_locked(&bo);
@@ -2573,7 +2615,7 @@ static int drm_bo_setup_vm_locked(struct drm_buffer_object *bo)
 	struct drm_device *dev = bo->dev;
 
 	DRM_ASSERT_LOCKED(&dev->struct_mutex);
-	list->map = drm_ctl_calloc(1, sizeof(*map), DRM_MEM_BUFOBJ);
+	list->map = drm_calloc(1, sizeof(*map), DRM_MEM_BUFOBJ);
 	if (!list->map)
 		return -ENOMEM;
 

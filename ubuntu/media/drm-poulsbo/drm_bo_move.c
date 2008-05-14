@@ -285,7 +285,7 @@ int drm_buffer_object_transfer(struct drm_buffer_object *bo,
 	struct drm_device *dev = bo->dev;
 	struct drm_buffer_manager *bm = &dev->bm;
 
-	fbo = drm_ctl_calloc(1, sizeof(*fbo), DRM_MEM_BUFOBJ);
+	fbo = drm_calloc(1, sizeof(*fbo), DRM_MEM_BUFOBJ);
 	if (!fbo)
 		return -ENOMEM;
 
@@ -310,7 +310,7 @@ int drm_buffer_object_transfer(struct drm_buffer_object *bo,
 	atomic_inc(&bm->count);
 	mutex_unlock(&dev->struct_mutex);
 	mutex_unlock(&fbo->mutex);
-
+	bo->reserved_size = 0;
 	*new_obj = fbo;
 	return 0;
 }

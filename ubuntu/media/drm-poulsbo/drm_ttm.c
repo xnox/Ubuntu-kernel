@@ -51,9 +51,6 @@ static void ttm_alloc_pages(struct drm_ttm *ttm)
 	unsigned long size = ttm->num_pages * sizeof(*ttm->pages);
 	ttm->pages = NULL;
 
-	if (drm_alloc_memctl(size))
-		return;
-
 	if (size <= PAGE_SIZE)
 		ttm->pages = drm_calloc(1, size, DRM_MEM_TTM);
 
@@ -62,8 +59,6 @@ static void ttm_alloc_pages(struct drm_ttm *ttm)
 		if (ttm->pages)
 			ttm->page_flags |= DRM_TTM_PAGE_VMALLOC;
 	}
-	if (!ttm->pages)
-		drm_free_memctl(size);
 }
 
 static void ttm_free_pages(struct drm_ttm *ttm)
@@ -76,7 +71,6 @@ static void ttm_free_pages(struct drm_ttm *ttm)
 	} else {
 		drm_free(ttm->pages, size, DRM_MEM_TTM);
 	}
-	drm_free_memctl(size);
 	ttm->pages = NULL;
 }
 
@@ -84,14 +78,9 @@ static struct page *drm_ttm_alloc_page(void)
 {
 	struct page *page;
 
-	if (drm_alloc_memctl(PAGE_SIZE))
-		return NULL;
-
 	page = alloc_page(GFP_KERNEL | __GFP_ZERO | GFP_DMA32);
-	if (!page) {
-		drm_free_memctl(PAGE_SIZE);
+	if (!page)
 		return NULL;
-	}
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,15))
 	SetPageReserved(page);
 #endif
@@ -183,7 +172,6 @@ static void drm_ttm_free_alloced_pages(struct drm_ttm *ttm)
 			if (page_mapped(*cur_page))
 				DRM_ERROR("Erroneous map count. Leaking page mappings.\n");
 			__free_page(*cur_page);
-			drm_free_memctl(PAGE_SIZE);
 			--bm->cur_pages;
 		}
 	}
@@ -218,7 +206,6 @@ int drm_destroy_ttm(struct drm_ttm *ttm)
 		ttm_free_pages(ttm);
 	}
 
-	drm_ctl_free(ttm, sizeof(*ttm), DRM_MEM_TTM);
 	return 0;
 }
 
@@ -296,6 +283,30 @@ int drm_ttm_populate(struct drm_ttm *ttm)
 }
 
 /*
+ * Calculate the estimated pinned memory usage of a ttm.
+ */
+
+unsigned long drm_ttm_size(struct drm_device *dev,
+			   unsigned long num_pages,
+			   int user_bo)
+{
+	struct drm_bo_driver *bo_driver = dev->driver->bo_driver;
+	unsigned long tmp;
+
+	tmp = drm_size_align(sizeof(struct drm_ttm)) +
+		drm_size_align(num_pages * sizeof(struct page *)) +
+		((user_bo) ? 0 : drm_size_align(num_pages * PAGE_SIZE));
+
+	if (bo_driver->backend_size)
+		tmp += bo_driver->backend_size(dev, num_pages);
+	else
+		tmp += drm_size_align(num_pages * sizeof(struct page *)) +
+			3*drm_size_align(sizeof(struct drm_ttm_backend));
+	return tmp;
+}
+
+
+/*
  * Initialize a ttm.
  */
 
@@ -307,7 +318,7 @@ struct drm_ttm *drm_ttm_init(struct drm_device *dev, unsigned long size)
 	if (!bo_driver)
 		return NULL;
 
-	ttm = drm_ctl_calloc(1, sizeof(*ttm), DRM_MEM_TTM);
+	ttm = drm_calloc(1, sizeof(*ttm), DRM_MEM_TTM);
 	if (!ttm)
 		return NULL;
 

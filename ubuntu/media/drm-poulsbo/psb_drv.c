@@ -31,13 +31,15 @@
 #include "psb_msvdx.h"
 #include "drm_pciids.h"
 #include "psb_scene.h"
+#include <linux/cpu.h>
+#include <linux/notifier.h>
 
 int drm_psb_debug = 0;
 EXPORT_SYMBOL(drm_psb_debug);
 static int drm_psb_trap_pagefaults = 0;
 static int drm_psb_clock_gating = 0;
 static int drm_psb_ta_mem_size = 32 * 1024;
-int drm_psb_disable_vsync = 0;
+int drm_psb_disable_vsync = 1;
 int drm_psb_no_fb = 0;
 int drm_psb_force_pipeb = 0;
 char* psb_init_mode;
@@ -103,6 +105,24 @@ static int psb_max_ioctl = DRM_ARRAY_SIZE(psb_ioctls);
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 
+#ifdef USE_PAT_WC
+#warning Init pat
+static int __cpuinit psb_cpu_callback(struct notifier_block *nfb,
+			    unsigned long action,
+			    void *hcpu)
+{
+	if (action == CPU_ONLINE)
+		drm_init_pat();
+
+	return 0;
+}
+
+static struct notifier_block __cpuinitdata psb_nb = {
+	.notifier_call = psb_cpu_callback,
+	.priority = 1
+};
+#endif
+
 static int dri_library_name(struct drm_device *dev, char *buf)
 {
 	return snprintf(buf, PAGE_SIZE, "psb\n");
@@ -125,6 +145,12 @@ static void psb_lastclose(struct drm_device *dev)
 	if (dev_priv->ta_mem)
 		psb_ta_mem_unref_devlocked(&dev_priv->ta_mem);
 	mutex_unlock(&dev->struct_mutex);
+	mutex_lock(&dev_priv->cmdbuf_mutex);
+	if (dev_priv->buffers) {
+		vfree(dev_priv->buffers);
+		dev_priv->buffers = NULL;
+	}
+	mutex_unlock(&dev_priv->cmdbuf_mutex);
 }
 
 static void psb_do_takedown(struct drm_device *dev)
@@ -619,6 +645,11 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	intel_modeset_init(dev);
 	psb_initial_config(dev, false);
 
+#ifdef USE_PAT_WC
+#warning Init pat
+	register_cpu_notifier(&psb_nb);
+#endif
+
 	return 0;
       out_err:
 	psb_driver_unload(dev);
@@ -664,6 +695,13 @@ static int psb_prepare_msvdx_suspend(struct drm_device *dev)
 		} while (ret == -EINTR);
 
 	}
+       
+	/* Issue software reset */
+        PSB_WMSVDX32 (msvdx_sw_reset_all, MSVDX_CONTROL);
+
+        ret = psb_wait_for_register (dev_priv, MSVDX_CONTROL, 0,
+                           MSVDX_CONTROL_CR_MSVDX_SOFT_RESET_MASK);
+
 	PSB_DEBUG_GENERAL("MSVDXACPI: All MSVDX IRQs (%d) serviced...\n",
 			  count);
 	return 0;
@@ -710,13 +748,16 @@ static int psb_resume(struct pci_dev *pdev)
 	if (ret)
 		return ret;
 
-	INIT_LIST_HEAD(&dev_priv->resume_buf.head);
-	dev_priv->msvdx_needs_reset = 1;
-
 #ifdef USE_PAT_WC
 #warning Init pat
+	/* for single CPU's we do it here, then for more than one CPU we
+	 * use the CPU notifier to reinit PAT on those CPU's. 
+	 */
 	drm_init_pat();
 #endif
+
+	INIT_LIST_HEAD(&dev_priv->resume_buf.head);
+	dev_priv->msvdx_needs_reset = 1;
 
 	PSB_WVDC32(pg->pge_ctl | _PSB_PGETBL_ENABLED, PSB_PGETBL_CTL);
 	pci_write_config_word(pdev, PSB_GMCH_CTRL,
@@ -846,6 +887,7 @@ static struct drm_bo_driver psb_bo_driver = {
 	.init_mem_type = psb_init_mem_type,
 	.evict_mask = psb_evict_mask,
 	.move = psb_move,
+	.backend_size = psb_tbe_size,
 	.command_stream_barrier = NULL,
 };
 
