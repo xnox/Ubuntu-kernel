@@ -4,6 +4,7 @@ ipw3945 ?
 acx ?
 e1000-ich9 ?
 igb ?
+e1000e-ich9m ?
 iwl3945 ?
 iwl4965 ?
 atl2 ?
