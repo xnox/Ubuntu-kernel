@@ -790,10 +790,12 @@ static int psb_resume(struct pci_dev *pdev)
 	 */
 	psb_init_2d(dev_priv);
 
-        list_for_each_entry(output, &dev->mode_config.output_list, head) {
-            if(output->crtc != NULL)
-                drm_crtc_set_mode(output->crtc, &output->crtc->mode,
+	if (drm_psb_no_fb == 0) {
+            list_for_each_entry(output, &dev->mode_config.output_list, head) {
+                if(output->crtc != NULL)
+                    drm_crtc_set_mode(output->crtc, &output->crtc->mode,
                               output->crtc->x, output->crtc->y);
+            }
         }
 
 	/*
