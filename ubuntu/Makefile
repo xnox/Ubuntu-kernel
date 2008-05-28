@@ -74,3 +74,5 @@ obj-$(CONFIG_TP_SMAPI_EC)	+= misc/thinkpad_ec.o
 obj-$(CONFIG_TP_SMAPI_HDAPS)	+= hwmon/hdaps_ec.o
 
 obj-$(CONFIG_DMRAID45)		+= md/
+
+obj-$(CONFIG_AGP_INTEL_ICH9M)	+= char/intel-agp-ich9m/

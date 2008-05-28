@@ -13,3 +13,4 @@ vmsync ?
 vmxnet ?
 vmhgfs ?
 vmmemctl ?
+intel-agp-ich9m ?
