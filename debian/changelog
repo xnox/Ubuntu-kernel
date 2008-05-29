@@ -1,3 +1,9 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-18.26) hardy-security; urgency=low
+
+  * security upload with ABI bump to -18
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 29 May 2008 07:50:22 -0600
+
 linux-ubuntu-modules-2.6.24 (2.6.24-17.25) hardy-proposed; urgency=low
 
   [Tim Gardner]
