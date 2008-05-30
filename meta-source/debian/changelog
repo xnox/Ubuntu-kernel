@@ -1,4 +1,10 @@
-linux-meta (2.6.24.17.19) hardy; urgency=low
+linux-meta (2.6.24.18.20) hardy-security; urgency=low
+
+  * ABI bump to -18
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 30 May 2008 11:22:12 -0600
+
+linux-meta (2.6.24.17.19) hardy-proposed; urgency=low
 
   [Stefan Bader]
 
