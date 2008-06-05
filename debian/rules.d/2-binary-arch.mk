@@ -56,7 +56,8 @@ install-%: $(stampdir)/stamp-build-%
 	#
 	# This firmware file name has to be consistent with IWL4965_UCODE_API in iwl4965-base.c
 	#
-	cp updates/wireless/iwlwifi/firmware/*4965*/*.ucode $(firmdir)/iwlwifi-4965-1-lbm.ucode
+	cp firmware/iwlwifi/*4965*/*.ucode $(firmdir)/iwlwifi-4965-1-lbm.ucode
+	cp firmware/iwlwifi/*3945*/*.ucode $(firmdir)/iwlwifi-3945-1-lbm.ucode
 	cd $(builddir)/build-$*; find . -type f -name '*.ko' | \
 		cpio -dumpl $(moddir)/updates
 
