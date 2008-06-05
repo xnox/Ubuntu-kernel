@@ -1,5 +1,3 @@
 # Ubuntu config
 
-ifeq ($(filter virtual,$(UBUNTU_FLAVOUR)),)
 CONFIG_COMPAT_WIRELESS=m
-endif

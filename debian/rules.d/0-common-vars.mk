@@ -26,10 +26,24 @@ stampdir	:= $(CURDIR)/debian/stamps
 udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 
 #
+# This is a way to support some external variables. A good example is
+# a local setup for ccache and distcc See LOCAL_ENV_CC and
+# LOCAL_ENV_DISTCC_HOSTS in the definition of kmake.
+# For example:
+#   LOCAL_ENV_CC="ccache distcc"
+#   LOCAL_ENV_DISTCC_HOSTS="localhost 10.0.2.5 10.0.2.221"
+#
+local_env_file  := $(CURDIR)/../.hardy-env
+have_local_env  := $(shell if [ -f $(local_env_file) ] ; then echo yes; fi;)
+ifneq ($(have_local_env),)
+include $(local_env_file)
+endif
+
+#
 # Specifically exclude these flavours from creating a sound include directory in
 # the linux-headers-lum package.
 #
-no_alsa_flavours="xen virtual"
+no_compat_wireless_flavours="xen virtual"
 
 # Support parallel=<n> in DEB_BUILD_OPTIONS (see #209008)
 COMMA=,
@@ -63,6 +77,9 @@ KDIR		= /lib/modules/$(release)-$(abinum)-$(target_flavour)/build
 kmake = make -C $(KDIR) \
 	ARCH=$(build_arch_t) M=$(builddir)/build-$(target_flavour) \
 	UBUNTU_FLAVOUR=$(target_flavour)
+ifneq ($(LOCAL_ENV_CC),)
+kmake += CC=$(LOCAL_ENV_CC) DISTCC_HOSTS=$(LOCAL_ENV_DISTCC_HOSTS)
+endif
 
 # Checks if a var is overriden by the custom rules. Called with var and
 # flavour as arguments.

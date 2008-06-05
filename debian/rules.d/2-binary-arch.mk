@@ -9,6 +9,11 @@ printenv:
 	@echo "confdir    : $(confdir)"
 	@echo "stampdir   : $(stampdir)"
 
+make_compat = make $(conc_level) KLIB_BUILD=$(KDIR)
+ifneq ($(LOCAL_ENV_CC),)
+make_compat += CC=$(LOCAL_ENV_CC) DISTCC_HOSTS=$(LOCAL_ENV_DISTCC_HOSTS)
+endif
+
 prepare-%: $(stampdir)/stamp-prepare-%
 	@# Empty for make to be happy
 $(stampdir)/stamp-prepare-%: target_flavour = $*
@@ -20,16 +25,6 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
 	touch $(builddir)/build-$*/ubuntu-build
-	if [ -z "$(filter $(no_alsa_flavours),$(target_flavour))" ] && grep 'CONFIG_ALSA=m' $(builddir)/build-$*/.config > /dev/null ; then \
-		cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` all-deps; \
-		cd $(builddir)/build-$*/sound/alsa-driver && aclocal && autoconf; \
-		cd $(builddir)/build-$*/sound/alsa-driver && ./configure --with-kernel=$(KDIR); \
-		sed -i 's/CONFIG_SND_S3C2412_SOC_I2S=m/CONFIG_SND_S3C2412_SOC_I2S=/' $(builddir)/build-$*/sound/alsa-driver/toplevel.config; \
-		cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` dep; \
-	fi
-	if grep 'CONFIG_COMPAT_WIRELESS=m' $(builddir)/build-$*/.config > /dev/null ; then \
-		 cd $(builddir)/build-$*/compat-wireless-2.6 && make KLIB_BUILD=$(KDIR); \
-	fi
 	touch $@
 
 # Do the actual build, including image and modules
@@ -39,6 +34,9 @@ $(stampdir)/stamp-build-%: target_flavour = $*
 $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
+	if ! echo $(no_compat_wireless_flavours)|grep $(target_flavour) > /dev/null && grep 'CONFIG_COMPAT_WIRELESS=m' $(builddir)/build-$*/.config > /dev/null ; then \
+		 cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat); \
+	fi
 	$(kmake) $(conc_level) modules
 	@touch $@
 
