@@ -21,12 +21,15 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	touch $(builddir)/build-$*/ubuntu-config.h
 	touch $(builddir)/build-$*/ubuntu-build
 	if [ -z "$(filter $(no_alsa_flavours),$(target_flavour))" ] && grep 'CONFIG_ALSA=m' $(builddir)/build-$*/.config > /dev/null ; then \
-      cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` all-deps; \
-      cd $(builddir)/build-$*/sound/alsa-driver && aclocal && autoconf; \
-      cd $(builddir)/build-$*/sound/alsa-driver && ./configure --with-kernel=$(KDIR); \
-      sed -i 's/CONFIG_SND_S3C2412_SOC_I2S=m/CONFIG_SND_S3C2412_SOC_I2S=/' $(builddir)/build-$*/sound/alsa-driver/toplevel.config; \
-      cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` dep; \
-    fi
+		cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` all-deps; \
+		cd $(builddir)/build-$*/sound/alsa-driver && aclocal && autoconf; \
+		cd $(builddir)/build-$*/sound/alsa-driver && ./configure --with-kernel=$(KDIR); \
+		sed -i 's/CONFIG_SND_S3C2412_SOC_I2S=m/CONFIG_SND_S3C2412_SOC_I2S=/' $(builddir)/build-$*/sound/alsa-driver/toplevel.config; \
+		cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` dep; \
+	fi
+	if grep 'CONFIG_COMPAT_WIRELESS=m' $(builddir)/build-$*/.config > /dev/null ; then \
+		 cd $(builddir)/build-$*/compat-wireless-2.6 && make KLIB_BUILD=$(KDIR); \
+	fi
 	touch $@
 
 # Do the actual build, including image and modules

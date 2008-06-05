@@ -1,0 +1,34 @@
+#!/usr/bin/make
+#
+# The compat-wireless tree is assembled in a seperate directory. Use this
+# makefile to update to the latest wireless testing tree.
+#
+
+PWD=$(shell pwd)
+CDIR=$(PWD)/../../compat-wireless
+
+WT=wireless-testing
+WTDIR=$(CDIR)/$(WT)
+
+CW=compat-wireless-2.6
+CWDIR=$(CDIR)/$(CW)
+
+all: $(CDIR)/wireless-testing/Makefile
+	cd $(WTDIR); git fetch origin; git rebase origin
+	rm -rf $(CWDIR)
+	cd $(CDIR); git clone git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/$(CW).git $(CW)
+	cd $(CWDIR);  GIT_TREE=$(WTDIR) scripts/admin-update.sh
+	sed -i 's/IWL4965_UCODE_API "-1"/IWL4965_UCODE_API "-1-lbm"/' `find $(CWDIR) -name iwl-dev.h`
+	sed -i 's/IWL3945_UCODE_API "-1"/IWL3945_UCODE_API "-1-lbm"/' `find $(CWDIR) -name iwl-3945.h`
+	rsync -av --delete $(CWDIR)/ $(CW)
+
+$(WTDIR)/Makefile: $(CDIR)/.ignore
+	cd $(CDIR); git clone git://git.kernel.org/pub/scm/linux/kernel/git/linville/$(WT).git $(WT)
+	touch $(WTDIR)/Makefile
+
+$(CDIR)/.ignore:
+	mkdir -p $(CDIR)
+	touch $(CDIR)/.ignore
+
+clean:
+	rm -rf $(CDIR)
