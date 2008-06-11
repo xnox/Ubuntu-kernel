@@ -1,0 +1,29 @@
+#!/bin/bash
+
+exit_val=0;
+
+# Add a signed-off-by if it doesn't exist
+SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# Catch duplicates
+test "" = "$(grep '^Signed-off-by: ' "$1" |
+	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
+	echo >&2 "E: Duplicate Signed-off-by lines."
+	echo >&2
+	exit_val=1
+}
+
+# Check for proper UBUNTU: usage
+if ! grep -q "^UBUNTU: .+" "$1"; then
+	if [ "`git-config --bool ubuntu.allow-non-ubuntu-commit`" = "true" ]; then
+		echo >&2 "W: Override enforced by ubuntu.allow-non-ubuntu-commit"
+	else
+		echo >&2 "E: Commit message doesn't start with UBUNTU:, or is empty"
+		echo >&2 "   To override: git-config --bool ubuntu.allow-non-ubuntu-commit true"
+		exit_val=1
+	fi
+	echo >&2
+fi
+
+exit $exit_val
