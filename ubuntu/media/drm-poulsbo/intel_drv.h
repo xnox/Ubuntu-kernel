@@ -82,4 +82,10 @@ extern int intelfb_remove(struct drm_device *dev, struct drm_crtc *crtc);
 extern void intel_modeset_init(struct drm_device *dev);
 extern void intel_modeset_cleanup(struct drm_device *dev);
 
+#define WA_NO_FB_GARBAGE_DISPLAY
+#ifdef WA_NO_FB_GARBAGE_DISPLAY
+extern void intel_crtc_mode_restore(struct drm_crtc *crtc);
+extern void intel_crtc_mode_save(struct drm_crtc *crtc);
+#endif
+
 #endif /* __INTEL_DRV_H__ */

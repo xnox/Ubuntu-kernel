@@ -660,6 +660,220 @@ int intel_panel_fitter_pipe (struct drm_device *dev)
 	return 1;
 }
 
+#define WA_NO_FB_GARBAGE_DISPLAY
+#ifdef WA_NO_FB_GARBAGE_DISPLAY
+static u32 fp_reg_value[2];
+static u32 dpll_reg_value[2];
+static u32 dpll_md_reg_value[2];
+static u32 dspcntr_reg_value[2];
+static u32 pipeconf_reg_value[2];
+static u32 htot_reg_value[2];
+static u32 hblank_reg_value[2];
+static u32 hsync_reg_value[2];
+static u32 vtot_reg_value[2];
+static u32 vblank_reg_value[2];
+static u32 vsync_reg_value[2];
+static u32 dspsize_reg_value[2];
+static u32 dspstride_reg_value[2];
+static u32 dsppos_reg_value[2];
+static u32 pipesrc_reg_value[2];
+
+static u32 dspbase_value[2];
+
+static u32 lvds_reg_value[2];
+static u32 vgacntrl_reg_value[2];
+static u32 pfit_control_reg_value[2];
+
+void intel_crtc_mode_restore(struct drm_crtc *crtc)
+{
+	struct drm_device *dev = crtc->dev;
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
+	struct intel_crtc *intel_crtc = crtc->driver_private;
+	int pipe = intel_crtc->pipe;
+	int fp_reg = (pipe == 0) ? FPA0 : FPB0;
+	int dpll_reg = (pipe == 0) ? DPLL_A : DPLL_B;
+	int dpll_md_reg = (intel_crtc->pipe == 0) ? DPLL_A_MD : DPLL_B_MD;
+	int dspcntr_reg = (pipe == 0) ? DSPACNTR : DSPBCNTR;
+	int pipeconf_reg = (pipe == 0) ? PIPEACONF : PIPEBCONF;
+	int htot_reg = (pipe == 0) ? HTOTAL_A : HTOTAL_B;
+	int hblank_reg = (pipe == 0) ? HBLANK_A : HBLANK_B;
+	int hsync_reg = (pipe == 0) ? HSYNC_A : HSYNC_B;
+	int vtot_reg = (pipe == 0) ? VTOTAL_A : VTOTAL_B;
+	int vblank_reg = (pipe == 0) ? VBLANK_A : VBLANK_B;
+	int vsync_reg = (pipe == 0) ? VSYNC_A : VSYNC_B;
+	int dspsize_reg = (pipe == 0) ? DSPASIZE : DSPBSIZE;
+	int dspstride_reg = (pipe == 0) ? DSPASTRIDE : DSPBSTRIDE;
+	int dsppos_reg = (pipe == 0) ? DSPAPOS : DSPBPOS;
+	int pipesrc_reg = (pipe == 0) ? PIPEASRC : PIPEBSRC;
+	int dspbase = (pipe == 0 ? DSPABASE : DSPBBASE);
+
+	bool ok, is_sdvo = false, is_dvo = false;
+	bool is_crt = false, is_lvds = false, is_tv = false;
+	struct drm_mode_config *mode_config = &dev->mode_config;
+	struct drm_output *output;
+
+	list_for_each_entry(output, &mode_config->output_list, head) {
+		struct intel_output *intel_output = output->driver_private;
+
+		if (output->crtc != crtc)
+			continue;
+
+		switch (intel_output->type) {
+		case INTEL_OUTPUT_LVDS:
+			is_lvds = TRUE;
+			break;
+		case INTEL_OUTPUT_SDVO:
+			is_sdvo = TRUE;
+			break;
+		case INTEL_OUTPUT_DVO:
+			is_dvo = TRUE;
+			break;
+		case INTEL_OUTPUT_TVOUT:
+			is_tv = TRUE;
+			break;
+		case INTEL_OUTPUT_ANALOG:
+			is_crt = TRUE;
+			break;
+		}
+		output->funcs->prepare(output);
+	}
+
+	intel_crtc_prepare(crtc);
+	/* Disable the panel fitter if it was on our pipe */
+	if (intel_panel_fitter_pipe(dev) == pipe)
+		I915_WRITE(PFIT_CONTROL, 0);
+
+	if (dpll_reg_value[pipe] & DPLL_VCO_ENABLE) {
+		I915_WRITE(fp_reg, fp_reg_value[pipe]);
+		I915_WRITE(dpll_reg, dpll_reg_value[pipe]& ~DPLL_VCO_ENABLE);
+		I915_READ(dpll_reg);
+		udelay(150);
+	}
+
+	/*
+	if(is_lvds)
+		I915_WRITE(LVDS, lvds_reg_value[pipe]);
+	*/
+	if (is_lvds) {
+		I915_WRITE(LVDS, lvds_reg_value[pipe]);
+		I915_READ(LVDS);
+	}
+
+	I915_WRITE(fp_reg, fp_reg_value[pipe]);
+	I915_WRITE(dpll_reg, dpll_reg_value[pipe]);
+	I915_READ(dpll_reg);
+	udelay(150);
+	//I915_WRITE(dpll_md_reg, dpll_md_reg_value[pipe]);
+	I915_WRITE(dpll_reg, dpll_reg_value[pipe]);
+	I915_READ(dpll_reg);
+	udelay(150);
+	I915_WRITE(htot_reg, htot_reg_value[pipe]);
+	I915_WRITE(hblank_reg, hblank_reg_value[pipe]);
+	I915_WRITE(hsync_reg, hsync_reg_value[pipe]);
+	I915_WRITE(vtot_reg, vtot_reg_value[pipe]);
+	I915_WRITE(vblank_reg, vblank_reg_value[pipe]);
+	I915_WRITE(vsync_reg, vsync_reg_value[pipe]);
+	I915_WRITE(dspstride_reg, dspstride_reg_value[pipe]);
+	I915_WRITE(dspsize_reg, dspsize_reg_value[pipe]);
+	I915_WRITE(dsppos_reg, dsppos_reg_value[pipe]);
+	I915_WRITE(pipesrc_reg, pipesrc_reg_value[pipe]);
+	I915_WRITE(pipeconf_reg, pipeconf_reg_value[pipe]);
+	I915_READ(pipeconf_reg);
+	intel_wait_for_vblank(dev);
+	I915_WRITE(dspcntr_reg, dspcntr_reg_value[pipe]);
+	I915_WRITE(dspbase, dspbase_value[pipe]);
+	I915_READ(dspbase);
+	I915_WRITE(VGACNTRL, vgacntrl_reg_value[pipe]);
+	intel_wait_for_vblank(dev);
+	I915_WRITE(PFIT_CONTROL, pfit_control_reg_value[pipe]);
+	
+	intel_crtc_commit(crtc);
+	list_for_each_entry(output, &mode_config->output_list, head) {
+		if (output->crtc != crtc)
+			continue;
+
+		output->funcs->commit(output);
+		//output->funcs->dpms(output, DPMSModeOff);
+		//printk("turn off the display first\n");
+	}
+	return;
+}
+
+void intel_crtc_mode_save(struct drm_crtc *crtc)
+{
+	struct drm_device *dev = crtc->dev;
+	DRM_DRIVER_PRIVATE_T *dev_priv = dev->dev_private;
+	struct intel_crtc *intel_crtc = crtc->driver_private;
+	int pipe = intel_crtc->pipe;
+	int fp_reg = (pipe == 0) ? FPA0 : FPB0;
+	int dpll_reg = (pipe == 0) ? DPLL_A : DPLL_B;
+	int dpll_md_reg = (intel_crtc->pipe == 0) ? DPLL_A_MD : DPLL_B_MD;
+	int dspcntr_reg = (pipe == 0) ? DSPACNTR : DSPBCNTR;
+	int pipeconf_reg = (pipe == 0) ? PIPEACONF : PIPEBCONF;
+	int htot_reg = (pipe == 0) ? HTOTAL_A : HTOTAL_B;
+	int hblank_reg = (pipe == 0) ? HBLANK_A : HBLANK_B;
+	int hsync_reg = (pipe == 0) ? HSYNC_A : HSYNC_B;
+	int vtot_reg = (pipe == 0) ? VTOTAL_A : VTOTAL_B;
+	int vblank_reg = (pipe == 0) ? VBLANK_A : VBLANK_B;
+	int vsync_reg = (pipe == 0) ? VSYNC_A : VSYNC_B;
+	int dspsize_reg = (pipe == 0) ? DSPASIZE : DSPBSIZE;
+	int dspstride_reg = (pipe == 0) ? DSPASTRIDE : DSPBSTRIDE;
+	int dsppos_reg = (pipe == 0) ? DSPAPOS : DSPBPOS;
+	int pipesrc_reg = (pipe == 0) ? PIPEASRC : PIPEBSRC;
+	int dspbase = (pipe == 0 ? DSPABASE : DSPBBASE);
+	bool ok, is_sdvo = false, is_dvo = false;
+	bool is_crt = false, is_lvds = false, is_tv = false;
+	struct drm_mode_config *mode_config = &dev->mode_config;
+	struct drm_output *output;
+
+	list_for_each_entry(output, &mode_config->output_list, head) {
+		struct intel_output *intel_output = output->driver_private;
+
+		if (output->crtc != crtc)
+			continue;
+
+		switch (intel_output->type) {
+		case INTEL_OUTPUT_LVDS:
+			is_lvds = TRUE;
+			break;
+		case INTEL_OUTPUT_SDVO:
+			is_sdvo = TRUE;
+			break;
+		case INTEL_OUTPUT_DVO:
+			is_dvo = TRUE;
+			break;
+		case INTEL_OUTPUT_TVOUT:
+			is_tv = TRUE;
+			break;
+		case INTEL_OUTPUT_ANALOG:
+			is_crt = TRUE;
+			break;
+		}
+	}
+	
+	fp_reg_value[pipe] = I915_READ(fp_reg);
+	dpll_reg_value[pipe] = I915_READ(dpll_reg);
+	dpll_md_reg_value[pipe] = I915_READ(dpll_md_reg);
+	dspcntr_reg_value[pipe] = I915_READ(dspcntr_reg);
+	pipeconf_reg_value[pipe] = I915_READ(pipeconf_reg);
+	htot_reg_value[pipe] = I915_READ(htot_reg);
+	hblank_reg_value[pipe] = I915_READ(hblank_reg);
+	hsync_reg_value[pipe] = I915_READ(hsync_reg);
+	vtot_reg_value[pipe] = I915_READ(vtot_reg);
+	vblank_reg_value[pipe] = I915_READ(vblank_reg);
+	vsync_reg_value[pipe] = I915_READ(vsync_reg);
+	dspsize_reg_value[pipe] = I915_READ(dspsize_reg);
+	dspstride_reg_value[pipe] = I915_READ(dspstride_reg);
+	dsppos_reg_value[pipe] = I915_READ(dsppos_reg);
+	pipesrc_reg_value[pipe] = I915_READ(pipesrc_reg);
+	dspbase_value[pipe] = I915_READ(dspbase);
+	if(is_lvds)
+		lvds_reg_value[pipe] = I915_READ(LVDS);
+	vgacntrl_reg_value[pipe] = I915_READ(VGACNTRL);
+	pfit_control_reg_value[pipe] = I915_READ(PFIT_CONTROL);
+}
+#endif
+
 static void intel_crtc_mode_set(struct drm_crtc *crtc,
 				struct drm_display_mode *mode,
 				struct drm_display_mode *adjusted_mode,

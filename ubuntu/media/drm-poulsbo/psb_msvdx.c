@@ -213,6 +213,7 @@ psb_submit_video_cmdbuf (struct drm_device *dev,
       PSB_DEBUG_GENERAL ("MSVDX: Reset ok\n");
       dev_priv->msvdx_needs_reset = 0;
       dev_priv->msvdx_busy = 0;
+      dev_priv->msvdx_start_idle = 0;
 
       psb_msvdx_init (dev);
       psb_msvdx_irq_preinstall (dev_priv);
@@ -579,7 +580,7 @@ psb_msvdx_mtx_interrupt (struct drm_device *dev)
     }
 isrExit:
 
-#if 0
+#if 1
   if (!dev_priv->msvdx_busy)
   {
     /* check that clocks are enabled before reading VLR */
@@ -593,7 +594,7 @@ isrExit:
 
    if( (ui32FWStatus & MSVDX_FW_STATUS_HW_IDLE) && (ui32CCBRoff == ui32CCBWoff))
    {
-	    PSB_DEBUG_GENERAL("MSVDX_CLOCK: Setting clock to minimal...\n");
+	PSB_DEBUG_GENERAL("MSVDX_CLOCK: Setting clock to minimal...\n");
         PSB_WMSVDX32 (clk_enable_minimal, MSVDX_MAN_CLK_ENABLE);
    }
    }
@@ -605,11 +606,18 @@ void
 psb_msvdx_lockup (struct drm_psb_private *dev_priv,
 		  int *msvdx_lockup, int *msvdx_idle)
 {
+	unsigned long irq_flags;
+//	struct psb_scheduler *scheduler = &dev_priv->scheduler;
+
+  spin_lock_irqsave (&dev_priv->msvdx_lock, irq_flags);
   *msvdx_lockup = 0;
   *msvdx_idle = 1;
 
   if (!dev_priv->has_msvdx)
-    return;
+  {
+      spin_unlock_irqrestore (&dev_priv->msvdx_lock, irq_flags);
+      return;
+  }
 #if 0
   PSB_DEBUG_GENERAL ("MSVDXTimer: current_sequence:%d "
 		     "last_sequence:%d and last_submitted_sequence :%d\n",
@@ -634,5 +642,35 @@ psb_msvdx_lockup (struct drm_psb_private *dev_priv,
 	  dev_priv->msvdx_last_sequence = dev_priv->msvdx_current_sequence;
 	  *msvdx_idle = 0;
 	}
+	if (dev_priv->msvdx_start_idle)
+		dev_priv->msvdx_start_idle = 0;
+    } 
+    else 
+    {
+	if (dev_priv->msvdx_needs_reset == 0)
+	{
+	    if (dev_priv->msvdx_start_idle && (dev_priv->msvdx_finished_sequence == dev_priv->msvdx_current_sequence))
+	    {
+		//if (dev_priv->msvdx_idle_start_jiffies + MSVDX_MAX_IDELTIME >= jiffies)
+		if (time_after_eq(jiffies, dev_priv->msvdx_idle_start_jiffies + MSVDX_MAX_IDELTIME))
+		{
+		    printk("set the msvdx clock to 0 in the %s\n", __FUNCTION__);
+      		    PSB_WMSVDX32 (0, MSVDX_MAN_CLK_ENABLE);
+		    dev_priv->msvdx_needs_reset = 1;
+		}
+		else
+		{
+		    *msvdx_idle = 0;
+		}
+	    }
+	    else
+	    {
+		dev_priv->msvdx_start_idle = 1;
+		dev_priv->msvdx_idle_start_jiffies = jiffies;
+		dev_priv->msvdx_finished_sequence = dev_priv->msvdx_current_sequence;
+		*msvdx_idle = 0;
+	    }
+	}
     }
+    spin_unlock_irqrestore (&dev_priv->msvdx_lock, irq_flags);
 }

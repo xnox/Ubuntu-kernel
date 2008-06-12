@@ -594,7 +594,9 @@ psb_msvdx_uninit (struct drm_device *dev)
   /*Reset MSVDX chip */
   psb_msvdx_reset (dev_priv);
 
-  PSB_WMSVDX32 (clk_enable_minimal, MSVDX_MAN_CLK_ENABLE);
+//  PSB_WMSVDX32 (clk_enable_minimal, MSVDX_MAN_CLK_ENABLE);
+    printk("set the msvdx clock to 0 in the %s\n", __FUNCTION__);
+    PSB_WMSVDX32 (0, MSVDX_MAN_CLK_ENABLE);
 
   /*Clean up resources...*/
   if (dev_priv->ccb0)

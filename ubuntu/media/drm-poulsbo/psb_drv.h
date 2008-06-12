@@ -46,9 +46,9 @@ enum {
 #define DRIVER_DESC "drm driver for the Intel GMA500"
 #define DRIVER_AUTHOR "Tungsten Graphics Inc."
 
-#define PSB_DRM_DRIVER_DATE "20080520"
+#define PSB_DRM_DRIVER_DATE "20080530"
 #define PSB_DRM_DRIVER_MAJOR 4
-#define PSB_DRM_DRIVER_MINOR 9
+#define PSB_DRM_DRIVER_MINOR 10
 #define PSB_DRM_DRIVER_PATCHLEVEL 0
 
 #define PSB_VDC_OFFSET           0x00000000
@@ -290,6 +290,11 @@ struct drm_psb_private {
 #endif
 	uint32_t msvdx_current_sequence;
 	uint32_t msvdx_last_sequence;
+#define MSVDX_MAX_IDELTIME HZ*30
+	uint32_t msvdx_finished_sequence;
+	uint32_t msvdx_start_idle;
+	unsigned long msvdx_idle_start_jiffies;
+
 	int fence2_irq_on;
 
 	/*

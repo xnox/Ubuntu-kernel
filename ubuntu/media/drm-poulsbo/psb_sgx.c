@@ -1278,6 +1278,8 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 		ret =
 		    psb_cmdbuf_video(file_priv, arg, num_buffers, cmd_buffer,
 				     &fence_arg);
+		if (ret)
+			goto out_err0;
 		break;
 	case PSB_ENGINE_RASTERIZER:
 		ret = psb_cmdbuf_raster(file_priv, arg, cmd_buffer, &fence_arg);
