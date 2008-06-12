@@ -13,8 +13,7 @@ my $flavour_config = 0;
 # Duh
 $exit_val = 0;
 
-# XXX --cached
-open(FILES, "git-diff-index -M --name-only HEAD -- |") or die "ERROR: Calling git-diff-index";
+open(FILES, "git-diff-index -M --name-only --cached HEAD -- |") or die "ERROR: Calling git-diff-index";
 
 while (<FILES>) {
 	chomp();
