@@ -33,6 +33,7 @@
 #include "psb_scene.h"
 #include <linux/cpu.h>
 #include <linux/notifier.h>
+#include <linux/fb.h>
 
 int drm_psb_debug = 0;
 EXPORT_SYMBOL(drm_psb_debug);
@@ -712,9 +713,20 @@ static int psb_suspend(struct pci_dev *pdev, pm_message_t state)
 	struct drm_device *dev = pci_get_drvdata(pdev);
 	struct drm_psb_private *dev_priv =
 	    (struct drm_psb_private *)dev->dev_private;
+        struct drm_output *output;
 
 	if (drm_psb_no_fb == 0)
 		psbfb_suspend(dev);
+#ifdef WA_NO_FB_GARBAGE_DISPLAY
+	else {
+		list_for_each_entry(output, &dev->mode_config.output_list, head) {
+			if(output->crtc != NULL)
+				intel_crtc_mode_save(output->crtc);
+			//if(output->funcs->save)
+			//	output->funcs->save(output);
+		}
+	}
+#endif
 
 	dev_priv->saveCLOCKGATING = PSB_RSGX32(PSB_CR_CLKGATECTL);
 	(void)psb_idle_3d(dev);
@@ -827,6 +839,23 @@ static int psb_resume(struct pci_dev *pdev)
 
 	if (drm_psb_no_fb == 0)
 		psbfb_resume(dev);
+#ifdef WA_NO_FB_GARBAGE_DISPLAY
+	else { 
+		list_for_each_entry(output, &dev->mode_config.output_list, head) {
+			if(output->crtc != NULL)
+				intel_crtc_mode_restore(output->crtc);
+		}
+		if(num_registered_fb)
+		{
+			struct fb_info *fb_info=registered_fb[0];
+			if(fb_info)
+			{
+				fb_set_suspend(fb_info, 0);
+				printk("set the fb_set_suspend resume end\n");
+			}
+		}
+	} 
+#endif
 
 	return 0;
 }
