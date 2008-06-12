@@ -138,15 +138,45 @@ static inline void pci_clear_mwi(struct pci_dev *dev)
 /* Added as of 2.6.23 in include/linux/netdevice.h */
 #define alloc_netdev_mq(sizeof_priv, name, setup, queue) \
 	alloc_netdev(sizeof_priv, name, setup)
-#define NETIF_F_MULTI_QUEUE 0
+#define NETIF_F_MULTI_QUEUE 16384
+
+/* Added as of 2.6.23 on include/linux/netdevice.h */
+static inline int netif_is_multiqueue(const struct net_device *dev)
+{
+	return (!!(NETIF_F_MULTI_QUEUE & dev->features));
+}
+
 
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)) */
 
 /* Compat work for 2.6.21, 2.6.22 and 2.6.23 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
 
-/* Added as of 2.6.24 in include/linux/netdevice.h */
+#if (LINUX_VERSION_CODE == KERNEL_VERSION(2,6,23)) /* Local check */
+/* Added as of 2.6.24 in include/linux/skbuff.h.
+ *
+ * Although 2.6.23 does support for CONFIG_NETDEVICES_MULTIQUEUE
+ * this helper was not added until 2.6.24. This implementation
+ * is exactly as it is on newer kernels.
+ *
+ * For older kernels we use the an internal mac80211 hack.
+ * For details see changes to include/net/mac80211.h through
+ * compat.diff and compat/mq_compat.h */
+static inline u16 skb_get_queue_mapping(struct sk_buff *skb)
+{
+#ifdef CONFIG_NETDEVICES_MULTIQUEUE
+	return skb->queue_mapping;
+#else
+	return 0;
+#endif
+}
+#endif /* Local 2.6.23 check */
 
+/* On older kernels we handle this a bit differently, so we yield to that
+ * code for its implementation in mq_compat.h as we want to make
+ * use of the internal mac80211 __ieee80211_queue_stopped() which itself
+ * uses internal mac80211 data structure hacks. */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23)) /* Local check */
 /**
  * netif_subqueue_stopped - test status of subqueue
  * @dev: network device
@@ -165,25 +195,13 @@ static inline int __netif_subqueue_stopped(const struct net_device *dev,
 #endif
 }
 
+/* Note: although the backport implementation for netif_subqueue_stopped
+ * on older kernels is identical to upstream __netif_subqueue_stopped()
+ * (except for a const qualifier) we implement netif_subqueue_stopped()
+ * as part of mac80211 as it relies on internal mac80211 structures we
+ * use for MQ support. We this implement it in mq_compat.h */
 
-/* Added as of 2.6.24 in include/linux/skbuff.h.
- *
- * Although 2.6.23 does support for CONFIG_NETDEVICES_MULTIQUEUE
- * this helper was not added until 2.6.24. This implementation
- * is exactly as it is on newer kernels.
- *
- * Older kernels just use queue 0 as it didn't support
- * CONFIG_NETDEVICES_MULTIQUEUE. This added support on
- * the network stack to use multiple hardware TX queues */
-static inline u16 skb_get_queue_mapping(struct sk_buff *skb)
-{
-#ifdef CONFIG_NETDEVICES_MULTIQUEUE
-	return skb->queue_mapping;
-#else
-	return 0;
-#endif
-}
-
+#endif /* Local 2.6.23 check */
 
 /*
  * Force link bug if constructor is used, can't be done compatibly
@@ -320,7 +338,8 @@ int compat_is_pcie(struct pci_dev *pdev);
 /* Compat work for kernels <= 2.6.22 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
 
-/* dev_mc_list was replaced with dev_addr_list as of 2.6.23 */
+/* dev_mc_list was replaced with dev_addr_list as of 2.6.23,
+ * only new member added is da_synced. */
 #define dev_addr_list	dev_mc_list
 #define da_addr		dmi_addr
 #define da_addrlen	dmi_addrlen

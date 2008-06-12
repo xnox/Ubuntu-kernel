@@ -14,7 +14,44 @@ include $(KLIB_BUILD)/.config
 endif
 
 # Wireless subsystem stuff
-CONFIG_MAC80211=m
+CONFIG_MAC80211=y
+
+# Enable QOS for 2.6.22, we'll do some hacks here to enable it.
+# You will need this for HT support (802.11n) and WME (802.11e).
+# If you are >= 2.6.23 we'll only warn when you don't have MQ support
+# or NET_SCHED enabled.
+#
+# We could consider just quiting if MQ and NET_SCHED is disabled
+# as I suspect all users of this package want 802.11e (WME) and
+# 802.11n (HT) support.
+ifeq ($(shell test -e $(KLIB_BUILD)/Makefile && echo yes),yes)
+KERNEL_SUBLEVEL = $(shell $(MAKE) -C $(KLIB_BUILD) kernelversion | sed -n 's/^2\.6\.\([0-9]\+\).*/\1/p')
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -lt 23 && echo yes),yes)
+CONFIG_MAC80211_QOS=y
+else
+
+# we're in a kernel >= 2.6.23
+
+ifneq ($(KERNELRELEASE),) # This prevents a warning
+
+ifeq ($(CONFIG_NETDEVICES_MULTIQUEUE),) # checks MQ first
+ QOS_REQS_MISSING+=CONFIG_NETDEVICES_MULTIQUEUE
+endif
+
+ifeq ($(CONFIG_NET_SCHED),)
+ QOS_REQS_MISSING+=CONFIG_NET_SCHED
+endif
+
+ifeq ($(QOS_REQS_MISSING),) # if our dependencies match for MAC80211_QOS
+CONFIG_MAC80211_QOS=y
+else # Complain about our missing dependencies
+$(warning "WARNING: You are running a kernel >= 2.6.23, you should enable in it $(QOS_REQS_MISSING) for 802.11[ne] support")
+endif
+
+endif # In build module mode
+
+endif # kernel release check
+endif # kernel Makefile check
 
 CONFIG_MAC80211_RC_DEFAULT=pid
 CONFIG_MAC80211_RC_PID=y

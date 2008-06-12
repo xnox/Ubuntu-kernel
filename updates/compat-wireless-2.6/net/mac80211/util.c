@@ -31,6 +31,9 @@
 #endif
 
 #include "ieee80211_i.h"
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+#include "mq_compat.h"
+#endif
 #include "rate.h"
 #include "mesh.h"
 #include "wme.h"
@@ -337,7 +340,14 @@ void ieee80211_wake_queue(struct ieee80211_hw *hw, int queue)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
+/* 2.6.22 doesn't have CONFIG_NETDEVICES_MULTIQUEUE so lets not make use
+ * of queues_pending map and use our own old hack */
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+	if (test_and_clear_bit(IEEE80211_LINK_STATE_XOFF,
+		&local->state[queue])) {
+#else
 	if (test_bit(queue, local->queues_pending)) {
+#endif
 		tasklet_schedule(&local->tx_pending_tasklet);
 	} else {
 		if (ieee80211_is_multiqueue(local)) {

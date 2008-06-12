@@ -26,6 +26,9 @@
 #include <net/mac80211.h>
 #include <asm/unaligned.h>
 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+#include "mq_compat.h" /* Internal MQ backport support for older kernels */
+#endif
 #include "ieee80211_i.h"
 #include "led.h"
 #include "mesh.h"
@@ -214,6 +217,7 @@ static u16 ieee80211_duration(struct ieee80211_tx_data *tx, int group_addr,
 
 	return dur;
 }
+
 
 static int inline is_ieee80211_device(struct net_device *dev,
 				      struct net_device *master)
@@ -667,8 +671,12 @@ ieee80211_tx_h_fragment(struct ieee80211_tx_data *tx)
 	 * etc.
 	 */
 	if (WARN_ON(tx->flags & IEEE80211_TX_CTL_AMPDU ||
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+			IEEE80211_SKB_CB(tx->skb)->queue >= tx->local->hw.queues))
+#else
 		    skb_get_queue_mapping(tx->skb) >=
 			ieee80211_num_regular_queues(&tx->local->hw)))
+#endif
 		return TX_DROP;
 
 	first = tx->skb;
@@ -1097,8 +1105,9 @@ static int ieee80211_tx(struct net_device *dev, struct sk_buff *skb)
 	u16 queue;
 
 	queue = skb_get_queue_mapping(skb);
-
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23))
 	WARN_ON(test_bit(queue, local->queues_pending));
+#endif
 
 	if (unlikely(skb->len < 10)) {
 		dev_kfree_skb(skb);
@@ -1176,7 +1185,12 @@ retry:
 
 		if (ret == IEEE80211_TX_FRAG_AGAIN)
 			skb = NULL;
+
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+		set_bit(IEEE80211_LINK_STATE_PENDING, &local->state[queue]);
+#else
 		set_bit(queue, local->queues_pending);
+#endif
 		smp_mb();
 		/*
 		 * When the driver gets out of buffers during sending of
@@ -1190,7 +1204,12 @@ retry:
 		 * possible to have happened.
 		 */
 		if (!__netif_subqueue_stopped(local->mdev, queue)) {
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+			clear_bit(IEEE80211_LINK_STATE_PENDING,
+				&local->state[queue]);
+#else
 			clear_bit(queue, local->queues_pending);
+#endif
 			goto retry;
 		}
 		store->skb = skb;
@@ -1653,14 +1672,24 @@ void ieee80211_clear_tx_pending(struct ieee80211_local *local)
 	struct ieee80211_tx_stored_packet *store;
 
 	for (i = 0; i < ieee80211_num_regular_queues(&local->hw); i++) {
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+		/* XXX: Test this */
+		//if (__ieee80211_queue_stopped(local, i))
+		if (0)
+#else
 		if (!test_bit(i, local->queues_pending))
+#endif
 			continue;
 		store = &local->pending_packet[i];
 		kfree_skb(store->skb);
 		for (j = 0; j < store->num_extra_frag; j++)
 			kfree_skb(store->extra_frag[j]);
 		kfree(store->extra_frag);
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+		clear_bit(IEEE80211_LINK_STATE_PENDING, &local->state[i]);
+#else
 		clear_bit(i, local->queues_pending);
+#endif
 	}
 }
 
@@ -1681,8 +1710,11 @@ void ieee80211_tx_pending(unsigned long data)
 		/* Check that this queue is ok */
 		if (__netif_subqueue_stopped(local->mdev, i))
 			continue;
-
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+		if (!__ieee80211_queue_pending(local, i)) {
+#else
 		if (!test_bit(i, local->queues_pending)) {
+#endif
 			ieee80211_wake_queue(&local->hw, i);
 			continue;
 		}
@@ -1699,7 +1731,12 @@ void ieee80211_tx_pending(unsigned long data)
 			if (ret == IEEE80211_TX_FRAG_AGAIN)
 				store->skb = NULL;
 		} else {
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+			clear_bit(IEEE80211_LINK_STATE_PENDING,
+				&local->state[i]);
+#else
 			clear_bit(i, local->queues_pending);
+#endif
 			ieee80211_wake_queue(&local->hw, i);
 		}
 	}

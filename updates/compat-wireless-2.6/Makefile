@@ -5,7 +5,7 @@ KMODPATH_ARG:=  "INSTALL_MOD_PATH=$(KLIB)"
 else
 KLIB:=          /lib/modules/$(shell uname -r)
 endif
-KLIB_BUILD ?=	$(KLIB)/build
+export KLIB_BUILD ?=	$(KLIB)/build
 # Sometimes not available in the path
 MODPROBE := /sbin/modprobe
 MADWIFI=$(shell $(MODPROBE) -l ath_pci)

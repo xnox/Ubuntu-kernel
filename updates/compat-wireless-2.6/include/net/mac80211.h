@@ -293,7 +293,11 @@ struct ieee80211_tx_info {
 	s8 tx_rate_idx;
 	u8 antenna_sel_tx;
 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+	u8 queue; /* For compatibilty support for HT for kernels <= 2.6.22 */
+#else
 	/* 1 byte hole */
+#endif
 
 	union {
 		struct {
@@ -323,6 +327,20 @@ static inline struct ieee80211_tx_info *IEEE80211_SKB_CB(struct sk_buff *skb)
 	return (struct ieee80211_tx_info *)skb->cb;
 }
 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+/* Added was added as of 2.6.24 in include/linux/skbuff.h, this for old kernels,
+ * we put it here instead of compat.h as we don't want to rely on mac80211.h in
+ * compat.h */
+static inline u16 skb_get_queue_mapping(struct sk_buff *skb)
+{
+	return IEEE80211_SKB_CB(skb)->queue;
+}
+
+static inline void skb_set_queue_mapping(struct sk_buff *skb, u16 queue_mapping)
+{
+	IEEE80211_SKB_CB(skb)->queue = queue_mapping;
+}
+#endif
 
 /**
  * enum mac80211_rx_flags - receive flags

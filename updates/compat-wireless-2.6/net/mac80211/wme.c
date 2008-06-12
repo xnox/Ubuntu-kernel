@@ -17,6 +17,9 @@
 #include <net/mac80211.h>
 #include "ieee80211_i.h"
 #include "wme.h"
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+#include "mq_compat.h"
+#endif
 
 /* maximum number of hardware queues we support. */
 #define QD_MAX_QUEUES (IEEE80211_MAX_AMPDU_QUEUES + IEEE80211_MAX_QUEUES)
@@ -328,14 +331,22 @@ static void wme_qdiscop_destroy(struct Qdisc* qd)
 
 
 /* called whenever parameters are updated on existing qdisc */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
+static int wme_qdiscop_tune(struct Qdisc *qd, struct rtattr *opt)
+#else
 static int wme_qdiscop_tune(struct Qdisc *qd, struct nlattr *opt)
+#endif
 {
 	return 0;
 }
 
 
 /* called during initial creation of qdisc on device */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
+static int wme_qdiscop_init(struct Qdisc *qd, struct rtattr *opt)
+#else
 static int wme_qdiscop_init(struct Qdisc *qd, struct nlattr *opt)
+#endif
 {
 	struct ieee80211_sched_data *q = qdisc_priv(qd);
 	struct net_device *dev = qd->dev;
@@ -456,7 +467,11 @@ static void wme_classop_put(struct Qdisc *q, unsigned long cl)
 
 
 static int wme_classop_change(struct Qdisc *qd, u32 handle, u32 parent,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
+				struct rtattr **tca, unsigned long *arg)
+#else
 			      struct nlattr **tca, unsigned long *arg)
+#endif
 {
 	unsigned long cl = *arg;
 	struct ieee80211_local *local = wdev_priv(qd->dev->ieee80211_ptr);
@@ -540,7 +555,11 @@ static struct tcf_proto ** wme_classop_find_tcf(struct Qdisc *qd,
 
 /* this qdisc is classful (i.e. has classes, some of which may have leaf qdiscs attached)
  * - these are the operations on the classes */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
+static struct Qdisc_class_ops class_ops =
+#else
 static const struct Qdisc_class_ops class_ops =
+#endif
 {
 	.graft = wme_classop_graft,
 	.leaf = wme_classop_leaf,

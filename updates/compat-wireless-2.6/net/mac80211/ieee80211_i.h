@@ -593,7 +593,14 @@ struct ieee80211_local {
 	struct sta_info *sta_hash[STA_HASH_SIZE];
 	struct timer_list sta_cleanup;
 
+/* Kernels without CONFIG_NETDEVICES_MULTIQUEUE (<=2.6.22) need this, so
+ * we implement multiple queue support internally with mac80211 hacks. */
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
+	unsigned long state[IEEE80211_MAX_QUEUES + IEEE80211_MAX_AMPDU_QUEUES];
+#else
 	unsigned long queues_pending[BITS_TO_LONGS(IEEE80211_MAX_QUEUES)];
+#endif
+
 	struct ieee80211_tx_stored_packet pending_packet[IEEE80211_MAX_QUEUES];
 	struct tasklet_struct tx_pending_tasklet;
 
@@ -857,7 +864,7 @@ u32 ieee80211_handle_ht(struct ieee80211_local *local, int enable_ht,
 
 /* ieee80211_ioctl.c */
 extern const struct iw_handler_def ieee80211_iw_handler_def;
-int ieee80211_set_freq(struct ieee80211_local *local, int freq);
+int ieee80211_set_freq(struct net_device *dev, int freq);
 /* ieee80211_sta.c */
 void ieee80211_sta_timer(unsigned long data);
 void ieee80211_sta_work(struct work_struct *work);

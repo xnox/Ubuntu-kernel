@@ -14,6 +14,7 @@
 OLDEST_KERNEL_SUPPORTED="2.6.21"
 COMPAT_RELEASE="compat-release"
 KERNEL_RELEASE="git-describe"
+MULT_DEP_FILE=".compat_pivot_dep"
 
 if [ $# -ne 1 ]; then
 	echo "Usage $0 config-file"
@@ -93,6 +94,28 @@ function define_config_dep {
 	echo "#endif /* $WARN_VAR */"
 }
 
+# This handles options which have *multiple* dependencies from the kernel
+function define_config_multiple_deps {
+	VAR=$1
+	VALUE=$2
+	DEP_ARRAY=$3
+
+	# First, put all ifdefs
+	for i in $(cat $MULT_DEP_FILE); do
+		echo "#ifdef $i"
+	done
+
+	# Now put our option in the middle
+	define_config $VAR $VALUE
+
+	# Now close all ifdefs
+	# First, put all ifdefs
+	for i in $(cat $MULT_DEP_FILE); do
+		echo "#endif"
+	done
+
+}
+
 function kernel_version_req {
 	VERSION=$(echo $1 | sed -e 's/\./,/g')
 	echo "#if (LINUX_VERSION_CODE < KERNEL_VERSION($VERSION))"
@@ -140,9 +163,32 @@ for i in $(grep '^CONFIG_' $COMPAT_CONFIG); do
 	CONFIG_USB_NET_RNDIS_HOST)
 		define_config_dep $VAR $VALUE CONFIG_USB_NET_CDCETHER
 		continue
+		;;
+	# ignore this, we have a special hanlder for this at the botttom
+	# instead. We still need to keep this in config.mk to let Makefiles
+	# know its enabled so just ignore it here.
+	CONFIG_MAC80211_QOS)
+		continue
+		;;
 	esac
 	# Any other module which can *definitely* be built as a module goes here
 	define_config $VAR $VALUE
 done
 
+# Deal with special cases. CONFIG_MAC80211_QOS is such a case.
+# We handle this specially for different kernels we support.
+if [ -f $KLIB_BUILD/Makefile ]; then
+	SUBLEVEL=$(make -C $KLIB_BUILD kernelversion | sed -n 's/^2\.6\.\([0-9]\+\).*/\1/p')
+	if [ $SUBLEVEL -le 22 ]; then
+		define_config CONFIG_MAC80211_QOS y
+	else # kernel >= 2.6.23
+		# CONFIG_MAC80211_QOS on these kernels requires
+		# CONFIG_NET_SCHED and CONFIG_NETDEVICES_MULTIQUEUE
+		rm -f $MULT_DEP_FILE
+		echo CONFIG_NET_SCHED >> $MULT_DEP_FILE
+		echo CONFIG_NETDEVICES_MULTIQUEUE >> $MULT_DEP_FILE
+		define_config_multiple_deps CONFIG_MAC80211_QOS y $ALL_DEPS
+		rm -f $MULT_DEP_FILE
+	fi
+fi
 echo "#endif /* COMPAT_AUTOCONF_INCLUDED */"

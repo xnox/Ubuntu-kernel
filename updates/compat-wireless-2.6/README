@@ -254,7 +254,7 @@ Please send patches against:
 git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/compat-wireless-2.6.git
 
 To: Luis R. Rodriguez <mcgrof@winlab.rutgers.edu>
-CC: linux-wireless@vger.kernel.org
+CC: compat-masters@lists.madwifi.org
 Subject: [PATCH] compat-2.6: add driver foo
 
 Patches for drivers
