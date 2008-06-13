@@ -85,6 +85,63 @@ const struct iwl_rate_info iwl_rates[IWL_RATE_COUNT] = {
 };
 EXPORT_SYMBOL(iwl_rates);
 
+/**
+ * translate ucode response to mac80211 tx status control values
+ */
+void iwl_hwrate_to_tx_control(struct iwl_priv *priv, u32 rate_n_flags,
+				  struct ieee80211_tx_info *control)
+{
+	int rate_index;
+
+	control->antenna_sel_tx =
+		((rate_n_flags & RATE_MCS_ANT_ABC_MSK) >> RATE_MCS_ANT_POS);
+	if (rate_n_flags & RATE_MCS_HT_MSK)
+		control->flags |= IEEE80211_TX_CTL_OFDM_HT;
+	if (rate_n_flags & RATE_MCS_GF_MSK)
+		control->flags |= IEEE80211_TX_CTL_GREEN_FIELD;
+	if (rate_n_flags & RATE_MCS_FAT_MSK)
+		control->flags |= IEEE80211_TX_CTL_40_MHZ_WIDTH;
+	if (rate_n_flags & RATE_MCS_DUP_MSK)
+		control->flags |= IEEE80211_TX_CTL_DUP_DATA;
+	if (rate_n_flags & RATE_MCS_SGI_MSK)
+		control->flags |= IEEE80211_TX_CTL_SHORT_GI;
+	rate_index = iwl_hwrate_to_plcp_idx(rate_n_flags);
+	if (control->band == IEEE80211_BAND_5GHZ)
+		rate_index -= IWL_FIRST_OFDM_RATE;
+	control->tx_rate_idx = rate_index;
+}
+EXPORT_SYMBOL(iwl_hwrate_to_tx_control);
+
+int iwl_hwrate_to_plcp_idx(u32 rate_n_flags)
+{
+	int idx = 0;
+
+	/* HT rate format */
+	if (rate_n_flags & RATE_MCS_HT_MSK) {
+		idx = (rate_n_flags & 0xff);
+
+		if (idx >= IWL_RATE_MIMO2_6M_PLCP)
+			idx = idx - IWL_RATE_MIMO2_6M_PLCP;
+
+		idx += IWL_FIRST_OFDM_RATE;
+		/* skip 9M not supported in ht*/
+		if (idx >= IWL_RATE_9M_INDEX)
+			idx += 1;
+		if ((idx >= IWL_FIRST_OFDM_RATE) && (idx <= IWL_LAST_OFDM_RATE))
+			return idx;
+
+	/* legacy rate format, search for match in table */
+	} else {
+		for (idx = 0; idx < ARRAY_SIZE(iwl_rates); idx++)
+			if (iwl_rates[idx].plcp == (rate_n_flags & 0xFF))
+				return idx;
+	}
+
+	return -1;
+}
+EXPORT_SYMBOL(iwl_hwrate_to_plcp_idx);
+
+
 
 const u8 iwl_bcast_addr[ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 EXPORT_SYMBOL(iwl_bcast_addr);
@@ -478,28 +535,10 @@ static int iwlcore_init_geos(struct iwl_priv *priv)
 			if (ch->flags & EEPROM_CHANNEL_RADAR)
 				geo_ch->flags |= IEEE80211_CHAN_RADAR;
 
-			switch (ch->fat_extension_channel) {
-			case HT_IE_EXT_CHANNEL_ABOVE:
-				/* only above is allowed, disable below */
-				geo_ch->flags |= IEEE80211_CHAN_NO_FAT_BELOW;
-				break;
-			case HT_IE_EXT_CHANNEL_BELOW:
-				/* only below is allowed, disable above */
-				geo_ch->flags |= IEEE80211_CHAN_NO_FAT_ABOVE;
-				break;
-			case HT_IE_EXT_CHANNEL_NONE:
-				/* fat not allowed: disable both*/
-				geo_ch->flags |= (IEEE80211_CHAN_NO_FAT_ABOVE |
-						  IEEE80211_CHAN_NO_FAT_BELOW);
-				break;
-			case HT_IE_EXT_CHANNEL_MAX:
-				/* both above and below are permitted */
-				break;
-			}
+			geo_ch->flags |= ch->fat_extension_channel;
 
-			if (ch->max_power_avg > priv->max_channel_txpower_limit)
-				priv->max_channel_txpower_limit =
-				    ch->max_power_avg;
+			if (ch->max_power_avg > priv->tx_power_channel_lmt)
+				priv->tx_power_channel_lmt = ch->max_power_avg;
 		} else {
 			geo_ch->flags |= IEEE80211_CHAN_DISABLED;
 		}
@@ -507,7 +546,7 @@ static int iwlcore_init_geos(struct iwl_priv *priv)
 		/* Save flags for reg domain usage */
 		geo_ch->orig_flags = geo_ch->flags;
 
-		IWL_DEBUG_INFO("Channel %d Freq=%d[%sGHz] %s flag=0%X\n",
+		IWL_DEBUG_INFO("Channel %d Freq=%d[%sGHz] %s flag=0x%X\n",
 				ch->channel, geo_ch->center_freq,
 				is_channel_a_band(ch) ?  "5.2" : "2.4",
 				geo_ch->flags & IEEE80211_CHAN_DISABLED ?
@@ -552,6 +591,7 @@ static u8 is_single_rx_stream(struct iwl_priv *priv)
 		(priv->current_ht_config.supp_mcs_set[2] == 0)) ||
 	       priv->ps_mode == IWL_MIMO_PS_STATIC;
 }
+
 static u8 iwl_is_channel_extension(struct iwl_priv *priv,
 				   enum ieee80211_band band,
 				   u16 channel, u8 extension_chan_offset)
@@ -562,12 +602,12 @@ static u8 iwl_is_channel_extension(struct iwl_priv *priv,
 	if (!is_channel_valid(ch_info))
 		return 0;
 
-	if (extension_chan_offset == IWL_EXT_CHANNEL_OFFSET_NONE)
-		return 0;
-
-	if ((ch_info->fat_extension_channel == extension_chan_offset) ||
-	    (ch_info->fat_extension_channel == HT_IE_EXT_CHANNEL_MAX))
-		return 1;
+	if (extension_chan_offset == IEEE80211_HT_IE_CHA_SEC_ABOVE)
+		return !(ch_info->fat_extension_channel &
+					IEEE80211_CHAN_NO_FAT_ABOVE);
+	else if (extension_chan_offset == IEEE80211_HT_IE_CHA_SEC_BELOW)
+		return !(ch_info->fat_extension_channel &
+					IEEE80211_CHAN_NO_FAT_BELOW);
 
 	return 0;
 }
@@ -579,7 +619,7 @@ u8 iwl_is_fat_tx_allowed(struct iwl_priv *priv,
 
 	if ((!iwl_ht_conf->is_ht) ||
 	   (iwl_ht_conf->supported_chan_width != IWL_CHANNEL_WIDTH_40MHZ) ||
-	   (iwl_ht_conf->extension_chan_offset == IWL_EXT_CHANNEL_OFFSET_NONE))
+	   (iwl_ht_conf->extension_chan_offset == IEEE80211_HT_IE_CHA_SEC_NONE))
 		return 0;
 
 	if (sta_ht_inf) {
@@ -613,19 +653,18 @@ void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info)
 		IWL_DEBUG_ASSOC("control diff than current %d %d\n",
 				le16_to_cpu(rxon->channel),
 				ht_info->control_channel);
-		rxon->channel = cpu_to_le16(ht_info->control_channel);
 		return;
 	}
 
 	/* Note: control channel is opposite of extension channel */
 	switch (ht_info->extension_chan_offset) {
-	case IWL_EXT_CHANNEL_OFFSET_ABOVE:
+	case IEEE80211_HT_IE_CHA_SEC_ABOVE:
 		rxon->flags &= ~(RXON_FLG_CTRL_CHANNEL_LOC_HI_MSK);
 		break;
-	case IWL_EXT_CHANNEL_OFFSET_BELOW:
+	case IEEE80211_HT_IE_CHA_SEC_BELOW:
 		rxon->flags |= RXON_FLG_CTRL_CHANNEL_LOC_HI_MSK;
 		break;
-	case IWL_EXT_CHANNEL_OFFSET_NONE:
+	case IEEE80211_HT_IE_CHA_SEC_NONE:
 	default:
 		rxon->flags &= ~RXON_FLG_CHANNEL_MODE_MIXED_MSK;
 		break;
@@ -835,6 +874,7 @@ int iwl_init_drv(struct iwl_priv *priv)
 
 	/* Choose which receivers/antennas to use */
 	iwl_set_rxon_chain(priv);
+	iwl_init_scan_params(priv);
 
 	if (priv->cfg->mod_params->enable_qos)
 		priv->qos_data.qos_enable = 1;
@@ -849,7 +889,7 @@ int iwl_init_drv(struct iwl_priv *priv)
 	priv->rates_mask = IWL_RATES_MASK;
 	/* If power management is turned on, default to AC mode */
 	priv->power_mode = IWL_POWER_AC;
-	priv->user_txpower_limit = IWL_DEFAULT_TX_POWER;
+	priv->tx_power_user_lmt = IWL_TX_POWER_TARGET_POWER_MAX;
 
 	ret = iwl_init_channel_map(priv);
 	if (ret) {
@@ -888,6 +928,34 @@ void iwl_free_calib_results(struct iwl_priv *priv)
 }
 EXPORT_SYMBOL(iwl_free_calib_results);
 
+int iwl_set_tx_power(struct iwl_priv *priv, s8 tx_power, bool force)
+{
+	int ret = 0;
+	if (tx_power < IWL_TX_POWER_TARGET_POWER_MIN) {
+		IWL_WARNING("Requested user TXPOWER %d below limit.\n",
+			    priv->tx_power_user_lmt);
+		return -EINVAL;
+	}
+
+	if (tx_power > IWL_TX_POWER_TARGET_POWER_MAX) {
+		IWL_WARNING("Requested user TXPOWER %d above limit.\n",
+			    priv->tx_power_user_lmt);
+		return -EINVAL;
+	}
+
+	if (priv->tx_power_user_lmt != tx_power)
+		force = true;
+
+	priv->tx_power_user_lmt = tx_power;
+
+	if (force && priv->cfg->ops->lib->send_tx_power)
+		ret = priv->cfg->ops->lib->send_tx_power(priv);
+
+	return ret;
+}
+EXPORT_SYMBOL(iwl_set_tx_power);
+
+
 void iwl_uninit_drv(struct iwl_priv *priv)
 {
 	iwl_free_calib_results(priv);
@@ -896,35 +964,6 @@ void iwl_uninit_drv(struct iwl_priv *priv)
 	kfree(priv->scan);
 }
 EXPORT_SYMBOL(iwl_uninit_drv);
-
-/* Low level driver call this function to update iwlcore with
- * driver status.
- */
-int iwlcore_low_level_notify(struct iwl_priv *priv,
-			      enum iwlcore_card_notify notify)
-{
-	int ret;
-	switch (notify) {
-	case IWLCORE_INIT_EVT:
-		ret = iwl_rfkill_init(priv);
-		if (ret)
-			IWL_ERROR("Unable to initialize RFKILL system. "
-				  "Ignoring error: %d\n", ret);
-		iwl_power_initialize(priv);
-		break;
-	case IWLCORE_START_EVT:
-		iwl_power_update_mode(priv, 1);
-		break;
-	case IWLCORE_STOP_EVT:
-		break;
-	case IWLCORE_REMOVE_EVT:
-		iwl_rfkill_unregister(priv);
-		break;
-	}
-
-	return 0;
-}
-EXPORT_SYMBOL(iwlcore_low_level_notify);
 
 int iwl_send_statistics_request(struct iwl_priv *priv, u8 flags)
 {
@@ -1186,12 +1225,14 @@ void iwl_print_event_log(struct iwl_priv *priv, u32 start_idx,
 		ptr += sizeof(u32);
 		time = iwl_read_targ_mem(priv, ptr);
 		ptr += sizeof(u32);
-		if (mode == 0)
-			IWL_ERROR("0x%08x\t%04u\n", time, ev); /* data, ev */
-		else {
+		if (mode == 0) {
+			/* data, ev */
+			IWL_ERROR("EVT_LOG:0x%08x:%04u\n", time, ev);
+		} else {
 			data = iwl_read_targ_mem(priv, ptr);
 			ptr += sizeof(u32);
-			IWL_ERROR("%010u\t0x%08x\t%04u\n", time, data, ev);
+			IWL_ERROR("EVT_LOGT:%010u:0x%08x:%04u\n",
+					time, data, ev);
 		}
 	}
 }
@@ -1254,4 +1295,27 @@ void iwl_dump_nic_event_log(struct iwl_priv *priv)
 }
 EXPORT_SYMBOL(iwl_dump_nic_event_log);
 
+void iwl_rf_kill_ct_config(struct iwl_priv *priv)
+{
+	struct iwl_ct_kill_config cmd;
+	unsigned long flags;
+	int ret = 0;
 
+	spin_lock_irqsave(&priv->lock, flags);
+	iwl_write32(priv, CSR_UCODE_DRV_GP1_CLR,
+		    CSR_UCODE_DRV_GP1_REG_BIT_CT_KILL_EXIT);
+	spin_unlock_irqrestore(&priv->lock, flags);
+
+	cmd.critical_temperature_R =
+		cpu_to_le32(priv->hw_params.ct_kill_threshold);
+
+	ret = iwl_send_cmd_pdu(priv, REPLY_CT_KILL_CONFIG_CMD,
+			       sizeof(cmd), &cmd);
+	if (ret)
+		IWL_ERROR("REPLY_CT_KILL_CONFIG_CMD failed\n");
+	else
+		IWL_DEBUG_INFO("REPLY_CT_KILL_CONFIG_CMD succeeded, "
+			"critical temperature is %d\n",
+			cmd.critical_temperature_R);
+}
+EXPORT_SYMBOL(iwl_rf_kill_ct_config);

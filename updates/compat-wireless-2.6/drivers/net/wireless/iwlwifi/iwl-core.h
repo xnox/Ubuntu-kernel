@@ -88,13 +88,11 @@ struct iwl_hcmd_ops {
 struct iwl_hcmd_utils_ops {
 	u16 (*get_hcmd_size)(u8 cmd_id, u16 len);
 	u16 (*build_addsta_hcmd)(const struct iwl_addsta_cmd *cmd, u8 *data);
-#ifdef CONFIG_IWLWIFI_RUN_TIME_CALIB
 	void (*gain_computation)(struct iwl_priv *priv,
 			u32 *average_noise,
 			u16 min_average_noise_antennat_i,
 			u32 min_average_noise);
 	void (*chain_noise_reset)(struct iwl_priv *priv);
-#endif
 };
 
 struct iwl_lib_ops {
@@ -118,6 +116,10 @@ struct iwl_lib_ops {
 			       u8 tx_fifo);
 	/* setup Rx handler */
 	void (*rx_handler_setup)(struct iwl_priv *priv);
+	/* setup deferred work */
+	void (*setup_deferred_work)(struct iwl_priv *priv);
+	/* cancel deferred work */
+	void (*cancel_deferred_work)(struct iwl_priv *priv);
 	/* alive notification after init uCode load */
 	void (*init_alive_start)(struct iwl_priv *priv);
 	/* alive notification */
@@ -127,7 +129,7 @@ struct iwl_lib_ops {
 	/* 1st ucode load */
 	int (*load_ucode)(struct iwl_priv *priv);
 	/* rfkill */
-	void (*radio_kill_sw)(struct iwl_priv *priv, int disable_radio);
+	int (*radio_kill_sw)(struct iwl_priv *priv, int disable_radio);
 	 /* power management */
 	struct {
 		int (*init)(struct iwl_priv *priv);
@@ -138,6 +140,7 @@ struct iwl_lib_ops {
 	} apm_ops;
 	/* power */
 	int (*set_power)(struct iwl_priv *priv, void *cmd);
+	int (*send_tx_power) (struct iwl_priv *priv);
 	void (*update_chain_flags)(struct iwl_priv *priv);
 	/* eeprom operations (as defined in iwl-eeprom.h) */
 	struct iwl_eeprom_ops eeprom_ops;
@@ -236,6 +239,43 @@ int iwl_tx_agg_stop(struct iwl_priv *priv , const u8 *ra, u16 tid);
 int iwl_txq_check_empty(struct iwl_priv *priv, int sta_id, u8 tid, int txq_id);
 
 /*****************************************************
+ * TX power
+ ****************************************************/
+int iwl_set_tx_power(struct iwl_priv *priv, s8 tx_power, bool force);
+
+/*******************************************************************************
+ * Rate
+ ******************************************************************************/
+
+void iwl_hwrate_to_tx_control(struct iwl_priv *priv, u32 rate_n_flags,
+			      struct ieee80211_tx_info *info);
+int iwl_hwrate_to_plcp_idx(u32 rate_n_flags);
+
+static inline u8 iwl_hw_get_rate(__le32 rate_n_flags)
+{
+	return le32_to_cpu(rate_n_flags) & 0xFF;
+}
+static inline u32 iwl_hw_get_rate_n_flags(__le32 rate_n_flags)
+{
+	return le32_to_cpu(rate_n_flags) & 0x1FFFF;
+}
+static inline __le32 iwl_hw_set_rate_n_flags(u8 rate, u32 flags)
+{
+	return cpu_to_le32(flags|(u32)rate);
+}
+
+/*******************************************************************************
+ * Scanning
+ ******************************************************************************/
+void iwl_init_scan_params(struct iwl_priv *priv);
+int iwl_scan_cancel(struct iwl_priv *priv);
+int iwl_scan_cancel_timeout(struct iwl_priv *priv, unsigned long ms);
+const char *iwl_escape_essid(const char *essid, u8 essid_len);
+int iwl_scan_initiate(struct iwl_priv *priv);
+void iwl_setup_rx_scan_handlers(struct iwl_priv *priv);
+void iwl_setup_scan_deferred_work(struct iwl_priv *priv);
+
+/*****************************************************
  *   S e n d i n g     H o s t     C o m m a n d s   *
  *****************************************************/
 
@@ -282,6 +322,7 @@ void iwl_dump_nic_event_log(struct iwl_priv *priv);
 #define STATUS_POWER_PMI	16
 #define STATUS_FW_ERROR		17
 #define STATUS_CONF_PENDING	18
+#define STATUS_MODE_PENDING	19
 
 
 static inline int iwl_is_ready(struct iwl_priv *priv)
@@ -318,18 +359,9 @@ static inline int iwl_is_ready_rf(struct iwl_priv *priv)
 	return iwl_is_ready(priv);
 }
 
-
-enum iwlcore_card_notify {
-	IWLCORE_INIT_EVT = 0,
-	IWLCORE_START_EVT = 1,
-	IWLCORE_STOP_EVT = 2,
-	IWLCORE_REMOVE_EVT = 3,
-};
-
-int iwlcore_low_level_notify(struct iwl_priv *priv,
-			     enum iwlcore_card_notify notify);
 extern int iwl_send_statistics_request(struct iwl_priv *priv, u8 flags);
 extern int iwl_verify_ucode(struct iwl_priv *priv);
+extern void iwl_rf_kill_ct_config(struct iwl_priv *priv);
 int iwl_send_lq_cmd(struct iwl_priv *priv,
 		    struct iwl_link_quality_cmd *lq, u8 flags);
 

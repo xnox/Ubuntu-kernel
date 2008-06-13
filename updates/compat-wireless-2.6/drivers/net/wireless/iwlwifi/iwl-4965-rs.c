@@ -38,6 +38,7 @@
 #include "../net/mac80211/rate.h"
 
 #include "iwl-dev.h"
+#include "iwl-sta.h"
 #include "iwl-core.h"
 #include "iwl-helpers.h"
 
@@ -273,8 +274,8 @@ static void rs_tl_rm_old_stats(struct iwl4965_traffic_load *tl, u32 curr_time)
  *	increment traffic load value for tid and also remove
  *	any old values if passed the certain time period
  */
-static void rs_tl_add_packet(struct iwl4965_lq_sta *lq_data,
-			     struct ieee80211_hdr *hdr)
+static u8 rs_tl_add_packet(struct iwl4965_lq_sta *lq_data,
+			   struct ieee80211_hdr *hdr)
 {
 	u32 curr_time = jiffies_to_msecs(jiffies);
 	u32 time_diff;
@@ -287,7 +288,7 @@ static void rs_tl_add_packet(struct iwl4965_lq_sta *lq_data,
 		u8 *qc = ieee80211_get_qos_ctrl(hdr, ieee80211_get_hdrlen(fc));
 		tid = qc[0] & 0xf;
 	} else
-		return;
+		return MAX_TID_COUNT;
 
 	tl = &lq_data->load[tid];
 
@@ -300,7 +301,7 @@ static void rs_tl_add_packet(struct iwl4965_lq_sta *lq_data,
 		tl->queue_count = 1;
 		tl->head = 0;
 		tl->packet_count[0] = 1;
-		return;
+		return MAX_TID_COUNT;
 	}
 
 	time_diff = TIME_WRAP_AROUND(tl->time_stamp, curr_time);
@@ -317,6 +318,8 @@ static void rs_tl_add_packet(struct iwl4965_lq_sta *lq_data,
 
 	if ((index + 1) > tl->queue_count)
 		tl->queue_count = index + 1;
+
+	return tid;
 }
 
 /*
@@ -534,7 +537,7 @@ static int rs_get_tbl_info_from_mcs(const u32 rate_n_flags,
 	u8 num_of_ant = get_num_of_ant_from_rate(rate_n_flags);
 	u8 mcs;
 
-	*rate_idx = iwl4965_hwrate_to_plcp_idx(rate_n_flags);
+	*rate_idx = iwl_hwrate_to_plcp_idx(rate_n_flags);
 
 	if (*rate_idx  == IWL_RATE_INVALID) {
 		*rate_idx = -1;
@@ -1680,7 +1683,8 @@ static void rs_rate_scale_perform(struct iwl_priv *priv,
 	}
 	lq_sta = (struct iwl4965_lq_sta *)sta->rate_ctrl_priv;
 
-	rs_tl_add_packet(lq_sta, hdr);
+	tid = rs_tl_add_packet(lq_sta, hdr);
+
 	/*
 	 * Select rate-scale / modulation-mode table to work with in
 	 * the rest of this function:  "search" if searching for better
@@ -1808,8 +1812,7 @@ static void rs_rate_scale_perform(struct iwl_priv *priv,
 			tbl = &(lq_sta->lq_info[active_tbl]);
 
 			/* Revert to "active" rate and throughput info */
-			index = iwl4965_hwrate_to_plcp_idx(
-							tbl->current_rate);
+			index = iwl_hwrate_to_plcp_idx(tbl->current_rate);
 			current_tpt = lq_sta->last_tpt;
 
 			/* Need to set up a new rate table in uCode */
@@ -1963,8 +1966,7 @@ lq_update:
 				rs_rate_scale_clear_window(&(tbl->win[i]));
 
 			/* Use new "search" start rate */
-			index = iwl4965_hwrate_to_plcp_idx(
-							tbl->current_rate);
+			index = iwl_hwrate_to_plcp_idx(tbl->current_rate);
 
 			IWL_DEBUG_RATE("Switch current  mcs: %X index: %d\n",
 				     tbl->current_rate, index);
@@ -2245,25 +2247,19 @@ static void rs_rate_init(void *priv_rate, void *priv_sta,
 	 * active_siso_rate mask includes 9 MBits (bit 5), and CCK (bits 0-3),
 	 * supp_rates[] does not; shift to convert format, force 9 MBits off.
 	 */
-	lq_sta->active_siso_rate =
-		priv->current_ht_config.supp_mcs_set[0] << 1;
-	lq_sta->active_siso_rate |=
-		priv->current_ht_config.supp_mcs_set[0] & 0x1;
+	lq_sta->active_siso_rate = conf->ht_conf.supp_mcs_set[0] << 1;
+	lq_sta->active_siso_rate |= conf->ht_conf.supp_mcs_set[0] & 0x1;
 	lq_sta->active_siso_rate &= ~((u16)0x2);
 	lq_sta->active_siso_rate <<= IWL_FIRST_OFDM_RATE;
 
 	/* Same here */
-	lq_sta->active_mimo2_rate =
-		priv->current_ht_config.supp_mcs_set[1] << 1;
-	lq_sta->active_mimo2_rate |=
-		priv->current_ht_config.supp_mcs_set[1] & 0x1;
+	lq_sta->active_mimo2_rate = conf->ht_conf.supp_mcs_set[1] << 1;
+	lq_sta->active_mimo2_rate |= conf->ht_conf.supp_mcs_set[1] & 0x1;
 	lq_sta->active_mimo2_rate &= ~((u16)0x2);
 	lq_sta->active_mimo2_rate <<= IWL_FIRST_OFDM_RATE;
 
-	lq_sta->active_mimo3_rate =
-		priv->current_ht_config.supp_mcs_set[2] << 1;
-	lq_sta->active_mimo3_rate |=
-		priv->current_ht_config.supp_mcs_set[2] & 0x1;
+	lq_sta->active_mimo3_rate = conf->ht_conf.supp_mcs_set[2] << 1;
+	lq_sta->active_mimo3_rate |= conf->ht_conf.supp_mcs_set[2] & 0x1;
 	lq_sta->active_mimo3_rate &= ~((u16)0x2);
 	lq_sta->active_mimo3_rate <<= IWL_FIRST_OFDM_RATE;
 
