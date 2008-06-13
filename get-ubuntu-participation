@@ -1,0 +1,63 @@
+#!/usr/bin/perl -w
+
+my %authors;
+my %signed;
+
+my $total_authored_commits = 0;
+my $total_signed_commits = 0;
+
+my $total_authors = 0;
+my $total_signers = 0;
+
+my $new_commit = 0;
+
+my $email_filter = ".*\@(ubuntu|canonical)\.com";
+
+open(LOG, "git-log @ARGV |") or die "Could not execute git-log";
+while (<LOG>) {
+	chomp;
+	if (m/^commit/) {
+		$new_commit++;
+	} elsif (m/^Author: (.*) <$email_filter>/) {
+		if (defined($authors{$1})) {
+			$authors{$1}++;
+		} else {
+			$total_authors++;
+			$authors{$1} = 1;
+		}
+		$total_authored_commits++;
+	} elsif (m/.*Signed-off-by: (.*) <$email_filter>/) {
+		if (defined($signed{$1})) {
+			$signed{$1}++;
+		} else {
+			$total_signers++;
+			$signed{$1} = 1;
+		}
+		if ($new_commit) {
+			$new_commit = 0;
+			$total_signed_commits++;
+		}
+	}
+}
+close(LOG);
+
+if ($total_authors) {
+	my $author_average = $total_authored_commits / $total_authors;
+	print  "Total Commits Authored : $total_authored_commits\n";
+	print  "Total Authors          : $total_authors\n";
+	printf "Average per author     : %0.4f\n", $author_average;
+	foreach $key (keys %authors) {
+		printf "% 6d  $key\n", $authors{$key};
+	}
+	print "\n";
+}
+
+if ($total_signers) {
+	my $signer_average = $total_signed_commits / $total_signers;
+	print  "Total Commits Signed   : $total_signed_commits\n";
+	print  "Total Signers          : $total_signers\n";
+	printf "Average per signer     : %0.4f\n", $signer_average;
+	foreach $key (keys %signed) {
+	        printf "% 6d  $key\n", $signed{$key};
+	}
+}
