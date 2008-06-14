@@ -666,9 +666,8 @@ ieee80211_tx_h_fragment(struct ieee80211_tx_data *tx)
 
 	/*
 	 * Warn when submitting a fragmented A-MPDU frame and drop it.
-	 * This is an error and needs to be fixed elsewhere, but when
-	 * done needs to take care of monitor interfaces (injection)
-	 * etc.
+	 * This scenario is handled in __ieee80211_tx_prepare but extra
+	 * caution taken here as fragmented ampdu may cause Tx stop.
 	 */
 	if (WARN_ON(tx->flags & IEEE80211_TX_CTL_AMPDU ||
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
@@ -991,7 +990,8 @@ __ieee80211_tx_prepare(struct ieee80211_tx_data *tx,
 	if (tx->flags & IEEE80211_TX_FRAGMENTED) {
 		if ((tx->flags & IEEE80211_TX_UNICAST) &&
 		    skb->len + FCS_LEN > local->fragmentation_threshold &&
-		    !local->ops->set_frag_threshold)
+		    !local->ops->set_frag_threshold &&
+		    !(info->flags & IEEE80211_TX_CTL_AMPDU))
 			tx->flags |= IEEE80211_TX_FRAGMENTED;
 		else
 			tx->flags &= ~IEEE80211_TX_FRAGMENTED;
