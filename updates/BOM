@@ -21,6 +21,8 @@ all: $(CDIR)/wireless-testing/Makefile
 	sed -i 's/IWL4965_UCODE_API "-1"/IWL4965_UCODE_API "-1-lbm"/' `find $(CWDIR) -name iwl-dev.h`
 	sed -i 's/IWL3945_UCODE_API "-1"/IWL3945_UCODE_API "-1-lbm"/' `find $(CWDIR) -name iwl-3945.h`
 	rsync -av --delete $(CWDIR)/ $(CW)
+	find $(CW) | egrep "\.git*" | xargs rm -rf
+	find  $(CW) -name "*.orig" | xargs rm -rf
 
 $(WTDIR)/Makefile: $(CDIR)/.ignore
 	cd $(CDIR); git clone git://git.kernel.org/pub/scm/linux/kernel/git/linville/$(WT).git $(WT)
