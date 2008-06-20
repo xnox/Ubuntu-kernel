@@ -18,3 +18,6 @@ obj-$(CONFIG_STK11XX)		+= stk11xx/
 
 obj-$(CONFIG_CX88)		+= cx88/
 obj-$(CONFIG_SAA7134)		+= saa7134/
+
+obj-$(CONFIG_VIDEO_AU0828)	+= au0828/
+
