@@ -1,3 +1,4 @@
 # Ubuntu config
 
 CONFIG_COMPAT_WIRELESS=m
+CONFIG_USB_UVCCAM=m
