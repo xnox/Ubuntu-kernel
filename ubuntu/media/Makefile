@@ -21,3 +21,4 @@ obj-$(CONFIG_SAA7134)		+= saa7134/
 
 obj-$(CONFIG_VIDEO_AU0828)	+= au0828/
 
+obj-$(CONFIG_DVB_SIANO_SMS1XXX)	+= sms1xxx/
