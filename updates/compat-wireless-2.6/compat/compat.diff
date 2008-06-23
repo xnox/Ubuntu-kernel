@@ -101,30 +101,6 @@
 -cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o
 +cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o compat.o
  cfg80211-$(CONFIG_NL80211) += nl80211.o
---- a/drivers/net/usb/Makefile	2008-02-28 19:54:52.000000000 +0100
-+++ b/drivers/net/usb/Makefile	2008-02-28 19:54:53.000000000 +0100
-@@ -2,21 +2,7 @@
- # Makefile for USB Network drivers
- #
- 
--obj-$(CONFIG_USB_CATC)		+= catc.o
--obj-$(CONFIG_USB_KAWETH)	+= kaweth.o
--obj-$(CONFIG_USB_PEGASUS)	+= pegasus.o
--obj-$(CONFIG_USB_RTL8150)	+= rtl8150.o
--obj-$(CONFIG_USB_NET_AX8817X)	+= asix.o
--obj-$(CONFIG_USB_NET_CDCETHER)	+= cdc_ether.o
--obj-$(CONFIG_USB_NET_DM9601)	+= dm9601.o
--obj-$(CONFIG_USB_NET_GL620A)	+= gl620a.o
--obj-$(CONFIG_USB_NET_NET1080)	+= net1080.o
--obj-$(CONFIG_USB_NET_PLUSB)	+= plusb.o
- obj-$(CONFIG_USB_NET_RNDIS_HOST)	+= rndis_host.o
--obj-$(CONFIG_USB_NET_CDC_SUBSET)	+= cdc_subset.o
--obj-$(CONFIG_USB_NET_ZAURUS)	+= zaurus.o
--obj-$(CONFIG_USB_NET_MCS7830)	+= mcs7830.o
--obj-$(CONFIG_USB_USBNET)	+= usbnet.o
- 
- ifeq ($(CONFIG_USB_DEBUG),y)
- EXTRA_CFLAGS += -DDEBUG
 --- a/drivers/net/wireless/Makefile	2008-03-11 19:54:52.000000000 +0100
 +++ b/drivers/net/wireless/Makefile	2008-03-11 19:54:53.000000000 +0100
 @@ -6,48 +6,13 @@ obj-$(CONFIG_IPW2100) += ipw2100.o
@@ -209,44 +185,6 @@
  	LED_SCANNING = 1,
  	LED_ASSOCIATED = 2,
  };
---- a/net/mac80211/util.c	2008-06-04 00:38:14.000000000 -0700
-+++ b/net/mac80211/util.c	2008-06-08 07:31:57.000000000 -0700
-@@ -20,11 +20,20 @@
- #include <linux/if_arp.h>
- #include <linux/wireless.h>
- #include <linux/bitmap.h>
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
- #include <net/net_namespace.h>
-+#endif
- #include <net/cfg80211.h>
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
- #include <net/rtnetlink.h>
-+#else
-+#include <linux/rtnetlink.h>
-+#endif
- 
- #include "ieee80211_i.h"
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+#include "mq_compat.h"
-+#endif
- #include "rate.h"
- #include "mesh.h"
- #include "wme.h"
-@@ -331,7 +340,14 @@
- {
- 	struct ieee80211_local *local = hw_to_local(hw);
- 
-+/* 2.6.22 doesn't have CONFIG_NETDEVICES_MULTIQUEUE so lets not make use
-+ * of queues_pending map and use our own old hack */
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+	if (test_and_clear_bit(IEEE80211_LINK_STATE_XOFF,
-+		&local->state[queue])) {
-+#else
- 	if (test_bit(queue, local->queues_pending)) {
-+#endif
- 		tasklet_schedule(&local->tx_pending_tasklet);
- 	} else {
- 		if (ieee80211_is_multiqueue(local)) {
 --- a/drivers/net/wireless/libertas/dev.h	2008-04-15 19:25:05.000000000 -0700
 +++ b/drivers/net/wireless/libertas/dev.h	2008-04-15 19:28:16.000000000 -0700
 @@ -11,6 +11,7 @@
@@ -755,64 +693,6 @@
 -	zd_chip_control_leds(&mac->chip, LED_OFF);
 +	zd_chip_control_leds(&mac->chip, LED_OFF_ZD);
  }
---- a/net/mac80211/rx.c	2008-05-23 11:55:04.000000000 +0530
-+++ b/net/mac80211/rx.c	2008-05-23 11:55:05.000000000 +0530
-@@ -308,8 +308,13 @@
- 		}
- 
- 		prev_dev = sdata->dev;
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
-+		sdata->stats.rx_packets++;
-+		sdata->stats.rx_bytes += skb->len;
-+#else
- 		sdata->dev->stats.rx_packets++;
- 		sdata->dev->stats.rx_bytes += skb->len;
-+#endif
- 	}
- 
- 	if (prev_dev) {
-@@ -1400,8 +1405,13 @@
- 
- 	skb->dev = dev;
- 
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
-+	IEEE80211_DEV_TO_SUB_IF(dev)->stats.rx_packets++;
-+	IEEE80211_DEV_TO_SUB_IF(dev)->stats.rx_bytes += skb->len;
-+#else
- 	dev->stats.rx_packets++;
- 	dev->stats.rx_bytes += skb->len;
-+#endif
- 
- 	/* skip the wrapping header */
- 	eth = (struct ethhdr *) skb_pull(skb, sizeof(struct ethhdr));
-@@ -1510,8 +1520,13 @@
- 
- 	rx->skb->dev = dev;
- 
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
-+	rx->sdata->stats.rx_packets++;
-+	rx->sdata->stats.rx_bytes += rx->skb->len;
-+#else
- 	dev->stats.rx_packets++;
- 	dev->stats.rx_bytes += rx->skb->len;
-+#endif
- 
- 	ieee80211_deliver_skb(rx);
- 
-@@ -1717,8 +1732,13 @@
- 		}
- 
- 		prev_dev = sdata->dev;
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
-+		sdata->stats.rx_packets++;
-+		sdata->stats.rx_bytes += skb->len;
-+#else
- 		sdata->dev->stats.rx_packets++;
- 		sdata->dev->stats.rx_bytes += skb->len;
-+#endif
- 	}
- 
- 	if (prev_dev) {
 --- a/net/mac80211/iface.c	2008-05-23 14:02:26.000000000 +0530
 +++ b/net/mac80211/iface.c	2008-05-23 14:11:06.000000000 +0530
 @@ -53,6 +53,15 @@
@@ -839,149 +719,6 @@
  
  	ret = dev_alloc_name(ndev, ndev->name);
  	if (ret < 0)
---- a/net/mac80211/tx.c	2008-06-04 00:38:14.000000000 -0700
-+++ b/net/mac80211/tx.c	2008-06-08 06:03:45.000000000 -0700
-@@ -18,12 +18,17 @@
- #include <linux/etherdevice.h>
- #include <linux/bitmap.h>
- #include <linux/rcupdate.h>
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
- #include <net/net_namespace.h>
-+#endif
- #include <net/ieee80211_radiotap.h>
- #include <net/cfg80211.h>
- #include <net/mac80211.h>
- #include <asm/unaligned.h>
- 
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+#include "mq_compat.h" /* Internal MQ backport support for older kernels */
-+#endif
- #include "ieee80211_i.h"
- #include "led.h"
- #include "mesh.h"
-@@ -213,6 +218,7 @@
- 	return dur;
- }
- 
-+
- static int inline is_ieee80211_device(struct net_device *dev,
- 				      struct net_device *master)
- {
-@@ -665,8 +671,12 @@
- 	 * etc.
- 	 */
- 	if (WARN_ON(tx->flags & IEEE80211_TX_CTL_AMPDU ||
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+			IEEE80211_SKB_CB(tx->skb)->queue >= tx->local->hw.queues))
-+#else
- 		    skb_get_queue_mapping(tx->skb) >=
- 			ieee80211_num_regular_queues(&tx->local->hw)))
-+#endif
- 		return TX_DROP;
- 
- 	first = tx->skb;
-@@ -1095,8 +1105,9 @@
- 	u16 queue;
- 
- 	queue = skb_get_queue_mapping(skb);
--
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23))
- 	WARN_ON(test_bit(queue, local->queues_pending));
-+#endif
- 
- 	if (unlikely(skb->len < 10)) {
- 		dev_kfree_skb(skb);
-@@ -1174,7 +1185,12 @@
- 
- 		if (ret == IEEE80211_TX_FRAG_AGAIN)
- 			skb = NULL;
-+
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+		set_bit(IEEE80211_LINK_STATE_PENDING, &local->state[queue]);
-+#else
- 		set_bit(queue, local->queues_pending);
-+#endif
- 		smp_mb();
- 		/*
- 		 * When the driver gets out of buffers during sending of
-@@ -1188,7 +1204,12 @@
- 		 * possible to have happened.
- 		 */
- 		if (!__netif_subqueue_stopped(local->mdev, queue)) {
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+			clear_bit(IEEE80211_LINK_STATE_PENDING,
-+				&local->state[queue]);
-+#else
- 			clear_bit(queue, local->queues_pending);
-+#endif
- 			goto retry;
- 		}
- 		store->skb = skb;
-@@ -1613,8 +1634,13 @@
- 	info->flags |= IEEE80211_TX_CTL_REQ_TX_STATUS;
- 
- 	skb->dev = local->mdev;
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
-+	sdata->stats.tx_packets++;
-+	sdata->stats.tx_bytes += skb->len;
-+#else
- 	dev->stats.tx_packets++;
- 	dev->stats.tx_bytes += skb->len;
-+#endif
- 
- 	/* Update skb pointers to various headers since this modified frame
- 	 * is going to go through Linux networking code that may potentially
-@@ -1646,14 +1672,24 @@
- 	struct ieee80211_tx_stored_packet *store;
- 
- 	for (i = 0; i < ieee80211_num_regular_queues(&local->hw); i++) {
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+		/* XXX: Test this */
-+		//if (__ieee80211_queue_stopped(local, i))
-+		if (0)
-+#else
- 		if (!test_bit(i, local->queues_pending))
-+#endif
- 			continue;
- 		store = &local->pending_packet[i];
- 		kfree_skb(store->skb);
- 		for (j = 0; j < store->num_extra_frag; j++)
- 			kfree_skb(store->extra_frag[j]);
- 		kfree(store->extra_frag);
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+		clear_bit(IEEE80211_LINK_STATE_PENDING, &local->state[i]);
-+#else
- 		clear_bit(i, local->queues_pending);
-+#endif
- 	}
- }
- 
-@@ -1674,8 +1710,11 @@
- 		/* Check that this queue is ok */
- 		if (__netif_subqueue_stopped(local->mdev, i))
- 			continue;
--
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+		if (!__ieee80211_queue_pending(local, i)) {
-+#else
- 		if (!test_bit(i, local->queues_pending)) {
-+#endif
- 			ieee80211_wake_queue(&local->hw, i);
- 			continue;
- 		}
-@@ -1692,7 +1731,12 @@
- 			if (ret == IEEE80211_TX_FRAG_AGAIN)
- 				store->skb = NULL;
- 		} else {
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+			clear_bit(IEEE80211_LINK_STATE_PENDING,
-+				&local->state[i]);
-+#else
- 			clear_bit(i, local->queues_pending);
-+#endif
- 			ieee80211_wake_queue(&local->hw, i);
- 		}
- 	}
 --- a/net/mac80211/ieee80211_i.h	2008-06-04 00:38:14.000000000 -0700
 +++ b/net/mac80211/ieee80211_i.h	2008-06-08 05:49:26.000000000 -0700
 @@ -406,6 +406,10 @@
@@ -1103,8 +840,247 @@
  
  /**
   * enum mac80211_rx_flags - receive flags
---- a/net/mac80211/wme.c	2008-06-09 02:06:22.000000000 -0700
-+++ b/net/mac80211/wme.c	2008-06-09 02:09:30.000000000 -0700
+--- a/net/mac80211/util.c	2008-06-20 16:39:59.000000000 +0530
++++ b/net/mac80211/util.c	2008-06-20 16:40:00.000000000 +0530
+@@ -20,11 +20,20 @@
+ #include <linux/if_arp.h>
+ #include <linux/wireless.h>
+ #include <linux/bitmap.h>
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
+ #include <net/net_namespace.h>
++#endif
+ #include <net/cfg80211.h>
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,22))
+ #include <net/rtnetlink.h>
++#else
++#include <linux/rtnetlink.h>
++#endif
+ 
+ #include "ieee80211_i.h"
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++#include "mq_compat.h"
++#endif
+ #include "rate.h"
+ #include "mesh.h"
+ #include "wme.h"
+@@ -360,7 +369,14 @@
+ {
+ 	struct ieee80211_local *local = hw_to_local(hw);
+ 
++/* 2.6.22 doesn't have CONFIG_NETDEVICES_MULTIQUEUE so lets not make use
++ * of queues_pending map and use our own old hack */
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++	if (test_and_clear_bit(IEEE80211_LINK_STATE_XOFF,
++		&local->state[queue])) {
++#else
+ 	if (test_bit(queue, local->queues_pending)) {
++#endif
+ 		tasklet_schedule(&local->tx_pending_tasklet);
+ 	} else {
+ 		if (ieee80211_is_multiqueue(local)) {
+--- a/net/mac80211/rx.c	2008-06-20 16:39:59.000000000 +0530
++++ b/net/mac80211/rx.c	2008-06-20 16:40:00.000000000 +0530
+@@ -305,8 +305,13 @@
+ 		}
+ 
+ 		prev_dev = sdata->dev;
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
++		sdata->stats.rx_packets++;
++		sdata->stats.rx_bytes += skb->len;
++#else
+ 		sdata->dev->stats.rx_packets++;
+ 		sdata->dev->stats.rx_bytes += skb->len;
++#endif
+ 	}
+ 
+ 	if (prev_dev) {
+@@ -1397,8 +1402,13 @@
+ 
+ 	skb->dev = dev;
+ 
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
++	IEEE80211_DEV_TO_SUB_IF(dev)->stats.rx_packets++;
++	IEEE80211_DEV_TO_SUB_IF(dev)->stats.rx_bytes += skb->len;
++#else
+ 	dev->stats.rx_packets++;
+ 	dev->stats.rx_bytes += skb->len;
++#endif
+ 
+ 	/* skip the wrapping header */
+ 	eth = (struct ethhdr *) skb_pull(skb, sizeof(struct ethhdr));
+@@ -1507,8 +1517,13 @@
+ 
+ 	rx->skb->dev = dev;
+ 
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
++	rx->sdata->stats.rx_packets++;
++	rx->sdata->stats.rx_bytes += rx->skb->len;
++#else
+ 	dev->stats.rx_packets++;
+ 	dev->stats.rx_bytes += rx->skb->len;
++#endif
+ 
+ 	ieee80211_deliver_skb(rx);
+ 
+@@ -1714,8 +1729,13 @@
+ 		}
+ 
+ 		prev_dev = sdata->dev;
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
++		sdata->stats.rx_packets++;
++		sdata->stats.rx_bytes += skb->len;
++#else
+ 		sdata->dev->stats.rx_packets++;
+ 		sdata->dev->stats.rx_bytes += skb->len;
++#endif
+ 	}
+ 
+ 	if (prev_dev) {
+--- a/net/mac80211/tx.c	2008-06-20 16:39:59.000000000 +0530
++++ b/net/mac80211/tx.c	2008-06-20 16:40:00.000000000 +0530
+@@ -18,12 +18,17 @@
+ #include <linux/etherdevice.h>
+ #include <linux/bitmap.h>
+ #include <linux/rcupdate.h>
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
+ #include <net/net_namespace.h>
++#endif
+ #include <net/ieee80211_radiotap.h>
+ #include <net/cfg80211.h>
+ #include <net/mac80211.h>
+ #include <asm/unaligned.h>
+ 
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++#include "mq_compat.h" /* Internal MQ backport support for older kernels */
++#endif
+ #include "ieee80211_i.h"
+ #include "led.h"
+ #include "mesh.h"
+@@ -213,6 +218,7 @@
+ 	return dur;
+ }
+ 
++
+ static int inline is_ieee80211_device(struct net_device *dev,
+ 				      struct net_device *master)
+ {
+@@ -664,8 +670,12 @@
+ 	 * caution taken here as fragmented ampdu may cause Tx stop.
+ 	 */
+ 	if (WARN_ON(tx->flags & IEEE80211_TX_CTL_AMPDU ||
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++			IEEE80211_SKB_CB(tx->skb)->queue >= tx->local->hw.queues))
++#else
+ 		    skb_get_queue_mapping(tx->skb) >=
+ 			ieee80211_num_regular_queues(&tx->local->hw)))
++#endif
+ 		return TX_DROP;
+ 
+ 	first = tx->skb;
+@@ -1095,8 +1105,9 @@
+ 	u16 queue;
+ 
+ 	queue = skb_get_queue_mapping(skb);
+-
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,23))
+ 	WARN_ON(test_bit(queue, local->queues_pending));
++#endif
+ 
+ 	if (unlikely(skb->len < 10)) {
+ 		dev_kfree_skb(skb);
+@@ -1174,7 +1185,12 @@
+ 
+ 		if (ret == IEEE80211_TX_FRAG_AGAIN)
+ 			skb = NULL;
++
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++		set_bit(IEEE80211_LINK_STATE_PENDING, &local->state[queue]);
++#else
+ 		set_bit(queue, local->queues_pending);
++#endif
+ 		smp_mb();
+ 		/*
+ 		 * When the driver gets out of buffers during sending of
+@@ -1188,7 +1204,12 @@
+ 		 * possible to have happened.
+ 		 */
+ 		if (!__netif_subqueue_stopped(local->mdev, queue)) {
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++			clear_bit(IEEE80211_LINK_STATE_PENDING,
++				&local->state[queue]);
++#else
+ 			clear_bit(queue, local->queues_pending);
++#endif
+ 			goto retry;
+ 		}
+ 		store->skb = skb;
+@@ -1613,8 +1634,13 @@
+ 	info->flags |= IEEE80211_TX_CTL_REQ_TX_STATUS;
+ 
+ 	skb->dev = local->mdev;
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,22))
++	sdata->stats.tx_packets++;
++	sdata->stats.tx_bytes += skb->len;
++#else
+ 	dev->stats.tx_packets++;
+ 	dev->stats.tx_bytes += skb->len;
++#endif
+ 
+ 	/* Update skb pointers to various headers since this modified frame
+ 	 * is going to go through Linux networking code that may potentially
+@@ -1646,14 +1672,24 @@
+ 	struct ieee80211_tx_stored_packet *store;
+ 
+ 	for (i = 0; i < ieee80211_num_regular_queues(&local->hw); i++) {
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++		/* XXX: Test this */
++		//if (__ieee80211_queue_stopped(local, i))
++		if (0)
++#else
+ 		if (!test_bit(i, local->queues_pending))
++#endif
+ 			continue;
+ 		store = &local->pending_packet[i];
+ 		kfree_skb(store->skb);
+ 		for (j = 0; j < store->num_extra_frag; j++)
+ 			kfree_skb(store->extra_frag[j]);
+ 		kfree(store->extra_frag);
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++		clear_bit(IEEE80211_LINK_STATE_PENDING, &local->state[i]);
++#else
+ 		clear_bit(i, local->queues_pending);
++#endif
+ 	}
+ }
+ 
+@@ -1674,8 +1710,11 @@
+ 		/* Check that this queue is ok */
+ 		if (__netif_subqueue_stopped(local->mdev, i))
+ 			continue;
+-
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++		if (!__ieee80211_queue_pending(local, i)) {
++#else
+ 		if (!test_bit(i, local->queues_pending)) {
++#endif
+ 			ieee80211_wake_queue(&local->hw, i);
+ 			continue;
+ 		}
+@@ -1692,7 +1731,12 @@
+ 			if (ret == IEEE80211_TX_FRAG_AGAIN)
+ 				store->skb = NULL;
+ 		} else {
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++			clear_bit(IEEE80211_LINK_STATE_PENDING,
++				&local->state[i]);
++#else
+ 			clear_bit(i, local->queues_pending);
++#endif
+ 			ieee80211_wake_queue(&local->hw, i);
+ 		}
+ 	}
+--- a/net/mac80211/wme.c	2008-06-20 16:39:59.000000000 +0530
++++ b/net/mac80211/wme.c	2008-06-20 16:40:00.000000000 +0530
 @@ -17,6 +17,9 @@
  #include <net/mac80211.h>
  #include "ieee80211_i.h"
@@ -1115,7 +1091,7 @@
  
  /* maximum number of hardware queues we support. */
  #define QD_MAX_QUEUES (IEEE80211_MAX_AMPDU_QUEUES + IEEE80211_MAX_QUEUES)
-@@ -328,14 +331,22 @@
+@@ -320,14 +323,22 @@
  
  
  /* called whenever parameters are updated on existing qdisc */
@@ -1138,7 +1114,7 @@
  {
  	struct ieee80211_sched_data *q = qdisc_priv(qd);
  	struct net_device *dev = qd->dev;
-@@ -456,7 +467,11 @@
+@@ -448,7 +459,11 @@
  
  
  static int wme_classop_change(struct Qdisc *qd, u32 handle, u32 parent,
@@ -1150,7 +1126,7 @@
  {
  	unsigned long cl = *arg;
  	struct ieee80211_local *local = wdev_priv(qd->dev->ieee80211_ptr);
-@@ -540,7 +555,11 @@
+@@ -532,7 +547,11 @@
  
  /* this qdisc is classful (i.e. has classes, some of which may have leaf qdiscs attached)
   * - these are the operations on the classes */
@@ -1162,3 +1138,26 @@
  {
  	.graft = wme_classop_graft,
  	.leaf = wme_classop_leaf,
+--- a/drivers/net/usb/Makefile	2008-06-20 16:59:51.000000000 +0530
++++ b/drivers/net/usb/Makefile	2008-06-20 16:59:51.000000000 +0530
+@@ -2,20 +2,8 @@
+ # Makefile for USB Network drivers
+ #
+ 
+-obj-$(CONFIG_USB_CATC)		+= catc.o
+-obj-$(CONFIG_USB_KAWETH)	+= kaweth.o
+-obj-$(CONFIG_USB_PEGASUS)	+= pegasus.o
+-obj-$(CONFIG_USB_RTL8150)	+= rtl8150.o
+-obj-$(CONFIG_USB_NET_AX8817X)	+= asix.o
+ obj-$(CONFIG_USB_NET_CDCETHER)	+= cdc_ether.o
+-obj-$(CONFIG_USB_NET_DM9601)	+= dm9601.o
+-obj-$(CONFIG_USB_NET_GL620A)	+= gl620a.o
+-obj-$(CONFIG_USB_NET_NET1080)	+= net1080.o
+-obj-$(CONFIG_USB_NET_PLUSB)	+= plusb.o
+ obj-$(CONFIG_USB_NET_RNDIS_HOST)	+= rndis_host.o
+-obj-$(CONFIG_USB_NET_CDC_SUBSET)	+= cdc_subset.o
+-obj-$(CONFIG_USB_NET_ZAURUS)	+= zaurus.o
+-obj-$(CONFIG_USB_NET_MCS7830)	+= mcs7830.o
+ obj-$(CONFIG_USB_USBNET)	+= usbnet.o
+ 
+ ifeq ($(CONFIG_USB_DEBUG),y)

@@ -12,7 +12,7 @@ libertas, ipw2100 and ipw2200.
 If you'd like to keep the wireless-testing git repository local as well,
 please read out git-guide which explains how to achieve this:
 
-http://linuxwireless.org/en/developers/git-guide
+http://wireless.kernel.org/en/developers/git-guide
 
 With a local git repository you can update the compatibility package yourself. 
 For more information on how to do this please refer the Developers section below.
@@ -23,7 +23,7 @@ Documenation
 This package is also documented online and probably has more-up-to date
 information online than on this README file.
 
-http://linuxwireless.org/en/users/Download
+http://wireless.kernel.org/en/users/Download
 
 Where to get the latest
 -----------------------
@@ -33,7 +33,7 @@ checkout of wireless-testing.git. However since not many users are expected to k
 a local git repository of wireless-testing we provide daily snapshots of this
 package + the wireless subsystem code. You can find the latest snapshot at:
 
-http://linuxwireless.org/download/compat-wireless-2.6/compat-wireless-2.6.tar.bz2
+http://wireless.kernel.org/download/compat-wireless-2.6/compat-wireless-2.6.tar.bz2
 
 Building, and installing
 ------------------------
@@ -82,27 +82,27 @@ This is the list of drivers this package provides. It adds
 all new drivers or drivers which keep being updated which you might
 be interested in.
 
-Driver			2.6.22	2.6.23
-adm8211			?	?
-ath5k			OK	?
-b43			OK	?
-b43legacy		?	?
-iwl3945			OK	?
-iwl4965			?	?
-ipw2100			?	?
-ipw2200			?	?
-libertas_cs (Libertas)	?	?
-ub8xxx      (Libertas)	?	?
-p54pci			OK	?
-p54usb			?	?
-rt2400pci (rt2x00)	?	?
-rt2500pci (rt2x00)	OK	?
-rt2500usb (rt2x00)	?	?
-rt61pci	  (rt2x00)	?	?
-rt73usb	  (rt2x00)	?	?
-rtl8180	(Realtek)	OK	?
-rtl8187	(Realtek)	?	?
-zd1211rw-mac80211	OK	?
+Driver
+adm8211
+ath5k
+b43
+b43legacy
+iwl3945
+iwl4965
+ipw2100
+ipw2200
+libertas_cs (Libertas)
+ub8xxx      (Libertas)
+p54pci
+p54usb
+rt2400pci (rt2x00)
+rt2500pci (rt2x00)
+rt2500usb (rt2x00)
+rt61pci	  (rt2x00)
+rt73usb	  (rt2x00)
+rtl8180	(Realtek)
+rtl8187	(Realtek)
+zd1211rw
 
 Known issues
 ------------
@@ -170,7 +170,7 @@ Who:   John W. Linville <linville@tuxdriver.com>
 If your driver needs firmware please be sure to check the driver page
 for that driver here:
 
-http://linuxwireless.org/en/users/Drivers
+http://wireless.kernel.org/en/users/Drivers
 
 Why?
 ----
@@ -263,5 +263,5 @@ Patches for drivers
 If you'd like to send patches for a driver though you can send it using our 
 Submitting Patches guideline:
 
-http://linuxwireless.org/en/developers/SubmittingPatches
+http://wireless.kernel.org/en/developers/SubmittingPatches
 
