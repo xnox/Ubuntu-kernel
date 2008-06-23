@@ -39,6 +39,9 @@ ifneq ($(have_local_env),)
 include $(local_env_file)
 endif
 
+ppa_file    := $(CURDIR)/ppa_build_sha
+is_ppa_build    := $(shell if [ -f $(ppa_file) ] ; then echo yes; fi;)
+
 #
 # Specifically exclude these flavours from creating a sound include directory in
 # the linux-headers-lum package.
