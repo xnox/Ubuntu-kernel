@@ -21,10 +21,14 @@ if [ "${VERBOSE}" = "" ]; then
 fi
 #export HOSTARCH CHROOTCMD CHROOTS FAKEROOT BASE ARCHS HOST
 
+BUILDTARGET=kernel
 while [ $# -gt 0 ]; do
 	case $1 in
 		-a|--auto)
 			AUTOBUILD=true
+			;;
+		--lum)
+			BUILDTARGET=lum
 			;;
 		-d|--dist)
 			DIST="$2"
@@ -56,31 +60,19 @@ function QueryChroots()
 
 	cat <<-EOD | ssh ${HOST}
 	if [ "\`type -p schroot\`" != "" ]; then
-		CMD="schroot"
-	elif [ "\`type -p dchroot\`" != "" ]; then
-		CMD="dchroot"
-	else
-		exit 1
+		schroot -l 2>/dev/null | \
+			sed -e 's/^.*: //' \
+				-e 's/ *\[default\]//' \
+				-e 's/, */ /g' | \
+		tr '\n' ' ' 2>/dev/null
 	fi
-	\$CMD -l | sed -e 's/^.*: //' -e 's/ *\[default\]//' \
-		-e 's/, */ /g' | tr '\n' ' '
+	if [ "\`type -p dchroot\`" != "" ]; then
+		dchroot -l | sed -e 's/^.*: //' -e 's/ *\[default\]//' \
+			-e 's/, */ /g' | tr '\n' ' '
+	fi
 	EOD
 
 	return $?
-}
-
-function GetChrootLocation()
-{
-	local HOST="$1"
-	local CHROOT="$2"
-
-	cat <<-EOD | ssh ${HOST}
-	if [ "\`type -p schroot\`" != "" ]; then
-		schroot -i -c${CHROOT}|awk '/Location/{print \$2}'
-	elif [ "\`type -p dchroot\`" != "" ]; then
-		dchroot -p${CHROOT}
-	fi
-	EOD
 }
 
 function FindHostByArch()
@@ -144,24 +136,39 @@ function GetHostEnvironment()
 					;;
 			esac
 		fi
-		if [ "${ARCHCMD}" != "" ]; then
-			CHROOTCMD="${ARCHCMD} ${CHROOTCMD}"
-		fi
 		CHROOT="${DIST}-${ARCH}"
+	else
+		CHROOT="${DIST}"
+	fi
+	if [ "${CHROOTCMD}" = "schroot" ]; then
+		CHROOTCMD="${CHROOTCMD} -q -c${CHROOT} -- "
+		if [ "${ARCHCMD}" != "" ]; then
+			 CHROOTCMD="${CHROOTCMD}${ARCHCMD} "
+		fi
 	else
 		if [ "${ARCHCMD}" != "" ]; then
 			CHROOTCMD="${ARCHCMD} ${CHROOTCMD}"
 		fi
-		CHROOT="${DIST}"
+		CHROOTCMD="${CHROOTCMD} -q -c${CHROOT} -- "
 	fi
-	CHROOTCMD="${CHROOTCMD} -q -c${CHROOT}"
+
 	if ${AUTOBUILD}; then
 		AUTO="-a"
 	fi
 	export HOSTARCH CHROOTCMD FAKEROOT BASE ARCHS HOST CHROOT
 	export BASEDIR="$BASE/$DIST-$ARCH"
 	export BUILDING="$BASEDIR/build-status"
-	export BUILDDIR="$BASEDIR/ubuntu-2.6"
+	case $BUILDTARGET in
+		kernel)
+			export BUILDDIR="$BASEDIR/ubuntu-2.6"
+			;;
+		lum)
+			export BUILDDIR="$BASEDIR/ubuntu-2.6-lum"
+			;;
+		*)
+			export BUILDDIR="$BASEDIR/something"
+			;;
+	esac
 
 	return 0
 }
@@ -174,6 +181,14 @@ function GetDistroEnvironment()
 	fi
 	. "${CONFDIR}/distros/$1"
 
+	case "${BUILDTARGET}" in
+		lum)
+			SRCDIR="${LUMDIR}"
+			;;
+		*)
+			;;
+	esac
+
 	return 0
 }
 
@@ -183,7 +198,9 @@ function EmitDoClean()
 	#!/bin/bash
 
 	if [ -f $BUILDING ]; then
-		case "\$(cat $BUILDING)" in
+		. ${BUILDING}
+
+		case "\${STATE}" in
 			failed)
 				;;
 			cleanup)
@@ -196,12 +213,12 @@ function EmitDoClean()
 		esac
 	fi
 
-	echo cleanup >$BUILDING
+	echo "STATE=cleanup" >$BUILDING
 
 	cd "$(dirname "$BUILDDIR")"
 	DIR="$(basename "$BUILDDIR")"
 
-	rm -f build.log *deb
+	rm -f *build.log *deb
 	if [ -d \$DIR -a \$DIR/.git ]; then
 		mv \$DIR \$DIR.old
 		mkdir \$DIR
@@ -218,18 +235,22 @@ function EmitDoBuild()
 {
 	local CONC="$1"
 
-	if [ "${CONC}" = "" -o "${CONC}" -lt 1 ]; then
+	if [ "${CONC}" = "" ]; then
+		echo "Invalid concurrency level ${CONC}" >&2
+		return 1
+	elif [ ${CONC} -lt 1 ]; then
 		echo "Invalid concurrency level ${CONC}" >&2
 		return 1
 	fi
 
-	cat <<-EOD
+	cat <<EOD | cut -c2-
 	#!/bin/bash
 
 	if ${AUTOBUILD}; then
 		export AUTOBUILD=1
 	fi
 
+	BUILDTARGET="\$1"
 	LOG=$BASEDIR/build.log
 	BPID=0
 	LPID=0
@@ -250,7 +271,7 @@ function EmitDoBuild()
 		fi
 		if [ "\$1" != "0" ]; then
 			echo "Failure(\$1)" >>\$LOG
-			echo "failed" >$BUILDING
+			echo "STATE=failed" >$BUILDING
 		else
 			rm -f $BUILDING
 		fi
@@ -259,14 +280,33 @@ function EmitDoBuild()
 	}
 	trap 'Cleanup 3' INT QUIT TRAP USR1 PIPE TERM
 
-	echo \$\$ >$BUILDING
+	cat <<-ENDSTATUS >${BUILDING}
+	STATE=building
+	BUILDTARGET=\${BUILDTARGET}
+	PID=\$\$
+	ENDSTATUS
 
 	cd $BUILDDIR
-	echo "build started $(date)" >\$LOG
+	echo "\${BUILDTARGET} build started $(date)" >\$LOG
 	$FAKEROOT debian/rules clean >\$LOG 2>&1 || Cleanup \$?
-	$FAKEROOT debian/rules binary-arch CONCURRENCY_LEVEL=$CONC \
-		>>\$LOG 2>&1 &
-	BPID=\$!
+
+	case "\${BUILDTARGET}" in
+		kernel)
+			$FAKEROOT debian/rules binary-arch \\
+				CONCURRENCY_LEVEL=$CONC >>\$LOG 2>&1 &
+			BPID=\$!
+			;;
+		lum)
+			$FAKEROOT debian/rules binary-modules-arch \\
+				>>\$LOG 2>&1 &
+			BPID=\$!
+			;;
+		*)
+			Cleanup 4
+			exit 0
+			;;
+	esac
+
 	tail -f \$LOG &
 	LPID=\$!
 
@@ -274,6 +314,6 @@ function EmitDoBuild()
 	Cleanup \$?
 
 	exit 0
-	EOD
+EOD
 }
 

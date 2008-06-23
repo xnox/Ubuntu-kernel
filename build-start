@@ -17,20 +17,11 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-case ${BASEDIR} in
-	/home/*|home/*)
-		TGTDIR="${BASEDIR}"
-		;;
-	*)
-		TGTDIR="$(GetChrootLocation ${HOST} ${CHROOT})${BASEDIR}"
-		;;
-esac
-
 EmitDoBuild $CONCURRENCY | ssh ${HOST} \
-	"cd $TGTDIR 2>/dev/null && cat - >do-build && chmod 700 do-build"
+	"cd $BASEDIR 2>/dev/null && cat - >do-build && chmod 700 do-build"
 if [ $? -eq 0 ]; then
-	ssh ${HOST} screen -d -m $CHROOTCMD $BASEDIR/do-build
-	printf "%-15s: build started\n" $SYSNAME
+	ssh ${HOST} screen -d -m $CHROOTCMD $BASEDIR/do-build ${BUILDTARGET}
+	printf "%-15s: ${BUILDTARGET} build started\n" $SYSNAME
 else
-	printf "%-15s: %s not found\n" $SYSNAME $TGTDIR
+	printf "%-15s: %s not found\n" $SYSNAME $BASEDIR
 fi

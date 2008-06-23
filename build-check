@@ -10,13 +10,14 @@ fi
 
 GetHostEnvironment $1 || exit 1
 
-cat <<EOD | ssh -oConnectTimeout=5 $HOST
-if ! test -f "$BUILDING" 2>/dev/null; then
+cat <<EOD | ssh -oConnectTimeout=5 $HOST 2>/dev/null
+if [ ! -f "$BUILDING" ] ; then
 	exit 1
 fi
-INFO="\`cat $BUILDING\`"
+PID=0
+. $BUILDING
 
-case "\$INFO" in
+case "\$STATE" in
 	cleanup)
 		exit 2
 		;;
@@ -24,7 +25,7 @@ case "\$INFO" in
 		exit 3
 		;;
 	*)
-		if ps hp\$INFO >/dev/null; then
+		if ps hp\$PID >/dev/null 2>&1; then
 			exit 0
 		fi
 		exit 3
