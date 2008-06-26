@@ -218,7 +218,7 @@ function EmitDoClean()
 	cd "$(dirname "$BUILDDIR")"
 	DIR="$(basename "$BUILDDIR")"
 
-	rm -f *build.log *deb
+	rm -f build.log build-status *.udeb
 	if [ -d \$DIR -a \$DIR/.git ]; then
 		mv \$DIR \$DIR.old
 		mkdir \$DIR
