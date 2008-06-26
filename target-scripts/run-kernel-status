@@ -1,0 +1,127 @@
+#!/bin/bash
+#
+# Command line
+#
+DIR="ubuntu-2.6"
+VERBOSE=false
+STATUSFILE="./build-status"
+while [ $# -gt 0 ]; do
+	case $1 in
+		-v|--verbose)
+			VERBOSE=true
+			;;
+		-*|--*)
+			echo "Unknown option $1" >&2
+			exit 1
+			;;
+		*)
+			if [ "$DIR" = "" ]; then
+				DIR="$1"
+			else
+				echo "Too many arguments" >&2
+				exit 1
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ ! -d "$DIR" ]; then
+	echo "$DIR not found" >&2
+	exit 1
+fi
+
+if [ ! -f $STATUSFILE ]; then
+	echo "idle"
+	exit 0
+fi
+
+. $STATUSFILE
+
+if [ "$STATE" = "" ]; then
+	echo "idle"
+	exit 0
+fi
+
+case "$STATE" in
+	failed)
+		echo "idle(last build failed)"
+		exit 0
+		;;
+	building)
+		if [ "$BUILDTARGET" != "kernel" ]; then
+			echo "building $BUILDTARGET"
+			exit 0
+		fi
+		if ! $VERBOSE; then
+			echo "building"
+			exit 0
+		fi
+		;;
+	*)
+		echo "$STATE"
+		exit 0
+		;;
+esac
+
+FLAVOURS=""
+if [ -f "$DIR/debian/stamps/stamp-flavours" ]; then
+	for i in $(cat "$DIR/debian/stamps/stamp-flavours"); do
+		FLAVOURS="$FLAVOURS $i"
+	done
+fi
+
+case "$ACTION" in
+	prepare)
+		echo "Q: [setup] headers$FLAVOURS"
+		echo "D:"
+		exit 0
+		;;
+	headers)
+		echo "Q: [headers]$FLAVOURS"
+		echo "D:"
+		exit 0
+		;;
+	*)
+		;;
+esac
+
+BUILD=""
+WAIT=""
+DONE=""
+SF="$DIR/debian/stamps/stamp"
+BF="$DIR/debian/build/build"
+for F in $FLAVOURS; do
+	if [ ! -f "$SF-prepare-$F" -a ! -f "$SF-custom-prepare-$F" ]; then
+		WAIT="$WAIT $F"
+		continue
+	fi
+	if [ "$(ls -1 $PKGPREFIX${F}_* 2>/dev/null)" != "" ]; then
+		DONE="$DONE $F"
+		continue
+	fi
+	if [ -f "$SF-build-$F" -o -f "$SF-custom-build-$F" ]; then
+		BUILD="$F(packaging)"
+		continue
+	fi
+	if [ -f "$BF-$F/vmlinux" -o "$BF-custum-$F/vmlinux" ]; then
+		BUILD="$F(modules)"
+		continue
+	fi
+	BUILD="$F(kernel)"
+done
+
+LINE="Q:"
+if [ "$BUILD" != "" ]; then
+	LINE="$LINE $BUILD"
+fi
+for i in $WAIT; do
+	LINE="$LINE $i"
+done
+echo $LINE
+LINE="D: headers"
+for i in $DONE; do
+	LINE="$LINE $i"
+done
+echo $LINE
+

@@ -1,9 +1,9 @@
 #!/bin/bash
 . $(dirname $0)/build-common
 
-if [ "$1" = "-v" ]; then
-	VERBOSE=1
-	shift;
+ARGS=""
+if $VERBOSE; then
+	ARGS="-v"
 fi
 
 if [ "$1" = "" ]; then
@@ -18,100 +18,21 @@ while [ "$1" != "" ]; do
 		continue
 	fi
 
-	status=$($(dirname $0)/build-check $SYSNAME)
-
-	if [ "$VERBOSE" = "true" -a "$status" = "building" ]; then
-		building=""
-		unbuilt=""
-		packaged=""
-
-		all_stamps=$(cat <<-EOD | ssh ${HOST} ${CHROOTCMD} 2>/dev/null
-			BUILDS=$BUILDDIR/debian/build
-			STAMPS=$BUILDDIR/debian/stamps
-
-			for i in \`cat \$STAMPS/stamp-flavours 2>/dev/null\`; do
-				echo FLAVOUR \$i
-			done
-			ls -d \$STAMPS/stamp-*prepare-* \
-				\$STAMPS/stamp-*build-* \
-				$BASEDIR/*.deb \
-				\$BUILDS/build-*/vmlinux \
-				\$BUILDS/custom-build/build-*/vmlinux \
-				2>/dev/null
-		EOD)
-
-		echo "$all_stamps" | awk -v sysname="${SYSNAME}" '
-			$1 == "FLAVOUR"{
-				flavours[$2] = 0
-				unbuild[$2] = $2
-				next
-			}
-			/stamps\/stamp-(custom-)?prepare-/{
-				sub(/.*stamp-(custom-)?prepare-/, "")
-				if (flavours[$0] < 1) {
-					flavours[$0] = 1
-					building[$0] = $0 "(kernel)"
-					delete unbuild[$0]
-				}
-				next
-			}
-			/stamps\/stamp-(custom-)?build-/{
-				sub(/.*stamp-(custom-)?build-/, "")
-				if (flavours[$0] < 2) {
-					flavours[$0] = 2
-					delete unbuild[$0]
-					delete building[$0]
-					building[$0] = $0 "(packaging)"
-				}
-				next
-			}
-			/linux-image-debug/{
-				next
-			}
-			/linux-image/{
-				sub(/.*linux-image-[^-]+-[^-]+-/, "")
-				sub(/_.*$/, "")
-				flavours[$0] = 3
-				delete unbuild[$0]
-				delete building[$0]
-				packaged[$0] = $0
-				next
-			}
-			/vmlinux/{
-				sub(/.*\/debian\/build\/build-(custom-)?/, "")
-				sub(/\/vmlinux$/, "")
-				if (flavours[$0] <= 1) {
-					flavours[$0] = 1
-					delete unbuild[$0]
-					building[$0] = $0 "(modules)"
-				}
-				next
-			}
-			END{
-				waitlist=""
-				buildmsg=""
-				packagelist=""
-				
-				for (i in flavours) {
-					if (i in packaged) {
-						packagelist = packagelist " " i
-						continue
-					}
-					if (i in unbuild) {
-						waitlist = waitlist " " i
-						continue
-					}
-					buildmsg = building[i]
-				}
-				printf("%-15s=> %s\n", sysname, buildmsg)
-				if (waitlist != "")
-					print "   unbuild \\-" waitlist
-				if (packagelist != "")
-					print "  packaged \\-" packagelist
-			}
-		'
-
-	else
-		 printf "%-15s: $status\n" $SYSNAME
-	fi
+	case $BUILDTARGET in
+		kernel)
+			CMD="run-kernel-status"
+			;;
+		lum)
+			CMD="run-lum-status"
+			;;
+		*)
+			echo "Invalid build target $BUILDTARGET" >&2
+			exit 1
+			;;
+	esac
+	PREFIX="$SYSNAME"
+	ssh $HOST "cd $BASEDIR && ./$CMD $ARGS" | while read LINE; do
+		printf "%-15s %s\n" "$PREFIX" "$LINE"
+		PREFIX=""
+	done
 done

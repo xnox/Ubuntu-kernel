@@ -1,0 +1,86 @@
+#!/bin/bash
+DIR="ubuntu-2.6-lum"
+VERBOSE=false
+while [ $# -ne 0 ]; do
+	case $1 in
+		-v|--verbose)
+			VERBOSE=true
+			;;
+		-*|--*)
+			echo "Unknown option $1" >&2
+			exit 1
+			;;
+		*)
+			DIR="$1"
+			;;
+	esac
+	shift
+done
+
+if [ ! -d "$DIR" ]; then
+	echo "$DIR not found" >&2
+	exit 1
+fi
+
+if [ ! -r build-status ]; then
+	# Assume nothing is going on
+	echo "idle"
+	exit 0
+fi
+
+. ./build-status
+
+if [ "$BUILDTARGET" = "" ]; then
+	if [ "$STATE" = "failed" ]; then
+		echo "idle(last build failed)"
+	else
+		echo "idle"
+	fi
+	exit 0
+fi
+if [ "$BUILDTARGET" != "lum" ]; then
+	echo "building $BUILDTARGET"
+	exit 0
+fi
+if ! $VERBOSE; then
+	echo "building"
+	exit 0
+fi
+
+if [ "$FLAVOURS" = "" -o "$ACTION" = "prepare" ]; then
+	echo "preparing build"
+	exit 0
+fi
+
+DONE=""
+WAIT=""
+BUILD=""
+for F in $FLAVOURS; do
+	if [ "$(ls -1 $PKGPREFIX$F* 2>/dev/null)" != "" ]; then
+		DONE="$DONE $F"
+		continue
+	fi
+	if [ "$FLAVOUR" != "$F" ]; then
+		WAIT="$WAIT $F"
+		continue
+	fi
+	if [ -f "$DIR/debian/stamps/stamp-build-$F" ]; then
+		BUILD="$F(packaging)"
+		continue
+	fi
+	if [ -f "$DIR/debian/stamps/stamp-prepare-$F" ]; then
+		BUILD="$F(building)"
+		continue
+	fi
+	BUILD="$F(setup)"
+done
+
+if [ "$BUILD" = "" ]; then
+	echo "Q:$WAIT"
+else
+	echo "Q: $BUILD$WAIT"
+fi
+echo "D:$DONE"
+
+exit 0
+

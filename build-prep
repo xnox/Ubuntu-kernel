@@ -63,3 +63,7 @@ git-send-pack --force ${HOST}:${BUILDDIR} master || exit 1
 
 echo "  ${HOST}: cleaning up build area ..."
 EmitDoClean | ssh ${HOST} 2>/dev/null
+
+echo "  local: sending status scripts..."
+scp -q $(dirname $0)/target-scripts/run-*-status ${HOST}:${BASEDIR}
+
