@@ -16,6 +16,7 @@ while [ $# != 0 ]; do
 	esac
 done
 
+export BUILD_DIST_PRINTED=1
 while true; do
 	START=$(date +%s)
 	if [ "$1" = '' ]; then
