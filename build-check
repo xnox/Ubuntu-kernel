@@ -34,7 +34,6 @@ esac
 exit 4
 EOD
 
-#ssh -oConnectTimeout=5 $HOST test -f $BUILDING >/dev/null 2>&1
 case $? in
 	0)
 		echo "building"
