@@ -50,19 +50,33 @@ if [ -d /usr/lib/ccache ]; then
 	test -d	 $CCACHE_DIR || mkdir $CCACHE_DIR
 fi
 
+function GetVersion()
+{
+	 head -1 debian/changelog | sed 's/.*(\(.*\)).*$/\1/' | cut -d. -f1-3
+}
+
 function BuildLUM()
 {
 	local VER
 	local NAME
 	local HEADER
 	local HEADERS
+	local FLAVOURS
 
-	VER=$(
-		head -1 debian/changelog |
-		sed 's/.*(\(.*\)).*$/\1/' |
-		cut -d. -f1-3
-	)
+	VER=$(GetVersion)
 	HEADERS=$(ls -1 ../linux-headers-$VER-* | grep -v _all.deb)
+	for HEADER in $HEADERS; do
+		FLAVOURS="$FLAVOURS$(echo $HEADER|cut -d- -f5|cut -d_ -f1) "
+	done
+
+	cat <<-EOD >>$STATUSFILE
+	FLAVOURS="$FLAVOURS"
+	PKGPREFIX="linux-ubuntu-modules-$VER-"
+	ACTION=prepare
+	EOD
+
+	# Remove any previously built packages.
+	rm -f ../linux-ubuntu-modules-$VER-*
 
 	if [ -d headers ]; then
 		echo "Removing old headers..."
@@ -70,11 +84,13 @@ function BuildLUM()
 	fi
 	echo "Extracting global headers..."
 	dpkg-deb -x ../linux-headers-$VER_*_all.deb headers || return 1
-	sleep 1
+	sync
 
+	echo "ACTION=build" >>$STATUSFILE
 	for HEADER in $HEADERS; do
 		NAME=$(echo $HEADER | cut -d- -f5 | cut -d_ -f1)
 		echo "Building LUM for $NAME"
+		echo "FLAVOUR=$NAME" >>$STATUSFILE
 		dpkg-deb -x $HEADER headers
 		fakeroot debian/rules clean || return 1
 		fakeroot debian/rules \
@@ -85,7 +101,7 @@ function BuildLUM()
 		fi
 	done
 	rm -rf headers
-	sleep 1
+	sync
 }
 	
 function Cleanup()
@@ -118,10 +134,19 @@ echo "${BUILDTARGET} build started $(date)" >$LOG
 case "${BUILDTARGET}" in
 	kernel)
 		cd ubuntu-2.6
+		VER=$(GetVersion)
+		cat <<-EOD >>$STATUSFILE
+		VER=$VER
+		PKGPREFIX="linux-image-$VER-"
+		ACTION=prepare
+		EOD
+		rm -f ../linux-image-$VER-*
 		fakeroot debian/rules clean >$LOG 2>&1 || Cleanup $?
+		echo "ACTION=headers" >>$STATUSFILE
 		fakeroot debian/rules binary-headers \
 			CONCURRENCY_LEVEL=$CONCURRENCY_LEVEL >>$LOG 2>&1 ||
 			Cleanup $?
+		echo "ACTION=kernel" >>$STATUSFILE
 		fakeroot debian/rules binary-arch \
 			CONCURRENCY_LEVEL=$CONCURRENCY_LEVEL >>$LOG 2>&1 &
 		BPID=$!

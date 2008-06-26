@@ -17,10 +17,16 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-EmitDoBuild $CONCURRENCY | ssh ${HOST} \
-	"cd $BASEDIR 2>/dev/null && cat - >do-build && chmod 700 do-build"
+ARGS="-c$CONCURRENCY"
+if $AUTOBUILD; then
+	ARGS="$ARGS -a"
+fi
+if [ "$BUILDTARGET" = "lum" ]; then
+	ARGS="$ARGS --lum"
+fi
+scp -q $(dirname $0)/target-scripts/run-build ${HOST}:${BASEDIR}
 if [ $? -eq 0 ]; then
-	ssh ${HOST} screen -d -m $CHROOTCMD $BASEDIR/do-build ${BUILDTARGET}
+	ssh ${HOST} screen -d -m $CHROOTCMD $BASEDIR/run-build $ARGS
 	printf "%-15s: ${BUILDTARGET} build started\n" $SYSNAME
 else
 	printf "%-15s: %s not found\n" $SYSNAME $BASEDIR
