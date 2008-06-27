@@ -18,20 +18,8 @@ while [ "$1" != "" ]; do
 		continue
 	fi
 
-	case $BUILDTARGET in
-		kernel)
-			CMD="run-kernel-status"
-			;;
-		lum)
-			CMD="run-lum-status"
-			;;
-		*)
-			echo "Invalid build target $BUILDTARGET" >&2
-			exit 1
-			;;
-	esac
 	PREFIX="$SYSNAME"
-	ssh $HOST "cd $BASEDIR && ./$CMD $ARGS" | while read LINE; do
+	ssh $HOST "cd $BASEDIR && ./run-status $ARGS" | while read LINE; do
 		printf "%-15s %s\n" "$PREFIX" "$LINE"
 		PREFIX=""
 	done

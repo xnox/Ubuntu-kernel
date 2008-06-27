@@ -37,6 +37,9 @@ if [ ! -d ${SRCDIR}/.git ]; then
 	exit 1
 fi
 
+echo "  local: sending status scripts..."
+scp -q $(dirname $0)/target-scripts/run-*status ${HOST}:${BASEDIR}
+
 cat <<EOD | ssh ${HOST} 2>/dev/null || exit 1
 if [ ! -d $BUILDDIR ]; then
 	echo "  remote: creating $BUILDDIR"
@@ -63,7 +66,4 @@ git-send-pack --force ${HOST}:${BUILDDIR} master || exit 1
 
 echo "  ${HOST}: cleaning up build area ..."
 EmitDoClean | ssh ${HOST} 2>/dev/null
-
-echo "  local: sending status scripts..."
-scp -q $(dirname $0)/target-scripts/run-*-status ${HOST}:${BASEDIR}
 

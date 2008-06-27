@@ -1,57 +1,9 @@
 #!/bin/bash
-DIR="ubuntu-2.6-lum"
-VERBOSE=false
-while [ $# -ne 0 ]; do
-	case $1 in
-		-v|--verbose)
-			VERBOSE=true
-			;;
-		-*|--*)
-			echo "Unknown option $1" >&2
-			exit 1
-			;;
-		*)
-			DIR="$1"
-			;;
-	esac
-	shift
-done
-
-if [ ! -d "$DIR" ]; then
-	echo "$DIR not found" >&2
-	exit 1
-fi
-
-if [ ! -r build-status ]; then
-	# Assume nothing is going on
-	echo "idle"
-	exit 0
-fi
-
-. ./build-status
-
-if [ "$BUILDTARGET" = "" ]; then
-	if [ "$STATE" = "failed" ]; then
-		echo "idle(last build failed)"
-	else
-		echo "idle"
-	fi
-	exit 0
-fi
-if [ "$BUILDTARGET" != "lum" ]; then
-	echo "building $BUILDTARGET"
-	exit 0
-fi
-if ! $VERBOSE; then
-	echo "building"
-	exit 0
-fi
-
-if [ "$FLAVOURS" = "" -o "$ACTION" = "prepare" ]; then
-	echo "preparing build"
-	exit 0
-fi
-
+#==============================================================================
+# This script handles the verbose output of the build status for LUM builds.
+# It requires some variables to be preset by the build status, otherwise it
+# will not work correctly.
+#==============================================================================
 DONE=""
 WAIT=""
 BUILD=""

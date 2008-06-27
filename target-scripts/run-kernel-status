@@ -1,68 +1,17 @@
 #!/bin/bash
-#
-# Command line
-#
-DIR="ubuntu-2.6"
-VERBOSE=false
-STATUSFILE="./build-status"
-while [ $# -gt 0 ]; do
-	case $1 in
-		-v|--verbose)
-			VERBOSE=true
-			;;
-		-*|--*)
-			echo "Unknown option $1" >&2
-			exit 1
-			;;
-		*)
-			if [ "$DIR" = "" ]; then
-				DIR="$1"
-			else
-				echo "Too many arguments" >&2
-				exit 1
-			fi
-			;;
-	esac
-	shift
-done
-
+#==============================================================================
+# This script is used to display the verbose status of a kernel build. It
+# would normally not be called directly because it depends on many things
+# defined in the build status file.
+#==============================================================================
+if [ "$DIR" = "" ]; then
+	echo "DIR is not set" >&2
+	exit 1
+fi
 if [ ! -d "$DIR" ]; then
 	echo "$DIR not found" >&2
 	exit 1
 fi
-
-if [ ! -f $STATUSFILE ]; then
-	echo "idle"
-	exit 0
-fi
-
-. $STATUSFILE
-
-if [ "$STATE" = "" ]; then
-	echo "idle"
-	exit 0
-fi
-
-case "$STATE" in
-	failed)
-		echo "idle(last build failed)"
-		exit 0
-		;;
-	building)
-		if [ "$BUILDTARGET" != "kernel" ]; then
-			echo "building $BUILDTARGET"
-			exit 0
-		fi
-		if ! $VERBOSE; then
-			echo "building"
-			exit 0
-		fi
-		;;
-	*)
-		echo "$STATE"
-		exit 0
-		;;
-esac
 
 FLAVOURS=""
 if [ -f "$DIR/debian/stamps/stamp-flavours" ]; then

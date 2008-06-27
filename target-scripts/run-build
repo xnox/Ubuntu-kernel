@@ -77,6 +77,7 @@ function BuildLUM()
 
 	# Remove any previously built packages.
 	rm -f ../linux-ubuntu-modules-$VER-*
+	rm -f ../linux-headers-lum-$VER-*
 
 	if [ -d headers ]; then
 		echo "Removing old headers..."
