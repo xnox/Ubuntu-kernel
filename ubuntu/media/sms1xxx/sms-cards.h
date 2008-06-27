@@ -30,8 +30,8 @@
 #define SMS1XXX_BOARD_DELL_DVBT 4
 
 struct sms_board {
-	char *name;
 	enum sms_device_type_st type;
+	char *name, *fw[DEVICE_MODE_MAX];
 };
 
 struct sms_board *sms_get_board(int id);
