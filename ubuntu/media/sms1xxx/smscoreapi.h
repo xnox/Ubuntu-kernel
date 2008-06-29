@@ -48,7 +48,7 @@
 #define SMS_ALLOC_ALIGNMENT					128
 #define SMS_DMA_ALIGNMENT					16
 #define SMS_ALIGN_ADDRESS(addr) \
-	((((u32)(addr)) + (SMS_DMA_ALIGNMENT-1)) & ~(SMS_DMA_ALIGNMENT-1))
+	((((uintptr_t)(addr)) + (SMS_DMA_ALIGNMENT-1)) & ~(SMS_DMA_ALIGNMENT-1))
 
 #define SMS_DEVICE_FAMILY2					1
 #define SMS_ROM_NO_RESPONSE					2
