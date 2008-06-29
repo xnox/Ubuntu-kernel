@@ -36,8 +36,6 @@
 
 #include <linux/mutex.h>
 
-typedef struct mutex kmutex_t;
-
 #define kmutex_init(_p_) mutex_init(_p_)
 #define kmutex_lock(_p_) mutex_lock(_p_)
 #define kmutex_trylock(_p_) mutex_trylock(_p_)
@@ -562,7 +560,8 @@ extern int smscore_map_common_buffer(struct smscore_device_t *coredev,
 				      struct vm_area_struct *vma);
 #endif
 
-extern struct smscore_buffer_t *smscore_getbuffer(struct smscore_device_t *coredev);
+extern
+struct smscore_buffer_t *smscore_getbuffer(struct smscore_device_t *coredev);
 extern void smscore_putbuffer(struct smscore_device_t *coredev,
 			      struct smscore_buffer_t *cb);
 
