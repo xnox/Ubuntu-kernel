@@ -112,9 +112,13 @@ install: uninstall modules
 	@#$(MODPROBE) -l rc80211_simple
 	@$(MODPROBE) -l zd1211rw
 	@echo 
-	@echo Now run: make load
+	@echo Now run:
+	@echo 
+	@echo make unload
 	@echo
-	@echo "   sudo make load"
+	@echo And then load the wireless module you need. If unsure run:
+	@echo
+	@echo make load
 	@echo
 
 uninstall:

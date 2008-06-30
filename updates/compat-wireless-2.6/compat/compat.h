@@ -476,6 +476,17 @@ static inline void led_classdev_unregister_suspended(struct led_classdev *lcd)
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))
 
+/* This is from include/linux/list.h */
+
+/**
+ * list_is_singular - tests whether a list has just one entry.
+ * @head: the list to test.
+ */
+static inline int list_is_singular(const struct list_head *head)
+{
+	return !list_empty(head) && (head->next == head->prev);
+}
+
 /* This is from include/linux/device.h, which was added as of 2.6.26 */
 static inline const char *dev_name(struct device *dev)
 {
@@ -711,5 +722,15 @@ static inline const char *dev_name(struct device *dev)
 #endif /* xtensa */
 
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26)) */
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
+
+/* This is from include/linux/rfkill.h */
+#define RFKILL_STATE_SOFT_BLOCKED	RFKILL_STATE_OFF
+#define RFKILL_STATE_UNBLOCKED		RFKILL_STATE_ON
+/* This one is new */
+#define RFKILL_STATE_HARD_BLOCKED	2
+
+#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27)) */
 
 #endif /* LINUX_26_COMPAT_H */

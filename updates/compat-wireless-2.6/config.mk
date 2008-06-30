@@ -14,7 +14,7 @@ include $(KLIB_BUILD)/.config
 endif
 
 # Wireless subsystem stuff
-CONFIG_MAC80211=y
+CONFIG_MAC80211=m
 
 # Enable QOS for 2.6.22, we'll do some hacks here to enable it.
 # You will need this for HT support (802.11n) and WME (802.11e).
