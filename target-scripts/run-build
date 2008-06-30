@@ -84,7 +84,7 @@ function BuildLUM()
 		rm -rf headers
 	fi
 	echo "Extracting global headers..."
-	dpkg-deb -x ../linux-headers-$VER_*_all.deb headers || return 1
+	dpkg-deb -x ../linux-headers-${VER}_*_all.deb headers || return 1
 	sync
 
 	echo "ACTION=build" >>$STATUSFILE
