@@ -735,6 +735,12 @@ void intel_crtc_mode_restore(struct drm_crtc *crtc)
 			is_crt = TRUE;
 			break;
 		}
+		if(is_lvds && ((lvds_reg_value[pipe] & LVDS_PORT_EN) == 0))
+		{
+			printk("%s: is_lvds but not the boot display, so return\n",
+							__FUNCTION__);
+			return;
+		}
 		output->funcs->prepare(output);
 	}
 

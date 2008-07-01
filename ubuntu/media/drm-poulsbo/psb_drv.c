@@ -49,6 +49,10 @@ int psb_init_yres;
 /*
  *
  */
+#define SII_1392_WA
+#ifdef SII_1392_WA
+extern int SII_1392;
+#endif
 
 MODULE_PARM_DESC(debug, "Enable debug output");
 MODULE_PARM_DESC(clock_gating, "clock gating");
@@ -491,7 +495,13 @@ static int psb_initial_config(struct drm_device *dev, bool can_grow)
 					  output->crtc->desired_mode, 0, 0);
 	}
 
+#ifdef SII_1392_WA
+	if((SII_1392 != 1) || (drm_psb_no_fb==0))
+		drm_disable_unused_functions(dev);
+#else
 	drm_disable_unused_functions(dev);
+#endif
+
 
 	mutex_unlock(&dev->mode_config.mutex);
 
@@ -719,11 +729,14 @@ static int psb_suspend(struct pci_dev *pdev, pm_message_t state)
 		psbfb_suspend(dev);
 #ifdef WA_NO_FB_GARBAGE_DISPLAY
 	else {
-		list_for_each_entry(output, &dev->mode_config.output_list, head) {
-			if(output->crtc != NULL)
-				intel_crtc_mode_save(output->crtc);
-			//if(output->funcs->save)
-			//	output->funcs->save(output);
+		if(num_registered_fb)
+		{
+			list_for_each_entry(output, &dev->mode_config.output_list, head) {
+				if(output->crtc != NULL)
+					intel_crtc_mode_save(output->crtc);
+				//if(output->funcs->save)
+				//	output->funcs->save(output);
+			}
 		}
 	}
 #endif
@@ -841,13 +854,13 @@ static int psb_resume(struct pci_dev *pdev)
 		psbfb_resume(dev);
 #ifdef WA_NO_FB_GARBAGE_DISPLAY
 	else { 
-		list_for_each_entry(output, &dev->mode_config.output_list, head) {
-			if(output->crtc != NULL)
-				intel_crtc_mode_restore(output->crtc);
-		}
 		if(num_registered_fb)
 		{
 			struct fb_info *fb_info=registered_fb[0];
+			list_for_each_entry(output, &dev->mode_config.output_list, head) {
+				if(output->crtc != NULL)
+					intel_crtc_mode_restore(output->crtc);
+			}
 			if(fb_info)
 			{
 				fb_set_suspend(fb_info, 0);
