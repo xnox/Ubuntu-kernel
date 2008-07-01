@@ -39,6 +39,12 @@
 #define PCI_PORT5_REG80_FFUSE				0xD0058000
 #define PCI_PORT5_REG80_SDVO_DISABLE		0x0020
 
+#define SII_1392_WA
+#ifdef SII_1392_WA
+int SII_1392=0;
+extern int drm_psb_no_fb;
+#endif
+
 typedef struct _EXTVDATA
 {
     u32 Value;
@@ -3200,6 +3206,13 @@ static void intel_sdvo_dpms(struct drm_output *output, int mode)
 
 	DRM_DEBUG("xxintel_sdvo_dpms, dpms mode is %d, active output is %d\n",mode,sdvo_priv->active_outputs);
 
+#ifdef SII_1392_WA
+	if((SII_1392==1) && (drm_psb_no_fb ==1)) {
+		DRM_DEBUG("don't touch 1392 card when no_fb=1\n");
+		return;
+	}
+#endif
+
 	if (mode != DPMSModeOn) {
 		intel_sdvo_set_active_outputs(output, sdvo_priv->output_device);
 		if (0)
@@ -3434,6 +3447,17 @@ static enum drm_output_status intel_sdvo_detect(struct drm_output *output)
         intel_sdvo_dpms(output, DPMSModeOff);
         return output_status_disconnected;
     }
+
+#ifdef SII_1392_WA
+	if ((sdvo_priv->caps.vendor_id == 0x04) && (sdvo_priv->caps.device_id==0xAE)){
+	    /*Leave the control of 1392 to X server*/
+		SII_1392=1;
+		printk("%s: detect 1392 card, leave the setting to up level\n", __FUNCTION__);
+		if (drm_psb_no_fb == 0)
+			intel_sdvo_dpms(output, DPMSModeOff);
+		return output_status_disconnected;
+	}
+#endif
     while (count--) {
 	intel_sdvo_write_cmd(output, SDVO_CMD_GET_ATTACHED_DISPLAYS, NULL, 0);
 	status = intel_sdvo_read_response(output, &response, 2);
@@ -3762,6 +3786,26 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 
 	intel_sdvo_get_capabilities(output, &sdvo_priv->caps);
 
+#ifdef SII_1392_WA
+	if ((sdvo_priv->caps.vendor_id == 0x04) && (sdvo_priv->caps.device_id==0xAE)){
+	    /*Leave the control of 1392 to X server*/
+		SII_1392=1;
+		printk("%s: detect 1392 card, leave the setting to up level\n", __FUNCTION__);
+		if (drm_psb_no_fb == 0)
+			intel_sdvo_dpms(output, DPMSModeOff);
+		sdvo_priv->active_outputs = 0;
+		output->subpixel_order = SubPixelHorizontalRGB;
+		name_prefix = "SDVO";
+		sdvo_priv->ActiveDevice = SDVO_DEVICE_NONE;
+		strcpy(name, name_prefix);
+		strcat(name, name_suffix);
+		if (!drm_output_rename(output, name)) {
+			drm_output_destroy(output);
+			return;
+        	}
+		return;
+	}
+#endif
 	memset(&sdvo_priv->active_outputs, 0, sizeof(sdvo_priv->active_outputs));
 
     while (count--) {
