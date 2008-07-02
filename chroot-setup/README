@@ -1,0 +1,2 @@
+The create-chroots.sh script will create chroot tarballs suitable for use
+with schroot. You must run the command as root (sudo, not fakeroot).
