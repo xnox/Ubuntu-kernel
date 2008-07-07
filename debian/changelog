@@ -1,3 +1,45 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook1) hardy; urgency=low
+
+  [Michael Krufky]
+
+  * sms1xxx: mark functions static, disable unused functions
+  * sms1xxx: simplify smsusb_init_device switch..case block
+  * sms1xxx: add capability to define device-specific firmware filenames
+  * sms1xxx: add support for Hauppauge 55xxx firmware
+    - LP: #243430
+  * sms1xxx: fix smsusb_driver.name and MODULE_DESCRIPTION
+  * sms1xxx: remove kmutex_t typedef
+  * sms1xxx: log firmware download process by default
+  * sms1xxx: fix warning: format '%d' expects type 'int', but argument x
+    has type 'size_t'
+  * sms1xxx: fix OOPS on 64 bit kernels due to a bad cast
+    - LP: #244005
+
+  [Stefan Bader]
+
+  * Adding support for HVR950G
+    - LP: #241628
+
+  [Tim Gardner]
+
+  * Add Siano SMS10xx USB dvb tuner driver
+    - LP: #241745
+  * prevent false-positive lock status
+    - LP: #241981
+  * xc5000: firmware loading optimizations
+    - LP: #242169
+
+  [Michael Frey]
+
+  * Firmware for DVB-T USB 5xxxx devices
+  * Firmware for Hauppauge DVB drivers.
+  * Fix for sound not working on resume (LP#239615)
+  * Changed drom module to drm_psb so not to conflict with in kernel module
+  * Remove lpiacompat from build
+  * Default netbook lipa config
+
+ -- Michael Frey <michael.frey@canonical.com>  Mon, 07 Jul 2008 13:40:50 +0100
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.28) hardy-proposed; urgency=low
 
   [Amit Kucheria]
