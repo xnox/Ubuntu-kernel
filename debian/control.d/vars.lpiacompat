@@ -1,3 +1,0 @@
-arch="lpia"
-desc="lpiacompat for x86-compatible"
-provides="ndiswrapper-modules-1.9"
