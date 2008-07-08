@@ -537,10 +537,20 @@ static inline int iwl3945_is_init(struct iwl3945_priv *priv)
 	return test_bit(STATUS_INIT, &priv->status);
 }
 
+static inline int iwl3945_is_rfkill_sw(struct iwl3945_priv *priv)
+{
+	return test_bit(STATUS_RF_KILL_SW, &priv->status);
+}
+
+static inline int iwl3945_is_rfkill_hw(struct iwl3945_priv *priv)
+{
+	return test_bit(STATUS_RF_KILL_HW, &priv->status);
+}
+
 static inline int iwl3945_is_rfkill(struct iwl3945_priv *priv)
 {
-	return test_bit(STATUS_RF_KILL_HW, &priv->status) ||
-	       test_bit(STATUS_RF_KILL_SW, &priv->status);
+	return iwl3945_is_rfkill_hw(priv) ||
+		iwl3945_is_rfkill_sw(priv);
 }
 
 static inline int iwl3945_is_ready_rf(struct iwl3945_priv *priv)
@@ -970,7 +980,7 @@ static int iwl3945_full_rxon_required(struct iwl3945_priv *priv)
 {
 
 	/* These items are only settable from the full RXON command */
-	if (!(priv->active_rxon.filter_flags & RXON_FILTER_ASSOC_MSK) ||
+	if (!(iwl3945_is_associated(priv)) ||
 	    compare_ether_addr(priv->staging_rxon.bssid_addr,
 			       priv->active_rxon.bssid_addr) ||
 	    compare_ether_addr(priv->staging_rxon.node_addr,
@@ -2312,7 +2322,7 @@ static void iwl3945_connection_init_rx_config(struct iwl3945_priv *priv)
 #endif
 
 	ch_info = iwl3945_get_channel_info(priv, priv->band,
-				       le16_to_cpu(priv->staging_rxon.channel));
+				       le16_to_cpu(priv->active_rxon.channel));
 
 	if (!ch_info)
 		ch_info = &priv->channel_info[0];
@@ -2539,6 +2549,11 @@ static int iwl3945_get_sta_id(struct iwl3945_priv *priv, struct ieee80211_hdr *h
 		iwl3945_print_hex_dump(IWL_DL_DROP, (u8 *) hdr, sizeof(*hdr));
 		return priv->hw_setting.bcast_sta_id;
 	}
+	/* If we are in monitor mode, use BCAST. This is required for
+	 * packet injection. */
+	case IEEE80211_IF_TYPE_MNTR:
+		return priv->hw_setting.bcast_sta_id;
+
 	default:
 		IWL_WARNING("Unknown mode of operation: %d", priv->iw_mode);
 		return priv->hw_setting.bcast_sta_id;
@@ -2578,11 +2593,6 @@ static int iwl3945_tx_skb(struct iwl3945_priv *priv, struct sk_buff *skb)
 		goto drop_unlock;
 	}
 
-	if (!priv->vif) {
-		IWL_DEBUG_DROP("Dropping - !priv->vif\n");
-		goto drop_unlock;
-	}
-
 	if ((ieee80211_get_tx_rate(priv->hw, info)->hw_value & 0xFF) == IWL_INVALID_RATE) {
 		IWL_ERROR("ERROR: No TX rate available.\n");
 		goto drop_unlock;
@@ -2603,9 +2613,10 @@ static int iwl3945_tx_skb(struct iwl3945_priv *priv, struct sk_buff *skb)
 #endif
 
 	/* drop all data frame if we are not associated */
-	if ((!iwl3945_is_associated(priv) ||
-	     ((priv->iw_mode == IEEE80211_IF_TYPE_STA) && !priv->assoc_id)) &&
-	    ieee80211_is_data(fc)) {
+	if (ieee80211_is_data(fc) &&
+	    (priv->iw_mode != IEEE80211_IF_TYPE_MNTR) && /* packet injection */
+	    (!iwl3945_is_associated(priv) ||
+	     ((priv->iw_mode == IEEE80211_IF_TYPE_STA) && !priv->assoc_id))) {
 		IWL_DEBUG_DROP("Dropping - !iwl3945_is_associated\n");
 		goto drop_unlock;
 	}
@@ -5921,7 +5932,9 @@ static void __iwl3945_down(struct iwl3945_priv *priv)
 			       test_bit(STATUS_GEO_CONFIGURED, &priv->status) <<
 					STATUS_GEO_CONFIGURED |
 			       test_bit(STATUS_IN_SUSPEND, &priv->status) <<
-					STATUS_IN_SUSPEND;
+					STATUS_IN_SUSPEND |
+				test_bit(STATUS_EXIT_PENDING, &priv->status) <<
+					STATUS_EXIT_PENDING;
 		goto exit;
 	}
 
@@ -5936,7 +5949,9 @@ static void __iwl3945_down(struct iwl3945_priv *priv)
 			test_bit(STATUS_IN_SUSPEND, &priv->status) <<
 				STATUS_IN_SUSPEND |
 			test_bit(STATUS_FW_ERROR, &priv->status) <<
-				STATUS_FW_ERROR;
+				STATUS_FW_ERROR |
+			test_bit(STATUS_EXIT_PENDING, &priv->status) <<
+				STATUS_EXIT_PENDING;
 
 	spin_lock_irqsave(&priv->lock, flags);
 	iwl3945_clear_bit(priv, CSR_GP_CNTRL, CSR_GP_CNTRL_REG_FLAG_MAC_ACCESS_REQ);
@@ -6068,6 +6083,7 @@ static int __iwl3945_up(struct iwl3945_priv *priv)
 
 	set_bit(STATUS_EXIT_PENDING, &priv->status);
 	__iwl3945_down(priv);
+	clear_bit(STATUS_EXIT_PENDING, &priv->status);
 
 	/* tried to restart and config the device for as long as our
 	 * patience could withstand */
@@ -6135,7 +6151,9 @@ static void iwl3945_bg_rf_kill(struct work_struct *work)
 				    "Kill switch must be turned off for "
 				    "wireless networking to work.\n");
 	}
+
 	mutex_unlock(&priv->mutex);
+	iwl3945_rfkill_set_hw_state(priv);
 }
 
 static void iwl3945_bg_set_monitor(struct work_struct *work)
@@ -6389,6 +6407,7 @@ static void iwl3945_bg_up(struct work_struct *data)
 	mutex_lock(&priv->mutex);
 	__iwl3945_up(priv);
 	mutex_unlock(&priv->mutex);
+	iwl3945_rfkill_set_hw_state(priv);
 }
 
 static void iwl3945_bg_restart(struct work_struct *data)
@@ -6609,6 +6628,8 @@ static int iwl3945_mac_start(struct ieee80211_hw *hw)
 
 	mutex_unlock(&priv->mutex);
 
+	iwl3945_rfkill_set_hw_state(priv);
+
 	if (ret)
 		goto out_release_irq;
 
@@ -6684,11 +6705,6 @@ static int iwl3945_mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 	struct iwl3945_priv *priv = hw->priv;
 
 	IWL_DEBUG_MAC80211("enter\n");
-
-	if (priv->iw_mode == IEEE80211_IF_TYPE_MNTR) {
-		IWL_DEBUG_MAC80211("leave - monitor\n");
-		return -1;
-	}
 
 	IWL_DEBUG_TX("dev->xmit(%d bytes) at rate 0x%02x\n", skb->len,
 		     ieee80211_get_tx_rate(hw, IEEE80211_SKB_CB(skb))->bitrate);
@@ -6836,7 +6852,7 @@ static void iwl3945_config_ap(struct iwl3945_priv *priv)
 		return;
 
 	/* The following should be done only at AP bring up */
-	if ((priv->active_rxon.filter_flags & RXON_FILTER_ASSOC_MSK) == 0) {
+	if (!(iwl3945_is_associated(priv))) {
 
 		/* RXON - unassoc (to set timing command) */
 		priv->staging_rxon.filter_flags &= ~RXON_FILTER_ASSOC_MSK;
@@ -6998,26 +7014,18 @@ static void iwl3945_configure_filter(struct ieee80211_hw *hw,
 				 unsigned int *total_flags,
 				 int mc_count, struct dev_addr_list *mc_list)
 {
-	/*
-	 * XXX: dummy
-	 * see also iwl3945_connection_init_rx_config
-	 */
 	struct iwl3945_priv *priv = hw->priv;
-	int new_flags = 0;
-	if (changed_flags & (FIF_PROMISC_IN_BSS | FIF_OTHER_BSS)) {
-		if (*total_flags & (FIF_PROMISC_IN_BSS | FIF_OTHER_BSS)) {
-			IWL_DEBUG_MAC80211("Enter: type %d (0x%x, 0x%x)\n",
-					   IEEE80211_IF_TYPE_MNTR,
-					   changed_flags, *total_flags);
-			/* queue work 'cuz mac80211 is holding a lock which
-			 * prevents us from issuing (synchronous) f/w cmds */
-			queue_work(priv->workqueue, &priv->set_monitor);
-			new_flags &= FIF_PROMISC_IN_BSS |
-				     FIF_OTHER_BSS |
-				     FIF_ALLMULTI;
-		}
+
+	if (changed_flags & (*total_flags) & FIF_OTHER_BSS) {
+		IWL_DEBUG_MAC80211("Enter: type %d (0x%x, 0x%x)\n",
+				   IEEE80211_IF_TYPE_MNTR,
+				   changed_flags, *total_flags);
+		/* queue work 'cuz mac80211 is holding a lock which
+		 * prevents us from issuing (synchronous) f/w cmds */
+		queue_work(priv->workqueue, &priv->set_monitor);
 	}
-	*total_flags = new_flags;
+	*total_flags &= FIF_OTHER_BSS | FIF_ALLMULTI |
+			FIF_BCN_PRBRESP_PROMISC | FIF_CONTROL;
 }
 
 static void iwl3945_mac_remove_interface(struct ieee80211_hw *hw,
@@ -7411,37 +7419,6 @@ static DRIVER_ATTR(debug_level, S_IWUSR | S_IRUGO,
 		   show_debug_level, store_debug_level);
 
 #endif /* CONFIG_IWL3945_DEBUG */
-
-static ssize_t show_rf_kill(struct device *d,
-			    struct device_attribute *attr, char *buf)
-{
-	/*
-	 * 0 - RF kill not enabled
-	 * 1 - SW based RF kill active (sysfs)
-	 * 2 - HW based RF kill active
-	 * 3 - Both HW and SW based RF kill active
-	 */
-	struct iwl3945_priv *priv = (struct iwl3945_priv *)d->driver_data;
-	int val = (test_bit(STATUS_RF_KILL_SW, &priv->status) ? 0x1 : 0x0) |
-		  (test_bit(STATUS_RF_KILL_HW, &priv->status) ? 0x2 : 0x0);
-
-	return sprintf(buf, "%i\n", val);
-}
-
-static ssize_t store_rf_kill(struct device *d,
-			     struct device_attribute *attr,
-			     const char *buf, size_t count)
-{
-	struct iwl3945_priv *priv = (struct iwl3945_priv *)d->driver_data;
-
-	mutex_lock(&priv->mutex);
-	iwl3945_radio_kill_sw(priv, buf[0] == '1');
-	mutex_unlock(&priv->mutex);
-
-	return count;
-}
-
-static DEVICE_ATTR(rf_kill, S_IWUSR | S_IRUGO, show_rf_kill, store_rf_kill);
 
 static ssize_t show_temperature(struct device *d,
 				struct device_attribute *attr, char *buf)
@@ -7928,7 +7905,6 @@ static struct attribute *iwl3945_sysfs_entries[] = {
 #endif
 	&dev_attr_power_level.attr,
 	&dev_attr_retry_rate.attr,
-	&dev_attr_rf_kill.attr,
 	&dev_attr_rs_window.attr,
 	&dev_attr_statistics.attr,
 	&dev_attr_status.attr,
@@ -8169,6 +8145,11 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 	pci_save_state(pdev);
 	pci_disable_device(pdev);
 
+	err = iwl3945_rfkill_init(priv);
+	if (err)
+		IWL_ERROR("Unable to initialize RFKILL system. "
+				  "Ignoring error: %d\n", err);
+
 	return 0;
 
  out_free_geos:
@@ -8231,6 +8212,7 @@ static void __devexit iwl3945_pci_remove(struct pci_dev *pdev)
 
 	sysfs_remove_group(&pdev->dev.kobj, &iwl3945_attribute_group);
 
+	iwl3945_rfkill_unregister(priv);
 	iwl3945_dealloc_ucode_pci(priv);
 
 	if (priv->rxq.bd)
@@ -8298,6 +8280,114 @@ static int iwl3945_pci_resume(struct pci_dev *pdev)
 }
 
 #endif /* CONFIG_PM */
+
+/*************** RFKILL FUNCTIONS **********/
+#ifdef CONFIG_IWL3945_RFKILL
+/* software rf-kill from user */
+static int iwl3945_rfkill_soft_rf_kill(void *data, enum rfkill_state state)
+{
+	struct iwl3945_priv *priv = data;
+	int err = 0;
+
+	if (!priv->rfkill)
+	return 0;
+
+	if (test_bit(STATUS_EXIT_PENDING, &priv->status))
+		return 0;
+
+	IWL_DEBUG_RF_KILL("we recieved soft RFKILL set to state %d\n", state);
+	mutex_lock(&priv->mutex);
+
+	switch (state) {
+	case RFKILL_STATE_UNBLOCKED:
+		if (iwl3945_is_rfkill_hw(priv)) {
+			err = -EBUSY;
+			goto out_unlock;
+		}
+		iwl3945_radio_kill_sw(priv, 0);
+		break;
+	case RFKILL_STATE_SOFT_BLOCKED:
+		iwl3945_radio_kill_sw(priv, 1);
+		break;
+	default:
+		IWL_WARNING("we recieved unexpected RFKILL state %d\n", state);
+		break;
+	}
+out_unlock:
+	mutex_unlock(&priv->mutex);
+
+	return err;
+}
+
+int iwl3945_rfkill_init(struct iwl3945_priv *priv)
+{
+	struct device *device = wiphy_dev(priv->hw->wiphy);
+	int ret = 0;
+
+	BUG_ON(device == NULL);
+
+	IWL_DEBUG_RF_KILL("Initializing RFKILL.\n");
+	priv->rfkill = rfkill_allocate(device, RFKILL_TYPE_WLAN);
+	if (!priv->rfkill) {
+		IWL_ERROR("Unable to allocate rfkill device.\n");
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	priv->rfkill->name = priv->cfg->name;
+	priv->rfkill->data = priv;
+	priv->rfkill->state = RFKILL_STATE_UNBLOCKED;
+	priv->rfkill->toggle_radio = iwl3945_rfkill_soft_rf_kill;
+	priv->rfkill->user_claim_unsupported = 1;
+
+	priv->rfkill->dev.class->suspend = NULL;
+	priv->rfkill->dev.class->resume = NULL;
+
+	ret = rfkill_register(priv->rfkill);
+	if (ret) {
+		IWL_ERROR("Unable to register rfkill: %d\n", ret);
+		goto freed_rfkill;
+	}
+
+	IWL_DEBUG_RF_KILL("RFKILL initialization complete.\n");
+	return ret;
+
+freed_rfkill:
+	if (priv->rfkill != NULL)
+		rfkill_free(priv->rfkill);
+	priv->rfkill = NULL;
+
+error:
+	IWL_DEBUG_RF_KILL("RFKILL initialization complete.\n");
+	return ret;
+}
+
+void iwl3945_rfkill_unregister(struct iwl3945_priv *priv)
+{
+	if (priv->rfkill)
+		rfkill_unregister(priv->rfkill);
+
+	priv->rfkill = NULL;
+}
+
+/* set rf-kill to the right state. */
+void iwl3945_rfkill_set_hw_state(struct iwl3945_priv *priv)
+{
+
+	if (!priv->rfkill)
+		return;
+
+	if (iwl3945_is_rfkill_hw(priv)) {
+		rfkill_force_state(priv->rfkill, RFKILL_STATE_HARD_BLOCKED);
+		return;
+	}
+
+	if (!iwl3945_is_rfkill_sw(priv))
+		rfkill_force_state(priv->rfkill, RFKILL_STATE_UNBLOCKED);
+	else
+		rfkill_force_state(priv->rfkill, RFKILL_STATE_SOFT_BLOCKED);
+}
+#endif
 
 /*****************************************************************************
  *

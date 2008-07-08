@@ -213,7 +213,6 @@ static int wme_qdiscop_enqueue(struct sk_buff *skb, struct Qdisc* qd)
 			kfree_skb(skb);
 			err = NET_XMIT_DROP;
 	} else {
-		tid = skb->priority & QOS_CONTROL_TAG1D_MASK;
 		skb_set_queue_mapping(skb, queue);
 		qdisc = q->queues[queue];
 		err = qdisc->enqueue(skb, qdisc);
@@ -311,8 +310,7 @@ static void wme_qdiscop_destroy(struct Qdisc* qd)
 	struct ieee80211_hw *hw = &local->hw;
 	int queue;
 
-	tcf_destroy_chain(q->filter_list);
-	q->filter_list = NULL;
+	tcf_destroy_chain(&q->filter_list);
 
 	for (queue = 0; queue < QD_NUM(hw); queue++) {
 		skb_queue_purge(&q->requeued[queue]);
@@ -699,7 +697,6 @@ void ieee80211_requeue(struct ieee80211_local *local, int queue)
 	if (!qdisc || !qdisc->dequeue)
 		return;
 
-	printk(KERN_DEBUG "requeue: qlen = %d\n", qdisc->q.qlen);
 	for (len = qdisc->q.qlen; len > 0; len--) {
 		skb = qdisc->dequeue(qdisc);
 		root_qd->q.qlen--;
