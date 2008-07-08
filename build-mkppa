@@ -267,8 +267,12 @@ if [ -d debian/abi ]; then
 		# just take the latest and pray!
 		#
 		if [ ! -d debian/abi/$VER-$LASTRELEASE ]; then
-			echo "WARNING: No kABI for $LASTRELEASE!!!"
+			echo "WARNING: No kABI files for $LASTRELEASE!!!"
 			LASTRELEASE=$(ls -1 debian/abi|tail -1|cut -d- -f2)
+			if [ "$LASTRELEASE" = "" ]; then
+				echo "Unable to continue!" >&2
+				exit 1
+			fi
 			echo "Using $LASTRELEASE instead. Hope this works..."
 		fi
 		echo "Generate ABI modules files..."
@@ -277,6 +281,7 @@ if [ -d debian/abi ]; then
 			-exec rm {} \;
 		echo $ABI >debian/abi/$VER-$ABI.$REL/abiname
 	fi
+	git-add debian/abi/$VER-$ABI.$REL
 fi
 
 #
