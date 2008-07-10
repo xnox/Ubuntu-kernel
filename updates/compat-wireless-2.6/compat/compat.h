@@ -29,6 +29,7 @@
 #include <linux/platform_device.h>
 #include <linux/init.h>
 #include <linux/uaccess.h>
+#include <linux/rfkill.h>
 
 #include <net/arp.h>
 #include <net/neighbour.h>
@@ -730,6 +731,11 @@ static inline const char *dev_name(struct device *dev)
 #define RFKILL_STATE_UNBLOCKED		RFKILL_STATE_ON
 /* This one is new */
 #define RFKILL_STATE_HARD_BLOCKED	2
+
+int rfkill_force_state(struct rfkill *rfkill, enum rfkill_state state);
+
+int register_rfkill_notifier(struct notifier_block *nb);
+int unregister_rfkill_notifier(struct notifier_block *nb);
 
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27)) */
 

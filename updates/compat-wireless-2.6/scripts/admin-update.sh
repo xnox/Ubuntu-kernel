@@ -71,6 +71,7 @@ DRIVER_FILES="$DRIVER_FILES ipw2100.h ipw2100.c"
 DRIVER_FILES="$DRIVER_FILES ipw2200.h ipw2200.c"
 DRIVER_FILES="$DRIVER_FILES rndis_wlan.c"
 DRIVER_FILES="$DRIVER_FILES at76_usb.h at76_usb.c"
+DRIVER_FILES="$DRIVER_FILES mac80211_hwsim.c"
 
 mkdir -p include/linux/ include/net/ include/linux/usb \
 	net/mac80211/ net/wireless/ net/ieee80211/ \

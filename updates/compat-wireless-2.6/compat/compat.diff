@@ -1052,65 +1052,6 @@
  
  /**
   * enum mac80211_rx_flags - receive flags
---- a/net/mac80211/wme.c	2008-07-06 23:07:15.000000000 -0700
-+++ b/net/mac80211/wme.c	2008-07-06 23:07:17.000000000 -0700
-@@ -17,6 +17,9 @@
- #include <net/mac80211.h>
- #include "ieee80211_i.h"
- #include "wme.h"
-+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
-+#include "mq_compat.h"
-+#endif
- 
- /* maximum number of hardware queues we support. */
- #define QD_MAX_QUEUES (IEEE80211_MAX_AMPDU_QUEUES + IEEE80211_MAX_QUEUES)
-@@ -319,14 +322,22 @@
- 
- 
- /* called whenever parameters are updated on existing qdisc */
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
-+static int wme_qdiscop_tune(struct Qdisc *qd, struct rtattr *opt)
-+#else
- static int wme_qdiscop_tune(struct Qdisc *qd, struct nlattr *opt)
-+#endif
- {
- 	return 0;
- }
- 
- 
- /* called during initial creation of qdisc on device */
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
-+static int wme_qdiscop_init(struct Qdisc *qd, struct rtattr *opt)
-+#else
- static int wme_qdiscop_init(struct Qdisc *qd, struct nlattr *opt)
-+#endif
- {
- 	struct ieee80211_sched_data *q = qdisc_priv(qd);
- 	struct net_device *dev = qd->dev;
-@@ -447,7 +458,11 @@
- 
- 
- static int wme_classop_change(struct Qdisc *qd, u32 handle, u32 parent,
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
-+				struct rtattr **tca, unsigned long *arg)
-+#else
- 			      struct nlattr **tca, unsigned long *arg)
-+#endif
- {
- 	unsigned long cl = *arg;
- 	struct ieee80211_local *local = wdev_priv(qd->dev->ieee80211_ptr);
-@@ -531,7 +546,11 @@
- 
- /* this qdisc is classful (i.e. has classes, some of which may have leaf qdiscs attached)
-  * - these are the operations on the classes */
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
-+static struct Qdisc_class_ops class_ops =
-+#else
- static const struct Qdisc_class_ops class_ops =
-+#endif
- {
- 	.graft = wme_classop_graft,
- 	.leaf = wme_classop_leaf,
 --- a/net/mac80211/main.c	2008-07-06 23:07:14.000000000 -0700
 +++ b/net/mac80211/main.c	2008-07-06 23:07:17.000000000 -0700
 @@ -21,7 +21,9 @@
@@ -1160,3 +1101,74 @@
  	mdev->set_multicast_list = ieee80211_master_set_multicast_list;
  
  	sdata->vif.type = IEEE80211_IF_TYPE_AP;
+--- a/net/mac80211/wme.c	2008-07-08 07:18:20.000000000 -0700
++++ b/net/mac80211/wme.c	2008-07-08 07:18:23.000000000 -0700
+@@ -17,6 +17,9 @@
+ #include <net/mac80211.h>
+ #include "ieee80211_i.h"
+ #include "wme.h"
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,22))
++#include "mq_compat.h"
++#endif
+ 
+ /* maximum number of hardware queues we support. */
+ #define QD_MAX_QUEUES (IEEE80211_MAX_AMPDU_QUEUES + IEEE80211_MAX_QUEUES)
+@@ -318,14 +321,22 @@
+ 
+ 
+ /* called whenever parameters are updated on existing qdisc */
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
++static int wme_qdiscop_tune(struct Qdisc *qd, struct rtattr *opt)
++#else
+ static int wme_qdiscop_tune(struct Qdisc *qd, struct nlattr *opt)
++#endif
+ {
+ 	return 0;
+ }
+ 
+ 
+ /* called during initial creation of qdisc on device */
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
++static int wme_qdiscop_init(struct Qdisc *qd, struct rtattr *opt)
++#else
+ static int wme_qdiscop_init(struct Qdisc *qd, struct nlattr *opt)
++#endif
+ {
+ 	struct ieee80211_sched_data *q = qdisc_priv(qd);
+ 	struct net_device *dev = qd->dev;
+@@ -446,7 +457,11 @@
+ 
+ 
+ static int wme_classop_change(struct Qdisc *qd, u32 handle, u32 parent,
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
++				struct rtattr **tca, unsigned long *arg)
++#else
+ 			      struct nlattr **tca, unsigned long *arg)
++#endif
+ {
+ 	unsigned long cl = *arg;
+ 	struct ieee80211_local *local = wdev_priv(qd->dev->ieee80211_ptr);
+@@ -530,7 +545,11 @@
+ 
+ /* this qdisc is classful (i.e. has classes, some of which may have leaf qdiscs attached)
+  * - these are the operations on the classes */
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
++static struct Qdisc_class_ops class_ops =
++#else
+ static const struct Qdisc_class_ops class_ops =
++#endif
+ {
+ 	.graft = wme_classop_graft,
+ 	.leaf = wme_classop_leaf,
+--- a/drivers/net/wireless/rt2x00/rt2x00rfkill.c	2008-07-09 05:07:17.000000000 -0700
++++ b/drivers/net/wireless/rt2x00/rt2x00rfkill.c	2008-07-09 05:02:12.000000000 -0700
+@@ -141,7 +141,9 @@
+ 	rt2x00dev->rfkill->data = rt2x00dev;
+ 	rt2x00dev->rfkill->state = -1;
+ 	rt2x00dev->rfkill->toggle_radio = rt2x00rfkill_toggle_radio;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+ 	rt2x00dev->rfkill->get_state = rt2x00rfkill_get_state;
++#endif
+ 
+ 	INIT_DELAYED_WORK(&rt2x00dev->rfkill_work, rt2x00rfkill_poll);
+ 
