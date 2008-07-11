@@ -477,6 +477,15 @@ static inline void led_classdev_unregister_suspended(struct led_classdev *lcd)
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))
 
+/* from include/linux/device.h */
+/* device_create_drvdata() is new */
+extern struct device *device_create_drvdata(struct class *cls,
+	struct device *parent,
+	dev_t devt,
+	void *drvdata,
+	const char *fmt, ...)
+__attribute__((format(printf, 5, 6)));
+
 /* This is from include/linux/list.h */
 
 /**
