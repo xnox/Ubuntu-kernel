@@ -118,6 +118,7 @@ enum {
 /* ALC269 models */
 enum {
 	ALC269_BASIC,
+	ALC269_CW020,
 	ALC269_AUTO,
 	ALC269_MODEL_LAST /* last tag */
 };
@@ -10342,6 +10343,34 @@ static struct snd_kcontrol_new alc269_capture_mixer[] = {
 	{ } /* end */
 };
 
+static struct hda_verb alc269_eapd_verbs[] = {
+	{0x14, AC_VERB_SET_EAPD_BTLENABLE, 2},
+	{0x15, AC_VERB_SET_EAPD_BTLENABLE, 2},
+	{ }
+};
+
+#define alc269_cw020_automute alc262_hippo_automute
+
+static struct hda_verb alc269_cw020_verbs[] = {
+	{0x15, AC_VERB_SET_UNSOLICITED_ENABLE, ALC880_HP_EVENT | AC_USRSP_EN},
+	{ } /* end */
+};
+
+static void alc269_cw020_unsol_event(struct hda_codec *codec,
+		unsigned int res)
+{
+	//printk("alc269_cw020_unsol_event:0x%x\n",res);
+	if ((res >> 26) != ALC880_HP_EVENT)
+	  return;
+	alc269_cw020_automute(codec);
+}
+
+static void alc269_cw020_init_hook(struct hda_codec *codec)
+{
+	//printk("alc269_cw020_init_hook\n");
+	alc269_cw020_automute(codec);
+}
+
 /*
  * generic initialization of ADC, input mixers and output mixers
  */
@@ -10564,6 +10593,7 @@ static void alc269_auto_init(struct hda_codec *codec)
  */
 static const char *alc269_models[ALC269_MODEL_LAST] = {
 	[ALC269_BASIC]		= "basic",
+	[ALC269_CW020]		= "cw020",
 };
 
 static struct snd_pci_quirk alc269_cfg_tbl[] = {
@@ -10580,6 +10610,19 @@ static struct alc_config_preset alc269_presets[] = {
 		.num_channel_mode = ARRAY_SIZE(alc269_modes),
 		.channel_mode = alc269_modes,
 		.input_mux = &alc269_capture_source,
+	},
+	[ALC269_CW020] = {
+		.mixers = { alc269_base_mixer },
+		.init_verbs = { alc269_init_verbs, alc269_eapd_verbs, 
+		   alc269_cw020_verbs },
+		.num_dacs = ARRAY_SIZE(alc269_dac_nids),
+		.dac_nids = alc269_dac_nids,
+		.hp_nid = 0x03,
+		.num_channel_mode = ARRAY_SIZE(alc269_modes),
+		.channel_mode = alc269_modes,
+		.input_mux = &alc269_capture_source,
+		.unsol_event = alc269_cw020_unsol_event,
+		.init_hook = alc269_cw020_init_hook,
 	},
 };
 
@@ -13432,7 +13475,6 @@ static struct alc_config_preset alc662_presets[] = {
 		.unsol_event = alc662_eeepc_ep20_unsol_event,
 		.init_hook = alc662_eeepc_ep20_inithook,
 	},
-
 };
 
 
