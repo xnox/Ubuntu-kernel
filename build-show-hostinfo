@@ -22,11 +22,5 @@ CHROOTCMD: $CHROOTCMD
 CHROOTS:   $(QueryChroots $HOST)
 SRCDIR:    $SRCDIR
 EOD
-if ${VERBOSE}; then
-	echo "--- Cleanup Script ---"
-	echo "$(EmitDoClean)"
-	echo "--- Build Script ---"
-	echo "$(EmitDoBuild 1)"
-fi
 
 exit 0

@@ -1,14 +1,43 @@
 #!/bin/bash
 . $(dirname $0)/build-common
 
-if [ "$1" = "" ]; then
-	echo "Usage: $0 <system>"
+BRANCH="master"
+TARGET=""
+while [ $# -gt 0 ]; do
+	case $1 in
+		-b|--branch)
+			BRANCH="$2"
+			shift
+			;;
+		-*|--*)
+			echo "Unknown option <$1>!" >&2
+			exit 1
+			;;
+		*)
+			if [ "${TARGET}" = "" ]; then
+				TARGET="$1"
+			else
+				echo "Too many arguments!" >&2
+				exit 1
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ "$(git-branch|grep "${BRANCH}")" = "" ]; then
+	echo "No branch <${BRANCH}> found!" >&2
 	exit 1
 fi
 
-GetHostEnvironment $1
+if [ "${TARGET}" = "" ]; then
+	echo "Usage: $(basename $0) [<options>] <system>"
+	exit 1
+fi
 
-status=$($(dirname $0)/build-check $1)
+GetHostEnvironment ${TARGET}
+
+status=$($(dirname $0)/build-check ${TARGET})
 if [ $? -ne 0 ]; then
 	echo "${SYSNAME}: $status"
 	exit 1
@@ -37,9 +66,6 @@ if [ ! -d ${SRCDIR}/.git ]; then
 	exit 1
 fi
 
-echo "  local: sending status scripts..."
-scp -q $(dirname $0)/target-scripts/run-*status ${HOST}:${BASEDIR}
-
 cat <<EOD | ssh ${HOST} 2>/dev/null || exit 1
 if [ ! -d $BUILDDIR ]; then
 	echo "  remote: creating $BUILDDIR"
@@ -60,10 +86,13 @@ if [ ! -d "${BUILDDIR}/.git" ]; then
 fi
 EOD
 
+echo "  local: sending status scripts..."
+scp -q $(dirname $0)/target-scripts/run-* ${HOST}:${BASEDIR}
+
 echo "  local: using git to push..."
 cd "${SRCDIR}"
-git-send-pack --force ${HOST}:${BUILDDIR} master || exit 1
+git-push --tags --force ${HOST}:${BUILDDIR} ${BRANCH} || exit 1
 
 echo "  ${HOST}: cleaning up build area ..."
-EmitDoClean | ssh ${HOST} 2>/dev/null
+ssh ${HOST} ${BASEDIR}/run-clean --branch ${BRANCH} $(basename ${BUILDDIR})
 
