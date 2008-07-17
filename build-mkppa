@@ -174,7 +174,13 @@ fi
 #
 # Get the revision number of the last release (the latest tag).
 #
-LASTRELEASE=$(git tag -l|grep Ubuntu|sort -t- -k2n -k3n|tail -1|cut -d- -f3)
+if [ "$PPABASE" = "" ]; then
+	LASTRELEASE=$(
+		git tag -l|grep Ubuntu|sort -t- -k2n -k3n|tail -1|cut -d- -f3
+	)
+else
+	LASTRELEASE=$(echo $PPABASE|cut -d- -f3)
+fi
 
 #
 # Apply all patches in the series file (patches are in git-format-patch style).
@@ -277,8 +283,8 @@ if [ -d debian/abi ]; then
 		fi
 		echo "Generate ABI modules files..."
 		cp -r debian/abi/$VER-$LASTRELEASE debian/abi/$VER-$ABI.$REL
-		find debian/abi/$VER-$ABI.$REL -type f ! -name '*.modules' \
-			-exec rm {} \;
+		#find debian/abi/$VER-$ABI.$REL -type f ! -name '*.modules' \
+		#	-exec rm {} \;
 		echo $ABI >debian/abi/$VER-$ABI.$REL/abiname
 	fi
 	git-add debian/abi/$VER-$ABI.$REL
