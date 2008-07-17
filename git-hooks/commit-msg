@@ -31,7 +31,9 @@ if ! (grep -v '^#' "$1" | head -1 | egrep -q '^UBUNTU: [^ ]+'); then
 fi
 
 # Similar to above, except we want a SAUCE commit for non ubuntu/debian
-# files (anything from stock kernel tree).
+# files (anything from stock kernel tree). Note that the pre-commit check
+# will verify that we are not comitting ubuntu/debian stuff along with
+# changes to the kernel.
 if (git-diff-index -M --name-only --cached HEAD | egrep -v '^(ubuntu|debian)/'); then
 	if ! (grep -v '^#' "$1" | head -1 | egrep -q '^UBUNTU: SAUCE: [^ ]+'); then
 		if [ "`git-config --bool ubuntu.allow-non-sauce-commit`" = "true" ]; then
