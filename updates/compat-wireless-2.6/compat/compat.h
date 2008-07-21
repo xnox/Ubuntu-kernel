@@ -136,6 +136,32 @@ static inline void pci_clear_mwi(struct pci_dev *dev)
 /* Compat work for < 2.6.23 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
 
+/*
+ * Tell gcc if a function is cold. The compiler will assume any path
+ * directly leading to the call is unlikely.
+ */
+
+#if !(__GNUC__ == 4 && __GNUC_MINOR__ < 3)
+/* Mark functions as cold. gcc will assume any path leading to a call
+ * to them will be unlikely.  This means a lot of manual unlikely()s
+ * are unnecessary now for any paths leading to the usual suspects
+ * like BUG(), printk(), panic() etc. [but let's keep them for now for
+ * older compilers]
+ *
+ * Early snapshots of gcc 4.3 don't support this and we can't detect this
+ * in the preprocessor, but we can live with this because they're unreleased.
+ * Maketime probing would be overkill here.
+ *
+ * gcc also has a __attribute__((__hot__)) to move hot functions into
+ * a special section, but I don't see any sense in this right now in
+ * the kernel context */
+#define __cold                  __attribute__((__cold__))
+#endif /* gcc 4.3 check */
+
+#ifndef __cold
+#define __cold
+#endif
+
 /* Added as of 2.6.23 in include/linux/netdevice.h */
 #define alloc_netdev_mq(sizeof_priv, name, setup, queue) \
 	alloc_netdev(sizeof_priv, name, setup)
@@ -407,6 +433,18 @@ static inline void set_freezable(void) {}
 #endif /* CONFIG_PM_SLEEP */
 
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)) */
+
+
+
+
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
+/* Added on 2.6.24 in include/linux/types.h by Al viro on commit 142956af */
+typedef unsigned long               uintptr_t;
+#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)) */
+
+
+
 
 /* Compat work for 2.6.24 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))

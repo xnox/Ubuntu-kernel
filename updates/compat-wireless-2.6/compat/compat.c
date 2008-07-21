@@ -642,6 +642,13 @@ EXPORT_SYMBOL(pci_try_set_mwi);
 
 /* All things not in 2.6.25 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))
+
+static void device_create_release(struct device *dev)
+{
+	pr_debug("device: '%s': %s\n", dev->bus_id, __func__);
+	kfree(dev);
+}
+
 /**
  * device_create_vargs - creates a device and registers it with sysfs
  * @class: pointer to the struct class that this device should be registered to

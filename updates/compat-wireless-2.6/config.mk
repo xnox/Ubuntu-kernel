@@ -27,6 +27,7 @@ CONFIG_MAC80211=m
 ifeq ($(shell test -e $(KLIB_BUILD)/Makefile && echo yes),yes)
 KERNEL_SUBLEVEL = $(shell $(MAKE) -C $(KLIB_BUILD) kernelversion | sed -n 's/^2\.6\.\([0-9]\+\).*/\1/p')
 ifeq ($(shell test $(KERNEL_SUBLEVEL) -lt 23 && echo yes),yes)
+$(error "ERROR: There is a bug with compat-wireless on 2.6.22. Remove me if you want to fix me")
 CONFIG_MAC80211_QOS=y
 else
 

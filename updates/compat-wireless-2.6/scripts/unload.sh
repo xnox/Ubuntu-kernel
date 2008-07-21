@@ -23,7 +23,6 @@ MODULES="$MODULES rndis_wlan rndis_host cdc_ether usbnet"
 # eeprom_93cx6 is used by rt2x00 (rt61pci, rt2500pci, rt2400pci) 
 # and Realtek drivers ( rtl8187, rtl8180)
 MODULES="$MODULES eeprom_93cx6"
-MODULES="$MODULES led_class"
 MODULES="$MODULES mac80211 cfg80211"
 MADWIFI_MODULES="ath_pci ath_rate_sample wlan_scan_sta wlan ath_hal"
 IPW3945D="/sbin/ipw3945d-`uname -r`"
