@@ -1,7 +1,7 @@
 /* -*-linux-c-*-
  *
- * Intel Wireless WiMax Connection 2400m
- * RX handling
+ * Intel Wireless WiMAX Connection 2400m
+ * Transport/bus independent RX handling
  *
  *
  *
@@ -36,190 +36,30 @@
  *
  * Intel Corporation <linux-wimax@intel.com>
  * Yanir Lubetkin <yanirx.lubetkin@intel.com>
- * Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
  *  - Initial implementation
+ * Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
+ *  - Use skb_clone(), break up processing in chunks
+ *  - Split transport/device specific
+ *  - Make buffer size dynamic to exert less memory pressure
  *
  *
- * FIXME: docs
- */
-#include "../version.h"
-#include <linux/kernel.h>
-#include <linux/kernel-compat.h>	/* @lket@ignore-line */
-#include <linux/if_arp.h>
-#include <linux/netdevice.h>
-#include <linux/workqueue.h>
-#include <linux/usb.h>
-#include <linux/usb-compat.h>
-
-#ifdef __USE_LEGACY_IOCTL
-#include "besor_legacy.h"
-#endif /* __USE_LEGACY_IOCTL */
-
-#include "i2400m.h"
-#define D_LOCAL 1
-#include "../debug.h"
-
-
-enum {
-	I2400M_RX_CTX_MAX = 5
-};
-
-
-/*
- * i2400m_rx_ctx - data reception context
+ * This handles the RX path.
  *
- * We need to do deferred processing, as we are going to do some
- * muching that is not that ok for an interrupt context, so we'll
- * defer to a worqueue.
+ * We receive an RX message from the bus-specific driver, which
+ * contains one or more payloads that have potentially different
+ * destinataries (data or control paths).
  *
- * We do some throtling here as if the device keeps asking us to
- * receive data we might go and queue too many reads; we allow a
- * maximum of I2400M_RX_CTX_MAX requests pending;
- * i2400m_rx_ctx_setup() and i2400m_rx_ctx_destroy() handle that. If
- * the current count is over the max, we don't submit another
- * one. FIXME: this will go away once we just preallocate a bunch of
- * contexts and limit ourselves to use only those.
+ * So we just take that payload from the transport specific code in
+ * the form of an skb, break it up in chunks (a cloned skb each in the
+ * case of network packets) and pass it to netdev or to the
+ * command/ack handler (and from there to the WiMAX stack).
  *
- * So instead of allocating three different items (urb, buffer,
- * workqueue struct), we pack it up in a single one. This simplifies
- * refcount management.
- *
- * In here we pack all the stuff we need to handle a bunch of received
- * packets.
- *
- * NOTE: It is safe to keep a seemingly not referenced pointer to
- *       i2400m in the rx_ctx struct, because we take one to the
- *       usb_iface the device is attached to in
- *       i2400m_rx_ctx_setup().
- */
-#warning FIXME: these guys should be preallocated at _rx_setup() have at least two
-#warning FIXME: move buffer to be a big skb we can clone later on
-struct i2400m_rx_ctx {
-	struct i2400m *i2400m;
-	struct work_struct ws;
-	struct urb urb;
-#warning FIXME: too big an allocation - check if we really need this much
-	unsigned char buffer[I2400M_MAX_MSG_LEN];
-};
-
-static
-void i2400m_rx_ctx_setup(struct i2400m *i2400m, struct i2400m_rx_ctx *ctx)
-{
-	/* INIT_WORK() is done when arming the work */
-	usb_init_urb(&ctx->urb);
-	usb_get_urb(&ctx->urb);	/* we manage the URB life cycles */
-	usb_get_intf(i2400m->usb_iface);
-	ctx->i2400m = i2400m;	/* See note about refcount */
-	atomic_inc(&i2400m->rx_ctx_count);
-};
-
-static
-void i2400m_rx_ctx_destroy(struct i2400m_rx_ctx *ctx)
-{
-	struct i2400m *i2400m = ctx->i2400m;
-	atomic_dec(&i2400m->rx_ctx_count);
-	usb_put_intf(i2400m->usb_iface);
-	kfree(ctx);
-};
-
-
-/**
- * i2400m_rx_packet - act on a received packet and payload
- *
- * @i2400m: device instance
- * @packet: pointer to packet descriptor
- * @payload: pointer to packet payload; the amount of available data
- *           is guaranteeed to be as much as declared in packet->size.
- *
- * Upon reception of a packet, look at its guts in the packet
- * descriptor and decide what to do with it.
- */
-#warning FIXME: payload should be const
-static
-void i2400m_rx_packet(struct i2400m *i2400m,
-		      const union i2400m_device_pkt_hdr *packet,
-		      void *payload)
-{
-	struct device *dev = &i2400m->usb_iface->dev;
-	struct wimax_dev *wimax_dev = &i2400m->wimax_dev;
-
-	/* sanity */
-	switch (packet->type) {
-	case I2400M_PT_DATA:
-		d_printf(2, dev, "RX: data packet %zu bytes\n", packet->size);
-		i2400m_net_rx(i2400m, payload, packet->size);
-		break;
-	case I2400M_PT_CTRL:
-#ifdef __USE_LEGACY_IOCTL	/* Ugly switch, but soon to be removed */
-		if (i2400m->ctl_iface == 0) {
-			d_printf(2, dev,
-				 "RX: control packet [legacy] %zu bytes\n",
-				packet->size);
-			i2400m_legacy_ctl_cb(i2400m, payload, packet->size);
-			break;
-		}
-#endif
-		if (wimax_dev->genl_pid != 0) {
-			d_printf(2, dev,
-				 "RX: control packet [genl] %zu bytes\n",
-				 packet->size);
-			d_dump(3, dev, payload, packet->size);
-#warning FIXME: should check retval and complain on error
-			wimax_msg_to_user(
-				wimax_dev, payload, packet->size,
-				GFP_ATOMIC);
-		} else {
-			d_printf(2, dev, "RX: control packet [no listeners] "
-				 "%zu bytes\n", packet->size);
-			d_dump(3, dev, payload, packet->size);
-		}
-		break;
-	case I2400M_PT_TRACE:
-		d_printf(2, dev, "RX: trace packet %zu bytes\n", packet->size);
-		d_dump(6, dev, payload, packet->size);
-#warning FIXME: bubble up to userspace as a GNL trace_event
-#warning "FIXME: Inaky - your trace callback here\
- - you MUST copy the buffer in the callback + callback can not sleep"
-		break;
-	default:	/* Anything else shouldn't come to the host */
-		if (printk_ratelimit())
-			dev_err(dev, "RX: HW BUG? unexpected packet type %u\n",
-				packet->type);
-	}
-}
-
-
-static
-int i2400m_rx_ctx_submit(struct i2400m_rx_ctx *rx_ctx,
-			   gfp_t gfp_flags)
-{
-	int ret;
-	struct device *dev = &rx_ctx->i2400m->usb_iface->dev;
-
-	d_fnstart(2, dev, "(rx_ctx %p)\n", rx_ctx);
-	ret = usb_submit_urb(&rx_ctx->urb, gfp_flags);
-	if (ret != 0)
-		dev_err(dev, "RX: cannot submit urb: %d\n", ret);
-	d_fnend(2, dev, "(rx_ctx %p) = %d\n", rx_ctx, ret);
-	return ret;
-}
-
-
-/**
- * i2400_bulk_in_dpc - 2nd stage incoming data handler
- *
- * @arg: opaque - actually a pointer to the incoming bulk urb.
- *
- * dpc = deferred proc call. naming relic from that other OS.
- * called from within a tasklet, this function parses the incoming urb,
- * calls the proper higher level callbacks, and frees the urb and its buffer.
- *
- * Parse in a buffer of data that contains a message sent from the device.
+ * TRANSMISSION FORMAT:
  *
  * The format of the buffer is:
  *
- * HEADER                      (struct i2400m_device_msg_hdr)
- * PAYLOAD DESCRIPTOR 0        (struct i2400m_device_pkt_hdr)
+ * HEADER                      (struct i2400m_msg_hdr)
+ * PAYLOAD DESCRIPTOR 0        (struct i2400m_pld)
  * PAYLOAD DESCRIPTOR 1
  * ...
  * PAYLOAD DESCRIPTOR N
@@ -228,254 +68,350 @@ int i2400m_rx_ctx_submit(struct i2400m_rx_ctx *rx_ctx,
  * ...
  * PAYLOAD N
  *
- * Now, depending on what each packet is, we need to do one thing or
- * the other and thus we'll multiplex the call.
+ * See tx.c for a deeper description on alignment requirements and
+ * other fun facts of it.
  *
- * FIXME: a single buffer might contain multiple payloads, used by
- *        potentially different subsystems. Devise a way to share the
- *        buffer so we don't have to copy around; maybe we can just
- *        set skb->destructor on the skb we pass up as it might
- *        do just what we need (in generic netlink we also need a
- *        skb...sooo).
+ * ROADMAP
  *
- * FIXME: Allocating a 64k buffer and using that as an RX buffer is
- *        not something that makes me specially proud; I bet we never
- *        really fill it. Change to have a smaller buffer (make it a
- *        floating size)--check with the FW guys if the hw will scale
- *        back payloads if the RX buffer is too small.
+ * i2400m_rx()
+ *   i2400m_rx_msg_hdr_check()
+ *   i2400m_rx_pkt_descr_check()
+ *   i2400m_rx_payload()
+ *     i2400m_net_rx()
+ *     i2400m_rx_ctl()
+ *       i2400m_report_hook()
+ *       wimax_msg_to_user()
  */
-static void i2400m_bulk_in_work(struct work_struct *ws)
-{
-	int i, result;
-	struct i2400m_rx_ctx *rx_ctx =
-		container_of(ws, struct i2400m_rx_ctx, ws);
-	struct urb *in_urb = &rx_ctx->urb;
-	struct i2400m *i2400m = rx_ctx->i2400m;
-	struct device *dev = &i2400m->usb_iface->dev;
-	const struct i2400m_msg_preview *msg;
-	const struct i2400m_device_msg_hdr *msg_hdr;
-	union i2400m_device_pkt_hdr packet;
-#warning FIXME: payload should be const
-	void *buf;
-	size_t pl_itr, buf_size, pending;
+#include <linux/kernel.h>
+#include <linux/kernel-compat.h>	/* @lket@ignore-line */
+#include <linux/if_arp.h>
+#include <linux/netdevice.h>
+#include <linux/workqueue.h>
+#include "i2400m.h"
 
-	d_fnstart(4, dev, "(urb %p [%p])\n", in_urb, in_urb->transfer_buffer);
-	/* Check message header */
-	buf_size = in_urb->actual_length;
+
+#define D_SUBMODULE rx
+#include "debug-levels.h"
+
+struct i2400m_report_hook_args {
+	struct sk_buff *skb_rx;
+	const struct i2400m_l3l4_hdr *l3l4_hdr;
+	size_t size;
+};
+
+
+/*
+ * Unpack arguments from the deferred call, execute it and drop
+ * references.
+ *
+ * Silly NOTE: References are needed because we are a separate thread;
+ *     otherwise the buffer changes under us because it is released by
+ *     the original caller.
+ */
+static
+void i2400m_report_hook_work(struct work_struct *ws)
+{
+	struct i2400m_work *iw =
+		container_of(ws, struct i2400m_work, ws);
+	struct i2400m_report_hook_args *args = (void *) iw->pl;
+	i2400m_report_hook(iw->i2400m, args->l3l4_hdr, args->size);
+	kfree_skb(args->skb_rx);
+	i2400m_put(iw->i2400m);
+	kfree(iw);
+}
+
+
+/*
+ * Receive and (minimally) process a control payload
+ *
+ * @i2400m: device descriptor
+ * @skb_rx: skb that contains the payload (for reference counting)
+ * @payload: pointer to message
+ * @size: size of the message
+ *
+ * There are two types of control RX messages: reports (asynchronous,
+ * like your every day life interrupts) and 'acks' (reponses to a
+ * command, get or set request).
+ *
+ * If it is a report, we run hooks on it (to extract information for
+ * things we need to do in the driver) and then pass it over to the
+ * WiMAX stack to send it to user space.
+ *
+ * NOTE: The driver uses i2400m->work_queue for TX and RX (and this
+ *     function is called from that context), so if we try to call any
+ *     commands from here, we'll deadlock. So processing of
+ *     notifications is deferred to yet another workqueue (the
+ *     system's generic).
+ *
+ * If it is not a report, it is an ack to a previosuly executed
+ * command, set or get, so wake up whoever is waiting for it from
+ * i2400m_msg_to_dev(). It might end up passing it up to the user.
+ *
+ * Note that the sizes we pass to other functions from here are the
+ * sizes of the _l3l4_hdr + payload, not full buffer sizes, as we have
+ * verified in _msg_size_check() that they are congruent.
+ *
+ * For reports: We can't clone the original skb where the data is
+ * because we need to send this up via netlink; netlink has to add
+ * headers and we can't overwrite what's preceeding the payload...as
+ * it is another message. So we just dup them.
+ */
+static
+void i2400m_rx_ctl(struct i2400m *i2400m, struct sk_buff *skb_rx,
+		   const void *payload, size_t size)
+{
+	int result;
+	struct device *dev = i2400m_dev(i2400m);
+	struct wimax_dev *wimax_dev = &i2400m->wimax_dev;
+	const struct i2400m_l3l4_hdr *l3l4_hdr = payload;
+	unsigned msg_type;
+
+	result = i2400m_msg_size_check(i2400m, l3l4_hdr, size);
+	if (result < 0) {
+		dev_err(dev, "HW BUG? device sent a bad message: %d\n",
+			result);
+		goto error_check;
+	}
+	msg_type = le16_to_cpu(l3l4_hdr->type);
+	d_printf(1, dev, "%s 0x%04x: %u bytes\n",
+		 msg_type & I2400M_MT_REPORT_MASK? "REPORT" : "CMD/SET/GET",
+		 msg_type, size);
+	d_dump(2, dev, l3l4_hdr, size);
+	if (msg_type & I2400M_MT_REPORT_MASK) {
+		struct i2400m_report_hook_args args = {
+			.skb_rx = skb_rx,
+			.l3l4_hdr = l3l4_hdr,
+			.size = size
+		};
+		skb_get(skb_rx);
+		i2400m_schedule_work(i2400m, 0, i2400m_report_hook_work,
+				     GFP_KERNEL, &args, sizeof(args));
+		if (unlikely(i2400m->ready == 0))	/* only send if up */
+			return;
+		result = wimax_msg_to_user(&i2400m->wimax_dev, l3l4_hdr, size,
+					   GFP_KERNEL);
+		if (result < 0)
+			dev_err(dev, "error sending report to userspace: %d\n",
+				result);
+	} else {		/* an ack to a CMD, GET or SET */
+		i2400m->ack_skb = wimax_msg_to_user_alloc(wimax_dev, size,
+							  GFP_KERNEL);
+		if (i2400m->ack_skb == NULL) {
+			dev_err(dev, "CMD/GET/SET ack: cannot allocate SKB\n");
+			result = -ENOMEM;
+		} else
+			memcpy(i2400m->ack_skb->data, payload, size);
+		i2400m->ack_status = result;
+		complete(&i2400m->msg_completion);
+	}
+error_check:
+	return;
+}
+
+
+/*
+ * Act on a received payload
+ *
+ * @i2400m: device instance
+ * @payload: pointer to payload descriptor
+ * @payload: pointer to payload payload; the amount of available data
+ *           is guaranteeed to be as much as declared in payload->size.
+ *
+ * Upon reception of a payload, look at its guts in the payload
+ * descriptor and decide what to do with it.
+ */
+static
+void i2400m_rx_payload(struct i2400m *i2400m,
+		      struct sk_buff *skb_rx,
+		      const struct i2400m_pld *pld,
+		      const void *payload)
+{
+	struct device *dev = i2400m_dev(i2400m);
+	size_t pl_size = i2400m_pld_size(pld);
+	enum i2400m_pt pl_type = i2400m_pld_type(pld);
+
+	switch (pl_type) {
+	case I2400M_PT_DATA:
+		d_printf(3, dev, "RX: data payload %zu bytes\n", pl_size);
+		i2400m_net_rx(i2400m, skb_rx, payload, pl_size);
+		break;
+	case I2400M_PT_CTRL:
+		i2400m_rx_ctl(i2400m, skb_rx, payload, pl_size);
+		break;
+	case I2400M_PT_TRACE:
+		d_printf(4, dev, "RX: trace payload %zu bytes\n", pl_size);
+		d_dump(5, dev, payload, pl_size);
+		if (d_test(1))
+			i2400m_rx_ctl(i2400m, skb_rx, payload, pl_size);
+		break;
+	default:	/* Anything else shouldn't come to the host */
+		if (printk_ratelimit())
+			dev_err(dev, "RX: HW BUG? unexpected payload type %u\n",
+				pl_type);
+	}
+}
+
+
+/*
+ * Check received buffer's message header
+ *
+ * @i2400m: device descriptor
+ * @msg_hdr: message header
+ * @buf_size: size of the received buffer
+ *
+ * Check that the declarations done by a RX buffer message header are
+ * sane and consistent.
+ */
+static
+int i2400m_rx_msg_hdr_check(struct i2400m *i2400m,
+			    const struct i2400m_msg_hdr *msg_hdr,
+			    size_t buf_size)
+{
+	int result = -EIO;
+	struct device *dev = i2400m_dev(i2400m);
 	if (buf_size < sizeof(*msg_hdr)) {
 		dev_err(dev, "RX: HW BUG? message with short header (%zu "
 			"vs %zu bytes expected)\n", buf_size, sizeof(*msg_hdr));
-		goto error_short_hdr;
+		goto error;
 	}
-	msg = buf = in_urb->transfer_buffer;
-	msg_hdr = &msg->msg_hdr;
-	if (le32_to_cpu(msg_hdr->barker) != I2400M_D2H_MSG_BARKER) {
+	if (msg_hdr->barker != cpu_to_le32(I2400M_D2H_MSG_BARKER)) {
 		dev_err(dev, "RX: HW BUG? message received with unknown "
 			"barker 0x%08x\n", le32_to_cpu(msg_hdr->barker));
-		goto error_invalid_barker;
+		goto error;
 	}
-	if (msg_hdr->num_pkts == 0) {
+	if (msg_hdr->num_pls == 0) {
 		dev_err(dev, "RX: HW BUG? zero payload packets in message\n");
-		goto error_no_payload;
+		goto error;
 	}
-	if (le16_to_cpu(msg_hdr->num_pkts) > I2400M_MAX_PACKETS_IN_MSG) {
+	if (le16_to_cpu(msg_hdr->num_pls) > I2400M_MAX_PLS_IN_MSG) {
 		dev_err(dev, "RX: HW BUG? message contains more payload "
 			"than maximum; ignoring.\n");
-		goto error_too_many_packets;
+		goto error;
 	}
-	/* Check payload descriptor(s) */
-	pl_itr = sizeof(*msg_hdr) +		/* PAYLOAD0 offset */
-		le16_to_cpu(msg_hdr->num_pkts) * sizeof(msg->pkts[0]);
-	pl_itr = ALIGN(pl_itr, I2400M_PKT_PAD);
-	if (pl_itr > buf_size) {	/* got all the payload headers? */
+	result = 0;
+error:
+	return result;
+}
+
+
+/*
+ * Check a payload descriptor
+ *
+ * @i2400m: device descriptor
+ * @pld: payload descriptor
+ * @pl_itr: offset (in bytes) in the received buffer the payload is
+ *          located
+ * @buf_size: size of the received buffer
+ *
+ * Given a payload descriptor part of a RX buffer, check it is sane
+ * and that the data it declares fits in the buffer.
+ */
+static
+int i2400m_rx_pl_descr_check(struct i2400m *i2400m,
+			      const struct i2400m_pld *pld,
+			      size_t pl_itr, size_t buf_size)
+{
+	int result = -EIO;
+	struct device *dev = i2400m_dev(i2400m);
+	size_t pl_size = i2400m_pld_size(pld);
+	enum i2400m_pt pl_type = i2400m_pld_type(pld);
+
+	if (pl_size > I2400M_PL_SIZE_MAX) {
+		dev_err(dev, "RX: HW BUG? payload @%zu: size %u is "
+			"bigger than maximum %u; ignoring message\n",
+			pl_itr, pl_size, I2400M_PL_SIZE_MAX);
+		goto error;
+	}
+	if (pl_itr + pl_size > buf_size) {	/* enough? */
+		dev_err(dev, "RX: HW BUG? payload @%zu: size %zu "
+			"goes beyond the received buffer "
+			"size (%zu bytes); ignoring message\n",
+			pl_itr, pl_size, buf_size);
+		goto error;
+	}
+	if (pl_type >= I2400M_PT_ILLEGAL) {
+		dev_err(dev, "RX: HW BUG? illegal payload type %u; "
+			"ignoring message\n", pl_type);
+		goto error;
+	}
+	result = 0;
+error:
+	return result;
+}
+
+
+/**
+ * i2400m_rx - Receive a buffer of data from the device
+ *
+ * @i2400m: device descriptor
+ * @skb: skbuff where the data has been received
+ *
+ * Parse in a buffer of data that contains a message sent from the
+ * device. See the file header for the format. Run all checks on the
+ * buffer header, then run over each payload's descriptors, verify
+ * their consistency and act on each payload's contents.
+ * If everything is succesful, update the device's statistics.
+ *
+ * Note: You need to set the skb to contain only the length of the
+ * received buffer; for that, use skb_trim(skb, RECEIVED_SIZE).
+ */
+int i2400m_rx(struct i2400m *i2400m, struct sk_buff *skb)
+{
+	int i, result;
+	struct device *dev = i2400m_dev(i2400m);
+	const struct i2400m_msg_hdr *msg_hdr;
+	size_t pl_itr, pl_size;
+	unsigned long flags;
+
+	d_fnstart(4, dev, "(i2400m %p skb %p [size %zu])\n",
+		  i2400m, skb, skb->len);
+	result = -EIO;
+	msg_hdr = (void *) skb->data;
+	result = i2400m_rx_msg_hdr_check(i2400m, msg_hdr, skb->len);
+	if (result < 0)
+		goto error_msg_hdr_check;
+
+	pl_itr = sizeof(*msg_hdr) +	/* Check payload descriptor(s) */
+		le16_to_cpu(msg_hdr->num_pls) * sizeof(msg_hdr->pld[0]);
+	pl_itr = ALIGN(pl_itr, I2400M_PL_PAD);
+	if (pl_itr > skb->len) {	/* got all the payload descriptors? */
 		dev_err(dev, "RX: HW BUG? message too short (%zu bytes) for "
 			"%u payload descriptors (%zu each, total %u)\n",
-			buf_size, le16_to_cpu(msg_hdr->num_pkts),
-			sizeof(msg->pkts[0]), pl_itr);
-		goto error_short_pl_desc;
+			skb->len, le16_to_cpu(msg_hdr->num_pls),
+			sizeof(msg_hdr->pld[0]), pl_itr);
+		goto error_pl_descr_short;
 	}
-	/* Walk each payload packet--check we really got it */
-	for (i = 0; i < le16_to_cpu(msg_hdr->num_pkts); i++) {
-		packet.value = le32_to_cpu(msg->pkts[i].value);
-		/* sanity */
-#warning FIXME: rename to I2400M_MAX_PKT_SIZE?
-		if (packet.size > I2400M_PKT_SIZE) {
-			dev_err(dev, "RX: HW BUG? packet #%d: size %u is "
-				"bigger than maximum %u; ignoring message\n",
-				i, packet.size, I2400M_PKT_SIZE);
-			goto error_packet_size_invalid;
-		}
-		if (pl_itr + packet.size > buf_size) {	/* enough? */
-			dev_err(dev, "RX: HW BUG? packet #%d: size %u at "
-				"offset %zu goes beyond the received buffer "
-				"size (%zu bytes); ignoring message\n",
-				i, packet.size, pl_itr, buf_size);
-			goto error_packet_size_out_of_bounds;
-		}
-		if (packet.type >= I2400M_PT_ILLEGAL) {
-			dev_err(dev, "RX: HW BUG? illegal packet type %u; "
-				"ignoring message\n", packet.type);
-			goto error_packet_type_invalid;
-		}
-		i2400m_rx_packet(i2400m, &packet, buf + pl_itr);
-		pl_itr += ALIGN((size_t) packet.size, I2400M_PKT_PAD);
-	}
-error_packet_type_invalid:
-error_packet_size_out_of_bounds:
-error_packet_size_invalid:
-error_short_pl_desc:
-error_too_many_packets:
-error_no_payload:
-error_invalid_barker:
-error_short_hdr:
-#warning FIXME: handle -EIOs with EDC
-#warning FIXME: split off
-	pending = atomic_dec_return(&i2400m->rx_pending_count);
-	d_printf(2, dev, "RX: work pending %u active %u\n",
-		 pending, atomic_read(&i2400m->rx_ctx_count));
-	if (pending >= atomic_read(&i2400m->rx_ctx_count)) {
-		d_printf(0, dev, "I: recycling rx_ctx %p "
-			 "(%u pending %u active)\n", rx_ctx, pending,
-			 atomic_read(&i2400m->rx_ctx_count));
-		result = i2400m_rx_ctx_submit(rx_ctx, GFP_KERNEL);
+	/* Walk each payload payload--check we really got it */
+	for (i = 0; i < le16_to_cpu(msg_hdr->num_pls); i++) {
+		/* work around old gcc warnings */
+		pl_size = i2400m_pld_size(&msg_hdr->pld[i]);
+		result = i2400m_rx_pl_descr_check(i2400m, &msg_hdr->pld[i],
+						      pl_itr, skb->len);
 		if (result < 0)
-			dev_err(dev, "RX: can't submit URB, we'll miss data: "
-				"%d\n", result);
+			goto error_pl_descr_check;
+		i2400m_rx_payload(i2400m, skb, &msg_hdr->pld[i],
+				  skb->data + pl_itr);
+		pl_itr += ALIGN(pl_size, I2400M_PL_PAD);
 	}
-	else
-		i2400m_rx_ctx_destroy(rx_ctx);
-	d_fnend(4, dev, "\n");
+	/* Update device statistics */
+	spin_lock_irqsave(&i2400m->rx_lock, flags);
+	i2400m->rx_pl_num += i;
+	if (i > i2400m->rx_pl_max)
+		i2400m->rx_pl_max = i;
+	if (i < i2400m->rx_pl_min)
+		i2400m->rx_pl_min = i;
+	i2400m->rx_num++;
+	i2400m->rx_size_acc += skb->len;
+	if (skb->len < i2400m->rx_size_min)
+		i2400m->rx_size_min = skb->len;
+	if (skb->len > i2400m->rx_size_max)
+		i2400m->rx_size_max = skb->len;
+	spin_unlock_irqrestore(&i2400m->rx_lock, flags);
+error_pl_descr_check:
+error_pl_descr_short:
+error_msg_hdr_check:
+	d_fnend(4, dev, "(i2400m %p skb %p [size %zu]) = %d\n",
+		i2400m, skb, skb->len, result);
+	return result;
 }
-
-
-/**
- * i2400_bulk_in_cb - Handle USB reception and spawn workqueue
- *
- * @urb: the urb for which this function was called
- */
-static void i2400m_bulk_in_cb(struct urb *urb)
-{
-	int ret;
-	struct i2400m_rx_ctx *rx_ctx =
-		container_of(urb, struct i2400m_rx_ctx, urb);
-	struct i2400m *i2400m = rx_ctx->i2400m;
-	struct device *dev = &i2400m->usb_iface->dev;
-
-	d_fnstart(4, dev, "(urb %p [i2400m %p ctx %p] status %d length %d)\n",
-		  urb, i2400m, rx_ctx, urb->status, urb->actual_length);
-	ret = urb->status;
-	switch (ret) {
-	case 0:
-		if (urb->actual_length == 0)	/* ZLP? resubmit */
-			goto resubmit;
-		INIT_WORK(&rx_ctx->ws, i2400m_bulk_in_work);
-		d_printf(4, dev, "RX: work scheduled for rx_ctx %p\n", rx_ctx);
-		schedule_work(&rx_ctx->ws);
-		break;
-	case -ECONNRESET:		/* disconnection */
-	case -ENOENT:			/* ditto */
-	case -ESHUTDOWN:		/* URB killed */
-		d_printf(2, dev, "RX: URB failed, device disconnected: %d\n",
-			 ret);
-		i2400m_rx_ctx_destroy(rx_ctx);
-		goto out;
-	default:			/* Some error? */
-		if (edc_inc(&i2400m->urb_edc,
-			    EDC_MAX_ERRORS, EDC_ERROR_TIMEFRAME)) {
-			dev_err(dev, "RX: maximum errors in URB exceeded; "
-				"resetting device\n");
-			i2400m_rx_ctx_destroy(rx_ctx);
-			usb_dev_reset_delayed(i2400m->usb_dev);
-			goto out;
-		}
-		dev_err(dev, "RX: URB error %d, retrying\n", urb->status);
-		goto resubmit;
-	}
-out:
-	d_fnend(4, dev, "(urb %p [i2400m %p ctx %p] status %d length %d)\n",
-		urb, i2400m, rx_ctx, urb->status, urb->actual_length);
-	return;
-
-resubmit:
-	ret = usb_submit_urb(&rx_ctx->urb, GFP_ATOMIC);
-	if (ret != 0) {
-		dev_err(dev, "RX: cannot submit notification URB: %d\n", ret);
-		i2400m_rx_ctx_destroy(rx_ctx);
-	}
-	goto out;
-}
-
-
-/**
- * i2400m_bulk_in_submit - Read a message from the device
- *
- * @i2400m: device instance
- *
- * When the message is read the callback will be called and the
- * message processing will be started. We call this function when we
- * get a message in the notification endpoint that is 16 bytes of
- * zeroes.
- *
- * FIXME: this function is called from an atomic context, which is
- *        another reason why the hug allocations we make are not
- *        good.
- */
-int i2400m_bulk_in_submit(struct i2400m *i2400m, gfp_t gfp_flags)
-{
-	int ret, rx_ctx_count;
-	struct device *dev = &i2400m->usb_iface->dev;
-	int usb_pipe;
-	struct usb_endpoint_descriptor *epd;
-	struct i2400m_rx_ctx *rx_ctx;
-
-	d_fnstart(2, dev, "(i2400m %p gfp_flags 0x%08x)\n", i2400m, gfp_flags);
-
-	atomic_inc(&i2400m->rx_pending_count);
-	rx_ctx_count = atomic_read(&i2400m->rx_ctx_count);
-	d_printf(2, dev, "RX: pending %u active %u\n",
-		 atomic_read(&i2400m->rx_pending_count), rx_ctx_count);
-	if (rx_ctx_count > I2400M_RX_CTX_MAX) {
-		ret = 0;
-		if (printk_ratelimit())
-			dev_err(dev, "RX: throttling down read requests, "
-				"%u pending\n", rx_ctx_count);
-		else
-			d_printf(0, dev, "RX: throttling down read requests, "
-				 "%u pending\n", rx_ctx_count);
-		goto error_too_many;
-	}
-	ret = -ENOMEM;
-	rx_ctx = kzalloc(sizeof(*rx_ctx), gfp_flags);
-	if (rx_ctx == NULL) {
-		dev_err(dev, "RX: cannot allocate context\n");
-		goto error_ctx_alloc;
-	}
-	i2400m_rx_ctx_setup(i2400m, rx_ctx);
-
-	epd = &i2400m->usb_iface->cur_altsetting	/* Setup URB */
-		->endpoint[I2400M_EP_BULK_IN].desc;
-	usb_pipe = usb_rcvbulkpipe(i2400m->usb_dev, epd->bEndpointAddress);
-	usb_fill_bulk_urb(&rx_ctx->urb, i2400m->usb_dev, usb_pipe,
-			  rx_ctx->buffer, sizeof(rx_ctx->buffer),
-			  i2400m_bulk_in_cb, rx_ctx);
-	ret = i2400m_rx_ctx_submit(rx_ctx, gfp_flags);
-	if (ret != 0)
-		goto error_urb_submit;
-	d_fnend(2, dev, "(i2400m %p gfp_flags 0x%08x) = %d\n",
-		i2400m, gfp_flags, ret);
-	return ret;
-
-error_urb_submit:
-	i2400m_rx_ctx_destroy(rx_ctx);
-error_ctx_alloc:
-error_too_many:
-	d_fnend(2, dev, "(i2400m %p gfp_flags 0x%08x) = %d\n",
-		i2400m, gfp_flags, ret);
-	return ret;
-}
-
-
-void i2400m_rx_release(struct i2400m *i2400m) 
-{
-	flush_scheduled_work();	/* rx work struct handlers */
-}
+EXPORT_SYMBOL_GPL(i2400m_rx);

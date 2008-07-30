@@ -40,8 +40,6 @@
  * seems like most deployments and devices we know of use Little
  * Endian).
  *
- * FIXME: TLVs are normally 4 byte aligned -- make sure we cover this.
- *
  *
  * REQUESTS AND EVENTS
  *
@@ -67,8 +65,7 @@
  *
  * The different requests and their formats are described below; the
  * data types are named 'struct i2400m_msg_OPNAME', OPNAME matching the
- * operation. FIXME: this is still not really true and many are
- * missing.
+ * operation.
  */
 
 #ifndef __NET__WIMAX_I2400M_H__
@@ -78,16 +75,15 @@
 
 /* Interface version */
 enum {
-	I2400M_L3L4_VERSION             = 0x0000,
+	I2400M_L3L4_VERSION             = 0x0100,
 };
 
 /* Message types */
 enum {
 	I2400M_MT_RESERVED              = 0x0000,
 	I2400M_MT_INVALID               = 0xffff,
-	/* Internal wimax stack operations */
-	I2400M_MT_OPEN			= 0x1000,	/* DEPRECATED */
-	I2400M_MT_CLOSE			= 0x1001,	/* DEPRECATED */
+	I2400M_MT_REPORT_MASK		= 0x8000,
+
 	I2400M_MT_GET_SCAN_RESULT  	= 0x4202,
 	I2400M_MT_SET_SCAN_PARAM   	= 0x4402,
 	I2400M_MT_CMD_RF_CONTROL   	= 0x4602,
@@ -100,21 +96,50 @@ enum {
 	I2400M_MT_GET_STATISTICS   	= 0x5204,
 	I2400M_MT_GET_STATE        	= 0x5205,
 	I2400M_MT_GET_MEDIA_STATUS	= 0x5206,
+	I2400M_MT_SET_INIT_CONFIG	= 0x5404,
 	I2400M_MT_CMD_INIT	        = 0x5601,
 	I2400M_MT_CMD_TERMINATE		= 0x5602,
 	I2400M_MT_CMD_MODE_OF_OPERATION = 0x5603,
 	I2400M_MT_CMD_RESET_DEVICE	= 0x5604,
 	I2400M_MT_CMD_MONITOR_CONTROL   = 0x5605,
+	I2400M_MT_CMD_ENTER_POWERSAVE   = 0x5606,
 	I2400M_MT_SET_EAP_SUCCESS       = 0x6402,
 	I2400M_MT_SET_EAP_FAIL          = 0x6403,
 	I2400M_MT_SET_EAP_KEY          	= 0x6404,
 	I2400M_MT_CMD_SEND_EAP_RESPONSE = 0x6602,
 	I2400M_MT_REPORT_SCAN_RESULT    = 0xc002,
 	I2400M_MT_REPORT_STATE		= 0xd002,
+	I2400M_MT_REPORT_POWERSAVE_READY = 0xd005,
 	I2400M_MT_REPORT_EAP_REQUEST    = 0xe002,
 	I2400M_MT_REPORT_EAP_RESTART    = 0xe003,
 	I2400M_MT_REPORT_ALT_ACCEPT    	= 0xe004,
 	I2400M_MT_REPORT_KEY_REQUEST 	= 0xe005,
+};
+
+
+/*
+ * Message Ack Status codes
+ *
+ * When a message is replied-to, this status is reported.
+ */
+enum i2400m_ms {
+	I2400M_MS_DONE_OK                  = 0,
+	I2400M_MS_DONE_IN_PROGRESS         = 1,
+	I2400M_MS_INVALID_OP               = 2,
+	I2400M_MS_BAD_STATE                = 3,
+	I2400M_MS_ILLEGAL_VALUE            = 4,
+	I2400M_MS_MISSING_PARAMS           = 5,
+	I2400M_MS_VERSION_ERROR            = 6,
+	I2400M_MS_ACCESSIBILITY_ERROR      = 7,
+	I2400M_MS_BUSY                     = 8,
+	I2400M_MS_CORRUPTED_TLV            = 9,
+	I2400M_MS_UNINITIALIZED            = 10,
+	I2400M_MS_UNKNOWN_ERROR            = 11,
+	I2400M_MS_PRODUCTION_ERROR         = 12,
+	I2400M_MS_NO_RF                    = 13,
+	I2400M_MS_NOT_READY_FOR_POWERSAVE  = 14,
+	I2400M_MS_THERMAL_CRITICAL         = 15,
+	I2400M_MS_MAX
 };
 
 
@@ -127,7 +152,18 @@ enum {
  */
 enum i2400m_tlv {
 	I2400M_TLV_SYSTEM_STATE = 141,
+	I2400M_TLV_RF_OPERATION = 162,
+	I2400M_TLV_RF_STATUS = 163,
+	I2400M_TLV_CONFIG_IDLE_PARAMETERS = 601,
 };
+
+
+struct i2400m_tlv_hdr {
+	__le16 type;
+	__le16 length;		/* payload's */
+	__u8   pl[0];
+} __attribute__((packed));
+
 
 struct i2400m_l3l4_hdr {
 	__le16 type;
@@ -136,59 +172,52 @@ struct i2400m_l3l4_hdr {
 	__le16 resv1;
 	__le16 status;
 	__le16 resv2;
-	__u8   pl[0];
-} __attribute__((packed));
-
-
-struct i2400m_tlv_hdr
-{
-	__le16 type;
-	__le16 length;		/* payload's */
-	__u8   pl[0];
+	struct i2400m_tlv_hdr pl[0];
 } __attribute__((packed));
 
 
 /**
- * i2400m_st_sys - different states of the device
- *
- * FIXME: explain each
+ * i2400m_system_state - different states of the device
  */
-enum i2400m_st_sys {
-	I2400M_ST_SYS_UNINITIALIZED = 1,
-	I2400M_ST_SYS_INIT,
-	I2400M_ST_SYS_READY,
-	I2400M_ST_SYS_SCAN,
-	I2400M_ST_SYS_STANDBY,
-	I2400M_ST_SYS_CONNECTING,
-	I2400M_ST_SYS_WIMAX_CONNECTED,
-	I2400M_ST_SYS_DATA_PATH_CONNECTED,
-	I2400M_ST_SYS_IDLE,
-	I2400M_ST_SYS_DISCONNECTING,
-	I2400M_ST_SYS_OUT_OF_ZONE,
-	I2400M_ST_SYS_SLEEPACTIVE,
-	I2400M_ST_SYS_PRODUCTION,
-	I2400M_ST_SYS_CONFIG,
-	I2400M_ST_SYS_RF_OFF,
-	I2400M_ST_SYS_RF_SHUTDOWN,
-	I2400M_ST_SYS_DEVICE_DISCONNECT
+enum i2400m_system_state {
+	I2400M_SYSTEM_STATE_UNINITIALIZED = 1,
+	I2400M_SYSTEM_STATE_INIT,
+	I2400M_SYSTEM_STATE_READY,
+	I2400M_SYSTEM_STATE_SCAN,
+	I2400M_SYSTEM_STATE_STANDBY,
+	I2400M_SYSTEM_STATE_CONNECTING,
+	I2400M_SYSTEM_STATE_WIMAX_CONNECTED,
+	I2400M_SYSTEM_STATE_DATA_PATH_CONNECTED,
+	I2400M_SYSTEM_STATE_IDLE,
+	I2400M_SYSTEM_STATE_DISCONNECTING,
+	I2400M_SYSTEM_STATE_OUT_OF_ZONE,
+	I2400M_SYSTEM_STATE_SLEEPACTIVE,
+	I2400M_SYSTEM_STATE_PRODUCTION,
+	I2400M_SYSTEM_STATE_CONFIG,
+	I2400M_SYSTEM_STATE_RF_OFF,
+	I2400M_SYSTEM_STATE_RF_SHUTDOWN,
+	I2400M_SYSTEM_STATE_DEVICE_DISCONNECT,
+	I2400M_SYSTEM_STATE_MAX,
 };
 
 
 /**
  * i2400m_tlv_system_state - report on the state of the system
  *
- * @state: see enum i2400m_st_sys
+ * @state: see enum i2400m_system_state
  */
-struct i2400m_tlv_system_state
-{
+struct i2400m_tlv_system_state {
 	struct i2400m_tlv_hdr hdr;
 	__le32 state;
+} __attribute__((packed));
+
+
+enum {
+	I2400M_TLV_L4_MESSAGE_VERSIONS = 129
 };
 
-
-struct i2400m_msg_get_version {
-	struct i2400m_l3l4_hdr hdr;
-	struct i2400m_tlv_hdr tlv;
+struct i2400m_tlv_l4_message_versions {
+	struct i2400m_tlv_hdr hdr;
 	__le16 major;
 	__le16 minor;
 	__le16 branch;
@@ -196,17 +225,33 @@ struct i2400m_msg_get_version {
 } __attribute__((packed));
 
 
-/**
- * Open a new netlink channel
- *
- * @rx_pid: netlink PID where receiver listens
- */
-struct i2400m_msg_cmd_open {
-	struct i2400m_l3l4_hdr hdr;
-	struct i2400m_tlv_hdr tlv;
-	__le32 rx_pid;
-} __attribute__((packed, deprecated));
+struct i2400m_tlv_detailed_device_info {
+	struct i2400m_tlv_hdr hdr;
+	__u8 reserved1[400];
+	__u8 mac_address[6];
+	__u8 reserved2[2];
+} __attribute__((packed));
 
 
+struct i2400m_tlv_rf_switches_status {
+	struct i2400m_tlv_hdr hdr;
+	__u8 sw_rf_switch;	/* 1 ON, 2 OFF */
+	__u8 hw_rf_switch;	/* 1 ON, 2 OFF */
+} __attribute__((packed));
+
+
+struct i2400m_tlv_rf_operation {
+	struct i2400m_tlv_hdr hdr;
+	__le32 status;	/* 1 ON, 2 OFF */
+} __attribute__((packed));
+
+
+
+struct i2400m_tlv_config_idle_parameters {
+	struct i2400m_tlv_hdr hdr;
+	__le32 idle_timeout;	/* 100 to 300000 ms [5min], 100 increments
+				 * 0 disabled */
+	__le32 idle_paging_interval;	/* frames */
+} __attribute__((packed));
 
 #endif /* #ifndef __NET__WIMAX_I2400M_H__ */

@@ -1,7 +1,6 @@
-/* -*-linux-c-*-
- *
- * Intel Wireless WiMax Connection 2400m
- * Declarations for internal APIs
+/*
+ * Intel Wireless WiMAX Connection 2400m
+ * Declarations for bus-generic internal APIs
  *
  *
  *
@@ -40,7 +39,58 @@
  *  - Initial implementation
  *
  *
- * FIXME: docs
+ * GENERAL DRIVER ARCHITECTURE
+ *
+ * The i2400m driver is split in the following two major parts:
+ *
+ *  - bus specific driver
+ *  - bus generic driver (this part)
+ *
+ * The bus specific driver sets up stuff specific to the bus the
+ * device is connected to (USB, SDIO, PCI, tam-tam...non-authoritative
+ * nor binding list) and then handles data frames for the the
+ * bus-generic driver...which does the stuff that is common to all the
+ * bus types.
+ *
+ * By functionality, the break up is:
+ *
+ *  - Firmware upload: fw.c - takes care of uploading firmware to the
+ *        device. bus-specific driver has to do some stuff in here.
+ *
+ *  - RX handling: rx.c - receives data from the bus-specific code
+ *        and feeds them to the network or WiMAX stack or uses it to
+ *        modify the driver state. bus-specific driver only has to
+ *        receive frames and pass them to this module.
+ *
+ *  - TX handling: tx.c - manages the TX FIFO queue and provides means
+ *        for the bus-specific TX code to easily manage the FIFO
+ *        queue. bus-specific code just pull frames from this module
+ *        to send them to the device.
+ *
+ *  - netdev glue: netdev.c - interface with Linux networking
+ *        stack. Pass around data frames, configure the device,
+ *        etc... bus-generic only.
+ *
+ *        This code implements a pure IP device. There is no ARP,
+ *        ethernet headers and the such.
+ *
+ *  - control ops: control.c - implements various commmands for
+ *        controlling the device. bus-generic only.
+ *
+ *  - device model glue: driver.c - implements helpers for creating
+ *        device-model glue. The bulk of these operations are done in
+ *        the bus-specific code.
+ *
+ * APIs AND HEADER FILES
+ *
+ * This bus generic code exports three APIs:
+ *
+ *  - HDI (host-device interface) definitions common to all busses
+ *  - internal API for the bus-generic part
+ *  - external API for the bus-specific drivers
+ *
+ * Definitions of message formats are in net/wimax-i2400m.h; these can
+ * be also used by user space code.
  */
 
 #ifndef __I2400M_H__
@@ -48,171 +98,20 @@
 
 #include <linux/usb.h>
 #include <linux/netdevice.h>
+#include <linux/completion.h>
+#include <linux/rwsem.h>
+#include <asm/atomic.h>
 #include <linux/wimax.h>
+#include <net/wimax-i2400m.h>
 #include <asm/byteorder.h>
 #include <config.h>		/* @lket@ignore-line */
 #include "edc.h"
-#ifdef __USE_LEGACY_IOCTL
-#include "besor_legacy.h"
-#endif /* __USE_LEGACY_IOCTL */
 
 /*
- * struct req_inflight - Basic flow control
- *
- * We maintain a basic flow control counter. "count" how many TX URBs
- * are outstanding. Only allow "max" TX URBs to be outstanding. If
- * this value is reached the queue will be stopped. The queue will be
- * restarted when there are "threshold" URBs outstanding.  Maintain a
- * counter of how many time the TX queue needed to be restarted due to
- * the "max" being exceeded and the "threshold" reached again. The
- * timestamp "restart_ts" is to keep track from when the counter was
- * last queried (see sysfs handling of file winet_tx_inflight).
+ * Host-Device interface common to all busses
  */
-struct req_inflight {
-	atomic_t count;
-	unsigned long max;
-	unsigned long threshold;
-	unsigned long restart_ts;
-	atomic_t restart_count;
-};
 
-/*
- * Defaults for inflight request control
- */
-enum {
-	i2400m_TX_INFLIGHT_MAX = 1000,
-	i2400m_TX_INFLIGHT_THRESHOLD = 100,
-};
-
-static inline void req_inflight_setup(struct req_inflight *inflight)
-{
-	inflight->max = i2400m_TX_INFLIGHT_MAX;
-	inflight->threshold = i2400m_TX_INFLIGHT_THRESHOLD;
-	inflight->restart_ts = jiffies;
-}
-
-
-/**
- * i2400m_tx - TX state and metadata. common to data and control planes.
- *
- * @lock: tx data access lock
- * @state: current state of the tx transaction
- * @submitted_buf: buffer submitted to the device, pending kfree().
- * @msg_buf: buffer containing the pending message to be sent
- * @msg_start: start of actual within the message buffer
- * @msg_len: lenght of the message
- * @urb: the active tx urb
- */
-struct i2400m_tx {
-	spinlock_t lock;
-	int state;
-	void *submitted_buf;
-	void *msg_buf;
-	void *msg_start;
-	size_t msg_len;
-	struct urb *urb;
-	struct sk_buff *skb;
-	unsigned long seq_id;
-};
-
-
-/**
- * struct i2400m - descriptor for the hardware state
- *
- * @wimax_dev: Wimax device -- Due to the funny way a net_device is
- *             allocated, we need to force this to be the first
- *             field so that we can get from net_dev_priv() the right
- *             pointer.
- */
-struct i2400m {
-	struct wimax_dev wimax_dev;	/* FIRST! See doc */
-	struct usb_device *usb_dev;
-	struct usb_interface *usb_iface;
-	struct net_device *net_dev;
-
-	spinlock_t lock;
-	struct edc urb_edc;		/* Error density counter */
-	unsigned boot_mode:1;
-
-	atomic_t rx_ctx_count, rx_pending_count;
-	struct req_inflight tx_inflight;
-	struct urb *notif_urb;
-	struct i2400m_tx *tx_data;
-#ifdef __USE_LEGACY_IOCTL
-	struct i2400m_legacy_ctl *legacy_ctl;
-	unsigned ctl_iface;	/* 0 - legacy ioctl, !0 - new */
-#endif				/* __USE_LEGACY_IOCTL */
-};
-
-static inline void i2400m_init(struct i2400m *i2400m)
-{
-	wimax_dev_init(&i2400m->wimax_dev);
-	spin_lock_init(&i2400m->lock);
-	edc_init(&i2400m->urb_edc);
-	i2400m->boot_mode = 1;
-	atomic_set(&i2400m->rx_ctx_count, 0);
-	atomic_set(&i2400m->rx_pending_count, 0);
-#ifdef __USE_LEGACY_IOCTL
-	i2400m->ctl_iface = 1;
-#endif
-}
-
-/*
- * Similar to above, but reinitialize only what affects the internal
- * state of the device. The USB transport hasn't been reset, so
- * nothing that deals with it should.
- */
-static inline void i2400m_init_from_reset(struct i2400m *i2400m)
-{
-	i2400m->boot_mode = 1;
-	atomic_set(&i2400m->rx_ctx_count, 0);
-	atomic_set(&i2400m->rx_pending_count, 0);
-}
-
-static inline struct i2400m *i2400m_get(struct i2400m *i2400m)
-{
-	dev_hold(i2400m->net_dev);
-	return i2400m;
-}
-
-static inline void i2400m_put(struct i2400m *i2400m)
-{
-	dev_put(i2400m->net_dev);
-}
-
-static inline struct i2400m *wimax_dev_to_i2400m(struct wimax_dev *wimax_dev)
-{
-	return container_of(wimax_dev, struct i2400m, wimax_dev);
-}
-
-static inline struct i2400m *net_dev_to_i2400m(struct net_device *net_dev)
-{
-	return wimax_dev_to_i2400m(netdev_priv(net_dev));
-}
-
-extern void i2400m_net_rx(struct i2400m *, void *, int);
-extern void i2400m_netdev_setup(struct net_device *net_dev);
-
-/* sub modules */
-extern int i2400m_sysfs_setup(struct device_driver *);
-extern void i2400m_sysfs_release(struct device_driver *);
-extern int i2400m_notification_setup(struct i2400m *);
-extern void i2400m_notification_release(struct i2400m *);
-extern void i2400m_rx_release(struct i2400m *);
-extern int i2400m_tx_setup(struct i2400m *);
-extern void i2400m_tx_release(struct i2400m *);
-
-extern int i2400m_bulk_in_submit(struct i2400m *i2400m, gfp_t);
-extern struct attribute_group i2400m_dev_attr_group;
-
-
-/*
- *
- * Device specific interface!
- *
- *
- * Packet types for the host-device interface
- */
+/* Packet types for the host-device interface */
 enum i2400m_pt {
 	I2400M_PT_DATA = 0,
 	I2400M_PT_CTRL,
@@ -222,190 +121,540 @@ enum i2400m_pt {
 	I2400M_PT_ILLEGAL
 };
 
+/* Misc constants */
 enum {
-	I2400M_PKT_PAD = 16,	/* Alignment of packet data */
-	I2400M_MAX_NOTIFICATION_LEN = 256,
+	I2400M_PL_PAD = 16,	/* Payload data size alignment */
+	I2400M_PL_SIZE_MAX = 0x3EFF,
+	I2400M_MAX_PLS_IN_MSG = 60,
 	/* protocol barkers: sync sequences; for notifications they
 	 * are sent in groups of four. */
-	I2400M_H2D_PREVIEW_BARKER = 0xCAFE900D,
+	I2400M_H2D_PREVIEW_BARKER = 0xcafe900d,
 	I2400M_COLD_RESET_BARKER = 0xc01dc01d,
 	I2400M_WARM_RESET_BARKER = 0x50f750f7,
-	I2400M_REBOOT_BARKER = 0xDEADBEEF,
-	I2400M_ACK_BARKER = 0xFEEDBABE,
-	I2400M_D2H_MSG_BARKER = 0xBEEFBABE
-};
-
-
-static const __le32 i2400m_REBOOT_BARKER[4] = {
-	__constant_cpu_to_le32(0xdeadbeef),
-	__constant_cpu_to_le32(0xdeadbeef),
-	__constant_cpu_to_le32(0xdeadbeef),
-	__constant_cpu_to_le32(0xdeadbeef)
+	I2400M_NBOOT_BARKER = 0xdeadbeef,
+	I2400M_SBOOT_BARKER = 0x0ff1c1a1,
+	I2400M_ACK_BARKER = 0xfeedbabe,
+	I2400M_D2H_MSG_BARKER = 0xbeefbabe,
+#ifndef I2400M_FW		/* Temporary */
+	/* Firmware uploading */
+	I2400M_BOOT_RETRIES = 3,
+	/* Size of the Boot Mode Command buffer */
+	I2400M_BM_CMD_BUF_SIZE = 16 * 1024,
+	I2400M_BM_ACK_BUF_SIZE = 256,
+#endif
 };
 
 
 /*
- * definition needed in order to parse a bulk_in buffer:
- * buffer contains a message header followed by one or more packet headers
+ * Hardware payload descriptor
+ *
+ * Bitfields encoded in a struct to enforce typing semantics.
+ *
+ * Look in rx.c and tx.c for a full description of the format.
  */
-enum {
-	I2400M_MAX_MSG_LEN = 0x10000,
-	I2400M_MAX_PACKETS_IN_MSG = 60,
-	I2400M_PKT_SIZE = 0x3EFF
-};
+struct i2400m_pld {
+	__le32 val;
+} __attribute__ ((packed));
+
+#define I2400M_PLD_SIZE_MASK 0x00003fff
+#define I2400M_PLD_TYPE_SHIFT 16
+#define I2400M_PLD_TYPE_MASK 0x000f0000
+
+static inline
+size_t i2400m_pld_size(const struct i2400m_pld *pld)
+{
+	return I2400M_PLD_SIZE_MASK & le32_to_cpu(pld->val);
+}
+
+static inline
+enum i2400m_pt i2400m_pld_type(const struct i2400m_pld *pld)
+{
+	return (I2400M_PLD_TYPE_MASK & le32_to_cpu(pld->val))
+		>> I2400M_PLD_TYPE_SHIFT;
+}
+
+static inline
+void i2400m_pld_set(struct i2400m_pld *pld, size_t size,
+		    enum i2400m_pt type)
+{
+	pld->val = cpu_to_le32(
+		((type << I2400M_PLD_TYPE_SHIFT) & I2400M_PLD_TYPE_MASK)
+		|  (size & I2400M_PLD_SIZE_MASK));
+}
 
 
-/* USB transport definitions */
-/**
- * enum - enumerate the endpoints by their logical role
- */
-enum {
-	I2400M_EP_BULK_OUT = 0,
-	I2400M_EP_NOTIFICATION,
-	I2400M_EP_RESET_COLD,
-	I2400M_EP_BULK_IN,
-};
-
-
-/**
- * bulk_in_msg_hdr - header of each bulk in buffer.
+/*
+ * Header for a TX message or RX message
  *
  * @barker: preamble
+ * @size: used for management of the FIFO queue buffer; before
+ *     sending, this is converted to be a real preamble. This
+ *     indicates the real size of the TX message that starts at this
+ *     point. If the highest bit is set, then this message is to be
+ *     skipped.
  * @sequence: sequence number of this message
- * @num_pkts: number of distinct packets in this bulk
- * @padding: amount of padding bytes at the end of the bulk
+ * @offset: offset where the message itself starts -- see the comments
+ *     in the file header about message header and payload descriptor
+ *     alignment.
+ * @num_pls: number of payloads in this message
+ * @padding: amount of padding bytes at the end of the message to make
+ *           it be of block-size aligned
+ *
+ * Look in rx.c and tx.c for a full description of the format.
  */
-struct i2400m_device_msg_hdr {
-	__le32 barker;
-	__le32 sequence;
-	__le16 num_pkts;
+struct i2400m_msg_hdr {
+	union {
+		__le32 barker;
+		u32 size;
+	};
+	union {
+		__le32 sequence;
+		u32 offset;
+	};
+	__le16 num_pls;
 	__le16 rsv1;
 	__le16 padding;
 	__le16 rsv2;
+	struct i2400m_pld pld[0];
 } __attribute__ ((packed));
 
 
+/* How do you want to reset the device? */
+enum i2400m_reset_type {
+	I2400M_RT_SOFT,	/* first measure */
+	I2400M_RT_COLD,	/* second measure */
+	I2400M_RT_BUS,	/* call in artillery */
+};
+
+
+/* Boot-mode (firmware upload mode) commands */
+#ifndef I2400M_FW
+
+/* Boot mode opcodes */
+enum i2400m_brh_opcode {
+	I2400M_BRH_READ = 1,
+	I2400M_BRH_WRITE = 2,
+	I2400M_BRH_JUMP = 3,
+	I2400M_BRH_SIGNED_JUMP = 8,
+	I2400M_BRH_HASH_PAYLOAD_ONLY = 9,
+};
+
 /**
- * bulk_in_pkt_hdr - packet descriptor.
+ * i2400m_bootrom_header - Header for a boot-mode command
  *
- * @size: packet size
- * @type: packet type
+ * @cmd: the above command descriptor
+ * @target_addr: where on the device memory should the action be performed.
+ * @data_size: for read/write, amount of data to be read/written
+ * @block_checksum: checksum value (if applicable)
+ * @payload: the beginning of data attached to this header
  */
-union i2400m_device_pkt_hdr {
-	struct {
-#if defined(__LITTLE_ENDIAN)
-		u32 size:14;
-		u32 rsv1:2;
-		u32 type:4;
-		u32 rsv2:12;
-#elif defined(__BIG_ENDIAN)
-		u32 rsv2:12;
-		u32 type:4;
-		u32 rsv1:2;
-		u32 size:14;
+struct i2400m_bootrom_header {
+	__le32 command;
+	__le32 target_addr;
+	__le32 data_size;
+	__le32 block_checksum;
+	char payload[0];
+} __attribute__ ((packed));
+
+
+static inline
+__le32 i2400m_brh_command(enum i2400m_brh_opcode opcode, unsigned use_checksum,
+			  unsigned direct_access)
+{
+	return cpu_to_le32(
+		0xcbbc0000
+		| (direct_access? 0x00000400 : 0)
+		| 0x00000200 /* response always required */
+		| (use_checksum? 0x00000100 : 0)
+		| (opcode & 0x0f));
+}
+
+static inline
+void i2400m_brh_set_opcode(struct i2400m_bootrom_header *hdr,
+			   enum i2400m_brh_opcode opcode)
+{
+	hdr->command = cpu_to_le32(
+		(le32_to_cpu(hdr->command) & ~0x0000000f)
+		| (opcode & 0x00000000f));
+}
+
+static inline
+unsigned i2400m_brh_get_opcode(const struct i2400m_bootrom_header *hdr)
+{
+	return le32_to_cpu(hdr->command) & 0x0000000f;
+}
+
+static inline
+unsigned i2400m_brh_get_response(const struct i2400m_bootrom_header *hdr)
+{
+	return (le32_to_cpu(hdr->command) & 0x000000f0) >> 4;
+}
+
+static inline
+unsigned i2400m_brh_get_use_checksum(const struct i2400m_bootrom_header *hdr)
+{
+	return le32_to_cpu(hdr->command) & 0x00000100;
+}
+
+static inline
+unsigned i2400m_brh_get_response_required(
+	const struct i2400m_bootrom_header *hdr)
+{
+	return le32_to_cpu(hdr->command) & 0x00000200;
+}
+
+static inline
+unsigned i2400m_brh_get_direct_access(const struct i2400m_bootrom_header *hdr)
+{
+	return le32_to_cpu(hdr->command) & 0x00000400;
+}
+
+static inline
+unsigned i2400m_brh_get_signature(const struct i2400m_bootrom_header *hdr)
+{
+	return (le32_to_cpu(hdr->command) & 0xffff0000) >> 16;
+}
+
 #else
-#error "Neither __LITTLE_ENDIAN nor __BIG_ENDIAN are defined."
+struct i2400m_bootrom_header;
 #endif
-	} __attribute__ ((packed));
-	__le32 value;
-} __attribute__ ((packed));
 
+/*
+ * i2400m driver data structures
+ */
 
 /**
- * bulk_in_hdr - used to cast over the bulk in buffer.
+ * struct i2400m - descriptor for the hardware state
  *
- * @size: header of the entire message
- * @type: array of headers for the specific packets
+ * Members marked with [fill] must be filled out/initialized before
+ * calling i2400m_setup().
+ *
+ * @wimax_dev: Wimax device -- Due to the way a net_device is
+ *     allocated, we need to force this to be the first field so that
+ *     we can get from net_dev_priv() the right pointer.
+ *
+ * @lock: spinlock to protect the RX members
+ *
+ * @stack_rwsem: gatekeeper for operations coming from the stack. When
+ *     this semaphoire is write-locked, the device can't accept any
+ *     operations coming from the stack. So the stack operation entry
+ *     points do read-trylocks-or-fail (many can happen at the same
+ *     time), and when we need to shut it down to all, we do a
+ *     write-lock.
+ *
+ * @bus_tx_kick: [fill] notification for the bus layer to know there
+ *     is data in the TX fifo ready to send.
+ *
+ *     This function cannot sleep.
+ *
+ * @bus_autopm_enable: [fill] bus specific operation to tell the bus the
+ *     device is ready to go powersave. This is required by USB. If
+ *     your bus doesn't need it, feel free to leave this as NULL.
+ *
+ * @bus_reset: [fill] operation to reset the device in various ways
+ *     In most cases, the bus-specific code can provide optimized
+ *     versions.
+ *
+ *     If soft or cold reset fail, this function is expected to do a
+ *     bus-specific reset (eg: USB reset) to get the device to a
+ *     working state (even if it implies device disconecction).
+ *
+ *     Note the soft reset is used by the firmware uploader to
+ *     reinitialize the device.
+ *
+ * @bus_bm_cmd_send: sends a boot-mode command described by the
+ *     argument (of the given size). Flags are defined by the '
+ *     i2400m_bm_cmd_flags'. This is synchronous and has to return 0
+ *     if ok or < 0 errno code in any error condition.
+ *
+ * @bus_bm_wait_for_ack: Wait for reception of a response to a
+ *     previously sent boot-mode command (or to any kind of boot-mode
+ *     output from the device). Will read until all the indicated size
+ *     is read or timeout. Reading more or less data than asked for is
+ *     an error condition. Return 0 if ok, < 0 errno code on error.
+ *
+ * @tx_lock: spinlock to protect TX members
+ *
+ * @tx_buf: FIFO buffer for TX; we queue data here
+ *
+ * @tx_in: FIFO index for incoming data. Note this doesn't wrap around
+ *     and it is always greater than @tx_out.
+ *
+ * @tx_out: FIFO index for outgoing data
+ *
+ * @tx_msg: current TX message that is active in the FIFO for
+ *     appending payloads.
+ *
+ * @tx_block_size: [fill] SDIO imposes a 256 block size, USB 16, so we
+ *     have a tx_blk_size variable that the bus layer sets to tell the
+ *     engine how much of that we need.
+ *
+ * @tx_sequence: current sequence number for TX messages from the
+ *     device to the host.
+ *
+ * @tx_msg_size: size of the current message being transmitted by the
+ *     bus-specific code.
+ *
+ * @txrx_pl_num: total number of payloads sent|received
+ *
+ * @txrx_pl_max: maximum number of payloads sent|received in a TX message
+ *
+ * @txrx_pl_min: minimum number of payloads sent|received in a TX message
+ *
+ * @txrx_num: number of TX|RX messages sent|received
+ *
+ * @txrx_size_acc: number of bytes in all TX|RX messages sent|received
+ *     (this is different to net_dev's statistics as it also counts
+ *     control messages).
+ *
+ * @txrx_size_min: smallest TX|RX message sent|received.
+ *
+ * @txrx_size_max: buggest TX|RX message sent|received.
+ *
+ * @msg_mutex: mutex used to send control commands to the device (we
+ *     only allow one at a time).
+ *
+ * @msg_completion: used to wait for an ack to a control command sent
+ *     to the device.
+ *
+ * @ack_status: used to store the reception status of an ack to a
+ *     control command. Only valid after @msg_completion is woken
+ *     up. Only updateable if @msg_completion is armed.
+ *
+ * @ack_skb: used to store the actual ack to a control command.
+ *
+ * @bm_cmd_buf: boot mode command buffer for composing firmware upload
+ *     commands. Allocated, managed and used by the bus-specific driver.
+ *
+ * @bm_cmd_buf: boot mode acknoledge buffer for staging reception of
+ *     responses to commands. Allocated, managed and used by the
+ *     bus-specific driver.
+ *
+ * @work_queue: work queue for scheduling miscellaneous work. This is
+ *     only to be used for scheduling TX or RX processing, as well as
+ *     reset operations. Processing of the actual RX data has to
+ *     happen in the global workqueue or you will deadlock (sending
+ *     and receiving commands might be using this workqueue).
+ *
+ * Boot Mode Command/Ack Buffers:
+ *
+ * Staging area for boot-mode (fw upload) commands and responses
+ *
+ * USB can't r/w to stack, vmalloc, etc...as well, we end up having to
+ * alloc/free a lot to compose commands, so we use these for stagging
+ * and not having to realloc all the eim.
+ *
+ * This assumes the code always runs serialized. Only one thread can
+ * call i2400m_bm_cmd() at the same time.
  */
-struct i2400m_msg_preview {
-	struct i2400m_device_msg_hdr msg_hdr;
-	union i2400m_device_pkt_hdr pkts[I2400M_MAX_PACKETS_IN_MSG];
-} __attribute__ ((packed));
+struct i2400m {
+	struct wimax_dev wimax_dev;	/* FIRST! See doc */
+
+	struct rw_semaphore stack_rwsem;
+	unsigned boot_mode:1;
+	unsigned sboot:1;		/* signed or unsigned fw boot */
+	unsigned ready:1;		/* all probing steps done */
+
+	void (*bus_tx_kick)(struct i2400m *);
+	void (*bus_autopm_enable)(struct i2400m *);
+	int (*bus_reset)(struct i2400m *, enum i2400m_reset_type);
+	ssize_t (*bus_bm_cmd_send)(struct i2400m *,
+				   const struct i2400m_bootrom_header *,
+				   size_t, int flags);
+	ssize_t (*bus_bm_wait_for_ack)(struct i2400m *,
+				       struct i2400m_bootrom_header *, size_t);
+
+	spinlock_t tx_lock;		/* protect TX state */
+	void *tx_buf;
+	size_t tx_in, tx_out;
+	struct i2400m_msg_hdr *tx_msg;
+	size_t tx_block_size, tx_sequence, tx_msg_size;
+	/* TX stats */
+	unsigned tx_pl_num, tx_pl_max, tx_pl_min,
+		tx_num, tx_size_acc, tx_size_min, tx_size_max;
+
+	/* RX stats */
+	spinlock_t rx_lock;		/* protect RX state */
+	unsigned rx_pl_num, rx_pl_max, rx_pl_min,
+		rx_num, rx_size_acc, rx_size_min, rx_size_max;
+
+	struct mutex msg_mutex;		/* serialize command execution */
+	struct completion msg_completion;
+	int ack_status;
+	struct sk_buff *ack_skb;
+
+	void *bm_ack_buf;		/* for receiving acks over USB */
+	void *bm_cmd_buf;		/* for issuing commands over USB */
+
+	struct workqueue_struct *work_queue;
+};
+
+
+/* Initialize a 'struct i2400m' from all zeroes */
+static inline
+void i2400m_init(struct i2400m *i2400m)
+{
+	wimax_dev_init(&i2400m->wimax_dev);
+
+	init_rwsem(&i2400m->stack_rwsem);
+	i2400m->boot_mode = 1;
+
+	spin_lock_init(&i2400m->tx_lock);
+	i2400m->tx_pl_min = ULONG_MAX;
+	i2400m->tx_size_min = ULONG_MAX;
+
+	spin_lock_init(&i2400m->rx_lock);
+	i2400m->rx_pl_min = ULONG_MAX;
+	i2400m->rx_size_min = ULONG_MAX;
+
+	mutex_init(&i2400m->msg_mutex);
+	init_completion(&i2400m->msg_completion);
+}
+
+
+/* bus-generic internal APIs */
+
+static inline struct i2400m *wimax_dev_to_i2400m(struct wimax_dev *wimax_dev)
+{
+	return container_of(wimax_dev, struct i2400m, wimax_dev);
+}
+static inline struct i2400m *net_dev_to_i2400m(struct net_device *net_dev)
+{
+	return wimax_dev_to_i2400m(netdev_priv(net_dev));
+}
+
+extern void i2400m_netdev_setup(struct net_device *net_dev);
+extern int i2400m_sysfs_setup(struct device_driver *);
+extern void i2400m_sysfs_release(struct device_driver *);
+extern int i2400m_tx_setup(struct i2400m *);
+extern void i2400m_tx_release(struct i2400m *);
+extern void i2400m_net_rx(struct i2400m *, struct sk_buff *, const void *, int);
+enum i2400m_pt;
+extern int i2400m_tx(struct i2400m *, const void *, size_t, enum i2400m_pt);
+extern struct attribute_group i2400m_dev_attr_group;
+
+/* API for the bus-specific drivers */
+
+static inline
+struct i2400m *i2400m_get(struct i2400m *i2400m)
+{
+	dev_hold(i2400m->wimax_dev.net_dev);
+	return i2400m;
+}
+
+static inline
+void i2400m_put(struct i2400m *i2400m)
+{
+	dev_put(i2400m->wimax_dev.net_dev);
+}
+
+extern int i2400m_setup(struct i2400m *);
+extern void i2400m_setup_mac_addr(struct i2400m *, const u8[ETH_ALEN]);
+extern int i2400m_setup_device(struct i2400m *);
+extern int i2400m_setup_device_post(struct i2400m *);
+extern void i2400m_release(struct i2400m *);
+
+extern int i2400m_rx(struct i2400m *, struct sk_buff *);
+extern void i2400m_tx_msg_sent(struct i2400m *);
+extern struct i2400m_msg_hdr *i2400m_tx_msg_get(struct i2400m *, size_t *);
+
+/* Firmware upload stuff */
+#ifndef I2400M_FW		/* Temporary */
+enum i2400m_bm_cmd_flags {	/* Flags for i2400m_bm_cmd() */
+	/* Send the command header verbatim, no processing */
+	I2400M_BM_CMD_RAW	= 1 << 2,
+};
+extern void i2400m_bm_cmd_prepare(struct i2400m_bootrom_header *);
+#endif
+extern int i2400m_dev_bootstrap(struct i2400m *);
+
+
+static const __le32 i2400m_NBOOT_BARKER[4] = {
+	__constant_cpu_to_le32(I2400M_NBOOT_BARKER),
+	__constant_cpu_to_le32(I2400M_NBOOT_BARKER),
+	__constant_cpu_to_le32(I2400M_NBOOT_BARKER),
+	__constant_cpu_to_le32(I2400M_NBOOT_BARKER)
+};
+
+static const __le32 i2400m_SBOOT_BARKER[4] = {
+	__constant_cpu_to_le32(I2400M_SBOOT_BARKER),
+	__constant_cpu_to_le32(I2400M_SBOOT_BARKER),
+	__constant_cpu_to_le32(I2400M_SBOOT_BARKER),
+	__constant_cpu_to_le32(I2400M_SBOOT_BARKER)
+};
+
+static const __le32 i2400m_WARM_RESET_BARKER[4] = {
+	__constant_cpu_to_le32(I2400M_WARM_RESET_BARKER),
+	__constant_cpu_to_le32(I2400M_WARM_RESET_BARKER),
+	__constant_cpu_to_le32(I2400M_WARM_RESET_BARKER),
+	__constant_cpu_to_le32(I2400M_WARM_RESET_BARKER)
+};
 
 
 /* utility functions */
-extern int i2400m_write_async(struct i2400m *, struct sk_buff *,
-			      const void *, size_t, enum i2400m_pt);
-struct i2400m_work 	/* Helper for scheduling simple work functions */
+static inline
+struct device *i2400m_dev(struct i2400m *i2400m)
 {
+	return i2400m->wimax_dev.net_dev->dev.parent;
+}
+
+/*
+ * Helper for scheduling simple work functions
+ *
+ * This struct can get any kind of payload attached (normally in the
+ * form of a struct where you pack the stuff you want to pass to the
+ * _work function).
+ */
+struct i2400m_work {
 	struct work_struct ws;
 	struct i2400m *i2400m;
+	u8 pl[0];
 };
-extern int i2400m_schedule_work(struct i2400m *i2400m,
-				void (*fn)(struct work_struct *), gfp_t);
-extern int i2400m_diag_off(struct i2400m *);
+extern int i2400m_schedule_work(struct i2400m *, unsigned,
+				void (*)(struct work_struct *), gfp_t,
+				const void *, size_t);
 
-/* device bootstrap - firmware download */
-extern int i2400m_dev_bootstrap(struct i2400m *);
-extern int i2400m_dev_bootstrap_delayed(struct i2400m *);
+extern int i2400m_msg_check_status(struct i2400m *,
+				   const struct i2400m_l3l4_hdr *,
+				   char *, size_t);
+extern int i2400m_msg_size_check(struct i2400m *,
+				 const struct i2400m_l3l4_hdr *, size_t);
+extern struct sk_buff *i2400m_msg_to_dev(struct i2400m *, const void *, size_t);
+extern void i2400m_msg_ack_hook(struct i2400m *,
+				const struct i2400m_l3l4_hdr *, size_t);
+extern void i2400m_report_hook(struct i2400m *,
+			       const struct i2400m_l3l4_hdr *, size_t);
+extern int i2400m_cmd_enter_powersave(struct i2400m *);
+extern int i2400m_cmd_diag_off(struct i2400m *);
+extern int i2400m_cmd_init(struct i2400m *);
+extern int i2400m_cmd_get_state(struct i2400m *);
+extern struct sk_buff *i2400m_get_device_info(struct i2400m *);
+extern int i2400m_firmware_check(struct i2400m *);
+extern int i2400m_set_init_config(struct i2400m *);
 
-/* reset support */
-extern int __i2400m_send_barker(struct i2400m *i2400m,
-				const __le32 *barker,
-				size_t barker_size,
-				unsigned endpoint);
-
-
-/**
- * __i2400m_reset_soft - do a full device reset
- *
- * @i2400m: device descriptor
- *
- * The device will be fully reset internally, but won't be
- * disconnected from the USB bus (so no reenumeration will
- * happen). Firmware upload will be neccessary.
- *
- * The device will send a reboot barker in the notification endpoint
- * that will trigger the driver to reinitialize the state
- * automatically from notif.c:i2400m_notification_grok() into
- * i2400m_dev_bootstrap_delayed().
- *
- * WARNING: no driver state saved/fixed
- */
-#include <linux/usb.h>
 static inline
-int __i2400m_reset_soft(struct i2400m *i2400m)
+struct usb_endpoint_descriptor *usb_get_epd(struct usb_interface *iface, int ep)
 {
-	static const __le32 i2400m_SOFT_BOOT_BARKER[4] = {
-		__constant_cpu_to_le32(0x50f750f7),
-		__constant_cpu_to_le32(0x50f750f7),
-		__constant_cpu_to_le32(0x50f750f7),
-		__constant_cpu_to_le32(0x50f750f7),
-	};
-	return __i2400m_send_barker(i2400m, i2400m_SOFT_BOOT_BARKER,
-				      sizeof(i2400m_SOFT_BOOT_BARKER),
-				      I2400M_EP_BULK_OUT);
+	return &iface->cur_altsetting->endpoint[ep].desc;
 }
 
-extern void i2400m_reset_soft(struct i2400m *);	/* resorts to USB reset */
+extern int i2400m_op_rfkill_sw_toggle(struct wimax_dev *,
+				      enum wimax_rfkill_state);
+extern void i2400m_report_tlv_rf_switches_status(
+	struct i2400m *, const struct i2400m_tlv_rf_switches_status *);
 
-/**
- * __i2400m_reset_cold - do a full device and USB transport reset
- *
- * @i2400m: device descriptor
- *
- * The device will be fully reset internally, disconnected from the
- * USB bus an a reenumeration will happen. Firmware upload will be
- * neccessary. Thus, we don't do any locking or struct
- * reinitialization, as we are going to be fully disconnected and
- * reenumerated.
- *
- * WARNING: No driver state saved/fixed!!!
+
+/*
+ * Do a millisecond-sleep for allowing wireshark to dump all the data
+ * packets. Used only for debugging.
  */
 static inline
-int __i2400m_reset_cold(struct i2400m *i2400m)
+void __i2400m_msleep(unsigned ms)
 {
-	static const __le32 i2400m_COLD_BOOT_BARKER[4] = {
-		__constant_cpu_to_le32(0xc01dc01d),
-		__constant_cpu_to_le32(0xc01dc01d),
-		__constant_cpu_to_le32(0xc01dc01d),
-		__constant_cpu_to_le32(0xc01dc01d),
-	};
-	return __i2400m_send_barker(i2400m, i2400m_COLD_BOOT_BARKER,
-				    sizeof(i2400m_COLD_BOOT_BARKER),
-				    I2400M_EP_RESET_COLD);
+#if 1
+#else
+	msleep(ms);
+#endif
 }
-
-extern void i2400m_reset_cold(struct i2400m *);	/* resorts to USB reset */
 
 #endif /* #ifndef __I2400M_H__ */

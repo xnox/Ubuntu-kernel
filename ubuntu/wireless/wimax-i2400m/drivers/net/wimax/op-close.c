@@ -1,5 +1,5 @@
 /*
- * Linux WiMax
+ * Linux WiMAX
  * Netlink layer, close operation
  *
  *
@@ -21,14 +21,15 @@
  * 02110-1301, USA.
  *
  *
- * FIXME: docs
+ * Close the currently open handle to the device from user space.
  */
 #include <net/genetlink.h>
 #include <net/wimax.h>
 #include "wimax-internal.h"
 
-#define D_LOCAL 0
-#include "debug.h"
+
+#define D_SUBMODULE op_close
+#include "debug-levels.h"
 
 
 static struct nla_policy wimax_gnl_close_policy[] = {
@@ -51,9 +52,8 @@ int wimax_gnl_doit_close(struct sk_buff *skb, struct genl_info *info)
 	wimax_dev = net_dev_to_wimax(net_dev);
 
 	result = 0;
-	__wimax_flush_queue(wimax_dev, net_dev);
 	wimax_dev->genl_pid = 0;
-	
+
 	dev_put(net_dev);
 error_no_wimax_dev:
 	d_fnend(3, NULL, "(skb %p info %p) = %d\n", skb, info, result);

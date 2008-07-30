@@ -44,6 +44,10 @@ $(src)/.tmp.config.mk:: $(src)/lket-ct-config
 config:
 	$(src)/lket-ct-config $(src) $(KDIR)
 install:
-	make -C $(KDIR) M=$(shell pwd) modules_install
+	make -C $(KDIR) M=$(shell pwd) INSTALL_MOD_PATH=$(DESTDIR) modules_install
 
 
+update-version:
+	@ESRC=$(src) $(src)/.lket/ct-10-generate-version.sh print > $(src)/.base_version.new
+	@mv $(src)/.base_version.new $(src)/.base_version
+	@echo "I: Base version is $$(cat $(src)/.base_version) [$(src)/.base_version]"

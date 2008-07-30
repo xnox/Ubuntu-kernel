@@ -1,5 +1,5 @@
 /*
- * Linux WiMax
+ * Linux WiMAX
  * Mappping of generic netlink family IDs to net devices
  *
  *
@@ -25,26 +25,28 @@
  * simplify lookup).
  *
  * We keep a table <id, net_dev> so we can lookup (and refcount) the
- * net_dev from the ID. Protected by a lock. When the array is full
- * (id == 0 is considered empty), we just double it's size. We start
- * with 1, as most systems will only have one adapter.
+ * net_dev from the ID. The table is protected by a read-write lock
+ * (most accesses will be read).
  *
- * All is protected with a rwlock, as most of the ops are read.
+ * When the array is full (id == 0 is considered empty), we just
+ * double it's size. We start with 1, as most systems will only have
+ * one adapter.
  *
- * Didn't want to use an attribute name on the netlink message because
- * that implied a heavier search over all the netdevs; seemed kind of
- * a waste given most systems will have just a single WiMax
- * adapter. This one should work with almost no overhead.
+ * The idea is to use a very simple lookup. Using a netlink attribute
+ * with (for example) the interface name implied a heavier search
+ * over all the netdevs; seemed kind of a waste given most systems
+ * will have just a single WiMAX adapter. This one should work with
+ * almost no overhead.
  */
-#include "version.h"
 #include <linux/device.h>
 #include <net/genetlink.h>
 #include <linux/netdevice.h>
 #include <net/wimax.h>
 #include "wimax-internal.h"
 
-#define D_LOCAL 0
-#include "debug.h"
+
+#define D_SUBMODULE id_table
+#include "debug-levels.h"
 
 
 static rwlock_t wimax_id_table_lock = __RW_LOCK_UNLOCKED(wimax_id_table_lock);
@@ -56,7 +58,7 @@ static struct wimax_id_table
 } *wimax_id_table = NULL;
 
 
-/**
+/*
  * wimax_id_table_add - add a gennetlink familiy ID / net_dev mapping
  *
  * @id: family ID to add to the table
@@ -164,7 +166,7 @@ void wimax_id_table_release(void)
 		    && wimax_id_table[cnt].net_dev == NULL)
 			continue;	/* this one is good... */
 		printk(KERN_ERR "BUG: %s index %u not cleared (%d/%p)\n",
-		       __FUNCTION__, cnt, wimax_id_table[cnt].id,
+		       __func__, cnt, wimax_id_table[cnt].id,
 		       wimax_id_table[cnt].net_dev);
 		WARN_ON(1);
 	}

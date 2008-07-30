@@ -1,5 +1,5 @@
 /*
- * Linux WiMax
+ * Linux WiMAX
  * Sysfs interfaces
  *
  *
@@ -21,11 +21,16 @@
  * 02110-1301, USA.
  *
  *
- * FIXME: docs
+ * Expose the generic netlink family ID and version over sysfs.
  */
 
 #include <linux/wimax.h>
-#include "debug.h"
+
+/* We don't really care about debugging levels here, we just want the
+ * definitions */
+
+#define D_SUBMODULE sysfs
+#include "debug-levels.h"
 
 static
 ssize_t wimax_dev_gnl_version_show(struct device *dev,
@@ -35,7 +40,7 @@ ssize_t wimax_dev_gnl_version_show(struct device *dev,
 	return scnprintf(buf, PAGE_SIZE, "%02u", wimax_dev->gnl_family.version);
 }
 static
-DEVICE_ATTR(wimax_gnl_version, S_IRUGO, wimax_dev_gnl_version_show, NULL);
+DEVICE_ATTR(gnl_version, S_IRUGO, wimax_dev_gnl_version_show, NULL);
 
 
 static
@@ -46,19 +51,32 @@ ssize_t wimax_dev_gnl_family_id_show(struct device *dev,
 	return scnprintf(buf, PAGE_SIZE, "%d", wimax_dev->gnl_family.id);
 }
 static
-DEVICE_ATTR(wimax_gnl_family_id, S_IRUGO, wimax_dev_gnl_family_id_show, NULL);
+DEVICE_ATTR(gnl_family_id, S_IRUGO, wimax_dev_gnl_family_id_show, NULL);
+
+struct d_level d_level[] = {
+	D_SUBMODULE_DEFINE(id_table),
+	D_SUBMODULE_DEFINE(op_close),
+	D_SUBMODULE_DEFINE(op_msg),
+	D_SUBMODULE_DEFINE(op_open),
+	D_SUBMODULE_DEFINE(op_rfkill),
+	D_SUBMODULE_DEFINE(stack),
+};
+size_t d_level_size = ARRAY_SIZE(d_level);
+
+static
+DEVICE_ATTR(debug_levels, S_IRUGO | S_IWUSR, d_level_show, d_level_store);
 
 
 /* Pack'em sysfs attribute files */
-
 static
 struct attribute *wimax_dev_attrs[] = {
-	&dev_attr_wimax_gnl_version.attr,
-	&dev_attr_wimax_gnl_family_id.attr,
+	&dev_attr_gnl_version.attr,
+	&dev_attr_gnl_family_id.attr,
+	&dev_attr_debug_levels.attr,
 	NULL,
 };
 
 const struct attribute_group wimax_dev_attr_group = {
-	.name = NULL,		/* we want them in the same directory */
+	.name = "wimax",
 	.attrs = wimax_dev_attrs,
 };

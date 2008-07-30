@@ -1,6 +1,6 @@
 /*
- * Intel Wireless WiMax Connection 2400m
- * Sysfs interfaces
+ * Intel Wireless WiMAX Connection 2400m
+ * Sysfs interfaces to show driver and device information
  *
  *
  *
@@ -20,149 +20,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
  * 02110-1301, USA.
- *
- *
- * FIXME: docs
  */
 
 #include <linux/netdevice.h>
 #include <linux/etherdevice.h>
+#include <linux/spinlock.h>
 #include <linux/device.h>
-#include "../debug.h"
 #include "i2400m.h"
 
-/*
- * Show current inflight values
- *
- * Will print the current MAX and THRESHOLD values for the basic flow
- * control. In addition it will report how many times the TX queue needed
- * to be restarted since the last time this query was made.
- */
-static
-ssize_t req_inflight_show(struct req_inflight *inflight, char *buf)
-{
-	ssize_t result;
-	unsigned long sec_elapsed = (jiffies - inflight->restart_ts) / HZ;
-	unsigned long restart_count = atomic_read(&inflight->restart_count);
 
-	result = scnprintf(buf, PAGE_SIZE, "%lu %lu %d %lu %lu %lu\n"
-			   "#read: threshold max inflight_count restarts "
-			   "seconds restarts/sec\n"
-			   "#write: threshold max\n",
-			   inflight->threshold, inflight->max,
-			   atomic_read(&inflight->count),
-			   restart_count, sec_elapsed,
-			   sec_elapsed == 0 ? 0 : restart_count / sec_elapsed);
-	inflight->restart_ts = jiffies;
-	atomic_set(&inflight->restart_count, 0);
-	return result;
-}
-
-static
-ssize_t req_inflight_store(struct req_inflight *inflight,
-			   const char *buf, size_t size)
-{
-	unsigned long in_threshold,
-	  in_max;
-	ssize_t result;
-
-	result = sscanf(buf, "%lu %lu", &in_threshold, &in_max);
-	if (result != 2)
-		return -EINVAL;
-	if (in_max <= in_threshold)
-		return -EINVAL;
-	inflight->max = in_max;
-	inflight->threshold = in_threshold;
-	return size;
-}
-
-
-#warning FIXME: remove these adaptors and just make it transparent
-/*							// @lket@ignore-start
- * Glue (or function adaptors) for accesing info on sysfs
- *
- * Linux 2.6.21 changed how 'struct netdevice' does attributes (from
- * having a 'struct class_dev' to having a 'struct device'). That is
- * quite of a pain.
- *
- * So we try to abstract that here. i2400m_SHOW() and i2400m_STORE()
- * create adaptors for extracting the 'struct i2400m' from a 'struct
- * dev' and calling a function for doing a sysfs operation (as we have
- * them factorized already). i2400m_ATTR creates the attribute file
- * (CLASS_DEVICE_ATTR or DEVICE_ATTR) and i2400m_ATTR_NAME produces a
- * class_device_attr_NAME or device_attr_NAME (for group registration).
- */
-#include <linux/version.h>
-
-#define i2400m_SHOW(name, fn, param)					\
-static									\
-ssize_t show_##name(struct device *dev,					\
-			   struct device_attribute *attr,		\
-			   char *buf) {					\
-	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));	\
-	return fn(&i2400m->param, buf);					\
-}
-
-#define i2400m_STORE(name, fn, param)					\
-static									\
-ssize_t store_##name(struct device *dev,				\
-			    struct device_attribute *attr,		\
-			    const char *buf, size_t size) {		\
-	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));	\
-	return fn(&i2400m->param, buf, size);				\
-}
-
-#define i2400m_ATTR(name, perm)	\
-	DEVICE_ATTR(name, perm, show_##name, store_##name)
-
-#define i2400m_ATTR_NAME(a) (dev_attr_##a)
-
-/* Sysfs adaptors */
-
-i2400m_SHOW(i2400m_tx_inflight, req_inflight_show, tx_inflight);
-i2400m_STORE(i2400m_tx_inflight, req_inflight_store, tx_inflight);
-i2400m_ATTR(i2400m_tx_inflight, S_IRUGO | S_IWUSR);
-
-
-#ifdef __USE_LEGACY_IOCTL
+#define D_SUBMODULE sysfs
+#include "debug-levels.h"
 
 /*
- * TEMPORARY: select control interface to actively use
- *
- * So for now this is pretty crappy and held together with stitches;
- * make sure no messages are going around when you modify this with
- * _store().
- */
-static
-ssize_t i2400m_ctl_iface_show(struct device *dev,
-			      struct device_attribute *attr,
-			      char *buf)
-{
-	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));
-	return scnprintf(buf, PAGE_SIZE, "%u\n", i2400m->ctl_iface);
-}
-
-static
-ssize_t i2400m_ctl_iface_store(struct device *dev,
-			       struct device_attribute *attr,
-			       const char *buf, size_t size)
-{
-	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));
-	unsigned val;
-	if (sscanf(buf, "%u\n", &val) != 1)
-		return -EINVAL;
-	i2400m->ctl_iface = val == 0? 0 : 1;
-	return size;
-}
-
-static
-DEVICE_ATTR(i2400m_ctl_iface, S_IRUGO | S_IWUSR,
-	    i2400m_ctl_iface_show, i2400m_ctl_iface_store);
-#endif				/* __USE_LEGACY_IOCTL */
-
-
-/*
- * TEMPORARY: cold reset the device
+ * cold reset the device deferred work routine
  *
  * Need to use a workstruct because when done from sysfs, the device
  * lock is taken, so after a reset, the new device "instance" is
@@ -170,7 +41,7 @@ DEVICE_ATTR(i2400m_ctl_iface, S_IRUGO | S_IWUSR,
  * instance. This creates problems for upper layers, as for example
  * the management daemon for a while could think we have two wimax
  * connections in the system.
- * 
+ *
  * Note calling _put before _reset_cold is ok because _put uses
  * netdev's dev_put(), which won't free anything.
  *
@@ -185,7 +56,7 @@ void __i2400m_reset_cold_work(struct work_struct *ws)
 	struct i2400m_work *iw =
 		container_of(ws, struct i2400m_work, ws);
 	i2400m_put(iw->i2400m);
-	i2400m_reset_cold(iw->i2400m);
+	iw->i2400m->bus_reset(iw->i2400m, I2400M_RT_COLD);
 	kfree(iw);
 }
 
@@ -203,8 +74,8 @@ ssize_t i2400m_reset_cold_store(struct device *dev,
 		goto error_no_unsigned;
 	if (val != 1)
 		goto error_bad_value;
-	result = i2400m_schedule_work(i2400m, __i2400m_reset_cold_work,
-				      GFP_KERNEL);
+	result = i2400m_schedule_work(i2400m, 0, __i2400m_reset_cold_work,
+				      GFP_KERNEL, NULL, 0);
 	if (result >= 0)
 		result = size;
 error_no_unsigned:
@@ -220,9 +91,8 @@ DEVICE_ATTR(i2400m_reset_cold, S_IRUGO | S_IWUSR,
 /*
  * soft reset the device
  *
- * We just soft reset the device to simulate what happens when it
- * crashes; the notif endpoint will receive ZLPs and a reboot barker
- * and then the bootstrap code will kick in.
+ * We just soft reset the device; the notif endpoint will receive ZLPs
+ * and a reboot barker and then the bootstrap code will kick in.
  */
 static
 ssize_t i2400m_reset_soft_store(struct device *dev,
@@ -238,7 +108,7 @@ ssize_t i2400m_reset_soft_store(struct device *dev,
 		goto error_no_unsigned;
 	if (val != 1)
 		goto error_bad_value;
-	result = __i2400m_reset_soft(i2400m);
+	result = i2400m->bus_reset(i2400m, I2400M_RT_SOFT);
 	if (result >= 0)
 		result = size;
 error_no_unsigned:
@@ -250,20 +120,190 @@ static
 DEVICE_ATTR(i2400m_reset_soft, S_IRUGO | S_IWUSR,
 	    NULL, i2400m_reset_soft_store);
 
+
+/*
+ * Show RX statistics
+ *
+ * Total #payloads | min #payloads in a RX | max #payloads in a RX
+ * Total #RXs | Total bytes | min #bytes in a RX | max #bytes in a RX
+ *
+ * Write 1 to clear.
+ */
 static
-DEVICE_ATTR(i2400m_crash, S_IRUGO | S_IWUSR,
-	    NULL, i2400m_reset_soft_store);
+ssize_t i2400m_rx_stats_show(struct device *dev,
+			     struct device_attribute *attr,
+			     char *buf)
+{
+	ssize_t result;
+	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));
+	unsigned long flags;
+
+	spin_lock_irqsave(&i2400m->rx_lock, flags);
+	result = snprintf(buf, PAGE_SIZE, "%u %u %u %u %u %u %u\n",
+			  i2400m->rx_pl_num, i2400m->rx_pl_min,
+			  i2400m->rx_pl_max, i2400m->rx_num,
+			  i2400m->rx_size_acc,
+			  i2400m->rx_size_min, i2400m->rx_size_max);
+	spin_unlock_irqrestore(&i2400m->rx_lock, flags);
+	return result;
+}
+
+static
+ssize_t i2400m_rx_stats_store(struct device *dev,
+			      struct device_attribute *attr,
+			      const char *buf, size_t size)
+{
+	ssize_t result;
+	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));
+	unsigned val;
+	unsigned long flags;
+
+	result = -EINVAL;
+	if (sscanf(buf, "%u\n", &val) != 1)
+		goto error_no_unsigned;
+	if (val != 1)
+		goto error_bad_value;
+	spin_lock_irqsave(&i2400m->rx_lock, flags);
+	i2400m->rx_pl_num = 0;
+	i2400m->rx_pl_max = 0;
+	i2400m->rx_pl_min = ULONG_MAX;
+	i2400m->rx_num = 0;
+	i2400m->rx_size_acc = 0;
+	i2400m->rx_size_min = ULONG_MAX;
+	i2400m->rx_size_max = 0;
+	spin_unlock_irqrestore(&i2400m->rx_lock, flags);
+	result = size;
+error_no_unsigned:
+error_bad_value:
+	return result;
+}
+
+static
+DEVICE_ATTR(i2400m_rx_stats, S_IRUGO | S_IWUSR,
+	    i2400m_rx_stats_show, i2400m_rx_stats_store);
+
+
+/*
+ * Show TX statistics
+ *
+ * Total #payloads | min #payloads in a TX | max #payloads in a TX
+ * Total #TXs | Total bytes | min #bytes in a TX | max #bytes in a TX
+ *
+ * Write 1 to clear.
+ */
+static
+ssize_t i2400m_tx_stats_show(struct device *dev,
+			     struct device_attribute *attr,
+			     char *buf)
+{
+	ssize_t result;
+	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));
+	unsigned long flags;
+
+	spin_lock_irqsave(&i2400m->tx_lock, flags);
+	result = snprintf(buf, PAGE_SIZE, "%u %u %u %u %u %u %u\n",
+			  i2400m->tx_pl_num, i2400m->tx_pl_min,
+			  i2400m->tx_pl_max, i2400m->tx_num,
+			  i2400m->tx_size_acc,
+			  i2400m->tx_size_min, i2400m->tx_size_max);
+	spin_unlock_irqrestore(&i2400m->tx_lock, flags);
+	return result;
+}
+
+static
+ssize_t i2400m_tx_stats_store(struct device *dev,
+			      struct device_attribute *attr,
+			      const char *buf, size_t size)
+{
+	ssize_t result;
+	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));
+	unsigned val;
+	unsigned long flags;
+
+	result = -EINVAL;
+	if (sscanf(buf, "%u\n", &val) != 1)
+		goto error_no_unsigned;
+	if (val != 1)
+		goto error_bad_value;
+	spin_lock_irqsave(&i2400m->tx_lock, flags);
+	i2400m->tx_pl_num = 0;
+	i2400m->tx_pl_max = 0;
+	i2400m->tx_pl_min = ULONG_MAX;
+	i2400m->tx_num = 0;
+	i2400m->tx_size_acc = 0;
+	i2400m->tx_size_min = ULONG_MAX;
+	i2400m->tx_size_max = 0;
+	spin_unlock_irqrestore(&i2400m->tx_lock, flags);
+	result = size;
+error_no_unsigned:
+error_bad_value:
+	return result;
+}
+
+static
+DEVICE_ATTR(i2400m_tx_stats, S_IRUGO | S_IWUSR,
+	    i2400m_tx_stats_show, i2400m_tx_stats_store);
+
+/*
+ * Show debug stuff
+ */
+static
+ssize_t i2400m_debug_stuff_show(struct device *dev,
+				struct device_attribute *attr,
+				char *buf)
+{
+	ssize_t result = 0;
+	struct i2400m *i2400m = net_dev_to_i2400m(to_net_dev(dev));
+	unsigned long flags;
+
+	result += scnprintf(buf, PAGE_SIZE, "queue is %s\n",
+			    netif_queue_stopped(to_net_dev(dev))?
+			    "stopped" : "running");
+
+	spin_lock_irqsave(&i2400m->tx_lock, flags);
+	result += scnprintf(
+		buf + result, PAGE_SIZE - result,
+		"TX FIFO in %zu out %zu (%zu used) msg @%d\n",
+		i2400m->tx_in, i2400m->tx_out,
+		i2400m->tx_out - i2400m->tx_in,
+		i2400m->tx_msg? (void *) i2400m->tx_msg - i2400m->tx_buf : -1);
+	spin_unlock_irqrestore(&i2400m->tx_lock, flags);
+
+	return result;
+}
+static
+DEVICE_ATTR(i2400m_debug_stuff, S_IRUGO | S_IWUSR,
+	    i2400m_debug_stuff_show, NULL);
+
+
+/*
+ * Debug levels control; see debug.h
+ */
+struct d_level d_level[] = {
+	D_SUBMODULE_DEFINE(control),
+	D_SUBMODULE_DEFINE(driver),
+	D_SUBMODULE_DEFINE(fw),
+	D_SUBMODULE_DEFINE(netdev),
+	D_SUBMODULE_DEFINE(rfkill),
+	D_SUBMODULE_DEFINE(rx),
+	D_SUBMODULE_DEFINE(sysfs),
+	D_SUBMODULE_DEFINE(tx),
+};
+size_t d_level_size = ARRAY_SIZE(d_level);
+
+static
+DEVICE_ATTR(i2400m_debug_levels, S_IRUGO | S_IWUSR,
+	    d_level_show, d_level_store);
 
 
 static
 struct attribute *i2400m_dev_attrs[] = {
-	&i2400m_ATTR_NAME(i2400m_tx_inflight).attr,
-#ifdef __USE_LEGACY_IOCTL
-	&dev_attr_i2400m_ctl_iface.attr,
-#endif
-	&dev_attr_i2400m_reset_cold.attr,	
+	&dev_attr_i2400m_reset_cold.attr,
 	&dev_attr_i2400m_reset_soft.attr,
-	&dev_attr_i2400m_crash.attr,
+	&dev_attr_i2400m_rx_stats.attr,
+	&dev_attr_i2400m_tx_stats.attr,
+	&dev_attr_i2400m_debug_stuff.attr,
+	&dev_attr_i2400m_debug_levels.attr,
 	NULL,
 };
 
