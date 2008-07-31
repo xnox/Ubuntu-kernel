@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# Isolate the compat-wireless exported symbols and munge every occurence such that
+# there is no possibility of conflict with the main kernel.
+#
+TL=token_list
+FL=file_list
+SL=sed_list
+TL_EXCEPTIONS=token_list_exceptions
+
+find compat-wireless-2.6 -name "*.[ch]" > ${FL}
+
+rm -f ${TL_EXCEPTIONS}
+for i in wireless_send_event iw_handler_set_spy wireless_spy_update iw_handler_get_thrspy iw_handler_get_spy iw_handler_set_thrspy
+do
+	echo ${i} >> ${TL_EXCEPTIONS}
+done
+
+cat ${FL} | \
+egrep -v "compat\.[ch]" |\
+xargs grep -h EXPORT_SYMBOL | \
+grep -v -f ${TL_EXCEPTIONS} |\
+sed -e 's/^.*EXPORT_SYMBOL_GPL(//' -e 's/);//' -e 's/^.*EXPORT_SYMBOL(//' -e 's/);//' |\
+sort -r | uniq > ${TL}
+
+rm -f ${SL}
+cat ${TL} | while read token
+do
+	echo s/${token}/cw_${token}/g >> ${SL}
+done
+
+cat ${FL} | while read f
+do
+	sed -i -f ${SL} "${f}"
+done
+
+rm -f ${TL} ${FL} ${SL} ${TL_EXCEPTIONS}
+
