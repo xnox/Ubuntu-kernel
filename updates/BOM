@@ -14,7 +14,7 @@ CW=compat-wireless-2.6
 CWDIR=$(CDIR)/$(CW)
 
 all: $(CDIR)/wireless-testing/Makefile
-	cd $(WTDIR); git fetch origin; git rebase origin; git checkout -f
+	cd $(WTDIR); git fetch origin; git rebase origin; git checkout -f; git reset --hard master-2008-07-28
 	rm -rf $(CWDIR)
 	cd $(CDIR); git clone git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/$(CW).git $(CW)
 	cd $(CWDIR);  GIT_TREE=$(WTDIR) scripts/admin-update.sh
