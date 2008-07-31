@@ -47,6 +47,8 @@ clean: debian/control.stub
 
 	rm -rf $(udebdir)
 	rm -rf $(builddir)
+	rm -rf debian/linux-backports-modules*
+	rm -rf debian/linux-headers*
 	rm -f $(stampdir)/stamp-*
 
 	# This gets rid of the d-i packages in control
