@@ -228,7 +228,7 @@ int b43_generate_txhdr(struct b43_wldev *dev,
 		 * use the original dur_id field. */
 		txhdr->dur_fb = wlhdr->duration_id;
 	} else {
-		txhdr->dur_fb = ieee80211_generic_frame_duration(
+		txhdr->dur_fb = cw_ieee80211_generic_frame_duration(
 			dev->wl->hw, info->control.vif, fragment_len, fbrate);
 	}
 
@@ -259,7 +259,7 @@ int b43_generate_txhdr(struct b43_wldev *dev,
 			   B43_TXH_MAC_KEYIDX;
 		mac_ctl |= (key->algorithm << B43_TXH_MAC_KEYALG_SHIFT) &
 			   B43_TXH_MAC_KEYALG;
-		wlhdr_len = ieee80211_hdrlen(fctl);
+		wlhdr_len = cw_ieee80211_hdrlen(fctl);
 		iv_len = min((size_t) info->control.iv_len,
 			     ARRAY_SIZE(txhdr->iv));
 		memcpy(txhdr->iv, ((u8 *) wlhdr) + wlhdr_len, iv_len);
@@ -354,7 +354,7 @@ int b43_generate_txhdr(struct b43_wldev *dev,
 				cts = (struct ieee80211_cts *)
 					(txhdr->new_format.rts_frame);
 			}
-			ieee80211_ctstoself_get(dev->wl->hw, info->control.vif,
+			cw_ieee80211_ctstoself_get(dev->wl->hw, info->control.vif,
 						fragment_data, fragment_len,
 						info, cts);
 			mac_ctl |= B43_TXH_MAC_SENDCTS;
@@ -369,7 +369,7 @@ int b43_generate_txhdr(struct b43_wldev *dev,
 				rts = (struct ieee80211_rts *)
 					(txhdr->new_format.rts_frame);
 			}
-			ieee80211_rts_get(dev->wl->hw, info->control.vif,
+			cw_ieee80211_rts_get(dev->wl->hw, info->control.vif,
 					  fragment_data, fragment_len,
 					  info, rts);
 			mac_ctl |= B43_TXH_MAC_SENDRTS;
@@ -505,7 +505,7 @@ static s8 b43_rssinoise_postprocess(struct b43_wldev *dev, u8 in_rssi)
 
 void b43_rx(struct b43_wldev *dev, struct sk_buff *skb, const void *_rxhdr)
 {
-	struct ieee80211_rx_status status;
+	struct cw_ieee80211_rx_status status;
 	struct b43_plcp_hdr6 *plcp;
 	struct ieee80211_hdr *wlhdr;
 	const struct b43_rxhdr_fw4 *rxhdr = _rxhdr;
@@ -564,7 +564,7 @@ void b43_rx(struct b43_wldev *dev, struct sk_buff *skb, const void *_rxhdr)
 		B43_WARN_ON(keyidx >= dev->max_nr_keys);
 
 		if (dev->key[keyidx].algorithm != B43_SEC_ALGO_NONE) {
-			wlhdr_len = ieee80211_hdrlen(fctl);
+			wlhdr_len = cw_ieee80211_hdrlen(fctl);
 			if (unlikely(skb->len < (wlhdr_len + 3))) {
 				b43dbg(dev->wl,
 				       "RX: Packet size underrun (3)\n");
@@ -648,7 +648,7 @@ void b43_rx(struct b43_wldev *dev, struct sk_buff *skb, const void *_rxhdr)
 	}
 
 	dev->stats.last_rx = jiffies;
-	ieee80211_rx_irqsafe(dev->wl->hw, skb, &status);
+	cw_cw_ieee80211_rx_irqsafe(dev->wl->hw, skb, &status);
 
 	return;
 drop:

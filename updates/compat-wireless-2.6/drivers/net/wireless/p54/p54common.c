@@ -67,7 +67,7 @@ static struct ieee80211_supported_band band_2GHz = {
 };
 
 
-void p54_parse_firmware(struct ieee80211_hw *dev, const struct firmware *fw)
+void cw_p54_parse_firmware(struct ieee80211_hw *dev, const struct firmware *fw)
 {
 	struct p54_common *priv = dev->priv;
 	struct bootrec_exp_if *exp_if;
@@ -153,7 +153,7 @@ void p54_parse_firmware(struct ieee80211_hw *dev, const struct firmware *fw)
 		dev->queues = 4;
 	}
 }
-EXPORT_SYMBOL_GPL(p54_parse_firmware);
+EXPORT_SYMBOL_GPL(cw_p54_parse_firmware);
 
 static int p54_convert_rev0_to_rev1(struct ieee80211_hw *dev,
 				    struct pda_pa_curve_data *curve_data)
@@ -201,7 +201,7 @@ static int p54_convert_rev0_to_rev1(struct ieee80211_hw *dev,
 	return 0;
 }
 
-int p54_parse_eeprom(struct ieee80211_hw *dev, void *eeprom, int len)
+int cw_p54_parse_eeprom(struct ieee80211_hw *dev, void *eeprom, int len)
 {
 	struct p54_common *priv = dev->priv;
 	struct eeprom_pda_wrap *wrap = NULL;
@@ -333,9 +333,9 @@ int p54_parse_eeprom(struct ieee80211_hw *dev, void *eeprom, int len)
 	printk(KERN_ERR "p54: eeprom parse failed!\n");
 	return err;
 }
-EXPORT_SYMBOL_GPL(p54_parse_eeprom);
+EXPORT_SYMBOL_GPL(cw_p54_parse_eeprom);
 
-void p54_fill_eeprom_readback(struct p54_control_hdr *hdr)
+void cw_p54_fill_eeprom_readback(struct p54_control_hdr *hdr)
 {
 	struct p54_eeprom_lm86 *eeprom_hdr;
 
@@ -347,12 +347,12 @@ void p54_fill_eeprom_readback(struct p54_control_hdr *hdr)
 	eeprom_hdr->offset = 0x0;
 	eeprom_hdr->len = cpu_to_le16(0x2000);
 }
-EXPORT_SYMBOL_GPL(p54_fill_eeprom_readback);
+EXPORT_SYMBOL_GPL(cw_p54_fill_eeprom_readback);
 
-static void p54_rx_data(struct ieee80211_hw *dev, struct sk_buff *skb)
+static void cw_p54_rx_data(struct ieee80211_hw *dev, struct sk_buff *skb)
 {
-	struct p54_rx_hdr *hdr = (struct p54_rx_hdr *) skb->data;
-	struct ieee80211_rx_status rx_status = {0};
+	struct cw_p54_rx_hdr *hdr = (struct cw_p54_rx_hdr *) skb->data;
+	struct cw_ieee80211_rx_status rx_status = {0};
 	u16 freq = le16_to_cpu(hdr->freq);
 
 	rx_status.signal = hdr->rssi;
@@ -368,7 +368,7 @@ static void p54_rx_data(struct ieee80211_hw *dev, struct sk_buff *skb)
 	skb_pull(skb, sizeof(*hdr));
 	skb_trim(skb, le16_to_cpu(hdr->len));
 
-	ieee80211_rx_irqsafe(dev, skb, &rx_status);
+	cw_cw_ieee80211_rx_irqsafe(dev, skb, &rx_status);
 }
 
 static void inline p54_wake_free_queues(struct ieee80211_hw *dev)
@@ -378,10 +378,10 @@ static void inline p54_wake_free_queues(struct ieee80211_hw *dev)
 
 	for (i = 0; i < dev->queues; i++)
 		if (priv->tx_stats[i].len < priv->tx_stats[i].limit)
-			ieee80211_wake_queue(dev, i);
+			cw_ieee80211_wake_queue(dev, i);
 }
 
-static void p54_rx_frame_sent(struct ieee80211_hw *dev, struct sk_buff *skb)
+static void cw_p54_rx_frame_sent(struct ieee80211_hw *dev, struct sk_buff *skb)
 {
 	struct p54_common *priv = dev->priv;
 	struct p54_control_hdr *hdr = (struct p54_control_hdr *) skb->data;
@@ -428,7 +428,7 @@ static void p54_rx_frame_sent(struct ieee80211_hw *dev, struct sk_buff *skb)
 			info->status.retry_count = payload->retries - 1;
 			info->status.ack_signal = le16_to_cpu(payload->ack_rssi);
 			skb_pull(entry, sizeof(*hdr) + pad + sizeof(*entry_data));
-			ieee80211_tx_status_irqsafe(dev, entry);
+			cw_cw_ieee80211_tx_status_irqsafe(dev, entry);
 			break;
 		} else
 			last_addr = range->end_addr;
@@ -440,13 +440,13 @@ static void p54_rx_frame_sent(struct ieee80211_hw *dev, struct sk_buff *skb)
 		p54_wake_free_queues(dev);
 }
 
-static void p54_rx_control(struct ieee80211_hw *dev, struct sk_buff *skb)
+static void cw_p54_rx_control(struct ieee80211_hw *dev, struct sk_buff *skb)
 {
 	struct p54_control_hdr *hdr = (struct p54_control_hdr *) skb->data;
 
 	switch (le16_to_cpu(hdr->type)) {
 	case P54_CONTROL_TYPE_TXDONE:
-		p54_rx_frame_sent(dev, skb);
+		cw_p54_rx_frame_sent(dev, skb);
 		break;
 	case P54_CONTROL_TYPE_BBP:
 		break;
@@ -458,13 +458,13 @@ static void p54_rx_control(struct ieee80211_hw *dev, struct sk_buff *skb)
 }
 
 /* returns zero if skb can be reused */
-int p54_rx(struct ieee80211_hw *dev, struct sk_buff *skb)
+int cw_p54_rx(struct ieee80211_hw *dev, struct sk_buff *skb)
 {
 	u8 type = le16_to_cpu(*((__le16 *)skb->data)) >> 8;
 	switch (type) {
 	case 0x00:
 	case 0x01:
-		p54_rx_data(dev, skb);
+		cw_p54_rx_data(dev, skb);
 		return -1;
 	case 0x4d:
 		/* TODO: do something better... but then again, I've never seen this happen */
@@ -472,7 +472,7 @@ int p54_rx(struct ieee80211_hw *dev, struct sk_buff *skb)
 		       wiphy_name(dev->wiphy));
 		break;
 	case 0x80:
-		p54_rx_control(dev, skb);
+		cw_p54_rx_control(dev, skb);
 		break;
 	default:
 		printk(KERN_ERR "%s: unknown frame RXed (0x%02x)\n",
@@ -481,7 +481,7 @@ int p54_rx(struct ieee80211_hw *dev, struct sk_buff *skb)
 	}
 	return 0;
 }
-EXPORT_SYMBOL_GPL(p54_rx);
+EXPORT_SYMBOL_GPL(cw_p54_rx);
 
 /*
  * So, the firmware is somewhat stupid and doesn't know what places in its
@@ -489,7 +489,7 @@ EXPORT_SYMBOL_GPL(p54_rx);
  * can find some unused memory to upload our packets to. However, data that we
  * want the card to TX needs to stay intact until the card has told us that
  * it is done with it. This function finds empty places we can upload to and
- * marks allocated areas as reserved if necessary. p54_rx_frame_sent frees
+ * marks allocated areas as reserved if necessary. cw_p54_rx_frame_sent frees
  * allocated areas.
  */
 static void p54_assign_address(struct ieee80211_hw *dev, struct sk_buff *skb,
@@ -540,7 +540,7 @@ static void p54_assign_address(struct ieee80211_hw *dev, struct sk_buff *skb,
 		__skb_queue_after(&priv->tx_queue, target_skb, skb);
 		if (largest_hole < IEEE80211_MAX_RTS_THRESHOLD + 0x170 +
 				   sizeof(struct p54_control_hdr))
-			ieee80211_stop_queues(dev);
+			cw_cw_ieee80211_stop_queues(dev);
 	}
 	spin_unlock_irqrestore(&priv->tx_queue.lock, flags);
 
@@ -563,7 +563,7 @@ static int p54_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
 	current_queue->len++;
 	current_queue->count++;
 	if (current_queue->len == current_queue->limit)
-		ieee80211_stop_queue(dev, skb_get_queue_mapping(skb));
+		cw_ieee80211_stop_queue(dev, skb_get_queue_mapping(skb));
 
 	padding = (unsigned long)(skb->data - (sizeof(*hdr) + sizeof(*txhdr))) & 3;
 	len = skb->len;
@@ -975,12 +975,12 @@ static const struct ieee80211_ops p54_ops = {
 	.get_tx_stats		= p54_get_tx_stats
 };
 
-struct ieee80211_hw *p54_init_common(size_t priv_data_len)
+struct ieee80211_hw *cw_p54_init_common(size_t priv_data_len)
 {
 	struct ieee80211_hw *dev;
 	struct p54_common *priv;
 
-	dev = ieee80211_alloc_hw(priv_data_len, &p54_ops);
+	dev = cw_ieee80211_alloc_hw(priv_data_len, &p54_ops);
 	if (!dev)
 		return NULL;
 
@@ -1004,7 +1004,7 @@ struct ieee80211_hw *p54_init_common(size_t priv_data_len)
               priv->tx_hdr_len + sizeof(struct p54_control_hdr), GFP_KERNEL);
 
 	if (!priv->cached_vdcf) {
-		ieee80211_free_hw(dev);
+		cw_ieee80211_free_hw(dev);
 		return NULL;
 	}
 
@@ -1012,9 +1012,9 @@ struct ieee80211_hw *p54_init_common(size_t priv_data_len)
 
 	return dev;
 }
-EXPORT_SYMBOL_GPL(p54_init_common);
+EXPORT_SYMBOL_GPL(cw_p54_init_common);
 
-void p54_free_common(struct ieee80211_hw *dev)
+void cw_p54_free_common(struct ieee80211_hw *dev)
 {
 	struct p54_common *priv = dev->priv;
 	kfree(priv->iq_autocal);
@@ -1022,7 +1022,7 @@ void p54_free_common(struct ieee80211_hw *dev)
 	kfree(priv->curve_data);
 	kfree(priv->cached_vdcf);
 }
-EXPORT_SYMBOL_GPL(p54_free_common);
+EXPORT_SYMBOL_GPL(cw_p54_free_common);
 
 static int __init p54_init(void)
 {

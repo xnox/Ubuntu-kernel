@@ -176,7 +176,7 @@ static int ieee80211_encrypt_fragment(struct ieee80211_device *ieee,
 	return 0;
 }
 
-void ieee80211_txb_free(struct ieee80211_txb *txb)
+void cw_ieee80211_txb_free(struct ieee80211_txb *txb)
 {
 	int i;
 	if (unlikely(!txb))
@@ -530,7 +530,7 @@ int ieee80211_xmit(struct sk_buff *skb, struct net_device *dev)
 			return 0;
 		}
 
-		ieee80211_txb_free(txb);
+		cw_ieee80211_txb_free(txb);
 	}
 
 	return 0;
@@ -542,4 +542,4 @@ int ieee80211_xmit(struct sk_buff *skb, struct net_device *dev)
 	return 1;
 }
 
-EXPORT_SYMBOL(ieee80211_txb_free);
+EXPORT_SYMBOL(cw_ieee80211_txb_free);

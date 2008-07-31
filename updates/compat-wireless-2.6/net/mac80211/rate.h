@@ -61,8 +61,8 @@ struct rate_control_ref {
 	struct kref kref;
 };
 
-int ieee80211_rate_control_register(struct rate_control_ops *ops);
-void ieee80211_rate_control_unregister(struct rate_control_ops *ops);
+int cw_ieee80211_rate_control_register(struct rate_control_ops *ops);
+void cw_ieee80211_rate_control_unregister(struct rate_control_ops *ops);
 
 /* Get a reference to the rate control algorithm. If `name' is NULL, get the
  * first available algorithm. */

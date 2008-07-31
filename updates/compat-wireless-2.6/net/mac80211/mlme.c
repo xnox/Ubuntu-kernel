@@ -76,9 +76,9 @@
 static void ieee80211_send_probe_req(struct net_device *dev, u8 *dst,
 				     u8 *ssid, size_t ssid_len);
 static struct ieee80211_sta_bss *
-ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int freq,
+cw_ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int freq,
 		     u8 *ssid, u8 ssid_len);
-static void ieee80211_rx_bss_put(struct ieee80211_local *local,
+static void cw_ieee80211_rx_bss_put(struct ieee80211_local *local,
 				 struct ieee80211_sta_bss *bss);
 static int ieee80211_sta_find_ibss(struct net_device *dev,
 				   struct ieee80211_if_sta *ifsta);
@@ -544,7 +544,7 @@ static void ieee80211_set_associated(struct net_device *dev,
 		if (sdata->vif.type != IEEE80211_IF_TYPE_STA)
 			return;
 
-		bss = ieee80211_rx_bss_get(dev, ifsta->bssid,
+		bss = cw_ieee80211_rx_bss_get(dev, ifsta->bssid,
 					   conf->channel->center_freq,
 					   ifsta->ssid, ifsta->ssid_len);
 		if (bss) {
@@ -554,7 +554,7 @@ static void ieee80211_set_associated(struct net_device *dev,
 
 			changed |= ieee80211_handle_bss_capability(sdata, bss);
 
-			ieee80211_rx_bss_put(local, bss);
+			cw_ieee80211_rx_bss_put(local, bss);
 		}
 
 		if (conf->flags & IEEE80211_CONF_SUPPORT_HT_MODE) {
@@ -741,7 +741,7 @@ static void ieee80211_send_assoc(struct net_device *dev,
 			capab |= WLAN_CAPABILITY_SHORT_PREAMBLE;
 	}
 
-	bss = ieee80211_rx_bss_get(dev, ifsta->bssid,
+	bss = cw_ieee80211_rx_bss_get(dev, ifsta->bssid,
 				   local->hw.conf.channel->center_freq,
 				   ifsta->ssid, ifsta->ssid_len);
 	if (bss) {
@@ -760,7 +760,7 @@ static void ieee80211_send_assoc(struct net_device *dev,
 		    (local->hw.flags & IEEE80211_HW_SPECTRUM_MGMT))
 			capab |= WLAN_CAPABILITY_SPECTRUM_MGMT;
 
-		ieee80211_rx_bss_put(local, bss);
+		cw_ieee80211_rx_bss_put(local, bss);
 	} else {
 		rates = ~0;
 		rates_len = sband->n_bitrates;
@@ -841,7 +841,7 @@ static void ieee80211_send_assoc(struct net_device *dev,
 		*pos++ = WLAN_EID_SUPPORTED_CHANNELS;
 		*pos++ = 2 * sband->n_channels;
 		for (i = 0; i < sband->n_channels; i++) {
-			*pos++ = ieee80211_frequency_to_channel(
+			*pos++ = cw_ieee80211_frequency_to_channel(
 					sband->channels[i].center_freq);
 			*pos++ = 1; /* one channel in the subband*/
 		}
@@ -982,7 +982,7 @@ static int ieee80211_privacy_mismatch(struct net_device *dev,
 	if (!ifsta || (ifsta->flags & IEEE80211_STA_MIXED_CELL))
 		return 0;
 
-	bss = ieee80211_rx_bss_get(dev, ifsta->bssid,
+	bss = cw_ieee80211_rx_bss_get(dev, ifsta->bssid,
 				   local->hw.conf.channel->center_freq,
 				   ifsta->ssid, ifsta->ssid_len);
 	if (!bss)
@@ -992,7 +992,7 @@ static int ieee80211_privacy_mismatch(struct net_device *dev,
 	wep_privacy = !!ieee80211_sta_wep_configured(dev);
 	privacy_invoked = !!(ifsta->flags & IEEE80211_STA_PRIVACY_INVOKED);
 
-	ieee80211_rx_bss_put(local, bss);
+	cw_ieee80211_rx_bss_put(local, bss);
 
 	if ((bss_privacy == wep_privacy) || (bss_privacy == privacy_invoked))
 		return 0;
@@ -1048,7 +1048,7 @@ static void ieee80211_associated(struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, ifsta->bssid);
+	sta = cw_sta_info_get(local, ifsta->bssid);
 	if (!sta) {
 		printk(KERN_DEBUG "%s: No STA entry for own AP %s\n",
 		       dev->name, print_mac(mac, ifsta->bssid));
@@ -1307,7 +1307,7 @@ static void ieee80211_sta_process_addba_request(struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, mgmt->sa);
+	sta = cw_sta_info_get(local, mgmt->sa);
 	if (!sta) {
 		rcu_read_unlock();
 		return;
@@ -1445,7 +1445,7 @@ static void ieee80211_sta_process_addba_resp(struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, mgmt->sa);
+	sta = cw_sta_info_get(local, mgmt->sa);
 	if (!sta) {
 		rcu_read_unlock();
 		return;
@@ -1482,7 +1482,7 @@ static void ieee80211_sta_process_addba_resp(struct net_device *dev,
 		sta->ampdu_mlme.addba_req_num[tid] = 0;
 
 		if (*state == HT_AGG_STATE_OPERATIONAL)
-			ieee80211_wake_queue(hw, sta->tid_to_tx_q[tid]);
+			cw_ieee80211_wake_queue(hw, sta->tid_to_tx_q[tid]);
 
 		spin_unlock_bh(&sta->lock);
 	} else {
@@ -1490,7 +1490,7 @@ static void ieee80211_sta_process_addba_resp(struct net_device *dev,
 		/* this will allow the state check in stop_BA_session */
 		*state = HT_AGG_STATE_OPERATIONAL;
 		spin_unlock_bh(&sta->lock);
-		ieee80211_stop_tx_ba_session(hw, sta->addr, tid,
+		cw_ieee80211_stop_tx_ba_session(hw, sta->addr, tid,
 					     WLAN_BACK_INITIATOR);
 	}
 
@@ -1581,7 +1581,7 @@ void ieee80211_sta_stop_rx_ba_session(struct net_device *dev, u8 *ra, u16 tid,
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, ra);
+	sta = cw_sta_info_get(local, ra);
 	if (!sta) {
 		rcu_read_unlock();
 		return;
@@ -1653,7 +1653,7 @@ static void ieee80211_sta_process_delba(struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, mgmt->sa);
+	sta = cw_sta_info_get(local, mgmt->sa);
 	if (!sta) {
 		rcu_read_unlock();
 		return;
@@ -1679,7 +1679,7 @@ static void ieee80211_sta_process_delba(struct net_device *dev,
 		sta->ampdu_mlme.tid_state_tx[tid] =
 				HT_AGG_STATE_OPERATIONAL;
 		spin_unlock_bh(&sta->lock);
-		ieee80211_stop_tx_ba_session(&local->hw, sta->addr, tid,
+		cw_ieee80211_stop_tx_ba_session(&local->hw, sta->addr, tid,
 					     WLAN_BACK_RECIPIENT);
 	}
 	rcu_read_unlock();
@@ -1707,7 +1707,7 @@ void sta_addba_resp_timer_expired(unsigned long data)
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, temp_sta->addr);
+	sta = cw_sta_info_get(local, temp_sta->addr);
 	if (!sta) {
 		rcu_read_unlock();
 		return;
@@ -1733,7 +1733,7 @@ void sta_addba_resp_timer_expired(unsigned long data)
 	/* go through the state check in stop_BA_session */
 	*state = HT_AGG_STATE_OPERATIONAL;
 	spin_unlock_bh(&sta->lock);
-	ieee80211_stop_tx_ba_session(hw, temp_sta->addr, tid,
+	cw_ieee80211_stop_tx_ba_session(hw, temp_sta->addr, tid,
 				     WLAN_BACK_INITIATOR);
 
 timer_expired_exit:
@@ -1770,7 +1770,7 @@ void ieee80211_sta_tear_down_BA_sessions(struct net_device *dev, u8 *addr)
 	int i;
 
 	for (i = 0; i <  STA_TID_NUM; i++) {
-		ieee80211_stop_tx_ba_session(&local->hw, addr, i,
+		cw_ieee80211_stop_tx_ba_session(&local->hw, addr, i,
 					     WLAN_BACK_INITIATOR);
 		ieee80211_sta_stop_rx_ba_session(dev, addr, i,
 						 WLAN_BACK_RECIPIENT,
@@ -1843,7 +1843,7 @@ static void ieee80211_sta_process_measurement_req(struct net_device *dev,
 }
 
 
-static void ieee80211_rx_mgmt_auth(struct net_device *dev,
+static void cw_ieee80211_rx_mgmt_auth(struct net_device *dev,
 				   struct ieee80211_if_sta *ifsta,
 				   struct ieee80211_mgmt *mgmt,
 				   size_t len)
@@ -1937,7 +1937,7 @@ static void ieee80211_rx_mgmt_auth(struct net_device *dev,
 }
 
 
-static void ieee80211_rx_mgmt_deauth(struct net_device *dev,
+static void cw_ieee80211_rx_mgmt_deauth(struct net_device *dev,
 				     struct ieee80211_if_sta *ifsta,
 				     struct ieee80211_mgmt *mgmt,
 				     size_t len)
@@ -1969,7 +1969,7 @@ static void ieee80211_rx_mgmt_deauth(struct net_device *dev,
 }
 
 
-static void ieee80211_rx_mgmt_disassoc(struct net_device *dev,
+static void cw_ieee80211_rx_mgmt_disassoc(struct net_device *dev,
 				       struct ieee80211_if_sta *ifsta,
 				       struct ieee80211_mgmt *mgmt,
 				       size_t len)
@@ -1998,7 +1998,7 @@ static void ieee80211_rx_mgmt_disassoc(struct net_device *dev,
 }
 
 
-static void ieee80211_rx_mgmt_assoc_resp(struct ieee80211_sub_if_data *sdata,
+static void cw_ieee80211_rx_mgmt_assoc_resp(struct ieee80211_sub_if_data *sdata,
 					 struct ieee80211_if_sta *ifsta,
 					 struct ieee80211_mgmt *mgmt,
 					 size_t len,
@@ -2075,7 +2075,7 @@ static void ieee80211_rx_mgmt_assoc_resp(struct ieee80211_sub_if_data *sdata,
 	rcu_read_lock();
 
 	/* Add STA entry for the AP */
-	sta = sta_info_get(local, ifsta->bssid);
+	sta = cw_sta_info_get(local, ifsta->bssid);
 	if (!sta) {
 		struct ieee80211_sta_bss *bss;
 		int err;
@@ -2087,14 +2087,14 @@ static void ieee80211_rx_mgmt_assoc_resp(struct ieee80211_sub_if_data *sdata,
 			rcu_read_unlock();
 			return;
 		}
-		bss = ieee80211_rx_bss_get(dev, ifsta->bssid,
+		bss = cw_ieee80211_rx_bss_get(dev, ifsta->bssid,
 					   local->hw.conf.channel->center_freq,
 					   ifsta->ssid, ifsta->ssid_len);
 		if (bss) {
 			sta->last_signal = bss->signal;
 			sta->last_qual = bss->qual;
 			sta->last_noise = bss->noise;
-			ieee80211_rx_bss_put(local, bss);
+			cw_ieee80211_rx_bss_put(local, bss);
 		}
 
 		err = sta_info_insert(sta);
@@ -2194,7 +2194,7 @@ static void ieee80211_rx_mgmt_assoc_resp(struct ieee80211_sub_if_data *sdata,
 
 
 /* Caller must hold local->sta_bss_lock */
-static void __ieee80211_rx_bss_hash_add(struct net_device *dev,
+static void __cw_ieee80211_rx_bss_hash_add(struct net_device *dev,
 					struct ieee80211_sta_bss *bss)
 {
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
@@ -2212,7 +2212,7 @@ static void __ieee80211_rx_bss_hash_add(struct net_device *dev,
 
 
 /* Caller must hold local->sta_bss_lock */
-static void __ieee80211_rx_bss_hash_del(struct ieee80211_local *local,
+static void __cw_ieee80211_rx_bss_hash_del(struct ieee80211_local *local,
 					struct ieee80211_sta_bss *bss)
 {
 	struct ieee80211_sta_bss *b, *prev = NULL;
@@ -2233,7 +2233,7 @@ static void __ieee80211_rx_bss_hash_del(struct ieee80211_local *local,
 
 
 static struct ieee80211_sta_bss *
-ieee80211_rx_bss_add(struct net_device *dev, u8 *bssid, int freq,
+cw_ieee80211_rx_bss_add(struct net_device *dev, u8 *bssid, int freq,
 		     u8 *ssid, u8 ssid_len)
 {
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
@@ -2254,13 +2254,13 @@ ieee80211_rx_bss_add(struct net_device *dev, u8 *bssid, int freq,
 	spin_lock_bh(&local->sta_bss_lock);
 	/* TODO: order by RSSI? */
 	list_add_tail(&bss->list, &local->sta_bss_list);
-	__ieee80211_rx_bss_hash_add(dev, bss);
+	__cw_ieee80211_rx_bss_hash_add(dev, bss);
 	spin_unlock_bh(&local->sta_bss_lock);
 	return bss;
 }
 
 static struct ieee80211_sta_bss *
-ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int freq,
+cw_ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int freq,
 		     u8 *ssid, u8 ssid_len)
 {
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
@@ -2285,7 +2285,7 @@ ieee80211_rx_bss_get(struct net_device *dev, u8 *bssid, int freq,
 
 #ifdef CONFIG_MAC80211_MESH
 static struct ieee80211_sta_bss *
-ieee80211_rx_mesh_bss_get(struct net_device *dev, u8 *mesh_id, int mesh_id_len,
+cw_ieee80211_rx_mesh_bss_get(struct net_device *dev, u8 *mesh_id, int mesh_id_len,
 			  u8 *mesh_cfg, int freq)
 {
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
@@ -2310,7 +2310,7 @@ ieee80211_rx_mesh_bss_get(struct net_device *dev, u8 *mesh_id, int mesh_id_len,
 }
 
 static struct ieee80211_sta_bss *
-ieee80211_rx_mesh_bss_add(struct net_device *dev, u8 *mesh_id, int mesh_id_len,
+cw_ieee80211_rx_mesh_bss_add(struct net_device *dev, u8 *mesh_id, int mesh_id_len,
 			  u8 *mesh_cfg, int mesh_config_len, int freq)
 {
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
@@ -2347,13 +2347,13 @@ ieee80211_rx_mesh_bss_add(struct net_device *dev, u8 *mesh_id, int mesh_id_len,
 	spin_lock_bh(&local->sta_bss_lock);
 	/* TODO: order by RSSI? */
 	list_add_tail(&bss->list, &local->sta_bss_list);
-	__ieee80211_rx_bss_hash_add(dev, bss);
+	__cw_ieee80211_rx_bss_hash_add(dev, bss);
 	spin_unlock_bh(&local->sta_bss_lock);
 	return bss;
 }
 #endif
 
-static void ieee80211_rx_bss_free(struct ieee80211_sta_bss *bss)
+static void cw_ieee80211_rx_bss_free(struct ieee80211_sta_bss *bss)
 {
 	kfree(bss->wpa_ie);
 	kfree(bss->rsn_ie);
@@ -2366,7 +2366,7 @@ static void ieee80211_rx_bss_free(struct ieee80211_sta_bss *bss)
 }
 
 
-static void ieee80211_rx_bss_put(struct ieee80211_local *local,
+static void cw_ieee80211_rx_bss_put(struct ieee80211_local *local,
 				 struct ieee80211_sta_bss *bss)
 {
 	local_bh_disable();
@@ -2375,26 +2375,26 @@ static void ieee80211_rx_bss_put(struct ieee80211_local *local,
 		return;
 	}
 
-	__ieee80211_rx_bss_hash_del(local, bss);
+	__cw_ieee80211_rx_bss_hash_del(local, bss);
 	list_del(&bss->list);
 	spin_unlock_bh(&local->sta_bss_lock);
-	ieee80211_rx_bss_free(bss);
+	cw_ieee80211_rx_bss_free(bss);
 }
 
 
-void ieee80211_rx_bss_list_init(struct ieee80211_local *local)
+void cw_ieee80211_rx_bss_list_init(struct ieee80211_local *local)
 {
 	spin_lock_init(&local->sta_bss_lock);
 	INIT_LIST_HEAD(&local->sta_bss_list);
 }
 
 
-void ieee80211_rx_bss_list_deinit(struct ieee80211_local *local)
+void cw_ieee80211_rx_bss_list_deinit(struct ieee80211_local *local)
 {
 	struct ieee80211_sta_bss *bss, *tmp;
 
 	list_for_each_entry_safe(bss, tmp, &local->sta_bss_list, list)
-		ieee80211_rx_bss_put(local, bss);
+		cw_ieee80211_rx_bss_put(local, bss);
 }
 
 
@@ -2472,7 +2472,7 @@ static int ieee80211_sta_join_ibss(struct net_device *dev,
 			pos = skb_put(skb, 2 + 1);
 			*pos++ = WLAN_EID_DS_PARAMS;
 			*pos++ = 1;
-			*pos++ = ieee80211_frequency_to_channel(bss->freq);
+			*pos++ = cw_ieee80211_frequency_to_channel(bss->freq);
 		}
 
 		pos = skb_put(skb, 2 + 2);
@@ -2554,10 +2554,10 @@ u64 ieee80211_sta_get_rates(struct ieee80211_local *local,
 }
 
 
-static void ieee80211_rx_bss_info(struct net_device *dev,
+static void cw_ieee80211_rx_bss_info(struct net_device *dev,
 				  struct ieee80211_mgmt *mgmt,
 				  size_t len,
-				  struct ieee80211_rx_status *rx_status,
+				  struct cw_ieee80211_rx_status *rx_status,
 				  struct ieee802_11_elems *elems,
 				  int beacon)
 {
@@ -2589,7 +2589,7 @@ static void ieee80211_rx_bss_info(struct net_device *dev,
 
 	if (sdata->vif.type == IEEE80211_IF_TYPE_IBSS && elems->supp_rates &&
 	    memcmp(mgmt->bssid, sdata->u.sta.bssid, ETH_ALEN) == 0 &&
-	    (sta = sta_info_get(local, mgmt->sa))) {
+	    (sta = cw_sta_info_get(local, mgmt->sa))) {
 		u64 prev_rates;
 		u64 supp_rates = ieee80211_sta_get_rates(local, elems,
 							rx_status->band);
@@ -2608,32 +2608,32 @@ static void ieee80211_rx_bss_info(struct net_device *dev,
 	rcu_read_unlock();
 
 	if (elems->ds_params && elems->ds_params_len == 1)
-		freq = ieee80211_channel_to_frequency(elems->ds_params[0]);
+		freq = cw_cw_ieee80211_channel_to_frequency(elems->ds_params[0]);
 	else
 		freq = rx_status->freq;
 
-	channel = ieee80211_get_channel(local->hw.wiphy, freq);
+	channel = cw_ieee80211_get_channel(local->hw.wiphy, freq);
 
 	if (!channel || channel->flags & IEEE80211_CHAN_DISABLED)
 		return;
 
 #ifdef CONFIG_MAC80211_MESH
 	if (elems->mesh_config)
-		bss = ieee80211_rx_mesh_bss_get(dev, elems->mesh_id,
+		bss = cw_ieee80211_rx_mesh_bss_get(dev, elems->mesh_id,
 				elems->mesh_id_len, elems->mesh_config, freq);
 	else
 #endif
-		bss = ieee80211_rx_bss_get(dev, mgmt->bssid, freq,
+		bss = cw_ieee80211_rx_bss_get(dev, mgmt->bssid, freq,
 					   elems->ssid, elems->ssid_len);
 	if (!bss) {
 #ifdef CONFIG_MAC80211_MESH
 		if (elems->mesh_config)
-			bss = ieee80211_rx_mesh_bss_add(dev, elems->mesh_id,
+			bss = cw_ieee80211_rx_mesh_bss_add(dev, elems->mesh_id,
 				elems->mesh_id_len, elems->mesh_config,
 				elems->mesh_config_len, freq);
 		else
 #endif
-			bss = ieee80211_rx_bss_add(dev, mgmt->bssid, freq,
+			bss = cw_ieee80211_rx_bss_add(dev, mgmt->bssid, freq,
 						  elems->ssid, elems->ssid_len);
 		if (!bss)
 			return;
@@ -2726,7 +2726,7 @@ static void ieee80211_rx_bss_info(struct net_device *dev,
 	 */
 	if (sdata->vif.type != IEEE80211_IF_TYPE_IBSS &&
 	    bss->probe_resp && beacon) {
-		ieee80211_rx_bss_put(local, bss);
+		cw_ieee80211_rx_bss_put(local, bss);
 		return;
 	}
 
@@ -2869,14 +2869,14 @@ static void ieee80211_rx_bss_info(struct net_device *dev,
 		}
 	}
 
-	ieee80211_rx_bss_put(local, bss);
+	cw_ieee80211_rx_bss_put(local, bss);
 }
 
 
-static void ieee80211_rx_mgmt_probe_resp(struct net_device *dev,
+static void cw_ieee80211_rx_mgmt_probe_resp(struct net_device *dev,
 					 struct ieee80211_mgmt *mgmt,
 					 size_t len,
-					 struct ieee80211_rx_status *rx_status)
+					 struct cw_ieee80211_rx_status *rx_status)
 {
 	size_t baselen;
 	struct ieee802_11_elems elems;
@@ -2888,14 +2888,14 @@ static void ieee80211_rx_mgmt_probe_resp(struct net_device *dev,
 	ieee802_11_parse_elems(mgmt->u.probe_resp.variable, len - baselen,
 				&elems);
 
-	ieee80211_rx_bss_info(dev, mgmt, len, rx_status, &elems, 0);
+	cw_ieee80211_rx_bss_info(dev, mgmt, len, rx_status, &elems, 0);
 }
 
 
-static void ieee80211_rx_mgmt_beacon(struct net_device *dev,
+static void cw_ieee80211_rx_mgmt_beacon(struct net_device *dev,
 				     struct ieee80211_mgmt *mgmt,
 				     size_t len,
-				     struct ieee80211_rx_status *rx_status)
+				     struct cw_ieee80211_rx_status *rx_status)
 {
 	struct ieee80211_sub_if_data *sdata;
 	struct ieee80211_if_sta *ifsta;
@@ -2912,7 +2912,7 @@ static void ieee80211_rx_mgmt_beacon(struct net_device *dev,
 
 	ieee802_11_parse_elems(mgmt->u.beacon.variable, len - baselen, &elems);
 
-	ieee80211_rx_bss_info(dev, mgmt, len, rx_status, &elems, 1);
+	cw_ieee80211_rx_bss_info(dev, mgmt, len, rx_status, &elems, 1);
 
 	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 	if (sdata->vif.type != IEEE80211_IF_TYPE_STA)
@@ -2955,11 +2955,11 @@ static void ieee80211_rx_mgmt_beacon(struct net_device *dev,
 }
 
 
-static void ieee80211_rx_mgmt_probe_req(struct net_device *dev,
+static void cw_ieee80211_rx_mgmt_probe_req(struct net_device *dev,
 					struct ieee80211_if_sta *ifsta,
 					struct ieee80211_mgmt *mgmt,
 					size_t len,
-					struct ieee80211_rx_status *rx_status)
+					struct cw_ieee80211_rx_status *rx_status)
 {
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
@@ -3029,11 +3029,11 @@ static void ieee80211_rx_mgmt_probe_req(struct net_device *dev,
 	ieee80211_sta_tx(dev, skb, 0);
 }
 
-static void ieee80211_rx_mgmt_action(struct net_device *dev,
+static void cw_ieee80211_rx_mgmt_action(struct net_device *dev,
 				     struct ieee80211_if_sta *ifsta,
 				     struct ieee80211_mgmt *mgmt,
 				     size_t len,
-				     struct ieee80211_rx_status *rx_status)
+				     struct cw_ieee80211_rx_status *rx_status)
 {
 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
@@ -3088,7 +3088,7 @@ static void ieee80211_rx_mgmt_action(struct net_device *dev,
 }
 
 void ieee80211_sta_rx_mgmt(struct net_device *dev, struct sk_buff *skb,
-			   struct ieee80211_rx_status *rx_status)
+			   struct cw_ieee80211_rx_status *rx_status)
 {
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
 	struct ieee80211_sub_if_data *sdata;
@@ -3129,7 +3129,7 @@ void ieee80211_sta_rx_mgmt(struct net_device *dev, struct sk_buff *skb,
 static void ieee80211_sta_rx_queued_mgmt(struct net_device *dev,
 					 struct sk_buff *skb)
 {
-	struct ieee80211_rx_status *rx_status;
+	struct cw_ieee80211_rx_status *rx_status;
 	struct ieee80211_sub_if_data *sdata;
 	struct ieee80211_if_sta *ifsta;
 	struct ieee80211_mgmt *mgmt;
@@ -3138,38 +3138,38 @@ static void ieee80211_sta_rx_queued_mgmt(struct net_device *dev,
 	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 	ifsta = &sdata->u.sta;
 
-	rx_status = (struct ieee80211_rx_status *) skb->cb;
+	rx_status = (struct cw_ieee80211_rx_status *) skb->cb;
 	mgmt = (struct ieee80211_mgmt *) skb->data;
 	fc = le16_to_cpu(mgmt->frame_control);
 
 	switch (fc & IEEE80211_FCTL_STYPE) {
 	case IEEE80211_STYPE_PROBE_REQ:
-		ieee80211_rx_mgmt_probe_req(dev, ifsta, mgmt, skb->len,
+		cw_ieee80211_rx_mgmt_probe_req(dev, ifsta, mgmt, skb->len,
 					    rx_status);
 		break;
 	case IEEE80211_STYPE_PROBE_RESP:
-		ieee80211_rx_mgmt_probe_resp(dev, mgmt, skb->len, rx_status);
+		cw_ieee80211_rx_mgmt_probe_resp(dev, mgmt, skb->len, rx_status);
 		break;
 	case IEEE80211_STYPE_BEACON:
-		ieee80211_rx_mgmt_beacon(dev, mgmt, skb->len, rx_status);
+		cw_ieee80211_rx_mgmt_beacon(dev, mgmt, skb->len, rx_status);
 		break;
 	case IEEE80211_STYPE_AUTH:
-		ieee80211_rx_mgmt_auth(dev, ifsta, mgmt, skb->len);
+		cw_ieee80211_rx_mgmt_auth(dev, ifsta, mgmt, skb->len);
 		break;
 	case IEEE80211_STYPE_ASSOC_RESP:
-		ieee80211_rx_mgmt_assoc_resp(sdata, ifsta, mgmt, skb->len, 0);
+		cw_ieee80211_rx_mgmt_assoc_resp(sdata, ifsta, mgmt, skb->len, 0);
 		break;
 	case IEEE80211_STYPE_REASSOC_RESP:
-		ieee80211_rx_mgmt_assoc_resp(sdata, ifsta, mgmt, skb->len, 1);
+		cw_ieee80211_rx_mgmt_assoc_resp(sdata, ifsta, mgmt, skb->len, 1);
 		break;
 	case IEEE80211_STYPE_DEAUTH:
-		ieee80211_rx_mgmt_deauth(dev, ifsta, mgmt, skb->len);
+		cw_ieee80211_rx_mgmt_deauth(dev, ifsta, mgmt, skb->len);
 		break;
 	case IEEE80211_STYPE_DISASSOC:
-		ieee80211_rx_mgmt_disassoc(dev, ifsta, mgmt, skb->len);
+		cw_ieee80211_rx_mgmt_disassoc(dev, ifsta, mgmt, skb->len);
 		break;
 	case IEEE80211_STYPE_ACTION:
-		ieee80211_rx_mgmt_action(dev, ifsta, mgmt, skb->len, rx_status);
+		cw_ieee80211_rx_mgmt_action(dev, ifsta, mgmt, skb->len, rx_status);
 		break;
 	}
 
@@ -3177,9 +3177,9 @@ static void ieee80211_sta_rx_queued_mgmt(struct net_device *dev,
 }
 
 
-ieee80211_rx_result
+cw_ieee80211_rx_result
 ieee80211_sta_rx_scan(struct net_device *dev, struct sk_buff *skb,
-		      struct ieee80211_rx_status *rx_status)
+		      struct cw_ieee80211_rx_status *rx_status)
 {
 	struct ieee80211_mgmt *mgmt;
 	__le16 fc;
@@ -3197,13 +3197,13 @@ ieee80211_sta_rx_scan(struct net_device *dev, struct sk_buff *skb,
 		return RX_DROP_MONITOR;
 
 	if (ieee80211_is_probe_resp(fc)) {
-		ieee80211_rx_mgmt_probe_resp(dev, mgmt, skb->len, rx_status);
+		cw_ieee80211_rx_mgmt_probe_resp(dev, mgmt, skb->len, rx_status);
 		dev_kfree_skb(skb);
 		return RX_QUEUED;
 	}
 
 	if (ieee80211_is_beacon(fc)) {
-		ieee80211_rx_mgmt_beacon(dev, mgmt, skb->len, rx_status);
+		cw_ieee80211_rx_mgmt_beacon(dev, mgmt, skb->len, rx_status);
 		dev_kfree_skb(skb);
 		return RX_QUEUED;
 	}
@@ -3529,7 +3529,7 @@ static int ieee80211_sta_config_auth(struct net_device *dev,
 					       selected->ssid_len);
 		ieee80211_sta_set_bssid(dev, selected->bssid);
 		ieee80211_sta_def_wmm_params(dev, selected, 0);
-		ieee80211_rx_bss_put(local, selected);
+		cw_ieee80211_rx_bss_put(local, selected);
 		ifsta->state = IEEE80211_AUTHENTICATE;
 		ieee80211_sta_reset_auth(dev, ifsta);
 		return 0;
@@ -3578,7 +3578,7 @@ static int ieee80211_sta_create_ibss(struct net_device *dev,
 	printk(KERN_DEBUG "%s: Creating new IBSS network, BSSID %s\n",
 	       dev->name, print_mac(mac, bssid));
 
-	bss = ieee80211_rx_bss_add(dev, bssid,
+	bss = cw_ieee80211_rx_bss_add(dev, bssid,
 				   local->hw.conf.channel->center_freq,
 				   sdata->u.sta.ssid, sdata->u.sta.ssid_len);
 	if (!bss)
@@ -3606,7 +3606,7 @@ static int ieee80211_sta_create_ibss(struct net_device *dev,
 	}
 
 	ret = ieee80211_sta_join_ibss(dev, ifsta, bss);
-	ieee80211_rx_bss_put(local, bss);
+	cw_ieee80211_rx_bss_put(local, bss);
 	return ret;
 }
 
@@ -3654,7 +3654,7 @@ static int ieee80211_sta_find_ibss(struct net_device *dev,
 		       print_mac(mac2, ifsta->bssid));
 #endif /* CONFIG_MAC80211_IBSS_DEBUG */
 	if (found && memcmp(ifsta->bssid, bssid, ETH_ALEN) != 0 &&
-	    (bss = ieee80211_rx_bss_get(dev, bssid,
+	    (bss = cw_ieee80211_rx_bss_get(dev, bssid,
 					local->hw.conf.channel->center_freq,
 					ifsta->ssid, ifsta->ssid_len))) {
 		int ret;
@@ -3662,7 +3662,7 @@ static int ieee80211_sta_find_ibss(struct net_device *dev,
 		       " based on configured SSID\n",
 		       dev->name, print_mac(mac, bssid));
 		ret = ieee80211_sta_join_ibss(dev, ifsta, bss);
-		ieee80211_rx_bss_put(local, bss);
+		cw_ieee80211_rx_bss_put(local, bss);
 		return ret;
 	}
 #ifdef CONFIG_MAC80211_IBSS_DEBUG
@@ -3837,7 +3837,7 @@ static void ieee80211_restart_sta_timer(struct ieee80211_sub_if_data *sdata)
 		ieee80211_sta_timer((unsigned long)sdata);
 }
 
-void ieee80211_scan_completed(struct ieee80211_hw *hw)
+void cw_ieee80211_scan_completed(struct ieee80211_hw *hw)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	struct net_device *dev = local->scan_dev;
@@ -3901,7 +3901,7 @@ done:
 			ieee80211_sta_find_ibss(dev, ifsta);
 	}
 }
-EXPORT_SYMBOL(ieee80211_scan_completed);
+EXPORT_SYMBOL(cw_ieee80211_scan_completed);
 
 void ieee80211_sta_scan_work(struct work_struct *work)
 {
@@ -3941,7 +3941,7 @@ void ieee80211_sta_scan_work(struct work_struct *work)
 
 		/* if no more bands/channels left, complete scan */
 		if (!sband || local->scan_channel_idx >= sband->n_channels) {
-			ieee80211_scan_completed(local_to_hw(local));
+			cw_ieee80211_scan_completed(local_to_hw(local));
 			return;
 		}
 		skip = 0;
@@ -4152,7 +4152,7 @@ ieee80211_sta_scan_result(struct net_device *dev,
 
 	memset(&iwe, 0, sizeof(iwe));
 	iwe.cmd = SIOCGIWFREQ;
-	iwe.u.freq.m = ieee80211_frequency_to_channel(bss->freq);
+	iwe.u.freq.m = cw_ieee80211_frequency_to_channel(bss->freq);
 	iwe.u.freq.e = 0;
 	current_ev = iwe_stream_add_event(info, current_ev, end_buf, &iwe,
 					  IW_EV_FREQ_LEN);
@@ -4425,7 +4425,7 @@ int ieee80211_sta_disassociate(struct net_device *dev, u16 reason)
 	return 0;
 }
 
-void ieee80211_notify_mac(struct ieee80211_hw *hw,
+void cw_ieee80211_notify_mac(struct ieee80211_hw *hw,
 			  enum ieee80211_notification_types  notif_type)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
@@ -4444,4 +4444,4 @@ void ieee80211_notify_mac(struct ieee80211_hw *hw,
 		break;
 	}
 }
-EXPORT_SYMBOL(ieee80211_notify_mac);
+EXPORT_SYMBOL(cw_ieee80211_notify_mac);

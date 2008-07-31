@@ -1716,7 +1716,7 @@ static u32 ath5k_hw_rf5110_chan2athchan(struct ieee80211_channel *channel)
 	 * different RF/PHY part.
 	 */
 	athchan = (ath5k_hw_bitswap(
-			(ieee80211_frequency_to_channel(
+			(cw_ieee80211_frequency_to_channel(
 				channel->center_freq) - 24) / 2, 5)
 				<< 1) | (1 << 6) | 0x1;
 	return athchan;
@@ -1778,7 +1778,7 @@ static int ath5k_hw_rf5111_channel(struct ath5k_hw *ah,
 {
 	struct ath5k_athchan_2ghz ath5k_channel_2ghz;
 	unsigned int ath5k_channel =
-		ieee80211_frequency_to_channel(channel->center_freq);
+		cw_ieee80211_frequency_to_channel(channel->center_freq);
 	u32 data0, data1, clock;
 	int ret;
 
@@ -1790,7 +1790,7 @@ static int ath5k_hw_rf5111_channel(struct ath5k_hw *ah,
 	if (channel->hw_value & CHANNEL_2GHZ) {
 		/* Map 2GHz channel to 5GHz Atheros channel ID */
 		ret = ath5k_hw_rf5111_chan2athchan(
-			ieee80211_frequency_to_channel(channel->center_freq),
+			cw_ieee80211_frequency_to_channel(channel->center_freq),
 			&ath5k_channel_2ghz);
 		if (ret)
 			return ret;

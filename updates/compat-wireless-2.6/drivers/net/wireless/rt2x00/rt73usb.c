@@ -54,7 +54,7 @@ static inline void rt73usb_register_read(struct rt2x00_dev *rt2x00dev,
 					 const unsigned int offset, u32 *value)
 {
 	__le32 reg;
-	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_READ,
+	cw_cw_rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_READ,
 				      USB_VENDOR_REQUEST_IN, offset,
 				      &reg, sizeof(u32), REGISTER_TIMEOUT);
 	*value = le32_to_cpu(reg);
@@ -64,7 +64,7 @@ static inline void rt73usb_register_read_lock(struct rt2x00_dev *rt2x00dev,
 					      const unsigned int offset, u32 *value)
 {
 	__le32 reg;
-	rt2x00usb_vendor_req_buff_lock(rt2x00dev, USB_MULTI_READ,
+	cw_rt2x00usb_vendor_req_buff_lock(rt2x00dev, USB_MULTI_READ,
 				       USB_VENDOR_REQUEST_IN, offset,
 				       &reg, sizeof(u32), REGISTER_TIMEOUT);
 	*value = le32_to_cpu(reg);
@@ -74,7 +74,7 @@ static inline void rt73usb_register_multiread(struct rt2x00_dev *rt2x00dev,
 					      const unsigned int offset,
 					      void *value, const u32 length)
 {
-	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_READ,
+	cw_cw_rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_READ,
 				      USB_VENDOR_REQUEST_IN, offset,
 				      value, length,
 				      REGISTER_TIMEOUT32(length));
@@ -84,7 +84,7 @@ static inline void rt73usb_register_write(struct rt2x00_dev *rt2x00dev,
 					  const unsigned int offset, u32 value)
 {
 	__le32 reg = cpu_to_le32(value);
-	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
+	cw_cw_rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
 				      USB_VENDOR_REQUEST_OUT, offset,
 				      &reg, sizeof(u32), REGISTER_TIMEOUT);
 }
@@ -93,7 +93,7 @@ static inline void rt73usb_register_write_lock(struct rt2x00_dev *rt2x00dev,
 					       const unsigned int offset, u32 value)
 {
 	__le32 reg = cpu_to_le32(value);
-	rt2x00usb_vendor_req_buff_lock(rt2x00dev, USB_MULTI_WRITE,
+	cw_rt2x00usb_vendor_req_buff_lock(rt2x00dev, USB_MULTI_WRITE,
 				       USB_VENDOR_REQUEST_OUT, offset,
 				      &reg, sizeof(u32), REGISTER_TIMEOUT);
 }
@@ -102,7 +102,7 @@ static inline void rt73usb_register_multiwrite(struct rt2x00_dev *rt2x00dev,
 					       const unsigned int offset,
 					       void *value, const u32 length)
 {
-	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
+	cw_cw_rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
 				      USB_VENDOR_REQUEST_OUT, offset,
 				      value, length,
 				      REGISTER_TIMEOUT32(length));
@@ -301,7 +301,7 @@ static void rt73usb_brightness_set(struct led_classdev *led_cdev,
 		rt2x00_set_field16(&led->rt2x00dev->led_mcu_reg,
 				   MCU_LEDCS_RADIO_STATUS, enabled);
 
-		rt2x00usb_vendor_request_sw(led->rt2x00dev, USB_LED_CONTROL,
+		cw_rt2x00usb_vendor_request_sw(led->rt2x00dev, USB_LED_CONTROL,
 					    0, led->rt2x00dev->led_mcu_reg,
 					    REGISTER_TIMEOUT);
 	} else if (led->type == LED_TYPE_ASSOC) {
@@ -310,7 +310,7 @@ static void rt73usb_brightness_set(struct led_classdev *led_cdev,
 		rt2x00_set_field16(&led->rt2x00dev->led_mcu_reg,
 				   MCU_LEDCS_LINK_A_STATUS, a_mode);
 
-		rt2x00usb_vendor_request_sw(led->rt2x00dev, USB_LED_CONTROL,
+		cw_rt2x00usb_vendor_request_sw(led->rt2x00dev, USB_LED_CONTROL,
 					    0, led->rt2x00dev->led_mcu_reg,
 					    REGISTER_TIMEOUT);
 	} else if (led->type == LED_TYPE_QUALITY) {
@@ -319,7 +319,7 @@ static void rt73usb_brightness_set(struct led_classdev *led_cdev,
 		 * this means we need to convert the brightness
 		 * argument into the matching level within that range.
 		 */
-		rt2x00usb_vendor_request_sw(led->rt2x00dev, USB_LED_CONTROL,
+		cw_rt2x00usb_vendor_request_sw(led->rt2x00dev, USB_LED_CONTROL,
 					    brightness / (LED_FULL / 6),
 					    led->rt2x00dev->led_mcu_reg,
 					    REGISTER_TIMEOUT);
@@ -926,7 +926,7 @@ static int rt73usb_load_firmware(struct rt2x00_dev *rt2x00dev, void *data,
 
 		memcpy(cache, ptr, buflen);
 
-		rt2x00usb_vendor_request(rt2x00dev, USB_MULTI_WRITE,
+		cw_rt2x00usb_vendor_request(rt2x00dev, USB_MULTI_WRITE,
 					 USB_VENDOR_REQUEST_OUT,
 					 FIRMWARE_IMAGE_BASE + i, 0,
 					 cache, buflen,
@@ -941,7 +941,7 @@ static int rt73usb_load_firmware(struct rt2x00_dev *rt2x00dev, void *data,
 	 * Send firmware request to device to load firmware,
 	 * we need to specify a long timeout time.
 	 */
-	status = rt2x00usb_vendor_request_sw(rt2x00dev, USB_DEVICE_MODE,
+	status = cw_rt2x00usb_vendor_request_sw(rt2x00dev, USB_DEVICE_MODE,
 					     0, USB_MODE_FIRMWARE,
 					     REGISTER_TIMEOUT_FIRMWARE);
 	if (status < 0) {
@@ -1211,7 +1211,7 @@ static void rt73usb_disable_radio(struct rt2x00_dev *rt2x00dev)
 	 */
 	rt73usb_register_write(rt2x00dev, TXRX_CSR9, 0);
 
-	rt2x00usb_disable_radio(rt2x00dev);
+	cw_rt2x00usb_disable_radio(rt2x00dev);
 }
 
 static int rt73usb_set_state(struct rt2x00_dev *rt2x00dev, enum dev_state state)
@@ -1374,7 +1374,7 @@ static void rt73usb_write_beacon(struct queue_entry *entry)
 	 * Write entire beacon with descriptor to register.
 	 */
 	beacon_base = HW_BEACON_OFFSET(entry->entry_idx);
-	rt2x00usb_vendor_request(rt2x00dev, USB_MULTI_WRITE,
+	cw_rt2x00usb_vendor_request(rt2x00dev, USB_MULTI_WRITE,
 				 USB_VENDOR_REQUEST_OUT, beacon_base, 0,
 				 entry->skb->data, entry->skb->len,
 				 REGISTER_TIMEOUT32(entry->skb->len));
@@ -1407,7 +1407,7 @@ static void rt73usb_kick_tx_queue(struct rt2x00_dev *rt2x00dev,
 	u32 reg;
 
 	if (queue != QID_BEACON) {
-		rt2x00usb_kick_tx_queue(rt2x00dev, queue);
+		cw_rt2x00usb_kick_tx_queue(rt2x00dev, queue);
 		return;
 	}
 
@@ -1999,19 +1999,19 @@ static u64 rt73usb_get_tsf(struct ieee80211_hw *hw)
 #endif
 
 static const struct ieee80211_ops rt73usb_mac80211_ops = {
-	.tx			= rt2x00mac_tx,
-	.start			= rt2x00mac_start,
-	.stop			= rt2x00mac_stop,
-	.add_interface		= rt2x00mac_add_interface,
-	.remove_interface	= rt2x00mac_remove_interface,
-	.config			= rt2x00mac_config,
-	.config_interface	= rt2x00mac_config_interface,
-	.configure_filter	= rt2x00mac_configure_filter,
-	.get_stats		= rt2x00mac_get_stats,
+	.tx			= cw_rt2x00mac_tx,
+	.start			= cw_rt2x00mac_start,
+	.stop			= cw_rt2x00mac_stop,
+	.add_interface		= cw_rt2x00mac_add_interface,
+	.remove_interface	= cw_rt2x00mac_remove_interface,
+	.config			= cw_rt2x00mac_config,
+	.config_interface	= cw_cw_rt2x00mac_config_interface,
+	.configure_filter	= cw_cw_rt2x00mac_configure_filter,
+	.get_stats		= cw_rt2x00mac_get_stats,
 	.set_retry_limit	= rt73usb_set_retry_limit,
-	.bss_info_changed	= rt2x00mac_bss_info_changed,
-	.conf_tx		= rt2x00mac_conf_tx,
-	.get_tx_stats		= rt2x00mac_get_tx_stats,
+	.bss_info_changed	= cw_rt2x00mac_bss_info_changed,
+	.conf_tx		= cw_rt2x00mac_conf_tx,
+	.get_tx_stats		= cw_rt2x00mac_get_tx_stats,
 	.get_tsf		= rt73usb_get_tsf,
 };
 
@@ -2020,16 +2020,16 @@ static const struct rt2x00lib_ops rt73usb_rt2x00_ops = {
 	.get_firmware_name	= rt73usb_get_firmware_name,
 	.get_firmware_crc	= rt73usb_get_firmware_crc,
 	.load_firmware		= rt73usb_load_firmware,
-	.initialize		= rt2x00usb_initialize,
-	.uninitialize		= rt2x00usb_uninitialize,
-	.init_rxentry		= rt2x00usb_init_rxentry,
-	.init_txentry		= rt2x00usb_init_txentry,
+	.initialize		= cw_rt2x00usb_initialize,
+	.uninitialize		= cw_rt2x00usb_uninitialize,
+	.init_rxentry		= cw_rt2x00usb_init_rxentry,
+	.init_txentry		= cw_rt2x00usb_init_txentry,
 	.set_device_state	= rt73usb_set_device_state,
 	.link_stats		= rt73usb_link_stats,
 	.reset_tuner		= rt73usb_reset_tuner,
 	.link_tuner		= rt73usb_link_tuner,
 	.write_tx_desc		= rt73usb_write_tx_desc,
-	.write_tx_data		= rt2x00usb_write_tx_data,
+	.write_tx_data		= cw_rt2x00usb_write_tx_data,
 	.write_beacon		= rt73usb_write_beacon,
 	.get_tx_data_len	= rt73usb_get_tx_data_len,
 	.kick_tx_queue		= rt73usb_kick_tx_queue,
@@ -2159,10 +2159,10 @@ MODULE_LICENSE("GPL");
 static struct usb_driver rt73usb_driver = {
 	.name		= KBUILD_MODNAME,
 	.id_table	= rt73usb_device_table,
-	.probe		= rt2x00usb_probe,
-	.disconnect	= rt2x00usb_disconnect,
-	.suspend	= rt2x00usb_suspend,
-	.resume		= rt2x00usb_resume,
+	.probe		= cw_rt2x00usb_probe,
+	.disconnect	= cw_rt2x00usb_disconnect,
+	.suspend	= cw_rt2x00usb_suspend,
+	.resume		= cw_rt2x00usb_resume,
 };
 
 static int __init rt73usb_init(void)

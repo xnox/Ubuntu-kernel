@@ -26,7 +26,7 @@ module_param(ieee80211_default_rc_algo, charp, 0644);
 MODULE_PARM_DESC(ieee80211_default_rc_algo,
 		 "Default rate control algorithm for mac80211 to use");
 
-int ieee80211_rate_control_register(struct rate_control_ops *ops)
+int cw_ieee80211_rate_control_register(struct rate_control_ops *ops)
 {
 	struct rate_control_alg *alg;
 
@@ -55,9 +55,9 @@ int ieee80211_rate_control_register(struct rate_control_ops *ops)
 
 	return 0;
 }
-EXPORT_SYMBOL(ieee80211_rate_control_register);
+EXPORT_SYMBOL(cw_ieee80211_rate_control_register);
 
-void ieee80211_rate_control_unregister(struct rate_control_ops *ops)
+void cw_ieee80211_rate_control_unregister(struct rate_control_ops *ops)
 {
 	struct rate_control_alg *alg;
 
@@ -71,7 +71,7 @@ void ieee80211_rate_control_unregister(struct rate_control_ops *ops)
 	}
 	mutex_unlock(&rate_ctrl_mutex);
 }
-EXPORT_SYMBOL(ieee80211_rate_control_unregister);
+EXPORT_SYMBOL(cw_ieee80211_rate_control_unregister);
 
 static struct rate_control_ops *
 ieee80211_try_rate_control_ops_get(const char *name)
@@ -174,7 +174,7 @@ void rate_control_get_rate(struct net_device *dev,
 	int i;
 
 	rcu_read_lock();
-	sta = sta_info_get(local, hdr->addr1);
+	sta = cw_sta_info_get(local, hdr->addr1);
 
 	sel->rate_idx = -1;
 	sel->nonerp_idx = -1;

@@ -266,7 +266,7 @@ static inline void *wdev_priv(struct wireless_dev *wdev)
 }
 
 /**
- * wiphy_new - create a new wiphy for use with cfg80211
+ * cw_wiphy_new - create a new wiphy for use with cfg80211
  *
  * create a new wiphy and associate the given operations with it.
  * @sizeof_priv bytes are allocated for private use.
@@ -274,58 +274,58 @@ static inline void *wdev_priv(struct wireless_dev *wdev)
  * the returned pointer must be assigned to each netdev's
  * ieee80211_ptr for proper operation.
  */
-struct wiphy *wiphy_new(struct cfg80211_ops *ops, int sizeof_priv);
+struct wiphy *cw_wiphy_new(struct cfg80211_ops *ops, int sizeof_priv);
 
 /**
- * wiphy_register - register a wiphy with cfg80211
+ * cw_wiphy_register - register a wiphy with cfg80211
  *
  * register the given wiphy
  *
  * Returns a non-negative wiphy index or a negative error code.
  */
-extern int wiphy_register(struct wiphy *wiphy);
+extern int cw_wiphy_register(struct wiphy *wiphy);
 
 /**
- * wiphy_unregister - deregister a wiphy from cfg80211
+ * cw_wiphy_unregister - deregister a wiphy from cfg80211
  *
  * unregister a device with the given priv pointer.
  * After this call, no more requests can be made with this priv
  * pointer, but the call may sleep to wait for an outstanding
  * request that is being handled.
  */
-extern void wiphy_unregister(struct wiphy *wiphy);
+extern void cw_wiphy_unregister(struct wiphy *wiphy);
 
 /**
- * wiphy_free - free wiphy
+ * cw_wiphy_free - free wiphy
  */
-extern void wiphy_free(struct wiphy *wiphy);
+extern void cw_wiphy_free(struct wiphy *wiphy);
 
 /**
- * ieee80211_channel_to_frequency - convert channel number to frequency
+ * cw_cw_ieee80211_channel_to_frequency - convert channel number to frequency
  */
-extern int ieee80211_channel_to_frequency(int chan);
+extern int cw_cw_ieee80211_channel_to_frequency(int chan);
 
 /**
- * ieee80211_frequency_to_channel - convert frequency to channel number
+ * cw_ieee80211_frequency_to_channel - convert frequency to channel number
  */
-extern int ieee80211_frequency_to_channel(int freq);
+extern int cw_ieee80211_frequency_to_channel(int freq);
 
 /*
  * Name indirection necessary because the ieee80211 code also has
- * a function named "ieee80211_get_channel", so if you include
+ * a function named "cw_ieee80211_get_channel", so if you include
  * cfg80211's header file you get cfg80211's version, if you try
  * to include both header files you'll (rightfully!) get a symbol
  * clash.
  */
-extern struct ieee80211_channel *__ieee80211_get_channel(struct wiphy *wiphy,
+extern struct ieee80211_channel *__cw_ieee80211_get_channel(struct wiphy *wiphy,
 							 int freq);
 
 /**
- * ieee80211_get_channel - get channel struct from wiphy for specified frequency
+ * cw_ieee80211_get_channel - get channel struct from wiphy for specified frequency
  */
 static inline struct ieee80211_channel *
-ieee80211_get_channel(struct wiphy *wiphy, int freq)
+cw_ieee80211_get_channel(struct wiphy *wiphy, int freq)
 {
-	return __ieee80211_get_channel(wiphy, freq);
+	return __cw_ieee80211_get_channel(wiphy, freq);
 }
 #endif /* __NET_WIRELESS_H */

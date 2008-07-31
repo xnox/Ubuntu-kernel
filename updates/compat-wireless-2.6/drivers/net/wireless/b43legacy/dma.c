@@ -72,7 +72,7 @@ static void op32_fill_descriptor(struct b43legacy_dmaring *ring,
 	addr = (u32)(dmaaddr & ~SSB_DMA_TRANSLATION_MASK);
 	addrext = (u32)(dmaaddr & SSB_DMA_TRANSLATION_MASK)
 		   >> SSB_DMA_TRANSLATION_SHIFT;
-	addr |= ssb_dma_translation(ring->dev->dev);
+	addr |= cw_ssb_dma_translation(ring->dev->dev);
 	ctl = (bufsize - ring->frameoffset)
 	      & B43legacy_DMA32_DCTL_BYTECNT;
 	if (slot == ring->nr_slots - 1)
@@ -174,7 +174,7 @@ static void op64_fill_descriptor(struct b43legacy_dmaring *ring,
 	addrhi = (((u64)dmaaddr >> 32) & ~SSB_DMA_TRANSLATION_MASK);
 	addrext = (((u64)dmaaddr >> 32) & SSB_DMA_TRANSLATION_MASK)
 		  >> SSB_DMA_TRANSLATION_SHIFT;
-	addrhi |= ssb_dma_translation(ring->dev->dev);
+	addrhi |= cw_ssb_dma_translation(ring->dev->dev);
 	if (slot == ring->nr_slots - 1)
 		ctl0 |= B43legacy_DMA64_DCTL0_DTABLEEND;
 	if (start)
@@ -459,7 +459,7 @@ void free_descriptor_buffer(struct b43legacy_dmaring *ring,
 static int alloc_ringmemory(struct b43legacy_dmaring *ring)
 {
 	/* GFP flags must match the flags in free_ringmemory()! */
-	ring->descbase = ssb_dma_alloc_consistent(ring->dev->dev,
+	ring->descbase = cw_ssb_dma_alloc_consistent(ring->dev->dev,
 						  B43legacy_DMA_RINGMEMSIZE,
 						  &(ring->dmabase),
 						  GFP_KERNEL);
@@ -475,7 +475,7 @@ static int alloc_ringmemory(struct b43legacy_dmaring *ring)
 
 static void free_ringmemory(struct b43legacy_dmaring *ring)
 {
-	ssb_dma_free_consistent(ring->dev->dev, B43legacy_DMA_RINGMEMSIZE,
+	cw_ssb_dma_free_consistent(ring->dev->dev, B43legacy_DMA_RINGMEMSIZE,
 				ring->descbase, ring->dmabase, GFP_KERNEL);
 }
 
@@ -708,7 +708,7 @@ static int dmacontroller_setup(struct b43legacy_dmaring *ring)
 	int err = 0;
 	u32 value;
 	u32 addrext;
-	u32 trans = ssb_dma_translation(ring->dev->dev);
+	u32 trans = cw_ssb_dma_translation(ring->dev->dev);
 
 	if (ring->tx) {
 		if (ring->type == B43legacy_DMA_64BIT) {
@@ -1039,7 +1039,7 @@ static int b43legacy_dma_set_mask(struct b43legacy_wldev *dev, u64 mask)
 	/* Try to set the DMA mask. If it fails, try falling back to a
 	 * lower mask, as we can always also support a lower one. */
 	while (1) {
-		err = ssb_dma_set_mask(dev->dev, mask);
+		err = cw_ssb_dma_set_mask(dev->dev, mask);
 		if (!err)
 			break;
 		if (mask == DMA_64BIT_MASK) {
@@ -1392,7 +1392,7 @@ int b43legacy_dma_tx(struct b43legacy_wldev *dev,
 	if ((free_slots(ring) < SLOTS_PER_PACKET) ||
 	    should_inject_overflow(ring)) {
 		/* This TX ring is full. */
-		ieee80211_stop_queue(dev->wl->hw, txring_to_priority(ring));
+		cw_ieee80211_stop_queue(dev->wl->hw, txring_to_priority(ring));
 		ring->stopped = 1;
 		if (b43legacy_debug(dev, B43legacy_DBG_DMAVERBOSE))
 			b43legacydbg(dev->wl, "Stopped TX ring %d\n",
@@ -1456,8 +1456,8 @@ void b43legacy_dma_handle_txstatus(struct b43legacy_wldev *dev,
 			} else
 				info->status.retry_count = status->frame_count
 							   - 1;
-			ieee80211_tx_status_irqsafe(dev->wl->hw, meta->skb);
-			/* skb is freed by ieee80211_tx_status_irqsafe() */
+			cw_cw_ieee80211_tx_status_irqsafe(dev->wl->hw, meta->skb);
+			/* skb is freed by cw_cw_ieee80211_tx_status_irqsafe() */
 			meta->skb = NULL;
 		} else {
 			/* No need to call free_descriptor_buffer here, as
@@ -1476,7 +1476,7 @@ void b43legacy_dma_handle_txstatus(struct b43legacy_wldev *dev,
 	dev->stats.last_tx = jiffies;
 	if (ring->stopped) {
 		B43legacy_WARN_ON(free_slots(ring) < SLOTS_PER_PACKET);
-		ieee80211_wake_queue(dev->wl->hw, txring_to_priority(ring));
+		cw_ieee80211_wake_queue(dev->wl->hw, txring_to_priority(ring));
 		ring->stopped = 0;
 		if (b43legacy_debug(dev, B43legacy_DBG_DMAVERBOSE))
 			b43legacydbg(dev->wl, "Woke up TX ring %d\n",

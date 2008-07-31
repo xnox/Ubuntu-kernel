@@ -160,7 +160,7 @@ struct p54_eeprom_lm86 {
 	u8 data[0];
 } __attribute__ ((packed));
 
-struct p54_rx_hdr {
+struct cw_p54_rx_hdr {
 	__le16 magic;
 	__le16 len;
 	__le16 freq;

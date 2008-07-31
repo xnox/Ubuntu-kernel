@@ -119,7 +119,7 @@ static void rtl8180_handle_rx(struct ieee80211_hw *dev)
 			goto done;
 		else {
 			u32 flags2 = le32_to_cpu(entry->flags2);
-			struct ieee80211_rx_status rx_status = {0};
+			struct cw_ieee80211_rx_status rx_status = {0};
 			struct sk_buff *new_skb = dev_alloc_skb(MAX_RX_SIZE);
 
 			if (unlikely(!new_skb))
@@ -143,7 +143,7 @@ static void rtl8180_handle_rx(struct ieee80211_hw *dev)
 			if (flags & RTL8180_RX_DESC_FLAG_CRC32_ERR)
 				rx_status.flag |= RX_FLAG_FAILED_FCS_CRC;
 
-			ieee80211_rx_irqsafe(dev, skb, &rx_status);
+			cw_cw_ieee80211_rx_irqsafe(dev, skb, &rx_status);
 
 			skb = new_skb;
 			priv->rx_buf[priv->rx_idx] = skb;
@@ -192,9 +192,9 @@ static void rtl8180_handle_tx(struct ieee80211_hw *dev, unsigned int prio)
 		}
 		info->status.retry_count = flags & 0xFF;
 
-		ieee80211_tx_status_irqsafe(dev, skb);
+		cw_cw_ieee80211_tx_status_irqsafe(dev, skb);
 		if (ring->entries - skb_queue_len(&ring->queue) == 2)
-			ieee80211_wake_queue(dev, prio);
+			cw_ieee80211_wake_queue(dev, prio);
 	}
 }
 
@@ -270,7 +270,7 @@ static int rtl8180_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
 	}
 
 	if (info->flags & IEEE80211_TX_CTL_USE_RTS_CTS)
-		rts_duration = ieee80211_rts_duration(dev, priv->vif, skb->len,
+		rts_duration = cw_ieee80211_rts_duration(dev, priv->vif, skb->len,
 						      info);
 
 	if (!priv->r8185) {
@@ -298,7 +298,7 @@ static int rtl8180_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
 	entry->flags = cpu_to_le32(tx_flags);
 	__skb_queue_tail(&ring->queue, skb);
 	if (ring->entries - skb_queue_len(&ring->queue) < 2)
-		ieee80211_stop_queue(dev, skb_get_queue_mapping(skb));
+		cw_ieee80211_stop_queue(dev, skb_get_queue_mapping(skb));
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	rtl818x_iowrite8(priv, &priv->map->TX_DMA_POLLING, (1 << (prio + 4)));
@@ -844,7 +844,7 @@ static int __devinit rtl8180_probe(struct pci_dev *pdev,
 
 	pci_set_master(pdev);
 
-	dev = ieee80211_alloc_hw(sizeof(*priv), &rtl8180_ops);
+	dev = cw_ieee80211_alloc_hw(sizeof(*priv), &rtl8180_ops);
 	if (!dev) {
 		printk(KERN_ERR "%s (rtl8180): ieee80211 alloc failed\n",
 		       pci_name(pdev));
@@ -926,7 +926,7 @@ static int __devinit rtl8180_probe(struct pci_dev *pdev,
 	rtl818x_ioread8(priv, &priv->map->EEPROM_CMD);
 	udelay(10);
 
-	eeprom_93cx6_read(&eeprom, 0x06, &eeprom_val);
+	cw_eeprom_93cx6_read(&eeprom, 0x06, &eeprom_val);
 	eeprom_val &= 0xFF;
 	switch (eeprom_val) {
 	case 1:	rf_name = "Intersil";
@@ -956,16 +956,16 @@ static int __devinit rtl8180_probe(struct pci_dev *pdev,
 		goto err_iounmap;
 	}
 
-	eeprom_93cx6_read(&eeprom, 0x17, &eeprom_val);
+	cw_eeprom_93cx6_read(&eeprom, 0x17, &eeprom_val);
 	priv->csthreshold = eeprom_val >> 8;
 	if (!priv->r8185) {
 		__le32 anaparam;
-		eeprom_93cx6_multiread(&eeprom, 0xD, (__le16 *)&anaparam, 2);
+		cw_eeprom_93cx6_multiread(&eeprom, 0xD, (__le16 *)&anaparam, 2);
 		priv->anaparam = le32_to_cpu(anaparam);
-		eeprom_93cx6_read(&eeprom, 0x19, &priv->rfparam);
+		cw_eeprom_93cx6_read(&eeprom, 0x19, &priv->rfparam);
 	}
 
-	eeprom_93cx6_multiread(&eeprom, 0x7, (__le16 *)dev->wiphy->perm_addr, 3);
+	cw_eeprom_93cx6_multiread(&eeprom, 0x7, (__le16 *)dev->wiphy->perm_addr, 3);
 	if (!is_valid_ether_addr(dev->wiphy->perm_addr)) {
 		printk(KERN_WARNING "%s (rtl8180): Invalid hwaddr! Using"
 		       " randomly generated MAC addr\n", pci_name(pdev));
@@ -975,7 +975,7 @@ static int __devinit rtl8180_probe(struct pci_dev *pdev,
 	/* CCK TX power */
 	for (i = 0; i < 14; i += 2) {
 		u16 txpwr;
-		eeprom_93cx6_read(&eeprom, 0x10 + (i >> 1), &txpwr);
+		cw_eeprom_93cx6_read(&eeprom, 0x10 + (i >> 1), &txpwr);
 		priv->channels[i].hw_value = txpwr & 0xFF;
 		priv->channels[i + 1].hw_value = txpwr >> 8;
 	}
@@ -984,7 +984,7 @@ static int __devinit rtl8180_probe(struct pci_dev *pdev,
 	if (priv->r8185) {
 		for (i = 0; i < 14; i += 2) {
 			u16 txpwr;
-			eeprom_93cx6_read(&eeprom, 0x20 + (i >> 1), &txpwr);
+			cw_eeprom_93cx6_read(&eeprom, 0x20 + (i >> 1), &txpwr);
 			priv->channels[i].hw_value |= (txpwr & 0xFF) << 8;
 			priv->channels[i + 1].hw_value |= txpwr & 0xFF00;
 		}
@@ -994,7 +994,7 @@ static int __devinit rtl8180_probe(struct pci_dev *pdev,
 
 	spin_lock_init(&priv->lock);
 
-	err = ieee80211_register_hw(dev);
+	err = cw_ieee80211_register_hw(dev);
 	if (err) {
 		printk(KERN_ERR "%s (rtl8180): Cannot register device\n",
 		       pci_name(pdev));
@@ -1012,7 +1012,7 @@ static int __devinit rtl8180_probe(struct pci_dev *pdev,
 
  err_free_dev:
 	pci_set_drvdata(pdev, NULL);
-	ieee80211_free_hw(dev);
+	cw_ieee80211_free_hw(dev);
 
  err_free_reg:
 	pci_release_regions(pdev);
@@ -1028,14 +1028,14 @@ static void __devexit rtl8180_remove(struct pci_dev *pdev)
 	if (!dev)
 		return;
 
-	ieee80211_unregister_hw(dev);
+	cw_ieee80211_unregister_hw(dev);
 
 	priv = dev->priv;
 
 	pci_iounmap(pdev, priv->map);
 	pci_release_regions(pdev);
 	pci_disable_device(pdev);
-	ieee80211_free_hw(dev);
+	cw_ieee80211_free_hw(dev);
 }
 
 #ifdef CONFIG_PM

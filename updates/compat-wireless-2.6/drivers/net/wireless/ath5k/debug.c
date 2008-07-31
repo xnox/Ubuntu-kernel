@@ -483,7 +483,7 @@ ath5k_debug_dump_bands(struct ath5k_softc *sc)
 		printk(KERN_DEBUG " channels:\n");
 		for (i = 0; i < band->n_channels; i++)
 			printk(KERN_DEBUG "  %3d %d %.4x %.4x\n",
-					ieee80211_frequency_to_channel(
+					cw_ieee80211_frequency_to_channel(
 						band->channels[i].center_freq),
 					band->channels[i].center_freq,
 					band->channels[i].hw_value,

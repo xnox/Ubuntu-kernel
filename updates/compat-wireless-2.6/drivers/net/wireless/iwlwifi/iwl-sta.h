@@ -33,23 +33,23 @@
 #define HW_KEY_DEFAULT 1
 
 /**
- * iwl_find_station - Find station id for a given BSSID
+ * cw_iwl_find_station - Find station id for a given BSSID
  * @bssid: MAC address of station ID to find
  */
-u8 iwl_find_station(struct iwl_priv *priv, const u8 *bssid);
+u8 cw_iwl_find_station(struct iwl_priv *priv, const u8 *bssid);
 
-int iwl_send_static_wepkey_cmd(struct iwl_priv *priv, u8 send_if_empty);
-int iwl_remove_default_wep_key(struct iwl_priv *priv,
+int cw_iwl_send_static_wepkey_cmd(struct iwl_priv *priv, u8 send_if_empty);
+int cw_iwl_remove_default_wep_key(struct iwl_priv *priv,
 			       struct ieee80211_key_conf *key);
-int iwl_set_default_wep_key(struct iwl_priv *priv,
+int cw_iwl_set_default_wep_key(struct iwl_priv *priv,
 			    struct ieee80211_key_conf *key);
-int iwl_set_dynamic_key(struct iwl_priv *priv,
+int cw_iwl_set_dynamic_key(struct iwl_priv *priv,
 			struct ieee80211_key_conf *key, u8 sta_id);
-int iwl_remove_dynamic_key(struct iwl_priv *priv,
+int cw_iwl_remove_dynamic_key(struct iwl_priv *priv,
 			   struct ieee80211_key_conf *key, u8 sta_id);
-int iwl_rxon_add_station(struct iwl_priv *priv, const u8 *addr, int is_ap);
-int iwl_remove_station(struct iwl_priv *priv, const u8 *addr, int is_ap);
-int iwl_get_sta_id(struct iwl_priv *priv, struct ieee80211_hdr *hdr);
-void iwl_sta_modify_enable_tid_tx(struct iwl_priv *priv, int sta_id, int tid);
-int iwl_get_ra_sta_id(struct iwl_priv *priv, struct ieee80211_hdr *hdr);
+int cw_iwl_rxon_add_station(struct iwl_priv *priv, const u8 *addr, int is_ap);
+int cw_iwl_remove_station(struct iwl_priv *priv, const u8 *addr, int is_ap);
+int cw_iwl_get_sta_id(struct iwl_priv *priv, struct ieee80211_hdr *hdr);
+void cw_iwl_sta_modify_enable_tid_tx(struct iwl_priv *priv, int sta_id, int tid);
+int cw_iwl_get_ra_sta_id(struct iwl_priv *priv, struct ieee80211_hdr *hdr);
 #endif /* __iwl_sta_h__ */

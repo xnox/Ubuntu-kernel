@@ -45,14 +45,14 @@ static int b43_pcmcia_suspend(struct pcmcia_device *dev)
 {
 	struct ssb_bus *ssb = dev->priv;
 
-	return ssb_bus_suspend(ssb);
+	return cw_ssb_bus_suspend(ssb);
 }
 
 static int b43_pcmcia_resume(struct pcmcia_device *dev)
 {
 	struct ssb_bus *ssb = dev->priv;
 
-	return ssb_bus_resume(ssb);
+	return cw_ssb_bus_resume(ssb);
 }
 #else /* CONFIG_PM */
 # define b43_pcmcia_suspend		NULL
@@ -128,7 +128,7 @@ static int __devinit b43_pcmcia_probe(struct pcmcia_device *dev)
 	if (res != CS_SUCCESS)
 		goto err_disable;
 
-	err = ssb_bus_pcmciabus_register(ssb, dev, win.Base);
+	err = cw_ssb_bus_pcmciabus_register(ssb, dev, win.Base);
 	if (err)
 		goto err_disable;
 	dev->priv = ssb;
@@ -149,7 +149,7 @@ static void __devexit b43_pcmcia_remove(struct pcmcia_device *dev)
 {
 	struct ssb_bus *ssb = dev->priv;
 
-	ssb_bus_unregister(ssb);
+	cw_ssb_bus_unregister(ssb);
 	pcmcia_disable_device(dev);
 	kfree(ssb);
 	dev->priv = NULL;

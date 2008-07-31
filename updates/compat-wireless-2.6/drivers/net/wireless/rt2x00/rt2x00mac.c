@@ -29,7 +29,7 @@
 #include "rt2x00.h"
 #include "rt2x00lib.h"
 
-static int rt2x00mac_tx_rts_cts(struct rt2x00_dev *rt2x00dev,
+static int cw_rt2x00mac_tx_rts_cts(struct rt2x00_dev *rt2x00dev,
 				struct data_queue *queue,
 				struct sk_buff *frag_skb)
 {
@@ -74,11 +74,11 @@ static int rt2x00mac_tx_rts_cts(struct rt2x00_dev *rt2x00dev,
 		rts_info->flags &= ~IEEE80211_TX_CTL_NO_ACK;
 
 	if (tx_info->flags & IEEE80211_TX_CTL_USE_CTS_PROTECT)
-		ieee80211_ctstoself_get(rt2x00dev->hw, tx_info->control.vif,
+		cw_ieee80211_ctstoself_get(rt2x00dev->hw, tx_info->control.vif,
 					frag_skb->data, size, tx_info,
 					(struct ieee80211_cts *)(skb->data));
 	else
-		ieee80211_rts_get(rt2x00dev->hw, tx_info->control.vif,
+		cw_ieee80211_rts_get(rt2x00dev->hw, tx_info->control.vif,
 				  frag_skb->data, size, tx_info,
 				  (struct ieee80211_rts *)(skb->data));
 
@@ -90,7 +90,7 @@ static int rt2x00mac_tx_rts_cts(struct rt2x00_dev *rt2x00dev,
 	return NETDEV_TX_OK;
 }
 
-int rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
+int cw_rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 	struct ieee80211_tx_info *tx_info = IEEE80211_SKB_CB(skb);
@@ -107,7 +107,7 @@ int rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 	 * due to possible race conditions in mac80211.
 	 */
 	if (!test_bit(DEVICE_PRESENT, &rt2x00dev->flags)) {
-		ieee80211_stop_queues(hw);
+		cw_cw_ieee80211_stop_queues(hw);
 		dev_kfree_skb_any(skb);
 		return NETDEV_TX_OK;
 	}
@@ -117,9 +117,9 @@ int rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 	 */
 	if (tx_info->flags & IEEE80211_TX_CTL_SEND_AFTER_DTIM &&
 	    test_bit(DRIVER_REQUIRE_ATIM_QUEUE, &rt2x00dev->flags))
-		queue = rt2x00queue_get_queue(rt2x00dev, QID_ATIM);
+		queue = cw_rt2x00queue_get_queue(rt2x00dev, QID_ATIM);
 	else
-		queue = rt2x00queue_get_queue(rt2x00dev, qid);
+		queue = cw_rt2x00queue_get_queue(rt2x00dev, qid);
 	if (unlikely(!queue)) {
 		ERROR(rt2x00dev,
 		      "Attempt to send packet over invalid queue %d.\n"
@@ -142,12 +142,12 @@ int rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 			       IEEE80211_TX_CTL_USE_CTS_PROTECT)) &&
 	    !rt2x00dev->ops->hw->set_rts_threshold) {
 		if (rt2x00queue_available(queue) <= 1) {
-			ieee80211_stop_queue(rt2x00dev->hw, qid);
+			cw_ieee80211_stop_queue(rt2x00dev->hw, qid);
 			return NETDEV_TX_BUSY;
 		}
 
-		if (rt2x00mac_tx_rts_cts(rt2x00dev, queue, skb)) {
-			ieee80211_stop_queue(rt2x00dev->hw, qid);
+		if (cw_rt2x00mac_tx_rts_cts(rt2x00dev, queue, skb)) {
+			cw_ieee80211_stop_queue(rt2x00dev->hw, qid);
 			return NETDEV_TX_BUSY;
 		}
 	}
@@ -165,18 +165,18 @@ int rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 	}
 
 	if (rt2x00queue_write_tx_frame(queue, skb)) {
-		ieee80211_stop_queue(rt2x00dev->hw, qid);
+		cw_ieee80211_stop_queue(rt2x00dev->hw, qid);
 		return NETDEV_TX_BUSY;
 	}
 
 	if (rt2x00queue_threshold(queue))
-		ieee80211_stop_queue(rt2x00dev->hw, qid);
+		cw_ieee80211_stop_queue(rt2x00dev->hw, qid);
 
 	return NETDEV_TX_OK;
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_tx);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_tx);
 
-int rt2x00mac_start(struct ieee80211_hw *hw)
+int cw_rt2x00mac_start(struct ieee80211_hw *hw)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 
@@ -185,9 +185,9 @@ int rt2x00mac_start(struct ieee80211_hw *hw)
 
 	return rt2x00lib_start(rt2x00dev);
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_start);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_start);
 
-void rt2x00mac_stop(struct ieee80211_hw *hw)
+void cw_rt2x00mac_stop(struct ieee80211_hw *hw)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 
@@ -196,14 +196,14 @@ void rt2x00mac_stop(struct ieee80211_hw *hw)
 
 	rt2x00lib_stop(rt2x00dev);
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_stop);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_stop);
 
-int rt2x00mac_add_interface(struct ieee80211_hw *hw,
+int cw_rt2x00mac_add_interface(struct ieee80211_hw *hw,
 			    struct ieee80211_if_init_conf *conf)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 	struct rt2x00_intf *intf = vif_to_intf(conf->vif);
-	struct data_queue *queue = rt2x00queue_get_queue(rt2x00dev, QID_BEACON);
+	struct data_queue *queue = cw_rt2x00queue_get_queue(rt2x00dev, QID_BEACON);
 	struct queue_entry *entry = NULL;
 	unsigned int i;
 
@@ -281,9 +281,9 @@ int rt2x00mac_add_interface(struct ieee80211_hw *hw,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_add_interface);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_add_interface);
 
-void rt2x00mac_remove_interface(struct ieee80211_hw *hw,
+void cw_rt2x00mac_remove_interface(struct ieee80211_hw *hw,
 				struct ieee80211_if_init_conf *conf)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
@@ -317,9 +317,9 @@ void rt2x00mac_remove_interface(struct ieee80211_hw *hw,
 	rt2x00lib_config_intf(rt2x00dev, intf,
 			      IEEE80211_IF_TYPE_INVALID, NULL, NULL);
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_remove_interface);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_remove_interface);
 
-int rt2x00mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *conf)
+int cw_rt2x00mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *conf)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 
@@ -353,9 +353,9 @@ int rt2x00mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *conf)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_config);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_config);
 
-int rt2x00mac_config_interface(struct ieee80211_hw *hw,
+int cw_cw_rt2x00mac_config_interface(struct ieee80211_hw *hw,
 			       struct ieee80211_vif *vif,
 			       struct ieee80211_if_conf *conf)
 {
@@ -401,9 +401,9 @@ int rt2x00mac_config_interface(struct ieee80211_hw *hw,
 
 	return status;
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_config_interface);
+EXPORT_SYMBOL_GPL(cw_cw_rt2x00mac_config_interface);
 
-void rt2x00mac_configure_filter(struct ieee80211_hw *hw,
+void cw_cw_rt2x00mac_configure_filter(struct ieee80211_hw *hw,
 				unsigned int changed_flags,
 				unsigned int *total_flags,
 				int mc_count, struct dev_addr_list *mc_list)
@@ -445,9 +445,9 @@ void rt2x00mac_configure_filter(struct ieee80211_hw *hw,
 	else
 		queue_work(rt2x00dev->hw->workqueue, &rt2x00dev->filter_work);
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_configure_filter);
+EXPORT_SYMBOL_GPL(cw_cw_rt2x00mac_configure_filter);
 
-int rt2x00mac_get_stats(struct ieee80211_hw *hw,
+int cw_rt2x00mac_get_stats(struct ieee80211_hw *hw,
 			struct ieee80211_low_level_stats *stats)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
@@ -461,9 +461,9 @@ int rt2x00mac_get_stats(struct ieee80211_hw *hw,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_get_stats);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_get_stats);
 
-int rt2x00mac_get_tx_stats(struct ieee80211_hw *hw,
+int cw_rt2x00mac_get_tx_stats(struct ieee80211_hw *hw,
 			   struct ieee80211_tx_queue_stats *stats)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
@@ -477,9 +477,9 @@ int rt2x00mac_get_tx_stats(struct ieee80211_hw *hw,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_get_tx_stats);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_get_tx_stats);
 
-void rt2x00mac_bss_info_changed(struct ieee80211_hw *hw,
+void cw_rt2x00mac_bss_info_changed(struct ieee80211_hw *hw,
 				struct ieee80211_vif *vif,
 				struct ieee80211_bss_conf *bss_conf,
 				u32 changes)
@@ -528,15 +528,15 @@ void rt2x00mac_bss_info_changed(struct ieee80211_hw *hw,
 	}
 	spin_unlock(&intf->lock);
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_bss_info_changed);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_bss_info_changed);
 
-int rt2x00mac_conf_tx(struct ieee80211_hw *hw, u16 queue_idx,
+int cw_rt2x00mac_conf_tx(struct ieee80211_hw *hw, u16 queue_idx,
 		      const struct ieee80211_tx_queue_params *params)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 	struct data_queue *queue;
 
-	queue = rt2x00queue_get_queue(rt2x00dev, queue_idx);
+	queue = cw_rt2x00queue_get_queue(rt2x00dev, queue_idx);
 	if (unlikely(!queue))
 		return -EINVAL;
 
@@ -565,4 +565,4 @@ int rt2x00mac_conf_tx(struct ieee80211_hw *hw, u16 queue_idx,
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(rt2x00mac_conf_tx);
+EXPORT_SYMBOL_GPL(cw_rt2x00mac_conf_tx);

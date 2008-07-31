@@ -7,7 +7,7 @@
 #include <asm/bitops.h>
 #include "core.h"
 
-int ieee80211_channel_to_frequency(int chan)
+int cw_cw_ieee80211_channel_to_frequency(int chan)
 {
 	if (chan < 14)
 		return 2407 + chan * 5;
@@ -18,9 +18,9 @@ int ieee80211_channel_to_frequency(int chan)
 	/* FIXME: 802.11j 17.3.8.3.2 */
 	return (chan + 1000) * 5;
 }
-EXPORT_SYMBOL(ieee80211_channel_to_frequency);
+EXPORT_SYMBOL(cw_cw_ieee80211_channel_to_frequency);
 
-int ieee80211_frequency_to_channel(int freq)
+int cw_ieee80211_frequency_to_channel(int freq)
 {
 	if (freq == 2484)
 		return 14;
@@ -31,9 +31,9 @@ int ieee80211_frequency_to_channel(int freq)
 	/* FIXME: 802.11j 17.3.8.3.2 */
 	return freq/5 - 1000;
 }
-EXPORT_SYMBOL(ieee80211_frequency_to_channel);
+EXPORT_SYMBOL(cw_ieee80211_frequency_to_channel);
 
-struct ieee80211_channel *__ieee80211_get_channel(struct wiphy *wiphy,
+struct ieee80211_channel *__cw_ieee80211_get_channel(struct wiphy *wiphy,
 						  int freq)
 {
 	enum ieee80211_band band;
@@ -54,7 +54,7 @@ struct ieee80211_channel *__ieee80211_get_channel(struct wiphy *wiphy,
 
 	return NULL;
 }
-EXPORT_SYMBOL(__ieee80211_get_channel);
+EXPORT_SYMBOL(__cw_ieee80211_get_channel);
 
 static void set_mandatory_flags_band(struct ieee80211_supported_band *sband,
 				     enum ieee80211_band band)

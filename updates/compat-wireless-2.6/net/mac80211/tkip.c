@@ -147,7 +147,7 @@ u8 *ieee80211_tkip_add_iv(u8 *pos, struct ieee80211_key *key, u16 iv16)
 	return pos + 4;
 }
 
-void ieee80211_get_tkip_key(struct ieee80211_key_conf *keyconf,
+void cw_ieee80211_get_tkip_key(struct ieee80211_key_conf *keyconf,
 			struct sk_buff *skb, enum ieee80211_tkip_key_type type,
 			u8 *outkey)
 {
@@ -160,7 +160,7 @@ void ieee80211_get_tkip_key(struct ieee80211_key_conf *keyconf,
 	u16 iv16;
 	u32 iv32;
 
-	data = (u8 *)hdr + ieee80211_hdrlen(hdr->frame_control);
+	data = (u8 *)hdr + cw_ieee80211_hdrlen(hdr->frame_control);
 	iv16 = data[2] | (data[0] << 8);
 	iv32 = get_unaligned_le32(&data[4]);
 
@@ -192,7 +192,7 @@ void ieee80211_get_tkip_key(struct ieee80211_key_conf *keyconf,
 
 	tkip_mixing_phase2(tk, ctx, iv16, outkey);
 }
-EXPORT_SYMBOL(ieee80211_get_tkip_key);
+EXPORT_SYMBOL(cw_ieee80211_get_tkip_key);
 
 /* Encrypt packet payload with TKIP using @key. @pos is a pointer to the
  * beginning of the buffer containing payload. This payload must include

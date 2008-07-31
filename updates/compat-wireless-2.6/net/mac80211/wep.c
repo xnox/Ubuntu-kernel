@@ -94,7 +94,7 @@ static u8 *ieee80211_wep_add_iv(struct ieee80211_local *local,
 		    skb_headroom(skb) < WEP_IV_LEN))
 		return NULL;
 
-	hdrlen = ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
 	newhdr = skb_push(skb, WEP_IV_LEN);
 	memmove(newhdr, newhdr + WEP_IV_LEN, hdrlen);
 	ieee80211_wep_get_iv(local, key, newhdr + hdrlen);
@@ -109,7 +109,7 @@ static void ieee80211_wep_remove_iv(struct ieee80211_local *local,
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)skb->data;
 	unsigned int hdrlen;
 
-	hdrlen = ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
 	memmove(skb->data + WEP_IV_LEN, skb->data, hdrlen);
 	skb_pull(skb, WEP_IV_LEN);
 }
@@ -227,7 +227,7 @@ int ieee80211_wep_decrypt(struct ieee80211_local *local, struct sk_buff *skb,
 	if (!ieee80211_has_protected(hdr->frame_control))
 		return -1;
 
-	hdrlen = ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
 
 	if (skb->len < 8 + hdrlen)
 		return -1;
@@ -279,7 +279,7 @@ u8 * ieee80211_wep_is_weak_iv(struct sk_buff *skb, struct ieee80211_key *key)
 	if (!ieee80211_has_protected(hdr->frame_control))
 		return NULL;
 
-	hdrlen = ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
 	ivpos = skb->data + hdrlen;
 	iv = (ivpos[0] << 16) | (ivpos[1] << 8) | ivpos[2];
 
@@ -289,8 +289,8 @@ u8 * ieee80211_wep_is_weak_iv(struct sk_buff *skb, struct ieee80211_key *key)
 	return NULL;
 }
 
-ieee80211_rx_result
-ieee80211_crypto_wep_decrypt(struct ieee80211_rx_data *rx)
+cw_ieee80211_rx_result
+ieee80211_crypto_wep_decrypt(struct cw_ieee80211_rx_data *rx)
 {
 	if ((rx->fc & IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_DATA &&
 	    ((rx->fc & IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_MGMT ||

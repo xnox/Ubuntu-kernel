@@ -76,11 +76,11 @@ static int lbs_join_adhoc_network(struct lbs_private *priv,
 	int ret = 0;
 
 	lbs_deb_join("current SSID '%s', ssid length %u\n",
-		escape_essid(priv->curbssparams.ssid,
+		cw_escape_essid(priv->curbssparams.ssid,
 		priv->curbssparams.ssid_len),
 		priv->curbssparams.ssid_len);
 	lbs_deb_join("requested ssid '%s', ssid length %u\n",
-		escape_essid(bss->ssid, bss->ssid_len),
+		cw_escape_essid(bss->ssid, bss->ssid_len),
 		bss->ssid_len);
 
 	/* check if the requested SSID is already joined */
@@ -454,7 +454,7 @@ static int assoc_helper_essid(struct lbs_private *priv,
 		channel = assoc_req->channel;
 
 	lbs_deb_assoc("SSID '%s' requested\n",
-	              escape_essid(assoc_req->ssid, assoc_req->ssid_len));
+	              cw_escape_essid(assoc_req->ssid, assoc_req->ssid_len));
 	if (assoc_req->mode == IW_MODE_INFRA) {
 		lbs_send_specific_ssid_scan(priv, assoc_req->ssid,
 			assoc_req->ssid_len);
@@ -985,7 +985,7 @@ void lbs_association_worker(struct work_struct *work)
 		"    secinfo:  %s%s%s\n"
 		"    auth_mode: %d\n",
 		assoc_req->flags,
-		escape_essid(assoc_req->ssid, assoc_req->ssid_len),
+		cw_escape_essid(assoc_req->ssid, assoc_req->ssid_len),
 		assoc_req->channel, assoc_req->band, assoc_req->mode,
 		print_mac(mac, assoc_req->bssid),
 		assoc_req->secinfo.WPAenabled ? " WPA" : "",
@@ -1524,7 +1524,7 @@ int lbs_cmd_80211_ad_hoc_start(struct lbs_private *priv,
 	memcpy(adhs->ssid, assoc_req->ssid, assoc_req->ssid_len);
 
 	lbs_deb_join("ADHOC_S_CMD: SSID '%s', ssid length %u\n",
-		escape_essid(assoc_req->ssid, assoc_req->ssid_len),
+		cw_escape_essid(assoc_req->ssid, assoc_req->ssid_len),
 		assoc_req->ssid_len);
 
 	/* set the BSS type */
@@ -1868,7 +1868,7 @@ int lbs_ret_80211_ad_hoc_start(struct lbs_private *priv,
 	 * If BSSID has changed use SSID to compare instead of BSSID
 	 */
 	lbs_deb_join("ADHOC_RESP: associated to '%s'\n",
-		escape_essid(bss->ssid, bss->ssid_len));
+		cw_escape_essid(bss->ssid, bss->ssid_len));
 
 	/* Send a Media Connected event, according to the Spec */
 	priv->connect_status = LBS_CONNECTED;

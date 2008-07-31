@@ -162,7 +162,7 @@ static void rtl8187_tx_cb(struct urb *urb)
 					  sizeof(struct rtl8187_tx_hdr));
 	memset(&info->status, 0, sizeof(info->status));
 	info->flags |= IEEE80211_TX_STAT_ACK;
-	ieee80211_tx_status_irqsafe(hw, skb);
+	cw_cw_ieee80211_tx_status_irqsafe(hw, skb);
 }
 
 static int rtl8187_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
@@ -191,7 +191,7 @@ static int rtl8187_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
 	if (info->flags & IEEE80211_TX_CTL_USE_RTS_CTS) {
 		flags |= RTL8187_TX_FLAG_RTS;
 		flags |= ieee80211_get_rts_cts_rate(dev, info)->hw_value << 19;
-		rts_dur = ieee80211_rts_duration(dev, priv->vif,
+		rts_dur = cw_ieee80211_rts_duration(dev, priv->vif,
 						 skb->len, info);
 	} else if (info->flags & IEEE80211_TX_CTL_USE_CTS_PROTECT) {
 		flags |= RTL8187_TX_FLAG_CTS;
@@ -224,7 +224,7 @@ static int rtl8187_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
 		hdr->rts_duration = rts_dur;
 		hdr->retry = cpu_to_le32(info->control.retry_limit << 8);
 		hdr->tx_duration =
-			ieee80211_generic_frame_duration(dev, priv->vif,
+			cw_ieee80211_generic_frame_duration(dev, priv->vif,
 							 skb->len, txrate);
 		buf = hdr;
 
@@ -254,7 +254,7 @@ static void rtl8187_rx_cb(struct urb *urb)
 	struct rtl8187_rx_info *info = (struct rtl8187_rx_info *)skb->cb;
 	struct ieee80211_hw *dev = info->dev;
 	struct rtl8187_priv *priv = dev->priv;
-	struct ieee80211_rx_status rx_status = { 0 };
+	struct cw_ieee80211_rx_status rx_status = { 0 };
 	int rate, signal;
 	u32 flags;
 
@@ -324,7 +324,7 @@ static void rtl8187_rx_cb(struct urb *urb)
 	rx_status.flag |= RX_FLAG_TSFT;
 	if (flags & (1 << 13))
 		rx_status.flag |= RX_FLAG_FAILED_FCS_CRC;
-	ieee80211_rx_irqsafe(dev, skb, &rx_status);
+	cw_cw_ieee80211_rx_irqsafe(dev, skb, &rx_status);
 
 	skb = dev_alloc_skb(RTL8187_MAX_RX);
 	if (unlikely(!skb)) {
@@ -981,7 +981,7 @@ static int __devinit rtl8187_probe(struct usb_interface *intf,
 	int err, i;
 	DECLARE_MAC_BUF(mac);
 
-	dev = ieee80211_alloc_hw(sizeof(*priv), &rtl8187_ops);
+	dev = cw_ieee80211_alloc_hw(sizeof(*priv), &rtl8187_ops);
 	if (!dev) {
 		printk(KERN_ERR "rtl8187: ieee80211 alloc failed\n");
 		return -ENOMEM;
@@ -1030,7 +1030,7 @@ static int __devinit rtl8187_probe(struct usb_interface *intf,
 	rtl818x_iowrite8(priv, &priv->map->EEPROM_CMD, RTL818X_EEPROM_CMD_CONFIG);
 	udelay(10);
 
-	eeprom_93cx6_multiread(&eeprom, RTL8187_EEPROM_MAC_ADDR,
+	cw_eeprom_93cx6_multiread(&eeprom, RTL8187_EEPROM_MAC_ADDR,
 			       (__le16 __force *)dev->wiphy->perm_addr, 3);
 	if (!is_valid_ether_addr(dev->wiphy->perm_addr)) {
 		printk(KERN_WARNING "rtl8187: Invalid hwaddr! Using randomly "
@@ -1040,19 +1040,19 @@ static int __devinit rtl8187_probe(struct usb_interface *intf,
 
 	channel = priv->channels;
 	for (i = 0; i < 3; i++) {
-		eeprom_93cx6_read(&eeprom, RTL8187_EEPROM_TXPWR_CHAN_1 + i,
+		cw_eeprom_93cx6_read(&eeprom, RTL8187_EEPROM_TXPWR_CHAN_1 + i,
 				  &txpwr);
 		(*channel++).hw_value = txpwr & 0xFF;
 		(*channel++).hw_value = txpwr >> 8;
 	}
 	for (i = 0; i < 2; i++) {
-		eeprom_93cx6_read(&eeprom, RTL8187_EEPROM_TXPWR_CHAN_4 + i,
+		cw_eeprom_93cx6_read(&eeprom, RTL8187_EEPROM_TXPWR_CHAN_4 + i,
 				  &txpwr);
 		(*channel++).hw_value = txpwr & 0xFF;
 		(*channel++).hw_value = txpwr >> 8;
 	}
 
-	eeprom_93cx6_read(&eeprom, RTL8187_EEPROM_TXPWR_BASE,
+	cw_eeprom_93cx6_read(&eeprom, RTL8187_EEPROM_TXPWR_BASE,
 			  &priv->txpwr_base);
 
 	reg = rtl818x_ioread8(priv, &priv->map->PGSELECT) & ~1;
@@ -1113,21 +1113,21 @@ static int __devinit rtl8187_probe(struct usb_interface *intf,
 
 	if (!priv->is_rtl8187b) {
 		for (i = 0; i < 2; i++) {
-			eeprom_93cx6_read(&eeprom,
+			cw_eeprom_93cx6_read(&eeprom,
 					  RTL8187_EEPROM_TXPWR_CHAN_6 + i,
 					  &txpwr);
 			(*channel++).hw_value = txpwr & 0xFF;
 			(*channel++).hw_value = txpwr >> 8;
 		}
 	} else {
-		eeprom_93cx6_read(&eeprom, RTL8187_EEPROM_TXPWR_CHAN_6,
+		cw_eeprom_93cx6_read(&eeprom, RTL8187_EEPROM_TXPWR_CHAN_6,
 				  &txpwr);
 		(*channel++).hw_value = txpwr & 0xFF;
 
-		eeprom_93cx6_read(&eeprom, 0x0A, &txpwr);
+		cw_eeprom_93cx6_read(&eeprom, 0x0A, &txpwr);
 		(*channel++).hw_value = txpwr & 0xFF;
 
-		eeprom_93cx6_read(&eeprom, 0x1C, &txpwr);
+		cw_eeprom_93cx6_read(&eeprom, 0x1C, &txpwr);
 		(*channel++).hw_value = txpwr & 0xFF;
 		(*channel++).hw_value = txpwr >> 8;
 	}
@@ -1149,7 +1149,7 @@ static int __devinit rtl8187_probe(struct usb_interface *intf,
 	else
 		dev->queues = 4;
 
-	err = ieee80211_register_hw(dev);
+	err = cw_ieee80211_register_hw(dev);
 	if (err) {
 		printk(KERN_ERR "rtl8187: Cannot register device\n");
 		goto err_free_dev;
@@ -1162,7 +1162,7 @@ static int __devinit rtl8187_probe(struct usb_interface *intf,
 	return 0;
 
  err_free_dev:
-	ieee80211_free_hw(dev);
+	cw_ieee80211_free_hw(dev);
 	usb_set_intfdata(intf, NULL);
 	usb_put_dev(udev);
 	return err;
@@ -1176,11 +1176,11 @@ static void __devexit rtl8187_disconnect(struct usb_interface *intf)
 	if (!dev)
 		return;
 
-	ieee80211_unregister_hw(dev);
+	cw_ieee80211_unregister_hw(dev);
 
 	priv = dev->priv;
 	usb_put_dev(interface_to_usbdev(intf));
-	ieee80211_free_hw(dev);
+	cw_ieee80211_free_hw(dev);
 }
 
 static struct usb_driver rtl8187_driver = {

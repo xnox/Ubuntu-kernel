@@ -96,13 +96,13 @@ struct ieee80211_crypt_data {
 
 struct ieee80211_device;
 
-int ieee80211_register_crypto_ops(struct ieee80211_crypto_ops *ops);
-int ieee80211_unregister_crypto_ops(struct ieee80211_crypto_ops *ops);
-struct ieee80211_crypto_ops *ieee80211_get_crypto_ops(const char *name);
-void ieee80211_crypt_deinit_entries(struct ieee80211_device *, int);
-void ieee80211_crypt_deinit_handler(unsigned long);
-void ieee80211_crypt_delayed_deinit(struct ieee80211_device *ieee,
+int cw_ieee80211_register_crypto_ops(struct ieee80211_crypto_ops *ops);
+int cw_ieee80211_unregister_crypto_ops(struct ieee80211_crypto_ops *ops);
+struct ieee80211_crypto_ops *cw_ieee80211_get_crypto_ops(const char *name);
+void cw_ieee80211_crypt_deinit_entries(struct ieee80211_device *, int);
+void cw_ieee80211_crypt_deinit_handler(unsigned long);
+void cw_ieee80211_crypt_delayed_deinit(struct ieee80211_device *ieee,
 				    struct ieee80211_crypt_data **crypt);
-void ieee80211_crypt_quiescing(struct ieee80211_device *ieee);
+void cw_ieee80211_crypt_quiescing(struct ieee80211_device *ieee);
 
 #endif

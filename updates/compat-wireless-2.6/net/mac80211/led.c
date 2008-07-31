@@ -120,7 +120,7 @@ void ieee80211_led_exit(struct ieee80211_local *local)
 	}
 }
 
-char *__ieee80211_get_radio_led_name(struct ieee80211_hw *hw)
+char *cw___ieee80211_get_radio_led_name(struct ieee80211_hw *hw)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
@@ -128,9 +128,9 @@ char *__ieee80211_get_radio_led_name(struct ieee80211_hw *hw)
 		return local->radio_led_name;
 	return NULL;
 }
-EXPORT_SYMBOL(__ieee80211_get_radio_led_name);
+EXPORT_SYMBOL(cw___ieee80211_get_radio_led_name);
 
-char *__ieee80211_get_assoc_led_name(struct ieee80211_hw *hw)
+char *cw___ieee80211_get_assoc_led_name(struct ieee80211_hw *hw)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
@@ -138,9 +138,9 @@ char *__ieee80211_get_assoc_led_name(struct ieee80211_hw *hw)
 		return local->assoc_led_name;
 	return NULL;
 }
-EXPORT_SYMBOL(__ieee80211_get_assoc_led_name);
+EXPORT_SYMBOL(cw___ieee80211_get_assoc_led_name);
 
-char *__ieee80211_get_tx_led_name(struct ieee80211_hw *hw)
+char *cw___ieee80211_get_tx_led_name(struct ieee80211_hw *hw)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
@@ -148,9 +148,9 @@ char *__ieee80211_get_tx_led_name(struct ieee80211_hw *hw)
 		return local->tx_led_name;
 	return NULL;
 }
-EXPORT_SYMBOL(__ieee80211_get_tx_led_name);
+EXPORT_SYMBOL(cw___ieee80211_get_tx_led_name);
 
-char *__ieee80211_get_rx_led_name(struct ieee80211_hw *hw)
+char *cw___ieee80211_get_rx_led_name(struct ieee80211_hw *hw)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
@@ -158,4 +158,4 @@ char *__ieee80211_get_rx_led_name(struct ieee80211_hw *hw)
 		return local->rx_led_name;
 	return NULL;
 }
-EXPORT_SYMBOL(__ieee80211_get_rx_led_name);
+EXPORT_SYMBOL(cw___ieee80211_get_rx_led_name);

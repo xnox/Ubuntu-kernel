@@ -11,7 +11,7 @@
 /* function prototypes and related defs are in include/net/cfg80211.h */
 
 /**
- * ieee80211_radiotap_iterator_init - radiotap parser iterator initialization
+ * cw_ieee80211_radiotap_iterator_init - radiotap parser iterator initialization
  * @iterator: radiotap_iterator to initialize
  * @radiotap_header: radiotap header to parse
  * @max_length: total length we can parse into (eg, whole packet length)
@@ -19,15 +19,15 @@
  * Returns: 0 or a negative error code if there is a problem.
  *
  * This function initializes an opaque iterator struct which can then
- * be passed to ieee80211_radiotap_iterator_next() to visit every radiotap
+ * be passed to cw_ieee80211_radiotap_iterator_next() to visit every radiotap
  * argument which is present in the header.  It knows about extended
  * present headers and handles them.
  *
  * How to use:
- * call __ieee80211_radiotap_iterator_init() to init a semi-opaque iterator
+ * call __cw_ieee80211_radiotap_iterator_init() to init a semi-opaque iterator
  * struct ieee80211_radiotap_iterator (no need to init the struct beforehand)
  * checking for a good 0 return code.  Then loop calling
- * __ieee80211_radiotap_iterator_next()... it returns either 0,
+ * __cw_ieee80211_radiotap_iterator_next()... it returns either 0,
  * -ENOENT if there are no more args to parse, or -EINVAL if there is a problem.
  * The iterator's @this_arg member points to the start of the argument
  * associated with the current argument index that is present, which can be
@@ -36,7 +36,7 @@
  *
  * Radiotap header length:
  * You can find the CPU-endian total radiotap header length in
- * iterator->max_length after executing ieee80211_radiotap_iterator_init()
+ * iterator->max_length after executing cw_ieee80211_radiotap_iterator_init()
  * successfully.
  *
  * Alignment Gotcha:
@@ -49,7 +49,7 @@
  * See Documentation/networking/radiotap-headers.txt
  */
 
-int ieee80211_radiotap_iterator_init(
+int cw_ieee80211_radiotap_iterator_init(
     struct ieee80211_radiotap_iterator *iterator,
     struct ieee80211_radiotap_header *radiotap_header,
     int max_length)
@@ -91,7 +91,7 @@ int ieee80211_radiotap_iterator_init(
 
 		/*
 		 * no need to check again for blowing past stated radiotap
-		 * header length, because ieee80211_radiotap_iterator_next
+		 * header length, because cw_ieee80211_radiotap_iterator_next
 		 * checks it before it is dereferenced
 		 */
 	}
@@ -100,11 +100,11 @@ int ieee80211_radiotap_iterator_init(
 
 	return 0;
 }
-EXPORT_SYMBOL(ieee80211_radiotap_iterator_init);
+EXPORT_SYMBOL(cw_ieee80211_radiotap_iterator_init);
 
 
 /**
- * ieee80211_radiotap_iterator_next - return next radiotap parser iterator arg
+ * cw_ieee80211_radiotap_iterator_next - return next radiotap parser iterator arg
  * @iterator: radiotap_iterator to move to next arg (if any)
  *
  * Returns: 0 if there is an argument to handle,
@@ -126,7 +126,7 @@ EXPORT_SYMBOL(ieee80211_radiotap_iterator_init);
  * iterator.this_arg for type "type" safely on all arches.
  */
 
-int ieee80211_radiotap_iterator_next(
+int cw_ieee80211_radiotap_iterator_next(
     struct ieee80211_radiotap_iterator *iterator)
 {
 
@@ -256,4 +256,4 @@ int ieee80211_radiotap_iterator_next(
 	/* we don't know how to handle any more args, we're done */
 	return -ENOENT;
 }
-EXPORT_SYMBOL(ieee80211_radiotap_iterator_next);
+EXPORT_SYMBOL(cw_ieee80211_radiotap_iterator_next);

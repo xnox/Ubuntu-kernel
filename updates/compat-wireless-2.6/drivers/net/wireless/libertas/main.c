@@ -34,9 +34,9 @@ const char lbs_driver_version[] = "COMM-USB8388-" DRIVER_RELEASE_VERSION
 
 
 /* Module parameters */
-unsigned int lbs_debug;
-EXPORT_SYMBOL_GPL(lbs_debug);
-module_param_named(libertas_debug, lbs_debug, int, 0644);
+unsigned int cw_lbs_debug;
+EXPORT_SYMBOL_GPL(cw_lbs_debug);
+module_param_named(libertas_debug, cw_lbs_debug, int, 0644);
 
 
 /* This global structure is used to send the confirm_sleep command as
@@ -311,7 +311,7 @@ static ssize_t lbs_rtap_set(struct device *dev,
 		}
 
 		/* Wake queues, command thread, etc. */
-		lbs_host_to_card_done(priv);
+		cw_lbs_host_to_card_done(priv);
 	}
 
 	lbs_prepare_and_send_command(priv,
@@ -488,11 +488,11 @@ static void lbs_tx_timeout(struct net_device *dev)
 	dev->trans_start = jiffies;
 
 	if (priv->currenttxskb)
-		lbs_send_tx_feedback(priv, 0);
+		cw_lbs_send_tx_feedback(priv, 0);
 
 	/* XX: Shouldn't we also call into the hw-specific driver
 	   to kick it somehow? */
-	lbs_host_to_card_done(priv);
+	cw_lbs_host_to_card_done(priv);
 
 	/* More often than not, this actually happens because the
 	   firmware has crapped itself -- rather than just a very
@@ -504,7 +504,7 @@ static void lbs_tx_timeout(struct net_device *dev)
 	lbs_deb_leave(LBS_DEB_TX);
 }
 
-void lbs_host_to_card_done(struct lbs_private *priv)
+void cw_lbs_host_to_card_done(struct lbs_private *priv)
 {
 	unsigned long flags;
 
@@ -521,7 +521,7 @@ void lbs_host_to_card_done(struct lbs_private *priv)
 	spin_unlock_irqrestore(&priv->driver_lock, flags);
 	lbs_deb_leave(LBS_DEB_THREAD);
 }
-EXPORT_SYMBOL_GPL(lbs_host_to_card_done);
+EXPORT_SYMBOL_GPL(cw_lbs_host_to_card_done);
 
 /**
  *  @brief This function returns the network statistics
@@ -890,7 +890,7 @@ static int lbs_thread(void *data)
 	return 0;
 }
 
-static int lbs_suspend_callback(struct lbs_private *priv, unsigned long dummy,
+static int cw_lbs_suspend_callback(struct lbs_private *priv, unsigned long dummy,
 				struct cmd_header *cmd)
 {
 	lbs_deb_enter(LBS_DEB_FW);
@@ -904,7 +904,7 @@ static int lbs_suspend_callback(struct lbs_private *priv, unsigned long dummy,
 	return 0;
 }
 
-int lbs_suspend(struct lbs_private *priv)
+int cw_lbs_suspend(struct lbs_private *priv)
 {
 	struct cmd_header cmd;
 	int ret;
@@ -918,17 +918,17 @@ int lbs_suspend(struct lbs_private *priv)
 
 	memset(&cmd, 0, sizeof(cmd));
 
-	ret = __lbs_cmd(priv, CMD_802_11_HOST_SLEEP_ACTIVATE, &cmd,
-			sizeof(cmd), lbs_suspend_callback, 0);
+	ret = cw___lbs_cmd(priv, CMD_802_11_HOST_SLEEP_ACTIVATE, &cmd,
+			sizeof(cmd), cw_lbs_suspend_callback, 0);
 	if (ret)
 		lbs_pr_info("HOST_SLEEP_ACTIVATE failed: %d\n", ret);
 
 	lbs_deb_leave_args(LBS_DEB_FW, "ret %d", ret);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lbs_suspend);
+EXPORT_SYMBOL_GPL(cw_lbs_suspend);
 
-void lbs_resume(struct lbs_private *priv)
+void cw_lbs_resume(struct lbs_private *priv)
 {
 	lbs_deb_enter(LBS_DEB_FW);
 
@@ -945,7 +945,7 @@ void lbs_resume(struct lbs_private *priv)
 
 	lbs_deb_leave(LBS_DEB_FW);
 }
-EXPORT_SYMBOL_GPL(lbs_resume);
+EXPORT_SYMBOL_GPL(cw_lbs_resume);
 
 /**
  *  @brief This function downloads firmware image, gets
@@ -1105,7 +1105,7 @@ static void lbs_free_adapter(struct lbs_private *priv)
  *  @param card    A pointer to card
  *  @return 	   A pointer to struct lbs_private structure
  */
-struct lbs_private *lbs_add_card(void *card, struct device *dmdev)
+struct lbs_private *cw_lbs_add_card(void *card, struct device *dmdev)
 {
 	struct net_device *dev = NULL;
 	struct lbs_private *priv = NULL;
@@ -1180,10 +1180,10 @@ done:
 	lbs_deb_leave_args(LBS_DEB_MAIN, "priv %p", priv);
 	return priv;
 }
-EXPORT_SYMBOL_GPL(lbs_add_card);
+EXPORT_SYMBOL_GPL(cw_lbs_add_card);
 
 
-void lbs_remove_card(struct lbs_private *priv)
+void cw_lbs_remove_card(struct lbs_private *priv)
 {
 	struct net_device *dev = priv->dev;
 	union iwreq_data wrqu;
@@ -1220,10 +1220,10 @@ void lbs_remove_card(struct lbs_private *priv)
 
 	lbs_deb_leave(LBS_DEB_MAIN);
 }
-EXPORT_SYMBOL_GPL(lbs_remove_card);
+EXPORT_SYMBOL_GPL(cw_lbs_remove_card);
 
 
-int lbs_start_card(struct lbs_private *priv)
+int cw_lbs_start_card(struct lbs_private *priv)
 {
 	struct net_device *dev = priv->dev;
 	int ret = -1;
@@ -1278,7 +1278,7 @@ int lbs_start_card(struct lbs_private *priv)
 		}
 	}
 
-	lbs_debugfs_init_one(priv, dev);
+	cw_lbs_debugfs_init_one(priv, dev);
 
 	lbs_pr_info("%s: Marvell WLAN 802.11 adapter\n", dev->name);
 
@@ -1288,10 +1288,10 @@ done:
 	lbs_deb_leave_args(LBS_DEB_MAIN, "ret %d", ret);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lbs_start_card);
+EXPORT_SYMBOL_GPL(cw_lbs_start_card);
 
 
-void lbs_stop_card(struct lbs_private *priv)
+void cw_lbs_stop_card(struct lbs_private *priv)
 {
 	struct net_device *dev = priv->dev;
 	struct cmd_ctrl_node *cmdnode;
@@ -1305,7 +1305,7 @@ void lbs_stop_card(struct lbs_private *priv)
 	netif_stop_queue(priv->dev);
 	netif_carrier_off(priv->dev);
 
-	lbs_debugfs_remove_one(priv);
+	cw_lbs_debugfs_remove_one(priv);
 	device_remove_file(&dev->dev, &dev_attr_lbs_rtap);
 	if (priv->mesh_tlv) {
 		device_remove_file(&dev->dev, &dev_attr_lbs_mesh);
@@ -1326,7 +1326,7 @@ void lbs_stop_card(struct lbs_private *priv)
 out:
 	lbs_deb_leave(LBS_DEB_MAIN);
 }
-EXPORT_SYMBOL_GPL(lbs_stop_card);
+EXPORT_SYMBOL_GPL(cw_lbs_stop_card);
 
 
 /**
@@ -1477,7 +1477,7 @@ out:
 	return ret;
 }
 
-void lbs_queue_event(struct lbs_private *priv, u32 event)
+void cw_lbs_queue_event(struct lbs_private *priv, u32 event)
 {
 	unsigned long flags;
 
@@ -1494,9 +1494,9 @@ void lbs_queue_event(struct lbs_private *priv, u32 event)
 	spin_unlock_irqrestore(&priv->driver_lock, flags);
 	lbs_deb_leave(LBS_DEB_THREAD);
 }
-EXPORT_SYMBOL_GPL(lbs_queue_event);
+EXPORT_SYMBOL_GPL(cw_lbs_queue_event);
 
-void lbs_notify_command_response(struct lbs_private *priv, u8 resp_idx)
+void cw_lbs_notify_command_response(struct lbs_private *priv, u8 resp_idx)
 {
 	lbs_deb_enter(LBS_DEB_THREAD);
 
@@ -1511,7 +1511,7 @@ void lbs_notify_command_response(struct lbs_private *priv, u8 resp_idx)
 
 	lbs_deb_leave(LBS_DEB_THREAD);
 }
-EXPORT_SYMBOL_GPL(lbs_notify_command_response);
+EXPORT_SYMBOL_GPL(cw_lbs_notify_command_response);
 
 static int __init lbs_init_module(void)
 {
@@ -1520,7 +1520,7 @@ static int __init lbs_init_module(void)
 	confirm_sleep.hdr.command = cpu_to_le16(CMD_802_11_PS_MODE);
 	confirm_sleep.hdr.size = cpu_to_le16(sizeof(confirm_sleep));
 	confirm_sleep.action = cpu_to_le16(CMD_SUBCMD_SLEEP_CONFIRMED);
-	lbs_debugfs_init();
+	cw_lbs_debugfs_init();
 	lbs_deb_leave(LBS_DEB_MAIN);
 	return 0;
 }
@@ -1528,7 +1528,7 @@ static int __init lbs_init_module(void)
 static void __exit lbs_exit_module(void)
 {
 	lbs_deb_enter(LBS_DEB_MAIN);
-	lbs_debugfs_remove();
+	cw_lbs_debugfs_remove();
 	lbs_deb_leave(LBS_DEB_MAIN);
 }
 
@@ -1618,7 +1618,7 @@ out:
 }
 
 #ifndef CONFIG_IEEE80211
-const char *escape_essid(const char *essid, u8 essid_len)
+const char *cw_escape_essid(const char *essid, u8 essid_len)
 {
 	static char escaped[IW_ESSID_MAX_SIZE * 2 + 1];
 	const char *s = essid;

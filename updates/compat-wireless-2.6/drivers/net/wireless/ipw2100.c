@@ -1745,7 +1745,7 @@ static int ipw2100_up(struct ipw2100_priv *priv, int deferred)
 	}
 
 	/* Initialize the geo */
-	if (ieee80211_set_geo(priv->ieee, &ipw_geos[0])) {
+	if (cw_ieee80211_set_geo(priv->ieee, &ipw_geos[0])) {
 		printk(KERN_WARNING DRV_NAME "Could not set geo\n");
 		return 0;
 	}
@@ -1978,7 +1978,7 @@ static void isr_indicate_associated(struct ipw2100_priv *priv, u32 status)
 
 	IPW_DEBUG_INFO("%s: Associated with '%s' at %s, channel %d (BSSID="
 		       "%s)\n",
-		       priv->net_dev->name, escape_essid(essid, essid_len),
+		       priv->net_dev->name, cw_escape_essid(essid, essid_len),
 		       txratename, chan, print_mac(mac, bssid));
 
 	/* now we copy read ssid into dev */
@@ -2006,7 +2006,7 @@ static int ipw2100_set_essid(struct ipw2100_priv *priv, char *essid,
 	};
 	int err;
 
-	IPW_DEBUG_HC("SSID: '%s'\n", escape_essid(essid, ssid_len));
+	IPW_DEBUG_HC("SSID: '%s'\n", cw_escape_essid(essid, ssid_len));
 
 	if (ssid_len)
 		memcpy(cmd.host_command_parameters, essid, ssid_len);
@@ -2051,7 +2051,7 @@ static void isr_indicate_association_lost(struct ipw2100_priv *priv, u32 status)
 
 	IPW_DEBUG(IPW_DL_NOTIF | IPW_DL_STATE | IPW_DL_ASSOC,
 		  "disassociated: '%s' %s \n",
-		  escape_essid(priv->essid, priv->essid_len),
+		  cw_escape_essid(priv->essid, priv->essid_len),
 		  print_mac(mac, priv->bssid));
 
 	priv->status &= ~(STATUS_ASSOCIATED | STATUS_ASSOCIATING);
@@ -2388,7 +2388,7 @@ static void ipw2100_corruption_detected(struct ipw2100_priv *priv, int i)
 }
 
 static void isr_rx(struct ipw2100_priv *priv, int i,
-			  struct ieee80211_rx_stats *stats)
+			  struct cw_ieee80211_rx_stats *stats)
 {
 	struct ipw2100_status *status = &priv->status_queue.drv[i];
 	struct ipw2100_rx_packet *packet = &priv->rx_buffers[i];
@@ -2426,13 +2426,13 @@ static void isr_rx(struct ipw2100_priv *priv, int i,
 
 #ifdef IPW2100_RX_DEBUG
 	/* Make a copy of the frame so we can dump it to the logs if
-	 * ieee80211_rx fails */
+	 * cw_ieee80211_rx fails */
 	skb_copy_from_linear_data(packet->skb, packet_data,
 				  min_t(u32, status->frame_size,
 					     IPW_RX_NIC_BUFFER_LENGTH));
 #endif
 
-	if (!ieee80211_rx(priv->ieee, packet->skb, stats)) {
+	if (!cw_ieee80211_rx(priv->ieee, packet->skb, stats)) {
 #ifdef IPW2100_RX_DEBUG
 		IPW_DEBUG_DROP("%s: Non consumed packet:\n",
 			       priv->net_dev->name);
@@ -2440,7 +2440,7 @@ static void isr_rx(struct ipw2100_priv *priv, int i,
 #endif
 		priv->ieee->stats.rx_errors++;
 
-		/* ieee80211_rx failed, so it didn't free the SKB */
+		/* cw_ieee80211_rx failed, so it didn't free the SKB */
 		dev_kfree_skb_any(packet->skb);
 		packet->skb = NULL;
 	}
@@ -2461,7 +2461,7 @@ static void isr_rx(struct ipw2100_priv *priv, int i,
 #ifdef CONFIG_IPW2100_MONITOR
 
 static void isr_rx_monitor(struct ipw2100_priv *priv, int i,
-		   struct ieee80211_rx_stats *stats)
+		   struct cw_ieee80211_rx_stats *stats)
 {
 	struct ipw2100_status *status = &priv->status_queue.drv[i];
 	struct ipw2100_rx_packet *packet = &priv->rx_buffers[i];
@@ -2518,10 +2518,10 @@ static void isr_rx_monitor(struct ipw2100_priv *priv, int i,
 
 	skb_put(packet->skb, status->frame_size + sizeof(struct ipw_rt_hdr));
 
-	if (!ieee80211_rx(priv->ieee, packet->skb, stats)) {
+	if (!cw_ieee80211_rx(priv->ieee, packet->skb, stats)) {
 		priv->ieee->stats.rx_errors++;
 
-		/* ieee80211_rx failed, so it didn't free the SKB */
+		/* cw_ieee80211_rx failed, so it didn't free the SKB */
 		dev_kfree_skb_any(packet->skb);
 		packet->skb = NULL;
 	}
@@ -2605,7 +2605,7 @@ static void __ipw2100_rx_process(struct ipw2100_priv *priv)
 	u16 frame_type;
 	u32 r, w, i, s;
 	struct ipw2100_rx *u;
-	struct ieee80211_rx_stats stats = {
+	struct cw_ieee80211_rx_stats stats = {
 		.mac_time = jiffies,
 	};
 
@@ -2680,7 +2680,7 @@ static void __ipw2100_rx_process(struct ipw2100_priv *priv)
 				break;
 			switch (WLAN_FC_GET_TYPE(le16_to_cpu(u->rx_data.header.frame_ctl))) {
 			case IEEE80211_FTYPE_MGMT:
-				ieee80211_rx_mgt(priv->ieee,
+				cw_cw_ieee80211_rx_mgt(priv->ieee,
 						 &u->rx_data.header, &stats);
 				break;
 
@@ -2874,7 +2874,7 @@ static int __ipw2100_tx_process(struct ipw2100_priv *priv)
 					 tbd->buf_length, PCI_DMA_TODEVICE);
 		}
 
-		ieee80211_txb_free(packet->info.d_struct.txb);
+		cw_ieee80211_txb_free(packet->info.d_struct.txb);
 		packet->info.d_struct.txb = NULL;
 
 		list_add_tail(element, &priv->tx_free_list);
@@ -4479,7 +4479,7 @@ static void ipw2100_tx_initialize(struct ipw2100_priv *priv)
 		/* We simply drop any SKBs that have been queued for
 		 * transmit */
 		if (priv->tx_buffers[i].info.d_struct.txb) {
-			ieee80211_txb_free(priv->tx_buffers[i].info.d_struct.
+			cw_ieee80211_txb_free(priv->tx_buffers[i].info.d_struct.
 					   txb);
 			priv->tx_buffers[i].info.d_struct.txb = NULL;
 		}
@@ -4518,7 +4518,7 @@ static void ipw2100_tx_free(struct ipw2100_priv *priv)
 
 	for (i = 0; i < TX_PENDED_QUEUE_LENGTH; i++) {
 		if (priv->tx_buffers[i].info.d_struct.txb) {
-			ieee80211_txb_free(priv->tx_buffers[i].info.d_struct.
+			cw_ieee80211_txb_free(priv->tx_buffers[i].info.d_struct.
 					   txb);
 			priv->tx_buffers[i].info.d_struct.txb = NULL;
 		}
@@ -5813,7 +5813,7 @@ static int ipw2100_close(struct net_device *dev)
 		list_del(element);
 		DEC_STAT(&priv->tx_pend_stat);
 
-		ieee80211_txb_free(packet->info.d_struct.txb);
+		cw_ieee80211_txb_free(packet->info.d_struct.txb);
 		packet->info.d_struct.txb = NULL;
 
 		list_add_tail(element, &priv->tx_free_list);
@@ -6013,7 +6013,7 @@ static struct net_device *ipw2100_alloc_device(struct pci_dev *pci_dev,
 	struct ipw2100_priv *priv;
 	struct net_device *dev;
 
-	dev = alloc_ieee80211(sizeof(struct ipw2100_priv));
+	dev = cw_alloc_ieee80211(sizeof(struct ipw2100_priv));
 	if (!dev)
 		return NULL;
 	priv = ieee80211_priv(dev);
@@ -6330,7 +6330,7 @@ static int ipw2100_pci_init_one(struct pci_dev *pci_dev,
 		sysfs_remove_group(&pci_dev->dev.kobj,
 				   &ipw2100_attribute_group);
 
-		free_ieee80211(dev);
+		cw_free_ieee80211(dev);
 		pci_set_drvdata(pci_dev, NULL);
 	}
 
@@ -6388,7 +6388,7 @@ static void __devexit ipw2100_pci_remove_one(struct pci_dev *pci_dev)
 		if (dev->base_addr)
 			iounmap((void __iomem *)dev->base_addr);
 
-		free_ieee80211(dev);
+		cw_free_ieee80211(dev);
 	}
 
 	pci_release_regions(pci_dev);
@@ -7000,7 +7000,7 @@ static int ipw2100_wx_set_essid(struct net_device *dev,
 		goto done;
 	}
 
-	IPW_DEBUG_WX("Setting ESSID: '%s' (%d)\n", escape_essid(essid, length),
+	IPW_DEBUG_WX("Setting ESSID: '%s' (%d)\n", cw_escape_essid(essid, length),
 		     length);
 
 	priv->essid_len = length;
@@ -7027,7 +7027,7 @@ static int ipw2100_wx_get_essid(struct net_device *dev,
 	 * configured ESSID then return that; otherwise return ANY */
 	if (priv->config & CFG_STATIC_ESSID || priv->status & STATUS_ASSOCIATED) {
 		IPW_DEBUG_WX("Getting essid: '%s'\n",
-			     escape_essid(priv->essid, priv->essid_len));
+			     cw_escape_essid(priv->essid, priv->essid_len));
 		memcpy(extra, priv->essid, priv->essid_len);
 		wrqu->essid.length = priv->essid_len;
 		wrqu->essid.flags = 1;	/* active */
@@ -7458,7 +7458,7 @@ static int ipw2100_wx_get_scan(struct net_device *dev,
 	 */
 
 	struct ipw2100_priv *priv = ieee80211_priv(dev);
-	return ieee80211_wx_get_scan(priv->ieee, info, wrqu, extra);
+	return cw_ieee80211_wx_get_scan(priv->ieee, info, wrqu, extra);
 }
 
 /*
@@ -7473,7 +7473,7 @@ static int ipw2100_wx_set_encode(struct net_device *dev,
 	 */
 
 	struct ipw2100_priv *priv = ieee80211_priv(dev);
-	return ieee80211_wx_set_encode(priv->ieee, info, wrqu, key);
+	return cw_ieee80211_wx_set_encode(priv->ieee, info, wrqu, key);
 }
 
 static int ipw2100_wx_get_encode(struct net_device *dev,
@@ -7485,7 +7485,7 @@ static int ipw2100_wx_get_encode(struct net_device *dev,
 	 */
 
 	struct ipw2100_priv *priv = ieee80211_priv(dev);
-	return ieee80211_wx_get_encode(priv->ieee, info, wrqu, key);
+	return cw_ieee80211_wx_get_encode(priv->ieee, info, wrqu, key);
 }
 
 static int ipw2100_wx_set_power(struct net_device *dev,
@@ -7778,7 +7778,7 @@ static int ipw2100_wx_set_encodeext(struct net_device *dev,
 				    union iwreq_data *wrqu, char *extra)
 {
 	struct ipw2100_priv *priv = ieee80211_priv(dev);
-	return ieee80211_wx_set_encodeext(priv->ieee, info, wrqu, extra);
+	return cw_cw_ieee80211_wx_set_encodeext(priv->ieee, info, wrqu, extra);
 }
 
 /* SIOCGIWENCODEEXT */
@@ -7787,7 +7787,7 @@ static int ipw2100_wx_get_encodeext(struct net_device *dev,
 				    union iwreq_data *wrqu, char *extra)
 {
 	struct ipw2100_priv *priv = ieee80211_priv(dev);
-	return ieee80211_wx_get_encodeext(priv->ieee, info, wrqu, extra);
+	return cw_cw_ieee80211_wx_get_encodeext(priv->ieee, info, wrqu, extra);
 }
 
 /* SIOCSIWMLME */

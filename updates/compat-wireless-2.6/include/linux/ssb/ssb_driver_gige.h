@@ -50,12 +50,12 @@ struct ssb_gige {
 };
 
 /* Check whether a PCI device is a SSB Gigabit Ethernet core. */
-extern bool pdev_is_ssb_gige_core(struct pci_dev *pdev);
+extern bool cw_pdev_is_ssb_gige_core(struct pci_dev *pdev);
 
 /* Convert a pci_dev pointer to a ssb_gige pointer. */
 static inline struct ssb_gige * pdev_to_ssb_gige(struct pci_dev *pdev)
 {
-	if (!pdev_is_ssb_gige_core(pdev))
+	if (!cw_pdev_is_ssb_gige_core(pdev))
 		return NULL;
 	return container_of(pdev->bus->ops, struct ssb_gige, pci_ops);
 }
@@ -145,7 +145,7 @@ static inline void ssb_gige_exit(void)
 {
 }
 
-static inline bool pdev_is_ssb_gige_core(struct pci_dev *pdev)
+static inline bool cw_pdev_is_ssb_gige_core(struct pci_dev *pdev)
 {
 	return 0;
 }

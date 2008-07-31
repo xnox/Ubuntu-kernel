@@ -173,7 +173,7 @@ void * ssb_get_drvdata(struct ssb_device *dev)
 }
 
 /* Devicetype specific user data. This is per device-type (not per device) */
-void ssb_set_devtypedata(struct ssb_device *dev, void *data);
+void cw_ssb_set_devtypedata(struct ssb_device *dev, void *data);
 static inline
 void * ssb_get_devtypedata(struct ssb_device *dev)
 {
@@ -195,12 +195,12 @@ struct ssb_driver {
 };
 #define drv_to_ssb_drv(_drv) container_of(_drv, struct ssb_driver, drv)
 
-extern int __ssb_driver_register(struct ssb_driver *drv, struct module *owner);
+extern int cw___ssb_driver_register(struct ssb_driver *drv, struct module *owner);
 static inline int ssb_driver_register(struct ssb_driver *drv)
 {
-	return __ssb_driver_register(drv, THIS_MODULE);
+	return cw___ssb_driver_register(drv, THIS_MODULE);
 }
-extern void ssb_driver_unregister(struct ssb_driver *drv);
+extern void cw_ssb_driver_unregister(struct ssb_driver *drv);
 
 
 
@@ -329,33 +329,33 @@ extern int ssb_bus_ssbbus_register(struct ssb_bus *bus,
 				   unsigned long baseaddr,
 				   ssb_invariants_func_t get_invariants);
 #ifdef CONFIG_SSB_PCIHOST
-extern int ssb_bus_pcibus_register(struct ssb_bus *bus,
+extern int cw_ssb_bus_pcibus_register(struct ssb_bus *bus,
 				   struct pci_dev *host_pci);
 #endif /* CONFIG_SSB_PCIHOST */
 #ifdef CONFIG_SSB_PCMCIAHOST
-extern int ssb_bus_pcmciabus_register(struct ssb_bus *bus,
+extern int cw_ssb_bus_pcmciabus_register(struct ssb_bus *bus,
 				      struct pcmcia_device *pcmcia_dev,
 				      unsigned long baseaddr);
 #endif /* CONFIG_SSB_PCMCIAHOST */
 
-extern void ssb_bus_unregister(struct ssb_bus *bus);
+extern void cw_ssb_bus_unregister(struct ssb_bus *bus);
 
 /* Suspend a SSB bus.
  * Call this from the parent bus suspend routine. */
-extern int ssb_bus_suspend(struct ssb_bus *bus);
+extern int cw_ssb_bus_suspend(struct ssb_bus *bus);
 /* Resume a SSB bus.
  * Call this from the parent bus resume routine. */
-extern int ssb_bus_resume(struct ssb_bus *bus);
+extern int cw_ssb_bus_resume(struct ssb_bus *bus);
 
-extern u32 ssb_clockspeed(struct ssb_bus *bus);
+extern u32 cw_ssb_clockspeed(struct ssb_bus *bus);
 
 /* Is the device enabled in hardware? */
-int ssb_device_is_enabled(struct ssb_device *dev);
+int cw_ssb_device_is_enabled(struct ssb_device *dev);
 /* Enable a device and pass device-specific SSB_TMSLOW flags.
  * If no device-specific flags are available, use 0. */
-void ssb_device_enable(struct ssb_device *dev, u32 core_specific_flags);
+void cw_ssb_device_enable(struct ssb_device *dev, u32 core_specific_flags);
 /* Disable a device in hardware and pass SSB_TMSLOW flags (if any). */
-void ssb_device_disable(struct ssb_device *dev, u32 core_specific_flags);
+void cw_ssb_device_disable(struct ssb_device *dev, u32 core_specific_flags);
 
 
 /* Device MMIO register read/write functions. */
@@ -404,15 +404,15 @@ static inline void ssb_block_write(struct ssb_device *dev, const void *buffer,
 
 /* Translation (routing) bits that need to be ORed to DMA
  * addresses before they are given to a device. */
-extern u32 ssb_dma_translation(struct ssb_device *dev);
+extern u32 cw_ssb_dma_translation(struct ssb_device *dev);
 #define SSB_DMA_TRANSLATION_MASK	0xC0000000
 #define SSB_DMA_TRANSLATION_SHIFT	30
 
-extern int ssb_dma_set_mask(struct ssb_device *dev, u64 mask);
+extern int cw_ssb_dma_set_mask(struct ssb_device *dev, u64 mask);
 
-extern void * ssb_dma_alloc_consistent(struct ssb_device *dev, size_t size,
+extern void * cw_ssb_dma_alloc_consistent(struct ssb_device *dev, size_t size,
 				       dma_addr_t *dma_handle, gfp_t gfp_flags);
-extern void ssb_dma_free_consistent(struct ssb_device *dev, size_t size,
+extern void cw_ssb_dma_free_consistent(struct ssb_device *dev, size_t size,
 				    void *vaddr, dma_addr_t dma_handle,
 				    gfp_t gfp_flags);
 
@@ -547,7 +547,7 @@ static inline void ssb_dma_sync_single_range_for_device(struct ssb_device *dev,
 
 #ifdef CONFIG_SSB_PCIHOST
 /* PCI-host wrapper driver */
-extern int ssb_pcihost_register(struct pci_driver *driver);
+extern int cw_ssb_pcihost_register(struct pci_driver *driver);
 static inline void ssb_pcihost_unregister(struct pci_driver *driver)
 {
 	pci_unregister_driver(driver);
@@ -575,16 +575,16 @@ void ssb_pcihost_set_power_state(struct ssb_device *sdev, pci_power_t state)
  * that the bus may be completely powered down. SSB will decide,
  * if it's really time to power down the bus, based on if there
  * are other devices that want to run. */
-extern int ssb_bus_may_powerdown(struct ssb_bus *bus);
+extern int cw_ssb_bus_may_powerdown(struct ssb_bus *bus);
 /* Before initializing and enabling a device, call this to power-up the bus.
  * If you want to allow use of dynamic-power-control, pass the flag.
  * Otherwise static always-on powercontrol will be used. */
-extern int ssb_bus_powerup(struct ssb_bus *bus, bool dynamic_pctl);
+extern int cw_ssb_bus_powerup(struct ssb_bus *bus, bool dynamic_pctl);
 
 
 /* Various helper functions */
-extern u32 ssb_admatch_base(u32 adm);
-extern u32 ssb_admatch_size(u32 adm);
+extern u32 cw_ssb_admatch_base(u32 adm);
+extern u32 cw_ssb_admatch_size(u32 adm);
 
 /* PCI device mapping and fixup routines.
  * Called from the architecture pcibios init code.

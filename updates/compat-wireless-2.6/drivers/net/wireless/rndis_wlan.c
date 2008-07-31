@@ -395,10 +395,10 @@ static u32 get_bcm4320_power(struct rndis_wext_private *priv)
 
 
 /* translate error code */
-static int rndis_error_status(__le32 rndis_status)
+static int rndis_error_status(__le32 cw_rndis_status)
 {
 	int ret = -EINVAL;
-	switch (rndis_status) {
+	switch (cw_rndis_status) {
 	case RNDIS_STATUS_SUCCESS:
 		ret = 0;
 		break;
@@ -448,7 +448,7 @@ static int rndis_query_oid(struct usbnet *dev, __le32 oid, void *data, int *len)
 	u.get->msg_len = ccpu2(sizeof *u.get);
 	u.get->oid = oid;
 
-	ret = rndis_command(dev, u.header);
+	ret = cw_rndis_command(dev, u.header);
 	if (ret == 0) {
 		ret = le32_to_cpu(u.get_c->len);
 		*len = (*len > ret) ? ret : *len;
@@ -498,7 +498,7 @@ static int rndis_set_oid(struct usbnet *dev, __le32 oid, void *data, int len)
 	u.set->handle = ccpu2(0);
 	memcpy(u.buf + sizeof(*u.set), data, len);
 
-	ret = rndis_command(dev, u.header);
+	ret = cw_rndis_command(dev, u.header);
 	if (ret == 0)
 		ret = rndis_error_status(u.set_c->status);
 
@@ -2302,7 +2302,7 @@ static void rndis_wext_link_change(struct usbnet *usbdev, int state)
 {
 	struct rndis_wext_private *priv = get_rndis_wext_priv(usbdev);
 
-	/* queue work to avoid recursive calls into rndis_command */
+	/* queue work to avoid recursive calls into cw_rndis_command */
 	set_bit(state ? WORK_LINK_UP : WORK_LINK_DOWN, &priv->work_pending);
 	queue_work(priv->workqueue, &priv->work);
 }
@@ -2472,7 +2472,7 @@ static int bcm4320_early_init(struct usbnet *usbdev)
 	char buf[8];
 
 	/* Early initialization settings, setting these won't have effect
-	 * if called after generic_rndis_bind().
+	 * if called after cw_generic_rndis_bind().
 	 */
 
 	priv->param_country[0] = modparam_country[0];
@@ -2545,7 +2545,7 @@ static int rndis_wext_bind(struct usbnet *usbdev, struct usb_interface *intf)
 	if (!priv)
 		return -ENOMEM;
 
-	/* These have to be initialized before calling generic_rndis_bind().
+	/* These have to be initialized before calling cw_generic_rndis_bind().
 	 * Otherwise we'll be in big trouble in rndis_wext_early_init().
 	 */
 	usbdev->driver_priv = priv;
@@ -2557,11 +2557,11 @@ static int rndis_wext_bind(struct usbnet *usbdev, struct usb_interface *intf)
 	spin_lock_init(&priv->stats_lock);
 
 	/* try bind rndis_host */
-	retval = generic_rndis_bind(usbdev, intf, FLAG_RNDIS_PHYM_WIRELESS);
+	retval = cw_generic_rndis_bind(usbdev, intf, FLAG_RNDIS_PHYM_WIRELESS);
 	if (retval < 0)
 		goto fail;
 
-	/* generic_rndis_bind set packet filter to multicast_all+
+	/* cw_generic_rndis_bind set packet filter to multicast_all+
 	 * promisc mode which doesn't work well for our devices (device
 	 * picks up rssi to closest station instead of to access point).
 	 *
@@ -2600,7 +2600,7 @@ static int rndis_wext_bind(struct usbnet *usbdev, struct usb_interface *intf)
 	disassociate(usbdev, 1);
 	netif_carrier_off(usbdev->net);
 
-	/* because rndis_command() sleeps we need to use workqueue */
+	/* because cw_rndis_command() sleeps we need to use workqueue */
 	priv->workqueue = create_singlethread_workqueue("rndis_wlan");
 	INIT_DELAYED_WORK(&priv->stats_work, rndis_update_wireless_stats);
 	queue_delayed_work(priv->workqueue, &priv->stats_work,
@@ -2631,7 +2631,7 @@ static void rndis_wext_unbind(struct usbnet *usbdev, struct usb_interface *intf)
 		kfree(priv->wpa_ie);
 	kfree(priv);
 
-	rndis_unbind(usbdev, intf);
+	cw_rndis_unbind(usbdev, intf);
 }
 
 
@@ -2646,9 +2646,9 @@ static const struct driver_info	bcm4320b_info = {
 	.flags =	FLAG_WLAN | FLAG_FRAMING_RN | FLAG_NO_SETINT,
 	.bind =		rndis_wext_bind,
 	.unbind =	rndis_wext_unbind,
-	.status =	rndis_status,
-	.rx_fixup =	rndis_rx_fixup,
-	.tx_fixup =	rndis_tx_fixup,
+	.status =	cw_rndis_status,
+	.rx_fixup =	cw_rndis_rx_fixup,
+	.tx_fixup =	cw_rndis_tx_fixup,
 	.reset =	rndis_wext_reset,
 	.early_init =	bcm4320_early_init,
 	.link_change =	rndis_wext_link_change,
@@ -2659,9 +2659,9 @@ static const struct driver_info	bcm4320a_info = {
 	.flags =	FLAG_WLAN | FLAG_FRAMING_RN | FLAG_NO_SETINT,
 	.bind =		rndis_wext_bind,
 	.unbind =	rndis_wext_unbind,
-	.status =	rndis_status,
-	.rx_fixup =	rndis_rx_fixup,
-	.tx_fixup =	rndis_tx_fixup,
+	.status =	cw_rndis_status,
+	.rx_fixup =	cw_rndis_rx_fixup,
+	.tx_fixup =	cw_rndis_tx_fixup,
 	.reset =	rndis_wext_reset,
 	.early_init =	bcm4320_early_init,
 	.link_change =	rndis_wext_link_change,
@@ -2672,9 +2672,9 @@ static const struct driver_info rndis_wext_info = {
 	.flags =	FLAG_WLAN | FLAG_FRAMING_RN | FLAG_NO_SETINT,
 	.bind =		rndis_wext_bind,
 	.unbind =	rndis_wext_unbind,
-	.status =	rndis_status,
-	.rx_fixup =	rndis_rx_fixup,
-	.tx_fixup =	rndis_tx_fixup,
+	.status =	cw_rndis_status,
+	.rx_fixup =	cw_rndis_rx_fixup,
+	.tx_fixup =	cw_rndis_tx_fixup,
 	.reset =	rndis_wext_reset,
 	.early_init =	bcm4320_early_init,
 	.link_change =	rndis_wext_link_change,
@@ -2800,10 +2800,10 @@ MODULE_DEVICE_TABLE(usb, products);
 static struct usb_driver rndis_wlan_driver = {
 	.name =		"rndis_wlan",
 	.id_table =	products,
-	.probe =	usbnet_probe,
-	.disconnect =	usbnet_disconnect,
-	.suspend =	usbnet_suspend,
-	.resume =	usbnet_resume,
+	.probe =	cw_usbnet_probe,
+	.disconnect =	cw_usbnet_disconnect,
+	.suspend =	cw_usbnet_suspend,
+	.resume =	cw_usbnet_resume,
 };
 
 static int __init rndis_wlan_init(void)

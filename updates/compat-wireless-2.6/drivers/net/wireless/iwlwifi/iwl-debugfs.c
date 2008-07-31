@@ -344,7 +344,7 @@ static ssize_t iwl_dbgfs_log_event_write(struct file *file,
 	if (sscanf(buf, "%d", &event_log_flag) != 1)
 		return -EFAULT;
 	if (event_log_flag == 1)
-		iwl_dump_nic_event_log(priv);
+		cw_iwl_dump_nic_event_log(priv);
 
 	return count;
 }
@@ -360,7 +360,7 @@ DEBUGFS_READ_FILE_OPS(tx_statistics);
  * Create the debugfs files and directories
  *
  */
-int iwl_dbgfs_register(struct iwl_priv *priv, const char *name)
+int cw_iwl_dbgfs_register(struct iwl_priv *priv, const char *name)
 {
 	struct iwl_debugfs *dbgfs;
 	struct dentry *phyd = priv->hw->wiphy->debugfsdir;
@@ -393,16 +393,16 @@ int iwl_dbgfs_register(struct iwl_priv *priv, const char *name)
 
 err:
 	IWL_ERROR("Can't open the debugfs directory\n");
-	iwl_dbgfs_unregister(priv);
+	cw_iwl_dbgfs_unregister(priv);
 	return -ENOENT;
 }
-EXPORT_SYMBOL(iwl_dbgfs_register);
+EXPORT_SYMBOL(cw_iwl_dbgfs_register);
 
 /**
  * Remove the debugfs files and directories
  *
  */
-void iwl_dbgfs_unregister(struct iwl_priv *priv)
+void cw_iwl_dbgfs_unregister(struct iwl_priv *priv)
 {
 	if (!(priv->dbgfs))
 		return;
@@ -422,7 +422,7 @@ void iwl_dbgfs_unregister(struct iwl_priv *priv)
 	kfree(priv->dbgfs);
 	priv->dbgfs = NULL;
 }
-EXPORT_SYMBOL(iwl_dbgfs_unregister);
+EXPORT_SYMBOL(cw_iwl_dbgfs_unregister);
 
 
 

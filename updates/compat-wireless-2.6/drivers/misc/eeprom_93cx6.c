@@ -135,7 +135,7 @@ static void eeprom_93cx6_write_bits(struct eeprom_93cx6 *eeprom,
 	eeprom->register_write(eeprom);
 }
 
-static void eeprom_93cx6_read_bits(struct eeprom_93cx6 *eeprom,
+static void cw_eeprom_93cx6_read_bits(struct eeprom_93cx6 *eeprom,
 	u16 *data, const u16 count)
 {
 	unsigned int i;
@@ -175,7 +175,7 @@ static void eeprom_93cx6_read_bits(struct eeprom_93cx6 *eeprom,
 }
 
 /**
- * eeprom_93cx6_read - Read multiple words from eeprom
+ * cw_eeprom_93cx6_read - Read multiple words from eeprom
  * @eeprom: Pointer to eeprom structure
  * @word: Word index from where we should start reading
  * @data: target pointer where the information will have to be stored
@@ -183,7 +183,7 @@ static void eeprom_93cx6_read_bits(struct eeprom_93cx6 *eeprom,
  * This function will read the eeprom data as host-endian word
  * into the given data pointer.
  */
-void eeprom_93cx6_read(struct eeprom_93cx6 *eeprom, const u8 word,
+void cw_eeprom_93cx6_read(struct eeprom_93cx6 *eeprom, const u8 word,
 	u16 *data)
 {
 	u16 command;
@@ -203,29 +203,29 @@ void eeprom_93cx6_read(struct eeprom_93cx6 *eeprom, const u8 word,
 	/*
 	 * Read the requested 16 bits.
 	 */
-	eeprom_93cx6_read_bits(eeprom, data, 16);
+	cw_eeprom_93cx6_read_bits(eeprom, data, 16);
 
 	/*
 	 * Cleanup eeprom register.
 	 */
 	eeprom_93cx6_cleanup(eeprom);
 }
-EXPORT_SYMBOL_GPL(eeprom_93cx6_read);
+EXPORT_SYMBOL_GPL(cw_eeprom_93cx6_read);
 
 /**
- * eeprom_93cx6_multiread - Read multiple words from eeprom
+ * cw_eeprom_93cx6_multiread - Read multiple words from eeprom
  * @eeprom: Pointer to eeprom structure
  * @word: Word index from where we should start reading
  * @data: target pointer where the information will have to be stored
  * @words: Number of words that should be read.
  *
  * This function will read all requested words from the eeprom,
- * this is done by calling eeprom_93cx6_read() multiple times.
- * But with the additional change that while the eeprom_93cx6_read
+ * this is done by calling cw_eeprom_93cx6_read() multiple times.
+ * But with the additional change that while the cw_eeprom_93cx6_read
  * will return host ordered bytes, this method will return little
  * endian words.
  */
-void eeprom_93cx6_multiread(struct eeprom_93cx6 *eeprom, const u8 word,
+void cw_eeprom_93cx6_multiread(struct eeprom_93cx6 *eeprom, const u8 word,
 	__le16 *data, const u16 words)
 {
 	unsigned int i;
@@ -233,9 +233,9 @@ void eeprom_93cx6_multiread(struct eeprom_93cx6 *eeprom, const u8 word,
 
 	for (i = 0; i < words; i++) {
 		tmp = 0;
-		eeprom_93cx6_read(eeprom, word + i, &tmp);
+		cw_eeprom_93cx6_read(eeprom, word + i, &tmp);
 		data[i] = cpu_to_le16(tmp);
 	}
 }
-EXPORT_SYMBOL_GPL(eeprom_93cx6_multiread);
+EXPORT_SYMBOL_GPL(cw_eeprom_93cx6_multiread);
 

@@ -247,7 +247,7 @@ static int iwl_update_power_command(struct iwl_priv *priv,
 /*
  * calucaute the final power mode index
  */
-int iwl_power_update_mode(struct iwl_priv *priv, u8 refresh)
+int cw_iwl_power_update_mode(struct iwl_priv *priv, u8 refresh)
 {
 	struct iwl_power_mgr *setting = &(priv->power_data);
 	int ret = 0;
@@ -308,13 +308,13 @@ int iwl_power_update_mode(struct iwl_priv *priv, u8 refresh)
 
 	return ret;
 }
-EXPORT_SYMBOL(iwl_power_update_mode);
+EXPORT_SYMBOL(cw_iwl_power_update_mode);
 
 /* Allow other iwl code to disable/enable power management active
  * this will be usefull for rate scale to disable PM during heavy
  * Tx/Rx activities
  */
-int iwl_power_disable_management(struct iwl_priv *priv)
+int cw_iwl_power_disable_management(struct iwl_priv *priv)
 {
 	u16 prev_mode;
 	int ret = 0;
@@ -324,30 +324,30 @@ int iwl_power_disable_management(struct iwl_priv *priv)
 
 	prev_mode = priv->power_data.user_power_setting;
 	priv->power_data.user_power_setting = IWL_POWER_MODE_CAM;
-	ret = iwl_power_update_mode(priv, 0);
+	ret = cw_iwl_power_update_mode(priv, 0);
 	priv->power_data.power_disabled = 1;
 	priv->power_data.user_power_setting = prev_mode;
 
 	return ret;
 }
-EXPORT_SYMBOL(iwl_power_disable_management);
+EXPORT_SYMBOL(cw_iwl_power_disable_management);
 
 /* Allow other iwl code to disable/enable power management active
  * this will be usefull for rate scale to disable PM during hight
  * valume activities
  */
-int iwl_power_enable_management(struct iwl_priv *priv)
+int cw_iwl_power_enable_management(struct iwl_priv *priv)
 {
 	int ret = 0;
 
 	priv->power_data.power_disabled = 0;
-	ret = iwl_power_update_mode(priv, 0);
+	ret = cw_iwl_power_update_mode(priv, 0);
 	return ret;
 }
-EXPORT_SYMBOL(iwl_power_enable_management);
+EXPORT_SYMBOL(cw_iwl_power_enable_management);
 
 /* set user_power_setting */
-int iwl_power_set_user_mode(struct iwl_priv *priv, u16 mode)
+int cw_iwl_power_set_user_mode(struct iwl_priv *priv, u16 mode)
 {
 	int ret = 0;
 
@@ -356,17 +356,17 @@ int iwl_power_set_user_mode(struct iwl_priv *priv, u16 mode)
 
 	priv->power_data.user_power_setting = mode;
 
-	ret = iwl_power_update_mode(priv, 0);
+	ret = cw_iwl_power_update_mode(priv, 0);
 
 	return ret;
 }
-EXPORT_SYMBOL(iwl_power_set_user_mode);
+EXPORT_SYMBOL(cw_iwl_power_set_user_mode);
 
 
 /* set system_power_setting. This should be set by over all
  * PM application.
  */
-int iwl_power_set_system_mode(struct iwl_priv *priv, u16 mode)
+int cw_iwl_power_set_system_mode(struct iwl_priv *priv, u16 mode)
 {
 	int ret = 0;
 
@@ -375,14 +375,14 @@ int iwl_power_set_system_mode(struct iwl_priv *priv, u16 mode)
 
 	priv->power_data.system_power_setting = mode;
 
-	ret = iwl_power_update_mode(priv, 0);
+	ret = cw_iwl_power_update_mode(priv, 0);
 
 	return ret;
 }
-EXPORT_SYMBOL(iwl_power_set_system_mode);
+EXPORT_SYMBOL(cw_iwl_power_set_system_mode);
 
 /* initilize to default */
-void iwl_power_initialize(struct iwl_priv *priv)
+void cw_iwl_power_initialize(struct iwl_priv *priv)
 {
 
 	iwl_power_init_handle(priv);
@@ -393,10 +393,10 @@ void iwl_power_initialize(struct iwl_priv *priv)
 	priv->power_data.power_disabled = 0;
 	priv->power_data.critical_power_setting = 0;
 }
-EXPORT_SYMBOL(iwl_power_initialize);
+EXPORT_SYMBOL(cw_iwl_power_initialize);
 
 /* set critical_power_setting according to temperature value */
-int iwl_power_temperature_change(struct iwl_priv *priv)
+int cw_iwl_power_temperature_change(struct iwl_priv *priv)
 {
 	int ret = 0;
 	u16 new_critical = priv->power_data.critical_power_setting;
@@ -416,8 +416,8 @@ int iwl_power_temperature_change(struct iwl_priv *priv)
 
 	if (priv->power_data.critical_power_setting >
 				priv->power_data.power_mode)
-		ret = iwl_power_update_mode(priv, 0);
+		ret = cw_iwl_power_update_mode(priv, 0);
 
 	return ret;
 }
-EXPORT_SYMBOL(iwl_power_temperature_change);
+EXPORT_SYMBOL(cw_iwl_power_temperature_change);

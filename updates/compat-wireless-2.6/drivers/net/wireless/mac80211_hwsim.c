@@ -151,7 +151,7 @@ static int mac80211_hwsim_tx_frame(struct ieee80211_hw *hw,
 	int i, ack = 0;
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
-	struct ieee80211_rx_status rx_status;
+	struct cw_ieee80211_rx_status rx_status;
 
 	memset(&rx_status, 0, sizeof(rx_status));
 	/* TODO: set mactime */
@@ -179,7 +179,7 @@ static int mac80211_hwsim_tx_frame(struct ieee80211_hw *hw,
 		if (memcmp(hdr->addr1, hwsim_radios[i]->wiphy->perm_addr,
 			   ETH_ALEN) == 0)
 			ack = 1;
-		ieee80211_rx_irqsafe(hwsim_radios[i], nskb, &rx_status);
+		cw_cw_ieee80211_rx_irqsafe(hwsim_radios[i], nskb, &rx_status);
 	}
 
 	return ack;
@@ -217,7 +217,7 @@ static int mac80211_hwsim_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 		else
 			txi->status.excessive_retries = 1;
 	}
-	ieee80211_tx_status_irqsafe(hw, skb);
+	cw_cw_ieee80211_tx_status_irqsafe(hw, skb);
 	return NETDEV_TX_OK;
 }
 
@@ -270,7 +270,7 @@ static void mac80211_hwsim_beacon_tx(void *arg, u8 *mac,
 	if (vif->type != IEEE80211_IF_TYPE_AP)
 		return;
 
-	skb = ieee80211_beacon_get(hw, vif);
+	skb = cw_ieee80211_beacon_get(hw, vif);
 	if (skb == NULL)
 		return;
 	info = IEEE80211_SKB_CB(skb);
@@ -289,7 +289,7 @@ static void mac80211_hwsim_beacon(unsigned long arg)
 	if (!data->started || !data->radio_enabled)
 		return;
 
-	ieee80211_iterate_active_interfaces_atomic(
+	cw_cw_ieee80211_iterate_active_interfaces_atomic(
 		hw, mac80211_hwsim_beacon_tx, hw);
 
 	data->beacon_timer.expires = jiffies + data->beacon_int;
@@ -363,10 +363,10 @@ static void mac80211_hwsim_free(void)
 		if (hwsim_radios[i]) {
 			struct mac80211_hwsim_data *data;
 			data = hwsim_radios[i]->priv;
-			ieee80211_unregister_hw(hwsim_radios[i]);
+			cw_ieee80211_unregister_hw(hwsim_radios[i]);
 			if (!IS_ERR(data->dev))
 				device_unregister(data->dev);
-			ieee80211_free_hw(hwsim_radios[i]);
+			cw_ieee80211_free_hw(hwsim_radios[i]);
 		}
 	}
 	kfree(hwsim_radios);
@@ -420,9 +420,9 @@ static int __init init_mac80211_hwsim(void)
 	for (i = 0; i < hwsim_radio_count; i++) {
 		printk(KERN_DEBUG "mac80211_hwsim: Initializing radio %d\n",
 		       i);
-		hw = ieee80211_alloc_hw(sizeof(*data), &mac80211_hwsim_ops);
+		hw = cw_ieee80211_alloc_hw(sizeof(*data), &mac80211_hwsim_ops);
 		if (hw == NULL) {
-			printk(KERN_DEBUG "mac80211_hwsim: ieee80211_alloc_hw "
+			printk(KERN_DEBUG "mac80211_hwsim: cw_ieee80211_alloc_hw "
 			       "failed\n");
 			err = -ENOMEM;
 			goto failed;
@@ -457,10 +457,10 @@ static int __init init_mac80211_hwsim(void)
 		data->band.n_bitrates = ARRAY_SIZE(hwsim_rates);
 		hw->wiphy->bands[IEEE80211_BAND_2GHZ] = &data->band;
 
-		err = ieee80211_register_hw(hw);
+		err = cw_ieee80211_register_hw(hw);
 		if (err < 0) {
 			printk(KERN_DEBUG "mac80211_hwsim: "
-			       "ieee80211_register_hw failed (%d)\n", err);
+			       "cw_ieee80211_register_hw failed (%d)\n", err);
 			goto failed;
 		}
 

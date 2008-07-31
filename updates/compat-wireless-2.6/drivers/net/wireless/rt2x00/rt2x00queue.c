@@ -79,7 +79,7 @@ struct sk_buff *rt2x00queue_alloc_rxskb(struct rt2x00_dev *rt2x00dev,
 	return skb;
 }
 
-void rt2x00queue_map_txskb(struct rt2x00_dev *rt2x00dev, struct sk_buff *skb)
+void cw_rt2x00queue_map_txskb(struct rt2x00_dev *rt2x00dev, struct sk_buff *skb)
 {
 	struct skb_frame_desc *skbdesc = get_skb_frame_desc(skb);
 
@@ -87,7 +87,7 @@ void rt2x00queue_map_txskb(struct rt2x00_dev *rt2x00dev, struct sk_buff *skb)
 					  DMA_TO_DEVICE);
 	skbdesc->flags |= SKBDESC_DMA_MAPPED_TX;
 }
-EXPORT_SYMBOL_GPL(rt2x00queue_map_txskb);
+EXPORT_SYMBOL_GPL(cw_rt2x00queue_map_txskb);
 
 void rt2x00queue_unmap_skb(struct rt2x00_dev *rt2x00dev, struct sk_buff *skb)
 {
@@ -275,7 +275,7 @@ static void rt2x00queue_write_tx_descriptor(struct queue_entry *entry,
 
 int rt2x00queue_write_tx_frame(struct data_queue *queue, struct sk_buff *skb)
 {
-	struct queue_entry *entry = rt2x00queue_get_entry(queue, Q_INDEX);
+	struct queue_entry *entry = cw_rt2x00queue_get_entry(queue, Q_INDEX);
 	struct txentry_desc txdesc;
 	struct skb_frame_desc *skbdesc;
 
@@ -311,7 +311,7 @@ int rt2x00queue_write_tx_frame(struct data_queue *queue, struct sk_buff *skb)
 	}
 
 	if (test_bit(DRIVER_REQUIRE_DMA, &queue->rt2x00dev->flags))
-		rt2x00queue_map_txskb(queue->rt2x00dev, skb);
+		cw_rt2x00queue_map_txskb(queue->rt2x00dev, skb);
 
 	__set_bit(ENTRY_DATA_PENDING, &entry->flags);
 
@@ -332,7 +332,7 @@ int rt2x00queue_update_beacon(struct rt2x00_dev *rt2x00dev,
 	if (unlikely(!intf->beacon))
 		return -ENOBUFS;
 
-	intf->beacon->skb = ieee80211_beacon_get(rt2x00dev->hw, vif);
+	intf->beacon->skb = cw_ieee80211_beacon_get(rt2x00dev->hw, vif);
 	if (!intf->beacon->skb)
 		return -ENOMEM;
 
@@ -375,7 +375,7 @@ int rt2x00queue_update_beacon(struct rt2x00_dev *rt2x00dev,
 	return 0;
 }
 
-struct data_queue *rt2x00queue_get_queue(struct rt2x00_dev *rt2x00dev,
+struct data_queue *cw_rt2x00queue_get_queue(struct rt2x00_dev *rt2x00dev,
 					 const enum data_queue_qid queue)
 {
 	int atim = test_bit(DRIVER_REQUIRE_ATIM_QUEUE, &rt2x00dev->flags);
@@ -393,9 +393,9 @@ struct data_queue *rt2x00queue_get_queue(struct rt2x00_dev *rt2x00dev,
 
 	return NULL;
 }
-EXPORT_SYMBOL_GPL(rt2x00queue_get_queue);
+EXPORT_SYMBOL_GPL(cw_rt2x00queue_get_queue);
 
-struct queue_entry *rt2x00queue_get_entry(struct data_queue *queue,
+struct queue_entry *cw_rt2x00queue_get_entry(struct data_queue *queue,
 					  enum queue_index index)
 {
 	struct queue_entry *entry;
@@ -415,7 +415,7 @@ struct queue_entry *rt2x00queue_get_entry(struct data_queue *queue,
 
 	return entry;
 }
-EXPORT_SYMBOL_GPL(rt2x00queue_get_entry);
+EXPORT_SYMBOL_GPL(cw_rt2x00queue_get_entry);
 
 void rt2x00queue_index_inc(struct data_queue *queue, enum queue_index index)
 {

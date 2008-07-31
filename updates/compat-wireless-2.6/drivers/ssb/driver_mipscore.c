@@ -185,7 +185,7 @@ void ssb_mipscore_init(struct ssb_mipscore *mcore)
 	ssb_dprintk(KERN_INFO PFX "Initializing MIPS core...\n");
 
 	bus = mcore->dev->bus;
-	hz = ssb_clockspeed(bus);
+	hz = cw_ssb_clockspeed(bus);
 	if (!hz)
 		hz = 100000000;
 	ns = 1000000000 / hz;

@@ -581,9 +581,9 @@ struct iwl_hw_params {
  *
  *****************************************************************************/
 struct iwl_addsta_cmd;
-extern int iwl_send_add_sta(struct iwl_priv *priv,
+extern int cw_iwl_send_add_sta(struct iwl_priv *priv,
 			    struct iwl_addsta_cmd *sta, u8 flags);
-u8 iwl_add_station_flags(struct iwl_priv *priv, const u8 *addr, int is_ap,
+u8 cw_iwl_add_station_flags(struct iwl_priv *priv, const u8 *addr, int is_ap,
 			 u8 flags, struct ieee80211_ht_info *ht_info);
 extern unsigned int iwl4965_fill_beacon_frame(struct iwl_priv *priv,
 					struct ieee80211_hdr *hdr,
@@ -591,7 +591,7 @@ extern unsigned int iwl4965_fill_beacon_frame(struct iwl_priv *priv,
 extern void iwl4965_update_chain_flags(struct iwl_priv *priv);
 int iwl4965_set_pwr_src(struct iwl_priv *priv, enum iwl_pwr_src src);
 
-extern const u8 iwl_bcast_addr[ETH_ALEN];
+extern const u8 cw_iwl_bcast_addr[ETH_ALEN];
 
 /******************************************************************************
  *
@@ -609,14 +609,14 @@ extern const u8 iwl_bcast_addr[ETH_ALEN];
  * iwl4965_mac_     <-- mac80211 callback
  *
  ****************************************************************************/
-extern int iwl_rxq_stop(struct iwl_priv *priv);
-extern void iwl_txq_ctx_stop(struct iwl_priv *priv);
+extern int cw_iwl_rxq_stop(struct iwl_priv *priv);
+extern void cw_iwl_txq_ctx_stop(struct iwl_priv *priv);
 extern unsigned int iwl4965_hw_get_beacon_cmd(struct iwl_priv *priv,
 				 struct iwl_frame *frame, u8 rate);
 extern void iwl4965_disable_events(struct iwl_priv *priv);
 
 extern int iwl4965_hw_channel_switch(struct iwl_priv *priv, u16 channel);
-extern int iwl_queue_space(const struct iwl_queue *q);
+extern int cw_iwl_queue_space(const struct iwl_queue *q);
 static inline int iwl_queue_used(const struct iwl_queue *q, int i)
 {
 	return q->write_ptr > q->read_ptr ?
@@ -1097,9 +1097,9 @@ static inline void iwl_txq_ctx_deactivate(struct iwl_priv *priv, int txq_id)
 }
 
 #ifdef CONFIG_IWLWIFI_DEBUG
-const char *iwl_get_tx_fail_reason(u32 status);
+const char *cw_iwl_get_tx_fail_reason(u32 status);
 #else
-static inline const char *iwl_get_tx_fail_reason(u32 status) { return ""; }
+static inline const char *cw_iwl_get_tx_fail_reason(u32 status) { return ""; }
 #endif
 
 
@@ -1167,7 +1167,7 @@ static inline void iwl_print_hex_dump(struct iwl_priv *priv, int level,
 }
 #endif
 
-extern const struct iwl_channel_info *iwl_get_channel_info(
+extern const struct iwl_channel_info *cw_iwl_get_channel_info(
 	const struct iwl_priv *priv, enum ieee80211_band band, u16 channel);
 
 /* Requires full declaration of iwl_priv before including */

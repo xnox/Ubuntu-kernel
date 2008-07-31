@@ -28,7 +28,7 @@ static struct cmd_ctrl_node *lbs_get_cmd_ctrl_node(struct lbs_private *priv);
  *
  *  @return 	   	0 on success, error on failure
  */
-int lbs_cmd_copyback(struct lbs_private *priv, unsigned long extra,
+int cw_lbs_cmd_copyback(struct lbs_private *priv, unsigned long extra,
 		     struct cmd_header *resp)
 {
 	struct cmd_header *buf = (void *)extra;
@@ -38,7 +38,7 @@ int lbs_cmd_copyback(struct lbs_private *priv, unsigned long extra,
 	memcpy(buf, resp, copy_len);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(lbs_cmd_copyback);
+EXPORT_SYMBOL_GPL(cw_lbs_cmd_copyback);
 
 /**
  *  @brief Simple callback that ignores the result. Use this if
@@ -160,7 +160,7 @@ out:
 	return ret;
 }
 
-int lbs_host_sleep_cfg(struct lbs_private *priv, uint32_t criteria)
+int cw_lbs_host_sleep_cfg(struct lbs_private *priv, uint32_t criteria)
 {
 	struct cmd_ds_host_sleep cmd_config;
 	int ret;
@@ -180,7 +180,7 @@ int lbs_host_sleep_cfg(struct lbs_private *priv, uint32_t criteria)
 
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lbs_host_sleep_cfg);
+EXPORT_SYMBOL_GPL(cw_lbs_host_sleep_cfg);
 
 static int lbs_cmd_802_11_ps_mode(struct cmd_ds_command *cmd,
 				   u16 cmd_action)
@@ -704,7 +704,7 @@ static __le16 lbs_rate_to_fw_bitmap(int rate, int lower_rates_ok)
 	return cpu_to_le16(ratemask);
 }
 
-int lbs_cmd_802_11_rate_adapt_rateset(struct lbs_private *priv,
+int cw_lbs_cmd_802_11_rate_adapt_rateset(struct lbs_private *priv,
 				      uint16_t cmd_action)
 {
 	struct cmd_ds_802_11_rate_adapt_rateset cmd;
@@ -729,7 +729,7 @@ int lbs_cmd_802_11_rate_adapt_rateset(struct lbs_private *priv,
 	lbs_deb_leave_args(LBS_DEB_CMD, "ret %d", ret);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lbs_cmd_802_11_rate_adapt_rateset);
+EXPORT_SYMBOL_GPL(cw_lbs_cmd_802_11_rate_adapt_rateset);
 
 /**
  *  @brief Set the data rate
@@ -1093,7 +1093,7 @@ int lbs_mesh_config(struct lbs_private *priv, uint16_t action, uint16_t chan)
 	}
 	lbs_deb_cmd("mesh config action %d type %x channel %d SSID %s\n",
 		    action, priv->mesh_tlv, chan,
-		    escape_essid(priv->mesh_ssid, priv->mesh_ssid_len));
+		    cw_escape_essid(priv->mesh_ssid, priv->mesh_ssid_len));
 
 	return lbs_mesh_config_send(priv, &cmd, action, priv->mesh_tlv);
 }
@@ -1953,7 +1953,7 @@ void lbs_ps_confirm_sleep(struct lbs_private *priv)
 }
 
 
-static struct cmd_ctrl_node *__lbs_cmd_async(struct lbs_private *priv,
+static struct cmd_ctrl_node *cw___lbs_cmd_async(struct lbs_private *priv,
 	uint16_t command, struct cmd_header *in_cmd, int in_cmd_size,
 	int (*callback)(struct lbs_private *, unsigned long, struct cmd_header *),
 	unsigned long callback_arg)
@@ -2006,12 +2006,12 @@ void lbs_cmd_async(struct lbs_private *priv, uint16_t command,
 	struct cmd_header *in_cmd, int in_cmd_size)
 {
 	lbs_deb_enter(LBS_DEB_CMD);
-	__lbs_cmd_async(priv, command, in_cmd, in_cmd_size,
+	cw___lbs_cmd_async(priv, command, in_cmd, in_cmd_size,
 		lbs_cmd_async_callback, 0);
 	lbs_deb_leave(LBS_DEB_CMD);
 }
 
-int __lbs_cmd(struct lbs_private *priv, uint16_t command,
+int cw___lbs_cmd(struct lbs_private *priv, uint16_t command,
 	      struct cmd_header *in_cmd, int in_cmd_size,
 	      int (*callback)(struct lbs_private *, unsigned long, struct cmd_header *),
 	      unsigned long callback_arg)
@@ -2022,7 +2022,7 @@ int __lbs_cmd(struct lbs_private *priv, uint16_t command,
 
 	lbs_deb_enter(LBS_DEB_HOST);
 
-	cmdnode = __lbs_cmd_async(priv, command, in_cmd, in_cmd_size,
+	cmdnode = cw___lbs_cmd_async(priv, command, in_cmd, in_cmd_size,
 				  callback, callback_arg);
 	if (IS_ERR(cmdnode)) {
 		ret = PTR_ERR(cmdnode);
@@ -2045,6 +2045,6 @@ done:
 	lbs_deb_leave_args(LBS_DEB_HOST, "ret %d", ret);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(__lbs_cmd);
+EXPORT_SYMBOL_GPL(cw___lbs_cmd);
 
 

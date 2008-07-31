@@ -30,7 +30,7 @@ struct ieee80211_crypto_alg {
 static LIST_HEAD(ieee80211_crypto_algs);
 static DEFINE_SPINLOCK(ieee80211_crypto_lock);
 
-void ieee80211_crypt_deinit_entries(struct ieee80211_device *ieee, int force)
+void cw_ieee80211_crypt_deinit_entries(struct ieee80211_device *ieee, int force)
 {
 	struct ieee80211_crypt_data *entry, *next;
 	unsigned long flags;
@@ -52,7 +52,7 @@ void ieee80211_crypt_deinit_entries(struct ieee80211_device *ieee, int force)
 }
 
 /* After this, crypt_deinit_list won't accept new members */
-void ieee80211_crypt_quiescing(struct ieee80211_device *ieee)
+void cw_ieee80211_crypt_quiescing(struct ieee80211_device *ieee)
 {
 	unsigned long flags;
 
@@ -61,12 +61,12 @@ void ieee80211_crypt_quiescing(struct ieee80211_device *ieee)
 	spin_unlock_irqrestore(&ieee->lock, flags);
 }
 
-void ieee80211_crypt_deinit_handler(unsigned long data)
+void cw_ieee80211_crypt_deinit_handler(unsigned long data)
 {
 	struct ieee80211_device *ieee = (struct ieee80211_device *)data;
 	unsigned long flags;
 
-	ieee80211_crypt_deinit_entries(ieee, 0);
+	cw_ieee80211_crypt_deinit_entries(ieee, 0);
 
 	spin_lock_irqsave(&ieee->lock, flags);
 	if (!list_empty(&ieee->crypt_deinit_list) && !ieee->crypt_quiesced) {
@@ -78,7 +78,7 @@ void ieee80211_crypt_deinit_handler(unsigned long data)
 	spin_unlock_irqrestore(&ieee->lock, flags);
 }
 
-void ieee80211_crypt_delayed_deinit(struct ieee80211_device *ieee,
+void cw_ieee80211_crypt_delayed_deinit(struct ieee80211_device *ieee,
 				    struct ieee80211_crypt_data **crypt)
 {
 	struct ieee80211_crypt_data *tmp;
@@ -105,7 +105,7 @@ void ieee80211_crypt_delayed_deinit(struct ieee80211_device *ieee,
 	spin_unlock_irqrestore(&ieee->lock, flags);
 }
 
-int ieee80211_register_crypto_ops(struct ieee80211_crypto_ops *ops)
+int cw_ieee80211_register_crypto_ops(struct ieee80211_crypto_ops *ops)
 {
 	unsigned long flags;
 	struct ieee80211_crypto_alg *alg;
@@ -126,7 +126,7 @@ int ieee80211_register_crypto_ops(struct ieee80211_crypto_ops *ops)
 	return 0;
 }
 
-int ieee80211_unregister_crypto_ops(struct ieee80211_crypto_ops *ops)
+int cw_ieee80211_unregister_crypto_ops(struct ieee80211_crypto_ops *ops)
 {
 	struct ieee80211_crypto_alg *alg;
 	unsigned long flags;
@@ -148,7 +148,7 @@ int ieee80211_unregister_crypto_ops(struct ieee80211_crypto_ops *ops)
 	return 0;
 }
 
-struct ieee80211_crypto_ops *ieee80211_get_crypto_ops(const char *name)
+struct ieee80211_crypto_ops *cw_ieee80211_get_crypto_ops(const char *name)
 {
 	struct ieee80211_crypto_alg *alg;
 	unsigned long flags;
@@ -184,23 +184,23 @@ static struct ieee80211_crypto_ops ieee80211_crypt_null = {
 
 static int __init ieee80211_crypto_init(void)
 {
-	return ieee80211_register_crypto_ops(&ieee80211_crypt_null);
+	return cw_ieee80211_register_crypto_ops(&ieee80211_crypt_null);
 }
 
 static void __exit ieee80211_crypto_deinit(void)
 {
-	ieee80211_unregister_crypto_ops(&ieee80211_crypt_null);
+	cw_ieee80211_unregister_crypto_ops(&ieee80211_crypt_null);
 	BUG_ON(!list_empty(&ieee80211_crypto_algs));
 }
 
-EXPORT_SYMBOL(ieee80211_crypt_deinit_entries);
-EXPORT_SYMBOL(ieee80211_crypt_deinit_handler);
-EXPORT_SYMBOL(ieee80211_crypt_delayed_deinit);
-EXPORT_SYMBOL(ieee80211_crypt_quiescing);
+EXPORT_SYMBOL(cw_ieee80211_crypt_deinit_entries);
+EXPORT_SYMBOL(cw_ieee80211_crypt_deinit_handler);
+EXPORT_SYMBOL(cw_ieee80211_crypt_delayed_deinit);
+EXPORT_SYMBOL(cw_ieee80211_crypt_quiescing);
 
-EXPORT_SYMBOL(ieee80211_register_crypto_ops);
-EXPORT_SYMBOL(ieee80211_unregister_crypto_ops);
-EXPORT_SYMBOL(ieee80211_get_crypto_ops);
+EXPORT_SYMBOL(cw_ieee80211_register_crypto_ops);
+EXPORT_SYMBOL(cw_ieee80211_unregister_crypto_ops);
+EXPORT_SYMBOL(cw_ieee80211_get_crypto_ops);
 
 module_init(ieee80211_crypto_init);
 module_exit(ieee80211_crypto_deinit);

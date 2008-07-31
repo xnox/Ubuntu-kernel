@@ -63,7 +63,7 @@ static int is_activesync(struct usb_interface_descriptor *desc)
  * all pure cdc, except for certain firmware workarounds, and knowing
  * that rndis uses one different rule.
  */
-int usbnet_generic_cdc_bind(struct usbnet *dev, struct usb_interface *intf)
+int cw_usbnet_generic_cdc_bind(struct usbnet *dev, struct usb_interface *intf)
 {
 	u8				*buf = intf->cur_altsetting->extra;
 	int				len = intf->cur_altsetting->extralen;
@@ -256,9 +256,9 @@ next_desc:
 	status = usb_driver_claim_interface(driver, info->data, dev);
 	if (status < 0)
 		return status;
-	status = usbnet_get_endpoints(dev, info->data);
+	status = cw_usbnet_get_endpoints(dev, info->data);
 	if (status < 0) {
-		/* ensure immediate exit from usbnet_disconnect */
+		/* ensure immediate exit from cw_usbnet_disconnect */
 		usb_set_intfdata(info->data, NULL);
 		usb_driver_release_interface(driver, info->data);
 		return status;
@@ -291,16 +291,16 @@ bad_desc:
 	dev_info(&dev->udev->dev, "bad CDC descriptors\n");
 	return -ENODEV;
 }
-EXPORT_SYMBOL_GPL(usbnet_generic_cdc_bind);
+EXPORT_SYMBOL_GPL(cw_usbnet_generic_cdc_bind);
 
-void usbnet_cdc_unbind(struct usbnet *dev, struct usb_interface *intf)
+void cw_usbnet_cdc_unbind(struct usbnet *dev, struct usb_interface *intf)
 {
 	struct cdc_state		*info = (void *) &dev->data;
 	struct usb_driver		*driver = driver_of(intf);
 
 	/* disconnect master --> disconnect slave */
 	if (intf == info->control && info->data) {
-		/* ensure immediate exit from usbnet_disconnect */
+		/* ensure immediate exit from cw_usbnet_disconnect */
 		usb_set_intfdata(info->data, NULL);
 		usb_driver_release_interface(driver, info->data);
 		info->data = NULL;
@@ -308,13 +308,13 @@ void usbnet_cdc_unbind(struct usbnet *dev, struct usb_interface *intf)
 
 	/* and vice versa (just in case) */
 	else if (intf == info->data && info->control) {
-		/* ensure immediate exit from usbnet_disconnect */
+		/* ensure immediate exit from cw_usbnet_disconnect */
 		usb_set_intfdata(info->control, NULL);
 		usb_driver_release_interface(driver, info->control);
 		info->control = NULL;
 	}
 }
-EXPORT_SYMBOL_GPL(usbnet_cdc_unbind);
+EXPORT_SYMBOL_GPL(cw_usbnet_cdc_unbind);
 
 /*-------------------------------------------------------------------------
  *
@@ -415,7 +415,7 @@ static int cdc_bind(struct usbnet *dev, struct usb_interface *intf)
 	int				status;
 	struct cdc_state		*info = (void *) &dev->data;
 
-	status = usbnet_generic_cdc_bind(dev, intf);
+	status = cw_usbnet_generic_cdc_bind(dev, intf);
 	if (status < 0)
 		return status;
 
@@ -438,7 +438,7 @@ static const struct driver_info	cdc_info = {
 	.flags =	FLAG_ETHER,
 	// .check_connect = cdc_check_connect,
 	.bind =		cdc_bind,
-	.unbind =	usbnet_cdc_unbind,
+	.unbind =	cw_usbnet_cdc_unbind,
 	.status =	cdc_status,
 };
 
@@ -558,10 +558,10 @@ MODULE_DEVICE_TABLE(usb, products);
 static struct usb_driver cdc_driver = {
 	.name =		"cdc_ether",
 	.id_table =	products,
-	.probe =	usbnet_probe,
-	.disconnect =	usbnet_disconnect,
-	.suspend =	usbnet_suspend,
-	.resume =	usbnet_resume,
+	.probe =	cw_usbnet_probe,
+	.disconnect =	cw_usbnet_disconnect,
+	.suspend =	cw_usbnet_suspend,
+	.resume =	cw_usbnet_resume,
 };
 
 

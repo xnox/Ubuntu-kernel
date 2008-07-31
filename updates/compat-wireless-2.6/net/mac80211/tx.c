@@ -57,7 +57,7 @@ static void ieee80211_dump_frame(const char *ifname, const char *title,
 		return;
 	}
 
-	hdrlen = ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
 	if (hdrlen > skb->len)
 		hdrlen = skb->len;
 	if (hdrlen >= 4)
@@ -639,7 +639,7 @@ ieee80211_tx_h_sequence(struct ieee80211_tx_data *tx)
 	if (unlikely(ieee80211_is_ctl(hdr->frame_control)))
 		return TX_CONTINUE;
 
-	if (ieee80211_hdrlen(hdr->frame_control) < 24)
+	if (cw_ieee80211_hdrlen(hdr->frame_control) < 24)
 		return TX_CONTINUE;
 
 	if (!ieee80211_is_data_qos(hdr->frame_control)) {
@@ -699,7 +699,7 @@ ieee80211_tx_h_fragment(struct ieee80211_tx_data *tx)
 
 	first = tx->skb;
 
-	hdrlen = ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
 	payload_len = first->len - hdrlen;
 	per_fragm = frag_threshold - hdrlen - FCS_LEN;
 	num_fragm = DIV_ROUND_UP(payload_len, per_fragm);
@@ -861,7 +861,7 @@ __ieee80211_parse_tx_radiotap(struct ieee80211_tx_data *tx,
 	struct ieee80211_radiotap_header *rthdr =
 		(struct ieee80211_radiotap_header *) skb->data;
 	struct ieee80211_supported_band *sband;
-	int ret = ieee80211_radiotap_iterator_init(&iterator, rthdr, skb->len);
+	int ret = cw_ieee80211_radiotap_iterator_init(&iterator, rthdr, skb->len);
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
 
 	sband = tx->local->hw.wiphy->bands[tx->channel->band];
@@ -872,14 +872,14 @@ __ieee80211_parse_tx_radiotap(struct ieee80211_tx_data *tx,
 
 	/*
 	 * for every radiotap entry that is present
-	 * (ieee80211_radiotap_iterator_next returns -ENOENT when no more
+	 * (cw_ieee80211_radiotap_iterator_next returns -ENOENT when no more
 	 * entries present, or -EINVAL on error)
 	 */
 
 	while (!ret) {
 		int i, target_rate;
 
-		ret = ieee80211_radiotap_iterator_next(&iterator);
+		ret = cw_ieee80211_radiotap_iterator_next(&iterator);
 
 		if (ret)
 			continue;
@@ -1013,7 +1013,7 @@ __ieee80211_tx_prepare(struct ieee80211_tx_data *tx,
 
 	hdr = (struct ieee80211_hdr *) skb->data;
 
-	tx->sta = sta_info_get(local, hdr->addr1);
+	tx->sta = cw_sta_info_get(local, hdr->addr1);
 	tx->fc = le16_to_cpu(hdr->frame_control);
 
 	if (is_multicast_ether_addr(hdr->addr1)) {
@@ -1039,7 +1039,7 @@ __ieee80211_tx_prepare(struct ieee80211_tx_data *tx,
 	else if (test_and_clear_sta_flags(tx->sta, WLAN_STA_CLEAR_PS_FILT))
 		info->flags |= IEEE80211_TX_CTL_CLEAR_PS_FILT;
 
-	hdrlen = ieee80211_get_hdrlen(tx->fc);
+	hdrlen = cw_ieee80211_get_hdrlen(tx->fc);
 	if (skb->len > hdrlen + sizeof(rfc1042_header) + 2) {
 		u8 *pos = &skb->data[hdrlen + sizeof(rfc1042_header)];
 		tx->ethertype = (pos[0] << 8) | pos[1];
@@ -1240,11 +1240,11 @@ retry:
 		smp_mb();
 		/*
 		 * When the driver gets out of buffers during sending of
-		 * fragments and calls ieee80211_stop_queue, the netif
+		 * fragments and calls cw_ieee80211_stop_queue, the netif
 		 * subqueue is stopped. There is, however, a small window
 		 * in which the PENDING bit is not yet set. If a buffer
 		 * gets available in that window (i.e. driver calls
-		 * ieee80211_wake_queue), we would end up with ieee80211_tx
+		 * cw_ieee80211_wake_queue), we would end up with ieee80211_tx
 		 * called with the PENDING bit still set. Prevent this by
 		 * continuing transmitting here when that situation is
 		 * possible to have happened.
@@ -1555,7 +1555,7 @@ int ieee80211_subif_start_xmit(struct sk_buff *skb,
 	 */
 	if (!is_multicast_ether_addr(hdr.addr1)) {
 		rcu_read_lock();
-		sta = sta_info_get(local, hdr.addr1);
+		sta = cw_sta_info_get(local, hdr.addr1);
 		if (sta)
 			sta_flags = get_sta_flags(sta);
 		rcu_read_unlock();
@@ -1768,7 +1768,7 @@ void ieee80211_tx_pending(unsigned long data)
 #else
 		if (!test_bit(i, local->queues_pending)) {
 #endif
-			ieee80211_wake_queue(&local->hw, i);
+			cw_ieee80211_wake_queue(&local->hw, i);
 			continue;
 		}
 
@@ -1790,7 +1790,7 @@ void ieee80211_tx_pending(unsigned long data)
 #else
 			clear_bit(i, local->queues_pending);
 #endif
-			ieee80211_wake_queue(&local->hw, i);
+			cw_ieee80211_wake_queue(&local->hw, i);
 		}
 	}
 	netif_tx_unlock_bh(dev);
@@ -1861,7 +1861,7 @@ static void ieee80211_beacon_add_tim(struct ieee80211_local *local,
 	}
 }
 
-struct sk_buff *ieee80211_beacon_get(struct ieee80211_hw *hw,
+struct sk_buff *cw_ieee80211_beacon_get(struct ieee80211_hw *hw,
 				     struct ieee80211_vif *vif)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
@@ -1906,7 +1906,7 @@ struct sk_buff *ieee80211_beacon_get(struct ieee80211_hw *hw,
 
 			/*
 			 * Not very nice, but we want to allow the driver to call
-			 * ieee80211_beacon_get() as a response to the set_tim()
+			 * cw_ieee80211_beacon_get() as a response to the set_tim()
 			 * callback. That, however, is already invoked under the
 			 * sta_lock to guarantee consistent and race-free update
 			 * of the tim bitmap in mac80211 and the driver.
@@ -1982,7 +1982,7 @@ struct sk_buff *ieee80211_beacon_get(struct ieee80211_hw *hw,
 
 	if (unlikely(rsel.rate_idx < 0)) {
 		if (net_ratelimit()) {
-			printk(KERN_DEBUG "%s: ieee80211_beacon_get: "
+			printk(KERN_DEBUG "%s: cw_ieee80211_beacon_get: "
 			       "no rate found\n",
 			       wiphy_name(local->hw.wiphy));
 		}
@@ -2010,9 +2010,9 @@ out:
 	rcu_read_unlock();
 	return skb;
 }
-EXPORT_SYMBOL(ieee80211_beacon_get);
+EXPORT_SYMBOL(cw_ieee80211_beacon_get);
 
-void ieee80211_rts_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
+void cw_ieee80211_rts_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 		       const void *frame, size_t frame_len,
 		       const struct ieee80211_tx_info *frame_txctl,
 		       struct ieee80211_rts *rts)
@@ -2021,14 +2021,14 @@ void ieee80211_rts_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 
 	rts->frame_control =
 	    cpu_to_le16(IEEE80211_FTYPE_CTL | IEEE80211_STYPE_RTS);
-	rts->duration = ieee80211_rts_duration(hw, vif, frame_len,
+	rts->duration = cw_ieee80211_rts_duration(hw, vif, frame_len,
 					       frame_txctl);
 	memcpy(rts->ra, hdr->addr1, sizeof(rts->ra));
 	memcpy(rts->ta, hdr->addr2, sizeof(rts->ta));
 }
-EXPORT_SYMBOL(ieee80211_rts_get);
+EXPORT_SYMBOL(cw_ieee80211_rts_get);
 
-void ieee80211_ctstoself_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
+void cw_ieee80211_ctstoself_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 			     const void *frame, size_t frame_len,
 			     const struct ieee80211_tx_info *frame_txctl,
 			     struct ieee80211_cts *cts)
@@ -2037,14 +2037,14 @@ void ieee80211_ctstoself_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 
 	cts->frame_control =
 	    cpu_to_le16(IEEE80211_FTYPE_CTL | IEEE80211_STYPE_CTS);
-	cts->duration = ieee80211_ctstoself_duration(hw, vif,
+	cts->duration = cw_ieee80211_ctstoself_duration(hw, vif,
 						     frame_len, frame_txctl);
 	memcpy(cts->ra, hdr->addr1, sizeof(cts->ra));
 }
-EXPORT_SYMBOL(ieee80211_ctstoself_get);
+EXPORT_SYMBOL(cw_ieee80211_ctstoself_get);
 
 struct sk_buff *
-ieee80211_get_buffered_bc(struct ieee80211_hw *hw,
+cw_ieee80211_get_buffered_bc(struct ieee80211_hw *hw,
 			  struct ieee80211_vif *vif)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
@@ -2108,4 +2108,4 @@ ieee80211_get_buffered_bc(struct ieee80211_hw *hw,
 
 	return skb;
 }
-EXPORT_SYMBOL(ieee80211_get_buffered_bc);
+EXPORT_SYMBOL(cw_ieee80211_get_buffered_bc);

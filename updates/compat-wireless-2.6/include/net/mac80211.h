@@ -34,7 +34,7 @@
 /**
  * DOC: Calling mac80211 from interrupts
  *
- * Only ieee80211_tx_status_irqsafe() and ieee80211_rx_irqsafe() can be
+ * Only cw_cw_ieee80211_tx_status_irqsafe() and cw_cw_ieee80211_rx_irqsafe() can be
  * called in hardware interrupt context. The low-level driver must not call any
  * other functions in hardware interrupt context. If there is a need for such
  * call, the low-level driver should first ACK the interrupt and perform the
@@ -368,7 +368,7 @@ static inline void skb_set_queue_mapping(struct sk_buff *skb, u16 queue_mapping)
 /**
  * enum mac80211_rx_flags - receive flags
  *
- * These flags are used with the @flag member of &struct ieee80211_rx_status.
+ * These flags are used with the @flag member of &struct cw_ieee80211_rx_status.
  * @RX_FLAG_MMIC_ERROR: Michael MIC error was reported on this frame.
  *	Use together with %RX_FLAG_MMIC_STRIPPED.
  * @RX_FLAG_DECRYPTED: This frame was decrypted in hardware.
@@ -398,7 +398,7 @@ enum mac80211_rx_flags {
 };
 
 /**
- * struct ieee80211_rx_status - receive status
+ * struct cw_ieee80211_rx_status - receive status
  *
  * The low-level driver should provide this information (the subset
  * supported by hardware) to the 802.11 code with each received
@@ -417,7 +417,7 @@ enum mac80211_rx_flags {
  * @rate_idx: index of data rate into band's supported rates
  * @flag: %RX_FLAG_*
  */
-struct ieee80211_rx_status {
+struct cw_ieee80211_rx_status {
 	u64 mactime;
 	enum ieee80211_band band;
 	int freq;
@@ -536,7 +536,7 @@ static inline bool ieee80211_vif_is_mesh(struct ieee80211_vif *vif)
  *
  * @vif: pointer to a driver-use per-interface structure. The pointer
  *	itself is also used for various functions including
- *	ieee80211_beacon_get() and ieee80211_get_buffered_bc().
+ *	cw_ieee80211_beacon_get() and cw_ieee80211_get_buffered_bc().
  * @type: one of &enum ieee80211_if_types constants. Determines the type of
  *	added/removed interface.
  * @mac_addr: pointer to MAC address of the interface. This pointer is valid
@@ -564,7 +564,7 @@ struct ieee80211_if_init_conf {
  * @IEEE80211_IFCC_BSSID: The BSSID changed.
  * @IEEE80211_IFCC_SSID: The SSID changed.
  * @IEEE80211_IFCC_BEACON: The beacon for this interface changed
- *	(currently AP and MESH only), use ieee80211_beacon_get().
+ *	(currently AP and MESH only), use cw_ieee80211_beacon_get().
  */
 enum ieee80211_if_conf_change {
 	IEEE80211_IFCC_BSSID	= BIT(0),
@@ -728,7 +728,7 @@ enum ieee80211_tkip_key_type {
  *	rely on the host system for such buffering. This option is used
  *	to configure the IEEE 802.11 upper layer to buffer broadcast and
  *	multicast frames when there are power saving stations so that
- *	the driver can fetch them with ieee80211_get_buffered_bc(). Note
+ *	the driver can fetch them with cw_ieee80211_get_buffered_bc(). Note
  *	that not setting this flag works properly only when the
  *	%IEEE80211_HW_HOST_GEN_BEACON_TEMPLATE is also not set because
  *	otherwise the stack will not know when the DTIM beacon was sent.
@@ -795,7 +795,7 @@ enum ieee80211_hw_flags {
  *	interface is removed.
  *	NOTICE: All work performed on this workqueue should NEVER
  *	acquire the RTNL lock (i.e. Don't use the function
- *	ieee80211_iterate_active_interfaces())
+ *	cw_ieee80211_iterate_active_interfaces())
  *
  * @priv: pointer to private area that was allocated for driver use
  *	along with this structure.
@@ -822,7 +822,7 @@ enum ieee80211_hw_flags {
  *
  * @rate_control_algorithm: rate control algorithm for this hardware.
  *	If unset (NULL), the default algorithm will be used. Must be
- *	set before calling ieee80211_register_hw().
+ *	set before calling cw_ieee80211_register_hw().
  *
  * @vif_data_size: size (in bytes) of the drv_priv data area
  *	within &struct ieee80211_vif.
@@ -1241,7 +1241,7 @@ struct ieee80211_ops {
 };
 
 /**
- * ieee80211_alloc_hw -  Allocate a new hardware device
+ * cw_ieee80211_alloc_hw -  Allocate a new hardware device
  *
  * This must be called once for each hardware device. The returned pointer
  * must be used to refer to this device when calling other functions.
@@ -1252,25 +1252,25 @@ struct ieee80211_ops {
  * @priv_data_len: length of private data
  * @ops: callbacks for this device
  */
-struct ieee80211_hw *ieee80211_alloc_hw(size_t priv_data_len,
+struct ieee80211_hw *cw_ieee80211_alloc_hw(size_t priv_data_len,
 					const struct ieee80211_ops *ops);
 
 /**
- * ieee80211_register_hw - Register hardware device
+ * cw_ieee80211_register_hw - Register hardware device
  *
  * You must call this function before any other functions in
  * mac80211. Note that before a hardware can be registered, you
  * need to fill the contained wiphy's information.
  *
- * @hw: the device to register as returned by ieee80211_alloc_hw()
+ * @hw: the device to register as returned by cw_ieee80211_alloc_hw()
  */
-int ieee80211_register_hw(struct ieee80211_hw *hw);
+int cw_ieee80211_register_hw(struct ieee80211_hw *hw);
 
 #ifdef CONFIG_MAC80211_LEDS
-extern char *__ieee80211_get_tx_led_name(struct ieee80211_hw *hw);
-extern char *__ieee80211_get_rx_led_name(struct ieee80211_hw *hw);
-extern char *__ieee80211_get_assoc_led_name(struct ieee80211_hw *hw);
-extern char *__ieee80211_get_radio_led_name(struct ieee80211_hw *hw);
+extern char *cw___ieee80211_get_tx_led_name(struct ieee80211_hw *hw);
+extern char *cw___ieee80211_get_rx_led_name(struct ieee80211_hw *hw);
+extern char *cw___ieee80211_get_assoc_led_name(struct ieee80211_hw *hw);
+extern char *cw___ieee80211_get_radio_led_name(struct ieee80211_hw *hw);
 #endif
 /**
  * ieee80211_get_tx_led_name - get name of TX LED
@@ -1285,7 +1285,7 @@ extern char *__ieee80211_get_radio_led_name(struct ieee80211_hw *hw);
 static inline char *ieee80211_get_tx_led_name(struct ieee80211_hw *hw)
 {
 #ifdef CONFIG_MAC80211_LEDS
-	return __ieee80211_get_tx_led_name(hw);
+	return cw___ieee80211_get_tx_led_name(hw);
 #else
 	return NULL;
 #endif
@@ -1304,7 +1304,7 @@ static inline char *ieee80211_get_tx_led_name(struct ieee80211_hw *hw)
 static inline char *ieee80211_get_rx_led_name(struct ieee80211_hw *hw)
 {
 #ifdef CONFIG_MAC80211_LEDS
-	return __ieee80211_get_rx_led_name(hw);
+	return cw___ieee80211_get_rx_led_name(hw);
 #else
 	return NULL;
 #endif
@@ -1323,7 +1323,7 @@ static inline char *ieee80211_get_rx_led_name(struct ieee80211_hw *hw)
 static inline char *ieee80211_get_assoc_led_name(struct ieee80211_hw *hw)
 {
 #ifdef CONFIG_MAC80211_LEDS
-	return __ieee80211_get_assoc_led_name(hw);
+	return cw___ieee80211_get_assoc_led_name(hw);
 #else
 	return NULL;
 #endif
@@ -1342,39 +1342,39 @@ static inline char *ieee80211_get_assoc_led_name(struct ieee80211_hw *hw)
 static inline char *ieee80211_get_radio_led_name(struct ieee80211_hw *hw)
 {
 #ifdef CONFIG_MAC80211_LEDS
-	return __ieee80211_get_radio_led_name(hw);
+	return cw___ieee80211_get_radio_led_name(hw);
 #else
 	return NULL;
 #endif
 }
 
 /**
- * ieee80211_unregister_hw - Unregister a hardware device
+ * cw_ieee80211_unregister_hw - Unregister a hardware device
  *
  * This function instructs mac80211 to free allocated resources
  * and unregister netdevices from the networking subsystem.
  *
  * @hw: the hardware to unregister
  */
-void ieee80211_unregister_hw(struct ieee80211_hw *hw);
+void cw_ieee80211_unregister_hw(struct ieee80211_hw *hw);
 
 /**
- * ieee80211_free_hw - free hardware descriptor
+ * cw_ieee80211_free_hw - free hardware descriptor
  *
  * This function frees everything that was allocated, including the
- * private data for the driver. You must call ieee80211_unregister_hw()
+ * private data for the driver. You must call cw_ieee80211_unregister_hw()
  * before calling this function.
  *
  * @hw: the hardware to free
  */
-void ieee80211_free_hw(struct ieee80211_hw *hw);
+void cw_ieee80211_free_hw(struct ieee80211_hw *hw);
 
 /* trick to avoid symbol clashes with the ieee80211 subsystem */
-void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
-		    struct ieee80211_rx_status *status);
+void __cw_ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
+		    struct cw_ieee80211_rx_status *status);
 
 /**
- * ieee80211_rx - receive frame
+ * cw_ieee80211_rx - receive frame
  *
  * Use this function to hand received frames to mac80211. The receive
  * buffer in @skb must start with an IEEE 802.11 header or a radiotap
@@ -1382,7 +1382,7 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
  *
  * This function may not be called in IRQ context. Calls to this function
  * for a single hardware must be synchronized against each other. Calls
- * to this function and ieee80211_rx_irqsafe() may not be mixed for a
+ * to this function and cw_cw_ieee80211_rx_irqsafe() may not be mixed for a
  * single hardware.
  *
  * @hw: the hardware this frame came in on
@@ -1390,19 +1390,19 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
  * @status: status of this frame; the status pointer need not be valid
  *	after this function returns
  */
-static inline void ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
-				struct ieee80211_rx_status *status)
+static inline void cw_ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
+				struct cw_ieee80211_rx_status *status)
 {
-	__ieee80211_rx(hw, skb, status);
+	__cw_ieee80211_rx(hw, skb, status);
 }
 
 /**
- * ieee80211_rx_irqsafe - receive frame
+ * cw_cw_ieee80211_rx_irqsafe - receive frame
  *
- * Like ieee80211_rx() but can be called in IRQ context
+ * Like cw_ieee80211_rx() but can be called in IRQ context
  * (internally defers to a tasklet.)
  *
- * Calls to this function and ieee80211_rx() may not be mixed for a
+ * Calls to this function and cw_ieee80211_rx() may not be mixed for a
  * single hardware.
  *
  * @hw: the hardware this frame came in on
@@ -1411,12 +1411,12 @@ static inline void ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
  *	after this function returns and is not freed by mac80211,
  *	it is recommended that it points to a stack area
  */
-void ieee80211_rx_irqsafe(struct ieee80211_hw *hw,
+void cw_cw_ieee80211_rx_irqsafe(struct ieee80211_hw *hw,
 			  struct sk_buff *skb,
-			  struct ieee80211_rx_status *status);
+			  struct cw_ieee80211_rx_status *status);
 
 /**
- * ieee80211_tx_status - transmit status callback
+ * cw_ieee80211_tx_status - transmit status callback
  *
  * Call this function for all transmitted frames after they have been
  * transmitted. It is permissible to not call this function for
@@ -1424,33 +1424,33 @@ void ieee80211_rx_irqsafe(struct ieee80211_hw *hw,
  *
  * This function may not be called in IRQ context. Calls to this function
  * for a single hardware must be synchronized against each other. Calls
- * to this function and ieee80211_tx_status_irqsafe() may not be mixed
+ * to this function and cw_cw_ieee80211_tx_status_irqsafe() may not be mixed
  * for a single hardware.
  *
  * @hw: the hardware the frame was transmitted by
  * @skb: the frame that was transmitted, owned by mac80211 after this call
  */
-void ieee80211_tx_status(struct ieee80211_hw *hw,
+void cw_ieee80211_tx_status(struct ieee80211_hw *hw,
 			 struct sk_buff *skb);
 
 /**
- * ieee80211_tx_status_irqsafe - IRQ-safe transmit status callback
+ * cw_cw_ieee80211_tx_status_irqsafe - IRQ-safe transmit status callback
  *
- * Like ieee80211_tx_status() but can be called in IRQ context
+ * Like cw_ieee80211_tx_status() but can be called in IRQ context
  * (internally defers to a tasklet.)
  *
- * Calls to this function and ieee80211_tx_status() may not be mixed for a
+ * Calls to this function and cw_ieee80211_tx_status() may not be mixed for a
  * single hardware.
  *
  * @hw: the hardware the frame was transmitted by
  * @skb: the frame that was transmitted, owned by mac80211 after this call
  */
-void ieee80211_tx_status_irqsafe(struct ieee80211_hw *hw,
+void cw_cw_ieee80211_tx_status_irqsafe(struct ieee80211_hw *hw,
 				 struct sk_buff *skb);
 
 /**
- * ieee80211_beacon_get - beacon generation function
- * @hw: pointer obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_beacon_get - beacon generation function
+ * @hw: pointer obtained from cw_ieee80211_alloc_hw().
  * @vif: &struct ieee80211_vif pointer from &struct ieee80211_if_init_conf.
  * @control: will be filled with information needed to send this beacon.
  *
@@ -1461,12 +1461,12 @@ void ieee80211_tx_status_irqsafe(struct ieee80211_hw *hw,
  * hardware interrupt). Returned skb is used only once and low-level driver
  * is responsible of freeing it.
  */
-struct sk_buff *ieee80211_beacon_get(struct ieee80211_hw *hw,
+struct sk_buff *cw_ieee80211_beacon_get(struct ieee80211_hw *hw,
 				     struct ieee80211_vif *vif);
 
 /**
- * ieee80211_rts_get - RTS frame generation function
- * @hw: pointer obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_rts_get - RTS frame generation function
+ * @hw: pointer obtained from cw_ieee80211_alloc_hw().
  * @vif: &struct ieee80211_vif pointer from &struct ieee80211_if_init_conf.
  * @frame: pointer to the frame that is going to be protected by the RTS.
  * @frame_len: the frame length (in octets).
@@ -1478,14 +1478,14 @@ struct sk_buff *ieee80211_beacon_get(struct ieee80211_hw *hw,
  * the next RTS frame from the 802.11 code. The low-level is responsible
  * for calling this function before and RTS frame is needed.
  */
-void ieee80211_rts_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
+void cw_ieee80211_rts_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 		       const void *frame, size_t frame_len,
 		       const struct ieee80211_tx_info *frame_txctl,
 		       struct ieee80211_rts *rts);
 
 /**
- * ieee80211_rts_duration - Get the duration field for an RTS frame
- * @hw: pointer obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_rts_duration - Get the duration field for an RTS frame
+ * @hw: pointer obtained from cw_ieee80211_alloc_hw().
  * @vif: &struct ieee80211_vif pointer from &struct ieee80211_if_init_conf.
  * @frame_len: the length of the frame that is going to be protected by the RTS.
  * @frame_txctl: &struct ieee80211_tx_info of the frame.
@@ -1494,13 +1494,13 @@ void ieee80211_rts_get(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
  * the duration field, the low-level driver uses this function to receive
  * the duration field value in little-endian byteorder.
  */
-__le16 ieee80211_rts_duration(struct ieee80211_hw *hw,
+__le16 cw_ieee80211_rts_duration(struct ieee80211_hw *hw,
 			      struct ieee80211_vif *vif, size_t frame_len,
 			      const struct ieee80211_tx_info *frame_txctl);
 
 /**
- * ieee80211_ctstoself_get - CTS-to-self frame generation function
- * @hw: pointer obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_ctstoself_get - CTS-to-self frame generation function
+ * @hw: pointer obtained from cw_ieee80211_alloc_hw().
  * @vif: &struct ieee80211_vif pointer from &struct ieee80211_if_init_conf.
  * @frame: pointer to the frame that is going to be protected by the CTS-to-self.
  * @frame_len: the frame length (in octets).
@@ -1512,15 +1512,15 @@ __le16 ieee80211_rts_duration(struct ieee80211_hw *hw,
  * the next CTS-to-self frame from the 802.11 code. The low-level is responsible
  * for calling this function before and CTS-to-self frame is needed.
  */
-void ieee80211_ctstoself_get(struct ieee80211_hw *hw,
+void cw_ieee80211_ctstoself_get(struct ieee80211_hw *hw,
 			     struct ieee80211_vif *vif,
 			     const void *frame, size_t frame_len,
 			     const struct ieee80211_tx_info *frame_txctl,
 			     struct ieee80211_cts *cts);
 
 /**
- * ieee80211_ctstoself_duration - Get the duration field for a CTS-to-self frame
- * @hw: pointer obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_ctstoself_duration - Get the duration field for a CTS-to-self frame
+ * @hw: pointer obtained from cw_ieee80211_alloc_hw().
  * @vif: &struct ieee80211_vif pointer from &struct ieee80211_if_init_conf.
  * @frame_len: the length of the frame that is going to be protected by the CTS-to-self.
  * @frame_txctl: &struct ieee80211_tx_info of the frame.
@@ -1529,14 +1529,14 @@ void ieee80211_ctstoself_get(struct ieee80211_hw *hw,
  * the duration field, the low-level driver uses this function to receive
  * the duration field value in little-endian byteorder.
  */
-__le16 ieee80211_ctstoself_duration(struct ieee80211_hw *hw,
+__le16 cw_ieee80211_ctstoself_duration(struct ieee80211_hw *hw,
 				    struct ieee80211_vif *vif,
 				    size_t frame_len,
 				    const struct ieee80211_tx_info *frame_txctl);
 
 /**
- * ieee80211_generic_frame_duration - Calculate the duration field for a frame
- * @hw: pointer obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_generic_frame_duration - Calculate the duration field for a frame
+ * @hw: pointer obtained from cw_ieee80211_alloc_hw().
  * @vif: &struct ieee80211_vif pointer from &struct ieee80211_if_init_conf.
  * @frame_len: the length of the frame.
  * @rate: the rate at which the frame is going to be transmitted.
@@ -1544,14 +1544,14 @@ __le16 ieee80211_ctstoself_duration(struct ieee80211_hw *hw,
  * Calculate the duration field of some generic frame, given its
  * length and transmission rate (in 100kbps).
  */
-__le16 ieee80211_generic_frame_duration(struct ieee80211_hw *hw,
+__le16 cw_ieee80211_generic_frame_duration(struct ieee80211_hw *hw,
 					struct ieee80211_vif *vif,
 					size_t frame_len,
 					struct ieee80211_rate *rate);
 
 /**
- * ieee80211_get_buffered_bc - accessing buffered broadcast and multicast frames
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_get_buffered_bc - accessing buffered broadcast and multicast frames
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @vif: &struct ieee80211_vif pointer from &struct ieee80211_if_init_conf.
  * @control: will be filled with information needed to send returned frame.
  *
@@ -1564,17 +1564,17 @@ __le16 ieee80211_generic_frame_duration(struct ieee80211_hw *hw,
  * buffered frames are available.
  *
  * Note: buffered frames are returned only after DTIM beacon frame was
- * generated with ieee80211_beacon_get() and the low-level driver must thus
- * call ieee80211_beacon_get() first. ieee80211_get_buffered_bc() returns
+ * generated with cw_ieee80211_beacon_get() and the low-level driver must thus
+ * call cw_ieee80211_beacon_get() first. cw_ieee80211_get_buffered_bc() returns
  * NULL if the previous generated beacon was not DTIM, so the low-level driver
  * does not need to check for DTIM beacons separately and should be able to
  * use common code for all beacons.
  */
 struct sk_buff *
-ieee80211_get_buffered_bc(struct ieee80211_hw *hw, struct ieee80211_vif *vif);
+cw_ieee80211_get_buffered_bc(struct ieee80211_hw *hw, struct ieee80211_vif *vif);
 
 /**
- * ieee80211_get_hdrlen_from_skb - get header length from data
+ * cw_cw_ieee80211_get_hdrlen_from_skb - get header length from data
  *
  * Given an skb with a raw 802.11 header at the data pointer this function
  * returns the 802.11 header length in bytes (not including encryption
@@ -1583,26 +1583,26 @@ ieee80211_get_buffered_bc(struct ieee80211_hw *hw, struct ieee80211_vif *vif);
  *
  * @skb: the frame
  */
-unsigned int ieee80211_get_hdrlen_from_skb(const struct sk_buff *skb);
+unsigned int cw_cw_ieee80211_get_hdrlen_from_skb(const struct sk_buff *skb);
 
 /**
- * ieee80211_get_hdrlen - get header length from frame control
+ * cw_ieee80211_get_hdrlen - get header length from frame control
  *
  * This function returns the 802.11 header length in bytes (not including
  * encryption headers.)
  *
  * @fc: the frame control field (in CPU endianness)
  */
-int ieee80211_get_hdrlen(u16 fc);
+int cw_ieee80211_get_hdrlen(u16 fc);
 
 /**
- * ieee80211_hdrlen - get header length in bytes from frame control
+ * cw_ieee80211_hdrlen - get header length in bytes from frame control
  * @fc: frame control field in little-endian format
  */
-unsigned int ieee80211_hdrlen(__le16 fc);
+unsigned int cw_ieee80211_hdrlen(__le16 fc);
 
 /**
- * ieee80211_get_tkip_key - get a TKIP rc4 for skb
+ * cw_ieee80211_get_tkip_key - get a TKIP rc4 for skb
  *
  * This function computes a TKIP rc4 key for an skb. It computes
  * a phase 1 key if needed (iv16 wraps around). This function is to
@@ -1615,45 +1615,45 @@ unsigned int ieee80211_hdrlen(__le16 fc);
  * @type: TBD
  * @key: TBD
  */
-void ieee80211_get_tkip_key(struct ieee80211_key_conf *keyconf,
+void cw_ieee80211_get_tkip_key(struct ieee80211_key_conf *keyconf,
 				struct sk_buff *skb,
 				enum ieee80211_tkip_key_type type, u8 *key);
 /**
- * ieee80211_wake_queue - wake specific queue
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_wake_queue - wake specific queue
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @queue: queue number (counted from zero).
  *
  * Drivers should use this function instead of netif_wake_queue.
  */
-void ieee80211_wake_queue(struct ieee80211_hw *hw, int queue);
+void cw_ieee80211_wake_queue(struct ieee80211_hw *hw, int queue);
 
 /**
- * ieee80211_stop_queue - stop specific queue
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_stop_queue - stop specific queue
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @queue: queue number (counted from zero).
  *
  * Drivers should use this function instead of netif_stop_queue.
  */
-void ieee80211_stop_queue(struct ieee80211_hw *hw, int queue);
+void cw_ieee80211_stop_queue(struct ieee80211_hw *hw, int queue);
 
 /**
- * ieee80211_stop_queues - stop all queues
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_cw_ieee80211_stop_queues - stop all queues
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  *
  * Drivers should use this function instead of netif_stop_queue.
  */
-void ieee80211_stop_queues(struct ieee80211_hw *hw);
+void cw_cw_ieee80211_stop_queues(struct ieee80211_hw *hw);
 
 /**
- * ieee80211_wake_queues - wake all queues
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_cw_ieee80211_wake_queues - wake all queues
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  *
  * Drivers should use this function instead of netif_wake_queue.
  */
-void ieee80211_wake_queues(struct ieee80211_hw *hw);
+void cw_cw_ieee80211_wake_queues(struct ieee80211_hw *hw);
 
 /**
- * ieee80211_scan_completed - completed hardware scan
+ * cw_ieee80211_scan_completed - completed hardware scan
  *
  * When hardware scan offload is used (i.e. the hw_scan() callback is
  * assigned) this function needs to be called by the driver to notify
@@ -1661,47 +1661,47 @@ void ieee80211_wake_queues(struct ieee80211_hw *hw);
  *
  * @hw: the hardware that finished the scan
  */
-void ieee80211_scan_completed(struct ieee80211_hw *hw);
+void cw_ieee80211_scan_completed(struct ieee80211_hw *hw);
 
 /**
- * ieee80211_iterate_active_interfaces - iterate active interfaces
+ * cw_ieee80211_iterate_active_interfaces - iterate active interfaces
  *
  * This function iterates over the interfaces associated with a given
  * hardware that are currently active and calls the callback for them.
  * This function allows the iterator function to sleep, when the iterator
- * function is atomic @ieee80211_iterate_active_interfaces_atomic can
+ * function is atomic @cw_cw_ieee80211_iterate_active_interfaces_atomic can
  * be used.
  *
  * @hw: the hardware struct of which the interfaces should be iterated over
  * @iterator: the iterator function to call
  * @data: first argument of the iterator function
  */
-void ieee80211_iterate_active_interfaces(struct ieee80211_hw *hw,
+void cw_ieee80211_iterate_active_interfaces(struct ieee80211_hw *hw,
 					 void (*iterator)(void *data, u8 *mac,
 						struct ieee80211_vif *vif),
 					 void *data);
 
 /**
- * ieee80211_iterate_active_interfaces_atomic - iterate active interfaces
+ * cw_cw_ieee80211_iterate_active_interfaces_atomic - iterate active interfaces
  *
  * This function iterates over the interfaces associated with a given
  * hardware that are currently active and calls the callback for them.
  * This function requires the iterator callback function to be atomic,
- * if that is not desired, use @ieee80211_iterate_active_interfaces instead.
+ * if that is not desired, use @cw_ieee80211_iterate_active_interfaces instead.
  *
  * @hw: the hardware struct of which the interfaces should be iterated over
  * @iterator: the iterator function to call, cannot sleep
  * @data: first argument of the iterator function
  */
-void ieee80211_iterate_active_interfaces_atomic(struct ieee80211_hw *hw,
+void cw_cw_ieee80211_iterate_active_interfaces_atomic(struct ieee80211_hw *hw,
 						void (*iterator)(void *data,
 						    u8 *mac,
 						    struct ieee80211_vif *vif),
 						void *data);
 
 /**
- * ieee80211_start_tx_ba_session - Start a tx Block Ack session.
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_start_tx_ba_session - Start a tx Block Ack session.
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @ra: receiver address of the BA session recipient
  * @tid: the TID to BA on.
  * @return: success if addBA request was sent, failure otherwise
@@ -1710,22 +1710,22 @@ void ieee80211_iterate_active_interfaces_atomic(struct ieee80211_hw *hw,
  * the need to start aggregation on a certain RA/TID, the session level
  * will be managed by the mac80211.
  */
-int ieee80211_start_tx_ba_session(struct ieee80211_hw *hw, u8 *ra, u16 tid);
+int cw_ieee80211_start_tx_ba_session(struct ieee80211_hw *hw, u8 *ra, u16 tid);
 
 /**
- * ieee80211_start_tx_ba_cb - low level driver ready to aggregate.
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_start_tx_ba_cb - low level driver ready to aggregate.
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @ra: receiver address of the BA session recipient.
  * @tid: the TID to BA on.
  *
  * This function must be called by low level driver once it has
  * finished with preparations for the BA session.
  */
-void ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid);
+void cw_ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid);
 
 /**
- * ieee80211_start_tx_ba_cb_irqsafe - low level driver ready to aggregate.
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_cw_ieee80211_start_tx_ba_cb_irqsafe - low level driver ready to aggregate.
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @ra: receiver address of the BA session recipient.
  * @tid: the TID to BA on.
  *
@@ -1733,12 +1733,12 @@ void ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid);
  * finished with preparations for the BA session.
  * This version of the function is IRQ-safe.
  */
-void ieee80211_start_tx_ba_cb_irqsafe(struct ieee80211_hw *hw, const u8 *ra,
+void cw_cw_ieee80211_start_tx_ba_cb_irqsafe(struct ieee80211_hw *hw, const u8 *ra,
 				      u16 tid);
 
 /**
- * ieee80211_stop_tx_ba_session - Stop a Block Ack session.
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_stop_tx_ba_session - Stop a Block Ack session.
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @ra: receiver address of the BA session recipient
  * @tid: the TID to stop BA.
  * @initiator: if indicates initiator DELBA frame will be sent.
@@ -1748,24 +1748,24 @@ void ieee80211_start_tx_ba_cb_irqsafe(struct ieee80211_hw *hw, const u8 *ra,
  * the need to stop aggregation on a certain RA/TID, the session level
  * will be managed by the mac80211.
  */
-int ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
+int cw_ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
 				 u8 *ra, u16 tid,
 				 enum ieee80211_back_parties initiator);
 
 /**
- * ieee80211_stop_tx_ba_cb - low level driver ready to stop aggregate.
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_stop_tx_ba_cb - low level driver ready to stop aggregate.
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @ra: receiver address of the BA session recipient.
  * @tid: the desired TID to BA on.
  *
  * This function must be called by low level driver once it has
  * finished with preparations for the BA session tear down.
  */
-void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid);
+void cw_ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid);
 
 /**
- * ieee80211_stop_tx_ba_cb_irqsafe - low level driver ready to stop aggregate.
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_cw_ieee80211_stop_tx_ba_cb_irqsafe - low level driver ready to stop aggregate.
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @ra: receiver address of the BA session recipient.
  * @tid: the desired TID to BA on.
  *
@@ -1773,18 +1773,18 @@ void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid);
  * finished with preparations for the BA session tear down.
  * This version of the function is IRQ-safe.
  */
-void ieee80211_stop_tx_ba_cb_irqsafe(struct ieee80211_hw *hw, const u8 *ra,
+void cw_cw_ieee80211_stop_tx_ba_cb_irqsafe(struct ieee80211_hw *hw, const u8 *ra,
 				     u16 tid);
 
 /**
- * ieee80211_notify_mac - low level driver notification
- * @hw: pointer as obtained from ieee80211_alloc_hw().
+ * cw_ieee80211_notify_mac - low level driver notification
+ * @hw: pointer as obtained from cw_ieee80211_alloc_hw().
  * @notif_type: enum ieee80211_notification_types
  *
  * This function must be called by low level driver to inform mac80211 of
  * low level driver status change or force mac80211 to re-assoc for low
  * level driver internal error that require re-assoc.
  */
-void ieee80211_notify_mac(struct ieee80211_hw *hw,
+void cw_ieee80211_notify_mac(struct ieee80211_hw *hw,
 			  enum ieee80211_notification_types  notif_type);
 #endif /* MAC80211_H */

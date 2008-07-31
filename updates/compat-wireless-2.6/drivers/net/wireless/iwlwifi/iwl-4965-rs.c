@@ -368,7 +368,7 @@ static void rs_tl_turn_on_agg_for_tid(struct iwl_priv *priv,
 	    rs_tl_get_load(lq_data, tid) > IWL_AGG_LOAD_THRESHOLD) {
 		IWL_DEBUG_HT("Starting Tx agg: STA: %s tid: %d\n",
 				print_mac(mac, sta->addr), tid);
-		ieee80211_start_tx_ba_session(priv->hw, sta->addr, tid);
+		cw_ieee80211_start_tx_ba_session(priv->hw, sta->addr, tid);
 	}
 }
 
@@ -479,7 +479,7 @@ static u32 rate_n_flags_from_tbl(struct iwl4965_scale_tbl_info *tbl,
 	u32 rate_n_flags = 0;
 
 	if (is_legacy(tbl->lq_type)) {
-		rate_n_flags = iwl_rates[index].plcp;
+		rate_n_flags = cw_iwl_rates[index].plcp;
 		if (index >= IWL_FIRST_CCK_RATE && index <= IWL_LAST_CCK_RATE)
 			rate_n_flags |= RATE_MCS_CCK_MSK;
 
@@ -491,11 +491,11 @@ static u32 rate_n_flags_from_tbl(struct iwl4965_scale_tbl_info *tbl,
 		rate_n_flags = RATE_MCS_HT_MSK;
 
 		if (is_siso(tbl->lq_type))
-			rate_n_flags |=	iwl_rates[index].plcp_siso;
+			rate_n_flags |=	cw_iwl_rates[index].plcp_siso;
 		else if (is_mimo2(tbl->lq_type))
-			rate_n_flags |=	iwl_rates[index].plcp_mimo2;
+			rate_n_flags |=	cw_iwl_rates[index].plcp_mimo2;
 		else
-			rate_n_flags |=	iwl_rates[index].plcp_mimo3;
+			rate_n_flags |=	cw_iwl_rates[index].plcp_mimo3;
 	} else {
 		IWL_ERROR("Invalid tbl->lq_type %d\n", tbl->lq_type);
 	}
@@ -537,7 +537,7 @@ static int rs_get_tbl_info_from_mcs(const u32 rate_n_flags,
 	u8 num_of_ant = get_num_of_ant_from_rate(rate_n_flags);
 	u8 mcs;
 
-	*rate_idx = iwl_hwrate_to_plcp_idx(rate_n_flags);
+	*rate_idx = cw_iwl_hwrate_to_plcp_idx(rate_n_flags);
 
 	if (*rate_idx  == IWL_RATE_INVALID) {
 		*rate_idx = -1;
@@ -693,7 +693,7 @@ static u16 rs_get_adjacent_rate(struct iwl_priv *priv, u8 index, u16 rate_mask,
 
 	low = index;
 	while (low != IWL_RATE_INVALID) {
-		low = iwl_rates[low].prev_rs;
+		low = cw_iwl_rates[low].prev_rs;
 		if (low == IWL_RATE_INVALID)
 			break;
 		if (rate_mask & (1 << low))
@@ -703,7 +703,7 @@ static u16 rs_get_adjacent_rate(struct iwl_priv *priv, u8 index, u16 rate_mask,
 
 	high = index;
 	while (high != IWL_RATE_INVALID) {
-		high = iwl_rates[high].next_rs;
+		high = cw_iwl_rates[high].next_rs;
 		if (high == IWL_RATE_INVALID)
 			break;
 		if (rate_mask & (1 << high))
@@ -814,7 +814,7 @@ static void rs_tx_status(void *priv_rate, struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, hdr->addr1);
+	sta = cw_sta_info_get(local, hdr->addr1);
 
 	if (!sta || !sta->rate_ctrl_priv)
 		goto out;
@@ -1806,7 +1806,7 @@ static void rs_rate_scale_perform(struct iwl_priv *priv,
 			tbl = &(lq_sta->lq_info[active_tbl]);
 
 			/* Revert to "active" rate and throughput info */
-			index = iwl_hwrate_to_plcp_idx(tbl->current_rate);
+			index = cw_iwl_hwrate_to_plcp_idx(tbl->current_rate);
 			current_tpt = lq_sta->last_tpt;
 
 			/* Need to set up a new rate table in uCode */
@@ -1927,7 +1927,7 @@ lq_update:
 	if (update_lq) {
 		rate = rate_n_flags_from_tbl(tbl, index, is_green);
 		rs_fill_link_cmd(priv, lq_sta, rate);
-		iwl_send_lq_cmd(priv, &lq_sta->lq, CMD_ASYNC);
+		cw_iwl_send_lq_cmd(priv, &lq_sta->lq, CMD_ASYNC);
 	}
 
 	/* Should we stay with this modulation mode, or search for a new one? */
@@ -1960,12 +1960,12 @@ lq_update:
 				rs_rate_scale_clear_window(&(tbl->win[i]));
 
 			/* Use new "search" start rate */
-			index = iwl_hwrate_to_plcp_idx(tbl->current_rate);
+			index = cw_iwl_hwrate_to_plcp_idx(tbl->current_rate);
 
 			IWL_DEBUG_RATE("Switch current  mcs: %X index: %d\n",
 				     tbl->current_rate, index);
 			rs_fill_link_cmd(priv, lq_sta, tbl->current_rate);
-			iwl_send_lq_cmd(priv, &lq_sta->lq, CMD_ASYNC);
+			cw_iwl_send_lq_cmd(priv, &lq_sta->lq, CMD_ASYNC);
 		}
 
 		/* If the "active" (non-search) mode was legacy,
@@ -2062,7 +2062,7 @@ static void rs_initialize_lq(struct iwl_priv *priv,
 		i = 0;
 
 	/* FIXME:RS: This is also wrong in 4965 */
-	rate = iwl_rates[i].plcp;
+	rate = cw_iwl_rates[i].plcp;
 	rate |= RATE_MCS_ANT_B_MSK;
 	rate &= ~RATE_MCS_ANT_A_MSK;
 
@@ -2078,7 +2078,7 @@ static void rs_initialize_lq(struct iwl_priv *priv,
 	tbl->current_rate = rate;
 	rs_set_expected_tpt_table(lq_sta, tbl);
 	rs_fill_link_cmd(NULL, lq_sta, rate);
-	iwl_send_lq_cmd(priv, &lq_sta->lq, CMD_ASYNC);
+	cw_iwl_send_lq_cmd(priv, &lq_sta->lq, CMD_ASYNC);
  out:
 	return;
 }
@@ -2102,7 +2102,7 @@ static void rs_get_rate(void *priv_rate, struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, hdr->addr1);
+	sta = cw_sta_info_get(local, hdr->addr1);
 
 	/* Send management frames and broadcast/multicast data using lowest
 	 * rate. */
@@ -2118,13 +2118,13 @@ static void rs_get_rate(void *priv_rate, struct net_device *dev,
 
 	if ((priv->iw_mode == IEEE80211_IF_TYPE_IBSS) &&
 	    !lq_sta->ibss_sta_added) {
-		u8 sta_id = iwl_find_station(priv, hdr->addr1);
+		u8 sta_id = cw_iwl_find_station(priv, hdr->addr1);
 		DECLARE_MAC_BUF(mac);
 
 		if (sta_id == IWL_INVALID_STATION) {
 			IWL_DEBUG_RATE("LQ: ADD station %s\n",
 				       print_mac(mac, hdr->addr1));
-			sta_id = iwl_add_station_flags(priv, hdr->addr1,
+			sta_id = cw_iwl_add_station_flags(priv, hdr->addr1,
 							0, CMD_ASYNC, NULL);
 		}
 		if ((sta_id != IWL_INVALID_STATION)) {
@@ -2197,7 +2197,7 @@ static void rs_rate_init(void *priv_rate, void *priv_sta,
 
 	lq_sta->ibss_sta_added = 0;
 	if (priv->iw_mode == IEEE80211_IF_TYPE_AP) {
-		u8 sta_id = iwl_find_station(priv, sta->addr);
+		u8 sta_id = cw_iwl_find_station(priv, sta->addr);
 		DECLARE_MAC_BUF(mac);
 
 		/* for IBSS the call are from tasklet */
@@ -2207,7 +2207,7 @@ static void rs_rate_init(void *priv_rate, void *priv_sta,
 		if (sta_id == IWL_INVALID_STATION) {
 			IWL_DEBUG_RATE("LQ: ADD station %s\n",
 				       print_mac(mac, sta->addr));
-			sta_id = iwl_add_station_flags(priv, sta->addr,
+			sta_id = cw_iwl_add_station_flags(priv, sta->addr,
 							0, CMD_ASYNC, NULL);
 		}
 		if ((sta_id != IWL_INVALID_STATION)) {
@@ -2480,7 +2480,7 @@ static ssize_t rs_sta_dbgfs_scale_table_write(struct file *file,
 
 	if (lq_sta->dbg_fixed_rate) {
 		rs_fill_link_cmd(NULL, lq_sta, lq_sta->dbg_fixed_rate);
-		iwl_send_lq_cmd(lq_sta->drv, &lq_sta->lq, CMD_ASYNC);
+		cw_iwl_send_lq_cmd(lq_sta->drv, &lq_sta->lq, CMD_ASYNC);
 	}
 
 	return count;
@@ -2623,7 +2623,7 @@ int iwl4965_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, priv->stations[sta_id].sta.sta.addr);
+	sta = cw_sta_info_get(local, priv->stations[sta_id].sta.sta.addr);
 	if (!sta || !sta->rate_ctrl_priv) {
 		if (sta)
 			IWL_DEBUG_RATE("leave - no private rate data!\n");
@@ -2648,7 +2648,7 @@ int iwl4965_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 		int active = lq_sta->active_tbl;
 
 		cnt +=
-		    sprintf(&buf[cnt], " %2dMbs: ", iwl_rates[i].ieee / 2);
+		    sprintf(&buf[cnt], " %2dMbs: ", cw_iwl_rates[i].ieee / 2);
 
 		mask = (1ULL << (IWL_RATE_MAX_WINDOW - 1));
 		for (j = 0; j < IWL_RATE_MAX_WINDOW; j++, mask >>= 1)
@@ -2659,7 +2659,7 @@ int iwl4965_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 		samples += lq_sta->lq_info[active].win[i].counter;
 		good += lq_sta->lq_info[active].win[i].success_counter;
 		success += lq_sta->lq_info[active].win[i].success_counter *
-			   iwl_rates[i].ieee;
+			   cw_iwl_rates[i].ieee;
 
 		if (lq_sta->lq_info[active].win[i].stamp) {
 			int delta =
@@ -2682,7 +2682,7 @@ int iwl4965_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 	/*
 	 * Display the average rate of all samples taken.
 	 * NOTE: We multiply # of samples by 2 since the IEEE measurement
-	 * added from iwl_rates is actually 2X the rate.
+	 * added from cw_iwl_rates is actually 2X the rate.
 	 */
 	if (samples)
 		cnt += sprintf(&buf[cnt],
@@ -2703,11 +2703,11 @@ int iwl4965_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 
 int iwl4965_rate_control_register(void)
 {
-	return ieee80211_rate_control_register(&rs_ops);
+	return cw_ieee80211_rate_control_register(&rs_ops);
 }
 
 void iwl4965_rate_control_unregister(void)
 {
-	ieee80211_rate_control_unregister(&rs_ops);
+	cw_ieee80211_rate_control_unregister(&rs_ops);
 }
 

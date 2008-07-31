@@ -67,7 +67,7 @@ static inline unsigned classify_1d(struct sk_buff *skb, struct Qdisc *qd)
 		return skb->priority - 256;
 
 	/* check there is a valid IP header present */
-	offset = ieee80211_get_hdrlen_from_skb(skb);
+	offset = cw_cw_ieee80211_get_hdrlen_from_skb(skb);
 	if (skb->len < offset + sizeof(llc_ip_hdr) + sizeof(*ip) ||
 	    memcmp(skb->data + offset, llc_ip_hdr, sizeof(llc_ip_hdr)))
 		return 0;
@@ -156,7 +156,7 @@ static int wme_qdiscop_enqueue(struct sk_buff *skb, struct Qdisc* qd)
 	if (info->flags & IEEE80211_TX_CTL_REQUEUE) {
 		queue = skb_get_queue_mapping(skb);
 		rcu_read_lock();
-		sta = sta_info_get(local, hdr->addr1);
+		sta = cw_sta_info_get(local, hdr->addr1);
 		tid = skb->priority & IEEE80211_QOS_CTL_TAG1D_MASK;
 		if (sta) {
 			int ampdu_queue = sta->tid_to_tx_q[tid];
@@ -194,7 +194,7 @@ static int wme_qdiscop_enqueue(struct sk_buff *skb, struct Qdisc* qd)
 
 		rcu_read_lock();
 
-		sta = sta_info_get(local, hdr->addr1);
+		sta = cw_sta_info_get(local, hdr->addr1);
 		if (sta) {
 			int ampdu_queue = sta->tid_to_tx_q[tid];
 			if ((ampdu_queue < QD_NUM(hw)) &&
@@ -644,7 +644,7 @@ int ieee80211_ht_agg_queue_add(struct ieee80211_local *local,
 	/* try to get a Qdisc from the pool */
 	for (i = local->hw.queues; i < QD_NUM(&local->hw); i++)
 		if (!test_and_set_bit(i, q->qdisc_pool)) {
-			ieee80211_stop_queue(local_to_hw(local), i);
+			cw_ieee80211_stop_queue(local_to_hw(local), i);
 			sta->tid_to_tx_q[tid] = i;
 
 			/* IF there are already pending packets

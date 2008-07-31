@@ -55,14 +55,14 @@
  * RNDIS notifications from device: command completion; "reverse"
  * keepalives; etc
  */
-void rndis_status(struct usbnet *dev, struct urb *urb)
+void cw_rndis_status(struct usbnet *dev, struct urb *urb)
 {
 	devdbg(dev, "rndis status urb, len %d stat %d",
 		urb->actual_length, urb->status);
 	// FIXME for keepalives, respond immediately (asynchronously)
 	// if not an RNDIS status, do like cdc_status(dev,urb) does
 }
-EXPORT_SYMBOL_GPL(rndis_status);
+EXPORT_SYMBOL_GPL(cw_rndis_status);
 
 /*
  * RPC done RNDIS-style.  Caller guarantees:
@@ -74,7 +74,7 @@ EXPORT_SYMBOL_GPL(rndis_status);
  * Call context is likely probe(), before interface name is known,
  * which is why we won't try to use it in the diagnostics.
  */
-int rndis_command(struct usbnet *dev, struct rndis_msg_hdr *buf)
+int cw_rndis_command(struct usbnet *dev, struct rndis_msg_hdr *buf)
 {
 	struct cdc_state	*info = (void *) &dev->data;
 	int			master_ifnum;
@@ -199,7 +199,7 @@ int rndis_command(struct usbnet *dev, struct rndis_msg_hdr *buf)
 	dev_dbg(&info->control->dev, "rndis response timeout\n");
 	return -ETIMEDOUT;
 }
-EXPORT_SYMBOL_GPL(rndis_command);
+EXPORT_SYMBOL_GPL(cw_rndis_command);
 
 /*
  * rndis_query:
@@ -239,7 +239,7 @@ static int rndis_query(struct usbnet *dev, struct usb_interface *intf,
 	u.get->len = cpu_to_le32(in_len);
 	u.get->offset = ccpu2(20);
 
-	retval = rndis_command(dev, u.header);
+	retval = cw_rndis_command(dev, u.header);
 	if (unlikely(retval < 0)) {
 		dev_err(&intf->dev, "RNDIS_MSG_QUERY(0x%08x) failed, %d\n",
 				oid, retval);
@@ -267,7 +267,7 @@ response_error:
 }
 
 int
-generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
+cw_generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 {
 	int			retval;
 	struct net_device	*net = dev->net;
@@ -292,7 +292,7 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 	u.buf = kmalloc(CONTROL_BUFFER_SIZE, GFP_KERNEL);
 	if (!u.buf)
 		return -ENOMEM;
-	retval = usbnet_generic_cdc_bind(dev, intf);
+	retval = cw_usbnet_generic_cdc_bind(dev, intf);
 	if (retval < 0)
 		goto fail;
 
@@ -328,7 +328,7 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 	u.init->max_transfer_size = cpu_to_le32(dev->rx_urb_size);
 
 	net->change_mtu = NULL;
-	retval = rndis_command(dev, u.header);
+	retval = cw_rndis_command(dev, u.header);
 	if (unlikely(retval < 0)) {
 		/* it might not even be an RNDIS device!! */
 		dev_err(&intf->dev, "RNDIS init failed, %d\n", retval);
@@ -409,7 +409,7 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 	u.set->offset = ccpu2((sizeof *u.set) - 8);
 	*(__le32 *)(u.buf + sizeof *u.set) = RNDIS_DEFAULT_FILTER;
 
-	retval = rndis_command(dev, u.header);
+	retval = cw_rndis_command(dev, u.header);
 	if (unlikely(retval < 0)) {
 		dev_err(&intf->dev, "rndis set packet filter, %d\n", retval);
 		goto halt_fail_and_release;
@@ -424,7 +424,7 @@ halt_fail_and_release:
 	memset(u.halt, 0, sizeof *u.halt);
 	u.halt->msg_type = RNDIS_MSG_HALT;
 	u.halt->msg_len = ccpu2(sizeof *u.halt);
-	(void) rndis_command(dev, (void *)u.halt);
+	(void) cw_rndis_command(dev, (void *)u.halt);
 fail_and_release:
 	usb_set_intfdata(info->data, NULL);
 	usb_driver_release_interface(driver_of(intf), info->data);
@@ -433,14 +433,14 @@ fail:
 	kfree(u.buf);
 	return retval;
 }
-EXPORT_SYMBOL_GPL(generic_rndis_bind);
+EXPORT_SYMBOL_GPL(cw_generic_rndis_bind);
 
 static int rndis_bind(struct usbnet *dev, struct usb_interface *intf)
 {
-	return generic_rndis_bind(dev, intf, FLAG_RNDIS_PHYM_NOT_WIRELESS);
+	return cw_generic_rndis_bind(dev, intf, FLAG_RNDIS_PHYM_NOT_WIRELESS);
 }
 
-void rndis_unbind(struct usbnet *dev, struct usb_interface *intf)
+void cw_rndis_unbind(struct usbnet *dev, struct usb_interface *intf)
 {
 	struct rndis_halt	*halt;
 
@@ -449,18 +449,18 @@ void rndis_unbind(struct usbnet *dev, struct usb_interface *intf)
 	if (halt) {
 		halt->msg_type = RNDIS_MSG_HALT;
 		halt->msg_len = ccpu2(sizeof *halt);
-		(void) rndis_command(dev, (void *)halt);
+		(void) cw_rndis_command(dev, (void *)halt);
 		kfree(halt);
 	}
 
-	usbnet_cdc_unbind(dev, intf);
+	cw_usbnet_cdc_unbind(dev, intf);
 }
-EXPORT_SYMBOL_GPL(rndis_unbind);
+EXPORT_SYMBOL_GPL(cw_rndis_unbind);
 
 /*
  * DATA -- host must not write zlps
  */
-int rndis_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
+int cw_rndis_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 {
 	/* peripheral may have batched packets to us... */
 	while (likely(skb->len)) {
@@ -496,16 +496,16 @@ int rndis_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			break;
 		skb_pull(skb, msg_len - sizeof *hdr);
 		skb_trim(skb2, data_len);
-		usbnet_skb_return(dev, skb2);
+		cw_usbnet_skb_return(dev, skb2);
 	}
 
-	/* caller will usbnet_skb_return the remaining packet */
+	/* caller will cw_usbnet_skb_return the remaining packet */
 	return 1;
 }
-EXPORT_SYMBOL_GPL(rndis_rx_fixup);
+EXPORT_SYMBOL_GPL(cw_rndis_rx_fixup);
 
 struct sk_buff *
-rndis_tx_fixup(struct usbnet *dev, struct sk_buff *skb, gfp_t flags)
+cw_rndis_tx_fixup(struct usbnet *dev, struct sk_buff *skb, gfp_t flags)
 {
 	struct rndis_data_hdr	*hdr;
 	struct sk_buff		*skb2;
@@ -549,17 +549,17 @@ fill:
 	/* FIXME make the last packet always be short ... */
 	return skb;
 }
-EXPORT_SYMBOL_GPL(rndis_tx_fixup);
+EXPORT_SYMBOL_GPL(cw_rndis_tx_fixup);
 
 
 static const struct driver_info	rndis_info = {
 	.description =	"RNDIS device",
 	.flags =	FLAG_ETHER | FLAG_FRAMING_RN | FLAG_NO_SETINT,
 	.bind =		rndis_bind,
-	.unbind =	rndis_unbind,
-	.status =	rndis_status,
-	.rx_fixup =	rndis_rx_fixup,
-	.tx_fixup =	rndis_tx_fixup,
+	.unbind =	cw_rndis_unbind,
+	.status =	cw_rndis_status,
+	.rx_fixup =	cw_rndis_rx_fixup,
+	.tx_fixup =	cw_rndis_tx_fixup,
 };
 
 #undef ccpu2
@@ -584,10 +584,10 @@ MODULE_DEVICE_TABLE(usb, products);
 static struct usb_driver rndis_driver = {
 	.name =		"rndis_host",
 	.id_table =	products,
-	.probe =	usbnet_probe,
-	.disconnect =	usbnet_disconnect,
-	.suspend =	usbnet_suspend,
-	.resume =	usbnet_resume,
+	.probe =	cw_usbnet_probe,
+	.disconnect =	cw_usbnet_disconnect,
+	.suspend =	cw_usbnet_suspend,
+	.resume =	cw_usbnet_resume,
 };
 
 static int __init rndis_init(void)

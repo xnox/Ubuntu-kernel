@@ -1778,7 +1778,7 @@ static void rt61pci_txdone(struct rt2x00_dev *rt2x00dev)
 		 * queue identication number.
 		 */
 		type = rt2x00_get_field32(reg, STA_CSR4_PID_TYPE);
-		queue = rt2x00queue_get_queue(rt2x00dev, type);
+		queue = cw_rt2x00queue_get_queue(rt2x00dev, type);
 		if (unlikely(!queue))
 			continue;
 
@@ -1798,7 +1798,7 @@ static void rt61pci_txdone(struct rt2x00_dev *rt2x00dev)
 		    !rt2x00_get_field32(word, TXD_W0_VALID))
 			return;
 
-		entry_done = rt2x00queue_get_entry(queue, Q_INDEX_DONE);
+		entry_done = cw_rt2x00queue_get_entry(queue, Q_INDEX_DONE);
 		while (entry != entry_done) {
 			/* Catch up.
 			 * Just report any entries we missed as failed.
@@ -1811,8 +1811,8 @@ static void rt61pci_txdone(struct rt2x00_dev *rt2x00dev)
 			__set_bit(TXDONE_UNKNOWN, &txdesc.flags);
 			txdesc.retry = 0;
 
-			rt2x00lib_txdone(entry_done, &txdesc);
-			entry_done = rt2x00queue_get_entry(queue, Q_INDEX_DONE);
+			cw_rt2x00lib_txdone(entry_done, &txdesc);
+			entry_done = cw_rt2x00queue_get_entry(queue, Q_INDEX_DONE);
 		}
 
 		/*
@@ -1831,7 +1831,7 @@ static void rt61pci_txdone(struct rt2x00_dev *rt2x00dev)
 		}
 		txdesc.retry = rt2x00_get_field32(reg, STA_CSR4_RETRY_COUNT);
 
-		rt2x00lib_txdone(entry, &txdesc);
+		cw_rt2x00lib_txdone(entry, &txdesc);
 	}
 }
 
@@ -1867,7 +1867,7 @@ static irqreturn_t rt61pci_interrupt(int irq, void *dev_instance)
 	 * 1 - Rx ring done interrupt.
 	 */
 	if (rt2x00_get_field32(reg, INT_SOURCE_CSR_RXDONE))
-		rt2x00pci_rxdone(rt2x00dev);
+		cw_rt2x00pci_rxdone(rt2x00dev);
 
 	/*
 	 * 2 - Tx ring done interrupt.
@@ -1908,7 +1908,7 @@ static int rt61pci_validate_eeprom(struct rt2x00_dev *rt2x00dev)
 	eeprom.reg_data_clock = 0;
 	eeprom.reg_chip_select = 0;
 
-	eeprom_93cx6_multiread(&eeprom, EEPROM_BASE, rt2x00dev->eeprom,
+	cw_eeprom_93cx6_multiread(&eeprom, EEPROM_BASE, rt2x00dev->eeprom,
 			       EEPROM_SIZE / sizeof(u16));
 
 	/*
@@ -2391,19 +2391,19 @@ static u64 rt61pci_get_tsf(struct ieee80211_hw *hw)
 }
 
 static const struct ieee80211_ops rt61pci_mac80211_ops = {
-	.tx			= rt2x00mac_tx,
-	.start			= rt2x00mac_start,
-	.stop			= rt2x00mac_stop,
-	.add_interface		= rt2x00mac_add_interface,
-	.remove_interface	= rt2x00mac_remove_interface,
-	.config			= rt2x00mac_config,
-	.config_interface	= rt2x00mac_config_interface,
-	.configure_filter	= rt2x00mac_configure_filter,
-	.get_stats		= rt2x00mac_get_stats,
+	.tx			= cw_rt2x00mac_tx,
+	.start			= cw_rt2x00mac_start,
+	.stop			= cw_rt2x00mac_stop,
+	.add_interface		= cw_rt2x00mac_add_interface,
+	.remove_interface	= cw_rt2x00mac_remove_interface,
+	.config			= cw_rt2x00mac_config,
+	.config_interface	= cw_cw_rt2x00mac_config_interface,
+	.configure_filter	= cw_cw_rt2x00mac_configure_filter,
+	.get_stats		= cw_rt2x00mac_get_stats,
 	.set_retry_limit	= rt61pci_set_retry_limit,
-	.bss_info_changed	= rt2x00mac_bss_info_changed,
-	.conf_tx		= rt2x00mac_conf_tx,
-	.get_tx_stats		= rt2x00mac_get_tx_stats,
+	.bss_info_changed	= cw_rt2x00mac_bss_info_changed,
+	.conf_tx		= cw_rt2x00mac_conf_tx,
+	.get_tx_stats		= cw_rt2x00mac_get_tx_stats,
 	.get_tsf		= rt61pci_get_tsf,
 };
 
@@ -2413,8 +2413,8 @@ static const struct rt2x00lib_ops rt61pci_rt2x00_ops = {
 	.get_firmware_name	= rt61pci_get_firmware_name,
 	.get_firmware_crc	= rt61pci_get_firmware_crc,
 	.load_firmware		= rt61pci_load_firmware,
-	.initialize		= rt2x00pci_initialize,
-	.uninitialize		= rt2x00pci_uninitialize,
+	.initialize		= cw_rt2x00pci_initialize,
+	.uninitialize		= cw_rt2x00pci_uninitialize,
 	.init_rxentry		= rt61pci_init_rxentry,
 	.init_txentry		= rt61pci_init_txentry,
 	.set_device_state	= rt61pci_set_device_state,
@@ -2423,7 +2423,7 @@ static const struct rt2x00lib_ops rt61pci_rt2x00_ops = {
 	.reset_tuner		= rt61pci_reset_tuner,
 	.link_tuner		= rt61pci_link_tuner,
 	.write_tx_desc		= rt61pci_write_tx_desc,
-	.write_tx_data		= rt2x00pci_write_tx_data,
+	.write_tx_data		= cw_rt2x00pci_write_tx_data,
 	.write_beacon		= rt61pci_write_beacon,
 	.kick_tx_queue		= rt61pci_kick_tx_queue,
 	.fill_rxdone		= rt61pci_fill_rxdone,
@@ -2498,10 +2498,10 @@ MODULE_LICENSE("GPL");
 static struct pci_driver rt61pci_driver = {
 	.name		= KBUILD_MODNAME,
 	.id_table	= rt61pci_device_table,
-	.probe		= rt2x00pci_probe,
-	.remove		= __devexit_p(rt2x00pci_remove),
-	.suspend	= rt2x00pci_suspend,
-	.resume		= rt2x00pci_resume,
+	.probe		= cw_rt2x00pci_probe,
+	.remove		= __devexit_p(cw_rt2x00pci_remove),
+	.suspend	= cw_rt2x00pci_suspend,
+	.resume		= cw_rt2x00pci_resume,
 };
 
 static int __init rt61pci_init(void)

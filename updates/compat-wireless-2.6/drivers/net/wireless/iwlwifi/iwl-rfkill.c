@@ -59,10 +59,10 @@ static int iwl_rfkill_soft_rf_kill(void *data, enum rfkill_state state)
 			err = -EBUSY;
 			goto out_unlock;
 		}
-		iwl_radio_kill_sw_enable_radio(priv);
+		cw_iwl_radio_kill_sw_enable_radio(priv);
 		break;
 	case RFKILL_STATE_SOFT_BLOCKED:
-		iwl_radio_kill_sw_disable_radio(priv);
+		cw_iwl_radio_kill_sw_disable_radio(priv);
 		break;
 	default:
 		IWL_WARNING("we recieved unexpected RFKILL state %d\n", state);
@@ -74,7 +74,7 @@ out_unlock:
 	return err;
 }
 
-int iwl_rfkill_init(struct iwl_priv *priv)
+int cw_iwl_rfkill_init(struct iwl_priv *priv)
 {
 	struct device *device = wiphy_dev(priv->hw->wiphy);
 	int ret = 0;
@@ -116,9 +116,9 @@ error:
 	IWL_DEBUG_RF_KILL("RFKILL initialization complete.\n");
 	return ret;
 }
-EXPORT_SYMBOL(iwl_rfkill_init);
+EXPORT_SYMBOL(cw_iwl_rfkill_init);
 
-void iwl_rfkill_unregister(struct iwl_priv *priv)
+void cw_iwl_rfkill_unregister(struct iwl_priv *priv)
 {
 
 	if (priv->rfkill)
@@ -126,10 +126,10 @@ void iwl_rfkill_unregister(struct iwl_priv *priv)
 
 	priv->rfkill = NULL;
 }
-EXPORT_SYMBOL(iwl_rfkill_unregister);
+EXPORT_SYMBOL(cw_iwl_rfkill_unregister);
 
 /* set rf-kill to the right state. */
-void iwl_rfkill_set_hw_state(struct iwl_priv *priv)
+void cw_iwl_rfkill_set_hw_state(struct iwl_priv *priv)
 {
 	if (!priv->rfkill)
 		return;
@@ -144,4 +144,4 @@ void iwl_rfkill_set_hw_state(struct iwl_priv *priv)
 	else
 		rfkill_force_state(priv->rfkill, RFKILL_STATE_SOFT_BLOCKED);
 }
-EXPORT_SYMBOL(iwl_rfkill_set_hw_state);
+EXPORT_SYMBOL(cw_iwl_rfkill_set_hw_state);

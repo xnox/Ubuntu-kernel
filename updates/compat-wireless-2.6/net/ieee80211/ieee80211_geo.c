@@ -43,7 +43,7 @@
 
 #include <net/ieee80211.h>
 
-int ieee80211_is_valid_channel(struct ieee80211_device *ieee, u8 channel)
+int cw_ieee80211_is_valid_channel(struct ieee80211_device *ieee, u8 channel)
 {
 	int i;
 
@@ -72,7 +72,7 @@ int ieee80211_is_valid_channel(struct ieee80211_device *ieee, u8 channel)
 	return 0;
 }
 
-int ieee80211_channel_to_index(struct ieee80211_device *ieee, u8 channel)
+int cw_ieee80211_channel_to_index(struct ieee80211_device *ieee, u8 channel)
 {
 	int i;
 
@@ -94,7 +94,7 @@ int ieee80211_channel_to_index(struct ieee80211_device *ieee, u8 channel)
 	return -1;
 }
 
-u32 ieee80211_channel_to_freq(struct ieee80211_device * ieee, u8 channel)
+u32 cw_ieee80211_channel_to_freq(struct ieee80211_device * ieee, u8 channel)
 {
 	const struct ieee80211_channel * ch;
 
@@ -103,13 +103,13 @@ u32 ieee80211_channel_to_freq(struct ieee80211_device * ieee, u8 channel)
 	if (ieee->geo.bg_channels == 0 && ieee->geo.a_channels == 0)
 		return 0;
 
-	ch = ieee80211_get_channel(ieee, channel);
+	ch = cw_ieee80211_get_channel(ieee, channel);
 	if (!ch->channel)
 		return 0;
 	return ch->freq;
 }
 
-u8 ieee80211_freq_to_channel(struct ieee80211_device * ieee, u32 freq)
+u8 cw_ieee80211_freq_to_channel(struct ieee80211_device * ieee, u32 freq)
 {
 	int i;
 
@@ -133,7 +133,7 @@ u8 ieee80211_freq_to_channel(struct ieee80211_device * ieee, u32 freq)
 	return 0;
 }
 
-int ieee80211_set_geo(struct ieee80211_device *ieee,
+int cw_ieee80211_set_geo(struct ieee80211_device *ieee,
 		      const struct ieee80211_geo *geo)
 {
 	memcpy(ieee->geo.name, geo->name, 3);
@@ -147,14 +147,14 @@ int ieee80211_set_geo(struct ieee80211_device *ieee,
 	return 0;
 }
 
-const struct ieee80211_geo *ieee80211_get_geo(struct ieee80211_device *ieee)
+const struct ieee80211_geo *cw_ieee80211_get_geo(struct ieee80211_device *ieee)
 {
 	return &ieee->geo;
 }
 
-u8 ieee80211_get_channel_flags(struct ieee80211_device * ieee, u8 channel)
+u8 cw_cw_ieee80211_get_channel_flags(struct ieee80211_device * ieee, u8 channel)
 {
-	int index = ieee80211_channel_to_index(ieee, channel);
+	int index = cw_ieee80211_channel_to_index(ieee, channel);
 
 	if (index == -1)
 		return IEEE80211_CH_INVALID;
@@ -171,10 +171,10 @@ static const struct ieee80211_channel bad_channel = {
 	.max_power = 0,
 };
 
-const struct ieee80211_channel *ieee80211_get_channel(struct ieee80211_device
+const struct ieee80211_channel *cw_ieee80211_get_channel(struct ieee80211_device
 						      *ieee, u8 channel)
 {
-	int index = ieee80211_channel_to_index(ieee, channel);
+	int index = cw_ieee80211_channel_to_index(ieee, channel);
 
 	if (index == -1)
 		return &bad_channel;
@@ -185,11 +185,11 @@ const struct ieee80211_channel *ieee80211_get_channel(struct ieee80211_device
 	return &ieee->geo.a[index];
 }
 
-EXPORT_SYMBOL(ieee80211_get_channel);
-EXPORT_SYMBOL(ieee80211_get_channel_flags);
-EXPORT_SYMBOL(ieee80211_is_valid_channel);
-EXPORT_SYMBOL(ieee80211_freq_to_channel);
-EXPORT_SYMBOL(ieee80211_channel_to_freq);
-EXPORT_SYMBOL(ieee80211_channel_to_index);
-EXPORT_SYMBOL(ieee80211_set_geo);
-EXPORT_SYMBOL(ieee80211_get_geo);
+EXPORT_SYMBOL(cw_ieee80211_get_channel);
+EXPORT_SYMBOL(cw_cw_ieee80211_get_channel_flags);
+EXPORT_SYMBOL(cw_ieee80211_is_valid_channel);
+EXPORT_SYMBOL(cw_ieee80211_freq_to_channel);
+EXPORT_SYMBOL(cw_ieee80211_channel_to_freq);
+EXPORT_SYMBOL(cw_ieee80211_channel_to_index);
+EXPORT_SYMBOL(cw_ieee80211_set_geo);
+EXPORT_SYMBOL(cw_ieee80211_get_geo);

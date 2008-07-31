@@ -39,7 +39,7 @@
 
 #define IWL_CMD(x) case x : return #x
 
-const char *get_cmd_string(u8 cmd)
+const char *cw_get_cmd_string(u8 cmd)
 {
 	switch (cmd) {
 		IWL_CMD(REPLY_ALIVE);
@@ -99,7 +99,7 @@ const char *get_cmd_string(u8 cmd)
 
 	}
 }
-EXPORT_SYMBOL(get_cmd_string);
+EXPORT_SYMBOL(cw_get_cmd_string);
 
 #define HOST_COMPLETE_TIMEOUT (HZ / 2)
 
@@ -110,25 +110,25 @@ static int iwl_generic_cmd_callback(struct iwl_priv *priv,
 
 	if (!skb) {
 		IWL_ERROR("Error: Response NULL in %s.\n",
-				get_cmd_string(cmd->hdr.cmd));
+				cw_get_cmd_string(cmd->hdr.cmd));
 		return 1;
 	}
 
 	pkt = (struct iwl_rx_packet *)skb->data;
 	if (pkt->hdr.flags & IWL_CMD_FAILED_MSK) {
 		IWL_ERROR("Bad return from %s (0x%08X)\n",
-			get_cmd_string(cmd->hdr.cmd), pkt->hdr.flags);
+			cw_get_cmd_string(cmd->hdr.cmd), pkt->hdr.flags);
 		return 1;
 	}
 
 	IWL_DEBUG_HC("back from %s (0x%08X)\n",
-			get_cmd_string(cmd->hdr.cmd), pkt->hdr.flags);
+			cw_get_cmd_string(cmd->hdr.cmd), pkt->hdr.flags);
 
 	/* Let iwl_tx_complete free the response skb */
 	return 1;
 }
 
-static int iwl_send_cmd_async(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
+static int cw_iwl_send_cmd_async(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
 {
 	int ret;
 
@@ -147,13 +147,13 @@ static int iwl_send_cmd_async(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
 	ret = iwl_enqueue_hcmd(priv, cmd);
 	if (ret < 0) {
 		IWL_ERROR("Error sending %s: enqueue_hcmd failed: %d\n",
-			  get_cmd_string(cmd->id), ret);
+			  cw_get_cmd_string(cmd->id), ret);
 		return ret;
 	}
 	return 0;
 }
 
-int iwl_send_cmd_sync(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
+int cw_cw_iwl_send_cmd_sync(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
 {
 	int cmd_idx;
 	int ret;
@@ -165,7 +165,7 @@ int iwl_send_cmd_sync(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
 
 	if (test_and_set_bit(STATUS_HCMD_SYNC_ACTIVE, &priv->status)) {
 		IWL_ERROR("Error sending %s: Already sending a host command\n",
-			  get_cmd_string(cmd->id));
+			  cw_get_cmd_string(cmd->id));
 		ret = -EBUSY;
 		goto out;
 	}
@@ -179,7 +179,7 @@ int iwl_send_cmd_sync(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
 	if (cmd_idx < 0) {
 		ret = cmd_idx;
 		IWL_ERROR("Error sending %s: enqueue_hcmd failed: %d\n",
-			  get_cmd_string(cmd->id), ret);
+			  cw_get_cmd_string(cmd->id), ret);
 		goto out;
 	}
 
@@ -189,7 +189,7 @@ int iwl_send_cmd_sync(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
 	if (!ret) {
 		if (test_bit(STATUS_HCMD_ACTIVE, &priv->status)) {
 			IWL_ERROR("Error sending %s: time out after %dms.\n",
-				  get_cmd_string(cmd->id),
+				  cw_get_cmd_string(cmd->id),
 				  jiffies_to_msecs(HOST_COMPLETE_TIMEOUT));
 
 			clear_bit(STATUS_HCMD_ACTIVE, &priv->status);
@@ -200,19 +200,19 @@ int iwl_send_cmd_sync(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
 
 	if (test_bit(STATUS_RF_KILL_HW, &priv->status)) {
 		IWL_DEBUG_INFO("Command %s aborted: RF KILL Switch\n",
-			       get_cmd_string(cmd->id));
+			       cw_get_cmd_string(cmd->id));
 		ret = -ECANCELED;
 		goto fail;
 	}
 	if (test_bit(STATUS_FW_ERROR, &priv->status)) {
 		IWL_DEBUG_INFO("Command %s failed: FW Error\n",
-			       get_cmd_string(cmd->id));
+			       cw_get_cmd_string(cmd->id));
 		ret = -EIO;
 		goto fail;
 	}
 	if ((cmd->meta.flags & CMD_WANT_SKB) && !cmd->meta.u.skb) {
 		IWL_ERROR("Error: Response NULL in '%s'\n",
-			  get_cmd_string(cmd->id));
+			  cw_get_cmd_string(cmd->id));
 		ret = -EIO;
 		goto out;
 	}
@@ -240,18 +240,18 @@ out:
 	clear_bit(STATUS_HCMD_SYNC_ACTIVE, &priv->status);
 	return ret;
 }
-EXPORT_SYMBOL(iwl_send_cmd_sync);
+EXPORT_SYMBOL(cw_cw_iwl_send_cmd_sync);
 
-int iwl_send_cmd(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
+int cw_iwl_send_cmd(struct iwl_priv *priv, struct iwl_host_cmd *cmd)
 {
 	if (cmd->meta.flags & CMD_ASYNC)
-		return iwl_send_cmd_async(priv, cmd);
+		return cw_iwl_send_cmd_async(priv, cmd);
 
-	return iwl_send_cmd_sync(priv, cmd);
+	return cw_cw_iwl_send_cmd_sync(priv, cmd);
 }
-EXPORT_SYMBOL(iwl_send_cmd);
+EXPORT_SYMBOL(cw_iwl_send_cmd);
 
-int iwl_send_cmd_pdu(struct iwl_priv *priv, u8 id, u16 len, const void *data)
+int cw_cw_iwl_send_cmd_pdu(struct iwl_priv *priv, u8 id, u16 len, const void *data)
 {
 	struct iwl_host_cmd cmd = {
 		.id = id,
@@ -259,11 +259,11 @@ int iwl_send_cmd_pdu(struct iwl_priv *priv, u8 id, u16 len, const void *data)
 		.data = data,
 	};
 
-	return iwl_send_cmd_sync(priv, &cmd);
+	return cw_cw_iwl_send_cmd_sync(priv, &cmd);
 }
-EXPORT_SYMBOL(iwl_send_cmd_pdu);
+EXPORT_SYMBOL(cw_cw_iwl_send_cmd_pdu);
 
-int iwl_send_cmd_pdu_async(struct iwl_priv *priv,
+int cw_cw_cw_iwl_send_cmd_pdu_async(struct iwl_priv *priv,
 			   u8 id, u16 len, const void *data,
 			   int (*callback)(struct iwl_priv *priv,
 					   struct iwl_cmd *cmd,
@@ -278,6 +278,6 @@ int iwl_send_cmd_pdu_async(struct iwl_priv *priv,
 	cmd.meta.flags |= CMD_ASYNC;
 	cmd.meta.u.callback = callback;
 
-	return iwl_send_cmd_async(priv, &cmd);
+	return cw_iwl_send_cmd_async(priv, &cmd);
 }
-EXPORT_SYMBOL(iwl_send_cmd_pdu_async);
+EXPORT_SYMBOL(cw_cw_cw_iwl_send_cmd_pdu_async);

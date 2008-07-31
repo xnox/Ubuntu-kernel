@@ -775,12 +775,12 @@ static struct ieee80211_crypto_ops ieee80211_crypt_tkip = {
 
 static int __init ieee80211_crypto_tkip_init(void)
 {
-	return ieee80211_register_crypto_ops(&ieee80211_crypt_tkip);
+	return cw_ieee80211_register_crypto_ops(&ieee80211_crypt_tkip);
 }
 
 static void __exit ieee80211_crypto_tkip_exit(void)
 {
-	ieee80211_unregister_crypto_ops(&ieee80211_crypt_tkip);
+	cw_ieee80211_unregister_crypto_ops(&ieee80211_crypt_tkip);
 }
 
 module_init(ieee80211_crypto_tkip_init);

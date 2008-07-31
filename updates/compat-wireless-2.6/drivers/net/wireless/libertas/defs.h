@@ -42,11 +42,11 @@
 #define LBS_DEB_SDIO	0x00400000
 #define LBS_DEB_SYSFS	0x00800000
 
-extern unsigned int lbs_debug;
+extern unsigned int cw_lbs_debug;
 
 #ifdef DEBUG
 #define LBS_DEB_LL(grp, grpnam, fmt, args...) \
-do { if ((lbs_debug & (grp)) == (grp)) \
+do { if ((cw_lbs_debug & (grp)) == (grp)) \
   printk(KERN_DEBUG DRV_NAME grpnam "%s: " fmt, \
          in_interrupt() ? " (INT)" : "", ## args); } while (0)
 #else
@@ -98,8 +98,8 @@ static inline void lbs_deb_hex(unsigned int grp, const char *prompt, u8 *buf, in
 	int i = 0;
 
 	if (len &&
-	    (lbs_debug & LBS_DEB_HEX) &&
-	    (lbs_debug & grp))
+	    (cw_lbs_debug & LBS_DEB_HEX) &&
+	    (cw_lbs_debug & grp))
 	{
 		for (i = 1; i <= len; i++) {
 			if ((i & 0xf) == 1) {

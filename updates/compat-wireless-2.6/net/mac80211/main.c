@@ -41,7 +41,7 @@
  * For seeing transmitted packets on monitor interfaces
  * we have a radiotap header too.
  */
-struct ieee80211_tx_status_rtap_hdr {
+struct cw_ieee80211_tx_status_rtap_hdr {
 	struct ieee80211_radiotap_header hdr;
 	__le16 tx_flags;
 	u8 data_retries;
@@ -553,7 +553,7 @@ static int ieee80211_stop(struct net_device *dev)
 	return 0;
 }
 
-int ieee80211_start_tx_ba_session(struct ieee80211_hw *hw, u8 *ra, u16 tid)
+int cw_ieee80211_start_tx_ba_session(struct ieee80211_hw *hw, u8 *ra, u16 tid)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	struct sta_info *sta;
@@ -573,7 +573,7 @@ int ieee80211_start_tx_ba_session(struct ieee80211_hw *hw, u8 *ra, u16 tid)
 
 	rcu_read_lock();
 
-	sta = sta_info_get(local, ra);
+	sta = cw_sta_info_get(local, ra);
 	if (!sta) {
 #ifdef CONFIG_MAC80211_HT_DEBUG
 		printk(KERN_DEBUG "Could not find the station\n");
@@ -695,9 +695,9 @@ exit:
 	rcu_read_unlock();
 	return ret;
 }
-EXPORT_SYMBOL(ieee80211_start_tx_ba_session);
+EXPORT_SYMBOL(cw_ieee80211_start_tx_ba_session);
 
-int ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
+int cw_ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
 				 u8 *ra, u16 tid,
 				 enum ieee80211_back_parties initiator)
 {
@@ -711,7 +711,7 @@ int ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
 		return -EINVAL;
 
 	rcu_read_lock();
-	sta = sta_info_get(local, ra);
+	sta = cw_sta_info_get(local, ra);
 	if (!sta) {
 		rcu_read_unlock();
 		return -ENOENT;
@@ -731,7 +731,7 @@ int ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
 				print_mac(mac, ra), tid);
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 
-	ieee80211_stop_queue(hw, sta->tid_to_tx_q[tid]);
+	cw_ieee80211_stop_queue(hw, sta->tid_to_tx_q[tid]);
 
 	*state = HT_AGG_STATE_REQ_STOP_BA_MSK |
 		(initiator << HT_AGG_STATE_INITIATOR_SHIFT);
@@ -744,7 +744,7 @@ int ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
 	if (ret) {
 		WARN_ON(ret != -EBUSY);
 		*state = HT_AGG_STATE_OPERATIONAL;
-		ieee80211_wake_queue(hw, sta->tid_to_tx_q[tid]);
+		cw_ieee80211_wake_queue(hw, sta->tid_to_tx_q[tid]);
 		goto stop_BA_exit;
 	}
 
@@ -753,9 +753,9 @@ stop_BA_exit:
 	rcu_read_unlock();
 	return ret;
 }
-EXPORT_SYMBOL(ieee80211_stop_tx_ba_session);
+EXPORT_SYMBOL(cw_ieee80211_stop_tx_ba_session);
 
-void ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid)
+void cw_ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	struct sta_info *sta;
@@ -771,7 +771,7 @@ void ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid)
 	}
 
 	rcu_read_lock();
-	sta = sta_info_get(local, ra);
+	sta = cw_sta_info_get(local, ra);
 	if (!sta) {
 		rcu_read_unlock();
 #ifdef CONFIG_MAC80211_HT_DEBUG
@@ -802,14 +802,14 @@ void ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid)
 #ifdef CONFIG_MAC80211_HT_DEBUG
 		printk(KERN_DEBUG "Aggregation is on for tid %d \n", tid);
 #endif
-		ieee80211_wake_queue(hw, sta->tid_to_tx_q[tid]);
+		cw_ieee80211_wake_queue(hw, sta->tid_to_tx_q[tid]);
 	}
 	spin_unlock_bh(&sta->lock);
 	rcu_read_unlock();
 }
-EXPORT_SYMBOL(ieee80211_start_tx_ba_cb);
+EXPORT_SYMBOL(cw_ieee80211_start_tx_ba_cb);
 
-void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid)
+void cw_ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	struct sta_info *sta;
@@ -831,7 +831,7 @@ void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid)
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 
 	rcu_read_lock();
-	sta = sta_info_get(local, ra);
+	sta = cw_sta_info_get(local, ra);
 	if (!sta) {
 #ifdef CONFIG_MAC80211_HT_DEBUG
 		printk(KERN_DEBUG "Could not find station: %s\n",
@@ -843,7 +843,7 @@ void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid)
 	state = &sta->ampdu_mlme.tid_state_tx[tid];
 
 	/* NOTE: no need to use sta->lock in this state check, as
-	 * ieee80211_stop_tx_ba_session will let only
+	 * cw_ieee80211_stop_tx_ba_session will let only
 	 * one stop call to pass through per sta/tid */
 	if ((*state & HT_AGG_STATE_REQ_STOP_BA_MSK) == 0) {
 #ifdef CONFIG_MAC80211_HT_DEBUG
@@ -868,7 +868,7 @@ void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid)
 
 	/* we just requeued the all the frames that were in the removed
 	 * queue, and since we might miss a softirq we do netif_schedule.
-	 * ieee80211_wake_queue is not used here as this queue is not
+	 * cw_ieee80211_wake_queue is not used here as this queue is not
 	 * necessarily stopped */
 	netif_schedule(local->mdev);
 	spin_lock_bh(&sta->lock);
@@ -880,9 +880,9 @@ void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid)
 
 	rcu_read_unlock();
 }
-EXPORT_SYMBOL(ieee80211_stop_tx_ba_cb);
+EXPORT_SYMBOL(cw_ieee80211_stop_tx_ba_cb);
 
-void ieee80211_start_tx_ba_cb_irqsafe(struct ieee80211_hw *hw,
+void cw_cw_ieee80211_start_tx_ba_cb_irqsafe(struct ieee80211_hw *hw,
 				      const u8 *ra, u16 tid)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
@@ -905,9 +905,9 @@ void ieee80211_start_tx_ba_cb_irqsafe(struct ieee80211_hw *hw,
 	skb_queue_tail(&local->skb_queue, skb);
 	tasklet_schedule(&local->tasklet);
 }
-EXPORT_SYMBOL(ieee80211_start_tx_ba_cb_irqsafe);
+EXPORT_SYMBOL(cw_cw_ieee80211_start_tx_ba_cb_irqsafe);
 
-void ieee80211_stop_tx_ba_cb_irqsafe(struct ieee80211_hw *hw,
+void cw_cw_ieee80211_stop_tx_ba_cb_irqsafe(struct ieee80211_hw *hw,
 				     const u8 *ra, u16 tid)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
@@ -930,7 +930,7 @@ void ieee80211_stop_tx_ba_cb_irqsafe(struct ieee80211_hw *hw,
 	skb_queue_tail(&local->skb_queue, skb);
 	tasklet_schedule(&local->tasklet);
 }
-EXPORT_SYMBOL(ieee80211_stop_tx_ba_cb_irqsafe);
+EXPORT_SYMBOL(cw_cw_ieee80211_stop_tx_ba_cb_irqsafe);
 
 static void ieee80211_set_multicast_list(struct net_device *dev)
 {
@@ -1187,7 +1187,7 @@ u32 ieee80211_reset_erp_info(struct net_device *dev)
 	return BSS_CHANGED_ERP_CTS_PROT | BSS_CHANGED_ERP_PREAMBLE;
 }
 
-void ieee80211_tx_status_irqsafe(struct ieee80211_hw *hw,
+void cw_cw_ieee80211_tx_status_irqsafe(struct ieee80211_hw *hw,
 				 struct sk_buff *skb)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
@@ -1208,13 +1208,13 @@ void ieee80211_tx_status_irqsafe(struct ieee80211_hw *hw,
 	}
 	tasklet_schedule(&local->tasklet);
 }
-EXPORT_SYMBOL(ieee80211_tx_status_irqsafe);
+EXPORT_SYMBOL(cw_cw_ieee80211_tx_status_irqsafe);
 
 static void ieee80211_tasklet_handler(unsigned long data)
 {
 	struct ieee80211_local *local = (struct ieee80211_local *) data;
 	struct sk_buff *skb;
-	struct ieee80211_rx_status rx_status;
+	struct cw_ieee80211_rx_status rx_status;
 	struct ieee80211_ra_tid *ra_tid;
 
 	while ((skb = skb_dequeue(&local->skb_queue)) ||
@@ -1226,21 +1226,21 @@ static void ieee80211_tasklet_handler(unsigned long data)
 			/* Clear skb->pkt_type in order to not confuse kernel
 			 * netstack. */
 			skb->pkt_type = 0;
-			__ieee80211_rx(local_to_hw(local), skb, &rx_status);
+			__cw_ieee80211_rx(local_to_hw(local), skb, &rx_status);
 			break;
 		case IEEE80211_TX_STATUS_MSG:
 			skb->pkt_type = 0;
-			ieee80211_tx_status(local_to_hw(local), skb);
+			cw_ieee80211_tx_status(local_to_hw(local), skb);
 			break;
 		case IEEE80211_DELBA_MSG:
 			ra_tid = (struct ieee80211_ra_tid *) &skb->cb;
-			ieee80211_stop_tx_ba_cb(local_to_hw(local),
+			cw_ieee80211_stop_tx_ba_cb(local_to_hw(local),
 						ra_tid->ra, ra_tid->tid);
 			dev_kfree_skb(skb);
 			break;
 		case IEEE80211_ADDBA_MSG:
 			ra_tid = (struct ieee80211_ra_tid *) &skb->cb;
-			ieee80211_start_tx_ba_cb(local_to_hw(local),
+			cw_ieee80211_start_tx_ba_cb(local_to_hw(local),
 						 ra_tid->ra, ra_tid->tid);
 			dev_kfree_skb(skb);
 			break ;
@@ -1268,7 +1268,7 @@ static void ieee80211_remove_tx_extra(struct ieee80211_local *local,
 			IEEE80211_TX_CTL_REQUEUE |
 			IEEE80211_TX_CTL_EAPOL_FRAME;
 
-	hdrlen = ieee80211_get_hdrlen_from_skb(skb);
+	hdrlen = cw_cw_ieee80211_get_hdrlen_from_skb(skb);
 
 	if (!key)
 		goto no_key;
@@ -1383,7 +1383,7 @@ static void ieee80211_handle_filtered_frame(struct ieee80211_local *local,
 	dev_kfree_skb(skb);
 }
 
-void ieee80211_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb)
+void cw_ieee80211_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb)
 {
 	struct sk_buff *skb2;
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
@@ -1391,7 +1391,7 @@ void ieee80211_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb)
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
 	u16 frag, type;
 	__le16 fc;
-	struct ieee80211_tx_status_rtap_hdr *rthdr;
+	struct cw_ieee80211_tx_status_rtap_hdr *rthdr;
 	struct ieee80211_sub_if_data *sdata;
 	struct net_device *prev_dev = NULL;
 	struct sta_info *sta;
@@ -1399,7 +1399,7 @@ void ieee80211_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb)
 	rcu_read_lock();
 
 	if (info->status.excessive_retries) {
-		sta = sta_info_get(local, hdr->addr1);
+		sta = cw_sta_info_get(local, hdr->addr1);
 		if (sta) {
 			if (test_sta_flags(sta, WLAN_STA_PS)) {
 				/*
@@ -1419,7 +1419,7 @@ void ieee80211_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb)
 	    (ieee80211_is_data_qos(fc))) {
 		u16 tid, ssn;
 		u8 *qc;
-		sta = sta_info_get(local, hdr->addr1);
+		sta = cw_sta_info_get(local, hdr->addr1);
 		if (sta) {
 			qc = ieee80211_get_qos_ctl(hdr);
 			tid = qc[0] & 0xf;
@@ -1431,7 +1431,7 @@ void ieee80211_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb)
 	}
 
 	if (info->flags & IEEE80211_TX_STAT_TX_FILTERED) {
-		sta = sta_info_get(local, hdr->addr1);
+		sta = cw_sta_info_get(local, hdr->addr1);
 		if (sta) {
 			ieee80211_handle_filtered_frame(local, sta, skb);
 			rcu_read_unlock();
@@ -1491,12 +1491,12 @@ void ieee80211_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb)
 	/* send frame to monitor interfaces now */
 
 	if (skb_headroom(skb) < sizeof(*rthdr)) {
-		printk(KERN_ERR "ieee80211_tx_status: headroom too small\n");
+		printk(KERN_ERR "cw_ieee80211_tx_status: headroom too small\n");
 		dev_kfree_skb(skb);
 		return;
 	}
 
-	rthdr = (struct ieee80211_tx_status_rtap_hdr *)
+	rthdr = (struct cw_ieee80211_tx_status_rtap_hdr *)
 				skb_push(skb, sizeof(*rthdr));
 
 	memset(rthdr, 0, sizeof(*rthdr));
@@ -1549,9 +1549,9 @@ void ieee80211_tx_status(struct ieee80211_hw *hw, struct sk_buff *skb)
 	rcu_read_unlock();
 	dev_kfree_skb(skb);
 }
-EXPORT_SYMBOL(ieee80211_tx_status);
+EXPORT_SYMBOL(cw_ieee80211_tx_status);
 
-struct ieee80211_hw *ieee80211_alloc_hw(size_t priv_data_len,
+struct ieee80211_hw *cw_ieee80211_alloc_hw(size_t priv_data_len,
 					const struct ieee80211_ops *ops)
 {
 	struct ieee80211_local *local;
@@ -1577,7 +1577,7 @@ struct ieee80211_hw *ieee80211_alloc_hw(size_t priv_data_len,
 		      NETDEV_ALIGN_CONST) & ~NETDEV_ALIGN_CONST) +
 		    priv_data_len;
 
-	wiphy = wiphy_new(&mac80211_config_ops, priv_size);
+	wiphy = cw_wiphy_new(&mac80211_config_ops, priv_size);
 
 	if (!wiphy)
 		return NULL;
@@ -1632,9 +1632,9 @@ struct ieee80211_hw *ieee80211_alloc_hw(size_t priv_data_len,
 
 	return local_to_hw(local);
 }
-EXPORT_SYMBOL(ieee80211_alloc_hw);
+EXPORT_SYMBOL(cw_ieee80211_alloc_hw);
 
-int ieee80211_register_hw(struct ieee80211_hw *hw)
+int cw_ieee80211_register_hw(struct ieee80211_hw *hw)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	const char *name;
@@ -1661,7 +1661,7 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 		}
 	}
 
-	result = wiphy_register(local->hw.wiphy);
+	result = cw_wiphy_register(local->hw.wiphy);
 	if (result < 0)
 		return result;
 
@@ -1696,7 +1696,7 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 
 	local->mdev = mdev;
 
-	ieee80211_rx_bss_list_init(local);
+	cw_ieee80211_rx_bss_list_init(local);
 
 	mdev->hard_start_xmit = ieee80211_master_start_xmit;
 	mdev->open = ieee80211_master_open;
@@ -1723,7 +1723,7 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 	 * interfaces, but never both at the same time.
 	 */
 	local->tx_headroom = max_t(unsigned int , local->hw.extra_tx_headroom,
-				   sizeof(struct ieee80211_tx_status_rtap_hdr));
+				   sizeof(struct cw_ieee80211_tx_status_rtap_hdr));
 
 	debugfs_hw_add(local);
 
@@ -1801,12 +1801,12 @@ fail_workqueue:
 	if (local->mdev)
 		free_netdev(local->mdev);
 fail_mdev_alloc:
-	wiphy_unregister(local->hw.wiphy);
+	cw_wiphy_unregister(local->hw.wiphy);
 	return result;
 }
-EXPORT_SYMBOL(ieee80211_register_hw);
+EXPORT_SYMBOL(cw_ieee80211_register_hw);
 
-void ieee80211_unregister_hw(struct ieee80211_hw *hw)
+void cw_ieee80211_unregister_hw(struct ieee80211_hw *hw)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
@@ -1829,7 +1829,7 @@ void ieee80211_unregister_hw(struct ieee80211_hw *hw)
 
 	rtnl_unlock();
 
-	ieee80211_rx_bss_list_deinit(local);
+	cw_ieee80211_rx_bss_list_deinit(local);
 	ieee80211_clear_tx_pending(local);
 	sta_info_stop(local);
 	rate_control_deinitialize(local);
@@ -1843,20 +1843,20 @@ void ieee80211_unregister_hw(struct ieee80211_hw *hw)
 	skb_queue_purge(&local->skb_queue_unreliable);
 
 	destroy_workqueue(local->hw.workqueue);
-	wiphy_unregister(local->hw.wiphy);
+	cw_wiphy_unregister(local->hw.wiphy);
 	ieee80211_wep_free(local);
 	ieee80211_led_exit(local);
 	free_netdev(local->mdev);
 }
-EXPORT_SYMBOL(ieee80211_unregister_hw);
+EXPORT_SYMBOL(cw_ieee80211_unregister_hw);
 
-void ieee80211_free_hw(struct ieee80211_hw *hw)
+void cw_ieee80211_free_hw(struct ieee80211_hw *hw)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
-	wiphy_free(local->hw.wiphy);
+	cw_wiphy_free(local->hw.wiphy);
 }
-EXPORT_SYMBOL(ieee80211_free_hw);
+EXPORT_SYMBOL(cw_ieee80211_free_hw);
 
 static int __init ieee80211_init(void)
 {

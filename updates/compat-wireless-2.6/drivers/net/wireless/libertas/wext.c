@@ -1048,7 +1048,7 @@ static int lbs_set_rate(struct net_device *dev, struct iw_request_info *info,
 	}
 
 	/* Try the newer command first (Firmware Spec 5.1 and above) */
-	ret = lbs_cmd_802_11_rate_adapt_rateset(priv, CMD_ACT_SET);
+	ret = cw_lbs_cmd_802_11_rate_adapt_rateset(priv, CMD_ACT_SET);
 
 	/* Fallback to older version */
 	if (ret)
@@ -1948,7 +1948,7 @@ static int lbs_set_essid(struct net_device *dev, struct iw_request_info *info,
 		lbs_deb_wext("requested any SSID\n");
 	} else {
 		lbs_deb_wext("requested SSID '%s'\n",
-		             escape_essid(ssid, ssid_len));
+		             cw_escape_essid(ssid, ssid_len));
 	}
 
 out:

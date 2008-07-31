@@ -410,14 +410,14 @@ static int iwl_sensitivity_write(struct iwl_priv *priv)
 	memcpy(&(priv->sensitivity_tbl[0]), &(cmd.table[0]),
 	       sizeof(u16)*HD_TABLE_SIZE);
 
-	ret = iwl_send_cmd(priv, &cmd_out);
+	ret = cw_iwl_send_cmd(priv, &cmd_out);
 	if (ret)
 		IWL_ERROR("SENSITIVITY_CMD failed\n");
 
 	return ret;
 }
 
-void iwl_init_sensitivity(struct iwl_priv *priv)
+void cw_iwl_init_sensitivity(struct iwl_priv *priv)
 {
 	int ret = 0;
 	int i;
@@ -427,7 +427,7 @@ void iwl_init_sensitivity(struct iwl_priv *priv)
 	if (priv->disable_sens_cal)
 		return;
 
-	IWL_DEBUG_CALIB("Start iwl_init_sensitivity\n");
+	IWL_DEBUG_CALIB("Start cw_iwl_init_sensitivity\n");
 
 	/* Clear driver's sensitivity algo data */
 	data = &(priv->sensitivity_data);
@@ -467,9 +467,9 @@ void iwl_init_sensitivity(struct iwl_priv *priv)
 	ret |= iwl_sensitivity_write(priv);
 	IWL_DEBUG_CALIB("<<return 0x%X\n", ret);
 }
-EXPORT_SYMBOL(iwl_init_sensitivity);
+EXPORT_SYMBOL(cw_iwl_init_sensitivity);
 
-void iwl_sensitivity_calibration(struct iwl_priv *priv,
+void cw_iwl_sensitivity_calibration(struct iwl_priv *priv,
 				    struct iwl_notif_statistics *resp)
 {
 	u32 rx_enable_time;
@@ -575,7 +575,7 @@ void iwl_sensitivity_calibration(struct iwl_priv *priv,
 
 	return;
 }
-EXPORT_SYMBOL(iwl_sensitivity_calibration);
+EXPORT_SYMBOL(cw_iwl_sensitivity_calibration);
 
 /*
  * Accumulate 20 beacons of signal and noise statistics for each of
@@ -583,7 +583,7 @@ EXPORT_SYMBOL(iwl_sensitivity_calibration);
  * 1)  Which antennas are connected.
  * 2)  Differential rx gain settings to balance the 3 receivers.
  */
-void iwl_chain_noise_calibration(struct iwl_priv *priv,
+void cw_iwl_chain_noise_calibration(struct iwl_priv *priv,
 				 struct iwl_notif_statistics *stat_resp)
 {
 	struct iwl_chain_noise_data *data = NULL;
@@ -780,10 +780,10 @@ void iwl_chain_noise_calibration(struct iwl_priv *priv,
 	priv->cfg->ops->utils->gain_computation(priv, average_noise,
 		min_average_noise_antenna_i, min_average_noise);
 }
-EXPORT_SYMBOL(iwl_chain_noise_calibration);
+EXPORT_SYMBOL(cw_iwl_chain_noise_calibration);
 
 
-void iwl_reset_run_time_calib(struct iwl_priv *priv)
+void cw_iwl_reset_run_time_calib(struct iwl_priv *priv)
 {
 	int i;
 	memset(&(priv->sensitivity_data), 0,
@@ -796,7 +796,7 @@ void iwl_reset_run_time_calib(struct iwl_priv *priv)
 
 	/* Ask for statistics now, the uCode will send notification
 	 * periodically after association */
-	iwl_send_statistics_request(priv, CMD_ASYNC);
+	cw_iwl_send_statistics_request(priv, CMD_ASYNC);
 }
-EXPORT_SYMBOL(iwl_reset_run_time_calib);
+EXPORT_SYMBOL(cw_iwl_reset_run_time_calib);
 

@@ -766,7 +766,7 @@ void zd_usb_disable_tx(struct zd_usb *usb)
 	}
 	tx->enabled = 0;
 	tx->submitted_urbs = 0;
-	/* The stopped state is ignored, relying on ieee80211_wake_queues()
+	/* The stopped state is ignored, relying on cw_cw_ieee80211_wake_queues()
 	 * in a potentionally following zd_usb_enable_tx().
 	 */
 	spin_unlock_irqrestore(&tx->lock, flags);
@@ -787,7 +787,7 @@ void zd_usb_enable_tx(struct zd_usb *usb)
 	spin_lock_irqsave(&tx->lock, flags);
 	tx->enabled = 1;
 	tx->submitted_urbs = 0;
-	ieee80211_wake_queues(zd_usb_to_hw(usb));
+	cw_cw_ieee80211_wake_queues(zd_usb_to_hw(usb));
 	tx->stopped = 0;
 	spin_unlock_irqrestore(&tx->lock, flags);
 }
@@ -850,7 +850,7 @@ static void tx_dec_submitted_urbs(struct zd_usb *usb)
 	spin_lock_irqsave(&tx->lock, flags);
 	--tx->submitted_urbs;
 	if (tx->stopped && tx->submitted_urbs <= ZD_USB_TX_LOW) {
-		ieee80211_wake_queues(zd_usb_to_hw(usb));
+		cw_cw_ieee80211_wake_queues(zd_usb_to_hw(usb));
 		tx->stopped = 0;
 	}
 	spin_unlock_irqrestore(&tx->lock, flags);
@@ -864,7 +864,7 @@ static void tx_inc_submitted_urbs(struct zd_usb *usb)
 	spin_lock_irqsave(&tx->lock, flags);
 	++tx->submitted_urbs;
 	if (!tx->stopped && tx->submitted_urbs > ZD_USB_TX_HIGH) {
-		ieee80211_stop_queues(zd_usb_to_hw(usb));
+		cw_cw_ieee80211_stop_queues(zd_usb_to_hw(usb));
 		tx->stopped = 1;
 	}
 	spin_unlock_irqrestore(&tx->lock, flags);
@@ -1177,7 +1177,7 @@ static int probe(struct usb_interface *intf, const struct usb_device_id *id)
 		goto error;
 	}
 
-	r = ieee80211_register_hw(hw);
+	r = cw_ieee80211_register_hw(hw);
 	if (r) {
 		dev_dbg_f(&intf->dev,
 			 "couldn't register device. Error number %d\n", r);
@@ -1191,7 +1191,7 @@ error:
 	usb_reset_device(interface_to_usbdev(intf));
 	if (hw) {
 		zd_mac_clear(zd_hw_mac(hw));
-		ieee80211_free_hw(hw);
+		cw_ieee80211_free_hw(hw);
 	}
 	return r;
 }
@@ -1212,7 +1212,7 @@ static void disconnect(struct usb_interface *intf)
 
 	dev_dbg_f(zd_usb_dev(usb), "\n");
 
-	ieee80211_unregister_hw(hw);
+	cw_ieee80211_unregister_hw(hw);
 
 	/* Just in case something has gone wrong! */
 	zd_usb_disable_rx(usb);
@@ -1226,7 +1226,7 @@ static void disconnect(struct usb_interface *intf)
 	usb_reset_device(interface_to_usbdev(intf));
 
 	zd_mac_clear(mac);
-	ieee80211_free_hw(hw);
+	cw_ieee80211_free_hw(hw);
 	dev_dbg(&intf->dev, "disconnected\n");
 }
 

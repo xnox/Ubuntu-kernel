@@ -746,6 +746,8 @@ struct device *device_create_drvdata(struct class *class,
 EXPORT_SYMBOL_GPL(device_create_drvdata);
 #endif
 
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)) */
+
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
 
 /* rfkill notification chain */
@@ -838,6 +840,3 @@ int rfkill_force_state(struct rfkill *rfkill, enum rfkill_state state)
 EXPORT_SYMBOL(rfkill_force_state);
 
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27) */
-
-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)) */
-

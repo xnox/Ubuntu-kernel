@@ -39,7 +39,7 @@ struct p54_control_hdr {
 } __attribute__ ((packed));
 
 #define EEPROM_READBACK_LEN (sizeof(struct p54_control_hdr) + 4 /* p54_eeprom_lm86 */)
-#define MAX_RX_SIZE (IEEE80211_MAX_RTS_THRESHOLD + sizeof(struct p54_control_hdr) + 20 /* length of struct p54_rx_hdr */ + 16 )
+#define MAX_RX_SIZE (IEEE80211_MAX_RTS_THRESHOLD + sizeof(struct p54_control_hdr) + 20 /* length of struct cw_p54_rx_hdr */ + 16 )
 
 #define ISL38XX_DEV_FIRMWARE_ADDR 0x20000
 
@@ -67,11 +67,11 @@ struct p54_common {
 	struct ieee80211_tx_queue_stats tx_stats[4];
 };
 
-int p54_rx(struct ieee80211_hw *dev, struct sk_buff *skb);
-void p54_parse_firmware(struct ieee80211_hw *dev, const struct firmware *fw);
-int p54_parse_eeprom(struct ieee80211_hw *dev, void *eeprom, int len);
-void p54_fill_eeprom_readback(struct p54_control_hdr *hdr);
-struct ieee80211_hw *p54_init_common(size_t priv_data_len);
-void p54_free_common(struct ieee80211_hw *dev);
+int cw_p54_rx(struct ieee80211_hw *dev, struct sk_buff *skb);
+void cw_p54_parse_firmware(struct ieee80211_hw *dev, const struct firmware *fw);
+int cw_p54_parse_eeprom(struct ieee80211_hw *dev, void *eeprom, int len);
+void cw_p54_fill_eeprom_readback(struct p54_control_hdr *hdr);
+struct ieee80211_hw *cw_p54_init_common(size_t priv_data_len);
+void cw_p54_free_common(struct ieee80211_hw *dev);
 
 #endif /* PRISM54_H */

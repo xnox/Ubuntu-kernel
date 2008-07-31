@@ -325,7 +325,7 @@ static int lbs_do_scan(struct lbs_private *priv, uint8_t bsstype,
 	lbs_deb_hex(LBS_DEB_SCAN, "SCAN_TLV", scan_cmd->tlvbuffer,
 		    tlv - scan_cmd->tlvbuffer);
 
-	ret = __lbs_cmd(priv, CMD_802_11_SCAN, &scan_cmd->hdr,
+	ret = cw___lbs_cmd(priv, CMD_802_11_SCAN, &scan_cmd->hdr,
 			le16_to_cpu(scan_cmd->hdr.size),
 			lbs_ret_80211_scan, 0);
 
@@ -453,7 +453,7 @@ int lbs_scan_networks(struct lbs_private *priv, int full_scan)
 	list_for_each_entry(iter, &priv->network_list, list)
 		lbs_deb_scan("%02d: BSSID %s, RSSI %d, SSID '%s'\n",
 			     i++, print_mac(mac, iter->bssid), iter->rssi,
-			     escape_essid(iter->ssid, iter->ssid_len));
+			     cw_escape_essid(iter->ssid, iter->ssid_len));
 	mutex_unlock(&priv->lock);
 #endif
 
@@ -601,7 +601,7 @@ static int lbs_process_bss(struct bss_descriptor *bss,
 			bss->ssid_len = elem->len;
 			memcpy(bss->ssid, elem->data, elem->len);
 			lbs_deb_scan("got SSID IE: '%s', len %u\n",
-			             escape_essid(bss->ssid, bss->ssid_len),
+			             cw_escape_essid(bss->ssid, bss->ssid_len),
 			             bss->ssid_len);
 			break;
 
@@ -744,7 +744,7 @@ int lbs_send_specific_ssid_scan(struct lbs_private *priv, uint8_t *ssid,
 	int ret = 0;
 
 	lbs_deb_enter_args(LBS_DEB_SCAN, "SSID '%s'\n",
-			   escape_essid(ssid, ssid_len));
+			   cw_escape_essid(ssid, ssid_len));
 
 	if (!ssid_len)
 		goto out;
@@ -963,7 +963,7 @@ int lbs_set_scan(struct net_device *dev, struct iw_request_info *info,
 		priv->scan_ssid_len = req->essid_len;
 		memcpy(priv->scan_ssid, req->essid, priv->scan_ssid_len);
 		lbs_deb_wext("set_scan, essid '%s'\n",
-			escape_essid(priv->scan_ssid, priv->scan_ssid_len));
+			cw_escape_essid(priv->scan_ssid, priv->scan_ssid_len));
 	} else {
 		priv->scan_ssid_len = 0;
 	}

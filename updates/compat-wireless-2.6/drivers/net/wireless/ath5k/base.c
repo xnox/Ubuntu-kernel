@@ -433,7 +433,7 @@ ath5k_pci_probe(struct pci_dev *pdev,
 	 * Allocate hw (mac80211 main struct)
 	 * and hw->priv (driver private data)
 	 */
-	hw = ieee80211_alloc_hw(sizeof(*sc), &ath5k_hw_ops);
+	hw = cw_ieee80211_alloc_hw(sizeof(*sc), &ath5k_hw_ops);
 	if (hw == NULL) {
 		dev_err(&pdev->dev, "cannot allocate ieee80211_hw\n");
 		ret = -ENOMEM;
@@ -552,7 +552,7 @@ err_irq:
 	free_irq(pdev->irq, sc);
 err_free:
 	pci_disable_msi(pdev);
-	ieee80211_free_hw(hw);
+	cw_ieee80211_free_hw(hw);
 err_map:
 	pci_iounmap(pdev, mem);
 err_reg:
@@ -577,7 +577,7 @@ ath5k_pci_remove(struct pci_dev *pdev)
 	pci_iounmap(pdev, sc->iobase);
 	pci_release_region(pdev, 0);
 	pci_disable_device(pdev);
-	ieee80211_free_hw(hw);
+	cw_ieee80211_free_hw(hw);
 }
 
 #ifdef CONFIG_PM
@@ -736,7 +736,7 @@ ath5k_attach(struct pci_dev *pdev, struct ieee80211_hw *hw)
 	memset(sc->bssidmask, 0xff, ETH_ALEN);
 	ath5k_hw_set_bssid_mask(sc->ah, sc->bssidmask);
 
-	ret = ieee80211_register_hw(hw);
+	ret = cw_ieee80211_register_hw(hw);
 	if (ret) {
 		ATH5K_ERR(sc, "can't register ieee80211 hw\n");
 		goto err_queues;
@@ -773,7 +773,7 @@ ath5k_detach(struct pci_dev *pdev, struct ieee80211_hw *hw)
 	 * XXX: ??? detach ath5k_hw ???
 	 * Other than that, it's straightforward...
 	 */
-	ieee80211_unregister_hw(hw);
+	cw_ieee80211_unregister_hw(hw);
 	ath5k_desc_free(sc, pdev);
 	ath5k_txq_release(sc);
 	ath5k_hw_release_tx_queue(sc->ah, sc->bhalq);
@@ -1229,7 +1229,7 @@ ath5k_txbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 		pktlen += info->control.icv_len;
 	}
 	ret = ah->ah_setup_tx_desc(ah, ds, pktlen,
-		ieee80211_get_hdrlen_from_skb(skb), AR5K_PKT_TYPE_NORMAL,
+		cw_cw_ieee80211_get_hdrlen_from_skb(skb), AR5K_PKT_TYPE_NORMAL,
 		(sc->power_level * 2),
 		ieee80211_get_tx_rate(sc->hw, info)->hw_value,
 		info->control.retry_limit, keyidx, 0, flags, 0, 0);
@@ -1507,7 +1507,7 @@ ath5k_txq_cleanup(struct ath5k_softc *sc)
 					sc->txqs[i].link);
 			}
 	}
-	ieee80211_wake_queues(sc->hw); /* XXX move to callers */
+	cw_cw_ieee80211_wake_queues(sc->hw); /* XXX move to callers */
 
 	for (i = 0; i < ARRAY_SIZE(sc->txqs); i++)
 		if (sc->txqs[i].setup)
@@ -1595,7 +1595,7 @@ ath5k_rx_decrypted(struct ath5k_softc *sc, struct ath5k_desc *ds,
 		struct sk_buff *skb, struct ath5k_rx_status *rs)
 {
 	struct ieee80211_hdr *hdr = (void *)skb->data;
-	unsigned int keyix, hlen = ieee80211_get_hdrlen_from_skb(skb);
+	unsigned int keyix, hlen = cw_cw_ieee80211_get_hdrlen_from_skb(skb);
 
 	if (!(rs->rs_status & AR5K_RXERR_DECRYPT) &&
 			rs->rs_keyix != AR5K_RXKEYIX_INVALID)
@@ -1619,7 +1619,7 @@ ath5k_rx_decrypted(struct ath5k_softc *sc, struct ath5k_desc *ds,
 
 static void
 ath5k_check_ibss_tsf(struct ath5k_softc *sc, struct sk_buff *skb,
-		     struct ieee80211_rx_status *rxs)
+		     struct cw_ieee80211_rx_status *rxs)
 {
 	u64 tsf, bc_tstamp;
 	u32 hw_tu;
@@ -1678,7 +1678,7 @@ ath5k_check_ibss_tsf(struct ath5k_softc *sc, struct sk_buff *skb,
 static void
 ath5k_tasklet_rx(unsigned long data)
 {
-	struct ieee80211_rx_status rxs = {};
+	struct cw_ieee80211_rx_status rxs = {};
 	struct ath5k_rx_status rs = {};
 	struct sk_buff *skb;
 	struct ath5k_softc *sc = (void *)data;
@@ -1765,7 +1765,7 @@ accept:
 		 * the header and the payload data if the header length is
 		 * not multiples of 4 - remove it
 		 */
-		hdrlen = ieee80211_get_hdrlen_from_skb(skb);
+		hdrlen = cw_cw_ieee80211_get_hdrlen_from_skb(skb);
 		if (hdrlen & 3) {
 			pad = hdrlen % 4;
 			memmove(skb->data + pad, skb->data, hdrlen);
@@ -1812,7 +1812,7 @@ accept:
 		if (sc->opmode == IEEE80211_IF_TYPE_IBSS)
 			ath5k_check_ibss_tsf(sc, skb, &rxs);
 
-		__ieee80211_rx(sc->hw, skb, &rxs);
+		__cw_ieee80211_rx(sc->hw, skb, &rxs);
 next:
 		list_move_tail(&bf->list, &sc->rxbuf);
 	} while (ath5k_rxbuf_setup(sc, bf) == 0);
@@ -1871,7 +1871,7 @@ ath5k_tx_processq(struct ath5k_softc *sc, struct ath5k_txq *txq)
 			info->status.ack_signal = ts.ts_rssi;
 		}
 
-		ieee80211_tx_status(sc->hw, skb);
+		cw_ieee80211_tx_status(sc->hw, skb);
 		sc->tx_stats[txq->qnum].count++;
 
 		spin_lock(&sc->txbuflock);
@@ -1884,7 +1884,7 @@ ath5k_tx_processq(struct ath5k_softc *sc, struct ath5k_txq *txq)
 		txq->link = NULL;
 	spin_unlock(&txq->lock);
 	if (sc->txbuf_len > ATH_TXBUF / 5)
-		ieee80211_wake_queues(sc->hw);
+		cw_cw_ieee80211_wake_queues(sc->hw);
 }
 
 static void
@@ -1944,7 +1944,7 @@ ath5k_beacon_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 
 	ds->ds_data = bf->skbaddr;
 	ret = ah->ah_setup_tx_desc(ah, ds, skb->len,
-			ieee80211_get_hdrlen_from_skb(skb),
+			cw_cw_ieee80211_get_hdrlen_from_skb(skb),
 			AR5K_PKT_TYPE_BEACON, (sc->power_level * 2),
 			ieee80211_get_tx_rate(sc->hw, info)->hw_value,
 			1, AR5K_TXKEYIX_INVALID,
@@ -2267,7 +2267,7 @@ ath5k_stop_locked(struct ath5k_softc *sc)
 	 * Note that some of this work is not possible if the
 	 * hardware is gone (invalid).
 	 */
-	ieee80211_stop_queues(sc->hw);
+	cw_cw_ieee80211_stop_queues(sc->hw);
 
 	if (!test_bit(ATH_STAT_INVALID, sc->status)) {
 		ath5k_led_off(sc);
@@ -2439,7 +2439,7 @@ ath5k_calibrate(unsigned long data)
 	struct ath5k_hw *ah = sc->ah;
 
 	ATH5K_DBG(sc, ATH5K_DEBUG_CALIBRATE, "channel %u/%x\n",
-		ieee80211_frequency_to_channel(sc->curchan->center_freq),
+		cw_ieee80211_frequency_to_channel(sc->curchan->center_freq),
 		sc->curchan->hw_value);
 
 	if (ath5k_hw_get_rf_gain(ah) == AR5K_RFGAIN_NEED_CHANGE) {
@@ -2452,7 +2452,7 @@ ath5k_calibrate(unsigned long data)
 	}
 	if (ath5k_hw_phy_calibrate(ah, sc->curchan))
 		ATH5K_ERR(sc, "calibration of channel %u failed\n",
-			ieee80211_frequency_to_channel(
+			cw_ieee80211_frequency_to_channel(
 				sc->curchan->center_freq));
 
 	mod_timer(&sc->calib_tim, round_jiffies(jiffies +
@@ -2607,7 +2607,7 @@ ath5k_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 	 * the hardware expects the header padded to 4 byte boundaries
 	 * if this is not the case we add the padding after the header
 	 */
-	hdrlen = ieee80211_get_hdrlen_from_skb(skb);
+	hdrlen = cw_cw_ieee80211_get_hdrlen_from_skb(skb);
 	if (hdrlen & 3) {
 		pad = hdrlen % 4;
 		if (skb_headroom(skb) < pad) {
@@ -2623,14 +2623,14 @@ ath5k_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 	if (list_empty(&sc->txbuf)) {
 		ATH5K_ERR(sc, "no further txbuf available, dropping packet\n");
 		spin_unlock_irqrestore(&sc->txbuflock, flags);
-		ieee80211_stop_queue(hw, skb_get_queue_mapping(skb));
+		cw_ieee80211_stop_queue(hw, skb_get_queue_mapping(skb));
 		return -1;
 	}
 	bf = list_first_entry(&sc->txbuf, struct ath5k_buf, list);
 	list_del(&bf->list);
 	sc->txbuf_len--;
 	if (list_empty(&sc->txbuf))
-		ieee80211_stop_queues(hw);
+		cw_cw_ieee80211_stop_queues(hw);
 	spin_unlock_irqrestore(&sc->txbuflock, flags);
 
 	bf->skb = skb;
@@ -2684,7 +2684,7 @@ ath5k_reset(struct ieee80211_hw *hw)
 	ath5k_beacon_config(sc);
 	/* intrs are started by ath5k_beacon_config */
 
-	ieee80211_wake_queues(hw);
+	cw_cw_ieee80211_wake_queues(hw);
 
 	return 0;
 err:
@@ -2787,7 +2787,7 @@ ath5k_config_interface(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 
 	if (conf->changed & IEEE80211_IFCC_BEACON &&
 	    vif->type == IEEE80211_IF_TYPE_IBSS) {
-		struct sk_buff *beacon = ieee80211_beacon_get(hw, vif);
+		struct sk_buff *beacon = cw_ieee80211_beacon_get(hw, vif);
 		if (!beacon) {
 			ret = -ENOMEM;
 			goto unlock;

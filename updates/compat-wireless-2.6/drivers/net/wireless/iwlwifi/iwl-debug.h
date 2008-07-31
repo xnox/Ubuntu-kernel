@@ -63,8 +63,8 @@ struct iwl_debugfs {
 	u32 sram_len;
 };
 
-int iwl_dbgfs_register(struct iwl_priv *priv, const char *name);
-void iwl_dbgfs_unregister(struct iwl_priv *priv);
+int cw_iwl_dbgfs_register(struct iwl_priv *priv, const char *name);
+void cw_iwl_dbgfs_unregister(struct iwl_priv *priv);
 #endif
 
 #else
@@ -79,11 +79,11 @@ static inline void IWL_DEBUG_LIMIT(int level, const char *fmt, ...)
 
 
 #ifndef CONFIG_IWLWIFI_DEBUGFS
-static inline int iwl_dbgfs_register(struct iwl_priv *priv, const char *name)
+static inline int cw_iwl_dbgfs_register(struct iwl_priv *priv, const char *name)
 {
 	return 0;
 }
-static inline void iwl_dbgfs_unregister(struct iwl_priv *priv)
+static inline void cw_iwl_dbgfs_unregister(struct iwl_priv *priv)
 {
 }
 #endif				/* CONFIG_IWLWIFI_DEBUGFS */
