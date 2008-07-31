@@ -59,8 +59,12 @@ install-%: $(stampdir)/stamp-build-%
 	#
 	cp firmware/iwlwifi/*4965*/*.ucode $(firmdir)/iwlwifi-4965-2-lbm.ucode
 	cp firmware/iwlwifi/*3945*/*.ucode $(firmdir)/iwlwifi-3945-1-lbm.ucode
-	cd $(builddir)/build-$*; find . -type f -name '*.ko' | \
-		cpio -dumpl $(moddir)/updates
+	#
+	# Preface each module name with lbm_ so that it doesn't conflict
+	# with existing module names.
+	#
+	install -d $(moddir)/updates
+	find $(builddir)/build-$* -type f -name '*.ko' | while read f ; do cp -v $${f} $(moddir)/updates/lbm_`basename $${f}`; done
 
 ifeq ($(no_image_strip),)
 	find $(pkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
