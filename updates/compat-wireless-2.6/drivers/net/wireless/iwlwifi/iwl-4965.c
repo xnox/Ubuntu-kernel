@@ -53,7 +53,7 @@ static int iwl4965_hw_get_temperature(const struct iwl_priv *priv);
  *   *only* when uCode interface or architecture changes so that it
  *   is not compatible with earlier drivers.
  * This number will also appear in << 8 position of 1st dword of uCode file */
-#define IWL4965_UCODE_API "-2"
+#define IWL4965_UCODE_API "-2-lbm"
 
 
 /* module parameters */
