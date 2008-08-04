@@ -1,3 +1,11 @@
+linux-backports-modules-2.6.24 (2.6.24-20.22) hardy-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Fix i4965 firmware name (forgot the '-lbm' on the end of the name)
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Sun, 03 Aug 2008 23:25:09 -0600
+
 linux-backports-modules-2.6.24 (2.6.24-20.21) hardy-proposed; urgency=low
 
   [Tim Gardner]
