@@ -1,0 +1,5 @@
+linux-ports-meta (2.6.25.1.1) intrepid; urgency=low
+
+  * Initial release.
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Fri, 01 Aug 2008 09:28:25 -0400

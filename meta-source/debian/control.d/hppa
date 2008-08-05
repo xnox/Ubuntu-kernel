@@ -1,0 +1,60 @@
+#
+# hppa32
+#
+Package: linux-ports-hppa32
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-ports-image-hppa32 (= ${binary:Version})
+Description: Complete Linux kernel on 32-bit PA-RISC.
+ This package will always depend on the latest complete Linux kernel available
+ for 32-bit PA-RISC.
+
+Package: linux-ports-image-hppa32
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-hppa32
+Description: Linux kernel image on 32-bit PA-RISC
+ This package will always depend on the latest kernel image available
+ for 32-bit PA-RISC.
+
+Package: linux-ports-headers-hppa32
+Architecture: hppa
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-hppa32
+Description: Linux kernel headers on 32-bit PA-RISC
+ This package will always depend on the latest kernel headers available
+ for 32-bit PA-RISC.
+
+#
+# hppa64
+#
+Package: linux-ports-hppa64
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-ports-image-hppa64 (= ${binary:Version})
+Description: Complete Linux kernel on 64-bit PA-RISC.
+ This package will always depend on the latest complete Linux kernel available
+ for 64-bit PA-RISC.
+
+Package: linux-ports-image-hppa64
+Architecture: hppa
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-hppa64
+Description: Linux kernel image on 64-bit PA-RISC
+ This package will always depend on the latest kernel image available
+ for 64-bit PA-RISC.
+
+Package: linux-ports-headers-hppa64
+Architecture: hppa
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-hppa64
+Description: Linux kernel headers on 64-bit PA-RISC
+ This package will always depend on the latest kernel headers available
+ for 64-bit PA-RISC.
+

@@ -1,0 +1,42 @@
+Source: linux-ports-meta
+Section: devel
+Priority: optional
+Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Standards-Version: 3.6.1
+Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3), gawk
+
+Package: linux-ports-source
+Architecture: all
+Section: devel
+Priority: optional
+Depends: linux-ports-source-${kernel-version}
+Description: Linux kernel source with Ubuntu patches
+ This package will always depend on the latest Linux kernel source code
+ available. The Ubuntu patches have been applied.
+
+Package: linux-ports-doc
+Architecture: all
+Section: doc
+Priority: optional
+Depends: linux-ports-doc-${kernel-version}
+Description: Linux kernel documentation
+ This package will always depend on the latest Linux kernel documentation
+ available.
+
+Package: linux-ports
+Architecture: i386 powerpc hppa sparc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-ports-image (= ${binary:Version})
+Description: Generic complete Linux kernel.
+ This package will always depend on the latest generic complete Linux kernel
+ available.
+
+Package: linux-ports-image
+Architecture: i386 powerpc hppa sparc
+Section: metapackages
+Priority: optional
+Depends: linux-ports-image-${generic-depends} (= ${binary:Version})
+Description: Generic Linux kernel image.
+ This package will always depend on the latest generic Linux kernel image
+ available.

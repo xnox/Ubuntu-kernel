@@ -1,0 +1,37 @@
+#
+# 386 (tiny i386 kernel)
+#
+Package: linux-ports-386
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-ports-image-386 (= ${binary:Version})
+Description: Complete Linux kernel on 386.
+ This package will always depend on the latest complete Linux kernel available
+ for 386.
+
+Package: linux-ports-image-386
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-386
+Description: Linux kernel image on 386.
+ This package will always depend on the latest kernel image available
+ for 386.
+
+Package: linux-ports-headers-386
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-386
+Description: Linux kernel headers on 386
+ This package will always depend on the latest kernel headers available
+ for 386.
+
+Package: linux-ports-image-debug-386
+Architecture: i386
+Section: devel
+Depends: linux-image-debug-${kernel-abi-version}-386
+Description: Linux kernel debug image for 386 kernel image
+ This package will always depend on the latest 386 kernel debug image.
+
