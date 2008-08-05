@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook5) hardy; urgency=low
+
+  [Michael Frey]
+
+  * Fix for QH Codec verb table (LP#248678)
+
+ -- Michael Frey <michael.frey@canonical.com>  Tue, 05 Aug 2008 10:44:55 -0400
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook4) hardy; urgency=low
 
   [Michael Frey]
