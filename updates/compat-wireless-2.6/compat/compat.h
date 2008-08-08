@@ -441,7 +441,7 @@ static inline void set_freezable(void) {}
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
 /* Added on 2.6.24 in include/linux/types.h by Al viro on commit 142956af */
 typedef unsigned long               uintptr_t;
-#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25)) */
+#endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)) */
 
 
 

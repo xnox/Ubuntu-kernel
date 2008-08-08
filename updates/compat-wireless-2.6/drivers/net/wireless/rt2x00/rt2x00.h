@@ -35,7 +35,6 @@
 #include <linux/etherdevice.h>
 
 #include <net/mac80211.h>
-#include <net/cfg80211.h>
 
 #include "rt2x00debug.h"
 #include "rt2x00leds.h"

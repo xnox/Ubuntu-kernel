@@ -640,6 +640,8 @@ int pci_try_set_mwi(struct pci_dev *dev)
 EXPORT_SYMBOL(pci_try_set_mwi);
 #endif
 
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)) */
+
 /* All things not in 2.6.25 */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))
 
@@ -744,9 +746,7 @@ struct device *device_create_drvdata(struct class *class,
 	return dev;
 }
 EXPORT_SYMBOL_GPL(device_create_drvdata);
-#endif
-
-#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)) */
+#endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26) */
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
 
@@ -840,3 +840,4 @@ int rfkill_force_state(struct rfkill *rfkill, enum rfkill_state state)
 EXPORT_SYMBOL(rfkill_force_state);
 
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27) */
+
