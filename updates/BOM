@@ -19,8 +19,9 @@ all: $(CDIR)/wireless-testing/Makefile
 	rm -rf $(CWDIR)
 	cd $(CDIR); git clone git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/$(CW).git $(CW)
 	cd $(CWDIR);  GIT_TREE=$(WTDIR) scripts/admin-update.sh
-	sed -i 's/#define IWL4965_UCODE_API "-2"/#define IWL4965_UCODE_API "-2-lbm"/' `find $(CWDIR)/drivers/net/wireless/iwlwifi -type f`
-	sed -i 's/#define IWL3945_UCODE_API "-1"/#define IWL3945_UCODE_API "-1-lbm"/' `find $(CWDIR)/drivers/net/wireless/iwlwifi -type f`
+	sed -i 's/#define.*IWL4965_UCODE_API.*"-2"/#define IWL4965_UCODE_API "-2-lbm"/' `find $(CWDIR)/drivers/net/wireless/iwlwifi -type f`
+	sed -i 's/#define.*IWL3945_UCODE_API.*"-1"/#define IWL3945_UCODE_API "-1-lbm"/' `find $(CWDIR)/drivers/net/wireless/iwlwifi -type f`
+	sed -i 's/#define.*IWL5000_UCODE_API.*"-1"/#define IWL5000_UCODE_API "-1-lbm"/' `find $(CWDIR)/drivers/net/wireless/iwlwifi -type f`
 	rsync -av --delete $(CWDIR)/ $(CW)
 	find $(CW) | egrep "\.git*" | xargs rm -rf
 	find  $(CW) -name "*.orig" | xargs rm -rf

@@ -45,7 +45,7 @@
 #include "iwl-helpers.h"
 #include "iwl-5000-hw.h"
 
-#define IWL5000_UCODE_API  "-1"
+#define IWL5000_UCODE_API "-1-lbm"
 
 static const u16 iwl5000_default_queue_to_tx_fifo[] = {
 	IWL_TX_FIFO_AC3,
