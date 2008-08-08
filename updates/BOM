@@ -8,18 +8,19 @@ PWD=$(shell pwd)
 CDIR=$(PWD)/../../compat-wireless
 
 WT=wireless-testing
+WT_TAG=master-2008-07-28
 WTDIR=$(CDIR)/$(WT)
 
 CW=compat-wireless-2.6
 CWDIR=$(CDIR)/$(CW)
 
 all: $(CDIR)/wireless-testing/Makefile
-	cd $(WTDIR); git fetch origin; git rebase origin; git checkout -f; git reset --hard master-2008-07-28
+	cd $(WTDIR); git fetch origin; git rebase origin; git checkout -f; git reset --hard $(WT_TAG)
 	rm -rf $(CWDIR)
 	cd $(CDIR); git clone git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/$(CW).git $(CW)
 	cd $(CWDIR);  GIT_TREE=$(WTDIR) scripts/admin-update.sh
-	sed -i 's/IWL4965_UCODE_API "-2"/IWL4965_UCODE_API "-2-lbm"/' `find $(CWDIR) -name iwl-dev.h`
-	sed -i 's/IWL3945_UCODE_API "-1"/IWL3945_UCODE_API "-1-lbm"/' `find $(CWDIR) -name iwl-3945.h`
+	sed -i 's/#define IWL4965_UCODE_API "-2"/#define IWL4965_UCODE_API "-2-lbm"/' `find $(CWDIR)/drivers/net/wireless/iwlwifi -type f`
+	sed -i 's/#define IWL3945_UCODE_API "-1"/#define IWL3945_UCODE_API "-1-lbm"/' `find $(CWDIR)/drivers/net/wireless/iwlwifi -type f`
 	rsync -av --delete $(CWDIR)/ $(CW)
 	find $(CW) | egrep "\.git*" | xargs rm -rf
 	find  $(CW) -name "*.orig" | xargs rm -rf
