@@ -65,12 +65,12 @@ struct iwl_power_mgr {
 	u8 power_disabled; /* flag to disable using power saving level */
 };
 
-int cw_iwl_power_update_mode(struct iwl_priv *priv, u8 refresh);
-int cw_iwl_power_disable_management(struct iwl_priv *priv);
-int cw_iwl_power_enable_management(struct iwl_priv *priv);
-int cw_iwl_power_set_user_mode(struct iwl_priv *priv, u16 mode);
-int cw_iwl_power_set_system_mode(struct iwl_priv *priv, u16 mode);
-void cw_iwl_power_initialize(struct iwl_priv *priv);
-int cw_iwl_power_temperature_change(struct iwl_priv *priv);
+int iwl_power_update_mode(struct iwl_priv *priv, u8 refresh);
+int iwl_power_disable_management(struct iwl_priv *priv);
+int iwl_power_enable_management(struct iwl_priv *priv);
+int iwl_power_set_user_mode(struct iwl_priv *priv, u16 mode);
+int iwl_power_set_system_mode(struct iwl_priv *priv, u16 mode);
+void iwl_power_initialize(struct iwl_priv *priv);
+int iwl_power_temperature_change(struct iwl_priv *priv);
 
 #endif  /* __iwl_power_setting_h__ */

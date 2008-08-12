@@ -21,7 +21,7 @@ static int ssb_pcihost_suspend(struct pci_dev *dev, pm_message_t state)
 	struct ssb_bus *ssb = pci_get_drvdata(dev);
 	int err;
 
-	err = cw_ssb_bus_suspend(ssb);
+	err = ssb_bus_suspend(ssb);
 	if (err)
 		return err;
 	pci_save_state(dev);
@@ -41,7 +41,7 @@ static int ssb_pcihost_resume(struct pci_dev *dev)
 	if (err)
 		return err;
 	pci_restore_state(dev);
-	err = cw_ssb_bus_resume(ssb);
+	err = ssb_bus_resume(ssb);
 	if (err)
 		return err;
 
@@ -73,7 +73,7 @@ static int ssb_pcihost_probe(struct pci_dev *dev,
 		goto err_pci_disable;
 	pci_set_master(dev);
 
-	err = cw_ssb_bus_pcibus_register(ssb, dev);
+	err = ssb_bus_pcibus_register(ssb, dev);
 	if (err)
 		goto err_pci_release_regions;
 
@@ -95,14 +95,14 @@ static void ssb_pcihost_remove(struct pci_dev *dev)
 {
 	struct ssb_bus *ssb = pci_get_drvdata(dev);
 
-	cw_ssb_bus_unregister(ssb);
+	ssb_bus_unregister(ssb);
 	pci_release_regions(dev);
 	pci_disable_device(dev);
 	kfree(ssb);
 	pci_set_drvdata(dev, NULL);
 }
 
-int cw_ssb_pcihost_register(struct pci_driver *driver)
+int ssb_pcihost_register(struct pci_driver *driver)
 {
 	driver->probe = ssb_pcihost_probe;
 	driver->remove = ssb_pcihost_remove;
@@ -111,4 +111,4 @@ int cw_ssb_pcihost_register(struct pci_driver *driver)
 
 	return pci_register_driver(driver);
 }
-EXPORT_SYMBOL(cw_ssb_pcihost_register);
+EXPORT_SYMBOL(ssb_pcihost_register);

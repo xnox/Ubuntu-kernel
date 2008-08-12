@@ -474,12 +474,12 @@ static irqreturn_t if_cs_interrupt(int irq, void *data)
 		lbs_deb_cs("rx packet\n");
 		skb = if_cs_receive_data(priv);
 		if (skb)
-			cw_lbs_process_rxed_packet(priv, skb);
+			lbs_process_rxed_packet(priv, skb);
 	}
 
 	if (cause & IF_CS_BIT_TX) {
 		lbs_deb_cs("tx done\n");
-		cw_lbs_host_to_card_done(priv);
+		lbs_host_to_card_done(priv);
 	}
 
 	if (cause & IF_CS_BIT_RESP) {
@@ -496,7 +496,7 @@ static irqreturn_t if_cs_interrupt(int irq, void *data)
 			&priv->resp_len[i]);
 
 		spin_lock_irqsave(&priv->driver_lock, flags);
-		cw_lbs_notify_command_response(priv, i);
+		lbs_notify_command_response(priv, i);
 		spin_unlock_irqrestore(&priv->driver_lock, flags);
 	}
 
@@ -504,7 +504,7 @@ static irqreturn_t if_cs_interrupt(int irq, void *data)
 		u16 status = if_cs_read16(priv->card, IF_CS_CARD_STATUS);
 		if_cs_write16(priv->card, IF_CS_HOST_INT_CAUSE,
 			IF_CS_BIT_EVENT);
-		cw_lbs_queue_event(priv, (status & IF_CS_CARD_STATUS_MASK) >> 8);
+		lbs_queue_event(priv, (status & IF_CS_CARD_STATUS_MASK) >> 8);
 	}
 
 	/* Clear interrupt cause */
@@ -880,7 +880,7 @@ static int if_cs_probe(struct pcmcia_device *p_dev)
 		goto out2;
 
 	/* Make this card known to the libertas driver */
-	priv = cw_lbs_add_card(card, &p_dev->dev);
+	priv = lbs_add_card(card, &p_dev->dev);
 	if (!priv) {
 		ret = -ENOMEM;
 		goto out2;
@@ -906,7 +906,7 @@ static int if_cs_probe(struct pcmcia_device *p_dev)
 	if_cs_enable_ints(card);
 
 	/* And finally bring the card up */
-	if (cw_lbs_start_card(priv) != 0) {
+	if (lbs_start_card(priv) != 0) {
 		lbs_pr_err("could not activate card\n");
 		goto out3;
 	}
@@ -918,7 +918,7 @@ static int if_cs_probe(struct pcmcia_device *p_dev)
 	goto out;
 
 out3:
-	cw_lbs_remove_card(priv);
+	lbs_remove_card(priv);
 out2:
 	ioport_unmap(card->iobase);
 out1:
@@ -941,8 +941,8 @@ static void if_cs_detach(struct pcmcia_device *p_dev)
 
 	lbs_deb_enter(LBS_DEB_CS);
 
-	cw_lbs_stop_card(card->priv);
-	cw_lbs_remove_card(card->priv);
+	lbs_stop_card(card->priv);
+	lbs_remove_card(card->priv);
 	if_cs_disable_ints(card);
 	if_cs_release(p_dev);
 	kfree(card);

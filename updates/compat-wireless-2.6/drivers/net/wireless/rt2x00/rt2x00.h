@@ -787,11 +787,11 @@ struct rt2x00_dev {
 	/*
 	 * RX configuration information.
 	 */
-	struct cw_ieee80211_rx_status rx_status;
+	struct ieee80211_rx_status rx_status;
 
 	/*
 	 * Scheduled work.
-	 * NOTE: intf_work will use cw_ieee80211_iterate_active_interfaces()
+	 * NOTE: intf_work will use ieee80211_iterate_active_interfaces()
 	 * which means it cannot be placed on the hw->workqueue
 	 * due to RTNL locking requirements.
 	 */
@@ -907,74 +907,74 @@ static inline u16 get_duration_res(const unsigned int size, const u8 rate)
 }
 
 /**
- * cw_rt2x00queue_map_txskb - Map a skb into DMA for TX purposes.
+ * rt2x00queue_map_txskb - Map a skb into DMA for TX purposes.
  * @rt2x00dev: Pointer to &struct rt2x00_dev.
  * @skb: The skb to map.
  */
-void cw_rt2x00queue_map_txskb(struct rt2x00_dev *rt2x00dev, struct sk_buff *skb);
+void rt2x00queue_map_txskb(struct rt2x00_dev *rt2x00dev, struct sk_buff *skb);
 
 /**
- * cw_rt2x00queue_get_queue - Convert queue index to queue pointer
+ * rt2x00queue_get_queue - Convert queue index to queue pointer
  * @rt2x00dev: Pointer to &struct rt2x00_dev.
  * @queue: rt2x00 queue index (see &enum data_queue_qid).
  */
-struct data_queue *cw_rt2x00queue_get_queue(struct rt2x00_dev *rt2x00dev,
+struct data_queue *rt2x00queue_get_queue(struct rt2x00_dev *rt2x00dev,
 					 const enum data_queue_qid queue);
 
 /**
- * cw_rt2x00queue_get_entry - Get queue entry where the given index points to.
+ * rt2x00queue_get_entry - Get queue entry where the given index points to.
  * @queue: Pointer to &struct data_queue from where we obtain the entry.
  * @index: Index identifier for obtaining the correct index.
  */
-struct queue_entry *cw_rt2x00queue_get_entry(struct data_queue *queue,
+struct queue_entry *rt2x00queue_get_entry(struct data_queue *queue,
 					  enum queue_index index);
 
 /*
  * Interrupt context handlers.
  */
-void cw_rt2x00lib_beacondone(struct rt2x00_dev *rt2x00dev);
-void cw_rt2x00lib_txdone(struct queue_entry *entry,
+void rt2x00lib_beacondone(struct rt2x00_dev *rt2x00dev);
+void rt2x00lib_txdone(struct queue_entry *entry,
 		      struct txdone_entry_desc *txdesc);
-void cw_rt2x00lib_rxdone(struct rt2x00_dev *rt2x00dev,
+void rt2x00lib_rxdone(struct rt2x00_dev *rt2x00dev,
 		      struct queue_entry *entry);
 
 /*
  * mac80211 handlers.
  */
-int cw_rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb);
-int cw_rt2x00mac_start(struct ieee80211_hw *hw);
-void cw_rt2x00mac_stop(struct ieee80211_hw *hw);
-int cw_rt2x00mac_add_interface(struct ieee80211_hw *hw,
+int rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb);
+int rt2x00mac_start(struct ieee80211_hw *hw);
+void rt2x00mac_stop(struct ieee80211_hw *hw);
+int rt2x00mac_add_interface(struct ieee80211_hw *hw,
 			    struct ieee80211_if_init_conf *conf);
-void cw_rt2x00mac_remove_interface(struct ieee80211_hw *hw,
+void rt2x00mac_remove_interface(struct ieee80211_hw *hw,
 				struct ieee80211_if_init_conf *conf);
-int cw_rt2x00mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *conf);
-int cw_cw_rt2x00mac_config_interface(struct ieee80211_hw *hw,
+int rt2x00mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *conf);
+int rt2x00mac_config_interface(struct ieee80211_hw *hw,
 			       struct ieee80211_vif *vif,
 			       struct ieee80211_if_conf *conf);
-void cw_cw_rt2x00mac_configure_filter(struct ieee80211_hw *hw,
+void rt2x00mac_configure_filter(struct ieee80211_hw *hw,
 				unsigned int changed_flags,
 				unsigned int *total_flags,
 				int mc_count, struct dev_addr_list *mc_list);
-int cw_rt2x00mac_get_stats(struct ieee80211_hw *hw,
+int rt2x00mac_get_stats(struct ieee80211_hw *hw,
 			struct ieee80211_low_level_stats *stats);
-int cw_rt2x00mac_get_tx_stats(struct ieee80211_hw *hw,
+int rt2x00mac_get_tx_stats(struct ieee80211_hw *hw,
 			   struct ieee80211_tx_queue_stats *stats);
-void cw_rt2x00mac_bss_info_changed(struct ieee80211_hw *hw,
+void rt2x00mac_bss_info_changed(struct ieee80211_hw *hw,
 				struct ieee80211_vif *vif,
 				struct ieee80211_bss_conf *bss_conf,
 				u32 changes);
-int cw_rt2x00mac_conf_tx(struct ieee80211_hw *hw, u16 queue,
+int rt2x00mac_conf_tx(struct ieee80211_hw *hw, u16 queue,
 		      const struct ieee80211_tx_queue_params *params);
 
 /*
  * Driver allocation handlers.
  */
-int cw_rt2x00lib_probe_dev(struct rt2x00_dev *rt2x00dev);
-void cw_rt2x00lib_remove_dev(struct rt2x00_dev *rt2x00dev);
+int rt2x00lib_probe_dev(struct rt2x00_dev *rt2x00dev);
+void rt2x00lib_remove_dev(struct rt2x00_dev *rt2x00dev);
 #ifdef CONFIG_PM
-int cw_rt2x00lib_suspend(struct rt2x00_dev *rt2x00dev, pm_message_t state);
-int cw_rt2x00lib_resume(struct rt2x00_dev *rt2x00dev);
+int rt2x00lib_suspend(struct rt2x00_dev *rt2x00dev, pm_message_t state);
+int rt2x00lib_resume(struct rt2x00_dev *rt2x00dev);
 #endif /* CONFIG_PM */
 
 #endif /* RT2X00_H */

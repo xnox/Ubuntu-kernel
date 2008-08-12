@@ -102,7 +102,7 @@ static int iwl_send_led_cmd(struct iwl_priv *priv, struct iwl_led_cmd *led_cmd)
 	if (reg != (reg & CSR_LED_BSM_CTRL_MSK))
 		iwl_write32(priv, CSR_LED_REG, reg & CSR_LED_BSM_CTRL_MSK);
 
-	return cw_iwl_send_cmd(priv, &cmd);
+	return iwl_send_cmd(priv, &cmd);
 }
 
 /* Set led pattern command */
@@ -226,7 +226,7 @@ static void iwl_led_brightness_set(struct led_classdev *led_cdev,
 /*
  * Register led class with the system
  */
-static int cw_iwl_leds_register_led(struct iwl_priv *priv, struct iwl_led *led,
+static int iwl_leds_register_led(struct iwl_priv *priv, struct iwl_led *led,
 				   enum led_type type, u8 set_led,
 				   const char *name, char *trigger)
 {
@@ -293,7 +293,7 @@ static inline int is_rf_kill(struct iwl_priv *priv)
  * happen very frequent we postpone led command to be called from
  * REPLY handler so we know ucode is up
  */
-void cw_iwl_leds_background(struct iwl_priv *priv)
+void iwl_leds_background(struct iwl_priv *priv)
 {
 	u8 blink_idx;
 
@@ -329,10 +329,10 @@ void cw_iwl_leds_background(struct iwl_priv *priv)
 	priv->last_blink_time = jiffies;
 	priv->last_blink_rate = blink_idx;
 }
-EXPORT_SYMBOL(cw_iwl_leds_background);
+EXPORT_SYMBOL(iwl_leds_background);
 
 /* Register all led handler */
-int cw_iwl_leds_register(struct iwl_priv *priv)
+int iwl_leds_register(struct iwl_priv *priv)
 {
 	char *trigger;
 	char name[32];
@@ -351,7 +351,7 @@ int cw_iwl_leds_register(struct iwl_priv *priv)
 	priv->led[IWL_LED_TRG_RADIO].led_off = iwl4965_led_off_reg;
 	priv->led[IWL_LED_TRG_RADIO].led_pattern = NULL;
 
-	ret = cw_iwl_leds_register_led(priv, &priv->led[IWL_LED_TRG_RADIO],
+	ret = iwl_leds_register_led(priv, &priv->led[IWL_LED_TRG_RADIO],
 				   IWL_LED_TRG_RADIO, 1, name, trigger);
 	if (ret)
 		goto exit_fail;
@@ -360,7 +360,7 @@ int cw_iwl_leds_register(struct iwl_priv *priv)
 	snprintf(name, sizeof(name), "iwl-%s:assoc",
 		 wiphy_name(priv->hw->wiphy));
 
-	ret = cw_iwl_leds_register_led(priv, &priv->led[IWL_LED_TRG_ASSOC],
+	ret = iwl_leds_register_led(priv, &priv->led[IWL_LED_TRG_ASSOC],
 				   IWL_LED_TRG_ASSOC, 0, name, trigger);
 
 	/* for assoc always turn led on */
@@ -375,7 +375,7 @@ int cw_iwl_leds_register(struct iwl_priv *priv)
 	snprintf(name, sizeof(name), "iwl-%s:RX", wiphy_name(priv->hw->wiphy));
 
 
-	ret = cw_iwl_leds_register_led(priv, &priv->led[IWL_LED_TRG_RX],
+	ret = iwl_leds_register_led(priv, &priv->led[IWL_LED_TRG_RX],
 				   IWL_LED_TRG_RX, 0, name, trigger);
 
 	priv->led[IWL_LED_TRG_RX].led_on = iwl_led_associated;
@@ -387,7 +387,7 @@ int cw_iwl_leds_register(struct iwl_priv *priv)
 
 	trigger = ieee80211_get_tx_led_name(priv->hw);
 	snprintf(name, sizeof(name), "iwl-%s:TX", wiphy_name(priv->hw->wiphy));
-	ret = cw_iwl_leds_register_led(priv, &priv->led[IWL_LED_TRG_TX],
+	ret = iwl_leds_register_led(priv, &priv->led[IWL_LED_TRG_TX],
 				   IWL_LED_TRG_TX, 0, name, trigger);
 
 	priv->led[IWL_LED_TRG_TX].led_on = iwl_led_associated;
@@ -400,13 +400,13 @@ int cw_iwl_leds_register(struct iwl_priv *priv)
 	return 0;
 
 exit_fail:
-	cw_iwl_leds_unregister(priv);
+	iwl_leds_unregister(priv);
 	return ret;
 }
-EXPORT_SYMBOL(cw_iwl_leds_register);
+EXPORT_SYMBOL(iwl_leds_register);
 
 /* unregister led class */
-static void cw_iwl_leds_unregister_led(struct iwl_led *led, u8 set_led)
+static void iwl_leds_unregister_led(struct iwl_led *led, u8 set_led)
 {
 	if (!led->registered)
 		return;
@@ -419,12 +419,12 @@ static void cw_iwl_leds_unregister_led(struct iwl_led *led, u8 set_led)
 }
 
 /* Unregister all led handlers */
-void cw_iwl_leds_unregister(struct iwl_priv *priv)
+void iwl_leds_unregister(struct iwl_priv *priv)
 {
-	cw_iwl_leds_unregister_led(&priv->led[IWL_LED_TRG_ASSOC], 0);
-	cw_iwl_leds_unregister_led(&priv->led[IWL_LED_TRG_RX], 0);
-	cw_iwl_leds_unregister_led(&priv->led[IWL_LED_TRG_TX], 0);
-	cw_iwl_leds_unregister_led(&priv->led[IWL_LED_TRG_RADIO], 1);
+	iwl_leds_unregister_led(&priv->led[IWL_LED_TRG_ASSOC], 0);
+	iwl_leds_unregister_led(&priv->led[IWL_LED_TRG_RX], 0);
+	iwl_leds_unregister_led(&priv->led[IWL_LED_TRG_TX], 0);
+	iwl_leds_unregister_led(&priv->led[IWL_LED_TRG_RADIO], 1);
 }
-EXPORT_SYMBOL(cw_iwl_leds_unregister);
+EXPORT_SYMBOL(iwl_leds_unregister);
 

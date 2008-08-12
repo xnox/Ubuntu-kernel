@@ -721,7 +721,7 @@ static inline int at76_get_cmd_status(struct usb_device *udev, u8 cmd)
 
 #define MAKE_CMD_CASE(c) case (c): return #c
 
-static const char *at76_cw_get_cmd_string(u8 cmd_status)
+static const char *at76_get_cmd_string(u8 cmd_status)
 {
 	switch (cmd_status) {
 		MAKE_CMD_CASE(CMD_SET_MIB);
@@ -754,7 +754,7 @@ static int at76_set_card_command(struct usb_device *udev, int cmd, void *buf,
 
 	at76_dbg_dump(DBG_CMD, cmd_buf, sizeof(struct at76_command) + buf_size,
 		      "issuing command %s (0x%02x)",
-		      at76_cw_get_cmd_string(cmd), cmd);
+		      at76_get_cmd_string(cmd), cmd);
 
 	ret = usb_control_msg(udev, usb_sndctrlpipe(udev, 0), 0x0e,
 			      USB_TYPE_VENDOR | USB_DIR_OUT | USB_RECIP_DEVICE,
@@ -1646,7 +1646,7 @@ static void at76_rx_tasklet(unsigned long param)
 	struct urb *urb = (struct urb *)param;
 	struct at76_priv *priv = urb->context;
 	struct at76_rx_buffer *buf;
-	struct cw_ieee80211_rx_status rx_status = { 0 };
+	struct ieee80211_rx_status rx_status = { 0 };
 
 	if (priv->device_unplugged) {
 		at76_dbg(DBG_DEVSTART, "device unplugged");
@@ -1684,9 +1684,9 @@ static void at76_rx_tasklet(unsigned long param)
 	rx_status.flag |= RX_FLAG_IV_STRIPPED;
 
 	skb_pull(priv->rx_skb, AT76_RX_HDRLEN);
-	at76_dbg(DBG_MAC80211, "calling cw_cw_ieee80211_rx_irqsafe(): %d/%d",
+	at76_dbg(DBG_MAC80211, "calling ieee80211_rx_irqsafe(): %d/%d",
 		 priv->rx_skb->len, priv->rx_skb->data_len);
-	cw_cw_ieee80211_rx_irqsafe(priv->hw, priv->rx_skb, &rx_status);
+	ieee80211_rx_irqsafe(priv->hw, priv->rx_skb, &rx_status);
 
 	/* Use a new skb for the next receive */
 	priv->rx_skb = NULL;
@@ -1795,11 +1795,11 @@ static void at76_mac80211_tx_callback(struct urb *urb)
 
 	memset(&info->status, 0, sizeof(info->status));
 
-	cw_cw_ieee80211_tx_status_irqsafe(priv->hw, priv->tx_skb);
+	ieee80211_tx_status_irqsafe(priv->hw, priv->tx_skb);
 
 	priv->tx_skb = NULL;
 
-	cw_cw_ieee80211_wake_queues(priv->hw);
+	ieee80211_wake_queues(priv->hw);
 }
 
 static int at76_mac80211_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
@@ -1817,7 +1817,7 @@ static int at76_mac80211_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 		return NETDEV_TX_BUSY;
 	}
 
-	cw_cw_ieee80211_stop_queues(hw);
+	ieee80211_stop_queues(hw);
 
 	at76_ledtrig_tx_activity();	/* tell ledtrigger we send a packet */
 
@@ -2002,14 +2002,14 @@ static void at76_dwork_hw_scan(struct work_struct *work)
 		goto exit;
 	}
 
-	cw_ieee80211_scan_completed(priv->hw);
+	ieee80211_scan_completed(priv->hw);
 
 	if (is_valid_ether_addr(priv->bssid)) {
-		cw_cw_ieee80211_wake_queues(priv->hw);
+		ieee80211_wake_queues(priv->hw);
 		at76_join(priv);
 	}
 
-	cw_cw_ieee80211_wake_queues(priv->hw);
+	ieee80211_wake_queues(priv->hw);
 
 exit:
 	return;
@@ -2026,7 +2026,7 @@ static int at76_hw_scan(struct ieee80211_hw *hw, u8 *ssid, size_t len)
 
 	mutex_lock(&priv->mtx);
 
-	cw_cw_ieee80211_stop_queues(hw);
+	ieee80211_stop_queues(hw);
 
 	memset(&scan, 0, sizeof(struct at76_req_scan));
 	memset(scan.bssid, 0xFF, ETH_ALEN);
@@ -2072,9 +2072,9 @@ static int at76_config(struct ieee80211_hw *hw, struct ieee80211_conf *conf)
 
 	if (is_valid_ether_addr(priv->bssid)) {
 		at76_join(priv);
-		cw_cw_ieee80211_wake_queues(priv->hw);
+		ieee80211_wake_queues(priv->hw);
 	} else {
-		cw_cw_ieee80211_stop_queues(priv->hw);
+		ieee80211_stop_queues(priv->hw);
 		at76_start_monitor(priv);
 	};
 
@@ -2101,10 +2101,10 @@ static int at76_config_interface(struct ieee80211_hw *hw,
 
 	if (is_valid_ether_addr(priv->bssid)) {
 		/* mac80211 is joining a bss */
-		cw_cw_ieee80211_wake_queues(priv->hw);
+		ieee80211_wake_queues(priv->hw);
 		at76_join(priv);
 	} else
-		cw_cw_ieee80211_stop_queues(priv->hw);
+		ieee80211_stop_queues(priv->hw);
 
 	mutex_unlock(&priv->mtx);
 
@@ -2376,7 +2376,7 @@ static struct at76_priv *at76_alloc_new_device(struct usb_device *udev)
 	struct ieee80211_hw *hw;
 	struct at76_priv *priv;
 
-	hw = cw_ieee80211_alloc_hw(sizeof(struct at76_priv), &at76_ops);
+	hw = ieee80211_alloc_hw(sizeof(struct at76_priv), &at76_ops);
 	if (!hw) {
 		printk(KERN_ERR DRIVER_NAME ": could not register"
 		       " ieee80211_hw\n");
@@ -2550,7 +2550,7 @@ static int at76_init_new_device(struct at76_priv *priv,
 	SET_IEEE80211_DEV(priv->hw, &interface->dev);
 	SET_IEEE80211_PERM_ADDR(priv->hw, priv->mac_addr);
 
-	ret = cw_ieee80211_register_hw(priv->hw);
+	ret = ieee80211_register_hw(priv->hw);
 	if (ret) {
 		printk(KERN_ERR "cannot register mac80211 hw (status %d)!\n",
 		       ret);
@@ -2589,7 +2589,7 @@ static void at76_delete_device(struct at76_priv *priv)
 	priv->device_unplugged = 1;
 
 	if (priv->mac80211_registered)
-		cw_ieee80211_unregister_hw(priv->hw);
+		ieee80211_unregister_hw(priv->hw);
 
 	/* assuming we used keventd, it must quiesce too */
 	flush_scheduled_work();
@@ -2614,7 +2614,7 @@ static void at76_delete_device(struct at76_priv *priv)
 
 	at76_dbg(DBG_PROC_ENTRY, "%s: before freeing priv/ieee80211_hw",
 		 __func__);
-	cw_ieee80211_free_hw(priv->hw);
+	ieee80211_free_hw(priv->hw);
 
 	at76_dbg(DBG_PROC_ENTRY, "%s: EXIT", __func__);
 }

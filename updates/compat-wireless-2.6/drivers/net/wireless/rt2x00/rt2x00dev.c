@@ -127,7 +127,7 @@ int rt2x00lib_enable_radio(struct rt2x00_dev *rt2x00dev)
 	/*
 	 * Start the TX queues.
 	 */
-	cw_cw_ieee80211_wake_queues(rt2x00dev->hw);
+	ieee80211_wake_queues(rt2x00dev->hw);
 
 	return 0;
 }
@@ -140,7 +140,7 @@ void rt2x00lib_disable_radio(struct rt2x00_dev *rt2x00dev)
 	/*
 	 * Stop the TX queues.
 	 */
-	cw_cw_ieee80211_stop_queues(rt2x00dev->hw);
+	ieee80211_stop_queues(rt2x00dev->hw);
 
 	/*
 	 * Disable RX.
@@ -453,7 +453,7 @@ static void rt2x00lib_intf_scheduled(struct work_struct *work)
 	 * Iterate over each interface and perform the
 	 * requested configurations.
 	 */
-	cw_ieee80211_iterate_active_interfaces(rt2x00dev->hw,
+	ieee80211_iterate_active_interfaces(rt2x00dev->hw,
 					    rt2x00lib_intf_scheduled_iter,
 					    rt2x00dev);
 }
@@ -461,7 +461,7 @@ static void rt2x00lib_intf_scheduled(struct work_struct *work)
 /*
  * Interrupt context handlers.
  */
-static void cw_rt2x00lib_beacondone_iter(void *data, u8 *mac,
+static void rt2x00lib_beacondone_iter(void *data, u8 *mac,
 				      struct ieee80211_vif *vif)
 {
 	struct rt2x00_dev *rt2x00dev = data;
@@ -482,20 +482,20 @@ static void cw_rt2x00lib_beacondone_iter(void *data, u8 *mac,
 	spin_unlock(&intf->lock);
 }
 
-void cw_rt2x00lib_beacondone(struct rt2x00_dev *rt2x00dev)
+void rt2x00lib_beacondone(struct rt2x00_dev *rt2x00dev)
 {
 	if (!test_bit(DEVICE_ENABLED_RADIO, &rt2x00dev->flags))
 		return;
 
-	cw_cw_ieee80211_iterate_active_interfaces_atomic(rt2x00dev->hw,
-						   cw_rt2x00lib_beacondone_iter,
+	ieee80211_iterate_active_interfaces_atomic(rt2x00dev->hw,
+						   rt2x00lib_beacondone_iter,
 						   rt2x00dev);
 
 	schedule_work(&rt2x00dev->intf_work);
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00lib_beacondone);
+EXPORT_SYMBOL_GPL(rt2x00lib_beacondone);
 
-void cw_rt2x00lib_txdone(struct queue_entry *entry,
+void rt2x00lib_txdone(struct queue_entry *entry,
 		      struct txdone_entry_desc *txdesc)
 {
 	struct rt2x00_dev *rt2x00dev = entry->queue->rt2x00dev;
@@ -551,7 +551,7 @@ void cw_rt2x00lib_txdone(struct queue_entry *entry,
 	 * status report back.
 	 */
 	if (tx_info->flags & IEEE80211_TX_CTL_REQ_TX_STATUS)
-		cw_cw_ieee80211_tx_status_irqsafe(rt2x00dev->hw, entry->skb);
+		ieee80211_tx_status_irqsafe(rt2x00dev->hw, entry->skb);
 	else
 		dev_kfree_skb_irq(entry->skb);
 
@@ -572,16 +572,16 @@ void cw_rt2x00lib_txdone(struct queue_entry *entry,
 	 * is reenabled when the txdone handler has finished.
 	 */
 	if (!rt2x00queue_threshold(entry->queue))
-		cw_ieee80211_wake_queue(rt2x00dev->hw, qid);
+		ieee80211_wake_queue(rt2x00dev->hw, qid);
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00lib_txdone);
+EXPORT_SYMBOL_GPL(rt2x00lib_txdone);
 
-void cw_rt2x00lib_rxdone(struct rt2x00_dev *rt2x00dev,
+void rt2x00lib_rxdone(struct rt2x00_dev *rt2x00dev,
 		      struct queue_entry *entry)
 {
 	struct rxdone_entry_desc rxdesc;
 	struct sk_buff *skb;
-	struct cw_ieee80211_rx_status *rx_status = &rt2x00dev->rx_status;
+	struct ieee80211_rx_status *rx_status = &rt2x00dev->rx_status;
 	struct ieee80211_supported_band *sband;
 	struct ieee80211_hdr *hdr;
 	const struct rt2x00_rate *rate;
@@ -613,7 +613,7 @@ void cw_rt2x00lib_rxdone(struct rt2x00_dev *rt2x00dev,
 	 * The data behind the ieee80211 header must be
 	 * aligned on a 4 byte boundary.
 	 */
-	header_size = cw_cw_ieee80211_get_hdrlen_from_skb(entry->skb);
+	header_size = ieee80211_get_hdrlen_from_skb(entry->skb);
 	align = ((unsigned long)(entry->skb->data + header_size)) & 3;
 
 	if (align) {
@@ -672,7 +672,7 @@ void cw_rt2x00lib_rxdone(struct rt2x00_dev *rt2x00dev,
 	 * mac80211 will clean up the skb structure.
 	 */
 	rt2x00debug_dump_frame(rt2x00dev, DUMP_FRAME_RXDONE, entry->skb);
-	cw_cw_ieee80211_rx_irqsafe(rt2x00dev->hw, entry->skb, rx_status);
+	ieee80211_rx_irqsafe(rt2x00dev->hw, entry->skb, rx_status);
 
 	/*
 	 * Replace the skb with the freshly allocated one.
@@ -684,7 +684,7 @@ void cw_rt2x00lib_rxdone(struct rt2x00_dev *rt2x00dev,
 
 	rt2x00queue_index_inc(entry->queue, Q_INDEX);
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00lib_rxdone);
+EXPORT_SYMBOL_GPL(rt2x00lib_rxdone);
 
 /*
  * Driver initialization handlers.
@@ -768,7 +768,7 @@ static void rt2x00lib_channel(struct ieee80211_channel *entry,
 			      const int channel, const int tx_power,
 			      const int value)
 {
-	entry->center_freq = cw_cw_ieee80211_channel_to_frequency(channel);
+	entry->center_freq = ieee80211_channel_to_frequency(channel);
 	entry->hw_value = value;
 	entry->max_power = tx_power;
 	entry->max_antenna_gain = 0xff;
@@ -879,7 +879,7 @@ static int rt2x00lib_probe_hw_modes(struct rt2x00_dev *rt2x00dev,
 static void rt2x00lib_remove_hw(struct rt2x00_dev *rt2x00dev)
 {
 	if (test_bit(DEVICE_REGISTERED_HW, &rt2x00dev->flags))
-		cw_ieee80211_unregister_hw(rt2x00dev->hw);
+		ieee80211_unregister_hw(rt2x00dev->hw);
 
 	if (likely(rt2x00dev->hw->wiphy->bands[IEEE80211_BAND_2GHZ])) {
 		kfree(rt2x00dev->hw->wiphy->bands[IEEE80211_BAND_2GHZ]->channels);
@@ -909,7 +909,7 @@ static int rt2x00lib_probe_hw(struct rt2x00_dev *rt2x00dev)
 	/*
 	 * Register HW.
 	 */
-	status = cw_ieee80211_register_hw(rt2x00dev->hw);
+	status = ieee80211_register_hw(rt2x00dev->hw);
 	if (status) {
 		rt2x00lib_remove_hw(rt2x00dev);
 		return status;
@@ -1038,7 +1038,7 @@ void rt2x00lib_stop(struct rt2x00_dev *rt2x00dev)
 /*
  * driver allocation handlers.
  */
-int cw_rt2x00lib_probe_dev(struct rt2x00_dev *rt2x00dev)
+int rt2x00lib_probe_dev(struct rt2x00_dev *rt2x00dev)
 {
 	int retval = -ENOMEM;
 
@@ -1092,13 +1092,13 @@ int cw_rt2x00lib_probe_dev(struct rt2x00_dev *rt2x00dev)
 	return 0;
 
 exit:
-	cw_rt2x00lib_remove_dev(rt2x00dev);
+	rt2x00lib_remove_dev(rt2x00dev);
 
 	return retval;
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00lib_probe_dev);
+EXPORT_SYMBOL_GPL(rt2x00lib_probe_dev);
 
-void cw_rt2x00lib_remove_dev(struct rt2x00_dev *rt2x00dev)
+void rt2x00lib_remove_dev(struct rt2x00_dev *rt2x00dev)
 {
 	__clear_bit(DEVICE_PRESENT, &rt2x00dev->flags);
 
@@ -1134,13 +1134,13 @@ void cw_rt2x00lib_remove_dev(struct rt2x00_dev *rt2x00dev)
 	 */
 	rt2x00queue_free(rt2x00dev);
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00lib_remove_dev);
+EXPORT_SYMBOL_GPL(rt2x00lib_remove_dev);
 
 /*
  * Device state handlers
  */
 #ifdef CONFIG_PM
-int cw_rt2x00lib_suspend(struct rt2x00_dev *rt2x00dev, pm_message_t state)
+int rt2x00lib_suspend(struct rt2x00_dev *rt2x00dev, pm_message_t state)
 {
 	int retval;
 
@@ -1185,9 +1185,9 @@ exit:
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00lib_suspend);
+EXPORT_SYMBOL_GPL(rt2x00lib_suspend);
 
-static void cw_rt2x00lib_resume_intf(void *data, u8 *mac,
+static void rt2x00lib_resume_intf(void *data, u8 *mac,
 				  struct ieee80211_vif *vif)
 {
 	struct rt2x00_dev *rt2x00dev = data;
@@ -1209,7 +1209,7 @@ static void cw_rt2x00lib_resume_intf(void *data, u8 *mac,
 	spin_unlock(&intf->lock);
 }
 
-int cw_rt2x00lib_resume(struct rt2x00_dev *rt2x00dev)
+int rt2x00lib_resume(struct rt2x00_dev *rt2x00dev)
 {
 	int retval;
 
@@ -1245,8 +1245,8 @@ int cw_rt2x00lib_resume(struct rt2x00_dev *rt2x00dev)
 	 * Iterator over each active interface to
 	 * reconfigure the hardware.
 	 */
-	cw_ieee80211_iterate_active_interfaces(rt2x00dev->hw,
-					    cw_rt2x00lib_resume_intf, rt2x00dev);
+	ieee80211_iterate_active_interfaces(rt2x00dev->hw,
+					    rt2x00lib_resume_intf, rt2x00dev);
 
 	/*
 	 * We are ready again to receive requests from mac80211.
@@ -1259,7 +1259,7 @@ int cw_rt2x00lib_resume(struct rt2x00_dev *rt2x00dev)
 	 * In that case we have disabled the TX queue and should
 	 * now enable it again
 	 */
-	cw_cw_ieee80211_wake_queues(rt2x00dev->hw);
+	ieee80211_wake_queues(rt2x00dev->hw);
 
 	/*
 	 * During interface iteration we might have changed the
@@ -1277,7 +1277,7 @@ exit:
 
 	return retval;
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00lib_resume);
+EXPORT_SYMBOL_GPL(rt2x00lib_resume);
 #endif /* CONFIG_PM */
 
 /*

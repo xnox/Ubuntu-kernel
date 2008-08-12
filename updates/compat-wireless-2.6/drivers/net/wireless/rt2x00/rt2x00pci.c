@@ -34,7 +34,7 @@
 /*
  * TX data handlers.
  */
-int cw_rt2x00pci_write_tx_data(struct queue_entry *entry)
+int rt2x00pci_write_tx_data(struct queue_entry *entry)
 {
 	struct queue_entry_priv_pci *entry_priv = entry->priv_data;
 	struct skb_frame_desc *skbdesc;
@@ -65,12 +65,12 @@ int cw_rt2x00pci_write_tx_data(struct queue_entry *entry)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00pci_write_tx_data);
+EXPORT_SYMBOL_GPL(rt2x00pci_write_tx_data);
 
 /*
  * TX/RX data handlers.
  */
-void cw_rt2x00pci_rxdone(struct rt2x00_dev *rt2x00dev)
+void rt2x00pci_rxdone(struct rt2x00_dev *rt2x00dev)
 {
 	struct data_queue *queue = rt2x00dev->rx;
 	struct queue_entry *entry;
@@ -79,7 +79,7 @@ void cw_rt2x00pci_rxdone(struct rt2x00_dev *rt2x00dev)
 	u32 word;
 
 	while (1) {
-		entry = cw_rt2x00queue_get_entry(queue, Q_INDEX);
+		entry = rt2x00queue_get_entry(queue, Q_INDEX);
 		entry_priv = entry->priv_data;
 		rt2x00_desc_read(entry_priv->desc, 0, &word);
 
@@ -96,10 +96,10 @@ void cw_rt2x00pci_rxdone(struct rt2x00_dev *rt2x00dev)
 		/*
 		 * Send the frame to rt2x00lib for further processing.
 		 */
-		cw_rt2x00lib_rxdone(rt2x00dev, entry);
+		rt2x00lib_rxdone(rt2x00dev, entry);
 	}
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00pci_rxdone);
+EXPORT_SYMBOL_GPL(rt2x00pci_rxdone);
 
 /*
  * Device initialization handlers.
@@ -148,7 +148,7 @@ static void rt2x00pci_free_queue_dma(struct rt2x00_dev *rt2x00dev,
 	entry_priv->desc = NULL;
 }
 
-int cw_rt2x00pci_initialize(struct rt2x00_dev *rt2x00dev)
+int rt2x00pci_initialize(struct rt2x00_dev *rt2x00dev)
 {
 	struct pci_dev *pci_dev = to_pci_dev(rt2x00dev->dev);
 	struct data_queue *queue;
@@ -182,9 +182,9 @@ exit:
 
 	return status;
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00pci_initialize);
+EXPORT_SYMBOL_GPL(rt2x00pci_initialize);
 
-void cw_rt2x00pci_uninitialize(struct rt2x00_dev *rt2x00dev)
+void rt2x00pci_uninitialize(struct rt2x00_dev *rt2x00dev)
 {
 	struct data_queue *queue;
 
@@ -199,7 +199,7 @@ void cw_rt2x00pci_uninitialize(struct rt2x00_dev *rt2x00dev)
 	queue_for_each(rt2x00dev, queue)
 		rt2x00pci_free_queue_dma(rt2x00dev, queue);
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00pci_uninitialize);
+EXPORT_SYMBOL_GPL(rt2x00pci_uninitialize);
 
 /*
  * PCI driver handlers.
@@ -245,7 +245,7 @@ exit:
 	return -ENOMEM;
 }
 
-int cw_rt2x00pci_probe(struct pci_dev *pci_dev, const struct pci_device_id *id)
+int rt2x00pci_probe(struct pci_dev *pci_dev, const struct pci_device_id *id)
 {
 	struct rt2x00_ops *ops = (struct rt2x00_ops *)id->driver_data;
 	struct ieee80211_hw *hw;
@@ -275,7 +275,7 @@ int cw_rt2x00pci_probe(struct pci_dev *pci_dev, const struct pci_device_id *id)
 		goto exit_disable_device;
 	}
 
-	hw = cw_ieee80211_alloc_hw(sizeof(struct rt2x00_dev), ops->hw);
+	hw = ieee80211_alloc_hw(sizeof(struct rt2x00_dev), ops->hw);
 	if (!hw) {
 		ERROR_PROBE("Failed to allocate hardware.\n");
 		retval = -ENOMEM;
@@ -293,7 +293,7 @@ int cw_rt2x00pci_probe(struct pci_dev *pci_dev, const struct pci_device_id *id)
 	if (retval)
 		goto exit_free_device;
 
-	retval = cw_rt2x00lib_probe_dev(rt2x00dev);
+	retval = rt2x00lib_probe_dev(rt2x00dev);
 	if (retval)
 		goto exit_free_reg;
 
@@ -303,7 +303,7 @@ exit_free_reg:
 	rt2x00pci_free_reg(rt2x00dev);
 
 exit_free_device:
-	cw_ieee80211_free_hw(hw);
+	ieee80211_free_hw(hw);
 
 exit_disable_device:
 	if (retval != -EBUSY)
@@ -316,9 +316,9 @@ exit_release_regions:
 
 	return retval;
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00pci_probe);
+EXPORT_SYMBOL_GPL(rt2x00pci_probe);
 
-void cw_rt2x00pci_remove(struct pci_dev *pci_dev)
+void rt2x00pci_remove(struct pci_dev *pci_dev)
 {
 	struct ieee80211_hw *hw = pci_get_drvdata(pci_dev);
 	struct rt2x00_dev *rt2x00dev = hw->priv;
@@ -326,9 +326,9 @@ void cw_rt2x00pci_remove(struct pci_dev *pci_dev)
 	/*
 	 * Free all allocated data.
 	 */
-	cw_rt2x00lib_remove_dev(rt2x00dev);
+	rt2x00lib_remove_dev(rt2x00dev);
 	rt2x00pci_free_reg(rt2x00dev);
-	cw_ieee80211_free_hw(hw);
+	ieee80211_free_hw(hw);
 
 	/*
 	 * Free the PCI device data.
@@ -337,16 +337,16 @@ void cw_rt2x00pci_remove(struct pci_dev *pci_dev)
 	pci_disable_device(pci_dev);
 	pci_release_regions(pci_dev);
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00pci_remove);
+EXPORT_SYMBOL_GPL(rt2x00pci_remove);
 
 #ifdef CONFIG_PM
-int cw_rt2x00pci_suspend(struct pci_dev *pci_dev, pm_message_t state)
+int rt2x00pci_suspend(struct pci_dev *pci_dev, pm_message_t state)
 {
 	struct ieee80211_hw *hw = pci_get_drvdata(pci_dev);
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 	int retval;
 
-	retval = cw_rt2x00lib_suspend(rt2x00dev, state);
+	retval = rt2x00lib_suspend(rt2x00dev, state);
 	if (retval)
 		return retval;
 
@@ -356,9 +356,9 @@ int cw_rt2x00pci_suspend(struct pci_dev *pci_dev, pm_message_t state)
 	pci_disable_device(pci_dev);
 	return pci_set_power_state(pci_dev, pci_choose_state(pci_dev, state));
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00pci_suspend);
+EXPORT_SYMBOL_GPL(rt2x00pci_suspend);
 
-int cw_rt2x00pci_resume(struct pci_dev *pci_dev)
+int rt2x00pci_resume(struct pci_dev *pci_dev)
 {
 	struct ieee80211_hw *hw = pci_get_drvdata(pci_dev);
 	struct rt2x00_dev *rt2x00dev = hw->priv;
@@ -375,7 +375,7 @@ int cw_rt2x00pci_resume(struct pci_dev *pci_dev)
 	if (retval)
 		return retval;
 
-	retval = cw_rt2x00lib_resume(rt2x00dev);
+	retval = rt2x00lib_resume(rt2x00dev);
 	if (retval)
 		goto exit_free_reg;
 
@@ -386,7 +386,7 @@ exit_free_reg:
 
 	return retval;
 }
-EXPORT_SYMBOL_GPL(cw_rt2x00pci_resume);
+EXPORT_SYMBOL_GPL(rt2x00pci_resume);
 #endif /* CONFIG_PM */
 
 /*

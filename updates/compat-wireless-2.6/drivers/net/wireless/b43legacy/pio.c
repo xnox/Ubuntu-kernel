@@ -508,7 +508,7 @@ void b43legacy_pio_handle_txstatus(struct b43legacy_wldev *dev,
 	if (status->acked)
 		info->flags |= IEEE80211_TX_STAT_ACK;
 	info->status.retry_count = status->frame_count - 1;
-	cw_cw_ieee80211_tx_status_irqsafe(dev->wl->hw, packet->skb);
+	ieee80211_tx_status_irqsafe(dev->wl->hw, packet->skb);
 	packet->skb = NULL;
 
 	free_txpacket(packet, 1);

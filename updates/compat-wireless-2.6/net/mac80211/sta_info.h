@@ -425,11 +425,11 @@ static inline u32 get_sta_flags(struct sta_info *sta)
 /*
  * Get a STA info, must have be under RCU read lock.
  */
-struct sta_info *cw_sta_info_get(struct ieee80211_local *local, u8 *addr);
+struct sta_info *sta_info_get(struct ieee80211_local *local, u8 *addr);
 /*
  * Get STA info by index, BROKEN!
  */
-struct sta_info *cw_sta_info_get_by_idx(struct ieee80211_local *local, int idx,
+struct sta_info *sta_info_get_by_idx(struct ieee80211_local *local, int idx,
 				      struct net_device *dev);
 /*
  * Create a new STA info, caller owns returned structure

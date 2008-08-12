@@ -251,7 +251,7 @@ static void rate_control_pid_tx_status(void *priv, struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, hdr->addr1);
+	sta = sta_info_get(local, hdr->addr1);
 	sband = local->hw.wiphy->bands[local->hw.conf.channel->band];
 
 	if (!sta)
@@ -323,7 +323,7 @@ static void rate_control_pid_get_rate(void *priv, struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, hdr->addr1);
+	sta = sta_info_get(local, hdr->addr1);
 
 	/* Send management frames and broadcast/multicast data using lowest
 	 * rate. */
@@ -537,10 +537,10 @@ static struct rate_control_ops mac80211_rcpid = {
 
 int __init rc80211_pid_init(void)
 {
-	return cw_ieee80211_rate_control_register(&mac80211_rcpid);
+	return ieee80211_rate_control_register(&mac80211_rcpid);
 }
 
 void rc80211_pid_exit(void)
 {
-	cw_ieee80211_rate_control_unregister(&mac80211_rcpid);
+	ieee80211_rate_control_unregister(&mac80211_rcpid);
 }

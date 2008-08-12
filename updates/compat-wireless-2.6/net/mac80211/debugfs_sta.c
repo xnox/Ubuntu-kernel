@@ -218,12 +218,12 @@ static ssize_t sta_agg_status_write(struct file *file,
 		/* toggle Tx aggregation command */
 		if (tid_static_tx[tid_num] == 0) {
 			strcpy(state, "on ");
-			rs =  cw_ieee80211_start_tx_ba_session(hw, da, tid_num);
+			rs =  ieee80211_start_tx_ba_session(hw, da, tid_num);
 			if (rs == 0)
 				tid_static_tx[tid_num] = 1;
 		} else {
 			strcpy(state, "off");
-			rs =  cw_ieee80211_stop_tx_ba_session(hw, da, tid_num, 1);
+			rs =  ieee80211_stop_tx_ba_session(hw, da, tid_num, 1);
 			if (rs == 0)
 				tid_static_tx[tid_num] = 0;
 		}

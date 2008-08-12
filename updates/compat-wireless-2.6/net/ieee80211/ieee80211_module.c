@@ -133,7 +133,7 @@ static struct net_device_stats *ieee80211_generic_get_stats(
 	return &ieee->stats;
 }
 
-struct net_device *cw_alloc_ieee80211(int sizeof_priv)
+struct net_device *alloc_ieee80211(int sizeof_priv)
 {
 	struct ieee80211_device *ieee;
 	struct net_device *dev;
@@ -183,7 +183,7 @@ struct net_device *cw_alloc_ieee80211(int sizeof_priv)
 	ieee->ieee802_1x = 1;	/* Default to supporting 802.1x */
 
 	INIT_LIST_HEAD(&ieee->crypt_deinit_list);
-	setup_timer(&ieee->crypt_deinit_timer, cw_ieee80211_crypt_deinit_handler,
+	setup_timer(&ieee->crypt_deinit_timer, ieee80211_crypt_deinit_handler,
 			(unsigned long)ieee);
 	ieee->crypt_quiesced = 0;
 
@@ -201,15 +201,15 @@ struct net_device *cw_alloc_ieee80211(int sizeof_priv)
 	return NULL;
 }
 
-void cw_free_ieee80211(struct net_device *dev)
+void free_ieee80211(struct net_device *dev)
 {
 	struct ieee80211_device *ieee = netdev_priv(dev);
 
 	int i;
 
-	cw_ieee80211_crypt_quiescing(ieee);
+	ieee80211_crypt_quiescing(ieee);
 	del_timer_sync(&ieee->crypt_deinit_timer);
-	cw_ieee80211_crypt_deinit_entries(ieee, 1);
+	ieee80211_crypt_deinit_entries(ieee, 1);
 
 	for (i = 0; i < WEP_KEYS; i++) {
 		struct ieee80211_crypt_data *crypt = ieee->crypt[i];
@@ -230,14 +230,14 @@ void cw_free_ieee80211(struct net_device *dev)
 #ifdef CONFIG_IEEE80211_DEBUG
 
 static int debug = 0;
-u32 cw_ieee80211_debug_level = 0;
-EXPORT_SYMBOL_GPL(cw_ieee80211_debug_level);
+u32 ieee80211_debug_level = 0;
+EXPORT_SYMBOL_GPL(ieee80211_debug_level);
 static struct proc_dir_entry *ieee80211_proc = NULL;
 
 static int show_debug_level(char *page, char **start, off_t offset,
 			    int count, int *eof, void *data)
 {
-	return snprintf(page, count, "0x%08X\n", cw_ieee80211_debug_level);
+	return snprintf(page, count, "0x%08X\n", ieee80211_debug_level);
 }
 
 static int store_debug_level(struct file *file, const char __user * buffer,
@@ -254,7 +254,7 @@ static int store_debug_level(struct file *file, const char __user * buffer,
 		printk(KERN_INFO DRV_NAME
 		       ": %s is not in hex or decimal form.\n", buf);
 	else
-		cw_ieee80211_debug_level = val;
+		ieee80211_debug_level = val;
 
 	return strnlen(buf, len);
 }
@@ -265,7 +265,7 @@ static int __init ieee80211_init(void)
 #ifdef CONFIG_IEEE80211_DEBUG
 	struct proc_dir_entry *e;
 
-	cw_ieee80211_debug_level = debug;
+	ieee80211_debug_level = debug;
 	ieee80211_proc = proc_mkdir(DRV_NAME, init_net.proc_net);
 	if (ieee80211_proc == NULL) {
 		IEEE80211_ERROR("Unable to create " DRV_NAME
@@ -310,7 +310,7 @@ MODULE_PARM_DESC(debug, "debug output mask");
 module_exit(ieee80211_exit);
 module_init(ieee80211_init);
 
-const char *cw_escape_essid(const char *essid, u8 essid_len)
+const char *escape_essid(const char *essid, u8 essid_len)
 {
 	static char escaped[IW_ESSID_MAX_SIZE * 2 + 1];
 	const char *s = essid;
@@ -335,6 +335,6 @@ const char *cw_escape_essid(const char *essid, u8 essid_len)
 	return escaped;
 }
 
-EXPORT_SYMBOL(cw_alloc_ieee80211);
-EXPORT_SYMBOL(cw_free_ieee80211);
-EXPORT_SYMBOL(cw_escape_essid);
+EXPORT_SYMBOL(alloc_ieee80211);
+EXPORT_SYMBOL(free_ieee80211);
+EXPORT_SYMBOL(escape_essid);

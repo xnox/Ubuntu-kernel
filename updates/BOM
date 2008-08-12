@@ -25,7 +25,7 @@ all: $(CDIR)/wireless-testing/Makefile
 	rsync -av --delete $(CWDIR)/ $(CW)
 	find $(CW) | egrep "\.git*" | xargs rm -rf
 	find  $(CW) -name "*.orig" | xargs rm -rf
-	bash ./munge
+	#bash ./munge
 
 $(WTDIR)/Makefile: $(CDIR)/.ignore
 	cd $(CDIR); git clone git://git.kernel.org/pub/scm/linux/kernel/git/linville/$(WT).git $(WT)

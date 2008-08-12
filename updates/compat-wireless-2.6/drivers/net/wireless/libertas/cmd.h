@@ -12,21 +12,21 @@
 #define lbs_cmd(priv, cmdnr, cmd, cb, cb_arg)	({		\
 	uint16_t __sz = le16_to_cpu((cmd)->hdr.size);		\
 	(cmd)->hdr.size = cpu_to_le16(sizeof(*(cmd)));		\
-	cw___lbs_cmd(priv, cmdnr, &(cmd)->hdr, __sz, cb, cb_arg);	\
+	__lbs_cmd(priv, cmdnr, &(cmd)->hdr, __sz, cb, cb_arg);	\
 })
 
 #define lbs_cmd_with_response(priv, cmdnr, cmd)	\
-	lbs_cmd(priv, cmdnr, cmd, cw_lbs_cmd_copyback, (unsigned long) (cmd))
+	lbs_cmd(priv, cmdnr, cmd, lbs_cmd_copyback, (unsigned long) (cmd))
 
 void lbs_cmd_async(struct lbs_private *priv, uint16_t command,
 	struct cmd_header *in_cmd, int in_cmd_size);
 
-int cw___lbs_cmd(struct lbs_private *priv, uint16_t command,
+int __lbs_cmd(struct lbs_private *priv, uint16_t command,
 	      struct cmd_header *in_cmd, int in_cmd_size,
 	      int (*callback)(struct lbs_private *, unsigned long, struct cmd_header *),
 	      unsigned long callback_arg);
 
-int cw_lbs_cmd_copyback(struct lbs_private *priv, unsigned long extra,
+int lbs_cmd_copyback(struct lbs_private *priv, unsigned long extra,
 		     struct cmd_header *resp);
 
 int lbs_update_hw_spec(struct lbs_private *priv);
@@ -44,11 +44,11 @@ int lbs_mesh_config_send(struct lbs_private *priv,
 			 uint16_t action, uint16_t type);
 int lbs_mesh_config(struct lbs_private *priv, uint16_t enable, uint16_t chan);
 
-int cw_lbs_host_sleep_cfg(struct lbs_private *priv, uint32_t criteria);
-int cw_lbs_suspend(struct lbs_private *priv);
-void cw_lbs_resume(struct lbs_private *priv);
+int lbs_host_sleep_cfg(struct lbs_private *priv, uint32_t criteria);
+int lbs_suspend(struct lbs_private *priv);
+void lbs_resume(struct lbs_private *priv);
 
-int cw_lbs_cmd_802_11_rate_adapt_rateset(struct lbs_private *priv,
+int lbs_cmd_802_11_rate_adapt_rateset(struct lbs_private *priv,
 				      uint16_t cmd_action);
 int lbs_cmd_802_11_inactivity_timeout(struct lbs_private *priv,
 				      uint16_t cmd_action, uint16_t *timeout);

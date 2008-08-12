@@ -55,7 +55,7 @@ static inline void rt2500usb_register_read(struct rt2x00_dev *rt2x00dev,
 					   u16 *value)
 {
 	__le16 reg;
-	cw_cw_rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_READ,
+	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_READ,
 				      USB_VENDOR_REQUEST_IN, offset,
 				      &reg, sizeof(u16), REGISTER_TIMEOUT);
 	*value = le16_to_cpu(reg);
@@ -66,7 +66,7 @@ static inline void rt2500usb_register_read_lock(struct rt2x00_dev *rt2x00dev,
 						u16 *value)
 {
 	__le16 reg;
-	cw_rt2x00usb_vendor_req_buff_lock(rt2x00dev, USB_MULTI_READ,
+	rt2x00usb_vendor_req_buff_lock(rt2x00dev, USB_MULTI_READ,
 				       USB_VENDOR_REQUEST_IN, offset,
 				       &reg, sizeof(u16), REGISTER_TIMEOUT);
 	*value = le16_to_cpu(reg);
@@ -76,7 +76,7 @@ static inline void rt2500usb_register_multiread(struct rt2x00_dev *rt2x00dev,
 						const unsigned int offset,
 						void *value, const u16 length)
 {
-	cw_cw_rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_READ,
+	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_READ,
 				      USB_VENDOR_REQUEST_IN, offset,
 				      value, length,
 				      REGISTER_TIMEOUT16(length));
@@ -87,7 +87,7 @@ static inline void rt2500usb_register_write(struct rt2x00_dev *rt2x00dev,
 					    u16 value)
 {
 	__le16 reg = cpu_to_le16(value);
-	cw_cw_rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
+	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
 				      USB_VENDOR_REQUEST_OUT, offset,
 				      &reg, sizeof(u16), REGISTER_TIMEOUT);
 }
@@ -97,7 +97,7 @@ static inline void rt2500usb_register_write_lock(struct rt2x00_dev *rt2x00dev,
 						 u16 value)
 {
 	__le16 reg = cpu_to_le16(value);
-	cw_rt2x00usb_vendor_req_buff_lock(rt2x00dev, USB_MULTI_WRITE,
+	rt2x00usb_vendor_req_buff_lock(rt2x00dev, USB_MULTI_WRITE,
 				       USB_VENDOR_REQUEST_OUT, offset,
 				       &reg, sizeof(u16), REGISTER_TIMEOUT);
 }
@@ -106,7 +106,7 @@ static inline void rt2500usb_register_multiwrite(struct rt2x00_dev *rt2x00dev,
 						 const unsigned int offset,
 						 void *value, const u16 length)
 {
-	cw_cw_rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
+	rt2x00usb_vendor_request_buff(rt2x00dev, USB_MULTI_WRITE,
 				      USB_VENDOR_REQUEST_OUT, offset,
 				      value, length,
 				      REGISTER_TIMEOUT16(length));
@@ -760,9 +760,9 @@ static int rt2500usb_init_registers(struct rt2x00_dev *rt2x00dev)
 {
 	u16 reg;
 
-	cw_rt2x00usb_vendor_request_sw(rt2x00dev, USB_DEVICE_MODE, 0x0001,
+	rt2x00usb_vendor_request_sw(rt2x00dev, USB_DEVICE_MODE, 0x0001,
 				    USB_MODE_TEST, REGISTER_TIMEOUT);
-	cw_rt2x00usb_vendor_request_sw(rt2x00dev, USB_SINGLE_WRITE, 0x0308,
+	rt2x00usb_vendor_request_sw(rt2x00dev, USB_SINGLE_WRITE, 0x0308,
 				    0x00f0, REGISTER_TIMEOUT);
 
 	rt2500usb_register_read(rt2x00dev, TXRX_CSR2, &reg);
@@ -979,7 +979,7 @@ static void rt2500usb_disable_radio(struct rt2x00_dev *rt2x00dev)
 	 */
 	rt2500usb_register_write(rt2x00dev, TXRX_CSR19, 0);
 
-	cw_rt2x00usb_disable_radio(rt2x00dev);
+	rt2x00usb_disable_radio(rt2x00dev);
 }
 
 static int rt2500usb_set_state(struct rt2x00_dev *rt2x00dev,
@@ -1187,7 +1187,7 @@ static void rt2500usb_kick_tx_queue(struct rt2x00_dev *rt2x00dev,
 	u16 reg;
 
 	if (queue != QID_BEACON) {
-		cw_rt2x00usb_kick_tx_queue(rt2x00dev, queue);
+		rt2x00usb_kick_tx_queue(rt2x00dev, queue);
 		return;
 	}
 
@@ -1736,32 +1736,32 @@ static int rt2500usb_probe_hw(struct rt2x00_dev *rt2x00dev)
 }
 
 static const struct ieee80211_ops rt2500usb_mac80211_ops = {
-	.tx			= cw_rt2x00mac_tx,
-	.start			= cw_rt2x00mac_start,
-	.stop			= cw_rt2x00mac_stop,
-	.add_interface		= cw_rt2x00mac_add_interface,
-	.remove_interface	= cw_rt2x00mac_remove_interface,
-	.config			= cw_rt2x00mac_config,
-	.config_interface	= cw_cw_rt2x00mac_config_interface,
-	.configure_filter	= cw_cw_rt2x00mac_configure_filter,
-	.get_stats		= cw_rt2x00mac_get_stats,
-	.bss_info_changed	= cw_rt2x00mac_bss_info_changed,
-	.conf_tx		= cw_rt2x00mac_conf_tx,
-	.get_tx_stats		= cw_rt2x00mac_get_tx_stats,
+	.tx			= rt2x00mac_tx,
+	.start			= rt2x00mac_start,
+	.stop			= rt2x00mac_stop,
+	.add_interface		= rt2x00mac_add_interface,
+	.remove_interface	= rt2x00mac_remove_interface,
+	.config			= rt2x00mac_config,
+	.config_interface	= rt2x00mac_config_interface,
+	.configure_filter	= rt2x00mac_configure_filter,
+	.get_stats		= rt2x00mac_get_stats,
+	.bss_info_changed	= rt2x00mac_bss_info_changed,
+	.conf_tx		= rt2x00mac_conf_tx,
+	.get_tx_stats		= rt2x00mac_get_tx_stats,
 };
 
 static const struct rt2x00lib_ops rt2500usb_rt2x00_ops = {
 	.probe_hw		= rt2500usb_probe_hw,
-	.initialize		= cw_rt2x00usb_initialize,
-	.uninitialize		= cw_rt2x00usb_uninitialize,
-	.init_rxentry		= cw_rt2x00usb_init_rxentry,
-	.init_txentry		= cw_rt2x00usb_init_txentry,
+	.initialize		= rt2x00usb_initialize,
+	.uninitialize		= rt2x00usb_uninitialize,
+	.init_rxentry		= rt2x00usb_init_rxentry,
+	.init_txentry		= rt2x00usb_init_txentry,
 	.set_device_state	= rt2500usb_set_device_state,
 	.link_stats		= rt2500usb_link_stats,
 	.reset_tuner		= rt2500usb_reset_tuner,
 	.link_tuner		= rt2500usb_link_tuner,
 	.write_tx_desc		= rt2500usb_write_tx_desc,
-	.write_tx_data		= cw_rt2x00usb_write_tx_data,
+	.write_tx_data		= rt2x00usb_write_tx_data,
 	.write_beacon		= rt2500usb_write_beacon,
 	.get_tx_data_len	= rt2500usb_get_tx_data_len,
 	.kick_tx_queue		= rt2500usb_kick_tx_queue,
@@ -1880,10 +1880,10 @@ MODULE_LICENSE("GPL");
 static struct usb_driver rt2500usb_driver = {
 	.name		= KBUILD_MODNAME,
 	.id_table	= rt2500usb_device_table,
-	.probe		= cw_rt2x00usb_probe,
-	.disconnect	= cw_rt2x00usb_disconnect,
-	.suspend	= cw_rt2x00usb_suspend,
-	.resume		= cw_rt2x00usb_resume,
+	.probe		= rt2x00usb_probe,
+	.disconnect	= rt2x00usb_disconnect,
+	.suspend	= rt2x00usb_suspend,
+	.resume		= rt2x00usb_resume,
 };
 
 static int __init rt2500usb_init(void)

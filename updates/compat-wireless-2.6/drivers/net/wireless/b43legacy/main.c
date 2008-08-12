@@ -707,7 +707,7 @@ void b43legacy_wireless_core_reset(struct b43legacy_wldev *dev, u32 flags)
 
 	flags |= B43legacy_TMSLOW_PHYCLKEN;
 	flags |= B43legacy_TMSLOW_PHYRESET;
-	cw_ssb_device_enable(dev->dev, flags);
+	ssb_device_enable(dev->dev, flags);
 	msleep(2); /* Wait for the PLL to turn on. */
 
 	/* Now take the PHY out of Reset again */
@@ -1029,7 +1029,7 @@ static void b43legacy_write_probe_resp_plcp(struct b43legacy_wldev *dev,
 
 	plcp.data = 0;
 	b43legacy_generate_plcp_hdr(&plcp, size + FCS_LEN, rate->bitrate);
-	dur = cw_ieee80211_generic_frame_duration(dev->wl->hw,
+	dur = ieee80211_generic_frame_duration(dev->wl->hw,
 					       dev->wl->vif,
 					       size,
 					       rate);
@@ -1094,7 +1094,7 @@ static const u8 *b43legacy_generate_probe_resp(struct b43legacy_wldev *dev,
 	/* Set the frame control. */
 	hdr->frame_control = cpu_to_le16(IEEE80211_FTYPE_MGMT |
 					 IEEE80211_STYPE_PROBE_RESP);
-	dur = cw_ieee80211_generic_frame_duration(dev->wl->hw,
+	dur = ieee80211_generic_frame_duration(dev->wl->hw,
 					       dev->wl->vif,
 					       *dest_size,
 					       rate);
@@ -1150,7 +1150,7 @@ static void b43legacy_update_templates(struct b43legacy_wl *wl)
 	 * field, but that would probably require resizing and moving of data
 	 * within the beacon template. Simply request a new beacon and let
 	 * mac80211 do the hard work. */
-	beacon = cw_ieee80211_beacon_get(wl->hw, wl->vif);
+	beacon = ieee80211_beacon_get(wl->hw, wl->vif);
 	if (unlikely(!beacon))
 		return;
 
@@ -2778,7 +2778,7 @@ static void b43legacy_wireless_core_stop(struct b43legacy_wldev *dev)
 	cancel_delayed_work_sync(&dev->periodic_work);
 	mutex_lock(&wl->mutex);
 
-	cw_cw_ieee80211_stop_queues(wl->hw); /* FIXME this could cause a deadlock */
+	ieee80211_stop_queues(wl->hw); /* FIXME this could cause a deadlock */
 
 	b43legacy_mac_suspend(dev);
 	free_irq(dev->dev->irq, dev);
@@ -3079,8 +3079,8 @@ static void b43legacy_wireless_core_exit(struct b43legacy_wldev *dev)
 		dev->wl->current_beacon = NULL;
 	}
 
-	cw_ssb_device_disable(dev->dev, 0);
-	cw_ssb_bus_may_powerdown(dev->dev->bus);
+	ssb_device_disable(dev->dev, 0);
+	ssb_bus_may_powerdown(dev->dev->bus);
 }
 
 static void prepare_phy_data_for_init(struct b43legacy_wldev *dev)
@@ -3135,10 +3135,10 @@ static int b43legacy_wireless_core_init(struct b43legacy_wldev *dev)
 
 	B43legacy_WARN_ON(b43legacy_status(dev) != B43legacy_STAT_UNINIT);
 
-	err = cw_ssb_bus_powerup(bus, 0);
+	err = ssb_bus_powerup(bus, 0);
 	if (err)
 		goto out;
-	if (!cw_ssb_device_is_enabled(dev->dev)) {
+	if (!ssb_device_is_enabled(dev->dev)) {
 		tmp = phy->gmode ? B43legacy_TMSLOW_GMODE : 0;
 		b43legacy_wireless_core_reset(dev, tmp);
 	}
@@ -3158,7 +3158,7 @@ static int b43legacy_wireless_core_init(struct b43legacy_wldev *dev)
 		goto err_kfree_lo_control;
 
 	/* Enable IRQ routing to this device. */
-	cw_ssb_pcicore_dev_irqvecs_enable(&bus->pcicore, dev->dev);
+	ssb_pcicore_dev_irqvecs_enable(&bus->pcicore, dev->dev);
 
 	b43legacy_imcfglo_timeouts_workaround(dev);
 	prepare_phy_data_for_init(dev);
@@ -3226,7 +3226,7 @@ static int b43legacy_wireless_core_init(struct b43legacy_wldev *dev)
 
 	b43legacy_set_synth_pu_delay(dev, 1);
 
-	cw_ssb_bus_powerup(bus, 1); /* Enable dynamic PCTL */
+	ssb_bus_powerup(bus, 1); /* Enable dynamic PCTL */
 	b43legacy_upload_card_macaddress(dev);
 	b43legacy_security_init(dev);
 	b43legacy_rng_init(wl);
@@ -3245,7 +3245,7 @@ err_kfree_tssitbl:
 err_kfree_lo_control:
 	kfree(phy->lo_control);
 	phy->lo_control = NULL;
-	cw_ssb_bus_may_powerdown(bus);
+	ssb_bus_may_powerdown(bus);
 	B43legacy_WARN_ON(b43legacy_status(dev) != B43legacy_STAT_UNINIT);
 	return err;
 }
@@ -3522,7 +3522,7 @@ static int b43legacy_wireless_core_attach(struct b43legacy_wldev *dev)
 	 * have that in core_init(), too.
 	 */
 
-	err = cw_ssb_bus_powerup(bus, 0);
+	err = ssb_bus_powerup(bus, 0);
 	if (err) {
 		b43legacyerr(wl, "Bus powerup failed\n");
 		goto out;
@@ -3584,14 +3584,14 @@ static int b43legacy_wireless_core_attach(struct b43legacy_wldev *dev)
 
 	b43legacy_radio_turn_off(dev, 1);
 	b43legacy_switch_analog(dev, 0);
-	cw_ssb_device_disable(dev->dev, 0);
-	cw_ssb_bus_may_powerdown(bus);
+	ssb_device_disable(dev->dev, 0);
+	ssb_bus_may_powerdown(bus);
 
 out:
 	return err;
 
 err_powerdown:
-	cw_ssb_bus_may_powerdown(bus);
+	ssb_bus_may_powerdown(bus);
 	return err;
 }
 
@@ -3682,8 +3682,8 @@ static void b43legacy_wireless_exit(struct ssb_device *dev,
 {
 	struct ieee80211_hw *hw = wl->hw;
 
-	cw_ssb_set_devtypedata(dev, NULL);
-	cw_ieee80211_free_hw(hw);
+	ssb_set_devtypedata(dev, NULL);
+	ieee80211_free_hw(hw);
 }
 
 static int b43legacy_wireless_init(struct ssb_device *dev)
@@ -3695,7 +3695,7 @@ static int b43legacy_wireless_init(struct ssb_device *dev)
 
 	b43legacy_sprom_fixup(dev->bus);
 
-	hw = cw_ieee80211_alloc_hw(sizeof(*wl), &b43legacy_hw_ops);
+	hw = ieee80211_alloc_hw(sizeof(*wl), &b43legacy_hw_ops);
 	if (!hw) {
 		b43legacyerr(NULL, "Could not allocate ieee80211 device\n");
 		goto out;
@@ -3722,7 +3722,7 @@ static int b43legacy_wireless_init(struct ssb_device *dev)
 	mutex_init(&wl->mutex);
 	INIT_LIST_HEAD(&wl->devlist);
 
-	cw_ssb_set_devtypedata(dev, wl);
+	ssb_set_devtypedata(dev, wl);
 	b43legacyinfo(wl, "Broadcom %04X WLAN found\n", dev->bus->chip_id);
 	err = 0;
 out:
@@ -3751,7 +3751,7 @@ static int b43legacy_probe(struct ssb_device *dev,
 		goto err_wireless_exit;
 
 	if (first) {
-		err = cw_ieee80211_register_hw(wl->hw);
+		err = ieee80211_register_hw(wl->hw);
 		if (err)
 			goto err_one_core_detach;
 	}
@@ -3778,7 +3778,7 @@ static void b43legacy_remove(struct ssb_device *dev)
 
 	B43legacy_WARN_ON(!wl);
 	if (wl->current_dev == wldev)
-		cw_ieee80211_unregister_hw(wl->hw);
+		ieee80211_unregister_hw(wl->hw);
 
 	b43legacy_one_core_detach(dev);
 
@@ -3914,7 +3914,7 @@ err_dfs_exit:
 
 static void __exit b43legacy_exit(void)
 {
-	cw_ssb_driver_unregister(&b43legacy_ssb_driver);
+	ssb_driver_unregister(&b43legacy_ssb_driver);
 	b43legacy_debugfs_exit();
 }
 

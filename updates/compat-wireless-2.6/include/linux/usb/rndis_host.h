@@ -254,18 +254,18 @@ struct rndis_keepalive_c {	/* IN (optionally OUT) */
 	RNDIS_PACKET_TYPE_ALL_MULTICAST | \
 	RNDIS_PACKET_TYPE_PROMISCUOUS)
 
-/* Flags to require specific physical medium type for cw_generic_rndis_bind() */
+/* Flags to require specific physical medium type for generic_rndis_bind() */
 #define FLAG_RNDIS_PHYM_NOT_WIRELESS	0x0001
 #define FLAG_RNDIS_PHYM_WIRELESS	0x0002
 
 
-extern void cw_rndis_status(struct usbnet *dev, struct urb *urb);
-extern int cw_rndis_command(struct usbnet *dev, struct rndis_msg_hdr *buf);
+extern void rndis_status(struct usbnet *dev, struct urb *urb);
+extern int rndis_command(struct usbnet *dev, struct rndis_msg_hdr *buf);
 extern int
-cw_generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags);
-extern void cw_rndis_unbind(struct usbnet *dev, struct usb_interface *intf);
-extern int cw_rndis_rx_fixup(struct usbnet *dev, struct sk_buff *skb);
+generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags);
+extern void rndis_unbind(struct usbnet *dev, struct usb_interface *intf);
+extern int rndis_rx_fixup(struct usbnet *dev, struct sk_buff *skb);
 extern struct sk_buff *
-cw_rndis_tx_fixup(struct usbnet *dev, struct sk_buff *skb, gfp_t flags);
+rndis_tx_fixup(struct usbnet *dev, struct sk_buff *skb, gfp_t flags);
 
 #endif	/* __LINUX_USB_RNDIS_HOST_H */

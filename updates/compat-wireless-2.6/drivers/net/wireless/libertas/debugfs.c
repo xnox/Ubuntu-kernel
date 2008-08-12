@@ -19,7 +19,7 @@ static char *szStates[] = {
 };
 
 #ifdef PROC_DEBUG
-static void cw_lbs_debug_init(struct lbs_private *priv);
+static void lbs_debug_init(struct lbs_private *priv);
 #endif
 
 static int open_file_generic(struct inode *inode, struct file *file)
@@ -87,7 +87,7 @@ static ssize_t lbs_getscantable(struct file *file, char __user *userbuf,
 				spectrum_mgmt ? 'S' : ' ');
 		pos += snprintf(buf+pos, len-pos, " %04d |", SCAN_RSSI(iter_bss->rssi));
 		pos += snprintf(buf+pos, len-pos, " %s\n",
-		                cw_escape_essid(iter_bss->ssid, iter_bss->ssid_len));
+		                escape_essid(iter_bss->ssid, iter_bss->ssid_len));
 
 		numscansdone++;
 	}
@@ -678,13 +678,13 @@ out_unlock:
 	.write = (fwrite), \
 }
 
-struct cw_lbs_debugfs_files {
+struct lbs_debugfs_files {
 	char *name;
 	int perm;
 	struct file_operations fops;
 };
 
-static struct cw_lbs_debugfs_files debugfs_files[] = {
+static struct lbs_debugfs_files debugfs_files[] = {
 	{ "info", 0444, FOPS(lbs_dev_info, write_file_dummy), },
 	{ "getscantable", 0444, FOPS(lbs_getscantable,
 					write_file_dummy), },
@@ -692,7 +692,7 @@ static struct cw_lbs_debugfs_files debugfs_files[] = {
 				lbs_sleepparams_write), },
 };
 
-static struct cw_lbs_debugfs_files debugfs_events_files[] = {
+static struct lbs_debugfs_files debugfs_events_files[] = {
 	{"low_rssi", 0644, FOPS(lbs_lowrssi_read,
 				lbs_lowrssi_write), },
 	{"low_snr", 0644, FOPS(lbs_lowsnr_read,
@@ -707,7 +707,7 @@ static struct cw_lbs_debugfs_files debugfs_events_files[] = {
 				lbs_highsnr_write), },
 };
 
-static struct cw_lbs_debugfs_files debugfs_regs_files[] = {
+static struct lbs_debugfs_files debugfs_regs_files[] = {
 	{"rdmac", 0644, FOPS(lbs_rdmac_read, lbs_rdmac_write), },
 	{"wrmac", 0600, FOPS(NULL, lbs_wrmac_write), },
 	{"rdbbp", 0644, FOPS(lbs_rdbbp_read, lbs_rdbbp_write), },
@@ -716,7 +716,7 @@ static struct cw_lbs_debugfs_files debugfs_regs_files[] = {
 	{"wrrf", 0600, FOPS(NULL, lbs_wrrf_write), },
 };
 
-void cw_lbs_debugfs_init(void)
+void lbs_debugfs_init(void)
 {
 	if (!lbs_dir)
 		lbs_dir = debugfs_create_dir("lbs_wireless", NULL);
@@ -724,17 +724,17 @@ void cw_lbs_debugfs_init(void)
 	return;
 }
 
-void cw_lbs_debugfs_remove(void)
+void lbs_debugfs_remove(void)
 {
 	if (lbs_dir)
 		 debugfs_remove(lbs_dir);
 	return;
 }
 
-void cw_lbs_debugfs_init_one(struct lbs_private *priv, struct net_device *dev)
+void lbs_debugfs_init_one(struct lbs_private *priv, struct net_device *dev)
 {
 	int i;
-	struct cw_lbs_debugfs_files *files;
+	struct lbs_debugfs_files *files;
 	if (!lbs_dir)
 		goto exit;
 
@@ -778,13 +778,13 @@ void cw_lbs_debugfs_init_one(struct lbs_private *priv, struct net_device *dev)
 	}
 
 #ifdef PROC_DEBUG
-	cw_lbs_debug_init(priv);
+	lbs_debug_init(priv);
 #endif
 exit:
 	return;
 }
 
-void cw_lbs_debugfs_remove_one(struct lbs_private *priv)
+void lbs_debugfs_remove_one(struct lbs_private *priv)
 {
 	int i;
 
@@ -841,7 +841,7 @@ static int num_of_items = ARRAY_SIZE(items);
  *  @param data    data to output
  *  @return 	   number of output data
  */
-static ssize_t cw_lbs_debugfs_read(struct file *file, char __user *userbuf,
+static ssize_t lbs_debugfs_read(struct file *file, char __user *userbuf,
 			size_t count, loff_t *ppos)
 {
 	int val = 0;
@@ -885,7 +885,7 @@ static ssize_t cw_lbs_debugfs_read(struct file *file, char __user *userbuf,
  *  @param data    data to write
  *  @return 	   number of data
  */
-static ssize_t cw_lbs_debugfs_write(struct file *f, const char __user *buf,
+static ssize_t lbs_debugfs_write(struct file *f, const char __user *buf,
 			    size_t cnt, loff_t *ppos)
 {
 	int r, i;
@@ -937,11 +937,11 @@ static ssize_t cw_lbs_debugfs_write(struct file *f, const char __user *buf,
 	return (ssize_t)cnt;
 }
 
-static struct file_operations cw_lbs_debug_fops = {
+static struct file_operations lbs_debug_fops = {
 	.owner = THIS_MODULE,
 	.open = open_file_generic,
-	.write = cw_lbs_debugfs_write,
-	.read = cw_lbs_debugfs_read,
+	.write = lbs_debugfs_write,
+	.read = lbs_debugfs_read,
 };
 
 /**
@@ -951,7 +951,7 @@ static struct file_operations cw_lbs_debug_fops = {
  *  @param dev     pointer net_device
  *  @return 	   N/A
  */
-static void cw_lbs_debug_init(struct lbs_private *priv)
+static void lbs_debug_init(struct lbs_private *priv)
 {
 	int i;
 
@@ -963,6 +963,6 @@ static void cw_lbs_debug_init(struct lbs_private *priv)
 
 	priv->debugfs_debug = debugfs_create_file("debug", 0644,
 						  priv->debugfs_dir, &items[0],
-						  &cw_lbs_debug_fops);
+						  &lbs_debug_fops);
 }
 #endif

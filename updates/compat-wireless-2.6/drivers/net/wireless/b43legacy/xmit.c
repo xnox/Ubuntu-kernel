@@ -227,7 +227,7 @@ static int generate_txhdr_fw3(struct b43legacy_wldev *dev,
 		 * use the original dur_id field. */
 		txhdr->dur_fb = wlhdr->duration_id;
 	} else {
-		txhdr->dur_fb = cw_ieee80211_generic_frame_duration(dev->wl->hw,
+		txhdr->dur_fb = ieee80211_generic_frame_duration(dev->wl->hw,
 							 info->control.vif,
 							 fragment_len,
 							 rate_fb);
@@ -253,7 +253,7 @@ static int generate_txhdr_fw3(struct b43legacy_wldev *dev,
 			mac_ctl |= (key->algorithm <<
 				   B43legacy_TX4_MAC_KEYALG_SHIFT) &
 				   B43legacy_TX4_MAC_KEYALG;
-			wlhdr_len = cw_ieee80211_get_hdrlen(fctl);
+			wlhdr_len = ieee80211_get_hdrlen(fctl);
 			iv_len = min((size_t)info->control.iv_len,
 				     ARRAY_SIZE(txhdr->iv));
 			memcpy(txhdr->iv, ((u8 *)wlhdr) + wlhdr_len, iv_len);
@@ -322,7 +322,7 @@ static int generate_txhdr_fw3(struct b43legacy_wldev *dev,
 			mac_ctl |= B43legacy_TX4_MAC_CTSFALLBACKOFDM;
 
 		if (info->flags & IEEE80211_TX_CTL_USE_CTS_PROTECT) {
-			cw_ieee80211_ctstoself_get(dev->wl->hw,
+			ieee80211_ctstoself_get(dev->wl->hw,
 						info->control.vif,
 						fragment_data,
 						fragment_len, info,
@@ -331,7 +331,7 @@ static int generate_txhdr_fw3(struct b43legacy_wldev *dev,
 			mac_ctl |= B43legacy_TX4_MAC_SENDCTS;
 			len = sizeof(struct ieee80211_cts);
 		} else {
-			cw_ieee80211_rts_get(dev->wl->hw,
+			ieee80211_rts_get(dev->wl->hw,
 					  info->control.vif,
 					  fragment_data, fragment_len, info,
 					  (struct ieee80211_rts *)
@@ -437,7 +437,7 @@ void b43legacy_rx(struct b43legacy_wldev *dev,
 		  struct sk_buff *skb,
 		  const void *_rxhdr)
 {
-	struct cw_ieee80211_rx_status status;
+	struct ieee80211_rx_status status;
 	struct b43legacy_plcp_hdr6 *plcp;
 	struct ieee80211_hdr *wlhdr;
 	const struct b43legacy_rxhdr_fw3 *rxhdr = _rxhdr;
@@ -502,7 +502,7 @@ void b43legacy_rx(struct b43legacy_wldev *dev,
 			fctl &= ~cpu_to_le16(IEEE80211_FCTL_PROTECTED);
 			wlhdr->frame_control = fctl;
 
-			wlhdr_len = cw_ieee80211_hdrlen(fctl);
+			wlhdr_len = ieee80211_hdrlen(fctl);
 			if (unlikely(skb->len < (wlhdr_len + 3))) {
 				b43legacydbg(dev->wl, "RX: Packet size"
 					     " underrun3\n");
@@ -581,7 +581,7 @@ void b43legacy_rx(struct b43legacy_wldev *dev,
 	}
 
 	dev->stats.last_rx = jiffies;
-	cw_cw_ieee80211_rx_irqsafe(dev->wl->hw, skb, &status);
+	ieee80211_rx_irqsafe(dev->wl->hw, skb, &status);
 
 	return;
 drop:

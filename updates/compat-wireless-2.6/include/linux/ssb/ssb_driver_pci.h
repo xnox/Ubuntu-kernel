@@ -90,7 +90,7 @@ struct ssb_pcicore {
 extern void ssb_pcicore_init(struct ssb_pcicore *pc);
 
 /* Enable IRQ routing for a specific device */
-extern int cw_ssb_pcicore_dev_irqvecs_enable(struct ssb_pcicore *pc,
+extern int ssb_pcicore_dev_irqvecs_enable(struct ssb_pcicore *pc,
 					  struct ssb_device *dev);
 
 int ssb_pcicore_plat_dev_init(struct pci_dev *d);
@@ -109,7 +109,7 @@ void ssb_pcicore_init(struct ssb_pcicore *pc)
 }
 
 static inline
-int cw_ssb_pcicore_dev_irqvecs_enable(struct ssb_pcicore *pc,
+int ssb_pcicore_dev_irqvecs_enable(struct ssb_pcicore *pc,
 				   struct ssb_device *dev)
 {
 	return 0;

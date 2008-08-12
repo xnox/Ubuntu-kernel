@@ -449,7 +449,7 @@ int ssb_chipco_serial_init(struct ssb_chipcommon *cc,
 			}
 		} else if (ccrev >= 3) {
 			/* Internal backplane clock */
-			baud_base = cw_ssb_clockspeed(bus);
+			baud_base = ssb_clockspeed(bus);
 			div = chipco_read32(cc, SSB_CHIPCO_CLKDIV)
 			      & SSB_CHIPCO_CLKDIV_UART;
 		} else {

@@ -130,7 +130,7 @@ static int adm8211_read_eeprom(struct ieee80211_hw *dev)
 	if (!priv->eeprom)
 		return -ENOMEM;
 
-	cw_eeprom_93cx6_multiread(&eeprom, 0, (__le16 *)priv->eeprom, words);
+	eeprom_93cx6_multiread(&eeprom, 0, (__le16 *)priv->eeprom, words);
 
 	cr49 = le16_to_cpu(priv->eeprom->cr49);
 	priv->rf_type = (cr49 >> 3) & 0x7;
@@ -382,13 +382,13 @@ static void adm8211_interrupt_tci(struct ieee80211_hw *dev)
 			else
 				txi->flags |= IEEE80211_TX_STAT_ACK;
 		}
-		cw_cw_ieee80211_tx_status_irqsafe(dev, skb);
+		ieee80211_tx_status_irqsafe(dev, skb);
 
 		info->skb = NULL;
 	}
 
 	if (priv->cur_tx - dirty_tx < priv->tx_ring_size - 2)
-		cw_ieee80211_wake_queue(dev, 0);
+		ieee80211_wake_queue(dev, 0);
 
 	priv->dirty_tx = dirty_tx;
 	spin_unlock(&priv->lock);
@@ -473,7 +473,7 @@ static void adm8211_interrupt_rci(struct ieee80211_hw *dev)
 				     RDES1_CONTROL_RER : 0));
 
 		if (skb) {
-			struct cw_ieee80211_rx_status rx_status = {0};
+			struct ieee80211_rx_status rx_status = {0};
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
 			if (priv->revid < ADM8211_REV_CA)
@@ -489,7 +489,7 @@ static void adm8211_interrupt_rci(struct ieee80211_hw *dev)
 			rx_status.freq = adm8211_channels[priv->channel - 1].center_freq;
 			rx_status.band = IEEE80211_BAND_2GHZ;
 
-			cw_cw_ieee80211_rx_irqsafe(dev, skb, &rx_status);
+			ieee80211_rx_irqsafe(dev, skb, &rx_status);
 		}
 
 		entry = (++priv->cur_rx) % priv->rx_ring_size;
@@ -1393,7 +1393,7 @@ static int adm8211_set_ssid(struct ieee80211_hw *dev, u8 *ssid, size_t ssid_len)
 static int adm8211_config(struct ieee80211_hw *dev, struct ieee80211_conf *conf)
 {
 	struct adm8211_priv *priv = dev->priv;
-	int channel = cw_ieee80211_frequency_to_channel(conf->channel->center_freq);
+	int channel = ieee80211_frequency_to_channel(conf->channel->center_freq);
 
 	if (channel != priv->channel) {
 		priv->channel = channel;
@@ -1732,7 +1732,7 @@ static void adm8211_tx_raw(struct ieee80211_hw *dev, struct sk_buff *skb,
 		flag = TDES1_CONTROL_LS | TDES1_CONTROL_FS;
 
 	if (priv->cur_tx - priv->dirty_tx == priv->tx_ring_size - 2)
-		cw_ieee80211_stop_queue(dev, 0);
+		ieee80211_stop_queue(dev, 0);
 
 	entry = priv->cur_tx % priv->tx_ring_size;
 
@@ -1771,7 +1771,7 @@ static int adm8211_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
 	plcp_signal = txrate->bitrate;
 
 	hdr = (struct ieee80211_hdr *)skb->data;
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 	memcpy(skb->cb, skb->data, hdrlen);
 	hdr = (struct ieee80211_hdr *)skb->cb;
 	skb_pull(skb, hdrlen);
@@ -1911,7 +1911,7 @@ static int __devinit adm8211_probe(struct pci_dev *pdev,
 
 	pci_set_master(pdev);
 
-	dev = cw_ieee80211_alloc_hw(sizeof(*priv), &adm8211_ops);
+	dev = ieee80211_alloc_hw(sizeof(*priv), &adm8211_ops);
 	if (!dev) {
 		printk(KERN_ERR "%s (adm8211): ieee80211 alloc failed\n",
 		       pci_name(pdev));
@@ -2000,7 +2000,7 @@ static int __devinit adm8211_probe(struct pci_dev *pdev,
 
 	dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &priv->band;
 
-	err = cw_ieee80211_register_hw(dev);
+	err = ieee80211_register_hw(dev);
 	if (err) {
 		printk(KERN_ERR "%s (adm8211): Cannot register device\n",
 		       pci_name(pdev));
@@ -2029,7 +2029,7 @@ static int __devinit adm8211_probe(struct pci_dev *pdev,
 
  err_free_dev:
 	pci_set_drvdata(pdev, NULL);
-	cw_ieee80211_free_hw(dev);
+	ieee80211_free_hw(dev);
 
  err_free_reg:
 	pci_release_regions(pdev);
@@ -2048,7 +2048,7 @@ static void __devexit adm8211_remove(struct pci_dev *pdev)
 	if (!dev)
 		return;
 
-	cw_ieee80211_unregister_hw(dev);
+	ieee80211_unregister_hw(dev);
 
 	priv = dev->priv;
 
@@ -2062,7 +2062,7 @@ static void __devexit adm8211_remove(struct pci_dev *pdev)
 	pci_iounmap(pdev, priv->map);
 	pci_release_regions(pdev);
 	pci_disable_device(pdev);
-	cw_ieee80211_free_hw(dev);
+	ieee80211_free_hw(dev);
 }
 
 
@@ -2073,7 +2073,7 @@ static int adm8211_suspend(struct pci_dev *pdev, pm_message_t state)
 	struct adm8211_priv *priv = dev->priv;
 
 	if (priv->mode != IEEE80211_IF_TYPE_INVALID) {
-		cw_cw_ieee80211_stop_queues(dev);
+		ieee80211_stop_queues(dev);
 		adm8211_stop(dev);
 	}
 
@@ -2092,7 +2092,7 @@ static int adm8211_resume(struct pci_dev *pdev)
 
 	if (priv->mode != IEEE80211_IF_TYPE_INVALID) {
 		adm8211_start(dev);
-		cw_cw_ieee80211_wake_queues(dev);
+		ieee80211_wake_queues(dev);
 	}
 
 	return 0;

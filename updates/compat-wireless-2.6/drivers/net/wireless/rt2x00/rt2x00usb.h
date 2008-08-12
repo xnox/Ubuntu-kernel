@@ -81,9 +81,9 @@
 #define USB_VENDOR_REQUEST_OUT	( USB_DIR_OUT | USB_VENDOR_REQUEST )
 
 /**
- * enum cw_rt2x00usb_vendor_request: USB vendor commands.
+ * enum rt2x00usb_vendor_request: USB vendor commands.
  */
-enum cw_rt2x00usb_vendor_request {
+enum rt2x00usb_vendor_request {
 	USB_DEVICE_MODE = 1,
 	USB_SINGLE_WRITE = 2,
 	USB_SINGLE_READ = 3,
@@ -109,9 +109,9 @@ enum rt2x00usb_mode_offset {
 };
 
 /**
- * cw_rt2x00usb_vendor_request - Send register command to device
+ * rt2x00usb_vendor_request - Send register command to device
  * @rt2x00dev: Pointer to &struct rt2x00_dev
- * @request: USB vendor command (See &enum cw_rt2x00usb_vendor_request)
+ * @request: USB vendor command (See &enum rt2x00usb_vendor_request)
  * @requesttype: Request type &USB_VENDOR_REQUEST_*
  * @offset: Register offset to perform action on
  * @value: Value to write to device
@@ -124,16 +124,16 @@ enum rt2x00usb_mode_offset {
  * a buffer allocated by kmalloc. Failure to do so can lead
  * to unexpected behavior depending on the architecture.
  */
-int cw_rt2x00usb_vendor_request(struct rt2x00_dev *rt2x00dev,
+int rt2x00usb_vendor_request(struct rt2x00_dev *rt2x00dev,
 			     const u8 request, const u8 requesttype,
 			     const u16 offset, const u16 value,
 			     void *buffer, const u16 buffer_length,
 			     const int timeout);
 
 /**
- * cw_cw_rt2x00usb_vendor_request_buff - Send register command to device (buffered)
+ * rt2x00usb_vendor_request_buff - Send register command to device (buffered)
  * @rt2x00dev: Pointer to &struct rt2x00_dev
- * @request: USB vendor command (See &enum cw_rt2x00usb_vendor_request)
+ * @request: USB vendor command (See &enum rt2x00usb_vendor_request)
  * @requesttype: Request type &USB_VENDOR_REQUEST_*
  * @offset: Register offset to perform action on
  * @buffer: Buffer where information will be read/written to by device
@@ -144,52 +144,52 @@ int cw_rt2x00usb_vendor_request(struct rt2x00_dev *rt2x00dev,
  * to communicate with the device. The contents of the buffer pointer
  * will be copied to this cache when writing, or read from the cache
  * when reading.
- * Buffers send to &cw_rt2x00usb_vendor_request _must_ be allocated with
+ * Buffers send to &rt2x00usb_vendor_request _must_ be allocated with
  * kmalloc. Hence the reason for using a previously allocated cache
  * which has been allocated properly.
  */
-int cw_cw_rt2x00usb_vendor_request_buff(struct rt2x00_dev *rt2x00dev,
+int rt2x00usb_vendor_request_buff(struct rt2x00_dev *rt2x00dev,
 				  const u8 request, const u8 requesttype,
 				  const u16 offset, void *buffer,
 				  const u16 buffer_length, const int timeout);
 
 /**
- * cw_cw_rt2x00usb_vendor_request_buff - Send register command to device (buffered)
+ * rt2x00usb_vendor_request_buff - Send register command to device (buffered)
  * @rt2x00dev: Pointer to &struct rt2x00_dev
- * @request: USB vendor command (See &enum cw_rt2x00usb_vendor_request)
+ * @request: USB vendor command (See &enum rt2x00usb_vendor_request)
  * @requesttype: Request type &USB_VENDOR_REQUEST_*
  * @offset: Register offset to perform action on
  * @buffer: Buffer where information will be read/written to by device
  * @buffer_length: Size of &buffer
  * @timeout: Operation timeout
  *
- * A version of &cw_cw_rt2x00usb_vendor_request_buff which must be called
+ * A version of &rt2x00usb_vendor_request_buff which must be called
  * if the usb_cache_mutex is already held.
  */
-int cw_rt2x00usb_vendor_req_buff_lock(struct rt2x00_dev *rt2x00dev,
+int rt2x00usb_vendor_req_buff_lock(struct rt2x00_dev *rt2x00dev,
 				   const u8 request, const u8 requesttype,
 				   const u16 offset, void *buffer,
 				   const u16 buffer_length, const int timeout);
 
 /**
- * cw_rt2x00usb_vendor_request_sw - Send single register command to device
+ * rt2x00usb_vendor_request_sw - Send single register command to device
  * @rt2x00dev: Pointer to &struct rt2x00_dev
- * @request: USB vendor command (See &enum cw_rt2x00usb_vendor_request)
+ * @request: USB vendor command (See &enum rt2x00usb_vendor_request)
  * @offset: Register offset to perform action on
  * @value: Value to write to device
  * @timeout: Operation timeout
  *
- * Simple wrapper around cw_rt2x00usb_vendor_request to write a single
+ * Simple wrapper around rt2x00usb_vendor_request to write a single
  * command to the device. Since we don't use the buffer argument we
  * don't have to worry about kmalloc here.
  */
-static inline int cw_rt2x00usb_vendor_request_sw(struct rt2x00_dev *rt2x00dev,
+static inline int rt2x00usb_vendor_request_sw(struct rt2x00_dev *rt2x00dev,
 					      const u8 request,
 					      const u16 offset,
 					      const u16 value,
 					      const int timeout)
 {
-	return cw_rt2x00usb_vendor_request(rt2x00dev, request,
+	return rt2x00usb_vendor_request(rt2x00dev, request,
 					USB_VENDOR_REQUEST_OUT, offset,
 					value, NULL, 0, timeout);
 }
@@ -200,14 +200,14 @@ static inline int cw_rt2x00usb_vendor_request_sw(struct rt2x00_dev *rt2x00dev,
  * @eeprom: Pointer to eeprom array to store the information in
  * @length: Number of bytes to read from the eeprom
  *
- * Simple wrapper around cw_rt2x00usb_vendor_request to read the eeprom
+ * Simple wrapper around rt2x00usb_vendor_request to read the eeprom
  * from the device. Note that the eeprom argument _must_ be allocated using
  * kmalloc for correct handling inside the kernel USB layer.
  */
 static inline int rt2x00usb_eeprom_read(struct rt2x00_dev *rt2x00dev,
 					__le16 *eeprom, const u16 length)
 {
-	return cw_rt2x00usb_vendor_request(rt2x00dev, USB_EEPROM_READ,
+	return rt2x00usb_vendor_request(rt2x00dev, USB_EEPROM_READ,
 					USB_VENDOR_REQUEST_IN, 0, 0,
 					eeprom, length,
 					REGISTER_TIMEOUT16(length));
@@ -216,16 +216,16 @@ static inline int rt2x00usb_eeprom_read(struct rt2x00_dev *rt2x00dev,
 /*
  * Radio handlers
  */
-void cw_rt2x00usb_disable_radio(struct rt2x00_dev *rt2x00dev);
+void rt2x00usb_disable_radio(struct rt2x00_dev *rt2x00dev);
 
 /**
- * cw_rt2x00usb_write_tx_data - Initialize URB for TX operation
+ * rt2x00usb_write_tx_data - Initialize URB for TX operation
  * @entry: The entry where the frame is located
  *
  * This function will initialize the URB and skb descriptor
  * to prepare the entry for the actual TX operation.
  */
-int cw_rt2x00usb_write_tx_data(struct queue_entry *entry);
+int rt2x00usb_write_tx_data(struct queue_entry *entry);
 
 /**
  * struct queue_entry_priv_usb: Per entry USB specific information
@@ -255,38 +255,38 @@ struct queue_entry_priv_usb_bcn {
 };
 
 /**
- * cw_rt2x00usb_kick_tx_queue - Kick data queue
+ * rt2x00usb_kick_tx_queue - Kick data queue
  * @rt2x00dev: Pointer to &struct rt2x00_dev
  * @qid: Data queue to kick
  *
  * This will walk through all entries of the queue and push all pending
  * frames to the hardware as a single burst.
  */
-void cw_rt2x00usb_kick_tx_queue(struct rt2x00_dev *rt2x00dev,
+void rt2x00usb_kick_tx_queue(struct rt2x00_dev *rt2x00dev,
 			     const enum data_queue_qid qid);
 
 /*
  * Device initialization handlers.
  */
-void cw_rt2x00usb_init_rxentry(struct rt2x00_dev *rt2x00dev,
+void rt2x00usb_init_rxentry(struct rt2x00_dev *rt2x00dev,
 			    struct queue_entry *entry);
-void cw_rt2x00usb_init_txentry(struct rt2x00_dev *rt2x00dev,
+void rt2x00usb_init_txentry(struct rt2x00_dev *rt2x00dev,
 			    struct queue_entry *entry);
-int cw_rt2x00usb_initialize(struct rt2x00_dev *rt2x00dev);
-void cw_rt2x00usb_uninitialize(struct rt2x00_dev *rt2x00dev);
+int rt2x00usb_initialize(struct rt2x00_dev *rt2x00dev);
+void rt2x00usb_uninitialize(struct rt2x00_dev *rt2x00dev);
 
 /*
  * USB driver handlers.
  */
-int cw_rt2x00usb_probe(struct usb_interface *usb_intf,
+int rt2x00usb_probe(struct usb_interface *usb_intf,
 		    const struct usb_device_id *id);
-void cw_rt2x00usb_disconnect(struct usb_interface *usb_intf);
+void rt2x00usb_disconnect(struct usb_interface *usb_intf);
 #ifdef CONFIG_PM
-int cw_rt2x00usb_suspend(struct usb_interface *usb_intf, pm_message_t state);
-int cw_rt2x00usb_resume(struct usb_interface *usb_intf);
+int rt2x00usb_suspend(struct usb_interface *usb_intf, pm_message_t state);
+int rt2x00usb_resume(struct usb_interface *usb_intf);
 #else
-#define cw_rt2x00usb_suspend	NULL
-#define cw_rt2x00usb_resume	NULL
+#define rt2x00usb_suspend	NULL
+#define rt2x00usb_resume	NULL
 #endif /* CONFIG_PM */
 
 #endif /* RT2X00USB_H */

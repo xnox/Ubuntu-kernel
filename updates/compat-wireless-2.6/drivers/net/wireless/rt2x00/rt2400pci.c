@@ -1096,7 +1096,7 @@ static void rt2400pci_write_beacon(struct queue_entry *entry)
 	memcpy(entry_priv->desc, skbdesc->desc, skbdesc->desc_len);
 	skbdesc->desc = entry_priv->desc;
 
-	cw_rt2x00queue_map_txskb(rt2x00dev, entry->skb);
+	rt2x00queue_map_txskb(rt2x00dev, entry->skb);
 
 	rt2x00_desc_read(entry_priv->desc, 1, &word);
 	rt2x00_set_field32(&word, TXD_W1_BUFFER_ADDRESS, skbdesc->skb_dma);
@@ -1190,14 +1190,14 @@ static void rt2400pci_fill_rxdone(struct queue_entry *entry,
 static void rt2400pci_txdone(struct rt2x00_dev *rt2x00dev,
 			     const enum data_queue_qid queue_idx)
 {
-	struct data_queue *queue = cw_rt2x00queue_get_queue(rt2x00dev, queue_idx);
+	struct data_queue *queue = rt2x00queue_get_queue(rt2x00dev, queue_idx);
 	struct queue_entry_priv_pci *entry_priv;
 	struct queue_entry *entry;
 	struct txdone_entry_desc txdesc;
 	u32 word;
 
 	while (!rt2x00queue_empty(queue)) {
-		entry = cw_rt2x00queue_get_entry(queue, Q_INDEX_DONE);
+		entry = rt2x00queue_get_entry(queue, Q_INDEX_DONE);
 		entry_priv = entry->priv_data;
 		rt2x00_desc_read(entry_priv->desc, 0, &word);
 
@@ -1222,7 +1222,7 @@ static void rt2400pci_txdone(struct rt2x00_dev *rt2x00dev,
 		}
 		txdesc.retry = rt2x00_get_field32(word, TXD_W0_RETRY_COUNT);
 
-		cw_rt2x00lib_txdone(entry, &txdesc);
+		rt2x00lib_txdone(entry, &txdesc);
 	}
 }
 
@@ -1254,13 +1254,13 @@ static irqreturn_t rt2400pci_interrupt(int irq, void *dev_instance)
 	 * 1 - Beacon timer expired interrupt.
 	 */
 	if (rt2x00_get_field32(reg, CSR7_TBCN_EXPIRE))
-		cw_rt2x00lib_beacondone(rt2x00dev);
+		rt2x00lib_beacondone(rt2x00dev);
 
 	/*
 	 * 2 - Rx ring done interrupt.
 	 */
 	if (rt2x00_get_field32(reg, CSR7_RXDONE))
-		cw_rt2x00pci_rxdone(rt2x00dev);
+		rt2x00pci_rxdone(rt2x00dev);
 
 	/*
 	 * 3 - Atim ring transmit done interrupt.
@@ -1305,7 +1305,7 @@ static int rt2400pci_validate_eeprom(struct rt2x00_dev *rt2x00dev)
 	eeprom.reg_data_clock = 0;
 	eeprom.reg_chip_select = 0;
 
-	cw_eeprom_93cx6_multiread(&eeprom, EEPROM_BASE, rt2x00dev->eeprom,
+	eeprom_93cx6_multiread(&eeprom, EEPROM_BASE, rt2x00dev->eeprom,
 			       EEPROM_SIZE / sizeof(u16));
 
 	/*
@@ -1523,7 +1523,7 @@ static int rt2400pci_conf_tx(struct ieee80211_hw *hw, u16 queue,
 	if (queue != 0)
 		return -EINVAL;
 
-	if (cw_rt2x00mac_conf_tx(hw, queue, params))
+	if (rt2x00mac_conf_tx(hw, queue, params))
 		return -EINVAL;
 
 	/*
@@ -1559,19 +1559,19 @@ static int rt2400pci_tx_last_beacon(struct ieee80211_hw *hw)
 }
 
 static const struct ieee80211_ops rt2400pci_mac80211_ops = {
-	.tx			= cw_rt2x00mac_tx,
-	.start			= cw_rt2x00mac_start,
-	.stop			= cw_rt2x00mac_stop,
-	.add_interface		= cw_rt2x00mac_add_interface,
-	.remove_interface	= cw_rt2x00mac_remove_interface,
-	.config			= cw_rt2x00mac_config,
-	.config_interface	= cw_cw_rt2x00mac_config_interface,
-	.configure_filter	= cw_cw_rt2x00mac_configure_filter,
-	.get_stats		= cw_rt2x00mac_get_stats,
+	.tx			= rt2x00mac_tx,
+	.start			= rt2x00mac_start,
+	.stop			= rt2x00mac_stop,
+	.add_interface		= rt2x00mac_add_interface,
+	.remove_interface	= rt2x00mac_remove_interface,
+	.config			= rt2x00mac_config,
+	.config_interface	= rt2x00mac_config_interface,
+	.configure_filter	= rt2x00mac_configure_filter,
+	.get_stats		= rt2x00mac_get_stats,
 	.set_retry_limit	= rt2400pci_set_retry_limit,
-	.bss_info_changed	= cw_rt2x00mac_bss_info_changed,
+	.bss_info_changed	= rt2x00mac_bss_info_changed,
 	.conf_tx		= rt2400pci_conf_tx,
-	.get_tx_stats		= cw_rt2x00mac_get_tx_stats,
+	.get_tx_stats		= rt2x00mac_get_tx_stats,
 	.get_tsf		= rt2400pci_get_tsf,
 	.tx_last_beacon		= rt2400pci_tx_last_beacon,
 };
@@ -1579,8 +1579,8 @@ static const struct ieee80211_ops rt2400pci_mac80211_ops = {
 static const struct rt2x00lib_ops rt2400pci_rt2x00_ops = {
 	.irq_handler		= rt2400pci_interrupt,
 	.probe_hw		= rt2400pci_probe_hw,
-	.initialize		= cw_rt2x00pci_initialize,
-	.uninitialize		= cw_rt2x00pci_uninitialize,
+	.initialize		= rt2x00pci_initialize,
+	.uninitialize		= rt2x00pci_uninitialize,
 	.init_rxentry		= rt2400pci_init_rxentry,
 	.init_txentry		= rt2400pci_init_txentry,
 	.set_device_state	= rt2400pci_set_device_state,
@@ -1589,7 +1589,7 @@ static const struct rt2x00lib_ops rt2400pci_rt2x00_ops = {
 	.reset_tuner		= rt2400pci_reset_tuner,
 	.link_tuner		= rt2400pci_link_tuner,
 	.write_tx_desc		= rt2400pci_write_tx_desc,
-	.write_tx_data		= cw_rt2x00pci_write_tx_data,
+	.write_tx_data		= rt2x00pci_write_tx_data,
 	.write_beacon		= rt2400pci_write_beacon,
 	.kick_tx_queue		= rt2400pci_kick_tx_queue,
 	.fill_rxdone		= rt2400pci_fill_rxdone,
@@ -1663,10 +1663,10 @@ MODULE_LICENSE("GPL");
 static struct pci_driver rt2400pci_driver = {
 	.name		= KBUILD_MODNAME,
 	.id_table	= rt2400pci_device_table,
-	.probe		= cw_rt2x00pci_probe,
-	.remove		= __devexit_p(cw_rt2x00pci_remove),
-	.suspend	= cw_rt2x00pci_suspend,
-	.resume		= cw_rt2x00pci_resume,
+	.probe		= rt2x00pci_probe,
+	.remove		= __devexit_p(rt2x00pci_remove),
+	.suspend	= rt2x00pci_suspend,
+	.resume		= rt2x00pci_resume,
 };
 
 static int __init rt2400pci_init(void)

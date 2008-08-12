@@ -179,7 +179,7 @@ int lbs_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
  *
  *  @returns void
  */
-void cw_lbs_send_tx_feedback(struct lbs_private *priv, u32 try_count)
+void lbs_send_tx_feedback(struct lbs_private *priv, u32 try_count)
 {
 	struct tx_radiotap_hdr *radiotap_hdr;
 
@@ -203,4 +203,4 @@ void cw_lbs_send_tx_feedback(struct lbs_private *priv, u32 try_count)
 	if (priv->mesh_dev && (priv->mesh_connect_status == LBS_CONNECTED))
 		netif_wake_queue(priv->mesh_dev);
 }
-EXPORT_SYMBOL_GPL(cw_lbs_send_tx_feedback);
+EXPORT_SYMBOL_GPL(lbs_send_tx_feedback);

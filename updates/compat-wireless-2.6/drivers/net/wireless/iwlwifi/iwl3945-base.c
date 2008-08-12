@@ -124,7 +124,7 @@ static int iwl3945_is_empty_essid(const char *essid, int essid_len)
 	return 1;
 }
 
-static const char *iwl3945_cw_escape_essid(const char *essid, u8 essid_len)
+static const char *iwl3945_escape_essid(const char *essid, u8 essid_len)
 {
 	static char escaped[IW_ESSID_MAX_SIZE * 2 + 1];
 	const char *s = essid;
@@ -566,7 +566,7 @@ static inline int iwl3945_is_ready_rf(struct iwl3945_priv *priv)
 
 #define IWL_CMD(x) case x : return #x
 
-static const char *cw_get_cmd_string(u8 cmd)
+static const char *get_cmd_string(u8 cmd)
 {
 	switch (cmd) {
 		IWL_CMD(REPLY_ALIVE);
@@ -691,7 +691,7 @@ static int iwl3945_enqueue_hcmd(struct iwl3945_priv *priv, struct iwl3945_host_c
 
 	IWL_DEBUG_HC("Sending command %s (#%x), seq: 0x%04X, "
 		     "%d bytes at %d[%d]:%d\n",
-		     cw_get_cmd_string(out_cmd->hdr.cmd),
+		     get_cmd_string(out_cmd->hdr.cmd),
 		     out_cmd->hdr.cmd, le16_to_cpu(out_cmd->hdr.sequence),
 		     fix_size, q->write_ptr, idx, IWL_CMD_QUEUE_NUM);
 
@@ -723,7 +723,7 @@ static int iwl3945_send_cmd_async(struct iwl3945_priv *priv, struct iwl3945_host
 	ret = iwl3945_enqueue_hcmd(priv, cmd);
 	if (ret < 0) {
 		IWL_ERROR("Error sending %s: iwl3945_enqueue_hcmd failed: %d\n",
-			  cw_get_cmd_string(cmd->id), ret);
+			  get_cmd_string(cmd->id), ret);
 		return ret;
 	}
 	return 0;
@@ -741,7 +741,7 @@ static int iwl3945_send_cmd_sync(struct iwl3945_priv *priv, struct iwl3945_host_
 
 	if (test_and_set_bit(STATUS_HCMD_SYNC_ACTIVE, &priv->status)) {
 		IWL_ERROR("Error sending %s: Already sending a host command\n",
-			  cw_get_cmd_string(cmd->id));
+			  get_cmd_string(cmd->id));
 		ret = -EBUSY;
 		goto out;
 	}
@@ -755,7 +755,7 @@ static int iwl3945_send_cmd_sync(struct iwl3945_priv *priv, struct iwl3945_host_
 	if (cmd_idx < 0) {
 		ret = cmd_idx;
 		IWL_ERROR("Error sending %s: iwl3945_enqueue_hcmd failed: %d\n",
-			  cw_get_cmd_string(cmd->id), ret);
+			  get_cmd_string(cmd->id), ret);
 		goto out;
 	}
 
@@ -765,7 +765,7 @@ static int iwl3945_send_cmd_sync(struct iwl3945_priv *priv, struct iwl3945_host_
 	if (!ret) {
 		if (test_bit(STATUS_HCMD_ACTIVE, &priv->status)) {
 			IWL_ERROR("Error sending %s: time out after %dms.\n",
-				  cw_get_cmd_string(cmd->id),
+				  get_cmd_string(cmd->id),
 				  jiffies_to_msecs(HOST_COMPLETE_TIMEOUT));
 
 			clear_bit(STATUS_HCMD_ACTIVE, &priv->status);
@@ -776,19 +776,19 @@ static int iwl3945_send_cmd_sync(struct iwl3945_priv *priv, struct iwl3945_host_
 
 	if (test_bit(STATUS_RF_KILL_HW, &priv->status)) {
 		IWL_DEBUG_INFO("Command %s aborted: RF KILL Switch\n",
-			       cw_get_cmd_string(cmd->id));
+			       get_cmd_string(cmd->id));
 		ret = -ECANCELED;
 		goto fail;
 	}
 	if (test_bit(STATUS_FW_ERROR, &priv->status)) {
 		IWL_DEBUG_INFO("Command %s failed: FW Error\n",
-			       cw_get_cmd_string(cmd->id));
+			       get_cmd_string(cmd->id));
 		ret = -EIO;
 		goto fail;
 	}
 	if ((cmd->meta.flags & CMD_WANT_SKB) && !cmd->meta.u.skb) {
 		IWL_ERROR("Error: Response NULL in '%s'\n",
-			  cw_get_cmd_string(cmd->id));
+			  get_cmd_string(cmd->id));
 		ret = -EIO;
 		goto out;
 	}
@@ -2579,7 +2579,7 @@ static int iwl3945_tx_skb(struct iwl3945_priv *priv, struct sk_buff *skb)
 
 	spin_unlock_irqrestore(&priv->lock, flags);
 
-	hdr_len = cw_ieee80211_get_hdrlen(le16_to_cpu(fc));
+	hdr_len = ieee80211_get_hdrlen(le16_to_cpu(fc));
 
 	/* Find (or create) index into station table for destination station */
 	sta_id = iwl3945_get_sta_id(priv, hdr);
@@ -2715,7 +2715,7 @@ static int iwl3945_tx_skb(struct iwl3945_priv *priv, struct sk_buff *skb)
 			   sizeof(out_cmd->cmd.tx));
 
 	iwl3945_print_hex_dump(IWL_DL_TX, (u8 *)out_cmd->cmd.tx.hdr,
-			   cw_ieee80211_get_hdrlen(le16_to_cpu(fc)));
+			   ieee80211_get_hdrlen(le16_to_cpu(fc)));
 
 	/* Tell device the write index *just past* this latest filled TFD */
 	q->write_ptr = iwl_queue_inc_wrap(q->write_ptr, q->n_bd);
@@ -2734,7 +2734,7 @@ static int iwl3945_tx_skb(struct iwl3945_priv *priv, struct sk_buff *skb)
 			spin_unlock_irqrestore(&priv->lock, flags);
 		}
 
-		cw_ieee80211_stop_queue(priv->hw, skb_get_queue_mapping(skb));
+		ieee80211_stop_queue(priv->hw, skb_get_queue_mapping(skb));
 	}
 
 	return 0;
@@ -2850,7 +2850,7 @@ static void iwl3945_radio_kill_sw(struct iwl3945_priv *priv, int disable_radio)
 }
 
 void iwl3945_set_decrypted_flag(struct iwl3945_priv *priv, struct sk_buff *skb,
-			    u32 decrypt_res, struct cw_ieee80211_rx_status *stats)
+			    u32 decrypt_res, struct ieee80211_rx_status *stats)
 {
 	u16 fc =
 	    le16_to_cpu(((struct ieee80211_hdr *)skb->data)->frame_control);
@@ -3067,7 +3067,7 @@ static void iwl3945_rx_reply_error(struct iwl3945_priv *priv,
 	IWL_ERROR("Error Reply type 0x%08X cmd %s (0x%02X) "
 		"seq 0x%04X ser 0x%08X\n",
 		le32_to_cpu(pkt->u.err_resp.error_type),
-		cw_get_cmd_string(pkt->u.err_resp.cmd_id),
+		get_cmd_string(pkt->u.err_resp.cmd_id),
 		pkt->u.err_resp.cmd_id,
 		le16_to_cpu(pkt->u.err_resp.bad_cmd_seq_num),
 		le32_to_cpu(pkt->u.err_resp.error_info));
@@ -3121,7 +3121,7 @@ static void iwl3945_rx_pm_debug_statistics_notif(struct iwl3945_priv *priv,
 	struct iwl3945_rx_packet *pkt = (void *)rxb->skb->data;
 	IWL_DEBUG_RADIO("Dumping %d bytes of unhandled "
 			"notification for %s:\n",
-			le32_to_cpu(pkt->len), cw_get_cmd_string(pkt->hdr.cmd));
+			le32_to_cpu(pkt->len), get_cmd_string(pkt->hdr.cmd));
 	iwl3945_print_hex_dump(IWL_DL_RADIO, pkt->u.raw, le32_to_cpu(pkt->len));
 }
 
@@ -3132,7 +3132,7 @@ static void iwl3945_bg_beacon_update(struct work_struct *work)
 	struct sk_buff *beacon;
 
 	/* Pull updated AP beacon from mac80211. will fail if not in AP mode */
-	beacon = cw_ieee80211_beacon_get(priv->hw, priv->vif);
+	beacon = ieee80211_beacon_get(priv->hw, priv->vif);
 
 	if (!beacon) {
 		IWL_ERROR("update beacon failed\n");
@@ -3924,13 +3924,13 @@ static void iwl3945_rx_handle(struct iwl3945_priv *priv)
 		if (priv->rx_handlers[pkt->hdr.cmd]) {
 			IWL_DEBUG(IWL_DL_HOST_COMMAND | IWL_DL_RX | IWL_DL_ISR,
 				"r = %d, i = %d, %s, 0x%02x\n", r, i,
-				cw_get_cmd_string(pkt->hdr.cmd), pkt->hdr.cmd);
+				get_cmd_string(pkt->hdr.cmd), pkt->hdr.cmd);
 			priv->rx_handlers[pkt->hdr.cmd] (priv, rxb);
 		} else {
 			/* No handling needed */
 			IWL_DEBUG(IWL_DL_HOST_COMMAND | IWL_DL_RX | IWL_DL_ISR,
 				"r %d i %d No handler needed for %s, 0x%02x\n",
-				r, i, cw_get_cmd_string(pkt->hdr.cmd),
+				r, i, get_cmd_string(pkt->hdr.cmd),
 				pkt->hdr.cmd);
 		}
 
@@ -4999,7 +4999,7 @@ static int iwl3945_init_geos(struct iwl3945_priv *priv)
 
 		geo_ch = &sband->channels[sband->n_channels++];
 
-		geo_ch->center_freq = cw_cw_ieee80211_channel_to_frequency(ch->channel);
+		geo_ch->center_freq = ieee80211_channel_to_frequency(ch->channel);
 		geo_ch->max_power = ch->max_power_avg;
 		geo_ch->max_antenna_gain = 0xff;
 		geo_ch->hw_value = ch->channel;
@@ -5730,7 +5730,7 @@ static void iwl3945_alive_start(struct iwl3945_priv *priv)
 	if (iwl3945_is_rfkill(priv))
 		return;
 
-	cw_cw_ieee80211_wake_queues(priv->hw);
+	ieee80211_wake_queues(priv->hw);
 
 	priv->active_rate = priv->rates_mask;
 	priv->active_rate_basic = priv->rates_mask & IWL_BASIC_RATES_MASK;
@@ -5767,7 +5767,7 @@ static void iwl3945_alive_start(struct iwl3945_priv *priv)
 	if (priv->error_recovering)
 		iwl3945_error_recovery(priv);
 
-	cw_ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
+	ieee80211_notify_mac(priv->hw, IEEE80211_NOTIFY_RE_ASSOC);
 	return;
 
  restart:
@@ -5810,7 +5810,7 @@ static void __iwl3945_down(struct iwl3945_priv *priv)
 	iwl_synchronize_irq(priv);
 
 	if (priv->mac80211_registered)
-		cw_cw_ieee80211_stop_queues(priv->hw);
+		ieee80211_stop_queues(priv->hw);
 
 	/* If we have not previously called iwl3945_init() then
 	 * clear all bits but the RF Kill and SUSPEND bits and return */
@@ -6201,7 +6201,7 @@ static void iwl3945_bg_request_scan(struct work_struct *data)
 	if (priv->one_direct_scan) {
 		IWL_DEBUG_SCAN
 		    ("Kicking off one direct scan for '%s'\n",
-		     iwl3945_cw_escape_essid(priv->direct_ssid,
+		     iwl3945_escape_essid(priv->direct_ssid,
 				      priv->direct_ssid_len));
 		scan->direct_scan[0].id = WLAN_EID_SSID;
 		scan->direct_scan[0].len = priv->direct_ssid_len;
@@ -6211,7 +6211,7 @@ static void iwl3945_bg_request_scan(struct work_struct *data)
 	} else if (!iwl3945_is_associated(priv) && priv->essid_len) {
 		IWL_DEBUG_SCAN
 		  ("Kicking off one direct scan for '%s' when not associated\n",
-		   iwl3945_cw_escape_essid(priv->essid, priv->essid_len));
+		   iwl3945_escape_essid(priv->essid, priv->essid_len));
 		scan->direct_scan[0].id = WLAN_EID_SSID;
 		scan->direct_scan[0].len = priv->essid_len;
 		memcpy(scan->direct_scan[0].ssid, priv->essid, priv->essid_len);
@@ -6458,7 +6458,7 @@ static void iwl3945_bg_scan_completed(struct work_struct *work)
 	if (test_bit(STATUS_CONF_PENDING, &priv->status))
 		iwl3945_mac_config(priv->hw, ieee80211_get_hw_conf(priv->hw));
 
-	cw_ieee80211_scan_completed(priv->hw);
+	ieee80211_scan_completed(priv->hw);
 
 	/* Since setting the TXPOWER may have been deferred while
 	 * performing the scan, fire one off */
@@ -6812,7 +6812,7 @@ static int iwl3945_mac_config_interface(struct ieee80211_hw *hw,
 	/* handle this temporarily here */
 	if (priv->iw_mode == IEEE80211_IF_TYPE_IBSS &&
 	    conf->changed & IEEE80211_IFCC_BEACON) {
-		struct sk_buff *beacon = cw_ieee80211_beacon_get(hw, vif);
+		struct sk_buff *beacon = ieee80211_beacon_get(hw, vif);
 		if (!beacon)
 			return -ENOMEM;
 		rc = iwl3945_mac_beacon_update(hw, beacon);
@@ -6855,7 +6855,7 @@ static int iwl3945_mac_config_interface(struct ieee80211_hw *hw,
 		if (priv->ibss_beacon)
 			dev_kfree_skb(priv->ibss_beacon);
 
-		priv->ibss_beacon = cw_ieee80211_beacon_get(hw, vif);
+		priv->ibss_beacon = ieee80211_beacon_get(hw, vif);
 	}
 
 	if (iwl3945_is_rfkill(priv))
@@ -6994,7 +6994,7 @@ static int iwl3945_mac_hw_scan(struct ieee80211_hw *hw, u8 *ssid, size_t len)
 	}
 	if (len) {
 		IWL_DEBUG_SCAN("direct scan for %s [%d]\n ",
-			       iwl3945_cw_escape_essid(ssid, len), (int)len);
+			       iwl3945_escape_essid(ssid, len), (int)len);
 
 		priv->one_direct_scan = 1;
 		priv->direct_ssid_len = (u8)
@@ -7865,7 +7865,7 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 
 	/* mac80211 allocates memory for this device instance, including
 	 *   space for this driver's private structure */
-	hw = cw_ieee80211_alloc_hw(sizeof(struct iwl3945_priv), &iwl3945_hw_ops);
+	hw = ieee80211_alloc_hw(sizeof(struct iwl3945_priv), &iwl3945_hw_ops);
 	if (hw == NULL) {
 		IWL_ERROR("Can not allocate network device\n");
 		err = -ENOMEM;
@@ -7910,7 +7910,7 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 	mutex_init(&priv->mutex);
 	if (pci_enable_device(pdev)) {
 		err = -ENODEV;
-		goto out_cw_ieee80211_free_hw;
+		goto out_ieee80211_free_hw;
 	}
 
 	pci_set_master(pdev);
@@ -8031,7 +8031,7 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 		goto out_free_channel_map;
 	}
 
-	err = cw_ieee80211_register_hw(priv->hw);
+	err = ieee80211_register_hw(priv->hw);
 	if (err) {
 		IWL_ERROR("Failed to register network device (error %d)\n", err);
 		goto out_free_geos;
@@ -8068,8 +8068,8 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
  out_pci_disable_device:
 	pci_disable_device(pdev);
 	pci_set_drvdata(pdev, NULL);
- out_cw_ieee80211_free_hw:
-	cw_ieee80211_free_hw(priv->hw);
+ out_ieee80211_free_hw:
+	ieee80211_free_hw(priv->hw);
  out:
 	return err;
 }
@@ -8110,13 +8110,13 @@ static void __devexit iwl3945_pci_remove(struct pci_dev *pdev)
 	iwl3945_clear_stations_table(priv);
 
 	if (priv->mac80211_registered) {
-		cw_ieee80211_unregister_hw(priv->hw);
+		ieee80211_unregister_hw(priv->hw);
 	}
 
 	/*netif_stop_queue(dev); */
 	flush_workqueue(priv->workqueue);
 
-	/* cw_ieee80211_unregister_hw calls iwl3945_mac_stop, which flushes
+	/* ieee80211_unregister_hw calls iwl3945_mac_stop, which flushes
 	 * priv->workqueue... so we can't take down the workqueue
 	 * until now... */
 	destroy_workqueue(priv->workqueue);
@@ -8133,7 +8133,7 @@ static void __devexit iwl3945_pci_remove(struct pci_dev *pdev)
 	if (priv->ibss_beacon)
 		dev_kfree_skb(priv->ibss_beacon);
 
-	cw_ieee80211_free_hw(priv->hw);
+	ieee80211_free_hw(priv->hw);
 }
 
 #ifdef CONFIG_PM

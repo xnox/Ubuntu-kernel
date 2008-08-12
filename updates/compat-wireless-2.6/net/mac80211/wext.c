@@ -54,7 +54,7 @@ static int ieee80211_set_encryption(struct net_device *dev, u8 *sta_addr,
 		if (is_broadcast_ether_addr(sta_addr)) {
 			key = sdata->keys[idx];
 		} else {
-			sta = cw_sta_info_get(local, sta_addr);
+			sta = sta_info_get(local, sta_addr);
 			if (!sta) {
 				err = -ENOENT;
 				goto out_unlock;
@@ -87,7 +87,7 @@ static int ieee80211_set_encryption(struct net_device *dev, u8 *sta_addr,
 				goto out_unlock;
 			}
 
-			sta = cw_sta_info_get(local, sta_addr);
+			sta = sta_info_get(local, sta_addr);
 			if (!sta) {
 				ieee80211_key_free(key);
 				err = -ENOENT;
@@ -248,7 +248,7 @@ static int ieee80211_ioctl_giwrange(struct net_device *dev,
 
 			if (!(chan->flags & IEEE80211_CHAN_DISABLED)) {
 				range->freq[c].i =
-					cw_ieee80211_frequency_to_channel(
+					ieee80211_frequency_to_channel(
 						chan->center_freq);
 				range->freq[c].m = chan->center_freq;
 				range->freq[c].e = 6;
@@ -340,7 +340,7 @@ int ieee80211_set_freq(struct net_device *dev, int freqMHz)
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 
-	chan = cw_ieee80211_get_channel(local->hw.wiphy, freqMHz);
+	chan = ieee80211_get_channel(local->hw.wiphy, freqMHz);
 
 	if (chan && !(chan->flags & IEEE80211_CHAN_DISABLED)) {
 		if (sdata->vif.type == IEEE80211_IF_TYPE_IBSS &&
@@ -380,7 +380,7 @@ static int ieee80211_ioctl_siwfreq(struct net_device *dev,
 			return 0;
 		} else
 			return ieee80211_set_freq(dev,
-				cw_cw_ieee80211_channel_to_frequency(freq->m));
+				ieee80211_channel_to_frequency(freq->m));
 	} else {
 		int i, div = 1000000;
 		for (i = 0; i < freq->e; i++)
@@ -663,7 +663,7 @@ static int ieee80211_ioctl_giwrate(struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, sdata->u.sta.bssid);
+	sta = sta_info_get(local, sdata->u.sta.bssid);
 
 	if (sta && sta->txrate_idx < sband->n_bitrates)
 		rate->value = sband->bitrates[sta->txrate_idx].bitrate;
@@ -1097,7 +1097,7 @@ static struct iw_statistics *ieee80211_get_wireless_stats(struct net_device *dev
 
 	if (sdata->vif.type == IEEE80211_IF_TYPE_STA ||
 	    sdata->vif.type == IEEE80211_IF_TYPE_IBSS)
-		sta = cw_sta_info_get(local, sdata->u.sta.bssid);
+		sta = sta_info_get(local, sdata->u.sta.bssid);
 	if (!sta) {
 		wstats->discard.fragment = 0;
 		wstats->discard.misc = 0;

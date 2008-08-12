@@ -262,7 +262,7 @@ static u32 hwmp_route_info_get(struct net_device *dev,
 	u8 action = mgmt->u.action.u.mesh_action.action_code;
 
 	rcu_read_lock();
-	sta = cw_sta_info_get(local, mgmt->sa);
+	sta = sta_info_get(local, mgmt->sa);
 	if (!sta) {
 		rcu_read_unlock();
 		return 0;

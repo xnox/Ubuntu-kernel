@@ -80,7 +80,7 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
 		return err;
 	}
 
-	cw_p54_parse_firmware(dev, fw_entry);
+	p54_parse_firmware(dev, fw_entry);
 
 	data = (__le32 *) fw_entry->data;
 	remains = fw_entry->size;
@@ -187,7 +187,7 @@ static int p54p_read_eeprom(struct ieee80211_hw *dev)
 	P54P_READ(int_enable);
 
 	hdr = eeprom + 0x2010;
-	cw_p54_fill_eeprom_readback(hdr);
+	p54_fill_eeprom_readback(hdr);
 	hdr->req_id = cpu_to_le32(priv->common.rx_start);
 
 	rx_mapping = pci_map_single(priv->pdev, eeprom,
@@ -225,7 +225,7 @@ static int p54p_read_eeprom(struct ieee80211_hw *dev)
 		goto out;
 	}
 
-	cw_p54_parse_eeprom(dev, (u8 *)eeprom + 0x10, alen - 0x10);
+	p54_parse_eeprom(dev, (u8 *)eeprom + 0x10, alen - 0x10);
 
  out:
 	kfree(eeprom);
@@ -337,7 +337,7 @@ static irqreturn_t p54p_interrupt(int irq, void *dev_id)
 
 			skb_put(skb, len);
 
-			if (cw_p54_rx(dev, skb)) {
+			if (p54_rx(dev, skb)) {
 				pci_unmap_single(priv->pdev,
 						 le32_to_cpu(desc->host_addr),
 						 MAX_RX_SIZE, PCI_DMA_FROMDEVICE);
@@ -540,7 +540,7 @@ static int __devinit p54p_probe(struct pci_dev *pdev,
 	pci_write_config_byte(pdev, 0x40, 0);
 	pci_write_config_byte(pdev, 0x41, 0);
 
-	dev = cw_p54_init_common(sizeof(*priv));
+	dev = p54_init_common(sizeof(*priv));
 	if (!dev) {
 		printk(KERN_ERR "%s (prism54pci): ieee80211 alloc failed\n",
 		       pci_name(pdev));
@@ -586,7 +586,7 @@ static int __devinit p54p_probe(struct pci_dev *pdev,
 
 	spin_lock_init(&priv->lock);
 
-	err = cw_ieee80211_register_hw(dev);
+	err = ieee80211_register_hw(dev);
 	if (err) {
 		printk(KERN_ERR "%s (prism54pci): Cannot register netdevice\n",
 		       pci_name(pdev));
@@ -601,7 +601,7 @@ static int __devinit p54p_probe(struct pci_dev *pdev,
 	return 0;
 
  err_free_common:
-	cw_p54_free_common(dev);
+	p54_free_common(dev);
 
  err_free_desc:
 	pci_free_consistent(pdev, sizeof(*priv->ring_control),
@@ -612,7 +612,7 @@ static int __devinit p54p_probe(struct pci_dev *pdev,
 
  err_free_dev:
 	pci_set_drvdata(pdev, NULL);
-	cw_ieee80211_free_hw(dev);
+	ieee80211_free_hw(dev);
 
  err_free_reg:
 	pci_release_regions(pdev);
@@ -628,15 +628,15 @@ static void __devexit p54p_remove(struct pci_dev *pdev)
 	if (!dev)
 		return;
 
-	cw_ieee80211_unregister_hw(dev);
+	ieee80211_unregister_hw(dev);
 	priv = dev->priv;
 	pci_free_consistent(pdev, sizeof(*priv->ring_control),
 			    priv->ring_control, priv->ring_control_dma);
-	cw_p54_free_common(dev);
+	p54_free_common(dev);
 	iounmap(priv->map);
 	pci_release_regions(pdev);
 	pci_disable_device(pdev);
-	cw_ieee80211_free_hw(dev);
+	ieee80211_free_hw(dev);
 }
 
 #ifdef CONFIG_PM
@@ -646,7 +646,7 @@ static int p54p_suspend(struct pci_dev *pdev, pm_message_t state)
 	struct p54p_priv *priv = dev->priv;
 
 	if (priv->common.mode != IEEE80211_IF_TYPE_INVALID) {
-		cw_cw_ieee80211_stop_queues(dev);
+		ieee80211_stop_queues(dev);
 		p54p_stop(dev);
 	}
 
@@ -665,7 +665,7 @@ static int p54p_resume(struct pci_dev *pdev)
 
 	if (priv->common.mode != IEEE80211_IF_TYPE_INVALID) {
 		p54p_open(dev);
-		cw_cw_ieee80211_wake_queues(dev);
+		ieee80211_wake_queues(dev);
 	}
 
 	return 0;

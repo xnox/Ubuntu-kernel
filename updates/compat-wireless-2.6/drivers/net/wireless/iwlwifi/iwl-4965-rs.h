@@ -45,7 +45,7 @@ struct iwl_rate_info {
 
 /*
  * These serve as indexes into
- * struct iwl_rate_info cw_iwl_rates[IWL_RATE_COUNT];
+ * struct iwl_rate_info iwl_rates[IWL_RATE_COUNT];
  */
 enum {
 	IWL_RATE_1M_INDEX = 0,
@@ -240,7 +240,7 @@ enum {
 #define TID_MAX_TIME_DIFF ((TID_QUEUE_MAX_SIZE - 1) * TID_QUEUE_CELL_SPACING)
 #define TIME_WRAP_AROUND(x, y) (((y) > (x)) ? (y) - (x) : (0-(x)) + (y))
 
-extern const struct iwl_rate_info cw_iwl_rates[IWL_RATE_COUNT];
+extern const struct iwl_rate_info iwl_rates[IWL_RATE_COUNT];
 
 enum iwl_table_type {
 	LQ_NONE,
@@ -279,7 +279,7 @@ static inline u8 num_of_ant(u8 mask)
 
 static inline u8 iwl4965_get_prev_ieee_rate(u8 rate_index)
 {
-	u8 rate = cw_iwl_rates[rate_index].prev_ieee;
+	u8 rate = iwl_rates[rate_index].prev_ieee;
 
 	if (rate == IWL_RATE_INVALID)
 		rate = rate_index;
@@ -302,7 +302,7 @@ extern int iwl4965_fill_rs_info(struct ieee80211_hw *, char *buf, u8 sta_id);
  * or reason to place it as a stand alone module.  The driver can call
  * iwl4965_rate_control_register in order to register the rate control callbacks
  * with the mac80211 subsystem.  This should be performed prior to calling
- * cw_ieee80211_register_hw
+ * ieee80211_register_hw
  *
  */
 extern int iwl4965_rate_control_register(void);
@@ -310,7 +310,7 @@ extern int iwl4965_rate_control_register(void);
 /**
  * iwl4965_rate_control_unregister - Unregister the rate control callbacks
  *
- * This should be called after calling cw_ieee80211_unregister_hw, but before
+ * This should be called after calling ieee80211_unregister_hw, but before
  * the driver is unloaded.
  */
 extern void iwl4965_rate_control_unregister(void);

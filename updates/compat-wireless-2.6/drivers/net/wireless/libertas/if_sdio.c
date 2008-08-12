@@ -147,7 +147,7 @@ static int if_sdio_handle_cmd(struct if_sdio_card *card,
 	BUG_ON(priv->resp_len[i]);
 	priv->resp_len[i] = size;
 	memcpy(priv->resp_buf[i], buffer, size);
-	cw_lbs_notify_command_response(priv, i);
+	lbs_notify_command_response(priv, i);
 
 	spin_unlock_irqrestore(&card->priv->driver_lock, flags);
 
@@ -186,7 +186,7 @@ static int if_sdio_handle_data(struct if_sdio_card *card,
 
 	memcpy(data, buffer, size);
 
-	cw_lbs_process_rxed_packet(card->priv, skb);
+	lbs_process_rxed_packet(card->priv, skb);
 
 	ret = 0;
 
@@ -221,7 +221,7 @@ static int if_sdio_handle_event(struct if_sdio_card *card,
 		event |= buffer[0] << 0;
 	}
 
-	cw_lbs_queue_event(card->priv, event & 0xFF);
+	lbs_queue_event(card->priv, event & 0xFF);
 	ret = 0;
 
 out:
@@ -787,7 +787,7 @@ static void if_sdio_interrupt(struct sdio_func *func)
 	 * successfully received the command.
 	 */
 	if (cause & IF_SDIO_H_INT_DNLD)
-		cw_lbs_host_to_card_done(card->priv);
+		lbs_host_to_card_done(card->priv);
 
 
 	if (cause & IF_SDIO_H_INT_UPLD) {
@@ -900,7 +900,7 @@ static int if_sdio_probe(struct sdio_func *func,
 	if (ret)
 		goto reclaim;
 
-	priv = cw_lbs_add_card(card, &func->dev);
+	priv = lbs_add_card(card, &func->dev);
 	if (!priv) {
 		ret = -ENOMEM;
 		goto reclaim;
@@ -922,7 +922,7 @@ static int if_sdio_probe(struct sdio_func *func,
 	if (ret)
 		goto reclaim;
 
-	ret = cw_lbs_start_card(priv);
+	ret = lbs_start_card(priv);
 	if (ret)
 		goto err_activate_card;
 
@@ -967,8 +967,8 @@ static void if_sdio_remove(struct sdio_func *func)
 	card->priv->surpriseremoved = 1;
 
 	lbs_deb_sdio("call remove card\n");
-	cw_lbs_stop_card(card->priv);
-	cw_lbs_remove_card(card->priv);
+	lbs_stop_card(card->priv);
+	lbs_remove_card(card->priv);
 
 	flush_scheduled_work();
 

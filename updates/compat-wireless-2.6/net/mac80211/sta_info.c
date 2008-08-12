@@ -107,13 +107,13 @@ static struct sta_info *__sta_info_find(struct ieee80211_local *local,
 	return sta;
 }
 
-struct sta_info *cw_sta_info_get(struct ieee80211_local *local, u8 *addr)
+struct sta_info *sta_info_get(struct ieee80211_local *local, u8 *addr)
 {
 	return __sta_info_find(local, addr);
 }
-EXPORT_SYMBOL(cw_sta_info_get);
+EXPORT_SYMBOL(sta_info_get);
 
-struct sta_info *cw_sta_info_get_by_idx(struct ieee80211_local *local, int idx,
+struct sta_info *sta_info_get_by_idx(struct ieee80211_local *local, int idx,
 				     struct net_device *dev)
 {
 	struct sta_info *sta;

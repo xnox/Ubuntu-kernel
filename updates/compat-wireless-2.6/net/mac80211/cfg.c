@@ -149,7 +149,7 @@ static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
 	rcu_read_lock();
 
 	if (mac_addr) {
-		sta = cw_sta_info_get(sdata->local, mac_addr);
+		sta = sta_info_get(sdata->local, mac_addr);
 		if (!sta) {
 			ieee80211_key_free(key);
 			err = -ENOENT;
@@ -180,7 +180,7 @@ static int ieee80211_del_key(struct wiphy *wiphy, struct net_device *dev,
 	if (mac_addr) {
 		ret = -ENOENT;
 
-		sta = cw_sta_info_get(sdata->local, mac_addr);
+		sta = sta_info_get(sdata->local, mac_addr);
 		if (!sta)
 			goto out_unlock;
 
@@ -225,7 +225,7 @@ static int ieee80211_get_key(struct wiphy *wiphy, struct net_device *dev,
 	rcu_read_lock();
 
 	if (mac_addr) {
-		sta = cw_sta_info_get(sdata->local, mac_addr);
+		sta = sta_info_get(sdata->local, mac_addr);
 		if (!sta)
 			goto out;
 
@@ -342,7 +342,7 @@ static int ieee80211_dump_station(struct wiphy *wiphy, struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get_by_idx(local, idx, dev);
+	sta = sta_info_get_by_idx(local, idx, dev);
 	if (sta) {
 		ret = 0;
 		memcpy(mac, sta->addr, ETH_ALEN);
@@ -365,7 +365,7 @@ static int ieee80211_get_station(struct wiphy *wiphy, struct net_device *dev,
 
 	/* XXX: verify sta->dev == dev */
 
-	sta = cw_sta_info_get(local, mac);
+	sta = sta_info_get(local, mac);
 	if (sta) {
 		ret = 0;
 		sta_set_sinfo(sta, sinfo);
@@ -711,7 +711,7 @@ static int ieee80211_del_station(struct wiphy *wiphy, struct net_device *dev,
 		rcu_read_lock();
 
 		/* XXX: get sta belonging to dev */
-		sta = cw_sta_info_get(local, mac);
+		sta = sta_info_get(local, mac);
 		if (!sta) {
 			rcu_read_unlock();
 			return -ENOENT;
@@ -739,7 +739,7 @@ static int ieee80211_change_station(struct wiphy *wiphy,
 	rcu_read_lock();
 
 	/* XXX: get sta belonging to dev */
-	sta = cw_sta_info_get(local, mac);
+	sta = sta_info_get(local, mac);
 	if (!sta) {
 		rcu_read_unlock();
 		return -ENOENT;
@@ -782,7 +782,7 @@ static int ieee80211_add_mpath(struct wiphy *wiphy, struct net_device *dev,
 		return -ENOTSUPP;
 
 	rcu_read_lock();
-	sta = cw_sta_info_get(local, next_hop);
+	sta = sta_info_get(local, next_hop);
 	if (!sta) {
 		rcu_read_unlock();
 		return -ENOENT;
@@ -832,7 +832,7 @@ static int ieee80211_change_mpath(struct wiphy *wiphy,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, next_hop);
+	sta = sta_info_get(local, next_hop);
 	if (!sta) {
 		rcu_read_unlock();
 		return -ENOENT;

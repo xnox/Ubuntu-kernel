@@ -88,7 +88,7 @@ static int iwl_is_empty_essid(const char *essid, int essid_len)
 
 
 
-const char *cw_iwl_cw_escape_essid(const char *essid, u8 essid_len)
+const char *iwl_escape_essid(const char *essid, u8 essid_len)
 {
 	static char escaped[IW_ESSID_MAX_SIZE * 2 + 1];
 	const char *s = essid;
@@ -111,14 +111,14 @@ const char *cw_iwl_cw_escape_essid(const char *essid, u8 essid_len)
 	*d = '\0';
 	return escaped;
 }
-EXPORT_SYMBOL(cw_iwl_cw_escape_essid);
+EXPORT_SYMBOL(iwl_escape_essid);
 
 /**
- * cw_iwl_scan_cancel - Cancel any currently executing HW scan
+ * iwl_scan_cancel - Cancel any currently executing HW scan
  *
  * NOTE: priv->mutex is not required before calling this function
  */
-int cw_iwl_scan_cancel(struct iwl_priv *priv)
+int iwl_scan_cancel(struct iwl_priv *priv)
 {
 	if (!test_bit(STATUS_SCAN_HW, &priv->status)) {
 		clear_bit(STATUS_SCANNING, &priv->status);
@@ -139,19 +139,19 @@ int cw_iwl_scan_cancel(struct iwl_priv *priv)
 
 	return 0;
 }
-EXPORT_SYMBOL(cw_iwl_scan_cancel);
+EXPORT_SYMBOL(iwl_scan_cancel);
 /**
- * cw_cw_iwl_scan_cancel_timeout - Cancel any currently executing HW scan
+ * iwl_scan_cancel_timeout - Cancel any currently executing HW scan
  * @ms: amount of time to wait (in milliseconds) for scan to abort
  *
  * NOTE: priv->mutex must be held before calling this function
  */
-int cw_cw_iwl_scan_cancel_timeout(struct iwl_priv *priv, unsigned long ms)
+int iwl_scan_cancel_timeout(struct iwl_priv *priv, unsigned long ms)
 {
 	unsigned long now = jiffies;
 	int ret;
 
-	ret = cw_iwl_scan_cancel(priv);
+	ret = iwl_scan_cancel(priv);
 	if (ret && ms) {
 		mutex_unlock(&priv->mutex);
 		while (!time_after(jiffies, now + msecs_to_jiffies(ms)) &&
@@ -164,7 +164,7 @@ int cw_cw_iwl_scan_cancel_timeout(struct iwl_priv *priv, unsigned long ms)
 
 	return ret;
 }
-EXPORT_SYMBOL(cw_cw_iwl_scan_cancel_timeout);
+EXPORT_SYMBOL(iwl_scan_cancel_timeout);
 
 static int iwl_send_scan_abort(struct iwl_priv *priv)
 {
@@ -183,7 +183,7 @@ static int iwl_send_scan_abort(struct iwl_priv *priv)
 		return 0;
 	}
 
-	ret = cw_cw_iwl_send_cmd_sync(priv, &cmd);
+	ret = iwl_send_cmd_sync(priv, &cmd);
 	if (ret) {
 		clear_bit(STATUS_SCAN_ABORTING, &priv->status);
 		return ret;
@@ -328,7 +328,7 @@ reschedule:
 	queue_work(priv->workqueue, &priv->request_scan);
 }
 
-void cw_iwl_setup_rx_scan_handlers(struct iwl_priv *priv)
+void iwl_setup_rx_scan_handlers(struct iwl_priv *priv)
 {
 	/* scan handlers */
 	priv->rx_handlers[REPLY_SCAN_CMD] = iwl_rx_reply_scan;
@@ -338,7 +338,7 @@ void cw_iwl_setup_rx_scan_handlers(struct iwl_priv *priv)
 	priv->rx_handlers[SCAN_COMPLETE_NOTIFICATION] =
 					iwl_rx_scan_complete_notif;
 }
-EXPORT_SYMBOL(cw_iwl_setup_rx_scan_handlers);
+EXPORT_SYMBOL(iwl_setup_rx_scan_handlers);
 
 static inline u16 iwl_get_active_dwell_time(struct iwl_priv *priv,
 					    enum ieee80211_band band,
@@ -402,10 +402,10 @@ static int iwl_get_channels_for_scan(struct iwl_priv *priv,
 			continue;
 
 		channel =
-			cw_ieee80211_frequency_to_channel(channels[i].center_freq);
+			ieee80211_frequency_to_channel(channels[i].center_freq);
 		scan_ch->channel = cpu_to_le16(channel);
 
-		ch_info = cw_iwl_get_channel_info(priv, band, channel);
+		ch_info = iwl_get_channel_info(priv, band, channel);
 		if (!is_channel_valid(ch_info)) {
 			IWL_DEBUG_SCAN("Channel %d is INVALID for this band.\n",
 					channel);
@@ -459,7 +459,7 @@ void iwl_init_scan_params(struct iwl_priv *priv)
 		priv->scan_tx_ant[IEEE80211_BAND_2GHZ] = RATE_MCS_ANT_INIT_IND;
 }
 
-int cw_iwl_scan_initiate(struct iwl_priv *priv)
+int iwl_scan_initiate(struct iwl_priv *priv)
 {
 	if (priv->iw_mode == IEEE80211_IF_TYPE_AP) {
 		IWL_ERROR("APs don't scan.\n");
@@ -495,7 +495,7 @@ int cw_iwl_scan_initiate(struct iwl_priv *priv)
 
 	return 0;
 }
-EXPORT_SYMBOL(cw_iwl_scan_initiate);
+EXPORT_SYMBOL(iwl_scan_initiate);
 
 #define IWL_SCAN_CHECK_WATCHDOG (7 * HZ)
 
@@ -535,7 +535,7 @@ static u16 iwl_supported_rate_to_ie(u8 *ie, u16 supported_rate,
 	for (bit = 1, i = 0; i < IWL_RATE_COUNT; i++, bit <<= 1) {
 		if (bit & supported_rate) {
 			ret_rates |= bit;
-			rates[*cnt] = cw_iwl_rates[i].ieee |
+			rates[*cnt] = iwl_rates[i].ieee |
 				((bit & basic_rate) ? 0x80 : 0x00);
 			(*cnt)++;
 			(*left)--;
@@ -595,9 +595,9 @@ static u16 iwl_fill_probe_req(struct iwl_priv *priv,
 		return 0;
 
 	frame->frame_control = cpu_to_le16(IEEE80211_STYPE_PROBE_REQ);
-	memcpy(frame->da, cw_iwl_bcast_addr, ETH_ALEN);
+	memcpy(frame->da, iwl_bcast_addr, ETH_ALEN);
 	memcpy(frame->sa, priv->mac_addr, ETH_ALEN);
-	memcpy(frame->bssid, cw_iwl_bcast_addr, ETH_ALEN);
+	memcpy(frame->bssid, iwl_bcast_addr, ETH_ALEN);
 	frame->seq_ctrl = 0;
 
 	len += 24;
@@ -800,7 +800,7 @@ static void iwl_bg_request_scan(struct work_struct *data)
 	/* We should add the ability for user to lock to PASSIVE ONLY */
 	if (priv->one_direct_scan) {
 		IWL_DEBUG_SCAN("Start direct scan for '%s'\n",
-				cw_iwl_cw_escape_essid(priv->direct_ssid,
+				iwl_escape_essid(priv->direct_ssid,
 				priv->direct_ssid_len));
 		scan->direct_scan[0].id = WLAN_EID_SSID;
 		scan->direct_scan[0].len = priv->direct_ssid_len;
@@ -809,7 +809,7 @@ static void iwl_bg_request_scan(struct work_struct *data)
 		n_probes++;
 	} else if (!iwl_is_associated(priv) && priv->essid_len) {
 		IWL_DEBUG_SCAN("Start direct scan for '%s' (not associated)\n",
-				cw_iwl_cw_escape_essid(priv->essid, priv->essid_len));
+				iwl_escape_essid(priv->essid, priv->essid_len));
 		scan->direct_scan[0].id = WLAN_EID_SSID;
 		scan->direct_scan[0].len = priv->essid_len;
 		memcpy(scan->direct_scan[0].ssid, priv->essid, priv->essid_len);
@@ -888,7 +888,7 @@ static void iwl_bg_request_scan(struct work_struct *data)
 	scan->len = cpu_to_le16(cmd.len);
 
 	set_bit(STATUS_SCAN_HW, &priv->status);
-	ret = cw_cw_iwl_send_cmd_sync(priv, &cmd);
+	ret = iwl_send_cmd_sync(priv, &cmd);
 	if (ret)
 		goto done;
 
@@ -919,7 +919,7 @@ static void iwl_bg_abort_scan(struct work_struct *work)
 	mutex_unlock(&priv->mutex);
 }
 
-void cw_iwl_setup_scan_deferred_work(struct iwl_priv *priv)
+void iwl_setup_scan_deferred_work(struct iwl_priv *priv)
 {
 	/*  FIXME: move here when resolved PENDING
 	 *  INIT_WORK(&priv->scan_completed, iwl_bg_scan_completed); */
@@ -927,5 +927,5 @@ void cw_iwl_setup_scan_deferred_work(struct iwl_priv *priv)
 	INIT_WORK(&priv->abort_scan, iwl_bg_abort_scan);
 	INIT_DELAYED_WORK(&priv->scan_check, iwl_bg_scan_check);
 }
-EXPORT_SYMBOL(cw_iwl_setup_scan_deferred_work);
+EXPORT_SYMBOL(iwl_setup_scan_deferred_work);
 

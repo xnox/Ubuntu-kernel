@@ -376,21 +376,21 @@ struct iwl_eeprom_ops {
 };
 
 
-void cw_iwl_eeprom_get_mac(const struct iwl_priv *priv, u8 *mac);
-int cw_iwl_eeprom_init(struct iwl_priv *priv);
-void cw_iwl_eeprom_free(struct iwl_priv *priv);
-int  cw_iwl_eeprom_check_version(struct iwl_priv *priv);
-const u8 *cw_iwl_eeprom_query_addr(const struct iwl_priv *priv, size_t offset);
-u16 cw_iwl_eeprom_query16(const struct iwl_priv *priv, size_t offset);
+void iwl_eeprom_get_mac(const struct iwl_priv *priv, u8 *mac);
+int iwl_eeprom_init(struct iwl_priv *priv);
+void iwl_eeprom_free(struct iwl_priv *priv);
+int  iwl_eeprom_check_version(struct iwl_priv *priv);
+const u8 *iwl_eeprom_query_addr(const struct iwl_priv *priv, size_t offset);
+u16 iwl_eeprom_query16(const struct iwl_priv *priv, size_t offset);
 
-int cw_iwlcore_eeprom_verify_signature(struct iwl_priv *priv);
-int cw_iwlcore_eeprom_acquire_semaphore(struct iwl_priv *priv);
-void cw_iwlcore_eeprom_release_semaphore(struct iwl_priv *priv);
-const u8 *cw_iwlcore_eeprom_query_addr(const struct iwl_priv *priv, size_t offset);
+int iwlcore_eeprom_verify_signature(struct iwl_priv *priv);
+int iwlcore_eeprom_acquire_semaphore(struct iwl_priv *priv);
+void iwlcore_eeprom_release_semaphore(struct iwl_priv *priv);
+const u8 *iwlcore_eeprom_query_addr(const struct iwl_priv *priv, size_t offset);
 
-int cw_iwl_init_channel_map(struct iwl_priv *priv);
+int iwl_init_channel_map(struct iwl_priv *priv);
 void iwl_free_channel_map(struct iwl_priv *priv);
-const struct iwl_channel_info *cw_iwl_get_channel_info(
+const struct iwl_channel_info *iwl_get_channel_info(
 		const struct iwl_priv *priv,
 		enum ieee80211_band band, u16 channel);
 

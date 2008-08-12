@@ -96,7 +96,7 @@ static char *ieee80211_translate_scan(struct ieee80211_device *ieee,
 	/* Add channel and frequency */
 	/* Note : userspace automatically computes channel using iwrange */
 	iwe.cmd = SIOCGIWFREQ;
-	iwe.u.freq.m = cw_ieee80211_channel_to_freq(ieee, network->channel);
+	iwe.u.freq.m = ieee80211_channel_to_freq(ieee, network->channel);
 	iwe.u.freq.e = 6;
 	iwe.u.freq.i = 0;
 	start = iwe_stream_add_event(info, start, stop, &iwe, IW_EV_FREQ_LEN);
@@ -231,13 +231,13 @@ static char *ieee80211_translate_scan(struct ieee80211_device *ieee,
 	p = custom;
 	p += snprintf(p, MAX_CUSTOM_LEN - (p - custom), " Channel flags: ");
 
-	if (cw_cw_ieee80211_get_channel_flags(ieee, network->channel) &
+	if (ieee80211_get_channel_flags(ieee, network->channel) &
 	    IEEE80211_CH_INVALID) {
 		iwe.cmd = IWEVCUSTOM;
 		p += snprintf(p, MAX_CUSTOM_LEN - (p - custom), "INVALID ");
 	}
 
-	if (cw_cw_ieee80211_get_channel_flags(ieee, network->channel) &
+	if (ieee80211_get_channel_flags(ieee, network->channel) &
 	    IEEE80211_CH_RADAR_DETECT) {
 		iwe.cmd = IWEVCUSTOM;
 		p += snprintf(p, MAX_CUSTOM_LEN - (p - custom), "DFS ");
@@ -253,7 +253,7 @@ static char *ieee80211_translate_scan(struct ieee80211_device *ieee,
 
 #define SCAN_ITEM_SIZE 128
 
-int cw_ieee80211_wx_get_scan(struct ieee80211_device *ieee,
+int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
 			  struct iw_request_info *info,
 			  union iwreq_data *wrqu, char *extra)
 {
@@ -284,7 +284,7 @@ int cw_ieee80211_wx_get_scan(struct ieee80211_device *ieee,
 		else
 			IEEE80211_DEBUG_SCAN("Not showing network '%s ("
 					     "%s)' due to age (%dms).\n",
-					     cw_escape_essid(network->ssid,
+					     escape_essid(network->ssid,
 							  network->ssid_len),
 					     print_mac(mac, network->bssid),
 					     jiffies_to_msecs(jiffies -
@@ -302,7 +302,7 @@ int cw_ieee80211_wx_get_scan(struct ieee80211_device *ieee,
 	return err;
 }
 
-int cw_ieee80211_wx_set_encode(struct ieee80211_device *ieee,
+int ieee80211_wx_set_encode(struct ieee80211_device *ieee,
 			    struct iw_request_info *info,
 			    union iwreq_data *wrqu, char *keybuf)
 {
@@ -337,7 +337,7 @@ int cw_ieee80211_wx_set_encode(struct ieee80211_device *ieee,
 		if (key_provided && *crypt) {
 			IEEE80211_DEBUG_WX("Disabling encryption on key %d.\n",
 					   key);
-			cw_ieee80211_crypt_delayed_deinit(ieee, crypt);
+			ieee80211_crypt_delayed_deinit(ieee, crypt);
 		} else
 			IEEE80211_DEBUG_WX("Disabling encryption.\n");
 
@@ -347,7 +347,7 @@ int cw_ieee80211_wx_set_encode(struct ieee80211_device *ieee,
 			if (ieee->crypt[i] != NULL) {
 				if (key_provided)
 					break;
-				cw_ieee80211_crypt_delayed_deinit(ieee,
+				ieee80211_crypt_delayed_deinit(ieee,
 							       &ieee->crypt[i]);
 			}
 		}
@@ -370,7 +370,7 @@ int cw_ieee80211_wx_set_encode(struct ieee80211_device *ieee,
 	    strcmp((*crypt)->ops->name, "WEP") != 0) {
 		/* changing to use WEP; deinit previously used algorithm
 		 * on this key */
-		cw_ieee80211_crypt_delayed_deinit(ieee, crypt);
+		ieee80211_crypt_delayed_deinit(ieee, crypt);
 	}
 
 	if (*crypt == NULL && host_crypto) {
@@ -381,10 +381,10 @@ int cw_ieee80211_wx_set_encode(struct ieee80211_device *ieee,
 				    GFP_KERNEL);
 		if (new_crypt == NULL)
 			return -ENOMEM;
-		new_crypt->ops = cw_ieee80211_get_crypto_ops("WEP");
+		new_crypt->ops = ieee80211_get_crypto_ops("WEP");
 		if (!new_crypt->ops) {
 			request_module("ieee80211_crypt_wep");
-			new_crypt->ops = cw_ieee80211_get_crypto_ops("WEP");
+			new_crypt->ops = ieee80211_get_crypto_ops("WEP");
 		}
 
 		if (new_crypt->ops && try_module_get(new_crypt->ops->owner))
@@ -409,7 +409,7 @@ int cw_ieee80211_wx_set_encode(struct ieee80211_device *ieee,
 			memset(sec.keys[key] + erq->length, 0,
 			       len - erq->length);
 		IEEE80211_DEBUG_WX("Setting key %d to '%s' (%d:%d bytes)\n",
-				   key, cw_escape_essid(sec.keys[key], len),
+				   key, escape_essid(sec.keys[key], len),
 				   erq->length, len);
 		sec.key_sizes[key] = len;
 		if (*crypt)
@@ -479,7 +479,7 @@ int cw_ieee80211_wx_set_encode(struct ieee80211_device *ieee,
 	return 0;
 }
 
-int cw_ieee80211_wx_get_encode(struct ieee80211_device *ieee,
+int ieee80211_wx_get_encode(struct ieee80211_device *ieee,
 			    struct iw_request_info *info,
 			    union iwreq_data *wrqu, char *keybuf)
 {
@@ -521,7 +521,7 @@ int cw_ieee80211_wx_get_encode(struct ieee80211_device *ieee,
 	return 0;
 }
 
-int cw_cw_ieee80211_wx_set_encodeext(struct ieee80211_device *ieee,
+int ieee80211_wx_set_encodeext(struct ieee80211_device *ieee,
 			       struct iw_request_info *info,
 			       union iwreq_data *wrqu, char *extra)
 {
@@ -563,7 +563,7 @@ int cw_cw_ieee80211_wx_set_encodeext(struct ieee80211_device *ieee,
 	if ((encoding->flags & IW_ENCODE_DISABLED) ||
 	    ext->alg == IW_ENCODE_ALG_NONE) {
 		if (*crypt)
-			cw_ieee80211_crypt_delayed_deinit(ieee, crypt);
+			ieee80211_crypt_delayed_deinit(ieee, crypt);
 
 		for (i = 0; i < WEP_KEYS; i++)
 			if (ieee->crypt[i] != NULL)
@@ -606,10 +606,10 @@ int cw_cw_ieee80211_wx_set_encodeext(struct ieee80211_device *ieee,
 		goto done;
 	}
 
-	ops = cw_ieee80211_get_crypto_ops(alg);
+	ops = ieee80211_get_crypto_ops(alg);
 	if (ops == NULL) {
 		request_module(module);
-		ops = cw_ieee80211_get_crypto_ops(alg);
+		ops = ieee80211_get_crypto_ops(alg);
 	}
 	if (ops == NULL) {
 		IEEE80211_DEBUG_WX("%s: unknown crypto alg %d\n",
@@ -621,7 +621,7 @@ int cw_cw_ieee80211_wx_set_encodeext(struct ieee80211_device *ieee,
 	if (*crypt == NULL || (*crypt)->ops != ops) {
 		struct ieee80211_crypt_data *new_crypt;
 
-		cw_ieee80211_crypt_delayed_deinit(ieee, crypt);
+		ieee80211_crypt_delayed_deinit(ieee, crypt);
 
 		new_crypt = kzalloc(sizeof(*new_crypt), GFP_KERNEL);
 		if (new_crypt == NULL) {
@@ -696,7 +696,7 @@ int cw_cw_ieee80211_wx_set_encodeext(struct ieee80211_device *ieee,
 	return ret;
 }
 
-int cw_cw_ieee80211_wx_get_encodeext(struct ieee80211_device *ieee,
+int ieee80211_wx_get_encodeext(struct ieee80211_device *ieee,
 			       struct iw_request_info *info,
 			       union iwreq_data *wrqu, char *extra)
 {
@@ -752,9 +752,9 @@ int cw_cw_ieee80211_wx_get_encodeext(struct ieee80211_device *ieee,
 	return 0;
 }
 
-EXPORT_SYMBOL(cw_cw_ieee80211_wx_set_encodeext);
-EXPORT_SYMBOL(cw_cw_ieee80211_wx_get_encodeext);
+EXPORT_SYMBOL(ieee80211_wx_set_encodeext);
+EXPORT_SYMBOL(ieee80211_wx_get_encodeext);
 
-EXPORT_SYMBOL(cw_ieee80211_wx_get_scan);
-EXPORT_SYMBOL(cw_ieee80211_wx_set_encode);
-EXPORT_SYMBOL(cw_ieee80211_wx_get_encode);
+EXPORT_SYMBOL(ieee80211_wx_get_scan);
+EXPORT_SYMBOL(ieee80211_wx_set_encode);
+EXPORT_SYMBOL(ieee80211_wx_get_encode);

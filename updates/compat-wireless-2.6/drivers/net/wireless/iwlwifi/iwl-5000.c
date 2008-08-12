@@ -216,7 +216,7 @@ static void iwl5000_nic_config(struct iwl_priv *priv)
 		/* L0S enabled L1A disabled */
 		iwl_clear_bit(priv, CSR_GIO_REG, CSR_GIO_REG_VAL_L0S_ENABLED);
 
-	radio_cfg = cw_iwl_eeprom_query16(priv, EEPROM_RADIO_CONFIG);
+	radio_cfg = iwl_eeprom_query16(priv, EEPROM_RADIO_CONFIG);
 
 	/* write radio config values to register */
 	if (EEPROM_RF_CFG_TYPE_MSK(radio_cfg) < EEPROM_5000_RF_CFG_TYPE_MAX)
@@ -247,22 +247,22 @@ static u32 eeprom_indirect_address(const struct iwl_priv *priv, u32 address)
 
 	switch (address & INDIRECT_TYPE_MSK) {
 	case INDIRECT_HOST:
-		offset = cw_iwl_eeprom_query16(priv, EEPROM_5000_LINK_HOST);
+		offset = iwl_eeprom_query16(priv, EEPROM_5000_LINK_HOST);
 		break;
 	case INDIRECT_GENERAL:
-		offset = cw_iwl_eeprom_query16(priv, EEPROM_5000_LINK_GENERAL);
+		offset = iwl_eeprom_query16(priv, EEPROM_5000_LINK_GENERAL);
 		break;
 	case INDIRECT_REGULATORY:
-		offset = cw_iwl_eeprom_query16(priv, EEPROM_5000_LINK_REGULATORY);
+		offset = iwl_eeprom_query16(priv, EEPROM_5000_LINK_REGULATORY);
 		break;
 	case INDIRECT_CALIBRATION:
-		offset = cw_iwl_eeprom_query16(priv, EEPROM_5000_LINK_CALIBRATION);
+		offset = iwl_eeprom_query16(priv, EEPROM_5000_LINK_CALIBRATION);
 		break;
 	case INDIRECT_PROCESS_ADJST:
-		offset = cw_iwl_eeprom_query16(priv, EEPROM_5000_LINK_PROCESS_ADJST);
+		offset = iwl_eeprom_query16(priv, EEPROM_5000_LINK_PROCESS_ADJST);
 		break;
 	case INDIRECT_OTHERS:
-		offset = cw_iwl_eeprom_query16(priv, EEPROM_5000_LINK_OTHERS);
+		offset = iwl_eeprom_query16(priv, EEPROM_5000_LINK_OTHERS);
 		break;
 	default:
 		IWL_ERROR("illegal indirect type: 0x%X\n",
@@ -283,9 +283,9 @@ static int iwl5000_eeprom_check_version(struct iwl_priv *priv)
 		u16 voltage;
 	} *hdr;
 
-	eeprom_ver = cw_iwl_eeprom_query16(priv, EEPROM_VERSION);
+	eeprom_ver = iwl_eeprom_query16(priv, EEPROM_VERSION);
 
-	hdr = (struct iwl_eeprom_calib_hdr *)cw_iwl_eeprom_query_addr(priv,
+	hdr = (struct iwl_eeprom_calib_hdr *)iwl_eeprom_query_addr(priv,
 							EEPROM_5000_CALIB_ALL);
 
 	if (eeprom_ver < EEPROM_5000_EEPROM_VERSION ||
@@ -337,7 +337,7 @@ static void iwl5000_gain_computation(struct iwl_priv *priv,
 		cmd.op_code = IWL5000_PHY_CALIBRATE_CHAIN_NOISE_GAIN_CMD;
 		cmd.delta_gain_1 = data->delta_gain_code[1];
 		cmd.delta_gain_2 = data->delta_gain_code[2];
-		cw_cw_cw_iwl_send_cmd_pdu_async(priv, REPLY_PHY_CALIBRATION_CMD,
+		iwl_send_cmd_pdu_async(priv, REPLY_PHY_CALIBRATION_CMD,
 			sizeof(cmd), &cmd, NULL);
 
 		data->radio_write = 1;
@@ -362,7 +362,7 @@ static void iwl5000_chain_noise_reset(struct iwl_priv *priv)
 
 		memset(&cmd, 0, sizeof(cmd));
 		cmd.op_code = IWL5000_PHY_CALIBRATE_CHAIN_NOISE_RESET_CMD;
-		if (cw_cw_iwl_send_cmd_pdu(priv, REPLY_PHY_CALIBRATION_CMD,
+		if (iwl_send_cmd_pdu(priv, REPLY_PHY_CALIBRATION_CMD,
 			sizeof(cmd), &cmd))
 			IWL_ERROR("Could not send REPLY_PHY_CALIBRATION_CMD\n");
 		data->state = IWL_CHAIN_NOISE_ACCUMULATE;
@@ -414,7 +414,7 @@ static const u8 *iwl5000_eeprom_query_addr(const struct iwl_priv *priv,
  */
 static int iwl5000_send_Xtal_calib(struct iwl_priv *priv)
 {
-	u16 *xtal_calib = (u16 *)cw_iwl_eeprom_query_addr(priv, EEPROM_5000_XTAL);
+	u16 *xtal_calib = (u16 *)iwl_eeprom_query_addr(priv, EEPROM_5000_XTAL);
 
 	struct iwl5000_calibration cal_cmd = {
 		.op_code = IWL5000_PHY_CALIBRATE_CRYSTAL_FRQ_CMD,
@@ -424,7 +424,7 @@ static int iwl5000_send_Xtal_calib(struct iwl_priv *priv)
 		}
 	};
 
-	return cw_cw_iwl_send_cmd_pdu(priv, REPLY_PHY_CALIBRATION_CMD,
+	return iwl_send_cmd_pdu(priv, REPLY_PHY_CALIBRATION_CMD,
 				sizeof(cal_cmd), &cal_cmd);
 }
 
@@ -440,7 +440,7 @@ static int iwl5000_send_calib_results(struct iwl_priv *priv)
 	if (priv->calib_results.lo_res) {
 		hcmd.len = priv->calib_results.lo_res_len;
 		hcmd.data = priv->calib_results.lo_res;
-		ret = cw_cw_iwl_send_cmd_sync(priv, &hcmd);
+		ret = iwl_send_cmd_sync(priv, &hcmd);
 
 		if (ret)
 			goto err;
@@ -449,7 +449,7 @@ static int iwl5000_send_calib_results(struct iwl_priv *priv)
 	if (priv->calib_results.tx_iq_res) {
 		hcmd.len = priv->calib_results.tx_iq_res_len;
 		hcmd.data = priv->calib_results.tx_iq_res;
-		ret = cw_cw_iwl_send_cmd_sync(priv, &hcmd);
+		ret = iwl_send_cmd_sync(priv, &hcmd);
 
 		if (ret)
 			goto err;
@@ -458,7 +458,7 @@ static int iwl5000_send_calib_results(struct iwl_priv *priv)
 	if (priv->calib_results.tx_iq_perd_res) {
 		hcmd.len = priv->calib_results.tx_iq_perd_res_len;
 		hcmd.data = priv->calib_results.tx_iq_perd_res;
-		ret = cw_cw_iwl_send_cmd_sync(priv, &hcmd);
+		ret = iwl_send_cmd_sync(priv, &hcmd);
 
 		if (ret)
 			goto err;
@@ -485,7 +485,7 @@ static int iwl5000_send_calib_cfg(struct iwl_priv *priv)
 	calib_cfg_cmd.ucd_calib_cfg.once.send_res = IWL_CALIB_INIT_CFG_ALL;
 	calib_cfg_cmd.ucd_calib_cfg.flags = IWL_CALIB_INIT_CFG_ALL;
 
-	return cw_iwl_send_cmd(priv, &cmd);
+	return iwl_send_cmd(priv, &cmd);
 }
 
 static void iwl5000_rx_calib_result(struct iwl_priv *priv,
@@ -495,7 +495,7 @@ static void iwl5000_rx_calib_result(struct iwl_priv *priv,
 	struct iwl5000_calib_hdr *hdr = (struct iwl5000_calib_hdr *)pkt->u.raw;
 	int len = le32_to_cpu(pkt->len) & FH_RSCSR_FRAME_SIZE_MSK;
 
-	cw_iwl_free_calib_results(priv);
+	iwl_free_calib_results(priv);
 
 	/* reduce the size of the length field itself */
 	len -= 4;
@@ -678,14 +678,14 @@ static void iwl5000_init_alive_start(struct iwl_priv *priv)
 	/* initialize uCode was loaded... verify inst image.
 	 * This is a paranoid check, because we would not have gotten the
 	 * "initialize" alive if code weren't properly loaded.  */
-	if (cw_iwl_verify_ucode(priv)) {
+	if (iwl_verify_ucode(priv)) {
 		/* Runtime instruction load was bad;
 		 * take it all the way back down so we can try again */
 		IWL_DEBUG_INFO("Bad \"initialize\" uCode load.\n");
 		goto restart;
 	}
 
-	cw_iwl_clear_stations_table(priv);
+	iwl_clear_stations_table(priv);
 	ret = priv->cfg->ops->lib->alive_notify(priv);
 	if (ret) {
 		IWL_WARNING("Could not complete ALIVE transition: %d\n", ret);
@@ -734,7 +734,7 @@ static int iwl5000_send_wimax_coex(struct iwl_priv *priv)
 
 	memset(&coex_cmd, 0, sizeof(coex_cmd));
 
-	return cw_cw_iwl_send_cmd_pdu(priv, COEX_PRIORITY_TABLE_CMD,
+	return iwl_send_cmd_pdu(priv, COEX_PRIORITY_TABLE_CMD,
 				sizeof(coex_cmd), &coex_cmd);
 }
 
@@ -1027,7 +1027,7 @@ static int iwl5000_txq_agg_enable(struct iwl_priv *priv, int txq_id,
 	ra_tid = BUILD_RAxTID(sta_id, tid);
 
 	/* Modify device's station table to Tx this TID */
-	cw_iwl_sta_modify_enable_tid_tx(priv, sta_id, tid);
+	iwl_sta_modify_enable_tid_tx(priv, sta_id, tid);
 
 	spin_lock_irqsave(&priv->lock, flags);
 	ret = iwl_grab_nic_access(priv);
@@ -1171,7 +1171,7 @@ static int iwl5000_tx_status_reply_tx(struct iwl_priv *priv,
 		info->flags &= ~IEEE80211_TX_CTL_AMPDU;
 		info->flags |= iwl_is_tx_success(status)?
 			IEEE80211_TX_STAT_ACK : 0;
-		cw_iwl_hwrate_to_tx_control(priv, rate_n_flags, info);
+		iwl_hwrate_to_tx_control(priv, rate_n_flags, info);
 
 		/* FIXME: code repetition end */
 
@@ -1277,7 +1277,7 @@ static void iwl5000_rx_reply_tx(struct iwl_priv *priv,
 		tid = qc[0] & 0xf;
 	}
 
-	sta_id = cw_iwl_get_ra_sta_id(priv, hdr);
+	sta_id = iwl_get_ra_sta_id(priv, hdr);
 	if (txq->sched_retry && unlikely(sta_id == IWL_INVALID_STATION)) {
 		IWL_ERROR("Station not known\n");
 		return;
@@ -1303,46 +1303,46 @@ static void iwl5000_rx_reply_tx(struct iwl_priv *priv,
 			index = iwl_queue_dec_wrap(scd_ssn & 0xff, txq->q.n_bd);
 			IWL_DEBUG_TX_REPLY("Retry scheduler reclaim scd_ssn "
 					   "%d index %d\n", scd_ssn , index);
-			freed = cw_iwl_tx_queue_reclaim(priv, txq_id, index);
+			freed = iwl_tx_queue_reclaim(priv, txq_id, index);
 			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
 
-			if (cw_iwl_queue_space(&txq->q) > txq->q.low_mark &&
+			if (iwl_queue_space(&txq->q) > txq->q.low_mark &&
 			    txq_id >= 0 && priv->mac80211_registered &&
 			    agg->state != IWL_EMPTYING_HW_QUEUE_DELBA) {
 				/* calculate mac80211 ampdu sw queue to wake */
 				ampdu_q = txq_id - IWL50_FIRST_AMPDU_QUEUE +
 					  priv->hw->queues;
 				if (agg->state == IWL_AGG_OFF)
-					cw_ieee80211_wake_queue(priv->hw, txq_id);
+					ieee80211_wake_queue(priv->hw, txq_id);
 				else
-					cw_ieee80211_wake_queue(priv->hw, ampdu_q);
+					ieee80211_wake_queue(priv->hw, ampdu_q);
 			}
-			cw_iwl_txq_check_empty(priv, sta_id, tid, txq_id);
+			iwl_txq_check_empty(priv, sta_id, tid, txq_id);
 		}
 	} else {
 		info->status.retry_count = tx_resp->failure_frame;
 		info->flags =
 			iwl_is_tx_success(status) ? IEEE80211_TX_STAT_ACK : 0;
-		cw_iwl_hwrate_to_tx_control(priv,
+		iwl_hwrate_to_tx_control(priv,
 					le32_to_cpu(tx_resp->rate_n_flags),
 					info);
 
 		IWL_DEBUG_TX("Tx queue %d Status %s (0x%08x) rate_n_flags "
 			     "0x%x retries %d\n", txq_id,
-				cw_iwl_get_tx_fail_reason(status),
+				iwl_get_tx_fail_reason(status),
 				status, le32_to_cpu(tx_resp->rate_n_flags),
 				tx_resp->failure_frame);
 
 		IWL_DEBUG_TX_REPLY("Tx queue reclaim %d\n", index);
 		if (index != -1) {
-		    int freed = cw_iwl_tx_queue_reclaim(priv, txq_id, index);
+		    int freed = iwl_tx_queue_reclaim(priv, txq_id, index);
 		    if (tid != MAX_TID_COUNT)
 			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-		    if (cw_iwl_queue_space(&txq->q) > txq->q.low_mark &&
+		    if (iwl_queue_space(&txq->q) > txq->q.low_mark &&
 			(txq_id >= 0) && priv->mac80211_registered)
-			cw_ieee80211_wake_queue(priv->hw, txq_id);
+			ieee80211_wake_queue(priv->hw, txq_id);
 		    if (tid != MAX_TID_COUNT)
-			cw_iwl_txq_check_empty(priv, sta_id, tid, txq_id);
+			iwl_txq_check_empty(priv, sta_id, tid, txq_id);
 		}
 	}
 
@@ -1418,7 +1418,7 @@ static int iwl5000_send_rxon_assoc(struct iwl_priv *priv)
 		 priv->staging_rxon.ofdm_ht_triple_stream_basic_rates;
 	rxon_assoc.acquisition_data = priv->staging_rxon.acquisition_data;
 
-	ret = cw_cw_cw_iwl_send_cmd_pdu_async(priv, REPLY_RXON_ASSOC,
+	ret = iwl_send_cmd_pdu_async(priv, REPLY_RXON_ASSOC,
 				     sizeof(rxon_assoc), &rxon_assoc, NULL);
 	if (ret)
 		return ret;
@@ -1433,7 +1433,7 @@ static int  iwl5000_send_tx_power(struct iwl_priv *priv)
 	tx_power_cmd.global_lmt = (s8)(2 * priv->tx_power_user_lmt);
 	tx_power_cmd.flags = IWL50_TX_POWER_NO_CLOSED;
 	tx_power_cmd.srv_chan_lmt = IWL50_TX_POWER_AUTO;
-	return  cw_cw_cw_iwl_send_cmd_pdu_async(priv, REPLY_TX_POWER_DBM_CMD,
+	return  iwl_send_cmd_pdu_async(priv, REPLY_TX_POWER_DBM_CMD,
 				       sizeof(tx_power_cmd), &tx_power_cmd,
 				       NULL);
 }
@@ -1491,9 +1491,9 @@ static struct iwl_lib_ops iwl5000_lib = {
 			EEPROM_5000_REG_BAND_24_FAT_CHANNELS,
 			EEPROM_5000_REG_BAND_52_FAT_CHANNELS
 		},
-		.verify_signature  = cw_iwlcore_eeprom_verify_signature,
-		.acquire_semaphore = cw_iwlcore_eeprom_acquire_semaphore,
-		.release_semaphore = cw_iwlcore_eeprom_release_semaphore,
+		.verify_signature  = iwlcore_eeprom_verify_signature,
+		.acquire_semaphore = iwlcore_eeprom_acquire_semaphore,
+		.release_semaphore = iwlcore_eeprom_release_semaphore,
 		.check_version	= iwl5000_eeprom_check_version,
 		.query_addr = iwl5000_eeprom_query_addr,
 	},

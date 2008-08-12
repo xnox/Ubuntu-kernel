@@ -110,14 +110,14 @@
 /* debug macros */
 
 #ifdef CONFIG_IEEE80211_DEBUG
-extern u32 cw_ieee80211_debug_level;
+extern u32 ieee80211_debug_level;
 #define IEEE80211_DEBUG(level, fmt, args...) \
-do { if (cw_ieee80211_debug_level & (level)) \
+do { if (ieee80211_debug_level & (level)) \
   printk(KERN_DEBUG "ieee80211: %c %s " fmt, \
          in_interrupt() ? 'I' : 'U', __FUNCTION__ , ## args); } while (0)
 static inline bool ieee80211_ratelimit_debug(u32 level)
 {
-	return (cw_ieee80211_debug_level & level) && net_ratelimit();
+	return (ieee80211_debug_level & level) && net_ratelimit();
 }
 #else
 #define IEEE80211_DEBUG(level, fmt, args...) do {} while (0)
@@ -127,9 +127,9 @@ static inline bool ieee80211_ratelimit_debug(u32 level)
 }
 #endif				/* CONFIG_IEEE80211_DEBUG */
 
-/* cw_escape_essid() is intended to be used in debug (and possibly error)
+/* escape_essid() is intended to be used in debug (and possibly error)
  * messages. It should never be used for passing essid to user space. */
-const char *cw_escape_essid(const char *essid, u8 essid_len);
+const char *escape_essid(const char *essid, u8 essid_len);
 
 /*
  * To use the debug system:
@@ -150,7 +150,7 @@ const char *cw_escape_essid(const char *essid, u8 essid_len);
  *
  * % cat /proc/net/ieee80211/debug_level
  *
- * you simply need to add your entry to the cw_ieee80211_debug_level array.
+ * you simply need to add your entry to the ieee80211_debug_level array.
  *
  * If you do not see debug_level in /proc/net/ieee80211 then you do not have
  * CONFIG_IEEE80211_DEBUG defined in your kernel configuration
@@ -392,9 +392,9 @@ enum ieee80211_actiondetails {
 
 /* NOTE: This data is for statistical purposes; not all hardware provides this
  *       information for frames received.
- *       For cw_cw_ieee80211_rx_mgt, you need to set at least the 'len' parameter.
+ *       For ieee80211_rx_mgt, you need to set at least the 'len' parameter.
  */
-struct cw_ieee80211_rx_stats {
+struct ieee80211_rx_stats {
 	u32 mac_time;
 	s8 rssi;
 	u8 signal;
@@ -906,7 +906,7 @@ struct ieee80211_network {
 	struct ieee80211_qos_data qos_data;
 
 	/* These are network statistics */
-	struct cw_ieee80211_rx_stats stats;
+	struct ieee80211_rx_stats stats;
 	u16 capability;
 	u8 rates[MAX_RATES_LENGTH];
 	u8 rates_len;
@@ -1103,7 +1103,7 @@ struct ieee80211_device {
 			      struct ieee80211_deauth * auth);
 	int (*handle_action) (struct net_device * dev,
 			      struct ieee80211_action * action,
-			      struct cw_ieee80211_rx_stats * stats);
+			      struct ieee80211_rx_stats * stats);
 	int (*handle_disassoc) (struct net_device * dev,
 				struct ieee80211_disassoc * assoc);
 	int (*handle_beacon) (struct net_device * dev,
@@ -1114,7 +1114,7 @@ struct ieee80211_device {
 				      struct ieee80211_network * network);
 	int (*handle_probe_request) (struct net_device * dev,
 				     struct ieee80211_probe_request * req,
-				     struct cw_ieee80211_rx_stats * stats);
+				     struct ieee80211_rx_stats * stats);
 	int (*handle_assoc_response) (struct net_device * dev,
 				      struct ieee80211_assoc_response * resp,
 				      struct ieee80211_network * network);
@@ -1125,7 +1125,7 @@ struct ieee80211_device {
 				       struct ieee80211_reassoc_request * req);
 
 	/* This must be the last item so that it points to the data
-	 * allocated beyond this structure by cw_alloc_ieee80211 */
+	 * allocated beyond this structure by alloc_ieee80211 */
 	u8 priv[0];
 };
 
@@ -1182,7 +1182,7 @@ static inline int ieee80211_is_valid_mode(struct ieee80211_device *ieee,
 	return 0;
 }
 
-static inline int cw_ieee80211_get_hdrlen(u16 fc)
+static inline int ieee80211_get_hdrlen(u16 fc)
 {
 	int hdrlen = IEEE80211_3ADDR_LEN;
 	u16 stype = WLAN_FC_GET_STYPE(fc);
@@ -1212,7 +1212,7 @@ static inline int cw_ieee80211_get_hdrlen(u16 fc)
 
 static inline u8 *ieee80211_get_payload(struct ieee80211_hdr *hdr)
 {
-	switch (cw_ieee80211_get_hdrlen(le16_to_cpu(hdr->frame_ctl))) {
+	switch (ieee80211_get_hdrlen(le16_to_cpu(hdr->frame_ctl))) {
 	case IEEE80211_1ADDR_LEN:
 		return ((struct ieee80211_hdr_1addr *)hdr)->payload;
 	case IEEE80211_2ADDR_LEN:
@@ -1254,59 +1254,59 @@ static inline int ieee80211_is_cck_rate(u8 rate)
 }
 
 /* ieee80211.c */
-extern void cw_free_ieee80211(struct net_device *dev);
-extern struct net_device *cw_alloc_ieee80211(int sizeof_priv);
+extern void free_ieee80211(struct net_device *dev);
+extern struct net_device *alloc_ieee80211(int sizeof_priv);
 
 extern int ieee80211_set_encryption(struct ieee80211_device *ieee);
 
 /* ieee80211_tx.c */
 extern int ieee80211_xmit(struct sk_buff *skb, struct net_device *dev);
-extern void cw_ieee80211_txb_free(struct ieee80211_txb *);
+extern void ieee80211_txb_free(struct ieee80211_txb *);
 
-/* cw_ieee80211_rx.c */
-extern void cw_cw_ieee80211_rx_any(struct ieee80211_device *ieee,
-		     struct sk_buff *skb, struct cw_ieee80211_rx_stats *stats);
-extern int cw_ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
-			struct cw_ieee80211_rx_stats *rx_stats);
+/* ieee80211_rx.c */
+extern void ieee80211_rx_any(struct ieee80211_device *ieee,
+		     struct sk_buff *skb, struct ieee80211_rx_stats *stats);
+extern int ieee80211_rx(struct ieee80211_device *ieee, struct sk_buff *skb,
+			struct ieee80211_rx_stats *rx_stats);
 /* make sure to set stats->len */
-extern void cw_cw_ieee80211_rx_mgt(struct ieee80211_device *ieee,
+extern void ieee80211_rx_mgt(struct ieee80211_device *ieee,
 			     struct ieee80211_hdr_4addr *header,
-			     struct cw_ieee80211_rx_stats *stats);
+			     struct ieee80211_rx_stats *stats);
 extern void ieee80211_network_reset(struct ieee80211_network *network);
 
 /* ieee80211_geo.c */
-extern const struct ieee80211_geo *cw_ieee80211_get_geo(struct ieee80211_device
+extern const struct ieee80211_geo *ieee80211_get_geo(struct ieee80211_device
 						     *ieee);
-extern int cw_ieee80211_set_geo(struct ieee80211_device *ieee,
+extern int ieee80211_set_geo(struct ieee80211_device *ieee,
 			     const struct ieee80211_geo *geo);
 
-extern int cw_ieee80211_is_valid_channel(struct ieee80211_device *ieee,
+extern int ieee80211_is_valid_channel(struct ieee80211_device *ieee,
 				      u8 channel);
-extern int cw_ieee80211_channel_to_index(struct ieee80211_device *ieee,
+extern int ieee80211_channel_to_index(struct ieee80211_device *ieee,
 				      u8 channel);
-extern u8 cw_ieee80211_freq_to_channel(struct ieee80211_device *ieee, u32 freq);
-extern u8 cw_cw_ieee80211_get_channel_flags(struct ieee80211_device *ieee,
+extern u8 ieee80211_freq_to_channel(struct ieee80211_device *ieee, u32 freq);
+extern u8 ieee80211_get_channel_flags(struct ieee80211_device *ieee,
 				      u8 channel);
-extern const struct ieee80211_channel *cw_ieee80211_get_channel(struct
+extern const struct ieee80211_channel *ieee80211_get_channel(struct
 							     ieee80211_device
 							     *ieee, u8 channel);
-extern u32 cw_ieee80211_channel_to_freq(struct ieee80211_device * ieee,
+extern u32 ieee80211_channel_to_freq(struct ieee80211_device * ieee,
 				      u8 channel);
 
 /* ieee80211_wx.c */
-extern int cw_ieee80211_wx_get_scan(struct ieee80211_device *ieee,
+extern int ieee80211_wx_get_scan(struct ieee80211_device *ieee,
 				 struct iw_request_info *info,
 				 union iwreq_data *wrqu, char *key);
-extern int cw_ieee80211_wx_set_encode(struct ieee80211_device *ieee,
+extern int ieee80211_wx_set_encode(struct ieee80211_device *ieee,
 				   struct iw_request_info *info,
 				   union iwreq_data *wrqu, char *key);
-extern int cw_ieee80211_wx_get_encode(struct ieee80211_device *ieee,
+extern int ieee80211_wx_get_encode(struct ieee80211_device *ieee,
 				   struct iw_request_info *info,
 				   union iwreq_data *wrqu, char *key);
-extern int cw_cw_ieee80211_wx_set_encodeext(struct ieee80211_device *ieee,
+extern int ieee80211_wx_set_encodeext(struct ieee80211_device *ieee,
 				      struct iw_request_info *info,
 				      union iwreq_data *wrqu, char *extra);
-extern int cw_cw_ieee80211_wx_get_encodeext(struct ieee80211_device *ieee,
+extern int ieee80211_wx_get_encodeext(struct ieee80211_device *ieee,
 				      struct iw_request_info *info,
 				      union iwreq_data *wrqu, char *extra);
 

@@ -90,7 +90,7 @@ MODULE_PARM_DESC (msg_level, "Override default message level");
 /*-------------------------------------------------------------------------*/
 
 /* handles CDC Ethernet and many other network "bulk data" interfaces */
-int cw_usbnet_get_endpoints(struct usbnet *dev, struct usb_interface *intf)
+int usbnet_get_endpoints(struct usbnet *dev, struct usb_interface *intf)
 {
 	int				tmp;
 	struct usb_host_interface	*alt = NULL;
@@ -154,7 +154,7 @@ int cw_usbnet_get_endpoints(struct usbnet *dev, struct usb_interface *intf)
 	dev->status = status;
 	return 0;
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_get_endpoints);
+EXPORT_SYMBOL_GPL(usbnet_get_endpoints);
 
 static void intr_complete (struct urb *urb);
 
@@ -198,7 +198,7 @@ static int init_status (struct usbnet *dev, struct usb_interface *intf)
  * Some link protocols batch packets, so their rx_fixup paths
  * can return clones as well as just modify the original skb.
  */
-void cw_usbnet_skb_return (struct usbnet *dev, struct sk_buff *skb)
+void usbnet_skb_return (struct usbnet *dev, struct sk_buff *skb)
 {
 	int	status;
 
@@ -214,7 +214,7 @@ void cw_usbnet_skb_return (struct usbnet *dev, struct sk_buff *skb)
 	if (status != NET_RX_SUCCESS && netif_msg_rx_err (dev))
 		devdbg (dev, "netif_rx status %d", status);
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_skb_return);
+EXPORT_SYMBOL_GPL(usbnet_skb_return);
 
 
 /*-------------------------------------------------------------------------
@@ -241,7 +241,7 @@ static int usbnet_change_mtu (struct net_device *net, int new_mtu)
 	if (dev->rx_urb_size == old_hard_mtu) {
 		dev->rx_urb_size = dev->hard_mtu;
 		if (dev->rx_urb_size > old_rx_urb_size)
-			cw_usbnet_unlink_rx_urbs(dev);
+			usbnet_unlink_rx_urbs(dev);
 	}
 
 	return 0;
@@ -280,7 +280,7 @@ static void defer_bh(struct usbnet *dev, struct sk_buff *skb, struct sk_buff_hea
  * NOTE:  annoying asymmetry:  if it's active, schedule_work() fails,
  * but tasklet_schedule() doesn't.  hope the failure is rare.
  */
-void cw_usbnet_defer_kevent (struct usbnet *dev, int work)
+void usbnet_defer_kevent (struct usbnet *dev, int work)
 {
 	set_bit (work, &dev->flags);
 	if (!schedule_work (&dev->kevent))
@@ -288,7 +288,7 @@ void cw_usbnet_defer_kevent (struct usbnet *dev, int work)
 	else
 		devdbg (dev, "kevent %d scheduled", work);
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_defer_kevent);
+EXPORT_SYMBOL_GPL(usbnet_defer_kevent);
 
 /*-------------------------------------------------------------------------*/
 
@@ -305,7 +305,7 @@ static void rx_submit (struct usbnet *dev, struct urb *urb, gfp_t flags)
 	if ((skb = alloc_skb (size + NET_IP_ALIGN, flags)) == NULL) {
 		if (netif_msg_rx_err (dev))
 			devdbg (dev, "no rx skb");
-		cw_usbnet_defer_kevent (dev, EVENT_RX_MEMORY);
+		usbnet_defer_kevent (dev, EVENT_RX_MEMORY);
 		usb_free_urb (urb);
 		return;
 	}
@@ -327,10 +327,10 @@ static void rx_submit (struct usbnet *dev, struct urb *urb, gfp_t flags)
 			&& !test_bit (EVENT_RX_HALT, &dev->flags)) {
 		switch (retval = usb_submit_urb (urb, GFP_ATOMIC)) {
 		case -EPIPE:
-			cw_usbnet_defer_kevent (dev, EVENT_RX_HALT);
+			usbnet_defer_kevent (dev, EVENT_RX_HALT);
 			break;
 		case -ENOMEM:
-			cw_usbnet_defer_kevent (dev, EVENT_RX_MEMORY);
+			usbnet_defer_kevent (dev, EVENT_RX_MEMORY);
 			break;
 		case -ENODEV:
 			if (netif_msg_ifdown (dev))
@@ -368,7 +368,7 @@ static inline void rx_process (struct usbnet *dev, struct sk_buff *skb)
 	// else network stack removes extra byte if we forced a short packet
 
 	if (skb->len)
-		cw_usbnet_skb_return (dev, skb);
+		usbnet_skb_return (dev, skb);
 	else {
 		if (netif_msg_rx_err (dev))
 			devdbg (dev, "drop");
@@ -410,7 +410,7 @@ static void rx_complete (struct urb *urb)
 	 */
 	case -EPIPE:
 		dev->stats.rx_errors++;
-		cw_usbnet_defer_kevent (dev, EVENT_RX_HALT);
+		usbnet_defer_kevent (dev, EVENT_RX_HALT);
 		// FALLTHROUGH
 
 	/* software-driven interface shutdown */
@@ -536,14 +536,14 @@ static int unlink_urbs (struct usbnet *dev, struct sk_buff_head *q)
 // Flush all pending rx urbs
 // minidrivers may need to do this when the MTU changes
 
-void cw_usbnet_unlink_rx_urbs(struct usbnet *dev)
+void usbnet_unlink_rx_urbs(struct usbnet *dev)
 {
 	if (netif_running(dev->net)) {
 		(void) unlink_urbs (dev, &dev->rxq);
 		tasklet_schedule(&dev->bh);
 	}
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_unlink_rx_urbs);
+EXPORT_SYMBOL_GPL(usbnet_unlink_rx_urbs);
 
 /*-------------------------------------------------------------------------*/
 
@@ -682,7 +682,7 @@ done_nopm:
  * they'll probably want to use this base set.
  */
 
-int cw_usbnet_get_settings (struct net_device *net, struct ethtool_cmd *cmd)
+int usbnet_get_settings (struct net_device *net, struct ethtool_cmd *cmd)
 {
 	struct usbnet *dev = netdev_priv(net);
 
@@ -691,9 +691,9 @@ int cw_usbnet_get_settings (struct net_device *net, struct ethtool_cmd *cmd)
 
 	return mii_ethtool_gset(&dev->mii, cmd);
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_get_settings);
+EXPORT_SYMBOL_GPL(usbnet_get_settings);
 
-int cw_usbnet_set_settings (struct net_device *net, struct ethtool_cmd *cmd)
+int usbnet_set_settings (struct net_device *net, struct ethtool_cmd *cmd)
 {
 	struct usbnet *dev = netdev_priv(net);
 	int retval;
@@ -710,9 +710,9 @@ int cw_usbnet_set_settings (struct net_device *net, struct ethtool_cmd *cmd)
 	return retval;
 
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_set_settings);
+EXPORT_SYMBOL_GPL(usbnet_set_settings);
 
-u32 cw_usbnet_get_link (struct net_device *net)
+u32 usbnet_get_link (struct net_device *net)
 {
 	struct usbnet *dev = netdev_priv(net);
 
@@ -727,9 +727,9 @@ u32 cw_usbnet_get_link (struct net_device *net)
 	/* Otherwise, say we're up (to avoid breaking scripts) */
 	return 1;
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_get_link);
+EXPORT_SYMBOL_GPL(usbnet_get_link);
 
-int cw_usbnet_nway_reset(struct net_device *net)
+int usbnet_nway_reset(struct net_device *net)
 {
 	struct usbnet *dev = netdev_priv(net);
 
@@ -738,9 +738,9 @@ int cw_usbnet_nway_reset(struct net_device *net)
 
 	return mii_nway_restart(&dev->mii);
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_nway_reset);
+EXPORT_SYMBOL_GPL(usbnet_nway_reset);
 
-void cw_usbnet_get_drvinfo (struct net_device *net, struct ethtool_drvinfo *info)
+void usbnet_get_drvinfo (struct net_device *net, struct ethtool_drvinfo *info)
 {
 	struct usbnet *dev = netdev_priv(net);
 
@@ -750,33 +750,33 @@ void cw_usbnet_get_drvinfo (struct net_device *net, struct ethtool_drvinfo *info
 		sizeof info->fw_version);
 	usb_make_path (dev->udev, info->bus_info, sizeof info->bus_info);
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_get_drvinfo);
+EXPORT_SYMBOL_GPL(usbnet_get_drvinfo);
 
-u32 cw_usbnet_get_msglevel (struct net_device *net)
+u32 usbnet_get_msglevel (struct net_device *net)
 {
 	struct usbnet *dev = netdev_priv(net);
 
 	return dev->msg_enable;
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_get_msglevel);
+EXPORT_SYMBOL_GPL(usbnet_get_msglevel);
 
-void cw_usbnet_set_msglevel (struct net_device *net, u32 level)
+void usbnet_set_msglevel (struct net_device *net, u32 level)
 {
 	struct usbnet *dev = netdev_priv(net);
 
 	dev->msg_enable = level;
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_set_msglevel);
+EXPORT_SYMBOL_GPL(usbnet_set_msglevel);
 
 /* drivers may override default ethtool_ops in their bind() routine */
 static struct ethtool_ops usbnet_ethtool_ops = {
-	.get_settings		= cw_usbnet_get_settings,
-	.set_settings		= cw_usbnet_set_settings,
-	.get_link		= cw_usbnet_get_link,
-	.nway_reset		= cw_usbnet_nway_reset,
-	.get_drvinfo		= cw_usbnet_get_drvinfo,
-	.get_msglevel		= cw_usbnet_get_msglevel,
-	.set_msglevel		= cw_usbnet_set_msglevel,
+	.get_settings		= usbnet_get_settings,
+	.set_settings		= usbnet_set_settings,
+	.get_link		= usbnet_get_link,
+	.nway_reset		= usbnet_nway_reset,
+	.get_drvinfo		= usbnet_get_drvinfo,
+	.get_msglevel		= usbnet_get_msglevel,
+	.set_msglevel		= usbnet_set_msglevel,
 };
 
 /*-------------------------------------------------------------------------*/
@@ -873,7 +873,7 @@ static void tx_complete (struct urb *urb)
 
 		switch (urb->status) {
 		case -EPIPE:
-			cw_usbnet_defer_kevent (dev, EVENT_TX_HALT);
+			usbnet_defer_kevent (dev, EVENT_TX_HALT);
 			break;
 
 		/* software-driven interface shutdown */
@@ -975,7 +975,7 @@ static int usbnet_start_xmit (struct sk_buff *skb, struct net_device *net)
 	switch ((retval = usb_submit_urb (urb, GFP_ATOMIC))) {
 	case -EPIPE:
 		netif_stop_queue (net);
-		cw_usbnet_defer_kevent (dev, EVENT_TX_HALT);
+		usbnet_defer_kevent (dev, EVENT_TX_HALT);
 		break;
 	default:
 		if (netif_msg_tx_err (dev))
@@ -1078,7 +1078,7 @@ static void usbnet_bh (unsigned long param)
 
 // precondition: never called in_interrupt
 
-void cw_usbnet_disconnect (struct usb_interface *intf)
+void usbnet_disconnect (struct usb_interface *intf)
 {
 	struct usbnet		*dev;
 	struct usb_device	*xdev;
@@ -1109,7 +1109,7 @@ void cw_usbnet_disconnect (struct usb_interface *intf)
 	free_netdev(net);
 	usb_put_dev (xdev);
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_disconnect);
+EXPORT_SYMBOL_GPL(usbnet_disconnect);
 
 
 /*-------------------------------------------------------------------------*/
@@ -1117,7 +1117,7 @@ EXPORT_SYMBOL_GPL(cw_usbnet_disconnect);
 // precondition: never called in_interrupt
 
 int
-cw_usbnet_probe (struct usb_interface *udev, const struct usb_device_id *prod)
+usbnet_probe (struct usb_interface *udev, const struct usb_device_id *prod)
 {
 	struct usbnet			*dev;
 	struct net_device		*net;
@@ -1211,7 +1211,7 @@ cw_usbnet_probe (struct usb_interface *udev, const struct usb_device_id *prod)
 		if (net->mtu > (dev->hard_mtu - net->hard_header_len))
 			net->mtu = dev->hard_mtu - net->hard_header_len;
 	} else if (!info->in || !info->out)
-		status = cw_usbnet_get_endpoints (dev, udev);
+		status = usbnet_get_endpoints (dev, udev);
 	else {
 		dev->in = usb_rcvbulkpipe (xdev, info->in);
 		dev->out = usb_sndbulkpipe (xdev, info->out);
@@ -1260,7 +1260,7 @@ out:
 	usb_put_dev(xdev);
 	return status;
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_probe);
+EXPORT_SYMBOL_GPL(usbnet_probe);
 
 /*-------------------------------------------------------------------------*/
 
@@ -1269,7 +1269,7 @@ EXPORT_SYMBOL_GPL(cw_usbnet_probe);
  * resume only when the last interface is resumed
  */
 
-int cw_usbnet_suspend (struct usb_interface *intf, pm_message_t message)
+int usbnet_suspend (struct usb_interface *intf, pm_message_t message)
 {
 	struct usbnet		*dev = usb_get_intfdata(intf);
 
@@ -1289,9 +1289,9 @@ int cw_usbnet_suspend (struct usb_interface *intf, pm_message_t message)
 	}
 	return 0;
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_suspend);
+EXPORT_SYMBOL_GPL(usbnet_suspend);
 
-int cw_usbnet_resume (struct usb_interface *intf)
+int usbnet_resume (struct usb_interface *intf)
 {
 	struct usbnet		*dev = usb_get_intfdata(intf);
 
@@ -1300,7 +1300,7 @@ int cw_usbnet_resume (struct usb_interface *intf)
 
 	return 0;
 }
-EXPORT_SYMBOL_GPL(cw_usbnet_resume);
+EXPORT_SYMBOL_GPL(usbnet_resume);
 
 
 /*-------------------------------------------------------------------------*/

@@ -70,7 +70,7 @@ static void if_usb_write_bulk_callback(struct urb *urb)
 		 * valid at firmware load time.
 		 */
 		if (priv)
-			cw_lbs_host_to_card_done(priv);
+			lbs_host_to_card_done(priv);
 	} else {
 		/* print the failure status number for debug */
 		lbs_pr_info("URB in failure status: %d\n", urb->status);
@@ -119,7 +119,7 @@ static void if_usb_setup_firmware(struct lbs_private *priv)
 
 	priv->wol_gpio = 2; /* Wake via GPIO2... */
 	priv->wol_gap = 20; /* ... after 20ms    */
-	cw_lbs_host_sleep_cfg(priv, EHS_WAKE_ON_UNICAST_DATA);
+	lbs_host_sleep_cfg(priv, EHS_WAKE_ON_UNICAST_DATA);
 
 	wake_method.hdr.size = cpu_to_le16(sizeof(wake_method));
 	wake_method.action = cpu_to_le16(CMD_ACT_GET);
@@ -236,7 +236,7 @@ static int if_usb_probe(struct usb_interface *intf,
 		goto err_prog_firmware;
 	}
 
-	if (!(priv = cw_lbs_add_card(cardp, &udev->dev)))
+	if (!(priv = lbs_add_card(cardp, &udev->dev)))
 		goto err_prog_firmware;
 
 	cardp->priv = priv;
@@ -252,7 +252,7 @@ static int if_usb_probe(struct usb_interface *intf,
 
 	if_usb_submit_rx_urb(cardp);
 
-	if (cw_lbs_start_card(priv))
+	if (lbs_start_card(priv))
 		goto err_start_card;
 
 	if_usb_setup_firmware(priv);
@@ -263,7 +263,7 @@ static int if_usb_probe(struct usb_interface *intf,
 	return 0;
 
 err_start_card:
-	cw_lbs_remove_card(priv);
+	lbs_remove_card(priv);
 err_prog_firmware:
 	if_usb_reset_device(cardp);
 dealloc:
@@ -289,8 +289,8 @@ static void if_usb_disconnect(struct usb_interface *intf)
 
 	if (priv) {
 		priv->surpriseremoved = 1;
-		cw_lbs_stop_card(priv);
-		cw_lbs_remove_card(priv);
+		lbs_stop_card(priv);
+		lbs_remove_card(priv);
 	}
 
 	/* Unlink and free urb */
@@ -599,7 +599,7 @@ static inline void process_cmdtypedata(int recvlength, struct sk_buff *skb,
 	skb_put(skb, recvlength);
 	skb_pull(skb, MESSAGE_HEADER_LEN);
 
-	cw_lbs_process_rxed_packet(priv, skb);
+	lbs_process_rxed_packet(priv, skb);
 }
 
 static inline void process_cmdrequest(int recvlength, uint8_t *recvbuff,
@@ -627,7 +627,7 @@ static inline void process_cmdrequest(int recvlength, uint8_t *recvbuff,
 	memcpy(priv->resp_buf[i], recvbuff + MESSAGE_HEADER_LEN,
 		priv->resp_len[i]);
 	kfree_skb(skb);
-	cw_lbs_notify_command_response(priv, i);
+	lbs_notify_command_response(priv, i);
 
 	spin_unlock(&priv->driver_lock);
 
@@ -692,9 +692,9 @@ static void if_usb_receive(struct urb *urb)
 		if (event & 0xffff0000) {
 			u32 trycount = (event & 0xffff0000) >> 16;
 
-			cw_lbs_send_tx_feedback(priv, trycount);
+			lbs_send_tx_feedback(priv, trycount);
 		} else
-			cw_lbs_queue_event(priv, event & 0xFF);
+			lbs_queue_event(priv, event & 0xFF);
 		break;
 
 	default:
@@ -908,7 +908,7 @@ static int if_usb_suspend(struct usb_interface *intf, pm_message_t message)
 	if (priv->psstate != PS_STATE_FULL_POWER)
 		return -1;
 
-	ret = cw_lbs_suspend(priv);
+	ret = lbs_suspend(priv);
 	if (ret)
 		goto out;
 
@@ -930,7 +930,7 @@ static int if_usb_resume(struct usb_interface *intf)
 
 	if_usb_submit_rx_urb(cardp);
 
-	cw_lbs_resume(priv);
+	lbs_resume(priv);
 
 	lbs_deb_leave(LBS_DEB_USB);
 	return 0;

@@ -73,7 +73,7 @@
  * + A list of pre-allocated SKBs is stored in iwl->rxq->rx_free.  When
  *   iwl->rxq->free_count drops to or below RX_LOW_WATERMARK, work is scheduled
  *   to replenish the iwl->rxq->rx_free.
- * + In cw_iwl_rx_replenish (scheduled) if 'processed' != 'read' then the
+ * + In iwl_rx_replenish (scheduled) if 'processed' != 'read' then the
  *   iwl->rxq is replenished and the READ INDEX is updated (updating the
  *   'processed' and 'read' driver indexes as well)
  * + A received packet is processed and handed to the kernel network stack,
@@ -86,28 +86,28 @@
  *
  * Driver sequence:
  *
- * cw_iwl_rx_queue_alloc()   Allocates rx_free
- * cw_iwl_rx_replenish()     Replenishes rx_free list from rx_used, and calls
- *                            cw_iwl_rx_queue_restock
- * cw_iwl_rx_queue_restock() Moves available buffers from rx_free into Rx
+ * iwl_rx_queue_alloc()   Allocates rx_free
+ * iwl_rx_replenish()     Replenishes rx_free list from rx_used, and calls
+ *                            iwl_rx_queue_restock
+ * iwl_rx_queue_restock() Moves available buffers from rx_free into Rx
  *                            queue, updates firmware pointers, and updates
  *                            the WRITE index.  If insufficient rx_free buffers
- *                            are available, schedules cw_iwl_rx_replenish
+ *                            are available, schedules iwl_rx_replenish
  *
  * -- enable interrupts --
  * ISR - iwl_rx()         Detach iwl_rx_mem_buffers from pool up to the
  *                            READ INDEX, detaching the SKB from the pool.
  *                            Moves the packet buffer from queue to rx_used.
- *                            Calls cw_iwl_rx_queue_restock to refill any empty
+ *                            Calls iwl_rx_queue_restock to refill any empty
  *                            slots.
  * ...
  *
  */
 
 /**
- * cw_iwl_rx_queue_space - Return number of free slots available in queue.
+ * iwl_rx_queue_space - Return number of free slots available in queue.
  */
-int cw_iwl_rx_queue_space(const struct iwl_rx_queue *q)
+int iwl_rx_queue_space(const struct iwl_rx_queue *q)
 {
 	int s = q->read - q->write;
 	if (s <= 0)
@@ -118,12 +118,12 @@ int cw_iwl_rx_queue_space(const struct iwl_rx_queue *q)
 		s = 0;
 	return s;
 }
-EXPORT_SYMBOL(cw_iwl_rx_queue_space);
+EXPORT_SYMBOL(iwl_rx_queue_space);
 
 /**
- * cw_iwl_rx_queue_update_write_ptr - Update the write pointer for the RX queue
+ * iwl_rx_queue_update_write_ptr - Update the write pointer for the RX queue
  */
-int cw_iwl_rx_queue_update_write_ptr(struct iwl_priv *priv, struct iwl_rx_queue *q)
+int iwl_rx_queue_update_write_ptr(struct iwl_priv *priv, struct iwl_rx_queue *q)
 {
 	u32 reg = 0;
 	int ret = 0;
@@ -165,7 +165,7 @@ int cw_iwl_rx_queue_update_write_ptr(struct iwl_priv *priv, struct iwl_rx_queue 
 	spin_unlock_irqrestore(&q->lock, flags);
 	return ret;
 }
-EXPORT_SYMBOL(cw_iwl_rx_queue_update_write_ptr);
+EXPORT_SYMBOL(iwl_rx_queue_update_write_ptr);
 /**
  * iwl_dma_addr2rbd_ptr - convert a DMA address to a uCode read buffer ptr
  */
@@ -176,7 +176,7 @@ static inline __le32 iwl_dma_addr2rbd_ptr(struct iwl_priv *priv,
 }
 
 /**
- * cw_iwl_rx_queue_restock - refill RX queue from pre-allocated pool
+ * iwl_rx_queue_restock - refill RX queue from pre-allocated pool
  *
  * If there are slots in the RX queue that need to be restocked,
  * and we have free pre-allocated buffers, fill the ranks as much
@@ -186,7 +186,7 @@ static inline __le32 iwl_dma_addr2rbd_ptr(struct iwl_priv *priv,
  * also updates the memory address in the firmware to reference the new
  * target buffer.
  */
-int cw_iwl_rx_queue_restock(struct iwl_priv *priv)
+int iwl_rx_queue_restock(struct iwl_priv *priv)
 {
 	struct iwl_rx_queue *rxq = &priv->rxq;
 	struct list_head *element;
@@ -197,7 +197,7 @@ int cw_iwl_rx_queue_restock(struct iwl_priv *priv)
 
 	spin_lock_irqsave(&rxq->lock, flags);
 	write = rxq->write & ~0x7;
-	while ((cw_iwl_rx_queue_space(rxq) > 0) && (rxq->free_count)) {
+	while ((iwl_rx_queue_space(rxq) > 0) && (rxq->free_count)) {
 		/* Get next free Rx buffer, remove from free list */
 		element = rxq->rx_free.next;
 		rxb = list_entry(element, struct iwl_rx_mem_buffer, list);
@@ -223,23 +223,23 @@ int cw_iwl_rx_queue_restock(struct iwl_priv *priv)
 		spin_lock_irqsave(&rxq->lock, flags);
 		rxq->need_update = 1;
 		spin_unlock_irqrestore(&rxq->lock, flags);
-		ret = cw_iwl_rx_queue_update_write_ptr(priv, rxq);
+		ret = iwl_rx_queue_update_write_ptr(priv, rxq);
 	}
 
 	return ret;
 }
-EXPORT_SYMBOL(cw_iwl_rx_queue_restock);
+EXPORT_SYMBOL(iwl_rx_queue_restock);
 
 
 /**
- * cw_iwl_rx_replenish - Move all used packet from rx_used to rx_free
+ * iwl_rx_replenish - Move all used packet from rx_used to rx_free
  *
  * When moving to rx_free an SKB is allocated for the slot.
  *
- * Also restock the Rx queue via cw_iwl_rx_queue_restock.
+ * Also restock the Rx queue via iwl_rx_queue_restock.
  * This is called as a scheduled work item (except for during initialization)
  */
-void cw_iwl_rx_allocate(struct iwl_priv *priv)
+void iwl_rx_allocate(struct iwl_priv *priv)
 {
 	struct iwl_rx_queue *rxq = &priv->rxq;
 	struct list_head *element;
@@ -274,19 +274,19 @@ void cw_iwl_rx_allocate(struct iwl_priv *priv)
 	}
 	spin_unlock_irqrestore(&rxq->lock, flags);
 }
-EXPORT_SYMBOL(cw_iwl_rx_allocate);
+EXPORT_SYMBOL(iwl_rx_allocate);
 
-void cw_iwl_rx_replenish(struct iwl_priv *priv)
+void iwl_rx_replenish(struct iwl_priv *priv)
 {
 	unsigned long flags;
 
-	cw_iwl_rx_allocate(priv);
+	iwl_rx_allocate(priv);
 
 	spin_lock_irqsave(&priv->lock, flags);
-	cw_iwl_rx_queue_restock(priv);
+	iwl_rx_queue_restock(priv);
 	spin_unlock_irqrestore(&priv->lock, flags);
 }
-EXPORT_SYMBOL(cw_iwl_rx_replenish);
+EXPORT_SYMBOL(iwl_rx_replenish);
 
 
 /* Assumes that the skb field of the buffers in 'pool' is kept accurate.
@@ -294,7 +294,7 @@ EXPORT_SYMBOL(cw_iwl_rx_replenish);
  * This free routine walks the list of POOL entries and if SKB is set to
  * non NULL it is unmapped and freed
  */
-void cw_iwl_rx_queue_free(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
+void iwl_rx_queue_free(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
 {
 	int i;
 	for (i = 0; i < RX_QUEUE_SIZE + RX_FREE_BUFFERS; i++) {
@@ -311,9 +311,9 @@ void cw_iwl_rx_queue_free(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
 			    rxq->dma_addr);
 	rxq->bd = NULL;
 }
-EXPORT_SYMBOL(cw_iwl_rx_queue_free);
+EXPORT_SYMBOL(iwl_rx_queue_free);
 
-int cw_iwl_rx_queue_alloc(struct iwl_priv *priv)
+int iwl_rx_queue_alloc(struct iwl_priv *priv)
 {
 	struct iwl_rx_queue *rxq = &priv->rxq;
 	struct pci_dev *dev = priv->pci_dev;
@@ -339,9 +339,9 @@ int cw_iwl_rx_queue_alloc(struct iwl_priv *priv)
 	rxq->need_update = 0;
 	return 0;
 }
-EXPORT_SYMBOL(cw_iwl_rx_queue_alloc);
+EXPORT_SYMBOL(iwl_rx_queue_alloc);
 
-void cw_iwl_rx_queue_reset(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
+void iwl_rx_queue_reset(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
 {
 	unsigned long flags;
 	int i;
@@ -370,7 +370,7 @@ void cw_iwl_rx_queue_reset(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
 	rxq->free_count = 0;
 	spin_unlock_irqrestore(&rxq->lock, flags);
 }
-EXPORT_SYMBOL(cw_iwl_rx_queue_reset);
+EXPORT_SYMBOL(iwl_rx_queue_reset);
 
 int iwl_rx_init(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
 {
@@ -423,7 +423,7 @@ int iwl_rx_init(struct iwl_priv *priv, struct iwl_rx_queue *rxq)
 	return 0;
 }
 
-int cw_iwl_rxq_stop(struct iwl_priv *priv)
+int iwl_rxq_stop(struct iwl_priv *priv)
 {
 	int ret;
 	unsigned long flags;
@@ -447,9 +447,9 @@ int cw_iwl_rxq_stop(struct iwl_priv *priv)
 
 	return 0;
 }
-EXPORT_SYMBOL(cw_iwl_rxq_stop);
+EXPORT_SYMBOL(iwl_rxq_stop);
 
-void cw_iwl_rx_missed_beacon_notif(struct iwl_priv *priv,
+void iwl_rx_missed_beacon_notif(struct iwl_priv *priv,
 				struct iwl_rx_mem_buffer *rxb)
 
 {
@@ -464,17 +464,17 @@ void cw_iwl_rx_missed_beacon_notif(struct iwl_priv *priv,
 		    le32_to_cpu(missed_beacon->num_recvd_beacons),
 		    le32_to_cpu(missed_beacon->num_expected_beacons));
 		if (!test_bit(STATUS_SCANNING, &priv->status))
-			cw_iwl_init_sensitivity(priv);
+			iwl_init_sensitivity(priv);
 	}
 }
-EXPORT_SYMBOL(cw_iwl_rx_missed_beacon_notif);
+EXPORT_SYMBOL(iwl_rx_missed_beacon_notif);
 
-int cw_iwl_rx_agg_start(struct iwl_priv *priv, const u8 *addr, int tid, u16 ssn)
+int iwl_rx_agg_start(struct iwl_priv *priv, const u8 *addr, int tid, u16 ssn)
 {
 	unsigned long flags;
 	int sta_id;
 
-	sta_id = cw_iwl_find_station(priv, addr);
+	sta_id = iwl_find_station(priv, addr);
 	if (sta_id == IWL_INVALID_STATION)
 		return -ENXIO;
 
@@ -486,17 +486,17 @@ int cw_iwl_rx_agg_start(struct iwl_priv *priv, const u8 *addr, int tid, u16 ssn)
 	priv->stations[sta_id].sta.mode = STA_CONTROL_MODIFY_MSK;
 	spin_unlock_irqrestore(&priv->sta_lock, flags);
 
-	return cw_iwl_send_add_sta(priv, &priv->stations[sta_id].sta,
+	return iwl_send_add_sta(priv, &priv->stations[sta_id].sta,
 					CMD_ASYNC);
 }
-EXPORT_SYMBOL(cw_iwl_rx_agg_start);
+EXPORT_SYMBOL(iwl_rx_agg_start);
 
-int cw_iwl_rx_agg_stop(struct iwl_priv *priv, const u8 *addr, int tid)
+int iwl_rx_agg_stop(struct iwl_priv *priv, const u8 *addr, int tid)
 {
 	unsigned long flags;
 	int sta_id;
 
-	sta_id = cw_iwl_find_station(priv, addr);
+	sta_id = iwl_find_station(priv, addr);
 	if (sta_id == IWL_INVALID_STATION)
 		return -ENXIO;
 
@@ -507,10 +507,10 @@ int cw_iwl_rx_agg_stop(struct iwl_priv *priv, const u8 *addr, int tid)
 	priv->stations[sta_id].sta.mode = STA_CONTROL_MODIFY_MSK;
 	spin_unlock_irqrestore(&priv->sta_lock, flags);
 
-	return cw_iwl_send_add_sta(priv, &priv->stations[sta_id].sta,
+	return iwl_send_add_sta(priv, &priv->stations[sta_id].sta,
 					CMD_ASYNC);
 }
-EXPORT_SYMBOL(cw_iwl_rx_agg_stop);
+EXPORT_SYMBOL(iwl_rx_agg_stop);
 
 
 /* Calculate noise level, based on measurements during network silence just
@@ -555,7 +555,7 @@ static void iwl_rx_calc_noise(struct iwl_priv *priv)
 
 #define REG_RECALIB_PERIOD (60)
 
-void cw_iwl_rx_statistics(struct iwl_priv *priv,
+void iwl_rx_statistics(struct iwl_priv *priv,
 			      struct iwl_rx_mem_buffer *rxb)
 {
 	int change;
@@ -587,12 +587,12 @@ void cw_iwl_rx_statistics(struct iwl_priv *priv,
 		queue_work(priv->workqueue, &priv->run_time_calib_work);
 	}
 
-	cw_iwl_leds_background(priv);
+	iwl_leds_background(priv);
 
 	if (priv->cfg->ops->lib->temperature && change)
 		priv->cfg->ops->lib->temperature(priv);
 }
-EXPORT_SYMBOL(cw_iwl_rx_statistics);
+EXPORT_SYMBOL(iwl_rx_statistics);
 
 #define PERFECT_RSSI (-20) /* dBm */
 #define WORST_RSSI (-95)   /* dBm */
@@ -752,11 +752,11 @@ static void iwl_dbg_report_frame(struct iwl_priv *priv,
 		else
 			title = "Frame";
 
-		rate_idx = cw_iwl_hwrate_to_plcp_idx(rate_sym);
+		rate_idx = iwl_hwrate_to_plcp_idx(rate_sym);
 		if (unlikely(rate_idx == -1))
 			bitrate = 0;
 		else
-			bitrate = cw_iwl_rates[rate_idx].ieee / 2;
+			bitrate = iwl_rates[rate_idx].ieee / 2;
 
 		/* print frame summary.
 		 * MAC addresses show just the last byte (for brevity),
@@ -792,7 +792,7 @@ static inline void iwl_dbg_report_frame(struct iwl_priv *priv,
 static void iwl_add_radiotap(struct iwl_priv *priv,
 				 struct sk_buff *skb,
 				 struct iwl4965_rx_phy_res *rx_start,
-				 struct cw_ieee80211_rx_status *stats,
+				 struct ieee80211_rx_status *stats,
 				 u32 ampdu_status)
 {
 	s8 signal = stats->signal;
@@ -868,7 +868,7 @@ static void iwl_add_radiotap(struct iwl_priv *priv,
 		if (stats->band == IEEE80211_BAND_5GHZ)
 			rate += IWL_FIRST_OFDM_RATE;
 
-		iwl4965_rt->rt_rate = cw_iwl_rates[rate].ieee;
+		iwl4965_rt->rt_rate = iwl_rates[rate].ieee;
 	}
 
 	/*
@@ -908,7 +908,7 @@ static void iwl_update_rx_stats(struct iwl_priv *priv, u16 fc, u16 len)
 static int iwl_set_decrypted_flag(struct iwl_priv *priv,
 				      struct ieee80211_hdr *hdr,
 				      u32 decrypt_res,
-				      struct cw_ieee80211_rx_status *stats)
+				      struct ieee80211_rx_status *stats)
 {
 	u16 fc = le16_to_cpu(hdr->frame_control);
 
@@ -1011,7 +1011,7 @@ static u32 iwl_translate_rx_status(struct iwl_priv *priv, u32 decrypt_in)
 static void iwl_pass_packet_to_mac80211(struct iwl_priv *priv,
 				       int include_phy,
 				       struct iwl_rx_mem_buffer *rxb,
-				       struct cw_ieee80211_rx_status *stats)
+				       struct ieee80211_rx_status *stats)
 {
 	struct iwl_rx_packet *pkt = (struct iwl_rx_packet *)rxb->skb->data;
 	struct iwl4965_rx_phy_res *rx_start = (include_phy) ?
@@ -1082,7 +1082,7 @@ static void iwl_pass_packet_to_mac80211(struct iwl_priv *priv,
 		iwl_add_radiotap(priv, rxb->skb, rx_start, stats, ampdu_status);
 
 	iwl_update_rx_stats(priv, le16_to_cpu(hdr->frame_control), len);
-	cw_cw_ieee80211_rx_irqsafe(priv->hw, rxb->skb, stats);
+	ieee80211_rx_irqsafe(priv->hw, rxb->skb, stats);
 	priv->alloc_rxb_skb--;
 	rxb->skb = NULL;
 }
@@ -1133,13 +1133,13 @@ static void iwl_sta_modify_ps_wake(struct iwl_priv *priv, int sta_id)
 	priv->stations[sta_id].sta.mode = STA_CONTROL_MODIFY_MSK;
 	spin_unlock_irqrestore(&priv->sta_lock, flags);
 
-	cw_iwl_send_add_sta(priv, &priv->stations[sta_id].sta, CMD_ASYNC);
+	iwl_send_add_sta(priv, &priv->stations[sta_id].sta, CMD_ASYNC);
 }
 
 static void iwl_update_ps_mode(struct iwl_priv *priv, u16 ps_bit, u8 *addr)
 {
 	/* FIXME: need locking over ps_status ??? */
-	u8 sta_id = cw_iwl_find_station(priv, addr);
+	u8 sta_id = iwl_find_station(priv, addr);
 
 	if (sta_id != IWL_INVALID_STATION) {
 		u8 sta_awake = priv->stations[sta_id].
@@ -1174,11 +1174,11 @@ static int iwl_is_network_packet(struct iwl_priv *priv,
 
 /* Called for REPLY_RX (legacy ABG frames), or
  * REPLY_RX_MPDU_CMD (HT high-throughput N frames). */
-void cw_iwl_rx_reply_rx(struct iwl_priv *priv,
+void iwl_rx_reply_rx(struct iwl_priv *priv,
 				struct iwl_rx_mem_buffer *rxb)
 {
 	struct ieee80211_hdr *header;
-	struct cw_ieee80211_rx_status rx_status;
+	struct ieee80211_rx_status rx_status;
 	struct iwl_rx_packet *pkt = (struct iwl_rx_packet *)rxb->skb->data;
 	/* Use phy data (Rx signal strength, etc.) contained within
 	 *   this rx packet for legacy frames,
@@ -1194,11 +1194,11 @@ void cw_iwl_rx_reply_rx(struct iwl_priv *priv,
 
 	rx_status.mactime = le64_to_cpu(rx_start->timestamp);
 	rx_status.freq =
-		cw_cw_ieee80211_channel_to_frequency(le16_to_cpu(rx_start->channel));
+		ieee80211_channel_to_frequency(le16_to_cpu(rx_start->channel));
 	rx_status.band = (rx_start->phy_flags & RX_RES_PHY_FLAGS_BAND_24_MSK) ?
 				IEEE80211_BAND_2GHZ : IEEE80211_BAND_5GHZ;
 	rx_status.rate_idx =
-		cw_iwl_hwrate_to_plcp_idx(le32_to_cpu(rx_start->rate_n_flags));
+		iwl_hwrate_to_plcp_idx(le32_to_cpu(rx_start->rate_n_flags));
 	if (rx_status.band == IEEE80211_BAND_5GHZ)
 		rx_status.rate_idx -= IWL_FIRST_OFDM_RATE;
 
@@ -1310,11 +1310,11 @@ void cw_iwl_rx_reply_rx(struct iwl_priv *priv,
 
 	}
 }
-EXPORT_SYMBOL(cw_iwl_rx_reply_rx);
+EXPORT_SYMBOL(iwl_rx_reply_rx);
 
 /* Cache phy data (Rx signal strength, etc) for HT frame (REPLY_RX_PHY_CMD).
- * This will be used later in cw_iwl_rx_reply_rx() for REPLY_RX_MPDU_CMD. */
-void cw_cw_iwl_rx_reply_rx_phy(struct iwl_priv *priv,
+ * This will be used later in iwl_rx_reply_rx() for REPLY_RX_MPDU_CMD. */
+void iwl_rx_reply_rx_phy(struct iwl_priv *priv,
 				    struct iwl_rx_mem_buffer *rxb)
 {
 	struct iwl_rx_packet *pkt = (struct iwl_rx_packet *)rxb->skb->data;
@@ -1322,4 +1322,4 @@ void cw_cw_iwl_rx_reply_rx_phy(struct iwl_priv *priv,
 	memcpy(&priv->last_phy_res[1], &(pkt->u.raw[0]),
 	       sizeof(struct iwl4965_rx_phy_res));
 }
-EXPORT_SYMBOL(cw_cw_iwl_rx_reply_rx_phy);
+EXPORT_SYMBOL(iwl_rx_reply_rx_phy);

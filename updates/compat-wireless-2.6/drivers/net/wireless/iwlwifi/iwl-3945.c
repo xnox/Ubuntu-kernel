@@ -283,7 +283,7 @@ static void iwl3945_tx_queue_reclaim(struct iwl3945_priv *priv,
 		q->read_ptr = iwl_queue_inc_wrap(q->read_ptr, q->n_bd)) {
 
 		tx_info = &txq->txb[txq->q.read_ptr];
-		cw_cw_ieee80211_tx_status_irqsafe(priv->hw, tx_info->skb[0]);
+		ieee80211_tx_status_irqsafe(priv->hw, tx_info->skb[0]);
 		tx_info->skb[0] = NULL;
 		iwl3945_hw_txq_free_tfd(priv, txq);
 	}
@@ -291,7 +291,7 @@ static void iwl3945_tx_queue_reclaim(struct iwl3945_priv *priv,
 	if (iwl3945_queue_space(q) > q->low_mark && (txq_id >= 0) &&
 			(txq_id != IWL_CMD_QUEUE_NUM) &&
 			priv->mac80211_registered)
-		cw_ieee80211_wake_queue(priv->hw, txq_id);
+		ieee80211_wake_queue(priv->hw, txq_id);
 }
 
 /**
@@ -535,7 +535,7 @@ static int iwl3945_is_network_packet(struct iwl3945_priv *priv,
 static void iwl3945_add_radiotap(struct iwl3945_priv *priv,
 				 struct sk_buff *skb,
 				 struct iwl3945_rx_frame_hdr *rx_hdr,
-				 struct cw_ieee80211_rx_status *stats)
+				 struct ieee80211_rx_status *stats)
 {
 	/* First cache any information we need before we overwrite
 	 * the information provided in the skb from the hardware */
@@ -627,7 +627,7 @@ static void iwl3945_add_radiotap(struct iwl3945_priv *priv,
 
 static void iwl3945_pass_packet_to_mac80211(struct iwl3945_priv *priv,
 				   struct iwl3945_rx_mem_buffer *rxb,
-				   struct cw_ieee80211_rx_status *stats)
+				   struct ieee80211_rx_status *stats)
 {
 	struct iwl3945_rx_packet *pkt = (struct iwl3945_rx_packet *)rxb->skb->data;
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)IWL_RX_DATA(pkt);
@@ -663,7 +663,7 @@ static void iwl3945_pass_packet_to_mac80211(struct iwl3945_priv *priv,
 	if (ieee80211_is_data(hdr->frame_control))
 		priv->rxtxpackets += len;
 #endif
-	cw_cw_ieee80211_rx_irqsafe(priv->hw, rxb->skb, stats);
+	ieee80211_rx_irqsafe(priv->hw, rxb->skb, stats);
 	rxb->skb = NULL;
 }
 
@@ -673,7 +673,7 @@ static void iwl3945_rx_reply_rx(struct iwl3945_priv *priv,
 				struct iwl3945_rx_mem_buffer *rxb)
 {
 	struct ieee80211_hdr *header;
-	struct cw_ieee80211_rx_status rx_status;
+	struct ieee80211_rx_status rx_status;
 	struct iwl3945_rx_packet *pkt = (void *)rxb->skb->data;
 	struct iwl3945_rx_frame_stats *rx_stats = IWL_RX_STATS(pkt);
 	struct iwl3945_rx_frame_hdr *rx_hdr = IWL_RX_HDR(pkt);
@@ -687,7 +687,7 @@ static void iwl3945_rx_reply_rx(struct iwl3945_priv *priv,
 	rx_status.flag = 0;
 	rx_status.mactime = le64_to_cpu(rx_end->timestamp);
 	rx_status.freq =
-		cw_cw_ieee80211_channel_to_frequency(le16_to_cpu(rx_hdr->channel));
+		ieee80211_channel_to_frequency(le16_to_cpu(rx_hdr->channel));
 	rx_status.band = (rx_hdr->phy_flags & RX_RES_PHY_FLAGS_BAND_24_MSK) ?
 				IEEE80211_BAND_2GHZ : IEEE80211_BAND_5GHZ;
 

@@ -38,7 +38,7 @@ ieee80211_tx_h_michael_mic_add(struct ieee80211_tx_data *tx)
 	    !ieee80211_is_data_present(hdr->frame_control))
 		return TX_CONTINUE;
 
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 	if (skb->len < hdrlen)
 		return TX_DROP;
 
@@ -80,8 +80,8 @@ ieee80211_tx_h_michael_mic_add(struct ieee80211_tx_data *tx)
 }
 
 
-cw_ieee80211_rx_result
-cw_ieee80211_rx_h_michael_mic_verify(struct cw_ieee80211_rx_data *rx)
+ieee80211_rx_result
+ieee80211_rx_h_michael_mic_verify(struct ieee80211_rx_data *rx)
 {
 	u8 *data, *key = NULL, key_offset;
 	size_t data_len;
@@ -104,7 +104,7 @@ cw_ieee80211_rx_h_michael_mic_verify(struct cw_ieee80211_rx_data *rx)
 	    !ieee80211_is_data_present(hdr->frame_control))
 		return RX_CONTINUE;
 
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 	if (skb->len < hdrlen + MICHAEL_MIC_LEN)
 		return RX_DROP_UNUSABLE;
 
@@ -162,7 +162,7 @@ static int tkip_encrypt_skb(struct ieee80211_tx_data *tx, struct sk_buff *skb)
 		return 0;
 	}
 
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 	len = skb->len - hdrlen;
 
 	if (tx->key->flags & KEY_FLAG_UPLOADED_TO_HARDWARE)
@@ -223,8 +223,8 @@ ieee80211_crypto_tkip_encrypt(struct ieee80211_tx_data *tx)
 }
 
 
-cw_ieee80211_rx_result
-ieee80211_crypto_tkip_decrypt(struct cw_ieee80211_rx_data *rx)
+ieee80211_rx_result
+ieee80211_crypto_tkip_decrypt(struct ieee80211_rx_data *rx)
 {
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) rx->skb->data;
 	int hdrlen, res, hwaccel = 0, wpa_test = 0;
@@ -232,7 +232,7 @@ ieee80211_crypto_tkip_decrypt(struct cw_ieee80211_rx_data *rx)
 	struct sk_buff *skb = rx->skb;
 	DECLARE_MAC_BUF(mac);
 
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 
 	if (!ieee80211_is_data(hdr->frame_control))
 		return RX_CONTINUE;
@@ -297,7 +297,7 @@ static void ccmp_special_blocks(struct sk_buff *skb, u8 *pn, u8 *scratch,
 				IEEE80211_FCTL_PM | IEEE80211_FCTL_MOREDATA);
 	mask_fc |= cpu_to_le16(IEEE80211_FCTL_PROTECTED);
 
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 	len_a = hdrlen - 2;
 	a4_included = ieee80211_has_a4(hdr->frame_control);
 
@@ -385,7 +385,7 @@ static int ccmp_encrypt_skb(struct ieee80211_tx_data *tx, struct sk_buff *skb)
 		return 0;
 	}
 
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 	len = skb->len - hdrlen;
 
 	if (key->flags & KEY_FLAG_UPLOADED_TO_HARDWARE)
@@ -450,8 +450,8 @@ ieee80211_crypto_ccmp_encrypt(struct ieee80211_tx_data *tx)
 }
 
 
-cw_ieee80211_rx_result
-ieee80211_crypto_ccmp_decrypt(struct cw_ieee80211_rx_data *rx)
+ieee80211_rx_result
+ieee80211_crypto_ccmp_decrypt(struct ieee80211_rx_data *rx)
 {
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)rx->skb->data;
 	int hdrlen;
@@ -461,7 +461,7 @@ ieee80211_crypto_ccmp_decrypt(struct cw_ieee80211_rx_data *rx)
 	int data_len;
 	DECLARE_MAC_BUF(mac);
 
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 
 	if (!ieee80211_is_data(hdr->frame_control))
 		return RX_CONTINUE;

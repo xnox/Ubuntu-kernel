@@ -61,19 +61,19 @@ struct iwl_led {
 	unsigned int registered;
 };
 
-int cw_iwl_leds_register(struct iwl_priv *priv);
-void cw_iwl_leds_unregister(struct iwl_priv *priv);
-void cw_iwl_leds_background(struct iwl_priv *priv);
+int iwl_leds_register(struct iwl_priv *priv);
+void iwl_leds_unregister(struct iwl_priv *priv);
+void iwl_leds_background(struct iwl_priv *priv);
 
 #else
-static inline int cw_iwl_leds_register(struct iwl_priv *priv)
+static inline int iwl_leds_register(struct iwl_priv *priv)
 {
 	return 0;
 }
-static inline void cw_iwl_leds_unregister(struct iwl_priv *priv)
+static inline void iwl_leds_unregister(struct iwl_priv *priv)
 {
 }
-static inline void cw_iwl_leds_background(struct iwl_priv *priv)
+static inline void iwl_leds_background(struct iwl_priv *priv)
 {
 }
 

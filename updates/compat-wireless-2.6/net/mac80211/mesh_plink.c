@@ -230,7 +230,7 @@ void mesh_neighbour_update(u8 *hw_addr, u64 rates, struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, hw_addr);
+	sta = sta_info_get(local, hw_addr);
 	if (!sta) {
 		sta = mesh_plink_alloc(sdata, hw_addr, rates);
 		if (!sta) {
@@ -409,7 +409,7 @@ int mesh_plink_close(struct sta_info *sta)
 }
 
 void mesh_rx_plink_frame(struct net_device *dev, struct ieee80211_mgmt *mgmt,
-			 size_t len, struct cw_ieee80211_rx_status *rx_status)
+			 size_t len, struct ieee80211_rx_status *rx_status)
 {
 	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 	struct ieee80211_local *local = sdata->local;
@@ -464,7 +464,7 @@ void mesh_rx_plink_frame(struct net_device *dev, struct ieee80211_mgmt *mgmt,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, mgmt->sa);
+	sta = sta_info_get(local, mgmt->sa);
 	if (!sta && ftype != PLINK_OPEN) {
 		mpl_dbg("Mesh plink: cls or cnf from unknown peer\n");
 		rcu_read_unlock();

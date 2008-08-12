@@ -100,7 +100,7 @@ u8 *ieee80211_get_bssid(struct ieee80211_hdr *hdr, size_t len,
 	return NULL;
 }
 
-int cw_ieee80211_get_hdrlen(u16 fc)
+int ieee80211_get_hdrlen(u16 fc)
 {
 	int hdrlen = 24;
 
@@ -137,9 +137,9 @@ int cw_ieee80211_get_hdrlen(u16 fc)
 
 	return hdrlen;
 }
-EXPORT_SYMBOL(cw_ieee80211_get_hdrlen);
+EXPORT_SYMBOL(ieee80211_get_hdrlen);
 
-unsigned int cw_ieee80211_hdrlen(__le16 fc)
+unsigned int ieee80211_hdrlen(__le16 fc)
 {
 	unsigned int hdrlen = 24;
 
@@ -169,21 +169,21 @@ unsigned int cw_ieee80211_hdrlen(__le16 fc)
 out:
 	return hdrlen;
 }
-EXPORT_SYMBOL(cw_ieee80211_hdrlen);
+EXPORT_SYMBOL(ieee80211_hdrlen);
 
-unsigned int cw_cw_ieee80211_get_hdrlen_from_skb(const struct sk_buff *skb)
+unsigned int ieee80211_get_hdrlen_from_skb(const struct sk_buff *skb)
 {
 	const struct ieee80211_hdr *hdr = (const struct ieee80211_hdr *)skb->data;
 	unsigned int hdrlen;
 
 	if (unlikely(skb->len < 10))
 		return 0;
-	hdrlen = cw_ieee80211_hdrlen(hdr->frame_control);
+	hdrlen = ieee80211_hdrlen(hdr->frame_control);
 	if (unlikely(hdrlen > skb->len))
 		return 0;
 	return hdrlen;
 }
-EXPORT_SYMBOL(cw_cw_ieee80211_get_hdrlen_from_skb);
+EXPORT_SYMBOL(ieee80211_get_hdrlen_from_skb);
 
 int ieee80211_get_mesh_hdrlen(struct ieee80211s_hdr *meshhdr)
 {
@@ -273,7 +273,7 @@ int ieee80211_frame_duration(struct ieee80211_local *local, size_t len,
 }
 
 /* Exported duration function for driver use */
-__le16 cw_ieee80211_generic_frame_duration(struct ieee80211_hw *hw,
+__le16 ieee80211_generic_frame_duration(struct ieee80211_hw *hw,
 					struct ieee80211_vif *vif,
 					size_t frame_len,
 					struct ieee80211_rate *rate)
@@ -292,9 +292,9 @@ __le16 cw_ieee80211_generic_frame_duration(struct ieee80211_hw *hw,
 
 	return cpu_to_le16(dur);
 }
-EXPORT_SYMBOL(cw_ieee80211_generic_frame_duration);
+EXPORT_SYMBOL(ieee80211_generic_frame_duration);
 
-__le16 cw_ieee80211_rts_duration(struct ieee80211_hw *hw,
+__le16 ieee80211_rts_duration(struct ieee80211_hw *hw,
 			      struct ieee80211_vif *vif, size_t frame_len,
 			      const struct ieee80211_tx_info *frame_txctl)
 {
@@ -328,9 +328,9 @@ __le16 cw_ieee80211_rts_duration(struct ieee80211_hw *hw,
 
 	return cpu_to_le16(dur);
 }
-EXPORT_SYMBOL(cw_ieee80211_rts_duration);
+EXPORT_SYMBOL(ieee80211_rts_duration);
 
-__le16 cw_ieee80211_ctstoself_duration(struct ieee80211_hw *hw,
+__le16 ieee80211_ctstoself_duration(struct ieee80211_hw *hw,
 				    struct ieee80211_vif *vif,
 				    size_t frame_len,
 				    const struct ieee80211_tx_info *frame_txctl)
@@ -363,9 +363,9 @@ __le16 cw_ieee80211_ctstoself_duration(struct ieee80211_hw *hw,
 
 	return cpu_to_le16(dur);
 }
-EXPORT_SYMBOL(cw_ieee80211_ctstoself_duration);
+EXPORT_SYMBOL(ieee80211_ctstoself_duration);
 
-void cw_ieee80211_wake_queue(struct ieee80211_hw *hw, int queue)
+void ieee80211_wake_queue(struct ieee80211_hw *hw, int queue)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
@@ -387,9 +387,9 @@ void cw_ieee80211_wake_queue(struct ieee80211_hw *hw, int queue)
 		}
 	}
 }
-EXPORT_SYMBOL(cw_ieee80211_wake_queue);
+EXPORT_SYMBOL(ieee80211_wake_queue);
 
-void cw_ieee80211_stop_queue(struct ieee80211_hw *hw, int queue)
+void ieee80211_stop_queue(struct ieee80211_hw *hw, int queue)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 
@@ -400,27 +400,27 @@ void cw_ieee80211_stop_queue(struct ieee80211_hw *hw, int queue)
 		netif_stop_queue(local->mdev);
 	}
 }
-EXPORT_SYMBOL(cw_ieee80211_stop_queue);
+EXPORT_SYMBOL(ieee80211_stop_queue);
 
-void cw_cw_ieee80211_stop_queues(struct ieee80211_hw *hw)
+void ieee80211_stop_queues(struct ieee80211_hw *hw)
 {
 	int i;
 
 	for (i = 0; i < ieee80211_num_queues(hw); i++)
-		cw_ieee80211_stop_queue(hw, i);
+		ieee80211_stop_queue(hw, i);
 }
-EXPORT_SYMBOL(cw_cw_ieee80211_stop_queues);
+EXPORT_SYMBOL(ieee80211_stop_queues);
 
-void cw_cw_ieee80211_wake_queues(struct ieee80211_hw *hw)
+void ieee80211_wake_queues(struct ieee80211_hw *hw)
 {
 	int i;
 
 	for (i = 0; i < hw->queues + hw->ampdu_queues; i++)
-		cw_ieee80211_wake_queue(hw, i);
+		ieee80211_wake_queue(hw, i);
 }
-EXPORT_SYMBOL(cw_cw_ieee80211_wake_queues);
+EXPORT_SYMBOL(ieee80211_wake_queues);
 
-void cw_ieee80211_iterate_active_interfaces(
+void ieee80211_iterate_active_interfaces(
 	struct ieee80211_hw *hw,
 	void (*iterator)(void *data, u8 *mac,
 			 struct ieee80211_vif *vif),
@@ -451,9 +451,9 @@ void cw_ieee80211_iterate_active_interfaces(
 
 	rtnl_unlock();
 }
-EXPORT_SYMBOL_GPL(cw_ieee80211_iterate_active_interfaces);
+EXPORT_SYMBOL_GPL(ieee80211_iterate_active_interfaces);
 
-void cw_cw_ieee80211_iterate_active_interfaces_atomic(
+void ieee80211_iterate_active_interfaces_atomic(
 	struct ieee80211_hw *hw,
 	void (*iterator)(void *data, u8 *mac,
 			 struct ieee80211_vif *vif),
@@ -484,4 +484,4 @@ void cw_cw_ieee80211_iterate_active_interfaces_atomic(
 
 	rcu_read_unlock();
 }
-EXPORT_SYMBOL_GPL(cw_cw_ieee80211_iterate_active_interfaces_atomic);
+EXPORT_SYMBOL_GPL(ieee80211_iterate_active_interfaces_atomic);

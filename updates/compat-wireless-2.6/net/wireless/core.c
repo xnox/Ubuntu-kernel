@@ -202,7 +202,7 @@ out_unlock:
 
 /* exported functions */
 
-struct wiphy *cw_wiphy_new(struct cfg80211_ops *ops, int sizeof_priv)
+struct wiphy *wiphy_new(struct cfg80211_ops *ops, int sizeof_priv)
 {
 	struct cfg80211_registered_device *drv;
 	int alloc_size;
@@ -249,9 +249,9 @@ struct wiphy *cw_wiphy_new(struct cfg80211_ops *ops, int sizeof_priv)
 
 	return &drv->wiphy;
 }
-EXPORT_SYMBOL(cw_wiphy_new);
+EXPORT_SYMBOL(wiphy_new);
 
-int cw_wiphy_register(struct wiphy *wiphy)
+int wiphy_register(struct wiphy *wiphy)
 {
 	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
 	int res;
@@ -315,9 +315,9 @@ out_unlock:
 	mutex_unlock(&cfg80211_drv_mutex);
 	return res;
 }
-EXPORT_SYMBOL(cw_wiphy_register);
+EXPORT_SYMBOL(wiphy_register);
 
-void cw_wiphy_unregister(struct wiphy *wiphy)
+void wiphy_unregister(struct wiphy *wiphy)
 {
 	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
 
@@ -346,7 +346,7 @@ void cw_wiphy_unregister(struct wiphy *wiphy)
 
 	mutex_unlock(&cfg80211_drv_mutex);
 }
-EXPORT_SYMBOL(cw_wiphy_unregister);
+EXPORT_SYMBOL(wiphy_unregister);
 
 void cfg80211_dev_free(struct cfg80211_registered_device *drv)
 {
@@ -355,11 +355,11 @@ void cfg80211_dev_free(struct cfg80211_registered_device *drv)
 	kfree(drv);
 }
 
-void cw_wiphy_free(struct wiphy *wiphy)
+void wiphy_free(struct wiphy *wiphy)
 {
 	put_device(&wiphy->dev);
 }
-EXPORT_SYMBOL(cw_wiphy_free);
+EXPORT_SYMBOL(wiphy_free);
 
 static int cfg80211_netdev_notifier_call(struct notifier_block * nb,
 					 unsigned long state,

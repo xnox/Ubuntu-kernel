@@ -237,7 +237,7 @@ int mesh_plink_open(struct sta_info *sta);
 int mesh_plink_close(struct sta_info *sta);
 void mesh_plink_block(struct sta_info *sta);
 void mesh_rx_plink_frame(struct net_device *dev, struct ieee80211_mgmt *mgmt,
-			 size_t len, struct cw_ieee80211_rx_status *rx_status);
+			 size_t len, struct ieee80211_rx_status *rx_status);
 
 /* Private interfaces */
 /* Mesh tables */

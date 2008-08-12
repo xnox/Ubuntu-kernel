@@ -681,12 +681,12 @@ static inline void ath5k_hw_write_rate_duration(struct ath5k_hw *ah,
 		srate.bitrate = control_rate->rate_kbps/100;
 
 		/* An ACK frame consists of 10 bytes. If you add the FCS,
-		 * which cw_ieee80211_generic_frame_duration() adds,
+		 * which ieee80211_generic_frame_duration() adds,
 		 * its 14 bytes. Note we use the control rate and not the
 		 * actual rate for this rate. See mac80211 tx.c
 		 * ieee80211_duration() for a brief description of
 		 * what rate we should choose to TX ACKs. */
-		tx_time = le16_to_cpu(cw_ieee80211_generic_frame_duration(sc->hw,
+		tx_time = le16_to_cpu(ieee80211_generic_frame_duration(sc->hw,
 							sc->vif, 10, &srate));
 
 		ath5k_hw_reg_write(ah, tx_time, reg);
@@ -705,7 +705,7 @@ static inline void ath5k_hw_write_rate_duration(struct ath5k_hw *ah,
 		 *    erp rates
 		 *  - remove passing argument ieee80211_local as
 		 *    drivers don't have access to it
-		 *  - move drivers using cw_ieee80211_generic_frame_duration()
+		 *  - move drivers using ieee80211_generic_frame_duration()
 		 *    to this
 		 */
 		ath5k_hw_reg_write(ah, tx_time,

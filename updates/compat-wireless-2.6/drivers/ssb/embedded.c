@@ -30,7 +30,7 @@ int ssb_watchdog_timer_set(struct ssb_bus *bus, u32 ticks)
 	return -ENODEV;
 }
 
-u32 cw_ssb_gpio_in(struct ssb_bus *bus, u32 mask)
+u32 ssb_gpio_in(struct ssb_bus *bus, u32 mask)
 {
 	unsigned long flags;
 	u32 res = 0;
@@ -46,9 +46,9 @@ u32 cw_ssb_gpio_in(struct ssb_bus *bus, u32 mask)
 
 	return res;
 }
-EXPORT_SYMBOL(cw_ssb_gpio_in);
+EXPORT_SYMBOL(ssb_gpio_in);
 
-u32 cw_ssb_gpio_out(struct ssb_bus *bus, u32 mask, u32 value)
+u32 ssb_gpio_out(struct ssb_bus *bus, u32 mask, u32 value)
 {
 	unsigned long flags;
 	u32 res = 0;
@@ -64,9 +64,9 @@ u32 cw_ssb_gpio_out(struct ssb_bus *bus, u32 mask, u32 value)
 
 	return res;
 }
-EXPORT_SYMBOL(cw_ssb_gpio_out);
+EXPORT_SYMBOL(ssb_gpio_out);
 
-u32 cw_cw_ssb_gpio_outen(struct ssb_bus *bus, u32 mask, u32 value)
+u32 ssb_gpio_outen(struct ssb_bus *bus, u32 mask, u32 value)
 {
 	unsigned long flags;
 	u32 res = 0;
@@ -82,9 +82,9 @@ u32 cw_cw_ssb_gpio_outen(struct ssb_bus *bus, u32 mask, u32 value)
 
 	return res;
 }
-EXPORT_SYMBOL(cw_cw_ssb_gpio_outen);
+EXPORT_SYMBOL(ssb_gpio_outen);
 
-u32 cw_ssb_gpio_control(struct ssb_bus *bus, u32 mask, u32 value)
+u32 ssb_gpio_control(struct ssb_bus *bus, u32 mask, u32 value)
 {
 	unsigned long flags;
 	u32 res = 0;
@@ -96,9 +96,9 @@ u32 cw_ssb_gpio_control(struct ssb_bus *bus, u32 mask, u32 value)
 
 	return res;
 }
-EXPORT_SYMBOL(cw_ssb_gpio_control);
+EXPORT_SYMBOL(ssb_gpio_control);
 
-u32 cw_cw_ssb_gpio_intmask(struct ssb_bus *bus, u32 mask, u32 value)
+u32 ssb_gpio_intmask(struct ssb_bus *bus, u32 mask, u32 value)
 {
 	unsigned long flags;
 	u32 res = 0;
@@ -114,9 +114,9 @@ u32 cw_cw_ssb_gpio_intmask(struct ssb_bus *bus, u32 mask, u32 value)
 
 	return res;
 }
-EXPORT_SYMBOL(cw_cw_ssb_gpio_intmask);
+EXPORT_SYMBOL(ssb_gpio_intmask);
 
-u32 cw_ssb_gpio_polarity(struct ssb_bus *bus, u32 mask, u32 value)
+u32 ssb_gpio_polarity(struct ssb_bus *bus, u32 mask, u32 value)
 {
 	unsigned long flags;
 	u32 res = 0;
@@ -132,7 +132,7 @@ u32 cw_ssb_gpio_polarity(struct ssb_bus *bus, u32 mask, u32 value)
 
 	return res;
 }
-EXPORT_SYMBOL(cw_ssb_gpio_polarity);
+EXPORT_SYMBOL(ssb_gpio_polarity);
 
 #ifdef CONFIG_SSB_DRIVER_GIGE
 static int gige_pci_init_callback(struct ssb_bus *bus, unsigned long data)

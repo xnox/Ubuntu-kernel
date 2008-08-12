@@ -177,11 +177,11 @@ struct ieee80211_tx_data {
 };
 
 
-typedef unsigned __bitwise__ cw_ieee80211_rx_result;
-#define RX_CONTINUE		((__force cw_ieee80211_rx_result) 0u)
-#define RX_DROP_UNUSABLE	((__force cw_ieee80211_rx_result) 1u)
-#define RX_DROP_MONITOR		((__force cw_ieee80211_rx_result) 2u)
-#define RX_QUEUED		((__force cw_ieee80211_rx_result) 3u)
+typedef unsigned __bitwise__ ieee80211_rx_result;
+#define RX_CONTINUE		((__force ieee80211_rx_result) 0u)
+#define RX_DROP_UNUSABLE	((__force ieee80211_rx_result) 1u)
+#define RX_DROP_MONITOR		((__force ieee80211_rx_result) 2u)
+#define RX_QUEUED		((__force ieee80211_rx_result) 3u)
 
 #define IEEE80211_RX_IN_SCAN		BIT(0)
 /* frame is destined to interface currently processed (incl. multicast frames) */
@@ -190,14 +190,14 @@ typedef unsigned __bitwise__ cw_ieee80211_rx_result;
 #define IEEE80211_RX_CMNTR_REPORTED	BIT(3)
 #define IEEE80211_RX_FRAGMENTED		BIT(4)
 
-struct cw_ieee80211_rx_data {
+struct ieee80211_rx_data {
 	struct sk_buff *skb;
 	struct net_device *dev;
 	struct ieee80211_local *local;
 	struct ieee80211_sub_if_data *sdata;
 	struct sta_info *sta;
 	struct ieee80211_key *key;
-	struct cw_ieee80211_rx_status *status;
+	struct ieee80211_rx_status *status;
 	struct ieee80211_rate *rate;
 
 	u16 fc, ethertype;
@@ -557,7 +557,7 @@ struct ieee80211_local {
 	unsigned int filter_flags; /* FIF_* */
 	struct iw_statistics wstats;
 	u8 wstats_flags;
-	bool tim_in_locked_section; /* see cw_ieee80211_beacon_get() */
+	bool tim_in_locked_section; /* see ieee80211_beacon_get() */
 	int tx_headroom; /* required headroom for hardware/radiotap */
 
 	/* Tasklet and skb queue to process calls from IRQ mode. All frames
@@ -877,7 +877,7 @@ void ieee80211_sta_timer(unsigned long data);
 void ieee80211_sta_work(struct work_struct *work);
 void ieee80211_sta_scan_work(struct work_struct *work);
 void ieee80211_sta_rx_mgmt(struct net_device *dev, struct sk_buff *skb,
-			   struct cw_ieee80211_rx_status *rx_status);
+			   struct ieee80211_rx_status *rx_status);
 int ieee80211_sta_set_ssid(struct net_device *dev, char *ssid, size_t len);
 int ieee80211_sta_get_ssid(struct net_device *dev, char *ssid, size_t *len);
 int ieee80211_sta_set_bssid(struct net_device *dev, u8 *bssid);
@@ -887,11 +887,11 @@ void ieee80211_sta_req_auth(struct net_device *dev,
 int ieee80211_sta_scan_results(struct net_device *dev,
 			       struct iw_request_info *info,
 			       char *buf, size_t len);
-cw_ieee80211_rx_result ieee80211_sta_rx_scan(
+ieee80211_rx_result ieee80211_sta_rx_scan(
 	struct net_device *dev, struct sk_buff *skb,
-	struct cw_ieee80211_rx_status *rx_status);
-void cw_ieee80211_rx_bss_list_init(struct ieee80211_local *local);
-void cw_ieee80211_rx_bss_list_deinit(struct ieee80211_local *local);
+	struct ieee80211_rx_status *rx_status);
+void ieee80211_rx_bss_list_init(struct ieee80211_local *local);
+void ieee80211_rx_bss_list_deinit(struct ieee80211_local *local);
 int ieee80211_sta_set_extra_ie(struct net_device *dev, char *ie, size_t len);
 struct sta_info *ieee80211_ibss_add_sta(struct net_device *dev,
 					struct sk_buff *skb, u8 *bssid,

@@ -364,8 +364,8 @@ static void ssb_pcicore_init_hostmode(struct ssb_pcicore *pc)
 		ssb_dprintk(KERN_INFO PFX "CardBus slot detected\n");
 		pc->cardbusmode = 1;
 		/* GPIO 1 resets the bridge */
-		cw_ssb_gpio_out(pc->dev->bus, 1, 1);
-		cw_cw_ssb_gpio_outen(pc->dev->bus, 1, 1);
+		ssb_gpio_out(pc->dev->bus, 1, 1);
+		ssb_gpio_outen(pc->dev->bus, 1, 1);
 		pcicore_write16(pc, SSB_PCICORE_SPROM(0),
 				pcicore_read16(pc, SSB_PCICORE_SPROM(0))
 				| 0x0400);
@@ -451,8 +451,8 @@ void ssb_pcicore_init(struct ssb_pcicore *pc)
 	if (!dev)
 		return;
 	bus = dev->bus;
-	if (!cw_ssb_device_is_enabled(dev))
-		cw_ssb_device_enable(dev, 0);
+	if (!ssb_device_is_enabled(dev))
+		ssb_device_enable(dev, 0);
 
 #ifdef CONFIG_SSB_PCICORE_HOSTMODE
 	pc->hostmode = pcicore_is_in_hostmode(pc);
@@ -529,7 +529,7 @@ static void ssb_commit_settings(struct ssb_bus *bus)
 	ssb_broadcast_value(dev, 0xFD8, 0);
 }
 
-int cw_ssb_pcicore_dev_irqvecs_enable(struct ssb_pcicore *pc,
+int ssb_pcicore_dev_irqvecs_enable(struct ssb_pcicore *pc,
 				   struct ssb_device *dev)
 {
 	struct ssb_device *pdev = pc->dev;
@@ -626,4 +626,4 @@ int cw_ssb_pcicore_dev_irqvecs_enable(struct ssb_pcicore *pc,
 out:
 	return err;
 }
-EXPORT_SYMBOL(cw_ssb_pcicore_dev_irqvecs_enable);
+EXPORT_SYMBOL(ssb_pcicore_dev_irqvecs_enable);

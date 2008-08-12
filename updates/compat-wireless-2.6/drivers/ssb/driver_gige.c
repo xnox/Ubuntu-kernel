@@ -188,11 +188,11 @@ static int ssb_gige_probe(struct ssb_device *sdev, const struct ssb_device_id *i
 	dev->io_resource.end = 0x8FF;
 	dev->io_resource.flags = IORESOURCE_IO | IORESOURCE_PCI_FIXED;
 
-	if (!cw_ssb_device_is_enabled(sdev))
-		cw_ssb_device_enable(sdev, 0);
+	if (!ssb_device_is_enabled(sdev))
+		ssb_device_enable(sdev, 0);
 
 	/* Setup BAR0. This is a 64k MMIO region. */
-	base = cw_ssb_admatch_base(ssb_read32(sdev, SSB_ADMATCH1));
+	base = ssb_admatch_base(ssb_read32(sdev, SSB_ADMATCH1));
 	gige_pcicfg_write32(dev, PCI_BASE_ADDRESS_0, base);
 	gige_pcicfg_write32(dev, PCI_BASE_ADDRESS_1, 0);
 
@@ -236,13 +236,13 @@ static int ssb_gige_probe(struct ssb_device *sdev, const struct ssb_device_id *i
 	return 0;
 }
 
-bool cw_pdev_is_ssb_gige_core(struct pci_dev *pdev)
+bool pdev_is_ssb_gige_core(struct pci_dev *pdev)
 {
 	if (!pdev->resource[0].name)
 		return 0;
 	return (strcmp(pdev->resource[0].name, SSB_GIGE_MEM_RES_NAME) == 0);
 }
-EXPORT_SYMBOL(cw_pdev_is_ssb_gige_core);
+EXPORT_SYMBOL(pdev_is_ssb_gige_core);
 
 int ssb_gige_pcibios_plat_dev_init(struct ssb_device *sdev,
 				   struct pci_dev *pdev)

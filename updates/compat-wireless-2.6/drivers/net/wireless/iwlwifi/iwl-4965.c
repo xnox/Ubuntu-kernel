@@ -284,7 +284,7 @@ static void iwl4965_init_alive_start(struct iwl_priv *priv)
 	/* Bootstrap uCode has loaded initialize uCode ... verify inst image.
 	 * This is a paranoid check, because we would not have gotten the
 	 * "initialize" alive if code weren't properly loaded.  */
-	if (cw_iwl_verify_ucode(priv)) {
+	if (iwl_verify_ucode(priv)) {
 		/* Runtime instruction load was bad;
 		 * take it all the way back down so we can try again */
 		IWL_DEBUG_INFO("Bad \"initialize\" uCode load.\n");
@@ -325,9 +325,9 @@ static int iwl4965_eeprom_check_version(struct iwl_priv *priv)
 	u16 eeprom_ver;
 	u16 calib_ver;
 
-	eeprom_ver = cw_iwl_eeprom_query16(priv, EEPROM_VERSION);
+	eeprom_ver = iwl_eeprom_query16(priv, EEPROM_VERSION);
 
-	calib_ver = cw_iwl_eeprom_query16(priv, EEPROM_4965_CALIB_VERSION_OFFSET);
+	calib_ver = iwl_eeprom_query16(priv, EEPROM_4965_CALIB_VERSION_OFFSET);
 
 	if (eeprom_ver < EEPROM_4965_EEPROM_VERSION ||
 	    calib_ver < EEPROM_4965_TX_POWER_VERSION)
@@ -454,7 +454,7 @@ static void iwl4965_nic_config(struct iwl_priv *priv)
 		/* L0S enabled L1A disabled */
 		iwl_clear_bit(priv, CSR_GIO_REG, CSR_GIO_REG_VAL_L0S_ENABLED);
 
-	radio_cfg = cw_iwl_eeprom_query16(priv, EEPROM_RADIO_CONFIG);
+	radio_cfg = iwl_eeprom_query16(priv, EEPROM_RADIO_CONFIG);
 
 	/* write radio config values to register */
 	if (EEPROM_RF_CFG_TYPE_MSK(radio_cfg) == EEPROM_4965_RF_CFG_TYPE_MAX)
@@ -469,7 +469,7 @@ static void iwl4965_nic_config(struct iwl_priv *priv)
 		    CSR_HW_IF_CONFIG_REG_BIT_MAC_SI);
 
 	priv->calib_info = (struct iwl_eeprom_calib_info *)
-		cw_iwl_eeprom_query_addr(priv, EEPROM_4965_CALIB_TXPOWER_OFFSET);
+		iwl_eeprom_query_addr(priv, EEPROM_4965_CALIB_TXPOWER_OFFSET);
 
 	spin_unlock_irqrestore(&priv->lock, flags);
 }
@@ -578,7 +578,7 @@ static void iwl4965_chain_noise_reset(struct iwl_priv *priv)
 		cmd.diff_gain_a = 0;
 		cmd.diff_gain_b = 0;
 		cmd.diff_gain_c = 0;
-		if (cw_cw_iwl_send_cmd_pdu(priv, REPLY_PHY_CALIBRATION_CMD,
+		if (iwl_send_cmd_pdu(priv, REPLY_PHY_CALIBRATION_CMD,
 				 sizeof(cmd), &cmd))
 			IWL_ERROR("Could not send REPLY_PHY_CALIBRATION_CMD\n");
 		data->state = IWL_CHAIN_NOISE_ACCUMULATE;
@@ -629,7 +629,7 @@ static void iwl4965_gain_computation(struct iwl_priv *priv,
 		cmd.diff_gain_a = data->delta_gain_code[0];
 		cmd.diff_gain_b = data->delta_gain_code[1];
 		cmd.diff_gain_c = data->delta_gain_code[2];
-		ret = cw_cw_iwl_send_cmd_pdu(priv, REPLY_PHY_CALIBRATION_CMD,
+		ret = iwl_send_cmd_pdu(priv, REPLY_PHY_CALIBRATION_CMD,
 				      sizeof(cmd), &cmd);
 		if (ret)
 			IWL_DEBUG_CALIB("fail sending cmd "
@@ -881,7 +881,7 @@ static int iwl4965_set_power(struct iwl_priv *priv,
 {
 	int ret = 0;
 
-	ret = cw_cw_cw_iwl_send_cmd_pdu_async(priv, POWER_TABLE_CMD,
+	ret = iwl_send_cmd_pdu_async(priv, POWER_TABLE_CMD,
 				    sizeof(struct iwl4965_powertable_cmd),
 				    cmd, NULL);
 	return ret;
@@ -1367,7 +1367,7 @@ static int iwl4965_fill_txpower_tbl(struct iwl_priv *priv, u8 band, u16 channel,
 	IWL_DEBUG_TXPOWER("chan %d band %d is_fat %d\n", channel, band,
 			  is_fat);
 
-	ch_info = cw_iwl_get_channel_info(priv, priv->band, channel);
+	ch_info = iwl_get_channel_info(priv, priv->band, channel);
 
 	if (!is_channel_valid(ch_info))
 		return -EINVAL;
@@ -1608,7 +1608,7 @@ static int iwl4965_send_tx_power(struct iwl_priv *priv)
 	if (ret)
 		goto out;
 
-	ret = cw_cw_iwl_send_cmd_pdu(priv, REPLY_TX_PWR_TABLE_CMD, sizeof(cmd), &cmd);
+	ret = iwl_send_cmd_pdu(priv, REPLY_TX_PWR_TABLE_CMD, sizeof(cmd), &cmd);
 
 out:
 	return ret;
@@ -1645,7 +1645,7 @@ static int iwl4965_send_rxon_assoc(struct iwl_priv *priv)
 	    priv->staging_rxon.ofdm_ht_dual_stream_basic_rates;
 	rxon_assoc.rx_chain_select_flags = priv->staging_rxon.rx_chain;
 
-	ret = cw_cw_cw_iwl_send_cmd_pdu_async(priv, REPLY_RXON_ASSOC,
+	ret = iwl_send_cmd_pdu_async(priv, REPLY_RXON_ASSOC,
 				     sizeof(rxon_assoc), &rxon_assoc, NULL);
 	if (ret)
 		return ret;
@@ -1665,7 +1665,7 @@ int iwl4965_hw_channel_switch(struct iwl_priv *priv, u16 channel)
 
 	band = priv->band == IEEE80211_BAND_2GHZ;
 
-	ch_info = cw_iwl_get_channel_info(priv, priv->band, channel);
+	ch_info = iwl_get_channel_info(priv, priv->band, channel);
 
 	is_fat = is_fat_channel(priv->staging_rxon.flags);
 
@@ -1691,7 +1691,7 @@ int iwl4965_hw_channel_switch(struct iwl_priv *priv, u16 channel)
 		return rc;
 	}
 
-	rc = cw_cw_iwl_send_cmd_pdu(priv, REPLY_CHANNEL_SWITCH, sizeof(cmd), &cmd);
+	rc = iwl_send_cmd_pdu(priv, REPLY_CHANNEL_SWITCH, sizeof(cmd), &cmd);
 	return rc;
 }
 
@@ -1715,7 +1715,7 @@ unsigned int iwl4965_hw_get_beacon_cmd(struct iwl_priv *priv,
 
 	frame_size = iwl4965_fill_beacon_frame(priv,
 				tx_beacon_cmd->frame,
-				cw_iwl_bcast_addr,
+				iwl_bcast_addr,
 				sizeof(frame->u) - sizeof(*tx_beacon_cmd));
 
 	BUG_ON(frame_size > MAX_MPDU_SIZE);
@@ -2033,7 +2033,7 @@ static int iwl4965_txq_agg_enable(struct iwl_priv *priv, int txq_id,
 	ra_tid = BUILD_RAxTID(sta_id, tid);
 
 	/* Modify device's station table to Tx this TID */
-	cw_iwl_sta_modify_enable_tid_tx(priv, sta_id, tid);
+	iwl_sta_modify_enable_tid_tx(priv, sta_id, tid);
 
 	spin_lock_irqsave(&priv->lock, flags);
 	ret = iwl_grab_nic_access(priv);
@@ -2095,16 +2095,16 @@ int iwl4965_mac_ampdu_action(struct ieee80211_hw *hw,
 	switch (action) {
 	case IEEE80211_AMPDU_RX_START:
 		IWL_DEBUG_HT("start Rx\n");
-		return cw_iwl_rx_agg_start(priv, addr, tid, *ssn);
+		return iwl_rx_agg_start(priv, addr, tid, *ssn);
 	case IEEE80211_AMPDU_RX_STOP:
 		IWL_DEBUG_HT("stop Rx\n");
-		return cw_iwl_rx_agg_stop(priv, addr, tid);
+		return iwl_rx_agg_stop(priv, addr, tid);
 	case IEEE80211_AMPDU_TX_START:
 		IWL_DEBUG_HT("start Tx\n");
-		return cw_iwl_tx_agg_start(priv, addr, tid, ssn);
+		return iwl_tx_agg_start(priv, addr, tid, ssn);
 	case IEEE80211_AMPDU_TX_STOP:
 		IWL_DEBUG_HT("stop Tx\n");
-		return cw_iwl_tx_agg_stop(priv, addr, tid);
+		return iwl_tx_agg_stop(priv, addr, tid);
 	default:
 		IWL_DEBUG_HT("unknown\n");
 		return -EINVAL;
@@ -2184,7 +2184,7 @@ static int iwl4965_tx_status_reply_tx(struct iwl_priv *priv,
 		info->flags &= ~IEEE80211_TX_CTL_AMPDU;
 		info->flags |= iwl_is_tx_success(status)?
 			IEEE80211_TX_STAT_ACK : 0;
-		cw_iwl_hwrate_to_tx_control(priv, rate_n_flags, info);
+		iwl_hwrate_to_tx_control(priv, rate_n_flags, info);
 		/* FIXME: code repetition end */
 
 		IWL_DEBUG_TX_REPLY("1 Frame 0x%x failure :%d\n",
@@ -2294,7 +2294,7 @@ static void iwl4965_rx_reply_tx(struct iwl_priv *priv,
 		tid = qc[0] & 0xf;
 	}
 
-	sta_id = cw_iwl_get_ra_sta_id(priv, hdr);
+	sta_id = iwl_get_ra_sta_id(priv, hdr);
 	if (txq->sched_retry && unlikely(sta_id == IWL_INVALID_STATION)) {
 		IWL_ERROR("Station not known\n");
 		return;
@@ -2320,47 +2320,47 @@ static void iwl4965_rx_reply_tx(struct iwl_priv *priv,
 			index = iwl_queue_dec_wrap(scd_ssn & 0xff, txq->q.n_bd);
 			IWL_DEBUG_TX_REPLY("Retry scheduler reclaim scd_ssn "
 					   "%d index %d\n", scd_ssn , index);
-			freed = cw_iwl_tx_queue_reclaim(priv, txq_id, index);
+			freed = iwl_tx_queue_reclaim(priv, txq_id, index);
 			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
 
-			if (cw_iwl_queue_space(&txq->q) > txq->q.low_mark &&
+			if (iwl_queue_space(&txq->q) > txq->q.low_mark &&
 			    txq_id >= 0 && priv->mac80211_registered &&
 			    agg->state != IWL_EMPTYING_HW_QUEUE_DELBA) {
 				/* calculate mac80211 ampdu sw queue to wake */
 				ampdu_q = txq_id - IWL49_FIRST_AMPDU_QUEUE +
 					  priv->hw->queues;
 				if (agg->state == IWL_AGG_OFF)
-					cw_ieee80211_wake_queue(priv->hw, txq_id);
+					ieee80211_wake_queue(priv->hw, txq_id);
 				else
-					cw_ieee80211_wake_queue(priv->hw, ampdu_q);
+					ieee80211_wake_queue(priv->hw, ampdu_q);
 			}
-			cw_iwl_txq_check_empty(priv, sta_id, tid, txq_id);
+			iwl_txq_check_empty(priv, sta_id, tid, txq_id);
 		}
 	} else {
 		info->status.retry_count = tx_resp->failure_frame;
 		info->flags |=
 			iwl_is_tx_success(status) ? IEEE80211_TX_STAT_ACK : 0;
-		cw_iwl_hwrate_to_tx_control(priv,
+		iwl_hwrate_to_tx_control(priv,
 					le32_to_cpu(tx_resp->rate_n_flags),
 					info);
 
 		IWL_DEBUG_TX("Tx queue %d Status %s (0x%08x) rate_n_flags "
 			     "0x%x retries %d\n", txq_id,
-				cw_iwl_get_tx_fail_reason(status),
+				iwl_get_tx_fail_reason(status),
 				status, le32_to_cpu(tx_resp->rate_n_flags),
 				tx_resp->failure_frame);
 
 		IWL_DEBUG_TX_REPLY("Tx queue reclaim %d\n", index);
 
 		if (index != -1) {
-		    int freed = cw_iwl_tx_queue_reclaim(priv, txq_id, index);
+		    int freed = iwl_tx_queue_reclaim(priv, txq_id, index);
 		    if (tid != MAX_TID_COUNT)
 			priv->stations[sta_id].tid[tid].tfds_in_queue -= freed;
-		    if (cw_iwl_queue_space(&txq->q) > txq->q.low_mark &&
+		    if (iwl_queue_space(&txq->q) > txq->q.low_mark &&
 			(txq_id >= 0) && priv->mac80211_registered)
-			cw_ieee80211_wake_queue(priv->hw, txq_id);
+			ieee80211_wake_queue(priv->hw, txq_id);
 		    if (tid != MAX_TID_COUNT)
-			cw_iwl_txq_check_empty(priv, sta_id, tid, txq_id);
+			iwl_txq_check_empty(priv, sta_id, tid, txq_id);
 		}
 	}
 
@@ -2373,7 +2373,7 @@ static void iwl4965_rx_reply_tx(struct iwl_priv *priv,
 static void iwl4965_rx_handler_setup(struct iwl_priv *priv)
 {
 	/* Legacy Rx frames */
-	priv->rx_handlers[REPLY_RX] = cw_iwl_rx_reply_rx;
+	priv->rx_handlers[REPLY_RX] = iwl_rx_reply_rx;
 	/* Tx response */
 	priv->rx_handlers[REPLY_TX] = iwl4965_rx_reply_tx;
 }
@@ -2434,11 +2434,11 @@ static struct iwl_lib_ops iwl4965_lib = {
 			EEPROM_4965_REGULATORY_BAND_24_FAT_CHANNELS,
 			EEPROM_4965_REGULATORY_BAND_52_FAT_CHANNELS
 		},
-		.verify_signature  = cw_iwlcore_eeprom_verify_signature,
-		.acquire_semaphore = cw_iwlcore_eeprom_acquire_semaphore,
-		.release_semaphore = cw_iwlcore_eeprom_release_semaphore,
+		.verify_signature  = iwlcore_eeprom_verify_signature,
+		.acquire_semaphore = iwlcore_eeprom_acquire_semaphore,
+		.release_semaphore = iwlcore_eeprom_release_semaphore,
 		.check_version = iwl4965_eeprom_check_version,
-		.query_addr = cw_iwlcore_eeprom_query_addr,
+		.query_addr = iwlcore_eeprom_query_addr,
 	},
 	.set_power = iwl4965_set_power,
 	.send_tx_power	= iwl4965_send_tx_power,

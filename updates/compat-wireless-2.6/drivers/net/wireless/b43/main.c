@@ -1076,7 +1076,7 @@ void b43_wireless_core_reset(struct b43_wldev *dev, u32 flags)
 
 	flags |= B43_TMSLOW_PHYCLKEN;
 	flags |= B43_TMSLOW_PHYRESET;
-	cw_ssb_device_enable(dev->dev, flags);
+	ssb_device_enable(dev->dev, flags);
 	msleep(2);		/* Wait for the PLL to turn on. */
 
 	/* Now take the PHY out of Reset again */
@@ -1481,7 +1481,7 @@ static void b43_write_probe_resp_plcp(struct b43_wldev *dev,
 
 	plcp.data = 0;
 	b43_generate_plcp_hdr(&plcp, size + FCS_LEN, rate->hw_value);
-	dur = cw_ieee80211_generic_frame_duration(dev->wl->hw,
+	dur = ieee80211_generic_frame_duration(dev->wl->hw,
 					       dev->wl->vif, size,
 					       rate);
 	/* Write PLCP in two parts and timing for packet transfer */
@@ -1542,7 +1542,7 @@ static const u8 * b43_generate_probe_resp(struct b43_wldev *dev,
 	/* Set the frame control. */
 	hdr->frame_control = cpu_to_le16(IEEE80211_FTYPE_MGMT |
 					 IEEE80211_STYPE_PROBE_RESP);
-	dur = cw_ieee80211_generic_frame_duration(dev->wl->hw,
+	dur = ieee80211_generic_frame_duration(dev->wl->hw,
 					       dev->wl->vif, *dest_size,
 					       rate);
 	hdr->duration_id = dur;
@@ -1689,7 +1689,7 @@ static void b43_update_templates(struct b43_wl *wl)
 	 * the TIM field, but that would probably require resizing and
 	 * moving of data within the beacon template.
 	 * Simply request a new beacon and let mac80211 do the hard work. */
-	beacon = cw_ieee80211_beacon_get(wl->hw, wl->vif);
+	beacon = ieee80211_beacon_get(wl->hw, wl->vif);
 	if (unlikely(!beacon))
 		return;
 
@@ -4061,8 +4061,8 @@ static void b43_wireless_core_exit(struct b43_wldev *dev)
 		dev->wl->current_beacon = NULL;
 	}
 
-	cw_ssb_device_disable(dev->dev, 0);
-	cw_ssb_bus_may_powerdown(dev->dev->bus);
+	ssb_device_disable(dev->dev, 0);
+	ssb_bus_may_powerdown(dev->dev->bus);
 }
 
 /* Initialize a wireless core */
@@ -4078,10 +4078,10 @@ static int b43_wireless_core_init(struct b43_wldev *dev)
 
 	B43_WARN_ON(b43_status(dev) != B43_STAT_UNINIT);
 
-	err = cw_ssb_bus_powerup(bus, 0);
+	err = ssb_bus_powerup(bus, 0);
 	if (err)
 		goto out;
-	if (!cw_ssb_device_is_enabled(dev->dev)) {
+	if (!ssb_device_is_enabled(dev->dev)) {
 		tmp = phy->gmode ? B43_TMSLOW_GMODE : 0;
 		b43_wireless_core_reset(dev, tmp);
 	}
@@ -4101,7 +4101,7 @@ static int b43_wireless_core_init(struct b43_wldev *dev)
 		goto err_kfree_lo_control;
 
 	/* Enable IRQ routing to this device. */
-	cw_ssb_pcicore_dev_irqvecs_enable(&bus->pcicore, dev->dev);
+	ssb_pcicore_dev_irqvecs_enable(&bus->pcicore, dev->dev);
 
 	b43_imcfglo_timeouts_workaround(dev);
 	b43_bluetooth_coext_disable(dev);
@@ -4161,7 +4161,7 @@ static int b43_wireless_core_init(struct b43_wldev *dev)
 	b43_set_synth_pu_delay(dev, 1);
 	b43_bluetooth_coext_enable(dev);
 
-	cw_ssb_bus_powerup(bus, 1);	/* Enable dynamic PCTL */
+	ssb_bus_powerup(bus, 1);	/* Enable dynamic PCTL */
 	b43_upload_card_macaddress(dev);
 	b43_security_init(dev);
 	if (!dev->suspend_in_progress)
@@ -4183,7 +4183,7 @@ out:
 	kfree(phy->lo_control);
 	phy->lo_control = NULL;
       err_busdown:
-	cw_ssb_bus_may_powerdown(bus);
+	ssb_bus_may_powerdown(bus);
 	B43_WARN_ON(b43_status(dev) != B43_STAT_UNINIT);
 	return err;
 }
@@ -4474,7 +4474,7 @@ static int b43_wireless_core_attach(struct b43_wldev *dev)
 	 * that in core_init(), too.
 	 */
 
-	err = cw_ssb_bus_powerup(bus, 0);
+	err = ssb_bus_powerup(bus, 0);
 	if (err) {
 		b43err(wl, "Bus powerup failed\n");
 		goto out;
@@ -4547,14 +4547,14 @@ static int b43_wireless_core_attach(struct b43_wldev *dev)
 
 	b43_radio_turn_off(dev, 1);
 	b43_switch_analog(dev, 0);
-	cw_ssb_device_disable(dev->dev, 0);
-	cw_ssb_bus_may_powerdown(bus);
+	ssb_device_disable(dev->dev, 0);
+	ssb_bus_may_powerdown(bus);
 
 out:
 	return err;
 
 err_powerdown:
-	cw_ssb_bus_may_powerdown(bus);
+	ssb_bus_may_powerdown(bus);
 	return err;
 }
 
@@ -4658,8 +4658,8 @@ static void b43_wireless_exit(struct ssb_device *dev, struct b43_wl *wl)
 {
 	struct ieee80211_hw *hw = wl->hw;
 
-	cw_ssb_set_devtypedata(dev, NULL);
-	cw_ieee80211_free_hw(hw);
+	ssb_set_devtypedata(dev, NULL);
+	ieee80211_free_hw(hw);
 }
 
 static int b43_wireless_init(struct ssb_device *dev)
@@ -4671,7 +4671,7 @@ static int b43_wireless_init(struct ssb_device *dev)
 
 	b43_sprom_fixup(dev->bus);
 
-	hw = cw_ieee80211_alloc_hw(sizeof(*wl), &b43_hw_ops);
+	hw = ieee80211_alloc_hw(sizeof(*wl), &b43_hw_ops);
 	if (!hw) {
 		b43err(NULL, "Could not allocate ieee80211 device\n");
 		goto out;
@@ -4703,7 +4703,7 @@ static int b43_wireless_init(struct ssb_device *dev)
 	INIT_WORK(&wl->qos_update_work, b43_qos_update_work);
 	INIT_WORK(&wl->beacon_update_trigger, b43_beacon_update_trigger_work);
 
-	cw_ssb_set_devtypedata(dev, wl);
+	ssb_set_devtypedata(dev, wl);
 	b43info(wl, "Broadcom %04X WLAN found\n", dev->bus->chip_id);
 	err = 0;
       out:
@@ -4731,7 +4731,7 @@ static int b43_probe(struct ssb_device *dev, const struct ssb_device_id *id)
 		goto err_wireless_exit;
 
 	if (first) {
-		err = cw_ieee80211_register_hw(wl->hw);
+		err = ieee80211_register_hw(wl->hw);
 		if (err)
 			goto err_one_core_detach;
 	}
@@ -4758,7 +4758,7 @@ static void b43_remove(struct ssb_device *dev)
 
 	B43_WARN_ON(!wl);
 	if (wl->current_dev == wldev)
-		cw_ieee80211_unregister_hw(wl->hw);
+		ieee80211_unregister_hw(wl->hw);
 
 	b43_one_core_detach(dev);
 
@@ -4901,7 +4901,7 @@ err_dfs_exit:
 
 static void __exit b43_exit(void)
 {
-	cw_ssb_driver_unregister(&b43_ssb_driver);
+	ssb_driver_unregister(&b43_ssb_driver);
 	b43_pcmcia_exit();
 	b43_debugfs_exit();
 }

@@ -257,7 +257,7 @@ static void zd_op_stop(struct ieee80211_hw *hw)
  * @ackssi: ACK signal strength
  * @success - True for successfull transmission of the frame
  *
- * This information calls cw_cw_ieee80211_tx_status_irqsafe() if required by the
+ * This information calls ieee80211_tx_status_irqsafe() if required by the
  * control information. It copies the control information into the status
  * information.
  *
@@ -274,7 +274,7 @@ static void tx_status(struct ieee80211_hw *hw, struct sk_buff *skb,
 		info->status.excessive_retries = 1;
 	info->flags |= flags;
 	info->status.ack_signal = ackssi;
-	cw_cw_ieee80211_tx_status_irqsafe(hw, skb);
+	ieee80211_tx_status_irqsafe(hw, skb);
 }
 
 /**
@@ -568,7 +568,7 @@ static int zd_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
  * Returns 1 if the frame was an ACK, 0 if it was ignored.
  */
 static int filter_ack(struct ieee80211_hw *hw, struct ieee80211_hdr *rx_hdr,
-		      struct cw_ieee80211_rx_status *stats)
+		      struct ieee80211_rx_status *stats)
 {
 	struct sk_buff *skb;
 	struct sk_buff_head *q;
@@ -598,7 +598,7 @@ out:
 int zd_mac_rx(struct ieee80211_hw *hw, const u8 *buffer, unsigned int length)
 {
 	struct zd_mac *mac = zd_hw_mac(hw);
-	struct cw_ieee80211_rx_status stats;
+	struct ieee80211_rx_status stats;
 	const struct rx_status *status;
 	struct sk_buff *skb;
 	int bad_frame = 0;
@@ -675,7 +675,7 @@ int zd_mac_rx(struct ieee80211_hw *hw, const u8 *buffer, unsigned int length)
 
 	memcpy(skb_put(skb, length), buffer, length);
 
-	cw_cw_ieee80211_rx_irqsafe(hw, skb, &stats);
+	ieee80211_rx_irqsafe(hw, skb, &stats);
 	return 0;
 }
 
@@ -729,7 +729,7 @@ static int zd_op_config_interface(struct ieee80211_hw *hw,
 	    mac->type == IEEE80211_IF_TYPE_IBSS) {
 		associated = true;
 		if (conf->changed & IEEE80211_IFCC_BEACON) {
-			struct sk_buff *beacon = cw_ieee80211_beacon_get(hw, vif);
+			struct sk_buff *beacon = ieee80211_beacon_get(hw, vif);
 
 			if (!beacon)
 				return -ENOMEM;
@@ -911,7 +911,7 @@ struct ieee80211_hw *zd_mac_alloc_hw(struct usb_interface *intf)
 	struct zd_mac *mac;
 	struct ieee80211_hw *hw;
 
-	hw = cw_ieee80211_alloc_hw(sizeof(struct zd_mac), &zd_ops);
+	hw = ieee80211_alloc_hw(sizeof(struct zd_mac), &zd_ops);
 	if (!hw) {
 		dev_dbg_f(&intf->dev, "out of memory\n");
 		return NULL;

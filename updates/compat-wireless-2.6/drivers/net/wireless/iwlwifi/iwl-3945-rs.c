@@ -472,7 +472,7 @@ static void rs_tx_status(void *priv_rate,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, hdr->addr1);
+	sta = sta_info_get(local, hdr->addr1);
 	if (!sta || !sta->rate_ctrl_priv) {
 		rcu_read_unlock();
 		IWL_DEBUG_RATE("leave: No STA priv data to update!\n");
@@ -660,7 +660,7 @@ static void rs_get_rate(void *priv_rate, struct net_device *dev,
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, hdr->addr1);
+	sta = sta_info_get(local, hdr->addr1);
 
 	/* Send management frames and broadcast/multicast data using lowest
 	 * rate. */
@@ -843,7 +843,7 @@ int iwl3945_fill_rs_info(struct ieee80211_hw *hw, char *buf, u8 sta_id)
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, priv->stations[sta_id].sta.sta.addr);
+	sta = sta_info_get(local, priv->stations[sta_id].sta.sta.addr);
 	if (!sta || !sta->rate_ctrl_priv) {
 		if (sta)
 			IWL_DEBUG_RATE("leave - no private rate data!\n");
@@ -929,7 +929,7 @@ void iwl3945_rate_scale_init(struct ieee80211_hw *hw, s32 sta_id)
 
 	rcu_read_lock();
 
-	sta = cw_sta_info_get(local, priv->stations[sta_id].sta.sta.addr);
+	sta = sta_info_get(local, priv->stations[sta_id].sta.sta.addr);
 	if (!sta || !sta->rate_ctrl_priv) {
 		IWL_DEBUG_RATE("leave - no private rate data!\n");
 		rcu_read_unlock();
@@ -977,12 +977,12 @@ void iwl3945_rate_scale_init(struct ieee80211_hw *hw, s32 sta_id)
 
 int iwl3945_rate_control_register(void)
 {
-	return cw_ieee80211_rate_control_register(&rs_ops);
+	return ieee80211_rate_control_register(&rs_ops);
 }
 
 void iwl3945_rate_control_unregister(void)
 {
-	cw_ieee80211_rate_control_unregister(&rs_ops);
+	ieee80211_rate_control_unregister(&rs_ops);
 }
 
 

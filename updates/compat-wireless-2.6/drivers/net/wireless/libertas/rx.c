@@ -139,7 +139,7 @@ static void lbs_compute_rssi(struct lbs_private *priv, struct rxpd *p_rx_pd)
  *  @param skb     A pointer to skb which includes the received packet
  *  @return 	   0 or -1
  */
-int cw_lbs_process_rxed_packet(struct lbs_private *priv, struct sk_buff *skb)
+int lbs_process_rxed_packet(struct lbs_private *priv, struct sk_buff *skb)
 {
 	int ret = 0;
 	struct net_device *dev = priv->dev;
@@ -257,7 +257,7 @@ done:
 	lbs_deb_leave_args(LBS_DEB_RX, "ret %d", ret);
 	return ret;
 }
-EXPORT_SYMBOL_GPL(cw_lbs_process_rxed_packet);
+EXPORT_SYMBOL_GPL(lbs_process_rxed_packet);
 
 /**
  *  @brief This function converts Tx/Rx rates from the Marvell WLAN format

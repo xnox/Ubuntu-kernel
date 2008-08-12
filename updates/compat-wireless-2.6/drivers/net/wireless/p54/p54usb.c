@@ -94,7 +94,7 @@ static void p54u_rx_cb(struct urb *urb)
 	if (!priv->hw_type)
 		skb_pull(skb, sizeof(struct net2280_tx_hdr));
 
-	if (cw_p54_rx(dev, skb)) {
+	if (p54_rx(dev, skb)) {
 		skb = dev_alloc_skb(MAX_RX_SIZE);
 		if (unlikely(!skb)) {
 			usb_free_urb(urb);
@@ -337,7 +337,7 @@ static int p54u_read_eeprom(struct ieee80211_hw *dev)
 	}
 
 	hdr = buf + priv->common.tx_hdr_len;
-	cw_p54_fill_eeprom_readback(hdr);
+	p54_fill_eeprom_readback(hdr);
 	hdr->req_id = cpu_to_le32(priv->common.rx_start);
 	if (priv->common.tx_hdr_len) {
 		struct net2280_tx_hdr *tx_hdr = buf;
@@ -357,7 +357,7 @@ static int p54u_read_eeprom(struct ieee80211_hw *dev)
 			   usb_rcvbulkpipe(priv->udev, P54U_PIPE_DATA),
 			   buf, 0x2020, &alen, 1000);
 	if (!err && alen > offset) {
-		cw_p54_parse_eeprom(dev, (u8 *)buf + offset, alen - offset);
+		p54_parse_eeprom(dev, (u8 *)buf + offset, alen - offset);
 	} else {
 		printk(KERN_ERR "prism54usb: eeprom read failed!\n");
 		err = -EINVAL;
@@ -401,7 +401,7 @@ static int p54u_upload_firmware_3887(struct ieee80211_hw *dev)
 		goto err_req_fw_failed;
 	}
 
-	cw_p54_parse_firmware(dev, fw_entry);
+	p54_parse_firmware(dev, fw_entry);
 
 	left = block_size = min((size_t)P54U_FW_BLOCK, fw_entry->size);
 	strcpy(buf, start_string);
@@ -538,7 +538,7 @@ static int p54u_upload_firmware_net2280(struct ieee80211_hw *dev)
 		return err;
 	}
 
-	cw_p54_parse_firmware(dev, fw_entry);
+	p54_parse_firmware(dev, fw_entry);
 
 #define P54U_WRITE(type, addr, data) \
 	do {\
@@ -789,7 +789,7 @@ static int __devinit p54u_probe(struct usb_interface *intf,
 	unsigned int i, recognized_pipes;
 	DECLARE_MAC_BUF(mac);
 
-	dev = cw_p54_init_common(sizeof(*priv));
+	dev = p54_init_common(sizeof(*priv));
 	if (!dev) {
 		printk(KERN_ERR "prism54usb: ieee80211 alloc failed\n");
 		return -ENOMEM;
@@ -854,7 +854,7 @@ static int __devinit p54u_probe(struct usb_interface *intf,
 
 	skb_queue_head_init(&priv->rx_queue);
 
-	err = cw_ieee80211_register_hw(dev);
+	err = ieee80211_register_hw(dev);
 	if (err) {
 		printk(KERN_ERR "prism54usb: Cannot register netdevice\n");
 		goto err_free_dev;
@@ -868,7 +868,7 @@ static int __devinit p54u_probe(struct usb_interface *intf,
 	return 0;
 
  err_free_dev:
-	cw_ieee80211_free_hw(dev);
+	ieee80211_free_hw(dev);
 	usb_set_intfdata(intf, NULL);
 	usb_put_dev(udev);
 	return err;
@@ -882,12 +882,12 @@ static void __devexit p54u_disconnect(struct usb_interface *intf)
 	if (!dev)
 		return;
 
-	cw_ieee80211_unregister_hw(dev);
+	ieee80211_unregister_hw(dev);
 
 	priv = dev->priv;
 	usb_put_dev(interface_to_usbdev(intf));
-	cw_p54_free_common(dev);
-	cw_ieee80211_free_hw(dev);
+	p54_free_common(dev);
+	ieee80211_free_hw(dev);
 }
 
 static struct usb_driver p54u_driver = {

@@ -88,13 +88,13 @@ rt2x00pci_register_multiwrite(struct rt2x00_dev *rt2x00dev,
 }
 
 /**
- * cw_rt2x00pci_write_tx_data - Initialize data for TX operation
+ * rt2x00pci_write_tx_data - Initialize data for TX operation
  * @entry: The entry where the frame is located
  *
  * This function will initialize the DMA and skb descriptor
  * to prepare the entry for the actual TX operation.
  */
-int cw_rt2x00pci_write_tx_data(struct queue_entry *entry);
+int rt2x00pci_write_tx_data(struct queue_entry *entry);
 
 /**
  * struct queue_entry_priv_pci: Per entry PCI specific information
@@ -110,28 +110,28 @@ struct queue_entry_priv_pci {
 };
 
 /**
- * cw_rt2x00pci_rxdone - Handle RX done events
+ * rt2x00pci_rxdone - Handle RX done events
  * @rt2x00dev: Device pointer, see &struct rt2x00_dev.
  */
-void cw_rt2x00pci_rxdone(struct rt2x00_dev *rt2x00dev);
+void rt2x00pci_rxdone(struct rt2x00_dev *rt2x00dev);
 
 /*
  * Device initialization handlers.
  */
-int cw_rt2x00pci_initialize(struct rt2x00_dev *rt2x00dev);
-void cw_rt2x00pci_uninitialize(struct rt2x00_dev *rt2x00dev);
+int rt2x00pci_initialize(struct rt2x00_dev *rt2x00dev);
+void rt2x00pci_uninitialize(struct rt2x00_dev *rt2x00dev);
 
 /*
  * PCI driver handlers.
  */
-int cw_rt2x00pci_probe(struct pci_dev *pci_dev, const struct pci_device_id *id);
-void cw_rt2x00pci_remove(struct pci_dev *pci_dev);
+int rt2x00pci_probe(struct pci_dev *pci_dev, const struct pci_device_id *id);
+void rt2x00pci_remove(struct pci_dev *pci_dev);
 #ifdef CONFIG_PM
-int cw_rt2x00pci_suspend(struct pci_dev *pci_dev, pm_message_t state);
-int cw_rt2x00pci_resume(struct pci_dev *pci_dev);
+int rt2x00pci_suspend(struct pci_dev *pci_dev, pm_message_t state);
+int rt2x00pci_resume(struct pci_dev *pci_dev);
 #else
-#define cw_rt2x00pci_suspend	NULL
-#define cw_rt2x00pci_resume	NULL
+#define rt2x00pci_suspend	NULL
+#define rt2x00pci_resume	NULL
 #endif /* CONFIG_PM */
 
 #endif /* RT2X00PCI_H */
