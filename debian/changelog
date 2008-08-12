@@ -1,3 +1,14 @@
+linux-backports-modules-2.6.24 (2.6.24-21.24) hardy-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Use a macro for the wireless-testing git tree tag. Munge the right
+    files in iwlwifi to change the firmware file name.
+  * Update compat-wireless to master-2008-07-28
+  * Added iwlwifi-5000-ucode
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 11 Aug 2008 21:11:36 -0600
+
 linux-backports-modules-2.6.24 (2.6.24-20.23) hardy-proposed; urgency=low
 
   [Upstream Kernel Changes]
