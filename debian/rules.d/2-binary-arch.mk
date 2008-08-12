@@ -65,7 +65,7 @@ install-%: $(stampdir)/stamp-build-%
 	# with existing module names.
 	#
 	install -d $(moddir)/updates
-	find $(builddir)/build-$* -type f -name '*.ko' | while read f ; do cp -v $${f} $(moddir)/updates/lbm_`basename $${f}`; done
+	find $(builddir)/build-$* -type f -name '*.ko' | while read f ; do cp -v $${f} $(moddir)/updates/`basename $${f}`; done
 
 ifeq ($(no_image_strip),)
 	find $(pkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
