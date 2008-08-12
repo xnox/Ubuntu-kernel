@@ -1,4 +1,8 @@
-linux-ubuntu-modules-2.6.24 (2.6.24-20.30) hardy-proposed; urgency=low
+linux-ubuntu-modules-2.6.24 (2.6.24-21.30) hardy-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * ABI bump to -21
 
   [Amit Kucheria]
 
