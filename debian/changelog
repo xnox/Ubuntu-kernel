@@ -1,11 +1,3 @@
-linux (2.6.24-19.36netbook3) hardy; urgency=low
-
-  [Michael Frey]
-
-  * Turn off the Belmont 80-wire ATA detection
-
- -- Michael Frey <michael.frey@canonical.com>  Thu, 14 Aug 2008 11:01:44 -0400
-
 linux (2.6.24-19.36netbook2) hardy; urgency=low
 
   [Michael Frey]
