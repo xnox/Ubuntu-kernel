@@ -21,6 +21,7 @@ ifeq ($(ONLY_CORE),)
 obj-y += net/ieee80211/ \
 	drivers/ssb/ \
 	drivers/misc/ \
+	drivers/net/ \
 	drivers/net/usb/ \
 	drivers/net/wireless/
 endif
