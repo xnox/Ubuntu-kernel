@@ -71,12 +71,10 @@ ifeq ($(CONCURRENCY_LEVEL),)
   # No? Check if this is on a buildd
   ifeq ($(CONCURRENCY_LEVEL),)
     ifneq ($(wildcard /CurrentlyBuilding),)
+      CONCURRENCY_LEVEL := 1
+    else
       CONCURRENCY_LEVEL := $(shell expr `getconf _NPROCESSORS_ONLN` \* 2)
     endif
-  endif
-  # Oh hell, give 'em one
-  ifeq ($(CONCURRENCY_LEVEL),)
-    CONCURRENCY_LEVEL := 1
   endif
 endif
 
