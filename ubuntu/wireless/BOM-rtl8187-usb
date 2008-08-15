@@ -1,7 +1,10 @@
-The RTL 8187 USB device driver comes directly from realtek. The
+The RTL 8187 USB device driver comes directly from Realtek. The
 original tarball can be found at 
 
 http://launchpadlibrarian.net/16855730/rtl8187B_linux_26.1036.0623.2008.tar.gz
 
 I cleaned out some cruft and added a Makefile.  Note that this driver
-is now upstream.
+is now upstream as of 2.6.26.
+
+
+Tim Gardner - Aug 15, 2008
