@@ -1,0 +1,58 @@
+---------------------------------------------------
+Release for rtl8187B mesh linux driver
+---------------------------------------------------
+2007-12
+1.porting to the latest rtl8187b linux driver.
+more info from file "CHANGES_for_MESH"
+
+2008-01-11
+1.fix the bug:macdenyadd
+2.make wpa can autorun.
+
+2880-01-25
+1.support both mesh and station driver.
+
+
+-------------------------------------
+reless LAN Linux driver for RTL8187B
+-------------------------------------
+Release date = 2007-08-16
+Operating system release = Fedora 4
+Kernel version = 2.6.22.2
+Release driver version = 1023.0816.2007
+Change history =    
+	1.Let driver support to Linux 2.6.22.2 
+
+------------------------------------------
+Release date = 2007-08-22
+Operating system release = Fedora 4
+Kernel version = 2.6.22.2
+Release driver version = 1024.0822.2007
+Change history =    
+	1.Fix the channel plan scan range bug. 
+
+------------------------------------------
+Release date = 2007-09-19
+Operating system release = Suse 10
+Kernel version = 2.6.13
+Release driver version = 1025.0917.2007
+Change history =    
+	1. Fix 8187B current issue with Linux.
+	2. Fix 8187 with RF_ZEBRA2 module bug.
+
+------------------------------------------
+Release date = 2008-06-17
+Operating system release = ubuntu 8.04 
+Kernel version = 2.6.24-12-generic
+Release driver version = 1033.0617.2008
+Change history =
+        1. Add WorkItem method for RF power on/off.
+
+------------------------------------------
+Release date = 2008-06-20
+Operating system release = ubuntu 8.04 
+Kernel version = 2.6.24-12-generic
+Release driver version = 1036.0620.2008
+Change history =
+        1. Add install file for driver install.
+
