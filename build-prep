@@ -2,7 +2,7 @@
 . $(dirname $0)/build-common
 
 BRANCH="master"
-TARGET=""
+TARGETS=""
 while [ $# -gt 0 ]; do
 	case $1 in
 		-b|--branch)
@@ -14,85 +14,117 @@ while [ $# -gt 0 ]; do
 			exit 1
 			;;
 		*)
-			if [ "${TARGET}" = "" ]; then
-				TARGET="$1"
-			else
-				echo "Too many arguments!" >&2
-				exit 1
-			fi
+			TARGETS="$TARGETS $1"
 			;;
 	esac
 	shift
 done
+
+if [ "${TARGETS}" = "" ]; then
+	echo "Usage: $(basename $0) [<options>] <system|group> [...]"
+	exit 1
+fi
+
+GetDistroEnvironment "${DIST}" || exit 1
+
+if [ ! -d ${SRCDIR}/.git ]; then
+	echo "${SRCDIR} is not a repository!" >&2
+	exit 1
+fi
+cd $SRCDIR
 
 if [ "$(git-branch|grep "${BRANCH}")" = "" ]; then
 	echo "No branch <${BRANCH}> found!" >&2
 	exit 1
 fi
 
-if [ "${TARGET}" = "" ]; then
-	echo "Usage: $(basename $0) [<options>] <system>"
-	exit 1
-fi
+function AddSummary()
+{
+	local LINE
 
-GetHostEnvironment ${TARGET}
-
-status=$($(dirname $0)/build-check ${TARGET})
-if [ $? -ne 0 ]; then
-	echo "${SYSNAME}: $status"
-	exit 1
-fi
-
-GetDistroEnvironment "${DIST}" || exit 1
-
-for i in $(QueryChroots ${HOST}); do
-	if [ "$i" = "${CHROOT}" ]; then
-		break
+	LINE="$(printf "%-15s %s\n" $SYSNAME "$@")"
+	if [ "$SUMMARY" != "" ]; then
+		SUMMARY="$(echo -e "$SUMMARY\n$LINE")"
+	else
+		SUMMARY="$LINE"
 	fi
+}
+
+function PrepareHost()
+{
+	if $VERBOSE; then
+		echo "  Source:     ${SRCDIR}"
+		echo "  Sending to: ${HOST}:${BUILDDIR}"
+	fi
+
+	cat <<-EOD | ssh ${HOST} 2>/dev/null
+	if [ ! -d $BUILDDIR ]; then
+		echo "  remote: creating $BUILDDIR"
+		mkdir -p $BUILDDIR
+		if [ \$? -ne 0 ]; then
+			echo "  remote: failed to create directory!"
+			exit 1
+		fi
+	fi
+	if [ ! -d "${BUILDDIR}/.git" ]; then
+		cd "${BUILDDIR}"
+		echo "  remote: creating empty git repos."
+		git-init
+		if [ \$? -ne 0 ]; then
+			echo "  remote: failed to initialize git!"
+			exit 1
+		fi
+	fi
+	EOD
+	if [ $? -ne 0 ]; then
+		AddSummary "[remote git-init failed]"
+		return 1
+	fi
+
+	echo "  local: sending status scripts..."
+	scp -q $(dirname $0)/target-scripts/run-* ${HOST}:${BASEDIR}
+
+	echo "  local: using git to push..."
+	cd "${SRCDIR}"
+	git-push --tags --force ${HOST}:${BUILDDIR} ${BRANCH}
+	if [ $? -ne 0 ]; then
+		AddSummary "[git-push failed]"
+		return 1
+	fi
+
+	echo "  ${HOST}: cleaning up build area ..."
+	ssh ${HOST} ${BASEDIR}/run-clean --branch ${BRANCH} \
+		$(basename ${BUILDDIR})
+}
+
+SUMMARY=""
+for TARGET in $(ExpandHostGroups $TARGETS); do
+	echo "$TARGET ..."
+	GetHostEnvironment ${TARGET} 2>/dev/null
+	if [ $? -ne 0 ]; then
+		SYSNAME="$TARGET"
+		AddSummary "[not configured]"
+		continue
+	fi
+	status=$($(dirname $0)/build-check ${TARGET})
+	if [ $? -ne 0 ]; then
+		AddSummary "[$status]"
+		continue
+	fi
+
+	for i in $(QueryChroots ${HOST}); do
+		if [ "$i" = "${CHROOT}" ]; then
+			break
+		fi
+	done
+	if [ "$i" != "${CHROOT}" ]; then
+		AddSummary "[no chroot found for $DIST]"
+		continue
+	fi
+	PrepareHost && AddSummary "[OK]"
 done
-if [ "$i" != "${CHROOT}" ]; then
-	echo "No chroot setup for ${DIST} on ${HOST}!" >&2
-	exit 1
-fi
 
-echo "$SYSNAME:"
-if $VERBOSE; then
-	echo "  Source:     ${SRCDIR}"
-	echo "  Sending to: ${HOST}:${BUILDDIR}"
-fi
-
-if [ ! -d ${SRCDIR}/.git ]; then
-	echo "${SRCDIR} is not a repository!" >&2
-	exit 1
-fi
-
-cat <<EOD | ssh ${HOST} 2>/dev/null || exit 1
-if [ ! -d $BUILDDIR ]; then
-	echo "  remote: creating $BUILDDIR"
-	mkdir -p $BUILDDIR
-	if [ \$? -ne 0 ]; then
-		echo "  remote: failed to create directory!"
-		exit 1
-	fi
-fi
-if [ ! -d "${BUILDDIR}/.git" ]; then
-	cd "${BUILDDIR}"
-	echo "  remote: creating empty git repos."
-	git-init
-	if [ \$? -ne 0 ]; then
-		echo "  remote: failed to initialize git!"
-		exit 1
-	fi
-fi
-EOD
-
-echo "  local: sending status scripts..."
-scp -q $(dirname $0)/target-scripts/run-* ${HOST}:${BASEDIR}
-
-echo "  local: using git to push..."
-cd "${SRCDIR}"
-git-push --tags --force ${HOST}:${BUILDDIR} ${BRANCH} || exit 1
-
-echo "  ${HOST}: cleaning up build area ..."
-ssh ${HOST} ${BASEDIR}/run-clean --branch ${BRANCH} $(basename ${BUILDDIR})
+echo
+echo "Summary:"
+echo "$SUMMARY"
 
