@@ -192,3 +192,17 @@ function GetDistroEnvironment()
 	return 0
 }
 
+function ExpandHostGroups()
+{
+	local HOST
+	local LIST
+
+	LIST=""
+	for HOST in $@; do
+		if [ -r "$CONFDIR/groups/$HOST" ]; then
+			cat "$CONFDIR/groups/$HOST"
+		else
+			echo "$HOST"
+		fi
+	done | sort -u
+}

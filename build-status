@@ -11,16 +11,30 @@ if [ "$1" = "" ]; then
 	exit 1
 fi
 
+set -- $(ExpandHostGroups "$@")
+
 while [ "$1" != "" ]; do
-	GetHostEnvironment $1
-	shift
+	GetHostEnvironment $1 2>/dev/null
 	if [ $? -ne 0 ]; then
+		printf "%-15s [not configured]\n" $1
+		shift
 		continue
 	fi
+	shift
 
 	PREFIX="$SYSNAME"
-	ssh $HOST "cd $BASEDIR && ./run-status $ARGS" | while read LINE; do
-		printf "%-15s %s\n" "$PREFIX" "$LINE"
-		PREFIX=""
-	done
+	cat <<-EOD | ssh $HOST
+	if [ -d $BASEDIR ]; then
+		cd $BASEDIR
+		if [ -x ./run-status ]; then
+			./run-status $ARGS | while read LINE; do
+				printf "%-15s %s\n" "$PREFIX" "\$LINE"
+			done
+		else
+			printf "%-15s [not prepared]\n" "$PREFIX"
+		fi
+	else
+		printf "%-15s [no $BASEDIR]\n" "$PREFIX"
+	fi
+	EOD
 done
