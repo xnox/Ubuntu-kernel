@@ -65,7 +65,9 @@ while [ $# -gt 0 ]; do
 				exit 1
 			fi
 			PPABASE="$2"
-			PATCHDIR="$PPADIR/patches-$PPABASE"
+			PPADIR="$PPADIR/$PPABASE"
+			PATCHDIR="$PPADIR/patches"
+			echo "Using $PPADIR as base"
 			shift
 			;;
 		#
@@ -108,7 +110,15 @@ done
 
 function GetVersion()
 {
-	head -1 debian/changelog| sed 's/.*(\(.*\)).*/\1/'
+	#
+	# A PPA build should be based on a released version to be superseeded
+	# by the next official build.
+	#
+	if [ "$PPABASE" = "" ]; then
+		git tag -l|grep Ubuntu|sort -t- -k2n -k3n|tail -1|cut -d- -f2-
+	else
+		echo $PPABASE | cut -d- -f2-
+	fi
 }
 
 function GetPatchTag()
@@ -144,6 +154,8 @@ if [ "$PPABASE" != "" ]; then
 	git-checkout -q -f ppabuild
 else
 	echo "(Re-)Creating master branch..."
+	git checkout -q -f origin
+	git branch -f master origin
 	git checkout -q -f master
 fi
 
@@ -197,12 +209,13 @@ if [ -r "$PATCHDIR/series" ]; then
 fi
 
 #
-# This are the version numers of the first entry in the changelog. This is
+# This is the version number of the version that we are based on. It is
 # used as a base to calculate the new numbers.
 #
-VER="$(GetVersion|cut -d- -f1)"
-ABI="$(GetVersion|cut -d- -f2|cut -d. -f1)"
-REL="$(GetVersion|cut -d- -f2|cut -d. -f2)"
+FULLVER=$(GetVersion)
+VER="$(echo $FULLVER|cut -d- -f1)"
+ABI="$(echo $FULLVER|cut -d- -f2|cut -d. -f1)"
+REL="$(echo $FULLVER|cut -d- -f2|cut -d. -f2)"
 
 #
 # If there has been a patch that bumps the ABI, do it now once. Otherwise we
@@ -253,7 +266,7 @@ CHANGES=$(cat <<EOD
 $(debian/rules prev_revision=$LASTRELEASE printchanges)
 EOD)
 
-dch -v"$PPAVER" -D"$DIST" "!!!PLACEHOLDER!!!"
+dch -b -v"$PPAVER" -D"$DIST" "!!!PLACEHOLDER!!!"
 awk -vTEXT="$CHANGES" '/!!!PLACEHOLDER!!!/{print TEXT; next} {print}' \
 	debian/changelog >debian/changelog.$$ && \
 	mv debian/changelog.$$ debian/changelog
@@ -266,13 +279,23 @@ debian/rules debian/control.stub >/dev/null
 #
 # Stupid ABI check possibly wants stuff
 #
+LASTFULLVER=$VER-$LASTRELEASE
 if [ -d debian/abi ]; then
-	if [ ! -d debian/abi/$VER-$ABI.$REL ]; then
+	if [ ! -d debian/abi/$LASTFULLVER ]; then
 		#
-		# There is no ABI directory for the last release? Argh! Ok,
-		# just take the latest and pray!
+		# No kABI files for the last release. If there is a tarball
+		# that provides those relative to the kernel top level dir,
+		# then use that.
 		#
-		if [ ! -d debian/abi/$VER-$LASTRELEASE ]; then
+		if [ -f $PPADIR/abi-$LASTFULLVER.tar.gz ]; then
+			echo "Found and use $FULLVER tarball."
+			tar -xzf $PPADIR/abi-$LASTFULLVER.tar.gz
+		fi
+		#
+		# If the directory is still missing, there was no tarbal.
+		# Maybe the files from an older release are there.
+		#
+		if [ ! -d debian/abi/$LASTFULLVER ]; then
 			echo "WARNING: No kABI files for $LASTRELEASE!!!"
 			LASTRELEASE=$(ls -1 debian/abi|tail -1|cut -d- -f2)
 			if [ "$LASTRELEASE" = "" ]; then
@@ -280,14 +303,13 @@ if [ -d debian/abi ]; then
 				exit 1
 			fi
 			echo "Using $LASTRELEASE instead. Hope this works..."
+			echo "Generate ABI modules files..."
+			cp -r debian/abi/$VER-$LASTRELEASE \
+				debian/abi/$LASTFULLVER
+			echo $ABI >debian/abi/$LASTFULLVER/abiname
 		fi
-		echo "Generate ABI modules files..."
-		cp -r debian/abi/$VER-$LASTRELEASE debian/abi/$VER-$ABI.$REL
-		#find debian/abi/$VER-$ABI.$REL -type f ! -name '*.modules' \
-		#	-exec rm {} \;
-		echo $ABI >debian/abi/$VER-$ABI.$REL/abiname
+		git-add debian/abi/$LASTFULLVER
 	fi
-	git-add debian/abi/$VER-$ABI.$REL
 fi
 
 #
