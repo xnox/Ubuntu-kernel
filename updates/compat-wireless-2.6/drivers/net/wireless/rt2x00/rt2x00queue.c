@@ -282,7 +282,7 @@ int rt2x00queue_write_tx_frame(struct data_queue *queue, struct sk_buff *skb)
 	if (unlikely(rt2x00queue_full(queue)))
 		return -EINVAL;
 
-	if (__test_and_set_bit(ENTRY_OWNER_DEVICE_DATA, &entry->flags)) {
+	if (test_and_set_bit(ENTRY_OWNER_DEVICE_DATA, &entry->flags)) {
 		ERROR(queue->rt2x00dev,
 		      "Arrived at non-free entry in the non-full queue %d.\n"
 		      "Please file bug report to %s.\n",
@@ -306,14 +306,14 @@ int rt2x00queue_write_tx_frame(struct data_queue *queue, struct sk_buff *skb)
 	skbdesc->entry = entry;
 
 	if (unlikely(queue->rt2x00dev->ops->lib->write_tx_data(entry))) {
-		__clear_bit(ENTRY_OWNER_DEVICE_DATA, &entry->flags);
+		clear_bit(ENTRY_OWNER_DEVICE_DATA, &entry->flags);
 		return -EIO;
 	}
 
 	if (test_bit(DRIVER_REQUIRE_DMA, &queue->rt2x00dev->flags))
 		rt2x00queue_map_txskb(queue->rt2x00dev, skb);
 
-	__set_bit(ENTRY_DATA_PENDING, &entry->flags);
+	set_bit(ENTRY_DATA_PENDING, &entry->flags);
 
 	rt2x00queue_index_inc(queue, Q_INDEX);
 	rt2x00queue_write_tx_descriptor(entry, &txdesc);

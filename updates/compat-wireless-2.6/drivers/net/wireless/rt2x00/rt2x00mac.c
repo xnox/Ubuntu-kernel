@@ -106,7 +106,7 @@ int rt2x00mac_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 	 * Note that we can only stop the TX queues inside the TX path
 	 * due to possible race conditions in mac80211.
 	 */
-	if (!test_bit(DEVICE_PRESENT, &rt2x00dev->flags)) {
+	if (!test_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags)) {
 		ieee80211_stop_queues(hw);
 		dev_kfree_skb_any(skb);
 		return NETDEV_TX_OK;
@@ -180,7 +180,7 @@ int rt2x00mac_start(struct ieee80211_hw *hw)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 
-	if (!test_bit(DEVICE_PRESENT, &rt2x00dev->flags))
+	if (!test_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags))
 		return 0;
 
 	return rt2x00lib_start(rt2x00dev);
@@ -191,7 +191,7 @@ void rt2x00mac_stop(struct ieee80211_hw *hw)
 {
 	struct rt2x00_dev *rt2x00dev = hw->priv;
 
-	if (!test_bit(DEVICE_PRESENT, &rt2x00dev->flags))
+	if (!test_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags))
 		return;
 
 	rt2x00lib_stop(rt2x00dev);
@@ -211,8 +211,8 @@ int rt2x00mac_add_interface(struct ieee80211_hw *hw,
 	 * Don't allow interfaces to be added
 	 * the device has disappeared.
 	 */
-	if (!test_bit(DEVICE_PRESENT, &rt2x00dev->flags) ||
-	    !test_bit(DEVICE_STARTED, &rt2x00dev->flags))
+	if (!test_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags) ||
+	    !test_bit(DEVICE_STATE_STARTED, &rt2x00dev->flags))
 		return -ENODEV;
 
 	/*
@@ -241,7 +241,7 @@ int rt2x00mac_add_interface(struct ieee80211_hw *hw,
 	 */
 	for (i = 0; i < queue->limit; i++) {
 		entry = &queue->entries[i];
-		if (!__test_and_set_bit(ENTRY_BCN_ASSIGNED, &entry->flags))
+		if (!test_and_set_bit(ENTRY_BCN_ASSIGNED, &entry->flags))
 			break;
 	}
 
@@ -294,7 +294,7 @@ void rt2x00mac_remove_interface(struct ieee80211_hw *hw,
 	 * either the device has disappeared or when
 	 * no interface is present.
 	 */
-	if (!test_bit(DEVICE_PRESENT, &rt2x00dev->flags) ||
+	if (!test_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags) ||
 	    (conf->type == NL80211_IFTYPE_AP && !rt2x00dev->intf_ap_count) ||
 	    (conf->type != NL80211_IFTYPE_AP && !rt2x00dev->intf_sta_count))
 		return;
@@ -308,7 +308,7 @@ void rt2x00mac_remove_interface(struct ieee80211_hw *hw,
 	 * Release beacon entry so it is available for
 	 * new interfaces again.
 	 */
-	__clear_bit(ENTRY_BCN_ASSIGNED, &intf->beacon->flags);
+	clear_bit(ENTRY_BCN_ASSIGNED, &intf->beacon->flags);
 
 	/*
 	 * Make sure the bssid and mac address registers
@@ -327,14 +327,14 @@ int rt2x00mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *conf)
 	 * Mac80211 might be calling this function while we are trying
 	 * to remove the device or perhaps suspending it.
 	 */
-	if (!test_bit(DEVICE_PRESENT, &rt2x00dev->flags))
+	if (!test_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags))
 		return 0;
 
 	/*
 	 * Check if we need to disable the radio,
 	 * if this is not the case, at least the RX must be disabled.
 	 */
-	if (test_bit(DEVICE_ENABLED_RADIO, &rt2x00dev->flags)) {
+	if (test_bit(DEVICE_STATE_ENABLED_RADIO, &rt2x00dev->flags)) {
 		if (!conf->radio_enabled)
 			rt2x00lib_disable_radio(rt2x00dev);
 		else
@@ -346,7 +346,7 @@ int rt2x00mac_config(struct ieee80211_hw *hw, struct ieee80211_conf *conf)
 	/*
 	 * Reenable RX only if the radio should be on.
 	 */
-	if (test_bit(DEVICE_ENABLED_RADIO, &rt2x00dev->flags))
+	if (test_bit(DEVICE_STATE_ENABLED_RADIO, &rt2x00dev->flags))
 		rt2x00lib_toggle_rx(rt2x00dev, STATE_RADIO_RX_ON);
 	else if (conf->radio_enabled)
 		return rt2x00lib_enable_radio(rt2x00dev);
@@ -368,7 +368,7 @@ int rt2x00mac_config_interface(struct ieee80211_hw *hw,
 	 * Mac80211 might be calling this function while we are trying
 	 * to remove the device or perhaps suspending it.
 	 */
-	if (!test_bit(DEVICE_PRESENT, &rt2x00dev->flags))
+	if (!test_bit(DEVICE_STATE_PRESENT, &rt2x00dev->flags))
 		return 0;
 
 	spin_lock(&intf->lock);
