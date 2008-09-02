@@ -108,7 +108,7 @@ obj-\$(CONFIG_IWLWIFI_5K) += /drivers/net/wireless/iwlwifi/
 all: modules
 
 modules: 
-	\$(MAKE) -C \$(KLIB_BUILD) M=\$(PWD) modules
+	if grep "CONFIG_WIRELESS_EXT=y" \$(KLIB_BUILD)/.config > /dev/null ; then \$(MAKE) -C \$(KLIB_BUILD) M=\$(PWD) modules; fi
 
 install:
 	\$(MAKE) -C \$(KLIB_BUILD) M=\$(PWD) \$(KMODDIR_ARG) \$(KMODPATH_ARG) modules_install
