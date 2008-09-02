@@ -28,6 +28,7 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	  sed -i 's/CONFIG_SND_S3C2412_SOC_I2S=m/CONFIG_SND_S3C2412_SOC_I2S=/' $(builddir)/build-$*/sound/alsa-driver/toplevel.config; \
 	  cd $(builddir)/build-$*/sound/alsa-driver && make SND_TOPDIR=`pwd` dep; \
 	fi
+	cd $(builddir)/build-$*/wireless/iwlwifi-5k && ./MUNGE
 	touch $@
 
 # Do the actual build, including image and modules
@@ -38,6 +39,7 @@ $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
 	$(kmake) $(conc_level) modules
+	cd $(builddir)/build-$*/wireless/iwlwifi-5k && make $(conc_level)
 	@touch $@
 
 # Install the finished build
