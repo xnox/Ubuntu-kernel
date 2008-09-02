@@ -39,7 +39,7 @@ $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
 	$(kmake) $(conc_level) modules
-	cd $(builddir)/build-$*/wireless/iwlwifi-5k && make $(conc_level)
+	cd $(builddir)/build-$*/wireless/iwlwifi-5k && make $(conc_level) KLIB_BUILD=$(KDIR)
 	@touch $@
 
 # Install the finished build
