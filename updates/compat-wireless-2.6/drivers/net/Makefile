@@ -1,4 +1,1 @@
-#
-# Makefile for the Linux network (ethercard) device drivers.
-#
-obj-m += b44.o
+obj-$(CONFIG_B44) += b44.o

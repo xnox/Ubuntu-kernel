@@ -1,6 +1,6 @@
 #!/bin/bash
 # 
-# Copyright 2007	Luis R. Rodriguez <mcgrof@winlab.rutgers.edu>
+# Copyright 2007, 2008	Luis R. Rodriguez <mcgrof@winlab.rutgers.edu>
 #
 # Use this to parse a small .config equivalent looking file to generate
 # our own autoconf.h. This file has defines for each config option
@@ -28,13 +28,16 @@ if [ ! -f $COMPAT_CONFIG ]; then
 	exit
 fi
 
-if [ ! -f $COMPAT_RELEASE  -o ! -f $KERNEL_RELEASE ]; then
-	echo "Error: $COMPAT_RELEASE or $KERNEL_RELEASE file is missing"
-	exit
+if [ ! -f $COMPAT_RELEASE ]; then
+	which git 2>&1 > /dev/null
+	if [ $? -ne 0 ]; then
+		echo "You need git to generate $COMPAT_RELEASE file"
+		exit
+	fi
+	git describe  > $COMPAT_RELEASE
 fi
 
 CREL=$(cat $COMPAT_RELEASE)
-KREL=$(cat $KERNEL_RELEASE)
 DATE=$(date)
 
 # Defines a CONFIG_ option if not defined yet, this helps respect
@@ -130,10 +133,8 @@ cat <<EOF
  * Automatically generated C config: don't edit
  * $DATE 
  * compat-wireless-2.6: $CREL
- * linux-2.6: $KREL
  */
 #define COMPAT_RELEASE "$CREL"
-#define COMPAT_KERNEL_RELEASE "$KREL"
 EOF
 
 # Checks user is compiling against a kernel we support

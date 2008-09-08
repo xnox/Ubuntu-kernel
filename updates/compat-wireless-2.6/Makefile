@@ -35,7 +35,7 @@ export PWD :=	$(shell pwd)
 export COMPAT_CONFIG=config.mk
 export CONFIG_CHECK=.$(COMPAT_CONFIG)_md5sum.txt
 export COMPAT_AUTOCONF=include/linux/compat_autoconf.h
-export CREL=$(shell cat $(PWD)/compat-release)
+-export CREL=$(shell cat $(PWD)/compat-release)
 export CREL_PRE:=.compat_autoconf_
 export CREL_CHECK:=$(CREL_PRE)$(CREL)
 
@@ -88,6 +88,7 @@ install: uninstall modules
 	@$(MODPROBE) -l adm8211
 	@$(MODPROBE) -l at76_usb
 	@$(MODPROBE) -l ath5k
+	@$(MODPROBE) -l ath9k
 	@$(MODPROBE) -l b43
 	@$(MODPROBE) -l b43legacy
 	@$(MODPROBE) -l ssb
@@ -147,6 +148,7 @@ uninstall:
 	@# rc80211_simple is a module on 2.6.22 and 2.6.23 though
 	@$(MODPROBE) -l adm8211
 	@$(MODPROBE) -l ath5k
+	@$(MODPROBE) -l ath9k
 	@$(MODPROBE) -l at76_usb
 	@$(MODPROBE) -l b43
 	@$(MODPROBE) -l b43legacy
@@ -183,6 +185,7 @@ uninstall:
 	@echo 
 
 clean:
+	@rm -f compat-release
 	@if [ -d net -a -d $(KLIB_BUILD) ]; then \
 		$(MAKE) -C $(KLIB_BUILD) M=$(PWD) clean ;\
 	fi

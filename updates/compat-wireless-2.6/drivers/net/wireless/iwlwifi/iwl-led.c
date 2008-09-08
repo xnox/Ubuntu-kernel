@@ -195,8 +195,10 @@ static void iwl_led_brightness_set(struct led_classdev *led_cdev,
 		return;
 
 
+#ifdef CONFIG_IWLWIFI_DEBUG
 	IWL_DEBUG_LED("Led type = %s brightness = %d\n",
 			led_type_str[led->type], brightness);
+#endif
 	switch (brightness) {
 	case LED_FULL:
 		if (led->type == IWL_LED_TRG_ASSOC)

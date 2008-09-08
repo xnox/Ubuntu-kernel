@@ -33,6 +33,11 @@ else
 
 # we're in a kernel >= 2.6.23
 
+# we're in kernel >= 2.6.27
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -gt 26 && echo yes),yes)
+$(error "ERROR: You should use another tree/tarball for newer kernels, this one is for kenrels <= 2.6.26")
+endif
+
 ifneq ($(KERNELRELEASE),) # This prevents a warning
 
 ifeq ($(CONFIG_NETDEVICES_MULTIQUEUE),) # checks MQ first
@@ -71,6 +76,14 @@ ifneq ($(CONFIG_PCI),)
 
 CONFIG_ATH5K=m
 CONFIG_ATH5K_DEBUG=n
+
+# For now we build ath9k only on kernel 2.6.26
+ifeq ($(shell test -e $(KLIB_BUILD)/Makefile && echo yes),yes)
+KERNEL_SUBLEVEL = $(shell $(MAKE) -C $(KLIB_BUILD) kernelversion | sed -n 's/^2\.6\.\([0-9]\+\).*/\1/p')
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -gt 25 && echo yes),yes)
+endif
+CONFIG_ATH9K=m
+endif
 
 # Required for older kernels which still use this flag.
 CONFIG_IWLWIFI=m
@@ -132,6 +145,7 @@ CONFIG_SSB_PCIHOST=y
 CONFIG_SSB_DRIVER_PCICORE_POSSIBLE=y
 CONFIG_SSB_DRIVER_PCICORE=y
 CONFIG_SSB_B43_PCI_BRIDGE=y
+CONFIG_B44=m
 
 CONFIG_RTL8180=m
 CONFIG_ADM8211=m
