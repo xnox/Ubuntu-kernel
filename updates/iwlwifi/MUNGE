@@ -1,0 +1,140 @@
+#!/bin/bash
+
+#
+# This script is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+
+#
+# Run this script when you update from one version of iwlwifi
+# to the next.
+#
+# The current Intel iwlwifi driver depends on a version
+# of the mac80211 stack that conflicts with the version
+# that exists in the kernel. Therefore, the fix is to modify
+# the public symbols in Intel's version and run both softmac
+# stacks.
+
+cd `dirname $0`
+
+#
+# Here is the algorithm I followed to munge the iwlwifi and mac80211
+# tarballs. Hopefully the next update will be close enough that you can
+# just run this script.
+#
+
+#
+# Insert the include path into the mac80211 Makefile
+#
+MF=Makefile.mac80211
+echo CONFIG_MAC80211=m >${MF}
+echo CONFIG_MAC80211_LEDS=y >>${MF}
+echo CONFIG_MAC80211_QOS=y >>${MF}
+echo CONFIG_MAC80211_DEBUGFS=y >>${MF}
+echo CONFIG_MAC80211_MESH=y >>${MF}
+echo CONFIG_MAC80211_RC_PID=y >>${MF}
+echo "NOSTDINC_FLAGS += -I\$(src)/../../include" >> ${MF}
+echo "EXTRA_CFLAGS +=-DCONFIG_MAC80211_QOS" >>${MF}
+cat net/mac80211/Makefile >> ${MF}
+sed -i 's/mac80211/iwlwifi-mac80211/' ${MF}
+mv -f ${MF} net/mac80211/Makefile
+
+
+#
+# Munge the cfg80211 Makefile
+#
+MF=Makefile.cfg80211
+echo CONFIG_CFG80211=m >${MF}
+echo CONFIG_NL80211=y >>${MF}
+cat net/wireless/Makefile >> ${MF}
+sed -i 's/cfg80211/iwlwifi-cfg80211/' ${MF}
+mv -f ${MF} net/wireless/Makefile
+
+#
+# Munge the iwlwifi Makefile
+#
+MF=Makefile.iwlwifi
+echo CONFIG_IWLAGN=m > ${MF}
+echo CONFIG_IWLCORE=m >> ${MF}
+echo CONFIG_IWL3945=m >> ${MF}
+echo CONFIG_IWL4965=y >> ${MF}
+echo CONFIG_IWLWIFI_DEBUGFS=y >> ${MF}
+echo CONFIG_IWLWIFI_LEDS=y >> ${MF}
+echo CONFIG_IWLWIFI_RFKILL=y >> ${MF}
+echo CONFIG_IWL3945_LEDS=y >> ${MF}
+echo CONFIG_IWL5000=y >> ${MF}
+echo "NOSTDINC_FLAGS += -I\$(src)/../../mac80211/compatible/include" >> ${MF}
+echo "EXTRA_CFLAGS += -DCONFIG_IWLWIFI_QOS=1" >> ${MF}
+cat drivers/net/wireless/iwlwifi/Makefile>> ${MF}
+mv -f ${MF} drivers/net/wireless/iwlwifi/Makefile
+
+#
+# Build the top level makefile
+#
+cat <<EOF > Makefile
+
+KMODDIR?=       updates
+KMODDIR_ARG:=   "INSTALL_MOD_DIR=\$(KMODDIR)"
+KLIB:=          /lib/modules/\$(shell uname -r)
+export KLIB_BUILD ?=    \$(KLIB)/build
+
+
+MODPROBE := /sbin/modprobe
+PWD=`pwd`
+
+
+NOSTDINC_FLAGS := -I\$(M)/include/ -include \$(M)/include/net/compat.h \$(CFLAGS)
+obj-m += net/wireless/
+obj-m += net/mac80211/
+obj-m += /drivers/net/wireless/iwlwifi/
+
+all: modules
+
+modules: 
+	\$(MAKE) -C \$(KLIB_BUILD) M=\$(PWD) modules
+
+install:
+	\$(MAKE) -C \$(KLIB_BUILD) M=\$(PWD) \$(KMODDIR_ARG) \$(KMODPATH_ARG) modules_install
+	@/sbin/depmod -ae
+uninstall:
+	@rm -rf \$(KLIB)/\$(KMODDIR)/net/mac80211/
+	@rm -rf \$(KLIB)/\$(KMODDIR)/net/wireless/
+	@rm -rf \$(KLIB)/\$(KMODDIR)/drivers/net/wireless/iwlwifi/
+	@/sbin/depmod -ae
+clean:
+	\$(MAKE) -C \$(KLIB_BUILD) M=\$(PWD) clean
+EOF
+
+#
+# Isolate the mac80211 exported symbols and munge every occurence such that
+# there is no possibility of conflict with the main kernel.
+#
+TL=token_list
+find net -name "*.[ch]"| \
+xargs grep EXPORT_SYMBOL|grep -v compat.c | \
+sed -e 's/^.*EXPORT_SYMBOL.*(//' -e 's/);//' > ${TL}
+
+TL_R=rm_token_list
+grep EXPORT_SYMBOL net/wireless/wext.c | \
+sed -e 's/^.*EXPORT_SYMBOL.*(//' -e 's/);//' > ${TL_R}
+
+while read rm_token
+do 
+    sed -i -e "s/${rm_token}//g" -e  "/^$/d" ${TL}
+done < ${TL_R}
+
+while read token
+do 
+    find . -name "*.[ch]"|while read f
+    do 
+	sed -i "s/${token}/iwl_lbm_${token}/g" "${f}"; 
+    done
+
+done < ${TL}
+
+rm -f ${TL} ${TL_R}

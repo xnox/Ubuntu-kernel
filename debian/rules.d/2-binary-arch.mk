@@ -21,6 +21,7 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; find . | cpio -dumpl $(builddir)/build-$*
+	cd $(builddir)/build-$*/iwlwifi && ./MUNGE
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
@@ -36,6 +37,7 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
 	if ! echo $(no_compat_wireless_flavours)|grep $(target_flavour) > /dev/null && grep 'CONFIG_COMPAT_WIRELESS=m' $(builddir)/build-$*/.config > /dev/null ; then \
 		 cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat); \
+		 cd $(builddir)/build-$*/iwlwifi && $(make_compat); \
 	fi
 	$(kmake) $(conc_level) modules
 	@touch $@
