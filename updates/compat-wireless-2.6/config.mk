@@ -86,12 +86,12 @@ CONFIG_ATH9K=m
 endif
 
 # Required for older kernels which still use this flag.
-CONFIG_IWLWIFI=m
+#CONFIG_IWLWIFI=m
 
-CONFIG_IWLCORE=m
-CONFIG_IWL3945=m
-CONFIG_IWL4965=m
-CONFIG_IWL4965_HT=y
+#CONFIG_IWLCORE=m
+#CONFIG_IWL3945=m
+#CONFIG_IWL4965=m
+#CONFIG_IWL4965_HT=y
 CONFIG_B43=m
 # B43 uses PCMCIA only for Compact Flash. The Cardbus cards uses PCI
 # Example, bcm4318:
