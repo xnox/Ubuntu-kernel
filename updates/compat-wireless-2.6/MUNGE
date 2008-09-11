@@ -1,0 +1,86 @@
+#!/bin/bash
+
+#
+# This script is free software; you can redistribute it and/or modify it
+# under the terms of version 2 of the GNU General Public License as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+# more details.
+
+#
+# Run this script when you update from one version of iwlwifi
+# to the next.
+#
+# The current Intel iwlwifi driver depends on a version
+# of the mac80211 stack that conflicts with the version
+# that exists in the kernel. Therefore, the fix is to modify
+# the public symbols in Intel's version and run both softmac
+# stacks.
+
+cd `dirname $0`
+
+#
+# Here is the algorithm I followed to munge the iwlwifi and mac80211
+# tarballs. Hopefully the next update will be close enough that you can
+# just run this script.
+#
+
+_COMPAT_PREFIX=lbm_cw
+#
+# Isolate the mac80211 exported symbols and munge every occurence such that
+# there is no possibility of conflict with the main kernel.
+#
+TL=token_list
+find net -name "*.[ch]"| \
+xargs grep EXPORT_SYMBOL|grep -v compat.c | grep -v wext.c | \
+sed -e 's/^.*EXPORT_SYMBOL.*(//' -e 's/);//' > ${TL}
+
+SC=sed_cmds
+rm -f ${SC}
+while read token
+do 
+	echo s/${token}/${_COMPAT_PREFIX}_${token}/g >> ${SC}
+done < ${TL}
+
+find . -name "*.[ch]"|while read f
+do 
+	sed -i -f ${SC} "${f}" 
+done
+
+#
+# Wack on the Makefiles so that the modules names don't collide with existing modules in LUM.
+#
+COMPAT_PREFIX=${_COMPAT_PREFIX}-
+sed -i 's/mac80211\./'${COMPAT_PREFIX}'mac80211\./' net/mac80211/Makefile
+sed -i 's/mac80211-/'${COMPAT_PREFIX}'mac80211-/' net/mac80211/Makefile
+sed -i 's/rc80211_pid-/'${COMPAT_PREFIX}'rc80211_pid-/' net/mac80211/Makefile
+
+cat <<. > net/ieee80211/Makefile
+obj-\$(CONFIG_IEEE80211) += ${COMPAT_PREFIX}ieee80211.o
+${COMPAT_PREFIX}ieee80211-objs := ieee80211.o
+obj-\$(CONFIG_IEEE80211) += ${COMPAT_PREFIX}ieee80211_crypt.o
+${COMPAT_PREFIX}ieee80211_crypt-objs := ieee80211_crypt.o
+obj-\$(CONFIG_IEEE80211_CRYPT_WEP) += ${COMPAT_PREFIX}ieee80211_crypt_wep.o
+${COMPAT_PREFIX}ieee80211_crypt_wep-objs := ieee80211_crypt_wep.o
+obj-\$(CONFIG_IEEE80211_CRYPT_CCMP) += ${COMPAT_PREFIX}ieee80211_crypt_ccmp.o
+${COMPAT_PREFIX}ieee80211_crypt_ccmp-objs := ieee80211_crypt_ccmp.o
+obj-\$(CONFIG_IEEE80211_CRYPT_TKIP) += ${COMPAT_PREFIX}ieee80211_crypt_tkip.o
+${COMPAT_PREFIX}ieee80211_crypt_tkip-objs := ieee80211_crypt_tkip.o
+${COMPAT_PREFIX}ieee80211-objs := \
+        ieee80211_module.o \
+        ieee80211_tx.o \
+        ieee80211_rx.o \
+        ieee80211_wx.o \
+        ieee80211_geo.o
+.
+
+cat <<. > net/wireless/Makefile
+obj-\$(CONFIG_CFG80211) += ${COMPAT_PREFIX}cfg80211.o
+
+${COMPAT_PREFIX}cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o compat.o
+${COMPAT_PREFIX}cfg80211-\$(CONFIG_NL80211) += nl80211.o
+.
+

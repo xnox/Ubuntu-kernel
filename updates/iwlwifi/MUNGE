@@ -27,6 +27,8 @@ cd `dirname $0`
 # tarballs. Hopefully the next update will be close enough that you can
 # just run this script.
 #
+_LBM_IWL=lbm-iwl
+LBM_IWL=${_LBM_IWL}-
 
 #
 # Insert the include path into the mac80211 Makefile
@@ -41,7 +43,7 @@ echo CONFIG_MAC80211_RC_PID=y >>${MF}
 echo "NOSTDINC_FLAGS += -I\$(src)/../../include" >> ${MF}
 echo "EXTRA_CFLAGS +=-DCONFIG_MAC80211_QOS" >>${MF}
 cat net/mac80211/Makefile >> ${MF}
-sed -i 's/mac80211/iwlwifi-mac80211/' ${MF}
+sed -i 's/mac80211/'${LBM_IWL}'mac80211/' ${MF}
 mv -f ${MF} net/mac80211/Makefile
 
 
@@ -52,7 +54,7 @@ MF=Makefile.cfg80211
 echo CONFIG_CFG80211=m >${MF}
 echo CONFIG_NL80211=y >>${MF}
 cat net/wireless/Makefile >> ${MF}
-sed -i 's/cfg80211/iwlwifi-cfg80211/' ${MF}
+sed -i 's/cfg80211/'${LBM_IWL}'cfg80211/' ${MF}
 mv -f ${MF} net/wireless/Makefile
 
 #
@@ -116,17 +118,19 @@ EOF
 #
 TL=token_list
 find net -name "*.[ch]"| \
-xargs grep EXPORT_SYMBOL|grep -v compat.c | \
+xargs grep EXPORT_SYMBOL|grep -v compat.c | grep -v wext.c | \
 sed -e 's/^.*EXPORT_SYMBOL.*(//' -e 's/);//' > ${TL}
 
-TL_R=rm_token_list
-grep EXPORT_SYMBOL net/wireless/wext.c | \
-sed -e 's/^.*EXPORT_SYMBOL.*(//' -e 's/);//' > ${TL_R}
+if false
+then
+	TL_R=rm_token_list
+	grep EXPORT_SYMBOL net/wireless/wext.c | sed -e 's/^.*EXPORT_SYMBOL.*(//' -e 's/);//' > ${TL_R}
 
-while read rm_token
-do 
-    sed -i -e "s/${rm_token}//g" -e  "/^$/d" ${TL}
-done < ${TL_R}
+	while read rm_token
+	do 
+    		sed -i -e "s/${rm_token}//g" -e  "/^$/d" ${TL}
+	done < ${TL_R}
+fi
 
 while read token
 do 
@@ -138,3 +142,9 @@ do
 done < ${TL}
 
 rm -f ${TL} ${TL_R}
+#
+# Change the ucode file name.
+#
+sed -i 's/^#define.*IWL3945_UCODE_API.*$/#define IWL3945_UCODE_API  "-1-lbm"/' drivers/net/wireless/iwlwifi/iwl-3945.h
+sed -i 's/^#define.*IWL4965_UCODE_API.*$/#define IWL4965_UCODE_API  "-2-lbm"/' drivers/net/wireless/iwlwifi/iwl-4965.c
+sed -i 's/^#define.*IWL5000_UCODE_API.*$/#define IWL5000_UCODE_API  "-1-lbm"/' drivers/net/wireless/iwlwifi/iwl-5000.c

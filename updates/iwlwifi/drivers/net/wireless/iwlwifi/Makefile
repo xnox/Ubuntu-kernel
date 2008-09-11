@@ -6,11 +6,11 @@ iwlcore-$(CONFIG_IWLWIFI_DEBUGFS) += iwl-debugfs.o
 iwlcore-$(CONFIG_IWLWIFI_LEDS) += iwl-led.o
 iwlcore-$(CONFIG_IWLWIFI_RFKILL) += iwl-rfkill.o
 
-obj-$(CONFIG_IWLAGN)	+= iwlagn.o
-iwlagn-objs		:= iwl-agn.o iwl-agn-rs.o
-iwlagn-$(CONFIG_IWL5000) += iwl-5000.o
+obj-$(CONFIG_IWLAGN)	+= iwl4965.o
+iwl4965-objs		:= iwl-agn.o iwl-agn-rs.o
+iwl4965-$(CONFIG_IWL5000) += iwl-5000.o
 
-iwlagn-$(CONFIG_IWL4965) += iwl-4965.o
+iwl4965-$(CONFIG_IWL4965) += iwl-4965.o
 
 
 obj-$(CONFIG_IWL3945)	+= iwl3945.o
