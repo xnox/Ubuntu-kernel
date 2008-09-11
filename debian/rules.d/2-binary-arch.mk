@@ -9,7 +9,7 @@ printenv:
 	@echo "confdir    : $(confdir)"
 	@echo "stampdir   : $(stampdir)"
 
-make_compat = make $(conc_level) KLIB_BUILD=$(KDIR)
+make_compat = export KLIB_BUILD=$(KDIR) && make $(conc_level) KLIB_BUILD=$(KDIR)
 ifneq ($(LOCAL_ENV_CC),)
 make_compat += CC=$(LOCAL_ENV_CC) DISTCC_HOSTS=$(LOCAL_ENV_DISTCC_HOSTS)
 endif
