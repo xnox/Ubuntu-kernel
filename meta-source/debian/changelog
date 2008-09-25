@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.25.2.2) intrepid; urgency=low
+
+  * ABI update to -2
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Thu, 25 Sep 2008 13:26:45 -0400
+
 linux-ports-meta (2.6.25.1.1) intrepid; urgency=low
 
   * Initial release.
