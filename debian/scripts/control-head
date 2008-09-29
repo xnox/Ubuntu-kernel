@@ -8,7 +8,7 @@ deps=""
 for var in debian/control.d/vars.*; do
 	flavour=$(basename $var | sed 's/.*\.//')
 	. $var
-	deps="${deps}, linux-headers-${version}-${flavour} [${arch}]"
+	deps="${deps}, linux-headers-${version}-${flavour} [${arch}], linux-headers-lum-${version}-${flavour} [${arch}]"
 done
 
 cat $input | sed -e "s#HEADER_DEPS#${deps}#g"
