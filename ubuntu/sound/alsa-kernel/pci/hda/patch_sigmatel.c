@@ -3252,6 +3252,20 @@ static void stac92xx_unsol_event(struct hda_codec *codec, unsigned int res)
 	case STAC_PWR_EVENT:
 		if (spec->num_pwrs > 0)
 			stac92xx_pin_sense(codec, idx);
+	default:
+		switch (codec->subsystem_id) {
+		case 0x103c361a: {
+			int data;
+
+			msleep(500);
+			data = snd_hda_codec_read(codec, codec->afg, 0,
+						AC_VERB_GET_GPIO_DATA, 0);
+
+			/* toggle VREF state based on GPIO1 status */
+			snd_hda_codec_write(codec, codec->afg, 0, 0x7e0,
+						!!(data & 0x02));
+			}
+		}
 	}
 }
 
