@@ -3,7 +3,7 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1)HEADER_DEPS
+Build-Depends: debhelper (>= 3), module-init-tools, coreutils, git-core, kernel-wedge (>= 2.24ubuntu1)HEADER_DEPS
 
 Package: linux-headers-lbm-PKGVER-ABINUM
 Architecture: all
