@@ -267,7 +267,7 @@ static void mac80211_hwsim_beacon_tx(void *arg, u8 *mac,
 	struct sk_buff *skb;
 	struct ieee80211_tx_info *info;
 
-	if (vif->type != IEEE80211_IF_TYPE_AP)
+	if (vif->type != NL80211_IFTYPE_AP)
 		return;
 
 	skb = ieee80211_beacon_get(hw, vif);
@@ -448,6 +448,9 @@ static int __init init_mac80211_hwsim(void)
 
 		hw->channel_change_time = 1;
 		hw->queues = 1;
+		hw->wiphy->interface_modes =
+			BIT(NL80211_IFTYPE_STATION) |
+			BIT(NL80211_IFTYPE_AP);
 
 		memcpy(data->channels, hwsim_channels, sizeof(hwsim_channels));
 		memcpy(data->rates, hwsim_rates, sizeof(hwsim_rates));

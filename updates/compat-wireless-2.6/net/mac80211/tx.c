@@ -233,7 +233,7 @@ ieee80211_tx_h_check_assoc(struct ieee80211_tx_data *tx)
 	     (tx->fc & IEEE80211_FCTL_STYPE) != IEEE80211_STYPE_PROBE_REQ))
 		return TX_DROP;
 
-	if (tx->sdata->vif.type == IEEE80211_IF_TYPE_MESH_POINT)
+	if (tx->sdata->vif.type == NL80211_IFTYPE_MESH_POINT)
 		return TX_CONTINUE;
 
 	if (tx->flags & IEEE80211_TX_PS_BUFFERED)
@@ -243,7 +243,7 @@ ieee80211_tx_h_check_assoc(struct ieee80211_tx_data *tx)
 
 	if (likely(tx->flags & IEEE80211_TX_UNICAST)) {
 		if (unlikely(!(sta_flags & WLAN_STA_ASSOC) &&
-			     tx->sdata->vif.type != IEEE80211_IF_TYPE_IBSS &&
+			     tx->sdata->vif.type != NL80211_IFTYPE_ADHOC &&
 			     (tx->fc & IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_DATA)) {
 #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
 			DECLARE_MAC_BUF(mac);
@@ -257,7 +257,7 @@ ieee80211_tx_h_check_assoc(struct ieee80211_tx_data *tx)
 	} else {
 		if (unlikely((tx->fc & IEEE80211_FCTL_FTYPE) == IEEE80211_FTYPE_DATA &&
 			     tx->local->num_sta == 0 &&
-			     tx->sdata->vif.type != IEEE80211_IF_TYPE_IBSS)) {
+			     tx->sdata->vif.type != NL80211_IFTYPE_ADHOC)) {
 			/*
 			 * No associated STAs - no need to send multicast
 			 * frames.
@@ -288,7 +288,7 @@ static void purge_old_ps_buffers(struct ieee80211_local *local)
 
 	list_for_each_entry_rcu(sdata, &local->interfaces, list) {
 		struct ieee80211_if_ap *ap;
-		if (sdata->vif.type != IEEE80211_IF_TYPE_AP)
+		if (sdata->vif.type != NL80211_IFTYPE_AP)
 			continue;
 		ap = &sdata->u.ap;
 		skb = skb_dequeue(&ap->ps_bc_buf);
@@ -388,7 +388,7 @@ ieee80211_tx_h_unicast_ps_buf(struct ieee80211_tx_data *tx)
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
 		printk(KERN_DEBUG "STA %s aid %d: PS buffer (entries "
 		       "before %d)\n",
-		       print_mac(mac, sta->addr), sta->aid,
+		       print_mac(mac, sta->sta.addr), sta->sta.aid,
 		       skb_queue_len(&sta->ps_tx_buf));
 #endif /* CONFIG_MAC80211_VERBOSE_PS_DEBUG */
 		if (tx->local->total_ps_buffered >= TOTAL_MAX_TX_BUFFER)
@@ -399,7 +399,7 @@ ieee80211_tx_h_unicast_ps_buf(struct ieee80211_tx_data *tx)
 			if (net_ratelimit()) {
 				printk(KERN_DEBUG "%s: STA %s TX "
 				       "buffer full - dropping oldest frame\n",
-				       tx->dev->name, print_mac(mac, sta->addr));
+				       tx->dev->name, print_mac(mac, sta->sta.addr));
 			}
 #endif
 			dev_kfree_skb(old);
@@ -418,7 +418,7 @@ ieee80211_tx_h_unicast_ps_buf(struct ieee80211_tx_data *tx)
 	else if (unlikely(test_sta_flags(sta, WLAN_STA_PS))) {
 		printk(KERN_DEBUG "%s: STA %s in PS mode, but pspoll "
 		       "set -> send frame\n", tx->dev->name,
-		       print_mac(mac, sta->addr));
+		       print_mac(mac, sta->sta.addr));
 	}
 #endif /* CONFIG_MAC80211_VERBOSE_PS_DEBUG */
 	clear_sta_flags(sta, WLAN_STA_PSPOLL);
@@ -541,7 +541,7 @@ ieee80211_tx_h_misc(struct ieee80211_tx_data *tx)
 	sband = tx->local->hw.wiphy->bands[tx->channel->band];
 
 	if (tx->sta)
-		info->control.aid = tx->sta->aid;
+		info->control.sta = &tx->sta->sta;
 
 	if (!info->control.retry_limit) {
 		if (!is_multicast_ether_addr(hdr->addr1)) {
@@ -621,7 +621,7 @@ ieee80211_tx_h_misc(struct ieee80211_tx_data *tx)
 	}
 
 	if (tx->sta)
-		info->control.aid = tx->sta->aid;
+		info->control.sta = &tx->sta->sta;
 
 	return TX_CONTINUE;
 }
@@ -1000,7 +1000,7 @@ __ieee80211_tx_prepare(struct ieee80211_tx_data *tx,
 
 	/* process and remove the injection radiotap header */
 	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
-	if (unlikely(sdata->vif.type == IEEE80211_IF_TYPE_MNTR)) {
+	if (unlikely(sdata->vif.type == NL80211_IFTYPE_MONITOR)) {
 		if (__ieee80211_parse_tx_radiotap(tx, skb) == TX_DROP)
 			return TX_DROP;
 
@@ -1479,8 +1479,8 @@ int ieee80211_subif_start_xmit(struct sk_buff *skb,
 	fc = cpu_to_le16(IEEE80211_FTYPE_DATA | IEEE80211_STYPE_DATA);
 
 	switch (sdata->vif.type) {
-	case IEEE80211_IF_TYPE_AP:
-	case IEEE80211_IF_TYPE_VLAN:
+	case NL80211_IFTYPE_AP:
+	case NL80211_IFTYPE_AP_VLAN:
 		fc |= cpu_to_le16(IEEE80211_FCTL_FROMDS);
 		/* DA BSSID SA */
 		memcpy(hdr.addr1, skb->data, ETH_ALEN);
@@ -1488,7 +1488,7 @@ int ieee80211_subif_start_xmit(struct sk_buff *skb,
 		memcpy(hdr.addr3, skb->data + ETH_ALEN, ETH_ALEN);
 		hdrlen = 24;
 		break;
-	case IEEE80211_IF_TYPE_WDS:
+	case NL80211_IFTYPE_WDS:
 		fc |= cpu_to_le16(IEEE80211_FCTL_FROMDS | IEEE80211_FCTL_TODS);
 		/* RA TA DA SA */
 		memcpy(hdr.addr1, sdata->u.wds.remote_addr, ETH_ALEN);
@@ -1498,7 +1498,7 @@ int ieee80211_subif_start_xmit(struct sk_buff *skb,
 		hdrlen = 30;
 		break;
 #ifdef CONFIG_MAC80211_MESH
-	case IEEE80211_IF_TYPE_MESH_POINT:
+	case NL80211_IFTYPE_MESH_POINT:
 		fc |= cpu_to_le16(IEEE80211_FCTL_FROMDS | IEEE80211_FCTL_TODS);
 		/* RA TA DA SA */
 		if (is_multicast_ether_addr(skb->data))
@@ -1528,7 +1528,7 @@ int ieee80211_subif_start_xmit(struct sk_buff *skb,
 		hdrlen = 30;
 		break;
 #endif
-	case IEEE80211_IF_TYPE_STA:
+	case NL80211_IFTYPE_STATION:
 		fc |= cpu_to_le16(IEEE80211_FCTL_TODS);
 		/* BSSID SA DA */
 		memcpy(hdr.addr1, sdata->u.sta.bssid, ETH_ALEN);
@@ -1536,7 +1536,7 @@ int ieee80211_subif_start_xmit(struct sk_buff *skb,
 		memcpy(hdr.addr3, skb->data, ETH_ALEN);
 		hdrlen = 24;
 		break;
-	case IEEE80211_IF_TYPE_IBSS:
+	case NL80211_IFTYPE_ADHOC:
 		/* DA SA BSSID */
 		memcpy(hdr.addr1, skb->data, ETH_ALEN);
 		memcpy(hdr.addr2, skb->data + ETH_ALEN, ETH_ALEN);
@@ -1886,7 +1886,7 @@ struct sk_buff *ieee80211_beacon_get(struct ieee80211_hw *hw,
 	sdata = vif_to_sdata(vif);
 	bdev = sdata->dev;
 
-	if (sdata->vif.type == IEEE80211_IF_TYPE_AP) {
+	if (sdata->vif.type == NL80211_IFTYPE_AP) {
 		ap = &sdata->u.ap;
 		beacon = rcu_dereference(ap->beacon);
 		if (ap && beacon) {
@@ -1928,7 +1928,7 @@ struct sk_buff *ieee80211_beacon_get(struct ieee80211_hw *hw,
 			num_beacons = &ap->num_beacons;
 		} else
 			goto out;
-	} else if (sdata->vif.type == IEEE80211_IF_TYPE_IBSS) {
+	} else if (sdata->vif.type == NL80211_IFTYPE_ADHOC) {
 		struct ieee80211_hdr *hdr;
 		ifsta = &sdata->u.sta;
 
@@ -2067,7 +2067,7 @@ ieee80211_get_buffered_bc(struct ieee80211_hw *hw,
 	rcu_read_lock();
 	beacon = rcu_dereference(bss->beacon);
 
-	if (sdata->vif.type != IEEE80211_IF_TYPE_AP || !beacon || !beacon->head)
+	if (sdata->vif.type != NL80211_IFTYPE_AP || !beacon || !beacon->head)
 		goto out;
 
 	if (bss->dtim_count != 0)

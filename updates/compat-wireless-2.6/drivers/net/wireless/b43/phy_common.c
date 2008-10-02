@@ -29,12 +29,13 @@
 #include "phy_common.h"
 #include "phy_g.h"
 #include "phy_a.h"
-#include "nphy.h"
+#include "phy_n.h"
+#include "phy_lp.h"
 #include "b43.h"
 #include "main.h"
 
 
-int b43_phy_operations_setup(struct b43_wldev *dev)
+int b43_phy_allocate(struct b43_wldev *dev)
 {
 	struct b43_phy *phy = &(dev->phy);
 	int err;
@@ -54,7 +55,9 @@ int b43_phy_operations_setup(struct b43_wldev *dev)
 #endif
 		break;
 	case B43_PHYTYPE_LP:
-		/* FIXME: Not yet */
+#ifdef CONFIG_B43_PHY_LP
+		phy->ops = &b43_phyops_lp;
+#endif
 		break;
 	}
 	if (B43_WARN_ON(!phy->ops))
@@ -65,6 +68,12 @@ int b43_phy_operations_setup(struct b43_wldev *dev)
 		phy->ops = NULL;
 
 	return err;
+}
+
+void b43_phy_free(struct b43_wldev *dev)
+{
+	dev->phy.ops->free(dev);
+	dev->phy.ops = NULL;
 }
 
 int b43_phy_init(struct b43_wldev *dev)
@@ -153,7 +162,7 @@ void b43_phy_lock(struct b43_wldev *dev)
 #endif
 	B43_WARN_ON(dev->dev->id.revision < 3);
 
-	if (!b43_is_mode(dev->wl, IEEE80211_IF_TYPE_AP))
+	if (!b43_is_mode(dev->wl, NL80211_IFTYPE_AP))
 		b43_power_saving_ctl_bits(dev, B43_PS_AWAKE);
 }
 
@@ -165,7 +174,7 @@ void b43_phy_unlock(struct b43_wldev *dev)
 #endif
 	B43_WARN_ON(dev->dev->id.revision < 3);
 
-	if (!b43_is_mode(dev->wl, IEEE80211_IF_TYPE_AP))
+	if (!b43_is_mode(dev->wl, NL80211_IFTYPE_AP))
 		b43_power_saving_ctl_bits(dev, 0);
 }
 
@@ -364,4 +373,9 @@ int b43_phy_shm_tssi_read(struct b43_wldev *dev, u16 shm_offset)
 	}
 
 	return average;
+}
+
+void b43_phyop_switch_analog_generic(struct b43_wldev *dev, bool on)
+{
+	b43_write16(dev, B43_MMIO_PHY0, on ? 0 : 0xF4);
 }

@@ -85,10 +85,12 @@ be interested in.
 Driver
 adm8211
 ath5k
+ath9k
 b43
 b43legacy
 iwl3945
 iwl4965
+iwl5000
 ipw2100
 ipw2200
 libertas_cs (Libertas)

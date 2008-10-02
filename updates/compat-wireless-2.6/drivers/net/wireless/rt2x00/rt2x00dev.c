@@ -467,8 +467,8 @@ static void rt2x00lib_beacondone_iter(void *data, u8 *mac,
 	struct rt2x00_dev *rt2x00dev = data;
 	struct rt2x00_intf *intf = vif_to_intf(vif);
 
-	if (vif->type != IEEE80211_IF_TYPE_AP &&
-	    vif->type != IEEE80211_IF_TYPE_IBSS)
+	if (vif->type != NL80211_IFTYPE_AP &&
+	    vif->type != NL80211_IFTYPE_ADHOC)
 		return;
 
 	/*
@@ -1048,6 +1048,11 @@ int rt2x00lib_probe_dev(struct rt2x00_dev *rt2x00dev)
 	 */
 	rt2x00dev->hw->vif_data_size = sizeof(struct rt2x00_intf);
 
+	rt2x00dev->hw->wiphy->interface_modes =
+	    BIT(NL80211_IFTYPE_AP) |
+	    BIT(NL80211_IFTYPE_STATION) |
+	    BIT(NL80211_IFTYPE_ADHOC);
+
 	/*
 	 * Let the driver probe the device to detect the capabilities.
 	 */
@@ -1202,8 +1207,8 @@ static void rt2x00lib_resume_intf(void *data, u8 *mac,
 	/*
 	 * Master or Ad-hoc mode require a new beacon update.
 	 */
-	if (vif->type == IEEE80211_IF_TYPE_AP ||
-	    vif->type == IEEE80211_IF_TYPE_IBSS)
+	if (vif->type == NL80211_IFTYPE_AP ||
+	    vif->type == NL80211_IFTYPE_ADHOC)
 		intf->delayed_flags |= DELAYED_UPDATE_BEACON;
 
 	spin_unlock(&intf->lock);

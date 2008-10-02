@@ -485,6 +485,12 @@ ath5k_pci_probe(struct pci_dev *pdev,
 	hw->flags = IEEE80211_HW_RX_INCLUDES_FCS |
 		    IEEE80211_HW_SIGNAL_DBM |
 		    IEEE80211_HW_NOISE_DBM;
+
+	hw->wiphy->interface_modes =
+		BIT(NL80211_IFTYPE_STATION) |
+		BIT(NL80211_IFTYPE_ADHOC) |
+		BIT(NL80211_IFTYPE_MESH_POINT);
+
 	hw->extra_tx_headroom = 2;
 	hw->channel_change_time = 5000;
 	sc = hw->priv;
@@ -501,7 +507,7 @@ ath5k_pci_probe(struct pci_dev *pdev,
 
 	sc->iobase = mem; /* So we can unmap it on detach */
 	sc->cachelsz = csz * sizeof(u32); /* convert to bytes */
-	sc->opmode = IEEE80211_IF_TYPE_STA;
+	sc->opmode = NL80211_IFTYPE_STATION;
 	mutex_init(&sc->lock);
 	spin_lock_init(&sc->rxbuflock);
 	spin_lock_init(&sc->txbuflock);
@@ -707,7 +713,7 @@ ath5k_attach(struct pci_dev *pdev, struct ieee80211_hw *hw)
 	 * return false w/o doing anything.  MAC's that do
 	 * support it will return true w/o doing anything.
 	 */
-	ret = ah->ah_setup_xtx_desc(ah, NULL, 0, 0, 0, 0, 0, 0);
+	ret = ah->ah_setup_mrr_tx_desc(ah, NULL, 0, 0, 0, 0, 0, 0);
 	if (ret < 0)
 		goto err;
 	if (ret > 0)
@@ -1111,7 +1117,11 @@ ath5k_rxbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 		bf->skb = skb;
 		bf->skbaddr = pci_map_single(sc->pdev,
 			skb->data, sc->rxbufsize, PCI_DMA_FROMDEVICE);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
 		if (unlikely(pci_dma_mapping_error(bf->skbaddr))) {
+#else
+		if (unlikely(pci_dma_mapping_error(sc->pdev, bf->skbaddr))) {
+#endif
 			ATH5K_ERR(sc, "%s: DMA mapping failed\n", __func__);
 			dev_kfree_skb(skb);
 			bf->skb = NULL;
@@ -1137,7 +1147,7 @@ ath5k_rxbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 	ds = bf->desc;
 	ds->ds_link = bf->daddr;	/* link to self */
 	ds->ds_data = bf->skbaddr;
-	ath5k_hw_setup_rx_desc(ah, ds,
+	ah->ah_setup_rx_desc(ah, ds,
 		skb_tailroom(skb),	/* buffer size */
 		0);
 
@@ -1188,12 +1198,12 @@ ath5k_txbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 	list_add_tail(&bf->list, &txq->q);
 	sc->tx_stats[txq->qnum].len++;
 	if (txq->link == NULL) /* is this first packet? */
-		ath5k_hw_put_tx_buf(ah, txq->qnum, bf->daddr);
+		ath5k_hw_set_txdp(ah, txq->qnum, bf->daddr);
 	else /* no, so only link it */
 		*txq->link = bf->daddr;
 
 	txq->link = &ds->ds_link;
-	ath5k_hw_tx_start(ah, txq->qnum);
+	ath5k_hw_start_tx_dma(ah, txq->qnum);
 	mmiowb();
 	spin_unlock_bh(&txq->lock);
 
@@ -1371,8 +1381,8 @@ ath5k_beaconq_config(struct ath5k_softc *sc)
 	ret = ath5k_hw_get_tx_queueprops(ah, sc->bhalq, &qi);
 	if (ret)
 		return ret;
-	if (sc->opmode == IEEE80211_IF_TYPE_AP ||
-		sc->opmode == IEEE80211_IF_TYPE_MESH_POINT) {
+	if (sc->opmode == NL80211_IFTYPE_AP ||
+		sc->opmode == NL80211_IFTYPE_MESH_POINT) {
 		/*
 		 * Always burst out beacon and CAB traffic
 		 * (aifs = cwmin = cwmax = 0)
@@ -1380,7 +1390,7 @@ ath5k_beaconq_config(struct ath5k_softc *sc)
 		qi.tqi_aifs = 0;
 		qi.tqi_cw_min = 0;
 		qi.tqi_cw_max = 0;
-	} else if (sc->opmode == IEEE80211_IF_TYPE_IBSS) {
+	} else if (sc->opmode == NL80211_IFTYPE_ADHOC) {
 		/*
 		 * Adhoc mode; backoff between 0 and (2 * cw_min).
 		 */
@@ -1393,7 +1403,7 @@ ath5k_beaconq_config(struct ath5k_softc *sc)
 		"beacon queueprops tqi_aifs:%d tqi_cw_min:%d tqi_cw_max:%d\n",
 		qi.tqi_aifs, qi.tqi_cw_min, qi.tqi_cw_max);
 
-	ret = ath5k_hw_setup_tx_queueprops(ah, sc->bhalq, &qi);
+	ret = ath5k_hw_set_tx_queueprops(ah, sc->bhalq, &qi);
 	if (ret) {
 		ATH5K_ERR(sc, "%s: unable to update parameters for beacon "
 			"hardware queue!\n", __func__);
@@ -1442,14 +1452,14 @@ ath5k_txq_cleanup(struct ath5k_softc *sc)
 		/* don't touch the hardware if marked invalid */
 		ath5k_hw_stop_tx_dma(ah, sc->bhalq);
 		ATH5K_DBG(sc, ATH5K_DEBUG_RESET, "beacon queue %x\n",
-			ath5k_hw_get_tx_buf(ah, sc->bhalq));
+			ath5k_hw_get_txdp(ah, sc->bhalq));
 		for (i = 0; i < ARRAY_SIZE(sc->txqs); i++)
 			if (sc->txqs[i].setup) {
 				ath5k_hw_stop_tx_dma(ah, sc->txqs[i].qnum);
 				ATH5K_DBG(sc, ATH5K_DEBUG_RESET, "txq [%u] %x, "
 					"link %p\n",
 					sc->txqs[i].qnum,
-					ath5k_hw_get_tx_buf(ah,
+					ath5k_hw_get_txdp(ah,
 							sc->txqs[i].qnum),
 					sc->txqs[i].link);
 			}
@@ -1509,8 +1519,8 @@ ath5k_rx_start(struct ath5k_softc *sc)
 	bf = list_first_entry(&sc->rxbuf, struct ath5k_buf, list);
 	spin_unlock_bh(&sc->rxbuflock);
 
-	ath5k_hw_put_rx_buf(ah, bf->daddr);
-	ath5k_hw_start_rx(ah);		/* enable recv descriptors */
+	ath5k_hw_set_rxdp(ah, bf->daddr);
+	ath5k_hw_start_rx_dma(ah);	/* enable recv descriptors */
 	ath5k_mode_setup(sc);		/* set filters, etc. */
 	ath5k_hw_start_rx_pcu(ah);	/* re-enable PCU/DMA engine */
 
@@ -1527,7 +1537,7 @@ ath5k_rx_stop(struct ath5k_softc *sc)
 {
 	struct ath5k_hw *ah = sc->ah;
 
-	ath5k_hw_stop_pcu_recv(ah);	/* disable PCU */
+	ath5k_hw_stop_rx_pcu(ah);	/* disable PCU */
 	ath5k_hw_set_rx_filter(ah, 0);	/* clear recv filter */
 	ath5k_hw_stop_rx_dma(ah);	/* disable DMA engine */
 
@@ -1708,7 +1718,7 @@ ath5k_tasklet_rx(unsigned long data)
 			/* let crypto-error packets fall through in MNTR */
 			if ((rs.rs_status &
 				~(AR5K_RXERR_DECRYPT|AR5K_RXERR_MIC)) ||
-					sc->opmode != IEEE80211_IF_TYPE_MNTR)
+					sc->opmode != NL80211_IFTYPE_MONITOR)
 				goto next;
 		}
 accept:
@@ -1771,7 +1781,7 @@ accept:
 		ath5k_debug_dump_skb(sc, skb, "RX  ", 0);
 
 		/* check beacons in IBSS mode */
-		if (sc->opmode == IEEE80211_IF_TYPE_IBSS)
+		if (sc->opmode == NL80211_IFTYPE_ADHOC)
 			ath5k_check_ibss_tsf(sc, skb, &rxs);
 
 		__ieee80211_rx(sc->hw, skb, &rxs);
@@ -1878,7 +1888,11 @@ ath5k_beacon_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 	ATH5K_DBG(sc, ATH5K_DEBUG_BEACON, "skb %p [data %p len %u] "
 			"skbaddr %llx\n", skb, skb->data, skb->len,
 			(unsigned long long)bf->skbaddr);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
 	if (pci_dma_mapping_error(bf->skbaddr)) {
+#else
+	if (pci_dma_mapping_error(sc->pdev, bf->skbaddr)) {
+#endif
 		ATH5K_ERR(sc, "beacon DMA mapping failed\n");
 		return -EIO;
 	}
@@ -1886,7 +1900,7 @@ ath5k_beacon_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 	ds = bf->desc;
 
 	flags = AR5K_TXDESC_NOACK;
-	if (sc->opmode == IEEE80211_IF_TYPE_IBSS && ath5k_hw_hasveol(ah)) {
+	if (sc->opmode == NL80211_IFTYPE_ADHOC && ath5k_hw_hasveol(ah)) {
 		ds->ds_link = bf->daddr;	/* self-linked */
 		flags |= AR5K_TXDESC_VEOL;
 		/*
@@ -1935,8 +1949,8 @@ ath5k_beacon_send(struct ath5k_softc *sc)
 
 	ATH5K_DBG_UNLIMIT(sc, ATH5K_DEBUG_BEACON, "in beacon_send\n");
 
-	if (unlikely(bf->skb == NULL || sc->opmode == IEEE80211_IF_TYPE_STA ||
-			sc->opmode == IEEE80211_IF_TYPE_MNTR)) {
+	if (unlikely(bf->skb == NULL || sc->opmode == NL80211_IFTYPE_STATION ||
+			sc->opmode == NL80211_IFTYPE_MONITOR)) {
 		ATH5K_WARN(sc, "bf=%p bf_skb=%p\n", bf, bf ? bf->skb : NULL);
 		return;
 	}
@@ -1976,8 +1990,8 @@ ath5k_beacon_send(struct ath5k_softc *sc)
 		/* NB: hw still stops DMA, so proceed */
 	}
 
-	ath5k_hw_put_tx_buf(ah, sc->bhalq, bf->daddr);
-	ath5k_hw_tx_start(ah, sc->bhalq);
+	ath5k_hw_set_txdp(ah, sc->bhalq, bf->daddr);
+	ath5k_hw_start_tx_dma(ah, sc->bhalq);
 	ATH5K_DBG(sc, ATH5K_DEBUG_BEACON, "TXDP[%u] = %llx (%p)\n",
 		sc->bhalq, (unsigned long long)bf->daddr, bf->desc);
 
@@ -2106,13 +2120,13 @@ ath5k_beacon_config(struct ath5k_softc *sc)
 {
 	struct ath5k_hw *ah = sc->ah;
 
-	ath5k_hw_set_intr(ah, 0);
+	ath5k_hw_set_imr(ah, 0);
 	sc->bmisscount = 0;
 	sc->imask &= ~(AR5K_INT_BMISS | AR5K_INT_SWBA);
 
-	if (sc->opmode == IEEE80211_IF_TYPE_STA) {
+	if (sc->opmode == NL80211_IFTYPE_STATION) {
 		sc->imask |= AR5K_INT_BMISS;
-	} else if (sc->opmode == IEEE80211_IF_TYPE_IBSS) {
+	} else if (sc->opmode == NL80211_IFTYPE_ADHOC) {
 		/*
 		 * In IBSS mode we use a self-linked tx descriptor and let the
 		 * hardware send the beacons automatically. We have to load it
@@ -2132,7 +2146,7 @@ ath5k_beacon_config(struct ath5k_softc *sc)
 	}
 	/* TODO else AP */
 
-	ath5k_hw_set_intr(ah, sc->imask);
+	ath5k_hw_set_imr(ah, sc->imask);
 }
 
 
@@ -2211,7 +2225,7 @@ ath5k_stop_locked(struct ath5k_softc *sc)
 
 	if (!test_bit(ATH_STAT_INVALID, sc->status)) {
 		ath5k_led_off(sc);
-		ath5k_hw_set_intr(ah, 0);
+		ath5k_hw_set_imr(ah, 0);
 		synchronize_irq(sc->pdev->irq);
 	}
 	ath5k_txq_cleanup(sc);
@@ -2317,7 +2331,7 @@ ath5k_intr(int irq, void *dev_id)
 				* transmission time) in order to detect wether
 				* automatic TSF updates happened.
 				*/
-				if (sc->opmode == IEEE80211_IF_TYPE_IBSS) {
+				if (sc->opmode == NL80211_IFTYPE_ADHOC) {
 					 /* XXX: only if VEOL suppported */
 					u64 tsf = ath5k_hw_get_tsf64(ah);
 					sc->nexttbtt += sc->bintval;
@@ -2547,7 +2561,7 @@ ath5k_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 
 	ath5k_debug_dump_skb(sc, skb, "TX  ", 1);
 
-	if (sc->opmode == IEEE80211_IF_TYPE_MNTR)
+	if (sc->opmode == NL80211_IFTYPE_MONITOR)
 		ATH5K_DBG(sc, ATH5K_DEBUG_XMIT, "tx in monitor (scan?)\n");
 
 	/*
@@ -2604,7 +2618,7 @@ ath5k_reset(struct ath5k_softc *sc, bool stop, bool change_channel)
 	ATH5K_DBG(sc, ATH5K_DEBUG_RESET, "resetting\n");
 
 	if (stop) {
-		ath5k_hw_set_intr(ah, 0);
+		ath5k_hw_set_imr(ah, 0);
 		ath5k_txq_cleanup(sc);
 		ath5k_rx_stop(sc);
 	}
@@ -2682,9 +2696,9 @@ static int ath5k_add_interface(struct ieee80211_hw *hw,
 	sc->vif = conf->vif;
 
 	switch (conf->type) {
-	case IEEE80211_IF_TYPE_STA:
-	case IEEE80211_IF_TYPE_IBSS:
-	case IEEE80211_IF_TYPE_MNTR:
+	case NL80211_IFTYPE_STATION:
+	case NL80211_IFTYPE_ADHOC:
+	case NL80211_IFTYPE_MONITOR:
 		sc->opmode = conf->type;
 		break;
 	default:
@@ -2755,7 +2769,7 @@ ath5k_config_interface(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 	}
 
 	if (conf->changed & IEEE80211_IFCC_BEACON &&
-	    vif->type == IEEE80211_IF_TYPE_IBSS) {
+	    vif->type == NL80211_IFTYPE_ADHOC) {
 		struct sk_buff *beacon = ieee80211_beacon_get(hw, vif);
 		if (!beacon) {
 			ret = -ENOMEM;
@@ -2874,17 +2888,17 @@ static void ath5k_configure_filter(struct ieee80211_hw *hw,
 
 	/* XXX move these to mac80211, and add a beacon IFF flag to mac80211 */
 
-	if (sc->opmode == IEEE80211_IF_TYPE_MNTR)
+	if (sc->opmode == NL80211_IFTYPE_MONITOR)
 		rfilt |= AR5K_RX_FILTER_CONTROL | AR5K_RX_FILTER_BEACON |
 			AR5K_RX_FILTER_PROBEREQ | AR5K_RX_FILTER_PROM;
-	if (sc->opmode != IEEE80211_IF_TYPE_STA)
+	if (sc->opmode != NL80211_IFTYPE_STATION)
 		rfilt |= AR5K_RX_FILTER_PROBEREQ;
-	if (sc->opmode != IEEE80211_IF_TYPE_AP &&
-		sc->opmode != IEEE80211_IF_TYPE_MESH_POINT &&
+	if (sc->opmode != NL80211_IFTYPE_AP &&
+		sc->opmode != NL80211_IFTYPE_MESH_POINT &&
 		test_bit(ATH_STAT_PROMISC, sc->status))
 		rfilt |= AR5K_RX_FILTER_PROM;
-	if (sc->opmode == IEEE80211_IF_TYPE_STA ||
-		sc->opmode == IEEE80211_IF_TYPE_IBSS) {
+	if (sc->opmode == NL80211_IFTYPE_STATION ||
+		sc->opmode == NL80211_IFTYPE_ADHOC) {
 		rfilt |= AR5K_RX_FILTER_BEACON;
 	}
 
@@ -2989,7 +3003,7 @@ ath5k_reset_tsf(struct ieee80211_hw *hw)
 	 * in IBSS mode we need to update the beacon timers too.
 	 * this will also reset the TSF if we call it with 0
 	 */
-	if (sc->opmode == IEEE80211_IF_TYPE_IBSS)
+	if (sc->opmode == NL80211_IFTYPE_ADHOC)
 		ath5k_beacon_update_timers(sc, 0);
 	else
 		ath5k_hw_reset_tsf(sc->ah);
@@ -3004,7 +3018,7 @@ ath5k_beacon_update(struct ieee80211_hw *hw, struct sk_buff *skb)
 
 	ath5k_debug_dump_skb(sc, skb, "BC  ", 1);
 
-	if (sc->opmode != IEEE80211_IF_TYPE_IBSS) {
+	if (sc->opmode != NL80211_IFTYPE_ADHOC) {
 		ret = -EIO;
 		goto end;
 	}

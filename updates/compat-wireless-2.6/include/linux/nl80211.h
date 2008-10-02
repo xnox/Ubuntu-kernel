@@ -192,6 +192,10 @@ enum nl80211_commands {
  * @NL80211_ATTR_MNTR_FLAGS: flags, nested element with NLA_FLAG attributes of
  *      &enum nl80211_mntr_flags.
  *
+ * @NL80211_ATTR_SUPPORTED_IFTYPES: nested attribute containing all
+ *    supported interface types, each a flag attribute with the number
+ *    of the interface mode.
+ *
  * @NL80211_ATTR_MAX: highest attribute number currently defined
  * @__NL80211_ATTR_AFTER_LAST: internal use
  */
@@ -234,6 +238,8 @@ enum nl80211_attrs {
 	NL80211_ATTR_STA_PLINK_ACTION,
 	NL80211_ATTR_MPATH_NEXT_HOP,
 	NL80211_ATTR_MPATH_INFO,
+
+	NL80211_ATTR_SUPPORTED_IFTYPES,
 
 	/* add attributes here, update the policy in nl80211.c */
 

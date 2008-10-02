@@ -92,8 +92,9 @@ install: uninstall modules
 	@$(MODPROBE) -l b43
 	@$(MODPROBE) -l b43legacy
 	@$(MODPROBE) -l ssb
+	@$(MODPROBE) -l iwlcore
 	@$(MODPROBE) -l iwl3945
-	@$(MODPROBE) -l iwl4965
+	@$(MODPROBE) -l iwlagn
 	@$(MODPROBE) -l ipw2100
 	@$(MODPROBE) -l ipw2200
 	@$(MODPROBE) -l ieee80211
@@ -154,8 +155,9 @@ uninstall:
 	@$(MODPROBE) -l b43legacy
 	@$(MODPROBE) -l ssb
 	@$(MODPROBE) -l rc80211_simple
+	@$(MODPROBE) -l iwlcore
 	@$(MODPROBE) -l iwl3945
-	@$(MODPROBE) -l iwl4965
+	@$(MODPROBE) -l iwlagn
 	@$(MODPROBE) -l ipw2100
 	@$(MODPROBE) -l ipw2200
 	@$(MODPROBE) -l ieee80211

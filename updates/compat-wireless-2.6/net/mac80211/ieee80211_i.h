@@ -81,6 +81,7 @@ struct ieee80211_sta_bss {
 
 	u8 bssid[ETH_ALEN];
 	u8 ssid[IEEE80211_MAX_SSID_LEN];
+	u8 dtim_period;
 	u16 capability; /* host byte order */
 	enum ieee80211_band band;
 	int freq;
@@ -935,10 +936,10 @@ static inline void ieee80211_start_mesh(struct net_device *dev)
 /* interface handling */
 void ieee80211_if_setup(struct net_device *dev);
 int ieee80211_if_add(struct ieee80211_local *local, const char *name,
-		     struct net_device **new_dev, enum ieee80211_if_types type,
+		     struct net_device **new_dev, enum nl80211_iftype type,
 		     struct vif_params *params);
 int ieee80211_if_change_type(struct ieee80211_sub_if_data *sdata,
-			     enum ieee80211_if_types type);
+			     enum nl80211_iftype type);
 void ieee80211_if_remove(struct net_device *dev);
 void ieee80211_remove_interfaces(struct ieee80211_local *local);
 
@@ -954,7 +955,7 @@ extern void *mac80211_wiphy_privid; /* for wiphy privid */
 extern const unsigned char rfc1042_header[6];
 extern const unsigned char bridge_tunnel_header[6];
 u8 *ieee80211_get_bssid(struct ieee80211_hdr *hdr, size_t len,
-			enum ieee80211_if_types type);
+			enum nl80211_iftype type);
 int ieee80211_frame_duration(struct ieee80211_local *local, size_t len,
 			     int rate, int erp, int short_preamble);
 void mac80211_ev_michael_mic_failure(struct net_device *dev, int keyidx,

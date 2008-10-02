@@ -22,7 +22,7 @@
  */
 
 #define IEEE80211_DEV_TO_LOCAL(dev) \
-	((struct ieee80211_local *)(IEEE80211_DEV_TO_SUB_IF(dev))->local)
+	((struct ieee80211_local *)(wdev_priv(dev->ieee80211_ptr)))
 
 /* This was stripped out after MQ patch for mac80211, let bring it
  * back to life */

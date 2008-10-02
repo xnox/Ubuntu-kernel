@@ -167,8 +167,6 @@ struct sta_ampdu_mlme {
  * @lock: used for locking all fields that require locking, see comments
  *	in the header file.
  * @flaglock: spinlock for flags accesses
- * @ht_info: HT capabilities of this STA
- * @supp_rates: Bitmap of supported rates (per band)
  * @addr: MAC address of this STA
  * @aid: STA's unique AID (1..2007, 0 = not assigned yet),
  *	only used in AP (and IBSS?) mode
@@ -217,6 +215,7 @@ struct sta_ampdu_mlme {
  * @plink_timeout: TBD
  * @plink_timer: TBD
  * @debugfs: debug filesystem info
+ * @sta: station information we share with the driver
  */
 struct sta_info {
 	/* General information, mostly static */
@@ -229,10 +228,7 @@ struct sta_info {
 	void *rate_ctrl_priv;
 	spinlock_t lock;
 	spinlock_t flaglock;
-	struct ieee80211_ht_info ht_info;
-	u64 supp_rates[IEEE80211_NUM_BANDS];
-	u8 addr[ETH_ALEN];
-	u16 aid;
+
 	u16 listen_interval;
 
 	/*
@@ -326,6 +322,9 @@ struct sta_info {
 		struct dentry *agg_status;
 	} debugfs;
 #endif
+
+	/* keep last! */
+	struct ieee80211_sta sta;
 };
 
 static inline enum plink_state sta_plink_state(struct sta_info *sta)

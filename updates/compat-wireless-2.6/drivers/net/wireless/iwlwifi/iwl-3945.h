@@ -54,7 +54,7 @@ extern struct pci_device_id iwl3945_hw_card_ids[];
  *   *only* when uCode interface or architecture changes so that it
  *   is not compatible with earlier drivers.
  * This number will also appear in << 8 position of 1st dword of uCode file */
-#define IWL3945_UCODE_API "-1-lbm"
+#define IWL3945_UCODE_API "-1"
 
 /* Default noise level to report when noise measurement is not available.
  *   This may be because we're:
@@ -707,7 +707,6 @@ struct iwl3945_priv {
 
 	enum ieee80211_band band;
 	int alloc_rxb_skb;
-	bool add_radiotap;
 
 	void (*rx_handlers[REPLY_MAX])(struct iwl3945_priv *priv,
 				       struct iwl3945_rx_mem_buffer *rxb);
@@ -852,7 +851,7 @@ struct iwl3945_priv {
 	/* eeprom */
 	struct iwl3945_eeprom eeprom;
 
-	enum ieee80211_if_types iw_mode;
+	enum nl80211_iftype iw_mode;
 
 	struct sk_buff *ibss_beacon;
 
@@ -895,7 +894,6 @@ struct iwl3945_priv {
 	struct delayed_work thermal_periodic;
 	struct delayed_work gather_stats;
 	struct delayed_work scan_check;
-	struct delayed_work post_associate;
 
 #define IWL_DEFAULT_TX_POWER 0x0F
 	s8 user_txpower_limit;

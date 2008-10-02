@@ -183,7 +183,7 @@ static void rate_control_pid_sample(struct rc_pid_info *pinfo,
 		pf = spinfo->tx_num_failed * 100 / spinfo->tx_num_xmit;
 #ifdef CONFIG_MAC80211_MESH
 		if (pf == 100 &&
-		    sdata->vif.type == IEEE80211_IF_TYPE_MESH_POINT)
+		    sdata->vif.type == NL80211_IFTYPE_MESH_POINT)
 			mesh_plink_broken(sta);
 #endif
 		pf <<= RC_PID_ARITH_SHIFT;

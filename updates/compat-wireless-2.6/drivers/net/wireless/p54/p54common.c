@@ -824,7 +824,7 @@ static int p54_start(struct ieee80211_hw *dev)
 
 	err = priv->open(dev);
 	if (!err)
-		priv->mode = IEEE80211_IF_TYPE_MNTR;
+		priv->mode = NL80211_IFTYPE_MONITOR;
 
 	return err;
 }
@@ -836,7 +836,7 @@ static void p54_stop(struct ieee80211_hw *dev)
 	while ((skb = skb_dequeue(&priv->tx_queue)))
 		kfree_skb(skb);
 	priv->stop(dev);
-	priv->mode = IEEE80211_IF_TYPE_INVALID;
+	priv->mode = NL80211_IFTYPE_UNSPECIFIED;
 }
 
 static int p54_add_interface(struct ieee80211_hw *dev,
@@ -844,11 +844,11 @@ static int p54_add_interface(struct ieee80211_hw *dev,
 {
 	struct p54_common *priv = dev->priv;
 
-	if (priv->mode != IEEE80211_IF_TYPE_MNTR)
+	if (priv->mode != NL80211_IFTYPE_MONITOR)
 		return -EOPNOTSUPP;
 
 	switch (conf->type) {
-	case IEEE80211_IF_TYPE_STA:
+	case NL80211_IFTYPE_STATION:
 		priv->mode = conf->type;
 		break;
 	default:
@@ -861,7 +861,7 @@ static int p54_add_interface(struct ieee80211_hw *dev,
 	p54_set_filter(dev, 0, priv->mac_addr, NULL, 1, 0, 0, 0xF642);
 
 	switch (conf->type) {
-	case IEEE80211_IF_TYPE_STA:
+	case NL80211_IFTYPE_STATION:
 		p54_set_filter(dev, 1, priv->mac_addr, NULL, 0, 0x15F, 0x1F4, 0);
 		break;
 	default:
@@ -878,7 +878,7 @@ static void p54_remove_interface(struct ieee80211_hw *dev,
 				 struct ieee80211_if_init_conf *conf)
 {
 	struct p54_common *priv = dev->priv;
-	priv->mode = IEEE80211_IF_TYPE_MNTR;
+	priv->mode = NL80211_IFTYPE_MONITOR;
 	memset(priv->mac_addr, 0, ETH_ALEN);
 	p54_set_filter(dev, 0, priv->mac_addr, NULL, 2, 0, 0, 0);
 }
@@ -985,12 +985,15 @@ struct ieee80211_hw *p54_init_common(size_t priv_data_len)
 		return NULL;
 
 	priv = dev->priv;
-	priv->mode = IEEE80211_IF_TYPE_INVALID;
+	priv->mode = NL80211_IFTYPE_UNSPECIFIED;
 	skb_queue_head_init(&priv->tx_queue);
 	dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &band_2GHz;
 	dev->flags = IEEE80211_HW_HOST_BROADCAST_PS_BUFFERING | /* not sure */
 		     IEEE80211_HW_RX_INCLUDES_FCS |
 		     IEEE80211_HW_SIGNAL_UNSPEC;
+
+	dev->wiphy->interface_modes = BIT(NL80211_IFTYPE_STATION);
+
 	dev->channel_change_time = 1000;	/* TODO: find actual value */
 	dev->max_signal = 127;
 
