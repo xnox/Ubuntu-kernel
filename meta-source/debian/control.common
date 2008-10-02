@@ -23,20 +23,20 @@ Description: Linux kernel documentation
  This package will always depend on the latest Linux kernel documentation
  available.
 
-Package: linux-ports
+Package: linux
 Architecture: i386 powerpc hppa sparc
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-ports-image (= ${binary:Version})
+Depends: linux-image (= ${binary:Version})
 Description: Generic complete Linux kernel.
  This package will always depend on the latest generic complete Linux kernel
  available.
 
-Package: linux-ports-image
+Package: linux-image
 Architecture: i386 powerpc hppa sparc
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-${generic-depends} (= ${binary:Version})
+Depends: linux-image-${generic-depends} (= ${binary:Version})
 Description: Generic Linux kernel image.
  This package will always depend on the latest generic Linux kernel image
  available.

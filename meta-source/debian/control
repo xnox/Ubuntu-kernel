@@ -23,37 +23,75 @@ Description: Linux kernel documentation
  This package will always depend on the latest Linux kernel documentation
  available.
 
-Package: linux-ports
+Package: linux
 Architecture: i386 powerpc hppa sparc
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-ports-image (= ${binary:Version})
+Depends: linux-image (= ${binary:Version})
 Description: Generic complete Linux kernel.
  This package will always depend on the latest generic complete Linux kernel
  available.
 
-Package: linux-ports-image
+Package: linux-image
 Architecture: i386 powerpc hppa sparc
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-${generic-depends} (= ${binary:Version})
+Depends: linux-image-${generic-depends} (= ${binary:Version})
 Description: Generic Linux kernel image.
  This package will always depend on the latest generic Linux kernel image
  available.
 
 #
+# 386 (tiny i386 kernel)
+#
+Package: linux-386
+Architecture: i386
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-386 (= ${binary:Version})
+Description: Complete Linux kernel on 386.
+ This package will always depend on the latest complete Linux kernel available
+ for 386.
+
+Package: linux-image-386
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-386
+Description: Linux kernel image on 386.
+ This package will always depend on the latest kernel image available
+ for 386.
+
+Package: linux-headers-386
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-386
+Description: Linux kernel headers on 386
+ This package will always depend on the latest kernel headers available
+ for 386.
+
+Package: linux-image-debug-386
+Architecture: i386
+Section: devel
+Depends: linux-image-debug-${kernel-abi-version}-386
+Description: Linux kernel debug image for 386 kernel image
+ This package will always depend on the latest 386 kernel debug image.
+
+
+#
 # hppa32
 #
-Package: linux-ports-hppa32
+Package: linux-hppa32
 Architecture: hppa
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-hppa32 (= ${binary:Version})
+Depends: linux-image-hppa32 (= ${binary:Version})
 Description: Complete Linux kernel on 32-bit PA-RISC.
  This package will always depend on the latest complete Linux kernel available
  for 32-bit PA-RISC.
 
-Package: linux-ports-image-hppa32
+Package: linux-image-hppa32
 Architecture: hppa
 Section: metapackages
 Priority: optional
@@ -62,7 +100,7 @@ Description: Linux kernel image on 32-bit PA-RISC
  This package will always depend on the latest kernel image available
  for 32-bit PA-RISC.
 
-Package: linux-ports-headers-hppa32
+Package: linux-headers-hppa32
 Architecture: hppa
 Section: devel
 Priority: optional
@@ -74,16 +112,16 @@ Description: Linux kernel headers on 32-bit PA-RISC
 #
 # hppa64
 #
-Package: linux-ports-hppa64
+Package: linux-hppa64
 Architecture: hppa
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-hppa64 (= ${binary:Version})
+Depends: linux-image-hppa64 (= ${binary:Version})
 Description: Complete Linux kernel on 64-bit PA-RISC.
  This package will always depend on the latest complete Linux kernel available
  for 64-bit PA-RISC.
 
-Package: linux-ports-image-hppa64
+Package: linux-image-hppa64
 Architecture: hppa
 Section: metapackages
 Priority: optional
@@ -92,7 +130,7 @@ Description: Linux kernel image on 64-bit PA-RISC
  This package will always depend on the latest kernel image available
  for 64-bit PA-RISC.
 
-Package: linux-ports-headers-hppa64
+Package: linux-headers-hppa64
 Architecture: hppa
 Section: devel
 Priority: optional
@@ -103,56 +141,18 @@ Description: Linux kernel headers on 64-bit PA-RISC
 
 
 #
-# 386 (tiny i386 kernel)
-#
-Package: linux-ports-386
-Architecture: i386
-Section: restricted/metapackages
-Priority: optional
-Depends: linux-ports-image-386 (= ${binary:Version})
-Description: Complete Linux kernel on 386.
- This package will always depend on the latest complete Linux kernel available
- for 386.
-
-Package: linux-ports-image-386
-Architecture: i386
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-386
-Description: Linux kernel image on 386.
- This package will always depend on the latest kernel image available
- for 386.
-
-Package: linux-ports-headers-386
-Architecture: i386
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-386
-Description: Linux kernel headers on 386
- This package will always depend on the latest kernel headers available
- for 386.
-
-Package: linux-ports-image-debug-386
-Architecture: i386
-Section: devel
-Depends: linux-image-debug-${kernel-abi-version}-386
-Description: Linux kernel debug image for 386 kernel image
- This package will always depend on the latest 386 kernel debug image.
-
-
-#
 # Itanium (generic)
 #
-Package: linux-ports-itanium
+Package: linux-itanium
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-itanium (= ${binary:Version})
+Depends: linux-image-itanium (= ${binary:Version})
 Description: Complete Linux kernel on Itanium.
  This package will always depend on the latest complete Linux kernel available
  for Itanium.
 
-Package: linux-ports-image-itanium
+Package: linux-image-itanium
 Architecture: ia64
 Section: metapackages
 Priority: optional
@@ -161,7 +161,7 @@ Description: Linux kernel image on Itanium
  This package will always depend on the latest kernel image available
  for Itanium.
 
-Package: linux-ports-headers-itanium
+Package: linux-headers-itanium
 Architecture: ia64
 Section: devel
 Priority: optional
@@ -173,16 +173,16 @@ Description: Linux kernel headers on Itanium
 #
 # Mckinley
 #
-Package: linux-ports-mckinley
+Package: linux-mckinley
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-mckinley (= ${binary:Version})
+Depends: linux-image-mckinley (= ${binary:Version})
 Description: Complete Linux kernel on Itanium II.
  This package will always depend on the latest complete Linux kernel available
  for Itanium II (also known as McKinley).
 
-Package: linux-ports-image-mckinley
+Package: linux-image-mckinley
 Architecture: ia64
 Section: metapackages
 Priority: optional
@@ -191,7 +191,7 @@ Description: Linux kernel image on Itanium II
  This package will always depend on the latest kernel image available
  for Itanium II (also known as McKinley).
 
-Package: linux-ports-headers-mckinley
+Package: linux-headers-mckinley
 Architecture: ia64
 Section: devel
 Priority: optional
@@ -204,17 +204,17 @@ Description: Linux kernel headers on Itanium II
 #
 # PowerPC64-SMP
 #
-Package: linux-ports-powerpc64-smp
+Package: linux-powerpc64-smp
 Architecture: powerpc
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-ports-image-powerpc64-smp (= ${binary:Version})
+Depends: linux-image-powerpc64-smp (= ${binary:Version})
 Description: Complete Linux kernel on PowerPC64 SMP.
  This package will always depend on the latest complete Linux kernel available
  for PowerPC64 with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-ports-image-powerpc64-smp
+Package: linux-image-powerpc64-smp
 Architecture: powerpc
 Section: metapackages
 Priority: optional
@@ -224,7 +224,7 @@ Description: Linux kernel image on PowerPC64 SMP.
  for PowerPC64 with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-ports-headers-powerpc64-smp
+Package: linux-headers-powerpc64-smp
 Architecture: powerpc
 Section: devel
 Priority: optional
@@ -237,16 +237,16 @@ Description: Linux kernel headers on PowerPC64 SMP
 #
 # PowerPC
 #
-Package: linux-ports-powerpc
+Package: linux-powerpc
 Architecture: powerpc
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-ports-image-powerpc (= ${binary:Version})
+Depends: linux-image-powerpc (= ${binary:Version})
 Description: Complete Linux kernel on PowerPC.
  This package will always depend on the latest complete Linux kernel available
  for PowerPC.
 
-Package: linux-ports-image-powerpc
+Package: linux-image-powerpc
 Architecture: powerpc
 Section: metapackages
 Priority: optional
@@ -255,7 +255,7 @@ Description: Linux kernel image on PowerPC
  This package will always depend on the latest kernel image available
  for PowerPC support.
 
-Package: linux-ports-headers-powerpc
+Package: linux-headers-powerpc
 Architecture: powerpc
 Section: devel
 Priority: optional
@@ -267,17 +267,17 @@ Description: Linux kernel headers on PowerPC
 #
 # PowerPC-SMP
 #
-Package: linux-ports-powerpc-smp
+Package: linux-powerpc-smp
 Architecture: powerpc
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-ports-image-powerpc-smp (= ${binary:Version})
+Depends: linux-image-powerpc-smp (= ${binary:Version})
 Description: Complete Linux kernel on PowerPC SMP.
  This package will always depend on the latest complete Linux kernel available
  for PowerPC with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-ports-image-powerpc-smp
+Package: linux-image-powerpc-smp
 Architecture: powerpc
 Section: metapackages
 Priority: optional
@@ -287,7 +287,7 @@ Description: Linux kernel image on PowerPC SMP.
  for PowerPC with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-ports-headers-powerpc-smp
+Package: linux-headers-powerpc-smp
 Architecture: powerpc
 Section: devel
 Priority: optional
@@ -301,16 +301,16 @@ Description: Linux kernel headers on PowerPC SMP
 #
 # sparc64
 #
-Package: linux-ports-sparc64
+Package: linux-sparc64
 Architecture: sparc
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-sparc64 (= ${binary:Version})
+Depends: linux-image-sparc64 (= ${binary:Version})
 Description: Complete Linux kernel on sparc64.
  This package will always depend on the latest complete Linux kernel available
  for the UltraSparc architecture.
 
-Package: linux-ports-image-sparc64
+Package: linux-image-sparc64
 Architecture: sparc
 Section: metapackages
 Priority: optional
@@ -319,7 +319,7 @@ Description: Linux kernel image on UltraSparc
  This package will always depend on the latest kernel image available
  for UltraSparc.
 
-Package: linux-ports-headers-sparc64
+Package: linux-headers-sparc64
 Architecture: sparc
 Section: devel
 Priority: optional
@@ -331,16 +331,16 @@ Description: Linux kernel headers on UltraSparc
 #
 # sparc64-smp
 #
-Package: linux-ports-sparc64-smp
+Package: linux-sparc64-smp
 Architecture: sparc
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-sparc64-smp (= ${binary:Version})
+Depends: linux-image-sparc64-smp (= ${binary:Version})
 Description: Complete Linux kernel on UltraSparc (SMP)
  This package will always depend on the latest complete Linux kernel available
  for the UltraSparc (SMP) architecture.
 
-Package: linux-ports-image-sparc64-smp
+Package: linux-image-sparc64-smp
 Architecture: sparc
 Section: metapackages
 Priority: optional
@@ -349,7 +349,7 @@ Description: Linux kernel image on UltraSparc (SMP)
  This package will always depend on the latest kernel image available
  for UltraSparc (SMP).
 
-Package: linux-ports-headers-sparc64-smp
+Package: linux-headers-sparc64-smp
 Architecture: sparc
 Section: devel
 Priority: optional

@@ -1,17 +1,17 @@
 #
 # PowerPC64-SMP
 #
-Package: linux-ports-powerpc64-smp
+Package: linux-powerpc64-smp
 Architecture: powerpc
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-ports-image-powerpc64-smp (= ${binary:Version})
+Depends: linux-image-powerpc64-smp (= ${binary:Version})
 Description: Complete Linux kernel on PowerPC64 SMP.
  This package will always depend on the latest complete Linux kernel available
  for PowerPC64 with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-ports-image-powerpc64-smp
+Package: linux-image-powerpc64-smp
 Architecture: powerpc
 Section: metapackages
 Priority: optional
@@ -21,7 +21,7 @@ Description: Linux kernel image on PowerPC64 SMP.
  for PowerPC64 with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-ports-headers-powerpc64-smp
+Package: linux-headers-powerpc64-smp
 Architecture: powerpc
 Section: devel
 Priority: optional
@@ -34,16 +34,16 @@ Description: Linux kernel headers on PowerPC64 SMP
 #
 # PowerPC
 #
-Package: linux-ports-powerpc
+Package: linux-powerpc
 Architecture: powerpc
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-ports-image-powerpc (= ${binary:Version})
+Depends: linux-image-powerpc (= ${binary:Version})
 Description: Complete Linux kernel on PowerPC.
  This package will always depend on the latest complete Linux kernel available
  for PowerPC.
 
-Package: linux-ports-image-powerpc
+Package: linux-image-powerpc
 Architecture: powerpc
 Section: metapackages
 Priority: optional
@@ -52,7 +52,7 @@ Description: Linux kernel image on PowerPC
  This package will always depend on the latest kernel image available
  for PowerPC support.
 
-Package: linux-ports-headers-powerpc
+Package: linux-headers-powerpc
 Architecture: powerpc
 Section: devel
 Priority: optional
@@ -64,17 +64,17 @@ Description: Linux kernel headers on PowerPC
 #
 # PowerPC-SMP
 #
-Package: linux-ports-powerpc-smp
+Package: linux-powerpc-smp
 Architecture: powerpc
 Section: restricted/metapackages
 Priority: optional
-Depends: linux-ports-image-powerpc-smp (= ${binary:Version})
+Depends: linux-image-powerpc-smp (= ${binary:Version})
 Description: Complete Linux kernel on PowerPC SMP.
  This package will always depend on the latest complete Linux kernel available
  for PowerPC with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-ports-image-powerpc-smp
+Package: linux-image-powerpc-smp
 Architecture: powerpc
 Section: metapackages
 Priority: optional
@@ -84,7 +84,7 @@ Description: Linux kernel image on PowerPC SMP.
  for PowerPC with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-ports-headers-powerpc-smp
+Package: linux-headers-powerpc-smp
 Architecture: powerpc
 Section: devel
 Priority: optional

@@ -1,16 +1,16 @@
 #
 # sparc64
 #
-Package: linux-ports-sparc64
+Package: linux-sparc64
 Architecture: sparc
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-sparc64 (= ${binary:Version})
+Depends: linux-image-sparc64 (= ${binary:Version})
 Description: Complete Linux kernel on sparc64.
  This package will always depend on the latest complete Linux kernel available
  for the UltraSparc architecture.
 
-Package: linux-ports-image-sparc64
+Package: linux-image-sparc64
 Architecture: sparc
 Section: metapackages
 Priority: optional
@@ -19,7 +19,7 @@ Description: Linux kernel image on UltraSparc
  This package will always depend on the latest kernel image available
  for UltraSparc.
 
-Package: linux-ports-headers-sparc64
+Package: linux-headers-sparc64
 Architecture: sparc
 Section: devel
 Priority: optional
@@ -31,16 +31,16 @@ Description: Linux kernel headers on UltraSparc
 #
 # sparc64-smp
 #
-Package: linux-ports-sparc64-smp
+Package: linux-sparc64-smp
 Architecture: sparc
 Section: metapackages
 Priority: optional
-Depends: linux-ports-image-sparc64-smp (= ${binary:Version})
+Depends: linux-image-sparc64-smp (= ${binary:Version})
 Description: Complete Linux kernel on UltraSparc (SMP)
  This package will always depend on the latest complete Linux kernel available
  for the UltraSparc (SMP) architecture.
 
-Package: linux-ports-image-sparc64-smp
+Package: linux-image-sparc64-smp
 Architecture: sparc
 Section: metapackages
 Priority: optional
@@ -49,7 +49,7 @@ Description: Linux kernel image on UltraSparc (SMP)
  This package will always depend on the latest kernel image available
  for UltraSparc (SMP).
 
-Package: linux-ports-headers-sparc64-smp
+Package: linux-headers-sparc64-smp
 Architecture: sparc
 Section: devel
 Priority: optional
