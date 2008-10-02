@@ -1,3 +1,18 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook8) hardy; urgency=low
+
+  [Matthew Ranostay]
+
+  * ALSA: patch_sigmatel: add support for iPhone-style headset.
+  * ALSA: patch_sigmatel: enable inputs for Harbour.
+  * ALSA: patch_sigmatel: add support for 92HD75 codec & fix phase delay.
+  * ALSA: patch_sigmatel: fix inputs on Harbour ( vref port E problem ).
+
+  [Tony Espy]
+
+  * ALSA: patch_sigmatel: fix trailing ':' syntax error.
+
+ -- Tony Espy <espy@canonical.com>  Wed, 01 Oct 2008 22:19:21 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook7) hardy; urgency=low
 
   [Michael Frey]
