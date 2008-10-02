@@ -3717,7 +3717,7 @@ again:
 #endif
 			spec->stream_delay = 40; /* 40 milliseconds */
 		}
-		/* fallthru */:
+		/* fallthru */
 	default:
 		spec->mixer = stac92hd71bxx_analog_mixer;
 		spec->init = stac92hd71bxx_analog_core_init;
