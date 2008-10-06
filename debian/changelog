@@ -11,6 +11,8 @@ linux-backports-modules-2.6.24 (2.6.24-21.27) hardy-proposed; urgency=low
   * Munge the ucode file names used by the iwlwifi drivers.
   * Disable IWL modules in compat-wireless, use Intel's backported drivers instead
     since the versions in compat-wireless don't work with NetworkManager.
+    Should also fix suspend crash.
+    - LP: #251252
 
  --  Tim Gardner <tim.gardner@canonical.com>  Tue, 09 Sep 2008 08:26:34 -0600
 
