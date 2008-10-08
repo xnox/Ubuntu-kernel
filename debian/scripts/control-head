@@ -1,0 +1,14 @@
+#!/bin/bash
+
+input="$1"
+version="$2"
+
+deps=""
+
+for var in debian/control.d/vars.*; do
+	flavour=$(basename $var | sed 's/.*\.//')
+	. $var
+	deps="${deps}, linux-headers-${version}-${flavour} [${arch}]"
+done
+
+cat $input | sed -e "s#HEADER_DEPS#${deps}#g"

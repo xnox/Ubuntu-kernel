@@ -1,0 +1,69 @@
+Source: linux-backports-modules-2.6.27
+Section: base
+Priority: optional
+Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
+Standards-Version: 3.6.1
+Build-Depends: debhelper (>= 3), module-init-tools, coreutils, git-core, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.27-6-generic [i386 amd64], linux-headers-2.6.27-6-server [i386 amd64]
+
+Package: linux-headers-lbm-2.6.27-6
+Architecture: all
+Section: devel
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0)
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to Linux ubuntu-modules version 2.6.27
+ This package provides linux-ubuntu-modules header files for version 2.6.27, for sites
+ that want the latest linux-ubuntu-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.27-6/debian.README.gz for details
+
+Package: linux-backports-modules-2.6.27-6-generic
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.27-6-generic
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.27 on x86/x86_64
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.27 on
+ x86/x86_64.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-generic meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.27-6-generic
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.27-6-generic, linux-headers-lum-2.6.27-6-generic
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-backports-modules version 2.6.27
+ This package provides linux-backports-modules header files for version 2.6.27, for sites
+ that want the latest linux-backports-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.27-6/debian.README.gz for details
+
+Package: linux-backports-modules-2.6.27-6-server
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Provides: 
+Depends: linux-image-2.6.27-6-server
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.27 on x86/x86_64
+ This package contains modules supplied by Ubuntu for Linux kernel 2.6.27 on
+ x86/x86_64.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-server meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+Package: linux-headers-lbm-2.6.27-6-server
+Architecture: i386 amd64
+Section: base
+Priority: optional
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.27-6-server, linux-headers-lum-2.6.27-6-server
+Provides: linux-headers-lbm, linux-headers-lbm-2.6
+Description: Header files related to linux-backports-modules version 2.6.27
+ This package provides linux-backports-modules header files for version 2.6.27, for sites
+ that want the latest linux-backports-modules headers. Please read
+ /usr/share/doc/linux-headers-lbm-2.6.27-6/debian.README.gz for details

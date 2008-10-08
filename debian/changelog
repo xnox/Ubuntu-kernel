@@ -1,0 +1,6 @@
+linux-backports-modules-2.6.27 (2.6.27-6.1) intrepid; urgency=low
+
+  * Initial empty package
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 09 Sep 2008 08:26:34 -0600
+
