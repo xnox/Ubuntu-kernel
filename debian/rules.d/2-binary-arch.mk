@@ -22,6 +22,8 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; find . | cpio -dumpl $(builddir)/build-$*
+	mv $(builddir)/build-$*/MUNGE-CW $(builddir)/build-$*/compat-wireless-2.6
+	cd $(builddir)/build-$*/compat-wireless-2.6 && ./MUNGE-CW
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
@@ -35,6 +37,7 @@ $(stampdir)/stamp-build-%: target_flavour = $*
 $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
+	cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat)
 	$(kmake) $(conc_level) modules
 	@touch $@
 
