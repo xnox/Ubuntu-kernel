@@ -53,9 +53,12 @@ install-%: $(stampdir)/stamp-build-%
 
 	install -d $(firmdir)
 	#
-	# Preface each module name with lbm_ so that it doesn't conflict
-	# with existing module names.
+	# This firmware file name has to be consistent with IWL4965_UCODE_API in iwl4965-base.c
 	#
+	cp firmware/iwlwifi/*4965*/*.ucode $(firmdir)/iwlwifi-4965-2-lbm.ucode
+	cp firmware/iwlwifi/*3945*/*.ucode $(firmdir)/iwlwifi-3945-1-lbm.ucode
+	cp firmware/iwlwifi/*5000*/*.ucode $(firmdir)/iwlwifi-5000-1-lbm.ucode
+
 	install -d $(moddir)/updates
 	find $(builddir)/build-$* -type f -name '*.ko' | while read f ; do cp -v $${f} $(moddir)/updates/`basename $${f}`; done
 
