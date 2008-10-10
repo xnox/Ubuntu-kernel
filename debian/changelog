@@ -1,3 +1,13 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook9) hardy; urgency=low
+
+  [Michael Frey]
+
+  * Fixes for psb drm module
+  * Fix for memory leak related to suspend / resume
+  * Fix for console locking race condition related to suspend / resume
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 10 Oct 2008 14:09:56 -0400
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook8) hardy; urgency=low
 
   [Matthew Ranostay]
