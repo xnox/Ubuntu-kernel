@@ -828,7 +828,7 @@ static int psbfb_kms_off(struct drm_device *dev, int suspend)
 		if (suspend)
 			fb_set_suspend(info, 1);
 		else
-			info->state &= ~FBINFO_STATE_RUNNING;
+			info->state = ~FBINFO_STATE_RUNNING;
 
 		info->screen_base = NULL;
 
@@ -930,7 +930,7 @@ static int psbfb_kms_on(struct drm_device *dev, int resume)
 		if (resume)
 			fb_set_suspend(info, 0);
 		else
-			info->state |= FBINFO_STATE_RUNNING;
+			info->state = FBINFO_STATE_RUNNING;
 
 		/*
 		 * Re-run modesetting here, since the VDS scanout offset may
