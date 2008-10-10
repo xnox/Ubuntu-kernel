@@ -1,3 +1,9 @@
+linux-backports-modules-2.6.27 (2.6.27-7.2) intrepid; urgency=low
+
+  * ABI bump
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Fri, 10 Oct 2008 09:59:30 -0600
+
 linux-backports-modules-2.6.27 (2.6.27-6.1) intrepid; urgency=low
 
   * Initial empty package
