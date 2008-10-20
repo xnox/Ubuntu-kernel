@@ -1,3 +1,12 @@
+linux-backports-modules-2.6.27 (2.6.27-7.4) intrepid; urgency=low
+
+  [Tim Gardner]
+
+  * Removed bogus linux-headers-lum dependency.
+    - LP: #285898
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 20 Oct 2008 10:39:19 -0600
+
 linux-backports-modules-2.6.27 (2.6.27-7.3) intrepid; urgency=low
 
   [Tim Gardner]
