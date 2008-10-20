@@ -24,7 +24,7 @@ Description: Linux kernel documentation
  available.
 
 Package: linux
-Architecture: powerpc hppa sparc
+Architecture: ia64 sparc
 Section: restricted/metapackages
 Priority: optional
 Depends: linux-image (= ${binary:Version})
@@ -33,7 +33,7 @@ Description: Generic complete Linux kernel.
  available.
 
 Package: linux-image
-Architecture: powerpc hppa sparc
+Architecture: ia64 sparc
 Section: metapackages
 Priority: optional
 Depends: linux-image-${generic-depends} (= ${binary:Version})
