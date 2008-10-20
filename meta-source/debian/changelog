@@ -1,3 +1,10 @@
+linux-ports-meta (2.6.25.2.3) intrepid; urgency=low
+
+  * Fixed bogus linux/linux-image dependencies on hppa and powerpc
+    -LP: #278700
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 20 Oct 2008 11:09:59 -0600
+
 linux-ports-meta (2.6.25.2.2) intrepid; urgency=low
 
   * ABI update to -2
