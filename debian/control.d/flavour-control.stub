@@ -27,7 +27,7 @@ Package: linux-headers-lbm-PKGVER-ABINUM-FLAVOUR
 Architecture: ARCH
 Section: SECTION_IMAGE
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-PKGVER-ABINUM-FLAVOUR, linux-headers-lum-PKGVER-ABINUM-FLAVOUR
+Depends: coreutils | fileutils (>= 4.0), linux-headers-PKGVER-ABINUM-FLAVOUR
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
 Description: Header files related to linux-backports-modules version PKGVER
  This package provides linux-backports-modules header files for version PKGVER, for sites

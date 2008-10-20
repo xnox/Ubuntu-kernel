@@ -35,7 +35,7 @@ Package: linux-headers-lbm-2.6.27-7-generic
 Architecture: i386 amd64
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.27-7-generic, linux-headers-lum-2.6.27-7-generic
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.27-7-generic
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
 Description: Header files related to linux-backports-modules version 2.6.27
  This package provides linux-backports-modules header files for version 2.6.27, for sites
@@ -61,7 +61,7 @@ Package: linux-headers-lbm-2.6.27-7-server
 Architecture: i386 amd64
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.27-7-server, linux-headers-lum-2.6.27-7-server
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.27-7-server
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
 Description: Header files related to linux-backports-modules version 2.6.27
  This package provides linux-backports-modules header files for version 2.6.27, for sites
