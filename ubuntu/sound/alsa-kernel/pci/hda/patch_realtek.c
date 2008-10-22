@@ -120,7 +120,6 @@ enum {
 enum {
 	ALC269_BASIC,
 	ALC269_CW020,
-	ALC269_YM,
 	ALC269_AUTO,
 	ALC269_MODEL_LAST /* last tag */
 };
@@ -10432,32 +10431,6 @@ static struct snd_kcontrol_new alc269_base_mixer[] = {
 	{ } /* end */
 };
 
-static int alc269_menlow_mux_enum_put(struct snd_kcontrol *kcontrol,
-			       struct snd_ctl_elem_value *ucontrol)
-{
-	struct hda_codec *codec = snd_kcontrol_chip(kcontrol);
-	struct alc_spec *spec = codec->spec;
-	const struct hda_input_mux *imux = spec->input_mux;
-	unsigned int adc_idx = snd_ctl_get_ioffidx(kcontrol, &ucontrol->id);
-	static hda_nid_t capture_mixers[1] = { 0x24 };
-	hda_nid_t nid = capture_mixers[adc_idx];
-	unsigned int *cur_val = &spec->cur_mux[adc_idx];
-	unsigned int i, idx;
-
-	idx = ucontrol->value.enumerated.item[0];
-	if (idx >= imux->num_items)
-		idx = imux->num_items - 1;
-	if (*cur_val == idx)
-		return 0;
-	for (i = 0; i < imux->num_items; i++) {
-		unsigned int v = (i == idx) ? 0 : HDA_AMP_MUTE;
-		snd_hda_codec_amp_stereo(codec, nid, HDA_INPUT,
-					 imux->items[i].index,
-					 HDA_AMP_MUTE, v);
-	}
-	*cur_val = idx;
-	return 1;
-}
 
 /* capture mixer elements */
 static struct snd_kcontrol_new alc269_capture_mixer[] = {
@@ -10490,9 +10463,9 @@ static struct snd_kcontrol_new alc269_menlow_capture_mixer[] = {
 		/* .name = "Capture Source", */
 		.name = "Input Source",
 		.count = 1,
-		.info = alc882_mux_enum_info,
-		.get = alc882_mux_enum_get,
-		.put = alc269_menlow_mux_enum_put,
+		.info = alc_mux_enum_info,
+		.get = alc_mux_enum_get,
+		.put = alc883_mux_enum_put,
 	},
 	{ } /* end */
 };
@@ -10513,7 +10486,6 @@ static struct hda_verb alc269_cw020_verbs[] = {
 static void alc269_cw020_unsol_event(struct hda_codec *codec,
 		unsigned int res)
 {
-	//printk("alc269_cw020_unsol_event:0x%x\n",res);
 	if ((res >> 26) != ALC880_HP_EVENT)
 	  return;
 	alc269_cw020_automute(codec);
@@ -10521,7 +10493,6 @@ static void alc269_cw020_unsol_event(struct hda_codec *codec,
 
 static void alc269_cw020_init_hook(struct hda_codec *codec)
 {
-	//printk("alc269_cw020_init_hook\n");
 	alc269_cw020_automute(codec);
 }
 
@@ -10748,12 +10719,10 @@ static void alc269_auto_init(struct hda_codec *codec)
 static const char *alc269_models[ALC269_MODEL_LAST] = {
 	[ALC269_BASIC]		= "basic",
 	[ALC269_CW020]		= "cw020",
-	[ALC269_YM]		= "ym",
 };
 
 static struct snd_pci_quirk alc269_cfg_tbl[] = {
         SND_PCI_QUIRK(0x8086,0x811b, "CW020", ALC269_CW020),
-        SND_PCI_QUIRK(0x1028,0x02b1, "ym", ALC269_YM),
 	{ }
 };
 
@@ -10781,16 +10750,6 @@ static struct alc_config_preset alc269_presets[] = {
 		.unsol_event = alc269_cw020_unsol_event,
 		.init_hook = alc269_cw020_init_hook,
 	},
-	[ALC269_YM] = {
-		.mixers = { alc269_base_mixer },
-		.init_verbs = { alc269_init_verbs },
-		.num_dacs = ARRAY_SIZE(alc269_dac_nids),
-		.dac_nids = alc269_dac_nids,
-		.hp_nid = 0x03,
-		.num_channel_mode = ARRAY_SIZE(alc269_modes),
-		.channel_mode = alc269_modes,
-		.input_mux = &alc269_capture_source,
-	},
 };
 
 static int patch_alc269(struct hda_codec *codec)
@@ -10798,6 +10757,7 @@ static int patch_alc269(struct hda_codec *codec)
 	struct alc_spec *spec;
 	int board_config;
 	int err;
+        int board_is_ym = 0;
 
 	spec = kzalloc(sizeof(*spec), GFP_KERNEL);
 	if (spec == NULL)
@@ -10809,6 +10769,9 @@ static int patch_alc269(struct hda_codec *codec)
 						  alc269_models,
 						  alc269_cfg_tbl);
 
+        if ((codec->bus->pci->subsystem_vendor == 0x1028) && 
+            (codec->bus->pci->subsystem_device == 0x02b1))
+                board_is_ym = 1;
 	if (board_config < 0) {
 		printk(KERN_INFO "hda_codec: Unknown model for ALC269, "
 		       "trying auto-probe from BIOS...\n");
@@ -10842,7 +10805,7 @@ static int patch_alc269(struct hda_codec *codec)
 
 	spec->adc_nids = alc269_adc_nids;
 	spec->num_adc_nids = ARRAY_SIZE(alc269_adc_nids);
-        if (board_config == ALC269_YM)
+        if (board_is_ym)
           spec->mixers[spec->num_mixers] = alc269_menlow_capture_mixer;
         else
           spec->mixers[spec->num_mixers] = alc269_capture_mixer;
