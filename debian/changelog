@@ -1,3 +1,12 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook11) hardy; urgency=low
+
+  [Michael Frey]
+
+  * Better fix for YM Internal Mic.  No longer break headphone jack
+    autodetect.
+
+ -- Michael Frey <michael.frey@canonical.com>  Wed, 22 Oct 2008 11:43:19 -0400
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook10) hardy; urgency=low
 
   [Michael Frey]
