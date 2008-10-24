@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook12) hardy; urgency=low
+
+  [Michael Frey]
+	
+  * No Changes -- Rebuilt against new kernel headers
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 24 Oct 2008 19:41:48 -0400
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook11) hardy; urgency=low
 
   [Michael Frey]
