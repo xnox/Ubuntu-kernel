@@ -398,6 +398,8 @@ static char *driver_short_names[] __devinitdata = {
 	[AZX_DRIVER_NVIDIA] = "HDA NVidia",
 };
 
+static int interrupt_index=0;
+
 /*
  * macros for easy use
  */
@@ -909,6 +911,75 @@ static void azx_init_pci(struct azx *chip)
 }
 
 
+static void azx_single_jd(struct azx *chip, hda_nid_t hp_nid,  hda_nid_t spk_nid,
+					 hda_nid_t emic_nid,  hda_nid_t imic_nid, hda_nid_t  vcap_nid)
+{
+	unsigned int 	mute=0, vol=0;
+	unsigned int	present = 0;
+	unsigned int	emic_index, imic_index;
+	struct hda_codec *codec;
+	codec = chip->bus->caddr_tbl[0];
+
+	azx_send_cmd(codec, hp_nid, 0, AC_VERB_SET_PIN_SENSE, 0);
+	if (!azx_send_cmd(codec, hp_nid, 0, AC_VERB_GET_PIN_SENSE, 0)) {
+		present = azx_get_response(codec);
+	} else {
+		spin_unlock(&chip->reg_lock);
+		return ;	
+	}
+	if (present & 0x80000000) {
+		azx_send_cmd(codec, spk_nid, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0xa080);
+		azx_send_cmd(codec, spk_nid, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0x9080);
+	} else {
+		if (!azx_send_cmd(codec, hp_nid, 0,AC_VERB_GET_AMP_GAIN_MUTE, 0xa000))
+			mute = azx_get_response(codec);
+		else 
+			mute = 0;
+		azx_send_cmd(codec, spk_nid, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0xa000 | mute);
+	
+		if (!azx_send_cmd(codec, hp_nid, 0,AC_VERB_GET_AMP_GAIN_MUTE, 0x8000))
+			mute = azx_get_response(codec);
+		else 
+			mute = 0;
+		azx_send_cmd(codec, spk_nid, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0x9000 | mute);
+	}
+
+// Mic JD
+	emic_index = (emic_nid - 0x18) << 8;
+	imic_index = (imic_nid - 0x18) << 8;
+
+	azx_send_cmd(codec, emic_nid, 0, AC_VERB_SET_PIN_SENSE, 0);
+	if (!azx_send_cmd(codec, emic_nid, 0, AC_VERB_GET_PIN_SENSE, 0)) {
+		present = azx_get_response(codec);
+	} else {
+		spin_unlock(&chip->reg_lock);
+		return;	
+	}			
+	if (present & 0x80000000) {
+	/* mute internal mic */
+		if (!azx_send_cmd(codec, 0x0b, 0,AC_VERB_GET_AMP_GAIN_MUTE, 0x2000 | imic_index))
+			mute = azx_get_response(codec);	// mute == volume
+		else 
+			mute = 0;
+		azx_send_cmd(codec, 0x0b, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0x7080 | mute | imic_index);
+		azx_send_cmd(codec, vcap_nid, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0x7000 | emic_index);
+		azx_send_cmd(codec, vcap_nid, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0x7080 | imic_index);
+	} else {
+	/* unmute internal mic if necessary */
+		if (!azx_send_cmd(codec, 0x0b, 0,AC_VERB_GET_AMP_GAIN_MUTE, 0x2000 | emic_index))	// get left channel volume
+			mute = (azx_get_response(codec)) & 0x80;	// mute == volume
+		else 
+			mute = 0;
+		if (!azx_send_cmd(codec, 0x0b, 0,AC_VERB_GET_AMP_GAIN_MUTE, 0x2000 | imic_index))	// get left channel volume
+			vol = (azx_get_response(codec)) & 0x7f;	// mute == volume
+		else 
+			vol = 0;
+		azx_send_cmd(codec, 0x0b, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0x7000 | mute | vol | imic_index);	//set 2 channels the same
+			
+		azx_send_cmd(codec, vcap_nid, 0, AC_VERB_SET_AMP_GAIN_MUTE, 0x7000 | imic_index);
+	}
+}
+
 /*
  * interrupt handler
  */
@@ -942,6 +1013,17 @@ static irqreturn_t azx_interrupt(int irq, void *dev_id)
 
 	/* clear rirb int */
 	status = azx_readb(chip, RIRBSTS);
+        if (chip->single_cmd == 1) {
+                interrupt_index = (interrupt_index+1) & 3;
+                if (!interrupt_index) {
+                        if ((chip->pci->subsystem_vendor == 0x1558) && (chip->pci->subsystem_device == 0x7001)) {
+                                azx_single_jd(chip, 0x1b, 0x14, 0x18, 0x19, 0x22);
+                        } else {
+                                azx_single_jd(chip, 0x15, 0x14, 0x18, 0x19, 0x24);
+                        }
+                }
+        }
+
 	if (status & RIRB_INT_MASK) {
 		if (!chip->single_cmd && (status & RIRB_INT_RESPONSE))
 			azx_update_rirb(chip);
@@ -1216,6 +1298,13 @@ static int azx_pcm_open(struct snd_pcm_substream *substream)
 	spin_unlock_irqrestore(&chip->reg_lock, flags);
 
 	runtime->private_data = azx_dev;
+        if (chip->single_cmd == 1) {
+                if ((chip->pci->subsystem_vendor == 0x1558) && (chip->pci->subsystem_device == 0x7001)) {
+                        azx_single_jd(chip, 0x1b, 0x14, 0x18, 0x19, 0x22);
+                } else {
+                        azx_single_jd(chip, 0x15, 0x14, 0x18, 0x19, 0x24);
+                }
+        }
 	mutex_unlock(&chip->open_mutex);
 	return 0;
 }
@@ -1366,6 +1455,19 @@ static snd_pcm_uframes_t azx_pcm_pointer(struct snd_pcm_substream *substream)
 	return bytes_to_frames(substream->runtime, pos);
 }
 
+static snd_pcm_uframes_t azx_pcm_capture_pointer(struct snd_pcm_substream *substream)
+{
+	struct azx_dev *azx_dev = get_azx_dev(substream);
+	unsigned int pos;
+
+	/* use the position buffer */
+	pos = le32_to_cpu(*azx_dev->posbuf);
+
+	if (pos >= azx_dev->bufsize)
+		pos = 0;
+	return bytes_to_frames(substream->runtime, pos);
+}
+
 static struct snd_pcm_ops azx_pcm_ops = {
 	.open = azx_pcm_open,
 	.close = azx_pcm_close,
@@ -1375,6 +1477,17 @@ static struct snd_pcm_ops azx_pcm_ops = {
 	.prepare = azx_pcm_prepare,
 	.trigger = azx_pcm_trigger,
 	.pointer = azx_pcm_pointer,
+};
+
+static struct snd_pcm_ops azx_pcm_capture_ops = {
+	.open = azx_pcm_open,
+	.close = azx_pcm_close,
+	.ioctl = snd_pcm_lib_ioctl,
+	.hw_params = azx_pcm_hw_params,
+	.hw_free = azx_pcm_hw_free,
+	.prepare = azx_pcm_prepare,
+	.trigger = azx_pcm_trigger,
+	.pointer = azx_pcm_capture_pointer,
 };
 
 static void azx_pcm_free(struct snd_pcm *pcm)
@@ -1416,7 +1529,7 @@ static int __devinit create_codec_pcm(struct azx *chip, struct hda_codec *codec,
 	if (cpcm->stream[0].substreams)
 		snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_PLAYBACK, &azx_pcm_ops);
 	if (cpcm->stream[1].substreams)
-		snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_CAPTURE, &azx_pcm_ops);
+		snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_CAPTURE, &azx_pcm_capture_ops);
 	snd_pcm_lib_preallocate_pages_for_all(pcm, SNDRV_DMA_TYPE_DEV,
 					      snd_dma_pci_data(chip->pci),
 					      1024 * 64, 1024 * 1024);

@@ -240,6 +240,7 @@ struct alc_spec {
 	/* capture */
 	unsigned int num_adc_nids;
 	hda_nid_t *adc_nids;
+	hda_nid_t *capsrc_nids;
 	hda_nid_t dig_in_nid;		/* digital-in NID; optional */
 
 	/* capture source */
@@ -293,6 +294,7 @@ struct alc_config_preset {
 	hda_nid_t hp_nid;		/* optional */
 	unsigned int num_adc_nids;
 	hda_nid_t *adc_nids;
+	hda_nid_t *capsrc_nids;
 	hda_nid_t dig_in_nid;
 	unsigned int num_channel_mode;
 	const struct hda_channel_mode *channel_mode;
@@ -339,8 +341,10 @@ static int alc_mux_enum_put(struct snd_kcontrol *kcontrol,
 	struct alc_spec *spec = codec->spec;
 	unsigned int adc_idx = snd_ctl_get_ioffidx(kcontrol, &ucontrol->id);
 	unsigned int mux_idx = adc_idx >= spec->num_mux_defs ? 0 : adc_idx;
+	hda_nid_t nid = spec->capsrc_nids ?
+		spec->capsrc_nids[adc_idx] : spec->adc_nids[adc_idx];
 	return snd_hda_input_mux_put(codec, &spec->input_mux[mux_idx], ucontrol,
-				     spec->adc_nids[adc_idx],
+                                     nid,
 				     &spec->cur_mux[adc_idx]);
 }
 
@@ -10409,8 +10413,13 @@ static int patch_alc268(struct hda_codec *codec)
 
 static hda_nid_t alc269_adc_nids[1] = {
 	/* ADC1 */
-	0x07,
+	0x08,
 };
+
+static hda_nid_t alc269_capsrc_nids[1] = {
+	0x23,
+};
+
 
 #define alc269_modes		alc260_modes
 #define alc269_capture_source	alc880_lg_lw_capture_source
@@ -10434,8 +10443,8 @@ static struct snd_kcontrol_new alc269_base_mixer[] = {
 
 /* capture mixer elements */
 static struct snd_kcontrol_new alc269_capture_mixer[] = {
-	HDA_CODEC_VOLUME("Capture Volume", 0x07, 0x0, HDA_INPUT),
-	HDA_CODEC_MUTE("Capture Switch", 0x07, 0x0, HDA_INPUT),
+	HDA_CODEC_VOLUME("Capture Volume", 0x08, 0x0, HDA_INPUT),
+	HDA_CODEC_MUTE("Capture Switch", 0x08, 0x0, HDA_INPUT),
 	{
 		.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
 		/* The multiple "Capture Source" controls confuse alsamixer
@@ -10447,25 +10456,6 @@ static struct snd_kcontrol_new alc269_capture_mixer[] = {
                 .info = alc_mux_enum_info,
                 .get = alc_mux_enum_get,
                 .put = alc_mux_enum_put,
-	},
-	{ } /* end */
-};
-
-/* capture mixer elements */
-static struct snd_kcontrol_new alc269_menlow_capture_mixer[] = {
-	HDA_CODEC_VOLUME("Capture Volume", 0x07, 0x0, HDA_INPUT),
-	HDA_CODEC_MUTE("Capture Switch", 0x07, 0x0, HDA_INPUT),
-	{
-		.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
-		/* The multiple "Capture Source" controls confuse alsamixer
-		 * So call somewhat different..
-		 */
-		/* .name = "Capture Source", */
-		.name = "Input Source",
-		.count = 1,
-		.info = alc_mux_enum_info,
-		.get = alc_mux_enum_get,
-		.put = alc883_mux_enum_put,
 	},
 	{ } /* end */
 };
@@ -10757,7 +10747,6 @@ static int patch_alc269(struct hda_codec *codec)
 	struct alc_spec *spec;
 	int board_config;
 	int err;
-        int board_is_ym = 0;
 
 	spec = kzalloc(sizeof(*spec), GFP_KERNEL);
 	if (spec == NULL)
@@ -10769,9 +10758,6 @@ static int patch_alc269(struct hda_codec *codec)
 						  alc269_models,
 						  alc269_cfg_tbl);
 
-        if ((codec->bus->pci->subsystem_vendor == 0x1028) && 
-            (codec->bus->pci->subsystem_device == 0x02b1))
-                board_is_ym = 1;
 	if (board_config < 0) {
 		printk(KERN_INFO "hda_codec: Unknown model for ALC269, "
 		       "trying auto-probe from BIOS...\n");
@@ -10805,10 +10791,8 @@ static int patch_alc269(struct hda_codec *codec)
 
 	spec->adc_nids = alc269_adc_nids;
 	spec->num_adc_nids = ARRAY_SIZE(alc269_adc_nids);
-        if (board_is_ym)
-          spec->mixers[spec->num_mixers] = alc269_menlow_capture_mixer;
-        else
-          spec->mixers[spec->num_mixers] = alc269_capture_mixer;
+	spec->capsrc_nids = alc269_capsrc_nids;
+        spec->mixers[spec->num_mixers] = alc269_capture_mixer;
 	spec->num_mixers++;
 
 	codec->patch_ops = alc_patch_ops;
