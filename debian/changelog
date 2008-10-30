@@ -1,3 +1,12 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook13) hardy; urgency=low
+
+  [Michael Frey]
+
+  * Fix for YM Mic noise. (LP#288545)  This patch also fixes internal Mic
+    on Natick.
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 30 Oct 2008 13:21:44 -0400
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook12) hardy; urgency=low
 
   [Michael Frey]
