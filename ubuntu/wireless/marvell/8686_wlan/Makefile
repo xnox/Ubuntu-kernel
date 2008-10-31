@@ -1,10 +1,7 @@
-CONFIG_DEBUG=1
+CONFIG_DEBUG=0
 
 # Proc in /proc/net/wlan
 CONFIG_PROC_DEBUG=y
-
-# Linux Power Management
-CONFIG_ENABLE_PM=n
 
 # Re-association in driver
 CONFIG_REASSOCIATION=y
@@ -42,10 +39,6 @@ ifeq ($(CONFIG_PROC_DEBUG),y)
 	export CONFIG_PROC_DEBUG
 endif
 
-ifeq ($(CONFIG_ENABLE_PM),y)
-	EXTRA_CFLAGS += -DENABLE_PM
-endif
-
 ifeq ($(CONFIG_REASSOCIATION),y)
 	EXTRA_CFLAGS += -DREASSOCIATION
 endif
@@ -66,7 +59,16 @@ sd8686-objs += wlan/wlan_debug.o
 endif
 
 obj-m += sd8686.o
+
 	EXTRA_CFLAGS += -DFPNUM='"13"'
 	EXTRA_CFLAGS += -DFB
 	EXTRA_CFLAGS += -I$(src)/os/linux -I$(src)/wlan
+
+ifdef CONFIG_MMC_DEBUG
+#	EXTRA_CFLAGS += -DDEBUG_LEVEL1
+#	EXTRA_CFLAGS += -DDEBUG_LEVEL2
+#	EXTRA_CFLAGS += -DDEBUG_LEVEL3
+#	EXTRA_CFLAGS += -DDEBUG_LEVEL4
+#	DBG=    -dbg
+endif
 

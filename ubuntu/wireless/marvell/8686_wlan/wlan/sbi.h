@@ -108,10 +108,6 @@ int sbi_enable_host_int(wlan_private *);
 
 int sbi_exit_deep_sleep(wlan_private *);
 int sbi_reset_deepsleep_wakeup(wlan_private *);
-#ifdef ENABLE_PM
-int sbi_suspend(wlan_private *);
-int sbi_resume(wlan_private *);
-#endif
 
 //int sbi_read_ioreg(wlan_private * priv, u8 func, u32 reg, u8 * dat);
 int sbi_read_ioreg(wlan_private *priv, u32 reg, u8 * dat);

@@ -54,11 +54,6 @@
 
 #include	<linux/ioport.h>
 
-/* New Code to synchronize between IEEE Power save and PM*/
-#ifdef ENABLE_PM
-#include <linux/pm.h>
-#endif
-
 /* ASM files */
 #include        <asm/semaphore.h>
 #include        <asm/byteorder.h>

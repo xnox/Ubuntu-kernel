@@ -36,7 +36,7 @@ Change log:
 /* define SD block size for firmware download */
 #define SD_BLOCK_SIZE_FW_DL	32
 /* define SD block size for data Tx/Rx */
-#define SD_BLOCK_SIZE		32
+#define SD_BLOCK_SIZE		256	
 
 #define ALLOC_BUF_SIZE		(((MAX(MRVDRV_ETH_RX_PACKET_BUFFER_SIZE, \
 					MRVDRV_SIZE_OF_CMD_BUFFER) + SDIO_HEADER_LEN \
@@ -699,6 +699,9 @@ disable_host_int_mask(wlan_private * priv, u8 mask)
 		Global Functions
 ********************************************************/
 
+int start_bus_clock(mmc_controller_t);
+int stop_bus_clock_2(mmc_controller_t);
+
 void
 gpio_irq_callback(void *arg)
 {
@@ -784,7 +787,7 @@ done:
 static void sbi_dev_remove_func(struct sdio_func *func)
 {
 	if (!wlan_remove_callback)
-		return;
+		return WLAN_STATUS_FAILURE;
 	pwlanpriv = NULL;
 
 	wlan_remove_callback(func);
@@ -800,6 +803,8 @@ static const struct sdio_device_id sdio_8686_ids[] = {
 	{ SDIO_DEVICE_CLASS(SDIO_CLASS_WLAN)		},
 	{ /* end: all zeroes */				},
 };
+
+//MODULE_DEVICE_TABLE(sdio, sdio_8686_ids);
 
 static struct sdio_driver sdio8686_driver = {
 	.probe		= sbi_dev_probe_func,
@@ -1509,28 +1514,4 @@ sbi_reset_deepsleep_wakeup(wlan_private * priv)
     return ret;
 }
 
-#ifdef ENABLE_PM
-/** 
- *  @brief This function suspends the device.
- *  
- *  @param priv    A pointer to wlan_private structure
- *  @return 	   WLAN_STATUS_SUCCESS or WLAN_STATUS_FAILURE
- */
-int
-sbi_suspend(wlan_private * priv)
-{
-    return sdio_suspend(priv->wlan_dev.card);
-}
 
-/** 
- *  @brief This function resumes the device from sleep
- *  
- *  @param priv    A pointer to wlan_private structure
- *  @return 	   WLAN_STATUS_SUCCESS or WLAN_STATUS_FAILURE
-*/
-int
-sbi_resume(wlan_private * priv)
-{
-    return sdio_resume(priv->wlan_dev.card);
-}
-#endif

@@ -2571,12 +2571,12 @@ wlan_get_range(struct net_device *dev, struct iw_request_info *info,
     range->num_txpower = 2;
     range->txpower_capa = IW_TXPOW_DBM | IW_TXPOW_RANGE;
 
-    if (FW_IS_WPA_ENABLED(Adapter)) {
-	range->enc_capa = IW_ENC_CAPA_WPA
-	    | IW_ENC_CAPA_WPA2
-	    | IW_ENC_CAPA_CIPHER_TKIP
-	    | IW_ENC_CAPA_CIPHER_CCMP;
-    }
+	if (FW_IS_WPA_ENABLED(Adapter)) {
+		range->enc_capa = IW_ENC_CAPA_WPA
+			| IW_ENC_CAPA_WPA2
+			| IW_ENC_CAPA_CIPHER_TKIP
+			| IW_ENC_CAPA_CIPHER_CCMP;
+	}
 
     LEAVE();
     return WLAN_STATUS_SUCCESS;
@@ -5319,20 +5319,7 @@ wlan_deepsleep_ioctl(wlan_private * priv, struct ifreq *req)
 
     ENTER();
 
-    if (Adapter->MediaConnectStatus == WlanMediaStateConnected) {
-        PRINTM(MSG, "Cannot enter Deep Sleep mode in connected state.\n");
-        return -EINVAL;
-    }
-
-    if (*(char *) req->ifr_data == '0') {
-        PRINTM(INFO, "Exit Deep Sleep Mode.\n");
-        sprintf(status, "setting to off ");
-        SetDeepSleep(priv, FALSE);
-    } else if (*(char *) req->ifr_data == '1') {
-        PRINTM(INFO, "Enter Deep Sleep Mode.\n");
-        sprintf(status, "setting to on ");
-        SetDeepSleep(priv, TRUE);
-    } else if (*(char *) req->ifr_data == '2') {
+    if (*(char *) req->ifr_data == '2') {
         PRINTM(INFO, "Get Deep Sleep Mode.\n");
         if (Adapter->IsDeepSleep == TRUE) {
             sprintf(status, "on ");
@@ -5340,8 +5327,23 @@ wlan_deepsleep_ioctl(wlan_private * priv, struct ifreq *req)
             sprintf(status, "off ");
         }
     } else {
-        PRINTM(INFO, "unknown option = %d\n", *(u8 *) req->ifr_data);
-        return -EINVAL;
+        if (Adapter->MediaConnectStatus == WlanMediaStateConnected) {
+            PRINTM(MSG, "Cannot enter Deep Sleep mode in connected state.\n");
+            return -EINVAL;
+        }
+
+        if (*(char *) req->ifr_data == '0') {
+            PRINTM(INFO, "Exit Deep Sleep Mode.\n");
+            sprintf(status, "setting to off ");
+            SetDeepSleep(priv, FALSE);
+        } else if (*(char *) req->ifr_data == '1') {
+            PRINTM(INFO, "Enter Deep Sleep Mode.\n");
+            sprintf(status, "setting to on ");
+            SetDeepSleep(priv, TRUE);
+        } else {
+            PRINTM(INFO, "unknown option = %d\n", *(u8 *) req->ifr_data);
+            return -EINVAL;
+        }
     }
 
     if (wrq->u.data.pointer) {

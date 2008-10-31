@@ -49,31 +49,6 @@ Change log:
         Local Variables
 ********************************************************/
 
-#ifdef ENABLE_PM
-#define WLAN_PM_DRV_NAME "wlan_pm_drv"
-
-static int wlan_pm_suspend(struct device *pmdev, u32 state, u32 level);
-static int wlan_pm_resume(struct device *pmdev, u32 level);
-static void wlan_pm_release(struct device *pmdev);
-
-/*!
- * This structure contains pointers to the power management callback functions.
- */
-static struct device_driver wlan_pm_driver = {
-    .name = WLAN_PM_DRV_NAME,
-    .bus = &platform_bus_type,
-    .suspend = wlan_pm_suspend,
-    .resume = wlan_pm_resume,
-};
-
-/*! Device Definition for WLAN */
-static struct platform_device wlan_pm_platform_device = {
-    .name = WLAN_PM_DRV_NAME,
-    .id = 0,
-    .dev.release = wlan_pm_release,
-};
-#endif
-
 spinlock_t driver_lock = SPIN_LOCK_UNLOCKED;
 ulong driver_flags;
 
@@ -326,202 +301,6 @@ wlan_close(struct net_device *dev)
     LEAVE();
     return WLAN_STATUS_SUCCESS;
 }
-
-#ifdef ENABLE_PM
-/**
- * @brief
- *     This function is called to put the SDHC in a low power state. Refer to the
- *     document driver-model/driver.txt in the kernel source tree for more
- *     information.
- *
- * @param   dev   the device structure used to give information on which SDHC
- *                to suspend
- * @param   state the power state the device is entering
- * @param   level the stage in device suspension process that we want the
- *                device to be put in
- *
- * @return  0 : go to sleep mode
- *          -1 : do not accept to go to sleep mode.
- */
-static int
-wlan_pm_suspend(struct device *pmdev, u32 state, u32 level)
-{
-    wlan_private *priv = wlanpriv;
-    wlan_adapter *Adapter = priv->adapter;
-    struct net_device *dev = priv->wlan_dev.netdev;
-
-    switch (level) {
-
-    case SUSPEND_DISABLE:
-        PRINTM(INFO, "WIFI_PM_SUSPEND_CALLBACK: enter SUSPEND_DISABLE.\n");
-
-        /* in associated mode : check that chipset is in IEEE PS and well configured to wake up the host if needed */
-        if (Adapter->MediaConnectStatus == WlanMediaStateConnected) {
-            if ((Adapter->PSState != PS_STATE_SLEEP)
-                || (!Adapter->bWakeupDevRequired)
-                || (Adapter->WakeupTries != 0)) {
-                PRINTM(INFO, "WIFI_PM_SUSPEND_CALLBACK: can't enter sleep mode because \
-		        PSstate=%d, bWakeupDevRequired=%d, wakeupTries=%d\n",
-                       Adapter->PSState, Adapter->bWakeupDevRequired, Adapter->WakeupTries);
-                return WLAN_STATUS_FAILURE;
-            }
-
-            else {
-
-                /*
-                 * Detach the network interface
-                 * if the network is running
-                 */
-                if (netif_running(dev)) {
-                    netif_device_detach(dev);
-                    PRINTM(INFO, "netif_device_detach().\n");
-                }
-                /* Stop bus clock */
-                sbi_set_bus_clock(priv, FALSE);
-            }
-        }
-
-        /* in non associated mode  : check that chipset is in Deepsleep mode */
-        else {
-            if (Adapter->IsDeepSleep == FALSE) {
-                PRINTM(INFO,
-                       "WIFI_PM_SUSPEND_CALLBACK: No allowed to enter sleep while in FW in full power.\n");
-                return WLAN_STATUS_FAILURE;
-            }
-            /*
-             * Detach the network interface 
-             * if the network is running
-             */
-            if (netif_running(dev)) {
-                netif_device_detach(dev);
-            }
-        }
-        break;
-
-    case SUSPEND_SAVE_STATE:
-
-        PRINTM(INFO, "WIFI_PM_SUSPEND_CALLBACK: enter SUSPEND_SAVE_STATE.\n");
-        /* Save bus state to restore it when waking up */
-        sbi_suspend(priv);
-
-        break;
-
-    case SUSPEND_POWER_DOWN:
-
-        PRINTM(INFO, "WIFI_PM_SUSPEND_CALLBACK: enter SUSPEND_POWER_DOWN.\n");
-        /* nothing to do */
-        break;
-
-    default:
-
-        break;
-
-    }
-
-    return WLAN_STATUS_SUCCESS;
-
-}
-
-/**
- * @brief
- *     This function is called to bring the SDHC back from a low power state. Refer
- *     to the document driver-model/driver.txt in the kernel source tree for more
- *     information.
- *
- * @param   dev   the device structure used to give information on which SDHC
- *                to resume
- * @param   level the stage in device resumption process that we want the
- *                device to be put in
- *
- * @return  The function always returns 0.
- */
-static int
-wlan_pm_resume(struct device *pmdev, u32 level)
-{
-    wlan_private *priv = wlanpriv;
-    wlan_adapter *Adapter = priv->adapter;
-    struct net_device *dev = priv->wlan_dev.netdev;
-
-    switch (level) {
-
-    case RESUME_POWER_ON:
-
-        PRINTM(INFO, "WIFI_PM_RESUME_CALLBACK: enter RESUME_POWER_ON.\n");
-        /* nothing to do */
-        break;
-
-    case RESUME_RESTORE_STATE:
-
-        PRINTM(INFO,
-               "WIFI_PM_RESUME_CALLBACK: enter RESUME_RESTORE_STATE.\n");
-        /* Restore bus state */
-        sbi_resume(priv);
-        break;
-
-    case RESUME_ENABLE:
-
-        PRINTM(INFO, "WIFI_PM_RESUME_CALLBACK: enter RESUME_ENABLE.\n");
-
-        /* in associated mode */
-        if (Adapter->MediaConnectStatus == WlanMediaStateConnected) {
-
-            if (Adapter->bWakeupDevRequired == FALSE) {
-                /* could never happen */
-                PRINTM(MSG, "WIFI_PM_RESUME_CALLBACK: serious error.\n");
-            } else {
-                /*
-                 * Start bus clock
-                 */
-                sbi_set_bus_clock(priv, TRUE);
-                /*
-                 * Attach the network interface
-                 * if the network is running
-                 */
-                if (netif_running(dev)) {
-                    netif_device_attach(dev);
-                    PRINTM(INFO, "WIFI_PM : after netif_device_attach().\n");
-                }
-                PRINTM(INFO,
-                       "WIFI_PM : After netif attach, in associated mode.\n");
-            }
-        }
-
-        /* in non associated mode */
-        else {
-            if (netif_running(dev)) {
-                netif_device_attach(dev);
-            }
-
-            PRINTM(INFO,
-                   "WIFI_PM : after netif attach, in NON associated mode.\n");
-        }
-        break;
-
-    default:
-        break;
-
-    }
-    return WLAN_STATUS_SUCCESS;
-
-}
-
-/**
- * @brief
- *     Dummy function to be compliant with Linux Power Management framework.
- *
- * @param   pmdev   the device structure used to give information on which SDHC
- *                  to use
- *
- * @return  None.
- */
-static void
-wlan_pm_release(struct device *pmdev)
-{
-    PRINTM(INFO, "WIFI_PM_DRIVER : Into pm_device release function\n");
-    return;
-}
-
-#endif /* ENABLE_PM */
 
 /** 
  *  @brief This function handles packet transmission
@@ -965,6 +744,8 @@ wlan_add_card(void *card)
     priv->wlan_dev.card = card;
     wlanpriv = priv;
 
+    //SET_MODULE_OWNER(dev);
+
     /* Setup the OS Interface to our functions */
     dev->open = wlan_open;
     dev->hard_start_xmit = wlan_hard_start_xmit;
@@ -986,24 +767,6 @@ wlan_add_card(void *card)
     dev->set_multicast_list = wlan_set_multicast_list;
 
     init_waitqueue_head(&priv->adapter->ds_awake_q);
-
-#ifdef ENABLE_PM
-    /* register Driver to Linux Power Management system. */
-    if (!driver_register(&wlan_pm_driver)) {
-        /* Register one device to Linux Power Management system. */
-        if (platform_device_register(&wlan_pm_platform_device)) {
-            PRINTM(MSG,
-                   "WiFi driver, wlan_main : error when registering device to Linux Power Managment.\n");
-            driver_unregister(&wlan_pm_driver);
-        } else {
-            PRINTM(INFO,
-                   "WiFi device and driver registered to Linux Power Managment.\n");
-        }
-    } else {
-        PRINTM(MSG,
-               "WiFi driver, wlan_main : error when registering driver to Linux Power Managment.\n");
-    }
-#endif
 
     INIT_LIST_HEAD(&priv->adapter->CmdFreeQ);
     INIT_LIST_HEAD(&priv->adapter->CmdPendingQ);
@@ -1162,12 +925,6 @@ wlan_remove_card(void *card)
     PrepareAndSendCommand(priv, HostCmd_CMD_802_11_RESET, 0, 0, 0, NULL);
 
     os_sched_timeout(200);
-
-#ifdef ENABLE_PM
-    /* unregister driver and device from Linux Power Management system. */
-    platform_device_unregister(&wlan_pm_platform_device);
-    driver_unregister(&wlan_pm_driver);
-#endif
 
     Adapter->SurpriseRemoved = TRUE;
 
