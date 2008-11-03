@@ -1,3 +1,14 @@
+linux-backports-modules-2.6.27 (2.6.27-7.5) intrepid-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Fix search for iwl5000 firmware file name.
+  * Update compat-wireless to wireless-testing master-2008-10-31
+  * reverted wireless-testing "ath5k: Update interrupt masking code"
+    which causes problems with ath5k.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 03 Nov 2008 10:58:09 -0700
+
 linux-backports-modules-2.6.27 (2.6.27-7.4) intrepid; urgency=low
 
   [Tim Gardner]
