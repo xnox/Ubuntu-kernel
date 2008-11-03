@@ -89,4 +89,4 @@ ${COMPAT_PREFIX}cfg80211-\$(CONFIG_NL80211) += nl80211.o
 #
 sed -i 's/^#define.*IWL3945_UCODE_API.*$/#define IWL3945_UCODE_API  "-1-lbm"/' drivers/net/wireless/iwlwifi/iwl-3945.h
 sed -i 's/^#define.*IWL4965_UCODE_API.*$/#define IWL4965_UCODE_API  "-2-lbm"/' drivers/net/wireless/iwlwifi/iwl-4965.c
-sed -i 's/^#define.*IWL5000_UCODE_API.*$/#define IWL5000_UCODE_API  "-1-lbm"/' drivers/net/wireless/iwlwifi/iwl-5000.c
+sed -i 's/^#define[ \t]IWL5000_UCODE_API.*$/#define IWL5000_UCODE_API  "-1-lbm"/' drivers/net/wireless/iwlwifi/iwl-5000.c
