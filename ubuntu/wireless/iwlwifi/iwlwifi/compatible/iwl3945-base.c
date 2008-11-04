@@ -78,7 +78,7 @@ static int iwl_tx_queue_update_write_ptr(struct iwl_priv *priv,
  ******************************************************************************/
 
 /* module parameters */
-static int iwl_param_disable_hw_scan;
+static int iwl_param_disable_hw_scan=1;
 static int iwl_param_debug;
 static int iwl_param_disable;      /* def: enable radio */
 static int iwl_param_antenna;      /* def: 0 = both antennas (use diversity) */
