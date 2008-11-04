@@ -88,26 +88,27 @@ EXPORT_SYMBOL(iwl_rates);
  * translate ucode response to mac80211 tx status control values
  */
 void iwl_hwrate_to_tx_control(struct iwl_priv *priv, u32 rate_n_flags,
-				  struct ieee80211_tx_info *control)
+				  struct ieee80211_tx_info *info)
 {
 	int rate_index;
+	struct ieee80211_tx_rate *r = &info->control.rates[0];
 
-	control->antenna_sel_tx =
+	info->antenna_sel_tx =
 		((rate_n_flags & RATE_MCS_ANT_ABC_MSK) >> RATE_MCS_ANT_POS);
 	if (rate_n_flags & RATE_MCS_HT_MSK)
-		control->flags |= IEEE80211_TX_CTL_OFDM_HT;
+		r->flags |= IEEE80211_TX_RC_MCS;
 	if (rate_n_flags & RATE_MCS_GF_MSK)
-		control->flags |= IEEE80211_TX_CTL_GREEN_FIELD;
+		r->flags |= IEEE80211_TX_RC_GREEN_FIELD;
 	if (rate_n_flags & RATE_MCS_FAT_MSK)
-		control->flags |= IEEE80211_TX_CTL_40_MHZ_WIDTH;
+		r->flags |= IEEE80211_TX_RC_40_MHZ_WIDTH;
 	if (rate_n_flags & RATE_MCS_DUP_MSK)
-		control->flags |= IEEE80211_TX_CTL_DUP_DATA;
+		r->flags |= IEEE80211_TX_RC_DUP_DATA;
 	if (rate_n_flags & RATE_MCS_SGI_MSK)
-		control->flags |= IEEE80211_TX_CTL_SHORT_GI;
+		r->flags |= IEEE80211_TX_RC_SHORT_GI;
 	rate_index = iwl_hwrate_to_plcp_idx(rate_n_flags);
-	if (control->band == IEEE80211_BAND_5GHZ)
+	if (info->band == IEEE80211_BAND_5GHZ)
 		rate_index -= IWL_FIRST_OFDM_RATE;
-	control->tx_rate_idx = rate_index;
+	r->idx = rate_index;
 }
 EXPORT_SYMBOL(iwl_hwrate_to_tx_control);
 
@@ -119,7 +120,9 @@ int iwl_hwrate_to_plcp_idx(u32 rate_n_flags)
 	if (rate_n_flags & RATE_MCS_HT_MSK) {
 		idx = (rate_n_flags & 0xff);
 
-		if (idx >= IWL_RATE_MIMO2_6M_PLCP)
+		if (idx >= IWL_RATE_MIMO3_6M_PLCP)
+			idx = idx - IWL_RATE_MIMO3_6M_PLCP;
+		else if (idx >= IWL_RATE_MIMO2_6M_PLCP)
 			idx = idx - IWL_RATE_MIMO2_6M_PLCP;
 
 		idx += IWL_FIRST_OFDM_RATE;
@@ -140,7 +143,17 @@ int iwl_hwrate_to_plcp_idx(u32 rate_n_flags)
 }
 EXPORT_SYMBOL(iwl_hwrate_to_plcp_idx);
 
-
+u8 iwl_toggle_tx_ant(struct iwl_priv *priv, u8 ant)
+{
+	int i;
+	u8 ind = ant;
+	for (i = 0; i < RATE_ANT_NUM - 1; i++) {
+		ind = (ind + 1) < RATE_ANT_NUM ?  ind + 1 : 0;
+		if (priv->hw_params.valid_tx_ant & BIT(ind))
+			return ind;
+	}
+	return ant;
+}
 
 const u8 iwl_bcast_addr[ETH_ALEN] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 EXPORT_SYMBOL(iwl_bcast_addr);
@@ -637,8 +650,8 @@ u8 iwl_is_fat_tx_allowed(struct iwl_priv *priv,
 	}
 
 	return iwl_is_channel_extension(priv, priv->band,
-					 iwl_ht_conf->control_channel,
-					 iwl_ht_conf->extension_chan_offset);
+					le16_to_cpu(priv->staging_rxon.channel),
+					iwl_ht_conf->extension_chan_offset);
 }
 EXPORT_SYMBOL(iwl_is_fat_tx_allowed);
 
@@ -663,13 +676,6 @@ void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info)
 		rxon->flags &= ~(RXON_FLG_CHANNEL_MODE_MIXED_MSK |
 				 RXON_FLG_CHANNEL_MODE_PURE_40_MSK);
 
-	if (le16_to_cpu(rxon->channel) != ht_info->control_channel) {
-		IWL_DEBUG_ASSOC("control diff than current %d %d\n",
-				le16_to_cpu(rxon->channel),
-				ht_info->control_channel);
-		return;
-	}
-
 	/* Note: control channel is opposite of extension channel */
 	switch (ht_info->extension_chan_offset) {
 	case IEEE80211_HT_PARAM_CHA_SEC_ABOVE:
@@ -692,14 +698,12 @@ void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info)
 
 	IWL_DEBUG_ASSOC("supported HT rate 0x%X 0x%X 0x%X "
 			"rxon flags 0x%X operation mode :0x%X "
-			"extension channel offset 0x%x "
-			"control chan %d\n",
+			"extension channel offset 0x%x\n",
 			ht_info->mcs.rx_mask[0],
 			ht_info->mcs.rx_mask[1],
 			ht_info->mcs.rx_mask[2],
 			le32_to_cpu(rxon->flags), ht_info->ht_protection,
-			ht_info->extension_chan_offset,
-			ht_info->control_channel);
+			ht_info->extension_chan_offset);
 	return;
 }
 EXPORT_SYMBOL(iwl_set_rxon_ht);
@@ -743,7 +747,7 @@ static int iwl_get_idle_rx_chain_count(struct iwl_priv *priv, int active_cnt)
 		break;
 	case WLAN_HT_CAP_SM_PS_INVALID:
 	default:
-		IWL_ERROR("invalide mimo ps mode %d\n",
+		IWL_ERROR("invalid mimo ps mode %d\n",
 			   priv->current_ht_config.sm_ps);
 		WARN_ON(1);
 		idle_cnt = -1;
@@ -869,7 +873,8 @@ int iwl_setup_mac(struct iwl_priv *priv)
 
 	/* Tell mac80211 our characteristics */
 	hw->flags = IEEE80211_HW_SIGNAL_DBM |
-		    IEEE80211_HW_NOISE_DBM;
+		    IEEE80211_HW_NOISE_DBM |
+		    IEEE80211_HW_AMPDU_AGGREGATION;
 	hw->wiphy->interface_modes =
 		BIT(NL80211_IFTYPE_AP) |
 		BIT(NL80211_IFTYPE_STATION) |
@@ -946,7 +951,6 @@ int iwl_init_drv(struct iwl_priv *priv)
 
 	priv->iw_mode = NL80211_IFTYPE_STATION;
 
-	priv->use_ant_b_for_management_frame = 1; /* start with ant B */
 	priv->current_ht_config.sm_ps = WLAN_HT_CAP_SM_PS_DISABLED;
 
 	/* Choose which receivers/antennas to use */
@@ -1170,24 +1174,47 @@ int iwl_verify_ucode(struct iwl_priv *priv)
 }
 EXPORT_SYMBOL(iwl_verify_ucode);
 
+
+static const char *desc_lookup_text[] = {
+	"OK",
+	"FAIL",
+	"BAD_PARAM",
+	"BAD_CHECKSUM",
+	"NMI_INTERRUPT_WDG",
+	"SYSASSERT",
+	"FATAL_ERROR",
+	"BAD_COMMAND",
+	"HW_ERROR_TUNE_LOCK",
+	"HW_ERROR_TEMPERATURE",
+	"ILLEGAL_CHAN_FREQ",
+	"VCC_NOT_STABLE",
+	"FH_ERROR",
+	"NMI_INTERRUPT_HOST",
+	"NMI_INTERRUPT_ACTION_PT",
+	"NMI_INTERRUPT_UNKNOWN",
+	"UCODE_VERSION_MISMATCH",
+	"HW_ERROR_ABS_LOCK",
+	"HW_ERROR_CAL_LOCK_FAIL",
+	"NMI_INTERRUPT_INST_ACTION_PT",
+	"NMI_INTERRUPT_DATA_ACTION_PT",
+	"NMI_TRM_HW_ER",
+	"NMI_INTERRUPT_TRM",
+	"NMI_INTERRUPT_BREAK_POINT"
+	"DEBUG_0",
+	"DEBUG_1",
+	"DEBUG_2",
+	"DEBUG_3",
+	"UNKNOWN"
+};
+
 static const char *desc_lookup(int i)
 {
-	switch (i) {
-	case 1:
-		return "FAIL";
-	case 2:
-		return "BAD_PARAM";
-	case 3:
-		return "BAD_CHECKSUM";
-	case 4:
-		return "NMI_INTERRUPT";
-	case 5:
-		return "SYSASSERT";
-	case 6:
-		return "FATAL_ERROR";
-	}
+	int max = ARRAY_SIZE(desc_lookup_text) - 1;
 
-	return "UNKNOWN";
+	if (i < 0 || i > max)
+		i = max;
+
+	return desc_lookup_text[i];
 }
 
 #define ERROR_START_OFFSET  (1 * sizeof(u32))
@@ -1233,9 +1260,9 @@ void iwl_dump_nic_error_log(struct iwl_priv *priv)
 	line = iwl_read_targ_mem(priv, base + 9 * sizeof(u32));
 	time = iwl_read_targ_mem(priv, base + 11 * sizeof(u32));
 
-	IWL_ERROR("Desc        Time       "
+	IWL_ERROR("Desc                               Time       "
 		"data1      data2      line\n");
-	IWL_ERROR("%-13s (#%d) %010u 0x%08X 0x%08X %u\n",
+	IWL_ERROR("%-28s (#%02d) %010u 0x%08X 0x%08X %u\n",
 		desc_lookup(desc), desc, time, data1, data2, line);
 	IWL_ERROR("blink1  blink2  ilink1  ilink2\n");
 	IWL_ERROR("0x%05X 0x%05X 0x%05X 0x%05X\n", blink1, blink2,

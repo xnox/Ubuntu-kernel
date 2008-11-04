@@ -12,8 +12,8 @@
  * published by the Free Software Foundation.
  */
 
-#ifndef IEEE80211_H
-#define IEEE80211_H
+#ifndef LINUX_IEEE80211_H
+#define LINUX_IEEE80211_H
 
 #include <linux/types.h>
 #include <asm/byteorder.h>
@@ -97,7 +97,10 @@
 #define IEEE80211_MAX_FRAME_LEN		2352
 
 #define IEEE80211_MAX_SSID_LEN		32
+
 #define IEEE80211_MAX_MESH_ID_LEN	32
+#define IEEE80211_MESH_CONFIG_LEN	19
+
 #define IEEE80211_QOS_CTL_LEN		2
 #define IEEE80211_QOS_CTL_TID_MASK	0x000F
 #define IEEE80211_QOS_CTL_TAG1D_MASK	0x0007
@@ -666,6 +669,13 @@ struct ieee80211_cts {
 	u8 ra[6];
 } __attribute__ ((packed));
 
+struct ieee80211_pspoll {
+	__le16 frame_control;
+	__le16 aid;
+	u8 bssid[6];
+	u8 ta[6];
+} __attribute__ ((packed));
+
 /**
  * struct ieee80211_bar - HT Block Ack Request
  *
@@ -826,8 +836,7 @@ struct ieee80211_ht_info {
 /* Authentication algorithms */
 #define WLAN_AUTH_OPEN 0
 #define WLAN_AUTH_SHARED_KEY 1
-#define WLAN_AUTH_FAST_BSS_TRANSITION 2
-#define WLAN_AUTH_LEAP 128
+#define WLAN_AUTH_LEAP 2
 
 #define WLAN_AUTH_CHALLENGE_LEN 128
 
@@ -1114,4 +1123,4 @@ static inline u8 *ieee80211_get_DA(struct ieee80211_hdr *hdr)
 		return hdr->addr1;
 }
 
-#endif /* IEEE80211_H */
+#endif /* LINUX_IEEE80211_H */

@@ -104,7 +104,9 @@ static int iwl_add_sta_callback(struct iwl_priv *priv,
 				   struct iwl_cmd *cmd, struct sk_buff *skb)
 {
 	struct iwl_rx_packet *res = NULL;
-	u8 sta_id = cmd->cmd.addsta.sta.sta_id;
+	struct iwl_addsta_cmd *addsta =
+		(struct iwl_addsta_cmd *)cmd->cmd.payload;
+	u8 sta_id = addsta->sta.sta_id;
 
 	if (!skb) {
 		IWL_ERROR("Error: Response NULL in REPLY_ADD_STA.\n");
@@ -326,7 +328,9 @@ static int iwl_remove_sta_callback(struct iwl_priv *priv,
 				   struct iwl_cmd *cmd, struct sk_buff *skb)
 {
 	struct iwl_rx_packet *res = NULL;
-	const char *addr = cmd->cmd.rm_sta.addr;
+	struct iwl_rem_sta_cmd *rm_sta =
+		 (struct iwl_rem_sta_cmd *)cmd->cmd.payload;
+	const char *addr = rm_sta->addr;
 
 	if (!skb) {
 		IWL_ERROR("Error: Response NULL in REPLY_REMOVE_STA.\n");
@@ -696,7 +700,7 @@ static int iwl_set_tkip_dynamic_key_info(struct iwl_priv *priv,
 	/* else, we are overriding an existing key => no need to allocated room
 	 * in uCode. */
 
-	/* This copy is acutally not needed: we get the key with each TX */
+	/* This copy is actually not needed: we get the key with each TX */
 	memcpy(priv->stations[sta_id].keyinfo.key, keyconf->key, 16);
 
 	memcpy(priv->stations[sta_id].sta.key.key, keyconf->key, 16);
@@ -791,7 +795,7 @@ static void iwl_dump_lq_cmd(struct iwl_priv *priv,
 {
 	int i;
 	IWL_DEBUG_RATE("lq station id 0x%x\n", lq->sta_id);
-	IWL_DEBUG_RATE("lq dta 0x%X 0x%X\n",
+	IWL_DEBUG_RATE("lq ant 0x%X 0x%X\n",
 		       lq->general_params.single_stream_ant_msk,
 		       lq->general_params.dual_stream_ant_msk);
 
@@ -873,7 +877,7 @@ static void iwl_sta_init_lq(struct iwl_priv *priv, const u8 *addr, int is_ap)
 
 		link_cmd.rs_table[i].rate_n_flags =
 			iwl_hw_set_rate_n_flags(iwl_rates[r].plcp, rate_flags);
-		r = iwl4965_get_prev_ieee_rate(r);
+		r = iwl_get_prev_ieee_rate(r);
 	}
 
 	link_cmd.general_params.single_stream_ant_msk =
@@ -893,24 +897,35 @@ static void iwl_sta_init_lq(struct iwl_priv *priv, const u8 *addr, int is_ap)
  * iwl_rxon_add_station - add station into station table.
  *
  * there is only one AP station with id= IWL_AP_ID
- * NOTE: mutex must be held before calling this fnction
+ * NOTE: mutex must be held before calling this function
  */
 int iwl_rxon_add_station(struct iwl_priv *priv, const u8 *addr, int is_ap)
 {
+	struct ieee80211_sta *sta;
+	struct ieee80211_sta_ht_cap ht_config;
+	struct ieee80211_sta_ht_cap *cur_ht_config = NULL;
 	u8 sta_id;
 
 	/* Add station to device's station table */
-	struct ieee80211_conf *conf = &priv->hw->conf;
-	struct ieee80211_sta_ht_cap *cur_ht_config = &conf->ht_cap;
 
-	if ((is_ap) &&
-	    (conf->flags & IEEE80211_CONF_SUPPORT_HT_MODE) &&
-	    (priv->iw_mode == NL80211_IFTYPE_STATION))
-		sta_id = iwl_add_station_flags(priv, addr, is_ap,
-						   0, cur_ht_config);
-	else
-		sta_id = iwl_add_station_flags(priv, addr, is_ap,
-						   0, NULL);
+	/*
+	 * XXX: This check is definitely not correct, if we're an AP
+	 *	it'll always be false which is not what we want, but
+	 *	it doesn't look like iwlagn is prepared to be an HT
+	 *	AP anyway.
+	 */
+	if (priv->current_ht_config.is_ht) {
+		rcu_read_lock();
+		sta = ieee80211_find_sta(priv->hw, addr);
+		if (sta) {
+			memcpy(&ht_config, &sta->ht_cap, sizeof(ht_config));
+			cur_ht_config = &ht_config;
+		}
+		rcu_read_unlock();
+	}
+
+	sta_id = iwl_add_station_flags(priv, addr, is_ap,
+				       0, cur_ht_config);
 
 	/* Set up default rate scaling table in device's station table */
 	iwl_sta_init_lq(priv, addr, is_ap);

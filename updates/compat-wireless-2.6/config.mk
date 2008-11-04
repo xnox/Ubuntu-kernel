@@ -28,19 +28,16 @@ ifeq ($(shell test $(KERNEL_SUBLEVEL) -lt 27 && echo yes),yes)
 $(error "ERROR: You should use compat-wireless-2.6-old for older kernels, this one is for kenrels >= 2.6.27")
 endif
 
-#
-# Distributions with kernels older then 2.6.29 probably don't have the CRDA
-# infrastructure installed.
-#
-ifeq ($(shell test $(KERNEL_SUBLEVEL) -lt 29 && echo yes),yes)
-CONFIG_WIRELESS_OLD_REGULATORY=y
+# 2.6.27 has FTRACE_DYNAMIC borked, so we will complain if
+# you have it enabled, otherwise you will very likely run into
+# a kernel panic.
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -eq 27 && echo yes),yes)
+ifeq ($(CONFIG_DYNAMIC_FTRACE),y)
+$(error "ERROR: Your 2.6.27 kernel has CONFIG_DYNAMIC_FTRACE, please upgrade your distribution kernel as newer ones should not have this enabled (and if so report a bug) or remove this warning if you know what you are doing")
+endif
 endif
 
 ifneq ($(KERNELRELEASE),) # This prevents a warning
-
-ifeq ($(CONFIG_NETDEVICES_MULTIQUEUE),) # checks MQ first
- QOS_REQS_MISSING+=CONFIG_NETDEVICES_MULTIQUEUE
-endif
 
 ifeq ($(CONFIG_NET_SCHED),)
  QOS_REQS_MISSING+=CONFIG_NET_SCHED
@@ -62,7 +59,11 @@ CONFIG_MAC80211_RC_PID=y
 CONFIG_MAC80211_MESH=y
 
 CONFIG_CFG80211=m
+CONFIG_LIB80211=m
 CONFIG_NL80211=y
+# We'll disable this as soon major distributions
+# start shipping this
+CONFIG_WIRELESS_OLD_REGULATORY=y
 
 # mac80211 test driver
 CONFIG_MAC80211_HWSIM=m
@@ -135,6 +136,8 @@ CONFIG_SSB_PCIHOST=y
 CONFIG_SSB_DRIVER_PCICORE_POSSIBLE=y
 CONFIG_SSB_DRIVER_PCICORE=y
 CONFIG_SSB_B43_PCI_BRIDGE=y
+
+CONFIG_B44=m
 
 CONFIG_RTL8180=m
 CONFIG_ADM8211=m

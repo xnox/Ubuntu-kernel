@@ -791,7 +791,11 @@ static int if_cs_probe(struct pcmcia_device *p_dev)
 	tuple.DesiredTuple = CISTPL_CFTABLE_ENTRY;
 	if ((ret = pcmcia_get_first_tuple(p_dev, &tuple)) != 0 ||
 	    (ret = pcmcia_get_tuple_data(p_dev, &tuple)) != 0 ||
-	    (ret = pcmcia_parse_tuple(p_dev, &tuple, &parse)) != 0)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,28))
+	    (ret = pcmcia_parse_tuple(NULL,&tuple, &parse)) != 0)
+#else
+	    (ret = pcmcia_parse_tuple(&tuple, &parse)) != 0)
+#endif
 	{
 		lbs_pr_err("error in pcmcia_get_first_tuple etc\n");
 		goto out1;

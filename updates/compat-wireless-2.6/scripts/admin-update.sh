@@ -27,7 +27,7 @@ INCLUDE_LINUX_USB="usbnet.h rndis_host.h"
 INCLUDE_NET_OLD="ieee80211.h ieee80211_crypt.h"
 # The good new yummy stuff
 INCLUDE_NET="$INCLUDE_NET_OLD cfg80211.h ieee80211_radiotap.h iw_handler.h"
-INCLUDE_NET="$INCLUDE_NET mac80211.h wext.h wireless.h"
+INCLUDE_NET="$INCLUDE_NET mac80211.h wext.h wireless.h lib80211.h"
 
 NET_DIRS="wireless mac80211 ieee80211"
 # User exported this variable
@@ -126,6 +126,10 @@ for i in $RNDIS_REQS; do
 	cp $GIT_TREE/$DIR/$i $DIR/
 done
 
+# b44 is dependent on ssb, so its has to be rebuilt as well.
+DIR="drivers/net"
+cp $GIT_TREE/$DIR/b44.[ch] $DIR
+
 # Misc
 mkdir -p drivers/misc/
 cp $GIT_TREE/drivers/misc/eeprom_93cx6.c drivers/misc/
@@ -157,11 +161,16 @@ if [[ $RET -ne 0 ]]; then
 	exit $RET
 fi
 DIR="$PWD"
-cd $GIT_TREE && git-describe > $DIR/git-describe && cd $DIR
+cd $GIT_TREE && git describe > $DIR/git-describe && cd $DIR
 echo "Updated from ${GIT_TREE}, git-describe says:"
 cat git-describe
 if [ -d ./.git ]; then
-	git-describe > compat-release
+	git describe > compat-release
+	cd $GIT_TREE && git tag -l| grep master | tail -1 > $DIR/master-tag && cd $DIR
+	if [ -f master-tag ]; then
+		echo "wireless-testing latest tag:"
+		cat master-tag
+	fi
 fi
 echo "This is compat-release:"
 cat compat-release

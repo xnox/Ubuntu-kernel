@@ -4,7 +4,7 @@
   */
 
 #include <net/iw_handler.h>
-#include <net/ieee80211.h>
+#include <net/lib80211.h>
 #include <linux/kfifo.h>
 #include "host.h"
 #include "hostcmd.h"
@@ -605,9 +605,9 @@ int lbs_get_tx_power(struct lbs_private *priv, s16 *curlevel, s16 *minlevel,
 	if (ret == 0) {
 		*curlevel = le16_to_cpu(cmd.curlevel);
 		if (minlevel)
-			*minlevel = le16_to_cpu(cmd.minlevel);
+			*minlevel = cmd.minlevel;
 		if (maxlevel)
-			*maxlevel = le16_to_cpu(cmd.maxlevel);
+			*maxlevel = cmd.maxlevel;
 	}
 
 	lbs_deb_leave(LBS_DEB_CMD);
@@ -1063,6 +1063,7 @@ int lbs_mesh_config(struct lbs_private *priv, uint16_t action, uint16_t chan)
 {
 	struct cmd_ds_mesh_config cmd;
 	struct mrvl_meshie *ie;
+	DECLARE_SSID_BUF(ssid);
 
 	memset(&cmd, 0, sizeof(cmd));
 	cmd.channel = cpu_to_le16(chan);
@@ -1070,7 +1071,7 @@ int lbs_mesh_config(struct lbs_private *priv, uint16_t action, uint16_t chan)
 
 	switch (action) {
 	case CMD_ACT_MESH_CONFIG_START:
-		ie->hdr.id = MFIE_TYPE_GENERIC;
+		ie->id = WLAN_EID_GENERIC;
 		ie->val.oui[0] = 0x00;
 		ie->val.oui[1] = 0x50;
 		ie->val.oui[2] = 0x43;
@@ -1082,7 +1083,7 @@ int lbs_mesh_config(struct lbs_private *priv, uint16_t action, uint16_t chan)
 		ie->val.mesh_capability = MARVELL_MESH_CAPABILITY;
 		ie->val.mesh_id_len = priv->mesh_ssid_len;
 		memcpy(ie->val.mesh_id, priv->mesh_ssid, priv->mesh_ssid_len);
-		ie->hdr.len = sizeof(struct mrvl_meshie_val) -
+		ie->len = sizeof(struct mrvl_meshie_val) -
 			IW_ESSID_MAX_SIZE + priv->mesh_ssid_len;
 		cmd.length = cpu_to_le16(sizeof(struct mrvl_meshie_val));
 		break;
@@ -1093,7 +1094,7 @@ int lbs_mesh_config(struct lbs_private *priv, uint16_t action, uint16_t chan)
 	}
 	lbs_deb_cmd("mesh config action %d type %x channel %d SSID %s\n",
 		    action, priv->mesh_tlv, chan,
-		    escape_essid(priv->mesh_ssid, priv->mesh_ssid_len));
+		    print_ssid(ssid, priv->mesh_ssid, priv->mesh_ssid_len));
 
 	return __lbs_mesh_config_send(priv, &cmd, action, priv->mesh_tlv);
 }
