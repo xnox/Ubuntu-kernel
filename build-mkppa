@@ -30,7 +30,6 @@
 # DEBEMAIL: Those two environment variables (exported) are used by dch to
 #           set the email address and the name of the maintainer.
 #==============================================================================
-DIST=hardy
 PPAEXT=smb
 if [ "$PPADIR" = "" ]; then
 	PPADIR="../$(basename $(pwd))-ppa"
@@ -108,6 +107,30 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
+#
+# If this is missing, there is really something odd.
+#
+if [ ! -f debian/changelog ]; then
+	echo "debian/changlog not found!" >&2
+	exit 1
+fi
+DIST=$(awk '
+	FNR == 1 {
+		D = $3
+		sub(/;.*|-.*/, "", D)
+		print D
+	}
+' debian/changelog)
+
+case $DIST in
+	dapper|feisty|gutsy|hardy|intrepid|jaunty)
+		;;
+	*)
+		echo "Unknown release name ($DIST)!" >&2
+		exit 1
+		;;
+esac
+
 function GetVersion()
 {
 	#
@@ -115,7 +138,7 @@ function GetVersion()
 	# by the next official build.
 	#
 	if [ "$PPABASE" = "" ]; then
-		git tag -l|grep Ubuntu|sort -t- -k2n -k3n|tail -1|cut -d- -f2-
+		git tag -l|grep Ubuntu|sort -t- -k2n,3n|tail -1|cut -d- -f2-
 	else
 		echo $PPABASE | cut -d- -f2-
 	fi
@@ -160,14 +183,6 @@ else
 fi
 
 #
-# If this is missing, there is really something odd.
-#
-if [ ! -f debian/changelog ]; then
-	echo "debian/changlog not found!" >&2
-	exit 1
-fi
-
-#
 # If not all flavours should be build, then create a special PPA file,
 # which is honoured by the build process.
 #
@@ -188,7 +203,7 @@ fi
 #
 if [ "$PPABASE" = "" ]; then
 	LASTRELEASE=$(
-		git tag -l|grep Ubuntu|sort -t- -k2n -k3n|tail -1|cut -d- -f3
+		git tag -l|grep Ubuntu|sort -t- -k2n,3n|tail -1|cut -d- -f3
 	)
 else
 	LASTRELEASE=$(echo $PPABASE|cut -d- -f3)
@@ -281,16 +296,16 @@ debian/rules debian/control.stub >/dev/null
 #
 LASTFULLVER=$VER-$LASTRELEASE
 if [ -d debian/abi ]; then
+	#
+	# No kABI files for the last release. If there is a tarball
+	# that provides those relative to the kernel top level dir,
+	# then use that.
+	#
+	if [ -f $PPADIR/abi-$LASTFULLVER.tar.gz ]; then
+		echo "Found and use $FULLVER tarball."
+		tar -xzf $PPADIR/abi-$LASTFULLVER.tar.gz
+	fi
 	if [ ! -d debian/abi/$LASTFULLVER ]; then
-		#
-		# No kABI files for the last release. If there is a tarball
-		# that provides those relative to the kernel top level dir,
-		# then use that.
-		#
-		if [ -f $PPADIR/abi-$LASTFULLVER.tar.gz ]; then
-			echo "Found and use $FULLVER tarball."
-			tar -xzf $PPADIR/abi-$LASTFULLVER.tar.gz
-		fi
 		#
 		# If the directory is still missing, there was no tarbal.
 		# Maybe the files from an older release are there.
