@@ -1,3 +1,9 @@
+linux-backports-modules-2.6.27 (2.6.27-8.7) intrepid-proposed; urgency=low
+
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Thu, 06 Nov 2008 13:27:41 -0700
+
 linux-backports-modules-2.6.27 (2.6.27-7.6) intrepid-proposed; urgency=low
 
   [Tim Gardner]
