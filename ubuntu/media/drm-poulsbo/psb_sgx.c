@@ -1223,7 +1223,7 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 	if (!dev_priv)
 		return -EINVAL;
 
-	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+	ret = drm_bo_read_lock(&dev->bm.bm_lock, 1);
 	if (ret)
 		return ret;
 

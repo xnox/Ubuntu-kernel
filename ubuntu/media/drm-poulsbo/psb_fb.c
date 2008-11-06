@@ -99,7 +99,7 @@ static int psbfb_setcolreg(unsigned regno, unsigned red, unsigned green,
 	if (!crtc->fb)
 		return -ENOMEM;
 
-	if (regno > 255)
+	if (regno > 15)
 		return 1;
 
 	if (crtc->funcs->gamma_set)

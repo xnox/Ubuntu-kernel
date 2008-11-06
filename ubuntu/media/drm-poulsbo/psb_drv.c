@@ -268,6 +268,8 @@ static int psb_do_init(struct drm_device *dev)
 	if (!dev_priv->comm_page)
 		goto out_err;
 
+	change_page_attr(dev_priv->comm_page, 1, PAGE_KERNEL_NOCACHE);
+
 	dev_priv->comm = kmap(dev_priv->comm_page);
 	memset((void *)dev_priv->comm, 0, PAGE_SIZE);
 
@@ -308,8 +310,7 @@ static int psb_do_init(struct drm_device *dev)
 
 	ret = psb_mmu_insert_pages(psb_mmu_get_default_pd(dev_priv->mmu),
 				   &dev_priv->comm_page,
-				   dev_priv->comm_mmu_offset, 1, 0, 0,
-				   PSB_MMU_CACHED_MEMORY);
+				   dev_priv->comm_mmu_offset, 1, 0, 0, 0);
 
 	if (ret)
 		goto out_err;
@@ -383,6 +384,12 @@ static int psb_driver_unload(struct drm_device *dev)
 {
 	struct drm_psb_private *dev_priv =
 	    (struct drm_psb_private *)dev->dev_private;
+
+#ifdef USE_PAT_WC
+#warning Init pat
+//	if (num_present_cpus() > 1)
+	unregister_cpu_notifier(&psb_nb);
+#endif
 
 	intel_modeset_cleanup(dev);
 
@@ -575,6 +582,8 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	if (!dev_priv->scratch_page)
 		goto out_err;
 
+	change_page_attr(dev_priv->scratch_page, 1, PAGE_KERNEL_NOCACHE);
+
 	dev_priv->pg = psb_gtt_alloc(dev);
 	if (!dev_priv->pg)
 		goto out_err;
@@ -658,6 +667,7 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 
 #ifdef USE_PAT_WC
 #warning Init pat
+//	if (num_present_cpus() > 1)
 	register_cpu_notifier(&psb_nb);
 #endif
 
@@ -725,10 +735,11 @@ static int psb_suspend(struct pci_dev *pdev, pm_message_t state)
 	    (struct drm_psb_private *)dev->dev_private;
         struct drm_output *output;
 
-	if (drm_psb_no_fb == 0)
-		psbfb_suspend(dev);
+	//if (drm_psb_no_fb == 0)
+	//	psbfb_suspend(dev);
 #ifdef WA_NO_FB_GARBAGE_DISPLAY
-	else {
+	//else {
+	if (drm_psb_no_fb != 0) {
 		if(num_registered_fb)
 		{
 			list_for_each_entry(output, &dev->mode_config.output_list, head) {
@@ -778,6 +789,7 @@ static int psb_resume(struct pci_dev *pdev)
 	/* for single CPU's we do it here, then for more than one CPU we
 	 * use the CPU notifier to reinit PAT on those CPU's. 
 	 */
+//	if (num_present_cpus() == 1)
 	drm_init_pat();
 #endif
 
@@ -850,10 +862,11 @@ static int psb_resume(struct pci_dev *pdev)
 				    dev_priv->ta_mem->hw_cookie);
 	}
 
-	if (drm_psb_no_fb == 0)
-		psbfb_resume(dev);
+	//if (drm_psb_no_fb == 0)
+	//	psbfb_resume(dev);
 #ifdef WA_NO_FB_GARBAGE_DISPLAY
-	else { 
+	//else {
+	if (drm_psb_no_fb != 0) {
 		if(num_registered_fb)
 		{
 			struct fb_info *fb_info=registered_fb[0];
