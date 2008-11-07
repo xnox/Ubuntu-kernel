@@ -115,10 +115,13 @@ if [ ! -f debian/changelog ]; then
 	exit 1
 fi
 DIST=$(awk '
-	FNR == 1 {
+	$4 ~ /^urgency=/{
 		D = $3
 		sub(/;.*|-.*/, "", D)
-		print D
+		if (D != "UNRELEASED") {
+			print D
+			exit
+		}
 	}
 ' debian/changelog)
 
@@ -138,7 +141,8 @@ function GetVersion()
 	# by the next official build.
 	#
 	if [ "$PPABASE" = "" ]; then
-		git tag -l|grep Ubuntu|sort -t- -k2n,3n|tail -1|cut -d- -f2-
+		git tag -l | grep Ubuntu | sort -t- -k2n | sort -t- -k3n | \
+		tail -1 | cut -d- -f2-
 	else
 		echo $PPABASE | cut -d- -f2-
 	fi
@@ -202,9 +206,7 @@ fi
 # Get the revision number of the last release (the latest tag).
 #
 if [ "$PPABASE" = "" ]; then
-	LASTRELEASE=$(
-		git tag -l|grep Ubuntu|sort -t- -k2n,3n|tail -1|cut -d- -f3
-	)
+	LASTRELEASE=$(GetVersion|cut -d- -f2)
 else
 	LASTRELEASE=$(echo $PPABASE|cut -d- -f3)
 fi
@@ -231,6 +233,14 @@ FULLVER=$(GetVersion)
 VER="$(echo $FULLVER|cut -d- -f1)"
 ABI="$(echo $FULLVER|cut -d- -f2|cut -d. -f1)"
 REL="$(echo $FULLVER|cut -d- -f2|cut -d. -f2)"
+
+#
+# Possibly there were kABI bumpers in the time between the last relase and the
+# current HEAD...
+#
+if [ "$(git log Ubuntu-$FULLVER..HEAD 2>/dev/null|grep BumpABI)" != "" ]; then
+	BUMPABI=true
+fi
 
 #
 # If there has been a patch that bumps the ABI, do it now once. Otherwise we
@@ -278,7 +288,7 @@ echo "Creating changelog for $PPAVER..."
 CHANGES=$(cat <<EOD
   PPA build is based on release $LASTRELEASE
 
-$(debian/rules prev_revision=$LASTRELEASE printchanges)
+$(debian/rules prev_revision=$LASTRELEASE printchanges 2>/dev/null)
 EOD)
 
 dch -b -v"$PPAVER" -D"$DIST" "!!!PLACEHOLDER!!!"
