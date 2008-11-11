@@ -1,11 +1,12 @@
-obj-$(CONFIG_IEEE80211) += lbm_cw-ieee80211.o
-lbm_cw-ieee80211-objs := ieee80211.o
-obj-$(CONFIG_IEEE80211) += lbm_cw-ieee80211_crypt.o
-lbm_cw-ieee80211_crypt-objs := ieee80211_crypt.o
-obj-$(CONFIG_IEEE80211_CRYPT_WEP) += lbm_cw-ieee80211_crypt_wep.o
-lbm_cw-ieee80211_crypt_wep-objs := ieee80211_crypt_wep.o
-obj-$(CONFIG_IEEE80211_CRYPT_CCMP) += lbm_cw-ieee80211_crypt_ccmp.o
-lbm_cw-ieee80211_crypt_ccmp-objs := ieee80211_crypt_ccmp.o
-obj-$(CONFIG_IEEE80211_CRYPT_TKIP) += lbm_cw-ieee80211_crypt_tkip.o
-lbm_cw-ieee80211_crypt_tkip-objs := ieee80211_crypt_tkip.o
-lbm_cw-ieee80211-objs :=         ieee80211_module.o         ieee80211_tx.o         ieee80211_rx.o         ieee80211_wx.o         ieee80211_geo.o
+obj-$(CONFIG_IEEE80211) += ieee80211.o
+obj-$(CONFIG_IEEE80211) += ieee80211_crypt.o
+obj-$(CONFIG_IEEE80211_CRYPT_WEP) += ieee80211_crypt_wep.o
+obj-$(CONFIG_IEEE80211_CRYPT_CCMP) += ieee80211_crypt_ccmp.o
+obj-$(CONFIG_IEEE80211_CRYPT_TKIP) += ieee80211_crypt_tkip.o
+ieee80211-objs := \
+	ieee80211_module.o \
+	ieee80211_tx.o \
+	ieee80211_rx.o \
+	ieee80211_wx.o \
+	ieee80211_geo.o
+
