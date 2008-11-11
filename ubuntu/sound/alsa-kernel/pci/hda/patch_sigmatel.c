@@ -3024,6 +3024,38 @@ static void stac_gpio_set(struct hda_codec *codec, unsigned int mask,
 			   AC_VERB_SET_GPIO_DATA, gpiostate); /* sync */
 }
 
+
+static void stac_gpio_reset(struct hda_codec *codec, unsigned int mask,
+			  unsigned int dir_mask, unsigned int data)
+{
+	unsigned int gpiostate, gpiomask, gpiodir;
+
+	gpiostate = snd_hda_codec_read(codec, codec->afg, 0,
+				       AC_VERB_GET_GPIO_DATA, 0);
+	gpiostate = (gpiostate & ~dir_mask) | ((~data) & dir_mask);
+
+	gpiomask = snd_hda_codec_read(codec, codec->afg, 0,
+				      AC_VERB_GET_GPIO_MASK, 0);
+	gpiomask &= ~mask;
+
+	gpiodir = snd_hda_codec_read(codec, codec->afg, 0,
+				     AC_VERB_GET_GPIO_DIRECTION, 0);
+	gpiodir &= ~dir_mask;
+
+	/* Configure GPIOx as CMOS */
+	snd_hda_codec_write(codec, codec->afg, 0, 0x7e7, 0);
+
+	snd_hda_codec_write(codec, codec->afg, 0,
+			    AC_VERB_SET_GPIO_MASK, gpiomask);
+	snd_hda_codec_read(codec, codec->afg, 0,
+			   AC_VERB_SET_GPIO_DIRECTION, gpiodir); /* sync */
+
+	msleep(1);
+
+	snd_hda_codec_read(codec, codec->afg, 0,
+			   AC_VERB_SET_GPIO_DATA, gpiostate); /* sync */
+}
+
 static void enable_pin_detect(struct hda_codec *codec, hda_nid_t nid,
 			      unsigned int event)
 {
@@ -3148,6 +3180,9 @@ static void stac92xx_free(struct hda_codec *codec)
 
 	if (! spec)
 		return;
+
+	stac_gpio_reset(codec, spec->gpio_mask,
+					spec->gpio_dir, spec->gpio_data);
 
 	if (spec->kctl_alloc) {
 		for (i = 0; i < spec->num_kctl_used; i++)
