@@ -1,3 +1,16 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook14) hardy; urgency=low
+
+  [Colin Ian King]
+
+  * HP mini wifi, ethernet, bluetooth and WWAN status monitoring and
+    control driver
+    - LP: #LP#270367
+  * ALSA: snd_hda_intel - clear GPIO EAPD pin to mute external amplifier on
+    shutdown
+    - LP: #LP# 276175
+
+ -- Tony Espy <espy@canonical.com>  Wed, 12 Nov 2008 00:24:45 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook13) hardy; urgency=low
 
   [Michael Frey]
