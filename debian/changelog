@@ -1,3 +1,14 @@
+linux-backports-modules-2.6.24 (2.6.24-22.28) hardy-proposed; urgency=low
+
+  [Upstream Kernel Changes]
+
+  * hardy-lbm: Upgrading to bcm5974-0.65
+    - LP: #275204
+  * hardy-lbm: Backport the applesmc module
+    - LP: #284417
+
+ --  <stefan.bader@canonical.com>  Wed, 12 Nov 2008 20:04:03 +0100
+
 linux-backports-modules-2.6.24 (2.6.24-21.27) hardy-proposed; urgency=low
 
   [Tim Gardner]
