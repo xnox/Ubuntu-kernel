@@ -119,8 +119,7 @@ int psb_gtt_init(struct psb_gtt *pg, int resume)
 
 	pg->gtt_pages = gtt_pages;
 	pg->stolen_size = stolen_size;
-	if (!resume)
-	  pg->gtt_map =
+	pg->gtt_map =
 	    ioremap_nocache(pg->gtt_phys_start, gtt_pages << PAGE_SHIFT);
 	if (!pg->gtt_map) {
 		DRM_ERROR("Failure to map gtt.\n");

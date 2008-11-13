@@ -997,7 +997,7 @@ static int i915_execbuffer(struct drm_device *dev, void *data,
 		return -EINVAL;
 
 
-	ret = drm_bo_read_lock(&dev->bm.bm_lock);
+	ret = drm_bo_read_lock(&dev->bm.bm_lock, 1);
 	if (ret)
 		return ret;
 

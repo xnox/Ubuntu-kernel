@@ -243,11 +243,9 @@ struct psb_mmu_pd *psb_mmu_alloc_pd(struct psb_mmu_driver *driver,
 
 	if (!trap_pagefaults) {
 		pd->invalid_pde = psb_mmu_mask_pte(page_to_pfn(pd->dummy_pt),
-						   invalid_type |
-						   PSB_MMU_CACHED_MEMORY);
+						   invalid_type);
 		pd->invalid_pte = psb_mmu_mask_pte(page_to_pfn(pd->dummy_page),
-						   invalid_type |
-						   PSB_MMU_CACHED_MEMORY);
+						   invalid_type);
 	} else {
 		pd->invalid_pde = 0;
 		pd->invalid_pte = 0;
@@ -991,8 +989,7 @@ void psb_mmu_test(struct psb_mmu_driver *driver, uint32_t offset)
 
 	pfn = (offset >> PAGE_SHIFT);
 
-	ret = psb_mmu_insert_pages(pd, &p, pfn << PAGE_SHIFT, 1, 0, 0,
-				   PSB_MMU_CACHED_MEMORY);
+	ret = psb_mmu_insert_pages(pd, &p, pfn << PAGE_SHIFT, 1, 0, 0, 0);
 	if (ret) {
 		printk(KERN_WARNING "Failed inserting mmu page\n");
 		goto out_err1;

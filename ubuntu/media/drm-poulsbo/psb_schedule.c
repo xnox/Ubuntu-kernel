@@ -1228,7 +1228,6 @@ int psb_cmdbuf_ta(struct drm_file *priv,
 	struct psb_task *task = NULL;
 	int ret;
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
-	unsigned long irq_flags;
 
 	PSB_DEBUG_RENDER("Cmdbuf ta\n");
 
@@ -1252,10 +1251,8 @@ int psb_cmdbuf_ta(struct drm_file *priv,
 	 * Hand the task over to the scheduler.
 	 */
 
-	spin_lock_irqsave(&scheduler->lock, irq_flags);
+	spin_lock_irq(&scheduler->lock);
 	task->sequence = psb_fence_advance_sequence(dev, PSB_ENGINE_TA);
-
-	psb_report_fence(scheduler, PSB_ENGINE_TA, task->sequence, 0, 1);
 
 	task->ta_complete_action = PSB_RASTER;
 	task->raster_complete_action = PSB_RETURN;
@@ -1264,12 +1261,16 @@ int psb_cmdbuf_ta(struct drm_file *priv,
 	PSB_DEBUG_RENDER("queued ta %u\n", task->sequence);
 
 	psb_schedule_ta(dev_priv, scheduler);
-	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
+	spin_unlock_irq(&scheduler->lock);
 
 	psb_fence_or_sync(priv, PSB_ENGINE_TA, arg, fence_arg, &fence);
 	drm_regs_fence(&dev_priv->use_manager, fence);
-	if (fence)
-	  fence_arg->signaled |= 0x1;
+	if (fence) {
+		spin_lock_irq(&scheduler->lock);
+		psb_report_fence(scheduler, PSB_ENGINE_TA, task->sequence, 0, 1);
+		spin_unlock_irq(&scheduler->lock);
+		fence_arg->signaled |= DRM_FENCE_TYPE_EXE;
+	}
 
       out_err:
 	if (ret && ret != -EAGAIN)
@@ -1302,7 +1303,6 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 	struct psb_task *task = NULL;
 	int ret;
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
-	unsigned long irq_flags;
 
 	PSB_DEBUG_RENDER("Cmdbuf Raster\n");
 
@@ -1323,21 +1323,24 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 	 * Hand the task over to the scheduler.
 	 */
 
-	spin_lock_irqsave(&scheduler->lock, irq_flags);
+	spin_lock_irq(&scheduler->lock);
 	task->sequence = psb_fence_advance_sequence(dev, PSB_ENGINE_TA);
-	psb_report_fence(scheduler, PSB_ENGINE_TA, task->sequence, 0, 1);
 	task->ta_complete_action = PSB_RASTER;
 	task->raster_complete_action = PSB_RETURN;
 
 	list_add_tail(&task->head, &scheduler->ta_queue);
 	PSB_DEBUG_RENDER("queued raster %u\n", task->sequence);
 	psb_schedule_ta(dev_priv, scheduler);
-	spin_unlock_irqrestore(&scheduler->lock, irq_flags);
+	spin_unlock_irq(&scheduler->lock);
 
 	psb_fence_or_sync(priv, PSB_ENGINE_TA, arg, fence_arg, &fence);
 	drm_regs_fence(&dev_priv->use_manager, fence);
-	if (fence)
-	  fence_arg->signaled |= 0x1;
+	if (fence) {
+		spin_lock_irq(&scheduler->lock);
+		psb_report_fence(scheduler, PSB_ENGINE_TA, task->sequence, 0, 1);
+		spin_unlock_irq(&scheduler->lock);
+		fence_arg->signaled |= DRM_FENCE_TYPE_EXE;
+	}
       out_err:
 	if (ret && ret != -EAGAIN)
 		DRM_ERROR("Raster task queue job failed.\n");

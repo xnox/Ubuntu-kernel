@@ -101,7 +101,7 @@ int psb_init_mem_type(struct drm_device *dev, uint32_t type,
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_TTM;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CMA;
 		man->gpu_offset = PSB_MEM_KERNEL_START;
 		break;
 	case DRM_PSB_MEM_MMU:
@@ -110,7 +110,7 @@ int psb_init_mem_type(struct drm_device *dev, uint32_t type,
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_TTM;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CMA;
 		man->gpu_offset = PSB_MEM_MMU_START;
 		break;
 	case DRM_PSB_MEM_PDS:
@@ -119,7 +119,7 @@ int psb_init_mem_type(struct drm_device *dev, uint32_t type,
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_TTM;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CMA;
 		man->gpu_offset = PSB_MEM_PDS_START;
 		break;
 	case DRM_PSB_MEM_RASTGEOM:
@@ -128,7 +128,7 @@ int psb_init_mem_type(struct drm_device *dev, uint32_t type,
 		man->io_addr = NULL;
 		man->drm_bus_maptype = _DRM_TTM;
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CMA;
 		man->gpu_offset = PSB_MEM_RASTGEOM_START;
 		break;
 	case DRM_BO_MEM_VRAM:
@@ -152,11 +152,11 @@ int psb_init_mem_type(struct drm_device *dev, uint32_t type,
 		man->io_addr = NULL;
 #ifdef PSB_WORKING_HOST_MMU_ACCESS
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
+		    _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_AGP;
 #else
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CMA;
 		man->drm_bus_maptype = _DRM_TTM;
 #endif
 		man->gpu_offset = pg->gatt_start;
@@ -167,11 +167,11 @@ int psb_init_mem_type(struct drm_device *dev, uint32_t type,
 		man->io_addr = NULL;
 #ifdef PSB_WORKING_HOST_MMU_ACCESS
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_NEEDS_IOREMAP;
+		    _DRM_FLAG_NEEDS_IOREMAP;
 		man->drm_bus_maptype = _DRM_AGP;
 #else
 		man->flags = _DRM_FLAG_MEMTYPE_MAPPABLE |
-		    _DRM_FLAG_MEMTYPE_CSELECT | _DRM_FLAG_MEMTYPE_CMA;
+		    _DRM_FLAG_MEMTYPE_CMA;
 		man->drm_bus_maptype = _DRM_TTM;
 #endif
 		man->gpu_offset = pg->gatt_start;
@@ -220,7 +220,7 @@ static int psb_move_blit(struct drm_buffer_object *bo,
 }
 
 /*
- * Flip destination ttm into cached-coherent GATT,
+ * Flip destination ttm into GATT,
  * then blit and subsequently move out again.
  */
 
@@ -233,8 +233,7 @@ static int psb_move_flip(struct drm_buffer_object *bo,
 
 	tmp_mem = *new_mem;
 	tmp_mem.mm_node = NULL;
-	tmp_mem.mask = DRM_BO_FLAG_MEM_TT |
-	    DRM_BO_FLAG_CACHED | DRM_BO_FLAG_FORCE_CACHING;
+	tmp_mem.mask = DRM_BO_FLAG_MEM_TT;
 
 	ret = drm_bo_mem_space(bo, &tmp_mem, no_wait);
 	if (ret)

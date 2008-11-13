@@ -30,27 +30,32 @@
 /*
  * Video display controller interrupt.
  */
+static int underrun = 0;
 
 static void psb_vdc_interrupt(struct drm_device *dev, uint32_t vdc_stat)
 {
 	struct drm_psb_private *dev_priv =
 	    (struct drm_psb_private *)dev->dev_private;
-	uint32_t pipe_stats;
+	uint32_t pipestat;
 	int wake = 0;
 
+	pipestat = PSB_RVDC32(PSB_PIPEASTAT);
+	if (pipestat & (1<<31)) {
+		printk("buffer underrun 0x%x\n",underrun++);
+		PSB_WVDC32(1<<31 | 1<<15, PSB_PIPEASTAT);
+	}
+
 	if (!drm_psb_disable_vsync && (vdc_stat & _PSB_VSYNC_PIPEA_FLAG)) {
-		pipe_stats = PSB_RVDC32(PSB_PIPEASTAT);
 		atomic_inc(&dev->vbl_received);
 		wake = 1;
-		PSB_WVDC32(pipe_stats | _PSB_VBLANK_INTERRUPT_ENABLE |
+		PSB_WVDC32(_PSB_VBLANK_INTERRUPT_ENABLE |
 			   _PSB_VBLANK_CLEAR, PSB_PIPEASTAT);
 	}
 
 	if (!drm_psb_disable_vsync && (vdc_stat & _PSB_VSYNC_PIPEB_FLAG)) {
-		pipe_stats = PSB_RVDC32(PSB_PIPEBSTAT);
 		atomic_inc(&dev->vbl_received2);
 		wake = 1;
-		PSB_WVDC32(pipe_stats | _PSB_VBLANK_INTERRUPT_ENABLE |
+		PSB_WVDC32(_PSB_VBLANK_INTERRUPT_ENABLE |
 			   _PSB_VBLANK_CLEAR, PSB_PIPEBSTAT);
 	}
 

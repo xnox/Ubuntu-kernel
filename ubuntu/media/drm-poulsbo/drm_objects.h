@@ -704,8 +704,8 @@ extern void drm_mem_reg_iounmap(struct drm_device *dev, struct drm_bo_mem_reg * 
 
 extern void drm_bo_init_lock(struct drm_bo_lock *lock);
 extern void drm_bo_read_unlock(struct drm_bo_lock *lock);
-extern int drm_bo_read_lock(struct drm_bo_lock *lock);
-extern int drm_bo_write_lock(struct drm_bo_lock *lock,
+extern int drm_bo_read_lock(struct drm_bo_lock *lock, int interruptible);
+extern int drm_bo_write_lock(struct drm_bo_lock *lock, int interruptible,
 			     struct drm_file *file_priv);
 
 extern int drm_bo_write_unlock(struct drm_bo_lock *lock,
