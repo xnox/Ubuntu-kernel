@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook15) hardy; urgency=low
+
+  [Michael Frey]
+
+  * New psb drm driver from Intel.  Version 2.2.0.32L.0020
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 13 Nov 2008 14:54:53 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook14) hardy; urgency=low
 
   [Colin Ian King]
