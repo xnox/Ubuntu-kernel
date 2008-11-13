@@ -1,3 +1,12 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook16) hardy; urgency=low
+
+  [Michael Frey]
+
+  * alsa-kernel/pci/hda/patch_realtek.c.  Added support for Sears Tower PCI
+    ID
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 13 Nov 2008 15:37:49 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook15) hardy; urgency=low
 
   [Michael Frey]
