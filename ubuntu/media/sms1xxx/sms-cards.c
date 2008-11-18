@@ -53,7 +53,7 @@ static struct sms_board sms_boards[] = {
 		.type	= SMS_NOVA_B0,
 	},
 	[SMS1XXX_BOARD_HAUPPAUGE_WINDHAM] = {
-		.name	= "Hauppauge Windham",
+		.name	= "Hauppauge WinTV MiniStick",
 		.type	= SMS_NOVA_B0,
 		.fw[DEVICE_MODE_DVBT_BDA] = "sms1xxx-hcw-55xxx-dvbt-01.fw",
 	},
