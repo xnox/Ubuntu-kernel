@@ -44,6 +44,8 @@ struct usb_device_id smsusb_id_table[] = {
 		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
 	{ USB_DEVICE(0x2040, 0x2009),
 		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
+	{ USB_DEVICE(0x2040, 0x200a),
+		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
 	{ USB_DEVICE(0x2040, 0x2019),
 		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
 	{ }		/* Terminating entry */
