@@ -6,7 +6,8 @@ cd $(dirname $0)
 LOG="$(pwd)/build.log"
 BPID=0
 LPID=0
-AUTOBUILD=0
+# Older build environments check against unset variable.
+unset AUTOBUILD
 BUILDTARGET="kernel"
 
 #
@@ -146,7 +147,7 @@ case "${BUILDTARGET}" in
 		echo "ACTION=headers" >>$STATUSFILE
 		fakeroot debian/rules binary-headers \
 			CONCURRENCY_LEVEL=$CONCURRENCY_LEVEL >>$LOG 2>&1 ||
-			Cleanup $?
+			echo "WARNING: no headers target!" >>$LOG
 		echo "ACTION=kernel" >>$STATUSFILE
 		fakeroot debian/rules binary-arch \
 			CONCURRENCY_LEVEL=$CONCURRENCY_LEVEL >>$LOG 2>&1 &
