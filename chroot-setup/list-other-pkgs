@@ -1,0 +1,82 @@
+#!/bin/bash
+CMD=$(basename $0)
+SEP=" "
+ARCH=$(dpkg-architecture -qDEB_BUILD_ARCH)
+DIST=$(lsb_release -cs)
+
+function PrintUsage()
+{
+	cat <<-EOD
+
+	Usage: $CMD [-d<sep>] [<distribution> [<architecture]]
+
+	-d<sep>         Separate packages by <sep> (default space)
+
+	<distributrion> ::= dapper|feisty|gutsy|hardy|intrepid|jaunty
+	                    (default = $ARCH)
+	<architecture>  ::= i386|amd64|powerpc|...
+	                    (default = $DIST)
+	EOD
+}
+
+ARGC=0
+while [ $# -ne 0 ]; do
+	case $1 in
+		-h|--help)
+			PrintUsage
+			exit 0
+			;;
+		-d)
+			SEP=$2
+			shift
+			;;
+		-d*)
+			SEP=$(echo $1|cut -c3-)
+			;;
+		-*|--*)
+			echo "Unknown option ($1)!" >&2
+			exit 1
+			;;
+		*)
+			if [ $ARGC -eq 0 ]; then
+				DIST=$1
+				let "ARGC++"
+			elif [ $ARGC -eq 1 ]; then
+				ARCH=$1
+				let "ARGC++"
+			else
+				echo "Too many arguments ($1)!" >&2
+				exit 1
+			fi
+			;;
+	esac
+	shift
+done
+
+FILE=$(dirname $0)/other-pkgs/others-$DIST
+if [ ! -f "$FILE" ]; then
+	echo "Unsupported distribution: $DIST!" >&2
+	exit 1
+fi
+
+awk -v SEP="$SEP" -v ARCH="$ARCH" '
+	/^[ \t]*#|^[ \t]*$/{
+		next
+	}
+	match($0, /\[.*\]/){
+		ARCHLIST=substr($0, RSTART+1, RLENGTH-2)
+		PKGNAME=substr($0, 1, RSTART-1)
+		if (index(ARCHLIST, ARCH))
+			printf("%s%s", N>0 ? SEP : "", PKGNAME)
+		else
+		N++
+		next
+	}
+	{
+		printf("%s%s", N>0 ? SEP : "", $1)
+		N++
+	}
+' $FILE
+
+exit 0
+

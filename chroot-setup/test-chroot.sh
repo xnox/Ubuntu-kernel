@@ -39,7 +39,6 @@ if [ ! -r $(dirname $0)/other-pkgs/others-$DIST ]; then
 	echo "No package definition for $DIST" >&2
 	exit 1
 fi
-PKGS="$(cat $(dirname $0)/other-pkgs/others-$DIST|sed 's/,/ /g')"
 
 #
 # Find out which chroot command is used
@@ -75,12 +74,16 @@ fi
 if $VERBOSE; then
 	echo "INFO: Using '$CMD$CHROOTNAME' to access chroot."
 fi
+if [ "$ARCH" = "" ]; then
+	ARCH="$HOSTARCH"
+fi
+PKGS="$($(dirname $0)/list-other-pkgs $DIST $ARCH)"
 
-cat <<EOD | ssh $HOST $CMD$CHROOTNAME
+cat <<EOD | ssh $HOST $CMD$CHROOTNAME 2>/dev/null
 RC=0
 MISS=""
 for i in $PKGS; do
-	if ! dpkg -l \$i >/dev/null 2>&1; then
+	if [ "\$(dpkg -l \$i 2>/dev/null | grep ^ii)" == "" ]; then
 		if [ "\$MISS" = "" ]; then
 			MISS="\$i"
 		else
@@ -89,6 +92,8 @@ for i in $PKGS; do
 	fi
 done
 if [ "\$MISS" != "" ]; then
+	echo "HOST: $HOST"
+	echo "DIST: $DIST($ARCH)"
 	echo "ERROR: The following packages are not installed:"
 	echo "\$MISS"
 	RC=1

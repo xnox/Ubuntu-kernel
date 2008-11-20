@@ -1,1 +1,14 @@
-binutils,cpp,dpkg-dev,gcc,libc6-dev,make,patch,debhelper,module-init-tools,kernel-wedge,vim,ccache,screen,fakeroot,git-core
+binutils
+cpp
+dpkg-dev
+gcc
+libc6-dev
+make
+patch
+debhelper
+module-init-tools
+kernel-wedge
+vim
+ccache
+fakeroot
+git-core
