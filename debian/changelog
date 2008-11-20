@@ -1,3 +1,9 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35) hardy-security; urgency=low
+
+  ABI bump to -22
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Thu, 20 Nov 2008 09:54:02 +0100
+
 linux-ubuntu-modules-2.6.24 (2.6.24-21.33) hardy-security; urgency=low
 
   [Stefan Bader]
