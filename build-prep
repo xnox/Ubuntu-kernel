@@ -106,7 +106,7 @@ for TARGET in $(ExpandHostGroups $TARGETS); do
 		AddSummary "[not configured]"
 		continue
 	fi
-	status=$($(dirname $0)/build-check ${TARGET})
+	status=$($(dirname $0)/build-check --dist ${DIST} ${TARGET})
 	if [ $? -ne 0 ]; then
 		AddSummary "[$status]"
 		continue
