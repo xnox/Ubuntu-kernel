@@ -291,6 +291,23 @@ CHANGES=$(cat <<EOD
 $(debian/rules prev_revision=$LASTRELEASE printchanges 2>/dev/null)
 EOD)
 
+#
+# Eradicate all entries in the changelog after the last release.
+#
+echo "Erase to $FULLVER"
+awk '
+	BEGIN{
+		silent=1
+	}
+	$2 == "('$FULLVER')" && $4 ~ /^urgency=/{
+		silent=0
+	}
+	!silent{
+		print
+	}
+' debian/changelog >debian/changelog.$$ && \
+	mv debian/changelog.$$ debian/changelog
+
 dch -b -v"$PPAVER" -D"$DIST" "!!!PLACEHOLDER!!!"
 awk -vTEXT="$CHANGES" '/!!!PLACEHOLDER!!!/{print TEXT; next} {print}' \
 	debian/changelog >debian/changelog.$$ && \
