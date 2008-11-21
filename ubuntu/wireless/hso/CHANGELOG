@@ -1,0 +1,53 @@
+1.2	Filip Aben
+	- Added frame length lower boundary checking
+	- Catch failed opens and unwanted closes.
+	- Set DTR/RTS at open()
+	- Add hso_tiocmset() locking
+	- Use usb_unlink_urb() when in_interrupt.
+	- Removed 'Suspend' modinfo and replace with more general 'Flags' which should contain all compiler defines.
+
+1.1	Filip Aben
+	- Added SIOCSETSUSPEND ioctl for serial ports: Enables or disables selective suspend if supported by kernel. 
+	- Added SIOCSETRADIO ioctl for serial ports:  Enabled or disables the radio.
+	- Icon401 support
+	- Added sysfs support
+	- Added GE40x, GTM382 devices
+	- Fixed APP2 port support
+	- Fixed crash when closing active port
+1.0	Filip Aben
+	- Fixed Interrupt endpoint bug for HS speed devices ( Icon321 )
+	- Major overhaul of devices structure and way of working. Should be a bit cleaner now.
+0.9	Sven Duytschaever
+	- added suspend, resume, autosuspend and autoresume
+	- minor restructuring of the code
+	- Icon031 enumeration fix
+	- added DTR and RTS handling
+	Filip Aben
+	- Added IP downlink recovery
+	- Fixed rescheduling while atomic crash.
+	- Changed serial writing mechanism
+	- Added port types to our per-device 'ttys' proc entry.
+	- Added multi-rx-urbs for modem downlink
+	- Replaced semaphore by safer spinlock
+	- Merged in Stefano Klinke's Icon031 patch
+0.8     Peter Henn
+        - Add device id for some new cards
+	- Fix for 2.6.18 & 2.6.19 compilation ( courtesy of Pharscape forum user joke_dst )
+0.7	Filip Aben
+      	- Added 2.6.12+ compatability
+0.6     Marco Himmer ( Option )
+        - Send REZERO UNIT command to switch from UMS to 3G device
+        - Move packed out of struct to avoid compiler warning
+0.5	Filip Aben ( Option )
+	- Removed internal project names from comments
+ 	- Removed dependency on Modem port which is not always there 
+ 	- Added USB id's for other compatible Option devices
+0.4	Andrew Bird (Sphere Systems Ltd)
+ 	Initial support for Circuit Switched interface - no H/W handshaking
+0.3	Andrew Bird (Sphere Systems Ltd)
+	Multiple device support, startup & shutdown cleanups
+0.2	Andrew Bird (Sphere Systems Ltd)
+	Initial port to 2.6, target 2.6.21/22	
+0.1	Option International
+	2.4 driver 
+ 
