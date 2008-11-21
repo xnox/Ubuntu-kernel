@@ -1,3 +1,34 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook17) hardy; urgency=low
+
+  [Michael Krufky]
+
+  * au0828: add new USB IDs for HVR950Q
+    - LP: #299634
+  * sms1xxx: fix product name for Hauppauge WinTV MiniStick
+    - LP: #299640
+  * sms1xxx: Add new USB product ID for Hauppauge WinTV MiniStick
+    - LP: #299636
+  * sms1xxx: support two new revisions of the Hauppauge WinTV MiniStick
+    - LP: #299636
+  * sms1xxx: use new firmware for Hauppauge WinTV MiniStick
+    - LP: #299671
+  * sms1xxx: add USB IDs for Hauppauge WinTV MiniCard DVB-T
+    - LP: #299680
+  * sms1xxx: add autodetection support for Hauppauge WinTV MiniCard
+    2040:200a
+    - LP: #299680
+
+  [Michael Frey]
+
+  * Fix for headphone detect on ALC269 codecs LP: 286260
+  * New firmware for Hauppauge DVB-T USB sticks
+  * Add Option USB 3G driver. LP: 296975
+  * Add wireless RTL8185 Realtek driver.  LP: 296981
+  * Added options for building HSO and RTL drivers
+  * Added default options to build both HSO and RTL drivers
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 21 Nov 2008 15:02:34 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook16) hardy; urgency=low
 
   [Michael Frey]
