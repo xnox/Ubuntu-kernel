@@ -1,0 +1,2426 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.7	//
+AC0_BE	r8180.h	125;"	d
+AC1_BK	r8180.h	126;"	d
+AC2Q	r8180.h	660;"	d
+AC2UP	ieee80211.h	987;"	d
+AC2_VI	r8180.h	127;"	d
+AC3_VO	r8180.h	128;"	d
+ACCEPT_ALLMAC_FRAME_SHIFT	r8180_hw.h	134;"	d
+ACCEPT_BCAST_FRAME_SHIFT	r8180_hw.h	132;"	d
+ACCEPT_CRCERR_FRAME_SHIFT	r8180_hw.h	131;"	d
+ACCEPT_CTL_FRAME_SHIFT	r8180_hw.h	128;"	d
+ACCEPT_DATA_FRAME_SHIFT	r8180_hw.h	129;"	d
+ACCEPT_ICVERR_FRAME_SHIFT	r8180_hw.h	130;"	d
+ACCEPT_MCAST_FRAME_SHIFT	r8180_hw.h	133;"	d
+ACCEPT_MNG_FRAME_SHIFT	r8180_hw.h	127;"	d
+ACCEPT_NICMAC_FRAME_SHIFT	r8180_hw.h	135;"	d
+ACCEPT_PWR_FRAME_SHIFT	r8180_hw.h	126;"	d
+ACI	r8180.h	/^		u8	ACI:2;$/;"	m	struct:_ACI_AIFSN::__anon11
+ACI_AIFSN	r8180.h	/^}ACI_AIFSN, *PACI_AIFSN;$/;"	t	typeref:union:_ACI_AIFSN
+ACM	r8180.h	/^		u8	ACM:1;$/;"	m	struct:_ACI_AIFSN::__anon11
+ACM_CONTROL	r8180_hw.h	815;"	d
+ACM_HW_EN	r8180_hw.h	887;"	d
+AC_BE_PARAM	r8180_hw.h	827;"	d
+AC_BK_PARAM	r8180_hw.h	828;"	d
+AC_CODING	r8180.h	/^typedef u32 AC_CODING;$/;"	t
+AC_MAX	r8180.h	129;"	d
+AC_PARAM	r8180.h	/^}AC_PARAM, *PAC_PARAM;$/;"	t	typeref:union:_AC_PARAM
+AC_PARAM_AIFS_OFFSET	r8180_hw.h	879;"	d
+AC_PARAM_ECW_MAX_OFFSET	r8180_hw.h	877;"	d
+AC_PARAM_ECW_MIN_OFFSET	r8180_hw.h	878;"	d
+AC_PARAM_TXOP_LIMIT_OFFSET	r8180_hw.h	876;"	d
+AC_VI_PARAM	r8180_hw.h	826;"	d
+AC_VO_PARAM	r8180_hw.h	825;"	d
+AGCRESET_SHIFT	r8180_hw.h	210;"	d
+AIFSN	r8180.h	/^		u8	AIFSN:4;$/;"	m	struct:_ACI_AIFSN::__anon11
+ANAPARAM	r8180_hw.h	185;"	d
+ANAPARAM2	r8180_hw.h	359;"	d
+ANAPARAM3	r8180_hw.h	823;"	d
+ANAPARAM_PWR0_MASK	r8180_hw.h	71;"	d
+ANAPARAM_PWR0_SHIFT	r8180_hw.h	72;"	d
+ANAPARAM_PWR1_MASK	r8180_hw.h	73;"	d
+ANAPARAM_PWR1_SHIFT	r8180_hw.h	74;"	d
+ANAPARAM_TXDACOFF_SHIFT	r8180_hw.h	70;"	d
+ANAPARM2_ASIC_ON	r8180_hw.h	307;"	d
+ANAPARM2_ASIC_ON	r8180_hw.h	314;"	d
+ANAPARM2_ON	r8180_hw.h	310;"	d
+ANAPARM2_ON	r8180_hw.h	317;"	d
+ANAPARM_ASIC_ON	r8180_hw.h	306;"	d
+ANAPARM_ASIC_ON	r8180_hw.h	313;"	d
+ANAPARM_ON	r8180_hw.h	309;"	d
+ANAPARM_ON	r8180_hw.h	316;"	d
+ANA_PARM	r8180_hw.h	295;"	d
+ANA_PARM_END	r8180_hw.h	296;"	d
+ANTENNA_DIVERSITY_TIMER_PERIOD	ieee80211.h	943;"	d
+ANTSEL	r8180_hw.h	813;"	d
+ARFR	r8180_hw.h	835;"	d
+ATIM	r8180_hw.h	191;"	d
+ATIM_MASK	r8180_hw.h	189;"	d
+AciAifsn	r8180.h	/^		ACI_AIFSN	AciAifsn;$/;"	m	struct:_AC_PARAM::__anon12
+AckTimeOutReg	r8180_hw.h	804;"	d
+ActSetWirelessMode8185	r8185b_init.c	/^ActSetWirelessMode8185($/;"	f
+ActUpdateChannelAccessSetting	r8185b_init.c	/^ActUpdateChannelAccessSetting($/;"	f
+AdAuxAntennaRxOkCnt	r8180.h	/^	u32			AdAuxAntennaRxOkCnt;		\/\/ Aux antenna Rx OK count. $/;"	m	struct:r8180_priv
+AdCheckPeriod	r8180.h	/^	u8 AdCheckPeriod;				\/\/ # of period SwAntennaDiversityTimer to check Rx signal strength for SW Antenna Diversity. $/;"	m	struct:r8180_priv
+AdMainAntennaRxOkCnt	r8180.h	/^	u32			AdMainAntennaRxOkCnt;		\/\/ Main antenna Rx OK count. $/;"	m	struct:r8180_priv
+AdMaxCheckPeriod	r8180.h	/^	u8 AdMaxCheckPeriod;			\/\/ Max value of AdCheckPeriod.  $/;"	m	struct:r8180_priv
+AdMaxRxSsThreshold	r8180.h	/^	long AdMaxRxSsThreshold;			\/\/ Max value of AdRxSsThreshold.$/;"	m	struct:r8180_priv
+AdMinCheckPeriod	r8180.h	/^	u8 AdMinCheckPeriod;			\/\/ Min value of AdCheckPeriod. $/;"	m	struct:r8180_priv
+AdRxOkCnt	r8180.h	/^	u32 AdRxOkCnt;$/;"	m	struct:r8180_priv
+AdRxSignalStrength	r8180.h	/^	long AdRxSignalStrength;$/;"	m	struct:r8180_priv
+AdRxSsBeforeSwitched	r8180.h	/^	long AdRxSsBeforeSwitched;		\/\/ Rx signal strength before we swithed antenna.$/;"	m	struct:r8180_priv
+AdRxSsThreshold	r8180.h	/^	long AdRxSsThreshold;			\/\/ Signal strength threshold to switch antenna.$/;"	m	struct:r8180_priv
+AdTickCount	r8180.h	/^	u8 AdTickCount;				\/\/ Times of SwAntennaDiversityTimer happened.$/;"	m	struct:r8180_priv
+AtimWnd	r8180_hw.h	332;"	d
+AtimWnd_AtimWnd	r8180_hw.h	744;"	d
+AtimWnd_END	r8180_hw.h	333;"	d
+AtimtrItv	r8180_hw.h	338;"	d
+AtimtrItv_AtimtrItv	r8180_hw.h	748;"	d
+AtimtrItv_END	r8180_hw.h	339;"	d
+BAND_A	r8180_rtl8255.c	13;"	d	file:
+BAND_BG	r8180_rtl8255.c	14;"	d	file:
+BB_ANTATTEN_CHAN14	r8180_hw.h	62;"	d
+BB_ANTENNA_B	r8180_hw.h	63;"	d
+BB_HOST_BANG	r8180_hw.h	65;"	d
+BB_HOST_BANG_CLK	r8180_hw.h	67;"	d
+BB_HOST_BANG_DATA	r8180_hw.h	68;"	d
+BB_HOST_BANG_EN	r8180_hw.h	66;"	d
+BB_HOST_BANG_RW	r8180_hw.h	902;"	d
+BEACON_INTERVAL	r8180_hw.h	186;"	d
+BEACON_INTERVAL_MASK	r8180_hw.h	187;"	d
+BEACON_PRIORITY	r8180.h	655;"	d
+BEACON_PROBE_SSID_ID_POSITION	ieee80211.h	766;"	d
+BEACON_QUEUE	r8180.h	75;"	d
+BEQ_ACM_CTL	r8180_hw.h	891;"	d
+BEQ_ACM_EN	r8180_hw.h	886;"	d
+BE_PRIORITY	r8180.h	651;"	d
+BE_QUEUE	r8180.h	71;"	d
+BIT0	r8180_hw.h	26;"	d
+BIT1	r8180_hw.h	27;"	d
+BIT10	r8180_hw.h	36;"	d
+BIT11	r8180_hw.h	37;"	d
+BIT12	r8180_hw.h	38;"	d
+BIT13	r8180_hw.h	39;"	d
+BIT14	r8180_hw.h	40;"	d
+BIT15	r8180_hw.h	41;"	d
+BIT16	r8180_hw.h	42;"	d
+BIT17	r8180_hw.h	43;"	d
+BIT18	r8180_hw.h	44;"	d
+BIT19	r8180_hw.h	45;"	d
+BIT2	r8180_hw.h	28;"	d
+BIT20	r8180_hw.h	46;"	d
+BIT21	r8180_hw.h	47;"	d
+BIT22	r8180_hw.h	48;"	d
+BIT23	r8180_hw.h	49;"	d
+BIT24	r8180_hw.h	50;"	d
+BIT25	r8180_hw.h	51;"	d
+BIT26	r8180_hw.h	52;"	d
+BIT27	r8180_hw.h	53;"	d
+BIT28	r8180_hw.h	54;"	d
+BIT29	r8180_hw.h	55;"	d
+BIT3	r8180_hw.h	29;"	d
+BIT30	r8180_hw.h	56;"	d
+BIT31	r8180_hw.h	57;"	d
+BIT4	r8180_hw.h	30;"	d
+BIT5	r8180_hw.h	31;"	d
+BIT6	r8180_hw.h	32;"	d
+BIT7	r8180_hw.h	33;"	d
+BIT8	r8180_hw.h	34;"	d
+BIT9	r8180_hw.h	35;"	d
+BK_PRIORITY	r8180.h	650;"	d
+BK_QUEUE	r8180.h	70;"	d
+BRSR	r8180_hw.h	260;"	d
+BRSR	r8180_hw.h	265;"	d
+BRSR_BPLCP	r8180_hw.h	502;"	d
+BRSR_END	r8180_hw.h	266;"	d
+BRSR_MBR	r8180_hw.h	503;"	d
+BRSR_MBR0	r8180_hw.h	505;"	d
+BRSR_MBR1	r8180_hw.h	506;"	d
+BRSR_MBR_8185	r8180_hw.h	504;"	d
+BSSID	r8180_hw.h	249;"	d
+BSSID_END	r8180_hw.h	250;"	d
+BcnItv	r8180_hw.h	329;"	d
+BcnItv_BcnItv	r8180_hw.h	742;"	d
+BcnItv_END	r8180_hw.h	330;"	d
+BcnTimingAdjust	r8180_hw.h	831;"	d
+BintrItv	r8180_hw.h	335;"	d
+BintrItv_BintrItv	r8180_hw.h	746;"	d
+BintrItv_END	r8180_hw.h	336;"	d
+CARDBUS	r8180.h	/^	enum card_type {PCI,MINIPCI,CARDBUS,USB\/*rtl8187*\/}card_type;$/;"	e	enum:r8180_priv::card_type
+CARRIER_SENSE_COUNTER	r8180_hw.h	198;"	d
+CC	Makefile	/^CC            = gcc$/;"	m
+CCK_FALSE_ALARM	r8180_hw.h	947;"	d
+CCK_TXAGC	r8180_hw.h	811;"	d
+CFG_IEEE80211_COMPUTE_FCS	ieee80211.h	1116;"	d
+CFG_IEEE80211_RESERVE_FCS	ieee80211.h	1115;"	d
+CHANNEL_ACCESS_SETTING	r8180.h	/^}*PCHANNEL_ACCESS_SETTING,CHANNEL_ACCESS_SETTING;$/;"	t	typeref:struct:ChnlAccessSetting
+CHANNEL_LIST	ieee80211.h	/^}CHANNEL_LIST, *PCHANNEL_LIST;$/;"	t	typeref:struct:_CHANNEL_LIST
+CHNL_TXPOWER_TRIPLE	dot11d.h	/^}CHNL_TXPOWER_TRIPLE, *PCHNL_TXPOWER_TRIPLE;$/;"	t	typeref:struct:_CHNL_TXPOWER_TRIPLE
+CIE_WATCHDOG_TH	dot11d.h	54;"	d
+CIS	r8180_93cx6.h	46;"	d
+CMD	r8180_hw.h	82;"	d
+CMD_RESERVED_MASK	r8180_hw.h	84;"	d
+CMD_RST_SHIFT	r8180_hw.h	83;"	d
+CMD_RX_ENABLE_SHIFT	r8180_hw.h	85;"	d
+CMD_TX_ENABLE_SHIFT	r8180_hw.h	86;"	d
+CONFIG0	r8180_hw.h	291;"	d
+CONFIG0_Aux_Status	r8180_hw.h	676;"	d
+CONFIG0_GL	r8180_hw.h	677;"	d
+CONFIG0_GL0	r8180_hw.h	679;"	d
+CONFIG0_GL1	r8180_hw.h	678;"	d
+CONFIG0_LEDGPO_En	r8180_hw.h	675;"	d
+CONFIG0_WEP104	r8180_hw.h	674;"	d
+CONFIG0_WEP104_SHIFT	r8180_hw.h	209;"	d
+CONFIG0_WEP40_SHIFT	r8180_hw.h	208;"	d
+CONFIG1	r8180_hw.h	292;"	d
+CONFIG1_IOMAP	r8180_hw.h	686;"	d
+CONFIG1_LEDS	r8180_hw.h	681;"	d
+CONFIG1_LEDS0	r8180_hw.h	683;"	d
+CONFIG1_LEDS1	r8180_hw.h	682;"	d
+CONFIG1_LWACT	r8180_hw.h	684;"	d
+CONFIG1_MEMMAP	r8180_hw.h	685;"	d
+CONFIG1_PMEn	r8180_hw.h	688;"	d
+CONFIG1_VPD	r8180_hw.h	687;"	d
+CONFIG2	r8180_hw.h	293;"	d
+CONFIG2_ANT	r8180_hw.h	691;"	d
+CONFIG2_ANTENNA_SHIFT	r8180_hw.h	206;"	d
+CONFIG2_DMA_POLLING_MODE_SHIFT	r8180_hw.h	100;"	d
+CONFIG2_DPS	r8180_hw.h	692;"	d
+CONFIG2_LCK	r8180_hw.h	690;"	d
+CONFIG2_PAPE_sign	r8180_hw.h	693;"	d
+CONFIG2_PAPE_time	r8180_hw.h	694;"	d
+CONFIG2_PAPE_time0	r8180_hw.h	696;"	d
+CONFIG2_PAPE_time1	r8180_hw.h	695;"	d
+CONFIG3	r8180_hw.h	300;"	d
+CONFIG3_ANAPARAM_W_SHIFT	r8180_hw.h	184;"	d
+CONFIG3_CLKRUN_En	r8180_hw.h	702;"	d
+CONFIG3_CLKRUN_SHIFT	r8180_hw.h	183;"	d
+CONFIG3_CardB_En	r8180_hw.h	701;"	d
+CONFIG3_FBtbEn	r8180_hw.h	704;"	d
+CONFIG3_FuncRegEn	r8180_hw.h	703;"	d
+CONFIG3_GNTSel	r8180_hw.h	698;"	d
+CONFIG3_Magic	r8180_hw.h	700;"	d
+CONFIG3_PARM_En	r8180_hw.h	699;"	d
+CONFIG4	r8180_hw.h	301;"	d
+CONFIG4_LWPME	r8180_hw.h	709;"	d
+CONFIG4_LWPTN	r8180_hw.h	710;"	d
+CONFIG4_PWRMGT	r8180_hw.h	708;"	d
+CONFIG4_PWROFF	r8180_hw.h	707;"	d
+CONFIG4_RFTYPE	r8180_hw.h	711;"	d
+CONFIG4_RFTYPE0	r8180_hw.h	713;"	d
+CONFIG4_RFTYPE1	r8180_hw.h	712;"	d
+CONFIG4_VCOPDN	r8180_hw.h	706;"	d
+CONFIG5	r8180_hw.h	450;"	d
+CONFIG5_CALON	r8180_hw.h	717;"	d
+CONFIG5_EACPI	r8180_hw.h	718;"	d
+CONFIG5_LANWake	r8180_hw.h	719;"	d
+CONFIG5_PME_STS	r8180_hw.h	720;"	d
+CONFIG5_RX_FIFO_OK	r8180_hw.h	716;"	d
+CONFIG5_TX_FIFO_OK	r8180_hw.h	715;"	d
+CONFIG_RTL8185B	r8180_hw.h	23;"	d
+CONFIG_RTL818X_S	r8180_hw.h	24;"	d
+COUNTRY_CODE_ETSI	ieee80211.h	/^	COUNTRY_CODE_ETSI = 2,$/;"	e	enum:__anon7
+COUNTRY_CODE_FCC	ieee80211.h	/^	COUNTRY_CODE_FCC = 0,$/;"	e	enum:__anon7
+COUNTRY_CODE_FRANCE	ieee80211.h	/^	COUNTRY_CODE_FRANCE = 4,$/;"	e	enum:__anon7
+COUNTRY_CODE_GLOBAL_DOMAIN	ieee80211.h	/^	COUNTRY_CODE_GLOBAL_DOMAIN = 9$/;"	e	enum:__anon7
+COUNTRY_CODE_IC	ieee80211.h	/^	COUNTRY_CODE_IC = 1,$/;"	e	enum:__anon7
+COUNTRY_CODE_ISRAEL	ieee80211.h	/^	COUNTRY_CODE_ISRAEL = 7,$/;"	e	enum:__anon7
+COUNTRY_CODE_MKK	ieee80211.h	/^	COUNTRY_CODE_MKK = 5,$/;"	e	enum:__anon7
+COUNTRY_CODE_MKK1	ieee80211.h	/^	COUNTRY_CODE_MKK1 = 6,$/;"	e	enum:__anon7
+COUNTRY_CODE_SPAIN	ieee80211.h	/^	COUNTRY_CODE_SPAIN = 3,$/;"	e	enum:__anon7
+COUNTRY_CODE_TELEC	ieee80211.h	/^	COUNTRY_CODE_TELEC = 8,$/;"	e	enum:__anon7
+CR	r8180_hw.h	252;"	d
+CR9346	r8180_hw.h	289;"	d
+CR9346_EECS	r8180_hw.h	669;"	d
+CR9346_EED0	r8180_hw.h	672;"	d
+CR9346_EED1	r8180_hw.h	671;"	d
+CR9346_EEM	r8180_hw.h	666;"	d
+CR9346_EEM0	r8180_hw.h	668;"	d
+CR9346_EEM1	r8180_hw.h	667;"	d
+CR9346_EESK	r8180_hw.h	670;"	d
+CRC0	r8180_hw.h	411;"	d
+CRC0_END	r8180_hw.h	412;"	d
+CRC1	r8180_hw.h	413;"	d
+CRC1_END	r8180_hw.h	414;"	d
+CRC2	r8180_hw.h	415;"	d
+CRC2_END	r8180_hw.h	416;"	d
+CRC3	r8180_hw.h	417;"	d
+CRC3_END	r8180_hw.h	418;"	d
+CRC4	r8180_hw.h	419;"	d
+CRC4_END	r8180_hw.h	420;"	d
+CRC_LENGTH	ieee80211.h	947;"	d
+CRCount	r8180_hw.h	343;"	d
+CR_MulRW	r8180_hw.h	511;"	d
+CR_RE	r8180_hw.h	509;"	d
+CR_RST	r8180_hw.h	508;"	d
+CR_TE	r8180_hw.h	510;"	d
+CSMethod	r8180.h	/^	u32 CSMethod;$/;"	m	struct:r8180_priv
+CWR	r8180_hw.h	460;"	d
+CWR_CW	r8180_hw.h	761;"	d
+CWR_END	r8180_hw.h	461;"	d
+CW_CONF	r8180_hw.h	378;"	d
+CW_CONF_PERPACKET_CW_SHIFT	r8180_hw.h	380;"	d
+CW_CONF_PERPACKET_RETRY_SHIFT	r8180_hw.h	379;"	d
+CW_VAL	r8180_hw.h	381;"	d
+CWmaxIndex	r8180.h	/^	u16 CWmaxIndex;$/;"	m	struct:ChnlAccessSetting
+CWminIndex	r8180.h	/^	u16 CWminIndex;$/;"	m	struct:ChnlAccessSetting
+Channel	ieee80211.h	/^	u8	Channel[MAX_CHANNEL_NUMBER + 1];$/;"	m	struct:_CHANNEL_LIST
+ChannelAccessSetting	r8180.h	/^	struct 	ChnlAccessSetting  ChannelAccessSetting;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::ChnlAccessSetting
+ChannelPlan	r8180_core.c	/^static CHANNEL_LIST ChannelPlan[] = {$/;"	v	file:
+CheckDig	r8180_dm.c	/^CheckDig($/;"	f
+CheckHighPower	r8180_dm.c	/^bool CheckHighPower(struct net_device *dev)$/;"	f
+ChnlAccessSetting	r8180.h	/^typedef struct 	ChnlAccessSetting {$/;"	s
+ComputeTxTime	r8180_core.c	/^u16 ComputeTxTime( $/;"	f
+CountryIeBuf	dot11d.h	/^	u8  CountryIeBuf[MAX_IE_LEN];$/;"	m	struct:_RT_DOT11D_INFO
+CountryIeBuf	ieee80211.h	/^	u8 CountryIeBuf[MAX_IE_LEN];$/;"	m	struct:ieee80211_network
+CountryIeLen	dot11d.h	/^	u16 CountryIeLen; \/\/ > 0 if CountryIeBuf[] contains valid country information element.$/;"	m	struct:_RT_DOT11D_INFO
+CountryIeLen	ieee80211.h	/^	u16 CountryIeLen;$/;"	m	struct:ieee80211_network
+CountryIeSrcAddr	dot11d.h	/^	u8  CountryIeSrcAddr[6]; \/\/ Source AP of the country IE.$/;"	m	struct:_RT_DOT11D_INFO
+CountryIeWatchdog	dot11d.h	/^	u8  CountryIeWatchdog; $/;"	m	struct:_RT_DOT11D_INFO
+CurCCKRSSI	r8180.h	/^	u8			CurCCKRSSI;$/;"	m	struct:r8180_priv
+CurrAntennaIndex	r8180.h	/^	u8 CurrAntennaIndex;			\/\/ Index to current Antenna (both Tx and Rx).$/;"	m	struct:r8180_priv
+CurrRetryCnt	r8180.h	/^        u16                                     CurrRetryCnt;$/;"	m	struct:r8180_priv
+CurrRetryRate	r8180.h	/^        u16                                     CurrRetryRate;$/;"	m	struct:r8180_priv
+CurrTxRate	r8180.h	/^        u8                                      CurrTxRate;     \/\/the rate before up$/;"	m	struct:r8180_priv
+CurrentOperaRate	r8180.h	/^        u8                  CurrentOperaRate;$/;"	m	struct:r8180_priv
+DEBUG_EPROM	r8180_core.c	39;"	d	file:
+DEBUG_IRQ	r8180_core.c	48;"	d	file:
+DEBUG_IRQ_TASKLET	r8180_core.c	53;"	d	file:
+DEBUG_REGISTERS	r8180_core.c	51;"	d	file:
+DEBUG_RING	r8180_core.c	52;"	d	file:
+DEBUG_RX	r8180_core.c	49;"	d	file:
+DEBUG_RXALLOC	r8180_core.c	50;"	d	file:
+DEBUG_RX_FRAG	r8180_core.c	45;"	d	file:
+DEBUG_RX_SKB	r8180_core.c	43;"	d	file:
+DEBUG_RX_VERBOSE	r8180_core.c	40;"	d	file:
+DEBUG_TX	r8180_core.c	47;"	d	file:
+DEBUG_TX_ALLOC	r8180_core.c	54;"	d	file:
+DEBUG_TX_DESC	r8180_core.c	55;"	d	file:
+DEBUG_TX_DESC2	r8180_core.c	37;"	d	file:
+DEBUG_TX_FILLDESC	r8180_core.c	46;"	d	file:
+DEBUG_TX_FRAG	r8180_core.c	44;"	d	file:
+DEBUG_ZERO_RX	r8180_core.c	42;"	d	file:
+DEFAULT_BEACONINTERVAL	r8180.h	59;"	d
+DEFAULT_BEACON_ESSID	r8180.h	60;"	d
+DEFAULT_FRAG_THRESHOLD	r8180.h	53;"	d
+DEFAULT_FTS	ieee80211.h	1095;"	d
+DEFAULT_MAX_SCAN_AGE	ieee80211.h	1094;"	d
+DEFAULT_RETRY_DATA	r8180.h	64;"	d
+DEFAULT_RETRY_RTS	r8180.h	63;"	d
+DEFAULT_RTS_THRESHOLD	r8180.h	56;"	d
+DEFAULT_SSID	r8180.h	62;"	d
+DIFS	r8180_hw.h	375;"	d
+DIFS_Timer	r8180.h	/^	u16 DIFS_Timer; $/;"	m	struct:ChnlAccessSetting
+DIG_NumberFallbackVote	r8180.h	/^	u8					DIG_NumberFallbackVote;$/;"	m	struct:r8180_priv
+DIG_NumberUpgradeVote	r8180.h	/^	u8					DIG_NumberUpgradeVote;$/;"	m	struct:r8180_priv
+DIG_Zebra	r8180_dm.c	/^DIG_Zebra($/;"	f
+DK0	r8180_hw.h	433;"	d
+DK0_END	r8180_hw.h	434;"	d
+DK1	r8180_hw.h	435;"	d
+DK1_END	r8180_hw.h	436;"	d
+DK2	r8180_hw.h	437;"	d
+DK2_END	r8180_hw.h	438;"	d
+DK3	r8180_hw.h	439;"	d
+DK3_END	r8180_hw.h	440;"	d
+DL_not_allowed	r8180.h	/^	DL_not_allowed	= 0x30,	\/\/ 48$/;"	e	enum:_ReasonCode
+DMESG	r8180.h	23;"	d
+DMESGE	r8180.h	25;"	d
+DMESGW	r8180.h	24;"	d
+DOT11D_STATE	dot11d.h	/^}DOT11D_STATE;$/;"	t	typeref:enum:_DOT11D_STATE
+DOT11D_STATE_DONE	dot11d.h	/^	DOT11D_STATE_DONE,$/;"	e	enum:_DOT11D_STATE
+DOT11D_STATE_LEARNED	dot11d.h	/^	DOT11D_STATE_LEARNED,$/;"	e	enum:_DOT11D_STATE
+DOT11D_STATE_NONE	dot11d.h	/^	DOT11D_STATE_NONE = 0,$/;"	e	enum:_DOT11D_STATE
+DUMMY_RX	r8180_core.c	41;"	d	file:
+DbmToTxPwrIdx	r8180_rtl8225z2.c	/^DbmToTxPwrIdx($/;"	f
+DefaultChannelPlan	r8180_wx.c	/^static CHANNEL_LIST DefaultChannelPlan[] = {$/;"	v	file:
+DoTxHighPower	r8180_dm.c	/^DoTxHighPower($/;"	f
+DrvIFIndicateDisassociation	r8185b_init.c	/^DrvIFIndicateDisassociation($/;"	f
+DynamicInitGain	r8180_dm.c	/^DynamicInitGain($/;"	f
+EAPOL_ENCAP_ASF_ALERT	ieee80211.h	/^	EAPOL_ENCAP_ASF_ALERT$/;"	e	enum:eap_type
+EAPOL_KEY	ieee80211.h	/^	EAPOL_KEY,$/;"	e	enum:eap_type
+EAPOL_LOGOFF	ieee80211.h	/^	EAPOL_LOGOFF,$/;"	e	enum:eap_type
+EAPOL_START	ieee80211.h	/^	EAPOL_START,$/;"	e	enum:eap_type
+EAP_PACKET	ieee80211.h	/^	EAP_PACKET = 0,$/;"	e	enum:eap_type
+ECW	r8180.h	/^}ECW, *PECW;$/;"	t	typeref:union:_ECW
+ECWmax	r8180.h	/^		u8	ECWmax:4;$/;"	m	struct:_ECW::__anon10
+ECWmin	r8180.h	/^		u8	ECWmin:4;$/;"	m	struct:_ECW::__anon10
+EEPROMDefaultAntenna1	r8180.h	/^	bool EEPROMDefaultAntenna1;$/;"	m	struct:r8180_priv
+EEPROMSwAntennaDiversity	r8180.h	/^	u8 EEPROMSwAntennaDiversity;$/;"	m	struct:r8180_priv
+EEPROM_CID_RSVD1	r8180_hw.h	943;"	d
+EEPROM_COUNTRY_CODE	r8180_hw.h	952;"	d
+EEPROM_DEF_ANT_1	r8180_hw.h	932;"	d
+EEPROM_DEF_ANT_MASK	r8180_hw.h	931;"	d
+EEPROM_RSV	r8180_hw.h	936;"	d
+EEPROM_SW_AD_ENABLE	r8180_hw.h	928;"	d
+EEPROM_SW_AD_MASK	r8180_hw.h	927;"	d
+EEPROM_SW_REVD_OFFSET	r8180_hw.h	925;"	d
+EEPROM_THERMAL_METER_ENABLE	r8180_hw.h	942;"	d
+EEPROM_THERMAL_METER_MASK	r8180_hw.h	940;"	d
+EEPROM_XTAL_CAL_ENABLE	r8180_hw.h	941;"	d
+EEPROM_XTAL_CAL_MASK	r8180_hw.h	937;"	d
+EEPROM_XTAL_CAL_XIN_MASK	r8180_hw.h	939;"	d
+EEPROM_XTAL_CAL_XOUT_MASK	r8180_hw.h	938;"	d
+EIFS	r8180_hw.h	258;"	d
+EIFS	r8180_hw.h	269;"	d
+EIFS_Timer	r8180.h	/^	u16 EIFS_Timer;$/;"	m	struct:ChnlAccessSetting
+ENERGY_TRESHOLD	r8180_93cx6.h	42;"	d
+EN_LPF_CAL	r8180_hw.h	944;"	d
+EPROM_93c46	r8180.h	48;"	d
+EPROM_93c56	r8180.h	49;"	d
+EPROM_ANAPARAM_ADDRHWORD	r8180_93cx6.h	22;"	d
+EPROM_ANAPARAM_ADDRLWORD	r8180_93cx6.h	21;"	d
+EPROM_CK_SHIFT	r8180_hw.h	193;"	d
+EPROM_CK_SHIFT	r8180_hw.h	97;"	d
+EPROM_CMD	r8180_hw.h	88;"	d
+EPROM_CMD_CONFIG	r8180_hw.h	92;"	d
+EPROM_CMD_LOAD	r8180_hw.h	94;"	d
+EPROM_CMD_NORMAL	r8180_hw.h	93;"	d
+EPROM_CMD_OPERATING_MODE_MASK	r8180_hw.h	91;"	d
+EPROM_CMD_OPERATING_MODE_SHIFT	r8180_hw.h	90;"	d
+EPROM_CMD_PROGRAM	r8180_hw.h	95;"	d
+EPROM_CMD_RESERVED_MASK	r8180_hw.h	89;"	d
+EPROM_CS_SHIFT	r8180_hw.h	192;"	d
+EPROM_CS_SHIFT	r8180_hw.h	96;"	d
+EPROM_DELAY	r8180_93cx6.h	19;"	d
+EPROM_R_SHIFT	r8180_hw.h	99;"	d
+EPROM_TXPW_BASE	r8180_93cx6.h	33;"	d
+EPROM_TXPW_CH11_12	r8180_93cx6.h	56;"	d
+EPROM_TXPW_CH13_14	r8180_93cx6.h	57;"	d
+EPROM_TXPW_CH1_2	r8180_93cx6.h	51;"	d
+EPROM_TXPW_CH3_4	r8180_93cx6.h	52;"	d
+EPROM_TXPW_CH5_6	r8180_93cx6.h	53;"	d
+EPROM_TXPW_CH7_8	r8180_93cx6.h	54;"	d
+EPROM_TXPW_CH9_10	r8180_93cx6.h	55;"	d
+EPROM_TXPW_OFDM_CH1_2	r8180_93cx6.h	48;"	d
+EPROM_TYPE_SHIFT	r8180_hw.h	144;"	d
+EPROM_VERSION	r8180_93cx6.h	43;"	d
+EPROM_W_SHIFT	r8180_hw.h	98;"	d
+ETHERTYPE_IP	ieee80211.h	1004;"	d
+ETHERTYPE_PAE	ieee80211.h	1001;"	d
+ETHER_ADDR_LEN	ieee80211.h	993;"	d
+ETH_P_80211_RAW	ieee80211.h	472;"	d
+ETH_P_PAE	ieee80211.h	466;"	d
+ETH_P_PREAUTH	ieee80211.h	469;"	d
+EarlyRxThreshold	r8180.h	/^	u16 EarlyRxThreshold;$/;"	m	struct:r8180_priv
+Ecw	r8180.h	/^		ECW		Ecw;$/;"	m	struct:_AC_PARAM::__anon12
+FEMR	r8180_hw.h	479;"	d
+FEMR	r8180_hw.h	481;"	d
+FEMR_END	r8180_hw.h	482;"	d
+FEMR_GWAKE	r8180_hw.h	768;"	d
+FEMR_INTR	r8180_hw.h	766;"	d
+FEMR_WKUP	r8180_hw.h	767;"	d
+FER	r8180_hw.h	475;"	d
+FER_END	r8180_hw.h	476;"	d
+FER_GWAKE	r8180_hw.h	764;"	d
+FER_INTR	r8180_hw.h	763;"	d
+FFER	r8180_hw.h	488;"	d
+FFER_END	r8180_hw.h	489;"	d
+FFER_GWAKE	r8180_hw.h	774;"	d
+FFER_INTR	r8180_hw.h	773;"	d
+FPSR	r8180_hw.h	485;"	d
+FPSR_END	r8180_hw.h	486;"	d
+FPSR_GWAKE	r8180_hw.h	771;"	d
+FPSR_INTR	r8180_hw.h	770;"	d
+FailTxRateCount	r8180.h	/^        u8                          FailTxRateCount;$/;"	m	struct:r8180_priv
+FalseAlarmRegValue	r8180.h	/^	u32					FalseAlarmRegValue;$/;"	m	struct:r8180_priv
+FirstChnl	dot11d.h	/^	u8 FirstChnl;$/;"	m	struct:_CHNL_TXPOWER_TRIPLE
+ForcedDataRate	r8180.h	/^	int	   ForcedDataRate; \/\/ Force Data Rate. 0: Auto, 0x02: 1M ~ 0x6C: 54M.)$/;"	m	struct:r8180_priv
+GCT_ANAPARAM_PWR0_ON	r8180_gct.h	18;"	d
+GCT_ANAPARAM_PWR1_ON	r8180_gct.h	17;"	d
+GCT_ANTENNA	r8180_gct.h	13;"	d
+GET_CIE_WATCHDOG	dot11d.h	55;"	d
+GET_DOT11D_INFO	dot11d.h	41;"	d
+GPIO	r8180_hw.h	363;"	d
+GPIOChangeRFWorkItem	ieee80211.h	/^	struct delayed_work GPIOChangeRFWorkItem;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+GPIOChangeRFWorkItem	ieee80211.h	/^	struct work_struct GPIOChangeRFWorkItem;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+GPIOChangeRFWorkItemCallBack	r8180_core.c	/^void GPIOChangeRFWorkItemCallBack(struct work_struct *work)$/;"	f
+GPIOCtrl	r8180_hw.h	832;"	d
+GP_ENABLE	r8180_hw.h	362;"	d
+GetDegradeTxRate	r8180_dm.c	/^GetDegradeTxRate($/;"	f
+GetSupportedWirelessMode8185	r8185b_init.c	/^GetSupportedWirelessMode8185($/;"	f
+GetUpgradeTxRate	r8180_dm.c	/^GetUpgradeTxRate($/;"	f
+HIGH_QUEUE	r8180.h	74;"	d
+HI_PRIORITY	r8180.h	654;"	d
+HW_LED	r8180.h	/^	HW_LED, \/\/ HW control 2 LEDs, LED0 and LED1 (there are 4 different control modes)$/;"	e	enum:_LED_STRATEGY_8185
+HW_THREE_WIRE	r8180_hw.h	779;"	d
+HW_THREE_WIRE_PI	r8180_hw.h	781;"	d
+HW_THREE_WIRE_SI	r8180_hw.h	782;"	d
+HW_VERID_R8180_ABCD	r8180_hw.h	613;"	d
+HW_VERID_R8180_F	r8180_hw.h	612;"	d
+HW_VERID_R8185B_B	r8180_hw.h	617;"	d
+HW_VERID_R8185_ABC	r8180_hw.h	614;"	d
+HW_VERID_R8185_D	r8180_hw.h	615;"	d
+HW_WAKE_DELAY	r8180_core.c	3670;"	d	file:
+HalDisableRx8185Dummy	r8185b_init.c	/^HalDisableRx8185Dummy($/;"	f
+HalEnableRx8185Dummy	r8185b_init.c	/^HalEnableRx8185Dummy($/;"	f
+HighestOperaRate	ieee80211.h	/^	u8 HighestOperaRate;$/;"	m	struct:ieee80211_network
+HwConfigureRTL8185	r8185b_init.c	/^HwConfigureRTL8185($/;"	f
+HwHSSIThreeWire	r8185b_init.c	/^HwHSSIThreeWire($/;"	f
+HwThreeWire	r8185b_init.c	/^HwThreeWire($/;"	f
+IDR0	r8180_hw.h	219;"	d
+IDR1	r8180_hw.h	220;"	d
+IDR2	r8180_hw.h	221;"	d
+IDR3	r8180_hw.h	222;"	d
+IDR4	r8180_hw.h	223;"	d
+IDR5	r8180_hw.h	224;"	d
+IEEE80211_24GHZ_BAND	ieee80211.h	568;"	d
+IEEE80211_3ADDR_LEN	ieee80211.h	328;"	d
+IEEE80211_4ADDR_LEN	ieee80211.h	329;"	d
+IEEE80211_52GHZ_BAND	ieee80211.h	569;"	d
+IEEE80211_ASSOCIATING	ieee80211.h	/^	IEEE80211_ASSOCIATING,$/;"	e	enum:ieee80211_state
+IEEE80211_ASSOCIATING_AUTHENTICATED	ieee80211.h	/^	IEEE80211_ASSOCIATING_AUTHENTICATED,$/;"	e	enum:ieee80211_state
+IEEE80211_ASSOCIATING_AUTHENTICATING	ieee80211.h	/^	IEEE80211_ASSOCIATING_AUTHENTICATING,$/;"	e	enum:ieee80211_state
+IEEE80211_ASSOCIATING_RETRY	ieee80211.h	/^	IEEE80211_ASSOCIATING_RETRY,$/;"	e	enum:ieee80211_state
+IEEE80211_BASIC_RATE_MASK	ieee80211.h	585;"	d
+IEEE80211_CCK_BASIC_RATES_MASK	ieee80211.h	601;"	d
+IEEE80211_CCK_DEFAULT_RATES_MASK	ieee80211.h	603;"	d
+IEEE80211_CCK_MODULATION	ieee80211.h	565;"	d
+IEEE80211_CCK_RATES_MASK	ieee80211.h	600;"	d
+IEEE80211_CCK_RATE_11MB	ieee80211.h	575;"	d
+IEEE80211_CCK_RATE_11MB_MASK	ieee80211.h	590;"	d
+IEEE80211_CCK_RATE_1MB	ieee80211.h	572;"	d
+IEEE80211_CCK_RATE_1MB_MASK	ieee80211.h	587;"	d
+IEEE80211_CCK_RATE_2MB	ieee80211.h	573;"	d
+IEEE80211_CCK_RATE_2MB_MASK	ieee80211.h	588;"	d
+IEEE80211_CCK_RATE_5MB	ieee80211.h	574;"	d
+IEEE80211_CCK_RATE_5MB_MASK	ieee80211.h	589;"	d
+IEEE80211_CCK_RATE_LEN	ieee80211.h	571;"	d
+IEEE80211_CRYPT_H	ieee80211_crypt.h	24;"	d
+IEEE80211_DATA_HDR3_LEN	ieee80211.h	554;"	d
+IEEE80211_DATA_HDR4_LEN	ieee80211.h	555;"	d
+IEEE80211_DATA_LEN	ieee80211.h	226;"	d
+IEEE80211_DEBUG	ieee80211.h	396;"	d
+IEEE80211_DEBUG	ieee80211.h	401;"	d
+IEEE80211_DEBUG_DROP	ieee80211.h	453;"	d
+IEEE80211_DEBUG_EAP	ieee80211.h	452;"	d
+IEEE80211_DEBUG_FRAG	ieee80211.h	451;"	d
+IEEE80211_DEBUG_INFO	ieee80211.h	444;"	d
+IEEE80211_DEBUG_MGMT	ieee80211.h	450;"	d
+IEEE80211_DEBUG_RX	ieee80211.h	455;"	d
+IEEE80211_DEBUG_SCAN	ieee80211.h	447;"	d
+IEEE80211_DEBUG_STATE	ieee80211.h	449;"	d
+IEEE80211_DEBUG_TX	ieee80211.h	454;"	d
+IEEE80211_DEBUG_WX	ieee80211.h	446;"	d
+IEEE80211_DEFAULT_BASIC_RATE	ieee80211.h	828;"	d
+IEEE80211_DEFAULT_RATES_MASK	ieee80211.h	617;"	d
+IEEE80211_DEFAULT_TX_ESSID	ieee80211.h	827;"	d
+IEEE80211_DL_DROP	ieee80211.h	437;"	d
+IEEE80211_DL_EAP	ieee80211.h	436;"	d
+IEEE80211_DL_FRAG	ieee80211.h	435;"	d
+IEEE80211_DL_INFO	ieee80211.h	430;"	d
+IEEE80211_DL_MGMT	ieee80211.h	434;"	d
+IEEE80211_DL_RX	ieee80211.h	440;"	d
+IEEE80211_DL_SCAN	ieee80211.h	432;"	d
+IEEE80211_DL_STATE	ieee80211.h	433;"	d
+IEEE80211_DL_TX	ieee80211.h	439;"	d
+IEEE80211_DL_WX	ieee80211.h	431;"	d
+IEEE80211_DTIM_INVALID	ieee80211.h	958;"	d
+IEEE80211_DTIM_MBCAST	ieee80211.h	955;"	d
+IEEE80211_DTIM_UCAST	ieee80211.h	956;"	d
+IEEE80211_DTIM_VALID	ieee80211.h	957;"	d
+IEEE80211_ERROR	ieee80211.h	442;"	d
+IEEE80211_FC0_SUBTYPE_MASK	ieee80211.h	242;"	d
+IEEE80211_FC0_SUBTYPE_QOS	ieee80211.h	243;"	d
+IEEE80211_FC0_TYPE_DATA	ieee80211.h	241;"	d
+IEEE80211_FC0_TYPE_MASK	ieee80211.h	240;"	d
+IEEE80211_FCS_LEN	ieee80211.h	330;"	d
+IEEE80211_FCTL_DSTODS	ieee80211.h	341;"	d
+IEEE80211_FCTL_FROMDS	ieee80211.h	340;"	d
+IEEE80211_FCTL_FTYPE	ieee80211.h	337;"	d
+IEEE80211_FCTL_MOREDATA	ieee80211.h	345;"	d
+IEEE80211_FCTL_MOREFRAGS	ieee80211.h	342;"	d
+IEEE80211_FCTL_ORDER	ieee80211.h	347;"	d
+IEEE80211_FCTL_PM	ieee80211.h	344;"	d
+IEEE80211_FCTL_RETRY	ieee80211.h	343;"	d
+IEEE80211_FCTL_STYPE	ieee80211.h	338;"	d
+IEEE80211_FCTL_TODS	ieee80211.h	339;"	d
+IEEE80211_FCTL_VERS	ieee80211.h	336;"	d
+IEEE80211_FCTL_WEP	ieee80211.h	346;"	d
+IEEE80211_FRAG_CACHE_LEN	ieee80211.h	649;"	d
+IEEE80211_FRAME_LEN	ieee80211.h	237;"	d
+IEEE80211_FTYPE_CTL	ieee80211.h	350;"	d
+IEEE80211_FTYPE_DATA	ieee80211.h	351;"	d
+IEEE80211_FTYPE_MGMT	ieee80211.h	349;"	d
+IEEE80211_H	ieee80211.h	25;"	d
+IEEE80211_HLEN	ieee80211.h	236;"	d
+IEEE80211_LINKED	ieee80211.h	/^	IEEE80211_LINKED,$/;"	e	enum:ieee80211_state
+IEEE80211_LINKED_SCANNING	ieee80211.h	/^	IEEE80211_LINKED_SCANNING,$/;"	e	enum:ieee80211_state
+IEEE80211_MGMT_HDR_LEN	ieee80211.h	553;"	d
+IEEE80211_NOLINK	ieee80211.h	/^	IEEE80211_NOLINK = 0,$/;"	e	enum:ieee80211_state
+IEEE80211_NUM_CCK_RATES	ieee80211.h	621;"	d
+IEEE80211_NUM_OFDM_RATES	ieee80211.h	620;"	d
+IEEE80211_OFDM_BASIC_RATES_MASK	ieee80211.h	608;"	d
+IEEE80211_OFDM_DEFAULT_RATES_MASK	ieee80211.h	611;"	d
+IEEE80211_OFDM_MODULATION	ieee80211.h	566;"	d
+IEEE80211_OFDM_RATES_MASK	ieee80211.h	607;"	d
+IEEE80211_OFDM_RATE_12MB	ieee80211.h	579;"	d
+IEEE80211_OFDM_RATE_12MB_MASK	ieee80211.h	593;"	d
+IEEE80211_OFDM_RATE_18MB	ieee80211.h	580;"	d
+IEEE80211_OFDM_RATE_18MB_MASK	ieee80211.h	594;"	d
+IEEE80211_OFDM_RATE_24MB	ieee80211.h	581;"	d
+IEEE80211_OFDM_RATE_24MB_MASK	ieee80211.h	595;"	d
+IEEE80211_OFDM_RATE_36MB	ieee80211.h	582;"	d
+IEEE80211_OFDM_RATE_36MB_MASK	ieee80211.h	596;"	d
+IEEE80211_OFDM_RATE_48MB	ieee80211.h	583;"	d
+IEEE80211_OFDM_RATE_48MB_MASK	ieee80211.h	597;"	d
+IEEE80211_OFDM_RATE_54MB	ieee80211.h	584;"	d
+IEEE80211_OFDM_RATE_54MB_MASK	ieee80211.h	598;"	d
+IEEE80211_OFDM_RATE_6MB	ieee80211.h	577;"	d
+IEEE80211_OFDM_RATE_6MB_MASK	ieee80211.h	591;"	d
+IEEE80211_OFDM_RATE_9MB	ieee80211.h	578;"	d
+IEEE80211_OFDM_RATE_9MB_MASK	ieee80211.h	592;"	d
+IEEE80211_OFDM_RATE_LEN	ieee80211.h	576;"	d
+IEEE80211_OFDM_SHIFT_MASK_A	ieee80211.h	622;"	d
+IEEE80211_PS_DISABLED	ieee80211.h	960;"	d
+IEEE80211_PS_ENABLE	ieee80211.h	963;"	d
+IEEE80211_PS_MBCAST	ieee80211.h	962;"	d
+IEEE80211_PS_UNICAST	ieee80211.h	961;"	d
+IEEE80211_QOS_HAS_SEQ	ieee80211.h	245;"	d
+IEEE80211_QOS_TID	ieee80211.h	915;"	d
+IEEE80211_SCTL_FRAG	ieee80211.h	388;"	d
+IEEE80211_SCTL_SEQ	ieee80211.h	389;"	d
+IEEE80211_SOFTMAC_ASSOC_RETRY_TIME	ieee80211.h	945;"	d
+IEEE80211_SOFTMAC_SCAN_TIME	ieee80211.h	937;"	d
+IEEE80211_STATMASK_NOISE	ieee80211.h	560;"	d
+IEEE80211_STATMASK_RATE	ieee80211.h	561;"	d
+IEEE80211_STATMASK_RSSI	ieee80211.h	559;"	d
+IEEE80211_STATMASK_SIGNAL	ieee80211.h	558;"	d
+IEEE80211_STATMASK_WEMASK	ieee80211.h	562;"	d
+IEEE80211_STYPE_ACK	ieee80211.h	371;"	d
+IEEE80211_STYPE_ASSOC_REQ	ieee80211.h	354;"	d
+IEEE80211_STYPE_ASSOC_RESP	ieee80211.h	355;"	d
+IEEE80211_STYPE_ATIM	ieee80211.h	361;"	d
+IEEE80211_STYPE_AUTH	ieee80211.h	363;"	d
+IEEE80211_STYPE_BEACON	ieee80211.h	360;"	d
+IEEE80211_STYPE_CFACK	ieee80211.h	381;"	d
+IEEE80211_STYPE_CFACKPOLL	ieee80211.h	383;"	d
+IEEE80211_STYPE_CFEND	ieee80211.h	372;"	d
+IEEE80211_STYPE_CFENDACK	ieee80211.h	373;"	d
+IEEE80211_STYPE_CFPOLL	ieee80211.h	382;"	d
+IEEE80211_STYPE_CTS	ieee80211.h	370;"	d
+IEEE80211_STYPE_DATA	ieee80211.h	376;"	d
+IEEE80211_STYPE_DATA_CFACK	ieee80211.h	377;"	d
+IEEE80211_STYPE_DATA_CFACKPOLL	ieee80211.h	379;"	d
+IEEE80211_STYPE_DATA_CFPOLL	ieee80211.h	378;"	d
+IEEE80211_STYPE_DEAUTH	ieee80211.h	364;"	d
+IEEE80211_STYPE_DISASSOC	ieee80211.h	362;"	d
+IEEE80211_STYPE_MANAGE_ACT	ieee80211.h	365;"	d
+IEEE80211_STYPE_NULLFUNC	ieee80211.h	380;"	d
+IEEE80211_STYPE_PROBE_REQ	ieee80211.h	358;"	d
+IEEE80211_STYPE_PROBE_RESP	ieee80211.h	359;"	d
+IEEE80211_STYPE_PSPOLL	ieee80211.h	368;"	d
+IEEE80211_STYPE_QOS_DATA	ieee80211.h	384;"	d
+IEEE80211_STYPE_QOS_NULL	ieee80211.h	385;"	d
+IEEE80211_STYPE_REASSOC_REQ	ieee80211.h	356;"	d
+IEEE80211_STYPE_REASSOC_RESP	ieee80211.h	357;"	d
+IEEE80211_STYPE_RTS	ieee80211.h	369;"	d
+IEEE80211_WARNING	ieee80211.h	443;"	d
+IEEE80211_WATCH_DOG_TIME	ieee80211.h	940;"	d
+IEEE_A	ieee80211.h	1442;"	d
+IEEE_B	ieee80211.h	1443;"	d
+IEEE_CMD_MLME	ieee80211.h	72;"	d
+IEEE_CMD_SET_ENCRYPTION	ieee80211.h	71;"	d
+IEEE_CMD_SET_WPA_IE	ieee80211.h	70;"	d
+IEEE_CMD_SET_WPA_PARAM	ieee80211.h	69;"	d
+IEEE_CRYPT_ALG_NAME_LEN	ieee80211.h	113;"	d
+IEEE_CRYPT_ERR_CARD_CONF_FAILED	ieee80211.h	110;"	d
+IEEE_CRYPT_ERR_CRYPT_INIT_FAILED	ieee80211.h	107;"	d
+IEEE_CRYPT_ERR_KEY_SET_FAILED	ieee80211.h	108;"	d
+IEEE_CRYPT_ERR_TX_KEY_SET_FAILED	ieee80211.h	109;"	d
+IEEE_CRYPT_ERR_UNKNOWN_ADDR	ieee80211.h	106;"	d
+IEEE_CRYPT_ERR_UNKNOWN_ALG	ieee80211.h	105;"	d
+IEEE_G	ieee80211.h	1444;"	d
+IEEE_IBSS_MAC_HASH_SIZE	ieee80211.h	250;"	d
+IEEE_KEY_MGMT_IEEE8021X	ieee80211.h	96;"	d
+IEEE_KEY_MGMT_PSK	ieee80211.h	97;"	d
+IEEE_MLME_STA_DEAUTH	ieee80211.h	101;"	d
+IEEE_MLME_STA_DISASSOC	ieee80211.h	102;"	d
+IEEE_MODE_MASK	ieee80211.h	1445;"	d
+IEEE_PARAM_AUTH_ALGS	ieee80211.h	78;"	d
+IEEE_PARAM_DROP_UNENCRYPTED	ieee80211.h	76;"	d
+IEEE_PARAM_IEEE_802_1X	ieee80211.h	79;"	d
+IEEE_PARAM_PRIVACY_INVOKED	ieee80211.h	77;"	d
+IEEE_PARAM_TKIP_COUNTERMEASURES	ieee80211.h	75;"	d
+IEEE_PARAM_WPAX_SELECT	ieee80211.h	82;"	d
+IEEE_PARAM_WPA_ENABLED	ieee80211.h	74;"	d
+IEEE_PROTO_RSN	ieee80211.h	86;"	d
+IEEE_PROTO_WPA	ieee80211.h	85;"	d
+IEEE_SOFTMAC_ASSOCIATE	ieee80211.h	1455;"	d
+IEEE_SOFTMAC_BEACONS	ieee80211.h	1476;"	d
+IEEE_SOFTMAC_PROBERQ	ieee80211.h	1458;"	d
+IEEE_SOFTMAC_PROBERS	ieee80211.h	1461;"	d
+IEEE_SOFTMAC_SCAN	ieee80211.h	1452;"	d
+IEEE_SOFTMAC_SINGLE_QUEUE	ieee80211.h	1471;"	d
+IEEE_SOFTMAC_TX_QUEUE	ieee80211.h	1466;"	d
+IEEE_WPAX_CCMP	ieee80211.h	93;"	d
+IEEE_WPAX_TKIP	ieee80211.h	91;"	d
+IEEE_WPAX_USEGROUP	ieee80211.h	89;"	d
+IEEE_WPAX_WEP104	ieee80211.h	94;"	d
+IEEE_WPAX_WEP40	ieee80211.h	90;"	d
+IEEE_WPAX_WRAP	ieee80211.h	92;"	d
+IE_dismatch	r8180.h	/^	IE_dismatch		= 0x11,$/;"	e	enum:_ReasonCode
+IMR	r8180_hw.h	262;"	d
+IMR	r8180_hw.h	271;"	d
+IMR_ATIMInt	r8180_hw.h	520;"	d
+IMR_ATIMInt	r8180_hw.h	580;"	d
+IMR_BcnDmaInt	r8180_hw.h	515;"	d
+IMR_BcnInt	r8180_hw.h	519;"	d
+IMR_BcnInt	r8180_hw.h	579;"	d
+IMR_Dot11hInt	r8180_hw.h	514;"	d
+IMR_END	r8180_hw.h	272;"	d
+IMR_FOVW	r8180_hw.h	527;"	d
+IMR_RDU	r8180_hw.h	528;"	d
+IMR_RDU	r8180_hw.h	588;"	d
+IMR_RER	r8180_hw.h	531;"	d
+IMR_RER	r8180_hw.h	591;"	d
+IMR_ROK	r8180_hw.h	532;"	d
+IMR_ROK	r8180_hw.h	592;"	d
+IMR_RQoSOK	r8180_hw.h	537;"	d
+IMR_RXFOVW	r8180_hw.h	587;"	d
+IMR_TBDER	r8180_hw.h	521;"	d
+IMR_TBDER	r8180_hw.h	581;"	d
+IMR_TBDOK	r8180_hw.h	522;"	d
+IMR_TBDOK	r8180_hw.h	582;"	d
+IMR_TBEDER	r8180_hw.h	533;"	d
+IMR_TBEDOK	r8180_hw.h	534;"	d
+IMR_TBKDER	r8180_hw.h	535;"	d
+IMR_TBKDOK	r8180_hw.h	536;"	d
+IMR_THPDER	r8180_hw.h	523;"	d
+IMR_THPDER	r8180_hw.h	583;"	d
+IMR_THPDOK	r8180_hw.h	524;"	d
+IMR_THPDOK	r8180_hw.h	584;"	d
+IMR_TLPDER	r8180_hw.h	589;"	d
+IMR_TLPDOK	r8180_hw.h	590;"	d
+IMR_TMGDOK	r8180_hw.h	540;"	d
+IMR_TNPDER	r8180_hw.h	585;"	d
+IMR_TNPDOK	r8180_hw.h	586;"	d
+IMR_TVIDER	r8180_hw.h	529;"	d
+IMR_TVIDOK	r8180_hw.h	530;"	d
+IMR_TVODER	r8180_hw.h	525;"	d
+IMR_TVODOK	r8180_hw.h	526;"	d
+IMR_TXFOVW	r8180_hw.h	517;"	d
+IMR_TXFOVW	r8180_hw.h	577;"	d
+IMR_TimeOut	r8180_hw.h	578;"	d
+IMR_TimeOut1	r8180_hw.h	518;"	d
+IMR_TimeOut2	r8180_hw.h	538;"	d
+IMR_TimeOut3	r8180_hw.h	539;"	d
+IMR_WakeInt	r8180_hw.h	516;"	d
+INSTALL_PREFIX	Makefile	/^INSTALL_PREFIX :=$/;"	m
+INTA	r8180_hw.h	101;"	d
+INTA_ATIM	r8180_hw.h	105;"	d
+INTA_BEACONDESCERR	r8180_hw.h	106;"	d
+INTA_BEACONDESCOK	r8180_hw.h	107;"	d
+INTA_BEACONTIMEOUT	r8180_hw.h	104;"	d
+INTA_HIPRIORITYDESCERR	r8180_hw.h	108;"	d
+INTA_HIPRIORITYDESCOK	r8180_hw.h	109;"	d
+INTA_LOWPRIORITYDESCERR	r8180_hw.h	114;"	d
+INTA_LOWPRIORITYDESCOK	r8180_hw.h	115;"	d
+INTA_MASK	r8180_hw.h	118;"	d
+INTA_NORMPRIORITYDESCERR	r8180_hw.h	110;"	d
+INTA_NORMPRIORITYDESCOK	r8180_hw.h	111;"	d
+INTA_RXCRCERR	r8180_hw.h	116;"	d
+INTA_RXDESCERR	r8180_hw.h	113;"	d
+INTA_RXOK	r8180_hw.h	117;"	d
+INTA_RXOVERFLOW	r8180_hw.h	112;"	d
+INTA_TIMEOUT	r8180_hw.h	103;"	d
+INTA_TXOVERFLOW	r8180_hw.h	102;"	d
+INT_TIMEOUT	r8180_hw.h	182;"	d
+IPSEnter	r8185b_init.c	/^IPSEnter($/;"	f
+IPSLeave	r8185b_init.c	/^IPSLeave($/;"	f
+ISR	r8180_hw.h	263;"	d
+ISR	r8180_hw.h	273;"	d
+ISR_ATIMInt	r8180_hw.h	547;"	d
+ISR_ATIMInt	r8180_hw.h	597;"	d
+ISR_BcnDmaInt	r8180_hw.h	542;"	d
+ISR_BcnInt	r8180_hw.h	546;"	d
+ISR_BcnInt	r8180_hw.h	596;"	d
+ISR_Dot11hInt	r8180_hw.h	541;"	d
+ISR_END	r8180_hw.h	274;"	d
+ISR_FOVW	r8180_hw.h	554;"	d
+ISR_RDU	r8180_hw.h	555;"	d
+ISR_RDU	r8180_hw.h	605;"	d
+ISR_RER	r8180_hw.h	558;"	d
+ISR_RER	r8180_hw.h	608;"	d
+ISR_ROK	r8180_hw.h	559;"	d
+ISR_ROK	r8180_hw.h	609;"	d
+ISR_RQoSOK	r8180_hw.h	564;"	d
+ISR_RXFOVW	r8180_hw.h	574;"	d
+ISR_RXFOVW	r8180_hw.h	604;"	d
+ISR_TBDER	r8180_hw.h	548;"	d
+ISR_TBDER	r8180_hw.h	598;"	d
+ISR_TBDOK	r8180_hw.h	549;"	d
+ISR_TBDOK	r8180_hw.h	599;"	d
+ISR_TBEDER	r8180_hw.h	560;"	d
+ISR_TBEDOK	r8180_hw.h	561;"	d
+ISR_TBKDER	r8180_hw.h	562;"	d
+ISR_TBKDOK	r8180_hw.h	563;"	d
+ISR_THPDER	r8180_hw.h	550;"	d
+ISR_THPDER	r8180_hw.h	600;"	d
+ISR_THPDOK	r8180_hw.h	551;"	d
+ISR_THPDOK	r8180_hw.h	601;"	d
+ISR_TLPDER	r8180_hw.h	569;"	d
+ISR_TLPDER	r8180_hw.h	606;"	d
+ISR_TLPDOK	r8180_hw.h	570;"	d
+ISR_TLPDOK	r8180_hw.h	607;"	d
+ISR_TNPDER	r8180_hw.h	571;"	d
+ISR_TNPDER	r8180_hw.h	602;"	d
+ISR_TNPDOK	r8180_hw.h	572;"	d
+ISR_TNPDOK	r8180_hw.h	603;"	d
+ISR_TVIDER	r8180_hw.h	556;"	d
+ISR_TVIDOK	r8180_hw.h	557;"	d
+ISR_TVODER	r8180_hw.h	552;"	d
+ISR_TVODOK	r8180_hw.h	553;"	d
+ISR_TXFOVW	r8180_hw.h	544;"	d
+ISR_TXFOVW	r8180_hw.h	594;"	d
+ISR_TimeOut	r8180_hw.h	573;"	d
+ISR_TimeOut	r8180_hw.h	595;"	d
+ISR_TimeOut1	r8180_hw.h	545;"	d
+ISR_TimeOut2	r8180_hw.h	565;"	d
+ISR_TimeOut3	r8180_hw.h	566;"	d
+ISR_WakeInt	r8180_hw.h	543;"	d
+IS_COUNTRY_IE_CHANGED	dot11d.h	49;"	d
+IS_COUNTRY_IE_VALID	dot11d.h	44;"	d
+IS_DOT11D_ENABLE	dot11d.h	43;"	d
+IS_DOT11D_STATE_DONE	dot11d.h	59;"	d
+IS_EQUAL_CIE_SRC	dot11d.h	46;"	d
+IW_QUAL_LEVEL_INVALID	ieee80211.h	201;"	d
+IW_QUAL_LEVEL_UPDATED	ieee80211.h	204;"	d
+IW_QUAL_NOISE_INVALID	ieee80211.h	202;"	d
+IW_QUAL_NOISE_UPDATED	ieee80211.h	205;"	d
+IW_QUAL_QUAL_INVALID	ieee80211.h	200;"	d
+IW_QUAL_QUAL_UPDATED	ieee80211.h	203;"	d
+InactivePowerSave	r8185b_init.c	/^InactivePowerSave($/;"	f
+IncludedInSupportedRates	r8180_dm.c	/^IncludedInSupportedRates($/;"	f
+InitTxPwrTracking87SE	r8185b_init.c	/^InitTxPwrTracking87SE($/;"	f
+InitialGain	r8180.h	/^	 u8 InitialGain;$/;"	m	struct:r8180_priv
+IntMig	r8180_hw.h	819;"	d
+IntrMask	r8180.h	/^	u32 IntrMask;$/;"	m	struct:r8180_priv
+KEY0	r8180_hw.h	205;"	d
+KEY_TYPE_CCMP	ieee80211.h	59;"	d
+KEY_TYPE_NA	ieee80211.h	56;"	d
+KEY_TYPE_TKIP	ieee80211.h	58;"	d
+KEY_TYPE_WEP104	ieee80211.h	60;"	d
+KEY_TYPE_WEP40	ieee80211.h	57;"	d
+KSRC	Makefile	/^KSRC := \/lib\/modules\/$(KVER)\/build$/;"	m
+KVER	Makefile	/^KVER  := $(shell uname -r)$/;"	m
+LED_CONTROL	r8180_hw.h	472;"	d
+LED_CTL_LINK	r8180.h	/^	LED_CTL_LINK = 2,$/;"	e	enum:_LED_CTL_MODE
+LED_CTL_MODE	r8180.h	/^}LED_CTL_MODE;$/;"	t	typeref:enum:_LED_CTL_MODE
+LED_CTL_NO_LINK	r8180.h	/^	LED_CTL_NO_LINK = 3,$/;"	e	enum:_LED_CTL_MODE
+LED_CTL_POWER_OFF	r8180.h	/^	LED_CTL_POWER_OFF = 7$/;"	e	enum:_LED_CTL_MODE
+LED_CTL_POWER_ON	r8180.h	/^	LED_CTL_POWER_ON = 1,$/;"	e	enum:_LED_CTL_MODE
+LED_CTL_RX	r8180.h	/^	LED_CTL_RX = 5,$/;"	e	enum:_LED_CTL_MODE
+LED_CTL_SITE_SURVEY	r8180.h	/^	LED_CTL_SITE_SURVEY = 6,$/;"	e	enum:_LED_CTL_MODE
+LED_CTL_TX	r8180.h	/^	LED_CTL_TX = 4,$/;"	e	enum:_LED_CTL_MODE
+LED_STRATEGY_8185	r8180.h	/^}LED_STRATEGY_8185, *PLED_STRATEGY_8185;$/;"	t	typeref:enum:_LED_STRATEGY_8185
+LOW_PRIORITY	r8180.h	657;"	d
+LOW_QUEUE	r8180.h	77;"	d
+LastFailTxRate	r8180.h	/^        u8                          LastFailTxRate;$/;"	m	struct:r8180_priv
+LastFailTxRateSS	r8180.h	/^        long                        LastFailTxRateSS;$/;"	m	struct:r8180_priv
+LastRetryCnt	r8180.h	/^	u16                                 LastRetryCnt;$/;"	m	struct:r8180_priv
+LastRetryRate	r8180.h	/^        u16                                     LastRetryRate;$/;"	m	struct:r8180_priv
+LastRxPktAntenna	r8180.h	/^	u8	 LastRxPktAntenna;	\/\/ +by amy 080312 Antenn which received the lasted packet. 0: Aux, 1:Main. Added by Roger, 2008.01.25.$/;"	m	struct:r8180_priv
+LastRxokCnt	r8180.h	/^        unsigned long           LastRxokCnt;$/;"	m	struct:r8180_priv
+LastSignalStrengthInPercent	r8180.h	/^	long LastSignalStrengthInPercent; \/\/ In percentange, used for smoothing, e.g. Moving Average.$/;"	m	struct:r8180_priv
+LastTxOKBytes	r8180.h	/^        unsigned long           LastTxOKBytes;$/;"	m	struct:r8180_priv
+LastTxThroughput	r8180.h	/^        u32                         LastTxThroughput;$/;"	m	struct:r8180_priv
+LastTxokCnt	r8180.h	/^        unsigned long       LastTxokCnt;$/;"	m	struct:r8180_priv
+LedStrategy	r8180.h	/^	LED_STRATEGY_8185 LedStrategy;$/;"	m	struct:r8180_priv
+LeisurePSEnter	r8180_core.c	/^LeisurePSEnter($/;"	f
+LeisurePSLeave	r8180_core.c	/^LeisurePSLeave($/;"	f
+Len	ieee80211.h	/^	u8	Len;$/;"	m	struct:_CHANNEL_LIST
+ListenInterval	ieee80211.h	/^	u16 ListenInterval;$/;"	m	struct:ieee80211_device
+LongRetryLimit	r8180.h	/^	u16 LongRetryLimit;$/;"	m	struct:r8180_priv
+MAC0	r8180_hw.h	76;"	d
+MAC1	r8180_hw.h	77;"	d
+MAC2	r8180_hw.h	78;"	d
+MAC3	r8180_hw.h	79;"	d
+MAC4	r8180_hw.h	80;"	d
+MAC5	r8180_hw.h	81;"	d
+MAC_ADR	r8180_93cx6.h	44;"	d
+MAC_ARG	ieee80211.h	1097;"	d
+MAC_FILTER_MASK	r8180_hw.h	123;"	d
+MAC_FMT	ieee80211.h	1096;"	d
+MAC_REG_TABLE	r8185b_init.c	/^ static u8 MAC_REG_TABLE[][2]={ $/;"	v	file:
+MAC_REG_TABLE	r8185b_init.c	/^static u8 MAC_REG_TABLE[][2]={$/;"	v	file:
+MANAGE_PRIORITY	r8180.h	649;"	d
+MAR0	r8180_hw.h	228;"	d
+MAR1	r8180_hw.h	229;"	d
+MAR2	r8180_hw.h	230;"	d
+MAR3	r8180_hw.h	231;"	d
+MAR4	r8180_hw.h	232;"	d
+MAR5	r8180_hw.h	233;"	d
+MAR6	r8180_hw.h	234;"	d
+MAR7	r8180_hw.h	235;"	d
+MAXIM_ANAPARAM_PWR0_ON	r8180_max2820.h	15;"	d
+MAXIM_ANAPARAM_PWR1_ON	r8180_max2820.h	14;"	d
+MAXIM_ANTENNA	r8180_max2820.h	13;"	d
+MAX_CHANNEL_NUMBER	ieee80211.h	929;"	d
+MAX_DOZE_WAITING_TIMES_85B	r8180_rtl8225z2.c	1217;"	d	file:
+MAX_FRAG_THRESHOLD	ieee80211.h	333;"	d
+MAX_IE_LEN	ieee80211.h	930;"	d
+MAX_NETWORK_COUNT	ieee80211.h	927;"	d
+MAX_PHY	r8180_core.c	5000;"	d	file:
+MAX_POLLING_24F_TIMES_87SE	r8180_rtl8225z2.c	1218;"	d	file:
+MAX_RATES_EX_LENGTH	ieee80211.h	926;"	d
+MAX_RATES_LENGTH	ieee80211.h	925;"	d
+MAX_RESP_RATE_SHIFT	r8180_hw.h	382;"	d
+MAX_RTS_THRESHOLD	r8180.h	58;"	d
+MAX_RX_DMA_1024	r8180_hw.h	180;"	d
+MAX_RX_DMA_2048	r8180_hw.h	179;"	d
+MAX_RX_DMA_MASK	r8180_hw.h	178;"	d
+MAX_RX_DMA_SHIFT	r8180_hw.h	181;"	d
+MAX_SLEEP_TIME	r8180_hw.h	59;"	d
+MAX_SP_Len	ieee80211.h	914;"	d
+MAX_SWEEP_TAB_ENTRIES	ieee80211.h	919;"	d
+MAX_SWEEP_TAB_ENTRIES_PER_PACKET	ieee80211.h	920;"	d
+MAX_WPA_IE_LEN	ieee80211.h	949;"	d
+MFIE_TYPE_CF_SET	ieee80211.h	773;"	d
+MFIE_TYPE_CHALLENGE	ieee80211.h	777;"	d
+MFIE_TYPE_COUNTRY	ieee80211.h	776;"	d
+MFIE_TYPE_DS_SET	ieee80211.h	772;"	d
+MFIE_TYPE_ERP	ieee80211.h	778;"	d
+MFIE_TYPE_FH_SET	ieee80211.h	771;"	d
+MFIE_TYPE_GENERIC	ieee80211.h	781;"	d
+MFIE_TYPE_IBSS_SET	ieee80211.h	775;"	d
+MFIE_TYPE_RATES	ieee80211.h	770;"	d
+MFIE_TYPE_RATES_EX	ieee80211.h	780;"	d
+MFIE_TYPE_RSN	ieee80211.h	779;"	d
+MFIE_TYPE_SSID	ieee80211.h	769;"	d
+MFIE_TYPE_TIM	ieee80211.h	774;"	d
+MGMT_QUEUE_NUM	ieee80211.h	66;"	d
+MGNT_QUEUE	r8180.h	69;"	d
+MINIPCI	r8180.h	/^	enum card_type {PCI,MINIPCI,CARDBUS,USB\/*rtl8187*\/}card_type;$/;"	e	enum:r8180_priv::card_type
+MIN_FRAG_THRESHOLD	ieee80211.h	332;"	d
+MIN_FRAG_THRESHOLD	r8180.h	54;"	d
+MIN_RESP_RATE_SHIFT	r8180_hw.h	383;"	d
+MIN_RTS_THRESHOLD	r8180.h	57;"	d
+MIN_SLEEP_TIME	r8180_hw.h	60;"	d
+MODDESTDIR	Makefile	/^MODDESTDIR := \/lib\/modules\/$(KVER)\/kernel\/drivers\/net\/wireless$/;"	m
+MODULES_LST	Makefile	/^MODULES_LST := r8180.ko $/;"	m
+MSECS	ieee80211.h	210;"	d
+MSECS	ieee80211.h	222;"	d
+MSR	r8180_hw.h	298;"	d
+MSR_LINK_ADHOC	r8180_hw.h	726;"	d
+MSR_LINK_ENEDCA	r8180_hw.h	871;"	d
+MSR_LINK_MANAGED	r8180_hw.h	723;"	d
+MSR_LINK_MASK	r8180_hw.h	722;"	d
+MSR_LINK_MASTER	r8180_hw.h	727;"	d
+MSR_LINK_NONE	r8180_hw.h	724;"	d
+MSR_LINK_SHIFT	r8180_hw.h	725;"	d
+MWIEnable	r8180.h	/^	u8 MWIEnable;$/;"	m	struct:r8180_priv
+MacConfig_85BASIC	r8185b_init.c	/^MacConfig_85BASIC($/;"	f	file:
+MacConfig_85BASIC_HardCode	r8185b_init.c	/^MacConfig_85BASIC_HardCode($/;"	f	file:
+MaxTxPowerInDbm	dot11d.h	/^	u8  MaxTxPowerInDbm;$/;"	m	struct:_CHNL_TXPOWER_TRIPLE
+MaxTxPwrDbmList	dot11d.h	/^	u8  MaxTxPwrDbmList[MAX_CHANNEL_NUMBER+1];$/;"	m	struct:_RT_DOT11D_INFO
+MgntActSet_802_11_PowerSaveMode	r8180_core.c	/^MgntActSet_802_11_PowerSaveMode($/;"	f
+MgntActSet_RF_State	r8185b_init.c	/^MgntActSet_RF_State($/;"	f
+MgntDisconnect	r8185b_init.c	/^MgntDisconnect($/;"	f
+MgntDisconnectAP	r8185b_init.c	/^MgntDisconnectAP($/;"	f
+MgntDisconnectIBSS	r8185b_init.c	/^MgntDisconnectIBSS($/;"	f
+MgntIsCckRate	r8180_dm.c	/^MgntIsCckRate($/;"	f
+MlmeDisassociateRequest	r8185b_init.c	/^MlmeDisassociateRequest($/;"	f
+NETWORK_EMPTY_ESSID	ieee80211.h	951;"	d
+NETWORK_HAS_CCK	ieee80211.h	953;"	d
+NETWORK_HAS_OFDM	ieee80211.h	952;"	d
+NIC_8185	r8180.h	/^        NIC_8185 = 1,$/;"	e	enum:__anon9
+NIC_8185B	r8180.h	/^        NIC_8185B$/;"	e	enum:__anon9
+NORMAL_QUEUE	r8180.h	78;"	d
+NORM_PRIORITY	r8180.h	658;"	d
+N_DBPSOfRate	r8180_core.c	/^u16 N_DBPSOfRate(u16 DataRate)$/;"	f
+NetgearSignalStrengthTranslate	r8180_core.c	/^NetgearSignalStrengthTranslate($/;"	f
+NumChnls	dot11d.h	/^	u8  NumChnls;$/;"	m	struct:_CHNL_TXPOWER_TRIPLE
+NumRxData	ieee80211.h	/^	u32 NumRxData;$/;"	m	struct:ieee80211_device
+NumRxOkInPeriod	r8180.h	/^	u32 NumRxOkInPeriod;$/;"	m	struct:r8180_priv
+NumRxOkTotal	ieee80211.h	/^	unsigned long NumRxOkTotal;$/;"	m	struct:ieee80211_device
+NumTxOkBytesTotal	r8180.h	/^	unsigned long 		    NumTxOkBytesTotal;$/;"	m	struct:r8180_priv
+NumTxOkInPeriod	r8180.h	/^	u32 NumTxOkInPeriod;$/;"	m	struct:r8180_priv
+NumTxOkTotal	r8180.h	/^	unsigned long 	NumTxOkTotal;$/;"	m	struct:r8180_priv
+OFDM_CONFIG	r8185b_init.c	/^static u8 OFDM_CONFIG[]={$/;"	v	file:
+OFDM_FALSE_ALARM	r8180_hw.h	948;"	d
+OFDM_TXAGC	r8180_hw.h	812;"	d
+P80211_OUI_LEN	ieee80211.h	477;"	d
+PACI_AIFSN	r8180.h	/^}ACI_AIFSN, *PACI_AIFSN;$/;"	t	typeref:union:_ACI_AIFSN
+PAC_PARAM	r8180.h	/^}AC_PARAM, *PAC_PARAM;$/;"	t	typeref:union:_AC_PARAM
+PCHANNEL_ACCESS_SETTING	r8180.h	/^}*PCHANNEL_ACCESS_SETTING,CHANNEL_ACCESS_SETTING;$/;"	t	typeref:struct:ChnlAccessSetting
+PCHANNEL_LIST	ieee80211.h	/^}CHANNEL_LIST, *PCHANNEL_LIST;$/;"	t	typeref:struct:_CHANNEL_LIST
+PCHNL_TXPOWER_TRIPLE	dot11d.h	/^}CHNL_TXPOWER_TRIPLE, *PCHNL_TXPOWER_TRIPLE;$/;"	t	typeref:struct:_CHNL_TXPOWER_TRIPLE
+PCI	r8180.h	/^	enum card_type {PCI,MINIPCI,CARDBUS,USB\/*rtl8187*\/}card_type;$/;"	e	enum:r8180_priv::card_type
+PCI_VENDOR_ID_BELKIN	r8180_core.c	88;"	d	file:
+PCI_VENDOR_ID_DLINK	r8180_core.c	91;"	d	file:
+PECW	r8180.h	/^}ECW, *PECW;$/;"	t	typeref:union:_ECW
+PGSELECT	r8180_hw.h	120;"	d
+PGSELECT_PG_SHIFT	r8180_hw.h	121;"	d
+PHYPR	r8180_hw.h	457;"	d
+PHY_ADR	r8180_hw.h	196;"	d
+PHY_CONFIG	r8180_hw.h	195;"	d
+PHY_DELAY	r8180_hw.h	194;"	d
+PHY_READ	r8180_hw.h	197;"	d
+PIFS	r8180_hw.h	257;"	d
+PI_DATA_READ	r8180_hw.h	844;"	d
+PLED_STRATEGY_8185	r8180.h	/^}LED_STRATEGY_8185, *PLED_STRATEGY_8185;$/;"	t	typeref:enum:_LED_STRATEGY_8185
+PRISM_HDR_SIZE	r8180.h	65;"	d
+PRT_DOT11D_INFO	dot11d.h	/^}RT_DOT11D_INFO, *PRT_DOT11D_INFO;$/;"	t	typeref:struct:_RT_DOT11D_INFO
+PSByGC	r8180_hw.h	833;"	d
+PSR	r8180_hw.h	325;"	d
+PSR_GPI	r8180_hw.h	730;"	d
+PSR_GPO	r8180_hw.h	729;"	d
+PSR_LEDGPO0	r8180_hw.h	732;"	d
+PSR_LEDGPO1	r8180_hw.h	731;"	d
+PSR_PSEn	r8180_hw.h	734;"	d
+PSR_UWF	r8180_hw.h	733;"	d
+PVERSION_8185	r8180.h	/^}VERSION_8185,*PVERSION_8185;$/;"	t	typeref:enum:_VERSION_8185
+PWR_METER_EN	r8180_hw.h	945;"	d
+PerformUndecoratedSignalSmoothing8185	r8180_core.c	/^PerformUndecoratedSignalSmoothing8185($/;"	f
+PhyAddr	r8180_hw.h	347;"	d
+PhyCFG	r8180_hw.h	351;"	d
+PhyCFG_END	r8180_hw.h	352;"	d
+PhyConfig8185	r8185b_init.c	/^PhyConfig8185($/;"	f
+PhyDataR	r8180_hw.h	349;"	d
+PhyDataW	r8180_hw.h	348;"	d
+PhyDelay	r8180_hw.h	341;"	d
+PhyDelay_PhyDelay	r8180_hw.h	750;"	d
+PlatformIORead1Byte	r8185b_init.c	/^PlatformIORead1Byte($/;"	f
+PlatformIORead2Byte	r8185b_init.c	/^PlatformIORead2Byte($/;"	f
+PlatformIORead4Byte	r8185b_init.c	/^PlatformIORead4Byte($/;"	f
+PlatformIOWrite1Byte	r8185b_init.c	/^PlatformIOWrite1Byte($/;"	f
+PlatformIOWrite2Byte	r8185b_init.c	/^PlatformIOWrite2Byte($/;"	f
+PlatformIOWrite4Byte	r8185b_init.c	/^PlatformIOWrite4Byte($/;"	f
+QAP_bandwidth	r8180.h	/^	QAP_bandwidth	= 0x21,	\/\/ 33$/;"	e	enum:_ReasonCode
+QOS_CTL_NOTCONTAIN_ACK	ieee80211.h	916;"	d
+QOS_ctl	ieee80211.h	/^	u16 QOS_ctl;$/;"	m	struct:ieee80211_hdr_3addr_QOS
+QOS_ctl	ieee80211.h	/^	u16 QOS_ctl;$/;"	m	struct:ieee80211_hdr_QOS
+QUALITY_MAP	r8180_core.c	/^unsigned char QUALITY_MAP[] = {$/;"	v
+QoS_Enable	ieee80211.h	/^	u8 QoS_Enable;$/;"	m	struct:ieee80211_network
+QoS_unspec	r8180.h	/^	QoS_unspec		= 0x20,	\/\/ 32$/;"	e	enum:_ReasonCode
+R8180H	r8180.h	19;"	d
+R8180_DM_H	r8180_dm.h	2;"	d
+R8180_HW	r8180_hw.h	21;"	d
+R8180_MAX_RETRY	r8180_hw.h	154;"	d
+R8180_PM_H	r8180_pm.h	16;"	d
+R8180_WX_H	r8180_wx.h	16;"	d
+RATE_ADAPTIVE_TIMER_PERIOD	r8180.h	85;"	d
+RATE_ADAPTIVE_TIMER_PERIOD	r8180_dm.c	12;"	d	file:
+RATE_COUNT	r8180_wx.c	33;"	d	file:
+RATE_FALLBACK	r8180_hw.h	384;"	d
+RATE_FALLBACK_CTL_AUTO_STEP0	r8180_hw.h	910;"	d
+RATE_FALLBACK_CTL_AUTO_STEP1	r8180_hw.h	911;"	d
+RATE_FALLBACK_CTL_AUTO_STEP2	r8180_hw.h	912;"	d
+RATE_FALLBACK_CTL_AUTO_STEP3	r8180_hw.h	913;"	d
+RATE_FALLBACK_CTL_ENABLE	r8180_hw.h	907;"	d
+RATE_FALLBACK_CTL_ENABLE_RTSCTS	r8180_hw.h	908;"	d
+RCR	r8180_hw.h	280;"	d
+RCR_9356SEL	r8180_hw.h	659;"	d
+RCR_AAP	r8180_hw.h	664;"	d
+RCR_AB	r8180_hw.h	661;"	d
+RCR_ACF	r8180_hw.h	648;"	d
+RCR_ACRC32	r8180_hw.h	660;"	d
+RCR_ADD3	r8180_hw.h	646;"	d
+RCR_ADF	r8180_hw.h	649;"	d
+RCR_AICV	r8180_hw.h	654;"	d
+RCR_AM	r8180_hw.h	662;"	d
+RCR_AMF	r8180_hw.h	647;"	d
+RCR_APM	r8180_hw.h	663;"	d
+RCR_APWRMGT	r8180_hw.h	645;"	d
+RCR_CBSSID	r8180_hw.h	644;"	d
+RCR_CS_MASK	r8180_hw.h	642;"	d
+RCR_CS_SHIFT	r8180_hw.h	641;"	d
+RCR_END	r8180_hw.h	281;"	d
+RCR_ENMARP	r8180_hw.h	643;"	d
+RCR_FIFO_OFFSET	r8180_hw.h	791;"	d
+RCR_MXDMA	r8180_hw.h	655;"	d
+RCR_MXDMA0	r8180_hw.h	658;"	d
+RCR_MXDMA1	r8180_hw.h	657;"	d
+RCR_MXDMA2	r8180_hw.h	656;"	d
+RCR_MXDMA_OFFSET	r8180_hw.h	790;"	d
+RCR_ONLYERLPKT	r8180_hw.h	640;"	d
+RCR_RXFTH	r8180_hw.h	650;"	d
+RCR_RXFTH0	r8180_hw.h	653;"	d
+RCR_RXFTH1	r8180_hw.h	652;"	d
+RCR_RXFTH2	r8180_hw.h	651;"	d
+RDSA	r8180_hw.h	802;"	d
+RDSAR	r8180_hw.h	467;"	d
+RDSAR_END	r8180_hw.h	468;"	d
+RESET_CIE_WATCHDOG	dot11d.h	56;"	d
+RESP_RATE	r8180_hw.h	373;"	d
+RFCHIPID	r8180_93cx6.h	24;"	d
+RFCHIPID_GCT	r8180_93cx6.h	29;"	d
+RFCHIPID_INTERSIL	r8180_93cx6.h	25;"	d
+RFCHIPID_MAXIM	r8180_93cx6.h	28;"	d
+RFCHIPID_PHILIPS	r8180_93cx6.h	27;"	d
+RFCHIPID_RFMD	r8180_93cx6.h	26;"	d
+RFCHIPID_RTL8225	r8180_93cx6.h	30;"	d
+RFCHIPID_RTL8255	r8180_93cx6.h	36;"	d
+RFChangeInProgress	r8180.h	/^	bool RFChangeInProgress;$/;"	m	struct:r8180_priv
+RFPinsEnable	r8180_hw.h	356;"	d
+RFPinsInput	r8180_hw.h	361;"	d
+RFPinsOutput	r8180_hw.h	355;"	d
+RFPinsSelect	r8180_hw.h	358;"	d
+RFProgType	r8180.h	/^	u8   RFProgType;$/;"	m	struct:r8180_priv
+RFSW_CTRL	r8180_hw.h	837;"	d
+RFTiming	r8180_hw.h	806;"	d
+RF_CHANGE_BY_HW	r8180_hw.h	920;"	d
+RF_CHANGE_BY_IPS	r8180_hw.h	922;"	d
+RF_CHANGE_BY_PS	r8180_hw.h	921;"	d
+RF_CHANGE_BY_SW	r8180_hw.h	919;"	d
+RF_PARA	r8180_hw.h	360;"	d
+RF_PARAM	r8180_93cx6.h	37;"	d
+RF_PARAM_ANTBDEFAULT_SHIFT	r8180_93cx6.h	39;"	d
+RF_PARAM_CARRIERSENSE_MASK	r8180_93cx6.h	41;"	d
+RF_PARAM_CARRIERSENSE_SHIFT	r8180_93cx6.h	40;"	d
+RF_PARAM_DIGPHY_SHIFT	r8180_93cx6.h	38;"	d
+RF_ReadReg	r8185b_init.c	/^RF_ReadReg($/;"	f
+RF_SW_CFG_SI	r8180_hw.h	256;"	d
+RF_SW_CONFIG	r8180_hw.h	255;"	d
+RF_TIMING	r8180_hw.h	357;"	d
+RF_WriteReg	r8185b_init.c	/^RF_WriteReg($/;"	f
+RF_ZEBRA2	r8180_93cx6.h	32;"	d
+RF_ZEBRA4	r8180_93cx6.h	34;"	d
+RSSI	r8180.h	/^	u8						RSSI;$/;"	m	struct:r8180_priv
+RTL8180_MODULE_NAME	r8180.h	22;"	d
+RTL8185B_VER_REG	r8180_hw.h	817;"	d
+RTL8225_ANAPARAM2_OFF	r8180_rtl8225.h	17;"	d
+RTL8225_ANAPARAM2_ON	r8180_rtl8225.h	18;"	d
+RTL8225_ANAPARAM2_SLEEP	r8180_rtl8225.h	20;"	d
+RTL8225_ANAPARAM_OFF	r8180_rtl8225.h	16;"	d
+RTL8225_ANAPARAM_ON	r8180_rtl8225.h	15;"	d
+RTL8225_ANAPARAM_SLEEP	r8180_rtl8225.h	19;"	d
+RTL8225z2_ANAPARAM2_OFF	r8180_hw.h	917;"	d
+RTL8225z2_ANAPARAM_OFF	r8180_hw.h	916;"	d
+RTL8255_ANAPARAM2_ON	r8180_rtl8255.h	14;"	d
+RTL8255_ANAPARAM_ON	r8180_rtl8255.h	13;"	d
+RTL_IOCTL_WPA_SUPPLICANT	r8180.h	51;"	d
+RT_DOT11D_INFO	dot11d.h	/^}RT_DOT11D_INFO, *PRT_DOT11D_INFO;$/;"	t	typeref:struct:_RT_DOT11D_INFO
+RT_PS_MODE	r8180.h	/^}RT_PS_MODE;$/;"	t	typeref:enum:_RT_PS_MODE
+RT_RF_POWER_STATE	r8180.h	/^}RT_RF_POWER_STATE;$/;"	t	typeref:enum:_RT_RF_POWER_STATE
+RXRING_ADDR	r8180_hw.h	119;"	d
+RX_AUTORESETPHY_SHIFT	r8180_hw.h	143;"	d
+RX_CHECK_BSSID_SHIFT	r8180_hw.h	125;"	d
+RX_CONF	r8180_hw.h	122;"	d
+RX_DONT_PASS_UL	r8180_core.c	38;"	d	file:
+RX_FIFO_THRESHOLD_1024	r8180_hw.h	141;"	d
+RX_FIFO_THRESHOLD_128	r8180_hw.h	138;"	d
+RX_FIFO_THRESHOLD_256	r8180_hw.h	139;"	d
+RX_FIFO_THRESHOLD_512	r8180_hw.h	140;"	d
+RX_FIFO_THRESHOLD_MASK	r8180_hw.h	136;"	d
+RX_FIFO_THRESHOLD_NONE	r8180_hw.h	142;"	d
+RX_FIFO_THRESHOLD_SHIFT	r8180_hw.h	137;"	d
+RateAdaptivePeriod	r8180.h	/^	u32    RateAdaptivePeriod;$/;"	m	struct:r8180_priv
+ReadBBPortUchar	r8185b_init.c	/^ReadBBPortUchar($/;"	f
+ReceiveConfig	r8180.h	/^	u32 ReceiveConfig;$/;"	m	struct:r8180_priv
+RecvSignalPower	r8180.h	/^	long RecvSignalPower; \/\/ in dBm.$/;"	m	struct:r8180_priv
+RegBModeGainStage	r8180.h	/^	 u8 RegBModeGainStage;$/;"	m	struct:r8180_priv
+RegDefaultAntenna	r8180.h	/^	u8 RegDefaultAntenna;$/;"	m	struct:r8180_priv
+RegDigOfdmFaUpTh	r8180.h	/^	u8					RegDigOfdmFaUpTh; \/\/ Upper threhold of OFDM false alarm, which is used in DIG.$/;"	m	struct:r8180_priv
+RegHiPwrLowerTh	r8180.h	/^	u8					RegHiPwrLowerTh;$/;"	m	struct:r8180_priv
+RegHiPwrUpperTh	r8180.h	/^	u8					RegHiPwrUpperTh;$/;"	m	struct:r8180_priv
+RegRSSIHiPwrLowerTh	r8180.h	/^	u8					RegRSSIHiPwrLowerTh;$/;"	m	struct:r8180_priv
+RegRSSIHiPwrUpperTh	r8180.h	/^	u8					RegRSSIHiPwrUpperTh;$/;"	m	struct:r8180_priv
+RegSwAntennaDiversityMechanism	r8180.h	/^	u8 RegSwAntennaDiversityMechanism;$/;"	m	struct:r8180_priv
+RegThreeWireMode	r8180.h	/^	u8	 RegThreeWireMode; \/\/ See "Three wire mode" defined above, 2006.05.31, by rcnjko.$/;"	m	struct:r8180_priv
+Reserved	r8180.h	/^		u8	Reserved:1;$/;"	m	struct:_ACI_AIFSN::__anon11
+RetryCTR	r8180_hw.h	463;"	d
+RfOffReason	r8180.h	/^	u32 RfOffReason;$/;"	m	struct:r8180_priv
+RxPower	r8180.h	/^	char					RxPower;$/;"	m	struct:r8180_priv
+SA2400_ANAPARAM_PWR0_ON	r8180_sa2400.h	16;"	d
+SA2400_ANA_ANAPARAM_PWR1_ON	r8180_sa2400.h	15;"	d
+SA2400_ANTENNA	r8180_sa2400.h	13;"	d
+SA2400_DIG_ANAPARAM_PWR1_ON	r8180_sa2400.h	14;"	d
+SA2400_REG4_FIRDAC_SHIFT	r8180_sa2400.h	21;"	d
+SA2400_RF_DEF_SENS	r8180_sa2400.h	19;"	d
+SA2400_RF_MAX_SENS	r8180_sa2400.h	18;"	d
+SCR_KM	r8180_hw.h	736;"	d
+SCR_KM0	r8180_hw.h	738;"	d
+SCR_KM1	r8180_hw.h	737;"	d
+SCR_RXSECON	r8180_hw.h	740;"	d
+SCR_TXSECON	r8180_hw.h	739;"	d
+SECURITY	r8180_hw.h	199;"	d
+SECURITY_ENCRYP_104	r8180_hw.h	202;"	d
+SECURITY_ENCRYP_MASK	r8180_hw.h	204;"	d
+SECURITY_ENCRYP_SHIFT	r8180_hw.h	203;"	d
+SECURITY_WEP_RX_ENABLE_SHIFT	r8180_hw.h	201;"	d
+SECURITY_WEP_TX_ENABLE_SHIFT	r8180_hw.h	200;"	d
+SEC_ACTIVE_KEY	ieee80211.h	712;"	d
+SEC_AUTH_MODE	ieee80211.h	713;"	d
+SEC_ENABLED	ieee80211.h	716;"	d
+SEC_KEY_1	ieee80211.h	708;"	d
+SEC_KEY_2	ieee80211.h	709;"	d
+SEC_KEY_3	ieee80211.h	710;"	d
+SEC_KEY_4	ieee80211.h	711;"	d
+SEC_LEVEL	ieee80211.h	715;"	d
+SEC_LEVEL_0	ieee80211.h	718;"	d
+SEC_LEVEL_1	ieee80211.h	719;"	d
+SEC_LEVEL_2	ieee80211.h	720;"	d
+SEC_LEVEL_2_CKIP	ieee80211.h	721;"	d
+SEC_LEVEL_3	ieee80211.h	722;"	d
+SEC_UNICAST_GROUP	ieee80211.h	714;"	d
+SIFS	r8180_hw.h	374;"	d
+SIFS_Timer	r8180.h	/^	u16 SIFS_Timer;$/;"	m	struct:ChnlAccessSetting
+SI_DATA_READ	r8180_hw.h	845;"	d
+SLOT	r8180_hw.h	377;"	d
+SNAP_SIZE	ieee80211.h	488;"	d
+STRENGTH_MAP	r8180_core.c	/^unsigned char STRENGTH_MAP[] = { $/;"	v
+SW_3W_CMD0	r8180_hw.h	840;"	d
+SW_3W_CMD0_HOLD	r8180_hw.h	897;"	d
+SW_3W_CMD1	r8180_hw.h	841;"	d
+SW_3W_CMD1_DONE	r8180_hw.h	900;"	d
+SW_3W_CMD1_RE	r8180_hw.h	898;"	d
+SW_3W_CMD1_WE	r8180_hw.h	899;"	d
+SW_3W_DB0	r8180_hw.h	838;"	d
+SW_3W_DB1	r8180_hw.h	839;"	d
+SW_CONTROL_GPIO	r8180_hw.h	364;"	d
+SW_LED_MODE0	r8180.h	/^	SW_LED_MODE0, \/\/$/;"	e	enum:_LED_STRATEGY_8185
+SW_LED_MODE1	r8180.h	/^	SW_LED_MODE1, \/\/ $/;"	e	enum:_LED_STRATEGY_8185
+SW_THREE_WIRE	r8180_hw.h	778;"	d
+SetAntenna8185	r8180_dm.c	/^SetAntenna8185($/;"	f
+SetAntennaConfig87SE	r8185b_init.c	/^SetAntennaConfig87SE($/;"	f
+SetOutputEnableOfRfPins	r8185b_init.c	/^SetOutputEnableOfRfPins($/;"	f
+SetRFPowerState	r8185b_init.c	/^SetRFPowerState($/;"	f
+SetRFPowerStateInProgress	r8180.h	/^	bool SetRFPowerStateInProgress;$/;"	m	struct:r8180_priv
+SetZebraRFPowerState8185	r8180_rtl8225z2.c	/^SetZebraRFPowerState8185($/;"	f
+ShortRetryLimit	r8180.h	/^	u16 ShortRetryLimit;$/;"	m	struct:r8180_priv
+SignalQuality	r8180.h	/^	u8	 SignalQuality; \/\/ in 0-100 index. $/;"	m	struct:r8180_priv
+SignalStrength	ieee80211.h	/^	u8 SignalStrength;$/;"	m	struct:ieee80211_network
+SignalStrength	r8180.h	/^	u8 SignalStrength;$/;"	m	struct:r8180_priv
+SlotTimeTimer	r8180.h	/^	u16 SlotTimeTimer;$/;"	m	struct:ChnlAccessSetting
+StaRateAdaptive87SE	r8180_dm.c	/^StaRateAdaptive87SE($/;"	f
+State	dot11d.h	/^	DOT11D_STATE State;$/;"	m	struct:_RT_DOT11D_INFO
+Stats	r8180.h	/^typedef struct Stats$/;"	s
+Stats	r8180.h	/^} Stats;$/;"	t	typeref:struct:Stats
+Stats_RecvSignalPower	r8180.h	/^	long Stats_RecvSignalPower;$/;"	m	struct:r8180_priv
+Stats_SignalQuality	r8180.h	/^	long Stats_SignalQuality;$/;"	m	struct:r8180_priv
+Stats_SignalStrength	r8180.h	/^	long Stats_SignalStrength;$/;"	m	struct:r8180_priv
+SwAntennaDiversity	r8180_dm.c	/^SwAntennaDiversity($/;"	f
+SwAntennaDiversityRxOk8185	r8180_dm.c	/^SwAntennaDiversityRxOk8185($/;"	f
+SwAntennaDiversityTimer	r8180.h	/^	struct timer_list SwAntennaDiversityTimer;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::timer_list
+SwAntennaDiversityTimerCallback	r8180_dm.c	/^SwAntennaDiversityTimerCallback($/;"	f
+SwitchAntenna	r8180_dm.c	/^SwitchAntenna($/;"	f
+TBDA	r8180_hw.h	286;"	d
+TBDA_END	r8180_hw.h	287;"	d
+TBDS	r8180_hw.h	800;"	d
+TBEDS	r8180_hw.h	795;"	d
+TBKDS	r8180_hw.h	794;"	d
+TCR	r8180_hw.h	277;"	d
+TCR_CRC	r8180_hw.h	635;"	d
+TCR_CWMIN	r8180_hw.h	620;"	d
+TCR_DISCW	r8180_hw.h	630;"	d
+TCR_DISReqQsize_OFFSET	r8180_hw.h	787;"	d
+TCR_DPRETRY_MASK	r8180_hw.h	636;"	d
+TCR_DurProcMode_OFFSET	r8180_hw.h	788;"	d
+TCR_END	r8180_hw.h	278;"	d
+TCR_HWVERID_MASK	r8180_hw.h	622;"	d
+TCR_HWVERID_SHIFT	r8180_hw.h	623;"	d
+TCR_ICV	r8180_hw.h	631;"	d
+TCR_LBK	r8180_hw.h	632;"	d
+TCR_LBK0	r8180_hw.h	634;"	d
+TCR_LBK1	r8180_hw.h	633;"	d
+TCR_LRL_OFFSET	r8180_hw.h	784;"	d
+TCR_MXDMA_1024	r8180_hw.h	627;"	d
+TCR_MXDMA_2048	r8180_hw.h	628;"	d
+TCR_MXDMA_MASK	r8180_hw.h	626;"	d
+TCR_MXDMA_OFFSET	r8180_hw.h	786;"	d
+TCR_MXDMA_SHIFT	r8180_hw.h	629;"	d
+TCR_PLCP_LEN	r8180_hw.h	625;"	d
+TCR_PROBE_NOTIMESTAMP_SHIFT	r8180_hw.h	638;"	d
+TCR_RTSRETRY_MASK	r8180_hw.h	637;"	d
+TCR_SAT	r8180_hw.h	624;"	d
+TCR_SRL_OFFSET	r8180_hw.h	785;"	d
+TCR_SWSEQ	r8180_hw.h	621;"	d
+TC_3W_POLL_MAX_TRY_CNT	r8185b_init.c	45;"	d	file:
+TESTR	r8180_hw.h	321;"	d
+THPDA	r8180_hw.h	246;"	d
+THPDA_END	r8180_hw.h	247;"	d
+THPDS	r8180_hw.h	798;"	d
+TID_AC_MAP	r8180_hw.h	821;"	d
+TLPDA	r8180_hw.h	242;"	d
+TLPDA_END	r8180_hw.h	243;"	d
+TLPDS	r8180_hw.h	796;"	d
+TMGDS	r8180_hw.h	793;"	d
+TNPDA	r8180_hw.h	244;"	d
+TNPDA_END	r8180_hw.h	245;"	d
+TNPDS	r8180_hw.h	797;"	d
+TPPOLLSTOP_AC_BEQ	r8180_hw.h	866;"	d
+TPPOLLSTOP_AC_BKQ	r8180_hw.h	867;"	d
+TPPOLLSTOP_AC_MGQ	r8180_hw.h	868;"	d
+TPPOLLSTOP_AC_VIQ	r8180_hw.h	865;"	d
+TPPOLLSTOP_AC_VOQ	r8180_hw.h	864;"	d
+TPPOLLSTOP_BQ	r8180_hw.h	862;"	d
+TPPOLLSTOP_HPQ	r8180_hw.h	863;"	d
+TPPOLL_AC_BEQ	r8180_hw.h	855;"	d
+TPPOLL_AC_BKQ	r8180_hw.h	856;"	d
+TPPOLL_AC_MGQ	r8180_hw.h	857;"	d
+TPPOLL_AC_VIQ	r8180_hw.h	854;"	d
+TPPOLL_AC_VOQ	r8180_hw.h	853;"	d
+TPPOLL_BQ	r8180_hw.h	851;"	d
+TPPOLL_HPQ	r8180_hw.h	852;"	d
+TPPoll	r8180_hw.h	452;"	d
+TPPollStop	r8180_hw.h	808;"	d
+TPPoll_BQ	r8180_hw.h	752;"	d
+TPPoll_HPQ	r8180_hw.h	753;"	d
+TPPoll_LPQ	r8180_hw.h	755;"	d
+TPPoll_NPQ	r8180_hw.h	754;"	d
+TPPoll_SBQ	r8180_hw.h	756;"	d
+TPPoll_SHPQ	r8180_hw.h	757;"	d
+TPPoll_SLPQ	r8180_hw.h	759;"	d
+TPPoll_SNPQ	r8180_hw.h	758;"	d
+TSFTR	r8180_hw.h	239;"	d
+TSFTR_END	r8180_hw.h	240;"	d
+TS_not_created	r8180.h	/^	TS_not_created	= 0x2F,	\/\/ 47$/;"	e	enum:_ReasonCode
+TXAGC_CTL	r8180_hw.h	810;"	d
+TXOPLimit	r8180.h	/^		u16		TXOPLimit;$/;"	m	struct:_AC_PARAM::__anon12
+TXOPSEL	r8180_hw.h	888;"	d
+TX_AGC_CTL	r8180_hw.h	369;"	d
+TX_AGC_CTL_FEEDBACK_ANT	r8180_hw.h	372;"	d
+TX_AGC_CTL_PERPACKET_ANTSEL_SHIFT	r8180_hw.h	371;"	d
+TX_AGC_CTL_PERPACKET_GAIN_SHIFT	r8180_hw.h	370;"	d
+TX_ANTENNA	r8180_hw.h	365;"	d
+TX_BEACON_RING_ADDR	r8180_hw.h	207;"	d
+TX_BEPRIORITY_RING_ADDR	r8180_hw.h	169;"	d
+TX_BKPRIORITY_RING_ADDR	r8180_hw.h	168;"	d
+TX_CONF	r8180_hw.h	145;"	d
+TX_CONF_HEADER_AUTOICREMENT_SHIFT	r8180_hw.h	146;"	d
+TX_DMA_POLLING	r8180_hw.h	158;"	d
+TX_DMA_POLLING_BEACON_SHIFT	r8180_hw.h	159;"	d
+TX_DMA_POLLING_HIPRIORITY_SHIFT	r8180_hw.h	160;"	d
+TX_DMA_POLLING_LOWPRIORITY_SHIFT	r8180_hw.h	162;"	d
+TX_DMA_POLLING_NORMPRIORITY_SHIFT	r8180_hw.h	161;"	d
+TX_DMA_STOP_BEACON_SHIFT	r8180_hw.h	163;"	d
+TX_DMA_STOP_HIPRIORITY_SHIFT	r8180_hw.h	164;"	d
+TX_DMA_STOP_LOWPRIORITY_SHIFT	r8180_hw.h	166;"	d
+TX_DMA_STOP_NORMPRIORITY_SHIFT	r8180_hw.h	165;"	d
+TX_DPRETRY_SHIFT	r8180_hw.h	153;"	d
+TX_GAIN_CCK	r8180_hw.h	367;"	d
+TX_GAIN_OFDM	r8180_hw.h	366;"	d
+TX_HIGHPRIORITY_RING_ADDR	r8180_hw.h	172;"	d
+TX_LOOPBACK_BASEBAND	r8180_hw.h	149;"	d
+TX_LOOPBACK_CONTINUE	r8180_hw.h	151;"	d
+TX_LOOPBACK_MAC	r8180_hw.h	148;"	d
+TX_LOOPBACK_MASK	r8180_hw.h	152;"	d
+TX_LOOPBACK_NONE	r8180_hw.h	150;"	d
+TX_LOOPBACK_SHIFT	r8180_hw.h	147;"	d
+TX_LOWPRIORITY_RING_ADDR	r8180_hw.h	174;"	d
+TX_MANAGEPRIORITY_RING_ADDR	r8180_hw.h	167;"	d
+TX_NOCRC_SHIFT	r8180_hw.h	157;"	d
+TX_NOICV_SHIFT	r8180_hw.h	156;"	d
+TX_NORMPRIORITY_RING_ADDR	r8180_hw.h	176;"	d
+TX_RTSRETRY_SHIFT	r8180_hw.h	155;"	d
+TX_VIPRIORITY_RING_ADDR	r8180_hw.h	170;"	d
+TX_VOPRIORITY_RING_ADDR	r8180_hw.h	171;"	d
+ThermalMeter	r8180.h	/^	u8			ThermalMeter; \/\/ Thermal meter reference indication.	$/;"	m	struct:r8180_priv
+ThreeWireReg	r8180.h	/^}ThreeWireReg;$/;"	t	typeref:union:_ThreeWire
+TimerInt	r8180_hw.h	283;"	d
+TimerInt_END	r8180_hw.h	284;"	d
+TranslateToDbm8185	r8180_core.c	/^TranslateToDbm8185($/;"	f
+TransmitConfig	r8180.h	/^	u32 TransmitConfig;$/;"	m	struct:r8180_priv
+TryDownCountLowData	r8180.h	/^        u8                                      TryDownCountLowData;$/;"	m	struct:r8180_priv
+TryupingCount	r8180.h	/^        u16                                     TryupingCount;$/;"	m	struct:r8180_priv
+TryupingCountNoData	r8180.h	/^        u8                                      TryupingCountNoData;$/;"	m	struct:r8180_priv
+Turbo_Enable	ieee80211.h	/^	u8 Turbo_Enable;\/\/enable turbo mode, added by thomas$/;"	m	struct:ieee80211_network
+TxPwrTracking87SE	r8180_dm.c	/^TxPwrTracking87SE($/;"	f
+UP2AC	ieee80211.h	980;"	d
+UPDATE_CIE_SRC	dot11d.h	47;"	d
+UPDATE_CIE_WATCHDOG	dot11d.h	57;"	d
+USB	r8180.h	/^	enum card_type {PCI,MINIPCI,CARDBUS,USB\/*rtl8187*\/}card_type;$/;"	e	enum:r8180_priv::card_type
+UndecoratedSmoothedSS	r8180.h	/^	long					UndecoratedSmoothedSS;$/;"	m	struct:r8180_priv
+UndercorateSmoothedRxPower	r8180.h	/^	long					UndercorateSmoothedRxPower;$/;"	m	struct:r8180_priv
+UpdateInitialGain	r8185b_init.c	/^UpdateInitialGain($/;"	f
+VERSION_8185	r8180.h	/^}VERSION_8185,*PVERSION_8185;$/;"	t	typeref:enum:_VERSION_8185
+VERSION_8185B_B	r8180.h	/^	VERSION_8185B_B, \/\/ B-cut$/;"	e	enum:_VERSION_8185
+VERSION_8185B_D	r8180.h	/^	VERSION_8185B_D, \/\/ D-cut$/;"	e	enum:_VERSION_8185
+VERSION_8185B_E	r8180.h	/^	VERSION_8185B_E, \/\/ E-cut$/;"	e	enum:_VERSION_8185
+VERSION_8185_C	r8180.h	/^	VERSION_8185_C, \/\/ C-cut$/;"	e	enum:_VERSION_8185
+VERSION_8185_D	r8180.h	/^	VERSION_8185_D, \/\/ D-cut$/;"	e	enum:_VERSION_8185
+VERSION_8185_UNKNOWN	r8180.h	/^	VERSION_8185_UNKNOWN,$/;"	e	enum:_VERSION_8185
+VERSION_8187S_B	r8180.h	/^	VERSION_8187S_B, \/\/ B-cut $/;"	e	enum:_VERSION_8185
+VERSION_8187S_C	r8180.h	/^	VERSION_8187S_C, \/\/ C-cut$/;"	e	enum:_VERSION_8185
+VERSION_8187S_D	r8180.h	/^	VERSION_8187S_D, \/\/ D-cut$/;"	e	enum:_VERSION_8185
+VIQ_ACM_CTL	r8180_hw.h	890;"	d
+VIQ_ACM_EN	r8180_hw.h	885;"	d
+VI_PRIORITY	r8180.h	652;"	d
+VI_QUEUE	r8180.h	72;"	d
+VOQ_ACM_CTL	r8180_hw.h	889;"	d
+VOQ_ACM_EN	r8180_hw.h	884;"	d
+VO_PRIORITY	r8180.h	653;"	d
+VO_QUEUE	r8180.h	73;"	d
+WEP_KEYS	ieee80211.h	724;"	d
+WEP_KEY_LEN	ieee80211.h	725;"	d
+WEP_KEY_LEN_MODIF	ieee80211.h	727;"	d
+WIRELESS_MODE	r8180.h	/^} WIRELESS_MODE;$/;"	t	typeref:enum:_WIRELESS_MODE
+WIRELESS_MODE_A	r8180.h	/^	WIRELESS_MODE_A = 0x01,$/;"	e	enum:_WIRELESS_MODE
+WIRELESS_MODE_AUTO	r8180.h	/^	WIRELESS_MODE_AUTO = 0x08,$/;"	e	enum:_WIRELESS_MODE
+WIRELESS_MODE_B	r8180.h	/^	WIRELESS_MODE_B = 0x02,$/;"	e	enum:_WIRELESS_MODE
+WIRELESS_MODE_G	r8180.h	/^	WIRELESS_MODE_G = 0x04,$/;"	e	enum:_WIRELESS_MODE
+WIRELESS_MODE_UNKNOWN	r8180.h	/^	WIRELESS_MODE_UNKNOWN = 0x00,$/;"	e	enum:_WIRELESS_MODE
+WIRELESS_SPY	ieee80211.h	461;"	d
+WLAN_AUTH_CHALLENGE_LEN	ieee80211.h	500;"	d
+WLAN_AUTH_OPEN	ieee80211.h	497;"	d
+WLAN_AUTH_SHARED_KEY	ieee80211.h	498;"	d
+WLAN_CAPABILITY_BSS	ieee80211.h	502;"	d
+WLAN_CAPABILITY_CF_POLLABLE	ieee80211.h	504;"	d
+WLAN_CAPABILITY_CF_POLL_REQUEST	ieee80211.h	505;"	d
+WLAN_CAPABILITY_CHANNEL_AGILITY	ieee80211.h	509;"	d
+WLAN_CAPABILITY_IBSS	ieee80211.h	503;"	d
+WLAN_CAPABILITY_PBCC	ieee80211.h	508;"	d
+WLAN_CAPABILITY_PRIVACY	ieee80211.h	506;"	d
+WLAN_CAPABILITY_SHORT_PREAMBLE	ieee80211.h	507;"	d
+WLAN_CAPABILITY_SHORT_SLOT	ieee80211.h	510;"	d
+WLAN_EID_CF_PARAMS	ieee80211.h	546;"	d
+WLAN_EID_CHALLENGE	ieee80211.h	549;"	d
+WLAN_EID_DS_PARAMS	ieee80211.h	545;"	d
+WLAN_EID_FH_PARAMS	ieee80211.h	544;"	d
+WLAN_EID_GENERIC	ieee80211.h	551;"	d
+WLAN_EID_IBSS_PARAMS	ieee80211.h	548;"	d
+WLAN_EID_RSN	ieee80211.h	550;"	d
+WLAN_EID_SSID	ieee80211.h	542;"	d
+WLAN_EID_SUPP_RATES	ieee80211.h	543;"	d
+WLAN_EID_TIM	ieee80211.h	547;"	d
+WLAN_FC_GET_STYPE	ieee80211.h	491;"	d
+WLAN_FC_GET_TYPE	ieee80211.h	490;"	d
+WLAN_GET_SEQ_FRAG	ieee80211.h	493;"	d
+WLAN_GET_SEQ_SEQ	ieee80211.h	494;"	d
+WLAN_REASON_CLASS2_FRAME_FROM_NONAUTH_STA	ieee80211.h	535;"	d
+WLAN_REASON_CLASS3_FRAME_FROM_NONASSOC_STA	ieee80211.h	536;"	d
+WLAN_REASON_DEAUTH_LEAVING	ieee80211.h	532;"	d
+WLAN_REASON_DISASSOC_AP_BUSY	ieee80211.h	534;"	d
+WLAN_REASON_DISASSOC_DUE_TO_INACTIVITY	ieee80211.h	533;"	d
+WLAN_REASON_DISASSOC_STA_HAS_LEFT	ieee80211.h	537;"	d
+WLAN_REASON_PREV_AUTH_NOT_VALID	ieee80211.h	531;"	d
+WLAN_REASON_STA_REQ_ASSOC_WITHOUT_AUTH	ieee80211.h	538;"	d
+WLAN_REASON_UNSPECIFIED	ieee80211.h	530;"	d
+WLAN_STATUS_AP_UNABLE_TO_HANDLE_NEW_STA	ieee80211.h	522;"	d
+WLAN_STATUS_ASSOC_DENIED_NOAGILITY	ieee80211.h	527;"	d
+WLAN_STATUS_ASSOC_DENIED_NOPBCC	ieee80211.h	526;"	d
+WLAN_STATUS_ASSOC_DENIED_NOSHORT	ieee80211.h	525;"	d
+WLAN_STATUS_ASSOC_DENIED_RATES	ieee80211.h	523;"	d
+WLAN_STATUS_ASSOC_DENIED_UNSPEC	ieee80211.h	517;"	d
+WLAN_STATUS_AUTH_TIMEOUT	ieee80211.h	521;"	d
+WLAN_STATUS_CAPS_UNSUPPORTED	ieee80211.h	515;"	d
+WLAN_STATUS_CHALLENGE_FAIL	ieee80211.h	520;"	d
+WLAN_STATUS_NOT_SUPPORTED_AUTH_ALG	ieee80211.h	518;"	d
+WLAN_STATUS_REASSOC_NO_ASSOC	ieee80211.h	516;"	d
+WLAN_STATUS_SUCCESS	ieee80211.h	513;"	d
+WLAN_STATUS_UNKNOWN_AUTH_TRANSACTION	ieee80211.h	519;"	d
+WLAN_STATUS_UNSPECIFIED_FAILURE	ieee80211.h	514;"	d
+WME_ACI_MASK	ieee80211.h	974;"	d
+WME_AC_BE	ieee80211.h	970;"	d
+WME_AC_BK	ieee80211.h	971;"	d
+WME_AC_PRAM_LEN	ieee80211.h	976;"	d
+WME_AC_VI	ieee80211.h	972;"	d
+WME_AC_VO	ieee80211.h	973;"	d
+WME_AIFSN_MASK	ieee80211.h	975;"	d
+WMM_Hang_8187	ieee80211.h	967;"	d
+WMM_all_frame	ieee80211.h	/^enum {WMM_all_frame, WMM_two_frame, WMM_four_frame, WMM_six_frame};$/;"	e	enum:__anon8
+WMM_four_frame	ieee80211.h	/^enum {WMM_all_frame, WMM_two_frame, WMM_four_frame, WMM_six_frame};$/;"	e	enum:__anon8
+WMM_six_frame	ieee80211.h	/^enum {WMM_all_frame, WMM_two_frame, WMM_four_frame, WMM_six_frame};$/;"	e	enum:__anon8
+WMM_two_frame	ieee80211.h	/^enum {WMM_all_frame, WMM_two_frame, WMM_four_frame, WMM_six_frame};$/;"	e	enum:__anon8
+WPA_CONFIG	r8180_hw.h	368;"	d
+Wakeup0	r8180_hw.h	390;"	d
+Wakeup0_END	r8180_hw.h	391;"	d
+Wakeup1	r8180_hw.h	393;"	d
+Wakeup1_END	r8180_hw.h	394;"	d
+Wakeup2HD	r8180_hw.h	398;"	d
+Wakeup2HD_END	r8180_hw.h	399;"	d
+Wakeup2LD	r8180_hw.h	396;"	d
+Wakeup2LD_END	r8180_hw.h	397;"	d
+Wakeup3HD	r8180_hw.h	403;"	d
+Wakeup3HD_END	r8180_hw.h	404;"	d
+Wakeup3LD	r8180_hw.h	401;"	d
+Wakeup3LD_END	r8180_hw.h	402;"	d
+Wakeup4HD	r8180_hw.h	408;"	d
+Wakeup4HD_END	r8180_hw.h	409;"	d
+Wakeup4LD	r8180_hw.h	406;"	d
+Wakeup4LD_END	r8180_hw.h	407;"	d
+WriteBBPortUchar	r8185b_init.c	/^WriteBBPortUchar($/;"	f
+XtalCal_Xin	r8180.h	/^	u8			XtalCal_Xin; \/\/ Crystal calibration for Xin. 0~7.5pF$/;"	m	struct:r8180_priv
+XtalCal_Xout	r8180.h	/^	u8			XtalCal_Xout; \/\/ Crystal calibration for Xout. 0~7.5pF$/;"	m	struct:r8180_priv
+ZEBRA2_CCK_OFDM_GAIN_SETTING	r8180_rtl8225z2.c	/^u8 ZEBRA2_CCK_OFDM_GAIN_SETTING[]={$/;"	v
+ZEBRA_AGC	r8185b_init.c	/^static u8  ZEBRA_AGC[]={$/;"	v	file:
+ZEBRA_Config_85BASIC_HardCode	r8185b_init.c	/^ZEBRA_Config_85BASIC_HardCode($/;"	f
+ZEBRA_RFSerialRead	r8185b_init.c	/^ZEBRA_RFSerialRead($/;"	f
+ZEBRA_RFSerialWrite	r8185b_init.c	/^ZEBRA_RFSerialWrite($/;"	f
+ZEBRA_RF_RX_GAIN_TABLE	r8185b_init.c	/^static u32 ZEBRA_RF_RX_GAIN_TABLE[]={	$/;"	v	file:
+_ACI_AIFSN	r8180.h	/^typedef	union _ACI_AIFSN{$/;"	u
+_AC_PARAM	r8180.h	/^typedef	union _AC_PARAM{$/;"	u
+_CHANNEL_LIST	ieee80211.h	/^typedef struct _CHANNEL_LIST{$/;"	s
+_CHNL_TXPOWER_TRIPLE	dot11d.h	/^typedef struct _CHNL_TXPOWER_TRIPLE {$/;"	s
+_DOT11D_STATE	dot11d.h	/^typedef enum _DOT11D_STATE {$/;"	g
+_ECW	r8180.h	/^typedef	union _ECW{$/;"	u
+_LED_CTL_MODE	r8180.h	/^typedef	enum _LED_CTL_MODE{$/;"	g
+_LED_STRATEGY_8185	r8180.h	/^typedef	enum _LED_STRATEGY_8185{$/;"	g
+_RT_DOT11D_INFO	dot11d.h	/^typedef struct _RT_DOT11D_INFO {$/;"	s
+_RT_PS_MODE	r8180.h	/^typedef	enum _RT_PS_MODE	$/;"	g
+_RT_RF_POWER_STATE	r8180.h	/^typedef	enum _RT_RF_POWER_STATE$/;"	g
+_ReasonCode	r8180.h	/^enum	_ReasonCode{$/;"	g
+_ThreeWire	r8180.h	/^typedef	union _ThreeWire{$/;"	u
+_ThreeWireStruc	r8180.h	/^	struct _ThreeWireStruc{$/;"	s	union:_ThreeWire
+_VERSION_8185	r8180.h	/^typedef enum _VERSION_8185{$/;"	g
+_WIRELESS_MODE	r8180.h	/^typedef enum _WIRELESS_MODE {$/;"	g
+__INC_DOT11D_H	dot11d.h	2;"	d
+__attribute_used__	r8180.mod.c	/^__attribute_used__$/;"	v	file:
+__attribute_used__	r8180.mod.c	/^__attribute_used__$/;"	v	typeref:struct:____versions	file:
+__devinitdata	r8180_core.c	/^static struct pci_device_id rtl8180_pci_id_tbl[] __devinitdata = {$/;"	v	typeref:struct:rtl8180_pci_id_tbl	file:
+__this_module	r8180.mod.c	/^struct module __this_module$/;"	v	typeref:struct:module
+_rtl8180_up	r8180_core.c	/^int _rtl8180_up(struct net_device *dev)$/;"	f
+aSifsTime	ieee80211.h	64;"	d
+aSifsTime	r8180.h	80;"	d
+abg_true	ieee80211.h	/^	int abg_true;   \/* ABG flag              *\/$/;"	m	struct:ieee80211_device
+ac_aci_acm_aifsn	ieee80211.h	/^	u8 ac_aci_acm_aifsn;$/;"	m	struct:ieee80211_wmm_ac_param
+ac_dir_tid	ieee80211.h	/^	u8 ac_dir_tid;$/;"	m	struct:ieee80211_wmm_ts_info
+ac_ecwmin_ecwmax	ieee80211.h	/^	u8 ac_ecwmin_ecwmax;$/;"	m	struct:ieee80211_wmm_ac_param
+ac_txop_limit	ieee80211.h	/^	u16 ac_txop_limit;$/;"	m	struct:ieee80211_wmm_ac_param
+ac_up_psb	ieee80211.h	/^	u8 ac_up_psb;$/;"	m	struct:ieee80211_wmm_ts_info
+ack_tx_to_ieee	r8180.h	/^	short ack_tx_to_ieee;$/;"	m	struct:r8180_priv
+active_key	ieee80211.h	/^	u16 active_key:2,$/;"	m	struct:ieee80211_security
+active_probe	r8180.h	/^	u8 active_probe;$/;"	m	struct:r8180_priv
+active_scan	ieee80211.h	/^	short active_scan;$/;"	m	struct:ieee80211_device
+actscanning	ieee80211.h	/^	bool actscanning;$/;"	m	struct:ieee80211_device
+addr1	ieee80211.h	/^	u8 addr1[6];$/;"	m	struct:ieee80211_header_data
+addr1	ieee80211.h	/^	u8 addr1[ETH_ALEN];$/;"	m	struct:ieee80211_hdr
+addr1	ieee80211.h	/^	u8 addr1[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_3addr
+addr1	ieee80211.h	/^	u8 addr1[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_3addr_QOS
+addr1	ieee80211.h	/^	u8 addr1[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_QOS
+addr2	ieee80211.h	/^	u8 addr2[6];$/;"	m	struct:ieee80211_header_data
+addr2	ieee80211.h	/^	u8 addr2[ETH_ALEN];$/;"	m	struct:ieee80211_hdr
+addr2	ieee80211.h	/^	u8 addr2[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_3addr
+addr2	ieee80211.h	/^	u8 addr2[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_3addr_QOS
+addr2	ieee80211.h	/^	u8 addr2[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_QOS
+addr3	ieee80211.h	/^	u8 addr3[6];$/;"	m	struct:ieee80211_header_data
+addr3	ieee80211.h	/^	u8 addr3[ETH_ALEN];$/;"	m	struct:ieee80211_hdr
+addr3	ieee80211.h	/^	u8 addr3[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_3addr
+addr3	ieee80211.h	/^	u8 addr3[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_3addr_QOS
+addr3	ieee80211.h	/^	u8 addr3[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_QOS
+addr4	ieee80211.h	/^	u8 addr4[ETH_ALEN];$/;"	m	struct:ieee80211_hdr
+addr4	ieee80211.h	/^	u8 addr4[ETH_ALEN];$/;"	m	struct:ieee80211_hdr_QOS
+aid	ieee80211.h	/^	u16 aid;$/;"	m	struct:ieee80211_assoc_response_frame
+alg	ieee80211.h	/^			u8 alg[IEEE_CRYPT_ALG_NAME_LEN];$/;"	m	struct:ieee_param::__anon2::__anon6
+algorithm	ieee80211.h	/^	u16 algorithm;$/;"	m	struct:ieee80211_authentication
+alloc_ieee80211	ieee80211.h	123;"	d
+alloc_rx_desc_ring	r8180_core.c	/^short alloc_rx_desc_ring(struct net_device *dev, u16 bufsize, int count)$/;"	f
+alloc_tx_desc_ring	r8180_core.c	/^short alloc_tx_desc_ring(struct net_device *dev, int bufsize, int count,$/;"	f
+antb	r8180.h	/^	short antb;$/;"	m	struct:r8180_priv
+ap_mac_addr	ieee80211.h	/^	u8 ap_mac_addr[6];$/;"	m	struct:ieee80211_device
+ap_overload	r8180.h	/^	ap_overload		= 0x5, $/;"	e	enum:_ReasonCode
+asoc_not_auth	r8180.h	/^	asoc_not_auth	= 0x9,$/;"	e	enum:_ReasonCode
+assoc_id	ieee80211.h	/^	u16 assoc_id;$/;"	m	struct:ieee80211_device
+associate_complete_wq	ieee80211.h	/^	struct work_struct associate_complete_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+associate_procedure_wq	ieee80211.h	/^	struct work_struct associate_procedure_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+associate_retry_wq	ieee80211.h	/^        struct delayed_work associate_retry_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+associate_retry_wq	ieee80211.h	/^        struct work_struct associate_retry_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+associate_seq	ieee80211.h	/^	u16 associate_seq;$/;"	m	struct:ieee80211_device
+associate_timer	ieee80211.h	/^	struct timer_list associate_timer;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::timer_list
+atim_window	ieee80211.h	/^	u16 atim_window;$/;"	m	struct:ieee80211_network
+auth_802_1x_fail	r8180.h	/^	auth_802_1x_fail= 0x17,$/;"	e	enum:_ReasonCode
+auth_algo	ieee80211.h	/^            auth_algo:4,$/;"	m	struct:ieee80211_security
+auth_mode	ieee80211.h	/^	    auth_mode:2,$/;"	m	struct:ieee80211_security
+auth_not_valid	r8180.h	/^	auth_not_valid	= 0x2,$/;"	e	enum:_ReasonCode
+bAdSwitchedChecking	r8180.h	/^	bool bAdSwitchedChecking;		\/\/ TRUE if we shall shall check Rx signal strength for last time switching antenna.$/;"	m	struct:r8180_priv
+bCurCCKPkt	r8180.h	/^	bool        bCurCCKPkt;$/;"	m	struct:r8180_priv
+bDefaultAntenna1	r8180.h	/^	bool bDefaultAntenna1;$/;"	m	struct:r8180_priv
+bDigMechanism	r8180.h	/^	bool				bDigMechanism; \/\/ TRUE if DIG is enabled, FALSE ow.$/;"	m	struct:r8180_priv
+bEnabled	dot11d.h	/^	bool bEnabled; \/\/ dot11MultiDomainCapabilityEnabled$/;"	m	struct:_RT_DOT11D_INFO
+bEnhanceTxPwr	r8180.h	/^	bool   bEnhanceTxPwr;$/;"	m	struct:r8180_priv
+bGlobalDomain	ieee80211.h	/^	bool bGlobalDomain;$/;"	m	struct:ieee80211_device
+bHWAdSwitched	r8180.h	/^	bool		bHWAdSwitched;				\/\/ TRUE if we has switched default antenna by HW evaluation.$/;"	m	struct:r8180_priv
+bHwRadioOff	ieee80211.h	/^	bool bHwRadioOff;$/;"	m	struct:ieee80211_device
+bInHctTest	r8180.h	/^	bool bInHctTest;$/;"	m	struct:r8180_priv
+bInactivePs	ieee80211.h	/^	bool bInactivePs;$/;"	m	struct:ieee80211_device
+bInactivePs	r8180.h	/^	bool bInactivePs;$/;"	m	struct:r8180_priv
+bLeisurePs	r8180.h	/^	bool bLeisurePs;$/;"	m	struct:r8180_priv
+bRegHighPowerMechanism	r8180.h	/^	bool				bRegHighPowerMechanism; \/\/ For High Power Mechanism. 061010, by rcnjko. $/;"	m	struct:r8180_priv
+bSwAntennaDiverity	r8180.h	/^	bool bSwAntennaDiverity;$/;"	m	struct:r8180_priv
+bSwRfProcessing	r8180.h	/^	bool bSwRfProcessing;$/;"	m	struct:r8180_priv
+bToUpdateTxPwr	r8180.h	/^	bool					bToUpdateTxPwr;$/;"	m	struct:r8180_priv
+bTryuping	r8180.h	/^        unsigned short          bTryuping;$/;"	m	struct:r8180_priv
+bTxPowerTrack	r8180.h	/^	bool		bTxPowerTrack; \/\/ Tx Power tracking.	$/;"	m	struct:r8180_priv
+bUpdateARFR	r8180.h	/^	bool   bUpdateARFR;$/;"	m	struct:r8180_priv
+bXtalCalibration	r8180.h	/^	bool		bXtalCalibration; \/\/ Crystal calibration.$/;"	m	struct:r8180_priv
+basic_rate	ieee80211.h	/^	int basic_rate;$/;"	m	struct:ieee80211_device
+bcrx_sta_key	ieee80211.h	/^	int bcrx_sta_key; \/* use individual keys to override default keys even$/;"	m	struct:ieee80211_device
+beacon_interval	ieee80211.h	/^	u16 beacon_interval;$/;"	m	struct:ieee80211_network
+beacon_interval	ieee80211.h	/^	u16 beacon_interval;$/;"	m	struct:ieee80211_probe_response
+beacon_lock	ieee80211.h	/^	spinlock_t beacon_lock;$/;"	m	struct:ieee80211_device
+beacon_timer	ieee80211.h	/^	struct timer_list beacon_timer;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::timer_list
+beacon_txing	ieee80211.h	/^	short beacon_txing;$/;"	m	struct:ieee80211_device
+beinretry	ieee80211.h	/^	bool beinretry;$/;"	m	struct:ieee80211_device
+bool	ieee80211.h	/^typedef enum{false = 0, true} bool;$/;"	t	typeref:enum:__anon1
+broadcast_key_type	ieee80211.h	/^	u16 broadcast_key_type;$/;"	m	struct:ieee80211_device
+bssid	ieee80211.h	/^	u8 bssid[ETH_ALEN];$/;"	m	struct:ieee80211_network
+buf	r8180.h	/^	u32 *buf;$/;"	m	struct:buffer
+buffer	r8180.h	/^typedef struct buffer$/;"	s
+buffer	r8180.h	/^} buffer;$/;"	t	typeref:struct:buffer
+buffer_add	r8180_core.c	/^short buffer_add(struct buffer **buffer, u32 *buf, dma_addr_t dma,$/;"	f
+buffer_free	r8180_core.c	/^void buffer_free(struct net_device *dev,struct buffer **buffer,int len,short$/;"	f
+capability	ieee80211.h	/^	u16 capability;$/;"	m	struct:ieee80211_assoc_request_frame
+capability	ieee80211.h	/^	u16 capability;$/;"	m	struct:ieee80211_assoc_response_frame
+capability	ieee80211.h	/^	u16 capability;$/;"	m	struct:ieee80211_network
+capability	ieee80211.h	/^	u16 capability;$/;"	m	struct:ieee80211_probe_response
+card_8185	r8180.h	/^        short card_8185; \/* O: rtl8180, 1:rtl8185 V B\/C, 2:rtl8185 V D, 3:rtl8185B *\/$/;"	m	struct:r8180_priv
+card_8185_Bversion	r8180.h	/^	short card_8185_Bversion; \/* if TCR reports card V B\/C this discriminates *\/$/;"	m	struct:r8180_priv
+card_type	r8180.h	/^	enum card_type {PCI,MINIPCI,CARDBUS,USB\/*rtl8187*\/}card_type;$/;"	g	struct:r8180_priv
+card_type	r8180.h	/^	enum card_type {PCI,MINIPCI,CARDBUS,USB\/*rtl8187*\/}card_type;$/;"	m	struct:r8180_priv	typeref:enum:r8180_priv::card_type
+cck_txpwr_base	r8180.h	/^	u8 cck_txpwr_base;$/;"	m	struct:r8180_priv
+chan	r8180.h	/^	short chan;$/;"	m	struct:r8180_priv
+channel	ieee80211.h	/^	u8 channel;$/;"	m	struct:ieee80211_network
+channel_map	dot11d.h	/^	u8  channel_map[MAX_CHANNEL_NUMBER+1];  \/\/!!!Value 0: Invalid, 1: Valid (active scan), 2: Valid (passive scan)$/;"	m	struct:_RT_DOT11D_INFO
+channel_map	ieee80211.h	/^	int channel_map[MAX_CHANNEL_NUMBER+1];$/;"	m	struct:ieee80211_device
+channel_plan	r8180.h	/^	u8 channel_plan;  \/\/ it's the channel plan index$/;"	m	struct:r8180_priv
+channels	r8180_core.c	/^static int channels = 0x3fff;$/;"	v	file:
+charData	r8180.h	/^	u8	charData;$/;"	m	union:_ACI_AIFSN
+charData	r8180.h	/^	u8	charData;$/;"	m	union:_ECW
+charData	r8180.h	/^	u8	charData[4];$/;"	m	union:_AC_PARAM
+check_nic_enought_desc	r8180_core.c	/^short check_nic_enought_desc(struct net_device *dev, int priority)$/;"	f
+check_rxbuf	r8180_core.c	/^void check_rxbuf(struct net_device *dev)$/;"	f
+check_tx_ring	r8180_core.c	/^void check_tx_ring(struct net_device *dev, int pri)$/;"	f
+chtxpwr	r8180.h	/^	u8 chtxpwr[15]; \/\/channels from 1 to 14, 0 not used$/;"	m	struct:r8180_priv
+chtxpwr_ofdm	r8180.h	/^	u8 chtxpwr_ofdm[15]; \/\/channels from 1 to 14, 0 not used$/;"	m	struct:r8180_priv
+ciper_reject	r8180.h	/^	ciper_reject		= 0x18,$/;"	e	enum:_ReasonCode
+class2_err	r8180.h	/^	class2_err		= 0x6,$/;"	e	enum:_ReasonCode
+class3_err	r8180.h	/^	class3_err		= 0x7, $/;"	e	enum:_ReasonCode
+clk	r8180.h	/^		u16		clk:1;$/;"	m	struct:_ThreeWire::_ThreeWireStruc
+cmd	ieee80211.h	/^	u32 cmd;$/;"	m	struct:ieee_param
+command	ieee80211.h	/^			int command;$/;"	m	struct:ieee_param::__anon2::__anon5
+config	ieee80211.h	/^	u32 config;$/;"	m	struct:ieee80211_device
+control	ieee80211.h	/^	u8 control;$/;"	m	struct:ieee80211_rx_stats
+country_code_type_t	ieee80211.h	/^}country_code_type_t;	$/;"	t	typeref:enum:__anon7
+cpMacAddr	dot11d.h	40;"	d
+cpMacAddr	r8180_core.c	148;"	d	file:
+crcmon	r8180.h	/^	short crcmon; \/\/if 1 allow bad crc frame reception in monitor mode$/;"	m	struct:r8180_priv
+crypt	ieee80211.h	/^		} crypt;$/;"	m	union:ieee_param::__anon2	typeref:struct:ieee_param::__anon2::__anon6
+crypt	ieee80211.h	/^	struct ieee80211_crypt_data *crypt[WEP_KEYS];$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::ieee80211_crypt_data
+crypt_deinit_list	ieee80211.h	/^	struct list_head crypt_deinit_list;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::list_head
+crypt_deinit_timer	ieee80211.h	/^	struct timer_list crypt_deinit_timer;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::timer_list
+cs_treshold	r8180.h	/^	u8 cs_treshold;$/;"	m	struct:r8180_priv
+ctrl	ieee80211.h	/^        u8    ctrl;   \/* always 0x03 *\/$/;"	m	struct:ieee80211_snap_hdr
+current_network	ieee80211.h	/^	struct ieee80211_network current_network;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::ieee80211_network
+data	ieee80211.h	/^			u8 data[0];$/;"	m	struct:ieee_param::__anon2::__anon4
+data	ieee80211.h	/^	u8 data[0];$/;"	m	struct:ieee80211_info_element
+data	r8180.h	/^		u16		data:1;$/;"	m	struct:_ThreeWire::_ThreeWireStruc
+data_hard_resume	ieee80211.h	/^	void (*data_hard_resume)(struct net_device *dev);$/;"	m	struct:ieee80211_device
+data_hard_stop	ieee80211.h	/^	void (*data_hard_stop)(struct net_device *dev);$/;"	m	struct:ieee80211_device
+deauth_lv_ss	r8180.h	/^	deauth_lv_ss	= 0x3, $/;"	e	enum:_ReasonCode
+decrypt_mpdu	ieee80211_crypt.h	/^	int (*decrypt_mpdu)(struct sk_buff *skb, int hdr_len, void *priv);$/;"	m	struct:ieee80211_crypto_ops
+decrypt_msdu	ieee80211_crypt.h	/^	int (*decrypt_msdu)(struct sk_buff *skb, int keyidx, int hdr_len,$/;"	m	struct:ieee80211_crypto_ops
+deinit	ieee80211_crypt.h	/^	void (*deinit)(void *priv);$/;"	m	struct:ieee80211_crypto_ops
+delay_bound	ieee80211.h	/^	u32 delay_bound;$/;"	m	struct:ieee80211_wmm_tspec_elem
+dest_not_QSTA	r8180.h	/^	dest_not_QSTA	= 0x32,	\/\/ 50$/;"	e	enum:_ReasonCode
+dest_not_exist	r8180.h	/^	dest_not_exist	= 0x31,	\/\/ 49$/;"	e	enum:_ReasonCode
+dev	ieee80211.h	/^	struct net_device *dev;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::net_device
+dev	r8180.h	/^	struct net_device *dev;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::net_device
+digphy	r8180.h	/^	short digphy;$/;"	m	struct:r8180_priv
+dir_dev	r8180.h	/^	struct proc_dir_entry *dir_dev;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::proc_dir_entry
+disas_lv_ss	r8180.h	/^	disas_lv_ss		= 0x8,$/;"	e	enum:_ReasonCode
+diversity	r8180.h	/^	short diversity;$/;"	m	struct:r8180_priv
+dma	r8180.h	/^	dma_addr_t dma;$/;"	m	struct:buffer
+dma_poll_mask	r8180.h	/^	u8 dma_poll_mask;$/;"	m	struct:r8180_priv
+dma_poll_stop_mask	r8180.h	/^	u8 dma_poll_stop_mask;$/;"	m	struct:r8180_priv
+dot11PowerSaveMode	r8180.h	/^	RT_PS_MODE dot11PowerSaveMode;$/;"	m	struct:r8180_priv
+drop_unencrypted	ieee80211.h	/^	int drop_unencrypted;$/;"	m	struct:ieee80211_device
+dsap	ieee80211.h	/^        u8    dsap;   \/* always 0xAA *\/$/;"	m	struct:ieee80211_snap_hdr
+dst_addr	ieee80211.h	/^	u8 dst_addr[ETH_ALEN];$/;"	m	struct:ieee80211_frag_entry
+dtim_data	ieee80211.h	/^	u8 dtim_data;$/;"	m	struct:ieee80211_network
+dtim_period	ieee80211.h	/^	u8 dtim_period;$/;"	m	struct:ieee80211_network
+dummy	r8180_wx.c	/^static int dummy(struct net_device *dev, struct iw_request_info *a,$/;"	f	file:
+dump_eprom	r8180_core.c	/^void dump_eprom(struct net_device *dev)$/;"	f
+duration_id	ieee80211.h	/^	u16 duration_id;$/;"	m	struct:ieee80211_hdr
+duration_id	ieee80211.h	/^	u16 duration_id;$/;"	m	struct:ieee80211_hdr_3addr
+duration_id	ieee80211.h	/^	u16 duration_id;$/;"	m	struct:ieee80211_hdr_3addr_QOS
+duration_id	ieee80211.h	/^	u16 duration_id;$/;"	m	struct:ieee80211_hdr_QOS
+duration_id	ieee80211.h	/^	u16 duration_id;$/;"	m	struct:ieee80211_header_data
+eActive	r8180.h	/^	eActive,	\/\/ Active\/Continuous access.$/;"	e	enum:_RT_PS_MODE
+eFastPs	r8180.h	/^	eFastPs		\/\/ Fast power save mode.$/;"	e	enum:_RT_PS_MODE
+eInactivePowerState	r8180.h	/^	RT_RF_POWER_STATE	eInactivePowerState;$/;"	m	struct:r8180_priv
+eMaxPs	r8180.h	/^	eMaxPs,		\/\/ Max power save mode.$/;"	e	enum:_RT_PS_MODE
+eRFPowerState	r8180.h	/^	RT_RF_POWER_STATE eRFPowerState;$/;"	m	struct:r8180_priv
+eRfOff	r8180.h	/^	eRfOff$/;"	e	enum:_RT_RF_POWER_STATE
+eRfOn	r8180.h	/^	eRfOn,$/;"	e	enum:_RT_RF_POWER_STATE
+eRfSleep	r8180.h	/^	eRfSleep,$/;"	e	enum:_RT_RF_POWER_STATE
+eap_get_type	ieee80211.h	/^static inline const char *eap_get_type(int type)$/;"	f
+eap_type	ieee80211.h	/^enum eap_type {$/;"	g
+eap_types	ieee80211.h	/^static const char *eap_types[] = {$/;"	v
+eapol	ieee80211.h	/^struct eapol {$/;"	s
+enableB	r8180.h	/^		u16		enableB:1;$/;"	m	struct:_ThreeWire::_ThreeWireStruc
+enable_gpio0	r8180.h	/^	short enable_gpio0;$/;"	m	struct:r8180_priv
+enabled	ieee80211.h	/^            enabled:1,$/;"	m	struct:ieee80211_security
+encrypt_mpdu	ieee80211_crypt.h	/^	int (*encrypt_mpdu)(struct sk_buff *skb, int hdr_len, void *priv);$/;"	m	struct:ieee80211_crypto_ops
+encrypt_msdu	ieee80211_crypt.h	/^	int (*encrypt_msdu)(struct sk_buff *skb, int hdr_len, void *priv);$/;"	m	struct:ieee80211_crypto_ops
+encrypted	ieee80211.h	/^	u8 encrypted;$/;"	m	struct:ieee80211_txb
+enter_sleep_state	ieee80211.h	/^	void (*enter_sleep_state) (struct net_device *dev, u32 th, u32 tl);$/;"	m	struct:ieee80211_device
+eprom_ck_cycle	r8180_93cx6.c	/^void eprom_ck_cycle(struct net_device *dev)$/;"	f
+eprom_cs	r8180_93cx6.c	/^void eprom_cs(struct net_device *dev, short bit)$/;"	f
+eprom_r	r8180_93cx6.c	/^short eprom_r(struct net_device *dev)$/;"	f
+eprom_read	r8180_93cx6.c	/^u32 eprom_read(struct net_device *dev, u32 addr)$/;"	f
+eprom_send_bits_string	r8180_93cx6.c	/^void eprom_send_bits_string(struct net_device *dev, short b[], int len)$/;"	f
+eprom_w	r8180_93cx6.c	/^void eprom_w(struct net_device *dev,short bit)$/;"	f
+epromtype	r8180.h	/^	short epromtype;$/;"	m	struct:r8180_priv
+eqMacAddr	dot11d.h	39;"	d
+eqMacAddr	r8180_core.c	147;"	d	file:
+err	ieee80211.h	/^			u32 err;$/;"	m	struct:ieee_param::__anon2::__anon6
+escape_essid	ieee80211.h	/^static inline const char *escape_essid(const char *essid, u8 essid_len) {$/;"	f
+ether_dhost	ieee80211.h	/^	u8 ether_dhost[ETHER_ADDR_LEN];$/;"	m	struct:ether_header
+ether_header	ieee80211.h	/^struct	ether_header {$/;"	s
+ether_shost	ieee80211.h	/^	u8 ether_shost[ETHER_ADDR_LEN];$/;"	m	struct:ether_header
+ether_type	ieee80211.h	/^	u16 ether_type;$/;"	m	struct:ether_header
+ethertype	ieee80211.h	/^	u16 ethertype;$/;"	m	struct:eapol
+extra_postfix_len	ieee80211_crypt.h	/^	int extra_prefix_len, extra_postfix_len;$/;"	m	struct:ieee80211_crypto_ops
+extra_prefix_len	ieee80211_crypt.h	/^	int extra_prefix_len, extra_postfix_len;$/;"	m	struct:ieee80211_crypto_ops
+f	r8180.h	/^	}f;	\/\/ Field$/;"	m	union:_ACI_AIFSN	typeref:struct:_ACI_AIFSN::__anon11
+f	r8180.h	/^	}f;	\/\/ Field$/;"	m	union:_AC_PARAM	typeref:struct:_AC_PARAM::__anon12
+f	r8180.h	/^	}f;	\/\/ Field$/;"	m	union:_ECW	typeref:struct:_ECW::__anon10
+false	ieee80211.h	/^typedef enum{false = 0, true} bool;$/;"	e	enum:__anon1
+first_frag_time	ieee80211.h	/^	unsigned long first_frag_time;$/;"	m	struct:ieee80211_frag_entry
+fix_rx_fifo	r8180_core.c	/^void fix_rx_fifo(struct net_device *dev) $/;"	f
+fix_tx_fifo	r8180_core.c	/^void fix_tx_fifo(struct net_device *dev)$/;"	f
+flags	ieee80211.h	/^	u16 flags;$/;"	m	struct:ieee80211_security
+flags	ieee80211.h	/^	u8 flags;$/;"	m	struct:ieee80211_network
+force_pci_posting	r8180_core.c	/^inline void force_pci_posting(struct net_device *dev)$/;"	f
+four_way_tmout	r8180.h	/^	four_way_tmout	= 0x0f,$/;"	e	enum:_ReasonCode
+frag	ieee80211.h	/^	int frag;$/;"	m	struct:tx_pending_t
+frag_cache	ieee80211.h	/^	struct ieee80211_frag_entry frag_cache[17][IEEE80211_FRAG_CACHE_LEN];$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::ieee80211_frag_entry
+frag_next_idx	ieee80211.h	/^	unsigned int frag_next_idx[17];$/;"	m	struct:ieee80211_device
+frag_num	ieee80211.h	/^	u16 frag_num[17];$/;"	m	struct:ieee_ibss_seq
+frag_size	ieee80211.h	/^	u16 frag_size;$/;"	m	struct:ieee80211_txb
+fragments	ieee80211.h	/^	struct sk_buff *fragments[0];$/;"	m	struct:ieee80211_txb	typeref:struct:ieee80211_txb::sk_buff
+frame_ctl	ieee80211.h	/^	u16 frame_ctl;$/;"	m	struct:ieee80211_hdr
+frame_ctl	ieee80211.h	/^	u16 frame_ctl;$/;"	m	struct:ieee80211_hdr_3addr
+frame_ctl	ieee80211.h	/^	u16 frame_ctl;$/;"	m	struct:ieee80211_hdr_3addr_QOS
+frame_ctl	ieee80211.h	/^	u16 frame_ctl;$/;"	m	struct:ieee80211_hdr_QOS
+frame_ctl	ieee80211.h	/^	u16 frame_ctl;$/;"	m	struct:ieee80211_header_data
+free_ieee80211	ieee80211.h	122;"	d
+free_rx_desc_ring	r8180_core.c	/^void free_rx_desc_ring(struct net_device *dev)$/;"	f
+free_tx_desc_rings	r8180_core.c	/^void free_tx_desc_rings(struct net_device *dev)$/;"	f
+freq	ieee80211.h	/^	u8 freq;$/;"	m	struct:ieee80211_rx_stats
+freq_band	ieee80211.h	/^	int freq_band;  \/* 2.4Ghz, 5.2Ghz, Mixed *\/$/;"	m	struct:ieee80211_device
+fts	ieee80211.h	/^	u16 fts; \/* Fragmentation Threshold *\/$/;"	m	struct:ieee80211_device
+gct_chan	r8180_gct.c	/^u32 gct_chan[] = {$/;"	v
+gct_encode	r8180_gct.c	/^int gct_encode[16] = { $/;"	v
+gct_rf_close	r8180_gct.c	/^void gct_rf_close(struct net_device *dev)$/;"	f
+gct_rf_init	r8180_gct.c	/^void gct_rf_init(struct net_device *dev)$/;"	f
+gct_rf_set_chan	r8180_gct.c	/^void gct_rf_set_chan(struct net_device *dev, short ch)$/;"	f
+gct_rf_stabilize	r8180_gct.c	/^void gct_rf_stabilize(struct net_device *dev)$/;"	f
+gct_write_phy_antenna	r8180_gct.c	/^void gct_write_phy_antenna(struct net_device *dev,short ch)$/;"	f
+get_curr_tx_free_desc	r8180_core.c	/^int get_curr_tx_free_desc(struct net_device *dev, int priority)$/;"	f
+get_key	ieee80211_crypt.h	/^	int (*get_key)(void *key, int len, u8 *seq, void *priv);$/;"	m	struct:ieee80211_crypto_ops
+hard_start_xmit	ieee80211.h	/^	int (*hard_start_xmit)(struct ieee80211_txb *txb,$/;"	m	struct:ieee80211_device
+header	ieee80211.h	/^	struct ieee80211_hdr_3addr header;$/;"	m	struct:ieee80211_assoc_request_frame	typeref:struct:ieee80211_assoc_request_frame::ieee80211_hdr_3addr
+header	ieee80211.h	/^	struct ieee80211_hdr_3addr header;$/;"	m	struct:ieee80211_assoc_response_frame	typeref:struct:ieee80211_assoc_response_frame::ieee80211_hdr_3addr
+header	ieee80211.h	/^	struct ieee80211_header_data header;$/;"	m	struct:ieee80211_authentication	typeref:struct:ieee80211_authentication::ieee80211_header_data
+header	ieee80211.h	/^	struct ieee80211_header_data header;$/;"	m	struct:ieee80211_probe_request	typeref:struct:ieee80211_probe_request::ieee80211_header_data
+header	ieee80211.h	/^	struct ieee80211_header_data header;$/;"	m	struct:ieee80211_probe_response	typeref:struct:ieee80211_probe_response::ieee80211_header_data
+header	ieee80211.h	/^        struct ieee80211_hdr_3addr header;$/;"	m	struct:ieee80211_disassoc_frame	typeref:struct:ieee80211_disassoc_frame::ieee80211_hdr_3addr
+host_decrypt	ieee80211.h	/^	int host_decrypt;$/;"	m	struct:ieee80211_device
+host_encrypt	ieee80211.h	/^	int host_encrypt;$/;"	m	struct:ieee80211_device
+hw_dig_wq	ieee80211.h	/^	struct delayed_work hw_dig_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+hw_dig_wq	ieee80211.h	/^	struct work_struct hw_dig_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+hw_plcp_len	r8180.h	/^	short hw_plcp_len;$/;"	m	struct:r8180_priv
+hw_sleep_wq	ieee80211.h	/^	struct delayed_work hw_sleep_wq;\/\/+by amy 080324$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+hw_sleep_wq	ieee80211.h	/^	struct work_struct hw_sleep_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+hw_wakeup_wq	ieee80211.h	/^	struct delayed_work hw_wakeup_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+hw_wakeup_wq	ieee80211.h	/^	struct work_struct hw_wakeup_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+hw_wep	r8180.h	/^	short hw_wep;$/;"	m	struct:r8180_priv
+hwseqnum	r8180_core.c	/^static int hwseqnum = 0;$/;"	v	file:
+hwwep	r8180_core.c	/^static int hwwep = 0;$/;"	v	file:
+ibss_mac_hash	ieee80211.h	/^	struct list_head ibss_mac_hash[IEEE_IBSS_MAC_HASH_SIZE];$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::list_head
+id	ieee80211.h	/^	u8 id;$/;"	m	struct:ieee80211_info_element
+id	ieee80211.h	/^	u8 id;$/;"	m	struct:ieee80211_info_element_hdr
+idx	ieee80211.h	/^			u8 idx;$/;"	m	struct:ieee_param::__anon2::__anon6
+ieee80211	r8180.h	/^	struct ieee80211_device *ieee80211;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::ieee80211_device
+ieee80211_assoc_request_frame	ieee80211.h	/^struct ieee80211_assoc_request_frame {$/;"	s
+ieee80211_assoc_response_frame	ieee80211.h	/^struct ieee80211_assoc_response_frame {$/;"	s
+ieee80211_authentication	ieee80211.h	/^struct ieee80211_authentication {$/;"	s
+ieee80211_crypt_data	ieee80211_crypt.h	/^struct ieee80211_crypt_data {$/;"	s
+ieee80211_crypt_deinit_entries	ieee80211.h	135;"	d
+ieee80211_crypt_deinit_handler	ieee80211.h	136;"	d
+ieee80211_crypt_delayed_deinit	ieee80211.h	137;"	d
+ieee80211_crypto_ops	ieee80211_crypt.h	/^struct ieee80211_crypto_ops {$/;"	s
+ieee80211_device	ieee80211.h	/^struct ieee80211_device {$/;"	s
+ieee80211_disassoc_frame	ieee80211.h	/^struct ieee80211_disassoc_frame{$/;"	s
+ieee80211_disassociate	ieee80211.h	165;"	d
+ieee80211_frag_entry	ieee80211.h	/^struct ieee80211_frag_entry {$/;"	s
+ieee80211_get_crypto_ops	ieee80211.h	134;"	d
+ieee80211_get_hdrlen	ieee80211.h	/^extern inline int ieee80211_get_hdrlen(u16 fc)$/;"	f
+ieee80211_get_scans	ieee80211.h	/^extern inline int ieee80211_get_scans(struct ieee80211_device *ieee)$/;"	f
+ieee80211_hdr	ieee80211.h	/^struct ieee80211_hdr {$/;"	s
+ieee80211_hdr_3addr	ieee80211.h	/^struct ieee80211_hdr_3addr {$/;"	s
+ieee80211_hdr_3addr_QOS	ieee80211.h	/^struct ieee80211_hdr_3addr_QOS {$/;"	s
+ieee80211_hdr_QOS	ieee80211.h	/^struct ieee80211_hdr_QOS {$/;"	s
+ieee80211_header_data	ieee80211.h	/^struct ieee80211_header_data {$/;"	s
+ieee80211_increment_scans	ieee80211.h	/^extern inline void ieee80211_increment_scans(struct ieee80211_device *ieee)$/;"	f
+ieee80211_info_element	ieee80211.h	/^struct ieee80211_info_element {$/;"	s
+ieee80211_info_element_hdr	ieee80211.h	/^struct ieee80211_info_element_hdr {$/;"	s
+ieee80211_is_empty_essid	ieee80211.h	/^extern inline int ieee80211_is_empty_essid(const char *essid, int essid_len)$/;"	f
+ieee80211_is_valid_mode	ieee80211.h	/^extern inline int ieee80211_is_valid_mode(struct ieee80211_device *ieee, int mode)$/;"	f
+ieee80211_network	ieee80211.h	/^struct ieee80211_network {$/;"	s
+ieee80211_priv	ieee80211.h	/^extern inline void *ieee80211_priv(struct net_device *dev)$/;"	f
+ieee80211_probe_request	ieee80211.h	/^struct ieee80211_probe_request {$/;"	s
+ieee80211_probe_response	ieee80211.h	/^struct ieee80211_probe_response {$/;"	s
+ieee80211_register_crypto_ops	ieee80211.h	132;"	d
+ieee80211_rx	ieee80211.h	130;"	d
+ieee80211_rx_mgt	ieee80211.h	159;"	d
+ieee80211_rx_stats	ieee80211.h	/^struct ieee80211_rx_stats {$/;"	s
+ieee80211_security	ieee80211.h	/^struct ieee80211_security {$/;"	s
+ieee80211_snap_hdr	ieee80211.h	/^struct ieee80211_snap_hdr {$/;"	s
+ieee80211_softmac_start_protocol	ieee80211.h	156;"	d
+ieee80211_softmac_stats	ieee80211.h	/^struct ieee80211_softmac_stats{$/;"	s
+ieee80211_softmac_stop_protocol	ieee80211.h	155;"	d
+ieee80211_start_protocol	ieee80211.h	157;"	d
+ieee80211_start_scan	ieee80211.h	166;"	d
+ieee80211_state	ieee80211.h	/^enum ieee80211_state {$/;"	g
+ieee80211_stats	ieee80211.h	/^struct ieee80211_stats {$/;"	s
+ieee80211_stop_protocol	ieee80211.h	158;"	d
+ieee80211_stop_queue	ieee80211.h	128;"	d
+ieee80211_stop_send_beacons	ieee80211.h	164;"	d
+ieee80211_txb	ieee80211.h	/^struct ieee80211_txb {$/;"	s
+ieee80211_txb_free	ieee80211.h	139;"	d
+ieee80211_unregister_crypto_ops	ieee80211.h	133;"	d
+ieee80211_wake_queue	ieee80211.h	127;"	d
+ieee80211_wlan_frequencies	ieee80211.h	154;"	d
+ieee80211_wmm_ac_param	ieee80211.h	/^struct ieee80211_wmm_ac_param {$/;"	s
+ieee80211_wmm_ts_info	ieee80211.h	/^struct ieee80211_wmm_ts_info {$/;"	s
+ieee80211_wmm_tspec_elem	ieee80211.h	/^struct ieee80211_wmm_tspec_elem {$/;"	s
+ieee80211_wx_get_encode	ieee80211.h	118;"	d
+ieee80211_wx_get_essid	ieee80211.h	140;"	d
+ieee80211_wx_get_freq	ieee80211.h	149;"	d
+ieee80211_wx_get_mode	ieee80211.h	147;"	d
+ieee80211_wx_get_name	ieee80211.h	121;"	d
+ieee80211_wx_get_power	ieee80211.h	153;"	d
+ieee80211_wx_get_rate	ieee80211.h	143;"	d
+ieee80211_wx_get_scan	ieee80211.h	116;"	d
+ieee80211_wx_get_wap	ieee80211.h	145;"	d
+ieee80211_wx_set_auth	ieee80211.h	161;"	d
+ieee80211_wx_set_encode	ieee80211.h	117;"	d
+ieee80211_wx_set_essid	ieee80211.h	141;"	d
+ieee80211_wx_set_freq	ieee80211.h	150;"	d
+ieee80211_wx_set_mode	ieee80211.h	146;"	d
+ieee80211_wx_set_power	ieee80211.h	152;"	d
+ieee80211_wx_set_rate	ieee80211.h	142;"	d
+ieee80211_wx_set_rawtx	ieee80211.h	151;"	d
+ieee80211_wx_set_scan	ieee80211.h	148;"	d
+ieee80211_wx_set_wap	ieee80211.h	144;"	d
+ieee802_1x	ieee80211.h	/^	int ieee802_1x; \/* is IEEE 802.1X used *\/$/;"	m	struct:ieee80211_device
+ieee_ibss_seq	ieee80211.h	/^struct ieee_ibss_seq {$/;"	s
+ieee_param	ieee80211.h	/^typedef struct ieee_param {$/;"	s
+ieee_param	ieee80211.h	/^}ieee_param;$/;"	t	typeref:struct:ieee_param
+ieee_stats	ieee80211.h	/^	struct ieee80211_stats ieee_stats;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::ieee80211_stats
+ieeerate2rtlrate	r8180_core.c	/^inline u16 ieeerate2rtlrate(int rate)$/;"	f
+ifname	r8180_core.c	/^static char* ifname = "ath%d";$/;"	v	file:
+inact_inter	ieee80211.h	/^	u32 inact_inter;$/;"	m	struct:ieee80211_wmm_tspec_elem
+inactivity	r8180.h	/^	inactivity		= 0x4,$/;"	e	enum:_ReasonCode
+info_element	ieee80211.h	/^	struct ieee80211_info_element info_element; \/* supported rates *\/$/;"	m	struct:ieee80211_assoc_response_frame	typeref:struct:ieee80211_assoc_response_frame::ieee80211_info_element
+info_element	ieee80211.h	/^	struct ieee80211_info_element info_element;$/;"	m	struct:ieee80211_probe_response	typeref:struct:ieee80211_probe_response::ieee80211_info_element
+info_element	ieee80211.h	/^	struct ieee80211_info_element_hdr info_element;$/;"	m	struct:ieee80211_assoc_request_frame	typeref:struct:ieee80211_assoc_request_frame::ieee80211_info_element_hdr
+init	ieee80211_crypt.h	/^	void * (*init)(int keyidx);$/;"	m	struct:ieee80211_crypto_ops
+init_wmmparam_flag	ieee80211.h	/^	char init_wmmparam_flag;$/;"	m	struct:ieee80211_device
+ints	r8180.h	/^	unsigned long ints;$/;"	m	struct:Stats
+invalid_AKMP	r8180.h	/^	invalid_AKMP	= 0x14,$/;"	e	enum:_ReasonCode
+invalid_Gcipher	r8180.h	/^	invalid_Gcipher	= 0x12,$/;"	e	enum:_ReasonCode
+invalid_IE	r8180.h	/^	invalid_IE		= 0x0d,$/;"	e	enum:_ReasonCode
+invalid_Pcipher	r8180.h	/^	invalid_Pcipher	= 0x13,$/;"	e	enum:_ReasonCode
+invalid_RSNIE	r8180.h	/^	invalid_RSNIE	= 0x16,$/;"	e	enum:_ReasonCode
+invalid_param	r8180.h	/^	invalid_param	= 0x26,	\/\/ 38$/;"	e	enum:_ReasonCode
+irq	r8180.h	/^	int irq;$/;"	m	struct:r8180_priv
+irq_enabled	r8180.h	/^	short irq_enabled;$/;"	m	struct:r8180_priv
+irq_lock	r8180.h	/^	spinlock_t irq_lock;$/;"	m	struct:r8180_priv
+irq_mask	r8180.h	/^	u16 irq_mask;$/;"	m	struct:r8180_priv
+irq_rx_tasklet	r8180.h	/^	struct tasklet_struct irq_rx_tasklet;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::tasklet_struct
+irq_th_lock	r8180.h	/^	spinlock_t irq_th_lock;$/;"	m	struct:r8180_priv
+is_broadcast_ether_addr	ieee80211.h	/^extern inline int is_broadcast_ether_addr(const u8 *addr)$/;"	f
+is_multicast_ether_addr	ieee80211.h	/^extern inline int is_multicast_ether_addr(const u8 *addr)$/;"	f
+is_same_network	r8180_wx.c	/^inline int is_same_network(struct ieee80211_network *src,$/;"	f
+iw_mode	ieee80211.h	/^	int iw_mode; \/* operating mode (IW_MODE_*) *\/$/;"	m	struct:ieee80211_device
+key	ieee80211.h	/^			u8 key[0];$/;"	m	struct:ieee_param::__anon2::__anon6
+key0	r8180.h	/^	u32 key0[4];$/;"	m	struct:r8180_priv
+key_len	ieee80211.h	/^			u16 key_len;$/;"	m	struct:ieee_param::__anon2::__anon6
+key_sizes	ieee80211.h	/^	u8 key_sizes[WEP_KEYS];$/;"	m	struct:ieee80211_security
+keys	ieee80211.h	/^	u8 keys[WEP_KEYS][WEP_KEY_LEN_MODIF];$/;"	m	struct:ieee80211_security
+last_associate	ieee80211.h	/^	u32 last_associate;$/;"	m	struct:ieee80211_network
+last_dtim_sta_time	ieee80211.h	/^	u32 last_dtim_sta_time[2];$/;"	m	struct:ieee80211_network
+last_frag	ieee80211.h	/^	unsigned int last_frag;$/;"	m	struct:ieee80211_frag_entry
+last_packet_time	ieee80211.h	/^	unsigned long last_packet_time[17];$/;"	m	struct:ieee80211_device
+last_rx_ps_time	ieee80211.h	/^	unsigned long last_rx_ps_time;$/;"	m	struct:ieee80211_device
+last_rxfrag_num	ieee80211.h	/^	u16 last_rxfrag_num[17];\/* tx frag previous per-tid *\/$/;"	m	struct:ieee80211_device
+last_rxseq_num	ieee80211.h	/^	u16 last_rxseq_num[17]; \/* rx seq previous per-tid *\/$/;"	m	struct:ieee80211_device
+last_scanned	ieee80211.h	/^	unsigned long last_scanned;$/;"	m	struct:ieee80211_network
+len	ieee80211.h	/^			u32 len;$/;"	m	struct:ieee_param::__anon2::__anon4
+len	ieee80211.h	/^	u16 len;$/;"	m	struct:ieee80211_rx_stats
+len	ieee80211.h	/^	u8 len;$/;"	m	struct:ieee80211_info_element
+len	ieee80211.h	/^	u8 len;$/;"	m	struct:ieee80211_info_element_hdr
+length	ieee80211.h	/^	u16 length;$/;"	m	struct:eapol
+level	ieee80211.h	/^	u8 level;$/;"	m	struct:ieee80211_security
+link_change	ieee80211.h	/^	void (*link_change)(struct net_device *dev);$/;"	m	struct:ieee80211_device
+list	ieee80211.h	/^	struct list_head list;$/;"	m	struct:ieee80211_network	typeref:struct:ieee80211_network::list_head
+list	ieee80211.h	/^	struct list_head list;$/;"	m	struct:ieee_ibss_seq	typeref:struct:ieee_ibss_seq::list_head
+list	ieee80211_crypt.h	/^	struct list_head list; \/* delayed deletion list *\/$/;"	m	struct:ieee80211_crypt_data	typeref:struct:ieee80211_crypt_data::list_head
+listen_interval	ieee80211.h	/^	u16 listen_interval;$/;"	m	struct:ieee80211_assoc_request_frame
+listen_interval	ieee80211.h	/^	u16 listen_interval;$/;"	m	struct:ieee80211_network
+lock	ieee80211.h	/^	spinlock_t lock;$/;"	m	struct:ieee80211_device
+longData	r8180.h	/^	u16			longData;$/;"	m	union:_ThreeWire
+longData	r8180.h	/^	u32	longData;$/;"	m	union:_AC_PARAM
+mac	ieee80211.h	/^	u8 mac[ETH_ALEN];$/;"	m	struct:ieee_ibss_seq
+mac_time	ieee80211.h	/^	u32 mac_time[2];$/;"	m	struct:ieee80211_rx_stats
+mask	ieee80211.h	/^	u8 mask;$/;"	m	struct:ieee80211_rx_stats
+max_burst_size	ieee80211.h	/^	u32 max_burst_size;$/;"	m	struct:ieee80211_wmm_tspec_elem
+max_msdu_size	ieee80211.h	/^	u16 max_msdu_size;$/;"	m	struct:ieee80211_wmm_tspec_elem
+max_sens	r8180.h	/^	short max_sens;$/;"	m	struct:r8180_priv
+max_serv_inter	ieee80211.h	/^	u32 max_serv_inter;$/;"	m	struct:ieee80211_wmm_tspec_elem
+maxim_chan	r8180_max2820.c	/^u32 maxim_chan[] = {$/;"	v
+maxim_rf_close	r8180_max2820.c	/^void maxim_rf_close(struct net_device *dev)$/;"	f
+maxim_rf_init	r8180_max2820.c	/^void maxim_rf_init(struct net_device *dev)$/;"	f
+maxim_rf_set_chan	r8180_max2820.c	/^void maxim_rf_set_chan(struct net_device *dev, short ch)$/;"	f
+maxim_write_phy_antenna	r8180_max2820.c	/^void maxim_write_phy_antenna(struct net_device *dev,short ch)$/;"	f
+mean_data_rate	ieee80211.h	/^	u32 mean_data_rate;$/;"	m	struct:ieee80211_wmm_tspec_elem
+medium_time	ieee80211.h	/^	u16 medium_time;$/;"	m	struct:ieee80211_wmm_tspec_elem
+mgmt_queue_head	ieee80211.h	/^	int mgmt_queue_head;$/;"	m	struct:ieee80211_device
+mgmt_queue_ring	ieee80211.h	/^	struct sk_buff *mgmt_queue_ring[MGMT_QUEUE_NUM];$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::sk_buff
+mgmt_queue_tail	ieee80211.h	/^	int mgmt_queue_tail;$/;"	m	struct:ieee80211_device
+mgmt_tx_lock	ieee80211.h	/^	spinlock_t mgmt_tx_lock;	$/;"	m	struct:ieee80211_device
+mic_failure	r8180.h	/^	mic_failure		= 0xe,$/;"	e	enum:_ReasonCode
+min_data_rate	ieee80211.h	/^	u32 min_data_rate;$/;"	m	struct:ieee80211_wmm_tspec_elem
+min_phy_rate	ieee80211.h	/^	u32 min_phy_rate;$/;"	m	struct:ieee80211_wmm_tspec_elem
+min_serv_inter	ieee80211.h	/^	u32 min_serv_inter;$/;"	m	struct:ieee80211_wmm_tspec_elem
+mlme	ieee80211.h	/^		} mlme;$/;"	m	union:ieee_param::__anon2	typeref:struct:ieee_param::__anon2::__anon5
+mode	ieee80211.h	/^	int mode;       \/* A, B, G *\/$/;"	m	struct:ieee80211_device
+mode	ieee80211.h	/^	u8 mode;$/;"	m	struct:ieee80211_network
+modulation	ieee80211.h	/^	int modulation; \/* CCK, OFDM *\/$/;"	m	struct:ieee80211_device
+msleep_interruptible_rtl	ieee80211.h	/^static inline unsigned long msleep_interruptible_rtl(unsigned int msecs)$/;"	f
+msleep_interruptible_rtl	ieee80211.h	223;"	d
+name	ieee80211.h	/^			u8 name;$/;"	m	struct:ieee_param::__anon2::__anon3
+name	ieee80211_crypt.h	/^	const char *name;$/;"	m	struct:ieee80211_crypto_ops
+network_free_list	ieee80211.h	/^	struct list_head network_free_list;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::list_head
+network_list	ieee80211.h	/^	struct list_head network_list;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::list_head
+networks	ieee80211.h	/^	struct ieee80211_network *networks;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::ieee80211_network
+next	r8180.h	/^	struct buffer *next;$/;"	m	struct:buffer	typeref:struct:buffer::buffer
+nic_t	r8180.h	/^        } nic_t;$/;"	t	typeref:enum:__anon9
+nic_type	ieee80211.h	/^	u8 nic_type;$/;"	m	struct:ieee80211_rx_stats
+no_ass_rs	ieee80211.h	/^	unsigned int no_ass_rs;$/;"	m	struct:ieee80211_softmac_stats
+no_auth_rs	ieee80211.h	/^	unsigned int no_auth_rs;$/;"	m	struct:ieee80211_softmac_stats
+no_facility	r8180.h	/^	no_facility		= 0x23,	\/\/ 35$/;"	e	enum:_ReasonCode
+noise	ieee80211.h	/^	u8 noise;$/;"	m	struct:ieee80211_rx_stats
+norm_msdu_size	ieee80211.h	/^	u16 norm_msdu_size;$/;"	m	struct:ieee80211_wmm_tspec_elem
+notify_wx_assoc_event	ieee80211.h	163;"	d
+nr_frags	ieee80211.h	/^	u8 nr_frags;$/;"	m	struct:ieee80211_txb
+ofdm_txpwr_base	r8180.h	/^	u8 ofdm_txpwr_base;$/;"	m	struct:r8180_priv
+open_wep	ieee80211.h	/^	int open_wep; \/* Set to 1 to allow unencrypted frames *\/$/;"	m	struct:ieee80211_device
+ops	ieee80211_crypt.h	/^	struct ieee80211_crypto_ops *ops;$/;"	m	struct:ieee80211_crypt_data	typeref:struct:ieee80211_crypt_data::ieee80211_crypto_ops
+oui	ieee80211.h	/^        u8    oui[P80211_OUI_LEN];    \/* organizational universal id *\/$/;"	m	struct:ieee80211_snap_hdr
+owner	ieee80211_crypt.h	/^	struct module *owner;$/;"	m	struct:ieee80211_crypto_ops	typeref:struct:ieee80211_crypto_ops::module
+pDot11dInfo	ieee80211.h	/^	void * pDot11dInfo;$/;"	m	struct:ieee80211_device
+packet_time	ieee80211.h	/^	unsigned long packet_time[17];$/;"	m	struct:ieee_ibss_seq
+pairwise_key_type	ieee80211.h	/^	u16 pairwise_key_type;$/;"	m	struct:ieee80211_device
+payload_size	ieee80211.h	/^	u16 payload_size;$/;"	m	struct:ieee80211_txb
+pdev	r8180.h	/^	struct pci_dev *pdev;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::pci_dev
+peak_data_rate	ieee80211.h	/^	u32 peak_data_rate;$/;"	m	struct:ieee80211_wmm_tspec_elem
+phy_ver	r8180.h	/^	short phy_ver; \/* meaningful for rtl8225 1:A 2:B 3:C *\/$/;"	m	struct:r8180_priv
+plcp_preamble_mode	r8180.h	/^	short plcp_preamble_mode; \/\/ 0:auto 1:short 2:long$/;"	m	struct:r8180_priv
+poor_condition	r8180.h	/^	poor_condition	= 0x22,	\/\/ 34$/;"	e	enum:_ReasonCode
+print_buffer	r8180_core.c	/^void print_buffer(u32 *buffer, int len)$/;"	f
+print_stats	ieee80211_crypt.h	/^	char * (*print_stats)(char *p, void *priv);$/;"	m	struct:ieee80211_crypto_ops
+prism_hdr	r8180.h	/^	short prism_hdr;$/;"	m	struct:r8180_priv
+priv	ieee80211.h	/^	u8 priv[0];$/;"	m	struct:ieee80211_device
+priv	ieee80211_crypt.h	/^	void *priv;$/;"	m	struct:ieee80211_crypt_data
+privacy_invoked	ieee80211.h	/^	int privacy_invoked;$/;"	m	struct:ieee80211_device
+proc_get_registers	r8180_core.c	/^static int proc_get_registers(char *page, char **start,$/;"	f	file:
+proc_get_stats_hw	r8180_core.c	/^static int proc_get_stats_hw(char *page, char **start,$/;"	f	file:
+proc_get_stats_rx	r8180_core.c	/^static int proc_get_stats_rx(char *page, char **start,$/;"	f	file:
+proc_get_stats_tx	r8180_core.c	/^static int proc_get_stats_tx(char *page, char **start,$/;"	f	file:
+promisc	r8180.h	/^	short promisc;	$/;"	m	struct:r8180_priv
+proto_started	ieee80211.h	/^	short proto_started;$/;"	m	struct:ieee80211_device
+ps	ieee80211.h	/^	short ps;$/;"	m	struct:ieee80211_device
+ps_is_queue_empty	ieee80211.h	/^	short (*ps_is_queue_empty) (struct net_device *dev);$/;"	m	struct:ieee80211_device
+ps_lock	r8180.h	/^	spinlock_t ps_lock;$/;"	m	struct:r8180_priv
+ps_request_tx_ack	ieee80211.h	/^	void (*ps_request_tx_ack) (struct net_device *dev);$/;"	m	struct:ieee80211_device
+ps_request_tx_ack_wq	ieee80211.h	/^	struct work_struct ps_request_tx_ack_wq;\/\/for ps$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+ps_task	ieee80211.h	/^	struct tasklet_struct ps_task;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::tasklet_struct
+ps_th	ieee80211.h	/^	u32 ps_th;$/;"	m	struct:ieee80211_device
+ps_timeout	ieee80211.h	/^	int ps_timeout;$/;"	m	struct:ieee80211_device
+ps_tl	ieee80211.h	/^	u32 ps_tl;$/;"	m	struct:ieee80211_device
+queue_stop	ieee80211.h	/^	short queue_stop;$/;"	m	struct:ieee80211_device
+r8180-objs	Makefile	/^r8180-objs := r8180_core.o r8180_sa2400.o r8180_93cx6.o r8180_wx.o r8180_max2820.o r8180_gct.o r8180_rtl8225.o r8180_rtl8255.o r8180_rtl8225z2.o r8185b_init.o r8180_dm.o$/;"	m
+r8180_get_wireless_stats	r8180_core.c	/^static struct iw_statistics *r8180_get_wireless_stats(struct net_device *dev)$/;"	f	file:
+r8180_get_wireless_stats	r8180_wx.c	/^static struct iw_statistics *r8180_get_wireless_stats(struct net_device *dev)$/;"	f	file:
+r8180_priv	r8180.h	/^typedef struct r8180_priv$/;"	s
+r8180_priv	r8180.h	/^}r8180_priv;$/;"	t	typeref:struct:r8180_priv
+r8180_private_args	r8180_wx.c	/^static const struct iw_priv_args r8180_private_args[] = { $/;"	v	typeref:struct:iw_priv_args	file:
+r8180_private_handler	r8180_wx.c	/^static iw_handler r8180_private_handler[] = {$/;"	v	file:
+r8180_set_mac_adr	r8180_core.c	/^int r8180_set_mac_adr(struct net_device *dev, void *mac)$/;"	f
+r8180_set_multicast	r8180_core.c	/^static void r8180_set_multicast(struct net_device *dev)$/;"	f	file:
+r8180_wx_get_channelplan	r8180_wx.c	/^static int r8180_wx_get_channelplan(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_enc	r8180_wx.c	/^static int r8180_wx_get_enc(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_essid	r8180_wx.c	/^static int r8180_wx_get_essid(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_frag	r8180_wx.c	/^static int r8180_wx_get_frag(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_freq	r8180_wx.c	/^static int r8180_wx_get_freq(struct net_device *dev,$/;"	f	file:
+r8180_wx_get_iwmode	r8180_wx.c	/^static int r8180_wx_get_iwmode(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_mode	r8180_wx.c	/^static int r8180_wx_get_mode(struct net_device *dev, struct iw_request_info *a,$/;"	f	file:
+r8180_wx_get_name	r8180_wx.c	/^static int r8180_wx_get_name(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_power	r8180_wx.c	/^static int r8180_wx_get_power(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_preamble	r8180_wx.c	/^static int r8180_wx_get_preamble(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_rate	r8180_wx.c	/^static int r8180_wx_get_rate(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_retry	r8180_wx.c	/^static int r8180_wx_get_retry(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_rts	r8180_wx.c	/^static int r8180_wx_get_rts(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_scan	r8180_wx.c	/^static int r8180_wx_get_scan(struct net_device *dev, struct iw_request_info *a,$/;"	f	file:
+r8180_wx_get_sens	r8180_wx.c	/^static int r8180_wx_get_sens(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_siglevel	r8180_wx.c	/^static int r8180_wx_get_siglevel(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_sigqual	r8180_wx.c	/^static int r8180_wx_get_sigqual(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_version	r8180_wx.c	/^static int r8180_wx_get_version(struct net_device *dev, $/;"	f	file:
+r8180_wx_get_wap	r8180_wx.c	/^static int r8180_wx_get_wap(struct net_device *dev, $/;"	f	file:
+r8180_wx_handlers	r8180_wx.c	/^static iw_handler r8180_wx_handlers[] =$/;"	v	file:
+r8180_wx_handlers_def	r8180_wx.c	/^struct iw_handler_def  r8180_wx_handlers_def={$/;"	v	typeref:struct:iw_handler_def
+r8180_wx_radio_off	r8180_wx.c	/^static int r8180_wx_radio_off(struct net_device *dev,$/;"	f	file:
+r8180_wx_radio_on	r8180_wx.c	/^static int r8180_wx_radio_on(struct net_device *dev,$/;"	f	file:
+r8180_wx_reset_stats	r8180_wx.c	/^static int r8180_wx_reset_stats(struct net_device *dev,$/;"	f	file:
+r8180_wx_set_auth	r8180_wx.c	/^static int r8180_wx_set_auth(struct net_device *dev,$/;"	f	file:
+r8180_wx_set_beaconinterval	r8180_wx.c	/^static int r8180_wx_set_beaconinterval(struct net_device *dev, struct iw_request_info *aa,$/;"	f	file:
+r8180_wx_set_channelplan	r8180_wx.c	/^static int r8180_wx_set_channelplan(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_crcmon	r8180_wx.c	/^static int r8180_wx_set_crcmon(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_enc	r8180_wx.c	/^static int r8180_wx_set_enc(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_enc_ext	r8180_wx.c	/^static int r8180_wx_set_enc_ext(struct net_device *dev,$/;"	f	file:
+r8180_wx_set_essid	r8180_wx.c	/^static int r8180_wx_set_essid(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_frag	r8180_wx.c	/^static int r8180_wx_set_frag(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_freq	r8180_wx.c	/^static int r8180_wx_set_freq(struct net_device *dev, struct iw_request_info *a,$/;"	f	file:
+r8180_wx_set_gen_ie	r8180_wx.c	/^static int r8180_wx_set_gen_ie(struct net_device *dev,$/;"	f	file:
+r8180_wx_set_iwmode	r8180_wx.c	/^static int r8180_wx_set_iwmode(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_key	r8180_wx.c	/^int r8180_wx_set_key(struct net_device *dev, struct iw_request_info *info, $/;"	f
+r8180_wx_set_mlme	r8180_wx.c	/^static int r8180_wx_set_mlme(struct net_device *dev,$/;"	f	file:
+r8180_wx_set_mode	r8180_wx.c	/^static int r8180_wx_set_mode(struct net_device *dev, struct iw_request_info *a,$/;"	f	file:
+r8180_wx_set_power	r8180_wx.c	/^static int r8180_wx_set_power(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_preamble	r8180_wx.c	/^static int r8180_wx_set_preamble(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_rate	r8180_wx.c	/^static int r8180_wx_set_rate(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_rawtx	r8180_wx.c	/^static int r8180_wx_set_rawtx(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_retry	r8180_wx.c	/^static int r8180_wx_set_retry(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_rts	r8180_wx.c	/^static int r8180_wx_set_rts(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_scan	r8180_wx.c	/^static int r8180_wx_set_scan(struct net_device *dev, struct iw_request_info *a,$/;"	f	file:
+r8180_wx_set_scan_type	r8180_wx.c	/^static int r8180_wx_set_scan_type(struct net_device *dev, struct iw_request_info *aa, union$/;"	f	file:
+r8180_wx_set_sens	r8180_wx.c	/^static int r8180_wx_set_sens(struct net_device *dev, $/;"	f	file:
+r8180_wx_set_wap	r8180_wx.c	/^static int r8180_wx_set_wap(struct net_device *dev,$/;"	f	file:
+rate	ieee80211.h	/^	int rate;       \/* current rate *\/$/;"	m	struct:ieee80211_device
+rate	ieee80211.h	/^	u16 rate; \/* in 100 kbps *\/$/;"	m	struct:ieee80211_rx_stats
+rate_adapter_wq	ieee80211.h	/^    struct delayed_work rate_adapter_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+rate_adapter_wq	ieee80211.h	/^    struct work_struct rate_adapter_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+rateadapter_timer	r8180.h	/^    struct timer_list rateadapter_timer;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::timer_list
+rates	ieee80211.h	/^	u8 rates[MAX_RATES_LENGTH];$/;"	m	struct:ieee80211_network
+rates_ex	ieee80211.h	/^	u8 rates_ex[MAX_RATES_EX_LENGTH];$/;"	m	struct:ieee80211_network
+rates_ex_len	ieee80211.h	/^	u8 rates_ex_len;$/;"	m	struct:ieee80211_network
+rates_len	ieee80211.h	/^	u8 rates_len;$/;"	m	struct:ieee80211_network
+raw_tx	ieee80211.h	/^	short raw_tx;$/;"	m	struct:ieee80211_device
+rcr_csense	r8180.h	/^	short rcr_csense;$/;"	m	struct:r8180_priv
+read_nic_byte	r8180_core.c	/^u8 read_nic_byte(struct net_device *dev, int x) $/;"	f
+read_nic_dword	r8180_core.c	/^u32 read_nic_dword(struct net_device *dev, int x) $/;"	f
+read_nic_word	r8180_core.c	/^u16 read_nic_word(struct net_device *dev, int x) $/;"	f
+read_rtl8225	r8180_rtl8225z2.c	/^u32 read_rtl8225(struct net_device *dev, u8 adr)$/;"	f
+read_write	r8180.h	/^		u16		read_write:1;$/;"	m	struct:_ThreeWire::_ThreeWireStruc
+reason_code	ieee80211.h	/^    			int reason_code;$/;"	m	struct:ieee_param::__anon2::__anon5
+reasoncode	ieee80211.h	/^        u16    reasoncode;$/;"	m	struct:ieee80211_disassoc_frame
+reassoc	ieee80211.h	/^	unsigned int reassoc;$/;"	m	struct:ieee80211_softmac_stats
+received_channel	ieee80211.h	/^	u8 received_channel;$/;"	m	struct:ieee80211_rx_stats
+refcnt	ieee80211_crypt.h	/^	atomic_t refcnt;$/;"	m	struct:ieee80211_crypt_data
+req_declined	r8180.h	/^	req_declined	= 0x25,	\/\/ 37$/;"	e	enum:_ReasonCode
+req_not_honored	r8180.h	/^	req_not_honored= 0x27,	\/\/ 39$/;"	e	enum:_ReasonCode
+reserved	ieee80211.h	/^			u8 reserved[32];$/;"	m	struct:ieee_param::__anon2::__anon4
+reserved	ieee80211.h	/^	u16 reserved;$/;"	m	struct:ieee80211_txb
+reserved	ieee80211.h	/^	u8 reserved;$/;"	m	struct:ieee80211_wmm_ts_info
+reset_on_keychange	ieee80211.h	/^	int reset_on_keychange; \/* Set to 1 if the HW needs to be reset on$/;"	m	struct:ieee80211_device
+reset_port	ieee80211.h	/^	int (*reset_port)(struct net_device *dev);$/;"	m	struct:ieee80211_device
+reset_wq	r8180.h	/^	struct work_struct reset_wq;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::work_struct
+resv1	r8180.h	/^		u16		resv1:12;$/;"	m	struct:_ThreeWire::_ThreeWireStruc
+retry_data	r8180.h	/^	u8 retry_data;$/;"	m	struct:r8180_priv
+retry_rts	r8180.h	/^	u8 retry_rts;$/;"	m	struct:r8180_priv
+rf_chip	r8180.h	/^	short rf_chip;$/;"	m	struct:r8180_priv
+rf_close	r8180.h	/^	void (*rf_close)(struct net_device *dev);$/;"	m	struct:r8180_priv
+rf_init	r8180.h	/^	void (*rf_init)(struct net_device *dev);$/;"	m	struct:r8180_priv
+rf_ps_lock	r8180.h	/^	spinlock_t rf_ps_lock;$/;"	m	struct:r8180_priv
+rf_set_chan	r8180.h	/^	void (*rf_set_chan)(struct net_device *dev,short ch);$/;"	m	struct:r8180_priv
+rf_set_sens	r8180.h	/^	short (*rf_set_sens)(struct net_device *dev,short sens);$/;"	m	struct:r8180_priv
+rf_sleep	r8180.h	/^	void (*rf_sleep)(struct net_device *dev);$/;"	m	struct:r8180_priv
+rf_stabilize	r8180_sa2400.c	/^void rf_stabilize(struct net_device *dev)$/;"	f
+rf_state	r8180.h	/^	struct semaphore rf_state;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::semaphore
+rf_wakeup	r8180.h	/^	void (*rf_wakeup)(struct net_device *dev);$/;"	m	struct:r8180_priv
+rsn_ie	ieee80211.h	/^	u8 rsn_ie[MAX_WPA_IE_LEN];$/;"	m	struct:ieee80211_network
+rsn_ie_len	ieee80211.h	/^	size_t rsn_ie_len;$/;"	m	struct:ieee80211_network
+rssi	ieee80211.h	/^	s8 rssi;$/;"	m	struct:ieee80211_rx_stats
+rtl8180_IsWirelessBMode	r8180_core.c	/^inline u8 rtl8180_IsWirelessBMode(u16 rate)$/;"	f
+rtl8180_RSSI_calc	r8180_core.c	/^void rtl8180_RSSI_calc(struct net_device *dev, u8 *rssi, u8 *qual){$/;"	f
+rtl8180_adapter_start	r8180_core.c	/^void rtl8180_adapter_start(struct net_device *dev)$/;"	f
+rtl8180_beacon_tx_disable	r8180_core.c	/^void rtl8180_beacon_tx_disable(struct net_device *dev) $/;"	f
+rtl8180_beacon_tx_enable	r8180_core.c	/^void rtl8180_beacon_tx_enable(struct net_device *dev)$/;"	f
+rtl8180_close	r8180_core.c	/^int rtl8180_close(struct net_device *dev)$/;"	f
+rtl8180_commit	r8180_core.c	/^void rtl8180_commit(struct net_device *dev)$/;"	f
+rtl8180_conttx_disable	r8180_core.c	/^void rtl8180_conttx_disable(struct net_device *dev)$/;"	f
+rtl8180_conttx_enable	r8180_core.c	/^void rtl8180_conttx_enable(struct net_device *dev)$/;"	f
+rtl8180_data_hard_resume	r8180_core.c	/^void rtl8180_data_hard_resume(struct net_device *dev)$/;"	f
+rtl8180_data_hard_stop	r8180_core.c	/^void rtl8180_data_hard_stop(struct net_device *dev)$/;"	f
+rtl8180_dma_kick	r8180_core.c	/^void rtl8180_dma_kick(struct net_device *dev, int priority)$/;"	f
+rtl8180_down	r8180_core.c	/^int rtl8180_down(struct net_device *dev)$/;"	f
+rtl8180_dump_reg	r8180_core.c	/^void rtl8180_dump_reg(struct net_device *dev)$/;"	f
+rtl8180_enable_wake	r8180_pm.c	/^int rtl8180_enable_wake (struct pci_dev *dev, u32 state, int enable)$/;"	f
+rtl8180_hard_data_xmit	r8180_core.c	/^void rtl8180_hard_data_xmit(struct sk_buff *skb,struct net_device *dev, int$/;"	f
+rtl8180_hard_start_xmit	r8180_core.c	/^int rtl8180_hard_start_xmit(struct sk_buff *skb,struct net_device *dev)$/;"	f
+rtl8180_hw_dig_wq	r8180_dm.c	/^void rtl8180_hw_dig_wq (struct work_struct *work)$/;"	f
+rtl8180_hw_sleep	r8180_core.c	/^void rtl8180_hw_sleep(struct net_device *dev, u32 th, u32 tl)$/;"	f
+rtl8180_hw_sleep_down	r8180_core.c	/^void rtl8180_hw_sleep_down(struct net_device *dev)$/;"	f
+rtl8180_hw_sleep_wq	r8180_core.c	/^void rtl8180_hw_sleep_wq (struct work_struct *work)$/;"	f
+rtl8180_hw_wakeup	r8180_core.c	/^void rtl8180_hw_wakeup(struct net_device *dev)$/;"	f
+rtl8180_hw_wakeup_wq	r8180_core.c	/^void rtl8180_hw_wakeup_wq (struct work_struct *work)$/;"	f
+rtl8180_init	r8180_core.c	/^short rtl8180_init(struct net_device *dev)$/;"	f
+rtl8180_interrupt	r8180_core.c	/^irqreturn_t rtl8180_interrupt(int irq, void *netdev, struct pt_regs *regs)$/;"	f
+rtl8180_ioctl	r8180_core.c	/^int rtl8180_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)$/;"	f
+rtl8180_irq_disable	r8180_core.c	/^void rtl8180_irq_disable(struct net_device *dev)$/;"	f
+rtl8180_irq_enable	r8180_core.c	/^void rtl8180_irq_enable(struct net_device *dev)$/;"	f
+rtl8180_irq_rx_tasklet	r8180_core.c	/^void rtl8180_irq_rx_tasklet(struct r8180_priv* priv)$/;"	f
+rtl8180_is_tx_queue_empty	r8180_core.c	/^short rtl8180_is_tx_queue_empty(struct net_device *dev){$/;"	f
+rtl8180_len2duration	r8180_core.c	/^u16 rtl8180_len2duration(u32 len, short rate,short* ext)$/;"	f
+rtl8180_link_change	r8180_core.c	/^void rtl8180_link_change(struct net_device *dev)$/;"	f
+rtl8180_no_hw_wep	r8180_core.c	/^void rtl8180_no_hw_wep(struct net_device *dev)$/;"	f
+rtl8180_open	r8180_core.c	/^int rtl8180_open(struct net_device *dev)$/;"	f
+rtl8180_pci_driver	r8180_core.c	/^static struct pci_driver rtl8180_pci_driver = {$/;"	v	typeref:struct:pci_driver	file:
+rtl8180_pci_module_exit	r8180_core.c	/^module_exit(rtl8180_pci_module_exit);$/;"	v
+rtl8180_pci_module_exit	r8180_core.c	/^static void __exit rtl8180_pci_module_exit(void)$/;"	f	file:
+rtl8180_pci_module_init	r8180_core.c	/^module_init(rtl8180_pci_module_init);$/;"	v
+rtl8180_pci_module_init	r8180_core.c	/^static int __init rtl8180_pci_module_init(void)$/;"	f	file:
+rtl8180_pci_probe	r8180_core.c	/^static int __devinit rtl8180_pci_probe(struct pci_dev *pdev, $/;"	f	file:
+rtl8180_pci_remove	r8180_core.c	/^static void __devexit rtl8180_pci_remove(struct pci_dev *pdev)$/;"	f	file:
+rtl8180_prepare_beacon	r8180_core.c	/^void rtl8180_prepare_beacon(struct net_device *dev)$/;"	f
+rtl8180_proc	r8180_core.c	/^static struct proc_dir_entry *rtl8180_proc = NULL;$/;"	v	typeref:struct:proc_dir_entry	file:
+rtl8180_proc_init_one	r8180_core.c	/^void rtl8180_proc_init_one(struct net_device *dev)$/;"	f
+rtl8180_proc_module_init	r8180_core.c	/^void rtl8180_proc_module_init(void)$/;"	f
+rtl8180_proc_module_remove	r8180_core.c	/^void rtl8180_proc_module_remove(void)$/;"	f
+rtl8180_proc_remove_one	r8180_core.c	/^void rtl8180_proc_remove_one(struct net_device *dev)$/;"	f
+rtl8180_rate2rate	r8180_core.c	/^inline u16 rtl8180_rate2rate(short rate)$/;"	f
+rtl8180_rate_adapter	r8180_dm.c	/^void rtl8180_rate_adapter(struct work_struct * work)$/;"	f
+rtl8180_rates	r8180_wx.c	/^u32 rtl8180_rates[] = {1000000,2000000,5500000,11000000,$/;"	v
+rtl8180_reset	r8180_core.c	/^void rtl8180_reset(struct net_device *dev)$/;"	f
+rtl8180_restart	r8180_core.c	/^void rtl8180_restart(struct net_device *dev)$/;"	f
+rtl8180_restart_wq	r8180_core.c	/^void rtl8180_restart_wq(struct work_struct *work)$/;"	f
+rtl8180_resume	r8180_pm.c	/^int rtl8180_resume (struct pci_dev *dev)$/;"	f
+rtl8180_rq_tx_ack	r8180_core.c	/^void rtl8180_rq_tx_ack(struct net_device *dev){$/;"	f
+rtl8180_rtx_disable	r8180_core.c	/^void rtl8180_rtx_disable(struct net_device *dev)$/;"	f
+rtl8180_rx	r8180_core.c	/^void rtl8180_rx(struct net_device *dev)$/;"	f
+rtl8180_rx_enable	r8180_core.c	/^void rtl8180_rx_enable(struct net_device *dev)$/;"	f
+rtl8180_save_state	r8180_pm.c	/^int rtl8180_save_state (struct pci_dev *dev, u32 state)$/;"	f
+rtl8180_set_anaparam	r8180_core.c	/^void rtl8180_set_anaparam(struct net_device *dev, u32 a)$/;"	f
+rtl8180_set_chan	r8180_core.c	/^void rtl8180_set_chan(struct net_device *dev,short ch)$/;"	f
+rtl8180_set_channel_map	r8180_core.c	/^static void rtl8180_set_channel_map(u8 channel_plan, struct ieee80211_device *ieee)$/;"	f	file:
+rtl8180_set_hw_wep	r8180_core.c	/^void rtl8180_set_hw_wep(struct net_device *dev)$/;"	f
+rtl8180_set_mode	r8180_core.c	/^void rtl8180_set_mode(struct net_device *dev,int mode)$/;"	f
+rtl8180_start_tx_beacon	r8180_core.c	/^void rtl8180_start_tx_beacon(struct net_device *dev)$/;"	f
+rtl8180_stats	r8180_core.c	/^static struct net_device_stats *rtl8180_stats(struct net_device *dev)$/;"	f	file:
+rtl8180_suspend	r8180_pm.c	/^int rtl8180_suspend (struct pci_dev *dev, u32 state)$/;"	f
+rtl8180_try_wake_queue	r8180_core.c	/^void rtl8180_try_wake_queue(struct net_device *dev, int pri)$/;"	f
+rtl8180_tx	r8180_core.c	/^short rtl8180_tx(struct net_device *dev, u8* txbuf, int len, int priority,$/;"	f
+rtl8180_tx_enable	r8180_core.c	/^void rtl8180_tx_enable(struct net_device *dev)$/;"	f
+rtl8180_tx_irq_wq	r8180_core.c	/^void rtl8180_tx_irq_wq(struct work_struct *work)$/;"	f
+rtl8180_tx_isr	r8180_core.c	/^void rtl8180_tx_isr(struct net_device *dev, int pri,short error)$/;"	f
+rtl8180_tx_pw_wq	r8180_dm.c	/^void rtl8180_tx_pw_wq (struct work_struct *work)$/;"	f
+rtl8180_up	r8180_core.c	/^int rtl8180_up(struct net_device *dev)$/;"	f
+rtl8180_update_msr	r8180_core.c	/^void rtl8180_update_msr(struct net_device *dev)$/;"	f
+rtl8180_watch_dog	r8180_core.c	/^void rtl8180_watch_dog(struct net_device *dev)$/;"	f
+rtl8180_wmm_param_update	r8180_core.c	/^void rtl8180_wmm_param_update(struct work_struct * work)$/;"	f
+rtl8180_wx_get_range	r8180_wx.c	/^static int rtl8180_wx_get_range(struct net_device *dev, $/;"	f	file:
+rtl8185_rf_pins_enable	r8180_core.c	/^void rtl8185_rf_pins_enable(struct net_device *dev)$/;"	f
+rtl8185_set_anaparam2	r8180_core.c	/^void rtl8185_set_anaparam2(struct net_device *dev, u32 a)$/;"	f
+rtl8185_set_rate	r8180_core.c	/^void rtl8185_set_rate(struct net_device *dev)$/;"	f
+rtl8185_tx_antenna	r8180_core.c	/^void rtl8185_tx_antenna(struct net_device *dev, u8 ant)$/;"	f
+rtl8185_write_phy	r8180_core.c	/^void rtl8185_write_phy(struct net_device *dev, u8 adr, u32 data)$/;"	f
+rtl8185b_adapter_start	r8185b_init.c	/^void rtl8185b_adapter_start(struct net_device *dev)$/;"	f
+rtl8185b_irq_enable	r8185b_init.c	/^void rtl8185b_irq_enable(struct net_device *dev)$/;"	f
+rtl8185b_rx_enable	r8185b_init.c	/^void rtl8185b_rx_enable(struct net_device *dev)$/;"	f
+rtl8185b_tx_enable	r8185b_init.c	/^void rtl8185b_tx_enable(struct net_device *dev)$/;"	f
+rtl8225_SetTXPowerLevel	r8180_rtl8225.c	/^void rtl8225_SetTXPowerLevel(struct net_device *dev, short ch)$/;"	f
+rtl8225_agc	r8180_rtl8225.c	/^u8 rtl8225_agc[]={$/;"	v
+rtl8225_chan	r8180_rtl8225.c	/^u32 rtl8225_chan[] = {$/;"	v
+rtl8225_chan	r8180_rtl8225.c	/^u32 rtl8225_chan[] ={$/;"	v
+rtl8225_gain	r8180_rtl8225.c	/^u8 rtl8225_gain[]={$/;"	v
+rtl8225_host_pci_init	r8180_rtl8225.c	/^void rtl8225_host_pci_init(struct net_device *dev) $/;"	f
+rtl8225_host_usb_init	r8180_rtl8225.c	/^void rtl8225_host_usb_init(struct net_device *dev) $/;"	f
+rtl8225_is_V_z2	r8180_rtl8225z2.c	/^short rtl8225_is_V_z2(struct net_device *dev)$/;"	f
+rtl8225_rf_close	r8180_rtl8225.c	/^void rtl8225_rf_close(struct net_device *dev)$/;"	f
+rtl8225_rf_init	r8180_rtl8225.c	/^void rtl8225_rf_init(struct net_device *dev) $/;"	f
+rtl8225_rf_set_chan	r8180_rtl8225.c	/^void rtl8225_rf_set_chan(struct net_device *dev, short ch)$/;"	f
+rtl8225_rf_sleep	r8180_rtl8225.c	/^void rtl8225_rf_sleep(struct net_device *dev)$/;"	f
+rtl8225_rf_wakeup	r8180_rtl8225.c	/^void rtl8225_rf_wakeup(struct net_device *dev) $/;"	f
+rtl8225_set_gain	r8180_rtl8225.c	/^void rtl8225_set_gain(struct net_device *dev, short gain)$/;"	f
+rtl8225_tx_gain_cck_ofdm	r8180_rtl8225.c	/^u8 rtl8225_tx_gain_cck_ofdm[]={$/;"	v
+rtl8225_tx_power_cck	r8180_rtl8225.c	/^u8 rtl8225_tx_power_cck[]={$/;"	v
+rtl8225_tx_power_cck_ch14	r8180_rtl8225.c	/^u8 rtl8225_tx_power_cck_ch14[]={$/;"	v
+rtl8225_tx_power_ofdm	r8180_rtl8225.c	/^u8 rtl8225_tx_power_ofdm[]={$/;"	v
+rtl8225bcd_rxgain	r8180_rtl8225.c	/^u16 rtl8225bcd_rxgain[]={	$/;"	v
+rtl8225z2_SetTXPowerLevel	r8180_rtl8225z2.c	/^void rtl8225z2_SetTXPowerLevel(struct net_device *dev, short ch)$/;"	f
+rtl8225z2_gain_a	r8180_rtl8225z2.c	/^u8 rtl8225z2_gain_a[]={$/;"	v
+rtl8225z2_gain_bg	r8180_rtl8225z2.c	/^u8 rtl8225z2_gain_bg[]={$/;"	v
+rtl8225z2_rf_close	r8180_rtl8225z2.c	/^void rtl8225z2_rf_close(struct net_device *dev)$/;"	f
+rtl8225z2_rf_init	r8180_rtl8225z2.c	/^void rtl8225z2_rf_init(struct net_device *dev) $/;"	f
+rtl8225z2_rf_set_chan	r8180_rtl8225z2.c	/^void rtl8225z2_rf_set_chan(struct net_device *dev, short ch)$/;"	f
+rtl8225z2_rf_set_mode	r8180_rtl8225z2.c	/^void rtl8225z2_rf_set_mode(struct net_device *dev) $/;"	f
+rtl8225z2_rxgain	r8180_rtl8225z2.c	/^u16 rtl8225z2_rxgain[]={	$/;"	v
+rtl8225z2_set_gain	r8180_rtl8225z2.c	/^void rtl8225z2_set_gain(struct net_device *dev, short gain)$/;"	f
+rtl8225z2_threshold	r8180_rtl8225z2.c	/^u8 rtl8225z2_threshold[]={$/;"	v
+rtl8225z2_tx_power_cck	r8180_rtl8225z2.c	/^u8 rtl8225z2_tx_power_cck[]={$/;"	v
+rtl8225z2_tx_power_cck_ch14	r8180_rtl8225z2.c	/^u8 rtl8225z2_tx_power_cck_ch14[]={$/;"	v
+rtl8225z2_tx_power_ofdm	r8180_rtl8225z2.c	/^u8 rtl8225z2_tx_power_ofdm[]={$/;"	v
+rtl8225z4_rf_sleep	r8180_rtl8225z2.c	/^void rtl8225z4_rf_sleep(struct net_device *dev)$/;"	f
+rtl8225z4_rf_wakeup	r8180_rtl8225z2.c	/^void rtl8225z4_rf_wakeup(struct net_device *dev)$/;"	f
+rtl8255_SetTXPowerLevel	r8180_rtl8255.c	/^void rtl8255_SetTXPowerLevel(struct net_device *dev, short ch)$/;"	f
+rtl8255_agc	r8180_rtl8255.c	/^static short rtl8255_agc[]={$/;"	v	file:
+rtl8255_chan	r8180_rtl8255.c	/^u32 rtl8255_chan[] = {$/;"	v
+rtl8255_gain_2G	r8180_rtl8255.c	/^static short rtl8255_gain_2G[]={$/;"	v	file:
+rtl8255_init_BGband	r8180_rtl8255.c	/^void rtl8255_init_BGband(struct net_device *dev)$/;"	f
+rtl8255_rf_close	r8180_rtl8255.c	/^void rtl8255_rf_close(struct net_device *dev)$/;"	f
+rtl8255_rf_init	r8180_rtl8255.c	/^void rtl8255_rf_init(struct net_device *dev) $/;"	f
+rtl8255_rf_set_chan	r8180_rtl8255.c	/^void rtl8255_rf_set_chan(struct net_device *dev, short ch)$/;"	f
+rtl8255_set_band_param	r8180_rtl8255.c	/^void rtl8255_set_band_param(struct net_device *dev, short band)$/;"	f
+rtl8255_set_gain	r8180_rtl8255.c	/^void rtl8255_set_gain(struct net_device *dev, short gain)$/;"	f
+rtl_rate	r8180_core.c	/^static u16 rtl_rate[] = {10,20,55,110,60,90,120,180,240,360,480,540,720};$/;"	v	file:
+rts	r8180.h	/^	u16 rts;$/;"	m	struct:r8180_priv
+rx_ass_err	ieee80211.h	/^	unsigned int rx_ass_err;$/;"	m	struct:ieee80211_softmac_stats
+rx_ass_ok	ieee80211.h	/^	unsigned int rx_ass_ok;$/;"	m	struct:ieee80211_softmac_stats
+rx_ass_rq	ieee80211.h	/^	unsigned int rx_ass_rq;$/;"	m	struct:ieee80211_softmac_stats
+rx_auth_rq	ieee80211.h	/^	unsigned int rx_auth_rq;$/;"	m	struct:ieee80211_softmac_stats
+rx_auth_rs_err	ieee80211.h	/^	unsigned int rx_auth_rs_err;$/;"	m	struct:ieee80211_softmac_stats
+rx_auth_rs_ok	ieee80211.h	/^	unsigned int rx_auth_rs_ok;$/;"	m	struct:ieee80211_softmac_stats
+rx_discards_no_buffer	ieee80211.h	/^	unsigned int rx_discards_no_buffer;$/;"	m	struct:ieee80211_stats
+rx_discards_undecryptable	ieee80211.h	/^	unsigned int rx_discards_undecryptable;$/;"	m	struct:ieee80211_stats
+rx_fcs_errors	ieee80211.h	/^	unsigned int rx_fcs_errors;$/;"	m	struct:ieee80211_stats
+rx_fragments	ieee80211.h	/^	unsigned int rx_fragments;$/;"	m	struct:ieee80211_stats
+rx_message_in_bad_msg_fragments	ieee80211.h	/^	unsigned int rx_message_in_bad_msg_fragments;$/;"	m	struct:ieee80211_stats
+rx_message_in_msg_fragments	ieee80211.h	/^	unsigned int rx_message_in_msg_fragments;$/;"	m	struct:ieee80211_stats
+rx_multicast_frames	ieee80211.h	/^	unsigned int rx_multicast_frames;$/;"	m	struct:ieee80211_stats
+rx_multicast_octets	ieee80211.h	/^	unsigned int rx_multicast_octets;$/;"	m	struct:ieee80211_stats
+rx_prevlen	r8180.h	/^	u32 rx_prevlen;$/;"	m	struct:r8180_priv
+rx_probe_rq	ieee80211.h	/^	unsigned int rx_probe_rq;$/;"	m	struct:ieee80211_softmac_stats
+rx_skb	r8180.h	/^	struct sk_buff *rx_skb; $/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::sk_buff
+rx_skb_complete	r8180.h	/^	short rx_skb_complete;$/;"	m	struct:r8180_priv
+rx_unicast_frames	ieee80211.h	/^	unsigned int rx_unicast_frames;$/;"	m	struct:ieee80211_stats
+rx_unicast_octets	ieee80211.h	/^	unsigned int rx_unicast_octets;$/;"	m	struct:ieee80211_stats
+rxbuffer	r8180.h	/^	struct buffer *rxbuffer;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+rxbufferhead	r8180.h	/^	struct buffer *rxbufferhead;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+rxbuffersize	r8180.h	/^	u16 rxbuffersize;$/;"	m	struct:r8180_priv
+rxcrcerrmax	r8180.h	/^	unsigned long rxcrcerrmax;\/\/crc error (>1000)$/;"	m	struct:Stats
+rxcrcerrmid	r8180.h	/^	unsigned long rxcrcerrmid;\/\/crc error (500-1000)$/;"	m	struct:Stats
+rxcrcerrmin	r8180.h	/^	unsigned long rxcrcerrmin;\/\/crc error (0-500) $/;"	m	struct:Stats
+rxdmafail	r8180.h	/^	unsigned long rxdmafail;$/;"	m	struct:Stats
+rxerr	r8180.h	/^	unsigned long rxerr;$/;"	m	struct:Stats
+rxicverr	r8180.h	/^	unsigned long rxicverr;\/\/ICV error$/;"	m	struct:Stats
+rxint	r8180.h	/^	unsigned long rxint;$/;"	m	struct:Stats
+rxnodata	r8180.h	/^	unsigned long rxnodata;$/;"	m	struct:Stats
+rxnolast	r8180.h	/^	unsigned long rxnolast;$/;"	m	struct:Stats
+rxnopointer	r8180.h	/^	unsigned long rxnopointer;$/;"	m	struct:Stats
+rxoverflow	r8180.h	/^	unsigned long rxoverflow;$/;"	m	struct:Stats
+rxrdu	r8180.h	/^	unsigned long rxrdu;$/;"	m	struct:Stats
+rxring	r8180.h	/^	u32 *rxring;$/;"	m	struct:r8180_priv
+rxringcount	r8180.h	/^	int rxringcount;$/;"	m	struct:r8180_priv
+rxringdma	r8180.h	/^	dma_addr_t rxringdma;$/;"	m	struct:r8180_priv
+rxringtail	r8180.h	/^	u32 *rxringtail;$/;"	m	struct:r8180_priv
+sAckCtsLng	r8180.h	83;"	d
+sCrcLng	r8180.h	82;"	d
+sa2400_chan	r8180_sa2400.c	/^u32 sa2400_chan[] = {$/;"	v
+sa2400_rf_close	r8180_sa2400.c	/^void sa2400_rf_close(struct net_device *dev)$/;"	f
+sa2400_rf_init	r8180_sa2400.c	/^void sa2400_rf_init(struct net_device *dev)$/;"	f
+sa2400_rf_set_chan	r8180_sa2400.c	/^void sa2400_rf_set_chan(struct net_device *dev, short ch)$/;"	f
+sa2400_rf_set_sens	r8180_sa2400.c	/^short sa2400_rf_set_sens(struct net_device *dev, short sens)$/;"	f
+sa2400_write_phy_antenna	r8180_sa2400.c	/^void sa2400_write_phy_antenna(struct net_device *dev,short ch)$/;"	f
+scan_age	ieee80211.h	/^	int scan_age;$/;"	m	struct:ieee80211_device
+scan_lock	r8180.h	/^	spinlock_t scan_lock;$/;"	m	struct:r8180_priv
+scan_sem	ieee80211.h	/^	struct semaphore scan_sem;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::semaphore
+scan_syncro	ieee80211.h	/^	void (*scan_syncro)(struct net_device *dev);$/;"	m	struct:ieee80211_device
+scan_timer	r8180.h	/^	struct timer_list scan_timer;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::timer_list
+scanning	ieee80211.h	/^	short scanning;$/;"	m	struct:ieee80211_device
+scans	ieee80211.h	/^	int scans;$/;"	m	struct:ieee80211_device
+sens	r8180.h	/^	short sens;$/;"	m	struct:r8180_priv
+seq	ieee80211.h	/^			u8 seq[8]; \/* sequence counter (set: RX, get: TX) *\/$/;"	m	struct:ieee_param::__anon2::__anon6
+seq	ieee80211.h	/^	unsigned int seq;$/;"	m	struct:ieee80211_frag_entry
+seq_ctl	ieee80211.h	/^	u16 seq_ctl;$/;"	m	struct:ieee80211_hdr
+seq_ctl	ieee80211.h	/^	u16 seq_ctl;$/;"	m	struct:ieee80211_hdr_3addr
+seq_ctl	ieee80211.h	/^	u16 seq_ctl;$/;"	m	struct:ieee80211_hdr_3addr_QOS
+seq_ctl	ieee80211.h	/^	u16 seq_ctl;$/;"	m	struct:ieee80211_hdr_QOS
+seq_ctrl	ieee80211.h	/^	u16 seq_ctrl;$/;"	m	struct:ieee80211_header_data
+seq_ctrl	ieee80211.h	/^	u16 seq_ctrl[5];$/;"	m	struct:ieee80211_device
+seq_num	ieee80211.h	/^	u16 seq_num[17];$/;"	m	struct:ieee_ibss_seq
+serv_start_time	ieee80211.h	/^	u32 serv_start_time;$/;"	m	struct:ieee80211_wmm_tspec_elem
+set_chan	ieee80211.h	/^	void (*set_chan)(struct net_device *dev,short ch);$/;"	m	struct:ieee80211_device
+set_key	ieee80211_crypt.h	/^	int (*set_key)(void *key, int len, u8 *seq, void *priv);$/;"	m	struct:ieee80211_crypto_ops
+set_nic_rxring	r8180_core.c	/^void set_nic_rxring(struct net_device *dev)$/;"	f
+set_nic_txring	r8180_core.c	/^void set_nic_txring(struct net_device *dev)$/;"	f
+set_security	ieee80211.h	/^	void (*set_security)(struct net_device *dev,$/;"	m	struct:ieee80211_device
+set_tx	ieee80211.h	/^			u8 set_tx;$/;"	m	struct:ieee_param::__anon2::__anon6
+shints	r8180.h	/^	unsigned long shints;$/;"	m	struct:Stats
+short_slot	ieee80211.h	/^	int short_slot;$/;"	m	struct:ieee80211_device
+signal	ieee80211.h	/^	u8 signal;$/;"	m	struct:ieee80211_rx_stats
+signalstrength	ieee80211.h	/^	u8 signalstrength;$/;"	m	struct:ieee80211_rx_stats
+skb	ieee80211.h	/^	struct sk_buff *skb;$/;"	m	struct:ieee80211_frag_entry	typeref:struct:ieee80211_frag_entry::sk_buff
+snap	ieee80211.h	/^	u8 snap[6];$/;"	m	struct:eapol
+softmac_data_hard_start_xmit	ieee80211.h	/^	void (*softmac_data_hard_start_xmit)(struct sk_buff *skb,$/;"	m	struct:ieee80211_device
+softmac_features	ieee80211.h	/^	u16 softmac_features;$/;"	m	struct:ieee80211_device
+softmac_hard_start_xmit	ieee80211.h	/^	int (*softmac_hard_start_xmit)(struct sk_buff *skb,$/;"	m	struct:ieee80211_device
+softmac_scan_wq	ieee80211.h	/^        struct delayed_work softmac_scan_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+softmac_scan_wq	ieee80211.h	/^        struct work_struct softmac_scan_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+softmac_stats	ieee80211.h	/^	struct ieee80211_softmac_stats softmac_stats;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::ieee80211_softmac_stats
+src_addr	ieee80211.h	/^	u8 src_addr[ETH_ALEN];$/;"	m	struct:ieee80211_frag_entry
+ssap	ieee80211.h	/^        u8    ssap;   \/* always 0xAA *\/$/;"	m	struct:ieee80211_snap_hdr
+ssid	ieee80211.h	/^	u8 ssid[IW_ESSID_MAX_SIZE + 1];$/;"	m	struct:ieee80211_network
+ssid_len	ieee80211.h	/^	u8 ssid_len;$/;"	m	struct:ieee80211_network
+ssid_set	ieee80211.h	/^	short ssid_set;$/;"	m	struct:ieee80211_device
+sta_addr	ieee80211.h	/^	u8 sta_addr[ETH_ALEN];$/;"	m	struct:ieee_param
+sta_sleep	ieee80211.h	/^	short sta_sleep;$/;"	m	struct:ieee80211_device
+sta_wake_up	ieee80211.h	/^	void (*sta_wake_up) (struct net_device *dev);$/;"	m	struct:ieee80211_device
+start_ibss_wq	ieee80211.h	/^	struct delayed_work  start_ibss_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+start_ibss_wq	ieee80211.h	/^	struct work_struct start_ibss_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+start_scan	ieee80211.h	/^	void (*start_scan)(struct net_device *dev);$/;"	m	struct:ieee80211_device
+start_send_beacons	ieee80211.h	/^	void (*start_send_beacons) (struct net_device *dev);$/;"	m	struct:ieee80211_device
+state	ieee80211.h	/^	enum ieee80211_state state;$/;"	m	struct:ieee80211_device	typeref:enum:ieee80211_device::ieee80211_state
+stats	ieee80211.h	/^	struct ieee80211_rx_stats stats;$/;"	m	struct:ieee80211_network	typeref:struct:ieee80211_network::ieee80211_rx_stats
+stats	ieee80211.h	/^	struct net_device_stats stats;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::net_device_stats
+stats	r8180.h	/^	struct Stats stats;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::Stats
+status	ieee80211.h	/^	u16 status;$/;"	m	struct:ieee80211_assoc_response_frame
+status	ieee80211.h	/^	u16 status;$/;"	m	struct:ieee80211_authentication
+stop_scan	ieee80211.h	/^	void (*stop_scan)(struct net_device *dev);$/;"	m	struct:ieee80211_device
+stop_send_beacons	ieee80211.h	/^	void (*stop_send_beacons) (struct net_device *dev);$/;"	m	struct:ieee80211_device
+struc	r8180.h	/^	}struc;$/;"	m	union:_ThreeWire	typeref:struct:_ThreeWire::_ThreeWireStruc
+surp_band_allow	ieee80211.h	/^	u16 surp_band_allow;$/;"	m	struct:ieee80211_wmm_tspec_elem
+suspen_inter	ieee80211.h	/^	u32 suspen_inter;$/;"	m	struct:ieee80211_wmm_tspec_elem
+sw_antenna_wq	ieee80211.h	/^	struct delayed_work sw_antenna_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+sw_antenna_wq	ieee80211.h	/^	struct work_struct sw_antenna_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+swtxawake	ieee80211.h	/^	unsigned int swtxawake;$/;"	m	struct:ieee80211_softmac_stats
+swtxstop	ieee80211.h	/^	unsigned int swtxstop;$/;"	m	struct:ieee80211_softmac_stats
+sync_scan_hurryup	ieee80211.h	/^	short sync_scan_hurryup; $/;"	m	struct:ieee80211_device
+time_stamp	ieee80211.h	/^	u32 time_stamp[2];$/;"	m	struct:ieee80211_network
+time_stamp	ieee80211.h	/^	u32 time_stamp[2];$/;"	m	struct:ieee80211_probe_response
+timer_rate_adaptive	r8180_dm.c	/^void timer_rate_adaptive(unsigned long data)$/;"	f
+tkip_countermeasures	ieee80211.h	/^	int tkip_countermeasures;$/;"	m	struct:ieee80211_device
+transaction	ieee80211.h	/^	u16 transaction;$/;"	m	struct:ieee80211_authentication
+true	ieee80211.h	/^typedef enum{false = 0, true} bool;$/;"	e	enum:__anon1
+ts_info	ieee80211.h	/^	struct ieee80211_wmm_ts_info ts_info;$/;"	m	struct:ieee80211_wmm_tspec_elem	typeref:struct:ieee80211_wmm_tspec_elem::ieee80211_wmm_ts_info
+two_way_tmout	r8180.h	/^	two_way_tmout	= 0x10,$/;"	e	enum:_ReasonCode
+tx_ass_rq	ieee80211.h	/^	unsigned int tx_ass_rq;$/;"	m	struct:ieee80211_softmac_stats
+tx_auth_rq	ieee80211.h	/^	unsigned int tx_auth_rq;$/;"	m	struct:ieee80211_softmac_stats
+tx_beacons	ieee80211.h	/^	unsigned int tx_beacons;$/;"	m	struct:ieee80211_softmac_stats
+tx_deferred_transmissions	ieee80211.h	/^	unsigned int tx_deferred_transmissions;$/;"	m	struct:ieee80211_stats
+tx_discards	ieee80211.h	/^	unsigned int tx_discards;$/;"	m	struct:ieee80211_stats
+tx_discards_wrong_sa	ieee80211.h	/^	unsigned int tx_discards_wrong_sa;$/;"	m	struct:ieee80211_stats
+tx_fragments	ieee80211.h	/^	unsigned int tx_fragments;$/;"	m	struct:ieee80211_stats
+tx_headroom	ieee80211.h	/^	int tx_headroom; \/* Set to size of any additional room needed at front$/;"	m	struct:ieee80211_device
+tx_irq_wq	r8180.h	/^	struct work_struct tx_irq_wq;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::work_struct
+tx_keyidx	ieee80211.h	/^	int tx_keyidx; \/* default TX key index (crypt[tx_keyidx]) *\/$/;"	m	struct:ieee80211_device
+tx_lock	r8180.h	/^	spinlock_t tx_lock;$/;"	m	struct:r8180_priv
+tx_multicast_frames	ieee80211.h	/^	unsigned int tx_multicast_frames;$/;"	m	struct:ieee80211_stats
+tx_multicast_octets	ieee80211.h	/^	unsigned int tx_multicast_octets;$/;"	m	struct:ieee80211_stats
+tx_multiple_retry_frames	ieee80211.h	/^	unsigned int tx_multiple_retry_frames;$/;"	m	struct:ieee80211_stats
+tx_pending	ieee80211.h	/^	struct  tx_pending_t tx_pending;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::tx_pending_t
+tx_pending_t	ieee80211.h	/^typedef struct tx_pending_t{$/;"	s
+tx_pending_t	ieee80211.h	/^}tx_pending_t;$/;"	t	typeref:struct:tx_pending_t
+tx_probe_rq	ieee80211.h	/^	unsigned int tx_probe_rq;$/;"	m	struct:ieee80211_softmac_stats
+tx_probe_rs	ieee80211.h	/^	unsigned int tx_probe_rs;$/;"	m	struct:ieee80211_softmac_stats
+tx_pw_wq	ieee80211.h	/^	struct delayed_work tx_pw_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+tx_pw_wq	ieee80211.h	/^	struct work_struct tx_pw_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+tx_retry_limit_exceeded	ieee80211.h	/^	unsigned int tx_retry_limit_exceeded;$/;"	m	struct:ieee80211_stats
+tx_single_retry_frames	ieee80211.h	/^	unsigned int tx_single_retry_frames;$/;"	m	struct:ieee80211_stats
+tx_unicast_frames	ieee80211.h	/^	unsigned int tx_unicast_frames;$/;"	m	struct:ieee80211_stats
+tx_unicast_octets	ieee80211.h	/^	unsigned int tx_unicast_octets;$/;"	m	struct:ieee80211_stats
+txb	ieee80211.h	/^	struct ieee80211_txb *txb;$/;"	m	struct:tx_pending_t	typeref:struct:tx_pending_t::ieee80211_txb
+txbeacon	r8180.h	/^	unsigned long txbeacon;$/;"	m	struct:Stats
+txbeaconbufs	r8180.h	/^	struct buffer *txbeaconbufs;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txbeaconbufstail	r8180.h	/^	struct buffer *txbeaconbufstail;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txbeaconcount	r8180.h	/^	int txbeaconcount;$/;"	m	struct:r8180_priv
+txbeaconerr	r8180.h	/^	unsigned long txbeaconerr;$/;"	m	struct:Stats
+txbeaconring	r8180.h	/^	u32 *txbeaconring;$/;"	m	struct:r8180_priv
+txbeaconringdma	r8180.h	/^	dma_addr_t txbeaconringdma;$/;"	m	struct:r8180_priv
+txbeaconringtail	r8180.h	/^	u32 *txbeaconringtail;$/;"	m	struct:r8180_priv
+txbepbufs	r8180.h	/^	struct buffer *txbepbufs;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txbepbufstail	r8180.h	/^	struct buffer *txbepbufstail;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txbeperr	r8180.h	/^	unsigned long txbeperr;$/;"	m	struct:Stats
+txbepoking	r8180.h	/^	unsigned long txbepoking;$/;"	m	struct:Stats
+txbepring	r8180.h	/^	u32 *txbepring;$/;"	m	struct:r8180_priv
+txbepringdma	r8180.h	/^	dma_addr_t txbepringdma;$/;"	m	struct:r8180_priv
+txbepringhead	r8180.h	/^	u32 *txbepringhead;$/;"	m	struct:r8180_priv
+txbepringtail	r8180.h	/^	u32 *txbepringtail;$/;"	m	struct:r8180_priv
+txbkpbufs	r8180.h	/^	struct buffer *txbkpbufs;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txbkpbufstail	r8180.h	/^	struct buffer *txbkpbufstail;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txbkperr	r8180.h	/^	unsigned long txbkperr;$/;"	m	struct:Stats
+txbkpokint	r8180.h	/^	unsigned long txbkpokint;$/;"	m	struct:Stats
+txbkpring	r8180.h	/^	u32 *txbkpring;$/;"	m	struct:r8180_priv
+txbkpringdma	r8180.h	/^	dma_addr_t txbkpringdma;$/;"	m	struct:r8180_priv
+txbkpringhead	r8180.h	/^	u32 *txbkpringhead;$/;"	m	struct:r8180_priv
+txbkpringtail	r8180.h	/^	u32 *txbkpringtail;$/;"	m	struct:r8180_priv
+txbuffsize	r8180.h	/^	int txbuffsize;$/;"	m	struct:r8180_priv
+txhpbufs	r8180.h	/^	struct buffer *txhpbufs;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txhpbufstail	r8180.h	/^	struct buffer *txhpbufstail;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txhperr	r8180.h	/^	unsigned long txhperr;$/;"	m	struct:Stats
+txhpokint	r8180.h	/^	unsigned long txhpokint;$/;"	m	struct:Stats
+txhpring	r8180.h	/^	u32 *txhpring;$/;"	m	struct:r8180_priv
+txhpringdma	r8180.h	/^	dma_addr_t txhpringdma;$/;"	m	struct:r8180_priv
+txhpringhead	r8180.h	/^	u32 *txhpringhead;$/;"	m	struct:r8180_priv
+txhpringtail	r8180.h	/^	u32 *txhpringtail;$/;"	m	struct:r8180_priv
+txlperr	r8180.h	/^	unsigned long txlperr;$/;"	m	struct:Stats
+txlpokint	r8180.h	/^	unsigned long txlpokint;$/;"	m	struct:Stats
+txmapbufs	r8180.h	/^	struct buffer *txmapbufs;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txmapbufstail	r8180.h	/^	struct buffer *txmapbufstail;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txmapring	r8180.h	/^	u32 *txmapring;$/;"	m	struct:r8180_priv
+txmapringdma	r8180.h	/^	dma_addr_t txmapringdma;$/;"	m	struct:r8180_priv
+txmapringhead	r8180.h	/^	u32 *txmapringhead;$/;"	m	struct:r8180_priv
+txmapringtail	r8180.h	/^	u32 *txmapringtail;$/;"	m	struct:r8180_priv
+txnperr	r8180.h	/^	unsigned long txnperr;$/;"	m	struct:Stats
+txnpokint	r8180.h	/^	unsigned long txnpokint;$/;"	m	struct:Stats
+txoverflow	r8180.h	/^	unsigned long txoverflow;$/;"	m	struct:Stats
+txrdu	r8180.h	/^	unsigned long txrdu;$/;"	m	struct:Stats
+txresumed	r8180.h	/^	unsigned long txresumed;$/;"	m	struct:Stats
+txretry	r8180.h	/^	unsigned long txretry;\/\/retry number  tony 20060601$/;"	m	struct:Stats
+txringcount	r8180.h	/^	int txringcount;$/;"	m	struct:r8180_priv
+txvipbufs	r8180.h	/^	struct buffer *txvipbufs;	$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txvipbufstail	r8180.h	/^	struct buffer *txvipbufstail;      $/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txvipring	r8180.h	/^	u32 *txvipring;$/;"	m	struct:r8180_priv
+txvipringdma	r8180.h	/^	dma_addr_t txvipringdma;$/;"	m	struct:r8180_priv
+txvipringhead	r8180.h	/^	u32 *txvipringhead;$/;"	m	struct:r8180_priv
+txvipringtail	r8180.h	/^	u32 *txvipringtail;$/;"	m	struct:r8180_priv
+txvopbufs	r8180.h	/^	struct buffer *txvopbufs;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txvopbufstail	r8180.h	/^	struct buffer *txvopbufstail;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::buffer
+txvopring	r8180.h	/^	u32 *txvopring;$/;"	m	struct:r8180_priv
+txvopringdma	r8180.h	/^	dma_addr_t txvopringdma;$/;"	m	struct:r8180_priv
+txvopringhead	r8180.h	/^	u32 *txvopringhead;$/;"	m	struct:r8180_priv
+txvopringtail	r8180.h	/^	u32 *txvopringtail;$/;"	m	struct:r8180_priv
+type	ieee80211.h	/^	u8 type;$/;"	m	struct:eapol
+u	ieee80211.h	/^	} u;$/;"	m	struct:ieee_param	typeref:union:ieee_param::__anon2
+unicast_uses_group	ieee80211.h	/^            unicast_uses_group:1;$/;"	m	struct:ieee80211_security
+unspec_reason	r8180.h	/^	unspec_reason	= 0x1,$/;"	e	enum:_ReasonCode
+unsup_RSNIEver	r8180.h	/^	unsup_RSNIEver = 0x15,$/;"	e	enum:_ReasonCode
+up	r8180.h	/^	short up;$/;"	m	struct:r8180_priv
+value	ieee80211.h	/^			u32 value;$/;"	m	struct:ieee_param::__anon2::__anon3
+version	ieee80211.h	/^	u8 version;$/;"	m	struct:eapol
+wap_set	ieee80211.h	/^	short wap_set;$/;"	m	struct:ieee80211_device
+watch_dog_adaptive	r8180_core.c	/^void watch_dog_adaptive(unsigned long data)$/;"	f
+watch_dog_timer	r8180.h	/^	struct timer_list watch_dog_timer;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::timer_list
+watch_dog_wq	ieee80211.h	/^	struct delayed_work watch_dog_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::delayed_work
+watch_dog_wq	ieee80211.h	/^	struct work_struct watch_dog_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+watch_dog_wq	r8180.h	/^	struct work_struct watch_dog_wq;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::work_struct
+wmm_info	ieee80211.h	/^	u8 wmm_info;$/;"	m	struct:ieee80211_network
+wmm_param	ieee80211.h	/^	struct ieee80211_wmm_ac_param wmm_param[4];$/;"	m	struct:ieee80211_network	typeref:struct:ieee80211_network::ieee80211_wmm_ac_param
+wmm_param_update_wq	ieee80211.h	/^	struct work_struct wmm_param_update_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
+wpa_enabled	ieee80211.h	/^	int wpa_enabled;$/;"	m	struct:ieee80211_device
+wpa_ie	ieee80211.h	/^		} wpa_ie;$/;"	m	union:ieee_param::__anon2	typeref:struct:ieee_param::__anon2::__anon4
+wpa_ie	ieee80211.h	/^	u8 *wpa_ie;$/;"	m	struct:ieee80211_device
+wpa_ie	ieee80211.h	/^	u8 wpa_ie[MAX_WPA_IE_LEN];$/;"	m	struct:ieee80211_network
+wpa_ie_len	ieee80211.h	/^	size_t wpa_ie_len;$/;"	m	struct:ieee80211_device
+wpa_ie_len	ieee80211.h	/^	size_t wpa_ie_len;$/;"	m	struct:ieee80211_network
+wpa_param	ieee80211.h	/^		} wpa_param;$/;"	m	union:ieee_param::__anon2	typeref:struct:ieee_param::__anon2::__anon3
+wpax_suitlist_lock	ieee80211.h	/^	spinlock_t wpax_suitlist_lock;$/;"	m	struct:ieee80211_device
+wpax_type_notify	ieee80211.h	/^	u32 wpax_type_notify; \/\/{added by David, 2006.9.26}$/;"	m	struct:ieee80211_device
+wpax_type_set	ieee80211.h	/^	u8  wpax_type_set;    \/\/{added by David, 2006.9.28}$/;"	m	struct:ieee80211_device
+wq	ieee80211.h	/^	struct workqueue_struct *wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::workqueue_struct
+write_gct	r8180_gct.c	/^void write_gct(struct net_device *dev, u8 adr, u32 data) $/;"	f
+write_maxim	r8180_max2820.c	/^void write_maxim(struct net_device *dev,u8 adr, u32 data) {$/;"	f
+write_nic_byte	r8180_core.c	/^void write_nic_byte(struct net_device *dev, int x,u8 y)$/;"	f
+write_nic_dword	r8180_core.c	/^void write_nic_dword(struct net_device *dev, int x,u32 y)$/;"	f
+write_nic_word	r8180_core.c	/^void write_nic_word(struct net_device *dev, int x,u16 y) $/;"	f
+write_nic_word	r8180_core.c	/^void write_nic_word(struct net_device *dev, int x,u16 y)$/;"	f
+write_phy	r8180_core.c	/^void write_phy(struct net_device *dev, u8 adr, u8 data)$/;"	f
+write_phy_cck	r8180_core.c	/^void write_phy_cck (struct net_device *dev, u8 adr, u32 data)$/;"	f
+write_phy_ofdm	r8180_core.c	/^inline void write_phy_ofdm (struct net_device *dev, u8 adr, u32 data)$/;"	f
+write_rtl8225	r8180_rtl8225.c	/^void write_rtl8225(struct net_device *dev, u8 adr, u16 data)$/;"	f
+write_rtl8255	r8180_rtl8255.c	/^void write_rtl8255(struct net_device *dev, u8 adr, u16 data)$/;"	f
+write_rtl8255_reg0c	r8180_rtl8255.c	/^void write_rtl8255_reg0c(struct net_device *dev, u32 d1, u32 d2, u32 d3, u32 d4, $/;"	f
+write_sa2400	r8180_sa2400.c	/^void write_sa2400(struct net_device *dev,u8 adr, u32 data) $/;"	f
+wstats	r8180.h	/^	struct iw_statistics wstats;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::iw_statistics
+wx_sem	ieee80211.h	/^	struct semaphore wx_sem;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::semaphore
+wx_sem	r8180.h	/^	struct semaphore wx_sem;$/;"	m	struct:r8180_priv	typeref:struct:r8180_priv::semaphore
+wx_sync_scan_wq	ieee80211.h	/^	struct work_struct wx_sync_scan_wq;$/;"	m	struct:ieee80211_device	typeref:struct:ieee80211_device::work_struct
