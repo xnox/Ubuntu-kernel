@@ -41,7 +41,7 @@ linux (2.6.24-19.41netbook13) hardy; urgency=low
   * Added support for Ericsson USB 3G modem
   * Turned on Ericsson 3G modem support in config.lpia
 
- -- Michael Frey<michael.frey@canonical.com>  Fri, 21 Nov 2008 14:52:40 -0500
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 21 Nov 2008 14:52:40 -0500
 
 linux (2.6.24-19.41netbook12) hardy; urgency=low
 
