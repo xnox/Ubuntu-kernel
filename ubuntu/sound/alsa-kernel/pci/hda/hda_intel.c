@@ -398,8 +398,6 @@ static char *driver_short_names[] __devinitdata = {
 	[AZX_DRIVER_NVIDIA] = "HDA NVidia",
 };
 
-static int interrupt_index=0;
-
 /*
  * macros for easy use
  */
@@ -1013,16 +1011,6 @@ static irqreturn_t azx_interrupt(int irq, void *dev_id)
 
 	/* clear rirb int */
 	status = azx_readb(chip, RIRBSTS);
-        if (chip->single_cmd == 1) {
-                interrupt_index = (interrupt_index+1) & 3;
-                if (!interrupt_index) {
-                        if ((chip->pci->subsystem_vendor == 0x1558) && (chip->pci->subsystem_device == 0x7001)) {
-                                azx_single_jd(chip, 0x1b, 0x14, 0x18, 0x19, 0x22);
-                        } else {
-                                azx_single_jd(chip, 0x15, 0x14, 0x18, 0x19, 0x24);
-                        }
-                }
-        }
 
 	if (status & RIRB_INT_MASK) {
 		if (!chip->single_cmd && (status & RIRB_INT_RESPONSE))
@@ -1298,13 +1286,6 @@ static int azx_pcm_open(struct snd_pcm_substream *substream)
 	spin_unlock_irqrestore(&chip->reg_lock, flags);
 
 	runtime->private_data = azx_dev;
-        if (chip->single_cmd == 1) {
-                if ((chip->pci->subsystem_vendor == 0x1558) && (chip->pci->subsystem_device == 0x7001)) {
-                        azx_single_jd(chip, 0x1b, 0x14, 0x18, 0x19, 0x22);
-                } else {
-                        azx_single_jd(chip, 0x15, 0x14, 0x18, 0x19, 0x24);
-                }
-        }
 	mutex_unlock(&chip->open_mutex);
 	return 0;
 }

@@ -748,7 +748,6 @@ static struct hda_verb alc_gpio3_init_verbs[] = {
 static void alc_sku_automute(struct hda_codec *codec)
 {
 	struct alc_spec *spec = codec->spec;
-	unsigned int mute;
 	unsigned int present;
 	unsigned int hp_nid = spec->autocfg.hp_pins[0];
 	unsigned int sp_nid = spec->autocfg.speaker_pins[0];
@@ -758,16 +757,8 @@ static void alc_sku_automute(struct hda_codec *codec)
 	present = snd_hda_codec_read(codec, hp_nid, 0,
 				     AC_VERB_GET_PIN_SENSE, 0);
 	spec->jack_present = (present & 0x80000000) != 0;
-	if (spec->jack_present) {
-		/* mute internal speaker */
-		snd_hda_codec_amp_stereo(codec, sp_nid, HDA_OUTPUT, 0,
-					 HDA_AMP_MUTE, HDA_AMP_MUTE);
-	} else {
-		/* unmute internal speaker if necessary */
-		mute = snd_hda_codec_amp_read(codec, hp_nid, 0, HDA_OUTPUT, 0);
-		snd_hda_codec_amp_stereo(codec, sp_nid, HDA_OUTPUT, 0,
-					 HDA_AMP_MUTE, mute);
-	}
+	snd_hda_codec_write(codec, sp_nid, 0, AC_VERB_SET_PIN_WIDGET_CONTROL,
+			    spec->jack_present ? 0 : PIN_OUT);
 }
 
 /* unsolicited event for HP jack sensing */
