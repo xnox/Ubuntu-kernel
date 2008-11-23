@@ -185,6 +185,8 @@ struct smsclient_params_t {
 #define MSG_SW_RELOAD_EXEC_REQ				704
 #define MSG_SW_RELOAD_EXEC_RES				705
 #define MSG_SMS_SPI_INT_LINE_SET_REQ		710
+#define MSG_SMS_GPIO_CONFIG_EX_REQ			712
+#define MSG_SMS_GPIO_CONFIG_EX_RES			713
 #define MSG_SMS_ISDBT_TUNE_REQ				776
 #define MSG_SMS_ISDBT_TUNE_RES				777
 
@@ -479,18 +481,6 @@ struct SMSHOSTLIB_STATISTICS_DVB_ST {
 
 };
 
-struct SMSHOSTLIB_GPIO_CONFIG_ST {
-	u8	Direction; /* GPIO direction: Input - 0, Output - 1 */
-	u8	PullUpDown; /* PullUp/PullDown: None - 0,
-			     * PullDown - 1, PullUp - 2, Keeper - 3 */
-	u8	InputCharacteristics; /* Input Characteristics: Normal - 0,
-				       * Schmitt trigger - 1 */
-	u8	OutputSlewRate; /* Output Slew Rate:
-				 * Fast slew rate - 0, Slow slew rate - 1 */
-	u8	OutputDriving; /* Output driving capability:
-				* 4mA - 0, 8mA - 1, 12mA - 2, 16mA - 3 */
-};
-
 struct SMSHOSTLIB_I2C_REQ_ST {
 	u32	DeviceAddress; /* I2c device address */
 	u32	WriteCount; /* number of bytes to write */
@@ -504,6 +494,32 @@ struct SMSHOSTLIB_I2C_RES_ST {
 	u8	Data[1];
 };
 #endif
+
+struct smscore_gpio_config {
+#define SMS_GPIO_DIRECTION_INPUT  0
+#define SMS_GPIO_DIRECTION_OUTPUT 1
+	u8 direction;
+
+#define SMS_GPIO_PULLUPDOWN_NONE     0
+#define SMS_GPIO_PULLUPDOWN_PULLDOWN 1
+#define SMS_GPIO_PULLUPDOWN_PULLUP   2
+#define SMS_GPIO_PULLUPDOWN_KEEPER   3
+	u8 pullupdown;
+
+#define SMS_GPIO_INPUTCHARACTERISTICS_NORMAL  0
+#define SMS_GPIO_INPUTCHARACTERISTICS_SCHMITT 1
+	u8 inputcharacteristics;
+
+#define SMS_GPIO_OUTPUTSLEWRATE_FAST 0
+#define SMS_GPIO_OUTPUTSLEWRATE_SLOW 1
+	u8 outputslewrate;
+
+#define SMS_GPIO_OUTPUTDRIVING_4mA  0
+#define SMS_GPIO_OUTPUTDRIVING_8mA  1
+#define SMS_GPIO_OUTPUTDRIVING_12mA 2
+#define SMS_GPIO_OUTPUTDRIVING_16mA 3
+	u8 outputdriving;
+};
 
 struct smsdvb_client_t {
 	struct list_head entry;
@@ -564,6 +580,10 @@ extern
 struct smscore_buffer_t *smscore_getbuffer(struct smscore_device_t *coredev);
 extern void smscore_putbuffer(struct smscore_device_t *coredev,
 			      struct smscore_buffer_t *cb);
+
+int smscore_configure_gpio(struct smscore_device_t *coredev, u32 pin,
+			   struct smscore_gpio_config *pinconfig);
+int smscore_set_gpio(struct smscore_device_t *coredev, u32 pin, int level);
 
 void smscore_set_board_id(struct smscore_device_t *core, int id);
 int smscore_get_board_id(struct smscore_device_t *core);
