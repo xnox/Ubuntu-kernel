@@ -110,12 +110,12 @@ struct smscore_registry_entry_t {
 	enum sms_device_type_st	type;
 };
 
-struct list_head g_smscore_notifyees;
-struct list_head g_smscore_devices;
-struct mutex g_smscore_deviceslock;
+static struct list_head g_smscore_notifyees;
+static struct list_head g_smscore_devices;
+static struct mutex g_smscore_deviceslock;
 
-struct list_head g_smscore_registry;
-struct mutex g_smscore_registrylock;
+static struct list_head g_smscore_registry;
+static struct mutex g_smscore_registrylock;
 
 static int default_mode = 4;
 
@@ -1248,7 +1248,7 @@ static int smscore_map_common_buffer(struct smscore_device_t *coredev,
 }
 #endif
 
-int smscore_module_init(void)
+static int __init smscore_module_init(void)
 {
 	int rc = 0;
 
@@ -1270,7 +1270,7 @@ int smscore_module_init(void)
 	return rc;
 }
 
-void smscore_module_exit(void)
+static void __exit smscore_module_exit(void)
 {
 
 	kmutex_lock(&g_smscore_deviceslock);
