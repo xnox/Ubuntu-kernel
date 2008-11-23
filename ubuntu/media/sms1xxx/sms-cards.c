@@ -39,15 +39,15 @@ struct usb_device_id smsusb_id_table[] = {
 	{ USB_DEVICE(0x2040, 0x5590),
 		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
 	{ USB_DEVICE(0x2040, 0x2000),
-		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
+		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_TIGER_MINICARD },
 	{ USB_DEVICE(0x2040, 0x2010),
-		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
+		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_TIGER_MINICARD },
 	{ USB_DEVICE(0x2040, 0x2009),
-		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
+		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD_R2 },
 	{ USB_DEVICE(0x2040, 0x200a),
-		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
+		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD },
 	{ USB_DEVICE(0x2040, 0x2019),
-		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
+		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD },
 	{ }		/* Terminating entry */
 };
 MODULE_DEVICE_TABLE(usb, smsusb_id_table);
@@ -80,6 +80,24 @@ static struct sms_board sms_boards[] = {
 		.name	= "Dell Digital TV Receiver",
 		.type	= SMS_NOVA_B0,
 		.fw[DEVICE_MODE_DVBT_BDA] = "sms1xxx-hcw-55xxx-dvbt-02.fw",
+	},
+	[SMS1XXX_BOARD_HAUPPAUGE_TIGER_MINICARD] = {
+		.name	= "Hauppauge WinTV MiniCard",
+		.type	= SMS_NOVA_B0,
+		.fw[DEVICE_MODE_DVBT_BDA] = "sms1xxx-hcw-55xxx-dvbt-02.fw",
+		.lna_ctrl  = 29,
+	},
+	[SMS1XXX_BOARD_DELL_TIGER_MINICARD] = {
+		.name	= "Dell Digital TV Receiver",
+		.type	= SMS_NOVA_B0,
+		.fw[DEVICE_MODE_DVBT_BDA] = "sms1xxx-hcw-55xxx-dvbt-02.fw",
+		.lna_ctrl  = 29,
+	},
+	[SMS1XXX_BOARD_DELL_TIGER_MINICARD_R2] = {
+		.name	= "Dell Digital TV Receiver",
+		.type	= SMS_NOVA_B0,
+		.fw[DEVICE_MODE_DVBT_BDA] = "sms1xxx-hcw-55xxx-dvbt-02.fw",
+		.lna_ctrl  = 1,
 	},
 };
 
@@ -124,6 +142,12 @@ int sms_board_setup(struct smscore_device_t *coredev)
 		sms_set_gpio(coredev, board->led_hi, 0);
 		sms_set_gpio(coredev, board->led_lo, 0);
 		break;
+	case SMS1XXX_BOARD_DELL_TIGER_MINICARD_R2:
+	case SMS1XXX_BOARD_DELL_TIGER_MINICARD:
+	case SMS1XXX_BOARD_HAUPPAUGE_TIGER_MINICARD:
+		/* turn off LNA */
+		sms_set_gpio(coredev, board->lna_ctrl, 0);
+		break;
 	}
 	return 0;
 }
@@ -138,6 +162,13 @@ int sms_board_power(struct smscore_device_t *coredev, int onoff)
 		/* power LED */
 		sms_set_gpio(coredev,
 			     board->led_power, onoff ? 1 : 0);
+		break;
+	case SMS1XXX_BOARD_DELL_TIGER_MINICARD_R2:
+	case SMS1XXX_BOARD_DELL_TIGER_MINICARD:
+	case SMS1XXX_BOARD_HAUPPAUGE_TIGER_MINICARD:
+		/* LNA */
+		sms_set_gpio(coredev,
+			     board->lna_ctrl, onoff ? 1 : 0);
 		break;
 	}
 	return 0;
