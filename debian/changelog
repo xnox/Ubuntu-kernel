@@ -1,3 +1,25 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook18) hardy; urgency=low
+
+  [Adrian Bunk]
+
+  * sms1xxx: dvb/siano/: cleanups
+
+  [Michael Krufky]
+
+  * sms1xxx: add functions to configure and set gpio
+  * sms1xxx: turn off LEDs after initialization of Hauppauge WinTV
+    MiniStick
+  * sms1xxx: enable power LED on Hauppauge WinTV MiniStick
+    - LP: #301405
+  * sms1xxx: fix invalid unc readings
+  * sms1xxx: enable signal quality indicator LEDs on Hauppauge WinTV
+    MiniStick
+    - LP: #301405
+  * sms1xxx: enable LNA control on Hauppauge WinTV MiniCard
+    - LP: #301204
+
+ -- Michael Frey <michael.frey@canonical.com>  Mon, 24 Nov 2008 13:22:45 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook17) hardy; urgency=low
 
   [Michael Krufky]
