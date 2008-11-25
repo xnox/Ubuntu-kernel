@@ -808,6 +808,10 @@ static void ieee80211_authenticate(struct ieee80211_sub_if_data *sdata,
 	mod_timer(&ifsta->timer, jiffies + IEEE80211_AUTH_TIMEOUT);
 }
 
+/*
+ * The disassoc 'reason' argument can be either our own reason
+ * if self disconnected or a reason code from the AP.
+ */
 static void ieee80211_set_disassoc(struct ieee80211_sub_if_data *sdata,
 				   struct ieee80211_if_sta *ifsta, bool deauth,
 				   bool self_disconnected, u16 reason)
@@ -854,7 +858,7 @@ static void ieee80211_set_disassoc(struct ieee80211_sub_if_data *sdata,
 
 	ieee80211_sta_send_apinfo(sdata, ifsta);
 
-	if (self_disconnected)
+	if (self_disconnected || reason == WLAN_REASON_DISASSOC_STA_HAS_LEFT)
 		ifsta->state = IEEE80211_STA_MLME_DISABLED;
 
 	sta_info_unlink(&sta);
@@ -1175,7 +1179,7 @@ static void ieee80211_rx_mgmt_disassoc(struct ieee80211_sub_if_data *sdata,
 				      IEEE80211_RETRY_AUTH_INTERVAL);
 	}
 
-	ieee80211_set_disassoc(sdata, ifsta, false, false, 0);
+	ieee80211_set_disassoc(sdata, ifsta, false, false, reason_code);
 }
 
 
@@ -1750,6 +1754,13 @@ static void ieee80211_rx_mgmt_beacon(struct ieee80211_sub_if_data *sdata,
 
 		changed |= ieee80211_enable_ht(sdata, elems.ht_info_elem,
 					       ap_ht_cap_flags);
+	}
+
+	if (elems.country_elem) {
+		/* Note we are only reviewing this on beacons
+		 * for the BSSID we are associated to */
+		regulatory_hint_11d(local->hw.wiphy,
+			elems.country_elem, elems.country_elem_len);
 	}
 
 	ieee80211_bss_info_change_notify(sdata, changed);
@@ -2586,25 +2597,3 @@ void ieee80211_mlme_notify_scan_completed(struct ieee80211_local *local)
 		ieee80211_restart_sta_timer(sdata);
 	rcu_read_unlock();
 }
-
-/* driver notification call */
-void ieee80211_notify_mac(struct ieee80211_hw *hw,
-			  enum ieee80211_notification_types  notif_type)
-{
-	struct ieee80211_local *local = hw_to_local(hw);
-	struct ieee80211_sub_if_data *sdata;
-
-	switch (notif_type) {
-	case IEEE80211_NOTIFY_RE_ASSOC:
-		rtnl_lock();
-		list_for_each_entry(sdata, &local->interfaces, list) {
-			if (sdata->vif.type != NL80211_IFTYPE_STATION)
-				continue;
-
-			ieee80211_sta_req_auth(sdata, &sdata->u.sta);
-		}
-		rtnl_unlock();
-		break;
-	}
-}
-EXPORT_SYMBOL(ieee80211_notify_mac);
