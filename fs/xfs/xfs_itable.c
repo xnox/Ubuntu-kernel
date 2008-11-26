@@ -215,13 +215,13 @@ xfs_bulkstat_one_fmt(
  * Return stat information for one inode.
  * Return 0 if ok, else errno.
  */
-int		       		/* error status */
-xfs_bulkstat_one(
+int					/* error status */
+xfs_bulkstat_one_int(
 	xfs_mount_t	*mp,		/* mount point for filesystem */
 	xfs_ino_t	ino,		/* inode number to get data for */
 	void		__user *buffer,	/* buffer to place output in */
 	int		ubsize,		/* size of buffer */
-	void		*private_data,	/* my private data */
+	bulkstat_one_fmt_pf formatter,	/* formatter, copy to user */
 	int		*ubused,	/* bytes used by me */
 	void		*dibuff,	/* on-disk inode buffer */
 	int		*stat)		/* BULKSTAT_RV_... */
@@ -229,7 +229,6 @@ xfs_bulkstat_one(
 	xfs_bstat_t	*buf;		/* return buffer */
 	int		error = 0;	/* error value */
 	xfs_dinode_t	*dip;		/* dinode inode pointer */
-	bulkstat_one_fmt_pf formatter = private_data ? : xfs_bulkstat_one_fmt;
 
 	dip = (xfs_dinode_t *)dibuff;
 	*stat = BULKSTAT_RV_NOTHING;
@@ -265,6 +264,22 @@ xfs_bulkstat_one(
  out_free:
 	kmem_free(buf, sizeof(*buf));
 	return error;
+}
+
+int
+xfs_bulkstat_one(
+	xfs_mount_t	*mp,		/* mount point for filesystem */
+	xfs_ino_t	ino,		/* inode number to get data for */
+	void		__user *buffer,	/* buffer to place output in */
+	int		ubsize,		/* size of buffer */
+	void		*private_data,	/* my private data */
+	int		*ubused,	/* bytes used by me */
+	void		*dibuff,	/* on-disk inode buffer */
+	int		*stat)		/* BULKSTAT_RV_... */
+{
+	return xfs_bulkstat_one_int(mp, ino, buffer, ubsize,
+				    xfs_bulkstat_one_fmt,
+				    ubused, dibuff, stat);
 }
 
 /*
