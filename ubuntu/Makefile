@@ -57,6 +57,7 @@ obj-$(CONFIG_WIMAX_I2400M)	+= wireless/wimax-i2400m/
 obj-$(CONFIG_HSO)		+= wireless/hso/
 obj-$(CONFIG_RTL8185)		+= wireless/ieee80211-rtl/
 obj-$(CONFIG_RTL8185)		+= wireless/rtl8185/
+obj-$(CONFIG_USB_NET_HSO)	+= wireless/hso.o
 
 ifneq ($(CONFIG_PRISM2_USB),)
 obj-m				+= wireless/p80211/
@@ -81,3 +82,4 @@ obj-$(CONFIG_DMRAID45)		+= md/
 obj-$(CONFIG_AGP_INTEL_ICH9M)	+= char/intel-agp-ich9m/
 
 obj-$(CONFIG_HP_MINI)		+= misc/hpmini.o
+obj-$(CONFIG_RTL_8187_USB)	+= wireless/rtl8187-usb/

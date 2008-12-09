@@ -1,3 +1,108 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook1) hardy; urgency=low
+
+  * merge with ubuntu 
+
+ -- Nicolas Valcárcel Scerpella <nvalcarcel@canonical.com>  Mon, 08 Dec 2008 12:54:00 -0800
+
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35) hardy-security; urgency=low
+
+  ABI bump to -22
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Thu, 20 Nov 2008 09:54:02 +0100
+
+linux-ubuntu-modules-2.6.24 (2.6.24-21.33) hardy-security; urgency=low
+
+  [Stefan Bader]
+
+  * ndiswrapper: Prevent buffer overflow if nickname is IW_ESSID_MAX_SIZE
+    characters long.
+    - LP: #275860
+    - CVE-2008-4395
+  * ndiswrapper: Print exactly the number of characters in essid
+    - LP: #275860
+    - CVE-2008-4395
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Fri, 03 Oct 2008 15:02:46 -0400
+
+linux-ubuntu-modules-2.6.24 (2.6.24-21.32) hardy-proposed; urgency=low
+
+  [Stefan Bader]
+
+  * Fix ieee80211_rtl to coexist with ieee80211
+    - LP: #258344
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Sun, 24 Aug 2008 14:23:45 -0400
+
+linux-ubuntu-modules-2.6.24 (2.6.24-21.31) hardy-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Add driver for RTL 8187 USB
+    Enable RTL 8187 USB config options for amd64/i386
+    - LP: #258344
+
+  [Upstream Kernel Changes]
+
+  * ALSA: hda - support new AMD HDMI Audio (1002:970f)
+    - LP: #258992
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 15 Aug 2008 08:23:37 -0600
+
+linux-ubuntu-modules-2.6.24 (2.6.24-21.30) hardy-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * ABI bump to -21
+
+  [Amit Kucheria]
+
+  * Update Intel wimax driver to 1.2.5
+    - LP: #253347
+  * Add firmware for Motorola wimax card (i2400m driver)
+    - LP: #253347
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Mon, 11 Aug 2008 16:10:05 -0400
+
+linux-ubuntu-modules-2.6.24 (2.6.24-20.29) hardy-proposed; urgency=low
+
+  [Amit Kucheria]
+
+  * LPIA: Poulsbo: Update DRM driver to 2.0.0.32L.0019
+    - LP: #244886
+
+  [Ben Collins]
+
+  * hso: New driver for high speed option devices
+
+  [Michael Krufky]
+
+  * UBUNTU: Add Siano sms1xxx USB dvb tuner driver
+    - LP: #241745
+  * sms1xxx: add support for Hauppauge 55xxx firmware
+    - LP: #243430
+  * sms1xxx: fix OOPS on 64 bit kernels due to a bad cast
+    - LP: #244005
+
+  [Stefan Bader]
+
+  * SAUCE: Disable DXS explicitly for 0x1458:0xa002 (VIA-based)
+   - LP: #68659
+  * Adding support for HVR950G
+    - LP: #241628
+
+  [Tim Gardner]
+
+  * Hauppauge HVR950Q: prevent false-positive lock status
+    - LP: #241981
+  * Hauppauge HVR950Q: firmware loading optimizations
+    - LP: #242169
+  * Added iwlwifi 3945/4965 firmware to debian installer firmware package.
+    - LP: #220917
+  * Add support for MEDION E1210 webcam
+    - LP: #246309
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 17 Jun 2008 18:09:03 +0300
+
 linux-ubuntu-modules-2.6.24 (2.6.24-19.29netbook18) hardy; urgency=low
 
   [Adrian Bunk]

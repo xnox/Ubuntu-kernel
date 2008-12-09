@@ -1,244 +1,220 @@
 
-Driver for the Intel Wireless WiMAX Connection 2400m
+   Driver for the Intel Wireless Wimax Connection 2400m
 
-(C) 2008 Intel Corporation <linux-wimax@intel.com>
+   (C) 2008 Intel Corporation < linux-wimax@intel.com >
 
-This provides a driver for the Intel Wireless WiMAX
-Connection 2400m and a basic Linux kernel WiMAX stack.
+   This provides a driver for the Intel Wireless WiMAX Connection 2400m
+   and a basic Linux kernel WiMAX stack.
 
-  Requirements
+Requirements
 
-    * Linux installation with Linux kernel 2.6.22 or newer
-    * Intel i2400m Echo Peak or Baxter Peak
-    * build tools:
-          o Linux kernel development package for the target kernel; to
-            build against your currently running kernel, you need to
-            have the kernel development package corresponding to the
-            running image installed (usually if your kernel is named
+     * Linux installation with Linux kernel 2.6.22 or newer
+     * Intel i2400m Echo Peak or Baxter Peak
+     * build tools:
+          + Linux kernel development package for the target kernel; to
+            build against your currently running kernel, you need to have
+            the kernel development package corresponding to the running
+            image installed (usually if your kernel is named
             linux-VERSION, the development package is called
             linux-dev-VERSION or linux-headers-VERSION).
-          o GNU C Compiler, make, scons
-          o Mercurial source control system 
+          + GNU C Compiler, make
 
+Compilation and installation
 
-* Compilation and installation
-
-To compile
+   To compile
 
 $ cd source/directory
 $ make
 
-Once built you can load and unload using the provided load.sh script;
-load.sh will load the modules, load.sh u will unload them.
+   Once built you can load and unload using the provided load.sh script;
+   load.sh will load the modules, load.sh u will unload them.
 
-To install in the default kernel directories (and enable auto loading
-when the device is plugged):
+   To install in the default kernel directories (and enable auto loading
+   when the device is plugged):
 
 $ make install
 $ depmod -a
 
-If your kernel development files are located in a non standard directory
-or if you want to build for a kernel that is not the currently running
-one, set KDIR to the right location:
+   If your kernel development files are located in a non standard
+   directory or if you want to build for a kernel that is not the
+   currently running one, set KDIR to the right location:
 
 $ make KDIR=/path/to/kernel/dev/tree
 
-For more information, please contact linux-wimax@intel.com.
+   For more information, please contact linux-wimax@intel.com.
 
+Installing the firmware
 
-* Installing the firmware
+   The firmware has been supplied with your hardware and it has to be
+   installed in the target system.
 
-The firmware has been supplied with your hardware and it has to be
-installed in the target system.
+$ cp FIRMWAREFILE.sbcf /lib/firmware/i2400m-fw-1.2.sbcf
 
-Copy the firmware (.elf files) to a subdirectory of /lib/firmware named
-after the version and any other identification tag that can uniquely
-tell what your firmware is:
+     * NOTE: if your firmware came in an .rpm or .deb file, just install
+       it as normal, with the rpm (rpm -i FIRMWARE.rpm) or dpkg
+       (dpkg -i FIRMWARE.deb) commands. No further action is needed.
 
-$ mkdir /lib/firmware/i2400m-fw-VERSIONSTRING
-$ cp *.elf /lib/firmware/i2400m-fw-VERSIONSTRING
+Usage
 
-    * NOTE: if your firmware came in a ZIP file named
-      i2400m-fw-VERSION.zip, it is already setup like that and you can
-      install it by:
+   To load the driver, follow the instructions in the install section;
+   once the driver is loaded, plug in the device (unless it is permanently
+   plugged in). The driver will enumerate the device, upload the firmware
+   and output messages in the kernel log (dmesg, /var/log/messages or
+   /var/log/kern.log) such as:
 
-      $ cd /lib/firmware
-      $ unzip i2400m-fw-VERSION.zip
+...
+i2400m_usb 5-4:1.0: firmware interface version 8.0.0
+i2400m_usb 5-4:1.0: WiMAX interface wmx0 (00:1d:e1:01:94:2c) ready
 
-Now make the firmware available to the driver.
+   At this point the device is ready to work.
 
-$ cd /lib/firmware/i2400m-fw-VERSIONSTRING
-$ ln -s i2400m-fw-VERSIONSTRING/* .
+   Current versions require the Intel WiMAX Network Service in userspace
+   to make things work. This document assumes the service is in place.
 
+    1. Start wimax_appsrv:
 
-* Usage
+$ wimax_appsrv
 
-To load the driver, follow the instructions in the install section; once
-the driver is loaded, plugging the device (or if it is permanently
-plugged in), the driver will enumerate the device upload the firmware
-and and output messages in the kernel log (dmesg, /var/log/messages or
-/var/log/kern.log) such as:
+    2. Switch on the radio:
 
-i2400m 4-7:1.0: i2400m_dev_bootstrap: firmware successfully uploaded
-i2400m 4-7:1.0: HW BUG? short notification (0 vs 16 bytes expected)
-i2400m 4-7:1.0: HW BUG? short notification (0 vs 16 bytes expected)
-i2400m 4-7:1.0: operation 0x5605: invalid state (3/-84)
-i2400m 4-7:1.0: 'Diagnostics off' command failed: -84
-i2400m 4-7:1.0: i2400m_get_mac_addr: GET DEVICE INFO: mac addr 00:16:eb:01:71:50
+$ wimaxcu ron
+SW Radio is on
 
-At this point the device is ready to work.
+    3. Scan for the available base stations and network service providers
 
-Current versions require WiMAX Network Service in userspace to make
-things work. This document assumes is in place.
+$ wimaxcu scan
+NSP: Motorola M4
+        ID:   111
+        RSSI: 50
+        CINR: 50
+        Network Type: Home network
+        Activated
 
-   1. Start AppSrv:
+    4. Connect to one of the found base stations
 
-      $ AppSrv
-      Enter Command:
-      q - Quit AppSrv
-      t - Trace ReInit (ReLoads Registry Values)
-      h - Help
-      Initializing...
-      Waiting for driver...
-      Driver is up - AppSrv is ready !
+$ wimaxcu connect network 111
+NSP Info
+        ID:     111
+        Name:   Motorola M4
+        Realm:
+        RSSI:   50
+        CINR:   50
+        Activated: Yes
+        Network Type:   Home network
+        Connection Time: 1087604736:111:00
 
-   2. with the wimaxcu (connect utility), set the connect mode to manual:
+    5. Once this step is done, you can assign an IP address:
 
-      $ wimaxcu setconnectmode manual
-      set to manual
+$ ifconfig wmx0 100.100.100.10
 
-   3. Switch on the radio:
+       and use the connection normally.
+       If you want to use DHCP to assign address, currently only the pump
+       client is known to work. ISC DHCP does some funny kernel package
+       raw management and still won't work with this code.
 
-      $ wimaxcu ron
-      radio is turned on
+Controlling the device through sysfs
 
-   4. Scan for the available base stations and network service providers
+   sysfs files to control the device behaviour are located in the
+   per-device directories /sys/class/net/wmxX*:
 
-      $ wimaxcu getnlist
-      NSP: Default
-              NSPid: 111
-              RSSI: 0
-              CINR: 0
-              Roaming: Home network
+$ cd /sys/class/net/wmx0
+$ ls -1 wimax/* i2400m*
+i2400m_debug_levels
+i2400m_debug_stuff
+i2400m_reset_cold
+i2400m_reset_soft
+i2400m_rx_stats
+i2400m_tx_stats
+i2400m_usb_debug_levels
+wimax/debug_levels
+wimax/gnl_family_id
+wimax/gnl_version
 
-   5. connect to a given base station
+Increasing debug output
 
-      $ wimaxcu connect NSPID         # eg: 111
-      connection completed
+   Each *debug_levels file corresponds controls the debug level settings
+   for a module (wimax, i2400m or i2400m-usb). Each one contains a list of
+   submodules and their current debug levels (default to zero):
 
-   6. Once this step is done, you can assign an IP address:
+$ cat i2400m_debug_levels
+0 control
+0 driver
+0 fw
+0 netdev
+0 rfkill
+0 rx
+0 sysfs
+0 tx
 
-      $ ifconfig wmx0 100.100.100.10
+   To increase the debug level of, for example, the TX engine, just write:
 
-      and use the connection normally. 
+$ echo 3 tx > i2400m_debug_levels
 
-      If you want to use DHCP, the only DHCP client that as of now
-      works with this device is pump. This client is available in most
-      distributions, or you can download it from:
+   Increasing numbers yield increasing debug information; for deatails of
+   what is printed, check the source.
 
-      http://packages.debian.org/stable/base/pump
+Performing a device reset
 
+   By writing a 1 to the i2400m_reset_cold file, the device will be
+   disconnected from the bus and reenumerated (as if the device had been
+   physically plugged in and out.
 
-* Controlling the device through sysfs
+   By writing a 1 to the i2400m_reset_soft file, the device will
+   internally reset, but not reconnect to the bus.
 
-sysfs files to control the device behaviour are located in
-/sys/bus/usb/driver/i2400m/*/net:*/i2400m*:
+   This feature is currently not working.
 
-$ ls /sys/bus/usb/driver/i2400m/*/net:*/i2400m*
-/sys/bus/usb/drivers/i2400m/5-2:1.0/net:wmx0/i2400m_crash
-/sys/bus/usb/drivers/i2400m/5-2:1.0/net:wmx0/i2400m_reset_cold
-/sys/bus/usb/drivers/i2400m/5-2:1.0/net:wmx0/i2400m_rx_stats
+RX and TX statistics
 
-
- * Simulating a device crash
-
-By writing a 1 to the i2400m_crash file (echo 1 > i2400m_crash), a soft
-reset is issued that simulates a device crash.
-
-
- * Performing a device cold reset
-
-By writing a 1 to the i2400m_reset_cold file, the device will be
-disconnected from the bus and reenumerated (as if the device had been
-physically plugged in and out.
-
-
- * RX statistics
-
-This file provides with statistics about the data reception from the
-device:
+   This file provides with statistics about the data reception from the
+   device:
 
 $ cat /sys/class/net/wmx0/i2400m_rx_stats
 45 1 3
 34 3104 48 480
 
-The numbers reported are
+   The numbers reported are
+     * packets/RX-buffer: total, min, max
+     * RX-buffers: total RX buffers received, accumulated RX buffer size
+       in bytes, min size received, max size received
 
-    * packets/RX-buffer: total, min, max
-    * RX-buffers: total RX buffers received, accumulated RX buffer size
-      in bytes, min size received, max size received 
+   Thus, to find the average buffer size received, divide accumulated
+   RX-buffer / total RX-buffers.
 
-Thus, to find the average buffer size received, divide accumulated
-RX-buffer / total RX-buffers.
-
-To clear the statistics back to 0:
+   To clear the statistics back to 0:
 
 $ echo 1 > /sys/class/net/wmx0/i2400m_rx_stats
 
+   Likewise for TX
 
-  * Increasing debug output: Spying on L4 traffic
+Troubleshooting
 
-Set D_LOCAL in drivers/net/wimax/op-msg.c to 2, recompile and reinstall
-the driver; now every message and report should be dumped on the kernel
-log by the driver:
+Driver complains about 'i2400m-fw-1.2.sbcf: request failed'
 
-i2400m 3-1:1.0: wimax_gnl_doit_msg_from_user: CRX: nlmsghdr len 36 type 19 flags 0x0005 seq 0x478bbfad pid 4198954
-i2400m 3-1:1.0: wimax_gnl_doit_msg_from_user: CRX: genlmsghdr cmd 0 version 1
-i2400m 3-1:1.0: wimax_gnl_doit_msg_from_user: CRX: wimax message 16 bytes
-i2400m 3-1:1.0: 01 52 00 00 01 00 00 00 00 00 00 00 00 00 00 00
+   If upon connecting the device, the following is output in the kernel
+   log:
 
-A request was sent by userspace to the driver and sent to the device.
-The data decode shows is a message type 0x5201 (GET_LM_VERSIONS).
+i2400m_usb 5-4:1.0: fw i2400m-fw-1.2.sbcf: request failed: -2
 
-i2400m 3-1:1.0: wimax_msg_to_user: CTX: wimax msg, 24 bytes
-i2400m 3-1:1.0: 01 52 0c 00 c0 00 00 00 00 00 55 55 81 00 08 00
-i2400m 3-1:1.0: 03 00 00 00 00 00 00 00
+   This means that the driver cannot locate the firmware file named
+   /lib/firmware/i2400m-fw-1.2.sbcf. Check that the file is present in the
+   right location.
 
-A response was received for the request by the driver and is sent to
-user space.
+Finding the source code version from compiled modules
 
+   All the modules contain versioning information:
 
-* Troubleshooting
-
-
-    Driver complains about not being able to find `DM_FPGA.elf`
-
-Rename /lib/firmware/DM_FPGA.elf to /lib/firmware/DM_FPGA_USB.elf.
-
-This is dirty, but so far is what we have; eventually all this will
-change and the firmware will be a single file.
-
-
-    Finding the source code version from compiled modules
-
-All the modules contain versioning information; if they are built with a
-properly obtained tree (from mercurial SCM or from a mercurial release,
-as described in Downloading the source <#downloading_the_source>), the
-following happens:
-
-$ modinfo drivers/net/wimax/i2400m/i2400m.ko
-filename:       drivers/net/wimax/i2400m/i2400m.ko
-version:        0.4.1-790259a03ade+
+# modinfo drivers/net/wimax/wimax.ko
+filename:       drivers/net/wimax/wimax.ko
+version:        v1.1.90.5-64c129e112b7+
 license:        GPL
-description:    Intel 2400M WiMAX networking for USB
-author:         Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>
-srcversion:     11C592042F265D611807878
-alias:          usb:v8086p1403d*dc*dsc*dp*ic*isc*ip*
-depends:        wimax,usbcore,firmware_class
-vermagic:       2.6.24-rc6 SMP preempt mod_unload CORE2
+...
+srcversion:     246E91FEF848C1B502015D8
+depends:        rfkill
+vermagic:       2.6.24-wusb1 SMP preempt mod_unload CORE2
 
-So, if you extract the version field (0.4.1-790259a03ade+), it gives us
-the unique identification of the whole source tree that was used to
-build this driver (790259a03ade). As well, the + sign says that there
-were local modifications applied to it.
+   So, if you extract the version field (v1.1.90.5-64c129e112b7+), it
+   gives us the unique identification of the whole source tree that was
+   used to build this driver (64c129e112b7). As well, the + sign says that
+   there were local modifications applied to it.
 

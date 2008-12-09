@@ -1,0 +1,224 @@
+-----------------------------------------------------------------------
+This Debug note is created for recording internal bug fixing before 
+officially release to QC lab. Created on 2008-02-01
+-----------------------------------------------------------------------
+<2008-02-01 10:30 wb>
+New Files:
+Modified Files:
+ieee80211/ieee_softmac.c 
+ieee80211/ieee_wx.c
+Change Notes:
+1. Porting 87B latest driver to mesh driver.
+
+Verification before checked-in:
+1. build ok on FC6.
+2. mesh mode test ok.
+3. station mode test ok.
+
+-----------------------------------------------------------------------
+<2008-02-03 10:30 david>
+New Files:
+Modified Files:
+rtl8187/r8187_core.c 
+Change Notes:
+1. Mark the debug message related to Rx status error when driver 
+   is down.
+
+Verification before checked-in:
+1. build ok on FC6.
+2. station mode test ok.
+
+-----------------------------------------------------------------------
+<2008-02-03 17:29 david>
+New Files:
+Modified Files:
+ieee80211/ieee80211_softmac.c 
+Change Notes:
+1. Fix the bug that the system will crash when ad-hoc mode is 
+   enabled in the both mesh and station mode supported driver.
+
+Verification before checked-in:
+1. build ok on FC6.
+2. infrastructure mode test ok.
+3. ad-hoc mode open and open wep test ok.
+
+--------------------------------------------------------------------------
+<2008-02-04 13:29 amy>
+New Files:
+Modified Files:
+ieee80211.h rtl8187/r8187_core.c
+Change Notes:
+added rate adaptive of 8187B
+Verification before checked-in:
+1. build ok on FC6.
+2. infrastructure mode and ad-hoc mode test ok.
+
+-------------------------------------------------------------------------
+<2008-02-04 14:18 wb>
+New Files:
+Modified Files:
+ieee80211/ieee80211_softmac.c 
+Change Notes:
+1. Fix the bug that the with NM(NetworkManager), ad-hoc mode will 
+   waste too much CPU. start_ibss_wq will be canceled once stop_protocol is called.
+
+Verification before checked-in:
+1. build ok on FC6.
+2. ad-hoc mode no encryption test ok.
+
+-------------------------------------------------------------------------
+<2008-02-15 20:50 wb>
+New Files:
+Modified Files:
+ieee80211/ieee80211_softmac.c 
+ieee80211.h
+Change Notes:
+1. Modified to fix ad-hoc occupied too much CPU bug in Linpus system(as its kernel is 2.6.22 and need to delay start_ibss_wq a little time for that system)
+Verification before checked-in:
+1. build ok on both FC6 & Linpus.
+2. ad-hoc mode no encryption test ok on Quanta IL1.
+
+Modified Files:
+ieee80211/ieee80211_module.c ieee80211_rx.c ieee80211_tx.c ieee80211_wx.c
+Change Notes:
+1. Fix bug that can't connect to encryption AP. (As station driver built with mesh_flag enabled doesn't get&set correct crypt in TX&RX)
+Verification before checked-in:
+1. build ok on both FC6 & Linpus
+2. ad-hoc mode test ok on Quanta IL1.
+3. infrastructure mode with WEP&WPA test ok on Quanta IL1.
+4. mesh mode not test.
+-------------------------------------------------------------------------
+<2008-02-22 11:37 wb>
+New Files:
+Modified Files:
+ieee80211/ieee80211_wx.c 
+Change Notes:
+1. Fix the bug that in command_line mode, wep multi_key can't be set in "iwconfig wlan0 key [3] 0987654321" mode. 
+   
+Verification before checked-in:
+1. build ok on FC6.
+2. command_line set multi_key OK using test pinging to AP orap on FC6.
+
+Modified Files:
+ieee80211/ieee80211_tx.c 
+Change Notes:
+1. Fix the bug that in NM GUI mode, system will hang when wep shared key is wrong. 
+   
+Verification before checked-in:
+1. build ok on FC6.
+2. infrastructure mode with WEP shared_key test ok on FC6.
+-------------------------------------------------------------------------
+<2008-02-25 10:00 amy>
+New Files:
+Modified Files:
+ieee80211.h r8187.h ieee80211/ieee80211_softmac.c rtl8187/r8180_hw.h,r8180_wx.c,r8187_core.c 
+Change Notes:
+1,Add the feature of IPS.
+
+Verification before checked-in:
+1. build ok on FC6.
+
+-------------------------------------------------------------------------
+<2008-02-25 16:00 wb>
+New Files:
+Modified Files:
+ieee80211.h ieee80211/ieee80211_softmac.c mshclass/rtl8187_mesh.c rtl8187_mesh.h 
+Change Notes:
+1. Add more support for "getmeshlist" and "getmeshinfo" to get MPs' encryption status.
+
+Verification before checked-in:
+1. build ok on FC6
+2. Mesh mode tesk OK on FC6
+
+-------------------------------------------------------------------------
+<2008-02-27 11:00 david>
+New Files:
+script/radion.sh
+Modified Files:
+rtl8187/r8180_hw.h
+rtl8187/r8180_wx.c
+rtl8187/r8187.h
+	mshclass/r8187.h
+Change Notes:
+	1. Add support for radio on/off, that is Enable/Disable RF radio plus 
+           Enable/Disalbe Networkmanager.
+
+Verification before checked-in:
+	1. build ok on FC6
+	2. Station mode tesk OK on FC6
+
+-------------------------------------------------------------------------
+<2008-02-27 16:50 david>
+New Files:
+Modified Files:
+	script/radion.sh
+Change Notes:
+	1. Add delay 3 seconds between two sequenctial radio on/off process.
+
+Verification before checked-in:
+	1. build ok on FC6
+	2. Station mode tesk OK on FC6
+
+-------------------------------------------------------------------------
+<2008-02-29 12:00 david>
+New Files:
+Modified Files:
+	rtl8187/ieee80211.h
+	rtl8187/r8180_pm.c
+	mshclass/ieee80211.h
+	ieee80211/ieee80211.h
+	ieee80211/ieee80211_module.c
+	ieee80211/ieee80211_rx.c
+
+Change Notes:
+	1. Fix the bug on the mesh mode that different staion may share 
+	   the same seq/frag num.
+	2. use the dev->open, dev->stop to replace function rtl8180_open, 
+           rtl8180_close.
+
+Verification before checked-in:
+	1. build ok on FC6
+	2. mesh mode tesk OK on FC6
+
+-------------------------------------------------------------------------
+<2008-02-29 12:00 david>
+New Files:
+Modified Files:
+	rtl8187/r8187_core.c
+
+Change Notes:
+	1. Fix the bug that the current consumption is a bit higher compared 
+	   with no IPS feature driver.
+
+Verification before checked-in:
+	1. build ok on FC6
+	2. mesh mode tesk OK on FC6
+
+-------------------------------------------------------------------------
+
+<2008-06-10 17:00 yangjue>
+New Files:
+Modified Files:
+        rtl8187/r8180_wx.c
+
+Change Notes:
+        1. Fix the bug on scanning when not linked.
+	   "r8180_wx_set_scan"
+Verification before checked-in:
+        1. Have tested on Ubuntu 8.04.
+
+-------------------------------------------------------------------------
+
+<2008-06-11 17:00 yangjue>
+New Files:
+Modified Files:
+        rtl8187/r8180_wx.c
+
+Change Notes:
+        1. Fix the bug on scanning when linked.
+	   "r8180_wx_set_scan"
+Verification before checked-in:
+        1. Have tested on Ubuntu 8.04.
+
+-------------------------------------------------------------------------
+

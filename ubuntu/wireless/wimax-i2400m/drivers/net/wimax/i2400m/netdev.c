@@ -1,6 +1,6 @@
 /* -*-linux-c-*-
  *
- * Intel Wireless WiMax Connection 2400m
+ * Intel Wireless WiMAX Connection 2400m
  * Glue with the networking stack
  *
  *
@@ -23,14 +23,26 @@
  * 02110-1301, USA.
  *
  *
- * FIXME: docs
+ * This implements a pure IP device for the i2400m.
+ *
+ * TX error handling is tricky; because we have to FIFO/queue the
+ * buffers for transmission (as the hardware likes it aggregated), we
+ * just give the skb to the TX subsystem and by the time it is
+ * transmitted, we have long forgotten about it. So we just don't care
+ * too much about it.
+ *
+ * FIXME: need to move the whole setup to upload firmware on 'ifconfig
+ *        DEV up' and to put the device to sleep on 'ifconfig DEV
+ *        down'.
  */
 #include <linux/if_arp.h>
+#include <linux/if_arp-compat.h>	/* @lket@ignore-line */
 #include <linux/netdevice.h>
 #include "i2400m.h"
 
-#define D_LOCAL 1
-#include "../debug.h"
+
+#define D_SUBMODULE netdev
+#include "debug-levels.h"
 
 enum {
 /* netdev interface */
@@ -59,48 +71,45 @@ static int i2400m_stop(struct net_device *net_dev)
 static int i2400m_hard_start_xmit(struct sk_buff *skb,
 				  struct net_device *net_dev)
 {
+	int result;
 	__le32 *wimax_header;
 	struct i2400m *i2400m = net_dev_to_i2400m(net_dev);
-	struct device *dev = &i2400m->usb_iface->dev;
+	struct device *dev = i2400m_dev(i2400m);
 
-	d_fnstart(2, dev, "\n");
+	d_fnstart(3, dev, "(skb %p net_dev %p)\n", skb, net_dev);
 	wimax_header = (__le32 *) skb_push(skb, I2400M_WIMAX_HDR_LEN);
 	*wimax_header = 0;
 	net_dev->trans_start = jiffies;
 	d_printf(3, dev, "NETTX: skb %p sending %d bytes to radio\n",
 		 skb, skb->len);
 	d_dump(4, dev, skb->data, skb->len);
-	i2400m_write_async(i2400m, skb, skb->data, skb->len, I2400M_PT_DATA);
-	i2400m->wimax_dev.stats.tx_packets++;
-	i2400m->wimax_dev.stats.tx_bytes += skb->len;
-	d_fnend(2, dev, "returning\n");
-	return 0;
+	result = i2400m_tx(i2400m, skb->data, skb->len, I2400M_PT_DATA);
+	if (result < 0) {
+		netif_stop_queue(net_dev);
+		net_dev->stats.tx_dropped++;
+		result = NETDEV_TX_BUSY;
+	} else {
+		net_dev->stats.tx_packets++;
+		net_dev->stats.tx_bytes += skb->len;
+		result = NETDEV_TX_OK;
+		kfree_skb(skb);
+	}
+	d_fnend(3, dev, "(skb %p net_dev %p) = %d\n", skb, net_dev, result);
+	return result;
 }
 
 
 static void i2400m_tx_timeout(struct net_device *net_dev)
 {
-	struct wimax_dev *wimax_dev = net_dev_to_wimax(net_dev);
-#warning FIXME: review the actions to take on timeout
 	/*
 	 * We might want to kick the device
+	 *
+	 * There is not much we can do though, as the device requires
+	 * that we send the data aggregated. By the time we receive
+	 * this, there might be data pending to be sent or not...
 	 */
-	wimax_dev->stats.tx_errors++;
+	net_dev->stats.tx_errors++;
 	return;
-}
-
-
-static struct net_device_stats *i2400m_get_stats(struct net_device *net_dev)
-{
-	struct wimax_dev *wimax_dev = net_dev_to_wimax(net_dev);
-	return &wimax_dev->stats;
-}
-
-
-static int i2400m_do_ioctl(struct net_device *net_dev,
-			   struct ifreq *ifr, int cmd)
-{
-	return 0;
 }
 
 
@@ -108,38 +117,46 @@ static int i2400m_do_ioctl(struct net_device *net_dev,
  * i2400m_net_rx - pass a network packet to the stack
  *
  * @i2400m: device instance
+ * @skb_rx: the skb where the buffer pointed to by @buf is
  * @buf: pointer to the buffer containing the data
  * @len: buffer's length
+ *
+ * We just clone the skb and set it up so that it's skb->data pointer
+ * points to "buf" and it's length.
  */
-#warning FIXME: use skb_clone() to avoid copying
-#warning FIXME: what about IPv6?
-void i2400m_net_rx(struct i2400m *i2400m, void *buf, int buf_len)
+void i2400m_net_rx(struct i2400m *i2400m, struct sk_buff *skb_rx,
+		   const void *buf, int buf_len)
 {
-	struct device *dev = &i2400m->usb_iface->dev;
+	struct net_device *net_dev = i2400m->wimax_dev.net_dev;
+	struct device *dev = i2400m_dev(i2400m);
 	struct sk_buff *skb;
 
 	d_fnstart(2, dev, "(i2400m %p buf %p buf_len %d)\n",
 		  i2400m, buf, buf_len);
-	skb = dev_alloc_skb(buf_len + I2400M_PAD_16BIT);
-	if (!skb) {
-		dev_err(&i2400m->usb_iface->dev,
-			"alloc skb failed. returning\n");
-		i2400m->wimax_dev.stats.rx_dropped++;
-		goto out;
+	if ((unsigned long) buf & 0x0f) { /* we like'm 16 byte aligned */
+		if (printk_ratelimit())
+			dev_err(dev, "NETRX: IP header misaligned (%p)\n",
+				buf);
 	}
-	skb_reserve(skb, I2400M_PAD_16BIT);	/* align IP on 16B boundary */
-	memcpy(skb_put(skb, buf_len), buf, buf_len);
-	skb->dev = i2400m->net_dev;
-	/* we are IP packets only */
-	skb->protocol = htons(ETH_P_IP);
-	skb->ip_summed = CHECKSUM_UNNECESSARY;
-	i2400m->wimax_dev.stats.rx_packets++;
-	i2400m->wimax_dev.stats.rx_bytes += buf_len;
+	skb = skb_clone(skb_rx, GFP_KERNEL);
+	if (skb == NULL) {
+		dev_err(dev, "NETRX: no memory ro clone skb\n"
+			"alloc skb failed. returning\n");
+		net_dev->stats.rx_dropped++;
+		goto error_skb_clone;
+	}
+	skb_pull(skb, buf - (void *) skb->data);
+	skb_trim(skb, (void *) skb->end - buf);
+	skb_set_mac_header(skb, 0);
+	skb->dev = i2400m->wimax_dev.net_dev;
+	skb->protocol = htons(ETH_P_IP);	/* we are IP packets only */
+	net_dev->stats.rx_packets++;
+	net_dev->stats.rx_bytes += buf_len;
 	d_printf(3, dev, "NETRX: receiving %d bytes to network stack\n",
 		buf_len);
 	d_dump(4, dev, buf, buf_len);
-	netif_rx(skb);
-out:
+	netif_receive_skb(skb);
+error_skb_clone:
 	d_fnend(2, dev, "(i2400m %p buf %p buf_len %d) = void\n",
 		i2400m, buf, buf_len);
 }
@@ -152,33 +169,19 @@ out:
  */
 void i2400m_netdev_setup(struct net_device *net_dev)
 {
-	struct i2400m *i2400m = net_dev_to_i2400m(net_dev);
-
 	d_fnstart(3, NULL, "(net_dev %p)\n", net_dev);
-	memset(i2400m, 0, sizeof(*i2400m));
-	i2400m_init(i2400m);
 	net_dev->hard_header_len = I2400M_WIMAX_HDR_LEN;
 	net_dev->mtu = I2400M_MAX_MTU;
 	net_dev->tx_queue_len = I2400M_TX_QLEN;
-	net_dev->type = ARPHRD_NONE;
-
-	/* With certain configurations, HW offload is breaking and not
-	 * computing checksums properly, so we disable it for
-	 * now. When ready, add | NETIF_F_HW_CSUM */
+	net_dev->type = ARPHRD_WIMAX;
 	net_dev->features =
 		NETIF_F_HIGHDMA | NETIF_F_VLAN_CHALLENGED;
 	net_dev->watchdog_timeo = I2400M_TX_TIMEOUT;
-
-	net_dev->open = i2400m_open;	/* All these in netdev.c */
+	net_dev->open = i2400m_open;
 	net_dev->stop = i2400m_stop;
 	net_dev->hard_start_xmit = i2400m_hard_start_xmit;
 	net_dev->tx_timeout = i2400m_tx_timeout;
-	net_dev->get_stats = i2400m_get_stats;
-#ifdef __USE_LEGACY_IOCTL
-	net_dev->do_ioctl = i2400m_legacy_ioctl;
-#else
-	net_dev->do_ioctl = i2400m_do_ioctl;
-#endif
 	d_fnend(3, NULL, "(net_dev %p) = void\n", net_dev);
 }
+EXPORT_SYMBOL_GPL(i2400m_netdev_setup);
 

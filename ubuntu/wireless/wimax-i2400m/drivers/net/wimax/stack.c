@@ -1,5 +1,5 @@
 /*
- * Linux WiMax
+ * Linux WiMAX
  * Netlink layer for the kernel/userspace interface
  *
  *
@@ -21,7 +21,7 @@
  * 02110-1301, USA.
  *
  *
- * FIXME: docs
+ * Check include/linux/wimax.h for general use instructions.
  */
 #include "version.h"
 #include <linux/device.h>
@@ -30,14 +30,17 @@
 #include <net/wimax.h>
 #include "wimax-internal.h"
 
-#define D_LOCAL 3
-#include "debug.h"
+
+#define D_SUBMODULE stack
+#include "debug-levels.h"
 
 
 /**
- * wimax_dev_init - initialize a newly allocated & zeroed wimax_dev instance
+ * wimax_dev_init - initialize a newly allocated and zeroed instance
  *
  * @wimax_dev: pointer to struct wimax_dev to initialize.
+ *
+ * Initializes non-zero fields of a freshly allocated and zeroed instance.
  */
 void wimax_dev_init(struct wimax_dev *wimax_dev)
 {
@@ -51,12 +54,18 @@ void wimax_dev_init(struct wimax_dev *wimax_dev)
 }
 EXPORT_SYMBOL_GPL(wimax_dev_init);
 
+extern struct genl_ops
+	wimax_gnl_close,
+	wimax_gnl_msg_from_user,
+	wimax_gnl_open,
+	wimax_gnl_rfkill;
 
 static
 struct genl_ops *wimax_gnl_ops[] = {
+	&wimax_gnl_close,
 	&wimax_gnl_msg_from_user,
 	&wimax_gnl_open,
-	&wimax_gnl_close,
+	&wimax_gnl_rfkill,
 };
 
 
@@ -70,10 +79,10 @@ int wimax_gnl_add(struct wimax_dev *wimax_dev)
 	int result, cnt;
 	struct net_device *net_dev = wimax_dev->net_dev;
 	struct device *dev = net_dev->dev.parent;
-	
+
 	d_fnstart(4, dev, "(wimax_dev %p)\n", wimax_dev);
 	snprintf(wimax_dev->gnl_family.name, sizeof(wimax_dev->gnl_family.name),
-		 "WiMax %s", net_dev->name);
+		 "WiMAX %s", net_dev->name);
 	result = genl_register_family(&wimax_dev->gnl_family);
 	if (unlikely(result < 0)) {
 		dev_err(dev, "cannot register generic netlink family: %d\n",
@@ -90,7 +99,7 @@ int wimax_gnl_add(struct wimax_dev *wimax_dev)
 				"%u: %d\n", wimax_gnl_ops[cnt]->cmd, result);
 			goto error_register_ops;
 		}
-	}		
+	}
 	d_fnend(4, dev, "(wimax_dev %p net_dev %p) = 0\n", wimax_dev, net_dev);
 	return 0;
 
@@ -115,7 +124,7 @@ void wimax_gnl_rm(struct wimax_dev *wimax_dev)
 {
 	int cnt, result;
 	struct device *dev = wimax_dev->net_dev->dev.parent;
-	
+
 	d_fnstart(4, dev, "(wimax_dev %p)\n", wimax_dev);
 	for (cnt = ARRAY_SIZE(wimax_gnl_ops) - 1; cnt >= 0; cnt--)
 		result = genl_unregister_ops(&wimax_dev->gnl_family,
@@ -124,6 +133,17 @@ void wimax_gnl_rm(struct wimax_dev *wimax_dev)
 	d_fnend(4, dev, "(wimax_dev %p) = void\n", wimax_dev);
 }
 
+static
+size_t wimax_addr_scnprint(char *addr_str, size_t addr_str_size,
+			   unsigned char *addr, size_t addr_len)
+{
+	unsigned cnt, total;
+	for (total = cnt = 0; cnt < addr_len; cnt++)
+		total += scnprintf(addr_str + total, addr_str_size - total,
+				   "%02x%c", addr[cnt],
+				   cnt == addr_len - 1? '\0' : ':');
+	return total;
+}
 
 /**
  * wimax_dev_add - register a new wimax device
@@ -135,17 +155,19 @@ void wimax_gnl_rm(struct wimax_dev *wimax_dev)
  *             you called SET_NETDEV_DEV() and register_netdev() on it
  *             before calling us.
  *
- * Registers the new Wimax device, sets up the user-kernel control
+ * Registers the new WiMAX device, sets up the user-kernel control
  * pipe (generic netlink) and common wimax infrastructure.
  *
  * After this function returns, you might get user space control
  * requests via netlink or from sysfs that might translate into calls
- * into wimax_dev->ops.
+ * into wimax_dev->op_*().
  */
 int wimax_dev_add(struct wimax_dev *wimax_dev, struct net_device *net_dev)
 {
 	int result;
 	struct device *dev = net_dev->dev.parent;
+	char addr_str[32];
+
 	d_fnstart(3, dev, "(wimax_dev %p net_dev %p)\n", wimax_dev, net_dev);
 	wimax_dev->net_dev = net_dev;
 	result = wimax_gnl_add(wimax_dev);
@@ -157,16 +179,25 @@ int wimax_dev_add(struct wimax_dev *wimax_dev, struct net_device *net_dev)
 			result);
 		goto error_id_table_add;
 	}
+	result = wimax_rfkill_add(wimax_dev);
+	if (result < 0)
+		goto error_rfkill_add;
 	result = sysfs_create_group(&net_dev->dev.kobj, &wimax_dev_attr_group);
 	if (result < 0) {
 		dev_err(dev, "cannot initialize sysfs attributes: %d\n",
 			result);
 		goto error_sysfs_create_group;
 	}
+	wimax_addr_scnprint(addr_str, sizeof(addr_str),
+			    net_dev->dev_addr, net_dev->addr_len);
+	dev_err(dev, "WiMAX interface %s (%s) ready\n",
+		net_dev->name, addr_str);
 	d_fnend(3, dev, "(wimax_dev %p net_dev %p) = 0\n", wimax_dev, net_dev);
 	return 0;
 
 error_sysfs_create_group:
+	wimax_rfkill_rm(wimax_dev);
+error_rfkill_add:
 	wimax_id_table_rm(wimax_dev->gnl_family.id);
 error_id_table_add:
 	wimax_gnl_rm(wimax_dev);
@@ -184,7 +215,7 @@ EXPORT_SYMBOL_GPL(wimax_dev_add);
  * @wimax_dev: pointer to the wimax description embedded in your
  *             net_dev's priv data.
  *
- * Unregisters a Wimax device previously registered for use with
+ * Unregisters a WiMAX device previously registered for use with
  * wimax_add_rm().
  *
  * IMPORTANT! Must call before calling unregister_netdev().
@@ -192,10 +223,13 @@ EXPORT_SYMBOL_GPL(wimax_dev_add);
  * After this function returns, you will not get any more user space
  * control requests (via netlink or sysfs) and thus to wimax_dev->ops.
  */
-void wimax_dev_rm(struct wimax_dev *wimax_dev, struct net_device *net_dev)
+void wimax_dev_rm(struct wimax_dev *wimax_dev)
 {
+	struct net_device *net_dev = wimax_dev->net_dev;
+
 	d_fnstart(3, NULL, "(wimax_dev %p)\n", wimax_dev);
 	sysfs_remove_group(&net_dev->dev.kobj, &wimax_dev_attr_group);
+	wimax_rfkill_rm(wimax_dev);
 	wimax_id_table_rm(wimax_dev->gnl_family.id);
 	wimax_gnl_rm(wimax_dev);
 	d_fnend(3, NULL, "(wimax_dev %p) = void\n", wimax_dev);
@@ -219,7 +253,7 @@ void __exit wimax_subsys_exit(void)
 module_exit(wimax_subsys_exit);
 
 MODULE_AUTHOR("Inaky Perez-Gonzalez <inaky.perez-gonzalez@intel.com>");
-MODULE_DESCRIPTION("Linux Wimax stack");
+MODULE_DESCRIPTION("Linux WiMAX stack");
 MODULE_LICENSE("GPL");
 MODULE_VERSION(WIMAX_VERSION);
 

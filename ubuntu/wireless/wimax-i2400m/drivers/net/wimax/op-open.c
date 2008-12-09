@@ -1,5 +1,5 @@
 /*
- * Linux WiMax
+ * Linux WiMAX
  * Netlink layer, open operation
  *
  *
@@ -21,20 +21,20 @@
  * 02110-1301, USA.
  *
  *
- * FIXME: docs
- * 
+ * Parse the open-handle command from user space.
+ *
  * Only one attribute: the RX pid for the message pipe (see the design
  * section, we use two handles for the messaging pipe, one for
- * user-to-kernel [RX], one for kernel-to-user [TX]).
- *
- * We need to define attribute numbers starting in 0 [I think]
+ * user-to-kernel [RX], one for kernel-to-user [TX]). This might go
+ * away if we move to use broadcast for kernel-to-user documentation.
  */
 #include <net/genetlink.h>
 #include <net/wimax.h>
 #include "wimax-internal.h"
 
-#define D_LOCAL 0
-#include "debug.h"
+
+#define D_SUBMODULE op_open
+#include "debug-levels.h"
 
 
 
@@ -64,7 +64,7 @@ int wimax_gnl_doit_open(struct sk_buff *skb, struct genl_info *info)
 		goto error_no_wimax_dev;
 	dev = net_dev->dev.parent;
 	wimax_dev = net_dev_to_wimax(net_dev);
-	
+
 	nlh = (void *) skb->data;
 	result = nla_parse(tb, ARRAY_SIZE(tb),
 			   nlmsg_attrdata(nlh, sizeof(struct genlmsghdr)),
@@ -81,9 +81,8 @@ int wimax_gnl_doit_open(struct sk_buff *skb, struct genl_info *info)
 			"attribute\n");
 		goto error_no_pid;
 	}
-	
+
 	result = 0;
-	__wimax_flush_queue(wimax_dev, net_dev);
 	wimax_dev->genl_pid =
 		nla_get_u32(tb[WIMAX_GNL_OPEN_MSG_FROM_USER_PID]);
 	d_printf(2, dev, "msg_from_user PID is %d\n", wimax_dev->genl_pid);

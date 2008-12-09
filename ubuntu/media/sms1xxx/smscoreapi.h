@@ -481,6 +481,18 @@ struct SMSHOSTLIB_STATISTICS_DVB_ST {
 
 };
 
+struct SMSHOSTLIB_GPIO_CONFIG_ST {
+	u8	Direction; /* GPIO direction: Input - 0, Output - 1 */
+	u8	PullUpDown; /* PullUp/PullDown: None - 0,
+			     * PullDown - 1, PullUp - 2, Keeper - 3 */
+	u8	InputCharacteristics; /* Input Characteristics: Normal - 0,
+				       * Schmitt trigger - 1 */
+	u8	OutputSlewRate; /* Output Slew Rate:
+				 * Fast slew rate - 0, Slow slew rate - 1 */
+	u8	OutputDriving; /* Output driving capability:
+				* 4mA - 0, 8mA - 1, 12mA - 2, 16mA - 3 */
+};
+
 struct SMSHOSTLIB_I2C_REQ_ST {
 	u32	DeviceAddress; /* I2c device address */
 	u32	WriteCount; /* number of bytes to write */

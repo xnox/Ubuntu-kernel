@@ -1,0 +1,8 @@
+#!/bin/sh
+cd ieee80211
+make clean
+cd ../rtl8187
+make clean
+cd ..
+
+

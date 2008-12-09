@@ -1,0 +1,58 @@
+#!/bin/bash
+#------------------------------------------------------------------------------
+# The RTL 8187 USB device driver comes directly from Realtek. The
+# original tarball can be found at 
+#
+# http://launchpadlibrarian.net/16855730/rtl8187B_linux_26.1036.0623.2008.tar.gz
+#
+# I cleaned out some cruft and added a Makefile.  Note that this driver
+# is now upstream as of 2.6.26.
+#
+#
+# Tim Gardner - Aug 15, 2008
+#
+# ---
+#
+# Update 2008-08-25 Stefan Bader
+#
+# Make sure to change all exported symbols of ieee80211 to something else.
+# Otherwise this one and the one from the kernel cannot coexist.
+# There has been some effort spent to this already (see ieee80211.h) by
+# creating defines that replace those.
+# The following script will create a list of defines and to which places
+# they should go. The actual change should be a manual process.
+#------------------------------------------------------------------------------
+TOPDIR="rtl8187-usb"
+MACDIR="$TOPDIR/ieee80211"
+
+# Get a list of exported symbols from ieee80211
+SYMS=$(
+	grep EXPORT_SYMBOL "$MACDIR"/* |
+	sed 's/.*EXPORT_SYMBOL.*(\(.*\)).*/\1/'
+)
+echo "$(echo "$SYMS"|wc -l) exported symbols." >&2
+
+# Now create a list of defines for the ones not already in the header
+N=0
+for FILE in "$MACDIR"/*.h; do
+	FOUND=false
+	echo "Checking $FILE..." >&2
+	for SYM in $SYMS; do
+		if ! grep -q $SYM $FILE; then
+			continue
+		fi
+		if ! grep -q ${SYM}_rtl $MACDIR/*.h; then
+			if ! $FOUND; then
+				echo "---------------------------------------"
+				echo " $FILE"
+				echo "---------------------------------------"
+				FOUND=true
+			fi
+			echo "#define $SYM ${SYM}_rtl"
+			let "N++"
+		fi
+	done
+done
+echo "$N symbols need redefinition."
+
+exit 0

@@ -1,0 +1,23 @@
+if_arp: add a WiMax pseudo header
+
+Most WiMax hardware doesn't really provide headers we see, being just
+pure IP devices, but this is specified so network tools can
+distinguish different network types.
+
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+
+---
+
+diff -r f456a80cbe51 include/linux/if_arp.h
+--- a/include/linux/if_arp.h	Fri Jan 04 18:17:18 2008 -0800
++++ b/include/linux/if_arp.h	Fri Jan 11 14:37:06 2008 -0800
+@@ -52,6 +52,8 @@
+ #define ARPHRD_ROSE	270
+ #define ARPHRD_X25	271		/* CCITT X.25			*/
+ #define ARPHRD_HWX25	272		/* Boards with X.25 in firmware	*/
++#define ARPHRD_WIMAX	273		/* WiMAX pseudo-header */
++
+ #define ARPHRD_PPP	512
+ #define ARPHRD_CISCO	513		/* Cisco HDLC	 		*/
+ #define ARPHRD_HDLC	ARPHRD_CISCO

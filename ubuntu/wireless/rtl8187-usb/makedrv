@@ -1,0 +1,22 @@
+#!/bin/sh
+
+#tar -zxvf stack.tar.gz
+#tar -zxvf drv.tar.gz
+cd ieee80211
+make clean
+make
+#cd ../mshclass
+# make clean
+#make
+cd ../rtl8187
+make clean
+make
+#cd ../11s-PathSelection
+#make clean
+#make
+#cd ../wpa_supplicant-0.5.3
+#make clean
+#make
+cd ..
+
+
