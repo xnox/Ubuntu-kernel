@@ -1,3 +1,75 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook2) hardy; urgency=low
+
+  [Amit Kucheria]
+
+  * LPIA: Update Poulsbo DRM driver to 2.0.1.32L.0016
+  * Poulsbo: Update DRM driver to 2.0.0.32L.0019
+    - LP: #244886
+  * Update Intel wimax driver to 1.2.5
+    - LP: #253347
+  * Add firmware for Motorola wimax card (i2400m driver)
+    - LP: #253347
+
+  [Michael Krufky]
+
+  * sms1xxx: mark functions static, disable unused functions
+  * sms1xxx: simplify smsusb_init_device switch..case block
+  * sms1xxx: add capability to define device-specific firmware filenames
+  * sms1xxx: add support for Hauppauge 55xxx firmware
+    - LP: #243430
+  * sms1xxx: fix smsusb_driver.name and MODULE_DESCRIPTION
+  * sms1xxx: remove kmutex_t typedef
+  * sms1xxx: log firmware download process by default
+  * sms1xxx: fix warning: format '%d' expects type 'int', but argument x
+    has type 'size_t'
+  * sms1xxx: fix OOPS on 64 bit kernels due to a bad cast
+    - LP: #244005
+
+  [Stefan Bader]
+
+  * SAUCE: Disable DXS explicitly for 0x1458:0xa002 (VIA-based)
+  * SAUCE: Disable DXS explicitly for 0x1458:0xa002 (VIA-based)
+  * Adding support for HVR950G
+    - LP: #241628
+  * Fix ieee80211_rtl to coexist with ieee80211
+    - LP: #258344
+  * Ubuntu-2.6.24-21.32
+  * ndiswrapper: Prevent buffer overflow if nickname is IW_ESSID_MAX_SIZE
+    characters long.
+  * ndiswrapper: Print exactly the number of characters in essid
+  * Ubuntu-2.6.24-21.33
+  * Ubuntu-2.6.24-22.35
+
+  [Tim Gardner]
+
+  * Updated atlx to upstream version from 2.6.25-rc5
+    - LP: #147639
+  * Updated atlx to upstream version from 2.6.25-rc5 Bug: #147639
+  * Add Siano SMS10xx USB dvb tuner driver
+    - LP: #241745
+  * prevent false-positive lock status
+    - LP: #241981
+  * xc5000: firmware loading optimizations
+    - LP: #242169
+  * Added iwlwifi 3945/4965 firmware to debian installer firmware package.
+    - LP: #220917
+  * Add support for MEDION E1210 webcam
+    - LP: #246309
+  * Add support for RTL 8187 USB
+    - LP: #258344
+  * Enable RTL 8187 USB for amd64/i386
+
+  [Upstream Kernel Changes]
+
+  * ALSA: hda - support new AMD HDMI Audio (1002:970f)
+
+  [Michael Frey]
+
+  * sound/pci/hda/hda_intel.c -- Remove unused function.
+  * sound/pci/hda/patch_realtek.c Fix for LP: 301785.  Muting sound does not work
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 11 Dec 2008 12:19:27 -0800
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook1) hardy; urgency=low
 
   * merge with ubuntu 
