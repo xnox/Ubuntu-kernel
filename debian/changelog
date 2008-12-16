@@ -1,3 +1,13 @@
+linux-backports-modules-2.6.27 (2.6.27-11.9) intrepid-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Update to wireless-testing master-2008-11-24
+    - LP: #293217
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 16 Dec 2008 16:52:10 -0700
+
 linux-backports-modules-2.6.27 (2.6.27-10.8) intrepid-proposed; urgency=low
 
   [Tim Gardner]
