@@ -1,5 +1,5 @@
 Intel PRO/Wireless 3945ABG/BG Network Connection Adapter
-Copyright (C) 2006 - 2007 Intel Corporation.  All rights reserved.
+Copyright (C) 2006 - 2008 Intel Corporation.  All rights reserved.
 
 Microcode Package README.iwlwifi-3945-ucode
 
@@ -12,10 +12,14 @@ INDEX
 
 1. OVERVIEW
 
-The file iwlwifi-3945.ucode provided in this package is required to be 
+The file iwlwifi-3945-2.ucode provided in this package must be 
 present on your system in order for the Intel PRO/Wireless 3945ABG/BG Network
-Connection Adapter driver for Linux (iwlwifi-3945) to be able to operate
-on your system.
+Connection Adapter driver for Linux (iwlwifi-3945) to operate on your system.
+
+The "-2" in the filename reflects an interface/architecture version number.
+It will change only when changes in new uCode releases make the new uCode
+incompatible with earlier drivers, or when new drivers are incompatible
+with older versions of uCode.
 
 On adapter initialization, and at varying times during the uptime of 
 the adapter, the microcode is loaded into the RAM on the network 
@@ -27,7 +31,7 @@ interest given the current operating mode of the device.
 
 2. INSTALLATION
 
-The iwlwifi-3945 driver will look for the file iwlwifi-3945.ucode using the 
+The iwlwifi-3945 driver will look for the file iwlwifi-3945-2.ucode using the 
 kernel's firmware_loader infrastructure.  In order to function 
 correctly, you need to have this support enabled in your kernel.  When 
 you configure the kernel, you can find this option in the following 
@@ -65,11 +69,10 @@ If it lists more than one directory, you only need to put the
 microcode in one of them.  In the above example, installation is 
 simply:
 
-	% cp iwlwifi-3945.ucode /lib/firmware
+	% cp iwlwifi-3945-2.ucode /lib/firmware
 
-You can now load the driver (see the INSTALL and 
-README.iwlwifi-3945 provided with the iwlwifi-3945 package for 
-information on building and using that driver.)
+You can now load the driver (see the INSTALL and README.iwlwifi provided with
+the iwlwifi package for information on building and using that driver.)
 
 3. LICENSE
 

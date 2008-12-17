@@ -25,7 +25,7 @@
  * in the file called LICENSE.GPL.
  *
  * Contact Information:
- * Tomas Winkler <tomas.winkler@intel.com>
+ *  Intel Linux Wireless <ilw@linux.intel.com>
  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
  *
  * BSD LICENSE
@@ -72,6 +72,7 @@ struct iwl_cmd;
 
 #define IWLWIFI_VERSION "1.3.27k"
 #define DRV_COPYRIGHT	"Copyright(c) 2003-2008 Intel Corporation"
+#define DRV_AUTHOR     "<ilw@linux.intel.com>"
 
 #define IWL_PCI_DEVICE(dev, subdev, cfg) \
 	.vendor = PCI_VENDOR_ID_INTEL,  .device = (dev), \
@@ -157,16 +158,45 @@ struct iwl_mod_params {
 	int disable_hw_scan;	/* def: 0 = use h/w scan */
 	int num_of_queues;	/* def: HW dependent */
 	int num_of_ampdu_queues;/* def: HW dependent */
-	int enable_qos;		/* def: 1 = use quality of service */
 	int disable_11n;	/* def: 0 = disable 11n capabilities */
 	int amsdu_size_8K;	/* def: 1 = enable 8K amsdu size */
 	int antenna;  		/* def: 0 = both antennas (use diversity) */
 	int restart_fw;		/* def: 1 = restart firmware */
 };
 
+/**
+ * struct iwl_cfg
+ * @fw_name_pre: Firmware filename prefix. The api version and extension
+ * 	(.ucode) will be added to filename before loading from disk. The
+ * 	filename is constructed as fw_name_pre<api>.ucode.
+ * @ucode_api_max: Highest version of uCode API supported by driver.
+ * @ucode_api_min: Lowest version of uCode API supported by driver.
+ *
+ * We enable the driver to be backward compatible wrt API version. The
+ * driver specifies which APIs it supports (with @ucode_api_max being the
+ * highest and @ucode_api_min the lowest). Firmware will only be loaded if
+ * it has a supported API version. The firmware's API version will be
+ * stored in @iwl_priv, enabling the driver to make runtime changes based
+ * on firmware version used.
+ *
+ * For example,
+ * if (IWL_UCODE_API(priv->ucode_ver) >= 2) {
+ * 	Driver interacts with Firmware API version >= 2.
+ * } else {
+ * 	Driver interacts with Firmware API version 1.
+ * }
+ *
+ * The ideal usage of this infrastructure is to treat a new ucode API
+ * release as a new hardware revision. That is, through utilizing the
+ * iwl_hcmd_utils_ops etc. we accommodate different command structures
+ * and flows between hardware versions (4965/5000) as well as their API
+ * versions.
+ */
 struct iwl_cfg {
 	const char *name;
-	const char *fw_name;
+	const char *fw_name_pre;
+	const unsigned int ucode_api_max;
+	const unsigned int ucode_api_min;
 	unsigned int sku;
 	int eeprom_size;
 	u16  eeprom_ver;
@@ -311,6 +341,12 @@ int iwl_send_cmd_pdu_async(struct iwl_priv *priv, u8 id, u16 len,
 					   struct sk_buff *skb));
 
 int iwl_enqueue_hcmd(struct iwl_priv *priv, struct iwl_host_cmd *cmd);
+
+/*****************************************************
+ * PCI						     *
+ *****************************************************/
+void iwl_disable_interrupts(struct iwl_priv *priv);
+void iwl_enable_interrupts(struct iwl_priv *priv);
 
 /*****************************************************
 *  Error Handling Debugging

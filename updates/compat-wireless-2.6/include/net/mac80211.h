@@ -165,14 +165,9 @@ enum ieee80211_bss_change {
 
 /**
  * struct ieee80211_bss_ht_conf - BSS's changing HT configuration
- * @secondary_channel_offset: secondary channel offset, uses
- *	%IEEE80211_HT_PARAM_CHA_SEC_ values
- * @width_40_ok: indicates that 40 MHz bandwidth may be used for TX
  * @operation_mode: HT operation mode (like in &struct ieee80211_ht_info)
  */
 struct ieee80211_bss_ht_conf {
-	u8 secondary_channel_offset;
-	bool width_40_ok;
 	u16 operation_mode;
 };
 
@@ -323,6 +318,7 @@ struct ieee80211_tx_rate {
  * @flags: transmit info flags, defined above
  * @band: the band to transmit on (use for checking for races)
  * @antenna_sel_tx: antenna to use, 0 for automatic diversity
+ * @pad: padding, ignore
  * @control: union for control data
  * @status: union for status data
  * @driver_data: array of driver_data pointers
@@ -440,6 +436,9 @@ ieee80211_tx_info_clear_status(struct ieee80211_tx_info *info)
  *	is valid. This is useful in monitor mode and necessary for beacon frames
  *	to enable IBSS merging.
  * @RX_FLAG_SHORTPRE: Short preamble was used for this frame
+ * @RX_FLAG_HT: HT MCS was used and rate_idx is MCS index
+ * @RX_FLAG_40MHZ: HT40 (40 MHz) was used
+ * @RX_FLAG_SHORT_GI: Short guard interval was used
  */
 enum mac80211_rx_flags {
 	RX_FLAG_MMIC_ERROR	= 1<<0,
@@ -450,7 +449,10 @@ enum mac80211_rx_flags {
 	RX_FLAG_FAILED_FCS_CRC	= 1<<5,
 	RX_FLAG_FAILED_PLCP_CRC = 1<<6,
 	RX_FLAG_TSFT		= 1<<7,
-	RX_FLAG_SHORTPRE	= 1<<8
+	RX_FLAG_SHORTPRE	= 1<<8,
+	RX_FLAG_HT		= 1<<9,
+	RX_FLAG_40MHZ		= 1<<10,
+	RX_FLAG_SHORT_GI	= 1<<11,
 };
 
 /**
@@ -470,7 +472,8 @@ enum mac80211_rx_flags {
  * @noise: noise when receiving this frame, in dBm.
  * @qual: overall signal quality indication, in percent (0-100).
  * @antenna: antenna used
- * @rate_idx: index of data rate into band's supported rates
+ * @rate_idx: index of data rate into band's supported rates or MCS index if
+ *	HT rates are use (RX_FLAG_HT)
  * @flag: %RX_FLAG_*
  */
 struct ieee80211_rx_status {
@@ -507,6 +510,7 @@ static inline int __deprecated __IEEE80211_CONF_SHORT_SLOT_TIME(void)
 
 struct ieee80211_ht_conf {
 	bool enabled;
+	enum nl80211_channel_type channel_type;
 };
 
 /**
@@ -769,13 +773,17 @@ struct ieee80211_sta {
  * enum sta_notify_cmd - sta notify command
  *
  * Used with the sta_notify() callback in &struct ieee80211_ops, this
- * indicates addition and removal of a station to station table.
+ * indicates addition and removal of a station to station table,
+ * or if a associated station made a power state transition.
  *
  * @STA_NOTIFY_ADD: a station was added to the station table
  * @STA_NOTIFY_REMOVE: a station being removed from the station table
+ * @STA_NOTIFY_SLEEP: a station is now sleeping
+ * @STA_NOTIFY_AWAKE: a sleeping station woke up
  */
 enum sta_notify_cmd {
-	STA_NOTIFY_ADD, STA_NOTIFY_REMOVE
+	STA_NOTIFY_ADD, STA_NOTIFY_REMOVE,
+	STA_NOTIFY_SLEEP, STA_NOTIFY_AWAKE,
 };
 
 /**
@@ -1241,12 +1249,9 @@ enum ieee80211_ampdu_mlme_action {
  *
  * @set_rts_threshold: Configuration of RTS threshold (if device needs it)
  *
- * @set_frag_threshold: Configuration of fragmentation threshold. Assign this if
- *	the device does fragmentation by itself; if this method is assigned then
- *	the stack will not do fragmentation.
- *
- * @sta_notify: Notifies low level driver about addition or removal
- *	of associated station or AP.
+ * @sta_notify: Notifies low level driver about addition, removal or power
+ *	state transition of an associated station, AP,  IBSS/WDS/mesh peer etc.
+ *	Must be atomic.
  *
  * @conf_tx: Configure TX queue parameters (EDCF (aifs, cw_min, cw_max),
  *	bursting) for a hardware TX queue.
@@ -1311,7 +1316,6 @@ struct ieee80211_ops {
 	void (*get_tkip_seq)(struct ieee80211_hw *hw, u8 hw_key_idx,
 			     u32 *iv32, u16 *iv16);
 	int (*set_rts_threshold)(struct ieee80211_hw *hw, u32 value);
-	int (*set_frag_threshold)(struct ieee80211_hw *hw, u32 value);
 	void (*sta_notify)(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 			enum sta_notify_cmd, struct ieee80211_sta *sta);
 	int (*conf_tx)(struct ieee80211_hw *hw, u16 queue,

@@ -149,7 +149,17 @@ ieee80211_add_rx_radiotap_header(struct ieee80211_local *local,
 	pos++;
 
 	/* IEEE80211_RADIOTAP_RATE */
-	*pos = rate->bitrate / 5;
+	if (status->flag & RX_FLAG_HT) {
+		/*
+		 * TODO: add following information into radiotap header once
+		 * suitable fields are defined for it:
+		 * - MCS index (status->rate_idx)
+		 * - HT40 (status->flag & RX_FLAG_40MHZ)
+		 * - short-GI (status->flag & RX_FLAG_SHORT_GI)
+		 */
+		*pos = 0;
+	} else
+		*pos = rate->bitrate / 5;
 	pos++;
 
 	/* IEEE80211_RADIOTAP_CHANNEL */
@@ -654,10 +664,14 @@ ieee80211_rx_h_decrypt(struct ieee80211_rx_data *rx)
 static void ap_sta_ps_start(struct sta_info *sta)
 {
 	struct ieee80211_sub_if_data *sdata = sta->sdata;
+	struct ieee80211_local *local = sdata->local;
 	DECLARE_MAC_BUF(mac);
 
 	atomic_inc(&sdata->bss->num_sta_ps);
 	set_and_clear_sta_flags(sta, WLAN_STA_PS, WLAN_STA_PSPOLL);
+	if (local->ops->sta_notify)
+		local->ops->sta_notify(local_to_hw(local), &sdata->vif,
+					STA_NOTIFY_SLEEP, &sta->sta);
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
 	printk(KERN_DEBUG "%s: STA %s aid %d enters power save mode\n",
 	       sdata->dev->name, print_mac(mac, sta->sta.addr), sta->sta.aid);
@@ -675,6 +689,9 @@ static int ap_sta_ps_end(struct sta_info *sta)
 	atomic_dec(&sdata->bss->num_sta_ps);
 
 	clear_sta_flags(sta, WLAN_STA_PS | WLAN_STA_PSPOLL);
+	if (local->ops->sta_notify)
+		local->ops->sta_notify(local_to_hw(local), &sdata->vif,
+					STA_NOTIFY_AWAKE, &sta->sta);
 
 	if (!skb_queue_empty(&sta->ps_tx_buf))
 		sta_info_clear_tim_bit(sta);
@@ -686,7 +703,7 @@ static int ap_sta_ps_end(struct sta_info *sta)
 
 	/* Send all buffered frames to the station */
 	while ((skb = skb_dequeue(&sta->tx_filtered)) != NULL) {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,28))
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,28))
 		dev_kfree_skb(skb);
 #else
 		sent++;
@@ -696,7 +713,7 @@ static int ap_sta_ps_end(struct sta_info *sta)
 	}
 	while ((skb = skb_dequeue(&sta->ps_tx_buf)) != NULL) {
 		local->total_ps_buffered--;
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
 		sent++;
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
 		printk(KERN_DEBUG "%s: STA %s aid %d send PS frame "
@@ -751,17 +768,29 @@ ieee80211_rx_h_sta_process(struct ieee80211_rx_data *rx)
 	sta->last_qual = rx->status->qual;
 	sta->last_noise = rx->status->noise;
 
+	/*
+	 * Change STA power saving mode only at the end of a frame
+	 * exchange sequence.
+	 */
 	if (!ieee80211_has_morefrags(hdr->frame_control) &&
 	    (rx->sdata->vif.type == NL80211_IFTYPE_AP ||
 	     rx->sdata->vif.type == NL80211_IFTYPE_AP_VLAN)) {
-		/* Change STA power saving mode only in the end of a frame
-		 * exchange sequence */
-		if (test_sta_flags(sta, WLAN_STA_PS) &&
-		    !ieee80211_has_pm(hdr->frame_control))
-			rx->sent_ps_buffered += ap_sta_ps_end(sta);
-		else if (!test_sta_flags(sta, WLAN_STA_PS) &&
-			 ieee80211_has_pm(hdr->frame_control))
-			ap_sta_ps_start(sta);
+		if (test_sta_flags(sta, WLAN_STA_PS)) {
+			/*
+			 * Ignore doze->wake transitions that are
+			 * indicated by non-data frames, the standard
+			 * is unclear here, but for example going to
+			 * PS mode and then scanning would cause a
+			 * doze->wake transition for the probe request,
+			 * and that is clearly undesirable.
+			 */
+			if (ieee80211_is_data(hdr->frame_control) &&
+			    !ieee80211_has_pm(hdr->frame_control))
+				rx->sent_ps_buffered += ap_sta_ps_end(sta);
+		} else {
+			if (ieee80211_has_pm(hdr->frame_control))
+				ap_sta_ps_start(sta);
+		}
 	}
 
 	/* Drop data::nullfunc frames silently, since they are used only to
@@ -1852,10 +1881,15 @@ static int prepare_for_handlers(struct ieee80211_sub_if_data *sdata,
 			if (!(sdata->dev->flags & IFF_PROMISC))
 				return 0;
 			rx->flags &= ~IEEE80211_RX_RA_MATCH;
-		} else if (!rx->sta)
-			rx->sta = ieee80211_ibss_add_sta(sdata, rx->skb,
-						bssid, hdr->addr2,
-						BIT(rx->status->rate_idx));
+		} else if (!rx->sta) {
+			int rate_idx;
+			if (rx->status->flag & RX_FLAG_HT)
+				rate_idx = 0; /* TODO: HT rates */
+			else
+				rate_idx = rx->status->rate_idx;
+			rx->sta = ieee80211_ibss_add_sta(sdata, bssid, hdr->addr2,
+				BIT(rate_idx));
+		}
 		break;
 	case NL80211_IFTYPE_MESH_POINT:
 		if (!multicast &&
@@ -2061,7 +2095,13 @@ static u8 ieee80211_sta_manage_reorder_buf(struct ieee80211_hw *hw,
 					tid_agg_rx->reorder_buf[index]->cb,
 					sizeof(status));
 				sband = local->hw.wiphy->bands[status.band];
-				rate = &sband->bitrates[status.rate_idx];
+				if (status.flag & RX_FLAG_HT) {
+					/* TODO: HT rates */
+					rate = sband->bitrates;
+				} else {
+					rate = &sband->bitrates
+						[status.rate_idx];
+				}
 				__ieee80211_rx_handle_packet(hw,
 					tid_agg_rx->reorder_buf[index],
 					&status, rate);
@@ -2105,7 +2145,10 @@ static u8 ieee80211_sta_manage_reorder_buf(struct ieee80211_hw *hw,
 		memcpy(&status, tid_agg_rx->reorder_buf[index]->cb,
 			sizeof(status));
 		sband = local->hw.wiphy->bands[status.band];
-		rate = &sband->bitrates[status.rate_idx];
+		if (status.flag & RX_FLAG_HT)
+			rate = sband->bitrates; /* TODO: HT rates */
+		else
+			rate = &sband->bitrates[status.rate_idx];
 		__ieee80211_rx_handle_packet(hw, tid_agg_rx->reorder_buf[index],
 					     &status, rate);
 		tid_agg_rx->stored_mpdu_num--;
@@ -2193,15 +2236,26 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
 	}
 
 	sband = local->hw.wiphy->bands[status->band];
-
-	if (!sband ||
-	    status->rate_idx < 0 ||
-	    status->rate_idx >= sband->n_bitrates) {
+	if (!sband) {
 		WARN_ON(1);
 		return;
 	}
 
-	rate = &sband->bitrates[status->rate_idx];
+	if (status->flag & RX_FLAG_HT) {
+		/* rate_idx is MCS index */
+		if (WARN_ON(status->rate_idx < 0 ||
+			    status->rate_idx >= 76))
+			return;
+		/* HT rates are not in the table - use the highest legacy rate
+		 * for now since other parts of mac80211 may not yet be fully
+		 * MCS aware. */
+		rate = &sband->bitrates[sband->n_bitrates - 1];
+	} else {
+		if (WARN_ON(status->rate_idx < 0 ||
+			    status->rate_idx >= sband->n_bitrates))
+			return;
+		rate = &sband->bitrates[status->rate_idx];
+	}
 
 	/*
 	 * key references and virtual interfaces are protected using RCU

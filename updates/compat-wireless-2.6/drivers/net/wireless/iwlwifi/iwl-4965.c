@@ -19,7 +19,7 @@
  * file called LICENSE.
  *
  * Contact Information:
- * James P. Ketrenos <ipw2100-admin@linux.intel.com>
+ *  Intel Linux Wireless <ilw@linux.intel.com>
  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
  *
  *****************************************************************************/
@@ -48,19 +48,21 @@
 static int iwl4965_send_tx_power(struct iwl_priv *priv);
 static int iwl4965_hw_get_temperature(const struct iwl_priv *priv);
 
-/* Change firmware file name, using "-" and incrementing number,
- *   *only* when uCode interface or architecture changes so that it
- *   is not compatible with earlier drivers.
- * This number will also appear in << 8 position of 1st dword of uCode file */
-#define IWL4965_UCODE_API "-2"
-#define IWL4965_MODULE_FIRMWARE "iwlwifi-4965" IWL4965_UCODE_API ".ucode"
+/* Highest firmware API version supported */
+#define IWL4965_UCODE_API_MAX 2
+
+/* Lowest firmware API version supported */
+#define IWL4965_UCODE_API_MIN 2
+
+#define IWL4965_FW_PRE "iwlwifi-4965-"
+#define _IWL4965_MODULE_FIRMWARE(api) IWL4965_FW_PRE #api ".ucode"
+#define IWL4965_MODULE_FIRMWARE(api) _IWL4965_MODULE_FIRMWARE(api)
 
 
 /* module parameters */
 static struct iwl_mod_params iwl4965_mod_params = {
 	.num_of_queues = IWL49_NUM_QUEUES,
 	.num_of_ampdu_queues = IWL49_NUM_AMPDU_QUEUES,
-	.enable_qos = 1,
 	.amsdu_size_8K = 1,
 	.restart_fw = 1,
 	/* the rest are 0 by default */
@@ -349,9 +351,8 @@ static int iwl4965_apm_init(struct iwl_priv *priv)
 	iwl_set_bit(priv, CSR_GP_CNTRL, CSR_GP_CNTRL_REG_FLAG_INIT_DONE);
 
 	/* wait for clock stabilization */
-	ret = iwl_poll_bit(priv, CSR_GP_CNTRL,
-			   CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY,
-			   CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
+	ret = iwl_poll_direct_bit(priv, CSR_GP_CNTRL,
+			CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
 	if (ret < 0) {
 		IWL_DEBUG_INFO("Failed to init the card\n");
 		goto out;
@@ -433,9 +434,8 @@ static int iwl4965_apm_stop_master(struct iwl_priv *priv)
 	/* set stop master bit */
 	iwl_set_bit(priv, CSR_RESET, CSR_RESET_REG_FLAG_STOP_MASTER);
 
-	ret = iwl_poll_bit(priv, CSR_RESET,
-				  CSR_RESET_REG_FLAG_MASTER_DISABLED,
-				  CSR_RESET_REG_FLAG_MASTER_DISABLED, 100);
+	ret = iwl_poll_direct_bit(priv, CSR_RESET,
+			CSR_RESET_REG_FLAG_MASTER_DISABLED, 100);
 	if (ret < 0)
 		goto out;
 
@@ -479,11 +479,9 @@ static int iwl4965_apm_reset(struct iwl_priv *priv)
 
 	iwl_set_bit(priv, CSR_GP_CNTRL, CSR_GP_CNTRL_REG_FLAG_INIT_DONE);
 
-	ret = iwl_poll_bit(priv, CSR_RESET,
-			  CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY,
-			  CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25);
-
-	if (ret)
+	ret = iwl_poll_direct_bit(priv, CSR_GP_CNTRL,
+			CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
+	if (ret < 0)
 		goto out;
 
 	udelay(10);
@@ -523,7 +521,7 @@ static void iwl4965_chain_noise_reset(struct iwl_priv *priv)
 		struct iwl_calib_diff_gain_cmd cmd;
 
 		memset(&cmd, 0, sizeof(cmd));
-		cmd.opCode = IWL_PHY_CALIBRATE_DIFF_GAIN_CMD;
+		cmd.hdr.op_code = IWL_PHY_CALIBRATE_DIFF_GAIN_CMD;
 		cmd.diff_gain_a = 0;
 		cmd.diff_gain_b = 0;
 		cmd.diff_gain_c = 0;
@@ -574,7 +572,7 @@ static void iwl4965_gain_computation(struct iwl_priv *priv,
 		data->radio_write = 1;
 
 		memset(&cmd, 0, sizeof(cmd));
-		cmd.opCode = IWL_PHY_CALIBRATE_DIFF_GAIN_CMD;
+		cmd.hdr.op_code = IWL_PHY_CALIBRATE_DIFF_GAIN_CMD;
 		cmd.diff_gain_a = data->delta_gain_code[0];
 		cmd.diff_gain_b = data->delta_gain_code[1];
 		cmd.diff_gain_c = data->delta_gain_code[2];
@@ -816,6 +814,7 @@ static int iwl4965_hw_set_hw_params(struct iwl_priv *priv)
 	}
 
 	priv->hw_params.max_txq_num = priv->cfg->mod_params->num_of_queues;
+	priv->hw_params.dma_chnl_num = FH49_TCSR_CHNL_NUM;
 	priv->hw_params.scd_bc_tbls_size =
 			IWL49_NUM_QUEUES * sizeof(struct iwl4965_scd_bc_tbl);
 	priv->hw_params.max_stations = IWL4965_STATION_COUNT;
@@ -2335,7 +2334,9 @@ static struct iwl_ops iwl4965_ops = {
 
 struct iwl_cfg iwl4965_agn_cfg = {
 	.name = "4965AGN",
-	.fw_name = IWL4965_MODULE_FIRMWARE,
+	.fw_name_pre = IWL4965_FW_PRE,
+	.ucode_api_max = IWL4965_UCODE_API_MAX,
+	.ucode_api_min = IWL4965_UCODE_API_MIN,
 	.sku = IWL_SKU_A|IWL_SKU_G|IWL_SKU_N,
 	.eeprom_size = IWL4965_EEPROM_IMG_SIZE,
 	.eeprom_ver = EEPROM_4965_EEPROM_VERSION,
@@ -2345,7 +2346,7 @@ struct iwl_cfg iwl4965_agn_cfg = {
 };
 
 /* Module firmware */
-MODULE_FIRMWARE(IWL4965_MODULE_FIRMWARE);
+MODULE_FIRMWARE(IWL4965_MODULE_FIRMWARE(IWL4965_UCODE_API_MAX));
 
 module_param_named(antenna, iwl4965_mod_params.antenna, int, 0444);
 MODULE_PARM_DESC(antenna, "select antenna (1=Main, 2=Aux, default 0 [both])");
@@ -2361,9 +2362,6 @@ MODULE_PARM_DESC(disable_hw_scan, "disable hardware scanning (default 0)");
 
 module_param_named(queues_num, iwl4965_mod_params.num_of_queues, int, 0444);
 MODULE_PARM_DESC(queues_num, "number of hw queues.");
-/* QoS */
-module_param_named(qos_enable, iwl4965_mod_params.enable_qos, int, 0444);
-MODULE_PARM_DESC(qos_enable, "enable all QoS functionality");
 /* 11n */
 module_param_named(11n_disable, iwl4965_mod_params.disable_11n, int, 0444);
 MODULE_PARM_DESC(11n_disable, "disable 11n functionality");

@@ -817,7 +817,7 @@ static void ath_rc_ratefind(struct ath_softc *sc,
 	struct ath_rate_table *rate_table;
 	struct ieee80211_tx_rate *rates = tx_info->control.rates;
 
-	rate_table = sc->hw_rate_table[sc->sc_curmode];
+	rate_table = sc->cur_rate_table;
 	rix = ath_rc_ratefind_ht(sc, ath_rc_priv, rate_table, 1,
 				 is_probe, is_retry);
 	nrix = rix;
@@ -874,10 +874,9 @@ static void ath_rc_ratefind(struct ath_softc *sc,
 	 * So, set fourth rate in series to be same as third one for
 	 * above conditions.
 	 */
-	if ((sc->sc_curmode == ATH9K_MODE_11NG_HT20) ||
-	    (sc->sc_curmode == ATH9K_MODE_11NG_HT40PLUS) ||
-	    (sc->sc_curmode == ATH9K_MODE_11NG_HT40MINUS)) {
-		u8  dot11rate = rate_table->info[rix].dot11rate;
+	if ((sc->hw->conf.channel->band == IEEE80211_BAND_2GHZ) &&
+	    (sc->hw->conf.ht.enabled)) {
+		u8 dot11rate = rate_table->info[rix].dot11rate;
 		u8 phy = rate_table->info[rix].phy;
 		if (i == 4 &&
 		    ((dot11rate == 2 && phy == WLAN_RC_PHY_HT_40_SS) ||
@@ -1094,7 +1093,7 @@ static void ath_rc_update_ht(struct ath_softc *sc,
 	int rate;
 	u8 last_per;
 	bool state_change = false;
-	struct ath_rate_table *rate_table = sc->hw_rate_table[sc->sc_curmode];
+	struct ath_rate_table *rate_table = sc->cur_rate_table;
 	int size = ath_rc_priv->rate_table_size;
 
 	if ((tx_rate < 0) || (tx_rate > rate_table->rate_cnt))
@@ -1254,7 +1253,7 @@ static void ath_rc_tx_status(struct ath_softc *sc,
 	u8 flags;
 	u32 i = 0, rix;
 
-	rate_table = sc->hw_rate_table[sc->sc_curmode];
+	rate_table = sc->cur_rate_table;
 
 	/*
 	 * If the first rate is not the final index, there
@@ -1304,6 +1303,38 @@ static void ath_rc_tx_status(struct ath_softc *sc,
 			 xretries, long_retry);
 }
 
+static struct ath_rate_table *ath_choose_rate_table(struct ath_softc *sc,
+						    enum ieee80211_band band,
+						    bool is_ht, bool is_cw_40)
+{
+	int mode = 0;
+
+	switch(band) {
+	case IEEE80211_BAND_2GHZ:
+		mode = ATH9K_MODE_11G;
+		if (is_ht)
+			mode = ATH9K_MODE_11NG_HT20;
+		if (is_cw_40)
+			mode = ATH9K_MODE_11NG_HT40PLUS;
+		break;
+	case IEEE80211_BAND_5GHZ:
+		mode = ATH9K_MODE_11A;
+		if (is_ht)
+			mode = ATH9K_MODE_11NA_HT20;
+		if (is_cw_40)
+			mode = ATH9K_MODE_11NA_HT40PLUS;
+		break;
+	default:
+		DPRINTF(sc, ATH_DBG_CONFIG, "Invalid band\n");
+		return NULL;
+	}
+
+	BUG_ON(mode >= ATH9K_MODE_MAX);
+
+	DPRINTF(sc, ATH_DBG_CONFIG, "Choosing rate table for mode: %d\n", mode);
+	return sc->hw_rate_table[mode];
+}
+
 static void ath_rc_init(struct ath_softc *sc,
 			struct ath_rate_priv *ath_rc_priv,
 			struct ieee80211_supported_band *sband,
@@ -1314,16 +1345,25 @@ static void ath_rc_init(struct ath_softc *sc,
 	u8 *ht_mcs = (u8 *)&ath_rc_priv->neg_ht_rates;
 	u8 i, j, k, hi = 0, hthi = 0;
 
-	rate_table = sc->hw_rate_table[sc->sc_curmode];
+	/* FIXME: Adhoc */
+	if ((sc->sc_ah->ah_opmode == NL80211_IFTYPE_STATION) ||
+	    (sc->sc_ah->ah_opmode == NL80211_IFTYPE_ADHOC)) {
+		bool is_cw_40 = sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40;
+		rate_table = ath_choose_rate_table(sc, sband->band,
+						   sta->ht_cap.ht_supported,
+						   is_cw_40);
+	} else if (sc->sc_ah->ah_opmode == NL80211_IFTYPE_AP) {
+		/* cur_rate_table would be set on init through config() */
+		rate_table = sc->cur_rate_table;
+	}
+
+	if (!rate_table) {
+		DPRINTF(sc, ATH_DBG_FATAL, "Rate table not initialized\n");
+		return;
+	}
 
 	if (sta->ht_cap.ht_supported) {
-		if (sband->band == IEEE80211_BAND_2GHZ)
-			rate_table = sc->hw_rate_table[ATH9K_MODE_11NG_HT20];
-		else
-			rate_table = sc->hw_rate_table[ATH9K_MODE_11NA_HT20];
-
 		ath_rc_priv->ht_cap = (WLAN_RC_HT_FLAG | WLAN_RC_DS_FLAG);
-
 		if (sta->ht_cap.cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40)
 			ath_rc_priv->ht_cap |= WLAN_RC_40_FLAG;
 	}
@@ -1391,6 +1431,7 @@ static void ath_rc_init(struct ath_softc *sc,
 	ath_rc_priv->max_valid_rate = k;
 	ath_rc_sort_validrates(rate_table, ath_rc_priv);
 	ath_rc_priv->rate_max_phy = ath_rc_priv->valid_rate_index[k-4];
+	sc->cur_rate_table = rate_table;
 }
 
 /* Rate Control callbacks */
@@ -1531,8 +1572,7 @@ static void *ath_rate_alloc_sta(void *priv, struct ieee80211_sta *sta, gfp_t gfp
 	rate_priv = kzalloc(sizeof(struct ath_rate_priv), gfp);
 	if (!rate_priv) {
 		DPRINTF(sc, ATH_DBG_FATAL,
-			"%s: Unable to allocate private rc structure\n",
-			__func__);
+			"Unable to allocate private rc structure\n");
 		return NULL;
 	}
 

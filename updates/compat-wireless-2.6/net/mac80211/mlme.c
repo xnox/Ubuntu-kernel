@@ -861,16 +861,27 @@ static void ieee80211_set_disassoc(struct ieee80211_sub_if_data *sdata,
 	if (self_disconnected || reason == WLAN_REASON_DISASSOC_STA_HAS_LEFT)
 		ifsta->state = IEEE80211_STA_MLME_DISABLED;
 
+	rcu_read_unlock();
+
+	local->hw.conf.ht.enabled = false;
+	local->oper_channel_type = NL80211_CHAN_NO_HT;
+	ieee80211_hw_config(local, IEEE80211_CONF_CHANGE_HT);
+
+	ieee80211_bss_info_change_notify(sdata, changed);
+
+	rcu_read_lock();
+
+	sta = sta_info_get(local, ifsta->bssid);
+	if (!sta) {
+		rcu_read_unlock();
+		return;
+	}
+
 	sta_info_unlink(&sta);
 
 	rcu_read_unlock();
 
 	sta_info_destroy(sta);
-
-	local->hw.conf.ht.enabled = false;
-	ieee80211_hw_config(local, IEEE80211_CONF_CHANGE_HT);
-
-	ieee80211_bss_info_change_notify(sdata, changed);
 }
 
 static int ieee80211_sta_wep_configured(struct ieee80211_sub_if_data *sdata)
@@ -1570,8 +1581,7 @@ static void ieee80211_rx_bss_info(struct ieee80211_sub_if_data *sdata,
 				    (unsigned long long) sta->sta.supp_rates[band]);
 #endif
 		} else {
-			ieee80211_ibss_add_sta(sdata, NULL, mgmt->bssid,
-					       mgmt->sa, supp_rates);
+			ieee80211_ibss_add_sta(sdata, mgmt->bssid, mgmt->sa, supp_rates);
 		}
 
 		rcu_read_unlock();
@@ -1618,8 +1628,13 @@ static void ieee80211_rx_bss_info(struct ieee80211_sub_if_data *sdata,
 			 * e.g: at 1 MBit that means mactime is 192 usec earlier
 			 * (=24 bytes * 8 usecs/byte) than the beacon timestamp.
 			 */
-			int rate = local->hw.wiphy->bands[band]->
+			int rate;
+			if (rx_status->flag & RX_FLAG_HT) {
+				rate = 65; /* TODO: HT rates */
+			} else {
+				rate = local->hw.wiphy->bands[band]->
 					bitrates[rx_status->rate_idx].bitrate;
+			}
 			rx_timestamp = rx_status->mactime + (24 * 8 * 10 / rate);
 		} else if (local && local->ops && local->ops->get_tsf)
 			/* second best option: get current TSF */
@@ -1644,9 +1659,7 @@ static void ieee80211_rx_bss_info(struct ieee80211_sub_if_data *sdata,
 			       sdata->dev->name, print_mac(mac, mgmt->bssid));
 #endif
 			ieee80211_sta_join_ibss(sdata, &sdata->u.sta, bss);
-			ieee80211_ibss_add_sta(sdata, NULL,
-					       mgmt->bssid, mgmt->sa,
-					       supp_rates);
+			ieee80211_ibss_add_sta(sdata, mgmt->bssid, mgmt->sa, supp_rates);
 		}
 	}
 
@@ -2023,7 +2036,7 @@ static int ieee80211_sta_match_ssid(struct ieee80211_if_sta *ifsta,
 		}
 	}
 
-	if (hidden_ssid && ifsta->ssid_len == ssid_len)
+	if (hidden_ssid && (ifsta->ssid_len == ssid_len || ssid_len == 0))
 		return 1;
 
 	if (ssid_len == 1 && ssid[0] == ' ')
@@ -2389,8 +2402,7 @@ void ieee80211_sta_setup_sdata(struct ieee80211_sub_if_data *sdata)
  * must be callable in atomic context.
  */
 struct sta_info *ieee80211_ibss_add_sta(struct ieee80211_sub_if_data *sdata,
-					struct sk_buff *skb, u8 *bssid,
-					u8 *addr, u64 supp_rates)
+					u8 *bssid,u8 *addr, u64 supp_rates)
 {
 	struct ieee80211_local *local = sdata->local;
 	struct sta_info *sta;

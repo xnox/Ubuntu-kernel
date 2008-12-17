@@ -1,16 +1,16 @@
 --- a/include/net/cfg80211.h	2008-02-28 19:54:52.000000000 +0100
 +++ b/include/net/cfg80211.h	2008-02-28 19:54:53.000000000 +0100
-@@ -5,6 +5,7 @@
- #include <linux/skbuff.h>
- #include <linux/nl80211.h>
+@@ -7,6 +7,7 @@
  #include <net/genetlink.h>
+ /* remove once we remove the wext stuff */
+ #include <net/iw_handler.h>
 +#include <net/compat.h>
  
  /*
   * 802.11 configuration in-kernel interface
 --- a/net/wireless/Makefile	2008-10-27 19:54:52.000000000 +0100
 +++ b/net/wireless/Makefile	2008-10-27 19:54:53.000000000 +0100
-@@ -1,9 +1,8 @@
+@@ -1,10 +1,9 @@
 -obj-$(CONFIG_WIRELESS_EXT) += wext.o
  obj-$(CONFIG_CFG80211) += cfg80211.o
  obj-$(CONFIG_LIB80211) += lib80211.o
@@ -20,6 +20,7 @@
  
 -cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o
 +cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o compat.o
+ cfg80211-$(CONFIG_WIRELESS_EXT) += wext-compat.o
  cfg80211-$(CONFIG_NL80211) += nl80211.o
 --- a/drivers/net/wireless/zd1211rw/zd_chip.c	2008-10-27 09:24:30.000000000 -0700
 +++ b/drivers/net/wireless/zd1211rw/zd_chip.c	2008-10-27 09:24:31.000000000 -0700
@@ -108,17 +109,17 @@ index 842a08d..079c1fd 100644
  	{
  		lbs_pr_err("error in pcmcia_get_first_tuple etc\n");
  		goto out1;
---- a/net/mac80211/main.c	2008-11-03 09:54:12.000000000 -0800
-+++ b/net/mac80211/main.c	2008-11-03 09:54:13.000000000 -0800
-@@ -423,6 +423,7 @@
+--- a/net/mac80211/main.c	2008-12-09 05:36:29.000000000 -0800
++++ b/net/mac80211/main.c	2008-12-09 05:36:34.000000000 -0800
+@@ -455,6 +455,7 @@
  		return;
  	}
  
-+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
  	if (!test_sta_flags(sta, WLAN_STA_PS) && !skb->requeue) {
  		/* Software retry the packet once */
  		skb->requeue = 1;
-@@ -430,6 +431,7 @@
+@@ -462,6 +463,7 @@
  		dev_queue_xmit(skb);
  		return;
  	}
@@ -130,11 +131,11 @@ diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
 index 5a1a60f..e062c97 100644
 --- a/net/mac80211/rx.c
 +++ b/net/mac80211/rx.c
-@@ -686,12 +686,17 @@ static int ap_sta_ps_end(struct sta_info *sta)
+@@ -693,12 +693,17 @@ static int ap_sta_ps_end(struct sta_info *sta)
  
  	/* Send all buffered frames to the station */
  	while ((skb = skb_dequeue(&sta->tx_filtered)) != NULL) {
-+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,28))
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,28))
 +		dev_kfree_skb(skb);
 +#else
  		sent++;
@@ -144,11 +145,11 @@ index 5a1a60f..e062c97 100644
  	}
  	while ((skb = skb_dequeue(&sta->ps_tx_buf)) != NULL) {
  		local->total_ps_buffered--;
-+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
  		sent++;
  #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
  		printk(KERN_DEBUG "%s: STA %s aid %d send PS frame "
-@@ -700,6 +705,9 @@ static int ap_sta_ps_end(struct sta_info *sta)
+@@ -707,6 +712,9 @@ static int ap_sta_ps_end(struct sta_info *sta)
  #endif /* CONFIG_MAC80211_VERBOSE_PS_DEBUG */
  		skb->requeue = 1;
  		dev_queue_xmit(skb);
@@ -166,7 +167,7 @@ index a0c860f..9c6f214 100644
  	if (unlikely(queue >= local->hw.queues))
  		queue = local->hw.queues - 1;
  
-+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
  	if (skb->requeue) {
  		if (!hw->ampdu_queues)
  			return queue;

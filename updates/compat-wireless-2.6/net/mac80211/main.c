@@ -195,19 +195,34 @@ int ieee80211_hw_config(struct ieee80211_local *local, u32 changed)
 	struct ieee80211_channel *chan;
 	int ret = 0;
 	int power;
+	enum nl80211_channel_type channel_type;
 
 	might_sleep();
 
-	if (local->sw_scanning)
+	if (local->sw_scanning) {
 		chan = local->scan_channel;
-	else
+		channel_type = NL80211_CHAN_NO_HT;
+	} else {
 		chan = local->oper_channel;
-
-	if (chan != local->hw.conf.channel) {
-		local->hw.conf.channel = chan;
-		changed |= IEEE80211_CONF_CHANGE_CHANNEL;
+		channel_type = local->oper_channel_type;
 	}
 
+	if (chan != local->hw.conf.channel ||
+	    channel_type != local->hw.conf.ht.channel_type) {
+		local->hw.conf.channel = chan;
+		local->hw.conf.ht.channel_type = channel_type;
+		switch (channel_type) {
+		case NL80211_CHAN_NO_HT:
+			local->hw.conf.ht.enabled = false;
+			break;
+		case NL80211_CHAN_HT20:
+		case NL80211_CHAN_HT40MINUS:
+		case NL80211_CHAN_HT40PLUS:
+			local->hw.conf.ht.enabled = true;
+			break;
+		}
+		changed |= IEEE80211_CONF_CHANGE_CHANNEL;
+	}
 
 	if (!local->hw.conf.power_level)
 		power = chan->max_power;
@@ -221,10 +236,20 @@ int ieee80211_hw_config(struct ieee80211_local *local, u32 changed)
 	if (changed && local->open_count) {
 		ret = local->ops->config(local_to_hw(local), changed);
 		/*
+		 * Goal:
 		 * HW reconfiguration should never fail, the driver has told
 		 * us what it can support so it should live up to that promise.
+		 *
+		 * Current status:
+		 * rfkill is not integrated with mac80211 and a
+		 * configuration command can thus fail if hardware rfkill
+		 * is enabled
+		 *
+		 * FIXME: integrate rfkill with mac80211 and then add this
+		 * WARN_ON() back
+		 *
 		 */
-		WARN_ON(ret);
+		/* WARN_ON(ret); */
 	}
 
 	return ret;
@@ -423,7 +448,7 @@ static void ieee80211_handle_filtered_frame(struct ieee80211_local *local,
 		return;
 	}
 
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
 	if (!test_sta_flags(sta, WLAN_STA_PS) && !skb->requeue) {
 		/* Software retry the packet once */
 		skb->requeue = 1;
@@ -856,12 +881,14 @@ int ieee80211_register_hw(struct ieee80211_hw *hw)
 
 	local->mdev->select_queue = ieee80211_select_queue;
 
-	/* add one default STA interface */
-	result = ieee80211_if_add(local, "wlan%d", NULL,
-				  NL80211_IFTYPE_STATION, NULL);
-	if (result)
-		printk(KERN_WARNING "%s: Failed to add default virtual iface\n",
-		       wiphy_name(local->hw.wiphy));
+	/* add one default STA interface if supported */
+	if (local->hw.wiphy->interface_modes & BIT(NL80211_IFTYPE_STATION)) {
+		result = ieee80211_if_add(local, "wlan%d", NULL,
+					  NL80211_IFTYPE_STATION, NULL);
+		if (result)
+			printk(KERN_WARNING "%s: Failed to add default virtual iface\n",
+			       wiphy_name(local->hw.wiphy));
+	}
 
 	rtnl_unlock();
 

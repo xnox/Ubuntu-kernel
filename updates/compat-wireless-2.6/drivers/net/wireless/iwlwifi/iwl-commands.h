@@ -25,7 +25,7 @@
  * in the file called LICENSE.GPL.
  *
  * Contact Information:
- * James P. Ketrenos <ipw2100-admin@linux.intel.com>
+ *  Intel Linux Wireless <ilw@linux.intel.com>
  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
  *
  * BSD LICENSE
@@ -69,6 +69,12 @@
 #ifndef __iwl_commands_h__
 #define __iwl_commands_h__
 
+/* uCode version contains 4 values: Major/Minor/API/Serial */
+#define IWL_UCODE_MAJOR(ver)	(((ver) & 0xFF000000) >> 24)
+#define IWL_UCODE_MINOR(ver)	(((ver) & 0x00FF0000) >> 16)
+#define IWL_UCODE_API(ver)	(((ver) & 0x0000FF00) >> 8)
+#define IWL_UCODE_SERIAL(ver)	((ver) & 0x000000FF)
+
 enum {
 	REPLY_ALIVE = 0x1,
 	REPLY_ERROR = 0x2,
@@ -88,6 +94,7 @@ enum {
 	REPLY_WEPKEY = 0x20,
 
 	/* RX, TX, LEDs */
+	REPLY_3945_RX = 0x1b,           /* 3945 only */
 	REPLY_TX = 0x1c,
 	REPLY_RATE_SCALE = 0x47,	/* 3945 only */
 	REPLY_LEDS_CMD = 0x48,
@@ -172,8 +179,8 @@ enum {
 #define QUEUE_TO_SEQ(q)	(((q) & 0x1f) << 8)
 #define SEQ_TO_INDEX(s)	((s) & 0xff)
 #define INDEX_TO_SEQ(i)	((i) & 0xff)
-#define SEQ_HUGE_FRAME	__constant_cpu_to_le16(0x4000)
-#define SEQ_RX_FRAME	__constant_cpu_to_le16(0x8000)
+#define SEQ_HUGE_FRAME	cpu_to_le16(0x4000)
+#define SEQ_RX_FRAME	cpu_to_le16(0x8000)
 
 /**
  * struct iwl_cmd_header
@@ -368,7 +375,7 @@ struct iwl5000_tx_power_dbm_cmd {
  *
  *****************************************************************************/
 
-#define UCODE_VALID_OK	__constant_cpu_to_le32(0x1)
+#define UCODE_VALID_OK	cpu_to_le32(0x1)
 #define INITIALIZE_SUBTYPE    (9)
 
 /*
@@ -517,75 +524,75 @@ enum {
 };
 
 
-#define RXON_RX_CHAIN_DRIVER_FORCE_MSK		__constant_cpu_to_le16(0x1 << 0)
-#define RXON_RX_CHAIN_VALID_MSK			__constant_cpu_to_le16(0x7 << 1)
+#define RXON_RX_CHAIN_DRIVER_FORCE_MSK		cpu_to_le16(0x1 << 0)
+#define RXON_RX_CHAIN_VALID_MSK			cpu_to_le16(0x7 << 1)
 #define RXON_RX_CHAIN_VALID_POS			(1)
-#define RXON_RX_CHAIN_FORCE_SEL_MSK		__constant_cpu_to_le16(0x7 << 4)
+#define RXON_RX_CHAIN_FORCE_SEL_MSK		cpu_to_le16(0x7 << 4)
 #define RXON_RX_CHAIN_FORCE_SEL_POS		(4)
-#define RXON_RX_CHAIN_FORCE_MIMO_SEL_MSK	__constant_cpu_to_le16(0x7 << 7)
+#define RXON_RX_CHAIN_FORCE_MIMO_SEL_MSK	cpu_to_le16(0x7 << 7)
 #define RXON_RX_CHAIN_FORCE_MIMO_SEL_POS	(7)
-#define RXON_RX_CHAIN_CNT_MSK			__constant_cpu_to_le16(0x3 << 10)
+#define RXON_RX_CHAIN_CNT_MSK			cpu_to_le16(0x3 << 10)
 #define RXON_RX_CHAIN_CNT_POS			(10)
-#define RXON_RX_CHAIN_MIMO_CNT_MSK		__constant_cpu_to_le16(0x3 << 12)
+#define RXON_RX_CHAIN_MIMO_CNT_MSK		cpu_to_le16(0x3 << 12)
 #define RXON_RX_CHAIN_MIMO_CNT_POS		(12)
-#define RXON_RX_CHAIN_MIMO_FORCE_MSK		__constant_cpu_to_le16(0x1 << 14)
+#define RXON_RX_CHAIN_MIMO_FORCE_MSK		cpu_to_le16(0x1 << 14)
 #define RXON_RX_CHAIN_MIMO_FORCE_POS		(14)
 
 /* rx_config flags */
 /* band & modulation selection */
-#define RXON_FLG_BAND_24G_MSK           __constant_cpu_to_le32(1 << 0)
-#define RXON_FLG_CCK_MSK                __constant_cpu_to_le32(1 << 1)
+#define RXON_FLG_BAND_24G_MSK           cpu_to_le32(1 << 0)
+#define RXON_FLG_CCK_MSK                cpu_to_le32(1 << 1)
 /* auto detection enable */
-#define RXON_FLG_AUTO_DETECT_MSK        __constant_cpu_to_le32(1 << 2)
+#define RXON_FLG_AUTO_DETECT_MSK        cpu_to_le32(1 << 2)
 /* TGg protection when tx */
-#define RXON_FLG_TGG_PROTECT_MSK        __constant_cpu_to_le32(1 << 3)
+#define RXON_FLG_TGG_PROTECT_MSK        cpu_to_le32(1 << 3)
 /* cck short slot & preamble */
-#define RXON_FLG_SHORT_SLOT_MSK          __constant_cpu_to_le32(1 << 4)
-#define RXON_FLG_SHORT_PREAMBLE_MSK     __constant_cpu_to_le32(1 << 5)
+#define RXON_FLG_SHORT_SLOT_MSK          cpu_to_le32(1 << 4)
+#define RXON_FLG_SHORT_PREAMBLE_MSK     cpu_to_le32(1 << 5)
 /* antenna selection */
-#define RXON_FLG_DIS_DIV_MSK            __constant_cpu_to_le32(1 << 7)
-#define RXON_FLG_ANT_SEL_MSK            __constant_cpu_to_le32(0x0f00)
-#define RXON_FLG_ANT_A_MSK              __constant_cpu_to_le32(1 << 8)
-#define RXON_FLG_ANT_B_MSK              __constant_cpu_to_le32(1 << 9)
+#define RXON_FLG_DIS_DIV_MSK            cpu_to_le32(1 << 7)
+#define RXON_FLG_ANT_SEL_MSK            cpu_to_le32(0x0f00)
+#define RXON_FLG_ANT_A_MSK              cpu_to_le32(1 << 8)
+#define RXON_FLG_ANT_B_MSK              cpu_to_le32(1 << 9)
 /* radar detection enable */
-#define RXON_FLG_RADAR_DETECT_MSK       __constant_cpu_to_le32(1 << 12)
-#define RXON_FLG_TGJ_NARROW_BAND_MSK    __constant_cpu_to_le32(1 << 13)
+#define RXON_FLG_RADAR_DETECT_MSK       cpu_to_le32(1 << 12)
+#define RXON_FLG_TGJ_NARROW_BAND_MSK    cpu_to_le32(1 << 13)
 /* rx response to host with 8-byte TSF
 * (according to ON_AIR deassertion) */
-#define RXON_FLG_TSF2HOST_MSK           __constant_cpu_to_le32(1 << 15)
+#define RXON_FLG_TSF2HOST_MSK           cpu_to_le32(1 << 15)
 
 
 /* HT flags */
 #define RXON_FLG_CTRL_CHANNEL_LOC_POS		(22)
-#define RXON_FLG_CTRL_CHANNEL_LOC_HI_MSK	__constant_cpu_to_le32(0x1 << 22)
+#define RXON_FLG_CTRL_CHANNEL_LOC_HI_MSK	cpu_to_le32(0x1 << 22)
 
 #define RXON_FLG_HT_OPERATING_MODE_POS		(23)
 
-#define RXON_FLG_HT_PROT_MSK			__constant_cpu_to_le32(0x1 << 23)
-#define RXON_FLG_FAT_PROT_MSK			__constant_cpu_to_le32(0x2 << 23)
+#define RXON_FLG_HT_PROT_MSK			cpu_to_le32(0x1 << 23)
+#define RXON_FLG_FAT_PROT_MSK			cpu_to_le32(0x2 << 23)
 
 #define RXON_FLG_CHANNEL_MODE_POS		(25)
-#define RXON_FLG_CHANNEL_MODE_MSK		__constant_cpu_to_le32(0x3 << 25)
-#define RXON_FLG_CHANNEL_MODE_PURE_40_MSK	__constant_cpu_to_le32(0x1 << 25)
-#define RXON_FLG_CHANNEL_MODE_MIXED_MSK		__constant_cpu_to_le32(0x2 << 25)
+#define RXON_FLG_CHANNEL_MODE_MSK		cpu_to_le32(0x3 << 25)
+#define RXON_FLG_CHANNEL_MODE_PURE_40_MSK	cpu_to_le32(0x1 << 25)
+#define RXON_FLG_CHANNEL_MODE_MIXED_MSK		cpu_to_le32(0x2 << 25)
 /* CTS to self (if spec allows) flag */
-#define RXON_FLG_SELF_CTS_EN			__constant_cpu_to_le32(0x1<<30)
+#define RXON_FLG_SELF_CTS_EN			cpu_to_le32(0x1<<30)
 
 /* rx_config filter flags */
 /* accept all data frames */
-#define RXON_FILTER_PROMISC_MSK         __constant_cpu_to_le32(1 << 0)
+#define RXON_FILTER_PROMISC_MSK         cpu_to_le32(1 << 0)
 /* pass control & management to host */
-#define RXON_FILTER_CTL2HOST_MSK        __constant_cpu_to_le32(1 << 1)
+#define RXON_FILTER_CTL2HOST_MSK        cpu_to_le32(1 << 1)
 /* accept multi-cast */
-#define RXON_FILTER_ACCEPT_GRP_MSK      __constant_cpu_to_le32(1 << 2)
+#define RXON_FILTER_ACCEPT_GRP_MSK      cpu_to_le32(1 << 2)
 /* don't decrypt uni-cast frames */
-#define RXON_FILTER_DIS_DECRYPT_MSK     __constant_cpu_to_le32(1 << 3)
+#define RXON_FILTER_DIS_DECRYPT_MSK     cpu_to_le32(1 << 3)
 /* don't decrypt multi-cast frames */
-#define RXON_FILTER_DIS_GRP_DECRYPT_MSK __constant_cpu_to_le32(1 << 4)
+#define RXON_FILTER_DIS_GRP_DECRYPT_MSK cpu_to_le32(1 << 4)
 /* STA is associated */
-#define RXON_FILTER_ASSOC_MSK           __constant_cpu_to_le32(1 << 5)
+#define RXON_FILTER_ASSOC_MSK           cpu_to_le32(1 << 5)
 /* transfer to host non bssid beacons in associated state */
-#define RXON_FILTER_BCON_AWARE_MSK      __constant_cpu_to_le32(1 << 6)
+#define RXON_FILTER_BCON_AWARE_MSK      cpu_to_le32(1 << 6)
 
 /**
  * REPLY_RXON = 0x10 (command, has simple generic response)
@@ -695,7 +702,7 @@ struct iwl_rxon_time_cmd {
 /*
  * REPLY_CHANNEL_SWITCH = 0x72 (command, has simple generic response)
  */
-struct iwl4965_channel_switch_cmd {
+struct iwl_channel_switch_cmd {
 	u8 band;
 	u8 expect_beacon;
 	__le16 channel;
@@ -708,7 +715,7 @@ struct iwl4965_channel_switch_cmd {
 /*
  * CHANNEL_SWITCH_NOTIFICATION = 0x73 (notification only, not a command)
  */
-struct iwl4965_csa_notification {
+struct iwl_csa_notification {
 	__le16 band;
 	__le16 channel;
 	__le32 status;		/* 0 - OK, 1 - fail */
@@ -745,9 +752,9 @@ struct iwl_ac_qos {
 } __attribute__ ((packed));
 
 /* QoS flags defines */
-#define QOS_PARAM_FLG_UPDATE_EDCA_MSK	__constant_cpu_to_le32(0x01)
-#define QOS_PARAM_FLG_TGN_MSK		__constant_cpu_to_le32(0x02)
-#define QOS_PARAM_FLG_TXOP_TYPE_MSK	__constant_cpu_to_le32(0x10)
+#define QOS_PARAM_FLG_UPDATE_EDCA_MSK	cpu_to_le32(0x01)
+#define QOS_PARAM_FLG_TGN_MSK		cpu_to_le32(0x02)
+#define QOS_PARAM_FLG_TXOP_TYPE_MSK	cpu_to_le32(0x10)
 
 /* Number of Access Categories (AC) (EDCA), queues 0..3 */
 #define AC_NUM                4
@@ -784,34 +791,34 @@ struct iwl_qosparam_cmd {
 #define	IWL_STATION_COUNT	32 	/* MAX(3945,4965)*/
 #define	IWL_INVALID_STATION 	255
 
-#define STA_FLG_PWR_SAVE_MSK		__constant_cpu_to_le32(1 << 8);
-#define STA_FLG_RTS_MIMO_PROT_MSK	__constant_cpu_to_le32(1 << 17)
-#define STA_FLG_AGG_MPDU_8US_MSK	__constant_cpu_to_le32(1 << 18)
+#define STA_FLG_PWR_SAVE_MSK		cpu_to_le32(1 << 8);
+#define STA_FLG_RTS_MIMO_PROT_MSK	cpu_to_le32(1 << 17)
+#define STA_FLG_AGG_MPDU_8US_MSK	cpu_to_le32(1 << 18)
 #define STA_FLG_MAX_AGG_SIZE_POS	(19)
-#define STA_FLG_MAX_AGG_SIZE_MSK	__constant_cpu_to_le32(3 << 19)
-#define STA_FLG_FAT_EN_MSK		__constant_cpu_to_le32(1 << 21)
-#define STA_FLG_MIMO_DIS_MSK		__constant_cpu_to_le32(1 << 22)
+#define STA_FLG_MAX_AGG_SIZE_MSK	cpu_to_le32(3 << 19)
+#define STA_FLG_FAT_EN_MSK		cpu_to_le32(1 << 21)
+#define STA_FLG_MIMO_DIS_MSK		cpu_to_le32(1 << 22)
 #define STA_FLG_AGG_MPDU_DENSITY_POS	(23)
-#define STA_FLG_AGG_MPDU_DENSITY_MSK	__constant_cpu_to_le32(7 << 23)
+#define STA_FLG_AGG_MPDU_DENSITY_MSK	cpu_to_le32(7 << 23)
 
 /* Use in mode field.  1: modify existing entry, 0: add new station entry */
 #define STA_CONTROL_MODIFY_MSK		0x01
 
 /* key flags __le16*/
-#define STA_KEY_FLG_ENCRYPT_MSK	__constant_cpu_to_le16(0x0007)
-#define STA_KEY_FLG_NO_ENC	__constant_cpu_to_le16(0x0000)
-#define STA_KEY_FLG_WEP		__constant_cpu_to_le16(0x0001)
-#define STA_KEY_FLG_CCMP	__constant_cpu_to_le16(0x0002)
-#define STA_KEY_FLG_TKIP	__constant_cpu_to_le16(0x0003)
+#define STA_KEY_FLG_ENCRYPT_MSK	cpu_to_le16(0x0007)
+#define STA_KEY_FLG_NO_ENC	cpu_to_le16(0x0000)
+#define STA_KEY_FLG_WEP		cpu_to_le16(0x0001)
+#define STA_KEY_FLG_CCMP	cpu_to_le16(0x0002)
+#define STA_KEY_FLG_TKIP	cpu_to_le16(0x0003)
 
 #define STA_KEY_FLG_KEYID_POS	8
-#define STA_KEY_FLG_INVALID 	__constant_cpu_to_le16(0x0800)
+#define STA_KEY_FLG_INVALID 	cpu_to_le16(0x0800)
 /* wep key is either from global key (0) or from station info array (1) */
-#define STA_KEY_FLG_MAP_KEY_MSK	__constant_cpu_to_le16(0x0008)
+#define STA_KEY_FLG_MAP_KEY_MSK	cpu_to_le16(0x0008)
 
 /* wep key in STA: 5-bytes (0) or 13-bytes (1) */
-#define STA_KEY_FLG_KEY_SIZE_MSK     __constant_cpu_to_le16(0x1000)
-#define STA_KEY_MULTICAST_MSK        __constant_cpu_to_le16(0x4000)
+#define STA_KEY_FLG_KEY_SIZE_MSK     cpu_to_le16(0x1000)
+#define STA_KEY_MULTICAST_MSK        cpu_to_le16(0x4000)
 #define STA_KEY_MAX_NUM		8
 
 /* Flags indicate whether to modify vs. don't change various station params */
@@ -1017,33 +1024,14 @@ struct iwl_wep_cmd {
  *
  *****************************************************************************/
 
-struct iwl4965_rx_frame_stats {
-	u8 phy_count;
-	u8 id;
-	u8 rssi;
-	u8 agc;
-	__le16 sig_avg;
-	__le16 noise_diff;
-	u8 payload[0];
-} __attribute__ ((packed));
+#define RX_RES_STATUS_NO_CRC32_ERROR	cpu_to_le32(1 << 0)
+#define RX_RES_STATUS_NO_RXE_OVERFLOW	cpu_to_le32(1 << 1)
 
-struct iwl4965_rx_frame_hdr {
-	__le16 channel;
-	__le16 phy_flags;
-	u8 reserved1;
-	u8 rate;
-	__le16 len;
-	u8 payload[0];
-} __attribute__ ((packed));
-
-#define RX_RES_STATUS_NO_CRC32_ERROR	__constant_cpu_to_le32(1 << 0)
-#define RX_RES_STATUS_NO_RXE_OVERFLOW	__constant_cpu_to_le32(1 << 1)
-
-#define RX_RES_PHY_FLAGS_BAND_24_MSK	__constant_cpu_to_le16(1 << 0)
-#define RX_RES_PHY_FLAGS_MOD_CCK_MSK		__constant_cpu_to_le16(1 << 1)
-#define RX_RES_PHY_FLAGS_SHORT_PREAMBLE_MSK	__constant_cpu_to_le16(1 << 2)
-#define RX_RES_PHY_FLAGS_NARROW_BAND_MSK	__constant_cpu_to_le16(1 << 3)
-#define RX_RES_PHY_FLAGS_ANTENNA_MSK		__constant_cpu_to_le16(0xf0)
+#define RX_RES_PHY_FLAGS_BAND_24_MSK	cpu_to_le16(1 << 0)
+#define RX_RES_PHY_FLAGS_MOD_CCK_MSK		cpu_to_le16(1 << 1)
+#define RX_RES_PHY_FLAGS_SHORT_PREAMBLE_MSK	cpu_to_le16(1 << 2)
+#define RX_RES_PHY_FLAGS_NARROW_BAND_MSK	cpu_to_le16(1 << 3)
+#define RX_RES_PHY_FLAGS_ANTENNA_MSK		cpu_to_le16(0xf0)
 
 #define RX_RES_STATUS_SEC_TYPE_MSK	(0x7 << 8)
 #define RX_RES_STATUS_SEC_TYPE_NONE	(0x0 << 8)
@@ -1065,26 +1053,6 @@ struct iwl4965_rx_frame_hdr {
 #define RX_MPDU_RES_STATUS_MIC_OK	(0x40)
 #define RX_MPDU_RES_STATUS_TTAK_OK	(1 << 7)
 #define RX_MPDU_RES_STATUS_DEC_DONE_MSK	(0x800)
-
-struct iwl4965_rx_frame_end {
-	__le32 status;
-	__le64 timestamp;
-	__le32 beacon_timestamp;
-} __attribute__ ((packed));
-
-/*
- * REPLY_3945_RX = 0x1b (response only, not a command)
- *
- * NOTE:  DO NOT dereference from casts to this structure
- * It is provided only for calculating minimum data set size.
- * The actual offsets of the hdr and end are dynamic based on
- * stats.phy_count
- */
-struct iwl4965_rx_frame {
-	struct iwl4965_rx_frame_stats stats;
-	struct iwl4965_rx_frame_hdr hdr;
-	struct iwl4965_rx_frame_end end;
-} __attribute__ ((packed));
 
 /* Fixed (non-configurable) rx data from phy */
 
@@ -1174,21 +1142,21 @@ struct iwl4965_rx_mpdu_res_start {
 /* 1: Use RTS/CTS protocol or CTS-to-self if spec allows it
  * before this frame. if CTS-to-self required check
  * RXON_FLG_SELF_CTS_EN status. */
-#define TX_CMD_FLG_RTS_CTS_MSK __constant_cpu_to_le32(1 << 0)
+#define TX_CMD_FLG_RTS_CTS_MSK cpu_to_le32(1 << 0)
 
 /* 1: Use Request-To-Send protocol before this frame.
  * Mutually exclusive vs. TX_CMD_FLG_CTS_MSK. */
-#define TX_CMD_FLG_RTS_MSK __constant_cpu_to_le32(1 << 1)
+#define TX_CMD_FLG_RTS_MSK cpu_to_le32(1 << 1)
 
 /* 1: Transmit Clear-To-Send to self before this frame.
  * Driver should set this for AUTH/DEAUTH/ASSOC-REQ/REASSOC mgmnt frames.
  * Mutually exclusive vs. TX_CMD_FLG_RTS_MSK. */
-#define TX_CMD_FLG_CTS_MSK __constant_cpu_to_le32(1 << 2)
+#define TX_CMD_FLG_CTS_MSK cpu_to_le32(1 << 2)
 
 /* 1: Expect ACK from receiving station
  * 0: Don't expect ACK (MAC header's duration field s/b 0)
  * Set this for unicast frames, but not broadcast/multicast. */
-#define TX_CMD_FLG_ACK_MSK __constant_cpu_to_le32(1 << 3)
+#define TX_CMD_FLG_ACK_MSK cpu_to_le32(1 << 3)
 
 /* For 4965:
  * 1: Use rate scale table (see REPLY_TX_LINK_QUALITY_CMD).
@@ -1196,40 +1164,40 @@ struct iwl4965_rx_mpdu_res_start {
  *    uCode walks through table for additional Tx attempts.
  * 0: Use Tx rate/MCS from Tx command's rate_n_flags field.
  *    This rate will be used for all Tx attempts; it will not be scaled. */
-#define TX_CMD_FLG_STA_RATE_MSK __constant_cpu_to_le32(1 << 4)
+#define TX_CMD_FLG_STA_RATE_MSK cpu_to_le32(1 << 4)
 
 /* 1: Expect immediate block-ack.
  * Set when Txing a block-ack request frame.  Also set TX_CMD_FLG_ACK_MSK. */
-#define TX_CMD_FLG_IMM_BA_RSP_MASK  __constant_cpu_to_le32(1 << 6)
+#define TX_CMD_FLG_IMM_BA_RSP_MASK  cpu_to_le32(1 << 6)
 
 /* 1: Frame requires full Tx-Op protection.
  * Set this if either RTS or CTS Tx Flag gets set. */
-#define TX_CMD_FLG_FULL_TXOP_PROT_MSK __constant_cpu_to_le32(1 << 7)
+#define TX_CMD_FLG_FULL_TXOP_PROT_MSK cpu_to_le32(1 << 7)
 
 /* Tx antenna selection field; used only for 3945, reserved (0) for 4965.
  * Set field to "0" to allow 3945 uCode to select antenna (normal usage). */
-#define TX_CMD_FLG_ANT_SEL_MSK __constant_cpu_to_le32(0xf00)
-#define TX_CMD_FLG_ANT_A_MSK __constant_cpu_to_le32(1 << 8)
-#define TX_CMD_FLG_ANT_B_MSK __constant_cpu_to_le32(1 << 9)
+#define TX_CMD_FLG_ANT_SEL_MSK cpu_to_le32(0xf00)
+#define TX_CMD_FLG_ANT_A_MSK cpu_to_le32(1 << 8)
+#define TX_CMD_FLG_ANT_B_MSK cpu_to_le32(1 << 9)
 
 /* 1: Ignore Bluetooth priority for this frame.
  * 0: Delay Tx until Bluetooth device is done (normal usage). */
-#define TX_CMD_FLG_BT_DIS_MSK __constant_cpu_to_le32(1 << 12)
+#define TX_CMD_FLG_BT_DIS_MSK cpu_to_le32(1 << 12)
 
 /* 1: uCode overrides sequence control field in MAC header.
  * 0: Driver provides sequence control field in MAC header.
  * Set this for management frames, non-QOS data frames, non-unicast frames,
  * and also in Tx command embedded in REPLY_SCAN_CMD for active scans. */
-#define TX_CMD_FLG_SEQ_CTL_MSK __constant_cpu_to_le32(1 << 13)
+#define TX_CMD_FLG_SEQ_CTL_MSK cpu_to_le32(1 << 13)
 
 /* 1: This frame is non-last MPDU; more fragments are coming.
  * 0: Last fragment, or not using fragmentation. */
-#define TX_CMD_FLG_MORE_FRAG_MSK __constant_cpu_to_le32(1 << 14)
+#define TX_CMD_FLG_MORE_FRAG_MSK cpu_to_le32(1 << 14)
 
 /* 1: uCode calculates and inserts Timestamp Function (TSF) in outgoing frame.
  * 0: No TSF required in outgoing frame.
  * Set this for transmitting beacons and probe responses. */
-#define TX_CMD_FLG_TSF_MSK __constant_cpu_to_le32(1 << 16)
+#define TX_CMD_FLG_TSF_MSK cpu_to_le32(1 << 16)
 
 /* 1: Driver inserted 2 bytes pad after the MAC header, for (required) dword
  *    alignment of frame's payload data field.
@@ -1237,14 +1205,14 @@ struct iwl4965_rx_mpdu_res_start {
  * Set this for MAC headers with 26 or 30 bytes, i.e. those with QOS or ADDR4
  * field (but not both).  Driver must align frame data (i.e. data following
  * MAC header) to DWORD boundary. */
-#define TX_CMD_FLG_MH_PAD_MSK __constant_cpu_to_le32(1 << 20)
+#define TX_CMD_FLG_MH_PAD_MSK cpu_to_le32(1 << 20)
 
 /* accelerate aggregation support
  * 0 - no CCMP encryption; 1 - CCMP encryption */
-#define TX_CMD_FLG_AGG_CCMP_MSK __constant_cpu_to_le32(1 << 22)
+#define TX_CMD_FLG_AGG_CCMP_MSK cpu_to_le32(1 << 22)
 
 /* HCCA-AP - disable duration overwriting. */
-#define TX_CMD_FLG_DUR_MSK __constant_cpu_to_le32(1 << 25)
+#define TX_CMD_FLG_DUR_MSK cpu_to_le32(1 << 25)
 
 
 /*
@@ -1270,7 +1238,7 @@ struct iwl4965_rx_mpdu_res_start {
  * Used for managing Tx retries when expecting block-acks.
  * Driver should set these fields to 0.
  */
-struct iwl4965_dram_scratch {
+struct iwl_dram_scratch {
 	u8 try_cnt;		/* Tx attempts */
 	u8 bt_kill_cnt;		/* Tx attempts blocked by Bluetooth device */
 	__le16 reserved;
@@ -1301,9 +1269,9 @@ struct iwl_tx_cmd {
 
 	__le32 tx_flags;	/* TX_CMD_FLG_* */
 
-	/* 4965's uCode may modify this field of the Tx command (in host DRAM!).
+	/* uCode may modify this field of the Tx command (in host DRAM!).
 	 * Driver must also set dram_lsb_ptr and dram_msb_ptr in this cmd. */
-	struct iwl4965_dram_scratch scratch;
+	struct iwl_dram_scratch scratch;
 
 	/* Rate for *all* Tx attempts, if TX_CMD_FLG_STA_RATE_MSK is cleared. */
 	__le32 rate_n_flags;	/* RATE_MCS_* */
@@ -1911,7 +1879,7 @@ struct iwl_link_quality_cmd {
  * same platform.  Bluetooth device alerts wireless device when it will Tx;
  * wireless device can delay or kill its own Tx to accommodate.
  */
-struct iwl4965_bt_cmd {
+struct iwl_bt_cmd {
 	u8 flags;
 	u8 lead_time;
 	u8 max_kill;
@@ -1937,18 +1905,18 @@ struct iwl4965_bt_cmd {
 				 RXON_FILTER_ASSOC_MSK           | \
 				 RXON_FILTER_BCON_AWARE_MSK)
 
-struct iwl4965_measure_channel {
+struct iwl_measure_channel {
 	__le32 duration;	/* measurement duration in extended beacon
 				 * format */
 	u8 channel;		/* channel to measure */
-	u8 type;		/* see enum iwl4965_measure_type */
+	u8 type;		/* see enum iwl_measure_type */
 	__le16 reserved;
 } __attribute__ ((packed));
 
 /*
  * REPLY_SPECTRUM_MEASUREMENT_CMD = 0x74 (command)
  */
-struct iwl4965_spectrum_cmd {
+struct iwl_spectrum_cmd {
 	__le16 len;		/* number of bytes starting from token */
 	u8 token;		/* token id */
 	u8 id;			/* measurement id -- 0 or 1 */
@@ -1961,13 +1929,13 @@ struct iwl4965_spectrum_cmd {
 	__le32 filter_flags;	/* rxon filter flags */
 	__le16 channel_count;	/* minimum 1, maximum 10 */
 	__le16 reserved3;
-	struct iwl4965_measure_channel channels[10];
+	struct iwl_measure_channel channels[10];
 } __attribute__ ((packed));
 
 /*
  * REPLY_SPECTRUM_MEASUREMENT_CMD = 0x74 (response)
  */
-struct iwl4965_spectrum_resp {
+struct iwl_spectrum_resp {
 	u8 token;
 	u8 id;			/* id of the prior command replaced, or 0xff */
 	__le16 status;		/* 0 - command will be handled
@@ -1975,12 +1943,12 @@ struct iwl4965_spectrum_resp {
 				 *     measurement) */
 } __attribute__ ((packed));
 
-enum iwl4965_measurement_state {
+enum iwl_measurement_state {
 	IWL_MEASUREMENT_START = 0,
 	IWL_MEASUREMENT_STOP = 1,
 };
 
-enum iwl4965_measurement_status {
+enum iwl_measurement_status {
 	IWL_MEASUREMENT_OK = 0,
 	IWL_MEASUREMENT_CONCURRENT = 1,
 	IWL_MEASUREMENT_CSA_CONFLICT = 2,
@@ -1993,18 +1961,18 @@ enum iwl4965_measurement_status {
 
 #define NUM_ELEMENTS_IN_HISTOGRAM 8
 
-struct iwl4965_measurement_histogram {
+struct iwl_measurement_histogram {
 	__le32 ofdm[NUM_ELEMENTS_IN_HISTOGRAM];	/* in 0.8usec counts */
 	__le32 cck[NUM_ELEMENTS_IN_HISTOGRAM];	/* in 1usec counts */
 } __attribute__ ((packed));
 
 /* clear channel availability counters */
-struct iwl4965_measurement_cca_counters {
+struct iwl_measurement_cca_counters {
 	__le32 ofdm;
 	__le32 cck;
 } __attribute__ ((packed));
 
-enum iwl4965_measure_type {
+enum iwl_measure_type {
 	IWL_MEASURE_BASIC = (1 << 0),
 	IWL_MEASURE_CHANNEL_LOAD = (1 << 1),
 	IWL_MEASURE_HISTOGRAM_RPI = (1 << 2),
@@ -2017,7 +1985,7 @@ enum iwl4965_measure_type {
 /*
  * SPECTRUM_MEASURE_NOTIFICATION = 0x75 (notification only, not a command)
  */
-struct iwl4965_spectrum_notification {
+struct iwl_spectrum_notification {
 	u8 id;			/* measurement id -- 0 or 1 */
 	u8 token;
 	u8 channel_index;	/* index in measurement channel list */
@@ -2025,7 +1993,7 @@ struct iwl4965_spectrum_notification {
 	__le32 start_time;	/* lower 32-bits of TSF */
 	u8 band;		/* 0 - 5.2GHz, 1 - 2.4GHz */
 	u8 channel;
-	u8 type;		/* see enum iwl4965_measurement_type */
+	u8 type;		/* see enum iwl_measurement_type */
 	u8 reserved1;
 	/* NOTE:  cca_ofdm, cca_cck, basic_type, and histogram are only only
 	 * valid if applicable for measurement type requested. */
@@ -2035,9 +2003,9 @@ struct iwl4965_spectrum_notification {
 	u8 basic_type;		/* 0 - bss, 1 - ofdm preamble, 2 -
 				 * unidentified */
 	u8 reserved2[3];
-	struct iwl4965_measurement_histogram histogram;
+	struct iwl_measurement_histogram histogram;
 	__le32 stop_time;	/* lower 32-bits of TSF */
-	__le32 status;		/* see iwl4965_measurement_status */
+	__le32 status;		/* see iwl_measurement_status */
 } __attribute__ ((packed));
 
 /******************************************************************************
@@ -2076,10 +2044,10 @@ struct iwl4965_spectrum_notification {
  */
 #define IWL_POWER_VEC_SIZE 5
 
-#define IWL_POWER_DRIVER_ALLOW_SLEEP_MSK	__constant_cpu_to_le16(1 << 0)
-#define IWL_POWER_SLEEP_OVER_DTIM_MSK		__constant_cpu_to_le16(1 << 2)
-#define IWL_POWER_PCI_PM_MSK			__constant_cpu_to_le16(1 << 3)
-#define IWL_POWER_FAST_PD			__constant_cpu_to_le16(1 << 4)
+#define IWL_POWER_DRIVER_ALLOW_SLEEP_MSK	cpu_to_le16(1 << 0)
+#define IWL_POWER_SLEEP_OVER_DTIM_MSK		cpu_to_le16(1 << 2)
+#define IWL_POWER_PCI_PM_MSK			cpu_to_le16(1 << 3)
+#define IWL_POWER_FAST_PD			cpu_to_le16(1 << 4)
 
 struct iwl_powertable_cmd {
 	__le16 flags;
@@ -2095,7 +2063,7 @@ struct iwl_powertable_cmd {
  * PM_SLEEP_NOTIFICATION = 0x7A (notification only, not a command)
  * 3945 and 4965 identical.
  */
-struct iwl4965_sleep_notification {
+struct iwl_sleep_notification {
 	u8 pm_sleep_mode;
 	u8 pm_wakeup_src;
 	__le16 reserved;
@@ -2125,14 +2093,14 @@ enum {
 #define CARD_STATE_CMD_DISABLE 0x00	/* Put card to sleep */
 #define CARD_STATE_CMD_ENABLE  0x01	/* Wake up card */
 #define CARD_STATE_CMD_HALT    0x02	/* Power down permanently */
-struct iwl4965_card_state_cmd {
+struct iwl_card_state_cmd {
 	__le32 status;		/* CARD_STATE_CMD_* request new power state */
 } __attribute__ ((packed));
 
 /*
  * CARD_STATE_NOTIFICATION = 0xa1 (notification only, not a command)
  */
-struct iwl4965_card_state_notif {
+struct iwl_card_state_notif {
 	__le32 flags;
 } __attribute__ ((packed));
 
@@ -2153,8 +2121,8 @@ struct iwl_ct_kill_config {
  *
  *****************************************************************************/
 
-#define SCAN_CHANNEL_TYPE_PASSIVE __constant_cpu_to_le32(0)
-#define SCAN_CHANNEL_TYPE_ACTIVE  __constant_cpu_to_le32(1)
+#define SCAN_CHANNEL_TYPE_PASSIVE cpu_to_le32(0)
+#define SCAN_CHANNEL_TYPE_ACTIVE  cpu_to_le32(1)
 
 /**
  * struct iwl_scan_channel - entry in REPLY_SCAN_CMD channel table
@@ -2195,7 +2163,7 @@ struct iwl_scan_channel {
  * struct iwl_ssid_ie - directed scan network information element
  *
  * Up to 4 of these may appear in REPLY_SCAN_CMD, selected by "type" field
- * in struct iwl4965_scan_channel; each channel may select different ssids from
+ * in struct iwl_scan_channel; each channel may select different ssids from
  * among the 4 entries.  SSID IEs get transmitted in reverse order of entry.
  */
 struct iwl_ssid_ie {
@@ -2205,8 +2173,8 @@ struct iwl_ssid_ie {
 } __attribute__ ((packed));
 
 #define PROBE_OPTION_MAX        	0x14
-#define TX_CMD_LIFE_TIME_INFINITE	__constant_cpu_to_le32(0xFFFFFFFF)
-#define IWL_GOOD_CRC_TH			__constant_cpu_to_le16(1)
+#define TX_CMD_LIFE_TIME_INFINITE	cpu_to_le32(0xFFFFFFFF)
+#define IWL_GOOD_CRC_TH			cpu_to_le16(1)
 #define IWL_MAX_SCAN_SIZE 1024
 
 /*
@@ -2295,7 +2263,7 @@ struct iwl_scan_cmd {
 	 * Number of channels in list is specified by channel_count.
 	 * Each channel in list is of type:
 	 *
-	 * struct iwl4965_scan_channel channels[0];
+	 * struct iwl_scan_channel channels[0];
 	 *
 	 * NOTE:  Only one band of channels can be scanned per pass.  You
 	 * must not mix 2.4GHz channels and 5.2GHz channels, and you must wait
@@ -2306,7 +2274,7 @@ struct iwl_scan_cmd {
 } __attribute__ ((packed));
 
 /* Can abort will notify by complete notification with abort status. */
-#define CAN_ABORT_STATUS	__constant_cpu_to_le32(0x1)
+#define CAN_ABORT_STATUS	cpu_to_le32(0x1)
 /* complete notification statuses */
 #define ABORT_STATUS            0x2
 
@@ -2568,8 +2536,8 @@ struct statistics_general {
  * STATISTICS_NOTIFICATIONs after received beacons (see below).  This flag
  * does not affect the response to the REPLY_STATISTICS_CMD 0x9c itself.
  */
-#define IWL_STATS_CONF_CLEAR_STATS __constant_cpu_to_le32(0x1)	/* see above */
-#define IWL_STATS_CONF_DISABLE_NOTIF __constant_cpu_to_le32(0x2)/* see above */
+#define IWL_STATS_CONF_CLEAR_STATS cpu_to_le32(0x1)	/* see above */
+#define IWL_STATS_CONF_DISABLE_NOTIF cpu_to_le32(0x2)/* see above */
 struct iwl_statistics_cmd {
 	__le32 configuration_flags;	/* IWL_STATS_CONF_* */
 } __attribute__ ((packed));
@@ -2589,8 +2557,8 @@ struct iwl_statistics_cmd {
  * appropriately so that each notification contains statistics for only the
  * one channel that has just been scanned.
  */
-#define STATISTICS_REPLY_FLG_BAND_24G_MSK         __constant_cpu_to_le32(0x2)
-#define STATISTICS_REPLY_FLG_FAT_MODE_MSK         __constant_cpu_to_le32(0x8)
+#define STATISTICS_REPLY_FLG_BAND_24G_MSK         cpu_to_le32(0x2)
+#define STATISTICS_REPLY_FLG_FAT_MODE_MSK         cpu_to_le32(0x8)
 struct iwl_notif_statistics {
 	__le32 flag;
 	struct statistics_rx rx;
@@ -2606,7 +2574,7 @@ struct iwl_notif_statistics {
  * then this notification will be sent. */
 #define CONSECUTIVE_MISSED_BCONS_TH 20
 
-struct iwl4965_missed_beacon_notif {
+struct iwl_missed_beacon_notif {
 	__le32 consequtive_missed_beacons;
 	__le32 total_missed_becons;
 	__le32 num_expected_beacons;
@@ -2806,8 +2774,8 @@ struct iwl4965_missed_beacon_notif {
 #define HD_OFDM_ENERGY_TH_IN_INDEX                  (10)
 
 /* Control field in struct iwl_sensitivity_cmd */
-#define SENSITIVITY_CMD_CONTROL_DEFAULT_TABLE	__constant_cpu_to_le16(0)
-#define SENSITIVITY_CMD_CONTROL_WORK_TABLE	__constant_cpu_to_le16(1)
+#define SENSITIVITY_CMD_CONTROL_DEFAULT_TABLE	cpu_to_le16(0)
+#define SENSITIVITY_CMD_CONTROL_WORK_TABLE	cpu_to_le16(1)
 
 /**
  * struct iwl_sensitivity_cmd
@@ -2896,12 +2864,7 @@ enum {
 };
 
 
-struct iwl_cal_xtal_freq {
-	u8 cap_pin1;
-	u8 cap_pin2;
-} __attribute__ ((packed));
-
-#define IWL_CALIB_INIT_CFG_ALL	__constant_cpu_to_le32(0xffffffff)
+#define IWL_CALIB_INIT_CFG_ALL	cpu_to_le32(0xffffffff)
 
 struct iwl_calib_cfg_elmnt_s {
 	__le32 is_enable;
@@ -2935,31 +2898,34 @@ struct iwl_calib_cmd {
 	u8 data[0];
 } __attribute__ ((packed));
 
-/* "Differential Gain" opcode used in REPLY_PHY_CALIBRATION_CMD. */
-
+/* IWL_PHY_CALIBRATE_DIFF_GAIN_CMD (7) */
 struct iwl_calib_diff_gain_cmd {
-	u8 opCode;		/* IWL_PHY_CALIBRATE_DIFF_GAIN_CMD (7) */
-	u8 flags;		/* not used */
-	__le16 reserved;
+	struct iwl_calib_hdr hdr;
 	s8 diff_gain_a;		/* see above */
 	s8 diff_gain_b;
 	s8 diff_gain_c;
 	u8 reserved1;
 } __attribute__ ((packed));
 
-struct iwl_calib_chain_noise_reset_cmd {
-	u8 op_code;	/* IWL_PHY_CALIBRATE_CHAIN_NOISE_RESET_CMD */
-	u8 flags;	/* not used */
-	__le16 reserved;
+struct iwl_calib_xtal_freq_cmd {
+	struct iwl_calib_hdr hdr;
+	u8 cap_pin1;
+	u8 cap_pin2;
+	u8 pad[2];
 } __attribute__ ((packed));
 
+/* IWL_PHY_CALIBRATE_CHAIN_NOISE_RESET_CMD */
+struct iwl_calib_chain_noise_reset_cmd {
+	struct iwl_calib_hdr hdr;
+	u8 data[0];
+};
+
+/* IWL_PHY_CALIBRATE_CHAIN_NOISE_GAIN_CMD */
 struct iwl_calib_chain_noise_gain_cmd {
-	u8 op_code;	/* IWL_PHY_CALIBRATE_CHAIN_NOISE_GAIN_CMD */
-	u8 flags;	/* not used */
-	__le16 reserved;
+	struct iwl_calib_hdr hdr;
 	u8 delta_gain_1;
 	u8 delta_gain_2;
-	__le16 reserved1;
+	u8 pad[2];
 } __attribute__ ((packed));
 
 /******************************************************************************
@@ -3045,25 +3011,22 @@ struct iwl_rx_packet {
 	struct iwl_cmd_header hdr;
 	union {
 		struct iwl_alive_resp alive_frame;
-		struct iwl4965_rx_frame rx_frame;
-		struct iwl4965_tx_resp tx_resp;
-		struct iwl4965_spectrum_notification spectrum_notif;
-		struct iwl4965_csa_notification csa_notif;
+		struct iwl_spectrum_notification spectrum_notif;
+		struct iwl_csa_notification csa_notif;
 		struct iwl_error_resp err_resp;
-		struct iwl4965_card_state_notif card_state_notif;
-		struct iwl4965_beacon_notif beacon_status;
+		struct iwl_card_state_notif card_state_notif;
 		struct iwl_add_sta_resp add_sta;
 		struct iwl_rem_sta_resp rem_sta;
-		struct iwl4965_sleep_notification sleep_notif;
-		struct iwl4965_spectrum_resp spectrum;
+		struct iwl_sleep_notification sleep_notif;
+		struct iwl_spectrum_resp spectrum;
 		struct iwl_notif_statistics stats;
 		struct iwl_compressed_ba_resp compressed_ba;
-		struct iwl4965_missed_beacon_notif missed_beacon;
+		struct iwl_missed_beacon_notif missed_beacon;
 		__le32 status;
 		u8 raw[0];
 	} u;
 } __attribute__ ((packed));
 
-#define IWL_RX_FRAME_SIZE        (4 + sizeof(struct iwl4965_rx_frame))
+int iwl_agn_check_rxon_cmd(struct iwl_rxon_cmd *rxon);
 
 #endif				/* __iwl_commands_h__ */

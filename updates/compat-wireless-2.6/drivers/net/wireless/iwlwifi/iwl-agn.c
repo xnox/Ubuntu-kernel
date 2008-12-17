@@ -22,7 +22,7 @@
  * file called LICENSE.
  *
  * Contact Information:
- * James P. Ketrenos <ipw2100-admin@linux.intel.com>
+ *  Intel Linux Wireless <ilw@linux.intel.com>
  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
  *
  *****************************************************************************/
@@ -83,7 +83,7 @@
 
 MODULE_DESCRIPTION(DRV_DESCRIPTION);
 MODULE_VERSION(DRV_VERSION);
-MODULE_AUTHOR(DRV_COPYRIGHT);
+MODULE_AUTHOR(DRV_COPYRIGHT " " DRV_AUTHOR);
 MODULE_LICENSE("GPL");
 MODULE_ALIAS("iwl4965");
 
@@ -105,79 +105,6 @@ static void iwl_set_rxon_hwcrypto(struct iwl_priv *priv, int hw_decrypt)
 	else
 		rxon->filter_flags |= RXON_FILTER_DIS_DECRYPT_MSK;
 
-}
-
-/**
- * iwl_check_rxon_cmd - validate RXON structure is valid
- *
- * NOTE:  This is really only useful during development and can eventually
- * be #ifdef'd out once the driver is stable and folks aren't actively
- * making changes
- */
-static int iwl_check_rxon_cmd(struct iwl_rxon_cmd *rxon)
-{
-	int error = 0;
-	int counter = 1;
-
-	if (rxon->flags & RXON_FLG_BAND_24G_MSK) {
-		error |= le32_to_cpu(rxon->flags &
-				(RXON_FLG_TGJ_NARROW_BAND_MSK |
-				 RXON_FLG_RADAR_DETECT_MSK));
-		if (error)
-			IWL_WARNING("check 24G fields %d | %d\n",
-				    counter++, error);
-	} else {
-		error |= (rxon->flags & RXON_FLG_SHORT_SLOT_MSK) ?
-				0 : le32_to_cpu(RXON_FLG_SHORT_SLOT_MSK);
-		if (error)
-			IWL_WARNING("check 52 fields %d | %d\n",
-				    counter++, error);
-		error |= le32_to_cpu(rxon->flags & RXON_FLG_CCK_MSK);
-		if (error)
-			IWL_WARNING("check 52 CCK %d | %d\n",
-				    counter++, error);
-	}
-	error |= (rxon->node_addr[0] | rxon->bssid_addr[0]) & 0x1;
-	if (error)
-		IWL_WARNING("check mac addr %d | %d\n", counter++, error);
-
-	/* make sure basic rates 6Mbps and 1Mbps are supported */
-	error |= (((rxon->ofdm_basic_rates & IWL_RATE_6M_MASK) == 0) &&
-		  ((rxon->cck_basic_rates & IWL_RATE_1M_MASK) == 0));
-	if (error)
-		IWL_WARNING("check basic rate %d | %d\n", counter++, error);
-
-	error |= (le16_to_cpu(rxon->assoc_id) > 2007);
-	if (error)
-		IWL_WARNING("check assoc id %d | %d\n", counter++, error);
-
-	error |= ((rxon->flags & (RXON_FLG_CCK_MSK | RXON_FLG_SHORT_SLOT_MSK))
-			== (RXON_FLG_CCK_MSK | RXON_FLG_SHORT_SLOT_MSK));
-	if (error)
-		IWL_WARNING("check CCK and short slot %d | %d\n",
-			    counter++, error);
-
-	error |= ((rxon->flags & (RXON_FLG_CCK_MSK | RXON_FLG_AUTO_DETECT_MSK))
-			== (RXON_FLG_CCK_MSK | RXON_FLG_AUTO_DETECT_MSK));
-	if (error)
-		IWL_WARNING("check CCK & auto detect %d | %d\n",
-			    counter++, error);
-
-	error |= ((rxon->flags & (RXON_FLG_AUTO_DETECT_MSK |
-			RXON_FLG_TGG_PROTECT_MSK)) == RXON_FLG_TGG_PROTECT_MSK);
-	if (error)
-		IWL_WARNING("check TGG and auto detect %d | %d\n",
-			    counter++, error);
-
-	if (error)
-		IWL_WARNING("Tuning to channel %d\n",
-			    le16_to_cpu(rxon->channel));
-
-	if (error) {
-		IWL_ERROR("Not a valid iwl_rxon_assoc_cmd field values\n");
-		return -1;
-	}
-	return 0;
 }
 
 /**
@@ -253,7 +180,7 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 	 * 5000, but will not damage 4965 */
 	priv->staging_rxon.flags |= RXON_FLG_SELF_CTS_EN;
 
-	ret = iwl_check_rxon_cmd(&priv->staging_rxon);
+	ret = iwl_agn_check_rxon_cmd(&priv->staging_rxon);
 	if (ret) {
 		IWL_ERROR("Invalid RXON configuration.  Not committing.\n");
 		return -EINVAL;
@@ -384,7 +311,7 @@ void iwl_update_chain_flags(struct iwl_priv *priv)
 
 static int iwl_send_bt_config(struct iwl_priv *priv)
 {
-	struct iwl4965_bt_cmd bt_cmd = {
+	struct iwl_bt_cmd bt_cmd = {
 		.flags = 3,
 		.lead_time = 0xAA,
 		.max_kill = 1,
@@ -393,7 +320,7 @@ static int iwl_send_bt_config(struct iwl_priv *priv)
 	};
 
 	return iwl_send_cmd_pdu(priv, REPLY_BT_CONFIG,
-				sizeof(struct iwl4965_bt_cmd), &bt_cmd);
+				sizeof(struct iwl_bt_cmd), &bt_cmd);
 }
 
 static void iwl_clear_free_frames(struct iwl_priv *priv)
@@ -589,19 +516,27 @@ static void iwl_ht_conf(struct iwl_priv *priv,
 	iwl_conf->supported_chan_width =
 		!!(ht_conf->cap & IEEE80211_HT_CAP_SUP_WIDTH_20_40);
 
-	iwl_conf->extension_chan_offset = bss_conf->ht.secondary_channel_offset;
+	/*
+	 * XXX: The HT configuration needs to be moved into iwl_mac_config()
+	 *	to be done there correctly.
+	 */
+
+	iwl_conf->extension_chan_offset = IEEE80211_HT_PARAM_CHA_SEC_NONE;
+	if (priv->hw->conf.ht.channel_type == NL80211_CHAN_HT40MINUS)
+		iwl_conf->extension_chan_offset = IEEE80211_HT_PARAM_CHA_SEC_BELOW;
+	else if(priv->hw->conf.ht.channel_type == NL80211_CHAN_HT40PLUS)
+		iwl_conf->extension_chan_offset = IEEE80211_HT_PARAM_CHA_SEC_ABOVE;
+
 	/* If no above or below channel supplied disable FAT channel */
 	if (iwl_conf->extension_chan_offset != IEEE80211_HT_PARAM_CHA_SEC_ABOVE &&
-	    iwl_conf->extension_chan_offset != IEEE80211_HT_PARAM_CHA_SEC_BELOW) {
-		iwl_conf->extension_chan_offset = IEEE80211_HT_PARAM_CHA_SEC_NONE;
+	    iwl_conf->extension_chan_offset != IEEE80211_HT_PARAM_CHA_SEC_BELOW)
 		iwl_conf->supported_chan_width = 0;
-	}
 
 	iwl_conf->sm_ps = (u8)((ht_conf->cap & IEEE80211_HT_CAP_SM_PS) >> 2);
 
 	memcpy(&iwl_conf->mcs, &ht_conf->mcs, 16);
 
-	iwl_conf->tx_chan_width = bss_conf->ht.width_40_ok;
+	iwl_conf->tx_chan_width = iwl_conf->supported_chan_width != 0;
 	iwl_conf->ht_protection =
 		bss_conf->ht.operation_mode & IEEE80211_HT_OP_MODE_PROTECTION;
 	iwl_conf->non_GF_STA_present =
@@ -618,9 +553,6 @@ static void iwl_ht_conf(struct iwl_priv *priv,
 static void iwl_activate_qos(struct iwl_priv *priv, u8 force)
 {
 	if (test_bit(STATUS_EXIT_PENDING, &priv->status))
-		return;
-
-	if (!priv->qos_data.qos_enable)
 		return;
 
 	priv->qos_data.def_qos_parm.qos_flags = 0;
@@ -934,7 +866,7 @@ static void iwl_rx_csa(struct iwl_priv *priv, struct iwl_rx_mem_buffer *rxb)
 {
 	struct iwl_rx_packet *pkt = (struct iwl_rx_packet *)rxb->skb->data;
 	struct iwl_rxon_cmd *rxon = (void *)&priv->active_rxon;
-	struct iwl4965_csa_notification *csa = &(pkt->u.csa_notif);
+	struct iwl_csa_notification *csa = &(pkt->u.csa_notif);
 	IWL_DEBUG_11H("CSA notif: channel %d, status %d\n",
 		      le16_to_cpu(csa->channel), le32_to_cpu(csa->status));
 	rxon->channel = csa->channel;
@@ -946,7 +878,7 @@ static void iwl_rx_pm_sleep_notif(struct iwl_priv *priv,
 {
 #ifdef CONFIG_IWLWIFI_DEBUG
 	struct iwl_rx_packet *pkt = (struct iwl_rx_packet *)rxb->skb->data;
-	struct iwl4965_sleep_notification *sleep = &(pkt->u.sleep_notif);
+	struct iwl_sleep_notification *sleep = &(pkt->u.sleep_notif);
 	IWL_DEBUG_RX("sleep mode: %d, src: %d\n",
 		     sleep->pm_sleep_mode, sleep->pm_wakeup_src);
 #endif
@@ -1016,7 +948,8 @@ static void iwl_rx_beacon_notif(struct iwl_priv *priv,
 {
 #ifdef CONFIG_IWLWIFI_DEBUG
 	struct iwl_rx_packet *pkt = (struct iwl_rx_packet *)rxb->skb->data;
-	struct iwl4965_beacon_notif *beacon = &(pkt->u.beacon_status);
+	struct iwl4965_beacon_notif *beacon =
+		(struct iwl4965_beacon_notif *)pkt->u.raw;
 	u8 rate = iwl_hw_get_rate(beacon->beacon_notify_hdr.rate_n_flags);
 
 	IWL_DEBUG_RX("beacon status %x retries %d iss %d "
@@ -1332,13 +1265,6 @@ static void iwl_print_rx_config_cmd(struct iwl_priv *priv)
 }
 #endif
 
-static void iwl_enable_interrupts(struct iwl_priv *priv)
-{
-	IWL_DEBUG_ISR("Enabling interrupts\n");
-	set_bit(STATUS_INT_ENABLED, &priv->status);
-	iwl_write32(priv, CSR_INT_MASK, CSR_INI_SET_MASK);
-}
-
 /* call this function to flush any scheduled tasklet */
 static inline void iwl_synchronize_irq(struct iwl_priv *priv)
 {
@@ -1346,21 +1272,6 @@ static inline void iwl_synchronize_irq(struct iwl_priv *priv)
 	synchronize_irq(priv->pci_dev->irq);
 	tasklet_kill(&priv->irq_tasklet);
 }
-
-static inline void iwl_disable_interrupts(struct iwl_priv *priv)
-{
-	clear_bit(STATUS_INT_ENABLED, &priv->status);
-
-	/* disable interrupts from uCode/NIC to host */
-	iwl_write32(priv, CSR_INT_MASK, 0x00000000);
-
-	/* acknowledge/clear/reset any interrupts still pending
-	 * from uCode or flow handler (Rx/Tx DMA) */
-	iwl_write32(priv, CSR_INT, 0xffffffff);
-	iwl_write32(priv, CSR_FH_INT_STATUS, 0xffffffff);
-	IWL_DEBUG_ISR("Disabled interrupts\n");
-}
-
 
 /**
  * iwl_irq_handle_error - called for HW or SW error interrupt from card
@@ -1504,8 +1415,11 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
 		 * the driver as well won't allow loading if RFKILL is set
 		 * therefore no need to restart the driver from this handler
 		 */
-		if (!hw_rf_kill && !test_bit(STATUS_ALIVE, &priv->status))
+		if (!hw_rf_kill && !test_bit(STATUS_ALIVE, &priv->status)) {
 			clear_bit(STATUS_RF_KILL_HW, &priv->status);
+			if (priv->is_open && !iwl_is_rfkill(priv))
+				queue_work(priv->workqueue, &priv->up);
+		}
 
 		handled |= CSR_INT_BIT_RF_KILL;
 	}
@@ -1612,7 +1526,7 @@ static irqreturn_t iwl_isr(int irq, void *data)
 	if ((inta == 0xFFFFFFFF) || ((inta & 0xFFFFFFF0) == 0xa5a5a5a0)) {
 		/* Hardware disappeared. It might have already raised
 		 * an interrupt */
-		IWL_WARNING("HARDWARE GONE?? INTA == 0x%080x\n", inta);
+		IWL_WARNING("HARDWARE GONE?? INTA == 0x%08x\n", inta);
 		goto unplugged;
 	}
 
@@ -1669,24 +1583,40 @@ static void iwl_nic_start(struct iwl_priv *priv)
 static int iwl_read_ucode(struct iwl_priv *priv)
 {
 	struct iwl_ucode *ucode;
-	int ret;
+	int ret = -EINVAL, index;
 	const struct firmware *ucode_raw;
-	const char *name = priv->cfg->fw_name;
+	const char *name_pre = priv->cfg->fw_name_pre;
+	const unsigned int api_max = priv->cfg->ucode_api_max;
+	const unsigned int api_min = priv->cfg->ucode_api_min;
+	char buf[25];
 	u8 *src;
 	size_t len;
-	u32 ver, inst_size, data_size, init_size, init_data_size, boot_size;
+	u32 api_ver, inst_size, data_size, init_size, init_data_size, boot_size;
 
 	/* Ask kernel firmware_class module to get the boot firmware off disk.
 	 * request_firmware() is synchronous, file is in memory on return. */
-	ret = request_firmware(&ucode_raw, name, &priv->pci_dev->dev);
-	if (ret < 0) {
-		IWL_ERROR("%s firmware file req failed: Reason %d\n",
-					name, ret);
-		goto error;
+	for (index = api_max; index >= api_min; index--) {
+		sprintf(buf, "%s%d%s", name_pre, index, ".ucode");
+		ret = request_firmware(&ucode_raw, buf, &priv->pci_dev->dev);
+		if (ret < 0) {
+			IWL_ERROR("%s firmware file req failed: Reason %d\n",
+				  buf, ret);
+			if (ret == -ENOENT)
+				continue;
+			else
+				goto error;
+		} else {
+			if (index < api_max)
+				IWL_ERROR("Loaded firmware %s, which is deprecated. Please use API v%u instead.\n",
+					  buf, api_max);
+			IWL_DEBUG_INFO("Got firmware '%s' file (%zd bytes) from disk\n",
+				       buf, ucode_raw->size);
+			break;
+		}
 	}
 
-	IWL_DEBUG_INFO("Got firmware '%s' file (%zd bytes) from disk\n",
-		       name, ucode_raw->size);
+	if (ret < 0)
+		goto error;
 
 	/* Make sure that we got at least our header! */
 	if (ucode_raw->size < sizeof(*ucode)) {
@@ -1698,14 +1628,40 @@ static int iwl_read_ucode(struct iwl_priv *priv)
 	/* Data from ucode file:  header followed by uCode images */
 	ucode = (void *)ucode_raw->data;
 
-	ver = le32_to_cpu(ucode->ver);
+	priv->ucode_ver = le32_to_cpu(ucode->ver);
+	api_ver = IWL_UCODE_API(priv->ucode_ver);
 	inst_size = le32_to_cpu(ucode->inst_size);
 	data_size = le32_to_cpu(ucode->data_size);
 	init_size = le32_to_cpu(ucode->init_size);
 	init_data_size = le32_to_cpu(ucode->init_data_size);
 	boot_size = le32_to_cpu(ucode->boot_size);
 
-	IWL_DEBUG_INFO("f/w package hdr ucode version = 0x%x\n", ver);
+	/* api_ver should match the api version forming part of the
+	 * firmware filename ... but we don't check for that and only rely
+	 * on the API version read from firware header from here on forward */
+
+	if (api_ver < api_min || api_ver > api_max) {
+		IWL_ERROR("Driver unable to support your firmware API. "
+			  "Driver supports v%u, firmware is v%u.\n",
+			  api_max, api_ver);
+		priv->ucode_ver = 0;
+		ret = -EINVAL;
+		goto err_release;
+	}
+	if (api_ver != api_max)
+		IWL_ERROR("Firmware has old API version. Expected v%u, "
+			  "got v%u. New firmware can be obtained "
+			  "from http://www.intellinuxwireless.org.\n",
+			  api_max, api_ver);
+
+	printk(KERN_INFO DRV_NAME " loaded firmware version %u.%u.%u.%u\n",
+		       IWL_UCODE_MAJOR(priv->ucode_ver),
+		       IWL_UCODE_MINOR(priv->ucode_ver),
+		       IWL_UCODE_API(priv->ucode_ver),
+		       IWL_UCODE_SERIAL(priv->ucode_ver));
+
+	IWL_DEBUG_INFO("f/w package hdr ucode version raw = 0x%x\n",
+		       priv->ucode_ver);
 	IWL_DEBUG_INFO("f/w package hdr runtime inst size = %u\n",
 		       inst_size);
 	IWL_DEBUG_INFO("f/w package hdr runtime data size = %u\n",
@@ -3025,12 +2981,6 @@ static int iwl_mac_hw_scan(struct ieee80211_hw *hw, u8 *ssid, size_t ssid_len)
 		goto out_unlock;
 	}
 
-	if (priv->iw_mode == NL80211_IFTYPE_AP) {	/* APs don't scan */
-		ret = -EIO;
-		IWL_ERROR("ERROR: APs don't scan\n");
-		goto out_unlock;
-	}
-
 	/* We don't schedule scan within next_scan_jiffies period.
 	 * Avoid scanning during possible EAPOL exchange, return
 	 * success immediately.
@@ -3175,11 +3125,6 @@ static int iwl_mac_conf_tx(struct ieee80211_hw *hw, u16 queue,
 		return 0;
 	}
 
-	if (!priv->qos_data.qos_enable) {
-		priv->qos_data.qos_active = 0;
-		IWL_DEBUG_MAC80211("leave - qos not enabled\n");
-		return 0;
-	}
 	q = AC_NUM - 1 - queue;
 
 	spin_lock_irqsave(&priv->lock, flags);
@@ -3686,68 +3631,6 @@ static ssize_t show_power_level(struct device *d,
 static DEVICE_ATTR(power_level, S_IWUSR | S_IRUSR, show_power_level,
 		   store_power_level);
 
-static ssize_t show_channels(struct device *d,
-			     struct device_attribute *attr, char *buf)
-{
-
-	struct iwl_priv *priv = dev_get_drvdata(d);
-	struct ieee80211_channel *channels = NULL;
-	const struct ieee80211_supported_band *supp_band = NULL;
-	int len = 0, i;
-	int count = 0;
-
-	if (!test_bit(STATUS_GEO_CONFIGURED, &priv->status))
-		return -EAGAIN;
-
-	supp_band = iwl_get_hw_mode(priv, IEEE80211_BAND_2GHZ);
-	channels = supp_band->channels;
-	count = supp_band->n_channels;
-
-	len += sprintf(&buf[len],
-			"Displaying %d channels in 2.4GHz band "
-			"(802.11bg):\n", count);
-
-	for (i = 0; i < count; i++)
-		len += sprintf(&buf[len], "%d: %ddBm: BSS%s%s, %s.\n",
-				ieee80211_frequency_to_channel(
-				channels[i].center_freq),
-				channels[i].max_power,
-				channels[i].flags & IEEE80211_CHAN_RADAR ?
-				" (IEEE 802.11h required)" : "",
-				(!(channels[i].flags & IEEE80211_CHAN_NO_IBSS)
-				|| (channels[i].flags &
-				IEEE80211_CHAN_RADAR)) ? "" :
-				", IBSS",
-				channels[i].flags &
-				IEEE80211_CHAN_PASSIVE_SCAN ?
-				"passive only" : "active/passive");
-
-	supp_band = iwl_get_hw_mode(priv, IEEE80211_BAND_5GHZ);
-	channels = supp_band->channels;
-	count = supp_band->n_channels;
-
-	len += sprintf(&buf[len], "Displaying %d channels in 5.2GHz band "
-			"(802.11a):\n", count);
-
-	for (i = 0; i < count; i++)
-		len += sprintf(&buf[len], "%d: %ddBm: BSS%s%s, %s.\n",
-				ieee80211_frequency_to_channel(
-				channels[i].center_freq),
-				channels[i].max_power,
-				channels[i].flags & IEEE80211_CHAN_RADAR ?
-				" (IEEE 802.11h required)" : "",
-				((channels[i].flags & IEEE80211_CHAN_NO_IBSS)
-				|| (channels[i].flags &
-				IEEE80211_CHAN_RADAR)) ? "" :
-				", IBSS",
-				channels[i].flags &
-				IEEE80211_CHAN_PASSIVE_SCAN ?
-				"passive only" : "active/passive");
-
-	return len;
-}
-
-static DEVICE_ATTR(channels, S_IRUSR, show_channels, NULL);
 
 static ssize_t show_statistics(struct device *d,
 			       struct device_attribute *attr, char *buf)
@@ -3847,7 +3730,6 @@ static void iwl_cancel_deferred_work(struct iwl_priv *priv)
 }
 
 static struct attribute *iwl_sysfs_entries[] = {
-	&dev_attr_channels.attr,
 	&dev_attr_flags.attr,
 	&dev_attr_filter_flags.attr,
 	&dev_attr_power_level.attr,
@@ -4222,7 +4104,11 @@ static struct pci_device_id iwl_hw_card_ids[] = {
 	{IWL_PCI_DEVICE(0x423A, 0x1001, iwl5350_agn_cfg)},
 	{IWL_PCI_DEVICE(0x423A, 0x1021, iwl5350_agn_cfg)},
 	{IWL_PCI_DEVICE(0x423B, 0x1011, iwl5350_agn_cfg)},
+/* 5150 Wifi/WiMax */
+	{IWL_PCI_DEVICE(0x423C, PCI_ANY_ID, iwl5150_agn_cfg)},
+	{IWL_PCI_DEVICE(0x423D, PCI_ANY_ID, iwl5150_agn_cfg)},
 #endif /* CONFIG_IWL5000 */
+
 	{0}
 };
 MODULE_DEVICE_TABLE(pci, iwl_hw_card_ids);

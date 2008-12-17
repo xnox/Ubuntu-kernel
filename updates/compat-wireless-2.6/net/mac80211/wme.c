@@ -124,7 +124,7 @@ u16 ieee80211_select_queue(struct net_device *dev, struct sk_buff *skb)
 	if (unlikely(queue >= local->hw.queues))
 		queue = local->hw.queues - 1;
 
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
 	if (skb->requeue) {
 		if (!hw->ampdu_queues)
 			return queue;

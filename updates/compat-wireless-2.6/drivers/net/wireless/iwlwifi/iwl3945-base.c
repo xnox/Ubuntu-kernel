@@ -22,7 +22,7 @@
  * file called LICENSE.
  *
  * Contact Information:
- * James P. Ketrenos <ipw2100-admin@linux.intel.com>
+ *  Intel Linux Wireless <ilw@linux.intel.com>
  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
  *
  *****************************************************************************/
@@ -69,7 +69,6 @@ static int iwl3945_param_debug;    /* def: 0 = minimal debug log messages */
 static int iwl3945_param_disable;  /* def: 0 = enable radio */
 static int iwl3945_param_antenna;  /* def: 0 = both antennas (use diversity) */
 int iwl3945_param_hwcrypto;        /* def: 0 = use software encryption */
-static int iwl3945_param_qos_enable = 1; /* def: 1 = use quality of service */
 int iwl3945_param_queues_num = IWL39_MAX_NUM_QUEUES; /* def: 8 Tx queues */
 
 /*
@@ -94,12 +93,13 @@ int iwl3945_param_queues_num = IWL39_MAX_NUM_QUEUES; /* def: 8 Tx queues */
 
 #define IWLWIFI_VERSION "1.2.26k" VD VS
 #define DRV_COPYRIGHT	"Copyright(c) 2003-2008 Intel Corporation"
+#define DRV_AUTHOR     "<ilw@linux.intel.com>"
 #define DRV_VERSION     IWLWIFI_VERSION
 
 
 MODULE_DESCRIPTION(DRV_DESCRIPTION);
 MODULE_VERSION(DRV_VERSION);
-MODULE_AUTHOR(DRV_COPYRIGHT);
+MODULE_AUTHOR(DRV_COPYRIGHT " " DRV_AUTHOR);
 MODULE_LICENSE("GPL");
 
 static const struct ieee80211_supported_band *iwl3945_get_band(
@@ -1507,10 +1507,8 @@ int iwl3945_eeprom_init(struct iwl3945_priv *priv)
 {
 	u16 *e = (u16 *)&priv->eeprom;
 	u32 gp = iwl3945_read32(priv, CSR_EEPROM_GP);
-	u32 r;
 	int sz = sizeof(priv->eeprom);
-	int rc;
-	int i;
+	int ret;
 	u16 addr;
 
 	/* The EEPROM structure has several padding buffers within it
@@ -1525,29 +1523,28 @@ int iwl3945_eeprom_init(struct iwl3945_priv *priv)
 	}
 
 	/* Make sure driver (instead of uCode) is allowed to read EEPROM */
-	rc = iwl3945_eeprom_acquire_semaphore(priv);
-	if (rc < 0) {
+	ret = iwl3945_eeprom_acquire_semaphore(priv);
+	if (ret < 0) {
 		IWL_ERROR("Failed to acquire EEPROM semaphore.\n");
 		return -ENOENT;
 	}
 
 	/* eeprom is an array of 16bit values */
 	for (addr = 0; addr < sz; addr += sizeof(u16)) {
-		_iwl3945_write32(priv, CSR_EEPROM_REG, addr << 1);
+		u32 r;
+
+		_iwl3945_write32(priv, CSR_EEPROM_REG,
+				 CSR_EEPROM_REG_MSK_ADDR & (addr << 1));
 		_iwl3945_clear_bit(priv, CSR_EEPROM_REG, CSR_EEPROM_REG_BIT_CMD);
-
-		for (i = 0; i < IWL_EEPROM_ACCESS_TIMEOUT;
-					i += IWL_EEPROM_ACCESS_DELAY) {
-			r = _iwl3945_read_direct32(priv, CSR_EEPROM_REG);
-			if (r & CSR_EEPROM_REG_READ_VALID_MSK)
-				break;
-			udelay(IWL_EEPROM_ACCESS_DELAY);
-		}
-
-		if (!(r & CSR_EEPROM_REG_READ_VALID_MSK)) {
+		ret = iwl3945_poll_direct_bit(priv, CSR_EEPROM_REG,
+					      CSR_EEPROM_REG_READ_VALID_MSK,
+					      IWL_EEPROM_ACCESS_TIMEOUT);
+		if (ret < 0) {
 			IWL_ERROR("Time out reading EEPROM[%d]\n", addr);
-			return -ETIMEDOUT;
+			return ret;
 		}
+
+		r = _iwl3945_read_direct32(priv, CSR_EEPROM_REG);
 		e[addr / 2] = le16_to_cpu((__force __le16)(r >> 16));
 	}
 
@@ -1695,17 +1692,21 @@ static void iwl3945_reset_qos(struct iwl3945_priv *priv)
 	spin_lock_irqsave(&priv->lock, flags);
 	priv->qos_data.qos_active = 0;
 
-	if (priv->iw_mode == NL80211_IFTYPE_ADHOC) {
-		if (priv->qos_data.qos_enable)
-			priv->qos_data.qos_active = 1;
-		if (!(priv->active_rate & 0xfff0)) {
-			cw_min = 31;
-			is_legacy = 1;
-		}
-	} else if (priv->iw_mode == NL80211_IFTYPE_AP) {
-		if (priv->qos_data.qos_enable)
-			priv->qos_data.qos_active = 1;
-	} else if (!(priv->staging_rxon.flags & RXON_FLG_SHORT_SLOT_MSK)) {
+	/* QoS always active in AP and ADHOC mode
+	 * In STA mode wait for association
+	 */
+	if (priv->iw_mode == NL80211_IFTYPE_ADHOC ||
+	    priv->iw_mode == NL80211_IFTYPE_AP)
+		priv->qos_data.qos_active = 1;
+	else
+		priv->qos_data.qos_active = 0;
+
+
+	/* check for legacy mode */
+	if ((priv->iw_mode == NL80211_IFTYPE_ADHOC &&
+	     (priv->active_rate & IWL_OFDM_RATES_MASK) == 0) ||
+	    (priv->iw_mode == NL80211_IFTYPE_STATION &&
+	     (priv->staging_rxon.flags & RXON_FLG_SHORT_SLOT_MSK) == 0)) {
 		cw_min = 31;
 		is_legacy = 1;
 	}
@@ -1775,9 +1776,6 @@ static void iwl3945_activate_qos(struct iwl3945_priv *priv, u8 force)
 	unsigned long flags;
 
 	if (test_bit(STATUS_EXIT_PENDING, &priv->status))
-		return;
-
-	if (!priv->qos_data.qos_enable)
 		return;
 
 	spin_lock_irqsave(&priv->lock, flags);
@@ -2105,11 +2103,6 @@ static void iwl3945_setup_rxon_timing(struct iwl3945_priv *priv)
 
 static int iwl3945_scan_initiate(struct iwl3945_priv *priv)
 {
-	if (priv->iw_mode == NL80211_IFTYPE_AP) {
-		IWL_ERROR("APs don't scan.\n");
-		return 0;
-	}
-
 	if (!iwl3945_is_ready_rf(priv)) {
 		IWL_DEBUG_SCAN("Aborting scan due to not ready.\n");
 		return -EIO;
@@ -4321,35 +4314,6 @@ static void iwl3945_irq_tasklet(struct iwl3945_priv *priv)
 	/* Safely ignore these bits for debug checks below */
 	inta &= ~(CSR_INT_BIT_SCD | CSR_INT_BIT_ALIVE);
 
-	/* HW RF KILL switch toggled (4965 only) */
-	if (inta & CSR_INT_BIT_RF_KILL) {
-		int hw_rf_kill = 0;
-		if (!(iwl3945_read32(priv, CSR_GP_CNTRL) &
-				CSR_GP_CNTRL_REG_FLAG_HW_RF_KILL_SW))
-			hw_rf_kill = 1;
-
-		IWL_DEBUG(IWL_DL_INFO | IWL_DL_RF_KILL | IWL_DL_ISR,
-				"RF_KILL bit toggled to %s.\n",
-				hw_rf_kill ? "disable radio" : "enable radio");
-
-		/* Queue restart only if RF_KILL switch was set to "kill"
-		 *   when we loaded driver, and is now set to "enable".
-		 * After we're Alive, RF_KILL gets handled by
-		 *   iwl3945_rx_card_state_notif() */
-		if (!hw_rf_kill && !test_bit(STATUS_ALIVE, &priv->status)) {
-			clear_bit(STATUS_RF_KILL_HW, &priv->status);
-			queue_work(priv->workqueue, &priv->restart);
-		}
-
-		handled |= CSR_INT_BIT_RF_KILL;
-	}
-
-	/* Chip got too hot and stopped itself (4965 only) */
-	if (inta & CSR_INT_BIT_CT_KILL) {
-		IWL_ERROR("Microcode CT kill error detected.\n");
-		handled |= CSR_INT_BIT_CT_KILL;
-	}
-
 	/* Error detected by uCode */
 	if (inta & CSR_INT_BIT_SW_ERR) {
 		IWL_ERROR("Microcode SW error detected.  Restarting 0x%X.\n",
@@ -4450,7 +4414,7 @@ static irqreturn_t iwl3945_isr(int irq, void *data)
 
 	if ((inta == 0xFFFFFFFF) || ((inta & 0xFFFFFFF0) == 0xa5a5a5a0)) {
 		/* Hardware disappeared */
-		IWL_WARNING("HARDWARE GONE?? INTA == 0x%080x\n", inta);
+		IWL_WARNING("HARDWARE GONE?? INTA == 0x%08x\n", inta);
 		goto unplugged;
 	}
 
@@ -4824,17 +4788,33 @@ static int iwl3945_get_channels_for_scan(struct iwl3945_priv *priv,
 			continue;
 		}
 
-		if (!is_active || is_channel_passive(ch_info) ||
-		    (channels[i].flags & IEEE80211_CHAN_PASSIVE_SCAN))
-			scan_ch->type = 0;	/* passive */
-		else
-			scan_ch->type = 1;	/* active */
-
-		if ((scan_ch->type & 1) && n_probes)
-			scan_ch->type |= IWL_SCAN_PROBE_MASK(n_probes);
-
 		scan_ch->active_dwell = cpu_to_le16(active_dwell);
 		scan_ch->passive_dwell = cpu_to_le16(passive_dwell);
+		/* If passive , set up for auto-switch
+		 *  and use long active_dwell time.
+		 */
+		if (!is_active || is_channel_passive(ch_info) ||
+		    (channels[i].flags & IEEE80211_CHAN_PASSIVE_SCAN)) {
+			scan_ch->type = 0;	/* passive */
+			if (IWL_UCODE_API(priv->ucode_ver) == 1)
+				scan_ch->active_dwell = cpu_to_le16(passive_dwell - 1);
+		} else {
+			scan_ch->type = 1;	/* active */
+		}
+
+		/* Set direct probe bits. These may be used both for active
+		 * scan channels (probes gets sent right away),
+		 * or for passive channels (probes get se sent only after
+		 * hearing clear Rx packet).*/
+		if (IWL_UCODE_API(priv->ucode_ver) >= 2) {
+			if (n_probes)
+				scan_ch->type |= IWL_SCAN_PROBE_MASK(n_probes);
+		} else {
+			/* uCode v1 does not allow setting direct probe bits on
+			 * passive channel. */
+			if ((scan_ch->type & 1) && n_probes)
+				scan_ch->type |= IWL_SCAN_PROBE_MASK(n_probes);
+		}
 
 		/* Set txpower levels to defaults */
 		scan_ch->tpc.dsp_atten = 110;
@@ -5335,25 +5315,41 @@ static void iwl3945_nic_start(struct iwl3945_priv *priv)
 static int iwl3945_read_ucode(struct iwl3945_priv *priv)
 {
 	struct iwl3945_ucode *ucode;
-	int ret = 0;
+	int ret = -EINVAL, index;
 	const struct firmware *ucode_raw;
 	/* firmware file name contains uCode/driver compatibility version */
-	const char *name = priv->cfg->fw_name;
+	const char *name_pre = priv->cfg->fw_name_pre;
+	const unsigned int api_max = priv->cfg->ucode_api_max;
+	const unsigned int api_min = priv->cfg->ucode_api_min;
+	char buf[25];
 	u8 *src;
 	size_t len;
-	u32 ver, inst_size, data_size, init_size, init_data_size, boot_size;
+	u32 api_ver, inst_size, data_size, init_size, init_data_size, boot_size;
 
 	/* Ask kernel firmware_class module to get the boot firmware off disk.
 	 * request_firmware() is synchronous, file is in memory on return. */
-	ret = request_firmware(&ucode_raw, name, &priv->pci_dev->dev);
-	if (ret < 0) {
-		IWL_ERROR("%s firmware file req failed: Reason %d\n",
-				name, ret);
-		goto error;
+	for (index = api_max; index >= api_min; index--) {
+		sprintf(buf, "%s%u%s", name_pre, index, ".ucode");
+		ret = request_firmware(&ucode_raw, buf, &priv->pci_dev->dev);
+		if (ret < 0) {
+			IWL_ERROR("%s firmware file req failed: Reason %d\n",
+				  buf, ret);
+			if (ret == -ENOENT)
+				continue;
+			else
+				goto error;
+		} else {
+			if (index < api_max)
+				IWL_ERROR("Loaded firmware %s, which is deprecated. Please use API v%u instead.\n",
+					  buf, api_max);
+			IWL_DEBUG_INFO("Got firmware '%s' file (%zd bytes) from disk\n",
+				       buf, ucode_raw->size);
+			break;
+		}
 	}
 
-	IWL_DEBUG_INFO("Got firmware '%s' file (%zd bytes) from disk\n",
-		       name, ucode_raw->size);
+	if (ret < 0)
+		goto error;
 
 	/* Make sure that we got at least our header! */
 	if (ucode_raw->size < sizeof(*ucode)) {
@@ -5365,19 +5361,45 @@ static int iwl3945_read_ucode(struct iwl3945_priv *priv)
 	/* Data from ucode file:  header followed by uCode images */
 	ucode = (void *)ucode_raw->data;
 
-	ver = le32_to_cpu(ucode->ver);
+	priv->ucode_ver = le32_to_cpu(ucode->ver);
+	api_ver = IWL_UCODE_API(priv->ucode_ver);
 	inst_size = le32_to_cpu(ucode->inst_size);
 	data_size = le32_to_cpu(ucode->data_size);
 	init_size = le32_to_cpu(ucode->init_size);
 	init_data_size = le32_to_cpu(ucode->init_data_size);
 	boot_size = le32_to_cpu(ucode->boot_size);
 
-	IWL_DEBUG_INFO("f/w package hdr ucode version = 0x%x\n", ver);
+	/* api_ver should match the api version forming part of the
+	 * firmware filename ... but we don't check for that and only rely
+	 * on the API version read from firware header from here on forward */
+
+	if (api_ver < api_min || api_ver > api_max) {
+		IWL_ERROR("Driver unable to support your firmware API. "
+			  "Driver supports v%u, firmware is v%u.\n",
+			  api_max, api_ver);
+		priv->ucode_ver = 0;
+		ret = -EINVAL;
+		goto err_release;
+	}
+	if (api_ver != api_max)
+		IWL_ERROR("Firmware has old API version. Expected %u, "
+			  "got %u. New firmware can be obtained "
+			  "from http://www.intellinuxwireless.org.\n",
+			  api_max, api_ver);
+
+	printk(KERN_INFO DRV_NAME " loaded firmware version %u.%u.%u.%u\n",
+		       IWL_UCODE_MAJOR(priv->ucode_ver),
+		       IWL_UCODE_MINOR(priv->ucode_ver),
+		       IWL_UCODE_API(priv->ucode_ver),
+		       IWL_UCODE_SERIAL(priv->ucode_ver));
+	IWL_DEBUG_INFO("f/w package hdr ucode version raw = 0x%x\n",
+		       priv->ucode_ver);
 	IWL_DEBUG_INFO("f/w package hdr runtime inst size = %u\n", inst_size);
 	IWL_DEBUG_INFO("f/w package hdr runtime data size = %u\n", data_size);
 	IWL_DEBUG_INFO("f/w package hdr init inst size = %u\n", init_size);
 	IWL_DEBUG_INFO("f/w package hdr init data size = %u\n", init_data_size);
 	IWL_DEBUG_INFO("f/w package hdr boot inst size = %u\n", boot_size);
+
 
 	/* Verify size of file vs. image size info in file's header */
 	if (ucode_raw->size < sizeof(*ucode) +
@@ -6962,12 +6984,6 @@ static int iwl3945_mac_hw_scan(struct ieee80211_hw *hw, u8 *ssid, size_t len)
 		goto out_unlock;
 	}
 
-	if (priv->iw_mode == NL80211_IFTYPE_AP) {	/* APs don't scan */
-		rc = -EIO;
-		IWL_ERROR("ERROR: APs don't scan\n");
-		goto out_unlock;
-	}
-
 	/* we don't schedule scan within next_scan_jiffies period */
 	if (priv->next_scan_jiffies &&
 			time_after(priv->next_scan_jiffies, jiffies)) {
@@ -7083,11 +7099,6 @@ static int iwl3945_mac_conf_tx(struct ieee80211_hw *hw, u16 queue,
 		return 0;
 	}
 
-	if (!priv->qos_data.qos_enable) {
-		priv->qos_data.qos_active = 0;
-		IWL_DEBUG_MAC80211("leave - qos not enabled\n");
-		return 0;
-	}
 	q = AC_NUM - 1 - queue;
 
 	spin_lock_irqsave(&priv->lock, flags);
@@ -7861,7 +7872,6 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 		    IEEE80211_HW_NOISE_DBM;
 
 	hw->wiphy->interface_modes =
-		BIT(NL80211_IFTYPE_AP) |
 		BIT(NL80211_IFTYPE_STATION) |
 		BIT(NL80211_IFTYPE_ADHOC);
 
@@ -7915,9 +7925,8 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 			CSR_GIO_CHICKEN_BITS_REG_BIT_DIS_L0S_EXIT_TIMER);
 
 	iwl3945_set_bit(priv, CSR_GP_CNTRL, CSR_GP_CNTRL_REG_FLAG_INIT_DONE);
-	err = iwl3945_poll_bit(priv, CSR_GP_CNTRL,
-			       CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY,
-			       CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
+	err = iwl3945_poll_direct_bit(priv, CSR_GP_CNTRL,
+				CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
 	if (err < 0) {
 		IWL_DEBUG_INFO("Failed to init the card\n");
 		goto out_remove_sysfs;
@@ -7969,9 +7978,6 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 	priv->band = IEEE80211_BAND_2GHZ;
 
 	priv->iw_mode = NL80211_IFTYPE_STATION;
-
-	if (iwl3945_param_qos_enable)
-		priv->qos_data.qos_enable = 1;
 
 	iwl3945_reset_qos(priv);
 
@@ -8346,7 +8352,7 @@ static void __exit iwl3945_exit(void)
 	iwl3945_rate_control_unregister();
 }
 
-MODULE_FIRMWARE("iwlwifi-3945" IWL3945_UCODE_API ".ucode");
+MODULE_FIRMWARE(IWL3945_MODULE_FIRMWARE(IWL3945_UCODE_API_MAX));
 
 module_param_named(antenna, iwl3945_param_antenna, int, 0444);
 MODULE_PARM_DESC(antenna, "select antenna (1=Main, 2=Aux, default 0 [both])");
@@ -8362,10 +8368,6 @@ MODULE_PARM_DESC(disable_hw_scan, "disable hardware scanning (default 0)");
 
 module_param_named(queues_num, iwl3945_param_queues_num, int, 0444);
 MODULE_PARM_DESC(queues_num, "number of hw queues.");
-
-/* QoS */
-module_param_named(qos_enable, iwl3945_param_qos_enable, int, 0444);
-MODULE_PARM_DESC(qos_enable, "enable all QoS functionality");
 
 module_exit(iwl3945_exit);
 module_init(iwl3945_init);

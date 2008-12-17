@@ -19,7 +19,7 @@
  * file called LICENSE.
  *
  * Contact Information:
- * James P. Ketrenos <ipw2100-admin@linux.intel.com>
+ *  Intel Linux Wireless <ilw@linux.intel.com>
  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
  *
  *****************************************************************************/
@@ -54,6 +54,7 @@ extern struct iwl_cfg iwl5100_agn_cfg;
 extern struct iwl_cfg iwl5350_agn_cfg;
 extern struct iwl_cfg iwl5100_bg_cfg;
 extern struct iwl_cfg iwl5100_abg_cfg;
+extern struct iwl_cfg iwl5150_agn_cfg;
 
 /* CT-KILL constants */
 #define CT_KILL_THRESHOLD	110 /* in Celsius */
@@ -183,12 +184,6 @@ struct iwl_channel_info {
 	s8 fat_scan_power;	/* (dBm) eeprom, direct scans, any rate */
 	u8 fat_flags;		/* flags copied from EEPROM */
 	u8 fat_extension_channel; /* HT_IE_EXT_CHANNEL_* */
-};
-
-struct iwl4965_clip_group {
-	/* maximum power level to prevent clipping for each rate, derived by
-	 *   us from this band's saturation power in EEPROM */
-	const s8 clip_powers[IWL_MAX_RATES];
 };
 
 
@@ -435,7 +430,6 @@ union iwl_qos_capabity {
 
 /* QoS structures */
 struct iwl_qos_info {
-	int qos_enable;
 	int qos_active;
 	union iwl_qos_capabity qos_cap;
 	struct iwl_qosparam_cmd def_qos_parm;
@@ -461,7 +455,7 @@ struct fw_desc {
 
 /* uCode file layout */
 struct iwl_ucode {
-	__le32 ver;		/* major/minor/subminor */
+	__le32 ver;		/* major/minor/API/serial */
 	__le32 inst_size;	/* bytes of runtime instructions */
 	__le32 data_size;	/* bytes of runtime data */
 	__le32 init_size;	/* bytes of initialization instructions */
@@ -504,9 +498,14 @@ struct iwl_sensitivity_ranges {
 
 #define IWL_FAT_CHANNEL_52 BIT(IEEE80211_BAND_5GHZ)
 
+#define KELVIN_TO_CELSIUS(x) ((x)-273)
+#define CELSIUS_TO_KELVIN(x) ((x)+273)
+
+
 /**
  * struct iwl_hw_params
  * @max_txq_num: Max # Tx queues supported
+ * @dma_chnl_num: Number of Tx DMA/FIFO channels
  * @scd_bc_tbls_size: size of scheduler byte count tables
  * @tx/rx_chains_num: Number of TX/RX chains
  * @valid_tx/rx_ant: usable antennas
@@ -524,7 +523,8 @@ struct iwl_sensitivity_ranges {
  * @struct iwl_sensitivity_ranges: range of sensitivity values
  */
 struct iwl_hw_params {
-	u16 max_txq_num;
+	u8 max_txq_num;
+	u8 dma_chnl_num;
 	u16 scd_bc_tbls_size;
 	u8  tx_chains_num;
 	u8  rx_chains_num;
@@ -549,15 +549,6 @@ struct iwl_hw_params {
 #define HT_SHORT_GI_20MHZ	(1 << 0)
 #define HT_SHORT_GI_40MHZ	(1 << 1)
 
-
-#define IWL_RX_HDR(x) ((struct iwl4965_rx_frame_hdr *)(\
-		       x->u.rx_frame.stats.payload + \
-		       x->u.rx_frame.stats.phy_count))
-#define IWL_RX_END(x) ((struct iwl4965_rx_frame_end *)(\
-		       IWL_RX_HDR(x)->payload + \
-		       le16_to_cpu(IWL_RX_HDR(x)->len)))
-#define IWL_RX_STATS(x) (&x->u.rx_frame.stats)
-#define IWL_RX_DATA(x) (IWL_RX_HDR(x)->payload)
 
 /******************************************************************************
  *
@@ -692,6 +683,7 @@ struct statistics_general_data {
  */
 enum iwl_calib {
 	IWL_CALIB_XTAL,
+	IWL_CALIB_DC,
 	IWL_CALIB_LO,
 	IWL_CALIB_TX_IQ,
 	IWL_CALIB_TX_IQ_PERD,
@@ -788,7 +780,7 @@ struct iwl_priv {
 
 #ifdef CONFIG_IWLAGN_SPECTRUM_MEASUREMENT
 	/* spectrum measurement report caching */
-	struct iwl4965_spectrum_notification measure_report;
+	struct iwl_spectrum_notification measure_report;
 	u8 measurement_status;
 #endif
 	/* ucode beacon time */
@@ -798,10 +790,6 @@ struct iwl_priv {
 	 *    Access via channel # using indirect index array */
 	struct iwl_channel_info *channel_info;	/* channel info array */
 	u8 channel_count;	/* # of channels */
-
-	/* each calibration channel group in the EEPROM has a derived
-	 * clip setting for each rate. */
-	const struct iwl4965_clip_group clip_groups[5];
 
 	/* thermal calibration */
 	s32 temperature;	/* degrees Kelvin */
@@ -839,6 +827,8 @@ struct iwl_priv {
 	u8   rev_id;
 
 	/* uCode images, save to reload in case of failure */
+	u32 ucode_ver;			/* version of ucode, copy of
+					   iwl_ucode.ver */
 	struct fw_desc ucode_code;	/* runtime inst */
 	struct fw_desc ucode_data;	/* runtime data original */
 	struct fw_desc ucode_data_backup;	/* runtime data save/restore */
@@ -997,9 +987,6 @@ struct iwl_priv {
 	s8 tx_power_user_lmt;
 	s8 tx_power_channel_lmt;
 
-#ifdef CONFIG_PM
-	u32 pm_state[16];
-#endif
 
 #ifdef CONFIG_IWLWIFI_DEBUG
 	/* debugging info */
@@ -1083,10 +1070,5 @@ static inline int is_channel_ibss(const struct iwl_channel_info *ch)
 {
 	return ((ch->flags & EEPROM_CHANNEL_IBSS)) ? 1 : 0;
 }
-
-extern const struct iwl_channel_info *iwl_get_channel_info(
-	const struct iwl_priv *priv, enum ieee80211_band band, u16 channel);
-
-/* Requires full declaration of iwl_priv before including */
 
 #endif				/* __iwl_dev_h__ */

@@ -83,18 +83,16 @@ static void ath_tx_txqaddbuf(struct ath_softc *sc, struct ath_txq *txq,
 	txq->axq_linkbuf = list_entry(txq->axq_q.prev, struct ath_buf, list);
 
 	DPRINTF(sc, ATH_DBG_QUEUE,
-		"%s: txq depth = %d\n", __func__, txq->axq_depth);
+		"qnum: %d, txq depth: %d\n", txq->axq_qnum, txq->axq_depth);
 
 	if (txq->axq_link == NULL) {
 		ath9k_hw_puttxbuf(ah, txq->axq_qnum, bf->bf_daddr);
 		DPRINTF(sc, ATH_DBG_XMIT,
-			"%s: TXDP[%u] = %llx (%p)\n",
-			__func__, txq->axq_qnum,
-			ito64(bf->bf_daddr), bf->bf_desc);
+			"TXDP[%u] = %llx (%p)\n",
+			txq->axq_qnum, ito64(bf->bf_daddr), bf->bf_desc);
 	} else {
 		*txq->axq_link = bf->bf_daddr;
-		DPRINTF(sc, ATH_DBG_XMIT, "%s: link[%u] (%p)=%llx (%p)\n",
-			__func__,
+		DPRINTF(sc, ATH_DBG_XMIT, "link[%u] (%p)=%llx (%p)\n",
 			txq->axq_qnum, txq->axq_link,
 			ito64(bf->bf_daddr), bf->bf_desc);
 	}
@@ -109,8 +107,7 @@ static void ath_tx_complete(struct ath_softc *sc, struct sk_buff *skb,
 	struct ieee80211_tx_info *tx_info = IEEE80211_SKB_CB(skb);
 	struct ath_tx_info_priv *tx_info_priv = ATH_TX_INFO_PRIV(tx_info);
 
-	DPRINTF(sc, ATH_DBG_XMIT,
-		"%s: TX complete: skb: %p\n", __func__, skb);
+	DPRINTF(sc, ATH_DBG_XMIT, "TX complete: skb: %p\n", skb);
 
 	if (tx_info->flags & IEEE80211_TX_CTL_NO_ACK ||
 	    tx_info->flags & IEEE80211_TX_STAT_TX_FILTERED) {
@@ -289,17 +286,17 @@ static struct ath_buf *ath_tx_get_buffer(struct ath_softc *sc)
 {
 	struct ath_buf *bf = NULL;
 
-	spin_lock_bh(&sc->sc_txbuflock);
+	spin_lock_bh(&sc->tx.txbuflock);
 
-	if (unlikely(list_empty(&sc->sc_txbuf))) {
-		spin_unlock_bh(&sc->sc_txbuflock);
+	if (unlikely(list_empty(&sc->tx.txbuf))) {
+		spin_unlock_bh(&sc->tx.txbuflock);
 		return NULL;
 	}
 
-	bf = list_first_entry(&sc->sc_txbuf, struct ath_buf, list);
+	bf = list_first_entry(&sc->tx.txbuf, struct ath_buf, list);
 	list_del(&bf->list);
 
-	spin_unlock_bh(&sc->sc_txbuflock);
+	spin_unlock_bh(&sc->tx.txbuflock);
 
 	return bf;
 }
@@ -313,6 +310,7 @@ static void ath_tx_complete_buf(struct ath_softc *sc,
 {
 	struct sk_buff *skb = bf->bf_mpdu;
 	struct ath_xmit_status tx_status;
+	unsigned long flags;
 
 	/*
 	 * Set retry information.
@@ -343,9 +341,9 @@ static void ath_tx_complete_buf(struct ath_softc *sc,
 	/*
 	 * Return the list of ath_buf of this mpdu to free queue
 	 */
-	spin_lock_bh(&sc->sc_txbuflock);
-	list_splice_tail_init(bf_q, &sc->sc_txbuf);
-	spin_unlock_bh(&sc->sc_txbuflock);
+	spin_lock_irqsave(&sc->tx.txbuflock, flags);
+	list_splice_tail_init(bf_q, &sc->tx.txbuf);
+	spin_unlock_irqrestore(&sc->tx.txbuflock, flags);
 }
 
 /*
@@ -386,7 +384,7 @@ static void ath_tx_queue_tid(struct ath_txq *txq, struct ath_atx_tid *tid)
 
 static void ath_tx_pause_tid(struct ath_softc *sc, struct ath_atx_tid *tid)
 {
-	struct ath_txq *txq = &sc->sc_txq[tid->ac->qnum];
+	struct ath_txq *txq = &sc->tx.txq[tid->ac->qnum];
 
 	spin_lock_bh(&txq->axq_lock);
 
@@ -399,7 +397,7 @@ static void ath_tx_pause_tid(struct ath_softc *sc, struct ath_atx_tid *tid)
 
 void ath_tx_resume_tid(struct ath_softc *sc, struct ath_atx_tid *tid)
 {
-	struct ath_txq *txq = &sc->sc_txq[tid->ac->qnum];
+	struct ath_txq *txq = &sc->tx.txq[tid->ac->qnum];
 
 	ASSERT(tid->paused > 0);
 	spin_lock_bh(&txq->axq_lock);
@@ -496,7 +494,7 @@ static void ath_tx_update_baw(struct ath_softc *sc, struct ath_atx_tid *tid,
 static u32 ath_pkt_duration(struct ath_softc *sc, u8 rix, struct ath_buf *bf,
 			    int width, int half_gi, bool shortPreamble)
 {
-	struct ath_rate_table *rate_table = sc->hw_rate_table[sc->sc_curmode];
+	struct ath_rate_table *rate_table = sc->cur_rate_table;
 	u32 nbits, nsymbits, duration, nsymbols;
 	u8 rc;
 	int streams, pktlen;
@@ -560,7 +558,7 @@ static void ath_buf_set_rate(struct ath_softc *sc, struct ath_buf *bf)
 	}
 
 	/* get the cix for the lowest valid rix */
-	rt = sc->hw_rate_table[sc->sc_curmode];
+	rt = sc->cur_rate_table;
 	for (i = 3; i >= 0; i--) {
 		if (rates[i].count && (rates[i].idx >= 0)) {
 			rix = rates[i].idx;
@@ -688,7 +686,7 @@ static int ath_tx_send_normal(struct ath_softc *sc,
 
 static void ath_tx_flush_tid(struct ath_softc *sc, struct ath_atx_tid *tid)
 {
-	struct ath_txq *txq = &sc->sc_txq[tid->ac->qnum];
+	struct ath_txq *txq = &sc->tx.txq[tid->ac->qnum];
 	struct ath_buf *bf;
 	struct list_head bf_head;
 	INIT_LIST_HEAD(&bf_head);
@@ -763,7 +761,8 @@ static void ath_tx_complete_aggr_rifs(struct ath_softc *sc,
 				 * when perform internal reset in this routine.
 				 * Only enable reset in STA mode for now.
 				 */
-				if (sc->sc_ah->ah_opmode == ATH9K_M_STA)
+				if (sc->sc_ah->ah_opmode ==
+					    NL80211_IFTYPE_STATION)
 					needreset = 1;
 			}
 		} else {
@@ -862,12 +861,12 @@ static void ath_tx_complete_aggr_rifs(struct ath_softc *sc,
 				struct ath_buf *tbf;
 
 				/* allocate new descriptor */
-				spin_lock_bh(&sc->sc_txbuflock);
-				ASSERT(!list_empty((&sc->sc_txbuf)));
-				tbf = list_first_entry(&sc->sc_txbuf,
+				spin_lock_bh(&sc->tx.txbuflock);
+				ASSERT(!list_empty((&sc->tx.txbuf)));
+				tbf = list_first_entry(&sc->tx.txbuf,
 						struct ath_buf, list);
 				list_del(&tbf->list);
-				spin_unlock_bh(&sc->sc_txbuflock);
+				spin_unlock_bh(&sc->tx.txbuflock);
 
 				ATH_TXBUF_RESET(tbf);
 
@@ -983,8 +982,7 @@ static void ath_tx_processq(struct ath_softc *sc, struct ath_txq *txq)
 	int txok, nbad = 0;
 	int status;
 
-	DPRINTF(sc, ATH_DBG_QUEUE,
-		"%s: tx queue %d (%x), link %p\n", __func__,
+	DPRINTF(sc, ATH_DBG_QUEUE, "tx queue %d (%x), link %p\n",
 		txq->axq_qnum, ath9k_hw_gettxbuf(sc->sc_ah, txq->axq_qnum),
 		txq->axq_link);
 
@@ -1060,9 +1058,9 @@ static void ath_tx_processq(struct ath_softc *sc, struct ath_txq *txq)
 
 		if (bf_held) {
 			list_del(&bf_held->list);
-			spin_lock_bh(&sc->sc_txbuflock);
-			list_add_tail(&bf_held->list, &sc->sc_txbuf);
-			spin_unlock_bh(&sc->sc_txbuflock);
+			spin_lock_bh(&sc->tx.txbuflock);
+			list_add_tail(&bf_held->list, &sc->tx.txbuf);
+			spin_unlock_bh(&sc->tx.txbuflock);
 		}
 
 		if (!bf_isampdu(bf)) {
@@ -1116,9 +1114,9 @@ static void ath_tx_stopdma(struct ath_softc *sc, struct ath_txq *txq)
 	struct ath_hal *ah = sc->sc_ah;
 
 	(void) ath9k_hw_stoptxdma(ah, txq->axq_qnum);
-	DPRINTF(sc, ATH_DBG_XMIT, "%s: tx queue [%u] %x, link %p\n",
-		__func__, txq->axq_qnum,
-		ath9k_hw_gettxbuf(ah, txq->axq_qnum), txq->axq_link);
+	DPRINTF(sc, ATH_DBG_XMIT, "tx queue [%u] %x, link %p\n",
+		txq->axq_qnum, ath9k_hw_gettxbuf(ah, txq->axq_qnum),
+		txq->axq_link);
 }
 
 /* Drain only the data queues */
@@ -1131,19 +1129,18 @@ static void ath_drain_txdataq(struct ath_softc *sc, bool retry_tx)
 	if (!(sc->sc_flags & SC_OP_INVALID)) {
 		for (i = 0; i < ATH9K_NUM_TX_QUEUES; i++) {
 			if (ATH_TXQ_SETUP(sc, i)) {
-				ath_tx_stopdma(sc, &sc->sc_txq[i]);
+				ath_tx_stopdma(sc, &sc->tx.txq[i]);
 				/* The TxDMA may not really be stopped.
 				 * Double check the hal tx pending count */
 				npend += ath9k_hw_numtxpending(ah,
-						       sc->sc_txq[i].axq_qnum);
+						       sc->tx.txq[i].axq_qnum);
 			}
 		}
 	}
 
 	if (npend) {
 		/* TxDMA not stopped, reset the hal */
-		DPRINTF(sc, ATH_DBG_XMIT,
-			"%s: Unable to stop TxDMA. Reset HAL!\n", __func__);
+		DPRINTF(sc, ATH_DBG_XMIT, "Unable to stop TxDMA. Reset HAL!\n");
 
 		spin_lock_bh(&sc->sc_resetlock);
 		if (!ath9k_hw_reset(ah,
@@ -1153,8 +1150,7 @@ static void ath_drain_txdataq(struct ath_softc *sc, bool retry_tx)
 				    sc->sc_ht_extprotspacing, true, &status)) {
 
 			DPRINTF(sc, ATH_DBG_FATAL,
-				"%s: unable to reset hardware; hal status %u\n",
-				__func__,
+				"Unable to reset hardware; hal status %u\n",
 				status);
 		}
 		spin_unlock_bh(&sc->sc_resetlock);
@@ -1162,7 +1158,7 @@ static void ath_drain_txdataq(struct ath_softc *sc, bool retry_tx)
 
 	for (i = 0; i < ATH9K_NUM_TX_QUEUES; i++) {
 		if (ATH_TXQ_SETUP(sc, i))
-			ath_tx_draintxq(sc, &sc->sc_txq[i], retry_tx);
+			ath_tx_draintxq(sc, &sc->tx.txq[i], retry_tx);
 	}
 }
 
@@ -1194,7 +1190,6 @@ static void ath_tx_addto_baw(struct ath_softc *sc,
  * Function to send an A-MPDU
  * NB: must be called with txq lock held
  */
-
 static int ath_tx_send_ampdu(struct ath_softc *sc,
 			     struct ath_atx_tid *tid,
 			     struct list_head *bf_head,
@@ -1242,12 +1237,11 @@ static int ath_tx_send_ampdu(struct ath_softc *sc,
  * looks up the rate
  * returns aggr limit based on lowest of the rates
  */
-
 static u32 ath_lookup_rate(struct ath_softc *sc,
 			   struct ath_buf *bf,
 			   struct ath_atx_tid *tid)
 {
-	struct ath_rate_table *rate_table = sc->hw_rate_table[sc->sc_curmode];
+	struct ath_rate_table *rate_table = sc->cur_rate_table;
 	struct sk_buff *skb;
 	struct ieee80211_tx_info *tx_info;
 	struct ieee80211_tx_rate *rates;
@@ -1310,13 +1304,12 @@ static u32 ath_lookup_rate(struct ath_softc *sc,
  * meet the minimum required mpdudensity.
  * caller should make sure that the rate is  HT rate .
  */
-
 static int ath_compute_num_delims(struct ath_softc *sc,
 				  struct ath_atx_tid *tid,
 				  struct ath_buf *bf,
 				  u16 frmlen)
 {
-	struct ath_rate_table *rt = sc->hw_rate_table[sc->sc_curmode];
+	struct ath_rate_table *rt = sc->cur_rate_table;
 	struct sk_buff *skb = bf->bf_mpdu;
 	struct ieee80211_tx_info *tx_info = IEEE80211_SKB_CB(skb);
 	u32 nsymbits, nsymbols, mpdudensity;
@@ -1382,7 +1375,6 @@ static int ath_compute_num_delims(struct ath_softc *sc,
  * For aggregation from software buffer queue.
  * NB: must be called with txq lock held
  */
-
 static enum ATH_AGGR_STATUS ath_tx_form_aggr(struct ath_softc *sc,
 					struct ath_atx_tid *tid,
 					struct list_head *bf_q,
@@ -1505,7 +1497,6 @@ static enum ATH_AGGR_STATUS ath_tx_form_aggr(struct ath_softc *sc,
  * process pending frames possibly doing a-mpdu aggregation
  * NB: must be called with txq lock held
  */
-
 static void ath_tx_sched_aggr(struct ath_softc *sc,
 	struct ath_txq *txq, struct ath_atx_tid *tid)
 {
@@ -1635,7 +1626,6 @@ static void ath_tid_drain(struct ath_softc *sc,
  * Drain all pending buffers
  * NB: must be called with txq lock held
  */
-
 static void ath_txq_drain_pending_buffers(struct ath_softc *sc,
 					  struct ath_txq *txq)
 {
@@ -1653,7 +1643,7 @@ static void ath_txq_drain_pending_buffers(struct ath_softc *sc,
 	}
 }
 
-static void ath_tx_setup_buffer(struct ath_softc *sc, struct ath_buf *bf,
+static int ath_tx_setup_buffer(struct ath_softc *sc, struct ath_buf *bf,
 				struct sk_buff *skb,
 				struct ath_tx_control *txctl)
 {
@@ -1663,7 +1653,9 @@ static void ath_tx_setup_buffer(struct ath_softc *sc, struct ath_buf *bf,
 	int hdrlen;
 	__le16 fc;
 
-	tx_info_priv = kzalloc(sizeof(*tx_info_priv), GFP_KERNEL);
+	tx_info_priv = kzalloc(sizeof(*tx_info_priv), GFP_ATOMIC);
+	if (unlikely(!tx_info_priv))
+		return -ENOMEM;
 	tx_info->rate_driver_data[0] = tx_info_priv;
 	hdrlen = ieee80211_get_hdrlen_from_skb(skb);
 	fc = hdr->frame_control;
@@ -1712,9 +1704,18 @@ static void ath_tx_setup_buffer(struct ath_softc *sc, struct ath_buf *bf,
 	/* DMA setup */
 
 	bf->bf_mpdu = skb;
+
 	bf->bf_dmacontext = pci_map_single(sc->pdev, skb->data,
 					   skb->len, PCI_DMA_TODEVICE);
+	if (unlikely(pci_dma_mapping_error(sc->pdev, bf->bf_dmacontext))) {
+		bf->bf_mpdu = NULL;
+		DPRINTF(sc, ATH_DBG_CONFIG,
+			"pci_dma_mapping_error() on TX\n");
+		return -ENOMEM;
+	}
+
 	bf->bf_buf_addr = bf->bf_dmacontext;
+	return 0;
 }
 
 /* FIXME: tx power */
@@ -1786,21 +1787,46 @@ static void ath_tx_start_dma(struct ath_softc *sc, struct ath_buf *bf,
 	spin_unlock_bh(&txctl->txq->axq_lock);
 }
 
+/* Upon failure caller should free skb */
 int ath_tx_start(struct ath_softc *sc, struct sk_buff *skb,
 		 struct ath_tx_control *txctl)
 {
 	struct ath_buf *bf;
+	int r;
 
 	/* Check if a tx buffer is available */
 
 	bf = ath_tx_get_buffer(sc);
 	if (!bf) {
-		DPRINTF(sc, ATH_DBG_XMIT, "%s: TX buffers are full\n",
-			__func__);
+		DPRINTF(sc, ATH_DBG_XMIT, "TX buffers are full\n");
 		return -1;
 	}
 
-	ath_tx_setup_buffer(sc, bf, skb, txctl);
+	r = ath_tx_setup_buffer(sc, bf, skb, txctl);
+	if (unlikely(r)) {
+		struct ath_txq *txq = txctl->txq;
+
+		DPRINTF(sc, ATH_DBG_FATAL, "TX mem alloc failure\n");
+
+		/* upon ath_tx_processq() this TX queue will be resumed, we
+		 * guarantee this will happen by knowing beforehand that
+		 * we will at least have to run TX completionon one buffer
+		 * on the queue */
+		spin_lock_bh(&txq->axq_lock);
+		if (ath_txq_depth(sc, txq->axq_qnum) > 1) {
+			ieee80211_stop_queue(sc->hw,
+				skb_get_queue_mapping(skb));
+			txq->stopped = 1;
+		}
+		spin_unlock_bh(&txq->axq_lock);
+
+		spin_lock_bh(&sc->tx.txbuflock);
+		list_add_tail(&bf->list, &sc->tx.txbuf);
+		spin_unlock_bh(&sc->tx.txbuflock);
+
+		return r;
+	}
+
 	ath_tx_start_dma(sc, bf, txctl);
 
 	return 0;
@@ -1813,26 +1839,25 @@ int ath_tx_init(struct ath_softc *sc, int nbufs)
 	int error = 0;
 
 	do {
-		spin_lock_init(&sc->sc_txbuflock);
+		spin_lock_init(&sc->tx.txbuflock);
 
 		/* Setup tx descriptors */
-		error = ath_descdma_setup(sc, &sc->sc_txdma, &sc->sc_txbuf,
+		error = ath_descdma_setup(sc, &sc->tx.txdma, &sc->tx.txbuf,
 			"tx", nbufs, 1);
 		if (error != 0) {
 			DPRINTF(sc, ATH_DBG_FATAL,
-				"%s: failed to allocate tx descriptors: %d\n",
-				__func__, error);
+				"Failed to allocate tx descriptors: %d\n",
+				error);
 			break;
 		}
 
 		/* XXX allocate beacon state together with vap */
-		error = ath_descdma_setup(sc, &sc->sc_bdma, &sc->sc_bbuf,
+		error = ath_descdma_setup(sc, &sc->beacon.bdma, &sc->beacon.bbuf,
 					  "beacon", ATH_BCBUF, 1);
 		if (error != 0) {
 			DPRINTF(sc, ATH_DBG_FATAL,
-				"%s: failed to allocate "
-				"beacon descripotrs: %d\n",
-				__func__, error);
+				"Failed to allocate beacon descriptors: %d\n",
+				error);
 			break;
 		}
 
@@ -1849,12 +1874,12 @@ int ath_tx_init(struct ath_softc *sc, int nbufs)
 int ath_tx_cleanup(struct ath_softc *sc)
 {
 	/* cleanup beacon descriptors */
-	if (sc->sc_bdma.dd_desc_len != 0)
-		ath_descdma_cleanup(sc, &sc->sc_bdma, &sc->sc_bbuf);
+	if (sc->beacon.bdma.dd_desc_len != 0)
+		ath_descdma_cleanup(sc, &sc->beacon.bdma, &sc->beacon.bbuf);
 
 	/* cleanup tx descriptors */
-	if (sc->sc_txdma.dd_desc_len != 0)
-		ath_descdma_cleanup(sc, &sc->sc_txdma, &sc->sc_txbuf);
+	if (sc->tx.txdma.dd_desc_len != 0)
+		ath_descdma_cleanup(sc, &sc->tx.txdma, &sc->tx.txbuf);
 
 	return 0;
 }
@@ -1902,15 +1927,15 @@ struct ath_txq *ath_txq_setup(struct ath_softc *sc, int qtype, int subtype)
 		 */
 		return NULL;
 	}
-	if (qnum >= ARRAY_SIZE(sc->sc_txq)) {
+	if (qnum >= ARRAY_SIZE(sc->tx.txq)) {
 		DPRINTF(sc, ATH_DBG_FATAL,
-			"%s: hal qnum %u out of range, max %u!\n",
-			__func__, qnum, (unsigned int)ARRAY_SIZE(sc->sc_txq));
+			"qnum %u out of range, max %u!\n",
+			qnum, (unsigned int)ARRAY_SIZE(sc->tx.txq));
 		ath9k_hw_releasetxqueue(ah, qnum);
 		return NULL;
 	}
 	if (!ATH_TXQ_SETUP(sc, qnum)) {
-		struct ath_txq *txq = &sc->sc_txq[qnum];
+		struct ath_txq *txq = &sc->tx.txq[qnum];
 
 		txq->axq_qnum = qnum;
 		txq->axq_link = NULL;
@@ -1921,9 +1946,9 @@ struct ath_txq *ath_txq_setup(struct ath_softc *sc, int qtype, int subtype)
 		txq->axq_aggr_depth = 0;
 		txq->axq_totalqueued = 0;
 		txq->axq_linkbuf = NULL;
-		sc->sc_txqsetup |= 1<<qnum;
+		sc->tx.txqsetup |= 1<<qnum;
 	}
-	return &sc->sc_txq[qnum];
+	return &sc->tx.txq[qnum];
 }
 
 /* Reclaim resources for a setup queue */
@@ -1931,7 +1956,7 @@ struct ath_txq *ath_txq_setup(struct ath_softc *sc, int qtype, int subtype)
 void ath_tx_cleanupq(struct ath_softc *sc, struct ath_txq *txq)
 {
 	ath9k_hw_releasetxqueue(sc->sc_ah, txq->axq_qnum);
-	sc->sc_txqsetup &= ~(1<<txq->axq_qnum);
+	sc->tx.txqsetup &= ~(1<<txq->axq_qnum);
 }
 
 /*
@@ -1948,15 +1973,15 @@ int ath_tx_setup(struct ath_softc *sc, int haltype)
 {
 	struct ath_txq *txq;
 
-	if (haltype >= ARRAY_SIZE(sc->sc_haltype2q)) {
+	if (haltype >= ARRAY_SIZE(sc->tx.hwq_map)) {
 		DPRINTF(sc, ATH_DBG_FATAL,
-			"%s: HAL AC %u out of range, max %zu!\n",
-			__func__, haltype, ARRAY_SIZE(sc->sc_haltype2q));
+			"HAL AC %u out of range, max %zu!\n",
+			 haltype, ARRAY_SIZE(sc->tx.hwq_map));
 		return 0;
 	}
 	txq = ath_txq_setup(sc, ATH9K_TX_QUEUE_DATA, haltype);
 	if (txq != NULL) {
-		sc->sc_haltype2q[haltype] = txq->axq_qnum;
+		sc->tx.hwq_map[haltype] = txq->axq_qnum;
 		return 1;
 	} else
 		return 0;
@@ -1968,20 +1993,19 @@ int ath_tx_get_qnum(struct ath_softc *sc, int qtype, int haltype)
 
 	switch (qtype) {
 	case ATH9K_TX_QUEUE_DATA:
-		if (haltype >= ARRAY_SIZE(sc->sc_haltype2q)) {
+		if (haltype >= ARRAY_SIZE(sc->tx.hwq_map)) {
 			DPRINTF(sc, ATH_DBG_FATAL,
-				"%s: HAL AC %u out of range, max %zu!\n",
-				__func__,
-				haltype, ARRAY_SIZE(sc->sc_haltype2q));
+				"HAL AC %u out of range, max %zu!\n",
+				haltype, ARRAY_SIZE(sc->tx.hwq_map));
 			return -1;
 		}
-		qnum = sc->sc_haltype2q[haltype];
+		qnum = sc->tx.hwq_map[haltype];
 		break;
 	case ATH9K_TX_QUEUE_BEACON:
-		qnum = sc->sc_bhalq;
+		qnum = sc->beacon.beaconq;
 		break;
 	case ATH9K_TX_QUEUE_CAB:
-		qnum = sc->sc_cabq->axq_qnum;
+		qnum = sc->beacon.cabq->axq_qnum;
 		break;
 	default:
 		qnum = -1;
@@ -1997,15 +2021,15 @@ struct ath_txq *ath_test_get_txq(struct ath_softc *sc, struct sk_buff *skb)
 	int qnum;
 
 	qnum = ath_get_hal_qnum(skb_get_queue_mapping(skb), sc);
-	txq = &sc->sc_txq[qnum];
+	txq = &sc->tx.txq[qnum];
 
 	spin_lock_bh(&txq->axq_lock);
 
 	/* Try to avoid running out of descriptors */
 	if (txq->axq_depth >= (ATH_TXBUF - 20)) {
 		DPRINTF(sc, ATH_DBG_FATAL,
-			"%s: TX queue: %d is full, depth: %d\n",
-			__func__, qnum, txq->axq_depth);
+			"TX queue: %d is full, depth: %d\n",
+			qnum, txq->axq_depth);
 		ieee80211_stop_queue(sc->hw, skb_get_queue_mapping(skb));
 		txq->stopped = 1;
 		spin_unlock_bh(&txq->axq_lock);
@@ -2026,17 +2050,17 @@ int ath_txq_update(struct ath_softc *sc, int qnum,
 	int error = 0;
 	struct ath9k_tx_queue_info qi;
 
-	if (qnum == sc->sc_bhalq) {
+	if (qnum == sc->beacon.beaconq) {
 		/*
 		 * XXX: for beacon queue, we just save the parameter.
 		 * It will be picked up by ath_beaconq_config when
 		 * it's necessary.
 		 */
-		sc->sc_beacon_qi = *qinfo;
+		sc->beacon.beacon_qi = *qinfo;
 		return 0;
 	}
 
-	ASSERT(sc->sc_txq[qnum].axq_qnum == qnum);
+	ASSERT(sc->tx.txq[qnum].axq_qnum == qnum);
 
 	ath9k_hw_get_txq_props(ah, qnum, &qi);
 	qi.tqi_aifs = qinfo->tqi_aifs;
@@ -2047,8 +2071,7 @@ int ath_txq_update(struct ath_softc *sc, int qnum,
 
 	if (!ath9k_hw_set_txq_props(ah, qnum, &qi)) {
 		DPRINTF(sc, ATH_DBG_FATAL,
-			"%s: unable to update hardware queue %u!\n",
-			__func__, qnum);
+			"Unable to update hardware queue %u!\n", qnum);
 		error = -EIO;
 	} else {
 		ath9k_hw_resettxqueue(ah, qnum); /* push to h/w */
@@ -2060,7 +2083,7 @@ int ath_txq_update(struct ath_softc *sc, int qnum,
 int ath_cabq_update(struct ath_softc *sc)
 {
 	struct ath9k_tx_queue_info qi;
-	int qnum = sc->sc_cabq->axq_qnum;
+	int qnum = sc->beacon.cabq->axq_qnum;
 	struct ath_beacon_config conf;
 
 	ath9k_hw_get_txq_props(sc->sc_ah, qnum, &qi);
@@ -2094,7 +2117,7 @@ void ath_tx_tasklet(struct ath_softc *sc)
 	 */
 	for (i = 0; i < ATH9K_NUM_TX_QUEUES; i++) {
 		if (ATH_TXQ_SETUP(sc, i) && (qcumask & (1 << i)))
-			ath_tx_processq(sc, &sc->sc_txq[i]);
+			ath_tx_processq(sc, &sc->tx.txq[i]);
 	}
 }
 
@@ -2126,9 +2149,9 @@ void ath_tx_draintxq(struct ath_softc *sc,
 			list_del(&bf->list);
 			spin_unlock_bh(&txq->axq_lock);
 
-			spin_lock_bh(&sc->sc_txbuflock);
-			list_add_tail(&bf->list, &sc->sc_txbuf);
-			spin_unlock_bh(&sc->sc_txbuflock);
+			spin_lock_bh(&sc->tx.txbuflock);
+			list_add_tail(&bf->list, &sc->tx.txbuf);
+			spin_unlock_bh(&sc->tx.txbuflock);
 			continue;
 		}
 
@@ -2166,9 +2189,9 @@ void ath_draintxq(struct ath_softc *sc, bool retry_tx)
 	/* stop beacon queue. The beacon will be freed when
 	 * we go to INIT state */
 	if (!(sc->sc_flags & SC_OP_INVALID)) {
-		(void) ath9k_hw_stoptxdma(sc->sc_ah, sc->sc_bhalq);
-		DPRINTF(sc, ATH_DBG_XMIT, "%s: beacon queue %x\n", __func__,
-			ath9k_hw_gettxbuf(sc->sc_ah, sc->sc_bhalq));
+		(void) ath9k_hw_stoptxdma(sc->sc_ah, sc->beacon.beaconq);
+		DPRINTF(sc, ATH_DBG_XMIT, "beacon queue %x\n",
+			ath9k_hw_gettxbuf(sc->sc_ah, sc->beacon.beaconq));
 	}
 
 	ath_drain_txdataq(sc, retry_tx);
@@ -2176,12 +2199,12 @@ void ath_draintxq(struct ath_softc *sc, bool retry_tx)
 
 u32 ath_txq_depth(struct ath_softc *sc, int qnum)
 {
-	return sc->sc_txq[qnum].axq_depth;
+	return sc->tx.txq[qnum].axq_depth;
 }
 
 u32 ath_txq_aggr_depth(struct ath_softc *sc, int qnum)
 {
-	return sc->sc_txq[qnum].axq_aggr_depth;
+	return sc->tx.txq[qnum].axq_aggr_depth;
 }
 
 bool ath_tx_aggr_check(struct ath_softc *sc, struct ath_node *an, u8 tidno)
@@ -2262,12 +2285,10 @@ void ath_tx_aggr_resume(struct ath_softc *sc, struct ieee80211_sta *sta, u16 tid
 void ath_tx_aggr_teardown(struct ath_softc *sc, struct ath_node *an, u8 tid)
 {
 	struct ath_atx_tid *txtid = ATH_AN_2_TID(an, tid);
-	struct ath_txq *txq = &sc->sc_txq[txtid->ac->qnum];
+	struct ath_txq *txq = &sc->tx.txq[txtid->ac->qnum];
 	struct ath_buf *bf;
 	struct list_head bf_head;
 	INIT_LIST_HEAD(&bf_head);
-
-	DPRINTF(sc, ATH_DBG_AGGR, "%s: teardown TX aggregation\n", __func__);
 
 	if (txtid->state & AGGR_CLEANUP) /* cleanup is in progress */
 		return;
@@ -2385,7 +2406,7 @@ void ath_tx_node_init(struct ath_softc *sc, struct ath_node *an)
 	/*
 	 * Init per tid tx state
 	 */
-	for (tidno = 0, tid = &an->an_aggr.tx.tid[tidno];
+	for (tidno = 0, tid = &an->tid[tidno];
 	     tidno < WME_NUM_TID;
 	     tidno++, tid++) {
 		tid->an        = an;
@@ -2399,7 +2420,7 @@ void ath_tx_node_init(struct ath_softc *sc, struct ath_node *an)
 		INIT_LIST_HEAD(&tid->buf_q);
 
 		acno = TID_TO_WME_AC(tidno);
-		tid->ac = &an->an_aggr.tx.ac[acno];
+		tid->ac = &an->ac[acno];
 
 		/* ADDBA state */
 		tid->state &= ~AGGR_ADDBA_COMPLETE;
@@ -2410,7 +2431,7 @@ void ath_tx_node_init(struct ath_softc *sc, struct ath_node *an)
 	/*
 	 * Init per ac tx state
 	 */
-	for (acno = 0, ac = &an->an_aggr.tx.ac[acno];
+	for (acno = 0, ac = &an->ac[acno];
 	     acno < WME_NUM_AC; acno++, ac++) {
 		ac->sched    = false;
 		INIT_LIST_HEAD(&ac->tid_q);
@@ -2446,7 +2467,7 @@ void ath_tx_node_cleanup(struct ath_softc *sc, struct ath_node *an)
 	struct ath_txq *txq;
 	for (i = 0; i < ATH9K_NUM_TX_QUEUES; i++) {
 		if (ATH_TXQ_SETUP(sc, i)) {
-			txq = &sc->sc_txq[i];
+			txq = &sc->tx.txq[i];
 
 			spin_lock(&txq->axq_lock);
 
@@ -2491,9 +2512,9 @@ void ath_tx_cabq(struct ath_softc *sc, struct sk_buff *skb)
 	if (info->flags & IEEE80211_TX_CTL_ASSIGN_SEQ) {
 		struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
 		if (info->flags & IEEE80211_TX_CTL_FIRST_FRAGMENT)
-			sc->seq_no += 0x10;
+			sc->tx.seq_no += 0x10;
 		hdr->seq_ctrl &= cpu_to_le16(IEEE80211_SCTL_FRAG);
-		hdr->seq_ctrl |= cpu_to_le16(sc->seq_no);
+		hdr->seq_ctrl |= cpu_to_le16(sc->tx.seq_no);
 	}
 
 	/* Add the padding after the header if this is not already done */
@@ -2501,8 +2522,7 @@ void ath_tx_cabq(struct ath_softc *sc, struct sk_buff *skb)
 	if (hdrlen & 3) {
 		padsize = hdrlen % 4;
 		if (skb_headroom(skb) < padsize) {
-			DPRINTF(sc, ATH_DBG_XMIT, "%s: TX CABQ padding "
-				"failed\n", __func__);
+			DPRINTF(sc, ATH_DBG_XMIT, "TX CABQ padding failed\n");
 			dev_kfree_skb_any(skb);
 			return;
 		}
@@ -2510,14 +2530,12 @@ void ath_tx_cabq(struct ath_softc *sc, struct sk_buff *skb)
 		memmove(skb->data, skb->data + padsize, hdrlen);
 	}
 
-	txctl.txq = sc->sc_cabq;
+	txctl.txq = sc->beacon.cabq;
 
-	DPRINTF(sc, ATH_DBG_XMIT, "%s: transmitting CABQ packet, skb: %p\n",
-		__func__,
-		skb);
+	DPRINTF(sc, ATH_DBG_XMIT, "transmitting CABQ packet, skb: %p\n", skb);
 
 	if (ath_tx_start(sc, skb, &txctl) != 0) {
-		DPRINTF(sc, ATH_DBG_XMIT, "%s: TX failed\n", __func__);
+		DPRINTF(sc, ATH_DBG_XMIT, "CABQ TX failed\n");
 		goto exit;
 	}
 

@@ -19,7 +19,7 @@
  * file called LICENSE.
  *
  * Contact Information:
- * James P. Ketrenos <ipw2100-admin@linux.intel.com>
+ *  Intel Linux Wireless <ilw@linux.intel.com>
  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
  *
  *****************************************************************************/
@@ -277,12 +277,14 @@ int iwl3945_rs_next_rate(struct iwl3945_priv *priv, int rate)
 		else if (rate == IWL_RATE_6M_INDEX)
 			next_rate = IWL_RATE_6M_INDEX;
 		break;
-/* XXX cannot be invoked in current mac80211 so not a regression
-	case MODE_IEEE80211B:
-		if (rate == IWL_RATE_11M_INDEX_TABLE)
-			next_rate = IWL_RATE_5M_INDEX_TABLE;
+	case IEEE80211_BAND_2GHZ:
+		if (!(priv->sta_supp_rates & IWL_OFDM_RATES_MASK) &&
+		    iwl3945_is_associated(priv)) {
+			if (rate == IWL_RATE_11M_INDEX)
+				next_rate = IWL_RATE_5M_INDEX;
+		}
 		break;
- */
+
 	default:
 		break;
 	}
@@ -337,7 +339,7 @@ static void iwl3945_rx_reply_tx(struct iwl3945_priv *priv,
 	struct iwl3945_tx_resp *tx_resp = (void *)&pkt->u.raw[0];
 	u32  status = le32_to_cpu(tx_resp->status);
 	int rate_idx;
-	int fail, i;
+	int fail;
 
 	if ((index >= txq->q.n_bd) || (iwl3945_x2_queue_used(&txq->q, index) == 0)) {
 		IWL_ERROR("Read index for DMA queue txq_id (%d) index %d "
@@ -356,27 +358,9 @@ static void iwl3945_rx_reply_tx(struct iwl3945_priv *priv,
 		rate_idx -= IWL_FIRST_OFDM_RATE;
 
 	fail = tx_resp->failure_frame;
-	for (i = 0; i < IEEE80211_TX_MAX_RATES; i++) {
-		int next = iwl3945_rs_next_rate(priv, rate_idx);
 
-		info->status.rates[i].idx = rate_idx;
-
-		/*
-		 * Put remaining into the last count as best approximation
-		 * of saying exactly what the hardware would have done...
-		 */
-		if ((rate_idx == next) || (i == IEEE80211_TX_MAX_RATES - 1)) {
-			info->status.rates[i].count = fail;
-			break;
-		}
-
-		info->status.rates[i].count = priv->retry_rate;
-		fail -= priv->retry_rate;
-		rate_idx = next;
-		if (fail <= 0)
-			break;
-	}
-	info->status.rates[i].count++; /* add final attempt */
+	info->status.rates[0].idx = rate_idx;
+	info->status.rates[0].count = fail + 1; /* add final attempt */
 
 	/* tx_status->rts_retry_count = tx_resp->failure_rts; */
 	info->flags |= ((status & TX_STATUS_MSK) == TX_STATUS_SUCCESS) ?
@@ -809,13 +793,20 @@ int iwl3945_hw_txq_free_tfd(struct iwl3945_priv *priv, struct iwl3945_tx_queue *
 
 u8 iwl3945_hw_find_station(struct iwl3945_priv *priv, const u8 *addr)
 {
-	int i;
+	int i, start = IWL_AP_ID;
 	int ret = IWL_INVALID_STATION;
 	unsigned long flags;
 	DECLARE_MAC_BUF(mac);
 
+	if ((priv->iw_mode == NL80211_IFTYPE_ADHOC) ||
+	    (priv->iw_mode == NL80211_IFTYPE_AP))
+		start = IWL_STA_ID;
+
+	if (is_broadcast_ether_addr(addr))
+		return priv->hw_setting.bcast_sta_id;
+
 	spin_lock_irqsave(&priv->sta_lock, flags);
-	for (i = IWL_STA_ID; i < priv->hw_setting.max_stations; i++)
+	for (i = start; i < priv->hw_setting.max_stations; i++)
 		if ((priv->stations[i].used) &&
 		    (!compare_ether_addr
 		     (priv->stations[i].sta.sta.addr, addr))) {
@@ -1113,9 +1104,8 @@ int iwl3945_hw_nic_init(struct iwl3945_priv *priv)
 		    CSR_GIO_CHICKEN_BITS_REG_BIT_L1A_NO_L0S_RX);
 
 	iwl3945_set_bit(priv, CSR_GP_CNTRL, CSR_GP_CNTRL_REG_FLAG_INIT_DONE);
-	rc = iwl3945_poll_bit(priv, CSR_GP_CNTRL,
-			  CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY,
-			  CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
+	rc = iwl3945_poll_direct_bit(priv, CSR_GP_CNTRL,
+			CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
 	if (rc < 0) {
 		spin_unlock_irqrestore(&priv->lock, flags);
 		IWL_DEBUG_INFO("Failed to init the card\n");
@@ -1296,8 +1286,7 @@ int iwl3945_hw_nic_stop_master(struct iwl3945_priv *priv)
 		IWL_DEBUG_INFO("Card in power save, master is already "
 			       "stopped\n");
 	else {
-		rc = iwl3945_poll_bit(priv, CSR_RESET,
-				  CSR_RESET_REG_FLAG_MASTER_DISABLED,
+		rc = iwl3945_poll_direct_bit(priv, CSR_RESET,
 				  CSR_RESET_REG_FLAG_MASTER_DISABLED, 100);
 		if (rc < 0) {
 			spin_unlock_irqrestore(&priv->lock, flags);
@@ -1322,9 +1311,8 @@ int iwl3945_hw_nic_reset(struct iwl3945_priv *priv)
 
 	iwl3945_set_bit(priv, CSR_RESET, CSR_RESET_REG_FLAG_SW_RESET);
 
-	rc = iwl3945_poll_bit(priv, CSR_GP_CNTRL,
-			  CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY,
-			  CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
+	iwl3945_poll_direct_bit(priv, CSR_GP_CNTRL,
+			 CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
 
 	rc = iwl3945_grab_nic_access(priv);
 	if (!rc) {
@@ -2321,7 +2309,8 @@ int iwl3945_hw_rxq_stop(struct iwl3945_priv *priv)
 	}
 
 	iwl3945_write_direct32(priv, FH_RCSR_CONFIG(0), 0);
-	rc = iwl3945_poll_direct_bit(priv, FH_RSSR_STATUS, (1 << 24), 1000);
+	rc = iwl3945_poll_direct_bit(priv, FH_RSSR_STATUS,
+			FH_RSSR_CHNL0_RX_STATUS_CHNL_IDLE, 1000);
 	if (rc < 0)
 		IWL_ERROR("Can't stop Rx DMA.\n");
 
@@ -2390,7 +2379,8 @@ int iwl3945_init_hw_rate_table(struct iwl3945_priv *priv)
 			iwl3945_hw_set_rate_n_flags(iwl3945_rates[i].plcp, 0);
 		table[index].try_cnt = priv->retry_rate;
 		prev_index = iwl3945_get_prev_ieee_rate(i);
-		table[index].next_rate_index = iwl3945_rates[prev_index].table_rs_index;
+		table[index].next_rate_index =
+				iwl3945_rates[prev_index].table_rs_index;
 	}
 
 	switch (priv->band) {
@@ -2398,11 +2388,14 @@ int iwl3945_init_hw_rate_table(struct iwl3945_priv *priv)
 		IWL_DEBUG_RATE("Select A mode rate scale\n");
 		/* If one of the following CCK rates is used,
 		 * have it fall back to the 6M OFDM rate */
-		for (i = IWL_RATE_1M_INDEX_TABLE; i <= IWL_RATE_11M_INDEX_TABLE; i++)
-			table[i].next_rate_index = iwl3945_rates[IWL_FIRST_OFDM_RATE].table_rs_index;
+		for (i = IWL_RATE_1M_INDEX_TABLE;
+			i <= IWL_RATE_11M_INDEX_TABLE; i++)
+			table[i].next_rate_index =
+			  iwl3945_rates[IWL_FIRST_OFDM_RATE].table_rs_index;
 
 		/* Don't fall back to CCK rates */
-		table[IWL_RATE_12M_INDEX_TABLE].next_rate_index = IWL_RATE_9M_INDEX_TABLE;
+		table[IWL_RATE_12M_INDEX_TABLE].next_rate_index =
+						IWL_RATE_9M_INDEX_TABLE;
 
 		/* Don't drop out of OFDM rates */
 		table[IWL_RATE_6M_INDEX_TABLE].next_rate_index =
@@ -2413,11 +2406,20 @@ int iwl3945_init_hw_rate_table(struct iwl3945_priv *priv)
 		IWL_DEBUG_RATE("Select B/G mode rate scale\n");
 		/* If an OFDM rate is used, have it fall back to the
 		 * 1M CCK rates */
-		for (i = IWL_RATE_6M_INDEX_TABLE; i <= IWL_RATE_54M_INDEX_TABLE; i++)
-			table[i].next_rate_index = iwl3945_rates[IWL_FIRST_CCK_RATE].table_rs_index;
 
-		/* CCK shouldn't fall back to OFDM... */
-		table[IWL_RATE_11M_INDEX_TABLE].next_rate_index = IWL_RATE_5M_INDEX_TABLE;
+		if (!(priv->sta_supp_rates & IWL_OFDM_RATES_MASK) &&
+		    iwl3945_is_associated(priv)) {
+
+			index = IWL_FIRST_CCK_RATE;
+			for (i = IWL_RATE_6M_INDEX_TABLE;
+			     i <= IWL_RATE_54M_INDEX_TABLE; i++)
+				table[i].next_rate_index =
+					iwl3945_rates[index].table_rs_index;
+
+			index = IWL_RATE_11M_INDEX_TABLE;
+			/* CCK shouldn't fall back to OFDM... */
+			table[index].next_rate_index = IWL_RATE_5M_INDEX_TABLE;
+		}
 		break;
 
 	default:
@@ -2520,13 +2522,17 @@ void iwl3945_hw_cancel_deferred_work(struct iwl3945_priv *priv)
 
 static struct iwl_3945_cfg iwl3945_bg_cfg = {
 	.name = "3945BG",
-	.fw_name = "iwlwifi-3945" IWL3945_UCODE_API ".ucode",
+	.fw_name_pre = IWL3945_FW_PRE,
+	.ucode_api_max = IWL3945_UCODE_API_MAX,
+	.ucode_api_min = IWL3945_UCODE_API_MIN,
 	.sku = IWL_SKU_G,
 };
 
 static struct iwl_3945_cfg iwl3945_abg_cfg = {
 	.name = "3945ABG",
-	.fw_name = "iwlwifi-3945" IWL3945_UCODE_API ".ucode",
+	.fw_name_pre = IWL3945_FW_PRE,
+	.ucode_api_max = IWL3945_UCODE_API_MAX,
+	.ucode_api_min = IWL3945_UCODE_API_MIN,
 	.sku = IWL_SKU_A|IWL_SKU_G,
 };
 

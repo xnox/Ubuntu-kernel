@@ -187,7 +187,6 @@ struct ieee80211_rx_data {
 	struct ieee80211_rx_status *status;
 	struct ieee80211_rate *rate;
 
-	u16 ethertype;
 	unsigned int flags;
 	int sent_ps_buffered;
 	int queue;
@@ -626,6 +625,7 @@ struct ieee80211_local {
 	struct delayed_work scan_work;
 	struct ieee80211_sub_if_data *scan_sdata;
 	struct ieee80211_channel *oper_channel, *scan_channel;
+	enum nl80211_channel_type oper_channel_type;
 	u8 scan_ssid[IEEE80211_MAX_SSID_LEN];
 	size_t scan_ssid_len;
 	struct list_head bss_list;
@@ -863,8 +863,7 @@ int ieee80211_sta_set_bssid(struct ieee80211_sub_if_data *sdata, u8 *bssid);
 void ieee80211_sta_req_auth(struct ieee80211_sub_if_data *sdata,
 			    struct ieee80211_if_sta *ifsta);
 struct sta_info *ieee80211_ibss_add_sta(struct ieee80211_sub_if_data *sdata,
-					struct sk_buff *skb, u8 *bssid,
-					u8 *addr, u64 supp_rates);
+					u8 *bssid, u8 *addr, u64 supp_rates);
 int ieee80211_sta_deauthenticate(struct ieee80211_sub_if_data *sdata, u16 reason);
 int ieee80211_sta_disassociate(struct ieee80211_sub_if_data *sdata, u16 reason);
 u32 ieee80211_reset_erp_info(struct ieee80211_sub_if_data *sdata);

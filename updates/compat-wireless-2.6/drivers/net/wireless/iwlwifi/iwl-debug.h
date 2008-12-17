@@ -21,7 +21,7 @@
  * file called LICENSE.
  *
  * Contact Information:
- * James P. Ketrenos <ipw2100-admin@linux.intel.com>
+ *  Intel Linux Wireless <ilw@linux.intel.com>
  * Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
  *
  *****************************************************************************/
@@ -60,6 +60,7 @@ struct iwl_debugfs {
 		struct dentry *file_rx_statistics;
 		struct dentry *file_tx_statistics;
 		struct dentry *file_log_event;
+		struct dentry *file_channels;
 	} dbgfs_data_files;
 	struct dir_rf_files {
 		struct dentry *file_disable_sensitivity;

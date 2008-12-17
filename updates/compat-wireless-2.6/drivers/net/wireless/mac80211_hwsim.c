@@ -497,11 +497,9 @@ static void mac80211_hwsim_bss_info_changed(struct ieee80211_hw *hw,
 	}
 
 	if (changed & BSS_CHANGED_HT) {
-		printk(KERN_DEBUG "  %s: HT: sec_ch_offs=%d width_40_ok=%d "
-		       "op_mode=%d\n",
+		printk(KERN_DEBUG "  %s: HT: op_mode=0x%x\n",
 		       wiphy_name(hw->wiphy),
-		       info->ht.secondary_channel_offset,
-		       info->ht.width_40_ok, info->ht.operation_mode);
+		       info->ht.operation_mode);
 	}
 
 	if (changed & BSS_CHANGED_BASIC_RATES) {
@@ -523,6 +521,10 @@ static void mac80211_hwsim_sta_notify(struct ieee80211_hw *hw,
 		break;
 	case STA_NOTIFY_REMOVE:
 		hwsim_clear_sta_magic(sta);
+		break;
+	case STA_NOTIFY_SLEEP:
+	case STA_NOTIFY_AWAKE:
+		/* TODO: make good use of these flags */
 		break;
 	}
 }
