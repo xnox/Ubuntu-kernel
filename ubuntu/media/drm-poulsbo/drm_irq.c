@@ -337,6 +337,7 @@ int drm_wait_vblank(struct drm_device *dev, void *data, struct drm_file *file_pr
 		do_gettimeofday(&now);
 		vblwait->reply.tval_sec = now.tv_sec;
 		vblwait->reply.tval_usec = now.tv_usec;
+		vblwait->reply.sequence = vblwait->request.sequence;
 	}
 
       done:

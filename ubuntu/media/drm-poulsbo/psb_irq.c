@@ -347,7 +347,8 @@ int psb_vblank_wait(struct drm_device *dev, unsigned int *sequence)
 {
 	int ret;
 
-	ret = psb_vblank_do_wait(dev, sequence, &dev->vbl_received);
+	//ret = psb_vblank_do_wait(dev, sequence, &dev->vbl_received);
+	ret = psb_vblank_do_wait(dev, sequence, &dev->vbl_received2);
 	return ret;
 }
 

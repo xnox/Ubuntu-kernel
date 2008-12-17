@@ -40,7 +40,8 @@ EXPORT_SYMBOL(drm_psb_debug);
 static int drm_psb_trap_pagefaults = 0;
 static int drm_psb_clock_gating = 0;
 static int drm_psb_ta_mem_size = 32 * 1024;
-int drm_psb_disable_vsync = 1;
+//int drm_psb_disable_vsync = 1;
+int drm_psb_disable_vsync = 0;
 int drm_psb_no_fb = 0;
 int drm_psb_force_pipeb = 0;
 char* psb_init_mode;
@@ -474,6 +475,8 @@ static int psb_initial_config(struct drm_device *dev, bool can_grow)
 	/* strncpy(drm_init_mode, psb_init_mode, strlen(psb_init_mode)); */
 	drm_init_xres = psb_init_xres;
 	drm_init_yres = psb_init_yres;
+
+	drm_psb_disable_vsync = 0;
 
 	drm_pick_crtcs(dev);
 
