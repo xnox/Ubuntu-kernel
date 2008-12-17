@@ -1,3 +1,15 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook3) hardy; urgency=low
+
+  [Michael Frey]
+
+  * Fix for PSB video tearing while playing videos. LP: #308760
+
+  [Michael Krufky]
+
+  * Support for DVB mini cards LP: #308715 LP: #308719 LP: #308772 LP: #308785 LP: #308791
+
+ -- Michael Frey <michael.frey@canonical.com>  Wed, 17 Dec 2008 12:13:03 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook2) hardy; urgency=low
 
   [Amit Kucheria]
