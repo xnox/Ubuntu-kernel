@@ -269,13 +269,6 @@ static DEVICE_ATTR(iCountryCodeRelDate, S_IRUGO, show_country_rel_date, NULL);
  * Interrupt handlers for various ACM device responses
  */
 
-#ifndef _LINUX_UNALIGNED_ACCESS_OK_H
-static inline u16 get_unaligned_le16(const void *p)
-{
-	return le16_to_cpup((__le16 *)p);
-}
-#endif
-
 /* control interface reports status changes with "interrupt" transfers */
 static void acm_ctrl_irq(struct urb *urb)
 {
@@ -521,7 +514,7 @@ static void acm_waker(struct work_struct *waker)
 	struct acm *acm = container_of(waker, struct acm, waker);
 	long flags;
 	int rv;
-	
+
 	rv = usb_autopm_get_interface(acm->control);
 	if (rv < 0) {
 		err("Autopm failure in %s", __func__);
