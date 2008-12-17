@@ -21,7 +21,7 @@ $(stampdir)/stamp-prepare-%: target_flavour = $*
 $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
-	cd updates; find . | cpio -dumpl $(builddir)/build-$*
+	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
 	mv $(builddir)/build-$*/MUNGE-CW $(builddir)/build-$*/compat-wireless-2.6
 	cd $(builddir)/build-$*/compat-wireless-2.6 && ./MUNGE-CW
 	cat $^ > $(builddir)/build-$*/.config
