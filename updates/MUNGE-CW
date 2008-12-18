@@ -76,7 +76,7 @@ ccflags-y += -D__CHECK_ENDIAN__
 #
 # Change the ucode file name.
 #
-sed -i 's/IWL3945_FW_PRE #api/IWL3945_FW_PRE #api \"-lbm\"/' drivers/net/wireless/iwlwifi/iwl-3945.h
-sed -i 's/IWL4965_FW_PRE #api/IWL4965_FW_PRE #api \"-lbm\"/' drivers/net/wireless/iwlwifi/iwl-4965.c
-sed -i 's/IWL5000_FW_PRE #api/IWL5000_FW_PRE #api \"-lbm\"/' drivers/net/wireless/iwlwifi/iwl-5000.c
-sed -i 's/IWL5150_FW_PRE #api/IWL5150_FW_PRE #api \"-lbm\"/' drivers/net/wireless/iwlwifi/iwl-5000.c
+sed -i 's/#define.*IWL3945_FW_PRE.*\"iwlwifi-3945-\"/#define IWL3945_FW_PRE \"lbm-iwlwifi-3945-\"/' drivers/net/wireless/iwlwifi/iwl-3945.h
+sed -i 's/#define.*IWL4965_FW_PRE.*\"iwlwifi-4965-\"/#define IWL4965_FW_PRE \"lbm-iwlwifi-4965-\"/' drivers/net/wireless/iwlwifi/iwl-4965.c
+sed -i 's/#define.*IWL5000_FW_PRE.*\"iwlwifi-5000-\"/#define IWL5000_FW_PRE \"lbm-iwlwifi-5000-\"/' drivers/net/wireless/iwlwifi/iwl-5000.c
+sed -i 's/#define.*IWL5150_FW_PRE.*\"iwlwifi-5150-\"/#define IWL5150_FW_PRE \"lbm-iwlwifi-5150-\"/' drivers/net/wireless/iwlwifi/iwl-5000.c
