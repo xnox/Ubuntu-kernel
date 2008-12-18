@@ -372,7 +372,7 @@ static void iwl_free_frame(struct iwl_priv *priv, struct iwl_frame *frame)
 
 static unsigned int iwl_fill_beacon_frame(struct iwl_priv *priv,
 					  struct ieee80211_hdr *hdr,
-					  const u8 *dest, int left)
+					  int left)
 {
 	if (!iwl_is_associated(priv) || !priv->ibss_beacon ||
 	    ((priv->iw_mode != NL80211_IFTYPE_ADHOC) &&
@@ -425,7 +425,6 @@ static unsigned int iwl_hw_get_beacon_cmd(struct iwl_priv *priv,
 	tx_beacon_cmd->tx.stop_time.life_time = TX_CMD_LIFE_TIME_INFINITE;
 
 	frame_size = iwl_fill_beacon_frame(priv, tx_beacon_cmd->frame,
-				iwl_bcast_addr,
 				sizeof(frame->u) - sizeof(*tx_beacon_cmd));
 
 	BUG_ON(frame_size > MAX_MPDU_SIZE);
@@ -1112,16 +1111,6 @@ static void iwl_setup_rx_handlers(struct iwl_priv *priv)
 	priv->cfg->ops->lib->rx_handler_setup(priv);
 }
 
-/*
- * this should be called while priv->lock is locked
-*/
-static void __iwl_rx_replenish(struct iwl_priv *priv)
-{
-	iwl_rx_allocate(priv);
-	iwl_rx_queue_restock(priv);
-}
-
-
 /**
  * iwl_rx_handle - Main entry function for receiving responses from uCode
  *
@@ -1230,7 +1219,7 @@ void iwl_rx_handle(struct iwl_priv *priv)
 			count++;
 			if (count >= 8) {
 				priv->rxq.read = i;
-				__iwl_rx_replenish(priv);
+				iwl_rx_queue_restock(priv);
 				count = 0;
 			}
 		}
@@ -3354,7 +3343,7 @@ static int iwl_mac_beacon_update(struct ieee80211_hw *hw, struct sk_buff *skb)
 
 /*
  * The following adds a new attribute to the sysfs representation
- * of this device driver (i.e. a new file in /sys/bus/pci/drivers/iwl/)
+ * of this device driver (i.e. a new file in /sys/class/net/wlan0/device/)
  * used for controlling the debug level.
  *
  * See the level definitions in iwl for details.
@@ -3440,7 +3429,11 @@ static ssize_t show_tx_power(struct device *d,
 			     struct device_attribute *attr, char *buf)
 {
 	struct iwl_priv *priv = (struct iwl_priv *)d->driver_data;
-	return sprintf(buf, "%d\n", priv->tx_power_user_lmt);
+
+	if (!iwl_is_ready_rf(priv))
+		return sprintf(buf, "off\n");
+	else
+		return sprintf(buf, "%d\n", priv->tx_power_user_lmt);
 }
 
 static ssize_t store_tx_power(struct device *d,
