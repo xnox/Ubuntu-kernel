@@ -414,6 +414,7 @@ struct iwl_rb_status {
 	__le16 closed_fr_num;
 	__le16 finished_rb_num;
 	__le16 finished_fr_nam;
+	__le32 __unused; /* 3945 only */
 } __attribute__ ((packed));
 
 
@@ -475,6 +476,17 @@ struct iwl_tfd {
 	u8 num_tbs;
 	struct iwl_tfd_tb tbs[IWL_NUM_OF_TBS];
 	__le32 __pad;
+} __attribute__ ((packed));
+
+struct iwl3945_tfd_frame_data {
+	__le32 addr;
+	__le32 len;
+} __attribute__ ((packed));
+
+struct iwl3945_tfd_frame {
+	__le32 control_flags;
+	struct iwl3945_tfd_frame_data pa[4];
+	u8 reserved[28];
 } __attribute__ ((packed));
 
 

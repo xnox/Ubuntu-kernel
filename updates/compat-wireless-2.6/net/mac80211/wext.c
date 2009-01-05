@@ -830,25 +830,62 @@ static int ieee80211_ioctl_siwpower(struct net_device *dev,
 				    struct iw_param *wrq,
 				    char *extra)
 {
+	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
 	struct ieee80211_conf *conf = &local->hw.conf;
+	int ret = 0, timeout = 0;
+	bool ps;
+
+	if (sdata->vif.type != NL80211_IFTYPE_STATION)
+		return -EINVAL;
 
 	if (wrq->disabled) {
-		conf->flags &= ~IEEE80211_CONF_PS;
-		return ieee80211_hw_config(local, IEEE80211_CONF_CHANGE_PS);
+		ps = false;
+		timeout = 0;
+		goto set;
 	}
 
 	switch (wrq->flags & IW_POWER_MODE) {
 	case IW_POWER_ON:       /* If not specified */
 	case IW_POWER_MODE:     /* If set all mask */
 	case IW_POWER_ALL_R:    /* If explicitely state all */
-		conf->flags |= IEEE80211_CONF_PS;
+		ps = true;
 		break;
-	default:                /* Otherwise we don't support it */
-		return -EINVAL;
+	default:                /* Otherwise we ignore */
+		break;
 	}
 
-	return ieee80211_hw_config(local, IEEE80211_CONF_CHANGE_PS);
+	if (wrq->flags & IW_POWER_TIMEOUT)
+		timeout = wrq->value / 1000;
+
+set:
+	if (ps == local->powersave && timeout == local->dynamic_ps_timeout)
+		return ret;
+
+	local->powersave = ps;
+	local->dynamic_ps_timeout = timeout;
+
+	if (!(local->hw.flags & IEEE80211_HW_NO_STACK_DYNAMIC_PS) &&
+			(sdata->u.sta.flags & IEEE80211_STA_ASSOCIATED)) {
+		if (local->dynamic_ps_timeout > 0)
+			mod_timer(&local->dynamic_ps_timer, jiffies +
+				  msecs_to_jiffies(local->dynamic_ps_timeout));
+		else {
+			if (local->powersave) {
+				ieee80211_send_nullfunc(local, sdata, 1);
+				conf->flags |= IEEE80211_CONF_PS;
+				ret = ieee80211_hw_config(local,
+						IEEE80211_CONF_CHANGE_PS);
+			} else {
+				conf->flags &= ~IEEE80211_CONF_PS;
+				ret = ieee80211_hw_config(local,
+						IEEE80211_CONF_CHANGE_PS);
+				ieee80211_send_nullfunc(local, sdata, 0);
+			}
+		}
+	}
+
+	return ret;
 }
 
 static int ieee80211_ioctl_giwpower(struct net_device *dev,
@@ -857,9 +894,8 @@ static int ieee80211_ioctl_giwpower(struct net_device *dev,
 				    char *extra)
 {
 	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
-	struct ieee80211_conf *conf = &local->hw.conf;
 
-	wrqu->power.disabled = !(conf->flags & IEEE80211_CONF_PS);
+	wrqu->power.disabled = !local->powersave;
 
 	return 0;
 }
@@ -873,11 +909,21 @@ static int ieee80211_ioctl_siwauth(struct net_device *dev,
 
 	switch (data->flags & IW_AUTH_INDEX) {
 	case IW_AUTH_WPA_VERSION:
-	case IW_AUTH_CIPHER_PAIRWISE:
 	case IW_AUTH_CIPHER_GROUP:
 	case IW_AUTH_WPA_ENABLED:
 	case IW_AUTH_RX_UNENCRYPTED_EAPOL:
 	case IW_AUTH_KEY_MGMT:
+		break;
+	case IW_AUTH_CIPHER_PAIRWISE:
+		if (sdata->vif.type == NL80211_IFTYPE_STATION) {
+			if (data->value & (IW_AUTH_CIPHER_WEP40 |
+			    IW_AUTH_CIPHER_WEP104 | IW_AUTH_CIPHER_TKIP))
+				sdata->u.sta.flags |=
+					IEEE80211_STA_TKIP_WEP_USED;
+			else
+				sdata->u.sta.flags &=
+					~IEEE80211_STA_TKIP_WEP_USED;
+		}
 		break;
 	case IW_AUTH_DROP_UNENCRYPTED:
 		sdata->drop_unencrypted = !!data->value;

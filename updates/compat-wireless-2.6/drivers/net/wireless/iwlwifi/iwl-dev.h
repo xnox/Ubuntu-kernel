@@ -36,13 +36,15 @@
 #include <linux/kernel.h>
 #include <net/ieee80211_radiotap.h>
 
-#define DRV_NAME        "iwlagn"
-#include "iwl-rfkill.h"
 #include "iwl-eeprom.h"
-#include "iwl-4965-hw.h"
 #include "iwl-csr.h"
 #include "iwl-prph.h"
+#include "iwl-fh.h"
 #include "iwl-debug.h"
+#include "iwl-rfkill.h"
+#include "iwl-4965-hw.h"
+#include "iwl-3945-hw.h"
+#include "iwl-3945-led.h"
 #include "iwl-led.h"
 #include "iwl-power.h"
 #include "iwl-agn-rs.h"
@@ -132,9 +134,13 @@ struct iwl_tx_info {
  * A Tx queue consists of circular buffer of BDs (a.k.a. TFDs, transmit frame
  * descriptors) and required locking structures.
  */
+#define TFD_TX_CMD_SLOTS 256
+#define TFD_CMD_SLOTS 32
+
 struct iwl_tx_queue {
 	struct iwl_queue q;
 	struct iwl_tfd *tfds;
+	struct iwl3945_tfd *tfds39;
 	struct iwl_cmd *cmd[TFD_TX_CMD_SLOTS];
 	struct iwl_tx_info *txb;
 	u8 need_update;
@@ -152,6 +158,36 @@ struct iwl4965_channel_tgd_info {
 
 struct iwl4965_channel_tgh_info {
 	s64 last_radar_time;
+};
+
+#define IWL4965_MAX_RATE (33)
+
+struct iwl3945_clip_group {
+	/* maximum power level to prevent clipping for each rate, derived by
+	 *   us from this band's saturation power in EEPROM */
+	const s8 clip_powers[IWL_MAX_RATES];
+};
+
+/* current Tx power values to use, one for each rate for each channel.
+ * requested power is limited by:
+ * -- regulatory EEPROM limits for this channel
+ * -- hardware capabilities (clip-powers)
+ * -- spectrum management
+ * -- user preference (e.g. iwconfig)
+ * when requested power is set, base power index must also be set. */
+struct iwl3945_channel_power_info {
+	struct iwl3945_tx_power tpc;	/* actual radio and DSP gain settings */
+	s8 power_table_index;	/* actual (compenst'd) index into gain table */
+	s8 base_power_index;	/* gain index for power at factory temp. */
+	s8 requested_power;	/* power (dBm) requested for this chnl/rate */
+};
+
+/* current scan Tx power values to use, one for each scan rate for each
+ * channel. */
+struct iwl3945_scan_power_info {
+	struct iwl3945_tx_power tpc;	/* actual radio and DSP gain settings */
+	s8 power_table_index;	/* actual (compenst'd) index into gain table */
+	s8 requested_power;	/* scan pwr (dBm) requested for chnl/rate */
 };
 
 /*
@@ -184,8 +220,15 @@ struct iwl_channel_info {
 	s8 fat_scan_power;	/* (dBm) eeprom, direct scans, any rate */
 	u8 fat_flags;		/* flags copied from EEPROM */
 	u8 fat_extension_channel; /* HT_IE_EXT_CHANNEL_* */
-};
 
+	/* Radio/DSP gain settings for each "normal" data Tx rate.
+	 * These include, in addition to RF and DSP gain, a few fields for
+	 *   remembering/modifying gain settings (indexes). */
+	struct iwl3945_channel_power_info power_info[IWL4965_MAX_RATE];
+
+	/* Radio/DSP gain settings for each scan rate, for directed scans. */
+	struct iwl3945_scan_power_info scan_pwr_info[IWL_NUM_SCAN_RATES];
+};
 
 #define IWL_TX_FIFO_AC0	0
 #define IWL_TX_FIFO_AC1	1
@@ -370,7 +413,7 @@ struct iwl_hw_key {
 	u8 key[32];
 };
 
-union iwl4965_ht_rate_supp {
+union iwl_ht_rate_supp {
 	u16 rates;
 	struct {
 		u8 siso_rate;
@@ -429,6 +472,24 @@ struct iwl_qos_info {
 
 #define STA_PS_STATUS_WAKE             0
 #define STA_PS_STATUS_SLEEP            1
+
+struct iwl3945_tid_data {
+	u16 seq_number;
+};
+
+struct iwl3945_hw_key {
+	enum ieee80211_key_alg alg;
+	int keylen;
+	u8 key[32];
+};
+
+struct iwl3945_station_entry {
+	struct iwl3945_addsta_cmd sta;
+	struct iwl3945_tid_data tid[MAX_TID_COUNT];
+	u8 used;
+	u8 ps_status;
+	struct iwl3945_hw_key keyinfo;
+};
 
 struct iwl_station_entry {
 	struct iwl_addsta_cmd sta;
@@ -534,6 +595,9 @@ struct iwl_hw_params {
 	u32 ct_kill_threshold; /* value in hw-dependent units */
 	u32 calib_init_cfg;
 	const struct iwl_sensitivity_ranges *sens;
+
+	/* for 3945 */
+	u16 tx_ant_num;
 };
 
 
@@ -755,7 +819,7 @@ struct iwl_priv {
 
 	struct ieee80211_supported_band bands[IEEE80211_NUM_BANDS];
 
-#ifdef CONFIG_IWLAGN_SPECTRUM_MEASUREMENT
+#if defined(CONFIG_IWLAGN_SPECTRUM_MEASUREMENT) || defined(CONFIG_IWL3945_SPECTRUM_MEASUREMENT)
 	/* spectrum measurement report caching */
 	struct iwl_spectrum_notification measure_report;
 	u8 measurement_status;
@@ -767,6 +831,10 @@ struct iwl_priv {
 	 *    Access via channel # using indirect index array */
 	struct iwl_channel_info *channel_info;	/* channel info array */
 	u8 channel_count;	/* # of channels */
+
+	/* each calibration channel group in the EEPROM has a derived
+	 * clip setting for each rate. 3945 only.*/
+	const struct iwl3945_clip_group clip39_groups[5];
 
 	/* thermal calibration */
 	s32 temperature;	/* degrees Kelvin */
@@ -832,18 +900,25 @@ struct iwl_priv {
 	 * 4965's initialize alive response contains some calibration data. */
 	struct iwl_init_alive_resp card_alive_init;
 	struct iwl_alive_resp card_alive;
-#ifdef CONFIG_IWLWIFI_RFKILL
+#if defined(CONFIG_IWLWIFI_RFKILL) || defined(CONFIG_IWL3945_RFKILL)
 	struct rfkill *rfkill;
 #endif
 
-#ifdef CONFIG_IWLWIFI_LEDS
-	struct iwl_led led[IWL_LED_TRG_MAX];
+#if defined(CONFIG_IWLWIFI_LEDS) || defined(CONFIG_IWL3945_LEDS)
 	unsigned long last_blink_time;
 	u8 last_blink_rate;
 	u8 allow_blinking;
 	u64 led_tpt;
 #endif
 
+#ifdef CONFIG_IWLWIFI_LEDS
+	struct iwl_led led[IWL_LED_TRG_MAX];
+#endif
+
+#ifdef CONFIG_IWL3945_LEDS
+	struct iwl3945_led led39[IWL_LED_TRG_MAX];
+	unsigned int rxtxpackets;
+#endif
 	u16 active_rate;
 	u16 active_rate_basic;
 
@@ -929,6 +1004,10 @@ struct iwl_priv {
 	u16 beacon_int;
 	struct ieee80211_vif *vif;
 
+	/*Added for 3945 */
+	void *shared_virt;
+	dma_addr_t shared_phys;
+	/*End*/
 	struct iwl_hw_params hw_params;
 
 
@@ -960,12 +1039,16 @@ struct iwl_priv {
 	struct delayed_work init_alive_start;
 	struct delayed_work alive_start;
 	struct delayed_work scan_check;
+
+	/*For 3945 only*/
+	struct delayed_work thermal_periodic;
+
 	/* TX Power */
 	s8 tx_power_user_lmt;
 	s8 tx_power_channel_lmt;
 
 
-#ifdef CONFIG_IWLWIFI_DEBUG
+#if defined(CONFIG_IWLWIFI_DEBUG) || defined(CONFIG_IWL3945_DEBUG)
 	/* debugging info */
 	u32 debug_level;
 	u32 framecnt_to_us;
@@ -982,6 +1065,33 @@ struct iwl_priv {
 	u32 disable_tx_power_cal;
 	struct work_struct run_time_calib_work;
 	struct timer_list statistics_periodic;
+
+	/*For 3945*/
+#define IWL_DEFAULT_TX_POWER 0x0F
+	s8 user_txpower_limit;
+	s8 max_channel_txpower_limit;
+
+	struct iwl3945_scan_cmd *scan39;
+
+	/* We declare this const so it can only be
+	 * changed via explicit cast within the
+	 * routines that actually update the physical
+	 * hardware */
+	const struct iwl3945_rxon_cmd active39_rxon;
+	struct iwl3945_rxon_cmd staging39_rxon;
+	struct iwl3945_rxon_cmd recovery39_rxon;
+
+	struct iwl3945_power_mgr power_data_39;
+	struct iwl3945_notif_statistics statistics_39;
+
+	struct iwl3945_station_entry stations_39[IWL_STATION_COUNT];
+
+	/* eeprom */
+	struct iwl3945_eeprom eeprom39;
+
+	u32 sta_supp_rates;
+	u8 call_post_assoc_from_beacon;
+
 }; /*iwl_priv */
 
 static inline void iwl_txq_ctx_activate(struct iwl_priv *priv, int txq_id)

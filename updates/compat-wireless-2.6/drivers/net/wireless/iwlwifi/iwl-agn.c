@@ -44,6 +44,8 @@
 
 #include <asm/div64.h>
 
+#define DRV_NAME        "iwlagn"
+
 #include "iwl-eeprom.h"
 #include "iwl-dev.h"
 #include "iwl-core.h"
@@ -61,9 +63,7 @@
 
 /*
  * module name, copyright, version, etc.
- * NOTE: DRV_NAME is defined in iwlwifi.h for use by iwl-debug.h and printk
  */
-
 #define DRV_DESCRIPTION	"Intel(R) Wireless WiFi Link AGN driver for Linux"
 
 #ifdef CONFIG_IWLWIFI_DEBUG
@@ -180,9 +180,9 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 	 * 5000, but will not damage 4965 */
 	priv->staging_rxon.flags |= RXON_FLG_SELF_CTS_EN;
 
-	ret = iwl_agn_check_rxon_cmd(&priv->staging_rxon);
+	ret = iwl_agn_check_rxon_cmd(priv);
 	if (ret) {
-		IWL_ERROR("Invalid RXON configuration.  Not committing.\n");
+		IWL_ERR(priv, "Invalid RXON configuration.  Not committing.\n");
 		return -EINVAL;
 	}
 
@@ -192,7 +192,7 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 	if (!iwl_full_rxon_required(priv)) {
 		ret = iwl_send_rxon_assoc(priv);
 		if (ret) {
-			IWL_ERROR("Error setting RXON_ASSOC (%d)\n", ret);
+			IWL_ERR(priv, "Error setting RXON_ASSOC (%d)\n", ret);
 			return ret;
 		}
 
@@ -219,7 +219,7 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 		 * active_rxon back to what it was previously */
 		if (ret) {
 			active_rxon->filter_flags |= RXON_FILTER_ASSOC_MSK;
-			IWL_ERROR("Error clearing ASSOC_MSK (%d)\n", ret);
+			IWL_ERR(priv, "Error clearing ASSOC_MSK (%d)\n", ret);
 			return ret;
 		}
 	}
@@ -243,7 +243,7 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 		ret = iwl_send_cmd_pdu(priv, REPLY_RXON,
 			      sizeof(struct iwl_rxon_cmd), &priv->staging_rxon);
 		if (ret) {
-			IWL_ERROR("Error setting new RXON (%d)\n", ret);
+			IWL_ERR(priv, "Error setting new RXON (%d)\n", ret);
 			return ret;
 		}
 		memcpy(active_rxon, &priv->staging_rxon, sizeof(*active_rxon));
@@ -257,7 +257,7 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 	/* Add the broadcast address so we can send broadcast frames */
 	if (iwl_rxon_add_station(priv, iwl_bcast_addr, 0) ==
 						IWL_INVALID_STATION) {
-		IWL_ERROR("Error adding BROADCAST address for transmit.\n");
+		IWL_ERR(priv, "Error adding BROADCAST address for transmit.\n");
 		return -EIO;
 	}
 
@@ -268,13 +268,15 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 			ret = iwl_rxon_add_station(priv,
 					   priv->active_rxon.bssid_addr, 1);
 			if (ret == IWL_INVALID_STATION) {
-				IWL_ERROR("Error adding AP address for TX.\n");
+				IWL_ERR(priv,
+					"Error adding AP address for TX.\n");
 				return -EIO;
 			}
 			priv->assoc_station_added = 1;
 			if (priv->default_wep_key &&
 			    iwl_send_static_wepkey_cmd(priv, 0))
-				IWL_ERROR("Could not send WEP static key.\n");
+				IWL_ERR(priv,
+					"Could not send WEP static key.\n");
 		}
 
 		/* Apply the new configuration
@@ -283,7 +285,7 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 		ret = iwl_send_cmd_pdu(priv, REPLY_RXON,
 			      sizeof(struct iwl_rxon_cmd), &priv->staging_rxon);
 		if (ret) {
-			IWL_ERROR("Error setting new RXON (%d)\n", ret);
+			IWL_ERR(priv, "Error setting new RXON (%d)\n", ret);
 			return ret;
 		}
 		memcpy(active_rxon, &priv->staging_rxon, sizeof(*active_rxon));
@@ -295,7 +297,7 @@ static int iwl_commit_rxon(struct iwl_priv *priv)
 	 * send a new TXPOWER command or we won't be able to Tx any frames */
 	ret = iwl_set_tx_power(priv, priv->tx_power_user_lmt, true);
 	if (ret) {
-		IWL_ERROR("Error sending TX power (%d)\n", ret);
+		IWL_ERR(priv, "Error sending TX power (%d)\n", ret);
 		return ret;
 	}
 
@@ -338,7 +340,7 @@ static void iwl_clear_free_frames(struct iwl_priv *priv)
 	}
 
 	if (priv->frames_count) {
-		IWL_WARNING("%d frames still in use.  Did we lose one?\n",
+		IWL_WARN(priv, "%d frames still in use.  Did we lose one?\n",
 			    priv->frames_count);
 		priv->frames_count = 0;
 	}
@@ -351,7 +353,7 @@ static struct iwl_frame *iwl_get_free_frame(struct iwl_priv *priv)
 	if (list_empty(&priv->free_frames)) {
 		frame = kzalloc(sizeof(*frame), GFP_KERNEL);
 		if (!frame) {
-			IWL_ERROR("Could not allocate frame!\n");
+			IWL_ERR(priv, "Could not allocate frame!\n");
 			return NULL;
 		}
 
@@ -453,7 +455,7 @@ static int iwl_send_beacon_cmd(struct iwl_priv *priv)
 	frame = iwl_get_free_frame(priv);
 
 	if (!frame) {
-		IWL_ERROR("Could not obtain free frame buffer for beacon "
+		IWL_ERR(priv, "Could not obtain free frame buffer for beacon "
 			  "command.\n");
 		return -ENOMEM;
 	}
@@ -687,7 +689,7 @@ static void iwl_connection_init_rx_config(struct iwl_priv *priv, int mode)
 		    RXON_FILTER_CTL2HOST_MSK | RXON_FILTER_ACCEPT_GRP_MSK;
 		break;
 	default:
-		IWL_ERROR("Unsupported interface type %d\n", mode);
+		IWL_ERR(priv, "Unsupported interface type %d\n", mode);
 		break;
 	}
 
@@ -746,7 +748,7 @@ static int iwl_set_mode(struct iwl_priv *priv, int mode)
 
 	cancel_delayed_work(&priv->scan_check);
 	if (iwl_scan_cancel_timeout(priv, 100)) {
-		IWL_WARNING("Aborted scan still in progress after 100ms\n");
+		IWL_WARN(priv, "Aborted scan still in progress after 100ms\n");
 		IWL_DEBUG_MAC80211("leaving - scan abort failed.\n");
 		return -EAGAIN;
 	}
@@ -764,7 +766,7 @@ static void iwl_set_rate(struct iwl_priv *priv)
 
 	hw = iwl_get_hw_mode(priv, priv->band);
 	if (!hw) {
-		IWL_ERROR("Failed to set rate: unable to get hw mode\n");
+		IWL_ERR(priv, "Failed to set rate: unable to get hw mode\n");
 		return;
 	}
 
@@ -842,7 +844,7 @@ static void iwl_rx_reply_alive(struct iwl_priv *priv,
 		queue_delayed_work(priv->workqueue, pwork,
 				   msecs_to_jiffies(5));
 	else
-		IWL_WARNING("uCode did not respond OK.\n");
+		IWL_WARN(priv, "uCode did not respond OK.\n");
 }
 
 static void iwl_rx_reply_error(struct iwl_priv *priv,
@@ -850,7 +852,7 @@ static void iwl_rx_reply_error(struct iwl_priv *priv,
 {
 	struct iwl_rx_packet *pkt = (struct iwl_rx_packet *)rxb->skb->data;
 
-	IWL_ERROR("Error Reply type 0x%08X cmd %s (0x%02X) "
+	IWL_ERR(priv, "Error Reply type 0x%08X cmd %s (0x%02X) "
 		"seq 0x%04X ser 0x%08X\n",
 		le32_to_cpu(pkt->u.err_resp.error_type),
 		get_cmd_string(pkt->u.err_resp.cmd_id),
@@ -903,7 +905,7 @@ static void iwl_bg_beacon_update(struct work_struct *work)
 	beacon = ieee80211_beacon_get(priv->hw, priv->vif);
 
 	if (!beacon) {
-		IWL_ERROR("update beacon failed\n");
+		IWL_ERR(priv, "update beacon failed\n");
 		return;
 	}
 
@@ -1194,7 +1196,7 @@ void iwl_rx_handle(struct iwl_priv *priv)
 			if (rxb && rxb->skb)
 				iwl_tx_cmd_complete(priv, rxb);
 			else
-				IWL_WARNING("Claim null rxb?\n");
+				IWL_WARN(priv, "Claim null rxb?\n");
 		}
 
 		/* For now we just don't re-use anything.  We can tweak this
@@ -1361,7 +1363,7 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
 
 	/* Now service all interrupt bits discovered above. */
 	if (inta & CSR_INT_BIT_HW_ERR) {
-		IWL_ERROR("Microcode HW error detected.  Restarting.\n");
+		IWL_ERR(priv, "Microcode HW error detected.  Restarting.\n");
 
 		/* Tell the device to stop sending interrupts */
 		iwl_disable_interrupts(priv);
@@ -1415,14 +1417,14 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
 
 	/* Chip got too hot and stopped itself */
 	if (inta & CSR_INT_BIT_CT_KILL) {
-		IWL_ERROR("Microcode CT kill error detected.\n");
+		IWL_ERR(priv, "Microcode CT kill error detected.\n");
 		handled |= CSR_INT_BIT_CT_KILL;
 	}
 
 	/* Error detected by uCode */
 	if (inta & CSR_INT_BIT_SW_ERR) {
-		IWL_ERROR("Microcode SW error detected.  Restarting 0x%X.\n",
-			  inta);
+		IWL_ERR(priv, "Microcode SW error detected. "
+			" Restarting 0x%X.\n", inta);
 		iwl_irq_handle_error(priv);
 		handled |= CSR_INT_BIT_SW_ERR;
 	}
@@ -1458,12 +1460,12 @@ static void iwl_irq_tasklet(struct iwl_priv *priv)
 	}
 
 	if (inta & ~handled)
-		IWL_ERROR("Unhandled INTA bits 0x%08x\n", inta & ~handled);
+		IWL_ERR(priv, "Unhandled INTA bits 0x%08x\n", inta & ~handled);
 
 	if (inta & ~CSR_INI_SET_MASK) {
-		IWL_WARNING("Disabled INTA bits 0x%08x were pending\n",
+		IWL_WARN(priv, "Disabled INTA bits 0x%08x were pending\n",
 			 inta & ~CSR_INI_SET_MASK);
-		IWL_WARNING("   with FH_INT = 0x%08x\n", inta_fh);
+		IWL_WARN(priv, "   with FH_INT = 0x%08x\n", inta_fh);
 	}
 
 	/* Re-enable all interrupts */
@@ -1515,7 +1517,7 @@ static irqreturn_t iwl_isr(int irq, void *data)
 	if ((inta == 0xFFFFFFFF) || ((inta & 0xFFFFFFF0) == 0xa5a5a5a0)) {
 		/* Hardware disappeared. It might have already raised
 		 * an interrupt */
-		IWL_WARNING("HARDWARE GONE?? INTA == 0x%08x\n", inta);
+		IWL_WARN(priv, "HARDWARE GONE?? INTA == 0x%08x\n", inta);
 		goto unplugged;
 	}
 
@@ -1588,7 +1590,7 @@ static int iwl_read_ucode(struct iwl_priv *priv)
 		sprintf(buf, "%s%d%s", name_pre, index, ".ucode");
 		ret = request_firmware(&ucode_raw, buf, &priv->pci_dev->dev);
 		if (ret < 0) {
-			IWL_ERROR("%s firmware file req failed: Reason %d\n",
+			IWL_ERR(priv, "%s firmware file req failed: %d\n",
 				  buf, ret);
 			if (ret == -ENOENT)
 				continue;
@@ -1596,8 +1598,11 @@ static int iwl_read_ucode(struct iwl_priv *priv)
 				goto error;
 		} else {
 			if (index < api_max)
-				IWL_ERROR("Loaded firmware %s, which is deprecated. Please use API v%u instead.\n",
+				IWL_ERR(priv, "Loaded firmware %s, "
+					"which is deprecated. "
+					"Please use API v%u instead.\n",
 					  buf, api_max);
+
 			IWL_DEBUG_INFO("Got firmware '%s' file (%zd bytes) from disk\n",
 				       buf, ucode_raw->size);
 			break;
@@ -1609,7 +1614,7 @@ static int iwl_read_ucode(struct iwl_priv *priv)
 
 	/* Make sure that we got at least our header! */
 	if (ucode_raw->size < sizeof(*ucode)) {
-		IWL_ERROR("File size way too small!\n");
+		IWL_ERR(priv, "File size way too small!\n");
 		ret = -EINVAL;
 		goto err_release;
 	}
@@ -1630,7 +1635,7 @@ static int iwl_read_ucode(struct iwl_priv *priv)
 	 * on the API version read from firware header from here on forward */
 
 	if (api_ver < api_min || api_ver > api_max) {
-		IWL_ERROR("Driver unable to support your firmware API. "
+		IWL_ERR(priv, "Driver unable to support your firmware API. "
 			  "Driver supports v%u, firmware is v%u.\n",
 			  api_max, api_ver);
 		priv->ucode_ver = 0;
@@ -1638,16 +1643,16 @@ static int iwl_read_ucode(struct iwl_priv *priv)
 		goto err_release;
 	}
 	if (api_ver != api_max)
-		IWL_ERROR("Firmware has old API version. Expected v%u, "
+		IWL_ERR(priv, "Firmware has old API version. Expected v%u, "
 			  "got v%u. New firmware can be obtained "
 			  "from http://www.intellinuxwireless.org.\n",
 			  api_max, api_ver);
 
-	printk(KERN_INFO DRV_NAME " loaded firmware version %u.%u.%u.%u\n",
-		       IWL_UCODE_MAJOR(priv->ucode_ver),
-		       IWL_UCODE_MINOR(priv->ucode_ver),
-		       IWL_UCODE_API(priv->ucode_ver),
-		       IWL_UCODE_SERIAL(priv->ucode_ver));
+	IWL_INFO(priv, "loaded firmware version %u.%u.%u.%u\n",
+	       IWL_UCODE_MAJOR(priv->ucode_ver),
+	       IWL_UCODE_MINOR(priv->ucode_ver),
+	       IWL_UCODE_API(priv->ucode_ver),
+	       IWL_UCODE_SERIAL(priv->ucode_ver));
 
 	IWL_DEBUG_INFO("f/w package hdr ucode version raw = 0x%x\n",
 		       priv->ucode_ver);
@@ -1791,7 +1796,7 @@ static int iwl_read_ucode(struct iwl_priv *priv)
 	return 0;
 
  err_pci_alloc:
-	IWL_ERROR("failed to allocate pci memory\n");
+	IWL_ERR(priv, "failed to allocate pci memory\n");
 	ret = -ENOMEM;
 	iwl_dealloc_ucode_pci(priv);
 
@@ -1837,8 +1842,8 @@ static void iwl_alive_start(struct iwl_priv *priv)
 	iwl_clear_stations_table(priv);
 	ret = priv->cfg->ops->lib->alive_notify(priv);
 	if (ret) {
-		IWL_WARNING("Could not complete ALIVE transition [ntf]: %d\n",
-			    ret);
+		IWL_WARN(priv,
+			"Could not complete ALIVE transition [ntf]: %d\n", ret);
 		goto restart;
 	}
 
@@ -2024,12 +2029,12 @@ static int __iwl_up(struct iwl_priv *priv)
 	int ret;
 
 	if (test_bit(STATUS_EXIT_PENDING, &priv->status)) {
-		IWL_WARNING("Exit pending; will not bring the NIC up\n");
+		IWL_WARN(priv, "Exit pending; will not bring the NIC up\n");
 		return -EIO;
 	}
 
 	if (!priv->ucode_data_backup.v_addr || !priv->ucode_data.v_addr) {
-		IWL_ERROR("ucode not available for device bringup\n");
+		IWL_ERR(priv, "ucode not available for device bringup\n");
 		return -EIO;
 	}
 
@@ -2041,7 +2046,7 @@ static int __iwl_up(struct iwl_priv *priv)
 
 	if (iwl_is_rfkill(priv)) {
 		iwl_enable_interrupts(priv);
-		IWL_WARNING("Radio disabled by %s RF Kill switch\n",
+		IWL_WARN(priv, "Radio disabled by %s RF Kill switch\n",
 		    test_bit(STATUS_RF_KILL_HW, &priv->status) ? "HW" : "SW");
 		return 0;
 	}
@@ -2050,7 +2055,7 @@ static int __iwl_up(struct iwl_priv *priv)
 
 	ret = iwl_hw_nic_init(priv);
 	if (ret) {
-		IWL_ERROR("Unable to init nic\n");
+		IWL_ERR(priv, "Unable to init nic\n");
 		return ret;
 	}
 
@@ -2083,7 +2088,8 @@ static int __iwl_up(struct iwl_priv *priv)
 		ret = priv->cfg->ops->lib->load_ucode(priv);
 
 		if (ret) {
-			IWL_ERROR("Unable to set up bootstrap uCode: %d\n", ret);
+			IWL_ERR(priv, "Unable to set up bootstrap uCode: %d\n",
+				ret);
 			continue;
 		}
 
@@ -2104,7 +2110,7 @@ static int __iwl_up(struct iwl_priv *priv)
 
 	/* tried to restart and config the device for as long as our
 	 * patience could withstand */
-	IWL_ERROR("Unable to initialize device after %d attempts.\n", i);
+	IWL_ERR(priv, "Unable to initialize device after %d attempts.\n", i);
 	return -EIO;
 }
 
@@ -2167,7 +2173,7 @@ static void iwl_bg_rf_kill(struct work_struct *work)
 			IWL_DEBUG_RF_KILL("Can not turn radio back on - "
 					  "disabled by SW switch\n");
 		else
-			IWL_WARNING("Radio Frequency Kill Switch is On:\n"
+			IWL_WARN(priv, "Radio Frequency Kill Switch is On:\n"
 				    "Kill switch must be turned off for "
 				    "wireless networking to work.\n");
 	}
@@ -2245,7 +2251,7 @@ static void iwl_post_associate(struct iwl_priv *priv)
 	unsigned long flags;
 
 	if (priv->iw_mode == NL80211_IFTYPE_AP) {
-		IWL_ERROR("%s Should not be called in AP mode\n", __func__);
+		IWL_ERR(priv, "%s Should not be called in AP mode\n", __func__);
 		return;
 	}
 
@@ -2273,7 +2279,7 @@ static void iwl_post_associate(struct iwl_priv *priv)
 	ret = iwl_send_cmd_pdu(priv, REPLY_RXON_TIMING,
 			      sizeof(priv->rxon_timing), &priv->rxon_timing);
 	if (ret)
-		IWL_WARNING("REPLY_RXON_TIMING failed - "
+		IWL_WARN(priv, "REPLY_RXON_TIMING failed - "
 			    "Attempting to continue.\n");
 
 	priv->staging_rxon.filter_flags |= RXON_FILTER_ASSOC_MSK;
@@ -2319,7 +2325,7 @@ static void iwl_post_associate(struct iwl_priv *priv)
 		break;
 
 	default:
-		IWL_ERROR("%s Should not be called in %d mode\n",
+		IWL_ERR(priv, "%s Should not be called in %d mode\n",
 			  __func__, priv->iw_mode);
 		break;
 	}
@@ -2360,7 +2366,7 @@ static int iwl_mac_start(struct ieee80211_hw *hw)
 	IWL_DEBUG_MAC80211("enter\n");
 
 	if (pci_enable_device(priv->pci_dev)) {
-		IWL_ERROR("Fail to pci_enable_device\n");
+		IWL_ERR(priv, "Fail to pci_enable_device\n");
 		return -ENODEV;
 	}
 	pci_restore_state(priv->pci_dev);
@@ -2376,7 +2382,7 @@ static int iwl_mac_start(struct ieee80211_hw *hw)
 	ret = request_irq(priv->pci_dev->irq, iwl_isr, IRQF_SHARED,
 			  DRV_NAME, priv);
 	if (ret) {
-		IWL_ERROR("Error allocating IRQ %d\n", priv->pci_dev->irq);
+		IWL_ERR(priv, "Error allocating IRQ %d\n", priv->pci_dev->irq);
 		goto out_disable_msi;
 	}
 
@@ -2390,7 +2396,7 @@ static int iwl_mac_start(struct ieee80211_hw *hw)
 	if (!priv->ucode_code.len) {
 		ret = iwl_read_ucode(priv);
 		if (ret) {
-			IWL_ERROR("Could not read microcode: %d\n", ret);
+			IWL_ERR(priv, "Could not read microcode: %d\n", ret);
 			mutex_unlock(&priv->mutex);
 			goto out_release_irq;
 		}
@@ -2420,7 +2426,7 @@ static int iwl_mac_start(struct ieee80211_hw *hw)
 			UCODE_READY_TIMEOUT);
 	if (!ret) {
 		if (!test_bit(STATUS_READY, &priv->status)) {
-			IWL_ERROR("START_ALIVE timeout after %dms.\n",
+			IWL_ERR(priv, "START_ALIVE timeout after %dms.\n",
 				jiffies_to_msecs(UCODE_READY_TIMEOUT));
 			ret = -ETIMEDOUT;
 			goto out_release_irq;
@@ -2580,7 +2586,7 @@ static int iwl_mac_config(struct ieee80211_hw *hw, u32 changed)
 
 	if (priv->iw_mode == NL80211_IFTYPE_ADHOC &&
 	    !is_channel_ibss(ch_info)) {
-		IWL_ERROR("channel %d in band %d not IBSS channel\n",
+		IWL_ERR(priv, "channel %d in band %d not IBSS channel\n",
 			conf->channel->hw_value, conf->channel->band);
 		ret = -EINVAL;
 		goto out;
@@ -2675,7 +2681,7 @@ static void iwl_config_ap(struct iwl_priv *priv)
 		ret = iwl_send_cmd_pdu(priv, REPLY_RXON_TIMING,
 				sizeof(priv->rxon_timing), &priv->rxon_timing);
 		if (ret)
-			IWL_WARNING("REPLY_RXON_TIMING failed - "
+			IWL_WARN(priv, "REPLY_RXON_TIMING failed - "
 					"Attempting to continue.\n");
 
 		iwl_set_rxon_chain(priv);
@@ -2783,7 +2789,7 @@ static int iwl_mac_config_interface(struct ieee80211_hw *hw,
 		/* If there is currently a HW scan going on in the background
 		 * then we need to cancel it else the RXON below will fail. */
 		if (iwl_scan_cancel_timeout(priv, 100)) {
-			IWL_WARNING("Aborted scan still in progress "
+			IWL_WARN(priv, "Aborted scan still in progress "
 				    "after 100ms\n");
 			IWL_DEBUG_MAC80211("leaving - scan abort failed.\n");
 			mutex_unlock(&priv->mutex);
@@ -3366,8 +3372,7 @@ static ssize_t store_debug_level(struct device *d,
 
 	ret = strict_strtoul(buf, 0, &val);
 	if (ret)
-		printk(KERN_INFO DRV_NAME
-		       ": %s is not in hex or decimal form.\n", buf);
+		IWL_ERR(priv, "%s is not in hex or decimal form.\n", buf);
 	else
 		priv->debug_level = val;
 
@@ -3446,8 +3451,7 @@ static ssize_t store_tx_power(struct device *d,
 
 	ret = strict_strtoul(buf, 10, &val);
 	if (ret)
-		printk(KERN_INFO DRV_NAME
-		       ": %s is not in decimal form.\n", buf);
+		IWL_INFO(priv, "%s is not in decimal form.\n", buf);
 	else
 		iwl_set_tx_power(priv, val, false);
 
@@ -3480,7 +3484,7 @@ static ssize_t store_flags(struct device *d,
 	if (le32_to_cpu(priv->staging_rxon.flags) != flags) {
 		/* Cancel any currently running scans... */
 		if (iwl_scan_cancel_timeout(priv, 100))
-			IWL_WARNING("Could not cancel scan.\n");
+			IWL_WARN(priv, "Could not cancel scan.\n");
 		else {
 			IWL_DEBUG_INFO("Commit rxon.flags = 0x%04X\n", flags);
 			priv->staging_rxon.flags = cpu_to_le32(flags);
@@ -3519,7 +3523,7 @@ static ssize_t store_filter_flags(struct device *d,
 	if (le32_to_cpu(priv->staging_rxon.filter_flags) != filter_flags) {
 		/* Cancel any currently running scans... */
 		if (iwl_scan_cancel_timeout(priv, 100))
-			IWL_WARNING("Could not cancel scan.\n");
+			IWL_WARN(priv, "Could not cancel scan.\n");
 		else {
 			IWL_DEBUG_INFO("Committing rxon.filter_flags = "
 				       "0x%04X\n", filter_flags);
@@ -3535,31 +3539,6 @@ static ssize_t store_filter_flags(struct device *d,
 
 static DEVICE_ATTR(filter_flags, S_IWUSR | S_IRUGO, show_filter_flags,
 		   store_filter_flags);
-
-static ssize_t store_retry_rate(struct device *d,
-				struct device_attribute *attr,
-				const char *buf, size_t count)
-{
-	struct iwl_priv *priv = dev_get_drvdata(d);
-	long val;
-	int ret  = strict_strtol(buf, 10, &val);
-	if (!ret)
-		return ret;
-
-	priv->retry_rate = (val > 0) ? val : 1;
-
-	return count;
-}
-
-static ssize_t show_retry_rate(struct device *d,
-			       struct device_attribute *attr, char *buf)
-{
-	struct iwl_priv *priv = dev_get_drvdata(d);
-	return sprintf(buf, "%d", priv->retry_rate);
-}
-
-static DEVICE_ATTR(retry_rate, S_IWUSR | S_IRUSR, show_retry_rate,
-		   store_retry_rate);
 
 static ssize_t store_power_level(struct device *d,
 				 struct device_attribute *attr,
@@ -3663,16 +3642,6 @@ static ssize_t show_statistics(struct device *d,
 
 static DEVICE_ATTR(statistics, S_IRUGO, show_statistics, NULL);
 
-static ssize_t show_status(struct device *d,
-			   struct device_attribute *attr, char *buf)
-{
-	struct iwl_priv *priv = (struct iwl_priv *)d->driver_data;
-	if (!iwl_is_alive(priv))
-		return -EAGAIN;
-	return sprintf(buf, "0x%08x\n", (int)priv->status);
-}
-
-static DEVICE_ATTR(status, S_IRUGO, show_status, NULL);
 
 /*****************************************************************************
  *
@@ -3726,9 +3695,7 @@ static struct attribute *iwl_sysfs_entries[] = {
 	&dev_attr_flags.attr,
 	&dev_attr_filter_flags.attr,
 	&dev_attr_power_level.attr,
-	&dev_attr_retry_rate.attr,
 	&dev_attr_statistics.attr,
-	&dev_attr_status.attr,
 	&dev_attr_temperature.attr,
 	&dev_attr_tx_power.attr,
 #ifdef CONFIG_IWLWIFI_DEBUG
@@ -3824,8 +3791,7 @@ static int iwl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 			err = pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(32));
 		/* both attempts failed: */
 		if (err) {
-			printk(KERN_WARNING "%s: No suitable DMA available.\n",
-				DRV_NAME);
+			IWL_WARN(priv, "No suitable DMA available.\n");
 			goto out_pci_disable_device;
 		}
 	}
@@ -3851,8 +3817,7 @@ static int iwl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	IWL_DEBUG_INFO("pci_resource_base = %p\n", priv->hw_base);
 
 	iwl_hw_detect(priv);
-	printk(KERN_INFO DRV_NAME
-		": Detected Intel Wireless WiFi Link %s REV=0x%X\n",
+	IWL_INFO(priv, "Detected Intel Wireless WiFi Link %s REV=0x%X\n",
 		priv->cfg->name, priv->hw_rev);
 
 	/* We disable the RETRY_TIMEOUT register (0x41) to keep
@@ -3871,7 +3836,7 @@ static int iwl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	/* Read the EEPROM */
 	err = iwl_eeprom_init(priv);
 	if (err) {
-		IWL_ERROR("Unable to init EEPROM\n");
+		IWL_ERR(priv, "Unable to init EEPROM\n");
 		goto out_iounmap;
 	}
 	err = iwl_eeprom_check_version(priv);
@@ -3887,7 +3852,7 @@ static int iwl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 	 * 5. Setup HW constants
 	 ************************/
 	if (iwl_set_hw_params(priv)) {
-		IWL_ERROR("failed to set hw parameters\n");
+		IWL_ERR(priv, "failed to set hw parameters\n");
 		goto out_free_eeprom;
 	}
 
@@ -3919,7 +3884,7 @@ static int iwl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	err = sysfs_create_group(&pdev->dev.kobj, &iwl_attribute_group);
 	if (err) {
-		IWL_ERROR("failed to create sysfs device attributes\n");
+		IWL_ERR(priv, "failed to create sysfs device attributes\n");
 		goto out_uninit_drv;
 	}
 
@@ -3943,11 +3908,11 @@ static int iwl_pci_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	err = iwl_dbgfs_register(priv, DRV_NAME);
 	if (err)
-		IWL_ERROR("failed to create debugfs files\n");
+		IWL_ERR(priv, "failed to create debugfs files\n");
 
 	err = iwl_rfkill_init(priv);
 	if (err)
-		IWL_ERROR("Unable to initialize RFKILL system. "
+		IWL_ERR(priv, "Unable to initialize RFKILL system. "
 				  "Ignoring error: %d\n", err);
 	iwl_power_initialize(priv);
 	return 0;
@@ -4126,13 +4091,14 @@ static int __init iwl_init(void)
 
 	ret = iwlagn_rate_control_register();
 	if (ret) {
-		IWL_ERROR("Unable to register rate control algorithm: %d\n", ret);
+		printk(KERN_ERR DRV_NAME
+		       "Unable to register rate control algorithm: %d\n", ret);
 		return ret;
 	}
 
 	ret = pci_register_driver(&iwl_driver);
 	if (ret) {
-		IWL_ERROR("Unable to initialize PCI module\n");
+		printk(KERN_ERR DRV_NAME "Unable to initialize PCI module\n");
 		goto error_register;
 	}
 

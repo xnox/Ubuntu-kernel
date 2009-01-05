@@ -526,52 +526,20 @@ void b43_hf_write(struct b43_wldev *dev, u64 value)
 	b43_shm_write16(dev, B43_SHM_SHARED, B43_SHM_SH_HOSTFHI, hi);
 }
 
-void b43_tsf_read(struct b43_wldev *dev, u64 * tsf)
+void b43_tsf_read(struct b43_wldev *dev, u64 *tsf)
 {
-	/* We need to be careful. As we read the TSF from multiple
-	 * registers, we should take care of register overflows.
-	 * In theory, the whole tsf read process should be atomic.
-	 * We try to be atomic here, by restaring the read process,
-	 * if any of the high registers changed (overflew).
-	 */
-	if (dev->dev->id.revision >= 3) {
-		u32 low, high, high2;
+	u32 low, high;
 
-		do {
-			high = b43_read32(dev, B43_MMIO_REV3PLUS_TSF_HIGH);
-			low = b43_read32(dev, B43_MMIO_REV3PLUS_TSF_LOW);
-			high2 = b43_read32(dev, B43_MMIO_REV3PLUS_TSF_HIGH);
-		} while (unlikely(high != high2));
+	B43_WARN_ON(dev->dev->id.revision < 3);
 
-		*tsf = high;
-		*tsf <<= 32;
-		*tsf |= low;
-	} else {
-		u64 tmp;
-		u16 v0, v1, v2, v3;
-		u16 test1, test2, test3;
+	/* The hardware guarantees us an atomic read, if we
+	 * read the low register first. */
+	low = b43_read32(dev, B43_MMIO_REV3PLUS_TSF_LOW);
+	high = b43_read32(dev, B43_MMIO_REV3PLUS_TSF_HIGH);
 
-		do {
-			v3 = b43_read16(dev, B43_MMIO_TSF_3);
-			v2 = b43_read16(dev, B43_MMIO_TSF_2);
-			v1 = b43_read16(dev, B43_MMIO_TSF_1);
-			v0 = b43_read16(dev, B43_MMIO_TSF_0);
-
-			test3 = b43_read16(dev, B43_MMIO_TSF_3);
-			test2 = b43_read16(dev, B43_MMIO_TSF_2);
-			test1 = b43_read16(dev, B43_MMIO_TSF_1);
-		} while (v3 != test3 || v2 != test2 || v1 != test1);
-
-		*tsf = v3;
-		*tsf <<= 48;
-		tmp = v2;
-		tmp <<= 32;
-		*tsf |= tmp;
-		tmp = v1;
-		tmp <<= 16;
-		*tsf |= tmp;
-		*tsf |= v0;
-	}
+	*tsf = high;
+	*tsf <<= 32;
+	*tsf |= low;
 }
 
 static void b43_time_lock(struct b43_wldev *dev)
@@ -598,35 +566,18 @@ static void b43_time_unlock(struct b43_wldev *dev)
 
 static void b43_tsf_write_locked(struct b43_wldev *dev, u64 tsf)
 {
-	/* Be careful with the in-progress timer.
-	 * First zero out the low register, so we have a full
-	 * register-overflow duration to complete the operation.
-	 */
-	if (dev->dev->id.revision >= 3) {
-		u32 lo = (tsf & 0x00000000FFFFFFFFULL);
-		u32 hi = (tsf & 0xFFFFFFFF00000000ULL) >> 32;
+	u32 low, high;
 
-		b43_write32(dev, B43_MMIO_REV3PLUS_TSF_LOW, 0);
-		mmiowb();
-		b43_write32(dev, B43_MMIO_REV3PLUS_TSF_HIGH, hi);
-		mmiowb();
-		b43_write32(dev, B43_MMIO_REV3PLUS_TSF_LOW, lo);
-	} else {
-		u16 v0 = (tsf & 0x000000000000FFFFULL);
-		u16 v1 = (tsf & 0x00000000FFFF0000ULL) >> 16;
-		u16 v2 = (tsf & 0x0000FFFF00000000ULL) >> 32;
-		u16 v3 = (tsf & 0xFFFF000000000000ULL) >> 48;
+	B43_WARN_ON(dev->dev->id.revision < 3);
 
-		b43_write16(dev, B43_MMIO_TSF_0, 0);
-		mmiowb();
-		b43_write16(dev, B43_MMIO_TSF_3, v3);
-		mmiowb();
-		b43_write16(dev, B43_MMIO_TSF_2, v2);
-		mmiowb();
-		b43_write16(dev, B43_MMIO_TSF_1, v1);
-		mmiowb();
-		b43_write16(dev, B43_MMIO_TSF_0, v0);
-	}
+	low = tsf;
+	high = (tsf >> 32);
+	/* The hardware guarantees us an atomic write, if we
+	 * write the low register first. */
+	b43_write32(dev, B43_MMIO_REV3PLUS_TSF_LOW, low);
+	mmiowb();
+	b43_write32(dev, B43_MMIO_REV3PLUS_TSF_HIGH, high);
+	mmiowb();
 }
 
 void b43_tsf_write(struct b43_wldev *dev, u64 tsf)
@@ -937,8 +888,7 @@ static int b43_key_write(struct b43_wldev *dev,
 		B43_WARN_ON(dev->key[i].keyconf == keyconf);
 	}
 	if (index < 0) {
-		/* Either pairwise key or address is 00:00:00:00:00:00
-		 * for transmit-only keys. Search the index. */
+		/* Pairwise key. Get an empty slot for the key. */
 		if (b43_new_kidx_api(dev))
 			sta_keys_start = 4;
 		else
@@ -951,7 +901,7 @@ static int b43_key_write(struct b43_wldev *dev,
 			}
 		}
 		if (index < 0) {
-			b43err(dev->wl, "Out of hardware key memory\n");
+			b43warn(dev->wl, "Out of hardware key memory\n");
 			return -ENOSPC;
 		}
 	} else
@@ -990,6 +940,52 @@ static void b43_clear_keys(struct b43_wldev *dev)
 
 	for (i = 0; i < dev->max_nr_keys; i++)
 		b43_key_clear(dev, i);
+}
+
+static void b43_dump_keymemory(struct b43_wldev *dev)
+{
+	unsigned int i, index, offset;
+	DECLARE_MAC_BUF(macbuf);
+	u8 mac[ETH_ALEN];
+	u16 algo;
+	u32 rcmta0;
+	u16 rcmta1;
+	u64 hf;
+	struct b43_key *key;
+
+	if (!b43_debug(dev, B43_DBG_KEYS))
+		return;
+
+	hf = b43_hf_read(dev);
+	b43dbg(dev->wl, "Hardware key memory dump:  USEDEFKEYS=%u\n",
+	       !!(hf & B43_HF_USEDEFKEYS));
+	for (index = 0; index < dev->max_nr_keys; index++) {
+		key = &(dev->key[index]);
+		printk(KERN_DEBUG "Key slot %02u: %s",
+		       index, (key->keyconf == NULL) ? " " : "*");
+		offset = dev->ktp + (index * B43_SEC_KEYSIZE);
+		for (i = 0; i < B43_SEC_KEYSIZE; i += 2) {
+			u16 tmp = b43_shm_read16(dev, B43_SHM_SHARED, offset + i);
+			printk("%02X%02X", (tmp & 0xFF), ((tmp >> 8) & 0xFF));
+		}
+
+		algo = b43_shm_read16(dev, B43_SHM_SHARED,
+				      B43_SHM_SH_KEYIDXBLOCK + (index * 2));
+		printk("   Algo: %04X/%02X", algo, key->algorithm);
+
+		if (index >= 4) {
+			rcmta0 = b43_shm_read32(dev, B43_SHM_RCMTA,
+						((index - 4) * 2) + 0);
+			rcmta1 = b43_shm_read16(dev, B43_SHM_RCMTA,
+						((index - 4) * 2) + 1);
+			*((__le32 *)(&mac[0])) = cpu_to_le32(rcmta0);
+			*((__le16 *)(&mac[4])) = cpu_to_le16(rcmta1);
+			printk("   MAC: %s",
+			       print_mac(macbuf, mac));
+		} else
+			printk("   DEFAULT KEY");
+		printk("\n");
+	}
 }
 
 void b43_power_saving_ctl_bits(struct b43_wldev *dev, unsigned int ps_flags)
@@ -3324,7 +3320,6 @@ static int b43_op_config(struct ieee80211_hw *hw, u32 changed)
 	unsigned long flags;
 	int antenna;
 	int err = 0;
-	u32 savedirqs;
 
 	mutex_lock(&wl->mutex);
 
@@ -3335,24 +3330,14 @@ static int b43_op_config(struct ieee80211_hw *hw, u32 changed)
 	dev = wl->current_dev;
 	phy = &dev->phy;
 
+	b43_mac_suspend(dev);
+
 	if (changed & IEEE80211_CONF_CHANGE_RETRY_LIMITS)
 		b43_set_retry_limits(dev, conf->short_frame_max_tx_count,
 					  conf->long_frame_max_tx_count);
 	changed &= ~IEEE80211_CONF_CHANGE_RETRY_LIMITS;
 	if (!changed)
-		goto out_unlock_mutex;
-
-	/* Disable IRQs while reconfiguring the device.
-	 * This makes it possible to drop the spinlock throughout
-	 * the reconfiguration process. */
-	spin_lock_irqsave(&wl->irq_lock, flags);
-	if (b43_status(dev) < B43_STAT_STARTED) {
-		spin_unlock_irqrestore(&wl->irq_lock, flags);
-		goto out_unlock_mutex;
-	}
-	savedirqs = b43_interrupt_disable(dev, B43_IRQ_ALL);
-	spin_unlock_irqrestore(&wl->irq_lock, flags);
-	b43_synchronize_irq(dev);
+		goto out_mac_enable;
 
 	/* Switch to the requested channel.
 	 * The firmware takes care of races with the TX handler. */
@@ -3399,11 +3384,9 @@ static int b43_op_config(struct ieee80211_hw *hw, u32 changed)
 		}
 	}
 
-	spin_lock_irqsave(&wl->irq_lock, flags);
-	b43_interrupt_enable(dev, savedirqs);
-	mmiowb();
-	spin_unlock_irqrestore(&wl->irq_lock, flags);
-      out_unlock_mutex:
+out_mac_enable:
+	b43_mac_enable(dev);
+out_unlock_mutex:
 	mutex_unlock(&wl->mutex);
 
 	return err;
@@ -3461,27 +3444,12 @@ static void b43_op_bss_info_changed(struct ieee80211_hw *hw,
 {
 	struct b43_wl *wl = hw_to_b43_wl(hw);
 	struct b43_wldev *dev;
-	struct b43_phy *phy;
-	unsigned long flags;
-	u32 savedirqs;
 
 	mutex_lock(&wl->mutex);
 
 	dev = wl->current_dev;
-	phy = &dev->phy;
-
-	/* Disable IRQs while reconfiguring the device.
-	 * This makes it possible to drop the spinlock throughout
-	 * the reconfiguration process. */
-	spin_lock_irqsave(&wl->irq_lock, flags);
-	if (b43_status(dev) < B43_STAT_STARTED) {
-		spin_unlock_irqrestore(&wl->irq_lock, flags);
+	if (!dev || b43_status(dev) < B43_STAT_STARTED)
 		goto out_unlock_mutex;
-	}
-	savedirqs = b43_interrupt_disable(dev, B43_IRQ_ALL);
-	spin_unlock_irqrestore(&wl->irq_lock, flags);
-	b43_synchronize_irq(dev);
-
 	b43_mac_suspend(dev);
 
 	if (changed & BSS_CHANGED_BASIC_RATES)
@@ -3495,13 +3463,7 @@ static void b43_op_bss_info_changed(struct ieee80211_hw *hw,
 	}
 
 	b43_mac_enable(dev);
-
-	spin_lock_irqsave(&wl->irq_lock, flags);
-	b43_interrupt_enable(dev, savedirqs);
-	/* XXX: why? */
-	mmiowb();
-	spin_unlock_irqrestore(&wl->irq_lock, flags);
- out_unlock_mutex:
+out_unlock_mutex:
 	mutex_unlock(&wl->mutex);
 
 	return;
@@ -3513,7 +3475,6 @@ static int b43_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 {
 	struct b43_wl *wl = hw_to_b43_wl(hw);
 	struct b43_wldev *dev;
-	unsigned long flags;
 	u8 algorithm;
 	u8 index;
 	int err;
@@ -3523,7 +3484,15 @@ static int b43_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 		return -ENOSPC; /* User disabled HW-crypto */
 
 	mutex_lock(&wl->mutex);
-	spin_lock_irqsave(&wl->irq_lock, flags);
+	spin_lock_irq(&wl->irq_lock);
+	write_lock(&wl->tx_lock);
+	/* Why do we need all this locking here?
+	 * mutex     -> Every config operation must take it.
+	 * irq_lock  -> We modify the dev->key array, which is accessed
+	 *              in the IRQ handlers.
+	 * tx_lock   -> We modify the dev->key array, which is accessed
+	 *              in the TX handler.
+	 */
 
 	dev = wl->current_dev;
 	err = -ENODEV;
@@ -3540,7 +3509,7 @@ static int b43_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 	err = -EINVAL;
 	switch (key->alg) {
 	case ALG_WEP:
-		if (key->keylen == 5)
+		if (key->keylen == LEN_WEP40)
 			algorithm = B43_SEC_ALGO_WEP40;
 		else
 			algorithm = B43_SEC_ALGO_WEP104;
@@ -3567,17 +3536,14 @@ static int b43_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 			goto out_unlock;
 		}
 
-		if (is_broadcast_ether_addr(addr)) {
-			/* addr is FF:FF:FF:FF:FF:FF for default keys */
-			err = b43_key_write(dev, index, algorithm,
-					    key->key, key->keylen, NULL, key);
-		} else {
-			/*
-			 * either pairwise key or address is 00:00:00:00:00:00
-			 * for transmit-only keys
-			 */
+		if (key->flags & IEEE80211_KEY_FLAG_PAIRWISE) {
+			/* Pairwise key with an assigned MAC address. */
 			err = b43_key_write(dev, -1, algorithm,
 					    key->key, key->keylen, addr, key);
+		} else {
+			/* Group key */
+			err = b43_key_write(dev, index, algorithm,
+					    key->key, key->keylen, NULL, key);
 		}
 		if (err)
 			goto out_unlock;
@@ -3600,15 +3566,19 @@ static int b43_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 	default:
 		B43_WARN_ON(1);
 	}
+
 out_unlock:
-	spin_unlock_irqrestore(&wl->irq_lock, flags);
-	mutex_unlock(&wl->mutex);
 	if (!err) {
 		b43dbg(wl, "%s hardware based encryption for keyidx: %d, "
 		       "mac: %s\n",
 		       cmd == SET_KEY ? "Using" : "Disabling", key->keyidx,
 		       print_mac(mac, addr));
+		b43_dump_keymemory(dev);
 	}
+	write_unlock(&wl->tx_lock);
+	spin_unlock_irq(&wl->irq_lock);
+	mutex_unlock(&wl->mutex);
+
 	return err;
 }
 

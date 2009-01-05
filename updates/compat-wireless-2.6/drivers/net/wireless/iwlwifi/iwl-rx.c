@@ -262,8 +262,7 @@ void iwl_rx_allocate(struct iwl_priv *priv)
 		rxb->skb = alloc_skb(priv->hw_params.rx_buf_size + 256,
 				     GFP_KERNEL);
 		if (!rxb->skb) {
-			printk(KERN_CRIT DRV_NAME
-				   "Can not allocate SKB buffers\n");
+			IWL_CRIT(priv, "Can not allocate SKB buffers\n");
 			/* We don't reschedule replenish work here -- we will
 			 * call the restock method and if it still needs
 			 * more buffers it will schedule replenish */
@@ -895,7 +894,7 @@ static void iwl_pass_packet_to_mac80211(struct iwl_priv *priv,
 		rx_start = (struct iwl_rx_phy_res *)&priv->last_phy_res[1];
 
 	if (!rx_start) {
-		IWL_ERROR("MPDU frame without a PHY data\n");
+		IWL_ERR(priv, "MPDU frame without a PHY data\n");
 		return;
 	}
 	if (include_phy) {
@@ -1021,7 +1020,7 @@ void iwl_rx_reply_rx(struct iwl_priv *priv,
 	}
 
 	if (!rx_start) {
-		IWL_ERROR("MPDU frame without a PHY data\n");
+		IWL_ERR(priv, "MPDU frame without a PHY data\n");
 		return;
 	}
 
