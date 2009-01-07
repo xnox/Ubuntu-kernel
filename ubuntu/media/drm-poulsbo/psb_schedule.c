@@ -346,7 +346,8 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 		PSB_DEBUG_RENDER("Raster busy.\n");
 		return;
 	}
-#ifdef PSB_BLOCK_OVERLAP
+//#ifdef PSB_BLOCK_OVERLAP
+#if 1
 	if (scheduler->current_task[PSB_SCENE_ENGINE_TA] != NULL) {
 		PSB_DEBUG_RENDER("TA busy.\n");
 		return;

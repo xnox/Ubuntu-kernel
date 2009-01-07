@@ -222,4 +222,4 @@ __attribute__((section(".modinfo"))) =
 "depends=drm_psb,i2c-algo-bit";
 
 
-MODULE_INFO(srcversion, "744E74C207F652BA9DEC441");
+MODULE_INFO(srcversion, "B2746B5D797D6961C214FBF");

@@ -40,8 +40,7 @@ EXPORT_SYMBOL(drm_psb_debug);
 static int drm_psb_trap_pagefaults = 0;
 static int drm_psb_clock_gating = 0;
 static int drm_psb_ta_mem_size = 32 * 1024;
-//int drm_psb_disable_vsync = 1;
-int drm_psb_disable_vsync = 0;
+int drm_psb_disable_vsync = 1;
 int drm_psb_no_fb = 0;
 int drm_psb_force_pipeb = 0;
 char* psb_init_mode;
@@ -269,7 +268,11 @@ static int psb_do_init(struct drm_device *dev)
 	if (!dev_priv->comm_page)
 		goto out_err;
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
 	change_page_attr(dev_priv->comm_page, 1, PAGE_KERNEL_NOCACHE);
+#else
+	map_page_into_agp(dev_priv->comm_page);
+#endif
 
 	dev_priv->comm = kmap(dev_priv->comm_page);
 	memset((void *)dev_priv->comm, 0, PAGE_SIZE);
@@ -476,8 +479,6 @@ static int psb_initial_config(struct drm_device *dev, bool can_grow)
 	drm_init_xres = psb_init_xres;
 	drm_init_yres = psb_init_yres;
 
-	drm_psb_disable_vsync = 0;
-
 	drm_pick_crtcs(dev);
 
 	if ((I915_READ(PIPEACONF) & PIPEACONF_ENABLE) && !drm_psb_force_pipeb)
@@ -585,7 +586,11 @@ static int psb_driver_load(struct drm_device *dev, unsigned long chipset)
 	if (!dev_priv->scratch_page)
 		goto out_err;
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
 	change_page_attr(dev_priv->scratch_page, 1, PAGE_KERNEL_NOCACHE);
+#else
+	map_page_into_agp(dev_priv->scratch_page);
+#endif
 
 	dev_priv->pg = psb_gtt_alloc(dev);
 	if (!dev_priv->pg)
