@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook5) hardy; urgency=low
+
+  [Michael Frey]
+
+  * Fix for Internal MIC on Dell Tiger.
+
+ -- Michael Frey <michael.frey@canonical.com>  Thu, 08 Jan 2009 11:59:19 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook4) hardy; urgency=low
 
   [Michael Frey]
