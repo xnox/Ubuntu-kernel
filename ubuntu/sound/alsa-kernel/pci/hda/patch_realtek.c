@@ -121,6 +121,7 @@ enum {
 	ALC269_BASIC,
 	ALC269_CW020,
 	ALC269_AUTO,
+	ALC269_QUANTA_ON1,
 	ALC269_MODEL_LAST /* last tag */
 };
 
@@ -10440,6 +10441,14 @@ static hda_nid_t alc269_capsrc_nids[1] = {
 	0x23,
 };
 
+static struct hda_input_mux alc269_eeepc_dmic_capture_source = {
+	.num_items = 2,
+	.items = {
+		{ "i-Mic", 0x5 },
+		{ "e-Mic", 0x0 },
+	},
+};
+
 
 #define alc269_modes		alc260_modes
 #define alc269_capture_source	alc880_lg_lw_capture_source
@@ -10457,6 +10466,19 @@ static struct snd_kcontrol_new alc269_base_mixer[] = {
 	HDA_CODEC_VOLUME("Front Mic Boost", 0x19, 0, HDA_INPUT),
 	HDA_CODEC_MUTE("Headphone Playback Switch", 0x15, 0x0, HDA_OUTPUT),
 	HDA_CODEC_MUTE_MONO("Mono Playback Switch", 0x16, 2, 0x0, HDA_OUTPUT),
+	{ } /* end */
+};
+
+static struct snd_kcontrol_new alc269_on1_mixer[] = {
+	HDA_BIND_VOL("Master Playback Volume", &alc268_acer_bind_master_vol),
+	{
+		.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
+		.name = "Master Playback Switch",
+		.info = snd_hda_mixer_amp_switch_info,
+		.get = snd_hda_mixer_amp_switch_get,
+		.put = alc268_acer_master_sw_put,
+		.private_value = HDA_COMPOSE_AMP_VAL(0x14, 3, 0, HDA_OUTPUT),
+	},
 	{ } /* end */
 };
 
@@ -10480,11 +10502,37 @@ static struct snd_kcontrol_new alc269_capture_mixer[] = {
 	{ } /* end */
 };
 
+static struct hda_verb alc269_eeepc_dmic_init_verbs[] = {
+	{0x15, AC_VERB_SET_CONNECT_SEL, 0x01},
+	{0x23, AC_VERB_SET_CONNECT_SEL, 0x05},
+	{0x02, AC_VERB_SET_AMP_GAIN_MUTE, 0xb026 },
+	{0x08, AC_VERB_SET_AMP_GAIN_MUTE, (0x7019 | (0x00 << 8))},
+	{0x12, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_IN},
+	{0x18, AC_VERB_SET_UNSOLICITED_ENABLE, AC_USRSP_EN | ALC880_MIC_EVENT},
+	{0x15, AC_VERB_SET_UNSOLICITED_ENABLE, AC_USRSP_EN | ALC880_HP_EVENT},
+	{}
+};
+
 static struct hda_verb alc269_eapd_verbs[] = {
 	{0x14, AC_VERB_SET_EAPD_BTLENABLE, 2},
 	{0x15, AC_VERB_SET_EAPD_BTLENABLE, 2},
 	{ }
 };
+
+/* toggle speaker-output according to the hp-jack state */
+static void alc269_speaker_automute(struct hda_codec *codec)
+{
+	unsigned int present;
+	unsigned char bits;
+
+	present = snd_hda_codec_read(codec, 0x15, 0,
+				AC_VERB_GET_PIN_SENSE, 0) & 0x80000000;
+	bits = present ? AMP_IN_MUTE(0) : 0;
+	snd_hda_codec_amp_stereo(codec, 0x0c, HDA_INPUT, 0,
+				AMP_IN_MUTE(0), bits);
+	snd_hda_codec_amp_stereo(codec, 0x0c, HDA_INPUT, 1,
+				AMP_IN_MUTE(0), bits);
+}
 
 #define alc269_cw020_automute alc262_hippo_automute
 
@@ -10492,6 +10540,33 @@ static struct hda_verb alc269_cw020_verbs[] = {
 	{0x15, AC_VERB_SET_UNSOLICITED_ENABLE, ALC880_HP_EVENT | AC_USRSP_EN},
 	{ } /* end */
 };
+
+static void alc269_eeepc_dmic_automute(struct hda_codec *codec)
+{
+	unsigned int present;
+
+	present = snd_hda_codec_read(codec, 0x18, 0,
+				AC_VERB_GET_PIN_SENSE, 0) & 0x80000000;
+	snd_hda_codec_write(codec, 0x23, 0,
+				AC_VERB_SET_CONNECT_SEL,  (present ? 0 : 5));
+}
+
+/* unsolicited event for HP jack sensing */
+static void alc269_eeepc_dmic_unsol_event(struct hda_codec *codec,
+				     unsigned int res)
+{
+	if ((res >> 26) == ALC880_HP_EVENT)
+		alc269_speaker_automute(codec);
+
+	if ((res >> 26) == ALC880_MIC_EVENT)
+		alc269_eeepc_dmic_automute(codec);
+}
+
+static void alc269_eeepc_dmic_inithook(struct hda_codec *codec)
+{
+	alc269_speaker_automute(codec);
+	alc269_eeepc_dmic_automute(codec);
+}
 
 static void alc269_cw020_unsol_event(struct hda_codec *codec,
 		unsigned int res)
@@ -10657,8 +10732,27 @@ static int alc269_auto_create_multi_out_ctls(struct alc_spec *spec,
 	return 0;
 }
 
-#define alc269_auto_create_analog_input_ctls \
-	alc880_auto_create_analog_input_ctls
+static int alc269_auto_create_analog_input_ctls(struct alc_spec *spec,
+						const struct auto_pin_cfg *cfg)
+{
+	int err;
+
+	err = alc880_auto_create_analog_input_ctls(spec, cfg);
+	if (err < 0)
+		return err;
+	/* digital-mic input pin is excluded in alc880_auto_create..()
+	 * because it's under 0x18
+	 */
+	if (cfg->input_pins[AUTO_PIN_MIC] == 0x12 ||
+	    cfg->input_pins[AUTO_PIN_FRONT_MIC] == 0x12) {
+		struct hda_input_mux *imux = &spec->private_imux;
+		imux->items[imux->num_items].label = "Int Mic";
+		imux->items[imux->num_items].index = 0x05;
+		imux->num_items++;
+	}
+	return 0;
+}
+ 
 
 #ifdef CONFIG_SND_HDA_POWER_SAVE
 #define alc269_loopbacks	alc880_loopbacks
@@ -10729,10 +10823,12 @@ static void alc269_auto_init(struct hda_codec *codec)
 static const char *alc269_models[ALC269_MODEL_LAST] = {
 	[ALC269_BASIC]		= "basic",
 	[ALC269_CW020]		= "cw020",
+	[ALC269_QUANTA_ON1]	= "quanta_on1"
 };
 
 static struct snd_pci_quirk alc269_cfg_tbl[] = {
         SND_PCI_QUIRK(0x8086,0x811b, "CW020", ALC269_CW020),
+	SND_PCI_QUIRK(0x1028, 0x02c6, "DELL KIU10", ALC269_QUANTA_ON1),
 	{ }
 };
 
@@ -10759,6 +10855,19 @@ static struct alc_config_preset alc269_presets[] = {
 		.input_mux = &alc269_capture_source,
 		.unsol_event = alc269_cw020_unsol_event,
 		.init_hook = alc269_cw020_init_hook,
+	},
+	[ALC269_QUANTA_ON1] = {
+		.mixers = { alc269_on1_mixer},
+		.init_verbs = { alc269_init_verbs,
+				alc269_eeepc_dmic_init_verbs },
+		.num_dacs = ARRAY_SIZE(alc269_dac_nids),
+		.dac_nids = alc269_dac_nids,
+		.hp_nid = 0x03,
+		.num_channel_mode = ARRAY_SIZE(alc269_modes),
+		.channel_mode = alc269_modes,
+		.input_mux = &alc269_eeepc_dmic_capture_source,
+		.unsol_event = alc269_eeepc_dmic_unsol_event,
+		.init_hook = alc269_eeepc_dmic_inithook,
 	},
 };
 
