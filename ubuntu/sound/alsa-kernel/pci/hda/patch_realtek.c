@@ -10827,7 +10827,7 @@ static const char *alc269_models[ALC269_MODEL_LAST] = {
 };
 
 static struct snd_pci_quirk alc269_cfg_tbl[] = {
-        SND_PCI_QUIRK(0x8086,0x811b, "CW020", ALC269_CW020),
+        SND_PCI_QUIRK(0x1509, 0x5001, "CW020", ALC269_CW020),
 	SND_PCI_QUIRK(0x1028, 0x02c6, "DELL KIU10", ALC269_QUANTA_ON1),
 	{ }
 };
