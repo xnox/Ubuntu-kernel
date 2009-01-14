@@ -1,29 +1,13 @@
-Source: linux-firmware
-Section: misc
+Source: wireless-crda
+Section: admin
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
-Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.6.2.1
+Build-Depends: debhelper (>= 5.0.0), pkg-config, python-m2crypto, libgcrypt11-dev, libnl-dev
 
-Package: linux-firmware
+Package: wireless-crda
 Architecture: all
-Priority: optional
-Provides: atmel-firmware
-Conflicts: atmel-firmware
-Replaces: atmel-firmware, linux-restricted-common
-Description: Firmware for Linux kernel drivers
- This package provides firmware used by Linux kernel drivers.
+Description: Wireless Central Regulatory Domain Agent
+ This package provides the CRDA agent for wireless drivers to
+ determine the regulatory domain channel and power settings.
 
-Package: nic-firmware
-XC-Package-Type: udeb
-Architecture: all
-Section: debian-installer
-Description: Firmware for NICs
- This package contains firmware needed by some network controllers.
-
-Package: scsi-firmware
-XC-Package-Type: udeb
-Architecture: all
-Section: debian-installer
-Description: Firmware for SCSI controllers
- This package contains firmware needed by some scsi controllers.

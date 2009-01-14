@@ -18,6 +18,7 @@ export SHELL=/bin/bash -e
 REG_PATH = /usr/lib/crda
 RBIN=regulatory.bin
 CRDA_PATH = /sbin
+UDEVR=/etc/udev/rules.d
 
 binary-arch:
 build-arch:
@@ -25,18 +26,20 @@ build-arch:
 build-indep:
 	make REG_BIN=$(shell pwd)/$(RBIN)
 
-pkg_dir = $(CURDIR)/debian/crda
+pkg=crda
+pkg_dir = $(CURDIR)/debian/$(pkg)
 
 install-indep: build-indep
 	dh_testdir
 	dh_testroot
-	dh_clean -k -i
+	dh_clean -k -p$(pkg_dir)
 
-	install -o 0 -g 0 -m 755 -d $(pkg_dir)/$(REG_PATH)
-	install -o 0 -g 0 -m 644 regulatory.bin $(pkg_dir)/$(REG_PATH)/$(RBIN)
-	install -m 755 -t $(pkg_dir)/$(CRDA_PATH)/ crda
-	install -m 755 -t $(pkg_dir)/$(CRDA_PATH)/ regdbdump
-	install -m 644 -t $(pkg_dir)/etc/udev/rules.d/ udev/regulatory.rules
+	install -d $(pkg_dir)$(REG_PATH)
+	install -o 0 -g 0 -m 644 regulatory.bin $(pkg_dir)$(REG_PATH)/$(RBIN)
+	install -d $(pkg_dir)$(CRDA_PATH)
+	install -m 755 -t $(pkg_dir)$(CRDA_PATH)/ crda regdbdump
+	install -d $(pkg_dir)$(UDEVR)
+	install -m 644 -t $(pkg_dir)$(UDEVR)/ udev/regulatory.rules
 
 
 binary-indep: install-indep
@@ -59,3 +62,5 @@ clean:
 	dh_testdir
 	dh_testroot
 	dh_clean
+	make clean
+	rm -rf $(pkg_dir)
