@@ -337,16 +337,17 @@ extern int drm_bo_map_bound(struct vm_area_struct *vma);
 #ifndef _PAGE_PAT
 #define _PAGE_PAT 0x080		/* Note that this is the same value as _PAGE_PROTNONE */
 
+#endif
 
 extern void drm_init_pat(void);
 extern int drm_use_pat(void);
 
 #endif
 
-#endif
-
 /* fixme when functions are upstreamed - upstreamed for 2.6.23 */
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
+//#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23))
+#if ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,23)) && \
+				(LINUX_VERSION_CODE != KERNEL_VERSION(2,6,21)))
 #define DRM_IDR_COMPAT_FN
 #endif
 #ifdef DRM_IDR_COMPAT_FN
@@ -358,6 +359,25 @@ void idr_remove_all(struct idr *idp);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,18))
 void *idr_replace(struct idr *idp, void *ptr, int id);
+#endif
+
+#ifndef VM_CAN_NONLINEAR
+#define DRM_VM_NOPAGE 1
+#endif
+
+#ifdef DRM_VM_NOPAGE
+
+extern struct page *drm_vm_nopage(struct vm_area_struct *vma,
+				  unsigned long address, int *type);
+
+extern struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
+				      unsigned long address, int *type);
+
+extern struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
+				      unsigned long address, int *type);
+
+extern struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
+				     unsigned long address, int *type);
 #endif
 
 #endif

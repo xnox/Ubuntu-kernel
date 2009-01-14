@@ -37,7 +37,11 @@ static void drm_ttm_ipi_handler(void *null)
 
 void drm_ttm_cache_flush(void)
 {
+  #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+  if (on_each_cpu(drm_ttm_ipi_handler, NULL, 1) != 0) 
+  #else 
 	if (on_each_cpu(drm_ttm_ipi_handler, NULL, 1, 1) != 0)
+  #endif
 		DRM_ERROR("Timed out waiting for drm cache flush.\n");
 }
 EXPORT_SYMBOL(drm_ttm_cache_flush);
@@ -117,8 +121,10 @@ static int drm_set_caching(struct drm_ttm *ttm, int noncached)
 			}
 		}
 	}
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,25))
 	if (do_tlbflush)
 		flush_agp_mappings();
+#endif
 
 	DRM_FLAG_MASKED(ttm->page_flags, noncached, DRM_TTM_PAGE_UNCACHED);
 

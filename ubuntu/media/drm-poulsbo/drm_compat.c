@@ -592,7 +592,12 @@ void drm_init_pat(void)
 	if (!boot_cpu_has(X86_FEATURE_PAT)) {
 		return;
 	}
+
+        #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+        if (on_each_cpu(drm_pat_ipi_handler,NULL,1) != 0) {
+        #else        
 	if (on_each_cpu(drm_pat_ipi_handler, NULL, 1, 1) != 0) {
+        #endif
 		DRM_ERROR("Timed out setting up CPU PAT.\n");
 		return;
 	}	

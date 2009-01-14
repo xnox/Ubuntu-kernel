@@ -1015,7 +1015,24 @@ static unsigned long psbfb_nopfn(struct vm_area_struct *vma,
 	mutex_unlock(&vi->vm_mutex);
 	return ret;
 }
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+static int psbfb_fault(struct vm_area_struct *vma,
+				 struct vm_fault *vmf)
+{
+	struct psbfb_vm_info *vi = (struct psbfb_vm_info *)vma->vm_private_data;
+	struct vm_area_struct tmp_vma;
+	unsigned long ret;
 
+        unsigned long address = (unsigned long)vmf->virtual_address;
+
+	mutex_lock(&vi->vm_mutex);
+	tmp_vma = *vma;
+	tmp_vma.vm_private_data = vi->bo;
+	ret = drm_bo_vm_nopfn(&tmp_vma, address);
+	mutex_unlock(&vi->vm_mutex);
+	return ret;
+}
+#endif
 static void psbfb_vm_open(struct vm_area_struct *vma)
 {
 	struct psbfb_vm_info *vi = (struct psbfb_vm_info *)vma->vm_private_data;
@@ -1029,8 +1046,11 @@ static void psbfb_vm_close(struct vm_area_struct *vma)
 }
 
 static struct vm_operations_struct psbfb_vm_ops = {
+  #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+        .fault = psbfb_fault,
+  #else
 	.nopfn = psbfb_nopfn,
-	.nopage = NULL,
+  #endif
 	.open = psbfb_vm_open,
 	.close = psbfb_vm_close,
 };

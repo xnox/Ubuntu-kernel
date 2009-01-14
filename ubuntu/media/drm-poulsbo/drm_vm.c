@@ -1,4 +1,4 @@
-/**
+/*
  * \file drm_vm.c
  * Memory mapping for DRM
  *
@@ -45,7 +45,6 @@ static int drm_bo_mmap_locked(struct vm_area_struct *vma,
 			      struct file *filp,
 			      drm_local_map_t *map);
 
-
 pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
 {
 	pgprot_t tmp = vm_get_page_prot(vma->vm_flags);
@@ -77,9 +76,9 @@ pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
 	return tmp;
 }
 
-
+#ifndef DRM_VM_NOPAGE
 /**
- * \c nopage method for AGP virtual memory.
+ * \c fault method for AGP virtual memory.
  *
  * \param vma virtual memory area.
  * \param address access address.
@@ -89,8 +88,7 @@ pgprot_t drm_io_prot(uint32_t map_type, struct vm_area_struct *vma)
  * map, get the page, increment the use count and return it.
  */
 #if __OS_HAS_AGP
-static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
-						unsigned long address)
+static int drm_do_vm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 {
 	struct drm_file *priv = vma->vm_file->private_data;
 	struct drm_device *dev = priv->head->dev;
@@ -102,19 +100,24 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 	 * Find the right map
 	 */
 	if (!drm_core_has_AGP(dev))
-		goto vm_nopage_error;
+		goto vm_fault_error;
 
 	if (!dev->agp || !dev->agp->cant_use_aperture)
-		goto vm_nopage_error;
+		goto vm_fault_error;
 
 	if (drm_ht_find_item(&dev->map_hash, vma->vm_pgoff, &hash))
-		goto vm_nopage_error;
+		goto vm_fault_error;
 
 	r_list = drm_hash_entry(hash, struct drm_map_list, hash);
 	map = r_list->map;
 
 	if (map && map->type == _DRM_AGP) {
-		unsigned long offset = address - vma->vm_start;
+		/*
+		 * Using vm_pgoff as a selector forces us to use this unusual
+		 * addressing scheme.
+		 */
+		unsigned long offset = (unsigned long)vmf->virtual_address -
+								vma->vm_start;
 		unsigned long baddr = map->offset + offset;
 		struct drm_agp_mem *agpmem;
 		struct page *page;
@@ -136,7 +139,7 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 		}
 
 		if (!agpmem)
-			goto vm_nopage_error;
+			goto vm_fault_error;
 
 		/*
 		 * Get the page, inc the use count, and return it
@@ -144,25 +147,21 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
 		offset = (baddr - agpmem->bound) >> PAGE_SHIFT;
 		page = virt_to_page(__va(agpmem->memory->memory[offset]));
 		get_page(page);
+		vmf->page = page;
 
-#if 0
-		/* page_count() not defined everywhere */
 		DRM_DEBUG
 		    ("baddr = 0x%lx page = 0x%p, offset = 0x%lx, count=%d\n",
 		     baddr, __va(agpmem->memory->memory[offset]), offset,
 		     page_count(page));
-#endif
-
-		return page;
+		return 0;
 	}
-      vm_nopage_error:
-	return NOPAGE_SIGBUS;	/* Disallow mremap */
+vm_fault_error:
+	return VM_FAULT_SIGBUS;	/* Disallow mremap */
 }
 #else				/* __OS_HAS_AGP */
-static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
-						unsigned long address)
+static int drm_do_vm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 {
-	return NOPAGE_SIGBUS;
+	return VM_FAULT_SIGBUS;
 }
 #endif				/* __OS_HAS_AGP */
 
@@ -176,29 +175,28 @@ static __inline__ struct page *drm_do_vm_nopage(struct vm_area_struct *vma,
  * Get the mapping, find the real physical page to map, get the page, and
  * return it.
  */
-static __inline__ struct page *drm_do_vm_shm_nopage(struct vm_area_struct *vma,
-						    unsigned long address)
+static int drm_do_vm_shm_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 {
 	struct drm_map *map = (struct drm_map *) vma->vm_private_data;
 	unsigned long offset;
 	unsigned long i;
 	struct page *page;
 
-	if (address > vma->vm_end)
-		return NOPAGE_SIGBUS;	/* Disallow mremap */
 	if (!map)
-		return NOPAGE_SIGBUS;	/* Nothing allocated */
+		return VM_FAULT_SIGBUS;	/* Nothing allocated */
 
-	offset = address - vma->vm_start;
+	offset = (unsigned long)vmf->virtual_address - vma->vm_start;
 	i = (unsigned long)map->handle + offset;
 	page = vmalloc_to_page((void *)i);
 	if (!page)
-		return NOPAGE_SIGBUS;
+		return VM_FAULT_SIGBUS;
 	get_page(page);
+	vmf->page = page;
 
-	DRM_DEBUG("shm_nopage 0x%lx\n", address);
-	return page;
+	DRM_DEBUG("shm_fault 0x%lx\n", offset);
+	return 0;
 }
+#endif
 
 /**
  * \c close method for shared virtual memory.
@@ -280,8 +278,9 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
 	mutex_unlock(&dev->struct_mutex);
 }
 
+#ifndef DRM_VM_NOPAGE
 /**
- * \c nopage method for DMA virtual memory.
+ * \c fault method for DMA virtual memory.
  *
  * \param vma virtual memory area.
  * \param address access address.
@@ -289,8 +288,7 @@ static void drm_vm_shm_close(struct vm_area_struct *vma)
  *
  * Determine the page number from the page offset and get it from drm_device_dma::pagelist.
  */
-static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
-						    unsigned long address)
+static int drm_do_vm_dma_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 {
 	struct drm_file *priv = vma->vm_file->private_data;
 	struct drm_device *dev = priv->head->dev;
@@ -300,24 +298,23 @@ static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
 	struct page *page;
 
 	if (!dma)
-		return NOPAGE_SIGBUS;	/* Error */
-	if (address > vma->vm_end)
-		return NOPAGE_SIGBUS;	/* Disallow mremap */
+		return VM_FAULT_SIGBUS;	/* Error */
 	if (!dma->pagelist)
-		return NOPAGE_SIGBUS;	/* Nothing allocated */
+		return VM_FAULT_SIGBUS;	/* Nothing allocated */
 
-	offset = address - vma->vm_start;	/* vm_[pg]off[set] should be 0 */
-	page_nr = offset >> PAGE_SHIFT;
+	offset = (unsigned long)vmf->virtual_address - vma->vm_start;	/* vm_[pg]off[set] should be 0 */
+	page_nr = offset >> PAGE_SHIFT; /* page_nr could just be vmf->pgoff */
 	page = virt_to_page((dma->pagelist[page_nr] + (offset & (~PAGE_MASK))));
 
 	get_page(page);
+	vmf->page = page;
 
-	DRM_DEBUG("dma_nopage 0x%lx (page %lu)\n", address, page_nr);
-	return page;
+	DRM_DEBUG("dma_fault 0x%lx (page %lu)\n", offset, page_nr);
+	return 0;
 }
 
 /**
- * \c nopage method for scatter-gather virtual memory.
+ * \c fault method for scatter-gather virtual memory.
  *
  * \param vma virtual memory area.
  * \param address access address.
@@ -325,8 +322,7 @@ static __inline__ struct page *drm_do_vm_dma_nopage(struct vm_area_struct *vma,
  *
  * Determine the map offset from the page offset and get it from drm_sg_mem::pagelist.
  */
-static __inline__ struct page *drm_do_vm_sg_nopage(struct vm_area_struct *vma,
-						   unsigned long address)
+static int drm_do_vm_sg_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
 {
 	struct drm_map *map = (struct drm_map *) vma->vm_private_data;
 	struct drm_file *priv = vma->vm_file->private_data;
@@ -337,80 +333,62 @@ static __inline__ struct page *drm_do_vm_sg_nopage(struct vm_area_struct *vma,
 	unsigned long page_offset;
 	struct page *page;
 
-	DRM_DEBUG("\n");
 	if (!entry)
-		return NOPAGE_SIGBUS;	/* Error */
-	if (address > vma->vm_end)
-		return NOPAGE_SIGBUS;	/* Disallow mremap */
+		return VM_FAULT_SIGBUS;	/* Error */
 	if (!entry->pagelist)
-		return NOPAGE_SIGBUS;	/* Nothing allocated */
+		return VM_FAULT_SIGBUS;	/* Nothing allocated */
 
-	offset = address - vma->vm_start;
+	offset = (unsigned long)vmf->virtual_address - vma->vm_start;
 	map_offset = map->offset - (unsigned long)dev->sg->virtual;
 	page_offset = (offset >> PAGE_SHIFT) + (map_offset >> PAGE_SHIFT);
 	page = entry->pagelist[page_offset];
 	get_page(page);
+	vmf->page = page;
 
-	return page;
+	return 0;
 }
-
-static struct page *drm_vm_nopage(struct vm_area_struct *vma,
-				  unsigned long address, int *type)
-{
-	if (type)
-		*type = VM_FAULT_MINOR;
-	return drm_do_vm_nopage(vma, address);
-}
-
-static struct page *drm_vm_shm_nopage(struct vm_area_struct *vma,
-				      unsigned long address, int *type)
-{
-	if (type)
-		*type = VM_FAULT_MINOR;
-	return drm_do_vm_shm_nopage(vma, address);
-}
-
-static struct page *drm_vm_dma_nopage(struct vm_area_struct *vma,
-				      unsigned long address, int *type)
-{
-	if (type)
-		*type = VM_FAULT_MINOR;
-	return drm_do_vm_dma_nopage(vma, address);
-}
-
-static struct page *drm_vm_sg_nopage(struct vm_area_struct *vma,
-				     unsigned long address, int *type)
-{
-	if (type)
-		*type = VM_FAULT_MINOR;
-	return drm_do_vm_sg_nopage(vma, address);
-}
-
+#endif
 
 /** AGP virtual memory operations */
 static struct vm_operations_struct drm_vm_ops = {
+#ifdef DRM_VM_NOPAGE
 	.nopage = drm_vm_nopage,
+#else
+	.fault = drm_do_vm_fault,
+#endif
 	.open = drm_vm_open,
 	.close = drm_vm_close,
 };
 
 /** Shared virtual memory operations */
 static struct vm_operations_struct drm_vm_shm_ops = {
+#ifdef DRM_VM_NOPAGE
 	.nopage = drm_vm_shm_nopage,
+#else
+	.fault = drm_do_vm_shm_fault,
+#endif
 	.open = drm_vm_open,
 	.close = drm_vm_shm_close,
 };
 
 /** DMA virtual memory operations */
 static struct vm_operations_struct drm_vm_dma_ops = {
+#ifdef DRM_VM_NOPAGE
 	.nopage = drm_vm_dma_nopage,
+#else
+	.fault = drm_do_vm_dma_fault,
+#endif
 	.open = drm_vm_open,
 	.close = drm_vm_close,
 };
 
 /** Scatter-gather virtual memory operations */
 static struct vm_operations_struct drm_vm_sg_ops = {
+#ifdef DRM_VM_NOPAGE
 	.nopage = drm_vm_sg_nopage,
+#else
+	.fault = drm_do_vm_sg_fault,
+#endif
 	.open = drm_vm_open,
 	.close = drm_vm_close,
 };
@@ -715,11 +693,242 @@ EXPORT_SYMBOL(drm_mmap);
  * These bits are not used by the mm subsystem code, and we consider them
  * protected by the bo->mutex lock.
  */
-
 #ifdef DRM_FULL_MM_COMPAT
-
 #define DRM_NOPFN_EXTRA 15 /* Fault 16 pages at a time in */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+int drm_bo_vm_fault(struct vm_area_struct *vma,
+			      struct vm_fault *vmf)
+{
+	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
+	unsigned long page_offset;
+	struct page *page = NULL;
+	struct drm_ttm *ttm = NULL;
+	struct drm_device *dev;
+	unsigned long pfn;
+	int err;
+	unsigned long bus_base;
+	unsigned long bus_offset;
+	unsigned long bus_size;
+	int i;
+        
+        unsigned long ret = VM_FAULT_NOPAGE;
+
+        unsigned long address = (unsigned long)vmf->virtual_address;
+
+	if (address > vma->vm_end)
+		return VM_FAULT_SIGBUS;
+
+	dev = bo->dev;
+	err = drm_bo_read_lock(&dev->bm.bm_lock, 1);
+	if (err)
+		return VM_FAULT_NOPAGE;
+
+	err = mutex_lock_interruptible(&bo->mutex);
+	if (err) {
+		drm_bo_read_unlock(&dev->bm.bm_lock);
+		return VM_FAULT_NOPAGE;
+	}
+
+	err = drm_bo_wait(bo, 0, 0, 0);
+	if (err) {
+		ret = (err != -EAGAIN) ? VM_FAULT_SIGBUS : VM_FAULT_NOPAGE;
+		goto out_unlock;
+	}
+
+	/*
+	 * If buffer happens to be in a non-mappable location,
+	 * move it to a mappable.
+	 */
+
+	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
+		uint32_t new_mask = bo->mem.mask |
+			DRM_BO_FLAG_MAPPABLE |
+			DRM_BO_FLAG_FORCE_MAPPABLE;
+		err = drm_bo_move_buffer(bo, new_mask, 0, 0);
+		if (err) {
+			ret = (err != -EAGAIN) ? VM_FAULT_SIGBUS : VM_FAULT_NOPAGE;
+			goto out_unlock;
+		}
+	}
+
+	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset,
+				&bus_size);
+
+	if (err) {
+		ret = VM_FAULT_SIGBUS;
+		goto out_unlock;
+	}
+
+	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
+
+	if (bus_size) {
+		struct drm_mem_type_manager *man = &dev->bm.man[bo->mem.mem_type];
+
+		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
+		vma->vm_page_prot = drm_io_prot(man->drm_bus_maptype, vma);
+	} else {
+		ttm = bo->ttm;
+
+		drm_ttm_fixup_caching(ttm);
+		page = drm_ttm_get_page(ttm, page_offset);
+		if (!page) {
+			ret = VM_FAULT_OOM;
+			goto out_unlock;
+		}
+		pfn = page_to_pfn(page);
+		vma->vm_page_prot = (bo->mem.flags & DRM_BO_FLAG_CACHED) ?
+			vm_get_page_prot(vma->vm_flags) :
+			drm_io_prot(_DRM_TTM, vma);
+	}
+
+	err = vm_insert_pfn(vma, address, pfn);
+	if (err) {
+		ret = (err != -EAGAIN) ? VM_FAULT_OOM : VM_FAULT_NOPAGE;
+		goto out_unlock;
+	}
+
+	for (i=0; i<DRM_NOPFN_EXTRA; ++i) {
+
+		if (++page_offset == bo->mem.num_pages)
+			break;
+		address = vma->vm_start + (page_offset << PAGE_SHIFT);
+		if (address >= vma->vm_end)
+			break;
+		if (bus_size) {
+			pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) 
+				+ page_offset;
+		} else {
+			page = drm_ttm_get_page(ttm, page_offset);
+			if (!page)
+				break;
+			pfn = page_to_pfn(page);
+		}
+		if (vm_insert_pfn(vma, address, pfn))
+			break;
+	}
+out_unlock:
+	mutex_unlock(&bo->mutex);
+	drm_bo_read_unlock(&dev->bm.bm_lock);
+	return ret;
+}
+
+int drm_bo_vm_nopfn(struct vm_area_struct *vma,
+			      struct vm_fault *vmf )
+{
+	struct drm_buffer_object *bo = (struct drm_buffer_object *) vma->vm_private_data;
+	unsigned long page_offset;
+	struct page *page = NULL;
+	struct drm_ttm *ttm = NULL;
+	struct drm_device *dev;
+	unsigned long pfn;
+	int err;
+	unsigned long bus_base;
+	unsigned long bus_offset;
+	unsigned long bus_size;
+	int i;
+	unsigned long ret = VM_FAULT_NOPAGE;
+        
+        unsigned long address = (unsigned long)vmf->virtual_address;
+
+	if (address > vma->vm_end)
+		return VM_FAULT_SIGBUS;
+
+	dev = bo->dev;
+	err = drm_bo_read_lock(&dev->bm.bm_lock, 1);
+	if (err)
+		return VM_FAULT_NOPAGE;
+
+	err = mutex_lock_interruptible(&bo->mutex);
+	if (err) {
+		drm_bo_read_unlock(&dev->bm.bm_lock);
+		return VM_FAULT_NOPAGE;
+	}
+
+	err = drm_bo_wait(bo, 0, 0, 0);
+	if (err) {
+		ret = (err != -EAGAIN) ? VM_FAULT_SIGBUS : VM_FAULT_NOPAGE;
+		goto out_unlock;
+	}
+
+	/*
+	 * If buffer happens to be in a non-mappable location,
+	 * move it to a mappable.
+	 */
+
+	if (!(bo->mem.flags & DRM_BO_FLAG_MAPPABLE)) {
+		uint32_t new_mask = bo->mem.mask |
+			DRM_BO_FLAG_MAPPABLE |
+			DRM_BO_FLAG_FORCE_MAPPABLE;
+		err = drm_bo_move_buffer(bo, new_mask, 0, 0);
+		if (err) {
+			ret = (err != -EAGAIN) ? VM_FAULT_SIGBUS : VM_FAULT_NOPAGE;
+			goto out_unlock;
+		}
+	}
+
+	err = drm_bo_pci_offset(dev, &bo->mem, &bus_base, &bus_offset,
+				&bus_size);
+
+	if (err) {
+		ret = VM_FAULT_SIGBUS;
+		goto out_unlock;
+	}
+
+	page_offset = (address - vma->vm_start) >> PAGE_SHIFT;
+
+	if (bus_size) {
+		struct drm_mem_type_manager *man = &dev->bm.man[bo->mem.mem_type];
+
+		pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) + page_offset;
+		vma->vm_page_prot = drm_io_prot(man->drm_bus_maptype, vma);
+	} else {
+		ttm = bo->ttm;
+
+		drm_ttm_fixup_caching(ttm);
+		page = drm_ttm_get_page(ttm, page_offset);
+		if (!page) {
+			ret = VM_FAULT_OOM;
+			goto out_unlock;
+		}
+		pfn = page_to_pfn(page);
+		vma->vm_page_prot = (bo->mem.flags & DRM_BO_FLAG_CACHED) ?
+			vm_get_page_prot(vma->vm_flags) :
+			drm_io_prot(_DRM_TTM, vma);
+	}
+
+	err = vm_insert_pfn(vma, address, pfn);
+	if (err) {
+		ret = (err != -EAGAIN) ? VM_FAULT_OOM : VM_FAULT_NOPAGE;
+		goto out_unlock;
+	}
+
+	for (i=0; i<DRM_NOPFN_EXTRA; ++i) {
+
+		if (++page_offset == bo->mem.num_pages)
+			break;
+		address = vma->vm_start + (page_offset << PAGE_SHIFT);
+		if (address >= vma->vm_end)
+			break;
+		if (bus_size) {
+			pfn = ((bus_base + bus_offset) >> PAGE_SHIFT) 
+				+ page_offset;
+		} else {
+			page = drm_ttm_get_page(ttm, page_offset);
+			if (!page)
+				break;
+			pfn = page_to_pfn(page);
+		}
+		if (vm_insert_pfn(vma, address, pfn))
+			break;
+	}
+out_unlock:
+	mutex_unlock(&bo->mutex);
+	drm_bo_read_unlock(&dev->bm.bm_lock);
+	return ret;
+}
+
+#else
 unsigned long drm_bo_vm_nopfn(struct vm_area_struct *vma,
 			      unsigned long address)
 {
@@ -832,6 +1041,8 @@ out_unlock:
 	drm_bo_read_unlock(&dev->bm.bm_lock);
 	return ret;
 }
+#endif
+
 EXPORT_SYMBOL(drm_bo_vm_nopfn);
 #endif
 
@@ -887,6 +1098,9 @@ static void drm_bo_vm_close(struct vm_area_struct *vma)
 }
 
 static struct vm_operations_struct drm_bo_vm_ops = {
+   #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+           .fault = drm_bo_vm_fault,
+   #else
 #ifdef DRM_FULL_MM_COMPAT
 	.nopfn = drm_bo_vm_nopfn,
 #else
@@ -896,6 +1110,7 @@ static struct vm_operations_struct drm_bo_vm_ops = {
 	.nopage = drm_bo_vm_nopage,
 #endif
 #endif
+   #endif
 	.open = drm_bo_vm_open,
 	.close = drm_bo_vm_close,
 };

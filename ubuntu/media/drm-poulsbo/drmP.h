@@ -82,6 +82,14 @@
 #define __OS_HAS_AGP (defined(CONFIG_AGP) || (defined(CONFIG_AGP_MODULE) && defined(MODULE)))
 #define __OS_HAS_MTRR (defined(CONFIG_MTRR))
 
+#ifndef TRUE
+#define TRUE 1
+#endif
+
+#ifndef FALSE
+#define FALSE 1
+#endif
+
 #include "drm_os_linux.h"
 #include "drm_hashtab.h"
 #include "drm_internal.h"
