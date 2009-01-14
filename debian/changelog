@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook7) hardy; urgency=low
+
+  [Michael Frey]
+
+  * Turn off some debug messages in the PSB DRM module
+
+ -- Michael Frey <michael.frey@canonical.com>  Wed, 14 Jan 2009 11:36:10 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook6) hardy; urgency=low
 
   [Michael Frey]
