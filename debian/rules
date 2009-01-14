@@ -1,0 +1,61 @@
+#!/usr/bin/make -f
+#
+# debian/rules for Ubuntu linux-firmware
+#
+# Use this however you want, just give credit where credit is due.
+#
+# Copyright (c) 2008 Ben Collins <bcollins@ubuntu.com>
+#
+# Example build for a specific arch:
+#	fakeroot debian/rules binary-arch arch=i386 flavours="generic"
+#
+
+# This is the debhelper compatability version to use.
+export DH_COMPAT=4
+export LC_ALL=C
+export SHELL=/bin/bash -e
+
+REG_PATH = /usr/lib/crda
+RBIN=regulatory.bin
+CRDA_PATH = /sbin
+
+binary-arch:
+build-arch:
+
+build-indep:
+	make REG_BIN=$(shell pwd)/$(RBIN)
+
+pkg_dir = $(CURDIR)/debian/crda
+
+install-indep: build-indep
+	dh_testdir
+	dh_testroot
+	dh_clean -k -i
+
+	install -o 0 -g 0 -m 755 -d $(pkg_dir)/$(REG_PATH)
+	install -o 0 -g 0 -m 644 regulatory.bin $(pkg_dir)/$(REG_PATH)/$(RBIN)
+	install -m 755 -t $(pkg_dir)/$(CRDA_PATH)/ crda
+	install -m 755 -t $(pkg_dir)/$(CRDA_PATH)/ regdbdump
+	install -m 644 -t $(pkg_dir)/etc/udev/rules.d/ udev/regulatory.rules
+
+
+binary-indep: install-indep
+	dh_testdir
+	dh_testroot
+
+	dh_installchangelogs -i
+	dh_installdocs -i
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+binary: binary-indep binary-arch
+build: build-arch build-indep
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
