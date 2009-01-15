@@ -28,7 +28,7 @@ popd
 #
 # Copy any updated files.
 #
-rsync -av --exclude=.git ${TMP}/${CRDA}/ .
+rsync -av --exclude=.git --exclude=.gitignore ${TMP}/${CRDA}/ .
 rsync -av ${TMP}/${REGDB}/regulatory.bin ${TMP}/${REGDB}/key.pub.pem .
 
 #
