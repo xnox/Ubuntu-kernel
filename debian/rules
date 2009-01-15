@@ -17,7 +17,9 @@ pkg_dir = $(CURDIR)/debian/$(pkg)
 
 build:
 	dh_testdir
-	$(MAKE) REG_BIN=$(shell pwd)/$(RBIN)
+	cp keys-gcrypt.c.sav keys-gcrypt.c
+	touch keys-gcrypt.c
+	$(MAKE) V=1 REG_BIN=$(shell pwd)/$(RBIN)
 
 clean:
 	dh_testdir
