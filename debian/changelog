@@ -1,3 +1,10 @@
+wireless-crda (1.1) jaunty; urgency=low
+
+  * Set 'Architecture: any' in debian/control
+  * Added README.ubuntu
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 15 Jan 2009 15:54:51 +0000
+
 wireless-crda (1.0) jaunty; urgency=low
 
   * Initial packaging

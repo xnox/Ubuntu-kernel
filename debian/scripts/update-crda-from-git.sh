@@ -32,10 +32,11 @@ rsync -av --exclude=.git --exclude=.gitignore ${TMP}/${CRDA}/ .
 rsync -av ${TMP}/${REGDB}/regulatory.bin ${TMP}/${REGDB}/key.pub.pem .
 
 #
-# This step generates the arch independent keys-gcrypt.c which
-# you will want to commit if it has changed. We could generate
-# this file on the fly, but then python-m2crypto would have to
-# be promoted to main.
+# This step generates the arch independent keys-gcrypt.c.sav which
+# you will want to commit if it has changed. It depends on python-m2crypto,
+# a universe package, which you (the package maintainer) must have installed.
+# Frankly, its quite unlikely that this key will change. 
+# You'll also need the other build dependencies listed in debian/control.
 #
 make clean REG_BIN=`pwd`/${RBIN}
 make REG_BIN=`pwd`/${RBIN}
