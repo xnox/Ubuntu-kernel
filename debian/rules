@@ -28,7 +28,7 @@ clean:
 	rm -rf $(pkg_dir)
 	dh_clean
 
-install:
+install: build
 	dh_testdir
 	dh_testroot
 	dh_clean -k -p$(pkg_dir)
@@ -39,7 +39,7 @@ install:
 
 binary-indep:
 
-binary-arch: build install
+binary-arch: install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs
