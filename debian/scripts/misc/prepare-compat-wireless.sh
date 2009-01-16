@@ -43,4 +43,4 @@ git ls-files --others |xargs rm -rf
 GIT_TREE=${WTDIR} scripts/admin-update.sh
 popd
 
-rsync -av --delete --exclude=.git ${CWDIR}/ updates/compat-wireless-2.6
+rsync -av --delete --exclude=.git --exclude=.gitignore ${CWDIR}/ updates/compat-wireless-2.6
