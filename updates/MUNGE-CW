@@ -44,10 +44,11 @@ while read token
 do 
 	echo s/${token}/${_COMPAT_PREFIX}_${token}/g >> ${SC}
 done < ${TL}
+echo s/${_COMPAT_PREFIX}_'('${_COMPAT_PREFIX}'_)+'/${_COMPAT_PREFIX}_/g >> ${SC}
 
 find . -name "*.[ch]"|while read f
 do 
-	sed -i -f ${SC} "${f}" 
+	sed -r -i -f ${SC} "${f}" 
 done
 
 #
