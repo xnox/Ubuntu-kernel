@@ -1026,6 +1026,9 @@ int ath5k_keycache_type(const struct ieee80211_key_conf *key)
 			return AR5K_KEYTABLE_TYPE_40;
 		else if (key->keylen == LEN_WEP104)
 			return AR5K_KEYTABLE_TYPE_104;
+		return -EINVAL;
+	default:
+		return -EINVAL;
 	}
 	return -EINVAL;
 }
@@ -1139,7 +1142,7 @@ int ath5k_hw_set_key_lladdr(struct ath5k_hw *ah, u16 entry, const u8 *mac)
 
 	/* MAC may be NULL if it's a broadcast key. In this case no need to
 	 * to compute AR5K_LOW_ID and AR5K_HIGH_ID as we already know it. */
-	if (unlikely(mac == NULL)) {
+	if (!mac) {
 		low_id = 0xffffffff;
 		high_id = 0xffff | AR5K_KEYTABLE_VALID;
 	} else {

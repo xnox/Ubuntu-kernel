@@ -67,14 +67,15 @@ static ssize_t sta_flags_read(struct file *file, char __user *userbuf,
 	char buf[100];
 	struct sta_info *sta = file->private_data;
 	u32 staflags = get_sta_flags(sta);
-	int res = scnprintf(buf, sizeof(buf), "%s%s%s%s%s%s%s",
+	int res = scnprintf(buf, sizeof(buf), "%s%s%s%s%s%s%s%s",
 		staflags & WLAN_STA_AUTH ? "AUTH\n" : "",
 		staflags & WLAN_STA_ASSOC ? "ASSOC\n" : "",
 		staflags & WLAN_STA_PS ? "PS\n" : "",
 		staflags & WLAN_STA_AUTHORIZED ? "AUTHORIZED\n" : "",
 		staflags & WLAN_STA_SHORT_PREAMBLE ? "SHORT PREAMBLE\n" : "",
 		staflags & WLAN_STA_WME ? "WME\n" : "",
-		staflags & WLAN_STA_WDS ? "WDS\n" : "");
+		staflags & WLAN_STA_WDS ? "WDS\n" : "",
+		staflags & WLAN_STA_MFP ? "MFP\n" : "");
 	return simple_read_from_buffer(userbuf, count, ppos, buf, res);
 }
 STA_OPS(flags);
@@ -175,15 +176,14 @@ STA_OPS(agg_status);
 void ieee80211_sta_debugfs_add(struct sta_info *sta)
 {
 	struct dentry *stations_dir = sta->local->debugfs.stations;
-	DECLARE_MAC_BUF(mbuf);
-	u8 *mac;
+	u8 mac[3*ETH_ALEN];
 
 	sta->debugfs.add_has_run = true;
 
 	if (!stations_dir)
 		return;
 
-	mac = print_mac(mbuf, sta->sta.addr);
+	snprintf(mac, sizeof(mac), "%pM", sta->sta.addr);
 
 	/*
 	 * This might fail due to a race condition:

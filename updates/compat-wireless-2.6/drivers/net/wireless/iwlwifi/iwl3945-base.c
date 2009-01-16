@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2003 - 2008 Intel Corporation. All rights reserved.
+ * Copyright(c) 2003 - 2009 Intel Corporation. All rights reserved.
  *
  * Portions of this file are derived from the ipw3945 project, as well
  * as portions of the ieee80211 subsystem header files.
@@ -79,7 +79,7 @@ static int iwl3945_tx_queue_update_write_ptr(struct iwl_priv *priv,
 #endif
 
 #define IWL39_VERSION "1.2.26k" VD VS
-#define DRV_COPYRIGHT	"Copyright(c) 2003-2008 Intel Corporation"
+#define DRV_COPYRIGHT	"Copyright(c) 2003-2009 Intel Corporation"
 #define DRV_AUTHOR     "<ilw@linux.intel.com>"
 #define DRV_VERSION     IWL39_VERSION
 
@@ -92,6 +92,7 @@ MODULE_LICENSE("GPL");
  /* module parameters */
 struct iwl_mod_params iwl3945_mod_params = {
 	.num_of_queues = IWL39_MAX_NUM_QUEUES,
+	.sw_crypto = 1,
 	/* the rest are 0 by default */
 };
 
@@ -119,13 +120,6 @@ struct iwl_mod_params iwl3945_mod_params = {
  * (#4) for sending commands to the device firmware, and four transmit queues
  * (#0-3) for data tx via EDCA.  An additional 2 HCCA queues are unused.
  ***************************************************/
-
-int iwl3945_x2_queue_used(const struct iwl_queue *q, int i)
-{
-	return q->write_ptr > q->read_ptr ?
-		(i >= q->read_ptr && i < q->write_ptr) :
-		!(i < q->read_ptr && i >= q->write_ptr);
-}
 
 /**
  * iwl3945_queue_init - Initialize queue's high/low-water and read/write indexes
@@ -381,7 +375,6 @@ u8 iwl3945_add_station(struct iwl_priv *priv, const u8 *addr, int is_ap, u8 flag
 	int index = IWL_INVALID_STATION;
 	struct iwl3945_station_entry *station;
 	unsigned long flags_spin;
-	DECLARE_MAC_BUF(mac);
 	u8 rate;
 
 	spin_lock_irqsave(&priv->sta_lock, flags_spin);
@@ -415,7 +408,7 @@ u8 iwl3945_add_station(struct iwl_priv *priv, const u8 *addr, int is_ap, u8 flag
 		return index;
 	}
 
-	IWL_DEBUG_ASSOC("Add STA ID %d: %s\n", index, print_mac(mac, addr));
+	IWL_DEBUG_ASSOC("Add STA ID %d: %pM\n", index, addr);
 	station = &priv->stations_39[index];
 	station->used = 1;
 	priv->num_stations++;
@@ -630,7 +623,7 @@ static int iwl3945_send_cmd_sync(struct iwl_priv *priv,
 		IWL_ERR(priv, "Error: Response NULL in '%s'\n",
 			  get_cmd_string(cmd->id));
 		ret = -EIO;
-		goto out;
+		goto cancel;
 	}
 
 	ret = 0;
@@ -909,7 +902,6 @@ static int iwl3945_commit_rxon(struct iwl_priv *priv)
 	/* cast away the const for active_rxon in this function */
 	struct iwl3945_rxon_cmd *active_rxon = (void *)&priv->active39_rxon;
 	int rc = 0;
-	DECLARE_MAC_BUF(mac);
 
 	if (!iwl_is_alive(priv))
 		return -1;
@@ -970,11 +962,11 @@ static int iwl3945_commit_rxon(struct iwl_priv *priv)
 	IWL_DEBUG_INFO("Sending RXON\n"
 		       "* with%s RXON_FILTER_ASSOC_MSK\n"
 		       "* channel = %d\n"
-		       "* bssid = %s\n",
+		       "* bssid = %pM\n",
 		       ((priv->staging39_rxon.filter_flags &
 			 RXON_FILTER_ASSOC_MSK) ? "" : "out"),
 		       le16_to_cpu(priv->staging39_rxon.channel),
-		       print_mac(mac, priv->staging39_rxon.bssid_addr));
+		       priv->staging_rxon.bssid_addr);
 
 	/* Apply the new configuration */
 	rc = iwl3945_send_cmd_pdu(priv, REPLY_RXON,
@@ -2186,8 +2178,6 @@ static int iwl3945_get_sta_id(struct iwl_priv *priv, struct ieee80211_hdr *hdr)
 	/* If this frame is going out to an IBSS network, find the station,
 	 * or create a new station table entry */
 	case NL80211_IFTYPE_ADHOC: {
-		DECLARE_MAC_BUF(mac);
-
 		/* Create new station table entry */
 		sta_id = iwl3945_hw_find_station(priv, hdr->addr1);
 		if (sta_id != IWL_INVALID_STATION)
@@ -2198,9 +2188,9 @@ static int iwl3945_get_sta_id(struct iwl_priv *priv, struct ieee80211_hdr *hdr)
 		if (sta_id != IWL_INVALID_STATION)
 			return sta_id;
 
-		IWL_DEBUG_DROP("Station %s not in station map. "
+		IWL_DEBUG_DROP("Station %pM not in station map. "
 			       "Defaulting to broadcast...\n",
-			       print_mac(mac, hdr->addr1));
+			       hdr->addr1);
 		iwl_print_hex_dump(priv, IWL_DL_DROP, (u8 *) hdr, sizeof(*hdr));
 		return priv->hw_params.bcast_sta_id;
 	}
@@ -2284,10 +2274,8 @@ static int iwl3945_tx_skb(struct iwl_priv *priv, struct sk_buff *skb)
 	/* Find (or create) index into station table for destination station */
 	sta_id = iwl3945_get_sta_id(priv, hdr);
 	if (sta_id == IWL_INVALID_STATION) {
-		DECLARE_MAC_BUF(mac);
-
-		IWL_DEBUG_DROP("Dropping - INVALID STATION: %s\n",
-			       print_mac(mac, hdr->addr1));
+		IWL_DEBUG_DROP("Dropping - INVALID STATION: %pM\n",
+			       hdr->addr1);
 		goto drop;
 	}
 
@@ -3085,7 +3073,7 @@ static void iwl3945_cmd_queue_reclaim(struct iwl_priv *priv,
 	struct iwl_queue *q = &txq->q;
 	int nfreed = 0;
 
-	if ((index >= q->n_bd) || (iwl3945_x2_queue_used(q, index) == 0)) {
+	if ((index >= q->n_bd) || (iwl_queue_used(q, index) == 0)) {
 		IWL_ERR(priv, "Read index for DMA queue txq id (%d), index %d, "
 			  "is out of range [0-%d] %d %d.\n", txq_id,
 			  index, q->n_bd, q->write_ptr, q->read_ptr);
@@ -3210,67 +3198,6 @@ static void iwl3945_tx_cmd_complete(struct iwl_priv *priv,
  */
 
 /**
- * iwl3945_rx_queue_space - Return number of free slots available in queue.
- */
-static int iwl3945_rx_queue_space(const struct iwl_rx_queue *q)
-{
-	int s = q->read - q->write;
-	if (s <= 0)
-		s += RX_QUEUE_SIZE;
-	/* keep some buffer to not confuse full and empty queue */
-	s -= 2;
-	if (s < 0)
-		s = 0;
-	return s;
-}
-
-/**
- * iwl3945_rx_queue_update_write_ptr - Update the write pointer for the RX queue
- */
-int iwl3945_rx_queue_update_write_ptr(struct iwl_priv *priv, struct iwl_rx_queue *q)
-{
-	u32 reg = 0;
-	int rc = 0;
-	unsigned long flags;
-
-	spin_lock_irqsave(&q->lock, flags);
-
-	if (q->need_update == 0)
-		goto exit_unlock;
-
-	/* If power-saving is in use, make sure device is awake */
-	if (test_bit(STATUS_POWER_PMI, &priv->status)) {
-		reg = iwl_read32(priv, CSR_UCODE_DRV_GP1);
-
-		if (reg & CSR_UCODE_DRV_GP1_BIT_MAC_SLEEP) {
-			iwl_set_bit(priv, CSR_GP_CNTRL,
-				    CSR_GP_CNTRL_REG_FLAG_MAC_ACCESS_REQ);
-			goto exit_unlock;
-		}
-
-		rc = iwl_grab_nic_access(priv);
-		if (rc)
-			goto exit_unlock;
-
-		/* Device expects a multiple of 8 */
-		iwl_write_direct32(priv, FH39_RSCSR_CHNL0_WPTR,
-				     q->write & ~0x7);
-		iwl_release_nic_access(priv);
-
-	/* Else device is assumed to be awake */
-	} else
-		/* Device expects a multiple of 8 */
-		iwl_write32(priv, FH39_RSCSR_CHNL0_WPTR, q->write & ~0x7);
-
-
-	q->need_update = 0;
-
- exit_unlock:
-	spin_unlock_irqrestore(&q->lock, flags);
-	return rc;
-}
-
-/**
  * iwl3945_dma_addr2rbd_ptr - convert a DMA address to a uCode read buffer ptr
  */
 static inline __le32 iwl3945_dma_addr2rbd_ptr(struct iwl_priv *priv,
@@ -3300,7 +3227,7 @@ static int iwl3945_rx_queue_restock(struct iwl_priv *priv)
 
 	spin_lock_irqsave(&rxq->lock, flags);
 	write = rxq->write & ~0x7;
-	while ((iwl3945_rx_queue_space(rxq) > 0) && (rxq->free_count)) {
+	while ((iwl_rx_queue_space(rxq) > 0) && (rxq->free_count)) {
 		/* Get next free Rx buffer, remove from free list */
 		element = rxq->rx_free.next;
 		rxb = list_entry(element, struct iwl_rx_mem_buffer, list);
@@ -3326,7 +3253,7 @@ static int iwl3945_rx_queue_restock(struct iwl_priv *priv)
 		spin_lock_irqsave(&rxq->lock, flags);
 		rxq->need_update = 1;
 		spin_unlock_irqrestore(&rxq->lock, flags);
-		rc = iwl3945_rx_queue_update_write_ptr(priv, rxq);
+		rc = iwl_rx_queue_update_write_ptr(priv, rxq);
 		if (rc)
 			return rc;
 	}
@@ -3355,7 +3282,8 @@ static void iwl3945_rx_allocate(struct iwl_priv *priv)
 
 		/* Alloc a new receive buffer */
 		rxb->skb =
-		    alloc_skb(IWL_RX_BUF_SIZE, __GFP_NOWARN | GFP_ATOMIC);
+		    alloc_skb(priv->hw_params.rx_buf_size,
+				__GFP_NOWARN | GFP_ATOMIC);
 		if (!rxb->skb) {
 			if (net_ratelimit())
 				IWL_CRIT(priv, ": Can not allocate SKB buffers\n");
@@ -3377,9 +3305,10 @@ static void iwl3945_rx_allocate(struct iwl_priv *priv)
 		list_del(element);
 
 		/* Get physical address of RB/SKB */
-		rxb->real_dma_addr =
-		    pci_map_single(priv->pci_dev, rxb->skb->data,
-				   IWL_RX_BUF_SIZE, PCI_DMA_FROMDEVICE);
+		rxb->real_dma_addr = pci_map_single(priv->pci_dev,
+						rxb->skb->data,
+						priv->hw_params.rx_buf_size,
+						PCI_DMA_FROMDEVICE);
 		list_add_tail(&rxb->list, &rxq->rx_free);
 		rxq->free_count++;
 	}
@@ -3511,7 +3440,7 @@ static void iwl3945_rx_handle(struct iwl_priv *priv)
 	r = le16_to_cpu(rxq->rb_stts->closed_rb_num) &  0x0FFF;
 	i = rxq->read;
 
-	if (iwl3945_rx_queue_space(rxq) > (RX_QUEUE_SIZE / 2))
+	if (iwl_rx_queue_space(rxq) > (RX_QUEUE_SIZE / 2))
 		fill_rx = 1;
 	/* Rx interrupt, but nothing sent from uCode */
 	if (i == r)
@@ -3528,7 +3457,7 @@ static void iwl3945_rx_handle(struct iwl_priv *priv)
 		rxq->queue[i] = NULL;
 
 		pci_dma_sync_single_for_cpu(priv->pci_dev, rxb->real_dma_addr,
-					    IWL_RX_BUF_SIZE,
+					    priv->hw_params.rx_buf_size,
 					    PCI_DMA_FROMDEVICE);
 		pkt = (struct iwl_rx_packet *)rxb->skb->data;
 
@@ -3578,7 +3507,8 @@ static void iwl3945_rx_handle(struct iwl_priv *priv)
 		}
 
 		pci_unmap_single(priv->pci_dev, rxb->real_dma_addr,
-				 IWL_RX_BUF_SIZE, PCI_DMA_FROMDEVICE);
+				priv->hw_params.rx_buf_size,
+				PCI_DMA_FROMDEVICE);
 		spin_lock_irqsave(&rxq->lock, flags);
 		list_add_tail(&rxb->list, &priv->rxq.rx_used);
 		spin_unlock_irqrestore(&rxq->lock, flags);
@@ -3650,8 +3580,6 @@ static int iwl3945_tx_queue_update_write_ptr(struct iwl_priv *priv,
 static void iwl3945_print_rx_config_cmd(struct iwl_priv *priv,
 					struct iwl3945_rxon_cmd *rxon)
 {
-	DECLARE_MAC_BUF(mac);
-
 	IWL_DEBUG_RADIO("RX CONFIG:\n");
 	iwl_print_hex_dump(priv, IWL_DL_RADIO, (u8 *) rxon, sizeof(*rxon));
 	IWL_DEBUG_RADIO("u16 channel: 0x%x\n", le16_to_cpu(rxon->channel));
@@ -3662,10 +3590,8 @@ static void iwl3945_print_rx_config_cmd(struct iwl_priv *priv,
 	IWL_DEBUG_RADIO("u8 ofdm_basic_rates: 0x%02x\n",
 			rxon->ofdm_basic_rates);
 	IWL_DEBUG_RADIO("u8 cck_basic_rates: 0x%02x\n", rxon->cck_basic_rates);
-	IWL_DEBUG_RADIO("u8[6] node_addr: %s\n",
-			print_mac(mac, rxon->node_addr));
-	IWL_DEBUG_RADIO("u8[6] bssid_addr: %s\n",
-			print_mac(mac, rxon->bssid_addr));
+	IWL_DEBUG_RADIO("u8[6] node_addr: %pM\n", rxon->node_addr);
+	IWL_DEBUG_RADIO("u8[6] bssid_addr: %pM\n", rxon->bssid_addr);
 	IWL_DEBUG_RADIO("u16 assoc_id: 0x%x\n", le16_to_cpu(rxon->assoc_id));
 }
 #endif
@@ -4017,7 +3943,7 @@ static void iwl3945_irq_tasklet(struct iwl_priv *priv)
 	/* uCode wakes up after power-down sleep */
 	if (inta & CSR_INT_BIT_WAKEUP) {
 		IWL_DEBUG_ISR("Wakeup interrupt\n");
-		iwl3945_rx_queue_update_write_ptr(priv, &priv->rxq);
+		iwl_rx_queue_update_write_ptr(priv, &priv->rxq);
 		iwl3945_tx_queue_update_write_ptr(priv, &priv->txq[0]);
 		iwl3945_tx_queue_update_write_ptr(priv, &priv->txq[1]);
 		iwl3945_tx_queue_update_write_ptr(priv, &priv->txq[2]);
@@ -5832,7 +5758,6 @@ static void iwl3945_post_associate(struct iwl_priv *priv)
 {
 	int rc = 0;
 	struct ieee80211_conf *conf = NULL;
-	DECLARE_MAC_BUF(mac);
 
 	if (priv->iw_mode == NL80211_IFTYPE_AP) {
 		IWL_ERR(priv, "%s Should not be called in AP mode\n", __func__);
@@ -5840,9 +5765,8 @@ static void iwl3945_post_associate(struct iwl_priv *priv)
 	}
 
 
-	IWL_DEBUG_ASSOC("Associated as %d to: %s\n",
-			priv->assoc_id,
-			print_mac(mac, priv->active39_rxon.bssid_addr));
+	IWL_DEBUG_ASSOC("Associated as %d to: %pM\n",
+			priv->assoc_id, priv->active39_rxon.bssid_addr);
 
 	if (test_bit(STATUS_EXIT_PENDING, &priv->status))
 		return;
@@ -6101,7 +6025,6 @@ static int iwl3945_mac_add_interface(struct ieee80211_hw *hw,
 {
 	struct iwl_priv *priv = hw->priv;
 	unsigned long flags;
-	DECLARE_MAC_BUF(mac);
 
 	IWL_DEBUG_MAC80211("enter: type %d\n", conf->type);
 
@@ -6119,7 +6042,7 @@ static int iwl3945_mac_add_interface(struct ieee80211_hw *hw,
 	mutex_lock(&priv->mutex);
 
 	if (conf->mac_addr) {
-		IWL_DEBUG_MAC80211("Set: %s\n", print_mac(mac, conf->mac_addr));
+		IWL_DEBUG_MAC80211("Set: %pM\n", conf->mac_addr);
 		memcpy(priv->mac_addr, conf->mac_addr, ETH_ALEN);
 	}
 
@@ -6283,10 +6206,9 @@ static void iwl3945_config_ap(struct iwl_priv *priv)
 
 static int iwl3945_mac_config_interface(struct ieee80211_hw *hw,
 					struct ieee80211_vif *vif,
-				    struct ieee80211_if_conf *conf)
+					struct ieee80211_if_conf *conf)
 {
 	struct iwl_priv *priv = hw->priv;
-	DECLARE_MAC_BUF(mac);
 	int rc;
 
 	if (conf == NULL)
@@ -6316,8 +6238,7 @@ static int iwl3945_mac_config_interface(struct ieee80211_hw *hw,
 	mutex_lock(&priv->mutex);
 
 	if (conf->bssid)
-		IWL_DEBUG_MAC80211("bssid: %s\n",
-				   print_mac(mac, conf->bssid));
+		IWL_DEBUG_MAC80211("bssid: %pM\n", conf->bssid);
 
 /*
  * very dubious code was here; the probe filtering flag is never set:
@@ -6330,8 +6251,8 @@ static int iwl3945_mac_config_interface(struct ieee80211_hw *hw,
 		if (!conf->bssid) {
 			conf->bssid = priv->mac_addr;
 			memcpy(priv->bssid, priv->mac_addr, ETH_ALEN);
-			IWL_DEBUG_MAC80211("bssid was set to: %s\n",
-					   print_mac(mac, conf->bssid));
+			IWL_DEBUG_MAC80211("bssid was set to: %pM\n",
+					   conf->bssid);
 		}
 		if (priv->ibss_beacon)
 			dev_kfree_skb(priv->ibss_beacon);
@@ -6561,12 +6482,16 @@ out_unlock:
 }
 
 static int iwl3945_mac_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
-			   const u8 *local_addr, const u8 *addr,
-			   struct ieee80211_key_conf *key)
+			       struct ieee80211_vif *vif,
+			       struct ieee80211_sta *sta,
+			       struct ieee80211_key_conf *key)
 {
 	struct iwl_priv *priv = hw->priv;
+	const u8 *addr;
 	int rc = 0;
 	u8 sta_id;
+	static const u8 bcast_addr[ETH_ALEN] =
+		{ 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
 	IWL_DEBUG_MAC80211("enter\n");
 
@@ -6575,16 +6500,12 @@ static int iwl3945_mac_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 		return -EOPNOTSUPP;
 	}
 
-	if (is_zero_ether_addr(addr))
-		/* only support pairwise keys */
-		return -EOPNOTSUPP;
+	addr = sta ? sta->addr : bcast_addr;
 
 	sta_id = iwl3945_hw_find_station(priv, addr);
 	if (sta_id == IWL_INVALID_STATION) {
-		DECLARE_MAC_BUF(mac);
-
-		IWL_DEBUG_MAC80211("leave - %s not in station map.\n",
-				   print_mac(mac, addr));
+		IWL_DEBUG_MAC80211("leave - %pM not in station map.\n",
+				   addr);
 		return -EINVAL;
 	}
 
@@ -7355,7 +7276,7 @@ static int iwl3945_init_drv(struct iwl_priv *priv)
 	priv->ibss_beacon = NULL;
 
 	spin_lock_init(&priv->lock);
-	spin_lock_init(&priv->power_data.lock);
+	spin_lock_init(&priv->power_data_39.lock);
 	spin_lock_init(&priv->sta_lock);
 	spin_lock_init(&priv->hcmd_lock);
 
@@ -7380,7 +7301,7 @@ static int iwl3945_init_drv(struct iwl_priv *priv)
 
 	priv->rates_mask = IWL_RATES_MASK;
 	/* If power management is turned on, default to AC mode */
-	priv->power_mode = IWL_POWER_AC;
+	priv->power_mode = IWL39_POWER_AC;
 	priv->user_txpower_limit = IWL_DEFAULT_TX_POWER;
 
 	ret = iwl3945_init_channel_map(priv);
@@ -7410,7 +7331,6 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 	struct ieee80211_hw *hw;
 	struct iwl_cfg *cfg = (struct iwl_cfg *)(ent->driver_data);
 	unsigned long flags;
-	DECLARE_MAC_BUF(mac);
 
 	/***********************
 	 * 1. Allocating HW data
@@ -7532,7 +7452,7 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 	}
 	/* MAC Address location in EEPROM same for 3945/4965 */
 	get_eeprom_mac(priv, priv->mac_addr);
-	IWL_DEBUG_INFO("MAC address: %s\n", print_mac(mac, priv->mac_addr));
+	IWL_DEBUG_INFO("MAC address: %pM\n", priv->mac_addr);
 	SET_IEEE80211_PERM_ADDR(priv->hw, priv->mac_addr);
 
 	/***********************
@@ -7895,9 +7815,9 @@ module_param_named(antenna, iwl3945_mod_params.antenna, int, 0444);
 MODULE_PARM_DESC(antenna, "select antenna (1=Main, 2=Aux, default 0 [both])");
 module_param_named(disable, iwl3945_mod_params.disable, int, 0444);
 MODULE_PARM_DESC(disable, "manually disable the radio (default 0 [radio on])");
-module_param_named(hwcrypto, iwl3945_mod_params.sw_crypto, int, 0444);
-MODULE_PARM_DESC(hwcrypto,
-		 "using hardware crypto engine (default 0 [software])\n");
+module_param_named(swcrypto, iwl3945_mod_params.sw_crypto, int, 0444);
+MODULE_PARM_DESC(swcrypto,
+		 "using software crypto (default 1 [software])\n");
 module_param_named(debug, iwl3945_mod_params.debug, uint, 0444);
 MODULE_PARM_DESC(debug, "debug output mask");
 module_param_named(disable_hw_scan, iwl3945_mod_params.disable_hw_scan, int, 0444);

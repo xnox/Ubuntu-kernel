@@ -79,6 +79,12 @@ static int p54p_upload_firmware(struct ieee80211_hw *dev)
 	if (err)
 		return err;
 
+	if (priv->common.fw_interface != FW_LM86) {
+		dev_err(&priv->pdev->dev, "wrong firmware, "
+			"please get a LM86(PCI) firmware a try again.\n");
+		return -EINVAL;
+	}
+
 	data = (__le32 *) priv->firmware->data;
 	remains = priv->firmware->size;
 	device_addr = ISL38XX_DEV_FIRMWARE_ADDR;
@@ -467,7 +473,6 @@ static int __devinit p54p_probe(struct pci_dev *pdev,
 	struct ieee80211_hw *dev;
 	unsigned long mem_addr, mem_len;
 	int err;
-	DECLARE_MAC_BUF(mac);
 
 	err = pci_enable_device(pdev);
 	if (err) {

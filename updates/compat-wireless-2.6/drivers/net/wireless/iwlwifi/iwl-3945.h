@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2003 - 2008 Intel Corporation. All rights reserved.
+ * Copyright(c) 2003 - 2009 Intel Corporation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -96,7 +96,6 @@ enum iwl3945_antenna {
  * else RTS for data/management frames where MPDU is larger
  *   than RTS value.
  */
-#define IWL_RX_BUF_SIZE           3000U
 #define DEFAULT_RTS_THRESHOLD     2347U
 #define MIN_RTS_THRESHOLD         0U
 #define MAX_RTS_THRESHOLD         2347U
@@ -105,8 +104,6 @@ enum iwl3945_antenna {
 #define DEFAULT_BEACON_INTERVAL   100U
 #define	DEFAULT_SHORT_RETRY_LIMIT 7U
 #define	DEFAULT_LONG_RETRY_LIMIT  4U
-
-int iwl3945_x2_queue_used(const struct iwl_queue *q, int i);
 
 #include "iwl-agn-rs.h"
 
@@ -225,8 +222,6 @@ extern int __must_check iwl3945_send_cmd(struct iwl_priv *priv,
 					 struct iwl_host_cmd *cmd);
 extern unsigned int iwl3945_fill_beacon_frame(struct iwl_priv *priv,
 					struct ieee80211_hdr *hdr,int left);
-extern int iwl3945_rx_queue_update_write_ptr(struct iwl_priv *priv,
-					 struct iwl_rx_queue *q);
 extern int iwl3945_send_statistics_request(struct iwl_priv *priv);
 extern void iwl3945_set_decrypted_flag(struct iwl_priv *priv, struct sk_buff *skb,
 				   u32 decrypt_res,

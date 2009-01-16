@@ -443,6 +443,7 @@ static int ieee80211_stop(struct net_device *dev)
 						WLAN_REASON_DEAUTH_LEAVING);
 
 		memset(sdata->u.sta.bssid, 0, ETH_ALEN);
+		del_timer_sync(&sdata->u.sta.chswitch_timer);
 		del_timer_sync(&sdata->u.sta.timer);
 		/*
 		 * If the timer fired while we waited for it, it will have
@@ -452,6 +453,7 @@ static int ieee80211_stop(struct net_device *dev)
 		 * it no longer is.
 		 */
 		cancel_work_sync(&sdata->u.sta.work);
+		cancel_work_sync(&sdata->u.sta.chswitch_work);
 		/*
 		 * When we get here, the interface is marked down.
 		 * Call synchronize_rcu() to wait for the RX path
@@ -702,7 +704,8 @@ int ieee80211_if_change_type(struct ieee80211_sub_if_data *sdata,
 		return 0;
 
 	/* Setting ad-hoc mode on non-IBSS channel is not supported. */
-	if (sdata->local->oper_channel->flags & IEEE80211_CHAN_NO_IBSS)
+	if (sdata->local->oper_channel->flags & IEEE80211_CHAN_NO_IBSS &&
+	    type == NL80211_IFTYPE_ADHOC)
 		return -EOPNOTSUPP;
 
 	/*

@@ -232,7 +232,7 @@ static void ath5k_configure_filter(struct ieee80211_hw *hw,
 		int mc_count, struct dev_mc_list *mclist);
 static int ath5k_set_key(struct ieee80211_hw *hw,
 		enum set_key_cmd cmd,
-		const u8 *local_addr, const u8 *addr,
+		struct ieee80211_vif *vif, struct ieee80211_sta *sta,
 		struct ieee80211_key_conf *key);
 static int ath5k_get_stats(struct ieee80211_hw *hw,
 		struct ieee80211_low_level_stats *stats);
@@ -240,7 +240,8 @@ static int ath5k_get_tx_stats(struct ieee80211_hw *hw,
 		struct ieee80211_tx_queue_stats *stats);
 static u64 ath5k_get_tsf(struct ieee80211_hw *hw);
 static void ath5k_reset_tsf(struct ieee80211_hw *hw);
-static int ath5k_beacon_update(struct ath5k_softc *sc, struct sk_buff *skb);
+static int ath5k_beacon_update(struct ath5k_softc *sc,
+		struct sk_buff *skb);
 static void ath5k_bss_info_changed(struct ieee80211_hw *hw,
 		struct ieee80211_vif *vif,
 		struct ieee80211_bss_conf *bss_conf,
@@ -1095,6 +1096,42 @@ ath5k_hw_to_driver_rix(struct ath5k_softc *sc, int hw_rix)
 * Buffers setup *
 \***************/
 
+static
+struct sk_buff *ath5k_rx_skb_alloc(struct ath5k_softc *sc, dma_addr_t *skb_addr)
+{
+	struct sk_buff *skb;
+	unsigned int off;
+
+	/*
+	 * Allocate buffer with headroom_needed space for the
+	 * fake physical layer header at the start.
+	 */
+	skb = dev_alloc_skb(sc->rxbufsize + sc->cachelsz - 1);
+
+	if (!skb) {
+		ATH5K_ERR(sc, "can't alloc skbuff of size %u\n",
+				sc->rxbufsize + sc->cachelsz - 1);
+		return NULL;
+	}
+	/*
+	 * Cache-line-align.  This is important (for the
+	 * 5210 at least) as not doing so causes bogus data
+	 * in rx'd frames.
+	 */
+	off = ((unsigned long)skb->data) % sc->cachelsz;
+	if (off != 0)
+		skb_reserve(skb, sc->cachelsz - off);
+
+	*skb_addr = pci_map_single(sc->pdev,
+		skb->data, sc->rxbufsize, PCI_DMA_FROMDEVICE);
+	if (unlikely(pci_dma_mapping_error(sc->pdev, *skb_addr))) {
+		ATH5K_ERR(sc, "%s: DMA mapping failed\n", __func__);
+		dev_kfree_skb(skb);
+		return NULL;
+	}
+	return skb;
+}
+
 static int
 ath5k_rxbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 {
@@ -1102,37 +1139,11 @@ ath5k_rxbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 	struct sk_buff *skb = bf->skb;
 	struct ath5k_desc *ds;
 
-	if (likely(skb == NULL)) {
-		unsigned int off;
-
-		/*
-		 * Allocate buffer with headroom_needed space for the
-		 * fake physical layer header at the start.
-		 */
-		skb = dev_alloc_skb(sc->rxbufsize + sc->cachelsz - 1);
-		if (unlikely(skb == NULL)) {
-			ATH5K_ERR(sc, "can't alloc skbuff of size %u\n",
-					sc->rxbufsize + sc->cachelsz - 1);
+	if (!skb) {
+		skb = ath5k_rx_skb_alloc(sc, &bf->skbaddr);
+		if (!skb)
 			return -ENOMEM;
-		}
-		/*
-		 * Cache-line-align.  This is important (for the
-		 * 5210 at least) as not doing so causes bogus data
-		 * in rx'd frames.
-		 */
-		off = ((unsigned long)skb->data) % sc->cachelsz;
-		if (off != 0)
-			skb_reserve(skb, sc->cachelsz - off);
-
 		bf->skb = skb;
-		bf->skbaddr = pci_map_single(sc->pdev,
-			skb->data, sc->rxbufsize, PCI_DMA_FROMDEVICE);
-		if (unlikely(pci_dma_mapping_error(sc->pdev, bf->skbaddr))) {
-			ATH5K_ERR(sc, "%s: DMA mapping failed\n", __func__);
-			dev_kfree_skb(skb);
-			bf->skb = NULL;
-			return -ENOMEM;
-		}
 	}
 
 	/*
@@ -1661,7 +1672,8 @@ ath5k_tasklet_rx(unsigned long data)
 {
 	struct ieee80211_rx_status rxs = {};
 	struct ath5k_rx_status rs = {};
-	struct sk_buff *skb;
+	struct sk_buff *skb, *next_skb;
+	dma_addr_t next_skb_addr;
 	struct ath5k_softc *sc = (void *)data;
 	struct ath5k_buf *bf, *bf_last;
 	struct ath5k_desc *ds;
@@ -1746,10 +1758,17 @@ ath5k_tasklet_rx(unsigned long data)
 				goto next;
 		}
 accept:
+		next_skb = ath5k_rx_skb_alloc(sc, &next_skb_addr);
+
+		/*
+		 * If we can't replace bf->skb with a new skb under memory
+		 * pressure, just skip this packet
+		 */
+		if (!next_skb)
+			goto next;
+
 		pci_unmap_single(sc->pdev, bf->skbaddr, sc->rxbufsize,
 				PCI_DMA_FROMDEVICE);
-		bf->skb = NULL;
-
 		skb_put(skb, rs.rs_datalen);
 
 		/* The MAC header is padded to have 32-bit boundary if the
@@ -1822,6 +1841,9 @@ accept:
 			ath5k_check_ibss_tsf(sc, skb, &rxs);
 
 		__ieee80211_rx(sc->hw, skb, &rxs);
+
+		bf->skb = next_skb;
+		bf->skbaddr = next_skb_addr;
 next:
 		list_move_tail(&bf->list, &sc->rxbuf);
 	} while (ath5k_rxbuf_setup(sc, bf) == 0);
@@ -2595,6 +2617,13 @@ ath5k_init_leds(struct ath5k_softc *sc)
 		sc->led_pin = 1;
 		sc->led_on = 1;  /* active high */
 	}
+	/* Pin 3 on Foxconn chips used in Acer Aspire One (0x105b:e008) */
+	if (pdev->subsystem_vendor == PCI_VENDOR_ID_FOXCONN) {
+		__set_bit(ATH_STAT_LEDSOFT, sc->status);
+		sc->led_pin = 3;
+		sc->led_on = 0;  /* active low */
+	}
+
 	if (!test_bit(ATH_STAT_LEDSOFT, sc->status))
 		goto out;
 
@@ -2643,7 +2672,7 @@ ath5k_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 		if (skb_headroom(skb) < padsize) {
 			ATH5K_ERR(sc, "tx hdrlen not %%4: %d not enough"
 				  " headroom to pad %d\n", hdrlen, padsize);
-			return -1;
+			return NETDEV_TX_BUSY;
 		}
 		skb_push(skb, padsize);
 		memmove(skb->data, skb->data+padsize, hdrlen);
@@ -2654,7 +2683,7 @@ ath5k_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 		ATH5K_ERR(sc, "no further txbuf available, dropping packet\n");
 		spin_unlock_irqrestore(&sc->txbuflock, flags);
 		ieee80211_stop_queue(hw, skb_get_queue_mapping(skb));
-		return -1;
+		return NETDEV_TX_BUSY;
 	}
 	bf = list_first_entry(&sc->txbuf, struct ath5k_buf, list);
 	list_del(&bf->list);
@@ -2672,10 +2701,10 @@ ath5k_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 		sc->txbuf_len++;
 		spin_unlock_irqrestore(&sc->txbuflock, flags);
 		dev_kfree_skb_any(skb);
-		return 0;
+		return NETDEV_TX_OK;
 	}
 
-	return 0;
+	return NETDEV_TX_OK;
 }
 
 static int
@@ -2990,8 +3019,8 @@ static void ath5k_configure_filter(struct ieee80211_hw *hw,
 
 static int
 ath5k_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
-		const u8 *local_addr, const u8 *addr,
-		struct ieee80211_key_conf *key)
+	      struct ieee80211_vif *vif, struct ieee80211_sta *sta,
+	      struct ieee80211_key_conf *key)
 {
 	struct ath5k_softc *sc = hw->priv;
 	int ret = 0;
@@ -3014,7 +3043,8 @@ ath5k_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 
 	switch (cmd) {
 	case SET_KEY:
-		ret = ath5k_hw_set_key(sc->ah, key->keyidx, key, addr);
+		ret = ath5k_hw_set_key(sc->ah, key->keyidx, key,
+				       sta ? sta->addr : NULL);
 		if (ret) {
 			ATH5K_ERR(sc, "can't set the key\n");
 			goto unlock;

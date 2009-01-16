@@ -34,6 +34,7 @@
  * @WLAN_STA_CLEAR_PS_FILT: Clear PS filter in hardware (using the
  *	IEEE80211_TX_CTL_CLEAR_PS_FILT control flag) when the next
  *	frame to this station is transmitted.
+ * @WLAN_STA_MFP: Management frame protection is used with this STA.
  */
 enum ieee80211_sta_info_flags {
 	WLAN_STA_AUTH		= 1<<0,
@@ -46,6 +47,7 @@ enum ieee80211_sta_info_flags {
 	WLAN_STA_WDS		= 1<<7,
 	WLAN_STA_PSPOLL		= 1<<8,
 	WLAN_STA_CLEAR_PS_FILT	= 1<<9,
+	WLAN_STA_MFP		= 1<<10,
 };
 
 #define STA_TID_NUM 16
@@ -195,7 +197,6 @@ struct sta_ampdu_mlme {
  * @tx_packets: number of RX/TX MSDUs
  * @tx_bytes: number of bytes transmitted to this STA
  * @tx_fragments: number of transmitted MPDUs
- * @last_txrate: description of the last used transmit rate
  * @tid_seq: per-TID sequence numbers for sending to this STA
  * @ampdu_mlme: A-MPDU state machine state
  * @timer_to_tid: identity mapping to ID timers
@@ -383,8 +384,6 @@ static inline u32 get_sta_flags(struct sta_info *sta)
 }
 
 
-/* Maximum number of concurrently registered stations */
-#define MAX_STA_COUNT 2007
 
 #define STA_HASH_SIZE 256
 #define STA_HASH(sta) (sta[5])

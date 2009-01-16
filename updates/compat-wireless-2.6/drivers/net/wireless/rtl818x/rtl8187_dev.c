@@ -213,7 +213,7 @@ static int rtl8187_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
 	urb = usb_alloc_urb(0, GFP_ATOMIC);
 	if (!urb) {
 		kfree_skb(skb);
-		return -ENOMEM;
+		return NETDEV_TX_OK;
 	}
 
 	flags = skb->len;
@@ -281,7 +281,7 @@ static int rtl8187_tx(struct ieee80211_hw *dev, struct sk_buff *skb)
 	}
 	usb_free_urb(urb);
 
-	return rc;
+	return NETDEV_TX_OK;
 }
 
 static void rtl8187_rx_cb(struct urb *urb)
@@ -1266,7 +1266,6 @@ static int __devinit rtl8187_probe(struct usb_interface *intf,
 	const char *chip_name;
 	u16 txpwr, reg;
 	int err, i;
-	DECLARE_MAC_BUF(mac);
 
 	dev = ieee80211_alloc_hw(sizeof(*priv), &rtl8187_ops);
 	if (!dev) {
@@ -1448,8 +1447,8 @@ static int __devinit rtl8187_probe(struct usb_interface *intf,
 	mutex_init(&priv->conf_mutex);
 	skb_queue_head_init(&priv->b_tx_status.queue);
 
-	printk(KERN_INFO "%s: hwaddr %s, %s V%d + %s\n",
-	       wiphy_name(dev->wiphy), print_mac(mac, dev->wiphy->perm_addr),
+	printk(KERN_INFO "%s: hwaddr %pM, %s V%d + %s\n",
+	       wiphy_name(dev->wiphy), dev->wiphy->perm_addr,
 	       chip_name, priv->asic_rev, priv->rf->name);
 
 	return 0;
@@ -1472,6 +1471,7 @@ static void __devexit rtl8187_disconnect(struct usb_interface *intf)
 	ieee80211_unregister_hw(dev);
 
 	priv = dev->priv;
+	usb_reset_device(priv->udev);
 	usb_put_dev(interface_to_usbdev(intf));
 	ieee80211_free_hw(dev);
 }

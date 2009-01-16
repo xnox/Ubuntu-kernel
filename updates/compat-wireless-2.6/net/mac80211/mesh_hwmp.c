@@ -149,7 +149,7 @@ static int mesh_path_sel_frame_tx(enum mpath_frame_type action, u8 flags,
 	pos += ETH_ALEN;
 	memcpy(pos, &dst_dsn, 4);
 
-	ieee80211_tx_skb(sdata, skb, 0);
+	ieee80211_tx_skb(sdata, skb, 1);
 	return 0;
 }
 
@@ -198,7 +198,7 @@ int mesh_path_error_tx(u8 *dst, __le32 dst_dsn, u8 *ra,
 	pos += ETH_ALEN;
 	memcpy(pos, &dst_dsn, 4);
 
-	ieee80211_tx_skb(sdata, skb, 0);
+	ieee80211_tx_skb(sdata, skb, 1);
 	return 0;
 }
 
@@ -763,7 +763,6 @@ enddiscovery:
  *
  * @skb: 802.11 frame to be sent
  * @sdata: network subif the frame will be sent through
- * @fwd_frame: true if this frame was originally from a different host
  *
  * Returns: 0 if the next hop was found. Nonzero otherwise. If no next hop is
  * found, the function will start a path discovery and queue the frame so it is

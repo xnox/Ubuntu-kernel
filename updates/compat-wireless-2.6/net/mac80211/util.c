@@ -352,8 +352,8 @@ static void __ieee80211_wake_queue(struct ieee80211_hw *hw, int queue,
 	}
 }
 
-void ieee80211_wake_queue_by_reason(struct ieee80211_hw *hw, int queue,
-				    enum queue_stop_reason reason)
+static void ieee80211_wake_queue_by_reason(struct ieee80211_hw *hw, int queue,
+					   enum queue_stop_reason reason)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	unsigned long flags;
@@ -382,8 +382,8 @@ static void __ieee80211_stop_queue(struct ieee80211_hw *hw, int queue,
 	netif_stop_subqueue(local->mdev, queue);
 }
 
-void ieee80211_stop_queue_by_reason(struct ieee80211_hw *hw, int queue,
-				    enum queue_stop_reason reason)
+static void ieee80211_stop_queue_by_reason(struct ieee80211_hw *hw, int queue,
+					   enum queue_stop_reason reason)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	unsigned long flags;
@@ -652,6 +652,10 @@ void ieee802_11_parse_elems(u8 *start, size_t len,
 		case WLAN_EID_PWR_CONSTRAINT:
 			elems->pwr_constr_elem = pos;
 			elems->pwr_constr_elem_len = elen;
+			break;
+		case WLAN_EID_ASSOC_COMEBACK_TIME:
+			elems->assoc_comeback = pos;
+			elems->assoc_comeback_len = elen;
 			break;
 		default:
 			break;

@@ -2,7 +2,7 @@
  *
  * GPL LICENSE SUMMARY
  *
- * Copyright(c) 2008 Intel Corporation. All rights reserved.
+ * Copyright(c) 2008 - 2009 Intel Corporation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of version 2 of the GNU General Public License as
@@ -234,7 +234,6 @@ static ssize_t iwl_dbgfs_stations_read(struct file *file, char __user *user_buf,
 	ssize_t ret;
 	/* Add 30 for initial string */
 	const size_t bufsz = 30 + sizeof(char) * 500 * (priv->num_stations);
-	DECLARE_MAC_BUF(mac);
 
 	buf = kmalloc(bufsz, GFP_KERNEL);
 	if (!buf)
@@ -248,7 +247,6 @@ static ssize_t iwl_dbgfs_stations_read(struct file *file, char __user *user_buf,
 		if (station->used) {
 			pos += scnprintf(buf + pos, bufsz - pos,
 					"station %d:\ngeneral data:\n", i+1);
-			print_mac(mac, station->sta.sta.addr);
 			pos += scnprintf(buf + pos, bufsz - pos, "id: %u\n",
 					station->sta.sta.sta_id);
 			pos += scnprintf(buf + pos, bufsz - pos, "mode: %u\n",

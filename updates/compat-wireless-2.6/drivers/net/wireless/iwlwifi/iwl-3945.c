@@ -1,6 +1,6 @@
 /******************************************************************************
  *
- * Copyright(c) 2003 - 2008 Intel Corporation. All rights reserved.
+ * Copyright(c) 2003 - 2009 Intel Corporation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of version 2 of the GNU General Public License as
@@ -344,7 +344,7 @@ static void iwl3945_rx_reply_tx(struct iwl_priv *priv,
 	int rate_idx;
 	int fail;
 
-	if ((index >= txq->q.n_bd) || (iwl3945_x2_queue_used(&txq->q, index) == 0)) {
+	if ((index >= txq->q.n_bd) || (iwl_queue_used(&txq->q, index) == 0)) {
 		IWL_ERR(priv, "Read index for DMA queue txq_id (%d) index %d "
 			  "is out of range [0-%d] %d %d\n", txq_id,
 			  index, txq->q.n_bd, txq->q.write_ptr,
@@ -600,7 +600,7 @@ static void iwl3945_pass_packet_to_mac80211(struct iwl_priv *priv,
 	/* Set the size of the skb to the size of the frame */
 	skb_put(rxb->skb, le16_to_cpu(rx_hdr->len));
 
-	if (iwl3945_mod_params.sw_crypto)
+	if (!iwl3945_mod_params.sw_crypto)
 		iwl3945_set_decrypted_flag(priv, rxb->skb,
 				       le32_to_cpu(rx_end->status), stats);
 
@@ -799,7 +799,6 @@ u8 iwl3945_hw_find_station(struct iwl_priv *priv, const u8 *addr)
 	int i, start = IWL_AP_ID;
 	int ret = IWL_INVALID_STATION;
 	unsigned long flags;
-	DECLARE_MAC_BUF(mac);
 
 	if ((priv->iw_mode == NL80211_IFTYPE_ADHOC) ||
 	    (priv->iw_mode == NL80211_IFTYPE_AP))
@@ -817,8 +816,8 @@ u8 iwl3945_hw_find_station(struct iwl_priv *priv, const u8 *addr)
 			goto out;
 		}
 
-	IWL_DEBUG_INFO("can not find STA %s (total %d)\n",
-		       print_mac(mac, addr), priv->num_stations);
+	IWL_DEBUG_INFO("can not find STA %pM (total %d)\n",
+		       addr, priv->num_stations);
  out:
 	spin_unlock_irqrestore(&priv->sta_lock, flags);
 	return ret;
@@ -1219,7 +1218,7 @@ int iwl3945_hw_nic_init(struct iwl_priv *priv)
 
 	/* Look at using this instead:
 	rxq->need_update = 1;
-	iwl3945_rx_queue_update_write_ptr(priv, rxq);
+	iwl_rx_queue_update_write_ptr(priv, rxq);
 	*/
 
 	rc = iwl_grab_nic_access(priv);
@@ -2243,7 +2242,7 @@ int iwl3945_txpower_set_from_eeprom(struct iwl_priv *priv)
 		/* set tx power value for all OFDM rates */
 		for (rate_index = 0; rate_index < IWL_OFDM_RATES;
 		     rate_index++) {
-			s32 power_idx;
+			s32 uninitialized_var(power_idx);
 			int rc;
 
 			/* use channel group's clip-power table,
@@ -2486,14 +2485,15 @@ int iwl3945_hw_set_hw_params(struct iwl_priv *priv)
 		return -ENOMEM;
 	}
 
-	priv->hw_params.rx_buf_size = IWL_RX_BUF_SIZE;
+	priv->hw_params.rx_buf_size = IWL_RX_BUF_SIZE_3K;
 	priv->hw_params.max_pkt_size = 2342;
 	priv->hw_params.max_rxq_size = RX_QUEUE_SIZE;
 	priv->hw_params.max_rxq_log = RX_QUEUE_SIZE_LOG;
 	priv->hw_params.max_stations = IWL3945_STATION_COUNT;
 	priv->hw_params.bcast_sta_id = IWL3945_BROADCAST_ID;
 
-	priv->hw_params.tx_ant_num = 2;
+	priv->hw_params.rx_wrt_ptr_reg = FH39_RSCSR_CHNL0_WPTR;
+
 	return 0;
 }
 

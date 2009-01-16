@@ -130,14 +130,15 @@ u32 ieee80211_enable_ht(struct ieee80211_sub_if_data *sdata,
 		}
 	}
 
-	ht_changed = local->hw.conf.ht.enabled != enable_ht ||
-		     channel_type != local->hw.conf.ht.channel_type;
+	ht_changed = conf_is_ht(&local->hw.conf) != enable_ht ||
+		     channel_type != local->hw.conf.channel_type;
 
 	local->oper_channel_type = channel_type;
-	local->hw.conf.ht.enabled = enable_ht;
 
-	if (ht_changed)
-		ieee80211_hw_config(local, IEEE80211_CONF_CHANGE_HT);
+	if (ht_changed) {
+                /* channel_type change automatically detected */
+		ieee80211_hw_config(local, 0);
+        }
 
 	/* disable HT */
 	if (!enable_ht)
@@ -201,7 +202,7 @@ static void ieee80211_send_addba_request(struct ieee80211_sub_if_data *sdata,
 	mgmt->u.action.u.addba_req.start_seq_num =
 					cpu_to_le16(start_seq_num << 4);
 
-	ieee80211_tx_skb(sdata, skb, 0);
+	ieee80211_tx_skb(sdata, skb, 1);
 }
 
 static void ieee80211_send_addba_resp(struct ieee80211_sub_if_data *sdata, u8 *da, u16 tid,
@@ -247,7 +248,7 @@ static void ieee80211_send_addba_resp(struct ieee80211_sub_if_data *sdata, u8 *d
 	mgmt->u.action.u.addba_resp.timeout = cpu_to_le16(timeout);
 	mgmt->u.action.u.addba_resp.status = cpu_to_le16(status);
 
-	ieee80211_tx_skb(sdata, skb, 0);
+	ieee80211_tx_skb(sdata, skb, 1);
 }
 
 static void ieee80211_send_delba(struct ieee80211_sub_if_data *sdata,
@@ -290,7 +291,7 @@ static void ieee80211_send_delba(struct ieee80211_sub_if_data *sdata,
 	mgmt->u.action.u.delba.params = cpu_to_le16(params);
 	mgmt->u.action.u.delba.reason_code = cpu_to_le16(reason_code);
 
-	ieee80211_tx_skb(sdata, skb, 0);
+	ieee80211_tx_skb(sdata, skb, 1);
 }
 
 void ieee80211_send_bar(struct ieee80211_sub_if_data *sdata, u8 *ra, u16 tid, u16 ssn)
@@ -329,7 +330,6 @@ void ieee80211_sta_stop_rx_ba_session(struct ieee80211_sub_if_data *sdata, u8 *r
 	struct ieee80211_hw *hw = &local->hw;
 	struct sta_info *sta;
 	int ret, i;
-	DECLARE_MAC_BUF(mac);
 
 	rcu_read_lock();
 
@@ -357,8 +357,8 @@ void ieee80211_sta_stop_rx_ba_session(struct ieee80211_sub_if_data *sdata, u8 *r
 	BUG_ON(!local->ops->ampdu_action);
 
 #ifdef CONFIG_MAC80211_HT_DEBUG
-	printk(KERN_DEBUG "Rx BA session stop requested for %s tid %u\n",
-				print_mac(mac, ra), tid);
+	printk(KERN_DEBUG "Rx BA session stop requested for %pM tid %u\n",
+	       ra, tid);
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 
 	ret = local->ops->ampdu_action(hw, IEEE80211_AMPDU_RX_STOP,
@@ -470,15 +470,14 @@ int ieee80211_start_tx_ba_session(struct ieee80211_hw *hw, u8 *ra, u16 tid)
 	struct ieee80211_sub_if_data *sdata;
 	u16 start_seq_num;
 	u8 *state;
-	int ret;
-	DECLARE_MAC_BUF(mac);
+	int ret = 0;
 
 	if ((tid >= STA_TID_NUM) || !(hw->flags & IEEE80211_HW_AMPDU_AGGREGATION))
 		return -EINVAL;
 
 #ifdef CONFIG_MAC80211_HT_DEBUG
-	printk(KERN_DEBUG "Open BA session requested for %s tid %u\n",
-				print_mac(mac, ra), tid);
+	printk(KERN_DEBUG "Open BA session requested for %pM tid %u\n",
+	       ra, tid);
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 
 	rcu_read_lock();
@@ -616,7 +615,6 @@ int ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
 	struct sta_info *sta;
 	u8 *state;
 	int ret = 0;
-	DECLARE_MAC_BUF(mac);
 
 	if (tid >= STA_TID_NUM)
 		return -EINVAL;
@@ -638,8 +636,8 @@ int ieee80211_stop_tx_ba_session(struct ieee80211_hw *hw,
 	}
 
 #ifdef CONFIG_MAC80211_HT_DEBUG
-	printk(KERN_DEBUG "Tx BA session stop requested for %s tid %u\n",
-				print_mac(mac, ra), tid);
+	printk(KERN_DEBUG "Tx BA session stop requested for %pM tid %u\n",
+	       ra, tid);
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 
 	if (hw->ampdu_queues)
@@ -673,7 +671,6 @@ void ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid)
 	struct ieee80211_local *local = hw_to_local(hw);
 	struct sta_info *sta;
 	u8 *state;
-	DECLARE_MAC_BUF(mac);
 
 	if (tid >= STA_TID_NUM) {
 #ifdef CONFIG_MAC80211_HT_DEBUG
@@ -688,8 +685,7 @@ void ieee80211_start_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u16 tid)
 	if (!sta) {
 		rcu_read_unlock();
 #ifdef CONFIG_MAC80211_HT_DEBUG
-		printk(KERN_DEBUG "Could not find station: %s\n",
-				print_mac(mac, ra));
+		printk(KERN_DEBUG "Could not find station: %pM\n", ra);
 #endif
 		return;
 	}
@@ -729,7 +725,6 @@ void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid)
 	struct sta_info *sta;
 	u8 *state;
 	int agg_queue;
-	DECLARE_MAC_BUF(mac);
 
 	if (tid >= STA_TID_NUM) {
 #ifdef CONFIG_MAC80211_HT_DEBUG
@@ -740,16 +735,15 @@ void ieee80211_stop_tx_ba_cb(struct ieee80211_hw *hw, u8 *ra, u8 tid)
 	}
 
 #ifdef CONFIG_MAC80211_HT_DEBUG
-	printk(KERN_DEBUG "Stopping Tx BA session for %s tid %d\n",
-				print_mac(mac, ra), tid);
+	printk(KERN_DEBUG "Stopping Tx BA session for %pM tid %d\n",
+	       ra, tid);
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 
 	rcu_read_lock();
 	sta = sta_info_get(local, ra);
 	if (!sta) {
 #ifdef CONFIG_MAC80211_HT_DEBUG
-		printk(KERN_DEBUG "Could not find station: %s\n",
-				print_mac(mac, ra));
+		printk(KERN_DEBUG "Could not find station: %pM\n", ra);
 #endif
 		rcu_read_unlock();
 		return;
@@ -880,7 +874,6 @@ void ieee80211_process_addba_request(struct ieee80211_local *local,
 	u16 capab, tid, timeout, ba_policy, buf_size, start_seq_num, status;
 	u8 dialog_token;
 	int ret = -EOPNOTSUPP;
-	DECLARE_MAC_BUF(mac);
 
 	/* extract session parameters from addba request frame */
 	dialog_token = mgmt->u.action.u.addba_req.dialog_token;
@@ -906,8 +899,8 @@ void ieee80211_process_addba_request(struct ieee80211_local *local,
 #ifdef CONFIG_MAC80211_HT_DEBUG
 		if (net_ratelimit())
 			printk(KERN_DEBUG "AddBA Req with bad params from "
-				"%s on tid %u. policy %d, buffer size %d\n",
-				print_mac(mac, mgmt->sa), tid, ba_policy,
+				"%pM on tid %u. policy %d, buffer size %d\n",
+				mgmt->sa, tid, ba_policy,
 				buf_size);
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 		goto end_no_lock;
@@ -929,8 +922,8 @@ void ieee80211_process_addba_request(struct ieee80211_local *local,
 #ifdef CONFIG_MAC80211_HT_DEBUG
 		if (net_ratelimit())
 			printk(KERN_DEBUG "unexpected AddBA Req from "
-				"%s on tid %u\n",
-				print_mac(mac, mgmt->sa), tid);
+				"%pM on tid %u\n",
+				mgmt->sa, tid);
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 		goto end;
 	}
@@ -1071,7 +1064,6 @@ void ieee80211_process_delba(struct ieee80211_sub_if_data *sdata,
 	struct ieee80211_local *local = sdata->local;
 	u16 tid, params;
 	u16 initiator;
-	DECLARE_MAC_BUF(mac);
 
 	params = le16_to_cpu(mgmt->u.action.u.delba.params);
 	tid = (params & IEEE80211_DELBA_PARAM_TID_MASK) >> 12;
@@ -1079,9 +1071,8 @@ void ieee80211_process_delba(struct ieee80211_sub_if_data *sdata,
 
 #ifdef CONFIG_MAC80211_HT_DEBUG
 	if (net_ratelimit())
-		printk(KERN_DEBUG "delba from %s (%s) tid %d reason code %d\n",
-			print_mac(mac, mgmt->sa),
-			initiator ? "initiator" : "recipient", tid,
+		printk(KERN_DEBUG "delba from %pM (%s) tid %d reason code %d\n",
+			mgmt->sa, initiator ? "initiator" : "recipient", tid,
 			mgmt->u.action.u.delba.reason_code);
 #endif /* CONFIG_MAC80211_HT_DEBUG */
 

@@ -5,7 +5,7 @@
  *
  * GPL LICENSE SUMMARY
  *
- * Copyright(c) 2005 - 2008 Intel Corporation. All rights reserved.
+ * Copyright(c) 2005 - 2009 Intel Corporation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of version 2 of the GNU General Public License as
@@ -30,7 +30,7 @@
  *
  * BSD LICENSE
  *
- * Copyright(c) 2005 - 2008 Intel Corporation. All rights reserved.
+ * Copyright(c) 2005 - 2009 Intel Corporation. All rights reserved.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -399,6 +399,21 @@
  */
 #define FH_TX_CHICKEN_BITS_SCD_AUTO_RETRY_EN	(0x00000002)
 
+#define RX_QUEUE_SIZE                         256
+#define RX_QUEUE_MASK                         255
+#define RX_QUEUE_SIZE_LOG                     8
+
+/*
+ * RX related structures and functions
+ */
+#define RX_FREE_BUFFERS 64
+#define RX_LOW_WATERMARK 8
+
+/* Size of one Rx buffer in host DRAM */
+#define IWL_RX_BUF_SIZE_3K (3 * 1000) /* 3945 only */
+#define IWL_RX_BUF_SIZE_4K (4 * 1024)
+#define IWL_RX_BUF_SIZE_8K (8 * 1024)
+
 /**
  * struct iwl_rb_status - reseve buffer status
  * 	host memory mapped FH registers
@@ -477,18 +492,6 @@ struct iwl_tfd {
 	struct iwl_tfd_tb tbs[IWL_NUM_OF_TBS];
 	__le32 __pad;
 } __attribute__ ((packed));
-
-struct iwl3945_tfd_frame_data {
-	__le32 addr;
-	__le32 len;
-} __attribute__ ((packed));
-
-struct iwl3945_tfd_frame {
-	__le32 control_flags;
-	struct iwl3945_tfd_frame_data pa[4];
-	u8 reserved[28];
-} __attribute__ ((packed));
-
 
 /* Keep Warm Size */
 #define IWL_KW_SIZE 0x1000	/* 4k */

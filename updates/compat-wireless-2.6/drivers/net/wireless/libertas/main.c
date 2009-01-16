@@ -647,7 +647,6 @@ static int lbs_add_mcast_addrs(struct cmd_ds_mac_multicast_adr *cmd,
 {
 	int i = nr_addrs;
 	struct dev_mc_list *mc_list;
-	DECLARE_MAC_BUF(mac);
 
 	if ((dev->flags & (IFF_UP|IFF_MULTICAST)) != (IFF_UP|IFF_MULTICAST))
 		return nr_addrs;
@@ -655,16 +654,16 @@ static int lbs_add_mcast_addrs(struct cmd_ds_mac_multicast_adr *cmd,
 	netif_addr_lock_bh(dev);
 	for (mc_list = dev->mc_list; mc_list; mc_list = mc_list->next) {
 		if (mac_in_list(cmd->maclist, nr_addrs, mc_list->dmi_addr)) {
-			lbs_deb_net("mcast address %s:%s skipped\n", dev->name,
-				    print_mac(mac, mc_list->dmi_addr));
+			lbs_deb_net("mcast address %s:%pM skipped\n", dev->name,
+				    mc_list->dmi_addr);
 			continue;
 		}
 
 		if (i == MRVDRV_MAX_MULTICAST_LIST_SIZE)
 			break;
 		memcpy(&cmd->maclist[6*i], mc_list->dmi_addr, ETH_ALEN);
-		lbs_deb_net("mcast address %s:%s added to filter\n", dev->name,
-			    print_mac(mac, mc_list->dmi_addr));
+		lbs_deb_net("mcast address %s:%pM added to filter\n", dev->name,
+			    mc_list->dmi_addr);
 		i++;
 	}
 	netif_addr_unlock_bh(dev);
@@ -1007,9 +1006,8 @@ void lbs_resume(struct lbs_private *priv)
 EXPORT_SYMBOL_GPL(lbs_resume);
 
 /**
- *  @brief This function downloads firmware image, gets
- *  HW spec from firmware and set basic parameters to
- *  firmware.
+ * @brief This function gets the HW spec from the firmware and sets
+ *        some basic parameters.
  *
  *  @param priv    A pointer to struct lbs_private structure
  *  @return 	   0 or -1

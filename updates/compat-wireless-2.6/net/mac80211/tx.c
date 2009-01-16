@@ -208,10 +208,9 @@ ieee80211_tx_h_check_assoc(struct ieee80211_tx_data *tx)
 			     tx->sdata->vif.type != NL80211_IFTYPE_ADHOC &&
 			     ieee80211_is_data(hdr->frame_control))) {
 #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
-			DECLARE_MAC_BUF(mac);
 			printk(KERN_DEBUG "%s: dropped data frame to not "
-			       "associated station %s\n",
-			       tx->dev->name, print_mac(mac, hdr->addr1));
+			       "associated station %pM\n",
+			       tx->dev->name, hdr->addr1);
 #endif /* CONFIG_MAC80211_VERBOSE_DEBUG */
 			I802_DEBUG_INC(tx->local->tx_handlers_drop_not_assoc);
 			return TX_DROP;
@@ -331,6 +330,22 @@ ieee80211_tx_h_multicast_ps_buf(struct ieee80211_tx_data *tx)
 	return TX_CONTINUE;
 }
 
+static int ieee80211_use_mfp(__le16 fc, struct sta_info *sta,
+			     struct sk_buff *skb)
+{
+	if (!ieee80211_is_mgmt(fc))
+		return 0;
+
+	if (sta == NULL || !test_sta_flags(sta, WLAN_STA_MFP))
+		return 0;
+
+	if (!ieee80211_is_robust_mgmt_frame((struct ieee80211_hdr *)
+					    skb->data))
+		return 0;
+
+	return 1;
+}
+
 static ieee80211_tx_result
 ieee80211_tx_h_unicast_ps_buf(struct ieee80211_tx_data *tx)
 {
@@ -338,7 +353,6 @@ ieee80211_tx_h_unicast_ps_buf(struct ieee80211_tx_data *tx)
 	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(tx->skb);
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *)tx->skb->data;
 	u32 staflags;
-	DECLARE_MAC_BUF(mac);
 
 	if (unlikely(!sta || ieee80211_is_probe_resp(hdr->frame_control)))
 		return TX_CONTINUE;
@@ -348,9 +362,9 @@ ieee80211_tx_h_unicast_ps_buf(struct ieee80211_tx_data *tx)
 	if (unlikely((staflags & WLAN_STA_PS) &&
 		     !(staflags & WLAN_STA_PSPOLL))) {
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
-		printk(KERN_DEBUG "STA %s aid %d: PS buffer (entries "
+		printk(KERN_DEBUG "STA %pM aid %d: PS buffer (entries "
 		       "before %d)\n",
-		       print_mac(mac, sta->sta.addr), sta->sta.aid,
+		       sta->sta.addr, sta->sta.aid,
 		       skb_queue_len(&sta->ps_tx_buf));
 #endif /* CONFIG_MAC80211_VERBOSE_PS_DEBUG */
 		if (tx->local->total_ps_buffered >= TOTAL_MAX_TX_BUFFER)
@@ -359,9 +373,9 @@ ieee80211_tx_h_unicast_ps_buf(struct ieee80211_tx_data *tx)
 			struct sk_buff *old = skb_dequeue(&sta->ps_tx_buf);
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
 			if (net_ratelimit()) {
-				printk(KERN_DEBUG "%s: STA %s TX "
+				printk(KERN_DEBUG "%s: STA %pM TX "
 				       "buffer full - dropping oldest frame\n",
-				       tx->dev->name, print_mac(mac, sta->sta.addr));
+				       tx->dev->name, sta->sta.addr);
 			}
 #endif
 			dev_kfree_skb(old);
@@ -378,9 +392,9 @@ ieee80211_tx_h_unicast_ps_buf(struct ieee80211_tx_data *tx)
 	}
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
 	else if (unlikely(test_sta_flags(sta, WLAN_STA_PS))) {
-		printk(KERN_DEBUG "%s: STA %s in PS mode, but pspoll "
+		printk(KERN_DEBUG "%s: STA %pM in PS mode, but pspoll "
 		       "set -> send frame\n", tx->dev->name,
-		       print_mac(mac, sta->sta.addr));
+		       sta->sta.addr);
 	}
 #endif /* CONFIG_MAC80211_VERBOSE_PS_DEBUG */
 	clear_sta_flags(sta, WLAN_STA_PSPOLL);
@@ -411,6 +425,9 @@ ieee80211_tx_h_select_key(struct ieee80211_tx_data *tx)
 		tx->key = NULL;
 	else if (tx->sta && (key = rcu_dereference(tx->sta->key)))
 		tx->key = key;
+	else if (ieee80211_is_mgmt(hdr->frame_control) &&
+		 (key = rcu_dereference(tx->sdata->default_mgmt_key)))
+		tx->key = key;
 	else if ((key = rcu_dereference(tx->sdata->default_key)))
 		tx->key = key;
 	else if (tx->sdata->drop_unencrypted &&
@@ -430,8 +447,17 @@ ieee80211_tx_h_select_key(struct ieee80211_tx_data *tx)
 			if (ieee80211_is_auth(hdr->frame_control))
 				break;
 		case ALG_TKIP:
-		case ALG_CCMP:
 			if (!ieee80211_is_data_present(hdr->frame_control))
+				tx->key = NULL;
+			break;
+		case ALG_CCMP:
+			if (!ieee80211_is_data_present(hdr->frame_control) &&
+			    !ieee80211_use_mfp(hdr->frame_control, tx->sta,
+					       tx->skb))
+				tx->key = NULL;
+			break;
+		case ALG_AES_CMAC:
+			if (!ieee80211_is_mgmt(hdr->frame_control))
 				tx->key = NULL;
 			break;
 		}
@@ -789,6 +815,8 @@ ieee80211_tx_h_encrypt(struct ieee80211_tx_data *tx)
 		return ieee80211_crypto_tkip_encrypt(tx);
 	case ALG_CCMP:
 		return ieee80211_crypto_ccmp_encrypt(tx);
+	case ALG_AES_CMAC:
+		return ieee80211_crypto_aes_cmac_encrypt(tx);
 	}
 
 	/* not reached */
@@ -1055,7 +1083,6 @@ static int __ieee80211_tx(struct ieee80211_local *local, struct sk_buff *skb,
 	if (skb) {
 		if (netif_subqueue_stopped(local->mdev, skb))
 			return IEEE80211_TX_AGAIN;
-		info =  IEEE80211_SKB_CB(skb);
 
 		ret = local->ops->tx(local_to_hw(local), skb);
 		if (ret)
@@ -1298,8 +1325,8 @@ int ieee80211_master_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		return 0;
 	}
 
-	if (!(local->hw.flags & IEEE80211_HW_NO_STACK_DYNAMIC_PS) &&
-	    local->dynamic_ps_timeout > 0) {
+	if ((local->hw.flags & IEEE80211_HW_PS_NULLFUNC_STACK) &&
+	    local->hw.conf.dynamic_ps_timeout > 0) {
 		if (local->hw.conf.flags & IEEE80211_CONF_PS) {
 			ieee80211_stop_queues_by_reason(&local->hw,
 					IEEE80211_QUEUE_STOP_REASON_PS);
@@ -1308,7 +1335,7 @@ int ieee80211_master_start_xmit(struct sk_buff *skb, struct net_device *dev)
 		}
 
 		mod_timer(&local->dynamic_ps_timer, jiffies +
-				msecs_to_jiffies(local->dynamic_ps_timeout));
+		        msecs_to_jiffies(local->hw.conf.dynamic_ps_timeout));
 	}
 
 	memset(info, 0, sizeof(*info));
@@ -1616,12 +1643,10 @@ int ieee80211_subif_start_xmit(struct sk_buff *skb,
 		       compare_ether_addr(dev->dev_addr,
 					  skb->data + ETH_ALEN) == 0))) {
 #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
-		DECLARE_MAC_BUF(mac);
-
 		if (net_ratelimit())
-			printk(KERN_DEBUG "%s: dropped frame to %s"
+			printk(KERN_DEBUG "%s: dropped frame to %pM"
 			       " (unauthorized port)\n", dev->name,
-			       print_mac(mac, hdr.addr1));
+			       hdr.addr1);
 #endif
 
 		I802_DEBUG_INC(local->tx_handlers_drop_unauth_port);

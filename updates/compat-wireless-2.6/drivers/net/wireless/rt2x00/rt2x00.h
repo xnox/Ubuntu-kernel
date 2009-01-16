@@ -33,6 +33,7 @@
 #include <linux/leds.h>
 #include <linux/mutex.h>
 #include <linux/etherdevice.h>
+#include <linux/input-polldev.h>
 
 #include <net/mac80211.h>
 
@@ -638,8 +639,8 @@ struct rt2x00_dev {
 	unsigned long rfkill_state;
 #define RFKILL_STATE_ALLOCATED		1
 #define RFKILL_STATE_REGISTERED		2
-	struct rfkill *rfkill;
-	struct delayed_work rfkill_work;
+#define RFKILL_STATE_BLOCKED		3
+	struct input_polled_dev *rfkill_poll_dev;
 #endif /* CONFIG_RT2X00_LIB_RFKILL */
 
 	/*
@@ -931,7 +932,7 @@ void rt2x00mac_configure_filter(struct ieee80211_hw *hw,
 				int mc_count, struct dev_addr_list *mc_list);
 #ifdef CONFIG_RT2X00_LIB_CRYPTO
 int rt2x00mac_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
-		      const u8 *local_address, const u8 *address,
+		      struct ieee80211_vif *vif, struct ieee80211_sta *sta,
 		      struct ieee80211_key_conf *key);
 #else
 #define rt2x00mac_set_key	NULL
