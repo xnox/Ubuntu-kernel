@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook8) hardy; urgency=low
+
+  [Michael Frey]
+
+  * Add support for HDMI audio out on Intel Menlow hardware (LP: #308476)
+
+ -- Michael Frey <michael.frey@canonical.com>  Tue, 20 Jan 2009 14:48:51 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook7) hardy; urgency=low
 
   [Michael Frey]
