@@ -14,5 +14,6 @@ snd-hda-intel-$(CONFIG_SND_HDA_CODEC_SI3054) += patch_si3054.o
 snd-hda-intel-$(CONFIG_SND_HDA_CODEC_ATIHDMI) += patch_atihdmi.o
 snd-hda-intel-$(CONFIG_SND_HDA_CODEC_CONEXANT) += patch_conexant.o
 snd-hda-intel-$(CONFIG_SND_HDA_CODEC_VIA) += patch_via.o
+snd-hda-intel-$(CONFIG_SND_HDA_CODEC_INTELHDMI) += patch_intelhdmi.o hda_eld.o
 
 obj-$(CONFIG_SND_HDA_INTEL) += snd-hda-intel.o

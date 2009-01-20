@@ -219,7 +219,7 @@ enum { SDI0, SDI1, SDI2, SDI3, SDO0, SDO1, SDO2, SDO3 };
 #define RIRB_INT_MASK		0x05
 
 /* STATESTS int mask: SD2,SD1,SD0 */
-#define AZX_MAX_CODECS		3
+#define AZX_MAX_CODECS		4
 #define STATESTS_INT_MASK	0x07
 
 /* SD_CTL bits */
@@ -1058,7 +1058,7 @@ static int azx_setup_controller(struct azx *chip, struct azx_dev *azx_dev)
 
 static unsigned int azx_max_codecs[] __devinitdata = {
 	[AZX_DRIVER_ICH] = 3,
-	[AZX_DRIVER_SCH] = 3,
+	[AZX_DRIVER_SCH] = 4,
 	[AZX_DRIVER_ATI] = 4,
 	[AZX_DRIVER_ATIHDMI] = 4,
 	[AZX_DRIVER_VIA] = 3,		/* FIXME: correct? */

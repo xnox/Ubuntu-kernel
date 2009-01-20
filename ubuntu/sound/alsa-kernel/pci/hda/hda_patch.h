@@ -18,6 +18,8 @@ extern struct hda_codec_preset snd_hda_preset_atihdmi[];
 extern struct hda_codec_preset snd_hda_preset_conexant[];
 /* VIA codecs */
 extern struct hda_codec_preset snd_hda_preset_via[];
+/* INTEL HDMI codecs */
+extern struct hda_codec_preset snd_hda_preset_intelhdmi[];
 
 static const struct hda_codec_preset *hda_preset_tables[] = {
 #ifdef CONFIG_SND_HDA_CODEC_REALTEK
@@ -43,6 +45,9 @@ static const struct hda_codec_preset *hda_preset_tables[] = {
 #endif
 #ifdef CONFIG_SND_HDA_CODEC_VIA
 	snd_hda_preset_via,
+#endif
+#ifdef CONFIG_SND_HDA_CODEC_INTELHDMI
+	snd_hda_preset_intelhdmi,
 #endif
 	NULL
 };

@@ -280,6 +280,11 @@ struct alc_spec {
 #ifdef CONFIG_SND_HDA_POWER_SAVE
 	struct hda_loopback_check loopback;
 #endif
+
+	/* for PLL fix */
+	hda_nid_t pll_nid;
+	unsigned int pll_coef_idx, pll_coef_bit;
+
 };
 
 /*
@@ -764,12 +769,48 @@ static struct hda_verb alc_gpio3_init_verbs[] = {
 	{ }
 };
 
+/*
+ * Fix hardware PLL issue
+ * On some codecs, the analog PLL gating control must be off while
+ * the default value is 1.
+ */
+static void alc_fix_pll(struct hda_codec *codec)
+{
+	struct alc_spec *spec = codec->spec;
+	unsigned int val;
+
+	if (!spec->pll_nid)
+		return;
+	snd_hda_codec_write(codec, spec->pll_nid, 0, AC_VERB_SET_COEF_INDEX,
+			    spec->pll_coef_idx);
+	val = snd_hda_codec_read(codec, spec->pll_nid, 0,
+				 AC_VERB_GET_PROC_COEF, 0);
+	snd_hda_codec_write(codec, spec->pll_nid, 0, AC_VERB_SET_COEF_INDEX,
+			    spec->pll_coef_idx);
+	snd_hda_codec_write(codec, spec->pll_nid, 0, AC_VERB_SET_PROC_COEF,
+			    val & ~(1 << spec->pll_coef_bit));
+}
+
+static void alc_fix_pll_init(struct hda_codec *codec, hda_nid_t nid,
+			     unsigned int coef_idx, unsigned int coef_bit)
+{
+	struct alc_spec *spec = codec->spec;
+	spec->pll_nid = nid;
+	spec->pll_coef_idx = coef_idx;
+	spec->pll_coef_bit = coef_bit;
+	alc_fix_pll(codec);
+}
+
+
 static void alc_sku_automute(struct hda_codec *codec)
 {
 	struct alc_spec *spec = codec->spec;
 	unsigned int present;
 	unsigned int hp_nid = spec->autocfg.hp_pins[0];
 	unsigned int sp_nid = spec->autocfg.speaker_pins[0];
+
+	alc_fix_pll(codec);
+
 
 	/* need to execute and sync at first */
 	snd_hda_codec_read(codec, hp_nid, 0, AC_VERB_SET_PIN_SENSE, 0);
@@ -10882,6 +10923,8 @@ static int patch_alc269(struct hda_codec *codec)
 		return -ENOMEM;
 
 	codec->spec = spec;
+
+	alc_fix_pll_init(codec, 0x20, 0x04, 15);
 
 	board_config = snd_hda_check_board_config(codec, ALC269_MODEL_LAST,
 						  alc269_models,
