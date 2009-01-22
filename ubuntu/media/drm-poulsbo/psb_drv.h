@@ -30,6 +30,41 @@
 #include "psb_schedule.h"
 #include "intel_drv.h"
 
+
+#ifdef DVD_FIX
+#define MAX_BLIT_REQ_SIZE 16*4
+#define PSB_BLIT_QUEUE_LEN 100
+typedef struct delayed_2d_blit_req
+{
+	unsigned char BlitReqData[MAX_BLIT_REQ_SIZE];
+	int gnBlitCmdSize;	//always 40 bytes now!
+}delayed_2d_blit_req_t, *delayed_2d_blit_req_ptr;
+
+typedef struct psb_2d_blit_queue
+{
+	delayed_2d_blit_req_t sBlitReq[PSB_BLIT_QUEUE_LEN];
+	int nHead, nTail;
+	spinlock_t sLock;
+}psb_2d_blit_queue_t, *psb_2d_blit_queue_ptr;
+
+
+
+extern int psb_blit_queue_init(psb_2d_blit_queue_ptr q);
+
+extern int psb_blit_queue_is_empty(psb_2d_blit_queue_ptr q);
+
+extern int psb_blit_queue_is_full(psb_2d_blit_queue_ptr q);
+
+
+extern delayed_2d_blit_req_ptr psb_blit_queue_get_item(psb_2d_blit_queue_ptr q);
+
+
+extern int psb_blit_queue_put_item(psb_2d_blit_queue_ptr q, delayed_2d_blit_req_ptr elem);
+void psb_blit_queue_clear(psb_2d_blit_queue_ptr q);
+
+#endif
+
+
 enum {
 	CHIP_PSB_8108 = 0,
 	CHIP_PSB_8109 = 1
@@ -46,9 +81,9 @@ enum {
 #define DRIVER_DESC "drm driver for the Intel GMA500"
 #define DRIVER_AUTHOR "Tungsten Graphics Inc."
 
-#define PSB_DRM_DRIVER_DATE "20081219"
+#define PSB_DRM_DRIVER_DATE "20090119"
 #define PSB_DRM_DRIVER_MAJOR 4
-#define PSB_DRM_DRIVER_MINOR 23
+#define PSB_DRM_DRIVER_MINOR 0
 #define PSB_DRM_DRIVER_PATCHLEVEL 0
 
 #define PSB_VDC_OFFSET           0x00000000
@@ -450,7 +485,7 @@ struct drm_psb_private {
 	struct mutex msvdx_mutex;
 	struct list_head msvdx_queue;
 	int msvdx_busy;
-    
+
 };
 
 struct psb_mmu_driver;
@@ -743,6 +778,7 @@ extern void psb_resume_ta_2d_idle(struct drm_psb_private *dev_priv);
 extern int drm_psb_debug;
 extern int drm_psb_no_fb;
 extern int drm_psb_disable_vsync;
+extern int drm_psb_detear;
 
 #define PSB_DEBUG_FW(_fmt, _arg...) \
 	PSB_DEBUG(PSB_D_FW, _fmt, ##_arg)

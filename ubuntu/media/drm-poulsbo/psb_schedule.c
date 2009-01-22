@@ -29,6 +29,11 @@
 #include "psb_reg.h"
 #include "psb_scene.h"
 
+#ifdef DVD_FIX
+extern struct semaphore gnRasterDoneNum; 
+extern unsigned int gnBlit;
+#endif
+
 #define PSB_ALLOWED_RASTER_RUNTIME (DRM_HZ * 20)
 #define PSB_RASTER_TIMEOUT (DRM_HZ / 2)
 #define PSB_TA_TIMEOUT (DRM_HZ / 5)
@@ -375,6 +380,13 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 
 	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = task;
 
+#ifdef DVD_FIX
+	if(task->bVideoFlag == PSB_VIDEO_BLIT)
+	{
+		while(test_and_clear_bit(0, &gnBlit) == 0);
+	}
+#endif
+
 	list_del_init(list);
 	scheduler->idle = 0;
 	scheduler->raster_end_jiffies = jiffies + PSB_RASTER_TIMEOUT;
@@ -481,6 +493,23 @@ static void psb_raster_done(struct drm_psb_private *dev_priv,
 
 	PSB_DEBUG_RENDER("Raster done %u\n", task->sequence);
 
+
+/***************************************************/
+#ifdef DVD_FIX
+if(task->bVideoFlag == PSB_VIDEO_BLIT)
+	{
+/* 		printk("%s, dbw,%x, %x, %x, %x\n", __FUNCTION__, */
+/* 			task->x, */
+/* 			task->y, */
+/* 			task->w, */
+/* 			task->h); */
+		task->bVideoFlag = 0;	
+		set_bit(0, &gnBlit);
+		up(&gnRasterDoneNum);
+	} 
+#endif	
+/***************************************************/	
+
 	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = NULL;
 
 	if (complete_action != PSB_RASTER)
@@ -540,6 +569,7 @@ static void psb_raster_done(struct drm_psb_private *dev_priv,
 			schedule_delayed_work(&scheduler->wq, 1);
 		}
 	}
+
 }
 
 void psb_scheduler_pause(struct drm_psb_private *dev_priv)
@@ -1206,6 +1236,22 @@ static int psb_setup_task_devlocked(struct drm_device *dev,
 	if (scene)
 		task->scene = psb_scene_ref(scene);
 
+#ifdef DVD_FIX
+	if(PSB_VIDEO_BLIT == arg->sVideoInfo.flag)
+	{
+/* 		printk("%s, dsv\n", __FUNCTION__); */
+		task->bVideoFlag = PSB_VIDEO_BLIT;
+		task->x = arg->sVideoInfo.x;
+		task->y = arg->sVideoInfo.y;
+		task->w = arg->sVideoInfo.w;
+		task->h = arg->sVideoInfo.h;	
+		task->pFBBOHandle = arg->sVideoInfo.pFBBOHandle;	
+
+		task->pFBVirtAddr = arg->sVideoInfo.pFBVirtAddr; 
+	}	
+#endif
+
+
 	*task_p = task;
 	return 0;
       out_err:
@@ -1305,6 +1351,8 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 	int ret;
 	struct psb_scheduler *scheduler = &dev_priv->scheduler;
 
+	uint32_t sequence_temp;
+
 	PSB_DEBUG_RENDER("Cmdbuf Raster\n");
 
 	ret = mutex_lock_interruptible(&dev_priv->reset_mutex);
@@ -1326,6 +1374,7 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 
 	spin_lock_irq(&scheduler->lock);
 	task->sequence = psb_fence_advance_sequence(dev, PSB_ENGINE_TA);
+	sequence_temp = task->sequence; // backup for the change
 	task->ta_complete_action = PSB_RASTER;
 	task->raster_complete_action = PSB_RETURN;
 
@@ -1338,7 +1387,7 @@ int psb_cmdbuf_raster(struct drm_file *priv,
 	drm_regs_fence(&dev_priv->use_manager, fence);
 	if (fence) {
 		spin_lock_irq(&scheduler->lock);
-		psb_report_fence(scheduler, PSB_ENGINE_TA, task->sequence, 0, 1);
+		psb_report_fence(scheduler, PSB_ENGINE_TA, sequence_temp, 0, 1);
 		spin_unlock_irq(&scheduler->lock);
 		fence_arg->signaled |= DRM_FENCE_TYPE_EXE;
 	}

@@ -25,6 +25,18 @@
 #ifndef _PSB_DRM_H_
 #define _PSB_DRM_H_
 
+/* to eliminate video playback tearing */
+#define DVD_FIX 		/* FIXME: rename it to DETEAR */
+
+#ifdef DVD_FIX
+#define PSB_VIDEO_BLIT                  0x0001
+#define PSB_DELAYED_2D_BLIT             0x0002
+#define PSB_VIDEO_BLIT_CANCEL           0x0004
+#define PSB_VIDEO_BLIT_QUICK_CANCEL           0x0008
+#endif
+
+
+
 #if defined(__linux__) && !defined(__KERNEL__)
 #include<stdint.h>
 #endif
@@ -34,7 +46,7 @@
  *
  */
 /* #define PSB_PACKAGE_VERSION "ED"__DATE__*/
-#define PSB_PACKAGE_VERSION "2.3.0.32L.0029"
+#define PSB_PACKAGE_VERSION "2.0.0.32L.0008"
 
 #define DRM_PSB_SAREA_MAJOR 0
 #define DRM_PSB_SAREA_MINOR 1
@@ -203,6 +215,17 @@ struct drm_psb_hw_info
         uint32_t caps;
 };
 
+#ifdef DVD_FIX
+struct video_info
+{
+	uint32_t flag;
+	uint32_t x, y, w, h;
+	uint32_t	pFBBOHandle;
+	void * pFBVirtAddr;
+};
+#endif
+
+
 typedef struct drm_psb_cmdbuf_arg {
 	uint64_t buffer_list;	/* List of buffers to validate */
 	uint64_t clip_rects;	/* See i915 counterpart */
@@ -241,12 +264,27 @@ typedef struct drm_psb_cmdbuf_arg {
 	uint32_t feedback_offset;
 	uint32_t feedback_breakpoints;
 	uint32_t feedback_size;
+
+/***************************************************/
+#ifdef DVD_FIX
+	struct video_info sVideoInfo;
+#endif
+/***************************************************/
+
 } drm_psb_cmdbuf_arg_t;
 
 struct drm_psb_xhw_init_arg {
 	uint32_t operation;
 	uint32_t buffer_handle;
+/***************************************************/
+#ifdef DVD_FIX
+	uint32_t tmpBOHandle;
+	void *fbPhys;
+	uint32_t fbSize;
+#endif
+/***************************************************/
 };
+
 
 /*
  * Feedback components:

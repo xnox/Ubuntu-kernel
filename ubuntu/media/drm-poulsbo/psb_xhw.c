@@ -440,6 +440,7 @@ static int psb_xhw_init_init(struct drm_device *dev,
 		dev_priv->xhw_on = 1;
 		dev_priv->xhw_submit_ok = 1;
 		spin_unlock_irqrestore(&dev_priv->xhw_lock, irq_flags);
+
 		return 0;
 	} else {
 		DRM_ERROR("Xhw is already initialized.\n");
@@ -502,8 +503,8 @@ int psb_xhw_init_ioctl(struct drm_device *dev, void *data,
 		       struct drm_file *file_priv)
 {
 	struct drm_psb_xhw_init_arg *arg = (struct drm_psb_xhw_init_arg *)data;
-	struct drm_psb_private *dev_priv =
-	    (struct drm_psb_private *)dev->dev_private;
+	struct drm_psb_private *dev_priv = 
+		(struct drm_psb_private *)dev->dev_private;
 
 	switch (arg->operation) {
 	case PSB_XHW_INIT:

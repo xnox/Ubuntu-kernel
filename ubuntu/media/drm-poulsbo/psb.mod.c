@@ -109,6 +109,7 @@ __attribute__((section("__versions"))) = {
 	{ 0x5cd6000f, "register_framebuffer" },
 	{ 0x2f287f0d, "copy_to_user" },
 	{ 0x346b66a4, "drm_bo_usage_deref_unlocked" },
+	{ 0x2cd3086, "__down_failed_trylock" },
 	{ 0x3a1ceada, "drm_buffer_object_create" },
 	{ 0x59282810, "drm_lookup_buffer_object" },
 	{ 0x9a5faffd, "pci_bus_write_config_dword" },
@@ -181,6 +182,7 @@ __attribute__((section("__versions"))) = {
 	{ 0x5e1389a, "finish_wait" },
 	{ 0xc46d056, "drm_putback_buffer_objects" },
 	{ 0xe600c086, "drm_fence_object_wait" },
+	{ 0x60a4461c, "__up_wakeup" },
 	{ 0x58387859, "cfb_copyarea" },
 	{ 0xb30ff253, "i2c_bit_add_bus" },
 	{ 0xec7df631, "drm_disable_unused_functions" },
@@ -222,4 +224,4 @@ __attribute__((section(".modinfo"))) =
 "depends=drm_psb,i2c-algo-bit";
 
 
-MODULE_INFO(srcversion, "B2746B5D797D6961C214FBF");
+MODULE_INFO(srcversion, "263B4767B459DEDDC7DD141");

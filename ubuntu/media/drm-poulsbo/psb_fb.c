@@ -1349,4 +1349,3 @@ int psbfb_remove(struct drm_device *dev, struct drm_crtc *crtc)
 }
 
 EXPORT_SYMBOL(psbfb_remove);
-

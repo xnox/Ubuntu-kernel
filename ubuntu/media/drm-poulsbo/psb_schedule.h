@@ -74,6 +74,13 @@ struct psb_task {
 	uint32_t reply_flags;
 	uint32_t aborting;
 	struct psb_xhw_buf buf;
+
+#ifdef DVD_FIX
+	uint32_t bVideoFlag;
+	uint32_t x, y, w, h;
+	uint32_t pFBBOHandle;
+	void *pFBVirtAddr;
+#endif
 };
 
 struct psb_hw_scene {

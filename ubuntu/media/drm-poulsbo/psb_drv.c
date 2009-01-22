@@ -35,12 +35,21 @@
 #include <linux/notifier.h>
 #include <linux/fb.h>
 
+#ifdef DVD_FIX
+unsigned int gnBlit;
+struct semaphore gnRasterDoneNum;
+delayed_2d_blit_req_t gs2DBlitReq;
+psb_2d_blit_queue_t gsBlitQueue;
+atomic_t g_cmd_cancel;
+#endif /* DVD_FIX */
+	
 int drm_psb_debug = 0;
 EXPORT_SYMBOL(drm_psb_debug);
 static int drm_psb_trap_pagefaults = 0;
 static int drm_psb_clock_gating = 0;
 static int drm_psb_ta_mem_size = 32 * 1024;
-int drm_psb_disable_vsync = 1;
+int drm_psb_disable_vsync = 0;
+int drm_psb_detear = 1;
 int drm_psb_no_fb = 0;
 int drm_psb_force_pipeb = 0;
 char* psb_init_mode;
@@ -59,6 +68,7 @@ MODULE_PARM_DESC(clock_gating, "clock gating");
 MODULE_PARM_DESC(no_fb, "Disable FBdev");
 MODULE_PARM_DESC(trap_pagefaults, "Error and reset on MMU pagefaults");
 MODULE_PARM_DESC(disable_vsync, "Disable vsync interrupts");
+MODULE_PARM_DESC(detear, "eliminate video playback tearing");
 MODULE_PARM_DESC(force_pipeb, "Forces PIPEB to become primary fb");
 MODULE_PARM_DESC(ta_mem_size, "TA memory size in kiB");
 MODULE_PARM_DESC(mode, "initial mode name");
@@ -70,6 +80,7 @@ module_param_named(clock_gating, drm_psb_clock_gating, int, 0600);
 module_param_named(no_fb, drm_psb_no_fb, int, 0600);
 module_param_named(trap_pagefaults, drm_psb_trap_pagefaults, int, 0600);
 module_param_named(disable_vsync, drm_psb_disable_vsync, int, 0600);
+module_param_named(detear, drm_psb_detear, int, 0600);
 module_param_named(force_pipeb, drm_psb_force_pipeb, int, 0600);
 module_param_named(ta_mem_size, drm_psb_ta_mem_size, int, 0600);
 module_param_named(mode, psb_init_mode, charp, 0600);
@@ -109,6 +120,85 @@ static struct drm_ioctl_desc psb_ioctls[] = {
 static int psb_max_ioctl = DRM_ARRAY_SIZE(psb_ioctls);
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
+
+#ifdef DVD_FIX
+int psb_blit_queue_init(psb_2d_blit_queue_ptr q)
+{
+	q->nHead = q->nTail = 0;
+	q->sLock = SPIN_LOCK_UNLOCKED;
+	return 0;
+}
+
+int psb_blit_queue_is_empty(psb_2d_blit_queue_ptr q)
+{
+	int ret;
+	unsigned long irq_flags;
+	spin_lock_irqsave(&q->sLock, irq_flags);
+	ret = (q->nHead == q->nTail) ? 1 : 0;	
+	spin_unlock_irqrestore(&q->sLock,  irq_flags);	
+
+	return ret;
+}
+
+int psb_blit_queue_is_full(psb_2d_blit_queue_ptr q)
+{
+	int ret;
+	//current queue size is 5 elements !
+
+	unsigned long irq_flags;
+	spin_lock_irqsave(&q->sLock, irq_flags);	
+	ret = (q->nHead == ((q->nTail+1)%PSB_BLIT_QUEUE_LEN) ) ? 1 : 0;	
+	spin_unlock_irqrestore(&q->sLock,  irq_flags);
+
+	return ret;
+}
+
+delayed_2d_blit_req_ptr  psb_blit_queue_get_item(psb_2d_blit_queue_ptr q)
+{
+	delayed_2d_blit_req_ptr p;
+	
+	if(psb_blit_queue_is_empty(q))
+		return NULL;	
+
+	unsigned long irq_flags;
+	spin_lock_irqsave(&q->sLock, irq_flags);		
+	p = (delayed_2d_blit_req_ptr) (&(q->sBlitReq[q->nHead]));
+	q->nHead = (q->nHead+1) % PSB_BLIT_QUEUE_LEN;
+	spin_unlock_irqrestore(&q->sLock,  irq_flags);
+
+	return p;
+}
+
+void psb_blit_queue_clear(psb_2d_blit_queue_ptr q)
+{
+	delayed_2d_blit_req_ptr p;
+	unsigned long irq_flags;
+
+	spin_lock_irqsave(&q->sLock, irq_flags);
+	q->nHead = q->nTail = 0;
+	spin_unlock_irqrestore(&q->sLock,  irq_flags);
+}
+
+int psb_blit_queue_put_item(psb_2d_blit_queue_ptr q, delayed_2d_blit_req_ptr elem)
+{
+	if(psb_blit_queue_is_full(q))
+	{
+		DRM_ERROR("%s, fatal error: blit queue is full!\n", __FUNCTION__);
+		return -1;
+	}
+
+	unsigned long irq_flags;
+	spin_lock_irqsave(&q->sLock, irq_flags);		
+	q->sBlitReq[q->nTail].gnBlitCmdSize = elem->gnBlitCmdSize;	//size in dwords
+	memcpy(q->sBlitReq[q->nTail].BlitReqData,  elem->BlitReqData, elem->gnBlitCmdSize * 4);
+	q->nTail = (q->nTail+1) % PSB_BLIT_QUEUE_LEN;
+	spin_unlock_irqrestore(&q->sLock,  irq_flags);	
+	
+	return 0;
+}
+
+#endif
+
 
 #ifdef USE_PAT_WC
 #warning Init pat
@@ -262,6 +352,15 @@ static int psb_do_init(struct drm_device *dev)
 
 	DRM_ERROR("Debug is 0x%08x\n", drm_psb_debug);
 
+#ifdef DVD_FIX
+	clear_bit(0, &gnBlit);
+	sema_init(&gnRasterDoneNum, 0);	
+	/* atomic_set(&gnRasterDoneNum, 0); */
+	atomic_set(&g_cmd_cancel, 0);
+	psb_blit_queue_init(&gsBlitQueue);
+#endif
+
+	
 	dev_priv->ta_mem_pages =
 	    PSB_ALIGN_TO(drm_psb_ta_mem_size * 1024, PAGE_SIZE) >> PAGE_SHIFT;
 	dev_priv->comm_page = alloc_page(GFP_KERNEL);
@@ -478,6 +577,7 @@ static int psb_initial_config(struct drm_device *dev, bool can_grow)
 	/* strncpy(drm_init_mode, psb_init_mode, strlen(psb_init_mode)); */
 	drm_init_xres = psb_init_xres;
 	drm_init_yres = psb_init_yres;
+	printk(KERN_ERR "detear is %sabled\n", drm_psb_detear ? "en" : "dis" );
 
 	drm_pick_crtcs(dev);
 
@@ -512,7 +612,6 @@ static int psb_initial_config(struct drm_device *dev, bool can_grow)
 #else
 	drm_disable_unused_functions(dev);
 #endif
-
 
 	mutex_unlock(&dev->mode_config.mutex);
 
@@ -965,7 +1064,7 @@ static struct drm_driver driver = {
 	.get_reg_ofs = drm_core_get_reg_ofs,
 	.ioctls = psb_ioctls,
 	.device_is_agp = psb_driver_device_is_agp,
-	.vblank_wait = psb_vblank_wait,
+	.vblank_wait = psb_vblank_wait2,
 	.vblank_wait2 = psb_vblank_wait2,
 	.irq_preinstall = psb_irq_preinstall,
 	.irq_postinstall = psb_irq_postinstall,

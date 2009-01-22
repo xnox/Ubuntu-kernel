@@ -279,6 +279,8 @@ out_err:
  * Wait until the buffer is idle.
  */
 
+int bFlag = 0; // Workaround for xserver crash issue
+
 int drm_bo_wait(struct drm_buffer_object *bo, int lazy, int ignore_signals,
 		int no_wait)
 {
@@ -296,8 +298,14 @@ int drm_bo_wait(struct drm_buffer_object *bo, int lazy, int ignore_signals,
 
 		ret = drm_fence_object_wait(bo->fence, lazy, ignore_signals,
 					  bo->fence_type);
-		if (ret)
+		if (ret) {
+			if (bFlag) {
+				bFlag = 0;
+				drm_fence_usage_deref_unlocked(&bo->fence);
+				return 0;
+			}
 			return ret;
+		}
 
 		drm_fence_usage_deref_unlocked(&bo->fence);
 	}
@@ -1228,6 +1236,11 @@ static int drm_buffer_object_map(struct drm_file *file_priv, uint32_t handle,
 				ret = -EBUSY;
 				goto out;
 			}
+
+			if (rep->expand_pad[0] == 10) {
+				bFlag = 1;
+			}
+
 			ret = drm_bo_wait(bo, 0, 0, no_wait);
 			if (ret) {
 				atomic_dec(&bo->mapped);
