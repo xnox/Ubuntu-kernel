@@ -1,3 +1,12 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook10) hardy; urgency=low
+
+  [Michael Krufky]
+
+  * sms1xxx driver is missing the USB ID 2040:2011 for Dell Digital TV
+    Receiver (LP: #320542)
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 23 Jan 2009 13:27:58 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook9) hardy; urgency=low
 
   [Upstream Kernel Changes]
