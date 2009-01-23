@@ -199,6 +199,8 @@ psb_submit_video_cmdbuf (struct drm_device *dev,
   psb_schedule_watchdog (dev_priv);
 
   spin_lock_irqsave (&dev_priv->msvdx_lock, irq_flags);
+  dev_priv->msvdx_power_saving = 0;
+
   if (dev_priv->msvdx_needs_reset)
     {
       spin_unlock_irqrestore (&dev_priv->msvdx_lock, irq_flags);
@@ -647,7 +649,8 @@ psb_msvdx_lockup (struct drm_psb_private *dev_priv,
     } 
     else 
     {
-	if (dev_priv->msvdx_needs_reset == 0)
+	//if (dev_priv->msvdx_needs_reset == 0)
+	if (dev_priv->msvdx_power_saving == 0)
 	{
 	    if (dev_priv->msvdx_start_idle && (dev_priv->msvdx_finished_sequence == dev_priv->msvdx_current_sequence))
 	    {
@@ -656,7 +659,9 @@ psb_msvdx_lockup (struct drm_psb_private *dev_priv,
 		{
 		    printk("set the msvdx clock to 0 in the %s\n", __FUNCTION__);
       		    PSB_WMSVDX32 (0, MSVDX_MAN_CLK_ENABLE);
-		    dev_priv->msvdx_needs_reset = 1;
+		    // MSVDX needn't to be reset for the latter commands after pausing and resuming playing.
+		    //dev_priv->msvdx_needs_reset = 1;
+		    dev_priv->msvdx_power_saving = 1;
 		}
 		else
 		{
