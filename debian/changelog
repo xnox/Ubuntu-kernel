@@ -1,3 +1,16 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook11) hardy; urgency=low
+
+  [Steve Magoun]
+
+  * patch_realtek.c:
+    - Backport fixes from realtek v5.05 drop to fix problem with 
+      headphone + internal speaker not muting properly if headphone
+      is plugged in at boot (LP: #250627, #241228)
+    - Clean up some CW020-specific code to use generic ALC269 code
+    - Disable CW020 quirk for now, it seems to be unnecessary
+
+ -- Michael Frey <michael.frey@canonical.com>  Mon, 26 Jan 2009 11:57:36 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook10) hardy; urgency=low
 
   [Michael Krufky]
