@@ -6283,6 +6283,9 @@ static void alc882_auto_init_hp_out(struct hda_codec *codec)
 	if (pin) /* connect to front */
 		/* use dac 0 */
 		alc882_auto_set_output_and_unmute(codec, pin, PIN_HP, 0);
+	pin = spec->autocfg.speaker_pins[0];
+	if (pin)
+		alc882_auto_set_output_and_unmute(codec, pin, PIN_OUT, 0);
 }
 
 #define alc882_is_input_pin(nid)	alc880_is_input_pin(nid)
@@ -10554,12 +10557,6 @@ static struct hda_verb alc269_eeepc_dmic_init_verbs[] = {
 	{}
 };
 
-static struct hda_verb alc269_eapd_verbs[] = {
-	{0x14, AC_VERB_SET_EAPD_BTLENABLE, 2},
-	{0x15, AC_VERB_SET_EAPD_BTLENABLE, 2},
-	{ }
-};
-
 /* toggle speaker-output according to the hp-jack state */
 static void alc269_speaker_automute(struct hda_codec *codec)
 {
@@ -10574,8 +10571,6 @@ static void alc269_speaker_automute(struct hda_codec *codec)
 	snd_hda_codec_amp_stereo(codec, 0x0c, HDA_INPUT, 1,
 				AMP_IN_MUTE(0), bits);
 }
-
-#define alc269_cw020_automute alc262_hippo_automute
 
 static struct hda_verb alc269_cw020_verbs[] = {
 	{0x15, AC_VERB_SET_UNSOLICITED_ENABLE, ALC880_HP_EVENT | AC_USRSP_EN},
@@ -10612,14 +10607,13 @@ static void alc269_eeepc_dmic_inithook(struct hda_codec *codec)
 static void alc269_cw020_unsol_event(struct hda_codec *codec,
 		unsigned int res)
 {
-	if ((res >> 26) != ALC880_HP_EVENT)
-	  return;
-	alc269_cw020_automute(codec);
+	if ((res >> 26) == ALC880_HP_EVENT)
+		alc269_speaker_automute(codec);
 }
 
 static void alc269_cw020_init_hook(struct hda_codec *codec)
 {
-	alc269_cw020_automute(codec);
+	alc269_speaker_automute(codec);
 }
 
 /*
@@ -10853,9 +10847,12 @@ static int alc269_parse_auto_config(struct hda_codec *codec)
 /* init callback for auto-configuration model -- overriding the default init */
 static void alc269_auto_init(struct hda_codec *codec)
 {
+	struct alc_spec *spec = codec->spec;
 	alc269_auto_init_multi_out(codec);
 	alc269_auto_init_hp_out(codec);
 	alc269_auto_init_analog_input(codec);
+	if (spec->unsol_event)
+		alc_sku_automute(codec);
 }
 
 /*
@@ -10868,7 +10865,7 @@ static const char *alc269_models[ALC269_MODEL_LAST] = {
 };
 
 static struct snd_pci_quirk alc269_cfg_tbl[] = {
-        SND_PCI_QUIRK(0x1509, 0x5001, "CW020", ALC269_CW020),
+	//SND_PCI_QUIRK(0x1509, 0x5001, "CW020", ALC269_CW020),
 	SND_PCI_QUIRK(0x1028, 0x02c6, "DELL KIU10", ALC269_QUANTA_ON1),
 	{ }
 };
@@ -10886,8 +10883,8 @@ static struct alc_config_preset alc269_presets[] = {
 	},
 	[ALC269_CW020] = {
 		.mixers = { alc269_base_mixer },
-		.init_verbs = { alc269_init_verbs, alc269_eapd_verbs, 
-		   alc269_cw020_verbs },
+		.init_verbs = { alc269_init_verbs,
+				alc269_cw020_verbs },
 		.num_dacs = ARRAY_SIZE(alc269_dac_nids),
 		.dac_nids = alc269_dac_nids,
 		.hp_nid = 0x03,
