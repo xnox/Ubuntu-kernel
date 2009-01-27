@@ -12,7 +12,7 @@ RBIN=regulatory.bin
 CRDA_PATH = /sbin
 UDEVR=/etc/udev/rules.d
 
-pkg=crda
+pkg=wireless-crda
 pkg_dir = $(CURDIR)/debian/$(pkg)
 
 build:
