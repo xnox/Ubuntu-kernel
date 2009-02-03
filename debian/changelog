@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook12) hardy; urgency=low
+
+  [Upstream Kernel Changes]
+
+  * New upstream PSB DRM driver from Intel. PV_2_3_0031
+
+ -- Michael Frey <michael.frey@canonical.com>  Tue, 03 Feb 2009 10:36:29 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook11) hardy; urgency=low
 
   [Steve Magoun]
