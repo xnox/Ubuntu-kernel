@@ -81,9 +81,9 @@ enum {
 #define DRIVER_DESC "drm driver for the Intel GMA500"
 #define DRIVER_AUTHOR "Tungsten Graphics Inc."
 
-#define PSB_DRM_DRIVER_DATE "20090119"
+#define PSB_DRM_DRIVER_DATE "20090121"
 #define PSB_DRM_DRIVER_MAJOR 4
-#define PSB_DRM_DRIVER_MINOR 0
+#define PSB_DRM_DRIVER_MINOR 25
 #define PSB_DRM_DRIVER_PATCHLEVEL 0
 
 #define PSB_VDC_OFFSET           0x00000000

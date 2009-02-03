@@ -32,6 +32,7 @@
 
 #ifdef DVD_FIX
 extern psb_2d_blit_queue_t gsBlitQueue;
+extern atomic_t gnRasterDoneNum;
 extern atomic_t g_cmd_cancel;
 #endif
 
@@ -199,7 +200,7 @@ static int psb_2d_submit_blit(struct drm_psb_private *dev_priv, uint32_t * cmdbu
 	item.gnBlitCmdSize = size;	//size in dwords
 	memcpy(item.BlitReqData, cmdbuf, size*4);
 	psb_blit_queue_put_item( &gsBlitQueue, &item );
-	/* printk("%s, after psb_blit_queue_put_item\n", __FUNCTION__); */
+	//printk("%s, after psb_blit_queue_put_item\n", __FUNCTION__);	
 	return 0;
 }
 #endif	
@@ -1007,7 +1008,7 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 	if(arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT))
 	{
 		arg->sVideoInfo.flag = 0;
-		/* printk("%s, is PSB_DELAYED_2D_BLIT\n",__FUNCTION__); */
+		//printk("%s, is PSB_DELAYED_2D_BLIT\n",__FUNCTION__);
 		ret = psb_submit_copy_cmdbuf_blit(dev, cmd_buffer, arg->cmdbuf_offset,
 				     arg->cmdbuf_size, PSB_ENGINE_2D, NULL);
 	}
@@ -1327,10 +1328,11 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 		return -EINVAL;
 
 #ifdef DVD_FIX
-#if 1
+#if 1 				
 	   	if( arg->sVideoInfo.flag == PSB_VIDEO_BLIT_QUICK_CANCEL )
 		{
-			psb_blit_queue_clear(&gsBlitQueue);		
+			//atomic_dec(&gnRasterDoneNum);
+			psb_blit_queue_clear(&gsBlitQueue);
 			//DRM_ERROR("atomic_inc, %x\n", arg->sVideoInfo.flag);
 			return 0;
 		}
@@ -1338,10 +1340,6 @@ int psb_cmdbuf_ioctl(struct drm_device *dev, void *data,
 	/* to eliminate image persistance issue */
 	if((arg->sVideoInfo.flag == (PSB_VIDEO_BLIT_CANCEL | PSB_DELAYED_2D_BLIT) ) || ( arg->sVideoInfo.flag == (PSB_VIDEO_BLIT_CANCEL |PSB_VIDEO_BLIT))) 
 	{
-	//add by zyz, just clear queue!
-//		atomic_inc(&g_cmd_cancel);
-//		psb_blit_queue_clear(&gsBlitQueue);		
-//		DRM_ERROR("atomic_inc, %x, %x\n", arg->sVideoInfo.flag, arg->engine);
 		arg->sVideoInfo.flag &= (~PSB_VIDEO_BLIT_CANCEL);
 	}	
 #endif	/* DVD_FIX */

@@ -37,61 +37,67 @@ extern psb_2d_blit_queue_t gsBlitQueue;
 #ifdef DVD_FIX
 #define BLIT_CMD_SIZE 10		/* in dwords */
 extern atomic_t g_cmd_cancel;
-/* 
- * Description: issue a delayed 2d blit task after the specific render task 
- */
 
-static int psb_2d_blit_issue(struct drm_device *dev )
-{
-	struct drm_psb_private *dev_priv = (struct drm_psb_private *)dev->dev_private;
-	int i;
-	unsigned int *start;
-	uint32_t avail;
-	uint32_t uCmdSize;
-	int num;
-	delayed_2d_blit_req_ptr p;
+/* /\*  */
+/*  * Description: issue a delayed 2d blit task after the specific render task  */
+/*  *\/ */
 
-	if(!test_and_clear_bit(0, &gnBlit)) {
-		if(down_trylock(&gnRasterDoneNum) == 0) {
-			p = psb_blit_queue_get_item(&gsBlitQueue);
-		}
-		return 0;
-	}
+/* static int psb_2d_blit_issue(struct drm_device *dev ) */
+/* { */
+/* 	struct drm_psb_private *dev_priv = (struct drm_psb_private *)dev->dev_private; */
+/* 	int i; */
+/* 	unsigned int *start; */
+/* 	uint32_t avail; */
+/* 	uint32_t uCmdSize; */
+/* 	int num; */
+/* 	delayed_2d_blit_req_ptr p; */
+
+/* 	if(!test_and_clear_bit(0, &gnBlit)) { */
+/* 		if(atomic_read(&gnRasterDoneNum) > 0) { */
+/* 			/\* We have missed the right time, just give up */
+/* 			   this frame *\/ */
+/* 			atomic_dec(&gnRasterDoneNum); */
+/* 			p = psb_blit_queue_get_item(&gsBlitQueue); */
+/* 		} */
+/* 		return 0; */
+/* 	} */
 	
-	/* get 2d cmdbuf and issue */
-	if(down_trylock(&gnRasterDoneNum) != 0)
-		return 0;	//no 2d task issue slot
+/* 	/\* No pending 2D task to work, just return *\/ */
+/* 	if(atomic_read(&gnRasterDoneNum) <= 0) */
+/* 		return 0; */
 
+/* 	/\* at least one 2D task pending, fire it, and decrease the */
+/* 	   count *\/ */
+/* 	atomic_dec(&gnRasterDoneNum); */
+/* 	p = psb_blit_queue_get_item(&gsBlitQueue); */
+/* 	if(!p) { */
+/* 		return 0; */
+/* 	} */
 
-	p = psb_blit_queue_get_item(&gsBlitQueue);
-	if(!p) {
-		return 0;
-	}
+/* 	/\* signal to 3D raster task *\/ */
+/* 	avail = PSB_RSGX32(PSB_CR_2D_SOCIF); */
+/* 	if(avail < BLIT_CMD_SIZE) {	/\* 2d cmdbuf lengthe is 10 dwords *\/ */
+/* 		return 0;	/\* 2D engine is busy.  maybe a bug!!! *\/ */
+/* 	} */
 
-	/* signal to 3D raster task */
-	avail = PSB_RSGX32(PSB_CR_2D_SOCIF);
-	if(avail < BLIT_CMD_SIZE) {	/* 2d cmdbuf lengthe is 10 dwords */
-		return 0;	/* 2D engine is busy.  maybe a bug!!! */
-	}
-
-#if 0
-	/* this command should not be really issued */
-	if (atomic_read(&g_cmd_cancel)) {
-		atomic_dec(&g_cmd_cancel);
-		return 0;
+/* #if 0 */
+/* 	/\* this command should not be really issued *\/ */
+/* 	if (atomic_read(&g_cmd_cancel)) { */
+/* 		atomic_dec(&g_cmd_cancel); */
+/* 		return 0; */
 	
-	}
-#endif	
+/* 	} */
+/* #endif	 */
 
-	uCmdSize = (p->gnBlitCmdSize)<<2;	
-	start = (unsigned int *)p->BlitReqData;
-	for (i = 0; i < uCmdSize; i += 4) {
-		PSB_WSGX32(*start++, PSB_SGX_2D_SLAVE_PORT + i);
-	}
-	(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4);
+/* 	uCmdSize = (p->gnBlitCmdSize)<<2; */
+/* 	start = (unsigned int *)p->BlitReqData; */
+/* 	for (i = 0; i < uCmdSize; i += 4) { */
+/* 		PSB_WSGX32(*start++, PSB_SGX_2D_SLAVE_PORT + i); */
+/* 	} */
+/* 	(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4); */
 
-	return 0;
-}
+/* 	return 0; */
+/* } */
 
 #endif
 
@@ -105,6 +111,11 @@ static void psb_vdc_interrupt(struct drm_device *dev, uint32_t vdc_stat)
 	    (struct drm_psb_private *)dev->dev_private;
 	uint32_t pipestat;
 	int wake = 0;
+	int vsync_a = 0;
+	int vsync_b = 0;
+	static int pipe_a_on = 0;
+	static int pipe_b_on = 0;
+	int trigger_2d_blit = 0;
 
 	pipestat = PSB_RVDC32(PSB_PIPEASTAT);
 	if (pipestat & (1<<31)) {
@@ -116,6 +127,8 @@ static void psb_vdc_interrupt(struct drm_device *dev, uint32_t vdc_stat)
 	    (vdc_stat & _PSB_VSYNC_PIPEA_FLAG)) {
 		atomic_inc(&dev->vbl_received);
 		wake = 1;
+		vsync_a = 1;
+		pipe_a_on = 1;
 		PSB_WVDC32(_PSB_VBLANK_INTERRUPT_ENABLE |
 			   _PSB_VBLANK_CLEAR, PSB_PIPEASTAT);
 	}
@@ -124,15 +137,23 @@ static void psb_vdc_interrupt(struct drm_device *dev, uint32_t vdc_stat)
 	    (vdc_stat & _PSB_VSYNC_PIPEB_FLAG)) {
 		atomic_inc(&dev->vbl_received2);
 		wake = 1;
+		vsync_b = 1;
+		pipe_b_on = 1;
 		PSB_WVDC32(_PSB_VBLANK_INTERRUPT_ENABLE |
 			   _PSB_VBLANK_CLEAR, PSB_PIPEBSTAT);
 	}
 
 #ifdef DVD_FIX
-	if (drm_psb_detear && wake) {
-		psb_2d_blit_issue(dev);
-		set_bit(0, &gnBlit);
-	}
+	
+/* 	if (pipe_a_on && pipe_b_on) */
+/* 		trigger_2d_blit = vsync_b; */
+/* 	else if (pipe_a_on || pipe_b_on) */
+/* 		trigger_2d_blit = vsync_a || vsync_b; */
+
+/* 	if (drm_psb_detear && trigger_2d_blit) { */
+/* 		psb_2d_blit_issue(dev); */
+/* 		set_bit(0, &gnBlit); */
+/* 	} */
 
 	/* maybe the wake is set due to drm_psb_detear, but it should
 	   not */

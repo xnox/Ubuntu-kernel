@@ -37,7 +37,7 @@
 
 #ifdef DVD_FIX
 unsigned int gnBlit;
-struct semaphore gnRasterDoneNum;
+atomic_t gnRasterDoneNum;
 delayed_2d_blit_req_t gs2DBlitReq;
 psb_2d_blit_queue_t gsBlitQueue;
 atomic_t g_cmd_cancel;
@@ -353,9 +353,9 @@ static int psb_do_init(struct drm_device *dev)
 	DRM_ERROR("Debug is 0x%08x\n", drm_psb_debug);
 
 #ifdef DVD_FIX
-	clear_bit(0, &gnBlit);
-	sema_init(&gnRasterDoneNum, 0);	
-	/* atomic_set(&gnRasterDoneNum, 0); */
+	//clear_bit(0, &gnBlit);
+	/* sema_init(&gnRasterDoneNum, 0); */
+	atomic_set(&gnRasterDoneNum, 0);
 	atomic_set(&g_cmd_cancel, 0);
 	psb_blit_queue_init(&gsBlitQueue);
 #endif
