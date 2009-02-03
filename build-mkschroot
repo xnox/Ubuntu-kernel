@@ -1,0 +1,159 @@
+#!/bin/bash
+#==============================================================================
+# This script is intended to automatically set up a schroot environment ready
+# to compile the kernel.
+# The arguments are the same as for the debootstrap command. The entry for
+# the schroot configuration will be automatically appended (if it does not
+# exist) and the remaining packages will get installed.
+#==============================================================================
+RC=0
+USER="$SUDO_USER"
+if [ "$USER" = "" ]; then
+	echo "ERROR: You must run this command under sudo!" >&2
+	RC=1
+fi
+if [ $(id -u) -ne 0 ]; then
+	echo "ERROR: You must be root to run this command!" >&2
+	RC=1
+fi
+for i in debootstrap schroot; do
+	if [ "$(type -p $i)" = "" ]; then
+		echo "ERROR: $i is required!" >&2
+		RC=1
+	fi
+done
+
+if [ $RC -ne 0 ]; then
+	exit $RC
+fi
+
+#------------------------------------------------------------------------------
+# Command line evaluation
+#------------------------------------------------------------------------------
+OPTIONS=""
+SUITE=""
+TARGET=""
+MIRROR=""
+while [ $# -ne 0 ]; do
+	case $1 in
+		--arch=*)
+			ARCH=$(echo $1|cut -d= -f2)
+			OPTIONS="$OPTIONS $1"
+			;;
+		-*|--*)
+			OPTIONS="$OPTIONS $1"
+			;;
+		*)
+			if [ "$SUITE" = "" ]; then
+				SUITE="$1"
+			elif [ "$TARGET" = "" ]; then
+				TARGET="$1"
+			elif [ "$MIRROR" = "" ]; then
+				MIRROR="$1"
+			else
+				echo "Too many arguments <$1>!" >&2
+				exit 1
+			fi
+			;;
+	esac
+	shift
+done
+
+if [ "$SUITE" = "" -o "$TARGET" = "" ]; then
+	echo "$(basename $0) <suite> <target> [mirror]"
+	exit 1
+fi
+
+#------------------------------------------------------------------------------
+# Make a list of package we additionally need (depending on suite).
+#------------------------------------------------------------------------------
+ADDPKG="vim fakeroot git-core kernel-wedge build-essential ccache"
+case $SUITE in
+	dapper)
+		ADDPKG="$ADDPKG kernel-package"
+		;;
+	feisty)
+		ADDPKG="$ADDPKG kernel-package"
+		;;
+	gutsy)
+		;;
+	hardy)
+		;;
+	intrepid)
+		ADDPKG="$ADDPKG makedumpfile"
+		;;
+	jaunty)
+		ADDPKG="$ADDPKG makedumpfile"
+		;;
+	*)
+		if [ "$SUITE" != "" ]; then
+			echo "Unknown suite <$SUITE>!" >&2
+			exit 1
+		fi
+		;;
+esac
+
+HOSTARCH=$(dpkg --print-architecture)
+if [ "$ARCH" = "" ]; then
+	NAME="$SUITE"
+else
+	NAME="$SUITE-$ARCH"
+fi
+
+CFGFILE="/etc/schroot/schroot.conf"
+CFGEXISTS=false
+if [ "$(fgrep "[$NAME]" $CFGFILE 2>/dev/null)" != "" ]; then
+	echo "WARNING: An entry for $NAME already exists in $CFGFILE!" >&2
+	CFGEXISTS=true
+fi
+
+DOINSTALL=true
+if [ ! -d "$TARGET" ]; then
+	mkdir "$TARGET"
+	if [ $? -ne 0 ]; then
+		echo "Failed to create <$TARGET>!" >&2
+		exit 1
+	fi
+else
+	if $CFGEXISTS; then
+		echo "WARNING: Target directory exists as well. " \
+		     "Skipping installation" >&2
+		DOINSTALL=false
+	fi
+fi
+
+if $DOINSTALL; then
+	echo debootstrap $OPTIONS $SUITE "$TARGET" $MIRROR
+	debootstrap $OPTIONS $SUITE "$TARGET" $MIRROR || exit 1
+	if [ -d "$TARGET/etc" ]; then
+		cp /etc/hosts /etc/sudoers "$TARGET/etc"
+	fi
+fi
+
+function UpdateConfig()
+{
+	echo "INFO: Updating configuration file..." >&2
+	USER=$SUDO_USER
+	cat <<-EOD >>$CFGFILE
+
+	[$NAME]
+	description=Ubuntu $SUITE ($ARCH)
+	type=directory
+	location=$TARGET
+	users=$USER
+	run-setup-scripts=true
+	EOD
+	case $ARCH in
+		i386|lpia)
+			case $HOSTARCH in
+				amd64)
+					echo "personality=linux32" >>$CFGFILE
+					;;
+			esac
+			;;
+	esac
+}
+if ! $CFGEXISTS; then
+	UpdateConfig
+fi
+schroot -uroot -c$NAME -q apt-get -- install -y --force-yes $ADDPKG
