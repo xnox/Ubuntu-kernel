@@ -67,7 +67,7 @@ fi
 #------------------------------------------------------------------------------
 # Make a list of package we additionally need (depending on suite).
 #------------------------------------------------------------------------------
-ADDPKG="vim fakeroot git-core kernel-wedge build-essential ccache"
+ADDPKG="vim fakeroot git-core kernel-wedge build-essential ccache devscripts"
 case $SUITE in
 	dapper)
 		ADDPKG="$ADDPKG kernel-package"
