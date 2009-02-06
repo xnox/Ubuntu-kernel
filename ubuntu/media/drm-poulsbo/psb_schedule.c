@@ -33,8 +33,6 @@
 /* extern struct semaphore gnRasterDoneNum; */
 extern atomic_t gnRasterDoneNum; 
 extern unsigned int gnBlit;
-extern psb_2d_blit_queue_t gsBlitQueue;
-#define BLIT_CMD_SIZE 10
 #endif
 
 #define PSB_ALLOWED_RASTER_RUNTIME (DRM_HZ * 20)
@@ -384,10 +382,10 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = task;
 
 #ifdef DVD_FIX
-/* 	if(task->bVideoFlag == PSB_VIDEO_BLIT) */
-/* 	{ */
-/* 		while(test_and_clear_bit(0, &gnBlit) == 0); */
-/* 	} */
+	if(task->bVideoFlag == PSB_VIDEO_BLIT)
+	{
+		while(test_and_clear_bit(0, &gnBlit) == 0);
+	}
 #endif
 
 	list_del_init(list);
@@ -482,37 +480,6 @@ static void psb_ta_done(struct drm_psb_private *dev_priv,
 	schedule_delayed_work(&scheduler->wq, 1);
 }
 
-static int psb_2d_blit_issue(struct drm_psb_private *dev_priv )
-{
-	int i;
-	unsigned int *start;
-	uint32_t avail;
-	uint32_t uCmdSize;
-	int num;
-	delayed_2d_blit_req_ptr p;
-
-	p = psb_blit_queue_get_item(&gsBlitQueue);
-	if(!p) {
-		/* no pending 2D task */
-		return 0;
-	}
-
-	avail = PSB_RSGX32(PSB_CR_2D_SOCIF);
-	if(avail < BLIT_CMD_SIZE) {	/* 2d cmdbuf lengthe is 10 dwords */
-		return 0;	/* 2D engine is busy.  maybe a bug!!! */
-	}
-
-	uCmdSize = (p->gnBlitCmdSize)<<2;
-	start = (unsigned int *)p->BlitReqData;
-	for (i = 0; i < uCmdSize; i += 4) {
-		PSB_WSGX32(*start++, PSB_SGX_2D_SLAVE_PORT + i);
-	}
-	(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4);
-
-	return 0;
-}
-
-
 /*
  * Rasterizer done handler.
  */
@@ -530,19 +497,19 @@ static void psb_raster_done(struct drm_psb_private *dev_priv,
 
 /***************************************************/
 #ifdef DVD_FIX
-	if(task->bVideoFlag == PSB_VIDEO_BLIT) {
-		/* 		printk("%s, dbw,%x, %x, %x, %x\n", __FUNCTION__, */
-		/* 			task->x, */
-		/* 			task->y, */
-		/* 			task->w, */
-		/* 			task->h); */
+if(task->bVideoFlag == PSB_VIDEO_BLIT)
+	{
+/* 		printk("%s, dbw,%x, %x, %x, %x\n", __FUNCTION__, */
+/* 			task->x, */
+/* 			task->y, */
+/* 			task->w, */
+/* 			task->h); */
 		task->bVideoFlag = 0;	
 		set_bit(0, &gnBlit);
-		//atomic_inc(&gnRasterDoneNum);
-		psb_2d_blit_issue(dev_priv);
+		atomic_inc(&gnRasterDoneNum);
 	} 
 #endif	
-/***************************************************/
+/***************************************************/	
 
 	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = NULL;
 
