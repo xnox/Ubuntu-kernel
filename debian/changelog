@@ -1,3 +1,9 @@
+linux-backports-modules-2.6.28 (2.6.28-7.4) jaunty; urgency=low
+
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Sun, 08 Feb 2009 19:32:21 -0700
+
 linux-backports-modules-2.6.28 (2.6.28-6.3) jaunty; urgency=low
 
   * Bump ABI
