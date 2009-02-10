@@ -144,9 +144,11 @@ enum {
 	WHO_IS_AWAKE_NOTIFICATION = 0x94,	/* not used */
 
 	/* Miscellaneous commands */
+	REPLY_TX_POWER_DBM_CMD = 0x95,
 	QUIET_NOTIFICATION = 0x96,		/* not used */
 	REPLY_TX_PWR_TABLE_CMD = 0x97,
-	REPLY_TX_POWER_DBM_CMD = 0x98,
+	REPLY_TX_POWER_DBM_CMD_V1 = 0x98,	/* old version of API */
+	TX_ANT_CONFIGURATION_CMD = 0x98,	/* not used */
 	MEASURE_ABORT_NOTIFICATION = 0x99,	/* not used */
 
 	/* Bluetooth device coexistence config command */
@@ -563,6 +565,7 @@ enum {
 
 
 #define RXON_RX_CHAIN_DRIVER_FORCE_MSK		cpu_to_le16(0x1 << 0)
+#define RXON_RX_CHAIN_DRIVER_FORCE_POS		(0)
 #define RXON_RX_CHAIN_VALID_MSK			cpu_to_le16(0x7 << 1)
 #define RXON_RX_CHAIN_VALID_POS			(1)
 #define RXON_RX_CHAIN_FORCE_SEL_MSK		cpu_to_le16(0x7 << 4)
@@ -2431,6 +2434,9 @@ struct iwl3945_scan_channel {
 	__le16 passive_dwell;	/* in 1024-uSec TU (time units), typ 20-500 */
 } __attribute__ ((packed));
 
+/* set number of direct probes u8 type */
+#define IWL39_SCAN_PROBE_MASK(n) ((BIT(n) | (BIT(n) - BIT(1))))
+
 struct iwl_scan_channel {
 	/*
 	 * type is defined as:
@@ -2446,6 +2452,9 @@ struct iwl_scan_channel {
 	__le16 active_dwell;	/* in 1024-uSec TU (time units), typ 5-50 */
 	__le16 passive_dwell;	/* in 1024-uSec TU (time units), typ 20-500 */
 } __attribute__ ((packed));
+
+/* set number of direct probes __le32 type */
+#define IWL_SCAN_PROBE_MASK(n) 	cpu_to_le32((BIT(n) | (BIT(n) - BIT(1))))
 
 /**
  * struct iwl_ssid_ie - directed scan network information element
@@ -2839,7 +2848,7 @@ struct statistics_rx_ht_phy {
 	__le32 reserved2;
 } __attribute__ ((packed));
 
-#define INTERFERENCE_DATA_AVAILABLE      __constant_cpu_to_le32(1)
+#define INTERFERENCE_DATA_AVAILABLE      cpu_to_le32(1)
 
 struct statistics_rx_non_phy {
 	__le32 bogus_cts;	/* CTS received when not expecting CTS */

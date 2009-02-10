@@ -73,7 +73,7 @@ static u8 *ieee80211_bss_get_ie(struct ieee80211_bss *bss, u8 ie)
 
 static int ieee80211_compatible_rates(struct ieee80211_bss *bss,
 				      struct ieee80211_supported_band *sband,
-				      u64 *rates)
+				      u32 *rates)
 {
 	int i, j, count;
 	*rates = 0;
@@ -93,14 +93,14 @@ static int ieee80211_compatible_rates(struct ieee80211_bss *bss,
 }
 
 /* also used by mesh code */
-u64 ieee80211_sta_get_rates(struct ieee80211_local *local,
+u32 ieee80211_sta_get_rates(struct ieee80211_local *local,
 			    struct ieee802_11_elems *elems,
 			    enum ieee80211_band band)
 {
 	struct ieee80211_supported_band *sband;
 	struct ieee80211_rate *bitrates;
 	size_t num_rates;
-	u64 supp_rates;
+	u32 supp_rates;
 	int i, j;
 	sband = local->hw.wiphy->bands[band];
 
@@ -131,6 +131,12 @@ u64 ieee80211_sta_get_rates(struct ieee80211_local *local,
 
 /* frame sending functions */
 
+static void add_extra_ies(struct sk_buff *skb, u8 *ies, size_t ies_len)
+{
+	if (ies)
+		memcpy(skb_put(skb, ies_len), ies, ies_len);
+}
+
 /* also used by scanning code */
 void ieee80211_send_probe_req(struct ieee80211_sub_if_data *sdata, u8 *dst,
 			      u8 *ssid, size_t ssid_len)
@@ -142,7 +148,8 @@ void ieee80211_send_probe_req(struct ieee80211_sub_if_data *sdata, u8 *dst,
 	u8 *pos, *supp_rates, *esupp_rates = NULL;
 	int i;
 
-	skb = dev_alloc_skb(local->hw.extra_tx_headroom + sizeof(*mgmt) + 200);
+	skb = dev_alloc_skb(local->hw.extra_tx_headroom + sizeof(*mgmt) + 200 +
+			    sdata->u.sta.ie_probereq_len);
 	if (!skb) {
 		printk(KERN_DEBUG "%s: failed to allocate buffer for probe "
 		       "request\n", sdata->dev->name);
@@ -189,6 +196,9 @@ void ieee80211_send_probe_req(struct ieee80211_sub_if_data *sdata, u8 *dst,
 		*pos = rate->bitrate / 5;
 	}
 
+	add_extra_ies(skb, sdata->u.sta.ie_probereq,
+		      sdata->u.sta.ie_probereq_len);
+
 	ieee80211_tx_skb(sdata, skb, 0);
 }
 
@@ -202,7 +212,8 @@ static void ieee80211_send_auth(struct ieee80211_sub_if_data *sdata,
 	struct ieee80211_mgmt *mgmt;
 
 	skb = dev_alloc_skb(local->hw.extra_tx_headroom +
-			    sizeof(*mgmt) + 6 + extra_len);
+			    sizeof(*mgmt) + 6 + extra_len +
+			    sdata->u.sta.ie_auth_len);
 	if (!skb) {
 		printk(KERN_DEBUG "%s: failed to allocate buffer for auth "
 		       "frame\n", sdata->dev->name);
@@ -225,6 +236,7 @@ static void ieee80211_send_auth(struct ieee80211_sub_if_data *sdata,
 	mgmt->u.auth.status_code = cpu_to_le16(0);
 	if (extra)
 		memcpy(skb_put(skb, extra_len), extra, extra_len);
+	add_extra_ies(skb, sdata->u.sta.ie_auth, sdata->u.sta.ie_auth_len);
 
 	ieee80211_tx_skb(sdata, skb, encrypt);
 }
@@ -235,17 +247,26 @@ static void ieee80211_send_assoc(struct ieee80211_sub_if_data *sdata,
 	struct ieee80211_local *local = sdata->local;
 	struct sk_buff *skb;
 	struct ieee80211_mgmt *mgmt;
-	u8 *pos, *ies, *ht_ie;
+	u8 *pos, *ies, *ht_ie, *e_ies;
 	int i, len, count, rates_len, supp_rates_len;
 	u16 capab;
 	struct ieee80211_bss *bss;
 	int wmm = 0;
 	struct ieee80211_supported_band *sband;
-	u64 rates = 0;
+	u32 rates = 0;
+	size_t e_ies_len;
+
+	if (ifsta->flags & IEEE80211_STA_PREV_BSSID_SET) {
+		e_ies = sdata->u.sta.ie_reassocreq;
+		e_ies_len = sdata->u.sta.ie_reassocreq_len;
+	} else {
+		e_ies = sdata->u.sta.ie_assocreq;
+		e_ies_len = sdata->u.sta.ie_assocreq_len;
+	}
 
 	skb = dev_alloc_skb(local->hw.extra_tx_headroom +
 			    sizeof(*mgmt) + 200 + ifsta->extra_ie_len +
-			    ifsta->ssid_len);
+			    ifsta->ssid_len + e_ies_len);
 	if (!skb) {
 		printk(KERN_DEBUG "%s: failed to allocate buffer for assoc "
 		       "frame\n", sdata->dev->name);
@@ -436,6 +457,8 @@ static void ieee80211_send_assoc(struct ieee80211_sub_if_data *sdata,
 		memcpy(pos, &sband->ht_cap.mcs, sizeof(sband->ht_cap.mcs));
 	}
 
+	add_extra_ies(skb, e_ies, e_ies_len);
+
 	kfree(ifsta->assocreq_ies);
 	ifsta->assocreq_ies_len = (skb->data + skb->len) - ies;
 	ifsta->assocreq_ies = kmalloc(ifsta->assocreq_ies_len, GFP_KERNEL);
@@ -453,8 +476,19 @@ static void ieee80211_send_deauth_disassoc(struct ieee80211_sub_if_data *sdata,
 	struct ieee80211_if_sta *ifsta = &sdata->u.sta;
 	struct sk_buff *skb;
 	struct ieee80211_mgmt *mgmt;
+	u8 *ies;
+	size_t ies_len;
 
-	skb = dev_alloc_skb(local->hw.extra_tx_headroom + sizeof(*mgmt));
+	if (stype == IEEE80211_STYPE_DEAUTH) {
+		ies = sdata->u.sta.ie_deauth;
+		ies_len = sdata->u.sta.ie_deauth_len;
+	} else {
+		ies = sdata->u.sta.ie_disassoc;
+		ies_len = sdata->u.sta.ie_disassoc_len;
+	}
+
+	skb = dev_alloc_skb(local->hw.extra_tx_headroom + sizeof(*mgmt) +
+			    ies_len);
 	if (!skb) {
 		printk(KERN_DEBUG "%s: failed to allocate buffer for "
 		       "deauth/disassoc frame\n", sdata->dev->name);
@@ -471,6 +505,8 @@ static void ieee80211_send_deauth_disassoc(struct ieee80211_sub_if_data *sdata,
 	skb_put(skb, 2);
 	/* u.deauth.reason_code == u.disassoc.reason_code */
 	mgmt->u.deauth.reason_code = cpu_to_le16(reason);
+
+	add_extra_ies(skb, ies, ies_len);
 
 	ieee80211_tx_skb(sdata, skb, ifsta->flags & IEEE80211_STA_MFP_ENABLED);
 }
@@ -651,8 +687,8 @@ static u32 ieee80211_handle_bss_capability(struct ieee80211_sub_if_data *sdata,
 	if (use_short_slot != bss_conf->use_short_slot) {
 #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
 		if (net_ratelimit()) {
-			printk(KERN_DEBUG "%s: switched to %s slot"
-			       " (BSSID=%s)\n",
+			printk(KERN_DEBUG "%s: switched to %s slot time"
+			       " (BSSID=%pM)\n",
 			       sdata->dev->name,
 			       use_short_slot ? "short" : "long",
 			       ifsta->bssid);
@@ -804,6 +840,14 @@ static void ieee80211_direct_probe(struct ieee80211_sub_if_data *sdata,
 		       sdata->dev->name, ifsta->bssid);
 		ifsta->state = IEEE80211_STA_MLME_DISABLED;
 		ieee80211_sta_send_apinfo(sdata, ifsta);
+
+		/*
+		 * Most likely AP is not in the range so remove the
+		 * bss information associated to the AP
+		 */
+		ieee80211_rx_bss_remove(sdata, ifsta->bssid,
+				sdata->local->hw.conf.channel->center_freq,
+				ifsta->ssid, ifsta->ssid_len);
 		return;
 	}
 
@@ -835,6 +879,9 @@ static void ieee80211_authenticate(struct ieee80211_sub_if_data *sdata,
 		       sdata->dev->name, ifsta->bssid);
 		ifsta->state = IEEE80211_STA_MLME_DISABLED;
 		ieee80211_sta_send_apinfo(sdata, ifsta);
+		ieee80211_rx_bss_remove(sdata, ifsta->bssid,
+				sdata->local->hw.conf.channel->center_freq,
+				ifsta->ssid, ifsta->ssid_len);
 		return;
 	}
 
@@ -897,8 +944,12 @@ static void ieee80211_set_disassoc(struct ieee80211_sub_if_data *sdata,
 
 	ieee80211_sta_send_apinfo(sdata, ifsta);
 
-	if (self_disconnected || reason == WLAN_REASON_DISASSOC_STA_HAS_LEFT)
+	if (self_disconnected || reason == WLAN_REASON_DISASSOC_STA_HAS_LEFT) {
 		ifsta->state = IEEE80211_STA_MLME_DISABLED;
+		ieee80211_rx_bss_remove(sdata, ifsta->bssid,
+				sdata->local->hw.conf.channel->center_freq,
+				ifsta->ssid, ifsta->ssid_len);
+	}
 
 	rcu_read_unlock();
 
@@ -981,6 +1032,9 @@ static void ieee80211_associate(struct ieee80211_sub_if_data *sdata,
 		       sdata->dev->name, ifsta->bssid);
 		ifsta->state = IEEE80211_STA_MLME_DISABLED;
 		ieee80211_sta_send_apinfo(sdata, ifsta);
+		ieee80211_rx_bss_remove(sdata, ifsta->bssid,
+				sdata->local->hw.conf.channel->center_freq,
+				ifsta->ssid, ifsta->ssid_len);
 		return;
 	}
 
@@ -1246,7 +1300,7 @@ static void ieee80211_rx_mgmt_assoc_resp(struct ieee80211_sub_if_data *sdata,
 	struct ieee80211_local *local = sdata->local;
 	struct ieee80211_supported_band *sband;
 	struct sta_info *sta;
-	u64 rates, basic_rates;
+	u32 rates, basic_rates;
 	u16 capab_info, status_code, aid;
 	struct ieee802_11_elems elems;
 	struct ieee80211_bss_conf *bss_conf = &sdata->vif.bss_conf;
@@ -1281,9 +1335,10 @@ static void ieee80211_rx_mgmt_assoc_resp(struct ieee80211_sub_if_data *sdata,
 	ieee802_11_parse_elems(pos, len - (pos - (u8 *) mgmt), &elems);
 
 	if (status_code == WLAN_STATUS_ASSOC_REJECTED_TEMPORARILY &&
-	    elems.assoc_comeback && elems.assoc_comeback_len == 4) {
+	    elems.timeout_int && elems.timeout_int_len == 5 &&
+	    elems.timeout_int[0] == WLAN_TIMEOUT_ASSOC_COMEBACK) {
 		u32 tu, ms;
-		tu = get_unaligned_le32(elems.assoc_comeback);
+		tu = get_unaligned_le32(elems.timeout_int + 1);
 		ms = tu * 1024 / 1000;
 		printk(KERN_DEBUG "%s: AP rejected association temporarily; "
 		       "comeback duration %u TU (%u ms)\n",
@@ -1466,14 +1521,24 @@ static int ieee80211_sta_join_ibss(struct ieee80211_sub_if_data *sdata,
 				   struct ieee80211_bss *bss)
 {
 	struct ieee80211_local *local = sdata->local;
-	int res, rates, i, j;
+	int res = 0, rates, i, j;
 	struct sk_buff *skb;
 	struct ieee80211_mgmt *mgmt;
 	u8 *pos;
 	struct ieee80211_supported_band *sband;
 	union iwreq_data wrqu;
 
-	skb = dev_alloc_skb(local->hw.extra_tx_headroom + 400);
+	if (local->ops->reset_tsf) {
+		/* Reset own TSF to allow time synchronization work. */
+		local->ops->reset_tsf(local_to_hw(local));
+	}
+
+	if ((ifsta->flags & IEEE80211_STA_PREV_BSSID_SET) &&
+	   memcmp(ifsta->bssid, bss->bssid, ETH_ALEN) == 0)
+		return res;
+
+	skb = dev_alloc_skb(local->hw.extra_tx_headroom + 400 +
+			    sdata->u.sta.ie_proberesp_len);
 	if (!skb) {
 		printk(KERN_DEBUG "%s: failed to allocate buffer for probe "
 		       "response\n", sdata->dev->name);
@@ -1482,13 +1547,11 @@ static int ieee80211_sta_join_ibss(struct ieee80211_sub_if_data *sdata,
 
 	sband = local->hw.wiphy->bands[local->hw.conf.channel->band];
 
-	/* Remove possible STA entries from other IBSS networks. */
-	sta_info_flush_delayed(sdata);
-
-	if (local->ops->reset_tsf) {
-		/* Reset own TSF to allow time synchronization work. */
-		local->ops->reset_tsf(local_to_hw(local));
+	if (!(ifsta->flags & IEEE80211_STA_PREV_BSSID_SET)) {
+		/* Remove possible STA entries from other IBSS networks. */
+		sta_info_flush_delayed(sdata);
 	}
+
 	memcpy(ifsta->bssid, bss->bssid, ETH_ALEN);
 	res = ieee80211_if_config(sdata, IEEE80211_IFCC_BSSID);
 	if (res)
@@ -1556,9 +1619,13 @@ static int ieee80211_sta_join_ibss(struct ieee80211_sub_if_data *sdata,
 		memcpy(pos, &bss->supp_rates[8], rates);
 	}
 
+	add_extra_ies(skb, sdata->u.sta.ie_proberesp,
+		      sdata->u.sta.ie_proberesp_len);
+
 	ifsta->probe_resp = skb;
 
-	ieee80211_if_config(sdata, IEEE80211_IFCC_BEACON);
+	ieee80211_if_config(sdata, IEEE80211_IFCC_BEACON |
+				   IEEE80211_IFCC_BEACON_ENABLED);
 
 
 	rates = 0;
@@ -1573,6 +1640,7 @@ static int ieee80211_sta_join_ibss(struct ieee80211_sub_if_data *sdata,
 
 	ieee80211_sta_def_wmm_params(sdata, bss);
 
+	ifsta->flags |= IEEE80211_STA_PREV_BSSID_SET;
 	ifsta->state = IEEE80211_STA_MLME_IBSS_JOINED;
 	mod_timer(&ifsta->timer, jiffies + IEEE80211_IBSS_MERGE_INTERVAL);
 
@@ -1598,7 +1666,7 @@ static void ieee80211_rx_bss_info(struct ieee80211_sub_if_data *sdata,
 	struct sta_info *sta;
 	struct ieee80211_channel *channel;
 	u64 beacon_timestamp, rx_timestamp;
-	u64 supp_rates = 0;
+	u32 supp_rates = 0;
 	enum ieee80211_band band = rx_status->band;
 
 	if (elems->ds_params && elems->ds_params_len == 1)
@@ -1619,7 +1687,7 @@ static void ieee80211_rx_bss_info(struct ieee80211_sub_if_data *sdata,
 
 		sta = sta_info_get(local, mgmt->sa);
 		if (sta) {
-			u64 prev_rates;
+			u32 prev_rates;
 
 			prev_rates = sta->sta.supp_rates[band];
 			/* make sure mandatory rates are always added */
@@ -2136,19 +2204,18 @@ static int ieee80211_sta_create_ibss(struct ieee80211_sub_if_data *sdata,
 	int i;
 	int ret;
 
-#if 0
-	/* Easier testing, use fixed BSSID. */
-	memset(bssid, 0xfe, ETH_ALEN);
-#else
-	/* Generate random, not broadcast, locally administered BSSID. Mix in
-	 * own MAC address to make sure that devices that do not have proper
-	 * random number generator get different BSSID. */
-	get_random_bytes(bssid, ETH_ALEN);
-	for (i = 0; i < ETH_ALEN; i++)
-		bssid[i] ^= sdata->dev->dev_addr[i];
-	bssid[0] &= ~0x01;
-	bssid[0] |= 0x02;
-#endif
+	if (sdata->u.sta.flags & IEEE80211_STA_BSSID_SET) {
+		memcpy(bssid, ifsta->bssid, ETH_ALEN);
+	} else {
+		/* Generate random, not broadcast, locally administered BSSID. Mix in
+		 * own MAC address to make sure that devices that do not have proper
+		 * random number generator get different BSSID. */
+		get_random_bytes(bssid, ETH_ALEN);
+		for (i = 0; i < ETH_ALEN; i++)
+			bssid[i] ^= sdata->dev->dev_addr[i];
+		bssid[0] &= ~0x01;
+		bssid[0] |= 0x02;
+	}
 
 	printk(KERN_DEBUG "%s: Creating new IBSS network, BSSID %pM\n",
 	       sdata->dev->name, bssid);
@@ -2209,6 +2276,9 @@ static int ieee80211_sta_find_ibss(struct ieee80211_sub_if_data *sdata,
 		    memcmp(ifsta->ssid, bss->ssid, bss->ssid_len) != 0
 		    || !(bss->capability & WLAN_CAPABILITY_IBSS))
 			continue;
+		if ((ifsta->flags & IEEE80211_STA_BSSID_SET) &&
+		    memcmp(ifsta->bssid, bss->bssid, ETH_ALEN) != 0)
+			continue;
 #ifdef CONFIG_MAC80211_IBSS_DEBUG
 		printk(KERN_DEBUG "   bssid=%pM found\n", bss->bssid);
 #endif /* CONFIG_MAC80211_IBSS_DEBUG */
@@ -2225,7 +2295,9 @@ static int ieee80211_sta_find_ibss(struct ieee80211_sub_if_data *sdata,
 		       "%pM\n", bssid, ifsta->bssid);
 #endif /* CONFIG_MAC80211_IBSS_DEBUG */
 
-	if (found && memcmp(ifsta->bssid, bssid, ETH_ALEN) != 0) {
+	if (found &&
+	    ((!(ifsta->flags & IEEE80211_STA_PREV_BSSID_SET)) ||
+	     memcmp(ifsta->bssid, bssid, ETH_ALEN) != 0)) {
 		int ret;
 		int search_freq;
 
@@ -2368,8 +2440,10 @@ static int ieee80211_sta_config_auth(struct ieee80211_sub_if_data *sdata,
 							 ifsta->ssid_len);
 			ifsta->state = IEEE80211_STA_MLME_AUTHENTICATE;
 			set_bit(IEEE80211_STA_REQ_AUTH, &ifsta->request);
-		} else
+		} else {
+			ifsta->assoc_scan_tries = 0;
 			ifsta->state = IEEE80211_STA_MLME_DISABLED;
+		}
 	}
 	return -1;
 }
@@ -2485,7 +2559,7 @@ void ieee80211_sta_setup_sdata(struct ieee80211_sub_if_data *sdata)
  * must be callable in atomic context.
  */
 struct sta_info *ieee80211_ibss_add_sta(struct ieee80211_sub_if_data *sdata,
-					u8 *bssid,u8 *addr, u64 supp_rates)
+					u8 *bssid,u8 *addr, u32 supp_rates)
 {
 	struct ieee80211_local *local = sdata->local;
 	struct sta_info *sta;
@@ -2563,16 +2637,16 @@ int ieee80211_sta_set_ssid(struct ieee80211_sub_if_data *sdata, char *ssid, size
 		memset(ifsta->ssid, 0, sizeof(ifsta->ssid));
 		memcpy(ifsta->ssid, ssid, len);
 		ifsta->ssid_len = len;
-		ifsta->flags &= ~IEEE80211_STA_PREV_BSSID_SET;
 	}
+
+	ifsta->flags &= ~IEEE80211_STA_PREV_BSSID_SET;
 
 	if (len)
 		ifsta->flags |= IEEE80211_STA_SSID_SET;
 	else
 		ifsta->flags &= ~IEEE80211_STA_SSID_SET;
 
-	if (sdata->vif.type == NL80211_IFTYPE_ADHOC &&
-	    !(ifsta->flags & IEEE80211_STA_BSSID_SET)) {
+	if (sdata->vif.type == NL80211_IFTYPE_ADHOC) {
 		ifsta->ibss_join_req = jiffies;
 		ifsta->state = IEEE80211_STA_MLME_IBSS_SEARCH;
 		return ieee80211_sta_find_ibss(sdata, ifsta);
@@ -2592,36 +2666,25 @@ int ieee80211_sta_get_ssid(struct ieee80211_sub_if_data *sdata, char *ssid, size
 int ieee80211_sta_set_bssid(struct ieee80211_sub_if_data *sdata, u8 *bssid)
 {
 	struct ieee80211_if_sta *ifsta;
-	int res;
-	bool valid;
 
 	ifsta = &sdata->u.sta;
-	valid = is_valid_ether_addr(bssid);
 
-	if (memcmp(ifsta->bssid, bssid, ETH_ALEN) != 0) {
-		if(valid)
-			memcpy(ifsta->bssid, bssid, ETH_ALEN);
-		else
-			memset(ifsta->bssid, 0, ETH_ALEN);
-		res = 0;
-		/*
-		 * Hack! See also ieee80211_sta_set_ssid.
-		 */
-		if (netif_running(sdata->dev))
-			res = ieee80211_if_config(sdata, IEEE80211_IFCC_BSSID);
-		if (res) {
+	if (is_valid_ether_addr(bssid)) {
+		memcpy(ifsta->bssid, bssid, ETH_ALEN);
+		ifsta->flags |= IEEE80211_STA_BSSID_SET;
+	} else {
+		memset(ifsta->bssid, 0, ETH_ALEN);
+		ifsta->flags &= ~IEEE80211_STA_BSSID_SET;
+	}
+
+	if (netif_running(sdata->dev)) {
+		if (ieee80211_if_config(sdata, IEEE80211_IFCC_BSSID)) {
 			printk(KERN_DEBUG "%s: Failed to config new BSSID to "
 			       "the low-level driver\n", sdata->dev->name);
-			return res;
 		}
 	}
 
-	if (valid)
-		ifsta->flags |= IEEE80211_STA_BSSID_SET;
-	else
-		ifsta->flags &= ~IEEE80211_STA_BSSID_SET;
-
-	return 0;
+	return ieee80211_sta_set_ssid(sdata, ifsta->ssid, ifsta->ssid_len);
 }
 
 int ieee80211_sta_set_extra_ie(struct ieee80211_sub_if_data *sdata, char *ie, size_t len)
@@ -2684,9 +2747,8 @@ void ieee80211_mlme_notify_scan_completed(struct ieee80211_local *local)
 
 	if (sdata && sdata->vif.type == NL80211_IFTYPE_ADHOC) {
 		ifsta = &sdata->u.sta;
-		if (!(ifsta->flags & IEEE80211_STA_BSSID_SET) ||
-		    (!(ifsta->state == IEEE80211_STA_MLME_IBSS_JOINED) &&
-		    !ieee80211_sta_active_ibss(sdata)))
+		if ((!(ifsta->flags & IEEE80211_STA_PREV_BSSID_SET)) ||
+		    !ieee80211_sta_active_ibss(sdata))
 			ieee80211_sta_find_ibss(sdata, ifsta);
 	}
 

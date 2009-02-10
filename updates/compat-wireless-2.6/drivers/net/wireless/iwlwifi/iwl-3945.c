@@ -41,7 +41,9 @@
 #include "iwl-fh.h"
 #include "iwl-3945-fh.h"
 #include "iwl-commands.h"
+#include "iwl-sta.h"
 #include "iwl-3945.h"
+#include "iwl-eeprom.h"
 #include "iwl-helpers.h"
 #include "iwl-core.h"
 #include "iwl-agn-rs.h"
@@ -168,7 +170,7 @@ void iwl3945_disable_events(struct iwl_priv *priv)
 	iwl_release_nic_access(priv);
 
 	if (IWL_EVT_DISABLE && (array_size == IWL_EVT_DISABLE_SIZE)) {
-		IWL_DEBUG_INFO("Disabling selected uCode log events at 0x%x\n",
+		IWL_DEBUG_INFO(priv, "Disabling selected uCode log events at 0x%x\n",
 			       disable_ptr);
 		ret = iwl_grab_nic_access(priv);
 		for (i = 0; i < IWL_EVT_DISABLE_SIZE; i++)
@@ -178,9 +180,9 @@ void iwl3945_disable_events(struct iwl_priv *priv)
 
 		iwl_release_nic_access(priv);
 	} else {
-		IWL_DEBUG_INFO("Selected uCode log events may be disabled\n");
-		IWL_DEBUG_INFO("  by writing \"1\"s into disable bitmap\n");
-		IWL_DEBUG_INFO("  in SRAM at 0x%x, size %d u32s\n",
+		IWL_DEBUG_INFO(priv, "Selected uCode log events may be disabled\n");
+		IWL_DEBUG_INFO(priv, "  by writing \"1\"s into disable bitmap\n");
+		IWL_DEBUG_INFO(priv, "  in SRAM at 0x%x, size %d u32s\n",
 			       disable_ptr, array_size);
 	}
 
@@ -196,40 +198,7 @@ static int iwl3945_hwrate_to_plcp_idx(u8 plcp)
 	return -1;
 }
 
-/**
- * iwl3945_get_antenna_flags - Get antenna flags for RXON command
- * @priv: eeprom and antenna fields are used to determine antenna flags
- *
- * priv->eeprom39  is used to determine if antenna AUX/MAIN are reversed
- * priv->antenna specifies the antenna diversity mode:
- *
- * IWL_ANTENNA_DIVERSITY - NIC selects best antenna by itself
- * IWL_ANTENNA_MAIN      - Force MAIN antenna
- * IWL_ANTENNA_AUX       - Force AUX antenna
- */
-__le32 iwl3945_get_antenna_flags(const struct iwl_priv *priv)
-{
-	switch (priv->antenna) {
-	case IWL_ANTENNA_DIVERSITY:
-		return 0;
-
-	case IWL_ANTENNA_MAIN:
-		if (priv->eeprom39.antenna_switch_type)
-			return RXON_FLG_DIS_DIV_MSK | RXON_FLG_ANT_B_MSK;
-		return RXON_FLG_DIS_DIV_MSK | RXON_FLG_ANT_A_MSK;
-
-	case IWL_ANTENNA_AUX:
-		if (priv->eeprom39.antenna_switch_type)
-			return RXON_FLG_DIS_DIV_MSK | RXON_FLG_ANT_A_MSK;
-		return RXON_FLG_DIS_DIV_MSK | RXON_FLG_ANT_B_MSK;
-	}
-
-	/* bad antenna selector value */
-	IWL_ERR(priv, "Bad antenna selector value (0x%x)\n", priv->antenna);
-	return 0;		/* "diversity" is default if error */
-}
-
-#ifdef CONFIG_IWL3945_DEBUG
+#ifdef CONFIG_IWLWIFI_DEBUG
 #define TX_STATUS_ENTRY(x) case TX_STATUS_FAIL_ ## x: return #x
 
 static const char *iwl3945_get_tx_fail_reason(u32 status)
@@ -282,7 +251,7 @@ int iwl3945_rs_next_rate(struct iwl_priv *priv, int rate)
 		break;
 	case IEEE80211_BAND_2GHZ:
 		if (!(priv->sta_supp_rates & IWL_OFDM_RATES_MASK) &&
-		    iwl3945_is_associated(priv)) {
+		    iwl_is_associated(priv)) {
 			if (rate == IWL_RATE_11M_INDEX)
 				next_rate = IWL_RATE_5M_INDEX;
 		}
@@ -318,7 +287,7 @@ static void iwl3945_tx_queue_reclaim(struct iwl_priv *priv,
 		tx_info = &txq->txb[txq->q.read_ptr];
 		ieee80211_tx_status_irqsafe(priv->hw, tx_info->skb[0]);
 		tx_info->skb[0] = NULL;
-		iwl3945_hw_txq_free_tfd(priv, txq);
+		priv->cfg->ops->lib->txq_free_tfd(priv, txq);
 	}
 
 	if (iwl_queue_space(q) > q->low_mark && (txq_id >= 0) &&
@@ -369,11 +338,11 @@ static void iwl3945_rx_reply_tx(struct iwl_priv *priv,
 	info->flags |= ((status & TX_STATUS_MSK) == TX_STATUS_SUCCESS) ?
 				IEEE80211_TX_STAT_ACK : 0;
 
-	IWL_DEBUG_TX("Tx queue %d Status %s (0x%08x) plcp rate %d retries %d\n",
+	IWL_DEBUG_TX(priv, "Tx queue %d Status %s (0x%08x) plcp rate %d retries %d\n",
 			txq_id, iwl3945_get_tx_fail_reason(status), status,
 			tx_resp->rate, tx_resp->failure_frame);
 
-	IWL_DEBUG_TX_REPLY("Tx queue reclaim %d\n", index);
+	IWL_DEBUG_TX_REPLY(priv, "Tx queue reclaim %d\n", index);
 	iwl3945_tx_queue_reclaim(priv, txq_id, index);
 
 	if (iwl_check_bits(status, TX_ABORT_REQUIRED_MSK))
@@ -393,7 +362,7 @@ static void iwl3945_rx_reply_tx(struct iwl_priv *priv,
 void iwl3945_hw_rx_statistics(struct iwl_priv *priv, struct iwl_rx_mem_buffer *rxb)
 {
 	struct iwl_rx_packet *pkt = (void *)rxb->skb->data;
-	IWL_DEBUG_RX("Statistics notification received (%d vs %d).\n",
+	IWL_DEBUG_RX(priv, "Statistics notification received (%d vs %d).\n",
 		     (int)sizeof(struct iwl3945_notif_statistics),
 		     le32_to_cpu(pkt->len));
 
@@ -409,7 +378,7 @@ void iwl3945_hw_rx_statistics(struct iwl_priv *priv, struct iwl_rx_mem_buffer *r
  * Misc. internal state and helper functions
  *
  ******************************************************************************/
-#ifdef CONFIG_IWL3945_DEBUG
+#ifdef CONFIG_IWLWIFI_DEBUG
 
 /**
  * iwl3945_report_frame - dump frame to syslog during debug sessions
@@ -418,7 +387,7 @@ void iwl3945_hw_rx_statistics(struct iwl_priv *priv, struct iwl_rx_mem_buffer *r
  * including selective frame dumps.
  * group100 parameter selects whether to show 1 out of 100 good frames.
  */
-static void iwl3945_dbg_report_frame(struct iwl_priv *priv,
+static void _iwl3945_dbg_report_frame(struct iwl_priv *priv,
 		      struct iwl_rx_packet *pkt,
 		      struct ieee80211_hdr *header, int group100)
 {
@@ -527,13 +496,13 @@ static void iwl3945_dbg_report_frame(struct iwl_priv *priv,
 		 * MAC addresses show just the last byte (for brevity),
 		 *    but you can hack it to show more, if you'd like to. */
 		if (dataframe)
-			IWL_DEBUG_RX("%s: mhd=0x%04x, dst=0x%02x, "
+			IWL_DEBUG_RX(priv, "%s: mhd=0x%04x, dst=0x%02x, "
 				     "len=%u, rssi=%d, chnl=%d, rate=%d, \n",
 				     title, le16_to_cpu(fc), header->addr1[5],
 				     length, rssi, channel, rate);
 		else {
 			/* src/dst addresses assume managed mode */
-			IWL_DEBUG_RX("%s: 0x%04x, dst=0x%02x, "
+			IWL_DEBUG_RX(priv, "%s: 0x%04x, dst=0x%02x, "
 				     "src=0x%02x, rssi=%u, tim=%lu usec, "
 				     "phy=0x%02x, chnl=%d\n",
 				     title, le16_to_cpu(fc), header->addr1[5],
@@ -545,6 +514,15 @@ static void iwl3945_dbg_report_frame(struct iwl_priv *priv,
 	if (print_dump)
 		iwl_print_hex_dump(priv, IWL_DL_RX, data, length);
 }
+
+static void iwl3945_dbg_report_frame(struct iwl_priv *priv,
+		      struct iwl_rx_packet *pkt,
+		      struct ieee80211_hdr *header, int group100)
+{
+	if (priv->debug_level & IWL_DL_RX)
+		_iwl3945_dbg_report_frame(priv, pkt, header, group100);
+}
+
 #else
 static inline void iwl3945_dbg_report_frame(struct iwl_priv *priv,
 		      struct iwl_rx_packet *pkt,
@@ -585,14 +563,14 @@ static void iwl3945_pass_packet_to_mac80211(struct iwl_priv *priv,
 
 	/* We received data from the HW, so stop the watchdog */
 	if (unlikely((len + IWL39_RX_FRAME_SIZE) > skb_tailroom(rxb->skb))) {
-		IWL_DEBUG_DROP("Corruption detected!\n");
+		IWL_DEBUG_DROP(priv, "Corruption detected!\n");
 		return;
 	}
 
 	/* We only process data packets if the interface is open */
 	if (unlikely(!priv->is_open)) {
-		IWL_DEBUG_DROP_LIMIT
-		    ("Dropping packet while interface is not open.\n");
+		IWL_DEBUG_DROP_LIMIT(priv,
+			"Dropping packet while interface is not open.\n");
 		return;
 	}
 
@@ -601,7 +579,8 @@ static void iwl3945_pass_packet_to_mac80211(struct iwl_priv *priv,
 	skb_put(rxb->skb, le16_to_cpu(rx_hdr->len));
 
 	if (!iwl3945_mod_params.sw_crypto)
-		iwl3945_set_decrypted_flag(priv, rxb->skb,
+		iwl_set_decrypted_flag(priv,
+				       (struct ieee80211_hdr *)rxb->skb->data,
 				       le32_to_cpu(rx_end->status), stats);
 
 #ifdef CONFIG_IWL3945_LEDS
@@ -647,15 +626,14 @@ static void iwl3945_rx_reply_rx(struct iwl_priv *priv,
 		rx_status.flag |= RX_FLAG_SHORTPRE;
 
 	if ((unlikely(rx_stats->phy_count > 20))) {
-		IWL_DEBUG_DROP
-		    ("dsp size out of range [0,20]: "
-		     "%d/n", rx_stats->phy_count);
+		IWL_DEBUG_DROP(priv, "dsp size out of range [0,20]: %d/n",
+				rx_stats->phy_count);
 		return;
 	}
 
 	if (!(rx_end->status & RX_RES_STATUS_NO_CRC32_ERROR)
 	    || !(rx_end->status & RX_RES_STATUS_NO_RXE_OVERFLOW)) {
-		IWL_DEBUG_RX("Bad CRC or FIFO: 0x%08X.\n", rx_end->status);
+		IWL_DEBUG_RX(priv, "Bad CRC or FIFO: 0x%08X.\n", rx_end->status);
 		return;
 	}
 
@@ -694,7 +672,7 @@ static void iwl3945_rx_reply_rx(struct iwl_priv *priv,
 	}
 
 
-	IWL_DEBUG_STATS("Rssi %d noise %d qual %d sig_avg %d noise_diff %d\n",
+	IWL_DEBUG_STATS(priv, "Rssi %d noise %d qual %d sig_avg %d noise_diff %d\n",
 			rx_status.signal, rx_status.noise, rx_status.qual,
 			rx_stats_sig_avg, rx_stats_noise_diff);
 
@@ -702,17 +680,14 @@ static void iwl3945_rx_reply_rx(struct iwl_priv *priv,
 
 	network_packet = iwl3945_is_network_packet(priv, header);
 
-	IWL_DEBUG_STATS_LIMIT("[%c] %d RSSI:%d Signal:%u, Noise:%u, Rate:%u\n",
+	IWL_DEBUG_STATS_LIMIT(priv, "[%c] %d RSSI:%d Signal:%u, Noise:%u, Rate:%u\n",
 			      network_packet ? '*' : ' ',
 			      le16_to_cpu(rx_hdr->channel),
 			      rx_status.signal, rx_status.signal,
 			      rx_status.noise, rx_status.rate_idx);
 
-#ifdef CONFIG_IWL3945_DEBUG
-	if (priv->debug_level & (IWL_DL_RX))
-		/* Set "1" to report good data frames in groups of 100 */
-		iwl3945_dbg_report_frame(priv, pkt, header, 1);
-#endif
+	/* Set "1" to report good data frames in groups of 100 */
+	iwl3945_dbg_report_frame(priv, pkt, header, 1);
 
 	if (network_packet) {
 		priv->last_beacon_time = le32_to_cpu(rx_end->beacon_timestamp);
@@ -724,15 +699,22 @@ static void iwl3945_rx_reply_rx(struct iwl_priv *priv,
 	iwl3945_pass_packet_to_mac80211(priv, rxb, &rx_status);
 }
 
-int iwl3945_hw_txq_attach_buf_to_tfd(struct iwl_priv *priv, void *ptr,
-				 dma_addr_t addr, u16 len)
+int iwl3945_hw_txq_attach_buf_to_tfd(struct iwl_priv *priv,
+				     struct iwl_tx_queue *txq,
+				     dma_addr_t addr, u16 len, u8 reset, u8 pad)
 {
 	int count;
-	u32 pad;
-	struct iwl3945_tfd *tfd = (struct iwl3945_tfd *)ptr;
+	struct iwl_queue *q;
+	struct iwl3945_tfd *tfd, *tfd_tmp;
+
+	q = &txq->q;
+	tfd_tmp = (struct iwl3945_tfd *)txq->tfds;
+	tfd = &tfd_tmp[q->write_ptr];
+
+	if (reset)
+		memset(tfd, 0, sizeof(*tfd));
 
 	count = TFD_CTL_COUNT_GET(le32_to_cpu(tfd->control_flags));
-	pad = TFD_CTL_PAD_GET(le32_to_cpu(tfd->control_flags));
 
 	if ((count >= NUM_TFD_CHUNKS) || (count < 0)) {
 		IWL_ERR(priv, "Error can not send more than %d chunks\n",
@@ -756,9 +738,9 @@ int iwl3945_hw_txq_attach_buf_to_tfd(struct iwl_priv *priv, void *ptr,
  *
  * Does NOT advance any indexes
  */
-int iwl3945_hw_txq_free_tfd(struct iwl_priv *priv, struct iwl_tx_queue *txq)
+void iwl3945_hw_txq_free_tfd(struct iwl_priv *priv, struct iwl_tx_queue *txq)
 {
-	struct iwl3945_tfd *tfd_tmp = (struct iwl3945_tfd *)&txq->tfds39[0];
+	struct iwl3945_tfd *tfd_tmp = (struct iwl3945_tfd *)txq->tfds;
 	struct iwl3945_tfd *tfd = &tfd_tmp[txq->q.read_ptr];
 	struct pci_dev *dev = priv->pci_dev;
 	int i;
@@ -767,14 +749,14 @@ int iwl3945_hw_txq_free_tfd(struct iwl_priv *priv, struct iwl_tx_queue *txq)
 	/* classify bd */
 	if (txq->q.id == IWL_CMD_QUEUE_NUM)
 		/* nothing to cleanup after for host commands */
-		return 0;
+		return;
 
 	/* sanity check */
 	counter = TFD_CTL_COUNT_GET(le32_to_cpu(tfd->control_flags));
 	if (counter > NUM_TFD_CHUNKS) {
 		IWL_ERR(priv, "Too many chunks: %i\n", counter);
 		/* @todo issue fatal error, it is quite serious situation */
-		return 0;
+		return;
 	}
 
 	/* unmap chunks if any */
@@ -791,7 +773,7 @@ int iwl3945_hw_txq_free_tfd(struct iwl_priv *priv, struct iwl_tx_queue *txq)
 			}
 		}
 	}
-	return 0;
+	return ;
 }
 
 u8 iwl3945_hw_find_station(struct iwl_priv *priv, const u8 *addr)
@@ -816,7 +798,7 @@ u8 iwl3945_hw_find_station(struct iwl_priv *priv, const u8 *addr)
 			goto out;
 		}
 
-	IWL_DEBUG_INFO("can not find STA %pM (total %d)\n",
+	IWL_DEBUG_INFO(priv, "can not find STA %pM (total %d)\n",
 		       addr, priv->num_stations);
  out:
 	spin_unlock_irqrestore(&priv->sta_lock, flags);
@@ -891,7 +873,7 @@ void iwl3945_hw_build_tx_cmd_rate(struct iwl_priv *priv, struct iwl_cmd *cmd,
 	/* CCK */
 	tx->supp_rates[1] = (rate_mask & 0xF);
 
-	IWL_DEBUG_RATE("Tx sta id: %d, rate: %d (plcp), flags: 0x%4X "
+	IWL_DEBUG_RATE(priv, "Tx sta id: %d, rate: %d (plcp), flags: 0x%4X "
 		       "cck/ofdm mask: 0x%x/0x%x\n", sta_id,
 		       tx->rate, le32_to_cpu(tx->tx_flags),
 		       tx->supp_rates[1], tx->supp_rates[0]);
@@ -914,8 +896,9 @@ u8 iwl3945_sync_sta(struct iwl_priv *priv, int sta_id, u16 tx_rate, u8 flags)
 
 	spin_unlock_irqrestore(&priv->sta_lock, flags_spin);
 
-	iwl3945_send_add_station(priv, &station->sta, flags);
-	IWL_DEBUG_RATE("SCALE sync station %d to rate %d\n",
+	iwl_send_add_sta(priv,
+			 (struct iwl_addsta_cmd *)&station->sta, flags);
+	IWL_DEBUG_RATE(priv, "SCALE sync station %d to rate %d\n",
 			sta_id, tx_rate);
 	return sta_id;
 }
@@ -1061,8 +1044,8 @@ static int iwl3945_txq_ctx_reset(struct iwl_priv *priv)
 	for (txq_id = 0; txq_id < TFD_QUEUE_MAX; txq_id++) {
 		slots_num = (txq_id == IWL_CMD_QUEUE_NUM) ?
 				TFD_CMD_SLOTS : TFD_TX_CMD_SLOTS;
-		rc = iwl3945_tx_queue_init(priv, &priv->txq[txq_id], slots_num,
-				txq_id);
+		rc = iwl_tx_queue_init(priv, &priv->txq[txq_id], slots_num,
+				       txq_id);
 		if (rc) {
 			IWL_ERR(priv, "Tx %d queue init failed\n", txq_id);
 			goto error;
@@ -1080,7 +1063,7 @@ static int iwl3945_apm_init(struct iwl_priv *priv)
 {
 	int ret = 0;
 
-	iwl3945_power_init_handle(priv);
+	iwl_power_initialize(priv);
 
 	iwl_set_bit(priv, CSR_GIO_CHICKEN_BITS,
 			  CSR_GIO_CHICKEN_BITS_REG_BIT_DIS_L0S_EXIT_TIMER);
@@ -1096,7 +1079,7 @@ static int iwl3945_apm_init(struct iwl_priv *priv)
 	iwl_poll_direct_bit(priv, CSR_GP_CNTRL,
 			    CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
 	if (ret < 0) {
-		IWL_DEBUG_INFO("Failed to init the card\n");
+		IWL_DEBUG_INFO(priv, "Failed to init the card\n");
 		goto out;
 	}
 
@@ -1121,60 +1104,61 @@ out:
 
 static void iwl3945_nic_config(struct iwl_priv *priv)
 {
+	struct iwl3945_eeprom *eeprom = (struct iwl3945_eeprom *)priv->eeprom;
 	unsigned long flags;
 	u8 rev_id = 0;
 
 	spin_lock_irqsave(&priv->lock, flags);
 
 	if (rev_id & PCI_CFG_REV_ID_BIT_RTP)
-		IWL_DEBUG_INFO("RTP type \n");
+		IWL_DEBUG_INFO(priv, "RTP type \n");
 	else if (rev_id & PCI_CFG_REV_ID_BIT_BASIC_SKU) {
-		IWL_DEBUG_INFO("3945 RADIO-MB type\n");
+		IWL_DEBUG_INFO(priv, "3945 RADIO-MB type\n");
 		iwl_set_bit(priv, CSR_HW_IF_CONFIG_REG,
 			    CSR39_HW_IF_CONFIG_REG_BIT_3945_MB);
 	} else {
-		IWL_DEBUG_INFO("3945 RADIO-MM type\n");
+		IWL_DEBUG_INFO(priv, "3945 RADIO-MM type\n");
 		iwl_set_bit(priv, CSR_HW_IF_CONFIG_REG,
 			    CSR39_HW_IF_CONFIG_REG_BIT_3945_MM);
 	}
 
-	if (EEPROM_SKU_CAP_OP_MODE_MRC == priv->eeprom39.sku_cap) {
-		IWL_DEBUG_INFO("SKU OP mode is mrc\n");
+	if (EEPROM_SKU_CAP_OP_MODE_MRC == eeprom->sku_cap) {
+		IWL_DEBUG_INFO(priv, "SKU OP mode is mrc\n");
 		iwl_set_bit(priv, CSR_HW_IF_CONFIG_REG,
 			    CSR39_HW_IF_CONFIG_REG_BIT_SKU_MRC);
 	} else
-		IWL_DEBUG_INFO("SKU OP mode is basic\n");
+		IWL_DEBUG_INFO(priv, "SKU OP mode is basic\n");
 
-	if ((priv->eeprom39.board_revision & 0xF0) == 0xD0) {
-		IWL_DEBUG_INFO("3945ABG revision is 0x%X\n",
-			       priv->eeprom39.board_revision);
+	if ((eeprom->board_revision & 0xF0) == 0xD0) {
+		IWL_DEBUG_INFO(priv, "3945ABG revision is 0x%X\n",
+			       eeprom->board_revision);
 		iwl_set_bit(priv, CSR_HW_IF_CONFIG_REG,
 			    CSR39_HW_IF_CONFIG_REG_BIT_BOARD_TYPE);
 	} else {
-		IWL_DEBUG_INFO("3945ABG revision is 0x%X\n",
-			       priv->eeprom39.board_revision);
+		IWL_DEBUG_INFO(priv, "3945ABG revision is 0x%X\n",
+			       eeprom->board_revision);
 		iwl_clear_bit(priv, CSR_HW_IF_CONFIG_REG,
 			      CSR39_HW_IF_CONFIG_REG_BIT_BOARD_TYPE);
 	}
 
-	if (priv->eeprom39.almgor_m_version <= 1) {
+	if (eeprom->almgor_m_version <= 1) {
 		iwl_set_bit(priv, CSR_HW_IF_CONFIG_REG,
 			    CSR39_HW_IF_CONFIG_REG_BITS_SILICON_TYPE_A);
-		IWL_DEBUG_INFO("Card M type A version is 0x%X\n",
-			       priv->eeprom39.almgor_m_version);
+		IWL_DEBUG_INFO(priv, "Card M type A version is 0x%X\n",
+			       eeprom->almgor_m_version);
 	} else {
-		IWL_DEBUG_INFO("Card M type B version is 0x%X\n",
-			       priv->eeprom39.almgor_m_version);
+		IWL_DEBUG_INFO(priv, "Card M type B version is 0x%X\n",
+			       eeprom->almgor_m_version);
 		iwl_set_bit(priv, CSR_HW_IF_CONFIG_REG,
 			    CSR39_HW_IF_CONFIG_REG_BITS_SILICON_TYPE_B);
 	}
 	spin_unlock_irqrestore(&priv->lock, flags);
 
-	if (priv->eeprom39.sku_cap & EEPROM_SKU_CAP_SW_RF_KILL_ENABLE)
-		IWL_DEBUG_RF_KILL("SW RF KILL supported in EEPROM.\n");
+	if (eeprom->sku_cap & EEPROM_SKU_CAP_SW_RF_KILL_ENABLE)
+		IWL_DEBUG_RF_KILL(priv, "SW RF KILL supported in EEPROM.\n");
 
-	if (priv->eeprom39.sku_cap & EEPROM_SKU_CAP_HW_RF_KILL_ENABLE)
-		IWL_DEBUG_RF_KILL("HW RF KILL supported in EEPROM.\n");
+	if (eeprom->sku_cap & EEPROM_SKU_CAP_HW_RF_KILL_ENABLE)
+		IWL_DEBUG_RF_KILL(priv, "HW RF KILL supported in EEPROM.\n");
 }
 
 int iwl3945_hw_nic_init(struct iwl_priv *priv)
@@ -1192,7 +1176,7 @@ int iwl3945_hw_nic_init(struct iwl_priv *priv)
 	rc = pci_read_config_byte(priv->pci_dev, PCI_REVISION_ID, &rev_id);
 	if (rc)
 		return rc;
-	IWL_DEBUG_INFO("HW Revision ID = 0x%X\n", rev_id);
+	IWL_DEBUG_INFO(priv, "HW Revision ID = 0x%X\n", rev_id);
 
 	rc = priv->cfg->ops->lib->apm_ops.set_pwr_src(priv, IWL_PWR_SRC_VMAIN);
 	if(rc)
@@ -1251,7 +1235,7 @@ void iwl3945_hw_txq_ctx_free(struct iwl_priv *priv)
 
 	/* Tx queues */
 	for (txq_id = 0; txq_id < TFD_QUEUE_MAX; txq_id++)
-		iwl3945_tx_queue_free(priv, &priv->txq[txq_id]);
+		iwl_tx_queue_free(priv, txq_id);
 }
 
 void iwl3945_hw_txq_ctx_stop(struct iwl_priv *priv)
@@ -1301,7 +1285,7 @@ static int iwl3945_apm_stop_master(struct iwl_priv *priv)
 
 out:
 	spin_unlock_irqrestore(&priv->lock, flags);
-	IWL_DEBUG_INFO("stop master\n");
+	IWL_DEBUG_INFO(priv, "stop master\n");
 
 	return ret;
 }
@@ -1332,6 +1316,9 @@ static int iwl3945_apm_reset(struct iwl_priv *priv)
 	spin_lock_irqsave(&priv->lock, flags);
 
 	iwl_set_bit(priv, CSR_RESET, CSR_RESET_REG_FLAG_SW_RESET);
+	udelay(10);
+
+	iwl_set_bit(priv, CSR_GP_CNTRL, CSR_GP_CNTRL_REG_FLAG_INIT_DONE);
 
 	iwl_poll_direct_bit(priv, CSR_GP_CNTRL,
 			 CSR_GP_CNTRL_REG_FLAG_MAC_CLOCK_READY, 25000);
@@ -1340,11 +1327,6 @@ static int iwl3945_apm_reset(struct iwl_priv *priv)
 	if (!rc) {
 		iwl_write_prph(priv, APMG_CLK_CTRL_REG,
 					 APMG_CLK_VAL_BSM_CLK_RQT);
-
-		udelay(10);
-
-		iwl_set_bit(priv, CSR_GP_CNTRL,
-			    CSR_GP_CNTRL_REG_FLAG_INIT_DONE);
 
 		iwl_write_prph(priv, APMG_RTC_INT_MSK_REG, 0x0);
 		iwl_write_prph(priv, APMG_RTC_INT_STT_REG,
@@ -1401,13 +1383,14 @@ int iwl3945_hw_get_temperature(struct iwl_priv *priv)
 */
 static int iwl3945_hw_reg_txpower_get_temperature(struct iwl_priv *priv)
 {
+	struct iwl3945_eeprom *eeprom = (struct iwl3945_eeprom *)priv->eeprom;
 	int temperature;
 
 	temperature = iwl3945_hw_get_temperature(priv);
 
 	/* driver's okay range is -260 to +25.
 	 *   human readable okay range is 0 to +285 */
-	IWL_DEBUG_INFO("Temperature: %d\n", temperature + IWL_TEMP_CONVERT);
+	IWL_DEBUG_INFO(priv, "Temperature: %d\n", temperature + IWL_TEMP_CONVERT);
 
 	/* handle insane temp reading */
 	if (iwl3945_hw_reg_temp_out_of_range(temperature)) {
@@ -1416,7 +1399,7 @@ static int iwl3945_hw_reg_txpower_get_temperature(struct iwl_priv *priv)
 		/* if really really hot(?),
 		 *   substitute the 3rd band/group's temp measured at factory */
 		if (priv->last_temperature > 100)
-			temperature = priv->eeprom39.groups[2].temperature;
+			temperature = eeprom->groups[2].temperature;
 		else /* else use most recent "sane" value from driver */
 			temperature = priv->last_temperature;
 	}
@@ -1444,20 +1427,20 @@ static int is_temp_calib_needed(struct iwl_priv *priv)
 
 	/* get absolute value */
 	if (temp_diff < 0) {
-		IWL_DEBUG_POWER("Getting cooler, delta %d,\n", temp_diff);
+		IWL_DEBUG_POWER(priv, "Getting cooler, delta %d,\n", temp_diff);
 		temp_diff = -temp_diff;
 	} else if (temp_diff == 0)
-		IWL_DEBUG_POWER("Same temp,\n");
+		IWL_DEBUG_POWER(priv, "Same temp,\n");
 	else
-		IWL_DEBUG_POWER("Getting warmer, delta %d,\n", temp_diff);
+		IWL_DEBUG_POWER(priv, "Getting warmer, delta %d,\n", temp_diff);
 
 	/* if we don't need calibration, *don't* update last_temperature */
 	if (temp_diff < IWL_TEMPERATURE_LIMIT_TIMER) {
-		IWL_DEBUG_POWER("Timed thermal calib not needed\n");
+		IWL_DEBUG_POWER(priv, "Timed thermal calib not needed\n");
 		return 0;
 	}
 
-	IWL_DEBUG_POWER("Timed thermal calib needed\n");
+	IWL_DEBUG_POWER(priv, "Timed thermal calib needed\n");
 
 	/* assume that caller will actually do calib ...
 	 *   update the "last temperature" value */
@@ -1669,7 +1652,7 @@ static void iwl3945_hw_reg_set_scan_power(struct iwl_priv *priv, u32 scan_tbl_in
 	/* further limit to user's max power preference.
 	 * FIXME:  Other spectrum management power limitations do not
 	 *   seem to apply?? */
-	power = min(power, priv->user_txpower_limit);
+	power = min(power, priv->tx_power_user_lmt);
 	scan_power_info->requested_power = power;
 
 	/* find difference between new scan *power* and current "normal"
@@ -1701,32 +1684,32 @@ static void iwl3945_hw_reg_set_scan_power(struct iwl_priv *priv, u32 scan_tbl_in
 }
 
 /**
- * iwl3945_hw_reg_send_txpower - fill in Tx Power command with gain settings
+ * iwl3945_send_tx_power - fill in Tx Power command with gain settings
  *
  * Configures power settings for all rates for the current channel,
  * using values from channel info struct, and send to NIC
  */
-int iwl3945_hw_reg_send_txpower(struct iwl_priv *priv)
+static int iwl3945_send_tx_power(struct iwl_priv *priv)
 {
 	int rate_idx, i;
 	const struct iwl_channel_info *ch_info = NULL;
 	struct iwl3945_txpowertable_cmd txpower = {
-		.channel = priv->active39_rxon.channel,
+		.channel = priv->active_rxon.channel,
 	};
 
 	txpower.band = (priv->band == IEEE80211_BAND_5GHZ) ? 0 : 1;
-	ch_info = iwl3945_get_channel_info(priv,
+	ch_info = iwl_get_channel_info(priv,
 				       priv->band,
-				       le16_to_cpu(priv->active39_rxon.channel));
+				       le16_to_cpu(priv->active_rxon.channel));
 	if (!ch_info) {
 		IWL_ERR(priv,
 			"Failed to get channel info for channel %d [%d]\n",
-			le16_to_cpu(priv->active39_rxon.channel), priv->band);
+			le16_to_cpu(priv->active_rxon.channel), priv->band);
 		return -EINVAL;
 	}
 
 	if (!is_channel_valid(ch_info)) {
-		IWL_DEBUG_POWER("Not calling TX_PWR_TABLE_CMD on "
+		IWL_DEBUG_POWER(priv, "Not calling TX_PWR_TABLE_CMD on "
 				"non-Tx channel.\n");
 		return 0;
 	}
@@ -1739,7 +1722,7 @@ int iwl3945_hw_reg_send_txpower(struct iwl_priv *priv)
 		txpower.power[i].tpc = ch_info->power_info[i].tpc;
 		txpower.power[i].rate = iwl3945_rates[rate_idx].plcp;
 
-		IWL_DEBUG_POWER("ch %d:%d rf %d dsp %3d rate code 0x%02x\n",
+		IWL_DEBUG_POWER(priv, "ch %d:%d rf %d dsp %3d rate code 0x%02x\n",
 				le16_to_cpu(txpower.channel),
 				txpower.band,
 				txpower.power[i].tpc.tx_gain,
@@ -1752,7 +1735,7 @@ int iwl3945_hw_reg_send_txpower(struct iwl_priv *priv)
 		txpower.power[i].tpc = ch_info->power_info[i].tpc;
 		txpower.power[i].rate = iwl3945_rates[rate_idx].plcp;
 
-		IWL_DEBUG_POWER("ch %d:%d rf %d dsp %3d rate code 0x%02x\n",
+		IWL_DEBUG_POWER(priv, "ch %d:%d rf %d dsp %3d rate code 0x%02x\n",
 				le16_to_cpu(txpower.channel),
 				txpower.band,
 				txpower.power[i].tpc.tx_gain,
@@ -1760,8 +1743,9 @@ int iwl3945_hw_reg_send_txpower(struct iwl_priv *priv)
 				txpower.power[i].rate);
 	}
 
-	return iwl3945_send_cmd_pdu(priv, REPLY_TX_PWR_TABLE_CMD,
-			sizeof(struct iwl3945_txpowertable_cmd), &txpower);
+	return iwl_send_cmd_pdu(priv, REPLY_TX_PWR_TABLE_CMD,
+				sizeof(struct iwl3945_txpowertable_cmd),
+				&txpower);
 
 }
 
@@ -1875,6 +1859,7 @@ static int iwl3945_hw_reg_get_ch_txpower_limit(struct iwl_channel_info *ch_info)
 static int iwl3945_hw_reg_comp_txpower_temp(struct iwl_priv *priv)
 {
 	struct iwl_channel_info *ch_info = NULL;
+	struct iwl3945_eeprom *eeprom = (struct iwl3945_eeprom *)priv->eeprom;
 	int delta_index;
 	const s8 *clip_pwrs; /* array of h/w max power levels for each rate */
 	u8 a_band;
@@ -1890,7 +1875,7 @@ static int iwl3945_hw_reg_comp_txpower_temp(struct iwl_priv *priv)
 		a_band = is_channel_a_band(ch_info);
 
 		/* Get this chnlgrp's factory calibration temperature */
-		ref_temp = (s16)priv->eeprom39.groups[ch_info->group_index].
+		ref_temp = (s16)eeprom->groups[ch_info->group_index].
 		    temperature;
 
 		/* get power index adjustment based on current and factory
@@ -1930,7 +1915,7 @@ static int iwl3945_hw_reg_comp_txpower_temp(struct iwl_priv *priv)
 	}
 
 	/* send Txpower command for current channel to ucode */
-	return iwl3945_hw_reg_send_txpower(priv);
+	return priv->cfg->ops->lib->send_tx_power(priv);
 }
 
 int iwl3945_hw_reg_set_txpower(struct iwl_priv *priv, s8 power)
@@ -1940,14 +1925,14 @@ int iwl3945_hw_reg_set_txpower(struct iwl_priv *priv, s8 power)
 	u8 a_band;
 	u8 i;
 
-	if (priv->user_txpower_limit == power) {
-		IWL_DEBUG_POWER("Requested Tx power same as current "
+	if (priv->tx_power_user_lmt == power) {
+		IWL_DEBUG_POWER(priv, "Requested Tx power same as current "
 				"limit: %ddBm.\n", power);
 		return 0;
 	}
 
-	IWL_DEBUG_POWER("Setting upper limit clamp to %ddBm.\n", power);
-	priv->user_txpower_limit = power;
+	IWL_DEBUG_POWER(priv, "Setting upper limit clamp to %ddBm.\n", power);
+	priv->tx_power_user_lmt = power;
 
 	/* set up new Tx powers for each and every channel, 2.4 and 5.x */
 
@@ -2035,7 +2020,8 @@ static void iwl3945_bg_reg_txpower_periodic(struct work_struct *work)
 static u16 iwl3945_hw_reg_get_ch_grp_index(struct iwl_priv *priv,
 				       const struct iwl_channel_info *ch_info)
 {
-	struct iwl3945_eeprom_txpower_group *ch_grp = &priv->eeprom39.groups[0];
+	struct iwl3945_eeprom *eeprom = (struct iwl3945_eeprom *)priv->eeprom;
+	struct iwl3945_eeprom_txpower_group *ch_grp = &eeprom->groups[0];
 	u8 group;
 	u16 group_index = 0;	/* based on factory calib frequencies */
 	u8 grp_channel;
@@ -2055,7 +2041,7 @@ static u16 iwl3945_hw_reg_get_ch_grp_index(struct iwl_priv *priv,
 	} else
 		group_index = 0;	/* 2.4 GHz, group 0 */
 
-	IWL_DEBUG_POWER("Chnl %d mapped to grp %d\n", ch_info->channel,
+	IWL_DEBUG_POWER(priv, "Chnl %d mapped to grp %d\n", ch_info->channel,
 			group_index);
 	return group_index;
 }
@@ -2071,6 +2057,7 @@ static int iwl3945_hw_reg_get_matched_power_index(struct iwl_priv *priv,
 				       s32 setting_index, s32 *new_index)
 {
 	const struct iwl3945_eeprom_txpower_group *chnl_grp = NULL;
+	struct iwl3945_eeprom *eeprom = (struct iwl3945_eeprom *)priv->eeprom;
 	s32 index0, index1;
 	s32 power = 2 * requested_power;
 	s32 i;
@@ -2079,7 +2066,7 @@ static int iwl3945_hw_reg_get_matched_power_index(struct iwl_priv *priv,
 	s32 res;
 	s32 denominator;
 
-	chnl_grp = &priv->eeprom39.groups[setting_index];
+	chnl_grp = &eeprom->groups[setting_index];
 	samples = chnl_grp->samples;
 	for (i = 0; i < 5; i++) {
 		if (power == samples[i].power) {
@@ -2118,14 +2105,15 @@ static void iwl3945_hw_reg_init_channel_groups(struct iwl_priv *priv)
 {
 	u32 i;
 	s32 rate_index;
+	struct iwl3945_eeprom *eeprom = (struct iwl3945_eeprom *)priv->eeprom;
 	const struct iwl3945_eeprom_txpower_group *group;
 
-	IWL_DEBUG_POWER("Initializing factory calib info from EEPROM\n");
+	IWL_DEBUG_POWER(priv, "Initializing factory calib info from EEPROM\n");
 
 	for (i = 0; i < IWL_NUM_TX_CALIB_GROUPS; i++) {
 		s8 *clip_pwrs;	/* table of power levels for each rate */
 		s8 satur_pwr;	/* saturation power for each chnl group */
-		group = &priv->eeprom39.groups[i];
+		group = &eeprom->groups[i];
 
 		/* sanity check on factory saturation power value */
 		if (group->saturation_power < 40) {
@@ -2198,6 +2186,7 @@ int iwl3945_txpower_set_from_eeprom(struct iwl_priv *priv)
 {
 	struct iwl_channel_info *ch_info = NULL;
 	struct iwl3945_channel_power_info *pwr_info;
+	struct iwl3945_eeprom *eeprom = (struct iwl3945_eeprom *)priv->eeprom;
 	int delta_index;
 	u8 rate_index;
 	u8 scan_tbl_index;
@@ -2232,10 +2221,10 @@ int iwl3945_txpower_set_from_eeprom(struct iwl_priv *priv)
 		/* calculate power index *adjustment* value according to
 		 *  diff between current temperature and factory temperature */
 		delta_index = iwl3945_hw_reg_adjust_power_by_temp(temperature,
-				priv->eeprom39.groups[ch_info->group_index].
+				eeprom->groups[ch_info->group_index].
 				temperature);
 
-		IWL_DEBUG_POWER("Delta index for channel %d: %d [%d]\n",
+		IWL_DEBUG_POWER(priv, "Delta index for channel %d: %d [%d]\n",
 				ch_info->channel, delta_index, temperature +
 				IWL_TEMP_CONVERT);
 
@@ -2383,10 +2372,19 @@ static u16 iwl3945_get_hcmd_size(u8 cmd_id, u16 len)
 {
 	switch (cmd_id) {
 	case REPLY_RXON:
-		return (u16) sizeof(struct iwl3945_rxon_cmd);
+		return sizeof(struct iwl3945_rxon_cmd);
+	case POWER_TABLE_CMD:
+		return sizeof(struct iwl3945_powertable_cmd);
 	default:
 		return len;
 	}
+}
+
+static u16 iwl3945_build_addsta_hcmd(const struct iwl_addsta_cmd *cmd, u8 *data)
+{
+	u16 size = (u16)sizeof(struct iwl3945_addsta_cmd);
+	memcpy(data, cmd, size);
+	return size;
 }
 
 /**
@@ -2413,7 +2411,7 @@ int iwl3945_init_hw_rate_table(struct iwl_priv *priv)
 
 	switch (priv->band) {
 	case IEEE80211_BAND_5GHZ:
-		IWL_DEBUG_RATE("Select A mode rate scale\n");
+		IWL_DEBUG_RATE(priv, "Select A mode rate scale\n");
 		/* If one of the following CCK rates is used,
 		 * have it fall back to the 6M OFDM rate */
 		for (i = IWL_RATE_1M_INDEX_TABLE;
@@ -2431,12 +2429,12 @@ int iwl3945_init_hw_rate_table(struct iwl_priv *priv)
 		break;
 
 	case IEEE80211_BAND_2GHZ:
-		IWL_DEBUG_RATE("Select B/G mode rate scale\n");
+		IWL_DEBUG_RATE(priv, "Select B/G mode rate scale\n");
 		/* If an OFDM rate is used, have it fall back to the
 		 * 1M CCK rates */
 
 		if (!(priv->sta_supp_rates & IWL_OFDM_RATES_MASK) &&
-		    iwl3945_is_associated(priv)) {
+		    iwl_is_associated(priv)) {
 
 			index = IWL_FIRST_CCK_RATE;
 			for (i = IWL_RATE_6M_INDEX_TABLE;
@@ -2457,14 +2455,14 @@ int iwl3945_init_hw_rate_table(struct iwl_priv *priv)
 
 	/* Update the rate scaling for control frame Tx */
 	rate_cmd.table_id = 0;
-	rc = iwl3945_send_cmd_pdu(priv, REPLY_RATE_SCALE, sizeof(rate_cmd),
+	rc = iwl_send_cmd_pdu(priv, REPLY_RATE_SCALE, sizeof(rate_cmd),
 			      &rate_cmd);
 	if (rc)
 		return rc;
 
 	/* Update the rate scaling for data frame Tx */
 	rate_cmd.table_id = 1;
-	return iwl3945_send_cmd_pdu(priv, REPLY_RATE_SCALE, sizeof(rate_cmd),
+	return iwl_send_cmd_pdu(priv, REPLY_RATE_SCALE, sizeof(rate_cmd),
 				&rate_cmd);
 }
 
@@ -2485,6 +2483,7 @@ int iwl3945_hw_set_hw_params(struct iwl_priv *priv)
 		return -ENOMEM;
 	}
 
+	priv->hw_params.tfd_size = sizeof(struct iwl3945_tfd);
 	priv->hw_params.rx_buf_size = IWL_RX_BUF_SIZE_3K;
 	priv->hw_params.max_pkt_size = 2342;
 	priv->hw_params.max_rxq_size = RX_QUEUE_SIZE;
@@ -2555,7 +2554,7 @@ static int iwl3945_verify_bsm(struct iwl_priv *priv)
 	u32 reg;
 	u32 val;
 
-	IWL_DEBUG_INFO("Begin verify bsm\n");
+	IWL_DEBUG_INFO(priv, "Begin verify bsm\n");
 
 	/* verify BSM SRAM contents */
 	val = iwl_read_prph(priv, BSM_WR_DWCOUNT_REG);
@@ -2573,9 +2572,36 @@ static int iwl3945_verify_bsm(struct iwl_priv *priv)
 		}
 	}
 
-	IWL_DEBUG_INFO("BSM bootstrap uCode image OK\n");
+	IWL_DEBUG_INFO(priv, "BSM bootstrap uCode image OK\n");
 
 	return 0;
+}
+
+
+/******************************************************************************
+ *
+ * EEPROM related functions
+ *
+ ******************************************************************************/
+
+/*
+ * Clear the OWNER_MSK, to establish driver (instead of uCode running on
+ * embedded controller) as EEPROM reader; each read is a series of pulses
+ * to/from the EEPROM chip, not a single event, so even reads could conflict
+ * if they weren't arbitrated by some ownership mechanism.  Here, the driver
+ * simply claims ownership, which should be safe when this function is called
+ * (i.e. before loading uCode!).
+ */
+static int iwl3945_eeprom_acquire_semaphore(struct iwl_priv *priv)
+{
+	_iwl_clear_bit(priv, CSR_EEPROM_GP, CSR_EEPROM_GP_IF_OWNER_MSK);
+	return 0;
+}
+
+
+static void iwl3945_eeprom_release_semaphore(struct iwl_priv *priv)
+{
+	return;
 }
 
  /**
@@ -2623,7 +2649,7 @@ static int iwl3945_load_bsm(struct iwl_priv *priv)
 	u32 done;
 	u32 reg_offset;
 
-	IWL_DEBUG_INFO("Begin load bsm\n");
+	IWL_DEBUG_INFO(priv, "Begin load bsm\n");
 
 	/* make sure bootstrap program is no larger than BSM's SRAM size */
 	if (len > IWL39_MAX_BSM_SIZE)
@@ -2680,7 +2706,7 @@ static int iwl3945_load_bsm(struct iwl_priv *priv)
 		udelay(10);
 	}
 	if (i < 100)
-		IWL_DEBUG_INFO("BSM write complete, poll %d iterations\n", i);
+		IWL_DEBUG_INFO(priv, "BSM write complete, poll %d iterations\n", i);
 	else {
 		IWL_ERR(priv, "BSM write did not complete!\n");
 		return -EIO;
@@ -2697,6 +2723,9 @@ static int iwl3945_load_bsm(struct iwl_priv *priv)
 }
 
 static struct iwl_lib_ops iwl3945_lib = {
+	.txq_attach_buf_to_tfd = iwl3945_hw_txq_attach_buf_to_tfd,
+	.txq_free_tfd = iwl3945_hw_txq_free_tfd,
+	.txq_init = iwl3945_hw_tx_queue_init,
 	.load_ucode = iwl3945_load_bsm,
 	.apm_ops = {
 		.init = iwl3945_apm_init,
@@ -2705,10 +2734,27 @@ static struct iwl_lib_ops iwl3945_lib = {
 		.config = iwl3945_nic_config,
 		.set_pwr_src = iwl3945_set_pwr_src,
 	},
+	.eeprom_ops = {
+		.regulatory_bands = {
+			EEPROM_REGULATORY_BAND_1_CHANNELS,
+			EEPROM_REGULATORY_BAND_2_CHANNELS,
+			EEPROM_REGULATORY_BAND_3_CHANNELS,
+			EEPROM_REGULATORY_BAND_4_CHANNELS,
+			EEPROM_REGULATORY_BAND_5_CHANNELS,
+			IWL3945_EEPROM_IMG_SIZE,
+			IWL3945_EEPROM_IMG_SIZE,
+		},
+		.verify_signature  = iwlcore_eeprom_verify_signature,
+		.acquire_semaphore = iwl3945_eeprom_acquire_semaphore,
+		.release_semaphore = iwl3945_eeprom_release_semaphore,
+		.query_addr = iwlcore_eeprom_query_addr,
+	},
+	.send_tx_power	= iwl3945_send_tx_power,
 };
 
 static struct iwl_hcmd_utils_ops iwl3945_hcmd_utils = {
 	.get_hcmd_size = iwl3945_get_hcmd_size,
+	.build_addsta_hcmd = iwl3945_build_addsta_hcmd,
 };
 
 static struct iwl_ops iwl3945_ops = {
@@ -2722,6 +2768,8 @@ static struct iwl_cfg iwl3945_bg_cfg = {
 	.ucode_api_max = IWL3945_UCODE_API_MAX,
 	.ucode_api_min = IWL3945_UCODE_API_MIN,
 	.sku = IWL_SKU_G,
+	.eeprom_size = IWL3945_EEPROM_IMG_SIZE,
+	.eeprom_ver = EEPROM_3945_EEPROM_VERSION,
 	.ops = &iwl3945_ops,
 	.mod_params = &iwl3945_mod_params
 };
@@ -2732,6 +2780,8 @@ static struct iwl_cfg iwl3945_abg_cfg = {
 	.ucode_api_max = IWL3945_UCODE_API_MAX,
 	.ucode_api_min = IWL3945_UCODE_API_MIN,
 	.sku = IWL_SKU_A|IWL_SKU_G,
+	.eeprom_size = IWL3945_EEPROM_IMG_SIZE,
+	.eeprom_ver = EEPROM_3945_EEPROM_VERSION,
 	.ops = &iwl3945_ops,
 	.mod_params = &iwl3945_mod_params
 };

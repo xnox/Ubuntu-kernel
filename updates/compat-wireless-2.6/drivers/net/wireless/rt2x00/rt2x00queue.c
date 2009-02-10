@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2004 - 2008 rt2x00 SourceForge Project
+	Copyright (C) 2004 - 2009 rt2x00 SourceForge Project
 	<http://rt2x00.serialmonkey.com>
 
 	This program is free software; you can redistribute it and/or modify
@@ -186,10 +186,11 @@ static void rt2x00queue_create_tx_descriptor_seq(struct queue_entry *entry,
 
 static void rt2x00queue_create_tx_descriptor_plcp(struct queue_entry *entry,
 						  struct txentry_desc *txdesc,
-						  struct ieee80211_rate *rate)
+						  const struct rt2x00_rate *hwrate)
 {
 	struct rt2x00_dev *rt2x00dev = entry->queue->rt2x00dev;
-	const struct rt2x00_rate *hwrate = rt2x00_get_rate(rate->hw_value);
+	struct ieee80211_tx_info *tx_info = IEEE80211_SKB_CB(entry->skb);
+	struct ieee80211_tx_rate *txrate = &tx_info->control.rates[0];
 	unsigned int data_length;
 	unsigned int duration;
 	unsigned int residual;
@@ -232,7 +233,7 @@ static void rt2x00queue_create_tx_descriptor_plcp(struct queue_entry *entry,
 		 * When preamble is enabled we should set the
 		 * preamble bit for the signal.
 		 */
-		if (rate->flags & IEEE80211_TX_RC_USE_SHORT_PREAMBLE)
+		if (txrate->flags & IEEE80211_TX_RC_USE_SHORT_PREAMBLE)
 			txdesc->signal |= 0x08;
 	}
 }
@@ -326,7 +327,7 @@ static void rt2x00queue_create_tx_descriptor(struct queue_entry *entry,
 	 */
 	rt2x00crypto_create_tx_descriptor(entry, txdesc);
 	rt2x00queue_create_tx_descriptor_seq(entry, txdesc);
-	rt2x00queue_create_tx_descriptor_plcp(entry, txdesc, rate);
+	rt2x00queue_create_tx_descriptor_plcp(entry, txdesc, hwrate);
 }
 
 static void rt2x00queue_write_tx_descriptor(struct queue_entry *entry,
@@ -442,7 +443,8 @@ int rt2x00queue_write_tx_frame(struct data_queue *queue, struct sk_buff *skb)
 }
 
 int rt2x00queue_update_beacon(struct rt2x00_dev *rt2x00dev,
-			      struct ieee80211_vif *vif)
+			      struct ieee80211_vif *vif,
+			      const bool enable_beacon)
 {
 	struct rt2x00_intf *intf = vif_to_intf(vif);
 	struct skb_frame_desc *skbdesc;
@@ -451,6 +453,11 @@ int rt2x00queue_update_beacon(struct rt2x00_dev *rt2x00dev,
 
 	if (unlikely(!intf->beacon))
 		return -ENOBUFS;
+
+	if (!enable_beacon) {
+		rt2x00dev->ops->lib->kill_tx_queue(rt2x00dev, QID_BEACON);
+		return 0;
+	}
 
 	intf->beacon->skb = ieee80211_beacon_get(rt2x00dev->hw, vif);
 	if (!intf->beacon->skb)
@@ -499,6 +506,9 @@ struct data_queue *rt2x00queue_get_queue(struct rt2x00_dev *rt2x00dev,
 					 const enum data_queue_qid queue)
 {
 	int atim = test_bit(DRIVER_REQUIRE_ATIM_QUEUE, &rt2x00dev->flags);
+
+	if (queue == QID_RX)
+		return rt2x00dev->rx;
 
 	if (queue < rt2x00dev->ops->tx_queues && rt2x00dev->tx)
 		return &rt2x00dev->tx[queue];
@@ -574,6 +584,14 @@ static void rt2x00queue_reset(struct data_queue *queue)
 	memset(queue->index, 0, sizeof(queue->index));
 
 	spin_unlock_irqrestore(&queue->lock, irqflags);
+}
+
+void rt2x00queue_stop_queues(struct rt2x00_dev *rt2x00dev)
+{
+	struct data_queue *queue;
+
+	txall_queue_for_each(rt2x00dev, queue)
+		rt2x00dev->ops->lib->kill_tx_queue(rt2x00dev, queue->qid);
 }
 
 void rt2x00queue_init_queues(struct rt2x00_dev *rt2x00dev)

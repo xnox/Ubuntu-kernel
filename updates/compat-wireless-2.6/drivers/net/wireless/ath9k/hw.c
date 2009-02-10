@@ -187,46 +187,6 @@ u16 ath9k_hw_computetxtime(struct ath_hal *ah,
 	return txTime;
 }
 
-u32 ath9k_hw_mhz2ieee(struct ath_hal *ah, u32 freq, u32 flags)
-{
-	if (flags & CHANNEL_2GHZ) {
-		if (freq == 2484)
-			return 14;
-		if (freq < 2484)
-			return (freq - 2407) / 5;
-		else
-			return 15 + ((freq - 2512) / 20);
-	} else if (flags & CHANNEL_5GHZ) {
-		if (ath9k_regd_is_public_safety_sku(ah) &&
-		    IS_CHAN_IN_PUBLIC_SAFETY_BAND(freq)) {
-			return ((freq * 10) +
-				(((freq % 5) == 2) ? 5 : 0) - 49400) / 5;
-		} else if ((flags & CHANNEL_A) && (freq <= 5000)) {
-			return (freq - 4000) / 5;
-		} else {
-			return (freq - 5000) / 5;
-		}
-	} else {
-		if (freq == 2484)
-			return 14;
-		if (freq < 2484)
-			return (freq - 2407) / 5;
-		if (freq < 5000) {
-			if (ath9k_regd_is_public_safety_sku(ah)
-			    && IS_CHAN_IN_PUBLIC_SAFETY_BAND(freq)) {
-				return ((freq * 10) +
-					(((freq % 5) ==
-					  2) ? 5 : 0) - 49400) / 5;
-			} else if (freq > 4900) {
-				return (freq - 4000) / 5;
-			} else {
-				return 15 + ((freq - 2512) / 20);
-			}
-		}
-		return (freq - 5000) / 5;
-	}
-}
-
 void ath9k_hw_get_channel_centers(struct ath_hal *ah,
 				  struct ath9k_channel *chan,
 				  struct chan_centers *centers)
@@ -307,7 +267,7 @@ static int ath9k_hw_get_radiorev(struct ath_hal *ah)
 
 static void ath9k_hw_disablepcie(struct ath_hal *ah)
 {
-	if (!AR_SREV_9100(ah))
+	if (AR_SREV_9100(ah))
 		return;
 
 	REG_WRITE(ah, AR_PCIE_SERDES, 0x9248fc00);
@@ -377,6 +337,8 @@ static const char *ath9k_hw_devname(u16 devid)
 		return "Atheros 5418";
 	case AR9160_DEVID_PCI:
 		return "Atheros 9160";
+	case AR5416_AR9100_DEVID:
+		return "Atheros 9100";
 	case AR9280_DEVID_PCI:
 	case AR9280_DEVID_PCIE:
 		return "Atheros 9280";
@@ -1011,7 +973,7 @@ static void ath9k_hw_init_pll(struct ath_hal *ah,
 				pll |= SM(0xb, AR_RTC_PLL_DIV);
 		}
 	}
-	REG_WRITE(ah, (u16) (AR_RTC_PLL_CONTROL), pll);
+	REG_WRITE(ah, AR_RTC_PLL_CONTROL, pll);
 
 	udelay(RTC_PLL_SETTLE_DELAY);
 
@@ -1179,6 +1141,7 @@ struct ath_hal *ath9k_hw_attach(u16 devid, struct ath_softc *sc,
 	switch (devid) {
 	case AR5416_DEVID_PCI:
 	case AR5416_DEVID_PCIE:
+	case AR5416_AR9100_DEVID:
 	case AR9160_DEVID_PCI:
 	case AR9280_DEVID_PCI:
 	case AR9280_DEVID_PCIE:
@@ -1267,6 +1230,7 @@ static int ath9k_hw_process_ini(struct ath_hal *ah,
 {
 	int i, regWrites = 0;
 	struct ath_hal_5416 *ahp = AH5416(ah);
+	struct ieee80211_channel *channel = chan->chan;
 	u32 modesIndex, freqIndex;
 	int status;
 
@@ -1371,9 +1335,8 @@ static int ath9k_hw_process_ini(struct ath_hal *ah,
 
 	status = ath9k_hw_set_txpower(ah, chan,
 				      ath9k_regd_get_ctl(ah, chan),
-				      ath9k_regd_get_antenna_allowed(ah,
-								     chan),
-				      chan->maxRegTxPower * 2,
+				      channel->max_antenna_gain * 2,
+				      channel->max_power * 2,
 				      min((u32) MAX_RATE_POWER,
 					  (u32) ah->ah_powerLimit));
 	if (status != 0) {
@@ -1550,11 +1513,11 @@ static bool ath9k_hw_set_reset(struct ath_hal *ah, int type)
 			rst_flags |= AR_RTC_RC_MAC_COLD;
 	}
 
-	REG_WRITE(ah, (u16) (AR_RTC_RC), rst_flags);
+	REG_WRITE(ah, AR_RTC_RC, rst_flags);
 	udelay(50);
 
-	REG_WRITE(ah, (u16) (AR_RTC_RC), 0);
-	if (!ath9k_hw_wait(ah, (u16) (AR_RTC_RC), AR_RTC_RC_M, 0)) {
+	REG_WRITE(ah, AR_RTC_RC, 0);
+	if (!ath9k_hw_wait(ah, AR_RTC_RC, AR_RTC_RC_M, 0)) {
 		DPRINTF(ah->ah_sc, ATH_DBG_RESET,
 			"RTC stuck in MAC reset\n");
 		return false;
@@ -1576,8 +1539,8 @@ static bool ath9k_hw_set_reset_power_on(struct ath_hal *ah)
 	REG_WRITE(ah, AR_RTC_FORCE_WAKE, AR_RTC_FORCE_WAKE_EN |
 		  AR_RTC_FORCE_WAKE_ON_INT);
 
-	REG_WRITE(ah, (u16) (AR_RTC_RESET), 0);
-	REG_WRITE(ah, (u16) (AR_RTC_RESET), 1);
+	REG_WRITE(ah, AR_RTC_RESET, 0);
+	REG_WRITE(ah, AR_RTC_RESET, 1);
 
 	if (!ath9k_hw_wait(ah,
 			   AR_RTC_STATUS,
@@ -1666,6 +1629,7 @@ static bool ath9k_hw_channel_change(struct ath_hal *ah,
 				    struct ath9k_channel *chan,
 				    enum ath9k_ht_macmode macmode)
 {
+	struct ieee80211_channel *channel = chan->chan;
 	u32 synthDelay, qnum;
 
 	for (qnum = 0; qnum < AR_NUM_QCU; qnum++) {
@@ -1702,8 +1666,8 @@ static bool ath9k_hw_channel_change(struct ath_hal *ah,
 
 	if (ath9k_hw_set_txpower(ah, chan,
 				 ath9k_regd_get_ctl(ah, chan),
-				 ath9k_regd_get_antenna_allowed(ah, chan),
-				 chan->maxRegTxPower * 2,
+				 channel->max_antenna_gain * 2,
+				 channel->max_power * 2,
 				 min((u32) MAX_RATE_POWER,
 				     (u32) ah->ah_powerLimit)) != 0) {
 		DPRINTF(ah->ah_sc, ATH_DBG_EEPROM,
@@ -2201,16 +2165,12 @@ int ath9k_hw_reset(struct ath_hal *ah, struct ath9k_channel *chan,
 	ahp->ah_txchainmask = sc->sc_tx_chainmask;
 	ahp->ah_rxchainmask = sc->sc_rx_chainmask;
 
-	if (AR_SREV_9280(ah)) {
+	if (AR_SREV_9285(ah)) {
+		ahp->ah_txchainmask &= 0x1;
+		ahp->ah_rxchainmask &= 0x1;
+	} else if (AR_SREV_9280(ah)) {
 		ahp->ah_txchainmask &= 0x3;
 		ahp->ah_rxchainmask &= 0x3;
-	}
-
-	if (ath9k_regd_check_channel(ah, chan) == NULL) {
-		DPRINTF(ah->ah_sc, ATH_DBG_CHANNEL,
-			"invalid channel %u/0x%x; no mapping\n",
-			chan->channel, chan->channelFlags);
-		return -EINVAL;
 	}
 
 	if (!ath9k_hw_setpower(ah, ATH9K_PM_AWAKE))
@@ -2252,18 +2212,8 @@ int ath9k_hw_reset(struct ath_hal *ah, struct ath9k_channel *chan,
 		return -EINVAL;
 	}
 
-	if (AR_SREV_9280(ah)) {
-		REG_SET_BIT(ah, AR_GPIO_INPUT_EN_VAL,
-			    AR_GPIO_JTAG_DISABLE);
-
-		if (test_bit(ATH9K_MODE_11A, ah->ah_caps.wireless_modes)) {
-			if (IS_CHAN_5GHZ(chan))
-				ath9k_hw_set_gpio(ah, 9, 0);
-			else
-				ath9k_hw_set_gpio(ah, 9, 1);
-		}
-		ath9k_hw_cfg_output(ah, 9, AR_GPIO_OUTPUT_MUX_AS_OUTPUT);
-	}
+	if (AR_SREV_9280_10_OR_LATER(ah))
+		REG_SET_BIT(ah, AR_GPIO_INPUT_EN_VAL, AR_GPIO_JTAG_DISABLE);
 
 	r = ath9k_hw_process_ini(ah, chan, sc->tx_chan_width);
 	if (r)
@@ -2619,7 +2569,7 @@ static void ath9k_set_power_sleep(struct ath_hal *ah, int setChip)
 		if (!AR_SREV_9100(ah))
 			REG_WRITE(ah, AR_RC, AR_RC_AHB | AR_RC_HOSTIF);
 
-		REG_CLR_BIT(ah, (u16) (AR_RTC_RESET),
+		REG_CLR_BIT(ah, (AR_RTC_RESET),
 			    AR_RTC_RESET_EN);
 	}
 }
@@ -2695,7 +2645,7 @@ bool ath9k_hw_setpower(struct ath_hal *ah,
 	int status = true, setChip = true;
 
 	DPRINTF(ah->ah_sc, ATH_DBG_POWER_MGMT, "%s -> %s (%s)\n",
-		modes[ahp->ah_powerMode], modes[mode],
+		modes[ah->ah_power_mode], modes[mode],
 		setChip ? "set chip " : "");
 
 	switch (mode) {
@@ -2714,7 +2664,7 @@ bool ath9k_hw_setpower(struct ath_hal *ah,
 			"Unknown power mode %u\n", mode);
 		return false;
 	}
-	ahp->ah_powerMode = mode;
+	ah->ah_power_mode = mode;
 
 	return status;
 }
@@ -3595,27 +3545,6 @@ void ath9k_enable_rfkill(struct ath_hal *ah)
 }
 #endif
 
-int ath9k_hw_select_antconfig(struct ath_hal *ah, u32 cfg)
-{
-	struct ath9k_channel *chan = ah->ah_curchan;
-	const struct ath9k_hw_capabilities *pCap = &ah->ah_caps;
-	u16 ant_config;
-	u32 halNumAntConfig;
-
-	halNumAntConfig = IS_CHAN_2GHZ(chan) ?
-		pCap->num_antcfg_2ghz : pCap->num_antcfg_5ghz;
-
-	if (cfg < halNumAntConfig) {
-		if (!ath9k_hw_get_eeprom_antenna_cfg(ah, chan,
-						     cfg, &ant_config)) {
-			REG_WRITE(ah, AR_PHY_SWITCH_COM, ant_config);
-			return 0;
-		}
-	}
-
-	return -EINVAL;
-}
-
 u32 ath9k_hw_getdefantenna(struct ath_hal *ah)
 {
 	return REG_READ(ah, AR_DEF_ANTENNA) & 0x7;
@@ -3725,13 +3654,14 @@ bool ath9k_hw_disable(struct ath_hal *ah)
 bool ath9k_hw_set_txpowerlimit(struct ath_hal *ah, u32 limit)
 {
 	struct ath9k_channel *chan = ah->ah_curchan;
+	struct ieee80211_channel *channel = chan->chan;
 
 	ah->ah_powerLimit = min(limit, (u32) MAX_RATE_POWER);
 
 	if (ath9k_hw_set_txpower(ah, chan,
 				 ath9k_regd_get_ctl(ah, chan),
-				 ath9k_regd_get_antenna_allowed(ah, chan),
-				 chan->maxRegTxPower * 2,
+				 channel->max_antenna_gain * 2,
+				 channel->max_power * 2,
 				 min((u32) MAX_RATE_POWER,
 				     (u32) ah->ah_powerLimit)) != 0)
 		return false;
@@ -3805,6 +3735,13 @@ u64 ath9k_hw_gettsf64(struct ath_hal *ah)
 	tsf = (tsf << 32) | REG_READ(ah, AR_TSF_L32);
 
 	return tsf;
+}
+
+void ath9k_hw_settsf64(struct ath_hal *ah, u64 tsf64)
+{
+	REG_WRITE(ah, AR_TSF_L32, 0x00000000);
+	REG_WRITE(ah, AR_TSF_U32, (tsf64 >> 32) & 0xffffffff);
+	REG_WRITE(ah, AR_TSF_L32, tsf64 & 0xffffffff);
 }
 
 void ath9k_hw_reset_tsf(struct ath_hal *ah)

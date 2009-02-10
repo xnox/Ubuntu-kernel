@@ -4,7 +4,7 @@
 
   Copyright (c) 2005 Martin Langer <martin-langer@gmx.de>
   Copyright (c) 2005 Stefano Brivio <stefano.brivio@polimi.it>
-  Copyright (c) 2005, 2006 Michael Buesch <mb@bu3sch.de>
+  Copyright (c) 2005-2009 Michael Buesch <mb@bu3sch.de>
   Copyright (c) 2005 Danny van Dyk <kugelfang@gentoo.org>
   Copyright (c) 2005 Andreas Jaggi <andreas.jaggi@waterwave.ch>
 
@@ -87,6 +87,10 @@ MODULE_PARM_DESC(qos, "Enable QOS support (default on)");
 static int modparam_btcoex = 1;
 module_param_named(btcoex, modparam_btcoex, int, 0444);
 MODULE_PARM_DESC(btcoex, "Enable Bluetooth coexistance (default on)");
+
+int b43_modparam_verbose = B43_VERBOSITY_DEFAULT;
+module_param_named(verbose, b43_modparam_verbose, int, 0644);
+MODULE_PARM_DESC(verbose, "Log message verbosity: 0=error, 1=warn, 2=info(default), 3=debug");
 
 
 static const struct ssb_device_id b43_ssb_tbl[] = {
@@ -300,6 +304,8 @@ void b43info(struct b43_wl *wl, const char *fmt, ...)
 {
 	va_list args;
 
+	if (b43_modparam_verbose < B43_VERBOSITY_INFO)
+		return;
 	if (!b43_ratelimit(wl))
 		return;
 	va_start(args, fmt);
@@ -313,6 +319,8 @@ void b43err(struct b43_wl *wl, const char *fmt, ...)
 {
 	va_list args;
 
+	if (b43_modparam_verbose < B43_VERBOSITY_ERROR)
+		return;
 	if (!b43_ratelimit(wl))
 		return;
 	va_start(args, fmt);
@@ -326,6 +334,8 @@ void b43warn(struct b43_wl *wl, const char *fmt, ...)
 {
 	va_list args;
 
+	if (b43_modparam_verbose < B43_VERBOSITY_WARN)
+		return;
 	if (!b43_ratelimit(wl))
 		return;
 	va_start(args, fmt);
@@ -335,18 +345,18 @@ void b43warn(struct b43_wl *wl, const char *fmt, ...)
 	va_end(args);
 }
 
-#if B43_DEBUG
 void b43dbg(struct b43_wl *wl, const char *fmt, ...)
 {
 	va_list args;
 
+	if (b43_modparam_verbose < B43_VERBOSITY_DEBUG)
+		return;
 	va_start(args, fmt);
 	printk(KERN_DEBUG "b43-%s debug: ",
 	       (wl && wl->hw) ? wiphy_name(wl->hw->wiphy) : "wlan");
 	vprintk(fmt, args);
 	va_end(args);
 }
-#endif /* DEBUG */
 
 static void b43_ram_write(struct b43_wldev *dev, u16 offset, u32 val)
 {
@@ -1934,7 +1944,7 @@ static irqreturn_t b43_interrupt_handler(int irq, void *dev_id)
 	return ret;
 }
 
-static void do_release_fw(struct b43_firmware_file *fw)
+void b43_do_release_fw(struct b43_firmware_file *fw)
 {
 	release_firmware(fw->data);
 	fw->data = NULL;
@@ -1943,10 +1953,10 @@ static void do_release_fw(struct b43_firmware_file *fw)
 
 static void b43_release_firmware(struct b43_wldev *dev)
 {
-	do_release_fw(&dev->fw.ucode);
-	do_release_fw(&dev->fw.pcm);
-	do_release_fw(&dev->fw.initvals);
-	do_release_fw(&dev->fw.initvals_band);
+	b43_do_release_fw(&dev->fw.ucode);
+	b43_do_release_fw(&dev->fw.pcm);
+	b43_do_release_fw(&dev->fw.initvals);
+	b43_do_release_fw(&dev->fw.initvals_band);
 }
 
 static void b43_print_fw_helptext(struct b43_wl *wl, bool error)
@@ -1963,12 +1973,10 @@ static void b43_print_fw_helptext(struct b43_wl *wl, bool error)
 		b43warn(wl, text);
 }
 
-static int do_request_fw(struct b43_wldev *dev,
-			 const char *name,
-			 struct b43_firmware_file *fw,
-			 bool silent)
+int b43_do_request_fw(struct b43_request_fw_context *ctx,
+		      const char *name,
+		      struct b43_firmware_file *fw)
 {
-	char path[sizeof(modparam_fwpostfix) + 32];
 	const struct firmware *blob;
 	struct b43_fw_header *hdr;
 	u32 size;
@@ -1976,29 +1984,49 @@ static int do_request_fw(struct b43_wldev *dev,
 
 	if (!name) {
 		/* Don't fetch anything. Free possibly cached firmware. */
-		do_release_fw(fw);
+		/* FIXME: We should probably keep it anyway, to save some headache
+		 * on suspend/resume with multiband devices. */
+		b43_do_release_fw(fw);
 		return 0;
 	}
 	if (fw->filename) {
-		if (strcmp(fw->filename, name) == 0)
+		if ((fw->type == ctx->req_type) &&
+		    (strcmp(fw->filename, name) == 0))
 			return 0; /* Already have this fw. */
 		/* Free the cached firmware first. */
-		do_release_fw(fw);
+		/* FIXME: We should probably do this later after we successfully
+		 * got the new fw. This could reduce headache with multiband devices.
+		 * We could also redesign this to cache the firmware for all possible
+		 * bands all the time. */
+		b43_do_release_fw(fw);
 	}
 
-	snprintf(path, ARRAY_SIZE(path),
-		 "b43%s/%s.fw",
-		 modparam_fwpostfix, name);
-	err = request_firmware(&blob, path, dev->dev->dev);
+	switch (ctx->req_type) {
+	case B43_FWTYPE_PROPRIETARY:
+		snprintf(ctx->fwname, sizeof(ctx->fwname),
+			 "b43%s/%s.fw",
+			 modparam_fwpostfix, name);
+		break;
+	case B43_FWTYPE_OPENSOURCE:
+		snprintf(ctx->fwname, sizeof(ctx->fwname),
+			 "b43-open%s/%s.fw",
+			 modparam_fwpostfix, name);
+		break;
+	default:
+		B43_WARN_ON(1);
+		return -ENOSYS;
+	}
+	err = request_firmware(&blob, ctx->fwname, ctx->dev->dev->dev);
 	if (err == -ENOENT) {
-		if (!silent) {
-			b43err(dev->wl, "Firmware file \"%s\" not found\n",
-			       path);
-		}
+		snprintf(ctx->errors[ctx->req_type],
+			 sizeof(ctx->errors[ctx->req_type]),
+			 "Firmware file \"%s\" not found\n", ctx->fwname);
 		return err;
 	} else if (err) {
-		b43err(dev->wl, "Firmware file \"%s\" request failed (err=%d)\n",
-		       path, err);
+		snprintf(ctx->errors[ctx->req_type],
+			 sizeof(ctx->errors[ctx->req_type]),
+			 "Firmware file \"%s\" request failed (err=%d)\n",
+			 ctx->fwname, err);
 		return err;
 	}
 	if (blob->size < sizeof(struct b43_fw_header))
@@ -2021,20 +2049,24 @@ static int do_request_fw(struct b43_wldev *dev,
 
 	fw->data = blob;
 	fw->filename = name;
+	fw->type = ctx->req_type;
 
 	return 0;
 
 err_format:
-	b43err(dev->wl, "Firmware file \"%s\" format error.\n", path);
+	snprintf(ctx->errors[ctx->req_type],
+		 sizeof(ctx->errors[ctx->req_type]),
+		 "Firmware file \"%s\" format error.\n", ctx->fwname);
 	release_firmware(blob);
 
 	return -EPROTO;
 }
 
-static int b43_request_firmware(struct b43_wldev *dev)
+static int b43_try_request_fw(struct b43_request_fw_context *ctx)
 {
-	struct b43_firmware *fw = &dev->fw;
-	const u8 rev = dev->dev->id.revision;
+	struct b43_wldev *dev = ctx->dev;
+	struct b43_firmware *fw = &ctx->dev->fw;
+	const u8 rev = ctx->dev->dev->id.revision;
 	const char *filename;
 	u32 tmshigh;
 	int err;
@@ -2049,7 +2081,7 @@ static int b43_request_firmware(struct b43_wldev *dev)
 		filename = "ucode13";
 	else
 		goto err_no_ucode;
-	err = do_request_fw(dev, filename, &fw->ucode, 0);
+	err = b43_do_request_fw(ctx, filename, &fw->ucode);
 	if (err)
 		goto err_load;
 
@@ -2061,7 +2093,7 @@ static int b43_request_firmware(struct b43_wldev *dev)
 	else
 		goto err_no_pcm;
 	fw->pcm_request_failed = 0;
-	err = do_request_fw(dev, filename, &fw->pcm, 1);
+	err = b43_do_request_fw(ctx, filename, &fw->pcm);
 	if (err == -ENOENT) {
 		/* We did not find a PCM file? Not fatal, but
 		 * core rev <= 10 must do without hwcrypto then. */
@@ -2097,7 +2129,7 @@ static int b43_request_firmware(struct b43_wldev *dev)
 	default:
 		goto err_no_initvals;
 	}
-	err = do_request_fw(dev, filename, &fw->initvals, 0);
+	err = b43_do_request_fw(ctx, filename, &fw->initvals);
 	if (err)
 		goto err_load;
 
@@ -2131,34 +2163,80 @@ static int b43_request_firmware(struct b43_wldev *dev)
 	default:
 		goto err_no_initvals;
 	}
-	err = do_request_fw(dev, filename, &fw->initvals_band, 0);
+	err = b43_do_request_fw(ctx, filename, &fw->initvals_band);
 	if (err)
 		goto err_load;
 
 	return 0;
 
-err_load:
-	b43_print_fw_helptext(dev->wl, 1);
-	goto error;
-
 err_no_ucode:
-	err = -ENODEV;
-	b43err(dev->wl, "No microcode available for core rev %u\n", rev);
+	err = ctx->fatal_failure = -EOPNOTSUPP;
+	b43err(dev->wl, "The driver does not know which firmware (ucode) "
+	       "is required for your device (wl-core rev %u)\n", rev);
 	goto error;
 
 err_no_pcm:
-	err = -ENODEV;
-	b43err(dev->wl, "No PCM available for core rev %u\n", rev);
+	err = ctx->fatal_failure = -EOPNOTSUPP;
+	b43err(dev->wl, "The driver does not know which firmware (PCM) "
+	       "is required for your device (wl-core rev %u)\n", rev);
 	goto error;
 
 err_no_initvals:
-	err = -ENODEV;
-	b43err(dev->wl, "No Initial Values firmware file for PHY %u, "
-	       "core rev %u\n", dev->phy.type, rev);
+	err = ctx->fatal_failure = -EOPNOTSUPP;
+	b43err(dev->wl, "The driver does not know which firmware (initvals) "
+	       "is required for your device (wl-core rev %u)\n", rev);
+	goto error;
+
+err_load:
+	/* We failed to load this firmware image. The error message
+	 * already is in ctx->errors. Return and let our caller decide
+	 * what to do. */
 	goto error;
 
 error:
 	b43_release_firmware(dev);
+	return err;
+}
+
+static int b43_request_firmware(struct b43_wldev *dev)
+{
+	struct b43_request_fw_context *ctx;
+	unsigned int i;
+	int err;
+	const char *errmsg;
+
+	ctx = kzalloc(sizeof(*ctx), GFP_KERNEL);
+	if (!ctx)
+		return -ENOMEM;
+	ctx->dev = dev;
+
+	ctx->req_type = B43_FWTYPE_PROPRIETARY;
+	err = b43_try_request_fw(ctx);
+	if (!err)
+		goto out; /* Successfully loaded it. */
+	err = ctx->fatal_failure;
+	if (err)
+		goto out;
+
+	ctx->req_type = B43_FWTYPE_OPENSOURCE;
+	err = b43_try_request_fw(ctx);
+	if (!err)
+		goto out; /* Successfully loaded it. */
+	err = ctx->fatal_failure;
+	if (err)
+		goto out;
+
+	/* Could not find a usable firmware. Print the errors. */
+	for (i = 0; i < B43_NR_FWTYPES; i++) {
+		errmsg = ctx->errors[i];
+		if (strlen(errmsg))
+			b43err(dev->wl, errmsg);
+	}
+	b43_print_fw_helptext(dev->wl, 1);
+	err = -ENOENT;
+
+out:
+	kfree(ctx);
 	return err;
 }
 
@@ -3177,6 +3255,43 @@ static int b43_op_get_stats(struct ieee80211_hw *hw,
 	return 0;
 }
 
+static u64 b43_op_get_tsf(struct ieee80211_hw *hw)
+{
+	struct b43_wl *wl = hw_to_b43_wl(hw);
+	struct b43_wldev *dev;
+	u64 tsf;
+
+	mutex_lock(&wl->mutex);
+	spin_lock_irq(&wl->irq_lock);
+	dev = wl->current_dev;
+
+	if (dev && (b43_status(dev) >= B43_STAT_INITIALIZED))
+		b43_tsf_read(dev, &tsf);
+	else
+		tsf = 0;
+
+	spin_unlock_irq(&wl->irq_lock);
+	mutex_unlock(&wl->mutex);
+
+	return tsf;
+}
+
+static void b43_op_set_tsf(struct ieee80211_hw *hw, u64 tsf)
+{
+	struct b43_wl *wl = hw_to_b43_wl(hw);
+	struct b43_wldev *dev;
+
+	mutex_lock(&wl->mutex);
+	spin_lock_irq(&wl->irq_lock);
+	dev = wl->current_dev;
+
+	if (dev && (b43_status(dev) >= B43_STAT_INITIALIZED))
+		b43_tsf_write(dev, tsf);
+
+	spin_unlock_irq(&wl->irq_lock);
+	mutex_unlock(&wl->mutex);
+}
+
 static void b43_put_phy_into_reset(struct b43_wldev *dev)
 {
 	struct ssb_device *sdev = dev->dev;
@@ -3398,7 +3513,7 @@ out_unlock_mutex:
 	return err;
 }
 
-static void b43_update_basic_rates(struct b43_wldev *dev, u64 brates)
+static void b43_update_basic_rates(struct b43_wldev *dev, u32 brates)
 {
 	struct ieee80211_supported_band *sband =
 		dev->wl->hw->wiphy->bands[b43_current_band(dev->wl)];
@@ -3484,6 +3599,7 @@ static int b43_op_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 	u8 algorithm;
 	u8 index;
 	int err;
+	static const u8 bcast_addr[ETH_ALEN] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
 	if (modparam_nohwcrypt)
 		return -ENOSPC; /* User disabled HW-crypto */
@@ -3582,7 +3698,7 @@ out_unlock:
 		b43dbg(wl, "%s hardware based encryption for keyidx: %d, "
 		       "mac: %pM\n",
 		       cmd == SET_KEY ? "Using" : "Disabling", key->keyidx,
-		       sta ? sta->addr : "<group key>");
+		       sta ? sta->addr : bcast_addr);
 		b43_dump_keymemory(dev);
 	}
 	write_unlock(&wl->tx_lock);
@@ -4293,6 +4409,8 @@ static const struct ieee80211_ops b43_hw_ops = {
 	.set_key		= b43_op_set_key,
 	.get_stats		= b43_op_get_stats,
 	.get_tx_stats		= b43_op_get_tx_stats,
+	.get_tsf		= b43_op_get_tsf,
+	.set_tsf		= b43_op_set_tsf,
 	.start			= b43_op_start,
 	.stop			= b43_op_stop,
 	.set_tim		= b43_op_beacon_set_tim,
@@ -4634,9 +4752,10 @@ static int b43_wireless_init(struct ssb_device *dev)
 	INIT_WORK(&wl->txpower_adjust_work, b43_phy_txpower_adjust_work);
 
 	ssb_set_devtypedata(dev, wl);
-	b43info(wl, "Broadcom %04X WLAN found\n", dev->bus->chip_id);
+	b43info(wl, "Broadcom %04X WLAN found (core revision %u)\n",
+		dev->bus->chip_id, dev->id.revision);
 	err = 0;
-      out:
+out:
 	return err;
 }
 

@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2004 - 2008 rt2x00 SourceForge Project
+	Copyright (C) 2004 - 2009 rt2x00 SourceForge Project
 	<http://rt2x00.serialmonkey.com>
 
 	This program is free software; you can redistribute it and/or modify
@@ -1061,25 +1061,37 @@ static char *rt73usb_get_firmware_name(struct rt2x00_dev *rt2x00dev)
 	return FIRMWARE_RT2571;
 }
 
-static u16 rt73usb_get_firmware_crc(const void *data, const size_t len)
+static int rt73usb_check_firmware(struct rt2x00_dev *rt2x00dev,
+				  const u8 *data, const size_t len)
 {
+	u16 fw_crc;
 	u16 crc;
 
 	/*
-	 * Use the crc itu-t algorithm.
+	 * Only support 2kb firmware files.
+	 */
+	if (len != 2048)
+		return FW_BAD_LENGTH;
+
+	/*
 	 * The last 2 bytes in the firmware array are the crc checksum itself,
 	 * this means that we should never pass those 2 bytes to the crc
 	 * algorithm.
+	 */
+	fw_crc = (data[len - 2] << 8 | data[len - 1]);
+
+	/*
+	 * Use the crc itu-t algorithm.
 	 */
 	crc = crc_itu_t(0, data, len - 2);
 	crc = crc_itu_t_byte(crc, 0);
 	crc = crc_itu_t_byte(crc, 0);
 
-	return crc;
+	return (fw_crc == crc) ? FW_OK : FW_BAD_CRC;
 }
 
-static int rt73usb_load_firmware(struct rt2x00_dev *rt2x00dev, const void *data,
-				 const size_t len)
+static int rt73usb_load_firmware(struct rt2x00_dev *rt2x00dev,
+				 const u8 *data, const size_t len)
 {
 	unsigned int i;
 	int status;
@@ -2180,6 +2192,7 @@ static int rt73usb_conf_tx(struct ieee80211_hw *hw, u16 queue_idx,
 	struct rt2x00_field32 field;
 	int retval;
 	u32 reg;
+	u32 offset;
 
 	/*
 	 * First pass the configuration through rt2x00lib, that will
@@ -2191,24 +2204,23 @@ static int rt73usb_conf_tx(struct ieee80211_hw *hw, u16 queue_idx,
 	if (retval)
 		return retval;
 
+	/*
+	 * We only need to perform additional register initialization
+	 * for WMM queues/
+	 */
+	if (queue_idx >= 4)
+		return 0;
+
 	queue = rt2x00queue_get_queue(rt2x00dev, queue_idx);
 
 	/* Update WMM TXOP register */
-	if (queue_idx < 2) {
-		field.bit_offset = queue_idx * 16;
-		field.bit_mask = 0xffff << field.bit_offset;
+	offset = AC_TXOP_CSR0 + (sizeof(u32) * (!!(queue_idx & 2)));
+	field.bit_offset = (queue_idx & 1) * 16;
+	field.bit_mask = 0xffff << field.bit_offset;
 
-		rt2x00usb_register_read(rt2x00dev, AC_TXOP_CSR0, &reg);
-		rt2x00_set_field32(&reg, field, queue->txop);
-		rt2x00usb_register_write(rt2x00dev, AC_TXOP_CSR0, reg);
-	} else if (queue_idx < 4) {
-		field.bit_offset = (queue_idx - 2) * 16;
-		field.bit_mask = 0xffff << field.bit_offset;
-
-		rt2x00usb_register_read(rt2x00dev, AC_TXOP_CSR1, &reg);
-		rt2x00_set_field32(&reg, field, queue->txop);
-		rt2x00usb_register_write(rt2x00dev, AC_TXOP_CSR1, reg);
-	}
+	rt2x00usb_register_read(rt2x00dev, offset, &reg);
+	rt2x00_set_field32(&reg, field, queue->txop);
+	rt2x00usb_register_write(rt2x00dev, offset, reg);
 
 	/* Update WMM registers */
 	field.bit_offset = queue_idx * 4;
@@ -2273,7 +2285,7 @@ static const struct ieee80211_ops rt73usb_mac80211_ops = {
 static const struct rt2x00lib_ops rt73usb_rt2x00_ops = {
 	.probe_hw		= rt73usb_probe_hw,
 	.get_firmware_name	= rt73usb_get_firmware_name,
-	.get_firmware_crc	= rt73usb_get_firmware_crc,
+	.check_firmware		= rt73usb_check_firmware,
 	.load_firmware		= rt73usb_load_firmware,
 	.initialize		= rt2x00usb_initialize,
 	.uninitialize		= rt2x00usb_uninitialize,
@@ -2288,6 +2300,7 @@ static const struct rt2x00lib_ops rt73usb_rt2x00_ops = {
 	.write_beacon		= rt73usb_write_beacon,
 	.get_tx_data_len	= rt73usb_get_tx_data_len,
 	.kick_tx_queue		= rt73usb_kick_tx_queue,
+	.kill_tx_queue		= rt2x00usb_kill_tx_queue,
 	.fill_rxdone		= rt73usb_fill_rxdone,
 	.config_shared_key	= rt73usb_config_shared_key,
 	.config_pairwise_key	= rt73usb_config_pairwise_key,
@@ -2355,6 +2368,7 @@ static struct usb_device_id rt73usb_device_table[] = {
 	/* Billionton */
 	{ USB_DEVICE(0x1631, 0xc019), USB_DEVICE_DATA(&rt73usb_ops) },
 	/* Buffalo */
+	{ USB_DEVICE(0x0411, 0x00d8), USB_DEVICE_DATA(&rt73usb_ops) },
 	{ USB_DEVICE(0x0411, 0x00f4), USB_DEVICE_DATA(&rt73usb_ops) },
 	/* CNet */
 	{ USB_DEVICE(0x1371, 0x9022), USB_DEVICE_DATA(&rt73usb_ops) },

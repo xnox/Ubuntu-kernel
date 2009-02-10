@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2004 - 2008 rt2x00 SourceForge Project
+	Copyright (C) 2004 - 2009 rt2x00 SourceForge Project
 	<http://rt2x00.serialmonkey.com>
 
 	This program is free software; you can redistribute it and/or modify
@@ -118,7 +118,8 @@ void rt2x00rfkill_allocate(struct rt2x00_dev *rt2x00dev)
 
 void rt2x00rfkill_free(struct rt2x00_dev *rt2x00dev)
 {
-	if (!__test_and_clear_bit(RFKILL_STATE_ALLOCATED, &rt2x00dev->flags))
+	if (!__test_and_clear_bit(RFKILL_STATE_ALLOCATED,
+				  &rt2x00dev->rfkill_state))
 		return;
 
 	input_free_polled_device(rt2x00dev->rfkill_poll_dev);

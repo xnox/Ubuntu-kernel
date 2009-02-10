@@ -953,7 +953,7 @@ enum {
 
 #define AR_RTC_BASE             0x00020000
 #define AR_RTC_RC \
-	(AR_SREV_9100(ah)) ? (AR_RTC_BASE + 0x0000) : 0x7000
+	((AR_SREV_9100(ah)) ? (AR_RTC_BASE + 0x0000) : 0x7000)
 #define AR_RTC_RC_M		0x00000003
 #define AR_RTC_RC_MAC_WARM      0x00000001
 #define AR_RTC_RC_MAC_COLD      0x00000002
@@ -961,7 +961,7 @@ enum {
 #define AR_RTC_RC_WARM_RESET    0x00000008
 
 #define AR_RTC_PLL_CONTROL \
-	(AR_SREV_9100(ah)) ? (AR_RTC_BASE + 0x0014) : 0x7014
+	((AR_SREV_9100(ah)) ? (AR_RTC_BASE + 0x0014) : 0x7014)
 
 #define AR_RTC_PLL_DIV          0x0000001f
 #define AR_RTC_PLL_DIV_S        0
@@ -1198,18 +1198,7 @@ enum {
 #define AR_CFP_VAL          0x0000FFFF
 
 #define AR_RX_FILTER        0x803C
-#define AR_RX_FILTER_ALL    0x00000000
-#define AR_RX_UCAST         0x00000001
-#define AR_RX_MCAST         0x00000002
-#define AR_RX_BCAST         0x00000004
-#define AR_RX_CONTROL       0x00000008
-#define AR_RX_BEACON        0x00000010
-#define AR_RX_PROM          0x00000020
-#define AR_RX_PROBE_REQ     0x00000080
-#define AR_RX_MY_BEACON     0x00000200
 #define AR_RX_COMPR_BAR     0x00000400
-#define AR_RX_COMPR_BA      0x00000800
-#define AR_RX_UNCOM_BA_BAR  0x00001000
 
 #define AR_MCAST_FIL0       0x8040
 #define AR_MCAST_FIL1       0x8044

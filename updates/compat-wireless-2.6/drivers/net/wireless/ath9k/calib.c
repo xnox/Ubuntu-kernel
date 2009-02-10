@@ -105,27 +105,29 @@ static void ath9k_hw_do_getnf(struct ath_hal *ah,
 		"NF calibrated [ctl] [chain 0] is %d\n", nf);
 	nfarray[0] = nf;
 
-	if (AR_SREV_9280_10_OR_LATER(ah))
-		nf = MS(REG_READ(ah, AR_PHY_CH1_CCA),
-			AR9280_PHY_CH1_MINCCA_PWR);
-	else
-		nf = MS(REG_READ(ah, AR_PHY_CH1_CCA),
-			AR_PHY_CH1_MINCCA_PWR);
+	if (!AR_SREV_9285(ah)) {
+		if (AR_SREV_9280_10_OR_LATER(ah))
+			nf = MS(REG_READ(ah, AR_PHY_CH1_CCA),
+					AR9280_PHY_CH1_MINCCA_PWR);
+		else
+			nf = MS(REG_READ(ah, AR_PHY_CH1_CCA),
+					AR_PHY_CH1_MINCCA_PWR);
 
-	if (nf & 0x100)
-		nf = 0 - ((nf ^ 0x1ff) + 1);
-	DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
-		"NF calibrated [ctl] [chain 1] is %d\n", nf);
-	nfarray[1] = nf;
-
-	if (!AR_SREV_9280(ah)) {
-		nf = MS(REG_READ(ah, AR_PHY_CH2_CCA),
-			AR_PHY_CH2_MINCCA_PWR);
 		if (nf & 0x100)
 			nf = 0 - ((nf ^ 0x1ff) + 1);
 		DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
-			"NF calibrated [ctl] [chain 2] is %d\n", nf);
-		nfarray[2] = nf;
+				"NF calibrated [ctl] [chain 1] is %d\n", nf);
+		nfarray[1] = nf;
+
+		if (!AR_SREV_9280(ah)) {
+			nf = MS(REG_READ(ah, AR_PHY_CH2_CCA),
+					AR_PHY_CH2_MINCCA_PWR);
+			if (nf & 0x100)
+				nf = 0 - ((nf ^ 0x1ff) + 1);
+			DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
+				"NF calibrated [ctl] [chain 2] is %d\n", nf);
+			nfarray[2] = nf;
+		}
 	}
 
 	if (AR_SREV_9280_10_OR_LATER(ah))
@@ -141,27 +143,29 @@ static void ath9k_hw_do_getnf(struct ath_hal *ah,
 		"NF calibrated [ext] [chain 0] is %d\n", nf);
 	nfarray[3] = nf;
 
-	if (AR_SREV_9280_10_OR_LATER(ah))
-		nf = MS(REG_READ(ah, AR_PHY_CH1_EXT_CCA),
-			AR9280_PHY_CH1_EXT_MINCCA_PWR);
-	else
-		nf = MS(REG_READ(ah, AR_PHY_CH1_EXT_CCA),
-			AR_PHY_CH1_EXT_MINCCA_PWR);
+	if (!AR_SREV_9285(ah)) {
+		if (AR_SREV_9280_10_OR_LATER(ah))
+			nf = MS(REG_READ(ah, AR_PHY_CH1_EXT_CCA),
+					AR9280_PHY_CH1_EXT_MINCCA_PWR);
+		else
+			nf = MS(REG_READ(ah, AR_PHY_CH1_EXT_CCA),
+					AR_PHY_CH1_EXT_MINCCA_PWR);
 
-	if (nf & 0x100)
-		nf = 0 - ((nf ^ 0x1ff) + 1);
-	DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
-		"NF calibrated [ext] [chain 1] is %d\n", nf);
-	nfarray[4] = nf;
-
-	if (!AR_SREV_9280(ah)) {
-		nf = MS(REG_READ(ah, AR_PHY_CH2_EXT_CCA),
-			AR_PHY_CH2_EXT_MINCCA_PWR);
 		if (nf & 0x100)
 			nf = 0 - ((nf ^ 0x1ff) + 1);
 		DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
-			"NF calibrated [ext] [chain 2] is %d\n", nf);
-		nfarray[5] = nf;
+				"NF calibrated [ext] [chain 1] is %d\n", nf);
+		nfarray[4] = nf;
+
+		if (!AR_SREV_9280(ah)) {
+			nf = MS(REG_READ(ah, AR_PHY_CH2_EXT_CCA),
+					AR_PHY_CH2_EXT_MINCCA_PWR);
+			if (nf & 0x100)
+				nf = 0 - ((nf ^ 0x1ff) + 1);
+			DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
+				"NF calibrated [ext] [chain 2] is %d\n", nf);
+			nfarray[5] = nf;
+		}
 	}
 }
 
@@ -620,16 +624,14 @@ void ath9k_hw_loadnf(struct ath_hal *ah, struct ath9k_channel *chan)
 	};
 	u8 chainmask;
 
-	if (AR_SREV_9280(ah))
+	if (AR_SREV_9285(ah))
+		chainmask = 0x9;
+	else if (AR_SREV_9280(ah))
 		chainmask = 0x1B;
 	else
 		chainmask = 0x3F;
 
-#ifdef ATH_NF_PER_CHAN
-	h = chan->nfCalHist;
-#else
 	h = ah->nfCalHist;
-#endif
 
 	for (i = 0; i < NUM_NF_READINGS; i++) {
 		if (chainmask & (1 << i)) {
@@ -670,12 +672,6 @@ int16_t ath9k_hw_getnf(struct ath_hal *ah,
 	int16_t nfarray[NUM_NF_READINGS] = { 0 };
 	struct ath9k_nfcal_hist *h;
 	struct ieee80211_channel *c = chan->chan;
-	u8 chainmask;
-
-	if (AR_SREV_9280(ah))
-		chainmask = 0x1B;
-	else
-		chainmask = 0x3F;
 
 	chan->channelFlags &= (~CHANNEL_CW_INT);
 	if (REG_READ(ah, AR_PHY_AGC_CONTROL) & AR_PHY_AGC_CONTROL_NF) {
@@ -697,11 +693,7 @@ int16_t ath9k_hw_getnf(struct ath_hal *ah,
 		}
 	}
 
-#ifdef ATH_NF_PER_CHAN
-	h = chan->nfCalHist;
-#else
 	h = ah->nfCalHist;
-#endif
 
 	ath9k_hw_update_nfcal_hist_buffer(h, nfarray);
 	chan->rawNoiseFloor = h[0].privNF;
@@ -728,20 +720,12 @@ void ath9k_init_nfcal_hist_buffer(struct ath_hal *ah)
 
 s16 ath9k_hw_getchan_noise(struct ath_hal *ah, struct ath9k_channel *chan)
 {
-	struct ath9k_channel *ichan;
 	s16 nf;
 
-	ichan = ath9k_regd_check_channel(ah, chan);
-	if (ichan == NULL) {
-		DPRINTF(ah->ah_sc, ATH_DBG_CALIBRATE,
-			"invalid channel %u/0x%x; no mapping\n",
-			chan->channel, chan->channelFlags);
-		return ATH_DEFAULT_NOISE_FLOOR;
-	}
-	if (ichan->rawNoiseFloor == 0)
+	if (chan->rawNoiseFloor == 0)
 		nf = -96;
 	else
-		nf = ichan->rawNoiseFloor;
+		nf = chan->rawNoiseFloor;
 
 	if (!ath9k_hw_nf_in_range(ah, nf))
 		nf = ATH_DEFAULT_NOISE_FLOOR;
@@ -755,21 +739,13 @@ bool ath9k_hw_calibrate(struct ath_hal *ah, struct ath9k_channel *chan,
 {
 	struct ath_hal_5416 *ahp = AH5416(ah);
 	struct hal_cal_list *currCal = ahp->ah_cal_list_curr;
-	struct ath9k_channel *ichan = ath9k_regd_check_channel(ah, chan);
 
 	*isCalDone = true;
-
-	if (ichan == NULL) {
-		DPRINTF(ah->ah_sc, ATH_DBG_CHANNEL,
-			"invalid channel %u/0x%x; no mapping\n",
-			chan->channel, chan->channelFlags);
-		return false;
-	}
 
 	if (currCal &&
 	    (currCal->calState == CAL_RUNNING ||
 	     currCal->calState == CAL_WAITING)) {
-		ath9k_hw_per_calibration(ah, ichan, rxchainmask, currCal,
+		ath9k_hw_per_calibration(ah, chan, rxchainmask, currCal,
 					 isCalDone);
 		if (*isCalDone) {
 			ahp->ah_cal_list_curr = currCal = currCal->calNext;
@@ -782,14 +758,12 @@ bool ath9k_hw_calibrate(struct ath_hal *ah, struct ath9k_channel *chan,
 	}
 
 	if (longcal) {
-		ath9k_hw_getnf(ah, ichan);
+		ath9k_hw_getnf(ah, chan);
 		ath9k_hw_loadnf(ah, ah->ah_curchan);
 		ath9k_hw_start_nfcal(ah);
 
-		if ((ichan->channelFlags & CHANNEL_CW_INT) != 0) {
-			chan->channelFlags |= CHANNEL_CW_INT;
-			ichan->channelFlags &= ~CHANNEL_CW_INT;
-		}
+		if (chan->channelFlags & CHANNEL_CW_INT)
+			chan->channelFlags &= ~CHANNEL_CW_INT;
 	}
 
 	return true;
@@ -894,7 +868,6 @@ bool ath9k_hw_init_cal(struct ath_hal *ah,
 		       struct ath9k_channel *chan)
 {
 	struct ath_hal_5416 *ahp = AH5416(ah);
-	struct ath9k_channel *ichan = ath9k_regd_check_channel(ah, chan);
 
 	REG_WRITE(ah, AR_PHY_AGC_CONTROL,
 		  REG_READ(ah, AR_PHY_AGC_CONTROL) |
@@ -942,7 +915,7 @@ bool ath9k_hw_init_cal(struct ath_hal *ah,
 			ath9k_hw_reset_calibration(ah, ahp->ah_cal_list_curr);
 	}
 
-	ichan->CalValid = 0;
+	chan->CalValid = 0;
 
 	return true;
 }

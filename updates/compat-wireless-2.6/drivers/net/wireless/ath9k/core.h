@@ -18,7 +18,7 @@
 #define CORE_H
 
 #include <linux/etherdevice.h>
-#include <linux/pci.h>
+#include <linux/device.h>
 #include <net/mac80211.h>
 #include <linux/leds.h>
 #include <linux/rfkill.h>
@@ -131,8 +131,20 @@ struct ath_interrupt_stats {
 	u32 dtim;
 };
 
+struct ath_legacy_rc_stats {
+	u32 success;
+};
+
+struct ath_11n_rc_stats {
+	u32 success;
+	u32 retries;
+	u32 xretries;
+};
+
 struct ath_stats {
 	struct ath_interrupt_stats istats;
+	struct ath_legacy_rc_stats legacy_rcstats[12]; /* max(11a,11b,11g) */
+	struct ath_11n_rc_stats n_rcstats[16]; /* 0..15 MCS rates */
 };
 
 struct ath9k_debug {
@@ -141,6 +153,7 @@ struct ath9k_debug {
 	struct dentry *debugfs_phy;
 	struct dentry *debugfs_dma;
 	struct dentry *debugfs_interrupt;
+	struct dentry *debugfs_rcstat;
 	struct ath_stats stats;
 };
 
@@ -148,6 +161,9 @@ void DPRINTF(struct ath_softc *sc, int dbg_mask, const char *fmt, ...);
 int ath9k_init_debug(struct ath_softc *sc);
 void ath9k_exit_debug(struct ath_softc *sc);
 void ath_debug_stat_interrupt(struct ath_softc *sc, enum ath9k_int status);
+void ath_debug_stat_rc(struct ath_softc *sc, struct sk_buff *skb);
+void ath_debug_stat_retries(struct ath_softc *sc, int rix,
+			    int xretries, int retries);
 
 #else
 
@@ -170,12 +186,21 @@ static inline void ath_debug_stat_interrupt(struct ath_softc *sc,
 {
 }
 
+static inline void ath_debug_stat_rc(struct ath_softc *sc,
+				     struct sk_buff *skb)
+{
+}
+
+static inline void ath_debug_stat_retries(struct ath_softc *sc, int rix,
+					  int xretries, int retries)
+{
+}
+
 #endif /* CONFIG_ATH9K_DEBUG */
 
 struct ath_config {
 	u32 ath_aggr_prot;
 	u16 txpowlimit;
-	u16 txpowlimit_override;
 	u8 cabqReadytime;
 	u8 swBeaconProcess;
 };
@@ -187,24 +212,27 @@ struct ath_config {
 #define ATH_TXBUF_RESET(_bf) do {				\
 		(_bf)->bf_status = 0;				\
 		(_bf)->bf_lastbf = NULL;			\
-		(_bf)->bf_lastfrm = NULL;			\
 		(_bf)->bf_next = NULL;				\
 		memset(&((_bf)->bf_state), 0,			\
-			    sizeof(struct ath_buf_state));	\
+		       sizeof(struct ath_buf_state));		\
 	} while (0)
 
+/**
+ * enum buffer_type - Buffer type flags
+ *
+ * @BUF_HT: Send this buffer using HT capabilities
+ * @BUF_AMPDU: This buffer is an ampdu, as part of an aggregate (during TX)
+ * @BUF_AGGR: Indicates whether the buffer can be aggregated
+ *	(used in aggregation scheduling)
+ * @BUF_RETRY: Indicates whether the buffer is retried
+ * @BUF_XRETRY: To denote excessive retries of the buffer
+ */
 enum buffer_type {
-	BUF_DATA		= BIT(0),
-	BUF_AGGR		= BIT(1),
+	BUF_HT			= BIT(1),
 	BUF_AMPDU		= BIT(2),
-	BUF_HT			= BIT(3),
+	BUF_AGGR		= BIT(3),
 	BUF_RETRY		= BIT(4),
 	BUF_XRETRY		= BIT(5),
-	BUF_SHORT_PREAMBLE	= BIT(6),
-	BUF_BAR			= BIT(7),
-	BUF_PSPOLL		= BIT(8),
-	BUF_AGGR_BURST		= BIT(9),
-	BUF_CALC_AIRTIME	= BIT(10),
 };
 
 struct ath_buf_state {
@@ -225,19 +253,13 @@ struct ath_buf_state {
 #define bf_retries      	bf_state.bfs_retries
 #define bf_seqno        	bf_state.bfs_seqno
 #define bf_tidno        	bf_state.bfs_tidno
-#define bf_rcs          	bf_state.bfs_rcs
 #define bf_keyix                bf_state.bfs_keyix
 #define bf_keytype      	bf_state.bfs_keytype
-#define bf_isdata(bf)		(bf->bf_state.bf_type & BUF_DATA)
-#define bf_isaggr(bf)		(bf->bf_state.bf_type & BUF_AGGR)
-#define bf_isampdu(bf)		(bf->bf_state.bf_type & BUF_AMPDU)
 #define bf_isht(bf)		(bf->bf_state.bf_type & BUF_HT)
+#define bf_isampdu(bf)		(bf->bf_state.bf_type & BUF_AMPDU)
+#define bf_isaggr(bf)		(bf->bf_state.bf_type & BUF_AGGR)
 #define bf_isretried(bf)	(bf->bf_state.bf_type & BUF_RETRY)
 #define bf_isxretried(bf)	(bf->bf_state.bf_type & BUF_XRETRY)
-#define bf_isshpreamble(bf)	(bf->bf_state.bf_type & BUF_SHORT_PREAMBLE)
-#define bf_isbar(bf)		(bf->bf_state.bf_type & BUF_BAR)
-#define bf_ispspoll(bf) 	(bf->bf_state.bf_type & BUF_PSPOLL)
-#define bf_isaggrburst(bf)	(bf->bf_state.bf_type & BUF_AGGR_BURST)
 
 /*
  * Abstraction of a contiguous buffer to transmit/receive.  There is only
@@ -245,10 +267,8 @@ struct ath_buf_state {
  */
 struct ath_buf {
 	struct list_head list;
-	struct list_head *last;
 	struct ath_buf *bf_lastbf;	/* last buf of this unit (a frame or
 					   an aggregate) */
-	struct ath_buf *bf_lastfrm;	/* last buf of this frame */
 	struct ath_buf *bf_next;	/* next subframe in the aggregate */
 	void *bf_mpdu;			/* enclosing frame structure */
 	struct ath_desc *bf_desc;	/* virtual addr of desc */
@@ -261,13 +281,7 @@ struct ath_buf {
 };
 
 #define ATH_RXBUF_RESET(_bf)    ((_bf)->bf_status = 0)
-
-/* hw processing complete, desc processed by hal */
-#define ATH_BUFSTATUS_DONE      0x00000001
-/* hw processing complete, desc hold for hw */
 #define ATH_BUFSTATUS_STALE     0x00000002
-/* Rx-only: OS is done with this packet and it's ok to queued it to hw */
-#define ATH_BUFSTATUS_FREE      0x00000004
 
 /* DMA state for tx/rx descriptors */
 
@@ -351,8 +365,6 @@ enum ATH_AGGR_STATUS {
 	ATH_AGGR_DONE,
 	ATH_AGGR_BAW_CLOSED,
 	ATH_AGGR_LIMITED,
-	ATH_AGGR_SHORTPKT,
-	ATH_AGGR_8K_LIMITED,
 };
 
 struct ath_txq {
@@ -360,7 +372,6 @@ struct ath_txq {
 	u32 *axq_link;			/* link ptr in last TX desc */
 	struct list_head axq_q;		/* transmit queue */
 	spinlock_t axq_lock;
-	unsigned long axq_lockflags;	/* intr state when must cli */
 	u32 axq_depth;			/* queue depth */
 	u8 axq_aggr_depth;		/* aggregates queued */
 	u32 axq_totalqueued;		/* total ever queued */
@@ -485,28 +496,22 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush);
 struct ath_txq *ath_txq_setup(struct ath_softc *sc, int qtype, int subtype);
 void ath_tx_cleanupq(struct ath_softc *sc, struct ath_txq *txq);
 int ath_tx_setup(struct ath_softc *sc, int haltype);
-void ath_draintxq(struct ath_softc *sc, bool retry_tx);
-void ath_tx_draintxq(struct ath_softc *sc,
+void ath_drain_all_txq(struct ath_softc *sc, bool retry_tx);
+void ath_draintxq(struct ath_softc *sc,
 		     struct ath_txq *txq, bool retry_tx);
 void ath_tx_node_init(struct ath_softc *sc, struct ath_node *an);
 void ath_tx_node_cleanup(struct ath_softc *sc, struct ath_node *an);
-void ath_tx_node_free(struct ath_softc *sc, struct ath_node *an);
 void ath_txq_schedule(struct ath_softc *sc, struct ath_txq *txq);
 int ath_tx_init(struct ath_softc *sc, int nbufs);
 int ath_tx_cleanup(struct ath_softc *sc);
-int ath_tx_get_qnum(struct ath_softc *sc, int qtype, int haltype);
 struct ath_txq *ath_test_get_txq(struct ath_softc *sc, struct sk_buff *skb);
 int ath_txq_update(struct ath_softc *sc, int qnum,
 		   struct ath9k_tx_queue_info *q);
 int ath_tx_start(struct ath_softc *sc, struct sk_buff *skb,
 		 struct ath_tx_control *txctl);
 void ath_tx_tasklet(struct ath_softc *sc);
-u32 ath_txq_depth(struct ath_softc *sc, int qnum);
-u32 ath_txq_aggr_depth(struct ath_softc *sc, int qnum);
 void ath_tx_cabq(struct ath_softc *sc, struct sk_buff *skb);
-void ath_tx_resume_tid(struct ath_softc *sc, struct ath_atx_tid *tid);
 bool ath_tx_aggr_check(struct ath_softc *sc, struct ath_node *an, u8 tidno);
-void ath_tx_aggr_teardown(struct ath_softc *sc,	struct ath_node *an, u8 tidno);
 int ath_tx_aggr_start(struct ath_softc *sc, struct ieee80211_sta *sta,
 		      u16 tid, u16 *ssn);
 int ath_tx_aggr_stop(struct ath_softc *sc, struct ieee80211_sta *sta, u16 tid);
@@ -616,6 +621,8 @@ struct ath_ani {
 /********************/
 
 #define ATH_LED_PIN	1
+#define ATH_LED_ON_DURATION_IDLE	350	/* in msecs */
+#define ATH_LED_OFF_DURATION_IDLE	250	/* in msecs */
 
 enum ath_led_type {
 	ATH_LED_RADIO,
@@ -656,7 +663,7 @@ struct ath_rfkill {
 #define ATH_MAX_SW_RETRIES      10
 #define ATH_CHAN_MAX            255
 #define IEEE80211_WEP_NKID      4       /* number of key ids */
-#define IEEE80211_RATE_VAL      0x7f
+
 /*
  * The key cache is used for h/w cipher state and also for
  * tracking station state such as the current tx antenna.
@@ -672,12 +679,6 @@ struct ath_rfkill {
 #define ATH_RSSI_DUMMY_MARKER   0x127
 #define ATH_RATE_DUMMY_MARKER   0
 
-enum PROT_MODE {
-	PROT_M_NONE = 0,
-	PROT_M_RTSCTS,
-	PROT_M_CTSONLY
-};
-
 #define SC_OP_INVALID		BIT(0)
 #define SC_OP_BEACONS		BIT(1)
 #define SC_OP_RXAGGR		BIT(2)
@@ -692,14 +693,23 @@ enum PROT_MODE {
 #define SC_OP_RFKILL_REGISTERED	BIT(11)
 #define SC_OP_RFKILL_SW_BLOCKED	BIT(12)
 #define SC_OP_RFKILL_HW_BLOCKED	BIT(13)
+#define SC_OP_WAIT_FOR_BEACON	BIT(14)
+#define SC_OP_LED_ON		BIT(15)
+
+struct ath_bus_ops {
+	void		(*read_cachesize)(struct ath_softc *sc, int *csz);
+	void		(*cleanup)(struct ath_softc *sc);
+	bool		(*eeprom_read)(struct ath_hal *ah, u32 off, u16 *data);
+};
 
 struct ath_softc {
 	struct ieee80211_hw *hw;
-	struct pci_dev *pdev;
+	struct device *dev;
 	struct tasklet_struct intr_tq;
 	struct tasklet_struct bcon_tasklet;
 	struct ath_hal *sc_ah;
 	void __iomem *mem;
+	int irq;
 	spinlock_t sc_resetlock;
 	struct mutex mutex;
 
@@ -718,8 +728,8 @@ struct ath_softc {
 	u32 sc_keymax;
 	DECLARE_BITMAP(sc_keymap, ATH_KEYMAX);
 	u8 sc_splitmic;
+	atomic_t ps_usecount;
 	enum ath9k_int sc_imask;
-	enum PROT_MODE sc_protmode;
 	enum ath9k_ht_extprotspacing sc_ht_extprotspacing;
 	enum ath9k_ht_macmode tx_chan_width;
 
@@ -731,18 +741,25 @@ struct ath_softc {
 	struct ieee80211_rate rates[IEEE80211_NUM_BANDS][ATH_RATE_MAX];
 	struct ath_rate_table *hw_rate_table[ATH9K_MODE_MAX];
 	struct ath_rate_table *cur_rate_table;
-	struct ieee80211_channel channels[IEEE80211_NUM_BANDS][ATH_CHAN_MAX];
 	struct ieee80211_supported_band sbands[IEEE80211_NUM_BANDS];
+
 	struct ath_led radio_led;
 	struct ath_led assoc_led;
 	struct ath_led tx_led;
 	struct ath_led rx_led;
+	struct delayed_work ath_led_blink_work;
+	int led_on_duration;
+	int led_off_duration;
+	int led_on_cnt;
+	int led_off_cnt;
+
 	struct ath_rfkill rf_kill;
 	struct ath_ani sc_ani;
 	struct ath9k_node_stats sc_halstats;
 #ifdef CONFIG_ATH9K_DEBUG
 	struct ath9k_debug sc_debug;
 #endif
+	struct ath_bus_ops *bus_ops;
 };
 
 int ath_reset(struct ath_softc *sc, bool retry_tx);
@@ -750,4 +767,55 @@ int ath_get_hal_qnum(u16 queue, struct ath_softc *sc);
 int ath_get_mac80211_qnum(u32 queue, struct ath_softc *sc);
 int ath_cabq_update(struct ath_softc *);
 
+static inline void ath_read_cachesize(struct ath_softc *sc, int *csz)
+{
+	sc->bus_ops->read_cachesize(sc, csz);
+}
+
+static inline void ath_bus_cleanup(struct ath_softc *sc)
+{
+	sc->bus_ops->cleanup(sc);
+}
+
+extern struct ieee80211_ops ath9k_ops;
+
+irqreturn_t ath_isr(int irq, void *dev);
+void ath_cleanup(struct ath_softc *sc);
+int ath_attach(u16 devid, struct ath_softc *sc);
+void ath_detach(struct ath_softc *sc);
+const char *ath_mac_bb_name(u32 mac_bb_version);
+const char *ath_rf_name(u16 rf_version);
+
+#ifdef CONFIG_PCI
+int ath_pci_init(void);
+void ath_pci_exit(void);
+#else
+static inline int ath_pci_init(void) { return 0; };
+static inline void ath_pci_exit(void) {};
+#endif
+
+#ifdef CONFIG_ATHEROS_AR71XX
+int ath_ahb_init(void);
+void ath_ahb_exit(void);
+#else
+static inline int ath_ahb_init(void) { return 0; };
+static inline void ath_ahb_exit(void) {};
+#endif
+
+static inline void ath9k_ps_wakeup(struct ath_softc *sc)
+{
+	if (atomic_inc_return(&sc->ps_usecount) == 1)
+		if (sc->sc_ah->ah_power_mode !=  ATH9K_PM_AWAKE) {
+			sc->sc_ah->ah_restore_mode = sc->sc_ah->ah_power_mode;
+			ath9k_hw_setpower(sc->sc_ah, ATH9K_PM_AWAKE);
+		}
+}
+
+static inline void ath9k_ps_restore(struct ath_softc *sc)
+{
+	if (atomic_dec_and_test(&sc->ps_usecount))
+		if (sc->hw->conf.flags & IEEE80211_CONF_PS)
+			ath9k_hw_setpower(sc->sc_ah,
+					  sc->sc_ah->ah_restore_mode);
+}
 #endif /* CORE_H */

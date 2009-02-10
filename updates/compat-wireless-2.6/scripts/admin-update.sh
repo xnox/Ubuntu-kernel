@@ -19,6 +19,7 @@ GIT_URL="git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing
 
 INCLUDE_LINUX="ieee80211.h nl80211.h wireless.h"
 INCLUDE_LINUX="$INCLUDE_LINUX pci_ids.h bitops.h eeprom_93cx6.h pm_qos_params.h"
+INCLUDE_LINUX="$INCLUDE_LINUX ath9k_platform.h"
 
 # For rndis_wext
 INCLUDE_LINUX_USB="usbnet.h rndis_host.h"
@@ -124,9 +125,9 @@ DIR="drivers/net"
 cp $GIT_TREE/$DIR/b44.[ch] $DIR
 
 # Misc
-mkdir -p drivers/misc/
-cp $GIT_TREE/drivers/misc/eeprom_93cx6.c drivers/misc/
-cp $GIT_TREE/drivers/misc/Makefile drivers/misc/
+mkdir -p drivers/misc/eeprom/
+cp $GIT_TREE/drivers/misc/eeprom/eeprom_93cx6.c drivers/misc/eeprom/
+cp $GIT_TREE/drivers/misc/eeprom/Makefile drivers/misc/eeprom/
 
 DIR="drivers/net/wireless"
 # Drivers part of the wireless directory

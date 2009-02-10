@@ -153,31 +153,13 @@ index a0c860f..9c6f214 100644
  obj-$(CONFIG_LIBERTAS)		+= libertas/
  
  obj-$(CONFIG_LIBERTAS_THINFIRM)	+= libertas_tf/
---- a/drivers/misc/Makefile	2009-01-15 16:46:04.000000000 -0800
-+++ b/drivers/misc/Makefile	2009-01-15 16:46:39.000000000 -0800
-@@ -2,22 +2,4 @@
- # Makefile for misc devices that really don't fit anywhere else.
- #
- 
--obj-$(CONFIG_IBM_ASM)		+= ibmasm/
--obj-$(CONFIG_HDPU_FEATURES)	+= hdpuftrs/
--obj-$(CONFIG_ATMEL_PWM)		+= atmel_pwm.o
--obj-$(CONFIG_ATMEL_SSC)		+= atmel-ssc.o
--obj-$(CONFIG_ATMEL_TCLIB)	+= atmel_tclib.o
--obj-$(CONFIG_ICS932S401)	+= ics932s401.o
--obj-$(CONFIG_LKDTM)		+= lkdtm.o
--obj-$(CONFIG_TIFM_CORE)       	+= tifm_core.o
--obj-$(CONFIG_DELL_LAPTOP)	+= dell-laptop.o
--obj-$(CONFIG_TIFM_7XX1)       	+= tifm_7xx1.o
--obj-$(CONFIG_PHANTOM)		+= phantom.o
--obj-$(CONFIG_SGI_IOC4)		+= ioc4.o
+--- a/drivers/misc/eeprom/Makefile	2009-01-22 07:51:17.000000000 -0800
++++ b/drivers/misc/eeprom/Makefile	2009-01-22 07:51:26.000000000 -0800
+@@ -1,4 +1 @@
+-obj-$(CONFIG_EEPROM_AT24)	+= at24.o
+-obj-$(CONFIG_EEPROM_AT25)	+= at25.o
+-obj-$(CONFIG_EEPROM_LEGACY)	+= eeprom.o
  obj-$(CONFIG_EEPROM_93CX6)	+= eeprom_93cx6.o
--obj-$(CONFIG_ENCLOSURE_SERVICES) += enclosure.o
--obj-$(CONFIG_KGDB_TESTS)	+= kgdbts.o
--obj-$(CONFIG_SGI_XP)		+= sgi-xp/
--obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
--obj-$(CONFIG_HP_ILO)		+= hpilo.o
--obj-$(CONFIG_C2PORT)		+= c2port/
 --- a/drivers/net/wireless/zd1211rw/zd_chip.c	2009-01-15 16:35:33.000000000 -0800
 +++ b/drivers/net/wireless/zd1211rw/zd_chip.c	2009-01-15 16:35:33.000000000 -0800
 @@ -1278,7 +1278,7 @@
@@ -198,27 +180,9 @@ index a0c860f..9c6f214 100644
 -	zd_chip_control_leds(&mac->chip, LED_OFF);
 +	zd_chip_control_leds(&mac->chip, LED_OFF_ZD);
  }
---- a/net/mac80211/main.c	2009-01-15 16:35:33.000000000 -0800
-+++ b/net/mac80211/main.c	2009-01-15 16:35:33.000000000 -0800
-@@ -445,6 +445,7 @@
- 		return;
- 	}
- 
-+#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
- 	if (!test_sta_flags(sta, WLAN_STA_PS) && !skb->requeue) {
- 		/* Software retry the packet once */
- 		skb->requeue = 1;
-@@ -452,6 +453,7 @@
- 		dev_queue_xmit(skb);
- 		return;
- 	}
-+#endif
- 
- #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
- 	if (net_ratelimit())
---- a/net/mac80211/rx.c	2009-01-15 16:35:33.000000000 -0800
-+++ b/net/mac80211/rx.c	2009-01-15 16:35:33.000000000 -0800
-@@ -780,12 +780,17 @@
+--- a/net/mac80211/rx.c	2009-02-04 00:21:05.000000000 -0800
++++ b/net/mac80211/rx.c	2009-02-04 00:20:41.000000000 -0800
+@@ -771,12 +771,17 @@
  
  	/* Send all buffered frames to the station */
  	while ((skb = skb_dequeue(&sta->tx_filtered)) != NULL) {
@@ -236,7 +200,7 @@ index a0c860f..9c6f214 100644
  		sent++;
  #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
  		printk(KERN_DEBUG "%s: STA %pM aid %d send PS frame "
-@@ -794,6 +799,9 @@
+@@ -785,6 +790,9 @@
  #endif /* CONFIG_MAC80211_VERBOSE_PS_DEBUG */
  		skb->requeue = 1;
  		dev_queue_xmit(skb);
@@ -246,3 +210,231 @@ index a0c860f..9c6f214 100644
  	}
  
  	return sent;
+--- a/drivers/net/b44.c	2009-01-22 07:52:14.000000000 -0800
++++ b/drivers/net/b44.c	2009-01-22 07:52:14.000000000 -0800
+@@ -846,6 +846,9 @@
+ static int b44_poll(struct napi_struct *napi, int budget)
+ {
+ 	struct b44 *bp = container_of(napi, struct b44, napi);
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
++	struct net_device *netdev = bp->dev;
++#endif
+ 	int work_done;
+ 
+ 	spin_lock_irq(&bp->lock);
+@@ -874,7 +877,11 @@
+ 	}
+ 
+ 	if (work_done < budget) {
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
++		netif_rx_complete(netdev, napi);
++#else
+ 		netif_rx_complete(napi);
++#endif
+ 		b44_enable_ints(bp);
+ 	}
+ 
+@@ -906,13 +913,21 @@
+ 			goto irq_ack;
+ 		}
+ 
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
++		if (netif_rx_schedule_prep(dev, &bp->napi)) {
++#else
+ 		if (netif_rx_schedule_prep(&bp->napi)) {
++#endif
+ 			/* NOTE: These writes are posted by the readback of
+ 			 *       the ISTAT register below.
+ 			 */
+ 			bp->istat = istat;
+ 			__b44_disable_ints(bp);
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
++			__netif_rx_schedule(dev, &bp->napi);
++#else
+ 			__netif_rx_schedule(&bp->napi);
++#endif
+ 		} else {
+ 			printk(KERN_ERR PFX "%s: Error, poll already scheduled\n",
+ 			       dev->name);
+@@ -2108,6 +2123,7 @@
+ 	return err;
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops b44_netdev_ops = {
+ 	.ndo_open		= b44_open,
+ 	.ndo_stop		= b44_close,
+@@ -2123,6 +2139,7 @@
+ 	.ndo_poll_controller	= b44_poll_controller,
+ #endif
+ };
++#endif
+ 
+ static int __devinit b44_init_one(struct ssb_device *sdev,
+ 				  const struct ssb_device_id *ent)
+@@ -2162,9 +2179,26 @@
+ 	bp->rx_pending = B44_DEF_RX_RING_PENDING;
+ 	bp->tx_pending = B44_DEF_TX_RING_PENDING;
+ 
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
++	dev->open = b44_open;
++	dev->stop = b44_close;
++	dev->hard_start_xmit = b44_start_xmit;
++	dev->get_stats = b44_get_stats;
++	dev->set_multicast_list = b44_set_rx_mode;
++	dev->set_mac_address = b44_set_mac_addr;
++	dev->do_ioctl = b44_ioctl;
++	dev->tx_timeout = b44_tx_timeout;
++	netif_napi_add(dev, &bp->napi, b44_poll, 64);
++	dev->watchdog_timeo = B44_TX_TIMEOUT;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	dev->poll_controller = b44_poll_controller;
++#endif
++	dev->change_mtu = b44_change_mtu;
++#else
+ 	dev->netdev_ops = &b44_netdev_ops;
+ 	netif_napi_add(dev, &bp->napi, b44_poll, 64);
+ 	dev->watchdog_timeo = B44_TX_TIMEOUT;
++#endif
+ 	dev->irq = sdev->irq;
+ 	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
+ 
+--- a/net/mac80211/iface.c	2009-02-04 00:14:56.000000000 -0800
++++ b/net/mac80211/iface.c	2009-02-04 00:19:28.000000000 -0800
+@@ -658,6 +658,7 @@
+ 	WARN_ON(flushed);
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops ieee80211_dataif_ops = {
+ 	.ndo_open		= ieee80211_open,
+ 	.ndo_stop		= ieee80211_stop,
+@@ -677,11 +678,22 @@
+ 	.ndo_change_mtu 	= ieee80211_change_mtu,
+ 	.ndo_set_mac_address 	= eth_mac_addr,
+ };
++#endif
+ 
+ static void ieee80211_if_setup(struct net_device *dev)
+ {
+ 	ether_setup(dev);
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	dev->netdev_ops = &ieee80211_dataif_ops;
++#else
++	dev->hard_start_xmit = ieee80211_subif_start_xmit;
++	dev->set_multicast_list = ieee80211_set_multicast_list;
++	dev->change_mtu = ieee80211_change_mtu;
++	dev->open = ieee80211_open;
++	dev->stop = ieee80211_stop;
++	/* we will validate the address ourselves in ->open */
++	dev->validate_addr = NULL;
++#endif
+ 	dev->wireless_handlers = &ieee80211_iw_handler_def;
+ 	dev->destructor = free_netdev;
+ }
+@@ -697,7 +709,11 @@
+ 
+ 	/* and set some type-dependent values */
+ 	sdata->vif.type = type;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	sdata->dev->netdev_ops = &ieee80211_dataif_ops;
++#else
++	sdata->dev->hard_start_xmit = ieee80211_subif_start_xmit;
++#endif
+ 	sdata->wdev.iftype = type;
+ 
+ 	/* only monitor differs */
+@@ -718,7 +734,11 @@
+ 		break;
+ 	case NL80211_IFTYPE_MONITOR:
+ 		sdata->dev->type = ARPHRD_IEEE80211_RADIOTAP;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 		sdata->dev->netdev_ops = &ieee80211_monitorif_ops;
++#else
++		sdata->dev->hard_start_xmit = ieee80211_monitor_start_xmit;
++#endif
+ 		sdata->u.mntr_flags = MONITOR_FLAG_CONTROL |
+ 				      MONITOR_FLAG_OTHER_BSS;
+ 		break;
+@@ -824,6 +844,10 @@
+ 	if (ret)
+ 		goto fail;
+ 
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,28))
++	ndev->uninit = ieee80211_teardown_sdata;
++#endif
++
+ 	if (ieee80211_vif_is_mesh(&sdata->vif) &&
+ 	    params && params->mesh_id_len)
+ 		ieee80211_sdata_set_mesh_id(sdata,
+--- a/net/mac80211/main.c	2009-02-04 00:10:33.000000000 -0800
++++ b/net/mac80211/main.c	2009-02-04 00:07:50.000000000 -0800
+@@ -485,6 +485,7 @@
+ 		return;
+ 	}
+ 
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
+ 	if (!test_sta_flags(sta, WLAN_STA_PS) && !skb->requeue) {
+ 		/* Software retry the packet once */
+ 		skb->requeue = 1;
+@@ -492,6 +493,7 @@
+ 		dev_queue_xmit(skb);
+ 		return;
+ 	}
++#endif
+ 
+ #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
+ 	if (net_ratelimit())
+@@ -791,6 +793,7 @@
+ }
+ EXPORT_SYMBOL(ieee80211_alloc_hw);
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops ieee80211_master_ops = {
+ 	.ndo_start_xmit = ieee80211_master_start_xmit,
+ 	.ndo_open = ieee80211_master_open,
+@@ -798,12 +801,22 @@
+ 	.ndo_set_multicast_list = ieee80211_master_set_multicast_list,
+ 	.ndo_select_queue = ieee80211_select_queue,
+ };
++#endif
+ 
+ static void ieee80211_master_setup(struct net_device *mdev)
+ {
+ 	mdev->type = ARPHRD_IEEE80211;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	mdev->netdev_ops = &ieee80211_master_ops;
+ 	mdev->header_ops = &ieee80211_header_ops;
++#else
++	mdev->hard_start_xmit = ieee80211_master_start_xmit;
++	mdev->open = ieee80211_master_open;
++	mdev->stop = ieee80211_master_stop;
++	mdev->header_ops = &ieee80211_header_ops;
++	mdev->set_multicast_list = ieee80211_master_set_multicast_list;
++	mdev->select_queue = ieee80211_select_queue;
++#endif
+ 	mdev->tx_queue_len = 1000;
+ 	mdev->addr_len = ETH_ALEN;
+ }
+--- a/net/mac80211/rate.c	2009-02-06 17:12:28.000000000 -0800
++++ b/net/mac80211/rate.c	2009-02-06 17:12:51.000000000 -0800
+@@ -22,7 +22,7 @@
+ static LIST_HEAD(rate_ctrl_algs);
+ static DEFINE_MUTEX(rate_ctrl_mutex);
+ 
+-static char *ieee80211_default_rc_algo = CONFIG_MAC80211_RC_DEFAULT;
++static char *ieee80211_default_rc_algo = CONFIG_COMPAT_MAC80211_RC_DEFAULT;
+ module_param(ieee80211_default_rc_algo, charp, 0644);
+ MODULE_PARM_DESC(ieee80211_default_rc_algo,
+ 		 "Default rate control algorithm for mac80211 to use");
+@@ -117,8 +117,8 @@
+ 		ops = ieee80211_try_rate_control_ops_get(ieee80211_default_rc_algo);
+ 
+ 	/* try built-in one if specific alg requested but not found */
+-	if (!ops && strlen(CONFIG_MAC80211_RC_DEFAULT))
+-		ops = ieee80211_try_rate_control_ops_get(CONFIG_MAC80211_RC_DEFAULT);
++	if (!ops && strlen(CONFIG_COMPAT_MAC80211_RC_DEFAULT))
++		ops = ieee80211_try_rate_control_ops_get(CONFIG_COMPAT_MAC80211_RC_DEFAULT);
+ 
+ 	return ops;
+ }

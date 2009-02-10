@@ -173,7 +173,7 @@ int iwlcore_eeprom_acquire_semaphore(struct iwl_priv *priv)
 				CSR_HW_IF_CONFIG_REG_BIT_EEPROM_OWN_SEM,
 				EEPROM_SEM_TIMEOUT);
 		if (ret >= 0) {
-			IWL_DEBUG_IO("Acquired semaphore after %d tries.\n",
+			IWL_DEBUG_IO(priv, "Acquired semaphore after %d tries.\n",
 				count+1);
 			return ret;
 		}
@@ -390,7 +390,7 @@ static int iwl_set_fat_chan_info(struct iwl_priv *priv,
 	if (!is_channel_valid(ch_info))
 		return -1;
 
-	IWL_DEBUG_INFO("FAT Ch. %d [%sGHz] %s%s%s%s%s(0x%02x %ddBm):"
+	IWL_DEBUG_INFO(priv, "FAT Ch. %d [%sGHz] %s%s%s%s%s(0x%02x %ddBm):"
 			" Ad-Hoc %ssupported\n",
 			ch_info->channel,
 			is_channel_a_band(ch_info) ?
@@ -432,11 +432,11 @@ int iwl_init_channel_map(struct iwl_priv *priv)
 	struct iwl_channel_info *ch_info;
 
 	if (priv->channel_count) {
-		IWL_DEBUG_INFO("Channel map already initialized.\n");
+		IWL_DEBUG_INFO(priv, "Channel map already initialized.\n");
 		return 0;
 	}
 
-	IWL_DEBUG_INFO("Initializing regulatory info from EEPROM\n");
+	IWL_DEBUG_INFO(priv, "Initializing regulatory info from EEPROM\n");
 
 	priv->channel_count =
 	    ARRAY_SIZE(iwl_eeprom_band_1) +
@@ -445,7 +445,7 @@ int iwl_init_channel_map(struct iwl_priv *priv)
 	    ARRAY_SIZE(iwl_eeprom_band_4) +
 	    ARRAY_SIZE(iwl_eeprom_band_5);
 
-	IWL_DEBUG_INFO("Parsing data for %d channels.\n", priv->channel_count);
+	IWL_DEBUG_INFO(priv, "Parsing data for %d channels.\n", priv->channel_count);
 
 	priv->channel_info = kzalloc(sizeof(struct iwl_channel_info) *
 				     priv->channel_count, GFP_KERNEL);
@@ -485,7 +485,7 @@ int iwl_init_channel_map(struct iwl_priv *priv)
 				 IEEE80211_CHAN_NO_FAT_BELOW);
 
 			if (!(is_channel_valid(ch_info))) {
-				IWL_DEBUG_INFO("Ch. %d Flags %x [%sGHz] - "
+				IWL_DEBUG_INFO(priv, "Ch. %d Flags %x [%sGHz] - "
 					       "No traffic\n",
 					       ch_info->channel,
 					       ch_info->flags,
@@ -501,7 +501,7 @@ int iwl_init_channel_map(struct iwl_priv *priv)
 			ch_info->scan_power = eeprom_ch_info[ch].max_power_avg;
 			ch_info->min_power = 0;
 
-			IWL_DEBUG_INFO("Ch. %d [%sGHz] %s%s%s%s%s%s(0x%02x %ddBm):"
+			IWL_DEBUG_INFO(priv, "Ch. %d [%sGHz] %s%s%s%s%s%s(0x%02x %ddBm):"
 				       " Ad-Hoc %ssupported\n",
 				       ch_info->channel,
 				       is_channel_a_band(ch_info) ?
@@ -520,7 +520,7 @@ int iwl_init_channel_map(struct iwl_priv *priv)
 					     flags & EEPROM_CHANNEL_RADAR))
 				       ? "" : "not ");
 
-			/* Set the user_txpower_limit to the highest power
+			/* Set the tx_power_user_lmt to the highest power
 			 * supported by any channel */
 			if (eeprom_ch_info[ch].max_power_avg >
 						priv->tx_power_user_lmt)
@@ -530,6 +530,13 @@ int iwl_init_channel_map(struct iwl_priv *priv)
 			ch_info++;
 		}
 	}
+
+	/* Check if we do have FAT channels */
+	if (priv->cfg->ops->lib->eeprom_ops.regulatory_bands[5] >=
+	    priv->cfg->eeprom_size &&
+	    priv->cfg->ops->lib->eeprom_ops.regulatory_bands[6] >=
+	    priv->cfg->eeprom_size)
+		return 0;
 
 	/* Two additional EEPROM bands for 2.4 and 5 GHz FAT channels */
 	for (band = 6; band <= 7; band++) {
@@ -582,6 +589,7 @@ void iwl_free_channel_map(struct iwl_priv *priv)
 	kfree(priv->channel_info);
 	priv->channel_count = 0;
 }
+EXPORT_SYMBOL(iwl_free_channel_map);
 
 /**
  * iwl_get_channel_info - Find driver's private channel info

@@ -1,9 +1,9 @@
-KMODDIR?=       updates
+export KMODDIR?=       updates
 KMODDIR_ARG:=   "INSTALL_MOD_DIR=$(KMODDIR)"
 ifneq ($(origin $(KLIB)), undefined)
 KMODPATH_ARG:=  "INSTALL_MOD_PATH=$(KLIB)"
 else
-KLIB:=          /lib/modules/$(shell uname -r)
+export KLIB:=          /lib/modules/$(shell uname -r)
 endif
 export KLIB_BUILD ?=	$(KLIB)/build
 # Sometimes not available in the path
@@ -21,7 +21,7 @@ obj-y := net/wireless/ net/mac80211/
 ifeq ($(ONLY_CORE),)
 obj-$(CONFIG_B44) += drivers/net/b44.o
 obj-y += drivers/ssb/ \
-	drivers/misc/ \
+	drivers/misc/eeprom/ \
 	drivers/net/usb/ \
 	drivers/net/wireless/
 endif
@@ -46,6 +46,7 @@ all: modules
 modules: $(CREL_CHECK)
 	@./scripts/check_config.sh
 	$(MAKE) -C $(KLIB_BUILD) M=$(PWD) modules
+	@touch $@
 
 # With the above and this we make sure we generate a new compat autoconf per
 # new relase of compat-wireless-2.6 OR when the user updates the 
@@ -80,7 +81,6 @@ install: uninstall modules
 		echo Running athenable ath5k...;\
 		/usr/sbin/athenable ath5k ;\
 	fi
-	@/sbin/depmod -ae
 	@if [ ! -z $(OLD_IWL) ]; then \
 		echo ;\
 		echo -n "Note: iwl4965 detected, we're going to disable it. "  ;\
@@ -90,6 +90,13 @@ install: uninstall modules
 		echo Running iwl-enable iwlagn...;\
 		/usr/sbin/iwl-enable iwlagn ;\
 	fi
+	@# If on distributions like Mandriva which like to
+	@# compress their modules this will find out and do
+	@# it for you. Reason is some old version of modutils
+	@# won't know mac80211.ko should be used instead of
+	@# mac80211.ko.gz
+	@./scripts/compress_modules
+	@/sbin/depmod -ae
 	@echo
 	@echo "Currently detected wireless subsystem modules:"
 	@echo 
@@ -134,9 +141,7 @@ install: uninstall modules
 	@echo 
 	@echo make unload
 	@echo
-	@echo And then load the wireless module you need. If unsure run:
-	@echo
-	@echo make load
+	@echo And then load the wireless module you need. If unsure reboot.
 	@echo
 
 uninstall:
@@ -148,7 +153,9 @@ uninstall:
 	@rm -rf $(KLIB)/$(KMODDIR)/drivers/net/wireless/
 	@# Lets only remove the stuff we are sure we are providing
 	@# on the misc directory.
-	@rm -f $(KLIB)/$(KMODDIR)/drivers/misc/eeprom_93cx6.ko
+	@rm -f $(KLIB)/$(KMODDIR)/drivers/misc/eeprom/eeprom_93cx6.ko*
+	@rm -f $(KLIB)/$(KMODDIR)/drivers/misc/eeprom_93cx6.ko*
+	@rm -f $(KLIB)/$(KMODDIR)/drivers/net/b44.ko*
 	@/sbin/depmod -ae
 	@echo
 	@echo "Your old wireless subsystem modules were left intact:"
@@ -209,4 +216,4 @@ load: unload
 
 endif
 
-clean-files += Module.symvers modules.order $(CREL_CHECK) $(CONFIG_CHECK)
+clean-files += Module.symvers modules modules.order $(CREL_CHECK) $(CONFIG_CHECK)

@@ -21,6 +21,23 @@
 #include "mesh.h"
 #include "led.h"
 
+/**
+ * DOC: Interface list locking
+ *
+ * The interface list in each struct ieee80211_local is protected
+ * three-fold:
+ *
+ * (1) modifications may only be done under the RTNL
+ * (2) modifications and readers are protected against each other by
+ *     the iflist_mtx.
+ * (3) modifications are done in an RCU manner so atomic readers
+ *     can traverse the list in RCU-safe blocks.
+ *
+ * As a consequence, reads (traversals) of the list can be protected
+ * by either the RTNL, the iflist_mtx or RCU.
+ */
+
+
 static int ieee80211_change_mtu(struct net_device *dev, int new_mtu)
 {
 	int meshhdrlen;
@@ -574,19 +591,6 @@ static void ieee80211_set_multicast_list(struct net_device *dev)
 	dev_mc_sync(local->mdev, dev);
 }
 
-static void ieee80211_if_setup(struct net_device *dev)
-{
-	ether_setup(dev);
-	dev->hard_start_xmit = ieee80211_subif_start_xmit;
-	dev->wireless_handlers = &ieee80211_iw_handler_def;
-	dev->set_multicast_list = ieee80211_set_multicast_list;
-	dev->change_mtu = ieee80211_change_mtu;
-	dev->open = ieee80211_open;
-	dev->stop = ieee80211_stop;
-	dev->destructor = free_netdev;
-	/* we will validate the address ourselves in ->open */
-	dev->validate_addr = NULL;
-}
 /*
  * Called when the netdev is removed or, by the code below, before
  * the interface type changes.
@@ -632,6 +636,13 @@ static void ieee80211_teardown_sdata(struct net_device *dev)
 		kfree(sdata->u.sta.assocreq_ies);
 		kfree(sdata->u.sta.assocresp_ies);
 		kfree_skb(sdata->u.sta.probe_resp);
+		kfree(sdata->u.sta.ie_probereq);
+		kfree(sdata->u.sta.ie_proberesp);
+		kfree(sdata->u.sta.ie_auth);
+		kfree(sdata->u.sta.ie_assocreq);
+		kfree(sdata->u.sta.ie_reassocreq);
+		kfree(sdata->u.sta.ie_deauth);
+		kfree(sdata->u.sta.ie_disassoc);
 		break;
 	case NL80211_IFTYPE_WDS:
 	case NL80211_IFTYPE_AP_VLAN:
@@ -647,6 +658,46 @@ static void ieee80211_teardown_sdata(struct net_device *dev)
 	WARN_ON(flushed);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+static const struct net_device_ops ieee80211_dataif_ops = {
+	.ndo_open		= ieee80211_open,
+	.ndo_stop		= ieee80211_stop,
+	.ndo_uninit		= ieee80211_teardown_sdata,
+	.ndo_start_xmit		= ieee80211_subif_start_xmit,
+	.ndo_set_multicast_list = ieee80211_set_multicast_list,
+	.ndo_change_mtu 	= ieee80211_change_mtu,
+	.ndo_set_mac_address 	= eth_mac_addr,
+};
+
+static const struct net_device_ops ieee80211_monitorif_ops = {
+	.ndo_open		= ieee80211_open,
+	.ndo_stop		= ieee80211_stop,
+	.ndo_uninit		= ieee80211_teardown_sdata,
+	.ndo_start_xmit		= ieee80211_monitor_start_xmit,
+	.ndo_set_multicast_list = ieee80211_set_multicast_list,
+	.ndo_change_mtu 	= ieee80211_change_mtu,
+	.ndo_set_mac_address 	= eth_mac_addr,
+};
+#endif
+
+static void ieee80211_if_setup(struct net_device *dev)
+{
+	ether_setup(dev);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+	dev->netdev_ops = &ieee80211_dataif_ops;
+#else
+	dev->hard_start_xmit = ieee80211_subif_start_xmit;
+	dev->set_multicast_list = ieee80211_set_multicast_list;
+	dev->change_mtu = ieee80211_change_mtu;
+	dev->open = ieee80211_open;
+	dev->stop = ieee80211_stop;
+	/* we will validate the address ourselves in ->open */
+	dev->validate_addr = NULL;
+#endif
+	dev->wireless_handlers = &ieee80211_iw_handler_def;
+	dev->destructor = free_netdev;
+}
+
 /*
  * Helper function to initialise an interface to a specific type.
  */
@@ -658,7 +709,11 @@ static void ieee80211_setup_sdata(struct ieee80211_sub_if_data *sdata,
 
 	/* and set some type-dependent values */
 	sdata->vif.type = type;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+	sdata->dev->netdev_ops = &ieee80211_dataif_ops;
+#else
 	sdata->dev->hard_start_xmit = ieee80211_subif_start_xmit;
+#endif
 	sdata->wdev.iftype = type;
 
 	/* only monitor differs */
@@ -679,7 +734,11 @@ static void ieee80211_setup_sdata(struct ieee80211_sub_if_data *sdata,
 		break;
 	case NL80211_IFTYPE_MONITOR:
 		sdata->dev->type = ARPHRD_IEEE80211_RADIOTAP;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+		sdata->dev->netdev_ops = &ieee80211_monitorif_ops;
+#else
 		sdata->dev->hard_start_xmit = ieee80211_monitor_start_xmit;
+#endif
 		sdata->u.mntr_flags = MONITOR_FLAG_CONTROL |
 				      MONITOR_FLAG_OTHER_BSS;
 		break;
@@ -785,7 +844,9 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 	if (ret)
 		goto fail;
 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,28))
 	ndev->uninit = ieee80211_teardown_sdata;
+#endif
 
 	if (ieee80211_vif_is_mesh(&sdata->vif) &&
 	    params && params->mesh_id_len)
@@ -793,7 +854,9 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 					    params->mesh_id_len,
 					    params->mesh_id);
 
+	mutex_lock(&local->iflist_mtx);
 	list_add_tail_rcu(&sdata->list, &local->interfaces);
+	mutex_unlock(&local->iflist_mtx);
 
 	if (new_dev)
 		*new_dev = ndev;
@@ -809,7 +872,10 @@ void ieee80211_if_remove(struct ieee80211_sub_if_data *sdata)
 {
 	ASSERT_RTNL();
 
+	mutex_lock(&sdata->local->iflist_mtx);
 	list_del_rcu(&sdata->list);
+	mutex_unlock(&sdata->local->iflist_mtx);
+
 	synchronize_rcu();
 	unregister_netdevice(sdata->dev);
 }
@@ -825,7 +891,16 @@ void ieee80211_remove_interfaces(struct ieee80211_local *local)
 	ASSERT_RTNL();
 
 	list_for_each_entry_safe(sdata, tmp, &local->interfaces, list) {
+		/*
+		 * we cannot hold the iflist_mtx across unregister_netdevice,
+		 * but we only need to hold it for list modifications to lock
+		 * out readers since we're under the RTNL here as all other
+		 * writers.
+		 */
+		mutex_lock(&local->iflist_mtx);
 		list_del(&sdata->list);
+		mutex_unlock(&local->iflist_mtx);
+
 		unregister_netdevice(sdata->dev);
 	}
 }

@@ -57,6 +57,28 @@ extern struct iwl_cfg iwl5350_agn_cfg;
 extern struct iwl_cfg iwl5100_bg_cfg;
 extern struct iwl_cfg iwl5100_abg_cfg;
 extern struct iwl_cfg iwl5150_agn_cfg;
+extern struct iwl_cfg iwl6000_2ag_cfg;
+extern struct iwl_cfg iwl6000_2agn_cfg;
+extern struct iwl_cfg iwl6000_3agn_cfg;
+extern struct iwl_cfg iwl6050_2agn_cfg;
+extern struct iwl_cfg iwl6050_3agn_cfg;
+extern struct iwl_cfg iwl100_bgn_cfg;
+
+/* shared structures from iwl-5000.c */
+extern struct iwl_mod_params iwl50_mod_params;
+extern struct iwl_ops iwl5000_ops;
+extern struct iwl_lib_ops iwl5000_lib;
+extern struct iwl_hcmd_ops iwl5000_hcmd;
+extern struct iwl_hcmd_utils_ops iwl5000_hcmd_utils;
+
+/* shared functions from iwl-5000.c */
+extern u16 iwl5000_get_hcmd_size(u8 cmd_id, u16 len);
+extern u16 iwl5000_build_addsta_hcmd(const struct iwl_addsta_cmd *cmd,
+				     u8 *data);
+extern void iwl5000_rts_tx_cmd_flag(struct ieee80211_tx_info *info,
+				    __le32 *tx_flags);
+extern int iwl5000_calc_rssi(struct iwl_priv *priv,
+			     struct iwl_rx_phy_res *rx_resp);
 
 /* CT-KILL constants */
 #define CT_KILL_THRESHOLD	110 /* in Celsius */
@@ -139,8 +161,7 @@ struct iwl_tx_info {
 
 struct iwl_tx_queue {
 	struct iwl_queue q;
-	struct iwl_tfd *tfds;
-	struct iwl3945_tfd *tfds39;
+	void *tfds;
 	struct iwl_cmd *cmd[TFD_TX_CMD_SLOTS];
 	struct iwl_tx_info *txb;
 	u8 need_update;
@@ -558,6 +579,7 @@ struct iwl_sensitivity_ranges {
  * @max_txq_num: Max # Tx queues supported
  * @dma_chnl_num: Number of Tx DMA/FIFO channels
  * @scd_bc_tbls_size: size of scheduler byte count tables
+ * @tfd_size: TFD size
  * @tx/rx_chains_num: Number of TX/RX chains
  * @valid_tx/rx_ant: usable antennas
  * @max_rxq_size: Max # Rx frames in Rx queue (must be power-of-2)
@@ -578,6 +600,7 @@ struct iwl_hw_params {
 	u8 max_txq_num;
 	u8 dma_chnl_num;
 	u16 scd_bc_tbls_size;
+	u32 tfd_size;
 	u8  tx_chains_num;
 	u8  rx_chains_num;
 	u8  valid_tx_ant;
@@ -848,7 +871,7 @@ struct iwl_priv {
 	unsigned long scan_start;
 	unsigned long scan_pass_start;
 	unsigned long scan_start_tsf;
-	struct iwl_scan_cmd *scan;
+	void *scan;
 	int scan_bands;
 	int one_direct_scan;
 	u8 direct_ssid_len;
@@ -967,7 +990,6 @@ struct iwl_priv {
 	u16 rates_mask;
 
 	u32 power_mode;
-	u32 antenna;
 	u8 bssid[ETH_ALEN];
 	u16 rts_threshold;
 	u8 mac_addr[ETH_ALEN];
@@ -1041,13 +1063,14 @@ struct iwl_priv {
 
 	/*For 3945 only*/
 	struct delayed_work thermal_periodic;
+	struct delayed_work rfkill_poll;
 
 	/* TX Power */
 	s8 tx_power_user_lmt;
 	s8 tx_power_channel_lmt;
 
 
-#if defined(CONFIG_IWLWIFI_DEBUG) || defined(CONFIG_IWL3945_DEBUG)
+#ifdef CONFIG_IWLWIFI_DEBUG
 	/* debugging info */
 	u32 debug_level;
 	u32 framecnt_to_us;
@@ -1067,30 +1090,12 @@ struct iwl_priv {
 
 	/*For 3945*/
 #define IWL_DEFAULT_TX_POWER 0x0F
-	s8 user_txpower_limit;
-	s8 max_channel_txpower_limit;
 
-	struct iwl3945_scan_cmd *scan39;
-
-	/* We declare this const so it can only be
-	 * changed via explicit cast within the
-	 * routines that actually update the physical
-	 * hardware */
-	const struct iwl3945_rxon_cmd active39_rxon;
-	struct iwl3945_rxon_cmd staging39_rxon;
-	struct iwl3945_rxon_cmd recovery39_rxon;
-
-	struct iwl3945_power_mgr power_data_39;
 	struct iwl3945_notif_statistics statistics_39;
 
 	struct iwl3945_station_entry stations_39[IWL_STATION_COUNT];
 
-	/* eeprom */
-	struct iwl3945_eeprom eeprom39;
-
 	u32 sta_supp_rates;
-	u8 call_post_assoc_from_beacon;
-
 }; /*iwl_priv */
 
 static inline void iwl_txq_ctx_activate(struct iwl_priv *priv, int txq_id)

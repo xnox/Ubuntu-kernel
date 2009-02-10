@@ -207,7 +207,7 @@ struct ieee80211_bss_conf {
 	u16 beacon_int;
 	u16 assoc_capability;
 	u64 timestamp;
-	u64 basic_rates;
+	u32 basic_rates;
 	struct ieee80211_bss_ht_conf ht;
 };
 
@@ -262,6 +262,26 @@ enum mac80211_tx_control_flags {
 	IEEE80211_TX_CTL_RATE_CTRL_PROBE	= BIT(12),
 };
 
+/**
+ * enum mac80211_rate_control_flags - per-rate flags set by the
+ *	Rate Control algorithm.
+ *
+ * These flags are set by the Rate control algorithm for each rate during tx,
+ * in the @flags member of struct ieee80211_tx_rate.
+ *
+ * @IEEE80211_TX_RC_USE_RTS_CTS: Use RTS/CTS exchange for this rate.
+ * @IEEE80211_TX_RC_USE_CTS_PROTECT: CTS-to-self protection is required.
+ *	This is set if the current BSS requires ERP protection.
+ * @IEEE80211_TX_RC_USE_SHORT_PREAMBLE: Use short preamble.
+ * @IEEE80211_TX_RC_MCS: HT rate.
+ * @IEEE80211_TX_RC_GREEN_FIELD: Indicates whether this rate should be used in
+ *	Greenfield mode.
+ * @IEEE80211_TX_RC_40_MHZ_WIDTH: Indicates if the Channel Width should be 40 MHz.
+ * @IEEE80211_TX_RC_DUP_DATA: The frame should be transmitted on both of the
+ *	adjacent 20 MHz channels, if the current channel type is
+ *	NL80211_CHAN_HT40MINUS or NL80211_CHAN_HT40PLUS.
+ * @IEEE80211_TX_RC_SHORT_GI: Short Guard interval should be used for this rate.
+ */
 enum mac80211_rate_control_flags {
 	IEEE80211_TX_RC_USE_RTS_CTS		= BIT(0),
 	IEEE80211_TX_RC_USE_CTS_PROTECT		= BIT(1),
@@ -626,10 +646,12 @@ struct ieee80211_if_init_conf {
  * @IEEE80211_IFCC_BSSID: The BSSID changed.
  * @IEEE80211_IFCC_BEACON: The beacon for this interface changed
  *	(currently AP and MESH only), use ieee80211_beacon_get().
+ * @IEEE80211_IFCC_BEACON_ENABLED: The enable_beacon value changed.
  */
 enum ieee80211_if_conf_change {
-	IEEE80211_IFCC_BSSID	= BIT(0),
-	IEEE80211_IFCC_BEACON	= BIT(1),
+	IEEE80211_IFCC_BSSID		= BIT(0),
+	IEEE80211_IFCC_BEACON		= BIT(1),
+	IEEE80211_IFCC_BEACON_ENABLED	= BIT(2),
 };
 
 /**
@@ -637,13 +659,16 @@ enum ieee80211_if_conf_change {
  *
  * @changed: parameters that have changed, see &enum ieee80211_if_conf_change.
  * @bssid: BSSID of the network we are associated to/creating.
+ * @enable_beacon: Indicates whether beacons can be sent.
+ *	This is valid only for AP/IBSS/MESH modes.
  *
  * This structure is passed to the config_interface() callback of
  * &struct ieee80211_hw.
  */
 struct ieee80211_if_conf {
 	u32 changed;
-	u8 *bssid;
+	const u8 *bssid;
+	bool enable_beacon;
 };
 
 /**
@@ -761,7 +786,7 @@ enum set_key_cmd {
  *	sizeof(void *), size is determined in hw information.
  */
 struct ieee80211_sta {
-	u64 supp_rates[IEEE80211_NUM_BANDS];
+	u32 supp_rates[IEEE80211_NUM_BANDS];
 	u8 addr[ETH_ALEN];
 	u16 aid;
 	struct ieee80211_sta_ht_cap ht_cap;
@@ -835,11 +860,6 @@ enum ieee80211_tkip_key_type {
  *	expect values between 0 and @max_signal.
  *	If possible please provide dB or dBm instead.
  *
- * @IEEE80211_HW_SIGNAL_DB:
- *	Hardware gives signal values in dB, decibel difference from an
- *	arbitrary, fixed reference. We expect values between 0 and @max_signal.
- *	If possible please provide dBm instead.
- *
  * @IEEE80211_HW_SIGNAL_DBM:
  *	Hardware gives signal values in dBm, decibel difference from
  *	one milliwatt. This is the preferred method since it is standardized
@@ -875,15 +895,14 @@ enum ieee80211_hw_flags {
 	IEEE80211_HW_2GHZ_SHORT_SLOT_INCAPABLE		= 1<<3,
 	IEEE80211_HW_2GHZ_SHORT_PREAMBLE_INCAPABLE	= 1<<4,
 	IEEE80211_HW_SIGNAL_UNSPEC			= 1<<5,
-	IEEE80211_HW_SIGNAL_DB				= 1<<6,
-	IEEE80211_HW_SIGNAL_DBM				= 1<<7,
-	IEEE80211_HW_NOISE_DBM				= 1<<8,
-	IEEE80211_HW_SPECTRUM_MGMT			= 1<<9,
-	IEEE80211_HW_AMPDU_AGGREGATION			= 1<<10,
-	IEEE80211_HW_SUPPORTS_PS			= 1<<11,
-	IEEE80211_HW_PS_NULLFUNC_STACK			= 1<<12,
-	IEEE80211_HW_SUPPORTS_DYNAMIC_PS		= 1<<13,
-	IEEE80211_HW_MFP_CAPABLE			= 1<<14,
+	IEEE80211_HW_SIGNAL_DBM				= 1<<6,
+	IEEE80211_HW_NOISE_DBM				= 1<<7,
+	IEEE80211_HW_SPECTRUM_MGMT			= 1<<8,
+	IEEE80211_HW_AMPDU_AGGREGATION			= 1<<9,
+	IEEE80211_HW_SUPPORTS_PS			= 1<<10,
+	IEEE80211_HW_PS_NULLFUNC_STACK			= 1<<11,
+	IEEE80211_HW_SUPPORTS_DYNAMIC_PS		= 1<<12,
+	IEEE80211_HW_MFP_CAPABLE			= 1<<13,
 };
 
 /**
@@ -903,9 +922,8 @@ enum ieee80211_hw_flags {
  * @workqueue: single threaded workqueue available for driver use,
  *	allocated by mac80211 on registration and flushed when an
  *	interface is removed.
- *	NOTICE: All work performed on this workqueue should NEVER
- *	acquire the RTNL lock (i.e. Don't use the function
- *	ieee80211_iterate_active_interfaces())
+ *	NOTICE: All work performed on this workqueue must not
+ *	acquire the RTNL lock.
  *
  * @priv: pointer to private area that was allocated for driver use
  *	along with this structure.
@@ -963,6 +981,19 @@ struct ieee80211_hw {
 	u8 max_rates;
 	u8 max_rate_tries;
 };
+
+/**
+ * wiphy_to_ieee80211_hw - return a mac80211 driver hw struct from a wiphy
+ *
+ * @wiphy: the &struct wiphy which we want to query
+ *
+ * mac80211 drivers can use this to get to their respective
+ * &struct ieee80211_hw. Drivers wishing to get to their own private
+ * structure can then access it via hw->priv. Note that mac802111 drivers should
+ * not use wiphy_priv() to try to get their private driver structure as this
+ * is already used internally by mac80211.
+ */
+struct ieee80211_hw *wiphy_to_ieee80211_hw(struct wiphy *wiphy);
 
 /**
  * SET_IEEE80211_DEV - set device for 802.11 hardware
@@ -1322,7 +1353,11 @@ enum ieee80211_ampdu_mlme_action {
  *	hw->ampdu_queues items.
  *
  * @get_tsf: Get the current TSF timer value from firmware/hardware. Currently,
- *	this is only used for IBSS mode debugging and, as such, is not a
+ *	this is only used for IBSS mode BSSID merging and debugging. Is not a
+ *	required function. Must be atomic.
+ *
+ * @set_tsf: Set the TSF timer to the specified value in the firmware/hardware.
+ *      Currently, this is only used for IBSS mode debugging. Is not a
  *	required function. Must be atomic.
  *
  * @reset_tsf: Reset the TSF timer and allow firmware/hardware to synchronize
@@ -1384,6 +1419,7 @@ struct ieee80211_ops {
 	int (*get_tx_stats)(struct ieee80211_hw *hw,
 			    struct ieee80211_tx_queue_stats *stats);
 	u64 (*get_tsf)(struct ieee80211_hw *hw);
+	void (*set_tsf)(struct ieee80211_hw *hw, u64 tsf);
 	void (*reset_tsf)(struct ieee80211_hw *hw);
 	int (*tx_last_beacon)(struct ieee80211_hw *hw);
 	int (*ampdu_action)(struct ieee80211_hw *hw,

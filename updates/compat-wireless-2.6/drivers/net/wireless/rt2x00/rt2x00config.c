@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2004 - 2008 rt2x00 SourceForge Project
+	Copyright (C) 2004 - 2009 rt2x00 SourceForge Project
 	<http://rt2x00.serialmonkey.com>
 
 	This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 void rt2x00lib_config_intf(struct rt2x00_dev *rt2x00dev,
 			   struct rt2x00_intf *intf,
 			   enum nl80211_iftype type,
-			   u8 *mac, u8 *bssid)
+			   const u8 *mac, const u8 *bssid)
 {
 	struct rt2x00intf_conf conf;
 	unsigned int flags = 0;

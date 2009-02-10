@@ -331,6 +331,22 @@ struct ieee80211_if_sta {
 	u32 supp_rates_bits[IEEE80211_NUM_BANDS];
 
 	int wmm_last_param_set;
+
+	/* Extra IE data for management frames */
+	u8 *ie_probereq;
+	size_t ie_probereq_len;
+	u8 *ie_proberesp;
+	size_t ie_proberesp_len;
+	u8 *ie_auth;
+	size_t ie_auth_len;
+	u8 *ie_assocreq;
+	size_t ie_assocreq_len;
+	u8 *ie_reassocreq;
+	size_t ie_reassocreq_len;
+	u8 *ie_deauth;
+	size_t ie_deauth_len;
+	u8 *ie_disassoc;
+	size_t ie_disassoc_len;
 };
 
 struct ieee80211_if_mesh {
@@ -627,7 +643,9 @@ struct ieee80211_local {
 	struct crypto_blkcipher *wep_rx_tfm;
 	u32 wep_iv;
 
+	/* see iface.c */
 	struct list_head interfaces;
+	struct mutex iflist_mtx;
 
 	/*
 	 * Key lock, protects sdata's key_list and sta_info's
@@ -728,6 +746,7 @@ struct ieee80211_local {
 		struct dentry *long_retry_limit;
 		struct dentry *total_ps_buffered;
 		struct dentry *wep_iv;
+		struct dentry *tsf;
 		struct dentry *statistics;
 		struct local_debugfsdentries_statsdentries {
 			struct dentry *transmitted_fragment_count;
@@ -821,7 +840,7 @@ struct ieee802_11_elems {
 	u8 *country_elem;
 	u8 *pwr_constr_elem;
 	u8 *quiet_elem; 	/* first quite element */
-	u8 *assoc_comeback;
+	u8 *timeout_int;
 
 	/* length of them, respectively */
 	u8 ssid_len;
@@ -849,7 +868,7 @@ struct ieee802_11_elems {
 	u8 pwr_constr_elem_len;
 	u8 quiet_elem_len;
 	u8 num_of_quiet_elem;	/* can be more the one */
-	u8 assoc_comeback_len;
+	u8 timeout_int_len;
 };
 
 static inline struct ieee80211_local *hw_to_local(
@@ -893,11 +912,11 @@ int ieee80211_sta_set_bssid(struct ieee80211_sub_if_data *sdata, u8 *bssid);
 void ieee80211_sta_req_auth(struct ieee80211_sub_if_data *sdata,
 			    struct ieee80211_if_sta *ifsta);
 struct sta_info *ieee80211_ibss_add_sta(struct ieee80211_sub_if_data *sdata,
-					u8 *bssid, u8 *addr, u64 supp_rates);
+					u8 *bssid, u8 *addr, u32 supp_rates);
 int ieee80211_sta_deauthenticate(struct ieee80211_sub_if_data *sdata, u16 reason);
 int ieee80211_sta_disassociate(struct ieee80211_sub_if_data *sdata, u16 reason);
 u32 ieee80211_reset_erp_info(struct ieee80211_sub_if_data *sdata);
-u64 ieee80211_sta_get_rates(struct ieee80211_local *local,
+u32 ieee80211_sta_get_rates(struct ieee80211_local *local,
 			    struct ieee802_11_elems *elems,
 			    enum ieee80211_band band);
 void ieee80211_send_probe_req(struct ieee80211_sub_if_data *sdata, u8 *dst,
@@ -936,6 +955,8 @@ ieee80211_rx_bss_get(struct ieee80211_local *local, u8 *bssid, int freq,
 		     u8 *ssid, u8 ssid_len);
 void ieee80211_rx_bss_put(struct ieee80211_local *local,
 			  struct ieee80211_bss *bss);
+void ieee80211_rx_bss_remove(struct ieee80211_sub_if_data *sdata, u8 *bssid,
+			     int freq, u8 *ssid, u8 ssid_len);
 
 /* interface handling */
 int ieee80211_if_add(struct ieee80211_local *local, const char *name,
@@ -990,6 +1011,10 @@ void ieee80211_handle_pwr_constr(struct ieee80211_sub_if_data *sdata,
 				 u16 capab_info, u8 *pwr_constr_elem,
 				 u8 pwr_constr_elem_len);
 
+/* Suspend/resume */
+int __ieee80211_suspend(struct ieee80211_hw *hw);
+int __ieee80211_resume(struct ieee80211_hw *hw);
+
 /* utility functions/constants */
 extern void *mac80211_wiphy_privid; /* for wiphy privid */
 extern const unsigned char rfc1042_header[6];
@@ -1006,7 +1031,7 @@ void ieee80211_tx_skb(struct ieee80211_sub_if_data *sdata, struct sk_buff *skb,
 void ieee802_11_parse_elems(u8 *start, size_t len,
 			    struct ieee802_11_elems *elems);
 int ieee80211_set_freq(struct ieee80211_sub_if_data *sdata, int freq);
-u64 ieee80211_mandatory_rates(struct ieee80211_local *local,
+u32 ieee80211_mandatory_rates(struct ieee80211_local *local,
 			      enum ieee80211_band band);
 
 void ieee80211_dynamic_ps_enable_work(struct work_struct *work);
