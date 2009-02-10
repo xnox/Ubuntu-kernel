@@ -1,0 +1,148 @@
+#! /bin/bash
+
+P="build-mainline"
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $P <tag>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+commit="$1"
+
+build_release="hardy"
+
+long=`git describe "$commit"`
+if [ "$?" -ne 0 ]; then
+	echo "$P: $commit: invalid commit" 1>&2
+	exit 1
+fi
+case "$long" in
+v*-*[0-9]-g*)
+	full_version="${long#v}"
+	full_version="${full_version%%-*}"
+	abinum="$full_version${long##*-}"
+	;;
+v*)
+	full_version="${long#v}"
+	abinum="$full_version"
+	;;
+*)
+	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
+	exit 1
+esac
+
+# The base version is always the first X.Y.Z part of the version number.  If we
+# do not maintain this then the modules directory will not match uname -r.
+version=`echo "$full_version" | sed -e 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/'`
+
+# Encode the real version number plus the abbreviated sha1 from git describe
+# output as the ABI.  We encode the version number by expanding the numbers
+# to be 2 digits and removing the '.' and '-' characters, for example:
+#
+#  2.6.27.12	02062712
+#  2.6.29-rc3   020629rc3
+#
+abinum=`echo "$abinum" | awk -F'[.-]' '{
+	for (i = 1; i <= NF; i++) {
+		if ($i ~ /^[0-9][0-9]*$/) {
+			printf("%02d", $i);
+		} else {
+			printf("%s", $i);
+		}
+	}
+}'`
+
+release=`pwd`
+release=${release#*/ubuntu-}
+release=${release%-build}
+
+echo "full_version<$full_version>"
+echo "version<$version>"
+echo "long<$long>"
+echo "abinum<$abinum>"
+
+# NOTE: a - in the branch name seems to be causing issues.
+branch="BUILD.$abinum"
+branch=`echo "$branch" | sed -e 's/-/./g'`
+
+# Ensure we get the uptodate machinary.
+git fetch origin
+git checkout -f origin/master
+git branch -D "$branch"
+
+#
+# Checkout the source at the specified version.
+#
+git checkout -b "$branch" "v$full_version" -- || exit 1
+
+#
+# Pull in the packaging from the head of our tree.
+#
+git checkout origin/master -- debian
+git commit -a -m "base packaging"
+
+#
+# XXX: allow us to default new config options.
+#
+git am "$here/0001-UBUNTU-allow-us-to-build-default-configs-for-automa.patch"
+
+#
+# Rebuild the changelog.
+#
+rm -f debian/changelog
+EDITOR=":" dch -v "${version}-$abinum" --distribution "UNRELEASED" \
+	--package linux --create
+sed -e "s/\* .*/* Mainline release $version/" \
+	<debian/changelog >debian/changelog.new
+mv -f debian/changelog.new debian/changelog
+git commit -a -m "debian changelog"
+
+#
+# Default any new configuration options.
+#
+dchroot --directory=`pwd` -c "$build_release" \
+	"fakeroot debian/rules defaultconfigs"
+git commit -a -m "default configs"
+
+#
+# Disable the ABI, module, and aliases checks.
+#
+cat - <<EOM >debian/scripts/abi-check
+#!/bin/sh
+exit 0
+EOM
+chmod 755 debian/scripts/abi-check
+
+cat - <<EOM >debian/scripts/module-check
+#!/bin/sh
+exit 0
+EOM
+chmod 755 debian/scripts/module-check
+
+cat - <<EOM >debian/tests/check-aliases
+#!/bin/sh
+exit 0
+EOM
+chmod 755 debian/tests/check-aliases
+
+#
+# Build the source package.
+#
+#dpkg-buildpackage -S -sd -rfakeroot -I.git -I.gitignore -i'\.git.*'
+
+#dpkg-buildpackage -b
+
+dchroot --directory=`pwd` -c "$build_release" \
+	"fakeroot debian/rules clean"
+dchroot --directory=`pwd` -c "$build_release" \
+	"fakeroot debian/rules no_dumpfile=1 binary-indep binary-generic"
+linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
+	"fakeroot debian/rules clean"
+linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
+	"fakeroot debian/rules no_dumpfile=1 binary-generic"

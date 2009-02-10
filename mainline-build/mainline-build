@@ -1,0 +1,74 @@
+#!/bin/bash
+
+set -e
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $P <tag>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+commit="$1"
+
+master_release="jaunty"
+master_main="$HOME/mainline"
+master_tree="$master_main/build"
+
+master_repo="/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${master_release}.git"
+
+# Build us a master tree if we do not have one.
+if [ ! -d "$master_tree" ]; then
+	echo "*** creating primary build tree ..."
+	mkdir -p "$master_tree"
+	cd "$master_tree"
+	git init
+#	(
+#		cd "$master_repo"
+#		git push "$master_tree" master
+#	)
+	git remote add "origin" "$master_repo"
+	git fetch origin
+else
+	cd "$master_tree"
+fi
+
+# Clean out the rubbish.
+rm -f "$master_main"/*.deb
+
+# Get an updated linus kernel, we always need that.
+echo "*** updating linus remote ..."
+if ! git remote show -n linus >/dev/null 2>&1; then
+	git remote add linus \
+		git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+fi
+git fetch linus
+
+# Work out which stable branch we might need.
+current=`git describe --tags linus/master`
+current="${current%%-*}"
+wanted="${commit%%-*}"
+
+if [ "$wanted" != "$current" ]; then
+	stable="${wanted#v2.6.}"
+	stable="2.6.${stable%.*}.y"
+
+	echo "*** updating stable-$stable ..."
+	
+	if ! git remote show -n "$stable" >/dev/null 2>&1; then
+		git remote add "$stable" \
+			git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-$stable.git
+	fi
+	git fetch "$stable"
+fi
+
+# We finally have the tree in a consitant state, finally ask for the build
+"$here/mainline-build-one" "$commit"
+
+html="$HOME/public_html/mainline/$commit"
+mkdir -p "$html"
+mv "$master_main/"linux-{headers,image}-*.deb "$html"
