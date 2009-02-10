@@ -1,3 +1,12 @@
+linux-backports-modules-2.6.28 (2.6.28-7.5) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Update to master-2009-02-09
+  * Convert 'git-log' to 'git log'
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 09 Feb 2009 17:48:22 -0700
+
 linux-backports-modules-2.6.28 (2.6.28-7.4) jaunty; urgency=low
 
   * Bump ABI
