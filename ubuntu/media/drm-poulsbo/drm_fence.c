@@ -253,8 +253,6 @@ static void drm_fence_object_destroy(struct drm_file *priv,
 	drm_fence_usage_deref_locked(&fence);
 }
 
-extern int bFlag;  // Workaround for xserver crash issue
-
 int drm_fence_object_signaled(struct drm_fence_object *fence, uint32_t mask)
 {
 	unsigned long flags;
@@ -265,11 +263,6 @@ int drm_fence_object_signaled(struct drm_fence_object *fence, uint32_t mask)
 	
 	mask &= fence->type;
 	read_lock_irqsave(&fm->lock, flags);
-
-	if (bFlag) {
-		DRM_ERROR("mask: %d, signaled_types: %d, waiting_types: %d\n", mask, fence->signaled_types, fence->waiting_types);
-		fence->signaled_types = mask;
-	}
 
 	signaled = (mask & fence->signaled_types) == mask;
 	read_unlock_irqrestore(&fm->lock, flags);
@@ -296,14 +289,12 @@ int drm_fence_object_flush(struct drm_fence_object *fence,
 	uint32_t diff;
 	int call_flush;
 
-	/* FIXME: It's a hack to comment out this, just to workaround
-	   an xserver crash */
+	/* FIXME: this is a hacking to workaround an xserver crash
+	   issue for when eabling detearing */
 /* 	if (type & ~fence->type) { */
 /* 		DRM_ERROR("Flush trying to extend fence type, " */
 /* 			  "0x%x, 0x%x\n", type, fence->type); */
-/* #ifndef DVD_FIX */
 /*                 return -EINVAL; */
-/* #endif */
 /* 	} */
 
 	write_lock_irqsave(&fm->lock, irq_flags);

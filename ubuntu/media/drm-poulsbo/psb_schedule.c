@@ -33,6 +33,8 @@
 /* extern struct semaphore gnRasterDoneNum; */
 extern atomic_t gnRasterDoneNum; 
 extern unsigned int gnBlit;
+extern psb_2d_blit_queue_t gsBlitQueue;
+#define BLIT_CMD_SIZE 10
 #endif
 
 #define PSB_ALLOWED_RASTER_RUNTIME (DRM_HZ * 20)
@@ -352,7 +354,7 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 		PSB_DEBUG_RENDER("Raster busy.\n");
 		return;
 	}
-//#ifdef PSB_BLOCK_OVERLAP
+/* #ifdef PSB_BLOCK_OVERLAP */
 #if 1
 	if (scheduler->current_task[PSB_SCENE_ENGINE_TA] != NULL) {
 		PSB_DEBUG_RENDER("TA busy.\n");
@@ -380,13 +382,6 @@ static void psb_schedule_raster(struct drm_psb_private *dev_priv,
 		PSB_WSGX32(_PSB_CS_RESET_ISP_RESET, PSB_CR_SOFT_RESET);
 
 	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = task;
-
-#ifdef DVD_FIX
-	if(task->bVideoFlag == PSB_VIDEO_BLIT)
-	{
-		while(test_and_clear_bit(0, &gnBlit) == 0);
-	}
-#endif
 
 	list_del_init(list);
 	scheduler->idle = 0;
@@ -480,6 +475,37 @@ static void psb_ta_done(struct drm_psb_private *dev_priv,
 	schedule_delayed_work(&scheduler->wq, 1);
 }
 
+static int psb_2d_blit_issue(struct drm_psb_private *dev_priv )
+{
+	int i;
+	unsigned int *start;
+	uint32_t avail;
+	uint32_t uCmdSize;
+	int num;
+	delayed_2d_blit_req_ptr p;
+
+	p = psb_blit_queue_get_item(&gsBlitQueue);
+	if(!p) {
+		/* no pending 2D task */
+		return 0;
+	}
+
+	avail = PSB_RSGX32(PSB_CR_2D_SOCIF);
+	if(avail < BLIT_CMD_SIZE) {	/* 2d cmdbuf lengthe is 10 dwords */
+		return 0;	/* 2D engine is busy.  maybe a bug!!! */
+	}
+
+	uCmdSize = (p->gnBlitCmdSize)<<2;
+	start = (unsigned int *)p->BlitReqData;
+	for (i = 0; i < uCmdSize; i += 4) {
+		PSB_WSGX32(*start++, PSB_SGX_2D_SLAVE_PORT + i);
+	}
+	(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4);
+
+	return 0;
+}
+
+
 /*
  * Rasterizer done handler.
  */
@@ -493,23 +519,6 @@ static void psb_raster_done(struct drm_psb_private *dev_priv,
 	uint32_t complete_action = task->raster_complete_action;
 
 	PSB_DEBUG_RENDER("Raster done %u\n", task->sequence);
-
-
-/***************************************************/
-#ifdef DVD_FIX
-if(task->bVideoFlag == PSB_VIDEO_BLIT)
-	{
-/* 		printk("%s, dbw,%x, %x, %x, %x\n", __FUNCTION__, */
-/* 			task->x, */
-/* 			task->y, */
-/* 			task->w, */
-/* 			task->h); */
-		task->bVideoFlag = 0;	
-		set_bit(0, &gnBlit);
-		atomic_inc(&gnRasterDoneNum);
-	} 
-#endif	
-/***************************************************/	
 
 	scheduler->current_task[PSB_SCENE_ENGINE_RASTER] = NULL;
 
@@ -1238,20 +1247,16 @@ static int psb_setup_task_devlocked(struct drm_device *dev,
 		task->scene = psb_scene_ref(scene);
 
 #ifdef DVD_FIX
-	if(PSB_VIDEO_BLIT == arg->sVideoInfo.flag)
-	{
-/* 		printk("%s, dsv\n", __FUNCTION__); */
+	if(PSB_VIDEO_BLIT == arg->sVideoInfo.flag) {
 		task->bVideoFlag = PSB_VIDEO_BLIT;
 		task->x = arg->sVideoInfo.x;
 		task->y = arg->sVideoInfo.y;
 		task->w = arg->sVideoInfo.w;
-		task->h = arg->sVideoInfo.h;	
-		task->pFBBOHandle = arg->sVideoInfo.pFBBOHandle;	
-
+		task->h = arg->sVideoInfo.h;
+		task->pFBBOHandle = arg->sVideoInfo.pFBBOHandle;
 		task->pFBVirtAddr = arg->sVideoInfo.pFBVirtAddr; 
-	}	
+	}
 #endif
-
 
 	*task_p = task;
 	return 0;

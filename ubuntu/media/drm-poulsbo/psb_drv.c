@@ -353,7 +353,7 @@ static int psb_do_init(struct drm_device *dev)
 	DRM_ERROR("Debug is 0x%08x\n", drm_psb_debug);
 
 #ifdef DVD_FIX
-	clear_bit(0, &gnBlit);
+	//clear_bit(0, &gnBlit);
 	/* sema_init(&gnRasterDoneNum, 0); */
 	atomic_set(&gnRasterDoneNum, 0);
 	atomic_set(&g_cmd_cancel, 0);
