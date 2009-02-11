@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook14) netbook-common; urgency=low
+
+  [Upstream Kernel Changes]
+
+  * New PSB drm version from Intel (0032)
+
+ -- Debbie Beliveau <debbie.beliveau@canonical.com>  Wed, 11 Feb 2009 16:17:08 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook13) hardy; urgency=low
 
   [Upstream Kernel Changes]
