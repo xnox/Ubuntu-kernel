@@ -1,3 +1,9 @@
+wireless-crda (1.5) jaunty; urgency=low
+
+  * Added udev as an install dependency.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 12 Feb 2009 16:13:32 +0000
+
 wireless-crda (1.4) jaunty; urgency=low
 
   * Update to CRDA tip, misc spelling fixes.

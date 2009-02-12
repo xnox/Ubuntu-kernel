@@ -7,6 +7,7 @@ Build-Depends: debhelper (>= 5.0.0), pkg-config, libgcrypt11-dev, libnl-dev
 
 Package: wireless-crda
 Architecture: any
+Depends: udev
 Description: Wireless Central Regulatory Domain Agent
  This package provides the CRDA agent for wireless drivers to
  determine the regulatory domain channel and power settings.
