@@ -1,3 +1,10 @@
+linux-ports-meta (2.6.28.1.1) jaunty; urgency=low
+
+  * Bump kernel version to 2.6.28-1
+  * Remove debug metapackages since ports doesn't build any currently
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Sat, 14 Feb 2009 10:18:26 +1100
+
 linux-ports-meta (2.6.25.2.3) intrepid; urgency=low
 
   * Fixed bogus linux/linux-image dependencies on hppa and powerpc

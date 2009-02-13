@@ -27,11 +27,3 @@ Depends: linux-headers-${kernel-abi-version}-386
 Description: Linux kernel headers on 386
  This package will always depend on the latest kernel headers available
  for 386.
-
-Package: linux-image-debug-386
-Architecture: i386
-Section: devel
-Depends: linux-image-debug-${kernel-abi-version}-386
-Description: Linux kernel debug image for 386 kernel image
- This package will always depend on the latest 386 kernel debug image.
-
