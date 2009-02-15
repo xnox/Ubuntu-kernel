@@ -82,7 +82,7 @@ Subject: Mainline Build $commit
 The mainline build for $commit is now complete and available at the URL
 below:
 
-    http://http://kernel.ubuntu.com/~apw/mainline/$commit/
+    http://kernel.ubuntu.com/~apw/mainline/$commit/
 
 Note that these builds do not contain any Ubuntu specific patches and
 are not supported.
