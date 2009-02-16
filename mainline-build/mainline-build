@@ -74,18 +74,4 @@ mkdir -p "$html"
 mv "$master_main/"linux-{headers,image}-*.deb "$html"
 
 # All done report this to the kernel-team
-cat - <<EOM | /usr/lib/sendmail kernel-team@lists.ubuntu.com
-From: Mainline Build <kernel-team@lists.ubuntu.com>
-To: Kernel Team <kernel-team@lists.ubuntu.com>
-Subject: Mainline Build $commit
-
-The mainline build for $commit is now complete and available at the URL
-below:
-
-    http://kernel.ubuntu.com/~apw/mainline/$commit/
-
-Note that these builds do not contain any Ubuntu specific patches and
-are not supported.
-
-Kernel Team
-EOM
+"$here/mainline-announce"  "$commit"

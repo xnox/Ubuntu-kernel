@@ -1,0 +1,30 @@
+#!/usr/bin/python
+import smtplib
+import sys
+
+commit = sys.argv[1]
+
+# Add the From: and To: headers at the start!
+msg  = """From: Mainline Builds <kernel-team@lists.ubuntu.com>\r
+To: Kernel Team <kernel-team@lists.ubuntu.com>\r
+Reply-to: Kernel Team <kernel-team@lists.ubuntu.com>\r
+Subject: Mainline Build %s\r
+\r
+The mainline build for %s is now complete and available at the URL\r
+below:\r
+\r
+    http://kernel.ubuntu.com/~apw/mainline/%s/\r
+\r
+Note that these builds do not contain any Ubuntu specific patches and\r
+are not supported.\r
+\r
+Kernel Team\r
+""" % (commit, commit, commit)
+
+print msg;
+
+server = smtplib.SMTP('lists.ubuntu.com')
+server.set_debuglevel(0)
+server.sendmail('apw@canonical.com',
+		'kernel-team@lists.ubuntu.com', msg)
+server.quit()
