@@ -71,7 +71,7 @@ fi
 
 html="$HOME/public_html/mainline/$commit"
 mkdir -p "$html"
-mv "$master_main/"linux-{headers,image}-*.deb "$html"
+mv "$master_main/"linux-{headers,image,source}-*.deb "$html"
 
 # All done report this to the kernel-team
 "$here/mainline-announce"  "$commit"
