@@ -1,3 +1,12 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook16) netbook-common; urgency=low
+
+  [Debbie Beliveau]
+
+  * Modifications to HDMI audio out support on Intel Menlow hardware (included
+    with 0033 PSB drm drop)
+
+ -- Debbie Beliveau <debbie.beliveau@canonical.com>  Wed, 18 Feb 2009 12:05:09 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook15) netbook-common; urgency=low
 
   [Upstream Kernel Changes]
