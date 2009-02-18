@@ -1,3 +1,9 @@
+linux-meta (2.6.24.24.26) hardy-proposed; urgency=low
+
+  * ABI bump to -24 by proposed update
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 18 Feb 2009 19:11:18 +0100
+
 linux-meta (2.6.24.23.25) hardy-proposed; urgency=low
 
   * ABI bump to -23 by proposed update.
