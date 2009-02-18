@@ -73,11 +73,12 @@ if [ "$wanted" != "$current" ]; then
 fi
 
 # We finally have the tree in a consitant state, finally ask for the build
-"$here/mainline-build-one" "$commit"
+"$here/mainline-build-one" "$commit" 2>&1 | tee "$master_tree/BUILD.LOG"
 
 html="$HOME/public_html/mainline/$commit"
 mkdir -p "$html"
 mv "$master_main/"linux-{headers,image,source}-*.deb "$html"
+mv "$master_tree/BUILD.LOG" "$html"
 
 # All done report this to the kernel-team
 $email "$here/mainline-announce"  "$commit"
