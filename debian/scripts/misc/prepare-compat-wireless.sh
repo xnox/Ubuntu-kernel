@@ -13,7 +13,7 @@ CWREPO=git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/${CW}.git
 CWDIR=${CDIR}/${CW}
 
 WT=wireless-testing
-WTREPO=git://git.kernel.org/pub/scm/linux/kernel/git/linville/{WT}.git
+WTREPO=git://git.kernel.org/pub/scm/linux/kernel/git/linville/${WT}.git
 WTDIR=${CDIR}/${WT}
 
 mkdir -p ${CDIR}
