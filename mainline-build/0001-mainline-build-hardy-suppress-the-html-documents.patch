@@ -1,0 +1,42 @@
+From ead7fdf2a7e384f42664ed100b13af1b516a75eb Mon Sep 17 00:00:00 2001
+From: Kernel PPA uploader dude <kernel-ppa@zinc.canonical.com>
+Date: Wed, 25 Feb 2009 01:14:09 +0000
+Subject: [PATCH] mainline build: hardy suppress the html documents
+
+Suppress the html documents for hardy, matches intrepid and later.
+
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ debian/rules.d/3-binary-indep.mk |   16 ++++++++++------
+ 1 files changed, 10 insertions(+), 6 deletions(-)
+
+diff --git a/debian/rules.d/3-binary-indep.mk b/debian/rules.d/3-binary-indep.mk
+index b821a76..6ed5833 100644
+--- a/debian/rules.d/3-binary-indep.mk
++++ b/debian/rules.d/3-binary-indep.mk
+@@ -7,12 +7,16 @@ install-doc:
+ 	dh_testroot
+ 	dh_clean -k -p$(docpkg)
+ 
+-	# First the html docs
+-	install -d $(docdir)/linux-doc-tmp
+-	$(kmake) O=$(docdir)/linux-doc-tmp htmldocs
+-	mv $(docdir)/linux-doc-tmp/Documentation/DocBook \
+-		$(docdir)/html
+-	rm -rf $(docdir)/linux-doc-tmp
++	install -d $(docdir)
++
++	# First the html docs. We skip these for autobuilds
++	if [ -z "$(AUTOBUILD) nobuild" ]; then \
++		install -d $(docdir)/linux-doc-tmp; \
++		$(kmake) O=$(docdir)/linux-doc-tmp htmldocs; \
++		mv $(docdir)/linux-doc-tmp/Documentation/DocBook \
++			$(docdir)/html; \
++		rm -rf $(docdir)/linux-doc-tmp; \
++	fi
+ 
+ 	# Copy the rest
+ 	cp -a Documentation $(docdir)
+-- 
+1.5.4.3
+

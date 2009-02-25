@@ -89,9 +89,14 @@ git checkout "$series/master" -- debian
 git commit -a -m "base packaging"
 
 #
-# XXX: allow us to default new config options.
+# ALL: allow us to default new config options.
 #
 git am -C0 "$here/0001-UBUNTU-allow-us-to-build-default-configs-for-automa.patch"
+
+#
+# HARDY: support htmldocs which require xmlto which is not installed.
+#
+git am -C0 "$here/0001-mainline-build-hardy-suppress-the-html-documents.patch"
 
 #
 # Rebuild the changelog.
