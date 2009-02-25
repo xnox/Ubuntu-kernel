@@ -142,7 +142,11 @@ chmod 755 debian/tests/check-aliases
 dchroot --directory=`pwd` -c "$build_release" \
 	"fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
-	"fakeroot debian/rules no_dumpfile=1 binary-indep binary-generic"
+	"fakeroot debian/rules no_dumpfile=1 binary-indep"
+dchroot --directory=`pwd` -c "$build_release" \
+	"fakeroot debian/rules clean"
+dchroot --directory=`pwd` -c "$build_release" \
+	"fakeroot debian/rules no_dumpfile=1 binary-generic"
 linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
 	"fakeroot debian/rules clean"
 linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
