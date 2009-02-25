@@ -1,0 +1,31 @@
+From 2daad64f3facaaef4f13b8bd514f82b44a4fc030 Mon Sep 17 00:00:00 2001
+From: Kernel PPA uploader dude <kernel-ppa@zinc.canonical.com>
+Date: Wed, 25 Feb 2009 16:42:55 +0000
+Subject: [PATCH] mainline build: allow us to force things on in the config
+
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ debian/scripts/misc/oldconfig |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/debian/scripts/misc/oldconfig b/debian/scripts/misc/oldconfig
+index ddf162b..29972f9 100755
+--- a/debian/scripts/misc/oldconfig
++++ b/debian/scripts/misc/oldconfig
+@@ -56,7 +56,12 @@ cd build
+ for config in $configs; do
+ 	echo "Running $what for $config ... "
+ 
+-	cat $confdir/$config > .config
++	if [ -f "$BUILD_CONFIG_OVERRIDE" ]; then
++		echo "Adding $BUILD_CONFIG_OVERRIDE to $config ... "
++		cat "$BUILD_CONFIG_OVERRIDE" $confdir/$config >.config
++	else
++		cat $confdir/$config > .config
++	fi
+ 
+ 	make -C ../ O=`pwd` "$what" ARCH=$kernarch
+ 
+-- 
+1.5.4.3
+

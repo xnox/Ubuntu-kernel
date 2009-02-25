@@ -92,6 +92,7 @@ git commit -a -m "base packaging"
 # ALL: allow us to default new config options.
 #
 git am -C0 "$here/0001-UBUNTU-allow-us-to-build-default-configs-for-automa.patch"
+git am -C0 "$here/0001-mainline-build-allow-us-to-force-things-on-in-the-c.patch"
 
 case "$series" in
 hardy)
@@ -117,8 +118,9 @@ git commit -a -m "debian changelog"
 #
 # Default any new configuration options.
 #
+BUILD_CONFIG_OVERRIDE="$here/config.$series"
 dchroot --directory=`pwd` -c "$build_release" \
-	"fakeroot debian/rules defaultconfigs"
+	"BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' fakeroot debian/rules defaultconfigs"
 git commit -a -m "default configs"
 
 #
