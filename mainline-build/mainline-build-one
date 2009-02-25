@@ -99,6 +99,11 @@ git am -C0 "$here/0001-UBUNTU-allow-us-to-build-default-configs-for-automa.patch
 git am -C0 "$here/0001-mainline-build-hardy-suppress-the-html-documents.patch"
 
 #
+# INTREPID: suppress makedumpfile as we do not have the tools
+#
+git am -C0 "$here/0001-mainline-build-suppress-makedumpfile-on-intrepid.patch"
+
+#
 # Rebuild the changelog.
 #
 rm -f debian/changelog
