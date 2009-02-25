@@ -21,11 +21,16 @@ esac
 
 commit="$1"
 
-master_release="jaunty"
-master_main="$HOME/mainline"
-master_tree="$master_main/build"
+case "$commit" in
+v2.6.24*)	master_release="hardy" ;;
+v2.6.27*)	master_release="intrepid" ;;
+v2.6.28*)	master_release="jaunty" ;;
+esac
 
 master_repo="/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${master_release}.git"
+
+master_main="$HOME/mainline"
+master_tree="$master_main/build"
 
 # Build us a master tree if we do not have one.
 if [ ! -d "$master_tree" ]; then
@@ -33,15 +38,16 @@ if [ ! -d "$master_tree" ]; then
 	mkdir -p "$master_tree"
 	cd "$master_tree"
 	git init
-#	(
-#		cd "$master_repo"
-#		git push "$master_tree" master
-#	)
-	git remote add "origin" "$master_repo"
-	git fetch origin
 else
 	cd "$master_tree"
 fi
+
+# Check if we have our upstream repository.
+if ! git remote show -n "$master_release" >/dev/null 2>&1; then
+	echo "*** updating $master_release remote ..."
+	git remote add "$master_release" "$master_repo"
+fi
+git fetch "$master_release"
 
 # Clean out the rubbish.
 rm -f "$master_main"/*.deb
@@ -73,7 +79,8 @@ if [ "$wanted" != "$current" ]; then
 fi
 
 # We finally have the tree in a consitant state, finally ask for the build
-"$here/mainline-build-one" "$commit" 2>&1 | tee "$master_tree/BUILD.LOG"
+"$here/mainline-build-one" "$commit" "$master_release" 2>&1 | \
+		tee "$master_tree/BUILD.LOG"
 
 html="$HOME/public_html/mainline/$commit"
 mkdir -p "$html"
