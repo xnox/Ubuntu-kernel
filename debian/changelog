@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook17) netbook-common; urgency=low
+
+  [Michael Frey]
+
+  * Add Bear audio support via ALC272 codec
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 27 Feb 2009 14:38:27 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook16) netbook-common; urgency=low
 
   [Debbie Beliveau]
