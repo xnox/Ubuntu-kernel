@@ -109,7 +109,7 @@ verify: $(REG_BIN) regdbdump
 
 install: crda crda.8.gz regdbdump.8.gz
 	$(NQ) '  INSTALL  crda'
-	$(Q)$(MKDIR) $(DESTDIR)/sbin
+	$(Q)$(MKDIR) $(DESTDIR)/$(SBINDIR)
 	$(Q)$(INSTALL) -m 755 -t $(DESTDIR)/$(SBINDIR) crda
 	$(NQ) '  INSTALL  regdbdump'
 	$(Q)$(INSTALL) -m 755 -t $(DESTDIR)/$(SBINDIR) regdbdump
@@ -118,7 +118,8 @@ install: crda crda.8.gz regdbdump.8.gz
 	@# This removes the old rule you may have, we were not
 	@# putting it in the right place.
 	$(Q)rm -f $(DESTDIR)/etc/udev/rules.d/regulatory.rules
-	$(Q)ln -sf regulatory.rules udev/$(UDEV_LEVEL)regulatory.rules
+	$(Q)sed 's:$$(SBINDIR):$(SBINDIR):' udev/regulatory.rules > udev/regulatory.rules.parsed
+	$(Q)ln -sf regulatory.rules.parsed udev/$(UDEV_LEVEL)regulatory.rules
 	$(Q)$(INSTALL) -m 644 -t \
 		$(DESTDIR)/$(UDEV_RULE_DIR)/ \
 		udev/$(UDEV_LEVEL)regulatory.rules
@@ -130,4 +131,4 @@ install: crda crda.8.gz regdbdump.8.gz
 
 clean:
 	$(Q)rm -f crda regdbdump intersect *.o *~ *.pyc keys-*.c *.gz \
-	udev/$(UDEV_LEVEL)regulatory.rules
+	udev/$(UDEV_LEVEL)regulatory.rules udev/regulatory.rules.parsed
