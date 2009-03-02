@@ -1,3 +1,10 @@
+wireless-crda (1.6) jaunty; urgency=low
+
+  * wireless-regdb: Update to Jan 30, 2009 regdb.
+  * crda: Add /usr/local/lib/crda/regulatory.bin as first in path
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 02 Mar 2009 09:27:02 -0700
+
 wireless-crda (1.5) jaunty; urgency=low
 
   * Added udev as an install dependency.
