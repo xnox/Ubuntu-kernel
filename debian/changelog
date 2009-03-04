@@ -1,3 +1,13 @@
+linux-backports-modules-2.6.28 (2.6.28-8.8) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Fixed the MUNGE script generation of net/wireless/Makefile. Upstream
+    added a new source file and I missed it.
+    - LP: #337711:
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Wed, 04 Mar 2009 10:01:53 -0700
+
 linux-backports-modules-2.6.28 (2.6.28-8.7) jaunty; urgency=low
 
   [Stefan Bader]
