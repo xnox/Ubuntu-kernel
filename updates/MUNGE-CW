@@ -52,27 +52,13 @@ do
 done
 
 #
-# Wack on the Makefiles so that the modules names don't collide with existing modules in LUM.
+# Wack on the Makefiles so that the modules names don't collide with existing modules.
 #
 COMPAT_PREFIX=${_COMPAT_PREFIX}-
 sed -i 's/mac80211\./'${COMPAT_PREFIX}'mac80211\./' net/mac80211/Makefile
 sed -i 's/mac80211-/'${COMPAT_PREFIX}'mac80211-/' net/mac80211/Makefile
 sed -i 's/rc80211_pid-/'${COMPAT_PREFIX}'rc80211_pid-/' net/mac80211/Makefile
-
-
-cat <<. > net/wireless/Makefile
-obj-\$(CONFIG_CFG80211) += ${COMPAT_PREFIX}cfg80211.o
-obj-\$(CONFIG_LIB80211) += lib80211.o
-obj-\$(CONFIG_LIB80211_CRYPT_WEP) += lib80211_crypt_wep.o
-obj-\$(CONFIG_LIB80211_CRYPT_CCMP) += lib80211_crypt_ccmp.o
-obj-\$(CONFIG_LIB80211_CRYPT_TKIP) += lib80211_crypt_tkip.o
-
-${COMPAT_PREFIX}cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o compat.o
-${COMPAT_PREFIX}cfg80211-\$(CONFIG_WIRELESS_EXT) += wext-compat.o
-${COMPAT_PREFIX}cfg80211-\$(CONFIG_NL80211) += nl80211.o
-
-ccflags-y += -D__CHECK_ENDIAN__
-.
+sed -i 's/cfg80211/'${COMPAT_PREFIX}'cfg80211/' net/wireless/Makefile
 
 #
 # I wonder why libipw_wx.c requests a specific module?
