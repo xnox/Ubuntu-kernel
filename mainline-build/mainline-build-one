@@ -18,6 +18,8 @@ series="$2"
 
 build_release="hardy"
 
+log_enabled=0
+
 long=`git describe "$commit"`
 if [ "$?" -ne 0 ]; then
 	echo "$P: $commit: invalid commit" 1>&2
@@ -26,17 +28,29 @@ fi
 case "$long" in
 v*-*[0-9]-g*)
 	full_version="${long#v}"
-	full_version="${full_version%%-*}"
+	full_version="${full_version%-*}"
+	full_version="${full_version%-*}"
 	abinum="$full_version${long##*-}"
 	;;
 v*)
 	full_version="${long#v}"
 	abinum="$full_version"
+	log_enabled=1
 	;;
 *)
 	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
 	exit 1
 esac
+
+if [ "$log_enabled" -eq 1 ]; then
+	log_from=`git describe "$commit^"`
+	if [ "$?" -eq 0 ]; then
+		log_from="${log_from%-*}"
+		log_from="${log_from%-*}"
+
+		git shortlog "$log_from..$commit" >"../CHANGES"
+	fi
+fi
 
 # The base version is always the first X.Y.Z part of the version number.  If we
 # do not maintain this then the modules directory will not match uname -r.

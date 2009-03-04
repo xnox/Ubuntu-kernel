@@ -16,6 +16,10 @@ below:\r
 \r
     http://kernel.ubuntu.com/~%(user)s/mainline/%(commit)s/\r
 \r
+See the CHANGES file for the list of changes from the previous version:\r
+\r
+    http://kernel.ubuntu.com/~%(user)s/mainline/%(commit)s/CHANGES\r
+\r
 Note that these builds do not contain any Ubuntu specific patches and\r
 are not supported.\r
 \r

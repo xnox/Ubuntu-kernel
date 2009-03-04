@@ -87,6 +87,9 @@ html="$HOME/public_html/mainline/$commit"
 mkdir -p "$html"
 mv "$master_main/"linux-{headers,image,source}-*.deb "$html"
 mv "$master_tree/BUILD.LOG" "$html"
+if [ -f "$master_main/CHANGES" ]; then
+	mv "$master_main/CHANGES" "$html"
+fi
 
 # All done report this to the kernel-team
 $email "$here/mainline-announce"  "$commit"
