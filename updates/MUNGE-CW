@@ -75,6 +75,11 @@ ccflags-y += -D__CHECK_ENDIAN__
 .
 
 #
+# I wonder why libipw_wx.c requests a specific module?
+#
+sed -i 's/lib80211_crypt_wep/'${COMPAT_PREFIX}'lib80211_crypt_wep/' drivers/net/wireless/ipw2x00/libipw_wx.c
+
+#
 # Change the ucode file name.
 #
 sed -i 's/#define.*IWL3945_FW_PRE.*\"iwlwifi-3945-\"/#define IWL3945_FW_PRE \"lbm-iwlwifi-3945-\"/' drivers/net/wireless/iwlwifi/iwl-3945.h
