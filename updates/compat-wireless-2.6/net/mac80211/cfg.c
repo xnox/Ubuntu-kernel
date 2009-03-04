@@ -341,11 +341,15 @@ static void sta_set_sinfo(struct sta_info *sta, struct station_info *sinfo)
 	sinfo->filled = STATION_INFO_INACTIVE_TIME |
 			STATION_INFO_RX_BYTES |
 			STATION_INFO_TX_BYTES |
+			STATION_INFO_RX_PACKETS |
+			STATION_INFO_TX_PACKETS |
 			STATION_INFO_TX_BITRATE;
 
 	sinfo->inactive_time = jiffies_to_msecs(jiffies - sta->last_rx);
 	sinfo->rx_bytes = sta->rx_bytes;
 	sinfo->tx_bytes = sta->tx_bytes;
+	sinfo->rx_packets = sta->rx_packets;
+	sinfo->tx_packets = sta->tx_packets;
 
 	if (sta->local->hw.flags & IEEE80211_HW_SIGNAL_DBM) {
 		sinfo->filled |= STATION_INFO_SIGNAL;
@@ -447,7 +451,8 @@ static int ieee80211_config_beacon(struct ieee80211_sub_if_data *sdata,
 	 * This is a kludge. beacon interval should really be part
 	 * of the beacon information.
 	 */
-	if (params->interval) {
+	if (params->interval && (sdata->local->hw.conf.beacon_int !=
+				 params->interval)) {
 		sdata->local->hw.conf.beacon_int = params->interval;
 		err = ieee80211_hw_config(sdata->local,
 					IEEE80211_CONF_CHANGE_BEACON_INTERVAL);
@@ -1176,44 +1181,49 @@ static int ieee80211_set_channel(struct wiphy *wiphy,
 	return ieee80211_hw_config(local, IEEE80211_CONF_CHANGE_CHANNEL);
 }
 
-static int set_mgmt_extra_ie_sta(struct ieee80211_if_sta *ifsta, u8 subtype,
-				 u8 *ies, size_t ies_len)
+static int set_mgmt_extra_ie_sta(struct ieee80211_sub_if_data *sdata,
+				 u8 subtype, u8 *ies, size_t ies_len)
 {
+	struct ieee80211_local *local = sdata->local;
+	struct ieee80211_if_managed *ifmgd = &sdata->u.mgd;
+
 	switch (subtype) {
 	case IEEE80211_STYPE_PROBE_REQ >> 4:
-		kfree(ifsta->ie_probereq);
-		ifsta->ie_probereq = ies;
-		ifsta->ie_probereq_len = ies_len;
+		if (local->ops->hw_scan)
+			break;
+		kfree(ifmgd->ie_probereq);
+		ifmgd->ie_probereq = ies;
+		ifmgd->ie_probereq_len = ies_len;
 		return 0;
 	case IEEE80211_STYPE_PROBE_RESP >> 4:
-		kfree(ifsta->ie_proberesp);
-		ifsta->ie_proberesp = ies;
-		ifsta->ie_proberesp_len = ies_len;
+		kfree(ifmgd->ie_proberesp);
+		ifmgd->ie_proberesp = ies;
+		ifmgd->ie_proberesp_len = ies_len;
 		return 0;
 	case IEEE80211_STYPE_AUTH >> 4:
-		kfree(ifsta->ie_auth);
-		ifsta->ie_auth = ies;
-		ifsta->ie_auth_len = ies_len;
+		kfree(ifmgd->ie_auth);
+		ifmgd->ie_auth = ies;
+		ifmgd->ie_auth_len = ies_len;
 		return 0;
 	case IEEE80211_STYPE_ASSOC_REQ >> 4:
-		kfree(ifsta->ie_assocreq);
-		ifsta->ie_assocreq = ies;
-		ifsta->ie_assocreq_len = ies_len;
+		kfree(ifmgd->ie_assocreq);
+		ifmgd->ie_assocreq = ies;
+		ifmgd->ie_assocreq_len = ies_len;
 		return 0;
 	case IEEE80211_STYPE_REASSOC_REQ >> 4:
-		kfree(ifsta->ie_reassocreq);
-		ifsta->ie_reassocreq = ies;
-		ifsta->ie_reassocreq_len = ies_len;
+		kfree(ifmgd->ie_reassocreq);
+		ifmgd->ie_reassocreq = ies;
+		ifmgd->ie_reassocreq_len = ies_len;
 		return 0;
 	case IEEE80211_STYPE_DEAUTH >> 4:
-		kfree(ifsta->ie_deauth);
-		ifsta->ie_deauth = ies;
-		ifsta->ie_deauth_len = ies_len;
+		kfree(ifmgd->ie_deauth);
+		ifmgd->ie_deauth = ies;
+		ifmgd->ie_deauth_len = ies_len;
 		return 0;
 	case IEEE80211_STYPE_DISASSOC >> 4:
-		kfree(ifsta->ie_disassoc);
-		ifsta->ie_disassoc = ies;
-		ifsta->ie_disassoc_len = ies_len;
+		kfree(ifmgd->ie_disassoc);
+		ifmgd->ie_disassoc = ies;
+		ifmgd->ie_disassoc_len = ies_len;
 		return 0;
 	}
 
@@ -1243,8 +1253,7 @@ static int ieee80211_set_mgmt_extra_ie(struct wiphy *wiphy,
 
 	switch (sdata->vif.type) {
 	case NL80211_IFTYPE_STATION:
-	case NL80211_IFTYPE_ADHOC:
-		ret = set_mgmt_extra_ie_sta(&sdata->u.sta, params->subtype,
+		ret = set_mgmt_extra_ie_sta(sdata, params->subtype,
 					    ies, ies_len);
 		break;
 	default:
@@ -1271,6 +1280,25 @@ static int ieee80211_resume(struct wiphy *wiphy)
 #define ieee80211_suspend NULL
 #define ieee80211_resume NULL
 #endif
+
+static int ieee80211_scan(struct wiphy *wiphy,
+			  struct net_device *dev,
+			  struct cfg80211_scan_request *req)
+{
+	struct ieee80211_sub_if_data *sdata;
+
+	if (!netif_running(dev))
+		return -ENETDOWN;
+
+	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+
+	if (sdata->vif.type != NL80211_IFTYPE_STATION &&
+	    sdata->vif.type != NL80211_IFTYPE_ADHOC &&
+	    sdata->vif.type != NL80211_IFTYPE_MESH_POINT)
+		return -EOPNOTSUPP;
+
+	return ieee80211_request_scan(sdata, req);
+}
 
 struct cfg80211_ops mac80211_config_ops = {
 	.add_virtual_intf = ieee80211_add_iface,
@@ -1304,4 +1332,5 @@ struct cfg80211_ops mac80211_config_ops = {
 	.set_mgmt_extra_ie = ieee80211_set_mgmt_extra_ie,
 	.suspend = ieee80211_suspend,
 	.resume = ieee80211_resume,
+	.scan = ieee80211_scan,
 };

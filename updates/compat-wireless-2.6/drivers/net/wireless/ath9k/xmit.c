@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "core.h"
+#include "ath9k.h"
 
 #define BITS_PER_BYTE           8
 #define OFDM_PLCP_BITS          22
@@ -308,7 +308,7 @@ static void ath_tx_complete_aggr(struct ath_softc *sc, struct ath_txq *txq,
 			 * when perform internal reset in this routine.
 			 * Only enable reset in STA mode for now.
 			 */
-			if (sc->sc_ah->ah_opmode == NL80211_IFTYPE_STATION)
+			if (sc->sc_ah->opmode == NL80211_IFTYPE_STATION)
 				needreset = 1;
 		}
 	}
@@ -772,24 +772,6 @@ bool ath_tx_aggr_check(struct ath_softc *sc, struct ath_node *an, u8 tidno)
 /* Queue Management */
 /********************/
 
-static u32 ath_txq_depth(struct ath_softc *sc, int qnum)
-{
-	return sc->tx.txq[qnum].axq_depth;
-}
-
-static void ath_get_beaconconfig(struct ath_softc *sc, int if_id,
-				 struct ath_beacon_config *conf)
-{
-	struct ieee80211_hw *hw = sc->hw;
-
-	/* fill in beacon config data */
-
-	conf->beacon_interval = hw->conf.beacon_int;
-	conf->listen_interval = 100;
-	conf->dtim_count = 1;
-	conf->bmiss_timeout = ATH_DEFAULT_BMISS_LIMIT * conf->listen_interval;
-}
-
 static void ath_txq_drain_pending_buffers(struct ath_softc *sc,
 					  struct ath_txq *txq)
 {
@@ -809,7 +791,7 @@ static void ath_txq_drain_pending_buffers(struct ath_softc *sc,
 
 struct ath_txq *ath_txq_setup(struct ath_softc *sc, int qtype, int subtype)
 {
-	struct ath_hal *ah = sc->sc_ah;
+	struct ath_hw *ah = sc->sc_ah;
 	struct ath9k_tx_queue_info qi;
 	int qnum;
 
@@ -926,7 +908,7 @@ struct ath_txq *ath_test_get_txq(struct ath_softc *sc, struct sk_buff *skb)
 int ath_txq_update(struct ath_softc *sc, int qnum,
 		   struct ath9k_tx_queue_info *qinfo)
 {
-	struct ath_hal *ah = sc->sc_ah;
+	struct ath_hw *ah = sc->sc_ah;
 	int error = 0;
 	struct ath9k_tx_queue_info qi;
 
@@ -964,20 +946,18 @@ int ath_cabq_update(struct ath_softc *sc)
 {
 	struct ath9k_tx_queue_info qi;
 	int qnum = sc->beacon.cabq->axq_qnum;
-	struct ath_beacon_config conf;
 
 	ath9k_hw_get_txq_props(sc->sc_ah, qnum, &qi);
 	/*
 	 * Ensure the readytime % is within the bounds.
 	 */
-	if (sc->sc_config.cabqReadytime < ATH9K_READY_TIME_LO_BOUND)
-		sc->sc_config.cabqReadytime = ATH9K_READY_TIME_LO_BOUND;
-	else if (sc->sc_config.cabqReadytime > ATH9K_READY_TIME_HI_BOUND)
-		sc->sc_config.cabqReadytime = ATH9K_READY_TIME_HI_BOUND;
+	if (sc->config.cabqReadytime < ATH9K_READY_TIME_LO_BOUND)
+		sc->config.cabqReadytime = ATH9K_READY_TIME_LO_BOUND;
+	else if (sc->config.cabqReadytime > ATH9K_READY_TIME_HI_BOUND)
+		sc->config.cabqReadytime = ATH9K_READY_TIME_HI_BOUND;
 
-	ath_get_beaconconfig(sc, ATH_IF_ID_ANY, &conf);
-	qi.tqi_readyTime =
-		(conf.beacon_interval * sc->sc_config.cabqReadytime) / 100;
+	qi.tqi_readyTime = (sc->hw->conf.beacon_int *
+			    sc->config.cabqReadytime) / 100;
 	ath_txq_update(sc, qnum, &qi);
 
 	return 0;
@@ -1047,7 +1027,7 @@ void ath_draintxq(struct ath_softc *sc, struct ath_txq *txq, bool retry_tx)
 
 void ath_drain_all_txq(struct ath_softc *sc, bool retry_tx)
 {
-	struct ath_hal *ah = sc->sc_ah;
+	struct ath_hw *ah = sc->sc_ah;
 	struct ath_txq *txq;
 	int i, npend = 0;
 
@@ -1072,7 +1052,7 @@ void ath_drain_all_txq(struct ath_softc *sc, bool retry_tx)
 		DPRINTF(sc, ATH_DBG_XMIT, "Unable to stop TxDMA. Reset HAL!\n");
 
 		spin_lock_bh(&sc->sc_resetlock);
-		r = ath9k_hw_reset(ah, sc->sc_ah->ah_curchan, true);
+		r = ath9k_hw_reset(ah, sc->sc_ah->curchan, true);
 		if (r)
 			DPRINTF(sc, ATH_DBG_FATAL,
 				"Unable to reset hardware; reset status %u\n",
@@ -1165,7 +1145,7 @@ int ath_tx_setup(struct ath_softc *sc, int haltype)
 static void ath_tx_txqaddbuf(struct ath_softc *sc, struct ath_txq *txq,
 			     struct list_head *head)
 {
-	struct ath_hal *ah = sc->sc_ah;
+	struct ath_hw *ah = sc->sc_ah;
 	struct ath_buf *bf;
 
 	/*
@@ -1471,13 +1451,13 @@ static void ath_buf_set_rate(struct ath_softc *sc, struct ath_buf *bf)
 		flags = ATH9K_TXDESC_RTSENA;
 
 	/* FIXME: Handle aggregation protection */
-	if (sc->sc_config.ath_aggr_prot &&
+	if (sc->config.ath_aggr_prot &&
 	    (!bf_isaggr(bf) || (bf_isaggr(bf) && bf->bf_al < 8192))) {
 		flags = ATH9K_TXDESC_RTSENA;
 	}
 
 	/* For AR5416 - RTS cannot be followed by a frame larger than 8K */
-	if (bf_isaggr(bf) && (bf->bf_al > sc->sc_ah->ah_caps.rts_aggr_limit))
+	if (bf_isaggr(bf) && (bf->bf_al > sc->sc_ah->caps.rts_aggr_limit))
 		flags &= ~(ATH9K_TXDESC_RTSENA);
 
 	for (i = 0; i < 4; i++) {
@@ -1486,7 +1466,7 @@ static void ath_buf_set_rate(struct ath_softc *sc, struct ath_buf *bf)
 
 		rix = rates[i].idx;
 		series[i].Tries = rates[i].count;
-		series[i].ChSel = sc->sc_tx_chainmask;
+		series[i].ChSel = sc->tx_chainmask;
 
 		if (rates[i].flags & IEEE80211_TX_RC_USE_SHORT_PREAMBLE)
 			series[i].Rate = rt->info[rix].ratecode |
@@ -1513,7 +1493,7 @@ static void ath_buf_set_rate(struct ath_softc *sc, struct ath_buf *bf)
 				     !is_pspoll, ctsrate,
 				     0, series, 4, flags);
 
-	if (sc->sc_config.ath_aggr_prot && flags)
+	if (sc->config.ath_aggr_prot && flags)
 		ath9k_hw_set11n_burstduration(sc->sc_ah, bf->bf_desc, 8192);
 }
 
@@ -1580,7 +1560,7 @@ static void ath_tx_start_dma(struct ath_softc *sc, struct ath_buf *bf,
 	struct list_head bf_head;
 	struct ath_desc *ds;
 	struct ath_atx_tid *tid;
-	struct ath_hal *ah = sc->sc_ah;
+	struct ath_hw *ah = sc->sc_ah;
 	int frm_type;
 
 	frm_type = get_hw_packet_type(skb);
@@ -1657,7 +1637,7 @@ int ath_tx_start(struct ath_softc *sc, struct sk_buff *skb,
 		 * we will at least have to run TX completionon one buffer
 		 * on the queue */
 		spin_lock_bh(&txq->axq_lock);
-		if (ath_txq_depth(sc, txq->axq_qnum) > 1) {
+		if (sc->tx.txq[txq->axq_qnum].axq_depth > 1) {
 			ieee80211_stop_queue(sc->hw,
 				skb_get_queue_mapping(skb));
 			txq->stopped = 1;
@@ -1867,7 +1847,7 @@ static void ath_wake_mac80211_queue(struct ath_softc *sc, struct ath_txq *txq)
 
 	spin_lock_bh(&txq->axq_lock);
 	if (txq->stopped &&
-	    ath_txq_depth(sc, txq->axq_qnum) <= (ATH_TXBUF - 20)) {
+	    sc->tx.txq[txq->axq_qnum].axq_depth <= (ATH_TXBUF - 20)) {
 		qnum = ath_get_mac80211_qnum(txq->axq_qnum, sc);
 		if (qnum != -1) {
 			ieee80211_wake_queue(sc->hw, qnum);
@@ -1879,7 +1859,7 @@ static void ath_wake_mac80211_queue(struct ath_softc *sc, struct ath_txq *txq)
 
 static void ath_tx_processq(struct ath_softc *sc, struct ath_txq *txq)
 {
-	struct ath_hal *ah = sc->sc_ah;
+	struct ath_hw *ah = sc->sc_ah;
 	struct ath_buf *bf, *lastbf, *bf_held = NULL;
 	struct list_head bf_head;
 	struct ath_desc *ds;

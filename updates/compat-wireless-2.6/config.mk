@@ -16,8 +16,6 @@ endif
 ifeq ($(CONFIG_MAC80211),y)
 $(error "ERROR: you have MAC80211 compiled into the kernel, CONFIG_MAC80211=y, as such you cannot replace its mac80211 driver. You need this set to CONFIG_MAC80211=m. If you are using Fedora upgrade your kernel as later version should this set as modular. For further information on Fedora see https://bugzilla.redhat.com/show_bug.cgi?id=470143. If you are using your own kernel recompile it and make mac80211 modular")
 endif
-# Wireless subsystem stuff
-CONFIG_MAC80211=m
 
 # We will warn when you don't have MQ support or NET_SCHED enabled.
 #
@@ -44,6 +42,21 @@ $(error "ERROR: Your 2.6.27 kernel has CONFIG_DYNAMIC_FTRACE, please upgrade you
 endif
 endif
 
+# This is because with CONFIG_MAC80211 include/linux/skbuff.h will
+# enable on 2.6.27 a new attribute:
+#
+# skb->do_not_encrypt
+#
+# and on 2.6.28 another new attribute:
+#
+# skb->requeue
+#
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -ge 27 && echo yes),yes)
+ifeq ($(CONFIG_MAC80211),)
+$(error "ERROR: Your >=2.6.27 kernel has CONFIG_MAC80211 disabled, you should have it CONFIG_MAC80211=m if you want to use this thing.")
+endif
+endif
+
 ifneq ($(KERNELRELEASE),) # This prevents a warning
 
 ifeq ($(CONFIG_NET_SCHED),)
@@ -59,6 +72,9 @@ endif
 endif # build check
 endif # kernel Makefile check
 
+# Wireless subsystem stuff
+CONFIG_MAC80211=m
+# CONFIG_MAC80211_DEBUGFS is not set
 
 # choose between pid and minstrel as default rate control algorithm
 CONFIG_MAC80211_RC_DEFAULT=minstrel
@@ -98,18 +114,15 @@ CONFIG_ATH9K=m
 # CONFIG_ATH9K_DEBUG is not set
 
 
-CONFIG_IWLWIFI=y
-CONFIG_IWLCORE=m
+CONFIG_IWLWIFI=m
 CONFIG_IWLWIFI_LEDS=y
 # CONFIG_IWLWIFI_RFKILL=y
+CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT=y
 # CONFIG_IWLWIFI_DEBUG is not set
 CONFIG_IWLAGN=m
-CONFIG_IWLAGN_SPECTRUM_MEASUREMENT=y
-CONFIG_IWLAGN_LEDS=y
 CONFIG_IWL4965=y
 CONFIG_IWL5000=y
 CONFIG_IWL3945=m
-# CONFIG_IWL3945_RFKILL=y
 CONFIG_IWL3945_SPECTRUM_MEASUREMENT=y
 CONFIG_IWL3945_LEDS=y
 # CONFIG_IWL3945_DEBUG is not set
@@ -226,6 +239,7 @@ CONFIG_USB_NET_CDCETHER=m
 CONFIG_P54_USB=m
 CONFIG_RTL8187=m
 
+CONFIG_AT76C50X_USB=m
 
 # RT2500USB does not require firmware
 CONFIG_RT2500USB=m

@@ -350,6 +350,7 @@ static int 	ath5k_beacon_setup(struct ath5k_softc *sc,
 static void 	ath5k_beacon_send(struct ath5k_softc *sc);
 static void 	ath5k_beacon_config(struct ath5k_softc *sc);
 static void	ath5k_beacon_update_timers(struct ath5k_softc *sc, u64 bc_tsf);
+static void	ath5k_tasklet_beacon(unsigned long data);
 
 static inline u64 ath5k_extend_tsf(struct ath5k_hw *ah, u32 rstamp)
 {
@@ -789,6 +790,7 @@ ath5k_attach(struct pci_dev *pdev, struct ieee80211_hw *hw)
 	tasklet_init(&sc->rxtq, ath5k_tasklet_rx, (unsigned long)sc);
 	tasklet_init(&sc->txtq, ath5k_tasklet_tx, (unsigned long)sc);
 	tasklet_init(&sc->restq, ath5k_tasklet_reset, (unsigned long)sc);
+	tasklet_init(&sc->beacontq, ath5k_tasklet_beacon, (unsigned long)sc);
 	setup_timer(&sc->calib_tim, ath5k_calibrate, (unsigned long)sc);
 
 	ret = ath5k_eeprom_read_mac(ah, mac);
@@ -1098,7 +1100,8 @@ ath5k_mode_setup(struct ath5k_softc *sc)
 static inline int
 ath5k_hw_to_driver_rix(struct ath5k_softc *sc, int hw_rix)
 {
-	WARN_ON(hw_rix < 0 || hw_rix > AR5K_MAX_RATES);
+	WARN(hw_rix < 0 || hw_rix >= AR5K_MAX_RATES,
+			"hw_rix out of bounds: %x\n", hw_rix);
 	return sc->rate_idx[sc->curband->band][hw_rix];
 }
 
@@ -1218,6 +1221,10 @@ ath5k_txbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 
 	pktlen = skb->len;
 
+	if (info->control.hw_key) {
+		keyidx = info->control.hw_key->hw_key_idx;
+		pktlen += info->control.hw_key->icv_len;
+	}
 	if (rc_flags & IEEE80211_TX_RC_USE_RTS_CTS) {
 		flags |= AR5K_TXDESC_RTSENA;
 		cts_rate = ieee80211_get_rts_cts_rate(sc->hw, info)->hw_value;
@@ -1229,11 +1236,6 @@ ath5k_txbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
 		cts_rate = ieee80211_get_rts_cts_rate(sc->hw, info)->hw_value;
 		duration = le16_to_cpu(ieee80211_ctstoself_duration(sc->hw,
 			sc->vif, pktlen, info));
-	}
-
-	if (info->control.hw_key) {
-		keyidx = info->control.hw_key->hw_key_idx;
-		pktlen += info->control.hw_key->icv_len;
 	}
 	ret = ah->ah_setup_tx_desc(ah, ds, pktlen,
 		ieee80211_get_hdrlen_from_skb(skb), AR5K_PKT_TYPE_NORMAL,
@@ -1700,6 +1702,34 @@ ath5k_check_ibss_tsf(struct ath5k_softc *sc, struct sk_buff *skb,
 	}
 }
 
+static void ath5k_tasklet_beacon(unsigned long data)
+{
+	struct ath5k_softc *sc = (struct ath5k_softc *) data;
+
+	/*
+	 * Software beacon alert--time to send a beacon.
+	 *
+	 * In IBSS mode we use this interrupt just to
+	 * keep track of the next TBTT (target beacon
+	 * transmission time) in order to detect wether
+	 * automatic TSF updates happened.
+	 */
+	if (sc->opmode == NL80211_IFTYPE_ADHOC) {
+		/* XXX: only if VEOL suppported */
+		u64 tsf = ath5k_hw_get_tsf64(sc->ah);
+		sc->nexttbtt += sc->bintval;
+		ATH5K_DBG(sc, ATH5K_DEBUG_BEACON,
+				"SWBA nexttbtt: %x hw_tu: %x "
+				"TSF: %llx\n",
+				sc->nexttbtt,
+				TSF_TO_TU(tsf),
+				(unsigned long long) tsf);
+	} else {
+		spin_lock(&sc->block);
+		ath5k_beacon_send(sc);
+		spin_unlock(&sc->block);
+	}
+}
 
 static void
 ath5k_tasklet_rx(unsigned long data)
@@ -2040,9 +2070,8 @@ err_unmap:
  * frame contents are done as needed and the slot time is
  * also adjusted based on current state.
  *
- * this is usually called from interrupt context (ath5k_intr())
- * but also from ath5k_beacon_config() in IBSS mode which in turn
- * can be called from a tasklet and user context
+ * This is called from software irq context (beacontq or restq
+ * tasklets) or user context from ath5k_beacon_config.
  */
 static void
 ath5k_beacon_send(struct ath5k_softc *sc)
@@ -2209,10 +2238,6 @@ ath5k_beacon_update_timers(struct ath5k_softc *sc, u64 bc_tsf)
  *
  * @sc: struct ath5k_softc pointer we are operating on
  *
- * When operating in station mode we want to receive a BMISS interrupt when we
- * stop seeing beacons from the AP we've associated with so we can look for
- * another AP to associate with.
- *
  * In IBSS mode we use a self-linked tx descriptor if possible. We enable SWBA
  * interrupts to detect TSF updates only.
  */
@@ -2220,14 +2245,13 @@ static void
 ath5k_beacon_config(struct ath5k_softc *sc)
 {
 	struct ath5k_hw *ah = sc->ah;
+	unsigned long flags;
 
 	ath5k_hw_set_imr(ah, 0);
 	sc->bmisscount = 0;
 	sc->imask &= ~(AR5K_INT_BMISS | AR5K_INT_SWBA);
 
-	if (sc->opmode == NL80211_IFTYPE_STATION) {
-		sc->imask |= AR5K_INT_BMISS;
-	} else if (sc->opmode == NL80211_IFTYPE_ADHOC ||
+	if (sc->opmode == NL80211_IFTYPE_ADHOC ||
 			sc->opmode == NL80211_IFTYPE_MESH_POINT ||
 			sc->opmode == NL80211_IFTYPE_AP) {
 		/*
@@ -2243,9 +2267,9 @@ ath5k_beacon_config(struct ath5k_softc *sc)
 
 		if (sc->opmode == NL80211_IFTYPE_ADHOC) {
 			if (ath5k_hw_hasveol(ah)) {
-				spin_lock(&sc->block);
+				spin_lock_irqsave(&sc->block, flags);
 				ath5k_beacon_send(sc);
-				spin_unlock(&sc->block);
+				spin_unlock_irqrestore(&sc->block, flags);
 			}
 		} else
 			ath5k_beacon_update_timers(sc, -1);
@@ -2397,6 +2421,7 @@ ath5k_stop_hw(struct ath5k_softc *sc)
 	tasklet_kill(&sc->rxtq);
 	tasklet_kill(&sc->txtq);
 	tasklet_kill(&sc->restq);
+	tasklet_kill(&sc->beacontq);
 
 	return ret;
 }
@@ -2414,16 +2439,9 @@ ath5k_intr(int irq, void *dev_id)
 		return IRQ_NONE;
 
 	do {
-		/*
-		 * Figure out the reason(s) for the interrupt.  Note
-		 * that get_isr returns a pseudo-ISR that may include
-		 * bits we haven't explicitly enabled so we mask the
-		 * value to insure we only process bits we requested.
-		 */
 		ath5k_hw_get_isr(ah, &status);		/* NB: clears IRQ too */
 		ATH5K_DBG(sc, ATH5K_DEBUG_INTR, "status 0x%x/0x%x\n",
 				status, sc->imask);
-		status &= sc->imask; /* discard unasked for bits */
 		if (unlikely(status & AR5K_INT_FATAL)) {
 			/*
 			 * Fatal errors are unrecoverable.
@@ -2434,32 +2452,7 @@ ath5k_intr(int irq, void *dev_id)
 			tasklet_schedule(&sc->restq);
 		} else {
 			if (status & AR5K_INT_SWBA) {
-				/*
-				* Software beacon alert--time to send a beacon.
-				* Handle beacon transmission directly; deferring
-				* this is too slow to meet timing constraints
-				* under load.
-				*
-				* In IBSS mode we use this interrupt just to
-				* keep track of the next TBTT (target beacon
-				* transmission time) in order to detect wether
-				* automatic TSF updates happened.
-				*/
-				if (sc->opmode == NL80211_IFTYPE_ADHOC) {
-					 /* XXX: only if VEOL suppported */
-					u64 tsf = ath5k_hw_get_tsf64(ah);
-					sc->nexttbtt += sc->bintval;
-					ATH5K_DBG(sc, ATH5K_DEBUG_BEACON,
-						  "SWBA nexttbtt: %x hw_tu: %x "
-						  "TSF: %llx\n",
-						  sc->nexttbtt,
-						  TSF_TO_TU(tsf),
-						  (unsigned long long) tsf);
-				} else {
-					spin_lock(&sc->block);
-					ath5k_beacon_send(sc);
-					spin_unlock(&sc->block);
-				}
+				tasklet_schedule(&sc->beacontq);
 			}
 			if (status & AR5K_INT_RXEOL) {
 				/*
@@ -2479,6 +2472,7 @@ ath5k_intr(int irq, void *dev_id)
 					| AR5K_INT_TXERR | AR5K_INT_TXEOL))
 				tasklet_schedule(&sc->txtq);
 			if (status & AR5K_INT_BMISS) {
+				/* TODO */
 			}
 			if (status & AR5K_INT_MIB) {
 				/*
@@ -2518,7 +2512,7 @@ ath5k_calibrate(unsigned long data)
 		ieee80211_frequency_to_channel(sc->curchan->center_freq),
 		sc->curchan->hw_value);
 
-	if (ath5k_hw_get_rf_gain(ah) == AR5K_RFGAIN_NEED_CHANGE) {
+	if (ath5k_hw_gainf_calibrate(ah) == AR5K_RFGAIN_NEED_CHANGE) {
 		/*
 		 * Rfgain is out of bounds, reset the chip
 		 * to load new gain values.
@@ -2889,7 +2883,7 @@ ath5k_config_interface(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 {
 	struct ath5k_softc *sc = hw->priv;
 	struct ath5k_hw *ah = sc->ah;
-	int ret;
+	int ret = 0;
 
 	mutex_lock(&sc->lock);
 	if (sc->vif != vif) {
@@ -2915,9 +2909,7 @@ ath5k_config_interface(struct ieee80211_hw *hw, struct ieee80211_vif *vif,
 		}
 		ath5k_beacon_update(sc, beacon);
 	}
-	mutex_unlock(&sc->lock);
 
-	return ath5k_reset_wake(sc);
 unlock:
 	mutex_unlock(&sc->lock);
 	return ret;

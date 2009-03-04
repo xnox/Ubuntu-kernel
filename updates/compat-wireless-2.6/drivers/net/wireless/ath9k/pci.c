@@ -16,9 +16,7 @@
 
 #include <linux/nl80211.h>
 #include <linux/pci.h>
-#include "core.h"
-#include "reg.h"
-#include "hw.h"
+#include "ath9k.h"
 
 static struct pci_device_id ath_pci_id_table[] __devinitdata = {
 	{ PCI_VDEVICE(ATHEROS, 0x0023) }, /* PCI   */
@@ -54,18 +52,19 @@ static void ath_pci_cleanup(struct ath_softc *sc)
 	struct pci_dev *pdev = to_pci_dev(sc->dev);
 
 	pci_iounmap(pdev, sc->mem);
-	pci_release_region(pdev, 0);
 	pci_disable_device(pdev);
+	pci_release_region(pdev, 0);
 }
 
-static bool ath_pci_eeprom_read(struct ath_hal *ah, u32 off, u16 *data)
+static bool ath_pci_eeprom_read(struct ath_hw *ah, u32 off, u16 *data)
 {
 	(void)REG_READ(ah, AR5416_EEPROM_OFFSET + (off << AR5416_EEPROM_S));
 
 	if (!ath9k_hw_wait(ah,
 			   AR_EEPROM_STATUS_DATA,
 			   AR_EEPROM_STATUS_DATA_BUSY |
-			   AR_EEPROM_STATUS_DATA_PROT_ACCESS, 0)) {
+			   AR_EEPROM_STATUS_DATA_PROT_ACCESS, 0,
+			   AH_WAIT_TIMEOUT)) {
 		return false;
 	}
 
@@ -89,7 +88,7 @@ static int ath_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	u8 csz;
 	u32 val;
 	int ret = 0;
-	struct ath_hal *ah;
+	struct ath_hw *ah;
 
 	if (pci_enable_device(pdev))
 		return -EIO;
@@ -192,10 +191,10 @@ static int ath_pci_probe(struct pci_dev *pdev, const struct pci_device_id *id)
 	       "%s: Atheros AR%s MAC/BB Rev:%x "
 	       "AR%s RF Rev:%x: mem=0x%lx, irq=%d\n",
 	       wiphy_name(hw->wiphy),
-	       ath_mac_bb_name(ah->ah_macVersion),
-	       ah->ah_macRev,
-	       ath_rf_name((ah->ah_analog5GhzRev & AR_RADIO_SREV_MAJOR)),
-	       ah->ah_phyRev,
+	       ath_mac_bb_name(ah->hw_version.macVersion),
+	       ah->hw_version.macRev,
+	       ath_rf_name((ah->hw_version.analog5GhzRev & AR_RADIO_SREV_MAJOR)),
+	       ah->hw_version.phyRev,
 	       (unsigned long)mem, pdev->irq);
 
 	return 0;
@@ -230,7 +229,7 @@ static int ath_pci_suspend(struct pci_dev *pdev, pm_message_t state)
 	ath9k_hw_set_gpio(sc->sc_ah, ATH_LED_PIN, 1);
 
 #if defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)
-	if (sc->sc_ah->ah_caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
+	if (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
 		cancel_delayed_work_sync(&sc->rf_kill.rfkill_poll);
 #endif
 
@@ -271,7 +270,7 @@ static int ath_pci_resume(struct pci_dev *pdev)
 	 * check the h/w rfkill state on resume
 	 * and start the rfkill poll timer
 	 */
-	if (sc->sc_ah->ah_caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
+	if (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
 		queue_delayed_work(sc->hw->workqueue,
 				   &sc->rf_kill.rfkill_poll, 0);
 #endif
@@ -294,7 +293,7 @@ static struct pci_driver ath_pci_driver = {
 #endif /* CONFIG_PM */
 };
 
-int __init ath_pci_init(void)
+int ath_pci_init(void)
 {
 	return pci_register_driver(&ath_pci_driver);
 }
