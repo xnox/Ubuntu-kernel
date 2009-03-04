@@ -1,3 +1,17 @@
+linux-backports-modules-2.6.28 (2.6.28-8.7) jaunty; urgency=low
+
+  [Stefan Bader]
+
+  * scripts: Fix typo in prepare-compat-wireless.sh
+    - LP: #332576
+
+  [Tim Gardner]
+
+  * Update to master-2009-03-03
+  * Accomodate request_module() calls when munging module names.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Wed, 04 Mar 2009 01:05:15 +0000
+
 linux-backports-modules-2.6.28 (2.6.28-8.6) jaunty; urgency=low
 
   [Tim Gardner]
