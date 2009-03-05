@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
 Build-Depends: debhelper (>= 3), module-init-tools, coreutils, git-core, kernel-wedge (>= 2.24ubuntu1)HEADER_DEPS
+Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-jaunty-lbm.git
 
 Package: linux-headers-lbm-PKGVER-ABINUM
 Architecture: all
