@@ -64,7 +64,7 @@ static int smsdvb_onresponse(void *context, struct smscore_buffer_t *cb)
 
 	switch (phdr->msgType) {
 	case MSG_SMS_DVBT_BDA_DATA:
-		dvb_dmx_swfilter(&client->demux, (u8 *)(phdr + 1),
+		dvb_dmx_swfilter(&client->demux, (u8 *) (phdr + 1),
 				 cb->size - sizeof(struct SmsMsgHdr_ST));
 		break;
 
@@ -141,13 +141,12 @@ static int smsdvb_start_feed(struct dvb_demux_feed *feed)
 		container_of(feed->demux, struct smsdvb_client_t, demux);
 	struct SmsMsgData_ST PidMsg;
 
-	sms_debug("add pid %d(%x)",
-		  feed->pid, feed->pid);
+	sms_debug("add pid %d(%x)", feed->pid, feed->pid);
 
 	PidMsg.xMsgHeader.msgSrcId = DVBT_BDA_CONTROL_MSG_ID;
 	PidMsg.xMsgHeader.msgDstId = HIF_TASK;
 	PidMsg.xMsgHeader.msgFlags = 0;
-	PidMsg.xMsgHeader.msgType  = MSG_SMS_ADD_PID_FILTER_REQ;
+	PidMsg.xMsgHeader.msgType = MSG_SMS_ADD_PID_FILTER_REQ;
 	PidMsg.xMsgHeader.msgLength = sizeof(PidMsg);
 	PidMsg.msgData[0] = feed->pid;
 
@@ -161,13 +160,12 @@ static int smsdvb_stop_feed(struct dvb_demux_feed *feed)
 		container_of(feed->demux, struct smsdvb_client_t, demux);
 	struct SmsMsgData_ST PidMsg;
 
-	sms_debug("remove pid %d(%x)",
-		  feed->pid, feed->pid);
+	sms_debug("remove pid %d(%x)", feed->pid, feed->pid);
 
 	PidMsg.xMsgHeader.msgSrcId = DVBT_BDA_CONTROL_MSG_ID;
 	PidMsg.xMsgHeader.msgDstId = HIF_TASK;
 	PidMsg.xMsgHeader.msgFlags = 0;
-	PidMsg.xMsgHeader.msgType  = MSG_SMS_REMOVE_PID_FILTER_REQ;
+	PidMsg.xMsgHeader.msgType = MSG_SMS_REMOVE_PID_FILTER_REQ;
 	PidMsg.xMsgHeader.msgLength = sizeof(PidMsg);
 	PidMsg.msgData[0] = feed->pid;
 
@@ -176,16 +174,15 @@ static int smsdvb_stop_feed(struct dvb_demux_feed *feed)
 }
 
 static int smsdvb_sendrequest_and_wait(struct smsdvb_client_t *client,
-					void *buffer, size_t size,
-					struct completion *completion)
+				       void *buffer, size_t size,
+				       struct completion *completion)
 {
 	int rc = smsclient_sendrequest(client->smsclient, buffer, size);
 	if (rc < 0)
 		return rc;
 
 	return wait_for_completion_timeout(completion,
-					   msecs_to_jiffies(2000)) ?
-						0 : -ETIME;
+					   msecs_to_jiffies(2000)) ? 0 : -ETIME;
 }
 
 static int smsdvb_send_statistics_request(struct smsdvb_client_t *client)
@@ -346,9 +343,7 @@ static int smsdvb_get_frontend(struct dvb_frontend *fe,
 	sms_debug("");
 
 	/* todo: */
-	memcpy(fep, &client->fe_params,
-	       sizeof(struct dvb_frontend_parameters));
-
+	memcpy(fep, &client->fe_params, sizeof(struct dvb_frontend_parameters));
 	return 0;
 }
 
@@ -549,8 +544,8 @@ void smsdvb_module_exit(void)
 	kmutex_lock(&g_smsdvb_clientslock);
 
 	while (!list_empty(&g_smsdvb_clients))
-	       smsdvb_unregister_client(
-			(struct smsdvb_client_t *) g_smsdvb_clients.next);
+		smsdvb_unregister_client((struct smsdvb_client_t *)
+					 g_smsdvb_clients.next);
 
 	kmutex_unlock(&g_smsdvb_clientslock);
 }
