@@ -490,6 +490,19 @@ struct usb_device_id smsusb_id_table[] = {
 		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
 	{ USB_DEVICE(0x2040, 0x5590),
 		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
+
+	{ USB_DEVICE(0x2040, 0xb400),
+		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_CMMB },
+	{ USB_DEVICE(0x2040, 0xb410),
+		.driver_info = SMS1XXX_BOARD_DELL_CMMB },
+	{ USB_DEVICE(0x2040, 0xb500),
+		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_TIGER_MINICARD_CMMB },
+	{ USB_DEVICE(0x2040, 0xb510),
+		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD_CMMB_R1 },
+	{ USB_DEVICE(0x2040, 0xb511),
+		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD_CMMB },
+	{ USB_DEVICE(0x2040, 0xb512),
+		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD_CMMB },
 	{ }		/* Terminating entry */
 };
 MODULE_DEVICE_TABLE(usb, smsusb_id_table);

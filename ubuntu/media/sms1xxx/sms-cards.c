@@ -72,6 +72,39 @@ static struct sms_board sms_boards[] = {
 		.fw[DEVICE_MODE_DVBT_BDA] = "sms1xxx-hcw-55xxx-dvbt-02.fw",
 		.lna_ctrl  = -1,
 	},
+	[SMS1XXX_BOARD_HAUPPAUGE_CMMB] = {
+		.name	= "Hauppauge WinTV MiniStick (CMMB)",
+		.type	= SMS_VEGA,
+		.fw[DEVICE_MODE_CMMB] = "sms1xxx-hcw-114xxx-cmmb-01.fw",
+		.led_power = 21,
+		.led_lo    = 17,
+		.led_hi    = 15,
+	},
+	[SMS1XXX_BOARD_DELL_CMMB] = {
+		.name	= "Dell Digital TV Receiver",
+		.type	= SMS_VEGA,
+		.fw[DEVICE_MODE_CMMB] = "sms1xxx-hcw-114xxx-cmmb-01.fw",
+	},
+	[SMS1XXX_BOARD_HAUPPAUGE_TIGER_MINICARD_CMMB] = {
+		.name	= "Hauppauge WinTV MiniCard (CMMB)",
+		.type	= SMS_VEGA,
+		.fw[DEVICE_MODE_CMMB] = "sms1xxx-hcw-114xxx-cmmb-01.fw",
+		.lna_ctrl  = 23,
+		.rf_switch = 25,
+	},
+	[SMS1XXX_BOARD_DELL_TIGER_MINICARD_CMMB_R1] = {
+		.name	= "Dell Digital TV Receiver",
+		.type	= SMS_VEGA,
+		.fw[DEVICE_MODE_CMMB] = "sms1xxx-hcw-114xxx-cmmb-01.fw",
+		.lna_ctrl  = 10,
+	},
+	[SMS1XXX_BOARD_DELL_TIGER_MINICARD_CMMB] = {
+		.name	= "Dell Digital TV Receiver",
+		.type	= SMS_VEGA,
+		.fw[DEVICE_MODE_CMMB] = "sms1xxx-hcw-114xxx-cmmb-01.fw",
+		.lna_ctrl  = 23,
+		.rf_switch = 25,
+	},
 };
 
 struct sms_board *sms_get_board(int id)
