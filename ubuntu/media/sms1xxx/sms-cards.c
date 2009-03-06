@@ -84,18 +84,20 @@ EXPORT_SYMBOL_GPL(sms_get_board);
 
 static int sms_set_gpio(struct smscore_device_t *coredev, int pin, int enable)
 {
-	int lvl, ret;
-	u32 gpio;
+	u8 gpio, lvl;
+	int ret;
 	struct smscore_gpio_config gpioconfig = {
 		.direction            = SMS_GPIO_DIRECTION_OUTPUT,
 		.pullupdown           = SMS_GPIO_PULLUPDOWN_NONE,
 		.inputcharacteristics = SMS_GPIO_INPUTCHARACTERISTICS_NORMAL,
-		.outputslewrate       = SMS_GPIO_OUTPUTSLEWRATE_FAST,
+		.outputslewrate       = SMS_GPIO_OUTPUTSLEWRATE_0_45_V_NS,
 		.outputdriving        = SMS_GPIO_OUTPUTDRIVING_4mA,
 	};
 
 	if (pin == 0)
 		return -EINVAL;
+
+	sms_debug("pin %x, enable %x", pin, enable);
 
 	if (pin < 0) {
 		/* inverted gpio */
@@ -106,11 +108,11 @@ static int sms_set_gpio(struct smscore_device_t *coredev, int pin, int enable)
 		lvl = enable ? 1 : 0;
 	}
 
-	ret = smscore_configure_gpio(coredev, gpio, &gpioconfig);
+	ret = smscore_gpio_configure(coredev, gpio, &gpioconfig, 0);
 	if (ret < 0)
 		return ret;
 
-	return smscore_set_gpio(coredev, gpio, lvl);
+	return smscore_gpio_set_level(coredev, gpio, lvl, 0);
 }
 
 int sms_board_setup(struct smscore_device_t *coredev)

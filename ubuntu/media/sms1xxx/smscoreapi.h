@@ -527,14 +527,28 @@ struct smscore_gpio_config {
 #define SMS_GPIO_INPUTCHARACTERISTICS_SCHMITT 1
 	u8 inputcharacteristics;
 
-#define SMS_GPIO_OUTPUTSLEWRATE_FAST 0
-#define SMS_GPIO_OUTPUTSLEWRATE_SLOW 1
+#define SMS_GPIO_OUTPUTSLEWRATE_SLOW      0 /* 10xx */
+#define SMS_GPIO_OUTPUTSLEWRATE_FAST      1 /* 10xx */
+
+#define SMS_GPIO_OUTPUTSLEWRATE_0_45_V_NS 0 /* 11xx */
+#define SMS_GPIO_OUTPUTSLEWRATE_0_9_V_NS  1 /* 11xx */
+#define SMS_GPIO_OUTPUTSLEWRATE_1_7_V_NS  2 /* 11xx */
+#define SMS_GPIO_OUTPUTSLEWRATE_3_3_V_NS  3 /* 11xx */
 	u8 outputslewrate;
 
-#define SMS_GPIO_OUTPUTDRIVING_4mA  0
-#define SMS_GPIO_OUTPUTDRIVING_8mA  1
-#define SMS_GPIO_OUTPUTDRIVING_12mA 2
-#define SMS_GPIO_OUTPUTDRIVING_16mA 3
+#define SMS_GPIO_OUTPUTDRIVING_S_4mA   0 /* 10xx */
+#define SMS_GPIO_OUTPUTDRIVING_S_8mA   1 /* 10xx */
+#define SMS_GPIO_OUTPUTDRIVING_S_12mA  2 /* 10xx */
+#define SMS_GPIO_OUTPUTDRIVING_S_16mA  3 /* 10xx */
+
+#define SMS_GPIO_OUTPUTDRIVING_1_5mA 0 /* 11xx */
+#define SMS_GPIO_OUTPUTDRIVING_2_8mA 1 /* 11xx */
+#define SMS_GPIO_OUTPUTDRIVING_4mA   2 /* 11xx */
+#define SMS_GPIO_OUTPUTDRIVING_7mA   3 /* 11xx */
+#define SMS_GPIO_OUTPUTDRIVING_10mA  4 /* 11xx */
+#define SMS_GPIO_OUTPUTDRIVING_11mA  5 /* 11xx */
+#define SMS_GPIO_OUTPUTDRIVING_14mA  6 /* 11xx */
+#define SMS_GPIO_OUTPUTDRIVING_16mA  7 /* 11xx */
 	u8 outputdriving;
 };
 
@@ -581,9 +595,10 @@ struct smscore_buffer_t *smscore_getbuffer(struct smscore_device_t *coredev);
 extern void smscore_putbuffer(struct smscore_device_t *coredev,
 			      struct smscore_buffer_t *cb);
 
-int smscore_configure_gpio(struct smscore_device_t *coredev, u32 pin,
-			   struct smscore_gpio_config *pinconfig);
-int smscore_set_gpio(struct smscore_device_t *coredev, u32 pin, int level);
+int smscore_gpio_configure(struct smscore_device_t *coredev, u8 pin,
+			   struct smscore_gpio_config *gpioconfig, int wait);
+int smscore_gpio_set_level(struct smscore_device_t *coredev,
+			   u8 pin, u8 level, int wait);
 
 void smscore_set_board_id(struct smscore_device_t *core, int id);
 int smscore_get_board_id(struct smscore_device_t *core);

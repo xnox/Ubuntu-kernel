@@ -93,6 +93,10 @@ struct smscore_device_t {
 
 	struct completion version_ex_done, data_download_done, trigger_done;
 	struct completion init_device_done, reload_start_done, resume_done;
+	struct completion gpio_configuration_done, gpio_set_level_done;
+	struct completion gpio_get_level_done;
+
+	int gpio_get_res;
 
 	int board_id;
 	int led_state;
@@ -377,6 +381,9 @@ int smscore_register_device(struct smsdevice_params_t *params,
 	init_completion(&dev->init_device_done);
 	init_completion(&dev->reload_start_done);
 	init_completion(&dev->resume_done);
+	init_completion(&dev->gpio_configuration_done);
+	init_completion(&dev->gpio_set_level_done);
+	init_completion(&dev->gpio_get_level_done);
 
 	/* alloc common buffer */
 	dev->common_buffer_size = params->buffer_size * params->num_buffers;
@@ -996,6 +1003,23 @@ void smscore_onresponse(struct smscore_device_t *coredev,
 		case MSG_SMS_SLEEP_RESUME_COMP_IND:
 			complete(&coredev->resume_done);
 			break;
+		case MSG_SMS_GPIO_CONFIG_EX_RES:
+			sms_debug("MSG_SMS_GPIO_CONFIG_EX_RES");
+			complete(&coredev->gpio_configuration_done);
+			break;
+		case MSG_SMS_GPIO_SET_LEVEL_RES:
+			sms_debug("MSG_SMS_GPIO_SET_LEVEL_RES");
+			complete(&coredev->gpio_set_level_done);
+			break;
+		case MSG_SMS_GPIO_GET_LEVEL_RES:
+		{
+			u32 *msgdata = (u32 *) phdr;
+			coredev->gpio_get_res = msgdata[1];
+			sms_debug("MSG_SMS_GPIO_GET_LEVEL_RES gpio level %d",
+				  coredev->gpio_get_res);
+			complete(&coredev->gpio_get_level_done);
+			break;
+		}
 		default:
 #if 0
 			sms_info("no client (%p) or error (%d), "
@@ -1251,61 +1275,133 @@ static int smscore_map_common_buffer(struct smscore_device_t *coredev,
 }
 #endif
 
-int smscore_configure_gpio(struct smscore_device_t *coredev, u32 pin,
-			   struct smscore_gpio_config *pinconfig)
+static int get_gpio_pin_params(u32 pin, u32 *translatedpin,
+			       u32 *groupnum, u32 *groupcfg)
 {
+	*groupcfg = 1;
+
+	if (pin >= 0 && pin <= 1)	{
+		*translatedpin = 0;
+		*groupnum = 9;
+		*groupcfg = 2;
+	} else if (pin >= 2 && pin <= 6) {
+		*translatedpin = 2;
+		*groupnum = 0;
+		*groupcfg = 2;
+	} else if (pin >= 7 && pin <= 11) {
+		*translatedpin = 7;
+		*groupnum = 1;
+	} else if (pin >= 12 && pin <= 15) {
+		*translatedpin = 12;
+		*groupnum = 2;
+		*groupcfg = 3;
+	} else if (pin == 16) {
+		*translatedpin = 16;
+		*groupnum = 23;
+	} else if (pin >= 17 && pin <= 24) {
+		*translatedpin = 17;
+		*groupnum = 3;
+	} else if (pin == 25) {
+		*translatedpin = 25;
+		*groupnum = 6;
+	} else if (pin >= 26 && pin <= 28) {
+		*translatedpin = 26;
+		*groupnum = 4;
+	} else if (pin == 29) {
+		*translatedpin = 29;
+		*groupnum = 5;
+		*groupcfg = 2;
+	} else if (pin == 30) {
+		*translatedpin = 30;
+		*groupnum = 8;
+	} else if (pin == 31) {
+		*translatedpin = 31;
+		*groupnum = 17;
+	} else
+		return -1;
+
+	*groupcfg <<= 24;
+
+	return 0;
+}
+
+int smscore_gpio_configure(struct smscore_device_t *coredev, u8 pin,
+			   struct smscore_gpio_config *gpioconfig, int wait)
+{
+	int rc;
+
 	struct {
 		struct SmsMsgHdr_ST hdr;
 		u32 data[6];
 	} msg;
 
-	if (coredev->device_flags & SMS_DEVICE_FAMILY2) {
-		msg.hdr.msgSrcId = DVBT_BDA_CONTROL_MSG_ID;
-		msg.hdr.msgDstId = HIF_TASK;
-		msg.hdr.msgFlags = 0;
-		msg.hdr.msgType  = MSG_SMS_GPIO_CONFIG_EX_REQ;
-		msg.hdr.msgLength = sizeof(msg);
 
-		msg.data[0] = pin;
-		msg.data[1] = pinconfig->pullupdown;
-
-		/* Convert slew rate for Nova: Fast(0) = 3 / Slow(1) = 0; */
-		msg.data[2] = pinconfig->outputslewrate == 0 ? 3 : 0;
-
-		switch (pinconfig->outputdriving) {
-		case SMS_GPIO_OUTPUTDRIVING_16mA:
-			msg.data[3] = 7; /* Nova - 16mA */
-			break;
-		case SMS_GPIO_OUTPUTDRIVING_12mA:
-			msg.data[3] = 5; /* Nova - 11mA */
-			break;
-		case SMS_GPIO_OUTPUTDRIVING_8mA:
-			msg.data[3] = 3; /* Nova - 7mA */
-			break;
-		case SMS_GPIO_OUTPUTDRIVING_4mA:
-		default:
-			msg.data[3] = 2; /* Nova - 4mA */
-			break;
-		}
-
-		msg.data[4] = pinconfig->direction;
-		msg.data[5] = 0;
-	} else /* TODO: SMS_DEVICE_FAMILY1 */
+	if ((pin > MAX_GPIO_PIN_NUMBER) || (gpioconfig == NULL))
 		return -EINVAL;
 
-	return coredev->sendrequest_handler(coredev->context,
-					    &msg, sizeof(msg));
+	msg.hdr.msgSrcId = DVBT_BDA_CONTROL_MSG_ID;
+	msg.hdr.msgDstId = HIF_TASK;
+	msg.hdr.msgFlags = 0;
+	msg.hdr.msgLength = sizeof(msg);
+	msg.data[0] = pin;
+
+	if (!(coredev->device_flags & SMS_DEVICE_FAMILY2)) {
+		u32 translatedpinnum;
+		u32 groupnum;
+		u32 groupcfg;
+
+		msg.hdr.msgType = MSG_SMS_GPIO_CONFIG_REQ;
+		if (get_gpio_pin_params(pin, &translatedpinnum, &groupnum,
+					&groupcfg) != 0)
+			return -EINVAL;
+
+		msg.data[1] = translatedpinnum;
+		msg.data[2] = groupnum;
+		msg.data[3] = (gpioconfig->pullupdown) |
+			      (gpioconfig->inputcharacteristics << 2) |
+			      (gpioconfig->outputslewrate << 3) |
+			      (gpioconfig->outputdriving << 4);
+		msg.data[4] = gpioconfig->direction;
+		msg.data[5] = groupcfg;
+	} else {
+		msg.hdr.msgType = MSG_SMS_GPIO_CONFIG_EX_REQ;
+		msg.data[1] = gpioconfig->pullupdown;
+		msg.data[2] = gpioconfig->outputslewrate;
+		msg.data[3] = gpioconfig->outputdriving;
+		msg.data[4] = gpioconfig->direction;
+		msg.data[5] = 0;
+	}
+
+	if (wait) {
+		rc = smscore_sendrequest_and_wait(coredev, &msg, sizeof(msg),
+						  &coredev->gpio_configuration_done);
+		if (rc != 0) {
+			if (rc == -ETIME)
+				sms_err("smscore_gpio_configure timeout");
+			else
+				sms_err("smscore_gpio_configure error");
+		}
+	} else
+		rc = coredev->sendrequest_handler(coredev->context,
+						  &msg, sizeof(msg));
+
+	return rc;
 }
 
-int smscore_set_gpio(struct smscore_device_t *coredev, u32 pin, int level)
+int smscore_gpio_set_level(struct smscore_device_t *coredev,
+			   u8 pin, u8 level, int wait)
 {
+	int rc;
+
 	struct {
 		struct SmsMsgHdr_ST hdr;
 		u32 data[3];
 	} msg;
 
-	if (pin > MAX_GPIO_PIN_NUMBER)
+	if ((level > 1) || (pin > MAX_GPIO_PIN_NUMBER))
 		return -EINVAL;
+
+	sms_debug("pin %x level %x", pin, level);
 
 	msg.hdr.msgSrcId = DVBT_BDA_CONTROL_MSG_ID;
 	msg.hdr.msgDstId = HIF_TASK;
@@ -1314,11 +1410,66 @@ int smscore_set_gpio(struct smscore_device_t *coredev, u32 pin, int level)
 	msg.hdr.msgLength = sizeof(msg);
 
 	msg.data[0] = pin;
-	msg.data[1] = level ? 1 : 0;
+	msg.data[1] = level;
 	msg.data[2] = 0;
 
-	return coredev->sendrequest_handler(coredev->context,
-					    &msg, sizeof(msg));
+	/* Sent message to SMS */
+	if (wait) {
+		rc = smscore_sendrequest_and_wait(coredev, &msg, sizeof(msg),
+						  &coredev->gpio_set_level_done);
+		if (rc != 0) {
+			if (rc == -ETIME)
+				sms_err("smscore_gpio_set_level timeout");
+			else
+				sms_err("smscore_gpio_set_level error");
+		}
+	} else
+		rc = coredev->sendrequest_handler(coredev->context,
+						  &msg, sizeof(msg));
+
+	return rc;
+}
+
+int smscore_gpio_get_level(struct smscore_device_t *coredev,
+			   u8 pin, u8 *level)
+{
+	int rc;
+
+	struct {
+		struct SmsMsgHdr_ST hdr;
+		u32 data[2];
+	} msg;
+
+
+	if (pin > MAX_GPIO_PIN_NUMBER)
+		return -EINVAL;
+
+	msg.hdr.msgSrcId = DVBT_BDA_CONTROL_MSG_ID;
+	msg.hdr.msgDstId = HIF_TASK;
+	msg.hdr.msgFlags = 0;
+	msg.hdr.msgType = MSG_SMS_GPIO_GET_LEVEL_REQ;
+	msg.hdr.msgLength = sizeof(msg);
+
+	msg.data[0] = pin;
+	msg.data[1] = 0;
+
+	/* Sent message to SMS */
+	rc = smscore_sendrequest_and_wait(coredev, &msg, sizeof(msg),
+					  &coredev->gpio_get_level_done);
+
+	if (rc != 0) {
+		if (rc == -ETIME)
+			sms_err("smscore_gpio_get_level timeout");
+		else
+			sms_err("smscore_gpio_get_level error");
+	}
+
+	/* Its a race between other gpio_get_level() and the copy of the single
+	 * global 'coredev->gpio_get_res' to  the function's variable 'level'
+	 */
+	*level = coredev->gpio_get_res;
+
+	return rc;
 }
 
 static int __init smscore_module_init(void)
