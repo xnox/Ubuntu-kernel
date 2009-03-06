@@ -27,6 +27,10 @@
 #include "smscoreapi.h"
 #include "sms-cards.h"
 
+int sms_dbg;
+module_param_named(debug, sms_dbg, int, 0644);
+MODULE_PARM_DESC(debug, "set debug level (info=1, adv=2 (or-able))");
+
 #define USB1_BUFFER_SIZE		0x1000
 #define USB2_BUFFER_SIZE		0x4000
 
@@ -418,7 +422,7 @@ static int smsusb_suspend(struct usb_interface *intf, pm_message_t msg)
 {
 	struct smsusb_device_t *dev =
 		(struct smsusb_device_t *)usb_get_intfdata(intf);
-	printk(KERN_INFO "%s  Entering status %d.\n", __func__, msg.event);
+	printk(KERN_INFO "%s: Entering status %d.\n", __func__, msg.event);
 	smsusb_stop_streaming(dev);
 	return 0;
 }
@@ -430,7 +434,7 @@ static int smsusb_resume(struct usb_interface *intf)
 		(struct smsusb_device_t *)usb_get_intfdata(intf);
 	struct usb_device *udev = interface_to_usbdev(intf);
 
-	printk(KERN_INFO "%s  Entering.\n", __func__);
+	printk(KERN_INFO "%s: Entering.\n", __func__);
 	usb_clear_halt(udev, usb_rcvbulkpipe(udev, 0x81));
 	usb_clear_halt(udev, usb_rcvbulkpipe(udev, 0x02));
 
@@ -445,9 +449,8 @@ static int smsusb_resume(struct usb_interface *intf)
 				       intf->cur_altsetting->desc.
 				       bInterfaceNumber, 0);
 		if (rc < 0) {
-			printk(KERN_INFO
-			       "%s usb_set_interface failed, rc %d\n",
-			       __func__, rc);
+			printk(KERN_INFO "%s usb_set_interface failed, "
+			       "rc %d\n", __func__, rc);
 			return rc;
 		}
 	}
