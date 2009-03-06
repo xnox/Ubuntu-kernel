@@ -38,6 +38,10 @@ static int sms_dbg;
 module_param_named(debug, sms_dbg, int, 0644);
 MODULE_PARM_DESC(debug, "set debug level (info=1, adv=2 (or-able))");
 
+static int default_mode = 4;
+module_param(default_mode, int, 0644);
+MODULE_PARM_DESC(default_mode, "default firmware id (device mode)");
+
 struct smscore_device_notifyee_t {
 	struct list_head entry;
 	hotplug_t hotplug;
@@ -45,17 +49,17 @@ struct smscore_device_notifyee_t {
 
 struct smscore_idlist_t {
 	struct list_head entry;
-	int		id;
-	int		data_type;
+	int id;
+	int data_type;
 };
 
 struct smscore_client_t {
 	struct list_head entry;
 	struct smscore_device_t *coredev;
-	void			*context;
-	struct list_head 	idlist;
-	onresponse_t	onresponse_handler;
-	onremove_t		onremove_handler;
+	void *context;
+	struct list_head idlist;
+	onresponse_t onresponse_handler;
+	onremove_t onremove_handler;
 };
 
 struct smscore_device_t {
@@ -63,29 +67,29 @@ struct smscore_device_t {
 
 	struct list_head clients;
 	struct list_head subclients;
-	spinlock_t		clientslock;
+	spinlock_t clientslock;
 
 	struct list_head buffers;
-	spinlock_t		bufferslock;
-	int				num_buffers;
+	spinlock_t bufferslock;
+	int num_buffers;
 
-	void			*common_buffer;
-	int				common_buffer_size;
-	dma_addr_t		common_buffer_phys;
+	void *common_buffer;
+	int common_buffer_size;
+	dma_addr_t common_buffer_phys;
 
-	void			*context;
-	struct device	*device;
+	void *context;
+	struct device *device;
 
-	char			devpath[32];
-	unsigned long	device_flags;
+	char devpath[32];
+	unsigned long device_flags;
 
-	setmode_t		setmode_handler;
-	detectmode_t	detectmode_handler;
-	sendrequest_t	sendrequest_handler;
-	preload_t		preload_handler;
-	postload_t		postload_handler;
+	setmode_t setmode_handler;
+	detectmode_t detectmode_handler;
+	sendrequest_t sendrequest_handler;
+	preload_t preload_handler;
+	postload_t postload_handler;
 
-	int				mode, modes_supported;
+	int mode, modes_supported;
 
 	struct completion version_ex_done, data_download_done, trigger_done;
 	struct completion init_device_done, reload_start_done, resume_done;
@@ -94,16 +98,17 @@ struct smscore_device_t {
 	int led_state;
 };
 
-void smscore_set_board_id(struct smscore_device_t *core, int id)
-{
-	core->board_id = id;
-}
 
 int smscore_led_state(struct smscore_device_t *core, int led)
 {
 	if (led >= 0)
 		core->led_state = led;
 	return core->led_state;
+}
+
+void smscore_set_board_id(struct smscore_device_t *core, int id)
+{
+	core->board_id = id;
 }
 EXPORT_SYMBOL_GPL(smscore_set_board_id);
 
@@ -115,9 +120,9 @@ EXPORT_SYMBOL_GPL(smscore_get_board_id);
 
 struct smscore_registry_entry_t {
 	struct list_head entry;
-	char			devpath[32];
-	int				mode;
-	enum sms_device_type_st	type;
+	char devpath[32];
+	int mode;
+	enum sms_device_type_st type;
 };
 
 static struct list_head g_smscore_notifyees;
@@ -127,19 +132,13 @@ static struct mutex g_smscore_deviceslock;
 static struct list_head g_smscore_registry;
 static struct mutex g_smscore_registrylock;
 
-static int default_mode = 4;
-
-module_param(default_mode, int, 0644);
-MODULE_PARM_DESC(default_mode, "default firmware id (device mode)");
-
 static struct smscore_registry_entry_t *smscore_find_registry(char *devpath)
 {
 	struct smscore_registry_entry_t *entry;
 	struct list_head *next;
 
 	kmutex_lock(&g_smscore_registrylock);
-	for (next = g_smscore_registry.next;
-	     next != &g_smscore_registry;
+	for (next = g_smscore_registry.next; next != &g_smscore_registry;
 	     next = next->next) {
 		entry = (struct smscore_registry_entry_t *) next;
 		if (!strcmp(entry->devpath, devpath)) {
@@ -147,9 +146,7 @@ static struct smscore_registry_entry_t *smscore_find_registry(char *devpath)
 			return entry;
 		}
 	}
-	entry = (struct smscore_registry_entry_t *)
-			kmalloc(sizeof(struct smscore_registry_entry_t),
-				GFP_KERNEL);
+	entry = kmalloc(sizeof(struct smscore_registry_entry_t), GFP_KERNEL);
 	if (entry) {
 		entry->mode = default_mode;
 		strcpy(entry->devpath, devpath);
@@ -210,16 +207,13 @@ static void smscore_registry_settype(char *devpath,
 		sms_err("No registry found.");
 }
 
-
 static void list_add_locked(struct list_head *new, struct list_head *head,
 			    spinlock_t *lock)
 {
 	unsigned long flags;
 
 	spin_lock_irqsave(lock, flags);
-
 	list_add(new, head);
-
 	spin_unlock_irqrestore(lock, flags);
 }
 
@@ -244,8 +238,7 @@ int smscore_register_hotplug(hotplug_t hotplug)
 	if (notifyee) {
 		/* now notify callback about existing devices */
 		first = &g_smscore_devices;
-		for (next = first->next;
-		     next != first && !rc;
+		for (next = first->next; next != first && !rc;
 		     next = next->next) {
 			struct smscore_device_t *coredev =
 				(struct smscore_device_t *) next;
@@ -318,7 +311,7 @@ static int smscore_notify_callbacks(struct smscore_device_t *coredev,
 
 	for (next = first->next; next != first; next = next->next) {
 		rc = ((struct smscore_device_notifyee_t *) next)->
-				hotplug(coredev, device, arrival);
+			 hotplug(coredev, device, arrival);
 		if (rc < 0)
 			break;
 	}
@@ -326,9 +319,9 @@ static int smscore_notify_callbacks(struct smscore_device_t *coredev,
 	return rc;
 }
 
-static struct
-smscore_buffer_t *smscore_createbuffer(u8 *buffer, void *common_buffer,
-				       dma_addr_t common_buffer_phys)
+static
+struct smscore_buffer_t *smscore_createbuffer(u8 *buffer, void *common_buffer,
+					      dma_addr_t common_buffer_phys)
 {
 	struct smscore_buffer_t *cb =
 		kmalloc(sizeof(struct smscore_buffer_t), GFP_KERNEL);
@@ -479,8 +472,7 @@ static int smscore_sendrequest_and_wait(struct smscore_device_t *coredev,
 	}
 
 	return wait_for_completion_timeout(completion,
-					   msecs_to_jiffies(10000)) ?
-						0 : -ETIME;
+			msecs_to_jiffies(10000)) ? 0 : -ETIME;
 }
 
 static int smscore_load_firmware_family2(struct smscore_device_t *coredev,
@@ -553,7 +545,7 @@ static int smscore_load_firmware_family2(struct smscore_device_t *coredev,
 				     sizeof(u32) * 5);
 
 			TriggerMsg->msgData[0] = firmware->StartAddress;
-						/* Entry point */
+			/* Entry point */
 			TriggerMsg->msgData[1] = 5; /* Priority */
 			TriggerMsg->msgData[2] = 0x200; /* Stack size */
 			TriggerMsg->msgData[3] = 0; /* Parameter */
@@ -565,8 +557,8 @@ static int smscore_load_firmware_family2(struct smscore_device_t *coredev,
 					TriggerMsg->xMsgHeader.msgLength);
 				msleep(100);
 			} else
-				rc = smscore_sendrequest_and_wait(
-					coredev, TriggerMsg,
+				rc = smscore_sendrequest_and_wait(coredev,
+					TriggerMsg,
 					TriggerMsg->xMsgHeader.msgLength,
 					&coredev->trigger_done);
 		} else {
@@ -579,14 +571,12 @@ static int smscore_load_firmware_family2(struct smscore_device_t *coredev,
 		msleep(500);
 	}
 
-	sms_debug("rc=%d, postload=%p ", rc,
-		  coredev->postload_handler);
+	sms_debug("rc=%d, postload=%p ", rc, coredev->postload_handler);
 
 	kfree(msg);
 
 	return ((rc >= 0) && coredev->postload_handler) ?
-		coredev->postload_handler(coredev->context) :
-		rc;
+		coredev->postload_handler(coredev->context) : rc;
 }
 
 /**
@@ -718,9 +708,8 @@ static int smscore_detect_mode(struct smscore_device_t *coredev)
 
 		if (wait_for_completion_timeout(&coredev->resume_done,
 						msecs_to_jiffies(5000))) {
-			rc = smscore_sendrequest_and_wait(
-				coredev, msg, msg->msgLength,
-				&coredev->version_ex_done);
+			rc = smscore_sendrequest_and_wait(coredev, msg,
+				msg->msgLength, &coredev->version_ex_done);
 			if (rc < 0)
 				sms_err("MSG_SMS_GET_VERSION_EX_REQ failed "
 					"second try, rc %d", rc);
@@ -814,7 +803,7 @@ int smscore_set_device_mode(struct smscore_device_t *coredev, int mode)
 				/* try again with the default firmware */
 				fw_filename = smscore_fw_lkup[mode][type];
 				rc = smscore_load_firmware_from_file(coredev,
-							     fw_filename, NULL);
+						fw_filename, NULL);
 
 				if (rc < 0) {
 					sms_warn("error %d loading "
@@ -839,9 +828,9 @@ int smscore_set_device_mode(struct smscore_device_t *coredev, int mode)
 				     sizeof(struct SmsMsgData_ST));
 			msg->msgData[0] = mode;
 
-			rc = smscore_sendrequest_and_wait(
-				coredev, msg, msg->xMsgHeader.msgLength,
-				&coredev->init_device_done);
+			rc = smscore_sendrequest_and_wait(coredev, msg,
+					msg->xMsgHeader.msgLength,
+					&coredev->init_device_done);
 
 			kfree(buffer);
 		} else {
@@ -899,24 +888,21 @@ EXPORT_SYMBOL_GPL(smscore_get_device_mode);
  * @param id client id (SMS_DONT_CARE for all id)
  *
  */
-static struct
-smscore_client_t *smscore_find_client(struct smscore_device_t *coredev,
-				      int data_type, int id)
+static
+struct smscore_client_t *smscore_find_client(struct smscore_device_t *coredev,
+					     int data_type, int id)
 {
 	struct smscore_client_t *client = NULL;
 	struct list_head *next, *first;
 	unsigned long flags;
 	struct list_head *firstid, *nextid;
 
-
 	spin_lock_irqsave(&coredev->clientslock, flags);
 	first = &coredev->clients;
-	for (next = first->next;
-	     (next != first) && !client;
+	for (next = first->next; (next != first) && !client;
 	     next = next->next) {
-		firstid = &((struct smscore_client_t *)next)->idlist;
-		for (nextid = firstid->next;
-		     nextid != firstid;
+		firstid = &((struct smscore_client_t *) next)->idlist;
+		for (nextid = firstid->next; nextid != firstid;
 		     nextid = nextid->next) {
 			if ((((struct smscore_idlist_t *)nextid)->id == id) &&
 			    (((struct smscore_idlist_t *)nextid)->data_type == data_type ||
@@ -943,12 +929,11 @@ void smscore_onresponse(struct smscore_device_t *coredev,
 			struct smscore_buffer_t *cb)
 {
 	struct SmsMsgHdr_ST *phdr =
-		(struct SmsMsgHdr_ST *)((u8 *) cb->p + cb->offset);
+		(struct SmsMsgHdr_ST *) ((u8 *) cb->p + cb->offset);
 	struct smscore_client_t *client =
 		smscore_find_client(coredev, phdr->msgType, phdr->msgDstId);
 	int rc = -EBUSY;
 
-#if 1
 	static unsigned long last_sample_time; /* = 0; */
 	static int data_total; /* = 0; */
 	unsigned long time_now = jiffies_to_msecs(jiffies);
@@ -966,7 +951,7 @@ void smscore_onresponse(struct smscore_device_t *coredev,
 	}
 
 	data_total += cb->size;
-#endif
+
 	/* If no client registered for type & id,
 	 * check for control client where type is not registered */
 	if (client)
@@ -1158,7 +1143,6 @@ void smscore_unregister_client(struct smscore_client_t *client)
 	unsigned long flags;
 
 	spin_lock_irqsave(&coredev->clientslock, flags);
-
 
 	while (!list_empty(&client->idlist)) {
 		struct smscore_idlist_t *identry =
