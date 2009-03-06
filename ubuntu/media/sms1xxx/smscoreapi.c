@@ -1224,7 +1224,6 @@ int smsclient_sendrequest(struct smscore_client_t *client,
 }
 EXPORT_SYMBOL_GPL(smsclient_sendrequest);
 
-#if 0
 /**
  * return the size of large (common) buffer
  *
@@ -1245,8 +1244,8 @@ int smscore_get_common_buffer_size(struct smscore_device_t *coredev)
  *
  * @return 0 on success, <0 on error.
  */
-static int smscore_map_common_buffer(struct smscore_device_t *coredev,
-				     struct vm_area_struct *vma)
+int smscore_map_common_buffer(struct smscore_device_t *coredev,
+			      struct vm_area_struct *vma)
 {
 	unsigned long end = vma->vm_end,
 		      start = vma->vm_start,
@@ -1273,7 +1272,6 @@ static int smscore_map_common_buffer(struct smscore_device_t *coredev,
 
 	return 0;
 }
-#endif
 
 static int get_gpio_pin_params(u32 pin, u32 *translatedpin,
 			       u32 *groupnum, u32 *groupcfg)

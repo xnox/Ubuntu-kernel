@@ -1,8 +1,10 @@
 include $(src)/../../.config
 
-sms1xxx-objs := smscoreapi.o smsusb.o smsdvb.o sms-cards.o
+sms1xxx-objs := smscoreapi.o sms-cards.o smschar.o smsnet.o
 
 obj-$(CONFIG_DVB_SIANO_SMS1XXX) += sms1xxx.o
+obj-$(CONFIG_DVB_SIANO_SMS1XXX) += smsusb.o
+obj-$(CONFIG_DVB_SIANO_SMS1XXX) += smsdvb.o
 
 EXTRA_CFLAGS += -Idrivers/media/dvb/dvb-core
 
