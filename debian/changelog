@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook19) netbook-common; urgency=low
+
+  [Michael Frey]
+ 
+  * Re-sync with Michael Krufky git tree to fix build issue.
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 06 Mar 2009 15:59:25 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook18) netbook-common; urgency=low
 
   [Michael Krufky]
