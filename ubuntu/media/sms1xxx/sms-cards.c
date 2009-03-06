@@ -118,6 +118,8 @@ int sms_board_setup(struct smscore_device_t *coredev)
 	int board_id = smscore_get_board_id(coredev);
 	struct sms_board *board = sms_get_board(board_id);
 
+	sms_debug();
+
 	switch (board_id) {
 	case SMS1XXX_BOARD_HAUPPAUGE_WINDHAM:
 		/* turn off all LEDs */
@@ -141,6 +143,8 @@ int sms_board_power(struct smscore_device_t *coredev, int onoff)
 	int board_id = smscore_get_board_id(coredev);
 	struct sms_board *board = sms_get_board(board_id);
 
+	sms_debug(" %d", onoff);
+
 	switch (board_id) {
 	case SMS1XXX_BOARD_HAUPPAUGE_WINDHAM:
 		/* power LED */
@@ -163,6 +167,8 @@ int sms_board_led_feedback(struct smscore_device_t *coredev, int led)
 {
 	int board_id = smscore_get_board_id(coredev);
 	struct sms_board *board = sms_get_board(board_id);
+
+	sms_debug(" %d", led);
 
 	/* dont touch GPIO if LEDs are already set */
 	if (smscore_led_state(coredev, -1) == led)
