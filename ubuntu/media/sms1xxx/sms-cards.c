@@ -76,7 +76,7 @@ struct sms_board *sms_get_board(int id)
 
 	return &sms_boards[id];
 }
-EXPORT_SYMBOL(sms_get_board);
+EXPORT_SYMBOL_GPL(sms_get_board);
 
 static int sms_set_gpio(struct smscore_device_t *coredev, int pin, int enable)
 {
@@ -130,7 +130,7 @@ int sms_board_setup(struct smscore_device_t *coredev)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(sms_board_setup);
+EXPORT_SYMBOL_GPL(sms_board_setup);
 
 int sms_board_power(struct smscore_device_t *coredev, int onoff)
 {
@@ -153,7 +153,7 @@ int sms_board_power(struct smscore_device_t *coredev, int onoff)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(sms_board_power);
+EXPORT_SYMBOL_GPL(sms_board_power);
 
 int sms_board_led_feedback(struct smscore_device_t *coredev, int led)
 {
@@ -176,7 +176,7 @@ int sms_board_led_feedback(struct smscore_device_t *coredev, int led)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(sms_board_led_feedback);
+EXPORT_SYMBOL_GPL(sms_board_led_feedback);
 
 int sms_board_lna_control(struct smscore_device_t *coredev, int onoff)
 {
@@ -196,7 +196,7 @@ int sms_board_lna_control(struct smscore_device_t *coredev, int onoff)
 	}
 	return -EINVAL;
 }
-EXPORT_SYMBOL(sms_board_lna_control);
+EXPORT_SYMBOL_GPL(sms_board_lna_control);
 
 int sms_board_load_modules(int id)
 {
@@ -213,4 +213,4 @@ int sms_board_load_modules(int id)
 	}
 	return 0;
 }
-EXPORT_SYMBOL(sms_board_load_modules);
+EXPORT_SYMBOL_GPL(sms_board_load_modules);
