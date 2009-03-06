@@ -41,7 +41,7 @@ struct smsusb_device_t;
 
 struct smsusb_urb_t {
 	struct smscore_buffer_t *cb;
-	struct smsusb_device_t	*dev;
+	struct smsusb_device_t *dev;
 
 	struct urb urb;
 };
@@ -50,10 +50,10 @@ struct smsusb_device_t {
 	struct usb_device *udev;
 	struct smscore_device_t *coredev;
 
-	struct smsusb_urb_t 	surbs[MAX_URBS];
+	struct smsusb_urb_t surbs[MAX_URBS];
 
-	int		response_alignment;
-	int		buffer_size;
+	int response_alignment;
+	int buffer_size;
 };
 
 static int smsusb_submit_urb(struct smsusb_device_t *dev,
@@ -126,15 +126,11 @@ static int smsusb_submit_urb(struct smsusb_device_t *dev,
 		}
 	}
 
-	usb_fill_bulk_urb(
-		&surb->urb,
-		dev->udev,
-		usb_rcvbulkpipe(dev->udev, 0x81),
-		surb->cb->p,
-		dev->buffer_size,
-		smsusb_onresponse,
-		surb
-	);
+	usb_fill_bulk_urb(&surb->urb,
+			  dev->udev,
+			  usb_rcvbulkpipe(dev->udev, 0x81),
+			  surb->cb->p,
+			  dev->buffer_size, smsusb_onresponse, surb);
 	surb->urb.transfer_dma = surb->cb->phys;
 	surb->urb.transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
 
@@ -251,8 +247,10 @@ static void smsusb1_detectmode(void *context, int *mode)
 
 static int smsusb1_setmode(void *context, int mode)
 {
-	struct SmsMsgHdr_ST Msg = { MSG_SW_RELOAD_REQ, 0, HIF_TASK,
-			     sizeof(struct SmsMsgHdr_ST), 0 };
+	struct SmsMsgHdr_ST Msg = {
+		MSG_SW_RELOAD_REQ, 0, HIF_TASK,
+		sizeof(struct SmsMsgHdr_ST), 0
+	};
 
 	if (mode < DEVICE_MODE_DVBT || mode > DEVICE_MODE_DVBT_BDA) {
 		sms_err("invalid firmware id specified %d", mode);
@@ -378,8 +376,9 @@ static int smsusb_probe(struct usb_interface *intf,
 	rc = usb_clear_halt(udev, usb_rcvbulkpipe(udev, 0x02));
 
 	if (intf->num_altsetting > 0) {
-		rc = usb_set_interface(
-			udev, intf->cur_altsetting->desc.bInterfaceNumber, 0);
+		rc = usb_set_interface(udev,
+				       intf->cur_altsetting->desc.
+				       bInterfaceNumber, 0);
 		if (rc < 0) {
 			sms_err("usb_set_interface failed, rc %d", rc);
 			return rc;
@@ -387,7 +386,7 @@ static int smsusb_probe(struct usb_interface *intf,
 	}
 
 	sms_info("smsusb_probe %d",
-	       intf->cur_altsetting->desc.bInterfaceNumber);
+		 intf->cur_altsetting->desc.bInterfaceNumber);
 	for (i = 0; i < intf->cur_altsetting->desc.bNumEndpoints; i++)
 		sms_info("endpoint %d %02x %02x %d", i,
 		       intf->cur_altsetting->endpoint[i].desc.bEndpointAddress,
@@ -432,7 +431,7 @@ static int smsusb_resume(struct usb_interface *intf)
 {
 	int rc, i;
 	struct smsusb_device_t *dev =
-		(struct smsusb_device_t *)usb_get_intfdata(intf);
+		(struct smsusb_device_t *) usb_get_intfdata(intf);
 	struct usb_device *udev = interface_to_usbdev(intf);
 
 	printk(KERN_INFO "%s: Entering.\n", __func__);
