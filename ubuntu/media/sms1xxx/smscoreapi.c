@@ -3,7 +3,7 @@
  *
  *  This file contains implementation for the interface to sms core component
  *
- *  author: Anatoly Greenblat
+ *  author: Uri Shkolnik
  *
  *  Copyright (c), 2005-2008 Siano Mobile Silicon, Inc.
  *
@@ -732,7 +732,7 @@ static char *smscore_fw_lkup[][SMS_NUM_OF_DEVICE_TYPES] = {
 	/*DVBH*/
 	{"none", "dvb_nova_12mhz.inp", "dvb_nova_12mhz_b0.inp", "none"},
 	/*TDMB*/
-	{"none", "tdmb_nova_12mhz.inp", "none", "none"},
+	{"none", "tdmb_nova_12mhz.inp", "tdmb_nova_12mhz_b0.inp", "none"},
 	/*DABIP*/
 	{"none", "none", "none", "none"},
 	/*BDA*/
@@ -960,10 +960,6 @@ void smscore_onresponse(struct smscore_device_t *coredev,
 #endif
 	/* If no client registered for type & id,
 	 * check for control client where type is not registered */
-#if 0
-	if (!client)
-		client = smscore_find_client(coredev, 0, phdr->msgDstId);
-#endif
 	if (client)
 		rc = client->onresponse_handler(client->context, cb);
 
@@ -1337,12 +1333,67 @@ static int __init smscore_module_init(void)
 	INIT_LIST_HEAD(&g_smscore_registry);
 	kmutex_init(&g_smscore_registrylock);
 
-	/* USB Register */
-	rc = smsusb_register();
+#if 0 /* def SMS_CHAR_CLIENT */
+	/* Char interface Register */
+	rc = smschar_register();
+	if (rc) {
+		sms_err("Error registering char device client.\n");
+		goto smschar_error;
+	}
+#endif
 
+#if 0 /* def SMS_DVB_CLIENT */
 	/* DVB Register */
 	rc = smsdvb_register();
+	if (rc) {
+		sms_err("Error registering DVB client.\n");
+		goto smsdvb_error;
+	}
+#endif
 
+#if 0 /* def SMS_NET_CLIENT */
+	/* DVB Register */
+	rc = smsnet_register();
+	if (rc) {
+		sms_err("Error registering Network client.\n");
+		goto smsnet_error;
+	}
+#endif
+
+#if 0 /* def SMS_USB_BUS_DRV */
+	/* USB Register */
+	rc = smsusb_register();
+	if (rc) {
+		sms_err("Error registering USB bus driver.\n");
+		goto sms_bus_drv_error;
+	}
+#endif
+
+#if 0 /* def SMS_SPI_BUS_DRV */
+	/* USB Register */
+	rc = smsspi_register();
+	if (rc) {
+		sms_err("Error registering spi bus driver.\n");
+		goto sms_bus_drv_error;
+	}
+#endif
+
+	return rc;
+#if 0
+sms_bus_drv_error:
+#endif /* 0 */
+#if 0 /* def SMS_NET_CLIENT */
+	smsnet_unregister();
+smsnet_error:
+#endif
+#if 0 /* def SMS_DVB_CLIENT */
+	smsdvb_unregister();
+smsdvb_error:
+#endif
+#if 0 /* def SMS_CHAR_CLIENT */
+	smschar_unregister();
+smschar_error:
+#endif
 	sms_debug("rc %d", rc);
 
 	return rc;
@@ -1350,6 +1401,30 @@ static int __init smscore_module_init(void)
 
 static void __exit smscore_module_exit(void)
 {
+#if 0 /* def SMS_CHAR_CLIENT */
+	/* Char interface UnRegister */
+	smschar_unregister();
+#endif
+
+#if 0 /* def SMS_DVB_CLIENT */
+	/* DVB UnRegister */
+	smsdvb_unregister();
+#endif
+
+#if 0 /* def SMS_NET_CLIENT */
+	/* NET UnRegister */
+	smsnet_unregister();
+#endif
+
+#if 0 /* def SMS_USB_BUS_DRV */
+	/* Unregister USB */
+	smsusb_unregister();
+#endif
+
+#if 0 /* def SMS_SPI_BUS_DRV */
+	/* Unregister SPI */
+	smsspi_unregister();
+#endif
 
 	kmutex_lock(&g_smscore_deviceslock);
 	while (!list_empty(&g_smscore_notifyees)) {
@@ -1373,18 +1448,34 @@ static void __exit smscore_module_exit(void)
 	}
 	kmutex_unlock(&g_smscore_registrylock);
 
-	/* DVB UnRegister */
-	smsdvb_unregister();
-
-	/* Unregister USB */
-	smsusb_unregister();
+//#ifdef DVB_CORE
+//	smsdvb_unregister();
+//#endif
 
 	sms_debug("");
 }
 
+EXPORT_SYMBOL(smscore_onresponse);
+EXPORT_SYMBOL(sms_get_board);
+EXPORT_SYMBOL(sms_debug);
+EXPORT_SYMBOL(smscore_putbuffer);
+EXPORT_SYMBOL(smscore_registry_getmode);
+EXPORT_SYMBOL(smscore_register_device);
+EXPORT_SYMBOL(smscore_set_board_id);
+EXPORT_SYMBOL(smscore_start_device);
+EXPORT_SYMBOL(smscore_unregister_device);
+EXPORT_SYMBOL(smscore_getbuffer);
+EXPORT_SYMBOL(smscore_get_device_mode);
+EXPORT_SYMBOL(smscore_register_client);
+EXPORT_SYMBOL(smscore_unregister_hotplug);
+EXPORT_SYMBOL(smsclient_sendrequest);
+EXPORT_SYMBOL(smscore_unregister_client);
+EXPORT_SYMBOL(smscore_get_board_id);
+EXPORT_SYMBOL(smscore_register_hotplug);
+
 module_init(smscore_module_init);
 module_exit(smscore_module_exit);
 
-MODULE_DESCRIPTION("Driver for the Siano SMS1XXX USB dongle");
-MODULE_AUTHOR("Siano Mobile Silicon,,, (doronc@siano-ms.com)");
+MODULE_DESCRIPTION("Siano MDTV Core module");
+MODULE_AUTHOR("Siano Mobile Silicon, Inc. (uris@siano-ms.com)");
 MODULE_LICENSE("GPL");
