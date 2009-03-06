@@ -1,3 +1,30 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook18) netbook-common; urgency=low
+
+  [Michael Krufky]
+
+  * sms1xxx: move definition of struct smsdvb_client_t into smsdvb.c
+  * sms1xxx: move smsusb_id_table into smsusb.c
+  * sms1xxx: fix checkpatch.pl violations introduced by previous changeset
+  * sms1xxx: load smsdvb module automatically based on device id
+  * siano: convert EXPORT_SYMBOL to EXPORT_SYMBOL_GPL
+  * siano: prevent duplicate variable declaration
+  * sms-cards: add some more debug
+  * smsusb: add autodetection for devices based on the SMS1180 chipset
+  * sms1xxx: ensure that smsdvb is loaded for DVB-T devices
+
+  [Uri Shkolnik]
+
+  * sms1xxx: add USB suspend and hibernation support
+  * sms1xxx: restore smsusb_driver.name to smsusb
+  * sms1xxx: import changes from Siano
+  * smsusb: whitespace cleanups
+  * smscore: whitespace cleanups
+  * smsdvb: whitespace cleanups
+  * sms1xxx: update GPIO functionality to support all devices
+  * sms1xxx: add smsnet and smschar modules (siano sub-system)
+
+ -- Michael Frey <michael.frey@canonical.com>  Fri, 06 Mar 2009 12:59:53 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook17) netbook-common; urgency=low
 
   [Michael Frey]
