@@ -608,6 +608,14 @@ int smscore_led_state(struct smscore_device_t *core, int led);
 
 /* ------------------------------------------------------------------------ */
 
+int smschar_register(void);
+int smsnet_register(void);
+
+void smsnet_unregister(void);
+void smschar_unregister(void);
+
+/* ------------------------------------------------------------------------ */
+
 #define DBG_INFO 1
 #define DBG_ADV  2
 

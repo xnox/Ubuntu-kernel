@@ -1481,7 +1481,7 @@ static int __init smscore_module_init(void)
 	INIT_LIST_HEAD(&g_smscore_registry);
 	kmutex_init(&g_smscore_registrylock);
 
-#if 0 /* def SMS_CHAR_CLIENT */
+#if 1 /* def SMS_CHAR_CLIENT */
 	/* Char interface Register */
 	rc = smschar_register();
 	if (rc) {
@@ -1499,7 +1499,7 @@ static int __init smscore_module_init(void)
 	}
 #endif
 
-#if 0 /* def SMS_NET_CLIENT */
+#if 1 /* def SMS_NET_CLIENT */
 	/* DVB Register */
 	rc = smsnet_register();
 	if (rc) {
@@ -1530,7 +1530,7 @@ static int __init smscore_module_init(void)
 #if 0
 sms_bus_drv_error:
 #endif /* 0 */
-#if 0 /* def SMS_NET_CLIENT */
+#if 1 /* def SMS_NET_CLIENT */
 	smsnet_unregister();
 smsnet_error:
 #endif
@@ -1538,7 +1538,7 @@ smsnet_error:
 	smsdvb_unregister();
 smsdvb_error:
 #endif
-#if 0 /* def SMS_CHAR_CLIENT */
+#if 1 /* def SMS_CHAR_CLIENT */
 	smschar_unregister();
 smschar_error:
 #endif
@@ -1549,7 +1549,7 @@ smschar_error:
 
 static void __exit smscore_module_exit(void)
 {
-#if 0 /* def SMS_CHAR_CLIENT */
+#if 1 /* def SMS_CHAR_CLIENT */
 	/* Char interface UnRegister */
 	smschar_unregister();
 #endif
@@ -1559,7 +1559,7 @@ static void __exit smscore_module_exit(void)
 	smsdvb_unregister();
 #endif
 
-#if 0 /* def SMS_NET_CLIENT */
+#if 1 /* def SMS_NET_CLIENT */
 	/* NET UnRegister */
 	smsnet_unregister();
 #endif
