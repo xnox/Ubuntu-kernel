@@ -1,0 +1,92 @@
+#!/usr/bin/python
+
+import subprocess
+import os
+import time
+
+tree_base = "/srv/kernel.ubuntu.com/git/ubuntu"
+
+
+def get_tags_list(series):
+	versions = dict()
+	p = subprocess.Popen(["git", "tag", "-l"], cwd="%s/ubuntu-%s.git" % \
+		(tree_base, series), stdout=subprocess.PIPE)
+	for tag in p.communicate()[0].splitlines():
+		if not tag.startswith('Ubuntu-'):
+			continue
+
+		version = tag.replace('Ubuntu-', '')
+		version = version.replace('.orig', '')
+	
+		versions[version] = tag
+
+	return versions
+
+
+def get_tag_version(series, tag):
+	p = subprocess.Popen(["git", "cat-file", "-p",
+		"%s:Makefile" % (tag)],
+		cwd="%s/ubuntu-%s.git" % (tree_base, series),
+		stdout=subprocess.PIPE)
+
+	version = None
+	patchlevel = None
+	sublevel = None
+	extraversion = None
+	for line in p.communicate()[0].splitlines():
+            if line.startswith('VERSION'):
+                version = line[line.index('=') + 1:].strip()
+            if line.startswith('PATCHLEVEL'):
+                patchlevel = line[line.index('=') + 1:].strip()
+            if line.startswith('SUBLEVEL'):
+                sublevel = line[line.index('=') + 1:].strip()
+            if line.startswith('EXTRAVERSION'):
+                extraversion = line[line.index('=') + 1:].strip()
+
+	overall = '%s.%s.%s' % (version, patchlevel, sublevel)
+	if extraversion:
+		overall += extraversion
+
+	return overall
+
+print "<html>"
+print "<h1>Ubuntu to Mainline kernel version mapping</h1>"
+
+print "Ubuntu kernel to Mainline kernel version mappings as generated at "
+print time.strftime("%H:%M UTC", time.gmtime())
+
+
+for series_name in [
+		"Karmic Koala",
+		"Jaunty Jackelope",
+		"Intrepid Ibex",
+		"Hardy Heron",
+		"Gutsy Gibbon",
+		"Feisty Fawn",
+		"Dapper Drake"
+	]:
+	series = series_name.split(' ')[0].lower()
+	
+	if not os.path.isdir("%s/ubuntu-%s.git" % (tree_base, series)):
+		continue
+
+	version_map = dict()
+	tags = get_tags_list(series)
+	for version in tags:
+		version_map[version] = get_tag_version(series, tags[version])
+
+	# Sort the list by upload number.
+	deco = [ (v.split('.')[-1].zfill(4), v) for v in tags.keys() ]
+	deco.sort(reverse = True)
+	version_order = [ v for _, v in deco ]
+
+	print "<h2>" + series_name + "</h2>"
+	print "<table border=1>"
+	print "<tr><th>Ubuntu Kernel Version<th>Mainline Kernel Version"
+
+	for version in version_order:
+		print "<tr><td>%s<td>%s" % (version, version_map[version])
+
+	print "</table>"
+
+print "</html>"
