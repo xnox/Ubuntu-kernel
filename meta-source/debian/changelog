@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.28.4.1) jaunty; urgency=low
+
+  * Bump ABI
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Tue, 10 Mar 2009 10:21:07 +1100
+
 linux-ports-meta (2.6.28.2.1) jaunty; urgency=low
 
   * Bump ABI
