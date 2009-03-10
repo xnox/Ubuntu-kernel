@@ -76,7 +76,8 @@ for series_name in [
 		version_map[version] = get_tag_version(series, tags[version])
 
 	# Sort the list by upload number.
-	deco = [ (v.split('.')[-1].zfill(4), v) for v in tags.keys() ]
+	deco = [ (v.split('-')[0] + "." + v.split('.')[-1].zfill(4), v)
+			for v in tags.keys() ]
 	deco.sort(reverse = True)
 	version_order = [ v for _, v in deco ]
 
