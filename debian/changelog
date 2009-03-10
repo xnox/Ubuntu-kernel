@@ -1,3 +1,12 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook20) netbook-common; urgency=low
+
+  [Michael Frey]
+
+  * Added functions to save / restore realtek codec pins on suspend / resume
+  * Fix for (LP# 250627)
+
+ -- Michael Frey <michael.frey@canonical.com>  Tue, 10 Mar 2009 10:12:22 -0400
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook19) netbook-common; urgency=low
 
   [Michael Frey]
