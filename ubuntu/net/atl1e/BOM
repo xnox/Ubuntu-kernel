@@ -1,0 +1,10 @@
+Bill of Materials
+
+This driver comes from http://partner.atheros.com/Download.aspx?id=60
+
+I modified the code slightly to build without the ethtool support (in a similar way
+that the atl2 driver builds with this disabled) since the call to
+__dev_get_by_name() causes build errors for hardy.
+
+Colin King
+March 2, 2009
