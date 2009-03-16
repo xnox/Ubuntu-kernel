@@ -17,7 +17,7 @@
 #ifndef MAC_H
 #define MAC_H
 
-#define RXSTATUS_RATE(ah, ads) (AR_SREV_5416_V20_OR_LATER(ah) ?		\
+#define RXSTATUS_RATE(ah, ads) (AR_SREV_5416_20_OR_LATER(ah) ?		\
 				MS(ads->ds_rxstatus0, AR_RxRate) :	\
 				(ads->ds_rxstatus3 >> 2) & 0xFF)
 
@@ -570,6 +570,7 @@ enum ath9k_rx_filter {
 	ATH9K_RX_FILTER_MYBEACON = 0x00000200,
 	ATH9K_RX_FILTER_PSPOLL = 0x00004000,
 	ATH9K_RX_FILTER_PHYRADAR = 0x00002000,
+	ATH9K_RX_FILTER_MCAST_BCAST_ALL = 0x00008000,
 };
 
 #define ATH9K_RATESERIES_RTS_CTS  0x0001
