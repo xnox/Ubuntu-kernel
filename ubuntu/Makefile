@@ -48,6 +48,7 @@ obj-$(CONFIG_USB_APPLEIR)	+= mactel/appleir.o
 obj-m				+= media/
 
 obj-$(CONFIG_NET_ATL2)		+= net/atl2/
+obj-$(CONFIG_NET_ATL1E)		+= net/atl1e/
 
 obj-$(CONFIG_NET_ACX)		+= wireless/acx/
 obj-$(CONFIG_IWLWIFI)		+= wireless/iwlwifi/
