@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook21) netbook-common; urgency=low
+
+  [Colin King]
+
+  * Add support for Atheros AR8121/AR8113/AR8114/AR8131/AR8132 ethernet
+
+ -- Tony Espy <espy@canonical.com>  Mon, 16 Mar 2009 16:49:46 -0400
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook20) netbook-common; urgency=low
 
   [Michael Frey]
