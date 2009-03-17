@@ -789,6 +789,11 @@ u32 query_amp_caps(struct hda_codec *codec, hda_nid_t nid, int direction)
 						    direction == HDA_OUTPUT ?
 						    AC_PAR_AMP_OUT_CAP :
 						    AC_PAR_AMP_IN_CAP);
+		if (codec->subsystem_id == 0x103c361a
+				&& direction == HDA_OUTPUT) {
+			info->amp_caps -= 21 << AC_AMPCAP_NUM_STEPS_SHIFT; /* -5.25dB */
+			info->amp_caps -= 21; /* 0dB point -5.25dB */
+		}
 		if (info->amp_caps)
 			info->head.val |= INFO_AMP_CAPS;
 	}
