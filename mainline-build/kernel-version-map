@@ -88,7 +88,7 @@ for series_name in [
 	for version in tags:
 		version_map[version] = get_tag_version(series, tags[version])
 		if version not in version_pocket.keys():
-			version_pocket[version] = ""
+			version_pocket[version] = "&nbsp;"
 
 	# Sort the list by upload number.
 	deco = [ (v.split('-')[0] + "." + v.split('.')[-1].zfill(4), v)
