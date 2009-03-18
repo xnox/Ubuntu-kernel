@@ -12,7 +12,7 @@ def get_tags_list(series):
 	p = subprocess.Popen(["git", "tag", "-l"], cwd="%s/ubuntu-%s.git" % \
 		(tree_base, series), stdout=subprocess.PIPE)
 	for tag in p.communicate()[0].splitlines():
-		if not tag.startswith('Ubuntu-'):
+		if not tag.startswith('Ubuntu-2'):
 			continue
 
 		version = tag.replace('Ubuntu-', '')
