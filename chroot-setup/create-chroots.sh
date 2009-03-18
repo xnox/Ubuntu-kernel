@@ -5,7 +5,7 @@ if [ "`id -u`" != "0" ] || [ -n "$FAKEROOTKEY" ]; then
 	exit 1
 fi
 
-distributions="dapper feisty gutsy hardy intrepid"
+distributions="dapper hardy intrepid jaunty"
 other_pkgs="$($(dirname $0)/list-other-pkgs -d, $dist $arch)"
 arches="i386 amd64"
 
