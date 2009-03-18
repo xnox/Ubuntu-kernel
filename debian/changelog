@@ -1,3 +1,12 @@
+linux-backports-modules-2.6.28 (2.6.28-11.11) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Update compat-wireless/wireless-testing to master-2009-03-17
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Wed, 18 Mar 2009 06:46:46 -0600
+
 linux-backports-modules-2.6.28 (2.6.28-10.10) jaunty; urgency=low
 
   [Tim Gardner]
