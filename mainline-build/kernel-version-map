@@ -49,6 +49,18 @@ def get_tag_version(series, tag):
 
 	return overall
 
+def get_pocket():
+	pockets = dict()
+	p = subprocess.Popen(["rmadison", "--architecture=source", "linux"],
+		stdout=subprocess.PIPE)
+	for line in p.communicate()[0].splitlines():
+		items = line.split("|")
+		version = items[1].strip()
+		pocket = items[2].strip()
+		pockets[version] = pocket
+
+	return pockets
+
 print "<html>"
 print "<h1>Ubuntu to Mainline kernel version mapping</h1>"
 
@@ -71,9 +83,12 @@ for series_name in [
 		continue
 
 	version_map = dict()
+	version_pocket = get_pocket()
 	tags = get_tags_list(series)
 	for version in tags:
 		version_map[version] = get_tag_version(series, tags[version])
+		if version not in version_pocket.keys():
+			version_pocket[version] = ""
 
 	# Sort the list by upload number.
 	deco = [ (v.split('-')[0] + "." + v.split('.')[-1].zfill(4), v)
@@ -83,10 +98,12 @@ for series_name in [
 
 	print "<h2>" + series_name + "</h2>"
 	print "<table border=1>"
-	print "<tr><th>Ubuntu Kernel Version<th>Mainline Kernel Version"
+	print "<tr><th>Ubuntu Kernel Version"
+	print "<th>Mainline Kernel Version"
+	print "<th>Ubuntu Kernel Pocket"
 
 	for version in version_order:
-		print "<tr><td>%s<td>%s" % (version, version_map[version])
+		print "<tr><td>%s<td>%s<td>%s" % (version, version_map[version], version_pocket[version])
 
 	print "</table>"
 
