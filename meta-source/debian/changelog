@@ -1,3 +1,10 @@
+linux-ports-meta (2.6.28.5.1) jaunty; urgency=low
+
+  * bump ABI
+  * Remove Mckinley flavour for ia64, we don't build such a kernel any more.
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Thu, 19 Mar 2009 03:14:16 +1100
+
 linux-ports-meta (2.6.28.4.3) jaunty; urgency=low
 
   * Fix FTBS caused by incorrect depends section

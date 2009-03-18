@@ -27,34 +27,3 @@ Depends: linux-headers-${kernel-abi-version}-itanium
 Description: Linux kernel headers on Itanium
  This package will always depend on the latest kernel headers available
  for Itanium.
-
-#
-# Mckinley
-#
-Package: linux-mckinley
-Architecture: ia64
-Section: metapackages
-Priority: optional
-Depends: linux-image-mckinley (= ${binary:Version})
-Description: Complete Linux kernel on Itanium II.
- This package will always depend on the latest complete Linux kernel available
- for Itanium II (also known as McKinley).
-
-Package: linux-image-mckinley
-Architecture: ia64
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-mckinley, linux-firmware
-Description: Linux kernel image on Itanium II
- This package will always depend on the latest kernel image available
- for Itanium II (also known as McKinley).
-
-Package: linux-headers-mckinley
-Architecture: ia64
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-mckinley
-Description: Linux kernel headers on Itanium II
- This package will always depend on the latest kernel headers available
- for Itanium II (also known as McKinley).
-
