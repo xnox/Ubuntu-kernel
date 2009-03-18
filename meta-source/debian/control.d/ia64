@@ -14,7 +14,7 @@ Package: linux-image-itanium
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-itanium, linux-firmware
+Depends: linux-image-${kernel-abi-version}-generic, linux-firmware
 Description: Linux kernel image on Itanium
  This package will always depend on the latest kernel image available
  for Itanium.
@@ -23,7 +23,7 @@ Package: linux-headers-itanium
 Architecture: ia64
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-itanium
+Depends: linux-headers-${kernel-abi-version}-generic
 Description: Linux kernel headers on Itanium
  This package will always depend on the latest kernel headers available
  for Itanium.

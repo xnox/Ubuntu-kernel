@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.28.5.2) jaunty; urgency=low
+
+  * fix up broken ia64 metapackages.
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Thu, 19 Mar 2009 07:52:56 +1100
+
 linux-ports-meta (2.6.28.5.1) jaunty; urgency=low
 
   * bump ABI
