@@ -14,7 +14,7 @@ Package: linux-image-386
 Architecture: i386
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-386
+Depends: linux-image-${kernel-abi-version}-386, linux-firmware
 Description: Linux kernel image on 386.
  This package will always depend on the latest kernel image available
  for 386.

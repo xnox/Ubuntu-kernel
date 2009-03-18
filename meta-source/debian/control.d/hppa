@@ -14,7 +14,7 @@ Package: linux-image-hppa32
 Architecture: hppa
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-hppa32
+Depends: linux-image-${kernel-abi-version}-hppa32, linux-firmware
 Description: Linux kernel image on 32-bit PA-RISC
  This package will always depend on the latest kernel image available
  for 32-bit PA-RISC.
@@ -44,7 +44,7 @@ Package: linux-image-hppa64
 Architecture: hppa
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-hppa64
+Depends: linux-image-${kernel-abi-version}-hppa64, linux-firmware
 Description: Linux kernel image on 64-bit PA-RISC
  This package will always depend on the latest kernel image available
  for 64-bit PA-RISC.

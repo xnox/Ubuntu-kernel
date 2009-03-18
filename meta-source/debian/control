@@ -57,7 +57,7 @@ Package: linux-image-386
 Architecture: i386
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-386
+Depends: linux-image-${kernel-abi-version}-386, linux-firmware
 Description: Linux kernel image on 386.
  This package will always depend on the latest kernel image available
  for 386.
@@ -87,7 +87,7 @@ Package: linux-image-hppa32
 Architecture: hppa
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-hppa32
+Depends: linux-image-${kernel-abi-version}-hppa32, linux-firmware
 Description: Linux kernel image on 32-bit PA-RISC
  This package will always depend on the latest kernel image available
  for 32-bit PA-RISC.
@@ -117,7 +117,7 @@ Package: linux-image-hppa64
 Architecture: hppa
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-hppa64
+Depends: linux-image-${kernel-abi-version}-hppa64, linux-firmware
 Description: Linux kernel image on 64-bit PA-RISC
  This package will always depend on the latest kernel image available
  for 64-bit PA-RISC.
@@ -148,7 +148,7 @@ Package: linux-image-itanium
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-itanium
+Depends: linux-image-${kernel-abi-version}-itanium, linux-firmware
 Description: Linux kernel image on Itanium
  This package will always depend on the latest kernel image available
  for Itanium.
@@ -178,7 +178,7 @@ Package: linux-image-mckinley
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-mckinley
+Depends: linux-image-${kernel-abi-version}-mckinley, linux-firmware
 Description: Linux kernel image on Itanium II
  This package will always depend on the latest kernel image available
  for Itanium II (also known as McKinley).
@@ -210,7 +210,7 @@ Package: linux-image-powerpc64-smp
 Architecture: powerpc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-powerpc64-smp
+Depends: linux-image-${kernel-abi-version}-powerpc64-smp, linux-firmware
 Description: Linux kernel image on PowerPC64 SMP.
  This package will always depend on the latest kernel image available
  for PowerPC64 with SMP support.
@@ -242,7 +242,7 @@ Package: linux-image-powerpc
 Architecture: powerpc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-powerpc
+Depends: linux-image-${kernel-abi-version}-powerpc, linux-firmware
 Description: Linux kernel image on PowerPC
  This package will always depend on the latest kernel image available
  for PowerPC support.
@@ -273,7 +273,7 @@ Package: linux-image-powerpc-smp
 Architecture: powerpc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-powerpc-smp
+Depends: linux-image-${kernel-abi-version}-powerpc-smp, linux-firmware
 Description: Linux kernel image on PowerPC SMP.
  This package will always depend on the latest kernel image available
  for PowerPC with SMP support.
@@ -306,7 +306,7 @@ Package: linux-image-sparc64
 Architecture: sparc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-sparc64
+Depends: linux-image-${kernel-abi-version}-sparc64, linux-firmware
 Description: Linux kernel image on UltraSparc
  This package will always depend on the latest kernel image available
  for UltraSparc.
@@ -336,7 +336,7 @@ Package: linux-image-sparc64-smp
 Architecture: sparc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-sparc64-smp, linux-ubuntu-modules-${kernel-abi-version}-sparc64-smp
+Depends: linux-image-${kernel-abi-version}-sparc64-smp, linux-firmware
 Description: Linux kernel image on UltraSparc (SMP)
  This package will always depend on the latest kernel image available
  for UltraSparc (SMP).

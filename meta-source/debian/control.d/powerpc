@@ -15,7 +15,7 @@ Package: linux-image-powerpc64-smp
 Architecture: powerpc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-powerpc64-smp
+Depends: linux-image-${kernel-abi-version}-powerpc64-smp, linux-firmware
 Description: Linux kernel image on PowerPC64 SMP.
  This package will always depend on the latest kernel image available
  for PowerPC64 with SMP support.
@@ -47,7 +47,7 @@ Package: linux-image-powerpc
 Architecture: powerpc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-powerpc
+Depends: linux-image-${kernel-abi-version}-powerpc, linux-firmware
 Description: Linux kernel image on PowerPC
  This package will always depend on the latest kernel image available
  for PowerPC support.
@@ -78,7 +78,7 @@ Package: linux-image-powerpc-smp
 Architecture: powerpc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-powerpc-smp
+Depends: linux-image-${kernel-abi-version}-powerpc-smp, linux-firmware
 Description: Linux kernel image on PowerPC SMP.
  This package will always depend on the latest kernel image available
  for PowerPC with SMP support.

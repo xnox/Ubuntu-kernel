@@ -14,7 +14,7 @@ Package: linux-image-itanium
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-itanium
+Depends: linux-image-${kernel-abi-version}-itanium, linux-firmware
 Description: Linux kernel image on Itanium
  This package will always depend on the latest kernel image available
  for Itanium.
@@ -44,7 +44,7 @@ Package: linux-image-mckinley
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-mckinley
+Depends: linux-image-${kernel-abi-version}-mckinley, linux-firmware
 Description: Linux kernel image on Itanium II
  This package will always depend on the latest kernel image available
  for Itanium II (also known as McKinley).

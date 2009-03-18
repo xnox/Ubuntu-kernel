@@ -14,7 +14,7 @@ Package: linux-image-sparc64
 Architecture: sparc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-sparc64
+Depends: linux-image-${kernel-abi-version}-sparc64, linux-firmware
 Description: Linux kernel image on UltraSparc
  This package will always depend on the latest kernel image available
  for UltraSparc.
@@ -44,7 +44,7 @@ Package: linux-image-sparc64-smp
 Architecture: sparc
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-sparc64-smp, linux-ubuntu-modules-${kernel-abi-version}-sparc64-smp
+Depends: linux-image-${kernel-abi-version}-sparc64-smp, linux-firmware
 Description: Linux kernel image on UltraSparc (SMP)
  This package will always depend on the latest kernel image available
  for UltraSparc (SMP).
