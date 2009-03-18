@@ -575,13 +575,17 @@ static int zd_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
 
 	r = fill_ctrlset(mac, skb);
 	if (r)
-		return r;
+		goto fail;
 
 	info->rate_driver_data[0] = hw;
 
 	r = zd_usb_tx(&mac->chip.usb, skb);
 	if (r)
-		return r;
+		goto fail;
+	return 0;
+
+fail:
+	dev_kfree_skb(skb);
 	return 0;
 }
 
@@ -1047,5 +1051,5 @@ static void housekeeping_disable(struct zd_mac *mac)
 	dev_dbg_f(zd_mac_dev(mac), "\n");
 	cancel_rearming_delayed_workqueue(zd_workqueue,
 		&mac->housekeeping.link_led_work);
-	zd_chip_control_leds(&mac->chip, LED_OFF_ZD);
+	zd_chip_control_leds(&mac->chip, LED_OFF);
 }

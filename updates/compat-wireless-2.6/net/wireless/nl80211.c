@@ -131,6 +131,7 @@ static int nl80211_send_wiphy(struct sk_buff *msg, u32 pid, u32 seq, int flags,
 	struct nlattr *nl_freqs, *nl_freq;
 	struct nlattr *nl_rates, *nl_rate;
 	struct nlattr *nl_modes;
+	struct nlattr *nl_cmds;
 	enum ieee80211_band band;
 	struct ieee80211_channel *chan;
 	struct ieee80211_rate *rate;
@@ -241,6 +242,32 @@ static int nl80211_send_wiphy(struct sk_buff *msg, u32 pid, u32 seq, int flags,
 		nla_nest_end(msg, nl_band);
 	}
 	nla_nest_end(msg, nl_bands);
+
+	nl_cmds = nla_nest_start(msg, NL80211_ATTR_SUPPORTED_COMMANDS);
+	if (!nl_cmds)
+		goto nla_put_failure;
+
+	i = 0;
+#define CMD(op, n)						\
+	 do {							\
+		if (dev->ops->op) {				\
+			i++;					\
+			NLA_PUT_U32(msg, i, NL80211_CMD_ ## n);	\
+		}						\
+	} while (0)
+
+	CMD(add_virtual_intf, NEW_INTERFACE);
+	CMD(change_virtual_intf, SET_INTERFACE);
+	CMD(add_key, NEW_KEY);
+	CMD(add_beacon, NEW_BEACON);
+	CMD(add_station, NEW_STATION);
+	CMD(add_mpath, NEW_MPATH);
+	CMD(set_mesh_params, SET_MESH_PARAMS);
+	CMD(change_bss, SET_BSS);
+	CMD(set_mgmt_extra_ie, SET_MGMT_EXTRA_IE);
+
+#undef CMD
+	nla_nest_end(msg, nl_cmds);
 
 	return genlmsg_end(msg, hdr);
 
@@ -614,17 +641,15 @@ static int nl80211_set_interface(struct sk_buff *skb, struct genl_info *info)
 		if (!err)
 			flags = &_flags;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
-#endif
 	err = drv->ops->change_virtual_intf(&drv->wiphy, ifindex,
 					    type, flags, &params);
 
 	dev = __dev_get_by_index(&init_net, ifindex);
 	WARN_ON(!dev || (!err && dev->ieee80211_ptr->iftype != type));
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_unlock();
-#endif
+
  unlock:
 	cfg80211_put_dev(drv);
 	return err;
@@ -664,18 +689,16 @@ static int nl80211_new_interface(struct sk_buff *skb, struct genl_info *info)
 		params.mesh_id = nla_data(info->attrs[NL80211_ATTR_MESH_ID]);
 		params.mesh_id_len = nla_len(info->attrs[NL80211_ATTR_MESH_ID]);
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
-#endif
 	err = parse_monitor_flags(type == NL80211_IFTYPE_MONITOR ?
 				  info->attrs[NL80211_ATTR_MNTR_FLAGS] : NULL,
 				  &flags);
 	err = drv->ops->add_virtual_intf(&drv->wiphy,
 		nla_data(info->attrs[NL80211_ATTR_IFNAME]),
 		type, err ? NULL : &flags, &params);
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_unlock();
-#endif
+
 
  unlock:
 	cfg80211_put_dev(drv);
@@ -698,13 +721,11 @@ static int nl80211_del_interface(struct sk_buff *skb, struct genl_info *info)
 		err = -EOPNOTSUPP;
 		goto out;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
 	err = drv->ops->del_virtual_intf(&drv->wiphy, ifindex);
 	rtnl_unlock();
-#else
-	err = drv->ops->del_virtual_intf(&drv->wiphy, ifindex);
-#endif
+
  out:
 	cfg80211_put_dev(drv);
 	return err;
@@ -788,15 +809,11 @@ static int nl80211_get_key(struct sk_buff *skb, struct genl_info *info)
 	if (mac_addr)
 		NLA_PUT(msg, NL80211_ATTR_MAC, ETH_ALEN, mac_addr);
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->get_key(&drv->wiphy, dev, key_idx, mac_addr,
 				&cookie, get_key_callback);
 	rtnl_unlock();
-#else
-	err = drv->ops->get_key(&drv->wiphy, dev, key_idx, mac_addr,
-                                &cookie, get_key_callback);
-#endif
+
 	if (err)
 		goto out;
 
@@ -854,13 +871,11 @@ static int nl80211_set_key(struct sk_buff *skb, struct genl_info *info)
 		err = -EOPNOTSUPP;
 		goto out;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
 	err = func(&drv->wiphy, dev, key_idx);
 	rtnl_unlock();
-#else
-	err = func(&drv->wiphy, dev, key_idx);
-#endif
+
  out:
 	cfg80211_put_dev(drv);
 	dev_put(dev);
@@ -941,13 +956,10 @@ static int nl80211_new_key(struct sk_buff *skb, struct genl_info *info)
 		err = -EOPNOTSUPP;
 		goto out;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
 	err = drv->ops->add_key(&drv->wiphy, dev, key_idx, mac_addr, &params);
 	rtnl_unlock();
-#else
-	err = drv->ops->add_key(&drv->wiphy, dev, key_idx, mac_addr, &params);
-#endif
 
  out:
 	cfg80211_put_dev(drv);
@@ -980,13 +992,10 @@ static int nl80211_del_key(struct sk_buff *skb, struct genl_info *info)
 		err = -EOPNOTSUPP;
 		goto out;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
 	err = drv->ops->del_key(&drv->wiphy, dev, key_idx, mac_addr);
 	rtnl_unlock();
-#else
-	err = drv->ops->del_key(&drv->wiphy, dev, key_idx, mac_addr);
-#endif
 
  out:
 	cfg80211_put_dev(drv);
@@ -1066,13 +1075,11 @@ static int nl80211_addset_beacon(struct sk_buff *skb, struct genl_info *info)
 		err = -EINVAL;
 		goto out;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
 	err = call(&drv->wiphy, dev, &params);
 	rtnl_unlock();
-#else
-	err = call(&drv->wiphy, dev, &params);
-#endif
+
  out:
 	cfg80211_put_dev(drv);
 	dev_put(dev);
@@ -1093,13 +1100,11 @@ static int nl80211_del_beacon(struct sk_buff *skb, struct genl_info *info)
 		err = -EOPNOTSUPP;
 		goto out;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
 	err = drv->ops->del_beacon(&drv->wiphy, dev);
 	rtnl_unlock();
-#else
-	err = drv->ops->del_beacon(&drv->wiphy, dev);
-#endif
+
  out:
 	cfg80211_put_dev(drv);
 	dev_put(dev);
@@ -1282,20 +1287,16 @@ static int nl80211_dump_station(struct sk_buff *skb,
 		err = -ENOSYS;
 		goto out_err;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
-#endif
+
 	while (1) {
 		err = dev->ops->dump_station(&dev->wiphy, netdev, sta_idx,
 					     mac_addr, &sinfo);
 		if (err == -ENOENT)
 			break;
 		if (err)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 			goto out_err_rtnl;
-#else
-			goto out_err;
-#endif
 
 		if (nl80211_send_station(skb,
 				NETLINK_CB(cb->skb).pid,
@@ -1311,10 +1312,8 @@ static int nl80211_dump_station(struct sk_buff *skb,
  out:
 	cb->args[1] = sta_idx;
 	err = skb->len;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
  out_err_rtnl:
 	rtnl_unlock();
-#endif
  out_err:
 	cfg80211_put_dev(dev);
  out_put_netdev:
@@ -1348,13 +1347,9 @@ static int nl80211_get_station(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->get_station(&drv->wiphy, dev, mac_addr, &sinfo);
 	rtnl_unlock();
-#else
-	err = drv->ops->get_station(&drv->wiphy, dev, mac_addr, &sinfo);
-#endif
 
 	if (err)
 		goto out;
@@ -1456,13 +1451,9 @@ static int nl80211_set_station(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->change_station(&drv->wiphy, dev, mac_addr, &params);
 	rtnl_unlock();
-#else
-	err = drv->ops->change_station(&drv->wiphy, dev, mac_addr, &params);
-#endif
 
  out:
 	if (params.vlan)
@@ -1523,13 +1514,9 @@ static int nl80211_new_station(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->add_station(&drv->wiphy, dev, mac_addr, &params);
 	rtnl_unlock();
-#else
-	err = drv->ops->add_station(&drv->wiphy, dev, mac_addr, &params);
-#endif
 
  out:
 	if (params.vlan)
@@ -1558,13 +1545,9 @@ static int nl80211_del_station(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->del_station(&drv->wiphy, dev, mac_addr);
 	rtnl_unlock();
-#else
-	err = drv->ops->del_station(&drv->wiphy, dev, mac_addr);	
-#endif
 
  out:
 	cfg80211_put_dev(drv);
@@ -1664,9 +1647,7 @@ static int nl80211_dump_mpath(struct sk_buff *skb,
 		goto out_err;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
-#endif
 
 	while (1) {
 		err = dev->ops->dump_mpath(&dev->wiphy, netdev, path_idx,
@@ -1674,11 +1655,7 @@ static int nl80211_dump_mpath(struct sk_buff *skb,
 		if (err == -ENOENT)
 			break;
 		if (err)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 			goto out_err_rtnl;
-#else
-			goto out_err;
-#endif
 
 		if (nl80211_send_mpath(skb, NETLINK_CB(cb->skb).pid,
 				       cb->nlh->nlmsg_seq, NLM_F_MULTI,
@@ -1693,10 +1670,8 @@ static int nl80211_dump_mpath(struct sk_buff *skb,
  out:
 	cb->args[1] = path_idx;
 	err = skb->len;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
  out_err_rtnl:
 	rtnl_unlock();
-#endif
  out_err:
 	cfg80211_put_dev(dev);
  out_put_netdev:
@@ -1731,13 +1706,9 @@ static int nl80211_get_mpath(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->get_mpath(&drv->wiphy, dev, dst, next_hop, &pinfo);
 	rtnl_unlock();
-#else
-	err = drv->ops->get_mpath(&drv->wiphy, dev, dst, next_hop, &pinfo);
-#endif
 
 	if (err)
 		goto out;
@@ -1788,13 +1759,9 @@ static int nl80211_set_mpath(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->change_mpath(&drv->wiphy, dev, dst, next_hop);
 	rtnl_unlock();
-#else
-	err = drv->ops->change_mpath(&drv->wiphy, dev, dst, next_hop);
-#endif
 
  out:
 	cfg80211_put_dev(drv);
@@ -1827,13 +1794,9 @@ static int nl80211_new_mpath(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->add_mpath(&drv->wiphy, dev, dst, next_hop);
 	rtnl_unlock();
-#else
-	err = drv->ops->add_mpath(&drv->wiphy, dev, dst, next_hop);
-#endif
 
  out:
 	cfg80211_put_dev(drv);
@@ -1860,13 +1823,9 @@ static int nl80211_del_mpath(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->del_mpath(&drv->wiphy, dev, dst);
 	rtnl_unlock();
-#else
-	err = drv->ops->del_mpath(&drv->wiphy, dev, dst);
-#endif
 
  out:
 	cfg80211_put_dev(drv);
@@ -1912,13 +1871,9 @@ static int nl80211_set_bss(struct sk_buff *skb, struct genl_info *info)
 		goto out;
 	}
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->change_bss(&drv->wiphy, dev, &params);
 	rtnl_unlock();
-#else
-	err = drv->ops->change_bss(&drv->wiphy, dev, &params);
-#endif
 
  out:
 	cfg80211_put_dev(drv);
@@ -2023,13 +1978,9 @@ static int nl80211_get_mesh_params(struct sk_buff *skb,
 		return err;
 
 	/* Get the mesh params */
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->get_mesh_params(&drv->wiphy, dev, &cur_params);
 	rtnl_unlock();
-#else
-	err = drv->ops->get_mesh_params(&drv->wiphy, dev, &cur_params);
-#endif
 	if (err)
 		goto out;
 
@@ -2175,13 +2126,9 @@ static int nl80211_set_mesh_params(struct sk_buff *skb, struct genl_info *info)
 			nla_get_u16);
 
 	/* Apply changes */
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_lock();
 	err = drv->ops->set_mesh_params(&drv->wiphy, dev, &cfg, mask);
 	rtnl_unlock();
-#else
-	err = drv->ops->set_mesh_params(&drv->wiphy, dev, &cfg, mask);
-#endif
 
 	/* cleanup */
 	cfg80211_put_dev(drv);
@@ -2357,13 +2304,9 @@ static int nl80211_set_mgmt_extra_ie(struct sk_buff *skb,
 		return err;
 
 	if (drv->ops->set_mgmt_extra_ie) {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 		rtnl_lock();
 		err = drv->ops->set_mgmt_extra_ie(&drv->wiphy, dev, &params);
 		rtnl_unlock();
-#else
-		err = drv->ops->set_mgmt_extra_ie(&drv->wiphy, dev, &params);
-#endif
 	} else
 		err = -EOPNOTSUPP;
 
@@ -2395,9 +2338,9 @@ static int nl80211_trigger_scan(struct sk_buff *skb, struct genl_info *info)
 		err = -EOPNOTSUPP;
 		goto out;
 	}
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
+
 	rtnl_lock();
-#endif
+
 	if (drv->scan_req) {
 		err = -EBUSY;
 		goto out_unlock;
@@ -2508,9 +2451,7 @@ static int nl80211_trigger_scan(struct sk_buff *skb, struct genl_info *info)
 		kfree(request);
 	}
  out_unlock:
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30))
 	rtnl_unlock();
-#endif
  out:
 	cfg80211_put_dev(drv);
 	dev_put(dev);
