@@ -14308,9 +14308,7 @@ static int alc662_parse_auto_config(struct hda_codec *codec)
 /* additional initialization for auto-configuration model */
 static void alc662_auto_init(struct hda_codec *codec)
 {
-	struct alc_spec *spec;
-
-	codec->spec = spec;
+	struct alc_spec *spec = codec->spec;
 
 	alc662_auto_init_multi_out(codec);
 	alc662_auto_init_hp_out(codec);
@@ -14353,7 +14351,8 @@ static int patch_alc662(struct hda_codec *codec)
 			       "from BIOS.  Using base mode...\n");
 			board_config = ALC662_3ST_2ch_DIG;
 		}
-	}
+	} else
+		add_mixer(spec, alc662_capture_mixer);
 
 	if (board_config != ALC662_AUTO)
 		setup_preset(spec, &alc662_presets[board_config]);
@@ -14381,8 +14380,6 @@ static int patch_alc662(struct hda_codec *codec)
 	}
 	if (!spec->capsrc_nids)
 		spec->capsrc_nids = alc662_capsrc_nids;
-
-	add_mixer(spec, alc662_capture_mixer);
 
 	spec->vmaster_nid = 0x02;
 
