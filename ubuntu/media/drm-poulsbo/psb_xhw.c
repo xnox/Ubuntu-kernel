@@ -62,6 +62,20 @@ static inline int psb_xhw_add(struct drm_psb_private *dev_priv,
 	return 0;
 }
 
+int psb_xhw_hotplug(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf)
+{
+	struct drm_psb_xhw_arg *xa = &buf->arg;
+	int ret;
+
+	buf->copy_back = 1;
+	xa->op = PSB_XHW_HOTPLUG;
+	xa->issue_irq = 0;
+	xa->irq_op = 0;
+
+	ret = psb_xhw_add(dev_priv, buf);
+	return ret;
+}
+
 int psb_xhw_scene_info(struct drm_psb_private *dev_priv,
 		       struct psb_xhw_buf *buf,
 		       uint32_t w,

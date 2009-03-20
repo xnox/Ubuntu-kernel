@@ -46,7 +46,7 @@
  *
  */
 /* #define PSB_PACKAGE_VERSION "ED"__DATE__*/
-#define PSB_PACKAGE_VERSION "2.3.0.32L.0033"
+#define PSB_PACKAGE_VERSION "2.3.2.32L.0038"
 
 #define DRM_PSB_SAREA_MAJOR 0
 #define DRM_PSB_SAREA_MINOR 1
@@ -372,6 +372,7 @@ struct drm_psb_xhw_arg {
 #define PSB_XHW_RESUME          0x08
 #define PSB_XHW_TA_MEM_LOAD	0x09
 #define PSB_XHW_CHECK_LOCKUP    0x0a
+#define PSB_XHW_HOTPLUG         0x0b
 
 #define PSB_SCENE_FLAG_DIRTY       (1 << 0)
 #define PSB_SCENE_FLAG_COMPLETE    (1 << 1)

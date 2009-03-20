@@ -26,10 +26,25 @@
 #include "psb_drv.h"
 #include "psb_reg.h"
 #include "psb_msvdx.h"
+#include <linux/wait.h>
+
+extern wait_queue_head_t hotplug_queue;
+char hotplug_env = '0';
+
+extern struct kern_blit_info psb_blit_info;
 
 /*
  * Video display controller interrupt.
  */
+static void psb_hotplug_irqhandler(struct drm_psb_private *dev_priv, uint32_t status)
+{
+        struct psb_xhw_buf buf;
+        INIT_LIST_HEAD(&buf.head);
+
+        if (status & _PSB_HOTPLUG_INTERRUPT_FLAG)
+		psb_xhw_hotplug(dev_priv, &buf);
+}
+
 static int underrun = 0;
 static void psb_vdc_interrupt(struct drm_device *dev, uint32_t vdc_stat)
 {
@@ -63,6 +78,17 @@ static void psb_vdc_interrupt(struct drm_device *dev, uint32_t vdc_stat)
 		wake = 1;
 		PSB_WVDC32(_PSB_VBLANK_INTERRUPT_ENABLE |
 			   _PSB_VBLANK_CLEAR, PSB_PIPEBSTAT);
+	}
+
+	if (vdc_stat & _PSB_HOTPLUG_INTERRUPT_FLAG) {
+		// Clear 2nd status register
+		spin_lock(&dev_priv->irqmask_lock);
+		uint32_t hotplugstat = PSB_RVDC32(PORT_HOTPLUG_STATUS_REG);
+		PSB_WVDC32(hotplugstat, PORT_HOTPLUG_STATUS_REG);
+		spin_unlock(&dev_priv->irqmask_lock);
+		
+		hotplug_env = '1';
+		wake_up_interruptible(&hotplug_queue);
 	}
 
 	PSB_WVDC32(vdc_stat, PSB_INT_IDENTITY_R);
@@ -170,6 +196,14 @@ irqreturn_t psb_irq_handler(DRM_IRQ_ARGS)
 	}
 
 	if (vdc_stat) {
+		/*******issue a 2d blit task here ************/
+		if(psb_blit_info.cmd_ready) {
+			psb_blit_info.cmd_ready = 0;
+			psb_blit_2d_reg_write(dev_priv, psb_blit_info.cmdbuf);
+			set_bit(0, &psb_blit_info.vdc_bit);
+		}
+		/**************************************/
+
 		/* MSVDX IRQ status is part of vdc_irq_mask */
 		psb_vdc_interrupt(dev, vdc_stat);
 		handled = 1;
@@ -218,9 +252,9 @@ void psb_irq_preinstall(struct drm_device *dev)
 
 	dev_priv->sgx2_irq_mask = _PSB_CE2_BIF_REQUESTER_FAULT;
 
-	dev_priv->vdc_irq_mask = _PSB_IRQ_SGX_FLAG | _PSB_IRQ_MSVDX_FLAG;
+	dev_priv->vdc_irq_mask = _PSB_IRQ_SGX_FLAG | _PSB_IRQ_MSVDX_FLAG | _PSB_HOTPLUG_INTERRUPT_ENABLE;
 
-	if (!drm_psb_disable_vsync)
+	if (!drm_psb_disable_vsync || drm_psb_detear)
 		dev_priv->vdc_irq_mask |= _PSB_VSYNC_PIPEA_FLAG |
 		    _PSB_VSYNC_PIPEB_FLAG;
 
@@ -264,6 +298,10 @@ void psb_irq_postinstall(struct drm_device *dev)
 		PSB_WMSVDX32(enables, MSVDX_HOST_INTERRUPT_ENABLE);
 	}
 	dev_priv->irq_enabled = 1;
+ 
+	uint32_t hotplug_stat = PSB_RVDC32(PORT_HOTPLUG_ENABLE_REG);
+	PSB_WVDC32(hotplug_stat | SDVOB_HOTPLUG_DETECT_ENABLE, PORT_HOTPLUG_ENABLE_REG);
+
 	spin_unlock_irqrestore(&dev_priv->irqmask_lock, irqflags);
 }
 

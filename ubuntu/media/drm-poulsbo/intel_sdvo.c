@@ -33,6 +33,12 @@
 #include "drm_crtc.h"
 #include "intel_sdvo_regs.h"
 
+#include <linux/proc_fs.h>
+#include <linux/wait.h>
+
+struct proc_dir_entry *proc_sdvo_dir = NULL;
+wait_queue_head_t hotplug_queue;
+
 #define MAX_VAL 1000
 #define DPLL_CLOCK_PHASE_9 (1<<9 | 1<<12)
 
@@ -3696,6 +3702,19 @@ static const struct drm_output_funcs intel_sdvo_output_funcs = {
 	.cleanup = intel_sdvo_destroy
 };
 
+extern char hotplug_env;
+static int intel_sdvo_proc_read_hotplug(char *buf, char **start, off_t offset, int count, int *eof, void *data)
+{
+        wait_event_interruptible(hotplug_queue, hotplug_env == '1');
+        return count; 
+}
+
+static int intel_sdvo_proc_write_hotplug(struct file *file, const char * user_buffer, unsigned long count, void *data)
+{
+        hotplug_env = '0';
+	return count;
+}
+
 void intel_sdvo_init(struct drm_device *dev, int output_device)
 {
 	struct drm_output *output;
@@ -3708,28 +3727,34 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 	char *name_prefix;
 	char *name_suffix;
 
-    int count = 3;
-    u8 response[2];
-    u8 status;	
+	int count = 3;
+	u8 response[2];
+	u8 status;	
 	unsigned char bytes[2];
-    
+
+	struct proc_dir_entry *ent;
+	char name_hotplug[64] = "dri/sdvo";
+	char name_file[64] = "hotplug";
+
 	DRM_DEBUG("xxintel_sdvo_init\n");
 	
-		if (IS_POULSBO(dev)) {
-			struct pci_dev * pci_root = pci_get_bus_and_slot(0, 0);
-			u32 sku_value = 0;
-			bool sku_bSDVOEnable = true;
-			if(pci_root)
-			{
-				pci_write_config_dword(pci_root, 0xD0, PCI_PORT5_REG80_FFUSE);
-				pci_read_config_dword(pci_root, 0xD4, &sku_value);
-				sku_bSDVOEnable = (sku_value & PCI_PORT5_REG80_SDVO_DISABLE)?false : true;
-				DRM_INFO("intel_sdvo_init: sku_value is 0x%08x\n", sku_value);
-				DRM_INFO("intel_sdvo_init: sku_bSDVOEnable is %d\n", sku_bSDVOEnable);
-				if (sku_bSDVOEnable == false)
-						return;
-			}
+	init_waitqueue_head(&hotplug_queue);
+
+	if (IS_POULSBO(dev)) {
+		struct pci_dev * pci_root = pci_get_bus_and_slot(0, 0);
+		u32 sku_value = 0;
+		bool sku_bSDVOEnable = true;
+		if(pci_root)
+		{
+			pci_write_config_dword(pci_root, 0xD0, PCI_PORT5_REG80_FFUSE);
+			pci_read_config_dword(pci_root, 0xD4, &sku_value);
+			sku_bSDVOEnable = (sku_value & PCI_PORT5_REG80_SDVO_DISABLE)?false : true;
+			DRM_INFO("intel_sdvo_init: sku_value is 0x%08x\n", sku_value);
+			DRM_INFO("intel_sdvo_init: sku_bSDVOEnable is %d\n", sku_bSDVOEnable);
+			if (sku_bSDVOEnable == false)
+				return;
 		}
+	}
 
 	output = drm_output_create(dev, &intel_sdvo_output_funcs, NULL);
 	if (!output)
@@ -3782,9 +3807,47 @@ void intel_sdvo_init(struct drm_device *dev, int output_device)
 			drm_output_destroy(output);
 			return;
 		}
+	} 
+ 
+
+	proc_sdvo_dir = proc_mkdir(name_hotplug, NULL);
+	if (!proc_sdvo_dir) {
+		printk("create /proc/dri/sdvo folder error\n");
 	}
 
+	ent = create_proc_entry(name_file,
+			S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH, proc_sdvo_dir);
+	if (!ent) {
+		printk("create /proc/dri/sdvo/hotplug error\n");
+	}
+
+	ent->read_proc = intel_sdvo_proc_read_hotplug;
+	ent->write_proc = intel_sdvo_proc_write_hotplug;
+	ent->data = dev;
+
 	intel_sdvo_get_capabilities(output, &sdvo_priv->caps);
+
+	// Set active hot-plug OpCode.
+	uint8_t  state_orig;
+	uint8_t  state_set;
+	uint8_t  byArgs_orig[2];
+	uint8_t  byArgs_set[2];
+	uint32_t value;
+
+	intel_sdvo_write_cmd(output, SDVO_CMD_GET_ACTIVE_HOT_PLUG, NULL, 0);
+	state_orig = intel_sdvo_read_response(output, byArgs_orig, 2);
+
+	value = (uint32_t)byArgs_orig[1];
+	value = (value << 8);
+	value |= (uint32_t)byArgs_orig[0];
+
+	value = value | (0x1);
+
+	byArgs_orig[0] = (uint8_t)(value & 0xFF);
+	byArgs_orig[1] = (uint8_t)((value >> 8) & 0xFF);
+	intel_sdvo_write_cmd(output, SDVO_CMD_SET_ACTIVE_HOT_PLUG, byArgs_orig, 2);
+	intel_sdvo_write_cmd(output, SDVO_CMD_GET_ACTIVE_HOT_PLUG, NULL, 0);
+	state_set = intel_sdvo_read_response(output, byArgs_set, 2);
 
 #ifdef SII_1392_WA
 	if ((sdvo_priv->caps.vendor_id == 0x04) && (sdvo_priv->caps.device_id==0xAE)){

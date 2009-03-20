@@ -49,6 +49,10 @@ typedef struct psb_2d_blit_queue
 
 
 
+
+extern void psb_blit_2d_reg_write(struct drm_psb_private *dev_priv, uint32_t * cmdbuf);
+
+
 extern int psb_blit_queue_init(psb_2d_blit_queue_ptr q);
 
 extern int psb_blit_queue_is_empty(psb_2d_blit_queue_ptr q);
@@ -81,9 +85,9 @@ enum {
 #define DRIVER_DESC "drm driver for the Intel GMA500"
 #define DRIVER_AUTHOR "Tungsten Graphics Inc."
 
-#define PSB_DRM_DRIVER_DATE "20090209"
+#define PSB_DRM_DRIVER_DATE "20090316"
 #define PSB_DRM_DRIVER_MAJOR 4
-#define PSB_DRM_DRIVER_MINOR 27
+#define PSB_DRM_DRIVER_MINOR 32
 #define PSB_DRM_DRIVER_PATCHLEVEL 0
 
 #define PSB_VDC_OFFSET           0x00000000
@@ -141,14 +145,22 @@ enum {
 #define PSB_INT_IDENTITY_R        0x20A4
 #define _PSB_VSYNC_PIPEB_FLAG     (1<<5)
 #define _PSB_VSYNC_PIPEA_FLAG     (1<<7)
+#define _PSB_HOTPLUG_INTERRUPT_FLAG (1<<17)
 #define _PSB_IRQ_SGX_FLAG         (1<<18)
 #define _PSB_IRQ_MSVDX_FLAG       (1<<19)
 #define PSB_INT_MASK_R            0x20A8
 #define PSB_INT_ENABLE_R          0x20A0
+#define _PSB_HOTPLUG_INTERRUPT_ENABLE (1<<17)
 #define PSB_PIPEASTAT             0x70024
 #define _PSB_VBLANK_INTERRUPT_ENABLE (1 << 17)
 #define _PSB_VBLANK_CLEAR         (1 << 1)
 #define PSB_PIPEBSTAT             0x71024
+
+#define PORT_HOTPLUG_ENABLE_REG      0x61110
+#define SDVOB_HOTPLUG_DETECT_ENABLE  (1 << 26)
+#define PORT_HOTPLUG_STATUS_REG      0x61114
+#define SDVOB_HOTPLUG_STATUS_ISPLUG  (1 << 15)
+#define SDVOB_HOTPLUG_STATUS         (1 << 6)
 
 #define _PSB_MMU_ER_MASK      0x0001FF00
 #define _PSB_MMU_ER_HOST      (1 << 16)
@@ -486,7 +498,20 @@ struct drm_psb_private {
 	struct list_head msvdx_queue;
 	int msvdx_busy;
 
+	/*
+	* DVD detear performance evalue
+	*/
+	struct timeval latest_vblank;	
+	wait_queue_head_t blit_2d_queue;
+	int blit_2d;
 };
+
+struct kern_blit_info
+{
+	int vdc_bit;
+	int cmd_ready;
+	unsigned char  cmdbuf[40]; //Video blit 2D cmd size is 40 bytes!
+};	
 
 struct psb_mmu_driver;
 
@@ -724,6 +749,7 @@ extern int psb_xhw_ta_mem_load(struct drm_psb_private *dev_priv,
 extern void psb_xhw_clean_buf(struct drm_psb_private *dev_priv,
 			      struct psb_xhw_buf *buf);
 
+extern int psb_xhw_hotplug(struct drm_psb_private *dev_priv, struct psb_xhw_buf *buf);
 /*
  * psb_schedule.c: HW bug fixing.
  */

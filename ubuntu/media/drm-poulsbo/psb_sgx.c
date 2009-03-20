@@ -34,6 +34,7 @@
 extern psb_2d_blit_queue_t gsBlitQueue;
 extern atomic_t gnRasterDoneNum;
 extern atomic_t g_cmd_cancel;
+struct kern_blit_info psb_blit_info;
 #endif
 
 int psb_submit_video_cmdbuf(struct drm_device *dev,
@@ -163,6 +164,18 @@ static int psb_2d_wait_available(struct drm_psb_private *dev_priv,
 	return ret;
 }
 
+#define VIDEO_BLIT_2D_SIZE 40
+void psb_blit_2d_reg_write(struct drm_psb_private *dev_priv, uint32_t * cmdbuf)
+{
+	int i;
+
+	for (i = 0; i < VIDEO_BLIT_2D_SIZE; i += 4) {
+		PSB_WSGX32(*cmdbuf++, PSB_SGX_2D_SLAVE_PORT + i);
+	}
+	(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4);
+}
+
+
 int psb_2d_submit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
 		  unsigned size)
 {
@@ -179,10 +192,16 @@ int psb_2d_submit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
 
 		submit_size <<= 2;
 
-		for (i = 0; i < submit_size; i += 4) {
-			PSB_WSGX32(*cmdbuf++, PSB_SGX_2D_SLAVE_PORT + i);
+		if(dev_priv->blit_2d) {
+			dev_priv->blit_2d = 0;
+			memcpy(psb_blit_info.cmdbuf,cmdbuf,10*4);
+		}		
+		else {
+			for (i = 0; i < submit_size; i += 4) {
+				PSB_WSGX32(*cmdbuf++, PSB_SGX_2D_SLAVE_PORT + i);
+			}
+			(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4);
 		}
-		(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4);
 	}
 	return 0;
 }
@@ -991,23 +1010,34 @@ static int psb_fixup_relocs(struct drm_file *file_priv,
 }
 
 static int psb_cmdbuf_2d(struct drm_file *priv,
-			 struct drm_psb_cmdbuf_arg *arg,
-			 struct drm_buffer_object *cmd_buffer,
-			 struct drm_fence_arg *fence_arg)
+		struct drm_psb_cmdbuf_arg *arg,
+		struct drm_buffer_object *cmd_buffer,
+		struct drm_fence_arg *fence_arg)
 {
 	struct drm_device *dev = priv->head->dev;
 	struct drm_psb_private *dev_priv =
-	    (struct drm_psb_private *)dev->dev_private;
+		(struct drm_psb_private *)dev->dev_private;
 	int ret;
 
 	ret = mutex_lock_interruptible(&dev_priv->reset_mutex);
 	if (ret)
 		return -EAGAIN;
-
+	if(arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT)) {
+		printk("special blit!\n");
+		dev_priv->blit_2d = 1;
+	}
 	ret = psb_submit_copy_cmdbuf(dev, cmd_buffer, arg->cmdbuf_offset,
-				     arg->cmdbuf_size, PSB_ENGINE_2D, NULL);
+			arg->cmdbuf_size, PSB_ENGINE_2D, NULL);
 	if (ret)
 		goto out_unlock;
+
+	if(arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT)) {
+		arg->sVideoInfo.flag = 0;
+		clear_bit(0, &psb_blit_info.vdc_bit);
+		psb_blit_info.cmd_ready = 1;
+		while(test_bit(0, &psb_blit_info.vdc_bit)==0)
+			schedule();
+	}
 
 	psb_fence_or_sync(priv, PSB_ENGINE_2D, arg, fence_arg, NULL);
 
@@ -1015,7 +1045,7 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 	if (cmd_buffer->fence != NULL)
 		drm_fence_usage_deref_unlocked(&cmd_buffer->fence);
 	mutex_unlock(&cmd_buffer->mutex);
-      out_unlock:
+out_unlock:
 	mutex_unlock(&dev_priv->reset_mutex);
 	return ret;
 }
