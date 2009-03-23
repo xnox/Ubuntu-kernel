@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook24) netbook-common; urgency=low
+
+  [Andres Salomon]
+
+  * Add support for Buffalo's audio.
+
+ -- Andres Salomon <dilinger@canonical.com>  Fri, 20 Mar 2009 17:53:17 -0400
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook23) netbook-common; urgency=low
 
   [Michael Frey]
