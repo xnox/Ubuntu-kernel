@@ -5,7 +5,7 @@ do-binary-udebs:
 	imagelist=$$(cat $(udebdir)/kernel-versions | grep ^${arch} | \
 		     awk '{print $$4}') && \
 	for i in $$imagelist; do \
-	  dpkg -x $$(ls ../linux-backports-modules-$$i\_*${arch}.deb) \
+	  dpkg -x $$(ls ../linux-backports-modules-$$i\_$(release)-$(revision)_${arch}.deb) \
 		$(udebdir)/; \
 	  if [ -d $(udebdir)/lib/modules/$$i ]; then \
 	    /sbin/depmod -b $(udebdir) $$i; \
