@@ -1,0 +1,148 @@
+#!/bin/bash
+. $(dirname $0)/build-common
+
+BRANCH="master"
+TARGETS=""
+while [ $# -gt 0 ]; do
+	case $1 in
+		-b|--branch)
+			BRANCH="$2"
+			shift
+			;;
+		-*|--*)
+			echo "Unknown option <$1>!" >&2
+			exit 1
+			;;
+		*)
+			TARGETS="$TARGETS $1"
+			;;
+	esac
+	shift
+done
+
+if [ "${TARGETS}" = "" ]; then
+	echo "Usage: $(basename $0) [<options>] <system|group> [...]"
+	exit 1
+fi
+
+GetDistroEnvironment "${DIST}" || exit 1
+
+if [ ! -d ${SRCDIR}/.git ]; then
+	echo "${SRCDIR} is not a repository!" >&2
+	exit 1
+fi
+cd $SRCDIR
+
+if [ "$(git branch|grep "${BRANCH}")" = "" ]; then
+	echo "No branch <${BRANCH}> found!" >&2
+	exit 1
+fi
+
+FULLVER=$(
+	git show ${BRANCH}:debian/changelog |
+	awk 'FNR==1{print substr($2, 2, length($2)-2)}'
+)
+VER=$(echo $FULLVER|cut -d- -f1)
+REL=$(echo $FULLVER|cut -d- -f2)
+ABI=$(echo $REL|cut -d. -f1)
+TMPDIR="$(pwd)/abi-tmp"
+ABIDIR="$(pwd)/debian/abi/$FULLVER"
+
+#
+# Evaluate the contents of debian/control to find out which packages should
+# have been built.
+#
+#CUSTOM_FLAVOURS=$(
+#	debian/rules printenv|
+#	awk '/custom_flavours/{sub(/.*_flavours *= */, ""); print}'
+#)
+CUSTOM_FLAVOURS="rt openvz xen lpia lpiacompat"
+PKG_LIST="$(
+	git-show ${BRANCH}:debian/control | \
+       	awk -v CFL="$CUSTOM_FLAVOURS" '
+		BEGIN{
+			split(CFL, X)
+			for (i in X)
+				BLL[X[i]] = i
+		}
+		/Package:/{
+			Package=$2
+		}
+		Package !~ /linux-image/ || Package ~ /debug/ {
+			next
+		}
+		/Architecture:/{
+			sub(/Architecture:[\t ]*/, "")
+			split($0, Arch, /[\t ]+/)
+
+			split(Package, X, "-|_")
+			if (X[5] in BLL)
+				next
+			for (i in Arch)
+				print Package "_'$FULLVER'_" Arch[i] ".deb"
+		}
+	'
+)"
+
+GetABIFrom()
+{
+	local PKG="$1"
+	local HOST="$2"
+	local ABIVER
+	local MODDIR
+
+	if [ -f $ABIDIR/$PKGARCH/$FLAVOUR ]; then
+		echo "II: Already got $ARCH/$FLAVOUR"
+		return 0
+	fi
+	echo "Fetching $PKG from $TARGET..."
+	scp $HOST:$BASEDIR/$PKG . 2>/dev/null
+	if [ ! -f $PKG ]; then
+		echo "EE: Failed to download $PKG"
+		return 1
+	fi
+	echo "Extracting..."
+	dpkg-deb --extract $PKG tmp
+	if [ $? -eq 0 ]; then
+		if [ -f tmp/boot/abi-* ]; then
+			if [ ! -d $ABIDIR/$ARCH ]; then
+				mkdir -p $ABIDIR/$ARCH
+			fi
+			mv tmp/boot/abi-* $ABIDIR/$ARCH/$FLAVOUR
+				ABIVER="$VER-$ABI-$FLAVOUR"
+				MODDIR="tmp/lib/modules/$ABIVER/kernel"
+				find $MODDIR -name '*.ko' \
+					-exec basename {} .ko \; | sort \
+					>$FLAVOUR.modules
+				mv $FLAVOUR.modules $ABIDIR/$ARCH
+				echo "DONE"
+		else
+			echo "NO ABI FILE"
+		fi
+	else
+		echo "FAILED"
+	fi
+	rm -rf tmp $PKG
+
+	return 0
+}
+
+for PKG in $PKG_LIST; do
+	FLAVOUR=$(echo $PKG|cut -d- -f5-|cut -d_ -f1)
+	PKGARCH=$(echo $PKG|cut -d_ -f3|cut -d. -f1)
+	PKGDONE=false
+	for TARGET in $(ExpandHostGroups $TARGETS); do
+		GetHostEnvironment ${TARGET} 2>/dev/null
+		if [ $? -ne 0 ]; then
+			SYSNAME="$TARGET"
+			continue
+		fi
+		if [ "$ARCH" = "$PKGARCH" ]; then
+			GetABIFrom $PKG $HOST && PKGDONE=true; break
+		fi
+	done
+	if ! $PKGDONE; then
+		echo "WW: No host to get $PKG"
+	fi
+done
+
