@@ -11,7 +11,7 @@
  */
 
 #ifndef _ELANTECH_H
-#define _ELANTECH_H
+#define _ELANTECH_H 
 
 #define ELANTECH_COMMAND	0x11	/* Commands start with this value */
 #define ELANTECH_FW_VER    0x01     /* Tom Lin */
@@ -27,7 +27,7 @@ struct elantech_data {
 	unsigned char reg_26;
 };
 
-
+static int EF_023_DEBUG=0;
 int elantech_detect(struct psmouse *psmouse, int set_properties);
 int elantech_init(struct psmouse *psmouse, int set_properties);
 
