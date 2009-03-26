@@ -1,3 +1,9 @@
+linux-meta (2.6.28.11.14) jaunty; urgency=low
+
+  * Removed orion5x and mv78xx0 ARM flavours
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 25 Mar 2009 17:30:27 +0000
+
 linux-meta (2.6.28.11.13) jaunty; urgency=low
 
   * Use *-lpia as the target for generic metapackage dependencies on lpia.
