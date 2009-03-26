@@ -1,7 +1,10 @@
 binutils
+binutils-hppa64
+bzip2
 cpp
 dpkg-dev
-gcc
+gcc-3.4
+gcc-3.4-hppa64
 libc6-dev
 make
 patch
