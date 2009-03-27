@@ -8,3 +8,9 @@ __dev_get_by_name() causes build errors for hardy.
 
 Colin King
 March 2, 2009
+
+Enabled alt1c to build with ethtool support as it builds OK and fixes
+bug LP#349478
+
+Colin King
+March 27, 2009
