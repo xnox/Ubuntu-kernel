@@ -28,6 +28,6 @@ Description: Complete Versatile-based systems systems Linux kernel
 Package: linux-backports-modules-RELEASE_NAME-versatile
 Architecture: armel
 Depends: linux-backports-modules-${kernel-abi-version}-versatile
-Description: Backported drivers for Versatile-based systems systems kernel image
+Description: Backported drivers for Versatile-based systems kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
