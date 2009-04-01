@@ -278,11 +278,20 @@ Description: Linux kernel image on Server Equipment.
  This package will always depend on the latest kernel image available
  for Server Equipment.
 
+Package: linux-restricted-modules-server
+Architecture: i386 amd64
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-restricted-modules-${kernel-abi-version}-server
+Description: Restricted Linux modules for server kernels
+ This package will always depend on the latest restricted modules available
+ for server kernels.
+
 Package: linux-server
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: linux-image-server (= ${binary:Version})
+Depends: linux-image-server (= ${binary:Version}), linux-restricted-modules-server (= ${binary:Version})
 Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
