@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook26) netbook-common; urgency=low
+
+  [Michael Frey]
+
+  * New firmware for DVB TV Tuner cards
+
+ -- Tony Espy <espy@canonical.com>  Thu, 02 Apr 2009 22:22:27 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook25) netbook-common; urgency=low
 
   [Andres Salomon]
