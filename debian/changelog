@@ -1,3 +1,20 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook26dennis1) dennis; urgency=low
+
+  [Colin Ian King]
+
+  * atl1e: Enable ethtool support
+
+  [Matthew Ranostay]
+
+  * ALSA: hda: lower overall HDA output by -5.25dB ( LP: 3292231 ).
+  * ALSA: hda: Add 83xx support and volume scaling ( LP: 333376 ).
+
+  [Kevin Barnett]
+
+  * New version of hpmini power module ( LP: 334505 )
+
+ -- root <root@ubuntu.com>  Thu, 02 Apr 2009 23:15:59 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook26) netbook-common; urgency=low
 
   [Michael Frey]
