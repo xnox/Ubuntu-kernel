@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Hewlett-Packard Development Company, L.P.
+ * Copyright (C) 2008-2009 Hewlett-Packard Development Company, L.P.
  *
  * Author: Kevin Barnett (kevin.barnett@hp.com)
  *
@@ -8,8 +8,6 @@
  *
  * - Bluetooth (device & radio)
  * - Wifi (radio only)
- * - WWAN (device & radio)
- * - Ethernet (device only - there is no radio)
  *
  */
 
@@ -21,58 +19,151 @@
 #include <linux/init.h>
 #include <linux/fs.h>
 #include <linux/platform_device.h>
-#include <linux/pci.h>
-#include <linux/ioport.h>
-#include <linux/spinlock.h>
 #include <linux/hwmon-sysfs.h>
 #include <linux/hwmon.h>
 #include <linux/sysfs.h>
-#include <asm/uaccess.h>
-#include <asm/io.h>
+#include <linux/acpi.h>
 
 /* module and version information */
 #define DRIVER_NAME             "HP Mini"
-#define DRIVER_VERSION          "1.00"
-#define DRIVER_RELEASE_DATE     "06-Nov-2008"
+#define DRIVER_VERSION          "1.10"
+#define DRIVER_RELEASE_DATE     "31-Mar-2009"
 #define PREFIX                  DRIVER_NAME ": "
 
 /* Change this to non-zero to enable debug output. */
 #define HP_MINI_DEBUG   0
 
-/* Change this to non-zero to allow the Ethernet support to be disabled.  This is
- * not allowed at present because we don't handle the Ethernet support being disabled
- * very gracefully.
- */
-#define ETHERNET_DISABLE_ALLOWED    0
-
 #if HP_MINI_DEBUG
-#define DPRINT(format, args...) printk(KERN_DEBUG PREFIX format, ##args)
+#define DPRINT(format, args...) printk(PREFIX format, ##args)
 #else
 #define DPRINT(format, args...)
 #endif
 
-static struct mutex gpio_mutex;
-
 static struct platform_device *hpmini_platform_device;
 
-/* the base address of I/O space for GPIO as read from the ICH7 LPC Interface Bridge */
-static u32 gpio_base_address;
+/*
+ * manifest constants, structures and functions for HP-specific WMI implementation
+ */
 
-/* address of 32-bit GPIO base address register on the ICH7 LPC Interface Bridge */ 
-#define GPIO_BASE_ADDRESS_REGISTER  0x48
+#define HP_WMI_READ_WRITE_DATA_GUID         "5FB7F034-2C63-45e9-BE91-3D44E2C707E4"
 
-/* Only bits 15:6 of the GPIO base address register are valid. */
-#define GPIO_BASE_ADDRESS_MASK      0xffc0
+#define HP_WMI_METHOD_READ_WRITE_4_BYTES    2
 
-/* offsets from the I/O base address for specific GPIO signals */
-#define GPIO_9_THROUGH_10_OFFSET    0xd
-#define GPIO_26_THROUGH_28_OFFSET   0xf
+struct wmi_input_data_block
+{
+    u32     signature;
+    u32     command;
+    u32     command_type;
+    u32     data_size;
+    u32     data;
+};
 
-/* GPIO signals */
-#define BLUETOOTH_OFF               0x2     /* GPIO9 */
-#define WWAN_RADIO_ON               0x4     /* GPIO26 */
-#define WIFI_RADIO_ON               0x8     /* GPIO27 */
-#define ETHERNET_ON                 0x10    /* GPIO28 */
+struct wmi_output_data_block
+{
+    u32     signature;
+    u32     data_size;
+};
+
+#define HP_WMI_INPUT_DATA_BLOCK_SIGNATURE   0x55434553
+
+#define HP_WMI_COMMAND_READ_BIOS_CONFIG                 1
+#define HP_WMI_COMMAND_TYPE_GET_NETWORK_DEVICE_STATE    5
+
+#define HP_WMI_NETWORK_STATE_WIFI_ON        0x100
+#define HP_WMI_NETWORK_STATE_BLUETOOTH_ON   0x10000   
+
+#define HP_WMI_COMMAND_WRITE_BIOS_CONFIG                2
+#define HP_WMI_COMMAND_TYPE_SET_NETWORK_DEVICE_STATE    5
+
+#define HP_WMI_NETWORK_STATE_ENABLE_WIFI                    0x1   
+#define HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_WIFI       0x100   
+#define HP_WMI_NETWORK_STATE_ENABLE_BLUETOOTH               0x2   
+#define HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_BLUETOOTH  0x200   
+
+static acpi_status set_network_device_state(u32 network_device_state)
+{
+	acpi_status status;
+	struct acpi_buffer input;
+    struct wmi_input_data_block input_block;
+    
+    DPRINT("%s\n", __FUNCTION__);
+
+    input_block.signature = HP_WMI_INPUT_DATA_BLOCK_SIGNATURE;
+    input_block.command = HP_WMI_COMMAND_WRITE_BIOS_CONFIG;
+    input_block.command_type = HP_WMI_COMMAND_TYPE_SET_NETWORK_DEVICE_STATE;
+    input_block.data_size = sizeof(input_block.data);
+    input_block.data = network_device_state;
+
+	input.length = sizeof(input_block);
+	input.pointer = &input_block;
+
+	status = wmi_evaluate_method(HP_WMI_READ_WRITE_DATA_GUID,       /* GUID */
+                                 1,                                 /* instance */
+                                 HP_WMI_METHOD_READ_WRITE_4_BYTES,  /* method_id */
+                                 &input,                            /* in */
+                                 NULL);                             /* out */
+
+	return(status);
+}
+
+static acpi_status get_network_device_state(u32 *network_device_state)
+{
+	acpi_status status;
+	struct acpi_buffer input;
+	struct acpi_buffer output;
+	union acpi_object *obj;
+    struct wmi_input_data_block input_block;
+    
+    DPRINT("%s\n", __FUNCTION__);
+
+    input_block.signature = HP_WMI_INPUT_DATA_BLOCK_SIGNATURE;
+    input_block.command = HP_WMI_COMMAND_READ_BIOS_CONFIG;
+    input_block.command_type = HP_WMI_COMMAND_TYPE_GET_NETWORK_DEVICE_STATE;
+    input_block.data_size = 0;
+
+	input.length = sizeof(input_block);
+	input.pointer = &input_block;
+
+	output.length = ACPI_ALLOCATE_BUFFER;
+	output.pointer = NULL;
+
+	status = wmi_evaluate_method(HP_WMI_READ_WRITE_DATA_GUID,       /* GUID */
+                                 1,                                 /* instance */
+                                 HP_WMI_METHOD_READ_WRITE_4_BYTES,  /* method_id */
+                                 &input,                            /* in */
+                                 &output);                          /* out */
+
+    DPRINT("%s: status = 0x%x\n", __FUNCTION__, status);
+
+	if (status != AE_OK)
+    {
+		return(status);
+    }
+
+	obj = (union acpi_object *) output.pointer;
+	if (obj == NULL)
+    {
+		return(AE_NULL_OBJECT);
+    }
+    
+	if (obj->type != ACPI_TYPE_BUFFER)
+    {
+		kfree(obj);
+		return(AE_TYPE);
+	}
+	
+	if (obj->buffer.length != 12)
+    {
+		kfree(obj);
+        return(AE_BAD_DATA);
+    }
+
+    *network_device_state = *((u32 *) &obj->buffer.pointer[8]);
+	
+	kfree(obj);
+	
+	return(AE_OK);
+}
 
 /*
  * sysfs callback functions and files
@@ -80,226 +171,115 @@ static u32 gpio_base_address;
 
 static ssize_t bluetooth_show(struct device *dev, struct device_attribute *devattr, char *buf)
 {
-	u8 data;
+    acpi_status status;
+    u32 network_device_state;
+	
+    status = get_network_device_state(&network_device_state);
 
-	data = inb(gpio_base_address + GPIO_9_THROUGH_10_OFFSET);
+    if (status != AE_OK)
+    {
+        return(-1);
+    }
 
-    DPRINT("%s: status = 0x%x\n", __FUNCTION__, data);
-
-    return(snprintf(buf, PAGE_SIZE, "%u\n", (data & BLUETOOTH_OFF) ? 0 : 1));
+    return(snprintf(buf, PAGE_SIZE, "%u\n", (network_device_state & HP_WMI_NETWORK_STATE_BLUETOOTH_ON) ? 1 : 0));
 }
+
 
 static ssize_t bluetooth_set(struct device *dev, struct device_attribute *devattr,
                const char *buf, size_t count)
 {
-    unsigned long val;
-	u8 original_data;
-	u8 new_data;
+	unsigned long val;
+    acpi_status status;
+    u32 network_device_state;
 
     val = simple_strtoul(buf, NULL, 10);
 
     DPRINT("%s: new value = %lu\n", __FUNCTION__, val);
-
-	mutex_lock(&gpio_mutex);
-
-	original_data = inb(gpio_base_address + GPIO_9_THROUGH_10_OFFSET);
-    new_data = original_data;
-
+    
     if (val)
     {
-        new_data &= ~BLUETOOTH_OFF;
+        /* enable the device */
+    	network_device_state = HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_BLUETOOTH | HP_WMI_NETWORK_STATE_ENABLE_BLUETOOTH;
     }
     else
     {
-        new_data |= BLUETOOTH_OFF;
+        /* disable the device */
+    	network_device_state = HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_BLUETOOTH;
     }
 
-    if (new_data != original_data)
+	status = set_network_device_state(network_device_state);
+
+    if (status != AE_OK)
     {
-	    outb(new_data, gpio_base_address + GPIO_9_THROUGH_10_OFFSET);
+        count = -1;
     }
-
-	mutex_unlock(&gpio_mutex);
-
+	
     return(count);
 }
 
 static ssize_t wifi_show(struct device *dev, struct device_attribute *devattr, char *buf)
 {
-	u8 data;
+    acpi_status status;
+    u32 network_device_state;
+	
+    status = get_network_device_state(&network_device_state);
 
-	data = inb(gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
+    if (status != AE_OK)
+    {
+        return(-1);
+    }
 
-    DPRINT("%s: status = 0x%x\n", __FUNCTION__, data);
-
-    return(snprintf(buf, PAGE_SIZE, "%u\n", (data & WIFI_RADIO_ON) ? 1 : 0));
+    return(snprintf(buf, PAGE_SIZE, "%u\n", (network_device_state & HP_WMI_NETWORK_STATE_WIFI_ON) ? 1 : 0));
 }
 
 static ssize_t wifi_set(struct device *dev, struct device_attribute *devattr,
                const char *buf, size_t count)
 {
-    unsigned long val;
-	u8 original_data;
-	u8 new_data;
+	unsigned long val;
+    acpi_status status;
+    u32 network_device_state;
 
     val = simple_strtoul(buf, NULL, 10);
 
     DPRINT("%s: new value = %lu\n", __FUNCTION__, val);
-
-	mutex_lock(&gpio_mutex);
-
-	original_data = inb(gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
-    new_data = original_data;
-
+    
     if (val)
     {
-        new_data |= WIFI_RADIO_ON;
+        /* enable the device */
+    	network_device_state = HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_WIFI | HP_WMI_NETWORK_STATE_ENABLE_WIFI;
     }
     else
     {
-        new_data &= ~WIFI_RADIO_ON;
+        /* disable the device */
+    	network_device_state = HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_WIFI;
     }
 
-    if (new_data != original_data)
+	status = set_network_device_state(network_device_state);
+
+    if (status != AE_OK)
     {
-	    outb(new_data, gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
+        count = -1;
     }
-
-	mutex_unlock(&gpio_mutex);
-
-    return(count);
-}
-
-static ssize_t wwan_show(struct device *dev, struct device_attribute *devattr, char *buf)
-{
-	u8 data;
-
-	data = inb(gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
-
-    DPRINT("%s: status = 0x%x\n", __FUNCTION__, data);
-
-    return(snprintf(buf, PAGE_SIZE, "%u\n", (data & WWAN_RADIO_ON) ? 1 : 0));
-}
-
-static ssize_t wwan_set(struct device *dev, struct device_attribute *devattr,
-               const char *buf, size_t count)
-{
-    unsigned long val;
-	u8 original_data;
-	u8 new_data;
-
-    val = simple_strtoul(buf, NULL, 10);
-
-    DPRINT("%s: new value = %lu\n", __FUNCTION__, val);
-
-	mutex_lock(&gpio_mutex);
-
-	original_data = inb(gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
-    new_data = original_data;
-
-    if (val)
-    {
-        new_data |= WWAN_RADIO_ON;
-    }
-    else
-    {
-        new_data &= ~WWAN_RADIO_ON;
-    }
-
-    if (new_data != original_data)
-    {
-    	outb(new_data, gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
-    }
-
-	mutex_unlock(&gpio_mutex);
-
-    return(count);
-}
-
-static ssize_t ethernet_show(struct device *dev, struct device_attribute *devattr, char *buf)
-{
-	u8 data;
-
-	data = inb(gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
-
-    DPRINT("%s: status = 0x%x\n", __FUNCTION__, data);
-
-    return(snprintf(buf, PAGE_SIZE, "%u\n", (data & ETHERNET_ON) ? 1 : 0));
-}
-
-static ssize_t ethernet_set(struct device *dev, struct device_attribute *devattr,
-               const char *buf, size_t count)
-{
-    unsigned long val;
-	u8 original_data;
-	u8 new_data;
-
-    val = simple_strtoul(buf, NULL, 10);
-
-    DPRINT("%s: new value = %lu\n", __FUNCTION__, val);
-
-#if !ETHERNET_DISABLE_ALLOWED
-    if (!val)
-    {
-        printk(KERN_INFO PREFIX "%s: disabling Ethernet is not allowed, so failing attempt to disable Ethernet\n", __FUNCTION__);
-        return(-1);
-    }
-#endif
-
-	mutex_lock(&gpio_mutex);
-
-	original_data = inb(gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
-    new_data = original_data;
-
-    if (val)
-    {
-        new_data |= ETHERNET_ON;
-    }
-    else
-    {
-        new_data &= ~ETHERNET_ON;
-    }
-
-    if (new_data != original_data)
-    {
-    	outb(new_data, gpio_base_address + GPIO_26_THROUGH_28_OFFSET);
-    }
-
-	mutex_unlock(&gpio_mutex);
-
+	
     return(count);
 }
 
 static SENSOR_DEVICE_ATTR(bluetooth,            /* name */
-                          S_IWUSR | S_IRUGO,    /* mode */
+                          S_IWUGO | S_IRUGO,    /* mode */
                           bluetooth_show,       /* show */
                           bluetooth_set,        /* store */
                           0);                   /* index */
 
 static SENSOR_DEVICE_ATTR(wifi,                 /* name */
-                          S_IWUSR | S_IRUGO,    /* mode */
+                          S_IWUGO | S_IRUGO,    /* mode */
                           wifi_show,            /* show */
                           wifi_set,             /* store */
-                          0);                   /* index */
-
-static SENSOR_DEVICE_ATTR(wwan,                 /* name */
-                          S_IWUSR | S_IRUGO,    /* mode */
-                          wwan_show,            /* show */
-                          wwan_set,             /* store */
-                          0);                   /* index */
-
-static SENSOR_DEVICE_ATTR(ethernet,             /* name */
-                          S_IWUSR | S_IRUGO,    /* mode */
-                          ethernet_show,        /* show */
-                          ethernet_set,         /* store */
                           0);                   /* index */
 
 static struct attribute *hpmini_attributes[] =
 {
     &sensor_dev_attr_bluetooth.dev_attr.attr,
     &sensor_dev_attr_wifi.dev_attr.attr,
-    &sensor_dev_attr_wwan.dev_attr.attr,
-    &sensor_dev_attr_ethernet.dev_attr.attr,
     NULL
 };
 
@@ -310,36 +290,6 @@ static const struct attribute_group hpmini_group_radio =
 
 static int __devinit hpmini_probe(struct platform_device *dev)
 {
-    int status;
-    struct pci_dev *pcidev;
-
-    pcidev = pci_get_device(PCI_VENDOR_ID_INTEL,            /* vendor */
-                            PCI_DEVICE_ID_INTEL_ICH7_1,     /* device */
-                            NULL);                          /* from */
-
-    if (pcidev == NULL)
-    {
-        printk(KERN_ERR PREFIX "ICH7-M LPC interface bridge not found\n");
-        return(-EIO);
-    }
-
-    status = pci_enable_device(pcidev);
-
-    if (status != 0)
-    {
-        printk(KERN_ERR PREFIX "unable to enable ICH7-M LPC interface bridge\n");
-        return(-EIO);
-    }
-
-    pci_read_config_dword(pcidev, GPIO_BASE_ADDRESS_REGISTER, &gpio_base_address);
-
-    /* Only bits 15:6 of the GPIO base address register are valid, so mask off
-     * all of the other bits.
-     */
-    gpio_base_address &= GPIO_BASE_ADDRESS_MASK;     
-
-    DPRINT("base address = 0x%x\n", gpio_base_address);
-
     return(0);
 }
 
@@ -410,8 +360,6 @@ static int __init hp_mini_init_module(void)
         platform_driver_unregister(&hpmini_driver);
         return(status);
     }
-
-	mutex_init(&gpio_mutex);
 
     /* Initialize the sysfs interface. */
     status = sysfs_create_group(&hpmini_platform_device->dev.kobj,
