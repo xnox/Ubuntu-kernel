@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook25) netbook-common; urgency=low
+
+  [Andres Salomon]
+
+  * ALSA: hda: fix realtek speaker muting when headphones plugged in.
+
+ -- Tony Espy <espy@canonical.com>  Thu, 02 Apr 2009 22:03:39 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook24) netbook-common; urgency=low
 
   [Andres Salomon]
