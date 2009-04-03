@@ -668,7 +668,7 @@ static struct snd_kcontrol_new stac92hd83xxx_mixer[] = {
 
 static struct hda_verb stac92hd83xxx_core_init[] = {
 	{ 0xa, AC_VERB_SET_CONNECT_SEL, 0x1},
-	{ 0xb, AC_VERB_SET_CONNECT_SEL, 0x1},
+	{ 0xb, AC_VERB_SET_CONNECT_SEL, 0x0},
 	{ 0xd, AC_VERB_SET_CONNECT_SEL, 0x0},
 	{}
 };
