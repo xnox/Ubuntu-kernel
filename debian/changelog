@@ -1,3 +1,9 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-24.51netbook27) netbook-common; urgency=low
+
+  * ABI bump to -24
+
+ -- Steve Conklin <sconklin@canonical.com>  Wed, 08 Apr 2009 13:21:19 -0500
+
 linux-ubuntu-modules-2.6.24 (2.6.24-22.35netbook26) netbook-common; urgency=low
 
   [Michael Frey]
