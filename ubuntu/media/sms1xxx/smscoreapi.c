@@ -38,7 +38,7 @@ static int sms_dbg;
 module_param_named(debug, sms_dbg, int, 0644);
 MODULE_PARM_DESC(debug, "set debug level (info=1, adv=2 (or-able))");
 
-static int default_mode = 4;
+static int default_mode;
 module_param(default_mode, int, 0644);
 MODULE_PARM_DESC(default_mode, "default firmware id (device mode)");
 
@@ -449,8 +449,18 @@ EXPORT_SYMBOL_GPL(smscore_register_device);
  */
 int smscore_start_device(struct smscore_device_t *coredev)
 {
+#if 0
 	int rc = smscore_set_device_mode(
 			coredev, smscore_registry_getmode(coredev->devpath));
+#else
+	/* Use default_mode defined in the cards structure
+	 * only if no module option was specified */
+	int startup_mode = (default_mode) ?
+		smscore_registry_getmode(coredev->devpath) :
+		sms_get_board(smscore_get_board_id(coredev))->default_mode;
+
+	int rc = smscore_set_device_mode(coredev, startup_mode);
+#endif
 	if (rc < 0) {
 		sms_info("set device mode faile , rc %d", rc);
 		return rc;

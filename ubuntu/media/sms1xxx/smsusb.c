@@ -478,6 +478,8 @@ struct usb_device_id smsusb_id_table[] = {
 		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD },
 	{ USB_DEVICE(0x2040, 0x2019),
 		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD },
+	{ USB_DEVICE(0x2040, 0x2021),
+		.driver_info = SMS1XXX_BOARD_DELL_TIGER_MINICARD_ISDBT },
 	{ USB_DEVICE(0x2040, 0x5500),
 		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_WINDHAM },
 	{ USB_DEVICE(0x2040, 0x5510),
@@ -489,7 +491,7 @@ struct usb_device_id smsusb_id_table[] = {
 	{ USB_DEVICE(0x2040, 0x5580),
 		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
 	{ USB_DEVICE(0x2040, 0x5590),
-		.driver_info = SMS1XXX_BOARD_DELL_DVBT },
+		.driver_info = SMS1XXX_BOARD_DELL_ISDBT },
 
 	{ USB_DEVICE(0x2040, 0xb400),
 		.driver_info = SMS1XXX_BOARD_HAUPPAUGE_CMMB },

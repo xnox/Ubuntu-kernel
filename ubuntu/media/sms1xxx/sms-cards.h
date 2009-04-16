@@ -37,10 +37,13 @@
 #define SMS1XXX_BOARD_DELL_CMMB 11
 #define SMS1XXX_BOARD_DELL_TIGER_MINICARD_CMMB_R1 12
 #define SMS1XXX_BOARD_DELL_TIGER_MINICARD_CMMB 13
+#define SMS1XXX_BOARD_DELL_ISDBT 14
+#define SMS1XXX_BOARD_DELL_TIGER_MINICARD_ISDBT 15
 
 struct sms_board {
 	enum sms_device_type_st type;
 	char *name, *fw[DEVICE_MODE_MAX];
+	int default_mode;
 
 	/* gpios */
 	int led_power, led_hi, led_lo, lna_ctrl, rf_switch;
