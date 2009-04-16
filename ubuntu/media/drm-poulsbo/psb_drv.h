@@ -52,20 +52,6 @@ typedef struct psb_2d_blit_queue
 
 extern void psb_blit_2d_reg_write(struct drm_psb_private *dev_priv, uint32_t * cmdbuf);
 
-
-extern int psb_blit_queue_init(psb_2d_blit_queue_ptr q);
-
-extern int psb_blit_queue_is_empty(psb_2d_blit_queue_ptr q);
-
-extern int psb_blit_queue_is_full(psb_2d_blit_queue_ptr q);
-
-
-extern delayed_2d_blit_req_ptr psb_blit_queue_get_item(psb_2d_blit_queue_ptr q);
-
-
-extern int psb_blit_queue_put_item(psb_2d_blit_queue_ptr q, delayed_2d_blit_req_ptr elem);
-void psb_blit_queue_clear(psb_2d_blit_queue_ptr q);
-
 #endif
 
 

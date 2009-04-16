@@ -120,85 +120,6 @@ static int psb_max_ioctl = DRM_ARRAY_SIZE(psb_ioctls);
 
 static int probe(struct pci_dev *pdev, const struct pci_device_id *ent);
 
-#ifdef DVD_FIX
-int psb_blit_queue_init(psb_2d_blit_queue_ptr q)
-{
-	q->nHead = q->nTail = 0;
-	q->sLock = SPIN_LOCK_UNLOCKED;
-	return 0;
-}
-
-int psb_blit_queue_is_empty(psb_2d_blit_queue_ptr q)
-{
-	int ret;
-	unsigned long irq_flags;
-	spin_lock_irqsave(&q->sLock, irq_flags);
-	ret = (q->nHead == q->nTail) ? 1 : 0;	
-	spin_unlock_irqrestore(&q->sLock,  irq_flags);	
-
-	return ret;
-}
-
-int psb_blit_queue_is_full(psb_2d_blit_queue_ptr q)
-{
-	int ret;
-	//current queue size is 5 elements !
-
-	unsigned long irq_flags;
-	spin_lock_irqsave(&q->sLock, irq_flags);	
-	ret = (q->nHead == ((q->nTail+1)%PSB_BLIT_QUEUE_LEN) ) ? 1 : 0;	
-	spin_unlock_irqrestore(&q->sLock,  irq_flags);
-
-	return ret;
-}
-
-delayed_2d_blit_req_ptr  psb_blit_queue_get_item(psb_2d_blit_queue_ptr q)
-{
-	delayed_2d_blit_req_ptr p;
-	
-	if(psb_blit_queue_is_empty(q))
-		return NULL;	
-
-	unsigned long irq_flags;
-	spin_lock_irqsave(&q->sLock, irq_flags);		
-	p = (delayed_2d_blit_req_ptr) (&(q->sBlitReq[q->nHead]));
-	q->nHead = (q->nHead+1) % PSB_BLIT_QUEUE_LEN;
-	spin_unlock_irqrestore(&q->sLock,  irq_flags);
-
-	return p;
-}
-
-void psb_blit_queue_clear(psb_2d_blit_queue_ptr q)
-{
-	delayed_2d_blit_req_ptr p;
-	unsigned long irq_flags;
-
-	spin_lock_irqsave(&q->sLock, irq_flags);
-	q->nHead = q->nTail = 0;
-	spin_unlock_irqrestore(&q->sLock,  irq_flags);
-}
-
-int psb_blit_queue_put_item(psb_2d_blit_queue_ptr q, delayed_2d_blit_req_ptr elem)
-{
-	if(psb_blit_queue_is_full(q))
-	{
-		DRM_ERROR("%s, fatal error: blit queue is full!\n", __FUNCTION__);
-		return -1;
-	}
-
-	unsigned long irq_flags;
-	spin_lock_irqsave(&q->sLock, irq_flags);		
-	q->sBlitReq[q->nTail].gnBlitCmdSize = elem->gnBlitCmdSize;	//size in dwords
-	memcpy(q->sBlitReq[q->nTail].BlitReqData,  elem->BlitReqData, elem->gnBlitCmdSize * 4);
-	q->nTail = (q->nTail+1) % PSB_BLIT_QUEUE_LEN;
-	spin_unlock_irqrestore(&q->sLock,  irq_flags);	
-	
-	return 0;
-}
-
-#endif
-
-
 #ifdef USE_PAT_WC
 #warning Init pat
 static int __cpuinit psb_cpu_callback(struct notifier_block *nfb,
@@ -354,7 +275,6 @@ static int psb_do_init(struct drm_device *dev)
 #ifdef DVD_FIX
 	//clear_bit(0, &gnBlit);
 	atomic_set(&g_cmd_cancel, 0);
-	psb_blit_queue_init(&gsBlitQueue);
 #endif
 
 	
