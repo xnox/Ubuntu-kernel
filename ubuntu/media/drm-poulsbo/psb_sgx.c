@@ -205,24 +205,6 @@ int psb_2d_submit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
 	return 0;
 }
 
-#ifdef DVD_FIX
-static int psb_2d_submit_blit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
-		  unsigned size)
-{
-	int ret = 0;
-	int i;
-	unsigned submit_size;
-	unsigned long irq_flags;
-	delayed_2d_blit_req_t item;
-
-	item.gnBlitCmdSize = size;	//size in dwords
-	memcpy(item.BlitReqData, cmdbuf, size*4);
-	psb_blit_queue_put_item( &gsBlitQueue, &item );
-	//printk("%s, after psb_blit_queue_put_item\n", __FUNCTION__);	
-	return 0;
-}
-#endif	
-
 int psb_blit_sequence(struct drm_psb_private *dev_priv, uint32_t sequence)
 {
 	uint32_t buffer[8];
@@ -641,8 +623,8 @@ psb_submit_copy_cmdbuf_blit(struct drm_device *dev,
 
 		switch (engine) {
 		case PSB_ENGINE_2D:
-			ret =	//psb_2d_submit
-			    psb_2d_submit_blit(dev_priv, cmd_page + cmd_page_offset,
+			ret =
+			    psb_2d_submit(dev_priv, cmd_page + cmd_page_offset,
 					  cmds);
 			break;
 		case PSB_ENGINE_RASTERIZER:
