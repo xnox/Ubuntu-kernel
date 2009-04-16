@@ -178,6 +178,8 @@ static void rt2x00lib_evaluate_antenna_sample(struct rt2x00_dev *rt2x00dev)
 {
 	enum antenna rx = rt2x00dev->link.ant.active.rx;
 	enum antenna tx = rt2x00dev->link.ant.active.tx;
+	int rssi_curr = rt2x00_get_link_ant_rssi(&rt2x00dev->link);
+	int rssi_old = rt2x00_update_ant_rssi(&rt2x00dev->link, rssi_curr);
 	int sample_a =
 	    rt2x00_get_link_ant_rssi_history(&rt2x00dev->link, ANTENNA_A);
 	int sample_b =
@@ -308,11 +310,6 @@ static void rt2x00lib_precalculate_link_signal(struct link_qual *qual)
 		    (qual->tx_failed + qual->tx_success);
 	else
 		qual->tx_percentage = 50;
-
-	qual->rx_success = 0;
-	qual->rx_failed = 0;
-	qual->tx_success = 0;
-	qual->tx_failed = 0;
 }
 
 static int rt2x00lib_calculate_link_signal(struct rt2x00_dev *rt2x00dev,
@@ -387,6 +384,11 @@ static void rt2x00lib_link_tuner(struct work_struct *work)
 	 * possibly reset some statistics.
 	 */
 	rt2x00lib_evaluate_antenna(rt2x00dev);
+
+	rt2x00dev->link.qual.rx_success = 0;
+	rt2x00dev->link.qual.rx_failed = 0;
+	rt2x00dev->link.qual.tx_success = 0;
+	rt2x00dev->link.qual.rx_failed = 0;
 
 	/*
 	 * Increase tuner counter, and reschedule the next link tuner run.
