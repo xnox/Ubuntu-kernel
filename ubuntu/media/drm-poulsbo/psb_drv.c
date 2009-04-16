@@ -38,7 +38,6 @@
 #ifdef DVD_FIX
 unsigned int gnBlit;
 delayed_2d_blit_req_t gs2DBlitReq;
-atomic_t g_cmd_cancel;
 #endif /* DVD_FIX */
 	
 int drm_psb_debug = 0;
@@ -271,12 +270,6 @@ static int psb_do_init(struct drm_device *dev)
 
 	DRM_ERROR("Debug is 0x%08x\n", drm_psb_debug);
 
-#ifdef DVD_FIX
-	//clear_bit(0, &gnBlit);
-	atomic_set(&g_cmd_cancel, 0);
-#endif
-
-	
 	dev_priv->ta_mem_pages =
 	    PSB_ALIGN_TO(drm_psb_ta_mem_size * 1024, PAGE_SIZE) >> PAGE_SHIFT;
 	dev_priv->comm_page = alloc_page(GFP_KERNEL);
