@@ -31,7 +31,6 @@
 
 #ifdef DVD_FIX
 extern unsigned int gnBlit;
-extern psb_2d_blit_queue_t gsBlitQueue;
 #define BLIT_CMD_SIZE 10
 #endif
 

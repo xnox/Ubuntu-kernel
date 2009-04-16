@@ -38,7 +38,6 @@
 #ifdef DVD_FIX
 unsigned int gnBlit;
 delayed_2d_blit_req_t gs2DBlitReq;
-psb_2d_blit_queue_t gsBlitQueue;
 atomic_t g_cmd_cancel;
 #endif /* DVD_FIX */
 	
