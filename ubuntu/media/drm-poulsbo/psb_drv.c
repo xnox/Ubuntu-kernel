@@ -35,11 +35,6 @@
 #include <linux/notifier.h>
 #include <linux/fb.h>
 
-#ifdef DVD_FIX
-unsigned int gnBlit;
-delayed_2d_blit_req_t gs2DBlitReq;
-#endif /* DVD_FIX */
-	
 int drm_psb_debug = 0;
 EXPORT_SYMBOL(drm_psb_debug);
 static int drm_psb_trap_pagefaults = 0;

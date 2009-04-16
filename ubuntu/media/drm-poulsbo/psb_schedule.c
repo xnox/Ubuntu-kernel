@@ -30,7 +30,6 @@
 #include "psb_scene.h"
 
 #ifdef DVD_FIX
-extern unsigned int gnBlit;
 #define BLIT_CMD_SIZE 10
 #endif
 
