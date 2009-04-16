@@ -29,10 +29,6 @@
 #include "psb_reg.h"
 #include "psb_scene.h"
 
-#ifdef DVD_FIX
-#define BLIT_CMD_SIZE 10
-#endif
-
 #define PSB_ALLOWED_RASTER_RUNTIME (DRM_HZ * 20)
 #define PSB_RASTER_TIMEOUT (DRM_HZ / 2)
 #define PSB_TA_TIMEOUT (DRM_HZ / 5)
@@ -1211,7 +1207,7 @@ static int psb_setup_task_devlocked(struct drm_device *dev,
 	if (scene)
 		task->scene = psb_scene_ref(scene);
 
-#ifdef DVD_FIX
+#ifdef PSB_DETEAR
 	if(PSB_VIDEO_BLIT == arg->sVideoInfo.flag) {
 		task->bVideoFlag = PSB_VIDEO_BLIT;
 		task->x = arg->sVideoInfo.x;

@@ -30,10 +30,11 @@
 #include "psb_schedule.h"
 #include "intel_drv.h"
 
+#ifdef PSB_DETEAR
 
-#ifdef DVD_FIX
 #define MAX_BLIT_REQ_SIZE 16*4
 #define PSB_BLIT_QUEUE_LEN 100
+
 typedef struct delayed_2d_blit_req
 {
 	unsigned char BlitReqData[MAX_BLIT_REQ_SIZE];
@@ -48,12 +49,7 @@ typedef struct psb_2d_blit_queue
 }psb_2d_blit_queue_t, *psb_2d_blit_queue_ptr;
 
 
-
-
-extern void psb_blit_2d_reg_write(struct drm_psb_private *dev_priv, uint32_t * cmdbuf);
-
-#endif
-
+#endif	/* PSB_DETEAR */
 
 enum {
 	CHIP_PSB_8108 = 0,
@@ -491,13 +487,6 @@ struct drm_psb_private {
 	wait_queue_head_t blit_2d_queue;
 	int blit_2d;
 };
-
-struct kern_blit_info
-{
-	int vdc_bit;
-	int cmd_ready;
-	unsigned char  cmdbuf[40]; //Video blit 2D cmd size is 40 bytes!
-};	
 
 struct psb_mmu_driver;
 

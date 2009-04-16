@@ -26,12 +26,12 @@
 #include "psb_drv.h"
 #include "psb_reg.h"
 #include "psb_msvdx.h"
+#include "psb_detear.h"
 #include <linux/wait.h>
 
 extern wait_queue_head_t hotplug_queue;
 char hotplug_env = '0';
 
-extern struct kern_blit_info psb_blit_info;
 
 /*
  * Video display controller interrupt.
@@ -196,13 +196,14 @@ irqreturn_t psb_irq_handler(DRM_IRQ_ARGS)
 	}
 
 	if (vdc_stat) {
-		/*******issue a 2d blit task here ************/
+#ifdef PSB_DETEAR
 		if(psb_blit_info.cmd_ready) {
 			psb_blit_info.cmd_ready = 0;
 			psb_blit_2d_reg_write(dev_priv, psb_blit_info.cmdbuf);
+			/* to resume the blocked psb_cmdbuf_2d() */
 			set_bit(0, &psb_blit_info.vdc_bit);
 		}
-		/**************************************/
+#endif	/* PSB_DETEAR */
 
 		/* MSVDX IRQ status is part of vdc_irq_mask */
 		psb_vdc_interrupt(dev, vdc_stat);

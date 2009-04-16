@@ -27,12 +27,9 @@
 #include "psb_drm.h"
 #include "psb_reg.h"
 #include "psb_scene.h"
+#include "psb_detear.h"
 
 #include "psb_msvdx.h"
-
-#ifdef DVD_FIX
-struct kern_blit_info psb_blit_info;
-#endif
 
 int psb_submit_video_cmdbuf(struct drm_device *dev,
 			    struct drm_buffer_object *cmd_buffer,
@@ -189,11 +186,18 @@ int psb_2d_submit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
 
 		submit_size <<= 2;
 
+#ifdef PSB_DETEAR
+		/* delayed 2D blit tasks are not executed right now,
+		   let's save a copy of the task */
 		if(dev_priv->blit_2d) {
-			dev_priv->blit_2d = 0;
-			memcpy(psb_blit_info.cmdbuf,cmdbuf,10*4);
-		}		
-		else {
+			/* FIXME: should use better approach other
+			   than the dev_priv->blit_2d to distinguish
+			   delayed 2D blit tasks */
+			dev_priv->blit_2d = 0; 
+			memcpy(psb_blit_info.cmdbuf, cmdbuf, 10*4);
+		} else
+#endif	/* PSB_DETEAR */
+		{
 			for (i = 0; i < submit_size; i += 4) {
 				PSB_WSGX32(*cmdbuf++, PSB_SGX_2D_SLAVE_PORT + i);
 			}
@@ -935,22 +939,29 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 	ret = mutex_lock_interruptible(&dev_priv->reset_mutex);
 	if (ret)
 		return -EAGAIN;
+
+#ifdef PSB_DETEAR
 	if(arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT)) {
-		printk("special blit!\n");
 		dev_priv->blit_2d = 1;
 	}
+#endif	/* PSB_DETEAR */
+
 	ret = psb_submit_copy_cmdbuf(dev, cmd_buffer, arg->cmdbuf_offset,
 			arg->cmdbuf_size, PSB_ENGINE_2D, NULL);
 	if (ret)
 		goto out_unlock;
 
+#ifdef PSB_DETEAR
 	if(arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT)) {
 		arg->sVideoInfo.flag = 0;
 		clear_bit(0, &psb_blit_info.vdc_bit);
 		psb_blit_info.cmd_ready = 1;
+		/* block until the delayed 2D blit task finishes
+		   execution */
 		while(test_bit(0, &psb_blit_info.vdc_bit)==0)
 			schedule();
 	}
+#endif	/* PSB_DETEAR */
 
 	psb_fence_or_sync(priv, PSB_ENGINE_2D, arg, fence_arg, NULL);
 
