@@ -473,37 +473,6 @@ static void psb_ta_done(struct drm_psb_private *dev_priv,
 	schedule_delayed_work(&scheduler->wq, 1);
 }
 
-static int psb_2d_blit_issue(struct drm_psb_private *dev_priv )
-{
-	int i;
-	unsigned int *start;
-	uint32_t avail;
-	uint32_t uCmdSize;
-	int num;
-	delayed_2d_blit_req_ptr p;
-
-	p = psb_blit_queue_get_item(&gsBlitQueue);
-	if(!p) {
-		/* no pending 2D task */
-		return 0;
-	}
-
-	avail = PSB_RSGX32(PSB_CR_2D_SOCIF);
-	if(avail < BLIT_CMD_SIZE) {	/* 2d cmdbuf lengthe is 10 dwords */
-		return 0;	/* 2D engine is busy.  maybe a bug!!! */
-	}
-
-	uCmdSize = (p->gnBlitCmdSize)<<2;
-	start = (unsigned int *)p->BlitReqData;
-	for (i = 0; i < uCmdSize; i += 4) {
-		PSB_WSGX32(*start++, PSB_SGX_2D_SLAVE_PORT + i);
-	}
-	(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4);
-
-	return 0;
-}
-
-
 /*
  * Rasterizer done handler.
  */
