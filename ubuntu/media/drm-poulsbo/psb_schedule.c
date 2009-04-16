@@ -30,8 +30,6 @@
 #include "psb_scene.h"
 
 #ifdef DVD_FIX
-/* extern struct semaphore gnRasterDoneNum; */
-extern atomic_t gnRasterDoneNum; 
 extern unsigned int gnBlit;
 extern psb_2d_blit_queue_t gsBlitQueue;
 #define BLIT_CMD_SIZE 10

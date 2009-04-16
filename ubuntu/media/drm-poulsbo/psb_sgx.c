@@ -32,7 +32,6 @@
 
 #ifdef DVD_FIX
 extern psb_2d_blit_queue_t gsBlitQueue;
-extern atomic_t gnRasterDoneNum;
 extern atomic_t g_cmd_cancel;
 struct kern_blit_info psb_blit_info;
 #endif
