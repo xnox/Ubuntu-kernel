@@ -1,3 +1,10 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-24.51netbook28) netbook-common; urgency=low
+
+  * New DVB driver
+  * New Poulsbo driver
+
+ -- Steve Conklin <sconklin@canonical.com>  Fri, 17 Apr 2009 17:43:34 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-24.51netbook27) netbook-common; urgency=low
 
   * ABI bump to -24
