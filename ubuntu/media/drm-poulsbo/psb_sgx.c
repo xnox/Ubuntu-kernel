@@ -158,18 +158,6 @@ static int psb_2d_wait_available(struct drm_psb_private *dev_priv,
 	return ret;
 }
 
-#define VIDEO_BLIT_2D_SIZE 40
-void psb_blit_2d_reg_write(struct drm_psb_private *dev_priv, uint32_t * cmdbuf)
-{
-	int i;
-
-	for (i = 0; i < VIDEO_BLIT_2D_SIZE; i += 4) {
-		PSB_WSGX32(*cmdbuf++, PSB_SGX_2D_SLAVE_PORT + i);
-	}
-	(void)PSB_RSGX32(PSB_SGX_2D_SLAVE_PORT + i - 4);
-}
-
-
 int psb_2d_submit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
 		  unsigned size)
 {
