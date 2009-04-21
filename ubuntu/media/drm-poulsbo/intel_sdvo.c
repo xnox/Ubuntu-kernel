@@ -3705,8 +3705,12 @@ static const struct drm_output_funcs intel_sdvo_output_funcs = {
 extern char hotplug_env;
 static int intel_sdvo_proc_read_hotplug(char *buf, char **start, off_t offset, int count, int *eof, void *data)
 {
-        wait_event_interruptible(hotplug_queue, hotplug_env == '1');
-        return count; 
+	if (count < sizeof(hotplug_env))
+		return 0;
+	memset(buf, 0, count);
+	wait_event_interruptible(hotplug_queue, hotplug_env == '1');
+	buf[0] = hotplug_env;
+	return sizeof(hotplug_env);
 }
 
 static int intel_sdvo_proc_write_hotplug(struct file *file, const char * user_buffer, unsigned long count, void *data)
