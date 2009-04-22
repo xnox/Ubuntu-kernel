@@ -289,7 +289,7 @@ Description: Restricted Linux modules for server kernels
 
 Package: linux-server
 Architecture: i386 amd64
-Section: metapackages
+Section: restricted/metapackages
 Priority: optional
 Depends: linux-image-server (= ${binary:Version}), linux-restricted-modules-server (= ${binary:Version})
 Description: Complete Linux kernel on Server Equipment.
