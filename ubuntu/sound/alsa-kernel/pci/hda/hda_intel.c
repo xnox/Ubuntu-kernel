@@ -58,6 +58,10 @@ static int probe_mask[SNDRV_CARDS] = {[0 ... (SNDRV_CARDS-1)] = -1};
 static int single_cmd;
 static int enable_msi;
 
+int volume_remap;
+int volume_offset_min;
+int volume_offset_max = 100;
+
 module_param_array(index, int, NULL, 0444);
 MODULE_PARM_DESC(index, "Index value for Intel HD audio interface.");
 module_param_array(id, charp, NULL, 0444);
@@ -76,6 +80,15 @@ MODULE_PARM_DESC(single_cmd, "Use single command to communicate with codecs "
 		 "(for debugging only).");
 module_param(enable_msi, int, 0444);
 MODULE_PARM_DESC(enable_msi, "Enable Message Signaled Interrupt (MSI)");
+module_param(volume_remap, int, 0444);
+MODULE_PARM_DESC(volume_remap, "Enable volume remapping "
+		 "(0 = off, 1 = linear, 2 = parabolic).");
+module_param(volume_offset_min, int, 0444);
+MODULE_PARM_DESC(volume_offset_min,
+		 "volume minimum offset when remapping enabled.");
+module_param(volume_offset_max, int, 0444);
+MODULE_PARM_DESC(volume_offset_max,
+		 "volume maximum offset when remapping enabled.");
 
 #ifdef CONFIG_SND_HDA_POWER_SAVE
 /* power_save option is defined in hda_codec.c */
@@ -1965,6 +1978,16 @@ static int __devinit azx_probe(struct pci_dev *pci,
 		dev++;
 		return -ENOENT;
 	}
+
+	/* avoid overflow */
+	if (volume_offset_max < 0)
+		volume_offset_max = 0;
+	if (volume_offset_max > 100)
+		volume_offset_max = 100;
+	if (volume_offset_min < 0)
+		volume_offset_min = 0;
+	if (volume_offset_min > volume_offset_max)
+		volume_offset_min = volume_offset_max;
 
 	card = snd_card_new(index[dev], id[dev], THIS_MODULE, 0);
 	if (!card) {

@@ -13,6 +13,9 @@
 #include <sound/core.h>
 #include <sound/control.h>
 
+#include "hda_codec.h"
+#include "hda_local.h"
+
 /*
  * a subset of information returned via ctl info callback
  */
@@ -34,6 +37,7 @@ struct link_master {
 	struct list_head slaves;
 	struct link_ctl_info info;
 	int val;		/* the master value */
+	struct mutex val_mutex;	/* master value mutex lock */
 };
 
 /*
@@ -109,10 +113,64 @@ static int master_init(struct link_master *master)
 		master->info = slave->info;
 		master->info.count = 1; /* always mono */
 		/* set full volume as default (= no attenuation) */
+		mutex_lock(&master->val_mutex);
 		master->val = master->info.max_val;
+		mutex_unlock(&master->val_mutex);
 		return 0;
 	}
 	return -ENOENT;
+}
+
+unsigned int vol_remap_parabolic(unsigned int min, unsigned int max,
+				 int offset_percent_min, int offset_percent_max,
+				 unsigned int original)
+{
+	unsigned int range = max - min;
+	unsigned int mapped;
+
+	if (range == 0)
+		mapped = max;
+	else {
+		unsigned int offset_min = (range * offset_percent_min) / 100;
+		unsigned int offset_max = (range * offset_percent_max) / 100;
+		mapped = offset_min + ((int_sqrt(range * (original - min)) *
+				       (offset_max - offset_min)) / range);
+	}
+	return mapped;
+}
+
+unsigned int vol_remap_linear(unsigned int min, unsigned int max,
+			      int offset_percent_min, int offset_percent_max,
+			      unsigned int original)
+{
+	unsigned int range = max - min;
+	unsigned int mapped;
+
+	if (range == 0)
+		mapped = max;
+	else {
+		unsigned int offset_min = (range * offset_percent_min) / 100;
+		unsigned int offset_max = (range * offset_percent_max) / 100;
+		mapped = offset_min + (((original-min) *
+				       (offset_max - offset_min)) / range);
+	}
+	return mapped;
+}
+
+unsigned int vol_remap(unsigned int min, unsigned int max,
+		       unsigned int original)
+{
+	switch (volume_remap) {
+	case 2:
+		return vol_remap_parabolic(min, max, volume_offset_min,
+					   volume_offset_max, original);
+	case 1:
+		return vol_remap_linear(min, max, volume_offset_min,
+					volume_offset_max, original);
+	case 0:
+	default:
+		return original;
+	}
 }
 
 static int slave_get_val(struct link_slave *slave,
@@ -279,7 +337,11 @@ static int master_get(struct snd_kcontrol *kcontrol,
 	int err = master_init(master);
 	if (err < 0)
 		return err;
+
+	mutex_lock(&master->val_mutex);
 	ucontrol->value.integer.value[0] = master->val;
+	mutex_unlock(&master->val_mutex);
+
 	return 0;
 }
 
@@ -294,20 +356,35 @@ static int master_put(struct snd_kcontrol *kcontrol,
 	err = master_init(master);
 	if (err < 0)
 		return err;
+
+	mutex_lock(&master->val_mutex);
 	old_val = master->val;
-	if (ucontrol->value.integer.value[0] == old_val)
+	if (ucontrol->value.integer.value[0] == old_val) {
+		mutex_unlock(&master->val_mutex);
 		return 0;
+	}
 
 	uval = kmalloc(sizeof(*uval), GFP_KERNEL);
-	if (!uval)
+	if (!uval) {
+		mutex_unlock(&master->val_mutex);
 		return -ENOMEM;
+	}
+
 	list_for_each_entry(slave, &master->slaves, list) {
 		master->val = old_val;
 		uval->id = slave->slave.id;
 		slave_get_val(slave, uval);
-		master->val = ucontrol->value.integer.value[0];
+
+		/* Put to slaves a remapped volume */
+		master->val = vol_remap(master->info.min_val,
+					master->info.max_val,
+					ucontrol->value.integer.value[0]);
 		slave_put_val(slave, uval);
+		/* And actually save the original unremapped volume
+		   for master_get() */
+		master->val = ucontrol->value.integer.value[0];
 	}
+	mutex_unlock(&master->val_mutex);
 	kfree(uval);
 	return 1;
 }
@@ -342,6 +419,7 @@ struct snd_kcontrol *snd_ctl_make_virtual_master(char *name,
 	if (!master)
 		return NULL;
 	INIT_LIST_HEAD(&master->slaves);
+	mutex_init(&master->val_mutex);
 
 	kctl = snd_ctl_new1(&knew, master);
 	if (!kctl) {
