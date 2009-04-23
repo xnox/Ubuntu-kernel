@@ -13,9 +13,6 @@
 #include <sound/core.h>
 #include <sound/control.h>
 
-#include "hda_codec.h"
-#include "hda_local.h"
-
 /*
  * a subset of information returned via ctl info callback
  */
@@ -116,58 +113,6 @@ static int master_init(struct link_master *master)
 		return 0;
 	}
 	return -ENOENT;
-}
-
-unsigned int vol_remap_parabolic(unsigned int min, unsigned int max,
-				 int offset_percent_min, int offset_percent_max,
-				 unsigned int original)
-{
-	unsigned int range = max - min;
-	unsigned int mapped;
-
-	if (range == 0)
-		mapped = max;
-	else {
-		unsigned int offset_min = (range * offset_percent_min) / 100;
-		unsigned int offset_max = (range * offset_percent_max) / 100;
-		mapped = offset_min + ((int_sqrt(range * (original - min)) *
-				       (offset_max - offset_min)) / range);
-	}
-	return mapped;
-}
-
-unsigned int vol_remap_linear(unsigned int min, unsigned int max,
-			      int offset_percent_min, int offset_percent_max,
-			      unsigned int original)
-{
-	unsigned int range = max - min;
-	unsigned int mapped;
-
-	if (range == 0)
-		mapped = max;
-	else {
-		unsigned int offset_min = (range * offset_percent_min) / 100;
-		unsigned int offset_max = (range * offset_percent_max) / 100;
-		mapped = offset_min + (((original-min) *
-				       (offset_max - offset_min)) / range);
-	}
-	return mapped;
-}
-
-unsigned int vol_remap(unsigned int min, unsigned int max,
-		       unsigned int original)
-{
-	switch (volume_remap) {
-	case 2:
-		return vol_remap_parabolic(min, max, volume_offset_min,
-					   volume_offset_max, original);
-	case 1:
-		return vol_remap_linear(min, max, volume_offset_min,
-					volume_offset_max, original);
-	case 0:
-	default:
-		return original;
-	}
 }
 
 static int slave_get_val(struct link_slave *slave,
@@ -360,15 +305,8 @@ static int master_put(struct snd_kcontrol *kcontrol,
 		master->val = old_val;
 		uval->id = slave->slave.id;
 		slave_get_val(slave, uval);
-
-		/* Put to slaves a remapped volume */
-		master->val = vol_remap(master->info.min_val,
-					master->info.max_val,
-					ucontrol->value.integer.value[0]);
-		slave_put_val(slave, uval);
-		/* And actually save the original unremapped volume
-		   for master_get() */
 		master->val = ucontrol->value.integer.value[0];
+		slave_put_val(slave, uval);
 	}
 	kfree(uval);
 	return 1;

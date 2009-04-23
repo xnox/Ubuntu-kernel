@@ -484,12 +484,5 @@ void snd_print_channel_allocation(int spk_alloc, char *buf, int buflen);
 struct snd_kcontrol *snd_ctl_make_virtual_master(char *name,
 						 const unsigned int *tlv);
 int snd_ctl_add_slave(struct snd_kcontrol *master, struct snd_kcontrol *slave);
-
-/*
- * volume scaling settings
- */
-extern int volume_remap;
-extern int volume_offset_min;
-extern int volume_offset_max;
 		      
 #endif /* __SOUND_HDA_LOCAL_H */
