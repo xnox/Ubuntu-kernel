@@ -34,6 +34,10 @@ while [ $# -gt 0 ]; do
 			DIST="$2"
 			shift
 			;;
+		-t|--target)
+			BUILDTARGET=$2
+			shift
+			;;
 		-v|--verbose)
 			VERBOSE=true
 			;;
@@ -130,7 +134,9 @@ function GetHostEnvironment()
 		if [ "${HOSTARCH}" = "amd64" ]; then
 			case ${ARCH} in
 				i386|lpia)
-					ARCHCMD="linux32"
+					if [ "$AUTOPERS" = "" ]; then
+						ARCHCMD="linux32"
+					fi
 					;;
 				*)
 					;;
@@ -160,21 +166,24 @@ function GetHostEnvironment()
 	export BUILDING="$BASEDIR/build-status"
 	case $BUILDTARGET in
 		kernel)
-			export BUILDDIR="$BASEDIR/ubuntu-2.6"
+			BUILDDIR="$BASEDIR/ubuntu-2.6"
 			;;
 		lum)
-			export BUILDDIR="$BASEDIR/ubuntu-2.6-lum"
+			BUILDDIR="$BASEDIR/ubuntu-2.6-lum"
 			;;
 		*)
-			export BUILDDIR="$BASEDIR/something"
+			BUILDDIR="$BASEDIR/$(basename $SRCDIR)"
 			;;
 	esac
+	export BUILDDIR
 
 	return 0
 }
 
 function GetDistroEnvironment()
 {
+	local N
+
 	if [ ! -f "${CONFDIR}/distros/${DIST}" ]; then
 		echo "No distro configuration file for $1!" >&2
 		return 1
@@ -186,6 +195,14 @@ function GetDistroEnvironment()
 			SRCDIR="${LUMDIR}"
 			;;
 		*)
+			N=0
+			while [ $N -lt ${#PKGNAMES[*]} ]; do
+				if [ "${PKGNAMES[$N]}" = "$BUILDTARGET" ]; then
+					SRCDIR=${PKGDIRS[$N]}
+					break
+				fi
+				let "N++"
+			done
 			;;
 	esac
 

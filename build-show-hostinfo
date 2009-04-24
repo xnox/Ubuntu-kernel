@@ -6,8 +6,8 @@ if [ "$1" = "" ]; then
 	exit
 fi
 
-GetHostEnvironment $1 || exit
 GetDistroEnvironment $DIST || exit
+GetHostEnvironment $1 || exit
 
 cat <<EOD
 SYSNAME:   $SYSNAME

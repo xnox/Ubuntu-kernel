@@ -15,7 +15,7 @@
 # PPADIR: The location of the other stuff. If unset it will default to the
 #         <current dirname>-ppa in the directory above.
 #
-# PPADIR/patches: There are the patches (in git-format-patch format) to be
+# PPADIR/patches: There are the patches (in git format-patch format) to be
 #                 applied and a "series" file (like quilt) which defines the
 #                 patch order. A patch can include a line "BumpABI: yes".
 #                 This will automatically bump the ABI (if applied).
@@ -59,7 +59,7 @@ while [ $# -gt 0 ]; do
 		# Create a new branch (ppabuild) based on this given tag.
 		#
 		--base)
-			if [ "$(git-tag -l $2|head -1)" != "$2" ]; then
+			if [ "$(git tag -l $2|head -1)" != "$2" ]; then
 				echo "Basetag not found or not unique!" >&2
 				exit 1
 			fi
@@ -169,7 +169,7 @@ if [ ! -d .git ]; then
 	echo "Cannot find .git!" >&2
 	exit 1
 fi
-git-checkout -q -f origin
+git checkout -q -f origin
 if $FORCEDERASE; then
 	echo "Removing all but .git..."
 	find . -mindepth 1 -maxdepth 1 -type d ! -name .git -exec rm -rf {} \;
@@ -177,8 +177,8 @@ if $FORCEDERASE; then
 fi
 if [ "$PPABASE" != "" ]; then
 	echo "Creating branch based on $PPABASE..."
-	git-branch --no-track -f ppabuild $PPABASE
-	git-checkout -q -f ppabuild
+	git branch --no-track -f ppabuild $PPABASE
+	git checkout -q -f ppabuild
 else
 	echo "(Re-)Creating master branch..."
 	git checkout -q -f origin
@@ -212,13 +212,13 @@ else
 fi
 
 #
-# Apply all patches in the series file (patches are in git-format-patch style).
+# Apply all patches in the series file (patches are in git format-patch style).
 # If one of the patches is marked "BumpABI: yes", then bump the ABI later.
 #
 BUMPABI=false
 if [ -r "$PATCHDIR/series" ]; then
 	for i in $(cat $PATCHDIR/series); do
-		git-am $PATCHDIR/$i
+		git am $PATCHDIR/$i
 		if [ "$(GetPatchTag BumpABI "$PATCHDIR/$i")" = "yes" ]; then
 			BUMPABI=true
 		fi
@@ -331,6 +331,7 @@ if [ -d debian/abi ]; then
 	if [ -f $PPADIR/abi-$LASTFULLVER.tar.gz ]; then
 		echo "Found and use $FULLVER tarball."
 		tar -xzf $PPADIR/abi-$LASTFULLVER.tar.gz
+		git add debian/abi/$LASTFULLVER
 	fi
 	if [ ! -d debian/abi/$LASTFULLVER ]; then
 		#
@@ -350,7 +351,7 @@ if [ -d debian/abi ]; then
 				debian/abi/$LASTFULLVER
 			echo $ABI >debian/abi/$LASTFULLVER/abiname
 		fi
-		git-add debian/abi/$LASTFULLVER
+		git add debian/abi/$LASTFULLVER
 	fi
 fi
 

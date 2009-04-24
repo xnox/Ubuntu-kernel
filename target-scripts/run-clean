@@ -59,7 +59,7 @@ echo "STATE=cleanup" >"${STATUSFILE}"
 
 rm -f build.log *.udeb
 if [ -d "${DIR}/.git" ]; then
-	if [ "$(cd "${DIR}" && git-branch|grep "${BRANCH}")" = "" ]; then
+	if [ "$(cd "${DIR}" && git branch|grep "${BRANCH}")" = "" ]; then
 		echo "Invalid branch <${BRANCH}>!" >&2
 	else
 		mv "${DIR}" "${DIR}.old"
@@ -68,7 +68,7 @@ if [ -d "${DIR}/.git" ]; then
 			rm -rf "${DIR}.old"
 		fi
 		cd "${DIR}"
-		git-checkout -f "${BRANCH}"
+		git checkout -f "${BRANCH}"
 		cd - >/dev/null 2>&1
 	fi
 fi
