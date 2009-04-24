@@ -15,7 +15,7 @@ KERNEL_ABI_VERSION=$(KERNEL_VERSION)-$(KERNEL_ABI)
 
 GENERIC_i386=
 GENERIC_amd64=
-GENERIC_ia64=itanium
+GENERIC_ia64=generic
 GENERIC_sparc=sparc64
 GENERIC_lpia=lpia
 # Since these can be 32-bit or 64-bit, there is no generic

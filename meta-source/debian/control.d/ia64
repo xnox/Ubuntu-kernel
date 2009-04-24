@@ -1,16 +1,16 @@
 #
 # Itanium (generic)
 #
-Package: linux-itanium
+Package: linux-generic
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-itanium (= ${binary:Version})
+Depends: linux-image-generic (= ${binary:Version})
 Description: Complete Linux kernel on Itanium.
  This package will always depend on the latest complete Linux kernel available
  for Itanium.
 
-Package: linux-image-itanium
+Package: linux-image-generic
 Architecture: ia64
 Section: metapackages
 Priority: optional
@@ -19,7 +19,7 @@ Description: Linux kernel image on Itanium
  This package will always depend on the latest kernel image available
  for Itanium.
 
-Package: linux-headers-itanium
+Package: linux-headers-generic
 Architecture: ia64
 Section: devel
 Priority: optional
@@ -27,3 +27,51 @@ Depends: linux-headers-${kernel-abi-version}-generic
 Description: Linux kernel headers on Itanium
  This package will always depend on the latest kernel headers available
  for Itanium.
+
+Package: linux-itanium
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-generic (= ${binary:Version})
+Description: Obsoleted by: linux-generic
+ This package is only for upgrades.
+
+Package: linux-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-generic (= ${binary:Version})
+Description: Obsoleted by: linux-generic
+ This package is only for upgrades.
+
+Package: linux-image-itanium
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic (= ${binary:Version})
+Description: Obsoleted by: linux-image-generic
+ This package is only for upgrades.
+
+Package: linux-image-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-image-generic (= ${binary:Version})
+Description: Obsoleted by: linux-image-generic
+ This package is only for upgrades.
+
+Package: linux-headers-itanium
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-headers-generic (= ${binary:Version})
+Description: Obsoleted by: linux-headers-generic
+ This package is only for upgrades.
+
+Package: linux-headers-mckinley
+Architecture: ia64
+Section: metapackages
+Priority: optional
+Depends: linux-headers-generic (= ${binary:Version})
+Description: Obsoleted by: linux-headers-generic
+ This package is only for upgrades.
