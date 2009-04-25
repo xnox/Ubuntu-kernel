@@ -133,9 +133,9 @@ Description: Linux kernel headers on 64-bit PA-RISC
 
 
 #
-# Itanium (generic)
+# Itanium
 #
-Package: linux-generic
+Package: linux-ia64
 Architecture: ia64
 Section: metapackages
 Priority: optional
@@ -144,7 +144,7 @@ Description: Complete Linux kernel on Itanium.
  This package will always depend on the latest complete Linux kernel available
  for Itanium.
 
-Package: linux-image-generic
+Package: linux-image-ia64
 Architecture: ia64
 Section: metapackages
 Priority: optional

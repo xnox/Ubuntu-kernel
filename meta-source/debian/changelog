@@ -1,9 +1,12 @@
-linux-ports-meta (2.6.28.6.4) karmic; urgency=low
+linux-ports-meta (2.6.30.1.1) karmic; urgency=low
 
-  * Rename ia64 metapackages to -generic; add transitional -itanium and
-    -mckinley metapackages.
+  [ Colin Watson ]
+  * Added transitional -itanium and -mckinley metapackages.
 
- -- Colin Watson <cjwatson@ubuntu.com>  Fri, 24 Apr 2009 17:41:22 +0100
+  [ Michael Casadevall ]
+  * Renamed -ia64-generic to -ia64 in line with other architectures
+
+ -- Michael Casadevall <mcasadevall@ubuntu.com>  Fri, 24 Apr 2009 16:05:14 -0400
 
 linux-ports-meta (2.6.28.6.3) jaunty; urgency=low
 
