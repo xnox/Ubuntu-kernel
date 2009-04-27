@@ -1,3 +1,13 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-24.51netbook29) netbook-common; urgency=low
+
+  [Colin Ian King]
+
+  * SAUCE: hda-intel volume remapping for non-linear volume scales
+    - LP: #249233
+  * SAUCE: hda-intel volume remapping for non-linear volume scales
+
+ -- Steve Conklin <sconklin@canonical.com>  Mon, 27 Apr 2009 22:38:48 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-24.51netbook28) netbook-common; urgency=low
 
   * New DVB driver
