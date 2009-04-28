@@ -1,3 +1,12 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-24.51netbook30) netbook-common; urgency=low
+
+  [Steve Conklin]
+
+  * snd-hda-intel: enable microphone for alc272 (realtek)
+    - LP: #347811
+
+ -- Steve Conklin <sconklin@ubuntu.com>  Tue, 28 Apr 2009 14:55:15 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-24.51netbook29) netbook-common; urgency=low
 
   [Colin Ian King]
