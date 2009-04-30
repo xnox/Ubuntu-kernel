@@ -1,0 +1,49 @@
+#!/bin/sh
+
+#
+# init.d-style example script for controlling the ATI External Events Daemon
+#
+# Distro maintainers may modify this reference script as necessary to conform
+# to their distribution policies, or they may simply substitute their own script
+# instead.  This reference script is provided merely as a simple example.
+#
+# Copyright (c) 2006, ATI Technologies Inc.  All rights reserved.
+#
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+DAEMONPATH=/usr/sbin/atieventsd
+DAEMONNAME=atieventsd
+DAEMONOPTS=""
+
+[ -f $DAEMONPATH ] || exit 0
+
+. /lib/lsb/init-functions
+
+case "$1" in
+    start)
+        log_daemon_msg "Starting $DAEMONNAME"
+	start-stop-daemon --start --quiet --oknodo --exec $DAEMONPATH -- $DAEMONOPTS
+        log_end_msg $?
+        ;;
+
+    stop)
+        log_daemon_msg "Stopping $DAEMONNAME"
+	start-stop-daemon --stop --quiet --exec $DAEMONPATH --oknodo
+        log_end_msg $?
+        ;;
+
+    restart)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+
+    *)
+        echo "$0 {start|stop|restart}"
+        exit 1
+        ;;
+esac
+
+exit 0
+

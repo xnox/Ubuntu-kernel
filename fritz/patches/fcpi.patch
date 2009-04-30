@@ -1,0 +1,38 @@
+diff -r -u --new-file fcpci/src/defs.h fcpci.new/src/defs.h
+--- fcpci/src/defs.h	2008-07-10 17:05:02.000000000 -0600
++++ fcpci.new/src/defs.h	2008-08-19 08:37:43.000000000 -0600
+@@ -32,13 +32,6 @@
+ # define FALSE	(1==0)
+ #endif
+ 
+-#if !defined(SA_SHIRQ)
+-#define SA_SHIRQ IRQF_SHARED
+-#endif
+-#if !defined(SA_INTERRUPT)
+-#define SA_INTERRUPT IRQF_DISABLED
+-#endif
+-
+ /*---------------------------------------------------------------------------*\
+ \*---------------------------------------------------------------------------*/
+ #if defined (__fcclassic__)
+diff -r -u --new-file fcpci/src/driver.c fcpci.new/src/driver.c
+--- fcpci/src/driver.c	2008-07-10 17:05:02.000000000 -0600
++++ fcpci.new/src/driver.c	2008-08-19 08:38:23.000000000 -0600
+@@ -194,7 +194,7 @@
+ 	}
+ 	lib_strncpy (ctrl->serial, tmp, CAPI_SERIAL_LEN);
+ 	lib_memcpy (&ctrl->profile, card->string[6], sizeof (capi_profile));
+-	strncpy (ctrl->manu, "AVM GmbH", CAPI_MANUFACTURER_LEN);
++	lib_strncpy (ctrl->manu, "AVM GmbH", CAPI_MANUFACTURER_LEN);
+ 	ctrl->version.majorversion = 2;
+ 	ctrl->version.minorversion = 0;
+ 	tmp = card->string[0];
+@@ -374,7 +374,7 @@
+ 			card->irq, 
+ 			&irq_handler, 
+ #if defined (__fcpci__) || defined (__fcpcmcia__)
+-			SA_INTERRUPT | SA_SHIRQ, 
++			IRQF_DISABLED | IRQF_SHARED,
+ #else
+ 			SA_INTERRUPT, 
+ #endif

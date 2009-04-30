@@ -1,0 +1,12 @@
+diff -r -u --new-file madwifi-0.9.4.old/tools/Makefile madwifi-0.9.4/tools/Makefile
+--- tools/Makefile	2007-11-13 02:24:57.000000000 -0700
++++ tools/Makefile	2008-05-07 20:39:19.000000000 -0600
+@@ -45,7 +45,7 @@
+ endif
+ 
+ 
+-ALL=	athstats 80211stats athkey athchans athctrl \
++ALL=	athstats athkey athchans athctrl \
+ 	athdebug 80211debug wlanconfig ath_info
+ 
+ all:	$(ALL)

@@ -1,0 +1,27 @@
+Hi guys,
+	if i will not be around when the time will come, hopefully never, that
+you will have to do a security update of this package, there are several
+things that you need to check and change. Specially in regards of the nvidia
+part, that is yes simpler than the Debian package, but it has a bunch of
+hardencoded values in different place that needs to be updated.
+
+This is list a good reference to keep handy:
+
+nvidia/NVIDIA-Linux-x86*: upstream source package
+nvidia/debian.binary: contains the debian dir that will be installed
+	in nvidia-kernel-source package. Only the changelog entry needs
+	to be updated manually. All the other files are parsed automatically.
+
+debian/rules: there is a nvidia section at the top of the file that contains
+	upstreamrelease and debian version. You might want to update these
+	values to generate proper nvidia* packages.
+	The rules file can only build kernel driver for 2.6 (see PATCHLEVEL=6).
+
+debian/control: clearly here you need to give some love to dependecies in case
+	of major releases.
+
+debian$ grep 6111 * -rl will give you a good shot of the files that will
+requires update (gived that 6111 is the nvidia release).
+
+Have fun!
+Fabio

@@ -1,0 +1,18 @@
+--- common/lib/modules/fglrx/build_mod/firegl_public.c	2007-09-21 09:53:50.000000000 -0400
++++ common/lib/modules/fglrx/build_mod/firegl_public.c	2007-09-21 09:55:38.000000000 -0400
+@@ -43,6 +43,7 @@
+ #if !defined(CONFIG_X86_BIGSMP)
+ #if !defined(CONFIG_X86_VISWS)
+ #if !defined(CONFIG_X86_GENERICARCH)
++#if !defined(CONFIG_X86_XEN)
+ #error unknown or undefined architecture configured
+ #endif
+ #endif
+@@ -52,6 +53,7 @@
+ #endif
+ #endif
+ #endif
++#endif
+ #endif
+ 
+ /* The dirty-page-tracking patch included in NLD 9 SMP kernels defines

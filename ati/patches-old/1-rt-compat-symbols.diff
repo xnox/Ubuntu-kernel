@@ -1,0 +1,26 @@
+--- common/lib/modules/fglrx/build_mod/firegl_public.c	2007-08-01 12:34:22.000000000 +0000
++++ common/lib/modules/fglrx/build_mod/firegl_public.c	2007-08-01 12:35:47.000000000 +0000
+@@ -1022,7 +1022,11 @@ unsigned int ATI_API_CALL __ke_is_proces
+    int process_terminated = 1;
+   
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,17)  
++#if !defined(CONFIG_PREEMPT_RT) && !defined(CONFIG_XEN)
+    rcu_read_lock();
++#else
++   preempt_disable();
++#endif
+ #else   
+    read_lock(&tasklist_lock);
+ #endif   
+@@ -1039,7 +1039,11 @@ unsigned int ATI_API_CALL __ke_is_proces
+       }
+    }   
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,17)  
++#if !defined(CONFIG_PREEMPT_RT) && !defined(CONFIG_XEN)
+    rcu_read_unlock();
++#else
++   preempt_enable();
++#endif
+ #else   
+    read_unlock(&tasklist_lock);
+ #endif   

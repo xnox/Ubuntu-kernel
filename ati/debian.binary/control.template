@@ -1,0 +1,22 @@
+Source: fglrx-kernel
+Section: restricted
+Priority: optional
+Maintainer: Daniel Stone <daniel.stone@ubuntu.com>
+Build-Depends: debhelper (>> 3.0.0), make, libc6-dev
+Standards-Version: 3.6.0
+
+Package: fglrx-kernel-#KVERS#
+Architecture: i386
+Provides: fglrx-kernel-#VERSION#
+Depends: fglrx-kernel-common (>= #VERSION#)
+Recommends: linux-image-#KVERS#
+Description: ATI binary kernel module for Linux #KVERS#
+ These XFree86/X.Org 4.x binary drivers provide optimized hardware acceleration
+ of OpenGL applications via a direct-rendering X Server and support the Radeon
+ r2xx/r3xx/r4xx (RADEON 8500 and above) chipsets.
+ .
+ This package contains the ATI binary kernel module needed by
+ fglrx-driver.
+ .
+ For more information on this source package visit ATI's homepage
+ at http://www.ati.com/ .

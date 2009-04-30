@@ -1,0 +1,20 @@
+#!/bin/sh
+
+set -e
+
+if [ -n "@@NV_ALT@@" ] && [ ! -e /lib/linux-restricted-modules/.nvidia_@@NV_ALT@@_installed ]; then
+	mkdir -p /lib/linux-restricted-modules
+	echo "# do not remove this file, it's needed by /sbin/lrm-video" \
+		> /lib/linux-restricted-modules/.nvidia_@@NV_ALT@@_installed
+fi
+
+# remove bogus libwfb divert, since the xserver version should be used or
+# problems arise.
+if [ "$(dpkg-divert --list /usr/lib/xorg/modules/libwfb.so | awk '{ print $7 }')" = "nvidia-glx@@NV_LEGACY@@" ]; then
+    dpkg-divert --remove --rename --package nvidia-glx@@NV_LEGACY@@ --divert /usr/lib/nvidia/libwfb.so.xserver-xorg-core /usr/lib/xorg/modules/libwfb.so > /dev/null
+fi
+
+
+#DEBHELPER#
+
+ldconfig

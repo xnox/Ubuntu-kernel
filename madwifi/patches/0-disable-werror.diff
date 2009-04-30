@@ -1,0 +1,11 @@
+--- Makefile.inc	2007-01-18 09:26:23.000000000 +0100
++++ Makefile.inc	2007-05-09 14:36:01.000000000 +0200
+@@ -146,7 +146,7 @@
+ # 
+ TOOLS=  $(TOP)/tools 
+ 
+-COPTS+=	-Werror
++#COPTS+=	-Werror
+ INCS=	-include $(TOP)/include/compat.h -I$(TOP)/include
+ 
+ # TARGET defines the target platform architecture. It must match one of

@@ -1,0 +1,10 @@
+#!/bin/sh
+set -e
+
+if [ -L /etc/rcS.d/S15linux-restricted-modules-common ]; then
+	mv /etc/rcS.d/S15linux-restricted-modules-common \
+	   /etc/rcS.d/S07linux-restricted-modules-common
+fi
+
+#DEBHELPER#
+

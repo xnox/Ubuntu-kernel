@@ -1,0 +1,28 @@
+# Card specific settings...
+#
+
+I_CARD="FRITZ!Card DSL SL USB"
+I_DRIVER=fcdslslusb
+
+I_STACK=3.11.05
+I_DATE=050707
+I_BLACKFLAG=1
+I_FIRMWARE=fdlubase.frm
+I_DRDSL=1
+I_RPMFILES=
+I_SCRIPTS=
+I_FLAGS="USB DSL"
+
+HAVE_PRE_INST=1
+HAVE_POST_INST=1
+HAVE_MAIN_INST=1
+
+FILE_PRE_INST=install.pre
+PROC_PRE_INST=pre_install
+
+FILE_MAIN_INST=install.main
+PROC_MAIN_INST=install_main
+
+FILE_POST_INST=install.post
+PROC_POST_INST=post_install
+

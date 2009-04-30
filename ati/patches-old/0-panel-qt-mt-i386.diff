@@ -1,0 +1,67 @@
+diff -Nur panel.orig/Makefile panel/Makefile
+--- extra_src/panel/Makefile	2004-09-12 10:48:59.000000000 +0300
++++ extra_src/panel/Makefile	2004-09-12 10:49:52.000000000 +0300
+@@ -37,28 +37,16 @@
+ # resolve target platform
+ # (on cross compiles this must be a commandline parameter)
+ PLATFORMTYPE = $(shell uname -m)
+-ifeq ($(PLATFORMTYPE), ia64) 
+-LIBQT_STATIC = libqt64.a
+-LIBQT_DYN = qt
+-LIB_DIR = lib
+-else
+-ifneq ($(findstring $(PLATFORMTYPE), i386 i486 i586 i686), )
++ifneq ($(findstring $(PLATFORMTYPE), ia64 x86_64 i386 i486 i586 i686), )
+ LIBQT_STATIC = libqt.a
+-LIBQT_DYN = qt
+-LIB_DIR = lib
+-else
+-ifeq ($(PLATFORMTYPE), x86_64)
+-LIBQT_STATIC = libqtx86_64.a
+ LIBQT_DYN = qt-mt
+-LIB_DIR = lib64
++LIB_DIR = lib
+ else
+ LIBQT_STATIC = libunknownplatform.a
+ LIBQT_DYN = qtunknown
+ LIB_DIR = unknowndir
+ $(error Unknown Platform)
+ endif
+-endif
+-endif
+ 
+ 
+ # ========================================
+@@ -343,7 +331,7 @@
+ 	$(STRIP) $@
+ 	bzip2 -c $@ >$@.bz2
+ 	rm -f $(BASENAME)
+-	ln -s $@ $(BASENAME)
++	ln $@ $(BASENAME)
+ 
+ 
+ $(TARGET1): $(TARGET1_OBJECTS)
+@@ -401,20 +389,9 @@
+ 
+ 
+ install::
+-	cp $(TARGET0) /usr/X11R6/bin/.
+-	cd /usr/X11R6/bin/. ; rm -f $(BASENAME) ; ln -s $(TARGET0) $(BASENAME)
+-	cp LICENSE.GPL /usr/X11R6/bin/.
+-	cp LICENSE.QPL /usr/X11R6/bin/.
+-	if  [ $KDEDIR ]; then\
+-	  cp fireglcontrol.kdelnk $(KDEDIR)/share/applnk/. ;\
+-	  cp ati.xpm $(KDEDIR)/share/icons/. ;\
+-	fi
+-	if test -d /usr/share/gnome/apps; then \
+-	  cp fireglcontrol.desktop /usr/share/gnome/apps/. ;\
+-	  if test -d /usr/share/pixmaps; then \
+-	    cp ati.xpm /usr/share/pixmaps/. ;\
+-	  fi ;\
+-	fi
++	cp $(BASENAME) $(DESTDIR)/usr/bin/.
++	cp ati.xpm $(DESTDIR)/usr/share/icons/. ; \
++	cp ati.xpm $(DESTDIR)/usr/share/pixmaps/. ; \
+ 
+ source_package::
+ 	@if [ -f $(PACKET_NAME).tar ]; then      \

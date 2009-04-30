@@ -1,0 +1,18 @@
+--- net80211/ieee80211_input.c	2007-05-15 13:41:53.000000000 -0400
++++ net80211/ieee80211_input.c	2007-05-15 13:47:45.000000000 -0400
+@@ -1039,11 +1039,12 @@
+ 			 * incoming fragments
+ 			 * XXX 4-address/QoS frames?
+ 			 */
+-			else if (skb->end - skb->head < ni->ni_vap->iv_dev->mtu +
+-				 hdrlen) {
++			else if (skb_end_pointer(skb) - skb->head <
++				 ni->ni_vap->iv_dev->mtu + hdrlen) {
+ 				ni->ni_rxfrag = skb_copy_expand(skb, 0,
+ 					(ni->ni_vap->iv_dev->mtu + hdrlen) -
+-					(skb->end - skb->head), GFP_ATOMIC);
++					(skb_end_pointer(skb) - skb->head),
++				        GFP_ATOMIC);
+ 				dev_kfree_skb(skb);
+ 			}
+ 		}

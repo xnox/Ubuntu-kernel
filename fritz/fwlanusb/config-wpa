@@ -1,0 +1,8 @@
+network={
+    ssid="hier die ESSID eintragen, wird beim eingangs gestarteten Scan ausgegeben"
+    key_mgmt=WPA-PSK
+    proto=WPA
+    pairwise=TKIP
+    group=TKIP
+    psk="hier steht der geheime Schluessel"
+}

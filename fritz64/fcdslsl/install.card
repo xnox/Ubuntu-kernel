@@ -1,0 +1,41 @@
+# Card specific settings...
+#
+
+I_CARD="FRITZ!Card DSL SL"
+I_DRIVER=fcdslsl
+
+I_STACK=3.11.07
+I_DATE=050707
+I_BLACKFLAG=0
+I_FIRMWARE=fdssbase.bin
+I_DRDSL=1
+I_RPMFILES=
+I_SCRIPTS=
+I_FLAGS="DSL PCI"
+
+HAVE_PRE_INST=1
+HAVE_POST_INST=1
+HAVE_MAIN_INST=1
+
+FILE_PRE_INST=install.pre
+PROC_PRE_INST=pre_install
+
+FILE_MAIN_INST=install.main
+PROC_MAIN_INST=install_main
+
+FILE_POST_INST=install.post
+PROC_POST_INST=post_install
+
+HAVE_LAST_MSG=1
+PROC_LAST_MSG=final_words
+
+final_words () {
+
+	if [ -n "$I_SUSEREL" ]; then
+		PRINT "\nYour system has been updated, please configure your"
+		PRINT "controller with YaST now."
+	else
+		PRINT "\nThe driver files have been copied."
+	fi
+}
+

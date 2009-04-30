@@ -1,0 +1,3 @@
+drivers/net/wireless/ath/ath_pci.o
+drivers/net/wireless/ath_hal/ath_hal.o
+drivers/net/wireless/ath_rate/onoe/ath_rate_onoe.o

@@ -1,0 +1,266 @@
+Index: net80211/ieee80211_linux.c
+===================================================================
+--- net80211/ieee80211_linux.c (revision 2796)
++++ net80211/ieee80211_linux.c (revision 2815)
+@@ -619,6 +619,4 @@
+ 	return ret;
+ }
+-
+-#define	CTL_AUTO	-2	/* cannot be CTL_ANY or CTL_NONE */
+ 
+ static const ctl_table ieee80211_sysctl_template[] = {
+@@ -707,5 +705,5 @@
+ 
+ 	/* add in dynamic data references */
+-	for (i = 4; vap->iv_sysctls[i].ctl_name; i++)
++	for (i = 4; vap->iv_sysctls[i].procname; i++)
+ 		if (vap->iv_sysctls[i].extra1 == NULL)
+ 			vap->iv_sysctls[i].extra1 = vap;
+Index: include/compat.h
+===================================================================
+--- include/compat.h (revision 2601)
++++ include/compat.h (revision 2815)
+@@ -164,4 +164,12 @@
+ #endif
+ 
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24)
++#define CTL_AUTO -2
++#define DEV_ATH 9
++#else
++#define CTL_AUTO CTL_UNNUMBERED
++#define DEV_ATH CTL_UNNUMBERED
++#endif
++
+ #endif /* __KERNEL__ */
+ 
+Index: ath_rate/onoe/onoe.c
+===================================================================
+--- ath_rate/onoe/onoe.c (revision 2141)
++++ ath_rate/onoe/onoe.c (revision 2815)
+@@ -432,13 +432,7 @@
+ static int maxint = 0x7fffffff;		/* 32-bit big */
+ 
+-#define	CTL_AUTO	-2	/* cannot be CTL_ANY or CTL_NONE */
+-
+ /*
+  * Static (i.e. global) sysctls.
+  */
+-enum {
+-	DEV_ATH		= 9,			/* XXX known by many */
+-};
+-
+ static ctl_table ath_rate_static_sysctls[] = {
+ 	{ .ctl_name	= CTL_AUTO,
+Index: ath_rate/amrr/amrr.c
+===================================================================
+--- ath_rate/amrr/amrr.c (revision 2141)
++++ ath_rate/amrr/amrr.c (revision 2815)
+@@ -483,12 +483,7 @@
+ static int min_threshold = 1;
+ 
+-#define	CTL_AUTO	-2	/* cannot be CTL_ANY or CTL_NONE */
+-
+ /*
+  * Static (i.e. global) sysctls.
+  */
+-enum {
+-	DEV_ATH		= 9,			/* XXX known by many */
+-};
+ 
+ static ctl_table ath_rate_static_sysctls[] = {
+Index: ath_hal/ah_os.c
+===================================================================
+--- ath_hal/ah_os.c (revision 2141)
++++ ath_hal/ah_os.c (revision 2815)
+@@ -434,10 +434,4 @@
+ }
+ EXPORT_SYMBOL(ath_hal_memcmp);
+-
+-enum {
+-	DEV_ATH		= 9,			/* XXX must match driver */
+-};
+-
+-#define	CTL_AUTO	-2	/* cannot be CTL_ANY or CTL_NONE */
+ 
+ static ctl_table ath_hal_sysctls[] = {
+Index: ath/if_ath.c
+===================================================================
+--- ath/if_ath.c (revision 2796)
++++ ath/if_ath.c (revision 2815)
+@@ -9286,5 +9286,5 @@
+ 		ret = ATH_SYSCTL_PROC_DOINTVEC(ctl, write, filp, buffer, lenp, ppos);
+ 		if (ret == 0) {
+-			switch (ctl->ctl_name) {
++			switch ((long)ctl->extra2) {
+ 			case ATH_SLOTTIME:
+ 				if (val > 0) {
+@@ -9405,5 +9405,5 @@
+ 		}
+ 	} else {
+-		switch (ctl->ctl_name) {
++		switch ((long)ctl->extra2) {
+ 		case ATH_SLOTTIME:
+ 			val = ath_hal_getslottime(ah);
+@@ -9470,95 +9470,110 @@
+ static int maxint = 0x7fffffff;		/* 32-bit big */
+ 
+-#define	CTL_AUTO	-2	/* cannot be CTL_ANY or CTL_NONE */
+-
+ static const ctl_table ath_sysctl_template[] = {
+-	{ .ctl_name	= ATH_SLOTTIME,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "slottime",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_SLOTTIME,
+ 	},
+-	{ .ctl_name	= ATH_ACKTIMEOUT,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "acktimeout",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_ACKTIMEOUT,
+ 	},
+-	{ .ctl_name	= ATH_CTSTIMEOUT,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "ctstimeout",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_CTSTIMEOUT,
+ 	},
+-	{ .ctl_name	= ATH_SOFTLED,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "softled",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_SOFTLED,
+ 	},
+-	{ .ctl_name	= ATH_LEDPIN,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "ledpin",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_LEDPIN,
+ 	},
+-	{ .ctl_name	= ATH_COUNTRYCODE,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "countrycode",
+ 	  .mode		= 0444,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_COUNTRYCODE,
+ 	},
+-	{ .ctl_name	= ATH_REGDOMAIN,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "regdomain",
+ 	  .mode		= 0444,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_REGDOMAIN,
+ 	},
+ #ifdef AR_DEBUG
+-	{ .ctl_name	= ATH_DEBUG,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "debug",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_DEBUG,
+ 	},
+ #endif
+-	{ .ctl_name	= ATH_TXANTENNA,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "txantenna",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_TXANTENNA,
+ 	},
+-	{ .ctl_name	= ATH_RXANTENNA,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "rxantenna",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_RXANTENNA,
+ 	},
+-	{ .ctl_name	= ATH_DIVERSITY,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "diversity",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_DIVERSITY,
+ 	},
+-	{ .ctl_name	= ATH_TXINTRPERIOD,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "txintrperiod",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_TXINTRPERIOD,
+ 	},
+-	{ .ctl_name	= ATH_FFTXQMIN,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "fftxqmin",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_FFTXQMIN,
+ 	},
+-	{ .ctl_name	= ATH_TKIPMIC,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "tkipmic",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_TKIPMIC,
+ 	},
+ #ifdef ATH_SUPERG_XR
+-	{ .ctl_name	= ATH_XR_POLL_PERIOD,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "xrpollperiod",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_XR_POLL_PERIOD,
+ 	},
+-	{ .ctl_name	= ATH_XR_POLL_COUNT,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "xrpollcount",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_XR_POLL_COUNT,
+ 	},
+ #endif
+-	{ .ctl_name	= ATH_ACKRATE,
++	{ .ctl_name	= CTL_AUTO,
+ 	  .procname	= "ackrate",
+ 	  .mode		= 0644,
+-	  .proc_handler	= ath_sysctl_halparam
++	  .proc_handler	= ath_sysctl_halparam,
++	  .extra2	= (void *)ATH_ACKRATE,
+ 	},
+ 	{ 0 }
+@@ -9609,5 +9624,5 @@
+ 
+ 	/* add in dynamic data references */
+-	for (i = 4; sc->sc_sysctls[i].ctl_name; i++)
++	for (i = 4; sc->sc_sysctls[i].procname; i++)
+ 		if (sc->sc_sysctls[i].extra1 == NULL)
+ 			sc->sc_sysctls[i].extra1 = sc;
+@@ -9700,8 +9715,4 @@
+  * are located under ours by sharing the setting for DEV_ATH.
+  */
+-enum {
+-	DEV_ATH		= 9,			/* XXX known by HAL */
+-};
+-
+ static ctl_table ath_static_sysctls[] = {
+ #ifdef AR_DEBUG

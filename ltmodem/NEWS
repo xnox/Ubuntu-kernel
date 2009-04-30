@@ -1,0 +1,35 @@
+news for versions <-alk-7:
+* driver works
+* three binary cores supplied: newest 8.31, 8.31 with misc fix (-with-memset)
+  and some (I don't remember exactly which) previous version
+  (possibly with my fixes). 8.31 is known to fail with some modems (At least with Genius 56PCI-L).
+* 8.31-with-memset removed in -alk-6, because I thought it is equivalent to 8.31.
+  But I've got some reports that -with-memset solves some mysterious problems.
+  That's strange. I thinks -with-memset hided some bug for this people, I ask them to try
+  latest driver (without -with-memset core) and report success or fail to me.
+* some SMP support is here (as of alk-6), but untested (I have no SMP hardware).
+  Should work fine, but I ask those who have SMP system to mail me success/fail stories.
+  UPDATE: One user reported success with SMP configuration.
+
+alk-7:
+* serious cleanup of lt_modem and lt_modem <-> serial interface.
+  It is now quite clean according to my own standards.
+* fix for 2.6.10 (fix contributed by Bjorn Helgaas).
+* switched udev device name to /dev/ttyLTM0 (like in "vendor" port to 2.6)
+* included (quite old) README for Mandrake (contributed by drew3@callplus.net.nz),
+  and added contributed by Bea Petrovicova mdk install makefile target (mdk_install).
+  Mdk users can try to install with mdk_install.
+* tested compilation with gcc-2.95 - works.
+* added pci ids table to serial.c to tell hotplug that ltserial is needed for
+   Lucent/Agere linmodems.
+* added docs about udev setup (with useful input from many people, especially Mir Adnan ALI)
+* changed recommended device mode to 0660 (bug reported by someone signed Sorin)
+
+alk-8:
+* worked around some broken versions of wvdial which fail if they
+  are unable to change baud rate (which does not make sense with softmodems)
+* fixed some compilation warnings
+* used more modern tty API on 2.6.12 and later
+  This release should work with latest TTY-layer changes.
+  (in -mm at the time of writing)
+  NOTE: I don't tested this with -mm, but I think it should work.

@@ -1,0 +1,567 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html style="direction: ltr;" lang="de"><head>
+  <meta http-equiv="content-type" content="text/html; charset=windows-1252">
+  <title>Installation des FRITZ!WLAN USB Sticks in Linux</title><link rel="StyleSheet" href="default.css">
+  <meta name="date" content="06 4, 2002 3:56:59 PM">
+  <meta name="filetype-version" content="1">
+  <meta name="generator-major-version" content="0.1">
+  <meta name="generator-minor-version" content="1">
+  <meta name="layout-height" content="1583">
+  <meta name="layout-width" content="701">
+  <meta name="page-count" content="1">
+  <meta name="author" content="AVM">
+  <meta name="keywords" content="CAPI, LINUX, AVM"></head>
+
+
+
+<body style="color: black; background-color: white; direction: ltr;" alink="red" link="blue" vlink="purple">
+
+
+
+<h1>Hinweise zur Installation des AVM FRITZ!WLAN&nbsp;USB Sticks in Linux</h1>
+
+<table border="1" cellpadding="1" cellspacing="1">
+  <tbody>
+    <tr>
+      <td style="padding: 0.75pt; vertical-align: top; width: 92px;">
+      <p></p><p><br>HINWEIS:</p>
+      </td>
+      <td style="padding: 0.75pt; vertical-align: top; width: 630px;"><br>
+      <p><font size="3">Dieser Treiber ist ausschließlich auf Kernel-Version&nbsp;2.6 oder höher einsetzbar.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+
+
+<h2><a name="Inhalt"></a>Inhalt</h2>
+
+<p><a href="#1">1 Installationshinweise für das Linux-Paket</a></p>
+
+<p><a href="#2">2 Installation des FRITZ!WLAN&nbsp;USB Sticks in Linux</a></p>
+
+<blockquote>
+  <p><a href="#2.1">2.1 Installationsvoraussetzungen</a><br>
+<a href="#2.2">2.2 Installation</a><br>
+<a href="#2.3">2.3 Eine Verbindung zu einer WLAN-Gegenstelle herstellen (Konsole)</a><br>
+<a href="#2.4">2.4 Eine Verbindung zu einer WLAN-Gegenstelle herstellen (openSUSE YaST)</a><br>
+<a href="#2.5">2.5 Ein Ad-hoc-Netzwerk einrichten (WEP-verschlüsselt)</a></p>
+</blockquote>
+
+<p><a href="#3">3 Installationshinweise für die Einbindung in andere Linux-Distributionen</a></p>
+
+<p><a href="#4">4 Deinstallation</a></p>
+
+<p><a href="#5">5 Welche AVM-Geräte werden zur Zeit mit Linux unterstützt?</a></p>
+
+<p><a href="#6">6 AVM-Support</a></p>
+
+<p><a href="#7">7 Copyright Hinweise</a></p>
+
+
+
+
+
+<hr noshade="noshade" size="1">
+<h2><a name="1">1 Installationshinweise für das Linux-Paket</a></h2>
+
+<p>Dieses Dokument beschreibt die Installation in Linux.<br>
+   Unterstützt wird die INTEL i386-Plattform und Kernel Version 2.6.<br>
+   Weitere Informationen zur Verwendung von AVM-Produkten mit Linux finden 
+   Sie auf dem AVM-Linux-Portal unter <a href="http://www.avm.de/linux"><font color="blue">www.avm.de/linux</font></a></p>
+
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+
+
+
+<h2><a name="2">2 Installation des FRITZ!WLAN&nbsp;USB Sticks in Linux</a></h2>
+
+<span style="color: rgb(255, 0, 0);"></span>Hinweise zur Release Version:
+
+<ul style="color: rgb(6, 0, 0);">
+  <li>Die Stick &amp; Surf-Funktion wird nicht unterstützt.</li>
+  <li>Der Konqueror baut die Seiten unter Umst&auml;nden sehr langsam auf. Verwenden Sie versuchsweise einen anderen Browser wie z.B. Firefox.</li>
+
+</ul>
+
+
+
+<h3><a name="2.1">2.1 Installationsvoraussetzungen</a></h3>
+
+<ul type="disc">
+  <li>openSUSE&nbsp;10.2 (2.6.18.2-34-default)</li>
+  <li>i386 (32 Bit)</li>
+  <li>ein FRITZ!WLAN&nbsp;USB&nbsp;Stick</li>
+  <li>Sie müssen die Installation als "root" durchführen, das hei&szlig;t, Sie müssen als Superuser Schreibrechte im "root"-Verzeichnis besitzen.</li>
+  <li>Mindestsystemanforderung für den FRITZ!WLAN&nbsp;USB Stick ist ein PIII 500&nbsp;MHz oder kompatibel</li>
+  <li>USB&nbsp;2.0- oder 1.1-Anschluss (mit verringerter Datenrate)</li>
+  <li style="color: rgb(6, 0, 0);">installierte Kernelquellen und GCC in der Version&nbsp;3.3.5 oder höher</li>
+  <li style="color: rgb(6, 0, 0);">installierter wpa_supplicant (getestet mit der Version&nbsp;0.4.9) für WPA-/WPA2-Verbindungen</li>
+</ul>
+
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+
+
+
+<h3><a name="2.2">2.2 Installation</a></h3>
+
+<table style="width: 729px; height: 174px;" border="1" cellpadding="1" cellspacing="1">
+  <tbody>
+    <tr>
+      <td>
+      <p>getestete Betriebssysteme:</p>
+      </td>
+      <td style="width: 630px;">
+      <p>openSUSE&nbsp;10.2 (Kernel 2.6.18.2-34-default und Kernel 2.6.18.8-0.3-default)<br>
+	   Ubuntu FeistyFawn 7.04 (Kernel 2.6.20-16-generic) <br>
+	   Gentoo InstallCD 2007.0 (Kernel 2.6.20-gentoo-r8 und 2.6.21-gentoo-r3)</p>
+      </td>
+    <tr>
+      <td>
+      <p>Version:</p>
+      </td>
+      <td>
+      <p>1.00.00</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+      <p>Build:</p>
+      </td>
+      <td style="color: rgb(11, 0, 0);">
+      <p>07.07.05</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>Sie benötigen für die Installation System-Verwaltungsrechte (Superuser-Rechte). Dazu müssen Sie sich auf der Konsole als &quot;root&quot; bzw. &quot;Superuser&quot; anmelden.</li>
+  <li>Kopieren Sie das Archiv "fwlanusb-x.yy.zz.tar.gz" aus dem Linux-Archiv auf Ihren Computer (z.B. von einer Diskette durch den auf einer Konsole eingegebenen Befehl &quot;mcopy&quot;) und starten Sie eine Konsole (Eingabeaufforderung).</li>
+  <li>
+    <p>Extrahieren Sie das Archiv mit dem Befehl</p>
+    <p align="left"><b>tar -xzvf fwlanusb-x.yy.zz.tar.gz</b></p>
+    <p>Beispiel für SUSE&nbsp;10.2:</p>
+    <p>tar -xzvf fwlanusb-1.00.00.tar.gz</p>
+    <p>Ein Verzeichnis mit dem Namen &quot;fritz&quot; wird erzeugt.</p>
+  </li>
+  <li>Wechseln Sie in das neue Verzeichnis &quot;fritz&quot; und starten Sie die Installation mit dem Befehl &quot;./install&quot;.</li>
+  <li>Verbinden Sie jetzt den FRITZ!WLAN&nbsp;USB Stick mit Ihrem USB-Anschluss.</li>
+  <li> Der WLAN-Treiber wird initialisiert. In den /var/log/messages erscheint die Ausgabe:<br>
+usbcore: registered new driver fwlanusb<br>
+fwlanusb: loaded</li>
+</ol>
+
+<table border="1" cellpadding="1" cellspacing="1"><tbody>
+  <tr>
+    <td style="padding: 0.75pt; width: 92px; color: rgb(0, 0, 0);" valign="top">
+      <p>HINWEIS:</p>
+    </td>
+    <td style="padding: 0.75pt; width: 630px; color: rgb(0, 0, 0);" valign="top">Der FRITZ!WLAN&nbsp;USB Stick&nbsp;v.1.1 startet anfangs als virtuelles CD-ROM-Laufwerk. Das automatische Umschalten zum WLAN Stick kann länger als eine Minute dauern. Öffnen Sie gegebenenfalls den Arbeitsplatz und wählen Sie in der Übersicht beim Datenträger &quot;FRITZ!WLAN&nbsp;USB Stick selfinstall&quot; die Funktion &quot;Auswerfen&quot; (bzw. eject /dev/sr0), um den Vorgang zu beschleunigen.
+    </td>
+  </tr>
+</tbody></table>
+
+<ol start="8">
+<li>Mit dem Befehl &quot;lsmod&quot; können Sie zusätzlich überprüfen, ob das Modul geladen wurde. Die Ausgabe sollte den folgenden Eintrag enthalten:<br>
+-fwlanusb</li>
+<li>Mit dem Befehl &quot;insmod fwlanusb.ko&quot; kann das Modul aus dem &quot;/src&quot;-Verzeichnis auch manuell geladen werden.<br></li>
+</ol>
+
+<p>Damit ist die Installation des FRITZ!WLAN&nbsp;USB Sticks in Linux abgeschlossen. Im folgenden Abschnitt wird beschrieben, wie eine Verbindung zu einem Access Point aufgebaut werden kann.</p>
+
+<a href="#Inhalt">Zurück zum Anfang</a>
+
+
+
+<h3><a name="2.3">2.3 Eine Verbindung zu einer WLAN-Gegenstelle herstellen (Konsole)</a></h3>
+
+<p>Für den Umgang mit WLAN unter Linux wird nachfolgend erläutert, wie Sie nach WLAN Access Points suchen können und wie Sie den FRITZ!WLAN&nbsp;USB Stick mit einem Access Point verbinden können.</p>
+
+<ol>
+  <li>Stellen Sie sicher, dass der WLAN Access Point (zum Beispiel die FRITZ!Box&nbsp;WLAN) eingeschaltet und in Reichweite ist. Für eine WPA-Verbindung stellen Sie bitte zusätzlich sicher, dass der &quot;wpa_supplicant&quot; installiert ist (&quot;YaST Kontrollzentrum / Software installieren/löschen&quot;). Der WPA-Supplicant befindet sich nach der Installation in dem Verzeichnis &quot;/usr/sbin&quot;.</li>
+  <li>Nach der Eingabe von &quot;iwconfig&quot; erscheint auf der Konsole die Liste der unterstützten Geräte. Die Ausgaben könnten z.B. so aussehen:<br><br>
+eth0 no wireless extensions.<br>
+<span style="font-weight: bold;">wlan0</span> IEEE 802.11b/g ESSID:off/any<br>
+Mode:Managed Channel:0<br>
+Encryption key:off<br>
+Link Quality:0 Signal level:0 Noise level:0<br>
+Rx invalid nwid:0 Rx invalid crypt:0 Rx invalid frag:0<br>
+Tx excessive retries:0 Invalid misc:0 Missed beacon:0<br><br>
+In diesem Beispiel ist der FRITZ!WLAN&nbsp;USB Stick das Gerät <span style="font-weight: bold;">wlan0</span>.<br><br></li>
+  <li>Mit dem Befehl &quot;iwlist wlan0 scan&quot; können Sie jetzt nach WLAN-Geräten in Reichweite suchen. Die Angabe nach &quot;essid&quot; steht dabei für den Netzwerknamen. Die Ausgabe könnte zum Beispiel so aussehen:<br>
+Cell 01 - Address: 00:11:22:33:44:55<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ESSID: "FRITZ!Box"</li>
+</ol>
+
+<span style="font-weight: bold;">WEP-Verschlüsselung</span>
+
+<ol>
+  <li>Bei WEP-Verschlüsselung können Sie sich mit dem Befehl &quot;iwconfig essid&quot; mit einem der gefundenen WLAN Access Points verbinden. In diesem Beispiel lautet der Befehl:<br>
+iwconfig wlan0 essid 'FRITZ!Box'<br>
+  </li>
+  <li>Über den Befehl &quot;iwconfig wlan0 key s: &lt;ASCII-Zeichenfolge&gt;&quot; wird der Netzwerkschlüssel für den Access Point angegeben. In diesem Beispiel ist es ein 128-Bit-WEP-Schlüssel:<br>
+iwconfig wlan0 key s:1234567890123</li>
+  <li>Für die DHCP-Funktion bitte den Leightweight Resolver Daemon installieren (Paketname: &quot;bind-chrootenv&quot;, es enthält das benötigte Paket &quot;lwresd&quot;). Um eine IP-Adresse von der FRITZ!Box zu erhalten, geben Sie den folgenden Befehl ein:<br>
+dhcpcd <span style="font-weight: bold;">wlan0</span></li>
+  <li>Damit ist die Verbindung hergestellt.<br>
+Starten Sie einen Browser und geben Sie die Adresse &quot;fritz.box&quot; ein.</li>
+</ol>
+
+<span style="font-weight: bold;">WPA-/WPA2-Verschlüsselung<br></span>
+
+<ol>
+  <li>Bei WPA-Verschlüsselung können Sie sich mit Hilfe des WPA-Supplicants mit einem der gefundenen WLAN Access Points verbinden. Dazu muss zunächst eine zum Access Point passende Konfigurationsdatei angelegt werden.<br><br>
+
+    <table style="text-align: left;" border="1" cellpadding="1" cellspacing="1">
+      <tbody>
+        <tr>
+          <td style="width: 92px;">HINWEIS:</td><td style="width: 630px;">Je ein Beispielscript &quot;config-wpa&quot; und &quot;config-wpa2&quot; liegt dem Installationspaket bei.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <br>
+    Bezogen auf das eingangs beschriebene Beispiel würde die WPA-Konfigurationsdatei zum Beispiel so aussehen:<br><br>
+    <span style="color: rgb(51, 102, 255);">network={<br>
+    &nbsp;&nbsp;&nbsp; ssid=&quot;
+    hier die ESSID eintragen, wird beim eingangs gestarteten Scan ausgegeben&quot;<br>
+    &nbsp;&nbsp;&nbsp; key_mgmt=WPA-PSK<br>
+    &nbsp;&nbsp;&nbsp; proto=WPA<br>
+    &nbsp;&nbsp;&nbsp; pairwise=TKIP<br>
+    &nbsp;&nbsp;&nbsp; group=TKIP<br>
+    &nbsp;&nbsp;&nbsp; psk=&quot;hier steht der geheime Schlüssel&quot;<br>
+    }</span><br><br>
+    Speichern Sie die Datei z.B. unter dem Namen &quot;config-wpa&quot;.<br>
+    Sofern Sie die WPA2-Verschlüsselung verwenden, würden sich die Angaben in der Datei wie folgt ändern:<br><br>
+    <span style="color: rgb(51, 102, 255);">network={<br>
+    &nbsp;&nbsp;&nbsp; ssid=&quot;
+    hier die ESSID eintragen, wird beim eingangs gestarteten Scan ausgegeben&quot;<br>
+    &nbsp;&nbsp;&nbsp; key_mgmt=WPA-PSK<br>
+    &nbsp;&nbsp;&nbsp; proto=<span style="font-weight: bold;">WPA2</span><br>
+    &nbsp;&nbsp;&nbsp; pairwise=<span style="font-weight: bold;">CCMP</span><br>
+    &nbsp;&nbsp;&nbsp; group=<span style="font-weight: bold;">CCMP</span><br>
+    &nbsp;&nbsp;&nbsp; psk=&quot;hier steht der geheime Schlüssel&quot;<br>
+    }</span><br><br>
+    <br>
+    Speichern Sie die Datei z.B. unter dem Namen &quot;config-wpa2&quot;.
+    <br><br>
+    <table style="text-align: left;" border="1" cellpadding="1" cellspacing="1">
+      <tbody>
+        <tr>
+          <td style="width: 92px;">HINWEIS:</td>
+          <td style="width: 630px;">Bei einer FRITZ!Box im Mixed Mode (WPA+WPA2), muss der Eintrag &quot;group=TKIP&quot; im Config Script gesetzt werden!</td>
+        </tr>
+      </tbody>
+    </table>
+    <br>
+  </li>
+  <li>Bezogen auf das Beispiel lautet der Befehl zum Verbindungsaufbau:<br>
+  wpa_supplicant -Dwext -i <span style="font-weight: bold;">wlan0</span> -c <span style="font-weight: bold;">config-wpa</span> -dd&nbsp; &nbsp;<br>bzw. <br>'wpa_supplicant -Dwext -i <span style="font-weight: bold;">wlan0</span> -c <span style="font-weight: bold;">config-wpa2</span> -dd'<br><br>
+  <table style="text-align: left;" border="1" cellpadding="1" cellspacing="1">
+    <tbody>
+      <tr>
+        <td style="width: 92px;">ACHTUNG:</td>
+        <td style="width: 630px;">Sie müssen sich in dem Verzeichnis mit dem Beispielscript befinden (.../fritz) oder den exakten Pfad zur Config-Datei angeben, damit die Datei bei dem Aufruf gefunden wird.</td>
+      </tr>
+    </tbody>
+  </table>
+  <br>
+  <li style="color: rgb(0, 0, 0);">Für die DHCP-Funktion bitte den &quot;Leightweight Resolver Daemon&quot; installieren (Paketname: &quot;bind-chrootenv&quot;, es enthält das benötigte Paket &quot;lwresd&quot;). Um eine IP-Adresse von der FRITZ!Box zu erhalten, geben Sie den folgenden Befehl ein:<br>
+  dhcpcd <span style="font-weight: bold;">wlan0</span></li>
+  <li style="color: rgb(0, 0, 0);">Damit ist die Verbindung hergestellt.<br>
+  Starten Sie einen Browser und geben Sie die Adresse &quot;fritz.box&quot; ein.</li>
+</ol>
+
+<p><span style="font-weight: bold;">Um den DHCP Deamon wieder zu beenden und den Eintrag zu entfernen, führen Sie folgende Befehle aus:</span>
+<br>
+killall -1 dhcpcd<br>
+rm /var/run/dhcpcd-wlan0.pid<br><span style="font-weight: bold;"><br>Eine feste IP-Adresse, ein Standardgateway und der Namensserver für den FRITZ!WLAN&nbsp;USB Stick können auch manuell übergeben werden:</span><br>ifconfig wlan0 &lt;gewünschte IP-Adresse&gt;<br>
+route add default gw &lt;die IP-Adresse der Box&gt;<br>
+echo nameserver &lt;IP-Adresse der Box&gt; &gt;&gt;
+/etc/resolv.conf<span style="font-weight: bold;"></span><span style="font-weight: bold;"><br></span></p>
+<p><span style="font-weight: bold;">Ausführliche Hinweise zum Befehl &quot;iwconfig&quot; und zum &quot;lwresd&quot; finden Sie in den entsprechenden Manual Pages:</span><br>
+man iwconfig<br>
+man lwresd</p>
+<p><span style="font-weight: bold;">Weitere Hinweise zur Konfiguration der Hardware finden Sie in der SUSE-Dokumentation u.a. in den Verzeichnissen:</span><br>/usr/share/doc/packages/wpa_supplicant<br>
+/usr/share/doc/packages/suselinux-userguide_de/ <br>
+/usr/share/doc/packages/suselinux-adminguide_de/</p>
+
+<p><a href="#Inhalt">Zurück zum Anfang</a> </p>
+
+<h3><a name="2.4">2.4 Eine Verbindung zu einer WLAN-Gegenstelle herstellen (openSUSE YaST)</a></h3>
+
+<ol>
+  <li>Starten Sie das YaST-Kontrollzentrum.</li>
+  <li>Wählen Sie die Option &quot;Netzwerkgeräte&quot; und klicken Sie auf &quot;Netzwerkkarte&quot;.</li>
+  <li>Der Dialog zur &quot;Konfiguration der Netzwerkkarten&quot; startet, in dem &quot;Traditionelle Methode mit ifup&quot; voreingestellt ist.</li>
+  <li>Klicken Sie auf die Schaltfläche &quot;Weiter&quot;.</li>
+  <li>Es erscheint der Überblick über die Konfiguration der Netzwerkkarten.</li>
+  <li>Klicken Sie auf die Schaltfläche &quot;Hinzufügen&quot;.</li>
+  <li>Wählen als &quot;Gerätetyp&quot; den Eintrag &quot;Drahtlos&quot; und markieren Sie das Kästchen &quot;USB&quot;.</li>
+  <li>Tragen Sie anschließend im Eingabefeld &quot;Konfigurationsname&quot; den Wert &quot;0&quot; (Null) ein (entspricht wlan0).</li>
+  <li>Klicken Sie anschließend zweimal auf die Schaltfläche &quot;Weiter&quot;.</li>
+  <li>In der Eingabemaske &quot;Konfiguration der drahlosen Netwerkkarte&quot; tragen Sie unter &quot;Netzwerknamen&quot; die SSID des WLAN-Access Points ein. Wählen Sie den zutreffenden Autentifizierungsmodus und geben Sie das entsprechende WLAN-Kennwort ein.</li>
+  <li>Klicken Sie anschließend auf die Schaltfläche &quot;Weiter&quot; und &quot;Beenden&quot;.</li>
+</ol>
+
+<p>Die Verbindung wird nun automatisch aufgebaut.</p>
+
+<p><a href="#Inhalt">Zurück zum Anfang</a> </p>
+
+
+<h3><a name="2.5">2.5 Ein Ad-hoc-Netzwerk einrichten (WEP-verschlüsselt)</a></h3>
+
+<p>Nachfolgend wird beschrieben, wie Sie ein Ad-hoc-Netzwerk unter Linux einrichten. Die Ad-hoc-Netzwerkteilnehmer können sich, wie im Abschnitt <a href="#2.3">2.3</a> beschrieben, mit diesem Ad-hoc-Netzwerk verbinden. Rufen Sie den Befehl &quot;iwlist scan&quot; auf, um herauszufinden, welchen Namen der WLAN-Adapter erhalten hat. Die nachfolgende Beschreibung geht von &quot;wlan0&quot; aus.</p>
+
+<ol>
+  <li>Mit dem Befehl &quot;iwconfig essid&quot; können Sie den Namen des WLAN Ad-hoc-Netzwerks festlegen. In diesem Beispiel lautet der Name &quot;ad-hoc&quot;:<br>
+  &nbsp;&nbsp;&nbsp; iwconfig wlan0 essid 'ad-hoc'</li>
+  <li>Über den Befehl &quot;iwconfig wlan0 key s: &lt;ASCII-Zeichenfolge&gt;&quot; wird der Netzwerkschlüssel für das Ad-hoc-Netzwerk festgelegt.<br>
+  Diesen Schlüssel geben alle Ad-hoc-Netzwerkteilnehmer später an. In diesem Beispiel wurde ein 128-Bit-WEP-Schlüssel verwendet:<br>
+  &nbsp;&nbsp;&nbsp; iwconfig wlan0 key s:1234567890123</li>
+  <li>Stellen Sie den Ad-hoc-Modus für die WLAN-Schnittstelle ein:<br>
+  &nbsp;&nbsp;&nbsp; iwconfig wlan0 mode ad-hoc</li>
+  <li>Stellen Sie Kanal für das Ad-hoc-Netzwerk ein. In diesem Beispiel wird Kanal&nbsp;1 verwendet:<br>
+  &nbsp;&nbsp;&nbsp; iwconfig wlan0 channel 1</li>
+  <li>Geben Sie eine IP-Adresse und, falls nötig, eine Subnetzmaske für das Ad-hoc Netzwerk an:<br>
+  &nbsp;&nbsp;&nbsp; iwconfig wlan0 <169.254.229.30> netmask <255.255.0.0> up</li>
+</ol>
+
+<p>Damit ist das Ad-hoc-Netzwerk einsatzbereit.</p>
+
+<p>Ausführliche Hilfestellung zum Thema Netzwerkkonfiguration unter Linux finden Sie z.B.</p>
+<ul>
+  <li>in der Manual Page &quot;man ifconfig&quot;</li>
+  <li>im Netzwerk-How-To unter <a href="http://www.linuxhaven.de/dlhp/HOWTO/DE-Netzwerk-HOWTO-4.html">http://www.linuxhaven.de/dlhp/HOWTO/DE-Netzwerk-HOWTO-4.html</a></li>
+</ul>
+
+<p><a href="#Inhalt">Zurück zum Anfang</a> </p>
+
+
+<h2><a name="3">3 Installationshinweise für die Einbindung in andere Linux-Distributionen</a></h2>
+
+<p>Durch das offene Konzept von Linux können alle aktuellen Distributionen eingesetzt werden. Die in den Treibern enthaltenen Binary-only-Module sind frei von Kernel-Abhängigkeiten. Sie führen daher keine direkten Aufrufe des Kernels (kernel calls) durch. Dadurch sind sie in jeden Linux-Kern integrierbar. Die manuelle Installation muss aber individuell entsprechend der Distribution (Kernel-Konfiguration etc.) und entsprechend der installierten Komponenten (zum Beispiel zusätzlich notwendiger PCMCIA-Module etc.) abgestimmt werden. Alle zur Integration notwendigen Treiberkomponenten, der Quellcode und diese Anleitung werden im &quot;fritz&quot;-Treiberverzeichnis mitgeliefert.</p>
+<p>Eine der möglichen Methoden, die Quellen für andere Distributionen und Kernelversionen zu übersetzen, wird hier beschrieben:<br></p>
+
+<ol>
+  <li>Rufen Sie nach dem Auspacken der Treiberarchivdatei im neu entstandenen Verzeichnis &quot;fritz/src&quot; den Befehl &quot;make&quot; auf.<br>
+Dieser Aufruf führt das dort vorhandene &quot;Makefile&quot; aus.</li>
+  <li>Die daraus entstandene .ko-Datei muss anschließend in das Unterverzeichnis /lib/modules/`uname -r`/extra kopiert werden.<br>
+Für den laufenden Kern geschieht dies automatisch mit dem Aufruf &quot;make install&quot;.</li>
+</ol>
+
+<p>Im Rahmen der Übersetzung werden zwei Komponenten zusammengebunden:<br></p>
+
+<ul>
+  <li>der mitgelieferte Quellcode zur Systemanbindung</li>
+  <li>ein binäres, kernelunabhängiges Modul im Verzeichnis &quot;/fritz/lib&quot;.<br></li>
+</ul>
+
+<p>Bitte beachten Sie, dass der Kern mit den Wireless Extensions (mindestens Version&nbsp;18) konfiguriert sein muss (CONFIG_NET_WIRELESS=y).<br>
+<br>Weitere nützliche Hinweise und Links finden Sie unter: <a href="http://www.avm.de/linux">www.avm.de/linux</a></p>
+
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+
+
+
+<h2><a name="4">4 Deinstallation</a></h2>
+
+<p>Zur Deinstallation genügt das Abziehen des FRITZ!WLAN&nbsp;USB Sticks. Sollte das Modul nicht automatisch entladen werden, geben Sie den Befehl &quot;rmmod fwlanusb&quot; ein.</p>
+
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+
+
+
+<h2><a name="5">5 Welche AVM-Geräte werden zur Zeit mit Linux unterstützt?</a></h2>
+
+<p>Es werden folgende DSL-/ISDN-/Box- und Bluetooth-Produkte mit Linux unterstützt:</p>
+
+<ul type="disc">
+  <li>AVM ISDN-Controller FRITZ!Card&nbsp;Classic (kompatibel zum AVM ISDN-Controller&nbsp;A1) * </li>
+  <li>AVM ISDN-Controller FRITZ!Card&nbsp;PnP * </li>
+  <li>AVM ISDN-Controller FRITZ!Card&nbsp;PCI/FRITZ!Card&nbsp;PCI&nbsp;v2.x * </li>
+  <li>AVM ISDN-Controller FRITZ!Card&nbsp;PCMCIA (kompatibel zum AVM ISDN-Controller&nbsp;A1&nbsp;PCMCIA) * </li>
+  <li>AVM ISDN-Controller FRITZ!Card&nbsp;USB/FRITZ!Card&nbsp;USB&nbsp;v2.x * </li>
+  <li>AVM DSL/ISDN-Controller FRITZ!Card&nbsp;DSL&nbsp;v2.0 * </li>
+  <li>AVM DSL/ISDN-Controller FRITZ!Card&nbsp;DSL&nbsp;USB * </li>
+  <li>AVM DSL-Controller FRITZ!Card&nbsp;DSL&nbsp;USB analog * </li>
+  <li>AVM DSL-Controller FRITZ!Card&nbsp;DSL&nbsp;SL * </li>
+  <li>AVM DSL-Controller FRITZ!Card&nbsp;DSL SL USB * </li>
+  <li>AVM ISDN-Controller&nbsp;B1&nbsp;v1.4/v2.0/v3.0 (ISA) * </li>
+  <li>AVM ISDN-Controller&nbsp;B1&nbsp;PCI / B1&nbsp;PCI&nbsp;v4.0</li>
+  <li>AVM ISDN-Controller&nbsp;B1&nbsp;PCMCIA </li>
+  <li>AVM ISDN-Controller&nbsp;C2</li>
+  <li>AVM ISDN-Controller&nbsp;C4</li>
+  <li>AVM ISDN-Controller&nbsp;T1 * </li>
+  <li>AVM ISDN-Controller&nbsp;T1-B * </li>
+  <li>AVM FRITZ!WLAN&nbsp;USB&nbsp;Stick</li>
+  <li>AVM FRITZ!X&nbsp;USB/ v2.0/&nbsp;v3.0 (kompatibel zu FRITZ!X&nbsp;ISDN) * </li>
+  <li>AVM BlueFRITZ!&nbsp;USB (Im Rahmen eines OpenSource-Projektes - Details unter <a href="http://www.bluez.org">www.bluez.org</a>) *</li>
+  <li>AVM FRITZ!Box (Hinweise zur Installation finden Sie auf dem <a href="http://www.avm.de/linux">AVM Linux-Portal</a> im Bereich FAQ)</li>
+</ul>
+
+<p><font size="2"><i>* &quot;End Of Maintenance&quot; state (EOM) - Der Linux-Treiber für diese Geräte wird von AVM nicht mehr weiterentwickelt.</i></font></p>
+<p>Informationen zu Freigaben finden Sie auch auf der AVM-Homepage und in der Datei &quot;hist-deu.txt&quot; im root-Verzeichnis von <a href="ftp://ftp.avm.de">ftp.avm.de</a>.</p>
+
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+
+<h2><a name="6">6&nbsp;AVM-Support</a></h2>
+
+<p>Dieser Treiber ist ausschließlich auf Kernel-Version&nbsp;2.6 oder höher einsetzbar.<br>
+Aufgrund der Vielzahl an erstellbaren Kernel- und Distributionsvarianten ist der E-Mail-Support auf die im Abschnitt&nbsp;2.1 genannte Betriebssystem- und Kernelversion beschr&auml;nkt. Der Support beschr&auml;nkt sich hierbei auf die reine Installation.
+<p>&Uuml;ber das Internet bietet AVM ausf&uuml;hrliche Informationen und kostenlose Updates. Alle Informationen zum Thema Linux bei AVM finden Sie unter: <a href="http://www.avm.de/linux">www.avm.de/linux</a></p>
+
+<ul type="disc">
+  <li>&Uuml;ber den Button &quot;zur AVM-Hompage&quot; gelangen Sie zur AVM-Startseite. Hier finden Sie detaillierte Informationen zu allen AVM-Produkten sowie Ank&uuml;ndigungen neuer Produkte und Produktversionen.</li>
+  <li>&Uuml;ber die Rubrik &quot;Fragen an die Hotline (FAQs)&quot; gelangen Sie zu einer Sammlung von Antworten zu h&auml;ufig gestellten Fragen. Dar&uuml;ber hinaus bietet der Bereich &quot;Praxis, Tipps &amp; Hintergr&uuml;nde&quot; Hilfestellungen.</li>
+
+  <li>Im Bereich &quot;Aktuelle Downloads&quot; k&ouml;nnen Sie aktuelle Linux-Treiber f&uuml;r alle AVM DSL/ISDN-Controller herunterladen.</li>
+</ul>
+
+<p>Auf dem AVM Data Call Center (ADC) befinden sich alle Programme und Treiber, die auch &uuml;ber die Internetseiten von AVM heruntergeladen werden k&ouml;nnen.<br>
+Bitte nutzen Sie zun&auml;chst die oben beschriebenen Informationsquellen, bevor Sie den Support kontaktieren!</p>
+
+<p>Haben Sie mit den bisherigen Hinweisen und mit Hilfe der verschiedenen Informationsquellen das Problem nicht l&ouml;sen k&ouml;nnen, wenden Sie sich f&uuml;r weitere technische Unterst&uuml;tzung an den AVM-Support.<br>
+Sie k&ouml;nnen eine Support-Anfrage per E-Mail an die AVM versenden. Nutzen Sie dazu bitte unser E-Mail-Formular. Das Formular finden Sie im Internet unter der Adresse: <a href="http://www.avm.de/linux">ww.avm.de/linux</a></p>
+
+<p>F&uuml;llen Sie das Formular aus und schicken Sie es per Mausklick auf die Schaltfl&auml;che &quot;Senden&quot; zum AVM-Support.</p>
+
+<p>EOF</p>
+<a href="#Inhalt">Zurück zum Anfang</a>
+
+
+
+<h2><a name="7">7&nbsp;Copyright Hinweise</a></h2>
+
+<small>
+© AVM GmbH 2007. Alle Rechte vorbehalten. www.avm.de<br><br>
+Diese Dokumentation und die zugehörigen Programme (beides wird nachfolgend als "Software" bezeichnet) sind urheberrechtlich geschützt. <br><br>
+Die Überlassung von Software erfolgt ausschließlich in maschinenlesbarer Form (Object Code Format). AVM räumt dem Lizenznehmer das nicht ausschließliche Recht ein, die Software zu nutzen. Das Nutzungsrecht ist auf den vereinbarten Zeitraum begrenzt, in Ermangelung einer solchen Vereinbarung ist das Nutzungsrecht zeitlich unbefristet. Der Lizenznehmer darf von der Software nur eine Vervielfältigung erstellen, die ausschließlich für Sicherungszwecke verwendet werden darf (Sicherungskopie). Der Lizenznehmer ist außer in den gesetzlich gestatteten Fällen (insbesondere nach § 69e deutsches Urheberrechtsgesetz, Dekompilierung) nicht berechtigt, die Software zu ändern, zurückzuentwickeln, zu disassemblieren, zu übersetzen oder Teile herauszulösen. AVM behält sich alle Rechte vor, die nicht ausdrücklich eingeräumt werden. Der Lizenznehmer darf alphanumerische und sonstige Kennungen von den Datenträgern nicht entfernen und hat sie auf jede Sicherungskopie unverändert zu übertragen. Eine Weitergabe der Ihnen hiermit überlassenen Informationen an Dritte ist nur mit schriftlicher Zustimmung von AVM erlaubt. <br><br>
+Der Lizenznehmer, dem die Software nicht zu Zwecken der gewerblichen Weiterveräußerung überlassen wird (Endkunde), darf das Nutzungsrecht nur zusammen mit dem Produkt, das er zusammen mit der Software von AVM erworben hat, an Dritte weiter geben.
+Im Falle einer Übertragung des Nutzungsrechts an Dritte hat der Lizenznehmer sicherzustellen, dass dem Dritten keine weitergehenden Rechte eingeräumt werden, als AVM nach den vorliegenden Bestimmungen zustehen, und dem Dritten mindestens die bezüglich der Software bestehenden Verpflichtungen aus den vorliegenden Bestimmungen auferlegt werden. Hierbei darf der Lizenznehmer keine Kopien der Software zurückbehalten. Der Lizenznehmer ist zur Einräumung von Unterlizenzen nicht berechtigt. Überlässt der Lizenznehmer die Software einem Dritten, so ist der Lizenznehmer für die Beachtung etwaiger Ausfuhrerfordernisse verantwortlich und hat AVM insoweit von Verpflichtungen freizustellen.<br><br>
+Soweit AVM Software zur Verfügung stellt, für die AVM nur ein abgeleitetes Nutzungsrecht besitzt (Fremdsoftware), gelten zusätzlich und vorrangig vor den vorliegenden Bestimmungen die für die Fremdsoftware vereinbarten Nutzungsbedingungen. Der Lizenznehmer darf etwaige, mit dieser Software im Object Code Format überlassene Fremdsoftware von Texas Instruments („TI Software“) nur mit der Maßgabe verbreiten, dass er die Nutzung der TI Software im Wege einer schriftlichen Lizenzvereinbarung auf das AVM-Produkt beschränkt, das er zusammen mit der AVM-Software erworben hat, und dabei (außer in den gesetzlich gestatteten Fällen) Vervielfältigung, Reverse Engineering, Dekompilierung oder Disassemblierung der TI Software verboten sind. Falls und soweit Open Source Software überlassen wird, gelten zusätzlich und vorrangig vor den vorliegenden Bestimmungen die Nutzungsbedingungen, denen die Open Source Software unterliegt. AVM überlässt auf Verlangen den Quellcode relevanter Open Source Software, soweit die Nutzungsbedingungen solcher Open Source Software eine Herausgabe des Quellcodes vorsehen. AVM wird in den Vertragsunterlagen auf das Vorhandensein und die Nutzungsbedingungen überlassener Fremdsoftware bzw. Open Source Software hinweisen sowie die entsprechenden Nutzungsbedingungen auf Verlangen zugänglich machen. <br><br>
+Diese Software wurde mit größter Sorgfalt erstellt und nach dem Stand der Technik auf Korrektheit überprüft. Für die Qualität, Leistungsfähigkeit sowie Marktgängigkeit der Software für einen bestimmten Zweck, der von dem durch die Softwarebeschreibung abgedeckten Leistungsumfang abweicht, übernimmt AVM weder ausdrücklich noch implizit die Gewähr oder Verantwortung. Für Schäden, die sich direkt oder indirekt aus dem Gebrauch der Dokumentation oder der übrigen Programme ergeben, sowie für beiläufige Schäden oder Folgeschäden haftet AVM nur im Falle des Vorsatzes oder der groben Fahrlässigkeit. Für den Verlust oder die Beschädigung von Hardware oder Software oder Daten infolge direkter oder indirekter Fehler oder Zerstörungen, sowie für Kosten, einschließlich der Kosten für ISDN-, GSM- und ADSL-Verbindungen, die im Zusammenhang mit den gelieferten Programmen und der Dokumentation stehen und auf fehlerhafte Installationen, die von AVM nicht vorgenommen wurden, zurückzuführen sind, sind alle Haftungsansprüche ausdrücklich ausgeschlossen. <br><br>
+AVM übernimmt keine Verpflichtungen zur Erbringung von Software-Service-Leistungen. Diese bedürfen einer gesonderten Vereinbarung. Die in dieser Dokumentation enthaltenen Informationen und die zugehörigen Programme können ohne besondere Ankündigung zum Zwecke des technischen Fortschritts geändert werden. <br>AVM bietet als Hersteller dieses Originalprodukts eine Herstellergarantie. Die Garantiebedingungen sind auf der beiliegenden Produkt-CD in der Datei GARANTIE.PDF im Ordner SOFTWARE/INFO/DEUTSCH zu finden.<br><br>
+Markenzeichen: Soweit nicht anders angegeben, sind alle genannten Markenzeichen gesetzlich geschützte Marken der AVM GmbH. Dies gilt insbesondere für Produktnamen und Logos. Microsoft, Windows und das Windows Logo sind Marken der Microsoft Corporation in den USA und/oder anderen Ländern. Alle anderen Produkt- und Firmennamen sind Marken der jeweiligen Inhaber. <br><br>
+--------------------------------------------------------------------------------<br><br>
+© AVM GmbH 2007. All rights reserved. www.avm.de<br><br>
+
+This documentation and the relevant programs (both herein referred to as "Software") are protected by copyright. <br><br>
+Software is delivered in machine-readable format only (object code format). Under all AVM intellectual property rights, AVM hereby grants licensee the non-exclusive right to use the Software. Unless agreed for a limited time period, the right to use the Software is for an unlimited time period.&nbsp; Licensee shall be entitled to make a copy exclusively reserved for personal backup purposes (backup copy). Unless granted by mandatory law (including but not limited to Art. 69 German Copyright Act for decompiling), licensee shall not be entitled to modify, disassemble, reverse engineer, decompile, disassemble&nbsp; or otherwise alter the Software in whole or in part. AVM reserves all intellectual property rights except as expressly granted herein. Licensee shall not be entitled to modify or delete alpha-numerical or other identifiechoion codes on data median and shall transfer such identification codes onto any legal backup copy. Without the prior written approval of AVM, licensee shall not be entitled to transmit any infomation made available herein. <br><br>
+If licensee has received the Software not for commercial purposes of resale (end user), licensee shall be obliged to transmit the right to use the Software to a third party only in connection with the product licensee acquired together with the Software. In the event that licensee transfers the right to use the Software to a third party, licensee shall ensure not to grant further rights to this third party than originally granted to AVM, and licensee shall ensure to impose this third party the obligations of the present license terms. In such case, licensee shall not withhold any backup copy. Licensee shall not be entitled to grant sublicenses. In the event licensee transmits the Software to a third party, licensee shall be responsible for and shall release AVM insofar from the compliance of export control laws and obligations. <br><br>
+If and insofar AVM provides Software for which AVM is only granted a derived right to use (Third Party Software), the license terms for such Third Party Software shall additionally apply and prevail. If and insofar certain Third Party Software in object code format by Texas Instrument („TI Software“) is provided together with this Software, licensee may only distribute such TI Software pursuant to a written license agreement which restricts use to TI Software embedded in the AVM hardware product licensee acquired together with the Software and prohibits (unless granted by mandatory law) copying, reverse engineering, decompiling or disassembling of TI Software. If Open Source Software is provided, the license terms for such Open Source Software shall additionally apply and prevail. AVM shall provide licensee with the corresponding source code of relevant Open Source Software, if the respective license terms of the Open Source Software include such obligation. AVM shall inform if the Software contains Third Party Software and/or Open Source Software and make available the corresponding license terms on request. <br><br>
+This Software has been produced with all due care and checked for correctness in accordance with state of the art. AVM hereby disclaims all liability and warranties, whether express or implied, relating to this Software’s quality, performance or suitability for any specific purpose which deviates from the performance specifications contained in the Software description. AVM shall not be liable for damages arising directly or indirectly from the use of the manual or related software, nor for incidental or consequential damages, except in case of intent or gross negligence. AVM expressly disclaims all liability for loss of or damage to hardware, software or data as a result of direct or indirect errors or destruction and for any costs, including ISDN, GSM and DSL connection charges, related to the Software supplied and due to incorrect installations not performed by AVM itself. <br><br>
+AVM shall not be obliged to offer any software services. The information in this Software is subject to change without notice for the purpose of technical improvement. <br>
+AVM offers a manufacturer's warranty for this original product. The conditions of this warranty are contained in the WARRANTY.PDF file in the SOFTWARE/INFO folder on the product CD included with delivery. <br><br>
+Trademarks: Unless otherwise indicated, all trademarks mentioned are legally protected trademarks owned by AVM GmbH. This is especially true for product names and logos. Microsoft, Windows and the Windows logo are trademarks owned by Microsoft Corporation in the USA and/or other countries. All other product and company names are trademarks of their respective owners. <br><br>
+-----------------------------------------------------------------------------------------<br><br>
+
+GNU LGPL Copyright Notice and Warranty Disclaimer <br>
+
+This product´s firmware contains library software that is free software; you can redistribute the library software and/or modify it under the terms of the GNU Lesser General Public License as published by the Free Software Foundation (version 2.1 of the license). The library software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. All copyrights are identified in more detail in the library source code. The library source code and a copy of the GNU Lesser General Public License can at least for a period of three years be requested by email fritzbox_info@avm.de or by AVM GmbH, Alt-Moabit 95, 10559 Berlin, Germany.<br><br><br>
+
+GNU LESSER GENERAL PUBLIC LICENSE<br><br>
+
+Version&nbsp;2.1, February 1999 <br><br>
+
+Copyright (C) 1991, 1999 Free Software Foundation, Inc.<br>
+
+59 Temple Place, Suite 330, Boston, MA  02111-1307  USA<br>
+
+Everyone is permitted to copy and distribute verbatim copies<br>
+of this license document, but changing it is not allowed.<br><br><br>
+[This is the first released version of the Lesser GPL.  It also counts<br>
+as the successor of the GNU Library Public License, version 2, hence<br>
+the version number 2.1.]<br><br>
+
+Preamble<br><br>
+
+The licenses for most software are designed to take away your freedom to share and change it. By contrast, the GNU General Public Licenses are intended to guarantee your freedom to share and change free software--to make sure the software is free for all its users. This license, the Lesser General Public License, applies to some specially designated software packages--typically libraries--of the Free Software Foundation and other authors who decide to use it. You can use it too, but we suggest you first think carefully about whether this license or the ordinary General Public License is the better strategy to use in any particular case, based on the explanations below. <br><br>
+When we speak of free software, we are referring to freedom of use, not price. Our General Public Licenses are designed to make sure that you have the freedom to distribute copies of free software (and charge for this service if you wish); that you receive source code or can get it if you want it; that you can change the software and use pieces of it in new free programs; and that you are informed that you can do these things. To protect your rights, we need to make restrictions that forbid distributors to deny you these rights or to ask you to surrender these rights. These restrictions translate to certain responsibilities for you if you distribute copies of the library or if you modify it. <br><br>
+For example, if you distribute copies of the library, whether gratis or for a fee, you must give the recipients all the rights that we gave you. You must make sure that they, too, receive or can get the source code. If you link other code with the library, you must provide complete object files to the recipients, so that they can relink them with the library after making changes to the library and recompiling it. And you must show them these terms so they know their rights. We protect your rights with a two-step method: (1) we copyright the library, and (2) we offer you this license, which gives you legal permission to copy, distribute and/or modify the library. <br><br>
+To protect each distributor, we want to make it very clear that there is no warranty for the free library. Also, if the library is modified by someone else and passed on, the recipients should know that what they have is not the original version, so that the original author's reputation will not be affected by problems that might be introduced by others. Finally, software patents pose a constant threat to the existence of any free program. We wish to make sure that a company cannot effectively restrict the users of a free program by obtaining a restrictive license from a patent holder. Therefore, we insist that any patent license obtained for a version of the library must be consistent with the full freedom of use specified in this license.<br><br>
+Most GNU software, including some libraries, is covered by the ordinary GNU General Public License. This license, the GNU Lesser General Public License, applies to certain designated libraries, and is quite different from the ordinary General Public License. We use this license for certain libraries in order to permit linking those libraries into non-free programs. When a program is linked with a library, whether statically or using a shared library, the combination of the two is legally speaking a combined work, a derivative of the original library. The ordinary General Public License therefore permits such linking only if the entire combination fits its criteria of freedom. The Lesser General Public License permits more lax criteria for linking other code with the library. <br>
+We call this license the "Lesser" General Public License because it does Less to protect the user's freedom than the ordinary General Public License. It also provides other free software developers Less of an advantage over competing non-free programs. These disadvantages are the reason we use the ordinary General Public License for many libraries. However, the Lesser license provides advantages in certain special circumstances. <br><br>
+For example, on rare occasions, there may be a special need to encourage the widest possible use of a certain library, so that it becomes a de-facto standard. To achieve this, non-free programs must be allowed to use the library. A more frequent case is that a free library does the same job as widely used non-free libraries. In this case, there is little to gain by limiting the free library to free software only, so we use the Lesser General Public License. In other cases, permission to use a particular library in non-free programs enables a greater number of people to use a large body of free software. For example, permission to use the GNU C Library in non-free programs enables many more people to use the whole GNU operating system, as well as its variant, the GNU/Linux operating system. Although the Lesser General Public License is Less protective of the users' freedom, it does ensure that the user of a program that is linked with the Library has the freedom and the wherewithal to run that program using a modified version of the Library. The precise terms and conditions for copying, distribution and modification follow. Pay close attention to the difference between a "work based on the library" and a "work that uses the library". The former contains code derived from the library, whereas the latter must be combined with the library in order to run. <br><br>
+
+TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION<br>
+0. This License Agreement applies to any software library or other program which contains a notice placed by the copyright holder or other authorized party saying it may be distributed under the terms of this Lesser General Public License (also called "this License"). Each licensee is addressed as "you". <br>
+A "library" means a collection of software functions and/or data prepared so as to be conveniently linked with application programs (which use some of those functions and data) to form executables. <br>
+The "Library", below, refers to any such software library or work which has been distributed under these terms. A "work based on the Library" means either the Library or any derivative work under copyright law: that is to say, a work containing the Library or a portion of it, either verbatim or with modifications and/or translated straightforwardly into another language. (Hereinafter, translation is included without limitation in the term "modification".) <br><br>
+"Source code" for a work means the preferred form of the work for making modifications to it. For a library, complete source code means all the source code for all modules it contains, plus any associated interface definition files, plus the scripts used to control compilation and installation of the library. <br>
+Activities other than copying, distribution and modification are not covered by this License; they are outside its scope. The act of running a program using the Library is not restricted, and output from such a program is covered only if its contents constitute a work based on the Library (independent of the use of the Library in a tool for writing it). Whether that is true depends on what the Library does and what the program that uses the Library does. <br>
+1. You may copy and distribute verbatim copies of the Library's complete source code as you receive it, in any medium, provided that you conspicuously and appropriately publish on each copy an appropriate copyright notice and disclaimer of warranty; keep intact all the notices that refer to this License and to the absence of any warranty; and distribute a copy of this License along with the Library. <br>
+You may charge a fee for the physical act of transferring a copy, and you may at your option offer warranty protection in exchange for a fee.<br><br>
+2. You may modify your copy or copies of the Library or any portion of it, thus forming a work based on the Library, and copy and distribute such modifications or work under the terms of Section 1 above, provided that you also meet all of these conditions: <br>
+a) The modified work must itself be a software library. <br>
+b) You must cause the files modified to carry prominent notices stating that you changed the files and the date of any change. <br>
+c) You must cause the whole of the work to be licensed at no charge to all third parties under the terms of this License. <br>
+d) If a facility in the modified Library refers to a function or a table of data to be supplied by an application program that uses the facility, other than as an argument passed when the facility is invoked, then you must make a good faith effort to ensure that, in the event an application does not supply such function or table, the facility still operates, and performs whatever part of its purpose remains meaningful. (For example, a function in a library to compute square roots has a purpose that is entirely well-defined independent of the application. Therefore, Subsection 2d requires that any application-supplied function or table used by this function must be optional: if the application does not supply it, the square root function must still compute square roots.) <br><br>
+These requirements apply to the modified work as a whole. If identifiable sections of that work are not derived from the Library, and can be reasonably considered independent and separate works in themselves, then this License, and its terms, do not apply to those sections when you distribute them as separate works. But when you distribute the same sections as part of a whole which is a work based on the Library, the distribution of the whole must be on the terms of this License, whose permissions for other licensees extend to the entire whole, and thus to each and every part regardless of who wrote it. Thus, it is not the intent of this section to claim rights or contest your rights to work written entirely by you; rather, the intent is to exercise the right to control the distribution of derivative or collective works based on the Library. <br><br>
+In addition, mere aggregation of another work not based on the Library with the Library (or with a work based on the Library) on a volume of a storage or distribution medium does not bring the other work under the scope of this License. <br><br>
+3. You may opt to apply the terms of the ordinary GNU General Public License instead of this License to a given copy of the Library. To do this, you must alter all the notices that refer to this License, so that they refer to the ordinary GNU General Public License, version 2, instead of to this License. (If a newer version than version 2 of the ordinary GNU General Public License has appeared, then you can specify that version instead if you wish.) Do not make any other change in these notices. <br><br>
+Once this change is made in a given copy, it is irreversible for that copy, so the ordinary GNU General Public License applies to all subsequent copies and derivative works made from that copy. <br>
+This option is useful when you wish to copy part of the code of the Library into a program that is not a library. <br><br>
+4. You may copy and distribute the Library (or a portion or derivative of it, under Section 2) in object code or executable form under the terms of Sections 1 and 2 above provided that you accompany it with the complete corresponding machine-readable source code, which must be distributed under the terms of Sections 1 and 2 above on a medium customarily used for software interchange. If distribution of object code is made by offering access to copy from a designated place, then offering equivalent access to copy the source code from the same place satisfies the requirement to distribute the source code, even though third parties are not compelled to copy the source along with the object code. <br><br>
+5. A program that contains no derivative of any portion of the Library, but is designed to work with the Library by being compiled or linked with it, is called a "work that uses the Library". Such a work, in isolation, is not a derivative work of the Library, and therefore falls outside the scope of this License. <br>However, linking a "work that uses the Library" with the Library creates an executable that is a derivative of the Library (because it contains portions of the Library), rather than a "work that uses the library". The executable is therefore covered by this License. Section 6 states terms for distribution of such executables. <br>When a "work that uses the Library" uses material from a header file that is part of the Library, the object code for the work may be a derivative work of the Library even though the source code is not. Whether this is true is especially significant if the work can be linked without the Library, or if the work is itself a library. The threshold for this to be true is not precisely defined by law. <br>If such an object file uses only numerical parameters, data structure layouts and accessors, and small macros and small inline functions (ten lines or less in length), then the use of the object file is unrestricted, regardless of whether it is legally a derivative work. (Executables containing this object code plus portions of the Library will still fall under Section 6.) <br>Otherwise, if the work is a derivative of the Library, you may distribute the object code for the work under the terms of Section 6. Any executables containing that work also fall under Section 6, whether or not they are linked directly with the Library itself. <br><br>
+6. As an exception to the Sections above, you may also combine or link a "work that uses the Library" with the Library to produce a work containing portions of the Library, and distribute that work under terms of your choice, provided that the terms permit modification of the work for the customer's own use and reverse engineering for debugging such modifications. <br>You must give prominent notice with each copy of the work that the Library is used in it and that the Library and its use are covered by this License. You must supply a copy of this License. If the work during execution displays copyright notices, you must include the copyright notice for the Library among them, as well as a reference directing the user to the copy of this License. Also, you must do one of these things: <br>
+a) Accompany the work with the complete corresponding machine-readable source code for the Library including whatever changes were used in the work (which must be distributed under Sections 1 and 2 above); and, if the work is an executable linked with the Library, with the complete machine-readable "work that uses the Library", as object code and/or source code, so that the user can modify the Library and then relink to produce a modified executable containing the modified Library. (It is understood that the user who changes the contents of definitions files in the Library will not necessarily be able to recompile the application to use the modified definitions.) <br>
+b) Use a suitable shared library mechanism for linking with the Library. A suitable mechanism is one that (1) uses at run time a copy of the library already present on the user's computer system, rather than copying library functions into the executable, and (2) will operate properly with a modified version of the library, if the user installs one, as long as the modified version is interface-compatible with the version that the work was made with. <br>
+c) Accompany the work with a written offer, valid for at least three years, to give the same user the materials specified in Subsection 6a,above, for a charge no more than the cost of performing this distribution. <br>
+d) If distribution of the work is made by offering access to copy from a designated place, offer equivalent access to copy the above specified materials from the same place. <br>
+e) Verify that the user has already received a copy of these materials or that you have already sent this user a copy. <br><br>
+For an executable, the required form of the "work that uses the Library" must include any data and utility programs needed for reproducing the executable from it. However, as a special exception, the materials to be distributed need not include anything that is normally distributed (in either source or binary form) with the major components (compiler, kernel, and so on) of the operating system on which the executable runs, unless that component itself accompanies the executable. <br><br>
+It may happen that this requirement contradicts the license restrictions of other proprietary libraries that do not normally accompany the operating system. Such a contradiction means you cannot use both them and the Library together in an executable that you distribute. <br><br>
+7. You may place library facilities that are a work based on the Library side-by-side in a single library together with other library facilities not covered by this License, and distribute such a combined library, provided that the separate distribution of the work based on the Library and of the other library facilities is otherwise permitted, and provided that you do these two things: <br>
+a) Accompany the combined library with a copy of the same work based on the Library, uncombined with any other library facilities. This must be distributed under the terms of the Sections above. <br>
+b) Give prominent notice with the combined library of the fact that part of it is a work based on the Library, and explaining where to find the accompanying uncombined form of the same work. <br><br>
+8. You may not copy, modify, sublicense, link with, or distribute the Library except as expressly provided under this License. Any attempt otherwise to copy, modify, sublicense, link with, or distribute the Library is void, and will automatically terminate your rights under this License. However, parties who have received copies, or rights, from you under this License will not have their licenses terminated so long as such parties remain in full compliance. <br><br>
+9. You are not required to accept this License, since you have not signed it. However, nothing else grants you permission to modify or distribute the Library or its derivative works. These actions are prohibited by law if you do not accept this License. Therefore, by modifying or distributing the Library (or any work based on the Library), you indicate your acceptance of this License to do so, and all its terms and conditions for copying, distributing or modifying the Library or works based on it. <br><br>
+10. Each time you redistribute the Library (or any work based on the Library), the recipient automatically receives a license from the original licensor to copy, distribute, link with or modify the Library subject to these terms and conditions. You may not impose any further restrictions on the recipients' exercise of the rights granted herein. You are not responsible for enforcing compliance by third parties with this License. <br><br>
+11. If, as a consequence of a court judgment or allegation of patent infringement or for any other reason (not limited to patent issues), conditions are imposed on you (whether by court order, agreement or otherwise) that contradict the conditions of this License, they do not excuse you from the conditions of this License. If you cannot distribute so as to satisfy simultaneously your obligations under this License and any other pertinent obligations, then as a consequence you may not distribute the Library at all. For example, if a patent license would not permit royalty-free redistribution of the Library by all those who receive copies directly or indirectly through you, then the only way you could satisfy both it and this License would be to refrain entirely from distribution of the Library. <br><br>
+If any portion of this section is held invalid or unenforceable under any particular circumstance, the balance of the section is intended to apply, and the section as a whole is intended to apply in other circumstances. It is not the purpose of this section to induce you to infringe any patents or other property right claims or to contest validity of any such claims; this section has the sole purpose of protecting the integrity of the free software distribution system which is implemented by public license practices. Many people have made generous contributions to the wide range of software distributed through that system in reliance on consistent application of that system; it is up to the author/donor to decide if he or she is willing to distribute software through any other system and a licensee cannot impose that choice. This section is intended to make thoroughly clear what is believed to be a consequence of the rest of this License. <br><br>
+12. If the distribution and/or use of the Library is restricted in certain countries either by patents or by copyrighted interfaces, the original copyright holder who places the Library under this License may add an explicit geographical distribution limitation excluding those countries, so that distribution is permitted only in or among countries not thus excluded. In such case, this License incorporates the limitation as if written in the body of this License. <br><br>
+13. The Free Software Foundation may publish revised and/or new versions of the Lesser General Public License from time to time. Such new versions will be similar in spirit to the present version, but may differ in detail to address new problems or concerns. Each version is given a distinguishing version number. If the Library specifies a version number of this License which applies to it and "any later version", you have the option of following the terms and conditions either of that version or of any later version published by the Free Software Foundation. If the Library does not specify a license version number, you may choose any version ever published by the Free Software Foundation. <br><br>
+14. If you wish to incorporate parts of the Library into other free programs whose distribution conditions are incompatible with these, write to the author to ask for permission. For software which is copyrighted by the Free Software Foundation, write to the Free Software Foundation; we sometimes make exceptions for this. Our decision will be guided by the two goals of preserving the free status of all derivatives of our free software and of promoting the sharing and reuse of software generally. <br><br>
+NO WARRANTY <br><br>
+15. BECAUSE THE LIBRARY IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY FOR THE LIBRARY, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE LIBRARY "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE LIBRARY IS WITH YOU. SHOULD THE LIBRARY PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION. <br><br>
+16. IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR REDISTRIBUTE THE LIBRARY AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE LIBRARY (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES OR A FAILURE OF THE LIBRARY TO OPERATE WITH ANY OTHER SOFTWARE), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES. <br><br>
+END OF TERMS AND CONDITIONS<br><br>
+-----------------------------------------------------------------<br>
+&nbsp;© 1998-2001 des OpenSSL Project. Alle Rechte vorbehalten.<br><br>
+
+Dieses Produkt enthält Software entwickelt vom OpenSSL Project für die Nutzung im OpenSSL Toolkit (http://www.openssl.org/). <br>
+Dieses Produkt enthält kryptografische Software von Eric Young (eay@cryptsoft.com). <br>
+Dieses Produkt enthält Software von Tim Hudson (tjh@cryptsoft.com).<br>
+<br>
+Bitte unbedingt die Details der zugrunde liegenden Lizenzbestimmungen unter http://www.openssl.org/ beachten.<br><br>
+---------------------------------------------------------------------------------------------<br><br>
+&nbsp;* Copyright (C) 1991-2, RSA Data Security, Inc. Created 1991. All<br>
+&nbsp;* rights reserved.<br>
+&nbsp;*<br>
+&nbsp;* License to copy and use this software is granted provided that it<br>
+&nbsp;* is identified as the "RSA Data Security, Inc. MD5 Message-Digest<br>
+&nbsp;* Algorithm" in all material mentioning or referencing this software<br>
+&nbsp;* or this function.<br>
+&nbsp;*<br>
+&nbsp;* License is also granted to make and use derivative works provided<br>
+&nbsp;* that such works are identified as "derived from the RSA Data<br>
+&nbsp;* Security, Inc. MD5 Message-Digest Algorithm" in all material<br>
+&nbsp;* mentioning or referencing the derived work.<br>
+&nbsp;*<br>
+&nbsp;* RSA Data Security, Inc. makes no representations concerning either<br>
+&nbsp;* the merchantability of this software or the suitability of this<br>
+&nbsp;* software for any particular purpose. It is provided "as is"<br>
+&nbsp;* without express or implied warranty of any kind.<br>
+&nbsp;*<br>
+&nbsp;* These notices must be retained in any copies of any part of this<br>
+&nbsp;* documentation and/or software.<br><br>
+------------------------------------------------------------------------------------------------------<br><br>
+Sämtliche Software der vorgenannten Dritten wird im vorhandenen Zustand "wie sie ist" zur Verfügung gestellt. Jede Gewährleistung, weder ausdrücklich noch implizit, insbesondere eine konkludente Gewährleistung der Marktreife oder der Verwendbarkeit für einen bestimmten Zweck, wird ausgeschlossen.<br><br>
+In keinem Fall ist ein Urheber oder dessen Mitarbeiter haftbar für irgendwelche direkten, indirekten, zufälligen, besonderen, exemplarischen Schäden oder Folgeschäden (dies betrifft insbesondere die Beschaffung von Ersatzgütern oder -dienstleistungen; den Verlust der Verwendbarkeit, von Daten oder Gewinn; oder betriebliche Störungen), unabhängig davon, wie diese Schäden verursacht worden sind oder auf welche Haftungstheorie sie gestützt werden, gleichgültig ob Vertragshaftung, verschuldensunabhängige Haftung oder Deliktshaftung (einschließlich Fahrlässigkeit oder Sonstiges) vorliegt. Dies schließt auch Schäden aus, die in irgendeiner Art und Weise aus dem Gebrauch der Software resultieren, selbst wenn auf die Möglichkeit solcher Schäden hingewiesen wurde.<br><br>
+EOF</small>
+<hr noshade="noshade" size="1">
+<p><font size="2">SAS; FS; 06/2007</font></p>
+</body></html>

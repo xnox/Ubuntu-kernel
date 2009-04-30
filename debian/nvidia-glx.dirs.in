@@ -1,0 +1,13 @@
+usr/bin
+usr/lib
+usr/sbin
+usr/share/applications
+usr/share/man/man1
+usr/share/lintian/overrides
+usr/share/pixmaps
+usr/lib/xorg/modules/drivers
+usr/lib/xorg/modules/extensions
+usr/lib/tls
+usr/lib/nvidia
+usr/lib32/nvidia
+usr/share/bug/nvidia-glx@@NV_LEGACY@@

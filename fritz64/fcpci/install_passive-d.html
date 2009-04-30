@@ -1,0 +1,526 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-15">
+  <title>CAPI4Linux für FRITZ!Card PCI (AMD64/EM64T)</title>
+  <link rel="StyleSheet" href="default.css">
+  <meta name="date" content="06 4, 2002 3:56:59 PM">
+  <meta name="filetype-version" content="1">
+  <meta name="generator-major-version" content="0.1">
+  <meta name="generator-minor-version" content="1">
+  <meta name="layout-height" content="1583">
+  <meta name="layout-width" content="701">
+  <meta name="page-count" content="1">
+  <meta name="author" content="AVM">
+  <meta name="keywords" content="CAPI, LINUX, AVM">
+</head>
+<body style="color: black; background-color: white;" alink="red"
+ link="blue" vlink="purple">
+<h1>Hinweise zur CAPI4Linux-Installation für den passiven AVM
+ISDN-Controller FRITZ!Card PCI / FRITZ!Card PCI 2.x in die SUSE Linux
+x64-Plattform (AMD64/EM64T)</h1>
+<h2><a name="Inhalt">Inhalt</a></h2>
+<p><a href="#1">1 Installationsvoraussetzungen für das CAPI4Linux-Paket</a></p>
+<p><a href="#2">2 Installation des ISDN-Controllers FRITZ!Card PCI in
+SUSE Linux&nbsp;x64-Plattform </a></p>
+<blockquote>
+  <p><a href="#2.1">2.1 Installationsvoraussetzungen</a><br>
+  <a href="#2.2">2.2 Installationsvorbereitungen</a><br>
+  <a href="#2.3">2.3 Installation mit YaST</a><br>
+  <a href="#2.4">2.4 Aufbau einer Internetverbindung</a></p>
+</blockquote>
+<p><a href="#3">3 Installationshinweise für die Einbindung in andere
+Linux-Distributionen</a></p>
+<p><a href="#4">4 Deinstallation<br>
+</a></p>
+<p><a href="#5">5 Informationen zum CAPI Plug-in-Modul für den "Generic
+PPP"-Stack (pppd)</a></p>
+<p><a href="#6">6 Welche AVM DSL/ISDN-Controller werden zur Zeit mit
+CAPI4Linux (AMD64/EM64T) unterstützt?</a></p>
+<p><a href="#7">7 Hilfsprogramme</a></p>
+<blockquote>
+  <p><a href="#71">7.1 ISDN-Monitor K&nbsp;ISDN&nbsp;Watch für KDE</a><br>
+  <a href="#72">7.2 DSL-Monitor K&nbsp;ADSL&nbsp;Watch für KDE</a><br>
+  <a href="#73">7.3 CAPI4HylaFAX - die Schnittstelle für HylaFAX</a></p>
+</blockquote>
+<p><a href="#8">8 AVM-Support</a></p>
+<hr noshade="noshade" size="1">
+<h2><a name="1">1 Installationsvoraussetzungen für das CAPI4Linux-Paket</a></h2>
+<p>Unterstützt wird die x64-Plattform (AMD64/INTEL EM64T) auf
+Single-CPU-Computern und jeweils ein installierter passiver
+DSL/ISDN-Controller.<br>
+<span style="font-style: italic;">Dieser Treiber ist NICHT für die
+64-Bit INTEL IA64-Plattform (ITANIUM 1/2) geeignet!</span><br>
+<i> Für diese Server-Plattform gibt es aktive AVM ISDN-Controller.
+Deren CAPI&nbsp;2.0-Treiber befinden sich bereits direkt im
+Lieferumfang des Betriebssystems.</i><br>
+</p>
+<p>Vergewissern Sie sich, welches Protokoll an Ihrem ISDN-Anschluss
+bereitgestellt wird. Möglich sind Anschlüsse mit DSS1- oder
+1TR6-Protokoll. Anschlüsse, die nach 1994 installiert wurden, sind im
+Allgemeinen DSS1-Anschlüsse (EURO-ISDN). Die 64-Bit-Treibersoftware für
+den AVM ISDN-Controller FRITZ!Card PCI unterstützt ausschließlich
+DSS1-Anschlüsse.</p>
+<p>Für eine besonders einfache Installation wird für die folgende
+Linux-Distribution ein vorkompiliertes Treiberarchiv ausgeliefert:</p>
+<ul type="disc">
+  <li>SUSE Linux Pro 9.3 x64-Plattform
+(Kernel&nbsp;2.6.11.4-20a-default)</li>
+  <li>SUSE Linux 10.0 x64-Plattform (Kernel 2.6.13-15-default)<br>
+  </li>
+</ul>
+<p>Dieses Dokument beschreibt die Installation in SUSE Linux.</p>
+<p>Weitere Informationen zur Verwendung von AVM-Produkten mit Linux
+finden Sie auf dem AVM-Linux-Portal unter <a
+ href="http://www.avm.de/linux"><font color="blue">www.avm.de/linux</font></a></p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h2><a name="2">2 Installation des ISDN-Controllers FRITZ!Card PCI in
+SUSE Linux&nbsp;x64-Plattform</a></h2>
+<table border="0">
+  <tbody>
+    <tr>
+      <td style="padding: 0.75pt;" valign="top" width="10%">
+      <p>HINWEIS:</p>
+      </td>
+      <td style="padding: 0.75pt;" valign="top" width="89%">
+      <p>Diese&nbsp;Treiber sind ausschließlich auf Kernel-Version 2.6
+oder höher einsetzbar.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<h3><a name="2.1">2.1 Installationsvoraussetzungen</a></h3>
+<ul type="disc">
+  <li>SUSE Linux 10.0 (Kernel 2.6.13-15-default)</li>
+  <li>x86-64 (AMD64/EM64T)</li>
+  <li>eine FRITZ!Card PCI / FRITZ!Card PCI v2.x</li>
+  <li>Sie müssen die Installation als "root" durchführen, d.h., Sie
+müssen als Superuser Schreibrechte im "root"-Verzeichnis besitzen.</li>
+  <li>pppd Version ppp-2.3.11-24 oder höher (ab SUSE 6.4 im
+Lieferumfang enthalten). Das Modul "pppd" (Point-to-Point Protocol
+Daemon) benötigen Sie für den Zugang zum Internet. Mit "pppd" können
+Sie nach Abschluss der Installation eine Testverbindung zum AVM Data
+Call Center (ADC) aufbauen. Mit diesem Test wird eine Verbindung zu
+einem Internetanbieter simuliert.</li>
+</ul>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h3><a name="2.2">2.2 Installationsvorbereitungen</a></h3>
+<table border="0" width="100%">
+  <tbody>
+    <tr>
+      <td>
+      <p>Betriebssystem:</p>
+      </td>
+      <td>
+      <p>SUSE Linux 10.0 (Kernel 2.6.13-15-default)</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+      <p>Version:</p>
+      </td>
+      <td>
+      <p>03.11.07</p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+      <p>Build:</p>
+      </td>
+      <td>
+      <p>06.01.05</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table border="1" width="100%">
+  <tbody>
+    <tr>
+      <td width="162">
+      <p>HINWEIS</p>
+      </td>
+      <td width="999">
+      <p>Der Treiber für diesen AVM-Controller ist nicht in SUSE Linux
+9.3 für die x64-Plattform enthalten. Für eine Installation in dieses
+Betriebssystem benötigen Sie deshalb das CAPI4Linux-Paket von AVM. Um
+den Controller mit YaST2 konfigurieren zu können, muss zuerst das
+CAPI4Linux-Paket installiert werden.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<ol>
+  <li>Sie benötigen für das Update System-Verwaltungsrechte
+(Superuser-Rechte). Dazu müssen Sie sich auf der Konsole als "root"
+bzw. Superuser anmelden.</li>
+  <li>Stellen Sie sicher, dass die FRITZ!Card PCI eingebaut und mit dem
+ISDN-Anschluss verbunden ist (siehe Handbuch).</li>
+  <li>Kopieren Sie das Archiv "fcpci-susexx-64bit-yy.yy-yy.tar.gz" aus
+dem CAPI4Linux-Archiv auf Ihren Computer (z.B. von einer Diskette durch
+den auf einer Konsole eingegebenen Befehl "mcopy") und starten Sie eine
+Konsole (Eingabeaufforderung).
+    <p>Extrahieren Sie das Archiv mit dem Befehl </p>
+    <p align="left"><font face="Courier"><b>tar -xzvf
+fcpci-susexx-64bit-yy.yy-yy.tar.gz</b></font></p>
+    <p>Beispiel für SUSE 10.0:</p>
+    <p><b><font face="Courier">tar -xzvf
+fcpci-suse10.0-64bit-3.11-07.tar.gz</font></b></p>
+    <p>Ein Verzeichnis mit dem Namen "fritz" wird erzeugt.</p>
+  </li>
+  <li>Wechseln Sie in das neue Verzeichnis "fritz".</li>
+  <li>Rufen Sie "./install" auf.</li>
+  <li>Die Installationsvorbereitungen sind mit der Meldung "Your system
+has been updated, please configure your controller with YaST now."
+abgeschlossen.</li>
+</ol>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h3><a name="2.3">2.3 Installation mit YaST</a></h3>
+<table border="1" width="100%">
+  <tbody>
+    <tr>
+      <td width="162">
+      <p>Hinweis:</p>
+      </td>
+      <td width="999">
+      <p>Bitte führen Sie zuerst Schritt 2.2. durch, bevor Sie wie
+nachfolgend beschrieben fortfahren.</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<ol>
+  <li>Starten Sie YaST2 bitte manuell (YaST2-Kontrollzentrum) und
+wählen Sie unter "Netzwerkgeräte" den Punkt "ISDN".</li>
+  <li>Sie benötigen zur Konfiguration System-Verwaltungsrechte
+(Superuser-Rechte). Sofern Sie nicht bereits als "root" bzw. als
+Superuser angemeldet sind, müssen Sie im anschließenden Dialog das
+"root"-Passwort eingeben.</li>
+  <li>Im folgenden YaST2-Dialog "Konfiguration von ISDN" wählen Sie die
+FRITZ!Card PCI aus und klicken auf "Konfigurieren".</li>
+  <li>Im anschließenden Fenster "ISDN-Konfiguration" bestätigen Sie die
+vorgegebenen Einstellungen mit "Weiter".</li>
+  <li>Ignorieren Sie gegebenenfalls die nun folgende Warnmeldung und
+bestätigen Sie die Frage mit "Ja".</li>
+  <li>Gegebenenfalls werden Sie jetzt aufgefordert, einige Pakete
+nachzuinstallieren.</li>
+  <li>Konfigurieren Sie Ihren Provider (z.B. mit Dial on Demand) und
+schließen Sie die Konfiguration mit "Beenden" ab.</li>
+</ol>
+<p>Beachten Sie bitte die weiteren Hinweise zur Benutzung von
+KInternet, des "pppd" und der Skripte im nachfolgenden Abschnitt.</p>
+<p>Weitere Hinweise zur Konfiguration der Hardware finden Sie in der
+SUSE-Dokumentation u.a. in den Verzeichnissen: <br>
+/usr/share/doc/packages/suselinux-userguide_de/ <br>
+/usr/share/doc/packages/suselinux-adminguide_de/</p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h3><a name="2.4">2.4 Aufbau einer Internetverbindung</a></h3>
+<p>Wenn Sie eine Verbindung über KInternet konfigurieren möchten, gehen
+Sie wie folgt vor:</p>
+<p><b>YaST Konfiguration der ISDN-Einwahl </b></p>
+<ol>
+  <li>Wählen Sie in der "ISDN-Service-Auswahl" unter "Netzwerkdienste"
+den Punkt "Neue SyncPPP-Netzwerkschnittstelle hinzufügen".</li>
+  <li>Im Dialog "add syncppp interface" können Sie Ihre Telefonnummer
+angeben und Angaben zu den Firewall-Einstellungen vornehmen. Klicken
+Sie anschließend zweimal auf "Weiter".</li>
+  <li>Konfigurieren Sie Ihren Provider (z.B. mit Dial on Demand) und
+schließen Sie die Konfiguration mit "Beenden" ab.</li>
+</ol>
+<p><b>ISDN-Einwahl über den Point-to-Point Protocol Daemon (pppd)</b></p>
+<p>Bauen Sie über das Modul&nbsp;pppd eine Testverbindung zum AVM Data
+Call Center (ADC) in Berlin auf, um die Installation zu testen. Dies
+simuliert eine Einwahl zu einem beliebigen Internetanbieter mit PPP
+sync nach RFC&nbsp;1618 über HDLC. Die notwendigen Parameter sind
+bereits unter dem Argument "AVM" vordefiniert.<br>
+Die Nummer des Testservers lautet (030) 39 98 43 20. Anwender aus
+Österreich oder der Schweiz wählen bitte ++49 30 39 98 43 20.</p>
+<ol>
+  <li>Starten Sie eine Konsole (Eingabeaufforderung).</li>
+  <li>Bauen Sie durch die folgende Eingabe eine pppd-Verbindung auf:<br>
+    <font face="Courier"><b>pppd call isdn/avm</b></font></li>
+  <li>Wenn Sie an einer Nebenstellenanlage mit Amtsvorwahl "0"
+arbeiten, geben Sie bitte Folgendes ein:<br>
+    <font face="Courier"><b>pppd call isdn/avm numberprefix 0</b></font><br>
+Nach dem Aufbau der Testverbindung sehen Sie im Ausgabefenster u.a. die
+Ping-Laufzeiten zum AVM-Server über die FRITZ!Card PCI. Die
+Installation war damit erfolgreich. Um direkt mit einem Web-Browser
+(z.B. Netscape) auf die AVM-Homepage zuzugreifen, kann alternativ
+folgender Aufruf (DNS wird über die PPP-Verbindung zugewiesen)
+verwendet werden:<br>
+    <font face="Courier"><b>pppd call isdn/avm usepeerdns</b></font><br>
+Wenn Sie an einer Nebenstellenanlage mit Amtsvorwahl "0" arbeiten,
+geben Sie bitte Folgendes ein: <br>
+    <font face="Courier"><b>pppd call isdn/avm numberprefix 0 usepeerdns</b></font>
+  </li>
+  <li>Beenden Sie die Testverbindung mit der Tastenkombination "Strg+C".</li>
+</ol>
+<p>Weitere Optionen des CAPI 2.0-Plug-in-Moduls für den "Generic
+PPP"-Stack (pppd) sind im Abschnitt <a href="#5">5 Informationen zum
+CAPI Plug-in-Modul für den "Generic PPP"-Stack (pppd)</a> beschrieben.</p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h2><a name="3">3 Installationshinweise für die Einbindung in andere
+Linux-Distributionen</a></h2>
+<p>Durch das offene Konzept von Linux können alle aktuellen
+Distributionen eingesetzt werden. Die in den Treibern enthaltenen
+Binary-only-Module sind frei von Kernel-Abhängigkeiten. Sie führen
+daher keine direkten Aufrufe des Kernels (kernel calls) durch. Dadurch
+sind sie in jeden Linux-Kern integrierbar. Die manuelle Installation
+muss aber individuell entsprechend der Distribution
+(Kernel-Konfiguration etc.) und entsprechend der installierten
+Komponenten (z.B. zusätzlich notwendiger PCMCIA-Module etc.) abgestimmt
+werden. Alle zur Integration notwendigen Treiberkomponenten, der
+Quellcode und eine Kurzanleitung (die Datei "compile-help-german.txt")
+werden im "fritz"-Treiberverzeichnis mitgeliefert.</p>
+<p>Weitere nützliche Hinweise und Links finden Sie unter <a
+ href="http://www.avm.de/linux">www.avm.de/linux</a>.</p>
+<h2><a name="4">4 Deinstallation</a></h2>
+<p>Gehen Sie wie folgt vor:</p>
+<ol>
+  <li>Starten Sie das YaST2-Kontrollzentrum.</li>
+  <li>Sie benötigen zur Deinstallation System-Verwaltungsrechte
+(Superuser-Rechte). Sofern Sie nicht bereits als "root" bzw. als
+Superuser eingeloggt sind, müssen Sie im anschließenden Dialog das
+"root"-Passwort eingeben.</li>
+  <li>Öffnen Sie im YaST2-Kontrollzentrum unter "Netzwerkgeräte" die
+"Konfiguration von ISDN".</li>
+  <li>Wählen Sie in der "Konfiguration von ISDN-Karten" den Punkt
+"Bereits konfigurierte Geräte" und klicken Sie auf "Ändern".</li>
+  <li>Im folgenden "Überblick über die ISDN-Konfiguration" wählen Sie
+die FRITZ!Card PCI, klicken auf "Löschen" und bestätigen Ihre Angaben
+mit "Beenden".</li>
+</ol>
+<p>Damit ist die Deinstallation beendet.</p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h2><a name="5">5 Informationen zum CAPI Plug-in-Modul für den "Generic
+PPP"-Stack (pppd)</a></h2>
+<p>Das CAPI Plug-in-Modul für den pppd (Point-to-point Protocol Daemon)
+wird automatisch mit dem CAPI-Treiber geladen und kann auf Wunsch mit
+zusätzlichen Optionen aufgerufen werden. Dies ist zum Beispiel
+sinnvoll, wenn Sie Ihre Online-Gebühren separat erfassen wollen, indem
+Sie die Signalisierung einer abgehenden MSN aus dem Rufnummernblock
+einstellen.</p>
+<p>Eine komplette Beschreibung des CAPI Plug-in-Moduls für den pppd ist
+als "UNIX manual page" enthalten und kann mit folgendem Kommando an der
+Konsole aufgerufen werden:</p>
+<p><font face="Courier"><b>man capiplugin</b></font></p>
+<p>Für diverse Call-by-Call-Anbieter befinden sich bereits entsprechend
+vorkonfigurierte Einwahlskripte im Lieferumfang. </p>
+<h3>Einwahl über T-Online</h3>
+<p>Um eine Verbindung zu T-Online aufzubauen, sollte ein passendes
+Einwahlskript als "/etc/ppp/peers/isdn/t-online" wie folgt gestaltet
+werden:</p>
+<p><font face="Courier">----- start -----<br>
+debug<br>
+sync<br>
+noauth<br>
+plugin /etc/ppp/plugins/userpass.so<br>
+user 11111\#22222\#0001\#@t-online.de<br>
+password 3333333<br>
+defaultroute<br>
+plugin /etc/ppp/plugins/capiplugin.so<br>
+number 0191011 <br>
+protocol hdlc<br>
+ipcp-accept-local<br>
+ipcp-accept-remote <br>
+/dev/null<br>
+----- end -----</font></p>
+<p>Setzen Sie folgende Parameter: <br>
+<font face="Courier">11111:
+max 12-stellige Anschlusskennung<br>
+22222: max 12-stellige T-Online-Nummer<br>
+0001: Mitbenutzer<br>
+33333: Password</font> </p>
+<table border="0">
+  <tbody>
+    <tr>
+      <td style="padding: 0.75pt;" valign="top" width="10%">
+      <p>ACHTUNG:</p>
+      </td>
+      <td style="padding: 0.75pt;" valign="top" width="89%">
+      <p>Wichtig ist das Zeichen "\" vor dem Zeichen "#"!</p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h3>Einwahl über 1&amp;1</h3>
+<p>Wenn Sie Ihren DSL-Anschluss mit dem Anbieter 1&amp;1 nutzen, muss
+das Skript "t-dsl" in "etc/ppp/peers/" wie folgt angepasst werden:</p>
+<p>Ersetzen Sie die folgende Zeile:</p>
+<p><font face="Courier">user </font><font color="red" face="Courier">000000000000\#000000000000\#0001\#@t-online.de</font><font
+ face="Courier"><br>
+password </font><font color="red" face="Courier">00000000</font></p>
+<p>durch folgende Einträge:</p>
+<p><font face="Courier">user </font><font color="red" face="Courier">1und1/&lt;Ihre
+login-id&gt;@online.de</font><font face="Courier"><br>
+password </font><font color="red" face="Courier">&lt;Ihr Passwort&gt;</font></p>
+<p>Bitte beachten Sie, dass die Einträge &lt;Ihre login-id&gt; und
+&lt;Ihr Passwort&gt; durch die Ihnen von 1&amp;1 zugewiesene
+Benutzerkennung, z.B. "1111-222", und das dazugehörige Passwort ersetzt
+werden müssen.</p>
+<p>Ausschnitt aus einem angepassten Beispielskript:</p>
+<p><font face="Courier"># Anschlusskennung T-Online-Nummer
+Mitbenutzerkennung<br>
+# | | |<br>
+user </font><font color="red" face="Courier">1und1/1234-5678@online.de</font><font
+ face="Courier"><br>
+password </font><font color="red" face="Courier">geheim</font><font
+ face="Courier"><br>
+linkname t-dsl<br>
+ipparam internet<br>
+plugin capiplugin.so<br>
+avmadsl<br>
+:<br>
+/dev/null<br>
+...<br>
+</font></p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h2><a name="6">6 Welche AVM DSL/ISDN-Controller werden zur Zeit mit
+CAPI4Linux x64 unterstützt?</a></h2>
+<p>CAPI4Linux (AMD64/EM64T) unterstützt bisher die folgenden AVM
+DSL/ISDN-Controller: </p>
+<ul type="disc">
+  <li>AVM ISDN-Controller FRITZ!Card&nbsp;PCI/FRITZ!Card&nbsp;PCI v2.x</li>
+  <li>AVM ISDN-Controller FRITZ!Card&nbsp;PCMCIA (kompatibel zum AVM
+ISDN-Controller&nbsp;A1&nbsp;PCMCIA*)</li>
+  <li>AVM ISDN-Controller FRITZ!Card USB v2.x</li>
+  <li>AVM DSL/ISDN-Controller FRITZ!Card&nbsp;DSL v2.0</li>
+  <li>AVM DSL/ISDN-Controller FRITZ!Card&nbsp;DSL USB</li>
+  <li>AVM DSL-Controller FRITZ!Card&nbsp;DSL SL</li>
+  <li>AVM DSL-Controller FRITZ!Card&nbsp;DSL SL USB</li>
+  <li>AVM ISDN-Controller&nbsp;B1&nbsp;v1.4/v2.0/v3.0 (ISA)*</li>
+  <li>AVM ISDN-Controller&nbsp;B1&nbsp;PCI / B1&nbsp;PCI&nbsp;v4.0</li>
+  <li>AVM ISDN-Controller&nbsp;B1&nbsp;PCMCIA</li>
+  <li>AVM ISDN-Controller&nbsp;C2</li>
+  <li>AVM ISDN-Controller&nbsp;C4</li>
+  <li>AVM ISDN-Controller&nbsp;T1*</li>
+  <li>AVM ISDN-Controller&nbsp;T1-B*</li>
+  <li>AVM BlueFRITZ! USB (Im Rahmen eines OpenSource Projektes -
+Details unter <a href="http://www.holtmann.org/">www.holtmann.org</a>)</li>
+  <li>AVM FRITZ!Box (Hinweise zur Installation finden Sie auf dem <a
+ href="http://www.avm.de/linux">AVM Linux-Portal</a> im Bereich FAQ)</li>
+</ul>
+<p><font size="2"><i>*"End Of Maintenance" state (EOM) - Der
+CAPI4Linux-Treiber für diese ISDN-Controller wird von AVM nicht mehr
+weiterentwickelt.</i></font>
+</p>
+<p>Informationen zu Freigaben finden Sie auch auf der AVM-Homepage und
+in der Datei "hist-deu.txt" im root-Verzeichnis von <a
+ href="ftp://ftp.avm.de">ftp.avm.de</a>.</p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h2><a name="7">7 Hilfsprogramme</a></h2>
+<p>Im Lieferumfang der CAPI4Linux-Treiber sind einige Hilfsprogramme
+enthalten, die weitere Informationen über die technischen Eigenschaften
+der CAPI-Treiber zur Verfügung stellen und Diagnosemöglichkeiten bieten.</p>
+<p>Kommando: <font face="Courier">capiinit</font><br>
+Option: <font face="Courier">stop</font><br>
+Bedeutung: Stoppt den CAPI-Treiber manuell.</p>
+<p>Kommando: <font face="Courier">capiinit</font><br>
+Option: <font face="Courier">start</font><br>
+Bedeutung: Startet den CAPI-Treiber manuell.</p>
+<p>Die Ausgabe enthält an erster Stelle die CAPI-Controllernummer, den
+run-Status des Treibers, den Namen des Treibermoduls, Typ des
+Controllers und die belegten Ressourcen.</p>
+<p>Kommando: <font face="Courier">capiinfo</font><br>
+Bedeutung: Zeigt zusätzliche Informationen zu den Fähigkeiten des
+CAPI-Treibers an.<br>
+Die Ausgabe enthält detaillierte Informationen zur Version des
+Treibers, zu unterstützten B-Kanal-Protokollen des Treibers und zu den
+zur Verfügung stehenden so genannten "supplementary services" im
+D-Kanal.</p>
+<p>Kommando: <font face="Courier">cat /proc/capi/controller</font><br>
+Bedeutung: Zeigt u.a. die logischen Controllernummern aller
+installierten CAPI-Controller an.</p>
+<p>Kommando: <font face="Courier">cat /proc/capi/controllers/&lt;n&gt;</font><br>
+Bedeutung: Zeigt weitere Konfigurationsinformationen zum
+CAPI-Controller mit der Nummer "&lt;n&gt;" an (siehe auch "cat
+/proc/capi/controller").<br>
+Diese Ausgabe wird direkt vom Treiber generiert und enthält u.a.
+Seriennummer und die gewählte Anschlussart, z.B. Anlagenanschluss (P2P)
+oder Mehrgeräteanschluss (P2M).</p>
+<p>Eine komplette Beschreibung des Hilfsprogramms "capiinfo" ist in
+Form einer "UNIX manual page" enthalten und kann mit folgendem Kommando
+an der Konsole aufgerufen werden:</p>
+<p><font face="Courier"><b>man capiinfo</b></font></p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h3><a name="71">7.1 ISDN-Monitor "K&nbsp;ISDN&nbsp;Watch" für KDE</a></h3>
+<p>Mit der CAPI-Applikation "K ISDN Watch" stellt AVM ein Programm für
+alle von CAPI4Linux unterstützten AVM ISDN-Controller bereit.
+"K&nbsp;ISDN&nbsp;Watch" ist ein ISDN-Monitor für die Überwachung der
+Aktivitäten des installierten AVM ISDN-Controllers. "K ISDN Watch"
+steht unter der GPL, basiert auf "kimon" und kann für KDE 2.x / KDE 3.x
+übersetzt werden. Sie können das Programm und weitere Informationen
+dazu unter folgender Adresse herunterladen: <a
+ href="http://www.avm.de/linux/">www.avm.de/linux/</a></p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h3><a name="72">7.2 DSL-Monitor "K&nbsp;ADSL&nbsp;Watch" für KDE</a></h3>
+<p>Mit der CAPI-Applikation "K&nbsp;ADSL&nbsp;Watch" stellt AVM ein
+weiteres Programm speziell für die AVM DSL-Controller bereit.
+"K&nbsp;ADSL&nbsp;Watch" ist ein DSL-Monitor für die Überwachung der
+Aktivitäten des installierten AVM DSL-Controllers.
+"K&nbsp;ADSL&nbsp;Watch" steht unter der GPL und basiert auf "kimon"
+und kann für KDE&nbsp;2.x und KDE&nbsp;3.x übersetzt werden. Sie können
+das Programm und weitere Informationen dazu unter folgender Adresse
+herunterladen: <a href="http://www.avm.de/linux/">www.avm.de/linux/</a></p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h3><a name="73">7.3 CAPI4HylaFAX - die Schnittstelle für HylaFAX</a></h3>
+<p>CAPI4HylaFAX macht Ihren Linux-Computer zu einem leistungsfähigen
+Faxserver, über den die im Netzwerk angeschlossenen Klienten parallel
+Faxe versenden und empfangen können. Sowohl passive als auch aktive
+ISDN-Controller, die über einen faxfähigen CAPI-Treiber verfügen,
+können CAPI4HylaFAX nutzen. Mit vier aktiven AVM ISDN-Controllern C4
+stehen Ihnen dafür z.B. bis zu 32 ISDN-B-Kanäle zur Verfügung. Dank
+CAPI ist Faxpolling ebenfalls möglich, auch mehrere ISDN-Dienste, wie
+z.B. FaxG3-Empfang und eine Verbindung zum Internet via pppd, können
+parallel genutzt werden. Die Zuordnung der ISDN-B-Kanäle erfolgt dabei
+automatisch durch den CAPI-Treiber. Sie können das Programm und weitere
+Informationen dazu unter folgender Adresse herunterladen: <a
+ href="http://www.avm.de/linux/">www.avm.de/linux/</a></p>
+<p><a href="#Inhalt">Zurück zum Anfang</a></p>
+<h2><a name="8">8 AVM-Support</a></h2>
+<p>Aufgrund der Vielzahl an erstellbaren Kernel- und
+Distributionsvarianten ist der E-Mail-Support auf die im Abschnitt 2.1
+genannte Betriebssystem- und Kernelversion beschränkt. Der Support ist
+hierbei auf die reine Installation und die ISDN- bzw.
+DSL-Funktionalität bis zum erfolgreichen Ausführen der Testverbindung
+bzw. des Testfaxes der CAPI-Treiber und des CAPI4HylaFAX-Moduls in
+Verbindung mit AVM DSL/ISDN-Controllern bei Nutzung der
+bereitgestellten Installationsroutinen beschränkt. Bei Fragen zur
+Netzwerkkonfiguration, zu integrierten Funktionen des Betriebssystems
+Linux und zu Anwendungen von Drittherstellern wenden Sie sich bitte an
+den jeweiligen Hersteller bzw. den Support-Service Ihrer verwendeten
+Distribution. Bei Fragen zur Konfiguration und zum Betrieb von HylaFAX
+wenden Sie sich bitte an: <a href="http://www.hylafax.org">www.hylafax.org</a></p>
+<p>Über das Internet bietet AVM ausführliche Informationen und
+kostenlose Updates. Alle Informationen zum Thema Linux bei AVM finden
+Sie unter: <a href="http://www.avm.de/linux">www.avm.de/linux</a></p>
+<ul type="disc">
+  <li>Über den Button "zur AVM-Hompage" gelangen Sie zur
+AVM-Startseite. Hier finden Sie detaillierte Informationen zu allen
+AVM-Produkten sowie Ankündigungen neuer Produkte und Produktversionen.</li>
+  <li>Über die Rubrik "Fragen an die Hotline (FAQs)" gelangen Sie zu
+einer Sammlung von Antworten zu häufig gestellten Fragen. Darüber
+hinaus bietet der Bereich "Praxis, Tipps &amp; Hintergründe"
+Hilfestellungen.</li>
+  <li>Im Bereich "Aktuelle Downloads" können Sie aktuelle Linux-Treiber
+für alle AVM DSL/ISDN-Controller herunterladen.</li>
+</ul>
+<p>Auf dem AVM Data Call Center (ADC) befinden sich alle Programme und
+Treiber, die auch über die Internetseiten von AVM heruntergeladen
+werden können.<br>
+Bitte nutzen Sie zunächst die oben beschriebenen Informationsquellen,
+bevor Sie den Support kontaktieren!</p>
+<p>Haben Sie mit den bisherigen Hinweisen und mit Hilfe der
+verschiedenen Informationsquellen das Problem nicht lösen können,
+wenden Sie sich für weitere technische Unterstützung an den AVM-Support.<br>
+Sie können eine Support-Anfrage per E-Mail an die AVM versenden. Nutzen
+Sie dazu bitte unser E-Mail-Formular. Das Formular finden Sie im
+Internet unter der Adresse: <a href="http://www.avm.de/linux">ww.avm.de/linux</a></p>
+<p>Füllen Sie das Formular aus und schicken Sie es per Mausklick auf
+die Schaltfläche "Senden" zum AVM-Support.</p>
+<p>EOF</p>
+<hr noshade="noshade" size="1">
+<p><font size="2">SAS; FS; 06/2005</font></p>
+</body>
+</html>

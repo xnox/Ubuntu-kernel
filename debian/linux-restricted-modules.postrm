@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ -f /lib/modules/@@KVERSION@@/volatile/.mounted ]; then
+	umount /lib/modules/@@KVERSION@@/volatile/
+fi
+
+rm -rf /lib/modules/@@KVERSION@@/volatile/
+
+
+case "$1" in
+  remove|purge)
+    depmod -a -q -F /boot/System.map-@@KVERSION@@ @@KVERSION@@
+    ;;
+esac
+
+exit 0

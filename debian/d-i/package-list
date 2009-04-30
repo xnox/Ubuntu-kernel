@@ -1,0 +1,19 @@
+# This file is used to build up the control file. The kernel version and
+# "-di" are appended to the package names. Section can be left out. So can
+# architecture, which is derived from the files in the modules directory.
+# It overwrites specifications from /usr/share/kernel-wedge/package-list.
+#
+Package: nic-restricted-modules
+Section: restricted/debian-installer
+Priority: standard
+Description: Restricted drivers for NICs
+ This package contains drivers for some NICs.  These drivers are "restricted"
+ because they are not available under a completely Free licence.
+
+Package: nic-restricted-firmware
+Section: restricted/debian-installer
+Priority: standard
+Description: Restricted external firmware for NIC drivers
+ This package contains external binary-only firmware for some NIC drivers.
+ These firmware images are "restricted" because they are not available under
+ a completely Free licence.

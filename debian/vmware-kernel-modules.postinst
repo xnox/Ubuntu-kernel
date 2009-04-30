@@ -1,0 +1,23 @@
+#!/bin/bash -e
+
+case "$1" in
+    configure)
+	kernel_ver=`uname -r`
+	if [ -f /boot/System.map-$kernel_ver ]; then
+		depmod -a -q -F /boot/System.map-$kernel_ver $kernel_ver
+	fi
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0

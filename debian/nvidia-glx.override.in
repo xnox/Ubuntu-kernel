@@ -1,0 +1,13 @@
+nvidia-glx@@NV_LEGACY@@: library-not-linked-against-libc ./usr/lib/libGL.so.@@VERSION@@
+
+nvidia-glx@@NV_LEGACY@@: shared-lib-without-dependency-information ./usr/lib/libGLcore.so.@@VERSION@@
+
+nvidia-glx@@NV_LEGACY@@: library-not-linked-against-libc ./usr/lib/xorg/modules/extensions/libglx.so.@@VERSION@@
+
+nvidia-glx@@NV_LEGACY@@: shlib-with-non-pic-code usr/lib/libGL.so.@@VERSION@@
+nvidia-glx@@NV_LEGACY@@: shlib-with-non-pic-code usr/lib/libGLcore.so.@@VERSION@@
+nvidia-glx@@NV_LEGACY@@: shlib-with-non-pic-code usr/lib/xorg/modules/extensions/libglx.so.@@VERSION@@
+nvidia-glx@@NV_LEGACY@@: shlib-with-non-pic-code usr/lib/libXvMCNVIDIA.so.@@VERSION@@
+
+nvidia-glx@@NV_LEGACY@@: non-dev-pkg-with-shlib-symlink usr/lib/libGL.so.@@VERSION@@ usr/lib/libGL.so
+nvidia-glx@@NV_LEGACY@@: non-dev-pkg-with-shlib-symlink usr/lib/xorg/modules/extensions/libglx.so.@@VERSION@@ usr/lib/xorg/modules/extensions/libglx.so

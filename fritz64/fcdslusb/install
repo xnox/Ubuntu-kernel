@@ -1,0 +1,107 @@
+#! /bin/bash
+
+# install for merged archives, v20050705
+
+# --- prelude ---
+
+SELF=$0
+SELFPATH=`dirname $SELF`
+SELFNAME=`basename $SELF`
+NOW=`date +%Y%m%d%H%M`
+LOGFILE=$SELFNAME.log
+RED=`tput setf 4`
+GREEN=`tput setf 2`
+NORM=`tput sgr0`
+CLREOL=`tput el`
+
+WHOAMI=dslusb
+
+LOGPREFIX="MINI:"
+LOGFLAG=1
+
+# --- logging and console stuff ---
+
+LOG () {
+	
+	if [ $LOGFLAG -ne 0 ]; then
+		echo -e "$LOGPREFIX$*" | grep -v "^$LOGPREFIX$" >> $LOGFILE
+	fi
+	true
+}
+
+PRINT () {
+	
+	echo -e "$*"
+	LOG "$*"
+	true
+}
+
+ALERT () {
+	
+	echo -e "\a$RED1$*$RED0"
+	LOG "$*"
+	true
+}
+
+# --- where are we? ---
+
+I_SUSEREL=
+if test -f /etc/SuSE-release; then
+	I_SUSEREL=`cat /etc/SuSE-release|grep VERSION|cut -d" " -f3`
+	LOG "Installing on SuSE Linux $I_SUSEREL\n"
+fi
+I_KERNVER=`uname -r`
+I_ARCH=`uname -i`
+I_SMP=`uname -v | sed -n "s/#[0-9][0-9]* \(SMP\) .*/\1/p"`
+
+LOG "Installing for kernel version $I_KERNVER, architecture: $I_ARCH $I_SMP\n"
+
+# --- load familiy specific stuff ---
+
+if ! test -f install.$WHOAMI; then
+	ALERT "Installer incomplete! File install.$WHOAMI missing!"
+	exit 1
+fi
+. ./install.$WHOAMI
+
+# --- main loop ---
+
+if ! test -f .contents; then
+	ALERT "Installer seems to be incomplete!"
+	exit 2
+fi
+
+PRINT "\nWelcome to the $I_NAME driver installation!"
+PRINT "\nCopying $I_NAME drivers...\n"
+ERROR=0
+while read name index; do
+	LOG "Found $name, index $index..."
+	echo -n "."
+	(cd $index/$I_PATH; ./install > /dev/null 2>&1)
+	test $? -eq 0 || ERROR=1
+	echo -n "."
+	if test -f $index/$I_PATH/install.log; then
+		while read line; do
+			echo "LOG($index):$line" >> $LOGFILE
+		done < $index/$I_PATH/install.log
+	fi
+	if test $ERROR -ne 0; then
+		echo -en "\r"
+		ALERT "Something went wrong... Please read install.log for more details!\n"
+		exit 3
+	fi
+	echo -n "."
+done < .contents
+echo -en "\r$CLREOL"
+
+# --- goodbye ---
+
+if [ -n "$I_SUSEREL" ]; then
+	PRINT "\nThe driver files have been updated, please restart the"
+	PRINT "ISDN package or reboot in order to activate the changes."
+else
+	PRINT "The driver files have been copied."
+fi
+PRINT "\nReady\n"
+
+

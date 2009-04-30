@@ -1,0 +1,13 @@
+#!/bin/sh 
+
+set -e
+
+case "$1" in
+	configure)
+		if [ -e /etc/init.d/nvidia-glx@@NV_LEGACY@@ ] ; then
+			/etc/init.d/nvidia-glx@@NV_LEGACY@@ start
+		fi
+		;;
+esac		
+	
+#DEBHELPER#

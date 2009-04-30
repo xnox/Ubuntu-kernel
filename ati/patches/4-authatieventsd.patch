@@ -1,0 +1,34 @@
+--- common/etc/ati/authatieventsd.sh.orig	2008-03-19 10:56:01.568196236 +0100
++++ common/etc/ati/authatieventsd.sh	2008-03-19 11:04:31.272102426 +0100
+@@ -41,6 +41,16 @@
+         return 0
+     fi
+ 
++    # Check for xauth
++    XAUTH_AUTH_MASK=/var/run/xauth/A$1*
++    XAUTH_AUTH_FILE=`ls -t $XAUTH_AUTH_MASK 2>/dev/null | head -n 1`   # Choose the newest file
++    if [ -n "$XAUTH_AUTH_FILE" ]; then
++        SERVER_AUTH_FILE=$XAUTH_AUTH_FILE
++        DISP_SEARCH_STRING="#ffff#"
++        return 0
++    fi
++
++
+     # Check gdm
+ 
+     GDM_AUTH_FILE=/var/lib/gdm/$1.Xauth
+@@ -54,12 +64,14 @@
+ 
+     for XPID in `pidof X`; do
+         TRIAL_XAUTH_FILE=`tr '\0' '\n' < /proc/$XPID/environ | grep -e "^XAUTHORITY=" | cut -d= -f2`
++        if [ -n "$TRIAL_XAUTH_FILE" ]; then
+         TRIAL_XAUTH_KEY=`xauth -f $TRIAL_XAUTH_FILE list | grep "unix$1"`
+         if [ -n "$TRIAL_XAUTH_KEY" ]; then
+             SERVER_AUTH_FILE=$TRIAL_XAUTH_FILE
+             DISP_SEARCH_STRING="unix$1"
+             return 0
+         fi
++	fi
+     done
+ 
+     # Couldn't find the key

@@ -1,0 +1,356 @@
+An example is provided herein of the usage of this compiling resource.
+
+Marv Stodolsky (MarvS)
+=============================================================
+First a brief history. Aleksey Kondratenko <alk@tut.by> did an update of the Open Source component of the AgereSystems 8.26a9 source, adapted to the compiling style now in use for compiling under 2.6.n kernels.  These updates are packaged as:  ltmodem-2.6-alk-N.tar.bz2 with N the update Number, currently N=4 on 05June 2004
+Do read the README carefully.
+
+Alek comments in his 05June2004 email to discuss@linmodems.org:
+--------------
+8.31 core seems to fail working on my modem. So I decided to update
+my own driver for 2.6. 2.6.6 also revealed mistake which also affected
+Fedora Core 2. 
+
+8.31 core is included and "SMP support" for it is also here. However,
+SMP support there IMO is seriously broken.
+----------------
+The 8.31 refers to the source code provide by AgereSystems in:    Ltmodem831-1-ker26.zip which Alex improved somewhat and MarvS repacked with Documentation as the  ltmodem-8.31alek.tar.gz available at http:/ltmodem.heby.de
+
+
+KERNEL SOURCE PREPARATION:
+--------------------------
+Prior to using this resource, the kernel-source must be configured.
+For some Linux distros such as SuSE, this step has already been done.
+But when in doubt, do it.
+Using 2.6.6 as an example for definiteness, unpack the kernel-source package provided by your Linux Distro.  Commonly it will be unpacked into the /usr/src/ folder. For my Debian Linux, the unpacked source has a base folder:
+  /usr/src/kernel-source-2.6.6
+Going there:
+$ cd /usr/src/kernel-source-2.6.6
+Cleaning up any remnants with
+$ make mrproper
+The first four lines of Makefile are like:
+VERSION = 2
+PATCHLEVEL = 6
+SUBLEVEL = 6
+EXTRAVERSION = Something
+and Something must generally be edited.  For example if your System displays:
+$ uname -r
+ 2.6.6-RealGood
+Then edit the 4th line to:
+  EXTRAVERSION = -RealGood
+as this ensure that modules are later installed to subfolders of:
+ /lib/modules/2.6.6-RealGood
+
+Read the README on the alternative ways of configuring your kernel.
+A safe and simple route is to:
+# cp /boot/config-ForYourKernel .config
+and DO use that "."  Check that it has been copied in with:
+$ ls -al
+where "a" is necessary to diaplay .dot_filename.
+$ make bzImage
+will do some configuration steps, assemble kernel_header.h files (which specify code interdependencies), in the course of assembling a compressed kernel_image 
+# make modules
+assemble the auxillary modules.
+
+ 
+COMPILING THE MODEM DRIVERS
+----------------------------
+The typical site for installing module packages is:
+  /usr/src/modules
+$ cd /usr/src/modules
+
+Unpack with:
+$ tar jxf PathTo/ltmodem-2.6-alk-4.tar.bz2
+which will create a folder ltmodem-2.6-alk-4/
+
+$ cd ltmodem-2.6-alk-4
+look at the contents
+
+$ ls
+Makefile  linuxif.h   ltmdmobj.o       ltmdmobj.o-8.31-with-memset  serial.c     
+README    lt_modem.c  ltmdmobj.o-8.31  ltmdmobj.o-pre-8.31       
+
+The precompiled binaries are:
+$ ls -l ltmdm*
+-rw-r--r--    1 marv     marv    550793 Apr 23 20:42 ltmdmobj.o-8.31
+-rw-r--r--    1 marv     marv    550926 Jun  3 16:17 ltmdmobj.o-8.31-with-memset
+-rw-r--r--    1 marv     marv    542179 Nov 26  2003 ltmdmobj.o-pre-8.31
+The ltmdmobj.o-pre-8.31 is actually the AgereSystems version 8.26 ltmdmobj.o
+and there is a synbolic link:
+  ltmdmobj.o --> ltmdmobj.o-pre-8.31
+which will be followed during the compile.
+Alek explains the ltmdmobj.o-8.31-with-memset:
+---------
+>What is the origin of      ltmdmobj.o-8.31-with-memset?
+
+It's 8.31 with memset replaced with __ltmodem_memset and
+__ltmodem_memset implementation linked in which calls ltmodem_memset
+(it's in lt_modem.c).
+This is for more corectness with -mregparm kernels.
+However, it seems that memset is not called from ltmdmobj.o on normal
+work. I have fixed this just in case.
+---------
+
+
+
+
+Before any usage, do a precautionary 
+# make clean
+rm -f lt_modem.o ltmodem.o ltserial.ko serial.o ltserial.o ltserial.mod.* ltmodem.mod.o ltmodem.ko ltmodem.mod.c
+
+Before the compile either edit the Makefile line
+  KERNEL_DIR := /usr/src/linux-2.6/
+toward the base folder of your kernel-source folder,
+OR alternatively, append it to the command "make"  as follows:
+# make KERNEL_DIR=/usr/src/kernel-source-2.6.6
+make -C /usr/src/kernel-source-2.6.6 SUBDIRS=/usr/src/modules/ltmodem-2.6-alk-4 modules
+make[1]: Entering directory `/mnt/compile/src/kernel-source-2.6.6'
+  CC [M]  /usr/src/modules/ltmodem-2.6-alk-4/lt_modem.o
+  CC [M]  /usr/src/modules/ltmodem-2.6-alk-4/serial.o
+  LD [M]  /usr/src/modules/ltmodem-2.6-alk-4/ltmodem.o
+  LD [M]  /usr/src/modules/ltmodem-2.6-alk-4/ltserial.o
+  Building modules, stage 2.
+  MODPOST
+  CC      /usr/src/modules/ltmodem-2.6-alk-4/ltmodem.mod.o
+  LD [M]  /usr/src/modules/ltmodem-2.6-alk-4/ltmodem.ko
+  CC      /usr/src/modules/ltmodem-2.6-alk-4/ltserial.mod.o
+  LD [M]  /usr/src/modules/ltmodem-2.6-alk-4/ltserial.ko
+make[1]: Leaving directory `/mnt/compile/src/kernel-source-2.6.6'
+-----
+Your compile may have more lines, as my 2.6.6 custom is quite lean. 
+
+Selectively displaying the drivers
+$ ls -l *.ko
+-rw-r--r--    1 marv     marv       560507 Jun  5 07:51 ltmodem.ko
+-rw-r--r--    1 marv     marv         9196 Jun  5 07:51 ltserial.ko
+
+Among all files:
+# ls -al
+total 2912
+drwxr-xr-x    3 marv     marv         4096 Jun  5 19:47 .
+drwxrwxr-x   19 marv     marv         4096 Jun  4 20:07 ..
+-rw-r--r--    1 marv     marv         9125 Jun  5 19:29 .lt_modem.o.cmd
+-rw-r--r--    1 marv     marv          214 Jun  5 19:29 .ltmodem.ko.cmd
+-rw-r--r--    1 marv     marv         6566 Jun  5 19:29 .ltmodem.mod.o.cmd
+-rw-r--r--    1 marv     marv          213 Jun  5 19:29 .ltmodem.o.cmd
+-rw-r--r--    1 marv     marv          218 Jun  5 19:29 .ltserial.ko.cmd
+-rw-r--r--    1 marv     marv         6577 Jun  5 19:29 .ltserial.mod.o.cmd
+-rw-r--r--    1 marv     marv          167 Jun  5 19:29 .ltserial.o.cmd
+-rw-r--r--    1 marv     marv        10528 Jun  5 19:29 .serial.o.cmd
+drwxr-xr-x    2 marv     marv         4096 Jun  4 20:13 .tmp_versions
+-rw-r--r--    1 marv     marv          479 Jun  3 19:07 Makefile
+-rw-r--r--    1 marv     marv         1554 Jun  4 16:10 README
+-rw-r--r--    1 marv     marv         2306 Jun  4 15:22 linuxif.h
+-rw-r--r--    1 marv     marv        11041 Jun  4 15:55 lt_modem.c
+-rw-r--r--    1 marv     marv        10033 Jun  5 19:29 lt_modem.o
+lrwxr-xr-x    1 marv     marv           15 Jun  4 22:55 ltmdmobj.o -> ltmdmobj.o-8.31
+-rw-r--r--    1 marv     marv       550793 Apr 23 20:42 ltmdmobj.o-8.31
+-rw-r--r--    1 marv     marv       550926 Jun  3 16:17 ltmdmobj.o-8.31-with-memset
+-rw-r--r--    1 marv     marv       542179 Nov 26  2003 ltmdmobj.o-pre-8.31
+-rw-r--r--    1 marv     marv       560507 Jun  5 19:29 ltmodem.ko
+-rw-r--r--    1 marv     marv         1165 Jun  5 19:29 ltmodem.mod.c
+-rw-r--r--    1 marv     marv         2460 Jun  5 19:29 ltmodem.mod.o
+-rw-r--r--    1 marv     marv       558749 Jun  5 19:29 ltmodem.o
+-rw-r--r--    1 marv     marv         9196 Jun  5 19:29 ltserial.ko
+-rw-r--r--    1 marv     marv         1282 Jun  5 19:29 ltserial.mod.c
+-rw-r--r--    1 marv     marv         2652 Jun  5 19:29 ltserial.mod.o
+-rw-r--r--    1 marv     marv         7275 Jun  5 19:29 ltserial.o
+-rw-r--r--    1 marv     marv        20594 Jun  4 16:04 serial.c
+-rw-r--r--    1 marv     marv         7180 Jun  5 19:29 serial.o
+wherein the .dot_filenames were created during the compile.
+
+Making the folder for the drivers under /lib/modules/2.6.6/
+#  mkdir /lib/modules/2.6.6/ltmodem
+
+Copying the drivers there:
+# cp *.ko  /lib/modules/2.6.6/ltmodem/
+
+Checking the modem port
+# ls -l /dev/modem /dev/ttyLT0
+lrwxr-xr-x    1 root     root           11 May 30 09:55 /dev/modem -> /dev/ttyLT0
+crw-rw----    1 root     dialout   62,  64 Jun  5 19:34 /dev/ttyLT0
+
+lt_serial.ko has a dependence on both serial_core.ko and ltmodem.ko ,
+so all three should be inserting into the kernel by:
+# modprobe ltserial
+
+Checking for loading
+# lsmod
+Module                  Size  Used by
+ltserial                6596  0 
+serial_core            22368  1 ltserial
+ltmodem               567088  1 ltserial
+
+Running a drivers+hardware test
+--------------
+# wvdialconf /etc/wvdial.conf
+Scanning your serial ports for a modem.
+
+Port Scan<*1>: Scanning ttyLT0 first, /dev/modem is a link to it.
+ttyLT0<*1>: ATQ0 V1 E1 -- OK
+ttyLT0<*1>: ATQ0 V1 E1 Z -- OK
+ttyLT0<*1>: ATQ0 V1 E1 S0=0 -- OK
+ttyLT0<*1>: ATQ0 V1 E1 S0=0 &C1 -- OK
+ttyLT0<*1>: ATQ0 V1 E1 S0=0 &C1 &D2 -- OK
+ttyLT0<*1>: ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0 -- OK
+ttyLT0<*1>: Modem Identifier: ATI -- LT V.92 Data+Fax Modem Version 8.31
+ttyLT0<*1>: Speed 4800: AT -- OK
+ttyLT0<*1>: Speed 9600: AT -- OK
+ttyLT0<*1>: Speed 19200: AT -- OK
+ttyLT0<*1>: Speed 38400: AT -- OK
+ttyLT0<*1>: Speed 57600: AT -- OK
+ttyLT0<*1>: Speed 115200: AT -- OK
+ttyLT0<*1>: Max speed is 115200; that should be safe.
+ttyLT0<*1>: ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0 -- OK
+ttyS0<*1>: ATQ0 V1 E1 -- failed with 2400 baud, next try: 9600 baud
+ttyS0<*1>: ATQ0 V1 E1 -- failed with 9600 baud, next try: 115200 baud
+ttyS0<*1>: ATQ0 V1 E1 -- and failed too at 115200, giving up.
+Port Scan<*1>: S1   
+ttyS2<*1>: ATQ0 V1 E1 -- failed with 2400 baud, next try: 9600 baud
+ttyS2<*1>: ATQ0 V1 E1 -- failed with 9600 baud, next try: 115200 baud
+ttyS2<*1>: ATQ0 V1 E1 -- and failed too at 115200, giving up.
+Port Scan<*1>: S3   
+ttyS15<Info>: No such device or address
+Port Scan<*1>: S15  
+
+Found a modem on /dev/ttyLT0, using link /dev/modem in config.
+Modem configuration written to LTtest.txt.
+ttyLT0<Info>: Speed 115200; init "ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0"
+------
+
+Edit /etc/wvdialconf from:
+Dialer Defaults]
+Modem = /dev/modem
+Baud = 115200
+Init1 = ATZ
+Init2 = ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0
+ISDN = 0
+Modem Type = Analog Modem
+; Phone = <Target Phone Number>
+; Username = <Your Login Name>
+; Password = <Your Password>
+
+To formatlike:
+-------------
+Dialer Defaults]
+Modem = /dev/modem
+Baud = 115200
+Init1 = ATZ
+## if not in the USA, use an 
+# Init2 = AT+GCI=Hexidecimal_Country_Code, and the following line should be Init3
+Init2 = ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0
+ISDN = 0
+Modem Type = Analog Modem
+Phone = 123444555
+Username = LoginName
+## If MSN.net is your Internet Provider, instead use
+# Username = MSN/LoginName
+Password = Your_Password
+## In some countries, the following line may be necessary
+# Stupid Mode = yes
+## to initiate dialing without Dialtone acquisition
+
+My /etc/ppp/options file has lines
+------------
+usepeerdns
+asyncmap 0
+auth
+crtscts
+lock
+hide-password
+modem
+proxyarp
+lcp-echo-interval 30
+lcp-echo-failure 4
+noipx
+------------
+where the "usepeerdns" means use the Domain Name Server (dns) addresses 
+automatically provide upon dialup, as contrasted to pre-written to /etc/resolv.conf 
+
+Try a dialout with:
+# wvdial &
+[2] 2704
+stodolsklap:/usr/src/modules/ltmodem-2.6-alk-4# --> WvDial: Internet dialer version 1.54.0
+--> Initializing modem.
+--> Sending: ATZ
+ATZ
+OK
+--> Sending: ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0
+ATQ0 V1 E1 S0=0 &C1 &D2 +FCLASS=0
+OK
+--> Modem initialized.
+--> Sending: ATDT3019178111
+--> Waiting for carrier.
+ATDT3019178111
+CONNECT 52000 V42bis
+--> Carrier detected.  Waiting for prompt.
+** APX1.LNH.MD.RCN.NET Terminal Server **
+Login: 
+--> Looks like a login prompt.
+--> Sending: marvstod
+marvstod
+Password: 
+--> Looks like a password prompt.
+--> Sending: (password)
+    Entering PPP Session.
+    IP address is 66.44.1.109
+    MTU is 1006.
+--> Looks like a welcome message.
+--> Starting pppd at Sat Jun  5 20:45:23 2004
+--> pid of pppd: 2708
+--> Using interface ppp0
+--> pppd:  Defaults
+--> pppd:  Defaults
+
+ pppd 2.4.2 started by root, uid 0
+ Using interface ppp0
+--> pppd:  Defaults
+--> pppd:  Defaults
+--> local  IP address 66.44.1.109
+--> pppd:  Defaults
+--> remote IP address 208.59.89.132
+--> pppd:  Defaults
+--> primary   DNS address 207.172.3.8
+--> pppd:  Defaults
+--> secondary DNS address 207.172.3.9
+--> pppd:  Defaults
+ Connect: ppp0 <--> /dev/ttyLT0
+ kernel does not support PPP filtering
+ PPP BSD Compression module registered
+ PPP Deflate Compression module registered
+ local  IP address 66.44.1.109
+ remote IP address 208.59.89.132
+ primary   DNS address 207.172.3.8
+
+Test DNS service with: 
+# ping corel.com
+PING corel.com (216.191.232.85): 56 data bytes
+64 bytes from 216.191.232.85: icmp_seq=0 ttl=51 time=184.7 ms
+64 bytes from 216.191.232.85: icmp_seq=1 ttl=51 time=173.9 ms
+which shows a success.  Abort with Ctrl-C
+
+Should there be a failure try the numerical address:
+ ping 216.191.232.85
+PING 216.191.232.85 (216.191.232.85): 56 data bytes
+64 bytes from 216.191.232.85: icmp_seq=0 ttl=51 time=168.0 ms
+64 bytes from 216.191.232.85: icmp_seq=1 ttl=51 time=165.9 ms
+64 bytes from 216.191.232.85: icmp_seq=2 ttl=51 time=168.9 ms
+
+Should the "ping 216.191.232.85" succeed but
+# ping corel.com
+fail, your Internet connection is OK, but there is a DNS failure.
+
+To terminate a wvdial session, first foreground the process.
+# fg wvdial
+Then terminate with
+# Ctrl-C
+
+With lines in /etc/modprobe.conf
+  alias /dev/modem    ltserial
+  alias char-major-62 ltserial
+  alias /dev/tts/lT0  ltserial
+The modem drivers load upon demand
+with the last line cogent to Systems using the device file system
+
+Enjoy
+ 

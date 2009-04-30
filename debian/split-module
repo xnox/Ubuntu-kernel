@@ -1,0 +1,61 @@
+#!/bin/bash
+
+set -e
+
+get_var() {
+    variable="$1"
+    dir="$2"
+
+    tmp=$(tempfile)
+    cat <<EOF > $tmp
+split_module_print_value:
+	@echo \$($variable)
+
+include Makefile
+EOF
+    make -f $tmp -C $dir --no-print-directory split_module_print_value CC="$CC" GCC="$GCC" 
+    rm -f $tmp
+}
+
+module="$1"
+build_dir="$2"
+install_dir="$3"
+
+case "$module" in
+    fcdsl|fcdsl2|fcdslsl|fcdslslusb|fcdslusb|fcdslusb2|fcdslusba|fcpci|fcpcmcia|fcusb|fwlanusb|fxusb)
+        export KERNELRELEASE=foo
+        extra_objs=../lib/$module-lib.o
+        objs_var="$module-objs"
+        ;;
+    fcpcmcia)
+        export KERNELRELEASE=foo
+        objs_var="fcpcmcia-objs"
+        ;;
+    fcpcmcia_cs)
+        export KERNELRELEASE=foo
+        objs_var=
+        extra_objs="fcpcmcia_cs.o"
+        ;;
+    *)
+        objs_var="$module-objs"
+        ;;
+esac
+
+modpost=$module.mod.o
+
+if [ -n "$objs_var" ]; then
+    objs=$(get_var $objs_var $build_dir)
+
+    if [ -z "$objs" ]; then
+        echo "split-module: failed to find objects for $module" >&2
+        exit 1
+    fi
+fi
+
+install -d $install_dir/$module
+for file in $objs $extra_objs $modpost; do
+    cp -v $build_dir/$file $install_dir/$module
+done
+
+exit 0
+

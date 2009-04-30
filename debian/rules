@@ -1,0 +1,1240 @@
+#!/usr/bin/make -f
+#
+# Copyright (c) 2004 Herbert Xu <herbert@gondor.apana.org.au>
+# Copyright (c) 2004-2005 Canonical Ltd.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# dpkg-buildpackage passes options that are incomptatible
+# with the kernel build.
+unexport CFLAGS
+unexport LDFLAGS
+
+SHELL := sh -e
+
+prefix := $(CURDIR)/debian/linux-restricted-modules
+DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
+udeb_prefix := $(CURDIR)/debian/d-i-$(DEB_HOST_ARCH)
+
+export CC=gcc
+export GCC=gcc
+
+# kernel
+abi_version        = $(shell dpkg-parsechangelog | grep ^Version | sed 's/.*-//;s/\..*//')
+kernel_version     = $(shell dpkg-parsechangelog | grep ^Source | sed 's/.*-//')
+kernel_abi_version = $(kernel_version)-$(abi_version)
+lrm_version        = $(shell dpkg-parsechangelog | grep ^Version | awk '{print $$2}')
+
+# nvidia
+nv_base_version=1.0
+nv_release := 96.43.05
+nv_upstreamversion := ${nv_release}
+nv_version := ${nv_release}
+nv_new_release := 169.12
+nv_new_upstreamversion := ${nv_new_release}
+nv_new_version := ${nv_new_release}
+nv_legacy_release := 71.86.04
+nv_legacy_upstreamversion := ${nv_legacy_release}
+nv_legacy_version := ${nv_legacy_release}
+
+# fglrx
+ati_xorg_base_version = 7.1.0
+ati_revision = 8-3
+ati_upstreamversion = ${ati_revision}
+ati_xorg_version = ${ati_xorg_base_version}-${ati_revision}
+ati_shar = ati-driver-installer-${ati_revision}-x86.x86_64.run
+
+# fritz avm
+avm_base_version = 3.11
+#avm_version = ${avm_base_version}-${avm_revision}
+avm_version = ${avm_base_version}
+pkg_avmfw := $(shell awk '/Package: avm-fritz-firmware/ {print $$2}' debian/control.stub)
+avmfw_dir = $(subst avm-fritz-firmware-,,$(pkg_avmfw))
+
+# ltmodem
+ltm_base_version = 8.31+2.6-alk-9
+ltm_url = http://linmodems.technion.ac.il/packages/ltmodem/kernel-2.6/
+
+# madwifi
+madwifi_version = 0.9.4
+
+# broadcom wireless
+bcmwl_dir = bcmwl
+
+# vmware-player
+vmplay_dir = $(CURDIR)/debian/vmware-player-kernel-modules-$(kernel_abi_version)
+vmserv_dir = $(CURDIR)/debian/vmware-server-kernel-modules-$(kernel_abi_version)
+vmtool_dir = $(CURDIR)/debian/vmware-tools-kernel-modules-$(kernel_abi_version)
+
+FGLRX   := 1
+NVIDIA  := 1
+MADWIFI := 1
+BCMWL   := 1
+FRITZ   := 1
+LTMODEM := 1
+VMWARE  := 0
+VMDESCHED := 1
+
+ifeq "$(DEB_HOST_ARCH)" "i386"
+export karch=i386
+mw_target := TARGET=i386-elf
+
+nv_filename := NVIDIA-Linux-x86-${nv_upstreamversion}-pkg1.run
+nv_dirname := nvidia/NVIDIA-Linux-x86-${nv_upstreamversion}-pkg1
+nv_url := http://download.nvidia.com/XFree86/Linux-x86/${nv_upstreamversion}/${nv_filename}
+
+nv_new_filename := NVIDIA-Linux-x86-${nv_new_upstreamversion}-pkg1.run
+nv_new_dirname := nvidia/NVIDIA-Linux-x86-${nv_new_upstreamversion}-pkg1
+nv_new_url := http://download.nvidia.com/XFree86/Linux-x86/${nv_new_upstreamversion}/${nv_new_filename}
+
+nv_legacy_filename := NVIDIA-Linux-x86-${nv_legacy_upstreamversion}-pkg1.run
+nv_legacy_dirname := nvidia/NVIDIA-Linux-x86-${nv_legacy_upstreamversion}-pkg1
+nv_legacy_url := http://download.nvidia.com/XFree86/Linux-x86/${nv_legacy_upstreamversion}/${nv_legacy_filename}
+
+ati_package = fglrx
+ati_url = http://www2.ati.com/drivers/linux/fglrx_${ati_revision}.zip
+ati_archdir = x86
+ati_nativelibdir = lib
+ati_xorg_dir = x710
+fritz_dir := fritz
+split_fritz_modules += \
+		fcdsl/src/fcdsl \
+		fcdsl2/src/fcdsl2 \
+		fcdslsl/src/fcdslsl \
+		fcdslslusb/src/fcdslslusb \
+		fcdslusb/1/fritz/src/fcdslusb \
+		fcdslusb/2/fritz/src/fcdslusb2 \
+		fcdslusba/src/fcdslusba \
+		fcpci/src/fcpci \
+		fcusb/src/fcusb \
+		fwlanusb/src/fwlanusb \
+		fxusb/src/fxusb
+flavours := $(addprefix $(kernel_abi_version)-,generic 386 openvz rt server xen)
+ati_flavours := $(addprefix $(kernel_abi_version)-,generic 386 openvz rt server xen)
+nv_flavours := $(addprefix $(kernel_abi_version)-,generic 386 openvz rt server)
+vmware_server_extra_flavours := $(addprefix $(kernel_abi_version)-,server)
+vmware_tools_extra_flavours := $(addprefix $(kernel_abi_version)-,server)
+endif
+
+ifeq "$(DEB_HOST_ARCH)" "amd64"
+export karch=x86_64
+mw_target := TARGET=x86_64-elf
+
+nv_filename := NVIDIA-Linux-x86_64-${nv_upstreamversion}-pkg2.run
+nv_dirname := nvidia/NVIDIA-Linux-x86_64-${nv_upstreamversion}-pkg2
+nv_url := http://download.nvidia.com/XFree86/Linux-x86_64/${nv_upstreamversion}/${nv_filename}
+
+nv_new_filename := NVIDIA-Linux-x86_64-${nv_new_upstreamversion}-pkg2.run
+nv_new_dirname := nvidia/NVIDIA-Linux-x86_64-${nv_new_upstreamversion}-pkg2
+nv_new_url := http://download.nvidia.com/XFree86/Linux-x86_64/${nv_new_upstreamversion}/${nv_new_filename}
+
+nv_legacy_filename := NVIDIA-Linux-x86_64-${nv_legacy_upstreamversion}-pkg2.run
+nv_legacy_dirname := nvidia/NVIDIA-Linux-x86_64-${nv_legacy_upstreamversion}-pkg2
+nv_legacy_url := http://download.nvidia.com/XFree86/Linux-x86_64/${nv_legacy_upstreamversion}/${nv_legacy_filename}
+
+ati_package := fglrx64
+ati_url = http://www2.ati.com/drivers/linux/fglrx64_${ati_revision}.zip
+ati_archdir = x86_64
+ati_nativelibdir = lib64
+ati_xorg_dir = x710_64a
+fritz_dir := fritz64
+split_fritz_modules += \
+		fcdsl2/src/fcdsl2 \
+		fcdslsl/src/fcdslsl \
+		fcdslslusb/src/fcdslslusb \
+		fcdslusb/1/fritz/src/fcdslusb \
+		fcdslusb/2/fritz/src/fcdslusb2 \
+		fcpci/src/fcpci
+flavours := $(addprefix $(kernel_abi_version)-,generic openvz rt server xen)
+ati_flavours := $(addprefix $(kernel_abi_version)-,generic openvz rt server xen)
+nv_flavours := $(addprefix $(kernel_abi_version)-,generic openvz rt server)
+LTMODEM := 0 # no Winmodem support
+VMDESCHED := 0
+vmware_server_extra_flavours := $(addprefix $(kernel_abi_version)-,server)
+vmware_tools_extra_flavours := $(addprefix $(kernel_abi_version)-,server)
+endif
+
+ifeq "$(DEB_HOST_ARCH)" "ia64"
+export karch=ia64
+mw_target := TARGET=ia64-elf
+flavours := $(addprefix $(kernel_abi_version)-,itanium mckinley)
+
+NVIDIA  := 0 # no real upstream nvidia support
+FGLRX   := 0 # no fireGL support yet
+MADWIFI := 0 # no madwifi support yet
+BCMWL	:= 0 # no Broadcom wireless support yet
+FRITZ   := 0 # no AVM Fritz support
+LTMODEM := 0 # no Winmodem support
+VMWARE  := 0 # no vmware player support
+endif
+
+ifeq "$(DEB_HOST_ARCH)" "powerpc"
+export karch=powerpc
+mw_target := TARGET=powerpc-be-elf
+flavours := $(addprefix $(kernel_abi_version)-,powerpc powerpc-smp powerpc64-smp)
+
+NVIDIA	:= 0 # no nVidia support yet
+FGLRX	:= 0 # no FireGL support yet
+FRITZ	:= 0 # no AVM Fritz support
+LTMODEM := 0 # no Winmodem support
+VMWARE  := 0 # no vmware player supportt
+BCMWL	:= 0 # no Broadcom wireless support yet
+endif
+
+ifeq "$(DEB_HOST_ARCH)" "hppa"
+export karch=hppa
+mw_target := TARGET=hppa-be-elf
+flavours := $(addprefix $(kernel_abi_version)-,hppa32 hppa64)
+
+NVIDIA	:= 0 # no nVidia support yet
+FGLRX	:= 0 # no FireGL support yet
+MADWIFI := 0 # no madwifi support yet
+BCMWL	:= 0 # no Broadcom wireless support yet
+FRITZ	:= 0 # no AVM Fritz support
+LTMODEM := 0 # no Winmodem support
+VMWARE  := 0 # no vmware player supportt
+endif
+
+ifeq "$(DEB_HOST_ARCH)" "lpia"
+export karch=i386
+mw_target := TARGET=i386-elf
+flavours := $(addprefix $(kernel_abi_version)-,lpia lpiacompat)
+
+NVIDIA  := 0 # no nVidia support yet
+FGLRX   := 0 # no FireGL support yet
+MADWIFI := 1
+BCMWL	:= 1
+FRITZ   := 0 # no AVM Fritz support
+LTMODEM := 0 # no Winmodem support
+VMWARE  := 0 # no vmware player supportt
+endif
+
+
+ifeq "$(DEB_HOST_ARCH)" "sparc"
+export karch=sparc
+mw_target := TARGET=sparc-be-elf
+flavours := $(addprefix $(kernel_abi_version)-,sparc64 sparc64-smp)
+
+NVIDIA	:= 0 # no nVidia support yet
+FGLRX	:= 0 # no FireGL support yet
+MADWIFI := 0 # no madwifi support yet
+BCMWL	:= 0 # no Broadcom wireless support yet
+FRITZ	:= 0 # no AVM Fritz support
+LTMODEM := 0 # no Winmodem support
+VMWARE  := 0 # no vmware player supportt
+endif
+
+flavours_udeb := $(shell grep ^$(DEB_HOST_ARCH) debian/d-i/kernel-versions | awk '{print $$4}')
+
+split_modules :=
+ifeq "$(FGLRX)" "1"
+split_modules += ati/build_mod/2.6.x/fglrx
+endif
+ifeq "$(MADWIFI)" "1"
+split_modules += madwifi/ath_hal/ath_hal
+endif
+ifeq "$(FRITZ)" "1"
+split_modules += $(split_fritz_modules)
+endif
+ifeq "$(LTMODEM)" "1"
+split_modules += ltmodem/ltmodem ltmodem/ltserial
+endif
+ifeq "$(BCMWL)" "1"
+split_modules += $(bcmwl_dir)/wl
+endif
+
+builddir := $(CURDIR)/debian/build
+rbuilddir := debian/build
+
+download-avm:
+	rm -rf fritz fritz64
+	python debian/getavmcardware.py
+	: # cleanup files we don't want in the archive
+	-find fritz fritz64 -name '*.ko' -o -name '*.rpm' | xargs rm -f
+
+unpack: unpack-stamp unpack-avm-stamp
+unpack-stamp:
+	dh_testdir
+
+	if [ -e debian/build ]; then \
+		mv debian/build debian/build.old; \
+	fi
+	mkdir debian/build
+
+	for i in $(flavours) $(vmware_server_extra_flavours) $(vmware_tools_extra_flavours); do \
+		mkdir -p debian/build/$$i; \
+	done
+
+ifeq "$(FGLRX)" "1"
+	mkdir $(builddir)/ati-xorg
+	cd $(builddir)/ati-xorg; \
+		$(SHELL) $(CURDIR)/ati/${ati_shar} --extract .; \
+		chmod u+rw . -R; \
+		if [ -d $(CURDIR)/ati/patches/ ]; then \
+		  for i in $(CURDIR)/ati/patches/*; do \
+		    patch -p0 -d $(builddir)/ati-xorg/ < $$i; \
+		  done; \
+		fi;
+
+	for i in $(ati_flavours); do \
+	        cp -al $(builddir)/ati-xorg/common/lib/modules/fglrx \
+			$(builddir)/$$i/ati; \
+		cp -a $(builddir)/ati-xorg/arch/$(ati_archdir)/lib/modules/fglrx/build_mod/* $(builddir)/$$i/ati/build_mod; \
+	done
+endif
+
+
+ifeq "$(MADWIFI)" "1"
+	cd $(builddir)/; \
+		tar zxf $(CURDIR)/madwifi/madwifi-$(madwifi_version).tar.gz; \
+		if [ -d $(CURDIR)/madwifi/patches/ ]; then \
+		  for i in $(CURDIR)/madwifi/patches/*; do \
+		    patch -p0 -d $(builddir)/madwifi-$(madwifi_version) < $$i; \
+		  done; \
+		fi
+
+	for i in $(flavours); do \
+	    if [ "$$i" = "$(kernel_abi_version)-powerpc64-smp" ]; then \
+	        echo "Not building madwifi drivers for $(kernel_abi_version)-powerpc64-smp"; \
+	    else \
+	        cp -al $(builddir)/madwifi-$(madwifi_version) $(builddir)/$$i/madwifi; \
+            fi; \
+	done
+endif
+
+ifeq "$(BCMWL)" "1"
+	for i in $(flavours); do \
+		mkdir -p $(builddir)/$$i/$(bcmwl_dir); \
+		cp -al $(CURDIR)/broadcom/* $(builddir)/$$i/$(bcmwl_dir); \
+	done
+endif
+
+ifeq "$(LTMODEM)" "1"
+	for i in $(flavours); do \
+	    cp -al ltmodem debian/build/$$i; \
+	    if [ -d $(CURDIR)/ltmodem/patches/ ]; then \
+	      for j in $(CURDIR)/ltmodem/patches/*; do \
+	        patch -p0 -d debian/build/$$i/ltmodem/ < $$j; \
+	      done; \
+	    fi; \
+	done
+endif
+
+ifeq "$(NVIDIA)" "1"
+	cd nvidia && sh ./$(nv_filename) --extract-only
+	cd nvidia && sh ./$(nv_new_filename) --extract-only
+	cd nvidia && sh ./$(nv_legacy_filename) --extract-only
+
+	if [ -d $(CURDIR)/nvidia/patches/ ]; then \
+	  for i in $(CURDIR)/nvidia/patches/*; do \
+	    patch -p0 -d ${nv_dirname} < $$i; \
+	  done; \
+	fi
+
+	if [ -d $(CURDIR)/nvidia/patches-new/ ]; then \
+	  for i in $(CURDIR)/nvidia/patches-new/*; do \
+	    patch -p0 -d ${nv_new_dirname} < $$i; \
+	  done; \
+	fi
+
+	if [ -d $(CURDIR)/nvidia/patches-legacy/ ]; then \
+	  for i in $(CURDIR)/nvidia/patches-legacy/*; do \
+	    patch -p0 -d ${nv_legacy_dirname} < $$i; \
+	  done; \
+	fi
+
+	cd ${nv_dirname}/usr/src/nv && ln -sf Makefile.kbuild Makefile
+	cd ${nv_new_dirname}/usr/src/nv && ln -sf Makefile.kbuild Makefile
+	cd ${nv_legacy_dirname}/usr/src/nv && ln -sf Makefile.kbuild Makefile
+
+	for i in $(nv_flavours); do \
+		cp -al ${nv_dirname}/usr/src/nv debian/build/$$i/nv; \
+		cp -al ${nv_new_dirname}/usr/src/nv debian/build/$$i/nv-new; \
+		cp -al ${nv_legacy_dirname}/usr/src/nv debian/build/$$i/nv-legacy; \
+	done
+
+	for i in -dev.dirs -dev.links -dev.postinst -dev.postrm \
+		 -dev.preinst .dirs .docs .examples .links.amd64 \
+		 .links .override .postinst .postrm .preinst \
+		 .prerm .README.Debian .reportbug .shlibs; \
+	do sed -e "s/@@VERSION@@/$(nv_new_version)/g" -e "s/@@NV_LEGACY@@/-new/g" \
+		-e "s:@dirname@:$(nv_new_dirname):"  -e "s/@@NV_ALT@@/new/g" \
+		< debian/nvidia-glx$$i.in > debian/nvidia-glx-new$$i; \
+	done
+
+	for i in -dev.dirs -dev.links -dev.postinst -dev.postrm \
+		 -dev.preinst .dirs .docs .examples .links.amd64 \
+		 .links .override .postinst .postrm .preinst \
+		 .prerm .README.Debian .reportbug .shlibs; \
+	do sed -e "s/@@VERSION@@/$(nv_version)/g" -e "s/@@NV_LEGACY@@//g" \
+		-e "s:@dirname@:$(nv_dirname):"  -e "s/@@NV_ALT@@//g" \
+		< debian/nvidia-glx$$i.in > debian/nvidia-glx$$i; \
+	done
+
+	for i in -dev.dirs -dev.links -dev.postinst -dev.postrm \
+		 -dev.preinst .dirs .docs .examples .links.amd64 \
+		 .links .override .postinst .postrm .preinst \
+		 .prerm .README.Debian .reportbug .shlibs; \
+	do sed -e "s/@@VERSION@@/$(nv_legacy_version)/g" -e "s/@@NV_LEGACY@@/-legacy/g" \
+		-e "s:@dirname@:$(nv_legacy_dirname):"  -e "s/@@NV_ALT@@/legacy/g" \
+		< debian/nvidia-glx$$i.in > debian/nvidia-glx-legacy$$i; \
+	done
+endif
+	for i in $(flavours); do \
+		sed -e "s/@@KVERSION@@/$$i/g;" debian/linux-restricted-modules.postinst \
+			> debian/linux-restricted-modules-$$i.postinst; \
+		sed -e "s/@@KVERSION@@/$$i/g;" debian/linux-restricted-modules.postrm \
+			> debian/linux-restricted-modules-$$i.postrm; \
+	done
+
+ifeq "$(VMWARE)" "1"
+	mkdir $(builddir)/vmware-player
+	cd $(builddir)/vmware-player; \
+	  tar xf $(CURDIR)/vmware-player/vmmon.tar; \
+	  tar xf $(CURDIR)/vmware-player/vmnet.tar; \
+	    if [ -d $(CURDIR)/vmware-player/patches/ ]; then \
+	      for i in $(CURDIR)/vmware-player/patches/*; do \
+	        patch -p0 -d $(builddir)/vmware-player < $$i; \
+	      done; \
+	    fi
+
+	mkdir $(builddir)/vmware-server
+	cd $(builddir)/vmware-server; \
+	  tar xf $(CURDIR)/vmware-server/vmmon.tar; \
+	  tar xf $(CURDIR)/vmware-server/vmnet.tar; \
+	    if [ -d $(CURDIR)/vmware-server/patches/ ]; then \
+	      for i in $(CURDIR)/vmware-server/patches/*; do \
+		patch -p0 -d $(builddir)/vmware-server < $$i; \
+	      done; \
+	    fi
+
+	mkdir $(builddir)/vmware-tools
+	cd $(builddir)/vmware-tools; \
+          tar xf $(CURDIR)/vmware-tools/vmdesched.tar; \
+	  tar xf $(CURDIR)/vmware-tools/vmmemctl.tar; \
+	  tar xf $(CURDIR)/vmware-tools/vmxnet.tar; \
+            if [ -d $(CURDIR)/vmware-tools/patches/ ]; then \
+              for i in $(CURDIR)/vmware-tools/patches/*; do \
+                patch -p0 -d $(builddir)/vmware-tools < $$i; \
+              done; \
+            fi
+
+	for i in $(flavours); do \
+	  cp -al $(builddir)/vmware-player $(builddir)/$$i/; \
+	done
+
+	for i in $(flavours) $(vmware_tools_extra_flavours); do \
+	  cp -al $(builddir)/vmware-tools $(builddir)/$$i/; \
+	done
+
+	for i in $(flavours) $(vmware_server_extra_flavours); do \
+	  cp -al $(builddir)/vmware-server $(builddir)/$$i/; \
+	done
+
+	for i in player server tools; do \
+	  sed -e "s/@@KVERSION@@/$$i/g;" debian/vmware-kernel-modules.postinst > \
+	    debian/vmware-$$i-kernel-modules-$(kernel_abi_version).postinst; \
+	  sed -e "s/@@KVERSION@@/$$i/g;" debian/vmware-kernel-modules.postrm > \
+	    debian/vmware-$$i-kernel-modules-$(kernel_abi_version).postrm; \
+	done
+endif
+
+	touch unpack-stamp
+
+unpack-avm-stamp:
+ifeq "$(FRITZ)" "1"
+ifeq "$(DEB_HOST_ARCH)" "i386"
+	cd fritz/fwlanusb/lib && uudecode fwlanusb-lib.o.uu
+endif
+	for i in $(flavours); do \
+	  mkdir -p debian/build/$$i; \
+	  for f in $(fritz_dir)/*; do \
+	    cp -al $$f debian/build/$$i; \
+	  done; \
+	  if [ -d $(fritz_dir)/patches ] ; then \
+	    for p in $(fritz_dir)/patches/* ; do \
+	      patch -d debian/build/$$i -p0 < $$p; \
+	    done; \
+	  fi; \
+	done
+endif
+	touch unpack-avm-stamp
+
+build-kernel: build-kernel-stamp
+build-kernel-stamp: unpack-stamp
+	dh_testdir
+	dh_testroot
+
+	mkdir -p $(CURDIR)/debian/temp/modules/nvidia-kernel/debian
+	mkdir -p $(CURDIR)/debian/temp/modules/nvidia-kernel/nv
+	cp -r $(CURDIR)/nvidia/debian.binary/* $(CURDIR)/debian/temp/modules/nvidia-kernel/debian
+	set +e && for f in `ls $(CURDIR)/nvidia/debian.binary` ; do \
+	    perl -p \
+	    -e 's{#BASE_VERSION#}{$(nv_base_version)}g;' \
+	    -e 's{#RELEASE#}{$(nv_release)}g;' \
+	    -e 's{#VERSION#}{$(nv_version)}g;' \
+	    -e 's{#UPSTREAMVERSION#}{$(nv_upstreamversion)}g;' \
+	    -e 's{#URL#}{$(nv_url)}g' \
+	    < $(CURDIR)/nvidia/debian.binary/$$f \
+	    > $(CURDIR)/debian/temp/modules/nvidia-kernel/debian/$$f ; \
+	    chmod 0644 $(CURDIR)/debian/temp/modules/nvidia-kernel/debian/$$f ; \
+	done
+	#chmod 755 $(CURDIR)/debian/temp/modules/nvidia-kernel/debian/patches
+	cp -al $(nv_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-kernel || true
+	rm -f $(CURDIR)/debian/temp/modules/nvidia-kernel/nv/Makefile
+	chmod 755 $(CURDIR)/debian/temp/modules/nvidia-kernel/debian/rules
+	chown -R root:src $(CURDIR)/debian/temp/modules
+	rm -rf $(CURDIR)/debian/temp/modules/nvidia-kernel/nv/precompiled
+	tar -zcvf $(CURDIR)/nvidia-kernel-source.tar.gz -C $(CURDIR)/debian/temp modules
+	rm -rf debian/temp 
+
+	mkdir -p $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian
+	mkdir -p $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/nv
+	cp -r $(CURDIR)/nvidia/debian.binary/* $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian
+	set +e && for f in `ls $(CURDIR)/nvidia/debian.binary` ; do \
+	    perl -p \
+	    -e 's{#BASE_VERSION#}{$(nv_base_version)}g;' \
+	    -e 's{#RELEASE#}{$(nv_legacy_release)}g;' \
+	    -e 's{#VERSION#}{$(nv_legacy_version)}g;' \
+	    -e 's{#UPSTREAMVERSION#}{$(nv_legacy_upstreamversion)}g;' \
+	    -e 's{#URL#}{$(nv_legacy_url)}g' \
+	    < $(CURDIR)/nvidia/debian.binary/$$f \
+	    > $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian/$$f ; \
+	    chmod 0644 $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian/$$f ; \
+	done
+	#chmod 755 $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian/patches
+	cp -al $(nv_legacy_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel || true
+	rm -f $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/nv/Makefile
+	chmod 755 $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian/rules
+	chown -R root:src $(CURDIR)/debian/temp/modules
+	rm -rf $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/nv/precompiled
+	tar -zcvf $(CURDIR)/nvidia-legacy-kernel-source.tar.gz -C $(CURDIR)/debian/temp modules
+	rm -rf debian/temp 
+
+	mkdir -p $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian
+	mkdir -p $(CURDIR)/debian/temp/modules/nvidia-new-kernel/nv
+	cp -r $(CURDIR)/nvidia/debian.binary/* $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian
+	set +e && for f in `ls $(CURDIR)/nvidia/debian.binary` ; do \
+	    perl -p \
+	    -e 's{#BASE_VERSION#}{$(nv_base_version)}g;' \
+	    -e 's{#RELEASE#}{$(nv_new_release)}g;' \
+	    -e 's{#VERSION#}{$(nv_new_version)}g;' \
+	    -e 's{#UPSTREAMVERSION#}{$(nv_new_upstreamversion)}g;' \
+	    -e 's{#URL#}{$(nv_new_url)}g' \
+	    < $(CURDIR)/nvidia/debian.binary/$$f \
+	    > $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian/$$f ; \
+	    chmod 0644 $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian/$$f ; \
+	done
+	#chmod 755 $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian/patches
+	cp -al $(nv_new_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-new-kernel || true
+	rm -f $(CURDIR)/debian/temp/modules/nvidia-new-kernel/nv/Makefile
+	chmod 755 $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian/rules
+	chown -R root:src $(CURDIR)/debian/temp/modules
+	rm -rf $(CURDIR)/debian/temp/modules/nvidia-new-kernel/nv/precompiled
+	tar -zcvf $(CURDIR)/nvidia-new-kernel-source.tar.gz -C $(CURDIR)/debian/temp modules
+	rm -rf debian/temp
+
+	mkdir -p $(CURDIR)/debian/temp/modules/fglrx-kernel/debian
+	mkdir -p $(CURDIR)/debian/temp/modules/fglrx-kernel/fglrx
+	cp -r $(CURDIR)/ati/debian.binary/* $(CURDIR)/debian/temp/modules/fglrx-kernel/debian
+	set +e && for f in `ls $(CURDIR)/ati/debian.binary` ; do \
+	    perl -p \
+	    -e 's{#BASE_VERSION#}{$(ati_xorg_base_version)}g;' \
+	    -e 's{#REVISION#}{$(ati_revision)}g;' \
+	    -e 's{#VERSION#}{$(ati_xorg_version)}g;' \
+	    -e 's{#UPSTREAMVERSION#}{$(ati_upstreamversion)}g;' \
+	    -e 's{#URL#}{$(ati_url)}g' \
+	    < $(CURDIR)/ati/debian.binary/$$f \
+	    > $(CURDIR)/debian/temp/modules/fglrx-kernel/debian/$$f ; \
+	    chmod 0644 $(CURDIR)/debian/temp/modules/fglrx-kernel/debian/$$f ; \
+	done
+	cp -al debian/build/ati-xorg/common/lib/modules/fglrx $(CURDIR)/debian/temp/modules/fglrx-kernel || true
+	chmod 755 $(CURDIR)/debian/temp/modules/fglrx-kernel/debian/rules
+	chown -R root:src $(CURDIR)/debian/temp/modules
+	tar -zcvf $(CURDIR)/fglrx-kernel-source.tar.gz -C debian/temp modules
+	rm -rf debian/temp 
+
+	touch build-kernel-stamp
+
+build: build-stamp build-avm-stamp modalias-patterns-stamp debian/control
+build-stamp: unpack-stamp
+	dh_testdir
+
+ifeq "$(BCMWL)" "1"
+	for i in $(flavours); do \
+		make karch=$(karch) -C /usr/src/linux-headers-$$i M=$(shell pwd)/debian/build/$$i/$(bcmwl_dir); \
+	done
+endif
+
+ifeq "$(MADWIFI)" "1"
+	for i in $(flavours); do \
+	    if [ "$$i" = "$(kernel_abi_version)-powerpc64-smp" ]; then \
+		echo "Not building madwifi drivers for $(kernel_abi_version)-powerpc64-smp"; \
+	    else \
+		make karch=$(karch) -C debian/build/$$i/madwifi \
+			KERNELPATH=/usr/src/linux-headers-$$i $(mw_target); \
+	    fi; \
+	done
+endif
+
+ifeq "$(VMWARE)" "1"
+	for i in $(flavours); do \
+	  $(MAKE) -C $(builddir)/$$i/vmware-player/vmmon-only VM_UNAME=$$i; \
+	  $(MAKE) -C $(builddir)/$$i/vmware-player/vmnet-only VM_UNAME=$$i; \
+	done
+
+	for i in $(flavours) $(vmware_server_extra_flavours); do \
+	  $(MAKE) -C $(builddir)/$$i/vmware-server/vmmon-only VM_UNAME=$$i; \
+	  $(MAKE) -C $(builddir)/$$i/vmware-server/vmnet-only VM_UNAME=$$i; \
+	done
+
+	for i in $(flavours) $(vmware_tools_extra_flavours); do \
+	  $(MAKE) -C $(builddir)/$$i/vmware-tools/vmmemctl-only VM_UNAME=$$i; \
+	  $(MAKE) -C $(builddir)/$$i/vmware-tools/vmxnet-only VM_UNAME=$$i; \
+	  if [ "$(VMDESCHED)" = "1" ]; then \
+	    $(MAKE) -C $(builddir)/$$i/vmware-tools/vmdesched-only VM_UNAME=$$i; \
+	  fi; \
+	done
+endif
+
+ifeq "$(LTMODEM)" "1"
+	for i in $(flavours); do \
+		$(MAKE) -C $(builddir)/$$i/ltmodem \
+			KERNEL_DIR=/usr/src/linux-headers-$$i module; \
+	done
+endif
+
+ifeq "$(FGLRX)" "1"
+	for i in $(ati_flavours); do \
+		$(MAKE) -C $(builddir)/$$i/ati/build_mod/2.6.x \
+			KDIR=/usr/src/linux-headers-$$i; \
+	done
+endif
+
+ifeq "$(NVIDIA)" "1"
+	for i in $(nv_flavours); do \
+		cd debian/build/$$i; \
+		export IGNORE_XEN_PRESENCE=1; \
+		$(ROOT_CMD) make -C $(builddir)/$$i/nv-new -f Makefile SYSSRC=/usr/src/linux-headers-$$i KBUILD_PARAMS="-C /usr/src/linux-headers-$$i SUBDIRS=$(builddir)/$$i/nv-new" module; \
+		if [ "$$i" != "$(kernel_abi_version)-xen" ]; then \
+		  $(ROOT_CMD) make -C $(builddir)/$$i/nv -f Makefile SYSSRC=/usr/src/linux-headers-$$i KBUILD_PARAMS="-C /usr/src/linux-headers-$$i SUBDIRS=$(builddir)/$$i/nv" module; \
+		  $(ROOT_CMD) make -C $(builddir)/$$i/nv-legacy -f Makefile SYSSRC=/usr/src/linux-headers-$$i KBUILD_PARAMS="-C /usr/src/linux-headers-$$i SUBDIRS=$(builddir)/$$i/nv-legacy" module; \
+		fi; \
+		cd - > /dev/null; \
+	done
+endif
+
+	touch build-stamp
+
+build-avm-stamp: unpack-avm-stamp
+	dh_testdir
+ifeq "$(FRITZ)" "1"
+	for i in $(flavours); do \
+	  for d in debian/build/$$i/f*; do \
+	    m=$$(basename $$d); \
+	    echo building for flavour $$i, module $$m; \
+	    if [ -d $$d/src.drv ]; then \
+	      make -C $$d/src.drv \
+		`cat $$d/make.card` \
+		KRNLINCL=/usr/src/linux-headers-$$i \
+		|| true; \
+	    else \
+	      if [ -f $$d/ID ]; then \
+	        mkdir -p $$d/tmp; \
+	        echo make -C $$d/src `cat $$d/ID` KDIR=/usr/src/linux-headers-$$i; \
+	        make -C $$d/src \
+		  `cat $$d/ID` \
+		  KDIR=/usr/src/linux-headers-$$i \
+		  LIBDIR=$(CURDIR)/$$d/tmp; \
+	        rm -rf $$d/tmp; \
+	      else \
+		for d2 in $$d/?/fritz; do \
+	          mkdir -p $$d2/tmp; \
+	          echo make -C $$d2/src `cat $$d2/ID` KDIR=/usr/src/linux-headers-$$i; \
+	          make -C $$d2/src \
+		    `cat $$d2/ID` \
+		    KDIR=/usr/src/linux-headers-$$i \
+		    LIBDIR=$(CURDIR)/$$d2/tmp; \
+	          rm -rf $$d2/tmp; \
+		done; \
+	      fi; \
+	    fi; \
+	  done; \
+	done
+endif
+	touch build-avm-stamp
+
+modalias-patterns-stamp: build-stamp
+	dh_testdir
+
+ifeq "$(FGLRX)" "1"
+	for i in $(ati_flavours); do \
+	  $(SHELL) ati/fglrx_supported \
+	    $(rbuilddir)/ati-xorg/$(ati_xorg_dir)/usr/X11R6/$(ati_nativelibdir)/modules/drivers/fglrx_drv.so \
+	    > $(rbuilddir)/$$i/ati/modules.alias.override; \
+	done
+endif
+
+ifeq "$(MADWIFI)" "1"
+	for i in $(flavours); do \
+	  if [ "$$i" = "$(kernel_abi_version)-powerpc64-smp" ]; then \
+                echo "Not building madwifi drivers for $(kernel_abi_version)-powerpc64-smp"; \
+          else \
+	    $(SHELL) madwifi/ath_hal_supported \
+	      $(rbuilddir)/$$i/madwifi/ath/ath_pci.ko \
+	      > $(rbuilddir)/$$i/madwifi/modules.alias.override; \
+	  fi; \
+	done
+endif
+
+ifeq "$(BCMWL)" "1"
+	for i in $(flavours); do \
+	  $(SHELL) broadcom/wl_supported $(rbuilddir)/$$i/$(bcmwl_dir)/wl.ko > \
+	    $(rbuilddir)/$$i/$(bcmwl_dir)/modules.alias.override; \
+	done
+endif
+
+ifeq "$(NVIDIA)" "1"
+	for i in $(nv_flavours); do \
+	  if [ "$$i" != "$(kernel_abi_version)-xen" ]; then \
+	    $(SHELL) nvidia/nvidia_supported \
+	      $(rbuilddir)/$$i/nv-new/nv-kernel.o nvidia_new \
+	      $(rbuilddir)/$$i/nv/nv-kernel.o nvidia \
+	      $(rbuilddir)/$$i/nv-legacy/nv-kernel.o nvidia_legacy \
+	      > $(rbuilddir)/$$i/nv/modules.alias.override; \
+	  else \
+	    $(SHELL) nvidia/nvidia_supported \
+	      $(rbuilddir)/$$i/nv-new/nv-kernel.o nvidia_new \
+	      > $(rbuilddir)/$$i/nv/modules.alias.override; \
+	  fi; \
+	done
+endif
+
+	touch modalias-patterns-stamp
+
+debian/control:
+	echo '# THIS FILE IS AUTO-GENERATED FROM control.stub.in' > debian/control.stub
+	sed -e 's/@@NV_VERSION@@/$(nv_version)/g' \
+	    -e 's/@@NV_NEW_VERSION@@/$(nv_new_version)/g' \
+	    -e 's/@@NV_LEGACY_VERSION@@/$(nv_legacy_version)/g' \
+	    -e 's/@@KVERSION@@/$(kernel_version)/g' \
+	    -e 's/@@ABIVER@@/$(kernel_abi_version)/g' \
+	    debian/control.stub.in >> debian/control.stub
+	echo '# THIS FILE IS AUTO-GENERATED FROM kernel-versions.in' > debian/d-i/kernel-versions
+	sed -e 's/@@ABIVER@@/$(kernel_abi_version)/g' \
+	    debian/d-i/kernel-versions.in >> debian/d-i/kernel-versions
+	rm -rf $(udeb_prefix)
+	mkdir -p $(udeb_prefix)/modules $(udeb_prefix)/firmware
+	-cp -a debian/d-i/modules/$(DEB_HOST_ARCH) $(udeb_prefix)/modules/
+	-cp -a debian/d-i/firmware/$(DEB_HOST_ARCH) $(udeb_prefix)/firmware/
+	cp -a debian/d-i/package-list debian/d-i/kernel-versions $(udeb_prefix)/
+	ln -s .. $(udeb_prefix)/debian
+	(cd $(udeb_prefix) && kernel-wedge gen-control) > debian/control
+	rm -rf $(udeb_prefix)
+
+clean: debian/control
+	dh_testdir
+	dh_testroot
+	rm -f unpack-stamp build-stamp build-kernel-stamp \
+	      modalias-patterns-stamp
+	rm -rf debian/build* debian/temp/
+	rm -f debian/vmware-*-kernel-modules-*.postinst
+	rm -f debian/vmware-*-kernel-modules-*.postrm
+	rm -f debian/linux-restricted-modules-[0-9]*.postinst
+	rm -f debian/linux-restricted-modules-*.postrm
+	rm -f debian/linux-restricted-modules-*.preinst
+	rm -f debian/linux-restricted-modules-*.prerm
+	rm -f debian/nic-restricted-modules-*.postinst
+	for i in -dev.dirs -dev.links -dev.postinst -dev.postrm \
+		 -dev.preinst .dirs .docs .examples .links.amd64 \
+		 .links .override .postinst .postrm .preinst \
+		 .prerm .README.Debian .reportbug .shlibs; \
+	    do rm -f debian/nvidia-glx$$i debian/nvidia-glx-legacy$$i debian/nvidia-glx-new$$i; \
+	done
+	rm -rf $(nv_dirname) $(nv_legacy_dirname) $(nv_new_dirname)
+	rm -f nvidia-kernel-source.tar.gz nvidia-legacy-kernel-source.tar.gz \
+		nvidia-new-kernel-source.tar.gz
+	rm -f fglrx-kernel-source.tar.gz
+	dh_clean `find debian/d-i/modules debian/d-i/firmware -type l 2>/dev/null`
+	rm -rf $(udeb_prefix)
+	rm -rf avm-download build-avm-stamp unpack-avm-stamp
+	rm -f fritz/fwlanusb/lib/fwlanusb-lib.o
+	rm -rf debian/nic-restricted-modules-*-di \
+	       debian/nic-restricted-firmware-*-di
+	rm -f correct-lib-path
+	cp -f debian/control.stub debian/control
+
+install: build build-kernel
+	dh_testdir
+	dh_clean -k
+	dh_installdirs
+
+	# Split modules for install
+	chmod u+rx debian/split-module
+	for flavour in $(flavours); do \
+		export KERNELPATH=/usr/src/linux-headers-$$flavour; \
+		export $(mw_target); \
+		for module in $(split_modules); do \
+			if [ ! -d "debian/build/$$flavour/$$(dirname $$module)" ]; then \
+				echo "No $$module driver for $$flavour"; \
+			elif [ "$$module" = "ltmodem/ltmodem" ] \
+				|| [ "$$module" = "ltmodem/ltserial" ] \
+				&& [ "$$flavour" != "$(kernel_abi_version)-386" ]; then \
+				echo "No $$module driver for $$flavour"; \
+			elif [ "$$module" = "madwifi/ath_hal/ath_hal" ] \
+				&& [ "$$flavour" = "$(kernel_abi_version)-powerpc64-smp" ]; then \
+				echo "No $$module driver for $$flavour"; \
+			else \
+			echo "KERNELPATH=/usr/src/linux-headers-$$flavour $(mw_target) CC=$(CC) GCC=$(GCC) debian/split-module $$(basename $$module) debian/build/$$flavour/$$(dirname $$module) $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour"; \
+			debian/split-module $$(basename $$module) \
+				debian/build/$$flavour/$$(dirname $$module) \
+				$(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour; \
+			fi; \
+		done; \
+	done
+
+ifeq "$(NVIDIA)" "1"
+	for flavour in $(nv_flavours); do \
+		export KERNELPATH=/usr/src/linux-headers-$$flavour; \
+		if [ "$$flavour" != "$(kernel_abi_version)-xen" ]; then \
+		  debian/split-module nvidia \
+			debian/build/$$flavour/nv-legacy \
+			$(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv-legacy; \
+		  mv $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv-legacy/nvidia \
+		     $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nvidia_legacy; \
+		  rm -rf $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv-legacy; \
+		  debian/split-module nvidia \
+                        debian/build/$$flavour/nv \
+                        $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv; \
+                  mv $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv/nvidia \
+                     $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nvidia; \
+                  rm -rf $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv; \
+		fi; \
+                debian/split-module nvidia \
+                        debian/build/$$flavour/nv-new \
+                        $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv-new; \
+                mv $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv-new/nvidia \
+                   $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nvidia_new; \
+                rm -rf $(prefix)-$$flavour/lib/linux-restricted-modules/$$flavour/nv-new; \
+		install -D -m0644 \
+			$(rbuilddir)/$$flavour/nv/modules.alias.override \
+			$(prefix)-$$flavour/usr/share/linux-restricted-modules/$$flavour/modules.alias.override/nvidia; \
+	done
+endif
+	#
+ifeq "$(MADWIFI)" "1"
+	for flavour in $(flavours); do \
+	    if [ "$$flavour" = "$(kernel_abi_version)-powerpc64-smp" ]; then \
+		echo "Not building madwifi drivers for $(kernel_abi_version)-powerpc64-smp"; \
+	    else \
+		install -d $(prefix)-$$flavour/lib/modules/$$flavour/madwifi; \
+		find debian/build/$$flavour/madwifi -name '*.ko' ! -name 'ath_hal.ko' | \
+			xargs cp --target=$(prefix)-$$flavour/lib/modules/$$flavour/madwifi; \
+		install -D -m0644 \
+		        $(rbuilddir)/$$flavour/madwifi/modules.alias.override \
+			$(prefix)-$$flavour/usr/share/linux-restricted-modules/$$flavour/modules.alias.override/ath_hal; \
+	    fi; \
+	done
+endif
+
+ifeq "$(BCMWL)" "1"
+	for flavour in $(flavours); do \
+	    install -D -m0644 \
+		$(rbuilddir)/$$flavour/$(bcmwl_dir)/modules.alias.override \
+		$(prefix)-$$flavour/usr/share/linux-restricted-modules/$$flavour/modules.alias.override/wl; \
+	done
+endif
+
+ifeq "$(VMWARE)" "1"
+	for flavour in $(flavours); do \
+	  install -d $(vmplay_dir)/lib/modules/$$flavour/vmware-player; \
+	  find debian/build/$$flavour/vmware-player -name '*.ko' | \
+	    xargs cp --target=$(vmplay_dir)/lib/modules/$$flavour/vmware-player; \
+	done
+
+	for flavour in $(flavours) $(vmware_server_extra_flavours); do \
+	  install -d $(vmserv_dir)/lib/modules/$$flavour/vmware-server; \
+	  find debian/build/$$flavour/vmware-server -name '*.ko' | \
+	    xargs cp --target=$(vmserv_dir)/lib/modules/$$flavour/vmware-server; \
+	done
+
+	for flavour in $(flavours) $(vmware_tools_extra_flavours); do \
+	  install -d $(vmtool_dir)/lib/modules/$$flavour/vmware-tools; \
+	  find debian/build/$$flavour/vmware-tools -name '*.ko' | \
+	    xargs cp --target=$(vmtool_dir)/lib/modules/$$flavour/vmware-tools; \
+	done
+endif
+
+	# fglrx
+ifeq "$(FGLRX)" "1"
+	$(CC) debian/correct-lib-path.c -o correct-lib-path
+
+	dh_installdirs -pfglrx-control \
+	        usr/bin \
+	        usr/share/applnk \
+	        usr/share/applications \
+	        usr/share/icons \
+	        usr/share/pixmaps
+	dh_install -pfglrx-control \
+	        $(rbuilddir)/ati-xorg/common/usr/share/gnome/* \
+	        usr/share/applications
+	dh_install -pfglrx-control \
+	        $(rbuilddir)/ati-xorg/common/usr/share/applnk/* \
+	        usr/share/applnk
+	dh_install -pfglrx-control \
+	        $(rbuilddir)/ati-xorg/common/usr/share/ati \
+	        usr/share
+	dh_install -pfglrx-control \
+	        $(rbuilddir)/ati-xorg/common/usr/share/icons/* \
+	        usr/share/icons
+	dh_install -pfglrx-control \
+	        $(rbuilddir)/ati-xorg/arch/$(ati_archdir)/usr/X11R6/bin/amdcccle \
+		usr/bin
+
+	dh_installdirs -p xorg-driver-fglrx \
+		etc/ati \
+	        usr/bin \
+	        usr/lib/xorg/modules \
+	        usr/sbin \
+	        usr/share/man/man8
+	dh_installdirs -p xorg-driver-fglrx-dev \
+	        usr/include \
+	        usr/lib
+	dh_install -pxorg-driver-fglrx \
+		$(rbuilddir)/ati-xorg/common/usr/share/man/man8/* \
+		usr/share/man/man8
+	dh_install -pxorg-driver-fglrx-dev \
+		$(rbuilddir)/ati-xorg/common/usr/X11R6/include/* \
+		$(rbuilddir)/ati-xorg/common/usr/include/* \
+		usr/include
+	dh_install -pxorg-driver-fglrx -Xamdcccle \
+		$(rbuilddir)/ati-xorg/arch/$(ati_archdir)/usr/X11R6/bin/* \
+		usr/bin
+	dh_install -pxorg-driver-fglrx \
+		$(rbuilddir)/ati-xorg/common/usr/sbin/* \
+		$(rbuilddir)/ati-xorg/arch/$(ati_archdir)/usr/sbin/* \
+		usr/sbin
+	dh_install -pxorg-driver-fglrx \
+		$(rbuilddir)/ati-xorg/arch/$(ati_archdir)/usr/X11R6/$(ati_nativelibdir)/*.so* \
+	        usr/lib
+	./correct-lib-path debian/xorg-driver-fglrx/usr/lib/libGL.so.1.2 \
+		/usr/X11R6/$(ati_nativelibdir)/modules/dri \
+		/usr/lib/dri
+	dh_install -pxorg-driver-fglrx \
+		$(rbuilddir)/ati-xorg/arch/$(ati_archdir)/usr/X11R6/$(ati_nativelibdir)/modules/* \
+	        usr/lib/xorg/modules
+	mv debian/xorg-driver-fglrx/usr/lib/xorg/modules/dri \
+		debian/xorg-driver-fglrx/usr/lib/
+	dh_install -pxorg-driver-fglrx-dev \
+		$(rbuilddir)/ati-xorg/arch/$(ati_archdir)/usr/X11R6/$(ati_nativelibdir)/*.a \
+	        usr/lib
+	dh_install -pxorg-driver-fglrx \
+		$(rbuilddir)/ati-xorg/$(ati_xorg_dir)/usr/X11R6/$(ati_nativelibdir)/modules/* \
+		usr/lib/xorg/modules
+	dh_install -pxorg-driver-fglrx \
+	        $(rbuilddir)/ati-xorg/common/etc/ati/* \
+	        etc/ati
+	dh_installinit -pxorg-driver-fglrx --name="atieventsd"
+
+ifeq "$(ati_archdir)" "x86_64"
+	# 32-bit stuff
+	dh_installdirs -p usr/lib32
+
+	dh_install -pxorg-driver-fglrx \
+		$(rbuilddir)/ati-xorg/arch/x86/usr/X11R6/lib/*.so* \
+		usr/lib32
+	./correct-lib-path debian/xorg-driver-fglrx/usr/lib32/libGL.so.1.2 \
+		/usr/X11R6/lib/modules/dri \
+		/usr/lib32/dri
+
+	dh_install -pxorg-driver-fglrx \
+		$(rbuilddir)/ati-xorg/arch/x86/usr/X11R6/lib/modules/* \
+		usr/lib32/
+	dh_install -pxorg-driver-fglrx-dev \
+		$(rbuilddir)/ati-xorg/arch/x86/usr/X11R6/lib/*.a \
+		usr/lib32
+endif
+
+	install -m 644 $(CURDIR)/fglrx-kernel-source.tar.gz $(CURDIR)/debian/fglrx-kernel-source/usr/src
+
+	for flavour in $(ati_flavours); do \
+		install -D -m0644 \
+			$(rbuilddir)/$$flavour/ati/modules.alias.override \
+			$(prefix)-$$flavour/usr/share/linux-restricted-modules/$$flavour/modules.alias.override/fglrx; \
+	done
+endif
+
+	# madwifi
+
+ifeq "$(NVIDIA)" "1"
+	# Huge pile of crud so we don't have to dupe for nvidia-{legacy,new}
+	for nv_flav in "" -new -legacy; do							\
+		install -m 644 $(CURDIR)/nvidia$${nv_flav}-kernel-source.tar.gz			\
+			$(CURDIR)/debian/nvidia$${nv_flav}-kernel-source/usr/src;		\
+		case $$nv_flav in								\
+			-new)    this_dir=$(nv_new_dirname); this_ver=$(nv_new_version) ;;	\
+			-legacy) this_dir=$(nv_legacy_dirname); this_ver=$(nv_legacy_version) ;;\
+			*)       this_dir=$(nv_dirname); this_ver=$(nv_version) ;;		\
+		esac;										\
+		install -m 0644 $$this_dir/usr/X11R6/lib/modules/drivers/nvidia_drv.so		\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/xorg/modules/drivers/;	\
+		install $$this_dir/usr/X11R6/lib/libXvMCNVIDIA.a				\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}-dev/usr/lib/libXvMCNVIDIA.a;	\
+		install $$this_dir/usr/X11R6/lib/libXvMCNVIDIA.so.$$this_ver			\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/libXvMCNVIDIA.so.$$this_ver; \
+		install -m 0644 $$this_dir/usr/include/GL/gl.h 					\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}-dev/usr/share/doc/nvidia-glx$${nv_flav}-dev/include/GL; \
+		install -m 0644 $$this_dir/usr/include/GL/glext.h				\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}-dev/usr/share/doc/nvidia-glx$${nv_flav}-dev/include/GL; \
+		install -m 0644 $$this_dir/usr/include/GL/glx.h					\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}-dev/usr/share/doc/nvidia-glx$${nv_flav}-dev/include/GL; \
+		if [ -e $$this_dir/usr/include/GL/glxext.h ]; then				\
+			install -m 0644 $$this_dir/usr/include/GL/glxext.h				\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}-dev/usr/share/doc/nvidia-glx$${nv_flav}-dev/include/GL; \
+		fi;										\
+		install -m 0644 $$this_dir/usr/lib/libGL.so.$$this_ver				\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib;				\
+		install -m 0644 $$this_dir/usr/lib/libGLcore.so.$$this_ver			\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib;				\
+		if [ -e $$this_dir/usr/lib/libnvidia-cfg.so.$$this_ver ]; then			\
+			install -m 0644 $$this_dir/usr/lib/libnvidia-cfg.so.$$this_ver		\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib;			\
+		fi;										\
+		sed "s/__GENERATED_BY__/Ubuntu nvidia-$${nv_flav}graphics-drivers/"		\
+			$$this_dir/usr/lib/libGL.la | sed "s/__LIBGL_PATH__/\/usr\/lib/" > 	\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}-dev/usr/lib/libGL.la;		\
+		if [ "$(DEB_HOST_ARCH)" = "amd64" ]; then					\
+			install -d $(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib32		\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}-dev/usr/lib32;		\
+			install -m 0644 $$this_dir/usr/lib32/libGL.so.$$this_ver		\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib32;		\
+			install -m 0644 $$this_dir/usr/lib32/libGLcore.so.$$this_ver		\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib32;		\
+			if [ -e $$this_dir/usr/lib32/libnvidia-cfg.so.$$this_ver ]; then	\
+				install -m 0644 $$this_dir/usr/lib32/libnvidia-cfg.so.$$this_ver \
+					$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib32;	\
+			fi;									\
+			sed "s/__GENERATED_BY__/Ubuntu nvidia-$${nv_flav}graphics-drivers/"	\
+				$$this_dir/usr/lib32/libGL.la |					\
+				sed "s/__LIBGL_PATH__/\/usr\/lib32/" >				\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}-dev/usr/lib32/libGL.la;	\
+		fi;										\
+		install $$this_dir/usr/lib/tls/libnvidia-tls.so.$$this_ver			\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/;			\
+		ln -sf ../libnvidia-tls.so.$$this_ver						\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/tls/libnvidia-tls.so.$$this_ver;	\
+		if [ "$(DEB_HOST_ARCH)" = "amd64" ]; then					\
+			install $$this_dir/usr/lib32/libnvidia-tls.so.$$this_ver		\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib32/;		\
+			install -d $(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib32/tls;	\
+			install $$this_dir/usr/lib32/tls/libnvidia-tls.so.$$this_ver		\
+				 $(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib32/tls/;		\
+		fi;										\
+		install $$this_dir/usr/X11R6/lib/modules/extensions/libglx.so.$$this_ver	\
+			 $(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/xorg/modules/extensions/;\
+		if [ -e  $$this_dir/usr/X11R6/lib/modules/libnvidia-wfb.so.$$this_ver ]; then 	\
+			install $$this_dir/usr/X11R6/lib/modules/libnvidia-wfb.so.$$this_ver 	\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/xorg/modules/; 	\
+			ln -s libnvidia-wfb.so.$$this_ver 					\
+			  $(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/xorg/modules/libnvidia-wfb.so.1;\
+		fi;										\
+		install $$this_dir/usr/bin/tls_test						\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/nvidia;			\
+		install $$this_dir/usr/bin/tls_test_dso.so					\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/lib/nvidia;			\
+		install -d $(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/share/lintian/overrides;	\
+		install -m 0644 debian/nvidia-glx$${nv_flav}.override				\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/share/lintian/overrides/nvidia-glx$${nv_flav}; \
+		install -m 755 $$this_dir/usr/bin/nvidia-bug-report.sh				\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/bin/;			\
+		install -m 644 $$this_dir/usr/share/pixmaps/nvidia-settings.png			\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/share/pixmaps/;		\
+		if [ -e $$this_dir/usr/share/man/man1/nvidia-xconfig.1.gz ]; then		\
+			install -m 755 $$this_dir/usr/bin/nvidia-xconfig			\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/bin/;		\
+			install -m 644 $$this_dir/usr/share/man/man1/nvidia-xconfig.1.gz	\
+				$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/share/man/man1/;	\
+		fi;										\
+		install $(CURDIR)/debian/nvidia-glx$${nv_flav}.reportbug			\
+			$(CURDIR)/debian/nvidia-glx$${nv_flav}/usr/share/bug/nvidia-glx$${nv_flav}/script; \
+	done
+endif
+
+# XXX We change the default here to avoid recreating the tarball. Fix up
+# next time .orig.tar.gz is regenerated.
+# acx100/acx111 and dvb firmware
+	for i in $(flavours); do \
+		mkdir -p $(prefix)-$$i/lib/firmware/$$i; \
+		cp -a acx $(prefix)-$$i/lib/firmware/$$i/; \
+		rm -f $(prefix)-$$i/lib/firmware/$$i/acx/default/tiacx111c16; \
+		rm -f $(prefix)-$$i/lib/firmware/$$i/acx/default/tiacx111c17; \
+		ln -s ../1.2.1.34/tiacx111c16 $(prefix)-$$i/lib/firmware/$$i/acx/default/; \
+		ln -s ../1.2.1.34/tiacx111c17 $(prefix)-$$i/lib/firmware/$$i/acx/default/; \
+		cp -a dvb/* $(prefix)-$$i/lib/firmware/$$i/; \
+	done
+
+# avm fritz
+
+ifeq "$(FRITZ)" "1"
+	dh_installdirs -p$(pkg_avmfw) usr/share/isdn/$(avmfw_dir)
+	for d in $(fritz_dir)/*; do \
+	  for f in $$d/*.bin $$d/*.frm $$d/?/fritz/*.bin $$d/?/fritz/*.frm; do \
+	    [ -f $$f ] || continue; \
+	    cp -p $$f debian/$(pkg_avmfw)/usr/share/isdn/$(avmfw_dir)/; \
+	  done; \
+	done
+	for i in $(flavours); do \
+	  install -d $(prefix)-$$i/usr/share/isdn; \
+	  ln -s $(avmfw_dir) $(prefix)-$$i/usr/share/isdn/$$i; \
+	done; \
+
+	dh_installdirs -pavm-fritz-kernel-source usr/src
+	tar cfz debian/avm-fritz-kernel-source/usr/src/avm-fritz.tgz \
+		$(fritz_dir)/*/license.txt \
+		$(fritz_dir)/*/Makefile \
+		$(fritz_dir)/*/ID \
+		$(fritz_dir)/*/lib \
+		$(fritz_dir)/*/src \
+		$(fritz_dir)/*/?/fritz/license.txt \
+		$(fritz_dir)/*/?/fritz/Makefile \
+		$(fritz_dir)/*/?/fritz/ID \
+		$(fritz_dir)/*/?/fritz/lib \
+		$(fritz_dir)/*/?/fritz/src
+	dh_installdocs -p avm-fritz-kernel-source $(fritz_dir)/fcdsl2/*.html $(fritz_dir)/fcdsl2/*.txt
+endif
+
+# Copy modules to a temporary tree for use in udebs.
+build-udebs: install
+	dh_testdir
+	dh_testroot
+
+	for i in $(flavours_udeb); do \
+		mkdir -p debian/nic-restricted-firmware-$$i-di/lib/firmware/$$i; \
+		cp -a $(prefix)-$$i/lib/firmware/$$i/* \
+			 debian/nic-restricted-firmware-$$i-di/lib/firmware/$$i/; \
+		cp debian/lrm-manager debian/nic-restricted-modules-$$i-di.postinst; \
+	done
+
+ifeq "$(MADWIFI)" "1"
+	for i in $(flavours_udeb); do \
+	    if [ "$$i" = "$(kernel_abi_version)-powerpc64-smp" ]; then \
+		echo "Not building madwifi drivers for $(kernel_abi_version)-powerpc64-smp"; \
+	    else \
+		mkdir -p debian/nic-restricted-modules-$$i-di/lib/linux-restricted-modules/$$i/ \
+			 debian/nic-restricted-modules-$$i-di/lib/modules/$$i/; \
+		cp -a $(prefix)-$$i/lib/linux-restricted-modules/$$i/ath_hal \
+			 debian/nic-restricted-modules-$$i-di/lib/linux-restricted-modules/$$i/; \
+		cp -a $(prefix)-$$i/lib/modules/$$i/madwifi \
+			 debian/nic-restricted-modules-$$i-di/lib/modules/$$i/; \
+	    fi; \
+	done
+endif
+
+# Build architecture-independent files here.
+binary-indep:
+	dh_testdir
+
+	install -d debian/linux-restricted-modules-common/sbin
+	install -m 755 debian/lrm-manager debian/linux-restricted-modules-common/sbin/lrm-manager
+	install -m 755 debian/lrm-video debian/linux-restricted-modules-common/sbin/lrm-video
+	install -d debian/linux-restricted-modules-common/etc/default
+	install -m 644 debian/linux-restricted-modules-common.default \
+		debian/linux-restricted-modules-common/etc/default/linux-restricted-modules-common
+	install -d debian/linux-restricted-modules-common/etc/modprobe.d
+	install -m 644 debian/linux-restricted-modules-common.modprobe \
+		debian/linux-restricted-modules-common/etc/modprobe.d/lrm-video
+
+	dh_installchangelogs -i
+	dh_installinit -p linux-restricted-modules-common --no-start -- start 7 S . start 1 0 6 .
+	dh_fixperms -i
+	dh_compress -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+binary-arch: binary-debs build-udebs
+# Build architecture-dependent files here.
+binary-debs: install
+	dh_testdir
+
+	dh_installchangelogs -s
+	dh_installdocs -s
+	dh_installexamples -s
+	dh_installman -s
+	dh_installinit -s
+	dh_link -s
+	# FIXME: Remove this when -legacy supports this library:
+	rm -f debian/nvidia-glx-legacy/usr/lib/libnvidia-cfg.so.1
+	rm -f debian/nvidia-glx-legacy/usr/lib32/libnvidia-cfg.so.1
+	dh_strip -s -X$(nv_new_release) -X$(nv_release) -X$(nv_legacy_release) -Xtls_test
+	dh_compress -X.h -s
+	dh_fixperms -s
+	dh_installdeb -s
+	dh_shlibdeps -X'*tls*' -X'*lib32*' -X'*lib64*' -s \
+		-l$(CURDIR)/debian/nvidia-glx/usr/lib:$(CURDIR)/debian/xorg-driver-fglrx/usr/lib
+ifeq "$(NVIDIA)" "1"
+	# this is a dirty hack, but we don't want -glx-legacy to depend on -glx
+	sed -i -e 's/, nvidia-glx//' debian/nvidia-glx-legacy.substvars
+endif
+
+	# Exclude packages we handle special
+	dh_gencontrol -s -Nxorg-driver-fglrx -Nxorg-driver-fglrx-dev \
+		-Nfglrx-kernel-source -Nfglrx-control -Nnvidia-glx \
+		-Nnvidia-glx-dev -Nnvidia-kernel-source -Nnvidia-glx-new \
+		-Nnvidia-glx-new-dev -Nnvidia-new-kernel-source \
+		-Nnvidia-glx-legacy -Nnvidia-glx-legacy-dev \
+		-Nnvidia-legacy-kernel-source -Navm-fritz-kernel-source \
+		-N$(pkg_avmfw)
+
+	# fglrx, nVidia and ACM build with different version numbers
+ifeq "$(FGLRX)" "1"
+	dh_gencontrol -v -pxorg-driver-fglrx -- -v1:${ati_xorg_version}+${lrm_version}
+	dh_gencontrol -v -pxorg-driver-fglrx-dev -- -v1:${ati_xorg_version}+${lrm_version} -Vati:XOrgFullVersion=1:${ati_xorg_version}+${lrm_version}
+	dh_gencontrol -v -pfglrx-kernel-source -- -v1:${ati_revision}+${lrm_version} -Vati:XOrgVersion=1:${ati_xorg_version}
+	dh_gencontrol -v -pfglrx-control -- -v1:${ati_revision}+${lrm_version}
+endif
+ifeq "$(NVIDIA)" "1"
+	dh_gencontrol -v -pnvidia-glx -- -v1:${nv_version}+${lrm_version} -Vnvidia:Version=${nv_version}
+	dh_gencontrol -v -pnvidia-glx-dev -- -v1:${nv_version}+${lrm_version} -Vnvidia:Version=${nv_version}
+	dh_gencontrol -v -pnvidia-kernel-source -- -v1:${nv_version}+${lrm_version} -Vnvidia:Version=${nv_version}
+
+	dh_gencontrol -v -pnvidia-glx-new -- -v${nv_new_version}+${lrm_version} -Vnvidia:NewVersion=${nv_new_version}
+	dh_gencontrol -v -pnvidia-glx-new-dev -- -v${nv_new_version}+${lrm_version} -Vnvidia:NewVersion=${nv_new_version}
+	dh_gencontrol -v -pnvidia-new-kernel-source -- -v${nv_new_version}+${lrm_version} -Vnvidia:NewVersion=${nv_new_version}
+
+	dh_gencontrol -v -pnvidia-glx-legacy -- -v${nv_legacy_version}+${lrm_version} -Vnvidia:LegacyVersion=${nv_legacy_version}
+	dh_gencontrol -v -pnvidia-glx-legacy-dev -- -v${nv_legacy_version}+${lrm_version} -Vnvidia:LegacyVersion=${nv_legacy_version}
+	dh_gencontrol -v -pnvidia-legacy-kernel-source -- -v${nv_legacy_version}+${lrm_version} -Vnvidia:LegacyVersion=${nv_legacy_version}
+endif
+ifeq "$(FRITZ)" "1"
+	dh_gencontrol -v -pavm-fritz-kernel-source -- -v${avm_version}+${lrm_version} -Vavm:Version=${avm_version}
+	dh_gencontrol -v -p$(pkg_avmfw) -- -v${avm_version}+${lrm_version} -Vavm:Version=${avm_version}
+endif
+	dh_md5sums -s
+	dh_builddeb -s
+
+printenv:
+	@echo "DEB_HOST_ARCH:   $(DEB_HOST_ARCH)"
+	@echo "flavours:        $(flavours)"
+
+build-orig-source:
+	@LRM="linux-restricted-modules"; \
+	ORIGVER=$$(echo $(lrm_version)|cut -d- -f1); \
+	TARDIR="$$LRM-$(kernel_version)-$$ORIGVER"; \
+	TARNAME="$$LRM-$(kernel_version)_$$ORIGVER.orig.tar.gz"; \
+	if [ -f "../$$TARNAME" ]; then \
+		echo "$$TARNAME already exists!" >&2; \
+		exit 1; \
+	fi; \
+	if [ ! -d "../$$TARDIR" ]; then \
+		echo "$$TARDIR not found!" >&2; \
+		exit 1; \
+	fi; \
+	tar -czvf "../$$TARNAME" -C .. "$$TARDIR" --exclude="*/debian" \
+		--exclude="*/debian/*"
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install unpack build-kernel
+.PHONY: debian/control build-udebs build-orig-source

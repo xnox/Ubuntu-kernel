@@ -1,0 +1,44 @@
+alk NOTE: be aware that is doc is quite old. You may want to contact it's author
+if you have problems on mdk.
+
+			README for Mandrake 10.1 Community 
+			for installing Lucent/Agree linmodem driver. 
+
+You can always build the modules yourself but from experience I know that can be an issue for a new user. So I hope that these will help someone. Credits to the ltmodem team and many linux forum posters.
+
+1. This supposes a 2.6.8.1-10mdk kernel (It may or may not work on other 10.1 kernels). The modules were built using ltmodem-2.6-alk-6. 
+
+2. become root 
+
+3. Copy the files ltmodem.ko and ltserial.ko to '/lib/modules/2.6.8.1-10mdk/other' (creating the 'other' directory if it does not already exist). This can be done by excecuting the following commands in the directory where you unpacked these files.
+
+mkdir /lib/modules/`uname -r`/other
+cp -v *.ko /lib/modules/`uname -r`/other
+
+4. excecute the following commands
+
+mknod --mode=0660 /dev/ttyLT0 c 62 64
+depmod -a
+modprobe ltserial
+
+if you wish to create a /dev/modem link to run something such as kppp as your dialer then also run the following command.
+
+ln -s /dev/ttyLT0 /dev/modem
+
+5. Add these line to /etc/modprobe.conf
+
+install winmodem /sbin/modprobe ltserial
+alias /dev/modem ltserial
+alias char-major-62 ltserial
+alias /dev/tts/LT0 ltserial
+
+6. Add this to /etc/modprobe.preload
+
+winmodem
+
+7. Thats it!
+
+Note:
+With mandrake 10.1 now using udev the symbolic link that you created to /dev/modem is destroyed at each re-boot. Untill I have worked out a way of getting around this I just re-enter 'ln -s /dev/ttyLT0 /dev/modem' on each reboot so that I can still use kppp. 
+
+If you would like to add anything I can be reached at drew3@callplus.net.nz

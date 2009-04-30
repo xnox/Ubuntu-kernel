@@ -1,0 +1,40 @@
+		HOWTO setup udev support for ltmodem-2.6-alk drivers
+
+UDEV is a new package for /dev directory management. Like older devfs it will autocreate
+device nodes in /dev upon module loading. But unlike devfs it does not provide autoloading capabilities.
+As far as I know hotplug package is supposed to care of automatic module insertion.
+Unlike devfs module insertion happens not in open() time, but either when system is boot or
+when device is hot-plugged. So you may want to install hotplug in addition to udev
+(there is good chance that your distro already took care of udev and hotplug installation).
+
+There are 2 distinct issues which must be solved:
+1. Automatically load ltmodem kernel modules at boot or hotplug time;
+2. Setup udev to create /dev/ttyLTM0 with correct mode and permission, and to create /dev/modem symlink to it.
+
+
+			Automatic module insertion
+
+To solve first issue there are two ways.
+
+First is to arrange automatic loading at boot time
+through special file (which is /etc/modules on Debian, and /etc/modprobe.preload on Mandrake).
+This way does not require hotplug to be installed.
+Just append ltserial to that file and first part is done.
+
+Second way is to use hotplug. As of -alk-7 driver contains information
+about supported devices (pci only (and probably not all)).
+On bootup your system will run /etc/init.d/hotplug, which will find your modem
+and load correct module for it (ltserial). Averything will automatically work,
+but only if you have PCI modem. If you have isa modem, then it will not work
+this way. You will have to find other way to tell hotplug about your modem,
+or you may choose way N1 (e.g. /etc/modules) to setup your modem.
+
+				UDEV setup
+
+We'll add new udev rule. Copy ltmodem.rules from this directory
+to /etc/udev/udev.rules/. You may want to fix group owner if your distro
+is not Debian. Just make sure that GROUP parameter matches group owner
+of /dev/ttyS0 (ls -l /dev/ttyS0 is your friend).
+
+
+After installation and setup, restart hotplug or reboot to check that all works.

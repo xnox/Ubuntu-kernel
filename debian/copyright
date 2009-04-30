@@ -1,0 +1,517 @@
+This is the Debian GNU/Linux prepackaged version of restricted Linux modules.
+
+This package was put together by Herbert Xu <herbert@gondor.apana.org.au>
+and Fabio M. Di Nitto <fabbione@canonical.com> in August 2004.
+
+This package has been created from the following source:
+
+madwifi: http://sourceforge.net/projects/madwifi/
+nvidia: ftp://download.nvidia.com/XFree86/Linux-x86/1.0-6111/NVIDIA-Linux-x86-1.0-6111-pkg0.run
+	based on Randall Donald <rdonald@debian.org> Debian packages.
+avm: ftp://ftp.avm.de/cardware
+
+
+Copyright and Licenses:
+
+MADWIFI
+-------
+
+Main Driver:
+
+All files contained in this distribution are covered by the following
+copyright unless explicitly identified otherwise.
+
+/*-
+ * Copyright (c) 2002-2004 Sam Leffler, Errno Consulting
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer,
+ *    without modification.
+ * 2. Redistributions in binary form must reproduce at minimum a disclaimer
+ *    similar to the "NO WARRANTY" disclaimer below ("Disclaimer") and any
+ *    redistribution must be conditioned upon including a substantially
+ *    similar Disclaimer requirement for further binary redistribution.
+ * 3. Neither the names of the above-listed copyright holders nor the names
+ *    of any contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
+ *
+ * Alternatively, this software may be distributed under the terms of the
+ * GNU General Public License ("GPL") version 2 as published by the Free
+ * Software Foundation.
+ *
+ * NO WARRANTY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF NONINFRINGEMENT, MERCHANTIBILITY
+ * AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+ * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGES.
+ *
+ * $Id: COPYRIGHT,v 1.4 2004/01/13 18:05:41 samleffler Exp $
+ */
+
+HAL:
+
+
+All files contained in this distribution are covered by the following
+copyright unless explicitly identified otherwise.  Note that this
+copyright does _NOT_ contain a "or GPL" clause and does _NOT_ permit
+redistribution with changes.
+
+/*-
+ * Copyright (c) 2002-2004 Sam Leffler, Errno Consulting, Atheros
+ * Communications, Inc.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms are permitted
+ * provided that the following conditions are met:
+ * 1. The materials contained herein are unmodified and are used
+ *    unmodified.
+ * 2. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following NO
+ *    ''WARRANTY'' disclaimer below (''Disclaimer''), without
+ *    modification.
+ * 3. Redistributions in binary form must reproduce at minimum a
+ *    disclaimer similar to the Disclaimer below and any redistribution
+ *    must be conditioned upon including a substantially similar
+ *    Disclaimer requirement for further binary redistribution.
+ * 4. Neither the names of the above-listed copyright holders nor the
+ *    names of any contributors may be used to endorse or promote
+ *    product derived from this software without specific prior written
+ *    permission.
+ *
+ * NO WARRANTY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * ''AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF NONINFRINGEMENT,
+ * MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE
+ * FOR SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+ * USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+ * OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGES.
+ *
+ * $Id: COPYRIGHT,v 1.2 2004/05/15 22:26:24 samleffler Exp $
+ */
+
+NVIDIA:
+
+Upstream Author: NVIDIA <linux-bugs@nvidia.com>
+
+
+Copyright:
+
+First a note from the README file
+
+Q: Why does NVIDIA not provide rpms anymore?
+
+A: Not every Linux distribution uses rpm, and NVIDIA wanted a single
+   solution that would work across all Linux distributions.  As indicated
+   in the NVIDIA Software License, Linux distributions are welcome to
+   repackage and redistribute the NVIDIA Linux driver in whatever package
+   format they wish.
+
+Furthermore, an email from NVIDIA:
+
+Greetings, Randall!  Comments below:
+
+On 30 Jul 2003, Randall Donald wrote:
+
+> To whom it may concern,
+> 
+> My name is Randall Donald and I am the maintainer for the Debian
+> downloader packages nvidia-glx-src and nvidia-kernel-src. 
+> As stated in your license and the README file 
+> ( "As indicated in the NVIDIA Software License, Linux distributions 
+>   are welcome to repackage and redistribute the NVIDIA Linux driver in 
+>   whatever package format they wish." )
+> I wish to include packages containing the Linux driver files in the Debian archive. 
+> I'd like to know if it is legally permitted to distribute binary kernel modules 
+> compiled from the NVIDIA kernel module source and Debian kernel headers. 
+
+This is fine; thanks for asking.
+
+> I am also wondering if the "No Separation of Components" clause 
+> ( No Separation of Components.  The SOFTWARE is licensed as a
+>   single product.  Its component parts may not be separated for use
+>   on more than one computer, nor otherwise used separately from the
+>   other parts.) applies to splitting the glx driver and kernel module source into
+>  multiple binary packages.
+
+This is also fine.  I believe this section of the license was
+intended to prevent users from doing things like using our Windows
+control panel with a competitor's display driver (that's not actually
+possible, but you get the idea...).  In the case of separating the
+driver into a glx package and a kernel package (like we used to
+do ourselves), this is simply a packaging issue; of course users
+will use the packages together when they install.
+
+Please feel free to redistribute the NVIDIA graphics driver.
+
+Thank you for doing this for the NVIDIA+Debian community!
+
+- Andy
+
+
+
+The NVIDIA Software Licence is as follows.   
+   
+From http://www.nvidia.com/view.asp?IO=nv_swlicense and extracted from the 
+installer: 
+
+
+           License For Customer Use of NVIDIA Software
+
+
+IMPORTANT NOTICE -- READ CAREFULLY: This License For Customer Use of
+NVIDIA Software ("LICENSE") is the agreement which governs use of
+the software of NVIDIA Corporation and its subsidiaries ("NVIDIA")
+downloadable herefrom, including computer software and associated
+printed materials ("SOFTWARE").  By downloading, installing, copying,
+or otherwise using the SOFTWARE, you agree to be bound by the terms
+of this LICENSE.  If you do not agree to the terms of this LICENSE,
+do not download the SOFTWARE.
+
+RECITALS
+
+Use of NVIDIA's products requires three elements: the SOFTWARE, the
+hardware on a graphics controller board, and a personal computer. The
+SOFTWARE is protected by copyright laws and international copyright
+treaties, as well as other intellectual property laws and treaties.
+The SOFTWARE is not sold, and instead is only licensed for use,
+strictly in accordance with this document.  The hardware is protected
+by various patents, and is sold, but this agreement does not cover
+that sale, since it may not necessarily be sold as a package with
+the SOFTWARE.  This agreement sets forth the terms and conditions
+of the SOFTWARE LICENSE only.
+
+1.  DEFINITIONS
+
+1.1  Customer.  Customer means the entity or individual that
+downloads the SOFTWARE.
+
+2.  GRANT OF LICENSE
+
+2.1  Rights and Limitations of Grant.  NVIDIA hereby grants Customer
+the following non-exclusive, non-transferable right to use the
+SOFTWARE, with the following limitations:
+
+2.1.1  Rights.  Customer may install and use one copy of the SOFTWARE
+on a single computer, and except for making one back-up copy of
+the Software, may not otherwise copy the SOFTWARE.  This LICENSE
+of SOFTWARE may not be shared or used concurrently on different
+computers.
+
+2.1.2  Linux Exception.  Notwithstanding the foregoing terms of
+Section 2.1.1, SOFTWARE designed exclusively for use on the Linux
+operating system may be copied and redistributed, provided that
+the binary files thereof are not modified in any way (except for
+unzipping of compressed files).
+
+2.1.3  Limitations.
+
+No Reverse Engineering.  Customer may not reverse engineer,
+decompile, or disassemble the SOFTWARE, nor attempt in any other
+manner to obtain the source code.
+
+No Separation of Components.  The SOFTWARE is licensed as a
+single product.  Its component parts may not be separated for use
+on more than one computer, nor otherwise used separately from the
+other parts.
+
+No Rental.  Customer may not rent or lease the SOFTWARE to someone
+else.
+
+3.  TERMINATION
+
+This LICENSE will automatically terminate if Customer fails to
+comply with any of the terms and conditions hereof.  In such event,
+Customer must destroy all copies of the SOFTWARE and all of its
+component parts.
+
+4.  COPYRIGHT
+
+All title and copyrights in and to the SOFTWARE (including but
+not limited to all images, photographs, animations, video, audio,
+music, text, and other information incorporated into the SOFTWARE),
+the accompanying printed materials, and any copies of the SOFTWARE,
+are owned by NVIDIA, or its suppliers.  The SOFTWARE is protected
+by copyright laws and international treaty provisions.  Accordingly,
+Customer is required to treat the SOFTWARE like any other copyrighted
+material, except as otherwise allowed pursuant to this LICENSE
+and that it may make one copy of the SOFTWARE solely for backup or
+archive purposes.
+
+5.  APPLICABLE LAW
+
+This agreement shall be deemed to have been made in, and shall be
+construed pursuant to, the laws of the State of California.
+
+6.  DISCLAIMER OF WARRANTIES AND LIMITATION ON LIABILITY
+
+6.1  No Warranties.  TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE
+LAW, THE SOFTWARE IS PROVIDED "AS IS" AND NVIDIA AND ITS SUPPLIERS
+DISCLAIM ALL WARRANTIES, EITHER EXPRESS OR IMPLIED, INCLUDING, BUT
+NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+FOR A PARTICULAR PURPOSE.
+
+6.2  No Liability for Consequential Damages.  TO THE MAXIMUM
+EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL NVIDIA OR
+ITS SUPPLIERS BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR
+CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION,
+DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS
+OF BUSINESS INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT
+OF THE USE OF OR INABILITY TO USE THE SOFTWARE, EVEN IF NVIDIA HAS
+BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+7.  MISCELLANEOUS 
+
+The United Nations Convention on Contracts for the International
+Sale of Goods is specifically disclaimed.  If any provision of this
+LICENSE is inconsistent with, or cannot be fully enforced under,
+the law, such provision will be construed as limited to the extent
+necessary to be consistent with and fully enforceable under the law.
+This agreement is the final, complete and exclusive agreement between
+the parties relating to the subject matter hereof, and supersedes
+all prior or contemporaneous understandings and agreements relating
+to such subject matter, whether oral or written.  Customer agrees
+that it will not ship, transfer or export the SOFTWARE into any
+country, or use the SOFTWARE in any manner, prohibited by the
+United States Bureau of Export Administration or any export laws,
+restrictions or regulations.  This LICENSE may only be modified in
+writing signed by an authorized officer of NVIDIA.
+
+ATI FGLRX
+---------
+
+Packaging scripts:
+  Copyright (C) 2002-2004 Flavio Stanchina
+  Licensed under the GNU GPL
+
+On Debian GNU/Linux systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL'.
+
+The rest:
+
+ATI Software End User License Agreement
+
+PLEASE READ THIS LICENSE CAREFULLY BEFORE USING THE SOFTWARE. BY DOWNLOADING, INSTALLING, COPYING OR USING THE SOFTWARE, YOU ARE AGREEING TO BE BOUND BY THE TERMS OF THIS LICENSE.  IF YOU ARE ACCESSING THE SOFTWARE ELECTRONICALLY, SIGNIFY YOUR AGREEMENT BY CLICKING THE “AGREE/ACCEPT” BUTTON.  IF YOU DO NOT AGREE TO THE TERMS OF THIS LICENSE, PROMPTLY RETURN THE SOFTWARE TO THE PLACE WHERE YOU OBTAINED IT AND (IF APPLICABLE) YOUR MONEY WILL BE REFUNDED OR IF THE SOFTWARE WAS ACCESSED ELECTRONICALLY CLICK “DISAGREE/DECLINE”.
+
+1. License.  ATI Technologies Inc., on behalf of itself, its subsidiaries and licensors (referred collectively as “ATI”) grants to you the following non-exclusive, right to use the software accompanying this License (hereinafter "Software") subject to the following terms and limitations:
+
+(a) 	Regardless of the media upon which it is distributed, the Software is licensed to you for use solely in conjunction with ATI hardware products to which the Software relates ("ATI Hardware").  
+
+(b)	You own the medium on which the Software is recorded, but ATI and, if applicable, its licensors retain title to the Software and related documentation.
+
+(c)	You may:
+
+  i) use the Software solely in connection with the ATI Hardware on a single computer;
+
+  ii) make one copy of the Software in machine-readable form for backup purposes only. You must reproduce on such copy ATI's copyright notice and any other proprietary legends that were on the original copy of the Software;
+
+  iii) transfer all your license rights in the Software provided you must also transfer a copy of this License, the backup copy of the Software, the ATI Hardware and the related documentation and provided the other party reads and agrees to accept the terms and conditions of this License.  Upon such transfer your license rights are then terminated.
+
+(d)	In addition to the license terms above, with respect to portions of the Software in source code form designed exclusively for use with the Linux operating system (“ATI Linux Code”), you may use, display, modify, copy, distribute, allow others to re-distribute, package and re-package such ATI Linux Code for commercial and non-commercial purposes, provided that: 
+
+i)	all binary components of the ATI Linux Code are not modified in any way;
+
+ii)the ATI Linux Code is only used as part of the Software and in connection with ATI Hardware;
+
+iii)all copyright notices of ATI are reproduced and you refer to these license terms;
+
+iv)	you may not offer or impose any terms on the use of ATI Linux Code that alter or restrict this License; and
+
+v)	if you have modified the ATI Linux Code, such modifications will be made publicly available and are licensed under the same terms provided herein to ATI or any other third party without further restriction, royalty or any other license requirement; 
+
+vi)	to the extent there is any ATI sample or control panel source code included in the ATI Linux Code, no rights are granted to modify such code except for portions thereof that may be subject to third party license terms that grant such rights; and
+
+vii) ATI is not obligated to provide any maintenance or technical support for any code resulting from ATI Linux Code.
+
+2.  Restrictions.  The Software contains copyrighted and patented material, trade secrets and other proprietary material.  In order to protect them, and except as permitted by this license or applicable legislation, you may not:
+
+  a) decompile, reverse engineer, disassemble or otherwise reduce the Software to a human-perceivable form;
+
+  b) modify, network, rent, lend, loan, distribute or create derivative works based upon the Software in whole or in part; or
+
+  c) electronically transmit the Software from one computer to another or over a network or otherwise transfer the Software except as permitted by this License.
+
+3.  Termination.  This License is effective until terminated.  You may terminate this License at any time by destroying the Software, related documentation and all copies thereof.  This License will terminate immediately without notice from ATI if you fail to comply with any provision of this License.  Upon termination you must destroy the Software, related documentation and all copies thereof.
+
+4.  Government End Users. If you are acquiring the Software on behalf of any unit or agency of the United States Government, the following provisions apply.  The Government agrees the Software and documentation were developed at private expense and are provided with "RESTRICTED RIGHTS".  Use, duplication, or disclosure by the Government is subject to restrictions as set forth in DFARS 227.7202-1(a) and 227.7202-3(a) (1995), DFARS 252.227-7013(c)(1)(ii) (Oct 1988), FAR 12.212(a)(1995), FAR 52.227-19, (June 1987) or FAR 52.227-14(ALT III) (June 1987),as amended from time to time.  In the event that this License, or any part thereof, is deemed inconsistent with the minimum rights identified in the Restricted Rights provisions, the minimum rights shall prevail.
+
+5.  No Other License.  No rights or licenses are granted by ATI under this License, expressly or by implication, with respect to any proprietary information or patent, copyright, trade secret or other intellectual property right owned or controlled by ATI, except as expressly provided in this License.
+
+6.  Additional Licenses.  DISTRIBUTION OR USE OF THE SOFTWARE WITH AN OPERATING SYSTEM MAY REQUIRE ADDITIONAL LICENSES FROM THE OPERATING SYSTEM VENDOR.  
+
+7.  Disclaimer of Warranty on Software.  You expressly acknowledge and agree that use of the Software is at your sole risk.  The Software and related documentation are provided "AS IS" and without warranty of any kind and ATI EXPRESSLY DISCLAIMS ALL WARRANTIES, EXPRESS AND IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FORA PARTICULAR PURPOSE, OF QUALITY, OF QUIET ENJOYMENT AND OF NON-INFRINGEMENT OF THIRD PARTY RIGHTS.  ATI DOES NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THE SOFTWARE WILL MEET YOUR REQUIREMENTS, OR THAT THE OPERATION OF THE SOFTWARE WILL BE UNINTERRUPTED OR ERROR-FREE, OR THAT DEFECTS IN THE SOFTWARE WILL BE CORRECTED.  THE ENTIRE RISK AS TO THE RESULTS AND PERFORMANCE OF THE SOFTWARE IS ASSUMED BY YOU.  FURTHERMORE, ATI DOES NOT WARRANT OR MAKE ANY REPRESENTATIONS REGARDING THE USE ORTHE RESULTS OF THE USE OF THE SOFTWARE OR RELATED DOCUMENTATION IN TERMS OF THEIR CORRECTNESS, ACCURACY, RELIABILITY, CURRENTNESS, OR OTHERWISE. NO ORAL OR WRITTEN INFORMATION OR ADVICE GIVEN BY ATI OR ATI'S AUTHORIZED REPRESENTATIVE SHALL CREATE A WARRANTY OR IN ANY WAY INCREASE THE SCOPE OF THIS WARRANTY.  SHOULD THE SOFTWARE PROVE DEFECTIVE, YOU (AND NOT ATI OR ATI'S AUTHORIZED REPRESENTATIVE) ASSUME THE ENTIRE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.  THE SOFTWARE IS NOT INTENDED FOR USE IN MEDICAL, LIFE SAVING OR LIFE SUSTAINING APPLICATIONS.  SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF IMPLIED WARRANTIES, SO THE ABOVE EXCLUSION MAY NOT APPLY TO YOU.  
+
+8.  Limitation of Liability. TO THE MAXIMUM EXTENT PERMITTED BY LAW, UNDER NO CIRCUMSTANCES INCLUDING NEGLIGENCE, SHALL ATI, OR ITS DIRECTORS, OFFICERS, EMPLOYEES OR AGENTS, BE LIABLE TO YOU FOR ANY INCIDENTAL, INDIRECT, SPECIAL OR CONSEQUENTIAL DAMAGES (INCLUDING DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF BUSINESSINFORMATION, AND THE LIKE) ARISING OUT OF THE USE, MISUSE OR INABILITY TO USE THE SOFTWARE OR RELATED DOCUMENTATION, BREACH OR DEFAULT, INCLUDING THOSE ARISING FROM INFRINGEMENT OR ALLEGED INFRINGEMENT OF ANY PATENT, TRADEMARK, COPYRIGHT OR OTHER INTELLECTUAL PROPERTY RIGHT, BY ATI, EVEN IF ATI OR ATI'S AUTHORIZED REPRESENTATIVE HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.  SOME JURISDICTIONS DO NOT ALLOW THE LIMITATION OR EXCLUSION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL DAMAGES, SO THE ABOVE LIMITATION OR EXCLUSION MAY NOT APPLY TO YOU.  ATI will not be liable for 1) loss of, or damage to, your records or data or 2) any damages claimed by you based on any third party claim.   In no event shall ATI's total liability to you for all damages, losses, and causes of action (whether in contract, tort (including negligence) or otherwise) exceed the amount paid by you for the Software.  The foregoing limitations will apply even if the above stated limitation fails of its essential purpose.
+
+9.  Controlling Law and Severability.  This License shall be governed by and construed under the laws of the Province of Ontario, Canada without reference to its conflict of law principles.  Any dispute related hereto will be brought only in the courts in Toronto, Ontario, Canada and such courts are agreed to be the convenient forum.  In the event of any conflicts between foreign law, rules, and regulations, and Canadian law, rules, and regulations, Canadian law, rules and regulations shall prevail and govern.  The United Nations Convention on Contracts for the International Sale of Goods shall not apply to this License.  If for any reason a court of competent jurisdiction finds any provision of this License or portion thereof, to be unenforceable, that provision of the License shall be enforced to the maximum extent permissible so as to effect the intent of the parties, and the remainder of this License shall continue in full force and effect.  
+
+10.  Complete Agreement.  This License constitutes the entire agreement between the parties with respect to the use of the Software and the related documentation, and supersedes all prior or contemporaneous understandings or agreements, written or oral, regarding such subject matter.  No amendment to or modification of this License will be binding unless in writing and signed by a duly authorized representative of ATI.
+
+
+AVM FRITZ
+---------
+
+Upstream Author: AVM (http://www.avm.de/)
+
+License:
+
+The available AVM driver package consists of two portions, namely an Open
+Source Software portion and a Proprietary Source Software portion. The
+Proprietary Source Software portion is delivered in binary format only
+and includes the firmware (.frm and .bin files) and object code (i.e. the
+lib.o files and the drdsl executable). The object code, again, includes
+libraries as well as specific portions of the driver. The Open Source
+Software portion is licensed under the terms and conditions of the GNU
+Lesser GPL (LGPL). Please be aware of the requirements of the LGPL.
+You may easily download the terms of the LGPL as follows:
+http://www.gnu.org/copyleft/lesser.html.
+
+On Debian GNU/Linux systems, the complete text of the GNU Lesser General
+Public License can be found in `/usr/share/common-licenses/LGPL'.
+
+In general, you may distribute both portions of the available AVM driver
+package, i.e. on a distribution CD delivered in conjunction with your
+products. In addition to the terms of the LGPL and under all AVM
+intellectual property and proprietary rights, AVM grants you the worldwide,
+non-exclusive and royalty-free rights
+
+ (1)   to use and copy
+
+ (2)   to make (and have made), use, import, sell, offer for sale or
+       otherwise distribute any of your (legal) products or services
+       containing (portions of) the AVM driver package.
+
+The Proprietary Source Software, which is delivered in object code format
+only, such as the firmware, the ".o files" and the "drdsl" binary, shall
+in no event be disassembled, reverse engineered, decompiled or otherwise
+"be opened" and the results realised insofar shall not be copied or
+distributed without the prior written approval of AVM except to the extent
+as may be expressly authorized under mandatory law and the terms of the LGPL.
+
+It is understood that you will be responsible/liable for the software which
+you offer/distribute/make available in conjunction with or which you
+combine with (portions of) the AVM driver package. For instance, we refer
+to the implications mentioned in the LGPL in case of a breach (your rights
+granted under LGPL would terminate automatically, see Art. 4 LGPL).  You
+should state clearly that you offer any necessary support on your own.
+
+
+
+LTMODEM
+-------
+
+Agere Systems WinModem End User SOFTWARE LICENSE AGREEMENT
+
+
+YOU SHOULD READ THE TERMS AND CONDITIONS OF THIS AGREEMENT BEFORE YOU DOWNLOAD AND USE THE AGERE SYSTEMS WINMODEM LICENSED SOFTWARE.  ONCE YOU HAVE READ THIS LICENSE AGREEMENT AND AGREE TO ITS TERMS, YOU MAY DOWNLOAD AND USE THE AGERE SYSTEMS WINMODEM LICENSED SOFTWARE.  DOWNLOADING OR USING THE AGERE SYSTEMS WINMODEM LICENSED SOFTWARE SHOWS YOUR ACCEPTANCE OF THE TERMS OF THIS LICENSE AGREEMENT.  
+
+The terms and conditions of this Agreement will apply to the Agere Systems WinModem Software (hereafter "Software") supplied under this Agreement and any derivatives obtained therefrom, including any copy.  The term Software includes programs and related documentation supplied herewith.
+
+The following file is made available under the standard Linux license, a copy of which may be found at <http://www.linux.org/info/gnu.html>.
+serial.c
+serial24.c
+ 
+These additional files are not derived from any Linux open source content, and are subject to the following restrictions.
+ltmodem.c
+linuxif.h
+ltmdmobj.o
+Makefile
+ltinst
+ltuninst
+readme.txt
+
+1.0	TITLE AND LICENSE GRANT
+
+	1.1	The Software is copyrighted and/or contains proprietary information protected by law.  All Software and all copies thereof are and will remain the sole property of Agere Systems or its suppliers.  Agere Systems hereby grants you a non-exclusive right to use the Software, in whatever form recorded, which is furnished to you under or in contemplation of this Agreement, in an Agere Systems winmodem.  Any other use of the Software or removal of the Software from a country in which use is licensed shall automatically terminate this license.
+
+	1.2	You agree to use your best efforts to see that any user of the Software licensed hereunder complies with the terms and conditions of this Agreement.
+
+
+2.0	SOFTWARE USE
+
+	2.1	You are permitted to make copies of the Software provided that any such copy shall contain the same copyright notice and proprietary marking included on the original Software.
+
+	2.2	You agree not to merge or combine any portion of the Software with any other software, other than the Linux operating system, unless expressly permitted by the laws of the jurisdiction where you are located.  Any portion of the Software merged or combined with the other software will continue to be the subject of the terms and conditions of this Agreement and you agree to reproduce on the merged or combined portion of the Software the copyright and other proprietary rights notices included in the original Software.
+
+2.3	Redistribution and Usage
+ Agere permits use and limited redistribution of this Licensed Software in source and binary forms, with or without modification, subject to the following terms and conditions, in addition to the terms mentioned in this agreement. 
+2.3.1 	Agere Systems reserves the right not to allow a third party to reuse or redistribute the software, at its sole discretion.
+2.3.2	User hereby agrees not to remove or alter any copyright, trademark, credits and other proprietary notices contained within or associated with the Licensed Software, and shall include all such unaltered copyright, trademark, credits and other proprietary notices on or in every copy of the Software.
+2.3.3	Notwithstanding any other provisions in this Agreement to the contrary, any modifications or alterations made to the Licensed Software shall cause any warranties and intellectual property indemnifications to become null and void and of no further effect.
+
+3.0	DISCLAIMER OF WARRANTY
+
+	3.1	You understand and acknowledge that the Software may contain errors, bugs or other defects.  The Software is provided on AS-IS basis, without warranty of any kind.
+
+	3.2	Agere Systems has used reasonable efforts to minimize defects or errors in the Software.  HOWEVER, YOU ASSUME THE RISK OF ANY AND ALL DAMAGE OR LOSS FROM USE OR INABILITY TO USE THE SOFTWARE.  Specifically, but not in limitation of the foregoing disclaimers, Agere Systems does not warrant that the functions of the Software will meet your requirements or that the Software operation will be error-free or uninterrupted.
+
+	3.3	Agere Systems bears no responsibility for supplying assistance for fixing or for communicating known errors to you pertaining to the Software supplied hereunder.
+
+	3.4	YOU UNDERSTAND THAT AGERE SYSTEMS, ITS AFFILIATES, CONTRACTORS, SUPPLIERS, AND AGENTS MAKE NO WARRANTIES, EXPRESS OR IMPLIED, AND SPECIFICALLY DISCLAIM ANY WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+4.0	EXCLUSIVE REMEDIES AND LIMITATION OF LIABILITIES
+
+	4.1	Regardless of any other provisions of this Agreement, neither Agere Systems nor its affiliates, contractors, suppliers, or agents shall be liable for any indirect, incidental, or consequential damages (including lost profits) sustained or incurred in connection with the use, operation, or inability to use the Software or for damages due to causes beyond the reasonable control of Agere Systems, its affiliates, contractors, suppliers, and agents attributable to any service, products, or action of any other person.
+
+	4.2	This Agreement shall be construed in accordance with and governed by the laws of the State of New York.
+
+YOU ACKNOWLEDGE THAT YOU HAVE READ THIS AGREEMENT AND UNDERSTAND IT, AND THAT BY DOWNLOADING OR USING THE SOFTWARE, YOU AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.  YOU FURTHER AGREE THAT THIS AGREEMENT IS THE COMPLETE AND EXCLUSIVE STATEMENT OF THE RIGHTS AND LIABILITIES OF THE PARTIES.  THIS AGREEMENT SUPERCEDES ALL PRIOR ORAL AGREEMENTS, PROPOSALS OR UNDERSTANDINGS, AND ANY OTHER COMMUNICATIONS BETWEEN US RELATING TO THE SUBJECT MATTER OF THIS AGREEMENT.
+
+
+IPW3945d
+--------
+
+Copyright (c) 2006, Intel Corporation.
+All rights reserved.
+
+Redistribution.  Redistribution and use in binary form, without 
+modification, are permitted provided that the following conditions are 
+met:
+
+* Redistributions must reproduce the above copyright notice and the 
+  following disclaimer in the documentation and/or other materials 
+  provided with the distribution. 
+* Neither the name of Intel Corporation nor the names of its suppliers 
+  may be used to endorse or promote products derived from this software 
+  without specific prior written permission. 
+* No reverse engineering, decompilation, or disassembly of this software 
+  is permitted.
+
+Limited patent license.  Intel Corporation grants a world-wide, 
+royalty-free, non-exclusive license under patents it now or hereafter 
+owns or controls to make, have made, use, import, offer to sell and 
+sell ("Utilize") this software, but solely to the extent that any 
+such patent is necessary to Utilize the software alone, or in 
+combination with an operating system licensed under an approved Open 
+Source license as listed by the Open Source Initiative at 
+http://opensource.org/licenses.  The patent license shall not apply to 
+any other combinations which include this software.  No hardware per 
+se is licensed hereunder.
+
+DISCLAIMER.  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND 
+CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, 
+BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
+COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, 
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
+BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS 
+OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND 
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR 
+TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE 
+USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH 
+DAMAGE.

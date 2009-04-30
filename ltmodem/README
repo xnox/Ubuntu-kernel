@@ -1,0 +1,112 @@
+
+		README for 2.6 kernel series port
+		   of Lucent/Agere linmodem driver.
+
+1. Requirements
+
+- Linux kernel 2.6.x (up to 2.6.10 tested at the moment of writing)
+- Configured kernel headers or source (read section 6 on this)
+- serial_core enabled in kernel configuration
+	(Device Drivers/Character Devices/Serial Drivers/"8250/16550..."
+		in menuconfig to "Yes" or "Module")
+	(most vendor supplied kernels enable this)
+- See chapter 4 for state of SMP support
+
+2. HOWTO build
+
+You may need to create /dev/ttyLTM0 if you haven't used 2.4 version
+of driver or if you don't use udev. Just do:
+a. mknod --mode=0660 /dev/ttyLTM0 c 62 64
+b. Change owner and group owner to match /dev/ttyS0
+	(Debian users: set group to dialout)
+c. Create symlink /dev/modem to it ('ln -s /dev/ttyLTM0 /dev/modem')
+If you use udev, than read docs/udev-setup and skip this step.
+
+NOTE: previous versions of this driver used device name /dev/ttyLT0. If you upgrade
+from previous version, than you may leave old name. But if you plan to switch to udev,
+than new name may be more preferable.
+
+Edit KERNEL_DIR variable in Makefile to reflect your 2.6 kernel dir or leave Makefile intact.
+In later case driver will be compiled (or miscompiled) against
+currently running kernel. Then just run make.
+You will get ltmodem.ko & ltserial.ko.
+Copy them to /lib/modules/`uname -r`/other/ dir and
+run depmod -a.
+
+NOTE: installing to /lib/modules/`uname -r`/other is somewhat bad practice,
+'cause if you recompile your kernel with different options ltmodem modules
+placed to .../other will remain there, but will likely conflict
+with new kernel configuration. If that happens you must recompile (make clean; make)
+and reinstall driver. Please, be aware of that. For more safety you
+may install modules to more apropriate place e.g. /lib/modules/`uname -r`/kernel/serial/.
+In that case new kernel modules installation will erase old ltmodem modules,
+and you will easily notice it.
+I actually prefer .../other approach, because often new config will be compatible with
+previous.
+
+Edit your modprobe.conf to load ltserial (not lt_serial)
+for /dev/ttyLTM0.
+
+My modprobe.conf contains following lines:
+alias /dev/modem ltserial
+alias char-major-62 ltserial
+alias /dev/tts/LT0 ltserial
+
+NOTE: there were reports that devfs (which is deprecated) creates /dev/ttyLT0, not /dev/tts/LT0.
+If this is true and you still use devfs, than you will need to change last line to
+alias /dev/ttyLT0 ltserial.
+
+3. Report any problems to alk@tut.by
+
+4. State of SMP support
+
+8.31 core which is supposed to support SMP does not work on my system,
+so default core is old one (I dont remember what).
+I have also included 8.31 core which seems to work on some (probably many)
+systems. Old core also contains some fixes for SMP, I dont remember
+if I did them (on top of 8.26 for example) or it is 8.30 core which
+should contain that fixes.
+
+Some code to support SMP is there since revision 6,
+but because largest part of driver is closed-source
+it is very hard to ensure that SMP support is correct. I believe that
+driver should work fine on SMP systems with both cores.
+
+Please, report SMP success/fail reports to me (alk@tut.by).
+
+5. How to use 8.31 core
+
+Just change ltmdmobj.o symlink to point to ltmdmobj-8.31.
+E.g.:
+	ln -sf ltmdmobj.o-8.31 ltmdmobj.o
+Be carefull to actually rebuild driver with new ltmdmobj.o.
+'make clean' followed by 'make' should suffice.
+
+
+6. Typical build problems
+
+Many novice users report build problems.
+All of them were about building kernel modules against precompiled kernels. Which is
+sometimes tricky process (depending on your distro).
+
+This is what FUSE project recomments
+(taken from http://fuse.sourceforge.net/):
+
+ Building the kernel module needs a configured kernel source tree matching the running kernel.
+ If you build your own kernel this is no problem.
+ On the other hand if a precompiled kernel is used, the kernel headers used by the FUSE build process
+ must first be prepared.  There are two possibilities:
+
+   1. A package containing the kernel headers for the kernel binary is available in the distribution
+      (e.g. on Debian it's the kernel-headers-X.Y.Z package for kernel-image-X.Y.Z)
+   2. The kernel source must be prepared:
+
+          o Extract the kernel source to some directory
+          o Copy the running kernel's config (usually found in /boot/config-X.Y.Z)
+            to .config at the top of the source tree
+          o Run make menuconfig, then make dep at the top of the source tree (only needed on 2.4 kernels)
+
+ If using the 2.6 kernel, then write access is needed to some files in the kernel source tree.
+ Usually it is enough if you make .tmp_versions and .__modpost.cmd writable.
+
+Also see docs/Example.txt section KERNEL SOURCE PREPARATION.

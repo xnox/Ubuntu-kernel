@@ -1,0 +1,52 @@
+diff -Naur nv-new.orig/conftest.sh nv-new/conftest.sh
+--- nv-new.orig/conftest.sh	2008-02-14 21:47:02.000000000 -0500
++++ usr/src/nv/conftest.sh	2008-03-03 10:07:13.000000000 -0500
+@@ -30,7 +30,7 @@
+     CFLAGS="$CFLAGS -I$OUTPUT/include2 -I$OUTPUT/include \
+ -I$HEADERS -I$HEADERS/asm-$ARCH/mach-default"
+     if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]; then
+-        CFLAGS="$CFLAGS -I$HEADERS/asm-x86/mach-default"
++        CFLAGS="$CFLAGS -I$HEADERS/asm-x86/mach-xen -I$HEADERS/asm-x86/mach-default"
+     fi
+ else
+     CFLAGS="$CFLAGS -I$HEADERS -I$HEADERS/asm/mach-default"
+diff -N'urpx*~' nv/nv.c NVIDIA-Linux-x86_64-169.04-pkg2-f/usr/src/nv/nv.c
+--- nv/nv.c	2007-11-15 02:43:30.000000000 +0200
++++ usr/src/nv/nv.c	2007-12-07 15:56:38.000000000 +0200
+@@ -1995,7 +1995,8 @@ int nv_kern_open(
+         nvl->tasklet.data = (unsigned long) nv;
+         tasklet_enable(&nvl->tasklet);
+ 
+-#if defined(CONFIG_XEN)
++#if defined(CONFIG_XEN) && 0
++	/* (anssi 12/2007) FATAL: modpost: GPL-incompatible module nvidia.ko uses GPL-only symbol 'hypercall_page' */
+         if ((nvl->dev->dma_mask <= 0xffffffff) &&
+             (HYPERVISOR_memory_op(XENMEM_maximum_ram_page, NULL) > 0xfffff))
+         {
+diff -N'urpx*~' nv/nv-linux.h NVIDIA-Linux-x86_64-169.04-pkg2-f/usr/src/nv/nv-linux.h
+--- nv/nv-linux.h	2007-11-15 02:43:30.000000000 +0200
++++ usr/src/nv/nv-linux.h	2007-12-07 15:59:44.000000000 +0200
+@@ -109,7 +109,10 @@
+ #include <linux/highmem.h>
+ 
+ #ifdef CONFIG_XEN
+-#include <asm/maddr.h>
++/* HYPERVISOR_memory_op() in nv.c */
++#include <asm/xen/hypercall.h>
++/* phys_to_machine() */
++#include <asm/page.h>
+ #include <xen/interface/memory.h>
+ #endif
+ 
+@@ -712,8 +715,9 @@ static inline int nv_execute_on_all_cpus
+ #define NV_TASK_STRUCT_RLIM(current)  ((current)->rlim)
+ #endif
+ 
+-#ifdef CONFIG_XEN
+-#define NV_GET_DMA_ADDRESS(phys_addr) phys_to_machine(phys_addr)
++#if defined(CONFIG_XEN) && 0
++/* (anssi 12/2007) FATAL: modpost: GPL-incompatible module nvidia.ko uses GPL-only symbol 'xen_features' */
++#define NV_GET_DMA_ADDRESS(phys_addr) phys_to_machine(XPADDR(phys_addr)).maddr
+ #else
+ #define NV_GET_DMA_ADDRESS(phys_addr) (phys_addr)
+ #endif

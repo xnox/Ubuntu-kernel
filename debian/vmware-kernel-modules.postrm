@@ -1,0 +1,19 @@
+#!/bin/bash -e
+
+case "$1" in
+       purge|remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+	kernel_ver=`uname -r`
+	if [ -f /boot/System.map-$kernel_ver ]; then
+		depmod -a -q -F /boot/System.map-$kernel_ver $kernel_ver
+	fi
+        ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+
+esac
+
+#DEBHELPER#
+
+exit 0

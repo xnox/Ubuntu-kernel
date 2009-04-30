@@ -1,0 +1,5 @@
+# Make nvidia/nvidia_legacy and fglrx use /sbin/lrm-video to load
+install fglrx /sbin/lrm-video fglrx $CMDLINE_OPTS
+install nvidia /sbin/lrm-video nvidia $CMDLINE_OPTS
+install nvidia_legacy /sbin/lrm-video nvidia_legacy $CMDLINE_OPTS
+install nvidia_new /sbin/lrm-video nvidia_new $CMDLINE_OPTS

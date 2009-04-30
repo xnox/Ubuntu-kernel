@@ -1,0 +1,2329 @@
+linux-restricted-modules-2.6.24 (2.6.24.17-24.1) hardy-proposed; urgency=low
+
+  * Updated broadcom wl driver to 5_10_79_10
+    This has been tested to fix issues with random crashed and at least one
+    buffer overrun with 32 byte SSIDs.
+    - LP: #292450
+  * Added build-orig-source target to automatically create orig.tar.gz
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 08 Apr 2009 14:22:36 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.16-24.57) hardy-proposed; urgency=low
+
+  * Bump ABI to -24 for -proposed kernel
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Tue, 17 Feb 2009 20:21:39 +0000
+
+linux-restricted-modules-2.6.24 (2.6.24.16-23.56) hardy-proposed; urgency=low
+
+  * Update wl to 5_10_27_12
+    This update from Broadcom has a new binary blob, better locking and
+    protection against the interrupt handler, and sets the VLAN mode to
+    off by default. They have also abstracted the ioctl code for kernels newer
+    then 2.6.26.
+    - LP: #292450
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 02 Jan 2009 21:59:39 +0000
+
+linux-restricted-modules-2.6.24 (2.6.24.15-23.55) hardy-proposed; urgency=low
+
+  * Updated Broadcom wl driver to version 5.10.27.11. The previous version
+    was actually 5.10.27.9 though that value was not reflected in the original
+    tarball name. Broadcom says this version should address some of
+    the kernel crashes folks are seeing, though there do not appear to
+    be any release notes about what exactly was fixed.
+    -LP: #292450
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 16 Dec 2008 16:37:03 +0000
+
+linux-restricted-modules-2.6.24 (2.6.24.14-23.54) hardy-proposed; urgency=low
+
+  * ABI bump to -23 for hardy-proposed release.
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 26 Nov 2008 09:33:56 +0000
+
+linux-restricted-modules-2.6.24 (2.6.24.14-22.53) hardy-security; urgency=low
+
+  * ABI bump to -22 for hardy-security release.
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Thu, 20 Nov 2008 11:36:14 +0100
+
+linux-restricted-modules-2.6.24 (2.6.24.14-22.52) hardy-proposed; urgency=low
+
+  * ABI bump to -22
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Thu, 13 Nov 2008 07:51:18 +0000
+
+linux-restricted-modules-2.6.24 (2.6.24.14-21.51) hardy-proposed; urgency=low
+
+  * Reimplmented the VLAN mode setting patch. It was occasionally
+    causing kernel lock violations.
+    LP: #259816
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 10 Oct 2008 03:38:49 +0000
+
+linux-restricted-modules-2.6.24 (2.6.24.14-21.50) hardy-proposed; urgency=low
+
+  * broadcom: Force vlan_mode to off on initialization of device. Otherwise
+    ssh and ssl connections will not work.
+    LP: #259816
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 12 Sep 2008 20:44:46 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.14-21.49) hardy-proposed; urgency=low
+
+  * Fixed oops in Fritz fwlanusb caused by writing beyond the end of
+    an array. Patch from Nils Kassube in the bug report.
+    LP: #200589
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 02 Sep 2008 14:47:45 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.14-21.48) hardy-proposed; urgency=low
+
+  * Fix Fritz PCI interrupt init problem.
+    LP: #204624
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 19 Aug 2008 16:05:46 +0000
+
+linux-restricted-modules-2.6.24 (2.6.24.14-21.47) hardy-proposed; urgency=low
+
+  * ABI bump to -21
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 13 Aug 2008 13:08:43 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.14-20.46) hardy-proposed; urgency=low
+
+  * ABI Bump to -20
+  * Upgrade Broadcom to 5.10.27
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 10 Jul 2008 17:07:00 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.13-19.45) hardy-proposed; urgency=low
+
+  * Fix broadcom Makefile to get correct objects from split-module.
+    LP: #243930
+
+ -- Ben Collins <ben.collins@canonical.com>  Sun, 06 Jul 2008 15:18:03 -0400
+
+linux-restricted-modules-2.6.24 (2.6.24.13-19.44) hardy-proposed; urgency=low
+
+  * Just ditch bcmwl from nic-restricted udeb.
+
+ -- Ben Collins <ben.collins@canonical.com>  Thu, 26 Jun 2008 19:40:42 -0400
+
+linux-restricted-modules-2.6.24 (2.6.24.13-19.43) hardy-proposed; urgency=low
+
+  * Use split_module on wl.ko
+  * Add wl_supported for lrm-common
+
+ -- Ben Collins <ben.collins@canonical.com>  Thu, 26 Jun 2008 10:34:57 -0400
+
+linux-restricted-modules-2.6.24 (2.6.24.13-19.42) hardy-proposed; urgency=low
+
+  * ABI bump to -19
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 04 Jun 2008 10:43:41 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.13-18.41) hardy-security; urgency=low
+
+  * Fix powerpc FTBS, need to explicitly disable Broadcom driver build.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 30 May 2008 10:49:48 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.13-18.40) hardy-security; urgency=low
+
+  * Fix lpia FTBS. The build arch for the new Broadcom WL driver was
+    not properly specified.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 29 May 2008 15:02:53 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.13-18.39) hardy-security; urgency=low
+
+  * Security upload with ABI bump to -18
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 29 May 2008 11:25:17 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.13-17.38) hardy-proposed; urgency=low
+
+  * Add new Broadcom driver that supports only PCI ID 14e4:4315. There is no
+    overlap with any kernel driver, therefore no possiblity of regression.
+  * Skip 17.37 version number since that is the Dell pre-installed
+    version of LRM with this Broadcom driver. It was used by Dell but
+    never got uploaded to the Ubuntu archive.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 28 May 2008 08:24:57 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.12-17.36) hardy-proposed; urgency=low
+
+  * nvidia: Do not divert libwfb.so, because if the xserver provides one
+    it should be used. Remove the diversion in postinst. This caused at
+    least problems with some websites making the xserver crash (LP: #212648),
+    and missing or falsely colored shadows with compiz. (LP: #186382)
+  * fglrx: Patch authatieventsd.sh to search for xauth files from
+    /var/run/xauth/. Otherwise the session would freeze on logout for KDM
+    users. Thanks Ilja Pavkovic! (LP: #118605)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 07 May 2008 11:27:35 +0300
+
+linux-restricted-modules-2.6.24 (2.6.24.12-17.35) hardy-proposed; urgency=low
+
+  * Kernel ABI bump to 17.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 02 May 2008 07:44:34 -0600
+
+linux-restricted-modules-2.6.24 (2.6.24.12-16.34) hardy; urgency=low
+
+  * Bump the ABI to 16.
+  * rules: fix dh_strip to not strip the current versions of nvidia.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 11 Apr 2008 00:48:35 +0300
+
+linux-restricted-modules-2.6.24 (2.6.24.12-15.33) hardy; urgency=low
+
+  [ Matthias Klose ]
+  * nvidia-glx: Install the TLS library in /usr/lib, symlink the one in
+    /usr/lib/tls to the one in /usr/lib. LP: #205079.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 04 Apr 2008 16:59:50 +0300
+
+linux-restricted-modules-2.6.24 (2.6.24.12-14.32) hardy; urgency=low
+
+  * ABI bump to 14.
+  * Madwifi 0.9.4 (LP: #208754):
+    - fixes compilation for recently released kernel 2.6.24
+    - introduces Minstrel rate control algorithm
+    - introduces switch to turn ANI (Ambience Noise Immunity) off, which
+      can help to improve performance (see also #705)
+    - several bug fixes to improve stability
+    - now defaults to radiotap headers in monitor mode
+    - adds support for variable number of VAPs, tunable via module
+      parameter
+  * control: Drop the nvidia-kernel-ABIVER dependencies from nvidia-glx*, since
+    fglrx is doing just fine without them, and they only create problems
+    during upgrades when apt selects the first package to provide the
+    virtual package. (LP: #188287)
+  * ltmodem/serial.c: Modify to compile with 2.6.24. Enable ltmodem again.
+    (LP: #210652)
+  * Add openvz flavour.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 03 Apr 2008 01:45:22 +0300
+
+linux-restricted-modules-2.6.24 (2.6.24.11-12.31) hardy; urgency=low
+
+  * fglrx 8-3 (LP: #199304)
+    - On workstation hardware 3D applications will no longer be corrupted
+    if the screen width is not an integer multiple of 64 pixels, for
+    example with a 1680x1050 wide screen display. Further details can be
+    found in topic number 737-31720
+    - Display flicker is no longer be noticed when the gnome screen-saver
+    starts (LP: #198702)
+    - Several image brightness and gamma-correction issues were
+    resolved. Setting the gamma correction using xgamma, fglrx_xgamma,
+    xorg.conf and in OpenGL games will all work as expected now.
+    - Diagonal tearing will no longer be noticed when playing a video file
+    using a video player that utilizes the XVideo extension
+    - Video playback will no longer look blocky when playing a video file
+    using a video player that utilizes the XVideo extension
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 11 Mar 2008 17:23:04 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.10-12.30) hardy; urgency=low
+
+  * ABI Bump to 12
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat, 08 Mar 2008 13:19:11 -0500
+
+linux-restricted-modules-2.6.24 (2.6.24.10-11.29) hardy; urgency=low
+
+  * ABI bump to -11.
+  * nvidia-new 169.12 (LP: #195901)
+    - Improved power management support with GeForce 8 GPUs.
+    - Further improved stability on some GeForce 8 GPUs.
+    - Fixed a bug that broke certain TwinView configurations with TV-OUT on
+      GeForce 8 GPUs.
+    - Fixed a bug that could cause OpenGL to crash in certain cases, e.g.
+      when running Counter-Strike under Wine. (LP: #194599)
+    - Further improved GLX_EXT_texture_from_pixmap out-of-memory handling.
+    - Fixed a bug that could result in incorrect PowerMizer state being
+      reported.
+    - Improved nvidia-xconfig behavior when updating X configuration files
+      without a "Module" section.
+    - Worked around a problem that caused function key presses on some
+      Toshiba notebooks to result in system crashes.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 29 Feb 2008 18:48:02 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.9-10.28) hardy; urgency=low
+
+  * Fix the Fritz drivers for i386 and amd64 to build with 2.6.24.
+
+ -- Matthias Klose <doko@ubuntu.com>  Wed, 27 Feb 2008 19:19:40 +0100
+
+linux-restricted-modules-2.6.24 (2.6.24.9-10.27) hardy; urgency=low
+
+  [ Timo Aaltonen ]
+  * Re-use 3-check-for-xen-build.diff for ati, refreshed (FTBFS).
+  * rules: Obtain the abiver with dpkg-parsechangelog.
+
+  [ Chuck Short ]
+  * Modify nvidia/patches/1-nvidia-2.6.24-xen.patch to use <asm/page.h>.
+    Still doesn't build though, so not enabled.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 26 Feb 2008 18:24:36 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.9-10.26) hardy; urgency=low
+
+  * ABI bump to -10.
+  * Enable xen on amd64, i386. No nvidia for now, since it doesn't build.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Tue, 26 Feb 2008 12:40:49 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.9-8.25) hardy; urgency=low
+
+  * nvidia-glx.links.amd64.in: sigh, add a missing slash. (LP: 192253)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sun, 17 Feb 2008 09:34:01 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.9-8.24) hardy; urgency=low
+
+  * This time fix the libglx.so link path for amd64, and while at it do
+    the same for lintian overrides. (LP: #192253)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sat, 16 Feb 2008 09:38:46 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.9-8.23) hardy; urgency=low
+
+  * Brown paper bag release vol. 2, now with a bottle.
+  * nvidia-glx.links.in:
+    - Fix the path of libglx.so.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 15 Feb 2008 17:34:10 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.9-8.22) hardy; urgency=low
+
+  * Brown paper bag release.
+  * Bump the ABI-version this time..
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 15 Feb 2008 02:17:02 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.9-8.21) hardy; urgency=low
+
+  * nvidia/patches-new/1-nvidia-2.6.24-xen.patch:
+    - Patch to disable xen properly for nvidia-new (FTBFS).
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 14 Feb 2008 22:38:54 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.9-8.20) hardy; urgency=low
+
+  [ Timo Aaltonen ]
+  * nvidia-glx*:
+    - When using the nvidia-settings binary for storing
+      values in xorg.conf it clutters up the file with unneeded settings,
+      and some are just plain wrong nowadays (the mouse device for
+      instance). So, don't ship the version included in the drivers, instead
+      Suggest nvidia-settings -package (again), and fix the issues there.
+    - Don't ship nvidia-settings.desktop, only the .png file.
+      Nvidia-settings will include the desktop-file.
+  * rules:
+    - Enable fglrx for -rt (LP: #182242)
+  * rules, control.stub.in:
+    - Enable -server flavor. (LP: #153011)
+  * dvb:
+    - Add dvb-usb-bluebird-01.fw (LP: #90723)
+    - Add dvb-fe-tda10046.fw (LP: #107090)
+  * ati: Update fglrx to 8-02. (LP: #173663, #189772)
+  * {nvidia-glx,nvidia-glx-dev,xorg-driver-fglrx}.postrm.in
+    - Check that the diverted file actually belongs to the current package
+      before trying to remove the diversion. Thanks to Kirk Turner and
+      Alberto Milone for patches, and Michael Vogt for review!
+      (LP: #36625, #130208, #175789)
+  * nvidia-glx.{preinst,postrm}.in, rules:
+    - Fix the path of libglx.so.
+  * rules:
+    - Unexport CFLAGS and LDFLAGS to cope with the new dpkg-buildpackage.
+
+  [ Alberto Milone ]
+  * debian/lrm-video: Add support for EnvyNG.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 14 Feb 2008 17:57:44 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.8-7.19) hardy; urgency=low
+
+  * Really include nvidia-settings binary in nvidia-glx-legacy, and set
+    Conflicts accordingly. (LP: #22297)
+  * nvidia-glx-new suggested nvidia-settings, now conflicts instead.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 08 Feb 2008 14:17:30 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.8-7.18) hardy; urgency=low
+
+  * Update nvidia -> 96.43.05, nvidia-legacy -> 71.86.04.
+  * nvidia*: Add the desktop file and png for nvidia-settings.
+    (LP: #44897)
+  * Added DVB firmware files:
+    - dvb-usb-wt220u-fc03.fw (LP: #91415)
+    - dvb-usb-wt220u-zl0353-01.fw (LP: #61181)
+    - dvb-usb-dib0700-1.10.fw (LP: #179626, #95277)
+  * Add atieventsd -initscript to xorg-driver-fglrx. (LP: #58785)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Fri, 08 Feb 2008 13:42:42 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.7-7.17) hardy; urgency=low
+
+  * Kernel ABI bump to -7. Skipped (-6) because of kernel FTBS issues.
+  * Use different locking mechanism for -rt flavor.
+  * Deleted the ipw3945d tarball (hence the bump to 2.6.24.7)
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue,  5 Feb 2008 08:16:38 -0700
+
+linux-restricted-modules-2.6.24 (2.6.24.6-5.16) hardy; urgency=low
+
+  * Kernel ABI bump to -5
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 24 Jan 2008 11:16:55 -0700
+
+linux-restricted-modules-2.6.24 (2.6.24.6-4.15) hardy; urgency=low
+
+  * fglrx: Install amdpcsdb.default, in fact install everything from
+    etc/ati/* just to be sure. (LP: #185654)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 24 Jan 2008 17:32:19 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.6-4.14) hardy; urgency=low
+
+  * rules: Fix amdcccle.desktop install path.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 23 Jan 2008 12:04:17 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.6-4.13) hardy; urgency=low
+
+  [ Timo Aaltonen ]
+  * nvidia: Update to 169.09
+    - Fixed a problem causing the fan on some GPUs to always run
+      at full speed. (LP: #184914)
+    - Fixed a bug that caused the X driver to crash if the X.Org
+      GLX extension module was loaded intead of NVIDIA's.
+    - Improved the X driver's awareness of the current notebook
+      docking status.
+    - Fixed brightness control on HP Compaq notebooks.
+    - Fixed a bug in the Linux/i2c algorithm driver implementation
+      that prevented core transfer types from succeeding.
+  * fglrx: Update to 8-01 (LP: #177829, #148345)
+    - Corruption will no longer be noticed in the lower right corner
+      of the display or on the mouse pointer after the system is
+      running for a long period of time. (LP: #106148)
+    - Connecting a display device that supports 1680x1050 to a system
+      running Linux will no longer result in a maximum display resolution
+      of 1280x1024 only being available.
+    - Custom mode lines in xorg.conf will no longer be ignored by the
+      fglrx driver.
+    - Suspending to RAM or DISK on kernel version 2.6.23 or later no
+      longer fails. (LP: #121653)
+  * nvidia/nvidia-glx-config: Remove, not needed anymore and only confuses
+    people and breaks keyboard setups (LP: #152486)
+  * control.stub.in: Add fglrx-amdcccle dummy package for easy transition
+    from packages generated by the ATI installer.
+  * fglrx-control:
+    - Remove fireglcontrol*.desktop, and install amdcccle*.desktop from
+      the extracted installer instead.
+    - Install amdcccle in this package, not the driver.
+    - Conflicts/Replaces xorg-driver-fglrx <= $previousversion.
+  * fglrx.xsession: Obsolete by now, removed.
+  * Drop obsolete build-dependencies: libxxf86misc-dev, libxtst-dev,
+    libxxf86vm-dev, libxinerama-dev, libstdc++5, libqt-mt-dev.
+
+  [ Johan Kiviniemi ]
+  * nvidia_supported: New version to support the latest NVIDIA
+    release. (LP: #182237)
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Wed, 23 Jan 2008 11:41:54 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.5-4.12) hardy; urgency=low
+
+  * Upgrade madwifi tarball to 0.9.3.3
+  * Add patch to fix sysctl for 2.6.24 to madwifi
+    (LP: 178648)
+
+ -- Amit Kucheria <amit.kucheria@ubuntu.com>  Fri, 18 Jan 2008 20:04:51 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.4-4.11) hardy; urgency=low
+
+  * Kernel ABI bump to -4
+  * Added rt to build.
+  * Fixed powerpc package duplication.
+ 
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 10 Jan 2008 10:47:00 -0700
+
+linux-restricted-modules-2.6.24 (2.6.24.4-3.10) hardy; urgency=low
+
+  * Kernel ABI bump to -3
+  * Updated dvd firmware to dvb-usb-wt220u-02.fw
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri,  4 Jan 2008 13:43:56 -0700
+
+linux-restricted-modules-2.6.24 (2.6.24.3-2.9) hardy; urgency=low
+
+  * nvidia-glx-new: Update to 169.07 (LP: #177826).
+  * Move fwlanusb to the tarball, was previously in the diff.
+  * fix nvidia-glx-new-dev description (LP: #158530).
+  * debian/rules: Clean up ati:Revision and ati:XFree86Version tags,
+    which were not used.
+  * fglrx: Added signature and control files to remove watermark
+    (LP: #176638).
+  * lrm-manager: Add --list parameter to show disabled modules
+    (LP: #121590).
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Thu, 03 Jan 2008 14:09:29 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.2-2.8) hardy; urgency=low
+
+  * debian/control.stub.in:
+    - nvidia*/fglrx Provides: xserver-xorg-video-2. (LP: #177609)
+    - fglrx: Updated the list of supported cards.
+  * debian/nvidia-glx.{preinst,postrm}.in
+    - Divert libwfb.so provided by xserver-xorg-core. (LP: #98641)
+    - Clean up old X11R6 diversions from preinst.
+    - Clean up some whitespace from preinst for readability.
+
+ -- Timo Aaltonen <tepsipakki@ubuntu.com>  Sat, 22 Dec 2007 21:32:11 +0200
+
+linux-restricted-modules-2.6.24 (2.6.24.2-2.7) hardy; urgency=low
+
+  * Updated 96xx and 71xx nvidia drivers to latest from nvidia.com
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 19 Dec 2007 12:10:42 -0500
+
+linux-restricted-modules-2.6.24 (2.6.24.1-2.6) hardy; urgency=low
+
+  * Add epoch to fglrx packages. New ATI version computes as lower than the
+    previous release.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 19 Dec 2007 08:54:14 -0500
+
+linux-restricted-modules-2.6.24 (2.6.24.1-2.5) hardy; urgency=low
+
+  * Whoops, ati subdir disappeared
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 18 Dec 2007 12:51:48 -0500
+
+linux-restricted-modules-2.6.24 (2.6.24.1-2.4) hardy; urgency=low
+
+  * Add -N<pkg> to `dh_gencontrol -s` call, to exclude all packages where we
+    handle special versions. This was causing duplicate debian/files entries.
+    It only recently began breaking the build with newer dpkg-dev.
+  * x86_64: Use x86 arch files. ATI upstream no longer provides lib32 dir.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 18 Dec 2007 10:40:12 -0500
+
+linux-restricted-modules-2.6.24 (2.6.24.1-2.3) hardy; urgency=low
+
+  * Try a rebuild with cleaned up control file.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 17 Dec 2007 12:38:06 -0500
+
+linux-restricted-modules-2.6.24 (2.6.24.1-2.2) hardy; urgency=low
+
+  * ABI bump to -2
+  * Patches for nv and nv-legacy to compile against newer kernel
+    - kmem_cache_t -> struct kmem_cache
+    - kmem_cache_create() doesn't take a constructor anymore
+    - unregister_chrdev doesn't return value anymore
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 17 Dec 2007 09:55:02 -0500
+
+linux-restricted-modules-2.6.24 (2.6.24.1-1.1) hardy; urgency=low
+
+  * Convert to build with 2.6.24
+  * Disable xen/rt builds
+  * Disable ltmodem and fritz for now, doesn't build with current headers
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 04 Dec 2007 16:27:06 -0500
+
+linux-restricted-modules-2.6.22 (2.6.22.4-14.10) gutsy-proposed; urgency=low
+
+  * Fix module load issue for fcpci, et. al.  LP: #121978
+  * remove hidden file .nvidia_new_installed. LP: #106217
+
+ -- LaMont Jones <lamont@ubuntu.com>  Mon, 29 Oct 2007 10:34:50 -0600
+
+linux-restricted-modules-2.6.22 (2.6.22.4-14.9) gutsy; urgency=low
+
+  * Fix fwlanusb driver (Alexander Sack). LP: #152867.
+
+ -- Matthias Klose <doko@ubuntu.com>  Mon, 15 Oct 2007 10:55:20 +0200
+
+linux-restricted-modules-2.6.22 (2.6.22.4-14.8) gutsy; urgency=low
+
+  * Bump ABI to -14.
+
+ -- Kyle McMartin <kyle@ubuntu.com>  Mon, 08 Oct 2007 10:31:41 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.4-13.7) gutsy; urgency=low
+
+  * Fix a typo is calling postinst - nv_flavours -> flavours
+     Fixes bug #150495 
+
+ -- Amit Kucheria <amit.kucheria@ubuntu.com>  Mon, 08 Oct 2007 18:46:25 +0300
+
+linux-restricted-modules-2.6.22 (2.6.22.4-13.6) gutsy; urgency=low
+
+  * Make 'nv' in /etc/default/linux-restricted-modules-common disable
+    nvidia_new as well.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 05 Oct 2007 20:40:06 +0100
+
+linux-restricted-modules-2.6.22 (2.6.22.4-13.5) gutsy; urgency=low
+
+  * Add lpiacompat flavour for lpia
+  * Bump ABI to -13
+
+ -- Amit Kucheria <amit.kucheria@ubuntu.com>  Wed, 03 Oct 2007 18:49:53 +0300
+
+linux-restricted-modules-2.6.22 (2.6.22.4-12.4) gutsy; urgency=low
+
+  * Add fwlanusb driver for i386.
+
+ -- Matthias Klose <doko@ubuntu.com>  Sat, 29 Sep 2007 12:08:23 +0200
+
+linux-restricted-modules-2.6.22 (2.6.22.4-12.3) gutsy; urgency=low
+
+  * hppa no longer needs to build-depend gcc-3.4.
+
+ -- LaMont Jones <lamont@ubuntu.com>  Sun, 23 Sep 2007 10:19:01 -0600
+
+linux-restricted-modules-2.6.22 (2.6.22.4-12.2) gutsy; urgency=low
+
+  * Updated nvidia_supported to correctly output lines for latest nvidia
+    driver. Thanks Johan Kiviniemi
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun, 23 Sep 2007 11:17:05 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.4-12.1) gutsy; urgency=low
+
+  * ABI bump for -12
+  * Upgrade nvidia-new driver to 100.14.19
+  * Default to nvidia-new
+  * Add patch to allow fglrx to compile with xen/rt flavours
+  * Enable nvidia/fglrx on xen/rt flavours
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 19 Sep 2007 17:00:05 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.3-11.4) gutsy; urgency=low
+
+  * Build xen flavour on amd64.
+  * Use debian/compat rather than DH_COMPAT.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Wed, 19 Sep 2007 19:31:51 +0100
+
+linux-restricted-modules-2.6.22 (2.6.22.3-11.3) gutsy; urgency=low
+
+  * Include libwfb.so symlink
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat, 08 Sep 2007 11:45:34 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.3-11.2) gutsy; urgency=low
+
+  * ABI bump to -11
+  * Add lpia architecture support
+  * Install libwfb, LP: #98641
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri, 07 Sep 2007 11:44:20 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.3-10.1) gutsy; urgency=low
+
+  * Update nvidia drivers:
+    - nvidia-legacy	-> 1.0-7185
+    - nvidia-new	-> 100.14.11
+    - nvidia		-> 1.0-9639
+
+  * ABI bump for -10
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 20 Aug 2007 11:59:21 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.2-9.8) gutsy; urgency=low
+
+  * Upgraded madwifi to 0.9.3.2
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 14 Aug 2007 17:58:58 +0000
+
+linux-restricted-modules-2.6.22 (2.6.22.2-9.7) gutsy; urgency=low
+
+  * lrm for -rt needs to dep on -rt kernel, not -xen kernel.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 06 Aug 2007 12:06:44 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.2-9.6) gutsy; urgency=low
+
+  * Oh well, disable xen/rt for fglrx and nvidia.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 30 Jul 2007 21:11:44 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.2-9.5) gutsy; urgency=low
+
+  * ABI bump
+  * Add -xen build for i386
+  * Add -rt builds for i386 and amd64
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat, 28 Jul 2007 12:58:52 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.2-8.4) gutsy; urgency=low
+
+  * madwifi update to 0.9.3.1:
+    CVE-2006-7180 - http://madwifi.org/changeset/1760
+    CVE-2006-7177 - http://madwifi.org/changeset/1818
+    CVE-2006-7178 - http://madwifi.org/changeset/1818
+    CVE-2006-7179 - http://madwifi.org/changeset/1762
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 17 Jul 2007 19:55:18 +0000
+
+linux-restricted-modules-2.6.22 (2.6.22.2-8.3) gutsy; urgency=low
+
+  * ABI bump for -8
+
+ -- Amit Kucheria <amit.kucheria@ubuntu.com>  Tue, 26 Jun 2007 00:46:24 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.2-7.2) gutsy; urgency=low
+
+  * ABI bump for -7
+  * Remove bigiron.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 26 Jun 2007 00:46:24 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.2-6.1) gutsy; urgency=low
+
+  * Update fglrx to new upstream 8.37.6
+    - New features since 8.34.8:
+      + Support for linux kernel 2.6.20
+      + Catalyst Control Center version 1.0 for adjusting 3D apps
+    - Resolved issues since 8.34.8:
+      + In certain AGP graphics cards the system no longer ceases to
+        respond when switching from the X-Server display to a text console.
+      + The screen no longer turns black if the X-Server is terminated
+        from the text console. This condition was known to occur only on
+        certain laptop configurations.  [ATI# 737-26829].
+      + Logging out of a session to the graphical login manager no longer
+        crashes the Xserver
+    - Known issues as of 8.37.6:
+      + Using the xgl enabled x-server interface disables display
+        switching hot plug support
+      + An increase in CPU utilization will be experienced for video
+        playback using GLESX comapred with GSL. [ATI# 737-26983]
+      + Video tearing during playback. [ATI# 737-26984]
+      + There is no support for video playback on the second head in dual
+        head mode. [ATI# 737-26985]
+   * Drop patch 1-2.6.20-fixes.diff - compatibility to 2.6.20 no longer
+     required, so patch is obsolete.  [LP: #101984]
+
+ -- Bryce Harrington <bryce@ubuntu.com>  Mon, 18 Jun 2007 14:05:13 -0700
+
+linux-restricted-modules-2.6.22 (2.6.22.1-6.8) gutsy; urgency=low
+
+  * ABI bump for -6
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri, 01 Jun 2007 15:38:46 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.1-5.7) gutsy; urgency=low
+
+  * ABI bump for -5.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat, 19 May 2007 09:05:40 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.1-4.6) gutsy; urgency=low
+
+  * ABI bump for -4
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 17 May 2007 13:44:55 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.1-3.5) gutsy; urgency=low
+
+  * ati: ioctl32.h is not longer needed.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 15 May 2007 16:59:05 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.1-3.4) gutsy; urgency=low
+
+  * madwifi: Fix FTBFS on amd64. Cannot use skb->end for pointer, must use
+    skb_end_pointer().
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 15 May 2007 13:50:34 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.1-3.3) gutsy; urgency=low
+
+  * *sigh* Remove -rt and -xen from build-deps too.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 15 May 2007 11:08:59 -0400
+
+linux-restricted-modules-2.6.22 (2.6.22.1-3.2) gutsy; urgency=low
+
+  * ABI bump.
+  * Add patches for madwifi to make it compile with newer kernels (sk_buff
+    changes).
+  * Diable rt and xen builds.
+  * Add generic to LTMODEM build.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun,  6 May 2007 18:18:35 +0200
+
+linux-restricted-modules-2.6.22 (2.6.22.1-1.1) gutsy; urgency=low
+
+  * New kernel, new lrm.
+  * Added -rt and -xen flavours. Do not build fglrx for -rt (wont compile due
+    to use of GPL-only symbol).
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat, 21 Apr 2007 12:40:36 -0400
+
+linux-restricted-modules-2.6.20 (2.6.20.5-15.20) feisty; urgency=low
+
+  * ABI bump for -15.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 13 Apr 2007 13:37:30 +0100
+
+linux-restricted-modules-2.6.20 (2.6.20.5-14.19) feisty; urgency=low
+
+  * debian/linux-restricted-modules-common.modprobe: Add line for nvidia_new,
+    so that it does not get autoloaded on boot. (LP: #105593)
+
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Thu, 12 Apr 2007 07:50:30 +0000
+
+linux-restricted-modules-2.6.20 (2.6.20.5-14.18) feisty; urgency=low
+
+  * Fix typo in last change to really fix ppc build failure.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 10 Apr 2007 18:06:52 -0400
+
+linux-restricted-modules-2.6.20 (2.6.20.5-14.17) feisty; urgency=low
+
+  * Do not do ath supported for powerpc64-smp. Fixes FTBFS on ppc.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 10 Apr 2007 12:18:32 -0400
+
+linux-restricted-modules-2.6.20 (2.6.20.5-14.16) feisty; urgency=low
+
+  * Change nvidia back to 9631, add epoch for nvidia-glx packages.
+  * Add nvidia-news package at version 9755. This is the path of least
+    surprise.
+  * Add module alias override patch from Johan Kiviniemi
+    <johan@kiviniemi.name>.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 10 Apr 2007 00:16:00 -0400
+
+linux-restricted-modules-2.6.20 (2.6.20.4-14.15) feisty; urgency=low
+
+  * ABI bump for -14.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu,  5 Apr 2007 12:46:12 +0100
+
+linux-restricted-modules-2.6.20 (2.6.20.4-13.14) feisty; urgency=low
+
+  * Don't fail if debian/d-i/{modules,firmware}/$(DEB_HOST_ARCH) doesn't
+    exist.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Mon,  2 Apr 2007 09:29:17 +0100
+
+linux-restricted-modules-2.6.20 (2.6.20.4-13.13) feisty; urgency=low
+
+  * Build generic flavour udebs for i386 (LP: #85362).
+  * Ship debian/control.stub as debian/control, and build the real control
+    file on the fly with the udebs for just the current architecture. This
+    is nasty, I know, but kernel-wedge can't consolidate the multiple
+    stanzas for nic-restricted-*-generic-di and debhelper doesn't like there
+    being more than one stanza for a given package name.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Mon,  2 Apr 2007 01:31:28 +0100
+
+linux-restricted-modules-2.6.20 (2.6.20.4-13.12) feisty; urgency=low
+
+  * madwifi: Update to v0.9.3.
+  * ABI bump for -13.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 21 Mar 2007 22:10:24 -0400
+
+linux-restricted-modules-2.6.20 (2.6.20.3-12.11) feisty; urgency=low
+
+  * ABI bump for -12
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun, 18 Mar 2007 00:20:23 -0400
+
+linux-restricted-modules-2.6.20 (2.6.20.3-11.10) feisty; urgency=low
+
+  * Bump ABI for -11.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 15 Mar 2007 08:41:26 -0400
+
+linux-restricted-modules-2.6.20 (2.6.20.3-10.9) feisty; urgency=low
+
+  * ABI bump to -10.
+  * Update ATI driver to 8.34.8
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 12 Mar 2007 12:01:06 -0400
+
+linux-restricted-modules-2.6.20 (2.6.20.2-9.8) feisty; urgency=low
+
+  * ABI bump to -9.
+
+ -- Ben <bcollins@ubuntu.com>  Mon, 26 Feb 2007 12:01:12 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.2-8.7) feisty; urgency=low
+
+  * Fix vmware post inst/rm.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat, 17 Feb 2007 18:30:08 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.2-8.6) feisty; urgency=low
+
+  * ABI bump for -8.14
+  * Update ATI driver to 8.33.6.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 12 Feb 2007 14:58:39 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-7.5) feisty; urgency=low
+
+  * Fix vmware kernel module post inst/rm calls for depmod.
+  * ABI bump for -7.12
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon,  5 Feb 2007 10:43:56 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-6.4) feisty; urgency=low
+
+  * Beat me with a stick.
+  * Fix the powerpc build, finally.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon,  5 Feb 2007 06:30:09 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-6.3) feisty; urgency=low
+
+  * madwifi: Switch ppc and others to elf-hal, like i386/x86_64/ia64.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon,  5 Feb 2007 03:50:22 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-6.2) feisty; urgency=low
+
+  * Add madwifi-0.9.3-wip patch, taken from svn trunk. Should fix atheros
+    crashes.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun,  4 Feb 2007 12:24:04 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-6.1) feisty; urgency=low
+
+  * ABI bump for 2.6.20-6.7
+  * Version match with kernel ABI.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue,  9 Jan 2007 20:21:58 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-6) feisty; urgency=low
+
+  * ABI bump for 2.6.20-5.7
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sat,  6 Jan 2007 12:01:38 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-5) feisty; urgency=low
+
+  * ABI bump for 2.6.20-4.5.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed,  3 Jan 2007 21:04:07 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-4) feisty; urgency=low
+
+  * vmware-server: Add server(amd64,i386) and server-bigiron(i386) flavours.
+  * vmware-tools: Add server(amd64,i386) flavours.
+  * Add build-dep for server/server-bigiron headers.
+  * ABI bump for 2.6.20-3
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 18 Dec 2006 18:03:37 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-3) feisty; urgency=low
+
+  * Revert ATI kernel module build to use syscall entries. Had to add i386 and
+    amd64 versions of these deprecated macros.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 18 Dec 2006 11:37:04 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-2) feisty; urgency=low
+
+  * Disable vmdesched on x86_64. Fixes FTBFS.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun, 17 Dec 2006 00:06:12 -0500
+
+linux-restricted-modules-2.6.20 (2.6.20.1-1) feisty; urgency=low
+
+  * Bump and first release for 2.6.20-2.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun, 10 Dec 2006 21:11:08 -0500
+
+linux-restricted-modules-2.6.19 (2.6.19.3-2) feisty; urgency=low
+
+  * Bump ABI to -7.
+  * Add lowlatency target for x86 and x86_64.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 29 Nov 2006 09:05:06 -0500
+
+linux-restricted-modules-2.6.19 (2.6.19.3-1) feisty; urgency=low
+
+  * Update ATI drivers to 8.31.5.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 21 Nov 2006 21:30:36 -0500
+
+linux-restricted-modules-2.6.19 (2.6.19.2-2) feisty; urgency=low
+
+  * ati: Fix typo which caused xorg modules to not be installed on amd64.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 21 Nov 2006 20:51:54 -0500
+
+linux-restricted-modules-2.6.19 (2.6.19.2-1) feisty; urgency=low
+
+  * Upgrade nvidia drivers to 1.0-9629
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 20 Nov 2006 19:34:15 -0500
+
+linux-restricted-modules-2.6.19 (2.6.19.1-1) feisty; urgency=low
+
+  * First release for 2.6.19.
+
+  [madwifi]
+
+  * Remove includes for linux/config.h
+  * Fix irq handler declarations
+  * Disable -Werror, since some crypto functions produce warnings due to being
+    obsolete.
+
+  [vmware-player]
+
+  * CHECKSUM_HW -> CHECKSUM_COMPLETE
+
+  [ltmodem]
+
+  * Fix irq handler declarations
+  * Remove includes for linux/config.h
+
+  [ati]
+
+  * Update driver to 8.29.6. Now uses a single shar for both x86 and x86_64.
+  * Reworked build setup for new packaging.
+
+  [nvidia]
+
+  * Fix irq handler declarations
+  * Remove includes for linux/config.h
+
+  [fritz]
+
+  * Remove includes for linux/config.h
+  * Fix irq handler declarations
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed,  1 Nov 2006 13:46:06 -0500
+
+linux-restricted-modules-2.6.17 (2.6.17.5-11) edgy; urgency=low
+
+  * nvidia/nvidia-glx-config: Use modprobe with -i when checking for the
+    nvidia module, since it will not load before xorg.conf gets changed.
+    Closes: LP#66908
+
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Thu, 19 Oct 2006 15:36:24 +0000
+
+linux-restricted-modules-2.6.17 (2.6.17.5-10) edgy; urgency=low
+
+  * Introduce /sbin/lrm-video to do detection of the current Xorg driver,
+    and load the right (nvidia/nvidia_legacy/fglrx or none) module.
+  * Remove the modprobe hack that was used for the above, and replace with
+    a much simpler modprobe.d snippet that just calls the above script.
+  * Make nvidia-glx, nvidia-glx-legacy, and xorg-driver-fglrx depend on
+    linux-restricted-modules-common to get the above script when wanted.
+  * Disable building and shipping madwifi for powerpc64-smp, since we don't
+    have a powerpc64 binary blob provided by upstream (yet, here's hoping).
+  * Fix the clean target to get rid of vmware-player-kernel-modules.postrm.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon,  9 Oct 2006 15:36:47 +1000
+
+linux-restricted-modules-2.6.17 (2.6.17.5-9) edgy; urgency=low
+
+  * Use the /.../I GNU extension to sed to match and replace
+    case-insensitively instead of using /usr/bin/tr, otherwise people with
+    /usr on a separate partition won't get the fglrx module loaded.
+
+ -- Scott James Remnant <scott@ubuntu.com>  Wed,  4 Oct 2006 10:03:48 +0100
+
+linux-restricted-modules-2.6.17 (2.6.17.5-8) edgy; urgency=low
+
+  * Don't allow the fglrx module to be loaded if it's not used in
+    xorg.conf
+
+ -- Scott James Remnant <scott@ubuntu.com>  Tue,  3 Oct 2006 10:30:01 +0100
+
+linux-restricted-modules-2.6.17 (2.6.17.5-7) edgy; urgency=low
+
+  * Fix FTBFS on powerpc, s/powerpc-smp,/powerpc-smp/ in debian/rules.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue,  3 Oct 2006 13:27:50 +1000
+
+linux-restricted-modules-2.6.17 (2.6.17.5-6) edgy; urgency=low
+
+  * Add powerpc64-smp target on powerpc.
+    - Malone #63197
+
+ -- Ben Collins <bcollins@ubuntu.com>  Sun,  1 Oct 2006 12:11:00 -0400
+
+linux-restricted-modules-2.6.17 (2.6.17.5-5) edgy; urgency=low
+
+  * ABI bump to -10.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 26 Sep 2006 10:20:26 -0400
+
+linux-restricted-modules-2.6.17 (2.6.17.5-4) edgy; urgency=low
+
+  * ABI bump to -9
+
+ -- Tollef Fog Heen <tfheen@ubuntu.com>  Fri, 22 Sep 2006 13:49:43 +0200
+
+linux-restricted-modules-2.6.17 (2.6.17.5-3) edgy; urgency=low
+
+  * Temporary fixup for default acx111 v16 and v17 firmware. Set default to
+    1.2.1.34. Next time the .orig.tar.gz is recreated, remove the default
+    symlinks, and we'll always generate them in the rules file.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 19 Sep 2006 12:17:37 -0400
+
+linux-restricted-modules-2.6.17 (2.6.17.5-2) edgy; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.17 version 2.6.17-8.21.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 18 Sep 2006 11:02:00 -0400
+
+linux-restricted-modules-2.6.17 (2.6.17.5-1) edgy; urgency=low
+
+  * ABI bump.
+  * Include vmware-player modules. vmware-server modules coming soon.
+  * Rework package names based on recent kernel changes.
+  * Add vmware-player vmmon and vmnet kernel modules. These are from
+    vmware-player 1.0.2.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 30 Aug 2006 13:00:06 -0400
+
+linux-restricted-modules-2.6.17 (2.6.17.4-1) edgy; urgency=low
+
+  * Repack the orig with the correct nvidia-legacy package for amd64, this
+    time including 32-bit libraries.  Revert the previous change to cope.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 30 Aug 2006 19:01:32 +1000
+
+linux-restricted-modules-2.6.17 (2.6.17.3-2) edgy; urgency=low
+
+  * Adjust some static strings in debian/rules to cope with nvidia changing
+    the filename for the amd64 nvidia-legacy package, resolving amd64 FTBFS.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 30 Aug 2006 11:09:14 +1000
+
+linux-restricted-modules-2.6.17 (2.6.17.3-1) edgy; urgency=low
+
+  * Update fglrx to new upstream 8.28.8, required to support edgy's Xorg 7.1:
+    - Include links in xorg-driver-fglrx for the new libfglrx_tvout library.
+    - Include binaries from /usr/sbin and manpages from /usr/share/man/man8.
+  * Update non-legacy NVIDIA driver to new upstream 1.0.8774 and legacy NVIDIA
+    driver to new upstream 1.0.7184, both required for Xorg 7.1 support.
+  * Bump xserver-xorg-core dependencies to (>= 1:1.1.1) for the above changes.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 29 Aug 2006 22:16:27 +1000
+
+linux-restricted-modules-2.6.17 (2.6.17.2-1) edgy; urgency=low
+
+  * ipw3945: Update ipw3945d to 1.7.22.
+  * madwifi: Remove legacy and ng drivers. Replace with stock madwifi-ng 0.9.2
+    driver.
+  * dvb: Added dvb firmware.
+  * Kernel ABI bump for linux-source-2.6.17 version 2.6.17-6.17.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed,  9 Aug 2006 14:37:41 -0400
+
+linux-restricted-modules-2.6.17 (2.6.17.1-6) edgy; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.17 version 2.6.17-5.9.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Sat, 15 Jul 2006 18:42:13 +0100
+
+linux-restricted-modules-2.6.17 (2.6.17.1-5) edgy; urgency=low
+  
+  * Provides: xserver-xorg-video instead of xserver-xorg-driver.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Thu, 13 Jul 2006 13:58:25 +0200
+
+linux-restricted-modules-2.6.17 (2.6.17.1-4) edgy; urgency=low
+
+  * debian/nvidia-glx.dirs.in: Add missing /usr/lib32/nvidia to fix ia32-libs
+    installation breakage when nvidia-glx is installed (otherwise the
+    libGL.so.1.2 diversion points into a nonexisting directory).
+
+ -- Martin Pitt <martin.pitt@ubuntu.com>  Thu, 13 Jul 2006 10:36:35 +0000
+
+linux-restricted-modules-2.6.17 (2.6.17.1-3) edgy; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.17 version 2.6.17-4.5.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri, 30 Jun 2006 14:54:34 +0000
+
+linux-restricted-modules-2.6.17 (2.6.17.1-2) edgy; urgency=low
+
+  * Work around buggy binutils by not stripping pre-build nvidia libs.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 29 Jun 2006 18:14:21 +0000
+
+linux-restricted-modules-2.6.17 (2.6.17.1-1) edgy; urgency=low
+
+  * 2.6.17 kernel, glad to meet ya.
+  * s/ia32-libs/libc6-i386/ on amd64 build-deps.
+  * Use gcc on non-hppa, instead of gcc-4.0.
+  * ATI
+    - Add patch to fix no_iommu missing error.
+    - Add patch to rework the makefile, since it's targets were clashing
+      somehow with kbuil built-in targets.
+  * Nvidia
+    - Update legacy driver to 7182
+  * Fritz
+    - Disable fcpcmcia and fcpcmcia_cs. No longer build, no longer supported.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 27 Jun 2006 21:05:50 -0400
+
+linux-restricted-modules-2.6.15 (2.6.15.11-2) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 version 2.6.15-24.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri,  9 Jun 2006 15:36:34 -0400
+
+linux-restricted-modules-2.6.15 (2.6.15.11-1) dapper; urgency=low
+
+  * Update non-legacy NVIDIA driver to 1.0.8762, legacy still at 1.0.7174:
+    - Added support for QuadroFX 4500 X2, FX 5500, FX 3500, and FX 1500.
+    - Confirmed that it fixes dual DVI connections, which weren't working
+      at all in the last driver, on any card (closes: launchpad.net/42258)
+    - Confirmed that this new version can drive several laptops sporting
+      5x00go chipsets that both the previous drivers refused to work with.
+  * Update fglrx to 8.25.18, now claiming to "officially" support Xorg 7.0:
+    - Add support for FireGL V7350, V7300, V7200, V5200, V3400, V3350, V2200.
+    - Confirmed that running two simultaneous Xservers no longer hardlocks.
+    - Fixes segfaults on Xserver init with several of the new X1xxx cards.
+    - Confirmed fix for shutdown hangs on at least two different machines.
+    - Confirmed fix for hangs on VT switch on my ATI Radeon Mobility M300.
+  * Make nvidia-glx and xorg-driver-fglrx provide xserver-xorg-driver, so
+    people can remove all their other drivers and streamline their systems.
+  * Only build ltmodem on the 386 kernel, as it's been shown to not behave
+    on SMP kernels, causing kernels to panic (closes: launchpad.net/46685)
+  * Mangle the *modnames structs in madwifi-ng, fixing the internal module
+    system, so the driver isn't stillborn (closes: launchpad.net/47137)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 29 May 2006 02:30:08 +1000
+
+linux-restricted-modules-2.6.15 (2.6.15.10-2) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 version 2.6.15-23.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 18 May 2006 12:31:19 -0400
+
+linux-restricted-modules-2.6.15 (2.6.15.10-1) dapper; urgency=low
+
+  * Add madwifi-ng support
+
+ -- Matthew Garrett <mjg59@srcf.ucam.org>  Tue, 16 May 2006 13:45:04 +0100
+
+linux-restricted-modules-2.6.15 (2.6.15.9-4) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 version 2.6.15-22.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon,  8 May 2006 11:42:20 +1000
+
+linux-restricted-modules-2.6.15 (2.6.15.9-3) dapper; urgency=low
+
+  * Add patch from madwifi upstream to fix usage of the pm_message_t type
+    on recent kernels (version 2.6.11 and higher), which eliminates some
+    compiler warnings, and may make suspend/resume happier with madwifi.
+  * Brown paper bag fix: add a missing semicolon in the build-udebs rule.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 24 Apr 2006 00:29:32 +1000
+
+linux-restricted-modules-2.6.15 (2.6.15.9-2) dapper; urgency=low
+
+  * Mangle the build-udebs target in debian/rules to conditionalise it to
+    only try to copy the bits we want when we have them, fixing the build
+    failure introduced on powerpc when I added ipw3945d to the nic udeb.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Sun, 23 Apr 2006 23:49:22 +1000
+
+linux-restricted-modules-2.6.15 (2.6.15.9-1) dapper; urgency=low
+
+  * Update fglrx to 8.24.8, which includes support for the Radeon X1n00 series
+    and the Mobility Radeon X1n00 series cards (closes: launchpad.net/39924)
+  * Include the binary-only ipw3945 daemon to go with the driver that has been
+    added to the latest Ubuntu kernel series (closes: launchpad.net/36684)
+  * Include a modprobe.d file for ipw3945 that loads the ipw3945d daemon when
+    the module is loaded, and kills it off before the module is unloaded.
+  * Add the above ipw3945d hacks to the nic-restricted-modules udebs for d-i.
+  * Kernel ABI bump for linux-source-2.6.15 version 2.6.15-21.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Sat, 22 Apr 2006 02:23:52 +1000
+
+linux-restricted-modules-2.6.15 (2.6.15.8-1) dapper; urgency=low
+
+  * Update non-legacy NVIDIA driver to 1.0.8756, legacy still at 1.0.7174:
+    - Drop patches 001 through 006, all incorporated in the new version.
+    - Includes improved power management support, and support for all the
+      latest/shiniest NVIDIA hardware, (closes: launchpad.net/{38637,35628})
+  * Fix whitespace in fglrx rules file (closes: launchpad.net/{32576,23250})
+  * Stop having nvidia-glx-enable add the nvidia kernel modules to the end
+    of /etc/modules, since it is properly autoloaded by the X server.  This
+    stops us breaking /etc/modules as a bonus (closes: launchpad.net/27579)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon, 10 Apr 2006 14:51:39 +1000
+
+linux-restricted-modules-2.6.15 (2.6.15.7-4) dapper; urgency=low
+
+  * Test for /sbin/lrm-manager in our init script, for the case where we
+    have been removed, rather than purged (closes: launchpad.net/36705)
+  * Call ld with the '-d' switch in lrm-manager, to assign space in the
+    final ltmodem object for common symbols (closes: launchpad.net/37321)
+  * Install the missing libnvidia-cfg.so.1 (closes: launchpad.net/34912)
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-20.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed,  5 Apr 2006 14:15:27 +1000
+
+linux-restricted-modules-2.6.15 (2.6.15.7-3) dapper; urgency=low
+
+  * Incorporate patch by Robert Love and Dan Williams needed for WPA support
+    in NetworkManager 0.6.0, backported to madwifi-old by Johan Kiviniemi.
+  * nvidia-glx (but not -legacy) needs to conflict with nvidia-xconfig, as
+    we've recently absorbed that binary as well (closes: launchpad.net/6600)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Sat, 18 Mar 2006 04:36:08 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.7-2) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-19.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Mon, 20 Mar 2006 16:21:45 -0500
+
+linux-restricted-modules-2.6.15 (2.6.15.7-1) dapper; urgency=low
+
+  * Update to fglrx 8.23.7, including support for a wide range of desktop
+    and mobile Radeon X800 and X850 series video cards, as well as FSAA.
+  * Freshen AVM Fritz drivers to the latest upstream builds (still 3.11)
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-18.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 10 Mar 2006 11:51:14 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.6-3) dapper; urgency=low
+
+  * Stop using the hideous "mangle TLS symlinks on boot" hack, which was
+    second-guessing our linker (which appears to do the right thing anyway)
+    - Removed the init script and /etc/default fragment from nvidia-glx
+    - Install TLS libraries directly to /usr/lib/tls and /usr/lib32/tls.
+  * Make nvidia-glx-config use /var/lib/x11 instead of /var/lib/xfree86.
+  * These changes fix launchpad.net/33456 and launchpad.net/{32878,29234}
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue,  7 Mar 2006 14:21:22 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.6-2) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-17.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Fri,  3 Mar 2006 07:30:19 -0500
+
+linux-restricted-modules-2.6.15 (2.6.15.6-1) dapper; urgency=low
+
+  * Update fglrx to 8.22.5 (UVF exception granted by mdz) which, among
+    other things, finally claims to "officially" support kernel 2.6.15.
+  * Drop ati/patches/fglrx-2.6.15.patch, which is no longer necessary.
+  * Add proper symlinks and shlibs for the new libfglrx_dm library.
+  * Add .so symlinks to xorg-driver-fglrx-dev for the libraries we ship.
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-16.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 21 Feb 2006 17:51:20 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.5-2) dapper; urgency=low
+
+  * Change boot-time message.
+
+ -- Scott James Remnant <scott@ubuntu.com>  Wed,  8 Feb 2006 14:54:08 +0000
+
+linux-restricted-modules-2.6.15 (2.6.15.5-1) dapper; urgency=low
+
+  * Change maintainer to the Ubuntu Kernel Team, in an attempt to do a
+    soft transition from sole maintenance to handing over to Ben and Co.
+  * Update fglrx to version 8.21.7, which claims to support OpenGL 2.0.
+  * Adjust for the corrected SONAMEs (thanks, ATI!) of libfglrx_gamma.so.1
+    and libfglrx_pp.so.1 (used to be libfglrx_pp.1 and libfglrx_gamma.1)
+  * Drop ati/patches/panel_fglrx_pp_proto.patch, fixed in upstream source.
+  * nvidia-glx conflicts with nvidia-settings, as we now ship that binary
+    ourselves directly from upstream sources (Closes launchpad.net/27040)
+  * Add nvidia/patches/003_NVIDIA_kernel-1.0-8178-change_page_attr.patch,
+    resolving crashes with some broken implementations of change_page_attr()
+  * Add nvidia/patches/004_NVIDIA_kernel-1.0-8178-gcc-4.1_fix.patch, making
+    the compiler tests more robust in the face of recent GCC 4.x changes.
+  * Add nvidia/patches/005_NVIDIA_kernel-1.0-8178-2.6.15-git8.patch, fixing
+    a build failure with certain versions of the linux source (not ours)
+  * Add nvidia/patches/006_NVIDIA_kernel-1.0-8178-PAT_fix.patch, which
+    makes us fall back to using MTRRs if our CPU does not support PAT.
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-15.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed,  8 Feb 2006 20:20:16 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.4-4) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-14.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed, 25 Jan 2006 23:17:24 +0000
+
+linux-restricted-modules-2.6.15 (2.6.15.4-3) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-13 (Look Adam!! I got it
+    right the first time!!).
+
+ -- Ben Collins <bcollins@ubuntu.com>  Thu, 19 Jan 2006 17:47:14 -0500
+
+linux-restricted-modules-2.6.15 (2.6.15.4-2) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-12.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 13 Jan 2006 16:20:42 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.4-1) dapper; urgency=low
+
+  * Include a config file, /etc/default/linux-restricted-modules-common,
+    allowing users to disable link-on-boot for individual drivers, thus
+    making it easier to keep linux-restricted-modules installed while also
+    installing updates from 3rd parties (like those nvidia or ati provide)
+  * Update non-legacy NVIDIA driver to 1.0.8174, legacy still at 1.0.7174:
+    - Drop incorporated patches (AGP_kernel_BUG.patch and broken_paths.patch)
+    - Carry forward unfixed patches (pm_fixes.patch and vm_insert_page.patch)
+    - Add libgtk2.0-dev to our build-deps to get proper GTKish dependencies
+      for the nvidia-settings binary, which is installed to nvidia-glx.
+  * Mangle fglrx sources and how we build them to make things actually work:
+    - Rearrange basedir of fglrx patches and unpack target in debian/rules to
+      not require individual patch calls in debian/rules for each new patch
+    - Very carefully edit libGL.so.1.2 (x3) with a hex editor (original files
+      are saved in the tarball as .orig, for comparison) to point at the new
+      path at /usr/lib{,32}/dri instead of /usr/X11R6/lib{,64}/modules/dri
+    - Add a shlibs file for xorg-driver-fglrx to cover the two shared libs
+      that we ship in that package (libfglrx_pp.1 and libfglrx_gamma.1)
+    - Apply fglrx-2.6.15.patch, which should make fglrx happy on new kernels.
+  * Update ltmodem drivers to 8.31+2.6-alk-8:
+    - Works around some broken versions of wvdial which fail if they are
+      unable to change baud rate (which makes no sense with softmodems)
+    - Drop our patch to compile correctly on 2.6.15, incorporated upstream.
+  * Fix acx/readme.txt to use the correct module parameter (firmware_ver=XXX)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu,  5 Jan 2006 23:01:48 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.3-5) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-11.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Wed,  4 Jan 2006 07:36:57 -0500
+
+linux-restricted-modules-2.6.15 (2.6.15.3-4) dapper; urgency=low
+
+  * Really bump the ABI this time.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 27 Dec 2005 17:22:49 -0500
+
+linux-restricted-modules-2.6.15 (2.6.15.3-3) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-10.
+  * No more amd64-k8-smp.
+  * Fix acx/readme.txt (fixed in diff, needs to be fixed in .orig.tar.gz
+    someday).
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 27 Dec 2005 11:48:22 -0500
+
+linux-restricted-modules-2.6.15 (2.6.15.3-2) dapper; urgency=low
+
+  * Another kernel ABI bump, this time for linux-source-2.6.15 2.6.15-9.
+  * NOTE/WARNING: Yes, there is a fix for fglrx DRI, but I'm intentionally
+    not enabling it until fglrx on 2.6.15 is fixed somewhat, since enabling
+    DRI causes every machine I've seen so far to kernel panic constantly.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 21 Dec 2005 05:19:08 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.3-1) dapper; urgency=low
+
+  * Include new firmware for acx100 USB, acx100 PCI and acx111 PCI to match
+    the layout that our shiny new driver expects to see, courtesy of BenC.
+  * Update non-legacy NVIDIA driver to 1.0.8174, legacy still at 1.0.7174.
+    - Install /usr/bin/nvidia-settings, /usr/bin/nvidia-xconfig, and their
+      manpages in nvidia-glx.  nvidia-xconfig is provided to allow you to
+      create sample configs and customise your xorg.conf should you want to,
+      however, it's recommended most people don't use it as it conflicts
+      with how we currently configure X (nvidia-glx-config), and with how
+      we plan to do it in the future (re-seed debconf and re-run dexconf)
+    - Add NVIDIA_kernel-1.0-7174-global_flush_tlb.patch to work around
+      tickling buggy behaviour in global_flush_tlb on some amd64 kernels.
+    - Add NVIDIA_kernel-1.0-8174-pm_fixes.patch to fix power management
+      support in line with changes in the kernel as of version 2.6.14.
+    - Add NVIDIA_kernel-1.0-8174-broken_paths.patch to resolve a failure
+      to find the correct version of the kernel header tree built against.
+    - Add NVIDIA_kernel-1.0-8174-vm_insert_page.patch, adding support for
+      the new vm_insert_page() kernel interface introduced in 2.6.15-rc5.
+    - Add NVIDIA_kernel-1.0-8174-AGP_kernel_BUG.patch, resolving a situation
+      where the nvidia module can throw a kernel BUG on some AGP systems.
+  * Update ATI fglrx driver to version 8.20.8, now with PowerPlay support.
+    - Add panel_fglrx_pp_proto.patch to bring back the fglrx_pp_proto.h
+      header that seems to have mysteriously gone missing from this update.
+    - NOTE: This driver still DOES NOT correctly support kernel 2.6.15,
+      which is what we are shipping.  If you use it, your system WILL crash,
+      very likely while in use, definitely when shutting down.  We are
+      hoping to get this issue resolved upstream as soon as we possibly can.
+  * Another kernel ABI bump, this time for linux-source-2.6.15 2.6.15-8.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 13 Dec 2005 15:04:42 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.2-3) dapper; urgency=low
+
+  * Kernel ABI bump for linux-source-2.6.15 2.6.15-7
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue,  6 Dec 2005 12:29:22 -0500
+
+linux-restricted-modules-2.6.15 (2.6.15.2-2) dapper; urgency=low
+
+  * Make lrm-manager check for ld_static before running it; kernel-wedge
+    makes it hard for nic-restricted-modules-* to depend on
+    binutils-static-udeb, but for the moment I've just set the latter's
+    priority so that it will usually be there.
+  * d-i doesn't have /boot/System.map-*. If that isn't there but udpkg is (a
+    sanity check), just run 'depmod -a -q'.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Mon,  5 Dec 2005 23:22:25 +0000
+
+linux-restricted-modules-2.6.15 (2.6.15.2-1) dapper; urgency=low
+
+  * Update ltmodem drivers with Aleksey Kondratenko's hacked sources from
+    linmodems.technion.ac.il, which actually build on modern kernels.
+  * Add ltmodem/patches/pci_id.patch to locally define the PCI ID for the
+    PCI_DEVICE_ID_ATT_L56XMF device, which went away in recent 2.6.15-rcX.
+  * Fix generation of xorg-driver-fglrx-dev's deps to make it installable.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Mon,  5 Dec 2005 17:36:33 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.1-2) dapper; urgency=low
+
+  * Brown paper bag fix: s,#/bin/sh,#!/bin/sh, in postinst (Ubuntu #20350)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri,  2 Dec 2005 15:18:04 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15.1-1) dapper; urgency=low
+
+  * Update madwifi driver to the trunk of the "madwifi-old" branch in the
+    madwifi.org SVN.  Not sure if "madwifi-ng" is yet stable enough to trust.
+  * Stop cleaning away the postinst of linux-restricted-modules-common during
+    clean, so we actually get the init script migration from the last upload.
+  * Restore buildability on powerpc by changing KARCH from ppc to powerpc
+    and exporting TARGET=powerpc-be-eabi while doing madwifi's split-modules.
+  * Give nvidia-glx, nvidia-glx-legacy, and xorg-driver-fglrx versioned deps
+    on xserver-xorg-core (>= 1:0.99.0-1), since we use the new Xorg paths.
+  * Kernel ABI bump to 2.6.15-6 for linux-source-2.6.15_2.6.15-6.8.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Thu,  1 Dec 2005 18:35:31 +1100
+
+linux-restricted-modules-2.6.15 (2.6.15-1) dapper; urgency=low
+
+  * First linux-restricted-modules upload for Dapper's 2.6.15 kernel series.
+  * Update NVIDIA driver (non-legacy) to 1.0.7676, legacy still at 1.0.7174.
+    - Add NVIDIA_kernel-1.0-7174-bigram.patch, resolving an issue with the
+      legacy driver's inability to load on systems with 4GB of RAM or more.
+    - Add NVIDIA_kernel-1.0-7174-register_ioctl32.patch to get the legacy
+      driver to actually load on modern kernels, rather than erroring out.
+    - Add NVIDIA_kernel-1.0-7676-IOMMU-SWIOTLB.patch, resolving an issue
+      where the nvidia driver can trigger a kernel BUG() on amd64 systems
+      using either the IOMMU or the SWIOTLB.
+    - Add NVIDIA_kernel-1.0-{7174,7676}-change_page_attr.patch, working
+      around differing implementations of the change_page_attr() interface.
+    - Add NVIDIA_kernel-1.0-{7174,7676}-no-execute-page.patch, resolving
+      issues with amd64 system that don't support no-execute page protection.
+  * Update ATI fglrx driver to version 8.19.10, using the Xorg 6.9.0 loader.
+    - Drop ati/patches/fglrx-2.6.12-x86-64.patch, incorporated upstream
+  * Move a LOT of files around to accomodate two fundamental changes:
+    - Xorg has eliminated X11R6, and files now go to /usr/lib/{,xorg}
+    - firmware from /lib/hotplug/firmware/$FW-$KV to /lib/firmware/$KV/$FW
+  * Autogenerate debian/control better than we already did, by removing all
+    kernel versions and ABI versions from debian/control and have them
+    specified in debian/rules instead.
+  * Autogenerate d-i/kernel-versions as well, using the above mechanism.
+  * Drop linux-restricted-modules-nvidia-legacy package, and instead ship
+    the nvidia_legacy module in the main linux-restricted-modules package.
+  * Make nvidia-glx-legacy employ a modprobe.d hack to have the above work.
+  * Attempt to document which hardware is supported in nvidia-glx versus
+    nvidia-glx-legacy in the package descriptions.
+  * Stop using crazy *_minor versioning scheme, and just have the oddball
+    packages use a scheme of UpstreamVer+SourceVer (ie: 1.0.7676+2.6.15-1)
+  * Change the logic we use for diversions to divert lib32 stuff on arches
+    that MAY have lib32 directories, rather than testing for one on disk.
+    This eliminates weird issues seen when we're installed before ia32-libs.
+  * Move LRM init script from S15 to S07 in accordance with Scott's master
+    plan for faster boot times in dapper.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed, 30 Nov 2005 23:13:32 +1100
+
+linux-restricted-modules-2.6.12 (2.6.12.4-14) dapper; urgency=low
+
+  * Add a --kver=KERNEL_VERSION option to lrm-manager, so it can be asked to
+    act on specific kernel versions (handy for invocation in our postinst)
+  * Add --help to lrm-manager to document the fact that we now have two args.
+  * Replace "lrm-manager; depmod" with "lrm-manager --kver=@@KVERSION@@" in
+    the linux-restricted-modules and lrm-nvidia-legacy postinst scripts.
+  * Remove the touch --date call from lrm-manager.  Since we're not running
+    depmod on boot anymore, this hack is no longer necessary.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed,  9 Nov 2005 23:01:12 -0500
+
+linux-restricted-modules-2.6.12 (2.6.12.4-13) dapper; urgency=low
+
+  * Restore lrm-manager's depmod usage, but make both the init script and the
+    postinst use "lrm-manager --quick", so the previous changes still achieve
+    their goals, while the nic-restricted-modules postinst continues to work.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed,  9 Nov 2005 22:13:57 -0500
+
+linux-restricted-modules-2.6.12 (2.6.12.4-12) dapper; urgency=low
+
+  * After installing, upgrading or removing any package we ship that
+    contains modules run depmod against the symbols and version of the
+    kernel that we ship them for.
+  * Drop support for lrm-manager to run depmod, as this would run it for
+    the current kernel rather than the installing one.  Run depmod
+    yourself now.
+
+ -- Scott James Remnant <scott@ubuntu.com>  Wed,  9 Nov 2005 19:23:03 -0500
+
+linux-restricted-modules-2.6.12 (2.6.12.4-11) breezy; urgency=low
+
+  * Enable atheros in debian-installer, by making lrm-manager the postinst
+    for nic-restricted-modules (fails gracefully if ld_static isn't around)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 11 Oct 2005 19:40:36 +1000
+
+linux-restricted-modules-2.6.12 (2.6.12.4-10) breezy; urgency=low
+
+  * Increment all those evil *_minor versions yet again.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 11 Oct 2005 12:14:22 +1000
+
+linux-restricted-modules-2.6.12 (2.6.12.4-9) breezy; urgency=low
+
+  * Mount the volatile tmpfs with mode 0755
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Mon, 10 Oct 2005 18:00:46 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.4-8) breezy; urgency=low
+
+  * Have lrm-manager touch everything in /lib/modules/"$KVER"/volatile/ to
+    a timestamp one day in the future, to account for possible timestamp
+    and timezone skews, so the later call to depmod --quick will work.
+  * Shrink the nic-restricted-modules udeb to only contain madwifi.  Even
+    if we don't end up using this in the installer, the udeb was HUGE and
+    needed to be shrunk, so lowmem installs can extract it without dying.
+  * Remove the volatile mount and directory on removal/purge. (#16310)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Wed,  5 Oct 2005 14:53:12 +1000
+
+linux-restricted-modules-2.6.12 (2.6.12.4-7) breezy; urgency=low
+
+  * Increment *_minor.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 23 Sep 2005 13:01:21 +0100
+
+linux-restricted-modules-2.6.12 (2.6.12.4-6) breezy; urgency=low
+
+  * Fix the ABI versioning for the avm-fritz-firmware-2.6.12 stuff.  Oops.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 23 Sep 2005 19:55:22 +1000
+
+linux-restricted-modules-2.6.12 (2.6.12.4-5) breezy; urgency=low
+
+  * Kernel ABI bump from -8- to -9- for all kernel module packages and udebs.
+  * Fix FTBFS on architectures that aren't building nvidia packages.
+  * Make sure nvidia-legacy-kernel-source actually ships files, and refresh
+    the outdated nvidia*kernel-source debian directory while we're in there.
+  * Adjust some more to the new reality that libGL now lives in /usr/lib
+    and /usr/lib32, rather than /usr/X11R6/lib{,32} (should fix bug #15473)
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Fri, 23 Sep 2005 15:01:39 +1000
+
+linux-restricted-modules-2.6.12 (2.6.12.4-4) breezy; urgency=low
+
+  * Re-work the nvidia-glx/nvidia-glx-legacy split to make all our debian/*
+    files autogenerated in debian/rules, so we can do clever things, like get
+    the right directories and package names in maintainer scripts and such.
+  * Make sure that diversions are happening, and are owned by the correct
+    packages, to avoid overwrite errors (as seen in Ubuntu bug #15962)
+  * Remove old broken diversions made by the preinst of the first uploads
+    of the nvidia-glx-legacy packages, so we don't get diversion conflicts.
+  * Stop having nvidia-glx-legacy replace nvidia-glx, as this is hideously
+    broken and incorrect, and dpkg will take interesting shortcuts with
+    Conflicts/Provides/Replaces triplets that can lead to diversions blowing
+    up when we try to install one and we already have the other installed.
+  * Make nvidia-glx-legacy-dev conflict with nvidia-glx-dev to ensure that
+    the latter is always deconfigured before the former is (pre)installed.
+  * Fix up some instances where files weren't being installed to the -legacy
+    packages, like the TLS libraries and nvidia-glx-config (Ubuntu #15828)
+  * Fix the clean target to actually clean all the *legacy* generated files.
+  * Build-dep on libstdc++5, rather than hardcoding our library dependencies.
+  * Put myself in the maintainer field, may god have mercy on my soul.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 20 Sep 2005 18:17:15 +1000
+
+linux-restricted-modules-2.6.12 (2.6.12.4-3) breezy; urgency=low
+
+  * Really add xorg-driver-fglrx Depends: libstdc++5
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Mon, 19 Sep 2005 14:50:45 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.4-2) breezy; urgency=low
+
+  * Fix build-deps for SCC architectures.
+  * And another *_minor dance, of course.
+
+ -- LaMont Jones <lamont@ubuntu.com>  Fri, 16 Sep 2005 17:43:56 -0600
+
+linux-restricted-modules-2.6.12 (2.6.12.4-1) breezy; urgency=low
+
+  * New tarball to remove madwifi cruft (Ubuntu Bugzilla #15592)
+  * Do the *_minor dance
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Fri, 16 Sep 2005 15:46:03 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.3-6) breezy; urgency=low
+
+  Changes by Fabio M. Di Nitto:
+
+  * Fix xorg-driver-fglrx-dev Depends:
+  (Closes: #15561)
+
+  * Make nvidia-glx{,-legacy} Conflicts with xorg-driver-fglrx since all of
+    them provides diversion for libGL and they can't be installed at the same
+    time.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Fri, 16 Sep 2005 09:31:08 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.3-5) breezy; urgency=low
+
+  Changes by Fabio M. Di Nitto:
+
+  * fglrx-control /usr/X11R6/bin -> /usr/bin transition.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Fri, 16 Sep 2005 06:41:47 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.3-4) breezy; urgency=low
+
+  Changes by Fabio M. Di Nitto:
+
+  * readd ati minors in version generation.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Thu, 15 Sep 2005 14:00:34 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.3-3) breezy; urgency=low
+
+  Changes by Fabio M. Di Nitto:
+
+  * The "When can we get root and chroots?" ;) aka B-D ia32-libs on amd64.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Thu, 15 Sep 2005 13:27:37 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.3-2) breezy; urgency=low
+
+  Changes by Fabio M. Di Nitto:
+
+  * Fix (AGAIN) nvidia-legacy install target for amd64.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Thu, 15 Sep 2005 11:03:33 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.3-1) breezy; urgency=low
+
+  Changes by Fabio M. Di Nitto:
+
+  * Reimport madwifi patches to build on ppc.
+
+  * Readd patch fglrx-2.6.12-x86_64.diff still required to build on amd64.
+
+  * Fix nvidia-legacy install target for amd64.
+
+  Changes by Daniel Stone:
+
+  * Bump to new fglrx upstream version 8.16.20.
+    + Adds support for mobile chipsets which were previously only supported in
+      8.13 and not 8.14.
+    + Switches to version built against DRI protocol 5.0.0, making it usable
+      with our current server (closes: Ubuntu#13538).  Since this is built for
+      a server using dlloader, relink fglrx_drv.so -> fglrx_drv.o and
+      libfglrxdrm.so -> libfglrxdrm.a.
+    + Remove fglrx-2.6.12-new-agpgart.diff, fglrx-2.6.12-inter_module_get.diff
+      and fglrx-2.6.12-x86_64.diff, since the new upstream version already
+      supports 2.6.12.
+    + Remove fglrx-2.6-agpgart.diff, which has already been applied upstream.
+    + Add fglrx-panel-style.diff, which removes the call to force the style fo
+      the Windows style, as it is no longer built in to our version of Qt.
+    + Add dependency on libstdc++5, since the DRI modules are built against
+      that version (closes: Ubuntu#14255).
+    + Revert change from 2.6.12.1-2.  ati_base_xorg_version is now 6.8.0
+      instead of 6_8_0.  ati_xorg_package_version no longer exists.
+    + Move utilities to /usr/bin (closes: Ubuntu#14383).
+  * Add nvidia legacy driver support, which is currently just the old driver
+    version (1.0-7174) (closes: Ubuntu#14210).  Since it still uses the
+    'nvidia' kernel module, ship
+    linux-restricted-modules-2.6.12-*-nvidia-legacy.  Add
+    nvidia-glx{,-dev}-legacy and nvidia-kernel-source-legacy.
+  * Remove support for multiple nvidia driver versions, as they do not seem to
+    be releasing any ia64 drivers any more (i.e. no more support for 5336).
+  * Call lrm-manager from postinst, and use ld-static in lrm-manager, instead
+    of ld (closes: Ubuntu#14115, Ubuntu#13952).
+  * Fix clean target: remove nic-restricted-*.
+  * Add ltmodem licence to debian/copyright (closes: Ubuntu#13830).
+  * Remove nonsensical 'Provides: xserver' from nvidia-glx.
+  * Change dependencies on xserver-xorg to -core, and nvidia's xserver-common
+    dependency to one of -xorg-core, -xorg, or -xfree86; having xserver-common
+    installed is no guarantee that we'll have a working server which supports
+    the nvidia driver.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Thu, 15 Sep 2005 09:55:59 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.2-12) breezy; urgency=low
+
+  * Man, this package is bringing out the worst in me. Let's try to
+    get the minor's and stuff working this time.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 30 Aug 2005 23:22:59 -0400
+
+linux-restricted-modules-2.6.12 (2.6.12.2-11) breezy; urgency=low
+
+  * Increment *_minor
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 30 Aug 2005 20:54:03 -0400
+
+linux-restricted-modules-2.6.12 (2.6.12.2-10) breezy; urgency=low
+
+  * Bump kernel ABI.
+
+ -- Ben Collins <bcollins@ubuntu.com>  Tue, 30 Aug 2005 17:21:20 -0400
+
+linux-restricted-modules-2.6.12 (2.6.12.2-9) breezy; urgency=low
+
+  * Increment *_minor
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Mon, 29 Aug 2005 13:40:00 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.2-8) breezy; urgency=low
+
+  * Skip depmod invocation if lrm-manager is invoked with --quick
+  * Invoke lrm-manager with --quick in the init script
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Mon, 29 Aug 2005 11:29:04 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.2-7) breezy; urgency=low
+
+  * Add LSB status messages to init script
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Mon, 29 Aug 2005 11:23:55 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.2-6) breezy; urgency=low
+
+  * hppa, ia64, sparc fixes.
+
+ -- LaMont Jones <lamont@ubuntu.com>  Fri, 26 Aug 2005 14:53:48 -0600
+
+linux-restricted-modules-2.6.12 (2.6.12.2-5) breezy; urgency=low
+
+  * And remember to update all the minor revisions for the binary packages.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Sun, 21 Aug 2005 21:17:18 +1000
+
+linux-restricted-modules-2.6.12 (2.6.12.2-4) breezy; urgency=low
+
+  * Fix dependencies for nvidia-glx{,-dev} for the xorg -> mesa transition.
+
+ -- Adam Conrad <adconrad@ubuntu.com>  Sun, 21 Aug 2005 19:02:34 +1000
+
+linux-restricted-modules-2.6.12 (2.6.12.2-3) breezy; urgency=low
+
+  * Bump Kernel ABI.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Fri, 19 Aug 2005 07:38:23 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.2-2) breezy; urgency=low
+
+  * Always divert the libGL.so.* files, else installing ia32-libs after
+    xorg-driver-fglrx will fail.
+
+ -- Tollef Fog Heen <tfheen@ubuntu.com>  Mon, 15 Aug 2005 14:42:51 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.2-1) breezy; urgency=low
+
+  * Fritz drivers:
+    - Update fritz drivers.
+    - Add fritz drivers for amd64.
+    - Remove fcpnp driver, which FTBFS, not supported anymore.
+    - Fix linking of pcmcia_cs module.
+  * Increment *_minor.
+
+ -- Matthias Klose <doko@ubuntu.com>  Thu, 11 Aug 2005 12:18:46 +0200
+
+linux-restricted-modules-2.6.12 (2.6.12.1-8) breezy; urgency=low
+
+  * Ensure that KERNELPATH is passed to the madwifi Makefile
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Sun,  7 Aug 2005 21:58:47 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.1-7) breezy; urgency=low
+
+  * Use the faster depmod -A rather than depmod -a
+  * Fix handling of module names
+  * Simplify and automate determining which objects make up each module
+  * Simplify lrm-manager not to require hardcoded lists of objects
+  * Use /lib/modules/$VER/volatile rather than .../kernel/drivers/volatile
+  * Increment *_minor
+  * Add versioned dependencies on linux-restricted-modules-common
+  * Don't install all of madwifi in volatile, only ath_hal
+  * Temporarily disable fcpcmcia_cs; it needs more fiddling to work with
+    the new scheme
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Thu,  4 Aug 2005 20:44:01 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.1-6) breezy; urgency=low
+
+  * Increment all of the minor revisions
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Thu,  4 Aug 2005 08:41:00 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.1-5) breezy; urgency=low
+
+  * Ensure .ko extension for volatile modules
+  * Update Section to match overrides (restricted/misc)
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed,  3 Aug 2005 22:25:03 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.1-4) breezy; urgency=low
+
+  * Fix fglrx version numbering
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed,  3 Aug 2005 20:13:56 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.1-3) breezy; urgency=low
+
+  * Get things building again after -2
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed,  3 Aug 2005 18:15:22 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.1-2) breezy; urgency=low
+
+  * Use 6.8.0 rather than 6_8_0 as the xorg base version, as previous versions
+    did.  This change was not documented, so I don't know why it was made,
+    and underscores are not valid in package version numbers.  Hopefully
+    doesn't break anything.
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed,  3 Aug 2005 16:41:39 -0700
+
+linux-restricted-modules-2.6.12 (2.6.12.1-1) breezy; urgency=low
+
+  * New upstream releases.
+  * New object linking infrastructure
+
+ -- Matt Zimmerman <mdz@ubuntu.com>  Wed,  3 Aug 2005 11:25:35 -0700
+
+linux-restricted-modules-2.6.10 (2.6.10.6-1) breezy; urgency=low
+
+  * Update fglrx to 8.12.10, released today.
+    + Patch to build with 2.6.10 is no longer necessary.
+  * Reset atiminor to 0ubuntu1; bump minor for everything else.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Fri,  8 Apr 2005 16:00:19 +1000
+
+linux-restricted-modules-2.6.10 (2.6.10.5-1) hoary; urgency=low
+
+  * Update nVidia driver to 1.0-7174, and remove agpgart patch (which has been
+    merged).
+  * Reset nvidiaminor to 0ubuntu1; bump minor for everything else.
+  * Clean up nvidia-glx.examples (generated file).
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Sat,  2 Apr 2005 12:42:49 +1000
+
+linux-restricted-modules-2.6.10 (2.6.10.4-1) hoary; urgency=low
+
+  * New NVIDIA upstream release (1.0-7167) + agpart patch.
+
+  * Double bump *_minor to allow all the nice guys that have done testing
+    for us, to upgrade and be in sync with archive.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Thu, 31 Mar 2005 18:49:31 +0200
+
+linux-restricted-modules-2.6.10 (2.6.10.3-8) hoary; urgency=low
+
+  * Bump *_minor.
+
+ -- Fabio M. Di Nitto <fabbione@ubuntu.com>  Tue, 15 Mar 2005 17:44:06 +0100
+
+linux-restricted-modules-2.6.10 (2.6.10.3-7) hoary; urgency=low
+
+  * Update for 2.6.10-5.
+  * Bump *_minor.
+  * Remove unneeded binary modules from nvidia-kernel-source (closes:
+    Ubuntu#6785).
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Tue, 15 Mar 2005 22:20:05 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10.3-6) hoary; urgency=low
+
+  * Update AVM copyright text.
+  * Bump *_minor.
+
+ -- Matthias Klose <doko@ubuntu.com>  Sun, 13 Mar 2005 20:07:37 +0100
+
+linux-restricted-modules-2.6.10 (2.6.10.3-5) hoary; urgency=low
+
+  * Update for 2.6.10-4.
+  * Bump *_minor.
+
+ -- LaMont Jones <lamont@ubuntu.com>  Mon, 21 Feb 2005 20:46:28 -0700
+
+linux-restricted-modules-2.6.10 (2.6.10.3-4) hoary; urgency=low
+
+  * Update for 2.6.10-3.
+  * Bump *_minor.
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue,  8 Feb 2005 10:42:03 +0000
+
+linux-restricted-modules-2.6.10 (2.6.10.3-3) hoary; urgency=low
+
+  * Change --with-kernel-dir to --with-kernel for ltmodem.
+  * Bump *_minor.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Thu, 27 Jan 2005 13:27:43 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10.3-2) hoary; urgency=low
+
+  * Bump *_minor.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Tue, 25 Jan 2005 05:20:01 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10.3-1) hoary; urgency=low
+
+  * Include ltmodem source.
+  * Make x{org,free86}-driver-fglrx install an Xsession.d file which sets
+    LIBGL_DRIVER_PATH=/usr/X11R6/lib/modules/dri:/usr/X11R6/lib32/modules/dri
+    on directories where fglrx is set up with lib and lib64, so 32-bit GL apps
+    can still work.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Thu, 20 Jan 2005 11:30:12 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10.2-2) hoary; urgency=low
+
+  * Change fglrx-control's Depends to be xorg-driver-fglrx |
+    xfree86-driver-fglrx.
+  * Kill off fglrx-driver altogether, and have x{org,free86}-driver-fglrx
+    Conflicts/Replaces/Provides it; ditto fglrx-driver-dev (closes:
+    Ubuntu#5630).
+  * Divert /usr/lib32/libGL.so.* as well in
+    xorg-driver-fglrx/xfree86-driver-fglrx (closes: Ubuntu#5627).
+  * Synchronise xorg-driver-fglrx.links* to xfree86-driver-fglrx.
+  * Update nvidia-glx-config help text (closes: Ubuntu#5320).
+  * Bump *_minor.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Tue, 18 Jan 2005 14:30:04 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10.2-1) hoary; urgency=low
+
+  * Update fglrx driver to 8.8.25 (new Catalyst series); this version adds
+    support for X.Org and amd64.  Update Build-Depends accordingly; split
+    fglrx-driver into xfree86-driver-fglrx and xorg-driver-fglrx, and
+    fglrx-driver-dev into xfree86-driver-fglrx-dev, and xorg-driver-fglrx-dev.
+    The original packages are retained as dummy packages.  Bump versions
+    accordingly.  Change 'grafics' to 'graphics' in ati/*.desktop.  Add
+    8.08-kernel-2.6.10.patch, an official ATI patch to deal with changed
+    pci_*() semantics in 2.6.10.  Update list of supported cards.  Add libGL
+    diversions for fglrx.
+  * Fix dependencies between l-r-m-2.6.10-2-power* and l-i-2.6.10-2-power*; this
+    fix seems to have got lost in a previous revision.
+  * Change l-r-m -> avm-fritz-firmware from Depends to Recommends.
+  * Bump nvidia_minor, ati_minor, avm_minor.
+
+ -- Daniel Stone <daniel.stone@ubuntu.com>  Sat,  8 Jan 2005 05:10:17 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10.1-1) hoary; urgency=low
+
+  * Reupload with unpacked avm tarball.
+  * Bump nvidia_minor, ati_minor, avm_minor.
+
+ -- Matthias Klose <m@klose.in-berlin.de>  Sat, 15 Jan 2005 21:21:15 +0100
+
+linux-restricted-modules-2.6.10 (2.6.10-6) hoary; urgency=low
+
+  * Add AVM ISDN drivers (as uuencoded tarball, unpack them for the next upload
+    of an .orig tarball).
+  * Bump nvidia_minor and ati_minor.
+
+ -- Matthias Klose <m@klose.in-berlin.de>  Sat, 15 Jan 2005 17:37:18 +0100
+
+linux-restricted-modules-2.6.10 (2.6.10-5) hoary; urgency=low
+
+  * Fix minor numbers
+
+ -- LaMont Jones <lamont@debian.org>  Thu, 13 Jan 2005 17:04:24 -0700
+
+linux-restricted-modules-2.6.10 (2.6.10-4) hoary; urgency=low
+
+  * Update for 2.6.10-2-*.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Thu, 13 Jan 2005 21:21:11 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10-3) hoary; urgency=low
+
+  * ati/patches/agpgart_be.patch: add fglrx kernel patch to reflect changed
+    function name in 2.6.10.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Sat,  8 Jan 2005 04:57:20 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10-2) hoary; urgency=low
+
+  * Bump nvidiaminor and atiminor.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Sat,  8 Jan 2005 02:02:51 +1100
+
+linux-restricted-modules-2.6.10 (2.6.10-1) hoary; urgency=low
+
+  * Update to 2.6.10.
+  * Update madwifi driver to current CVS, to build with 2.6.10.
+  * Add two nVidia patches from Thomas Vander (see nvnews.net) to fix
+    compilation against 2.6.10 for 6629; 5111 (the current latest on ia64)
+    does not work with .10.
+  * Change Maintainer field to myself.
+  * Add /etc/default/nvidia-glx and /etc/init.d/nvidia-glx to nvidia-glx's
+    conffiles.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Thu,  6 Jan 2005 01:19:18 +1100
+
+linux-restricted-modules-2.6.9 (2.6.9-11) hoary; urgency=low
+
+  * [arch]-style dependencies don't work in the binary package parts of
+    debian/control. Use substvars instead.
+
+ -- Colin Watson <cjwatson@canonical.com>  Sun, 26 Dec 2004 02:17:38 +0000
+
+linux-restricted-modules-2.6.9 (2.6.9-10) hoary; urgency=low
+
+  * Forgot to bump nvidiaminor and ati_minor in debian/rules.
+
+ -- Colin Watson <cjwatson@canonical.com>  Fri, 24 Dec 2004 13:28:44 +0000
+
+linux-restricted-modules-2.6.9 (2.6.9-9) hoary; urgency=low
+
+  * debian/nvidia-glx.postrm.in: Fix /usr/X11R6/lib32/libGL.so.1 diversion
+    removal.
+
+ -- Colin Watson <cjwatson@canonical.com>  Fri, 24 Dec 2004 01:00:59 +0000
+
+linux-restricted-modules-2.6.9 (2.6.9-8) hoary; urgency=low
+
+  * Sanitise powerpc l-r-m -> l-i dependencies.
+  * Fix nvidia-glx sed scripts to catch all the @@VERSION@@ substitutions.
+  * Divert /usr/X11R6/lib32 GL modules when installing nvidia-glx (closes:
+    Ubuntu#2500).
+  * Remove previous patches to nvidia-glx and sync back with Debian patches
+    from new Debian 6629 packages, fixing segfaults (closes: Ubuntu#4640).
+  * Create nic-restricted-modules udeb, containing the Atheros driver.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Sat, 11 Dec 2004 22:29:55 +0100
+
+linux-restricted-modules-2.6.9 (2.6.9-7) hoary; urgency=low
+
+  * Create udebs:
+    - debian/d-i/: Incorporate linux-kernel-restricted-di-2.6 version 0.3.
+    - debian/control: Move to debian/control.stub; kernel-wedge will
+      generate the real control file.
+    - debian/control.stub: Build-depend on kernel-wedge.
+    - debian/rules: Update to copy /lib/modules and /lib/hotplug/firmware to
+      a temporary tree and generate udebs from them.
+  * debian/d-i/kernel-versions: Remove superfluous build-dependency fields.
+  * debian/d-i/firmware/: Add amd64 and powerpc nic-restricted-firmware
+    packages.
+
+ -- Colin Watson <cjwatson@canonical.com>  Tue, 14 Dec 2004 18:40:37 +0100
+
+linux-restricted-modules-2.6.9 (2.6.9-6) hoary; urgency=low
+
+  * Bump nvidiaminor and atiminor in debian/rules; this must be done every
+    revision!
+  * Add Build-Depends on libxinerama-dev.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Sat, 11 Dec 2004 13:16:57 +0100
+
+linux-restricted-modules-2.6.9 (2.6.9-5) hoary; urgency=low
+
+  * Fix kernel boot failure on powerpc: l-r-m-2.6.9-1-powerpc[-smp] now
+    depends on linux-image-2.6.9-1-powerpc, not on -power3
+
+ -- Martin Pitt <martin.pitt@canonical.com>  Sat, 11 Dec 2004 12:11:32 +0100
+
+linux-restricted-modules-2.6.9 (2.6.9-4) hoary; urgency=low
+
+  * Really add libxxf86vm-dev B-D; the last upload only added libxtst-dev.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Fri, 10 Dec 2004 17:12:15 +0100
+
+linux-restricted-modules-2.6.9 (2.6.9-3) hoary; urgency=low
+
+  * Add libxxf86vm-dev Build-Depends.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Fri, 10 Dec 2004 13:58:35 +0100
+
+linux-restricted-modules-2.6.9 (2.6.9-2) hoary; urgency=low
+
+  * Add Build-Depends on libxtst-dev and libxxf86misc-dev, fixing i386 FTBFS.
+  * Temporarily remove ia64 from the nvidia-* architecture list until I get it
+    building properly on halley, which involves splitting the patch system.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Fri, 10 Dec 2004 12:58:03 +0100
+
+linux-restricted-modules-2.6.9 (2.6.9-1) hoary; urgency=low
+
+  * Updated to 2.6.9.
+  * Add nvidia-glx 1.0.6629 (i386/amd64), and nvidia-glx 1.0.5336 (ia64).
+    + Added two patches from zander in nVidia forums to fix several issues
+      with 6629 (nvidia/patches).
+  * Add fglrx 3.14.6 (still only for XFree86 4.3.0/X.Org 6.7.0).
+    + Add fglrx-kernel-source, for people building their own kernels.
+  * Updated madwifi to CVS from 20041124, and enable building on amd64 and
+    powerpc (closes: Ubuntu#3010).
+    + New linux-restricted-modules-2.6.9-1-power{3,4,pc}{,-smp} packages.
+    + Removed default setting of TOOLPREFIX in
+      madwifi/hal/linux/{x86_64-elf,powerpc-be-eapi}.inc, as we compile
+      natively.
+  * Rewrite large swathes of debian/rules to have a greater segregation
+    between drivers; e.g, use $(nv_dirname), et al, for nVidia driver.
+  * Make nvidia-glx-config aware of X.Org.
+
+ -- Daniel Stone <daniel.stone@canonical.com>  Fri,  3 Dec 2004 10:58:53 +0000
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.3-4) warty; urgency=low
+
+  * Fix nvidia-glx call to date. (Closes: #2429)
+
+ -- Fabio M. Di Nitto <fabbione@fabbione.net>  Mon, 18 Oct 2004 05:37:36 +0200
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.3-3) warty; urgency=low
+
+  * .. and bump the version number of nvidia-glx.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Mon, 11 Oct 2004 21:01:22 +0200
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.3-2) warty; urgency=low
+
+  * Brown paper bug -- too much copy&paste in debian/rules is not a
+    good idea.  Actually copy the madwifi directory to build it.
+  * amd64-xeon is amd64, not i386.
+
+ -- Tollef Fog Heen <tfheen@debian.org>  Mon, 11 Oct 2004 18:19:51 +0200
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.3-1) warty; urgency=low
+
+  * s/Debian/Ubuntu/ in some readme files
+  * Add nvidia amd64 modules
+
+ -- Tollef Fog Heen <tfheen@raw.no>  Sat, 09 Oct 2004 14:24:18 +0200
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.2-3) warty; urgency=low
+
+  * Fixed acx100 firmware filenames.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Fri,  8 Oct 2004 09:07:29 +1000
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.2-2) warty; urgency=low
+
+  * [debian/rules] Update nvidia driver package version
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Fri,  8 Oct 2004 07:27:07 +1000
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.2-1) warty; urgency=low
+
+  * Added acx100 firmware.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Thu,  7 Oct 2004 21:34:45 +1000
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.1-7) warty; urgency=low
+
+  * [debian/rules] Update nvidia driver package version
+
+ -- Matt Zimmerman <mdz@canonical.com>  Mon, 27 Sep 2004 11:57:13 -0700
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.1-6) warty; urgency=low
+
+  * Updated ABI
+  * Add "Atheros" to description, for keyword searches
+  * Add note to nvidia-kernel-source description explaining that this package
+    is not needed in ubuntu
+  * Add instructions to nvidia-glx description about how to enable the driver
+  * Remove pointer to nvidia-kernel-source from nvidia-glx description
+
+ -- Matt Zimmerman <mdz@canonical.com>  Mon, 27 Sep 2004 10:48:42 -0700
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.1-5) warty; urgency=low
+
+  * Build-Depends: bzip2
+
+ -- Matt Zimmerman <mdz@canonical.com>  Mon, 20 Sep 2004 18:58:27 -0700
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.1-4) warty; urgency=low
+
+  * Improved /etc/modules modification in nvidia-glx-config
+    (Fabio M. Di Nitto).
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Mon, 20 Sep 2004 21:00:03 +1000
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.1-3) warty; urgency=low
+
+  * Added nvidia-glx-config script (Fabio M. Di Nitto)
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Sat, 18 Sep 2004 14:23:49 +1000
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.1-2) warty; urgency=low
+
+  * Added ATI license to copyright.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Wed, 15 Sep 2004 19:58:51 +1000
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.1-1) warty; urgency=low
+
+  * Added ATI driver.
+  * Clarified package descriptions.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Tue, 14 Sep 2004 20:25:27 +1000
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.0-2) warty; urgency=low
+
+  * Build-Depends: sharutils
+
+ -- Matt Zimmerman <mdz@canonical.com>  Fri, 10 Sep 2004 18:38:02 -0700
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1.0-1) warty; urgency=low
+
+  * Add nvidia kernel and X driver:
+    + Roll new orig.tar.gz. to add nvidia directory and binary installer.
+    + Update copyright file to include NVIDIA license and email exchange
+      between Debian maintainer and upstream to clarify a few points
+      about the redistribution.
+    + Build-Depends on debhelper >= 4.0.0 and sed >> 3.0.
+    + Make flavour regexpr more strict to match only kernel modules packages
+      and clear pkg var after each match to avoid duplicates.
+    + Add comments in debian/rules to identify specific drivers operations.
+    + Make clean: target wipe only linux-restricted*.postinst and postrm.
+    + Create nvidia-kernel-source, nvidia-glx and nvidia-glx-dev packages
+      and give them proper version.
+    + Build nvidia kernel driver and install in linux-restricted-modules-*
+    + Add nvidia bits to linux-restricted-modules postinst and postrm.
+    + linux-restricted-modules Depends: nvidia-kernel-common,
+      Provides: nvidia-kernel-1.0.6111 and Suggests: nvidia-glx
+    + nvidia-glx Depends: nvidia-kernel-1.0.6111
+
+ -- Fabio M. Di Nitto <fabbione@fabbione.net>  Sat, 11 Sep 2004 01:19:12 +0200
+
+linux-restricted-modules-2.6.8.1 (2.6.8.1-2) warty; urgency=low
+
+  * Built for linux-source 2.6.8.1-3.
+  * Replaced the word non-free by restricted.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Fri, 10 Sep 2004 09:22:59 +1000
+
+linux-non-free-modules-2.6.8.1 (2.6.8.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Herbert Xu <herbert@gondor.apana.org.au>  Sun, 29 Aug 2004 15:06:44 +1000

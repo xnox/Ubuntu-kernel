@@ -1,0 +1,91 @@
+#!/bin/sh
+
+# Note that this script is not only /sbin/lrm-manager, but it also
+# ends up being the postinst for nic-restricted-modules.  Take care
+# when adding features to make sure they'll work in d-i's busybox
+
+# If you wish to disable the link-on-boot feature for certain modules,
+# please see /etc/default/linux-restricted-modules-common for details.
+
+set -e
+
+KVER="$(uname -r)"
+DEPMOD=yes
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --kver=*)	KVER="${1#--kver=}"; shift ;;
+    --quick)	DEPMOD=no; shift ;;
+    --list)	LIST=yes; shift ;;
+    --help)	echo "Usage: $0 [ --quick ] [ --kver=KERNEL_VERSION ]"; exit 0 ;;
+    *)		shift ;;
+  esac
+done
+
+if [ -f /etc/default/linux-restricted-modules-common ] && [ "$DEPMOD" = "no" ]; then
+  . /etc/default/linux-restricted-modules-common
+fi
+
+# check if we have the kernel objects
+
+if [ ! -d /lib/linux-restricted-modules/"$KVER" ]; then
+  exit 0
+fi
+
+# if tmpfs is already mounted, skip it.
+# NOTE that at this point in time we have no /proc or other fancy things to check
+
+if [ ! -f /lib/modules/"$KVER"/volatile/.mounted ]; then
+  mkdir -p /lib/modules/"$KVER"/volatile/
+  mount -t tmpfs -o mode=0755 tmpfs /lib/modules/"$KVER"/volatile/
+  touch /lib/modules/"$KVER"/volatile/.mounted
+fi
+
+cd /lib/linux-restricted-modules/"$KVER"
+for module in *; do
+  CURRENT_MODULE_DISABLED="false"
+  set -- $DISABLED_MODULES
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      fc)
+        set -- $@ fcdsl fcdsl2 fcdslsl fcdslslusb fcdslusb fcdslusb2 fcdslusba fcpci fcusb fxusb
+        shift
+        ;;
+      nv)
+        set -- $@ nvidia nvidia_legacy nvidia_new
+        shift
+        ;;
+      ltm)
+        set -- $@ ltmodem ltserial
+        shift
+        ;;
+      *)
+        if [ "$1" = "$module" ]; then
+          CURRENT_MODULE_DISABLED="true"
+          if [ "$LIST" = "yes" ]; then
+            echo "$module"
+          fi
+          break
+        else
+          shift
+        fi
+        ;;
+    esac
+  done
+  if [ "$CURRENT_MODULE_DISABLED" = "false" ]; then
+    if type ld_static >/dev/null 2>&1; then
+      ld_static -d -r -o /lib/modules/"$KVER"/volatile/$module.ko $module/* || true
+    fi
+  fi
+done
+
+if [ "$DEPMOD" = "yes" ]; then
+  if [ -f "/boot/System.map-$KVER" ]; then
+    depmod -a -q -F /boot/System.map-"$KVER" "$KVER"
+  elif type udpkg >/dev/null 2>&1; then
+    # Running in d-i
+    depmod -a -q
+  fi
+fi
+
+exit 0

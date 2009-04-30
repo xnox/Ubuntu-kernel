@@ -1,0 +1,19 @@
+--- common/lib/modules/fglrx/build_mod/firegl_public.c	2007-02-20 13:23:07.000000000 -0500
++++ common/lib/modules/fglrx/build_mod/firegl_public.c	2007-05-15 16:55:34.000000000 -0400
+@@ -145,11 +145,11 @@
+ #endif
+ 
+ #ifdef __x86_64__
+-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
+-#include "linux/ioctl32.h"
+-#else
+-#include "asm/ioctl32.h"
+-#endif
++//#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,12)
++//#include "linux/ioctl32.h"
++//#else
++//#include "asm/ioctl32.h"
++//#endif
+ 
+ #ifdef __x86_64__
+ #include "asm/compat.h"
