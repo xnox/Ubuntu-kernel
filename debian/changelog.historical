@@ -1,0 +1,204 @@
+linux-backports-modules-2.6.28 (2.6.28-11.12) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Update wireless-testing/compat-wireless to master-2009-03-24
+    -LP: #329975
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 24 Mar 2009 17:40:33 -0600
+
+linux-backports-modules-2.6.28 (2.6.28-11.11) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Update compat-wireless/wireless-testing to master-2009-03-17
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Wed, 18 Mar 2009 06:46:46 -0600
+
+linux-backports-modules-2.6.28 (2.6.28-10.10) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Updated compat-wireless/wireless-testing to master-2009-03-11
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 16 Mar 2009 13:18:35 +0000
+
+linux-backports-modules-2.6.28 (2.6.28-9.9) jaunty; urgency=low
+
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 10 Mar 2009 10:35:43 -0600
+
+linux-backports-modules-2.6.28 (2.6.28-8.8) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Fixed the MUNGE script generation of net/wireless/Makefile. Upstream
+    added a new source file and I missed it.
+    - LP: #337711:
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Wed, 04 Mar 2009 10:01:53 -0700
+
+linux-backports-modules-2.6.28 (2.6.28-8.7) jaunty; urgency=low
+
+  [Stefan Bader]
+
+  * scripts: Fix typo in prepare-compat-wireless.sh
+    - LP: #332576
+
+  [Tim Gardner]
+
+  * Update to master-2009-03-03
+  * Accomodate request_module() calls when munging module names.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Wed, 04 Mar 2009 01:05:15 +0000
+
+linux-backports-modules-2.6.28 (2.6.28-8.6) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Added LPIA arch support
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 17 Feb 2009 02:44:25 +0000
+
+linux-backports-modules-2.6.28 (2.6.28-7.5) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Update to master-2009-02-09
+  * Convert 'git-log' to 'git log'
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 09 Feb 2009 17:48:22 -0700
+
+linux-backports-modules-2.6.28 (2.6.28-7.4) jaunty; urgency=low
+
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Sun, 08 Feb 2009 19:32:21 -0700
+
+linux-backports-modules-2.6.28 (2.6.28-6.3) jaunty; urgency=low
+
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 26 Jan 2009 20:48:45 -0700
+
+linux-backports-modules-2.6.28 (2.6.28-5.2) jaunty; urgency=low
+
+  [Tim Gardner]
+
+  * Fix double munging
+  * Update to compat-wireless master-2009-01-13
+  * Use b44.c from 2.6.28
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 20 Jan 2009 13:27:00 -0700
+
+linux-backports-modules-2.6.28 (2.6.28-4.1) jaunty; urgency=low
+
+  * First Jaunty release.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 05 Jan 2009 09:44:28 -0700
+
+linux-backports-modules-2.6.27 (2.6.27-11.11) intrepid-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Updated compat-wireless to master-2008-12-23
+    - LP: #293217
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 05 Jan 2009 08:41:59 -0700
+
+linux-backports-modules-2.6.27 (2.6.27-11.10) intrepid-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Updated to master-2008-12-17
+    - LP: #293217
+  * Fix firmware naming issues caused by upstream wireless-testing.
+  * Updated iwl 3945 firmware to iwlwifi-3945-ucode-15.28.2.8.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Fri, 19 Dec 2008 08:38:37 -0700
+
+linux-backports-modules-2.6.27 (2.6.27-11.9) intrepid-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Update to wireless-testing master-2008-11-24
+    - LP: #293217
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 16 Dec 2008 16:52:10 -0700
+
+linux-backports-modules-2.6.27 (2.6.27-10.8) intrepid-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Updated to wireless-testing master-2008-11-17
+    - LP: #293217
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 11 Nov 2008 08:52:25 -0700
+
+linux-backports-modules-2.6.27 (2.6.27-8.7) intrepid-proposed; urgency=low
+
+  * Bump ABI
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Thu, 06 Nov 2008 13:27:41 -0700
+
+linux-backports-modules-2.6.27 (2.6.27-7.6) intrepid-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Really update to wireless-testing master-2008-10-31
+    Somehow either git failed me, or it was pilot error,
+    but the last upload wasn't master-2008-10-31. This also
+    includes the b44 driver.
+    -LP: #293217
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 04 Nov 2008 14:17:29 -0700
+
+linux-backports-modules-2.6.27 (2.6.27-7.5) intrepid-proposed; urgency=low
+
+  [Tim Gardner]
+
+  * Fix search for iwl5000 firmware file name.
+  * Update compat-wireless to wireless-testing master-2008-10-31
+  * reverted wireless-testing "ath5k: Update interrupt masking code"
+    which causes problems with ath5k.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 03 Nov 2008 10:58:09 -0700
+
+linux-backports-modules-2.6.27 (2.6.27-7.4) intrepid; urgency=low
+
+  [Tim Gardner]
+
+  * Removed bogus linux-headers-lum dependency.
+    - LP: #285898
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 20 Oct 2008 10:39:19 -0600
+
+linux-backports-modules-2.6.27 (2.6.27-7.3) intrepid; urgency=low
+
+  [Tim Gardner]
+
+  * Added iwlwifi firmware
+  * Added the upstream compat-wireless-2.6 tree.
+  * Updated compat-wireless to wireless-testing tag master-2008-10-14
+  * Set CONFIG_WIRELESS_OLD_REGULATORY=y by default.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 20 Oct 2008 09:54:03 -0600
+
+linux-backports-modules-2.6.27 (2.6.27-7.2) intrepid; urgency=low
+
+  * ABI bump
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Fri, 10 Oct 2008 09:59:30 -0600
+
+linux-backports-modules-2.6.27 (2.6.27-6.1) intrepid; urgency=low
+
+  * Initial empty package
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 09 Sep 2008 08:26:34 -0600
+
