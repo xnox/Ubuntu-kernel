@@ -1,3 +1,12 @@
+linux-meta (2.6.28.12.16) jaunty-proposed; urgency=low
+
+  [Stefan Bader]
+
+  * Move linux-server to restricted/metapackages as it depends on lrm
+  * Bump ABI to 12 for proposed kernel
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 15 Apr 2009 18:23:18 +0200
+
 linux-meta (2.6.28.11.15) jaunty; urgency=low
 
   * Adding linux-restricted modules for server
