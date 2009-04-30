@@ -70,6 +70,7 @@ extern struct iwl_ops iwl5000_ops;
 extern struct iwl_lib_ops iwl5000_lib;
 extern struct iwl_hcmd_ops iwl5000_hcmd;
 extern struct iwl_hcmd_utils_ops iwl5000_hcmd_utils;
+extern struct iwl_station_mgmt_ops iwl5000_station_mgmt;
 
 /* shared functions from iwl-5000.c */
 extern u16 iwl5000_get_hcmd_size(u8 cmd_id, u16 len);
@@ -360,12 +361,16 @@ struct iwl_host_cmd {
 
 /**
  * struct iwl_rx_queue - Rx queue
+ * @bd: driver's pointer to buffer of receive buffer descriptors (rbd)
+ * @dma_addr: bus address of buffer of receive buffer descriptors (rbd)
  * @read: Shared index to newest available Rx buffer
  * @write: Shared index to oldest written Rx packet
  * @free_count: Number of pre-allocated buffers in rx_free
  * @rx_free: list of free SKBs for use
  * @rx_used: List of Rx buffers with no SKB
  * @need_update: flag to indicate we need to update read/write index
+ * @rb_stts: driver's pointer to receive buffer status
+ * @rb_stts_dma: bus address of receive buffer status
  *
  * NOTE:  rx_free and rx_used are used as a FIFO for iwl_rx_mem_buffers
  */
@@ -818,6 +823,21 @@ enum {
 	MEASUREMENT_ACTIVE = (1 << 1),
 };
 
+/* interrupt statistics */
+struct isr_statistics {
+	u32 hw;
+	u32 sw;
+	u32 sw_err;
+	u32 sch;
+	u32 alive;
+	u32 rfkill;
+	u32 ctkill;
+	u32 wakeup;
+	u32 rx;
+	u32 rx_handlers[REPLY_MAX];
+	u32 tx;
+	u32 unhandled;
+};
 
 #define IWL_MAX_NUM_QUEUES	20 /* FIXME: do dynamic allocation */
 
@@ -873,9 +893,7 @@ struct iwl_priv {
 	unsigned long scan_start_tsf;
 	void *scan;
 	int scan_bands;
-	int one_direct_scan;
-	u8 direct_ssid_len;
-	u8 direct_ssid[IW_ESSID_MAX_SIZE];
+	struct cfg80211_scan_request *scan_request;
 	u8 scan_tx_ant[IEEE80211_NUM_BANDS];
 	u8 mgmt_tx_ant;
 
@@ -974,6 +992,9 @@ struct iwl_priv {
 		u64 bytes;
 	} tx_stats[3], rx_stats[3];
 
+	/* counts interrupts */
+	struct isr_statistics isr_stats;
+
 	struct iwl_power_mgr power_data;
 
 	struct iwl_notif_statistics statistics;
@@ -995,6 +1016,12 @@ struct iwl_priv {
 	u8 default_wep_key;
 	u8 key_mapping_key;
 	unsigned long ucode_key_table;
+
+	/* queue refcounts */
+#define IWL_MAX_HW_QUEUES	32
+	unsigned long queue_stopped[BITS_TO_LONGS(IWL_MAX_HW_QUEUES)];
+	/* for each AC */
+	atomic_t queue_stop_count[4];
 
 	/* Indication if ieee80211_ops->open has been called */
 	u8 is_open;

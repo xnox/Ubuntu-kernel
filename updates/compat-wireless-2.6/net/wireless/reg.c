@@ -37,7 +37,6 @@
 #include <linux/random.h>
 #include <linux/nl80211.h>
 #include <linux/platform_device.h>
-#include <net/wireless.h>
 #include <net/cfg80211.h>
 #include "core.h"
 #include "reg.h"
@@ -1049,18 +1048,10 @@ static void handle_reg_beacon(struct wiphy *wiphy,
 			      unsigned int chan_idx,
 			      struct reg_beacon *reg_beacon)
 {
-#ifdef CONFIG_CFG80211_REG_DEBUG
-#define REG_DEBUG_BEACON_FLAG(desc) \
-	printk(KERN_DEBUG "cfg80211: Enabling " desc " on " \
-		"frequency: %d MHz (Ch %d) on %s\n", \
-		reg_beacon->chan.center_freq, \
-		ieee80211_frequency_to_channel(reg_beacon->chan.center_freq), \
-		wiphy_name(wiphy));
-#else
-#define REG_DEBUG_BEACON_FLAG(desc) do {} while (0)
-#endif
 	struct ieee80211_supported_band *sband;
 	struct ieee80211_channel *chan;
+	bool channel_changed = false;
+	struct ieee80211_channel chan_before;
 
 	assert_cfg80211_lock();
 
@@ -1070,18 +1061,28 @@ static void handle_reg_beacon(struct wiphy *wiphy,
 	if (likely(chan->center_freq != reg_beacon->chan.center_freq))
 		return;
 
-	if (chan->flags & IEEE80211_CHAN_PASSIVE_SCAN) {
-		chan->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
-		REG_DEBUG_BEACON_FLAG("active scanning");
-	}
-
-	if (chan->flags & IEEE80211_CHAN_NO_IBSS) {
-		chan->flags &= ~IEEE80211_CHAN_NO_IBSS;
-		REG_DEBUG_BEACON_FLAG("beaconing");
-	}
+	if (chan->beacon_found)
+		return;
 
 	chan->beacon_found = true;
-#undef REG_DEBUG_BEACON_FLAG
+
+	chan_before.center_freq = chan->center_freq;
+	chan_before.flags = chan->flags;
+
+	if ((chan->flags & IEEE80211_CHAN_PASSIVE_SCAN) &&
+	    !(chan->orig_flags & IEEE80211_CHAN_PASSIVE_SCAN)) {
+		chan->flags &= ~IEEE80211_CHAN_PASSIVE_SCAN;
+		channel_changed = true;
+	}
+
+	if ((chan->flags & IEEE80211_CHAN_NO_IBSS) &&
+	    !(chan->orig_flags & IEEE80211_CHAN_NO_IBSS)) {
+		chan->flags &= ~IEEE80211_CHAN_NO_IBSS;
+		channel_changed = true;
+	}
+
+	if (channel_changed)
+		nl80211_send_beacon_hint_event(wiphy, &chan_before, chan);
 }
 
 /*
@@ -2095,17 +2096,18 @@ int set_regdom(const struct ieee80211_regdomain *rd)
 /* Caller must hold cfg80211_mutex */
 void reg_device_remove(struct wiphy *wiphy)
 {
-	struct wiphy *request_wiphy;
+	struct wiphy *request_wiphy = NULL;
 
 	assert_cfg80211_lock();
 
-	request_wiphy = wiphy_idx_to_wiphy(last_request->wiphy_idx);
-
 	kfree(wiphy->regd);
-	if (!last_request || !request_wiphy)
+
+	if (last_request)
+		request_wiphy = wiphy_idx_to_wiphy(last_request->wiphy_idx);
+
+	if (!request_wiphy || request_wiphy != wiphy)
 		return;
-	if (request_wiphy != wiphy)
-		return;
+
 	last_request->wiphy_idx = WIPHY_IDX_STALE;
 	last_request->country_ie_env = ENVIRON_ANY;
 }

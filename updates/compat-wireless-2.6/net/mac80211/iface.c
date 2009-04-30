@@ -20,6 +20,7 @@
 #include "debugfs_netdev.h"
 #include "mesh.h"
 #include "led.h"
+#include "driver-ops.h"
 
 /**
  * DOC: Interface list locking
@@ -164,9 +165,7 @@ static int ieee80211_open(struct net_device *dev)
 	}
 
 	if (local->open_count == 0) {
-		res = 0;
-		if (local->ops->start)
-			res = local->ops->start(local_to_hw(local));
+		res = drv_start(local);
 		if (res)
 			goto err_del_bss;
 		/* we're brought up, everything changes */
@@ -199,8 +198,8 @@ static int ieee80211_open(struct net_device *dev)
 	 * Validate the MAC address for this device.
 	 */
 	if (!is_valid_ether_addr(dev->dev_addr)) {
-		if (!local->open_count && local->ops->stop)
-			local->ops->stop(local_to_hw(local));
+		if (!local->open_count)
+			drv_stop(local);
 		return -EADDRNOTAVAIL;
 	}
 
@@ -235,17 +234,13 @@ static int ieee80211_open(struct net_device *dev)
 		netif_addr_unlock_bh(local->mdev);
 		break;
 	case NL80211_IFTYPE_STATION:
-	case NL80211_IFTYPE_ADHOC:
-		if (sdata->vif.type == NL80211_IFTYPE_STATION)
-			sdata->u.mgd.flags &= ~IEEE80211_STA_PREV_BSSID_SET;
-		else
-			sdata->u.ibss.flags &= ~IEEE80211_IBSS_PREV_BSSID_SET;
+		sdata->u.mgd.flags &= ~IEEE80211_STA_PREV_BSSID_SET;
 		/* fall through */
 	default:
 		conf.vif = &sdata->vif;
 		conf.type = sdata->vif.type;
 		conf.mac_addr = dev->dev_addr;
-		res = local->ops->add_interface(local_to_hw(local), &conf);
+		res = drv_add_interface(local, &conf);
 		if (res)
 			goto err_stop;
 
@@ -317,6 +312,8 @@ static int ieee80211_open(struct net_device *dev)
 		ieee80211_set_wmm_default(sdata);
 	}
 
+	ieee80211_recalc_ps(local, -1);
+
 	/*
 	 * ieee80211_sta_work is disabled while network interface
 	 * is down. Therefore, some configuration changes may not
@@ -325,17 +322,15 @@ static int ieee80211_open(struct net_device *dev)
 	 */
 	if (sdata->vif.type == NL80211_IFTYPE_STATION)
 		queue_work(local->hw.workqueue, &sdata->u.mgd.work);
-	else if (sdata->vif.type == NL80211_IFTYPE_ADHOC)
-		queue_work(local->hw.workqueue, &sdata->u.ibss.work);
 
 	netif_tx_start_all_queues(dev);
 
 	return 0;
  err_del_interface:
-	local->ops->remove_interface(local_to_hw(local), &conf);
+	drv_remove_interface(local, &conf);
  err_stop:
-	if (!local->open_count && local->ops->stop)
-		local->ops->stop(local_to_hw(local));
+	if (!local->open_count)
+		drv_stop(local);
  err_del_bss:
 	sdata->bss = NULL;
 	if (sdata->vif.type == NL80211_IFTYPE_AP_VLAN)
@@ -497,7 +492,6 @@ static int ieee80211_stop(struct net_device *dev)
 		/* fall through */
 	case NL80211_IFTYPE_ADHOC:
 		if (sdata->vif.type == NL80211_IFTYPE_ADHOC) {
-			memset(sdata->u.ibss.bssid, 0, ETH_ALEN);
 			del_timer_sync(&sdata->u.ibss.timer);
 			cancel_work_sync(&sdata->u.ibss.work);
 			synchronize_rcu();
@@ -549,7 +543,7 @@ static int ieee80211_stop(struct net_device *dev)
 		conf.mac_addr = dev->dev_addr;
 		/* disable all keys for as long as this netdev is down */
 		ieee80211_disable_keys(sdata);
-		local->ops->remove_interface(local_to_hw(local), &conf);
+		drv_remove_interface(local, &conf);
 	}
 
 	sdata->bss = NULL;
@@ -558,8 +552,7 @@ static int ieee80211_stop(struct net_device *dev)
 		if (netif_running(local->mdev))
 			dev_close(local->mdev);
 
-		if (local->ops->stop)
-			local->ops->stop(local_to_hw(local));
+		drv_stop(local);
 
 		ieee80211_led_radio(local, 0);
 
@@ -571,6 +564,8 @@ static int ieee80211_stop(struct net_device *dev)
 		/* no reconfiguring after stop! */
 		hw_reconf_flags = 0;
 	}
+
+	ieee80211_recalc_ps(local, -1);
 
 	/* do after stop to avoid reconfiguring when we stop anyway */
 	if (hw_reconf_flags)
@@ -649,7 +644,8 @@ static void ieee80211_teardown_sdata(struct net_device *dev)
 			mesh_rmc_free(sdata);
 		break;
 	case NL80211_IFTYPE_ADHOC:
-		kfree_skb(sdata->u.ibss.probe_resp);
+		if (WARN_ON(sdata->u.ibss.presp))
+			kfree_skb(sdata->u.ibss.presp);
 		break;
 	case NL80211_IFTYPE_STATION:
 		kfree(sdata->u.mgd.extra_ie);

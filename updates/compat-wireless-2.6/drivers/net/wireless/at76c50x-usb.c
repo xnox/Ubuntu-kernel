@@ -250,6 +250,8 @@ static struct usb_device_id dev_table[] = {
 	{ USB_DEVICE(0x03eb, 0x7617), USB_DEVICE_DATA(BOARD_505A) },
 	/* Siemens Gigaset USB WLAN Adapter 11 */
 	{ USB_DEVICE(0x1690, 0x0701), USB_DEVICE_DATA(BOARD_505A) },
+	/* OQO Model 01+ Internal Wi-Fi */
+	{ USB_DEVICE(0x1557, 0x0002), USB_DEVICE_DATA(BOARD_505A) },
 	/*
 	 * at76c505amx-rfmd
 	 */
@@ -1963,13 +1965,18 @@ static int at76_config(struct ieee80211_hw *hw, u32 changed)
 	return 0;
 }
 
-static int at76_config_interface(struct ieee80211_hw *hw,
-				 struct ieee80211_vif *vif,
-				 struct ieee80211_if_conf *conf)
+static void at76_bss_info_changed(struct ieee80211_hw *hw,
+				  struct ieee80211_vif *vif,
+				  struct ieee80211_bss_conf *conf,
+				  u32 changed)
 {
 	struct at76_priv *priv = hw->priv;
 
 	at76_dbg(DBG_MAC80211, "%s():", __func__);
+
+	if (!(changed & BSS_CHANGED_BSSID))
+		return;
+
 	at76_dbg_dump(DBG_MAC80211, conf->bssid, ETH_ALEN, "bssid:");
 
 	mutex_lock(&priv->mtx);
@@ -1981,8 +1988,6 @@ static int at76_config_interface(struct ieee80211_hw *hw,
 		at76_join(priv);
 
 	mutex_unlock(&priv->mtx);
-
-	return 0;
 }
 
 /* must be atomic */
@@ -2074,7 +2079,7 @@ static const struct ieee80211_ops at76_ops = {
 	.add_interface = at76_add_interface,
 	.remove_interface = at76_remove_interface,
 	.config = at76_config,
-	.config_interface = at76_config_interface,
+	.bss_info_changed = at76_bss_info_changed,
 	.configure_filter = at76_configure_filter,
 	.start = at76_mac80211_start,
 	.stop = at76_mac80211_stop,
@@ -2248,6 +2253,7 @@ static int at76_init_new_device(struct at76_priv *priv,
 
 	/* mac80211 initialisation */
 	priv->hw->wiphy->max_scan_ssids = 1;
+	priv->hw->wiphy->max_scan_ie_len = 0;
 	priv->hw->wiphy->interface_modes = BIT(NL80211_IFTYPE_STATION);
 	priv->hw->wiphy->bands[IEEE80211_BAND_2GHZ] = &at76_supported_band;
 	priv->hw->flags = IEEE80211_HW_RX_INCLUDES_FCS |

@@ -58,6 +58,12 @@ static void bss_release(struct kref *ref)
 	bss = container_of(ref, struct cfg80211_internal_bss, ref);
 	if (bss->pub.free_priv)
 		bss->pub.free_priv(&bss->pub);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+
+	if (bss->ies_allocated)
+		kfree(bss->pub.information_elements);
+
+#endif
 	kfree(bss);
 }
 
@@ -360,19 +366,53 @@ cfg80211_bss_update(struct cfg80211_registered_device *dev,
 
 	found = rb_find_bss(dev, res);
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+	if (found) {
+#else
 	if (found && overwrite) {
 		list_replace(&found->list, &res->list);
 		rb_replace_node(&found->rbn, &res->rbn,
 				&dev->bss_tree);
+		/* XXX: workaround */
+		res->hold = found->hold;
 		kref_put(&found->ref, bss_release);
 		found = res;
 	} else if (found) {
+#endif
 		kref_get(&found->ref);
 		found->pub.beacon_interval = res->pub.beacon_interval;
 		found->pub.tsf = res->pub.tsf;
 		found->pub.signal = res->pub.signal;
 		found->pub.capability = res->pub.capability;
 		found->ts = res->ts;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+
+		/* overwrite IEs */
+		if (overwrite) {
+			size_t used = dev->wiphy.bss_priv_size + sizeof(*res);
+			size_t ielen = res->pub.len_information_elements;
+
+			if (!found->ies_allocated && ksize(found) >= used + ielen) {
+				memcpy(found->pub.information_elements,
+				       res->pub.information_elements, ielen);
+				found->pub.len_information_elements = ielen;
+			} else {
+				u8 *ies = found->pub.information_elements;
+
+				if (found->ies_allocated)
+					ies = krealloc(ies, ielen, GFP_ATOMIC);
+				else
+					ies = kmalloc(ielen, GFP_ATOMIC);
+
+				if (ies) {
+					memcpy(ies, res->pub.information_elements, ielen);
+					found->ies_allocated = true;
+					found->pub.information_elements = ies;
+				}
+			}
+		}
+
+#endif
 		kref_put(&res->ref, bss_release);
 	} else {
 		/* this "consumes" the reference */
@@ -387,6 +427,55 @@ cfg80211_bss_update(struct cfg80211_registered_device *dev,
 	kref_get(&found->ref);
 	return found;
 }
+
+struct cfg80211_bss*
+cfg80211_inform_bss(struct wiphy *wiphy,
+		    struct ieee80211_channel *channel,
+		    const u8 *bssid,
+		    u64 timestamp, u16 capability, u16 beacon_interval,
+		    const u8 *ie, size_t ielen,
+		    s32 signal, gfp_t gfp)
+{
+	struct cfg80211_internal_bss *res;
+	size_t privsz;
+
+	if (WARN_ON(!wiphy))
+		return NULL;
+
+	privsz = wiphy->bss_priv_size;
+
+	if (WARN_ON(wiphy->signal_type == NL80211_BSS_SIGNAL_UNSPEC &&
+			(signal < 0 || signal > 100)))
+		return NULL;
+
+	res = kzalloc(sizeof(*res) + privsz + ielen, gfp);
+	if (!res)
+		return NULL;
+
+	memcpy(res->pub.bssid, bssid, ETH_ALEN);
+	res->pub.channel = channel;
+	res->pub.signal = signal;
+	res->pub.tsf = timestamp;
+	res->pub.beacon_interval = beacon_interval;
+	res->pub.capability = capability;
+	/* point to after the private area */
+	res->pub.information_elements = (u8 *)res + sizeof(*res) + privsz;
+	memcpy(res->pub.information_elements, ie, ielen);
+	res->pub.len_information_elements = ielen;
+
+	kref_init(&res->ref);
+
+	res = cfg80211_bss_update(wiphy_to_dev(wiphy), res, 0);
+	if (!res)
+		return NULL;
+
+	if (res->pub.capability & WLAN_CAPABILITY_ESS)
+		regulatory_hint_found_beacon(wiphy, channel, gfp);
+
+	/* cfg80211_bss_update gives us a referenced result */
+	return &res->pub;
+}
+EXPORT_SYMBOL(cfg80211_inform_bss);
 
 struct cfg80211_bss *
 cfg80211_inform_bss_frame(struct wiphy *wiphy,
@@ -578,7 +667,7 @@ int cfg80211_wext_siwscan(struct net_device *dev,
 	cfg80211_put_dev(rdev);
 	return err;
 }
-EXPORT_SYMBOL(cfg80211_wext_siwscan);
+EXPORT_SYMBOL_GPL(cfg80211_wext_siwscan);
 
 static void ieee80211_scan_add_ies(struct iw_request_info *info,
 				   struct cfg80211_bss *bss,
@@ -887,5 +976,5 @@ int cfg80211_wext_giwscan(struct net_device *dev,
 	cfg80211_put_dev(rdev);
 	return res;
 }
-EXPORT_SYMBOL(cfg80211_wext_giwscan);
+EXPORT_SYMBOL_GPL(cfg80211_wext_giwscan);
 #endif

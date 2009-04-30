@@ -19,6 +19,7 @@
 #include <net/ieee80211_radiotap.h>
 
 #include "ieee80211_i.h"
+#include "driver-ops.h"
 #include "led.h"
 #include "mesh.h"
 #include "wep.h"
@@ -29,6 +30,7 @@
 static u8 ieee80211_sta_manage_reorder_buf(struct ieee80211_hw *hw,
 					   struct tid_ampdu_rx *tid_agg_rx,
 					   struct sk_buff *skb,
+					   struct ieee80211_rx_status *status,
 					   u16 mpdu_seq_num,
 					   int bar_req);
 /*
@@ -772,9 +774,7 @@ static void ap_sta_ps_start(struct sta_info *sta)
 
 	atomic_inc(&sdata->bss->num_sta_ps);
 	set_and_clear_sta_flags(sta, WLAN_STA_PS, WLAN_STA_PSPOLL);
-	if (local->ops->sta_notify)
-		local->ops->sta_notify(local_to_hw(local), &sdata->vif,
-					STA_NOTIFY_SLEEP, &sta->sta);
+	drv_sta_notify(local, &sdata->vif, STA_NOTIFY_SLEEP, &sta->sta);
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
 	printk(KERN_DEBUG "%s: STA %pM aid %d enters power save mode\n",
 	       sdata->dev->name, sta->sta.addr, sta->sta.aid);
@@ -791,9 +791,7 @@ static int ap_sta_ps_end(struct sta_info *sta)
 	atomic_dec(&sdata->bss->num_sta_ps);
 
 	clear_sta_flags(sta, WLAN_STA_PS | WLAN_STA_PSPOLL);
-	if (local->ops->sta_notify)
-		local->ops->sta_notify(local_to_hw(local), &sdata->vif,
-					STA_NOTIFY_AWAKE, &sta->sta);
+	drv_sta_notify(local, &sdata->vif, STA_NOTIFY_AWAKE, &sta->sta);
 
 	if (!skb_queue_empty(&sta->ps_tx_buf))
 		sta_info_clear_tim_bit(sta);
@@ -1404,7 +1402,7 @@ ieee80211_deliver_skb(struct ieee80211_rx_data *rx)
 		 * mac80211. That also explains the __skb_push()
 		 * below.
 		 */
-		align = (unsigned long)skb->data & 4;
+		align = (unsigned long)skb->data & 3;
 		if (align) {
 			if (WARN_ON(skb_headroom(skb) < 3)) {
 				dev_kfree_skb(skb);
@@ -1696,7 +1694,7 @@ ieee80211_rx_h_ctrl(struct ieee80211_rx_data *rx)
 		/* manage reordering buffer according to requested */
 		/* sequence number */
 		rcu_read_lock();
-		ieee80211_sta_manage_reorder_buf(hw, tid_agg_rx, NULL,
+		ieee80211_sta_manage_reorder_buf(hw, tid_agg_rx, NULL, NULL,
 						 start_seq_num, 1);
 		rcu_read_unlock();
 		return RX_DROP_UNUSABLE;
@@ -1939,7 +1937,7 @@ static void ieee80211_rx_michael_mic_report(struct net_device *dev,
 	    !ieee80211_is_auth(hdr->frame_control))
 		goto ignore;
 
-	mac80211_ev_michael_mic_failure(rx->sdata, keyidx, hdr);
+	mac80211_ev_michael_mic_failure(rx->sdata, keyidx, hdr, NULL);
  ignore:
 	dev_kfree_skb(rx->skb);
 	rx->skb = NULL;
@@ -2301,6 +2299,7 @@ static inline u16 seq_sub(u16 sq1, u16 sq2)
 static u8 ieee80211_sta_manage_reorder_buf(struct ieee80211_hw *hw,
 					   struct tid_ampdu_rx *tid_agg_rx,
 					   struct sk_buff *skb,
+					   struct ieee80211_rx_status *rxstatus,
 					   u16 mpdu_seq_num,
 					   int bar_req)
 {
@@ -2382,6 +2381,8 @@ static u8 ieee80211_sta_manage_reorder_buf(struct ieee80211_hw *hw,
 
 	/* put the frame in the reordering buffer */
 	tid_agg_rx->reorder_buf[index] = skb;
+	memcpy(tid_agg_rx->reorder_buf[index]->cb, rxstatus,
+	       sizeof(*rxstatus));
 	tid_agg_rx->stored_mpdu_num++;
 	/* release the buffer until next missing frame */
 	index = seq_sub(tid_agg_rx->head_seq_num, tid_agg_rx->ssn)
@@ -2407,7 +2408,8 @@ static u8 ieee80211_sta_manage_reorder_buf(struct ieee80211_hw *hw,
 }
 
 static u8 ieee80211_rx_reorder_ampdu(struct ieee80211_local *local,
-				     struct sk_buff *skb)
+				     struct sk_buff *skb,
+				     struct ieee80211_rx_status *status)
 {
 	struct ieee80211_hw *hw = &local->hw;
 	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
@@ -2456,7 +2458,7 @@ static u8 ieee80211_rx_reorder_ampdu(struct ieee80211_local *local,
 
 	/* according to mpdu sequence number deal with reordering buffer */
 	mpdu_seq_num = (sc & IEEE80211_SCTL_SEQ) >> 4;
-	ret = ieee80211_sta_manage_reorder_buf(hw, tid_agg_rx, skb,
+	ret = ieee80211_sta_manage_reorder_buf(hw, tid_agg_rx, skb, status,
 						mpdu_seq_num, 0);
  end_reorder:
 	return ret;
@@ -2520,7 +2522,7 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb,
 		return;
 	}
 
-	if (!ieee80211_rx_reorder_ampdu(local, skb))
+	if (!ieee80211_rx_reorder_ampdu(local, skb, status))
 		__ieee80211_rx_handle_packet(hw, skb, status, rate);
 
 	rcu_read_unlock();

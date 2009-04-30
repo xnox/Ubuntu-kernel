@@ -553,18 +553,13 @@ static int mac80211_hwsim_config(struct ieee80211_hw *hw, u32 changed)
 	struct mac80211_hwsim_data *data = hw->priv;
 	struct ieee80211_conf *conf = &hw->conf;
 
-	printk(KERN_DEBUG "%s:%s (freq=%d radio_enabled=%d beacon_int=%d)\n",
+	printk(KERN_DEBUG "%s:%s (freq=%d radio_enabled=%d)\n",
 	       wiphy_name(hw->wiphy), __func__,
-	       conf->channel->center_freq, conf->radio_enabled,
-	       conf->beacon_int);
+	       conf->channel->center_freq, conf->radio_enabled);
 
 	data->channel = conf->channel;
 	data->radio_enabled = conf->radio_enabled;
-	data->beacon_int = 1024 * conf->beacon_int / 1000 * HZ / 1000;
-	if (data->beacon_int < 1)
-		data->beacon_int = 1;
-
-	if (!data->started || !data->radio_enabled)
+	if (!data->started || !data->radio_enabled || !data->beacon_int)
 		del_timer(&data->beacon_timer);
 	else
 		mod_timer(&data->beacon_timer, jiffies + data->beacon_int);
@@ -592,40 +587,39 @@ static void mac80211_hwsim_configure_filter(struct ieee80211_hw *hw,
 	*total_flags = data->rx_filter;
 }
 
-static int mac80211_hwsim_config_interface(struct ieee80211_hw *hw,
-					   struct ieee80211_vif *vif,
-					   struct ieee80211_if_conf *conf)
-{
-	struct hwsim_vif_priv *vp = (void *)vif->drv_priv;
-
-	hwsim_check_magic(vif);
-	if (conf->changed & IEEE80211_IFCC_BSSID) {
-		DECLARE_MAC_BUF(mac);
-		printk(KERN_DEBUG "%s:%s: BSSID changed: %pM\n",
-		       wiphy_name(hw->wiphy), __func__,
-		       conf->bssid);
-		memcpy(vp->bssid, conf->bssid, ETH_ALEN);
-	}
-	return 0;
-}
-
 static void mac80211_hwsim_bss_info_changed(struct ieee80211_hw *hw,
 					    struct ieee80211_vif *vif,
 					    struct ieee80211_bss_conf *info,
 					    u32 changed)
 {
 	struct hwsim_vif_priv *vp = (void *)vif->drv_priv;
+	struct mac80211_hwsim_data *data = hw->priv;
 
 	hwsim_check_magic(vif);
 
 	printk(KERN_DEBUG "%s:%s(changed=0x%x)\n",
 	       wiphy_name(hw->wiphy), __func__, changed);
 
+	if (changed & BSS_CHANGED_BSSID) {
+		printk(KERN_DEBUG "%s:%s: BSSID changed: %pM\n",
+		       wiphy_name(hw->wiphy), __func__,
+		       info->bssid);
+		memcpy(vp->bssid, info->bssid, ETH_ALEN);
+	}
+
 	if (changed & BSS_CHANGED_ASSOC) {
 		printk(KERN_DEBUG "  %s: ASSOC: assoc=%d aid=%d\n",
 		       wiphy_name(hw->wiphy), info->assoc, info->aid);
 		vp->assoc = info->assoc;
 		vp->aid = info->aid;
+	}
+
+	if (changed & BSS_CHANGED_BEACON_INT) {
+		printk(KERN_DEBUG "  %s: BCNINT: %d\n",
+		       wiphy_name(hw->wiphy), info->beacon_int);
+		data->beacon_int = 1024 * info->beacon_int / 1000 * HZ / 1000;
+		if (WARN_ON(!data->beacon_int))
+			data->beacon_int = 1;
 	}
 
 	if (changed & BSS_CHANGED_ERP_CTS_PROT) {
@@ -704,7 +698,6 @@ static const struct ieee80211_ops mac80211_hwsim_ops =
 	.remove_interface = mac80211_hwsim_remove_interface,
 	.config = mac80211_hwsim_config,
 	.configure_filter = mac80211_hwsim_configure_filter,
-	.config_interface = mac80211_hwsim_config_interface,
 	.bss_info_changed = mac80211_hwsim_bss_info_changed,
 	.sta_notify = mac80211_hwsim_sta_notify,
 	.set_tim = mac80211_hwsim_set_tim,
@@ -739,10 +732,22 @@ static struct device_driver mac80211_hwsim_driver = {
 	.name = "mac80211_hwsim"
 };
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+static const struct net_device_ops hwsim_netdev_ops = {
+	.ndo_start_xmit 	= hwsim_mon_xmit,
+	.ndo_change_mtu		= eth_change_mtu,
+	.ndo_set_mac_address 	= eth_mac_addr,
+	.ndo_validate_addr	= eth_validate_addr,
+};
+#endif
 
 static void hwsim_mon_setup(struct net_device *dev)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+	dev->netdev_ops = &hwsim_netdev_ops;
+#else
 	dev->hard_start_xmit = hwsim_mon_xmit;
+#endif
 	dev->destructor = free_netdev;
 	ether_setup(dev);
 	dev->tx_queue_len = 0;
@@ -927,7 +932,6 @@ static int __init init_mac80211_hwsim(void)
 			BIT(NL80211_IFTYPE_STATION) |
 			BIT(NL80211_IFTYPE_AP) |
 			BIT(NL80211_IFTYPE_MESH_POINT);
-		hw->ampdu_queues = 1;
 
 		hw->flags = IEEE80211_HW_MFP_CAPABLE;
 
