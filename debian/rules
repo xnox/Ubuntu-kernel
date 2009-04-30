@@ -13,6 +13,12 @@ unexport LDFLAGS
 
 SHELL := sh -e
 
+# Common variables for all architectures
+include debian/rules.d/0-common-vars.mk
+
+# Maintainer targets
+include debian/rules.d/1-maintainer.mk
+
 prefix := $(CURDIR)/debian/linux-restricted-modules
 DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
 udeb_prefix := $(CURDIR)/debian/d-i-$(DEB_HOST_ARCH)
@@ -1215,9 +1221,9 @@ endif
 	dh_md5sums -s
 	dh_builddeb -s
 
-printenv:
-	@echo "DEB_HOST_ARCH:   $(DEB_HOST_ARCH)"
-	@echo "flavours:        $(flavours)"
+printenv: printenv-e
+	@echo "DEB_HOST_ARCH     = $(DEB_HOST_ARCH)"
+	@echo "flavours          = $(flavours)"
 
 build-orig-source:
 	@LRM="linux-restricted-modules"; \
