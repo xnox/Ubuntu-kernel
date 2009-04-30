@@ -26,8 +26,8 @@
 
 /* module and version information */
 #define DRIVER_NAME		"HP Mini"
-#define DRIVER_VERSION		"1.10"
-#define DRIVER_RELEASE_DATE	"31-Mar-2009"
+#define DRIVER_VERSION		"1.10ubuntu1"
+#define DRIVER_RELEASE_DATE	"20-Apr-2009"
 #define DRIVER_PREFIX		DRIVER_NAME ": "
 
 /* Change this to non-zero to enable debug output. */
@@ -39,7 +39,12 @@
 #define DPRINT(format, args...)
 #endif
 
+/* Indicates could not read wifi or bluetooth states before suspend */
+#define SAVED_STATE_BAD			(~0)
+
 static struct platform_device *hpmini_platform_device;
+
+static u32 saved_state;
 
 /*
  * manifest constants, structures and functions for HP-specific
@@ -299,11 +304,48 @@ static void hpmini_shutdown(struct platform_device *dev)
 
 static int hpmini_suspend(struct platform_device *dev, pm_message_t state)
 {
+	acpi_status status;
+
+	status = get_network_device_state(&saved_state);
+
+	if (status != AE_OK)
+		saved_state = SAVED_STATE_BAD;
+	else {
+		/* Turn off Bluetooth and Wifi */
+		u32 network_device_state =
+			HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_BLUETOOTH |
+			HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_WIFI;
+		set_network_device_state(network_device_state);
+
+		/* Only interested in bluetooth and wifi states */
+		saved_state &=
+			(HP_WMI_NETWORK_STATE_BLUETOOTH_ON |
+			 HP_WMI_NETWORK_STATE_WIFI_ON);
+	}
+
 	return 0;
 }
 
 static int hpmini_resume(struct platform_device *dev)
 {
+	if  (saved_state != SAVED_STATE_BAD) {
+		u32 network_device_state = 0;
+
+		/* Re-enable Bluetooth? */
+		if (saved_state & HP_WMI_NETWORK_STATE_BLUETOOTH_ON)
+			network_device_state |=
+				(HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_BLUETOOTH |
+				 HP_WMI_NETWORK_STATE_ENABLE_BLUETOOTH);
+
+		/* Re-enable Wifi? */
+		if (saved_state & HP_WMI_NETWORK_STATE_WIFI_ON)
+			network_device_state |=
+				(HP_WMI_NETWORK_STATE_ENABLE_DISABLE_MASK_WIFI |
+				 HP_WMI_NETWORK_STATE_ENABLE_WIFI);
+
+		set_network_device_state(network_device_state);
+	}
+
 	return 0;
 }
 
