@@ -8,9 +8,9 @@ Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-jaunty-meta.git
 
 Package: linux
 Architecture: i386 amd64 lpia
-Section: restricted/metapackages
+Section: metapackages
 Priority: optional
-Depends: linux-image (= ${binary:Version}), linux-restricted-modules (= ${binary:Version})
+Depends: linux-image (= ${binary:Version})
 Description: Generic complete Linux kernel.
  This package will always depend on the latest generic complete Linux kernel
  available.
@@ -32,15 +32,6 @@ Depends: linux-image-${generic-depends} (= ${binary:Version})
 Description: Generic Linux kernel image.
  This package will always depend on the latest generic Linux kernel image
  available.
-
-Package: linux-restricted-modules
-Architecture: i386 amd64 lpia
-Section: restricted/metapackages
-Priority: optional
-Depends: linux-restricted-modules-${generic-depends} (= ${binary:Version})
-Description: Generic Linux restricted modules.
- This package will always depend on the latest generic Linux restricted
- modules available.
 
 Package: linux-backports-modules-RELEASE_NAME
 Architecture: i386 amd64 lpia

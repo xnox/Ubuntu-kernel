@@ -16,20 +16,11 @@ Description: Generic Linux kernel image
  This package will always depend on the latest lpia kernel image
  available.
 
-Package: linux-restricted-modules-lpia
-Architecture: lpia
-Section: restricted/metapackages
-Priority: optional
-Depends: linux-restricted-modules-${kernel-abi-version}-lpia
-Description: Restricted Linux modules for lpia kernels
- This package will always depend on the latest restricted modules available
- for lpia kernels.
-
 Package: linux-lpia
 Architecture: lpia
-Section: restricted/metapackages
+Section: metapackages
 Priority: optional
-Depends: linux-image-lpia (= ${binary:Version}), linux-restricted-modules-lpia (= ${binary:Version})
+Depends: linux-image-lpia (= ${binary:Version})
 Description: Complete Generic Linux kernel
  This package will always depend on the latest complete lpia Linux kernel
  available.
