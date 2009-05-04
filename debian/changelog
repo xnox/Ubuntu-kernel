@@ -1,3 +1,10 @@
+wireless-crda (1.7) jaunty; urgency=low
+
+  * Update wireless-regdb to master-2009-03-09
+  * enable passive scanning for world regdomain on other channels
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 10 Mar 2009 16:49:38 -0600
+
 wireless-crda (1.6) jaunty; urgency=low
 
   * wireless-regdb: Update to Jan 30, 2009 regdb.
