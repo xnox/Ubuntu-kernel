@@ -26,12 +26,6 @@ udeb_prefix := $(CURDIR)/debian/d-i-$(DEB_HOST_ARCH)
 export CC=gcc
 export GCC=gcc
 
-# kernel
-abi_version        = $(shell dpkg-parsechangelog | grep ^Version | sed 's/.*-//;s/\..*//')
-kernel_version     = $(shell dpkg-parsechangelog | grep ^Source | sed 's/.*-//')
-kernel_abi_version = $(kernel_version)-$(abi_version)
-lrm_version        = $(shell dpkg-parsechangelog | grep ^Version | awk '{print $$2}')
-
 # nvidia
 nv_base_version=1.0
 nv_release := 96.43.05
