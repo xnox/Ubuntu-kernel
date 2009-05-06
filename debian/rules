@@ -307,6 +307,11 @@ ifeq "$(BCMWL)" "1"
 	for i in $(flavours); do \
 		mkdir -p $(builddir)/$$i/$(bcmwl_dir); \
 		cp -al $(CURDIR)/broadcom/* $(builddir)/$$i/$(bcmwl_dir); \
+		if [ -d $(CURDIR)/broadcom/patches/ ]; then \
+		  for p in $(CURDIR)/broadcom/patches/*; do \
+		    patch -p2 -d $(builddir)/$$i/$(bcmwl_dir) < $$p; \
+		  done; \
+		fi \
 	done
 endif
 
