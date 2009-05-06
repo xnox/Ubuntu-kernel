@@ -306,7 +306,7 @@ endif
 ifeq "$(BCMWL)" "1"
 	for i in $(flavours); do \
 		mkdir -p $(builddir)/$$i/$(bcmwl_dir); \
-		cp -al $(CURDIR)/broadcom/* $(builddir)/$$i/$(bcmwl_dir); \
+		cp -a $(CURDIR)/broadcom/* $(builddir)/$$i/$(bcmwl_dir); \
 		if [ -d $(CURDIR)/broadcom/patches/ ]; then \
 		  for p in $(CURDIR)/broadcom/patches/*; do \
 		    patch -p2 -d $(builddir)/$$i/$(bcmwl_dir) < $$p; \
@@ -317,7 +317,7 @@ endif
 
 ifeq "$(LTMODEM)" "1"
 	for i in $(flavours); do \
-	    cp -al ltmodem debian/build/$$i; \
+	    cp -a ltmodem debian/build/$$i; \
 	    if [ -d $(CURDIR)/ltmodem/patches/ ]; then \
 	      for j in $(CURDIR)/ltmodem/patches/*; do \
 	        patch -p0 -d debian/build/$$i/ltmodem/ < $$j; \
@@ -354,9 +354,9 @@ ifeq "$(NVIDIA)" "1"
 	cd ${nv_legacy_dirname}/usr/src/nv && ln -sf Makefile.kbuild Makefile
 
 	for i in $(nv_flavours); do \
-		cp -al ${nv_dirname}/usr/src/nv debian/build/$$i/nv; \
-		cp -al ${nv_new_dirname}/usr/src/nv debian/build/$$i/nv-new; \
-		cp -al ${nv_legacy_dirname}/usr/src/nv debian/build/$$i/nv-legacy; \
+		cp -a ${nv_dirname}/usr/src/nv debian/build/$$i/nv; \
+		cp -a ${nv_new_dirname}/usr/src/nv debian/build/$$i/nv-new; \
+		cp -a ${nv_legacy_dirname}/usr/src/nv debian/build/$$i/nv-legacy; \
 	done
 
 	for i in -dev.dirs -dev.links -dev.postinst -dev.postrm \
@@ -426,15 +426,15 @@ ifeq "$(VMWARE)" "1"
             fi
 
 	for i in $(flavours); do \
-	  cp -al $(builddir)/vmware-player $(builddir)/$$i/; \
+	  cp -a $(builddir)/vmware-player $(builddir)/$$i/; \
 	done
 
 	for i in $(flavours) $(vmware_tools_extra_flavours); do \
-	  cp -al $(builddir)/vmware-tools $(builddir)/$$i/; \
+	  cp -a $(builddir)/vmware-tools $(builddir)/$$i/; \
 	done
 
 	for i in $(flavours) $(vmware_server_extra_flavours); do \
-	  cp -al $(builddir)/vmware-server $(builddir)/$$i/; \
+	  cp -a $(builddir)/vmware-server $(builddir)/$$i/; \
 	done
 
 	for i in player server tools; do \
@@ -455,7 +455,7 @@ endif
 	for i in $(flavours); do \
 	  mkdir -p debian/build/$$i; \
 	  for f in $(fritz_dir)/*; do \
-	    cp -al $$f debian/build/$$i; \
+	    cp -a $$f debian/build/$$i; \
 	  done; \
 	  if [ -d $(fritz_dir)/patches ] ; then \
 	    for p in $(fritz_dir)/patches/* ; do \
@@ -486,7 +486,7 @@ build-kernel-stamp: unpack-stamp
 	    chmod 0644 $(CURDIR)/debian/temp/modules/nvidia-kernel/debian/$$f ; \
 	done
 	#chmod 755 $(CURDIR)/debian/temp/modules/nvidia-kernel/debian/patches
-	cp -al $(nv_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-kernel || true
+	cp -a $(nv_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-kernel || true
 	rm -f $(CURDIR)/debian/temp/modules/nvidia-kernel/nv/Makefile
 	chmod 755 $(CURDIR)/debian/temp/modules/nvidia-kernel/debian/rules
 	chown -R root:src $(CURDIR)/debian/temp/modules
@@ -509,7 +509,7 @@ build-kernel-stamp: unpack-stamp
 	    chmod 0644 $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian/$$f ; \
 	done
 	#chmod 755 $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian/patches
-	cp -al $(nv_legacy_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel || true
+	cp -a $(nv_legacy_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel || true
 	rm -f $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/nv/Makefile
 	chmod 755 $(CURDIR)/debian/temp/modules/nvidia-legacy-kernel/debian/rules
 	chown -R root:src $(CURDIR)/debian/temp/modules
@@ -532,7 +532,7 @@ build-kernel-stamp: unpack-stamp
 	    chmod 0644 $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian/$$f ; \
 	done
 	#chmod 755 $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian/patches
-	cp -al $(nv_new_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-new-kernel || true
+	cp -a $(nv_new_dirname)/usr/src/nv $(CURDIR)/debian/temp/modules/nvidia-new-kernel || true
 	rm -f $(CURDIR)/debian/temp/modules/nvidia-new-kernel/nv/Makefile
 	chmod 755 $(CURDIR)/debian/temp/modules/nvidia-new-kernel/debian/rules
 	chown -R root:src $(CURDIR)/debian/temp/modules
@@ -554,7 +554,7 @@ build-kernel-stamp: unpack-stamp
 	    > $(CURDIR)/debian/temp/modules/fglrx-kernel/debian/$$f ; \
 	    chmod 0644 $(CURDIR)/debian/temp/modules/fglrx-kernel/debian/$$f ; \
 	done
-	cp -al debian/build/ati-xorg/common/lib/modules/fglrx $(CURDIR)/debian/temp/modules/fglrx-kernel || true
+	cp -a debian/build/ati-xorg/common/lib/modules/fglrx $(CURDIR)/debian/temp/modules/fglrx-kernel || true
 	chmod 755 $(CURDIR)/debian/temp/modules/fglrx-kernel/debian/rules
 	chown -R root:src $(CURDIR)/debian/temp/modules
 	tar -zcvf $(CURDIR)/fglrx-kernel-source.tar.gz -C debian/temp modules
