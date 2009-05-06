@@ -59,8 +59,8 @@ sub add_entry($) {
         }
 }
 
-sub shortlog_entry($$$$) {
-	my ($name, $desc, $bug, $commit) = @_;
+sub shortlog_entry($$$$$) {
+	my ($name, $desc, $bug, $cve, $commit) = @_;
 	my $entry;
 
 	$desc =~ s#/pub/scm/linux/kernel/git/#/.../#g;
@@ -70,7 +70,10 @@ sub shortlog_entry($$$$) {
 	$desc =~ s# *UBUNTU: ##g;
 
 	$entry->{'desc'} = $desc;
-	$entry->{'bugno'} = $bug;
+	if ($bug ne '') {
+		$entry->{'bugno'} = $bug;
+	}
+	$entry->{'cve'} = $cve;
 	$entry->{'commit'} = $commit;
 	$entry->{'author'} = $name;
 
@@ -101,7 +104,7 @@ sub shortlog_output {
 		$first_print = 0;
 
 		# output author
-		printf "  [%s]\n\n", $key;
+		printf "  [ %s ]\n\n", $key;
 
 		# output author's 1-line summaries
 		$obj = $map{$key};
@@ -114,17 +117,18 @@ sub shortlog_output {
 						"\n";
 				}
 			}
-			# Upstream cherry-picks can have a bug number as well.
 			if (defined($entry->{'bugno'})) {
-				print "    - LP: #" .
-					$entry->{'bugno'} . "\n";
+				print "    - LP: #" .  $entry->{'bugno'} . "\n";
+			}
+			if (defined($entry->{'cve'})) {
+				print "    - " . $entry->{'cve'} . "\n";
 			}
 		}
 	}
 }
 
 sub changelog_input {
-	my ($author, $desc, $commit, $entry);
+	my ($author, $desc, $commit, $entry, $cve);
 
 	while (<STDIN>) {
 		# get commit
@@ -145,6 +149,7 @@ sub changelog_input {
 			$author = $1;
 			$email = $2;
 			$desc = undef;
+			$cve = undef;
 
 			# cset author fixups
 			if (!$author) {
@@ -164,6 +169,8 @@ sub changelog_input {
 			next unless /^\s*?(.*)/;
 			my $ignore = 0;
 			my $bug = undef;
+			my %bugz = ();
+			my $k;
 
 			# skip lines that are obviously not
 			# a 1-line cset description
@@ -174,22 +181,43 @@ sub changelog_input {
 
 			if ($desc =~ /^ *(Revert "|)UBUNTU:/) {
 				while (<STDIN>) {
-					$ignore = 1 if /^ *Ignore: yes/i;
-					$bug = $2 if /^ *Bug: *(#|)(.*)/;
+					$ignore  =  1 if /^ *Ignore: yes/i;
+					if    (/^ *Bug: *(#|)(.*)/i) {
+						foreach $k (split('(,|)*\s*#', $2)) {
+							$bugz{$k} = 1 if (($k ne '') and ($k =~ /[0-9]+/));
+						}
+					}
+					elsif (/^ *BugLink: *http.*:\/\/.*\/([0-9]+)/i) {
+						$bugz{$1} = 1;
+					}
+					elsif (/^ *(CVE-.*)/) {
+						$cve = $1
+					}
 					last if /^commit /;
 				}
 			} else {
 				$author = $kernel_auth;
 				$ignore = 1 if $desc =~ /Merge /;
 				while (<STDIN>) {
-					$bug = $2 if /^ *Bug: *(#|)(.*)/;
+					if    (/^ *Bug: *(#|)(.*)/i) {
+						foreach $k (split('(,|)*\s*#', $2)) {
+							$bugz{$k} = 1 if (($k ne '') and ($k =~ /[0-9]+/));
+						}
+					}
+					elsif (/^ *BugLink: *http.*:\/\/.*\/([0-9]+)/i) {
+						$bugz{$1} = 1;
+					}
+					elsif (/^ *(CVE-.*)/) {
+						$cve = $1
+					}
 					last if /^commit /;
 				}
 			}
 
+                        $bug = join(", #", keys(%bugz));
 			if (!$ignore) {
 				&shortlog_entry($author, $desc, $bug,
-						$commit, 0);
+						$cve, $commit, 0);
 			}
 
 			$pstate = 1;
@@ -205,7 +233,6 @@ sub changelog_input {
 	}
 
 	foreach $entry (@reverts) {
-		print "Adding revert entry '" . $entry->{'desc'} . "'\n";
 		add_entry($entry);
 	}	
 }
