@@ -226,7 +226,7 @@ endif # end of USB driver list
 ifeq ($(NEED_RT2X00),y)
 CONFIG_RT2X00=m
 CONFIG_RT2X00_LIB=m
-# CONFIG_RT2X00_LIB_DEBUGFS is not set
+CONFIG_RT2X00_LIB_DEBUGFS=y
 # CONFIG_RT2X00_DEBUG is not set
 endif
 
