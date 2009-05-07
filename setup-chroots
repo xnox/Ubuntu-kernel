@@ -2,7 +2,7 @@
 
 base="/org/chroots"
 
-dists="dapper edgy feisty gutsy"
+dists="dapper hardy intrepid jaunty karmic"
 archs="$(dpkg-architecture -qDEB_BUILD_ARCH)"
 if [ "$archs" = "amd64" ]; then
 	archs="$archs i386"

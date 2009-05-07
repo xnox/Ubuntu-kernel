@@ -73,17 +73,15 @@ case $SUITE in
 	dapper)
 		ADDPKG="$ADDPKG kernel-package"
 		;;
-	feisty)
-		ADDPKG="$ADDPKG kernel-package"
-		;;
-	gutsy)
-		;;
 	hardy)
 		;;
 	intrepid)
 		ADDPKG="$ADDPKG makedumpfile"
 		;;
 	jaunty)
+		ADDPKG="$ADDPKG makedumpfile"
+		;;
+	karmic)
 		ADDPKG="$ADDPKG makedumpfile"
 		;;
 	*)
