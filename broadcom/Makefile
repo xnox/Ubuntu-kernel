@@ -25,11 +25,6 @@
 # written permission of Broadcom Corporation.
 #
 # $Id: Makefile_kbuild_portsrc,v 1.1.2.4 2008/05/02 18:33:39 Exp $
-ifeq		($(shell uname -m),x86_64)
-BINARCH		:= x86_64
-else
-BINARCH		:= i386
-endif
 
 obj-m              += wl.o
 
@@ -37,8 +32,9 @@ wl-objs            :=
 wl-objs            += src/wl/sys/wl_linux.o
 wl-objs            += src/wl/sys/wl_iw.o
 wl-objs            += src/shared/linux_osl.o
-wl-objs            += lib/wlc_hybrid.o_shipped_$(BINARCH)
 
 EXTRA_CFLAGS       :=
 EXTRA_CFLAGS       += -I$(src)/src/include
 EXTRA_CFLAGS       += -I$(src)/src/wl/sys
+
+EXTRA_LDFLAGS      := $(src)/lib/wlc_hybrid.o_shipped

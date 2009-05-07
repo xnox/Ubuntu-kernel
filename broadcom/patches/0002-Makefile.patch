@@ -1,0 +1,27 @@
+diff --git a/broadcom/Makefile b/broadcom/Makefile
+index 2ef91b1..f28b383 100644
+--- a/broadcom/Makefile
++++ b/broadcom/Makefile
+@@ -26,15 +26,20 @@
+ #
+ # $Id: Makefile_kbuild_portsrc,v 1.1.2.4 2008/05/02 18:33:39 Exp $
+ 
++ifeq ($(shell dpkg-architecture -qDEB_HOST_ARCH),amd64)
++BINARCH = x86_64
++else
++BINARCH = i386
++endif
++
+ obj-m              += wl.o
+ 
+ wl-objs            := 
+ wl-objs            += src/wl/sys/wl_linux.o
+ wl-objs            += src/wl/sys/wl_iw.o
+ wl-objs            += src/shared/linux_osl.o
++wl-objs            += lib/wlc_hybrid.o_shipped_$(BINARCH)
+ 
+ EXTRA_CFLAGS       :=
+ EXTRA_CFLAGS       += -I$(src)/src/include
+ EXTRA_CFLAGS       += -I$(src)/src/wl/sys
+-
+-EXTRA_LDFLAGS      := $(src)/lib/wlc_hybrid.o_shipped
