@@ -1,4 +1,4 @@
 # arch	version		flavour		installedname			suffix	bdep
-amd64	2.6.30-2	generic		2.6.30-2-generic		-	
-i386	2.6.30-2	generic		2.6.30-2-generic		-	
-lpia	2.6.30-2	lpia		2.6.30-2-lpia		-	
+amd64	2.6.30-5	generic		2.6.30-5-generic		-	
+i386	2.6.30-5	generic		2.6.30-5-generic		-	
+lpia	2.6.30-5	lpia		2.6.30-5-lpia		-	
