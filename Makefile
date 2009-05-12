@@ -16,5 +16,5 @@ binary: clean
 clean:
 	cd meta-source && fakeroot debian/rules clean
 	rm -f linux-meta-$(META_VERSION)
-	rm -f *.dsc *.changes *.gz *.deb *.build
+	rm -f *.dsc *.changes *.gz *.deb *.build *.upload
 
