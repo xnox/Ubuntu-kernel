@@ -1,3 +1,9 @@
+linux-meta (2.6.30.5.2) karmic; urgency=low
+
+  * Karmic ABI 5
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Tue, 12 May 2009 11:42:24 +0200
+
 linux-meta (2.6.30.2.1) karmic; urgency=low
 
   * Karmic ABI 2
