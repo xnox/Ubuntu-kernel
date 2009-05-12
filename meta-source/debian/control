@@ -33,11 +33,11 @@ Description: Generic Linux kernel image.
  This package will always depend on the latest generic Linux kernel image
  available.
 
-Package: linux-backports-modules-jaunty
+Package: linux-backports-modules-karmic
 Architecture: i386 amd64 lpia
 Section: metapackages
 Priority: optional
-Depends: linux-backports-modules-jaunty-${generic-depends} (= ${binary:Version})
+Depends: linux-backports-modules-karmic-${generic-depends} (= ${binary:Version})
 Description: Generic Linux backported drivers.
  This package will always depend on the latest generic Linux backported
  drivers available.
@@ -90,7 +90,7 @@ Description: Complete Generic Linux kernel
  This package will always depend on the latest complete generic Linux kernel
  available.
 
-Package: linux-backports-modules-jaunty-generic
+Package: linux-backports-modules-karmic-generic
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-generic
 Description: Backported drivers for generic kernel image
@@ -124,7 +124,7 @@ Description: Complete Versatile-based systems Linux kernel
  This package will always depend on the latest complete imx51 Linux kernel
  available.
 
-Package: linux-backports-modules-jaunty-imx51
+Package: linux-backports-modules-karmic-imx51
 Architecture: armel
 Depends: linux-backports-modules-${kernel-abi-version}-imx51
 Description: Backported drivers for Versatile-based systems systems kernel image
@@ -158,7 +158,7 @@ Description: Complete IOP32x-based systems Linux kernel
  This package will always depend on the latest complete iop32x Linux kernel
  available.
 
-Package: linux-backports-modules-jaunty-iop32x
+Package: linux-backports-modules-karmic-iop32x
 Architecture: armel
 Depends: linux-backports-modules-${kernel-abi-version}-iop32x
 Description: Backported drivers for IOP32x-based systems kernel image
@@ -192,7 +192,7 @@ Description: Complete IXP4xx-based systems Linux kernel
  This package will always depend on the latest complete ixp4xx Linux kernel
  available.
 
-Package: linux-backports-modules-jaunty-ixp4xx
+Package: linux-backports-modules-karmic-ixp4xx
 Architecture: armel
 Depends: linux-backports-modules-${kernel-abi-version}-ixp4xx
 Description: Backported drivers for IXP4xx-based systems kernel image
@@ -226,7 +226,7 @@ Description: Complete Generic Linux kernel
  This package will always depend on the latest complete lpia Linux kernel
  available.
 
-Package: linux-backports-modules-jaunty-lpia
+Package: linux-backports-modules-karmic-lpia
 Architecture: lpia
 Depends: linux-backports-modules-${kernel-abi-version}-lpia
 Description: Backported drivers for lpia kernel image
@@ -260,7 +260,7 @@ Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
-Package: linux-backports-modules-jaunty-server
+Package: linux-backports-modules-karmic-server
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-server
 Description: Backported drivers for server kernel image
@@ -294,7 +294,7 @@ Description: Complete Versatile-based systems systems Linux kernel
  This package will always depend on the latest complete versatile Linux kernel
  available.
 
-Package: linux-backports-modules-jaunty-versatile
+Package: linux-backports-modules-karmic-versatile
 Architecture: armel
 Depends: linux-backports-modules-${kernel-abi-version}-versatile
 Description: Backported drivers for Versatile-based systems kernel image
@@ -328,7 +328,7 @@ Description: Complete Linux kernel for virtual machines
  This package will always depend on the latest complete Linux kernel available
  for virtual machines.
 
-Package: linux-backports-modules-jaunty-virtual
+Package: linux-backports-modules-karmic-virtual
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-server
 Description: Backported drivers for virtual kernel image

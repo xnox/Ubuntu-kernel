@@ -1,3 +1,10 @@
+linux-meta (2.6.30.5.4) karmic; urgency=low
+
+  * Replaced RELEASE_NAME in the rules file with karmic as well and rebuild
+    the control file.
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Tue, 12 May 2009 16:02:37 +0200
+
 linux-meta (2.6.30.5.3) karmic; urgency=low
 
   * Updated vcs-git line to reference karmic.
