@@ -8,24 +8,20 @@ Signed-off-by: Andy Whitcroft <apw@canonical.com>
  debian/scripts/misc/oldconfig |    7 ++++++-
  1 files changed, 6 insertions(+), 1 deletions(-)
 
-diff --git a/debian/scripts/misc/oldconfig b/debian/scripts/misc/oldconfig
-index ddf162b..29972f9 100755
---- a/debian/scripts/misc/oldconfig
-+++ b/debian/scripts/misc/oldconfig
-@@ -56,7 +56,12 @@ cd build
+--- a/debian/scripts/misc/oldconfig.orig	2009-05-14 12:52:21.000000000 +0100
++++ b/debian/scripts/misc/oldconfig	2009-05-14 12:53:32.000000000 +0100
+@@ -55,7 +55,13 @@
  for config in $configs; do
  	echo "Running $what for $config ... "
  
 -	cat $confdir/$config > .config
 +	if [ -f "$BUILD_CONFIG_OVERRIDE" ]; then
 +		echo "Adding $BUILD_CONFIG_OVERRIDE to $config ... "
-+		cat "$BUILD_CONFIG_OVERRIDE" $confdir/$config >.config
++		cat "$BUILD_CONFIG_OVERRIDE" $confdir/$config \
++			"$BUILD_CONFIG_OVERRIDE">.config
 +	else
 +		cat $confdir/$config > .config
 +	fi
  
  	make -C ../ O=`pwd` "$what" ARCH=$kernarch
  
--- 
-1.5.4.3
-
