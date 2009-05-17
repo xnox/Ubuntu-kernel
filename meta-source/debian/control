@@ -133,13 +133,13 @@ Description: Linux kernel headers on 64-bit PA-RISC
 
 
 #
-# Itanium
+# Itanium (generic)
 #
 Package: linux-ia64
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-generic (= ${binary:Version})
+Depends: linux-image-ia64 (= ${binary:Version})
 Description: Complete Linux kernel on Itanium.
  This package will always depend on the latest complete Linux kernel available
  for Itanium.
@@ -148,16 +148,16 @@ Package: linux-image-ia64
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-generic, linux-firmware
+Depends: linux-image-${kernel-abi-version}-ia64, linux-firmware
 Description: Linux kernel image on Itanium
  This package will always depend on the latest kernel image available
  for Itanium.
 
-Package: linux-headers-generic
+Package: linux-headers-ia64
 Architecture: ia64
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-generic
+Depends: linux-headers-${kernel-abi-version}-ia64
 Description: Linux kernel headers on Itanium
  This package will always depend on the latest kernel headers available
  for Itanium.
@@ -166,48 +166,48 @@ Package: linux-itanium
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-generic (= ${binary:Version})
-Description: Obsoleted by: linux-generic
+Depends: linux-ia64 (= ${binary:Version})
+Description: Obsoleted by: linux-ia64
  This package is only for upgrades.
 
 Package: linux-mckinley
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-generic (= ${binary:Version})
-Description: Obsoleted by: linux-generic
+Depends: linux-ia64 (= ${binary:Version})
+Description: Obsoleted by: linux-ia64
  This package is only for upgrades.
 
 Package: linux-image-itanium
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-generic (= ${binary:Version})
-Description: Obsoleted by: linux-image-generic
+Depends: linux-image-ia64 (= ${binary:Version})
+Description: Obsoleted by: linux-image-ia64
  This package is only for upgrades.
 
 Package: linux-image-mckinley
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-image-generic (= ${binary:Version})
-Description: Obsoleted by: linux-image-generic
+Depends: linux-image-ia64 (= ${binary:Version})
+Description: Obsoleted by: linux-image-ia64
  This package is only for upgrades.
 
 Package: linux-headers-itanium
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-headers-generic (= ${binary:Version})
-Description: Obsoleted by: linux-headers-generic
+Depends: linux-headers-ia64 (= ${binary:Version})
+Description: Obsoleted by: linux-headers-ia64
  This package is only for upgrades.
 
 Package: linux-headers-mckinley
 Architecture: ia64
 Section: metapackages
 Priority: optional
-Depends: linux-headers-generic (= ${binary:Version})
-Description: Obsoleted by: linux-headers-generic
+Depends: linux-headers-ia64 (= ${binary:Version})
+Description: Obsoleted by: linux-headers-ia64
  This package is only for upgrades.
 
 #
