@@ -1,5 +1,6 @@
 linux-ports-meta (2.6.30.2.1) karmic; urgency=low
 
+  * Bump ABI
   * Properly fixed ia64 metpackages AGAIN
 
  -- Michael Casadevall <mcasadevall@ubuntu.com>  Sat, 16 May 2009 17:04:04 -0400
