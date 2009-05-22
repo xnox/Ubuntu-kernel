@@ -118,7 +118,13 @@ typedef int (*processor_translate_addr_fxn) (void *handle, void **dst_addr,
  *		address space
  */
 typedef int (*processor_map_fxn) (void *handle, u32 proc_addr, u32 size,
-			u32 *mapped_addr, u32 *mapped_size);
+			u32 *mapped_addr, u32 *mapped_size, u32 map_attribs);
+
+/*
+ *Function pointer type for the function to map address to slave
+ *		address space
+ */
+typedef int (*processor_unmap_fxn) (void *handle, u32 mapped_addr);
 
 /* =============================
  *  Function table interface
@@ -146,6 +152,8 @@ struct processor_fxn_table {
 	/* Function to translate between address ranges */
 	processor_map_fxn map;
 	/* Function to map slave addresses to master address space */
+	processor_unmap_fxn unmap;
+	/* Function to unmap slave addresses to master address space */
 };
 
 /* =============================

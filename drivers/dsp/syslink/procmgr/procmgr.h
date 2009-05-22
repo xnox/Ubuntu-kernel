@@ -240,7 +240,10 @@ int proc_mgr_translate_addr(void *handle, void **dst_addr,
 
 /* Function that maps the specified slave address to master address space. */
 int proc_mgr_map(void *handle, u32 proc_addr, u32 size,
-	u32 *mappedAddr, u32 *mapped_size, enum proc_mgr_map_type type);
+	u32 *mappedAddr, u32 *mapped_size, u32 map_attribs);
+
+/* Function that unmaps the specified slave address to master address space. */
+int proc_mgr_unmap(void *handle, u32 mapped_addr);
 
 /* Function that registers for notification when the slave processor
  * transitions to any of the states specified.
