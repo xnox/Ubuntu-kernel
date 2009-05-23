@@ -1,3 +1,9 @@
+linux-meta (2.6.30.6.5) karmic; urgency=low
+
+  * Karmic ABI 6
+
+ -- Andy Whitcroft <apw@canonical.com>  Sat, 23 May 2009 23:24:09 +0100
+
 linux-meta (2.6.30.5.4) karmic; urgency=low
 
   * Replaced RELEASE_NAME in the rules file with karmic as well and rebuild
