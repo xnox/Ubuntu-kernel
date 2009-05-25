@@ -19,12 +19,20 @@ fi
 if [ ! -d "${CONFDIR}/distros" ]; then
 	mkdir "${CONFDIR}/distros"
 fi
-for distro in edgy feisty gutsy hardy; do
+for distro in dapper hardy intrepid jaunty karmic; do
 	if [ ! -f "${CONFDIR}/distros/${distro}" ]; then
 		echo "Creating distro(${distro})"
 		cat <<-EOD >"${CONFDIR}/distros/${distro}"
 		# Where to find sources for that disto
-		SRCDIR=$HOME/ubuntu-$distro
+		#SRCDIR=$HOME/ubuntu-$distro
+		PKGNAMES=(
+		 	kernel
+		 	meta
+		)
+		PKGDIRS=(
+		 	$HOME/ubuntu-$distro/kernel
+		 	$HOME/ubuntu-$distro/meta
+		)	
 		EOD
 	fi
 done
@@ -46,6 +54,9 @@ if [ ! -f "${CONFDIR}/groups/autobuild" ]; then
 	ronne-amd64
 	davis
 	faure
+	halley
+	wongi
+	rimu
 	EOD
 fi
 
