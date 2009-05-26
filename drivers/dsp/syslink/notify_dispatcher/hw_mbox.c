@@ -161,8 +161,8 @@ long hw_mbox_msg_write(const unsigned long   base_address,
 /* ==================== Function Separator =============================*/
 
 long hw_mbox_is_full(
-		const unsigned long    base_address,
-		const enum hw_mbox_id_t   mail_box_id,
+		const unsigned long base_address,
+		const enum hw_mbox_id_t mail_box_id,
 		unsigned long  *const p_is_full
 		)
 {
@@ -337,8 +337,7 @@ long hw_mbox_event_status(
 		const unsigned long              base_address,
 		const enum hw_mbox_id_t        mail_box_id,
 		const enum hw_mbox_userid_t    user_id,
-		unsigned long *const p_eventStatus
-		)
+		unsigned long *const p_eventStatus)
 {
 	long status = RET_OK;
 	unsigned long      irq_status_reg;
