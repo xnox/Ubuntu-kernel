@@ -1,0 +1,158 @@
+#! /bin/bash
+
+P="build-mainline-crack"
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $P <tag> <series>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+commit="$1"
+series="$2"
+
+build_release="hardy"
+
+long=`git describe "$commit"`
+if [ "$?" -ne 0 ]; then
+	echo "$P: $commit: invalid commit" 1>&2
+	exit 1
+fi
+case "$long" in
+v*-*[0-9]-g*)
+	full_version="${long#v}"
+	full_version="${full_version%-*}"
+	full_version="${full_version%-*}"
+	;;
+v*)
+	full_version="${long#v}"
+	;;
+*)
+	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
+	exit 1
+esac
+
+# Crack of the day is always ABI -999.
+abinum='999'
+upload=`date +%s`
+
+# The base version is always the first X.Y.Z part of the version number.  If we
+# do not maintain this then the modules directory will not match uname -r.
+version=`echo "$full_version" | sed -e 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/'`
+
+#release=`pwd`
+#release=${release#*/ubuntu-}
+#release=${release%-build}
+
+echo "full_version<$full_version>"
+echo "version<$version>"
+echo "long<$long>"
+echo "abinum<$abinum>"
+
+# NOTE: a - in the branch name seems to be causing issues.
+branch="BUILD.$abinum"
+branch=`echo "$branch" | sed -e 's/-/./g'`
+
+# Ensure we get the uptodate machinary.
+git fetch "$series"
+git checkout -f "$series/master"
+git branch -D "$branch"
+
+#
+# Checkout the source at the specified version.
+#
+git checkout -b "$branch" "$long" -- || exit 1
+
+# Report the head for posterity.
+echo "vvv - build head"
+git log -1 HEAD
+echo "^^^ - build head"
+
+#
+# Pull in the packaging from the head of our tree.
+#
+git checkout "$series/master" -- debian
+git commit -a -m "base packaging"
+
+#
+# ALL: allow us to default new config options.
+#
+git am -C0 "$here/0001-UBUNTU-allow-us-to-build-default-configs-for-automa.patch"
+git am -C0 "$here/0001-mainline-build-allow-us-to-force-things-on-in-the-c.patch"
+## XXX: git am -C0 "$here/0001-disable-udebs.patch"
+
+case "$series" in
+hardy)
+	# HARDY: support htmldocs which require xmlto which is not installed.
+	git am -C0 "$here/0001-mainline-build-hardy-suppress-the-html-documents.patch"
+	;;
+intrepid)
+	# INTREPID: suppress makedumpfile as we do not have the tools
+	git am -C0 "$here/0001-mainline-build-suppress-makedumpfile-on-intrepid.patch"
+esac
+
+#
+# Rebuild the changelog.
+#
+rm -f debian/changelog
+EDITOR=":" dch -v "${version}-$abinum.$upload" --distribution "$series" \
+	--package linux --create
+sed -e "s/\* .*/* Mainline kernel of the day: $long/" \
+	<debian/changelog >debian/changelog.new
+mv -f debian/changelog.new debian/changelog
+git commit -a -m "debian changelog"
+
+#
+# Default any new configuration options.
+#
+BUILD_CONFIG_OVERRIDE="$here/config.$series"
+dchroot --directory=`pwd` -c "$build_release" \
+	"BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' fakeroot debian/rules defaultconfigs"
+##BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' schroot --directory=`pwd` -c "$build_release-i386" fakeroot debian/rules defaultconfigs
+git commit -a -m "default configs"
+
+#
+# Disable the ABI, module, and aliases checks.
+#
+cat - <<EOM >debian/scripts/abi-check
+#!/bin/sh
+exit 0
+EOM
+chmod 755 debian/scripts/abi-check
+
+cat - <<EOM >debian/scripts/module-check
+#!/bin/sh
+exit 0
+EOM
+chmod 755 debian/scripts/module-check
+
+cat - <<EOM >debian/tests/check-aliases
+#!/bin/sh
+exit 0
+EOM
+chmod 755 debian/tests/check-aliases
+
+git commit -a -m "fix up abi checks, module checks, check aliases"
+
+#
+# Build the source package.
+#
+##dpkg-buildpackage -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa
+
+dchroot --directory=`pwd` -c "$build_release" \
+        "fakeroot debian/rules clean"
+dchroot --directory=`pwd` -c "$build_release" \
+        "fakeroot debian/rules no_dumpfile=1 binary-indep"
+dchroot --directory=`pwd` -c "$build_release" \
+        "fakeroot debian/rules clean"
+dchroot --directory=`pwd` -c "$build_release" \
+        "fakeroot debian/rules no_dumpfile=1 binary-generic"
+linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
+        "fakeroot debian/rules clean"
+linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
+        "fakeroot debian/rules no_dumpfile=1 binary-generic"
