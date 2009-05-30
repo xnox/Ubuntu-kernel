@@ -368,7 +368,6 @@ union notify_drv_procevents{
 		/*Attributes */
 		unsigned long int  num_events;
 		unsigned long int  send_event_pollcount;
-
 		/*Control Paramters */
 		unsigned long int send_init_status ;
 		struct notify_shmdrv_eventreg_mask  reg_mask ;
@@ -393,25 +392,25 @@ struct notify_driver_object {
 
 
 struct notify_drv_eventlist {
-       unsigned long int  event_handler_count;
+       unsigned long int event_handler_count;
        struct list_head listeners;
 };
 
 
 
 struct notify_drv_eventlistner{
-	struct list_head    element;
-	fn_notify_cbck   fn_notify_cbck;
+	struct list_head element;
+	fn_notify_cbck fn_notify_cbck;
 	void *cbck_arg;
 };
 
 
 struct notify_drv_proc_module {
 
-       unsigned long int  proc_id;
+       unsigned long int proc_id;
        struct notify_drv_eventlist *event_list;
        struct notify_shmdrv_eventreg *reg_chart;
-       union notify_drv_procevents  events_obj;
+       union notify_drv_procevents events_obj;
 };
 
 /*
