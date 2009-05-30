@@ -32,7 +32,8 @@
  */
 
 #define IPC_BUF_ALIGN     128
-#define IPC_ALIGN(x, y) (unsigned long int)((unsigned long int)((x + y - 1) / y) * y)
+#define IPC_ALIGN(x, y) (unsigned long int)\
+((unsigned long int)((x + y - 1) / y) * y)
 
 
 #define NOTIFYDUCATI_DRIVERNAME   "NOTIFY_DUCATIDRV"

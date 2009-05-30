@@ -83,23 +83,23 @@ struct notify_ducatidrv_cmdargs {
  *  @brief  Command arguments for NotifyDriverShm_getConfig
  */
 struct notify_ducatidrv_cmdargs_getconfig {
-	struct notify_ducatidrv_cmdargs  common_args;
-	struct notify_ducatidrv_config  *cfg;
+	struct notify_ducatidrv_cmdargs common_args;
+	struct notify_ducatidrv_config *cfg;
 };
 
 /*
  *  brief  Command arguments for NotifyDriverShm_setup
  */
 struct notify_ducatidrv_cmdargs_setup {
-	struct notify_ducatidrv_cmdargs  common_args;
-	struct notify_ducatidrv_config  *cfg;
+	struct notify_ducatidrv_cmdargs common_args;
+	struct notify_ducatidrv_config *cfg;
 };
 
 /*
  *  brief  Command arguments for NotifyDriverShm_destroy
  */
 struct notify_ducatidrv_cmdargs_destroy  {
-	struct notify_ducatidrv_cmdargs  common_args;
+	struct notify_ducatidrv_cmdargs common_args;
 } ;
 
 /*
@@ -107,7 +107,7 @@ struct notify_ducatidrv_cmdargs_destroy  {
  */
 
 struct notify_ducatidrv_cmdargs_paramsinit {
-	struct notify_ducatidrv_cmdargs  common_args;
+	struct notify_ducatidrv_cmdargs common_args;
 	struct notify_driver_object *handle;
 	struct notify_ducatidrv_params *params;
 };
@@ -118,7 +118,7 @@ struct notify_ducatidrv_cmdargs_paramsinit {
 struct notify_ducatidrv_cmdargs_create {
 	struct notify_ducatidrv_cmdargs  common_args;
 	char  driverName[NOTIFY_MAX_NAMELEN];
-	struct notify_ducatidrv_params      params;
+	struct notify_ducatidrv_params params;
 	struct notify_driver_object *handle;
 };
 
@@ -126,7 +126,7 @@ struct notify_ducatidrv_cmdargs_create {
  *  brief  Command arguments for NotifyDriverShm_delete
  */
 struct notify_ducatidrv_cmdargs_delete {
-	struct notify_ducatidrv_cmdargs  common_args;
+	struct notify_ducatidrv_cmdargs common_args;
 	struct notify_driver_object *handle;
 };
 
@@ -134,7 +134,7 @@ struct notify_ducatidrv_cmdargs_delete {
  *  brief  Command arguments for NotifyDriverShm_open
  */
 struct notify_ducatidrv_cmdargs_open {
-	struct notify_ducatidrv_cmdargs  common_args;
+	struct notify_ducatidrv_cmdargs common_args;
 	char *driverName;
 	struct notify_driver_object *handle;
 
@@ -144,7 +144,7 @@ struct notify_ducatidrv_cmdargs_open {
  *  brief  Command arguments for NotifyDriverShm_close
  */
 struct notify_ducatidrv_cmdargs_close {
-	struct notify_ducatidrv_cmdargs  common_args;
+	struct notify_ducatidrv_cmdargs common_args;
 	struct notify_driver_object *handle;
 
 };
