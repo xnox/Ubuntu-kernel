@@ -25,6 +25,7 @@ Build-Depends: cpio, debhelper (>= 4.0.0), libc6-i386 [amd64],
  linux-headers-2.6.24-24-hppa64 [hppa],
  linux-headers-2.6.24-24-sparc64-smp [sparc],
  linux-headers-2.6.24-24-sparc64 [sparc]
+Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-hardy-lrm.git
 
 Package: linux-restricted-modules-common
 Architecture: all
