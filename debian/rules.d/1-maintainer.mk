@@ -14,6 +14,9 @@ help:
 	@echo
 	@echo "  startnewrelease : Start a new changelog set"
 	@echo
+	@echo "  build-orig-source: Creates the orig tarball after doing some"
+	@echo "                     binary changes"
+	@echo
 	@echo "  help            : If you are kernel hacking, you need the professional"
 	@echo "                    version of this"
 	@echo

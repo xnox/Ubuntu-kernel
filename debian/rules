@@ -1233,12 +1233,12 @@ build-orig-source:
 		echo "$$TARNAME already exists!" >&2; \
 		exit 1; \
 	fi; \
-	if [ ! -d "../$$TARDIR" ]; then \
-		echo "$$TARDIR not found!" >&2; \
-		exit 1; \
-	fi; \
-	tar -czvf "../$$TARNAME" -C .. "$$TARDIR" --exclude="*/debian" \
-		--exclude="*/debian/*"
+	test -L ../$$TARDIR && rm ../$$TARDIR; \
+	CWD=$$(basename $$(pwd)); \
+	(cd .. && ln -s $$CWD $$TARDIR); \
+	tar -czvf "../$$TARNAME" -C .. "$$TARDIR/." --exclude="*/debian" \
+		--exclude="*/debian/*" --exclude=".git" || rm ../$$TARNAME; \
+	test -L ../$$TARDIR && rm ../$$TARDIR
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install unpack build-kernel
