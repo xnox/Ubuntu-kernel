@@ -256,6 +256,17 @@ static void rt73usb_write_csr(struct rt2x00_dev *rt2x00dev,
 	rt73usb_register_write(rt2x00dev, CSR_OFFSET(word), data);
 }
 
+static inline void rt73_eeprom_write(struct rt2x00_dev *rt2x00dev,
+				     const unsigned int word, u16 data)
+{
+	rt2x00dev->eeprom[word] = cpu_to_le16(data);
+
+	rt2x00usb_vendor_request(rt2x00dev, USB_EEPROM_WRITE,
+				USB_VENDOR_REQUEST_OUT, word*2, 0,
+				&rt2x00dev->eeprom[word], sizeof(u16),
+				REGISTER_TIMEOUT16(sizeof(u16)));
+}
+
 static const struct rt2x00debug rt73usb_rt2x00debug = {
 	.owner	= THIS_MODULE,
 	.csr	= {
@@ -266,7 +277,7 @@ static const struct rt2x00debug rt73usb_rt2x00debug = {
 	},
 	.eeprom	= {
 		.read		= rt2x00_eeprom_read,
-		.write		= rt2x00_eeprom_write,
+		.write		= rt73_eeprom_write,
 		.word_size	= sizeof(u16),
 		.word_count	= EEPROM_SIZE / sizeof(u16),
 	},
