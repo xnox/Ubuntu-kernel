@@ -298,21 +298,14 @@ void ieee80211_scan_completed(struct ieee80211_hw *hw, bool aborted)
 	was_hw_scan = local->hw_scanning;
 	local->hw_scanning = false;
 	local->sw_scanning = false;
+	local->scan_channel = NULL;
 
 	/* we only have to protect scan_req and hw/sw scan */
 	mutex_unlock(&local->scan_mtx);
 
-	if (was_hw_scan) {
-		/*
-		 * Somebody might have requested channel change during scan
-		 * that we won't have acted upon, try now. ieee80211_hw_config
-		 * will set the flag based on actual changes.
-		 */
-		ieee80211_hw_config(local, 0);
-		goto done;
-	}
-
 	ieee80211_hw_config(local, IEEE80211_CONF_CHANGE_CHANNEL);
+	if (was_hw_scan)
+		goto done;
 
 	netif_tx_lock_bh(local->mdev);
 	netif_addr_lock(local->mdev);
@@ -351,6 +344,7 @@ void ieee80211_scan_completed(struct ieee80211_hw *hw, bool aborted)
 	mutex_unlock(&local->iflist_mtx);
 
  done:
+	ieee80211_recalc_idle(local);
 	ieee80211_mlme_notify_scan_completed(local);
 	ieee80211_ibss_notify_scan_completed(local);
 	ieee80211_mesh_notify_scan_completed(local);
@@ -471,6 +465,8 @@ static int __ieee80211_start_scan(struct ieee80211_sub_if_data *sdata,
 	 * dependency, so that the scan completed calls
 	 * have more locking freedom.
 	 */
+
+	ieee80211_recalc_idle(local);
 	mutex_unlock(&local->scan_mtx);
 
 	if (local->ops->hw_scan)
@@ -486,6 +482,8 @@ static int __ieee80211_start_scan(struct ieee80211_sub_if_data *sdata,
 			ieee80211_restore_scan_ies(local);
 		} else
 			local->sw_scanning = false;
+
+		ieee80211_recalc_idle(local);
 
 		local->scan_req = NULL;
 		local->scan_sdata = NULL;
@@ -561,24 +559,39 @@ void ieee80211_scan_work(struct work_struct *work)
 		if (skip)
 			break;
 
-		next_delay = IEEE80211_PROBE_DELAY +
-			     usecs_to_jiffies(local->hw.channel_change_time);
+		/*
+		 * Probe delay is used to update the NAV, cf. 11.1.3.2.2
+		 * (which unfortunately doesn't say _why_ step a) is done,
+		 * but it waits for the probe delay or until a frame is
+		 * received - and the received frame would update the NAV).
+		 * For now, we do not support waiting until a frame is
+		 * received.
+		 *
+		 * In any case, it is not necessary for a passive scan.
+		 */
+		if (chan->flags & IEEE80211_CHAN_PASSIVE_SCAN ||
+		    !local->scan_req->n_ssids) {
+			next_delay = IEEE80211_PASSIVE_CHANNEL_TIME;
+			break;
+		}
+
+		next_delay = IEEE80211_PROBE_DELAY;
 		local->scan_state = SCAN_SEND_PROBE;
 		break;
 	case SCAN_SEND_PROBE:
-		next_delay = IEEE80211_PASSIVE_CHANNEL_TIME;
-		local->scan_state = SCAN_SET_CHANNEL;
-
-		if (local->scan_channel->flags & IEEE80211_CHAN_PASSIVE_SCAN ||
-		    !local->scan_req->n_ssids)
-			break;
 		for (i = 0; i < local->scan_req->n_ssids; i++)
 			ieee80211_send_probe_req(
 				sdata, NULL,
 				local->scan_req->ssids[i].ssid,
 				local->scan_req->ssids[i].ssid_len,
 				local->scan_req->ie, local->scan_req->ie_len);
+
+		/*
+		 * After sending probe requests, wait for probe responses
+		 * on the channel.
+		 */
 		next_delay = IEEE80211_CHANNEL_TIME;
+		local->scan_state = SCAN_SET_CHANNEL;
 		break;
 	}
 
@@ -617,4 +630,22 @@ int ieee80211_request_internal_scan(struct ieee80211_sub_if_data *sdata,
  unlock:
 	mutex_unlock(&local->scan_mtx);
 	return ret;
+}
+
+void ieee80211_scan_cancel(struct ieee80211_local *local)
+{
+	bool swscan;
+
+	cancel_delayed_work_sync(&local->scan_work);
+
+	/*
+	 * Only call this function when a scan can't be
+	 * queued -- mostly at suspend under RTNL.
+	 */
+	mutex_lock(&local->scan_mtx);
+	swscan = local->sw_scanning;
+	mutex_unlock(&local->scan_mtx);
+
+	if (swscan)
+		ieee80211_scan_completed(&local->hw, true);
 }

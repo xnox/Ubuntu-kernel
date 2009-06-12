@@ -35,14 +35,14 @@ MODULE_PARM_DESC(nohwcrypt, "Disable hardware encryption");
 #define CHAN2G(_freq, _idx)  { \
 	.center_freq = (_freq), \
 	.hw_value = (_idx), \
-	.max_power = 30, \
+	.max_power = 20, \
 }
 
 #define CHAN5G(_freq, _idx) { \
 	.band = IEEE80211_BAND_5GHZ, \
 	.center_freq = (_freq), \
 	.hw_value = (_idx), \
-	.max_power = 30, \
+	.max_power = 20, \
 }
 
 /* Some 2 GHz radios are actually tunable on 2312-2732
@@ -189,7 +189,7 @@ static u8 parse_mpdudensity(u8 mpdudensity)
 
 static void ath_setup_rates(struct ath_softc *sc, enum ieee80211_band band)
 {
-	struct ath_rate_table *rate_table = NULL;
+	const struct ath_rate_table *rate_table = NULL;
 	struct ieee80211_supported_band *sband;
 	struct ieee80211_rate *rate;
 	int i, maxrates;
@@ -280,7 +280,7 @@ int ath_set_channel(struct ath_softc *sc, struct ieee80211_hw *hw,
 	if (r) {
 		DPRINTF(sc, ATH_DBG_FATAL,
 			"Unable to reset channel (%u Mhz) "
-			"reset status %u\n",
+			"reset status %d\n",
 			channel->center_freq, r);
 		spin_unlock_bh(&sc->sc_resetlock);
 		return r;
@@ -328,6 +328,12 @@ static void ath_ani_calibrate(unsigned long data)
 	*/
 	if (sc->sc_flags & SC_OP_SCANNING)
 		goto set_timer;
+
+	/* Only calibrate if awake */
+	if (sc->sc_ah->power_mode != ATH9K_PM_AWAKE)
+		goto set_timer;
+
+	ath9k_ps_wakeup(sc);
 
 	/* Long calibration runs independently of short calibration. */
 	if ((timestamp - sc->ani.longcal_timer) >= ATH_LONG_CALINTERVAL) {
@@ -379,6 +385,8 @@ static void ath_ani_calibrate(unsigned long data)
 				sc->ani.noise_floor);
 		}
 	}
+
+	ath9k_ps_restore(sc);
 
 set_timer:
 	/*
@@ -455,8 +463,11 @@ static void ath9k_tasklet(unsigned long data)
 	struct ath_softc *sc = (struct ath_softc *)data;
 	u32 status = sc->intrstatus;
 
+	ath9k_ps_wakeup(sc);
+
 	if (status & ATH9K_INT_FATAL) {
 		ath_reset(sc, false);
+		ath9k_ps_restore(sc);
 		return;
 	}
 
@@ -469,8 +480,19 @@ static void ath9k_tasklet(unsigned long data)
 	if (status & ATH9K_INT_TX)
 		ath_tx_tasklet(sc);
 
+	if ((status & ATH9K_INT_TSFOOR) &&
+	    (sc->hw->conf.flags & IEEE80211_CONF_PS)) {
+		/*
+		 * TSF sync does not look correct; remain awake to sync with
+		 * the next Beacon.
+		 */
+		DPRINTF(sc, ATH_DBG_PS, "TSFOOR - Sync with next Beacon\n");
+		sc->sc_flags |= SC_OP_WAIT_FOR_BEACON | SC_OP_BEACON_SYNC;
+	}
+
 	/* re-enable hardware interrupt */
 	ath9k_hw_set_interrupts(sc->sc_ah, sc->imask);
+	ath9k_ps_restore(sc);
 }
 
 irqreturn_t ath_isr(int irq, void *dev)
@@ -498,14 +520,11 @@ irqreturn_t ath_isr(int irq, void *dev)
 	if (sc->sc_flags & SC_OP_INVALID)
 		return IRQ_NONE;
 
-	ath9k_ps_wakeup(sc);
 
 	/* shared irq, not for us */
 
-	if (!ath9k_hw_intrpend(ah)) {
-		ath9k_ps_restore(sc);
+	if (!ath9k_hw_intrpend(ah))
 		return IRQ_NONE;
-	}
 
 	/*
 	 * Figure out the reason(s) for the interrupt.  Note
@@ -520,10 +539,8 @@ irqreturn_t ath_isr(int irq, void *dev)
 	 * If there are no status bits set, then this interrupt was not
 	 * for me (should have been caught above).
 	 */
-	if (!status) {
-		ath9k_ps_restore(sc);
+	if (!status)
 		return IRQ_NONE;
-	}
 
 	/* Cache the status */
 	sc->intrstatus = status;
@@ -560,20 +577,17 @@ irqreturn_t ath_isr(int irq, void *dev)
 		ath9k_hw_set_interrupts(ah, sc->imask);
 	}
 
-	if (status & ATH9K_INT_TIM_TIMER) {
-		if (!(ah->caps.hw_caps & ATH9K_HW_CAP_AUTOSLEEP)) {
+	if (!(ah->caps.hw_caps & ATH9K_HW_CAP_AUTOSLEEP))
+		if (status & ATH9K_INT_TIM_TIMER) {
 			/* Clear RxAbort bit so that we can
 			 * receive frames */
 			ath9k_hw_setpower(ah, ATH9K_PM_AWAKE);
-			ath9k_hw_setrxabort(ah, 0);
-			sched = true;
+			ath9k_hw_setrxabort(sc->sc_ah, 0);
 			sc->sc_flags |= SC_OP_WAIT_FOR_BEACON;
 		}
-	}
 
 chip_reset:
 
-	ath9k_ps_restore(sc);
 	ath_debug_stat_interrupt(sc, status);
 
 	if (sched) {
@@ -900,6 +914,13 @@ static void ath9k_bss_assoc_info(struct ath_softc *sc,
 		if (avp->av_opmode == NL80211_IFTYPE_STATION) {
 			sc->curaid = bss_conf->aid;
 			ath9k_hw_write_associd(sc);
+
+			/*
+			 * Request a re-configuration of Beacon related timers
+			 * on the receipt of the first Beacon frame (i.e.,
+			 * after time sync with the AP).
+			 */
+			sc->sc_flags |= SC_OP_BEACON_SYNC;
 		}
 
 		/* Configure the beacon */
@@ -1094,7 +1115,7 @@ void ath_radio_enable(struct ath_softc *sc)
 	if (r) {
 		DPRINTF(sc, ATH_DBG_FATAL,
 			"Unable to reset channel %u (%uMhz) ",
-			"reset status %u\n",
+			"reset status %d\n",
 			channel->center_freq, r);
 	}
 	spin_unlock_bh(&sc->sc_resetlock);
@@ -1146,7 +1167,7 @@ void ath_radio_disable(struct ath_softc *sc)
 	if (r) {
 		DPRINTF(sc, ATH_DBG_FATAL,
 			"Unable to reset channel %u (%uMhz) "
-			"reset status %u\n",
+			"reset status %d\n",
 			channel->center_freq, r);
 	}
 	spin_unlock_bh(&sc->sc_resetlock);
@@ -1157,7 +1178,7 @@ void ath_radio_disable(struct ath_softc *sc)
 	ath9k_ps_restore(sc);
 }
 
-#if defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)
+#if ((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)) && defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)) || ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,31)) && defined(CONFIG_RFKILL_BACKPORT) || defined(CONFIG_RFKILL_BACKPORT_MODULE))
 
 /*******************/
 /*	Rfkill	   */
@@ -1171,92 +1192,59 @@ static bool ath_is_rfkill_set(struct ath_softc *sc)
 				  ah->rfkill_polarity;
 }
 
-/* h/w rfkill poll function */
-static void ath_rfkill_poll(struct work_struct *work)
-{
-	struct ath_softc *sc = container_of(work, struct ath_softc,
-					    rf_kill.rfkill_poll.work);
-	bool radio_on;
-
-	if (sc->sc_flags & SC_OP_INVALID)
-		return;
-
-	radio_on = !ath_is_rfkill_set(sc);
-
-	/*
-	 * enable/disable radio only when there is a
-	 * state change in RF switch
-	 */
-	if (radio_on == !!(sc->sc_flags & SC_OP_RFKILL_HW_BLOCKED)) {
-		enum rfkill_state state;
-
-		if (sc->sc_flags & SC_OP_RFKILL_SW_BLOCKED) {
-			state = radio_on ? RFKILL_STATE_SOFT_BLOCKED
-				: RFKILL_STATE_HARD_BLOCKED;
-		} else if (radio_on) {
-			ath_radio_enable(sc);
-			state = RFKILL_STATE_UNBLOCKED;
-		} else {
-			ath_radio_disable(sc);
-			state = RFKILL_STATE_HARD_BLOCKED;
-		}
-
-		if (state == RFKILL_STATE_HARD_BLOCKED)
-			sc->sc_flags |= SC_OP_RFKILL_HW_BLOCKED;
-		else
-			sc->sc_flags &= ~SC_OP_RFKILL_HW_BLOCKED;
-
-		rfkill_force_state(sc->rf_kill.rfkill, state);
-	}
-
-	queue_delayed_work(sc->hw->workqueue, &sc->rf_kill.rfkill_poll,
-			   msecs_to_jiffies(ATH_RFKILL_POLL_INTERVAL));
-}
-
-/* s/w rfkill handler */
-static int ath_sw_toggle_radio(void *data, enum rfkill_state state)
+/* s/w rfkill handlers */
+static int ath_rfkill_set_block(void *data, bool blocked)
 {
 	struct ath_softc *sc = data;
 
-	switch (state) {
-	case RFKILL_STATE_SOFT_BLOCKED:
-		if (!(sc->sc_flags & (SC_OP_RFKILL_HW_BLOCKED |
-		    SC_OP_RFKILL_SW_BLOCKED)))
-			ath_radio_disable(sc);
-		sc->sc_flags |= SC_OP_RFKILL_SW_BLOCKED;
-		return 0;
-	case RFKILL_STATE_UNBLOCKED:
-		if ((sc->sc_flags & SC_OP_RFKILL_SW_BLOCKED)) {
-			sc->sc_flags &= ~SC_OP_RFKILL_SW_BLOCKED;
-			if (sc->sc_flags & SC_OP_RFKILL_HW_BLOCKED) {
-				DPRINTF(sc, ATH_DBG_FATAL, "Can't turn on the"
-					"radio as it is disabled by h/w\n");
-				return -EPERM;
-			}
-			ath_radio_enable(sc);
-		}
-		return 0;
-	default:
-		return -EINVAL;
-	}
+	if (blocked)
+		ath_radio_disable(sc);
+	else
+		ath_radio_enable(sc);
+
+	return 0;
+}
+
+static void ath_rfkill_poll_state(struct rfkill *rfkill, void *data)
+{
+	struct ath_softc *sc = data;
+	bool blocked = !!ath_is_rfkill_set(sc);
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	if (rfkill_set_hw_state(rfkill, blocked))
+#else
+	if (backport_rfkill_set_hw_state(rfkill, blocked))
+#endif
+		ath_radio_disable(sc);
+	else
+		ath_radio_enable(sc);
 }
 
 /* Init s/w rfkill */
 static int ath_init_sw_rfkill(struct ath_softc *sc)
 {
-	sc->rf_kill.rfkill = rfkill_allocate(wiphy_dev(sc->hw->wiphy),
-					     RFKILL_TYPE_WLAN);
+	sc->rf_kill.ops.set_block = ath_rfkill_set_block;
+	if (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
+		sc->rf_kill.ops.poll = ath_rfkill_poll_state;
+
+	snprintf(sc->rf_kill.rfkill_name, sizeof(sc->rf_kill.rfkill_name),
+		"ath9k-%s::rfkill", wiphy_name(sc->hw->wiphy));
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	sc->rf_kill.rfkill = rfkill_alloc(sc->rf_kill.rfkill_name,
+					  wiphy_dev(sc->hw->wiphy),
+					  RFKILL_TYPE_WLAN,
+					  &sc->rf_kill.ops, sc);
+#else
+	sc->rf_kill.rfkill = backport_rfkill_alloc(sc->rf_kill.rfkill_name,
+					  wiphy_dev(sc->hw->wiphy),
+					  RFKILL_TYPE_WLAN,
+					  &sc->rf_kill.ops, sc);
+#endif
 	if (!sc->rf_kill.rfkill) {
 		DPRINTF(sc, ATH_DBG_FATAL, "Failed to allocate rfkill\n");
 		return -ENOMEM;
 	}
-
-	snprintf(sc->rf_kill.rfkill_name, sizeof(sc->rf_kill.rfkill_name),
-		"ath9k-%s::rfkill", wiphy_name(sc->hw->wiphy));
-	sc->rf_kill.rfkill->name = sc->rf_kill.rfkill_name;
-	sc->rf_kill.rfkill->data = sc;
-	sc->rf_kill.rfkill->toggle_radio = ath_sw_toggle_radio;
-	sc->rf_kill.rfkill->state = RFKILL_STATE_UNBLOCKED;
 
 	return 0;
 }
@@ -1264,27 +1252,33 @@ static int ath_init_sw_rfkill(struct ath_softc *sc)
 /* Deinitialize rfkill */
 static void ath_deinit_rfkill(struct ath_softc *sc)
 {
-	if (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
-		cancel_delayed_work_sync(&sc->rf_kill.rfkill_poll);
-
 	if (sc->sc_flags & SC_OP_RFKILL_REGISTERED) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
 		rfkill_unregister(sc->rf_kill.rfkill);
+		rfkill_destroy(sc->rf_kill.rfkill);
+#else
+		backport_rfkill_unregister(sc->rf_kill.rfkill);
+		backport_rfkill_destroy(sc->rf_kill.rfkill);
+#endif
 		sc->sc_flags &= ~SC_OP_RFKILL_REGISTERED;
-		sc->rf_kill.rfkill = NULL;
 	}
 }
 
 static int ath_start_rfkill_poll(struct ath_softc *sc)
 {
-	if (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
-		queue_delayed_work(sc->hw->workqueue,
-				   &sc->rf_kill.rfkill_poll, 0);
-
 	if (!(sc->sc_flags & SC_OP_RFKILL_REGISTERED)) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
 		if (rfkill_register(sc->rf_kill.rfkill)) {
+#else
+		if (backport_rfkill_register(sc->rf_kill.rfkill)) {
+#endif
 			DPRINTF(sc, ATH_DBG_FATAL,
 				"Unable to register rfkill\n");
-			rfkill_free(sc->rf_kill.rfkill);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+			rfkill_destroy(sc->rf_kill.rfkill);
+#else
+			backport_rfkill_destroy(sc->rf_kill.rfkill);
+#endif
 
 			/* Deinitialize the device */
 			ath_cleanup(sc);
@@ -1316,7 +1310,7 @@ void ath_detach(struct ath_softc *sc)
 
 	DPRINTF(sc, ATH_DBG_CONFIG, "Detach ATH hw\n");
 
-#if defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)
+#if ((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)) && defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)) || ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,31)) && defined(CONFIG_RFKILL_BACKPORT) || defined(CONFIG_RFKILL_BACKPORT_MODULE))
 	ath_deinit_rfkill(sc);
 #endif
 	ath_deinit_leds(sc);
@@ -1416,8 +1410,6 @@ static int ath_init(u16 devid, struct ath_softc *sc)
 	for (i = 0; i < sc->keymax; i++)
 		ath9k_hw_keyreset(ah, (u16) i);
 
-	error = ath_regd_init(&sc->sc_ah->regulatory, sc->hw->wiphy,
-			      ath9k_reg_notifier);
 	if (error)
 		goto bad;
 
@@ -1630,13 +1622,18 @@ int ath_attach(u16 devid, struct ath_softc *sc)
 	if (error != 0)
 		return error;
 
-	reg = &sc->sc_ah->regulatory;
-
 	/* get mac address from hardware and set in mac80211 */
 
 	SET_IEEE80211_PERM_ADDR(hw, sc->sc_ah->macaddr);
 
 	ath_set_hw_capab(sc, hw);
+
+	error = ath_regd_init(&sc->sc_ah->regulatory, sc->hw->wiphy,
+			      ath9k_reg_notifier);
+	if (error)
+		return error;
+
+	reg = &sc->sc_ah->regulatory;
 
 	if (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_HT) {
 		setup_ht_cap(sc, &sc->sbands[IEEE80211_BAND_2GHZ].ht_cap);
@@ -1653,11 +1650,7 @@ int ath_attach(u16 devid, struct ath_softc *sc)
 	if (error != 0)
 		goto error_attach;
 
-#if defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)
-	/* Initialze h/w Rfkill */
-	if (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
-		INIT_DELAYED_WORK(&sc->rf_kill.rfkill_poll, ath_rfkill_poll);
-
+#if ((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)) && defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)) || ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,31)) && defined(CONFIG_RFKILL_BACKPORT) || defined(CONFIG_RFKILL_BACKPORT_MODULE))
 	/* Initialize s/w rfkill */
 	error = ath_init_sw_rfkill(sc);
 	if (error)
@@ -1709,7 +1702,7 @@ int ath_reset(struct ath_softc *sc, bool retry_tx)
 	r = ath9k_hw_reset(ah, sc->sc_ah->curchan, false);
 	if (r)
 		DPRINTF(sc, ATH_DBG_FATAL,
-			"Unable to reset hardware; reset status %u\n", r);
+			"Unable to reset hardware; reset status %d\n", r);
 	spin_unlock_bh(&sc->sc_resetlock);
 
 	if (ath_startrecv(sc) != 0)
@@ -2001,7 +1994,7 @@ static int ath9k_start(struct ieee80211_hw *hw)
 	r = ath9k_hw_reset(sc->sc_ah, init_channel, false);
 	if (r) {
 		DPRINTF(sc, ATH_DBG_FATAL,
-			"Unable to reset hardware; reset status %u "
+			"Unable to reset hardware; reset status %d "
 			"(freq %u MHz)\n", r,
 			curchan->center_freq);
 		spin_unlock_bh(&sc->sc_resetlock);
@@ -2049,7 +2042,7 @@ static int ath9k_start(struct ieee80211_hw *hw)
 
 	ieee80211_wake_queues(hw);
 
-#if defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)
+#if ((LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31)) && defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)) || ((LINUX_VERSION_CODE < KERNEL_VERSION(2,6,31)) && defined(CONFIG_RFKILL_BACKPORT) || defined(CONFIG_RFKILL_BACKPORT_MODULE))
 	r = ath_start_rfkill_poll(sc);
 #endif
 
@@ -2072,6 +2065,46 @@ static int ath9k_tx(struct ieee80211_hw *hw,
 		printk(KERN_DEBUG "ath9k: %s: TX in unexpected wiphy state "
 		       "%d\n", wiphy_name(hw->wiphy), aphy->state);
 		goto exit;
+	}
+
+	if (sc->hw->conf.flags & IEEE80211_CONF_PS) {
+		struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
+		/*
+		 * mac80211 does not set PM field for normal data frames, so we
+		 * need to update that based on the current PS mode.
+		 */
+		if (ieee80211_is_data(hdr->frame_control) &&
+		    !ieee80211_is_nullfunc(hdr->frame_control) &&
+		    !ieee80211_has_pm(hdr->frame_control)) {
+			DPRINTF(sc, ATH_DBG_PS, "Add PM=1 for a TX frame "
+				"while in PS mode\n");
+			hdr->frame_control |= cpu_to_le16(IEEE80211_FCTL_PM);
+		}
+	}
+
+	if (unlikely(sc->sc_ah->power_mode != ATH9K_PM_AWAKE)) {
+		/*
+		 * We are using PS-Poll and mac80211 can request TX while in
+		 * power save mode. Need to wake up hardware for the TX to be
+		 * completed and if needed, also for RX of buffered frames.
+		 */
+		struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
+		ath9k_ps_wakeup(sc);
+		ath9k_hw_setrxabort(sc->sc_ah, 0);
+		if (ieee80211_is_pspoll(hdr->frame_control)) {
+			DPRINTF(sc, ATH_DBG_PS, "Sending PS-Poll to pick a "
+				"buffered frame\n");
+			sc->sc_flags |= SC_OP_WAIT_FOR_PSPOLL_DATA;
+		} else {
+			DPRINTF(sc, ATH_DBG_PS, "Wake up to complete TX\n");
+			sc->sc_flags |= SC_OP_WAIT_FOR_TX_ACK;
+		}
+		/*
+		 * The actual restore operation will happen only after
+		 * the sc_flags bit is cleared. We are just dropping
+		 * the ps_usecount here.
+		 */
+		ath9k_ps_restore(sc);
 	}
 
 	memset(&txctl, 0, sizeof(struct ath_tx_control));
@@ -2150,10 +2183,12 @@ static void ath9k_stop(struct ieee80211_hw *hw)
 	} else
 		sc->rx.rxlink = NULL;
 
-#if defined(CONFIG_RFKILL) || defined(CONFIG_RFKILL_MODULE)
-	if (sc->sc_ah->caps.hw_caps & ATH9K_HW_CAP_RFSILENT)
-		cancel_delayed_work_sync(&sc->rf_kill.rfkill_poll);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	rfkill_pause_polling(sc->rf_kill.rfkill);
+#else
+	backport_rfkill_pause_polling(sc->rf_kill.rfkill);
 #endif
+
 	/* disable HAL and put h/w to sleep */
 	ath9k_hw_disable(sc->sc_ah);
 	ath9k_hw_configpcipowersave(sc->sc_ah, 1);
@@ -2311,7 +2346,10 @@ static int ath9k_config(struct ieee80211_hw *hw, u32 changed)
 			if (!(ah->caps.hw_caps &
 			      ATH9K_HW_CAP_AUTOSLEEP)) {
 				ath9k_hw_setrxabort(sc->sc_ah, 0);
-				sc->sc_flags &= ~SC_OP_WAIT_FOR_BEACON;
+				sc->sc_flags &= ~(SC_OP_WAIT_FOR_BEACON |
+						  SC_OP_WAIT_FOR_CAB |
+						  SC_OP_WAIT_FOR_PSPOLL_DATA |
+						  SC_OP_WAIT_FOR_TX_ACK);
 				if (sc->imask & ATH9K_INT_TIM_TIMER) {
 					sc->imask &= ~ATH9K_INT_TIM_TIMER;
 					ath9k_hw_set_interrupts(sc->sc_ah,
@@ -2386,8 +2424,10 @@ static void ath9k_configure_filter(struct ieee80211_hw *hw,
 	*total_flags &= SUPPORTED_FILTERS;
 
 	sc->rx.rxfilter = *total_flags;
+	ath9k_ps_wakeup(sc);
 	rfilt = ath_calcrxfilter(sc);
 	ath9k_hw_setrxfilter(sc->sc_ah, rfilt);
+	ath9k_ps_restore(sc);
 
 	DPRINTF(sc, ATH_DBG_CONFIG, "Set HW RX filter: 0x%x\n", sc->rx.rxfilter);
 }

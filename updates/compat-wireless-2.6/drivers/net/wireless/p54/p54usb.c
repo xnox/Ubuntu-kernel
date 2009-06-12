@@ -84,8 +84,8 @@ MODULE_DEVICE_TABLE(usb, p54u_table);
 static const struct {
 	u32 intf;
 	enum p54u_hw_type type;
-	char fw[FIRMWARE_NAME_MAX];
-	char fw_legacy[FIRMWARE_NAME_MAX];
+	const char *fw;
+	const char *fw_legacy;
 	char hw[20];
 } p54u_fwlist[__NUM_P54U_HWTYPES] = {
 	{
@@ -919,9 +919,11 @@ static int __devinit p54u_probe(struct usb_interface *intf,
 	priv->common.open = p54u_open;
 	priv->common.stop = p54u_stop;
 	if (recognized_pipes < P54U_PIPE_NUMBER) {
+#ifdef CONFIG_PM
 		/* ISL3887 needs a full reset on resume */
 		udev->reset_resume = 1;
 		err = p54u_device_reset(dev);
+#endif
 
 		priv->hw_type = P54U_3887;
 		dev->extra_tx_headroom += sizeof(struct lm87_tx_hdr);

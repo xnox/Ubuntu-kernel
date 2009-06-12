@@ -147,6 +147,7 @@ struct rt2x00_chip {
 #define RT2561		0x0302
 #define RT2661		0x0401
 #define RT2571		0x1300
+#define RT2870		0x1600
 
 	u16 rf;
 	u32 rev;
@@ -416,6 +417,8 @@ struct rt2x00lib_erp {
 	short pifs;
 	short difs;
 	short eifs;
+
+	u16 beacon_int;
 };
 
 /*
@@ -799,6 +802,11 @@ struct rt2x00_dev {
 	u8 calibration[2];
 
 	/*
+	 * Beacon interval.
+	 */
+	u16 beacon_int;
+
+	/*
 	 * Low level statistics which will have
 	 * to be kept up to date while device is running.
 	 */
@@ -914,11 +922,10 @@ static inline u32 rt2x00_rev(const struct rt2x00_chip *chipset)
 	return chipset->rev;
 }
 
-static inline u16 rt2x00_check_rev(const struct rt2x00_chip *chipset,
-				   const u32 rev)
+static inline bool rt2x00_check_rev(const struct rt2x00_chip *chipset,
+				    const u32 mask, const u32 rev)
 {
-	return (((chipset->rev & 0xffff0) == rev) &&
-		!!(chipset->rev & 0x0000f));
+	return ((chipset->rev & mask) == rev);
 }
 
 /**

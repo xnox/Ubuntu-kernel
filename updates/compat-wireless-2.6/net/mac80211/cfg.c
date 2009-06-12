@@ -112,7 +112,7 @@ static int ieee80211_change_iface(struct wiphy *wiphy, int ifindex,
 }
 
 static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
-			     u8 key_idx, u8 *mac_addr,
+			     u8 key_idx, const u8 *mac_addr,
 			     struct key_params *params)
 {
 	struct ieee80211_sub_if_data *sdata;
@@ -141,7 +141,8 @@ static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
 		return -EINVAL;
 	}
 
-	key = ieee80211_key_alloc(alg, key_idx, params->key_len, params->key);
+	key = ieee80211_key_alloc(alg, key_idx, params->key_len, params->key,
+				  params->seq_len, params->seq);
 	if (!key)
 		return -ENOMEM;
 
@@ -166,7 +167,7 @@ static int ieee80211_add_key(struct wiphy *wiphy, struct net_device *dev,
 }
 
 static int ieee80211_del_key(struct wiphy *wiphy, struct net_device *dev,
-			     u8 key_idx, u8 *mac_addr)
+			     u8 key_idx, const u8 *mac_addr)
 {
 	struct ieee80211_sub_if_data *sdata;
 	struct sta_info *sta;
@@ -208,7 +209,7 @@ static int ieee80211_del_key(struct wiphy *wiphy, struct net_device *dev,
 }
 
 static int ieee80211_get_key(struct wiphy *wiphy, struct net_device *dev,
-			     u8 key_idx, u8 *mac_addr, void *cookie,
+			     u8 key_idx, const u8 *mac_addr, void *cookie,
 			     void (*callback)(void *cookie,
 					      struct key_params *params))
 {
@@ -629,34 +630,45 @@ static void sta_apply_parameters(struct ieee80211_local *local,
 	int i, j;
 	struct ieee80211_supported_band *sband;
 	struct ieee80211_sub_if_data *sdata = sta->sdata;
+	u32 mask, set;
 
 	sband = local->hw.wiphy->bands[local->oper_channel->band];
 
-	/*
-	 * FIXME: updating the flags is racy when this function is
-	 *	  called from ieee80211_change_station(), this will
-	 *	  be resolved in a future patch.
-	 */
+	spin_lock_bh(&sta->lock);
+	mask = params->sta_flags_mask;
+	set = params->sta_flags_set;
 
-	if (params->station_flags & STATION_FLAG_CHANGED) {
-		spin_lock_bh(&sta->lock);
+	if (mask & BIT(NL80211_STA_FLAG_AUTHORIZED)) {
 		sta->flags &= ~WLAN_STA_AUTHORIZED;
-		if (params->station_flags & STATION_FLAG_AUTHORIZED)
+		if (set & BIT(NL80211_STA_FLAG_AUTHORIZED))
 			sta->flags |= WLAN_STA_AUTHORIZED;
-
-		sta->flags &= ~WLAN_STA_SHORT_PREAMBLE;
-		if (params->station_flags & STATION_FLAG_SHORT_PREAMBLE)
-			sta->flags |= WLAN_STA_SHORT_PREAMBLE;
-
-		sta->flags &= ~WLAN_STA_WME;
-		if (params->station_flags & STATION_FLAG_WME)
-			sta->flags |= WLAN_STA_WME;
-
-		sta->flags &= ~WLAN_STA_MFP;
-		if (params->station_flags & STATION_FLAG_MFP)
-			sta->flags |= WLAN_STA_MFP;
-		spin_unlock_bh(&sta->lock);
 	}
+
+	if (mask & BIT(NL80211_STA_FLAG_SHORT_PREAMBLE)) {
+		sta->flags &= ~WLAN_STA_SHORT_PREAMBLE;
+		if (set & BIT(NL80211_STA_FLAG_SHORT_PREAMBLE))
+			sta->flags |= WLAN_STA_SHORT_PREAMBLE;
+	}
+
+	if (mask & BIT(NL80211_STA_FLAG_WME)) {
+		sta->flags &= ~WLAN_STA_WME;
+		if (set & BIT(NL80211_STA_FLAG_WME))
+			sta->flags |= WLAN_STA_WME;
+	}
+
+	if (mask & BIT(NL80211_STA_FLAG_MFP)) {
+		sta->flags &= ~WLAN_STA_MFP;
+		if (set & BIT(NL80211_STA_FLAG_MFP))
+			sta->flags |= WLAN_STA_MFP;
+	}
+	spin_unlock_bh(&sta->lock);
+
+	/*
+	 * cfg80211 validates this (1-2007) and allows setting the AID
+	 * only when creating a new station entry
+	 */
+	if (params->aid)
+		sta->sta.aid = params->aid;
 
 	/*
 	 * FIXME: updating the following information is racy when this
@@ -664,12 +676,6 @@ static void sta_apply_parameters(struct ieee80211_local *local,
 	 *	  However, all this information should be static so
 	 *	  maybe we should just reject attemps to change it.
 	 */
-
-	if (params->aid) {
-		sta->sta.aid = params->aid;
-		if (sta->sta.aid > IEEE80211_MAX_AID)
-			sta->sta.aid = 0; /* XXX: should this be an error? */
-	}
 
 	if (params->listen_interval >= 0)
 		sta->listen_interval = params->listen_interval;
@@ -1116,8 +1122,8 @@ static int ieee80211_set_txq_params(struct wiphy *wiphy,
 	p.txop = params->txop;
 	if (drv_conf_tx(local, params->queue, &p)) {
 		printk(KERN_DEBUG "%s: failed to set TX queue "
-		       "parameters for queue %d\n", local->mdev->name,
-		       params->queue);
+		       "parameters for queue %d\n",
+		       wiphy_name(local->hw.wiphy), params->queue);
 		return -EINVAL;
 	}
 
@@ -1250,8 +1256,21 @@ static int ieee80211_assoc(struct wiphy *wiphy, struct net_device *dev,
 		sdata->u.mgd.flags |= IEEE80211_STA_AUTO_SSID_SEL;
 
 	ret = ieee80211_sta_set_extra_ie(sdata, req->ie, req->ie_len);
-	if (ret)
+	if (ret && ret != -EALREADY)
 		return ret;
+
+	if (req->use_mfp) {
+		sdata->u.mgd.mfp = IEEE80211_MFP_REQUIRED;
+		sdata->u.mgd.flags |= IEEE80211_STA_MFP_ENABLED;
+	} else {
+		sdata->u.mgd.mfp = IEEE80211_MFP_DISABLED;
+		sdata->u.mgd.flags &= ~IEEE80211_STA_MFP_ENABLED;
+	}
+
+	if (req->control_port)
+		sdata->u.mgd.flags |= IEEE80211_STA_CONTROL_PORT;
+	else
+		sdata->u.mgd.flags &= ~IEEE80211_STA_CONTROL_PORT;
 
 	sdata->u.mgd.flags |= IEEE80211_STA_EXT_SME;
 	sdata->u.mgd.state = IEEE80211_STA_MLME_ASSOCIATE;
@@ -1315,6 +1334,53 @@ static int ieee80211_set_wiphy_params(struct wiphy *wiphy, u32 changed)
 	return 0;
 }
 
+static int ieee80211_set_tx_power(struct wiphy *wiphy,
+				  enum tx_power_setting type, int dbm)
+{
+	struct ieee80211_local *local = wiphy_priv(wiphy);
+	struct ieee80211_channel *chan = local->hw.conf.channel;
+	u32 changes = 0;
+
+	switch (type) {
+	case TX_POWER_AUTOMATIC:
+		local->user_power_level = -1;
+		break;
+	case TX_POWER_LIMITED:
+		if (dbm < 0)
+			return -EINVAL;
+		local->user_power_level = dbm;
+		break;
+	case TX_POWER_FIXED:
+		if (dbm < 0)
+			return -EINVAL;
+		/* TODO: move to cfg80211 when it knows the channel */
+		if (dbm > chan->max_power)
+			return -EINVAL;
+		local->user_power_level = dbm;
+		break;
+	}
+
+	ieee80211_hw_config(local, changes);
+
+	return 0;
+}
+
+static int ieee80211_get_tx_power(struct wiphy *wiphy, int *dbm)
+{
+	struct ieee80211_local *local = wiphy_priv(wiphy);
+
+	*dbm = local->hw.conf.power_level;
+
+	return 0;
+}
+
+static void ieee80211_rfkill_poll(struct wiphy *wiphy)
+{
+	struct ieee80211_local *local = wiphy_priv(wiphy);
+
+	drv_rfkill_poll(local);
+}
+
 struct cfg80211_ops mac80211_config_ops = {
 	.add_virtual_intf = ieee80211_add_iface,
 	.del_virtual_intf = ieee80211_del_iface,
@@ -1354,4 +1420,7 @@ struct cfg80211_ops mac80211_config_ops = {
 	.join_ibss = ieee80211_join_ibss,
 	.leave_ibss = ieee80211_leave_ibss,
 	.set_wiphy_params = ieee80211_set_wiphy_params,
+	.set_tx_power = ieee80211_set_tx_power,
+	.get_tx_power = ieee80211_get_tx_power,
+	.rfkill_poll = ieee80211_rfkill_poll,
 };

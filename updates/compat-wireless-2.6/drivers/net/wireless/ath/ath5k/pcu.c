@@ -736,8 +736,8 @@ void ath5k_hw_init_beacon(struct ath5k_hw *ah, u32 next_beacon, u32 interval)
 	/* When in AP mode zero timer0 to start TSF */
 	if (ah->ah_op_mode == NL80211_IFTYPE_AP)
 		ath5k_hw_reg_write(ah, 0, AR5K_TIMER0);
-	else
-		ath5k_hw_reg_write(ah, next_beacon, AR5K_TIMER0);
+
+	ath5k_hw_reg_write(ah, next_beacon, AR5K_TIMER0);
 	ath5k_hw_reg_write(ah, timer1, AR5K_TIMER1);
 	ath5k_hw_reg_write(ah, timer2, AR5K_TIMER2);
 	ath5k_hw_reg_write(ah, timer3, AR5K_TIMER3);
@@ -1038,9 +1038,9 @@ int ath5k_keycache_type(const struct ieee80211_key_conf *key)
 	case ALG_CCMP:
 		return AR5K_KEYTABLE_TYPE_CCM;
 	case ALG_WEP:
-		if (key->keylen == LEN_WEP40)
+		if (key->keylen == WLAN_KEY_LEN_WEP40)
 			return AR5K_KEYTABLE_TYPE_40;
-		else if (key->keylen == LEN_WEP104)
+		else if (key->keylen == WLAN_KEY_LEN_WEP104)
 			return AR5K_KEYTABLE_TYPE_104;
 		return -EINVAL;
 	default:

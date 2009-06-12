@@ -200,8 +200,10 @@ ath_reg_apply_beaconing_flags(struct wiphy *wiphy,
 				continue;
 
 			if (initiator == NL80211_REGDOM_SET_BY_COUNTRY_IE) {
-				r = freq_reg_info(wiphy, ch->center_freq,
-					&bandwidth, &reg_rule);
+				r = freq_reg_info(wiphy,
+						  ch->center_freq,
+						  bandwidth,
+						  &reg_rule);
 				if (r)
 					continue;
 				/*
@@ -265,7 +267,7 @@ ath_reg_apply_active_scan_flags(struct wiphy *wiphy,
 	 */
 
 	ch = &sband->channels[11]; /* CH 12 */
-	r = freq_reg_info(wiphy, ch->center_freq, &bandwidth, &reg_rule);
+	r = freq_reg_info(wiphy, ch->center_freq, bandwidth, &reg_rule);
 	if (!r) {
 		if (!(reg_rule->flags & NL80211_RRF_PASSIVE_SCAN))
 			if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
@@ -273,7 +275,7 @@ ath_reg_apply_active_scan_flags(struct wiphy *wiphy,
 	}
 
 	ch = &sband->channels[12]; /* CH 13 */
-	r = freq_reg_info(wiphy, ch->center_freq, &bandwidth, &reg_rule);
+	r = freq_reg_info(wiphy, ch->center_freq, bandwidth, &reg_rule);
 	if (!r) {
 		if (!(reg_rule->flags & NL80211_RRF_PASSIVE_SCAN))
 			if (ch->flags & IEEE80211_CHAN_PASSIVE_SCAN)
@@ -364,11 +366,17 @@ static bool ath_regd_is_eeprom_valid(struct ath_regulatory *reg)
 	if (rd & COUNTRY_ERD_FLAG) {
 		/* EEPROM value is a country code */
 		u16 cc = rd & ~COUNTRY_ERD_FLAG;
+		printk(KERN_DEBUG
+		       "ath: EEPROM indicates we should expect "
+			"a country code\n");
 		for (i = 0; i < ARRAY_SIZE(allCountries); i++)
 			if (allCountries[i].countryCode == cc)
 				return true;
 	} else {
 		/* EEPROM value is a regpair value */
+		if (rd != CTRY_DEFAULT)
+			printk(KERN_DEBUG "ath: EEPROM indicates we "
+			       "should expect a direct regpair map\n");
 		for (i = 0; i < ARRAY_SIZE(regDomainPairs); i++)
 			if (regDomainPairs[i].regDmnEnum == rd)
 				return true;
@@ -475,6 +483,11 @@ ath_regd_init(struct ath_regulatory *reg,
 	struct country_code_to_enum_rd *country = NULL;
 	u16 regdmn;
 
+	if (!reg)
+		return -EINVAL;
+
+	printk(KERN_DEBUG "ath: EEPROM regdomain: 0x%0x\n", reg->current_rd);
+
 	if (!ath_regd_is_eeprom_valid(reg)) {
 		printk(KERN_ERR "ath: Invalid EEPROM contents\n");
 		return -EINVAL;
@@ -484,20 +497,30 @@ ath_regd_init(struct ath_regulatory *reg,
 	reg->country_code = ath_regd_get_default_country(regdmn);
 
 	if (reg->country_code == CTRY_DEFAULT &&
-	    regdmn == CTRY_DEFAULT)
+	    regdmn == CTRY_DEFAULT) {
+		printk(KERN_DEBUG "ath: EEPROM indicates default "
+		       "country code should be used\n");
 		reg->country_code = CTRY_UNITED_STATES;
+	}
 
 	if (reg->country_code == CTRY_DEFAULT) {
 		country = NULL;
 	} else {
+		printk(KERN_DEBUG "ath: doing EEPROM country->regdmn "
+		       "map search\n");
 		country = ath_regd_find_country(reg->country_code);
 		if (country == NULL) {
 			printk(KERN_DEBUG
-				"ath: Country is NULL!!!!, cc= %d\n",
+				"ath: no valid country maps found for "
+				"country code: 0x%0x\n",
 				reg->country_code);
 			return -EINVAL;
-		} else
+		} else {
 			regdmn = country->regDmnEnum;
+			printk(KERN_DEBUG "ath: country maps to "
+			       "regdmn code: 0x%0x\n",
+			       regdmn);
+		}
 	}
 
 	reg->regpair = ath_get_regpair(regdmn);
@@ -521,7 +544,7 @@ ath_regd_init(struct ath_regulatory *reg,
 
 	printk(KERN_DEBUG "ath: Country alpha2 being used: %c%c\n",
 		reg->alpha2[0], reg->alpha2[1]);
-	printk(KERN_DEBUG "ath: Regpair detected: 0x%0x\n",
+	printk(KERN_DEBUG "ath: Regpair used: 0x%0x\n",
 		reg->regpair->regDmnEnum);
 
 	ath_regd_init_wiphy(reg, wiphy, reg_notifier);

@@ -73,22 +73,6 @@
  */
 
 /**
- * struct ieee80211_ht_bss_info - describing BSS's HT characteristics
- *
- * This structure describes most essential parameters needed
- * to describe 802.11n HT characteristics in a BSS.
- *
- * @primary_channel: channel number of primery channel
- * @bss_cap: 802.11n's general BSS capabilities (e.g. channel width)
- * @bss_op_mode: 802.11n's BSS operation modes (e.g. HT protection)
- */
-struct ieee80211_ht_bss_info {
-	u8 primary_channel;
-	u8 bss_cap;  /* use IEEE80211_HT_IE_CHA_ */
-	u8 bss_op_mode; /* use IEEE80211_HT_IE_ */
-};
-
-/**
  * enum ieee80211_max_queues - maximum number of queues
  *
  * @IEEE80211_MAX_QUEUES: Maximum number of regular device queues.
@@ -171,14 +155,6 @@ enum ieee80211_bss_change {
 };
 
 /**
- * struct ieee80211_bss_ht_conf - BSS's changing HT configuration
- * @operation_mode: HT operation mode (like in &struct ieee80211_ht_info)
- */
-struct ieee80211_bss_ht_conf {
-	u16 operation_mode;
-};
-
-/**
  * struct ieee80211_bss_conf - holds the BSS's changing parameters
  *
  * This structure keeps information about a BSS (and an association
@@ -197,12 +173,13 @@ struct ieee80211_bss_ht_conf {
  * @timestamp: beacon timestamp
  * @beacon_int: beacon interval
  * @assoc_capability: capabilities taken from assoc resp
- * @ht: BSS's HT configuration
  * @basic_rates: bitmap of basic rates, each bit stands for an
  *	index into the rate table configured by the driver in
  *	the current band.
  * @bssid: The BSSID for this BSS
  * @enable_beacon: whether beaconing should be enabled or not
+ * @ht_operation_mode: HT operation mode (like in &struct ieee80211_ht_info).
+ *	This field is only valid when the channel type is one of the HT types.
  */
 struct ieee80211_bss_conf {
 	const u8 *bssid;
@@ -219,7 +196,7 @@ struct ieee80211_bss_conf {
 	u16 assoc_capability;
 	u64 timestamp;
 	u32 basic_rates;
-	struct ieee80211_bss_ht_conf ht;
+	u16 ht_operation_mode;
 };
 
 /**
@@ -262,6 +239,8 @@ struct ieee80211_bss_conf {
  * @IEEE80211_TX_INTFL_NEED_TXPROCESSING: completely internal to mac80211,
  *	used to indicate that a pending frame requires TX processing before
  *	it can be sent out.
+ * @IEEE80211_TX_INTFL_RETRIED: completely internal to mac80211,
+ *	used to indicate that a frame was already retried due to PS
  */
 enum mac80211_tx_control_flags {
 	IEEE80211_TX_CTL_REQ_TX_STATUS		= BIT(0),
@@ -279,6 +258,7 @@ enum mac80211_tx_control_flags {
 	IEEE80211_TX_CTL_RATE_CTRL_PROBE	= BIT(12),
 	IEEE80211_TX_INTFL_RCALGO		= BIT(13),
 	IEEE80211_TX_INTFL_NEED_TXPROCESSING	= BIT(14),
+	IEEE80211_TX_INTFL_RETRIED		= BIT(15),
 };
 
 /**
@@ -533,43 +513,49 @@ struct ieee80211_rx_status {
  *
  * @IEEE80211_CONF_RADIOTAP: add radiotap header at receive time (if supported)
  * @IEEE80211_CONF_PS: Enable 802.11 power save mode (managed mode only)
+ * @IEEE80211_CONF_IDLE: The device is running, but idle; if the flag is set
+ *	the driver should be prepared to handle configuration requests but
+ *	may turn the device off as much as possible. Typically, this flag will
+ *	be set when an interface is set UP but not associated or scanning, but
+ *	it can also be unset in that case when monitor interfaces are active.
  */
 enum ieee80211_conf_flags {
 	IEEE80211_CONF_RADIOTAP		= (1<<0),
 	IEEE80211_CONF_PS		= (1<<1),
+	IEEE80211_CONF_IDLE		= (1<<2),
 };
 
 
 /**
  * enum ieee80211_conf_changed - denotes which configuration changed
  *
- * @IEEE80211_CONF_CHANGE_RADIO_ENABLED: the value of radio_enabled changed
- * @_IEEE80211_CONF_CHANGE_BEACON_INTERVAL: DEPRECATED
+ * @_IEEE80211_CONF_CHANGE_RADIO_ENABLED: DEPRECATED
  * @IEEE80211_CONF_CHANGE_LISTEN_INTERVAL: the listen interval changed
  * @IEEE80211_CONF_CHANGE_RADIOTAP: the radiotap flag changed
  * @IEEE80211_CONF_CHANGE_PS: the PS flag or dynamic PS timeout changed
  * @IEEE80211_CONF_CHANGE_POWER: the TX power changed
  * @IEEE80211_CONF_CHANGE_CHANNEL: the channel/channel_type changed
  * @IEEE80211_CONF_CHANGE_RETRY_LIMITS: retry limits changed
+ * @IEEE80211_CONF_CHANGE_IDLE: Idle flag changed
  */
 enum ieee80211_conf_changed {
-	IEEE80211_CONF_CHANGE_RADIO_ENABLED	= BIT(0),
-	_IEEE80211_CONF_CHANGE_BEACON_INTERVAL	= BIT(1),
+	_IEEE80211_CONF_CHANGE_RADIO_ENABLED	= BIT(0),
 	IEEE80211_CONF_CHANGE_LISTEN_INTERVAL	= BIT(2),
 	IEEE80211_CONF_CHANGE_RADIOTAP		= BIT(3),
 	IEEE80211_CONF_CHANGE_PS		= BIT(4),
 	IEEE80211_CONF_CHANGE_POWER		= BIT(5),
 	IEEE80211_CONF_CHANGE_CHANNEL		= BIT(6),
 	IEEE80211_CONF_CHANGE_RETRY_LIMITS	= BIT(7),
+	IEEE80211_CONF_CHANGE_IDLE		= BIT(8),
 };
 
 static inline __deprecated enum ieee80211_conf_changed
-__IEEE80211_CONF_CHANGE_BEACON_INTERVAL(void)
+__IEEE80211_CONF_CHANGE_RADIO_ENABLED(void)
 {
-	return _IEEE80211_CONF_CHANGE_BEACON_INTERVAL;
+	return _IEEE80211_CONF_CHANGE_RADIO_ENABLED;
 }
-#define IEEE80211_CONF_CHANGE_BEACON_INTERVAL \
-	__IEEE80211_CONF_CHANGE_BEACON_INTERVAL()
+#define IEEE80211_CONF_CHANGE_RADIO_ENABLED \
+	__IEEE80211_CONF_CHANGE_RADIO_ENABLED()
 
 /**
  * struct ieee80211_conf - configuration of the device
@@ -579,7 +565,7 @@ __IEEE80211_CONF_CHANGE_BEACON_INTERVAL(void)
  * @flags: configuration flags defined above
  *
  * @radio_enabled: when zero, driver is required to switch off the radio.
- * @beacon_int: beacon interval (TODO make interface config)
+ * @beacon_int: DEPRECATED, DO NOT USE
  *
  * @listen_interval: listen interval in units of beacon interval
  * @max_sleep_period: the maximum number of beacon intervals to sleep for
@@ -604,13 +590,13 @@ __IEEE80211_CONF_CHANGE_BEACON_INTERVAL(void)
  *    number of transmissions not the number of retries
  */
 struct ieee80211_conf {
-	int beacon_int;
+	int __deprecated beacon_int;
 	u32 flags;
 	int power_level, dynamic_ps_timeout;
 	int max_sleep_period;
 
 	u16 listen_interval;
-	bool radio_enabled;
+	bool __deprecated radio_enabled;
 
 	u8 long_frame_max_tx_count, short_frame_max_tx_count;
 
@@ -684,16 +670,6 @@ enum ieee80211_key_alg {
 	ALG_TKIP,
 	ALG_CCMP,
 	ALG_AES_CMAC,
-};
-
-/**
- * enum ieee80211_key_len - key length
- * @LEN_WEP40: WEP 5-byte long key
- * @LEN_WEP104: WEP 13-byte long key
- */
-enum ieee80211_key_len {
-	LEN_WEP40 = 5,
-	LEN_WEP104 = 13,
 };
 
 /**
@@ -1431,6 +1407,10 @@ enum ieee80211_ampdu_mlme_action {
  * 	is the first frame we expect to perform the action on. Notice
  * 	that TX/RX_STOP can pass NULL for this parameter.
  *	Returns a negative error code on failure.
+ *
+ * @rfkill_poll: Poll rfkill hardware state. If you need this, you also
+ *	need to set wiphy->rfkill_poll to %true before registration,
+ *	and need to call wiphy_rfkill_set_hw_state() in the callback.
  */
 struct ieee80211_ops {
 	int (*tx)(struct ieee80211_hw *hw, struct sk_buff *skb);
@@ -1479,6 +1459,8 @@ struct ieee80211_ops {
 	int (*ampdu_action)(struct ieee80211_hw *hw,
 			    enum ieee80211_ampdu_mlme_action action,
 			    struct ieee80211_sta *sta, u16 tid, u16 *ssn);
+
+	void (*rfkill_poll)(struct ieee80211_hw *hw);
 };
 
 /**
@@ -1825,24 +1807,6 @@ __le16 ieee80211_generic_frame_duration(struct ieee80211_hw *hw,
  */
 struct sk_buff *
 ieee80211_get_buffered_bc(struct ieee80211_hw *hw, struct ieee80211_vif *vif);
-
-/**
- * ieee80211_get_hdrlen_from_skb - get header length from data
- *
- * Given an skb with a raw 802.11 header at the data pointer this function
- * returns the 802.11 header length in bytes (not including encryption
- * headers). If the data in the sk_buff is too short to contain a valid 802.11
- * header the function returns 0.
- *
- * @skb: the frame
- */
-unsigned int ieee80211_get_hdrlen_from_skb(const struct sk_buff *skb);
-
-/**
- * ieee80211_hdrlen - get header length in bytes from frame control
- * @fc: frame control field in little-endian format
- */
-unsigned int ieee80211_hdrlen(__le16 fc);
 
 /**
  * ieee80211_get_tkip_key - get a TKIP rc4 for skb

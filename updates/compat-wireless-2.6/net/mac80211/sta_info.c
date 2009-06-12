@@ -44,6 +44,15 @@
  * When the insertion fails (sta_info_insert()) returns non-zero), the
  * structure will have been freed by sta_info_insert()!
  *
+ * sta entries are added by mac80211 when you establish a link with a
+ * peer. This means different things for the different type of interfaces
+ * we support. For a regular station this mean we add the AP sta when we
+ * receive an assocation response from the AP. For IBSS this occurs when
+ * we receive a probe response or a beacon from target IBSS network. For
+ * WDS we add the sta for the peer imediately upon device open. When using
+ * AP mode we add stations for each respective station upon request from
+ * userspace through nl80211.
+ *
  * Because there are debugfs entries for each station, and adding those
  * must be able to sleep, it is also possible to "pin" a station entry,
  * that means it can be removed from the hash table but not be freed.
@@ -292,6 +301,9 @@ struct sta_info *sta_info_alloc(struct ieee80211_sub_if_data *sdata,
 	}
 	skb_queue_head_init(&sta->ps_tx_buf);
 	skb_queue_head_init(&sta->tx_filtered);
+
+	for (i = 0; i < NUM_RX_DATA_QUEUES; i++)
+		sta->last_seq_ctrl[i] = cpu_to_le16(USHORT_MAX);
 
 #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
 	printk(KERN_DEBUG "%s: Allocated STA %pM\n",
@@ -607,6 +619,9 @@ static void sta_info_cleanup(unsigned long data)
 	list_for_each_entry_rcu(sta, &local->sta_list, list)
 		sta_info_cleanup_expire_buffered(local, sta);
 	rcu_read_unlock();
+
+	if (local->quiescing)
+		return;
 
 	local->sta_cleanup.expires =
 		round_jiffies(jiffies + STA_INFO_CLEANUP_INTERVAL);

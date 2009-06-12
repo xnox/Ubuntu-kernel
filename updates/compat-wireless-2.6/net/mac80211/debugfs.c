@@ -52,14 +52,6 @@ static const struct file_operations name## _ops = {			\
 
 DEBUGFS_READONLY_FILE(frequency, 20, "%d",
 		      local->hw.conf.channel->center_freq);
-DEBUGFS_READONLY_FILE(rts_threshold, 20, "%d",
-		      local->hw.wiphy->rts_threshold);
-DEBUGFS_READONLY_FILE(fragmentation_threshold, 20, "%d",
-		      local->hw.wiphy->frag_threshold);
-DEBUGFS_READONLY_FILE(short_retry_limit, 20, "%d",
-		      local->hw.wiphy->retry_short);
-DEBUGFS_READONLY_FILE(long_retry_limit, 20, "%d",
-		      local->hw.wiphy->retry_long);
 DEBUGFS_READONLY_FILE(total_ps_buffered, 20, "%d",
 		      local->total_ps_buffered);
 DEBUGFS_READONLY_FILE(wep_iv, 20, "%#08x",
@@ -133,6 +125,42 @@ static ssize_t reset_write(struct file *file, const char __user *user_buf,
 static const struct file_operations reset_ops = {
 	.write = reset_write,
 	.open = mac80211_open_file_generic,
+};
+
+static ssize_t noack_read(struct file *file, char __user *user_buf,
+			  size_t count, loff_t *ppos)
+{
+	struct ieee80211_local *local = file->private_data;
+	int res;
+	char buf[10];
+
+	res = scnprintf(buf, sizeof(buf), "%d\n", local->wifi_wme_noack_test);
+
+	return simple_read_from_buffer(user_buf, count, ppos, buf, res);
+}
+
+static ssize_t noack_write(struct file *file,
+			   const char __user *user_buf,
+			   size_t count, loff_t *ppos)
+{
+	struct ieee80211_local *local = file->private_data;
+	char buf[10];
+	size_t len;
+
+	len = min(count, sizeof(buf) - 1);
+	if (copy_from_user(buf, user_buf, len))
+		return -EFAULT;
+	buf[len] = '\0';
+
+	local->wifi_wme_noack_test = !!simple_strtoul(buf, NULL, 0);
+
+	return count;
+}
+
+static const struct file_operations noack_ops = {
+	.read = noack_read,
+	.write = noack_write,
+	.open = mac80211_open_file_generic
 };
 
 /* statistics stuff */
@@ -267,14 +295,11 @@ void debugfs_hw_add(struct ieee80211_local *local)
 	local->debugfs.keys = debugfs_create_dir("keys", phyd);
 
 	DEBUGFS_ADD(frequency);
-	DEBUGFS_ADD(rts_threshold);
-	DEBUGFS_ADD(fragmentation_threshold);
-	DEBUGFS_ADD(short_retry_limit);
-	DEBUGFS_ADD(long_retry_limit);
 	DEBUGFS_ADD(total_ps_buffered);
 	DEBUGFS_ADD(wep_iv);
 	DEBUGFS_ADD(tsf);
 	DEBUGFS_ADD_MODE(reset, 0200);
+	DEBUGFS_ADD(noack);
 
 	statsd = debugfs_create_dir("statistics", phyd);
 	local->debugfs.statistics = statsd;
@@ -322,14 +347,11 @@ void debugfs_hw_add(struct ieee80211_local *local)
 void debugfs_hw_del(struct ieee80211_local *local)
 {
 	DEBUGFS_DEL(frequency);
-	DEBUGFS_DEL(rts_threshold);
-	DEBUGFS_DEL(fragmentation_threshold);
-	DEBUGFS_DEL(short_retry_limit);
-	DEBUGFS_DEL(long_retry_limit);
 	DEBUGFS_DEL(total_ps_buffered);
 	DEBUGFS_DEL(wep_iv);
 	DEBUGFS_DEL(tsf);
 	DEBUGFS_DEL(reset);
+	DEBUGFS_DEL(noack);
 
 	DEBUGFS_STATS_DEL(transmitted_fragment_count);
 	DEBUGFS_STATS_DEL(multicast_transmitted_frame_count);

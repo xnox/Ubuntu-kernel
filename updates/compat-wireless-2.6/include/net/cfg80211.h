@@ -57,9 +57,9 @@ enum ieee80211_band {
  *	on this channel.
  * @IEEE80211_CHAN_NO_IBSS: IBSS is not allowed on this channel.
  * @IEEE80211_CHAN_RADAR: Radar detection is required on this channel.
- * @IEEE80211_CHAN_NO_FAT_ABOVE: extension channel above this channel
+ * @IEEE80211_CHAN_NO_HT40PLUS: extension channel above this channel
  * 	is not permitted.
- * @IEEE80211_CHAN_NO_FAT_BELOW: extension channel below this channel
+ * @IEEE80211_CHAN_NO_HT40MINUS: extension channel below this channel
  * 	is not permitted.
  */
 enum ieee80211_channel_flags {
@@ -67,9 +67,12 @@ enum ieee80211_channel_flags {
 	IEEE80211_CHAN_PASSIVE_SCAN	= 1<<1,
 	IEEE80211_CHAN_NO_IBSS		= 1<<2,
 	IEEE80211_CHAN_RADAR		= 1<<3,
-	IEEE80211_CHAN_NO_FAT_ABOVE	= 1<<4,
-	IEEE80211_CHAN_NO_FAT_BELOW	= 1<<5,
+	IEEE80211_CHAN_NO_HT40PLUS	= 1<<4,
+	IEEE80211_CHAN_NO_HT40MINUS	= 1<<5,
 };
+
+#define IEEE80211_CHAN_NO_HT40 \
+	(IEEE80211_CHAN_NO_HT40PLUS | IEEE80211_CHAN_NO_HT40MINUS)
 
 /**
  * struct ieee80211_channel - channel definition
@@ -253,27 +256,6 @@ struct beacon_parameters {
 };
 
 /**
- * enum station_flags - station flags
- *
- * Station capability flags. Note that these must be the bits
- * according to the nl80211 flags.
- *
- * @STATION_FLAG_CHANGED: station flags were changed
- * @STATION_FLAG_AUTHORIZED: station is authorized to send frames (802.1X)
- * @STATION_FLAG_SHORT_PREAMBLE: station is capable of receiving frames
- *	with short preambles
- * @STATION_FLAG_WME: station is WME/QoS capable
- * @STATION_FLAG_MFP: station uses management frame protection
- */
-enum station_flags {
-	STATION_FLAG_CHANGED		= 1<<0,
-	STATION_FLAG_AUTHORIZED		= 1<<NL80211_STA_FLAG_AUTHORIZED,
-	STATION_FLAG_SHORT_PREAMBLE	= 1<<NL80211_STA_FLAG_SHORT_PREAMBLE,
-	STATION_FLAG_WME		= 1<<NL80211_STA_FLAG_WME,
-	STATION_FLAG_MFP		= 1<<NL80211_STA_FLAG_MFP,
-};
-
-/**
  * enum plink_action - actions to perform in mesh peers
  *
  * @PLINK_ACTION_INVALID: action 0 is reserved
@@ -295,14 +277,17 @@ enum plink_actions {
  * @supported_rates: supported rates in IEEE 802.11 format
  *	(or NULL for no change)
  * @supported_rates_len: number of supported rates
- * @station_flags: station flags (see &enum station_flags)
+ * @sta_flags_mask: station flags that changed
+ *	(bitmask of BIT(NL80211_STA_FLAG_...))
+ * @sta_flags_set: station flags values
+ *	(bitmask of BIT(NL80211_STA_FLAG_...))
  * @listen_interval: listen interval or -1 for no change
  * @aid: AID or zero for no change
  */
 struct station_parameters {
 	u8 *supported_rates;
 	struct net_device *vlan;
-	u32 station_flags;
+	u32 sta_flags_mask, sta_flags_set;
 	int listen_interval;
 	u16 aid;
 	u8 supported_rates_len;
@@ -673,6 +658,11 @@ struct cfg80211_auth_request {
  * @ssid_len: Length of ssid in octets
  * @ie: Extra IEs to add to (Re)Association Request frame or %NULL
  * @ie_len: Length of ie buffer in octets
+ * @use_mfp: Use management frame protection (IEEE 802.11w) in this association
+ * @control_port: Whether user space controls IEEE 802.1X port, i.e.,
+ *	sets/clears %NL80211_STA_FLAG_AUTHORIZED. If true, the driver is
+ *	required to assume that the port is unauthorized until authorized by
+ *	user space. Otherwise, port is marked authorized by default.
  */
 struct cfg80211_assoc_request {
 	struct ieee80211_channel *chan;
@@ -681,6 +671,8 @@ struct cfg80211_assoc_request {
 	size_t ssid_len;
 	const u8 *ie;
 	size_t ie_len;
+	bool use_mfp;
+	bool control_port;
 };
 
 /**
@@ -761,6 +753,19 @@ enum wiphy_params_flags {
 };
 
 /**
+ * enum tx_power_setting - TX power adjustment
+ *
+ * @TX_POWER_AUTOMATIC: the dbm parameter is ignored
+ * @TX_POWER_LIMITED: limit TX power by the dbm parameter
+ * @TX_POWER_FIXED: fix TX power to the dbm parameter
+ */
+enum tx_power_setting {
+	TX_POWER_AUTOMATIC,
+	TX_POWER_LIMITED,
+	TX_POWER_FIXED,
+};
+
+/**
  * struct cfg80211_ops - backend description for wireless configuration
  *
  * This struct is registered by fullmac card drivers and/or wireless stacks
@@ -790,10 +795,11 @@ enum wiphy_params_flags {
  * @get_key: get information about the key with the given parameters.
  *	@mac_addr will be %NULL when requesting information for a group
  *	key. All pointers given to the @callback function need not be valid
- *	after it returns.
+ *	after it returns. This function should return an error if it is
+ *	not possible to retrieve the key, -ENOENT if it doesn't exist.
  *
  * @del_key: remove a key given the @mac_addr (%NULL for a group key)
- *	and @key_index
+ *	and @key_index, return -ENOENT if the key doesn't exist.
  *
  * @set_default_key: set the default key on an interface
  *
@@ -845,6 +851,13 @@ enum wiphy_params_flags {
  *	@changed bitfield (see &enum wiphy_params_flags) describes which values
  *	have changed. The actual parameter values are available in
  *	struct wiphy. If returning an error, no value should be changed.
+ *
+ * @set_tx_power: set the transmit power according to the parameters
+ * @get_tx_power: store the current TX power into the dbm variable;
+ *	return 0 if successful
+ *
+ * @rfkill_poll: polls the hw rfkill line, use cfg80211 reporting
+ *	functions to adjust rfkill hw state
  */
 struct cfg80211_ops {
 	int	(*suspend)(struct wiphy *wiphy);
@@ -859,13 +872,13 @@ struct cfg80211_ops {
 				       struct vif_params *params);
 
 	int	(*add_key)(struct wiphy *wiphy, struct net_device *netdev,
-			   u8 key_index, u8 *mac_addr,
+			   u8 key_index, const u8 *mac_addr,
 			   struct key_params *params);
 	int	(*get_key)(struct wiphy *wiphy, struct net_device *netdev,
-			   u8 key_index, u8 *mac_addr, void *cookie,
+			   u8 key_index, const u8 *mac_addr, void *cookie,
 			   void (*callback)(void *cookie, struct key_params*));
 	int	(*del_key)(struct wiphy *wiphy, struct net_device *netdev,
-			   u8 key_index, u8 *mac_addr);
+			   u8 key_index, const u8 *mac_addr);
 	int	(*set_default_key)(struct wiphy *wiphy,
 				   struct net_device *netdev,
 				   u8 key_index);
@@ -936,6 +949,12 @@ struct cfg80211_ops {
 	int	(*leave_ibss)(struct wiphy *wiphy, struct net_device *dev);
 
 	int	(*set_wiphy_params)(struct wiphy *wiphy, u32 changed);
+
+	int	(*set_tx_power)(struct wiphy *wiphy,
+				enum tx_power_setting type, int dbm);
+	int	(*get_tx_power)(struct wiphy *wiphy, int *dbm);
+
+	void	(*rfkill_poll)(struct wiphy *wiphy);
 };
 
 /*
@@ -1006,7 +1025,7 @@ struct wiphy {
 	 * know whether it points to a wiphy your driver has registered
 	 * or not. Assign this to something global to your driver to
 	 * help determine whether you own this wiphy or not. */
-	void *privid;
+	const void *privid;
 
 	struct ieee80211_supported_band *bands[IEEE80211_NUM_BANDS];
 
@@ -1082,7 +1101,7 @@ static inline const char *wiphy_name(struct wiphy *wiphy)
  * The returned pointer must be assigned to each netdev's
  * ieee80211_ptr for proper operation.
  */
-struct wiphy *wiphy_new(struct cfg80211_ops *ops, int sizeof_priv);
+struct wiphy *wiphy_new(const struct cfg80211_ops *ops, int sizeof_priv);
 
 /**
  * wiphy_register - register a wiphy with cfg80211
@@ -1146,8 +1165,11 @@ struct wireless_dev {
 
 #ifdef CONFIG_WIRELESS_EXT
 	/* wext data */
-	struct cfg80211_ibss_params wext;
-	u8 wext_bssid[ETH_ALEN];
+	struct {
+		struct cfg80211_ibss_params ibss;
+		u8 bssid[ETH_ALEN];
+		s8 default_key, default_mgmt_key;
+	} wext;
 #endif
 };
 
@@ -1249,6 +1271,53 @@ extern int ieee80211_radiotap_iterator_init(
 extern int ieee80211_radiotap_iterator_next(
    struct ieee80211_radiotap_iterator *iterator);
 
+extern const unsigned char rfc1042_header[6];
+extern const unsigned char bridge_tunnel_header[6];
+
+/**
+ * ieee80211_get_hdrlen_from_skb - get header length from data
+ *
+ * Given an skb with a raw 802.11 header at the data pointer this function
+ * returns the 802.11 header length in bytes (not including encryption
+ * headers). If the data in the sk_buff is too short to contain a valid 802.11
+ * header the function returns 0.
+ *
+ * @skb: the frame
+ */
+unsigned int ieee80211_get_hdrlen_from_skb(const struct sk_buff *skb);
+
+/**
+ * ieee80211_hdrlen - get header length in bytes from frame control
+ * @fc: frame control field in little-endian format
+ */
+unsigned int ieee80211_hdrlen(__le16 fc);
+
+/**
+ * ieee80211_data_to_8023 - convert an 802.11 data frame to 802.3
+ * @skb: the 802.11 data frame
+ * @addr: the device MAC address
+ * @iftype: the virtual interface type
+ */
+int ieee80211_data_to_8023(struct sk_buff *skb, u8 *addr,
+			   enum nl80211_iftype iftype);
+
+/**
+ * ieee80211_data_from_8023 - convert an 802.3 frame to 802.11
+ * @skb: the 802.3 frame
+ * @addr: the device MAC address
+ * @iftype: the virtual interface type
+ * @bssid: the network bssid (used only for iftype STATION and ADHOC)
+ * @qos: build 802.11 QoS data frame
+ */
+int ieee80211_data_from_8023(struct sk_buff *skb, u8 *addr,
+			     enum nl80211_iftype iftype, u8 *bssid, bool qos);
+
+/**
+ * cfg80211_classify8021d - determine the 802.1p/1d tag for a data frame
+ * @skb: the data frame
+ */
+unsigned int cfg80211_classify8021d(struct sk_buff *skb);
+
 /*
  * Regulatory helper functions for wiphys
  */
@@ -1312,9 +1381,10 @@ extern void wiphy_apply_custom_regulatory(
  * freq_reg_info - get regulatory information for the given frequency
  * @wiphy: the wiphy for which we want to process this rule for
  * @center_freq: Frequency in KHz for which we want regulatory information for
- * @bandwidth: the bandwidth requirement you have in KHz, if you do not have one
- * 	you can set this to 0. If this frequency is allowed we then set
- * 	this value to the maximum allowed bandwidth.
+ * @desired_bw_khz: the desired max bandwidth you want to use per
+ *	channel. Note that this is still 20 MHz if you want to use HT40
+ *	as HT40 makes use of two channels for its 40 MHz width bandwidth.
+ *	If set to 0 we'll assume you want the standard 20 MHz.
  * @reg_rule: the regulatory rule which we have for this frequency
  *
  * Use this function to get the regulatory rule for a specific frequency on
@@ -1329,7 +1399,9 @@ extern void wiphy_apply_custom_regulatory(
  * freq_in_rule_band() for our current definition of a band -- this is purely
  * subjective and right now its 802.11 specific.
  */
-extern int freq_reg_info(struct wiphy *wiphy, u32 center_freq, u32 *bandwidth,
+extern int freq_reg_info(struct wiphy *wiphy,
+			 u32 center_freq,
+			 u32 desired_bw_khz,
 			 const struct ieee80211_reg_rule **reg_rule);
 
 /*
@@ -1397,6 +1469,21 @@ int cfg80211_wext_siwretry(struct net_device *dev,
 int cfg80211_wext_giwretry(struct net_device *dev,
 			   struct iw_request_info *info,
 			   struct iw_param *retry, char *extra);
+int cfg80211_wext_siwencodeext(struct net_device *dev,
+			       struct iw_request_info *info,
+			       struct iw_point *erq, char *extra);
+int cfg80211_wext_siwencode(struct net_device *dev,
+			    struct iw_request_info *info,
+			    struct iw_point *erq, char *keybuf);
+int cfg80211_wext_giwencode(struct net_device *dev,
+			    struct iw_request_info *info,
+			    struct iw_point *erq, char *keybuf);
+int cfg80211_wext_siwtxpower(struct net_device *dev,
+			     struct iw_request_info *info,
+			     union iwreq_data *data, char *keybuf);
+int cfg80211_wext_giwtxpower(struct net_device *dev,
+			     struct iw_request_info *info,
+			     union iwreq_data *data, char *keybuf);
 
 /*
  * callbacks for asynchronous cfg80211 methods, notification
@@ -1581,5 +1668,24 @@ void cfg80211_michael_mic_failure(struct net_device *dev, const u8 *addr,
  * always a scan result for this IBSS. cfg80211 will handle the rest.
  */
 void cfg80211_ibss_joined(struct net_device *dev, const u8 *bssid, gfp_t gfp);
+
+/**
+ * wiphy_rfkill_set_hw_state - notify cfg80211 about hw block state
+ * @wiphy: the wiphy
+ * @blocked: block status
+ */
+void wiphy_rfkill_set_hw_state(struct wiphy *wiphy, bool blocked);
+
+/**
+ * wiphy_rfkill_start_polling - start polling rfkill
+ * @wiphy: the wiphy
+ */
+void wiphy_rfkill_start_polling(struct wiphy *wiphy);
+
+/**
+ * wiphy_rfkill_stop_polling - stop polling rfkill
+ * @wiphy: the wiphy
+ */
+void wiphy_rfkill_stop_polling(struct wiphy *wiphy);
 
 #endif /* __NET_CFG80211_H */

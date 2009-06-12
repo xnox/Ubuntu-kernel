@@ -1,7 +1,7 @@
 /*
  * This is the linux wireless configuration interface.
  *
- * Copyright 2006-2008		Johannes Berg <johannes@sipsolutions.net>
+ * Copyright 2006-2009		Johannes Berg <johannes@sipsolutions.net>
  */
 
 #include <linux/if.h>
@@ -12,11 +12,13 @@
 #include <linux/debugfs.h>
 #include <linux/notifier.h>
 #include <linux/device.h>
+#include <linux/rtnetlink.h>
 #include <net/genetlink.h>
 #include <net/cfg80211.h>
 #include "nl80211.h"
 #include "core.h"
 #include "sysfs.h"
+#include "debugfs.h"
 
 /* name for sysfs, %d is appended */
 #define PHY_NAME "phy"
@@ -226,9 +228,48 @@ int cfg80211_dev_rename(struct cfg80211_registered_device *rdev,
 	return 0;
 }
 
+static void cfg80211_rfkill_poll(struct rfkill *rfkill, void *data)
+{
+	struct cfg80211_registered_device *drv = data;
+
+	drv->ops->rfkill_poll(&drv->wiphy);
+}
+
+static int cfg80211_rfkill_set_block(void *data, bool blocked)
+{
+	struct cfg80211_registered_device *drv = data;
+	struct wireless_dev *wdev;
+
+	if (!blocked)
+		return 0;
+
+	rtnl_lock();
+	mutex_lock(&drv->devlist_mtx);
+
+	list_for_each_entry(wdev, &drv->netdev_list, list)
+		dev_close(wdev->netdev);
+
+	mutex_unlock(&drv->devlist_mtx);
+	rtnl_unlock();
+
+	return 0;
+}
+
+static void cfg80211_rfkill_sync_work(struct work_struct *work)
+{
+	struct cfg80211_registered_device *drv;
+
+	drv = container_of(work, struct cfg80211_registered_device, rfkill_sync);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	cfg80211_rfkill_set_block(drv, rfkill_blocked(drv->rfkill));
+#else
+	cfg80211_rfkill_set_block(drv, backport_rfkill_blocked(drv->rfkill));
+#endif
+}
+
 /* exported functions */
 
-struct wiphy *wiphy_new(struct cfg80211_ops *ops, int sizeof_priv)
+struct wiphy *wiphy_new(const struct cfg80211_ops *ops, int sizeof_priv)
 {
 	static int wiphy_counter;
 
@@ -272,6 +313,24 @@ struct wiphy *wiphy_new(struct cfg80211_ops *ops, int sizeof_priv)
 	device_initialize(&drv->wiphy.dev);
 	drv->wiphy.dev.class = &ieee80211_class;
 	drv->wiphy.dev.platform_data = drv;
+
+	drv->rfkill_ops.set_block = cfg80211_rfkill_set_block;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	drv->rfkill = rfkill_alloc(dev_name(&drv->wiphy.dev),
+				   &drv->wiphy.dev, RFKILL_TYPE_WLAN,
+				   &drv->rfkill_ops, drv);
+#else
+	drv->rfkill = backport_rfkill_alloc(dev_name(&drv->wiphy.dev),
+				   &drv->wiphy.dev, RFKILL_TYPE_WLAN,
+				   &drv->rfkill_ops, drv);
+#endif
+
+	if (!drv->rfkill) {
+		kfree(drv);
+		return NULL;
+	}
+
+	INIT_WORK(&drv->rfkill_sync, cfg80211_rfkill_sync_work);
 
 	/*
 	 * Initialize wiphy parameters to IEEE 802.11 MIB default values.
@@ -346,16 +405,26 @@ int wiphy_register(struct wiphy *wiphy)
 	/* check and set up bitrates */
 	ieee80211_set_bitrate_flags(wiphy);
 
+	res = device_add(&drv->wiphy.dev);
+	if (res)
+		return res;
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	res = rfkill_register(drv->rfkill);
+#else
+	res = backport_rfkill_register(drv->rfkill);
+#endif
+	if (res)
+		goto out_rm_dev;
+
 	mutex_lock(&cfg80211_mutex);
 
 	/* set up regulatory info */
 	wiphy_update_regulatory(wiphy, NL80211_REGDOM_SET_BY_CORE);
 
-	res = device_add(&drv->wiphy.dev);
-	if (res)
-		goto out_unlock;
-
 	list_add(&drv->list, &cfg80211_drv_list);
+
+	mutex_unlock(&cfg80211_mutex);
 
 	/* add to debugfs */
 	drv->wiphy.debugfsdir =
@@ -375,16 +444,52 @@ int wiphy_register(struct wiphy *wiphy)
 		nl80211_send_reg_change_event(&request);
 	}
 
-	res = 0;
-out_unlock:
-	mutex_unlock(&cfg80211_mutex);
+	cfg80211_debugfs_drv_add(drv);
+
+	return 0;
+
+ out_rm_dev:
+	device_del(&drv->wiphy.dev);
 	return res;
 }
 EXPORT_SYMBOL(wiphy_register);
 
+void wiphy_rfkill_start_polling(struct wiphy *wiphy)
+{
+	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
+
+	if (!drv->ops->rfkill_poll)
+		return;
+	drv->rfkill_ops.poll = cfg80211_rfkill_poll;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	rfkill_resume_polling(drv->rfkill);
+#else
+	backport_rfkill_resume_polling(drv->rfkill);
+#endif
+}
+EXPORT_SYMBOL(wiphy_rfkill_start_polling);
+
+void wiphy_rfkill_stop_polling(struct wiphy *wiphy)
+{
+	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	rfkill_pause_polling(drv->rfkill);
+#else
+	backport_rfkill_pause_polling(drv->rfkill);
+#endif
+}
+EXPORT_SYMBOL(wiphy_rfkill_stop_polling);
+
 void wiphy_unregister(struct wiphy *wiphy)
 {
 	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	rfkill_unregister(drv->rfkill);
+#else
+	backport_rfkill_unregister(drv->rfkill);
+#endif
 
 	/* protect the device list */
 	mutex_lock(&cfg80211_mutex);
@@ -405,6 +510,8 @@ void wiphy_unregister(struct wiphy *wiphy)
 	/* unlock again before freeing */
 	mutex_unlock(&drv->mtx);
 
+	cfg80211_debugfs_drv_del(drv);
+
 	/* If this device got a regulatory hint tell core its
 	 * free to listen now to a new shiny device regulatory hint */
 	reg_device_remove(wiphy);
@@ -420,6 +527,11 @@ EXPORT_SYMBOL(wiphy_unregister);
 void cfg80211_dev_free(struct cfg80211_registered_device *drv)
 {
 	struct cfg80211_internal_bss *scan, *tmp;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	rfkill_destroy(drv->rfkill);
+#else
+	backport_rfkill_destroy(drv->rfkill);
+#endif
 	mutex_destroy(&drv->mtx);
 	mutex_destroy(&drv->devlist_mtx);
 	list_for_each_entry_safe(scan, tmp, &drv->bss_list, list)
@@ -433,6 +545,19 @@ void wiphy_free(struct wiphy *wiphy)
 }
 EXPORT_SYMBOL(wiphy_free);
 
+void wiphy_rfkill_set_hw_state(struct wiphy *wiphy, bool blocked)
+{
+	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+	if (rfkill_set_hw_state(drv->rfkill, blocked))
+#else
+	if (backport_rfkill_set_hw_state(drv->rfkill, blocked))
+#endif
+		schedule_work(&drv->rfkill_sync);
+}
+EXPORT_SYMBOL(wiphy_rfkill_set_hw_state);
+
 static int cfg80211_netdev_notifier_call(struct notifier_block * nb,
 					 unsigned long state,
 					 void *ndev)
@@ -441,7 +566,7 @@ static int cfg80211_netdev_notifier_call(struct notifier_block * nb,
 	struct cfg80211_registered_device *rdev;
 
 	if (!dev->ieee80211_ptr)
-		return 0;
+		return NOTIFY_DONE;
 
 	rdev = wiphy_to_dev(dev->ieee80211_ptr->wiphy);
 
@@ -457,6 +582,10 @@ static int cfg80211_netdev_notifier_call(struct notifier_block * nb,
 				"symlink to netdev!\n");
 		}
 		dev->ieee80211_ptr->netdev = dev;
+#ifdef CONFIG_WIRELESS_EXT
+		dev->ieee80211_ptr->wext.default_key = -1;
+		dev->ieee80211_ptr->wext.default_mgmt_key = -1;
+#endif
 		mutex_unlock(&rdev->devlist_mtx);
 		break;
 	case NETDEV_GOING_DOWN:
@@ -470,9 +599,9 @@ static int cfg80211_netdev_notifier_call(struct notifier_block * nb,
 #ifdef CONFIG_WIRELESS_EXT
 		if (dev->ieee80211_ptr->iftype != NL80211_IFTYPE_ADHOC)
 			break;
-		if (!dev->ieee80211_ptr->wext.ssid_len)
+		if (!dev->ieee80211_ptr->wext.ibss.ssid_len)
 			break;
-		cfg80211_join_ibss(rdev, dev, &dev->ieee80211_ptr->wext);
+		cfg80211_join_ibss(rdev, dev, &dev->ieee80211_ptr->wext.ibss);
 		break;
 #endif
 	case NETDEV_UNREGISTER:
@@ -483,9 +612,17 @@ static int cfg80211_netdev_notifier_call(struct notifier_block * nb,
 		}
 		mutex_unlock(&rdev->devlist_mtx);
 		break;
+	case NETDEV_PRE_UP:
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+		if (rfkill_blocked(rdev->rfkill))
+#else
+		if (backport_rfkill_blocked(rdev->rfkill))
+#endif
+			return notifier_from_errno(-ERFKILL);
+		break;
 	}
 
-	return 0;
+	return NOTIFY_DONE;
 }
 
 static struct notifier_block cfg80211_netdev_notifier = {

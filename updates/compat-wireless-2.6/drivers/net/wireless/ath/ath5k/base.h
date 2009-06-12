@@ -46,6 +46,11 @@
 #include <linux/wireless.h>
 #include <linux/if_ether.h>
 #include <linux/leds.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+#include <linux/rfkill.h>
+#else
+#include <linux/rfkill_backport.h>
+#endif
 
 #include "ath5k.h"
 #include "debug.h"
@@ -91,6 +96,15 @@ struct ath5k_led
 	struct led_classdev led_dev;		/* led classdev */
 };
 
+/* Rfkill */
+struct ath5k_rfkill {
+	/* GPIO PIN for rfkill */
+	u16 gpio;
+	/* polarity of rfkill GPIO PIN */
+	bool polarity;
+	/* RFKILL toggle tasklet */
+	struct tasklet_struct toggleq;
+};
 
 #if CHAN_DEBUG
 #define ATH_CHAN_MAX	(26+26+26+200+200)
@@ -166,6 +180,8 @@ struct ath5k_softc {
 	struct ath5k_txq	*txq;		/* beacon and tx*/
 	struct tasklet_struct	txtq;		/* tx intr tasklet */
 	struct ath5k_led	tx_led;		/* tx led */
+
+	struct ath5k_rfkill	rf_kill;
 
 	spinlock_t		block;		/* protects beacon */
 	struct tasklet_struct	beacontq;	/* beacon intr tasklet */

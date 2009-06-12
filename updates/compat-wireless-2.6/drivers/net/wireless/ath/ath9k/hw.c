@@ -84,6 +84,38 @@ static u32 ath9k_hw_mac_to_clks(struct ath_hw *ah, u32 usecs)
 		return ath9k_hw_mac_clks(ah, usecs);
 }
 
+/*
+ * Read and write, they both share the same lock. We do this to serialize
+ * reads and writes on Atheros 802.11n PCI devices only. This is required
+ * as the FIFO on these devices can only accept sanely 2 requests. After
+ * that the device goes bananas. Serializing the reads/writes prevents this
+ * from happening.
+ */
+
+void ath9k_iowrite32(struct ath_hw *ah, u32 reg_offset, u32 val)
+{
+	if (ah->config.serialize_regmode == SER_REG_MODE_ON) {
+		unsigned long flags;
+		spin_lock_irqsave(&ah->ah_sc->sc_serial_rw, flags);
+		iowrite32(val, ah->ah_sc->mem + reg_offset);
+		spin_unlock_irqrestore(&ah->ah_sc->sc_serial_rw, flags);
+	} else
+		iowrite32(val, ah->ah_sc->mem + reg_offset);
+}
+
+unsigned int ath9k_ioread32(struct ath_hw *ah, u32 reg_offset)
+{
+	u32 val;
+	if (ah->config.serialize_regmode == SER_REG_MODE_ON) {
+		unsigned long flags;
+		spin_lock_irqsave(&ah->ah_sc->sc_serial_rw, flags);
+		val = ioread32(ah->ah_sc->mem + reg_offset);
+		spin_unlock_irqrestore(&ah->ah_sc->sc_serial_rw, flags);
+	} else
+		val = ioread32(ah->ah_sc->mem + reg_offset);
+	return val;
+}
+
 bool ath9k_hw_wait(struct ath_hw *ah, u32 reg, u32 mask, u32 val, u32 timeout)
 {
 	int i;
@@ -136,7 +168,7 @@ bool ath9k_get_channel_edges(struct ath_hw *ah,
 }
 
 u16 ath9k_hw_computetxtime(struct ath_hw *ah,
-			   struct ath_rate_table *rates,
+			   const struct ath_rate_table *rates,
 			   u32 frameLen, u16 rateix,
 			   bool shortPreamble)
 {
@@ -1242,7 +1274,6 @@ static int ath9k_hw_process_ini(struct ath_hw *ah,
 	int i, regWrites = 0;
 	struct ieee80211_channel *channel = chan->chan;
 	u32 modesIndex, freqIndex;
-	int status;
 
 	switch (chan->chanmode) {
 	case CHANNEL_A:
@@ -1313,8 +1344,7 @@ static int ath9k_hw_process_ini(struct ath_hw *ah,
 	if (AR_SREV_9280(ah))
 		REG_WRITE_ARRAY(&ah->iniModesRxGain, modesIndex, regWrites);
 
-	if (AR_SREV_9280(ah) || (AR_SREV_9285(ah) &&
-	    AR_SREV_9285_12_OR_LATER(ah)))
+	if (AR_SREV_9280(ah) || AR_SREV_9285_12_OR_LATER(ah))
 		REG_WRITE_ARRAY(&ah->iniModesTxGain, modesIndex, regWrites);
 
 	for (i = 0; i < ah->iniCommon.ia_rows; i++) {
@@ -1345,17 +1375,12 @@ static int ath9k_hw_process_ini(struct ath_hw *ah,
 	if (OLC_FOR_AR9280_20_LATER)
 		ath9k_olc_init(ah);
 
-	status = ah->eep_ops->set_txpower(ah, chan,
-				  ath9k_regd_get_ctl(&ah->regulatory, chan),
-				  channel->max_antenna_gain * 2,
-				  channel->max_power * 2,
-				  min((u32) MAX_RATE_POWER,
-				      (u32) ah->regulatory.power_limit));
-	if (status != 0) {
-		DPRINTF(ah->ah_sc, ATH_DBG_FATAL,
-			"Error initializing transmit power\n");
-		return -EIO;
-	}
+	ah->eep_ops->set_txpower(ah, chan,
+				 ath9k_regd_get_ctl(&ah->regulatory, chan),
+				 channel->max_antenna_gain * 2,
+				 channel->max_power * 2,
+				 min((u32) MAX_RATE_POWER,
+				 (u32) ah->regulatory.power_limit));
 
 	if (!ath9k_hw_set_rf_regs(ah, chan, freqIndex)) {
 		DPRINTF(ah->ah_sc, ATH_DBG_FATAL,
@@ -1586,11 +1611,9 @@ static bool ath9k_hw_set_reset_reg(struct ath_hw *ah, u32 type)
 	switch (type) {
 	case ATH9K_RESET_POWER_ON:
 		return ath9k_hw_set_reset_power_on(ah);
-		break;
 	case ATH9K_RESET_WARM:
 	case ATH9K_RESET_COLD:
 		return ath9k_hw_set_reset(ah, type);
-		break;
 	default:
 		return false;
 	}
@@ -1672,11 +1695,7 @@ static bool ath9k_hw_channel_change(struct ath_hw *ah,
 	ath9k_hw_set_regs(ah, chan, macmode);
 
 	if (AR_SREV_9280_10_OR_LATER(ah)) {
-		if (!(ath9k_hw_ar9280_set_channel(ah, chan))) {
-			DPRINTF(ah->ah_sc, ATH_DBG_FATAL,
-				"Failed to set channel\n");
-			return false;
-		}
+		ath9k_hw_ar9280_set_channel(ah, chan);
 	} else {
 		if (!(ath9k_hw_set_channel(ah, chan))) {
 			DPRINTF(ah->ah_sc, ATH_DBG_FATAL,
@@ -1685,16 +1704,12 @@ static bool ath9k_hw_channel_change(struct ath_hw *ah,
 		}
 	}
 
-	if (ah->eep_ops->set_txpower(ah, chan,
+	ah->eep_ops->set_txpower(ah, chan,
 			     ath9k_regd_get_ctl(&ah->regulatory, chan),
 			     channel->max_antenna_gain * 2,
 			     channel->max_power * 2,
 			     min((u32) MAX_RATE_POWER,
-				 (u32) ah->regulatory.power_limit)) != 0) {
-		DPRINTF(ah->ah_sc, ATH_DBG_EEPROM,
-			"Error initializing transmit power\n");
-		return false;
-	}
+			     (u32) ah->regulatory.power_limit));
 
 	synthDelay = REG_READ(ah, AR_PHY_RX_DELAY) & AR_PHY_RX_DELAY_DELAY;
 	if (IS_CHAN_B(chan))
@@ -2282,13 +2297,11 @@ int ath9k_hw_reset(struct ath_hw *ah, struct ath9k_channel *chan,
 
 	REG_WRITE(ah, AR_RSSI_THR, INIT_RSSI_THR);
 
-	if (AR_SREV_9280_10_OR_LATER(ah)) {
-		if (!(ath9k_hw_ar9280_set_channel(ah, chan)))
-			return -EIO;
-	} else {
+	if (AR_SREV_9280_10_OR_LATER(ah))
+		ath9k_hw_ar9280_set_channel(ah, chan);
+	else
 		if (!(ath9k_hw_set_channel(ah, chan)))
 			return -EIO;
-	}
 
 	for (i = 0; i < AR_NUM_DCU; i++)
 		REG_WRITE(ah, AR_DQCUMASK(i), 1 << i);
@@ -2459,14 +2472,14 @@ bool ath9k_hw_set_keycache_entry(struct ath_hw *ah, u16 entry,
 		}
 		break;
 	case ATH9K_CIPHER_WEP:
-		if (k->kv_len < LEN_WEP40) {
+		if (k->kv_len < WLAN_KEY_LEN_WEP40) {
 			DPRINTF(ah->ah_sc, ATH_DBG_ANY,
 				"WEP key length %u too small\n", k->kv_len);
 			return false;
 		}
-		if (k->kv_len <= LEN_WEP40)
+		if (k->kv_len <= WLAN_KEY_LEN_WEP40)
 			keyType = AR_KEYTABLE_TYPE_40;
-		else if (k->kv_len <= LEN_WEP104)
+		else if (k->kv_len <= WLAN_KEY_LEN_WEP104)
 			keyType = AR_KEYTABLE_TYPE_104;
 		else
 			keyType = AR_KEYTABLE_TYPE_128;
@@ -2485,7 +2498,7 @@ bool ath9k_hw_set_keycache_entry(struct ath_hw *ah, u16 entry,
 	key2 = get_unaligned_le32(k->kv_val + 6);
 	key3 = get_unaligned_le16(k->kv_val + 10);
 	key4 = get_unaligned_le32(k->kv_val + 12);
-	if (k->kv_len <= LEN_WEP104)
+	if (k->kv_len <= WLAN_KEY_LEN_WEP104)
 		key4 &= 0xff;
 
 	/*
@@ -3719,22 +3732,19 @@ bool ath9k_hw_disable(struct ath_hw *ah)
 	return ath9k_hw_set_reset_reg(ah, ATH9K_RESET_COLD);
 }
 
-bool ath9k_hw_set_txpowerlimit(struct ath_hw *ah, u32 limit)
+void ath9k_hw_set_txpowerlimit(struct ath_hw *ah, u32 limit)
 {
 	struct ath9k_channel *chan = ah->curchan;
 	struct ieee80211_channel *channel = chan->chan;
 
 	ah->regulatory.power_limit = min(limit, (u32) MAX_RATE_POWER);
 
-	if (ah->eep_ops->set_txpower(ah, chan,
-			     ath9k_regd_get_ctl(&ah->regulatory, chan),
-			     channel->max_antenna_gain * 2,
-			     channel->max_power * 2,
-			     min((u32) MAX_RATE_POWER,
-				 (u32) ah->regulatory.power_limit)) != 0)
-		return false;
-
-	return true;
+	ah->eep_ops->set_txpower(ah, chan,
+				 ath9k_regd_get_ctl(&ah->regulatory, chan),
+				 channel->max_antenna_gain * 2,
+				 channel->max_power * 2,
+				 min((u32) MAX_RATE_POWER,
+				 (u32) ah->regulatory.power_limit));
 }
 
 void ath9k_hw_setmac(struct ath_hw *ah, const u8 *mac)

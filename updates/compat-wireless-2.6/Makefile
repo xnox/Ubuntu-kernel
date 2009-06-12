@@ -17,7 +17,7 @@ include $(M)/$(COMPAT_CONFIG)
 
 NOSTDINC_FLAGS := -I$(M)/include/ -include $(M)/include/net/compat.h $(CFLAGS)
 
-obj-y := net/wireless/ net/mac80211/
+obj-y := net/wireless/ net/mac80211/ net/rfkill/
 ifeq ($(ONLY_CORE),)
 obj-$(CONFIG_B44) += drivers/net/b44.o
 obj-y += drivers/ssb/ \
@@ -96,6 +96,10 @@ install: uninstall modules
 	@# won't know mac80211.ko should be used instead of
 	@# mac80211.ko.gz
 	@./scripts/compress_modules
+	@# Mandrake doesn't have a depmod.d/ conf file to prefer
+	@# the updates/ dir which is what we use so we add one for it
+	@# (or any other distribution that doens't have this).
+	@./scripts/check_depmod
 	@/sbin/depmod -ae
 	@echo
 	@echo "Currently detected wireless subsystem modules:"
@@ -162,6 +166,7 @@ install: uninstall modules
 uninstall:
 	@# New location, matches upstream
 	@rm -rf $(KLIB)/$(KMODDIR)/net/mac80211/
+	@rm -rf $(KLIB)/$(KMODDIR)/net/rfkill/
 	@rm -rf $(KLIB)/$(KMODDIR)/net/wireless/
 	@rm -rf $(KLIB)/$(KMODDIR)/drivers/ssb/
 	@rm -rf $(KLIB)/$(KMODDIR)/drivers/net/usb/

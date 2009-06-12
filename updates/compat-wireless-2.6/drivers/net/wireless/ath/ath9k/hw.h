@@ -580,7 +580,8 @@ bool ath9k_hw_setantennaswitch(struct ath_hw *ah,
 bool ath9k_hw_wait(struct ath_hw *ah, u32 reg, u32 mask, u32 val, u32 timeout);
 u32 ath9k_hw_reverse_bits(u32 val, u32 n);
 bool ath9k_get_channel_edges(struct ath_hw *ah, u16 flags, u16 *low, u16 *high);
-u16 ath9k_hw_computetxtime(struct ath_hw *ah, struct ath_rate_table *rates,
+u16 ath9k_hw_computetxtime(struct ath_hw *ah,
+			   const struct ath_rate_table *rates,
 			   u32 frameLen, u16 rateix, bool shortPreamble);
 void ath9k_hw_get_channel_centers(struct ath_hw *ah,
 				  struct ath9k_channel *chan,
@@ -589,7 +590,7 @@ u32 ath9k_hw_getrxfilter(struct ath_hw *ah);
 void ath9k_hw_setrxfilter(struct ath_hw *ah, u32 bits);
 bool ath9k_hw_phy_disable(struct ath_hw *ah);
 bool ath9k_hw_disable(struct ath_hw *ah);
-bool ath9k_hw_set_txpowerlimit(struct ath_hw *ah, u32 limit);
+void ath9k_hw_set_txpowerlimit(struct ath_hw *ah, u32 limit);
 void ath9k_hw_setmac(struct ath_hw *ah, const u8 *mac);
 void ath9k_hw_setopmode(struct ath_hw *ah);
 void ath9k_hw_setmcastfilter(struct ath_hw *ah, u32 filter0, u32 filter1);

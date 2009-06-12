@@ -493,6 +493,7 @@ struct ieee80211s_hdr {
 /* Mesh flags */
 #define MESH_FLAGS_AE_A4 	0x1
 #define MESH_FLAGS_AE_A5_A6	0x2
+#define MESH_FLAGS_AE		0x3
 #define MESH_FLAGS_PS_DEEP	0x4
 
 /**
@@ -543,7 +544,7 @@ struct ieee80211_tim_ie {
 	u8 virtual_map[1];
 } __attribute__ ((packed));
 
-#define WLAN_SA_QUERY_TR_ID_LEN 16
+#define WLAN_SA_QUERY_TR_ID_LEN 2
 
 struct ieee80211_mgmt {
 	__le16 frame_control;
@@ -1068,8 +1069,12 @@ enum ieee80211_category {
 	WLAN_CATEGORY_DLS = 2,
 	WLAN_CATEGORY_BACK = 3,
 	WLAN_CATEGORY_PUBLIC = 4,
+	WLAN_CATEGORY_HT = 7,
 	WLAN_CATEGORY_SA_QUERY = 8,
+	WLAN_CATEGORY_PROTECTED_DUAL_OF_ACTION = 9,
 	WLAN_CATEGORY_WMM = 17,
+	WLAN_CATEGORY_VENDOR_SPECIFIC_PROTECTED = 126,
+	WLAN_CATEGORY_VENDOR_SPECIFIC = 127,
 };
 
 /* SPECTRUM_MGMT action code */
@@ -1079,6 +1084,15 @@ enum ieee80211_spectrum_mgmt_actioncode {
 	WLAN_ACTION_SPCT_TPC_REQ = 2,
 	WLAN_ACTION_SPCT_TPC_RPRT = 3,
 	WLAN_ACTION_SPCT_CHL_SWITCH = 4,
+};
+
+/* Security key length */
+enum ieee80211_key_len {
+	WLAN_KEY_LEN_WEP40 = 5,
+	WLAN_KEY_LEN_WEP104 = 13,
+	WLAN_KEY_LEN_CCMP = 16,
+	WLAN_KEY_LEN_TKIP = 32,
+	WLAN_KEY_LEN_AES_CMAC = 16,
 };
 
 /*
@@ -1261,7 +1275,9 @@ static inline bool ieee80211_is_robust_mgmt_frame(struct ieee80211_hdr *hdr)
 		if (ieee80211_has_protected(hdr->frame_control))
 			return true;
 		category = ((u8 *) hdr) + 24;
-		return *category != WLAN_CATEGORY_PUBLIC;
+		return *category != WLAN_CATEGORY_PUBLIC &&
+			*category != WLAN_CATEGORY_HT &&
+			*category != WLAN_CATEGORY_VENDOR_SPECIFIC;
 	}
 
 	return false;

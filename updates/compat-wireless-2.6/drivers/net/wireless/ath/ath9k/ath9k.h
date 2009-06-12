@@ -21,7 +21,11 @@
 #include <linux/device.h>
 #include <net/mac80211.h>
 #include <linux/leds.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
 #include <linux/rfkill.h>
+#else
+#include <linux/rfkill_backport.h>
+#endif
 
 #include "hw.h"
 #include "rc.h"
@@ -464,12 +468,9 @@ struct ath_led {
 	bool registered;
 };
 
-/* Rfkill */
-#define ATH_RFKILL_POLL_INTERVAL	2000 /* msecs */
-
 struct ath_rfkill {
 	struct rfkill *rfkill;
-	struct delayed_work rfkill_poll;
+	struct rfkill_ops ops;
 	char rfkill_name[32];
 };
 
@@ -513,12 +514,14 @@ struct ath_rfkill {
 #define SC_OP_RXFLUSH           BIT(7)
 #define SC_OP_LED_ASSOCIATED    BIT(8)
 #define SC_OP_RFKILL_REGISTERED BIT(9)
-#define SC_OP_RFKILL_SW_BLOCKED BIT(10)
-#define SC_OP_RFKILL_HW_BLOCKED BIT(11)
 #define SC_OP_WAIT_FOR_BEACON   BIT(12)
 #define SC_OP_LED_ON            BIT(13)
 #define SC_OP_SCANNING          BIT(14)
 #define SC_OP_TSF_RESET         BIT(15)
+#define SC_OP_WAIT_FOR_CAB      BIT(16)
+#define SC_OP_WAIT_FOR_PSPOLL_DATA BIT(17)
+#define SC_OP_WAIT_FOR_TX_ACK   BIT(18)
+#define SC_OP_BEACON_SYNC       BIT(19)
 
 struct ath_bus_ops {
 	void		(*read_cachesize)(struct ath_softc *sc, int *csz);
@@ -580,8 +583,8 @@ struct ath_softc {
 	struct ath_tx tx;
 	struct ath_beacon beacon;
 	struct ieee80211_rate rates[IEEE80211_NUM_BANDS][ATH_RATE_MAX];
-	struct ath_rate_table *hw_rate_table[ATH9K_MODE_MAX];
-	struct ath_rate_table *cur_rate_table;
+	const struct ath_rate_table *hw_rate_table[ATH9K_MODE_MAX];
+	const struct ath_rate_table *cur_rate_table;
 	struct ieee80211_supported_band sbands[IEEE80211_NUM_BANDS];
 
 	struct ath_led radio_led;
@@ -603,6 +606,7 @@ struct ath_softc {
 	struct ath9k_debug debug;
 #endif
 	struct ath_bus_ops *bus_ops;
+	struct ath_beacon_config cur_beacon_conf;
 };
 
 struct ath_wiphy {
@@ -680,7 +684,9 @@ static inline void ath9k_ps_restore(struct ath_softc *sc)
 {
 	if (atomic_dec_and_test(&sc->ps_usecount))
 		if ((sc->hw->conf.flags & IEEE80211_CONF_PS) &&
-		    !(sc->sc_flags & SC_OP_WAIT_FOR_BEACON))
+		    !(sc->sc_flags & (SC_OP_WAIT_FOR_BEACON |
+				      SC_OP_WAIT_FOR_PSPOLL_DATA |
+				      SC_OP_WAIT_FOR_TX_ACK)))
 			ath9k_hw_setpower(sc->sc_ah,
 					  sc->sc_ah->restore_mode);
 }
@@ -701,36 +707,7 @@ void ath9k_wiphy_pause_all_forced(struct ath_softc *sc,
 bool ath9k_wiphy_scanning(struct ath_softc *sc);
 void ath9k_wiphy_work(struct work_struct *work);
 
-/*
- * Read and write, they both share the same lock. We do this to serialize
- * reads and writes on Atheros 802.11n PCI devices only. This is required
- * as the FIFO on these devices can only accept sanely 2 requests. After
- * that the device goes bananas. Serializing the reads/writes prevents this
- * from happening.
- */
-
-static inline void ath9k_iowrite32(struct ath_hw *ah, u32 reg_offset, u32 val)
-{
-	if (ah->config.serialize_regmode == SER_REG_MODE_ON) {
-		unsigned long flags;
-		spin_lock_irqsave(&ah->ah_sc->sc_serial_rw, flags);
-		iowrite32(val, ah->ah_sc->mem + reg_offset);
-		spin_unlock_irqrestore(&ah->ah_sc->sc_serial_rw, flags);
-	} else
-		iowrite32(val, ah->ah_sc->mem + reg_offset);
-}
-
-static inline unsigned int ath9k_ioread32(struct ath_hw *ah, u32 reg_offset)
-{
-	u32 val;
-	if (ah->config.serialize_regmode == SER_REG_MODE_ON) {
-		unsigned long flags;
-		spin_lock_irqsave(&ah->ah_sc->sc_serial_rw, flags);
-		val = ioread32(ah->ah_sc->mem + reg_offset);
-		spin_unlock_irqrestore(&ah->ah_sc->sc_serial_rw, flags);
-	} else
-		val = ioread32(ah->ah_sc->mem + reg_offset);
-	return val;
-}
+void ath9k_iowrite32(struct ath_hw *ah, u32 reg_offset, u32 val);
+unsigned int ath9k_ioread32(struct ath_hw *ah, u32 reg_offset);
 
 #endif /* ATH9K_H */

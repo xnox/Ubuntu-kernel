@@ -602,9 +602,6 @@ struct b43legacy_wl {
 	char rng_name[30 + 1];
 #endif
 
-	/* The RF-kill button */
-	struct b43legacy_rfkill rfkill;
-
 	/* List of all wireless devices on this chip */
 	struct list_head devlist;
 	u8 nr_devs;
@@ -694,8 +691,8 @@ struct b43legacy_wldev {
 	/* Reason code of the last interrupt. */
 	u32 irq_reason;
 	u32 dma_reason[6];
-	/* saved irq enable/disable state bitfield. */
-	u32 irq_savedstate;
+	/* The currently active generic-interrupt mask. */
+	u32 irq_mask;
 	/* Link Quality calculation context. */
 	struct b43legacy_noise_calculation noisecalc;
 	/* if > 0 MAC is suspended. if == 0 MAC is enabled. */
