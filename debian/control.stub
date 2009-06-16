@@ -3,7 +3,7 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 3), module-init-tools, coreutils, git-core, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.30-9-generic [i386 amd64], linux-headers-2.6.30-9-lpia [lpia], linux-headers-2.6.30-9-server [i386 amd64]
+Build-Depends: debhelper (>= 3), module-init-tools, coreutils, git-core, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.30-9-generic [i386 amd64], linux-headers-2.6.30-9-lpia [lpia], linux-headers-2.6.30-9-server [amd64]
 Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-karmic-lbm.git
 
 Package: linux-headers-lbm-2.6.30-9
@@ -70,22 +70,22 @@ Description: Header files related to linux-backports-modules version 2.6.30
  /usr/share/doc/linux-headers-lbm-2.6.30-9/debian.README.gz for details
 
 Package: linux-backports-modules-2.6.30-9-server
-Architecture: i386 amd64
+Architecture: amd64
 Section: base
 Priority: optional
 Provides: 
 Depends: linux-image-2.6.30-9-server
 Pre-Depends: dpkg (>= 1.10.24)
-Description: Ubuntu supplied Linux modules for version 2.6.30 on x86/x86_64
+Description: Ubuntu supplied Linux modules for version 2.6.30 on x86_64
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.30 on
- x86/x86_64.
+ x86_64.
  .
  You likely do not want to install this package directly. Instead, install
  the linux-server meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-2.6.30-9-server
-Architecture: i386 amd64
+Architecture: amd64
 Section: base
 Priority: optional
 Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.30-9-server
