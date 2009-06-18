@@ -1,5 +1,5 @@
 Package: linux-headers-server
-Architecture: i386 amd64
+Architecture: amd64
 Section: devel
 Priority: optional
 Depends: linux-headers-${kernel-abi-version}-server
@@ -8,7 +8,7 @@ Description: Linux kernel headers on Server Equipment.
  for Server Equipment.
 
 Package: linux-image-server
-Architecture: i386 amd64
+Architecture: amd64
 Section: metapackages
 Priority: optional
 Depends: linux-image-${kernel-abi-version}-server, linux-firmware
@@ -17,7 +17,7 @@ Description: Linux kernel image on Server Equipment.
  for Server Equipment.
 
 Package: linux-server
-Architecture: i386 amd64
+Architecture: amd64
 Section: metapackages
 Priority: optional
 Depends: linux-image-server (= ${binary:Version})
@@ -26,7 +26,7 @@ Description: Complete Linux kernel on Server Equipment.
  for Server Equipment.
 
 Package: linux-backports-modules-RELEASE_NAME-server
-Architecture: amd64 i386
+Architecture: amd64
 Depends: linux-backports-modules-${kernel-abi-version}-server
 Description: Backported drivers for server kernel image
  This empty package allows people to keep their backported modules
