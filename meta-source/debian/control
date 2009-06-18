@@ -131,74 +131,6 @@ Description: Backported drivers for Versatile-based systems systems kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-headers-iop32x
-Architecture: armel
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-iop32x
-Description: IOP32x-based systems Linux kernel headers
- This package will always depend on the latest iop32x kernel headers
- available.
-
-Package: linux-image-iop32x
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-iop32x, linux-firmware
-Description: IOP32x-based systems Linux kernel image
- This package will always depend on the latest iop32x kernel image
- available.
-
-Package: linux-iop32x
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: linux-image-iop32x (= ${binary:Version})
-Description: Complete IOP32x-based systems Linux kernel
- This package will always depend on the latest complete iop32x Linux kernel
- available.
-
-Package: linux-backports-modules-karmic-iop32x
-Architecture: armel
-Depends: linux-backports-modules-${kernel-abi-version}-iop32x
-Description: Backported drivers for IOP32x-based systems kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
-Package: linux-headers-ixp4xx
-Architecture: armel
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-ixp4xx
-Description: IXP4xx-based systems Linux kernel headers
- This package will always depend on the latest ixp4xx kernel headers
- available.
-
-Package: linux-image-ixp4xx
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-ixp4xx, linux-firmware
-Description: IXP4xx-based systems Linux kernel image
- This package will always depend on the latest ixp4xx kernel image
- available.
-
-Package: linux-ixp4xx
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: linux-image-ixp4xx (= ${binary:Version})
-Description: Complete IXP4xx-based systems Linux kernel
- This package will always depend on the latest complete ixp4xx Linux kernel
- available.
-
-Package: linux-backports-modules-karmic-ixp4xx
-Architecture: armel
-Depends: linux-backports-modules-${kernel-abi-version}-ixp4xx
-Description: Backported drivers for IXP4xx-based systems kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
 Package: linux-headers-lpia
 Architecture: lpia
 Section: devel
@@ -264,40 +196,6 @@ Package: linux-backports-modules-karmic-server
 Architecture: amd64 i386
 Depends: linux-backports-modules-${kernel-abi-version}-server
 Description: Backported drivers for server kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
-Package: linux-headers-versatile
-Architecture: armel
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-versatile
-Description: Versatile-based systems systems Linux kernel headers
- This package will always depend on the latest versatile kernel headers
- available.
-
-Package: linux-image-versatile
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-versatile, linux-firmware
-Description: Versatile-based systems systems Linux kernel image
- This package will always depend on the latest versatile kernel image
- available.
-
-Package: linux-versatile
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: linux-image-versatile (= ${binary:Version})
-Description: Complete Versatile-based systems systems Linux kernel
- This package will always depend on the latest complete versatile Linux kernel
- available.
-
-Package: linux-backports-modules-karmic-versatile
-Architecture: armel
-Depends: linux-backports-modules-${kernel-abi-version}-versatile
-Description: Backported drivers for Versatile-based systems kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
 
