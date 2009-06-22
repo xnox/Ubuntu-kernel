@@ -21,11 +21,6 @@
 #include <linux/device.h>
 #include <net/mac80211.h>
 #include <linux/leds.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
-#include <linux/rfkill.h>
-#else
-#include <linux/rfkill_backport.h>
-#endif
 
 #include "hw.h"
 #include "rc.h"
@@ -281,7 +276,6 @@ struct ath_atx_tid {
 	int sched;
 	int paused;
 	u8 state;
-	int addba_exchangeattempts;
 };
 
 struct ath_atx_ac {
@@ -468,12 +462,6 @@ struct ath_led {
 	bool registered;
 };
 
-struct ath_rfkill {
-	struct rfkill *rfkill;
-	struct rfkill_ops ops;
-	char rfkill_name[32];
-};
-
 /********************/
 /* Main driver core */
 /********************/
@@ -513,7 +501,6 @@ struct ath_rfkill {
 #define SC_OP_PROTECT_ENABLE    BIT(6)
 #define SC_OP_RXFLUSH           BIT(7)
 #define SC_OP_LED_ASSOCIATED    BIT(8)
-#define SC_OP_RFKILL_REGISTERED BIT(9)
 #define SC_OP_WAIT_FOR_BEACON   BIT(12)
 #define SC_OP_LED_ON            BIT(13)
 #define SC_OP_SCANNING          BIT(14)
@@ -599,7 +586,6 @@ struct ath_softc {
 
 	int beacon_interval;
 
-	struct ath_rfkill rf_kill;
 	struct ath_ani ani;
 	struct ath9k_node_stats nodestats;
 #ifdef CONFIG_ATH9K_DEBUG
@@ -685,6 +671,7 @@ static inline void ath9k_ps_restore(struct ath_softc *sc)
 	if (atomic_dec_and_test(&sc->ps_usecount))
 		if ((sc->hw->conf.flags & IEEE80211_CONF_PS) &&
 		    !(sc->sc_flags & (SC_OP_WAIT_FOR_BEACON |
+				      SC_OP_WAIT_FOR_CAB |
 				      SC_OP_WAIT_FOR_PSPOLL_DATA |
 				      SC_OP_WAIT_FOR_TX_ACK)))
 			ath9k_hw_setpower(sc->sc_ah,
