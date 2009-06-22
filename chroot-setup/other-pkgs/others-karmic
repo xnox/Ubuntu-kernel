@@ -1,0 +1,23 @@
+binutils
+cpp
+dpkg-dev
+gcc
+patch
+debhelper
+module-init-tools
+kernel-wedge
+vim
+ccache
+fakeroot
+git-core
+build-essential
+
+# Unmet dependencies when running debbuild -b
+xmlto
+docbook-utils
+gs
+transfig
+sharutils
+
+# This package is not available for all architectures
+makedumpfile[i386,amd64]
