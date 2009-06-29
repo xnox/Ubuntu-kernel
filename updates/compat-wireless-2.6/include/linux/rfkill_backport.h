@@ -308,7 +308,7 @@ static inline void backport_rfkill_resume_polling(struct rfkill *rfkill)
 {
 }
 
-static inline void rfkill_unregister(struct rfkill *rfkill)
+static inline void backport_rfkill_unregister(struct rfkill *rfkill)
 {
 }
 
