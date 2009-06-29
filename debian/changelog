@@ -19,7 +19,7 @@ linux-backports-modules-2.6.30 (2.6.30-9.5) karmic; urgency=low
 
   [ Andy Whitcroft ]
 
-  * Update wireless-testing/compat-wireless to master-2009-06-12
+  * Update wireless-testing/compat-wireless to master-2009-06-10
 
  -- Andy Whitcroft <apw@canonical.com>  Fri, 12 Jun 2009 18:39:20 +0100
 
