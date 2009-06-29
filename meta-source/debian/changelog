@@ -1,3 +1,17 @@
+linux-meta (2.6.31.1.11) karmic; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * Rebuild debian/control to contain updated recommends etc
+  * Karmic ABI 1 (2.6.31)
+
+  [ Tim Gardner ]
+
+  * Recommend apport for linux-crashdump
+    - LP: #391026
+
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 29 Jun 2009 15:56:38 +0100
+
 linux-meta (2.6.30.10.10) karmic; urgency=low
 
   * Karmic ABI 10
