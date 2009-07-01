@@ -94,7 +94,7 @@ git branch -D "$branch"
 #
 # Checkout the source at the specified version.
 #
-git checkout -b "$branch" "v$full_version" -- || exit 1
+git checkout -b "$branch" "$commit" -- || exit 1
 
 #
 # Pull in the packaging from the head of our tree.
