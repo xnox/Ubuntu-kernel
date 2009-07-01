@@ -57,6 +57,16 @@ function PrepareHost()
 		echo "  Sending to: ${HOST}:${BUILDDIR}"
 	fi
 
+	# Look up the origin URL and see if that is a kernel repo.
+	URL=`git config remote.origin.url`
+	case "$URL" in
+	*kernel.ubuntu.com/*|*zinc.ubuntu.com/*)
+		URL=`echo "$URL" | sed -e 's@.*/\([^/]*/[^/]*\)$@\1@'`
+		URL="git://kernel.ubuntu.com/$URL"
+		;;
+	*)	URL='' ;;
+	esac
+
 	cat <<-EOD | ssh ${HOST} 2>/dev/null
 	if [ ! -d $BUILDDIR ]; then
 		echo "  remote: creating $BUILDDIR"
@@ -66,14 +76,24 @@ function PrepareHost()
 			exit 1
 		fi
 	fi
+	cd "${BUILDDIR}" || exit 1
 	if [ ! -d "${BUILDDIR}/.git" ]; then
-		cd "${BUILDDIR}"
 		echo "  remote: creating empty git repos."
 		git init
 		if [ \$? -ne 0 ]; then
 			echo "  remote: failed to initialize git!"
 			exit 1
 		fi
+	fi
+	if [ "$USE_DC" = 'yes' -a  "$URL" != '' ]; then
+		# Check if we have our upstream repository.
+		if ! git remote show -n "origin" >/dev/null 2>&1; then
+			echo "  remote: adding origin remote to DC"
+			git remote add "origin" "$URL"
+		fi
+		# Get as many objects from the upstream repo as possible.
+		echo "  remote: updating from DC"
+		git fetch "origin"
 	fi
 	EOD
 	if [ $? -ne 0 ]; then
