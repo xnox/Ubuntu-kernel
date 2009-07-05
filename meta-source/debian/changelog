@@ -1,3 +1,9 @@
+linux-meta (2.6.31.2.12) karmic; urgency=low
+
+  * Karmic ABI 2
+
+ -- Andy Whitcroft <apw@canonical.com>  Sun, 05 Jul 2009 12:16:48 +0100
+
 linux-meta (2.6.31.1.11) karmic; urgency=low
 
   [ Andy Whitcroft ]
