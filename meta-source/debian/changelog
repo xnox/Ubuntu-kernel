@@ -1,3 +1,9 @@
+linux-meta (2.6.31.3.14) karmic; urgency=low
+
+  * Karmic ABI 3
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 14 Jul 2009 08:07:05 -0600
+
 linux-meta (2.6.31.2.13) karmic; urgency=low
 
   * Add grub2 as a linux-crashdump dependency
