@@ -85,7 +85,7 @@ if [ "$commit" = "linus/master" ]; then
 		tee "$master_tree/BUILD.LOG"
 	date="`date +%F`"
 	html="$HOME/public_html/mainline/daily/$date"
-	ln -sf "$date" "$HOME/public_html/mainline/daily/current"
+	ln -nsf "$date" "$HOME/public_html/mainline/daily/current"
 else
 	"$here/mainline-build-one" "$commit" "$master_release" 2>&1 | \
 		tee "$master_tree/BUILD.LOG"

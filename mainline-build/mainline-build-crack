@@ -16,7 +16,7 @@ esac
 commit="$1"
 series="$2"
 
-build_release="hardy"
+build_release="jaunty-amd64"
 
 long=`git describe "$commit"`
 if [ "$?" -ne 0 ]; then
@@ -144,15 +144,17 @@ git commit -a -m "fix up abi checks, module checks, check aliases"
 #
 ##dpkg-buildpackage -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa
 
-dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules clean"
-dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules no_dumpfile=1 binary-indep"
-dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules clean"
-dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules no_dumpfile=1 binary-generic"
-linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
-        "fakeroot debian/rules clean"
-linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
-        "fakeroot debian/rules no_dumpfile=1 binary-generic"
+#dchroot --directory=`pwd` -c "$build_release" \
+#        "fakeroot debian/rules clean"
+#dchroot --directory=`pwd` -c "$build_release" \
+#        "fakeroot debian/rules no_dumpfile=1 binary-indep"
+#dchroot --directory=`pwd` -c "$build_release" \
+#        "fakeroot debian/rules clean"
+#dchroot --directory=`pwd` -c "$build_release" \
+#        "fakeroot debian/rules no_dumpfile=1 binary-generic"
+#linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
+#        "fakeroot debian/rules clean"
+#linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
+#        "fakeroot debian/rules no_dumpfile=1 binary-generic"
+schroot --directory=`pwd` -c "$build_release" \
+        fakeroot debian/rules no_dumpfile=1 binary-generic
