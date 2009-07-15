@@ -48,6 +48,9 @@ while [ $# -ne 0 ]; do
 				SUITE="$1"
 			elif [ "$TARGET" = "" ]; then
 				TARGET="$1"
+				if [ "$(dirname $TARGET)" = "." ]; then
+					TARGET="$(pwd)/$TARGET"
+				fi
 			elif [ "$MIRROR" = "" ]; then
 				MIRROR="$1"
 			else
@@ -122,6 +125,15 @@ else
 fi
 
 if $DOINSTALL; then
+	#
+	# Weirdly debootstrap seems to be confused if the current working
+	# directory is the place where the target direcory gets created.
+	# At least on Hardy it will bail out claiming the current working
+	# directory does not exist. Circumvent that by stepping aside.
+	#
+	if [ "$(pwd)" = "$(dirname $TARGET)" ]; then
+		cd /tmp
+	fi
 	echo debootstrap $OPTIONS $SUITE "$TARGET" $MIRROR
 	debootstrap $OPTIONS $SUITE "$TARGET" $MIRROR || exit 1
 	if [ -d "$TARGET/etc" ]; then
