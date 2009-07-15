@@ -4776,6 +4776,15 @@ static struct pci_device_id e1000_pci_tbl[] = {
 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_M_AMT), board_ich9lan },
 	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH9_IGP_M_V), board_ich9lan },
 
+	/* Even as these are ICH10 devices, the ICH9 setup (which really
+	 * uses ICH8) works fine. Just drop this patch when it collides with
+	 * upstream. I ripped this from the SourceForge e1000e "0.4.1.7" driver.
+	 */
+#define E1000_DEV_ID_ICH10_D_BM_LM            0x10DE
+#define E1000_DEV_ID_ICH10_D_BM_LF            0x10DF
+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_D_BM_LM), board_ich9lan },
+	{ PCI_VDEVICE(INTEL, E1000_DEV_ID_ICH10_D_BM_LF), board_ich9lan },
+
 	{ }	/* terminate list */
 };
 MODULE_DEVICE_TABLE(pci, e1000_pci_tbl);
