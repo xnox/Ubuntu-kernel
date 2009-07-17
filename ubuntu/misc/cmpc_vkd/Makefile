@@ -1,0 +1,15 @@
+# Makefile2.6
+ifneq ($(KERNELRELEASE),)
+#kbuild syntax. dependency relationshsip of files and target modules are listed here.
+#mymodule-objs := file1.o file2.o
+#obj-m := mymodule.o 
+obj-m := cmpc_vkd.o
+else
+PWD  := $(shell pwd)
+KVER ?= $(shell uname -r)
+KDIR := /lib/modules/$(KVER)/build
+all:
+	$(MAKE) -C $(KDIR) M=$(PWD) 
+clean:
+	rm -rf .*.cmd *.o *.mod.c *.ko .tmp_versions
+endif

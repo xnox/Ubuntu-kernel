@@ -1,0 +1,60 @@
+
+release date: 2008/01/03
+driver version: 1.007.02-cpmc
+reset MAC and PHY only after the PCI-E is reset.
+
+release date: 2008/01/09
+driver version: 1.007.01
+report disconnect to the protocol stack during esd rescuse process.
+
+--------------------------------------------------
+release date: 2008/01/04
+driver version: 1.006.00
+1. In r8101_n.c, rename rtl8169_priv_ioctl to rtl8101_priv_ioctl.
+2. implement a kernel timer to rescue the NIC after the PCI-E is reset.
+3. create a spin lock to protect GPHY configuration.
+
+release date: 2007/12/06
+driver version: 1.005.00
+1. Support linux kernel 2.6.23
+2. Support RTL8102E(L)
+3. Fix S3 issue => cannot wakeup.
+	Root cause: In rtl8101_init_board, tp->dev is never assigned. Therefor, it is a NULL pointer and the system crashes when this pointer is accessed. 
+	Solution: Assign the vaild memory address to tp->dev.
+
+release date: 2007/11/21
+driver version: 1.004.00
+1. Support linux kernel 2.4.20 and latter.
+2. Tinker with the rmb, wmb, smp_rmb, and smp_wmb.
+3. G-PHY reset remedy: 
+	(a) the driver waits until the bit 15 of BMCR taggle and configues the capability of ANAR and BMCR. (driver waits 2.5 sec)
+	(b) turn to page 0 before configure ANAR and BMCR to prevent the phy from being configured wrongly.
+4. Amendments of G-PHY.
+5. Add accessing functions of E-PHY and CSI.
+6. Do an amendment of multicast registers, since the sequence of multicast registers (MAR0 - MAR 7) are different from that of RTL8110 series.
+7. check null pointers in rtl8101_rx_interrupt to prevent the driver from crushing.
+8. Remove the Gigabit wording in source code.
+9. Implement SIOCGMIIPHY, SIOCGMIIREG and SIOCSMIIREG.
+
+release date: 2007/08/24
+driver version: 1.003.00
+1. add strip to Makefile to reduce the size of driver.
+2. solve the copmiling issue of FC2
+3. support linux kernel 2.6.21 and 2.6.22
+4. support nway force an true force.
+5. support RTL8102E
+6. Fix the bug of tx csum offload. This issue is caused by driver padding the packets whose lengths are smaller than 60 byte and tell the NIC the length is 60 byte. However, the driver should tell the NIC the orginal packet length, then the NIC won't make mistake in tx csum if checksum offload is enabled. There is another solution. Since RTL8101E and RTL8102E support autopadding. Therefore, driver can offload the autopadding to NIC.
+7. default csum offload
+8. RTL8102E support csum offload
+
+release date: 2007/07/09
+driver version: 1.002.00
+1. Implement the private ioctl for Realtek
+2. Revise the readme to notice the users to check the built-in driver and
+3. Turn on phy when the driver is loaded.
+
+release date: 2007/04/26
+driver version: 1.001.00
+1. This driver is modified from the r8169.c in Linux kernel 2.6.18 and
+supports Linux 2.6.x only.
+2. This driver supports RTL8101E, the Realtek PCI-E 10/100 Ethernet NIC.

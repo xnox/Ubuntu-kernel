@@ -84,3 +84,10 @@ obj-$(CONFIG_AGP_INTEL_ICH9M)	+= char/intel-agp-ich9m/
 
 obj-$(CONFIG_HP_MINI)		+= misc/hpmini.o
 obj-$(CONFIG_RTL_8187_USB)	+= wireless/rtl8187-usb/
+
+obj-$(CONFIG_CMPC_ACCEL)        += misc/accel/
+obj-$(CONFIG_CMPC_PM)           += misc/cmpc_pm/
+obj-$(CONFIG_CMPC_VKD)          += misc/cmpc_vkd/
+obj-$(CONFIG_CMPC_TABLET)       += misc/tablet/
+obj-$(CONFIG_CMPC_R8101)        += net/r8101-cmpc/
+obj-$(CONFIG_RT3070STA)         += wireless/rt3070sta/
