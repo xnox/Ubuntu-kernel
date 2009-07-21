@@ -1,7 +1,7 @@
-Intel Wireless WiFi Link 5000AGN Adapter Series
-Copyright (C) 2006 - 2008 Intel Corporation.  All rights reserved.
+Intel Wireless WiFi Link 4965AGN Adapter
+Copyright (C) 2006 - 2009 Intel Corporation.  All rights reserved.
 
-Microcode Package README.iwlwifi-5000-ucode
+Microcode Package README.iwlwifi-4965-ucode
 
 INDEX
 
@@ -12,16 +12,16 @@ INDEX
 
 1. OVERVIEW
 
-The file iwlwifi-5000-1.ucode provided in this package must be 
+The file iwlwifi-4965-2.ucode provided in this package must be 
 present on your system in order for the Intel Wireless WiFi Link
-5000AGN driver for Linux (iwlwifi-5000) to operate on your system.
+4965AGN driver for Linux (iwlwifi-4965) to operate on your system.
 
-The "-1" in the filename reflects an interface/architecture version number.
+The "-2" in the filename reflects an interface/architecture version number.
 It will change only when changes in new uCode releases make the new uCode
 incompatible with earlier drivers.
 
 On adapter initialization, and at varying times during the uptime of 
-the adapter, the microcode is loaded into the memory on the network 
+the adapter, the microcode is loaded into the RAM on the network 
 adapter.  The microcode provides the low level MAC features including 
 radio control and high precision timing events (backoff, transmit, 
 etc.) while also providing varying levels of packet filtering which can 
@@ -30,7 +30,7 @@ interest given the current operating mode of the device.
 
 2. INSTALLATION
 
-The iwl5000 driver will look for the file iwlwifi-5000-1.ucode using the 
+The iwlwifi-4965 driver will look for the file iwlwifi-4965-2.ucode using the 
 kernel's firmware_loader infrastructure.  In order to function 
 correctly, you need to have this support enabled in your kernel.  When 
 you configure the kernel, you can find this option in the following 
@@ -68,18 +68,18 @@ If it lists more than one directory, you only need to put the
 microcode in one of them.  In the above example, installation is 
 simply:
 
-	% cp iwlwifi-5000-3x3-1.ucode /lib/firmware
+	% cp iwlwifi-4965-2.ucode /lib/firmware
 
 You can now load the driver (see the INSTALL and README.iwlwifi provided with
 the iwlwifi package for information on building and using that driver.)
 
 3. LICENSE
 
-The microcode in this package (iwlwifi-5000-1.ucode) is provided under the 
+The microcode in this package (iwlwifi-4965.ucode) is provided under the 
 terms of the following license (available in the file 
-LICENSE.iwlwifi-5000-ucode):
+LICENSE.iwlwifi-4965-ucode):
 
-Copyright (c) 2006-2008, Intel Corporation.
+Copyright (c) 2006, Intel Corporation.
 All rights reserved.
 
 Redistribution.  Redistribution and use in binary form, without 

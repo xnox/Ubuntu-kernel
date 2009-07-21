@@ -61,6 +61,7 @@ install-%: $(stampdir)/stamp-build-%
 	cp firmware/iwlwifi/*4965*/*.ucode $(firmdir)/lbm-iwlwifi-4965-2.ucode
 	cp firmware/iwlwifi/*3945*/*.ucode $(firmdir)/lbm-iwlwifi-3945-2.ucode
 	cp firmware/iwlwifi/*5000*/*.ucode $(firmdir)/lbm-iwlwifi-5000-1.ucode
+	cp firmware/iwlwifi/*5150*/*.ucode $(firmdir)/lbm-iwlwifi-5150-1.ucode
 
 	install -d $(moddir)/updates
 	find $(builddir)/build-$* -type f -name '*.ko' | while read f ; do cp -v $${f} $(moddir)/updates/`basename $${f}`; done
