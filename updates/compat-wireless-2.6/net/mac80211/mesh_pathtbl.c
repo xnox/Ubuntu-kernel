@@ -55,7 +55,25 @@ static DEFINE_RWLOCK(pathtbl_resize_lock);
  */
 void mesh_path_assign_nexthop(struct mesh_path *mpath, struct sta_info *sta)
 {
+	struct sk_buff *skb;
+	struct ieee80211_hdr *hdr;
+	struct sk_buff_head tmpq;
+	unsigned long flags;
+
 	rcu_assign_pointer(mpath->next_hop, sta);
+
+	__skb_queue_head_init(&tmpq);
+
+	spin_lock_irqsave(&mpath->frame_queue.lock, flags);
+
+	while ((skb = __skb_dequeue(&mpath->frame_queue)) != NULL) {
+		hdr = (struct ieee80211_hdr *) skb->data;
+		memcpy(hdr->addr1, sta->sta.addr, ETH_ALEN);
+		__skb_queue_tail(&tmpq, skb);
+	}
+
+	skb_queue_splice(&tmpq, &mpath->frame_queue);
+	spin_unlock_irqrestore(&mpath->frame_queue.lock, flags);
 }
 
 
@@ -175,6 +193,8 @@ int mesh_path_add(u8 *dst, struct ieee80211_sub_if_data *sdata)
 	int err = 0;
 	u32 hash_idx;
 
+	might_sleep();
+
 	if (memcmp(dst, sdata->dev->dev_addr, ETH_ALEN) == 0)
 		/* never add ourselves as neighbours */
 		return -ENOTSUPP;
@@ -265,6 +285,7 @@ int mpp_path_add(u8 *dst, u8 *mpp, struct ieee80211_sub_if_data *sdata)
 	int err = 0;
 	u32 hash_idx;
 
+	might_sleep();
 
 	if (memcmp(dst, sdata->dev->dev_addr, ETH_ALEN) == 0)
 		/* never add ourselves as neighbours */
@@ -478,11 +499,9 @@ enddel:
  */
 void mesh_path_tx_pending(struct mesh_path *mpath)
 {
-	struct sk_buff *skb;
-
-	while ((skb = skb_dequeue(&mpath->frame_queue)) &&
-			(mpath->flags & MESH_PATH_ACTIVE))
-		dev_queue_xmit(skb);
+	if (mpath->flags & MESH_PATH_ACTIVE)
+		ieee80211_add_pending_skbs(mpath->sdata->local,
+				&mpath->frame_queue);
 }
 
 /**
@@ -491,8 +510,10 @@ void mesh_path_tx_pending(struct mesh_path *mpath)
  * @skb: frame to discard
  * @sdata: network subif the frame was to be sent through
  *
- * If the frame was beign forwarded from another MP, a PERR frame will be sent
- * to the precursor.
+ * If the frame was being forwarded from another MP, a PERR frame will be sent
+ * to the precursor.  The precursor's address (i.e. the previous hop) was saved
+ * in addr1 of the frame-to-be-forwarded, and would only be overwritten once
+ * the destination is successfully resolved.
  *
  * Locking: the function must me called within a rcu_read_lock region
  */
@@ -507,7 +528,7 @@ void mesh_path_discard_frame(struct sk_buff *skb,
 		u8 *ra, *da;
 
 		da = hdr->addr3;
-		ra = hdr->addr2;
+		ra = hdr->addr1;
 		mpath = mesh_path_lookup(da, sdata);
 		if (mpath)
 			dsn = ++mpath->dsn;

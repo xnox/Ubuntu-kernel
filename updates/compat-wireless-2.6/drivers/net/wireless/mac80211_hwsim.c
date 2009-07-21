@@ -406,7 +406,8 @@ static bool mac80211_hwsim_tx_frame(struct ieee80211_hw *hw,
 	rx_status.freq = data->channel->center_freq;
 	rx_status.band = data->channel->band;
 	rx_status.rate_idx = info->control.rates[0].idx;
-	/* TODO: simulate signal strength (and optional packet drop) */
+	/* TODO: simulate real signal strength (and optional packet loss) */
+	rx_status.signal = -50;
 
 	if (data->ps != PS_DISABLED)
 		hdr->frame_control |= cpu_to_le16(IEEE80211_FCTL_PM);
@@ -427,6 +428,7 @@ static bool mac80211_hwsim_tx_frame(struct ieee80211_hw *hw,
 			continue;
 
 		if (!data2->started || !hwsim_ps_rx_ok(data2, skb) ||
+		    !data->channel || !data2->channel ||
 		    data->channel->center_freq != data2->channel->center_freq ||
 		    !(data->group & data2->group))
 			continue;
@@ -699,6 +701,74 @@ static int mac80211_hwsim_conf_tx(
 	return 0;
 }
 
+#ifdef CONFIG_NL80211_TESTMODE
+/*
+ * This section contains example code for using netlink
+ * attributes with the testmode command in nl80211.
+ */
+
+/* These enums need to be kept in sync with userspace */
+enum hwsim_testmode_attr {
+	__HWSIM_TM_ATTR_INVALID	= 0,
+	HWSIM_TM_ATTR_CMD	= 1,
+	HWSIM_TM_ATTR_PS	= 2,
+
+	/* keep last */
+	__HWSIM_TM_ATTR_AFTER_LAST,
+	HWSIM_TM_ATTR_MAX	= __HWSIM_TM_ATTR_AFTER_LAST - 1
+};
+
+enum hwsim_testmode_cmd {
+	HWSIM_TM_CMD_SET_PS		= 0,
+	HWSIM_TM_CMD_GET_PS		= 1,
+};
+
+static const struct nla_policy hwsim_testmode_policy[HWSIM_TM_ATTR_MAX + 1] = {
+	[HWSIM_TM_ATTR_CMD] = { .type = NLA_U32 },
+	[HWSIM_TM_ATTR_PS] = { .type = NLA_U32 },
+};
+
+static int hwsim_fops_ps_write(void *dat, u64 val);
+
+static int mac80211_hwsim_testmode_cmd(struct ieee80211_hw *hw,
+				       void *data, int len)
+{
+	struct mac80211_hwsim_data *hwsim = hw->priv;
+	struct nlattr *tb[HWSIM_TM_ATTR_MAX + 1];
+	struct sk_buff *skb;
+	int err, ps;
+
+	err = nla_parse(tb, HWSIM_TM_ATTR_MAX, data, len,
+			hwsim_testmode_policy);
+	if (err)
+		return err;
+
+	if (!tb[HWSIM_TM_ATTR_CMD])
+		return -EINVAL;
+
+	switch (nla_get_u32(tb[HWSIM_TM_ATTR_CMD])) {
+	case HWSIM_TM_CMD_SET_PS:
+		if (!tb[HWSIM_TM_ATTR_PS])
+			return -EINVAL;
+		ps = nla_get_u32(tb[HWSIM_TM_ATTR_PS]);
+		return hwsim_fops_ps_write(hwsim, ps);
+	case HWSIM_TM_CMD_GET_PS:
+		skb = cfg80211_testmode_alloc_reply_skb(hw->wiphy,
+						nla_total_size(sizeof(u32)));
+		if (!skb)
+			return -ENOMEM;
+		NLA_PUT_U32(skb, HWSIM_TM_ATTR_PS, hwsim->ps);
+		return cfg80211_testmode_reply(skb);
+	default:
+		return -EOPNOTSUPP;
+	}
+
+ nla_put_failure:
+	kfree_skb(skb);
+	return -ENOBUFS;
+}
+#endif
+
 static const struct ieee80211_ops mac80211_hwsim_ops =
 {
 	.tx = mac80211_hwsim_tx,
@@ -712,13 +782,14 @@ static const struct ieee80211_ops mac80211_hwsim_ops =
 	.sta_notify = mac80211_hwsim_sta_notify,
 	.set_tim = mac80211_hwsim_set_tim,
 	.conf_tx = mac80211_hwsim_conf_tx,
+	CFG80211_TESTMODE_CMD(mac80211_hwsim_testmode_cmd)
 };
 
 
 static void mac80211_hwsim_free(void)
 {
 	struct list_head tmplist, *i, *tmp;
-	struct mac80211_hwsim_data *data;
+	struct mac80211_hwsim_data *data, *tmpdata;
 
 	INIT_LIST_HEAD(&tmplist);
 
@@ -727,7 +798,7 @@ static void mac80211_hwsim_free(void)
 		list_move(i, &tmplist);
 	spin_unlock_bh(&hwsim_radio_lock);
 
-	list_for_each_entry(data, &tmplist, list) {
+	list_for_each_entry_safe(data, tmpdata, &tmplist, list) {
 		debugfs_remove(data->debugfs_group);
 		debugfs_remove(data->debugfs_ps);
 		debugfs_remove(data->debugfs);
@@ -960,7 +1031,8 @@ static int __init init_mac80211_hwsim(void)
 			BIT(NL80211_IFTYPE_AP) |
 			BIT(NL80211_IFTYPE_MESH_POINT);
 
-		hw->flags = IEEE80211_HW_MFP_CAPABLE;
+		hw->flags = IEEE80211_HW_MFP_CAPABLE |
+			    IEEE80211_HW_SIGNAL_DBM;
 
 		/* ask mac80211 to reserve space for magic */
 		hw->vif_data_size = sizeof(struct hwsim_vif_priv);
@@ -1182,8 +1254,8 @@ static void __exit exit_mac80211_hwsim(void)
 {
 	printk(KERN_DEBUG "mac80211_hwsim: unregister radios\n");
 
-	unregister_netdev(hwsim_mon);
 	mac80211_hwsim_free();
+	unregister_netdev(hwsim_mon);
 }
 
 

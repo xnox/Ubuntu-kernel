@@ -25,8 +25,8 @@ endif
 ifeq ($(shell test -e $(KLIB_BUILD)/Makefile && echo yes),yes)
 KERNEL_SUBLEVEL = $(shell $(MAKE) -C $(KLIB_BUILD) kernelversion | sed -n 's/^2\.6\.\([0-9]\+\).*/\1/p')
 
-ifeq ($(shell test $(KERNEL_SUBLEVEL) -lt 27 && echo yes),yes)
-$(error "ERROR: You should use compat-wireless-2.6-old for older kernels, this one is for kenrels >= 2.6.27")
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -lt 25 && echo yes),yes)
+$(error "ERROR: You should use compat-wireless-2.6-old for older kernels, this one is for kernels >= 2.6.25")
 endif
 
 ifeq ($(CONFIG_CFG80211),y)
@@ -75,9 +75,6 @@ endif # kernel Makefile check
 # Wireless subsystem stuff
 CONFIG_MAC80211=m
 
-CONFIG_MAC80211_DEFAULT_PS=y
-CONFIG_MAC80211_DEFAULT_PS_VALUE=1
-
 # CONFIG_MAC80211_DEBUGFS=y
 # CONFIG_MAC80211_DEBUG_MENU=y
 # CONFIG_MAC80211_DEBUG_PACKET_ALIGNMENT=y
@@ -105,6 +102,8 @@ CONFIG_MAC80211_LEDS=y
 CONFIG_MAC80211_MESH=y
 
 CONFIG_CFG80211=m
+CONFIG_CFG80211_DEFAULT_PS=y
+CONFIG_CFG80211_DEFAULT_PS_VALUE=1
 # CONFIG_CFG80211_REG_DEBUG=y
 
 CONFIG_LIB80211=m
@@ -238,8 +237,13 @@ endif
 
 ifneq ($(CONFIG_PCMCIA),)
 
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 26 && echo yes),yes)
+CONFIG_LIBERTAS=n
+CONFIG_LIBERTAS_CS=n
+else
 CONFIG_LIBERTAS_CS=m
 NEED_LIBERTAS=y
+endif
 
 endif
 ## end of PCMCIA
@@ -269,9 +273,7 @@ CONFIG_RTL8187=m
 
 CONFIG_AT76C50X_USB=m
 
-# Activate AR9170 support only on kernel >= 2.6.29.
-# The needed USB poison feature was added in this kernel release.
-ifeq ($(shell test $(KERNEL_SUBLEVEL) -ge 29 && echo yes),yes)
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -ge 27 && echo yes),yes)
 CONFIG_AR9170_USB=m
 CONFIG_AR9170_LEDS=y
 endif
@@ -287,9 +289,15 @@ CONFIG_RT73USB=m
 NEED_RT2X00_FIRMWARE=y
 endif
 
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 26 && echo yes),yes)
+CONFIG_LIBERTAS_THINFIRM_USB=n
+CONFIG_LIBERTAS_USB=n
+NEED_LIBERTAS=n
+else
 CONFIG_LIBERTAS_THINFIRM_USB=m
 CONFIG_LIBERTAS_USB=m
 NEED_LIBERTAS=y
+endif
 
 endif # end of USB driver list
 
@@ -297,15 +305,26 @@ ifneq ($(CONFIG_SPI_MASTER),)
 
 CONFIG_WL1251=m
 CONFIG_P54_SPI=m
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 26 && echo yes),yes)
+CONFIG_LIBERTAS_SPI=n
+NEED_LIBERTAS=n
+else
 CONFIG_LIBERTAS_SPI=m
 NEED_LIBERTAS=y
+endif
 
 endif # end of SPI driver list
 
 ifneq ($(CONFIG_MMC),)
 
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 26 && echo yes),yes)
+CONFIG_LIBERTAS_SDIO=n
+NEED_LIBERTAS=n
+else
 CONFIG_LIBERTAS_SDIO=m
 NEED_LIBERTAS=y
+endif
 
 # Activate iwmc3200wifi support only on kernel >= 2.6.29.
 # iwmc3200wifi uses new netdev_ops api no supported by old kernel.
@@ -348,10 +367,14 @@ CONFIG_SSB=m
 CONFIG_SSB_SPROM=y
 # CONFIG_SSB_DEBUG=y
 
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 26 && echo yes),yes)
+CONFIG_LIBERTAS=n
+else
 ifeq ($(NEED_LIBERTAS),y)
 CONFIG_LIBERTAS_THINFIRM=m
 CONFIG_LIBERTAS=m
 # CONFIG_LIBERTAS_DEBUG=y
+endif
 endif
 
 # We need the backported rfkill module on kernel < 2.6.31.

@@ -17,28 +17,39 @@
 
 #define IEEE80211_SCAN_RESULT_EXPIRE	(10 * HZ)
 
-void cfg80211_scan_done(struct cfg80211_scan_request *request, bool aborted)
+void __cfg80211_scan_done(struct work_struct *wk)
 {
+	struct cfg80211_registered_device *rdev;
+	struct cfg80211_scan_request *request;
 	struct net_device *dev;
 #ifdef CONFIG_WIRELESS_EXT
 	union iwreq_data wrqu;
 #endif
 
+	rdev = container_of(wk, struct cfg80211_registered_device,
+			    scan_done_wk);
+
+	mutex_lock(&rdev->mtx);
+	request = rdev->scan_req;
+
 	dev = dev_get_by_index(&init_net, request->ifidx);
 	if (!dev)
 		goto out;
 
-	WARN_ON(request != wiphy_to_dev(request->wiphy)->scan_req);
+	/*
+	 * This must be before sending the other events!
+	 * Otherwise, wpa_supplicant gets completely confused with
+	 * wext events.
+	 */
+	cfg80211_sme_scan_done(dev);
 
-	if (aborted)
+	if (request->aborted)
 		nl80211_send_scan_aborted(wiphy_to_dev(request->wiphy), dev);
 	else
 		nl80211_send_scan_done(wiphy_to_dev(request->wiphy), dev);
 
-	wiphy_to_dev(request->wiphy)->scan_req = NULL;
-
 #ifdef CONFIG_WIRELESS_EXT
-	if (!aborted) {
+	if (!request->aborted) {
 		memset(&wrqu, 0, sizeof(wrqu));
 
 		wireless_send_event(dev, SIOCGIWSCAN, &wrqu, NULL);
@@ -48,7 +59,24 @@ void cfg80211_scan_done(struct cfg80211_scan_request *request, bool aborted)
 	dev_put(dev);
 
  out:
+	rdev->scan_req = NULL;
+	cfg80211_unlock_rdev(rdev);
 	kfree(request);
+}
+
+void cfg80211_scan_done(struct cfg80211_scan_request *request, bool aborted)
+{
+	struct net_device *dev = dev_get_by_index(&init_net, request->ifidx);
+	if (WARN_ON(!dev)) {
+		kfree(request);
+		return;
+	}
+
+	WARN_ON(request != wiphy_to_dev(request->wiphy)->scan_req);
+
+	request->aborted = aborted;
+	schedule_work(&wiphy_to_dev(request->wiphy)->scan_done_wk);
+	dev_put(dev);
 }
 EXPORT_SYMBOL(cfg80211_scan_done);
 
@@ -59,12 +87,12 @@ static void bss_release(struct kref *ref)
 	bss = container_of(ref, struct cfg80211_internal_bss, ref);
 	if (bss->pub.free_priv)
 		bss->pub.free_priv(&bss->pub);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 
 	if (bss->ies_allocated)
 		kfree(bss->pub.information_elements);
 
-#endif
+	BUG_ON(atomic_read(&bss->hold));
+
 	kfree(bss);
 }
 
@@ -87,8 +115,9 @@ void cfg80211_bss_expire(struct cfg80211_registered_device *dev)
 	bool expired = false;
 
 	list_for_each_entry_safe(bss, tmp, &dev->bss_list, list) {
-		if (bss->hold ||
-		    !time_after(jiffies, bss->ts + IEEE80211_SCAN_RESULT_EXPIRE))
+		if (atomic_read(&bss->hold))
+			continue;
+		if (!time_after(jiffies, bss->ts + IEEE80211_SCAN_RESULT_EXPIRE))
 			continue;
 		list_del(&bss->list);
 		rb_erase(&bss->rbn, &dev->bss_tree);
@@ -367,33 +396,23 @@ cfg80211_bss_update(struct cfg80211_registered_device *dev,
 
 	found = rb_find_bss(dev, res);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 	if (found) {
-#else
-	if (found && overwrite) {
-		list_replace(&found->list, &res->list);
-		rb_replace_node(&found->rbn, &res->rbn,
-				&dev->bss_tree);
-		/* XXX: workaround */
-		res->hold = found->hold;
-		kref_put(&found->ref, bss_release);
-		found = res;
-	} else if (found) {
-#endif
-		kref_get(&found->ref);
 		found->pub.beacon_interval = res->pub.beacon_interval;
 		found->pub.tsf = res->pub.tsf;
 		found->pub.signal = res->pub.signal;
 		found->pub.capability = res->pub.capability;
 		found->ts = res->ts;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 
 		/* overwrite IEs */
 		if (overwrite) {
 			size_t used = dev->wiphy.bss_priv_size + sizeof(*res);
 			size_t ielen = res->pub.len_information_elements;
 
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,28)
+			if (0) {
+#else
 			if (!found->ies_allocated && ksize(found) >= used + ielen) {
+#endif
 				memcpy(found->pub.information_elements,
 				       res->pub.information_elements, ielen);
 				found->pub.len_information_elements = ielen;
@@ -414,7 +433,6 @@ cfg80211_bss_update(struct cfg80211_registered_device *dev,
 			}
 		}
 
-#endif
 		kref_put(&res->ref, bss_release);
 	} else {
 		/* this "consumes" the reference */
@@ -563,30 +581,6 @@ void cfg80211_unlink_bss(struct wiphy *wiphy, struct cfg80211_bss *pub)
 }
 EXPORT_SYMBOL(cfg80211_unlink_bss);
 
-void cfg80211_hold_bss(struct cfg80211_bss *pub)
-{
-	struct cfg80211_internal_bss *bss;
-
-	if (!pub)
-		return;
-
-	bss = container_of(pub, struct cfg80211_internal_bss, pub);
-	bss->hold = true;
-}
-EXPORT_SYMBOL(cfg80211_hold_bss);
-
-void cfg80211_unhold_bss(struct cfg80211_bss *pub)
-{
-	struct cfg80211_internal_bss *bss;
-
-	if (!pub)
-		return;
-
-	bss = container_of(pub, struct cfg80211_internal_bss, pub);
-	bss->hold = false;
-}
-EXPORT_SYMBOL(cfg80211_unhold_bss);
-
 #ifdef CONFIG_WIRELESS_EXT
 int cfg80211_wext_siwscan(struct net_device *dev,
 			  struct iw_request_info *info,
@@ -667,7 +661,7 @@ int cfg80211_wext_siwscan(struct net_device *dev,
 	} else
 		nl80211_send_scan_start(rdev, dev);
  out:
-	cfg80211_put_dev(rdev);
+	cfg80211_unlock_rdev(rdev);
 	return err;
 }
 EXPORT_SYMBOL_GPL(cfg80211_wext_siwscan);
@@ -976,7 +970,7 @@ int cfg80211_wext_giwscan(struct net_device *dev,
 	}
 
  out:
-	cfg80211_put_dev(rdev);
+	cfg80211_unlock_rdev(rdev);
 	return res;
 }
 EXPORT_SYMBOL_GPL(cfg80211_wext_giwscan);

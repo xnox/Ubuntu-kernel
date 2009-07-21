@@ -171,7 +171,7 @@ int iwl_commit_rxon(struct iwl_priv *priv)
 		       le16_to_cpu(priv->staging_rxon.channel),
 		       priv->staging_rxon.bssid_addr);
 
-	iwl_set_rxon_hwcrypto(priv, !priv->hw_params.sw_crypto);
+	iwl_set_rxon_hwcrypto(priv, !priv->cfg->mod_params->sw_crypto);
 
 	/* Apply the new configuration
 	 * RXON unassoc clears the station table in uCode, send it before
@@ -510,70 +510,6 @@ int iwl_hw_tx_queue_init(struct iwl_priv *priv,
 			     txq->q.dma_addr >> 8);
 
 	return 0;
-}
-
-
-/******************************************************************************
- *
- * Misc. internal state and helper functions
- *
- ******************************************************************************/
-
-#define MAX_UCODE_BEACON_INTERVAL	4096
-
-static u16 iwl_adjust_beacon_interval(u16 beacon_val)
-{
-	u16 new_val = 0;
-	u16 beacon_factor = 0;
-
-	beacon_factor = (beacon_val + MAX_UCODE_BEACON_INTERVAL)
-					/ MAX_UCODE_BEACON_INTERVAL;
-	new_val = beacon_val / beacon_factor;
-
-	if (!new_val)
-		new_val = MAX_UCODE_BEACON_INTERVAL;
-
-	return new_val;
-}
-
-static void iwl_setup_rxon_timing(struct iwl_priv *priv)
-{
-	u64 tsf;
-	s32 interval_tm, rem;
-	unsigned long flags;
-	struct ieee80211_conf *conf = NULL;
-	u16 beacon_int = 0;
-
-	conf = ieee80211_get_hw_conf(priv->hw);
-
-	spin_lock_irqsave(&priv->lock, flags);
-	priv->rxon_timing.timestamp = cpu_to_le64(priv->timestamp);
-	priv->rxon_timing.listen_interval = cpu_to_le16(conf->listen_interval);
-
-	if (priv->iw_mode == NL80211_IFTYPE_STATION) {
-		beacon_int = iwl_adjust_beacon_interval(priv->beacon_int);
-		priv->rxon_timing.atim_window = 0;
-	} else {
-		beacon_int = iwl_adjust_beacon_interval(
-			priv->vif->bss_conf.beacon_int);
-
-		/* TODO: we need to get atim_window from upper stack
-		 * for now we set to 0 */
-		priv->rxon_timing.atim_window = 0;
-	}
-
-	priv->rxon_timing.beacon_interval = cpu_to_le16(beacon_int);
-
-	tsf = priv->timestamp; /* tsf is modifed by do_div: copy it */
-	interval_tm = beacon_int * 1024;
-	rem = do_div(tsf, interval_tm);
-	priv->rxon_timing.beacon_init_val = cpu_to_le32(interval_tm - rem);
-
-	spin_unlock_irqrestore(&priv->lock, flags);
-	IWL_DEBUG_ASSOC(priv, "beacon interval %d beacon timer %d beacon tim %d\n",
-			le16_to_cpu(priv->rxon_timing.beacon_interval),
-			le32_to_cpu(priv->rxon_timing.beacon_init_val),
-			le16_to_cpu(priv->rxon_timing.atim_window));
 }
 
 /******************************************************************************
@@ -1812,6 +1748,11 @@ static int iwl_prepare_card_hw(struct iwl_priv *priv)
 
 	IWL_DEBUG_INFO(priv, "iwl_prepare_card_hw enter \n");
 
+	ret = iwl_set_hw_ready(priv);
+	if (priv->hw_ready)
+		return ret;
+
+	/* If HW is not ready, prepare the conditions to check again */
 	iwl_set_bit(priv, CSR_HW_IF_CONFIG_REG,
 			CSR_HW_IF_CONFIG_REG_PREPARE);
 
@@ -1819,6 +1760,7 @@ static int iwl_prepare_card_hw(struct iwl_priv *priv)
 			~CSR_HW_IF_CONFIG_REG_BIT_NIC_PREPARE_DONE,
 			CSR_HW_IF_CONFIG_REG_BIT_NIC_PREPARE_DONE, 150000);
 
+	/* HW should be ready by now, check again. */
 	if (ret != -ETIMEDOUT)
 		iwl_set_hw_ready(priv);
 
@@ -2331,7 +2273,7 @@ static int iwl_mac_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 
 	IWL_DEBUG_MAC80211(priv, "enter\n");
 
-	if (priv->hw_params.sw_crypto) {
+	if (priv->cfg->mod_params->sw_crypto) {
 		IWL_DEBUG_MAC80211(priv, "leave - hwcrypto disabled\n");
 		return -EOPNOTSUPP;
 	}
@@ -2675,38 +2617,16 @@ static ssize_t show_power_level(struct device *d,
 				struct device_attribute *attr, char *buf)
 {
 	struct iwl_priv *priv = dev_get_drvdata(d);
-	int mode = priv->power_data.user_power_setting;
 	int level = priv->power_data.power_mode;
 	char *p = buf;
 
-	p += sprintf(p, "INDEX:%d\t", level);
-	p += sprintf(p, "USER:%d\n", mode);
+	p += sprintf(p, "%d\n", level);
 	return p - buf + 1;
 }
 
 static DEVICE_ATTR(power_level, S_IWUSR | S_IRUSR, show_power_level,
 		   store_power_level);
 
-static ssize_t show_qos(struct device *d,
-				struct device_attribute *attr, char *buf)
-{
-	struct iwl_priv *priv = dev_get_drvdata(d);
-	char *p = buf;
-	int   q;
-
-	for (q = 0; q < AC_NUM; q++) {
-		p += sprintf(p, "\tcw_min\tcw_max\taifsn\ttxop\n");
-		p += sprintf(p, "AC[%d]\t%u\t%u\t%u\t%u\n", q,
-			     priv->qos_data.def_qos_parm.ac[q].cw_min,
-			     priv->qos_data.def_qos_parm.ac[q].cw_max,
-			     priv->qos_data.def_qos_parm.ac[q].aifsn,
-			     priv->qos_data.def_qos_parm.ac[q].edca_txop);
-	}
-
-	return p - buf + 1;
-}
-
-static DEVICE_ATTR(qos, S_IRUGO, show_qos, NULL);
 
 static ssize_t show_statistics(struct device *d,
 			       struct device_attribute *attr, char *buf)
@@ -2807,7 +2727,6 @@ static struct attribute *iwl_sysfs_entries[] = {
 	&dev_attr_debug_level.attr,
 #endif
 	&dev_attr_version.attr,
-	&dev_attr_qos.attr,
 	NULL
 };
 

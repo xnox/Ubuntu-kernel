@@ -89,7 +89,7 @@ MODULE_LICENSE("GPL");
 
  /* module parameters */
 struct iwl_mod_params iwl3945_mod_params = {
-	.num_of_queues = IWL39_MAX_NUM_QUEUES,
+	.num_of_queues = IWL39_NUM_QUEUES, /* Not used */
 	.sw_crypto = 1,
 	.restart_fw = 1,
 	/* the rest are 0 by default */
@@ -359,76 +359,6 @@ static void iwl3945_unset_hw_params(struct iwl_priv *priv)
 				    sizeof(struct iwl3945_shared),
 				    priv->shared_virt,
 				    priv->shared_phys);
-}
-
-#define MAX_UCODE_BEACON_INTERVAL	1024
-#define INTEL_CONN_LISTEN_INTERVAL	cpu_to_le16(0xA)
-
-static __le16 iwl3945_adjust_beacon_interval(u16 beacon_val)
-{
-	u16 new_val = 0;
-	u16 beacon_factor = 0;
-
-	beacon_factor =
-	    (beacon_val + MAX_UCODE_BEACON_INTERVAL)
-		/ MAX_UCODE_BEACON_INTERVAL;
-	new_val = beacon_val / beacon_factor;
-
-	return cpu_to_le16(new_val);
-}
-
-static void iwl3945_setup_rxon_timing(struct iwl_priv *priv)
-{
-	u64 interval_tm_unit;
-	u64 tsf, result;
-	unsigned long flags;
-	struct ieee80211_conf *conf = NULL;
-	u16 beacon_int = 0;
-
-	conf = ieee80211_get_hw_conf(priv->hw);
-
-	spin_lock_irqsave(&priv->lock, flags);
-	priv->rxon_timing.timestamp = cpu_to_le64(priv->timestamp);
-	priv->rxon_timing.listen_interval = INTEL_CONN_LISTEN_INTERVAL;
-
-	tsf = priv->timestamp;
-
-	beacon_int = priv->beacon_int;
-	spin_unlock_irqrestore(&priv->lock, flags);
-
-	if (priv->iw_mode == NL80211_IFTYPE_STATION) {
-		if (beacon_int == 0) {
-			priv->rxon_timing.beacon_interval = cpu_to_le16(100);
-			priv->rxon_timing.beacon_init_val = cpu_to_le32(102400);
-		} else {
-			priv->rxon_timing.beacon_interval =
-				cpu_to_le16(beacon_int);
-			priv->rxon_timing.beacon_interval =
-			    iwl3945_adjust_beacon_interval(
-				le16_to_cpu(priv->rxon_timing.beacon_interval));
-		}
-
-		priv->rxon_timing.atim_window = 0;
-	} else {
-		priv->rxon_timing.beacon_interval =
-			iwl3945_adjust_beacon_interval(
-				priv->vif->bss_conf.beacon_int);
-		/* TODO: we need to get atim_window from upper stack
-		 * for now we set to 0 */
-		priv->rxon_timing.atim_window = 0;
-	}
-
-	interval_tm_unit =
-		(le16_to_cpu(priv->rxon_timing.beacon_interval) * 1024);
-	result = do_div(tsf, interval_tm_unit);
-	priv->rxon_timing.beacon_init_val =
-	    cpu_to_le32((u32) ((u64) interval_tm_unit - result));
-
-	IWL_DEBUG_ASSOC(priv,
-		"beacon interval %d beacon timer %d beacon tim %d\n",
-		le16_to_cpu(priv->rxon_timing.beacon_interval),
-		le32_to_cpu(priv->rxon_timing.beacon_init_val),
-		le16_to_cpu(priv->rxon_timing.atim_window));
 }
 
 static void iwl3945_build_tx_cmd_hwcrypto(struct iwl_priv *priv,
@@ -1844,7 +1774,7 @@ static int iwl3945_get_channels_for_scan(struct iwl_priv *priv,
 				     u8 is_active, u8 n_probes,
 				     struct iwl3945_scan_channel *scan_ch)
 {
-	const struct ieee80211_channel *channels = NULL;
+	struct ieee80211_channel *chan;
 	const struct ieee80211_supported_band *sband;
 	const struct iwl_channel_info *ch_info;
 	u16 passive_dwell = 0;
@@ -1855,19 +1785,19 @@ static int iwl3945_get_channels_for_scan(struct iwl_priv *priv,
 	if (!sband)
 		return 0;
 
-	channels = sband->channels;
-
 	active_dwell = iwl_get_active_dwell_time(priv, band, n_probes);
 	passive_dwell = iwl_get_passive_dwell_time(priv, band);
 
 	if (passive_dwell <= active_dwell)
 		passive_dwell = active_dwell + 1;
 
-	for (i = 0, added = 0; i < sband->n_channels; i++) {
-		if (channels[i].flags & IEEE80211_CHAN_DISABLED)
+	for (i = 0, added = 0; i < priv->scan_request->n_channels; i++) {
+		chan = priv->scan_request->channels[i];
+
+		if (chan->band != band)
 			continue;
 
-		scan_ch->channel = channels[i].hw_value;
+		scan_ch->channel = chan->hw_value;
 
 		ch_info = iwl_get_channel_info(priv, band, scan_ch->channel);
 		if (!is_channel_valid(ch_info)) {
@@ -1882,7 +1812,7 @@ static int iwl3945_get_channels_for_scan(struct iwl_priv *priv,
 		 *  and use long active_dwell time.
 		 */
 		if (!is_active || is_channel_passive(ch_info) ||
-		    (channels[i].flags & IEEE80211_CHAN_PASSIVE_SCAN)) {
+		    (chan->flags & IEEE80211_CHAN_PASSIVE_SCAN)) {
 			scan_ch->type = 0;	/* passive */
 			if (IWL_UCODE_API(priv->ucode_ver) == 1)
 				scan_ch->active_dwell = cpu_to_le16(passive_dwell - 1);
@@ -3066,7 +2996,7 @@ void iwl3945_post_associate(struct iwl_priv *priv)
 	iwlcore_commit_rxon(priv);
 
 	memset(&priv->rxon_timing, 0, sizeof(struct iwl_rxon_time_cmd));
-	iwl3945_setup_rxon_timing(priv);
+	iwl_setup_rxon_timing(priv);
 	rc = iwl_send_cmd_pdu(priv, REPLY_RXON_TIMING,
 			      sizeof(priv->rxon_timing), &priv->rxon_timing);
 	if (rc)
@@ -3261,7 +3191,7 @@ void iwl3945_config_ap(struct iwl_priv *priv)
 
 		/* RXON Timing */
 		memset(&priv->rxon_timing, 0, sizeof(struct iwl_rxon_time_cmd));
-		iwl3945_setup_rxon_timing(priv);
+		iwl_setup_rxon_timing(priv);
 		rc = iwl_send_cmd_pdu(priv, REPLY_RXON_TIMING,
 				      sizeof(priv->rxon_timing),
 				      &priv->rxon_timing);
@@ -3643,12 +3573,10 @@ static ssize_t show_power_level(struct device *d,
 				struct device_attribute *attr, char *buf)
 {
 	struct iwl_priv *priv = dev_get_drvdata(d);
-	int mode = priv->power_data.user_power_setting;
 	int level = priv->power_data.power_mode;
 	char *p = buf;
 
-	p += sprintf(p, "INDEX:%d\t", level);
-	p += sprintf(p, "USER:%d\n", mode);
+	p += sprintf(p, "%d\n", level);
 	return p - buf + 1;
 }
 
@@ -4019,15 +3947,6 @@ static int iwl3945_pci_probe(struct pci_dev *pdev, const struct pci_device_id *e
 	priv = hw->priv;
 	SET_IEEE80211_DEV(hw, &pdev->dev);
 
-	if ((iwl3945_mod_params.num_of_queues > IWL39_MAX_NUM_QUEUES) ||
-	     (iwl3945_mod_params.num_of_queues < IWL_MIN_NUM_QUEUES)) {
-		IWL_ERR(priv,
-			"invalid queues_num, should be between %d and %d\n",
-			IWL_MIN_NUM_QUEUES, IWL39_MAX_NUM_QUEUES);
-		err = -EINVAL;
-		goto out_ieee80211_free_hw;
-	}
-
 	/*
 	 * Disabling hardware scan means that mac80211 will perform scans
 	 * "the hard way", rather than using device's scan.
@@ -4344,10 +4263,6 @@ module_param_named(debug, iwl3945_mod_params.debug, uint, 0444);
 MODULE_PARM_DESC(debug, "debug output mask");
 module_param_named(disable_hw_scan, iwl3945_mod_params.disable_hw_scan, int, 0444);
 MODULE_PARM_DESC(disable_hw_scan, "disable hardware scanning (default 0)");
-
-module_param_named(queues_num, iwl3945_mod_params.num_of_queues, int, 0444);
-MODULE_PARM_DESC(queues_num, "number of hw queues.");
-
 module_param_named(fw_restart3945, iwl3945_mod_params.restart_fw, int, 0444);
 MODULE_PARM_DESC(fw_restart3945, "restart firmware in case of error");
 

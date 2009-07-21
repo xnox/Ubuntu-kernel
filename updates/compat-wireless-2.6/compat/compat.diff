@@ -1,10 +1,10 @@
---- a/drivers/misc/eeprom/Makefile	2009-07-02 00:23:37.993293412 -0700
-+++ b/drivers/misc/eeprom/Makefile	2009-07-02 00:23:38.053296505 -0700
-@@ -1,5 +1,2 @@
+--- a/drivers/misc/eeprom/Makefile
++++ b/drivers/misc/eeprom/Makefile
+@@ -1,5 +1 @@
 -obj-$(CONFIG_EEPROM_AT24)	+= at24.o
 -obj-$(CONFIG_EEPROM_AT25)	+= at25.o
 -obj-$(CONFIG_EEPROM_LEGACY)	+= eeprom.o
- obj-$(CONFIG_EEPROM_MAX6875)	+= max6875.o
+-obj-$(CONFIG_EEPROM_MAX6875)	+= max6875.o
  obj-$(CONFIG_EEPROM_93CX6)	+= eeprom_93cx6.o
 --- a/drivers/net/b44.c
 +++ b/drivers/net/b44.c
@@ -51,9 +51,9 @@
  	dev->irq = sdev->irq;
  	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
  
---- a/drivers/net/usb/Makefile	2009-07-02 00:23:37.969259980 -0700
-+++ b/drivers/net/usb/Makefile	2009-07-02 00:23:38.057293452 -0700
-@@ -2,23 +2,8 @@
+--- a/drivers/net/usb/Makefile
++++ b/drivers/net/usb/Makefile
+@@ -2,23 +2,7 @@
  # Makefile for USB Network drivers
  #
  
@@ -75,7 +75,7 @@
 -obj-$(CONFIG_USB_NET_ZAURUS)	+= zaurus.o
 -obj-$(CONFIG_USB_NET_MCS7830)	+= mcs7830.o
  obj-$(CONFIG_USB_USBNET)	+= usbnet.o
- obj-$(CONFIG_USB_NET_INT51X1)	+= int51x1.o
+-obj-$(CONFIG_USB_NET_INT51X1)	+= int51x1.o
  
 --- a/drivers/net/usb/rndis_host.c
 +++ b/drivers/net/usb/rndis_host.c
@@ -141,52 +141,20 @@
  	net->watchdog_timeo = TX_TIMEOUT_JIFFIES;
  	net->ethtool_ops = &usbnet_ethtool_ops;
  
---- a/drivers/net/wireless/Makefile
-+++ b/drivers/net/wireless/Makefile
-@@ -5,43 +5,17 @@
- obj-$(CONFIG_IPW2100) += ipw2x00/
- obj-$(CONFIG_IPW2200) += ipw2x00/
+--- a/net/wireless/Makefile
++++ b/net/wireless/Makefile
+@@ -10,3 +10,11 @@ cfg80211-$(CONFIG_CFG80211_DEBUGFS) += debugfs.o
+ cfg80211-$(CONFIG_WIRELESS_EXT) += wext-compat.o wext-sme.o
  
--obj-$(CONFIG_STRIP) += strip.o
--obj-$(CONFIG_ARLAN) += arlan.o 
--
--arlan-objs := arlan-main.o arlan-proc.o
--
--# Obsolete cards
--obj-$(CONFIG_WAVELAN)		+= wavelan.o
--obj-$(CONFIG_PCMCIA_NETWAVE)	+= netwave_cs.o
--obj-$(CONFIG_PCMCIA_WAVELAN)	+= wavelan_cs.o
--
--obj-$(CONFIG_HERMES)		+= orinoco/
--
--obj-$(CONFIG_AIRO)		+= airo.o
--obj-$(CONFIG_AIRO_CS)		+= airo_cs.o airo.o
--
--obj-$(CONFIG_ATMEL)             += atmel.o
--obj-$(CONFIG_PCI_ATMEL)         += atmel_pci.o 
--obj-$(CONFIG_PCMCIA_ATMEL)      += atmel_cs.o
--
- obj-$(CONFIG_AT76C50X_USB)      += at76c50x-usb.o
- 
--obj-$(CONFIG_PRISM54)		+= prism54/
--
--obj-$(CONFIG_HOSTAP)		+= hostap/
- obj-$(CONFIG_B43)		+= b43/
- obj-$(CONFIG_B43LEGACY)		+= b43legacy/
- obj-$(CONFIG_ZD1211RW)		+= zd1211rw/
- obj-$(CONFIG_RTL8180)		+= rtl818x/
- obj-$(CONFIG_RTL8187)		+= rtl818x/
- 
--# 16-bit wireless PCMCIA client drivers
--obj-$(CONFIG_PCMCIA_RAYCS)	+= ray_cs.o
--obj-$(CONFIG_PCMCIA_WL3501)	+= wl3501_cs.o
- 
- obj-$(CONFIG_USB_NET_RNDIS_WLAN)	+= rndis_wlan.o
- 
--obj-$(CONFIG_USB_ZD1201)	+= zd1201.o
- obj-$(CONFIG_LIBERTAS)		+= libertas/
- 
- obj-$(CONFIG_LIBERTAS_THINFIRM)	+= libertas_tf/
+ ccflags-y += -D__CHECK_ENDIAN__
++# Compat-wireless kernel compatibility code
++cfg80211-y += compat-2.6.27.o
++cfg80211-y += compat-2.6.28.o
++cfg80211-y += compat-2.6.29.o
++cfg80211-y += compat-2.6.30.o
++cfg80211-y += compat-2.6.31.o
++cfg80211-y += compat-2.6.32.o
++
 --- a/drivers/net/wireless/ath/ath5k/base.h
 +++ b/drivers/net/wireless/ath/ath5k/base.h
 @@ -46,7 +46,11 @@
@@ -212,9 +180,9 @@
  	ah->rfsilent = ah->eep_ops->get_eeprom(ah, EEP_RF_SILENT);
  	if (ah->rfsilent & EEP_RFSILENT_ENABLED) {
  		ah->rfkill_gpio =
---- a/drivers/net/wireless/b43/pcmcia.c
-+++ b/drivers/net/wireless/b43/pcmcia.c
-@@ -87,7 +87,11 @@ static int __devinit b43_pcmcia_probe(struct pcmcia_device *dev)
+--- a/drivers/net/wireless/b43/pcmcia.c	2009-07-08 23:31:13.028453519 -0700
++++ b/drivers/net/wireless/b43/pcmcia.c	2009-07-08 23:31:15.213207643 -0700
+@@ -88,7 +88,11 @@ static int __devinit b43_pcmcia_probe(st
  	res = pcmcia_get_tuple_data(dev, &tuple);
  	if (res != 0)
  		goto err_kfree_ssb;
@@ -446,9 +414,9 @@
  	rtap_dev->ml_priv = priv;
  	SET_NETDEV_DEV(rtap_dev, priv->dev->dev.parent);
  
---- a/drivers/net/wireless/mac80211_hwsim.c	2009-07-02 00:23:38.005263090 -0700
-+++ b/drivers/net/wireless/mac80211_hwsim.c	2009-07-02 00:23:38.069262502 -0700
-@@ -743,16 +743,22 @@
+--- a/drivers/net/wireless/mac80211_hwsim.c
++++ b/drivers/net/wireless/mac80211_hwsim.c
+@@ -814,16 +814,22 @@ static struct device_driver mac80211_hwsim_driver = {
  	.name = "mac80211_hwsim"
  };
  
@@ -525,9 +493,17 @@
  #include <linux/spi/spi.h>
  
  #include "wl1251.h"
---- a/include/linux/rfkill_backport.h	2009-07-01 23:54:40.529283538 -0700
-+++ b/include/linux/rfkill_backport.h	2009-07-02 00:23:38.069262502 -0700
-@@ -134,7 +134,7 @@
+--- a/include/linux/rfkill_backport.h	2009-07-08 19:34:26.145290692 -0700
++++ b/include/linux/rfkill_backport.h	2009-07-08 23:33:04.501218904 -0700
+@@ -23,6 +23,7 @@
+  */
+ 
+ #include <linux/types.h>
++#include <net/compat.h>
+ 
+ /* define userspace visible states */
+ #define RFKILL_STATE_SOFT_BLOCKED	0
+@@ -147,7 +148,7 @@ struct rfkill_ops {
  	int	(*set_block)(void *data, bool blocked);
  };
  
@@ -536,203 +512,6 @@
  /**
   * rfkill_alloc - allocate rfkill structure
   * @name: name of the struct -- the string is not copied internally
-@@ -146,7 +146,7 @@
-  * This function should be called by the transmitter driver to allocate an
-  * rfkill structure. Returns %NULL on failure.
-  */
--struct rfkill * __must_check rfkill_alloc(const char *name,
-+struct rfkill * __must_check backport_rfkill_alloc(const char *name,
- 					  struct device *parent,
- 					  const enum rfkill_type type,
- 					  const struct rfkill_ops *ops,
-@@ -167,7 +167,7 @@
-  * If the hardware blocked state is not set before registration,
-  * it is assumed to be unblocked.
-  */
--int __must_check rfkill_register(struct rfkill *rfkill);
-+int __must_check backport_rfkill_register(struct rfkill *rfkill);
- 
- /**
-  * rfkill_pause_polling(struct rfkill *rfkill)
-@@ -176,7 +176,7 @@
-  * NOTE: not necessary for suspend/resume -- in that case the
-  * core stops polling anyway
-  */
--void rfkill_pause_polling(struct rfkill *rfkill);
-+void backport_rfkill_pause_polling(struct rfkill *rfkill);
- 
- /**
-  * rfkill_resume_polling(struct rfkill *rfkill)
-@@ -185,7 +185,7 @@
-  * NOTE: not necessary for suspend/resume -- in that case the
-  * core stops polling anyway
-  */
--void rfkill_resume_polling(struct rfkill *rfkill);
-+void backport_rfkill_resume_polling(struct rfkill *rfkill);
- 
- 
- /**
-@@ -196,7 +196,7 @@
-  * teardown to destroy rfkill structure. Until it returns, the driver
-  * needs to be able to service method calls.
-  */
--void rfkill_unregister(struct rfkill *rfkill);
-+void backport_rfkill_unregister(struct rfkill *rfkill);
- 
- /**
-  * rfkill_destroy - free rfkill structure
-@@ -204,7 +204,7 @@
-  *
-  * Destroys the rfkill structure.
-  */
--void rfkill_destroy(struct rfkill *rfkill);
-+void backport_rfkill_destroy(struct rfkill *rfkill);
- 
- /**
-  * rfkill_set_hw_state - Set the internal rfkill hardware block state
-@@ -225,7 +225,7 @@
-  * should be blocked) so that drivers need not keep track of the soft
-  * block state -- which they might not be able to.
-  */
--bool __must_check rfkill_set_hw_state(struct rfkill *rfkill, bool blocked);
-+bool __must_check backport_rfkill_set_hw_state(struct rfkill *rfkill, bool blocked);
- 
- /**
-  * rfkill_set_sw_state - Set the internal rfkill software block state
-@@ -247,7 +247,7 @@
-  * The function returns the combined block state (true if transmitter
-  * should be blocked).
-  */
--bool rfkill_set_sw_state(struct rfkill *rfkill, bool blocked);
-+bool backport_rfkill_set_sw_state(struct rfkill *rfkill, bool blocked);
- 
- /**
-  * rfkill_init_sw_state - Initialize persistent software block state
-@@ -263,7 +263,7 @@
-  * can be read by userspace.  Persistent devices are expected to preserve
-  * their own state when suspended.
-  */
--void rfkill_init_sw_state(struct rfkill *rfkill, bool blocked);
-+void backport_rfkill_init_sw_state(struct rfkill *rfkill, bool blocked);
- 
- /**
-  * rfkill_set_states - Set the internal rfkill block states
-@@ -274,17 +274,17 @@
-  * This function can be called in any context, even from within rfkill
-  * callbacks.
-  */
--void rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw);
-+void backport_rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw);
- 
- /**
-  * rfkill_blocked - query rfkill block
-  *
-  * @rfkill: rfkill struct to query
-  */
--bool rfkill_blocked(struct rfkill *rfkill);
--#else /* !RFKILL */
-+bool backport_rfkill_blocked(struct rfkill *rfkill);
-+#else /* !RFKILL_BACKPORT */
- static inline struct rfkill * __must_check
--rfkill_alloc(const char *name,
-+backport_rfkill_alloc(const char *name,
- 	     struct device *parent,
- 	     const enum rfkill_type type,
- 	     const struct rfkill_ops *ops,
-@@ -293,61 +293,61 @@
- 	return ERR_PTR(-ENODEV);
- }
- 
--static inline int __must_check rfkill_register(struct rfkill *rfkill)
-+static inline int __must_check backport_rfkill_register(struct rfkill *rfkill)
- {
- 	if (rfkill == ERR_PTR(-ENODEV))
- 		return 0;
- 	return -EINVAL;
- }
- 
--static inline void rfkill_pause_polling(struct rfkill *rfkill)
-+static inline void backport_rfkill_pause_polling(struct rfkill *rfkill)
- {
- }
- 
--static inline void rfkill_resume_polling(struct rfkill *rfkill)
-+static inline void backport_rfkill_resume_polling(struct rfkill *rfkill)
- {
- }
- 
--static inline void rfkill_unregister(struct rfkill *rfkill)
-+static inline void backport_rfkill_unregister(struct rfkill *rfkill)
- {
- }
- 
--static inline void rfkill_destroy(struct rfkill *rfkill)
-+static inline void backport_rfkill_destroy(struct rfkill *rfkill)
- {
- }
- 
--static inline bool rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
-+static inline bool backport_rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
- {
- 	return blocked;
- }
- 
--static inline bool rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
-+static inline bool backport_rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
- {
- 	return blocked;
- }
- 
--static inline void rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
-+static inline void backport_rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
- {
- }
- 
--static inline void rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
-+static inline void backport_rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
- {
- }
- 
--static inline bool rfkill_blocked(struct rfkill *rfkill)
-+static inline bool backport_rfkill_blocked(struct rfkill *rfkill)
- {
- 	return false;
- }
--#endif /* RFKILL || RFKILL_MODULE */
-+#endif /* RFKILL_BACKPORT || RFKILL_BACKPORT_MODULE */
- 
- 
--#ifdef CONFIG_RFKILL_LEDS
-+#ifdef CONFIG_RFKILL_BACKPORT_LEDS
- /**
-  * rfkill_get_led_trigger_name - Get the LED trigger name for the button's LED.
-  * This function might return a NULL pointer if registering of the
-  * LED trigger failed. Use this as "default_trigger" for the LED.
-  */
--const char *rfkill_get_led_trigger_name(struct rfkill *rfkill);
-+const char *backport_rfkill_get_led_trigger_name(struct rfkill *rfkill);
- 
- /**
-  * rfkill_set_led_trigger_name -- set the LED trigger name
-@@ -358,15 +358,15 @@
-  * trigger that rfkill creates. It is optional, but if called
-  * must be called before rfkill_register() to be effective.
-  */
--void rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name);
-+void backport_rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name);
- #else
--static inline const char *rfkill_get_led_trigger_name(struct rfkill *rfkill)
-+static inline const char *backport_rfkill_get_led_trigger_name(struct rfkill *rfkill)
- {
- 	return NULL;
- }
- 
- static inline void
--rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name)
-+backport_rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name)
- {
- }
- #endif
 --- a/include/net/cfg80211.h
 +++ b/include/net/cfg80211.h
 @@ -23,6 +23,7 @@
@@ -743,9 +522,28 @@
  
  
  /*
---- a/net/mac80211/iface.c
-+++ b/net/mac80211/iface.c
-@@ -670,6 +670,7 @@ static void ieee80211_teardown_sdata(struct net_device *dev)
+--- a/net/mac80211/driver-trace.h
++++ b/net/mac80211/driver-trace.h
+@@ -1,7 +1,9 @@
+ #if !defined(__MAC80211_DRIVER_TRACE) || defined(TRACE_HEADER_MULTI_READ)
+ #define __MAC80211_DRIVER_TRACE
+ 
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+ #include <linux/tracepoint.h>
++#endif /* (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27)) */
+ #include <net/mac80211.h>
+ #include "ieee80211_i.h"
+ 
+@@ -645,4 +647,6 @@ TRACE_EVENT(drv_ampdu_action,
+ #define TRACE_INCLUDE_PATH .
+ #undef TRACE_INCLUDE_FILE
+ #define TRACE_INCLUDE_FILE driver-trace
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,30))
+ #include <trace/define_trace.h>
++#endif /* (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,30)) */
+--- a/net/mac80211/iface.c	2009-07-08 15:46:16.452255410 -0700
++++ b/net/mac80211/iface.c	2009-07-08 15:46:06.060257895 -0700
+@@ -643,6 +643,7 @@
  	WARN_ON(flushed);
  }
  
@@ -753,7 +551,7 @@
  static const struct net_device_ops ieee80211_dataif_ops = {
  	.ndo_open		= ieee80211_open,
  	.ndo_stop		= ieee80211_stop,
-@@ -689,11 +690,22 @@ static const struct net_device_ops ieee80211_monitorif_ops = {
+@@ -662,11 +663,22 @@
  	.ndo_change_mtu 	= ieee80211_change_mtu,
  	.ndo_set_mac_address 	= eth_mac_addr,
  };
@@ -776,7 +574,7 @@
  	dev->wireless_handlers = &ieee80211_iw_handler_def;
  	dev->destructor = free_netdev;
  }
-@@ -709,7 +721,11 @@ static void ieee80211_setup_sdata(struct ieee80211_sub_if_data *sdata,
+@@ -682,7 +694,11 @@
  
  	/* and set some type-dependent values */
  	sdata->vif.type = type;
@@ -788,7 +586,7 @@
  	sdata->wdev.iftype = type;
  
  	/* only monitor differs */
-@@ -732,7 +748,11 @@ static void ieee80211_setup_sdata(struct ieee80211_sub_if_data *sdata,
+@@ -705,7 +721,11 @@
  		break;
  	case NL80211_IFTYPE_MONITOR:
  		sdata->dev->type = ARPHRD_IEEE80211_RADIOTAP;
@@ -800,7 +598,24 @@
  		sdata->u.mntr_flags = MONITOR_FLAG_CONTROL |
  				      MONITOR_FLAG_OTHER_BSS;
  		break;
-@@ -839,6 +859,10 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
+@@ -771,6 +791,8 @@
+ 	if (!ndev)
+ 		return -ENOMEM;
+ 
++/* This is an optimization, just ignore for older kernels */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26))
+ 	ndev->needed_headroom = local->tx_headroom +
+ 				4*6 /* four MAC addresses */
+ 				+ 2 + 2 + 2 + 2 /* ctl, dur, seq, qos */
+@@ -779,6 +801,7 @@
+ 				- ETH_HLEN /* ethernet hard_header_len */
+ 				+ IEEE80211_ENCRYPT_HEADROOM;
+ 	ndev->needed_tailroom = IEEE80211_ENCRYPT_TAILROOM;
++#endif
+ 
+ 	ret = dev_alloc_name(ndev, ndev->name);
+ 	if (ret < 0)
+@@ -812,6 +835,10 @@
  	if (ret)
  		goto fail;
  
@@ -857,8 +672,8 @@
 +rfkill_backport-y			+= core.o
 +rfkill_backport-$(CONFIG_RFKILL_BACKPORT_INPUT)	+= input.o
 +obj-$(CONFIG_RFKILL_BACKPORT)		+= rfkill_backport.o
---- a/net/rfkill/core.c
-+++ b/net/rfkill/core.c
+--- a/net/rfkill/core.c	2009-07-07 16:36:36.087678337 -0700
++++ b/net/rfkill/core.c	2009-07-07 16:36:22.462708547 -0700
 @@ -26,7 +26,7 @@
  #include <linux/capability.h>
  #include <linux/list.h>
@@ -886,40 +701,7 @@
  static void rfkill_led_trigger_event(struct rfkill *rfkill)
  {
  	struct led_trigger *trigger;
-@@ -147,19 +147,19 @@ static void rfkill_led_trigger_activate(struct led_classdev *led)
- 	rfkill_led_trigger_event(rfkill);
- }
- 
--const char *rfkill_get_led_trigger_name(struct rfkill *rfkill)
-+const char *backport_rfkill_get_led_trigger_name(struct rfkill *rfkill)
- {
- 	return rfkill->led_trigger.name;
- }
--EXPORT_SYMBOL(rfkill_get_led_trigger_name);
-+EXPORT_SYMBOL(backport_rfkill_get_led_trigger_name);
- 
--void rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name)
-+void backport_rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name)
- {
- 	BUG_ON(!rfkill);
- 
- 	rfkill->ledtrigname = name;
- }
--EXPORT_SYMBOL(rfkill_set_led_trigger_name);
-+EXPORT_SYMBOL(backport_rfkill_set_led_trigger_name);
- 
- static int rfkill_led_trigger_register(struct rfkill *rfkill)
- {
-@@ -186,7 +186,7 @@ static inline int rfkill_led_trigger_register(struct rfkill *rfkill)
- static inline void rfkill_led_trigger_unregister(struct rfkill *rfkill)
- {
- }
--#endif /* CONFIG_RFKILL_LEDS */
-+#endif /* CONFIG_RFKILL_BACKPORT_LEDS */
- 
- static void rfkill_fill_event(struct rfkill_event *ev, struct rfkill *rfkill,
- 			      enum rfkill_operation op)
-@@ -316,7 +316,7 @@ static void rfkill_set_block(struct rfkill *rfkill, bool blocked)
+@@ -316,7 +316,7 @@ static void rfkill_set_block(struct rfki
  	rfkill_event(rfkill);
  }
  
@@ -928,111 +710,7 @@
  static atomic_t rfkill_input_disabled = ATOMIC_INIT(0);
  
  /**
-@@ -463,7 +463,7 @@ bool rfkill_get_global_sw_state(const enum rfkill_type type)
- #endif
- 
- 
--bool rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
-+bool backport_rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
- {
- 	bool ret, change;
- 
-@@ -477,7 +477,7 @@ bool rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
- 
- 	return ret;
- }
--EXPORT_SYMBOL(rfkill_set_hw_state);
-+EXPORT_SYMBOL(backport_rfkill_set_hw_state);
- 
- static void __rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
- {
-@@ -493,7 +493,7 @@ static void __rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
- 		rfkill->state &= ~bit;
- }
- 
--bool rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
-+bool backport_rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
- {
- 	unsigned long flags;
- 	bool prev, hwblock;
-@@ -517,9 +517,9 @@ bool rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
- 
- 	return blocked;
- }
--EXPORT_SYMBOL(rfkill_set_sw_state);
-+EXPORT_SYMBOL(backport_rfkill_set_sw_state);
- 
--void rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
-+void backport_rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
- {
- 	unsigned long flags;
- 
-@@ -531,9 +531,9 @@ void rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
- 	rfkill->persistent = true;
- 	spin_unlock_irqrestore(&rfkill->lock, flags);
- }
--EXPORT_SYMBOL(rfkill_init_sw_state);
-+EXPORT_SYMBOL(backport_rfkill_init_sw_state);
- 
--void rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
-+void backport_rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
- {
- 	unsigned long flags;
- 	bool swprev, hwprev;
-@@ -561,7 +561,7 @@ void rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
- 		rfkill_led_trigger_event(rfkill);
- 	}
- }
--EXPORT_SYMBOL(rfkill_set_states);
-+EXPORT_SYMBOL(backport_rfkill_set_states);
- 
- static ssize_t rfkill_name_show(struct device *dev,
- 				struct device_attribute *attr,
-@@ -712,7 +712,7 @@ static int rfkill_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	return error;
- }
- 
--void rfkill_pause_polling(struct rfkill *rfkill)
-+void backport_rfkill_pause_polling(struct rfkill *rfkill)
- {
- 	BUG_ON(!rfkill);
- 
-@@ -721,9 +721,9 @@ void rfkill_pause_polling(struct rfkill *rfkill)
- 
- 	cancel_delayed_work_sync(&rfkill->poll_work);
- }
--EXPORT_SYMBOL(rfkill_pause_polling);
-+EXPORT_SYMBOL(backport_rfkill_pause_polling);
- 
--void rfkill_resume_polling(struct rfkill *rfkill)
-+void backport_rfkill_resume_polling(struct rfkill *rfkill)
- {
- 	BUG_ON(!rfkill);
- 
-@@ -732,13 +732,13 @@ void rfkill_resume_polling(struct rfkill *rfkill)
- 
- 	schedule_work(&rfkill->poll_work.work);
- }
--EXPORT_SYMBOL(rfkill_resume_polling);
-+EXPORT_SYMBOL(backport_rfkill_resume_polling);
- 
- static int rfkill_suspend(struct device *dev, pm_message_t state)
- {
- 	struct rfkill *rfkill = to_rfkill(dev);
- 
--	rfkill_pause_polling(rfkill);
-+	backport_rfkill_pause_polling(rfkill);
- 
- 	return 0;
- }
-@@ -753,13 +753,13 @@ static int rfkill_resume(struct device *dev)
- 		rfkill_set_block(rfkill, cur);
- 	}
- 
--	rfkill_resume_polling(rfkill);
-+	backport_rfkill_resume_polling(rfkill);
- 
- 	return 0;
+@@ -759,7 +759,7 @@ static int rfkill_resume(struct device *
  }
  
  static struct class rfkill_class = {
@@ -1041,47 +719,7 @@
  	.dev_release	= rfkill_release,
  	.dev_attrs	= rfkill_dev_attrs,
  	.dev_uevent	= rfkill_dev_uevent,
-@@ -767,7 +767,7 @@ static struct class rfkill_class = {
- 	.resume		= rfkill_resume,
- };
- 
--bool rfkill_blocked(struct rfkill *rfkill)
-+bool backport_rfkill_blocked(struct rfkill *rfkill)
- {
- 	unsigned long flags;
- 	u32 state;
-@@ -778,10 +778,10 @@ bool rfkill_blocked(struct rfkill *rfkill)
- 
- 	return !!(state & RFKILL_BLOCK_ANY);
- }
--EXPORT_SYMBOL(rfkill_blocked);
-+EXPORT_SYMBOL(backport_rfkill_blocked);
- 
- 
--struct rfkill * __must_check rfkill_alloc(const char *name,
-+struct rfkill * __must_check backport_rfkill_alloc(const char *name,
- 					  struct device *parent,
- 					  const enum rfkill_type type,
- 					  const struct rfkill_ops *ops,
-@@ -820,7 +820,7 @@ struct rfkill * __must_check rfkill_alloc(const char *name,
- 
- 	return rfkill;
- }
--EXPORT_SYMBOL(rfkill_alloc);
-+EXPORT_SYMBOL(backport_rfkill_alloc);
- 
- static void rfkill_poll(struct work_struct *work)
- {
-@@ -863,7 +863,7 @@ static void rfkill_sync_work(struct work_struct *work)
- 	mutex_unlock(&rfkill_global_mutex);
- }
- 
--int __must_check rfkill_register(struct rfkill *rfkill)
-+int __must_check backport_rfkill_register(struct rfkill *rfkill)
- {
- 	static unsigned long rfkill_no;
- 	struct device *dev = &rfkill->dev;
-@@ -905,7 +905,7 @@ int __must_check rfkill_register(struct rfkill *rfkill)
+@@ -905,7 +905,7 @@ int __must_check rfkill_register(struct 
  	if (!rfkill->persistent || rfkill_epo_lock_active) {
  		schedule_work(&rfkill->sync_work);
  	} else {
@@ -1090,37 +728,7 @@
  		bool soft_blocked = !!(rfkill->state & RFKILL_BLOCK_SW);
  
  		if (!atomic_read(&rfkill_input_disabled))
-@@ -926,9 +926,9 @@ int __must_check rfkill_register(struct rfkill *rfkill)
- 	mutex_unlock(&rfkill_global_mutex);
- 	return error;
- }
--EXPORT_SYMBOL(rfkill_register);
-+EXPORT_SYMBOL(backport_rfkill_register);
- 
--void rfkill_unregister(struct rfkill *rfkill)
-+void backport_rfkill_unregister(struct rfkill *rfkill)
- {
- 	BUG_ON(!rfkill);
- 
-@@ -949,14 +949,14 @@ void rfkill_unregister(struct rfkill *rfkill)
- 
- 	rfkill_led_trigger_unregister(rfkill);
- }
--EXPORT_SYMBOL(rfkill_unregister);
-+EXPORT_SYMBOL(backport_rfkill_unregister);
- 
--void rfkill_destroy(struct rfkill *rfkill)
-+void backport_rfkill_destroy(struct rfkill *rfkill)
- {
- 	if (rfkill)
- 		put_device(&rfkill->dev);
- }
--EXPORT_SYMBOL(rfkill_destroy);
-+EXPORT_SYMBOL(backport_rfkill_destroy);
- 
- static int rfkill_fop_open(struct inode *inode, struct file *file)
- {
-@@ -1127,7 +1127,7 @@ static int rfkill_fop_release(struct inode *inode, struct file *file)
+@@ -1133,7 +1133,7 @@ static int rfkill_fop_release(struct ino
  	list_for_each_entry_safe(ev, tmp, &data->events, list)
  		kfree(ev);
  
@@ -1129,7 +737,7 @@
  	if (data->input_handler)
  		if (atomic_dec_return(&rfkill_input_disabled) == 0)
  			printk(KERN_DEBUG "rfkill: input handler enabled\n");
-@@ -1138,7 +1138,7 @@ static int rfkill_fop_release(struct inode *inode, struct file *file)
+@@ -1144,7 +1144,7 @@ static int rfkill_fop_release(struct ino
  	return 0;
  }
  
@@ -1138,7 +746,7 @@
  static long rfkill_fop_ioctl(struct file *file, unsigned int cmd,
  			     unsigned long arg)
  {
-@@ -1170,14 +1170,14 @@ static const struct file_operations rfkill_fops = {
+@@ -1176,14 +1176,14 @@ static const struct file_operations rfki
  	.write		= rfkill_fop_write,
  	.poll		= rfkill_fop_poll,
  	.release	= rfkill_fop_release,
@@ -1155,7 +763,7 @@
  	.fops	= &rfkill_fops,
  	.minor	= MISC_DYNAMIC_MINOR,
  };
-@@ -1200,7 +1200,7 @@ static int __init rfkill_init(void)
+@@ -1206,7 +1206,7 @@ static int __init rfkill_init(void)
  		goto out;
  	}
  
@@ -1164,7 +772,7 @@
  	error = rfkill_handler_init();
  	if (error) {
  		misc_deregister(&rfkill_miscdev);
-@@ -1216,7 +1216,7 @@ subsys_initcall(rfkill_init);
+@@ -1222,7 +1222,7 @@ subsys_initcall(rfkill_init);
  
  static void __exit rfkill_exit(void)
  {
@@ -1173,18 +781,21 @@
  	rfkill_handler_exit();
  #endif
  	misc_deregister(&rfkill_miscdev);
---- a/net/rfkill/input.c
-+++ b/net/rfkill/input.c
-@@ -17,7 +17,7 @@
+--- a/net/rfkill/input.c	2009-07-07 17:27:09.290706860 -0700
++++ b/net/rfkill/input.c	2009-07-07 17:26:57.195684653 -0700
+@@ -17,7 +17,11 @@
  #include <linux/slab.h>
  #include <linux/workqueue.h>
  #include <linux/init.h>
--#include <linux/rfkill.h>
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+ #include <linux/rfkill.h>
++#else
 +#include <linux/rfkill_backport.h>
++#endif
  #include <linux/sched.h>
  
  #include "rfkill.h"
-@@ -229,7 +229,7 @@ static int rfkill_connect(struct input_handler *handler, struct input_dev *dev,
+@@ -229,7 +233,7 @@ static int rfkill_connect(struct input_h
  
  	handle->dev = dev;
  	handle->handler = handler;
@@ -1193,137 +804,8 @@
  
  	/* causes rfkill_start() to be called */
  	error = input_register_handle(handle);
---- a/net/wireless/Makefile
-+++ b/net/wireless/Makefile
-@@ -1,11 +1,10 @@
--obj-$(CONFIG_WIRELESS_EXT) += wext.o
- obj-$(CONFIG_CFG80211) += cfg80211.o
- obj-$(CONFIG_LIB80211) += lib80211.o
- obj-$(CONFIG_LIB80211_CRYPT_WEP) += lib80211_crypt_wep.o
- obj-$(CONFIG_LIB80211_CRYPT_CCMP) += lib80211_crypt_ccmp.o
- obj-$(CONFIG_LIB80211_CRYPT_TKIP) += lib80211_crypt_tkip.o
- 
--cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o scan.o nl80211.o mlme.o ibss.o
-+cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o scan.o nl80211.o mlme.o ibss.o compat.o
- cfg80211-$(CONFIG_CFG80211_DEBUGFS) += debugfs.o
- cfg80211-$(CONFIG_WIRELESS_EXT) += wext-compat.o
- 
---- a/net/wireless/core.c
-+++ b/net/wireless/core.c
-@@ -260,7 +260,11 @@ static void cfg80211_rfkill_sync_work(struct work_struct *work)
- 	struct cfg80211_registered_device *drv;
- 
- 	drv = container_of(work, struct cfg80211_registered_device, rfkill_sync);
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	cfg80211_rfkill_set_block(drv, rfkill_blocked(drv->rfkill));
-+#else
-+	cfg80211_rfkill_set_block(drv, backport_rfkill_blocked(drv->rfkill));
-+#endif
- }
- 
- /* exported functions */
-@@ -311,9 +315,15 @@ struct wiphy *wiphy_new(const struct cfg80211_ops *ops, int sizeof_priv)
- 	drv->wiphy.dev.platform_data = drv;
- 
- 	drv->rfkill_ops.set_block = cfg80211_rfkill_set_block;
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	drv->rfkill = rfkill_alloc(dev_name(&drv->wiphy.dev),
- 				   &drv->wiphy.dev, RFKILL_TYPE_WLAN,
- 				   &drv->rfkill_ops, drv);
-+#else
-+	drv->rfkill = backport_rfkill_alloc(dev_name(&drv->wiphy.dev),
-+				   &drv->wiphy.dev, RFKILL_TYPE_WLAN,
-+				   &drv->rfkill_ops, drv);
-+#endif
- 
- 	if (!drv->rfkill) {
- 		kfree(drv);
-@@ -396,7 +406,11 @@ int wiphy_register(struct wiphy *wiphy)
- 	if (res)
- 		return res;
- 
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	res = rfkill_register(drv->rfkill);
-+#else
-+	res = backport_rfkill_register(drv->rfkill);
-+#endif
- 	if (res)
- 		goto out_rm_dev;
- 
-@@ -444,7 +458,11 @@ void wiphy_rfkill_start_polling(struct wiphy *wiphy)
- 	if (!drv->ops->rfkill_poll)
- 		return;
- 	drv->rfkill_ops.poll = cfg80211_rfkill_poll;
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	rfkill_resume_polling(drv->rfkill);
-+#else
-+	backport_rfkill_resume_polling(drv->rfkill);
-+#endif
- }
- EXPORT_SYMBOL(wiphy_rfkill_start_polling);
- 
-@@ -452,7 +470,11 @@ void wiphy_rfkill_stop_polling(struct wiphy *wiphy)
- {
- 	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
- 
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	rfkill_pause_polling(drv->rfkill);
-+#else
-+	backport_rfkill_pause_polling(drv->rfkill);
-+#endif
- }
- EXPORT_SYMBOL(wiphy_rfkill_stop_polling);
- 
-@@ -460,7 +482,11 @@ void wiphy_unregister(struct wiphy *wiphy)
- {
- 	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
- 
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	rfkill_unregister(drv->rfkill);
-+#else
-+	backport_rfkill_unregister(drv->rfkill);
-+#endif
- 
- 	/* protect the device list */
- 	mutex_lock(&cfg80211_mutex);
-@@ -498,7 +524,11 @@ EXPORT_SYMBOL(wiphy_unregister);
- void cfg80211_dev_free(struct cfg80211_registered_device *drv)
- {
- 	struct cfg80211_internal_bss *scan, *tmp;
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	rfkill_destroy(drv->rfkill);
-+#else
-+	backport_rfkill_destroy(drv->rfkill);
-+#endif
- 	mutex_destroy(&drv->mtx);
- 	mutex_destroy(&drv->devlist_mtx);
- 	list_for_each_entry_safe(scan, tmp, &drv->bss_list, list)
-@@ -516,7 +546,11 @@ void wiphy_rfkill_set_hw_state(struct wiphy *wiphy, bool blocked)
- {
- 	struct cfg80211_registered_device *drv = wiphy_to_dev(wiphy);
- 
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	if (rfkill_set_hw_state(drv->rfkill, blocked))
-+#else
-+	if (backport_rfkill_set_hw_state(drv->rfkill, blocked))
-+#endif
- 		schedule_work(&drv->rfkill_sync);
- }
- EXPORT_SYMBOL(wiphy_rfkill_set_hw_state);
-@@ -576,7 +610,11 @@ static int cfg80211_netdev_notifier_call(struct notifier_block * nb,
- 		mutex_unlock(&rdev->devlist_mtx);
- 		break;
- 	case NETDEV_PRE_UP:
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 		if (rfkill_blocked(rdev->rfkill))
-+#else
-+		if (backport_rfkill_blocked(rdev->rfkill))
-+#endif
- 			return notifier_from_errno(-ERFKILL);
- 		break;
- 	}
---- a/net/wireless/core.h
-+++ b/net/wireless/core.h
+--- a/net/wireless/core.h	2009-07-07 13:32:53.367707921 -0700
++++ b/net/wireless/core.h	2009-07-07 13:32:53.943703622 -0700
 @@ -11,7 +11,11 @@
  #include <linux/kref.h>
  #include <linux/rbtree.h>
@@ -1336,103 +818,166 @@
  #include <linux/workqueue.h>
  #include <net/genetlink.h>
  #include <net/cfg80211.h>
-@@ -104,7 +108,11 @@ struct cfg80211_internal_bss {
- 	struct rb_node rbn;
- 	unsigned long ts;
- 	struct kref ref;
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
- 	bool hold, ies_allocated;
+--- a/net/wireless/scan.c
++++ b/net/wireless/scan.c
+@@ -409,7 +409,11 @@ cfg80211_bss_update(struct cfg80211_registered_device *dev,
+ 			size_t used = dev->wiphy.bss_priv_size + sizeof(*res);
+ 			size_t ielen = res->pub.len_information_elements;
+ 
++#if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,28)
++			if (0) {
 +#else
-+	bool hold;
+ 			if (!found->ies_allocated && ksize(found) >= used + ielen) {
 +#endif
+ 				memcpy(found->pub.information_elements,
+ 				       res->pub.information_elements, ielen);
+ 				found->pub.len_information_elements = ielen;
+--- a/drivers/net/wireless/Makefile	2009-07-06 12:53:07.479194884 -0700
++++ b/drivers/net/wireless/Makefile	2009-07-06 12:54:42.026195576 -0700
+@@ -5,43 +5,16 @@
+ obj-$(CONFIG_IPW2100) += ipw2x00/
+ obj-$(CONFIG_IPW2200) += ipw2x00/
  
- 	/* must be last because of priv member */
- 	struct cfg80211_bss pub;
---- a/net/wireless/scan.c	2009-04-28 15:34:48.000000000 -0700
-+++ b/net/wireless/scan.c	2009-04-28 15:35:06.000000000 -0700
-@@ -59,10 +59,12 @@
- 	bss = container_of(ref, struct cfg80211_internal_bss, ref);
- 	if (bss->pub.free_priv)
- 		bss->pub.free_priv(&bss->pub);
+-obj-$(CONFIG_STRIP) += strip.o
+-obj-$(CONFIG_ARLAN) += arlan.o 
+-
+-arlan-objs := arlan-main.o arlan-proc.o
+-
+-# Obsolete cards
+-obj-$(CONFIG_WAVELAN)		+= wavelan.o
+-obj-$(CONFIG_PCMCIA_NETWAVE)	+= netwave_cs.o
+-obj-$(CONFIG_PCMCIA_WAVELAN)	+= wavelan_cs.o
+-
+-obj-$(CONFIG_HERMES)		+= orinoco/
+-
+-obj-$(CONFIG_AIRO)		+= airo.o
+-obj-$(CONFIG_AIRO_CS)		+= airo_cs.o airo.o
+-
+-obj-$(CONFIG_ATMEL)             += atmel.o
+-obj-$(CONFIG_PCI_ATMEL)         += atmel_pci.o 
+-obj-$(CONFIG_PCMCIA_ATMEL)      += atmel_cs.o
+-
+ obj-$(CONFIG_AT76C50X_USB)      += at76c50x-usb.o
+ 
+-obj-$(CONFIG_PRISM54)		+= prism54/
+-
+-obj-$(CONFIG_HOSTAP)		+= hostap/
+ obj-$(CONFIG_B43)		+= b43/
+ obj-$(CONFIG_B43LEGACY)		+= b43legacy/
+ obj-$(CONFIG_ZD1211RW)		+= zd1211rw/
+ obj-$(CONFIG_RTL8180)		+= rtl818x/
+ obj-$(CONFIG_RTL8187)		+= rtl818x/
+ 
+-# 16-bit wireless PCMCIA client drivers
+-obj-$(CONFIG_PCMCIA_RAYCS)	+= ray_cs.o
+-obj-$(CONFIG_PCMCIA_WL3501)	+= wl3501_cs.o
+-
+ obj-$(CONFIG_USB_NET_RNDIS_WLAN)	+= rndis_wlan.o
+ 
+-obj-$(CONFIG_USB_ZD1201)	+= zd1201.o
+ obj-$(CONFIG_LIBERTAS)		+= libertas/
+ 
+ obj-$(CONFIG_LIBERTAS_THINFIRM)	+= libertas_tf/
+--- a/drivers/net/wireless/p54/p54usb.c	2009-07-07 13:36:49.523678591 -0700
++++ b/drivers/net/wireless/p54/p54usb.c	2009-07-07 13:36:49.831718432 -0700
+@@ -1047,7 +1047,9 @@
+ 	.resume = p54u_resume,
+ 	.reset_resume = p54u_resume,
+ #endif /* CONFIG_PM */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,27))
+ 	.soft_unbind = 1,
++#endif
+ };
+ 
+ static int __init p54u_init(void)
+--- a/drivers/net/wireless/zd1211rw/zd_chip.h	2009-07-06 16:09:14.934197004 -0700
++++ b/drivers/net/wireless/zd1211rw/zd_chip.h	2009-07-06 16:10:01.570226234 -0700
+@@ -897,9 +897,9 @@
+ int zd_chip_unlock_phy_regs(struct zd_chip *chip);
+ 
+ enum led_status {
+-	LED_OFF = 0,
+-	LED_SCANNING = 1,
+-	LED_ASSOCIATED = 2,
++	ZD_LED_OFF = 0,
++	ZD_LED_SCANNING = 1,
++	ZD_LED_ASSOCIATED = 2,
+ };
+ 
+ int zd_chip_control_leds(struct zd_chip *chip, enum led_status status);
+--- a/drivers/net/wireless/zd1211rw/zd_chip.c	2009-07-06 16:09:24.986198445 -0700
++++ b/drivers/net/wireless/zd1211rw/zd_chip.c	2009-07-06 16:10:19.898624742 -0700
+@@ -1278,11 +1278,11 @@
+ 	other_led = chip->link_led == LED1 ? LED2 : LED1;
+ 
+ 	switch (status) {
+-	case LED_OFF:
++	case ZD_LED_OFF:
+ 		ioreqs[0].value = FW_LINK_OFF;
+ 		ioreqs[1].value = v[1] & ~(LED1|LED2);
+ 		break;
+-	case LED_SCANNING:
++	case ZD_LED_SCANNING:
+ 		ioreqs[0].value = FW_LINK_OFF;
+ 		ioreqs[1].value = v[1] & ~other_led;
+ 		if (get_seconds() % 3 == 0) {
+@@ -1291,7 +1291,7 @@
+ 			ioreqs[1].value |= chip->link_led;
+ 		}
+ 		break;
+-	case LED_ASSOCIATED:
++	case ZD_LED_ASSOCIATED:
+ 		ioreqs[0].value = FW_LINK_TX;
+ 		ioreqs[1].value = v[1] & ~other_led;
+ 		ioreqs[1].value |= chip->link_led;
+--- a/drivers/net/wireless/zd1211rw/zd_mac.c	2009-07-06 16:09:30.382198435 -0700
++++ b/drivers/net/wireless/zd1211rw/zd_mac.c	2009-07-06 16:11:36.778629948 -0700
+@@ -1013,7 +1013,7 @@
+ 	spin_unlock_irq(&mac->lock);
+ 
+ 	r = zd_chip_control_leds(chip,
+-		                 is_associated ? LED_ASSOCIATED : LED_SCANNING);
++		                 is_associated ? ZD_LED_ASSOCIATED : ZD_LED_SCANNING);
+ 	if (r)
+ 		dev_dbg_f(zd_mac_dev(mac), "zd_chip_control_leds error %d\n", r);
+ 
+@@ -1038,5 +1038,5 @@
+ 	dev_dbg_f(zd_mac_dev(mac), "\n");
+ 	cancel_rearming_delayed_workqueue(zd_workqueue,
+ 		&mac->housekeeping.link_led_work);
+-	zd_chip_control_leds(&mac->chip, LED_OFF);
++	zd_chip_control_leds(&mac->chip, ZD_LED_OFF);
+ }
+--- a/net/wireless/wext.c	2009-07-07 15:03:28.803678550 -0700
++++ b/net/wireless/wext.c	2009-07-07 15:03:11.011682437 -0700
+@@ -1103,8 +1103,13 @@
+ 			return private(dev, iwr, cmd, info, handler);
+ 	}
+ 	/* Old driver API : call driver ioctl handler */
 +#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
- 
- 	if (bss->ies_allocated)
- 		kfree(bss->pub.information_elements);
- 
+ 	if (dev->netdev_ops->ndo_do_ioctl)
+ 		return dev->netdev_ops->ndo_do_ioctl(dev, ifr, cmd);
++#else
++	if (dev->do_ioctl)
++		return dev->do_ioctl(dev, ifr, cmd);
 +#endif
- 	kfree(bss);
+ 	return -EOPNOTSUPP;
  }
  
-@@ -365,13 +367,26 @@
+--- a/drivers/net/wireless/libertas/defs.h	2009-07-08 14:04:29.692256519 -0700
++++ b/drivers/net/wireless/libertas/defs.h	2009-07-08 14:03:26.712279246 -0700
+@@ -16,6 +16,14 @@
+ #define DRV_NAME "libertas"
+ #endif
  
- 	found = rb_find_bss(dev, res);
- 
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
- 	if (found) {
-+#else
-+	if (found && overwrite) {
-+		list_replace(&found->list, &res->list);
-+		rb_replace_node(&found->rbn, &res->rbn,
-+				&dev->bss_tree);
-+		/* XXX: workaround */
-+		res->hold = found->hold;
-+		kref_put(&found->ref, bss_release);
-+		found = res;
-+	} else if (found) {
-+#endif
- 		kref_get(&found->ref);
- 		found->pub.beacon_interval = res->pub.beacon_interval;
- 		found->pub.tsf = res->pub.tsf;
- 		found->pub.signal = res->pub.signal;
- 		found->pub.capability = res->pub.capability;
- 		found->ts = res->ts;
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
- 
- 		/* overwrite IEs */
- 		if (overwrite) {
-@@ -399,6 +414,7 @@
- 			}
- 		}
- 
-+#endif
- 		kref_put(&res->ref, bss_release);
- 	} else {
- 		/* this "consumes" the reference */
---- a/net/wireless/wext-compat.c
-+++ b/net/wireless/wext-compat.c
-@@ -783,7 +783,11 @@ int cfg80211_wext_siwtxpower(struct net_device *dev,
- 
- 	/* only change when not disabling */
- 	if (!data->txpower.disabled) {
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 		rfkill_set_sw_state(rdev->rfkill, false);
-+#else
-+		backport_rfkill_set_sw_state(rdev->rfkill, false);
++/*
++ * Really nasty hack to avoid stuffing compat.diff with tons of ifdefs,
++ * we could add this to a compat header file but too lazy to check ml_priv
++ * is not used anywhere else
++ */
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))
++#define ml_priv priv
 +#endif
  
- 		if (data->txpower.fixed) {
- 			/*
-@@ -808,7 +812,11 @@ int cfg80211_wext_siwtxpower(struct net_device *dev,
- 			}
- 		}
- 	} else {
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 		rfkill_set_sw_state(rdev->rfkill, true);
-+#else
-+		backport_rfkill_set_sw_state(rdev->rfkill, true);
-+#endif
- 		schedule_work(&rdev->rfkill_sync);
- 		return 0;
- 	}
-@@ -839,7 +847,11 @@ int cfg80211_wext_giwtxpower(struct net_device *dev,
- 
- 	/* well... oh well */
- 	data->txpower.fixed = 1;
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
- 	data->txpower.disabled = rfkill_blocked(rdev->rfkill);
-+#else
-+	data->txpower.disabled = backport_rfkill_blocked(rdev->rfkill);
-+#endif
- 	data->txpower.value = val;
- 	data->txpower.flags = IW_TXPOW_DBM;
- 
+ #define LBS_DEB_ENTER	0x00000001
+ #define LBS_DEB_LEAVE	0x00000002

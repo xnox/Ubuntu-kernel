@@ -23,6 +23,7 @@
  */
 
 #include <linux/types.h>
+#include <net/compat.h>
 
 /* define userspace visible states */
 #define RFKILL_STATE_SOFT_BLOCKED	0
@@ -82,6 +83,20 @@ struct rfkill_event {
 	__u8  soft, hard;
 } __packed;
 
+/*
+ * We are planning to be backward and forward compatible with changes
+ * to the event struct, by adding new, optional, members at the end.
+ * When reading an event (whether the kernel from userspace or vice
+ * versa) we need to accept anything that's at least as large as the
+ * version 1 event size, but might be able to accept other sizes in
+ * the future.
+ *
+ * One exception is the kernel -- we already have two event sizes in
+ * that we've made the 'hard' member optional since our only option
+ * is to ignore it anyway.
+ */
+#define RFKILL_EVENT_SIZE_V1	8
+
 /* ioctl for turning off rfkill-input (if present) */
 #define RFKILL_IOC_MAGIC	'R'
 #define RFKILL_IOC_NOINPUT	1
@@ -99,7 +114,6 @@ enum rfkill_user_states {
 #undef RFKILL_STATE_UNBLOCKED
 #undef RFKILL_STATE_HARD_BLOCKED
 
-#include <linux/types.h>
 #include <linux/kernel.h>
 #include <linux/list.h>
 #include <linux/mutex.h>
@@ -146,7 +160,7 @@ struct rfkill_ops {
  * This function should be called by the transmitter driver to allocate an
  * rfkill structure. Returns %NULL on failure.
  */
-struct rfkill * __must_check backport_rfkill_alloc(const char *name,
+struct rfkill * __must_check rfkill_alloc(const char *name,
 					  struct device *parent,
 					  const enum rfkill_type type,
 					  const struct rfkill_ops *ops,
@@ -167,7 +181,7 @@ struct rfkill * __must_check backport_rfkill_alloc(const char *name,
  * If the hardware blocked state is not set before registration,
  * it is assumed to be unblocked.
  */
-int __must_check backport_rfkill_register(struct rfkill *rfkill);
+int __must_check rfkill_register(struct rfkill *rfkill);
 
 /**
  * rfkill_pause_polling(struct rfkill *rfkill)
@@ -176,7 +190,7 @@ int __must_check backport_rfkill_register(struct rfkill *rfkill);
  * NOTE: not necessary for suspend/resume -- in that case the
  * core stops polling anyway
  */
-void backport_rfkill_pause_polling(struct rfkill *rfkill);
+void rfkill_pause_polling(struct rfkill *rfkill);
 
 /**
  * rfkill_resume_polling(struct rfkill *rfkill)
@@ -185,7 +199,7 @@ void backport_rfkill_pause_polling(struct rfkill *rfkill);
  * NOTE: not necessary for suspend/resume -- in that case the
  * core stops polling anyway
  */
-void backport_rfkill_resume_polling(struct rfkill *rfkill);
+void rfkill_resume_polling(struct rfkill *rfkill);
 
 
 /**
@@ -196,7 +210,7 @@ void backport_rfkill_resume_polling(struct rfkill *rfkill);
  * teardown to destroy rfkill structure. Until it returns, the driver
  * needs to be able to service method calls.
  */
-void backport_rfkill_unregister(struct rfkill *rfkill);
+void rfkill_unregister(struct rfkill *rfkill);
 
 /**
  * rfkill_destroy - free rfkill structure
@@ -204,7 +218,7 @@ void backport_rfkill_unregister(struct rfkill *rfkill);
  *
  * Destroys the rfkill structure.
  */
-void backport_rfkill_destroy(struct rfkill *rfkill);
+void rfkill_destroy(struct rfkill *rfkill);
 
 /**
  * rfkill_set_hw_state - Set the internal rfkill hardware block state
@@ -225,7 +239,7 @@ void backport_rfkill_destroy(struct rfkill *rfkill);
  * should be blocked) so that drivers need not keep track of the soft
  * block state -- which they might not be able to.
  */
-bool __must_check backport_rfkill_set_hw_state(struct rfkill *rfkill, bool blocked);
+bool rfkill_set_hw_state(struct rfkill *rfkill, bool blocked);
 
 /**
  * rfkill_set_sw_state - Set the internal rfkill software block state
@@ -247,7 +261,7 @@ bool __must_check backport_rfkill_set_hw_state(struct rfkill *rfkill, bool block
  * The function returns the combined block state (true if transmitter
  * should be blocked).
  */
-bool backport_rfkill_set_sw_state(struct rfkill *rfkill, bool blocked);
+bool rfkill_set_sw_state(struct rfkill *rfkill, bool blocked);
 
 /**
  * rfkill_init_sw_state - Initialize persistent software block state
@@ -263,7 +277,7 @@ bool backport_rfkill_set_sw_state(struct rfkill *rfkill, bool blocked);
  * can be read by userspace.  Persistent devices are expected to preserve
  * their own state when suspended.
  */
-void backport_rfkill_init_sw_state(struct rfkill *rfkill, bool blocked);
+void rfkill_init_sw_state(struct rfkill *rfkill, bool blocked);
 
 /**
  * rfkill_set_states - Set the internal rfkill block states
@@ -274,17 +288,17 @@ void backport_rfkill_init_sw_state(struct rfkill *rfkill, bool blocked);
  * This function can be called in any context, even from within rfkill
  * callbacks.
  */
-void backport_rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw);
+void rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw);
 
 /**
  * rfkill_blocked - query rfkill block
  *
  * @rfkill: rfkill struct to query
  */
-bool backport_rfkill_blocked(struct rfkill *rfkill);
-#else /* !RFKILL_BACKPORT */
+bool rfkill_blocked(struct rfkill *rfkill);
+#else /* !RFKILL */
 static inline struct rfkill * __must_check
-backport_rfkill_alloc(const char *name,
+rfkill_alloc(const char *name,
 	     struct device *parent,
 	     const enum rfkill_type type,
 	     const struct rfkill_ops *ops,
@@ -293,61 +307,61 @@ backport_rfkill_alloc(const char *name,
 	return ERR_PTR(-ENODEV);
 }
 
-static inline int __must_check backport_rfkill_register(struct rfkill *rfkill)
+static inline int __must_check rfkill_register(struct rfkill *rfkill)
 {
 	if (rfkill == ERR_PTR(-ENODEV))
 		return 0;
 	return -EINVAL;
 }
 
-static inline void backport_rfkill_pause_polling(struct rfkill *rfkill)
+static inline void rfkill_pause_polling(struct rfkill *rfkill)
 {
 }
 
-static inline void backport_rfkill_resume_polling(struct rfkill *rfkill)
+static inline void rfkill_resume_polling(struct rfkill *rfkill)
 {
 }
 
-static inline void backport_rfkill_unregister(struct rfkill *rfkill)
+static inline void rfkill_unregister(struct rfkill *rfkill)
 {
 }
 
-static inline void backport_rfkill_destroy(struct rfkill *rfkill)
+static inline void rfkill_destroy(struct rfkill *rfkill)
 {
 }
 
-static inline bool backport_rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
-{
-	return blocked;
-}
-
-static inline bool backport_rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
+static inline bool rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
 {
 	return blocked;
 }
 
-static inline void backport_rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
+static inline bool rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
+{
+	return blocked;
+}
+
+static inline void rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
 {
 }
 
-static inline void backport_rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
+static inline void rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
 {
 }
 
-static inline bool backport_rfkill_blocked(struct rfkill *rfkill)
+static inline bool rfkill_blocked(struct rfkill *rfkill)
 {
 	return false;
 }
-#endif /* RFKILL_BACKPORT || RFKILL_BACKPORT_MODULE */
+#endif /* RFKILL || RFKILL_MODULE */
 
 
-#ifdef CONFIG_RFKILL_BACKPORT_LEDS
+#ifdef CONFIG_RFKILL_LEDS
 /**
  * rfkill_get_led_trigger_name - Get the LED trigger name for the button's LED.
  * This function might return a NULL pointer if registering of the
  * LED trigger failed. Use this as "default_trigger" for the LED.
  */
-const char *backport_rfkill_get_led_trigger_name(struct rfkill *rfkill);
+const char *rfkill_get_led_trigger_name(struct rfkill *rfkill);
 
 /**
  * rfkill_set_led_trigger_name -- set the LED trigger name
@@ -358,15 +372,15 @@ const char *backport_rfkill_get_led_trigger_name(struct rfkill *rfkill);
  * trigger that rfkill creates. It is optional, but if called
  * must be called before rfkill_register() to be effective.
  */
-void backport_rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name);
+void rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name);
 #else
-static inline const char *backport_rfkill_get_led_trigger_name(struct rfkill *rfkill)
+static inline const char *rfkill_get_led_trigger_name(struct rfkill *rfkill)
 {
 	return NULL;
 }
 
 static inline void
-backport_rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name)
+rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name)
 {
 }
 #endif

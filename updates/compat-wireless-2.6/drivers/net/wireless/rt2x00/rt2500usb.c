@@ -277,7 +277,6 @@ static const struct rt2x00debug rt2500usb_rt2x00debug = {
 };
 #endif /* CONFIG_RT2X00_LIB_DEBUGFS */
 
-#ifdef CONFIG_RT2X00_LIB_RFKILL
 static int rt2500usb_rfkill_poll(struct rt2x00_dev *rt2x00dev)
 {
 	u16 reg;
@@ -285,9 +284,6 @@ static int rt2500usb_rfkill_poll(struct rt2x00_dev *rt2x00dev)
 	rt2500usb_register_read(rt2x00dev, MAC_CSR19, &reg);
 	return rt2x00_get_field32(reg, MAC_CSR19_BIT7);
 }
-#else
-#define rt2500usb_rfkill_poll	NULL
-#endif /* CONFIG_RT2X00_LIB_RFKILL */
 
 #ifdef CONFIG_RT2X00_LIB_LEDS
 static void rt2500usb_brightness_set(struct led_classdev *led_cdev,
@@ -1550,7 +1546,9 @@ static int rt2500usb_init_eeprom(struct rt2x00_dev *rt2x00dev)
 	rt2500usb_register_read(rt2x00dev, MAC_CSR0, &reg);
 	rt2x00_set_chip(rt2x00dev, RT2570, value, reg);
 
-	if (!rt2x00_check_rev(&rt2x00dev->chip, 0x000ffff0, 0)) {
+	if (!rt2x00_check_rev(&rt2x00dev->chip, 0x000ffff0, 0) ||
+	    rt2x00_check_rev(&rt2x00dev->chip, 0x0000000f, 0)) {
+
 		ERROR(rt2x00dev, "Invalid RT chipset detected.\n");
 		return -ENODEV;
 	}
@@ -1601,10 +1599,8 @@ static int rt2500usb_init_eeprom(struct rt2x00_dev *rt2x00dev)
 	/*
 	 * Detect if this device has an hardware controlled radio.
 	 */
-#ifdef CONFIG_RT2X00_LIB_RFKILL
 	if (rt2x00_get_field16(eeprom, EEPROM_ANTENNA_HARDWARE_RADIO))
 		__set_bit(CONFIG_SUPPORT_HW_BUTTON, &rt2x00dev->flags);
-#endif /* CONFIG_RT2X00_LIB_RFKILL */
 
 	/*
 	 * Check if the BBP tuning should be disabled.
@@ -1905,6 +1901,7 @@ static const struct ieee80211_ops rt2500usb_mac80211_ops = {
 	.bss_info_changed	= rt2x00mac_bss_info_changed,
 	.conf_tx		= rt2x00mac_conf_tx,
 	.get_tx_stats		= rt2x00mac_get_tx_stats,
+	.rfkill_poll		= rt2x00mac_rfkill_poll,
 };
 
 static const struct rt2x00lib_ops rt2500usb_rt2x00_ops = {

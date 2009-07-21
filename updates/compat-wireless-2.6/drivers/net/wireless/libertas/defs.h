@@ -16,6 +16,14 @@
 #define DRV_NAME "libertas"
 #endif
 
+/*
+ * Really nasty hack to avoid stuffing compat.diff with tons of ifdefs,
+ * we could add this to a compat header file but too lazy to check ml_priv
+ * is not used anywhere else
+ */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))
+#define ml_priv priv
+#endif
 
 #define LBS_DEB_ENTER	0x00000001
 #define LBS_DEB_LEAVE	0x00000002
@@ -234,6 +242,8 @@ static inline void lbs_deb_hex(unsigned int grp, const char *prompt, u8 *buf, in
 /** Mesh enable bit in FW capability */
 #define MESH_CAPINFO_ENABLE_MASK			(1<<16)
 
+/** FW definition from Marvell v4 */
+#define MRVL_FW_V4					(0x04)
 /** FW definition from Marvell v5 */
 #define MRVL_FW_V5					(0x05)
 /** FW definition from Marvell v10 */

@@ -147,19 +147,19 @@ static void rfkill_led_trigger_activate(struct led_classdev *led)
 	rfkill_led_trigger_event(rfkill);
 }
 
-const char *backport_rfkill_get_led_trigger_name(struct rfkill *rfkill)
+const char *rfkill_get_led_trigger_name(struct rfkill *rfkill)
 {
 	return rfkill->led_trigger.name;
 }
-EXPORT_SYMBOL(backport_rfkill_get_led_trigger_name);
+EXPORT_SYMBOL(rfkill_get_led_trigger_name);
 
-void backport_rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name)
+void rfkill_set_led_trigger_name(struct rfkill *rfkill, const char *name)
 {
 	BUG_ON(!rfkill);
 
 	rfkill->ledtrigname = name;
 }
-EXPORT_SYMBOL(backport_rfkill_set_led_trigger_name);
+EXPORT_SYMBOL(rfkill_set_led_trigger_name);
 
 static int rfkill_led_trigger_register(struct rfkill *rfkill)
 {
@@ -186,7 +186,7 @@ static inline int rfkill_led_trigger_register(struct rfkill *rfkill)
 static inline void rfkill_led_trigger_unregister(struct rfkill *rfkill)
 {
 }
-#endif /* CONFIG_RFKILL_BACKPORT_LEDS */
+#endif /* CONFIG_RFKILL_LEDS */
 
 static void rfkill_fill_event(struct rfkill_event *ev, struct rfkill *rfkill,
 			      enum rfkill_operation op)
@@ -463,7 +463,7 @@ bool rfkill_get_global_sw_state(const enum rfkill_type type)
 #endif
 
 
-bool backport_rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
+bool rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
 {
 	bool ret, change;
 
@@ -477,7 +477,7 @@ bool backport_rfkill_set_hw_state(struct rfkill *rfkill, bool blocked)
 
 	return ret;
 }
-EXPORT_SYMBOL(backport_rfkill_set_hw_state);
+EXPORT_SYMBOL(rfkill_set_hw_state);
 
 static void __rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
 {
@@ -493,7 +493,7 @@ static void __rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
 		rfkill->state &= ~bit;
 }
 
-bool backport_rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
+bool rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
 {
 	unsigned long flags;
 	bool prev, hwblock;
@@ -517,9 +517,9 @@ bool backport_rfkill_set_sw_state(struct rfkill *rfkill, bool blocked)
 
 	return blocked;
 }
-EXPORT_SYMBOL(backport_rfkill_set_sw_state);
+EXPORT_SYMBOL(rfkill_set_sw_state);
 
-void backport_rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
+void rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
 {
 	unsigned long flags;
 
@@ -531,9 +531,9 @@ void backport_rfkill_init_sw_state(struct rfkill *rfkill, bool blocked)
 	rfkill->persistent = true;
 	spin_unlock_irqrestore(&rfkill->lock, flags);
 }
-EXPORT_SYMBOL(backport_rfkill_init_sw_state);
+EXPORT_SYMBOL(rfkill_init_sw_state);
 
-void backport_rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
+void rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
 {
 	unsigned long flags;
 	bool swprev, hwprev;
@@ -549,6 +549,10 @@ void backport_rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
 	swprev = !!(rfkill->state & RFKILL_BLOCK_SW);
 	hwprev = !!(rfkill->state & RFKILL_BLOCK_HW);
 	__rfkill_set_sw_state(rfkill, sw);
+	if (hw)
+		rfkill->state |= RFKILL_BLOCK_HW;
+	else
+		rfkill->state &= ~RFKILL_BLOCK_HW;
 
 	spin_unlock_irqrestore(&rfkill->lock, flags);
 
@@ -561,7 +565,7 @@ void backport_rfkill_set_states(struct rfkill *rfkill, bool sw, bool hw)
 		rfkill_led_trigger_event(rfkill);
 	}
 }
-EXPORT_SYMBOL(backport_rfkill_set_states);
+EXPORT_SYMBOL(rfkill_set_states);
 
 static ssize_t rfkill_name_show(struct device *dev,
 				struct device_attribute *attr,
@@ -648,15 +652,26 @@ static ssize_t rfkill_state_store(struct device *dev,
 				  struct device_attribute *attr,
 				  const char *buf, size_t count)
 {
-	/*
-	 * The intention was that userspace can only take control over
-	 * a given device when/if rfkill-input doesn't control it due
-	 * to user_claim. Since user_claim is currently unsupported,
-	 * we never support changing the state from userspace -- this
-	 * can be implemented again later.
-	 */
+	struct rfkill *rfkill = to_rfkill(dev);
+	unsigned long state;
+	int err;
 
-	return -EPERM;
+	if (!capable(CAP_NET_ADMIN))
+		return -EPERM;
+
+	err = strict_strtoul(buf, 0, &state);
+	if (err)
+		return err;
+
+	if (state != RFKILL_USER_STATE_SOFT_BLOCKED &&
+	    state != RFKILL_USER_STATE_UNBLOCKED)
+		return -EINVAL;
+
+	mutex_lock(&rfkill_global_mutex);
+	rfkill_set_block(rfkill, state == RFKILL_USER_STATE_SOFT_BLOCKED);
+	mutex_unlock(&rfkill_global_mutex);
+
+	return err ?: count;
 }
 
 static ssize_t rfkill_claim_show(struct device *dev,
@@ -712,7 +727,7 @@ static int rfkill_dev_uevent(struct device *dev, struct kobj_uevent_env *env)
 	return error;
 }
 
-void backport_rfkill_pause_polling(struct rfkill *rfkill)
+void rfkill_pause_polling(struct rfkill *rfkill)
 {
 	BUG_ON(!rfkill);
 
@@ -721,9 +736,9 @@ void backport_rfkill_pause_polling(struct rfkill *rfkill)
 
 	cancel_delayed_work_sync(&rfkill->poll_work);
 }
-EXPORT_SYMBOL(backport_rfkill_pause_polling);
+EXPORT_SYMBOL(rfkill_pause_polling);
 
-void backport_rfkill_resume_polling(struct rfkill *rfkill)
+void rfkill_resume_polling(struct rfkill *rfkill)
 {
 	BUG_ON(!rfkill);
 
@@ -732,13 +747,13 @@ void backport_rfkill_resume_polling(struct rfkill *rfkill)
 
 	schedule_work(&rfkill->poll_work.work);
 }
-EXPORT_SYMBOL(backport_rfkill_resume_polling);
+EXPORT_SYMBOL(rfkill_resume_polling);
 
 static int rfkill_suspend(struct device *dev, pm_message_t state)
 {
 	struct rfkill *rfkill = to_rfkill(dev);
 
-	backport_rfkill_pause_polling(rfkill);
+	rfkill_pause_polling(rfkill);
 
 	return 0;
 }
@@ -753,7 +768,7 @@ static int rfkill_resume(struct device *dev)
 		rfkill_set_block(rfkill, cur);
 	}
 
-	backport_rfkill_resume_polling(rfkill);
+	rfkill_resume_polling(rfkill);
 
 	return 0;
 }
@@ -767,7 +782,7 @@ static struct class rfkill_class = {
 	.resume		= rfkill_resume,
 };
 
-bool backport_rfkill_blocked(struct rfkill *rfkill)
+bool rfkill_blocked(struct rfkill *rfkill)
 {
 	unsigned long flags;
 	u32 state;
@@ -778,10 +793,10 @@ bool backport_rfkill_blocked(struct rfkill *rfkill)
 
 	return !!(state & RFKILL_BLOCK_ANY);
 }
-EXPORT_SYMBOL(backport_rfkill_blocked);
+EXPORT_SYMBOL(rfkill_blocked);
 
 
-struct rfkill * __must_check backport_rfkill_alloc(const char *name,
+struct rfkill * __must_check rfkill_alloc(const char *name,
 					  struct device *parent,
 					  const enum rfkill_type type,
 					  const struct rfkill_ops *ops,
@@ -820,7 +835,7 @@ struct rfkill * __must_check backport_rfkill_alloc(const char *name,
 
 	return rfkill;
 }
-EXPORT_SYMBOL(backport_rfkill_alloc);
+EXPORT_SYMBOL(rfkill_alloc);
 
 static void rfkill_poll(struct work_struct *work)
 {
@@ -863,7 +878,7 @@ static void rfkill_sync_work(struct work_struct *work)
 	mutex_unlock(&rfkill_global_mutex);
 }
 
-int __must_check backport_rfkill_register(struct rfkill *rfkill)
+int __must_check rfkill_register(struct rfkill *rfkill)
 {
 	static unsigned long rfkill_no;
 	struct device *dev = &rfkill->dev;
@@ -926,9 +941,9 @@ int __must_check backport_rfkill_register(struct rfkill *rfkill)
 	mutex_unlock(&rfkill_global_mutex);
 	return error;
 }
-EXPORT_SYMBOL(backport_rfkill_register);
+EXPORT_SYMBOL(rfkill_register);
 
-void backport_rfkill_unregister(struct rfkill *rfkill)
+void rfkill_unregister(struct rfkill *rfkill)
 {
 	BUG_ON(!rfkill);
 
@@ -949,14 +964,14 @@ void backport_rfkill_unregister(struct rfkill *rfkill)
 
 	rfkill_led_trigger_unregister(rfkill);
 }
-EXPORT_SYMBOL(backport_rfkill_unregister);
+EXPORT_SYMBOL(rfkill_unregister);
 
-void backport_rfkill_destroy(struct rfkill *rfkill)
+void rfkill_destroy(struct rfkill *rfkill)
 {
 	if (rfkill)
 		put_device(&rfkill->dev);
 }
-EXPORT_SYMBOL(backport_rfkill_destroy);
+EXPORT_SYMBOL(rfkill_destroy);
 
 static int rfkill_fop_open(struct inode *inode, struct file *file)
 {
@@ -1076,10 +1091,16 @@ static ssize_t rfkill_fop_write(struct file *file, const char __user *buf,
 	struct rfkill_event ev;
 
 	/* we don't need the 'hard' variable but accept it */
-	if (count < sizeof(ev) - 1)
+	if (count < RFKILL_EVENT_SIZE_V1 - 1)
 		return -EINVAL;
 
-	if (copy_from_user(&ev, buf, sizeof(ev) - 1))
+	/*
+	 * Copy as much data as we can accept into our 'ev' buffer,
+	 * but tell userspace how much we've copied so it can determine
+	 * our API version even in a write() call, if it cares.
+	 */
+	count = min(count, sizeof(ev));
+	if (copy_from_user(&ev, buf, count))
 		return -EFAULT;
 
 	if (ev.op != RFKILL_OP_CHANGE && ev.op != RFKILL_OP_CHANGE_ALL)

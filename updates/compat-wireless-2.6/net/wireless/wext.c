@@ -610,6 +610,11 @@ static void wireless_seq_printf_stats(struct seq_file *seq,
 {
 	/* Get stats from the driver */
 	struct iw_statistics *stats = get_wireless_stats(dev);
+	static struct iw_statistics nullstats = {};
+
+	/* show device if it's wireless regardless of current stats */
+	if (!stats && dev->wireless_handlers)
+		stats = &nullstats;
 
 	if (stats) {
 		seq_printf(seq, "%6s: %04x  %3d%c  %3d%c  %3d%c  %6d %6d %6d "
@@ -628,7 +633,9 @@ static void wireless_seq_printf_stats(struct seq_file *seq,
 			   stats->discard.nwid, stats->discard.code,
 			   stats->discard.fragment, stats->discard.retries,
 			   stats->discard.misc, stats->miss.beacon);
-		stats->qual.updated &= ~IW_QUAL_ALL_UPDATED;
+
+		if (stats != &nullstats)
+			stats->qual.updated &= ~IW_QUAL_ALL_UPDATED;
 	}
 }
 
@@ -1096,8 +1103,13 @@ static int wireless_process_ioctl(struct net *net, struct ifreq *ifr,
 			return private(dev, iwr, cmd, info, handler);
 	}
 	/* Old driver API : call driver ioctl handler */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 	if (dev->netdev_ops->ndo_do_ioctl)
 		return dev->netdev_ops->ndo_do_ioctl(dev, ifr, cmd);
+#else
+	if (dev->do_ioctl)
+		return dev->do_ioctl(dev, ifr, cmd);
+#endif
 	return -EOPNOTSUPP;
 }
 
@@ -1369,7 +1381,7 @@ static void rtmsg_iwinfo(struct net_device *dev, char *event, int event_len)
 void wireless_send_event(struct net_device *	dev,
 			 unsigned int		cmd,
 			 union iwreq_data *	wrqu,
-			 char *			extra)
+			 const char *		extra)
 {
 	const struct iw_ioctl_description *	descr = NULL;
 	int extra_len = 0;
