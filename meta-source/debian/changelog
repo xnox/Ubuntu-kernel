@@ -1,3 +1,12 @@
+linux-meta (2.6.31.3.15) UNRELEASED; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * fix dependancies for i386 virtual kernel
+    - LP: #399914
+
+ -- Andy Whitcroft <apw@canonical.com>  Tue, 21 Jul 2009 11:47:11 +0100
+
 linux-meta (2.6.31.3.14) karmic; urgency=low
 
   * Karmic ABI 3
