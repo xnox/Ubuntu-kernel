@@ -120,3 +120,12 @@ Description: Header files related to linux-backports-modules version 2.6.31
  This package provides linux-backports-modules header files for version 2.6.31, for sites
  that want the latest linux-backports-modules headers. Please read
  /usr/share/doc/linux-headers-lbm-2.6.31-3/debian.README.gz for details
+
+Package: updates-modules-2.6.31-3-generic-di
+XC-Package-Type: udeb
+Provides: updates-modules
+Architecture: amd64
+XB-Kernel-Version: 2.6.31-3-generic
+Section: debian-installer
+Priority: standard
+Description: Ubuntu supplied kernel modules
