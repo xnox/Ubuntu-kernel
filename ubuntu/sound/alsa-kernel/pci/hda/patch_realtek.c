@@ -14099,7 +14099,7 @@ static struct alc_config_preset alc662_presets[] = {
  		.init_hook = alc662_eeepc_inithook,
  	},
 	[ALC272_DELL_ZM1] = {
-		.mixers = { alc663_m51va_mixer },
+		.mixers = { alc663_m51va_mixer, alc662_capture_mixer },
 		.init_verbs = { alc662_init_verbs, alc272_dell_init_verbs },
 		.num_dacs = ARRAY_SIZE(alc662_dac_nids),
 		.dac_nids = alc662_dac_nids,
@@ -14434,8 +14434,7 @@ static int patch_alc662(struct hda_codec *codec)
 			       "from BIOS.  Using base mode...\n");
 			board_config = ALC662_3ST_2ch_DIG;
 		}
-	} else
-		add_mixer(spec, alc662_capture_mixer);
+	}
 
 	if (board_config != ALC662_AUTO)
 		setup_preset(spec, &alc662_presets[board_config]);
