@@ -10,63 +10,10 @@
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 
-#
-# Run this script when you update from one version of iwlwifi
-# to the next.
-#
-# The current Intel iwlwifi driver depends on a version
-# of the mac80211 stack that conflicts with the version
-# that exists in the kernel. Therefore, the fix is to modify
-# the public symbols in Intel's version and run both softmac
-# stacks.
-
 cd `dirname $0`
 
 #
-# Here is the algorithm I followed to munge the iwlwifi and mac80211
-# tarballs. Hopefully the next update will be close enough that you can
-# just run this script.
-#
-
-_COMPAT_PREFIX=lbm_cw
-#
-# Isolate the mac80211 exported symbols and munge every occurence such that
-# there is no possibility of conflict with the main kernel.
-#
-TL=token_list
-find net -name "*.[ch]"| \
-xargs grep EXPORT_SYMBOL|grep -v compat.c | grep -v wext.c | \
-sed -e 's/^.*EXPORT_SYMBOL.*(//' -e 's/);//' > ${TL}
-
-SC=sed_cmds
-rm -f ${SC}
-while read token
-do 
-	echo s/${token}/${_COMPAT_PREFIX}_${token}/g >> ${SC}
-done < ${TL}
-echo s/${_COMPAT_PREFIX}_'('${_COMPAT_PREFIX}'_)+'/${_COMPAT_PREFIX}_/g >> ${SC}
-
-find . -name "*.[ch]"|while read f
-do 
-	sed -r -i -f ${SC} "${f}" 
-done
-
-#
-# Wack on the Makefiles so that the modules names don't collide with existing modules.
-#
-COMPAT_PREFIX=${_COMPAT_PREFIX}-
-sed -i 's/mac80211\./'${COMPAT_PREFIX}'mac80211\./' net/mac80211/Makefile
-sed -i 's/mac80211-/'${COMPAT_PREFIX}'mac80211-/' net/mac80211/Makefile
-sed -i 's/rc80211_pid-/'${COMPAT_PREFIX}'rc80211_pid-/' net/mac80211/Makefile
-sed -i 's/cfg80211/'${COMPAT_PREFIX}'cfg80211/' net/wireless/Makefile
-
-#
-# I wonder why libipw_wx.c requests a specific module?
-#
-sed -i 's/lib80211_crypt_wep/'${COMPAT_PREFIX}'lib80211_crypt_wep/' drivers/net/wireless/ipw2x00/libipw_wx.c
-
-#
-# Change the ucode file name.
+# Change the ucode file name so that the updated firmware files don't clash.
 #
 sed -i 's/#define.*IWL3945_FW_PRE.*\"iwlwifi-3945-\"/#define IWL3945_FW_PRE \"lbm-iwlwifi-3945-\"/' drivers/net/wireless/iwlwifi/iwl-3945.h
 sed -i 's/#define.*IWL4965_FW_PRE.*\"iwlwifi-4965-\"/#define IWL4965_FW_PRE \"lbm-iwlwifi-4965-\"/' drivers/net/wireless/iwlwifi/iwl-4965.c
