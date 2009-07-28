@@ -1,3 +1,15 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-24.54.netbook01) netbook-common; urgency=low
+
+  [Colin Ian King]
+
+  * ALSA: snd-hda-intel: fix ALC662 capture device init
+
+  [Steve Conklin]
+
+  * Add drivers needed to support Natick platforms
+
+ -- sconklin <sconklin@ubuntu.com>  Tue, 28 Jul 2009 18:49:47 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-24.53netbook01) netbook-common; urgency=low
 
   * Bump ABI to match rebased kernel
