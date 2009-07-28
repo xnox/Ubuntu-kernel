@@ -56,9 +56,9 @@ ABIDIR="$(pwd)/debian/abi/$FULLVER"
 #	debian/rules printenv|
 #	awk '/custom_flavours/{sub(/.*_flavours *= */, ""); print}'
 #)
-CUSTOM_FLAVOURS="rt openvz xen lpia lpiacompat"
+CUSTOM_FLAVOURS="rt openvz xen lpiacompat"
 PKG_LIST="$(
-	git-show ${BRANCH}:debian/control | \
+	git show ${BRANCH}:debian/control | \
        	awk -v CFL="$CUSTOM_FLAVOURS" '
 		BEGIN{
 			split(CFL, X)
