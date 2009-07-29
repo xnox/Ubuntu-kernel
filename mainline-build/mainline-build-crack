@@ -39,7 +39,7 @@ esac
 
 # Crack of the day is always ABI -999.
 abinum='999'
-upload=`date +%s`
+upload=`date +%Y%m%d%H%M`
 
 # The base version is always the first X.Y.Z part of the version number.  If we
 # do not maintain this then the modules directory will not match uname -r.
