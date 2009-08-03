@@ -336,6 +336,12 @@ void ieee80211_add_pending_skb(struct ieee80211_local *local,
 	struct ieee80211_hw *hw = &local->hw;
 	unsigned long flags;
 	int queue = skb_get_queue_mapping(skb);
+	struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+
+	if (WARN_ON(!info->control.vif)) {
+		kfree(skb);
+		return;
+	}
 
 	spin_lock_irqsave(&local->queue_stop_reason_lock, flags);
 	__ieee80211_stop_queue(hw, queue, IEEE80211_QUEUE_STOP_REASON_SKB_ADD);
@@ -358,6 +364,13 @@ int ieee80211_add_pending_skbs(struct ieee80211_local *local,
 			IEEE80211_QUEUE_STOP_REASON_SKB_ADD);
 
 	while ((skb = skb_dequeue(skbs))) {
+		struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+
+		if (WARN_ON(!info->control.vif)) {
+			kfree(skb);
+			continue;
+		}
+
 		ret++;
 		queue = skb_get_queue_mapping(skb);
 		__skb_queue_tail(&local->pending[queue], skb);
@@ -960,7 +973,6 @@ int ieee80211_reconfig(struct ieee80211_local *local)
 	struct ieee80211_sub_if_data *sdata;
 	struct ieee80211_if_init_conf conf;
 	struct sta_info *sta;
-	unsigned long flags;
 	int res;
 	bool from_suspend = local->suspended;
 
@@ -991,7 +1003,7 @@ int ieee80211_reconfig(struct ieee80211_local *local)
 
 	/* add STAs back */
 	if (local->ops->sta_notify) {
-		spin_lock_irqsave(&local->sta_lock, flags);
+		spin_lock_bh(&local->sta_lock);
 		list_for_each_entry(sta, &local->sta_list, list) {
 			sdata = sta->sdata;
 			if (sdata->vif.type == NL80211_IFTYPE_AP_VLAN)
@@ -1002,7 +1014,7 @@ int ieee80211_reconfig(struct ieee80211_local *local)
 			drv_sta_notify(local, &sdata->vif, STA_NOTIFY_ADD,
 				       &sta->sta);
 		}
-		spin_unlock_irqrestore(&local->sta_lock, flags);
+		spin_unlock_bh(&local->sta_lock);
 	}
 
 	/* Clear Suspend state so that ADDBA requests can be processed */
@@ -1092,10 +1104,10 @@ int ieee80211_reconfig(struct ieee80211_local *local)
 
 	add_timer(&local->sta_cleanup);
 
-	spin_lock_irqsave(&local->sta_lock, flags);
+	spin_lock_bh(&local->sta_lock);
 	list_for_each_entry(sta, &local->sta_list, list)
 		mesh_plink_restart(sta);
-	spin_unlock_irqrestore(&local->sta_lock, flags);
+	spin_unlock_bh(&local->sta_lock);
 #else
 	WARN_ON(1);
 #endif

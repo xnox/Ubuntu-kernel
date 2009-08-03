@@ -378,7 +378,7 @@ int rt2x00mac_config(struct ieee80211_hw *hw, u32 changed)
 		 */
 		if (changed & IEEE80211_CONF_CHANGE_RADIO_ENABLED)
 			rt2x00lib_config_antenna(rt2x00dev,
-						 &rt2x00dev->default_ant);
+						 rt2x00dev->default_ant);
 
 		/* Turn RX back on */
 		rt2x00lib_toggle_rx(rt2x00dev, STATE_RADIO_RX_ON);
@@ -435,6 +435,16 @@ void rt2x00mac_configure_filter(struct ieee80211_hw *hw,
 }
 EXPORT_SYMBOL_GPL(rt2x00mac_configure_filter);
 
+int rt2x00mac_set_tim(struct ieee80211_hw *hw, struct ieee80211_sta *sta,
+		      bool set)
+{
+	struct rt2x00_dev *rt2x00dev = hw->priv;
+
+	rt2x00lib_beacondone(rt2x00dev);
+	return 0;
+}
+EXPORT_SYMBOL_GPL(rt2x00mac_set_tim);
+
 #ifdef CONFIG_RT2X00_LIB_CRYPTO
 static void memcpy_tkip(struct rt2x00lib_crypto *crypto, u8 *key, u8 key_len)
 {
@@ -453,16 +463,6 @@ static void memcpy_tkip(struct rt2x00lib_crypto *crypto, u8 *key, u8 key_len)
 		       &key[NL80211_TKIP_DATA_OFFSET_RX_MIC_KEY],
 		       sizeof(crypto->rx_mic));
 }
-
-int rt2x00mac_set_tim(struct ieee80211_hw *hw, struct ieee80211_sta *sta,
-		      bool set)
-{
-	struct rt2x00_dev *rt2x00dev = hw->priv;
-
-	rt2x00lib_beacondone(rt2x00dev);
-	return 0;
-}
-EXPORT_SYMBOL_GPL(rt2x00mac_set_tim);
 
 int rt2x00mac_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,
 		      struct ieee80211_vif *vif, struct ieee80211_sta *sta,

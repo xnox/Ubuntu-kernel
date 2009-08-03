@@ -51,9 +51,9 @@
  	dev->irq = sdev->irq;
  	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
  
---- a/drivers/net/usb/Makefile
-+++ b/drivers/net/usb/Makefile
-@@ -2,23 +2,7 @@
+--- a/drivers/net/usb/Makefile	2009-07-27 08:03:34.770077174 -0700
++++ b/drivers/net/usb/Makefile	2009-07-27 08:04:22.594143560 -0700
+@@ -2,24 +2,7 @@
  # Makefile for USB Network drivers
  #
  
@@ -76,6 +76,7 @@
 -obj-$(CONFIG_USB_NET_MCS7830)	+= mcs7830.o
  obj-$(CONFIG_USB_USBNET)	+= usbnet.o
 -obj-$(CONFIG_USB_NET_INT51X1)	+= int51x1.o
+-obj-$(CONFIG_USB_CDC_PHONET)	+= cdc-phonet.o
  
 --- a/drivers/net/usb/rndis_host.c
 +++ b/drivers/net/usb/rndis_host.c
@@ -169,9 +170,9 @@
  
  #include "ath5k.h"
  #include "debug.h"
---- a/drivers/net/wireless/ath/ath9k/hw.c	2009-07-21 13:18:14.945936434 -0700
-+++ b/drivers/net/wireless/ath/ath9k/hw.c	2009-07-21 13:18:15.389946641 -0700
-@@ -3434,7 +3434,7 @@
+--- a/drivers/net/wireless/ath/ath9k/hw.c	2009-07-27 14:41:59.497061239 -0700
++++ b/drivers/net/wireless/ath/ath9k/hw.c	2009-07-27 14:41:59.861073081 -0700
+@@ -3515,7 +3515,7 @@
  
  	pCap->hw_caps |= ATH9K_HW_CAP_ENHANCEDPM;
  
@@ -541,9 +542,9 @@
 +#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,30))
  #include <trace/define_trace.h>
 +#endif /* (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,30)) */
---- a/net/mac80211/iface.c	2009-07-21 13:19:35.836937034 -0700
-+++ b/net/mac80211/iface.c	2009-07-21 13:19:36.396937822 -0700
-@@ -645,6 +645,7 @@
+--- a/net/mac80211/iface.c	2009-07-27 13:03:30.589047026 -0700
++++ b/net/mac80211/iface.c	2009-07-27 14:39:46.521397084 -0700
+@@ -660,6 +660,7 @@ static void ieee80211_teardown_sdata(str
  	WARN_ON(flushed);
  }
  
@@ -551,7 +552,7 @@
  static const struct net_device_ops ieee80211_dataif_ops = {
  	.ndo_open		= ieee80211_open,
  	.ndo_stop		= ieee80211_stop,
-@@ -664,11 +665,22 @@
+@@ -679,11 +680,22 @@ static const struct net_device_ops ieee8
  	.ndo_change_mtu 	= ieee80211_change_mtu,
  	.ndo_set_mac_address 	= eth_mac_addr,
  };
@@ -571,10 +572,10 @@
 +	/* we will validate the address ourselves in ->open */
 +	dev->validate_addr = NULL;
 +#endif
- 	dev->wireless_handlers = &ieee80211_iw_handler_def;
  	dev->destructor = free_netdev;
  }
-@@ -684,7 +696,11 @@
+ 
+@@ -698,7 +710,11 @@ static void ieee80211_setup_sdata(struct
  
  	/* and set some type-dependent values */
  	sdata->vif.type = type;
@@ -586,7 +587,7 @@
  	sdata->wdev.iftype = type;
  
  	/* only monitor differs */
-@@ -707,7 +723,11 @@
+@@ -721,7 +737,11 @@ static void ieee80211_setup_sdata(struct
  		break;
  	case NL80211_IFTYPE_MONITOR:
  		sdata->dev->type = ARPHRD_IEEE80211_RADIOTAP;
@@ -598,16 +599,16 @@
  		sdata->u.mntr_flags = MONITOR_FLAG_CONTROL |
  				      MONITOR_FLAG_OTHER_BSS;
  		break;
-@@ -773,6 +793,8 @@
- 	if (!ndev)
+@@ -788,6 +808,8 @@ int ieee80211_if_add(struct ieee80211_lo
  		return -ENOMEM;
+ 	dev_net_set(ndev, wiphy_net(local->hw.wiphy));
  
 +/* This is an optimization, just ignore for older kernels */
 +#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26))
  	ndev->needed_headroom = local->tx_headroom +
  				4*6 /* four MAC addresses */
  				+ 2 + 2 + 2 + 2 /* ctl, dur, seq, qos */
-@@ -781,6 +803,7 @@
+@@ -796,6 +818,7 @@ int ieee80211_if_add(struct ieee80211_lo
  				- ETH_HLEN /* ethernet hard_header_len */
  				+ IEEE80211_ENCRYPT_HEADROOM;
  	ndev->needed_tailroom = IEEE80211_ENCRYPT_TAILROOM;
@@ -615,7 +616,7 @@
  
  	ret = dev_alloc_name(ndev, ndev->name);
  	if (ret < 0)
-@@ -814,6 +837,10 @@
+@@ -828,6 +851,10 @@ int ieee80211_if_add(struct ieee80211_lo
  	if (ret)
  		goto fail;
  
@@ -818,9 +819,9 @@
  #include <linux/workqueue.h>
  #include <net/genetlink.h>
  #include <net/cfg80211.h>
---- a/net/wireless/scan.c	2009-07-21 13:21:01.952935088 -0700
-+++ b/net/wireless/scan.c	2009-07-21 13:21:02.468936915 -0700
-@@ -408,7 +408,11 @@
+--- a/net/wireless/scan.c	2009-07-27 14:42:47.558049856 -0700
++++ b/net/wireless/scan.c	2009-07-27 14:42:48.118044849 -0700
+@@ -399,7 +399,11 @@ cfg80211_bss_update(struct cfg80211_regi
  			size_t used = dev->wiphy.bss_priv_size + sizeof(*res);
  			size_t ielen = res->pub.len_information_elements;
  
@@ -948,22 +949,6 @@
 -	zd_chip_control_leds(&mac->chip, LED_OFF);
 +	zd_chip_control_leds(&mac->chip, ZD_LED_OFF);
  }
---- a/net/wireless/wext.c	2009-07-07 15:03:28.803678550 -0700
-+++ b/net/wireless/wext.c	2009-07-07 15:03:11.011682437 -0700
-@@ -1103,8 +1103,13 @@
- 			return private(dev, iwr, cmd, info, handler);
- 	}
- 	/* Old driver API : call driver ioctl handler */
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
- 	if (dev->netdev_ops->ndo_do_ioctl)
- 		return dev->netdev_ops->ndo_do_ioctl(dev, ifr, cmd);
-+#else
-+	if (dev->do_ioctl)
-+		return dev->do_ioctl(dev, ifr, cmd);
-+#endif
- 	return -EOPNOTSUPP;
- }
- 
 --- a/drivers/net/wireless/libertas/defs.h	2009-07-08 14:04:29.692256519 -0700
 +++ b/drivers/net/wireless/libertas/defs.h	2009-07-08 14:03:26.712279246 -0700
 @@ -16,6 +16,14 @@
@@ -981,3 +966,83 @@
  
  #define LBS_DEB_ENTER	0x00000001
  #define LBS_DEB_LEAVE	0x00000002
+--- a/net/wireless/wext.c	2009-07-27 15:38:09.989056661 -0700
++++ b/net/wireless/wext.c	2009-07-27 16:05:06.681045663 -0700
+@@ -1118,8 +1118,13 @@
+ 			return private(dev, iwr, cmd, info, handler);
+ 	}
+ 	/* Old driver API : call driver ioctl handler */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	if (dev->netdev_ops->ndo_do_ioctl)
+ 		return dev->netdev_ops->ndo_do_ioctl(dev, ifr, cmd);
++#else
++	if (dev->do_ioctl)
++		return dev->do_ioctl(dev, ifr, cmd);
++#endif
+ 	return -EOPNOTSUPP;
+ }
+ 
+@@ -1272,6 +1277,7 @@
+ }
+ #endif
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
+ static int __net_init wext_pernet_init(struct net *net)
+ {
+ 	skb_queue_head_init(&net->wext_nlevents);
+@@ -1315,6 +1321,29 @@
+ 
+ static DECLARE_WORK(wireless_nlevent_work, wireless_nlevent_process);
+ 
++#else
++/* Older kernels get the old way of doing stuff*/
++static struct sk_buff_head wireless_nlevent_queue;
++
++static int __init wireless_nlevent_init(void)
++{
++	skb_queue_head_init(&wireless_nlevent_queue);
++	return 0;
++}
++
++subsys_initcall(wireless_nlevent_init);
++
++static void wireless_nlevent_process(unsigned long data)
++{
++	struct sk_buff *skb;
++	while ((skb = skb_dequeue(&wireless_nlevent_queue)))
++		rtnl_notify(skb, &init_net, 0, RTNLGRP_LINK, NULL, GFP_ATOMIC);
++}
++
++static DECLARE_TASKLET(wireless_nlevent_tasklet, wireless_nlevent_process, 0);
++
++#endif
++
+ static struct nlmsghdr *rtnetlink_ifinfo_prep(struct net_device *dev,
+ 					      struct sk_buff *skb)
+ {
+@@ -1525,8 +1554,13 @@
+ 
+ 	skb_shinfo(skb)->frag_list = compskb;
+ #endif
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
+ 	skb_queue_tail(&dev_net(dev)->wext_nlevents, skb);
+ 	schedule_work(&wireless_nlevent_work);
++#else
++	skb_queue_tail(&wireless_nlevent_queue, skb);
++	tasklet_schedule(&wireless_nlevent_tasklet);
++#endif
+ }
+ EXPORT_SYMBOL(wireless_send_event);
+ 
+--- a/net/wireless/nl80211.c	2009-07-27 16:22:30.301045695 -0700
++++ b/net/wireless/nl80211.c	2009-07-27 18:17:28.445046102 -0700
+@@ -29,7 +29,9 @@
+ 	.hdrsize = 0,		/* no private header */
+ 	.version = 1,		/* no particular meaning now */
+ 	.maxattr = NL80211_ATTR_MAX,
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
+ 	.netnsok = true,
++#endif
+ };
+ 
+ /* internal helper: get rdev and dev */

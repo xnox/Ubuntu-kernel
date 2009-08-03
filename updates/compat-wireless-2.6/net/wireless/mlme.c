@@ -8,7 +8,9 @@
 #include <linux/module.h>
 #include <linux/netdevice.h>
 #include <linux/nl80211.h>
+#include <linux/wireless.h>
 #include <net/cfg80211.h>
+#include <net/iw_handler.h>
 #include "core.h"
 #include "nl80211.h"
 
@@ -59,7 +61,7 @@ void cfg80211_send_rx_assoc(struct net_device *dev, const u8 *buf, size_t len)
 	struct ieee80211_mgmt *mgmt = (struct ieee80211_mgmt *)buf;
 	u8 *ie = mgmt->u.assoc_resp.variable;
 	int i, ieoffs = offsetof(struct ieee80211_mgmt, u.assoc_resp.variable);
-	bool done;
+	struct cfg80211_internal_bss *bss = NULL;
 
 	wdev_lock(wdev);
 
@@ -67,22 +69,32 @@ void cfg80211_send_rx_assoc(struct net_device *dev, const u8 *buf, size_t len)
 
 	nl80211_send_rx_assoc(rdev, dev, buf, len, GFP_KERNEL);
 
-	__cfg80211_connect_result(dev, mgmt->bssid, NULL, 0, ie, len - ieoffs,
-				  status_code,
-				  status_code == WLAN_STATUS_SUCCESS);
-
 	if (status_code == WLAN_STATUS_SUCCESS) {
-		for (i = 0; wdev->current_bss && i < MAX_AUTH_BSSES; i++) {
-			if (wdev->auth_bsses[i] == wdev->current_bss) {
-				cfg80211_unhold_bss(wdev->auth_bsses[i]);
-				cfg80211_put_bss(&wdev->auth_bsses[i]->pub);
+		for (i = 0; i < MAX_AUTH_BSSES; i++) {
+			if (!wdev->auth_bsses[i])
+				continue;
+			if (memcmp(wdev->auth_bsses[i]->pub.bssid, mgmt->bssid,
+				   ETH_ALEN) == 0) {
+				bss = wdev->auth_bsses[i];
 				wdev->auth_bsses[i] = NULL;
-				done = true;
+				/* additional reference to drop hold */
+				cfg80211_ref_bss(bss);
 				break;
 			}
 		}
 
-		WARN_ON(!done);
+		WARN_ON(!bss);
+	}
+
+	/* this consumes one bss reference (unless bss is NULL) */
+	__cfg80211_connect_result(dev, mgmt->bssid, NULL, 0, ie, len - ieoffs,
+				  status_code,
+				  status_code == WLAN_STATUS_SUCCESS,
+				  bss ? &bss->pub : NULL);
+	/* drop hold now, and also reference acquired above */
+	if (bss) {
+		cfg80211_unhold_bss(bss);
+		cfg80211_put_bss(&bss->pub);
 	}
 
 	wdev_unlock(wdev);
@@ -142,7 +154,7 @@ static void __cfg80211_send_deauth(struct net_device *dev,
 	} else if (wdev->sme_state == CFG80211_SME_CONNECTING) {
 		__cfg80211_connect_result(dev, mgmt->bssid, NULL, 0, NULL, 0,
 					  WLAN_STATUS_UNSPECIFIED_FAILURE,
-					  false);
+					  false, NULL);
 	}
 }
 
@@ -239,7 +251,7 @@ void cfg80211_send_auth_timeout(struct net_device *dev, const u8 *addr)
 	if (wdev->sme_state == CFG80211_SME_CONNECTING)
 		__cfg80211_connect_result(dev, addr, NULL, 0, NULL, 0,
 					  WLAN_STATUS_UNSPECIFIED_FAILURE,
-					  false);
+					  false, NULL);
 
 	for (i = 0; addr && i < MAX_AUTH_BSSES; i++) {
 		if (wdev->authtry_bsses[i] &&
@@ -273,7 +285,7 @@ void cfg80211_send_assoc_timeout(struct net_device *dev, const u8 *addr)
 	if (wdev->sme_state == CFG80211_SME_CONNECTING)
 		__cfg80211_connect_result(dev, addr, NULL, 0, NULL, 0,
 					  WLAN_STATUS_UNSPECIFIED_FAILURE,
-					  false);
+					  false, NULL);
 
 	for (i = 0; addr && i < MAX_AUTH_BSSES; i++) {
 		if (wdev->auth_bsses[i] &&
@@ -544,6 +556,12 @@ static int __cfg80211_mlme_disassoc(struct cfg80211_registered_device *rdev,
 	struct cfg80211_disassoc_request req;
 
 	ASSERT_WDEV_LOCK(wdev);
+
+	if (wdev->sme_state != CFG80211_SME_CONNECTED)
+		return -ENOTCONN;
+
+	if (WARN_ON(!wdev->current_bss))
+		return -ENOTCONN;
 
 	memset(&req, 0, sizeof(req));
 	req.reason_code = reason;

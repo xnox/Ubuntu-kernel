@@ -335,7 +335,10 @@ static int ieee80211_stop(struct net_device *dev)
 	struct ieee80211_local *local = sdata->local;
 	struct ieee80211_if_init_conf conf;
 	struct sta_info *sta;
+	unsigned long flags;
+	struct sk_buff *skb, *tmp;
 	u32 hw_reconf_flags = 0;
+	int i;
 
 	/*
 	 * Stop TX on this interface first.
@@ -398,7 +401,7 @@ static int ieee80211_stop(struct net_device *dev)
 
 	/* APs need special treatment */
 	if (sdata->vif.type == NL80211_IFTYPE_AP) {
-		struct ieee80211_sub_if_data *vlan, *tmp;
+		struct ieee80211_sub_if_data *vlan, *tmpsdata;
 		struct beacon_data *old_beacon = sdata->u.ap.beacon;
 
 		/* remove beacon */
@@ -407,7 +410,7 @@ static int ieee80211_stop(struct net_device *dev)
 		kfree(old_beacon);
 
 		/* down all dependent devices, that is VLANs */
-		list_for_each_entry_safe(vlan, tmp, &sdata->u.ap.vlans,
+		list_for_each_entry_safe(vlan, tmpsdata, &sdata->u.ap.vlans,
 					 u.vlan.list)
 			dev_close(vlan->dev);
 		WARN_ON(!list_empty(&sdata->u.ap.vlans));
@@ -515,8 +518,18 @@ static int ieee80211_stop(struct net_device *dev)
 			 * the scan_sdata is NULL already don't send out a
 			 * scan event to userspace -- the scan is incomplete.
 			 */
-			if (local->sw_scanning)
+			if (test_bit(SCAN_SW_SCANNING, &local->scanning))
 				ieee80211_scan_completed(&local->hw, true);
+		}
+
+		/*
+		 * Disable beaconing for AP and mesh, IBSS can't
+		 * still be joined to a network at this point.
+		 */
+		if (sdata->vif.type == NL80211_IFTYPE_AP ||
+		    sdata->vif.type == NL80211_IFTYPE_MESH_POINT) {
+			ieee80211_bss_info_change_notify(sdata,
+				BSS_CHANGED_BEACON_ENABLED);
 		}
 
 		conf.vif = &sdata->vif;
@@ -550,6 +563,18 @@ static int ieee80211_stop(struct net_device *dev)
 	/* do after stop to avoid reconfiguring when we stop anyway */
 	if (hw_reconf_flags)
 		ieee80211_hw_config(local, hw_reconf_flags);
+
+	spin_lock_irqsave(&local->queue_stop_reason_lock, flags);
+	for (i = 0; i < IEEE80211_MAX_QUEUES; i++) {
+		skb_queue_walk_safe(&local->pending[i], skb, tmp) {
+			struct ieee80211_tx_info *info = IEEE80211_SKB_CB(skb);
+			if (info->control.vif == &sdata->vif) {
+				__skb_unlink(skb, &local->pending[i]);
+				dev_kfree_skb_irq(skb);
+			}
+		}
+	}
+	spin_unlock_irqrestore(&local->queue_stop_reason_lock, flags);
 
 	return 0;
 }
@@ -681,7 +706,6 @@ static void ieee80211_if_setup(struct net_device *dev)
 	/* we will validate the address ourselves in ->open */
 	dev->validate_addr = NULL;
 #endif
-	dev->wireless_handlers = &ieee80211_iw_handler_def;
 	dev->destructor = free_netdev;
 }
 
@@ -792,6 +816,7 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 			    name, ieee80211_if_setup);
 	if (!ndev)
 		return -ENOMEM;
+	dev_net_set(ndev, wiphy_net(local->hw.wiphy));
 
 /* This is an optimization, just ignore for older kernels */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26))
@@ -811,7 +836,6 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 
 	memcpy(ndev->dev_addr, local->hw.wiphy->perm_addr, ETH_ALEN);
 	SET_NETDEV_DEV(ndev, wiphy_dev(local->hw.wiphy));
-	ndev->features |= NETIF_F_NETNS_LOCAL;
 
 	/* don't use IEEE80211_DEV_TO_SUB_IF because it checks too much */
 	sdata = netdev_priv(ndev);
@@ -932,7 +956,7 @@ u32 __ieee80211_recalc_idle(struct ieee80211_local *local)
 	struct ieee80211_sub_if_data *sdata;
 	int count = 0;
 
-	if (local->hw_scanning || local->sw_scanning)
+	if (local->scanning)
 		return ieee80211_idle_off(local, "scanning");
 
 	list_for_each_entry(sdata, &local->interfaces, list) {

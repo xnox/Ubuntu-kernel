@@ -30,7 +30,6 @@
  * @WLAN_STA_ASSOC_AP: We're associated to that station, it is an AP.
  * @WLAN_STA_WME: Station is a QoS-STA.
  * @WLAN_STA_WDS: Station is one of our WDS peers.
- * @WLAN_STA_PSPOLL: Station has just PS-polled us.
  * @WLAN_STA_CLEAR_PS_FILT: Clear PS filter in hardware (using the
  *	IEEE80211_TX_CTL_CLEAR_PS_FILT control flag) when the next
  *	frame to this station is transmitted.
@@ -47,7 +46,6 @@ enum ieee80211_sta_info_flags {
 	WLAN_STA_ASSOC_AP	= 1<<5,
 	WLAN_STA_WME		= 1<<6,
 	WLAN_STA_WDS		= 1<<7,
-	WLAN_STA_PSPOLL		= 1<<8,
 	WLAN_STA_CLEAR_PS_FILT	= 1<<9,
 	WLAN_STA_MFP		= 1<<10,
 	WLAN_STA_SUSPEND	= 1<<11
@@ -343,41 +341,25 @@ static inline enum plink_state sta_plink_state(struct sta_info *sta)
 
 static inline void set_sta_flags(struct sta_info *sta, const u32 flags)
 {
-	unsigned long irqfl;
-
-	spin_lock_irqsave(&sta->flaglock, irqfl);
+	spin_lock_bh(&sta->flaglock);
 	sta->flags |= flags;
-	spin_unlock_irqrestore(&sta->flaglock, irqfl);
+	spin_unlock_bh(&sta->flaglock);
 }
 
 static inline void clear_sta_flags(struct sta_info *sta, const u32 flags)
 {
-	unsigned long irqfl;
-
-	spin_lock_irqsave(&sta->flaglock, irqfl);
+	spin_lock_bh(&sta->flaglock);
 	sta->flags &= ~flags;
-	spin_unlock_irqrestore(&sta->flaglock, irqfl);
-}
-
-static inline void set_and_clear_sta_flags(struct sta_info *sta,
-					   const u32 set, const u32 clear)
-{
-	unsigned long irqfl;
-
-	spin_lock_irqsave(&sta->flaglock, irqfl);
-	sta->flags |= set;
-	sta->flags &= ~clear;
-	spin_unlock_irqrestore(&sta->flaglock, irqfl);
+	spin_unlock_bh(&sta->flaglock);
 }
 
 static inline u32 test_sta_flags(struct sta_info *sta, const u32 flags)
 {
 	u32 ret;
-	unsigned long irqfl;
 
-	spin_lock_irqsave(&sta->flaglock, irqfl);
+	spin_lock_bh(&sta->flaglock);
 	ret = sta->flags & flags;
-	spin_unlock_irqrestore(&sta->flaglock, irqfl);
+	spin_unlock_bh(&sta->flaglock);
 
 	return ret;
 }
@@ -386,12 +368,11 @@ static inline u32 test_and_clear_sta_flags(struct sta_info *sta,
 					   const u32 flags)
 {
 	u32 ret;
-	unsigned long irqfl;
 
-	spin_lock_irqsave(&sta->flaglock, irqfl);
+	spin_lock_bh(&sta->flaglock);
 	ret = sta->flags & flags;
 	sta->flags &= ~flags;
-	spin_unlock_irqrestore(&sta->flaglock, irqfl);
+	spin_unlock_bh(&sta->flaglock);
 
 	return ret;
 }
@@ -399,11 +380,10 @@ static inline u32 test_and_clear_sta_flags(struct sta_info *sta,
 static inline u32 get_sta_flags(struct sta_info *sta)
 {
 	u32 ret;
-	unsigned long irqfl;
 
-	spin_lock_irqsave(&sta->flaglock, irqfl);
+	spin_lock_bh(&sta->flaglock);
 	ret = sta->flags;
-	spin_unlock_irqrestore(&sta->flaglock, irqfl);
+	spin_unlock_bh(&sta->flaglock);
 
 	return ret;
 }
