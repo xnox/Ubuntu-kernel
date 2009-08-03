@@ -1,3 +1,9 @@
+linux-meta (2.6.31.5.16) karmic; urgency=low
+
+  * Karmic ABI 5
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 03 Aug 2009 10:44:53 -0600
+
 linux-meta (2.6.31.4.15) karmic; urgency=low
 
   [ Andy Whitcroft ]
