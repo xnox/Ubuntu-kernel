@@ -1,4 +1,5 @@
 #!/bin/bash
+CDIR=$(cd $(dirname $0); pwd)
 . $(dirname $0)/build-common
 
 BRANCH="master"
@@ -126,7 +127,7 @@ for TARGET in $(ExpandHostGroups $TARGETS); do
 		AddSummary "[not configured]"
 		continue
 	fi
-	status=$($(dirname $0)/build-check --dist ${DIST} ${TARGET})
+	status=$($CDIR/build-check --dist ${DIST} ${TARGET})
 	if [ $? -ne 0 ]; then
 		AddSummary "[$status]"
 		continue
