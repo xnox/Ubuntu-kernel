@@ -101,7 +101,7 @@ esac
 #
 rm -f debian/changelog
 EDITOR=":" dch -v "${version}-$abinum.$upload" --distribution "$series" \
-	--package linux --create
+	--package linux --create </dev/null
 sed -e "s/\* .*/* Mainline kernel of the day: $long/" \
 	<debian/changelog >debian/changelog.new
 mv -f debian/changelog.new debian/changelog

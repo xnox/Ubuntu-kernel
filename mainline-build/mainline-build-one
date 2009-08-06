@@ -123,7 +123,7 @@ esac
 #
 rm -f debian/changelog
 EDITOR=":" dch -v "${version}-$abinum" --distribution "UNRELEASED" \
-	--package linux --create
+	--package linux --create </dev/null
 sed -e "s/\* .*/* Mainline release $version/" \
 	<debian/changelog >debian/changelog.new
 mv -f debian/changelog.new debian/changelog
