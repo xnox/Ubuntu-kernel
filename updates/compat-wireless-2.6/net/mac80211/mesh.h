@@ -265,7 +265,7 @@ void mesh_path_discard_frame(struct sk_buff *skb,
 void mesh_path_quiesce(struct ieee80211_sub_if_data *sdata);
 void mesh_path_restart(struct ieee80211_sub_if_data *sdata);
 
-#ifdef CONFIG_MAC80211_MESH
+#ifdef CONFIG_COMPAT_MAC80211_MESH
 extern int mesh_allocated;
 
 static inline int mesh_plink_free_count(struct ieee80211_sub_if_data *sdata)

@@ -142,6 +142,17 @@
 #define B43_BFL_BTCMOD			0x4000	/* BFL_BTCOEXIST is given in alternate GPIOs */
 #define B43_BFL_ALTIQ			0x8000	/* alternate I/Q settings */
 
+/* SPROM boardflags_hi values */
+#define B43_BFH_NOPA			0x0001	/* has no PA */
+#define B43_BFH_RSSIINV			0x0002	/* RSSI uses positive slope (not TSSI) */
+#define B43_BFH_PAREF			0x0004	/* uses the PARef LDO */
+#define B43_BFH_3TSWITCH		0x0008	/* uses a triple throw switch shared
+						 * with bluetooth */
+#define B43_BFH_PHASESHIFT		0x0010	/* can support phase shifter */
+#define B43_BFH_BUCKBOOST		0x0020	/* has buck/booster */
+#define B43_BFH_FEM_BT			0x0040	/* has FEM and switch to share antenna
+						 * with bluetooth */
+
 /* GPIO register offset, in both ChipCommon and PCI core. */
 #define B43_GPIO_CONTROL		0x6c
 
@@ -628,7 +639,7 @@ struct b43_wl {
 	u8 mac_addr[ETH_ALEN];
 	/* Current BSSID */
 	u8 bssid[ETH_ALEN];
-	/* Interface type. (IEEE80211_IF_TYPE_XXX) */
+	/* Interface type. (NL80211_IFTYPE_XXX) */
 	int if_type;
 	/* Is the card operating in AP, STA or IBSS mode? */
 	bool operating;
@@ -834,7 +845,7 @@ static inline struct b43_wldev *dev_to_b43_wldev(struct device *dev)
 	return ssb_get_drvdata(ssb_dev);
 }
 
-/* Is the device operating in a specified mode (IEEE80211_IF_TYPE_XXX). */
+/* Is the device operating in a specified mode (NL80211_IFTYPE_XXX). */
 static inline int b43_is_mode(struct b43_wl *wl, int type)
 {
 	return (wl->operating && wl->if_type == type);

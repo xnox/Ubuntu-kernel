@@ -88,11 +88,7 @@ static int __devinit b43_pcmcia_probe(struct pcmcia_device *dev)
 	res = pcmcia_get_tuple_data(dev, &tuple);
 	if (res != 0)
 		goto err_kfree_ssb;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,28))
-	res = pcmcia_parse_tuple(NULL,&tuple, &parse);
-#else
 	res = pcmcia_parse_tuple(&tuple, &parse);
-#endif
 	if (res != 0)
 		goto err_kfree_ssb;
 

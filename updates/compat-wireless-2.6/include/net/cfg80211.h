@@ -1077,6 +1077,10 @@ struct cfg80211_ops {
  * 	channels at a later time. This can be used for devices which do not
  * 	have calibration information gauranteed for frequencies or settings
  * 	outside of its regulatory domain.
+ * @disable_beacon_hints: enable this if your driver needs to ensure that
+ *	passive scan flags and beaconing flags may not be lifted by cfg80211
+ *	due to regulatory beacon hints. For more information on beacon
+ *	hints read the documenation for regulatory_hint_found_beacon()
  * @reg_notifier: the driver's regulatory notification callback
  * @regd: the driver's regulatory domain, if one was requested via
  * 	the regulatory_hint() API. This can be used by the driver
@@ -1105,6 +1109,7 @@ struct wiphy {
 
 	bool custom_regulatory;
 	bool strict_regulatory;
+	bool disable_beacon_hints;
 
 	bool netnsok;
 
@@ -1514,20 +1519,6 @@ unsigned int cfg80211_classify8021d(struct sk_buff *skb);
  */
 extern int regulatory_hint(struct wiphy *wiphy, const char *alpha2);
 
-/**
- * regulatory_hint_11d - hints a country IE as a regulatory domain
- * @wiphy: the wireless device giving the hint (used only for reporting
- *	conflicts)
- * @country_ie: pointer to the country IE
- * @country_ie_len: length of the country IE
- *
- * We will intersect the rd with the what CRDA tells us should apply
- * for the alpha2 this country IE belongs to, this prevents APs from
- * sending us incorrect or outdated information against a country.
- */
-extern void regulatory_hint_11d(struct wiphy *wiphy,
-				u8 *country_ie,
-				u8 country_ie_len);
 /**
  * wiphy_apply_custom_regulatory - apply a custom driver regulatory domain
  * @wiphy: the wireless device we want to process the regulatory domain on

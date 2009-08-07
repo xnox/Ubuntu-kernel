@@ -24,7 +24,7 @@ static bool nl80211_type_check(enum nl80211_iftype type)
 	case NL80211_IFTYPE_ADHOC:
 	case NL80211_IFTYPE_STATION:
 	case NL80211_IFTYPE_MONITOR:
-#ifdef CONFIG_MAC80211_MESH
+#ifdef CONFIG_COMPAT_MAC80211_MESH
 	case NL80211_IFTYPE_MESH_POINT:
 #endif
 	case NL80211_IFTYPE_AP:
@@ -359,7 +359,7 @@ static void sta_set_sinfo(struct sta_info *sta, struct station_info *sinfo)
 		sinfo->txrate.mcs = sta->last_tx_rate.idx;
 
 	if (ieee80211_vif_is_mesh(&sdata->vif)) {
-#ifdef CONFIG_MAC80211_MESH
+#ifdef CONFIG_COMPAT_MAC80211_MESH
 		sinfo->filled |= STATION_INFO_LLID |
 				 STATION_INFO_PLID |
 				 STATION_INFO_PLINK_STATE;
@@ -822,7 +822,7 @@ static int ieee80211_change_station(struct wiphy *wiphy,
 	return 0;
 }
 
-#ifdef CONFIG_MAC80211_MESH
+#ifdef CONFIG_COMPAT_MAC80211_MESH
 static int ieee80211_add_mpath(struct wiphy *wiphy, struct net_device *dev,
 				 u8 *dst, u8 *next_hop)
 {
@@ -1378,7 +1378,7 @@ struct cfg80211_ops mac80211_config_ops = {
 	.change_station = ieee80211_change_station,
 	.get_station = ieee80211_get_station,
 	.dump_station = ieee80211_dump_station,
-#ifdef CONFIG_MAC80211_MESH
+#ifdef CONFIG_COMPAT_MAC80211_MESH
 	.add_mpath = ieee80211_add_mpath,
 	.del_mpath = ieee80211_del_mpath,
 	.change_mpath = ieee80211_change_mpath,

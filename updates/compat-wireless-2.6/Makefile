@@ -21,10 +21,7 @@ NOSTDINC_FLAGS := -I$(M)/include/ -include $(M)/include/net/compat.h $(CFLAGS)
 
 obj-y := net/wireless/ net/mac80211/ net/rfkill/
 ifeq ($(ONLY_CORE),)
-obj-$(CONFIG_B44) += drivers/net/b44.o
-obj-y += drivers/ssb/ \
-	drivers/misc/eeprom/ \
-	drivers/net/usb/ \
+obj-m += \
 	drivers/net/wireless/
 endif
 
@@ -78,7 +75,7 @@ install-scripts:
 	@install scripts/athload	$(DESTDIR)/usr/sbin/
 	@install scripts/b43load	$(DESTDIR)/usr/sbin/
 	@install scripts/iwl-load	$(DESTDIR)/usr/sbin/
-	@if [ ! -z $(MADWIFI) && -z "$(DESTDIR)" ]; then \
+	@if [ ! -z "$(MADWIFI)" ] && [ -z "$(DESTDIR)" ]; then \
 		echo ;\
 		echo -n "Note: madwifi detected, we're going to disable it. "  ;\
 		echo "If you would like to enable it later you can run:"  ;\
@@ -87,7 +84,7 @@ install-scripts:
 		echo Running athenable ath5k...;\
 		/usr/sbin/athenable ath5k ;\
 	fi
-	@if [ ! -z $(OLD_IWL) && -z "$(DESTDIR)" ]; then \
+	@if [ ! -z "$(OLD_IWL)" ] && [ -z "$(DESTDIR)" ]; then \
 		echo ;\
 		echo -n "Note: iwl4965 detected, we're going to disable it. "  ;\
 		echo "If you would like to enable it later you can run:"  ;\

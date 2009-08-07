@@ -1,0 +1,73 @@
+
+Every kernel release there are a few changes to headers
+made. Some code gets shifted around between headers or
+new headers are defined. This patch deals with such
+cases.
+
+--- a/drivers/net/wireless/b43/phy_common.h
++++ b/drivers/net/wireless/b43/phy_common.h
+@@ -2,6 +2,9 @@
+ #define LINUX_B43_PHY_COMMON_H_
+ 
+ #include <linux/types.h>
++#if (LINUX_VERSION_CODE == KERNEL_VERSION(2,6,28))
++#include <asm/atomic.h>
++#endif
+ 
+ struct b43_wldev;
+ 
+--- a/drivers/net/wireless/wl12xx/wl1251_main.c
++++ b/drivers/net/wireless/wl12xx/wl1251_main.c
+@@ -26,6 +26,9 @@
+ #include <linux/firmware.h>
+ #include <linux/delay.h>
+ #include <linux/irq.h>
++#if (LINUX_VERSION_CODE == KERNEL_VERSION(2,6,28))
++#include <linux/device.h>
++#endif
+ #include <linux/spi/spi.h>
+ #include <linux/crc32.h>
+ #include <linux/etherdevice.h>
+--- a/drivers/net/wireless/wl12xx/wl1251_spi.c
++++ b/drivers/net/wireless/wl12xx/wl1251_spi.c
+@@ -23,6 +23,9 @@
+ 
+ #include <linux/module.h>
+ #include <linux/crc7.h>
++#if (LINUX_VERSION_CODE == KERNEL_VERSION(2,6,28))
++#include <linux/device.h>
++#endif
+ #include <linux/spi/spi.h>
+ 
+ #include "wl1251.h"
+--- a/net/mac80211/driver-trace.h
++++ b/net/mac80211/driver-trace.h
+@@ -1,7 +1,9 @@
+ #if !defined(__MAC80211_DRIVER_TRACE) || defined(TRACE_HEADER_MULTI_READ)
+ #define __MAC80211_DRIVER_TRACE
+ 
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+ #include <linux/tracepoint.h>
++#endif /* (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27)) */
+ #include <net/mac80211.h>
+ #include "ieee80211_i.h"
+ 
+@@ -645,4 +647,6 @@ TRACE_EVENT(drv_ampdu_action,
+ #define TRACE_INCLUDE_PATH .
+ #undef TRACE_INCLUDE_FILE
+ #define TRACE_INCLUDE_FILE driver-trace
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,30))
+ #include <trace/define_trace.h>
++#endif /* (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,30)) */
+--- a/net/mac80211/key.c
++++ b/net/mac80211/key.c
+@@ -21,6 +21,9 @@
+ #include "aes_ccm.h"
+ #include "aes_cmac.h"
+ 
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
++#include <asm/unaligned.h>
++#endif
+ 
+ /**
+  * DOC: Key handling basics
