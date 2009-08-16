@@ -14,12 +14,9 @@ KERNEL_ABI=$(shell echo $(META_VERSION) | cut -d. -f4)
 KERNEL_ABI_VERSION=$(KERNEL_VERSION)-$(KERNEL_ABI)
 
 GENERIC_i386=
-GENERIC_amd64=
 GENERIC_ia64=ia64
 GENERIC_sparc=sparc64
-GENERIC_lpia=lpia
 # Since these can be 32-bit or 64-bit, there is no generic
-GENERIC_hppa=
 GENERIC_powerpc=
 
 GENERIC=$(value GENERIC_$(shell dpkg-architecture -qDEB_HOST_ARCH))
