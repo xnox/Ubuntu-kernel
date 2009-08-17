@@ -24,7 +24,7 @@ static bool nl80211_type_check(enum nl80211_iftype type)
 	case NL80211_IFTYPE_ADHOC:
 	case NL80211_IFTYPE_STATION:
 	case NL80211_IFTYPE_MONITOR:
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 	case NL80211_IFTYPE_MESH_POINT:
 #endif
 	case NL80211_IFTYPE_AP:
@@ -323,6 +323,8 @@ static void sta_set_sinfo(struct sta_info *sta, struct station_info *sinfo)
 {
 	struct ieee80211_sub_if_data *sdata = sta->sdata;
 
+	sinfo->generation = sdata->local->sta_generation;
+
 	sinfo->filled = STATION_INFO_INACTIVE_TIME |
 			STATION_INFO_RX_BYTES |
 			STATION_INFO_TX_BYTES |
@@ -359,7 +361,7 @@ static void sta_set_sinfo(struct sta_info *sta, struct station_info *sinfo)
 		sinfo->txrate.mcs = sta->last_tx_rate.idx;
 
 	if (ieee80211_vif_is_mesh(&sdata->vif)) {
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 		sinfo->filled |= STATION_INFO_LLID |
 				 STATION_INFO_PLID |
 				 STATION_INFO_PLINK_STATE;
@@ -822,7 +824,7 @@ static int ieee80211_change_station(struct wiphy *wiphy,
 	return 0;
 }
 
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 static int ieee80211_add_mpath(struct wiphy *wiphy, struct net_device *dev,
 				 u8 *dst, u8 *next_hop)
 {
@@ -908,6 +910,8 @@ static void mpath_set_pinfo(struct mesh_path *mpath, u8 *next_hop,
 		memcpy(next_hop, mpath->next_hop->sta.addr, ETH_ALEN);
 	else
 		memset(next_hop, 0, ETH_ALEN);
+
+	pinfo->generation = mesh_paths_generation;
 
 	pinfo->filled = MPATH_INFO_FRAME_QLEN |
 			MPATH_INFO_DSN |
@@ -1378,7 +1382,7 @@ struct cfg80211_ops mac80211_config_ops = {
 	.change_station = ieee80211_change_station,
 	.get_station = ieee80211_get_station,
 	.dump_station = ieee80211_dump_station,
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 	.add_mpath = ieee80211_add_mpath,
 	.del_mpath = ieee80211_del_mpath,
 	.change_mpath = ieee80211_change_mpath,

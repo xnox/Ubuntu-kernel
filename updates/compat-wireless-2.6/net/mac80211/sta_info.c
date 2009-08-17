@@ -174,7 +174,7 @@ void sta_info_destroy(struct sta_info *sta)
 	rate_control_remove_sta_debugfs(sta);
 	ieee80211_sta_debugfs_remove(sta);
 
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 	if (ieee80211_vif_is_mesh(&sta->sdata->vif))
 		mesh_plink_deactivate(sta);
 #endif
@@ -190,7 +190,7 @@ void sta_info_destroy(struct sta_info *sta)
 	 */
 	ieee80211_key_todo();
 
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 	if (ieee80211_vif_is_mesh(&sta->sdata->vif))
 		del_timer_sync(&sta->plink_timer);
 #endif
@@ -310,7 +310,7 @@ struct sta_info *sta_info_alloc(struct ieee80211_sub_if_data *sdata,
 	       wiphy_name(local->hw.wiphy), sta->sta.addr);
 #endif /* CONFIG_MAC80211_VERBOSE_DEBUG */
 
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 	sta->plink_state = PLINK_LISTEN;
 	init_timer(&sta->plink_timer);
 #endif
@@ -349,6 +349,7 @@ int sta_info_insert(struct sta_info *sta)
 		goto out_free;
 	}
 	list_add(&sta->list, &local->sta_list);
+	local->sta_generation++;
 	local->num_sta++;
 	sta_info_hash_add(local, sta);
 
@@ -485,6 +486,7 @@ static void __sta_info_unlink(struct sta_info **sta)
 	}
 
 	local->num_sta--;
+	local->sta_generation++;
 
 	if (local->ops->sta_notify) {
 		if (sdata->vif.type == NL80211_IFTYPE_AP_VLAN)
@@ -498,7 +500,7 @@ static void __sta_info_unlink(struct sta_info **sta)
 
 	if (ieee80211_vif_is_mesh(&sdata->vif)) {
 		mesh_accept_plinks_update(sdata);
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 		del_timer(&(*sta)->plink_timer);
 #endif
 	}

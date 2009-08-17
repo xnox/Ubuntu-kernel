@@ -282,7 +282,7 @@ struct sta_info {
 	struct sta_ampdu_mlme ampdu_mlme;
 	u8 timer_to_tid[STA_TID_NUM];
 
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 	/*
 	 * Mesh peer link attributes
 	 * TODO: move to a sub-structure that is referenced with pointer?
@@ -333,7 +333,7 @@ struct sta_info {
 
 static inline enum plink_state sta_plink_state(struct sta_info *sta)
 {
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 	return sta->plink_state;
 #endif
 	return PLINK_LISTEN;

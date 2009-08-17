@@ -70,8 +70,8 @@ without creating a headache on maintenance of the pathes.
  	net->watchdog_timeo = TX_TIMEOUT_JIFFIES;
  	net->ethtool_ops = &usbnet_ethtool_ops;
  
---- a/drivers/net/wireless/rndis_wlan.c	2009-08-04 10:34:57.006001381 -0700
-+++ b/drivers/net/wireless/rndis_wlan.c	2009-08-04 10:34:57.065996441 -0700
+--- a/drivers/net/wireless/rndis_wlan.c	2009-08-10 16:57:41.535486388 -0700
++++ b/drivers/net/wireless/rndis_wlan.c	2009-08-10 16:57:41.903464012 -0700
 @@ -2789,6 +2789,7 @@
  	return 0;
  }

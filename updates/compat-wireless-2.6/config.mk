@@ -33,6 +33,53 @@ ifeq ($(CONFIG_CFG80211),y)
 $(error "ERROR: your kernel has CONFIG_CFG80211=y, you should have it CONFIG_CFG80211=m if you want to use this thing.")
 endif
 
+
+# Compat wireless compat-2.6.2x.c files gets selected here
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 21 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_22=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 22 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_23=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 23 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_24=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 24 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_25=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 25 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_26=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 26 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_27=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 27 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_28=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 28 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_29=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 29 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_30=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 30 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_31=y
+endif
+
+ifeq ($(shell test $(KERNEL_SUBLEVEL) -le 31 && echo yes),yes)
+CONFIG_COMPAT_WIRELESS_32=y
+endif
+
 # 2.6.27 has FTRACE_DYNAMIC borked, so we will complain if
 # you have it enabled, otherwise you will very likely run into
 # a kernel panic.
@@ -99,8 +146,7 @@ CONFIG_MAC80211_RC_MINSTREL=y
 CONFIG_MAC80211_LEDS=y
 
 # enable mesh networking too
-# Mesh is currently busted on wireless-testing
-#CONFIG_COMPAT_MAC80211_MESH=n
+CONFIG_MAC80211_MESH=y
 
 CONFIG_CFG80211=m
 CONFIG_CFG80211_DEFAULT_PS=y
@@ -135,7 +181,7 @@ CONFIG_IWLWIFI_SPECTRUM_MEASUREMENT=y
 # CONFIG_IWLWIFI_DEBUG=y
 # CONFIG_IWLWIFI_DEBUGFS=y
 CONFIG_IWLAGN=m
-CONFIG_IWL4965=y
+CONFIG_COMPAT_IWL4965=y
 CONFIG_IWL5000=y
 CONFIG_IWL3945=m
 CONFIG_IWL3945_SPECTRUM_MEASUREMENT=y
@@ -361,6 +407,10 @@ CONFIG_P54_LEDS=y
 CONFIG_ATH_COMMON=m
 
 CONFIG_WL12XX=y
+CONFIG_WL1251=m
+CONFIG_WL1251_SPI=m
+CONFIG_WL1251_SDIO=m
+CONFIG_WL1271=m
 
 # Sonics Silicon Backplane
 CONFIG_SSB_POSSIBLE=y

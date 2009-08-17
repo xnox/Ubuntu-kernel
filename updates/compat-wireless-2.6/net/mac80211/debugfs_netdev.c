@@ -114,7 +114,7 @@ __IEEE80211_IF_FILE(num_buffered_multicast);
 /* WDS attributes */
 IEEE80211_IF_FILE(peer, u.wds.remote_addr, MAC);
 
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 /* Mesh stats attributes */
 IEEE80211_IF_FILE(fwded_frames, u.mesh.mshstats.fwded_frames, DEC);
 IEEE80211_IF_FILE(dropped_frames_ttl, u.mesh.mshstats.dropped_frames_ttl, DEC);
@@ -196,7 +196,7 @@ static void add_monitor_files(struct ieee80211_sub_if_data *sdata)
 {
 }
 
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 #define MESHSTATS_ADD(name)\
 	sdata->mesh_stats.name = debugfs_create_file(#name, 0400,\
 		sdata->mesh_stats_dir, sdata, &name##_ops);
@@ -242,7 +242,7 @@ static void add_files(struct ieee80211_sub_if_data *sdata)
 
 	switch (sdata->vif.type) {
 	case NL80211_IFTYPE_MESH_POINT:
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 		add_mesh_stats(sdata);
 		add_mesh_config(sdata);
 #endif
@@ -318,7 +318,7 @@ static void del_monitor_files(struct ieee80211_sub_if_data *sdata)
 {
 }
 
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 #define MESHSTATS_DEL(name)			\
 	do {						\
 		debugfs_remove(sdata->mesh_stats.name);	\
@@ -368,7 +368,7 @@ static void del_files(struct ieee80211_sub_if_data *sdata)
 
 	switch (sdata->vif.type) {
 	case NL80211_IFTYPE_MESH_POINT:
-#ifdef CONFIG_COMPAT_MAC80211_MESH
+#ifdef CONFIG_MAC80211_MESH
 		del_mesh_stats(sdata);
 		del_mesh_config(sdata);
 #endif

@@ -16,7 +16,6 @@
 #endif
 
 #include <linux/pci.h>
-#include <pcmcia/ds.h>
 
 #ifndef WARN_ONCE
 #define WARN_ONCE(condition, format...) ({                      \
@@ -30,7 +29,13 @@
 })
 #endif /* From include/asm-generic/bug.h */
 
-#define pcmcia_parse_tuple(tuple, parse) pcmcia_parse_tuple(NULL, tuple, parse)
+#include <pcmcia/cs_types.h>
+#include <pcmcia/cs.h>
+#include <pcmcia/cistpl.h>
+#ifdef pcmcia_parse_tuple
+#undef pcmcia_parse_tuple
+#define pcmcia_parse_tuple(tuple, parse) pccard_parse_tuple(tuple, parse)
+#endif
 
 #if 0
 extern void usb_poison_urb(struct urb *urb);
