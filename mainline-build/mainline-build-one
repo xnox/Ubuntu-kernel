@@ -91,6 +91,8 @@ git fetch "$series"
 git checkout -f "$series/master"
 git branch -D "$branch"
 
+rm -rf .dotest
+
 #
 # Checkout the source at the specified version.
 #
@@ -100,33 +102,30 @@ git checkout -b "$branch" "$commit" -- || exit 1
 # Pull in the packaging from the head of our tree.
 #
 git checkout "$series/master" -- debian
+git checkout "$series/master" -- debian.master
 git commit -a -m "base packaging"
 
 #
 # ALL: allow us to default new config options.
 #
-git am -C0 "$here/0001-UBUNTU-allow-us-to-build-default-configs-for-automa.patch"
-git am -C0 "$here/0001-mainline-build-allow-us-to-force-things-on-in-the-c.patch"
-
-case "$series" in
-hardy)
-	# HARDY: support htmldocs which require xmlto which is not installed.
-	git am -C0 "$here/0001-mainline-build-hardy-suppress-the-html-documents.patch"
-	;;
-intrepid)
-	# INTREPID: suppress makedumpfile as we do not have the tools
-	git am -C0 "$here/0001-mainline-build-suppress-makedumpfile-on-intrepid.patch"
-esac
+if [ -d "$here/patches.$series" ]; then
+	git am -C0 "$here/patches.$series"/*
+fi
 
 #
 # Rebuild the changelog.
 #
-rm -f debian/changelog
+for debian in "debian.master" "debian"
+do
+	[ -d "$debian" ] && break
+done 
+changelog="$debian/changelog"
+rm -f "$changelog"
 EDITOR=":" dch -v "${version}-$abinum" --distribution "UNRELEASED" \
-	--package linux --create </dev/null
+	--package linux --create -c "$changelog" </dev/null
 sed -e "s/\* .*/* Mainline release $version/" \
-	<debian/changelog >debian/changelog.new
-mv -f debian/changelog.new debian/changelog
+	<"$changelog" >"$changelog.new"
+mv -f "$changelog.new" "$changelog"
 git commit -a -m "debian changelog"
 
 #
@@ -140,23 +139,23 @@ git commit -a -m "default configs"
 #
 # Disable the ABI, module, and aliases checks.
 #
-cat - <<EOM >debian/scripts/abi-check
+cat - <<EOM >$debian/scripts/abi-check
 #!/bin/sh
 exit 0
 EOM
-chmod 755 debian/scripts/abi-check
+chmod 755 $debian/scripts/abi-check
 
-cat - <<EOM >debian/scripts/module-check
+cat - <<EOM >$debian/scripts/module-check
 #!/bin/sh
 exit 0
 EOM
-chmod 755 debian/scripts/module-check
+chmod 755 $debian/scripts/module-check
 
-cat - <<EOM >debian/tests/check-aliases
+cat - <<EOM >$debian/tests/check-aliases
 #!/bin/sh
 exit 0
 EOM
-chmod 755 debian/tests/check-aliases
+chmod 755 $debian/tests/check-aliases
 
 #
 # Build the source package.
