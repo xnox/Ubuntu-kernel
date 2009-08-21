@@ -1,0 +1,26 @@
+Package: linux-headers-imx51
+Architecture: armel
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-imx51
+Description: Linux kernel headers for imx51 machines
+ This package will always depend on the latest kernel headers available
+ for imx51 machines (which are the same headers as for the server flavour).
+
+Package: linux-image-imx51
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-imx51, linux-firmware
+Description: Linux kernel image for imx51 machines
+ This package will always depend on the latest kernel image available
+ for imx51 machines.
+
+Package: linux-imx51
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: linux-image-imx51 (= ${binary:Version})
+Description: Complete Linux kernel for imx51 machines
+ This package will always depend on the latest complete Linux kernel available
+ for imx51 machines.

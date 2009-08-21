@@ -1,4 +1,4 @@
-Source: linux-meta
+Source: linux-meta-fsl-imx51
 Section: devel
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
@@ -6,26 +6,17 @@ Standards-Version: 3.6.1
 Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3), gawk
 Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-karmic-meta.git
 
-Package: linux
-Architecture: i386 amd64 lpia
+Package: linux-fsl-imx51
+Architecture: armel
 Section: metapackages
 Priority: optional
-Depends: linux-image (= ${binary:Version})
+Depends: linux-image-fsl-imx51 (= ${binary:Version})
 Description: Generic complete Linux kernel.
  This package will always depend on the latest generic complete Linux kernel
  available.
 
-Package: linux-source
-Architecture: all
-Section: devel
-Priority: optional
-Depends: linux-source-${kernel-version}
-Description: Linux kernel source with Ubuntu patches
- This package will always depend on the latest Linux kernel source code
- available. The Ubuntu patches have been applied.
-
-Package: linux-image
-Architecture: i386 amd64 lpia
+Package: linux-image-fsl-imx51
+Architecture: armel
 Section: metapackages
 Priority: optional
 Depends: linux-image-${generic-depends} (= ${binary:Version})
@@ -33,196 +24,40 @@ Description: Generic Linux kernel image.
  This package will always depend on the latest generic Linux kernel image
  available.
 
-Package: linux-backports-modules-karmic
-Architecture: i386 amd64 lpia
-Section: metapackages
-Priority: optional
-Depends: linux-backports-modules-karmic-${generic-depends} (= ${binary:Version})
-Description: Generic Linux backported drivers.
- This package will always depend on the latest generic Linux backported
- drivers available.
-
-Package: linux-crashdump
-Architecture: i386 amd64
-Section: devel
-Depends: kexec-tools, makedumpfile, grub2 (>= 1.96+20090611-1ubuntu2) | grub (>= 0.97-29ubuntu24)
-Recommends: apport
-Suggests: crash
-Description: Linux kernel crashdump setup for the latest generic kernel
- This package installs all the needed infrstracture to get crashdumps from
- your running system. If you are experiencing kernel crashes that cannot
- be debugged normally (because the problem is infrequent or panic's the
- system in such a way as to make information gathering impossible), then
- you can install this package to automatically enable capture of the
- vmcore on crashes.
-
-Package: linux-headers-generic
-Architecture: i386 amd64
+Package: linux-source-fsl-imx51
+Architecture: all
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-generic
-Description: Generic Linux kernel headers
- This package will always depend on the latest generic kernel headers
- available.
+Depends: linux-fsl-imx51-source-${kernel-version}
+Description: Linux kernel source with Ubuntu patches
+ This package will always depend on the latest Linux kernel source code
+ available. The Ubuntu patches have been applied.
 
-Package: linux-image-generic
-Architecture: i386 amd64
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-generic, linux-firmware
-Description: Generic Linux kernel image
- This package will always depend on the latest generic kernel image
- available.
 
-Package: linux-generic
-Architecture: i386 amd64
-Section: metapackages
-Priority: optional
-Depends: linux-image-generic (= ${binary:Version})
-Description: Complete Generic Linux kernel
- This package will always depend on the latest complete generic Linux kernel
- available.
-
-Package: linux-backports-modules-karmic-generic
-Architecture: amd64 i386
-Depends: linux-backports-modules-${kernel-abi-version}-generic
-Description: Backported drivers for generic kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
-Package: linux-headers-generic-pae
-Architecture: i386
+Package: linux-headers-imx51
+Architecture: armel
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-generic-pae
-Description: Generic Linux kernel headers
- This package will always depend on the latest generic kernel headers
- available.
-
-Package: linux-image-generic-pae
-Architecture: i386
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-generic-pae, linux-firmware
-Description: Generic Linux kernel image
- This package will always depend on the latest generic kernel image
- available.
-
-Package: linux-generic-pae
-Architecture: i386
-Section: metapackages
-Priority: optional
-Depends: linux-image-generic-pae (= ${binary:Version})
-Description: Complete Generic Linux kernel
- This package will always depend on the latest complete generic Linux kernel
- available.
-
-Package: linux-backports-modules-karmic-generic-pae
-Architecture: i386
-Depends: linux-backports-modules-${kernel-abi-version}-generic-pae
-Description: Backported drivers for generic kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
-Package: linux-headers-lpia
-Architecture: lpia
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-lpia
-Description: Generic Linux kernel headers
- This package will always depend on the latest lpia kernel headers
- available.
-
-Package: linux-image-lpia
-Architecture: lpia
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-lpia, linux-firmware
-Description: Generic Linux kernel image
- This package will always depend on the latest lpia kernel image
- available.
-
-Package: linux-lpia
-Architecture: lpia
-Section: metapackages
-Priority: optional
-Depends: linux-image-lpia (= ${binary:Version})
-Description: Complete Generic Linux kernel
- This package will always depend on the latest complete lpia Linux kernel
- available.
-
-Package: linux-backports-modules-karmic-lpia
-Architecture: lpia
-Depends: linux-backports-modules-${kernel-abi-version}-lpia
-Description: Backported drivers for lpia kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
-Package: linux-headers-server
-Architecture: amd64
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-server
-Description: Linux kernel headers on Server Equipment.
+Depends: linux-headers-${kernel-abi-version}-imx51
+Description: Linux kernel headers for imx51 machines
  This package will always depend on the latest kernel headers available
- for Server Equipment.
+ for imx51 machines (which are the same headers as for the server flavour).
 
-Package: linux-image-server
-Architecture: amd64
+Package: linux-image-imx51
+Architecture: armel
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-server, linux-firmware
-Description: Linux kernel image on Server Equipment.
+Depends: linux-image-${kernel-abi-version}-imx51, linux-firmware
+Description: Linux kernel image for imx51 machines
  This package will always depend on the latest kernel image available
- for Server Equipment.
+ for imx51 machines.
 
-Package: linux-server
-Architecture: amd64
+Package: linux-imx51
+Architecture: armel
 Section: metapackages
 Priority: optional
-Depends: linux-image-server (= ${binary:Version})
-Description: Complete Linux kernel on Server Equipment.
+Depends: linux-image-imx51 (= ${binary:Version})
+Description: Complete Linux kernel for imx51 machines
  This package will always depend on the latest complete Linux kernel available
- for Server Equipment.
-
-Package: linux-backports-modules-karmic-server
-Architecture: amd64
-Depends: linux-backports-modules-${kernel-abi-version}-server
-Description: Backported drivers for server kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
-Package: linux-headers-virtual
-Architecture: i386 amd64
-Section: devel
-Priority: optional
-Depends: linux-headers-${kernel-abi-version}-server | linux-headers-${kernel-abi-version}-generic-pae
-Description: Linux kernel headers for virtual machines
- This package will always depend on the latest kernel headers available
- for virtual machines (which are the same headers as for the server flavour).
-
-Package: linux-image-virtual
-Architecture: i386 amd64
-Section: metapackages
-Priority: optional
-Depends: linux-image-${kernel-abi-version}-virtual, linux-firmware
-Description: Linux kernel image for virtual machines
- This package will always depend on the latest kernel image available
- for virtual machines.
-
-Package: linux-virtual
-Architecture: i386 amd64
-Section: metapackages
-Priority: optional
-Depends: linux-image-virtual (= ${binary:Version})
-Description: Complete Linux kernel for virtual machines
- This package will always depend on the latest complete Linux kernel available
- for virtual machines.
-
-Package: linux-backports-modules-karmic-virtual
-Architecture: amd64 i386
-Depends: linux-backports-modules-${kernel-abi-version}-server | linux-backports-modules-${kernel-abi-version}-generic-pae
-Description: Backported drivers for virtual kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
+ for imx51 machines.
 
