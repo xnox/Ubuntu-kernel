@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.31.200.2) karmic; urgency=low
+
+  * Version bump to force a rebuild
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 21 Aug 2009 12:10:05 -0600
+
 linux-meta-mvl-dove (2.6.31.200.1) karmic; urgency=low
 
   * Initial Marvell Dove, ABI 200
