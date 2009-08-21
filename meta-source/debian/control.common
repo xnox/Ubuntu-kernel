@@ -6,24 +6,6 @@ Standards-Version: 3.6.1
 Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3), gawk
 Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-karmic-meta.git
 
-Package: linux-fsl-imx51
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: linux-image-fsl-imx51 (= ${binary:Version})
-Description: Generic complete Linux kernel.
- This package will always depend on the latest generic complete Linux kernel
- available.
-
-Package: linux-image-fsl-imx51
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: linux-image-${generic-depends} (= ${binary:Version})
-Description: Generic Linux kernel image.
- This package will always depend on the latest generic Linux kernel image
- available.
-
 Package: linux-source-fsl-imx51
 Architecture: all
 Section: devel
