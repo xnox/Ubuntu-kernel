@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.31.200.1) karmic; urgency=low
+
+  * Initial Marvell Dove, ABI 200
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 21 Aug 2009 08:25:38 -0600
+
 linux-meta (2.6.31.6.17) karmic; urgency=low
 
   * Karmic ABI 6

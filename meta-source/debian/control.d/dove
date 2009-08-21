@@ -1,20 +1,3 @@
-Source: linux-meta-mvl-dove
-Section: devel
-Priority: optional
-Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
-Standards-Version: 3.6.1
-Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3), gawk
-Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-karmic-meta.git
-
-Package: linux-source-mvl-dove
-Architecture: all
-Section: devel
-Priority: optional
-Depends: linux-mvl-dove-source-${kernel-version}
-Description: Linux kernel source with Ubuntu patches
- This package will always depend on the latest Linux kernel source code
- available. The Ubuntu patches have been applied.
-
 Package: linux-headers-dove
 Architecture: armel
 Section: devel
@@ -41,4 +24,3 @@ Depends: linux-image-dove (= ${binary:Version})
 Description: Complete Generic Linux kernel
  This package will always depend on the latest complete dove Linux kernel
  available.
-
