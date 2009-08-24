@@ -43,8 +43,8 @@ just keep /dev/rfkill and not /dev/rfkill_backport.
  
  	/* causes rfkill_start() to be called */
  	error = input_register_handle(handle);
---- a/net/rfkill/core.c	2009-08-04 10:54:43.078999821 -0700
-+++ b/net/rfkill/core.c	2009-08-04 10:54:43.555024585 -0700
+--- a/net/rfkill/core.c	2009-08-20 13:48:36.083267397 -0700
++++ b/net/rfkill/core.c	2009-08-20 13:48:37.051267098 -0700
 @@ -26,7 +26,7 @@
  #include <linux/capability.h>
  #include <linux/list.h>
@@ -117,7 +117,7 @@ just keep /dev/rfkill and not /dev/rfkill_backport.
  static long rfkill_fop_ioctl(struct file *file, unsigned int cmd,
  			     unsigned long arg)
  {
-@@ -1193,14 +1193,14 @@
+@@ -1193,7 +1193,7 @@
  	.write		= rfkill_fop_write,
  	.poll		= rfkill_fop_poll,
  	.release	= rfkill_fop_release,
@@ -126,14 +126,6 @@ just keep /dev/rfkill and not /dev/rfkill_backport.
  	.unlocked_ioctl	= rfkill_fop_ioctl,
  	.compat_ioctl	= rfkill_fop_ioctl,
  #endif
- };
- 
- static struct miscdevice rfkill_miscdev = {
--	.name	= "rfkill",
-+	.name	= "rfkill_backport",
- 	.fops	= &rfkill_fops,
- 	.minor	= MISC_DYNAMIC_MINOR,
- };
 @@ -1223,7 +1223,7 @@
  		goto out;
  	}
@@ -185,9 +177,9 @@ just keep /dev/rfkill and not /dev/rfkill_backport.
  #include <linux/workqueue.h>
  #include <net/genetlink.h>
  #include <net/cfg80211.h>
---- a/drivers/net/wireless/ath/ath9k/hw.c	2009-08-04 11:07:27.734023469 -0700
-+++ b/drivers/net/wireless/ath/ath9k/hw.c	2009-08-04 11:07:28.482002411 -0700
-@@ -3601,7 +3601,7 @@
+--- a/drivers/net/wireless/ath/ath9k/hw.c	2009-08-18 16:21:06.969354721 -0700
++++ b/drivers/net/wireless/ath/ath9k/hw.c	2009-08-18 16:21:07.893353370 -0700
+@@ -3615,7 +3615,7 @@
  
  	pCap->hw_caps |= ATH9K_HW_CAP_ENHANCEDPM;
  

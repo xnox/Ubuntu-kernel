@@ -870,6 +870,9 @@ static int rtl8187b_init_hw(struct ieee80211_hw *dev)
 	priv->aifsn[3] = 3; /* AIFSN[AC_BE] */
 	rtl818x_iowrite8(priv, &priv->map->ACM_CONTROL, 0);
 
+	/* ENEDCA flag must always be set, transmit issues? */
+	rtl818x_iowrite8(priv, &priv->map->MSR, RTL818X_MSR_ENEDCA);
+
 	return 0;
 }
 
@@ -1174,13 +1177,16 @@ static void rtl8187_bss_info_changed(struct ieee80211_hw *dev,
 			rtl818x_iowrite8(priv, &priv->map->BSSID[i],
 					 info->bssid[i]);
 
+		if (priv->is_rtl8187b)
+			reg = RTL818X_MSR_ENEDCA;
+		else
+			reg = 0;
+
 		if (is_valid_ether_addr(info->bssid)) {
-			reg = RTL818X_MSR_INFRA;
-			if (priv->is_rtl8187b)
-				reg |= RTL818X_MSR_ENEDCA;
+			reg |= RTL818X_MSR_INFRA;
 			rtl818x_iowrite8(priv, &priv->map->MSR, reg);
 		} else {
-			reg = RTL818X_MSR_NO_LINK;
+			reg |= RTL818X_MSR_NO_LINK;
 			rtl818x_iowrite8(priv, &priv->map->MSR, reg);
 		}
 
@@ -1192,10 +1198,16 @@ static void rtl8187_bss_info_changed(struct ieee80211_hw *dev,
 				 info->use_short_preamble);
 }
 
+static u64 rtl8187_prepare_multicast(struct ieee80211_hw *dev,
+				     int mc_count, struct dev_addr_list *mc_list)
+{
+	return mc_count;
+}
+
 static void rtl8187_configure_filter(struct ieee80211_hw *dev,
 				     unsigned int changed_flags,
 				     unsigned int *total_flags,
-				     int mc_count, struct dev_addr_list *mclist)
+				     u64 multicast)
 {
 	struct rtl8187_priv *priv = dev->priv;
 
@@ -1205,7 +1217,7 @@ static void rtl8187_configure_filter(struct ieee80211_hw *dev,
 		priv->rx_conf ^= RTL818X_RX_CONF_CTRL;
 	if (changed_flags & FIF_OTHER_BSS)
 		priv->rx_conf ^= RTL818X_RX_CONF_MONITOR;
-	if (*total_flags & FIF_ALLMULTI || mc_count > 0)
+	if (*total_flags & FIF_ALLMULTI || multicast > 0)
 		priv->rx_conf |= RTL818X_RX_CONF_MULTICAST;
 	else
 		priv->rx_conf &= ~RTL818X_RX_CONF_MULTICAST;
@@ -1268,6 +1280,7 @@ static const struct ieee80211_ops rtl8187_ops = {
 	.remove_interface	= rtl8187_remove_interface,
 	.config			= rtl8187_config,
 	.bss_info_changed	= rtl8187_bss_info_changed,
+	.prepare_multicast	= rtl8187_prepare_multicast,
 	.configure_filter	= rtl8187_configure_filter,
 	.conf_tx		= rtl8187_conf_tx
 };

@@ -222,7 +222,7 @@ static int ath_rx_prepare(struct sk_buff *skb, struct ath_desc *ds,
 
 	/* Update Beacon RSSI, this is used by ANI. */
 	if (ieee80211_is_beacon(fc))
-		sc->nodestats.ns_avgbrssi = ds->ds_rxstat.rs_rssi;
+		sc->sc_ah->stats.avgbrssi = ds->ds_rxstat.rs_rssi;
 
 	rx_status->mactime = ath_extend_tsf(sc, ds->ds_rxstat.rs_tstamp);
 	rx_status->band = hw->conf.channel->band;
@@ -423,11 +423,12 @@ u32 ath_calcrxfilter(struct ath_softc *sc)
 	if (sc->rx.rxfilter & FIF_PSPOLL)
 		rfilt |= ATH9K_RX_FILTER_PSPOLL;
 
-	if (sc->sec_wiphy) {
+	if (sc->sec_wiphy || (sc->rx.rxfilter & FIF_OTHER_BSS)) {
 		/* TODO: only needed if more than one BSSID is in use in
 		 * station/adhoc mode */
-		/* TODO: for older chips, may need to add ATH9K_RX_FILTER_PROM
-		 */
+		/* The following may also be needed for other older chips */
+		if (sc->sc_ah->hw_version.macVersion == AR_SREV_VERSION_9160)
+			rfilt |= ATH9K_RX_FILTER_PROM;
 		rfilt |= ATH9K_RX_FILTER_MCAST_BCAST_ALL;
 	}
 

@@ -1200,7 +1200,7 @@ static const struct file_operations rfkill_fops = {
 };
 
 static struct miscdevice rfkill_miscdev = {
-	.name	= "rfkill_backport",
+	.name	= "rfkill",
 	.fops	= &rfkill_fops,
 	.minor	= MISC_DYNAMIC_MINOR,
 };

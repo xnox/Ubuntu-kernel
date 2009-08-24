@@ -1550,7 +1550,10 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 			info->flags |= IEEE80211_TX_INTFL_NEED_TXPROCESSING;
 			info->control.vif = &rx->sdata->vif;
 			ieee80211_select_queue(local, fwd_skb);
-			if (!is_multicast_ether_addr(fwd_hdr->addr1)) {
+			if (is_multicast_ether_addr(fwd_hdr->addr1))
+				IEEE80211_IFSTA_MESH_CTR_INC(&sdata->u.mesh,
+								fwded_mcast);
+			else {
 				int err;
 				/*
 				 * Save TA to addr1 to send TA a path error if a
@@ -1564,6 +1567,9 @@ ieee80211_rx_h_mesh_fwding(struct ieee80211_rx_data *rx)
 				 * later to the pending skb queue.  */
 				if (err)
 					return RX_DROP_MONITOR;
+
+				IEEE80211_IFSTA_MESH_CTR_INC(&sdata->u.mesh,
+								fwded_unicast);
 			}
 			IEEE80211_IFSTA_MESH_CTR_INC(&sdata->u.mesh,
 						     fwded_frames);
@@ -2434,7 +2440,7 @@ static u8 ieee80211_rx_reorder_ampdu(struct ieee80211_local *local,
  * This is the receive path handler. It is called by a low level driver when an
  * 802.11 MPDU is received from the hardware.
  */
-void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb)
+void ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb)
 {
 	struct ieee80211_local *local = hw_to_local(hw);
 	struct ieee80211_rate *rate = NULL;
@@ -2461,6 +2467,15 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb)
 	 * driver callbacks be invoked.
 	 */
 	if (unlikely(local->quiescing || local->suspended)) {
+		kfree_skb(skb);
+		return;
+	}
+
+	/*
+	 * The same happens when we're not even started,
+	 * but that's worth a warning.
+	 */
+	if (WARN_ON(!local->started)) {
 		kfree_skb(skb);
 		return;
 	}
@@ -2517,7 +2532,7 @@ void __ieee80211_rx(struct ieee80211_hw *hw, struct sk_buff *skb)
 
 	rcu_read_unlock();
 }
-EXPORT_SYMBOL(__ieee80211_rx);
+EXPORT_SYMBOL(ieee80211_rx);
 
 /* This is a version of the rx handler that can be called from hard irq
  * context. Post the skb on the queue and schedule the tasklet */

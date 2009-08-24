@@ -212,7 +212,9 @@ struct ieee80211_if_vlan {
 };
 
 struct mesh_stats {
-	__u32 fwded_frames;		/* Mesh forwarded frames */
+	__u32 fwded_mcast;		/* Mesh forwarded multicast frames */
+	__u32 fwded_unicast;		/* Mesh forwarded unicast frames */
+	__u32 fwded_frames;		/* Mesh total forwarded frames */
 	__u32 dropped_frames_ttl;	/* Not transmitted since mesh_ttl == 0*/
 	__u32 dropped_frames_no_route;	/* Not transmitted, no route found */
 	atomic_t estab_plinks;
@@ -365,6 +367,10 @@ struct ieee80211_if_mesh {
 	u8 mesh_pm_id[4];
 	/* Congestion Control Mode Identifier */
 	u8 mesh_cc_id[4];
+	/* Synchronization Protocol Identifier */
+	u8 mesh_sp_id[4];
+	/* Authentication Protocol Identifier */
+	u8 mesh_auth_id[4];
 	/* Local mesh Destination Sequence Number */
 	u32 dsn;
 	/* Last used PREQ ID */
@@ -506,6 +512,8 @@ struct ieee80211_sub_if_data {
 #ifdef CONFIG_MAC80211_MESH
 	struct dentry *mesh_stats_dir;
 	struct {
+		struct dentry *fwded_mcast;
+		struct dentry *fwded_unicast;
 		struct dentry *fwded_frames;
 		struct dentry *dropped_frames_ttl;
 		struct dentry *dropped_frames_no_route;
@@ -636,6 +644,9 @@ struct ieee80211_local {
 	/* protects the aggregated multicast list and filter calls */
 	spinlock_t filter_lock;
 
+	/* used for uploading changed mc list */
+	struct work_struct reconfig_filter;
+
 	/* aggregated multicast list */
 	struct dev_addr_list *mc_list;
 	int mc_count;
@@ -655,6 +666,9 @@ struct ieee80211_local {
 	 * ease timer cancelling etc.
 	 */
 	bool quiescing;
+
+	/* device is started */
+	bool started;
 
 	int tx_headroom; /* required headroom for hardware/radiotap */
 
@@ -1075,6 +1089,7 @@ void ieee80211_process_measurement_req(struct ieee80211_sub_if_data *sdata,
 
 /* Suspend/resume and hw reconfiguration */
 int ieee80211_reconfig(struct ieee80211_local *local);
+void ieee80211_stop_device(struct ieee80211_local *local);
 
 #ifdef CONFIG_PM
 int __ieee80211_suspend(struct ieee80211_hw *hw);
