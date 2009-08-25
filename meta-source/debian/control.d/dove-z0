@@ -1,0 +1,26 @@
+Package: linux-headers-dove-z0
+Architecture: armel
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-dove-z0
+Description: Generic Linux kernel headers
+ This package will always depend on the latest dove kernel headers
+ available.
+
+Package: linux-image-dove-z0
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-dove-z0, linux-firmware
+Description: Generic Linux kernel image
+ This package will always depend on the latest dove kernel image
+ available.
+
+Package: linux-dove-z0
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: linux-image-dove-z0 (= ${binary:Version})
+Description: Complete Generic Linux kernel
+ This package will always depend on the latest complete dove Linux kernel
+ available.
