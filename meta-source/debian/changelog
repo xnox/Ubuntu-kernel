@@ -1,3 +1,10 @@
+linux-meta-mvl-dove (2.6.31.201.2) karmic; urgency=low
+
+  * Karmic ABI 201
+  * Added dove-z0 flavour
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 24 Aug 2009 20:16:01 -0600
+
 linux-meta-mvl-dove (2.6.31.200.2) karmic; urgency=low
 
   * Version bump to force a rebuild
