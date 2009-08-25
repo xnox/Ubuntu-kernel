@@ -33,7 +33,8 @@ function BuildStart()
 	fi
 	scp -q $(dirname $0)/target-scripts/run-build ${HOST}:${BASEDIR}
 	if [ $? -eq 0 ]; then
-		ssh ${HOST} screen -d -m $CHROOTCMD $BASEDIR/run-build $ARGS
+		ssh ${HOST} screen -d -m $CHROOTCMD bash -i \
+			$BASEDIR/run-build $ARGS
 		printf "%-15s: [${BUILDTARGET} build started]\n" $SYSNAME
 	else
 		printf "%-15s: [%s not found]\n" $SYSNAME $BASEDIR
