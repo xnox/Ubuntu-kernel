@@ -38,50 +38,36 @@ if [ "$(git branch|grep "${BRANCH}")" = "" ]; then
 	exit 1
 fi
 
-FULLVER=$(
-	git show ${BRANCH}:debian/changelog |
-	awk 'FNR==1{print substr($2, 2, length($2)-2)}'
-)
+eval $(git show ${BRANCH}:debian/rules|grep '^DEBIAN=')
+if [ "$DEBIAN" = "" ]; then
+	DEBIAN="debian"
+fi
+
+PKG_INFO="$(git show ${BRANCH}:${DEBIAN}/changelog | head -1)"
+FULLVER=$(echo $PKG_INFO | awk '{print substr($2, 2, length($2)-2)}')
 VER=$(echo $FULLVER|cut -d- -f1)
 REL=$(echo $FULLVER|cut -d- -f2)
 ABI=$(echo $REL|cut -d. -f1)
 TMPDIR="$(pwd)/abi-tmp"
-ABIDIR="$(pwd)/debian/abi/$FULLVER"
+ABIDIR="$(pwd)/${DEBIAN}/abi/$FULLVER"
 
 #
-# Evaluate the contents of debian/control to find out which packages should
-# have been built.
+# Build a list of package that should have been build with version information.
+# All flavours should be defined in $DEBIAN/control.d/vars.*
+# Sub-flavours are not controlled with ABI checks, neither are custom binaries.
 #
-#CUSTOM_FLAVOURS=$(
-#	debian/rules printenv|
-#	awk '/custom_flavours/{sub(/.*_flavours *= */, ""); print}'
-#)
-CUSTOM_FLAVOURS="rt openvz xen lpiacompat"
+PKG_NAME="$(echo $PKG_INFO | cut -d" " -f1)-image-$VER-$ABI"
 PKG_LIST="$(
-	git show ${BRANCH}:debian/control | \
-       	awk -v CFL="$CUSTOM_FLAVOURS" '
-		BEGIN{
-			split(CFL, X)
-			for (i in X)
-				BLL[X[i]] = i
-		}
-		/Package:/{
-			Package=$2
-		}
-		Package !~ /linux-image/ || Package ~ /debug/ {
-			next
-		}
-		/Architecture:/{
-			sub(/Architecture:[\t ]*/, "")
-			split($0, Arch, /[\t ]+/)
-
-			split(Package, X, "-|_")
-			if (X[5] in BLL)
-				next
-			for (i in Arch)
-				print Package "_'$FULLVER'_" Arch[i] ".deb"
-		}
-	'
+	for FILE in $(git show $BRANCH:$DEBIAN/control.d); do
+		if [ "$(echo $FILE | cut -d. -f1)" != "vars" ]; then
+			continue
+		fi
+		FLAVOUR=$(echo $FILE|cut -d. -f2-)
+		eval $(git show $BRANCH:$DEBIAN/control.d/$FILE)
+		for i in $arch; do
+			echo $PKG_NAME-${FLAVOUR}_${FULLVER}_$i.deb
+		done
+	done
 )"
 
 GetABIFrom()
