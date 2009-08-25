@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.31.7.5) karmic; urgency=low
+
+  * Bump ABI
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Tue, 25 Aug 2009 16:09:52 +1000
+
 linux-ports-meta (2.6.31.6.4) karmic; urgency=low
 
   * Bump ABI
