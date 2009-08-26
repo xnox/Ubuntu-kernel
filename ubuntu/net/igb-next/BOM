@@ -1,0 +1,8 @@
+Description: Intel IGB standalone driver
+Source:      http://sourceforge.net/projects/e1000/files/igb%20stable/1.3.28.4/
+Version:     1.3.28.4
+
+The driver has been modified to produce a differently named module and to
+exclude the PCI IDs which are handled by the igb driver originally shipped
+with Hardy-LUM.
+
