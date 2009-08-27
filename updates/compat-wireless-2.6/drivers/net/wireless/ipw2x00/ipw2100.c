@@ -19,7 +19,7 @@
   file called LICENSE.
 
   Contact Information:
-  James P. Ketrenos <ipw2100-admin@linux.intel.com>
+  Intel Linux Wireless <ilw@linux.intel.com>
   Intel Corporation, 5200 N.E. Elam Young Parkway, Hillsboro, OR 97124-6497
 
   Portions of this file are based on the sample_* files provided by Wireless
@@ -6031,7 +6031,7 @@ static struct net_device *ipw2100_alloc_device(struct pci_dev *pci_dev,
 	struct ipw2100_priv *priv;
 	struct net_device *dev;
 
-	dev = alloc_ieee80211(sizeof(struct ipw2100_priv));
+	dev = alloc_ieee80211(sizeof(struct ipw2100_priv), 0);
 	if (!dev)
 		return NULL;
 	priv = libipw_priv(dev);
@@ -6353,7 +6353,7 @@ static int ipw2100_pci_init_one(struct pci_dev *pci_dev,
 		sysfs_remove_group(&pci_dev->dev.kobj,
 				   &ipw2100_attribute_group);
 
-		free_ieee80211(dev);
+		free_ieee80211(dev, 0);
 		pci_set_drvdata(pci_dev, NULL);
 	}
 
@@ -6411,7 +6411,7 @@ static void __devexit ipw2100_pci_remove_one(struct pci_dev *pci_dev)
 		if (dev->base_addr)
 			iounmap((void __iomem *)dev->base_addr);
 
-		free_ieee80211(dev);
+		free_ieee80211(dev, 0);
 	}
 
 	pci_release_regions(pci_dev);
