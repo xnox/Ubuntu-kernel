@@ -1,3 +1,11 @@
+linux-backports-modules-2.6.31 (2.6.31-9.11) karmic; urgency=low
+
+  [ Tim Gardner ]
+
+  * Updated wireless-testing to master-2009-09-01
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 01 Sep 2009 17:58:50 -0600
+
 linux-backports-modules-2.6.31 (2.6.31-9.10) karmic; urgency=low
 
   * Bump ABI
