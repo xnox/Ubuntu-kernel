@@ -509,6 +509,8 @@ static void vc0321_start(struct usb_spca50x *spca50x)
 	    		/* 640x480 */
 	   		 err = vc0321WriteVector(spca50x, mi1310_socinitVGA_JPG);
 		}
+		// turn on LED
+		spca5xxRegWrite(spca50x->dev, 0x89, 0x058c, 0x0000, NULL, 0);
 	break;
 	default:
 		PDEBUG(0, "Damned !! no sensor found Bye");
@@ -554,7 +556,12 @@ static void vc0321_start(struct usb_spca50x *spca50x)
 static void vc0321_stopN(struct usb_spca50x *spca50x)
 {
     struct usb_device *dev = spca50x->dev;
-    spca5xxRegWrite(dev, 0x89, 0xffff, 0xffff, NULL, 0);
+
+    if( spca50x->sensor == SENSOR_MI1310_SOC)
+        spca5xxRegWrite(dev, 0x89, 0x058c, 0x00ff, NULL, 0);
+    else
+        spca5xxRegWrite(dev, 0x89, 0xffff, 0xffff, NULL, 0);
+
     spca5xxRegWrite(dev, 0xa0, 0x01, 0xb301, NULL, 0);
     spca5xxRegWrite(dev, 0xa0, 0x09, 0xb003, NULL, 0);
 }
@@ -562,7 +569,10 @@ static void vc0321_stopN(struct usb_spca50x *spca50x)
 static void vc0321_stop0(struct usb_spca50x *spca50x)
 {
     struct usb_device *dev = spca50x->dev;
-    spca5xxRegWrite(dev, 0x89, 0xffff, 0xffff, NULL, 0);
+    if( spca50x->sensor == SENSOR_MI1310_SOC)
+        spca5xxRegWrite(dev, 0x89, 0x058c, 0x00ff, NULL, 0);
+    else
+        spca5xxRegWrite(dev, 0x89, 0xffff, 0xffff, NULL, 0);
 }
 
 static void vc0321_shutdown(struct usb_spca50x *spca50x)
