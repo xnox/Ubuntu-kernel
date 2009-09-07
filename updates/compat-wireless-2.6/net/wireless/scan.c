@@ -141,7 +141,7 @@ void cfg80211_bss_expire(struct cfg80211_registered_device *dev)
 		dev->bss_generation++;
 }
 
-static u8 *find_ie(u8 num, u8 *ies, size_t len)
+static u8 *find_ie(u8 num, u8 *ies, int len)
 {
 	while (len > 2 && ies[0] != num) {
 		len -= ies[1] + 2;
@@ -498,6 +498,9 @@ cfg80211_inform_bss(struct wiphy *wiphy,
 	res->pub.len_information_elements = ielen;
 
 	kref_init(&res->ref);
+
+	/* cfg80211_bss_update() eats up res - we ensure we free it there */
+	kmemleak_ignore(res);
 
 	res = cfg80211_bss_update(wiphy_to_dev(wiphy), res, 0);
 	if (!res)
