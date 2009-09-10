@@ -1,3 +1,15 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-24.59netbook01) netbook-common; urgency=low
+
+  [Colin Ian King]
+
+  * usbvideo: add reset_resume to uvc_driver
+
+  [Steve Conklin]
+
+  * match the latest kernel release
+
+ -- sconklin <sconklin@ubuntu.com>  Thu, 10 Sep 2009 19:20:12 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-24.54netbook01) netbook-common; urgency=low
 
   [Colin Ian King]
