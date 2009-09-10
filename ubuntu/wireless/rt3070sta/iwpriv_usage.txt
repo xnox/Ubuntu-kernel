@@ -83,6 +83,13 @@ wsc_auto_conn			{0, 1}
 						0: Disabled, driver won't re-connect to AP with new configurations.
 						1: Enabled, driver will re-connect to AP with new configurations.
 
+wsc_ap_band 			{0, 1, 2}
+						::Set prefer band to do WPS with dual band WPS AP
+						0 : prefer 2.4G
+						1 : prefer 5G
+						2 : auto
+						Default value is auto (2)
+
 -------------------------------------------------------------------------------------------------------
 USAGE:
 	iwpriv ra0 set [parameters]=[val]
@@ -103,7 +110,8 @@ CountryRegion       	{0~7}
 						4: 14 ch
 						5: 1 ~ 14 ch
 						6: 3 ~ 9 ch
-						7: 5 ~ 13 Channel
+						7: 5 ~ 13 ch
+					   31: 1 ~ 14 ch (ch1-11:active scan, ch12-14 passive scan)
 											
 CountryRegionABand		{0~11}
 						::Set country region for A band  										                                       
@@ -430,7 +438,7 @@ iwconfig ra0 freq N.NNNN[k|M|G]]		; set frequency
 iwconfig ra0 channel N					; set channel
 iwconfig ra0 ap {N|off|auto}			; set AP address
 iwconfig ra0 nick N						; set nickname
-iwconfig ra0 rate {N|auto|fixed}     	; set rate
+iwconfig ra0 rate {N|auto|fixed}     	; set rate (only support legacy rate setting)
 iwconfig ra0 rts {N|auto|fixed|off}		; set RTS threshold
 iwconfig ra0 frag {N|auto|fixed|off}	; set Fragment threshold
 iwconfig ra0 enc {NNNN-NNNN|off}		; set encryption type

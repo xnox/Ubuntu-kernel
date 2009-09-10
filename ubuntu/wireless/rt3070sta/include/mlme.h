@@ -1,45 +1,12 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
-
-	Module Name:
-	mlme.h
-
-	Abstract:
-
-	Revision History:
-	Who			When			What
-	--------	----------		----------------------------------------------
-	John Chang	2003-08-28		Created
-	John Chang  2004-09-06      modified for RT2600
-	
-*/
+/* Plz read readme file for Software License information */
 #ifndef __MLME_H__
 #define __MLME_H__
 
-//extern UCHAR BROADCAST_ADDR[];
+#include "rtmp_dot11.h"
+
+#ifdef CONFIG_STA_SUPPORT
+#endif // CONFIG_STA_SUPPORT //
+
 
 // maximum supported capability information - 
 // ESS, IBSS, Privacy, Short Preamble, Spectrum mgmt, Short Slot
@@ -61,27 +28,23 @@
 #define JAP_W56	4
 #define MAX_RD_REGION 5
 
-#ifdef	NDIS51_MINIPORT
-#define BEACON_LOST_TIME            4000       // 2048 msec = 2 sec
-#else
 #define BEACON_LOST_TIME            4 * OS_HZ    // 2048 msec = 2 sec
-#endif
 
 #define DLS_TIMEOUT                 1200      // unit: msec
 #define AUTH_TIMEOUT                300       // unit: msec
 #define ASSOC_TIMEOUT               300       // unit: msec
-#define JOIN_TIMEOUT                2 * OS_HZ      // unit: msec
+#define JOIN_TIMEOUT                2000        // unit: msec
 #define SHORT_CHANNEL_TIME          90        // unit: msec
 #define MIN_CHANNEL_TIME            110        // unit: msec, for dual band scan
 #define MAX_CHANNEL_TIME            140       // unit: msec, for single band scan
 #define	FAST_ACTIVE_SCAN_TIME	    30 		  // Active scan waiting for probe response time
 #define CW_MIN_IN_BITS              4         // actual CwMin = 2^CW_MIN_IN_BITS - 1
+#define LINK_DOWN_TIMEOUT           20000      // unit: msec
+#define AUTO_WAKEUP_TIMEOUT			70			//unit: msec
 
 
 #ifdef CONFIG_STA_SUPPORT
-#ifndef CONFIG_AP_SUPPORT
 #define CW_MAX_IN_BITS              10        // actual CwMax = 2^CW_MAX_IN_BITS - 1
-#endif
 #endif // CONFIG_STA_SUPPORT //
 
 #ifdef CONFIG_APSTA_MIXED_SUPPORT
@@ -395,7 +358,7 @@ typedef struct PACKED _HT_CAPABILITY_IE{
 #define dot11BSSWidthTriggerScanInterval					300  // in sec. max interval between scan operations to be performed to detect BSS channel width trigger events.
 #define dot11OBSSScanPassiveTotalPerChannel					200	// in TU. min total amount of time that the STA scans each channel when performing a passive OBSS scan.
 #define dot11OBSSScanActiveTotalPerChannel					20	//in TU. min total amount of time that the STA scans each channel when performing a active OBSS scan
-#define dot11BSSWidthChannelTransactionDelayFactor			5	// min ratio between the delay time in performing a switch from 20MHz BSS to 20/40 BSS operation and the maxima
+#define dot11BSSWidthChannelTransactionDelayFactor			5	// min ratio between the delay time in performing a switch from 20MHz BSS to 20/40 BSS operation and the maximum
 																//	interval between overlapping BSS scan operations.
 #define dot11BSSScanActivityThreshold						25	// in %%, max total time that a STA may be active on the medium during a period of 
 																//	(dot11BSSWidthChannelTransactionDelayFactor * dot11BSSWidthTriggerScanInterval) seconds without
@@ -501,7 +464,7 @@ typedef struct {
 	BOOLEAN			bHtEnable;	 // If we should use ht rate.
 	BOOLEAN			bPreNHt;	 // If we should use ht rate.
 	//Substract from HT Capability IE
-	UCHAR			MCSSet[16];	//only supoort MCS=0-15,32 , 
+	UCHAR			MCSSet[16];
 } RT_HT_PHY_INFO, *PRT_HT_PHY_INFO;
 
 //This structure substracts ralink supports from all 802.11n-related features.
@@ -634,104 +597,6 @@ typedef struct  PACKED{
 	UCHAR				NewExtChanOffset;
 } NEW_EXT_CHAN_IE, *PNEW_EXT_CHAN_IE;
 
-
-// 4-byte HTC field.  maybe included in any frame except non-QOS data frame.  The Order bit must set 1.
-typedef struct PACKED {
-#ifdef RT_BIG_ENDIAN
-    UINT32		RDG:1;	//RDG / More PPDU
-    UINT32		ACConstraint:1;	//feedback request
-    UINT32		rsv:5;  //calibration sequence
-    UINT32		ZLFAnnouce:1;	// ZLF announcement
-    UINT32		CSISTEERING:2;	//CSI/ STEERING
-    UINT32		FBKReq:2;	//feedback request
-    UINT32		CalSeq:2;  //calibration sequence
-    UINT32		CalPos:2;	// calibration position
-    UINT32		MFBorASC:7;	//Link adaptation feedback containing recommended MCS. 0x7f for no feedback or not available
-    UINT32		MFS:3;	//SET to the received value of MRS. 0x111 for unsolicited MFB.
-    UINT32		MRSorASI:3;	// MRQ Sequence identifier. unchanged during entire procedure. 0x000-0x110.
-    UINT32		MRQ:1;	//MCS feedback. Request for a MCS feedback
-    UINT32		TRQ:1;	//sounding request
-    UINT32		MA:1;	//management action payload exist in (QoS Null+HTC)
-#else
-    UINT32		MA:1;	//management action payload exist in (QoS Null+HTC)
-    UINT32		TRQ:1;	//sounding request
-    UINT32		MRQ:1;	//MCS feedback. Request for a MCS feedback
-    UINT32		MRSorASI:3;	// MRQ Sequence identifier. unchanged during entire procedure. 0x000-0x110.
-    UINT32		MFS:3;	//SET to the received value of MRS. 0x111 for unsolicited MFB.
-    UINT32		MFBorASC:7;	//Link adaptation feedback containing recommended MCS. 0x7f for no feedback or not available
-    UINT32		CalPos:2;	// calibration position
-    UINT32		CalSeq:2;  //calibration sequence
-    UINT32		FBKReq:2;	//feedback request
-    UINT32		CSISTEERING:2;	//CSI/ STEERING
-    UINT32		ZLFAnnouce:1;	// ZLF announcement
-    UINT32		rsv:5;  //calibration sequence
-    UINT32		ACConstraint:1;	//feedback request
-    UINT32		RDG:1;	//RDG / More PPDU
-#endif /* !RT_BIG_ENDIAN */
-} HT_CONTROL, *PHT_CONTROL;
-
-// 2-byte QOS CONTROL field
-typedef struct PACKED {
-#ifdef RT_BIG_ENDIAN
-    USHORT      Txop_QueueSize:8;
-    USHORT      AMsduPresent:1;
-    USHORT      AckPolicy:2;  //0: normal ACK 1:No ACK 2:scheduled under MTBA/PSMP  3: BA
-    USHORT      EOSP:1;
-    USHORT      TID:4;
-#else
-    USHORT      TID:4;
-    USHORT      EOSP:1;
-    USHORT      AckPolicy:2;  //0: normal ACK 1:No ACK 2:scheduled under MTBA/PSMP  3: BA
-    USHORT      AMsduPresent:1;
-    USHORT      Txop_QueueSize:8;
-#endif /* !RT_BIG_ENDIAN */
-} QOS_CONTROL, *PQOS_CONTROL;	
-
-// 2-byte Frame control field
-typedef	struct	PACKED {
-#ifdef RT_BIG_ENDIAN
-	USHORT		Order:1;			// Strict order expected
-	USHORT		Wep:1;				// Wep data
-	USHORT		MoreData:1;			// More data bit
-	USHORT		PwrMgmt:1;			// Power management bit
-	USHORT		Retry:1;			// Retry status bit
-	USHORT		MoreFrag:1;			// More fragment bit
-	USHORT		FrDs:1;				// From DS indication
-	USHORT		ToDs:1;				// To DS indication
-	USHORT		SubType:4;			// MSDU subtype
-	USHORT		Type:2;				// MSDU type
-	USHORT		Ver:2;				// Protocol version
-#else
-	USHORT		Ver:2;				// Protocol version
-	USHORT		Type:2;				// MSDU type
-	USHORT		SubType:4;			// MSDU subtype
-	USHORT		ToDs:1;				// To DS indication
-	USHORT		FrDs:1;				// From DS indication
-	USHORT		MoreFrag:1;			// More fragment bit
-	USHORT		Retry:1;			// Retry status bit
-	USHORT		PwrMgmt:1;			// Power management bit
-	USHORT		MoreData:1;			// More data bit
-	USHORT		Wep:1;				// Wep data
-	USHORT		Order:1;			// Strict order expected
-#endif /* !RT_BIG_ENDIAN */
-} FRAME_CONTROL, *PFRAME_CONTROL;
-
-typedef	struct	PACKED _HEADER_802_11	{
-    FRAME_CONTROL   FC;
-    USHORT          Duration;
-    UCHAR           Addr1[MAC_ADDR_LEN];
-    UCHAR           Addr2[MAC_ADDR_LEN];
-	UCHAR			Addr3[MAC_ADDR_LEN];
-#ifdef RT_BIG_ENDIAN
-	USHORT			Sequence:12;
-	USHORT			Frag:4;
-#else
-	USHORT			Frag:4;
-	USHORT			Sequence:12;
-#endif /* !RT_BIG_ENDIAN */
-	UCHAR			Octet[0];
-}	HEADER_802_11, *PHEADER_802_11;
-
 typedef struct PACKED _FRAME_802_11 {
     HEADER_802_11   Hdr;
     UCHAR            Octet[1];
@@ -859,20 +724,6 @@ typedef struct {
 	BASEQ_CONTROL 	 BAStartingSeq;
 } EACH_TID, *PEACH_TID;
 
-
-typedef struct PACKED _PSPOLL_FRAME {
-    FRAME_CONTROL   FC;
-    USHORT          Aid;
-    UCHAR           Bssid[MAC_ADDR_LEN];
-    UCHAR           Ta[MAC_ADDR_LEN];
-}   PSPOLL_FRAME, *PPSPOLL_FRAME;
-
-typedef	struct	PACKED _RTS_FRAME	{
-    FRAME_CONTROL   FC;
-    USHORT          Duration;
-    UCHAR           Addr1[MAC_ADDR_LEN];
-    UCHAR           Addr2[MAC_ADDR_LEN];
-}RTS_FRAME, *PRTS_FRAME;
 
 // BAREQ AND MTBAREQ have the same subtype BAR, 802.11n BAR use compressed bitmap.
 typedef struct PACKED _FRAME_BA_REQ {
@@ -1188,6 +1039,7 @@ typedef struct {
 	BOOLEAN		bHasCountryIE;
 #endif // EXT_BUILD_CHANNEL_LIST //
 #endif // CONFIG_STA_SUPPORT //
+
 } BSS_ENTRY, *PBSS_ENTRY;
 
 typedef struct {
@@ -1288,6 +1140,9 @@ typedef struct _MLME_AUX {
     RALINK_TIMER_STRUCT BeaconTimer, ScanTimer;
     RALINK_TIMER_STRUCT AuthTimer;
     RALINK_TIMER_STRUCT AssocTimer, ReassocTimer, DisassocTimer;
+
+#ifdef CONFIG_STA_SUPPORT
+#endif // CONFIG_STA_SUPPORT //
 } MLME_AUX, *PMLME_AUX;
 
 typedef struct _MLME_ADDBA_REQ_STRUCT{
@@ -1375,7 +1230,7 @@ typedef struct _MLME_DLS_REQ_STRUCT {
 typedef struct PACKED {
     UCHAR   Eid;
     UCHAR   Len;
-    CHAR   Octet[1];
+    UCHAR   Octet[1];
 } EID_STRUCT,*PEID_STRUCT, BEACON_EID_STRUCT, *PBEACON_EID_STRUCT;
 
 typedef struct PACKED _RTMP_TX_RATE_SWITCH

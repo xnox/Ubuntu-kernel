@@ -1,40 +1,4 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
-
-    Module Name:
-	action.c
- 
-    Abstract:
-    Handle association related requests either from WSTA or from local MLME
- 
-    Revision History:
-    Who         When          What
-    --------    ----------    ----------------------------------------------
-	Jan Lee		2006	  	created for rt2860
- */
+/* Plz read readme file for Software License information */
 
 #include "rt_config.h"
 #include "action.h"
@@ -43,6 +7,7 @@
 static VOID ReservedAction(
 	IN PRTMP_ADAPTER pAd, 
 	IN MLME_QUEUE_ELEM *Elem);
+
 
 /*  
     ==========================================================================
@@ -90,6 +55,8 @@ VOID ActionStateMachineInit(
 	StateMachineSetAction(S, ACT_IDLE, MT2_MLME_QOS_CATE, (STATE_MACHINE_FUNC)MlmeQOSAction);
 	StateMachineSetAction(S, ACT_IDLE, MT2_MLME_DLS_CATE, (STATE_MACHINE_FUNC)MlmeDLSAction);
 	StateMachineSetAction(S, ACT_IDLE, MT2_ACT_INVALID, (STATE_MACHINE_FUNC)MlmeInvalidAction);
+
+
 }
 
 #ifdef DOT11_N_SUPPORT
@@ -131,13 +98,25 @@ VOID MlmeADDBAAction(
 			pBAEntry =&pAd->BATable.BAOriEntry[Idx];
 		}
 		
+#ifdef MESH_SUPPORT
+		if (pAd->MacTab.Content[pInfo->Wcid].ValidAsMesh)
+		{
+			ActHeaderInit(pAd, &Frame.Hdr, pInfo->pAddr, pAd->MeshTab.CurrentAddress, pInfo->pAddr);		
+		}
+		else
+#endif // MESH_SUPPORT //
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		{
 			if (ADHOC_ON(pAd))
 				ActHeaderInit(pAd, &Frame.Hdr, pInfo->pAddr, pAd->CurrentAddress, pAd->CommonCfg.Bssid);
 			else
-				ActHeaderInit(pAd, &Frame.Hdr, pAd->CommonCfg.Bssid, pAd->CurrentAddress, pInfo->pAddr);
+#ifdef QOS_DLS_SUPPORT
+			if (pAd->MacTab.Content[pInfo->Wcid].ValidAsDls)
+				ActHeaderInit(pAd, &Frame.Hdr, pInfo->pAddr, pAd->CurrentAddress, pAd->CommonCfg.Bssid);
+			else
+#endif // QOS_DLS_SUPPORT //
+			ActHeaderInit(pAd, &Frame.Hdr, pAd->CommonCfg.Bssid, pAd->CurrentAddress, pInfo->pAddr);
 
 		}
 #endif // CONFIG_STA_SUPPORT // 
@@ -160,8 +139,9 @@ VOID MlmeADDBAAction(
 		MakeOutgoingFrame(pOutBuffer,		   &FrameLen,
 		              sizeof(FRAME_ADDBA_REQ), &Frame,
 		              END_OF_ARGS);
-		MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-		//MiniportDataMMRequest(pAd, MapUserPriorityToAccessCategory[pInfo->TID], pOutBuffer, FrameLen);
+
+		MiniportMMRequest(pAd, (MGMT_USE_QUEUE_FLAG | MapUserPriorityToAccessCategory[pInfo->TID]), pOutBuffer, FrameLen);
+
 		MlmeFreeMemory(pAd, pOutBuffer);
 		
 		DBGPRINT(RT_DEBUG_TRACE, ("BA - Send ADDBA request. StartSeq = %x,  FrameLen = %ld. BufSize = %d\n", Frame.BaStartSeq.field.StartSeq, FrameLen, Frame.BaParm.BufSize));
@@ -216,6 +196,13 @@ VOID MlmeDELBAAction(
 
 		// SEND BAR (Send BAR to refresh peer reordering buffer.)
 		Idx = pAd->MacTab.Content[pInfo->Wcid].BAOriWcidArray[pInfo->TID];
+#ifdef MESH_SUPPORT
+		if (pAd->MacTab.Content[pInfo->Wcid].ValidAsMesh)
+		{
+			BarHeaderInit(pAd, &FrameBar, pAd->MacTab.Content[pInfo->Wcid].Addr, pAd->MeshTab.CurrentAddress);
+		}	
+		else
+#endif // MESH_SUPPORT //
 
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
@@ -238,13 +225,25 @@ VOID MlmeDELBAAction(
 
 		// SEND DELBA FRAME
 		FrameLen = 0;
+#ifdef MESH_SUPPORT
+		if (pAd->MacTab.Content[pInfo->Wcid].ValidAsMesh)
+		{
+			ActHeaderInit(pAd, &Frame.Hdr, pAd->MacTab.Content[pInfo->Wcid].Addr, pAd->MeshTab.CurrentAddress, pAd->MacTab.Content[pInfo->Wcid].Addr);
+		}
+		else
+#endif // MESH_SUPPORT //
 #ifdef CONFIG_STA_SUPPORT
 		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 		{
 			if (ADHOC_ON(pAd))
 				ActHeaderInit(pAd, &Frame.Hdr, pAd->MacTab.Content[pInfo->Wcid].Addr, pAd->CurrentAddress, pAd->CommonCfg.Bssid);
 			else
-				ActHeaderInit(pAd, &Frame.Hdr,  pAd->CommonCfg.Bssid, pAd->CurrentAddress, pAd->MacTab.Content[pInfo->Wcid].Addr);
+#ifdef QOS_DLS_SUPPORT
+			if (pAd->MacTab.Content[pInfo->Wcid].ValidAsDls)
+				ActHeaderInit(pAd, &Frame.Hdr, pAd->MacTab.Content[pInfo->Wcid].Addr, pAd->CurrentAddress, pAd->CommonCfg.Bssid);
+			else
+#endif // QOS_DLS_SUPPORT //
+			ActHeaderInit(pAd, &Frame.Hdr,  pAd->CommonCfg.Bssid, pAd->CurrentAddress, pAd->MacTab.Content[pInfo->Wcid].Addr);
 		}
 #endif // CONFIG_STA_SUPPORT //
 		Frame.Category = CATEGORY_BA;
@@ -323,6 +322,8 @@ VOID PeerDLSAction(
 	}
 }
 #endif // QOS_DLS_SUPPORT //
+
+
 
 #ifdef DOT11_N_SUPPORT
 VOID PeerBAAction(
@@ -607,13 +608,15 @@ VOID PeerPublicAction(
 	IN PRTMP_ADAPTER pAd, 
 	IN MLME_QUEUE_ELEM *Elem) 
 {
+#ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
 	UCHAR	Action = Elem->Msg[LENGTH_802_11+1];
 #endif // DOT11N_DRAFT3 //
-	
+#endif // DOT11_N_SUPPORT //	
 	if (Elem->Wcid >= MAX_LEN_OF_MAC_TABLE)
 		return;
 
+#ifdef DOT11_N_SUPPORT
 #ifdef DOT11N_DRAFT3
 	switch(Action)
 	{
@@ -658,6 +661,7 @@ VOID PeerPublicAction(
 	}
 
 #endif // DOT11N_DRAFT3 //
+#endif // DOT11_N_SUPPORT //
 
 }	
 
@@ -713,13 +717,20 @@ static VOID respond_ht_information_exchange_action(
 
 	NdisZeroMemory(&HTINFOframe, sizeof(FRAME_HT_INFO));
 	// 2-1. Prepare ADDBA Response frame.
+#ifdef MESH_SUPPORT
+	if (pAd->MacTab.Content[Elem->Wcid].ValidAsMesh)
+	{
+		ActHeaderInit(pAd, &HTINFOframe.Hdr, pAddr, pAd->MeshTab.CurrentAddress, pAddr);		
+	}
+	else
+#endif // MESH_SUPPORT //
 #ifdef CONFIG_STA_SUPPORT
 	IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 	{
 		if (ADHOC_ON(pAd))
 			ActHeaderInit(pAd, &HTINFOframe.Hdr, pAddr, pAd->CurrentAddress, pAd->CommonCfg.Bssid);
 		else
-			ActHeaderInit(pAd, &HTINFOframe.Hdr, pAd->CommonCfg.Bssid, pAd->CurrentAddress, pAddr);
+		ActHeaderInit(pAd, &HTINFOframe.Hdr, pAd->CommonCfg.Bssid, pAd->CurrentAddress, pAddr);
 	}
 #endif // CONFIG_STA_SUPPORT //
 
@@ -850,7 +861,7 @@ VOID PeerHTAction(
     					respond_ht_information_exchange_action(pAd, Elem);
     				}
 			}
-    			break;	
+    		break;
 	}
 }
 
@@ -939,6 +950,11 @@ VOID SendRefreshBAR(
 				
 			Sequence = pEntry->TxSeq[TID];
 
+#ifdef MESH_SUPPORT
+			if (pEntry->ValidAsMesh)		
+				BarHeaderInit(pAd, &FrameBar, pEntry->Addr, pAd->MeshTab.CurrentAddress);			
+			else
+#endif // MESH_SUPPORT //
 
 #ifdef CONFIG_STA_SUPPORT
 			IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
@@ -956,8 +972,8 @@ VOID SendRefreshBAR(
 			if (1)	// Now we always send BAR.
 			{
 				//MiniportMMRequestUnlock(pAd, 0, pOutBuffer, FrameLen);
-				MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-				//MiniportDataMMRequest(pAd, MapUserPriorityToAccessCategory[TID], pOutBuffer, FrameLen);
+				MiniportMMRequest(pAd, (MGMT_USE_QUEUE_FLAG | MapUserPriorityToAccessCategory[TID]), pOutBuffer, FrameLen);				
+
 			}
 			MlmeFreeMemory(pAd, pOutBuffer);
 		}

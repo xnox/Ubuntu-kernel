@@ -1,41 +1,5 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
-
-	Module Name:
-	sanity.c
-
-	Abstract:
-
-	Revision History:
-	Who			When			What
-	--------	----------		----------------------------------------------
-	John Chang  2004-09-01      add WMM support
-*/
+/* Plz read readme file for Software License information */
 #include "rt_config.h"
-
 
 extern UCHAR	CISCO_OUI[];
 
@@ -159,7 +123,17 @@ BOOLEAN PeerAddBAReqActionSanity(
 		return FALSE;
 	}
 	// we support immediate BA.
+#ifdef UNALIGNMENT_SUPPORT
+	{
+		BA_PARM		tmpBaParm;
+
+		NdisMoveMemory((PUCHAR)(&tmpBaParm), (PUCHAR)(&pAddFrame->BaParm), sizeof(BA_PARM));
+		*(USHORT *)(&tmpBaParm) = cpu2le16(*(USHORT *)(&tmpBaParm));
+		NdisMoveMemory((PUCHAR)(&pAddFrame->BaParm), (PUCHAR)(&tmpBaParm), sizeof(BA_PARM));
+	}
+#else
 	*(USHORT *)(&pAddFrame->BaParm) = cpu2le16(*(USHORT *)(&pAddFrame->BaParm));
+#endif
 	pAddFrame->TimeOutValue = cpu2le16(pAddFrame->TimeOutValue);
 	pAddFrame->BaStartSeq.word = cpu2le16(pAddFrame->BaStartSeq.word); 
 
@@ -195,7 +169,17 @@ BOOLEAN PeerAddBARspActionSanity(
 		return FALSE;
 	}
 	// we support immediate BA.
+#ifdef UNALIGNMENT_SUPPORT
+	{
+		BA_PARM		tmpBaParm;
+
+		NdisMoveMemory((PUCHAR)(&tmpBaParm), (PUCHAR)(&pAddFrame->BaParm), sizeof(BA_PARM));
+		*(USHORT *)(&tmpBaParm) = cpu2le16(*(USHORT *)(&tmpBaParm));
+		NdisMoveMemory((PUCHAR)(&pAddFrame->BaParm), (PUCHAR)(&tmpBaParm), sizeof(BA_PARM));
+	}
+#else
 	*(USHORT *)(&pAddFrame->BaParm) = cpu2le16(*(USHORT *)(&pAddFrame->BaParm));
+#endif
 	pAddFrame->StatusCode = cpu2le16(pAddFrame->StatusCode);
 	pAddFrame->TimeOutValue = cpu2le16(pAddFrame->TimeOutValue);
 
@@ -294,9 +278,9 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
     OUT USHORT *LengthVIE,	
     OUT	PNDIS_802_11_VARIABLE_IEs pVIE) 
 {
-    CHAR				*Ptr;
+    UCHAR				*Ptr;
 #ifdef CONFIG_STA_SUPPORT
-	CHAR 				TimLen;
+	UCHAR 				TimLen;
 #endif // CONFIG_STA_SUPPORT //
     PFRAME_802_11		pFrame;
     PEID_STRUCT         pEid;
@@ -437,12 +421,21 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
 				*pHtCapabilityLen = SIZE_HT_CAP_IE;	// Nnow we only support 26 bytes.
 
 				*(USHORT *)(&pHtCapability->HtCapInfo) = cpu2le16(*(USHORT *)(&pHtCapability->HtCapInfo));
+#ifdef UNALIGNMENT_SUPPORT
+				{
+					EXT_HT_CAP_INFO extHtCapInfo;
+					NdisMoveMemory((PUCHAR)(&extHtCapInfo), (PUCHAR)(&pHtCapability->ExtHtCapInfo), sizeof(EXT_HT_CAP_INFO));
+					*(USHORT *)(&extHtCapInfo) = cpu2le16(*(USHORT *)(&extHtCapInfo));
+					NdisMoveMemory((PUCHAR)(&pHtCapability->ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));
+				}
+#else
 				*(USHORT *)(&pHtCapability->ExtHtCapInfo) = cpu2le16(*(USHORT *)(&pHtCapability->ExtHtCapInfo));
+#endif // UNALIGNMENT_SUPPORT //
 
 #ifdef CONFIG_STA_SUPPORT
 				IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
 				{
-					*pPreNHtCapabilityLen = 0;	// Nnow we only support 26 bytes.
+					*pPreNHtCapabilityLen = 0;	// Now we only support 26 bytes.
 
 					Ptr = (PUCHAR) pVIE;
 					NdisMoveMemory(Ptr + *LengthVIE, &pEid->Eid, pEid->Len + 2);
@@ -454,7 +447,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
 			{
 				DBGPRINT(RT_DEBUG_WARN, ("PeerBeaconAndProbeRspSanity - wrong IE_HT_CAP. pEid->Len = %d\n", pEid->Len));
 			}
-				
+			
 		break;
             case IE_ADD_HT:
 			if (pEid->Len >= sizeof(ADD_HT_INFO_IE))				
@@ -554,7 +547,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
             case IE_TIM:
                 if(INFRA_ON(pAd) && SubType == SUBTYPE_BEACON)
                 {
-                    GetTimBit((PUCHAR)pEid, pAd->StaActive.Aid, &TimLen, pBcastFlag, pDtimCount, pDtimPeriod, pMessageToMe);
+                    GetTimBit((PCHAR)pEid, pAd->StaActive.Aid, &TimLen, pBcastFlag, pDtimCount, pDtimPeriod, pMessageToMe);
                 }
                 break;
 #endif // CONFIG_STA_SUPPORT //
@@ -689,10 +682,8 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
                 }
 #ifdef CONFIG_STA_SUPPORT 
 #endif // CONFIG_STA_SUPPORT //                
-                else	
-                {
-                }
 
+                
                 break;
 
             case IE_EXT_SUPP_RATES:
@@ -758,6 +749,8 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
 				break;
 #endif // EXT_BUILD_CHANNEL_LIST //
 #endif // CONFIG_STA_SUPPORT //
+
+
             default:
                 break;
         }
@@ -784,7 +777,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity(
 
 	if (Sanity != 0x7)
 	{
-		DBGPRINT(RT_DEBUG_WARN, ("PeerBeaconAndProbeRspSanity - missing field, Sanity=0x%02x\n", Sanity));
+		DBGPRINT(RT_DEBUG_LOUD, ("PeerBeaconAndProbeRspSanity - missing field, Sanity=0x%02x\n", Sanity));
 		return FALSE;
 	}
 	else
@@ -820,7 +813,7 @@ BOOLEAN PeerBeaconAndProbeRspSanity2(
 	pFrame = (PFRAME_802_11)Msg;
 
 	*RegClass = 0;
-	Ptr = pFrame->Octet;
+	Ptr = (PCHAR) pFrame->Octet;
 	Length += LENGTH_802_11;
 
 	// get timestamp from payload and advance the pointer
@@ -892,8 +885,6 @@ BOOLEAN MlmeScanReqSanity(
 	if ((*pBssType == BSS_INFRA || *pBssType == BSS_ADHOC || *pBssType == BSS_ANY)
 		&& (*pScanType == SCAN_ACTIVE || *pScanType == SCAN_PASSIVE
 #ifdef CONFIG_STA_SUPPORT
-		|| *pScanType == SCAN_CISCO_PASSIVE || *pScanType == SCAN_CISCO_ACTIVE
-		|| *pScanType == SCAN_CISCO_CHANNEL_LOAD || *pScanType == SCAN_CISCO_NOISE
 #endif // CONFIG_STA_SUPPORT //
 		))
 	{
@@ -975,11 +966,7 @@ BOOLEAN PeerAuthSanity(
     NdisMoveMemory(pSeq,    &pFrame->Octet[2], 2);
     NdisMoveMemory(pStatus, &pFrame->Octet[4], 2);
 
-    if ((*pAlg == Ndis802_11AuthModeOpen)
-#ifdef LEAP_SUPPORT	
-      || (*pAlg == CISCO_AuthModeLEAP)
-#endif // LEAP_SUPPORT //      
-      )
+    if (*pAlg == AUTH_MODE_OPEN)
     {
         if (*pSeq == 1 || *pSeq == 2) 
         {
@@ -991,7 +978,7 @@ BOOLEAN PeerAuthSanity(
             return FALSE;
         }
     } 
-    else if (*pAlg == Ndis802_11AuthModeShared) 
+    else if (*pAlg == AUTH_MODE_KEY) 
     {
         if (*pSeq == 1 || *pSeq == 4) 
         {
@@ -1038,10 +1025,7 @@ BOOLEAN MlmeAuthReqSanity(
     *pTimeout = pInfo->Timeout;
     *pAlg = pInfo->Alg;
     
-    if (((*pAlg == Ndis802_11AuthModeShared) ||(*pAlg == Ndis802_11AuthModeOpen)
-#ifdef LEAP_SUPPORT	
-     || (*pAlg == CISCO_AuthModeLEAP)
-#endif // LEAP_SUPPORT //     
+    if (((*pAlg == AUTH_MODE_KEY) ||(*pAlg == AUTH_MODE_OPEN)
      	) && 
         ((*pAddr & 0x01) == 0)) 
     {
@@ -1200,9 +1184,10 @@ NDIS_802_11_NETWORK_TYPE NetworkTypeInUseSanity(
 /* 
     ==========================================================================
     Description:
-        WPA message sanity check
+        Check the validity of the received EAPoL frame
     Return:
-        TRUE if all parameters are OK, FALSE otherwise
+        TRUE if all parameters are OK, 
+        FALSE otherwise
     ==========================================================================
  */
 BOOLEAN PeerWpaMessageSanity(
@@ -1292,13 +1277,13 @@ BOOLEAN PeerWpaMessageSanity(
 		NdisMoveMemory(rcvd_mic, pMsg->KeyDesc.KeyMic, LEN_KEY_DESC_MIC);
 		NdisZeroMemory(pMsg->KeyDesc.KeyMic, LEN_KEY_DESC_MIC);
 							
-        if (pEntry->WepStatus == Ndis802_11Encryption2Enabled)	// TKIP
+        if (EapolKeyInfo.KeyDescVer == DESC_TYPE_TKIP)	// TKIP
         {	
-            hmac_md5(pEntry->PTK, LEN_EAP_MICK, (PUCHAR)pMsg, MsgLen, mic);
+            HMAC_MD5(pEntry->PTK, LEN_EAP_MICK, (PUCHAR)pMsg, MsgLen, mic, MD5_DIGEST_SIZE);
         }
-        else if (pEntry->WepStatus == Ndis802_11Encryption3Enabled)	// AES        
+        else if (EapolKeyInfo.KeyDescVer == DESC_TYPE_AES)	// AES        
         {                        
-            HMAC_SHA1((PUCHAR)pMsg, MsgLen, pEntry->PTK, LEN_EAP_MICK, digest);
+            HMAC_SHA1(pEntry->PTK, LEN_EAP_MICK, (PUCHAR)pMsg, MsgLen, digest, SHA1_DIGEST_SIZE);
             NdisMoveMemory(mic, digest, LEN_KEY_DESC_MIC);
         }
 	
@@ -1324,18 +1309,22 @@ BOOLEAN PeerWpaMessageSanity(
         }        
 	}
 
-	// Extract the context of the Key Data field if it exist
-	// The field in pairwise_msg_2_WPA1(WPA2) & pairwise_msg_3_WPA1 is un-encrypted.
+	// 1. Decrypt the Key Data field if GTK is included.
+	// 2. Extract the context of the Key Data field if it exist.	 
+	// The field in pairwise_msg_2_WPA1(WPA2) & pairwise_msg_3_WPA1 is clear.
 	// The field in group_msg_1_WPA1(WPA2) & pairwise_msg_3_WPA2 is encrypted.
-	if (pMsg->KeyDesc.KeyDataLen[1] > 0)
+	if (CONV_ARRARY_TO_UINT16(pMsg->KeyDesc.KeyDataLen) > 0)
 	{		
 		// Decrypt this field		
 		if ((MsgType == EAPOL_PAIR_MSG_3 && bWPA2) || (MsgType == EAPOL_GROUP_MSG_1))
 		{					
-			if(pEntry->WepStatus == Ndis802_11Encryption3Enabled)
+			if(
+				(EapolKeyInfo.KeyDescVer == DESC_TYPE_AES))
 			{
 				// AES 
-				AES_GTK_KEY_UNWRAP(&pEntry->PTK[16], KEYDATA, pMsg->KeyDesc.KeyDataLen[1],pMsg->KeyDesc.KeyData);       
+				AES_GTK_KEY_UNWRAP(&pEntry->PTK[16], KEYDATA, 
+									CONV_ARRARY_TO_UINT16(pMsg->KeyDesc.KeyDataLen),
+									pMsg->KeyDesc.KeyData);       
 			} 
 			else	  
 			{
@@ -1350,7 +1339,9 @@ BOOLEAN PeerWpaMessageSanity(
 				for(i = 0; i < 256; i++)
 					ARCFOUR_BYTE(&pAd->PrivateInfo.WEPCONTEXT);
 				// Decrypt GTK. Becareful, there is no ICV to check the result is correct or not
-				ARCFOUR_DECRYPT(&pAd->PrivateInfo.WEPCONTEXT, KEYDATA, pMsg->KeyDesc.KeyData, pMsg->KeyDesc.KeyDataLen[1]);       
+				ARCFOUR_DECRYPT(&pAd->PrivateInfo.WEPCONTEXT, KEYDATA, 
+								pMsg->KeyDesc.KeyData, 
+								CONV_ARRARY_TO_UINT16(pMsg->KeyDesc.KeyDataLen));       
 			}	
 
 			if (!bWPA2 && (MsgType == EAPOL_GROUP_MSG_1))
@@ -1359,7 +1350,7 @@ BOOLEAN PeerWpaMessageSanity(
 		}
 		else if ((MsgType == EAPOL_PAIR_MSG_2) || (MsgType == EAPOL_PAIR_MSG_3 && !bWPA2))
 		{					
-			NdisMoveMemory(KEYDATA, pMsg->KeyDesc.KeyData, pMsg->KeyDesc.KeyDataLen[1]);			     
+			NdisMoveMemory(KEYDATA, pMsg->KeyDesc.KeyData, CONV_ARRARY_TO_UINT16(pMsg->KeyDesc.KeyDataLen));			     
 		}
 		else
 		{
@@ -1371,7 +1362,9 @@ BOOLEAN PeerWpaMessageSanity(
 		// 1. verify RSN IE for pairwise_msg_2_WPA1(WPA2) ,pairwise_msg_3_WPA1(WPA2)
 		// 2. verify KDE format for pairwise_msg_3_WPA2, group_msg_1_WPA2
 		// 3. update shared key for pairwise_msg_3_WPA2, group_msg_1_WPA1(WPA2)
-		if (!RTMPParseEapolKeyData(pAd, KEYDATA, pMsg->KeyDesc.KeyDataLen[1], GroupKeyIndex, MsgType, bWPA2, pEntry))
+		if (!RTMPParseEapolKeyData(pAd, KEYDATA, 
+								  CONV_ARRARY_TO_UINT16(pMsg->KeyDesc.KeyDataLen), 
+								  GroupKeyIndex, MsgType, bWPA2, pEntry))
 		{
 			return FALSE;
 		}
@@ -1425,7 +1418,7 @@ BOOLEAN PeerDlsReqSanity(
     *pDlsTimeout	= 0;
 	*pHtCapabilityLen = 0;
 
-    Ptr = Fr->Octet;
+    Ptr = (PCHAR)Fr->Octet;
 
 	// offset to destination MAC address (Category and Action field)
     Ptr += 2;
@@ -1495,7 +1488,17 @@ BOOLEAN PeerDlsReqSanity(
 					NdisMoveMemory(pHtCapability, eid_ptr->Octet, sizeof(HT_CAPABILITY_IE));
 
 					*(USHORT *)(&pHtCapability->HtCapInfo) = cpu2le16(*(USHORT *)(&pHtCapability->HtCapInfo));
+#ifdef UNALIGNMENT_SUPPORT
+					{
+						EXT_HT_CAP_INFO extHtCapInfo;
+
+						NdisMoveMemory((PUCHAR)(&extHtCapInfo), (PUCHAR)(&pHtCapability->ExtHtCapInfo), sizeof(EXT_HT_CAP_INFO));
+						*(USHORT *)(&extHtCapInfo) = cpu2le16(*(USHORT *)(&extHtCapInfo));
+						NdisMoveMemory((PUCHAR)(&pHtCapability->ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));		
+					}
+#else				
 					*(USHORT *)(&pHtCapability->ExtHtCapInfo) = cpu2le16(*(USHORT *)(&pHtCapability->ExtHtCapInfo));
+#endif // UNALIGNMENT_SUPPORT //
 					*pHtCapabilityLen = sizeof(HT_CAPABILITY_IE);
 
 					DBGPRINT(RT_DEBUG_TRACE, ("PeerDlsReqSanity - IE_HT_CAP\n"));
@@ -1538,7 +1541,7 @@ BOOLEAN PeerDlsRspSanity(
     *pCapabilityInfo	= 0;
 	*pHtCapabilityLen = 0;
 
-    Ptr = Fr->Octet;
+    Ptr = (PCHAR)Fr->Octet;
 
 	// offset to destination MAC address (Category and Action field)
     Ptr += 2;
@@ -1611,7 +1614,17 @@ BOOLEAN PeerDlsRspSanity(
 					NdisMoveMemory(pHtCapability, eid_ptr->Octet, sizeof(HT_CAPABILITY_IE));
 
 					*(USHORT *)(&pHtCapability->HtCapInfo) = cpu2le16(*(USHORT *)(&pHtCapability->HtCapInfo));
+#ifdef UNALIGNMENT_SUPPORT
+					{
+						EXT_HT_CAP_INFO extHtCapInfo;
+
+						NdisMoveMemory((PUCHAR)(&extHtCapInfo), (PUCHAR)(&pHtCapability->ExtHtCapInfo), sizeof(EXT_HT_CAP_INFO));
+						*(USHORT *)(&extHtCapInfo) = cpu2le16(*(USHORT *)(&extHtCapInfo));
+						NdisMoveMemory((PUCHAR)(&pHtCapability->ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));		
+					}
+#else				
 					*(USHORT *)(&pHtCapability->ExtHtCapInfo) = cpu2le16(*(USHORT *)(&pHtCapability->ExtHtCapInfo));
+#endif // UNALIGNMENT_SUPPORT //
 					*pHtCapabilityLen = sizeof(HT_CAPABILITY_IE);
 
 					DBGPRINT(RT_DEBUG_TRACE, ("PeerDlsRspSanity - IE_HT_CAP\n"));
@@ -1646,7 +1659,7 @@ BOOLEAN PeerDlsTearDownSanity(
     // to prevent caller from using garbage output value
     *pReason	= 0;
 
-    Ptr = Fr->Octet;
+    Ptr = (PCHAR)Fr->Octet;
 
 	// offset to destination MAC address (Category and Action field)
     Ptr += 2;

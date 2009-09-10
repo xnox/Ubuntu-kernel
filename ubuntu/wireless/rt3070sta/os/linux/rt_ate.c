@@ -1,60 +1,29 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
- */
-
+/* Plz read readme file for Software License information */
 #include "rt_config.h"
 
-#ifdef UCOS
-INT IoctlResponse(PUCHAR payload, PUCHAR msg, INT len);
-#endif // UCOS //
+#ifdef RALINK_ATE
 
+#ifdef RT30xx
 #define ATE_BBP_REG_NUM	168
 UCHAR restore_BBP[ATE_BBP_REG_NUM]={0};
+#endif // RT30xx //
 
-#ifdef RALINK_ATE
-UCHAR TemplateFrame[24] = {0x08/* Data type */,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0x00,0xAA,0xBB,0x12,0x34,0x56,0x00,0x11,0x22,0xAA,0xBB,0xCC,0x00,0x00};	// 802.11 MAC Header, Type:Data, Length:24bytes 
+// 802.11 MAC Header, Type:Data, Length:24bytes
+UCHAR TemplateFrame[24] = {0x08,0x00,0x00,0x00,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,
+		0x00,0xAA,0xBB,0x12,0x34,0x56,0x00,0x11,0x22,0xAA,0xBB,0xCC,0x00,0x00};	
+ 
 extern RTMP_RF_REGS RF2850RegTable[];
 extern UCHAR NUM_OF_2850_CHNL;
 
-#ifdef RT2870
-extern UCHAR EpToQueue[];
-extern VOID	RTUSBRejectPendingPackets(	IN	PRTMP_ADAPTER	pAd);
-#endif // RT2870 //
-
-#ifdef RT30xx
-//2008/07/10:KH adds to support 3070 ATE<--
 extern FREQUENCY_ITEM FreqItems3020[];
 extern UCHAR NUM_OF_3020_CHNL;
-//2008/07/10:KH adds to support 3070 ATE-->
-#endif // RT30xx //
 
-#ifdef UCOS
-extern INT ConsoleResponse(IN PUCHAR buff);
-extern int (*remote_display)(char *);
-#endif // UCOS //
+
+#ifdef RTMP_MAC_USB
+extern UCHAR EpToQueue[];
+extern VOID RTUSBRejectPendingPackets(IN PRTMP_ADAPTER pAd);
+#endif // RTMP_MAC_USB //
+
 
 static CHAR CCKRateTable[] = {0, 1, 2, 3, 8, 9, 10, 11, -1}; /* CCK Mode. */
 static CHAR OFDMRateTable[] = {0, 1, 2, 3, 4, 5, 6, 7, -1}; /* OFDM Mode. */
@@ -86,14 +55,23 @@ static INT ATETxPwrHandler(
 
 static INT ATECmdHandler(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg);
+	IN	PSTRING			arg);
 
+#ifndef RT30xx
 static int CheckMCSValid(
 	IN UCHAR Mode,
 	IN UCHAR Mcs);
+#endif // RT30xx //
+
+#ifdef RT30xx
+static int CheckMCSValid(
+	IN UCHAR Mode,
+	IN UCHAR Mcs,
+	IN BOOLEAN bRT2070);
+#endif // RT30xx //
 
 
-#ifdef RT2870
+#ifdef RTMP_MAC_USB
 static VOID ATEWriteTxInfo(
 	IN	PRTMP_ADAPTER	pAd,
 	IN	PTXINFO_STRUC 	pTxInfo,
@@ -120,15 +98,315 @@ static VOID ATEWriteTxWI(
 	IN	BOOLEAN			CfAck,	
 	IN	HTTRANSMIT_SETTING	Transmit);
 
-#endif // RT2870 //
+#endif // RTMP_MAC_USB //
 
 static VOID SetJapanFilter(
 	IN	PRTMP_ADAPTER	pAd);
 
-/*=========================end of prototype=========================*/
+
+#ifdef RALINK_28xx_QA
+static inline INT 	DO_RACFG_CMD_ATE_START(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_STOP(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_RF_WRITE_ALL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_E2PROM_READ16(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_E2PROM_WRITE16(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_E2PROM_READ_ALL
+(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_E2PROM_WRITE_ALL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_IO_READ(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_IO_WRITE(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_IO_READ_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_BBP_READ8(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_BBP_WRITE8(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_BBP_READ_ALL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_GET_NOISE_LEVEL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_GET_COUNTER(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_CLEAR_COUNTER(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_TX_START(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_GET_TX_STATUS(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_TX_STOP(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_RX_START(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_RX_STOP(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_RX_STOP(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_START_TX_CARRIER(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_START_TX_CONT(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_START_TX_FRAME(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_BW(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_TX_POWER0(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_TX_POWER1(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_FREQ_OFFSET(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_GET_STATISTICS(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_RESET_COUNTER(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SEL_TX_ANTENNA(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);	
+
+static inline INT DO_RACFG_CMD_ATE_SEL_RX_ANTENNA(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_PREAMBLE(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_CHANNEL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_ADDR1(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_ADDR2(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_ADDR3(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_RATE(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_TX_FRAME_LEN(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_SET_TX_FRAME_COUNT(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_START_RX_FRAME(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_E2PROM_READ_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_E2PROM_WRITE_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_IO_WRITE_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_BBP_READ_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_BBP_WRITE_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN struct ate_racfghdr *pRaCfg
+);
+
+#if defined(RT305x) || defined(RT30xx)
+static inline INT DO_RACFG_CMD_ATE_RF_READ_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg
+);
+
+static inline INT DO_RACFG_CMD_ATE_RF_WRITE_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg
+);
+#endif // RT305x || RT30xx //
+#endif // RALINK_28xx_QA //
 
 
-#ifdef RT2870
+
+
+#ifdef RTMP_MAC_USB
 static INT TxDmaBusy(
 	IN PRTMP_ADAPTER pAd)
 {
@@ -136,6 +414,7 @@ static INT TxDmaBusy(
 	USB_DMA_CFG_STRUC UsbCfg;
 
 	RTMP_IO_READ32(pAd, USB_DMA_CFG, &UsbCfg.word);	// disable DMA
+
 	if (UsbCfg.field.TxBusy)
 		result = 1;
 	else
@@ -143,6 +422,7 @@ static INT TxDmaBusy(
 
 	return result;
 }
+
 
 static INT RxDmaBusy(
 	IN PRTMP_ADAPTER pAd)
@@ -159,6 +439,7 @@ static INT RxDmaBusy(
 	return result;
 }
 
+
 static VOID RtmpDmaEnable(
 	IN PRTMP_ADAPTER pAd,
 	IN INT Enable)
@@ -171,6 +452,7 @@ static VOID RtmpDmaEnable(
 
 	// check DMA is in busy mode.
 	WaitCnt = 0;
+
 	while (TxDmaBusy(pAd) || RxDmaBusy(pAd))
 	{
 		RTMPusecDelay(10);
@@ -187,7 +469,8 @@ static VOID RtmpDmaEnable(
 
 	return;
 }
-#endif // RT2870 //
+#endif // RTMP_MAC_USB //
+
 
 static VOID BbpSoftReset(
 	IN PRTMP_ADAPTER pAd)
@@ -205,6 +488,7 @@ static VOID BbpSoftReset(
 
 	return;
 }
+
 
 static VOID RtmpRfIoWrite(
 	IN PRTMP_ADAPTER pAd)
@@ -234,14 +518,23 @@ static VOID RtmpRfIoWrite(
 	return;
 }
 
+
+#ifdef RT30xx
 static int CheckMCSValid(
 	UCHAR Mode,
-	UCHAR Mcs)
+	UCHAR Mcs,
+	BOOLEAN bRT2070)
+#endif // RT30xx //
+#ifndef RT30xx
+static int CheckMCSValid(
+	IN UCHAR Mode,
+	IN UCHAR Mcs)
+#endif // RT30xx //
 {
-	int i;
+	INT i;
 	PCHAR pRateTab;
 
-	switch(Mode)
+	switch (Mode)
 	{
 		case 0:
 			pRateTab = CCKRateTable;
@@ -251,6 +544,11 @@ static int CheckMCSValid(
 			break;
 		case 2:
 		case 3:
+#ifdef RT30xx
+			if (bRT2070)
+				pRateTab = OFDMRateTable;
+			else
+#endif // RT30xx //
 			pRateTab = HTMIXRateTable;
 			break;
 		default: 
@@ -260,7 +558,7 @@ static int CheckMCSValid(
 	}
 
 	i = 0;
-	while(pRateTab[i] != -1)
+	while (pRateTab[i] != -1)
 	{
 		if (pRateTab[i] == Mcs)
 			return 0;
@@ -270,7 +568,7 @@ static int CheckMCSValid(
 	return -1;
 }
 
-#if 1
+
 static INT ATETxPwrHandler(
 	IN PRTMP_ADAPTER pAd,
 	IN char index)
@@ -279,19 +577,16 @@ static INT ATETxPwrHandler(
 	CHAR TxPower;
 	UCHAR Bbp94 = 0;
 	BOOLEAN bPowerReduce = FALSE;
-#ifdef RT30xx
+#ifdef RTMP_RF_RW_SUPPORT
 	UCHAR RFValue;
-#endif // RT30xx //
+#endif // RTMP_RF_RW_SUPPORT //
 #ifdef RALINK_28xx_QA
 	if ((pAd->ate.bQATxStart == TRUE) || (pAd->ate.bQARxStart == TRUE))
 	{
-		/* When QA is used for Tx, pAd->ate.TxPower0/1 and real tx power
-		** are not synchronized.
+		/* 
+			When QA is used for Tx, pAd->ate.TxPower0/1 and real tx power
+			are not synchronized.
 		*/
-/*
-		pAd->ate.TxPower0 = pAd->LatchRfRegs.xxx;
-		pAd->ate.TxPower1 = pAd->LatchRfRegs.xxx;
-*/
 		return 0;
 	}
 	else
@@ -303,18 +598,16 @@ static INT ATETxPwrHandler(
 		{
 			if (TxPower > 31)
 			{
-				//
+				
 				// R3, R4 can't large than 31 (0x24), 31 ~ 36 used by BBP 94
-				//
 				R = 31;
 				if (TxPower <= 36)
 					Bbp94 = BBPR94_DEFAULT + (UCHAR)(TxPower - 31);		
 			}
 			else if (TxPower < 0)
 			{
-				//
+				
 				// R3, R4 can't less than 0, -1 ~ -6 used by BBP 94
-				//	
 				R = 0;
 				if (TxPower >= -6)
 					Bbp94 = BBPR94_DEFAULT + TxPower;
@@ -328,20 +621,18 @@ static INT ATETxPwrHandler(
 
 			ATEDBGPRINT(RT_DEBUG_TRACE, ("%s (TxPower=%d, R=%ld, BBP_R94=%d)\n", __FUNCTION__, TxPower, R, Bbp94));
 		}
-		else// 5.5 GHz
+		else /* 5.5 GHz */
 		{
 			if (TxPower > 15)
 			{
-				//
+				
 				// R3, R4 can't large than 15 (0x0F)
-				//
 				R = 15;
 			}
 			else if (TxPower < 0)
 			{
-				//
+				
 				// R3, R4 can't less than 0
-				//	
 				// -1 ~ -7
 				ASSERT((TxPower >= -7));
 				R = (ULONG)(TxPower + 7);
@@ -356,48 +647,50 @@ static INT ATETxPwrHandler(
 			ATEDBGPRINT(RT_DEBUG_TRACE, ("%s (TxPower=%d, R=%lu)\n", __FUNCTION__, TxPower, R));
 		}
 //2008/09/10:KH adds to support 3070 ATE TX Power tunning real time<--
-#ifdef RT30xx
-		if(IS_RT30xx(pAd))
+#ifdef RTMP_RF_RW_SUPPORT
+		if (IS_RT30xx(pAd))
 		{
 			// Set Tx Power
-
-					RT30xxReadRFRegister(pAd, RF_R12, (PUCHAR)&RFValue);
-					RFValue = (RFValue & 0xE0) | TxPower;
-					RT30xxWriteRFRegister(pAd, RF_R12, (UCHAR)RFValue);
-					ATEDBGPRINT(RT_DEBUG_TRACE, ("3070 or 2070:%s (TxPower=%d, RFValue=%x)\n", __FUNCTION__, TxPower, RFValue));
-
+			ATE_RF_IO_READ8_BY_REG_ID(pAd, RF_R12, (PUCHAR)&RFValue);
+			RFValue = (RFValue & 0xE0) | TxPower;
+			ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R12, (UCHAR)RFValue);
+			ATEDBGPRINT(RT_DEBUG_TRACE, ("3070 or 2070:%s (TxPower=%d, RFValue=%x)\n", __FUNCTION__, TxPower, RFValue));
 		}
 		else
-#endif // RT30xx //
-	      {
+#endif // RTMP_RF_RW_SUPPORT //
+		{
 		if (pAd->ate.Channel <= 14)
 		{
 			if (index == 0)
 			{
-				R = R << 9;		// shift TX power control to correct RF(R3) register bit position
+				// shift TX power control to correct RF(R3) register bit position
+				R = R << 9;		
 				R |= (pAd->LatchRfRegs.R3 & 0xffffc1ff);
 				pAd->LatchRfRegs.R3 = R;
 			}
 			else
 			{
-				R = R << 6;		// shift TX power control to correct RF(R4) register bit position
+				// shift TX power control to correct RF(R4) register bit position
+				R = R << 6;		
 				R |= (pAd->LatchRfRegs.R4 & 0xfffff83f);
 				pAd->LatchRfRegs.R4 = R;
 			}
 		}
-		else// 5.5GHz
+		else /* 5.5GHz */
 		{
 			if (bPowerReduce == FALSE)
 			{
 				if (index == 0)
 				{
-					R = (R << 10) | (1 << 9);		// shift TX power control to correct RF(R3) register bit position
+					// shift TX power control to correct RF(R3) register bit position
+					R = (R << 10) | (1 << 9);		
 					R |= (pAd->LatchRfRegs.R3 & 0xffffc1ff);
 					pAd->LatchRfRegs.R3 = R;
 				}
 				else
 				{
-					R = (R << 7) | (1 << 6);		// shift TX power control to correct RF(R4) register bit position
+					// shift TX power control to correct RF(R4) register bit position
+					R = (R << 7) | (1 << 6);		
 					R |= (pAd->LatchRfRegs.R4 & 0xfffff83f);
 					pAd->LatchRfRegs.R4 = R;
 				}
@@ -406,7 +699,8 @@ static INT ATETxPwrHandler(
 			{
 				if (index == 0)
 				{
-					R = (R << 10);		// shift TX power control to correct RF(R3) register bit position
+					// shift TX power control to correct RF(R3) register bit position
+					R = (R << 10);		
 					R |= (pAd->LatchRfRegs.R3 & 0xffffc1ff);
 
 					/* Clear bit 9 of R3 to reduce 7dB. */ 
@@ -414,7 +708,8 @@ static INT ATETxPwrHandler(
 				}
 				else
 				{
-					R = (R << 7);		// shift TX power control to correct RF(R4) register bit position
+					// shift TX power control to correct RF(R4) register bit position
+					R = (R << 7);		
 					R |= (pAd->LatchRfRegs.R4 & 0xfffff83f);
 
 					/* Clear bit 6 of R4 to reduce 7dB. */ 
@@ -423,105 +718,16 @@ static INT ATETxPwrHandler(
 			}
 		}
 		RtmpRfIoWrite(pAd);
-           }
+	}
 //2008/09/10:KH adds to support 3070 ATE TX Power tunning real time-->
 
 		return 0;
 	}
 }
-#else// 1 //
-static INT ATETxPwrHandler(
-	IN PRTMP_ADAPTER pAd,
-	IN char index)
-{
-	ULONG R;
-	CHAR TxPower;
-	UCHAR Bbp94 = 0;
-	
-#ifdef RALINK_28xx_QA
-	if ((pAd->ate.bQATxStart == TRUE) || (pAd->ate.bQARxStart == TRUE))
-	{
-		// TODO: how to get current TxPower0/1 from pAd->LatchRfRegs ?
-		/* When QA is used for Tx, pAd->ate.TxPower0/1 and real tx power
-		** are not synchronized.
-		*/
+
+
 /*
-		pAd->ate.TxPower0 = pAd->LatchRfRegs.xxx;
-		pAd->ate.TxPower1 = pAd->LatchRfRegs.xxx;
-*/
-		return 0;
-	}
-	else
-#endif // RALINK_28xx_QA //
-	{
-		TxPower = index == 0 ? pAd->ate.TxPower0 : pAd->ate.TxPower1;
-
-	if (TxPower > 31)
-	{
-		//
-		// R3, R4 can't large than 36 (0x24), 31 ~ 36 used by BBP 94
-		//
-		R = 31;
-		if (TxPower <= 36)
-			Bbp94 = BBPR94_DEFAULT + (UCHAR)(TxPower - 31);		
-	}
-	else if (TxPower < 0)
-	{
-		//
-		// R3, R4 can't less than 0, -1 ~ -6 used by BBP 94
-		//	
-		R = 0;
-		if (TxPower >= -6)
-			Bbp94 = BBPR94_DEFAULT + TxPower;
-	}
-	else
-	{  
-		// 0 ~ 31
-		R = (ULONG) TxPower;
-		Bbp94 = BBPR94_DEFAULT;
-	}
-
-	ATEDBGPRINT(RT_DEBUG_TRACE, ("%s (TxPower=%d, R3=%ld, BBP_R94=%d)\n", __FUNCTION__, TxPower, R, Bbp94));
-
-		if (pAd->ate.Channel <= 14)
-		{
-	if (index == 0)
-	{
-		R = R << 9;		// shift TX power control to correct RF(R3) register bit position
-		R |= (pAd->LatchRfRegs.R3 & 0xffffc1ff);
-		pAd->LatchRfRegs.R3 = R;
-	}
-	else
-	{
-		R = R << 6;		// shift TX power control to correct RF(R4) register bit position
-		R |= (pAd->LatchRfRegs.R4 & 0xfffff83f);
-		pAd->LatchRfRegs.R4 = R;
-	}
-		}
-		else
-		{
-			if (index == 0)
-			{
-				R = (R << 10) | (1 << 9);		// shift TX power control to correct RF(R3) register bit position
-				R |= (pAd->LatchRfRegs.R3 & 0xffffc1ff);
-				pAd->LatchRfRegs.R3 = R;
-			}
-			else
-			{
-				R = (R << 7) | (1 << 6);		// shift TX power control to correct RF(R4) register bit position
-				R |= (pAd->LatchRfRegs.R4 & 0xfffff83f);
-				pAd->LatchRfRegs.R4 = R;
-			}
-		}
-
-	RtmpRfIoWrite(pAd);
-
-	return 0;
-	}
-}
-#endif // 1 //
-/*
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE operation mode to
         0. ATESTART  = Start ATE Mode
@@ -536,30 +742,29 @@ static INT ATETxPwrHandler(
 #endif // RALINK_28xx_QA //
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
-/*                                                           */
-/*                                                           */
-/*=======================End of RT2860=======================*/
 
 
-/*======================Start of RT2870======================*/
-/*                                                           */
-/*                                                           */
-
-#ifdef RT2870
+#ifdef RTMP_MAC_USB
+/*======================Start of RTMP_MAC_USB ======================*/
 static INT	ATECmdHandler(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	UINT32			Value;
 	UCHAR			BbpData;
 	UINT32          MacData;
-	UINT			i=0, atemode;
-	//NDIS_STATUS		Status = NDIS_STATUS_SUCCESS;
-	//PUCHAR			pDest;
+	UINT			i=0, atemode, bbp_index=0;
 	UINT32 			temp;
 	ULONG			IrqFlags;
+#ifdef RT30xx
+	UCHAR	RestoreRfICType=0;
+#endif // RT30xx //
+
+#ifdef RT30xx
+	RestoreRfICType=pAd->RfIcType;
+#endif // RT30xx //
 
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("===> ATECmdHandler()\n"));
 	ATEAsicSwitchChannel(pAd);
@@ -579,11 +784,13 @@ static INT	ATECmdHandler(
 #endif // CONFIG_STA_SUPPORT //
 		ATEDBGPRINT(RT_DEBUG_TRACE, ("ATE: ATESTART\n"));
 		
-		netif_stop_queue(pAd->net_dev);		
+#if defined(LINUX) || defined(VXWORKS)
+		RTMP_OS_NETDEV_STOP_QUEUE(pAd->net_dev);
+#endif // defined(LINUX) || defined(VXWORKS) //
 
 		atemode = pAd->ate.Mode;
 		pAd->ate.Mode = ATE_START;
-//		pAd->ate.TxDoneCount = pAd->ate.TxCount;
+
 		// Disable Rx
 		RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &Value);
 		Value &= ~(1 << 3);
@@ -594,82 +801,125 @@ static INT	ATECmdHandler(
 		temp = temp & 0xFFFFFFFE;
 		RTMP_IO_WRITE32(pAd, AUTO_RSP_CFG, temp);
 
-		// read MAC_SYS_CTRL and backup MAC_SYS_CTRL value.
+		// read MAC_SYS_CTRL and backup MAC_SYS_CTRL value
 		RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &MacData);
-		// clean bit4 to stop continuous Tx production test.
+		// clean bit4 to stop continuous Tx production test
 		MacData &= 0xFFFFFFEF;		
-		// Stop continuous TX production test.
-		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData);//disable or cancel pending irp first ???
 
-        if (atemode & ATE_TXCARR
-#ifdef RT30xx
- || atemode & ATE_TXCONT
-#endif // RT30xx //
-)
+		// Stop continuous TX production test.
+		// Disable or cancel pending irp first ???
+		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData);
+
+        if (atemode == ATE_TXCARR)
 		{
+			/* RT35xx ATE will reuse this code segment. */
 #ifdef RT30xx
-			//Hardware Reset BBP
+			// Hardware Reset BBP
 			RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &temp);
-			temp = temp |0x00000002;
+			temp = temp | 0x00000002;
 			RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, temp);
 			RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &temp);
 			temp = temp & ~(0x00000002);
 			RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, temp);
-			//Restore All BBP Value
-			for(i=0;i<ATE_BBP_REG_NUM;i++)
-			ATE_BBP_IO_WRITE8_BY_REG_ID(pAd,i,restore_BBP[i]);
+
+			// Restore All BBP Value
+			for (bbp_index=0;bbp_index<ATE_BBP_REG_NUM;bbp_index++)
+				ATE_BBP_IO_WRITE8_BY_REG_ID(pAd,bbp_index,restore_BBP[bbp_index]);
+
+			/*
+				The RfIcType will be reset to zero after the hardware reset bbp command.
+				Therefore, we must restore the original RfIcType.
+			*/
+			pAd->RfIcType=RestoreRfICType;
 #endif // RT30xx //
 
-			// No Carrier Test set BBP R22 bit7=0, bit6=0, bit[5~0]=0x0
+			/* No Carrier Test set BBP R22 bit7=0, bit6=0, bit[5~0]=0x0 */
 			ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R22, &BbpData);
 			BbpData &= 0xFFFFFF00; //clear bit7, bit6, bit[5~0]	
 		    ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
 		}
-		else if (atemode & ATE_TXCARRSUPP)
+		else if (atemode == ATE_TXCARRSUPP)
 		{
+			/* RT35xx ATE will reuse this code segment. */
 #ifdef RT30xx
-			//Hardware Reset BBP
+			// Hardware Reset BBP
 			RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &temp);
-			temp = temp |0x00000002;
+			temp = temp | 0x00000002;
 			RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, temp);
 			RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &temp);
 			temp = temp & ~(0x00000002);
 			RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, temp);
-			//Restore All BBP Value
-			for(i=0;i<ATE_BBP_REG_NUM;i++)
-			ATE_BBP_IO_WRITE8_BY_REG_ID(pAd,i,restore_BBP[i]);
+
+			// Restore All BBP Value
+			for (bbp_index=0;bbp_index<ATE_BBP_REG_NUM;bbp_index++)
+				ATE_BBP_IO_WRITE8_BY_REG_ID(pAd,bbp_index,restore_BBP[bbp_index]);
+
+			/*
+				The RfIcType will be reset to zero after the hardware reset bbp command.
+				Therefore, we must restore the original RfIcType.
+			*/
+			pAd->RfIcType=RestoreRfICType;			
 #endif // RT30xx //
 
-			// No Cont. TX set BBP R22 bit7=0
+			/* No Cont. TX set BBP R22 bit7=0 */
 			ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R22, &BbpData);
 			BbpData &= ~(1 << 7); //set bit7=0
 			ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
 
-			// No Carrier Suppression set BBP R24 bit0=0
+			/* No Carrier Suppression set BBP R24 bit0=0 */
 			ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R24, &BbpData);
 			BbpData &= 0xFFFFFFFE; //clear bit0	
 		    ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R24, BbpData);
 		}		
-		// We should free some resource which allocate when ATE_TXFRAME , ATE_STOP, and ATE_TXCONT.
-		// TODO:Should we free some resource which was allocated when LoopBack and ATE_STOP ?
+
+		/*
+			We should free some resource which was allocated
+			when ATE_TXFRAME, ATE_STOP, and ATE_TXCONT.
+		*/
 		else if ((atemode & ATE_TXFRAME) || (atemode == ATE_STOP))
 		{
-			if (atemode & ATE_TXCONT)
+			if (atemode == ATE_TXCONT)
 			{
-				// Not Cont. TX anymore, so set BBP R22 bit7=0
+#ifdef RT30xx
+				// Hardware Reset BBP
+				RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &temp);
+				temp = temp | 0x00000002;
+				RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, temp);
+				RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &temp);
+				temp = temp & ~(0x00000002);
+				RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, temp);
+
+				// Restore All BBP Value
+				for (bbp_index=0;bbp_index<ATE_BBP_REG_NUM;bbp_index++)
+					ATE_BBP_IO_WRITE8_BY_REG_ID(pAd,bbp_index,restore_BBP[bbp_index]);
+
+			/*
+				The RfIcType will be reset to zero after the hardware reset bbp command.
+				Therefore, we must restore the original RfIcType.
+			*/
+			pAd->RfIcType=RestoreRfICType;			
+#endif // RT30xx //
+
+
+
+				/* Not Cont. TX anymore, so set BBP R22 bit7=0 */
 				ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R22, &BbpData);
-				BbpData &= ~(1 << 7); //set bit7=0
+				BbpData &= ~(1 << 7); // set bit7=0
 				ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
 			}
-			// Abort Tx, Rx DMA.
+
+			/* Abort Tx, Rx DMA. */
 			RtmpDmaEnable(pAd, 0);
 
 			{
-				// It seems nothing to free, 
-				// because we didn't allocate any resource when we entered ATE_TXFRAME mode latestly. 
+				/*
+					It seems nothing needed to be free, 
+					because we did not allocate any resource
+					when we entered ATE_TXFRAME mode latestly. 
+				*/
 			}
 
-			// Start Tx, RX DMA
+			/* Start Tx, RX DMA */
 			RtmpDmaEnable(pAd, 1);
 		}
 		
@@ -677,24 +927,25 @@ static INT	ATECmdHandler(
 		RTUSBCleanUpDataBulkOutQueue(pAd);
 
 #ifdef CONFIG_STA_SUPPORT
-		//
-		// It will be called in MlmeSuspend().
-		//
-		// Cancel pending timers
-		RTMPCancelTimer(&pAd->MlmeAux.AssocTimer,     &Cancelled);
-		RTMPCancelTimer(&pAd->MlmeAux.ReassocTimer,   &Cancelled);
+		/*
+			It will be called in MlmeSuspend().
+			Cancel pending timers.
+		*/
+		RTMPCancelTimer(&pAd->MlmeAux.AssocTimer,      &Cancelled);
+		RTMPCancelTimer(&pAd->MlmeAux.ReassocTimer,    &Cancelled);
 		RTMPCancelTimer(&pAd->MlmeAux.DisassocTimer,   &Cancelled);
 		RTMPCancelTimer(&pAd->MlmeAux.AuthTimer,       &Cancelled);
 		RTMPCancelTimer(&pAd->MlmeAux.BeaconTimer,     &Cancelled);
 		RTMPCancelTimer(&pAd->MlmeAux.ScanTimer,       &Cancelled);
 #endif // CONFIG_STA_SUPPORT //
 
-		//RTUSBCleanUpMLMEWaitQueue(pAd);	/* not used in RT28xx */
+		/* not used in RT28xx */
+//		RTUSBCleanUpMLMEWaitQueue(pAd);	
 		RTUSBCleanUpMLMEBulkOutQueue(pAd);
 
 		// Sometimes kernel will hang on, so we avoid calling MlmeSuspend().
 //		MlmeSuspend(pAd, TRUE);
-		//RTMPCancelTimer(&pAd->Mlme.PeriodicTimer, &Cancelled);
+//		RTMPCancelTimer(&pAd->Mlme.PeriodicTimer, &Cancelled);
 
 		// Disable Rx
 		RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &Value);
@@ -710,42 +961,39 @@ static INT	ATECmdHandler(
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, Value);
 
 		// Make sure there are no pending bulk in/out IRPs before we go on.
-/*=========================================================================*/
-		/* pAd->PendingRx is not of type atomic_t anymore in 28xx */
-//		while ((atomic_read(&pAd->PendingRx) > 0))	//pAd->BulkFlags != 0 wait bulk out finish
-		while ((pAd->PendingRx > 0))	//pAd->BulkFlags != 0 wait bulk out finish
+		// pAd->BulkFlags != 0 : wait bulk out finish
+		while ((pAd->PendingRx > 0))	
 		{
-#if 1
 			ATE_RTUSBCancelPendingBulkInIRP(pAd);
-#else
-			NdisInterlockedDecrement(&pAd->PendingRx);
-#endif
+
 			/* delay 0.5 seconds */
 			RTMPusecDelay(500000);
 			pAd->PendingRx = 0;
 		}
-		/* peter : why don't we have to get BulkOutLock first ? */ 
+
+		/* Why don't we have to get BulkOutLock first ? */ 
 		while (((pAd->BulkOutPending[0] == TRUE) ||
 				(pAd->BulkOutPending[1] == TRUE) || 
 				(pAd->BulkOutPending[2] == TRUE) ||
-				(pAd->BulkOutPending[3] == TRUE)) && (pAd->BulkFlags != 0))	//pAd->BulkFlags != 0 wait bulk out finish
+				(pAd->BulkOutPending[3] == TRUE)) && (pAd->BulkFlags != 0))// pAd->BulkFlags != 0 : wait bulk out finish	
 		{
 			do 
 			{
-				/* pAd->BulkOutPending[y] will be set to FALSE in RTUSBCancelPendingBulkOutIRP(pAd) */
+				/* 
+					pAd->BulkOutPending[y] will be set to FALSE
+					in RTUSBCancelPendingBulkOutIRP(pAd)
+				*/
 				RTUSBCancelPendingBulkOutIRP(pAd);
 			} while (FALSE);			
 
-			/* we have enough time delay in RTUSBCancelPendingBulkOutIRP(pAd)
-			** so this is not necessary 
+			/* 
+				we have enough time delay in RTUSBCancelPendingBulkOutIRP(pAd)
+				so this is not necessary 
 			*/
 //			RTMPusecDelay(500000);
 		}
 
-		/* pAd->PendingRx is not of type atomic_t anymore in 28xx */
-//		ASSERT(atomic_read(&pAd->PendingRx) == 0);
 		ASSERT(pAd->PendingRx == 0);
-/*=========================================================================*/
 
 		// reset Rx statistics.
 		pAd->ate.LastSNR0 = 0;
@@ -776,7 +1024,7 @@ static INT	ATECmdHandler(
 		pAd->ate.TxAc1 = 0;
 		pAd->ate.TxAc2 = 0;
 		pAd->ate.TxAc3 = 0;
-		pAd->ate.TxHCCA = 0;
+		/*pAd->ate.TxHCCA = 0;*/
 		pAd->ate.TxMgmt = 0;
 		pAd->ate.RSSI0 = 0;
 		pAd->ate.RSSI1 = 0;
@@ -786,7 +1034,8 @@ static INT	ATECmdHandler(
 
 		// control
 		pAd->ate.TxDoneCount = 0;
-		pAd->ate.TxStatus = 0; // task Tx status // 0 --> task is idle, 1 --> task is running
+		// TxStatus : 0 --> task is idle, 1 --> task is running
+		pAd->ate.TxStatus = 0; 
 #endif // RALINK_28xx_QA //
 
 		// Soft reset BBP.		
@@ -797,8 +1046,8 @@ static INT	ATECmdHandler(
 		AsicDisableSync(pAd);
 
 		/*
-		** If we skip "LinkDown()", we should disable protection
-		** to prevent from sending out RTS or CTS-to-self.
+			If we skip "LinkDown()", we should disable protection
+			to prevent from sending out RTS or CTS-to-self.
 		*/                 
 		ATEDisableAsicProtect(pAd);
 		RTMPStationStop(pAd);
@@ -811,8 +1060,9 @@ static INT	ATECmdHandler(
 		// Clean bit4 to stop continuous Tx production test.
 		MacData &= 0xFFFFFFEF;
 	   	ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
-	    	RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData);		
-		//Clean ATE Bulk in/out counter and continue setup
+		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData);		
+
+		// Clean ATE Bulk in/out counter and continue setup
 		InterlockedExchange(&pAd->BulkOutRemained, 0);
 
 		/* NdisAcquireSpinLock()/NdisReleaseSpinLock() need only one argument in RT28xx */
@@ -827,13 +1077,15 @@ static INT	ATECmdHandler(
 	{						
 		ATEDBGPRINT(RT_DEBUG_TRACE, ("ATE : ATESTOP ===>\n"));
 
+
 		// Default value in BBP R22 is 0x0.
 		BbpData = 0;
-		RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &MacData);//0820
+		RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &MacData);
 		// Clean bit4 to stop continuous Tx production test.
 		MacData &= 0xFFFFFFEF;
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
-		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData); // recover the MAC_SYS_CTRL register back.		
+		// recover the MAC_SYS_CTRL register back.
+		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData); 		
 
 		// Disable Rx
 		RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &Value);
@@ -841,9 +1093,9 @@ static INT	ATECmdHandler(
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, Value);
 
 		/*
-		** Abort Tx, RX DMA.
-		** Q   : How to do the following I/O if Tx, Rx DMA is aborted ?
-		** Ans : Bulk endpoints are aborted, while the control endpoint is not.
+			Abort Tx, RX DMA.
+			Q   : How to do the following I/O if Tx, Rx DMA is aborted ?
+			Ans : Bulk endpoints are aborted, while the control endpoint is not.
 		*/
 		RtmpDmaEnable(pAd, 0);
 
@@ -853,23 +1105,17 @@ static INT	ATECmdHandler(
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, Value);
 
 		/* Make sure there are no pending bulk in/out IRPs before we go on. */
-/*=========================================================================*/
-//		while ((atomic_read(&pAd->PendingRx) > 0))	//pAd->BulkFlags != 0 wait bulk out finish
+		// pAd->BulkFlags != 0 : wait bulk out finish
 		while (pAd->PendingRx > 0)
 		{
-#if 1
 			ATE_RTUSBCancelPendingBulkInIRP(pAd);
-#else
-//			NdisInterlockedDecrement(&pAd->PendingRx);
-			pAd->PendingRx--;
-#endif
 			RTMPusecDelay(500000);
 		}
 
 		while (((pAd->BulkOutPending[0] == TRUE) ||
 				(pAd->BulkOutPending[1] == TRUE) || 
 				(pAd->BulkOutPending[2] == TRUE) ||
-				(pAd->BulkOutPending[3] == TRUE)) && (pAd->BulkFlags != 0))	//pAd->BulkFlags != 0 wait bulk out finish
+				(pAd->BulkOutPending[3] == TRUE)) && (pAd->BulkFlags != 0))	// pAd->BulkFlags != 0 : wait bulk out finish
 		{
 			do 
 			{
@@ -879,27 +1125,27 @@ static INT	ATECmdHandler(
 			RTMPusecDelay(500000);
 		}
 
-//		ASSERT(atomic_read(&pAd->PendingRx) == 0);
+
 		ASSERT(pAd->PendingRx == 0);
 /*=========================================================================*/
 /*      Reset Rx RING                                                      */ 
 /*=========================================================================*/
 //		InterlockedExchange(&pAd->PendingRx, 0);
 		pAd->PendingRx = 0;
-		pAd->NextRxBulkInReadIndex = 0;	// Next Rx Read index
-		pAd->NextRxBulkInIndex = RX_RING_SIZE - 1;	// Rx Bulk pointer
+		// Next Rx Read index
+		pAd->NextRxBulkInReadIndex = 0;	
+		// Rx Bulk pointer
+		pAd->NextRxBulkInIndex = RX_RING_SIZE - 1;	
 		pAd->NextRxBulkInPosition = 0;
 		for (i = 0; i < (RX_RING_SIZE); i++)
 		{
 			PRX_CONTEXT  pRxContext = &(pAd->RxContext[i]);
 			NdisZeroMemory(pRxContext->TransferBuffer, MAX_RXBULK_SIZE);
-			/* peter : why don't we have to get BulkInLock first ? */
+			/* why don't we have to get BulkInLock first ? */
 			pRxContext->pAd	= pAd;
 			pRxContext->pIrp = NULL;
-            /* peter debug ++ */
 			pRxContext->BulkInOffset = 0;
 			pRxContext->bRxHandling = FALSE;
-            /* peter debug -- */
 			pRxContext->InUse		= FALSE;
 			pRxContext->IRPPending	= FALSE;
 			pRxContext->Readable	= FALSE;
@@ -915,20 +1161,17 @@ static INT	ATECmdHandler(
 			RTUSBCancelPendingBulkOutIRP(pAd);
 		} while (FALSE);
 
-/*=========================================================================*/
 		// Enable auto responder.
 		RTMP_IO_READ32(pAd, AUTO_RSP_CFG, &temp);
 		temp = temp | (0x01);
 		RTMP_IO_WRITE32(pAd, AUTO_RSP_CFG, temp);
 
-/*================================================*/
 		AsicEnableBssSync(pAd);
 
 		/* Soft reset BBP.*/
 		/* In 2870 chipset, ATE_BBP_IO_READ8_BY_REG_ID() == RTMP_BBP_IO_READ8_BY_REG_ID() */
 		/* Both rt2870ap and rt2870sta use BbpSoftReset(pAd) to do BBP soft reset */
 		BbpSoftReset(pAd);
-/*================================================*/
 		{
 #ifdef CONFIG_STA_SUPPORT
 			// Set all state machines back IDLE
@@ -945,11 +1188,13 @@ static INT	ATECmdHandler(
 			// When we entered ATE_START mode, PeriodicTimer was not cancelled.
 			// So we don't have to set it here.
 			//
-			//RTMPSetTimer(pAd, &pAd->Mlme.PeriodicTimer, MLME_TASK_EXEC_INTV);
+//			RTMPSetTimer(pAd, &pAd->Mlme.PeriodicTimer, MLME_TASK_EXEC_INTV);
 			
 			ASSERT(pAd->CommonCfg.Channel != 0);			
 
 			AsicSwitchChannel(pAd, pAd->CommonCfg.Channel, FALSE);
+
+			/* empty function */
 			AsicLockChannel(pAd, pAd->CommonCfg.Channel);
 
 
@@ -957,9 +1202,7 @@ static INT	ATECmdHandler(
 		    RTMPStationStart(pAd);
 #endif // CONFIG_STA_SUPPORT //
 		}	
-//
-// These two steps have been done when entering ATE_STOP mode.
-//
+
 		// Clean ATE Bulk in/out counter and continue setup.
 		InterlockedExchange(&pAd->BulkOutRemained, 0);				
 		NdisAcquireSpinLock(&pAd->GenericLock);
@@ -969,7 +1212,7 @@ static INT	ATECmdHandler(
 
 		/* Wait 50ms to prevent next URB to bulkout during HW reset. */
 		/* todo : remove this if not necessary */
-		NdisMSleep(50000);
+		RTMPusecDelay(50000);
 
 		pAd->ate.Mode = ATE_STOP;
 
@@ -978,13 +1221,12 @@ static INT	ATECmdHandler(
 		Value |= (1 << 2);
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, Value);
 
-/*=========================================================================*/
 		/* restore RX_FILTR_CFG */
+
 #ifdef CONFIG_STA_SUPPORT 
 		/* restore RX_FILTR_CFG in order that QA maybe set it to 0x3 */
 		RTMP_IO_WRITE32(pAd, RX_FILTR_CFG, STANORMAL);
 #endif // CONFIG_STA_SUPPORT //
-/*=========================================================================*/
 
 		// Enable Tx, RX DMA.
 		RtmpDmaEnable(pAd, 1);
@@ -994,27 +1236,31 @@ static INT	ATECmdHandler(
 		Value |= (1 << 3);
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, Value);
 
-		// Wait 10ms to wait all of the bulk-in URBs to complete.
+		/* Wait 10ms for all of the bulk-in URBs to complete. */
 		/* todo : remove this if not necessary */
-		NdisMSleep(10000);
+		RTMPusecDelay(10000);
 
 		// Everything is ready to start normal Tx/Rx.
 		RTUSBBulkReceive(pAd);
-		netif_start_queue(pAd->net_dev);
+
+#if defined(LINUX) || defined(VXWORKS)
+		RTMP_OS_NETDEV_START_QUEUE(pAd->net_dev);
+#endif // defined(LINUX) || defined(VXWORKS) //
 
 		ATEDBGPRINT(RT_DEBUG_TRACE, ("<=== ATE : ATESTOP \n"));
 	}
-	else if (!strcmp(arg, "TXCARR"))	// Tx Carrier
+	else if (!strcmp(arg, "TXCARR"))	
 	{
 		ATEDBGPRINT(RT_DEBUG_TRACE, ("ATE: TXCARR\n"));
-		pAd->ate.Mode |= ATE_TXCARR;
+		pAd->ate.Mode = ATE_TXCARR;
 
+		/* RT35xx ATE will reuse this code segment. */
 #ifdef RT30xx
-			for(i=0;i<ATE_BBP_REG_NUM;i++)
-				restore_BBP[i]=0;
-			//Record All BBP Value
-			for(i=0;i<ATE_BBP_REG_NUM;i++)
-			ATE_BBP_IO_READ8_BY_REG_ID(pAd,i,&restore_BBP[i]);
+		for (bbp_index=0;bbp_index<ATE_BBP_REG_NUM;bbp_index++)
+			restore_BBP[bbp_index]=0;
+		// Record All BBP Value
+		for (bbp_index=0;bbp_index<ATE_BBP_REG_NUM;bbp_index++)
+			ATE_BBP_IO_READ8_BY_REG_ID(pAd,bbp_index,&restore_BBP[bbp_index]);
 #endif // RT30xx //
 
 		// Disable Rx
@@ -1041,12 +1287,14 @@ static INT	ATECmdHandler(
 			RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, Value);
 		}
 	}
-	else if (!strcmp(arg, "TXCONT"))	// Tx Continue
+	else if (!strcmp(arg, "TXCONT"))	
 	{
 		if (pAd->ate.bQATxStart == TRUE)
 		{
-			/* set MAC_SYS_CTRL(0x1004) bit4(Continuous Tx Production Test)
-			   and bit2(MAC TX enable) back to zero. */ 
+			/* 
+				set MAC_SYS_CTRL(0x1004) bit4(Continuous Tx Production Test)
+				and bit2(MAC TX enable) back to zero.
+			*/ 
 			RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &MacData);
 			MacData &= 0xFFFFFFEB;
 			RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData);
@@ -1057,22 +1305,24 @@ static INT	ATECmdHandler(
 			ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
 		}
 
-		/* for TxCont mode.
-		** Step 1: Send 50 packets first then wait for a moment.
-		** Step 2: Send more 50 packet then start continue mode.
+		/* 
+			for TxCont mode.
+			Step 1: Send 50 packets first then wait for a moment.
+			Step 2: Send more 50 packet then start continue mode.
 		*/
 		ATEDBGPRINT(RT_DEBUG_TRACE, ("ATE: TXCONT\n"));
 
+		/* RT35xx ATE will reuse this code segment. */
 #ifdef RT30xx
-				for(i=0;i<ATE_BBP_REG_NUM;i++)
-				restore_BBP[i]=0;
-			//Record All BBP Value
-			for(i=0;i<ATE_BBP_REG_NUM;i++)
-			ATE_BBP_IO_READ8_BY_REG_ID(pAd,i,&restore_BBP[i]);
+			for(bbp_index=0;bbp_index<ATE_BBP_REG_NUM;bbp_index++)
+				restore_BBP[bbp_index]=0;
+			// Record All BBP Value
+			for(bbp_index=0;bbp_index<ATE_BBP_REG_NUM;bbp_index++)
+				ATE_BBP_IO_READ8_BY_REG_ID(pAd,bbp_index,&restore_BBP[bbp_index]);
 #endif // RT30xx //
 
 		// Step 1: send 50 packets first.
-		pAd->ate.Mode |= ATE_TXCONT;
+		pAd->ate.Mode = ATE_TXCONT;
 		pAd->ate.TxCount = 50;
 		pAd->ate.TxDoneCount = 0;
 
@@ -1108,11 +1358,10 @@ static INT	ATECmdHandler(
 		if (pAd->ate.bQATxStart == TRUE)
 		{
 			pAd->ate.TxStatus = 1;
-			//pAd->ate.Repeat = 0;
 		}
 #endif	// RALINK_28xx_QA //
 
-		NdisAcquireSpinLock(&pAd->GenericLock);//0820
+		NdisAcquireSpinLock(&pAd->GenericLock);
 		pAd->ContinBulkOut = FALSE;		
 		NdisReleaseSpinLock(&pAd->GenericLock);
 
@@ -1162,11 +1411,10 @@ static INT	ATECmdHandler(
 		if (pAd->ate.bQATxStart == TRUE)
 		{
 			pAd->ate.TxStatus = 1;
-			//pAd->ate.Repeat = 0;
 		}
 #endif	// RALINK_28xx_QA //
 
-		NdisAcquireSpinLock(&pAd->GenericLock);//0820
+		NdisAcquireSpinLock(&pAd->GenericLock);
 		pAd->ContinBulkOut = FALSE;		
 		NdisReleaseSpinLock(&pAd->GenericLock);
 
@@ -1174,21 +1422,15 @@ static INT	ATECmdHandler(
 		// Kick bulk out 
 		RTUSBKickBulkOut(pAd);
 
-#if 1
+		/* Let pAd->BulkOutRemained be consumed to zero */
 		RTMPusecDelay(500);
-#else
-		while (atomic_read(&pAd->BulkOutRemained) > 0)
-		{
-			RTMPusecDelay(5000);
-		}
-#endif // 1 //
 
 		// Set MAC_SYS_CTRL(0x1004) Continuous Tx Production Test (bit4) = 1.
 		RTMP_IO_READ32(pAd, MAC_SYS_CTRL, &MacData);
 		MacData |= 0x00000010;
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData);
 	}
-	else if (!strcmp(arg, "TXFRAME"))	// Tx Frames
+	else if (!strcmp(arg, "TXFRAME"))	
 	{
 		ATEDBGPRINT(RT_DEBUG_TRACE, ("ATE: TXFRAME(Count=0x%08x)\n", pAd->ate.TxCount));
 		pAd->ate.Mode |= ATE_TXFRAME;
@@ -1220,7 +1462,6 @@ static INT	ATECmdHandler(
 		if (pAd->ate.bQATxStart == TRUE)  
 		{
 			pAd->ate.TxStatus = 1;
-			//pAd->ate.Repeat = 0;
 		}
 #else
 		// Disable Rx
@@ -1247,12 +1488,13 @@ static INT	ATECmdHandler(
 		// Start Tx, RX DMA.
 		RtmpDmaEnable(pAd, 1);
 
-		// Check count is continuous or not yet.
-		//
-		// Due to the type mismatch between "pAd->BulkOutRemained"(atomic_t) and "pAd->ate.TxCount"(UINT32)
-		//
+		/* Check count is continuous or not yet. */
 		if (pAd->ate.TxCount == 0)
 		{
+			/*
+				Due to the type mismatch between "pAd->BulkOutRemained"(atomic_t)
+				and "pAd->ate.TxCount"(UINT32)
+			*/
 			InterlockedExchange(&pAd->BulkOutRemained, 0);
 		}
 		else
@@ -1273,9 +1515,9 @@ static INT	ATECmdHandler(
 			NdisReleaseSpinLock(&pAd->GenericLock);
 
 			/* In 28xx, BULK_OUT_LOCK() == spin_lock_irqsave() */
-			BULK_OUT_LOCK(&pAd->BulkOutLock[0], IrqFlags);// peter : NdisAcquireSpinLock ==> BULK_OUT_LOCK
+			BULK_OUT_LOCK(&pAd->BulkOutLock[0], IrqFlags);// NdisAcquireSpinLock ==> BULK_OUT_LOCK
 			pAd->BulkOutPending[0] = FALSE;
-			BULK_OUT_UNLOCK(&pAd->BulkOutLock[0], IrqFlags);// peter : NdisAcquireSpinLock ==> BULK_OUT_LOCK
+			BULK_OUT_UNLOCK(&pAd->BulkOutLock[0], IrqFlags);// NdisAcquireSpinLock ==> BULK_OUT_LOCK
 		}
 		else
 		{
@@ -1296,77 +1538,71 @@ static INT	ATECmdHandler(
 		RTUSBKickBulkOut(pAd);
 	}
 #ifdef RALINK_28xx_QA
-	else if (!strcmp(arg, "TXSTOP")) 		//Enter ATE mode and set Tx/Rx Idle
+	// Enter ATE mode and set Tx/Rx Idle
+	else if (!strcmp(arg, "TXSTOP")) 		
 	{						
 		ATEDBGPRINT(RT_DEBUG_TRACE, ("ATE: TXSTOP\n"));
 		
 		atemode = pAd->ate.Mode;
 		pAd->ate.Mode &= ATE_TXSTOP;
 		pAd->ate.bQATxStart = FALSE;
-//		pAd->ate.TxDoneCount = pAd->ate.TxCount;
 
-/*=========================================================================*/
-		if (atemode & ATE_TXCARR)
+		if (atemode == ATE_TXCARR)
 		{
 			// No Carrier Test set BBP R22 bit7=0, bit6=0, bit[5~0]=0x0
 			ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R22, &BbpData);
-			BbpData &= 0xFFFFFF00; //clear bit7, bit6, bit[5~0]	
+			BbpData &= 0xFFFFFF00; // clear bit7, bit6, bit[5~0]	
 		    ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
 		}
-		else if (atemode & ATE_TXCARRSUPP)
+		else if (atemode == ATE_TXCARRSUPP)
 		{
 			// No Cont. TX set BBP R22 bit7=0
 			ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R22, &BbpData);
-			BbpData &= ~(1 << 7); //set bit7=0
+			BbpData &= ~(1 << 7); // set bit7=0
 			ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
 
 			// No Carrier Suppression set BBP R24 bit0=0
 			ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R24, &BbpData);
-			BbpData &= 0xFFFFFFFE; //clear bit0	
+			BbpData &= 0xFFFFFFFE; // clear bit0	
 		    ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R24, BbpData);
 		}		
 		else if ((atemode & ATE_TXFRAME) || (atemode == ATE_STOP))
 		{
-			if (atemode & ATE_TXCONT)
+			if (atemode == ATE_TXCONT)
 			{
 				// No Cont. TX set BBP R22 bit7=0
 				ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R22, &BbpData);
-				BbpData &= ~(1 << 7); //set bit7=0
+				BbpData &= ~(1 << 7); // set bit7=0
 				ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R22, BbpData);
 			}
 		}
 
-/*=========================================================================*/
 		RTUSBRejectPendingPackets(pAd);
 		RTUSBCleanUpDataBulkOutQueue(pAd);
 
 		/* not used in RT28xx */
-		//RTUSBCleanUpMLMEWaitQueue(pAd);
+//		RTUSBCleanUpMLMEWaitQueue(pAd);
+
 		/* empty function so far */
 		RTUSBCleanUpMLMEBulkOutQueue(pAd);
-/*=========================================================================*/
+
 		// Abort Tx, RX DMA.
 		RtmpDmaEnable(pAd, 0);
-/*=========================================================================*/
 
 		/* In 28xx, pAd->PendingRx is not of type atomic_t anymore */
-//		while ((atomic_read(&pAd->PendingRx) > 0))	//pAd->BulkFlags != 0 wait bulk out finish
-		/* peter todo : BulkInLock */
+		/* pAd->BulkFlags != 0 : wait bulk out finish */
+		/* todo : BulkInLock */
 		while (pAd->PendingRx > 0)
 		{
-#if 1
 			ATE_RTUSBCancelPendingBulkInIRP(pAd);
-#else
-//			NdisInterlockedDecrement(&pAd->PendingRx);
-			pAd->PendingRx--;
-#endif
 			RTMPusecDelay(500000);
 		}
 
 		while (((pAd->BulkOutPending[0] == TRUE) ||
 				(pAd->BulkOutPending[1] == TRUE) || 
 				(pAd->BulkOutPending[2] == TRUE) ||
-				(pAd->BulkOutPending[3] == TRUE)) && (pAd->BulkFlags != 0))	//pAd->BulkFlags != 0 wait bulk out finish
+				(pAd->BulkOutPending[3] == TRUE)) && (pAd->BulkFlags != 0))	
+				// pAd->BulkFlags != 0 : wait bulk out finish
 		{
 			do 
 			{
@@ -1377,11 +1613,11 @@ static INT	ATECmdHandler(
 		}
 
 		ASSERT(pAd->PendingRx == 0);
-/*=========================================================================*/
+
 		// Enable Tx, Rx DMA.
 		RtmpDmaEnable(pAd, 1);
 
-		/* task Tx status : 0 --> task is idle, 1 --> task is running */
+		// TxStatus : 0 --> task is idle, 1 --> task is running
 		pAd->ate.TxStatus = 0;
 
 		// Soft reset BBP.		
@@ -1392,7 +1628,7 @@ static INT	ATECmdHandler(
 		MacData &= (0xfffffffb);
 		RTMP_IO_WRITE32(pAd, MAC_SYS_CTRL, MacData);
 
-		//Clean ATE Bulk in/out counter and continue setup
+		// Clean ATE Bulk in/out counter and continue setup
 		InterlockedExchange(&pAd->BulkOutRemained, 0);
 	
 		pAd->ContinBulkOut = FALSE;	
@@ -1411,34 +1647,27 @@ static INT	ATECmdHandler(
 		pAd->ate.bQARxStart = FALSE;
 //		pAd->ate.TxDoneCount = pAd->ate.TxCount;
 
-/*=========================================================================*/
 		RTUSBRejectPendingPackets(pAd);
 		RTUSBCleanUpDataBulkOutQueue(pAd);
 
 		/* not used in RT28xx */
-		//RTUSBCleanUpMLMEWaitQueue(pAd);	
+//		RTUSBCleanUpMLMEWaitQueue(pAd);	
 		RTUSBCleanUpMLMEBulkOutQueue(pAd);
-/*=========================================================================*/
 
 		// Abort Tx, RX DMA.
 		RtmpDmaEnable(pAd, 0);
-/*=========================================================================*/
-//		while ((atomic_read(&pAd->PendingRx) > 0))
+
 		while (pAd->PendingRx > 0)
 		{
-#if 1
 			ATE_RTUSBCancelPendingBulkInIRP(pAd);
-#else
-//			NdisInterlockedDecrement(&pAd->PendingRx);
-			pAd->PendingRx--;
-#endif
 			RTMPusecDelay(500000);
 		}
 
 		while (((pAd->BulkOutPending[0] == TRUE) ||
 				(pAd->BulkOutPending[1] == TRUE) || 
 				(pAd->BulkOutPending[2] == TRUE) ||
-				(pAd->BulkOutPending[3] == TRUE)) && (pAd->BulkFlags != 0))	//pAd->BulkFlags != 0 wait bulk out finish
+				(pAd->BulkOutPending[3] == TRUE)) && (pAd->BulkFlags != 0))	
+				// pAd->BulkFlags != 0 : wait bulk out finish
 		{
 			do
 			{
@@ -1449,14 +1678,13 @@ static INT	ATECmdHandler(
 		}
 
 		ASSERT(pAd->PendingRx == 0);
-/*=========================================================================*/
 
 		// Soft reset BBP.		
 		BbpSoftReset(pAd);
 		pAd->ContinBulkIn = FALSE;
 	}
 #endif // RALINK_28xx_QA //
-	else if (!strcmp(arg, "RXFRAME")) // Rx Frames
+	else if (!strcmp(arg, "RXFRAME")) 
 	{
 		ATEDBGPRINT(RT_DEBUG_TRACE, ("ATE: RXFRAME\n"));
 
@@ -1494,26 +1722,26 @@ static INT	ATECmdHandler(
 			pRxContext->IRPPending = FALSE;
 			pRxContext->Readable = FALSE;
 
-			//
-			// Get the urb from kernel back to driver.
-			//
+			/* Get the URB from kernel(i.e., host control driver) back to driver. */
 			RTUSB_UNLINK_URB(pRxContext->pUrb);
 
 			/* Sleep 200 microsecs to give cancellation time to work. */
-			NdisMSleep(200);
+			RTMPusecDelay(200);
 			pAd->BulkInReq = 0;
 
 //			InterlockedExchange(&pAd->PendingRx, 0);
 			pAd->PendingRx = 0;
-			pAd->NextRxBulkInReadIndex = 0;	// Next Rx Read index
-			pAd->NextRxBulkInIndex		= RX_RING_SIZE - 1;	// Rx Bulk pointer
+			// Next Rx Read index
+			pAd->NextRxBulkInReadIndex = 0;
+			// Rx Bulk pointer
+			pAd->NextRxBulkInIndex		= RX_RING_SIZE - 1;	
 			pAd->NextRxBulkInPosition = 0;			
 		}
 
 		// read to clear counters
-		RTUSBReadMACRegister(pAd, RX_STA_CNT0, &temp); //RX PHY & RX CRC count
-		RTUSBReadMACRegister(pAd, RX_STA_CNT1, &temp); //RX PLCP error count & CCA false alarm count
-		RTUSBReadMACRegister(pAd, RX_STA_CNT2, &temp); //RX FIFO overflow frame count & RX duplicated filtered frame count
+		RTUSBReadMACRegister(pAd, RX_STA_CNT0, &temp); // RX PHY & RX CRC count
+		RTUSBReadMACRegister(pAd, RX_STA_CNT1, &temp); // RX PLCP error count & CCA false alarm count
+		RTUSBReadMACRegister(pAd, RX_STA_CNT2, &temp); // RX FIFO overflow frame count & RX duplicated filtered frame count
 
 		pAd->ContinBulkIn = TRUE;
 
@@ -1539,11 +1767,12 @@ static INT	ATECmdHandler(
 
 	return TRUE;
 }
-#endif // RT2870 //
+#endif // RTMP_MAC_USB //
+
 
 INT	Set_ATE_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	if (ATECmdHandler(pAd, arg))
 	{
@@ -1559,8 +1788,9 @@ INT	Set_ATE_Proc(
 	}
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE ADDR1=DA for TxFrame(AP  : To DS = 0 ; From DS = 1)
         or
@@ -1568,32 +1798,37 @@ INT	Set_ATE_Proc(
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_DA_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-	CHAR				*value;
+	PSTRING				value;
 	INT					i;
-	
-	if(strlen(arg) != 17)  //Mac address acceptable format 01:02:03:04:05:06 length 17
+
+	// Mac address acceptable format 01:02:03:04:05:06 length 17	
+	if (strlen(arg) != 17)  
 		return FALSE;
 
-    for (i=0, value = rstrtok(arg, ":"); value; value = rstrtok(NULL, ":")) 
+    for (i = 0, value = rstrtok(arg, ":"); value; value = rstrtok(NULL, ":")) 
 	{
-		if((strlen(value) != 2) || (!isxdigit(*value)) || (!isxdigit(*(value+1))) ) 
-			return FALSE;  //Invalid
-
+		/* sanity check */
+		if ((strlen(value) != 2) || (!isxdigit(*value)) || (!isxdigit(*(value+1))))
+		{
+			return FALSE;  
+		}
 
 #ifdef CONFIG_STA_SUPPORT
 		AtoH(value, &pAd->ate.Addr3[i++], 1);
 #endif // CONFIG_STA_SUPPORT //
 	}
 
-	if(i != 6)
-		return FALSE;  //Invalid
-
+	/* sanity check */
+	if (i != 6)
+	{
+		return FALSE;  
+	}
 
 #ifdef CONFIG_STA_SUPPORT
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("Set_ATE_DA_Proc (DA = %2X:%2X:%2X:%2X:%2X:%2X)\n", pAd->ate.Addr3[0],
@@ -1605,8 +1840,9 @@ INT	Set_ATE_DA_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE ADDR3=SA for TxFrame(AP  : To DS = 0 ; From DS = 1)
         or
@@ -1614,32 +1850,37 @@ INT	Set_ATE_DA_Proc(
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_SA_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-	CHAR				*value;
+	PSTRING				value;
 	INT					i;
-	
-	if(strlen(arg) != 17)  //Mac address acceptable format 01:02:03:04:05:06 length 17
+
+	// Mac address acceptable format 01:02:03:04:05:06 length 17	
+	if (strlen(arg) != 17)  
 		return FALSE;
 
     for (i=0, value = rstrtok(arg, ":"); value; value = rstrtok(NULL, ":")) 
 	{
-		if((strlen(value) != 2) || (!isxdigit(*value)) || (!isxdigit(*(value+1))) ) 
-			return FALSE;  //Invalid
-
+		/* sanity check */
+		if ((strlen(value) != 2) || (!isxdigit(*value)) || (!isxdigit(*(value+1))))
+		{
+			return FALSE;  
+		}
 
 #ifdef CONFIG_STA_SUPPORT
 		AtoH(value, &pAd->ate.Addr2[i++], 1);
 #endif // CONFIG_STA_SUPPORT //
 	}
 
-	if(i != 6)
-		return FALSE;  //Invalid
-
+	/* sanity check */
+	if (i != 6)
+	{
+		return FALSE;
+	}
 
 #ifdef CONFIG_STA_SUPPORT
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("Set_ATE_SA_Proc (SA = %2X:%2X:%2X:%2X:%2X:%2X)\n", pAd->ate.Addr2[0],
@@ -1651,8 +1892,9 @@ INT	Set_ATE_SA_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE ADDR2=BSSID for TxFrame(AP  : To DS = 0 ; From DS = 1)
         or
@@ -1660,32 +1902,37 @@ INT	Set_ATE_SA_Proc(
 
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_BSSID_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-	CHAR				*value;
+	PSTRING				value;
 	INT					i;
-	
-	if(strlen(arg) != 17)  //Mac address acceptable format 01:02:03:04:05:06 length 17
+
+	// Mac address acceptable format 01:02:03:04:05:06 length 17	
+	if (strlen(arg) != 17)  
 		return FALSE;
 
     for (i=0, value = rstrtok(arg, ":"); value; value = rstrtok(NULL, ":")) 
 	{
-		if((strlen(value) != 2) || (!isxdigit(*value)) || (!isxdigit(*(value+1))) ) 
-			return FALSE;  //Invalid
-
+		/* sanity check */
+		if ((strlen(value) != 2) || (!isxdigit(*value)) || (!isxdigit(*(value+1))))
+		{
+			return FALSE;  
+		}
 
 #ifdef CONFIG_STA_SUPPORT
 		AtoH(value, &pAd->ate.Addr1[i++], 1);
 #endif // CONFIG_STA_SUPPORT //
 	}
 
+	/* sanity check */
 	if(i != 6)
-		return FALSE;  //Invalid
-
+	{
+		return FALSE;
+	}
 
 #ifdef CONFIG_STA_SUPPORT
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("Set_ATE_BSSID_Proc (BSSID = %2X:%2X:%2X:%2X:%2X:%2X)\n",	pAd->ate.Addr1[0],
@@ -1697,24 +1944,26 @@ INT	Set_ATE_BSSID_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx Channel
 
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_CHANNEL_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	UCHAR channel;
 
 	channel = simple_strtol(arg, 0, 10);
 
-	if ((channel < 1) || (channel > 216))// to allow A band channel : ((channel < 1) || (channel > 14))
+	// to allow A band channel : ((channel < 1) || (channel > 14))
+	if ((channel < 1) || (channel > 216))
 	{
 		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_CHANNEL_Proc::Out of range, it should be in range of 1~14.\n"));
 		return FALSE;
@@ -1728,18 +1977,19 @@ INT	Set_ATE_CHANNEL_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx Power0
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_POWER0_Proc(
 	IN	PRTMP_ADAPTER	pAd,
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	CHAR TxPower;
 	
@@ -1753,7 +2003,7 @@ INT	Set_ATE_TX_POWER0_Proc(
 			return FALSE;
 		}
 	}
-	else// 5.5GHz
+	else/* 5.5 GHz */
 	{
 		if ((TxPower > 15) || (TxPower < -7))
 		{
@@ -1770,18 +2020,19 @@ INT	Set_ATE_TX_POWER0_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx Power1
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_POWER1_Proc(
 	IN	PRTMP_ADAPTER	pAd,
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	CHAR TxPower;
 	
@@ -1789,11 +2040,11 @@ INT	Set_ATE_TX_POWER1_Proc(
 
 	if (pAd->ate.Channel <= 14)
 	{
-	if ((TxPower > 31) || (TxPower < 0))
-	{
-		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_POWER1_Proc::Out of range (Value=%d)\n", TxPower));
-		return FALSE;
-	}
+		if ((TxPower > 31) || (TxPower < 0))
+		{
+			ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_POWER1_Proc::Out of range (Value=%d)\n", TxPower));
+			return FALSE;
+		}
 	}
 	else
 	{
@@ -1812,18 +2063,19 @@ INT	Set_ATE_TX_POWER1_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx Antenna
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_Antenna_Proc(
 	IN	PRTMP_ADAPTER	pAd,
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	CHAR value;
 	
@@ -1840,22 +2092,26 @@ INT	Set_ATE_TX_Antenna_Proc(
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("Set_ATE_TX_Antenna_Proc (Antenna = %d)\n", pAd->ate.TxAntennaSel));
 	ATEDBGPRINT(RT_DEBUG_TRACE,("Ralink: Set_ATE_TX_Antenna_Proc Success\n"));
 
+	// calibration power unbalance issues, merged from Arch Team
+	ATEAsicSwitchChannel(pAd);
+
 	
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Rx Antenna
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_RX_Antenna_Proc(
 	IN	PRTMP_ADAPTER	pAd,
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	CHAR value;
 	
@@ -1872,55 +2128,61 @@ INT	Set_ATE_RX_Antenna_Proc(
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("Set_ATE_RX_Antenna_Proc (Antenna = %d)\n", pAd->ate.RxAntennaSel));
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("Ralink: Set_ATE_RX_Antenna_Proc Success\n"));
 
+	// calibration power unbalance issues, merged from Arch Team
+	ATEAsicSwitchChannel(pAd);
+
 	
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE RF frequence offset
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_FREQOFFSET_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-	UCHAR RFFreqOffset;
-	ULONG R4;
+	UCHAR RFFreqOffset = 0;
+	ULONG R4 = 0;
 	
 	RFFreqOffset = simple_strtol(arg, 0, 10);
-#ifndef RT30xx
-	if(RFFreqOffset >= 64)
-#endif // RT30xx //
-#ifdef RT30xx
+#ifndef RTMP_RF_RW_SUPPORT
+	if (RFFreqOffset >= 64)
+#endif // RTMP_RF_RW_SUPPORT //
+	/* RT35xx ATE will reuse this code segment. */
+#ifdef RTMP_RF_RW_SUPPORT
 //2008/08/06: KH modified the limit of offset value from 65 to 95(0x5F)
-	if(RFFreqOffset >= 95)
-#endif // RT30xx //
+	if (RFFreqOffset >= 95)
+#endif // RTMP_RF_RW_SUPPORT //
 	{
 		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_FREQOFFSET_Proc::Out of range, it should be in range of 0~63.\n"));
 		return FALSE;
 	}
 
 	pAd->ate.RFFreqOffset = RFFreqOffset;
-#ifdef RT30xx
-	if(IS_RT30xx(pAd))
+#ifdef RTMP_RF_RW_SUPPORT
+	if (IS_RT30xx(pAd) || IS_RT3572(pAd))
 	{
 		// Set RF offset
 		UCHAR RFValue;
-		RT30xxReadRFRegister(pAd, RF_R23, (PUCHAR)&RFValue);
-				//2008/08/06: KH modified "pAd->RFFreqOffset" to "pAd->ate.RFFreqOffset"
-				RFValue = (RFValue & 0x80) | pAd->ate.RFFreqOffset;
-		RT30xxWriteRFRegister(pAd, RF_R23, (UCHAR)RFValue);
+		ATE_RF_IO_READ8_BY_REG_ID(pAd, RF_R23, (PUCHAR)&RFValue);
+//2008/08/06: KH modified "pAd->RFFreqOffset" to "pAd->ate.RFFreqOffset"
+		RFValue = ((RFValue & 0x80) | pAd->ate.RFFreqOffset);
+		ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R23, (UCHAR)RFValue);
 	}
 	else
-#endif // RT30xx //
+#endif // RTMP_RF_RW_SUPPORT //
 	{
-		
-		R4 = pAd->ate.RFFreqOffset << 15;		// shift TX power control to correct RF register bit position
+		// RT28xx
+		// shift TX power control to correct RF register bit position
+		R4 = pAd->ate.RFFreqOffset << 15;		
 		R4 |= (pAd->LatchRfRegs.R4 & ((~0x001f8000)));
 		pAd->LatchRfRegs.R4 = R4;
 		
@@ -1933,36 +2195,54 @@ INT	Set_ATE_TX_FREQOFFSET_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE RF BW
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_BW_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-	int i;
+	INT i;
 	UCHAR value = 0;
 	UCHAR BBPCurrentBW;
 	
 	BBPCurrentBW = simple_strtol(arg, 0, 10);
 
-	if(BBPCurrentBW == 0)
-		pAd->ate.TxWI.BW = BW_20;
-	else
-		pAd->ate.TxWI.BW = BW_40;
- 
-	if(pAd->ate.TxWI.BW == BW_20)
+	if ((BBPCurrentBW == 0)
+#ifdef RT30xx
+		|| IS_RT2070(pAd)
+#endif // RT30xx //
+		)
 	{
-		if(pAd->ate.Channel <= 14)
+		pAd->ate.TxWI.BW = BW_20;
+	}
+	else
+	{
+		pAd->ate.TxWI.BW = BW_40;
+ 	}
+
+	/* RT35xx ATE will reuse this code segment. */
+	// Fix the error spectrum of CCK-40MHZ
+	// Turn on BBP 20MHz mode by request here.
+	if ((pAd->ate.TxWI.PHYMODE == MODE_CCK) && (pAd->ate.TxWI.BW == BW_40))
+	{
+		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_BW_Proc!! Warning!! CCK only supports 20MHZ!!\nBandwidth switch to 20\n"));
+		pAd->ate.TxWI.BW = BW_20;
+	}
+
+	if (pAd->ate.TxWI.BW == BW_20)
+	{
+		if (pAd->ate.Channel <= 14)
 		{
- 		for (i=0; i<5; i++)
- 		{
+ 			for (i=0; i<5; i++)
+ 			{
 				if (pAd->Tx20MPwrCfgGBand[i] != 0xffffffff)
 				{
 					RTMP_IO_WRITE32(pAd, TX_PWR_CFG_0 + i*4, pAd->Tx20MPwrCfgGBand[i]);	
@@ -1972,46 +2252,50 @@ INT	Set_ATE_TX_BW_Proc(
 		}
 		else
 		{
-			for (i=0; i<5; i++)
-			{
-				if (pAd->Tx20MPwrCfgABand[i] != 0xffffffff)
+ 			for (i=0; i<5; i++)
  			{
+				if (pAd->Tx20MPwrCfgABand[i] != 0xffffffff)
+ 				{
 					RTMP_IO_WRITE32(pAd, TX_PWR_CFG_0 + i*4, pAd->Tx20MPwrCfgABand[i]);	
- 				RTMPusecDelay(5000);				
+ 					RTMPusecDelay(5000);				
+ 				}
  			}
- 		}
 		}
  
-		//Set BBP R4 bit[4:3]=0:0
+		// Set BBP R4 bit[4:3]=0:0
  		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &value);
  		value &= (~0x18);
  		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, value);
- 
-  		//Set BBP R66=0x3C
- 		value = 0x3C;
- 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, value);
-		//Set BBP R68=0x0B
-		//to improve Rx sensitivity.
+
+
+		// Set BBP R66=0x3C
+		value = 0x3C;
+		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, value);
+
+		// Set BBP R68=0x0B
+		// to improve Rx sensitivity.
 		value = 0x0B;
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R68, value);
-		//Set BBP R69=0x16
+		// Set BBP R69=0x16
 		value = 0x16;
  		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, value);
-		//Set BBP R70=0x08
+		// Set BBP R70=0x08
 		value = 0x08;
  		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, value);
-		//Set BBP R73=0x11
+		// Set BBP R73=0x11
 		value = 0x11;
  		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R73, value);
 
-	    // If Channel=14, Bandwidth=20M and Mode=CCK, Set BBP R4 bit5=1
-	    // (Japan filter coefficients)
-	    // This segment of code will only works when ATETXMODE and ATECHANNEL
-	    // were set to MODE_CCK and 14 respectively before ATETXBW is set to 0.
-	    //=====================================================================
+	    /*
+			If Channel=14, Bandwidth=20M and Mode=CCK, Set BBP R4 bit5=1
+			(to set Japan filter coefficients).
+			This segment of code will only works when ATETXMODE and ATECHANNEL
+			were set to MODE_CCK and 14 respectively before ATETXBW is set to 0.
+	    */
 		if (pAd->ate.Channel == 14)
 		{
-			int TxMode = pAd->ate.TxWI.PHYMODE;
+			INT TxMode = pAd->ate.TxWI.PHYMODE;
+
 			if (TxMode == MODE_CCK)
 			{
 				// when Channel==14 && Mode==CCK && BandWidth==20M, BBP R4 bit5=1
@@ -2021,23 +2305,23 @@ INT	Set_ATE_TX_BW_Proc(
 			}
 		}
 
-	    //=====================================================================
-		// If bandwidth != 40M, RF Reg4 bit 21 = 0.
 #ifdef RT30xx
-	// Set BW
-		if(IS_RT30xx(pAd))
-			RT30xxWriteRFRegister(pAd, RF_R24, (UCHAR) pAd->Mlme.CaliBW20RfR24);
+		// set BW = 20 MHz
+		if (IS_RT30xx(pAd))
+			ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R24, (UCHAR) pAd->Mlme.CaliBW20RfR24);
 		else
 #endif // RT30xx //
+		// set BW = 20 MHz
 		{
-		pAd->LatchRfRegs.R4 &= ~0x00200000;
-		RtmpRfIoWrite(pAd);
-	}
+			pAd->LatchRfRegs.R4 &= ~0x00200000;
+			RtmpRfIoWrite(pAd);
+		}
 		
 	}
-	else if(pAd->ate.TxWI.BW == BW_40)
+	// If bandwidth = 40M, set RF Reg4 bit 21 = 0.
+	else if (pAd->ate.TxWI.BW == BW_40)
 	{
-		if(pAd->ate.Channel <= 14)
+		if (pAd->ate.Channel <= 14)
 		{
 			for (i=0; i<5; i++)
 			{
@@ -2067,39 +2351,42 @@ INT	Set_ATE_TX_BW_Proc(
 #endif // DOT11_N_SUPPORT //
 		}
 
-		//Set BBP R4 bit[4:3]=1:0
+		// Set BBP R4 bit[4:3]=1:0
 		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &value);
 		value &= (~0x18);
 		value |= 0x10;
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, value);
 
-		//Set BBP R66=0x3C
+
+		// Set BBP R66=0x3C
 		value = 0x3C;
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, value);
-		//Set BBP R68=0x0C
-		//to improve Rx sensitivity.
+
+		// Set BBP R68=0x0C
+		// to improve Rx sensitivity
 		value = 0x0C;
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R68, value);
-		//Set BBP R69=0x1A
+		// Set BBP R69=0x1A
 		value = 0x1A;
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, value);
-		//Set BBP R70=0x0A
+		// Set BBP R70=0x0A
 		value = 0x0A;
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, value);
-		//Set BBP R73=0x16
+		// Set BBP R73=0x16
 		value = 0x16;
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R73, value);
 
 		// If bandwidth = 40M, set RF Reg4 bit 21 = 1.
 #ifdef RT30xx
-	// Set BW
+		// set BW = 40 MHz
 		if(IS_RT30xx(pAd))
-			RT30xxWriteRFRegister(pAd, RF_R24, (UCHAR) pAd->Mlme.CaliBW40RfR24);
+			ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R24, (UCHAR) pAd->Mlme.CaliBW40RfR24);
 		else
 #endif // RT30xx //
+		// set BW = 40 MHz
 		{
-			pAd->LatchRfRegs.R4 |= 0x00200000;
-			RtmpRfIoWrite(pAd);
+		pAd->LatchRfRegs.R4 |= 0x00200000;
+		RtmpRfIoWrite(pAd);
 		}
 	}
 
@@ -2110,22 +2397,23 @@ INT	Set_ATE_TX_BW_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx frame length
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_LENGTH_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	pAd->ate.TxLength = simple_strtol(arg, 0, 10);
 
-	if((pAd->ate.TxLength < 24) || (pAd->ate.TxLength > (MAX_FRAME_SIZE - 34/* == 2312 */)))
+	if ((pAd->ate.TxLength < 24) || (pAd->ate.TxLength > (MAX_FRAME_SIZE - 34/* == 2312 */)))
 	{
 		pAd->ate.TxLength = (MAX_FRAME_SIZE - 34/* == 2312 */);
 		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_LENGTH_Proc::Out of range, it should be in range of 24~%d.\n", (MAX_FRAME_SIZE - 34/* == 2312 */)));
@@ -2139,18 +2427,19 @@ INT	Set_ATE_TX_LENGTH_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx frame count
         
     Return:
         TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_COUNT_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	pAd->ate.TxCount = simple_strtol(arg, 0, 10);
 
@@ -2161,24 +2450,33 @@ INT	Set_ATE_TX_COUNT_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx frame MCS
         
         Return:
         	TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_MCS_Proc(
 	IN	PRTMP_ADAPTER	pAd,
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	UCHAR MCS;
-	int result;
+	INT result;
 
 	MCS = simple_strtol(arg, 0, 10);
+#ifndef RT30xx
 	result = CheckMCSValid(pAd->ate.TxWI.PHYMODE, MCS);
+#endif // RT30xx //
+
+	/* RT35xx ATE will reuse this code segment. */
+#ifdef RT30xx
+	result = CheckMCSValid(pAd->ate.TxWI.PHYMODE, MCS, IS_RT2070(pAd));
+#endif // RT30xx //
+		
 
 	if (result != -1)
 	{
@@ -2197,8 +2495,9 @@ INT	Set_ATE_TX_MCS_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx frame Mode
         0: MODE_CCK
@@ -2208,20 +2507,32 @@ INT	Set_ATE_TX_MCS_Proc(
         
         Return:
         	TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_MODE_Proc(
 	IN	PRTMP_ADAPTER	pAd,
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
+	UCHAR BbpData = 0;
+
 	pAd->ate.TxWI.PHYMODE = simple_strtol(arg, 0, 10);
 
-	if(pAd->ate.TxWI.PHYMODE > 3)
+	if (pAd->ate.TxWI.PHYMODE > 3)
 	{
 		pAd->ate.TxWI.PHYMODE = 0;
-		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_MODE_Proc::Out of range. it should be in range of 0~3\n"));
+		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_MODE_Proc::Out of range.\nIt should be in range of 0~3\n"));
 		ATEDBGPRINT(RT_DEBUG_ERROR, ("0: CCK, 1: OFDM, 2: HT_MIX, 3: HT_GREEN_FIELD.\n"));
 		return FALSE;
+	}
+
+	// Turn on BBP 20MHz mode by request here.
+	if (pAd->ate.TxWI.PHYMODE == MODE_CCK)
+	{
+		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R4, &BbpData);
+		BbpData &= (~0x18);
+		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, BbpData);
+		pAd->ate.TxWI.BW = BW_20;
+		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_MODE_Proc::CCK Only support 20MHZ. Switch to 20MHZ.\n"));
 	}
 
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("Set_ATE_TX_MODE_Proc (TxMode = %d)\n", pAd->ate.TxWI.PHYMODE));
@@ -2231,22 +2542,23 @@ INT	Set_ATE_TX_MODE_Proc(
 	return TRUE;
 }
 
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Set ATE Tx frame GI
         
         Return:
         	TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
 INT	Set_ATE_TX_GI_Proc(
 	IN	PRTMP_ADAPTER	pAd,
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	pAd->ate.TxWI.ShortGI = simple_strtol(arg, 0, 10);
 
-	if(pAd->ate.TxWI.ShortGI > 1)
+	if (pAd->ate.TxWI.ShortGI > 1)
 	{
 		pAd->ate.TxWI.ShortGI = 0;
 		ATEDBGPRINT(RT_DEBUG_ERROR, ("Set_ATE_TX_GI_Proc::Out of range\n"));
@@ -2260,50 +2572,48 @@ INT	Set_ATE_TX_GI_Proc(
 	return TRUE;
 }
 
-/*
-    ==========================================================================
-    Description:
-    ==========================================================================
- */
+
 INT	Set_ATE_RX_FER_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-	pAd->ate.bRxFer = simple_strtol(arg, 0, 10);
+	pAd->ate.bRxFER = simple_strtol(arg, 0, 10);
 
-	if (pAd->ate.bRxFer == 1)
+	if (pAd->ate.bRxFER == 1)
 	{
 		pAd->ate.RxCntPerSec = 0;
 		pAd->ate.RxTotalCnt = 0;
 	}
 
-	ATEDBGPRINT(RT_DEBUG_TRACE, ("Set_ATE_RX_FER_Proc (bRxFer = %d)\n", pAd->ate.bRxFer));
+	ATEDBGPRINT(RT_DEBUG_TRACE, ("Set_ATE_RX_FER_Proc (bRxFER = %d)\n", pAd->ate.bRxFER));
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("Ralink: Set_ATE_RX_FER_Proc Success\n"));
 
 	
 	return TRUE;
 }
 
+
 INT Set_ATE_Read_RF_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-#ifdef RT30xx
+#ifdef RTMP_RF_RW_SUPPORT
 //2008/07/10:KH add to support RT30xx ATE<--
-	if(IS_RT30xx(pAd))
+	if (IS_RT30xx(pAd) || IS_RT3572(pAd))
 	{
-			/* modify by WY for Read RF Reg. error */
+		/* modify by WY for Read RF Reg. error */
 		UCHAR RFValue;
 		INT index=0;
+
 		for (index = 0; index < 32; index++)
 		{
-			RT30xxReadRFRegister(pAd, index, (PUCHAR)&RFValue);
-			printk("R%d=%d\n",index,RFValue);
+			ATE_RF_IO_READ8_BY_REG_ID(pAd, index, (PUCHAR)&RFValue);
+			ate_print("R%d=%d\n",index,RFValue);
 		}		
 	}
 	else
 //2008/07/10:KH add to support RT30xx ATE-->
-#endif // RT30xx //
+#endif // RTMP_RF_RW_SUPPORT //
 	{
 		ate_print(KERN_EMERG "R1 = %lx\n", pAd->LatchRfRegs.R1);
 		ate_print(KERN_EMERG "R2 = %lx\n", pAd->LatchRfRegs.R2);
@@ -2313,151 +2623,130 @@ INT Set_ATE_Read_RF_Proc(
 	return TRUE;
 }
 
+
 INT Set_ATE_Write_RF1_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-#ifdef RT30xx
+	UINT32 value = (UINT32) simple_strtol(arg, 0, 16);	
+
+#ifdef RTMP_RF_RW_SUPPORT
 //2008/07/10:KH add to support 3070 ATE<--
-	if(IS_RT30xx(pAd))
+	if (IS_RT30xx(pAd) || IS_RT3572(pAd))
 	{
-		printk("Warning!! RT30xx Don't Support\n");
+		ate_print("Warning!! RT3xxx Don't Support !\n");
 		return FALSE;
 			
 	}
 	else
 //2008/07/10:KH add to support 3070 ATE-->
-#endif // RT30xx //
+#endif // RTMP_RF_RW_SUPPORT //
 	{
-		UINT32 value = simple_strtol(arg, 0, 16);
-
 		pAd->LatchRfRegs.R1 = value;
 		RtmpRfIoWrite(pAd);
 	}
 	return TRUE;
-
 }
+
 
 INT Set_ATE_Write_RF2_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-#ifdef RT30xx
+	UINT32 value = (UINT32) simple_strtol(arg, 0, 16);
+
+#ifdef RTMP_RF_RW_SUPPORT
 //2008/07/10:KH add to support 3070 ATE<--
-	if(IS_RT30xx(pAd))
+	if (IS_RT30xx(pAd) || IS_RT3572(pAd))
 	{
-		printk("Warning!! RT30xx Don't Support\n");
+		ate_print("Warning!! RT3xxx Don't Support !\n");
 		return FALSE;
 			
 	}
 	else
 //2008/07/10:KH add to support 3070 ATE-->
-#endif // RT30xx //
+#endif // RTMP_RF_RW_SUPPORT //
 	{
-		UINT32 value = simple_strtol(arg, 0, 16);
-
 		pAd->LatchRfRegs.R2 = value;
 		RtmpRfIoWrite(pAd);
 	}
 	return TRUE;
 }
 
+
 INT Set_ATE_Write_RF3_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-#ifdef RT30xx
+	UINT32 value = simple_strtol(arg, 0, 16);
+
+#ifdef RTMP_RF_RW_SUPPORT
 //2008/07/10:KH add to support 3070 ATE<--
-	if(IS_RT30xx(pAd))
+	if (IS_RT30xx(pAd) || IS_RT3572(pAd))
 	{
-		printk("Warning!! RT30xx Don't Support\n");
+		ate_print("Warning!! RT3xxx Don't Support !\n");
 		return FALSE;
 			
 	}
 	else
 //2008/07/10:KH add to support 3070 ATE-->
-#endif // RT30xx //
+#endif // RTMP_RF_RW_SUPPORT //
 	{
-		UINT32 value = simple_strtol(arg, 0, 16);
-
 		pAd->LatchRfRegs.R3 = value;
 		RtmpRfIoWrite(pAd);
 	}
 	return TRUE;
 }
 
+
 INT Set_ATE_Write_RF4_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-#ifdef RT30xx
+	UINT32 value = (UINT32) simple_strtol(arg, 0, 16);
+
+#ifdef RTMP_RF_RW_SUPPORT
 //2008/07/10:KH add to support 3070 ATE<--
-	if(IS_RT30xx(pAd))
+	if (IS_RT30xx(pAd) || IS_RT3572(pAd))
 	{
-		printk("Warning!! RT30xx Don't Support\n");
+		ate_print("Warning!! RT3xxx Don't Support !\n");
 		return FALSE;
 			
 	}
 	else
 //2008/07/10:KH add to support 3070 ATE-->
-#endif // RT30xx //
+#endif // RTMP_RF_RW_SUPPORT //
 	{
-		UINT32 value = simple_strtol(arg, 0, 16);
-
 		pAd->LatchRfRegs.R4 = value;
 		RtmpRfIoWrite(pAd);
 	}
 	return TRUE;
 }
-#ifdef RT30xx
-//2008/07/10:KH add to support 3070 ATE<--
-INT	SET_ATE_3070RF_Proc(
-	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
-{
-	CHAR *this_char;
-	CHAR *value;
-	UINT32 Reg,RFValue; 
-	if(IS_RT30xx(pAd))
-	{
-		printk("SET_ATE_3070RF_Proc=%s\n",arg);
-		this_char =arg;
-		if ((value = strchr(this_char, ':')) != NULL)
-			*value++ = 0;
-		Reg= simple_strtol(this_char, 0, 16);
-		RFValue= simple_strtol(value, 0, 16);
-		printk("RF Reg[%d]=%d\n",Reg,RFValue);
-		RT30xxWriteRFRegister(pAd, Reg,RFValue);
-	}
-	else
-		printk("Warning!! Only 3070 Support\n");
-	return TRUE;
-}
-//2008/07/10:KH add to support 3070 ATE-->
-#endif // RT30xx //
+
+
 /* 
-    ==========================================================================
+==========================================================================
     Description:
         Load and Write EEPROM from a binary file prepared in advance.
         
         Return:
         	TRUE if all parameters are OK, FALSE otherwise
-    ==========================================================================
+==========================================================================
 */
-#ifndef UCOS
+#if defined(LINUX) || defined(VXWORKS)
 INT Set_ATE_Load_E2P_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
-	BOOLEAN		    ret = FALSE;
-	PUCHAR			src = EEPROM_BIN_FILE_NAME;
-	struct file		*srcf;
-	INT32 			retval, orgfsuid, orgfsgid;
-   	mm_segment_t	orgfs;
+	BOOLEAN		    	ret = FALSE;
+	PSTRING			src = EEPROM_BIN_FILE_NAME;
+	RTMP_OS_FD		srcf;
+	INT32 			retval;
 	USHORT 			WriteEEPROM[(EEPROM_SIZE/2)];
-	UINT32			FileLength = 0;
-	UINT32 			value = simple_strtol(arg, 0, 10);
-	
+	INT				FileLength = 0;
+	UINT32 			value = (UINT32) simple_strtol(arg, 0, 10);
+	RTMP_OS_FS_INFO	osFSInfo;
+
 	ATEDBGPRINT(RT_DEBUG_ERROR, ("===> %s (value=%d)\n\n", __FUNCTION__, value));
 
 	if (value > 0)
@@ -2465,39 +2754,21 @@ INT Set_ATE_Load_E2P_Proc(
 		/* zero the e2p buffer */
 		NdisZeroMemory((PUCHAR)WriteEEPROM, EEPROM_SIZE);
 
-		/* save uid and gid used for filesystem access.
-	    ** set user and group to 0 (root)
-	    */
-		orgfsuid = current->fsuid;
-		orgfsgid = current->fsgid;
-		/* as root */
-		current->fsuid = current->fsgid = 0;
-    	orgfs = get_fs();
-    	set_fs(KERNEL_DS);
+		RtmpOSFSInfoChange(&osFSInfo, TRUE);
 
 		do
 		{
 			/* open the bin file */
-			srcf = filp_open(src, O_RDONLY, 0);
+			srcf = RtmpOSFileOpen(src, O_RDONLY, 0);
 
-			if (IS_ERR(srcf)) 
+			if (IS_FILE_OPEN_ERR(srcf)) 
 			{
-				ate_print("%s - Error %ld opening %s\n", __FUNCTION__, -PTR_ERR(srcf), src);
-				break;
-			}
-			
-			/* the object must have a read method */
-			if ((srcf->f_op == NULL) || (srcf->f_op->read == NULL))
-			{
-				ate_print("%s - %s does not have a read method\n", __FUNCTION__, src);
+				ate_print("%s - Error opening file %s\n", __FUNCTION__, src);
 				break;
 			}
 
 			/* read the firmware from the file *.bin */
-			FileLength = srcf->f_op->read(srcf,
-										  (PUCHAR)WriteEEPROM,
-										  EEPROM_SIZE,
-										  &srcf->f_pos);
+			FileLength = RtmpOSFileRead(srcf, (PSTRING)WriteEEPROM, EEPROM_SIZE);
 
 			if (FileLength != EEPROM_SIZE)
 			{
@@ -2515,13 +2786,14 @@ INT Set_ATE_Load_E2P_Proc(
 		} while(TRUE);
 
 		/* close firmware file */
-		if (IS_ERR(srcf))
+		if (IS_FILE_OPEN_ERR(srcf))
 		{
 				;
 		}
 		else
 		{
-			retval = filp_close(srcf, NULL);			
+			retval = RtmpOSFileClose(srcf);			
+
 			if (retval)
 			{
 				ATEDBGPRINT(RT_DEBUG_ERROR, ("--> Error %d closing %s\n", -retval, src));
@@ -2530,57 +2802,22 @@ INT Set_ATE_Load_E2P_Proc(
 		}
 
 		/* restore */
-		set_fs(orgfs);
-		current->fsuid = orgfsuid;
-		current->fsgid = orgfsgid;		
+		RtmpOSFSInfoChange(&osFSInfo, FALSE);		
 	}
+
     ATEDBGPRINT(RT_DEBUG_ERROR, ("<=== %s (ret=%d)\n", __FUNCTION__, ret));
 
     return ret;
 	
 }
-#else
-INT Set_ATE_Load_E2P_Proc(
-	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
-{
-	USHORT 			WriteEEPROM[(EEPROM_SIZE/2)];
-	struct iwreq	*wrq = (struct iwreq *)arg;
-	
-	ATEDBGPRINT(RT_DEBUG_TRACE, ("===> %s (wrq->u.data.length = %d)\n\n", __FUNCTION__, wrq->u.data.length));
+#endif // defined(LINUX) || defined(VXWORKS) //
 
-	if (wrq->u.data.length != EEPROM_SIZE)
-	{
-		ate_print("%s: error length (=%d) from host\n",
-			   __FUNCTION__, wrq->u.data.length);
-		return FALSE;
-	}
-	else/* (wrq->u.data.length == EEPROM_SIZE) */
-	{
-		/* zero the e2p buffer */
-		NdisZeroMemory((PUCHAR)WriteEEPROM, EEPROM_SIZE);
 
-		/* fill the local buffer */
-		NdisMoveMemory((PUCHAR)WriteEEPROM, wrq->u.data.pointer, wrq->u.data.length);
 
-		do
-		{
-				/* write the content of .bin file to EEPROM */
-				rt_ee_write_all(pAd, WriteEEPROM);
-				
-		} while(FALSE);
-		}
-
-    ATEDBGPRINT(RT_DEBUG_TRACE, ("<=== %s\n", __FUNCTION__));
-
-    return TRUE;
-	
-}
-#endif // !UCOS //
 
 INT Set_ATE_Read_E2P_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	USHORT buffer[EEPROM_SIZE/2];
 	USHORT *p;
@@ -2598,9 +2835,12 @@ INT Set_ATE_Read_E2P_Proc(
 	return TRUE;
 }
 
+
+
+
 INT	Set_ATE_Show_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	ate_print("Mode=%d\n", pAd->ate.Mode);
 	ate_print("TxPower0=%d\n", pAd->ate.TxPower0);
@@ -2625,9 +2865,10 @@ INT	Set_ATE_Show_Proc(
 	return TRUE;
 }
 
+
 INT	Set_ATE_Help_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	ate_print("ATE=ATESTART, ATESTOP, TXCONT, TXCARR, TXFRAME, RXFRAME\n");
 	ate_print("ATEDA\n");
@@ -2659,24 +2900,30 @@ INT	Set_ATE_Help_Proc(
 	return TRUE;
 }
 
+
+
+
 /*
-    ==========================================================================
+==========================================================================
     Description:
 
 	AsicSwitchChannel() dedicated for ATE.
     
-    ==========================================================================
+==========================================================================
 */
 VOID ATEAsicSwitchChannel(
     IN PRTMP_ADAPTER pAd) 
 {
 	UINT32 R2 = 0, R3 = DEFAULT_RF_TX_POWER, R4 = 0, Value = 0;
 	CHAR TxPwer = 0, TxPwer2 = 0;
-	UCHAR index, BbpValue = 0, R66 = 0x30;
+	UCHAR index = 0, BbpValue = 0, R66 = 0x30;
 	RTMP_RF_REGS *RFRegTable;
-	UCHAR Channel;
+	UCHAR Channel = 0;
+
+	RFRegTable = NULL;
 
 #ifdef RALINK_28xx_QA
+	// for QA mode, TX power values are passed from UI
 	if ((pAd->ate.bQATxStart == TRUE) || (pAd->ate.bQARxStart == TRUE))
 	{
 		if (pAd->ate.Channel != pAd->LatchRfRegs.Channel)			
@@ -2689,7 +2936,7 @@ VOID ATEAsicSwitchChannel(
 #endif // RALINK_28xx_QA //
 	Channel = pAd->ate.Channel;
 
-	// Select antenna
+	// select antenna for RT3090
 	AsicAntennaSelect(pAd, Channel);
 
 	// fill Tx power value
@@ -2698,63 +2945,66 @@ VOID ATEAsicSwitchChannel(
 #ifdef RT30xx
 //2008/07/10:KH add to support 3070 ATE<--
 
-	// The RF programming sequence is difference between 3xxx and 2xxx
-	// The 3070 is 1T1R. Therefore, we don't need to set the number of Tx/Rx path and the only job is to set the parameters of channels.
+	/*
+		The RF programming sequence is difference between 3xxx and 2xxx.
+		The 3070 is 1T1R. Therefore, we don't need to set the number of Tx/Rx path
+		and the only job is to set the parameters of channels.
+	*/
 	if (IS_RT30xx(pAd) && ((pAd->RfIcType == RFIC_3020) ||
-(pAd->RfIcType == RFIC_3021) || (pAd->RfIcType == RFIC_3022) ||
-(pAd->RfIcType == RFIC_2020)))
+			(pAd->RfIcType == RFIC_3021) || (pAd->RfIcType == RFIC_3022) ||
+			(pAd->RfIcType == RFIC_2020)))
 	{
 		/* modify by WY for Read RF Reg. error */
-		UCHAR RFValue;
-		
+		UCHAR RFValue = 0;
+
 		for (index = 0; index < NUM_OF_3020_CHNL; index++)
 		{
 			if (Channel == FreqItems3020[index].Channel)
 			{
-				// Programming channel parameters
-				RT30xxWriteRFRegister(pAd, RF_R02, FreqItems3020[index].N);
-				RT30xxWriteRFRegister(pAd, RF_R03, FreqItems3020[index].K);
+				// Programming channel parameters.
+				ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R02, FreqItems3020[index].N);
+				ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R03, FreqItems3020[index].K);
 
-				RT30xxReadRFRegister(pAd, RF_R06, (PUCHAR)&RFValue);
+				ATE_RF_IO_READ8_BY_REG_ID(pAd, RF_R06, (PUCHAR)&RFValue);
 				RFValue = (RFValue & 0xFC) | FreqItems3020[index].R;
-				RT30xxWriteRFRegister(pAd, RF_R06, (UCHAR)RFValue);
+				ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R06, (UCHAR)RFValue);
 
-				// Set Tx Power
-				RT30xxReadRFRegister(pAd, RF_R12, (PUCHAR)&RFValue);
+				// Set Tx Power.
+				ATE_RF_IO_READ8_BY_REG_ID(pAd, RF_R12, (PUCHAR)&RFValue);
 				RFValue = (RFValue & 0xE0) | TxPwer;
-				RT30xxWriteRFRegister(pAd, RF_R12, (UCHAR)RFValue);
+				ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R12, (UCHAR)RFValue);
 
-				// Set RF offset
-				RT30xxReadRFRegister(pAd, RF_R23, (PUCHAR)&RFValue);
+				// Set RF offset.
+				ATE_RF_IO_READ8_BY_REG_ID(pAd, RF_R23, (PUCHAR)&RFValue);
 				//2008/08/06: KH modified "pAd->RFFreqOffset" to "pAd->ate.RFFreqOffset"
 				RFValue = (RFValue & 0x80) | pAd->ate.RFFreqOffset;
-				RT30xxWriteRFRegister(pAd, RF_R23, (UCHAR)RFValue);
+				ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R23, (UCHAR)RFValue);
 
-				// Set BW
+				// Set BW.
 				if (pAd->ate.TxWI.BW == BW_40)
 				{
 					RFValue = pAd->Mlme.CaliBW40RfR24;
-					//DISABLE_11N_CHECK(pAd);
+//					DISABLE_11N_CHECK(pAd);
 				}
 				else
 				{
 					RFValue = pAd->Mlme.CaliBW20RfR24;
 				}
-				RT30xxWriteRFRegister(pAd, RF_R24, (UCHAR)RFValue);
+				ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R24, (UCHAR)RFValue);
 
 				// Enable RF tuning
-				RT30xxReadRFRegister(pAd, RF_R07, (PUCHAR)&RFValue);
+				ATE_RF_IO_READ8_BY_REG_ID(pAd, RF_R07, (PUCHAR)&RFValue);
 				RFValue = RFValue | 0x1;
-				RT30xxWriteRFRegister(pAd, RF_R07, (UCHAR)RFValue);
+				ATE_RF_IO_WRITE8_BY_REG_ID(pAd, RF_R07, (UCHAR)RFValue);
 
-				// latch channel for future usage.
+				// latch channel for future usage
 				pAd->LatchRfRegs.Channel = Channel;
 
 				break;				
 			}
 		}
 
-		DBGPRINT(RT_DEBUG_TRACE, ("SwitchChannel#%d(RF=%d, Pwr0=%d, Pwr1=%d, %dT), N=0x%02X, K=0x%02X, R=0x%02X\n",
+		ATEDBGPRINT(RT_DEBUG_TRACE, ("SwitchChannel#%d(RF=%d, Pwr0=%d, Pwr1=%d, %dT), N=0x%02X, K=0x%02X, R=0x%02X\n",
 			Channel, 
 			pAd->RfIcType, 
 			TxPwer,
@@ -2767,189 +3017,202 @@ VOID ATEAsicSwitchChannel(
 	else
 //2008/07/10:KH add to support 3070 ATE-->
 #endif // RT30xx //
-{
-	RFRegTable = RF2850RegTable;
-
-	switch (pAd->RfIcType)
 	{
-		/* But only 2850 and 2750 support 5.5GHz band... */
-		case RFIC_2820:
-		case RFIC_2850:
-		case RFIC_2720:
-		case RFIC_2750:
-			
-			for (index = 0; index < NUM_OF_2850_CHNL; index++)
-			{
-				if (Channel == RFRegTable[index].Channel)
+		/* RT28xx */
+		RFRegTable = RF2850RegTable;
+
+		switch (pAd->RfIcType)
+		{
+			/* But only 2850 and 2750 support 5.5GHz band... */
+			case RFIC_2820:
+			case RFIC_2850:
+			case RFIC_2720:
+			case RFIC_2750:
+				
+				for (index = 0; index < NUM_OF_2850_CHNL; index++)
 				{
-					R2 = RFRegTable[index].R2;
-					if (pAd->Antenna.field.TxPath == 1)
+					if (Channel == RFRegTable[index].Channel)
 					{
-						R2 |= 0x4000;	// If TXpath is 1, bit 14 = 1;
-					}
+						R2 = RFRegTable[index].R2;
 
-					if (pAd->Antenna.field.RxPath == 2)
-					{
-						switch (pAd->ate.RxAntennaSel)
+						// If TX path is 1, bit 14 = 1;
+						if (pAd->Antenna.field.TxPath == 1)
 						{
-							case 1:
-								R2 |= 0x20040;
-								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
-								BbpValue &= 0xE4;
-								BbpValue |= 0x00;
-								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);								
-								break;
-							case 2:
-								R2 |= 0x10040;
-								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
-								BbpValue &= 0xE4;
-								BbpValue |= 0x01;
-								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);									
-								break;
-							default:	
-								R2 |= 0x40;
-								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
-								BbpValue &= 0xE4;
-								/* Only enable two Antenna to receive. */
+							R2 |= 0x4000;	
+						}
+
+						if (pAd->Antenna.field.RxPath == 2)
+						{
+							switch (pAd->ate.RxAntennaSel)
+							{
+								case 1:
+									R2 |= 0x20040;
+									ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
+									BbpValue &= 0xE4;
+									BbpValue |= 0x00;
+									ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);								
+									break;
+								case 2:
+									R2 |= 0x10040;
+									ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
+									BbpValue &= 0xE4;
+									BbpValue |= 0x01;
+									ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);									
+									break;
+								default:	
+									R2 |= 0x40;
+									ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
+									BbpValue &= 0xE4;
+									/* Only enable two Antenna to receive. */
+									BbpValue |= 0x08;
+									ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);								
+									break;
+							}
+						}
+						else if (pAd->Antenna.field.RxPath == 1)
+						{
+							// write 1 to off RxPath
+							R2 |= 0x20040;	
+						}
+
+						if (pAd->Antenna.field.TxPath == 2)
+						{
+							if (pAd->ate.TxAntennaSel == 1)
+							{
+								// If TX Antenna select is 1 , bit 14 = 1; Disable Ant 2
+								R2 |= 0x4000;	
+								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpValue);
+								BbpValue &= 0xE7;		// 11100111B
+								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpValue);
+							}
+							else if (pAd->ate.TxAntennaSel == 2)
+							{
+								// If TX Antenna select is 2 , bit 15 = 1; Disable Ant 1
+								R2 |= 0x8000;	
+								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpValue);
+								BbpValue &= 0xE7;	
 								BbpValue |= 0x08;
-								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);								
-								break;
-						}
-					}
-					else if (pAd->Antenna.field.RxPath == 1)
-					{
-						R2 |= 0x20040;	// write 1 to off RxPath
-					}
-
-					if (pAd->Antenna.field.TxPath == 2)
-					{
-						if (pAd->ate.TxAntennaSel == 1)
-						{
-							R2 |= 0x4000;	// If TX Antenna select is 1 , bit 14 = 1; Disable Ant 2
-							ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpValue);
-							BbpValue &= 0xE7;		//11100111B
-							ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpValue);
-						}
-						else if (pAd->ate.TxAntennaSel == 2)
-						{
-							R2 |= 0x8000;	// If TX Antenna select is 2 , bit 15 = 1; Disable Ant 1
-							ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpValue);
-							BbpValue &= 0xE7;	
-							BbpValue |= 0x08;
-							ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpValue);
-						}
-						else
-						{
-							ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpValue);
-							BbpValue &= 0xE7;
-							BbpValue |= 0x10;
-							ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpValue);
-						}
-					}
-					if (pAd->Antenna.field.RxPath == 3)
-					{
-						switch (pAd->ate.RxAntennaSel)
-						{
-							case 1:
-								R2 |= 0x20040;
-								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
-								BbpValue &= 0xE4;
-								BbpValue |= 0x00;
-								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);								
-								break;
-							case 2:
-								R2 |= 0x10040;
-								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
-								BbpValue &= 0xE4;
-								BbpValue |= 0x01;
-								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);									
-								break;
-							case 3:	
-								R2 |= 0x30000;
-								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
-								BbpValue &= 0xE4;
-								BbpValue |= 0x02;
-								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);
-								break;								
-							default:	
-								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
-								BbpValue &= 0xE4;
+								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpValue);
+							}
+							else
+							{
+								ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R1, &BbpValue);
+								BbpValue &= 0xE7;
 								BbpValue |= 0x10;
-								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);								
-								break;
+								ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R1, BbpValue);
+							}
 						}
-					}
-					
-					if (Channel > 14)
-					{
-						// initialize R3, R4
-						R3 = (RFRegTable[index].R3 & 0xffffc1ff);
-						R4 = (RFRegTable[index].R4 & (~0x001f87c0)) | (pAd->ate.RFFreqOffset << 15);
-
-                        // According the Rory's suggestion to solve the middle range issue.
-						// 5.5G band power range: 0xF9~0X0F, TX0 Reg3 bit9/TX1 Reg4 bit6="0" means the TX power reduce 7dB
-						// R3
-						if ((TxPwer >= -7) && (TxPwer < 0))
+						if (pAd->Antenna.field.RxPath == 3)
 						{
-							TxPwer = (7+TxPwer);
-							TxPwer = (TxPwer > 0xF) ? (0xF) : (TxPwer);
-							R3 |= (TxPwer << 10);
-							ATEDBGPRINT(RT_DEBUG_TRACE, ("ATEAsicSwitchChannel: TxPwer=%d \n", TxPwer));
+							switch (pAd->ate.RxAntennaSel)
+							{
+								case 1:
+									R2 |= 0x20040;
+									ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
+									BbpValue &= 0xE4;
+									BbpValue |= 0x00;
+									ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);								
+									break;
+								case 2:
+									R2 |= 0x10040;
+									ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
+									BbpValue &= 0xE4;
+									BbpValue |= 0x01;
+									ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);									
+									break;
+								case 3:	
+									R2 |= 0x30000;
+									ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
+									BbpValue &= 0xE4;
+									BbpValue |= 0x02;
+									ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);
+									break;								
+								default:	
+									ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R3, &BbpValue);
+									BbpValue &= 0xE4;
+									BbpValue |= 0x10;
+									ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R3, BbpValue);								
+									break;
+							}
+						}
+						
+						if (Channel > 14)
+						{
+							// initialize R3, R4
+							R3 = (RFRegTable[index].R3 & 0xffffc1ff);
+							R4 = (RFRegTable[index].R4 & (~0x001f87c0)) | (pAd->ate.RFFreqOffset << 15);
+
+		                    /*
+			                    According the Rory's suggestion to solve the middle range issue.
+
+								5.5G band power range : 0xF9~0X0F, TX0 Reg3 bit9/TX1 Reg4 bit6="0"
+														means the TX power reduce 7dB.
+							*/
+							// R3
+							if ((TxPwer >= -7) && (TxPwer < 0))
+							{
+								TxPwer = (7+TxPwer);
+								TxPwer = (TxPwer > 0xF) ? (0xF) : (TxPwer);
+								R3 |= (TxPwer << 10);
+								ATEDBGPRINT(RT_DEBUG_TRACE, ("ATEAsicSwitchChannel: TxPwer=%d \n", TxPwer));
+							}
+							else
+							{
+								TxPwer = (TxPwer > 0xF) ? (0xF) : (TxPwer);
+								R3 |= (TxPwer << 10) | (1 << 9);
+							}
+
+							// R4
+							if ((TxPwer2 >= -7) && (TxPwer2 < 0))
+							{
+								TxPwer2 = (7+TxPwer2);
+								TxPwer2 = (TxPwer2 > 0xF) ? (0xF) : (TxPwer2);
+								R4 |= (TxPwer2 << 7);
+								ATEDBGPRINT(RT_DEBUG_TRACE, ("ATEAsicSwitchChannel: TxPwer2=%d \n", TxPwer2));
+							}
+							else
+							{
+								TxPwer2 = (TxPwer2 > 0xF) ? (0xF) : (TxPwer2);
+								R4 |= (TxPwer2 << 7) | (1 << 6);
+							}
 						}
 						else
 						{
-							TxPwer = (TxPwer > 0xF) ? (0xF) : (TxPwer);
-							R3 |= (TxPwer << 10) | (1 << 9);
+							// Set TX power0.
+							R3 = (RFRegTable[index].R3 & 0xffffc1ff) | (TxPwer << 9);
+							// Set frequency offset and TX power1.
+							R4 = (RFRegTable[index].R4 & (~0x001f87c0)) | (pAd->ate.RFFreqOffset << 15) | (TxPwer2 <<6);
 						}
 
-						// R4
-						if ((TxPwer2 >= -7) && (TxPwer2 < 0))
+						// based on BBP current mode before changing RF channel
+						if (pAd->ate.TxWI.BW == BW_40)
 						{
-							TxPwer2 = (7+TxPwer2);
-							TxPwer2 = (TxPwer2 > 0xF) ? (0xF) : (TxPwer2);
-							R4 |= (TxPwer2 << 7);
-							ATEDBGPRINT(RT_DEBUG_TRACE, ("ATEAsicSwitchChannel: TxPwer2=%d \n", TxPwer2));
+							R4 |=0x200000;
 						}
-						else
-						{
-							TxPwer2 = (TxPwer2 > 0xF) ? (0xF) : (TxPwer2);
-							R4 |= (TxPwer2 << 7) | (1 << 6);
-						}
-					}
-					else
-					{
-						R3 = (RFRegTable[index].R3 & 0xffffc1ff) | (TxPwer << 9); // set TX power0
-						R4 = (RFRegTable[index].R4 & (~0x001f87c0)) | (pAd->ate.RFFreqOffset << 15) | (TxPwer2 <<6);// Set freq offset & TxPwr1
-					}
+						
+						// Update variables.
+						pAd->LatchRfRegs.Channel = Channel;
+						pAd->LatchRfRegs.R1 = RFRegTable[index].R1;
+						pAd->LatchRfRegs.R2 = R2;
+						pAd->LatchRfRegs.R3 = R3;
+						pAd->LatchRfRegs.R4 = R4;
 
-					// Based on BBP current mode before changing RF channel.
-					if (pAd->ate.TxWI.BW == BW_40)
-					{
-						R4 |=0x200000;
+						RtmpRfIoWrite(pAd);
+						
+						break;
 					}
-					
-					// Update variables
-					pAd->LatchRfRegs.Channel = Channel;
-					pAd->LatchRfRegs.R1 = RFRegTable[index].R1;
-					pAd->LatchRfRegs.R2 = R2;
-					pAd->LatchRfRegs.R3 = R3;
-					pAd->LatchRfRegs.R4 = R4;
-
-					RtmpRfIoWrite(pAd);
-					
-					break;
 				}
-			}
-			break;
+				break;
 
-		default:
-			break;
+			default:
+				break;
+		}
 	}
-}
+
 	// Change BBP setting during switch from a->g, g->a
 	if (Channel <= 14)
 	{
-	    ULONG	TxPinCfg = 0x00050F0A;// 2007.10.09 by Brian : 0x0005050A ==> 0x00050F0A
+	    UINT32 TxPinCfg = 0x00050F0A;// 2007.10.09 by Brian : 0x0005050A ==> 0x00050F0A
 		
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R62, (0x37 - GET_LNA_GAIN(pAd)));
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R63, (0x37 - GET_LNA_GAIN(pAd)));
@@ -2966,14 +3229,15 @@ VOID ATEAsicSwitchChannel(
 	    }
 
         // According the Rory's suggestion to solve the middle range issue.
-		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R86, &BbpValue);
+		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R86, &BbpValue);// may be removed for RT35xx ++
+
 		ASSERT((BbpValue == 0x00));
 		if ((BbpValue != 0x00))
 		{
 			ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R86, 0x00);
-		}
+		}// may be removed for RT35xx --
 
-		// 5.5GHz band selection PIN, bit1 and bit2 are complement
+		// 5.5 GHz band selection PIN, bit1 and bit2 are complement
 		RTMP_IO_READ32(pAd, TX_BAND_CFG, &Value);
 		Value &= (~0x6);
 		Value |= (0x04);
@@ -2989,41 +3253,56 @@ VOID ATEAsicSwitchChannel(
 			TxPinCfg &= 0xFFFFF3FF;
 		}
 
+		// calibration power unbalance issues 
+		if (pAd->Antenna.field.TxPath == 2)
+		{
+			if (pAd->ate.TxAntennaSel == 1)
+			{
+				TxPinCfg &= 0xFFFFFFF7;
+			}
+			else if (pAd->ate.TxAntennaSel == 2)
+			{
+				TxPinCfg &= 0xFFFFFFFD;
+			}
+		}
+
 		RTMP_IO_WRITE32(pAd, TX_PIN_CFG, TxPinCfg);
 	}
 	else
 	{
-	    ULONG	TxPinCfg = 0x00050F05;//2007.10.09 by Brian : 0x00050505 ==> 0x00050F05
+	    UINT32	TxPinCfg = 0x00050F05;// 2007.10.09 by Brian : 0x00050505 ==> 0x00050F05
 		
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R62, (0x37 - GET_LNA_GAIN(pAd)));
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R63, (0x37 - GET_LNA_GAIN(pAd)));
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R64, (0x37 - GET_LNA_GAIN(pAd)));
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R82, 0xF2);
-
+		
         // According the Rory's suggestion to solve the middle range issue.
-		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R86, &BbpValue);
+		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R86, &BbpValue);// may be removed for RT35xx ++
+
 		ASSERT((BbpValue == 0x00));
 		if ((BbpValue != 0x00))
 		{
 			ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R86, 0x00);
 		}
+
 		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R91, &BbpValue);
 		ASSERT((BbpValue == 0x04));
 
 		ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R92, &BbpValue);
-		ASSERT((BbpValue == 0x00));
+		ASSERT((BbpValue == 0x00));// may be removed for RT35xx --
 		
-		// 5.5GHz band selection PIN, bit1 and bit2 are complement
+		// 5.5 GHz band selection PIN, bit1 and bit2 are complement
 		RTMP_IO_READ32(pAd, TX_BAND_CFG, &Value);
 		Value &= (~0x6);
 		Value |= (0x02);
 		RTMP_IO_WRITE32(pAd, TX_BAND_CFG, Value);
 
-        // Turn off unused PA or LNA when only 1T or 1R.
+		// Turn off unused PA or LNA when only 1T or 1R.
 		if (pAd->Antenna.field.TxPath == 1)
 		{
 			TxPinCfg &= 0xFFFFFFF3;
-	    }
+		}
 		if (pAd->Antenna.field.RxPath == 1)
 		{
 			TxPinCfg &= 0xFFFFF3FF;
@@ -3031,6 +3310,7 @@ VOID ATEAsicSwitchChannel(
 
 		RTMP_IO_WRITE32(pAd, TX_PIN_CFG, TxPinCfg);
 	}
+
 
     // R66 should be set according to Channel and use 20MHz when scanning
 	if (Channel <= 14)
@@ -3054,13 +3334,15 @@ VOID ATEAsicSwitchChannel(
 		}
 	}
 
-	//
-	// On 11A, We should delay and wait RF/BBP to be stable
-	// and the appropriate time should be 1000 micro seconds 
-	// 2005/06/05 - On 11G, We also need this delay time. Otherwise it's difficult to pass the WHQL.
-	//
+	/*
+		On 11A, We should delay and wait RF/BBP to be stable
+		and the appropriate time should be 1000 micro seconds. 
+
+		2005/06/05 - On 11G, We also need this delay time. Otherwise it's difficult to pass the WHQL.
+	*/
 	RTMPusecDelay(1000);  
 
+#ifndef RTMP_RF_RW_SUPPORT
 	if (Channel > 14)
 	{
 		// When 5.5GHz band the LSB of TxPwr will be used to reduced 7dB or not.
@@ -3086,13 +3368,15 @@ VOID ATEAsicSwitchChannel(
 								  pAd->LatchRfRegs.R3, 
 								  pAd->LatchRfRegs.R4));
     }
+#endif // RTMP_RF_RW_SUPPORT //
 }
 
-//
-// In fact, no one will call this routine so far !
-//
+
+
+/* In fact, no one will call this routine so far ! */
+
 /*
-	==========================================================================
+==========================================================================
 	Description:
 		Gives CCK TX rate 2 more dB TX power.
 		This routine works only in ATE mode.
@@ -3106,8 +3390,8 @@ VOID ATEAsicSwitchChannel(
 
 	NOTE: Since this routine requires the value of (pAd->DrsCounters.fNoisyEnvironment),
 		it should be called AFTER MlmeDynamicTxRateSwitching()
-	==========================================================================
- */
+==========================================================================
+*/
 VOID ATEAsicAdjustTxPower(
 	IN PRTMP_ADAPTER pAd) 
 {
@@ -3187,7 +3471,7 @@ VOID ATEAsicAdjustTxPower(
 
 		if (bAutoTxAgc)
 		{
-			/* BbpR49 is unsigned char */
+			/* BbpR49 is unsigned char. */
 			ATE_BBP_IO_READ8_BY_REG_ID(pAd, BBP_R49, &BbpR49);
 
 			/* (p) TssiPlusBoundaryG[0] = 0 = (m) TssiMinusBoundaryG[0] */
@@ -3209,10 +3493,12 @@ VOID ATEAsicAdjustTxPower(
 				// Check for how large we need to decrease the Tx power.
 				for (idx = 1; idx < 5; idx++)
 				{
-					if (BbpR49 <= pTssiMinusBoundary[idx])  // Found the range
+					// Found the range.
+					if (BbpR49 <= pTssiMinusBoundary[idx])  
 						break;
 				}
-				// The index is the step we should decrease, idx = 0 means there is nothing to compensate
+
+				// The index is the step we should decrease, idx = 0 means there is nothing to compensate.
 //				if (R3 > (ULONG) (TxAgcStep * (idx-1)))
 					*pTxAgcCompensate = -(TxAgcStep * (idx-1));
 //				else
@@ -3224,14 +3510,16 @@ VOID ATEAsicAdjustTxPower(
 			}
 			else if (BbpR49 < pTssiPlusBoundary[1])
 			{
-				// Reading is smaller than the reference value
-				// check for how large we need to increase the Tx power
+				// Reading is smaller than the reference value.
+				// Check for how large we need to increase the Tx power.
 				for (idx = 1; idx < 5; idx++)
 				{
-					if (BbpR49 >= pTssiPlusBoundary[idx])   // Found the range
+					// Found the range.
+					if (BbpR49 >= pTssiPlusBoundary[idx])   
 						break;
 				}
-				// The index is the step we should increase, idx = 0 means there is nothing to compensate
+
+				// The index is the step we should increase, idx = 0 means there is nothing to compensate.
 				*pTxAgcCompensate = TxAgcStep * (idx-1);
 				DeltaPwr += (*pTxAgcCompensate);
 				ATEDBGPRINT(RT_DEBUG_TRACE, ("++ Tx Power, BBP R1=%x, TssiRef=%x, TxAgcStep=%x, step = +%d\n",
@@ -3262,9 +3550,9 @@ VOID ATEAsicAdjustTxPower(
 			DeltaPwr += (*pTxAgcCompensate);
 	}
 
-	/* calculate delta power based on the percentage specified from UI */
+	/* Calculate delta power based on the percentage specified from UI. */
 	// E2PROM setting is calibrated for maximum TX power (i.e. 100%)
-	// We lower TX power here according to the percentage specified from UI
+	// We lower TX power here according to the percentage specified from UI.
 	if (pAd->CommonCfg.TxPowerPercentage == 0xffffffff)       // AUTO TX POWER control
 		;
 	else if (pAd->CommonCfg.TxPowerPercentage > 90)  // 91 ~ 100% & AUTO, treat as 100% in terms of mW
@@ -3290,8 +3578,8 @@ VOID ATEAsicAdjustTxPower(
 		DeltaPwr -= 12;
 	}
 
-	/* reset different new tx power for different TX rate */
-	for(i=0; i<5; i++)
+	/* Reset different new tx power for different TX rate. */
+	for (i=0; i<5; i++)
 	{
 		if (TxPwr[i] != 0xffffffff)
 		{
@@ -3330,17 +3618,19 @@ VOID ATEAsicAdjustTxPower(
 
 }
 
+
 /*
-	========================================================================
+========================================================================
 	Routine Description:
 		Write TxWI for ATE mode.
 		
 	Return Value:
 		None
-	========================================================================
+========================================================================
 */
 
-#ifdef RT2870
+
+#ifdef RTMP_MAC_USB
 static VOID ATEWriteTxWI(
 	IN	PRTMP_ADAPTER	pAd,
 	IN	PTXWI_STRUC 	pTxWI,
@@ -3401,13 +3691,15 @@ static VOID ATEWriteTxWI(
 
 	return;
 }
-#endif // RT2870 //
+#endif // RTMP_MAC_USB //
+
+
 /*
-	========================================================================
+========================================================================
 
 	Routine Description:
 		Disable protection for ATE.
-	========================================================================
+========================================================================
 */
 VOID ATEDisableAsicProtect(
 	IN		PRTMP_ADAPTER	pAd)
@@ -3489,15 +3781,16 @@ VOID ATEDisableAsicProtect(
 
 }
 
-#ifdef RT2870
+
+#ifdef RTMP_MAC_USB
 /*
-	========================================================================
+========================================================================
 	Routine	Description:
 		Write TxInfo for ATE mode.
 		
 	Return Value:
 		None
-	========================================================================
+========================================================================
 */
 static VOID ATEWriteTxInfo(
 	IN	PRTMP_ADAPTER	pAd,
@@ -3523,13 +3816,11 @@ static VOID ATEWriteTxInfo(
 
 	return;
 }
-#endif // RT2870 //
+#endif // RTMP_MAC_USB //
+
 
 /* There are two ways to convert Rssi */
-#if 1
-//
-// The way used with GET_LNA_GAIN().
-//
+/* the way used with GET_LNA_GAIN() */
 CHAR ATEConvertToRssi(
 	IN PRTMP_ADAPTER pAd,
 	IN	CHAR	Rssi,
@@ -3563,48 +3854,10 @@ CHAR ATEConvertToRssi(
 
 	return (-12 - RssiOffset - LNAGain - Rssi);
 }
-#else
-// 
-// The way originally used in ATE of rt2860ap.
-// 
-CHAR ATEConvertToRssi(
-	IN PRTMP_ADAPTER pAd,
-	IN	CHAR			Rssi,
-	IN  UCHAR   RssiNumber)
-{
-	UCHAR	RssiOffset, LNAGain;
 
-	// Rssi equals to zero should be an invalid value
-	if (Rssi == 0)
-		return -99;
-
-    if (pAd->LatchRfRegs.Channel > 14)
-    {
-        LNAGain = pAd->ALNAGain;
-        if (RssiNumber == 0)
-			RssiOffset = pAd->ARssiOffset0;
-		else if (RssiNumber == 1)
-			RssiOffset = pAd->ARssiOffset1;
-		else
-			RssiOffset = pAd->ARssiOffset2;
-    }
-    else
-    {
-        LNAGain = pAd->BLNAGain;
-        if (RssiNumber == 0)
-			RssiOffset = pAd->BGRssiOffset0;
-		else if (RssiNumber == 1)
-			RssiOffset = pAd->BGRssiOffset1;
-		else
-			RssiOffset = pAd->BGRssiOffset2;
-    }
-	
-    return (-32 - RssiOffset + LNAGain - Rssi);
-}
-#endif /* end of #if 1 */
 
 /*
-	========================================================================
+========================================================================
 
 	Routine Description:
 		Set Japan filter coefficients if needed.
@@ -3612,7 +3865,7 @@ CHAR ATEConvertToRssi(
 		This routine should only be called when
 		entering TXFRAME mode or TXCONT mode.
 				
-	========================================================================
+========================================================================
 */
 static VOID SetJapanFilter(
 	IN		PRTMP_ADAPTER	pAd)
@@ -3639,13 +3892,13 @@ static VOID SetJapanFilter(
 	ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R4, BbpData);
 }
 
+
 VOID ATESampleRssi(
 	IN PRTMP_ADAPTER	pAd,
 	IN PRXWI_STRUC		pRxWI)
 {
 	/* There are two ways to collect RSSI. */
-#if 1
-	//pAd->LastRxRate = (USHORT)((pRxWI->MCS) + (pRxWI->BW <<7) + (pRxWI->ShortGI <<8)+ (pRxWI->PHYMODE <<14)) ;
+//	pAd->LastRxRate = (USHORT)((pRxWI->MCS) + (pRxWI->BW <<7) + (pRxWI->ShortGI <<8)+ (pRxWI->PHYMODE <<14)) ;
 	if (pRxWI->RSSI0 != 0)
 	{
 		pAd->ate.LastRssi0	= ATEConvertToRssi(pAd, (CHAR) pRxWI->RSSI0, RSSI_0);
@@ -3669,22 +3922,8 @@ VOID ATESampleRssi(
 	pAd->ate.LastSNR1 = (CHAR)(pRxWI->SNR1);// CHAR ==> UCHAR ?
 
 	pAd->ate.NumOfAvgRssiSample ++;
-#else
-	pAd->ate.LastSNR0 = (CHAR)(pRxWI->SNR0);
-	pAd->ate.LastSNR1 = (CHAR)(pRxWI->SNR1);
-	pAd->ate.RxCntPerSec++;
-	pAd->ate.LastRssi0 = ATEConvertToRssi(pAd, (CHAR) pRxWI->RSSI0, RSSI_0);				
-	pAd->ate.LastRssi1 = ATEConvertToRssi(pAd, (CHAR) pRxWI->RSSI1, RSSI_1);
-	pAd->ate.LastRssi2 = ATEConvertToRssi(pAd, (CHAR) pRxWI->RSSI2, RSSI_2);
-	pAd->ate.AvgRssi0X8 = (pAd->ate.AvgRssi0X8 - pAd->ate.AvgRssi0) + pAd->ate.LastRssi0;
-	pAd->ate.AvgRssi0 = pAd->ate.AvgRssi0X8 >> 3;
-	pAd->ate.AvgRssi1X8 = (pAd->ate.AvgRssi1X8 - pAd->ate.AvgRssi1) + pAd->ate.LastRssi1;
-	pAd->ate.AvgRssi1 = pAd->ate.AvgRssi1X8 >> 3;
-	pAd->ate.AvgRssi2X8 = (pAd->ate.AvgRssi2X8 - pAd->ate.AvgRssi2) + pAd->ate.LastRssi2;
-	pAd->ate.AvgRssi2 = pAd->ate.AvgRssi2X8 >> 3;
-	pAd->ate.NumOfAvgRssiSample ++;
-#endif
 }
+
 
 #ifdef CONFIG_STA_SUPPORT
 VOID RTMPStationStop(
@@ -3700,27 +3939,30 @@ VOID RTMPStationStop(
     ATEDBGPRINT(RT_DEBUG_TRACE, ("<== RTMPStationStop\n"));
 }
 
+
 VOID RTMPStationStart(
     IN  PRTMP_ADAPTER   pAd)
 {
     ATEDBGPRINT(RT_DEBUG_TRACE, ("==> RTMPStationStart\n"));
+
+
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("<== RTMPStationStart\n"));
 }
 #endif // CONFIG_STA_SUPPORT //
 
+
 /* 
-	==========================================================================
+==========================================================================
 	Description:
 		Setup Frame format.
 	NOTE:
 		This routine should only be used in ATE mode.
-	==========================================================================
- */
+==========================================================================
+*/
 
-#ifdef RT2870
-/*======================Start of RT2870======================*/
-/*                                                           */
-/*                                                           */
+
+#ifdef RTMP_MAC_USB
+/*======================Start of RTMP_MAC_USB ======================*/
 static INT ATESetUpFrame(
 	IN PRTMP_ADAPTER pAd,
 	IN UINT32 TxIdx)
@@ -3752,11 +3994,11 @@ static INT ATESetUpFrame(
 	
 	if (pNullContext->InUse == FALSE)
 	{
-		// Set the in use bit
+		// set the in use bit
 		pNullContext->InUse = TRUE;
 		NdisZeroMemory(&(pAd->NullFrame), sizeof(HEADER_802_11));
 		
-		// Fill 802.11 header.
+		// fill 802.11 header
 #ifdef RALINK_28xx_QA
 		if (pAd->ate.bQATxStart == TRUE) 
 		{
@@ -3767,17 +4009,19 @@ static INT ATESetUpFrame(
 		else
 #endif // RALINK_28xx_QA //
 		{
-			// Fill 802.11 header.
+			// fill 802.11 header
 			NdisMoveMemory(&(pAd->NullFrame), TemplateFrame, sizeof(HEADER_802_11));
 		}
+
 #ifdef RT_BIG_ENDIAN
 		RTMPFrameEndianChange(pAd, (PUCHAR)&(pAd->NullFrame), DIR_READ, FALSE);
 #endif // RT_BIG_ENDIAN //
 
+
 #ifdef RALINK_28xx_QA
 		if (pAd->ate.bQATxStart == TRUE) 
 		{
-			/* modify sequence number.... */
+			/* modify sequence number... */
 			if (pAd->ate.TxDoneCount == 0)
 			{
 				pAd->ate.seq = pHeader80211->Sequence;
@@ -3786,7 +4030,7 @@ static INT ATESetUpFrame(
 			{
 				pHeader80211->Sequence = ++pAd->ate.seq;
 			}
-			/* We already got all the addr. fields from QA GUI. */
+			/* We already got all the address fields from QA GUI. */
 		}
 		else
 #endif // RALINK_28xx_QA //
@@ -3796,7 +4040,7 @@ static INT ATESetUpFrame(
 			COPY_MAC_ADDR(pAd->NullFrame.Addr3, pAd->ate.Addr3);
 		}
 
-		RTMPZeroMemory(&pAd->NullContext.TransferBuffer->field.WirelessPacket[0], TX_BUFFER_NORMSIZE);//???
+		RTMPZeroMemory(&pAd->NullContext.TransferBuffer->field.WirelessPacket[0], TX_BUFFER_NORMSIZE);
 		pTxInfo = (PTXINFO_STRUC)&pAd->NullContext.TransferBuffer->field.WirelessPacket[0];
 
 #ifdef RALINK_28xx_QA
@@ -3812,14 +4056,15 @@ static INT ATESetUpFrame(
 			// Avoid to exceed the range of WirelessPacket[].
 			ASSERT(pAd->ate.TxLength <= (MAX_FRAME_SIZE - 34/* == 2312 */));
 
-			// pTxInfo->USBDMATxPktLen will be updated to include padding later.
-			ATEWriteTxInfo(pAd, pTxInfo, (USHORT)(TXWI_SIZE + pAd->ate.TxLength), TRUE, EpToQueue[MGMTPIPEIDX], FALSE,  FALSE);
+			// pTxInfo->USBDMATxPktLen will be updated to include padding later
+			ATEWriteTxInfo(pAd, pTxInfo, (USHORT)(TXWI_SIZE + pAd->ate.TxLength)
+			, TRUE, EpToQueue[MGMTPIPEIDX], FALSE,  FALSE);
 			pTxInfo->QSEL = FIFO_EDCA;
 		}
 
 		pTxWI = (PTXWI_STRUC)&pAd->NullContext.TransferBuffer->field.WirelessPacket[TXINFO_SIZE];
 
-		// Fill TxWI.
+		// fill TxWI
 		if (pAd->ate.bQATxStart == TRUE) 
 		{
 			TxHTPhyMode.field.BW = pAd->ate.TxWI.BW;
@@ -3827,8 +4072,13 @@ static INT ATESetUpFrame(
 			TxHTPhyMode.field.STBC = pAd->ate.TxWI.STBC;
 			TxHTPhyMode.field.MCS = pAd->ate.TxWI.MCS;
 			TxHTPhyMode.field.MODE = pAd->ate.TxWI.PHYMODE;
-			ATEWriteTxWI(pAd, pTxWI, pAd->ate.TxWI.FRAG, pAd->ate.TxWI.TS, pAd->ate.TxWI.AMPDU, pAd->ate.TxWI.ACK, pAd->ate.TxWI.NSEQ, 
-				pAd->ate.TxWI.BAWinSize, BSSID_WCID, pAd->ate.TxWI.MPDUtotalByteCount/* include 802.11 header */, pAd->ate.TxWI.PacketId, 0, pAd->ate.TxWI.txop/*IFS_HTTXOP*/, pAd->ate.TxWI.CFACK/*FALSE*/, TxHTPhyMode);
+			ATEWriteTxWI(pAd, pTxWI, pAd->ate.TxWI.FRAG, pAd->ate.TxWI.TS,
+				pAd->ate.TxWI.AMPDU, pAd->ate.TxWI.ACK, pAd->ate.TxWI.NSEQ, 
+				pAd->ate.TxWI.BAWinSize, BSSID_WCID,
+				pAd->ate.TxWI.MPDUtotalByteCount/* include 802.11 header */,
+				pAd->ate.TxWI.PacketId,
+				0, pAd->ate.TxWI.txop/*IFS_HTTXOP*/, pAd->ate.TxWI.CFACK
+				/*FALSE*/, TxHTPhyMode);
 		}
 		else
 		{
@@ -3838,19 +4088,21 @@ static INT ATESetUpFrame(
 			TxHTPhyMode.field.MCS = pAd->ate.TxWI.MCS;
 			TxHTPhyMode.field.MODE = pAd->ate.TxWI.PHYMODE;
 
-			ATEWriteTxWI(pAd, pTxWI,  FALSE, FALSE, FALSE, FALSE/* No ack required. */, FALSE, 0, BSSID_WCID, pAd->ate.TxLength,
+			ATEWriteTxWI(pAd, pTxWI,  FALSE, FALSE, FALSE, FALSE
+				/* No ack required. */, FALSE, 0, BSSID_WCID, pAd->ate.TxLength,
 				0, 0, IFS_HTTXOP, FALSE, TxHTPhyMode);// "MMPS_STATIC" instead of "MMPS_DYNAMIC" ???
 		}
 
-		RTMPMoveMemory(&pAd->NullContext.TransferBuffer->field.WirelessPacket[TXINFO_SIZE+TXWI_SIZE], &pAd->NullFrame, sizeof(HEADER_802_11));
+		RTMPMoveMemory(&pAd->NullContext.TransferBuffer->field.WirelessPacket[TXINFO_SIZE+TXWI_SIZE],
+			&pAd->NullFrame, sizeof(HEADER_802_11));
 
 		pDest = &(pAd->NullContext.TransferBuffer->field.WirelessPacket[TXINFO_SIZE+TXWI_SIZE+sizeof(HEADER_802_11)]);
 
-		// Prepare frame payload
+		/* prepare frame payload */
 #ifdef RALINK_28xx_QA
 		if (pAd->ate.bQATxStart == TRUE) 
 		{
-			// copy pattern
+			/* copy the pattern one by one to the frame payload */
 			if ((pAd->ate.PLen != 0))
 			{
 				for (j = 0; j < pAd->ate.DLen; j+=pAd->ate.PLen)
@@ -3872,58 +4124,44 @@ static INT ATESetUpFrame(
 			TransferBufferLength = TXINFO_SIZE + TXWI_SIZE + pAd->ate.TxLength;
 		}
 
-#if 1
 		OrgBufferLength = TransferBufferLength;
 		TransferBufferLength = (TransferBufferLength + 3) & (~3);
 
-		// Always add 4 extra bytes at every packet.
+		/* Always add 4 extra bytes at every packet. */
 		padLen = TransferBufferLength - OrgBufferLength + 4;/* 4 == last packet padding */
+
+		/* 
+			RTMP_PKT_TAIL_PADDING == 11.
+			[11 == 3(max 4 byte padding) + 4(last packet padding) + 4(MaxBulkOutsize align padding)]		
+		*/
 		ASSERT((padLen <= (RTMP_PKT_TAIL_PADDING - 4/* 4 == MaxBulkOutsize alignment padding */)));
 
 		/* Now memzero all extra padding bytes. */
 		NdisZeroMemory(pDest, padLen);
 		pDest += padLen;
-#else
-		if ((TransferBufferLength % 4) == 1)	
-		{
-			NdisZeroMemory(pDest, 7);
-			pDest += 7;
-			TransferBufferLength  += 3;
-		}
-		else if ((TransferBufferLength % 4) == 2)	
-		{
-			NdisZeroMemory(pDest, 6);
-			pDest += 6;
-			TransferBufferLength  += 2;
-		}
-		else if ((TransferBufferLength % 4) == 3)	
-		{
-			NdisZeroMemory(pDest, 5);
-			pDest += 5;
-			TransferBufferLength  += 1;
-		}
-#endif // 1 //
 
-		// Update pTxInfo->USBDMATxPktLen to include padding.
+		/* Update pTxInfo->USBDMATxPktLen to include padding. */
 		pTxInfo->USBDMATxPktLen = TransferBufferLength - TXINFO_SIZE;
 
 		TransferBufferLength += 4;
 
-		// If TransferBufferLength is multiple of 64, add extra 4 bytes again.
+		/* If TransferBufferLength is multiple of 64, add extra 4 bytes again. */
 		if ((TransferBufferLength % pAd->BulkOutMaxPacketSize) == 0)
 		{
 			NdisZeroMemory(pDest, 4);
 			TransferBufferLength += 4;
 		}
 
-		// Fill out frame length information for global Bulk out arbitor
+		/* Fill out frame length information for global Bulk out arbitor. */
 		pAd->NullContext.BulkOutSize = TransferBufferLength;
 	}
+
 #ifdef RT_BIG_ENDIAN
 	RTMPWIEndianChange((PUCHAR)pTxWI, TYPE_TXWI);
 	RTMPFrameEndianChange(pAd, (((PUCHAR)pTxInfo)+TXWI_SIZE+TXINFO_SIZE), DIR_WRITE, FALSE);
-    RTMPDescriptorEndianChange((PUCHAR)pTxInfo, TYPE_TXINFO);
+	RTMPDescriptorEndianChange((PUCHAR)pTxInfo, TYPE_TXINFO);
 #endif // RT_BIG_ENDIAN //
+
 	return 0;
 }
 
@@ -3933,19 +4171,19 @@ VOID ATE_RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 	PTX_CONTEXT		    pNullContext;
 	UCHAR				BulkOutPipeId;
 	NTSTATUS			Status;
-	unsigned long		IrqFlags;
+	ULONG				IrqFlags;
 	ULONG			    OldValue;
 		
 	pNullContext = (PTX_CONTEXT)pUrb->context;
 	pAd = pNullContext->pAd;
 
 	
-	// Reset Null frame context flags
+	/* Reset Null frame context flags */
 	pNullContext->IRPPending = FALSE;
 	pNullContext->InUse = FALSE;
 	Status = pUrb->status;
 
-	// Store BulkOut PipeId
+	/* Store BulkOut PipeId. */
 	BulkOutPipeId = pNullContext->BulkOutPipeId;
 	pAd->BulkOutDataOneSecCount++;
 	
@@ -3956,11 +4194,15 @@ VOID ATE_RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 		{
 			if (pAd->ate.QID == BulkOutPipeId)
 			{
-				// Let Rx can have a chance to break in during Tx process,
-				// especially for loopback mode in QA ATE.
-				// To trade off between tx performance and loopback mode integrity.
-				/* Q   : Now Rx is handled by tasklet, do we still need this delay ? */
-				/* Ans : Even tasklet is used, Rx/Tx < 1 if we do not delay for a while right here. */
+				/*
+					Let Rx can have a chance to break in during Tx process,
+					especially for loopback mode in QA ATE.
+
+					To trade off between tx performance and loopback mode integrity.
+
+					Q   : Now Rx is handled by tasklet, do we still need this delay ?
+					Ans : Even tasklet is used, Rx/Tx < 1 if we do not delay for a while right here.
+				*/
 				RTMPusecDelay(500);
 				pAd->ate.TxDoneCount++;
 				pAd->RalinkCounters.KickTxCount++;
@@ -3974,17 +4216,11 @@ VOID ATE_RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 		pAd->Counters8023.GoodTransmits++;
 
 		/* Don't worry about the queue is empty or not. This function will check itself. */
+		/* In RT28xx, SendTxWaitQueue == TxSwQueue  */
 		RTMPDeQueuePacket(pAd, TRUE, BulkOutPipeId, MAX_TX_PROCESS);
 
-		/* In 28xx, SendTxWaitQueue ==> TxSwQueue  */
-/*		
-		if (pAd->SendTxWaitQueue[BulkOutPipeId].Number > 0)
-		{
-			RTMPDeQueuePacket(pAd, BulkOutPipeId);
-		}
-*/
 	}
-	else	// STATUS_OTHER
+	else
 	{
 		pAd->BulkOutCompleteOther++;
 
@@ -3997,13 +4233,16 @@ VOID ATE_RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 			(!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BULKOUT_RESET)))
 		{
 			RTMP_SET_FLAG(pAd, fRTMP_ADAPTER_BULKOUT_RESET);
+
 			/* In 28xx, RT_OID_USB_RESET_BULK_OUT ==> CMDTHREAD_RESET_BULK_OUT */
 			RTUSBEnqueueInternalCmd(pAd, CMDTHREAD_RESET_BULK_OUT, NULL, 0);
-			// Check
+
+			/* check */
 			BULK_OUT_LOCK(&pAd->BulkOutLock[BulkOutPipeId], IrqFlags);
 			pAd->BulkOutPending[BulkOutPipeId] = FALSE;
 			pAd->bulkResetPipeid = BulkOutPipeId;
 			BULK_OUT_UNLOCK(&pAd->BulkOutLock[BulkOutPipeId], IrqFlags);
+
 			return;
 		}
 	}
@@ -4012,10 +4251,10 @@ VOID ATE_RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 
 	if (atomic_read(&pAd->BulkOutRemained) > 0)
 	{			
-		atomic_dec(&pAd->BulkOutRemained);
+		InterlockedDecrement/* atomic_dec */(&pAd->BulkOutRemained);
 	}
 	
-	// 1st - Transmit Success
+	/* 1st - Transmit Success */
 	OldValue = pAd->WlanCounters.TransmittedFragmentCount.u.LowPart;
 	pAd->WlanCounters.TransmittedFragmentCount.u.LowPart++;
 
@@ -4024,7 +4263,8 @@ VOID ATE_RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 		pAd->WlanCounters.TransmittedFragmentCount.u.HighPart++;
 	}
 	
-	if(((pAd->ContinBulkOut == TRUE ) ||(atomic_read(&pAd->BulkOutRemained) > 0)) && (pAd->ate.Mode & ATE_TXFRAME))
+	if (((pAd->ContinBulkOut == TRUE ) ||(atomic_read(&pAd->BulkOutRemained) > 0))
+		&& (pAd->ate.Mode & ATE_TXFRAME))
 	{
 		RTUSB_SET_BULK_FLAG(pAd, fRTUSB_BULK_OUT_DATA_ATE);
 	}	
@@ -4040,13 +4280,14 @@ VOID ATE_RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 	pAd->BulkOutPending[BulkOutPipeId] = FALSE;
 	BULK_OUT_UNLOCK(&pAd->BulkOutLock[BulkOutPipeId], IrqFlags);	
 
-	// Always call Bulk routine, even reset bulk.
-	// The protection of rest bulk should be in BulkOut routine.
+	/* Always call Bulk routine, even reset bulk. */
+	/* The protection of rest bulk should be in BulkOut routine. */
 	RTUSBKickBulkOut(pAd);
 }
 
+
 /*
-	========================================================================
+========================================================================
 	
 	Routine Description:
 
@@ -4056,18 +4297,18 @@ VOID ATE_RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 
 	Note:
 	
-	========================================================================
+========================================================================
 */
-VOID	ATE_RTUSBBulkOutDataPacket(
+VOID ATE_RTUSBBulkOutDataPacket(
 	IN	PRTMP_ADAPTER	pAd,
 	IN	UCHAR			BulkOutPipeId)
 {
 	PTX_CONTEXT		pNullContext = &(pAd->NullContext);
 	PURB			pUrb;
-	int				ret = 0;
-	unsigned long	IrqFlags;
+	INT32			ret = 0;
+	ULONG			IrqFlags;
 
-	
+
 	ASSERT(BulkOutPipeId == 0);
 
 	/* Build up the frame first. */
@@ -4084,31 +4325,32 @@ VOID	ATE_RTUSBBulkOutDataPacket(
 	pAd->BulkOutPending[BulkOutPipeId] = TRUE;
 	BULK_OUT_UNLOCK(&pAd->BulkOutLock[BulkOutPipeId], IrqFlags);
 
-	// Increase Total transmit byte counter
+	// Increase Total transmit byte counter.
 	pAd->RalinkCounters.OneSecTransmittedByteCount +=  pNullContext->BulkOutSize; 
 	pAd->RalinkCounters.TransmittedByteCount +=  pNullContext->BulkOutSize;
 
-	// Clear ATE frame bulk out flag
+	// Clear ATE frame bulk out flag.
 	RTUSB_CLEAR_BULK_FLAG(pAd, fRTUSB_BULK_OUT_DATA_ATE);
 
-	// Init Tx context descriptor
+	// Init Tx context descriptor.
 	pNullContext->IRPPending = TRUE;
 	RTUSBInitTxDesc(pAd, pNullContext, BulkOutPipeId, (usb_complete_t)ATE_RTUSBBulkOutDataPacketComplete);
 	pUrb = pNullContext->pUrb;
 
-	if((ret = RTUSB_SUBMIT_URB(pUrb))!=0)
+	if ((ret = RTUSB_SUBMIT_URB(pUrb))!=0)
 	{
 		ATEDBGPRINT(RT_DEBUG_ERROR, ("ATE_RTUSBBulkOutDataPacket: Submit Tx URB failed %d\n", ret));
 		return;
 	}
 
 	pAd->BulkOutReq++;
-	return;
 
+	return;
 }
 
+
 /*
-	========================================================================
+========================================================================
 	
 	Routine Description:
 
@@ -4118,71 +4360,146 @@ VOID	ATE_RTUSBBulkOutDataPacket(
 
 	Note:
 	
-	========================================================================
+========================================================================
 */
-VOID	ATE_RTUSBCancelPendingBulkInIRP(
+VOID ATE_RTUSBCancelPendingBulkInIRP(
 	IN	PRTMP_ADAPTER	pAd)
 {
-	PRX_CONTEXT		pRxContext;
-	UINT			i;
+	PRX_CONTEXT		pRxContext = NULL;
+	UINT			rx_ring_index;
 
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("--->ATE_RTUSBCancelPendingBulkInIRP\n"));
-#if 1
-	for ( i = 0; i < (RX_RING_SIZE); i++)
+
+	for (rx_ring_index = 0; rx_ring_index < (RX_RING_SIZE); rx_ring_index++)
 	{
-		pRxContext = &(pAd->RxContext[i]);
-		if(pRxContext->IRPPending == TRUE)
+		pRxContext = &(pAd->RxContext[rx_ring_index]);
+
+		if (pRxContext->IRPPending == TRUE)
 		{
 			RTUSB_UNLINK_URB(pRxContext->pUrb);
 			pRxContext->IRPPending = FALSE;
 			pRxContext->InUse = FALSE;
-			//NdisInterlockedDecrement(&pAd->PendingRx);
-			//pAd->PendingRx--;
+//			NdisInterlockedDecrement(&pAd->PendingRx);
+//			pAd->PendingRx--;
 		}
 	}
-#else
-	for ( i = 0; i < (RX_RING_SIZE); i++)
-	{
-		pRxContext = &(pAd->RxContext[i]);
-		if(atomic_read(&pRxContext->IrpLock) == IRPLOCK_CANCELABLE)
-		{
-			RTUSB_UNLINK_URB(pRxContext->pUrb);
-		}
-		InterlockedExchange(&pRxContext->IrpLock, IRPLOCK_CANCE_START);
-	}
-#endif // 1 //
+
 	ATEDBGPRINT(RT_DEBUG_TRACE, ("<---ATE_RTUSBCancelPendingBulkInIRP\n"));
+
 	return;
 }
-#endif // RT2870 //
+
+
+
+
+/*
+========================================================================
+	
+	Routine Description:
+
+	Arguments:
+
+	Return Value:
+
+	Note:
+	
+========================================================================
+*/
+VOID ATEResetBulkIn(
+	IN PRTMP_ADAPTER	pAd)
+{
+	if ((pAd->PendingRx > 0) && (!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST)))
+	{
+		ATEDBGPRINT(RT_DEBUG_ERROR, ("ATE : BulkIn IRP Pending!!!\n"));
+		ATE_RTUSBCancelPendingBulkInIRP(pAd);
+		RTMPusecDelay(100000);
+		pAd->PendingRx = 0;
+	}
+
+	return;
+}
+
+
+/*
+========================================================================
+	
+	Routine Description:
+
+	Arguments:
+
+	Return Value:
+
+	Note:
+	
+========================================================================
+*/
+INT ATEResetBulkOut(
+	IN PRTMP_ADAPTER	pAd)
+{
+	PTX_CONTEXT	pNullContext = &(pAd->NullContext);
+	INT ret=0;
+
+	pNullContext->IRPPending = TRUE;
+
+	/*
+		If driver is still in ATE TXFRAME mode, 
+		keep on transmitting ATE frames.
+	*/
+	ATEDBGPRINT(RT_DEBUG_TRACE, ("pAd->ate.Mode == %d\npAd->ContinBulkOut == %d\npAd->BulkOutRemained == %d\n",
+		pAd->ate.Mode, pAd->ContinBulkOut, atomic_read(&pAd->BulkOutRemained)));
+
+	if ((pAd->ate.Mode == ATE_TXFRAME) && ((pAd->ContinBulkOut == TRUE) || (atomic_read(&pAd->BulkOutRemained) > 0)))
+    {
+		ATEDBGPRINT(RT_DEBUG_TRACE, ("After CMDTHREAD_RESET_BULK_OUT, continue to bulk out frames !\n"));
+
+		// Init Tx context descriptor.
+		RTUSBInitTxDesc(pAd, pNullContext, 0/* pAd->bulkResetPipeid */, (usb_complete_t)ATE_RTUSBBulkOutDataPacketComplete);
+		
+		if ((ret = RTUSB_SUBMIT_URB(pNullContext->pUrb))!=0)
+		{
+			ATEDBGPRINT(RT_DEBUG_ERROR, ("ATE_RTUSBBulkOutDataPacket: Submit Tx URB failed %d\n", ret));
+		}
+
+		pAd->BulkOutReq++;
+	}
+
+	return ret;
+}
+#endif // RTMP_MAC_USB //
+
 
 VOID rt_ee_read_all(PRTMP_ADAPTER pAd, USHORT *Data)
 {
 	USHORT i;
 	USHORT value;
-	
+
+
 	for (i = 0 ; i < EEPROM_SIZE/2 ; )
 	{
-		/* "value" is expecially for some compilers... */
+		/* "value" is especially for some compilers... */
 		RT28xx_EEPROM_READ16(pAd, i*2, value);
 		Data[i] = value;
 		i++;
 	}
 }
 
+
 VOID rt_ee_write_all(PRTMP_ADAPTER pAd, USHORT *Data)
 {
 	USHORT i;
 	USHORT value;
 
+
 	for (i = 0 ; i < EEPROM_SIZE/2 ; )
 	{
-		/* "value" is expecially for some compilers... */
+		/* "value" is especially for some compilers... */
 		value = Data[i];
 		RT28xx_EEPROM_WRITE16(pAd, i*2, value);
-		i ++;
+		i++;
 	}
 }
+
+
 #ifdef RALINK_28xx_QA
 VOID ATE_QA_Statistics(
 	IN PRTMP_ADAPTER			pAd,
@@ -4218,6 +4535,7 @@ VOID ATE_QA_Statistics(
 	pAd->ate.SNR0 = pRxWI->SNR0;
 	pAd->ate.SNR1 = pRxWI->SNR1;
 }
+
 
 /* command id with Cmd Type == 0x0008(for 28xx)/0x0005(for iNIC) */
 #define RACFG_CMD_RF_WRITE_ALL		0x0000
@@ -4277,56 +4595,22 @@ VOID ATE_QA_Statistics(
 #define RACFG_CMD_ATE_RF_WRITE_BULK		0x011a
 
 
-
-#define A2Hex(_X, _p) 				\
-{									\
-	UCHAR *p;						\
-	_X = 0;							\
-	p = _p;							\
-	while (((*p >= 'a') && (*p <= 'f')) || ((*p >= 'A') && (*p <= 'F')) || ((*p >= '0') && (*p <= '9')))		\
-	{												\
-		if ((*p >= 'a') && (*p <= 'f'))				\
-			_X = _X * 16 + *p - 87;					\
-		else if ((*p >= 'A') && (*p <= 'F'))		\
-			_X = _X * 16 + *p - 55;					\
-		else if ((*p >= '0') && (*p <= '9'))		\
-			_X = _X * 16 + *p - 48;					\
-		p++;										\
-	}												\
-}
-
-
 static VOID memcpy_exl(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, ULONG len);
 static VOID memcpy_exs(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, ULONG len);
 static VOID RTMP_IO_READ_BULK(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, UINT32 len);
 
-#ifdef UCOS
-int ate_copy_to_user(
-	IN PUCHAR payload,
-	IN PUCHAR msg, 
-	IN INT    len)
-{
-	memmove(payload, msg, len);
-	return 0;
-}
 
-#undef	copy_to_user
-#define copy_to_user(x,y,z) ate_copy_to_user((PUCHAR)x, (PUCHAR)y, z)
-#endif // UCOS //
-
-#define	LEN_OF_ARG 16
 
 VOID RtmpDoAte(
 	IN	PRTMP_ADAPTER	pAdapter, 
 	IN	struct iwreq	*wrq)
 {
-	unsigned short Command_Id;
-	struct ate_racfghdr *pRaCfg;
+	USHORT Command_Id;
 	INT	Status = NDIS_STATUS_SUCCESS;
-
+	struct ate_racfghdr *pRaCfg;
 	
 
-	if((pRaCfg = kmalloc(sizeof(struct ate_racfghdr), GFP_KERNEL)) == NULL)
+	if ((pRaCfg = kmalloc(sizeof(struct ate_racfghdr), GFP_KERNEL)) == NULL)
 	{
 		Status = -EINVAL;
 		return;
@@ -4341,1821 +4625,220 @@ VOID RtmpDoAte(
 		return;
 	}
     
-
 	Command_Id = ntohs(pRaCfg->command_id);
 	
 	ATEDBGPRINT(RT_DEBUG_TRACE,("\n%s: Command_Id = 0x%04x !\n", __FUNCTION__, Command_Id));
 	
 	switch (Command_Id) 
 	{
- 		// We will get this command when QA starts.
+ 		/* We will get this command when QA starts. */
 		case RACFG_CMD_ATE_START:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_START\n"));
-
-				// prepare feedback as soon as we can to avoid QA timeout.
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", wrq->u.data.length));
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_TRACE, ("copy_to_user() fail in case RACFG_CMD_ATE_START\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_START is done !\n"));
-				}
-				Set_ATE_Proc(pAdapter, "ATESTART");
-			}
+			Status=DO_RACFG_CMD_ATE_START(pAdapter,wrq,pRaCfg);
 			break;
 
- 		// We will get this command either QA is closed or ated is killed by user.
+ 		/* We will get this command either QA is closed or ated is killed by user. */
 		case RACFG_CMD_ATE_STOP:
-			{
-#ifndef UCOS
-				INT32 ret;
-#endif // !UCOS //
-
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_STOP\n"));
-
-				// Distinguish this command came from QA(via ated)
-				// or ate daemon according to the existence of pid in payload.
-				// No need to prepare feedback if this cmd came directly from ate daemon.
-				pRaCfg->length = ntohs(pRaCfg->length);
-
-				if (pRaCfg->length == sizeof(pAdapter->ate.AtePid))
-				{
-					// This command came from QA.
-					// Get the pid of ATE daemon.
-					memcpy((UCHAR *)&pAdapter->ate.AtePid,
-						(&pRaCfg->data[0]) - 2/* == &(pRaCfg->status) */,
-						sizeof(pAdapter->ate.AtePid));					
-
-					// prepare feedback as soon as we can to avoid QA timeout.
-					pRaCfg->length = htons(2);
-					pRaCfg->status = htons(0);
-
-					wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-										+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-										+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-					ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", wrq->u.data.length));
-
-	            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-	            	{
-	            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_STOP\n"));
-	                    Status = -EFAULT;
-	            	}
-
-					//
-					// kill ATE daemon when leaving ATE mode.
-					// We must kill ATE daemon first before setting ATESTOP,
-					// or Microsoft will report sth. wrong. 
-#ifndef UCOS
-					ret = kill_proc(pAdapter->ate.AtePid, SIGTERM, 1);
-					if (ret)
-					{
-						ATEDBGPRINT(RT_DEBUG_ERROR, ("%s: unable to signal thread\n", pAdapter->net_dev->name));
-					}
-#endif // !UCOS //
-				}
-
-#ifdef UCOS
-				// Roger add to avoid error message after close QA
-				if (pAdapter->CSRBaseAddress == RT2860_CSR_ADDR)
-				{
-					
-					// prepare feedback as soon as we can to avoid QA timeout.
-					pRaCfg->length = htons(2);
-					pRaCfg->status = htons(0);
-
-					wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-										+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-										+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-					ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", wrq->u.data.length));
-	            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-	            	{
-	            		ATEDBGPRINT(RT_DEBUG_TRACE, ("copy_to_user() fail in case RACFG_CMD_AP_START\n"));
-	                    Status = -EFAULT;
-	            	}
-				}
-#endif // UCOS //
-
-				// AP might have in ATE_STOP mode due to cmd from QA.
-				if (ATE_ON(pAdapter))
-				{
-					// Someone has killed ate daemon while QA GUI is still open.
-					Set_ATE_Proc(pAdapter, "ATESTOP");
-					ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_AP_START is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_STOP(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_RF_WRITE_ALL:
-			{
-				UINT32 R1, R2, R3, R4;
-				USHORT channel;
-				
-				memcpy(&R1, pRaCfg->data-2, 4);
-				memcpy(&R2, pRaCfg->data+2, 4);
-				memcpy(&R3, pRaCfg->data+6, 4);
-				memcpy(&R4, pRaCfg->data+10, 4);
-				memcpy(&channel, pRaCfg->data+14, 2);		
-				
-				pAdapter->LatchRfRegs.R1 = ntohl(R1);
-				pAdapter->LatchRfRegs.R2 = ntohl(R2);
-				pAdapter->LatchRfRegs.R3 = ntohl(R3);
-				pAdapter->LatchRfRegs.R4 = ntohl(R4);
-				pAdapter->LatchRfRegs.Channel = ntohs(channel);
-
-				RTMP_RF_IO_WRITE32(pAdapter, pAdapter->LatchRfRegs.R1);
-				RTMP_RF_IO_WRITE32(pAdapter, pAdapter->LatchRfRegs.R2);
-				RTMP_RF_IO_WRITE32(pAdapter, pAdapter->LatchRfRegs.R3);
-				RTMP_RF_IO_WRITE32(pAdapter, pAdapter->LatchRfRegs.R4);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", wrq->u.data.length));
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_RF_WRITE_ALL\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_RF_WRITE_ALL is done !\n"));
-				}
-			}
-            break;				
+			Status=DO_RACFG_CMD_RF_WRITE_ALL(pAdapter,wrq,pRaCfg);
+			break;				
 			
 		case RACFG_CMD_E2PROM_READ16:
-			{
-				USHORT	offset, value, tmp;
-				
-				offset = ntohs(pRaCfg->status);
-				/* "tmp" is expecially for some compilers... */
-				RT28xx_EEPROM_READ16(pAdapter, offset, tmp);
-				value = tmp;
-				value = htons(value);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE,("EEPROM Read offset = 0x%04x, value = 0x%04x\n", offset, value));
-
-				// prepare feedback
-				pRaCfg->length = htons(4);
-				pRaCfg->status = htons(0);
-				memcpy(pRaCfg->data, &value, 2);
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE, ("sizeof(struct ate_racfghdr) = %d\n", sizeof(struct ate_racfghdr)));
-				ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", wrq->u.data.length));
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_E2PROM_READ16\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_E2PROM_READ16 is done !\n"));
-				}
-           	}
+			Status=DO_RACFG_CMD_E2PROM_READ16(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_E2PROM_WRITE16:
-			{
-				USHORT	offset, value;
-				
-				offset = ntohs(pRaCfg->status);
-				memcpy(&value, pRaCfg->data, 2);
-				value = ntohs(value);
-				RT28xx_EEPROM_WRITE16(pAdapter, offset, value);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_E2PROM_WRITE16\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_E2PROM_WRITE16 is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_E2PROM_WRITE16(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_E2PROM_READ_ALL:
-			{
-				USHORT buffer[EEPROM_SIZE/2];
-
-				rt_ee_read_all(pAdapter,(USHORT *)buffer);
-				memcpy_exs(pAdapter, pRaCfg->data, (UCHAR *)buffer, EEPROM_SIZE);
-
-				// prepare feedback
-				pRaCfg->length = htons(2+EEPROM_SIZE);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_E2PROM_READ_ALL\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_E2PROM_READ_ALL is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_E2PROM_READ_ALL(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_E2PROM_WRITE_ALL:
-			{
-				USHORT buffer[EEPROM_SIZE/2];
-
-				NdisZeroMemory((UCHAR *)buffer, EEPROM_SIZE);
-				memcpy_exs(pAdapter, (UCHAR *)buffer, (UCHAR *)&pRaCfg->status, EEPROM_SIZE);
-				rt_ee_write_all(pAdapter,(USHORT *)buffer);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_E2PROM_WRITE_ALL\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_ERROR, ("RACFG_CMD_E2PROM_WRITE_ALL is done !\n"));
-				}
-
-			}
+			Status=DO_RACFG_CMD_E2PROM_WRITE_ALL(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_IO_READ:
-			{
-				UINT32	offset;
-				UINT32	value;
-				
-				memcpy(&offset, &pRaCfg->status, 4);
-				offset = ntohl(offset);
-
-				// We do not need the base address.
-				// So just extract the offset out.
-				offset &= 0x0000FFFF;
-				RTMP_IO_READ32(pAdapter, offset, &value);
-				value = htonl(value);
-
-				// prepare feedback
-				pRaCfg->length = htons(6);
-				pRaCfg->status = htons(0);
-				memcpy(pRaCfg->data, &value, 4);
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_IO_READ\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_IO_READ is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_IO_READ(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_IO_WRITE:
-			{
-				UINT32	offset, value;
-								
-				memcpy(&offset, pRaCfg->data-2, 4);
-				memcpy(&value, pRaCfg->data+2, 4);
-			
-				offset = ntohl(offset);
-
-				// We do not need the base address.
-				// So just extract out the offset.
-				offset &= 0x0000FFFF;
-				value = ntohl(value);
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_IO_WRITE: offset = %x, value = %x\n", offset, value));
-				RTMP_IO_WRITE32(pAdapter, offset, value);
-				
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_IO_WRITE\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_IO_WRITE is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_IO_WRITE(pAdapter,wrq,pRaCfg);
 			break;
 			
 		case RACFG_CMD_IO_READ_BULK:
-			{
-				UINT32	offset;
-				USHORT	len;
-				
-				memcpy(&offset, &pRaCfg->status, 4);
-				offset = ntohl(offset);
-
-				// We do not need the base address.
-				// So just extract the offset.
-				offset &= 0x0000FFFF;
-				memcpy(&len, pRaCfg->data+2, 2);
-				len = ntohs(len);
-
-				if (len > 371)
-				{
-					ATEDBGPRINT(RT_DEBUG_TRACE,("len is too large, make it smaller\n"));
-					pRaCfg->length = htons(2);
-					pRaCfg->status = htons(1);
-					break;
-				}
-
-				RTMP_IO_READ_BULK(pAdapter, pRaCfg->data, (UCHAR *)offset, len*4);// unit in four bytes
-
-				// prepare feedback
-				pRaCfg->length = htons(2+len*4);// unit in four bytes
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_IO_READ_BULK\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_IO_READ_BULK is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_IO_READ_BULK(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_BBP_READ8:
-			{
-				USHORT	offset;
-				UCHAR	value;
-				
-				value = 0;
-				offset = ntohs(pRaCfg->status);
-
-				if (ATE_ON(pAdapter))
-				{
-					ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, offset,  &value);
-				}
-				else
-				{
-					RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, offset,  &value);	
-				}
-				// prepare feedback
-				pRaCfg->length = htons(3);
-				pRaCfg->status = htons(0);
-				pRaCfg->data[0] = value;
-
-				ATEDBGPRINT(RT_DEBUG_TRACE,("BBP value = %x\n", value));
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_BBP_READ8\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_BBP_READ8 is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_BBP_READ8(pAdapter,wrq,pRaCfg);
 			break;
 		case RACFG_CMD_BBP_WRITE8:
-			{
-				USHORT	offset;
-				UCHAR	value;
-				
-				offset = ntohs(pRaCfg->status);
-				memcpy(&value, pRaCfg->data, 1);
-
-				if (ATE_ON(pAdapter))
-				{
-					ATE_BBP_IO_WRITE8_BY_REG_ID(pAdapter, offset,  value);
-				}
-				else
-				{
-					RTMP_BBP_IO_WRITE8_BY_REG_ID(pAdapter, offset,  value);
-				}
-
-				if ((offset == BBP_R1) || (offset == BBP_R3))
-				{
-					SyncTxRxConfig(pAdapter, offset, value);
-				}
-				
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_BBP_WRITE8\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_BBP_WRITE8 is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_BBP_WRITE8(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_BBP_READ_ALL:
-			{
-				USHORT j;
-				
-				for (j = 0; j < 137; j++)
-				{
-					pRaCfg->data[j] = 0;
-					
-					if (ATE_ON(pAdapter))
-					{
-						ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, j,  &pRaCfg->data[j]);
-					}
-					else
-					{
-						RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, j,  &pRaCfg->data[j]);
-					}
-				}
-				
-				// prepare feedback
-				pRaCfg->length = htons(2+137);
-				pRaCfg->status = htons(0);
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_BBP_READ_ALL\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_BBP_READ_ALL is done !\n"));
-				}
-			}
-
+			Status=DO_RACFG_CMD_BBP_READ_ALL(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_E2PROM_READ_BULK:
-		{
-			USHORT offset;
-			USHORT len;
-			USHORT buffer[EEPROM_SIZE/2];
-			
-			offset = ntohs(pRaCfg->status);
-			memcpy(&len, pRaCfg->data, 2);
-			len = ntohs(len);
-			
-			rt_ee_read_all(pAdapter,(USHORT *)buffer);
-			if (offset + len <= EEPROM_SIZE)
-				memcpy_exs(pAdapter, pRaCfg->data, (UCHAR *)buffer+offset, len);
-			else
-				ATEDBGPRINT(RT_DEBUG_ERROR, ("exceed EEPROM size\n"));
-
-			// prepare feedback
-			pRaCfg->length = htons(2+len);
-			pRaCfg->status = htons(0);
-			wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            {
-            	ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_E2PROM_READ_BULK\n"));
-                Status = -EFAULT;
-            }
-			else
-			{
-               	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_E2PROM_READ_BULK is done !\n"));
-			}
-
-		}
+			Status=DO_RACFG_CMD_ATE_E2PROM_READ_BULK(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_E2PROM_WRITE_BULK:
-		{
-			USHORT offset;
-			USHORT len;
-			USHORT buffer[EEPROM_SIZE/2];
-			
-			offset = ntohs(pRaCfg->status);
-			memcpy(&len, pRaCfg->data, 2);
-			len = ntohs(len);
-
-			rt_ee_read_all(pAdapter,(USHORT *)buffer);
-			memcpy_exs(pAdapter, (UCHAR *)buffer + offset, (UCHAR *)pRaCfg->data + 2, len);
-			rt_ee_write_all(pAdapter,(USHORT *)buffer);
-
-			// prepare feedback
-			pRaCfg->length = htons(2);
-			pRaCfg->status = htons(0);
-			wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-								+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-								+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-            if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            {
-            	ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_E2PROM_WRITE_BULK\n"));
-                   Status = -EFAULT;
-            }
-			else
-			{
-               	ATEDBGPRINT(RT_DEBUG_ERROR, ("RACFG_CMD_ATE_E2PROM_WRITE_BULK is done !\n"));
-			}
-
-		}
+			Status=DO_RACFG_CMD_ATE_E2PROM_WRITE_BULK(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_IO_WRITE_BULK:
-		{
-			UINT32 offset, i, value;
-			USHORT len;
-			
-			memcpy(&offset, &pRaCfg->status, 4);
-			offset = ntohl(offset);
-			memcpy(&len, pRaCfg->data+2, 2);
-			len = ntohs(len);
-			
-			for (i = 0; i < len; i += 4)
-			{
-				memcpy_exl(pAdapter, (UCHAR *)&value, pRaCfg->data+4+i, 4);
-				printk("Write %x %x\n", offset + i, value);
-				RTMP_IO_WRITE32(pAdapter, (offset +i) & 0xffff, value);
-			}
-
-			// prepare feedback
-			pRaCfg->length = htons(2);
-			pRaCfg->status = htons(0);
-			wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-								+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-								+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-            if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            {
-            	ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_IO_WRITE_BULK\n"));
-                   Status = -EFAULT;
-            }
-			else
-			{
-               	ATEDBGPRINT(RT_DEBUG_ERROR, ("RACFG_CMD_ATE_IO_WRITE_BULK is done !\n"));
-			}
-
-		}
+			Status=DO_RACFG_CMD_ATE_IO_WRITE_BULK(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_BBP_READ_BULK:
-		{
-			USHORT offset;
-			USHORT len;
-			USHORT j;
-			
-			offset = ntohs(pRaCfg->status);
-			memcpy(&len, pRaCfg->data, 2);
-			len = ntohs(len);
-			
-				
-			for (j = offset; j < (offset+len); j++)
-			{
-				pRaCfg->data[j - offset] = 0;
-				
-				if (pAdapter->ate.Mode == ATE_STOP)
-				{
-					RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, j,  &pRaCfg->data[j - offset]);
-				}
-				else
-				{
-					ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, j,  &pRaCfg->data[j - offset]);
-				}
-			}
-
-			// prepare feedback
-			pRaCfg->length = htons(2+len);
-			pRaCfg->status = htons(0);
-			wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-								+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-								+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            {
-            	ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_BBP_READ_BULK\n"));
-                   Status = -EFAULT;
-            }
-			else
-			{
-               	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_BBP_READ_BULK is done !\n"));
-			}
-
-		}
+			Status=DO_RACFG_CMD_ATE_BBP_READ_BULK(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_BBP_WRITE_BULK:
-		{
-			USHORT offset;
-			USHORT len;
-			USHORT j;
-			UCHAR *value;
-			
-			offset = ntohs(pRaCfg->status);
-			memcpy(&len, pRaCfg->data, 2);
-			len = ntohs(len);
-							
-			for (j = offset; j < (offset+len); j++)
-			{
-				value = pRaCfg->data + 2 + (j - offset);
-				if (pAdapter->ate.Mode == ATE_STOP)
-				{
-					RTMP_BBP_IO_WRITE8_BY_REG_ID(pAdapter, j,  *value);
-				}
-				else
-				{
-					ATE_BBP_IO_WRITE8_BY_REG_ID(pAdapter, j,  *value);
-				}
-			}
-
-			// prepare feedback
-			pRaCfg->length = htons(2);
-			pRaCfg->status = htons(0);
-			wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-								+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-								+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            {
-            	ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_BBP_WRITE_BULK\n"));
-                   Status = -EFAULT;
-            }
-			else
-			{
-               	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_BBP_WRITE_BULK is done !\n"));
-			}
-		}
+			Status=DO_RACFG_CMD_ATE_BBP_WRITE_BULK(pAdapter,wrq,pRaCfg);
 			break;
 
-#ifdef CONFIG_RALINK_RT3052
+#if defined(RT305x) || defined(RT30xx)
 		case RACFG_CMD_ATE_RF_READ_BULK:
-		{
-			USHORT offset;
-			USHORT len;
-			USHORT j;
-			
-			offset = ntohs(pRaCfg->status);
-			memcpy(&len, pRaCfg->data, 2);
-			len = ntohs(len);
-
-			for (j = offset; j < (offset+len); j++)
-			{
-				pRaCfg->data[j - offset] = 0;
-				RT30xxReadRFRegister(pAdapter, j,  &pRaCfg->data[j - offset]);
-			}
-
-			// prepare feedback
-			pRaCfg->length = htons(2+len);
-			pRaCfg->status = htons(0);
-			wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-								+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-								+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            {
-            	ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_RF_READ_BULK\n"));
-                   Status = -EFAULT;
-            }
-			else
-			{
-               	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_RF_READ_BULK is done !\n"));
-			}
-
-		}
+			Status=DO_RACFG_CMD_ATE_RF_READ_BULK(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_RF_WRITE_BULK:
-		{
-			USHORT offset;
-			USHORT len;
-			USHORT j;
-			UCHAR *value;
-			
-			offset = ntohs(pRaCfg->status);
-			memcpy(&len, pRaCfg->data, 2);
-			len = ntohs(len);
-
-			for (j = offset; j < (offset+len); j++)
-			{
-				value = pRaCfg->data + 2 + (j - offset);
-				RT30xxWriteRFRegister(pAdapter, j,  *value);
-			}
-
-			// prepare feedback
-			pRaCfg->length = htons(2);
-			pRaCfg->status = htons(0);
-			wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-								+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-								+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            {
-            	ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_RF_WRITE_BULK\n"));
-                   Status = -EFAULT;
-            }
-			else
-			{
-               	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_RF_WRITE_BULK is done !\n"));
-			}
-
-		}
+			Status=DO_RACFG_CMD_ATE_RF_WRITE_BULK(pAdapter,wrq,pRaCfg);
 			break;
-#endif
-
+#endif // RT305x || RT30xx //
 
 		case RACFG_CMD_GET_NOISE_LEVEL:
-			{
-				UCHAR	channel;
-				INT32   buffer[3][10];/* 3 : RxPath ; 10 : no. of per rssi samples */
-				
-				channel = (ntohs(pRaCfg->status) & 0x00FF);
-				CalNoiseLevel(pAdapter, channel, buffer);
-				memcpy_exl(pAdapter, (UCHAR *)pRaCfg->data, (UCHAR *)&(buffer[0][0]), (sizeof(INT32)*3*10));
-
-				// prepare feedback
-				pRaCfg->length = htons(2 + (sizeof(INT32)*3*10));
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_GET_NOISE_LEVEL\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_GET_NOISE_LEVEL is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_GET_NOISE_LEVEL(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_GET_COUNTER:
-			{
-				memcpy_exl(pAdapter, &pRaCfg->data[0], (UCHAR *)&pAdapter->ate.U2M, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[4], (UCHAR *)&pAdapter->ate.OtherData, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[8], (UCHAR *)&pAdapter->ate.Beacon, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[12], (UCHAR *)&pAdapter->ate.OtherCount, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[16], (UCHAR *)&pAdapter->ate.TxAc0, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[20], (UCHAR *)&pAdapter->ate.TxAc1, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[24], (UCHAR *)&pAdapter->ate.TxAc2, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[28], (UCHAR *)&pAdapter->ate.TxAc3, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[32], (UCHAR *)&pAdapter->ate.TxHCCA, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[36], (UCHAR *)&pAdapter->ate.TxMgmt, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[40], (UCHAR *)&pAdapter->ate.RSSI0, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[44], (UCHAR *)&pAdapter->ate.RSSI1, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[48], (UCHAR *)&pAdapter->ate.RSSI2, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[52], (UCHAR *)&pAdapter->ate.SNR0, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[56], (UCHAR *)&pAdapter->ate.SNR1, 4);
-				
-				pRaCfg->length = htons(2+60);
-				pRaCfg->status = htons(0);			
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_GET_COUNTER\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_GET_COUNTER is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_GET_COUNTER(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_CLEAR_COUNTER:
-			{
-				pAdapter->ate.U2M = 0;
-				pAdapter->ate.OtherData = 0;
-				pAdapter->ate.Beacon = 0;
-				pAdapter->ate.OtherCount = 0;
-				pAdapter->ate.TxAc0 = 0;
-				pAdapter->ate.TxAc1 = 0;
-				pAdapter->ate.TxAc2 = 0;
-				pAdapter->ate.TxAc3 = 0;
-				pAdapter->ate.TxHCCA = 0;
-				pAdapter->ate.TxMgmt = 0;
-				pAdapter->ate.TxDoneCount = 0;
-				
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);			
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_CLEAR_COUNTER\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_CLEAR_COUNTER is done !\n"));
-				}
-			}
-			
+			Status=DO_RACFG_CMD_CLEAR_COUNTER(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_TX_START:
-			{
-				USHORT *p;
-				USHORT	err = 1;
-				UCHAR   Bbp22Value = 0, Bbp24Value = 0;
-
-				if ((pAdapter->ate.TxStatus != 0) && (pAdapter->ate.Mode & ATE_TXFRAME))
-				{
-					ATEDBGPRINT(RT_DEBUG_TRACE,("Ate Tx is already running, to run next Tx, you must stop it first\n"));
-					err = 2; 
-					goto TX_START_ERROR;
-				}
-				else if ((pAdapter->ate.TxStatus != 0) && !(pAdapter->ate.Mode & ATE_TXFRAME))
-				{
-					int i = 0;
-
-					while ((i++ < 10) && (pAdapter->ate.TxStatus != 0))
-					{
-						RTMPusecDelay(5000);
-					}
-
-					// force it to stop
-					pAdapter->ate.TxStatus = 0;
-					pAdapter->ate.TxDoneCount = 0;
-					//pAdapter->ate.Repeat = 0;
-					pAdapter->ate.bQATxStart = FALSE;
-				}
-
-				// If pRaCfg->length == 0, this "RACFG_CMD_TX_START" is for Carrier test or Carrier Suppression.
-				if (ntohs(pRaCfg->length) != 0)
-				{
-					// Get frame info
-#ifdef RT2870
-					NdisMoveMemory(&pAdapter->ate.TxInfo, pRaCfg->data - 2, 4);
-#ifdef RT_BIG_ENDIAN
-					RTMPDescriptorEndianChange((PUCHAR) &pAdapter->ate.TxInfo, TYPE_TXINFO);
-#endif // RT_BIG_ENDIAN //
-#endif // RT2870 //
-
-					NdisMoveMemory(&pAdapter->ate.TxWI, pRaCfg->data + 2, 16);						
-#ifdef RT_BIG_ENDIAN
-					RTMPWIEndianChange((PUCHAR)&pAdapter->ate.TxWI, TYPE_TXWI);
-#endif // RT_BIG_ENDIAN //
-
-					NdisMoveMemory(&pAdapter->ate.TxCount, pRaCfg->data + 18, 4);
-					pAdapter->ate.TxCount = ntohl(pAdapter->ate.TxCount);
-
-					p = (USHORT *)(&pRaCfg->data[22]);
-					//p = pRaCfg->data + 22;
-					// always use QID_AC_BE
-					pAdapter->ate.QID = 0;
-					p = (USHORT *)(&pRaCfg->data[24]);
-					//p = pRaCfg->data + 24;
-					pAdapter->ate.HLen = ntohs(*p);
-
-					if (pAdapter->ate.HLen > 32)
-					{
-						ATEDBGPRINT(RT_DEBUG_ERROR,("pAdapter->ate.HLen > 32\n"));
-						err = 3;
-						goto TX_START_ERROR;
-					}
-
-					NdisMoveMemory(&pAdapter->ate.Header, pRaCfg->data + 26, pAdapter->ate.HLen);
-
-
-					pAdapter->ate.PLen = ntohs(pRaCfg->length) - (pAdapter->ate.HLen + 28);
-
-					if (pAdapter->ate.PLen > 32)
-					{
-						ATEDBGPRINT(RT_DEBUG_ERROR,("pAdapter->ate.PLen > 32\n"));
-						err = 4;
-						goto TX_START_ERROR;
-					}
-
-					NdisMoveMemory(&pAdapter->ate.Pattern, pRaCfg->data + 26 + pAdapter->ate.HLen, pAdapter->ate.PLen);
-					pAdapter->ate.DLen = pAdapter->ate.TxWI.MPDUtotalByteCount - pAdapter->ate.HLen;
-				}
-
-				ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, BBP_R22, &Bbp22Value);
-
-				switch (Bbp22Value)
-				{
-					case BBP22_TXFRAME:
-						{
-							if (pAdapter->ate.TxCount == 0)
-							{
-							}
-							ATEDBGPRINT(RT_DEBUG_TRACE,("START TXFRAME\n"));
-							pAdapter->ate.bQATxStart = TRUE;
-							Set_ATE_Proc(pAdapter, "TXFRAME");
-						}
-						break;
-
-					case BBP22_TXCONT_OR_CARRSUPP:
-						{
-							ATEDBGPRINT(RT_DEBUG_TRACE,("BBP22_TXCONT_OR_CARRSUPP\n"));
-							ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, 24, &Bbp24Value);
-
-							switch (Bbp24Value)
-							{
-								case BBP24_TXCONT:
-									{
-										ATEDBGPRINT(RT_DEBUG_TRACE,("START TXCONT\n"));
-										pAdapter->ate.bQATxStart = TRUE;
-										Set_ATE_Proc(pAdapter, "TXCONT");
-									}
-									break;
-
-								case BBP24_CARRSUPP:
-									{
-										ATEDBGPRINT(RT_DEBUG_TRACE,("START TXCARRSUPP\n"));
-										pAdapter->ate.bQATxStart = TRUE;
-										pAdapter->ate.Mode |= ATE_TXCARRSUPP;
-									}
-									break;
-
-								default:
-									{
-										ATEDBGPRINT(RT_DEBUG_ERROR,("Unknown Start TX subtype !"));
-									}
-									break;
-							}
-						}
-						break;	
-
-					case BBP22_TXCARR:
-						{
-							ATEDBGPRINT(RT_DEBUG_TRACE,("START TXCARR\n"));
-							pAdapter->ate.bQATxStart = TRUE;
-							Set_ATE_Proc(pAdapter, "TXCARR");
-						}
-						break;							
-
-					default:
-						{
-							ATEDBGPRINT(RT_DEBUG_ERROR,("Unknown Start TX subtype !"));
-						}
-						break;
-				}
-
-				if (pAdapter->ate.bQATxStart == TRUE)
-				{
-					// prepare feedback
-					pRaCfg->length = htons(2);
-					pRaCfg->status = htons(0);
-					
-					wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-										+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-										+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-	            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-	            	{
-	            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() was failed in case RACFG_CMD_TX_START\n"));
-	                    Status = -EFAULT;
-	            	}
-					else
-					{
-	                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_TX_START is done !\n"));
-					}
-					break;
-				}
-
-TX_START_ERROR:
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(err);
-				
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_TX_START\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("feedback of TX_START_ERROR is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_TX_START(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_GET_TX_STATUS:
-			{
-				UINT32 count;
-				
-				// prepare feedback
-				pRaCfg->length = htons(6);
-				pRaCfg->status = htons(0);
-				count = htonl(pAdapter->ate.TxDoneCount);
-				NdisMoveMemory(pRaCfg->data, &count, 4);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_GET_TX_STATUS\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_GET_TX_STATUS is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_GET_TX_STATUS(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_TX_STOP:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_TX_STOP\n"));
-
-				Set_ATE_Proc(pAdapter, "TXSTOP");
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_TRACE, ("copy_to_user() fail in case RACFG_CMD_TX_STOP\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_TX_STOP is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_TX_STOP(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_RX_START:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_RX_START\n"));
-
-				pAdapter->ate.bQARxStart = TRUE;
-				Set_ATE_Proc(pAdapter, "RXFRAME");
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_RX_START\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_RX_START is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_RX_START(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_RX_STOP:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_RX_STOP\n"));
-
-				Set_ATE_Proc(pAdapter, "RXSTOP");
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_RX_STOP\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_RX_STOP is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_RX_STOP(pAdapter,wrq,pRaCfg);
 			break;
 
 		/* The following cases are for new ATE GUI(not QA). */
 		/*==================================================*/
 		case RACFG_CMD_ATE_START_TX_CARRIER:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_START_TX_CARRIER\n"));
-
-				Set_ATE_Proc(pAdapter, "TXCARR");
-
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", wrq->u.data.length));
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_START_TX_CARRIER\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_START_TX_CARRIER is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_START_TX_CARRIER(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_START_TX_CONT:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_START_TX_CONT\n"));
-
-				Set_ATE_Proc(pAdapter, "TXCONT");
-
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", wrq->u.data.length));
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_START_TX_CONT\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_START_TX_CONT is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_START_TX_CONT(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_START_TX_FRAME:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_START_TX_FRAME\n"));
-
-				Set_ATE_Proc(pAdapter, "TXFRAME");
-
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", wrq->u.data.length));
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_START_TX_FRAME\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_START_TX_FRAME is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_START_TX_FRAME(pAdapter,wrq,pRaCfg);
 			break;	
 
 		case RACFG_CMD_ATE_SET_BW:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_BW\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-
-				Set_ATE_TX_BW_Proc(pAdapter, str);
-				
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_BW\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_BW is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_BW(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_TX_POWER0:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_TX_POWER0\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_TX_POWER0_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_TX_POWER0\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_TX_POWER0 is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_TX_POWER0(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_TX_POWER1:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_TX_POWER1\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_TX_POWER1_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_TX_POWER1\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_TX_POWER1 is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_TX_POWER1(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_FREQ_OFFSET:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_FREQ_OFFSET\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_TX_FREQOFFSET_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_FREQ_OFFSET\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_FREQ_OFFSET is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_TX_POWER1(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_GET_STATISTICS:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_GET_STATISTICS\n"));
-
-				memcpy_exl(pAdapter, &pRaCfg->data[0], (UCHAR *)&pAdapter->ate.TxDoneCount, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[4], (UCHAR *)&pAdapter->WlanCounters.RetryCount.u.LowPart, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[8], (UCHAR *)&pAdapter->WlanCounters.FailedCount.u.LowPart, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[12], (UCHAR *)&pAdapter->WlanCounters.RTSSuccessCount.u.LowPart, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[16], (UCHAR *)&pAdapter->WlanCounters.RTSFailureCount.u.LowPart, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[20], (UCHAR *)&pAdapter->WlanCounters.ReceivedFragmentCount.QuadPart, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[24], (UCHAR *)&pAdapter->WlanCounters.FCSErrorCount.u.LowPart, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[28], (UCHAR *)&pAdapter->Counters8023.RxNoBuffer, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[32], (UCHAR *)&pAdapter->WlanCounters.FrameDuplicateCount.u.LowPart, 4);
-				memcpy_exl(pAdapter, &pRaCfg->data[36], (UCHAR *)&pAdapter->RalinkCounters.OneSecFalseCCACnt, 4);
-				
-				if (pAdapter->ate.RxAntennaSel == 0)
-				{
-					INT32 RSSI0 = 0;
-					INT32 RSSI1 = 0;
-					INT32 RSSI2 = 0;
-
-					RSSI0 = (INT32)(pAdapter->ate.LastRssi0 - pAdapter->BbpRssiToDbmDelta);
-					RSSI1 = (INT32)(pAdapter->ate.LastRssi1 - pAdapter->BbpRssiToDbmDelta);
-					RSSI2 = (INT32)(pAdapter->ate.LastRssi2 - pAdapter->BbpRssiToDbmDelta);
-					memcpy_exl(pAdapter, &pRaCfg->data[40], (UCHAR *)&RSSI0, 4);
-					memcpy_exl(pAdapter, &pRaCfg->data[44], (UCHAR *)&RSSI1, 4);
-					memcpy_exl(pAdapter, &pRaCfg->data[48], (UCHAR *)&RSSI2, 4);
-					pRaCfg->length = htons(2+52);
-				}
-				else
-				{
-					INT32 RSSI0 = 0;
-				
-					RSSI0 = (INT32)(pAdapter->ate.LastRssi0 - pAdapter->BbpRssiToDbmDelta);
-					memcpy_exl(pAdapter, &pRaCfg->data[40], (UCHAR *)&RSSI0, 4);
-					pRaCfg->length = htons(2+44);
-				}
-				pRaCfg->status = htons(0);			
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_GET_STATISTICS\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_GET_STATISTICS is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_GET_STATISTICS(pAdapter,wrq,pRaCfg);	
 			break;
 
 		case RACFG_CMD_ATE_RESET_COUNTER:
-			{
-				SHORT    value = 1;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_RESET_COUNTER\n"));				
-
-				sprintf((PCHAR)str, "%d", value);
-				Set_ResetStatCounter_Proc(pAdapter, str);
-
-				pAdapter->ate.TxDoneCount = 0;
-			
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);			
-
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_RESET_COUNTER\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_RESET_COUNTER is done !\n"));
-				}
-			}
-			
+			Status=DO_RACFG_CMD_ATE_RESET_COUNTER(pAdapter,wrq,pRaCfg);	
 			break;
 
 		case RACFG_CMD_ATE_SEL_TX_ANTENNA:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SEL_TX_ANTENNA\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_TX_Antenna_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SEL_TX_ANTENNA\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SEL_TX_ANTENNA is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SEL_TX_ANTENNA(pAdapter,wrq,pRaCfg);		
 			break;
 			
 		case RACFG_CMD_ATE_SEL_RX_ANTENNA:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SEL_RX_ANTENNA\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_RX_Antenna_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SEL_RX_ANTENNA\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SEL_RX_ANTENNA is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SEL_TX_ANTENNA(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_PREAMBLE:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_PREAMBLE\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_TX_MODE_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_PREAMBLE\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_PREAMBLE is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_PREAMBLE(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_CHANNEL:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_CHANNEL\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_CHANNEL_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_CHANNEL\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_CHANNEL is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_CHANNEL(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_ADDR1:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_ADDR1\n"));
-
-				// Addr is an array of UCHAR,
-				// so no need to perform endian swap.
-				memcpy(pAdapter->ate.Addr1, (PUCHAR)(pRaCfg->data - 2), MAC_ADDR_LEN);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_ADDR1\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-					ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_ADDR1 is done !\n (ADDR1 = %2X:%2X:%2X:%2X:%2X:%2X)\n", pAdapter->ate.Addr1[0],
-						pAdapter->ate.Addr1[1], pAdapter->ate.Addr1[2], pAdapter->ate.Addr1[3], pAdapter->ate.Addr1[4], pAdapter->ate.Addr1[5]));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_ADDR1(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_ADDR2:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_ADDR2\n"));
-
-				// Addr is an array of UCHAR,
-				// so no need to perform endian swap.
-				memcpy(pAdapter->ate.Addr2, (PUCHAR)(pRaCfg->data - 2), MAC_ADDR_LEN);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_ADDR2\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-					ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_ADDR2 is done !\n (ADDR2 = %2X:%2X:%2X:%2X:%2X:%2X)\n", pAdapter->ate.Addr2[0],
-						pAdapter->ate.Addr2[1], pAdapter->ate.Addr2[2], pAdapter->ate.Addr2[3], pAdapter->ate.Addr2[4], pAdapter->ate.Addr2[5]));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_ADDR2(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_ADDR3:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_ADDR3\n"));
-
-				// Addr is an array of UCHAR,
-				// so no need to perform endian swap.
-				memcpy(pAdapter->ate.Addr3, (PUCHAR)(pRaCfg->data - 2), MAC_ADDR_LEN);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_ADDR3\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-					ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_ADDR3 is done !\n (ADDR3 = %2X:%2X:%2X:%2X:%2X:%2X)\n", pAdapter->ate.Addr3[0],
-						pAdapter->ate.Addr3[1], pAdapter->ate.Addr3[2], pAdapter->ate.Addr3[3], pAdapter->ate.Addr3[4], pAdapter->ate.Addr3[5]));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_ADDR3(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_RATE:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_RATE\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_TX_MCS_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_RATE\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_RATE is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_RATE(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_TX_FRAME_LEN:
-			{
-				SHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_TX_FRAME_LEN\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				sprintf((PCHAR)str, "%d", value);
-				Set_ATE_TX_LENGTH_Proc(pAdapter, str);
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_TX_FRAME_LEN\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_TX_FRAME_LEN is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_TX_FRAME_LEN(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_SET_TX_FRAME_COUNT:
-			{
-				USHORT    value = 0;
-				UCHAR    str[LEN_OF_ARG];
-
-				NdisZeroMemory(str, LEN_OF_ARG);
-				
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_TX_FRAME_COUNT\n"));				
-
-				memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
-				value = ntohs(value);
-				{
-					sprintf((PCHAR)str, "%d", value);
-					Set_ATE_TX_COUNT_Proc(pAdapter, str);
-				}
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_ATE_SET_TX_FRAME_COUNT\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_ATE_SET_TX_FRAME_COUNT is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_SET_TX_FRAME_COUNT(pAdapter,wrq,pRaCfg);
 			break;
 
 		case RACFG_CMD_ATE_START_RX_FRAME:
-			{
-				ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_RX_START\n"));
-
-				Set_ATE_Proc(pAdapter, "RXFRAME");
-
-				// prepare feedback
-				pRaCfg->length = htons(2);
-				pRaCfg->status = htons(0);
-				wrq->u.data.length = sizeof(pRaCfg->magic_no) + sizeof(pRaCfg->command_type)
-									+ sizeof(pRaCfg->command_id) + sizeof(pRaCfg->length) 
-									+ sizeof(pRaCfg->sequence) + ntohs(pRaCfg->length);
-
-            	if (copy_to_user(wrq->u.data.pointer, pRaCfg, wrq->u.data.length))
-            	{
-            		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in case RACFG_CMD_RX_START\n"));
-                    Status = -EFAULT;
-            	}
-				else
-				{
-                	ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_RX_START is done !\n"));
-				}
-			}
+			Status=DO_RACFG_CMD_ATE_START_RX_FRAME(pAdapter,wrq,pRaCfg);
 			break;
 		default:
 			break;		
 	}
+
     ASSERT(pRaCfg != NULL);
+
     if (pRaCfg != NULL)
-    {
-    kfree(pRaCfg);
-    }
+	    kfree(pRaCfg);
+
 	return;
 }
+
 
 VOID BubbleSort(INT32 n, INT32 a[])
 { 
@@ -6165,7 +4848,7 @@ VOID BubbleSort(INT32 n, INT32 a[])
 	{
 		for (j = 0; j<k; j++)
 		{
-			if(a[j] > a[j+1])
+			if (a[j] > a[j+1])
 			{
 				temp = a[j]; 
 				a[j]=a[j+1]; 
@@ -6174,6 +4857,7 @@ VOID BubbleSort(INT32 n, INT32 a[])
 		}
 	}
 } 
+
 
 VOID CalNoiseLevel(PRTMP_ADAPTER pAd, UCHAR channel, INT32 RSSI[3][10])
 {
@@ -6230,7 +4914,7 @@ VOID CalNoiseLevel(PRTMP_ADAPTER pAd, UCHAR channel, INT32 RSSI[3][10])
 		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, data);
 		mdelay(5);
 
-		// Start Rx
+		// start Rx
 		pAd->ate.bQARxStart = TRUE;
 		Set_ATE_Proc(pAd, "RXFRAME");
 
@@ -6244,7 +4928,7 @@ VOID CalNoiseLevel(PRTMP_ADAPTER pAd, UCHAR channel, INT32 RSSI[3][10])
 
 			mdelay(10);
 
-			// Calculate RSSI 0
+			// calculate RSSI 0
 			if (BbpR50Rssi0 == 0)
 			{
 				RSSI0 = -100;
@@ -6257,7 +4941,7 @@ VOID CalNoiseLevel(PRTMP_ADAPTER pAd, UCHAR channel, INT32 RSSI[3][10])
 
 			if ( pAd->Antenna.field.RxPath >= 2 ) // 2R
 			{
-				// Calculate RSSI 1
+				// calculate RSSI 1
 				if (BbpR51Rssi1 == 0)
 				{
 					RSSI1 = -100;
@@ -6271,7 +4955,7 @@ VOID CalNoiseLevel(PRTMP_ADAPTER pAd, UCHAR channel, INT32 RSSI[3][10])
 
 			if ( pAd->Antenna.field.RxPath >= 3 ) // 3R
 			{
-				// Calculate RSSI 2
+				// calculate RSSI 2
 				if (BbpR52Rssi2 == 0)
 					RSSI2 = -100;
 				else
@@ -6281,7 +4965,7 @@ VOID CalNoiseLevel(PRTMP_ADAPTER pAd, UCHAR channel, INT32 RSSI[3][10])
 			}
 		}
 
-		// Stop Rx
+		// stop Rx
 		Set_ATE_Proc(pAd, "RXSTOP");
 
 		mdelay(5);
@@ -6297,19 +4981,19 @@ VOID CalNoiseLevel(PRTMP_ADAPTER pAd, UCHAR channel, INT32 RSSI[3][10])
 		{
 			BubbleSort(10, RSSI[2]);
 		}	
-
 	}
 
 	pAd->ate.Channel = Org_Channel;
 	ATEAsicSwitchChannel(pAd);
 	
-	// Restore original value
+	// restore original value
     ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R66, Org_BBP66value);
     ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R69, Org_BBP69value);
     ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, BBP_R70, Org_BBP70value);
 
 	return;
 }
+
 
 BOOLEAN SyncTxRxConfig(PRTMP_ADAPTER pAd, USHORT offset, UCHAR value)
 { 
@@ -6327,12 +5011,12 @@ BOOLEAN SyncTxRxConfig(PRTMP_ADAPTER pAd, USHORT offset, UCHAR value)
 	/* confirm again */
 	ASSERT(bbp_data == value);
 
-	switch(offset)
+	switch (offset)
 	{
 		case BBP_R1:
-			/* Need to sync. tx configuration with legacy ATE. */
+			/* Need to synchronize tx configuration with legacy ATE. */
 			tmp = (bbp_data & ((1 << 4) | (1 << 3))/* 0x18 */) >> 3;
-		    switch(tmp)
+		    switch (tmp)
 		    {
 				/* The BBP R1 bit[4:3] = 2 :: Both DACs will be used by QA. */
 		        case 2:
@@ -6356,7 +5040,7 @@ BOOLEAN SyncTxRxConfig(PRTMP_ADAPTER pAd, USHORT offset, UCHAR value)
 			break;/* case BBP_R1 */
 
 		case BBP_R3:
-			/* Need to sync. rx configuration with legacy ATE. */
+			/* Need to synchronize rx configuration with legacy ATE. */
 			tmp = (bbp_data & ((1 << 1) | (1 << 0))/* 0x03 */);
 		    switch(tmp)
 		    {
@@ -6365,8 +5049,10 @@ BOOLEAN SyncTxRxConfig(PRTMP_ADAPTER pAd, USHORT offset, UCHAR value)
 					/* All */
 					pAd->ate.RxAntennaSel = 0;
 		            break;
-				/* The BBP R3 bit[1:0] = 0 :: ADC 0 will be used by QA, */
-				/* unless the BBP R3 bit[4:3] = 2 */
+				/*
+					The BBP R3 bit[1:0] = 0 :: ADC 0 will be used by QA,
+					unless the BBP R3 bit[4:3] = 2
+				*/
 		        case 0:
 					/* Antenna one */
 					pAd->ate.RxAntennaSel = 1;
@@ -6401,6 +5087,7 @@ BOOLEAN SyncTxRxConfig(PRTMP_ADAPTER pAd, USHORT offset, UCHAR value)
 	return TRUE;
 } 
 
+
 static VOID memcpy_exl(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, ULONG len)
 {
 	ULONG i, Value = 0;
@@ -6429,6 +5116,7 @@ static VOID memcpy_exl(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, ULONG len)
 	}
 }
 
+
 static VOID memcpy_exs(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, ULONG len)
 {
 	ULONG i;
@@ -6451,6 +5139,7 @@ static VOID memcpy_exs(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, ULONG len)
 	}
 }
 
+
 static VOID RTMP_IO_READ_BULK(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, UINT32 len)
 {
 	UINT32 i, Value;
@@ -6470,37 +5159,1508 @@ static VOID RTMP_IO_READ_BULK(PRTMP_ADAPTER pAd, UCHAR *dst, UCHAR *src, UINT32 
 	return;	
 }
 
+
 INT Set_TxStop_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	ATEDBGPRINT(RT_DEBUG_TRACE,("Set_TxStop_Proc\n"));
 
 	if (Set_ATE_Proc(pAd, "TXSTOP"))
 	{
-	return TRUE;
-}
+		return TRUE;
+	}
 	else
 	{
 		return FALSE;
 	}
 }
 
+
 INT Set_RxStop_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	ATEDBGPRINT(RT_DEBUG_TRACE,("Set_RxStop_Proc\n"));
 
 	if (Set_ATE_Proc(pAd, "RXSTOP"))
 	{
-	return TRUE;
-}
+		return TRUE;
+	}
 	else
 	{
 		return FALSE;
 	}
 }
-#endif	// RALINK_28xx_QA //
+
+
+#ifdef DBG
+INT Set_EERead_Proc(
+	IN	PRTMP_ADAPTER	pAd, 
+	IN	PSTRING			arg)
+{
+	USHORT buffer[EEPROM_SIZE/2];
+	USHORT *p;
+	INT i;
+	
+	rt_ee_read_all(pAd, (USHORT *)buffer);
+	p = buffer;
+
+	for (i = 0; i < (EEPROM_SIZE/2); i++)
+	{
+		ate_print(KERN_EMERG "%4.4x ", *p);
+		if (((i+1) % 16) == 0)
+			ate_print(KERN_EMERG "\n");
+		p++;
+	}
+
+	return TRUE;
+}
+
+
+INT Set_EEWrite_Proc(
+	IN	PRTMP_ADAPTER	pAd, 
+	IN	PSTRING			arg)
+{
+	USHORT offset = 0, value;
+	PSTRING p2 = arg;
+	
+	while ((*p2 != ':') && (*p2 != '\0'))
+	{
+		p2++;
+	}
+	
+	if (*p2 == ':')
+	{
+		A2Hex(offset, arg);
+		A2Hex(value, p2 + 1);
+	}
+	else
+	{
+		A2Hex(value, arg);
+	}
+	
+	if (offset >= EEPROM_SIZE)
+	{
+		ate_print(KERN_EMERG "Offset can not exceed EEPROM_SIZE( == 0x%04x)\n", EEPROM_SIZE);	
+		return FALSE;
+	}
+	
+	RT28xx_EEPROM_WRITE16(pAd, offset, value);
+
+	return TRUE;
+}
+
+
+INT Set_BBPRead_Proc(
+	IN	PRTMP_ADAPTER	pAd, 
+	IN	PSTRING			arg)
+{
+	UCHAR value = 0, offset;
+
+	A2Hex(offset, arg);	
+			
+	if (ATE_ON(pAd))
+	{
+		ATE_BBP_IO_READ8_BY_REG_ID(pAd, offset,  &value);
+	}
+	else
+	{
+		RTMP_BBP_IO_READ8_BY_REG_ID(pAd, offset,  &value);
+	}
+
+	ate_print(KERN_EMERG "%x\n", value);
+		
+	return TRUE;
+}
+
+
+INT Set_BBPWrite_Proc(
+	IN	PRTMP_ADAPTER	pAd, 
+	IN	PSTRING			arg)
+{
+	USHORT offset = 0;
+	PSTRING p2 = arg;
+	UCHAR value;
+	
+	while ((*p2 != ':') && (*p2 != '\0'))
+	{
+		p2++;
+	}
+	
+	if (*p2 == ':')
+	{
+		A2Hex(offset, arg);	
+		A2Hex(value, p2 + 1);	
+	}
+	else
+	{
+		A2Hex(value, arg);	
+	}
+
+	if (ATE_ON(pAd))
+	{
+		ATE_BBP_IO_WRITE8_BY_REG_ID(pAd, offset,  value);
+	}
+	else
+	{
+		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, offset,  value);
+	}
+
+	return TRUE;
+}
+
+
+INT Set_RFWrite_Proc(
+	IN	PRTMP_ADAPTER	pAd, 
+	IN	PSTRING			arg)
+{
+	PSTRING p2, p3, p4;
+	UINT32 R1, R2, R3, R4;
+	
+	p2 = arg;
+
+	while ((*p2 != ':') && (*p2 != '\0'))
+	{
+		p2++;
+	}
+	
+	if (*p2 != ':')
+		return FALSE;
+	
+	p3 = p2 + 1;
+
+	while((*p3 != ':') && (*p3 != '\0'))
+	{
+		p3++;
+	}
+
+	if (*p3 != ':')
+		return FALSE;
+	
+	p4 = p3 + 1;
+
+	while ((*p4 != ':') && (*p4 != '\0'))
+	{
+		p4++;
+	}
+
+	if (*p4 != ':')
+		return FALSE;
+
+		
+	A2Hex(R1, arg);	
+	A2Hex(R2, p2 + 1);	
+	A2Hex(R3, p3 + 1);	
+	A2Hex(R4, p4 + 1);	
+	
+	RTMP_RF_IO_WRITE32(pAd, R1);
+	RTMP_RF_IO_WRITE32(pAd, R2);
+	RTMP_RF_IO_WRITE32(pAd, R3);
+	RTMP_RF_IO_WRITE32(pAd, R4);
+	
+	return TRUE;
+}
+#endif // DBG //
+#endif // RALINK_28xx_QA //
+
+
+
+
+#ifdef RALINK_28xx_QA
+#define	LEN_OF_ARG 16
+
+#define RESPONSE_TO_GUI(__pRaCfg, __pwrq, __Length, __Status)									\
+	(__pRaCfg)->length = htons((__Length));														\
+	(__pRaCfg)->status = htons((__Status));														\
+	(__pwrq)->u.data.length = sizeof((__pRaCfg)->magic_no) + sizeof((__pRaCfg)->command_type)	\
+							+ sizeof((__pRaCfg)->command_id) + sizeof((__pRaCfg)->length)		\
+							+ sizeof((__pRaCfg)->sequence) + ntohs((__pRaCfg)->length);			\
+	ATEDBGPRINT(RT_DEBUG_TRACE, ("wrq->u.data.length = %d\n", (__pwrq)->u.data.length));		\
+	if (copy_to_user((__pwrq)->u.data.pointer, (UCHAR *)(__pRaCfg), (__pwrq)->u.data.length))	\
+	{																							\
+		ATEDBGPRINT(RT_DEBUG_ERROR, ("copy_to_user() fail in %s\n", __FUNCTION__));				\
+		return (-EFAULT);																		\
+	}																							\
+	else																						\
+	{																							\
+		ATEDBGPRINT(RT_DEBUG_TRACE, ("%s is done !\n", __FUNCTION__));							\
+	}
+
+static inline INT 	DO_RACFG_CMD_ATE_START(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_START\n"));
+	
+	/* Prepare feedback as soon as we can to avoid QA timeout. */
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+	Set_ATE_Proc(pAdapter, "ATESTART");
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_STOP(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	INT32 ret;
+
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_STOP\n"));
+
+	/*
+		Distinguish this command came from QA(via ate agent)
+		or ate agent according to the existence of pid in payload.
+
+		No need to prepare feedback if this cmd came directly from ate agent,
+		not from QA.
+	*/
+	pRaCfg->length = ntohs(pRaCfg->length);
+
+	if (pRaCfg->length == sizeof(pAdapter->ate.AtePid))
+	{
+		/*
+			This command came from QA.
+			Get the pid of ATE agent.
+		*/
+		memcpy((UCHAR *)&pAdapter->ate.AtePid,
+						(&pRaCfg->data[0]) - 2/* == sizeof(pRaCfg->status) */,
+						sizeof(pAdapter->ate.AtePid));					
+
+		/* Prepare feedback as soon as we can to avoid QA timeout. */
+		RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+		/*
+			Kill ATE agent when leaving ATE mode.
+
+			We must kill ATE agent first before setting ATESTOP,
+			or Microsoft will report sth. wrong. 
+		*/
+		ret = KILL_THREAD_PID(pAdapter->ate.AtePid, SIGTERM, 1);
+
+		if (ret)
+		{
+			ATEDBGPRINT(RT_DEBUG_ERROR, ("%s: unable to kill ate thread\n", pAdapter->net_dev->name));
+		}
+	}
+
+
+	/* AP/STA might have in ATE_STOP mode due to cmd from QA. */
+	if (ATE_ON(pAdapter))
+	{
+		/* Someone has killed ate agent while QA GUI is still open. */
+		Set_ATE_Proc(pAdapter, "ATESTOP");
+		ATEDBGPRINT(RT_DEBUG_TRACE, ("RACFG_CMD_AP_START is done !\n"));
+	}
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_RF_WRITE_ALL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	UINT32 R1, R2, R3, R4;
+	USHORT channel;
+	
+	memcpy(&R1, pRaCfg->data-2, 4);
+	memcpy(&R2, pRaCfg->data+2, 4);
+	memcpy(&R3, pRaCfg->data+6, 4);
+	memcpy(&R4, pRaCfg->data+10, 4);
+	memcpy(&channel, pRaCfg->data+14, 2);		
+	
+	pAdapter->LatchRfRegs.R1 = ntohl(R1);
+	pAdapter->LatchRfRegs.R2 = ntohl(R2);
+	pAdapter->LatchRfRegs.R3 = ntohl(R3);
+	pAdapter->LatchRfRegs.R4 = ntohl(R4);
+	pAdapter->LatchRfRegs.Channel = ntohs(channel);
+
+	RTMP_RF_IO_WRITE32(pAdapter, pAdapter->LatchRfRegs.R1);
+	RTMP_RF_IO_WRITE32(pAdapter, pAdapter->LatchRfRegs.R2);
+	RTMP_RF_IO_WRITE32(pAdapter, pAdapter->LatchRfRegs.R3);
+	RTMP_RF_IO_WRITE32(pAdapter, pAdapter->LatchRfRegs.R4);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return  NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_E2PROM_READ16(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	UINT16	offset=0, value=0;
+	USHORT  tmp=0;				
+
+	offset = ntohs(pRaCfg->status);
+
+	/* "tmp" is especially for some compilers... */
+	RT28xx_EEPROM_READ16(pAdapter, offset, tmp);
+	value = tmp;
+	value = htons(value);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("EEPROM Read offset = 0x%04x, value = 0x%04x\n", offset, value));
+	memcpy(pRaCfg->data, &value, 2);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+2, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_E2PROM_WRITE16(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT	offset, value;
+	
+	offset = ntohs(pRaCfg->status);
+	memcpy(&value, pRaCfg->data, 2);
+	value = ntohs(value);
+	RT28xx_EEPROM_WRITE16(pAdapter, offset, value);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_E2PROM_READ_ALL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT buffer[EEPROM_SIZE/2];
+
+	rt_ee_read_all(pAdapter,(USHORT *)buffer);
+	memcpy_exs(pAdapter, pRaCfg->data, (UCHAR *)buffer, EEPROM_SIZE);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+EEPROM_SIZE, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_E2PROM_WRITE_ALL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT buffer[EEPROM_SIZE/2];
+
+	NdisZeroMemory((UCHAR *)buffer, EEPROM_SIZE);
+	memcpy_exs(pAdapter, (UCHAR *)buffer, (UCHAR *)&pRaCfg->status, EEPROM_SIZE);
+	rt_ee_write_all(pAdapter,(USHORT *)buffer);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_IO_READ(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	UINT32	offset;
+	UINT32	value;
+	
+	memcpy(&offset, &pRaCfg->status, 4);
+	offset = ntohl(offset);
+
+	/*
+		We do not need the base address.
+		So just extract the offset out.
+	*/
+	offset &= 0x0000FFFF;
+	RTMP_IO_READ32(pAdapter, offset, &value);
+	value = htonl(value);
+	memcpy(pRaCfg->data, &value, 4);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+4, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_IO_WRITE(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	UINT32	offset, value;
+					
+	memcpy(&offset, pRaCfg->data-2, 4);
+	memcpy(&value, pRaCfg->data+2, 4);
+
+	offset = ntohl(offset);
+
+	/*
+		We do not need the base address.
+		So just extract the offset out.
+	*/
+	offset &= 0x0000FFFF;
+	value = ntohl(value);
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_IO_WRITE: offset = %x, value = %x\n", offset, value));
+	RTMP_IO_WRITE32(pAdapter, offset, value);
+	
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_IO_READ_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	UINT32	offset;
+	USHORT	len;
+	
+	memcpy(&offset, &pRaCfg->status, 4);
+	offset = ntohl(offset);
+
+	/*
+		We do not need the base address.
+		So just extract the offset out.
+	*/
+	offset &= 0x0000FFFF;
+	memcpy(&len, pRaCfg->data+2, 2);
+	len = ntohs(len);
+
+	if (len > 371)
+	{
+		ATEDBGPRINT(RT_DEBUG_TRACE,("length requested is too large, make it smaller\n"));
+		pRaCfg->length = htons(2);
+		pRaCfg->status = htons(1);
+		return -EFAULT;
+	}
+
+	RTMP_IO_READ_BULK(pAdapter, pRaCfg->data, (UCHAR *)offset, len*4);// unit in four bytes
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+(len*4), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_BBP_READ8(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT	offset;
+	UCHAR	value;
+	
+	value = 0;
+	offset = ntohs(pRaCfg->status);
+
+	if (ATE_ON(pAdapter))
+	{
+		ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, offset, &value);
+	}
+	else
+	{
+		RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, offset, &value);	
+	}
+
+	pRaCfg->data[0] = value;
+	
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+1, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_BBP_WRITE8(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT	offset;
+	UCHAR	value;
+	
+	offset = ntohs(pRaCfg->status);
+	memcpy(&value, pRaCfg->data, 1);
+
+	if (ATE_ON(pAdapter))
+	{
+		ATE_BBP_IO_WRITE8_BY_REG_ID(pAdapter, offset, value);
+	}
+	else
+	{
+		RTMP_BBP_IO_WRITE8_BY_REG_ID(pAdapter, offset, value);
+	}
+
+	if ((offset == BBP_R1) || (offset == BBP_R3))
+	{
+		SyncTxRxConfig(pAdapter, offset, value);
+	}
+	
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_BBP_READ_ALL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT bbp_reg_index;
+	
+	for (bbp_reg_index = 0; bbp_reg_index < MAX_BBP_ID+1; bbp_reg_index++)
+	{
+		pRaCfg->data[bbp_reg_index] = 0;
+		
+		if (ATE_ON(pAdapter))
+		{
+			ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, bbp_reg_index, &pRaCfg->data[bbp_reg_index]);
+		}
+		else
+		{
+			RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, bbp_reg_index, &pRaCfg->data[bbp_reg_index]);
+		}
+	}
+	
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+MAX_BBP_ID+1, NDIS_STATUS_SUCCESS);
+	
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_GET_NOISE_LEVEL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	UCHAR	channel;
+	INT32   buffer[3][10];/* 3 : RxPath ; 10 : no. of per rssi samples */
+
+	channel = (ntohs(pRaCfg->status) & 0x00FF);
+	CalNoiseLevel(pAdapter, channel, buffer);
+	memcpy_exl(pAdapter, (UCHAR *)pRaCfg->data, (UCHAR *)&(buffer[0][0]), (sizeof(INT32)*3*10));
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+(sizeof(INT32)*3*10), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_GET_COUNTER(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	memcpy_exl(pAdapter, &pRaCfg->data[0], (UCHAR *)&pAdapter->ate.U2M, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[4], (UCHAR *)&pAdapter->ate.OtherData, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[8], (UCHAR *)&pAdapter->ate.Beacon, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[12], (UCHAR *)&pAdapter->ate.OtherCount, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[16], (UCHAR *)&pAdapter->ate.TxAc0, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[20], (UCHAR *)&pAdapter->ate.TxAc1, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[24], (UCHAR *)&pAdapter->ate.TxAc2, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[28], (UCHAR *)&pAdapter->ate.TxAc3, 4);
+	/*memcpy_exl(pAdapter, &pRaCfg->data[32], (UCHAR *)&pAdapter->ate.TxHCCA, 4);*/
+	memcpy_exl(pAdapter, &pRaCfg->data[36], (UCHAR *)&pAdapter->ate.TxMgmt, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[40], (UCHAR *)&pAdapter->ate.RSSI0, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[44], (UCHAR *)&pAdapter->ate.RSSI1, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[48], (UCHAR *)&pAdapter->ate.RSSI2, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[52], (UCHAR *)&pAdapter->ate.SNR0, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[56], (UCHAR *)&pAdapter->ate.SNR1, 4);
+	
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+60, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_CLEAR_COUNTER(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	pAdapter->ate.U2M = 0;
+	pAdapter->ate.OtherData = 0;
+	pAdapter->ate.Beacon = 0;
+	pAdapter->ate.OtherCount = 0;
+	pAdapter->ate.TxAc0 = 0;
+	pAdapter->ate.TxAc1 = 0;
+	pAdapter->ate.TxAc2 = 0;
+	pAdapter->ate.TxAc3 = 0;
+	/*pAdapter->ate.TxHCCA = 0;*/
+	pAdapter->ate.TxMgmt = 0;
+	pAdapter->ate.TxDoneCount = 0;
+	
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_TX_START(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT *p;
+	USHORT	err = 1;
+	UCHAR   Bbp22Value = 0, Bbp24Value = 0;
+
+	if ((pAdapter->ate.TxStatus != 0) && (pAdapter->ate.Mode & ATE_TXFRAME))
+	{
+		ATEDBGPRINT(RT_DEBUG_TRACE,("Ate Tx is already running, to run next Tx, you must stop it first\n"));
+		err = 2; 
+		goto TX_START_ERROR;
+	}
+	else if ((pAdapter->ate.TxStatus != 0) && !(pAdapter->ate.Mode & ATE_TXFRAME))
+	{
+		int i = 0;
+
+		while ((i++ < 10) && (pAdapter->ate.TxStatus != 0))
+		{
+			RTMPusecDelay(5000);
+		}
+
+		/* force it to stop */
+		pAdapter->ate.TxStatus = 0;
+		pAdapter->ate.TxDoneCount = 0;
+		pAdapter->ate.bQATxStart = FALSE;
+	}
+
+	/*
+		If pRaCfg->length == 0, this "RACFG_CMD_TX_START"
+		is for Carrier test or Carrier Suppression.
+	*/
+	if (ntohs(pRaCfg->length) != 0)
+	{
+		/* get frame info */
+#ifdef RTMP_MAC_USB
+		NdisMoveMemory(&pAdapter->ate.TxInfo, pRaCfg->data - 2, 4);
+#ifdef RT_BIG_ENDIAN
+		RTMPDescriptorEndianChange((PUCHAR) &pAdapter->ate.TxInfo, TYPE_TXINFO);
+#endif // RT_BIG_ENDIAN //
+#endif // RTMP_MAC_USB //
+
+		NdisMoveMemory(&pAdapter->ate.TxWI, pRaCfg->data + 2, 16);						
+#ifdef RT_BIG_ENDIAN
+		RTMPWIEndianChange((PUCHAR)&pAdapter->ate.TxWI, TYPE_TXWI);
+#endif // RT_BIG_ENDIAN //
+
+		NdisMoveMemory(&pAdapter->ate.TxCount, pRaCfg->data + 18, 4);
+		pAdapter->ate.TxCount = ntohl(pAdapter->ate.TxCount);
+
+		p = (USHORT *)(&pRaCfg->data[22]);
+
+		/* always use QID_AC_BE */
+		pAdapter->ate.QID = 0;
+
+		p = (USHORT *)(&pRaCfg->data[24]);
+		pAdapter->ate.HLen = ntohs(*p);
+
+		if (pAdapter->ate.HLen > 32)
+		{
+			ATEDBGPRINT(RT_DEBUG_ERROR,("pAdapter->ate.HLen > 32\n"));
+			err = 3;
+			goto TX_START_ERROR;
+		}
+
+		NdisMoveMemory(&pAdapter->ate.Header, pRaCfg->data + 26, pAdapter->ate.HLen);
+
+		pAdapter->ate.PLen = ntohs(pRaCfg->length) - (pAdapter->ate.HLen + 28);
+
+		if (pAdapter->ate.PLen > 32)
+		{
+			ATEDBGPRINT(RT_DEBUG_ERROR,("pAdapter->ate.PLen > 32\n"));
+			err = 4;
+			goto TX_START_ERROR;
+		}
+
+		NdisMoveMemory(&pAdapter->ate.Pattern, pRaCfg->data + 26 + pAdapter->ate.HLen, pAdapter->ate.PLen);
+		pAdapter->ate.DLen = pAdapter->ate.TxWI.MPDUtotalByteCount - pAdapter->ate.HLen;
+	}
+
+	ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, BBP_R22, &Bbp22Value);
+
+	switch (Bbp22Value)
+	{
+		case BBP22_TXFRAME:
+			{
+				if (pAdapter->ate.TxCount == 0)
+				{
+				}
+				ATEDBGPRINT(RT_DEBUG_TRACE,("START TXFRAME\n"));
+				pAdapter->ate.bQATxStart = TRUE;
+				Set_ATE_Proc(pAdapter, "TXFRAME");
+			}
+			break;
+
+		case BBP22_TXCONT_OR_CARRSUPP:
+			{
+				ATEDBGPRINT(RT_DEBUG_TRACE,("BBP22_TXCONT_OR_CARRSUPP\n"));
+				ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, BBP_R24, &Bbp24Value);
+
+				switch (Bbp24Value)
+				{
+					case BBP24_TXCONT:
+						{
+							ATEDBGPRINT(RT_DEBUG_TRACE,("START TXCONT\n"));
+							pAdapter->ate.bQATxStart = TRUE;
+							Set_ATE_Proc(pAdapter, "TXCONT");
+						}
+						break;
+
+					case BBP24_CARRSUPP:
+						{
+							ATEDBGPRINT(RT_DEBUG_TRACE,("START TXCARRSUPP\n"));
+							pAdapter->ate.bQATxStart = TRUE;
+							pAdapter->ate.Mode |= ATE_TXCARRSUPP;
+						}
+						break;
+
+					default:
+						{
+							ATEDBGPRINT(RT_DEBUG_ERROR,("Unknown TX subtype !"));
+						}
+						break;
+				}
+			}
+			break;	
+
+		case BBP22_TXCARR:
+			{
+				ATEDBGPRINT(RT_DEBUG_TRACE,("START TXCARR\n"));
+				pAdapter->ate.bQATxStart = TRUE;
+				Set_ATE_Proc(pAdapter, "TXCARR");
+			}
+			break;							
+
+		default:
+			{
+				ATEDBGPRINT(RT_DEBUG_ERROR,("Unknown Start TX subtype !"));
+			}
+			break;
+	}
+
+	if (pAdapter->ate.bQATxStart == TRUE)
+	{
+		RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+		return NDIS_STATUS_SUCCESS;
+	}
+
+TX_START_ERROR:
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), err);
+
+	return err;
+}
+
+
+static inline INT DO_RACFG_CMD_GET_TX_STATUS(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	UINT32 count=0;
+	
+	count = htonl(pAdapter->ate.TxDoneCount);
+	NdisMoveMemory(pRaCfg->data, &count, 4);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+4, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_TX_STOP(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_TX_STOP\n"));
+
+	Set_ATE_Proc(pAdapter, "TXSTOP");
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_RX_START(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_RX_START\n"));
+
+	pAdapter->ate.bQARxStart = TRUE;
+	Set_ATE_Proc(pAdapter, "RXFRAME");
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}	
+
+
+static inline INT DO_RACFG_CMD_RX_STOP(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_RX_STOP\n"));
+
+	Set_ATE_Proc(pAdapter, "RXSTOP");
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_START_TX_CARRIER(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_START_TX_CARRIER\n"));
+
+	Set_ATE_Proc(pAdapter, "TXCARR");
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_START_TX_CONT(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_START_TX_CONT\n"));
+
+	Set_ATE_Proc(pAdapter, "TXCONT");
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_START_TX_FRAME(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_START_TX_FRAME\n"));
+
+	Set_ATE_Proc(pAdapter, "TXFRAME");
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}	
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_BW(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_BW\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+
+	Set_ATE_TX_BW_Proc(pAdapter, str);
+	
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_TX_POWER0(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_TX_POWER0\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_TX_POWER0_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_TX_POWER1(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_TX_POWER1\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_TX_POWER1_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_FREQ_OFFSET(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_FREQ_OFFSET\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_TX_FREQOFFSET_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_GET_STATISTICS(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_GET_STATISTICS\n"));
+
+	memcpy_exl(pAdapter, &pRaCfg->data[0], (UCHAR *)&pAdapter->ate.TxDoneCount, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[4], (UCHAR *)&pAdapter->WlanCounters.RetryCount.u.LowPart, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[8], (UCHAR *)&pAdapter->WlanCounters.FailedCount.u.LowPart, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[12], (UCHAR *)&pAdapter->WlanCounters.RTSSuccessCount.u.LowPart, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[16], (UCHAR *)&pAdapter->WlanCounters.RTSFailureCount.u.LowPart, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[20], (UCHAR *)&pAdapter->WlanCounters.ReceivedFragmentCount.QuadPart, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[24], (UCHAR *)&pAdapter->WlanCounters.FCSErrorCount.u.LowPart, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[28], (UCHAR *)&pAdapter->Counters8023.RxNoBuffer, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[32], (UCHAR *)&pAdapter->WlanCounters.FrameDuplicateCount.u.LowPart, 4);
+	memcpy_exl(pAdapter, &pRaCfg->data[36], (UCHAR *)&pAdapter->RalinkCounters.OneSecFalseCCACnt, 4);
+	
+	if (pAdapter->ate.RxAntennaSel == 0)
+	{
+		INT32 RSSI0 = 0;
+		INT32 RSSI1 = 0;
+		INT32 RSSI2 = 0;
+
+		RSSI0 = (INT32)(pAdapter->ate.LastRssi0 - pAdapter->BbpRssiToDbmDelta);
+		RSSI1 = (INT32)(pAdapter->ate.LastRssi1 - pAdapter->BbpRssiToDbmDelta);
+		RSSI2 = (INT32)(pAdapter->ate.LastRssi2 - pAdapter->BbpRssiToDbmDelta);
+		memcpy_exl(pAdapter, &pRaCfg->data[40], (UCHAR *)&RSSI0, 4);
+		memcpy_exl(pAdapter, &pRaCfg->data[44], (UCHAR *)&RSSI1, 4);
+		memcpy_exl(pAdapter, &pRaCfg->data[48], (UCHAR *)&RSSI2, 4);
+		RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+52, NDIS_STATUS_SUCCESS);
+	}
+	else
+	{
+		INT32 RSSI0 = 0;
+	
+		RSSI0 = (INT32)(pAdapter->ate.LastRssi0 - pAdapter->BbpRssiToDbmDelta);
+		memcpy_exl(pAdapter, &pRaCfg->data[40], (UCHAR *)&RSSI0, 4);
+		RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+44, NDIS_STATUS_SUCCESS);
+	}
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_RESET_COUNTER(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 1;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_RESET_COUNTER\n"));				
+
+	sprintf((char *)str, "%d", value);
+	Set_ResetStatCounter_Proc(pAdapter, str);
+
+	pAdapter->ate.TxDoneCount = 0;
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SEL_TX_ANTENNA(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)	
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SEL_TX_ANTENNA\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_TX_Antenna_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SEL_RX_ANTENNA(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SEL_RX_ANTENNA\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_RX_Antenna_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_PREAMBLE(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_PREAMBLE\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_TX_MODE_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_CHANNEL(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_CHANNEL\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_CHANNEL_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_ADDR1(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_ADDR1\n"));
+
+	/*
+		Addr is an array of UCHAR,
+		so no need to perform endian swap.
+	*/
+	memcpy(pAdapter->ate.Addr1, (PUCHAR)(pRaCfg->data - 2), MAC_ADDR_LEN);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_ADDR2(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_ADDR2\n"));
+
+	/*
+		Addr is an array of UCHAR,
+		so no need to perform endian swap.
+	*/
+	memcpy(pAdapter->ate.Addr2, (PUCHAR)(pRaCfg->data - 2), MAC_ADDR_LEN);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_ADDR3(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_ADDR3\n"));
+
+	/*
+		Addr is an array of UCHAR,
+		so no need to perform endian swap.
+	*/
+	memcpy(pAdapter->ate.Addr3, (PUCHAR)(pRaCfg->data - 2), MAC_ADDR_LEN);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_RATE(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_RATE\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_TX_MCS_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_TX_FRAME_LEN(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	SHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_TX_FRAME_LEN\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+	sprintf((char *)str, "%d", value);
+	Set_ATE_TX_LENGTH_Proc(pAdapter, str);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_SET_TX_FRAME_COUNT(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT    value = 0;
+	STRING    str[LEN_OF_ARG];
+
+	NdisZeroMemory(str, LEN_OF_ARG);
+	
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_ATE_SET_TX_FRAME_COUNT\n"));				
+
+	memcpy((PUCHAR)&value, (PUCHAR)&(pRaCfg->status), 2);
+	value = ntohs(value);
+
+	{
+		sprintf((char *)str, "%d", value);
+		Set_ATE_TX_COUNT_Proc(pAdapter, str);
+	}
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_START_RX_FRAME(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	ATEDBGPRINT(RT_DEBUG_TRACE,("RACFG_CMD_RX_START\n"));
+
+	Set_ATE_Proc(pAdapter, "RXFRAME");
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_E2PROM_READ_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT offset;
+	USHORT len;
+	USHORT buffer[EEPROM_SIZE/2];
+	
+	offset = ntohs(pRaCfg->status);
+	memcpy(&len, pRaCfg->data, 2);
+	len = ntohs(len);
+	
+	rt_ee_read_all(pAdapter, (USHORT *)buffer);
+
+	if (offset + len <= EEPROM_SIZE)
+		memcpy_exs(pAdapter, pRaCfg->data, (UCHAR *)buffer+offset, len);
+	else
+		ATEDBGPRINT(RT_DEBUG_ERROR, ("exceed EEPROM size\n"));
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+len, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_E2PROM_WRITE_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT offset;
+	USHORT len;
+	USHORT buffer[EEPROM_SIZE/2];
+	
+	offset = ntohs(pRaCfg->status);
+	memcpy(&len, pRaCfg->data, 2);
+	len = ntohs(len);
+
+	rt_ee_read_all(pAdapter,(USHORT *)buffer);
+	memcpy_exs(pAdapter, (UCHAR *)buffer + offset, (UCHAR *)pRaCfg->data + 2, len);
+	rt_ee_write_all(pAdapter,(USHORT *)buffer);
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_IO_WRITE_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	UINT32 offset, i, value;
+	USHORT len;
+	
+	memcpy(&offset, &pRaCfg->status, 4);
+	offset = ntohl(offset);
+	memcpy(&len, pRaCfg->data+2, 2);
+	len = ntohs(len);
+	
+	for (i = 0; i < len; i += 4)
+	{
+		memcpy_exl(pAdapter, (UCHAR *)&value, pRaCfg->data+4+i, 4);
+		ATEDBGPRINT(RT_DEBUG_TRACE,("Write %x %x\n", offset + i, value));
+		RTMP_IO_WRITE32(pAdapter, ((offset+i) & (0xffff)), value);
+	}
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_BBP_READ_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT offset;
+	USHORT len;
+	USHORT j;
+	
+	offset = ntohs(pRaCfg->status);
+	memcpy(&len, pRaCfg->data, 2);
+	len = ntohs(len);
+	
+	for (j = offset; j < (offset+len); j++)
+	{
+		pRaCfg->data[j - offset] = 0;
+		
+		if (pAdapter->ate.Mode == ATE_STOP)
+		{
+			RTMP_BBP_IO_READ8_BY_REG_ID(pAdapter, j, &pRaCfg->data[j - offset]);
+		}
+		else
+		{
+			ATE_BBP_IO_READ8_BY_REG_ID(pAdapter, j, &pRaCfg->data[j - offset]);
+		}
+	}
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+len, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_BBP_WRITE_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT offset;
+	USHORT len;
+	USHORT j;
+	UCHAR *value;
+	
+	offset = ntohs(pRaCfg->status);
+	memcpy(&len, pRaCfg->data, 2);
+	len = ntohs(len);
+					
+	for (j = offset; j < (offset+len); j++)
+	{
+		value = pRaCfg->data + 2 + (j - offset);
+		if (pAdapter->ate.Mode == ATE_STOP)
+		{
+			RTMP_BBP_IO_WRITE8_BY_REG_ID(pAdapter, j,  *value);
+		}
+		else
+		{
+			ATE_BBP_IO_WRITE8_BY_REG_ID(pAdapter, j,  *value);
+		}
+	}
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+#if defined(RT305x) || defined(RT30xx)
+static inline INT DO_RACFG_CMD_ATE_RF_READ_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT offset;
+	USHORT len;
+	USHORT j;
+	
+	offset = ntohs(pRaCfg->status);
+	memcpy(&len, pRaCfg->data, 2);
+	len = ntohs(len);
+
+	for (j = offset; j < (offset+len); j++)
+	{
+		pRaCfg->data[j - offset] = 0;
+		ATE_RF_IO_READ8_BY_REG_ID(pAdapter, j,  &pRaCfg->data[j - offset]);
+	}
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status)+len, NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+
+
+static inline INT DO_RACFG_CMD_ATE_RF_WRITE_BULK(
+	IN	PRTMP_ADAPTER	pAdapter,
+	IN	struct iwreq	*wrq,
+	IN  struct ate_racfghdr *pRaCfg)
+{
+	USHORT offset;
+	USHORT len;
+	USHORT j;
+	UCHAR *value;
+	
+	offset = ntohs(pRaCfg->status);
+	memcpy(&len, pRaCfg->data, 2);
+	len = ntohs(len);
+
+	for (j = offset; j < (offset+len); j++)
+	{
+		value = pRaCfg->data + 2 + (j - offset);
+		ATE_RF_IO_WRITE8_BY_REG_ID(pAdapter, j,  *value);
+	}
+
+	RESPONSE_TO_GUI(pRaCfg, wrq, sizeof(pRaCfg->status), NDIS_STATUS_SUCCESS);
+
+	return NDIS_STATUS_SUCCESS;
+}
+#endif // RT305x || RT30xx //
+#endif // RALINK_28xx_QA //
 #endif	// RALINK_ATE //
 

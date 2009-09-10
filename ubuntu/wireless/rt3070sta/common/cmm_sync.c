@@ -1,39 +1,4 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
-
-	Module Name:
-	sync.c
-
-	Abstract:
-
-	Revision History:
-	Who			When			What
-	--------	----------		----------------------------------------------
-	John Chang	2004-09-01      modified for rt2561/2661
-*/
+/* Plz read readme file for Software License information */
 #include "rt_config.h"
 
 // 2.4 Ghz channel plan index in the TxPower arrays.
@@ -64,11 +29,16 @@ UCHAR A_BAND_REGION_3_CHANNEL_LIST[]={52, 56, 60, 64, 149, 153, 157, 161};
 UCHAR A_BAND_REGION_4_CHANNEL_LIST[]={149, 153, 157, 161, 165};
 UCHAR A_BAND_REGION_5_CHANNEL_LIST[]={149, 153, 157, 161};
 UCHAR A_BAND_REGION_6_CHANNEL_LIST[]={36, 40, 44, 48};
-UCHAR A_BAND_REGION_7_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161, 165};
+UCHAR A_BAND_REGION_7_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161, 165, 169, 173};
 UCHAR A_BAND_REGION_8_CHANNEL_LIST[]={52, 56, 60, 64};
 UCHAR A_BAND_REGION_9_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 132, 136, 140, 149, 153, 157, 161, 165};
 UCHAR A_BAND_REGION_10_CHANNEL_LIST[]={36, 40, 44, 48, 149, 153, 157, 161, 165};
 UCHAR A_BAND_REGION_11_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 149, 153, 157, 161};
+UCHAR A_BAND_REGION_12_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
+UCHAR A_BAND_REGION_13_CHANNEL_LIST[]={52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161};
+UCHAR A_BAND_REGION_14_CHANNEL_LIST[]={36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 136, 140, 149, 153, 157, 161, 165};
+UCHAR A_BAND_REGION_15_CHANNEL_LIST[]={149, 153, 157, 161, 165, 169, 173};
+
 
 //BaSizeArray follows the 802.11n definition as MaxRxFactor.  2^(13+factor) bytes. When factor =0, it's about Ba buffer size =8.
 UCHAR BaSizeArray[4] = {8,16,32,64};
@@ -194,17 +164,30 @@ VOID BuildChannelList(
 				num = sizeof(A_BAND_REGION_9_CHANNEL_LIST)/sizeof(UCHAR);
 				pChannelList = A_BAND_REGION_9_CHANNEL_LIST;
 				break;
-
 			case REGION_10_A_BAND:
 				num = sizeof(A_BAND_REGION_10_CHANNEL_LIST)/sizeof(UCHAR);
 				pChannelList = A_BAND_REGION_10_CHANNEL_LIST;
 				break;
-
 			case REGION_11_A_BAND:
 				num = sizeof(A_BAND_REGION_11_CHANNEL_LIST)/sizeof(UCHAR);
 				pChannelList = A_BAND_REGION_11_CHANNEL_LIST;
 				break;	
-
+			case REGION_12_A_BAND:
+				num = sizeof(A_BAND_REGION_12_CHANNEL_LIST)/sizeof(UCHAR);
+				pChannelList = A_BAND_REGION_12_CHANNEL_LIST;
+				break;
+			case REGION_13_A_BAND:
+				num = sizeof(A_BAND_REGION_13_CHANNEL_LIST)/sizeof(UCHAR);
+				pChannelList = A_BAND_REGION_13_CHANNEL_LIST;
+				break;
+			case REGION_14_A_BAND:
+				num = sizeof(A_BAND_REGION_14_CHANNEL_LIST)/sizeof(UCHAR);
+				pChannelList = A_BAND_REGION_14_CHANNEL_LIST;
+				break;
+			case REGION_15_A_BAND:
+				num = sizeof(A_BAND_REGION_15_CHANNEL_LIST)/sizeof(UCHAR);
+				pChannelList = A_BAND_REGION_15_CHANNEL_LIST;
+				break;
 			default:            // Error. should never happen
 				DBGPRINT(RT_DEBUG_WARN,("countryregion=%d not support", pAd->CommonCfg.CountryRegionForABand));
 				break;
@@ -336,9 +319,9 @@ VOID ChangeToCellPowerLimit(
 }
 
 CHAR	ConvertToRssi(
-	IN PRTMP_ADAPTER pAd,
-	IN	CHAR			Rssi,
-	IN  UCHAR   RssiNumber)
+	IN PRTMP_ADAPTER	pAd,
+	IN CHAR				Rssi,
+	IN UCHAR			RssiNumber)
 {
 	UCHAR	RssiOffset, LNAGain;
 
@@ -407,7 +390,10 @@ VOID ScanNextChannel(
 	{
 		if ((pAd->CommonCfg.BBPCurrentBW == BW_40)
 #ifdef CONFIG_STA_SUPPORT
-			&& (INFRA_ON(pAd)
+			&& (INFRA_ON(pAd)||ADHOC_ON(pAd)
+#ifdef MESH_SUPPORT
+				|| MESH_ON(pAd)
+#endif // MESH_SUPPORT //
 				|| (pAd->OpMode == OPMODE_AP))
 #endif // CONFIG_STA_SUPPORT //
 			)
@@ -461,9 +447,12 @@ VOID ScanNextChannel(
 #endif // CONFIG_STA_SUPPORT //
 
 
+#ifdef MESH_SUPPORT
+		MlmeEnqueueEx(pAd, MESH_CTRL_STATE_MACHINE, APMT2_MLME_SCAN_FINISH, 0, NULL, 0);
+#endif // MESH_SUPPORT //
 		RTMP_CLEAR_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS);
 	} 
-#ifdef RT2870
+#ifdef RTMP_MAC_USB
 #ifdef CONFIG_STA_SUPPORT
 	else if (RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NIC_NOT_EXIST) && (pAd->OpMode == OPMODE_STA))
 	{
@@ -471,7 +460,7 @@ VOID ScanNextChannel(
 		MlmeCntlConfirm(pAd, MT2_SCAN_CONF, MLME_FAIL_NO_RESOURCE);
 	}	
 #endif // CONFIG_STA_SUPPORT //
-#endif // RT2870 //
+#endif // RTMP_MAC_USB //
 	else 
 	{
 #ifdef CONFIG_STA_SUPPORT
@@ -483,7 +472,7 @@ VOID ScanNextChannel(
 
 			// leave PSM during scanning. otherwise we may lost ProbeRsp & BEACON
 			if (pAd->StaCfg.Psm == PWR_SAVE)
-				MlmeSetPsmBit(pAd, PWR_ACTIVE);
+				RTMP_SET_PSM_BIT(pAd, PWR_ACTIVE);
 		}
 #endif // CONFIG_STA_SUPPORT //
 
@@ -524,18 +513,6 @@ VOID ScanNextChannel(
 		// Chnage the channel scan time for CISCO stuff based on its IAPP announcement
 		if (ScanType == FAST_SCAN_ACTIVE)
 			RTMPSetTimer(&pAd->MlmeAux.ScanTimer, FAST_ACTIVE_SCAN_TIME);
-#ifdef CONFIG_STA_SUPPORT
-		else if (((ScanType == SCAN_CISCO_ACTIVE) ||
-				(ScanType == SCAN_CISCO_PASSIVE) ||
-				(ScanType == SCAN_CISCO_CHANNEL_LOAD) ||
-				(ScanType == SCAN_CISCO_NOISE)) && (pAd->OpMode == OPMODE_STA))
-		{
-			if (pAd->StaCfg.CCXScanTime < 25)
-				RTMPSetTimer(&pAd->MlmeAux.ScanTimer, pAd->StaCfg.CCXScanTime * 2);
-			else
-				RTMPSetTimer(&pAd->MlmeAux.ScanTimer, pAd->StaCfg.CCXScanTime);
-		}
-#endif // CONFIG_STA_SUPPORT //
 		else // must be SCAN_PASSIVE or SCAN_ACTIVE
 		{
 			if ((pAd->CommonCfg.PhyMode == PHY_11ABG_MIXED) 
@@ -553,8 +530,9 @@ VOID ScanNextChannel(
 				RTMPSetTimer(&pAd->MlmeAux.ScanTimer, MAX_CHANNEL_TIME);
 		}
 
-		if ((ScanType == SCAN_ACTIVE) || (ScanType == FAST_SCAN_ACTIVE) ||
-			(ScanType == SCAN_CISCO_ACTIVE))
+		if ((ScanType == SCAN_ACTIVE)
+			|| (ScanType == FAST_SCAN_ACTIVE)
+			)
 		{
 			NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  //Get an unused nonpaged memory
 			if (NStatus != NDIS_STATUS_SUCCESS)
@@ -579,7 +557,12 @@ VOID ScanNextChannel(
 			else
 				SsidLen = 0;
 
-			MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, BROADCAST_ADDR);
+#ifdef CONFIG_STA_SUPPORT
+			IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
+				MgtMacHeaderInit(pAd, &Hdr80211, SUBTYPE_PROBE_REQ, 0, BROADCAST_ADDR, BROADCAST_ADDR);
+#endif // CONFIG_STA_SUPPORT //
+
+
 			MakeOutgoingFrame(pOutBuffer,               &FrameLen,
 							  sizeof(HEADER_802_11),    &Hdr80211,
 							  1,                        &SsidIe,
@@ -616,7 +599,17 @@ VOID ScanNextChannel(
 #ifdef RT_BIG_ENDIAN
 					NdisMoveMemory(&HtCapabilityTmp, &pAd->MlmeAux.HtCapability, SIZE_HT_CAP_IE);
 					*(USHORT *)(&HtCapabilityTmp.HtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.HtCapInfo));
-					*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
+#ifdef UNALIGNMENT_SUPPORT
+					{
+						EXT_HT_CAP_INFO extHtCapInfo;
+
+						NdisMoveMemory((PUCHAR)(&extHtCapInfo), (PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), sizeof(EXT_HT_CAP_INFO));
+						*(USHORT *)(&extHtCapInfo) = cpu2le16(*(USHORT *)(&extHtCapInfo));
+						NdisMoveMemory((PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));		
+					}
+#else				
+					*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = cpu2le16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
+#endif // UNALIGNMENT_SUPPORT //
 
 					MakeOutgoingFrame(pOutBuffer + FrameLen,          &Tmp,
 									1,                                &WpaIe,
@@ -639,7 +632,17 @@ VOID ScanNextChannel(
 #ifdef RT_BIG_ENDIAN
 					NdisMoveMemory(&HtCapabilityTmp, &pAd->CommonCfg.HtCapability, SIZE_HT_CAP_IE);
 					*(USHORT *)(&HtCapabilityTmp.HtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.HtCapInfo));
-					*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = SWAP16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
+#ifdef UNALIGNMENT_SUPPORT
+					{
+						EXT_HT_CAP_INFO extHtCapInfo;
+
+						NdisMoveMemory((PUCHAR)(&extHtCapInfo), (PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), sizeof(EXT_HT_CAP_INFO));
+						*(USHORT *)(&extHtCapInfo) = cpu2le16(*(USHORT *)(&extHtCapInfo));
+						NdisMoveMemory((PUCHAR)(&HtCapabilityTmp.ExtHtCapInfo), (PUCHAR)(&extHtCapInfo), sizeof(EXT_HT_CAP_INFO));		
+					}
+#else				
+					*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo) = cpu2le16(*(USHORT *)(&HtCapabilityTmp.ExtHtCapInfo));
+#endif // UNALIGNMENT_SUPPORT //
 
 					MakeOutgoingFrame(pOutBuffer + FrameLen,          &Tmp,
 									1,                                &HtCapIe,

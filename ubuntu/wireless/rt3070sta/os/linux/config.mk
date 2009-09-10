@@ -1,12 +1,11 @@
 # Support ATE function
-HAS_ATE=n
+HAS_ATE=y
 
 # Support 28xx QA ATE function
 HAS_28xx_QA=n
 
-#ifdef NINTENDO_AP
+
 HAS_NINTENDO=n
-#endif // NINTENDO_AP //
 
 # Support LLTD function
 HAS_LLTD=n
@@ -14,16 +13,14 @@ HAS_LLTD=n
 # Support WDS function
 HAS_WDS=n
 
+# Support AP-Client function
+HAS_APCLI=n
 
-#ifdef WPA_SUPPLICANT_SUPPORT
 # Support Wpa_Supplicant
 HAS_WPA_SUPPLICANT=y
-#endif // WPA_SUPPLICANT_SUPPORT //
 
-#ifdef NATIVE_WPA_SUPPLICANT_SUPPORT
 # Support Native WpaSupplicant for Network Maganger
-HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=y
-#endif // NATIVE_WPA_SUPPLICANT_SUPPORT //
+HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=n
 
 #Support Net interface block while Tx-Sw queue full
 HAS_BLOCK_NET_IF=n
@@ -37,16 +34,18 @@ HAS_DFS_SUPPORT=n
 #Support Carrier-Sense function
 HAS_CS_SUPPORT=n
 
+# Support for STA Ethernet Converter
+HAS_ETH_CONVERT_SUPPORT=n
+
 # Support user specific transmit rate of Multicast packet.
 HAS_MCAST_RATE_SPECIFIC_SUPPORT=n
 
-#ifdef MULTI_CARD
 # Support for Multiple Cards
 HAS_MC_SUPPORT=n
-#endif // MULTI_CARD //
 
 #Support for PCI-MSI
 HAS_MSI_SUPPORT=n
+
 
 #Support for IEEE802.11e DLS
 HAS_QOS_DLS_SUPPORT=n
@@ -57,45 +56,70 @@ HAS_EXT_BUILD_CHANNEL_LIST=n
 #Support for IDS 
 HAS_IDS_SUPPORT=n
 
+#Support for MESH
+HAS_MESH_SUPPORT=n
 
 #Support for Net-SNMP
 HAS_SNMP_SUPPORT=n
 
-#ifdef DOT11N_DRAFT3
 #Support features of 802.11n Draft3
 HAS_DOT11N_DRAFT3_SUPPORT=n
-#endif // DOT11N_DRAFT3 //
 
 #Support features of Single SKU. 
 HAS_SINGLE_SKU_SUPPORT=n
 
-#ifdef DOT11_N_SUPPORT
 #Support features of 802.11n
 HAS_DOT11_N_SUPPORT=y
-#endif // DOT11_N_SUPPORT //
 
 
+
+#Support for 2860/2880 co-exist 
+HAS_RT2880_RT2860_COEXIST=n
+
+HAS_KTHREAD_SUPPORT=n
+
+
+#Support for Auto channel select enhance
+HAS_AUTO_CH_SELECT_ENHANCE=n
+
+#Support bypass bridge
+HAS_BG_FT_SUPPORT=n
+
+#Support Antenna Diversity
+HAS_ANTENNA_DIVERSITY_SUPPORT=y
 #################################################
 
 CC := $(CROSS_COMPILE)gcc
 LD := $(CROSS_COMPILE)ld
 
+#GCC v4.0 and below
+#WFLAGS := -DAGGREGATION_SUPPORT -DPIGGYBACK_SUPPORT -DWMM_SUPPORT  -DLINUX -Wall -Wstrict-prototypes -Wno-trigraphs
+#GCC v4.1 and above
 WFLAGS := -DAGGREGATION_SUPPORT -DPIGGYBACK_SUPPORT -DWMM_SUPPORT  -DLINUX -Wall -Wstrict-prototypes -Wno-trigraphs 
 
-ifeq ($(RT28xx_MODE),STA)
-WFLAGS += -DCONFIG_STA_SUPPORT 
+ifeq ($(HAS_KTHREAD_SUPPORT),y)
+WFLAGS += -DKTHREAD_SUPPORT
+endif
 
-#ifdef WPA_SUPPLICANT_SUPPORT
+
+#################################################
+
+# config for STA mode
+
+ifeq ($(RT28xx_MODE),STA)
+WFLAGS += -DCONFIG_STA_SUPPORT -DDBG
+
 ifeq ($(HAS_WPA_SUPPLICANT),y)
 WFLAGS += -DWPA_SUPPLICANT_SUPPORT
-endif
-#endif // WPA_SUPPLICANT_SUPPORT //
-
-#ifdef NATIVE_WPA_SUPPLICANT_SUPPORT
 ifeq ($(HAS_NATIVE_WPA_SUPPLICANT_SUPPORT),y)
 WFLAGS += -DNATIVE_WPA_SUPPLICANT_SUPPORT
 endif
-#endif // NATIVE_WPA_SUPPLICANT_SUPPORT //
+endif
+
+
+ifeq ($(HAS_ETH_CONVERT_SUPPORT), y)
+WFLAGS += -DETH_CONVERT_SUPPORT  -DMAT_SUPPORT
+endif
 
 ifeq ($(HAS_ATE),y)
 WFLAGS += -DRALINK_ATE
@@ -103,6 +127,7 @@ ifeq ($(HAS_28xx_QA),y)
 WFLAGS += -DRALINK_28xx_QA
 endif
 endif
+
 
 ifeq ($(HAS_SNMP_SUPPORT),y)
 WFLAGS += -DSNMP_SUPPORT
@@ -112,14 +137,16 @@ ifeq ($(HAS_QOS_DLS_SUPPORT),y)
 WFLAGS += -DQOS_DLS_SUPPORT
 endif
 
-#ifdef DOT11_N_SUPPORT
 ifeq ($(HAS_DOT11_N_SUPPORT),y)
 WFLAGS += -DDOT11_N_SUPPORT
 endif
-#endif // DOT11_N_SUPPORT //
 
 ifeq ($(HAS_CS_SUPPORT),y)
 WFLAGS += -DCARRIER_DETECTION_SUPPORT
+endif
+
+ifeq ($(HAS_ANTENNA_DIVERSITY_SUPPORT),y)
+WFLAGS += -DANT_DIVERSITY_SUPPORT
 endif
 
 endif
@@ -127,9 +154,16 @@ endif
 
 #################################################
 
+#################################################
+
 #
 # Common compiler flag
 #
+
+
+ifeq ($(HAS_MESH_SUPPORT),y)
+WFLAGS += -DMESH_SUPPORT -DMLME_EX -DINTEL_CMPC
+endif
 
 
 
@@ -141,9 +175,58 @@ ifeq ($(HAS_IDS_SUPPORT),y)
 WFLAGS += -DIDS_SUPPORT
 endif
 
-ifeq ($(CHIPSET),3070)
-WFLAGS +=-DRT2870 -DRT30xx -DRT3070
+
+#################################################
+# ChipSet specific definitions.
+#
+ifeq ($(CHIPSET),2860)
+WFLAGS +=-DRTMP_MAC_PCI -DRTMP_PCI_SUPPORT -DRT2860
 endif
+
+ifeq ($(CHIPSET),3090)
+WFLAGS +=-DRTMP_MAC_PCI -DRT30xx -DRT3090  -DRTMP_PCI_SUPPORT -DRTMP_RF_RW_SUPPORT -DRTMP_EFUSE_SUPPORT
+endif
+
+ifeq ($(CHIPSET),2870)
+WFLAGS +=-DRTMP_MAC_USB -DRTMP_USB_SUPPORT -DRT2870 -DRTMP_TIMER_TASK_SUPPORT
+endif
+
+ifeq ($(CHIPSET),2070)
+WFLAGS +=-DRTMP_MAC_USB -DRT30xx -DRT3070 -DRT2070 -DRTMP_USB_SUPPORT -DRTMP_TIMER_TASK_SUPPORT -DRTMP_RF_RW_SUPPORT -DRTMP_EFUSE_SUPPORT
+endif
+
+ifeq ($(CHIPSET),3070)
+WFLAGS +=-DRTMP_MAC_USB -DRT30xx -DRT3070 -DRTMP_USB_SUPPORT -DRTMP_TIMER_TASK_SUPPORT -DRTMP_RF_RW_SUPPORT -DRTMP_EFUSE_SUPPORT
+endif
+
+ifeq ($(CHIPSET),2880)
+WFLAGS += -DRT2880 -DRTMP_MAC_PCI -DCONFIG_RALINK_RT2880_MP -DRTMP_RBUS_SUPPORT -DMERGE_ARCH_TEAM
+ifeq ($(HAS_DFS_SUPPORT),y)
+WFLAGS += -DNEW_DFS -DDFS_FCC_BW40_FIX -DDFS_DEBUG
+endif
+endif
+
+ifeq ($(CHIPSET),3572)
+WFLAGS +=-DRTMP_MAC_USB -DRTMP_USB_SUPPORT -DRT2870 -DRT30xx -DRT35xx -DRTMP_TIMER_TASK_SUPPORT -DRTMP_RF_RW_SUPPORT -DRTMP_EFUSE_SUPPORT
+endif
+
+ifeq ($(CHIPSET),3062)
+WFLAGS +=-DRTMP_MAC_PCI -DRT2860 -DRT30xx -DRT35xx -DRTMP_PCI_SUPPORT -DRTMP_RF_RW_SUPPORT -DRTMP_EFUSE_SUPPORT
+endif
+
+ifeq ($(CHIPSET),3562)
+WFLAGS +=-DRTMP_MAC_PCI -DRT2860 -DRT30xx -DRT35xx -DRTMP_PCI_SUPPORT -DRTMP_RF_RW_SUPPORT -DRTMP_EFUSE_SUPPORT
+endif
+
+ifeq ($(CHIPSET),3390)
+WFLAGS +=-DRTMP_MAC_PCI -DRT30xx -DRT33xx  -DRTMP_PCI_SUPPORT -DRTMP_RF_RW_SUPPORT -DRTMP_EFUSE_SUPPORT -DRT3390
+endif
+
+ifeq ($(CHIPSET),3370)
+WFLAGS +=-DRTMP_MAC_PCI -DRT30xx -DRT33xx  -DRTMP_PCI_SUPPORT -DRTMP_RF_RW_SUPPORT -DRTMP_EFUSE_SUPPORT -DRT3370
+endif
+#################################################
+
 
 ifeq ($(PLATFORM),5VT)
 #WFLAGS += -DCONFIG_5VT_ENHANCE
@@ -157,11 +240,9 @@ ifeq ($(HAS_DFS_SUPPORT),y)
 WFLAGS += -DDFS_SUPPORT
 endif
 
-#ifdef MULTI_CARD
 ifeq ($(HAS_MC_SUPPORT),y)
 WFLAGS += -DMULTIPLE_CARD_SUPPORT
 endif
-#endif // MULTI_CARD //
 
 ifeq ($(HAS_LLTD),y)
 WFLAGS += -DLLTD_SUPPORT
@@ -196,12 +277,21 @@ WFLAGS += -DRT_BIG_ENDIAN
 endif
 
 ifeq ($(PLATFORM),INF_AMAZON_SE)
-#WFLAGS += -DRT_BIG_ENDIAN -DINF_AMAZON_SE -DBG_FT_SUPPORT
 WFLAGS += -DRT_BIG_ENDIAN -DINF_AMAZON_SE
+endif
+
+ifeq ($(PLATFORM),ST)
+#WFLAGS += -DST
+WFLAGS += -DST
 endif
 
 #kernel build options for 2.4
 # move to Makefile outside LINUX_SRC := /opt/star/kernel/linux-2.4.27-star
+
+ifeq ($(PLATFORM), RALINK_2880)
+CFLAGS := -D__KERNEL__ -I$(LINUX_SRC)/include -I$(RT28xx_DIR)/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common -fomit-frame-pointer -G 0 -mno-abicalls -fno-pic -pipe  -finline-limit=100000 -march=mips2 -mabi=32 -Wa,--trap -DLINUX -nostdinc -iwithprefix include $(WFLAGS)
+export CFLAGS
+endif
 
 ifeq ($(PLATFORM),STAR)
 CFLAGS := -D__KERNEL__ -I$(LINUX_SRC)/include -I$(RT28xx_DIR)/include -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common -Uarm -fno-common -pipe -mapcs-32 -D__LINUX_ARM_ARCH__=4 -march=armv4  -mshort-load-bytes -msoft-float -Uarm -DMODULE -DMODVERSIONS -include $(LINUX_SRC)/include/linux/modversions.h $(WFLAGS)
@@ -210,7 +300,7 @@ export CFLAGS
 endif
 
 ifeq ($(PLATFORM),SIGMA)
-CFLAGS := -D__KERNEL__ -I$(RT28xx_DIR)/include -I$(LINUX_SRC)/include -I$(LINUX_SRC)/include/asm/gcc -I$(LINUX_SRC)/include/asm-mips/mach-tango2 -I$(LINUX_SRC)/include/asm-mips/mach-tango2 -DEM86XX_CHIP=EM86XX_CHIPID_TANGO2 -DEM86XX_REVISION=6 -I$(LINUX_SRC)/include/asm-mips/mach-generic -I$(RT2860_DIR)/include -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -ffreestanding -O2     -fomit-frame-pointer -G 0 -mno-abicalls -fno-pic -pipe  -mabi=32 -march=mips32r2 -Wa,-32 -Wa,-march=mips32r2 -Wa,-mips32r2 -Wa,--trap -DMODULE $(WFLAGS) 
+CFLAGS := -D__KERNEL__ -I$(RT28xx_DIR)/include -I$(LINUX_SRC)/include -I$(LINUX_SRC)/include/asm/gcc -I$(LINUX_SRC)/include/asm-mips/mach-tango2 -I$(LINUX_SRC)/include/asm-mips/mach-tango2 -DEM86XX_CHIP=EM86XX_CHIPID_TANGO2 -DEM86XX_REVISION=6 -I$(LINUX_SRC)/include/asm-mips/mach-generic -I$(RT2860_DIR)/include -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -ffreestanding -O2     -fomit-frame-pointer -G 0 -mno-abicalls -fno-pic -pipe  -mabi=32 -march=mips32r2 -Wa,-32 -Wa,-march=mips32r2 -Wa,-mips32r2 -Wa,--trap -DMODULE $(WFLAGS) -DSIGMA863X_PLATFORM
 
 export CFLAGS
 endif
@@ -256,6 +346,11 @@ CFLAGS := -D__KERNEL__ -DMODULE=1 -I$(LINUX_SRC)/include -I$(RT28xx_DIR)/include
 export CFLAGS
 endif
 
+ifeq ($(PLATFORM),ST)
+CFLAGS := -D__KERNEL__ -I$(LINUX_SRC)/include -I$(RT28xx_DIR)/include -Wall -O2 -Wundef -Wstrict-prototypes -Wno-trigraphs -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-aliasing -fno-common -fomit-frame-pointer -ffreestanding -o $(WFLAGS) 
+export CFLAGS
+endif
+
 ifeq ($(PLATFORM),PC)
     ifneq (,$(findstring 2.4,$(LINUX_SRC)))
 	# Linux 2.4
@@ -276,4 +371,6 @@ ifeq ($(PLATFORM),CAVM_OCTEON)
 				    -mabi=64 $(WFLAGS)
 export CFLAGS
 endif
+
+
 

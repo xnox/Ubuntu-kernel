@@ -1,41 +1,8 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
+/* Plz read readme file for Software License information */
 
-	Module Name:
-	rtusb_data.c
+#ifdef RTMP_MAC_USB
 
-	Abstract:
-	Ralink USB driver Tx/Rx functions.
 
-	Revision History:
-	Who         When          What
-	--------    ----------    ----------------------------------------------
-	Jan            03-25-2006    created
-
-*/
 #include	"rt_config.h"
 
 extern  UCHAR Phy11BGNextRateUpward[]; // defined in mlme.c
@@ -69,6 +36,26 @@ VOID REPORT_AMSDU_FRAMES_TO_LLC(
 	}
 }
 
+
+/*
+	========================================================================
+
+	Routine	Description:
+		This subroutine will scan through releative ring descriptor to find
+		out avaliable free ring descriptor and compare with request size.
+		
+	Arguments:
+		pAd	Pointer	to our adapter
+		RingType	Selected Ring
+		
+	Return Value:
+		NDIS_STATUS_FAILURE		Not enough free descriptor
+		NDIS_STATUS_SUCCESS		Enough free descriptor
+
+	Note:
+	
+	========================================================================
+*/
 NDIS_STATUS	RTUSBFreeDescriptorRequest(
 	IN	PRTMP_ADAPTER	pAd,
 	IN	UCHAR			BulkOutPipeId,
@@ -192,8 +179,38 @@ VOID	RTUSBRejectPendingPackets(
 		NdisReleaseSpinLock(&pAd->TxSwQueueLock[Index]);
 
 	}
-	
+
 }
+
+
+/*
+	========================================================================
+	
+	Routine	Description:
+		Calculates the duration which is required to transmit out frames 
+	with given size and specified rate.
+		
+	Arguments:
+		pTxD		Pointer to transmit descriptor
+		Ack			Setting for Ack requirement bit
+		Fragment	Setting for Fragment bit
+		RetryMode	Setting for retry mode
+		Ifs			Setting for IFS gap
+		Rate		Setting for transmit rate
+		Service		Setting for service
+		Length		Frame length
+		TxPreamble  Short or Long preamble when using CCK rates
+		QueIdx - 0-3, according to 802.11e/d4.4 June/2003
+		
+	Return Value:
+		None
+		
+	IRQL = PASSIVE_LEVEL
+	IRQL = DISPATCH_LEVEL
+	
+	========================================================================
+*/
+
 
 VOID RTMPWriteTxInfo(
 	IN	PRTMP_ADAPTER	pAd,
@@ -216,3 +233,4 @@ VOID RTMPWriteTxInfo(
 	pTxInfo->rsv2 = 0;
 }
 
+#endif // RTMP_MAC_USB //

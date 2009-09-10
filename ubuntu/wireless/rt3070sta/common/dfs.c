@@ -1,40 +1,4 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
-
-    Module Name:
-    ap_dfs.c
-
-    Abstract:
-    Support DFS function.
-
-    Revision History:
-    Who       When            What
-    --------  ----------      ----------------------------------------------
-    Fonchi    03-12-2007      created
-*/
+/* Plz read readme file for Software License information */
 
 #include "rt_config.h"
 
@@ -46,15 +10,26 @@ typedef struct _RADAR_DURATION_TABLE
 } RADAR_DURATION_TABLE, *PRADAR_DURATION_TABLE;
 
 
-static UCHAR RdIdleTimeTable[MAX_RD_REGION][4] =
+
+UCHAR RdIdleTimeTable[MAX_RD_REGION][4] =
 {
 	{9, 250, 250, 250},		// CE
+#ifdef DFS_FCC_BW40_FIX
+	{1, 250, 250, 250},		// FCC
+#else
 	{4, 250, 250, 250},		// FCC
+#endif
 	{4, 250, 250, 250},		// JAP
 	{15, 250, 250, 250},	// JAP_W53
 	{4, 250, 250, 250}		// JAP_W56
 };
 
+#ifdef TONE_RADAR_DETECT_SUPPORT
+static void ToneRadarProgram(PRTMP_ADAPTER pAd);
+static void ToneRadarEnable(PRTMP_ADAPTER pAd);
+#endif // TONE_RADAR_DETECT_SUPPORT //
+
+#ifdef DFS_SUPPORT
 /*
 	========================================================================
 
@@ -80,11 +55,35 @@ VOID BbpRadarDetectionStart(
 	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 124, 0x28);
 	RTMP_BBP_IO_WRITE8_BY_REG_ID(pAd, 125, 0xff);
 
+#ifdef MERGE_ARCH_TEAM
+	if ((pAd->CommonCfg.RadarDetect.RDDurRegion == JAP) || (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W53) || (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W56))
+	{
+		pAd->CommonCfg.RadarDetect.RDDurRegion = JAP;
+		pAd->CommonCfg.RadarDetect.RDDurRegion = JapRadarType(pAd);
+		if (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W56)
+		{
+			pAd->CommonCfg.RadarDetect.DfsSessionTime = 13;
+		}
+		else if (pAd->CommonCfg.RadarDetect.RDDurRegion == JAP_W53)
+		{
+			pAd->CommonCfg.RadarDetect.DfsSessionTime = 15;
+		}
+#ifdef CARRIER_DETECTION_SUPPORT
+		pAd->CommonCfg.CarrierDetect.Enable = 1;
+#endif // CARRIER_DETECTION_SUPPORT //
+	}
+#endif // MERGE_ARCH_TEAM //
+
 	RadarPeriod = ((UINT)RdIdleTimeTable[pAd->CommonCfg.RadarDetect.RDDurRegion][0] + (UINT)pAd->CommonCfg.RadarDetect.DfsSessionTime) < 250 ?
 			(RdIdleTimeTable[pAd->CommonCfg.RadarDetect.RDDurRegion][0] + pAd->CommonCfg.RadarDetect.DfsSessionTime) : 250;
 
+#ifdef MERGE_ARCH_TEAM
+
+
+#else // Original RT28xx source code.
 	RTMP_IO_WRITE8(pAd, 0x7020, 0x1d);
 	RTMP_IO_WRITE8(pAd, 0x7021, 0x40);
+#endif // MERGE_ARCH_TEAM //
 
 	RadarDetectionStart(pAd, 0, RadarPeriod);
 	return;
@@ -143,6 +142,17 @@ VOID RadarDetectionStart(
 			CtsProtect = 0x03;
 			break;
 
+		case JAP:
+			{
+				UCHAR RDDurRegion;
+				RDDurRegion = JapRadarType(pAd);
+				if (RDDurRegion == JAP_W56)
+					CtsProtect = 0x03;
+				else
+					CtsProtect = 0x02;
+				break;
+			}
+
 		case CE:
 		case JAP_W53:
 		default:
@@ -190,6 +200,8 @@ VOID RadarDetectionStop(
 
 	return;
 }
+#endif // DFS_SUPPORT //
+
 
 /*
 	========================================================================
@@ -210,7 +222,6 @@ BOOLEAN RadarChannelCheck(
 	IN PRTMP_ADAPTER	pAd,
 	IN UCHAR			Ch)
 {
-#if 1
 	INT		i;
 	BOOLEAN result = FALSE;
 
@@ -224,24 +235,9 @@ BOOLEAN RadarChannelCheck(
 	}
 
 	return result;
-#else
-	INT		i;
-	UCHAR	Channel[15]={52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
-
-	for (i=0; i<15; i++)
-	{
-		if (Ch == Channel[i])
-		{
-			break;
-		}
-	}
-
-	if (i != 15)
-		return TRUE;
-	else
-		return FALSE;
-#endif
 }
+
+#ifdef DFS_SUPPORT
 
 ULONG JapRadarType(
 	IN PRTMP_ADAPTER pAd)
@@ -305,6 +301,7 @@ ULONG RTMPReadRadarDuration(
 #ifdef DFS_SUPPORT
 	UINT8 duration1 = 0, duration2 = 0, duration3 = 0;
 
+
 	BBP_IO_READ8_BY_REG_ID(pAd, BBP_R116, &duration1);
 	BBP_IO_READ8_BY_REG_ID(pAd, BBP_R117, &duration2);
 	BBP_IO_READ8_BY_REG_ID(pAd, BBP_R118, &duration3);
@@ -343,6 +340,7 @@ VOID ApRadarDetectPeriodic(
 
 	for (i=0; i<pAd->ChannelListNum; i++)
 	{
+
 		if (pAd->ChannelList[i].RemainingTimeForUse > 0)
 		{
 			pAd->ChannelList[i].RemainingTimeForUse --;
@@ -369,17 +367,23 @@ VOID ApRadarDetectPeriodic(
 VOID RadarDetectPeriodic(
 	IN PRTMP_ADAPTER	pAd)
 {
+
 	// need to check channel availability, after switch channel
 	if (pAd->CommonCfg.RadarDetect.RDMode != RD_SILENCE_MODE)
 			return;
+
+
 
 	// channel availability check time is 60sec, use 65 for assurance
 	if (pAd->CommonCfg.RadarDetect.RDCount++ > pAd->CommonCfg.RadarDetect.ChMovingTime)
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("Not found radar signal, start send beacon and radar detection in service monitor\n\n"));
-			BbpRadarDetectionStop(pAd);
+		BbpRadarDetectionStop(pAd);
+
+
 		AsicEnableBssSync(pAd);
 		pAd->CommonCfg.RadarDetect.RDMode = RD_NORMAL_MODE;
+
 
 
 		return;
@@ -387,8 +391,9 @@ VOID RadarDetectPeriodic(
 
 	return;
 }
+#endif // DFS_SUPPORT //
 
-
+#ifdef DFS_SUPPORT
 /* 
     ==========================================================================
     Description:
@@ -408,11 +413,11 @@ VOID RadarDetectPeriodic(
 */
 INT Set_ChMovingTime_Proc(
 	IN PRTMP_ADAPTER pAd, 
-	IN PUCHAR arg)
+	IN PSTRING arg)
 {
 	UINT8 Value;
 
-	Value = simple_strtol(arg, 0, 10);
+	Value = (UINT8) simple_strtol(arg, 0, 10);
 
 	pAd->CommonCfg.RadarDetect.ChMovingTime = Value;
 
@@ -424,11 +429,11 @@ INT Set_ChMovingTime_Proc(
 
 INT Set_LongPulseRadarTh_Proc(
 	IN PRTMP_ADAPTER pAd, 
-	IN PUCHAR arg)
+	IN PSTRING arg)
 {
 	UINT8 Value;
 
-	Value = simple_strtol(arg, 0, 10) > 10 ? 10 : simple_strtol(arg, 0, 10);
+	Value = (UINT8) simple_strtol(arg, 0, 10) > 10 ? 10 : simple_strtol(arg, 0, 10);
 	
 	pAd->CommonCfg.RadarDetect.LongPulseRadarTh = Value;
 
@@ -437,5 +442,7 @@ INT Set_LongPulseRadarTh_Proc(
 
 	return TRUE;
 }
+#endif // DFS_SUPPORT //
+
 
 

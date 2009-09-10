@@ -1,41 +1,7 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
+/* Plz read readme file for Software License information */
 
-	Module Name:
-	rtusb_bulk.c
+#ifdef RTMP_MAC_USB
 
-	Abstract:
-
-	Revision History:
-	Who			When		What
-	--------	----------	----------------------------------------------
-	Name		Date		Modification logs
-	Paul Lin	06-25-2004	created
-	
-*/
 
 #include	"rt_config.h"
 // Match total 6 bulkout endpoint to corresponding queue.
@@ -216,6 +182,7 @@ VOID	RTUSBBulkOutDataPacket(
 	BOOLEAN			bTxQLastRound = FALSE;
 	UCHAR			allzero[4]= {0x0,0x0,0x0,0x0};
 
+
 	BULK_OUT_LOCK(&pAd->BulkOutLock[BulkOutPipeId], IrqFlags);
 	if ((pAd->BulkOutPending[BulkOutPipeId] == TRUE) || RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_NEED_STOP_TX))
 	{
@@ -225,6 +192,9 @@ VOID	RTUSBBulkOutDataPacket(
 	pAd->BulkOutPending[BulkOutPipeId] = TRUE;
 	
 	if (!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED)
+#ifdef MESH_SUPPORT
+			&& !MESH_ON(pAd)
+#endif // MESH_SUPPORT //
 		)
 	{
 		pAd->BulkOutPending[BulkOutPipeId] = FALSE;
@@ -256,6 +226,7 @@ VOID	RTUSBBulkOutDataPacket(
 	// Clear Data flag
 	RTUSB_CLEAR_BULK_FLAG(pAd, (fRTUSB_BULK_OUT_DATA_FRAG << BulkOutPipeId));
 	RTUSB_CLEAR_BULK_FLAG(pAd, (fRTUSB_BULK_OUT_DATA_NORMAL << BulkOutPipeId));
+
 
 	//DBGPRINT(RT_DEBUG_TRACE,("BulkOut-B:I=0x%lx, CWPos=%ld, CWRPos=%ld, NBPos=%ld, ENBPos=%ld, bCopy=%d!\n", in_interrupt(), 
 	//							pHTTXContext->CurWritePosition, pHTTXContext->CurWriteRealPos, pHTTXContext->NextBulkOutPosition, 
@@ -297,34 +268,18 @@ VOID	RTUSBBulkOutDataPacket(
 			{
 				/*Iverson patch for WMM A5-T07 ,WirelessStaToWirelessSta do not bulk out aggregate*/
 				if(pTxWI->PacketId == 6)
-                {            
-                	pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-                	break;
-                }    
-				else if (BulkOutPipeId == 1)
-				{
-					/*BK  No Limit BulkOut size .*/
+                		{            
+                			pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
+                			break;
+                		}    
+				else if (((ThisBulkSize&0xffff8000) != 0) || ((ThisBulkSize&pAd->BulkOutDataSizeLimit[BulkOutPipeId]) == pAd->BulkOutDataSizeLimit[BulkOutPipeId]))
+				{	
+			//printk("===Bulkout size limit :%d ===\n",MaxBulkOutSize);
+			//DBGPRINT(RT_DEBUG_TRACE,("b mode BulkOutPipeId %d  pAd->BulkOutDataSizeLimit[BulkOutPipeId] %d  \n",BulkOutPipeId,pAd->BulkOutDataSizeLimit[BulkOutPipeId]));
 					pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
 					break;
 				}
-				else if (((ThisBulkSize&0xffff8000) != 0) || (((ThisBulkSize&0x1000) == 0x1000) &&  (BulkOutPipeId == 0)  ))
-				{
-					/*BE  Limit BulkOut size to about 4k bytes.*/
-					pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-					break;
-				}
-				else if (((ThisBulkSize&0xffff8000) != 0) || (((ThisBulkSize&0x1c00) == 0x1c00) &&  (BulkOutPipeId == 2)  ))
-				{
-					/*VI Limit BulkOut size to about 7k bytes.*/
-					pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-					break;
-				}
-				else if (((ThisBulkSize&0xffff8000) != 0) || (((ThisBulkSize&0x2500) == 0x2500) &&  (BulkOutPipeId == 3)  ))
-				{
-					/*VO Limit BulkOut size to about 9k bytes.*/
-					pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-					break;
-				}
+				
 			}
 			else if (((ThisBulkSize&0xffff8000) != 0) || ((ThisBulkSize&0x1000) == 0x1000))
 			{
@@ -332,7 +287,8 @@ VOID	RTUSBBulkOutDataPacket(
 				pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
 				break;
 			}
-#else		
+#endif // INF_AMAZON_SE //
+#ifndef INF_AMAZON_SE
 			if (((ThisBulkSize&0xffff8000) != 0) || ((ThisBulkSize&0x1000) == 0x1000))
 			{
 				// Limit BulkOut size to about 4k bytes.
@@ -352,50 +308,26 @@ VOID	RTUSBBulkOutDataPacket(
 		// end Iverson
 		else
 		{
+
+		if (((ThisBulkSize&0xffff8000) != 0) || ((ThisBulkSize&0x6000) == 0x6000))
+		{	// Limit BulkOut size to about 24k bytes.
+			pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
+			break;
+		}
 #ifdef INF_AMAZON_SE
-//#ifdef DOT11_N_SUPPORT
-//			if(((ThisBulkSize&0xffff8000) != 0) || ((ThisBulkSize&0x6000) == 0x6000) || ( (ThisBulkSize != 0)  && (pTxWI->AMPDU == 0))) 
-//			{
-//				/* AMAZON_SE: BG mode Disable BulkOut Aggregate, N mode BulkOut Aggregaet size 24K */
-//				pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-//               break;
-//			}
-//			else			
-//#endif // DOT11_N_SUPPORT // 
-//			{
-				if(OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) && (pTxWI->AMPDU == 0))
-				{
-					if (((pAd->BulkOutMaxPacketSize < 512) && ((ThisBulkSize&0xfffff800) != 0)) ||
-						(ThisBulkSize != 0))
-					{
-						/* AMAZON_SE: RT2070  Disable BulkOut Aggregate when WMM for USB issue */
-						pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-						break;
-					}
-				}
-/*
-				else if (((ThisBulkSize&0xffff8000) != 0) || ((ThisBulkSize&0x6000) == 0x6000))
-				{					
-					// Limit BulkOut size to about 24k bytes.
-					pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-					break;								
-				}
-			}
-*/
-#endif // INF_AMAZON_SE //
-
-			if (((ThisBulkSize&0xffff8000) != 0) || ((ThisBulkSize&0x6000) == 0x6000))
-			{	// Limit BulkOut size to about 24k bytes.
-				pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-				break;
-			}
-
-			else if (((pAd->BulkOutMaxPacketSize < 512) && ((ThisBulkSize&0xfffff800) != 0) ) /*|| ( (ThisBulkSize != 0)  && (pTxWI->AMPDU == 0))*/)
-			{	// For USB 1.1 or peer which didn't support AMPDU, limit the BulkOut size. 
-				// For performence in b/g mode, now just check for USB 1.1 and didn't care about the APMDU or not! 2008/06/04.
-				pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
-				break;
-			}			
+		else if (((ThisBulkSize&0xffff8000) != 0) || ((ThisBulkSize&pAd->BulkOutDataSizeLimit[BulkOutPipeId]) == pAd->BulkOutDataSizeLimit[BulkOutPipeId]))
+		{	
+			//printk("===Bulkout size limit :%d ===\n",MaxBulkOutSize);
+			pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
+			break;
+		}
+#endif // INF_AMAZON_SE //		
+		else if (((pAd->BulkOutMaxPacketSize < 512) && ((ThisBulkSize&0xfffff800) != 0) ) /*|| ( (ThisBulkSize != 0)  && (pTxWI->AMPDU == 0))*/)
+		{	// For USB 1.1 or peer which didn't support AMPDU, limit the BulkOut size. 
+			// For performence in b/g mode, now just check for USB 1.1 and didn't care about the APMDU or not! 2008/06/04.
+			pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
+			break;
+		}
 		}
 		
 		if (TmpBulkEndPos == pHTTXContext->CurWritePosition)
@@ -403,18 +335,16 @@ VOID	RTUSBBulkOutDataPacket(
 			pHTTXContext->ENextBulkOutPosition = TmpBulkEndPos;
 			break;
 		}
-		//PS packets use HCCA queue when dequeue from PS unicast queue (WiFi WPA2 MA9_DT1 for Marvell B STA)
-#ifdef CONFIG_STA_SUPPORT
-		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
-		{
+		
 		if (pTxInfo->QSEL != FIFO_EDCA)
 		{
-			printk("%s(): ====> pTxInfo->QueueSel(%d)!= FIFO_EDCA!!!!\n", __FUNCTION__, pTxInfo->QSEL);
-			printk("\tCWPos=%ld, NBPos=%ld, ENBPos=%ld, bCopy=%d!\n", pHTTXContext->CurWritePosition, pHTTXContext->NextBulkOutPosition, pHTTXContext->ENextBulkOutPosition, pHTTXContext->bCopySavePad);
+			DBGPRINT(RT_DEBUG_ERROR, ("%s(): ====> pTxInfo->QueueSel(%d)!= FIFO_EDCA!!!!\n", 
+										__FUNCTION__, pTxInfo->QSEL));
+			DBGPRINT(RT_DEBUG_ERROR, ("\tCWPos=%ld, NBPos=%ld, ENBPos=%ld, bCopy=%d!\n", 
+										pHTTXContext->CurWritePosition, pHTTXContext->NextBulkOutPosition, 
+										pHTTXContext->ENextBulkOutPosition, pHTTXContext->bCopySavePad));
 			hex_dump("Wrong QSel Pkt:", (PUCHAR)&pWirelessPkt[TmpBulkEndPos], (pHTTXContext->CurWritePosition - pHTTXContext->NextBulkOutPosition));
 		}
-		}
-#endif // CONFIG_STA_SUPPORT //
 		
 		if (pTxInfo->USBDMATxPktLen <= 8)
 		{
@@ -441,10 +371,7 @@ VOID	RTUSBBulkOutDataPacket(
 		pLastTxInfo = pTxInfo;
 		
 		// Make sure we use EDCA QUEUE.  
-#ifdef CONFIG_STA_SUPPORT
-		IF_DEV_CONFIG_OPMODE_ON_STA(pAd)
-		pTxInfo->QSEL = FIFO_EDCA; //PS packets use HCCA queue when dequeue from PS unicast queue (WiFi WPA2 MA9_DT1 for Marvell B STA)
-#endif // CONFIG_STA_SUPPORT //
+		pTxInfo->QSEL = FIFO_EDCA;
 		ThisBulkSize += (pTxInfo->USBDMATxPktLen+4);
 		TmpBulkEndPos += (pTxInfo->USBDMATxPktLen+4);
 		
@@ -592,11 +519,15 @@ VOID RTUSBBulkOutDataPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 				pObj->ac3_dma_done_task.data = (unsigned long)pUrb;
 				tasklet_hi_schedule(&pObj->ac3_dma_done_task);
 				break;
+		/*
 		case 4:
 				pObj->hcca_dma_done_task.data = (unsigned long)pUrb;
 				tasklet_hi_schedule(&pObj->hcca_dma_done_task);
 				break;
+		*/
 	}
+
+	
 }
 
 
@@ -672,13 +603,14 @@ VOID RTUSBBulkOutNullFrameComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 	
 	pNullContext	= (PTX_CONTEXT)pUrb->context;
 	pAd 			= pNullContext->pAd;
-	Status 			= pUrb->status;
-	
+	Status 		= pUrb->status;
+
 	pObj = (POS_COOKIE) pAd->OS_Cookie;
 	pObj->null_frame_complete_task.data = (unsigned long)pUrb;
 	tasklet_hi_schedule(&pObj->null_frame_complete_task);
 
 }
+
 
 /*
 	========================================================================
@@ -715,7 +647,7 @@ VOID	RTUSBBulkOutMLMEPacket(
 		RTUSB_CLEAR_BULK_FLAG(pAd, fRTUSB_BULK_OUT_MLME);
 		
 		return;
-	} 
+	}
 
 
 	RTMP_IRQ_LOCK(&pAd->BulkOutLock[MGMTPIPEIDX], IrqFlags);
@@ -776,7 +708,7 @@ VOID RTUSBBulkOutMLMEPacketComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 	NTSTATUS			Status;
 	POS_COOKIE 			pObj;
 	int					index;
-
+	
 	//DBGPRINT_RAW(RT_DEBUG_INFO, ("--->RTUSBBulkOutMLMEPacketComplete\n"));
 	pMLMEContext	= (PTX_CONTEXT)pUrb->context;
 	pAd 			= pMLMEContext->pAd;
@@ -859,11 +791,13 @@ VOID RTUSBBulkOutPsPollComplete(purbb_t pUrb,struct pt_regs *pt_regs)
 	pPsPollContext= (PTX_CONTEXT)pUrb->context;
 	pAd = pPsPollContext->pAd;
 	Status = pUrb->status;
+
 	pObj = (POS_COOKIE) pAd->OS_Cookie;
 	pObj->pspoll_frame_complete_task.data = (unsigned long)pUrb;
 	tasklet_hi_schedule(&pObj->pspoll_frame_complete_task);
 
 }
+
 
 VOID DoBulkIn(IN RTMP_ADAPTER *pAd)
 {	
@@ -1033,6 +967,9 @@ VOID RTUSBBulkRxComplete(purbb_t pUrb, struct pt_regs *pt_regs)
 	
 }
 
+
+
+
 /*
 	========================================================================
 	
@@ -1056,6 +993,7 @@ VOID	RTUSBKickBulkOut(
 #endif // RALINK_ATE //
 		)
 	{
+
 		// 2. PS-Poll frame is next
 		if (RTUSB_TEST_BULK_FLAG(pAd, fRTUSB_BULK_OUT_PSPOLL))
 		{
@@ -1063,7 +1001,7 @@ VOID	RTUSBKickBulkOut(
 		}
 
 		// 5. Mlme frame is next
-		else if ((RTUSB_TEST_BULK_FLAG(pAd, fRTUSB_BULK_OUT_MLME)) &&
+		else if ((RTUSB_TEST_BULK_FLAG(pAd, fRTUSB_BULK_OUT_MLME)) ||
 				 (pAd->MgmtRing.TxSwFreeIdx < MGMT_RING_SIZE))
 		{
 			RTUSBBulkOutMLMEPacket(pAd, pAd->MgmtRing.TxDmaIdx);
@@ -1074,6 +1012,9 @@ VOID	RTUSBKickBulkOut(
 		{
 			if (((!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)) || 
 				(!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED))
+#ifdef MESH_SUPPORT
+				|| MESH_ON(pAd)
+#endif // MESH_SUPPORT //
 				))
 			{
 				RTUSBBulkOutDataPacket(pAd, 0, pAd->NextBulkOutIndex[0]);
@@ -1083,6 +1024,9 @@ VOID	RTUSBKickBulkOut(
 		{		
 			if (((!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)) || 
 				(!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED))
+#ifdef MESH_SUPPORT
+				|| MESH_ON(pAd)
+#endif // MESH_SUPPORT //
 				))
 			{
 				RTUSBBulkOutDataPacket(pAd, 1, pAd->NextBulkOutIndex[1]);
@@ -1092,6 +1036,9 @@ VOID	RTUSBKickBulkOut(
 		{
 			if (((!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)) || 
 				(!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED))
+#ifdef MESH_SUPPORT
+				|| MESH_ON(pAd)
+#endif // MESH_SUPPORT //
 				))
 			{
 				RTUSBBulkOutDataPacket(pAd, 2, pAd->NextBulkOutIndex[2]);
@@ -1101,18 +1048,12 @@ VOID	RTUSBKickBulkOut(
 		{
 			if (((!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)) || 
 				(!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED))
+#ifdef MESH_SUPPORT
+				|| MESH_ON(pAd)
+#endif // MESH_SUPPORT //
 				))
 			{
 				RTUSBBulkOutDataPacket(pAd, 3, pAd->NextBulkOutIndex[3]);
-			}
-		}
-		//PS packets use HCCA queue when dequeue from PS unicast queue (WiFi WPA2 MA9_DT1 for Marvell B STA)
-		if (RTUSB_TEST_BULK_FLAG(pAd, fRTUSB_BULK_OUT_DATA_NORMAL_5))
-		{
-			if (((!RTMP_TEST_FLAG(pAd, fRTMP_ADAPTER_BSS_SCAN_IN_PROGRESS)) || 
-				(!OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_MEDIA_STATE_CONNECTED))
-				))
-			{
 			}
 		}
 
@@ -1132,9 +1073,8 @@ VOID	RTUSBKickBulkOut(
 		}
 	}
 #ifdef RALINK_ATE			
-	/* If the mode is in ATE mode. */
 	else if((ATE_ON(pAd)) &&
-		!RTMP_TEST_FLAG(pAd ,fRTMP_ADAPTER_NEED_STOP_TX))// PETER : watch out !
+			!RTMP_TEST_FLAG(pAd , fRTMP_ADAPTER_NEED_STOP_TX))
 	{
 		if (RTUSB_TEST_BULK_FLAG(pAd, fRTUSB_BULK_OUT_DATA_ATE))
 		{
@@ -1197,6 +1137,8 @@ VOID	RTUSBCleanUpMLMEBulkOutQueue(
 	IN	PRTMP_ADAPTER	pAd)
 {
 	DBGPRINT(RT_DEBUG_TRACE, ("--->CleanUpMLMEBulkOutQueue\n"));
+
+
 	DBGPRINT(RT_DEBUG_TRACE, ("<---CleanUpMLMEBulkOutQueue\n"));
 }
 
@@ -1380,3 +1322,4 @@ VOID	RTUSBCancelPendingBulkOutIRP(
 	}
 }
 
+#endif // RTMP_MAC_USB //

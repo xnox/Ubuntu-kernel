@@ -1,43 +1,250 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
-
-    Module Name:
-	action.c
- 
-    Abstract:
-    Handle association related requests either from WSTA or from local MLME
- 
-    Revision History:
-    Who          When          What
-    ---------    ----------    ----------------------------------------------
-	Fonchi Wu    2008	  	   created for 802.11h
- */
+/* Plz read readme file for Software License information */
 
 #include "rt_config.h"
 #include "action.h"
+
+
+/* The regulatory information in the USA (US) */
+DOT11_REGULATORY_INFORMATION USARegulatoryInfo[] = 
+{
+/*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
+    {0,	                {0,                   0,           {0}}}, // Invlid entry
+    {1,                 {4,                   16,           {36, 40, 44, 48}}}, 
+    {2,                 {4,                   23,           {52, 56, 60, 64}}}, 
+    {3,                 {4,                   29,           {149, 153, 157, 161}}}, 
+    {4,                 {11,                  23,           {100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140}}}, 
+    {5,                 {5,                   30,           {149, 153, 157, 161, 165}}}, 
+    {6,                 {10,                  14,           {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}}}, 
+    {7,                 {10,                  27,           {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}}}, 
+    {8,                 {5,                   17,           {11, 13, 15, 17, 19}}}, 
+    {9,                 {5,                   30,           {11, 13, 15, 17, 19}}}, 
+    {10,                {2,                   20,           {21, 25}}}, 
+    {11,                {2,                   33,            {21, 25}}}, 
+    {12,                {11,                  30,            {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}}}
+};
+#define USA_REGULATORY_INFO_SIZE (sizeof(USARegulatoryInfo) / sizeof(DOT11_REGULATORY_INFORMATION))
+
+
+/* The regulatory information in Europe */
+DOT11_REGULATORY_INFORMATION EuropeRegulatoryInfo[] = 
+{
+/*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
+    {0,                 {0,                   0,           {0}}}, // Invalid entry
+    {1,                 {4,                   20,           {36, 40, 44, 48}}}, 
+    {2,                 {4,                   20,           {52, 56, 60, 64}}}, 
+    {3,                 {11,                  30,           {100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140}}}, 
+    {4,                 {13,                  20,           {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}}}
+};
+#define EU_REGULATORY_INFO_SIZE (sizeof(EuropeRegulatoryInfo) / sizeof(DOT11_REGULATORY_INFORMATION))
+
+
+/* The regulatory information in Japan */
+DOT11_REGULATORY_INFORMATION JapanRegulatoryInfo[] = 
+{
+/*  "regulatory class"  "number of channels"  "Max Tx Pwr"  "channel list" */
+    {0,                 {0,                   0,           {0}}}, // Invalid entry
+    {1,                 {4,                   22,           {34, 38, 42, 46}}}, 
+    {2,                 {3,                   24,           {8, 12, 16}}}, 
+    {3,                 {3,                   24,           {8, 12, 16}}}, 
+    {4,                 {3,                   24,           {8, 12, 16}}}, 
+    {5,                 {3,                   24,           {8, 12, 16}}}, 
+    {6,                 {3,                   22,           {8, 12, 16}}}, 
+    {7,                 {4,                   24,           {184, 188, 192, 196}}}, 
+    {8,                 {4,                   24,           {184, 188, 192, 196}}}, 
+    {9,                 {4,                   24,           {184, 188, 192, 196}}}, 
+    {10,                {4,                   24,           {184, 188, 192, 196}}}, 
+    {11,                {4,                   22,           {184, 188, 192, 196}}}, 
+    {12,                {4,                   24,           {7, 8, 9, 11}}}, 
+    {13,                {4,                   24,           {7, 8, 9, 11}}}, 
+    {14,                {4,                   24,           {7, 8, 9, 11}}}, 
+    {15,                {4,                   24,           {7, 8, 9, 11}}}, 
+    {16,                {6,                   24,           {183, 184, 185, 187, 188, 189}}}, 
+    {17,                {6,                   24,           {183, 184, 185, 187, 188, 189}}}, 
+    {18,                {6,                   24,           {183, 184, 185, 187, 188, 189}}}, 
+    {19,                {6,                   24,           {183, 184, 185, 187, 188, 189}}}, 
+    {20,                {6,                   17,           {183, 184, 185, 187, 188, 189}}}, 
+    {21,                {6,                   24,           {6, 7, 8, 9, 10, 11}}}, 
+    {22,                {6,                   24,           {6, 7, 8, 9, 10, 11}}}, 
+    {23,                {6,                   24,           {6, 7, 8, 9, 10, 11}}}, 
+    {24,                {6,                   24,           {6, 7, 8, 9, 10, 11}}}, 
+    {25,                {8,                   24,           {182, 183, 184, 185, 186, 187, 188, 189}}}, 
+    {26,                {8,                   24,           {182, 183, 184, 185, 186, 187, 188, 189}}}, 
+    {27,                {8,                   24,           {182, 183, 184, 185, 186, 187, 188, 189}}}, 
+    {28,                {8,                   24,           {182, 183, 184, 185, 186, 187, 188, 189}}}, 
+    {29,                {8,                   17,           {182, 183, 184, 185, 186, 187, 188, 189}}}, 
+    {30,                {13,                  23,           {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13}}}, 
+    {31,                {1,                   23,           {14}}}, 
+    {32,                {4,                   22,           {52, 56, 60, 64}}}
+};
+#define JP_REGULATORY_INFO_SIZE (sizeof(JapanRegulatoryInfo) / sizeof(DOT11_REGULATORY_INFORMATION))
+
+
+CHAR RTMP_GetTxPwr(
+	IN PRTMP_ADAPTER pAd,
+	IN HTTRANSMIT_SETTING HTTxMode)
+{
+typedef struct __TX_PWR_CFG
+{
+	UINT8 Mode;
+	UINT8 MCS;
+	UINT16 req;
+	UINT8 shift;
+	UINT32 BitMask;
+} TX_PWR_CFG;
+
+	UINT32 Value;
+	INT Idx;
+	UINT8 PhyMode;
+	CHAR CurTxPwr;
+	UINT8 TxPwrRef = 0;
+	CHAR DaltaPwr;
+	ULONG TxPwr[5];
+
+
+	TX_PWR_CFG TxPwrCfg[] = {
+		{MODE_CCK, 0, 0, 4, 0x000000f0},
+		{MODE_CCK, 1, 0, 0, 0x0000000f},
+		{MODE_CCK, 2, 0, 12, 0x0000f000},
+		{MODE_CCK, 3, 0, 8, 0x00000f00},
+
+		{MODE_OFDM, 0, 0, 20, 0x00f00000},
+		{MODE_OFDM, 1, 0, 16, 0x000f0000},
+		{MODE_OFDM, 2, 0, 28, 0xf0000000},
+		{MODE_OFDM, 3, 0, 24, 0x0f000000},
+		{MODE_OFDM, 4, 1, 4, 0x000000f0},
+		{MODE_OFDM, 5, 1, 0, 0x0000000f},
+		{MODE_OFDM, 6, 1, 12, 0x0000f000},
+		{MODE_OFDM, 7, 1, 8, 0x00000f00}
+#ifdef DOT11_N_SUPPORT
+		,{MODE_HTMIX, 0, 1, 20, 0x00f00000},
+		{MODE_HTMIX, 1, 1, 16, 0x000f0000},
+		{MODE_HTMIX, 2, 1, 28, 0xf0000000},
+		{MODE_HTMIX, 3, 1, 24, 0x0f000000},
+		{MODE_HTMIX, 4, 2, 4, 0x000000f0},
+		{MODE_HTMIX, 5, 2, 0, 0x0000000f},
+		{MODE_HTMIX, 6, 2, 12, 0x0000f000},
+		{MODE_HTMIX, 7, 2, 8, 0x00000f00},
+		{MODE_HTMIX, 8, 2, 20, 0x00f00000},
+		{MODE_HTMIX, 9, 2, 16, 0x000f0000},
+		{MODE_HTMIX, 10, 2, 28, 0xf0000000},
+		{MODE_HTMIX, 11, 2, 24, 0x0f000000},
+		{MODE_HTMIX, 12, 3, 4, 0x000000f0},
+		{MODE_HTMIX, 13, 3, 0, 0x0000000f},
+		{MODE_HTMIX, 14, 3, 12, 0x0000f000},
+		{MODE_HTMIX, 15, 3, 8, 0x00000f00}
+#endif // DOT11_N_SUPPORT //
+	};
+#define MAX_TXPWR_TAB_SIZE (sizeof(TxPwrCfg) / sizeof(TX_PWR_CFG))
+
+#ifdef SINGLE_SKU
+	CurTxPwr = pAd->CommonCfg.DefineMaxTxPwr;
+#else
+	CurTxPwr = 19;
+#endif
+
+	/* check Tx Power setting from UI. */
+	if (pAd->CommonCfg.TxPowerPercentage > 90)
+		;
+	else if (pAd->CommonCfg.TxPowerPercentage > 60)  /* reduce Pwr for 1 dB. */
+		CurTxPwr -= 1;
+	else if (pAd->CommonCfg.TxPowerPercentage > 30)  /* reduce Pwr for 3 dB. */
+		CurTxPwr -= 3;
+	else if (pAd->CommonCfg.TxPowerPercentage > 15)  /* reduce Pwr for 6 dB. */
+		CurTxPwr -= 6;
+	else if (pAd->CommonCfg.TxPowerPercentage > 9)   /* reduce Pwr for 9 dB. */
+		CurTxPwr -= 9;
+	else                                           /* reduce Pwr for 12 dB. */
+		CurTxPwr -= 12;
+
+	if (pAd->CommonCfg.BBPCurrentBW == BW_40)
+	{
+		if (pAd->CommonCfg.CentralChannel > 14)
+		{
+			TxPwr[0] = pAd->Tx40MPwrCfgABand[0];
+			TxPwr[1] = pAd->Tx40MPwrCfgABand[1];
+			TxPwr[2] = pAd->Tx40MPwrCfgABand[2];
+			TxPwr[3] = pAd->Tx40MPwrCfgABand[3];
+			TxPwr[4] = pAd->Tx40MPwrCfgABand[4];
+		}
+		else
+		{
+			TxPwr[0] = pAd->Tx40MPwrCfgGBand[0];
+			TxPwr[1] = pAd->Tx40MPwrCfgGBand[1];
+			TxPwr[2] = pAd->Tx40MPwrCfgGBand[2];
+			TxPwr[3] = pAd->Tx40MPwrCfgGBand[3];
+			TxPwr[4] = pAd->Tx40MPwrCfgGBand[4];
+		}
+	}
+	else
+	{
+		if (pAd->CommonCfg.Channel > 14)
+		{
+			TxPwr[0] = pAd->Tx20MPwrCfgABand[0];
+			TxPwr[1] = pAd->Tx20MPwrCfgABand[1];
+			TxPwr[2] = pAd->Tx20MPwrCfgABand[2];
+			TxPwr[3] = pAd->Tx20MPwrCfgABand[3];
+			TxPwr[4] = pAd->Tx20MPwrCfgABand[4];
+		}
+		else
+		{
+			TxPwr[0] = pAd->Tx20MPwrCfgGBand[0];
+			TxPwr[1] = pAd->Tx20MPwrCfgGBand[1];
+			TxPwr[2] = pAd->Tx20MPwrCfgGBand[2];
+			TxPwr[3] = pAd->Tx20MPwrCfgGBand[3];
+			TxPwr[4] = pAd->Tx20MPwrCfgGBand[4];
+		}
+	}
+
+
+	switch(HTTxMode.field.MODE)
+	{
+		case MODE_CCK:
+		case MODE_OFDM:
+			Value = TxPwr[1];
+			TxPwrRef = (Value & 0x00000f00) >> 8;
+			
+			break;
+
+#ifdef DOT11_N_SUPPORT
+		case MODE_HTMIX:
+		case MODE_HTGREENFIELD:
+			if (pAd->CommonCfg.TxStream == 1)
+			{
+				Value = TxPwr[2];
+				TxPwrRef = (Value & 0x00000f00) >> 8;
+			}
+			else if (pAd->CommonCfg.TxStream == 2)
+			{
+				Value = TxPwr[3];
+				TxPwrRef = (Value & 0x00000f00) >> 8;
+			}
+			break;
+#endif // DOT11_N_SUPPORT //
+	}
+
+	PhyMode =
+#ifdef DOT11_N_SUPPORT
+				(HTTxMode.field.MODE == MODE_HTGREENFIELD)
+				? MODE_HTMIX :
+#endif // DOT11_N_SUPPORT //
+				HTTxMode.field.MODE;
+
+	for (Idx = 0; Idx < MAX_TXPWR_TAB_SIZE; Idx++)
+	{
+		if ((TxPwrCfg[Idx].Mode == PhyMode)
+			&& (TxPwrCfg[Idx].MCS == HTTxMode.field.MCS))
+		{
+			Value = TxPwr[TxPwrCfg[Idx].req];
+			DaltaPwr = TxPwrRef - (CHAR)((Value & TxPwrCfg[Idx].BitMask)
+											>> TxPwrCfg[Idx].shift);
+			CurTxPwr -= DaltaPwr;
+			break;
+		}
+	}
+
+	return CurTxPwr;
+}
+
 
 VOID MeasureReqTabInit(
 	IN PRTMP_ADAPTER pAd)
@@ -56,7 +263,7 @@ VOID MeasureReqTabInit(
 VOID MeasureReqTabExit(
 	IN PRTMP_ADAPTER pAd)
 {
-	NdisFreeSpinLock(pAd->CommonCfg.MeasureReqTabLock);
+	NdisFreeSpinLock(&pAd->CommonCfg.MeasureReqTabLock);
 
 	if (pAd->CommonCfg.pMeasureReqTab)
 		kfree(pAd->CommonCfg.pMeasureReqTab);
@@ -65,7 +272,7 @@ VOID MeasureReqTabExit(
 	return;
 }
 
-static PMEASURE_REQ_ENTRY MeasureReqLookUp(
+PMEASURE_REQ_ENTRY MeasureReqLookUp(
 	IN PRTMP_ADAPTER	pAd,
 	IN UINT8			DialogToken)
 {
@@ -101,7 +308,7 @@ static PMEASURE_REQ_ENTRY MeasureReqLookUp(
 	return pEntry;
 }
 
-static PMEASURE_REQ_ENTRY MeasureReqInsert(
+PMEASURE_REQ_ENTRY MeasureReqInsert(
 	IN PRTMP_ADAPTER	pAd,
 	IN UINT8			DialogToken)
 {
@@ -200,7 +407,7 @@ static PMEASURE_REQ_ENTRY MeasureReqInsert(
 	return pEntry;
 }
 
-static VOID MeasureReqDelete(
+VOID MeasureReqDelete(
 	IN PRTMP_ADAPTER	pAd,
 	IN UINT8			DialogToken)
 {
@@ -274,7 +481,7 @@ VOID TpcReqTabInit(
 VOID TpcReqTabExit(
 	IN PRTMP_ADAPTER pAd)
 {
-	NdisFreeSpinLock(pAd->CommonCfg.TpcReqTabLock);
+	NdisFreeSpinLock(&pAd->CommonCfg.TpcReqTabLock);
 
 	if (pAd->CommonCfg.pTpcReqTab)
 		kfree(pAd->CommonCfg.pTpcReqTab);
@@ -513,6 +720,72 @@ static UINT8 GetCurTxPwr(
 /*
 	==========================================================================
 	Description:
+		Get Current Transmit Power.
+		
+	Parametrs:
+	
+	Return	: Current Time Stamp.
+	==========================================================================
+ */
+VOID InsertChannelRepIE(
+	IN PRTMP_ADAPTER pAd,
+	OUT PUCHAR pFrameBuf,
+	OUT PULONG pFrameLen,
+	IN PSTRING pCountry,
+	IN UINT8 RegulatoryClass)
+{
+	ULONG TempLen;
+	UINT8 Len;
+	UINT8 IEId = IE_AP_CHANNEL_REPORT;
+	PUCHAR pChListPtr = NULL;
+
+	Len = 1;
+	if (strncmp(pCountry, "US", 2) == 0)
+	{
+		if (RegulatoryClass >= USA_REGULATORY_INFO_SIZE)
+		{
+			DBGPRINT(RT_DEBUG_ERROR, ("%s: USA Unknow Requlatory class (%d)\n",
+						__FUNCTION__, RegulatoryClass));
+			return;
+		}
+
+		Len += USARegulatoryInfo[RegulatoryClass].ChannelSet.NumberOfChannels;
+		pChListPtr = USARegulatoryInfo[RegulatoryClass].ChannelSet.ChannelList;
+	}
+	else if (strncmp(pCountry, "JP", 2) == 0)
+	{
+		if (RegulatoryClass >= JP_REGULATORY_INFO_SIZE)
+		{
+			DBGPRINT(RT_DEBUG_ERROR, ("%s: JP Unknow Requlatory class (%d)\n",
+						__FUNCTION__, RegulatoryClass));
+			return;
+		}
+
+		Len += JapanRegulatoryInfo[RegulatoryClass].ChannelSet.NumberOfChannels;
+		pChListPtr = JapanRegulatoryInfo[RegulatoryClass].ChannelSet.ChannelList;
+	}
+	else
+	{
+		DBGPRINT(RT_DEBUG_ERROR, ("%s: Unknow Country (%s)\n",
+					__FUNCTION__, pCountry));
+		return;
+	}
+
+	MakeOutgoingFrame(pFrameBuf,	&TempLen,
+					1,				&IEId,
+					1,				&Len,
+					1,				&RegulatoryClass,
+					Len -1,			pChListPtr,
+					END_OF_ARGS);
+
+	*pFrameLen = *pFrameLen + TempLen;
+
+	return;
+}
+
+/*
+	==========================================================================
+	Description:
 		Insert Dialog Token into frame.
 		
 	Parametrs:
@@ -523,7 +796,7 @@ static UINT8 GetCurTxPwr(
 	Return	: None.
 	==========================================================================
  */
-static VOID InsertDialogToken(
+VOID InsertDialogToken(
 	IN PRTMP_ADAPTER pAd,
 	OUT PUCHAR pFrameBuf,
 	OUT PULONG pFrameLen,
@@ -584,7 +857,7 @@ static VOID InsertDialogToken(
 	Return	: None.
 	==========================================================================
  */
- static VOID InsertTpcReportIE(
+VOID InsertTpcReportIE(
 	IN PRTMP_ADAPTER pAd,
 	OUT PUCHAR pFrameBuf,
 	OUT PULONG pFrameLen,
@@ -678,16 +951,16 @@ static VOID InsertMeasureReqIE(
 	IN PRTMP_ADAPTER pAd,
 	OUT PUCHAR pFrameBuf,
 	OUT PULONG pFrameLen,
+	IN UINT8 Len,
 	IN PMEASURE_REQ_INFO pMeasureReqIE)
 {
 	ULONG TempLen;
-	UINT8 Len = sizeof(MEASURE_REQ_INFO);
 	UINT8 ElementID = IE_MEASUREMENT_REQUEST;
 
 	MakeOutgoingFrame(pFrameBuf,					&TempLen,
 						1,							&ElementID,
 						1,							&Len,
-						Len,						pMeasureReqIE,
+						sizeof(MEASURE_REQ_INFO),	pMeasureReqIE,
 						END_OF_ARGS);
 
 	*pFrameLen = *pFrameLen + TempLen;
@@ -757,53 +1030,43 @@ static VOID InsertMeasureReportIE(
 	Return	: None.
 	==========================================================================
  */
-VOID EnqueueMeasurementReq(
+VOID MakeMeasurementReqFrame(
 	IN PRTMP_ADAPTER pAd,
-	IN PUCHAR pDA,
+	OUT PUCHAR pOutBuffer,
+	OUT PULONG pFrameLen,
+	IN UINT8 TotalLen,
+	IN UINT8 Category,
+	IN UINT8 Action,
 	IN UINT8 MeasureToken, 
 	IN UINT8 MeasureReqMode,
 	IN UINT8 MeasureReqType,
-	IN UINT8 MeasureCh,
-	IN UINT16 MeasureDuration)
+	IN UINT8 NumOfRepetitions)
 {
-	PUCHAR pOutBuffer = NULL;
-	NDIS_STATUS NStatus;
-	ULONG FrameLen;
-	HEADER_802_11 ActHdr;
+	ULONG TempLen;
 	MEASURE_REQ_INFO MeasureReqIE;
-	UINT8 RmReqDailogToken = RandomByte(pAd);
-	UINT64 MeasureStartTime = GetCurrentTimeStamp(pAd);
 
-	// build action frame header.
-	MgtMacHeaderInit(pAd, &ActHdr, SUBTYPE_ACTION, 0, pDA,
-						pAd->CurrentAddress);
-
-	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  //Get an unused nonpaged memory
-	if(NStatus != NDIS_STATUS_SUCCESS)
-	{
-		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
-		return;
-	}
-	NdisMoveMemory(pOutBuffer, (PCHAR)&ActHdr, sizeof(HEADER_802_11));
-	FrameLen = sizeof(HEADER_802_11);
-
-	InsertActField(pAd, (pOutBuffer + FrameLen), &FrameLen, CATEGORY_SPECTRUM, SPEC_MRQ);
+	InsertActField(pAd, (pOutBuffer + *pFrameLen), pFrameLen, Category, Action);
 
 	// fill Dialog Token
-	InsertDialogToken(pAd, (pOutBuffer + FrameLen), &FrameLen, MeasureToken);
+	InsertDialogToken(pAd, (pOutBuffer + *pFrameLen), pFrameLen, MeasureToken);
+
+	/* fill Number of repetitions. */
+	if (Category == CATEGORY_RM)
+	{
+		MakeOutgoingFrame((pOutBuffer+*pFrameLen),	&TempLen,
+						2,							&NumOfRepetitions,
+						END_OF_ARGS);
+
+		*pFrameLen += TempLen;
+	}
 
 	// prepare Measurement IE.
 	NdisZeroMemory(&MeasureReqIE, sizeof(MEASURE_REQ_INFO));
-	MeasureReqIE.Token = RmReqDailogToken;
+	MeasureReqIE.Token = MeasureToken;
 	MeasureReqIE.ReqMode.word = MeasureReqMode;
 	MeasureReqIE.ReqType = MeasureReqType;
-	MeasureReqIE.MeasureReq.ChNum = MeasureCh;
-	MeasureReqIE.MeasureReq.MeasureStartTime = cpu2le64(MeasureStartTime);
-	MeasureReqIE.MeasureReq.MeasureDuration = cpu2le16(MeasureDuration);
-	InsertMeasureReqIE(pAd, (pOutBuffer + FrameLen), &FrameLen, &MeasureReqIE);
-
-	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, FrameLen);
-	MlmeFreeMemory(pAd, pOutBuffer);
+	InsertMeasureReqIE(pAd, (pOutBuffer+*pFrameLen), pFrameLen,
+		TotalLen, &MeasureReqIE);
 
 	return;
 }
@@ -857,7 +1120,7 @@ VOID EnqueueMeasurementRep(
 	// prepare Measurement IE.
 	NdisZeroMemory(&MeasureRepIE, sizeof(MEASURE_REPORT_INFO));
 	MeasureRepIE.Token = MeasureToken;
-	MeasureRepIE.ReportMode.word = MeasureReqMode;
+	MeasureRepIE.ReportMode = MeasureReqMode;
 	MeasureRepIE.ReportType = MeasureReqType;
 	InsertMeasureReportIE(pAd, (pOutBuffer + FrameLen), &FrameLen, &MeasureRepIE, ReportInfoLen, pReportInfo);
 
@@ -1179,7 +1442,8 @@ static BOOLEAN PeerMeasureReqSanity(
 	IN VOID *pMsg,
 	IN ULONG MsgLen,
 	OUT PUINT8 pDialogToken,
-	OUT PMEASURE_REQ_INFO pMeasureReqInfo)
+	OUT PMEASURE_REQ_INFO pMeasureReqInfo,
+	OUT PMEASURE_REQ pMeasureReq)
 {
 	PFRAME_802_11 Fr = (PFRAME_802_11)pMsg;
 	PUCHAR pFramePtr = Fr->Octet;
@@ -1212,12 +1476,12 @@ static BOOLEAN PeerMeasureReqSanity(
 				NdisMoveMemory(&pMeasureReqInfo->Token, eid_ptr->Octet, 1);
 				NdisMoveMemory(&pMeasureReqInfo->ReqMode.word, eid_ptr->Octet + 1, 1);
 				NdisMoveMemory(&pMeasureReqInfo->ReqType, eid_ptr->Octet + 2, 1);
-				ptr = eid_ptr->Octet + 3;
-				NdisMoveMemory(&pMeasureReqInfo->MeasureReq.ChNum, ptr, 1);
+				ptr = (PUCHAR)(eid_ptr->Octet + 3);
+				NdisMoveMemory(&pMeasureReq->ChNum, ptr, 1);
 				NdisMoveMemory(&MeasureStartTime, ptr + 1, 8);
-				pMeasureReqInfo->MeasureReq.MeasureStartTime = SWAP64(MeasureStartTime);
+				pMeasureReq->MeasureStartTime = SWAP64(MeasureStartTime);
 				NdisMoveMemory(&MeasureDuration, ptr + 9, 2);
-				pMeasureReqInfo->MeasureReq.MeasureDuration = SWAP16(MeasureDuration);
+				pMeasureReq->MeasureDuration = SWAP16(MeasureDuration);
 				
 				result = TRUE;
 				break;
@@ -1305,7 +1569,7 @@ static BOOLEAN PeerMeasureReportSanity(
 				if (pMeasureReportInfo->ReportType == RM_BASIC)
 				{
 					PMEASURE_BASIC_REPORT pReport = (PMEASURE_BASIC_REPORT)pReportBuf;
-					ptr = eid_ptr->Octet + 3;
+					ptr = (PUCHAR)(eid_ptr->Octet + 3);
 					NdisMoveMemory(&pReport->ChNum, ptr, 1);
 					NdisMoveMemory(&pReport->MeasureStartTime, ptr + 1, 8);
 					NdisMoveMemory(&pReport->MeasureDuration, ptr + 9, 2);
@@ -1315,7 +1579,7 @@ static BOOLEAN PeerMeasureReportSanity(
 				else if (pMeasureReportInfo->ReportType == RM_CCA)
 				{
 					PMEASURE_CCA_REPORT pReport = (PMEASURE_CCA_REPORT)pReportBuf;
-					ptr = eid_ptr->Octet + 3;
+					ptr = (PUCHAR)(eid_ptr->Octet + 3);
 					NdisMoveMemory(&pReport->ChNum, ptr, 1);
 					NdisMoveMemory(&pReport->MeasureStartTime, ptr + 1, 8);
 					NdisMoveMemory(&pReport->MeasureDuration, ptr + 9, 2);
@@ -1325,7 +1589,7 @@ static BOOLEAN PeerMeasureReportSanity(
 				else if (pMeasureReportInfo->ReportType == RM_RPI_HISTOGRAM)
 				{
 					PMEASURE_RPI_REPORT pReport = (PMEASURE_RPI_REPORT)pReportBuf;
-					ptr = eid_ptr->Octet + 3;
+					ptr = (PUCHAR)(eid_ptr->Octet + 3);
 					NdisMoveMemory(&pReport->ChNum, ptr, 1);
 					NdisMoveMemory(&pReport->MeasureStartTime, ptr + 1, 8);
 					NdisMoveMemory(&pReport->MeasureDuration, ptr + 9, 2);
@@ -1558,9 +1822,10 @@ static VOID PeerMeasureReqAction(
 	PFRAME_802_11 pFr = (PFRAME_802_11)Elem->Msg;
 	UINT8 DialogToken;
 	MEASURE_REQ_INFO MeasureReqInfo;
+	MEASURE_REQ	MeasureReq;
 	MEASURE_REPORT_MODE ReportMode;
 
-	if(PeerMeasureReqSanity(pAd, Elem->Msg, Elem->MsgLen, &DialogToken, &MeasureReqInfo))
+	if(PeerMeasureReqSanity(pAd, Elem->Msg, Elem->MsgLen, &DialogToken, &MeasureReqInfo, &MeasureReq))
 	{
 		ReportMode.word = 0;
 		ReportMode.field.Incapable = 1;
@@ -1754,8 +2019,9 @@ VOID PeerSpectrumAction(
 			break;
 
 		case SPEC_CHANNEL_SWITCH:
-{
+
 #ifdef DOT11N_DRAFT3
+			{
 				SEC_CHA_OFFSET_IE	Secondary;
 				CHA_SWITCH_ANNOUNCE_IE	ChannelSwitch;
 
@@ -1776,8 +2042,9 @@ VOID PeerSpectrumAction(
 				{
 					ChannelSwitchAction(pAd, Elem->Wcid, ChannelSwitch.NewChannel, Secondary.SecondaryChannelOffset);
 				}
+			}
 #endif // DOT11N_DRAFT3 //
-}
+
 			PeerChSwAnnAction(pAd, Elem);
 			break;
 	}
@@ -1796,16 +2063,31 @@ VOID PeerSpectrumAction(
  */
 INT Set_MeasureReq_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	UINT Aid = 1;
 	UINT ArgIdx;
-	PUCHAR thisChar;
+	PSTRING thisChar;
 
 	MEASURE_REQ_MODE MeasureReqMode;
 	UINT8 MeasureReqToken = RandomByte(pAd);
 	UINT8 MeasureReqType = RM_BASIC;
 	UINT8 MeasureCh = 1;
+	UINT64 MeasureStartTime = GetCurrentTimeStamp(pAd);
+	MEASURE_REQ MeasureReq;
+	UINT8 TotalLen;
+
+	HEADER_802_11 ActHdr;
+	PUCHAR pOutBuffer = NULL;
+	NDIS_STATUS NStatus;
+	ULONG FrameLen;
+
+	NStatus = MlmeAllocateMemory(pAd, (PVOID)&pOutBuffer);  //Get an unused nonpaged memory
+	if(NStatus != NDIS_STATUS_SUCCESS)
+	{
+		DBGPRINT(RT_DEBUG_TRACE, ("%s() allocate memory failed \n", __FUNCTION__));
+		goto END_OF_MEASURE_REQ;
+	}
 
 	ArgIdx = 1;
 	while ((thisChar = strsep((char **)&arg, "-")) != NULL)
@@ -1813,7 +2095,7 @@ INT Set_MeasureReq_Proc(
 		switch(ArgIdx)
 		{
 			case 1:	// Aid.
-				Aid = simple_strtol(thisChar, 0, 16);
+				Aid = (UINT8) simple_strtol(thisChar, 0, 16);
 				break;
 
 			case 2: // Measurement Request Type.
@@ -1821,12 +2103,12 @@ INT Set_MeasureReq_Proc(
 				if (MeasureReqType > 3)
 				{
 					DBGPRINT(RT_DEBUG_ERROR, ("%s: unknow MeasureReqType(%d)\n", __FUNCTION__, MeasureReqType));
-					return TRUE;
+					goto END_OF_MEASURE_REQ;
 				}
 				break;
 
 			case 3: // Measurement channel.
-				MeasureCh = simple_strtol(thisChar, 0, 16);
+				MeasureCh = (UINT8) simple_strtol(thisChar, 0, 16);
 				break;
 		}
 		ArgIdx++;
@@ -1836,7 +2118,7 @@ INT Set_MeasureReq_Proc(
 	if (!VALID_WCID(Aid))
 	{
 		DBGPRINT(RT_DEBUG_ERROR, ("%s: unknow sta of Aid(%d)\n", __FUNCTION__, Aid));
-		return TRUE;
+		goto END_OF_MEASURE_REQ;
 	}
 
 	MeasureReqMode.word = 0;
@@ -1844,21 +2126,49 @@ INT Set_MeasureReq_Proc(
 
 	MeasureReqInsert(pAd, MeasureReqToken);
 
-	EnqueueMeasurementReq(pAd, pAd->MacTab.Content[Aid].Addr,
-		MeasureReqToken, MeasureReqMode.word, MeasureReqType, MeasureCh, 2000);
+	// build action frame header.
+	MgtMacHeaderInit(pAd, &ActHdr, SUBTYPE_ACTION, 0, pAd->MacTab.Content[Aid].Addr,
+						pAd->CurrentAddress);
+
+	NdisMoveMemory(pOutBuffer, (PCHAR)&ActHdr, sizeof(HEADER_802_11));
+	FrameLen = sizeof(HEADER_802_11);
+
+	TotalLen = sizeof(MEASURE_REQ_INFO) + sizeof(MEASURE_REQ);
+
+	MakeMeasurementReqFrame(pAd, pOutBuffer, &FrameLen,
+		sizeof(MEASURE_REQ_INFO), CATEGORY_RM, RM_BASIC,
+		MeasureReqToken, MeasureReqMode.word,
+		MeasureReqType, 0);
+
+	MeasureReq.ChNum = MeasureCh;
+	MeasureReq.MeasureStartTime = cpu2le64(MeasureStartTime);
+	MeasureReq.MeasureDuration = cpu2le16(2000);
+
+	{
+		ULONG TempLen;
+		MakeOutgoingFrame(	pOutBuffer+FrameLen,	&TempLen,
+							sizeof(MEASURE_REQ),	&MeasureReq,
+							END_OF_ARGS);
+		FrameLen += TempLen;
+	}
+
+	MiniportMMRequest(pAd, QID_AC_BE, pOutBuffer, (UINT)FrameLen);
+
+END_OF_MEASURE_REQ:
+	MlmeFreeMemory(pAd, pOutBuffer);
 
 	return TRUE;
 }
 
 INT Set_TpcReq_Proc(
 	IN	PRTMP_ADAPTER	pAd, 
-	IN	PUCHAR			arg)
+	IN	PSTRING			arg)
 {
 	UINT Aid;
 
 	UINT8 TpcReqToken = RandomByte(pAd);
 
-	Aid = simple_strtol(arg, 0, 16);
+	Aid = (UINT) simple_strtol(arg, 0, 16);
 
 	DBGPRINT(RT_DEBUG_TRACE, ("%s::Aid = %d\n", __FUNCTION__, Aid));
 	if (!VALID_WCID(Aid))
@@ -1873,4 +2183,5 @@ INT Set_TpcReq_Proc(
 
 	return TRUE;
 }
+
 

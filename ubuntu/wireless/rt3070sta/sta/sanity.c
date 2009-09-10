@@ -1,39 +1,4 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
-
-	Module Name:
-	sanity.c
-
-	Abstract:
-
-	Revision History:
-	Who			When			What
-	--------	----------		----------------------------------------------
-	John Chang  2004-09-01      add WMM support
-*/
+/* Plz read readme file for Software License information */
 #include "rt_config.h"
 
 extern UCHAR	CISCO_OUI[];
@@ -117,7 +82,7 @@ BOOLEAN PeerAssocRspSanity(
 	*pHtCapabilityLen = 0;
 	*pAddHtInfoLen = 0;
     COPY_MAC_ADDR(pAddr2, pFrame->Hdr.Addr2);
-    Ptr = pFrame->Octet;
+    Ptr = (PCHAR)pFrame->Octet;
     Length += LENGTH_802_11;
         
     NdisMoveMemory(pCapabilityInfo, &pFrame->Octet[0], 2);
@@ -147,6 +112,7 @@ BOOLEAN PeerAssocRspSanity(
     } 
     else 
         NdisMoveMemory(SupRate, &pFrame->Octet[8], *pSupRateLen);
+
 
     Length = Length + 2 + *pSupRateLen;
 
@@ -215,28 +181,7 @@ BOOLEAN PeerAssocRspSanity(
 			}
 #endif // DOT11_N_SUPPORT //				
 		break;
-            case IE_AIRONET_CKIP:
-                // 0. Check Aironet IE length, it must be larger or equal to 28
-                //    Cisco's AP VxWork version(will not be supported) used this IE length as 28
-                //    Cisco's AP IOS version used this IE length as 30 
-                if (pEid->Len < (CKIP_NEGOTIATION_LENGTH - 2))
-                break;
 
-                // 1. Copy CKIP flag byte to buffer for process
-                *pCkipFlag = *(pEid->Octet + 8);				
-                break;
-
-            case IE_AIRONET_IPADDRESS:
-                if (pEid->Len != 0x0A)
-                break;
-
-                // Get Cisco Aironet IP information
-                if (NdisEqualMemory(pEid->Octet, CISCO_OUI, 3) == 1)
-                    NdisMoveMemory(pAd->StaCfg.AironetIPAddress, pEid->Octet + 4, 4);
-                break;
-
-            // CCX2, WMM use the same IE value
-            // case IE_CCX_V2:
             case IE_VENDOR_SPECIFIC:
                 // handle WME PARAMTER ELEMENT
                 if (NdisEqualMemory(pEid->Octet, WME_PARM_ELEM, 6) && (pEid->Len == 24))
@@ -252,7 +197,7 @@ BOOLEAN PeerAssocRspSanity(
                     //pEdcaParm->bMoreDataAck    = FALSE; // pEid->Octet[0] & 0x80;
                     pEdcaParm->EdcaUpdateCount = pEid->Octet[6] & 0x0f;
                     pEdcaParm->bAPSDCapable    = (pEid->Octet[6] & 0x80) ? 1 : 0;
-                    ptr = &pEid->Octet[8];
+                    ptr = (PUCHAR)&pEid->Octet[8];
                     for (i=0; i<4; i++)
                     {
                         UCHAR aci = (*ptr & 0x60) >> 5; // b5~6 is AC INDEX
@@ -264,23 +209,7 @@ BOOLEAN PeerAssocRspSanity(
                         ptr += 4; // point to next AC
                     }
                 }
-
-                // handle CCX IE
-                else
-                {
-                    // 0. Check the size and CCX admin control
-                    if (pAd->StaCfg.CCXControl.field.Enable == 0)
-                        break;
-                    if (pEid->Len != 5)
-                        break;
-
-                    // Turn CCX2 if matched
-                    if (NdisEqualMemory(pEid->Octet, Ccx2IeInfo, 5) == 1)
-                        pAd->StaCfg.CCXEnable = TRUE;
-                    break;
-                }
                 break;
-
             default:
                 DBGPRINT(RT_DEBUG_TRACE, ("PeerAssocRspSanity - ignore unrecognized EID = %d\n", pEid->Eid));
                 break;
@@ -290,9 +219,6 @@ BOOLEAN PeerAssocRspSanity(
         pEid = (PEID_STRUCT)((UCHAR*)pEid + 2 + pEid->Len);        
     }
 
-    // Force CCX2 enable to TRUE for those AP didn't replay CCX v2 IE, we still force it to be on
-    if (pAd->StaCfg.CCXControl.field.Enable == 1)
-        pAd->StaCfg.CCXEnable = TRUE;
 
     return TRUE;
 }

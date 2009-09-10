@@ -1,39 +1,4 @@
-/*
- *************************************************************************
- * Ralink Tech Inc.
- * 5F., No.36, Taiyuan St., Jhubei City,
- * Hsinchu County 302,
- * Taiwan, R.O.C.
- *
- * (c) Copyright 2002-2007, Ralink Technology, Inc.
- *
- * This program is free software; you can redistribute it and/or modify  * 
- * it under the terms of the GNU General Public License as published by  * 
- * the Free Software Foundation; either version 2 of the License, or     * 
- * (at your option) any later version.                                   * 
- *                                                                       * 
- * This program is distributed in the hope that it will be useful,       * 
- * but WITHOUT ANY WARRANTY; without even the implied warranty of        * 
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         * 
- * GNU General Public License for more details.                          * 
- *                                                                       * 
- * You should have received a copy of the GNU General Public License     * 
- * along with this program; if not, write to the                         * 
- * Free Software Foundation, Inc.,                                       * 
- * 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             * 
- *                                                                       * 
- *************************************************************************
-
-	Module Name:
-	auth_rsp.c
-
-	Abstract:
-
-	Revision History:
-	Who			When			What
-	--------	----------		----------------------------------------------
-	John		2004-10-1		copy from RT2560
-*/
+/* Plz read readme file for Software License information */
 #include "rt_config.h"
 
 /*
@@ -88,7 +53,7 @@ VOID PeerAuthSimpleRspGenAndSend(
         DBGPRINT(RT_DEBUG_TRACE, ("Peer AUTH fail...\n"));
         return;
     }
-
+    
 	//Get an unused nonpaged memory
     NStatus = MlmeAllocateMemory(pAd, &pOutBuffer);  
     if (NStatus != NDIS_STATUS_SUCCESS) 
@@ -123,17 +88,15 @@ VOID PeerDeauthAction(
 
     if (PeerDeauthSanity(pAd, Elem->Msg, Elem->MsgLen, Addr2, &Reason)) 
     {
-        if (INFRA_ON(pAd) && MAC_ADDR_EQUAL(Addr2, pAd->CommonCfg.Bssid)) 
+        if (INFRA_ON(pAd)
+			&& MAC_ADDR_EQUAL(Addr2, pAd->CommonCfg.Bssid)
+			)
         {
             DBGPRINT(RT_DEBUG_TRACE,("AUTH_RSP - receive DE-AUTH from our AP (Reason=%d)\n", Reason));
 
 
 #ifdef NATIVE_WPA_SUPPLICANT_SUPPORT
-            {
-                union iwreq_data    wrqu;
-                memset(wrqu.ap_addr.sa_data, 0, MAC_ADDR_LEN);
-                wireless_send_event(pAd->net_dev, SIOCGIWAP, &wrqu, NULL);
-            }
+		RtmpOSWrielessEventSend(pAd, SIOCGIWAP, -1, NULL, NULL, 0);
 #endif // NATIVE_WPA_SUPPLICANT_SUPPORT //        
             
 
@@ -142,21 +105,6 @@ VOID PeerDeauthAction(
 				RTMPSendWirelessEvent(pAd, IW_DEAUTH_EVENT_FLAG, pAd->MacTab.Content[BSSID_WCID].Addr, BSS0, 0); 
 
             LinkDown(pAd, TRUE);
-
-            // Authentication Mode Cisco_LEAP has start a timer 
-            // We should cancel it if using LEAP
-#ifdef LEAP_SUPPORT
-            if (pAd->StaCfg.LeapAuthMode == CISCO_AuthModeLEAP)
-            {
-                RTMPCancelTimer(&pAd->StaCfg.LeapAuthTimer, &TimerCancelled);
-                //Check is it mach the LEAP Authentication failed as possible a Rogue AP
-                //on it's PortSecured not equal to WPA_802_1X_PORT_SECURED while process the Authenticaton.
-                if ((pAd->StaCfg.PortSecured != WPA_802_1X_PORT_SECURED) && (pAd->Mlme.LeapMachine.CurrState != LEAP_IDLE))
-                {
-                    RogueApTableSetEntry(pAd, &pAd->StaCfg.RogueApTab, Addr2, LEAP_REASON_AUTH_TIMEOUT);
-                }
-            }
-#endif // LEAP_SUPPORT //
         }
     }
     else

@@ -1,9 +1,14 @@
 RT28xx_MODE = STA
+
 TARGET = LINUX
+
 CHIPSET = 3070
+
 #RT28xx_DIR = home directory of RT28xx source code
-RT28xx_DIR = $(src)
+RT28xx_DIR = $(shell pwd)
 RTMP_SRC_DIR = $(RT28xx_DIR)/RT$(CHIPSET)
+
+#PLATFORM: Target platform
 PLATFORM = PC
 #PLATFORM = 5VT
 #PLATFORM = IKANOS_V160
@@ -19,14 +24,14 @@ PLATFORM = PC
 #PLATFORM = INF_AMAZON_SE
 #PLATFORM = CAVM_OCTEON
 #PLATFORM = CMPC
-RELEASE = DPO
-ifeq ($(PLATFORM),CMPC)
-LINUX_SRC = /opt/fvt_11N_SDK_0807/fvt131x_SDK_11n/linux-2.6.17
-CROSS_COMPILE =
-endif
+#PLATFORM = RALINK_2880
+
+#RELEASE Package
+RELEASE = DPOM
+
 
 ifeq ($(PLATFORM),5VT)
-LINUX_SRC = /opt/fvt_11N_SDK_0807/fvt131x_SDK_11n/linux-2.6.17
+LINUX_SRC = /project/stable/5vt/ralink-2860-sdk/linux-2.6.17
 CROSS_COMPILE = /opt/crosstool/uClibc_v5te_le_gcc_4_1_1/bin/arm-linux-
 endif
 
@@ -61,10 +66,14 @@ LINUX_SRC = /opt/star/kernel/linux-2.4.27-star
 CROSS_COMPILE = /opt/star/tools/arm-linux/bin/arm-linux-
 endif
 
+ifeq ($(PLATFORM), RALINK_2880)
+LINUX_SRC = /project/stable/RT288x/RT288x_SDK/source/linux-2.4.x
+CROSS_COMPILE = /opt/buildroot-gdb/bin/mipsel-linux-
+endif
+
 ifeq ($(PLATFORM),PC)
 # Linux 2.6
 LINUX_SRC = /lib/modules/$(shell uname -r)/build
-obj-m := os/linux/
 # Linux 2.4 Change to your local setting
 #LINUX_SRC = /usr/src/linux-2.4
 LINUX_SRC_MODULE = /lib/modules/$(shell uname -r)/kernel/drivers/net/wireless/
@@ -106,13 +115,25 @@ LINUX_SRC = /backup/ifx/3.6.2.2/source/kernel/opensource/linux-2.4.31
 CROSS_COMPILE = /opt/uclibc-toolchain/ifx-lxdb-1-2-3-external/gcc-3.3.6/toolchain-mips/R0208V35/mips-linux-uclibc/bin/
 endif
 
+ifeq ($(PLATFORM),ST)
+LINUX_SRC = /opt/STM/STLinux-2.2/devkit/sources/kernel/linux0039
+CROSS_COMPILE = /opt/STM/STLinux-2.2/devkit/sh4/bin/sh4-linux-
+ARCH := sh
+export ARCH
+endif
+
 ifeq ($(PLATFORM),CAVM_OCTEON)
 OCTEON_ROOT = /usr/local/Cavium_Networks/OCTEON-SDK
 LINUX_SRC = $(OCTEON_ROOT)/linux/kernel_2.6/linux
 CROSS_COMPILE = mips64-octeon-linux-gnu-
 endif
 
-export RT28xx_DIR RT28xx_MODE LINUX_SRC CROSS_COMPILE CROSS_COMPILE_INCLUDE PLATFORM RELEASE CHIPSET RTMP_SRC_DIR LINUX_SRC_MODULE
+ifeq ($(PLATFORM),CMPC)
+LINUX_SRC = /opt/fvt_11N_SDK_0807/fvt131x_SDK_11n/linux-2.6.17
+CROSS_COMPILE =
+endif
+
+export RT28xx_DIR RT28xx_MODE LINUX_SRC CROSS_COMPILE CROSS_COMPILE_INCLUDE PLATFORM RELEASE CHIPSET RTMP_SRC_DIR LINUX_SRC_MODULE TARGET
 
 all: build_tools $(TARGET)
 
@@ -120,6 +141,9 @@ all: build_tools $(TARGET)
 build_tools:
 	make -C tools
 	$(RT28xx_DIR)/tools/bin2h
+
+test:
+	make -C tools test
 
 UCOS:
 	make -C os/ucos/ MODE=$(RT28xx_MODE)
@@ -130,21 +154,52 @@ LINUX:
 ifneq (,$(findstring 2.4,$(LINUX_SRC)))
 	cp -f os/linux/Makefile.4 $(RT28xx_DIR)/os/linux/Makefile
 	make -C $(RT28xx_DIR)/os/linux/
+ifeq ($(RT28xx_MODE),AP)
+	cp -f $(RT28xx_DIR)/os/linux/rt$(CHIPSET)ap.o /tftpboot
+ifeq ($(PLATFORM),INF_AMAZON_SE)
+	cp -f /tftpboot/rt2870ap.o /backup/ifx/build/root_filesystem/lib/modules/2.4.31-Amazon_SE-3.6.2.2-R0416_Ralink/kernel/drivers/net
+endif
+else	
+ifeq ($(RT28xx_MODE),APSTA)
+	cp -f $(RT28xx_DIR)/os/linux/rt$(CHIPSET)apsta.o /tftpboot
+else
 	cp -f $(RT28xx_DIR)/os/linux/rt$(CHIPSET)sta.o /tftpboot
+endif	
+endif	
 else
 	cp -f os/linux/Makefile.6 $(RT28xx_DIR)/os/linux/Makefile
 	make  -C  $(LINUX_SRC) SUBDIRS=$(RT28xx_DIR)/os/linux modules
+ifeq ($(RT28xx_MODE),AP)
+	cp -f $(RT28xx_DIR)/os/linux/rt$(CHIPSET)ap.ko /tftpboot
+else	
+ifeq ($(RT28xx_MODE),APSTA)
+	cp -f $(RT28xx_DIR)/os/linux/rt$(CHIPSET)apsta.ko /tftpboot
+else
 	cp -f $(RT28xx_DIR)/os/linux/rt$(CHIPSET)sta.ko /tftpboot
+endif	
+endif
 endif
 
 release:
 ifeq ($(TARGET), LINUX)
-	make -C $(RT28xx_DIR)/os/linux -f Makefile.release release
-ifeq ($(RELEASE), DPO)
-	make -C $(RT28xx_DIR)/os/linux -f Makefile.DPO release
-	rm -rf build
+	make -C $(RT28xx_DIR)/striptool -f Makefile.release clean
+	make -C $(RT28xx_DIR)/striptool -f Makefile.release
+	striptool/striptool.out
 endif
+
+prerelease:
+ifeq ($(CHIPSET), 2880)
+	make -C $(RT28xx_DIR)/os/linux -f Makefile.release.2880 prerelease
+else
+	make -C $(RT28xx_DIR)/os/linux -f Makefile.release prerelease
 endif
+	cp $(RT28xx_DIR)/os/linux/Makefile.DPB $(RTMP_SRC_DIR)/os/linux/.
+	cp $(RT28xx_DIR)/os/linux/Makefile.DPA $(RTMP_SRC_DIR)/os/linux/.
+	cp $(RT28xx_DIR)/os/linux/Makefile.DPC $(RTMP_SRC_DIR)/os/linux/.
+ifeq ($(RT28xx_MODE),STA)
+	cp $(RT28xx_DIR)/os/linux/Makefile.DPD $(RTMP_SRC_DIR)/os/linux/.
+	cp $(RT28xx_DIR)/os/linux/Makefile.DPO $(RTMP_SRC_DIR)/os/linux/.
+endif	
 
 clean:
 ifeq ($(TARGET), LINUX)
@@ -177,3 +232,7 @@ else
 	make -C $(RT28xx_DIR)/os/linux -f Makefile.6 install
 endif
 endif
+
+libwapi:
+	make -C $(RT28xx_DIR)/os/linux -f Makefile.libwapi
+
