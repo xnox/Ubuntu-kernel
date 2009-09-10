@@ -5,7 +5,7 @@ TARGET = LINUX
 CHIPSET = 3070
 
 #RT28xx_DIR = home directory of RT28xx source code
-RT28xx_DIR = $(shell pwd)
+RT28xx_DIR = $(src)
 RTMP_SRC_DIR = $(RT28xx_DIR)/RT$(CHIPSET)
 
 #PLATFORM: Target platform
@@ -74,6 +74,7 @@ endif
 ifeq ($(PLATFORM),PC)
 # Linux 2.6
 LINUX_SRC = /lib/modules/$(shell uname -r)/build
+obj-m := os/linux/
 # Linux 2.4 Change to your local setting
 #LINUX_SRC = /usr/src/linux-2.4
 LINUX_SRC_MODULE = /lib/modules/$(shell uname -r)/kernel/drivers/net/wireless/
