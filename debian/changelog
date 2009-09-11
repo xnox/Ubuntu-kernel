@@ -1,3 +1,14 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-24.60netbook01) netbook-common; urgency=low
+
+  [Jim Lieb]
+
+  * Update rt3070 Ralink driver for Natick 2
+  * rt3070sta: integrate driver into LUM build
+  * rt3070sta: Enable mesh protocol function
+  * rt3070sta: Turn on native WPA Supplicant option.
+
+ -- sconklin <sconklin@ubuntu.com>  Fri, 11 Sep 2009 23:10:55 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-24.59netbook01) netbook-common; urgency=low
 
   [Colin Ian King]
