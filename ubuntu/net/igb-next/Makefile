@@ -25,7 +25,7 @@
 #
 ################################################################################
 
-obj-$(CONFIG_IGB_NEXT) += igb-next.o
+obj-m += igb-next.o
 
 igb-next-objs	:= igb_main.o e1000_82575.o e1000_mac.o e1000_nvm.o \
 			e1000_phy.o e1000_manage.o igb_param.o igb_ethtool.o \
