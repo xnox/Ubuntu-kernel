@@ -1,11 +1,3 @@
-Source: linux-meta-ec2
-Section: devel
-Priority: optional
-Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
-Standards-Version: 3.6.1
-Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3), gawk
-Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-karmic-meta.git ec2
-
 Package: linux-headers-ec2
 Architecture: i386 amd64
 Section: devel
@@ -32,4 +24,3 @@ Depends: linux-image-ec2 (= ${binary:Version})
 Description: Complete Linux kernel for ec2 machines
  This package will always depend on the latest complete Linux kernel available
  for ec2 machines.
-

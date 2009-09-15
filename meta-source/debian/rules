@@ -14,9 +14,8 @@ KERNEL_VERSION=$(shell dpkg-parsechangelog | grep ^Version | sed -e \
 KERNEL_ABI=$(shell head -n1 < debian/changelog | gawk '{n=split($$0,v,"."); print v[4];}')
 KERNEL_ABI_VERSION=$(KERNEL_VERSION)-$(KERNEL_ABI)
 
-GENERIC_i386=generic
-GENERIC_amd64=generic
-GENERIC_lpia=lpia
+GENERIC_i386=ec2
+GENERIC_amd64=ec2
 
 GENERIC=$(value GENERIC_$(shell dpkg-architecture -qDEB_HOST_ARCH))
 GENERIC_DEP=$(if $(GENERIC),$(GENERIC),)
