@@ -18,6 +18,8 @@ series="$2"
 
 build_release="hardy"
 
+echo "*** BUILDING: commit:$1 series:$2 ..."
+
 log_enabled=0
 
 long=`git describe "$commit"`
@@ -109,6 +111,7 @@ git commit -a -m "base packaging"
 # ALL: allow us to default new config options.
 #
 if [ -d "$here/patches.$series" ]; then
+	echo "*** applying patches for series:$series ..."
 	git am -C0 "$here/patches.$series"/*
 fi
 
@@ -156,6 +159,8 @@ cat - <<EOM >$debian/tests/check-aliases
 exit 0
 EOM
 chmod 755 $debian/tests/check-aliases
+
+git commit -a -m "fix up abi checks, module checks, check aliases"
 
 #
 # Build the source package.

@@ -16,6 +16,8 @@ esac
 commit="$1"
 series="$2"
 
+echo "*** BUILDING CRACK: commit:$1 series:$2 ..."
+
 build_release="hardy"
 
 long=`git describe "$commit"`
@@ -88,6 +90,7 @@ git commit -a -m "base packaging"
 ## XXX: git am -C0 "$here/0001-disable-udebs.patch"
 
 if [ -d "$here/patches.$series" ]; then
+	echo "*** applying patches for series:$series ..."
 	git am -C0 "$here/patches.$series"/*
 fi
 
