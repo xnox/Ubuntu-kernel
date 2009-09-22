@@ -1,6 +1,5 @@
 # Ubuntu config
 
-CONFIG_USB_UVCCAM=m
 CONFIG_IGB=m
 CONFIG_E1000E=m
 
