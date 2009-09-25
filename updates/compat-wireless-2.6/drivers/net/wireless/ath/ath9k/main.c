@@ -1131,7 +1131,7 @@ void ath_radio_enable(struct ath_softc *sc)
 	int r;
 
 	ath9k_ps_wakeup(sc);
-	ath9k_hw_configpcipowersave(ah, 0);
+	ath9k_hw_configpcipowersave(ah, 0, 0);
 
 	if (!ah->curchan)
 		ah->curchan = ath_get_curchannel(sc, sc->hw);
@@ -1202,7 +1202,7 @@ void ath_radio_disable(struct ath_softc *sc)
 	spin_unlock_bh(&sc->sc_resetlock);
 
 	ath9k_hw_phy_disable(ah);
-	ath9k_hw_configpcipowersave(ah, 1);
+	ath9k_hw_configpcipowersave(ah, 1, 1);
 	ath9k_ps_restore(sc);
 	ath9k_hw_setpower(ah, ATH9K_PM_FULL_SLEEP);
 }
@@ -1226,11 +1226,6 @@ static void ath9k_rfkill_poll_state(struct ieee80211_hw *hw)
 	bool blocked = !!ath_is_rfkill_set(sc);
 
 	wiphy_rfkill_set_hw_state(hw->wiphy, blocked);
-
-	if (blocked)
-		ath_radio_disable(sc);
-	else
-		ath_radio_enable(sc);
 }
 
 static void ath_start_rfkill_poll(struct ath_softc *sc)
@@ -1260,6 +1255,7 @@ void ath_detach(struct ath_softc *sc)
 	DPRINTF(sc, ATH_DBG_CONFIG, "Detach ATH hw\n");
 
 	ath_deinit_leds(sc);
+	wiphy_rfkill_stop_polling(sc->hw->wiphy);
 
 	for (i = 0; i < sc->num_sec_wiphy; i++) {
 		struct ath_wiphy *aphy = sc->sec_wiphy[i];
@@ -1310,7 +1306,7 @@ static int ath9k_reg_notifier(struct wiphy *wiphy,
  * to allow the separation between hardware specific
  * variables (now in ath_hw) and driver specific variables.
  */
-static int ath_init_softc(u16 devid, struct ath_softc *sc)
+static int ath_init_softc(u16 devid, struct ath_softc *sc, u16 subsysid)
 {
 	struct ath_hw *ah = NULL;
 	int r = 0, i;
@@ -1348,6 +1344,7 @@ static int ath_init_softc(u16 devid, struct ath_softc *sc)
 
 	ah->ah_sc = sc;
 	ah->hw_version.devid = devid;
+	ah->hw_version.subsysid = subsysid;
 	sc->sc_ah = ah;
 
 	r = ath9k_hw_init(ah);
@@ -1577,7 +1574,7 @@ void ath_set_hw_capab(struct ath_softc *sc, struct ieee80211_hw *hw)
 }
 
 /* Device driver core initialization */
-int ath_init_device(u16 devid, struct ath_softc *sc)
+int ath_init_device(u16 devid, struct ath_softc *sc, u16 subsysid)
 {
 	struct ieee80211_hw *hw = sc->hw;
 	int error = 0, i;
@@ -1585,7 +1582,7 @@ int ath_init_device(u16 devid, struct ath_softc *sc)
 
 	DPRINTF(sc, ATH_DBG_CONFIG, "Attach ATH hw\n");
 
-	error = ath_init_softc(devid, sc);
+	error = ath_init_softc(devid, sc, subsysid);
 	if (error != 0)
 		return error;
 
@@ -1941,7 +1938,7 @@ static int ath9k_start(struct ieee80211_hw *hw)
 	init_channel = ath_get_curchannel(sc, hw);
 
 	/* Reset SERDES registers */
-	ath9k_hw_configpcipowersave(sc->sc_ah, 0);
+	ath9k_hw_configpcipowersave(sc->sc_ah, 0, 0);
 
 	/*
 	 * The basic interface to setting the hardware in a good
@@ -2010,6 +2007,7 @@ static int ath9k_start(struct ieee80211_hw *hw)
 				      AR_STOMP_LOW_WLAN_WGHT);
 		ath9k_hw_btcoex_enable(sc->sc_ah);
 
+		ath_pcie_aspm_disable(sc);
 		if (sc->btcoex_info.btcoex_scheme == ATH_BTCOEX_CFG_3WIRE)
 			ath_btcoex_timer_resume(sc, &sc->btcoex_info);
 	}
@@ -2164,11 +2162,9 @@ static void ath9k_stop(struct ieee80211_hw *hw)
 	} else
 		sc->rx.rxlink = NULL;
 
-	wiphy_rfkill_stop_polling(sc->hw->wiphy);
-
 	/* disable HAL and put h/w to sleep */
 	ath9k_hw_disable(sc->sc_ah);
-	ath9k_hw_configpcipowersave(sc->sc_ah, 1);
+	ath9k_hw_configpcipowersave(sc->sc_ah, 1, 1);
 	ath9k_hw_setpower(sc->sc_ah, ATH9K_PM_FULL_SLEEP);
 
 	sc->sc_flags |= SC_OP_INVALID;

@@ -616,23 +616,18 @@ struct b43_wl {
 	/* Pointer to the ieee80211 hardware data structure */
 	struct ieee80211_hw *hw;
 
+	/* Global driver mutex. Every operation must run with this mutex locked. */
+	struct mutex mutex;
+	/* Hard-IRQ spinlock. This lock protects things used in the hard-IRQ
+	 * handler, only. This basically is just the IRQ mask register. */
+	spinlock_t hardirq_lock;
+
 	/* The number of queues that were registered with the mac80211 subsystem
 	 * initially. This is a backup copy of hw->queues in case hw->queues has
 	 * to be dynamically lowered at runtime (Firmware does not support QoS).
 	 * hw->queues has to be restored to the original value before unregistering
 	 * from the mac80211 subsystem. */
 	u16 mac80211_initially_registered_queues;
-
-	struct mutex mutex;
-	spinlock_t irq_lock;
-	/* R/W lock for data transmission.
-	 * Transmissions on 2+ queues can run concurrently, but somebody else
-	 * might sync with TX by write_lock_irqsave()'ing. */
-	rwlock_t tx_lock;
-	/* Lock for LEDs access. */
-	spinlock_t leds_lock;
-	/* Lock for SHM access. */
-	spinlock_t shm_lock;
 
 	/* We can only have one operating interface (802.11 core)
 	 * at a time. General information about this interface follows.
@@ -665,8 +660,7 @@ struct b43_wl {
 	bool radiotap_enabled;
 	bool radio_enabled;
 
-	/* The beacon we are currently using (AP or IBSS mode).
-	 * This beacon stuff is protected by the irq_lock. */
+	/* The beacon we are currently using (AP or IBSS mode). */
 	struct sk_buff *current_beacon;
 	bool beacon0_uploaded;
 	bool beacon1_uploaded;
@@ -680,6 +674,14 @@ struct b43_wl {
 	 * This is scheduled when we determine that the actual TX output
 	 * power doesn't match what we want. */
 	struct work_struct txpower_adjust_work;
+
+	/* Packet transmit work */
+	struct work_struct tx_work;
+	/* Queue of packets to be transmitted. */
+	struct sk_buff_head tx_queue;
+
+	/* The device LEDs. */
+	struct b43_leds leds;
 };
 
 /* The type of the firmware file. */
@@ -754,14 +756,6 @@ enum {
 		smp_wmb();					\
 					} while (0)
 
-/* XXX---   HOW LOCKING WORKS IN B43   ---XXX
- *
- * You should always acquire both, wl->mutex and wl->irq_lock unless:
- * - You don't need to acquire wl->irq_lock, if the interface is stopped.
- * - You don't need to acquire wl->mutex in the IRQ handler, IRQ tasklet
- *   and packet TX path (and _ONLY_ there.)
- */
-
 /* Data structure for one wireless device (802.11 core) */
 struct b43_wldev {
 	struct ssb_device *dev;
@@ -770,13 +764,10 @@ struct b43_wldev {
 	/* The device initialization status.
 	 * Use b43_status() to query. */
 	atomic_t __init_status;
-	/* Saved init status for handling suspend. */
-	int suspend_init_status;
 
 	bool bad_frames_preempt;	/* Use "Bad Frames Preemption" (default off) */
 	bool dfq_valid;		/* Directed frame queue valid (IBSS PS mode, ATIM) */
 	bool radio_hw_enable;	/* saved state of radio hardware enabled state */
-	bool suspend_in_progress;	/* TRUE, if we are in a suspend/resume cycle */
 	bool qos_enabled;		/* TRUE, if QoS is used. */
 	bool hwcrypto_enabled;		/* TRUE, if HW crypto acceleration is enabled. */
 
@@ -796,24 +787,16 @@ struct b43_wldev {
 	/* Various statistics about the physical device. */
 	struct b43_stats stats;
 
-	/* The device LEDs. */
-	struct b43_led led_tx;
-	struct b43_led led_rx;
-	struct b43_led led_assoc;
-	struct b43_led led_radio;
-
 	/* Reason code of the last interrupt. */
 	u32 irq_reason;
 	u32 dma_reason[6];
 	/* The currently active generic-interrupt mask. */
 	u32 irq_mask;
+
 	/* Link Quality calculation context. */
 	struct b43_noise_calculation noisecalc;
 	/* if > 0 MAC is suspended. if == 0 MAC is enabled. */
 	int mac_suspended;
-
-	/* Interrupt Service Routine tasklet (bottom-half) */
-	struct tasklet_struct isr_tasklet;
 
 	/* Periodic tasks */
 	struct delayed_work periodic_work;
@@ -834,6 +817,13 @@ struct b43_wldev {
 	/* Debugging stuff follows. */
 #ifdef CONFIG_B43_DEBUG
 	struct b43_dfsentry *dfsentry;
+	unsigned int irq_count;
+	unsigned int irq_bit_count[32];
+	unsigned int tx_count;
+	unsigned int rx_count;
+#endif
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,31)
+	struct compat_threaded_irq irq_compat;
 #endif
 };
 

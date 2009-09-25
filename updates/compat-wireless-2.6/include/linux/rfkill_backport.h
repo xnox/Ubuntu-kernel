@@ -353,7 +353,7 @@ static inline bool rfkill_blocked(struct rfkill *rfkill)
 #endif /* RFKILL || RFKILL_MODULE */
 
 
-#ifdef CONFIG_RFKILL_LEDS
+#ifdef CONFIG_RFKILL_BACKPORT_LEDS
 /**
  * rfkill_get_led_trigger_name - Get the LED trigger name for the button's LED.
  * This function might return a NULL pointer if registering of the

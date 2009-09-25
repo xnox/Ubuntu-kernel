@@ -45,6 +45,10 @@
 #define AR5416_DEVID_AR9287_PCI  0x002D
 #define AR5416_DEVID_AR9287_PCIE 0x002E
 
+#define AR9280_COEX2WIRE_SUBSYSID	0x309b
+#define AT9285_COEX3WIRE_SA_SUBSYSID	0x30aa
+#define AT9285_COEX3WIRE_DA_SUBSYSID	0x30ab
+
 /* Register read/write primitives */
 #define REG_WRITE(_ah, _reg, _val) ath9k_iowrite32((_ah), (_reg), (_val))
 #define REG_READ(_ah, _reg) ath9k_ioread32((_ah), (_reg))
@@ -102,7 +106,7 @@
 #define AH_TSF_WRITE_TIMEOUT        100    /* (us) */
 #define AH_TIME_QUANTUM             10
 #define AR_KEYTABLE_SIZE            128
-#define POWER_UP_TIME               200000
+#define POWER_UP_TIME               10000
 #define SPUR_RSSI_THRESH            40
 
 #define CAB_TIMEOUT_VAL             10
@@ -390,6 +394,7 @@ struct ath9k_hw_version {
 	u16 phyRev;
 	u16 analog5GhzRev;
 	u16 analog2GhzRev;
+	u16 subsysid;
 };
 
 /* Generic TSF timer definitions */
@@ -645,7 +650,7 @@ void ath9k_hw_set_sta_beacon_timers(struct ath_hw *ah,
 				    const struct ath9k_beacon_state *bs);
 bool ath9k_hw_setpower(struct ath_hw *ah,
 		       enum ath9k_power_mode mode);
-void ath9k_hw_configpcipowersave(struct ath_hw *ah, int restore);
+void ath9k_hw_configpcipowersave(struct ath_hw *ah, int restore, int power_off);
 
 /* Interrupt Handling */
 bool ath9k_hw_intrpend(struct ath_hw *ah);
@@ -665,4 +670,9 @@ void ath_gen_timer_free(struct ath_hw *ah, struct ath_gen_timer *timer);
 void ath_gen_timer_isr(struct ath_hw *hw);
 u32 ath9k_hw_gettsf32(struct ath_hw *ah);
 
+#define ATH_PCIE_CAP_LINK_CTRL	0x70
+#define ATH_PCIE_CAP_LINK_L0S	1
+#define ATH_PCIE_CAP_LINK_L1	2
+
+void ath_pcie_aspm_disable(struct ath_softc *sc);
 #endif

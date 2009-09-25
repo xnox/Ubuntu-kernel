@@ -267,11 +267,11 @@ int b43_generate_txhdr(struct b43_wldev *dev,
 			 */
 			ieee80211_get_tkip_key(info->control.hw_key, skb_frag,
 					IEEE80211_TKIP_P1_KEY, (u8*)phase1key);
-			/* phase1key is in host endian */
-			for (i = 0; i < 5; i++)
-				phase1key[i] = cpu_to_le16(phase1key[i]);
-
-			memcpy(txhdr->iv, phase1key, 10);
+			/* phase1key is in host endian. Copy to little-endian txhdr->iv. */
+			for (i = 0; i < 5; i++) {
+				txhdr->iv[i * 2 + 0] = phase1key[i];
+				txhdr->iv[i * 2 + 1] = phase1key[i] >> 8;
+			}
 			/* iv16 */
 			memcpy(txhdr->iv + 10, ((u8 *) wlhdr) + wlhdr_len, 3);
 		} else {
@@ -690,8 +690,11 @@ void b43_rx(struct b43_wldev *dev, struct sk_buff *skb, const void *_rxhdr)
 	}
 
 	memcpy(IEEE80211_SKB_RXCB(skb), &status, sizeof(status));
-	ieee80211_rx_irqsafe(dev->wl->hw, skb);
+	ieee80211_rx(dev->wl->hw, skb);
 
+#if B43_DEBUG
+	dev->rx_count++;
+#endif
 	return;
 drop:
 	b43dbg(dev->wl, "RX: Packet dropped\n");
