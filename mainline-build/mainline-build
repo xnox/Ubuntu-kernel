@@ -101,8 +101,8 @@ else
 fi
 
 mkdir -p "$html"
-mv "$master_main/"linux-{headers,image,source}-*.deb "$html"
 mv "$master_tree/BUILD.LOG" "$html"
+mv "$master_main/"linux-{headers,image,source}-*.deb "$html"
 if [ -f "$master_main/CHANGES" ]; then
 	mv "$master_main/CHANGES" "$html"
 fi
