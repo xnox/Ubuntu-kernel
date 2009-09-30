@@ -172,7 +172,7 @@ git commit -a -m "fix up abi checks, module checks, check aliases"
 dchroot --directory=`pwd` -c "$build_release" \
 	"fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
-	"fakeroot debian/rules no_dumpfile=1 binary-indep"
+	"fakeroot debian/rules no_dumpfile=1 do_linux_source_content=true binary-indep"
 dchroot --directory=`pwd` -c "$build_release" \
 	"fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
