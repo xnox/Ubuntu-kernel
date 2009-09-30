@@ -312,11 +312,12 @@ struct hwsim_radiotap_hdr {
 } __attribute__ ((packed));
 
 
-static int hwsim_mon_xmit(struct sk_buff *skb, struct net_device *dev)
+static netdev_tx_t hwsim_mon_xmit(struct sk_buff *skb,
+					struct net_device *dev)
 {
 	/* TODO: allow packet injection */
 	dev_kfree_skb(skb);
-	return 0;
+	return NETDEV_TX_OK;
 }
 
 
@@ -630,6 +631,9 @@ static void mac80211_hwsim_bss_info_changed(struct ieee80211_hw *hw,
 		data->beacon_int = 1024 * info->beacon_int / 1000 * HZ / 1000;
 		if (WARN_ON(!data->beacon_int))
 			data->beacon_int = 1;
+		if (data->started)
+			mod_timer(&data->beacon_timer,
+				  jiffies + data->beacon_int);
 	}
 
 	if (changed & BSS_CHANGED_ERP_CTS_PROT) {

@@ -76,7 +76,10 @@ static void iwl1000_set_ct_threshold(struct iwl_priv *priv)
 /* NIC configuration for 1000 series */
 static void iwl1000_nic_config(struct iwl_priv *priv)
 {
-	iwl5000_nic_config(priv);
+	/* set CSR_HW_CONFIG_REG for uCode use */
+	iwl_set_bit(priv, CSR_HW_IF_CONFIG_REG,
+		    CSR_HW_IF_CONFIG_REG_BIT_RADIO_SI |
+		    CSR_HW_IF_CONFIG_REG_BIT_MAC_SI);
 
 	/* Setting digital SVR for 1000 card to 1.32V */
 	/* locking is acquired in iwl_set_bits_mask_prph() function */
@@ -99,6 +102,8 @@ static struct iwl_lib_ops iwl1000_lib = {
 	.setup_deferred_work = iwl5000_setup_deferred_work,
 	.is_valid_rtc_data_addr = iwl5000_hw_valid_rtc_data_addr,
 	.load_ucode = iwl5000_load_ucode,
+	.dump_nic_event_log = iwl_dump_nic_event_log,
+	.dump_nic_error_log = iwl_dump_nic_error_log,
 	.init_alive_start = iwl5000_init_alive_start,
 	.alive_notify = iwl5000_alive_notify,
 	.send_tx_power = iwl5000_send_tx_power,
@@ -150,7 +155,7 @@ struct iwl_cfg iwl1000_bgn_cfg = {
 	.sku = IWL_SKU_G|IWL_SKU_N,
 	.ops = &iwl1000_ops,
 	.eeprom_size = OTP_LOW_IMAGE_SIZE,
-	.eeprom_ver = EEPROM_5000_EEPROM_VERSION,
+	.eeprom_ver = EEPROM_1000_EEPROM_VERSION,
 	.eeprom_calib_ver = EEPROM_5000_TX_POWER_VERSION,
 	.mod_params = &iwl50_mod_params,
 	.valid_tx_ant = ANT_A,
@@ -159,5 +164,29 @@ struct iwl_cfg iwl1000_bgn_cfg = {
 	.max_ll_items = OTP_MAX_LL_ITEMS_1000,
 	.shadow_ram_support = false,
 	.ht_greenfield_support = true,
+	.led_compensation = 51,
+	.chain_noise_num_beacons = IWL_CAL_NUM_BEACONS,
 };
 
+struct iwl_cfg iwl1000_bg_cfg = {
+	.name = "1000 Series BG",
+	.fw_name_pre = IWL1000_FW_PRE,
+	.ucode_api_max = IWL1000_UCODE_API_MAX,
+	.ucode_api_min = IWL1000_UCODE_API_MIN,
+	.sku = IWL_SKU_G,
+	.ops = &iwl1000_ops,
+	.eeprom_size = OTP_LOW_IMAGE_SIZE,
+	.eeprom_ver = EEPROM_1000_EEPROM_VERSION,
+	.eeprom_calib_ver = EEPROM_5000_TX_POWER_VERSION,
+	.mod_params = &iwl50_mod_params,
+	.valid_tx_ant = ANT_A,
+	.valid_rx_ant = ANT_AB,
+	.need_pll_cfg = true,
+	.max_ll_items = OTP_MAX_LL_ITEMS_1000,
+	.shadow_ram_support = false,
+	.ht_greenfield_support = true,
+	.led_compensation = 51,
+	.chain_noise_num_beacons = IWL_CAL_NUM_BEACONS,
+};
+
+MODULE_FIRMWARE(IWL1000_MODULE_FIRMWARE(IWL1000_UCODE_API_MAX));

@@ -383,6 +383,7 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
 	int pos = 0, ofs = 0, buf_size = 0;
 	const u8 *ptr;
 	char *buf;
+	u16 eeprom_ver;
 	size_t eeprom_len = priv->cfg->eeprom_size;
 	buf_size = 4 * eeprom_len + 256;
 
@@ -403,14 +404,16 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
 		IWL_ERR(priv, "Can not allocate Buffer\n");
 		return -ENOMEM;
 	}
-	pos += scnprintf(buf + pos, buf_size - pos, "NVM Type: %s\n",
+	eeprom_ver = iwl_eeprom_query16(priv, EEPROM_VERSION);
+	pos += scnprintf(buf + pos, buf_size - pos, "NVM Type: %s, "
+			"version: 0x%x\n",
 			(priv->nvm_device_type == NVM_DEVICE_TYPE_OTP)
-			? "OTP" : "EEPROM");
+			 ? "OTP" : "EEPROM", eeprom_ver);
 	for (ofs = 0 ; ofs < eeprom_len ; ofs += 16) {
 		pos += scnprintf(buf + pos, buf_size - pos, "0x%.4x ", ofs);
 		hex_dump_to_buffer(ptr + ofs, 16 , 16, 2, buf + pos,
 				   buf_size - pos, 0);
-		pos += strlen(buf);
+		pos += strlen(buf + pos);
 		if (buf_size - pos > 0)
 			buf[pos++] = '\n';
 	}
@@ -436,7 +439,7 @@ static ssize_t iwl_dbgfs_log_event_write(struct file *file,
 	if (sscanf(buf, "%d", &event_log_flag) != 1)
 		return -EFAULT;
 	if (event_log_flag == 1)
-		iwl_dump_nic_event_log(priv);
+		priv->cfg->ops->lib->dump_nic_event_log(priv);
 
 	return count;
 }
@@ -909,7 +912,7 @@ static ssize_t iwl_dbgfs_traffic_log_read(struct file *file,
 						"0x%.4x ", ofs);
 				hex_dump_to_buffer(ptr + ofs, 16, 16, 2,
 						   buf + pos, bufsz - pos, 0);
-				pos += strlen(buf);
+				pos += strlen(buf + pos);
 				if (bufsz - pos > 0)
 					buf[pos++] = '\n';
 			}
@@ -932,7 +935,7 @@ static ssize_t iwl_dbgfs_traffic_log_read(struct file *file,
 						"0x%.4x ", ofs);
 				hex_dump_to_buffer(ptr + ofs, 16, 16, 2,
 						   buf + pos, bufsz - pos, 0);
-				pos += strlen(buf);
+				pos += strlen(buf + pos);
 				if (bufsz - pos > 0)
 					buf[pos++] = '\n';
 			}

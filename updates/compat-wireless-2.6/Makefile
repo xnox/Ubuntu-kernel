@@ -24,6 +24,7 @@ ifeq ($(ONLY_CORE),)
 obj-m += \
 	drivers/ssb/ \
 	drivers/misc/eeprom/ \
+	drivers/net/ \
 	drivers/net/usb/ \
 	drivers/net/wireless/
 endif
@@ -65,6 +66,7 @@ install: uninstall install-modules install-scripts
 install-modules: modules
 	$(MAKE) -C $(KLIB_BUILD) M=$(PWD) $(KMODDIR_ARG) $(KMODPATH_ARG) \
 		modules_install
+	@./scripts/update-initramfs
 
 install-scripts:
 	@# All the scripts we can use

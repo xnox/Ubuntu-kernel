@@ -2839,6 +2839,8 @@ static struct iwl_lib_ops iwl3945_lib = {
 	.txq_free_tfd = iwl3945_hw_txq_free_tfd,
 	.txq_init = iwl3945_hw_tx_queue_init,
 	.load_ucode = iwl3945_load_bsm,
+	.dump_nic_event_log = iwl3945_dump_nic_event_log,
+	.dump_nic_error_log = iwl3945_dump_nic_error_log,
 	.apm_ops = {
 		.init = iwl3945_apm_init,
 		.reset = iwl3945_apm_reset,
@@ -2892,6 +2894,7 @@ static struct iwl_cfg iwl3945_bg_cfg = {
 	.mod_params = &iwl3945_mod_params,
 	.use_isr_legacy = true,
 	.ht_greenfield_support = false,
+	.led_compensation = 64,
 };
 
 static struct iwl_cfg iwl3945_abg_cfg = {
@@ -2906,6 +2909,7 @@ static struct iwl_cfg iwl3945_abg_cfg = {
 	.mod_params = &iwl3945_mod_params,
 	.use_isr_legacy = true,
 	.ht_greenfield_support = false,
+	.led_compensation = 64,
 };
 
 struct pci_device_id iwl3945_hw_card_ids[] = {

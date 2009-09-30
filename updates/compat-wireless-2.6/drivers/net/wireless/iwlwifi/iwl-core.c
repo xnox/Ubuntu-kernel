@@ -607,8 +607,7 @@ EXPORT_SYMBOL(iwlcore_free_geos);
 static bool is_single_rx_stream(struct iwl_priv *priv)
 {
 	return !priv->current_ht_config.is_ht ||
-	       ((priv->current_ht_config.mcs.rx_mask[1] == 0) &&
-		(priv->current_ht_config.mcs.rx_mask[2] == 0));
+	       priv->current_ht_config.single_chain_sufficient;
 }
 
 static u8 iwl_is_channel_extension(struct iwl_priv *priv,
@@ -634,10 +633,9 @@ static u8 iwl_is_channel_extension(struct iwl_priv *priv,
 u8 iwl_is_ht40_tx_allowed(struct iwl_priv *priv,
 			 struct ieee80211_sta_ht_cap *sta_ht_inf)
 {
-	struct iwl_ht_info *iwl_ht_conf = &priv->current_ht_config;
+	struct iwl_ht_config *ht_conf = &priv->current_ht_config;
 
-	if ((!iwl_ht_conf->is_ht) ||
-	    (iwl_ht_conf->supported_chan_width != IWL_CHANNEL_WIDTH_40MHZ))
+	if (!ht_conf->is_ht || !ht_conf->is_40mhz)
 		return 0;
 
 	/* We do not check for IEEE80211_HT_CAP_SUP_WIDTH_20_40
@@ -653,7 +651,7 @@ u8 iwl_is_ht40_tx_allowed(struct iwl_priv *priv,
 #endif
 	return iwl_is_channel_extension(priv, priv->band,
 			le16_to_cpu(priv->staging_rxon.channel),
-			iwl_ht_conf->extension_chan_offset);
+			ht_conf->extension_chan_offset);
 }
 EXPORT_SYMBOL(iwl_is_ht40_tx_allowed);
 
@@ -877,11 +875,11 @@ u8 iwl_rate_get_lowest_plcp(struct iwl_priv *priv)
 }
 EXPORT_SYMBOL(iwl_rate_get_lowest_plcp);
 
-void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info)
+void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_config *ht_conf)
 {
 	struct iwl_rxon_cmd *rxon = &priv->staging_rxon;
 
-	if (!ht_info->is_ht) {
+	if (!ht_conf->is_ht) {
 		rxon->flags &= ~(RXON_FLG_CHANNEL_MODE_MSK |
 			RXON_FLG_CTRL_CHANNEL_LOC_HI_MSK |
 			RXON_FLG_HT40_PROT_MSK |
@@ -892,7 +890,7 @@ void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info)
 	/* FIXME: if the definition of ht_protection changed, the "translation"
 	 * will be needed for rxon->flags
 	 */
-	rxon->flags |= cpu_to_le32(ht_info->ht_protection << RXON_FLG_HT_OPERATING_MODE_POS);
+	rxon->flags |= cpu_to_le32(ht_conf->ht_protection << RXON_FLG_HT_OPERATING_MODE_POS);
 
 	/* Set up channel bandwidth:
 	 * 20 MHz only, 20/40 mixed or pure 40 if ht40 ok */
@@ -901,10 +899,10 @@ void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info)
 			 RXON_FLG_CTRL_CHANNEL_LOC_HI_MSK);
 	if (iwl_is_ht40_tx_allowed(priv, NULL)) {
 		/* pure ht40 */
-		if (ht_info->ht_protection == IEEE80211_HT_OP_MODE_PROTECTION_20MHZ) {
+		if (ht_conf->ht_protection == IEEE80211_HT_OP_MODE_PROTECTION_20MHZ) {
 			rxon->flags |= RXON_FLG_CHANNEL_MODE_PURE_40;
 			/* Note: control channel is opposite of extension channel */
-			switch (ht_info->extension_chan_offset) {
+			switch (ht_conf->extension_chan_offset) {
 			case IEEE80211_HT_PARAM_CHA_SEC_ABOVE:
 				rxon->flags &= ~RXON_FLG_CTRL_CHANNEL_LOC_HI_MSK;
 				break;
@@ -914,7 +912,7 @@ void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info)
 			}
 		} else {
 			/* Note: control channel is opposite of extension channel */
-			switch (ht_info->extension_chan_offset) {
+			switch (ht_conf->extension_chan_offset) {
 			case IEEE80211_HT_PARAM_CHA_SEC_ABOVE:
 				rxon->flags &= ~(RXON_FLG_CTRL_CHANNEL_LOC_HI_MSK);
 				rxon->flags |= RXON_FLG_CHANNEL_MODE_MIXED;
@@ -937,14 +935,10 @@ void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info)
 	if (priv->cfg->ops->hcmd->set_rxon_chain)
 		priv->cfg->ops->hcmd->set_rxon_chain(priv);
 
-	IWL_DEBUG_ASSOC(priv, "supported HT rate 0x%X 0x%X 0x%X "
-			"rxon flags 0x%X operation mode :0x%X "
+	IWL_DEBUG_ASSOC(priv, "rxon flags 0x%X operation mode :0x%X "
 			"extension channel offset 0x%x\n",
-			ht_info->mcs.rx_mask[0],
-			ht_info->mcs.rx_mask[1],
-			ht_info->mcs.rx_mask[2],
-			le32_to_cpu(rxon->flags), ht_info->ht_protection,
-			ht_info->extension_chan_offset);
+			le32_to_cpu(rxon->flags), ht_conf->ht_protection,
+			ht_conf->extension_chan_offset);
 	return;
 }
 EXPORT_SYMBOL(iwl_set_rxon_ht);
@@ -954,47 +948,37 @@ EXPORT_SYMBOL(iwl_set_rxon_ht);
 #define IWL_NUM_IDLE_CHAINS_DUAL	2
 #define IWL_NUM_IDLE_CHAINS_SINGLE	1
 
-/* Determine how many receiver/antenna chains to use.
- * More provides better reception via diversity.  Fewer saves power.
+/*
+ * Determine how many receiver/antenna chains to use.
+ *
+ * More provides better reception via diversity.  Fewer saves power
+ * at the expense of throughput, but only when not in powersave to
+ * start with.
+ *
  * MIMO (dual stream) requires at least 2, but works better with 3.
  * This does not determine *which* chains to use, just how many.
  */
 static int iwl_get_active_rx_chain_count(struct iwl_priv *priv)
 {
-	bool is_single = is_single_rx_stream(priv);
-	bool is_cam = !test_bit(STATUS_POWER_PMI, &priv->status);
-
 	/* # of Rx chains to use when expecting MIMO. */
-	if (is_single || (!is_cam && (priv->current_ht_config.sm_ps ==
-						 WLAN_HT_CAP_SM_PS_STATIC)))
+	if (is_single_rx_stream(priv))
 		return IWL_NUM_RX_CHAINS_SINGLE;
 	else
 		return IWL_NUM_RX_CHAINS_MULTIPLE;
 }
 
+/*
+ * When we are in power saving, there's no difference between
+ * using multiple chains or just a single chain, but due to the
+ * lack of SM PS we lose a lot of throughput if we use just a
+ * single chain.
+ *
+ * Therefore, use the active count here (which will use multiple
+ * chains unless connected to a legacy AP).
+ */
 static int iwl_get_idle_rx_chain_count(struct iwl_priv *priv, int active_cnt)
 {
-	int idle_cnt;
-	bool is_cam = !test_bit(STATUS_POWER_PMI, &priv->status);
-	/* # Rx chains when idling and maybe trying to save power */
-	switch (priv->current_ht_config.sm_ps) {
-	case WLAN_HT_CAP_SM_PS_STATIC:
-	case WLAN_HT_CAP_SM_PS_DYNAMIC:
-		idle_cnt = (is_cam) ? IWL_NUM_IDLE_CHAINS_DUAL :
-					IWL_NUM_IDLE_CHAINS_SINGLE;
-		break;
-	case WLAN_HT_CAP_SM_PS_DISABLED:
-		idle_cnt = (is_cam) ? active_cnt : IWL_NUM_IDLE_CHAINS_SINGLE;
-		break;
-	case WLAN_HT_CAP_SM_PS_INVALID:
-	default:
-		IWL_ERR(priv, "invalid mimo ps mode %d\n",
-			   priv->current_ht_config.sm_ps);
-		WARN_ON(1);
-		idle_cnt = -1;
-		break;
-	}
-	return idle_cnt;
+	return active_cnt;
 }
 
 /* up to 4 chains */
@@ -1004,7 +988,7 @@ static u8 iwl_count_chain_bitmap(u32 chain_bitmap)
 	res = (chain_bitmap & BIT(0)) >> 0;
 	res += (chain_bitmap & BIT(1)) >> 1;
 	res += (chain_bitmap & BIT(2)) >> 2;
-	res += (chain_bitmap & BIT(4)) >> 4;
+	res += (chain_bitmap & BIT(3)) >> 3;
 	return res;
 }
 
@@ -1309,189 +1293,6 @@ static void iwl_print_rx_config_cmd(struct iwl_priv *priv)
 	IWL_DEBUG_RADIO(priv, "u8[6] bssid_addr: %pM\n", rxon->bssid_addr);
 	IWL_DEBUG_RADIO(priv, "u16 assoc_id: 0x%x\n", le16_to_cpu(rxon->assoc_id));
 }
-
-static const char *desc_lookup_text[] = {
-	"OK",
-	"FAIL",
-	"BAD_PARAM",
-	"BAD_CHECKSUM",
-	"NMI_INTERRUPT_WDG",
-	"SYSASSERT",
-	"FATAL_ERROR",
-	"BAD_COMMAND",
-	"HW_ERROR_TUNE_LOCK",
-	"HW_ERROR_TEMPERATURE",
-	"ILLEGAL_CHAN_FREQ",
-	"VCC_NOT_STABLE",
-	"FH_ERROR",
-	"NMI_INTERRUPT_HOST",
-	"NMI_INTERRUPT_ACTION_PT",
-	"NMI_INTERRUPT_UNKNOWN",
-	"UCODE_VERSION_MISMATCH",
-	"HW_ERROR_ABS_LOCK",
-	"HW_ERROR_CAL_LOCK_FAIL",
-	"NMI_INTERRUPT_INST_ACTION_PT",
-	"NMI_INTERRUPT_DATA_ACTION_PT",
-	"NMI_TRM_HW_ER",
-	"NMI_INTERRUPT_TRM",
-	"NMI_INTERRUPT_BREAK_POINT"
-	"DEBUG_0",
-	"DEBUG_1",
-	"DEBUG_2",
-	"DEBUG_3",
-	"UNKNOWN"
-};
-
-static const char *desc_lookup(int i)
-{
-	int max = ARRAY_SIZE(desc_lookup_text) - 1;
-
-	if (i < 0 || i > max)
-		i = max;
-
-	return desc_lookup_text[i];
-}
-
-#define ERROR_START_OFFSET  (1 * sizeof(u32))
-#define ERROR_ELEM_SIZE     (7 * sizeof(u32))
-
-static void iwl_dump_nic_error_log(struct iwl_priv *priv)
-{
-	u32 data2, line;
-	u32 desc, time, count, base, data1;
-	u32 blink1, blink2, ilink1, ilink2;
-
-	if (priv->ucode_type == UCODE_INIT)
-		base = le32_to_cpu(priv->card_alive_init.error_event_table_ptr);
-	else
-		base = le32_to_cpu(priv->card_alive.error_event_table_ptr);
-
-	if (!priv->cfg->ops->lib->is_valid_rtc_data_addr(base)) {
-		IWL_ERR(priv, "Not valid error log pointer 0x%08X\n", base);
-		return;
-	}
-
-	count = iwl_read_targ_mem(priv, base);
-
-	if (ERROR_START_OFFSET <= count * ERROR_ELEM_SIZE) {
-		IWL_ERR(priv, "Start IWL Error Log Dump:\n");
-		IWL_ERR(priv, "Status: 0x%08lX, count: %d\n",
-			priv->status, count);
-	}
-
-	desc = iwl_read_targ_mem(priv, base + 1 * sizeof(u32));
-	blink1 = iwl_read_targ_mem(priv, base + 3 * sizeof(u32));
-	blink2 = iwl_read_targ_mem(priv, base + 4 * sizeof(u32));
-	ilink1 = iwl_read_targ_mem(priv, base + 5 * sizeof(u32));
-	ilink2 = iwl_read_targ_mem(priv, base + 6 * sizeof(u32));
-	data1 = iwl_read_targ_mem(priv, base + 7 * sizeof(u32));
-	data2 = iwl_read_targ_mem(priv, base + 8 * sizeof(u32));
-	line = iwl_read_targ_mem(priv, base + 9 * sizeof(u32));
-	time = iwl_read_targ_mem(priv, base + 11 * sizeof(u32));
-
-	IWL_ERR(priv, "Desc                               Time       "
-		"data1      data2      line\n");
-	IWL_ERR(priv, "%-28s (#%02d) %010u 0x%08X 0x%08X %u\n",
-		desc_lookup(desc), desc, time, data1, data2, line);
-	IWL_ERR(priv, "blink1  blink2  ilink1  ilink2\n");
-	IWL_ERR(priv, "0x%05X 0x%05X 0x%05X 0x%05X\n", blink1, blink2,
-		ilink1, ilink2);
-
-}
-
-#define EVENT_START_OFFSET  (4 * sizeof(u32))
-
-/**
- * iwl_print_event_log - Dump error event log to syslog
- *
- */
-static void iwl_print_event_log(struct iwl_priv *priv, u32 start_idx,
-				u32 num_events, u32 mode)
-{
-	u32 i;
-	u32 base;       /* SRAM byte address of event log header */
-	u32 event_size; /* 2 u32s, or 3 u32s if timestamp recorded */
-	u32 ptr;        /* SRAM byte address of log data */
-	u32 ev, time, data; /* event log data */
-
-	if (num_events == 0)
-		return;
-	if (priv->ucode_type == UCODE_INIT)
-		base = le32_to_cpu(priv->card_alive_init.log_event_table_ptr);
-	else
-		base = le32_to_cpu(priv->card_alive.log_event_table_ptr);
-
-	if (mode == 0)
-		event_size = 2 * sizeof(u32);
-	else
-		event_size = 3 * sizeof(u32);
-
-	ptr = base + EVENT_START_OFFSET + (start_idx * event_size);
-
-	/* "time" is actually "data" for mode 0 (no timestamp).
-	* place event id # at far right for easier visual parsing. */
-	for (i = 0; i < num_events; i++) {
-		ev = iwl_read_targ_mem(priv, ptr);
-		ptr += sizeof(u32);
-		time = iwl_read_targ_mem(priv, ptr);
-		ptr += sizeof(u32);
-		if (mode == 0) {
-			/* data, ev */
-			IWL_ERR(priv, "EVT_LOG:0x%08x:%04u\n", time, ev);
-		} else {
-			data = iwl_read_targ_mem(priv, ptr);
-			ptr += sizeof(u32);
-			IWL_ERR(priv, "EVT_LOGT:%010u:0x%08x:%04u\n",
-					time, data, ev);
-		}
-	}
-}
-
-void iwl_dump_nic_event_log(struct iwl_priv *priv)
-{
-	u32 base;       /* SRAM byte address of event log header */
-	u32 capacity;   /* event log capacity in # entries */
-	u32 mode;       /* 0 - no timestamp, 1 - timestamp recorded */
-	u32 num_wraps;  /* # times uCode wrapped to top of log */
-	u32 next_entry; /* index of next entry to be written by uCode */
-	u32 size;       /* # entries that we'll print */
-
-	if (priv->ucode_type == UCODE_INIT)
-		base = le32_to_cpu(priv->card_alive_init.log_event_table_ptr);
-	else
-		base = le32_to_cpu(priv->card_alive.log_event_table_ptr);
-
-	if (!priv->cfg->ops->lib->is_valid_rtc_data_addr(base)) {
-		IWL_ERR(priv, "Invalid event log pointer 0x%08X\n", base);
-		return;
-	}
-
-	/* event log header */
-	capacity = iwl_read_targ_mem(priv, base);
-	mode = iwl_read_targ_mem(priv, base + (1 * sizeof(u32)));
-	num_wraps = iwl_read_targ_mem(priv, base + (2 * sizeof(u32)));
-	next_entry = iwl_read_targ_mem(priv, base + (3 * sizeof(u32)));
-
-	size = num_wraps ? capacity : next_entry;
-
-	/* bail out if nothing in log */
-	if (size == 0) {
-		IWL_ERR(priv, "Start IWL Event Log Dump: nothing in log\n");
-		return;
-	}
-
-	IWL_ERR(priv, "Start IWL Event Log Dump: display count %d, wraps %d\n",
-			size, num_wraps);
-
-	/* if uCode has wrapped back to top of log, start at the oldest entry,
-	 * i.e the next one that uCode would fill. */
-	if (num_wraps)
-		iwl_print_event_log(priv, next_entry,
-					capacity - next_entry, mode);
-	/* (then/else) start at top of log */
-	iwl_print_event_log(priv, 0, next_entry, mode);
-
-}
 #endif
 /**
  * iwl_irq_handle_error - called for HW or SW error interrupt from card
@@ -1506,8 +1307,8 @@ void iwl_irq_handle_error(struct iwl_priv *priv)
 
 #ifdef CONFIG_IWLWIFI_DEBUG
 	if (iwl_get_debug_level(priv) & IWL_DL_FW_ERRORS) {
-		iwl_dump_nic_error_log(priv);
-		iwl_dump_nic_event_log(priv);
+		priv->cfg->ops->lib->dump_nic_error_log(priv);
+		priv->cfg->ops->lib->dump_nic_event_log(priv);
 		iwl_print_rx_config_cmd(priv);
 	}
 #endif
@@ -1676,8 +1477,6 @@ int iwl_init_drv(struct iwl_priv *priv)
 	priv->band = IEEE80211_BAND_2GHZ;
 
 	priv->iw_mode = NL80211_IFTYPE_STATION;
-
-	priv->current_ht_config.sm_ps = WLAN_HT_CAP_SM_PS_DISABLED;
 
 	/* Choose which receivers/antennas to use */
 	if (priv->cfg->ops->hcmd->set_rxon_chain)
@@ -2410,42 +2209,58 @@ int iwl_mac_conf_tx(struct ieee80211_hw *hw, u16 queue,
 EXPORT_SYMBOL(iwl_mac_conf_tx);
 
 static void iwl_ht_conf(struct iwl_priv *priv,
-			    struct ieee80211_bss_conf *bss_conf)
+			struct ieee80211_bss_conf *bss_conf)
 {
-	struct ieee80211_sta_ht_cap *ht_conf;
-	struct iwl_ht_info *iwl_conf = &priv->current_ht_config;
+	struct iwl_ht_config *ht_conf = &priv->current_ht_config;
 	struct ieee80211_sta *sta;
 
 	IWL_DEBUG_MAC80211(priv, "enter: \n");
 
-	if (!iwl_conf->is_ht)
+	if (!ht_conf->is_ht)
 		return;
 
-
-	/*
-	 * It is totally wrong to base global information on something
-	 * that is valid only when associated, alas, this driver works
-	 * that way and I don't know how to fix it.
-	 */
-
-	rcu_read_lock();
-	sta = ieee80211_find_sta(priv->hw, priv->bssid);
-	if (!sta) {
-		rcu_read_unlock();
-		return;
-	}
-	ht_conf = &sta->ht_cap;
-
-	iwl_conf->sm_ps = (u8)((ht_conf->cap & IEEE80211_HT_CAP_SM_PS) >> 2);
-
-	memcpy(&iwl_conf->mcs, &ht_conf->mcs, 16);
-
-	iwl_conf->ht_protection =
+	ht_conf->ht_protection =
 		bss_conf->ht_operation_mode & IEEE80211_HT_OP_MODE_PROTECTION;
-	iwl_conf->non_GF_STA_present =
+	ht_conf->non_GF_STA_present =
 		!!(bss_conf->ht_operation_mode & IEEE80211_HT_OP_MODE_NON_GF_STA_PRSNT);
 
-	rcu_read_unlock();
+	ht_conf->single_chain_sufficient = false;
+
+	switch (priv->iw_mode) {
+	case NL80211_IFTYPE_STATION:
+		rcu_read_lock();
+		sta = ieee80211_find_sta(priv->hw, priv->bssid);
+		if (sta) {
+			struct ieee80211_sta_ht_cap *ht_cap = &sta->ht_cap;
+			int maxstreams;
+
+			maxstreams = (ht_cap->mcs.tx_params &
+				      IEEE80211_HT_MCS_TX_MAX_STREAMS_MASK)
+					>> IEEE80211_HT_MCS_TX_MAX_STREAMS_SHIFT;
+			maxstreams += 1;
+
+			if ((ht_cap->mcs.rx_mask[1] == 0) &&
+			    (ht_cap->mcs.rx_mask[2] == 0))
+				ht_conf->single_chain_sufficient = true;
+			if (maxstreams <= 1)
+				ht_conf->single_chain_sufficient = true;
+		} else {
+			/*
+			 * If at all, this can only happen through a race
+			 * when the AP disconnects us while we're still
+			 * setting up the connection, in that case mac80211
+			 * will soon tell us about that.
+			 */
+			ht_conf->single_chain_sufficient = true;
+		}
+		rcu_read_unlock();
+		break;
+	case NL80211_IFTYPE_ADHOC:
+		ht_conf->single_chain_sufficient = true;
+		break;
+	default:
+		break;
+	}
 
 	IWL_DEBUG_MAC80211(priv, "leave\n");
 }
@@ -2752,7 +2567,7 @@ int iwl_mac_config(struct ieee80211_hw *hw, u32 changed)
 	struct iwl_priv *priv = hw->priv;
 	const struct iwl_channel_info *ch_info;
 	struct ieee80211_conf *conf = &hw->conf;
-	struct iwl_ht_info *ht_conf = &priv->current_ht_config;
+	struct iwl_ht_config *ht_conf = &priv->current_ht_config;
 	unsigned long flags = 0;
 	int ret = 0;
 	u16 ch;
@@ -2802,21 +2617,18 @@ int iwl_mac_config(struct ieee80211_hw *hw, u32 changed)
 			if (conf_is_ht40_minus(conf)) {
 				ht_conf->extension_chan_offset =
 					IEEE80211_HT_PARAM_CHA_SEC_BELOW;
-				ht_conf->supported_chan_width =
-					IWL_CHANNEL_WIDTH_40MHZ;
+				ht_conf->is_40mhz = true;
 			} else if (conf_is_ht40_plus(conf)) {
 				ht_conf->extension_chan_offset =
 					IEEE80211_HT_PARAM_CHA_SEC_ABOVE;
-				ht_conf->supported_chan_width =
-					IWL_CHANNEL_WIDTH_40MHZ;
+				ht_conf->is_40mhz = true;
 			} else {
 				ht_conf->extension_chan_offset =
 					IEEE80211_HT_PARAM_CHA_SEC_NONE;
-				ht_conf->supported_chan_width =
-					IWL_CHANNEL_WIDTH_20MHZ;
+				ht_conf->is_40mhz = false;
 			}
 		} else
-			ht_conf->supported_chan_width = IWL_CHANNEL_WIDTH_20MHZ;
+			ht_conf->is_40mhz = false;
 		/* Default to no protection. Protection mode will later be set
 		 * from BSS config in iwl_ht_conf */
 		ht_conf->ht_protection = IEEE80211_HT_OP_MODE_PROTECTION_NONE;
@@ -2838,7 +2650,8 @@ int iwl_mac_config(struct ieee80211_hw *hw, u32 changed)
 		iwl_set_rate(priv);
 	}
 
-	if (changed & IEEE80211_CONF_CHANGE_PS) {
+	if (changed & (IEEE80211_CONF_CHANGE_PS |
+			IEEE80211_CONF_CHANGE_IDLE)) {
 		ret = iwl_power_update_mode(priv, false);
 		if (ret)
 			IWL_DEBUG_MAC80211(priv, "Error setting sleep level\n");
@@ -2922,7 +2735,7 @@ void iwl_mac_reset_tsf(struct ieee80211_hw *hw)
 	IWL_DEBUG_MAC80211(priv, "enter\n");
 
 	spin_lock_irqsave(&priv->lock, flags);
-	memset(&priv->current_ht_config, 0, sizeof(struct iwl_ht_info));
+	memset(&priv->current_ht_config, 0, sizeof(struct iwl_ht_config));
 	spin_unlock_irqrestore(&priv->lock, flags);
 
 	iwl_reset_qos(priv);

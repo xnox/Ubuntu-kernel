@@ -495,14 +495,15 @@ static void iwl4965_chain_noise_reset(struct iwl_priv *priv)
 static void iwl4965_gain_computation(struct iwl_priv *priv,
 		u32 *average_noise,
 		u16 min_average_noise_antenna_i,
-		u32 min_average_noise)
+		u32 min_average_noise,
+		u8 default_chain)
 {
 	int i, ret;
 	struct iwl_chain_noise_data *data = &priv->chain_noise_data;
 
 	data->delta_gain_code[min_average_noise_antenna_i] = 0;
 
-	for (i = 0; i < NUM_RX_CHAINS; i++) {
+	for (i = default_chain; i < NUM_RX_CHAINS; i++) {
 		s32 delta_g = 0;
 
 		if (!(data->disconn_array[i]) &&
@@ -2298,6 +2299,8 @@ static struct iwl_lib_ops iwl4965_lib = {
 	.alive_notify = iwl4965_alive_notify,
 	.init_alive_start = iwl4965_init_alive_start,
 	.load_ucode = iwl4965_load_bsm,
+	.dump_nic_event_log = iwl_dump_nic_event_log,
+	.dump_nic_error_log = iwl_dump_nic_error_log,
 	.apm_ops = {
 		.init = iwl4965_apm_init,
 		.reset = iwl4965_apm_reset,
@@ -2353,26 +2356,29 @@ struct iwl_cfg iwl4965_agn_cfg = {
 	.use_isr_legacy = true,
 	.ht_greenfield_support = false,
 	.broken_powersave = true,
+	.led_compensation = 61,
+	.chain_noise_num_beacons = IWL4965_CAL_NUM_BEACONS,
 };
 
 /* Module firmware */
 MODULE_FIRMWARE(IWL4965_MODULE_FIRMWARE(IWL4965_UCODE_API_MAX));
 
-module_param_named(antenna, iwl4965_mod_params.antenna, int, 0444);
+module_param_named(antenna, iwl4965_mod_params.antenna, int, S_IRUGO);
 MODULE_PARM_DESC(antenna, "select antenna (1=Main, 2=Aux, default 0 [both])");
-module_param_named(swcrypto, iwl4965_mod_params.sw_crypto, int, 0444);
+module_param_named(swcrypto, iwl4965_mod_params.sw_crypto, int, S_IRUGO);
 MODULE_PARM_DESC(swcrypto, "using crypto in software (default 0 [hardware])");
 module_param_named(
-	disable_hw_scan, iwl4965_mod_params.disable_hw_scan, int, 0444);
+	disable_hw_scan, iwl4965_mod_params.disable_hw_scan, int, S_IRUGO);
 MODULE_PARM_DESC(disable_hw_scan, "disable hardware scanning (default 0)");
 
-module_param_named(queues_num, iwl4965_mod_params.num_of_queues, int, 0444);
+module_param_named(queues_num, iwl4965_mod_params.num_of_queues, int, S_IRUGO);
 MODULE_PARM_DESC(queues_num, "number of hw queues.");
 /* 11n */
-module_param_named(11n_disable, iwl4965_mod_params.disable_11n, int, 0444);
+module_param_named(11n_disable, iwl4965_mod_params.disable_11n, int, S_IRUGO);
 MODULE_PARM_DESC(11n_disable, "disable 11n functionality");
-module_param_named(amsdu_size_8K, iwl4965_mod_params.amsdu_size_8K, int, 0444);
+module_param_named(amsdu_size_8K, iwl4965_mod_params.amsdu_size_8K,
+		   int, S_IRUGO);
 MODULE_PARM_DESC(amsdu_size_8K, "enable 8K amsdu size");
 
-module_param_named(fw_restart4965, iwl4965_mod_params.restart_fw, int, 0444);
+module_param_named(fw_restart4965, iwl4965_mod_params.restart_fw, int, S_IRUGO);
 MODULE_PARM_DESC(fw_restart4965, "restart firmware in case of error");

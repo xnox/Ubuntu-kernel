@@ -35,7 +35,7 @@
  * released by Atheros and on various debug messages found on the net.
  */
 
-
+#include "../reg.h"
 
 /*====MAC DMA REGISTERS====*/
 
@@ -982,7 +982,7 @@
 #define AR5K_5414_CBCFG_BUF_DIS	0x10	/* Disable buffer */
 
 /*
- * PCI-E Power managment configuration
+ * PCI-E Power management configuration
  * and status register [5424+]
  */
 #define	AR5K_PCIE_PM_CTL		0x4068			/* Register address */
@@ -1648,12 +1648,6 @@
 #define AR5K_SLEEP2_TIM_PER_S		0
 #define AR5K_SLEEP2_DTIM_PER		0xffff0000	/* Mask for DTIM period (?) */
 #define AR5K_SLEEP2_DTIM_PER_S		16
-
-/*
- * BSSID mask registers
- */
-#define AR5K_BSS_IDM0			0x80e0	/* Upper bits */
-#define AR5K_BSS_IDM1			0x80e4	/* Lower bits */
 
 /*
  * TX power control (TPC) register

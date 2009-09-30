@@ -89,6 +89,7 @@ struct iwl_hcmd_ops {
 	int (*rxon_assoc)(struct iwl_priv *priv);
 	int (*commit_rxon)(struct iwl_priv *priv);
 	void (*set_rxon_chain)(struct iwl_priv *priv);
+	int (*set_tx_ant)(struct iwl_priv *priv, u8 valid_tx_ant);
 };
 
 struct iwl_hcmd_utils_ops {
@@ -97,7 +98,8 @@ struct iwl_hcmd_utils_ops {
 	void (*gain_computation)(struct iwl_priv *priv,
 			u32 *average_noise,
 			u16 min_average_noise_antennat_i,
-			u32 min_average_noise);
+			u32 min_average_noise,
+			u8 default_chain);
 	void (*chain_noise_reset)(struct iwl_priv *priv);
 	void (*rts_tx_cmd_flag)(struct ieee80211_tx_info *info,
 			__le32 *tx_flags);
@@ -166,6 +168,8 @@ struct iwl_lib_ops {
 	int (*is_valid_rtc_data_addr)(u32 addr);
 	/* 1st ucode load */
 	int (*load_ucode)(struct iwl_priv *priv);
+	void (*dump_nic_event_log)(struct iwl_priv *priv);
+	void (*dump_nic_error_log)(struct iwl_priv *priv);
 	/* power management */
 	struct iwl_apm_ops apm_ops;
 
@@ -211,6 +215,11 @@ struct iwl_mod_params {
  * @pa_type: used by 6000 series only to identify the type of Power Amplifier
  * @max_ll_items: max number of OTP blocks
  * @shadow_ram_support: shadow support for OTP memory
+ * @led_compensation: compensate on the led on/off time per HW according
+ *	to the deviation to achieve the desired led frequency.
+ *	The detail algorithm is described in iwl-led.c
+ * @use_rts_for_ht: use rts/cts protection for HT traffic
+ * @chain_noise_num_beacons: number of beacons used to compute chain noise
  *
  * We enable the driver to be backward compatible wrt API version. The
  * driver specifies which APIs it supports (with @ucode_api_max being the
@@ -252,7 +261,11 @@ struct iwl_cfg {
 	const u16 max_ll_items;
 	const bool shadow_ram_support;
 	const bool ht_greenfield_support;
+	u16 led_compensation;
 	const bool broken_powersave;
+	bool use_rts_for_ht;
+	int chain_noise_num_beacons;
+	const bool supports_idle;
 };
 
 /***************************
@@ -271,7 +284,7 @@ int iwl_check_rxon_cmd(struct iwl_priv *priv);
 int iwl_full_rxon_required(struct iwl_priv *priv);
 void iwl_set_rxon_chain(struct iwl_priv *priv);
 int iwl_set_rxon_channel(struct iwl_priv *priv, struct ieee80211_channel *ch);
-void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_info *ht_info);
+void iwl_set_rxon_ht(struct iwl_priv *priv, struct iwl_ht_config *ht_conf);
 u8 iwl_is_ht40_tx_allowed(struct iwl_priv *priv,
 			 struct ieee80211_sta_ht_cap *sta_ht_inf);
 void iwl_set_flags_for_band(struct iwl_priv *priv, enum ieee80211_band band);
@@ -540,7 +553,19 @@ int iwl_pci_resume(struct pci_dev *pdev);
 /*****************************************************
 *  Error Handling Debugging
 ******************************************************/
+#ifdef CONFIG_IWLWIFI_DEBUG
 void iwl_dump_nic_event_log(struct iwl_priv *priv);
+void iwl_dump_nic_error_log(struct iwl_priv *priv);
+#else
+static inline void iwl_dump_nic_event_log(struct iwl_priv *priv)
+{
+}
+
+static inline void iwl_dump_nic_error_log(struct iwl_priv *priv)
+{
+}
+#endif
+
 void iwl_clear_isr_stats(struct iwl_priv *priv);
 
 /*****************************************************

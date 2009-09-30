@@ -197,6 +197,12 @@ void iwl_cmd_queue_free(struct iwl_priv *priv)
 		pci_free_consistent(dev, priv->hw_params.tfd_size *
 				    txq->q.n_bd, txq->tfds, txq->q.dma_addr);
 
+	/* deallocate arrays */
+	kfree(txq->cmd);
+	kfree(txq->meta);
+	txq->cmd = NULL;
+	txq->meta = NULL;
+
 	/* 0-fill queue descriptor structure */
 	memset(txq, 0, sizeof(*txq));
 }
@@ -1394,7 +1400,7 @@ static int iwl_tx_status_reply_compressed_ba(struct iwl_priv *priv,
 
 	info = IEEE80211_SKB_CB(priv->txq[scd_flow].txb[agg->start_idx].skb[0]);
 	memset(&info->status, 0, sizeof(info->status));
-	info->flags = IEEE80211_TX_STAT_ACK;
+	info->flags |= IEEE80211_TX_STAT_ACK;
 	info->flags |= IEEE80211_TX_STAT_AMPDU;
 	info->status.ampdu_ack_map = successes;
 	info->status.ampdu_ack_len = agg->frame_count;
