@@ -7,7 +7,7 @@ obj-$(CONFIG_LIB80211_CRYPT_TKIP) += lib80211_crypt_tkip.o
 cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o scan.o nl80211.o
 cfg80211-y += mlme.o ibss.o sme.o chan.o
 cfg80211-$(CONFIG_CFG80211_DEBUGFS) += debugfs.o
-cfg80211-$(CONFIG_WIRELESS_EXT) += wext-compat.o wext-sme.o
+cfg80211-$(CONFIG_CFG80211_WEXT) += wext-compat.o wext-sme.o
 
 ccflags-y += -D__CHECK_ENDIAN__
 # Compat-wireless kernel compatibility code
