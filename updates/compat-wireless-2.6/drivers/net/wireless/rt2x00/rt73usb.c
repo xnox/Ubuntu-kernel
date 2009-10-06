@@ -36,6 +36,13 @@
 #include "rt2x00usb.h"
 #include "rt73usb.h"
 
+struct rt73_work_info {
+	struct work_struct work;
+	struct rt2x00_dev *rt2x00dev;
+};
+
+struct rt73_work_info rt73_work;
+
 /*
  * Register access.
  * All access to the CSR registers will go through the methods
@@ -1426,6 +1433,62 @@ static void rt73usb_kick_tx_queue(struct rt2x00_dev *rt2x00dev,
 	}
 }
 
+static void rt73usb_tx_status_work(struct work_struct *work)
+{
+	u32 reg4;
+	u32 reg5;
+	int retry_fails;
+	struct rt73_work_info *rt73_work_item =
+		container_of(work, struct rt73_work_info, work);
+	struct rt2x00_dev *rt2x00dev = rt73_work_item->rt2x00dev;
+
+	rt73usb_register_read(rt2x00dev, STA_CSR4, &reg4);
+	rt73usb_register_read(rt2x00dev, STA_CSR5, &reg5);
+
+	retry_fails = rt2x00_get_field32(reg5, STA_CSR5_TX_RETRY_FAIL_COUNT);
+
+	if (retry_fails > 0)
+		/* -ve retry count indicates a failure */
+		rt2x00dev->tx_retry_count = -retry_fails;
+	else
+		if (rt2x00_get_field32(reg4, STA_CSR4_TX_NO_RETRY_COUNT) > 0)
+			rt2x00dev->tx_retry_count = 0;	/* Success */
+		else if (rt2x00_get_field32(reg4, STA_CSR4_TX_ONE_RETRY_COUNT) > 0)
+			rt2x00dev->tx_retry_count = 1;	/* Single retry */
+		else {
+			int retries = rt2x00_get_field32(reg5, STA_CSR5_TX_MULTI_RETRY_COUNT);
+			if (retries > 0)
+				rt2x00dev->tx_retry_count = retries;
+			else
+				rt2x00dev->tx_retry_count = 0;	/* Unknown */
+		}
+}
+
+static void rt73usb_get_tx_status(struct rt2x00_dev *rt2x00dev,
+				  struct txdone_entry_desc *txdesc)
+{
+	rt73_work.rt2x00dev = rt2x00dev;
+
+	/*
+	 * Caution: This is being called from withing an interrupt context.
+	 * We cannot gather statistics on the current transmitted packets
+	 * inside the interrupt context because we need to do USB register
+	 * reads. Instead, we shedule it to be run on a work queue to gather
+	 * statistics for the next packet. It's not 100% perfect solution
+	 * but it does at least supply some information back up the stack
+	 * to allow bitrate control to work.
+	 */
+	schedule_work(&rt73_work.work);
+
+	if (rt2x00dev->tx_retry_count < 0) {
+		__set_bit(TXDONE_FAILURE, &txdesc->flags);
+		txdesc->retry = 0;
+	} else {
+		__set_bit(TXDONE_SUCCESS, &txdesc->flags);
+		txdesc->retry = rt2x00dev->tx_retry_count;
+	}
+}
+
 /*
  * RX control handlers
  */
@@ -1927,6 +1990,8 @@ static int rt73usb_probe_hw(struct rt2x00_dev *rt2x00dev)
 {
 	int retval;
 
+	INIT_WORK(&rt73_work.work, rt73usb_tx_status_work);
+
 	/*
 	 * Allocate eeprom data.
 	 */
@@ -2033,6 +2098,7 @@ static const struct rt2x00lib_ops rt73usb_rt2x00_ops = {
 	.write_beacon		= rt73usb_write_beacon,
 	.get_tx_data_len	= rt73usb_get_tx_data_len,
 	.kick_tx_queue		= rt73usb_kick_tx_queue,
+	.get_tx_status		= rt73usb_get_tx_status,
 	.fill_rxdone		= rt73usb_fill_rxdone,
 	.config_filter		= rt73usb_config_filter,
 	.config_intf		= rt73usb_config_intf,
