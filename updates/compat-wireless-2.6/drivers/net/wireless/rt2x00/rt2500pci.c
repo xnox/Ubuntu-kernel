@@ -373,10 +373,8 @@ static void rt2500pci_config_erp(struct rt2x00_dev *rt2x00dev,
 	preamble_mask = erp->short_preamble << 3;
 
 	rt2x00pci_register_read(rt2x00dev, TXCSR1, &reg);
-	rt2x00_set_field32(&reg, TXCSR1_ACK_TIMEOUT,
-			   erp->ack_timeout);
-	rt2x00_set_field32(&reg, TXCSR1_ACK_CONSUME_TIME,
-			   erp->ack_consume_time);
+	rt2x00_set_field32(&reg, TXCSR1_ACK_TIMEOUT, 0x162);
+	rt2x00_set_field32(&reg, TXCSR1_ACK_CONSUME_TIME, 0xa2);
 	rt2x00pci_register_write(rt2x00dev, TXCSR1, reg);
 
 	rt2x00pci_register_read(rt2x00dev, ARCSR2, &reg);
