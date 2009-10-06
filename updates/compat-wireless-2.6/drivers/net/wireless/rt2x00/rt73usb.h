@@ -619,8 +619,8 @@ struct hw_pairwise_ta_entry {
  * STA_CSR5: TX Retry count.
  */
 #define STA_CSR5			0x30d4
-#define STA_CSR4_TX_MULTI_RETRY_COUNT	FIELD32(0x0000ffff)
-#define STA_CSR4_TX_RETRY_FAIL_COUNT	FIELD32(0xffff0000)
+#define STA_CSR5_TX_MULTI_RETRY_COUNT	FIELD32(0x0000ffff)
+#define STA_CSR5_TX_RETRY_FAIL_COUNT	FIELD32(0xffff0000)
 
 /*
  * QOS control registers.

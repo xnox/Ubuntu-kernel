@@ -528,6 +528,8 @@ struct rt2x00lib_ops {
 				struct sk_buff *skb);
 	void (*kick_tx_queue) (struct rt2x00_dev *rt2x00dev,
 			       const enum data_queue_qid queue);
+	void (*get_tx_status) (struct rt2x00_dev *rt2x00dev,
+			       struct txdone_entry_desc *txdesc);
 
 	/*
 	 * RX control handlers
@@ -812,6 +814,11 @@ struct rt2x00_dev {
 	 * Firmware image.
 	 */
 	const struct firmware *fw;
+
+	/*
+	 * Cached TX stats, rt73usb
+	 */
+	int tx_retry_count;
 };
 
 /*
