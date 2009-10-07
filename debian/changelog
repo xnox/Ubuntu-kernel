@@ -1,3 +1,19 @@
+linux-backports-modules-2.6.24 (2.6.24-24.60netbook01) netbook-common; urgency=low
+
+  [Ike Panhc]
+
+  * Report TX retry and fail count to mac80211 in rt73usb
+
+  [Steve Conklin]
+
+  * Change version string to look for the NBK- tags in printchanges
+
+  [Upstream Kernel Changes]
+
+  * rt2x00: Hardcode TX ack timeout and consume time
+
+ --  <sconklin@canonical.com>  Wed, 07 Oct 2009 15:51:16 +0000
+
 linux-backports-modules-2.6.24 (2.6.24-24.59netbook01) netbook-common; urgency=low
 
   * reversion to match latest kernel
