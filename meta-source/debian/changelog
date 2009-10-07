@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.31.206.6) karmic; urgency=low
+
+  * Karmic ABI 206
+
+ -- Andy Whitcroft <apw@canonical.com>  Wed, 07 Oct 2009 12:52:16 +0100
+
 linux-meta-mvl-dove (2.6.31.204.5) karmic; urgency=low
 
   * Karmic ABI 204
