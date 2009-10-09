@@ -1,5 +1,5 @@
 Source: linux-backports-modules-2.6.31
-Section: base
+Section: admin
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
@@ -19,7 +19,7 @@ Description: Header files related to Linux ubuntu-modules version 2.6.31
 
 Package: linux-backports-modules-2.6.31-13-generic
 Architecture: i386 amd64
-Section: base
+Section: admin
 Priority: optional
 Provides: 
 Depends: linux-image-2.6.31-13-generic
@@ -34,7 +34,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86/x86_64
 
 Package: linux-headers-lbm-2.6.31-13-generic
 Architecture: i386 amd64
-Section: base
+Section: devel
 Priority: optional
 Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-13-generic
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
@@ -45,7 +45,7 @@ Description: Header files related to linux-backports-modules version 2.6.31
 
 Package: linux-backports-modules-2.6.31-13-generic-pae
 Architecture: i386
-Section: base
+Section: admin
 Priority: optional
 Provides: 
 Depends: linux-image-2.6.31-13-generic-pae
@@ -60,7 +60,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86
 
 Package: linux-headers-lbm-2.6.31-13-generic-pae
 Architecture: i386
-Section: base
+Section: devel
 Priority: optional
 Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-13-generic-pae
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
@@ -71,7 +71,7 @@ Description: Header files related to linux-backports-modules version 2.6.31
 
 Package: linux-backports-modules-2.6.31-13-lpia
 Architecture: lpia
-Section: base
+Section: admin
 Priority: optional
 Provides: 
 Depends: linux-image-2.6.31-13-lpia
@@ -86,7 +86,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on lpia
 
 Package: linux-headers-lbm-2.6.31-13-lpia
 Architecture: lpia
-Section: base
+Section: devel
 Priority: optional
 Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-13-lpia
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
@@ -97,7 +97,7 @@ Description: Header files related to linux-backports-modules version 2.6.31
 
 Package: linux-backports-modules-2.6.31-13-server
 Architecture: amd64
-Section: base
+Section: admin
 Priority: optional
 Provides: 
 Depends: linux-image-2.6.31-13-server
@@ -112,7 +112,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86_64
 
 Package: linux-headers-lbm-2.6.31-13-server
 Architecture: amd64
-Section: base
+Section: devel
 Priority: optional
 Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-13-server
 Provides: linux-headers-lbm, linux-headers-lbm-2.6

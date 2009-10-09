@@ -1,5 +1,5 @@
 Source: linux-backports-modules-PKGVER
-Section: base
+Section: admin
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1

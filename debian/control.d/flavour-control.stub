@@ -25,7 +25,7 @@ Description: Ubuntu supplied Linux modules for version PKGVER on DESC
 
 Package: linux-headers-lbm-PKGVER-ABINUM-FLAVOUR
 Architecture: ARCH
-Section: SECTION_IMAGE
+Section: SECTION_HEADERS
 Priority: optional
 Depends: coreutils | fileutils (>= 4.0), linux-headers-PKGVER-ABINUM-FLAVOUR
 Provides: linux-headers-lbm, linux-headers-lbm-2.6

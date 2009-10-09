@@ -4,7 +4,7 @@ stub=debian/control.d/flavour-control.stub
 vars=$1
 
 # Defaults
-section_image=base
+section_image=admin
 section_headers=devel
 
 . $vars
@@ -20,4 +20,5 @@ cat $stub | grep -v '^#' | sed			\
 	-e "s#DESC#$desc#g"			\
 	-e "s#ARCH#$arch#g"			\
 	-e "s#=PROVIDES=#$provides#g"		\
-	-e "s#SECTION_IMAGE#$section_image#g"
+	-e "s#SECTION_IMAGE#$section_image#g"	\
+	-e "s#SECTION_HEADERS#$section_headers#g"
