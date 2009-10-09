@@ -6057,7 +6057,7 @@ static struct net_device *ipw2100_alloc_device(struct pci_dev *pci_dev,
 
 	dev->ethtool_ops = &ipw2100_ethtool_ops;
 	dev->wireless_handlers = &ipw2100_wx_handler_def;
-	priv->wireless_data.libipw = priv->ieee;
+	priv->wireless_data.ieee80211 = (struct ieee80211_device *) priv->ieee;
 	dev->wireless_data = &priv->wireless_data;
 	dev->watchdog_timeo = 3 * HZ;
 	dev->irq = 0;

@@ -6,8 +6,10 @@
 
 DRIVERS_MAKEFILE="drivers/net/wireless/Makefile"
 ATH_MAKEFILE="drivers/net/wireless/ath/Makefile"
+ATH9K_MAKEFILE="drivers/net/wireless/ath/ath9k/Makefile"
 NET_WIRELESS_MAKEFILE="net/wireless/Makefile"
 EEPROM_MAKEFILE="drivers/misc/eeprom/Makefile"
+DRIVERS_NET="drivers/net/Makefile"
 DRIVERS_NET_USB_MAKEFILE="drivers/net/usb/Makefile"
 SSB_MAKEFILE="drivers/ssb/Makefile"
 
@@ -95,7 +97,8 @@ function disable_lib80211
 }
 
 function disable_b44 {
-	perl -i -ne 'print if ! /CONFIG_B44/ ' Makefile
+	backup_file $DRIVERS_NET
+	perl -i -ne 'print if ! /CONFIG_B44/ ' $DRIVERS_NET
 }
 
 function disable_ssb
@@ -138,7 +141,13 @@ function disable_var_02 {
 function select_ath_driver 
 {
 	backup_file $ATH_MAKEFILE
-	perl -i -ne 'print if /'$1'/ || /CONFIG_ATH_COMMON/ || /ath-objs/ ' $ATH_MAKEFILE
+	perl -i -ne 'print if /'$1'/ || /CONFIG_ATH_COMMON/ || /ath-objs/ || /regd.o/ || /hw.o/ ' $ATH_MAKEFILE
+	disable_var_01
+}
+
+function select_ath9k_driver
+{
+	select_ath_driver CONFIG_ATH9K_HW
 	disable_var_01
 }
 
@@ -229,7 +238,7 @@ case $1 in
 		;;
 	ath9k)
 		select_driver		CONFIG_ATH_COMMON
-		select_ath_driver	CONFIG_ATH9K
+		select_ath9k_driver
 		;;
 	ar9170)
 		select_driver		CONFIG_ATH_COMMON

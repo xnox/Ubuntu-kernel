@@ -195,12 +195,40 @@ static int __devinit	ath5k_pci_probe(struct pci_dev *pdev,
 				const struct pci_device_id *id);
 static void __devexit	ath5k_pci_remove(struct pci_dev *pdev);
 #ifdef CONFIG_PM
-static int		ath5k_pci_suspend(struct pci_dev *pdev,
-					pm_message_t state);
-static int		ath5k_pci_resume(struct pci_dev *pdev);
+static int		ath5k_pci_suspend(struct device *dev);
+static int		ath5k_pci_resume(struct device *dev);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
+#endif
+static int ath5k_pci_suspend_compat(struct pci_dev *pdev, pm_message_t state)
+{
+	int r;
+
+	r = ath5k_pci_suspend(&pdev->dev);
+	if (r)
+		return r;
+
+	pci_save_state(pdev);
+	pci_disable_device(pdev);
+	pci_set_power_state(pdev, PCI_D3hot);
+	return 0;
+}
+
+static int ath5k_pci_resume_compat(struct pci_dev *pdev)
+{
+	int r;
+
+	pci_restore_state(pdev);
+	r = pci_enable_device(pdev);
+	if (r)
+		return r;
+
+	return ath5k_pci_resume(&pdev->dev);
+}
+
+SIMPLE_DEV_PM_OPS(ath5k_pm_ops, ath5k_pci_suspend, ath5k_pci_resume);
+#define ATH5K_PM_OPS	(&ath5k_pm_ops)
 #else
-#define ath5k_pci_suspend NULL
-#define ath5k_pci_resume NULL
+#define ATH5K_PM_OPS	NULL
 #endif /* CONFIG_PM */
 
 static struct pci_driver ath5k_pci_driver = {
@@ -208,8 +236,12 @@ static struct pci_driver ath5k_pci_driver = {
 	.id_table	= ath5k_pci_id_table,
 	.probe		= ath5k_pci_probe,
 	.remove		= __devexit_p(ath5k_pci_remove),
-	.suspend	= ath5k_pci_suspend,
-	.resume		= ath5k_pci_resume,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+	.driver.pm	= ATH5K_PM_OPS,
+#else
+	.suspend        = ath5k_pci_suspend_compat,
+	.resume         = ath5k_pci_resume_compat,
+#endif
 };
 
 
@@ -703,33 +735,20 @@ ath5k_pci_remove(struct pci_dev *pdev)
 }
 
 #ifdef CONFIG_PM
-static int
-ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+static int ath5k_pci_suspend(struct device *dev)
 {
-	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
+	struct ieee80211_hw *hw = pci_get_drvdata(to_pci_dev(dev));
 	struct ath5k_softc *sc = hw->priv;
 
 	ath5k_led_off(sc);
-
-	pci_save_state(pdev);
-	pci_disable_device(pdev);
-	pci_set_power_state(pdev, PCI_D3hot);
-
 	return 0;
 }
 
-static int
-ath5k_pci_resume(struct pci_dev *pdev)
+static int ath5k_pci_resume(struct device *dev)
 {
+	struct pci_dev *pdev = to_pci_dev(dev);
 	struct ieee80211_hw *hw = pci_get_drvdata(pdev);
 	struct ath5k_softc *sc = hw->priv;
-	int err;
-
-	pci_restore_state(pdev);
-
-	err = pci_enable_device(pdev);
-	if (err)
-		return err;
 
 	/*
 	 * Suspend/Resume resets the PCI configuration space, so we have to
@@ -3224,9 +3243,8 @@ static void ath5k_bss_info_changed(struct ieee80211_hw *hw,
 	if (changes & BSS_CHANGED_BSSID) {
 		/* Cache for later use during resets */
 		memcpy(common->curbssid, bss_conf->bssid, ETH_ALEN);
-		/* XXX: assoc id is set to 0 for now, mac80211 doesn't have
-		 * a clean way of letting us retrieve this yet. */
-		ath5k_hw_set_associd(ah, common->curbssid, 0);
+		common->curaid = 0;
+		ath5k_hw_set_associd(ah);
 		mmiowb();
 	}
 
@@ -3239,6 +3257,14 @@ static void ath5k_bss_info_changed(struct ieee80211_hw *hw,
 			set_beacon_filter(hw, sc->assoc);
 		ath5k_hw_set_ledstate(sc->ah, sc->assoc ?
 			AR5K_LED_ASSOC : AR5K_LED_INIT);
+		if (bss_conf->assoc) {
+			ATH5K_DBG(sc, ATH5K_DEBUG_ANY,
+				  "Bss Info ASSOC %d, bssid: %pM\n",
+				  bss_conf->aid, common->curbssid);
+			common->curaid = bss_conf->aid;
+			ath5k_hw_set_associd(ah);
+			/* Once ANI is available you would start it here */
+		}
 	}
 
 	if (changes & BSS_CHANGED_BEACON) {
