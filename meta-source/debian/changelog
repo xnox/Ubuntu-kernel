@@ -1,3 +1,11 @@
+linux-ports-meta (2.6.31.13.11) karmic; urgency=low
+
+  * Drop all references to i386, linux-meta takes care of this now
+  * Remove linux-ports-source and doc. Linux-ports is no longer in
+    karmic
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Sat, 10 Oct 2009 16:52:53 +1100
+
 linux-ports-meta (2.6.31.13.10) karmic; urgency=low
 
   * Bump ABI
