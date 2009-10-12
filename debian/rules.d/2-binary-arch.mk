@@ -24,6 +24,7 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
 	mv $(builddir)/build-$*/MUNGE-CW $(builddir)/build-$*/compat-wireless-2.6
 	cd $(builddir)/build-$*/compat-wireless-2.6 && ./MUNGE-CW
+	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
@@ -38,6 +39,7 @@ $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
 	cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat)
+	cd $(builddir)/build-$*/alsa-driver && make $(conc_level)
 	$(kmake) $(conc_level) modules
 	@touch $@
 
