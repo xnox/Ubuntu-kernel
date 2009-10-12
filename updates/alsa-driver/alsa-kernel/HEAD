@@ -1,0 +1,10 @@
+3acf6315e1ec1d06ea226ef09361aea3cabf957f Merge branch 'fix/misc'
+e77f6be6107cfcdec6e804d1d8e8c75ef4adb5a5 ALSA: usb-audio - Add match for JMTek USB sound card
+fd114426cd591bd8411d11c21e5a8dd5ef6ce693 Merge branch 'topic/misc'
+68f139204c1a2b10cc292d9cca036ebdbb6730a8 ALSA: SND_CS5535AUDIO: Remove the X86 platform dependency
+d7247f9b6f5611defcbe2f6eb3d350c1b6409f9b Merge branch 'topic/hda'
+0f48327eac5f65ad029d7112cac97577766730ba sound: use semicolons to end statements
+2c07420980cce37f47d95a94f93a34c3f9a3510e Merge branch 'fix/misc'
+bd3c200e6d5495343c91db66d2acf1853b57a141 ALSA: ice1724 - Make call to set hw params succeed on ESI Juli@
+caa9a6ee60aee9452a1eb42fde5ad9c3b7a9f81a Merge branch 'topic/misc'
+8066e51ae7329220f459470a38387f8533e99141 ALSA: snd_dma_pointer workaround for chipsets with buggy DMA

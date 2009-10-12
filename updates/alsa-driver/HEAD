@@ -1,0 +1,10 @@
+510c34e95941d3549caeb117641fea6b5c3f51be Grammatical corrections in INSTALL and utils/setup-alsa-kernel script
+7d618cffc2e070345ec2beedf654b3cf1f702f38 Fix a typo in hda_intel.patch
+433fc7913ffad631b9779ffc480357d74a8f68a2 Fix a missing patch chunk in usx2yhwdeppcm.patch
+ad2fdbfff66dfbdcc21763a4a2a40037066508b1 Make MSI white/black-list for HD-audio
+800d5f13c434871489c7e608d498472a6b7e49bc Refresh vm_ops related patches
+6c2b53277e0898318ecdcb0ee6d685f29f90b094 Merge remote branch 'alsa/master'
+098ab174bd05f878d4284d4967709ad7738670f3 oxygen: add more build stubs
+aa7a6f525401fd6cbd845a6de7ff92654f723785 Refresh pcm_natvie.patch
+1a73487288030cb7568ba8e2aef047f155b8ccab Add a build-stub for i2c/other/ak4113.c
+548a79acf1a5d8b062fae83ae2bddc47d8e621a0 Add a build stub for pci/ice1712/quartet.c
