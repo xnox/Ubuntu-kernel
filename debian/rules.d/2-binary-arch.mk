@@ -44,12 +44,12 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@touch $@
 
 # Install the finished build
-install-%: pkgdir = $(CURDIR)/debian/linux-backports-modules-$(release)-$(abinum)-$*
-install-%: moddir = $(pkgdir)/lib/modules/$(release)-$(abinum)-$*
-install-%: firmdir = $(pkgdir)/lib/firmware/$(release)-$(abinum)-$*
-install-%: basehdrpkg = linux-headers-lbm-$(release)$(debnum)
-install-%: hdrpkg = $(basehdrpkg)-$*
-install-%: hdrdir = $(CURDIR)/debian/$(hdrpkg)/usr/src/$(hdrpkg)
+install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-$(release)-$(abinum)-$*
+install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
+install-%: firmdir = $(cwpkgdir)/lib/firmware/$(release)-$(abinum)-$*
+install-%: cwbasehdrpkg = linux-headers-lbm-$(release)$(debnum)
+install-%: cwhdrpkg = $(cwbasehdrpkg)-$*
+install-%: hdrdir = $(CURDIR)/debian/$(cwhdrpkg)/usr/src/$(cwhdrpkg)
 install-%: target_flavour = $*
 install-%: $(stampdir)/stamp-build-%
 	dh_testdir
@@ -65,18 +65,18 @@ install-%: $(stampdir)/stamp-build-%
 	cp firmware/iwlwifi/*5000*/*.ucode $(firmdir)/lbm-iwlwifi-5000-1.ucode
 	cp firmware/iwlwifi/*5150*/*.ucode $(firmdir)/lbm-iwlwifi-5150-1.ucode
 
-	install -d $(moddir)/updates
-	find $(builddir)/build-$* -type f -name '*.ko' | while read f ; do cp -v $${f} $(moddir)/updates/`basename $${f}`; done
+	install -d $(cwmoddir)/updates
+	find $(builddir)/build-$*/compat-wireless-2.6 -type f -name '*.ko' | while read f ; do cp -v $${f} $(cwmoddir)/updates/`basename $${f}`; done
 
 ifeq ($(no_image_strip),)
-	find $(pkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
+	find $(cwpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
 endif
 
-	install -d $(pkgdir)/DEBIAN
+	install -d $(cwpkgdir)/DEBIAN
 	for script in postinst postrm; do					\
 	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
-	       debian/control-scripts/$$script > $(pkgdir)/DEBIAN/$$script;	\
-	  chmod 755 $(pkgdir)/DEBIAN/$$script;					\
+	       debian/control-scripts/$$script > $(cwpkgdir)/DEBIAN/$$script;	\
+	  chmod 755 $(cwpkgdir)/DEBIAN/$$script;					\
 	done
 
 	# The flavour specific headers package
@@ -86,14 +86,14 @@ endif
     fi
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs -p$(hdrpkg)
-	dh_installdocs -p$(hdrpkg)
-	dh_compress -p$(hdrpkg)
-	dh_fixperms -p$(hdrpkg)
-	dh_installdeb -p$(hdrpkg)
-	dh_gencontrol -p$(hdrpkg)
-	dh_md5sums -p$(hdrpkg)
-	dh_builddeb -p$(hdrpkg)
+	dh_installchangelogs -p$(cwhdrpkg)
+	dh_installdocs -p$(cwhdrpkg)
+	dh_compress -p$(cwhdrpkg)
+	dh_fixperms -p$(cwhdrpkg)
+	dh_installdeb -p$(cwhdrpkg)
+	dh_gencontrol -p$(cwhdrpkg)
+	dh_md5sums -p$(cwhdrpkg)
+	dh_builddeb -p$(cwhdrpkg)
 
 binary-modules-%: pkgimg = linux-backports-modules-$(release)-$(abinum)-$*
 binary-modules-%: install-%
