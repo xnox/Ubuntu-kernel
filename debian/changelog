@@ -1,3 +1,9 @@
+linux-restricted-modules-2.6.24 (2.6.24.18-25.2) hardy-security; urgency=low
+
+  Bump ABI to -25 due to security update
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 12 Oct 2009 12:30:49 -0700
+
 linux-restricted-modules-2.6.24 (2.6.24.18-24.1) hardy-proposed; urgency=low
 
   [Tim Gardner]
