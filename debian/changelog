@@ -1,3 +1,9 @@
+linux-backports-modules-2.6.24 (2.6.24-25.33) hardy-security; urgency=low
+
+  Bump ABI to -25 due to security update
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 12 Oct 2009 12:38:24 -0700
+
 linux-backports-modules-2.6.24 (2.6.24-24.32) hardy-proposed; urgency=low
 
   [Stefan Bader]
