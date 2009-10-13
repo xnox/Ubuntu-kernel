@@ -46,10 +46,12 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 # Install the finished build
 install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-$(release)-$(abinum)-$*
 install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
+install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
+install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: firmdir = $(cwpkgdir)/lib/firmware/$(release)-$(abinum)-$*
-install-%: cwbasehdrpkg = linux-headers-lbm-$(release)$(debnum)
-install-%: cwhdrpkg = $(cwbasehdrpkg)-$*
-install-%: hdrdir = $(CURDIR)/debian/$(cwhdrpkg)/usr/src/$(cwhdrpkg)
+install-%: lbmbasehdrpkg = linux-headers-lbm-$(release)$(debnum)
+install-%: lbmhdrpkg = $(lbmbasehdrpkg)-$*
+install-%: hdrdir = $(CURDIR)/debian/$(lbmhdrpkg)/usr/src/$(lbmhdrpkg)
 install-%: target_flavour = $*
 install-%: $(stampdir)/stamp-build-%
 	dh_testdir
@@ -65,8 +67,11 @@ install-%: $(stampdir)/stamp-build-%
 	cp firmware/iwlwifi/*5000*/*.ucode $(firmdir)/lbm-iwlwifi-5000-1.ucode
 	cp firmware/iwlwifi/*5150*/*.ucode $(firmdir)/lbm-iwlwifi-5150-1.ucode
 
-	install -d $(cwmoddir)/updates
-	find $(builddir)/build-$*/compat-wireless-2.6 -type f -name '*.ko' | while read f ; do cp -v $${f} $(cwmoddir)/updates/`basename $${f}`; done
+	#
+	# Build the compat wireless packages.
+	#
+	install -d $(cwmoddir)/updates-cw
+	find $(builddir)/build-$*/compat-wireless-2.6 -type f -name '*.ko' | while read f ; do cp -v $${f} $(cwmoddir)/updates-cw/`basename $${f}`; done
 
 ifeq ($(no_image_strip),)
 	find $(cwpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
@@ -79,35 +84,56 @@ endif
 	  chmod 755 $(cwpkgdir)/DEBIAN/$$script;					\
 	done
 
-	# The flavour specific headers package
-	if [ -z "$(filter $(no_alsa_flavours),$(target_flavour))" ] && grep 'CONFIG_ALSA=m' $(builddir)/build-$*/.config > /dev/null ; then \
-      install -d $(hdrdir)/sound; \
-      cp `find $(builddir)/build-$*/sound/alsa-kernel/include -type f` $(hdrdir)/sound; \
-    fi
 	dh_testdir
 	dh_testroot
-	dh_installchangelogs -p$(cwhdrpkg)
-	dh_installdocs -p$(cwhdrpkg)
-	dh_compress -p$(cwhdrpkg)
-	dh_fixperms -p$(cwhdrpkg)
-	dh_installdeb -p$(cwhdrpkg)
-	dh_gencontrol -p$(cwhdrpkg)
-	dh_md5sums -p$(cwhdrpkg)
-	dh_builddeb -p$(cwhdrpkg)
+	dh_installchangelogs -p$(lbmhdrpkg)
+	dh_installdocs -p$(lbmhdrpkg)
+	dh_compress -p$(lbmhdrpkg)
+	dh_fixperms -p$(lbmhdrpkg)
+	dh_installdeb -p$(lbmhdrpkg)
+	dh_gencontrol -p$(lbmhdrpkg)
+	dh_md5sums -p$(lbmhdrpkg)
+	dh_builddeb -p$(lbmhdrpkg)
+
+	#
+	# Build the ALSA snapshot packages.
+	#
+	install -d $(csmoddir)/updates-alsa
+	find $(builddir)/build-$*/alsa-driver -type f -name '*.ko' | while read f ; do cp -v $${f} $(csmoddir)/updates-alsa/`basename $${f}`; done
+
+ifeq ($(no_image_strip),)
+	find $(cspkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
+endif
+
+	install -d $(cspkgdir)/DEBIAN
+	for script in postinst postrm; do					\
+	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
+	       debian/control-scripts/$$script > $(cspkgdir)/DEBIAN/$$script;	\
+	  chmod 755 $(cspkgdir)/DEBIAN/$$script;					\
+	done
+
+	# The flavour specific headers package
+	if [ -z "$(filter $(no_alsa_flavours),$(target_flavour))" ] && grep 'CONFIG_ALSA=m' $(builddir)/build-$*/.config > /dev/null ; then \
+		install -d $(hdrdir)/sound; \
+		cp `find $(builddir)/build-$*/sound/alsa-kernel/include -type f` $(hdrdir)/sound; \
+	fi
 
 binary-modules-%: pkgimg = linux-backports-modules-$(release)-$(abinum)-$*
+binary-modules-%: alsaimg = linux-backports-modules-alsa-$(release)-$(abinum)-$*
 binary-modules-%: install-%
 	dh_testdir
 	dh_testroot
 
-	dh_installchangelogs -p$(pkgimg)
-	dh_installdocs -p$(pkgimg)
-	dh_compress -p$(pkgimg)
-	dh_fixperms -p$(pkgimg)
-	dh_installdeb -p$(pkgimg)
-	dh_gencontrol -p$(pkgimg)
-	dh_md5sums -p$(pkgimg)
-	dh_builddeb -p$(pkgimg) -- -Zbzip2 -z9
+	for i in $(pkgimg) $(alsaimg) ; do \
+	dh_installchangelogs -p$$i; \
+	dh_installdocs -p$$i; \
+	dh_compress -p$$i; \
+	dh_fixperms -p$$i; \
+	dh_installdeb -p$$i; \
+	dh_gencontrol -p$$i; \
+	dh_md5sums -p$$i; \
+	dh_builddeb -p$$i -- -Zbzip2 -z9; \
+	done
 
 binary-debs: $(addprefix binary-modules-,$(flavours))
 binary-arch: binary-debs binary-udebs

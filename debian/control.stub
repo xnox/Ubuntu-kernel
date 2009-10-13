@@ -29,7 +29,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86/x86_64
  x86/x86_64.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-generic meta-package, which will ensure that upgrades work
+ the linux-backports-modules-generic meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-2.6.31-13-generic
@@ -43,6 +43,22 @@ Description: Header files related to linux-backports-modules version 2.6.31
  that want the latest linux-backports-modules headers. Please read
  /usr/share/doc/linux-headers-lbm-2.6.31-13/debian.README.gz for details
 
+Package: linux-backports-modules-alsa-2.6.31-13-generic
+Architecture: i386 amd64
+Section: admin
+Priority: optional
+Provides:
+Depends: linux-image-2.6.31-13-generic
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
+ This package contains modules supplied by Ubuntu for Linux 2.6.31 ALSA
+ snapshots from http://www.alsa-project.org/main/index.php/Main_Page
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-alsa-generic meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+
 Package: linux-backports-modules-2.6.31-13-generic-pae
 Architecture: i386
 Section: admin
@@ -55,7 +71,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86
  x86.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-generic-pae meta-package, which will ensure that upgrades work
+ the linux-backports-modules-generic-pae meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-2.6.31-13-generic-pae
@@ -69,6 +85,22 @@ Description: Header files related to linux-backports-modules version 2.6.31
  that want the latest linux-backports-modules headers. Please read
  /usr/share/doc/linux-headers-lbm-2.6.31-13/debian.README.gz for details
 
+Package: linux-backports-modules-alsa-2.6.31-13-generic-pae
+Architecture: i386
+Section: admin
+Priority: optional
+Provides:
+Depends: linux-image-2.6.31-13-generic-pae
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
+ This package contains modules supplied by Ubuntu for Linux 2.6.31 ALSA
+ snapshots from http://www.alsa-project.org/main/index.php/Main_Page
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-alsa-generic-pae meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+
 Package: linux-backports-modules-2.6.31-13-lpia
 Architecture: lpia
 Section: admin
@@ -81,7 +113,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on lpia
  lpia.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-lpia meta-package, which will ensure that upgrades work
+ the linux-backports-modules-lpia meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-2.6.31-13-lpia
@@ -95,6 +127,22 @@ Description: Header files related to linux-backports-modules version 2.6.31
  that want the latest linux-backports-modules headers. Please read
  /usr/share/doc/linux-headers-lbm-2.6.31-13/debian.README.gz for details
 
+Package: linux-backports-modules-alsa-2.6.31-13-lpia
+Architecture: lpia
+Section: admin
+Priority: optional
+Provides:
+Depends: linux-image-2.6.31-13-lpia
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
+ This package contains modules supplied by Ubuntu for Linux 2.6.31 ALSA
+ snapshots from http://www.alsa-project.org/main/index.php/Main_Page
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-alsa-lpia meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
+
 Package: linux-backports-modules-2.6.31-13-server
 Architecture: amd64
 Section: admin
@@ -107,7 +155,7 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86_64
  x86_64.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-server meta-package, which will ensure that upgrades work
+ the linux-backports-modules-server meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-2.6.31-13-server
@@ -120,3 +168,19 @@ Description: Header files related to linux-backports-modules version 2.6.31
  This package provides linux-backports-modules header files for version 2.6.31, for sites
  that want the latest linux-backports-modules headers. Please read
  /usr/share/doc/linux-headers-lbm-2.6.31-13/debian.README.gz for details
+
+Package: linux-backports-modules-alsa-2.6.31-13-server
+Architecture: amd64
+Section: admin
+Priority: optional
+Provides:
+Depends: linux-image-2.6.31-13-server
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
+ This package contains modules supplied by Ubuntu for Linux 2.6.31 ALSA
+ snapshots from http://www.alsa-project.org/main/index.php/Main_Page
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-alsa-server meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+

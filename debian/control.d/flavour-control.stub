@@ -20,7 +20,7 @@ Description: Ubuntu supplied Linux modules for version PKGVER on DESC
  DESC.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-FLAVOUR meta-package, which will ensure that upgrades work
+ the linux-backports-modules-FLAVOUR meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-PKGVER-ABINUM-FLAVOUR
@@ -33,3 +33,19 @@ Description: Header files related to linux-backports-modules version PKGVER
  This package provides linux-backports-modules header files for version PKGVER, for sites
  that want the latest linux-backports-modules headers. Please read
  /usr/share/doc/linux-headers-lbm-PKGVER-ABINUM/debian.README.gz for details
+
+Package: linux-backports-modules-alsa-PKGVER-ABINUM-FLAVOUR
+Architecture: ARCH
+Section: SECTION_IMAGE
+Priority: optional
+Provides:
+Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version PKGVER ALSA snapshots.
+ This package contains modules supplied by Ubuntu for Linux PKGVER ALSA
+ snapshots from http://www.alsa-project.org/main/index.php/Main_Page
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-alsa-FLAVOUR meta-package, which will ensure that upgrades work
+ correctly, and that supporting packages are also installed.
+
