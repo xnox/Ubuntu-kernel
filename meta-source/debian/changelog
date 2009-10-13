@@ -1,3 +1,9 @@
+linux-meta-fsl-imx51 (2.6.31.105.4) karmic; urgency=low
+
+  * fsl-imx51 ABI 105, seemed to have skipped 104
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 13 Oct 2009 17:06:01 -0600
+
 linux-meta-fsl-imx51 (2.6.31.103.3) karmic; urgency=low
 
   * fsl-imx51 ABI 103
