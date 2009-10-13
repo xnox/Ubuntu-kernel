@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.31.208.7) karmic; urgency=low
+
+  * Karmic ABI 208, seemed to have skipped 207
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 13 Oct 2009 17:08:15 -0600
+
 linux-meta-mvl-dove (2.6.31.206.6) karmic; urgency=low
 
   * Karmic ABI 206
