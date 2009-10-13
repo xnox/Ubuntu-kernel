@@ -1,3 +1,9 @@
+linux-meta-ec2 (2.6.31.302.2) karmic; urgency=low
+
+  * Karmic ABI 302 for linux-ec2
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 13 Oct 2009 16:56:28 -0600
+
 linux-meta-ec2 (2.6.31.301.1) karmic; urgency=low
 
   * Karmic ABI 301 for linux-ec2
