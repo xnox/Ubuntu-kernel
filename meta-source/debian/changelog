@@ -1,3 +1,15 @@
+linux-meta (2.6.31.14.26) karmic; urgency=low
+
+  * Added linux-backports-modules-headers-karmic meta packages
+  * Removed linux-backports-modules-karmic-*-virtual
+    LBM does not generate a virtual flavour.
+  * Added linux-backports-modules-wireless-karmic meta package.
+    The orignal meta package linux-backports-modules-karmic* points
+    to the same package. Need to drop this non-orthogonality in Lucid.
+  * Added linux-backports-modules-alsa-karmic meta package
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 14 Oct 2009 13:09:22 -0600
+
 linux-meta (2.6.31.14.25) karmic; urgency=low
 
   * Karmic ABI 14
