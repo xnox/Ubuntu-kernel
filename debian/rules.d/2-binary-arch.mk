@@ -70,8 +70,8 @@ install-%: $(stampdir)/stamp-build-%
 	#
 	# Build the compat wireless packages.
 	#
-	install -d $(cwmoddir)/updates-cw
-	find $(builddir)/build-$*/compat-wireless-2.6 -type f -name '*.ko' | while read f ; do cp -v $${f} $(cwmoddir)/updates-cw/`basename $${f}`; done
+	install -d $(cwmoddir)/updates/cw
+	find $(builddir)/build-$*/compat-wireless-2.6 -type f -name '*.ko' | while read f ; do cp -v $${f} $(cwmoddir)/updates/cw/`basename $${f}`; done
 
 ifeq ($(no_image_strip),)
 	find $(cwpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
@@ -98,8 +98,8 @@ endif
 	#
 	# Build the ALSA snapshot packages.
 	#
-	install -d $(csmoddir)/updates-alsa
-	find $(builddir)/build-$*/alsa-driver -type f -name '*.ko' | while read f ; do cp -v $${f} $(csmoddir)/updates-alsa/`basename $${f}`; done
+	install -d $(csmoddir)/updates/alsa
+	find $(builddir)/build-$*/alsa-driver -type f -name '*.ko' | while read f ; do cp -v $${f} $(csmoddir)/updates/alsa/`basename $${f}`; done
 
 ifeq ($(no_image_strip),)
 	find $(cspkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
