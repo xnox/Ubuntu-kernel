@@ -14,13 +14,11 @@
 #include <linux/stddef.h>
 #include <linux/ieee80211.h>
 #include <net/iw_handler.h>
-#include <net/cfg80211.h>
 
 #include "host.h"
 #include "decl.h"
 #include "dev.h"
 #include "wext.h"
-#include "cfg.h"
 #include "debugfs.h"
 #include "scan.h"
 #include "assoc.h"
@@ -576,10 +574,8 @@ void lbs_host_to_card_done(struct lbs_private *priv)
 	priv->dnld_sent = DNLD_RES_RECEIVED;
 
 	/* Wake main thread if commands are pending */
-	if (!priv->cur_cmd || priv->tx_pending_len > 0) {
-		if (!priv->wakeup_dev_required)
-			wake_up_interruptible(&priv->waitq);
-	}
+	if (!priv->cur_cmd || priv->tx_pending_len > 0)
+		wake_up_interruptible(&priv->waitq);
 
 	spin_unlock_irqrestore(&priv->driver_lock, flags);
 	lbs_deb_leave(LBS_DEB_THREAD);
@@ -774,8 +770,7 @@ static int lbs_thread(void *data)
 			shouldsleep = 0;	/* We have a command response */
 		else if (priv->cur_cmd)
 			shouldsleep = 1;	/* Can't send a command; one already running */
-		else if (!list_empty(&priv->cmdpendingq) &&
-					!(priv->wakeup_dev_required))
+		else if (!list_empty(&priv->cmdpendingq))
 			shouldsleep = 0;	/* We have a command to send */
 		else if (__kfifo_len(priv->event_fifo))
 			shouldsleep = 0;	/* We have an event to process */
@@ -827,26 +822,6 @@ static int lbs_thread(void *data)
 		}
 		spin_unlock_irq(&priv->driver_lock);
 
-		/* Process hardware events, e.g. card removed, link lost */
-		spin_lock_irq(&priv->driver_lock);
-		while (__kfifo_len(priv->event_fifo)) {
-			u32 event;
-			__kfifo_get(priv->event_fifo, (unsigned char *) &event,
-				sizeof(event));
-			spin_unlock_irq(&priv->driver_lock);
-			lbs_process_event(priv, event);
-			spin_lock_irq(&priv->driver_lock);
-		}
-		spin_unlock_irq(&priv->driver_lock);
-
-		if (priv->wakeup_dev_required) {
-			lbs_deb_thread("Waking up device...\n");
-			/* Wake up device */
-			if (priv->exit_deep_sleep(priv))
-				lbs_deb_thread("Wakeup device failed\n");
-			continue;
-		}
-
 		/* command timeout stuff */
 		if (priv->cmd_timed_out && priv->cur_cmd) {
 			struct cmd_ctrl_node *cmdnode = priv->cur_cmd;
@@ -874,7 +849,18 @@ static int lbs_thread(void *data)
 		}
 		priv->cmd_timed_out = 0;
 
+		/* Process hardware events, e.g. card removed, link lost */
+		spin_lock_irq(&priv->driver_lock);
+		while (__kfifo_len(priv->event_fifo)) {
+			u32 event;
 
+			__kfifo_get(priv->event_fifo, (unsigned char *) &event,
+				sizeof(event));
+			spin_unlock_irq(&priv->driver_lock);
+			lbs_process_event(priv, event);
+			spin_lock_irq(&priv->driver_lock);
+		}
+		spin_unlock_irq(&priv->driver_lock);
 
 		if (!priv->fw_ready)
 			continue;
@@ -906,9 +892,6 @@ static int lbs_thread(void *data)
 		 */
 		if ((priv->psstate == PS_STATE_SLEEP) ||
 		    (priv->psstate == PS_STATE_PRE_SLEEP))
-			continue;
-
-		if (priv->is_deep_sleep)
 			continue;
 
 		/* Execute the next command */
@@ -945,7 +928,6 @@ static int lbs_thread(void *data)
 	}
 
 	del_timer(&priv->command_timer);
-	del_timer(&priv->auto_deepsleep_timer);
 	wake_up_all(&priv->cmd_pending);
 
 	lbs_deb_leave(LBS_DEB_THREAD);
@@ -1068,60 +1050,6 @@ out:
 	lbs_deb_leave(LBS_DEB_CMD);
 }
 
-/**
- *  This function put the device back to deep sleep mode when timer expires
- *  and no activity (command, event, data etc.) is detected.
- */
-static void auto_deepsleep_timer_fn(unsigned long data)
-{
-	struct lbs_private *priv = (struct lbs_private *)data;
-	int ret;
-
-	lbs_deb_enter(LBS_DEB_CMD);
-
-	if (priv->is_activity_detected) {
-		priv->is_activity_detected = 0;
-	} else {
-		if (priv->is_auto_deep_sleep_enabled &&
-				(!priv->wakeup_dev_required) &&
-				(priv->connect_status != LBS_CONNECTED)) {
-			lbs_deb_main("Entering auto deep sleep mode...\n");
-			ret = lbs_prepare_and_send_command(priv,
-					CMD_802_11_DEEP_SLEEP, 0,
-					0, 0, NULL);
-		}
-	}
-	mod_timer(&priv->auto_deepsleep_timer , jiffies +
-				(priv->auto_deep_sleep_timeout * HZ)/1000);
-	lbs_deb_leave(LBS_DEB_CMD);
-}
-
-int lbs_enter_auto_deep_sleep(struct lbs_private *priv)
-{
-	lbs_deb_enter(LBS_DEB_SDIO);
-
-	priv->is_auto_deep_sleep_enabled = 1;
-	if (priv->is_deep_sleep)
-		priv->wakeup_dev_required = 1;
-	mod_timer(&priv->auto_deepsleep_timer ,
-			jiffies + (priv->auto_deep_sleep_timeout * HZ)/1000);
-
-	lbs_deb_leave(LBS_DEB_SDIO);
-	return 0;
-}
-
-int lbs_exit_auto_deep_sleep(struct lbs_private *priv)
-{
-	lbs_deb_enter(LBS_DEB_SDIO);
-
-	priv->is_auto_deep_sleep_enabled = 0;
-	priv->auto_deep_sleep_timeout = 0;
-	del_timer(&priv->auto_deepsleep_timer);
-
-	lbs_deb_leave(LBS_DEB_SDIO);
-	return 0;
-}
-
 static void lbs_sync_channel_worker(struct work_struct *work)
 {
 	struct lbs_private *priv = container_of(work, struct lbs_private,
@@ -1171,17 +1099,11 @@ static int lbs_init_adapter(struct lbs_private *priv)
 	priv->capability = WLAN_CAPABILITY_SHORT_PREAMBLE;
 	priv->psmode = LBS802_11POWERMODECAM;
 	priv->psstate = PS_STATE_FULL_POWER;
-	priv->is_deep_sleep = 0;
-	priv->is_auto_deep_sleep_enabled = 0;
-	priv->wakeup_dev_required = 0;
-	init_waitqueue_head(&priv->ds_awake_q);
 
 	mutex_init(&priv->lock);
 
 	setup_timer(&priv->command_timer, command_timer_fn,
 		(unsigned long)priv);
-	setup_timer(&priv->auto_deepsleep_timer, auto_deepsleep_timer_fn,
-			(unsigned long)priv);
 
 	INIT_LIST_HEAD(&priv->cmdfreeq);
 	INIT_LIST_HEAD(&priv->cmdpendingq);
@@ -1220,7 +1142,6 @@ static void lbs_free_adapter(struct lbs_private *priv)
 	if (priv->event_fifo)
 		kfifo_free(priv->event_fifo);
 	del_timer(&priv->command_timer);
-	del_timer(&priv->auto_deepsleep_timer);
 	kfree(priv->networks);
 	priv->networks = NULL;
 
@@ -1249,41 +1170,31 @@ static const struct net_device_ops lbs_netdev_ops = {
  */
 struct lbs_private *lbs_add_card(void *card, struct device *dmdev)
 {
-	struct net_device *dev;
-	struct wireless_dev *wdev;
+	struct net_device *dev = NULL;
 	struct lbs_private *priv = NULL;
 
 	lbs_deb_enter(LBS_DEB_MAIN);
 
 	/* Allocate an Ethernet device and register it */
-	wdev = lbs_cfg_alloc(dmdev);
-	if (IS_ERR(wdev)) {
-		lbs_pr_err("cfg80211 init failed\n");
+	dev = alloc_etherdev(sizeof(struct lbs_private));
+	if (!dev) {
+		lbs_pr_err("init wlanX device failed\n");
 		goto done;
 	}
-	/* TODO? */
-	wdev->iftype = NL80211_IFTYPE_STATION;
-	priv = wdev_priv(wdev);
-	priv->wdev = wdev;
+	priv = netdev_priv(dev);
+	dev->ml_priv = priv;
 
 	if (lbs_init_adapter(priv)) {
 		lbs_pr_err("failed to initialize adapter structure.\n");
-		goto err_wdev;
+		goto err_init_adapter;
 	}
 
-	//TODO? dev = alloc_netdev_mq(0, "wlan%d", ether_setup, IWM_TX_QUEUES);
-	dev = alloc_netdev(0, "wlan%d", ether_setup);
-	if (!dev) {
-		dev_err(dmdev, "no memory for network device instance\n");
-		goto err_adapter;
-	}
-
-	dev->ieee80211_ptr = wdev;
-	dev->ml_priv = priv;
-	SET_NETDEV_DEV(dev, dmdev);
-	wdev->netdev = dev;
 	priv->dev = dev;
+	priv->card = card;
+	priv->mesh_open = 0;
+	priv->infra_open = 0;
 
+	/* Setup the OS Interface to our functions */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
  	dev->netdev_ops = &lbs_netdev_ops;
 #else
@@ -1301,14 +1212,7 @@ struct lbs_private *lbs_add_card(void *card, struct device *dmdev)
 #endif
 	dev->flags |= IFF_BROADCAST | IFF_MULTICAST;
 
-
-	// TODO: kzalloc + iwm_init_default_profile(iwm, iwm->umac_profile); ??
-
-
-	priv->card = card;
-	priv->mesh_open = 0;
-	priv->infra_open = 0;
-
+	SET_NETDEV_DEV(dev, dmdev);
 
 	priv->rtap_net_dev = NULL;
 	strcpy(dev->name, "wlan%d");
@@ -1318,7 +1222,7 @@ struct lbs_private *lbs_add_card(void *card, struct device *dmdev)
 	priv->main_thread = kthread_run(lbs_thread, dev, "lbs_main");
 	if (IS_ERR(priv->main_thread)) {
 		lbs_deb_thread("Error creating main thread.\n");
-		goto err_ndev;
+		goto err_init_adapter;
 	}
 
 	priv->work_thread = create_singlethread_workqueue("lbs_worker");
@@ -1335,15 +1239,9 @@ struct lbs_private *lbs_add_card(void *card, struct device *dmdev)
 
 	goto done;
 
- err_ndev:
-	free_netdev(dev);
-
- err_adapter:
+err_init_adapter:
 	lbs_free_adapter(priv);
-
- err_wdev:
-	lbs_cfg_free(priv);
-
+	free_netdev(dev);
 	priv = NULL;
 
 done:
@@ -1385,17 +1283,11 @@ void lbs_remove_card(struct lbs_private *priv)
 	wrqu.ap_addr.sa_family = ARPHRD_ETHER;
 	wireless_send_event(priv->dev, SIOCGIWAP, &wrqu, NULL);
 
-	if (priv->is_deep_sleep) {
-		priv->is_deep_sleep = 0;
-		wake_up_interruptible(&priv->ds_awake_q);
-	}
-
 	/* Stop the thread servicing the interrupts */
 	priv->surpriseremoved = 1;
 	kthread_stop(priv->main_thread);
 
 	lbs_free_adapter(priv);
-	lbs_cfg_free(priv);
 
 	priv->dev = NULL;
 	free_netdev(dev);
@@ -1420,8 +1312,8 @@ int lbs_start_card(struct lbs_private *priv)
 	/* init 802.11d */
 	lbs_init_11d(priv);
 
-	if (lbs_cfg_register(priv)) {
-		lbs_pr_err("cannot register device\n");
+	if (register_netdev(dev)) {
+		lbs_pr_err("cannot register ethX device\n");
 		goto done;
 	}
 
@@ -1511,7 +1403,6 @@ void lbs_stop_card(struct lbs_private *priv)
 
 	/* Delete the timeout of the currently processing command */
 	del_timer_sync(&priv->command_timer);
-	del_timer_sync(&priv->auto_deepsleep_timer);
 
 	/* Flush pending command nodes */
 	spin_lock_irqsave(&priv->driver_lock, flags);

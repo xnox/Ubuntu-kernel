@@ -100,8 +100,8 @@ without creating a headache on maintenance of the pathes.
  
  	tmp = RNDIS_PACKET_TYPE_DIRECTED | RNDIS_PACKET_TYPE_BROADCAST;
  	retval = rndis_set_oid(usbdev, OID_GEN_CURRENT_PACKET_FILTER, &tmp,
---- a/net/mac80211/iface.c	2009-09-02 14:09:58.557123328 -0700
-+++ b/net/mac80211/iface.c	2009-09-02 14:10:02.137093336 -0700
+--- a/net/mac80211/iface.c	2009-10-02 16:28:31.862281205 -0700
++++ b/net/mac80211/iface.c	2009-10-02 16:28:32.735274775 -0700
 @@ -642,6 +642,7 @@
  	WARN_ON(flushed);
  }
@@ -230,17 +230,31 @@ without creating a headache on maintenance of the pathes.
  	dev->irq = sdev->irq;
  	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
  
---- a/net/wireless/wext-core.c
-+++ b/net/wireless/wext-core.c
-@@ -340,6 +340,7 @@
+--- a/net/wireless/wext.c	2009-10-02 16:29:38.126275784 -0700
++++ b/net/wireless/wext.c	2009-10-02 16:29:38.990276029 -0700
+@@ -1121,8 +1121,13 @@
+ 			return private(dev, iwr, cmd, info, handler);
+ 	}
+ 	/* Old driver API : call driver ioctl handler */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	if (dev->netdev_ops->ndo_do_ioctl)
+ 		return dev->netdev_ops->ndo_do_ioctl(dev, ifr, cmd);
++#else
++	if (dev->do_ioctl)
++		return dev->do_ioctl(dev, ifr, cmd);
++#endif
+ 	return -EOPNOTSUPP;
+ }
  
- /* IW event code */
+@@ -1275,6 +1280,7 @@
+ }
+ #endif
  
 +#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
  static int __net_init wext_pernet_init(struct net *net)
  {
  	skb_queue_head_init(&net->wext_nlevents);
-@@ -382,6 +383,29 @@
+@@ -1317,6 +1323,29 @@
  
  static DECLARE_WORK(wireless_nlevent_work, wireless_nlevent_process);
  
@@ -270,7 +284,7 @@ without creating a headache on maintenance of the pathes.
  static struct nlmsghdr *rtnetlink_ifinfo_prep(struct net_device *dev,
  					      struct sk_buff *skb)
  {
-@@ -592,8 +616,13 @@
+@@ -1527,8 +1556,13 @@
  
  	skb_shinfo(skb)->frag_list = compskb;
  #endif
@@ -283,20 +297,6 @@ without creating a headache on maintenance of the pathes.
 +#endif
  }
  EXPORT_SYMBOL(wireless_send_event);
- 
-@@ -901,8 +930,13 @@
- 			return private(dev, iwr, cmd, info, handler);
- 	}
- 	/* Old driver API : call driver ioctl handler */
-+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
- 	if (dev->netdev_ops->ndo_do_ioctl)
- 		return dev->netdev_ops->ndo_do_ioctl(dev, ifr, cmd);
-+#else
-+	if (dev->do_ioctl)
-+		return dev->do_ioctl(dev, ifr, cmd);
-+#endif
- 	return -EOPNOTSUPP;
- }
  
 --- a/drivers/net/wireless/ipw2x00/ipw2100.c	2009-09-02 14:12:00.958117808 -0700
 +++ b/drivers/net/wireless/ipw2x00/ipw2100.c	2009-09-02 14:12:01.382115761 -0700
@@ -333,9 +333,9 @@ without creating a headache on maintenance of the pathes.
  	dev->ethtool_ops = &ipw2100_ethtool_ops;
  	dev->wireless_handlers = &ipw2100_wx_handler_def;
  	priv->wireless_data.libipw = priv->ieee;
---- a/drivers/net/wireless/ipw2x00/ipw2200.c	2009-08-20 13:47:07.311291621 -0700
-+++ b/drivers/net/wireless/ipw2x00/ipw2200.c	2009-08-20 13:47:07.783268230 -0700
-@@ -11624,6 +11624,7 @@
+--- a/drivers/net/wireless/ipw2x00/ipw2200.c	2009-10-13 13:27:11.000000000 -0700
++++ b/drivers/net/wireless/ipw2x00/ipw2200.c	2009-10-13 13:27:12.000000000 -0700
+@@ -11625,6 +11625,7 @@
  	return NETDEV_TX_OK;
  }
  
@@ -343,7 +343,7 @@ without creating a headache on maintenance of the pathes.
  static const struct net_device_ops ipw_prom_netdev_ops = {
  	.ndo_open 		= ipw_prom_open,
  	.ndo_stop		= ipw_prom_stop,
-@@ -11632,6 +11633,7 @@
+@@ -11633,6 +11634,7 @@
  	.ndo_set_mac_address 	= eth_mac_addr,
  	.ndo_validate_addr	= eth_validate_addr,
  };
@@ -351,7 +351,7 @@ without creating a headache on maintenance of the pathes.
  
  static int ipw_prom_alloc(struct ipw_priv *priv)
  {
-@@ -11652,7 +11654,13 @@
+@@ -11653,7 +11655,13 @@
  	memcpy(priv->prom_net_dev->dev_addr, priv->mac_addr, ETH_ALEN);
  
  	priv->prom_net_dev->type = ARPHRD_IEEE80211_RADIOTAP;
@@ -365,7 +365,7 @@ without creating a headache on maintenance of the pathes.
  
  	priv->prom_priv->ieee->iw_mode = IW_MODE_MONITOR;
  	SET_NETDEV_DEV(priv->prom_net_dev, &priv->pci_dev->dev);
-@@ -11680,6 +11688,7 @@
+@@ -11681,6 +11689,7 @@
  
  #endif
  
@@ -373,7 +373,7 @@ without creating a headache on maintenance of the pathes.
  static const struct net_device_ops ipw_netdev_ops = {
  	.ndo_init		= ipw_net_init,
  	.ndo_open		= ipw_net_open,
-@@ -11690,6 +11699,7 @@
+@@ -11691,6 +11700,7 @@
  	.ndo_change_mtu		= libipw_change_mtu,
  	.ndo_validate_addr	= eth_validate_addr,
  };
@@ -381,7 +381,7 @@ without creating a headache on maintenance of the pathes.
  
  static int __devinit ipw_pci_probe(struct pci_dev *pdev,
  				   const struct pci_device_id *ent)
-@@ -11791,7 +11801,15 @@
+@@ -11792,7 +11802,15 @@
  	priv->ieee->perfect_rssi = -20;
  	priv->ieee->worst_rssi = -85;
  
@@ -397,9 +397,9 @@ without creating a headache on maintenance of the pathes.
  	priv->wireless_data.spy_data = &priv->ieee->spy_data;
  	net_dev->wireless_data = &priv->wireless_data;
  	net_dev->wireless_handlers = &ipw_wx_handler_def;
---- a/drivers/net/wireless/libertas/main.c	2009-10-07 01:42:20.000000000 -0400
-+++ b/drivers/net/wireless/libertas/main.c	2009-10-07 01:42:21.000000000 -0400
-@@ -1227,6 +1227,7 @@
+--- a/drivers/net/wireless/libertas/main.c	2009-10-02 16:31:30.818278411 -0700
++++ b/drivers/net/wireless/libertas/main.c	2009-10-02 16:31:31.194276474 -0700
+@@ -1148,6 +1148,7 @@
  	lbs_deb_leave(LBS_DEB_MAIN);
  }
  
@@ -407,7 +407,7 @@ without creating a headache on maintenance of the pathes.
  static const struct net_device_ops lbs_netdev_ops = {
  	.ndo_open 		= lbs_dev_open,
  	.ndo_stop		= lbs_eth_stop,
-@@ -1237,6 +1238,7 @@
+@@ -1158,6 +1159,7 @@
  	.ndo_change_mtu		= eth_change_mtu,
  	.ndo_validate_addr	= eth_validate_addr,
  };
@@ -415,10 +415,10 @@ without creating a headache on maintenance of the pathes.
  
  /**
   * @brief This function adds the card. it will probe the
-@@ -1283,7 +1285,16 @@
- 	wdev->netdev = dev;
- 	priv->dev = dev;
+@@ -1193,7 +1195,16 @@
+ 	priv->infra_open = 0;
  
+ 	/* Setup the OS Interface to our functions */
 +#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
   	dev->netdev_ops = &lbs_netdev_ops;
 +#else
@@ -432,7 +432,7 @@ without creating a headache on maintenance of the pathes.
  	dev->watchdog_timeo = 5 * HZ;
  	dev->ethtool_ops = &lbs_ethtool_ops;
  #ifdef	WIRELESS_EXT
-@@ -1530,6 +1541,7 @@
+@@ -1420,6 +1431,7 @@
  EXPORT_SYMBOL_GPL(lbs_stop_card);
  
  
@@ -440,7 +440,7 @@ without creating a headache on maintenance of the pathes.
  static const struct net_device_ops mesh_netdev_ops = {
  	.ndo_open		= lbs_dev_open,
  	.ndo_stop 		= lbs_mesh_stop,
-@@ -1537,6 +1549,7 @@
+@@ -1427,6 +1439,7 @@
  	.ndo_set_mac_address	= lbs_set_mac_address,
  	.ndo_set_multicast_list = lbs_set_multicast_list,
  };
@@ -448,7 +448,7 @@ without creating a headache on maintenance of the pathes.
  
  /**
   * @brief This function adds mshX interface
-@@ -1560,7 +1573,15 @@
+@@ -1450,7 +1463,15 @@
  	mesh_dev->ml_priv = priv;
  	priv->mesh_dev = mesh_dev;
  
@@ -464,7 +464,7 @@ without creating a headache on maintenance of the pathes.
  	mesh_dev->ethtool_ops = &lbs_ethtool_ops;
  	memcpy(mesh_dev->dev_addr, priv->dev->dev_addr,
  			sizeof(priv->dev->dev_addr));
-@@ -1776,11 +1797,13 @@
+@@ -1666,11 +1687,13 @@
  	lbs_deb_leave(LBS_DEB_MAIN);
  }
  
@@ -478,7 +478,7 @@ without creating a headache on maintenance of the pathes.
  
  static int lbs_add_rtap(struct lbs_private *priv)
  {
-@@ -1801,7 +1824,13 @@
+@@ -1691,7 +1714,13 @@
  
  	memcpy(rtap_dev->dev_addr, priv->current_addr, ETH_ALEN);
  	rtap_dev->type = ARPHRD_IEEE80211_RADIOTAP;
@@ -509,8 +509,8 @@ without creating a headache on maintenance of the pathes.
  
  #define LBS_DEB_ENTER	0x00000001
  #define LBS_DEB_LEAVE	0x00000002
---- a/drivers/net/wireless/mac80211_hwsim.c	2009-08-18 16:18:52.829350750 -0700
-+++ b/drivers/net/wireless/mac80211_hwsim.c	2009-08-18 16:18:52.977352457 -0700
+--- a/drivers/net/wireless/mac80211_hwsim.c	2009-10-02 16:32:28.002278741 -0700
++++ b/drivers/net/wireless/mac80211_hwsim.c	2009-10-02 16:32:28.086277898 -0700
 @@ -816,16 +816,22 @@
  	.name = "mac80211_hwsim"
  };
@@ -534,38 +534,3 @@ without creating a headache on maintenance of the pathes.
  	dev->destructor = free_netdev;
  	ether_setup(dev);
  	dev->tx_queue_len = 0;
-
-
-Remove this after John picks this up:
-
-From 8fe3f6159c61a7c88a2bd160e8281d62e3978bed Mon Sep 17 00:00:00 2001
-From: Luis R. Rodriguez <lrodriguez@atheros.com>
-Date: Thu, 8 Oct 2009 16:43:57 -0400
-Subject: [PATCH] libertas: remove double assignment of dev->netdev_ops
-
-This came in through the patch titled:
-    libertas: first stab at cfg80211 support
-
-I only noticed it because it breaks compat-wireless :)
-
-Cc: Holger Schurig <hs4233@mail.mn-solutions.de>
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
----
- drivers/net/wireless/libertas/main.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/wireless/libertas/main.c b/drivers/net/wireless/libertas/main.c
-index e6da1df..87bfd17 100644
---- a/drivers/net/wireless/libertas/main.c
-+++ b/drivers/net/wireless/libertas/main.c
-@@ -1276,7 +1276,6 @@ struct lbs_private *lbs_add_card(void *card, struct device *dmdev)
- 		goto err_adapter;
- 	}
- 
--	dev->netdev_ops = &lbs_netdev_ops;
- 	dev->ieee80211_ptr = wdev;
- 	dev->ml_priv = priv;
- 	SET_NETDEV_DEV(dev, dmdev);
--- 
-1.6.0.4
-

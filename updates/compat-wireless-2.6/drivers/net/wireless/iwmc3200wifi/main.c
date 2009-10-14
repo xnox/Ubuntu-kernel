@@ -38,6 +38,7 @@
 
 #include <linux/kernel.h>
 #include <linux/netdevice.h>
+#include <linux/sched.h>
 #include <linux/ieee80211.h>
 #include <linux/wireless.h>
 
@@ -637,8 +638,6 @@ static int __iwm_up(struct iwm_priv *iwm)
 		IWM_ERR(iwm, "MAC reading failed\n");
 		goto err_disable;
 	}
-	memcpy(iwm_to_ndev(iwm)->perm_addr, iwm_to_ndev(iwm)->dev_addr,
-		ETH_ALEN);
 
 	/* We can load the FWs */
 	ret = iwm_load_fw(iwm);

@@ -1952,7 +1952,6 @@ static int ar9170_op_add_interface(struct ieee80211_hw *hw,
 				   struct ieee80211_if_init_conf *conf)
 {
 	struct ar9170 *ar = hw->priv;
-	struct ath_common *common = &ar->common;
 	int err = 0;
 
 	mutex_lock(&ar->mutex);
@@ -1963,7 +1962,7 @@ static int ar9170_op_add_interface(struct ieee80211_hw *hw,
 	}
 
 	ar->vif = conf->vif;
-	memcpy(common->macaddr, conf->mac_addr, ETH_ALEN);
+	memcpy(ar->mac_addr, conf->mac_addr, ETH_ALEN);
 
 	if (modparam_nohwcrypt || (ar->vif->type != NL80211_IFTYPE_STATION)) {
 		ar->rx_software_decryption = true;
@@ -2132,13 +2131,12 @@ static void ar9170_op_bss_info_changed(struct ieee80211_hw *hw,
 				       u32 changed)
 {
 	struct ar9170 *ar = hw->priv;
-	struct ath_common *common = &ar->common;
 	int err = 0;
 
 	mutex_lock(&ar->mutex);
 
 	if (changed & BSS_CHANGED_BSSID) {
-		memcpy(common->curbssid, bss_conf->bssid, ETH_ALEN);
+		memcpy(ar->bssid, bss_conf->bssid, ETH_ALEN);
 		err = ar9170_set_operating_mode(ar);
 		if (err)
 			goto out;
@@ -2192,30 +2190,22 @@ static u64 ar9170_op_get_tsf(struct ieee80211_hw *hw)
 {
 	struct ar9170 *ar = hw->priv;
 	int err;
+	u32 tsf_low;
+	u32 tsf_high;
 	u64 tsf;
-#define NR 3
-	static const u32 addr[NR] = { AR9170_MAC_REG_TSF_H,
-				    AR9170_MAC_REG_TSF_L,
-				    AR9170_MAC_REG_TSF_H };
-	u32 val[NR];
-	int loops = 0;
 
 	mutex_lock(&ar->mutex);
-
-	while (loops++ < 10) {
-		err = ar9170_read_mreg(ar, NR, addr, val);
-		if (err || val[0] == val[2])
-			break;
-	}
-
+	err = ar9170_read_reg(ar, AR9170_MAC_REG_TSF_L, &tsf_low);
+	if (!err)
+		err = ar9170_read_reg(ar, AR9170_MAC_REG_TSF_H, &tsf_high);
 	mutex_unlock(&ar->mutex);
 
 	if (WARN_ON(err))
 		return 0;
-	tsf = val[0];
-	tsf = (tsf << 32) | val[1];
+
+	tsf = tsf_high;
+	tsf = (tsf << 32) | tsf_low;
 	return tsf;
-#undef NR
 }
 
 static int ar9170_set_key(struct ieee80211_hw *hw, enum set_key_cmd cmd,

@@ -383,7 +383,6 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
 	int pos = 0, ofs = 0, buf_size = 0;
 	const u8 *ptr;
 	char *buf;
-	u16 eeprom_ver;
 	size_t eeprom_len = priv->cfg->eeprom_size;
 	buf_size = 4 * eeprom_len + 256;
 
@@ -404,11 +403,9 @@ static ssize_t iwl_dbgfs_nvm_read(struct file *file,
 		IWL_ERR(priv, "Can not allocate Buffer\n");
 		return -ENOMEM;
 	}
-	eeprom_ver = iwl_eeprom_query16(priv, EEPROM_VERSION);
-	pos += scnprintf(buf + pos, buf_size - pos, "NVM Type: %s, "
-			"version: 0x%x\n",
+	pos += scnprintf(buf + pos, buf_size - pos, "NVM Type: %s\n",
 			(priv->nvm_device_type == NVM_DEVICE_TYPE_OTP)
-			 ? "OTP" : "EEPROM", eeprom_ver);
+			? "OTP" : "EEPROM");
 	for (ofs = 0 ; ofs < eeprom_len ; ofs += 16) {
 		pos += scnprintf(buf + pos, buf_size - pos, "0x%.4x ", ofs);
 		hex_dump_to_buffer(ptr + ofs, 16 , 16, 2, buf + pos,
@@ -535,8 +532,6 @@ static ssize_t iwl_dbgfs_status_read(struct file *file,
 		test_bit(STATUS_INT_ENABLED, &priv->status));
 	pos += scnprintf(buf + pos, bufsz - pos, "STATUS_RF_KILL_HW:\t %d\n",
 		test_bit(STATUS_RF_KILL_HW, &priv->status));
-	pos += scnprintf(buf + pos, bufsz - pos, "STATUS_CT_KILL:\t\t %d\n",
-		test_bit(STATUS_CT_KILL, &priv->status));
 	pos += scnprintf(buf + pos, bufsz - pos, "STATUS_INIT:\t\t %d\n",
 		test_bit(STATUS_INIT, &priv->status));
 	pos += scnprintf(buf + pos, bufsz - pos, "STATUS_ALIVE:\t\t %d\n",
@@ -677,6 +672,7 @@ static ssize_t iwl_dbgfs_qos_read(struct file *file, char __user *user_buf,
 	return ret;
 }
 
+#ifdef CONFIG_IWLWIFI_LEDS
 static ssize_t iwl_dbgfs_led_read(struct file *file, char __user *user_buf,
 				  size_t count, loff_t *ppos)
 {
@@ -701,6 +697,7 @@ static ssize_t iwl_dbgfs_led_read(struct file *file, char __user *user_buf,
 	ret = simple_read_from_buffer(user_buf, count, ppos, buf, pos);
 	return ret;
 }
+#endif
 
 static ssize_t iwl_dbgfs_thermal_throttling_read(struct file *file,
 				char __user *user_buf,
@@ -864,7 +861,9 @@ DEBUGFS_READ_FILE_OPS(channels);
 DEBUGFS_READ_FILE_OPS(status);
 DEBUGFS_READ_WRITE_FILE_OPS(interrupt);
 DEBUGFS_READ_FILE_OPS(qos);
+#ifdef CONFIG_IWLWIFI_LEDS
 DEBUGFS_READ_FILE_OPS(led);
+#endif
 DEBUGFS_READ_FILE_OPS(thermal_throttling);
 DEBUGFS_READ_WRITE_FILE_OPS(disable_ht40);
 DEBUGFS_READ_WRITE_FILE_OPS(sleep_level_override);
@@ -1662,7 +1661,9 @@ int iwl_dbgfs_register(struct iwl_priv *priv, const char *name)
 	DEBUGFS_ADD_FILE(status, data);
 	DEBUGFS_ADD_FILE(interrupt, data);
 	DEBUGFS_ADD_FILE(qos, data);
+#ifdef CONFIG_IWLWIFI_LEDS
 	DEBUGFS_ADD_FILE(led, data);
+#endif
 	DEBUGFS_ADD_FILE(sleep_level_override, data);
 	DEBUGFS_ADD_FILE(current_sleep_command, data);
 	DEBUGFS_ADD_FILE(thermal_throttling, data);
@@ -1715,7 +1716,9 @@ void iwl_dbgfs_unregister(struct iwl_priv *priv)
 	DEBUGFS_REMOVE(priv->dbgfs->dbgfs_data_files.file_status);
 	DEBUGFS_REMOVE(priv->dbgfs->dbgfs_data_files.file_interrupt);
 	DEBUGFS_REMOVE(priv->dbgfs->dbgfs_data_files.file_qos);
+#ifdef CONFIG_IWLWIFI_LEDS
 	DEBUGFS_REMOVE(priv->dbgfs->dbgfs_data_files.file_led);
+#endif
 	DEBUGFS_REMOVE(priv->dbgfs->dbgfs_data_files.file_thermal_throttling);
 	DEBUGFS_REMOVE(priv->dbgfs->dbgfs_data_files.file_disable_ht40);
 	DEBUGFS_REMOVE(priv->dbgfs->dir_data);

@@ -22,7 +22,7 @@ void ___cfg80211_scan_done(struct cfg80211_registered_device *rdev, bool leak)
 {
 	struct cfg80211_scan_request *request;
 	struct net_device *dev;
-#ifdef CONFIG_CFG80211_WEXT
+#ifdef CONFIG_WIRELESS_EXT
 	union iwreq_data wrqu;
 #endif
 
@@ -47,7 +47,7 @@ void ___cfg80211_scan_done(struct cfg80211_registered_device *rdev, bool leak)
 	else
 		nl80211_send_scan_done(rdev, dev);
 
-#ifdef CONFIG_CFG80211_WEXT
+#ifdef CONFIG_WIRELESS_EXT
 	if (!request->aborted) {
 		memset(&wrqu, 0, sizeof(wrqu));
 
@@ -424,6 +424,7 @@ cfg80211_bss_update(struct cfg80211_registered_device *dev,
 
 #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,28)
 			if (0) {
+				used = 0; /* just to shut up the compiler */
 #else
 			if (!found->ies_allocated && ksize(found) >= used + ielen) {
 #endif
@@ -596,7 +597,7 @@ void cfg80211_unlink_bss(struct wiphy *wiphy, struct cfg80211_bss *pub)
 }
 EXPORT_SYMBOL(cfg80211_unlink_bss);
 
-#ifdef CONFIG_CFG80211_WEXT
+#ifdef CONFIG_WIRELESS_EXT
 int cfg80211_wext_siwscan(struct net_device *dev,
 			  struct iw_request_info *info,
 			  union iwreq_data *wrqu, char *extra)

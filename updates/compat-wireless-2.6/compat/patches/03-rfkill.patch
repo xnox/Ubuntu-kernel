@@ -63,8 +63,8 @@ This would do the policing from within mac80211.
  
  	/* causes rfkill_start() to be called */
  	error = input_register_handle(handle);
---- a/net/rfkill/core.c	2009-10-06 12:53:52.000000000 -0400
-+++ b/net/rfkill/core.c	2009-10-06 12:53:53.000000000 -0400
+--- a/net/rfkill/core.c	2009-08-20 13:48:36.083267397 -0700
++++ b/net/rfkill/core.c	2009-08-20 13:48:37.051267098 -0700
 @@ -26,7 +26,7 @@
  #include <linux/capability.h>
  #include <linux/list.h>
@@ -206,9 +206,9 @@ This would do the policing from within mac80211.
  #include <linux/workqueue.h>
  #include <net/genetlink.h>
  #include <net/cfg80211.h>
---- a/drivers/net/wireless/ath/ath9k/hw.c	2009-10-06 12:55:01.000000000 -0400
-+++ b/drivers/net/wireless/ath/ath9k/hw.c	2009-10-06 12:55:02.000000000 -0400
-@@ -3675,7 +3675,7 @@
+--- a/drivers/net/wireless/ath/ath9k/hw.c	2009-09-23 10:28:55.875708257 -0700
++++ b/drivers/net/wireless/ath/ath9k/hw.c	2009-09-23 10:28:56.211707588 -0700
+@@ -3688,7 +3688,7 @@
  
  	pCap->hw_caps |= ATH9K_HW_CAP_ENHANCEDPM;
  

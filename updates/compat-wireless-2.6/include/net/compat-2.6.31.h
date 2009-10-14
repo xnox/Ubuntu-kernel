@@ -12,7 +12,6 @@
 #include <linux/interrupt.h>
 #include <net/dst.h>
 #include <net/genetlink.h>
-#include <linux/ethtool.h>
 
 /*
  * These macros allow us to backport rfkill without any
