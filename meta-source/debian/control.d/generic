@@ -31,3 +31,10 @@ Depends: linux-backports-modules-${kernel-abi-version}-generic
 Description: Backported drivers for generic kernel image
  This empty package allows people to keep their backported modules
  up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-alsa-RELEASE_NAME-generic
+Architecture: amd64 i386
+Depends: linux-backports-modules-alsa-${kernel-abi-version}-generic
+Description: Backported drivers for alsa-driver snapshot.
+ This empty package allows people to keep their alsa-driver snapshot
+ up-to-date when upgrading their Linux kernel.
