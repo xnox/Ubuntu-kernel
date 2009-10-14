@@ -71,17 +71,42 @@ install-%: $(stampdir)/stamp-build-%
 	# Build the compat wireless packages.
 	#
 	install -d $(cwmoddir)/updates/cw
-	find $(builddir)/build-$*/compat-wireless-2.6 -type f -name '*.ko' | while read f ; do cp -v $${f} $(cwmoddir)/updates/cw/`basename $${f}`; done
+	find $(builddir)/build-$*/compat-wireless-2.6 -type f -name '*.ko' | \
+	while read f ; do \
+		cp -v $${f} $(cwmoddir)/updates/cw/`basename $${f}`; \
+	done
 
-ifeq ($(no_image_strip),)
 	find $(cwpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
-endif
 
 	install -d $(cwpkgdir)/DEBIAN
 	for script in postinst postrm; do					\
 	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
 	       debian/control-scripts/$$script > $(cwpkgdir)/DEBIAN/$$script;	\
 	  chmod 755 $(cwpkgdir)/DEBIAN/$$script;					\
+	done
+
+	#
+	# Build the ALSA snapshot packages.
+	#
+	install -d $(csmoddir)/updates/alsa
+	find $(builddir)/build-$*/alsa-driver -type f -name '*.ko' | while read f ; do cp -v $${f} $(csmoddir)/updates/alsa/`basename $${f}`; done
+
+	find $(cspkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
+
+	install -d $(cspkgdir)/DEBIAN
+	for script in postinst postrm; do					\
+	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
+	       debian/control-scripts/$$script > $(cspkgdir)/DEBIAN/$$script;	\
+	  chmod 755 $(cspkgdir)/DEBIAN/$$script;					\
+	done
+
+	#
+	# The flavour specific headers package
+	#
+	install -d $(hdrdir)/include
+	tar -C $(builddir)/build-$*/compat-wireless-2.6 -chf - include | tar -C $(hdrdir) -xf -
+	for i in asm linux media sound; do \
+		tar -C $(builddir)/build-$*/alsa-driver/include -chf - $$i | tar -C $(hdrdir)/include -xf -; \
 	done
 
 	dh_testdir
@@ -95,28 +120,6 @@ endif
 	dh_md5sums -p$(lbmhdrpkg)
 	dh_builddeb -p$(lbmhdrpkg)
 
-	#
-	# Build the ALSA snapshot packages.
-	#
-	install -d $(csmoddir)/updates/alsa
-	find $(builddir)/build-$*/alsa-driver -type f -name '*.ko' | while read f ; do cp -v $${f} $(csmoddir)/updates/alsa/`basename $${f}`; done
-
-ifeq ($(no_image_strip),)
-	find $(cspkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
-endif
-
-	install -d $(cspkgdir)/DEBIAN
-	for script in postinst postrm; do					\
-	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
-	       debian/control-scripts/$$script > $(cspkgdir)/DEBIAN/$$script;	\
-	  chmod 755 $(cspkgdir)/DEBIAN/$$script;					\
-	done
-
-	# The flavour specific headers package
-	if [ -z "$(filter $(no_alsa_flavours),$(target_flavour))" ] && grep 'CONFIG_ALSA=m' $(builddir)/build-$*/.config > /dev/null ; then \
-		install -d $(hdrdir)/sound; \
-		cp `find $(builddir)/build-$*/sound/alsa-kernel/include -type f` $(hdrdir)/sound; \
-	fi
 
 binary-modules-%: pkgimg = linux-backports-modules-$(release)-$(abinum)-$*
 binary-modules-%: alsaimg = linux-backports-modules-alsa-$(release)-$(abinum)-$*
