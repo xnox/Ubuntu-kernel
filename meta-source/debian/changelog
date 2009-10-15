@@ -1,3 +1,11 @@
+linux-meta (2.6.31.14.27) UNRELEASED; urgency=low
+
+  * Added transitional packages for i386 moving upgraders from -server
+    to -generic-pae.
+      - LP: 399718
+
+ -- Andy Whitcroft <apw@canonical.com>  Thu, 15 Oct 2009 09:28:52 +0100
+
 linux-meta (2.6.31.14.26) karmic; urgency=low
 
   * Added linux-backports-modules-headers-karmic meta packages
