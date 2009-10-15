@@ -1,4 +1,4 @@
-linux-meta (2.6.31.14.27) UNRELEASED; urgency=low
+linux-meta (2.6.31.14.27) karmic; urgency=low
 
   * Added transitional packages for i386 moving upgraders from -server
     to -generic-pae.
