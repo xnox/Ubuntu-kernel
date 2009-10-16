@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-25.62netbook01) netbook-common; urgency=low
+
+  [Steve Conklin]
+
+  * Rebased kernel and ABI bump requires reversioning of lum
+
+ -- sconklin <sconklin@canonical.com>  Fri, 16 Oct 2009 15:51:17 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-24.61netbook01) netbook-common; urgency=low
 
   [Colin Ian King]
