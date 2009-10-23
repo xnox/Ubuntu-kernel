@@ -1,3 +1,10 @@
+linux-meta-mvl-dove (2.6.31.208.8) UNRELEASED; urgency=low
+
+  * remove the dove-z0 flavour
+    - LP: #459022
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 23 Oct 2009 17:40:33 +0100
+
 linux-meta-mvl-dove (2.6.31.208.7) karmic; urgency=low
 
   * Karmic ABI 208, seemed to have skipped 207
