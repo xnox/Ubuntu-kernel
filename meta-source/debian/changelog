@@ -1,4 +1,4 @@
-linux-meta-mvl-dove (2.6.31.208.8) UNRELEASED; urgency=low
+linux-meta-mvl-dove (2.6.31.208.8) karmic; urgency=low
 
   * remove the dove-z0 flavour
     - LP: #459022
