@@ -1,3 +1,9 @@
+linux-meta (2.6.32.2.1) UNRELEASED; urgency=low
+
+  * Lucid ABI 2
+
+ -- Andy Whitcroft <apw@canonical.com>  Sat, 31 Oct 2009 01:43:00 +0000
+
 linux-meta (2.6.31.14.27) karmic; urgency=low
 
   * Added transitional packages for i386 moving upgraders from -server
