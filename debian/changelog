@@ -1,3 +1,11 @@
+linux-backports-modules-2.6.31 (2.6.31-15.17) karmic-proposed; urgency=low
+
+  [Stefan Bader]
+
+  * Bump the ABI for proposed upload
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Sat, 31 Oct 2009 01:30:20 +0000
+
 linux-backports-modules-2.6.31 (2.6.31-14.16) karmic; urgency=low
 
   [ Colin Watson ]
