@@ -1,4 +1,4 @@
-linux-meta (2.6.32.2.1) UNRELEASED; urgency=low
+linux-meta (2.6.32.2.1) lucid; urgency=low
 
   * Lucid ABI 2
   * Drop the transitional packages for karmic -server to -generic-pae
