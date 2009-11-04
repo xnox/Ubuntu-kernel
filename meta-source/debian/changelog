@@ -4,6 +4,8 @@ linux-meta (2.6.32.2.1) UNRELEASED; urgency=low
   * Drop the transitional packages for karmic -server to -generic-pae
     upgraders for lucid.
   * Switch series to lucid.
+  * Drop the linux-backports-modules package, we should only use sub-system
+    specific modules for lucid.
 
  -- Andy Whitcroft <apw@canonical.com>  Sat, 31 Oct 2009 01:43:00 +0000
 

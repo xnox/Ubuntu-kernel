@@ -25,13 +25,6 @@ Description: Complete Generic Linux kernel
  This package will always depend on the latest complete lpia Linux kernel
  available.
 
-Package: linux-backports-modules-RELEASE_NAME-lpia
-Architecture: lpia
-Depends: linux-backports-modules-${kernel-abi-version}-lpia
-Description: Backported drivers for lpia kernel image
- This empty package allows people to keep their backported modules
- up-to-date when upgrading their Linux kernel.
-
 Package: linux-backports-modules-headers-RELEASE_NAME-lpia
 Architecture: lpia
 Depends: linux-headers-lbm-${kernel-abi-version}-lpia
