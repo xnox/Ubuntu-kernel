@@ -2,12 +2,16 @@
 . $(dirname $0)/build-common
 
 BRANCH="master"
+DRYRUN=false
 TARGETS=""
 while [ $# -gt 0 ]; do
 	case $1 in
 		-b|--branch)
 			BRANCH="$2"
 			shift
+			;;
+		--dry-run)
+			DRYRUN=true
 			;;
 		-*|--*)
 			echo "Unknown option <$1>!" >&2
@@ -56,7 +60,18 @@ ABIDIR="$(pwd)/${DEBIAN}/abi/$FULLVER"
 # All flavours should be defined in $DEBIAN/control.d/vars.*
 # Sub-flavours are not controlled with ABI checks, neither are custom binaries.
 #
-PKG_NAME="$(echo $PKG_INFO | cut -d" " -f1)-image-$VER-$ABI"
+PKG_NAME=$(
+	git show $BRANCH:$DEBIAN/control.d/flavour-control.stub |
+	awk '
+		/Package:/{
+			pkg=$2
+		}
+		/Provides:.*linux-image/{
+			sub(/-PKGVER-ABINUM-FLAVOUR/, "", pkg)
+			print pkg
+		}
+			'
+)-$VER-$ABI
 PKG_LIST="$(
 	for FILE in $(git show $BRANCH:$DEBIAN/control.d); do
 		if [ "$(echo $FILE | cut -d. -f1)" != "vars" ]; then
@@ -82,6 +97,9 @@ GetABIFrom()
 		return 0
 	fi
 	echo "Fetching $PKG from $TARGET..."
+	if [ "$DRYRUN" = "true" ]; then
+		return 0
+	fi
 	scp $HOST:$BASEDIR/$PKG . 2>/dev/null
 	if [ ! -f $PKG ]; then
 		echo "EE: Failed to download $PKG"
@@ -112,6 +130,13 @@ GetABIFrom()
 
 	return 0
 }
+
+if [ "$DRYRUN" != "true" ]; then
+	if [ ! -d $ABIDIR ]; then
+		mkdir $ABIDIR
+	fi
+	echo "$ABI" >$ABIDIR/abiname
+fi
 
 for PKG in $PKG_LIST; do
 	FLAVOUR=$(echo $PKG|cut -d- -f5-|cut -d_ -f1)
