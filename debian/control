@@ -3,10 +3,10 @@ Section: admin
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: debhelper (>= 3), module-init-tools, coreutils, git-core, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.31-15-generic [i386 amd64], linux-headers-2.6.31-15-generic-pae [i386], linux-headers-2.6.31-15-lpia [lpia], linux-headers-2.6.31-15-server [amd64]
+Build-Depends: debhelper (>= 3), module-init-tools, coreutils, git-core, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.31-16-generic [i386 amd64], linux-headers-2.6.31-16-generic-pae [i386], linux-headers-2.6.31-16-lpia [lpia], linux-headers-2.6.31-16-server [amd64]
 Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-karmic-lbm.git
 
-Package: linux-headers-lbm-2.6.31-15
+Package: linux-headers-lbm-2.6.31-16
 Architecture: all
 Section: devel
 Priority: optional
@@ -15,14 +15,14 @@ Provides: linux-headers-lbm, linux-headers-lbm-2.6
 Description: Header files related to Linux ubuntu-modules version 2.6.31
  This package provides linux-ubuntu-modules header files for version 2.6.31, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lbm-2.6.31-15/debian.README.gz for details
+ /usr/share/doc/linux-headers-lbm-2.6.31-16/debian.README.gz for details
 
-Package: linux-backports-modules-2.6.31-15-generic
+Package: linux-backports-modules-2.6.31-16-generic
 Architecture: i386 amd64
 Section: admin
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.31-15-generic
+Depends: linux-image-2.6.31-16-generic
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.31 on x86/x86_64
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.31 on
@@ -32,23 +32,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86/x86_64
  the linux-backports-modules-generic meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lbm-2.6.31-15-generic
+Package: linux-headers-lbm-2.6.31-16-generic
 Architecture: i386 amd64
 Section: devel
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-15-generic
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-16-generic
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
 Description: Header files related to linux-backports-modules version 2.6.31
  This package provides linux-backports-modules header files for version 2.6.31, for sites
  that want the latest linux-backports-modules headers. Please read
- /usr/share/doc/linux-headers-lbm-2.6.31-15/debian.README.gz for details
+ /usr/share/doc/linux-headers-lbm-2.6.31-16/debian.README.gz for details
 
-Package: linux-backports-modules-alsa-2.6.31-15-generic
+Package: linux-backports-modules-alsa-2.6.31-16-generic
 Architecture: i386 amd64
 Section: admin
 Priority: optional
 Provides:
-Depends: linux-image-2.6.31-15-generic
+Depends: linux-image-2.6.31-16-generic
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
  This package contains modules supplied by Ubuntu for Linux 2.6.31 ALSA
@@ -59,12 +59,12 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
  correctly, and that supporting packages are also installed.
 
 
-Package: linux-backports-modules-2.6.31-15-generic-pae
+Package: linux-backports-modules-2.6.31-16-generic-pae
 Architecture: i386
 Section: admin
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.31-15-generic-pae
+Depends: linux-image-2.6.31-16-generic-pae
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.31 on x86
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.31 on
@@ -74,23 +74,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86
  the linux-backports-modules-generic-pae meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lbm-2.6.31-15-generic-pae
+Package: linux-headers-lbm-2.6.31-16-generic-pae
 Architecture: i386
 Section: devel
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-15-generic-pae
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-16-generic-pae
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
 Description: Header files related to linux-backports-modules version 2.6.31
  This package provides linux-backports-modules header files for version 2.6.31, for sites
  that want the latest linux-backports-modules headers. Please read
- /usr/share/doc/linux-headers-lbm-2.6.31-15/debian.README.gz for details
+ /usr/share/doc/linux-headers-lbm-2.6.31-16/debian.README.gz for details
 
-Package: linux-backports-modules-alsa-2.6.31-15-generic-pae
+Package: linux-backports-modules-alsa-2.6.31-16-generic-pae
 Architecture: i386
 Section: admin
 Priority: optional
 Provides:
-Depends: linux-image-2.6.31-15-generic-pae
+Depends: linux-image-2.6.31-16-generic-pae
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
  This package contains modules supplied by Ubuntu for Linux 2.6.31 ALSA
@@ -101,12 +101,12 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
  correctly, and that supporting packages are also installed.
 
 
-Package: linux-backports-modules-2.6.31-15-lpia
+Package: linux-backports-modules-2.6.31-16-lpia
 Architecture: lpia
 Section: admin
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.31-15-lpia
+Depends: linux-image-2.6.31-16-lpia
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.31 on lpia
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.31 on
@@ -116,23 +116,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on lpia
  the linux-backports-modules-lpia meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lbm-2.6.31-15-lpia
+Package: linux-headers-lbm-2.6.31-16-lpia
 Architecture: lpia
 Section: devel
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-15-lpia
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-16-lpia
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
 Description: Header files related to linux-backports-modules version 2.6.31
  This package provides linux-backports-modules header files for version 2.6.31, for sites
  that want the latest linux-backports-modules headers. Please read
- /usr/share/doc/linux-headers-lbm-2.6.31-15/debian.README.gz for details
+ /usr/share/doc/linux-headers-lbm-2.6.31-16/debian.README.gz for details
 
-Package: linux-backports-modules-alsa-2.6.31-15-lpia
+Package: linux-backports-modules-alsa-2.6.31-16-lpia
 Architecture: lpia
 Section: admin
 Priority: optional
 Provides:
-Depends: linux-image-2.6.31-15-lpia
+Depends: linux-image-2.6.31-16-lpia
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
  This package contains modules supplied by Ubuntu for Linux 2.6.31 ALSA
@@ -143,12 +143,12 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
  correctly, and that supporting packages are also installed.
 
 
-Package: linux-backports-modules-2.6.31-15-server
+Package: linux-backports-modules-2.6.31-16-server
 Architecture: amd64
 Section: admin
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.31-15-server
+Depends: linux-image-2.6.31-16-server
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.31 on x86_64
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.31 on
@@ -158,23 +158,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.31 on x86_64
  the linux-backports-modules-server meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lbm-2.6.31-15-server
+Package: linux-headers-lbm-2.6.31-16-server
 Architecture: amd64
 Section: devel
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-15-server
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.31-16-server
 Provides: linux-headers-lbm, linux-headers-lbm-2.6
 Description: Header files related to linux-backports-modules version 2.6.31
  This package provides linux-backports-modules header files for version 2.6.31, for sites
  that want the latest linux-backports-modules headers. Please read
- /usr/share/doc/linux-headers-lbm-2.6.31-15/debian.README.gz for details
+ /usr/share/doc/linux-headers-lbm-2.6.31-16/debian.README.gz for details
 
-Package: linux-backports-modules-alsa-2.6.31-15-server
+Package: linux-backports-modules-alsa-2.6.31-16-server
 Architecture: amd64
 Section: admin
 Priority: optional
 Provides:
-Depends: linux-image-2.6.31-15-server
+Depends: linux-image-2.6.31-16-server
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.31 ALSA snapshots.
  This package contains modules supplied by Ubuntu for Linux 2.6.31 ALSA
