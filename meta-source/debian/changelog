@@ -1,3 +1,10 @@
+linux-ports-meta (2.6.31.14.13) karmic; urgency=low
+
+  * No-change rebuild to readd linux-{image,headers}-ia64, which were dropped
+    by accident.
+
+ -- Steve Langasek <steve.langasek@ubuntu.com>  Tue, 27 Oct 2009 06:44:25 -0700
+
 linux-ports-meta (2.6.31.14.12) karmic; urgency=low
 
   * Bump ABI
