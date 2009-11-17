@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.32.4.1) lucid; urgency=low
+
+  * Bump kernel version and ABI for lucid
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Tue, 17 Nov 2009 16:00:08 -0600
+
 linux-ports-meta (2.6.31.14.13) karmic; urgency=low
 
   * No-change rebuild to readd linux-{image,headers}-ia64, which were dropped
