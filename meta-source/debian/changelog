@@ -1,3 +1,9 @@
+linux-meta-fsl-imx51 (2.6.31.600.1) lucid; urgency=low
+
+  * Lucid ABI 600
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Fri, 20 Nov 2009 15:53:41 -0600
+
 linux-meta-fsl-imx51 (2.6.31.105.4) karmic; urgency=low
 
   * fsl-imx51 ABI 105, seemed to have skipped 104
