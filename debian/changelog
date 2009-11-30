@@ -1,3 +1,15 @@
+wireless-crda (1.10) karmic; urgency=low
+
+  * Updated wireless-regdb to master-2009-08-05
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 11 Aug 2009 10:11:08 -0600
+
+wireless-crda (1.9) karmic; urgency=low
+
+  * Updated crda to v1.1.0
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 07 Jul 2009 07:30:51 -0600
+
 wireless-crda (1.8) karmic; urgency=low
 
   * Updated wireless-regdb to master-2009-04-17
