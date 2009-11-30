@@ -16,12 +16,17 @@ UDEV_LEVEL=$(CRDA_UDEV_LEVEL)-
 # a different location.
 UDEV_RULE_DIR?=/lib/udev/rules.d/
 
-# Used locally to retrieve all pubkeys during build time
-PUBKEY_DIR=pubkeys
+# If your distribution requires a custom pubkeys dir
+# you must update this variable to reflect where the
+# keys are put when building. For example you can run
+# with make PUBKEY_DIR=/usr/lib/crda/pubkeys
+PUBKEY_DIR?=pubkeys
 
 CFLAGS += -Wall -g
 
-all: $(REG_BIN) crda intersect verify
+all: all_noverify verify
+
+all_noverify: crda intersect regdbdump
 
 ifeq ($(USE_OPENSSL),1)
 CFLAGS += -DUSE_OPENSSL `pkg-config --cflags openssl`
@@ -71,16 +76,18 @@ $(REG_BIN):
 	$(NQ) '  EXIST ' $(REG_BIN)
 	$(NQ)
 	$(NQ) ERROR: The file: $(REG_BIN) is missing. You need this in place in order
-	$(NQ) to build CRDA. You can get it from:
+	$(NQ) to verify CRDA. You can get it from:
 	$(NQ)
 	$(NQ) $(REG_GIT)
 	$(NQ)
 	$(NQ) "Once cloned (no need to build) cp regulatory.bin to $(REG_BIN)"
+	$(NQ) "Use \"make noverify\" to disable verification"
 	$(NQ)
 	$(Q) exit 1
 
 keys-%.c: utils/key2pub.py $(wildcard $(PUBKEY_DIR)/*.pem)
 	$(NQ) '  GEN ' $@
+	$(NQ) '  Trusted pubkeys:' $(wildcard $(PUBKEY_DIR)/*.pem)
 	$(Q)./utils/key2pub.py --$* $(wildcard $(PUBKEY_DIR)/*.pem) $@
 
 %.o: %.c regdb.h
