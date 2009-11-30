@@ -29,7 +29,8 @@ popd
 # Copy any updated files.
 #
 rsync -av --exclude=.git --exclude=.gitignore ${TMP}/${CRDA}/ .
-rsync -av ${TMP}/${REGDB}/regulatory.bin ${TMP}/${REGDB}/linville.key.pub.pem .
+rsync -av ${TMP}/${REGDB}/regulatory.bin .
+rsync -av ${TMP}/${REGDB}/linville.key.pub.pem key.pub.pem
 
 #
 # This step generates the arch independent keys-gcrypt.c.sav which
