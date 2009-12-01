@@ -14,9 +14,6 @@ function BuildStart()
 		printf "%-15s: [not configured]\n" $1
 		return 1
 	fi
-	if [ "$CONCURRENCY" = "" ]; then
-		CONCURRENCY=4
-	fi
 
 	status=$($CMDDIR/build-check --dist $DIST ${SYSNAME})
 	if [ $? -ne 0 ]; then
@@ -24,7 +21,11 @@ function BuildStart()
 		return 1
 	fi
 
-	ARGS="-c$CONCURRENCY"
+	if [ "$CONCURRENCY" != "" ]; then
+		ARGS="-c$CONCURRENCY"
+	else
+		ARGS=""
+	fi
 	if $AUTOBUILD; then
 		ARGS="$ARGS -a"
 	fi

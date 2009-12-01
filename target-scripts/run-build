@@ -14,7 +14,7 @@ BUILDTARGET="kernel"
 # Might come from config file
 #
 STATUSFILE="$(pwd)/build-status"
-CONCURRENCY_LEVEL=1
+CONCURRENCY_LEVEL=0
 if [ -r build.cfg ]; then
 	. build.cfg
 fi
@@ -42,6 +42,10 @@ while [ $# -gt 0 ]; do
 	shift
 done
 export AUTOBUILD
+
+if [ $CONCURRENCY_LEVEL -eq 0 ]; then
+	CONCURRENCY_LEVEL=$(getconf _NPROCESSORS_ONLN)
+fi
 
 if [ -d /usr/lib/ccache ]; then
 	export PATH=/usr/lib/ccache:$PATH
