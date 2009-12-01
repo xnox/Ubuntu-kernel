@@ -1,6 +1,6 @@
 # THIS FILE IS AUTO-GENERATED FROM kernel-versions.in
 # arch   version    flavour       installedname            suffix build-depends
-i386     2.6.24-25  386           2.6.24-25-386              -	
-i386     2.6.24-25  generic       2.6.24-25-generic          -	
-powerpc  2.6.24-25  powerpc       2.6.24-25-powerpc          -	
-amd64    2.6.24-25  generic       2.6.24-25-generic          -	
+i386     2.6.24-26  386           2.6.24-26-386              -	
+i386     2.6.24-26  generic       2.6.24-26-generic          -	
+powerpc  2.6.24-26  powerpc       2.6.24-26-powerpc          -	
+amd64    2.6.24-26  generic       2.6.24-26-generic          -	

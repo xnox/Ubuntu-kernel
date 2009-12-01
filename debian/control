@@ -8,23 +8,23 @@ Standards-Version: 3.6.1
 Build-Depends: cpio, debhelper (>= 4.0.0), libc6-i386 [amd64],
  kernel-wedge (>= 2.05ubuntu2), module-init-tools, rpm, sed (>> 3.0),
  sharutils, bzip2, libgtk2.0-dev [i386 amd64],
- linux-headers-2.6.24-25-386 [i386],
- linux-headers-2.6.24-25-server [amd64 i386],
- linux-headers-2.6.24-25-generic [amd64 i386],
- linux-headers-2.6.24-25-lpia [lpia],
- linux-headers-2.6.24-25-lpiacompat [lpia],
- linux-headers-2.6.24-25-openvz [i386 amd64],
- linux-headers-2.6.24-25-rt [i386 amd64],
- linux-headers-2.6.24-25-xen [amd64 i386],
- linux-headers-2.6.24-25-powerpc [powerpc],
- linux-headers-2.6.24-25-powerpc-smp [powerpc],
- linux-headers-2.6.24-25-powerpc64-smp [powerpc],
- linux-headers-2.6.24-25-mckinley [ia64],
- linux-headers-2.6.24-25-itanium [ia64],
- linux-headers-2.6.24-25-hppa32 [hppa],
- linux-headers-2.6.24-25-hppa64 [hppa],
- linux-headers-2.6.24-25-sparc64-smp [sparc],
- linux-headers-2.6.24-25-sparc64 [sparc]
+ linux-headers-2.6.24-26-386 [i386],
+ linux-headers-2.6.24-26-server [amd64 i386],
+ linux-headers-2.6.24-26-generic [amd64 i386],
+ linux-headers-2.6.24-26-lpia [lpia],
+ linux-headers-2.6.24-26-lpiacompat [lpia],
+ linux-headers-2.6.24-26-openvz [i386 amd64],
+ linux-headers-2.6.24-26-rt [i386 amd64],
+ linux-headers-2.6.24-26-xen [amd64 i386],
+ linux-headers-2.6.24-26-powerpc [powerpc],
+ linux-headers-2.6.24-26-powerpc-smp [powerpc],
+ linux-headers-2.6.24-26-powerpc64-smp [powerpc],
+ linux-headers-2.6.24-26-mckinley [ia64],
+ linux-headers-2.6.24-26-itanium [ia64],
+ linux-headers-2.6.24-26-hppa32 [hppa],
+ linux-headers-2.6.24-26-hppa64 [hppa],
+ linux-headers-2.6.24-26-sparc64-smp [sparc],
+ linux-headers-2.6.24-26-sparc64 [sparc]
 Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-hardy-lrm.git
 
 Package: linux-restricted-modules-common
@@ -35,12 +35,12 @@ Description: Non-free Linux 2.6.24 modules helper script
  This package provides only a set of helper scripts to handle
  linux-restricted-modules.
 
-Package: linux-restricted-modules-2.6.24-25-386
+Package: linux-restricted-modules-2.6.24-26-386
 Architecture: i386
 Priority: optional
 Provides: nvidia-kernel-96.43.05, nvidia-kernel-71.86.04, nvidia-kernel-169.12
-Depends: linux-image-2.6.24-25-386, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
-Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-25
+Depends: linux-image-2.6.24-26-386, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
+Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-26
 Description: Non-free Linux 2.6.24 modules on 386
  This package provides restricted modules for Linux version 2.6.24 on
  386.
@@ -268,7 +268,7 @@ Description: AVM Fritz! binary kernel module source
  a pre-compiled kernel module is supplied by the linux-restricted-modules
  packages.
 
-Package: avm-fritz-firmware-2.6.24-25
+Package: avm-fritz-firmware-2.6.24-26
 Architecture: amd64 i386
 Depends: capiutils (>= 1:3.6.2005-01-03-3ubuntu1)
 Recommends: drdsl
@@ -277,12 +277,12 @@ Description: Firmware for AVM Fritz! ISDN hardware
  made by AVM.  The firmware is installed in a kernel specific directory to
  match driver and firmware version, if more than one kernel installed.
 
-Package: linux-restricted-modules-2.6.24-25-generic
+Package: linux-restricted-modules-2.6.24-26-generic
 Architecture: amd64 i386
 Priority: optional
 Provides: nvidia-kernel-96.43.05, nvidia-kernel-71.86.04, nvidia-kernel-169.12
-Depends: linux-image-2.6.24-25-generic, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
-Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-25
+Depends: linux-image-2.6.24-26-generic, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
+Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-26
 Description: Non-free Linux 2.6.24 modules on x86/x86_64
  This package provides restricted modules for Linux version 2.6.24 on
  x86/x86_64.
@@ -297,12 +297,12 @@ Description: Non-free Linux 2.6.24 modules on x86/x86_64
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-rt
+Package: linux-restricted-modules-2.6.24-26-rt
 Architecture: amd64 i386
 Priority: optional
 Provides: nvidia-kernel-96.43.05, nvidia-kernel-71.86.04, nvidia-kernel-169.12
-Depends: linux-image-2.6.24-25-rt, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
-Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-25
+Depends: linux-image-2.6.24-26-rt, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
+Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-26
 Description: Non-free Linux 2.6.24 modules on x86/x86_64
  This package provides restricted modules for Linux version 2.6.24 on
  x86/x86_64.
@@ -317,12 +317,12 @@ Description: Non-free Linux 2.6.24 modules on x86/x86_64
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-server
+Package: linux-restricted-modules-2.6.24-26-server
 Architecture: amd64 i386
 Priority: optional
 Provides: nvidia-kernel-96.43.05, nvidia-kernel-71.86.04, nvidia-kernel-169.12
-Depends: linux-image-2.6.24-25-server, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
-Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-25
+Depends: linux-image-2.6.24-26-server, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
+Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-26
 Description: Non-free Linux 2.6.24 modules on x86/x86_64
  This package provides restricted modules for Linux version 2.6.24 on
  x86/x86_64.
@@ -337,10 +337,10 @@ Description: Non-free Linux 2.6.24 modules on x86/x86_64
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-powerpc
+Package: linux-restricted-modules-2.6.24-26-powerpc
 Architecture: powerpc
 Priority: optional
-Depends: linux-image-2.6.24-25-powerpc, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-powerpc, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on PowerPC
  This package provides restricted modules for Linux version 2.6.24 on
  PowerPC.
@@ -350,10 +350,10 @@ Description: Non-free Linux 2.6.24 modules on PowerPC
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-powerpc-smp
+Package: linux-restricted-modules-2.6.24-26-powerpc-smp
 Architecture: powerpc
 Priority: optional
-Depends: linux-image-2.6.24-25-powerpc-smp, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-powerpc-smp, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on PowerPC SMP
  This package provides restricted modules for Linux version 2.6.24 on
  PowerPC SMP.
@@ -363,10 +363,10 @@ Description: Non-free Linux 2.6.24 modules on PowerPC SMP
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-powerpc64-smp
+Package: linux-restricted-modules-2.6.24-26-powerpc64-smp
 Architecture: powerpc
 Priority: optional
-Depends: linux-image-2.6.24-25-powerpc64-smp, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-powerpc64-smp, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on PowerPC 64-bit SMP
  This package provides restricted modules for Linux version 2.6.24 on
  PowerPC 64-bit SMP.
@@ -376,10 +376,10 @@ Description: Non-free Linux 2.6.24 modules on PowerPC 64-bit SMP
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-itanium
+Package: linux-restricted-modules-2.6.24-26-itanium
 Architecture: ia64
 Priority: optional
-Depends: linux-image-2.6.24-25-itanium, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-itanium, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on Itanium
  This package provides restricted modules for Linux version 2.6.24 on
  Itanium.
@@ -389,10 +389,10 @@ Description: Non-free Linux 2.6.24 modules on Itanium
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-mckinley
+Package: linux-restricted-modules-2.6.24-26-mckinley
 Architecture: ia64
 Priority: optional
-Depends: linux-image-2.6.24-25-mckinley, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-mckinley, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on Itanium 2
  This package provides restricted modules for Linux version 2.6.24 on
  Itanium 2.
@@ -402,10 +402,10 @@ Description: Non-free Linux 2.6.24 modules on Itanium 2
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-hppa32
+Package: linux-restricted-modules-2.6.24-26-hppa32
 Architecture: hppa
 Priority: optional
-Depends: linux-image-2.6.24-25-hppa32, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-hppa32, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on 32-bit HPPA
  This package provides restricted modules for Linux version 2.6.24 on
  32-bit HPPA.
@@ -415,10 +415,10 @@ Description: Non-free Linux 2.6.24 modules on 32-bit HPPA
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-hppa64
+Package: linux-restricted-modules-2.6.24-26-hppa64
 Architecture: hppa
 Priority: optional
-Depends: linux-image-2.6.24-25-hppa64, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-hppa64, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on 64-bit HPPA
  This package provides restricted modules for Linux version 2.6.24 on
  64-bit HPPA.
@@ -428,10 +428,10 @@ Description: Non-free Linux 2.6.24 modules on 64-bit HPPA
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-lpia
+Package: linux-restricted-modules-2.6.24-26-lpia
 Architecture: lpia
 Priority: optional
-Depends: linux-image-2.6.24-25-lpia, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-lpia, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on LPIA
  This package provides restricted modules for Linux version 2.6.24 on
  32-bit LPIA
@@ -441,10 +441,10 @@ Description: Non-free Linux 2.6.24 modules on LPIA
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-lpiacompat
+Package: linux-restricted-modules-2.6.24-26-lpiacompat
 Architecture: lpia
 Priority: optional
-Depends: linux-image-2.6.24-25-lpiacompat, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-lpiacompat, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on LPIAcompat
  This package provides restricted modules for Linux version 2.6.24 on
  32-bit LPIAcompat
@@ -454,10 +454,10 @@ Description: Non-free Linux 2.6.24 modules on LPIAcompat
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-sparc64
+Package: linux-restricted-modules-2.6.24-26-sparc64
 Architecture: sparc
 Priority: optional
-Depends: linux-image-2.6.24-25-sparc64, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-sparc64, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on 64-bit Sparc
  This package provides restricted modules for Linux version 2.6.24 on
  64-bit Sparc.
@@ -467,10 +467,10 @@ Description: Non-free Linux 2.6.24 modules on 64-bit Sparc
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-sparc64-smp
+Package: linux-restricted-modules-2.6.24-26-sparc64-smp
 Architecture: sparc
 Priority: optional
-Depends: linux-image-2.6.24-25-sparc64-smp, linux-restricted-modules-common (>= 2.6.24), module-init-tools
+Depends: linux-image-2.6.24-26-sparc64-smp, linux-restricted-modules-common (>= 2.6.24), module-init-tools
 Description: Non-free Linux 2.6.24 modules on 64-bit Sparc SMP
  This package provides restricted modules for Linux version 2.6.24 on
  64-bit Sparc SMP.
@@ -480,12 +480,12 @@ Description: Non-free Linux 2.6.24 modules on 64-bit Sparc SMP
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-xen
+Package: linux-restricted-modules-2.6.24-26-xen
 Architecture: amd64 i386
 Priority: optional
 Provides: nvidia-kernel-96.43.05, nvidia-kernel-71.86.04, nvidia-kernel-169.12
-Depends: linux-image-2.6.24-25-xen, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
-Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-25
+Depends: linux-image-2.6.24-26-xen, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
+Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-26
 Description: Non-free Linux 2.6.24 modules on Xen
  This package provides restricted modules for Linux version 2.6.24 on
  Xen dom0 and domU.
@@ -497,12 +497,12 @@ Description: Non-free Linux 2.6.24 modules on Xen
  These modules are "restricted" because they are not available under a
  completely Free licence.
 
-Package: linux-restricted-modules-2.6.24-25-openvz
+Package: linux-restricted-modules-2.6.24-26-openvz
 Architecture: amd64 i386
 Priority: optional
 Provides: nvidia-kernel-96.43.05, nvidia-kernel-71.86.04, nvidia-kernel-169.12
-Depends: linux-image-2.6.24-25-openvz, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
-Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-25
+Depends: linux-image-2.6.24-26-openvz, linux-restricted-modules-common (>= 2.6.24), module-init-tools, nvidia-kernel-common
+Suggests: nvidia-glx | nvidia-glx-legacy | nvidia-glx-new, avm-fritz-firmware-2.6.24-26
 Description: Non-free Linux 2.6.24 modules on OpenVZ Virtualization enabled kernel
  This package provides restricted modules for Linux version 2.6.24 on
  OpenVZ Virtualization enabled kernel.
