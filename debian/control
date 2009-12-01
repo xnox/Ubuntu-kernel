@@ -3,14 +3,14 @@ Section: base
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
-Build-Depends: automake, autoconf, debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-25-386 [i386], linux-headers-2.6.24-25-generic [i386 amd64], linux-headers-2.6.24-25-hppa32 [hppa], linux-headers-2.6.24-25-hppa64 [hppa], linux-headers-2.6.24-25-itanium [ia64], linux-headers-2.6.24-25-lpia [lpia], linux-headers-2.6.24-25-lpiacompat [lpia], linux-headers-2.6.24-25-mckinley [ia64], linux-headers-2.6.24-25-openvz [i386 amd64], linux-headers-2.6.24-25-powerpc [powerpc], linux-headers-2.6.24-25-powerpc-smp [powerpc], linux-headers-2.6.24-25-powerpc64-smp [powerpc], linux-headers-2.6.24-25-rt [i386 amd64], linux-headers-2.6.24-25-server [i386 amd64], linux-headers-2.6.24-25-sparc64 [sparc], linux-headers-2.6.24-25-sparc64-smp [sparc], linux-headers-2.6.24-25-virtual [i386], linux-headers-2.6.24-25-xen [i386 amd64]
+Build-Depends: automake, autoconf, debhelper (>= 3), module-init-tools, kernel-wedge (>= 2.24ubuntu1), linux-headers-2.6.24-26-386 [i386], linux-headers-2.6.24-26-generic [i386 amd64], linux-headers-2.6.24-26-hppa32 [hppa], linux-headers-2.6.24-26-hppa64 [hppa], linux-headers-2.6.24-26-itanium [ia64], linux-headers-2.6.24-26-lpia [lpia], linux-headers-2.6.24-26-lpiacompat [lpia], linux-headers-2.6.24-26-mckinley [ia64], linux-headers-2.6.24-26-openvz [i386 amd64], linux-headers-2.6.24-26-powerpc [powerpc], linux-headers-2.6.24-26-powerpc-smp [powerpc], linux-headers-2.6.24-26-powerpc64-smp [powerpc], linux-headers-2.6.24-26-rt [i386 amd64], linux-headers-2.6.24-26-server [i386 amd64], linux-headers-2.6.24-26-sparc64 [sparc], linux-headers-2.6.24-26-sparc64-smp [sparc], linux-headers-2.6.24-26-virtual [i386], linux-headers-2.6.24-26-xen [i386 amd64]
 
-Package: linux-ubuntu-modules-2.6.24-25-386
+Package: linux-ubuntu-modules-2.6.24-26-386
 Architecture: i386
 Section: base
 Priority: optional
 Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-25-386
+Depends: linux-image-2.6.24-26-386
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on i386
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -20,23 +20,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on i386
  the linux-386 meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-386
+Package: linux-headers-lum-2.6.24-26-386
 Architecture: i386
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-386
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-386
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-generic
+Package: linux-ubuntu-modules-2.6.24-26-generic
 Architecture: i386 amd64
 Section: base
 Priority: optional
 Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-25-generic
+Depends: linux-image-2.6.24-26-generic
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -46,23 +46,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  the linux-generic meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-generic
+Package: linux-headers-lum-2.6.24-26-generic
 Architecture: i386 amd64
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-generic
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-generic
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-hppa32
+Package: linux-ubuntu-modules-2.6.24-26-hppa32
 Architecture: hppa
 Section: base
 Priority: optional
 Provides: rhcs-modules2-1
-Depends: linux-image-2.6.24-25-hppa32
+Depends: linux-image-2.6.24-26-hppa32
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit HP PA-RISC SMP
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -72,23 +72,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit HP PA-RI
  the linux-hppa32 meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-hppa32
+Package: linux-headers-lum-2.6.24-26-hppa32
 Architecture: hppa
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-hppa32
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-hppa32
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-hppa64
+Package: linux-ubuntu-modules-2.6.24-26-hppa64
 Architecture: hppa
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-hppa64
+Depends: linux-image-2.6.24-26-hppa64
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit HP PA-RISC SMP
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -98,23 +98,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit HP PA-RI
  the linux-hppa64 meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-hppa64
+Package: linux-headers-lum-2.6.24-26-hppa64
 Architecture: hppa
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-hppa64
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-hppa64
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-itanium
+Package: linux-ubuntu-modules-2.6.24-26-itanium
 Architecture: ia64
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-itanium
+Depends: linux-image-2.6.24-26-itanium
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on Itanium SMP
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -124,23 +124,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on Itanium SMP
  the linux-itanium meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-itanium
+Package: linux-headers-lum-2.6.24-26-itanium
 Architecture: ia64
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-itanium
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-itanium
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-lpia
+Package: linux-ubuntu-modules-2.6.24-26-lpia
 Architecture: lpia
 Section: base
 Priority: optional
 Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-25-lpia
+Depends: linux-image-2.6.24-26-lpia
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on lpia
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -150,23 +150,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on lpia
  the linux-lpia meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-lpia
+Package: linux-headers-lum-2.6.24-26-lpia
 Architecture: lpia
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-lpia
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-lpia
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-lpiacompat
+Package: linux-ubuntu-modules-2.6.24-26-lpiacompat
 Architecture: lpia
 Section: base
 Priority: optional
 Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-25-lpiacompat
+Depends: linux-image-2.6.24-26-lpiacompat
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on lpiacompat for x86-compatible
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -176,23 +176,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on lpiacompat for 
  the linux-lpiacompat meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-lpiacompat
+Package: linux-headers-lum-2.6.24-26-lpiacompat
 Architecture: lpia
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-lpiacompat
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-lpiacompat
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-mckinley
+Package: linux-ubuntu-modules-2.6.24-26-mckinley
 Architecture: ia64
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-mckinley
+Depends: linux-image-2.6.24-26-mckinley
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on Itanium II SMP
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -202,23 +202,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on Itanium II SMP
  the linux-mckinley meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-mckinley
+Package: linux-headers-lum-2.6.24-26-mckinley
 Architecture: ia64
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-mckinley
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-mckinley
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-openvz
+Package: linux-ubuntu-modules-2.6.24-26-openvz
 Architecture: i386 amd64
 Section: universe/base
 Priority: optional
 Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-25-openvz
+Depends: linux-image-2.6.24-26-openvz
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -228,23 +228,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  the linux-openvz meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-openvz
+Package: linux-headers-lum-2.6.24-26-openvz
 Architecture: i386 amd64
 Section: universe/base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-openvz
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-openvz
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-powerpc
+Package: linux-ubuntu-modules-2.6.24-26-powerpc
 Architecture: powerpc
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-powerpc
+Depends: linux-image-2.6.24-26-powerpc
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -254,23 +254,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC
  the linux-powerpc meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-powerpc
+Package: linux-headers-lum-2.6.24-26-powerpc
 Architecture: powerpc
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-powerpc
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-powerpc
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-powerpc64-smp
+Package: linux-ubuntu-modules-2.6.24-26-powerpc64-smp
 Architecture: powerpc
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-powerpc64-smp
+Depends: linux-image-2.6.24-26-powerpc64-smp
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit PowerPC SMP
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -280,23 +280,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit PowerPC 
  the linux-powerpc64-smp meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-powerpc64-smp
+Package: linux-headers-lum-2.6.24-26-powerpc64-smp
 Architecture: powerpc
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-powerpc64-smp
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-powerpc64-smp
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-powerpc-smp
+Package: linux-ubuntu-modules-2.6.24-26-powerpc-smp
 Architecture: powerpc
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-powerpc-smp
+Depends: linux-image-2.6.24-26-powerpc-smp
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC SMP
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -306,23 +306,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 32-bit PowerPC 
  the linux-powerpc-smp meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-powerpc-smp
+Package: linux-headers-lum-2.6.24-26-powerpc-smp
 Architecture: powerpc
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-powerpc-smp
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-powerpc-smp
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-rt
+Package: linux-ubuntu-modules-2.6.24-26-rt
 Architecture: i386 amd64
 Section: universe/base
 Priority: optional
 Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-25-rt
+Depends: linux-image-2.6.24-26-rt
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -332,23 +332,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  the linux-rt meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-rt
+Package: linux-headers-lum-2.6.24-26-rt
 Architecture: i386 amd64
 Section: universe/base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-rt
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-rt
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-server
+Package: linux-ubuntu-modules-2.6.24-26-server
 Architecture: i386 amd64
 Section: base
 Priority: optional
 Provides: ndiswrapper-modules-1.9
-Depends: linux-image-2.6.24-25-server
+Depends: linux-image-2.6.24-26-server
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -358,23 +358,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  the linux-server meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-server
+Package: linux-headers-lum-2.6.24-26-server
 Architecture: i386 amd64
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-server
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-server
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-sparc64
+Package: linux-ubuntu-modules-2.6.24-26-sparc64
 Architecture: sparc
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-sparc64
+Depends: linux-image-2.6.24-26-sparc64
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPARC
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -384,23 +384,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPA
  the linux-sparc64 meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-sparc64
+Package: linux-headers-lum-2.6.24-26-sparc64
 Architecture: sparc
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-sparc64
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-sparc64
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-sparc64-smp
+Package: linux-ubuntu-modules-2.6.24-26-sparc64-smp
 Architecture: sparc
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-sparc64-smp
+Depends: linux-image-2.6.24-26-sparc64-smp
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPARC SMP
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -410,23 +410,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on 64-bit UltraSPA
  the linux-sparc64-smp meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-sparc64-smp
+Package: linux-headers-lum-2.6.24-26-sparc64-smp
 Architecture: sparc
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-sparc64-smp
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-sparc64-smp
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-virtual
+Package: linux-ubuntu-modules-2.6.24-26-virtual
 Architecture: i386
 Section: base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-virtual
+Depends: linux-image-2.6.24-26-virtual
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on virtualised hardware
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -436,23 +436,23 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on virtualised har
  the linux-virtual meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-virtual
+Package: linux-headers-lum-2.6.24-26-virtual
 Architecture: i386
 Section: base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-virtual
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-virtual
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
 
-Package: linux-ubuntu-modules-2.6.24-25-xen
+Package: linux-ubuntu-modules-2.6.24-26-xen
 Architecture: i386 amd64
 Section: universe/base
 Priority: optional
 Provides: 
-Depends: linux-image-2.6.24-25-xen
+Depends: linux-image-2.6.24-26-xen
 Pre-Depends: dpkg (>= 1.10.24)
 Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  This package contains modules supplied by Ubuntu for Linux kernel 2.6.24 on
@@ -462,13 +462,13 @@ Description: Ubuntu supplied Linux modules for version 2.6.24 on x86/x86_64
  the linux-xen meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-headers-lum-2.6.24-25-xen
+Package: linux-headers-lum-2.6.24-26-xen
 Architecture: i386 amd64
 Section: universe/base
 Priority: optional
-Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-25-xen
+Depends: coreutils | fileutils (>= 4.0), linux-headers-2.6.24-26-xen
 Provides: linux-headers-lum, linux-headers-lum-2.6
 Description: Header files related to linux-ubuntu-modules version 2.6.24
  This package provides linux-ubuntu-modules header files for version 2.6.24, for sites
  that want the latest linux-ubuntu-modules headers. Please read
- /usr/share/doc/linux-headers-lum-2.6.24-25/debian.README.gz for details
+ /usr/share/doc/linux-headers-lum-2.6.24-26/debian.README.gz for details
