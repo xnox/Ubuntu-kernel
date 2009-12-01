@@ -69,6 +69,7 @@ print time.strftime("%H:%M UTC", time.gmtime())
 
 
 for series_name in [
+		"Lucid Lynx",
 		"Karmic Koala",
 		"Jaunty Jackelope",
 		"Intrepid Ibex",
