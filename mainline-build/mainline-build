@@ -27,7 +27,8 @@ case "$commit" in
 v2.6.24*)	master_release="hardy" ;;
 v2.6.27*)	master_release="intrepid" ;;
 v2.6.28*|v2.6.29*|v2.6.30*)	master_release="jaunty" ;;
-*)		master_release="karmic" ;;
+v2.6.31*)	master_release="karmic" ;;
+*)		master_release="lucid" ;;
 esac
 
 master_repo="/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${master_release}.git"
