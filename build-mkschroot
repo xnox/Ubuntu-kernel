@@ -87,6 +87,9 @@ case $SUITE in
 	karmic)
 		ADDPKG="$ADDPKG makedumpfile"
 		;;
+	lucid)
+		ADDPKG="$ADDPKG makedumpfile"
+		;;
 	*)
 		if [ "$SUITE" != "" ]; then
 			echo "Unknown suite <$SUITE>!" >&2
