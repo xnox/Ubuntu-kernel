@@ -44,7 +44,8 @@ fi
 # Find out which chroot command is used
 #
 CMD=""
-INFO=$(cat <<-EOD | ssh $HOST
+INFO=$(
+	cat <<-EOD
 	HOSTARCH="\$(dpkg --print-architecture)"
 	echo "HOSTARCH=\"\$HOSTARCH\""
 	if [ "$ARCH" = "" ]; then
@@ -62,7 +63,7 @@ INFO=$(cat <<-EOD | ssh $HOST
 	fi
 	EOD
 )
-eval "$INFO"
+eval "$(echo "$INFO"|ssh $HOST)"
 
 if $VERBOSE; then
 	echo "INFO: Host architecture: $HOSTARCH"
