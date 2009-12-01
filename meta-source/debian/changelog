@@ -1,3 +1,9 @@
+linux-meta (2.6.24.26.28) hardy-security; urgency=low
+
+  * ABI bump to -26 by security update
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 01 Dec 2009 00:36:05 -0800
+
 linux-meta (2.6.24.25.27) hardy-security; urgency=low
 
   * ABI bump to -25 by security update
