@@ -897,7 +897,7 @@ int __must_check rfkill_register(struct rfkill *rfkill)
 	}
 
 	rfkill->idx = rfkill_no;
-	dev_set_name(dev, "rfkill%lu", rfkill_no);
+	dev_set_name(dev, "backport_rfkill%lu", rfkill_no);
 	rfkill_no++;
 
 	list_add_tail(&rfkill->node, &rfkill_list);
@@ -1189,6 +1189,7 @@ static long rfkill_fop_ioctl(struct file *file, unsigned int cmd,
 #endif
 
 static const struct file_operations rfkill_fops = {
+	.owner		= THIS_MODULE,
 	.open		= rfkill_fop_open,
 	.read		= rfkill_fop_read,
 	.write		= rfkill_fop_write,

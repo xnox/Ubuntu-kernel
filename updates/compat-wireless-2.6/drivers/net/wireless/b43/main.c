@@ -4534,9 +4534,8 @@ static int b43_op_beacon_set_tim(struct ieee80211_hw *hw,
 {
 	struct b43_wl *wl = hw_to_b43_wl(hw);
 
-	mutex_lock(&wl->mutex);
+	/* FIXME: add locking */
 	b43_update_templates(wl);
-	mutex_unlock(&wl->mutex);
 
 	return 0;
 }
