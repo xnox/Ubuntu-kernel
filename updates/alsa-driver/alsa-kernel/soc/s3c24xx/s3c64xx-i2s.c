@@ -31,12 +31,11 @@
 #include <plat/gpio-bank-d.h>
 #include <plat/gpio-bank-e.h>
 #include <plat/gpio-cfg.h>
-#include <plat/audio.h>
 
 #include <mach/map.h>
 #include <mach/dma.h>
 
-#include "s3c24xx-pcm.h"
+#include "s3c-dma.h"
 #include "s3c64xx-i2s.h"
 
 static struct s3c2410_dma_client s3c64xx_dma_client_out = {
@@ -47,7 +46,7 @@ static struct s3c2410_dma_client s3c64xx_dma_client_in = {
 	.name		= "I2S PCM Stereo in"
 };
 
-static struct s3c24xx_pcm_dma_params s3c64xx_i2s_pcm_stereo_out[2] = {
+static struct s3c_dma_params s3c64xx_i2s_pcm_stereo_out[2] = {
 	[0] = {
 		.channel	= DMACH_I2S0_OUT,
 		.client		= &s3c64xx_dma_client_out,
@@ -62,7 +61,7 @@ static struct s3c24xx_pcm_dma_params s3c64xx_i2s_pcm_stereo_out[2] = {
 	},
 };
 
-static struct s3c24xx_pcm_dma_params s3c64xx_i2s_pcm_stereo_in[2] = {
+static struct s3c_dma_params s3c64xx_i2s_pcm_stereo_in[2] = {
 	[0] = {
 		.channel	= DMACH_I2S0_IN,
 		.client		= &s3c64xx_dma_client_in,
@@ -236,6 +235,8 @@ static __devinit int s3c64xx_iis_dev_probe(struct platform_device *pdev)
 		ret = PTR_ERR(i2s->iis_cclk);
 		goto err;
 	}
+
+	clk_enable(i2s->iis_cclk);
 
 	ret = s3c_i2sv2_probe(pdev, dai, i2s, 0);
 	if (ret)

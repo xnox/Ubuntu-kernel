@@ -689,7 +689,7 @@ SOC_DOUBLE_TLV("Digital Sidetone Volume", WM8993_DIGITAL_SIDE_TONE,
 
 SOC_SINGLE("DRC Switch", WM8993_DRC_CONTROL_1, 15, 1, 0),
 SOC_ENUM("DRC Path", drc_path),
-SOC_SINGLE_TLV("DRC Compressor Threashold Volume", WM8993_DRC_CONTROL_2,
+SOC_SINGLE_TLV("DRC Compressor Threshold Volume", WM8993_DRC_CONTROL_2,
 	       2, 60, 1, drc_comp_threash),
 SOC_SINGLE_TLV("DRC Compressor Amplitude Volume", WM8993_DRC_CONTROL_3,
 	       11, 30, 1, drc_comp_amp),
@@ -709,7 +709,7 @@ SOC_SINGLE_TLV("DRC Quick Release Volume", WM8993_DRC_CONTROL_3, 2, 3, 0,
 SOC_ENUM("DRC Quick Release Rate", drc_qr_rate),
 SOC_SINGLE("DRC Smoothing Switch", WM8993_DRC_CONTROL_1, 11, 1, 0),
 SOC_SINGLE("DRC Smoothing Hysteresis Switch", WM8993_DRC_CONTROL_1, 8, 1, 0),
-SOC_ENUM("DRC Smoothing Hysteresis Threashold", drc_smooth),
+SOC_ENUM("DRC Smoothing Hysteresis Threshold", drc_smooth),
 SOC_SINGLE_TLV("DRC Startup Volume", WM8993_DRC_CONTROL_4, 8, 18, 0,
 	       drc_startup_tlv),
 
@@ -1464,19 +1464,8 @@ static int wm8993_probe(struct platform_device *pdev)
 	wm_hubs_add_analogue_routes(codec, wm8993->pdata.lineout1_diff,
 				    wm8993->pdata.lineout2_diff);
 
-	snd_soc_dapm_new_widgets(codec);
-
-	ret = snd_soc_init_card(socdev);
-	if (ret < 0) {
-		dev_err(codec->dev, "failed to register card\n");
-		goto card_err;
-	}
-
 	return ret;
 
-card_err:
-	snd_soc_free_pcms(socdev);
-	snd_soc_dapm_free(socdev);
 err:
 	return ret;
 }

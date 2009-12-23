@@ -99,7 +99,6 @@ static int wm8711_add_widgets(struct snd_soc_codec *codec)
 
 	snd_soc_dapm_add_routes(codec, intercon, ARRAY_SIZE(intercon));
 
-	snd_soc_dapm_new_widgets(codec);
 	return 0;
 }
 
@@ -404,17 +403,9 @@ static int wm8711_probe(struct platform_device *pdev)
 	snd_soc_add_controls(codec, wm8711_snd_controls,
 			     ARRAY_SIZE(wm8711_snd_controls));
 	wm8711_add_widgets(codec);
-	ret = snd_soc_init_card(socdev);
-	if (ret < 0) {
-		dev_err(codec->dev, "failed to register card: %d\n", ret);
-		goto card_err;
-	}
 
 	return ret;
 
-card_err:
-	snd_soc_free_pcms(socdev);
-	snd_soc_dapm_free(socdev);
 pcm_err:
 	return ret;
 }
@@ -548,21 +539,6 @@ static int __devexit wm8711_spi_remove(struct spi_device *spi)
 	return 0;
 }
 
-#ifdef CONFIG_PM
-static int wm8711_spi_suspend(struct spi_device *spi, pm_message_t msg)
-{
-	return snd_soc_suspend_device(&spi->dev);
-}
-
-static int wm8711_spi_resume(struct spi_device *spi)
-{
-	return snd_soc_resume_device(&spi->dev);
-}
-#else
-#define wm8711_spi_suspend NULL
-#define wm8711_spi_resume NULL
-#endif
-
 static struct spi_driver wm8711_spi_driver = {
 	.driver = {
 		.name	= "wm8711",
@@ -570,8 +546,6 @@ static struct spi_driver wm8711_spi_driver = {
 		.owner	= THIS_MODULE,
 	},
 	.probe		= wm8711_spi_probe,
-	.suspend	= wm8711_spi_suspend,
-	.resume		= wm8711_spi_resume,
 	.remove		= __devexit_p(wm8711_spi_remove),
 };
 #endif /* CONFIG_SPI_MASTER */

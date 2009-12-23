@@ -2893,7 +2893,9 @@ static int snd_usb_create_streams(struct snd_usb_audio *chip, int ctrlif)
 		if ((altsd->bInterfaceClass == USB_CLASS_AUDIO ||
 		     altsd->bInterfaceClass == USB_CLASS_VENDOR_SPEC) &&
 		    altsd->bInterfaceSubClass == USB_SUBCLASS_MIDI_STREAMING) {
-			if (snd_usb_create_midi_interface(chip, iface, NULL) < 0) {
+			int err = snd_usbmidi_create(chip->card, iface,
+						     &chip->midi_list, NULL);
+			if (err < 0) {
 				snd_printk(KERN_ERR "%d:%u:%d: cannot create sequencer device\n", dev->devnum, ctrlif, j);
 				continue;
 			}
@@ -3038,12 +3040,11 @@ static int create_uaxx_quirk(struct snd_usb_audio *chip,
 			.type = QUIRK_MIDI_FIXED_ENDPOINT,
 			.data = &uaxx_ep
 		};
-		if (chip->usb_id == USB_ID(0x0582, 0x002b))
-			return snd_usb_create_midi_interface(chip, iface,
-							     &ua700_quirk);
-		else
-			return snd_usb_create_midi_interface(chip, iface,
-							     &uaxx_quirk);
+		const struct snd_usb_audio_quirk *quirk =
+			chip->usb_id == USB_ID(0x0582, 0x002b)
+			? &ua700_quirk : &uaxx_quirk;
+		return snd_usbmidi_create(chip->card, iface,
+					  &chip->midi_list, quirk);
 	}
 
 	if (altsd->bNumEndpoints != 1)
@@ -3128,59 +3129,6 @@ static int create_ua1000_quirk(struct snd_usb_audio *chip,
 	fp->datainterval = parse_datainterval(chip, alts);
 	fp->maxpacksize = le16_to_cpu(get_endpoint(alts, 0)->wMaxPacketSize);
 	fp->rate_max = fp->rate_min = combine_triple(&alts->extra[8]);
-
-	stream = (fp->endpoint & USB_DIR_IN)
-		? SNDRV_PCM_STREAM_CAPTURE : SNDRV_PCM_STREAM_PLAYBACK;
-	err = add_audio_endpoint(chip, stream, fp);
-	if (err < 0) {
-		kfree(fp);
-		return err;
-	}
-	/* FIXME: playback must be synchronized to capture */
-	usb_set_interface(chip->dev, fp->iface, 0);
-	return 0;
-}
-
-/*
- * Create a stream for an Edirol UA-101 interface.
- * Copy, paste and modify from Edirol UA-1000
- */
-static int create_ua101_quirk(struct snd_usb_audio *chip,
-			       struct usb_interface *iface,
-			       const struct snd_usb_audio_quirk *quirk)
-{
-	static const struct audioformat ua101_format = {
-		.format = SNDRV_PCM_FORMAT_S32_LE,
-		.fmt_type = USB_FORMAT_TYPE_I,
-		.altsetting = 1,
-		.altset_idx = 1,
-		.attributes = 0,
-		.rates = SNDRV_PCM_RATE_CONTINUOUS,
-	};
-	struct usb_host_interface *alts;
-	struct usb_interface_descriptor *altsd;
-	struct audioformat *fp;
-	int stream, err;
-
-	if (iface->num_altsetting != 2)
-		return -ENXIO;
-	alts = &iface->altsetting[1];
-	altsd = get_iface_desc(alts);
-	if (alts->extralen != 18 || alts->extra[1] != USB_DT_CS_INTERFACE ||
-	    altsd->bNumEndpoints != 1)
-		return -ENXIO;
-
-	fp = kmemdup(&ua101_format, sizeof(*fp), GFP_KERNEL);
-	if (!fp)
-		return -ENOMEM;
-
-	fp->channels = alts->extra[11];
-	fp->iface = altsd->bInterfaceNumber;
-	fp->endpoint = get_endpoint(alts, 0)->bEndpointAddress;
-	fp->ep_attr = get_endpoint(alts, 0)->bmAttributes;
-	fp->datainterval = parse_datainterval(chip, alts);
-	fp->maxpacksize = le16_to_cpu(get_endpoint(alts, 0)->wMaxPacketSize);
-	fp->rate_max = fp->rate_min = combine_triple(&alts->extra[15]);
 
 	stream = (fp->endpoint & USB_DIR_IN)
 		? SNDRV_PCM_STREAM_CAPTURE : SNDRV_PCM_STREAM_PLAYBACK;
@@ -3370,6 +3318,13 @@ static int audiophile_skip_setting_quirk(struct snd_usb_audio *chip,
 	return 0; /* keep this altsetting */
 }
 
+static int create_any_midi_quirk(struct snd_usb_audio *chip,
+				 struct usb_interface *intf,
+				 const struct snd_usb_audio_quirk *quirk)
+{
+	return snd_usbmidi_create(chip->card, intf, &chip->midi_list, quirk);
+}
+
 /*
  * audio-interface quirks
  *
@@ -3387,18 +3342,17 @@ static int snd_usb_create_quirk(struct snd_usb_audio *chip,
 	static const quirk_func_t quirk_funcs[] = {
 		[QUIRK_IGNORE_INTERFACE] = ignore_interface_quirk,
 		[QUIRK_COMPOSITE] = create_composite_quirk,
-		[QUIRK_MIDI_STANDARD_INTERFACE] = snd_usb_create_midi_interface,
-		[QUIRK_MIDI_FIXED_ENDPOINT] = snd_usb_create_midi_interface,
-		[QUIRK_MIDI_YAMAHA] = snd_usb_create_midi_interface,
-		[QUIRK_MIDI_MIDIMAN] = snd_usb_create_midi_interface,
-		[QUIRK_MIDI_NOVATION] = snd_usb_create_midi_interface,
-		[QUIRK_MIDI_FASTLANE] = snd_usb_create_midi_interface,
-		[QUIRK_MIDI_EMAGIC] = snd_usb_create_midi_interface,
-		[QUIRK_MIDI_CME] = snd_usb_create_midi_interface,
+		[QUIRK_MIDI_STANDARD_INTERFACE] = create_any_midi_quirk,
+		[QUIRK_MIDI_FIXED_ENDPOINT] = create_any_midi_quirk,
+		[QUIRK_MIDI_YAMAHA] = create_any_midi_quirk,
+		[QUIRK_MIDI_MIDIMAN] = create_any_midi_quirk,
+		[QUIRK_MIDI_NOVATION] = create_any_midi_quirk,
+		[QUIRK_MIDI_FASTLANE] = create_any_midi_quirk,
+		[QUIRK_MIDI_EMAGIC] = create_any_midi_quirk,
+		[QUIRK_MIDI_CME] = create_any_midi_quirk,
 		[QUIRK_AUDIO_STANDARD_INTERFACE] = create_standard_audio_quirk,
 		[QUIRK_AUDIO_FIXED_ENDPOINT] = create_fixed_stream_quirk,
 		[QUIRK_AUDIO_EDIROL_UA1000] = create_ua1000_quirk,
-		[QUIRK_AUDIO_EDIROL_UA101] = create_ua101_quirk,
 		[QUIRK_AUDIO_EDIROL_UAXX] = create_uaxx_quirk
 	};
 

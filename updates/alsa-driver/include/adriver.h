@@ -699,6 +699,8 @@ int snd_compat_queue_delayed_work(struct workqueue_struct *wq, struct delayed_wo
 #define schedule_delayed_work(work, delay) snd_compat_queue_delayed_work(NULL, (work), (delay))
 int snd_compat_cancel_delayed_work(struct delayed_work *work);
 #define cancel_delayed_work(work) snd_compat_cancel_delayed_work(work)
+#define work_pending(work) test_bit(0, &(work)->pending)
+#define delayed_work_pending(w) work_pending(&(w)->work)
 #define flush_scheduled_work()
 #endif /* < 2.5.45 */
 #endif /* < 2.6.0 */
@@ -739,6 +741,10 @@ struct delayed_work {
 	schedule_delayed_work(&(_work)->work, delay)
 #define cancel_delayed_work(_work) \
 	cancel_delayed_work(&(_work)->work)
+#define work_pending(work) \
+	test_bit(0, &(work)->pending)
+#define delayed_work_pending(w) \
+	work_pending(&(w)->work)
 #endif /* !SND_WORKQUEUE_COMPAT */
 #endif /* < 2.6.20 */
 
@@ -1780,6 +1786,8 @@ typedef int _Bool;
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19)
 #ifndef bool	/* just to be sure */
 typedef _Bool bool;
+#define true	1
+#define false	0
 #endif
 #endif
 
@@ -1822,5 +1830,59 @@ static inline int snd_strict_strtoull(const char *str, unsigned int base,
 }
 #define strict_strtoull	snd_strict_strtoull
 #endif /* < 2.6.25 */
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 17)
+#define CONFIG_SND_HAS_REFCOUNTED_STRUCT_PID
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 19)
+#define CONFIG_SND_HAS_TASK_PID
+#endif
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24)
+#define CONFIG_SND_HAS_PID_VNR
+#endif
+#ifndef CONFIG_SND_HAS_REFCOUNTED_STRUCT_PID
+/* use nr as pointer */
+struct pid;
+#define get_pid(p) (p)
+#define put_pid(p)
+#define task_pid(t) ((struct pid *)((t)->pid))
+#define pid_vnr(p) ((pid_t)(p))
+#else
+#ifndef CONFIG_SND_HAS_TASK_PID
+static inline struct pid *task_pid(struct task_struct *task)
+{
+	return task->pids[PIDTYPE_PID].pid;
+}
+#endif
+#ifndef CONFIG_SND_HAS_PID_VNR
+static inline pid_t pid_vnr(struct pid *pid)
+{
+	return pid ? pid->nr : 0;
+}
+#endif
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 29)
+#define pci_clear_master(x)
+#endif
+
+/* some new macros */
+#ifndef FIELD_SIZEOF
+#define FIELD_SIZEOF(t, f) (sizeof(((t*)0)->f))
+#endif
+#ifndef DIV_ROUND_UP
+#define DIV_ROUND_UP(n,d) (((n) + (d) - 1) / (d))
+#endif
+#ifndef roundup
+#define roundup(x, y) ((((x) + ((y) - 1)) / (y)) * (y))
+#endif
+#ifndef DIV_ROUND_CLOSEST
+#define DIV_ROUND_CLOSEST(x, divisor)(			\
+{							\
+	typeof(divisor) __divisor = divisor;		\
+	(((x) + ((__divisor) / 2)) / (__divisor));	\
+}							\
+)
+#endif
 
 #endif /* __SOUND_LOCAL_DRIVER_H */

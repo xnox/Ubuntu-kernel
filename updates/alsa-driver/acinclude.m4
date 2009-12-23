@@ -92,7 +92,6 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_CMI8330=""
 	CONFIG_SND_CS4231=""
 	CONFIG_SND_CS4236=""
-	CONFIG_SND_DT019X=""
 	CONFIG_SND_ES968=""
 	CONFIG_SND_ES1688=""
 	CONFIG_SND_ES18XX=""
@@ -172,6 +171,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_HDA_HWDEP=""
 	CONFIG_SND_HDA_RECONFIG=""
 	CONFIG_SND_HDA_INPUT_BEEP=""
+	CONFIG_SND_HDA_INPUT_BEEP_MODE=""
 	CONFIG_SND_HDA_INPUT_JACK=""
 	CONFIG_SND_HDA_PATCH_LOADER=""
 	CONFIG_SND_HDA_CODEC_REALTEK=""
@@ -194,6 +194,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_HDSPM=""
 	CONFIG_SND_HIFIER=""
 	CONFIG_SND_ICE1712=""
+	CONFIG_BITREVERSE=""
 	CONFIG_SND_ICE1724=""
 	CONFIG_SND_INTEL8X0=""
 	CONFIG_SND_INTEL8X0M=""
@@ -219,8 +220,6 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_PDPLUS=""
 	CONFIG_SND_ASIHPI=""
 	CONFIG_SND_PPC=""
-	CONFIG_PPC64=""
-	CONFIG_PPC32=""
 	CONFIG_SND_POWERMAC=""
 	CONFIG_I2C=""
 	CONFIG_PPC_PMAC=""
@@ -277,9 +276,12 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_AICA=""
 	CONFIG_SH_DREAMCAST=""
 	CONFIG_G2_DMA=""
+	CONFIG_SND_SH_DAC_AUDIO=""
+	CONFIG_CPU_SH3=""
 	CONFIG_SND_USB=""
 	CONFIG_USB=""
 	CONFIG_SND_USB_AUDIO=""
+	CONFIG_SND_USB_UA101=""
 	CONFIG_SND_USB_USX2Y=""
 	CONFIG_ALPHA=""
 	CONFIG_SND_USB_CAIAQ=""
@@ -387,10 +389,13 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_OMAP_SOC_OVERO=""
 	CONFIG_TWL4030_CORE=""
 	CONFIG_MACH_OVERO=""
+	CONFIG_MACH_CM_T35=""
 	CONFIG_SND_OMAP_SOC_OMAP2EVM=""
 	CONFIG_MACH_OMAP2EVM=""
 	CONFIG_SND_OMAP_SOC_OMAP3EVM=""
 	CONFIG_MACH_OMAP3EVM=""
+	CONFIG_SND_OMAP_SOC_AM3517EVM=""
+	CONFIG_MACH_OMAP3517EVM=""
 	CONFIG_SND_OMAP_SOC_SDP3430=""
 	CONFIG_MACH_OMAP_3430SDP=""
 	CONFIG_SND_OMAP_SOC_OMAP3_PANDORA=""
@@ -399,6 +404,8 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_MACH_OMAP3_BEAGLE=""
 	CONFIG_SND_OMAP_SOC_ZOOM2=""
 	CONFIG_MACH_OMAP_ZOOM2=""
+	CONFIG_SND_OMAP_SOC_IGEP0020=""
+	CONFIG_MACH_IGEP0020=""
 	CONFIG_SND_PXA2XX_SOC=""
 	CONFIG_SND_PXA2XX_SOC_AC97=""
 	CONFIG_SND_PXA2XX_SOC_I2S=""
@@ -420,6 +427,8 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_MACH_E800=""
 	CONFIG_SND_PXA2XX_SOC_EM_X270=""
 	CONFIG_MACH_EM_X270=""
+	CONFIG_MACH_EXEDA=""
+	CONFIG_MACH_CM_X300=""
 	CONFIG_SND_PXA2XX_SOC_PALM27X=""
 	CONFIG_MACH_PALMLD=""
 	CONFIG_MACH_PALMTX=""
@@ -427,6 +436,9 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_MACH_PALMTE2=""
 	CONFIG_SND_SOC_ZYLONITE=""
 	CONFIG_MACH_ZYLONITE=""
+	CONFIG_SND_SOC_RAUMFELD=""
+	CONFIG_MACH_RAUMFELD_SPEAKER=""
+	CONFIG_MACH_RAUMFELD_CONNECTOR=""
 	CONFIG_SND_PXA2XX_SOC_MAGICIAN=""
 	CONFIG_MACH_MAGICIAN=""
 	CONFIG_SND_PXA2XX_SOC_MIOA701=""
@@ -440,6 +452,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_S3C_I2SV2_SOC=""
 	CONFIG_SND_S3C2412_SOC_I2S=""
 	CONFIG_SND_S3C64XX_SOC_I2S=""
+	CONFIG_SND_S3C_SOC_PCM=""
 	CONFIG_SND_S3C2443_SOC_AC97=""
 	CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753=""
 	CONFIG_MACH_NEO1973_GTA01=""
@@ -469,7 +482,6 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_SOC_SH4_SSI=""
 	CONFIG_SND_SOC_SH4_FSI=""
 	CONFIG_CPU_SUBTYPE_SH7724=""
-	CONFIG_SH_DMA=""
 	CONFIG_SND_SH7760_AC97=""
 	CONFIG_SND_FSI_AK4642=""
 	CONFIG_SND_SOC_TXX9ACLC=""
@@ -485,6 +497,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_SOC_AD1938=""
 	CONFIG_SND_SOC_AD1980=""
 	CONFIG_SND_SOC_AD73311=""
+	CONFIG_SND_SOC_ADS117X=""
 	CONFIG_SND_SOC_AK4104=""
 	CONFIG_SND_SOC_AK4535=""
 	CONFIG_SND_SOC_AK4642=""
@@ -500,7 +513,9 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_SOC_TLV320AIC23=""
 	CONFIG_SND_SOC_TLV320AIC26=""
 	CONFIG_SND_SOC_TLV320AIC3X=""
+	CONFIG_SND_SOC_TLV320DAC33=""
 	CONFIG_SND_SOC_TWL4030=""
+	CONFIG_TWL4030_CODEC=""
 	CONFIG_SND_SOC_UDA134X=""
 	CONFIG_SND_SOC_UDA1380=""
 	CONFIG_SND_SOC_WM8350=""
@@ -509,6 +524,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_SOC_WM8523=""
 	CONFIG_SND_SOC_WM8580=""
 	CONFIG_SND_SOC_WM8711=""
+	CONFIG_SND_SOC_WM8727=""
 	CONFIG_SND_SOC_WM8728=""
 	CONFIG_SND_SOC_WM8731=""
 	CONFIG_SND_SOC_WM8750=""
@@ -546,11 +562,11 @@ AC_ARG_WITH(cards,
   [                          hpet, pcsp, dummy, virmidi, mtpav, mts64, ]
   [                          serial-u16550, mpu401, portman2x4, ml403-ac97cr, ]
   [                          serialmidi, loopback, adlib, ad1816a, ad1848, ]
-  [                          als100, azt2320, cmi8330, cs4231, cs4236, dt019x, ]
-  [                          es968, es1688, es18xx, sc6000, gusclassic, ]
-  [                          gusextreme, gusmax, interwave, interwave-stb, ]
-  [                          opl3sa2, opti92x-ad1848, opti92x-cs4231, opti93x, ]
-  [                          miro, sb8, sb16, sgalaxy, sscape, wavefront, ]
+  [                          als100, azt2320, cmi8330, cs4231, cs4236, es968, ]
+  [                          es1688, es18xx, sc6000, gusclassic, gusextreme, ]
+  [                          gusmax, interwave, interwave-stb, opl3sa2, ]
+  [                          opti92x-ad1848, opti92x-cs4231, opti93x, miro, ]
+  [                          sb8, sb16, sgalaxy, sscape, wavefront, ]
   [                          msnd-pinnacle, msnd-classic, pc98-cs4232, ad1889, ]
   [                          als300, als4000, ali5451, atiixp, atiixp-modem, ]
   [                          au8810, au8820, au8830, aw2, azt3328, bt87x, ]
@@ -569,11 +585,12 @@ AC_ARG_WITH(cards,
   [                          aoa-soundbus, aoa-soundbus-i2s, armaaci, ]
   [                          pxa2xx-ac97, sa11xx-uda1341, s3c2410, ]
   [                          atmel-abdac, atmel-ac97c, at73c213, sgi-o2, ]
-  [                          sgi-hal2, au1x00, aica, usb-audio, usb-usx2y, ]
-  [                          usb-caiaq, usb-us122l, vxpocket, pdaudiocf, ]
-  [                          sun-amd7930, sun-cs4231, sun-dbri, harmony, soc, ]
-  [                          atmel-soc, at91-soc-sam9g20-wm8731, ]
-  [                          at32-soc-playpaq, at91-soc-afeb9260, soc-au1xpsc, ]
+  [                          sgi-hal2, au1x00, aica, sh-dac-audio, usb-audio, ]
+  [                          usb-ua101, usb-usx2y, usb-caiaq, usb-us122l, ]
+  [                          vxpocket, pdaudiocf, sun-amd7930, sun-cs4231, ]
+  [                          sun-dbri, harmony, soc, atmel-soc, ]
+  [                          at91-soc-sam9g20-wm8731, at32-soc-playpaq, ]
+  [                          at91-soc-afeb9260, soc-au1xpsc, ]
   [                          soc-sample-psc-ac97, bf5xx-i2s, ]
   [                          bf5xx-soc-ssm2602, bf5xx-soc-ad73311, bf5xx-tdm, ]
   [                          bf5xx-soc-ad1836, bf5xx-soc-ad1938, bf5xx-ac97, ]
@@ -586,13 +603,14 @@ AC_ARG_WITH(cards,
   [                          omap-soc-n810, omap-soc-ams-delta, ]
   [                          omap-soc-osk5912, omap-soc-overo, ]
   [                          omap-soc-omap2evm, omap-soc-omap3evm, ]
-  [                          omap-soc-sdp3430, omap-soc-omap3-pandora, ]
-  [                          omap-soc-omap3-beagle, omap-soc-zoom2, ]
-  [                          pxa2xx-soc, pxa2xx-soc-corgi, pxa2xx-soc-spitz, ]
+  [                          omap-soc-am3517evm, omap-soc-sdp3430, ]
+  [                          omap-soc-omap3-pandora, omap-soc-omap3-beagle, ]
+  [                          omap-soc-zoom2, omap-soc-igep0020, pxa2xx-soc, ]
+  [                          pxa2xx-soc-corgi, pxa2xx-soc-spitz, ]
   [                          pxa2xx-soc-poodle, pxa2xx-soc-tosa, ]
   [                          pxa2xx-soc-e740, pxa2xx-soc-e750, ]
   [                          pxa2xx-soc-e800, pxa2xx-soc-em-x270, ]
-  [                          soc-zylonite, pxa2xx-soc-magician, ]
+  [                          soc-zylonite, soc-raumfeld, pxa2xx-soc-magician, ]
   [                          pxa2xx-soc-mioa701, s3c24xx-soc, ]
   [                          s3c24xx-soc-neo1973-wm8753, ]
   [                          s3c24xx-soc-neo1973-gta02-wm8753, ]
@@ -933,21 +951,6 @@ alsa_check_kconfig_option () {
       CONFIG_SND_MPU401_UART="m"
       CONFIG_SND_WSS_LIB="m"
       CONFIG_SND_CS4236="m"
-    fi
-  fi
-  if alsa_check_kconfig_card "dt019x"; then
-    if ( test "$CONFIG_SND_ISA" = "y" -o "$CONFIG_SND_ISA" = "m" ) &&
-      ( test "$CONFIG_PNP" = "y" -o "$CONFIG_PNP" = "m" ) &&
-      ( test "$CONFIG_ISAPNP" = "y" -o "$CONFIG_ISAPNP" = "m" ); then
-      CONFIG_SND_TIMER="m"
-      CONFIG_SND_HWDEP="m"
-      CONFIG_SND_RAWMIDI="m"
-      CONFIG_SND_PCM="m"
-      CONFIG_SND_SB_COMMON="m"
-      CONFIG_SND_OPL3_LIB="m"
-      CONFIG_SND_MPU401_UART="m"
-      CONFIG_SND_SB16_DSP="m"
-      CONFIG_SND_DT019X="m"
     fi
   fi
   if alsa_check_kconfig_card "es968"; then
@@ -1672,6 +1675,11 @@ alsa_check_kconfig_option () {
       CONFIG_SND_HDA_INPUT_BEEP="y"
     fi
   fi
+    if ( test "$CONFIG_SND_PCI" = "y" -o "$CONFIG_SND_PCI" = "m" ) &&
+      ( test "$CONFIG_SND_HDA_INTEL" = "y" -o "$CONFIG_SND_HDA_INTEL" = "m" ) &&
+      ( test "$CONFIG_SND_HDA_INPUT_BEEP" = "y" -o "$CONFIG_SND_HDA_INPUT_BEEP" = "m" ); then
+      CONFIG_SND_HDA_INPUT_BEEP_MODE="1"
+    fi
   if alsa_check_kconfig_option "hda-input-jack"; then
     if ( test "$CONFIG_SND_PCI" = "y" -o "$CONFIG_SND_PCI" = "m" ) &&
       ( test "$CONFIG_SND_HDA_INTEL" = "y" -o "$CONFIG_SND_HDA_INTEL" = "m" ) &&
@@ -1815,18 +1823,6 @@ alsa_check_kconfig_option () {
       CONFIG_SND_HIFIER="m"
     fi
   fi
-  if alsa_check_kconfig_card "ice1712"; then
-    if ( test "$CONFIG_SND_PCI" = "y" -o "$CONFIG_SND_PCI" = "m" ); then
-      CONFIG_SND_RAWMIDI="m"
-      CONFIG_SND_TIMER="m"
-      CONFIG_SND_PCM="m"
-      test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
-      CONFIG_SND_VMASTER="y"
-      CONFIG_SND_MPU401_UART="m"
-      CONFIG_SND_AC97_CODEC="m"
-      CONFIG_SND_ICE1712="m"
-    fi
-  fi
   if alsa_check_kconfig_card "ice1724"; then
     if ( test "$CONFIG_SND_PCI" = "y" -o "$CONFIG_SND_PCI" = "m" ); then
       CONFIG_SND_TIMER="m"
@@ -1867,7 +1863,8 @@ alsa_check_kconfig_option () {
     fi
   fi
   if alsa_check_kconfig_card "lx6464es"; then
-    if ( test "$CONFIG_SND_PCI" = "y" -o "$CONFIG_SND_PCI" = "m" ); then
+    if ( test "$CONFIG_SND_PCI" = "y" -o "$CONFIG_SND_PCI" = "m" ) &&
+      ( test "$kversion.$kpatchlevel" = "2.6" ); then
       CONFIG_SND_TIMER="m"
       CONFIG_SND_PCM="m"
       CONFIG_SND_LX6464ES="m"
@@ -2057,8 +2054,7 @@ alsa_check_kconfig_option () {
       CONFIG_SND_ASIHPI="m"
     fi
   fi
-    if ( ( test "$CONFIG_PPC64" = "y" -o "$CONFIG_PPC64" = "m" ) ||
-      ( test "$CONFIG_PPC32" = "y" -o "$CONFIG_PPC32" = "m" ) ); then
+    if ( test "$CONFIG_PPC" = "y" -o "$CONFIG_PPC" = "m" ); then
       CONFIG_SND_PPC="y"
     fi
   if alsa_check_kconfig_card "powermac"; then
@@ -2246,6 +2242,15 @@ alsa_check_kconfig_option () {
     if ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ); then
       CONFIG_SND_SUPERH="y"
     fi
+  if alsa_check_kconfig_card "sh-dac-audio"; then
+    if ( test "$CONFIG_SND_SUPERH" = "y" -o "$CONFIG_SND_SUPERH" = "m" ) &&
+      ( ( test "$CONFIG_CPU_SH3" = "y" -o "$CONFIG_CPU_SH3" = "m" ) &&
+      ( test "$CONFIG_HIGH_RES_TIMERS" = "y" -o "$CONFIG_HIGH_RES_TIMERS" = "m" ) ); then
+      CONFIG_SND_TIMER="m"
+      CONFIG_SND_PCM="m"
+      CONFIG_SND_SH_DAC_AUDIO="m"
+    fi
+  fi
     if ( test "$CONFIG_USB" = "y" -o "$CONFIG_USB" = "m" ); then
       CONFIG_SND_USB="y"
     fi
@@ -2257,6 +2262,17 @@ alsa_check_kconfig_option () {
       CONFIG_SND_RAWMIDI="m"
       CONFIG_SND_PCM="m"
       CONFIG_SND_USB_AUDIO="m"
+    fi
+  fi
+  if alsa_check_kconfig_card "usb-ua101"; then
+    if ( ( test "$CONFIG_SND_USB" = "y" -o "$CONFIG_SND_USB" = "m" ) &&
+      ( test "$CONFIG_USB" = "y" -o "$CONFIG_USB" = "m" ) ) &&
+      ( test "$CONFIG_EXPERIMENTAL" = "y" -o "$CONFIG_EXPERIMENTAL" = "m" ) &&
+      ( test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 32 ); then
+      CONFIG_SND_TIMER="m"
+      CONFIG_SND_PCM="m"
+      CONFIG_SND_RAWMIDI="m"
+      CONFIG_SND_USB_UA101="m"
     fi
   fi
   if alsa_check_kconfig_card "usb-usx2y"; then
@@ -2659,6 +2675,16 @@ alsa_check_kconfig_option () {
       CONFIG_SND_OMAP_SOC_OSK5912="m"
     fi
   fi
+  if alsa_check_kconfig_card "omap-soc-am3517evm"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( ( test "$CONFIG_SND_OMAP_SOC" = "y" -o "$CONFIG_SND_OMAP_SOC" = "m" ) &&
+      ( test "$CONFIG_MACH_OMAP3517EVM" = "y" -o "$CONFIG_MACH_OMAP3517EVM" = "m" ) &&
+      ( test "$CONFIG_I2C" = "y" -o "$CONFIG_I2C" = "m" ) ); then
+      CONFIG_SND_OMAP_SOC_MCBSP="m"
+      CONFIG_SND_SOC_TLV320AIC23="m"
+      CONFIG_SND_OMAP_SOC_AM3517EVM="m"
+    fi
+  fi
   if alsa_check_kconfig_card "pxa2xx-soc"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( test "$CONFIG_ARCH_PXA" = "y" -o "$CONFIG_ARCH_PXA" = "m" ); then
@@ -2754,7 +2780,9 @@ alsa_check_kconfig_option () {
   if alsa_check_kconfig_card "pxa2xx-soc-em-x270"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( ( test "$CONFIG_SND_PXA2XX_SOC" = "y" -o "$CONFIG_SND_PXA2XX_SOC" = "m" ) &&
-      ( test "$CONFIG_MACH_EM_X270" = "y" -o "$CONFIG_MACH_EM_X270" = "m" ) ); then
+      ( ( test "$CONFIG_MACH_EM_X270" = "y" -o "$CONFIG_MACH_EM_X270" = "m" ) ||
+      ( test "$CONFIG_MACH_EXEDA" = "y" -o "$CONFIG_MACH_EXEDA" = "m" ) ||
+      ( test "$CONFIG_MACH_CM_X300" = "y" -o "$CONFIG_MACH_CM_X300" = "m" ) ) ); then
       test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
       CONFIG_SND_ARM="y"
       CONFIG_SND_PXA2XX_LIB_AC97="y"
@@ -2794,6 +2822,17 @@ alsa_check_kconfig_option () {
       CONFIG_SND_SOC_ZYLONITE="m"
     fi
   fi
+  if alsa_check_kconfig_card "soc-raumfeld"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( ( test "$CONFIG_SND_PXA2XX_SOC" = "y" -o "$CONFIG_SND_PXA2XX_SOC" = "m" ) &&
+      ( ( test "$CONFIG_MACH_RAUMFELD_SPEAKER" = "y" -o "$CONFIG_MACH_RAUMFELD_SPEAKER" = "m" ) ||
+      ( test "$CONFIG_MACH_RAUMFELD_CONNECTOR" = "y" -o "$CONFIG_MACH_RAUMFELD_CONNECTOR" = "m" ) ) ); then
+      CONFIG_SND_PXA_SOC_SSP="m"
+      CONFIG_SND_SOC_CS4270="m"
+      CONFIG_SND_SOC_AK4104="m"
+      CONFIG_SND_SOC_RAUMFELD="m"
+    fi
+  fi
   if alsa_check_kconfig_card "pxa2xx-soc-magician"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( ( test "$CONFIG_SND_PXA2XX_SOC" = "y" -o "$CONFIG_SND_PXA2XX_SOC" = "m" ) &&
@@ -2828,8 +2867,7 @@ alsa_check_kconfig_option () {
   if alsa_check_kconfig_card "soc-sh4-fsi"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
-      ( test "$CONFIG_CPU_SUBTYPE_SH7724" = "y" -o "$CONFIG_CPU_SUBTYPE_SH7724" = "m" ) &&
-      ( test "$CONFIG_SH_DMA" = "y" -o "$CONFIG_SH_DMA" = "m" ); then
+      ( test "$CONFIG_CPU_SUBTYPE_SH7724" = "y" -o "$CONFIG_CPU_SUBTYPE_SH7724" = "m" ); then
       CONFIG_SND_SOC_SH4_FSI="m"
     fi
   fi
@@ -2905,6 +2943,19 @@ alsa_check_kconfig_option () {
       ( test "$CONFIG_SND_AC97_POWER_SAVE" = "y" -o "$CONFIG_SND_AC97_POWER_SAVE" = "m" ); then
       CONFIG_SND_AC97_POWER_SAVE_DEFAULT="0"
     fi
+  if alsa_check_kconfig_card "ice1712"; then
+    if ( test "$CONFIG_SND_PCI" = "y" -o "$CONFIG_SND_PCI" = "m" ) &&
+      ( test "$CONFIG_BITREVERSE" = "y" -o "$CONFIG_BITREVERSE" = "m" ); then
+      CONFIG_SND_RAWMIDI="m"
+      CONFIG_SND_TIMER="m"
+      CONFIG_SND_PCM="m"
+      test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
+      CONFIG_SND_VMASTER="y"
+      CONFIG_SND_MPU401_UART="m"
+      CONFIG_SND_AC97_CODEC="m"
+      CONFIG_SND_ICE1712="m"
+    fi
+  fi
   if alsa_check_kconfig_card "atmel-abdac"; then
     if ( ( test "$CONFIG_AVR32" = "y" -o "$CONFIG_AVR32" = "m" ) ||
       ( test "$CONFIG_ARCH_AT91" = "y" -o "$CONFIG_ARCH_AT91" = "m" ) ) &&
@@ -2964,7 +3015,8 @@ alsa_check_kconfig_option () {
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( ( test "$CONFIG_TWL4030_CORE" = "y" -o "$CONFIG_TWL4030_CORE" = "m" ) &&
       ( test "$CONFIG_SND_OMAP_SOC" = "y" -o "$CONFIG_SND_OMAP_SOC" = "m" ) &&
-      ( test "$CONFIG_MACH_OVERO" = "y" -o "$CONFIG_MACH_OVERO" = "m" ) ); then
+      ( ( test "$CONFIG_MACH_OVERO" = "y" -o "$CONFIG_MACH_OVERO" = "m" ) ||
+      ( test "$CONFIG_MACH_CM_T35" = "y" -o "$CONFIG_MACH_CM_T35" = "m" ) ) ); then
       CONFIG_SND_OMAP_SOC_MCBSP="m"
       CONFIG_SND_SOC_TWL4030="m"
       CONFIG_SND_OMAP_SOC_OVERO="m"
@@ -3028,6 +3080,16 @@ alsa_check_kconfig_option () {
       CONFIG_SND_OMAP_SOC_MCBSP="m"
       CONFIG_SND_SOC_TWL4030="m"
       CONFIG_SND_OMAP_SOC_ZOOM2="m"
+    fi
+  fi
+  if alsa_check_kconfig_card "omap-soc-igep0020"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( ( test "$CONFIG_TWL4030_CORE" = "y" -o "$CONFIG_TWL4030_CORE" = "m" ) &&
+      ( test "$CONFIG_SND_OMAP_SOC" = "y" -o "$CONFIG_SND_OMAP_SOC" = "m" ) &&
+      ( test "$CONFIG_MACH_IGEP0020" = "y" -o "$CONFIG_MACH_IGEP0020" = "m" ) ); then
+      CONFIG_SND_OMAP_SOC_MCBSP="m"
+      CONFIG_SND_SOC_TWL4030="m"
+      CONFIG_SND_OMAP_SOC_IGEP0020="m"
     fi
   fi
   if alsa_check_kconfig_card "s3c24xx-soc"; then
@@ -3390,9 +3452,6 @@ fi
 if test -n "$CONFIG_SND_CS4236"; then
   AC_DEFINE(CONFIG_SND_CS4236_MODULE)
 fi
-if test -n "$CONFIG_SND_DT019X"; then
-  AC_DEFINE(CONFIG_SND_DT019X_MODULE)
-fi
 if test -n "$CONFIG_SND_ES968"; then
   AC_DEFINE(CONFIG_SND_ES968_MODULE)
 fi
@@ -3611,6 +3670,9 @@ if test -n "$CONFIG_SND_HDA_RECONFIG"; then
 fi
 if test -n "$CONFIG_SND_HDA_INPUT_BEEP"; then
   AC_DEFINE(CONFIG_SND_HDA_INPUT_BEEP)
+fi
+if test -n "$CONFIG_SND_HDA_INPUT_BEEP_MODE"; then
+  AC_DEFINE_UNQUOTED([CONFIG_SND_HDA_INPUT_BEEP_MODE], [1])
 fi
 if test -n "$CONFIG_SND_HDA_INPUT_JACK"; then
   AC_DEFINE(CONFIG_SND_HDA_INPUT_JACK)
@@ -3843,11 +3905,17 @@ fi
 if test -n "$CONFIG_SND_AICA"; then
   AC_DEFINE(CONFIG_SND_AICA_MODULE)
 fi
+if test -n "$CONFIG_SND_SH_DAC_AUDIO"; then
+  AC_DEFINE(CONFIG_SND_SH_DAC_AUDIO_MODULE)
+fi
 if test -n "$CONFIG_SND_USB"; then
   AC_DEFINE(CONFIG_SND_USB)
 fi
 if test -n "$CONFIG_SND_USB_AUDIO"; then
   AC_DEFINE(CONFIG_SND_USB_AUDIO_MODULE)
+fi
+if test -n "$CONFIG_SND_USB_UA101"; then
+  AC_DEFINE(CONFIG_SND_USB_UA101_MODULE)
 fi
 if test -n "$CONFIG_SND_USB_USX2Y"; then
   AC_DEFINE(CONFIG_SND_USB_USX2Y_MODULE)
@@ -4059,6 +4127,9 @@ fi
 if test -n "$CONFIG_SND_OMAP_SOC_OMAP3EVM"; then
   AC_DEFINE(CONFIG_SND_OMAP_SOC_OMAP3EVM_MODULE)
 fi
+if test -n "$CONFIG_SND_OMAP_SOC_AM3517EVM"; then
+  AC_DEFINE(CONFIG_SND_OMAP_SOC_AM3517EVM_MODULE)
+fi
 if test -n "$CONFIG_SND_OMAP_SOC_SDP3430"; then
   AC_DEFINE(CONFIG_SND_OMAP_SOC_SDP3430_MODULE)
 fi
@@ -4070,6 +4141,9 @@ if test -n "$CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE"; then
 fi
 if test -n "$CONFIG_SND_OMAP_SOC_ZOOM2"; then
   AC_DEFINE(CONFIG_SND_OMAP_SOC_ZOOM2_MODULE)
+fi
+if test -n "$CONFIG_SND_OMAP_SOC_IGEP0020"; then
+  AC_DEFINE(CONFIG_SND_OMAP_SOC_IGEP0020_MODULE)
 fi
 if test -n "$CONFIG_SND_PXA2XX_SOC"; then
   AC_DEFINE(CONFIG_SND_PXA2XX_SOC_MODULE)
@@ -4113,6 +4187,9 @@ fi
 if test -n "$CONFIG_SND_SOC_ZYLONITE"; then
   AC_DEFINE(CONFIG_SND_SOC_ZYLONITE_MODULE)
 fi
+if test -n "$CONFIG_SND_SOC_RAUMFELD"; then
+  AC_DEFINE(CONFIG_SND_SOC_RAUMFELD_MODULE)
+fi
 if test -n "$CONFIG_SND_PXA2XX_SOC_MAGICIAN"; then
   AC_DEFINE(CONFIG_SND_PXA2XX_SOC_MAGICIAN_MODULE)
 fi
@@ -4136,6 +4213,9 @@ if test -n "$CONFIG_SND_S3C2412_SOC_I2S"; then
 fi
 if test -n "$CONFIG_SND_S3C64XX_SOC_I2S"; then
   AC_DEFINE(CONFIG_SND_S3C64XX_SOC_I2S_MODULE)
+fi
+if test -n "$CONFIG_SND_S3C_SOC_PCM"; then
+  AC_DEFINE(CONFIG_SND_S3C_SOC_PCM_MODULE)
 fi
 if test -n "$CONFIG_SND_S3C2443_SOC_AC97"; then
   AC_DEFINE(CONFIG_SND_S3C2443_SOC_AC97_MODULE)
@@ -4233,6 +4313,9 @@ fi
 if test -n "$CONFIG_SND_SOC_AD73311"; then
   AC_DEFINE(CONFIG_SND_SOC_AD73311_MODULE)
 fi
+if test -n "$CONFIG_SND_SOC_ADS117X"; then
+  AC_DEFINE(CONFIG_SND_SOC_ADS117X_MODULE)
+fi
 if test -n "$CONFIG_SND_SOC_AK4104"; then
   AC_DEFINE(CONFIG_SND_SOC_AK4104_MODULE)
 fi
@@ -4278,6 +4361,9 @@ fi
 if test -n "$CONFIG_SND_SOC_TLV320AIC3X"; then
   AC_DEFINE(CONFIG_SND_SOC_TLV320AIC3X_MODULE)
 fi
+if test -n "$CONFIG_SND_SOC_TLV320DAC33"; then
+  AC_DEFINE(CONFIG_SND_SOC_TLV320DAC33_MODULE)
+fi
 if test -n "$CONFIG_SND_SOC_TWL4030"; then
   AC_DEFINE(CONFIG_SND_SOC_TWL4030_MODULE)
 fi
@@ -4304,6 +4390,9 @@ if test -n "$CONFIG_SND_SOC_WM8580"; then
 fi
 if test -n "$CONFIG_SND_SOC_WM8711"; then
   AC_DEFINE(CONFIG_SND_SOC_WM8711_MODULE)
+fi
+if test -n "$CONFIG_SND_SOC_WM8727"; then
+  AC_DEFINE(CONFIG_SND_SOC_WM8727_MODULE)
 fi
 if test -n "$CONFIG_SND_SOC_WM8728"; then
   AC_DEFINE(CONFIG_SND_SOC_WM8728_MODULE)
@@ -4466,7 +4555,6 @@ AC_SUBST(CONFIG_SND_AZT2320)
 AC_SUBST(CONFIG_SND_CMI8330)
 AC_SUBST(CONFIG_SND_CS4231)
 AC_SUBST(CONFIG_SND_CS4236)
-AC_SUBST(CONFIG_SND_DT019X)
 AC_SUBST(CONFIG_SND_ES968)
 AC_SUBST(CONFIG_SND_ES1688)
 AC_SUBST(CONFIG_SND_ES18XX)
@@ -4546,6 +4634,7 @@ AC_SUBST(CONFIG_SND_HDA_INTEL)
 AC_SUBST(CONFIG_SND_HDA_HWDEP)
 AC_SUBST(CONFIG_SND_HDA_RECONFIG)
 AC_SUBST(CONFIG_SND_HDA_INPUT_BEEP)
+AC_SUBST(CONFIG_SND_HDA_INPUT_BEEP_MODE)
 AC_SUBST(CONFIG_SND_HDA_INPUT_JACK)
 AC_SUBST(CONFIG_SND_HDA_PATCH_LOADER)
 AC_SUBST(CONFIG_SND_HDA_CODEC_REALTEK)
@@ -4568,6 +4657,7 @@ AC_SUBST(CONFIG_SND_HDSP)
 AC_SUBST(CONFIG_SND_HDSPM)
 AC_SUBST(CONFIG_SND_HIFIER)
 AC_SUBST(CONFIG_SND_ICE1712)
+AC_SUBST(CONFIG_BITREVERSE)
 AC_SUBST(CONFIG_SND_ICE1724)
 AC_SUBST(CONFIG_SND_INTEL8X0)
 AC_SUBST(CONFIG_SND_INTEL8X0M)
@@ -4593,8 +4683,6 @@ AC_SUBST(CONFIG_SND_YMFPCI)
 AC_SUBST(CONFIG_SND_PDPLUS)
 AC_SUBST(CONFIG_SND_ASIHPI)
 AC_SUBST(CONFIG_SND_PPC)
-AC_SUBST(CONFIG_PPC64)
-AC_SUBST(CONFIG_PPC32)
 AC_SUBST(CONFIG_SND_POWERMAC)
 AC_SUBST(CONFIG_I2C)
 AC_SUBST(CONFIG_PPC_PMAC)
@@ -4651,9 +4739,12 @@ AC_SUBST(CONFIG_SUPERH)
 AC_SUBST(CONFIG_SND_AICA)
 AC_SUBST(CONFIG_SH_DREAMCAST)
 AC_SUBST(CONFIG_G2_DMA)
+AC_SUBST(CONFIG_SND_SH_DAC_AUDIO)
+AC_SUBST(CONFIG_CPU_SH3)
 AC_SUBST(CONFIG_SND_USB)
 AC_SUBST(CONFIG_USB)
 AC_SUBST(CONFIG_SND_USB_AUDIO)
+AC_SUBST(CONFIG_SND_USB_UA101)
 AC_SUBST(CONFIG_SND_USB_USX2Y)
 AC_SUBST(CONFIG_ALPHA)
 AC_SUBST(CONFIG_SND_USB_CAIAQ)
@@ -4761,10 +4852,13 @@ AC_SUBST(CONFIG_MACH_OMAP_OSK)
 AC_SUBST(CONFIG_SND_OMAP_SOC_OVERO)
 AC_SUBST(CONFIG_TWL4030_CORE)
 AC_SUBST(CONFIG_MACH_OVERO)
+AC_SUBST(CONFIG_MACH_CM_T35)
 AC_SUBST(CONFIG_SND_OMAP_SOC_OMAP2EVM)
 AC_SUBST(CONFIG_MACH_OMAP2EVM)
 AC_SUBST(CONFIG_SND_OMAP_SOC_OMAP3EVM)
 AC_SUBST(CONFIG_MACH_OMAP3EVM)
+AC_SUBST(CONFIG_SND_OMAP_SOC_AM3517EVM)
+AC_SUBST(CONFIG_MACH_OMAP3517EVM)
 AC_SUBST(CONFIG_SND_OMAP_SOC_SDP3430)
 AC_SUBST(CONFIG_MACH_OMAP_3430SDP)
 AC_SUBST(CONFIG_SND_OMAP_SOC_OMAP3_PANDORA)
@@ -4773,6 +4867,8 @@ AC_SUBST(CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE)
 AC_SUBST(CONFIG_MACH_OMAP3_BEAGLE)
 AC_SUBST(CONFIG_SND_OMAP_SOC_ZOOM2)
 AC_SUBST(CONFIG_MACH_OMAP_ZOOM2)
+AC_SUBST(CONFIG_SND_OMAP_SOC_IGEP0020)
+AC_SUBST(CONFIG_MACH_IGEP0020)
 AC_SUBST(CONFIG_SND_PXA2XX_SOC)
 AC_SUBST(CONFIG_SND_PXA2XX_SOC_AC97)
 AC_SUBST(CONFIG_SND_PXA2XX_SOC_I2S)
@@ -4794,6 +4890,8 @@ AC_SUBST(CONFIG_SND_PXA2XX_SOC_E800)
 AC_SUBST(CONFIG_MACH_E800)
 AC_SUBST(CONFIG_SND_PXA2XX_SOC_EM_X270)
 AC_SUBST(CONFIG_MACH_EM_X270)
+AC_SUBST(CONFIG_MACH_EXEDA)
+AC_SUBST(CONFIG_MACH_CM_X300)
 AC_SUBST(CONFIG_SND_PXA2XX_SOC_PALM27X)
 AC_SUBST(CONFIG_MACH_PALMLD)
 AC_SUBST(CONFIG_MACH_PALMTX)
@@ -4801,6 +4899,9 @@ AC_SUBST(CONFIG_MACH_PALMT5)
 AC_SUBST(CONFIG_MACH_PALMTE2)
 AC_SUBST(CONFIG_SND_SOC_ZYLONITE)
 AC_SUBST(CONFIG_MACH_ZYLONITE)
+AC_SUBST(CONFIG_SND_SOC_RAUMFELD)
+AC_SUBST(CONFIG_MACH_RAUMFELD_SPEAKER)
+AC_SUBST(CONFIG_MACH_RAUMFELD_CONNECTOR)
 AC_SUBST(CONFIG_SND_PXA2XX_SOC_MAGICIAN)
 AC_SUBST(CONFIG_MACH_MAGICIAN)
 AC_SUBST(CONFIG_SND_PXA2XX_SOC_MIOA701)
@@ -4814,6 +4915,7 @@ AC_SUBST(CONFIG_S3C2410_DMA)
 AC_SUBST(CONFIG_SND_S3C_I2SV2_SOC)
 AC_SUBST(CONFIG_SND_S3C2412_SOC_I2S)
 AC_SUBST(CONFIG_SND_S3C64XX_SOC_I2S)
+AC_SUBST(CONFIG_SND_S3C_SOC_PCM)
 AC_SUBST(CONFIG_SND_S3C2443_SOC_AC97)
 AC_SUBST(CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753)
 AC_SUBST(CONFIG_MACH_NEO1973_GTA01)
@@ -4843,7 +4945,6 @@ AC_SUBST(CONFIG_SND_SOC_SH4_HAC)
 AC_SUBST(CONFIG_SND_SOC_SH4_SSI)
 AC_SUBST(CONFIG_SND_SOC_SH4_FSI)
 AC_SUBST(CONFIG_CPU_SUBTYPE_SH7724)
-AC_SUBST(CONFIG_SH_DMA)
 AC_SUBST(CONFIG_SND_SH7760_AC97)
 AC_SUBST(CONFIG_SND_FSI_AK4642)
 AC_SUBST(CONFIG_SND_SOC_TXX9ACLC)
@@ -4859,6 +4960,7 @@ AC_SUBST(CONFIG_SND_SOC_AD1836)
 AC_SUBST(CONFIG_SND_SOC_AD1938)
 AC_SUBST(CONFIG_SND_SOC_AD1980)
 AC_SUBST(CONFIG_SND_SOC_AD73311)
+AC_SUBST(CONFIG_SND_SOC_ADS117X)
 AC_SUBST(CONFIG_SND_SOC_AK4104)
 AC_SUBST(CONFIG_SND_SOC_AK4535)
 AC_SUBST(CONFIG_SND_SOC_AK4642)
@@ -4874,7 +4976,9 @@ AC_SUBST(CONFIG_SND_SOC_STAC9766)
 AC_SUBST(CONFIG_SND_SOC_TLV320AIC23)
 AC_SUBST(CONFIG_SND_SOC_TLV320AIC26)
 AC_SUBST(CONFIG_SND_SOC_TLV320AIC3X)
+AC_SUBST(CONFIG_SND_SOC_TLV320DAC33)
 AC_SUBST(CONFIG_SND_SOC_TWL4030)
+AC_SUBST(CONFIG_TWL4030_CODEC)
 AC_SUBST(CONFIG_SND_SOC_UDA134X)
 AC_SUBST(CONFIG_SND_SOC_UDA1380)
 AC_SUBST(CONFIG_SND_SOC_WM8350)
@@ -4883,6 +4987,7 @@ AC_SUBST(CONFIG_SND_SOC_WM8510)
 AC_SUBST(CONFIG_SND_SOC_WM8523)
 AC_SUBST(CONFIG_SND_SOC_WM8580)
 AC_SUBST(CONFIG_SND_SOC_WM8711)
+AC_SUBST(CONFIG_SND_SOC_WM8727)
 AC_SUBST(CONFIG_SND_SOC_WM8728)
 AC_SUBST(CONFIG_SND_SOC_WM8731)
 AC_SUBST(CONFIG_SND_SOC_WM8750)

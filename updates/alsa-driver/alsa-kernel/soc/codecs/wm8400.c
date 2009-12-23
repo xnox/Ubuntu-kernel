@@ -915,7 +915,6 @@ static int wm8400_add_widgets(struct snd_soc_codec *codec)
 
 	snd_soc_dapm_add_routes(codec, audio_map, ARRAY_SIZE(audio_map));
 
-	snd_soc_dapm_new_widgets(codec);
 	return 0;
 }
 
@@ -1400,17 +1399,6 @@ static int wm8400_probe(struct platform_device *pdev)
 	wm8400_add_controls(codec);
 	wm8400_add_widgets(codec);
 
-	ret = snd_soc_init_card(socdev);
-	if (ret < 0) {
-		dev_err(&pdev->dev, "failed to register card\n");
-		goto card_err;
-	}
-
-	return ret;
-
-card_err:
-	snd_soc_free_pcms(socdev);
-	snd_soc_dapm_free(socdev);
 pcm_err:
 	return ret;
 }
@@ -1559,21 +1547,6 @@ static int __exit wm8400_codec_remove(struct platform_device *dev)
 	return 0;
 }
 
-#ifdef CONFIG_PM
-static int wm8400_pdev_suspend(struct platform_device *pdev, pm_message_t msg)
-{
-	return snd_soc_suspend_device(&pdev->dev);
-}
-
-static int wm8400_pdev_resume(struct platform_device *pdev)
-{
-	return snd_soc_resume_device(&pdev->dev);
-}
-#else
-#define wm8400_pdev_suspend NULL
-#define wm8400_pdev_resume NULL
-#endif
-
 static struct platform_driver wm8400_codec_driver = {
 	.driver = {
 		.name = "wm8400-codec",
@@ -1581,8 +1554,6 @@ static struct platform_driver wm8400_codec_driver = {
 	},
 	.probe = wm8400_codec_probe,
 	.remove	= __exit_p(wm8400_codec_remove),
-	.suspend = wm8400_pdev_suspend,
-	.resume = wm8400_pdev_resume,
 };
 
 static int __init wm8400_codec_init(void)

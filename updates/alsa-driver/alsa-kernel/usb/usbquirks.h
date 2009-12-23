@@ -80,19 +80,6 @@
 	.bInterfaceClass = USB_CLASS_AUDIO,
 },
 
-/* JMTek, LLC. SSS USB Headphone Set */
-{
-	.match_flags = USB_DEVICE_ID_MATCH_DEVICE |
-		       USB_DEVICE_ID_MATCH_DEV_CLASS |
-		       USB_DEVICE_ID_MATCH_INT_CLASS |
-		       USB_DEVICE_ID_MATCH_INT_SUBCLASS,
-	.idVendor = 0x0c76,
-	.idProduct = 0x1605,
-	.bDeviceClass = USB_CLASS_PER_INTERFACE,
-	.bInterfaceClass = USB_CLASS_AUDIO,
-	.bInterfaceSubClass = USB_SUBCLASS_AUDIO_CONTROL
-},
-
 /*
  * Logitech QuickCam: bDeviceClass is vendor-specific, so generic interface
  * class matches do not take effect without an explicit ID match.
@@ -1279,37 +1266,6 @@ YAMAHA_DEVICE(0x7010, "UB99"),
 		}
 	}
 },
-/* Roland UA-101 in High-Speed Mode only */
-{
-	USB_DEVICE(0x0582, 0x007d),
-	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
-		.vendor_name = "Roland",
-		.product_name = "UA-101",
-		.ifnum = QUIRK_ANY_INTERFACE,
-		.type = QUIRK_COMPOSITE,
-		.data = (const struct snd_usb_audio_quirk[]) {
-			{
-				.ifnum = 0,
-				.type = QUIRK_AUDIO_EDIROL_UA101
-			},
-			{
-				.ifnum = 1,
-				.type = QUIRK_AUDIO_EDIROL_UA101
-			},
-			{
-				.ifnum = 2,
-				.type = QUIRK_MIDI_FIXED_ENDPOINT,
-				.data = & (const struct snd_usb_midi_endpoint_info) {
-					.out_cables = 0x0001,
-					.in_cables  = 0x0001
-				}
-			},
-			{
-				.ifnum = -1
-			}
-		}
-	}
-},
 {
 	/* has ID 0x0081 when not in "Advanced Driver" mode */
 	USB_DEVICE(0x0582, 0x0080),
@@ -1569,6 +1525,29 @@ YAMAHA_DEVICE(0x7010, "UB99"),
 			{
 				.ifnum = 2,
 				.type = QUIRK_AUDIO_EDIROL_UAXX
+			},
+			{
+				.ifnum = -1
+			}
+		}
+	}
+},
+{
+	/* has ID 0x00ea when not in Advanced Driver mode */
+	USB_DEVICE_VENDOR_SPEC(0x0582, 0x00e9),
+	.driver_info = (unsigned long) & (const struct snd_usb_audio_quirk) {
+		/* .vendor_name = "Roland", */
+		/* .product_name = "UA-1G", */
+		.ifnum = QUIRK_ANY_INTERFACE,
+		.type = QUIRK_COMPOSITE,
+		.data = (const struct snd_usb_audio_quirk[]) {
+			{
+				.ifnum = 0,
+				.type = QUIRK_AUDIO_STANDARD_INTERFACE
+			},
+			{
+				.ifnum = 1,
+				.type = QUIRK_AUDIO_STANDARD_INTERFACE
 			},
 			{
 				.ifnum = -1

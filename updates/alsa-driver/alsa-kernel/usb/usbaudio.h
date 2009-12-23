@@ -132,7 +132,6 @@ struct snd_usb_audio {
 	int pcm_devs;
 
 	struct list_head midi_list;	/* list of midi interfaces */
-	int next_midi_device;
 
 	struct list_head mixer_list;	/* list of mixer interfaces */
 };
@@ -160,7 +159,6 @@ enum quirk_type {
 	QUIRK_AUDIO_STANDARD_INTERFACE,
 	QUIRK_AUDIO_FIXED_ENDPOINT,
 	QUIRK_AUDIO_EDIROL_UA1000,
-	QUIRK_AUDIO_EDIROL_UA101,
 	QUIRK_AUDIO_EDIROL_UAXX,
 
 	QUIRK_TYPE_COUNT
@@ -210,7 +208,7 @@ struct snd_usb_midi_endpoint_info {
 /*
  */
 
-#define combine_word(s)    ((*s) | ((unsigned int)(s)[1] << 8))
+#define combine_word(s)    ((*(s)) | ((unsigned int)(s)[1] << 8))
 #define combine_triple(s)  (combine_word(s) | ((unsigned int)(s)[2] << 16))
 #define combine_quad(s)    (combine_triple(s) | ((unsigned int)(s)[3] << 24))
 
@@ -227,8 +225,10 @@ int snd_usb_create_mixer(struct snd_usb_audio *chip, int ctrlif,
 			 int ignore_error);
 void snd_usb_mixer_disconnect(struct list_head *p);
 
-int snd_usb_create_midi_interface(struct snd_usb_audio *chip, struct usb_interface *iface,
-				  const struct snd_usb_audio_quirk *quirk);
+int snd_usbmidi_create(struct snd_card *card,
+		       struct usb_interface *iface,
+		       struct list_head *midi_list,
+		       const struct snd_usb_audio_quirk *quirk);
 void snd_usbmidi_input_stop(struct list_head* p);
 void snd_usbmidi_input_start(struct list_head* p);
 void snd_usbmidi_disconnect(struct list_head *p);
