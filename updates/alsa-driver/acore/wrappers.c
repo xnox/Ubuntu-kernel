@@ -327,3 +327,36 @@ void snd_free_irq(unsigned int irq, void *data)
 EXPORT_SYMBOL(snd_free_irq);
 #endif /* !CONFIG_SND_NEW_IRQ_HANDLER */
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+#include <linux/ctype.h>
+
+char *compat_skip_spaces(const char *str)
+{
+	while (isspace(*str))
+		++str;
+	return (char *)str;
+}
+EXPORT_SYMBOL(compat_skip_spaces);
+#endif /* < 2.6.33 */
+
+#ifndef CONFIG_GCD
+#include <linux/gcd.h>
+#ifdef CONFIG_SND_COMPAT_GCD
+/* Greatest common divisor */
+unsigned long gcd(unsigned long a, unsigned long b)
+{
+	unsigned long r;
+	if (a < b) {
+		r = a;
+		a = b;
+		b = r;
+	}
+	while ((r = a % b) != 0) {
+		a = b;
+		b = r;
+	}
+	return b;
+}
+EXPORT_SYMBOL(gcd);
+#endif /* CONFIG_SND_COMPAT_GCD */
+#endif /* !CONFIG_GCD */

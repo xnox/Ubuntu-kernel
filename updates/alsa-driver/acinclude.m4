@@ -12,6 +12,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND=""
 	CONFIG_SND_TIMER=""
 	CONFIG_SND_PCM=""
+	CONFIG_GCD=""
 	CONFIG_SND_HWDEP=""
 	CONFIG_SND_RAWMIDI=""
 	CONFIG_SND_JACK=""
@@ -102,6 +103,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_GUSMAX=""
 	CONFIG_SND_INTERWAVE=""
 	CONFIG_SND_INTERWAVE_STB=""
+	CONFIG_SND_JAZZ16=""
 	CONFIG_SND_OPL3SA2=""
 	CONFIG_SND_OPTI92X_AD1848=""
 	CONFIG_SND_OPTI92X_CS4231=""
@@ -484,6 +486,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_CPU_SUBTYPE_SH7724=""
 	CONFIG_SND_SH7760_AC97=""
 	CONFIG_SND_FSI_AK4642=""
+	CONFIG_SND_FSI_DA7210=""
 	CONFIG_SND_SOC_TXX9ACLC=""
 	CONFIG_HAS_TXX9_ACLC=""
 	CONFIG_TXX9_DMAC=""
@@ -503,6 +506,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_SOC_AK4642=""
 	CONFIG_SND_SOC_AK4671=""
 	CONFIG_SND_SOC_CS4270=""
+	CONFIG_SND_SOC_DA7210=""
 	CONFIG_SND_SOC_CS4270_VD33_ERRATA=""
 	CONFIG_SND_SOC_CX20442=""
 	CONFIG_SND_SOC_L3=""
@@ -532,7 +536,9 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_SOC_WM8776=""
 	CONFIG_SND_SOC_WM8900=""
 	CONFIG_SND_SOC_WM8903=""
+	CONFIG_SND_SOC_WM8904=""
 	CONFIG_SND_SOC_WM8940=""
+	CONFIG_SND_SOC_WM8955=""
 	CONFIG_SND_SOC_WM8960=""
 	CONFIG_SND_SOC_WM8961=""
 	CONFIG_SND_SOC_WM8971=""
@@ -564,9 +570,9 @@ AC_ARG_WITH(cards,
   [                          serialmidi, loopback, adlib, ad1816a, ad1848, ]
   [                          als100, azt2320, cmi8330, cs4231, cs4236, es968, ]
   [                          es1688, es18xx, sc6000, gusclassic, gusextreme, ]
-  [                          gusmax, interwave, interwave-stb, opl3sa2, ]
-  [                          opti92x-ad1848, opti92x-cs4231, opti93x, miro, ]
-  [                          sb8, sb16, sgalaxy, sscape, wavefront, ]
+  [                          gusmax, interwave, interwave-stb, jazz16, ]
+  [                          opl3sa2, opti92x-ad1848, opti92x-cs4231, opti93x, ]
+  [                          miro, sb8, sb16, sgalaxy, sscape, wavefront, ]
   [                          msnd-pinnacle, msnd-classic, pc98-cs4232, ad1889, ]
   [                          als300, als4000, ali5451, atiixp, atiixp-modem, ]
   [                          au8810, au8820, au8830, aw2, azt3328, bt87x, ]
@@ -647,7 +653,7 @@ AC_ARG_WITH(card_options,
   [                          usb-caiaq-input, at32-soc-playpaq-slave, ]
   [                          bf5xx-mmap-support, bf5xx-multichan-support, ]
   [                          bf5xx-have-cold-reset, pxa2xx-soc-palm27x, ]
-  [                          fsi-ak4642 ],
+  [                          fsi-ak4642, fsi-da7210 ],
   cards="$withval", cards="all")
 SELECTED_OPTIONS=`echo $cards | sed 's/,/ /g'`
 AC_MSG_RESULT($SELECTED_OPTIONS)
@@ -1047,6 +1053,19 @@ alsa_check_kconfig_option () {
       CONFIG_SND_RAWMIDI="m"
       CONFIG_SND_WSS_LIB="m"
       CONFIG_SND_INTERWAVE_STB="m"
+    fi
+  fi
+  if alsa_check_kconfig_card "jazz16"; then
+    if ( test "$CONFIG_SND_ISA" = "y" -o "$CONFIG_SND_ISA" = "m" ); then
+      CONFIG_SND_TIMER="m"
+      CONFIG_SND_HWDEP="m"
+      CONFIG_SND_RAWMIDI="m"
+      CONFIG_SND_PCM="m"
+      CONFIG_SND_SB_COMMON="m"
+      CONFIG_SND_OPL3_LIB="m"
+      CONFIG_SND_MPU401_UART="m"
+      CONFIG_SND_SB8_DSP="m"
+      CONFIG_SND_JAZZ16="m"
     fi
   fi
   if alsa_check_kconfig_card "opl3sa2"; then
@@ -2895,6 +2914,14 @@ alsa_check_kconfig_option () {
       CONFIG_SND_FSI_AK4642="y"
     fi
   fi
+  if alsa_check_kconfig_option "fsi-da7210"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
+      ( test "$CONFIG_SND_SOC_SH4_FSI" = "y" -o "$CONFIG_SND_SOC_SH4_FSI" = "m" ); then
+      CONFIG_SND_SOC_DA7210="m"
+      CONFIG_SND_FSI_DA7210="y"
+    fi
+  fi
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ); then
       CONFIG_SND_SOC_I2C_AND_SPI="m"
     fi
@@ -3478,6 +3505,9 @@ if test -n "$CONFIG_SND_INTERWAVE"; then
 fi
 if test -n "$CONFIG_SND_INTERWAVE_STB"; then
   AC_DEFINE(CONFIG_SND_INTERWAVE_STB_MODULE)
+fi
+if test -n "$CONFIG_SND_JAZZ16"; then
+  AC_DEFINE(CONFIG_SND_JAZZ16_MODULE)
 fi
 if test -n "$CONFIG_SND_OPL3SA2"; then
   AC_DEFINE(CONFIG_SND_OPL3SA2_MODULE)
@@ -4277,6 +4307,9 @@ fi
 if test -n "$CONFIG_SND_FSI_AK4642"; then
   AC_DEFINE(CONFIG_SND_FSI_AK4642)
 fi
+if test -n "$CONFIG_SND_FSI_DA7210"; then
+  AC_DEFINE(CONFIG_SND_FSI_DA7210)
+fi
 if test -n "$CONFIG_SND_SOC_TXX9ACLC"; then
   AC_DEFINE(CONFIG_SND_SOC_TXX9ACLC_MODULE)
 fi
@@ -4330,6 +4363,9 @@ if test -n "$CONFIG_SND_SOC_AK4671"; then
 fi
 if test -n "$CONFIG_SND_SOC_CS4270"; then
   AC_DEFINE(CONFIG_SND_SOC_CS4270_MODULE)
+fi
+if test -n "$CONFIG_SND_SOC_DA7210"; then
+  AC_DEFINE(CONFIG_SND_SOC_DA7210_MODULE)
 fi
 if test -n "$CONFIG_SND_SOC_CS4270_VD33_ERRATA"; then
   AC_DEFINE(CONFIG_SND_SOC_CS4270_VD33_ERRATA)
@@ -4415,8 +4451,14 @@ fi
 if test -n "$CONFIG_SND_SOC_WM8903"; then
   AC_DEFINE(CONFIG_SND_SOC_WM8903_MODULE)
 fi
+if test -n "$CONFIG_SND_SOC_WM8904"; then
+  AC_DEFINE(CONFIG_SND_SOC_WM8904_MODULE)
+fi
 if test -n "$CONFIG_SND_SOC_WM8940"; then
   AC_DEFINE(CONFIG_SND_SOC_WM8940_MODULE)
+fi
+if test -n "$CONFIG_SND_SOC_WM8955"; then
+  AC_DEFINE(CONFIG_SND_SOC_WM8955_MODULE)
 fi
 if test -n "$CONFIG_SND_SOC_WM8960"; then
   AC_DEFINE(CONFIG_SND_SOC_WM8960_MODULE)
@@ -4475,6 +4517,7 @@ AC_SUBST(CONFIG_M68K)
 AC_SUBST(CONFIG_SND)
 AC_SUBST(CONFIG_SND_TIMER)
 AC_SUBST(CONFIG_SND_PCM)
+AC_SUBST(CONFIG_GCD)
 AC_SUBST(CONFIG_SND_HWDEP)
 AC_SUBST(CONFIG_SND_RAWMIDI)
 AC_SUBST(CONFIG_SND_JACK)
@@ -4565,6 +4608,7 @@ AC_SUBST(CONFIG_SND_GUSEXTREME)
 AC_SUBST(CONFIG_SND_GUSMAX)
 AC_SUBST(CONFIG_SND_INTERWAVE)
 AC_SUBST(CONFIG_SND_INTERWAVE_STB)
+AC_SUBST(CONFIG_SND_JAZZ16)
 AC_SUBST(CONFIG_SND_OPL3SA2)
 AC_SUBST(CONFIG_SND_OPTI92X_AD1848)
 AC_SUBST(CONFIG_SND_OPTI92X_CS4231)
@@ -4947,6 +4991,7 @@ AC_SUBST(CONFIG_SND_SOC_SH4_FSI)
 AC_SUBST(CONFIG_CPU_SUBTYPE_SH7724)
 AC_SUBST(CONFIG_SND_SH7760_AC97)
 AC_SUBST(CONFIG_SND_FSI_AK4642)
+AC_SUBST(CONFIG_SND_FSI_DA7210)
 AC_SUBST(CONFIG_SND_SOC_TXX9ACLC)
 AC_SUBST(CONFIG_HAS_TXX9_ACLC)
 AC_SUBST(CONFIG_TXX9_DMAC)
@@ -4966,6 +5011,7 @@ AC_SUBST(CONFIG_SND_SOC_AK4535)
 AC_SUBST(CONFIG_SND_SOC_AK4642)
 AC_SUBST(CONFIG_SND_SOC_AK4671)
 AC_SUBST(CONFIG_SND_SOC_CS4270)
+AC_SUBST(CONFIG_SND_SOC_DA7210)
 AC_SUBST(CONFIG_SND_SOC_CS4270_VD33_ERRATA)
 AC_SUBST(CONFIG_SND_SOC_CX20442)
 AC_SUBST(CONFIG_SND_SOC_L3)
@@ -4995,7 +5041,9 @@ AC_SUBST(CONFIG_SND_SOC_WM8753)
 AC_SUBST(CONFIG_SND_SOC_WM8776)
 AC_SUBST(CONFIG_SND_SOC_WM8900)
 AC_SUBST(CONFIG_SND_SOC_WM8903)
+AC_SUBST(CONFIG_SND_SOC_WM8904)
 AC_SUBST(CONFIG_SND_SOC_WM8940)
+AC_SUBST(CONFIG_SND_SOC_WM8955)
 AC_SUBST(CONFIG_SND_SOC_WM8960)
 AC_SUBST(CONFIG_SND_SOC_WM8961)
 AC_SUBST(CONFIG_SND_SOC_WM8971)

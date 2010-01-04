@@ -924,6 +924,10 @@ static inline unsigned long msecs_to_jiffies(const unsigned int m)
 #ifndef DMA_BIT_MASK
 #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
 #endif
+#ifndef __GFP_ZERO
+#define __GFP_ZERO	0x4000
+#define CONFIG_HAVE_OWN_GFP_ZERO 1
+#endif
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
@@ -1883,6 +1887,12 @@ static inline pid_t pid_vnr(struct pid *pid)
 	(((x) + ((__divisor) / 2)) / (__divisor));	\
 }							\
 )
+#endif
+
+/* skip_spaces() wrapper */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
+char *compat_skip_spaces(const char *);
+#define skip_spaces	compat_skip_spaces
 #endif
 
 #endif /* __SOUND_LOCAL_DRIVER_H */

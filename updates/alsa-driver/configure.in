@@ -5,7 +5,7 @@ dnl Copyright (c) by Jaroslav Kysela <perex@perex.cz>
 AC_PREREQ(2.59)
 AC_INIT(acore/sound.patch)
 AC_PREFIX_DEFAULT(/usr)
-CONFIG_SND_VERSION="1.0.22"
+CONFIG_SND_VERSION="1.0.22.1"
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -60,6 +60,18 @@ CC="`basename $CC` $CC_save"
 echo $CPP | grep ' ' >/dev/null && CPP_save=`echo "$CPP" | cut -d' ' -f2-`
 CPP="`basename $CPP` $CPP_save"
 fi
+
+dnl Check for directory with current ALSA linux kernel sources...
+AC_MSG_CHECKING(for directory with ALSA kernel sources)
+AC_ARG_WITH(alsakernel,
+  [  --with-alsakernel=dir   give the directory with ALSA kernel sources]
+  [                        [[../alsa-kmirror]]],
+  [alsakerneldir="$withval"],
+  [alsakerneldir="../alsa-kmirror"]
+)
+ALSAKERNELDIR=$(cd "$alsakerneldir" && pwd)
+AC_MSG_RESULT($alsakerneldir)
+AC_SUBST(ALSAKERNELDIR)
 
 dnl Check for directory with kernel source...
 AC_MSG_CHECKING(for directory with kernel source)
@@ -1476,6 +1488,8 @@ CHECK_KERNEL_HEADER(linux/dmi.h, [#include \"dmi_compat.h\"
 ])
 CHECK_KERNEL_HEADER(linux/bitrev.h)
 CHECK_KERNEL_HEADER(linux/hrtimer.h)
+CHECK_KERNEL_HEADER(linux/gcd.h, [#include \"gcd_compat.h\"
+])
 
 dnl Check for dump_stack
 if test "$kversion.$kpatchlevel" = "2.6"; then

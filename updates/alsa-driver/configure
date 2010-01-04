@@ -618,6 +618,7 @@ GREP
 EGREP
 SRCDIR
 CROSS_COMPILE
+ALSAKERNELDIR
 kaversion
 kversion
 kpatchlevel
@@ -685,6 +686,7 @@ CONFIG_M68K
 CONFIG_SND
 CONFIG_SND_TIMER
 CONFIG_SND_PCM
+CONFIG_GCD
 CONFIG_SND_HWDEP
 CONFIG_SND_RAWMIDI
 CONFIG_SND_JACK
@@ -762,6 +764,7 @@ CONFIG_SND_GUSEXTREME
 CONFIG_SND_GUSMAX
 CONFIG_SND_INTERWAVE
 CONFIG_SND_INTERWAVE_STB
+CONFIG_SND_JAZZ16
 CONFIG_SND_OPL3SA2
 CONFIG_SND_OPTI92X_AD1848
 CONFIG_SND_OPTI92X_CS4231
@@ -1128,6 +1131,7 @@ CONFIG_SND_SOC_SH4_FSI
 CONFIG_CPU_SUBTYPE_SH7724
 CONFIG_SND_SH7760_AC97
 CONFIG_SND_FSI_AK4642
+CONFIG_SND_FSI_DA7210
 CONFIG_SND_SOC_TXX9ACLC
 CONFIG_HAS_TXX9_ACLC
 CONFIG_TXX9_DMAC
@@ -1147,6 +1151,7 @@ CONFIG_SND_SOC_AK4535
 CONFIG_SND_SOC_AK4642
 CONFIG_SND_SOC_AK4671
 CONFIG_SND_SOC_CS4270
+CONFIG_SND_SOC_DA7210
 CONFIG_SND_SOC_CS4270_VD33_ERRATA
 CONFIG_SND_SOC_CX20442
 CONFIG_SND_SOC_L3
@@ -1176,7 +1181,9 @@ CONFIG_SND_SOC_WM8753
 CONFIG_SND_SOC_WM8776
 CONFIG_SND_SOC_WM8900
 CONFIG_SND_SOC_WM8903
+CONFIG_SND_SOC_WM8904
 CONFIG_SND_SOC_WM8940
+CONFIG_SND_SOC_WM8955
 CONFIG_SND_SOC_WM8960
 CONFIG_SND_SOC_WM8961
 CONFIG_SND_SOC_WM8971
@@ -1790,6 +1797,8 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-cross=dir        give the cross-compile prefix
+  --with-alsakernel=dir   give the directory with ALSA kernel sources
+                          [../alsa-kmirror]
   --with-kernel=dir       give the directory with kernel sources
                           [/usr/src/linux]
   --with-build=dir        give the directory with kernel build tree
@@ -1815,9 +1824,9 @@ Optional Packages:
                             serialmidi, loopback, adlib, ad1816a, ad1848,
                             als100, azt2320, cmi8330, cs4231, cs4236, es968,
                             es1688, es18xx, sc6000, gusclassic, gusextreme,
-                            gusmax, interwave, interwave-stb, opl3sa2,
-                            opti92x-ad1848, opti92x-cs4231, opti93x, miro,
-                            sb8, sb16, sgalaxy, sscape, wavefront,
+                            gusmax, interwave, interwave-stb, jazz16,
+                            opl3sa2, opti92x-ad1848, opti92x-cs4231, opti93x,
+                            miro, sb8, sb16, sgalaxy, sscape, wavefront,
                             msnd-pinnacle, msnd-classic, pc98-cs4232, ad1889,
                             als300, als4000, ali5451, atiixp, atiixp-modem,
                             au8810, au8820, au8830, aw2, azt3328, bt87x,
@@ -1893,7 +1902,7 @@ Optional Packages:
                             usb-caiaq-input, at32-soc-playpaq-slave,
                             bf5xx-mmap-support, bf5xx-multichan-support,
                             bf5xx-have-cold-reset, pxa2xx-soc-palm27x,
-                            fsi-ak4642
+                            fsi-ak4642, fsi-da7210
 
 Some influential environment variables:
   CC          C compiler command
@@ -2327,7 +2336,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-CONFIG_SND_VERSION="1.0.22"
+CONFIG_SND_VERSION="1.0.22.1"
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -4513,6 +4522,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND=""
 	CONFIG_SND_TIMER=""
 	CONFIG_SND_PCM=""
+	CONFIG_GCD=""
 	CONFIG_SND_HWDEP=""
 	CONFIG_SND_RAWMIDI=""
 	CONFIG_SND_JACK=""
@@ -4603,6 +4613,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_GUSMAX=""
 	CONFIG_SND_INTERWAVE=""
 	CONFIG_SND_INTERWAVE_STB=""
+	CONFIG_SND_JAZZ16=""
 	CONFIG_SND_OPL3SA2=""
 	CONFIG_SND_OPTI92X_AD1848=""
 	CONFIG_SND_OPTI92X_CS4231=""
@@ -4985,6 +4996,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_CPU_SUBTYPE_SH7724=""
 	CONFIG_SND_SH7760_AC97=""
 	CONFIG_SND_FSI_AK4642=""
+	CONFIG_SND_FSI_DA7210=""
 	CONFIG_SND_SOC_TXX9ACLC=""
 	CONFIG_HAS_TXX9_ACLC=""
 	CONFIG_TXX9_DMAC=""
@@ -5004,6 +5016,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_SOC_AK4642=""
 	CONFIG_SND_SOC_AK4671=""
 	CONFIG_SND_SOC_CS4270=""
+	CONFIG_SND_SOC_DA7210=""
 	CONFIG_SND_SOC_CS4270_VD33_ERRATA=""
 	CONFIG_SND_SOC_CX20442=""
 	CONFIG_SND_SOC_L3=""
@@ -5033,7 +5046,9 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_SOC_WM8776=""
 	CONFIG_SND_SOC_WM8900=""
 	CONFIG_SND_SOC_WM8903=""
+	CONFIG_SND_SOC_WM8904=""
 	CONFIG_SND_SOC_WM8940=""
+	CONFIG_SND_SOC_WM8955=""
 	CONFIG_SND_SOC_WM8960=""
 	CONFIG_SND_SOC_WM8961=""
 	CONFIG_SND_SOC_WM8971=""
@@ -5077,6 +5092,22 @@ CC="`basename $CC` $CC_save"
 echo $CPP | grep ' ' >/dev/null && CPP_save=`echo "$CPP" | cut -d' ' -f2-`
 CPP="`basename $CPP` $CPP_save"
 fi
+
+{ echo "$as_me:$LINENO: checking for directory with ALSA kernel sources" >&5
+echo $ECHO_N "checking for directory with ALSA kernel sources... $ECHO_C" >&6; }
+
+# Check whether --with-alsakernel was given.
+if test "${with_alsakernel+set}" = set; then
+  withval=$with_alsakernel; alsakerneldir="$withval"
+else
+  alsakerneldir="../alsa-kmirror"
+
+fi
+
+ALSAKERNELDIR=$(cd "$alsakerneldir" && pwd)
+{ echo "$as_me:$LINENO: result: $alsakerneldir" >&5
+echo "${ECHO_T}$alsakerneldir" >&6; }
+
 
 { echo "$as_me:$LINENO: checking for directory with kernel source" >&5
 echo $ECHO_N "checking for directory with kernel source... $ECHO_C" >&6; }
@@ -8994,6 +9025,47 @@ echo "${ECHO_T}no" >&6; }
         mkdir -p include/linux include/asm include/media
 	mkdir -p include/linux/regulator
         echo "" > include/linux/hrtimer.h
+      fi
+    fi
+  fi
+
+
+  { echo "$as_me:$LINENO: checking for kernel linux/gcd.h" >&5
+echo $ECHO_N "checking for kernel linux/gcd.h... $ECHO_C" >&6; }
+  if test -n "$kernelbuild" -a \( -f "$kernelbuild/include/linux/gcd.h" -o -f "$kernelbuild/include2/linux/gcd.h" -o -f "$kernelbuild/arch/$ARCHDIR/include/linux/gcd.h" \) ; then
+    KERNDIR=$kernelbuild
+  else
+    KERNDIR=$CONFIG_SND_KERNELDIR
+  fi
+  if test -n ""; then
+    eval =""
+  fi
+  if test -f "$KERNDIR/include/linux/gcd.h" -o -f "$KERNDIR/include2/linux/gcd.h" -o -f "$KERNDIR/arch/$ARCHDIR/include/linux/gcd.h"; then
+    { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+    if test -f include/linux/gcd.h; then
+      echo "Removing a dummy linux/gcd.h."
+      rm -f include/linux/gcd.h
+    fi
+    if test -n ""; then
+      eval ="y"
+    fi
+  else
+    { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+    if test ! -f include/linux/gcd.h; then
+      if test -z "#include \"gcd_compat.h\"
+" ; then
+        echo "Creating a dummy <linux/gcd.h>..."
+        mkdir -p include/linux include/asm include/media
+	mkdir -p include/linux/regulator
+        touch include/linux/gcd.h
+      else
+        echo "Creating <linux/gcd.h>..."
+        mkdir -p include/linux include/asm include/media
+	mkdir -p include/linux/regulator
+        echo "#include \"gcd_compat.h\"
+" > include/linux/gcd.h
       fi
     fi
   fi
@@ -15969,6 +16041,19 @@ alsa_check_kconfig_option () {
       CONFIG_SND_INTERWAVE_STB="m"
     fi
   fi
+  if alsa_check_kconfig_card "jazz16"; then
+    if ( test "$CONFIG_SND_ISA" = "y" -o "$CONFIG_SND_ISA" = "m" ); then
+      CONFIG_SND_TIMER="m"
+      CONFIG_SND_HWDEP="m"
+      CONFIG_SND_RAWMIDI="m"
+      CONFIG_SND_PCM="m"
+      CONFIG_SND_SB_COMMON="m"
+      CONFIG_SND_OPL3_LIB="m"
+      CONFIG_SND_MPU401_UART="m"
+      CONFIG_SND_SB8_DSP="m"
+      CONFIG_SND_JAZZ16="m"
+    fi
+  fi
   if alsa_check_kconfig_card "opl3sa2"; then
     if ( test "$CONFIG_SND_ISA" = "y" -o "$CONFIG_SND_ISA" = "m" ); then
       CONFIG_SND_TIMER="m"
@@ -17815,6 +17900,14 @@ alsa_check_kconfig_option () {
       CONFIG_SND_FSI_AK4642="y"
     fi
   fi
+  if alsa_check_kconfig_option "fsi-da7210"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
+      ( test "$CONFIG_SND_SOC_SH4_FSI" = "y" -o "$CONFIG_SND_SOC_SH4_FSI" = "m" ); then
+      CONFIG_SND_SOC_DA7210="m"
+      CONFIG_SND_FSI_DA7210="y"
+    fi
+  fi
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ); then
       CONFIG_SND_SOC_I2C_AND_SPI="m"
     fi
@@ -18636,6 +18729,12 @@ fi
 if test -n "$CONFIG_SND_INTERWAVE_STB"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_INTERWAVE_STB_MODULE 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_JAZZ16"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_JAZZ16_MODULE 1
 _ACEOF
 
 fi
@@ -20235,6 +20334,12 @@ if test -n "$CONFIG_SND_FSI_AK4642"; then
 _ACEOF
 
 fi
+if test -n "$CONFIG_SND_FSI_DA7210"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_FSI_DA7210 1
+_ACEOF
+
+fi
 if test -n "$CONFIG_SND_SOC_TXX9ACLC"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_SOC_TXX9ACLC_MODULE 1
@@ -20340,6 +20445,12 @@ fi
 if test -n "$CONFIG_SND_SOC_CS4270"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_SOC_CS4270_MODULE 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_SOC_DA7210"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_DA7210_MODULE 1
 _ACEOF
 
 fi
@@ -20511,9 +20622,21 @@ if test -n "$CONFIG_SND_SOC_WM8903"; then
 _ACEOF
 
 fi
+if test -n "$CONFIG_SND_SOC_WM8904"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_WM8904_MODULE 1
+_ACEOF
+
+fi
 if test -n "$CONFIG_SND_SOC_WM8940"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_SOC_WM8940_MODULE 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_SOC_WM8955"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_WM8955_MODULE 1
 _ACEOF
 
 fi
@@ -20616,6 +20739,12 @@ if test "$CONFIG_SND_OSSEMUL" = "y"; then
     CONFIG_SND_SEQUENCER_OSS="y"
   fi
 fi
+
+
+
+
+
+
 
 
 
@@ -21847,6 +21976,7 @@ GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
 SRCDIR!$SRCDIR$ac_delim
 CROSS_COMPILE!$CROSS_COMPILE$ac_delim
+ALSAKERNELDIR!$ALSAKERNELDIR$ac_delim
 kaversion!$kaversion$ac_delim
 kversion!$kversion$ac_delim
 kpatchlevel!$kpatchlevel$ac_delim
@@ -21888,7 +22018,6 @@ CONFIG_FW_LOADER!$CONFIG_FW_LOADER$ac_delim
 CONFIG_INPUT!$CONFIG_INPUT$ac_delim
 msmp!$msmp$ac_delim
 CONFIG_VIDEO_DEV!$CONFIG_VIDEO_DEV$ac_delim
-CONFIG_ISAPNP_KERNEL!$CONFIG_ISAPNP_KERNEL$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -21930,6 +22059,7 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+CONFIG_ISAPNP_KERNEL!$CONFIG_ISAPNP_KERNEL$ac_delim
 CONFIG_PNP_KERNEL!$CONFIG_PNP_KERNEL$ac_delim
 CONFIG_ISAPNP!$CONFIG_ISAPNP$ac_delim
 CONFIG_PNP!$CONFIG_PNP$ac_delim
@@ -21955,6 +22085,7 @@ CONFIG_M68K!$CONFIG_M68K$ac_delim
 CONFIG_SND!$CONFIG_SND$ac_delim
 CONFIG_SND_TIMER!$CONFIG_SND_TIMER$ac_delim
 CONFIG_SND_PCM!$CONFIG_SND_PCM$ac_delim
+CONFIG_GCD!$CONFIG_GCD$ac_delim
 CONFIG_SND_HWDEP!$CONFIG_SND_HWDEP$ac_delim
 CONFIG_SND_RAWMIDI!$CONFIG_SND_RAWMIDI$ac_delim
 CONFIG_SND_JACK!$CONFIG_SND_JACK$ac_delim
@@ -22025,8 +22156,6 @@ CONFIG_SND_CS4236!$CONFIG_SND_CS4236$ac_delim
 CONFIG_SND_ES968!$CONFIG_SND_ES968$ac_delim
 CONFIG_SND_ES1688!$CONFIG_SND_ES1688$ac_delim
 CONFIG_SND_ES18XX!$CONFIG_SND_ES18XX$ac_delim
-CONFIG_SND_SC6000!$CONFIG_SND_SC6000$ac_delim
-CONFIG_HAS_IOPORT!$CONFIG_HAS_IOPORT$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -22068,11 +22197,14 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+CONFIG_SND_SC6000!$CONFIG_SND_SC6000$ac_delim
+CONFIG_HAS_IOPORT!$CONFIG_HAS_IOPORT$ac_delim
 CONFIG_SND_GUSCLASSIC!$CONFIG_SND_GUSCLASSIC$ac_delim
 CONFIG_SND_GUSEXTREME!$CONFIG_SND_GUSEXTREME$ac_delim
 CONFIG_SND_GUSMAX!$CONFIG_SND_GUSMAX$ac_delim
 CONFIG_SND_INTERWAVE!$CONFIG_SND_INTERWAVE$ac_delim
 CONFIG_SND_INTERWAVE_STB!$CONFIG_SND_INTERWAVE_STB$ac_delim
+CONFIG_SND_JAZZ16!$CONFIG_SND_JAZZ16$ac_delim
 CONFIG_SND_OPL3SA2!$CONFIG_SND_OPL3SA2$ac_delim
 CONFIG_SND_OPTI92X_AD1848!$CONFIG_SND_OPTI92X_AD1848$ac_delim
 CONFIG_SND_OPTI92X_CS4231!$CONFIG_SND_OPTI92X_CS4231$ac_delim
@@ -22162,9 +22294,6 @@ CONFIG_SND_HDSPM!$CONFIG_SND_HDSPM$ac_delim
 CONFIG_SND_HIFIER!$CONFIG_SND_HIFIER$ac_delim
 CONFIG_SND_ICE1712!$CONFIG_SND_ICE1712$ac_delim
 CONFIG_BITREVERSE!$CONFIG_BITREVERSE$ac_delim
-CONFIG_SND_ICE1724!$CONFIG_SND_ICE1724$ac_delim
-CONFIG_SND_INTEL8X0!$CONFIG_SND_INTEL8X0$ac_delim
-CONFIG_SND_INTEL8X0M!$CONFIG_SND_INTEL8X0M$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -22206,6 +22335,9 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+CONFIG_SND_ICE1724!$CONFIG_SND_ICE1724$ac_delim
+CONFIG_SND_INTEL8X0!$CONFIG_SND_INTEL8X0$ac_delim
+CONFIG_SND_INTEL8X0M!$CONFIG_SND_INTEL8X0M$ac_delim
 CONFIG_SND_KORG1212!$CONFIG_SND_KORG1212$ac_delim
 CONFIG_SND_LX6464ES!$CONFIG_SND_LX6464ES$ac_delim
 CONFIG_SND_MAESTRO3!$CONFIG_SND_MAESTRO3$ac_delim
@@ -22300,9 +22432,6 @@ CONFIG_SND_SOC!$CONFIG_SND_SOC$ac_delim
 CONFIG_SND_SOC_AC97_BUS!$CONFIG_SND_SOC_AC97_BUS$ac_delim
 CONFIG_SND_ATMEL_SOC!$CONFIG_SND_ATMEL_SOC$ac_delim
 CONFIG_SND_ATMEL_SOC_SSC!$CONFIG_SND_ATMEL_SOC_SSC$ac_delim
-CONFIG_SND_AT91_SOC_SAM9G20_WM8731!$CONFIG_SND_AT91_SOC_SAM9G20_WM8731$ac_delim
-CONFIG_ARCH_AT91SAM9G20!$CONFIG_ARCH_AT91SAM9G20$ac_delim
-CONFIG_SND_AT32_SOC_PLAYPAQ!$CONFIG_SND_AT32_SOC_PLAYPAQ$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -22344,6 +22473,9 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+CONFIG_SND_AT91_SOC_SAM9G20_WM8731!$CONFIG_SND_AT91_SOC_SAM9G20_WM8731$ac_delim
+CONFIG_ARCH_AT91SAM9G20!$CONFIG_ARCH_AT91SAM9G20$ac_delim
+CONFIG_SND_AT32_SOC_PLAYPAQ!$CONFIG_SND_AT32_SOC_PLAYPAQ$ac_delim
 CONFIG_BOARD_PLAYPAQ!$CONFIG_BOARD_PLAYPAQ$ac_delim
 CONFIG_SND_AT32_SOC_PLAYPAQ_SLAVE!$CONFIG_SND_AT32_SOC_PLAYPAQ_SLAVE$ac_delim
 CONFIG_SND_AT91_SOC_AFEB9260!$CONFIG_SND_AT91_SOC_AFEB9260$ac_delim
@@ -22438,9 +22570,6 @@ CONFIG_MACH_OMAP_3430SDP!$CONFIG_MACH_OMAP_3430SDP$ac_delim
 CONFIG_SND_OMAP_SOC_OMAP3_PANDORA!$CONFIG_SND_OMAP_SOC_OMAP3_PANDORA$ac_delim
 CONFIG_MACH_OMAP3_PANDORA!$CONFIG_MACH_OMAP3_PANDORA$ac_delim
 CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE!$CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE$ac_delim
-CONFIG_MACH_OMAP3_BEAGLE!$CONFIG_MACH_OMAP3_BEAGLE$ac_delim
-CONFIG_SND_OMAP_SOC_ZOOM2!$CONFIG_SND_OMAP_SOC_ZOOM2$ac_delim
-CONFIG_MACH_OMAP_ZOOM2!$CONFIG_MACH_OMAP_ZOOM2$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -22482,6 +22611,9 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+CONFIG_MACH_OMAP3_BEAGLE!$CONFIG_MACH_OMAP3_BEAGLE$ac_delim
+CONFIG_SND_OMAP_SOC_ZOOM2!$CONFIG_SND_OMAP_SOC_ZOOM2$ac_delim
+CONFIG_MACH_OMAP_ZOOM2!$CONFIG_MACH_OMAP_ZOOM2$ac_delim
 CONFIG_SND_OMAP_SOC_IGEP0020!$CONFIG_SND_OMAP_SOC_IGEP0020$ac_delim
 CONFIG_MACH_IGEP0020!$CONFIG_MACH_IGEP0020$ac_delim
 CONFIG_SND_PXA2XX_SOC!$CONFIG_SND_PXA2XX_SOC$ac_delim
@@ -22562,6 +22694,7 @@ CONFIG_SND_SOC_SH4_FSI!$CONFIG_SND_SOC_SH4_FSI$ac_delim
 CONFIG_CPU_SUBTYPE_SH7724!$CONFIG_CPU_SUBTYPE_SH7724$ac_delim
 CONFIG_SND_SH7760_AC97!$CONFIG_SND_SH7760_AC97$ac_delim
 CONFIG_SND_FSI_AK4642!$CONFIG_SND_FSI_AK4642$ac_delim
+CONFIG_SND_FSI_DA7210!$CONFIG_SND_FSI_DA7210$ac_delim
 CONFIG_SND_SOC_TXX9ACLC!$CONFIG_SND_SOC_TXX9ACLC$ac_delim
 CONFIG_HAS_TXX9_ACLC!$CONFIG_HAS_TXX9_ACLC$ac_delim
 CONFIG_TXX9_DMAC!$CONFIG_TXX9_DMAC$ac_delim
@@ -22575,10 +22708,6 @@ CONFIG_SND_SOC_AD1836!$CONFIG_SND_SOC_AD1836$ac_delim
 CONFIG_SND_SOC_AD1938!$CONFIG_SND_SOC_AD1938$ac_delim
 CONFIG_SND_SOC_AD1980!$CONFIG_SND_SOC_AD1980$ac_delim
 CONFIG_SND_SOC_AD73311!$CONFIG_SND_SOC_AD73311$ac_delim
-CONFIG_SND_SOC_ADS117X!$CONFIG_SND_SOC_ADS117X$ac_delim
-CONFIG_SND_SOC_AK4104!$CONFIG_SND_SOC_AK4104$ac_delim
-CONFIG_SND_SOC_AK4535!$CONFIG_SND_SOC_AK4535$ac_delim
-CONFIG_SND_SOC_AK4642!$CONFIG_SND_SOC_AK4642$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -22620,8 +22749,13 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+CONFIG_SND_SOC_ADS117X!$CONFIG_SND_SOC_ADS117X$ac_delim
+CONFIG_SND_SOC_AK4104!$CONFIG_SND_SOC_AK4104$ac_delim
+CONFIG_SND_SOC_AK4535!$CONFIG_SND_SOC_AK4535$ac_delim
+CONFIG_SND_SOC_AK4642!$CONFIG_SND_SOC_AK4642$ac_delim
 CONFIG_SND_SOC_AK4671!$CONFIG_SND_SOC_AK4671$ac_delim
 CONFIG_SND_SOC_CS4270!$CONFIG_SND_SOC_CS4270$ac_delim
+CONFIG_SND_SOC_DA7210!$CONFIG_SND_SOC_DA7210$ac_delim
 CONFIG_SND_SOC_CS4270_VD33_ERRATA!$CONFIG_SND_SOC_CS4270_VD33_ERRATA$ac_delim
 CONFIG_SND_SOC_CX20442!$CONFIG_SND_SOC_CX20442$ac_delim
 CONFIG_SND_SOC_L3!$CONFIG_SND_SOC_L3$ac_delim
@@ -22651,7 +22785,9 @@ CONFIG_SND_SOC_WM8753!$CONFIG_SND_SOC_WM8753$ac_delim
 CONFIG_SND_SOC_WM8776!$CONFIG_SND_SOC_WM8776$ac_delim
 CONFIG_SND_SOC_WM8900!$CONFIG_SND_SOC_WM8900$ac_delim
 CONFIG_SND_SOC_WM8903!$CONFIG_SND_SOC_WM8903$ac_delim
+CONFIG_SND_SOC_WM8904!$CONFIG_SND_SOC_WM8904$ac_delim
 CONFIG_SND_SOC_WM8940!$CONFIG_SND_SOC_WM8940$ac_delim
+CONFIG_SND_SOC_WM8955!$CONFIG_SND_SOC_WM8955$ac_delim
 CONFIG_SND_SOC_WM8960!$CONFIG_SND_SOC_WM8960$ac_delim
 CONFIG_SND_SOC_WM8961!$CONFIG_SND_SOC_WM8961$ac_delim
 CONFIG_SND_SOC_WM8971!$CONFIG_SND_SOC_WM8971$ac_delim
@@ -22676,7 +22812,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 54; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 61; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
