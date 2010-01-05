@@ -1,3 +1,9 @@
+linux-meta-ec2 (2.6.32.301.2) lucid; urgency=low
+
+  * Lucid ABI 301 for linux-ec2
+
+ -- Andy Whitcroft <apw@canonical.com>  Tue, 05 Jan 2010 13:34:17 +0000
+
 linux-meta-ec2 (2.6.32.300.1) lucid; urgency=low
 
   * Lucid ABI 300 for linux-ec2
