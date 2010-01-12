@@ -2,8 +2,8 @@
 
 P="build-mainline-crack"
 
-if [ "$#" -ne 2 ]; then
-	echo "Usage: $P <tag> <series>" 1>&2
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $P <commit> <series> <abinum>" 1>&2
 	exit 1
 fi
 
@@ -15,6 +15,7 @@ esac
 
 commit="$1"
 series="$2"
+abinum="$3"
 
 echo "*** BUILDING CRACK: commit:$1 series:$2 ..."
 
@@ -39,8 +40,7 @@ v*)
 	exit 1
 esac
 
-# Crack of the day is always ABI -999.
-abinum='999'
+# Crack of the day is always ABI -999 or similar.
 upload=`date +%Y%m%d%H%M`
 
 # The base version is always the first X.Y.Z part of the version number.  If we
@@ -105,7 +105,7 @@ changelog="$debian/changelog"
 rm -f "$changelog"
 EDITOR=":" dch -v "${version}-$abinum.$upload" --distribution "$series" \
 	--package linux --create -c "$changelog" </dev/null
-sed -e "s/\* .*/* Mainline kernel of the day: $long/" \
+sed -e "s/\* .*/* Crack of the day commit: $long/" \
 	<"$changelog" >"$changelog.new"
 mv -f "$changelog.new" "$changelog"
 git commit -a -m "debian changelog"

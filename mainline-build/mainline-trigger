@@ -14,7 +14,6 @@ master_main="$HOME/mainline"
 master_tree="$master_main/build"
 
 tags_list="$master_main/TAGS"
-linus_curr="$master_main/LINUS"
 
 cd "$master_tree" || exit 1
 
@@ -30,7 +29,7 @@ done
 git tag -l >"$tags_list.new"
 
 diff /home/kernel-ppa/mainline/TAGS{,.new} | \
-	awk '/>/ && $2 ~ /^v/ { print $2 }' >"$tags_list.added"
+	awk '/>/ && $2 ~ /^v/ { print $2 }' | tac >"$tags_list.added"
 
 # Commit the list.
 mv "$tags_list.new" "$tags_list"
@@ -38,22 +37,31 @@ mv "$tags_list.new" "$tags_list"
 # Run the list.
 while read commit
 do
-	"$here/mainline-build" "$commit"
+	"$here/mainline-build" "$commit" || true
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
 
-# Check for upstream crack of the day.
-linus_tip=`git log --pretty=format:%H linus/master^..linus/master | head -1`
-linus_prev=`cat "$linus_curr" 2>/dev/null || true`
+while read curr branch abi base
+do
+	curr="$master_main/$curr"
+	# Check for upstream crack of the day.
+	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
+	prev=`cat "$curr" 2>/dev/null || true`
 
-echo "tip<$linus_tip>"
-echo "prev<$linus_prev>"
+	echo "branch<$branch> tip<$tip> prev<$prev>"
 
-if [ "$linus_tip" != "$linus_prev" ]; then
-	# Commit the new tip.
-	echo "$linus_tip" >"$linus_curr.new"
-	mv -f "$linus_curr.new" "$linus_curr"
+	if [ "$tip" != "$prev" ]; then
+		# Commit the new tip.
+		echo "$tip" >"$curr.new"
+		mv -f "$curr.new" "$curr"
 
-	"$here/mainline-build" --no-email "linus/master"
-fi
+		"$here/mainline-build" "$branch" "$abi" "$base" || true
+	fi
+done <<EOL
+LINUS		linus/master			999	daily
+DRM-INTEL-NEXT	drm-intel/drm-intel-next	997	drm-intel-next
+DRM-NEXT	drm-2.6/drm-next		996	drm-next
+EOL
+# Also allocated
+# 995: sconklin -- wayland
