@@ -1,3 +1,21 @@
+linux-ports-meta (2.6.32.9.4) lucid; urgency=low
+
+  * Bump ABI
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Wed, 23 Dec 2009 02:54:18 +0000
+
+linux-ports-meta (2.6.32.7.3) lucid; urgency=low
+
+  * Bump ABI
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Tue, 08 Dec 2009 23:26:24 +0000
+
+linux-ports-meta (2.6.32.6.2) lucid; urgency=low
+
+  * Bump ABI
+
+ -- Colin Watson <cjwatson@ubuntu.com>  Thu, 03 Dec 2009 16:00:44 +0000
+
 linux-ports-meta (2.6.32.4.1) lucid; urgency=low
 
   * Bump kernel version and ABI for lucid
