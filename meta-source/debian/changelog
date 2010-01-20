@@ -1,3 +1,9 @@
+linux-meta (2.6.32.11.11) lucid; urgency=low
+
+  * Lucid ABI 11
+
+ -- Andy Whitcroft <apw@canonical.com>  Wed, 20 Jan 2010 09:21:00 +0000
+
 linux-meta (2.6.32.10.10) lucid; urgency=low
 
   * Lucid ABI 10
