@@ -142,10 +142,8 @@ function GetHostEnvironment()
 					;;
 			esac
 		fi
-		CHROOT="${DIST}-${ARCH}"
-	else
-		CHROOT="${DIST}"
 	fi
+	CHROOT="${DIST}-${ARCH}"
 	if [ "${CHROOTCMD}" = "schroot" ]; then
 		CHROOTCMD="${CHROOTCMD} -q -c${CHROOT} -- "
 		if [ "${ARCHCMD}" != "" ]; then
