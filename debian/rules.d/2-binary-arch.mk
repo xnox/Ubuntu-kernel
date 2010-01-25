@@ -51,7 +51,7 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@touch $@
 
 # Install the finished build
-install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-$(release)-$(abinum)-$*
+install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-wireless-$(release)-$(abinum)-$*
 install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
@@ -128,13 +128,13 @@ install-%: $(stampdir)/stamp-build-%
 	dh_builddeb -p$(lbmhdrpkg)
 
 
-binary-modules-%: pkgimg = linux-backports-modules-$(release)-$(abinum)-$*
+binary-modules-%: wirelessimg = linux-backports-modules-wireless-$(release)-$(abinum)-$*
 binary-modules-%: alsaimg = linux-backports-modules-alsa-$(release)-$(abinum)-$*
 binary-modules-%: install-%
 	dh_testdir
 	dh_testroot
 
-	for i in $(pkgimg) $(alsaimg) ; do \
+	for i in $(wirelessimg) $(alsaimg) ; do \
 	dh_installchangelogs -p$$i; \
 	dh_installdocs -p$$i; \
 	dh_compress -p$$i; \
