@@ -62,6 +62,10 @@ perl -e '
 			if ($_ !~ /^\s*#\s*include/) {
 				$_ =~ s/\b($pat)\b/lbm_$1/g;
 			}
+			#$_ =~ s/register_chrdev\(DRM_MAJOR,/register_chrdev(0,/;
+			$_ =~ s/#define\s+DRM_MAJOR.*/#define DRM_MAJOR 227/;
+			$_ =~ s/"drm"/"lbm-drm"/g;
+			$_ =~ s/"dri"/"lbm-dri"/g;
 			print OUT $_;
 		}
 		close(FILE);
