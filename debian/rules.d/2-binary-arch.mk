@@ -29,6 +29,7 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
+	$(builddir)/build-$*/MUNGE-NOUVEAU
 	mv $(builddir)/build-$*/MUNGE-CW $(builddir)/build-$*/compat-wireless-2.6
 	cd $(builddir)/build-$*/compat-wireless-2.6 && ./MUNGE-CW
 	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
@@ -55,6 +56,8 @@ install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-wireless-$(releas
 install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
+install-%: nvpkgdir = $(CURDIR)/debian/linux-backports-modules-nouveau-$(release)-$(abinum)-$*
+install-%: nvmoddir = $(nvpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: firmdir = $(cwpkgdir)/lib/firmware/$(release)-$(abinum)-$*
 install-%: lbmbasehdrpkg = linux-headers-lbm-$(release)$(debnum)
 install-%: lbmhdrpkg = $(lbmbasehdrpkg)-$*
@@ -108,6 +111,21 @@ install-%: $(stampdir)/stamp-build-%
 	done
 
 	#
+	# Build the NOUVEAU snapshot packages.
+	#
+	install -d $(nvmoddir)/updates/nouveau
+	find $(builddir)/build-$*/nouveau -type f -name '*.ko' | while read f ; do cp -v $${f} $(nvmoddir)/updates/nouveau/`basename $${f}`; done
+
+	find $(nvpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
+
+	install -d $(nvpkgdir)/DEBIAN
+	for script in postinst postrm; do					\
+	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
+	       debian/control-scripts/$$script > $(nvpkgdir)/DEBIAN/$$script;	\
+	  chmod 755 $(nvpkgdir)/DEBIAN/$$script;					\
+	done
+
+	#
 	# The flavour specific headers package
 	#
 	install -d $(hdrdir)/include
@@ -130,11 +148,12 @@ install-%: $(stampdir)/stamp-build-%
 
 binary-modules-%: wirelessimg = linux-backports-modules-wireless-$(release)-$(abinum)-$*
 binary-modules-%: alsaimg = linux-backports-modules-alsa-$(release)-$(abinum)-$*
+binary-modules-%: nouveauimg = linux-backports-modules-nouveau-$(release)-$(abinum)-$*
 binary-modules-%: install-%
 	dh_testdir
 	dh_testroot
 
-	for i in $(wirelessimg) $(alsaimg) ; do \
+	for i in $(wirelessimg) $(alsaimg) $(nouveauimg) ; do \
 	dh_installchangelogs -p$$i; \
 	dh_installdocs -p$$i; \
 	dh_compress -p$$i; \
