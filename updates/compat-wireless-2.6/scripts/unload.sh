@@ -27,6 +27,10 @@ MODULES="$MODULES rndis_wlan rndis_host cdc_ether usbnet"
 MODULES="$MODULES eeprom_93cx6"
 MODULES="$MODULES lib80211_crypt_ccmp lib80211_crypt_tkip lib80211_crypt_wep"
 MODULES="$MODULES mac80211 cfg80211 lib80211"
+MODULES="$MODULES hidp rfcomm bnep l2cap sco btusb bluetooth"
+echo Stoping bluetooth service..
+sudo service bluetooth stop
+sudo service bluetooth status
 MADWIFI_MODULES="ath_pci ath_rate_sample wlan_scan_sta wlan ath_hal"
 IPW3945D="/sbin/ipw3945d-`uname -r`"
 

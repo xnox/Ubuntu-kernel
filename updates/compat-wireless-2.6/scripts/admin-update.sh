@@ -15,10 +15,14 @@
 # 
 # for example
 #
-GIT_URL="git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-testing.git"
+GIT_URL="git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git"
+GIT_COMPAT_URL="git://git.kernel.org/pub/scm/linux/kernel/git/mcgrof/compat.git"
+
+INCLUDE_NET_BT="hci_core.h l2cap.h bluetooth.h rfcomm.h hci.h"
+NET_BT_DIRS="bluetooth bluetooth/bnep bluetooth/cmtp bluetooth/rfcomm bluetooth/hidp"
 
 INCLUDE_LINUX="ieee80211.h nl80211.h wireless.h"
-INCLUDE_LINUX="$INCLUDE_LINUX pci_ids.h bitops.h eeprom_93cx6.h pm_qos_params.h"
+INCLUDE_LINUX="$INCLUDE_LINUX pci_ids.h eeprom_93cx6.h"
 INCLUDE_LINUX="$INCLUDE_LINUX ath9k_platform.h"
 
 # For rndis_wext
@@ -43,20 +47,37 @@ UNDERLINE="\033[02m"
 NET_DIRS="wireless mac80211 rfkill"
 # User exported this variable
 if [ -z $GIT_TREE ]; then
-	GIT_TREE="/home/$USER/devel/wireless-testing/"
+	GIT_TREE="/home/$USER/linux-next/"
 	if [ ! -d $GIT_TREE ]; then
-		echo "Please tell me where your wireless-testing git tree is."
+		echo "Please tell me where your linux-next git tree is."
 		echo "You can do this by exporting its location as follows:"
 		echo
-		echo "  export GIT_TREE=/home/$USER/wireless-testing/"
+		echo "  export GIT_TREE=/home/$USER/linux-next/"
 		echo
 		echo "If you do not have one you can clone the repository:"
 		echo "  git-clone $GIT_URL"
 		exit 1
 	fi
 else
-	echo "You said to use git tree at: $GIT_TREE"
+	echo "You said to use git tree at: $GIT_TREE for wireless"
 fi
+
+if [ -z $GIT_COMPAT_TREE ]; then
+	GIT_COMPAT_TREE="/home/$USER/compat/"
+	if [ ! -d $GIT_COMPAT_TREE ]; then
+		echo "Please tell me where your bluetooth-testing git tree is."
+		echo "You can do this by exporting its location as follows:"
+		echo
+		echo "  export GIT_COMPAT_TREE=/home/$USER/compat/"
+		echo
+		echo "If you do not have one you can clone the repository:"
+		echo "  git-clone $GIT_COMPAT_URL"
+		exit 1
+	fi
+else
+	echo "You said to use git tree at: $GIT_COMPAT_TREE for bluetooth"
+fi
+
 # Drivers that have their own directory
 DRIVERS="drivers/net/wireless/ath"
 DRIVERS="$DRIVERS drivers/net/wireless/ath/ar9170"
@@ -76,6 +97,14 @@ DRIVERS="$DRIVERS drivers/net/wireless/ipw2x00"
 DRIVERS="$DRIVERS drivers/net/wireless/wl12xx"
 DRIVERS="$DRIVERS drivers/net/wireless/iwmc3200wifi"
 
+# Ethernet drivers
+DRIVERS="$DRIVERS drivers/net/atl1c/"
+DRIVERS="$DRIVERS drivers/net/atl1e/"
+DRIVERS="$DRIVERS drivers/net/atlx/"
+
+# Bluetooth drivers
+DRIVERS_BT="drivers/bluetooth"
+
 # Drivers that belong the the wireless directory
 DRIVER_FILES="adm8211.c  adm8211.h"
 DRIVER_FILES="$DRIVER_FILES rndis_wlan.c"
@@ -91,6 +120,7 @@ mkdir -p include/linux/ include/net/ include/linux/usb \
 	drivers/ssb/ \
 	drivers/net/usb/ \
 	drivers/net/wireless/
+mkdir -p include/net/bluetooth/
 
 # include/linux
 DIR="include/linux"
@@ -107,6 +137,12 @@ DIR="include/net"
 for i in $INCLUDE_NET; do
 	echo "Copying $GIT_TREE/$DIR/$i"
 	cp "$GIT_TREE/$DIR/$i" $DIR/
+done
+
+DIR="include/net/bluetooth"
+for i in $INCLUDE_NET_BT; do
+  echo "Copying $GIT_TREE/$DIR/$i"
+  cp $GIT_TREE/$DIR/$i $DIR/
 done
 
 DIR="include/linux/usb"
@@ -129,8 +165,25 @@ for i in $NET_DIRS; do
 	rm -f net/$i/*.mod.c
 done
 
+# net/bluetooth
+for i in $NET_BT_DIRS; do
+	mkdir -p net/$i
+	echo "Copying $GIT_TREE/net/$i/*.[ch]"
+	cp $GIT_TREE/net/$i/*.[ch] net/$i/
+	cp $GIT_TREE/net/$i/Makefile net/$i/
+	rm -f net/$i/*.mod.c
+done
+
 # Drivers in their own directory
 for i in $DRIVERS; do
+	mkdir -p $i
+	echo "Copying $GIT_TREE/$i/*.[ch]"
+	cp $GIT_TREE/$i/*.[ch] $i/
+	cp $GIT_TREE/$i/Makefile $i/
+	rm -f $i/*.mod.c
+done
+
+for i in $DRIVERS_BT; do
 	mkdir -p $i
 	echo "Copying $GIT_TREE/$i/*.[ch]"
 	cp $GIT_TREE/$i/*.[ch] $i/
@@ -146,10 +199,15 @@ for i in $RNDIS_REQS; do
 	cp $GIT_TREE/$DIR/$i $DIR/
 done
 
-# b44 is dependent on ssb, so its has to be rebuilt as well.
 DIR="drivers/net"
+echo > $DIR/Makefile
 cp $GIT_TREE/$DIR/b44.[ch] $DIR
-echo "obj-\$(CONFIG_B44) += b44.o" > $DIR/Makefile
+# Not yet
+#echo "obj-\$(CONFIG_B44) += b44.o" >> $DIR/Makefile
+echo "obj-\$(CONFIG_ATL1) += atlx/" >> $DIR/Makefile
+echo "obj-\$(CONFIG_ATL2) += atlx/" >> $DIR/Makefile
+echo "obj-\$(CONFIG_ATL1E) += atl1e/" >> $DIR/Makefile
+echo "obj-\$(CONFIG_ATL1C) += atl1c/" >> $DIR/Makefile
 
 # Misc
 mkdir -p drivers/misc/eeprom/
@@ -165,17 +223,52 @@ done
 # Top level wireless driver Makefile
 cp $GIT_TREE/$DIR/Makefile $DIR
 
-DIR="include/linux/unaligned"
-echo "Copying $GIT_TREE/$DIR/*"
-cp $GIT_TREE/$DIR/* $DIR
-
-
 # Compat stuff
-cp compat/compat-2.6.*.c net/wireless/
-cp compat/compat-2.6.*.h include/net/
-cp compat/compat.h include/net/
+COMPAT="compat"
+mkdir -p $COMPAT
+echo "Copying $GIT_COMPAT_TREE/ files..."
+cp $GIT_COMPAT_TREE/compat/*.c $COMPAT/
+cp $GIT_COMPAT_TREE/compat/Makefile $COMPAT/
+cp -a $GIT_COMPAT_TREE/udev/ .
+cp -a $GIT_COMPAT_TREE/scripts/ $COMPAT/
+cp -a $GIT_COMPAT_TREE/include/linux/* include/linux/
+rm -f $COMPAT/*.mod.c
 
-for i in compat/patches/*.patch; do
+# Refresh patches using quilt
+patchRefresh() {
+	if [ -d patches.orig ] ; then
+		rm -rf .pc patches/series
+	else
+		mkdir patches.orig
+	fi
+
+	mv -u patches/* patches.orig/
+
+	for i in patches.orig/*.patch; do
+		echo -e "${GREEN}Refresh backport patch${NORMAL}: ${BLUE}$i${NORMAL}"
+		quilt import $i
+		quilt push -f
+		RET=$?
+		if [[ $RET -ne 0 ]]; then
+			echo -e "${RED}Refreshing $i failed${NORMAL}, update it"
+			echo -e "use ${CYAN}quilt edit [filename]${NORMAL} to apply the failed part manually"
+			echo -e "use ${CYAN}quilt refresh${NORMAL} after the files are corrected and rerun this script"
+			cp patches.orig/README patches/README
+			exit $RET
+		fi
+		QUILT_DIFF_OPTS="-p" quilt refresh -p ab --no-index --no-timestamp
+	done
+	quilt pop -a
+
+	cp patches.orig/README patches/README
+	rm -rf patches.orig .pc patches/series
+}
+
+if [[ "$1" = "refresh" ]]; then
+	patchRefresh
+fi
+
+for i in patches/*.patch; do
 	echo -e "${GREEN}Applying backport patch${NORMAL}: ${BLUE}$i${NORMAL}"
 	patch -p1 -N -t < $i
 	RET=$?
@@ -192,6 +285,7 @@ echo -e "${GREEN}Updated${NORMAL} from local tree: ${BLUE}${GIT_TREE}${NORMAL}"
 echo -e "Origin remote URL: ${CYAN}$(git config remote.origin.url)${NORMAL}"
 cd $DIR
 if [ -d ./.git ]; then
+	git describe > compat-release
 
 	cd $GIT_TREE
 	TREE_NAME=$(git config remote.origin.url)
@@ -205,23 +299,14 @@ if [ -d ./.git ]; then
 	rm -f $DIR/master-tag
 	case $TREE_NAME in
 	"wireless-testing.git") # John's wireless-testing
-		cd $DIR
-		git tag -l | grep "master" | tail -1 > compat-release
-		cd $GIT_TREE
 		MASTER_TAG=$(git tag -l| grep master | tail -1)
 		echo $MASTER_TAG > $DIR/master-tag
 		echo -e "This is a ${RED}bleeding edge${NORMAL} compat-wireless release based on: ${PURPLE}$MASTER_TAG${NORMAL}"
 		;;
 	"linux-2.6-allstable.git") # HPA's all stable tree
-		cd $DIR
-		git tag -l | grep "2.6" | tail -1 > compat-release
-		cd $GIT_TREE
 		echo -e "This is a ${GREEN}stable${NORMAL} compat-wireless release based on: ${PURPLE}$(git describe --abbrev=0)${NORMAL}"
 		;;
 	"linux-2.6.git") # Linus' 2.6 tree
-		cd $DIR
-		git tag -l | grep "2.6" > compat-release
-		cd $GIT_TREE
 		;;
 	*)
 		;;

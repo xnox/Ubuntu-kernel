@@ -15,19 +15,24 @@ DESTDIR?=
 
 ifneq ($(KERNELRELEASE),)
 
-include $(M)/$(COMPAT_CONFIG)
+NOSTDINC_FLAGS := -I$(M)/include/ -include $(M)/include/linux/compat-2.6.h $(CFLAGS)
 
-NOSTDINC_FLAGS := -I$(M)/include/ -include $(M)/include/net/compat.h $(CFLAGS)
+obj-y := compat/
 
-obj-y := net/wireless/ net/mac80211/ net/rfkill/
-ifeq ($(ONLY_CORE),)
-obj-m += \
-	drivers/ssb/ \
-	drivers/misc/eeprom/ \
-	drivers/net/ \
-	drivers/net/usb/ \
-	drivers/net/wireless/
-endif
+obj-$(CONFIG_COMPAT_RFKILL) += net/rfkill/
+
+obj-$(CONFIG_COMPAT_WIRELESS) += net/wireless/ net/mac80211/
+obj-$(CONFIG_COMPAT_WIRELESS_MODULES) += drivers/net/wireless/
+
+obj-$(CONFIG_COMPAT_NET_USB_MODULES) += drivers/net/usb/
+
+obj-$(CONFIG_COMPAT_BLUETOOTH) += net/bluetooth/
+obj-$(CONFIG_COMPAT_BLUETOOTH_MODULES) += drivers/bluetooth/
+
+obj-$(CONFIG_COMPAT_NETWORK_MODULES) += drivers/net/
+obj-$(CONFIG_COMPAT_VAR_MODULES) +=  drivers/misc/eeprom/
+# Sorry ssb requires pcmica backport for 2.6.33 which is not done yet
+#					drivers/ssb/
 
 else
 
@@ -108,7 +113,9 @@ install-scripts:
 	@# the updates/ dir which is what we use so we add one for it
 	@# (or any other distribution that doens't have this).
 	@./scripts/check_depmod
-	@/sbin/depmod -ae
+	@# Udev stuff needed for the new compat_firmware_class.
+	@./compat/scripts/compat_firmware_install
+	@/sbin/depmod -a
 	@echo
 	@echo "Currently detected wireless subsystem modules:"
 	@echo 
@@ -163,12 +170,25 @@ install-scripts:
 	@$(MODPROBE) -l usb8xxx
 	@$(MODPROBE) -l usbnet
 	@$(MODPROBE) -l zd1211rw
+	@echo
+	@echo "Currently detected bluetooth subsystem modules:"
+	@echo
+	@$(MODPROBE) -l sco
+	@$(MODPROBE) -l l2cap
+	@$(MODPROBE) -l hidp
+	@$(MODPROBE) -l rfcomm
+	@$(MODPROBE) -l bnep
+	@$(MODPROBE) -l btusb
+	@$(MODPROBE) -l bluetooth
 	@echo 
 	@echo Now run:
 	@echo 
-	@echo make unload
+	@echo sudo make unload to unload both wireless and bluetooth modules
+	@echo sudo make wlunload to unload wireless modules
+	@echo sudo make btunload to unload bluetooth modules
 	@echo
-	@echo And then load the wireless module you need. If unsure reboot.
+	@echo And then load the wireless or bluetooth module you need. If unsure reboot.
+	@echo Alternatively use "sudo make load/wlload/btload" to load modules
 	@echo
 
 uninstall:
@@ -184,7 +204,7 @@ uninstall:
 	@rm -f $(KLIB)/$(KMODDIR)/drivers/misc/eeprom/eeprom_93cx6.ko*
 	@rm -f $(KLIB)/$(KMODDIR)/drivers/misc/eeprom_93cx6.ko*
 	@rm -f $(KLIB)/$(KMODDIR)/drivers/net/b44.ko*
-	@/sbin/depmod -ae
+	@/sbin/depmod -a
 	@echo
 	@echo "Your old wireless subsystem modules were left intact:"
 	@echo 
@@ -239,6 +259,16 @@ uninstall:
 	@$(MODPROBE) -l usb8xxx
 	@$(MODPROBE) -l usbnet
 	@$(MODPROBE) -l zd1211rw
+	@echo
+	@echo "Your old bluetooth subsystem modules were left intact:"
+	@echo
+	@$(MODPROBE) -l sco
+	@$(MODPROBE) -l l2cap
+	@$(MODPROBE) -l hidp
+	@$(MODPROBE) -l rfcomm
+	@$(MODPROBE) -l bnep
+	@$(MODPROBE) -l btusb
+	@$(MODPROBE) -l bluetooth
 	@
 	@echo 
 
@@ -253,7 +283,19 @@ unload:
 load: unload
 	@./scripts/load.sh
 
-.PHONY: all clean install uninstall unload load
+btunload:
+	@./scripts/btunload.sh
+
+btload: btunload
+	@./scripts/btload.sh
+
+wlunload:
+	@./scripts/wlunload.sh
+
+wlload: wlunload
+	@./scripts/wlload.sh
+
+.PHONY: all clean install uninstall unload load btunload btload wlunload wlload modules
 
 endif
 

@@ -15,12 +15,14 @@
 #include <linux/netdevice.h>
 #include <linux/rtnetlink.h>
 #include <net/mac80211.h>
+#include <net/ieee80211_radiotap.h>
 #include "ieee80211_i.h"
 #include "sta_info.h"
 #include "debugfs_netdev.h"
 #include "mesh.h"
 #include "led.h"
 #include "driver-ops.h"
+#include "wme.h"
 
 /**
  * DOC: Interface list locking
@@ -184,10 +186,12 @@ static int ieee80211_open(struct net_device *dev)
 		 * No need to check netif_running since we do not allow
 		 * it to start up with this invalid address.
 		 */
-		if (compare_ether_addr(null_addr, ndev->dev_addr) == 0)
+		if (compare_ether_addr(null_addr, ndev->dev_addr) == 0) {
 			memcpy(ndev->dev_addr,
 			       local->hw.wiphy->perm_addr,
 			       ETH_ALEN);
+			memcpy(ndev->perm_addr, ndev->dev_addr, ETH_ALEN);
+		}
 	}
 
 	/*
@@ -212,8 +216,8 @@ static int ieee80211_open(struct net_device *dev)
 		/* must be before the call to ieee80211_configure_filter */
 		local->monitors++;
 		if (local->monitors == 1) {
-			local->hw.conf.flags |= IEEE80211_CONF_RADIOTAP;
-			hw_reconf_flags |= IEEE80211_CONF_CHANGE_RADIOTAP;
+			local->hw.conf.flags |= IEEE80211_CONF_MONITOR;
+			hw_reconf_flags |= IEEE80211_CONF_CHANGE_MONITOR;
 		}
 
 		if (sdata->u.mntr_flags & MONITOR_FLAG_FCSFAIL)
@@ -433,8 +437,8 @@ static int ieee80211_stop(struct net_device *dev)
 
 		local->monitors--;
 		if (local->monitors == 0) {
-			local->hw.conf.flags &= ~IEEE80211_CONF_RADIOTAP;
-			hw_reconf_flags |= IEEE80211_CONF_CHANGE_RADIOTAP;
+			local->hw.conf.flags &= ~IEEE80211_CONF_MONITOR;
+			hw_reconf_flags |= IEEE80211_CONF_CHANGE_MONITOR;
 		}
 
 		if (sdata->u.mntr_flags & MONITOR_FLAG_FCSFAIL)
@@ -642,6 +646,12 @@ static void ieee80211_teardown_sdata(struct net_device *dev)
 	WARN_ON(flushed);
 }
 
+static u16 ieee80211_netdev_select_queue(struct net_device *dev,
+					 struct sk_buff *skb)
+{
+	return ieee80211_select_queue(IEEE80211_DEV_TO_SUB_IF(dev), skb);
+}
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 static const struct net_device_ops ieee80211_dataif_ops = {
 	.ndo_open		= ieee80211_open,
@@ -651,7 +661,37 @@ static const struct net_device_ops ieee80211_dataif_ops = {
 	.ndo_set_multicast_list = ieee80211_set_multicast_list,
 	.ndo_change_mtu 	= ieee80211_change_mtu,
 	.ndo_set_mac_address 	= eth_mac_addr,
+	.ndo_select_queue	= ieee80211_netdev_select_queue,
 };
+
+static u16 ieee80211_monitor_select_queue(struct net_device *dev,
+					  struct sk_buff *skb)
+{
+	struct ieee80211_sub_if_data *sdata = IEEE80211_DEV_TO_SUB_IF(dev);
+	struct ieee80211_local *local = sdata->local;
+	struct ieee80211_hdr *hdr;
+	struct ieee80211_radiotap_header *rtap = (void *)skb->data;
+	u8 *p;
+
+	if (local->hw.queues < 4)
+		return 0;
+
+	if (skb->len < 4 ||
+	    skb->len < le16_to_cpu(rtap->it_len) + 2 /* frame control */)
+		return 0; /* doesn't matter, frame will be dropped */
+
+	hdr = (void *)((u8 *)skb->data + le16_to_cpu(rtap->it_len));
+
+	if (!ieee80211_is_data_qos(hdr->frame_control)) {
+		skb->priority = 7;
+		return ieee802_1d_to_ac[skb->priority];
+	}
+
+	p = ieee80211_get_qos_ctl(hdr);
+	skb->priority = *p & IEEE80211_QOS_CTL_TAG1D_MASK;
+
+	return ieee80211_downgrade_queue(local, skb);
+}
 
 static const struct net_device_ops ieee80211_monitorif_ops = {
 	.ndo_open		= ieee80211_open,
@@ -661,6 +701,7 @@ static const struct net_device_ops ieee80211_monitorif_ops = {
 	.ndo_set_multicast_list = ieee80211_set_multicast_list,
 	.ndo_change_mtu 	= ieee80211_change_mtu,
 	.ndo_set_mac_address 	= eth_mac_addr,
+	.ndo_select_queue	= ieee80211_monitor_select_queue,
 };
 #endif
 
@@ -676,7 +717,9 @@ static void ieee80211_if_setup(struct net_device *dev)
 	dev->open = ieee80211_open;
 	dev->stop = ieee80211_stop;
 	/* we will validate the address ourselves in ->open */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
 	dev->validate_addr = NULL;
+#endif
 #endif
 	dev->destructor = free_netdev;
 }
@@ -770,15 +813,11 @@ int ieee80211_if_change_type(struct ieee80211_sub_if_data *sdata,
 		ieee80211_mandatory_rates(sdata->local,
 			sdata->local->hw.conf.channel->band);
 	sdata->drop_unencrypted = 0;
+	if (type == NL80211_IFTYPE_STATION)
+		sdata->u.mgd.use_4addr = false;
 
 	return 0;
 }
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
-static struct device_type wiphy_type = {
-	.name	= "wlan",
-};
-#endif
 
 int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 		     struct net_device **new_dev, enum nl80211_iftype type,
@@ -790,8 +829,8 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 
 	ASSERT_RTNL();
 
-	ndev = alloc_netdev(sizeof(*sdata) + local->hw.vif_data_size,
-			    name, ieee80211_if_setup);
+	ndev = alloc_netdev_mq(sizeof(*sdata) + local->hw.vif_data_size,
+			       name, ieee80211_if_setup, local->hw.queues);
 	if (!ndev)
 		return -ENOMEM;
 	dev_net_set(ndev, wiphy_net(local->hw.wiphy));
@@ -813,8 +852,8 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 		goto fail;
 
 	memcpy(ndev->dev_addr, local->hw.wiphy->perm_addr, ETH_ALEN);
+	memcpy(ndev->perm_addr, ndev->dev_addr, ETH_ALEN);
 	SET_NETDEV_DEV(ndev, wiphy_dev(local->hw.wiphy));
-	SET_NETDEV_DEVTYPE(ndev, &wiphy_type);
 
 	/* don't use IEEE80211_DEV_TO_SUB_IF because it checks too much */
 	sdata = netdev_priv(ndev);
@@ -835,6 +874,12 @@ int ieee80211_if_add(struct ieee80211_local *local, const char *name,
 
 	/* setup type-dependent data */
 	ieee80211_setup_sdata(sdata, type);
+
+	if (params) {
+		ndev->ieee80211_ptr->use_4addr = params->use_4addr;
+		if (type == NL80211_IFTYPE_STATION)
+			sdata->u.mgd.use_4addr = params->use_4addr;
+	}
 
 	ret = register_netdevice(ndev);
 	if (ret)
@@ -880,6 +925,24 @@ void ieee80211_if_remove(struct ieee80211_sub_if_data *sdata)
  * Remove all interfaces, may only be called at hardware unregistration
  * time because it doesn't do RCU-safe list removals.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
+void ieee80211_remove_interfaces(struct ieee80211_local *local)
+{
+	struct ieee80211_sub_if_data *sdata, *tmp;
+	LIST_HEAD(unreg_list);
+
+	ASSERT_RTNL();
+
+	mutex_lock(&local->iflist_mtx);
+	list_for_each_entry_safe(sdata, tmp, &local->interfaces, list) {
+		list_del(&sdata->list);
+
+		unregister_netdevice_queue(sdata->dev, &unreg_list);
+	}
+	mutex_unlock(&local->iflist_mtx);
+	unregister_netdevice_many(&unreg_list);
+}
+#else
 void ieee80211_remove_interfaces(struct ieee80211_local *local)
 {
 	struct ieee80211_sub_if_data *sdata, *tmp;
@@ -887,12 +950,6 @@ void ieee80211_remove_interfaces(struct ieee80211_local *local)
 	ASSERT_RTNL();
 
 	list_for_each_entry_safe(sdata, tmp, &local->interfaces, list) {
-		/*
-		 * we cannot hold the iflist_mtx across unregister_netdevice,
-		 * but we only need to hold it for list modifications to lock
-		 * out readers since we're under the RTNL here as all other
-		 * writers.
-		 */
 		mutex_lock(&local->iflist_mtx);
 		list_del(&sdata->list);
 		mutex_unlock(&local->iflist_mtx);
@@ -900,6 +957,7 @@ void ieee80211_remove_interfaces(struct ieee80211_local *local)
 		unregister_netdevice(sdata->dev);
 	}
 }
+#endif
 
 static u32 ieee80211_idle_off(struct ieee80211_local *local,
 			      const char *reason)

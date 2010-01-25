@@ -6,6 +6,7 @@
 
 DRIVERS_MAKEFILE="drivers/net/wireless/Makefile"
 ATH_MAKEFILE="drivers/net/wireless/ath/Makefile"
+ATH9K_MAKEFILE="drivers/net/wireless/ath/ath9k/Makefile"
 NET_WIRELESS_MAKEFILE="net/wireless/Makefile"
 EEPROM_MAKEFILE="drivers/misc/eeprom/Makefile"
 DRIVERS_NET="drivers/net/Makefile"
@@ -119,6 +120,30 @@ function disable_usbnet
 	perl -i -ne 'print if ! /drivers\/net\/usb\/ \\/' Makefile
 }
 
+function disable_usbnet {
+	perl -i -ne 'print if ! /CONFIG_COMPAT_NET_USB_MODULES/' Makefile
+} 
+
+function disable_ethernet {
+	perl -i -ne 'print if ! /CONFIG_COMPAT_NETWORK_MODULES/' Makefile
+} 
+
+function disable_var_03 {
+	perl -i -ne 'print if ! /CONFIG_COMPAT_BLUETOOTH/' Makefile
+} 
+
+function disable_bt {
+	perl -i -ne 'print if ! /CONFIG_COMPAT_VAR_MODULES/' Makefile
+} 
+
+function disable_bt_usb_ethernet_var {
+	backup_file Makefile
+	disable_usbnet
+	disable_ethernet
+	disable_var_03
+	disable_bt
+} 
+
 function disable_var {
 	disable_ssb
 	disable_usbnet
@@ -140,8 +165,14 @@ function disable_var_02 {
 function select_ath_driver 
 {
 	backup_file $ATH_MAKEFILE
-	perl -i -ne 'print if /'$1'/ || /CONFIG_ATH_COMMON/ || /ath-objs/ ' $ATH_MAKEFILE
+	perl -i -ne 'print if /'$1'/ || /CONFIG_ATH_/ || /ath-objs/ || /regd.o/ || /hw.o/ ' $ATH_MAKEFILE
 	disable_var_01
+}
+
+function select_ath9k_driver
+{
+	select_ath_driver CONFIG_ATH9K_HW
+	# In the future here we'll add stuff to disable ath9k_htc
 }
 
 # iwlwifi stuff needs more work
@@ -209,6 +240,7 @@ case $1 in
 		disable_var_01
 		;;
 	ath)
+		disable_bt_usb_ethernet_var
 		select_drivers		CONFIG_ATH_COMMON
 		disable_var_01
 		;;
@@ -226,14 +258,19 @@ case $1 in
 		disable_var_01
 		;;
 	ath5k)
+		disable_bt_usb_ethernet_var
 		select_driver		CONFIG_ATH_COMMON
 		select_ath_driver	CONFIG_ATH5K
+		patch -p1 < enable-older-kernels/enable-2.6.23.patch
 		;;
 	ath9k)
+		disable_bt_usb_ethernet_var
 		select_driver		CONFIG_ATH_COMMON
-		select_ath_driver	CONFIG_ATH9K
+		select_ath9k_driver
+		patch -p1 < enable-older-kernels/enable-2.6.23.patch
 		;;
 	ar9170)
+		disable_bt_usb_ethernet_var
 		select_driver		CONFIG_ATH_COMMON
 		select_ath_driver	CONFIG_AR9170_USB
 		;;
