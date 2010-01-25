@@ -6,8 +6,15 @@ build-arch: $(addprefix build-modules-,$(flavours))
 # Prepare the out-of-tree build directory
 
 printenv:
-	@echo "confdir    : $(confdir)"
-	@echo "stampdir   : $(stampdir)"
+	@echo "confdir           =  $(confdir)"
+	@echo "stampdir          = $(stampdir)"
+	@echo "release           = $(release)"
+	@echo "revisions         = $(revisions)"
+	@echo "revision          = $(revision)"
+	@echo "prev_revisions    = $(prev_revisions)"
+	@echo "prev_revision     = $(prev_revision)"
+	@echo "abinum            = $(abinum)"
+	@echo "flavours          = $(flavours)"
 
 COMPAT_KDIR=/lib/modules/$(release)-$(abinum)-$(target_flavour)
 make_compat = make $(conc_level) KLIB=$(COMPAT_KDIR) MADWIFI=
