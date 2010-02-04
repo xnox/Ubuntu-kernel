@@ -2,7 +2,11 @@
 #
 # 
 #
-src="$HOME/git2/linux-2.6"
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <root of linux tree>" 1>&2
+	exit 1
+fi
+src="$1"
 drm="$src/drivers/gpu/drm/"
 rm -rf nouveau
 mkdir nouveau nouveau/include
