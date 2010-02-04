@@ -66,7 +66,7 @@ install-%: target_flavour = $*
 install-%: $(stampdir)/stamp-build-%
 	dh_testdir
 	dh_testroot
-	dh_clean -k -plinux-backports-modules-$(release)-$(abinum)-$*
+	dh_clean -k -plinux-backports-modules-wireless-$(release)-$(abinum)-$*
 
 	install -d $(firmdir)
 	#
