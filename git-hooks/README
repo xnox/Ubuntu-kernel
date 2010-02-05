@@ -1,7 +1,15 @@
-rm -f .git/hooks/*
-cp * .git/hooks/
+Git-hooks
+
+These hooks are optional. You can install them to your git tree to add
+additional automatic checks to your git workflow.
 
 Basically these will help keep you from doing dumb things by accident
+
+To use them, delete the default (dummy) hooks in the tree and copy over these
+hooks.
+
+$ rm -f .git/hooks/*
+$ cp * .git/hooks/
 
 commit-msg: Verifies the format of commit messages and adds signed-off-by if missing
 
