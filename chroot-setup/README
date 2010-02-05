@@ -1,2 +1,13 @@
-The create-chroots.sh script will create chroot tarballs suitable for use
-with schroot. You must run the command as root (sudo, not fakeroot).
+build-mkschroot.sh is used to created a chroot for compiling kernels. It
+consists of 3 steps:
+	- Creation of a chroot using deboostrap
+	- Installing additional packages inside the chroot that are needed for
+	  kernel compilation
+	- Update schroot.conf to that the chroot is accessible by name
+
+You must run the command as root (sudo, not fakeroot).
+
+Sample invocation:
+
+$ sudo ./build-mkschroot --arch=i386 lucid /shared/lucid-i386
+
