@@ -1,0 +1,7 @@
+These scripts are used on zinc.canonical.com to produce builds of mainline
+Linux kernels using Ubuntu configuration (as much as possible). This provides
+testers a way to confirm if the bug is fixed upstream and helps in testing of
+upstream kernels too.
+
+FIXME: Andy to document the working of the scripts
+
