@@ -11,7 +11,6 @@ Build-Depends: cpio, debhelper (>= 4.0.0), libc6-i386 [amd64],
  linux-headers-@@ABIVER@@-server [amd64 i386],
  linux-headers-@@ABIVER@@-generic [amd64 i386],
  linux-headers-@@ABIVER@@-lpia [lpia],
- linux-headers-@@ABIVER@@-lpiacompat [lpia],
  linux-headers-@@ABIVER@@-openvz [i386 amd64],
  linux-headers-@@ABIVER@@-rt [i386 amd64],
  linux-headers-@@ABIVER@@-xen [amd64 i386],
@@ -434,19 +433,6 @@ Depends: linux-image-@@ABIVER@@-lpia, linux-restricted-modules-common (>= @@KVER
 Description: Non-free Linux @@KVERSION@@ modules on LPIA
  This package provides restricted modules for Linux version @@KVERSION@@ on
  32-bit LPIA
- Currently the following modules are included:
-  - madwifi (Atheros)
- .
- These modules are "restricted" because they are not available under a
- completely Free licence.
-
-Package: linux-restricted-modules-@@ABIVER@@-lpiacompat
-Architecture: lpia
-Priority: optional
-Depends: linux-image-@@ABIVER@@-lpiacompat, linux-restricted-modules-common (>= @@KVERSION@@), module-init-tools
-Description: Non-free Linux @@KVERSION@@ modules on LPIAcompat
- This package provides restricted modules for Linux version @@KVERSION@@ on
- 32-bit LPIAcompat
  Currently the following modules are included:
   - madwifi (Atheros)
  .

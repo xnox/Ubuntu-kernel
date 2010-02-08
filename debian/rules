@@ -199,7 +199,7 @@ endif
 ifeq "$(DEB_HOST_ARCH)" "lpia"
 export karch=i386
 mw_target := TARGET=i386-elf
-flavours := $(addprefix $(kernel_abi_version)-,lpia lpiacompat)
+flavours := $(addprefix $(kernel_abi_version)-,lpia)
 
 NVIDIA  := 0 # no nVidia support yet
 FGLRX   := 0 # no FireGL support yet

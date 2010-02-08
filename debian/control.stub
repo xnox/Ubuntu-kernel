@@ -12,7 +12,6 @@ Build-Depends: cpio, debhelper (>= 4.0.0), libc6-i386 [amd64],
  linux-headers-2.6.24-27-server [amd64 i386],
  linux-headers-2.6.24-27-generic [amd64 i386],
  linux-headers-2.6.24-27-lpia [lpia],
- linux-headers-2.6.24-27-lpiacompat [lpia],
  linux-headers-2.6.24-27-openvz [i386 amd64],
  linux-headers-2.6.24-27-rt [i386 amd64],
  linux-headers-2.6.24-27-xen [amd64 i386],
@@ -435,19 +434,6 @@ Depends: linux-image-2.6.24-27-lpia, linux-restricted-modules-common (>= 2.6.24)
 Description: Non-free Linux 2.6.24 modules on LPIA
  This package provides restricted modules for Linux version 2.6.24 on
  32-bit LPIA
- Currently the following modules are included:
-  - madwifi (Atheros)
- .
- These modules are "restricted" because they are not available under a
- completely Free licence.
-
-Package: linux-restricted-modules-2.6.24-27-lpiacompat
-Architecture: lpia
-Priority: optional
-Depends: linux-image-2.6.24-27-lpiacompat, linux-restricted-modules-common (>= 2.6.24), module-init-tools
-Description: Non-free Linux 2.6.24 modules on LPIAcompat
- This package provides restricted modules for Linux version 2.6.24 on
- 32-bit LPIAcompat
  Currently the following modules are included:
   - madwifi (Atheros)
  .
