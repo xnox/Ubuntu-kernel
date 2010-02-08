@@ -57,7 +57,7 @@ ltm_base_version = 8.31+2.6-alk-9
 ltm_url = http://linmodems.technion.ac.il/packages/ltmodem/kernel-2.6/
 
 # madwifi
-madwifi_version = 0.9.4
+madwifi_version = 0.10.0
 
 # broadcom wireless
 bcmwl_dir = bcmwl
