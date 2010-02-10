@@ -1,4 +1,6 @@
-linux-restricted-modules-2.6.24 (2.6.24.25-27.1netbook01)) netbook-common; urgency=low
+linux-restricted-modules-2.6.24 (2.6.24.25-27.1netbook01) netbook-common; urgency=low
+
+  [Leann Ogasawara]
 
   * Bump version to supersede OEM Hardy LRM tarball
 
