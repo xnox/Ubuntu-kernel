@@ -214,7 +214,7 @@ sub changelog_input {
 				}
 			}
 
-                        $bug = join(", #", keys(%bugz));
+                        $bug = join(", #", sort keys(%bugz));
 			if (!$ignore) {
 				&shortlog_entry($author, $desc, $bug,
 						$cve, $commit, 0);
