@@ -1,8 +1,14 @@
+linux-restricted-modules-2.6.24 (2.6.24.25-27.1netbook01)) netbook-common; urgency=low
+
+  * Bump version to supersede OEM Hardy LRM tarball
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Wed, 10 Feb 2010 10:01:44 -0800
+
 linux-restricted-modules-2.6.24 (2.6.24.19-27.1netbook01) netbook-common; urgency=low
 
   [Leann Ogasawara]
 
-  * Sync with OEM Hardy LBM tarball
+  * Sync with OEM Hardy LRM tarball
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 08 Feb 2010 11:29:02 -0800
 
