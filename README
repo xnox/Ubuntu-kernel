@@ -4,6 +4,8 @@ Common tools used by the kernel team
 buildscripts: Scripts used to farm out the kernel builds to very fast remote
 machines that are part of the kernel team build infrastructure
 
+maintscripts: Scripts used for general / stable kernel maintenance
+
 chroot-setup: Scripts to setup jailed kernel compilation enviroments.
 
 git-hooks: Optional hooks to save you from making dumb mistakes when

@@ -1,0 +1,5 @@
+maint-make-bug-branch:
+	This is used to create a branch which relates to a Launchpad bug.
+	The branch is based on a version uploaded and is automtically named
+	and prepared (creating a special version in the changelog) for test
+	patch application.
