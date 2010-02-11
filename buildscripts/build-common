@@ -131,6 +131,7 @@ function GetHostEnvironment()
 		return 1
 	fi
 	if [ "${HOSTARCH}" != "${ARCH}" ]; then
+		CHROOT="${DIST}-${ARCH}"
 		if [ "${HOSTARCH}" = "amd64" ]; then
 			case ${ARCH} in
 				i386|lpia)
@@ -142,8 +143,13 @@ function GetHostEnvironment()
 					;;
 			esac
 		fi
+	else
+		if [ "${HOSTARCH}" = "amd64" ]; then
+			CHROOT="${DIST}-${ARCH}"
+		else
+			CHROOT="${DIST}"
+		fi
 	fi
-	CHROOT="${DIST}-${ARCH}"
 	if [ "${CHROOTCMD}" = "schroot" ]; then
 		CHROOTCMD="${CHROOTCMD} -q -c${CHROOT} -- "
 		if [ "${ARCHCMD}" != "" ]; then
