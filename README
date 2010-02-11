@@ -1,4 +1,5 @@
-Tools to help build kernels on Canonical's infrastructure
+Common tools used by the kernel team
+------------------------------------
 
 buildscripts: Scripts used to farm out the kernel builds to very fast remote
 machines that are part of the kernel team build infrastructure
