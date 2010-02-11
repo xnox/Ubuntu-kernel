@@ -46,7 +46,7 @@ __attribute__((section("__versions"))) = {
 	{ 0xc8b57c27, "autoremove_wake_function" },
 	{ 0xd53a350e, "drm_mode_destroy" },
 	{ 0x508ef3dd, "remove_wait_queue" },
-	{ 0xc64796bc, "boot_cpu_data" },
+	{ 0x1f88fcde, "boot_cpu_data" },
 	{ 0xc46c94a9, "drm_lookup_user_object" },
 	{ 0x2c190605, "pci_disable_device" },
 	{ 0xc0fa04aa, "_write_lock_irqsave" },
@@ -91,6 +91,7 @@ __attribute__((section("__versions"))) = {
 	{ 0x456df3dc, "pci_get_bus_and_slot" },
 	{ 0x89bfc962, "drm_framebuffer_destroy" },
 	{ 0xcda10c1, "del_timer_sync" },
+	{ 0x7264c867, "proc_mkdir" },
 	{ 0xfb348e74, "pci_restore_state" },
 	{ 0xd95ef8de, "cfb_imageblit" },
 	{ 0x1c27a6a5, "drm_crtc_set_mode" },
@@ -155,6 +156,7 @@ __attribute__((section("__versions"))) = {
 	{ 0xf174ed48, "acquire_console_sem" },
 	{ 0x1601027, "registered_fb" },
 	{ 0x4d33df45, "pv_cpu_ops" },
+	{ 0xebc4b26, "create_proc_entry" },
 	{ 0x4bbe0965, "dev_driver_string" },
 	{ 0x62fc3ede, "drm_output_create" },
 	{ 0xffd3c7, "init_waitqueue_head" },
@@ -222,4 +224,4 @@ __attribute__((section(".modinfo"))) =
 "depends=drm_psb,i2c-algo-bit";
 
 
-MODULE_INFO(srcversion, "68C4670FB92CE503BF404CA");
+MODULE_INFO(srcversion, "EAFD381E1A63034386C769D");

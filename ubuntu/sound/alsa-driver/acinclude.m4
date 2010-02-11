@@ -158,6 +158,7 @@ AC_DEFUN([ALSA_TOPLEVEL_INIT], [
 	CONFIG_SND_HDA_CODEC_SIGMATEL=""
 	CONFIG_SND_HDA_CODEC_VIA=""
 	CONFIG_SND_HDA_CODEC_ATIHDMI=""
+	CONFIG_SND_HDA_CODEC_INTELHDMI=""
 	CONFIG_SND_HDA_CODEC_CONEXANT=""
 	CONFIG_SND_HDA_CODEC_CMEDIA=""
 	CONFIG_SND_HDA_CODEC_SI3054=""
@@ -2461,9 +2462,10 @@ AC_ARG_WITH(card_options,
   [                          cs46xx-new-dsp, fm801-tea575x-bool, hda-hwdep, ]
   [                          hda-codec-realtek, hda-codec-analog, ]
   [                          hda-codec-sigmatel, hda-codec-via, ]
-  [                          hda-codec-atihdmi, hda-codec-conexant, ]
-  [                          hda-codec-cmedia, hda-codec-si3054, hda-generic, ]
-  [                          hda-power-save, korg1212-firmware-in-kernel, ]
+  [                          hda-codec-atihdmi, hda-codec-intelhdmi, ]
+  [                          hda-codec-conexant, hda-codec-cmedia, ]
+  [                          hda-codec-si3054, hda-generic, hda-power-save, ]
+  [                          korg1212-firmware-in-kernel, ]
   [                          maestro3-firmware-in-kernel, ]
   [                          ymfpci-firmware-in-kernel, ac97-power-save, ]
   [                          powermac-auto-drc, usb-caiaq-input, soc-ac97-bus, ]
@@ -2628,6 +2630,16 @@ for card in $SELECTED_OPTIONS; do
       ( test "$CONFIG_PCI" = "y" -o "$CONFIG_PCI" = "m" ) &&
       ( test "$CONFIG_SND_HDA_INTEL" = "y" -o "$CONFIG_SND_HDA_INTEL" = "m" ); then
       CONFIG_SND_HDA_CODEC_ATIHDMI="y"
+      probed=1
+    elif test -z "$probed"; then
+      probed=0
+    fi
+  fi
+  if test "$card" = "all" -o "$card" = "hda-codec-intelhdmi"; then
+    if ( test "$CONFIG_SOUND" = "y" -o "$CONFIG_SOUND" = "m" ) &&
+      ( test "$CONFIG_PCI" = "y" -o "$CONFIG_PCI" = "m" ) &&
+      ( test "$CONFIG_SND_HDA_INTEL" = "y" -o "$CONFIG_SND_HDA_INTEL" = "m" ); then
+      CONFIG_SND_HDA_CODEC_INTELHDMI="y"
       probed=1
     elif test -z "$probed"; then
       probed=0
@@ -3222,6 +3234,9 @@ fi
 if test -n "$CONFIG_SND_HDA_CODEC_ATIHDMI"; then
   AC_DEFINE(CONFIG_SND_HDA_CODEC_ATIHDMI)
 fi
+if test -n "$CONFIG_SND_HDA_CODEC_INTELHDMI"; then
+  AC_DEFINE(CONFIG_SND_HDA_CODEC_INTELHDMI)
+fi
 if test -n "$CONFIG_SND_HDA_CODEC_CONEXANT"; then
   AC_DEFINE(CONFIG_SND_HDA_CODEC_CONEXANT)
 fi
@@ -3770,6 +3785,7 @@ AC_SUBST(CONFIG_SND_HDA_CODEC_ANALOG)
 AC_SUBST(CONFIG_SND_HDA_CODEC_SIGMATEL)
 AC_SUBST(CONFIG_SND_HDA_CODEC_VIA)
 AC_SUBST(CONFIG_SND_HDA_CODEC_ATIHDMI)
+AC_SUBST(CONFIG_SND_HDA_CODEC_INTELHDMI)
 AC_SUBST(CONFIG_SND_HDA_CODEC_CONEXANT)
 AC_SUBST(CONFIG_SND_HDA_CODEC_CMEDIA)
 AC_SUBST(CONFIG_SND_HDA_CODEC_SI3054)
