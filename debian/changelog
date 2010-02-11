@@ -1,3 +1,11 @@
+linux-backports-modules-2.6.24 (2.6.24-27.65netbook01) netbook-common; urgency=low
+
+  [Leann Ogasawara]
+
+  * Bump ABI to match security update for NBK-Ubuntu-2.6.24-27.65netbook01
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 11 Feb 2010 10:48:26 -0800
+
 linux-backports-modules-2.6.24 (2.6.24-25.62netbook01) netbook-common; urgency=low
 
   [Steve Conklin]
