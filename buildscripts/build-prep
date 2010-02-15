@@ -1,6 +1,6 @@
 #!/bin/bash
 CDIR=$(cd $(dirname $0); pwd)
-. $(dirname $0)/build-common
+. $CDIR/build-common
 
 BRANCH="master"
 TARGETS=""
@@ -103,7 +103,7 @@ function PrepareHost()
 	fi
 
 	echo "  local: sending status scripts..."
-	scp -q $(dirname $0)/target-scripts/run-* ${HOST}:${BASEDIR}
+	scp -q $CDIR/target-scripts/run-* ${HOST}:${BASEDIR}
 
 	echo "  local: using git to push..."
 	cd "${SRCDIR}"
