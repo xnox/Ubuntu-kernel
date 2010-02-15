@@ -19,9 +19,9 @@ CMD='if [ "`type -p dpkg-architecture`" != "" ]; then
 else
 	echo HOSTARCH="`dpkg --print-architecture`";
 fi;
-if [ "\`type -p schroot\`" != "" ]; then
+if [ "`schroot -l 2>/dev/null`" != "" ]; then
 	CHROOTCMD="schroot";
-elif [ "\`type -p dchroot\`" != "" ]; then
+elif [ "`dchroot -l 2>/dev/null`" != "" ]; then
 	CHROOTCMD="dchroot";
 else
 	exit 1;
