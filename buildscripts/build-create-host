@@ -14,28 +14,28 @@ if [ "${HOST}" = "" ]; then
 	exit 1
 fi
 
-HOSTINFO="$(cat <<EOD | ssh ${HOST} -oConnectTimeout=60
-if [ "\`type -p dpkg-architecture\`" != "" ]; then
-	echo HOSTARCH="\`dpkg-architecture -qDEB_BUILD_ARCH\`"
+CMD='if [ "`type -p dpkg-architecture`" != "" ]; then
+	echo HOSTARCH="`dpkg-architecture -qDEB_BUILD_ARCH`";
 else
-	echo HOSTARCH="\`dpkg --print-architecture\`"
-fi
+	echo HOSTARCH="`dpkg --print-architecture`";
+fi;
 if [ "\`type -p schroot\`" != "" ]; then
-	CHROOTCMD="schroot"
+	CHROOTCMD="schroot";
 elif [ "\`type -p dchroot\`" != "" ]; then
-	CHROOTCMD="dchroot"
+	CHROOTCMD="dchroot";
 else
-	exit 1
-fi
-echo "CHROOTCMD=\$CHROOTCMD"
+	exit 1;
+fi;
+echo "CHROOTCMD=$CHROOTCMD";
 
-if [ \`id -u\` -ne 0 ]; then
-	echo "FAKEROOT=fakeroot"
+if [ `id -u` -ne 0 ]; then
+	echo "FAKEROOT=fakeroot";
 else
-	echo "FAKEROOT=''"
-fi
-echo "BASE=\$HOME"
-EOD)"
+	echo "FAKEROOT=\"\"";
+fi;
+echo "BASE=$HOME"'
+
+HOSTINFO=$(echo $CMD | ssh ${HOST} -oConnectTimeout=60)
 
 case $? in
 	255)
