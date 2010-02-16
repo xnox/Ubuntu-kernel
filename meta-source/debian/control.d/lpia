@@ -24,24 +24,3 @@ Depends: linux-image-lpia (= ${binary:Version})
 Description: Complete Generic Linux kernel
  This package will always depend on the latest complete lpia Linux kernel
  available.
-
-#Package: linux-backports-modules-headers-RELEASE_NAME-lpia
-#Architecture: lpia
-#Depends: linux-headers-lbm-${kernel-abi-version}-lpia
-#Description: Backported driver headers for lpia kernel image
-# This empty package allows people to keep their backported module
-# headers up-to-date when upgrading their Linux kernel.
-
-#Package: linux-backports-modules-wireless-RELEASE_NAME-lpia
-#Architecture: lpia
-#Depends: linux-backports-modules-${kernel-abi-version}-lpia
-#Description: Backported wireless drivers for lpia kernel image
-# This empty package allows people to keep their backported wireless modules
-# up-to-date when upgrading their Linux kernel.
-
-#Package: linux-backports-modules-alsa-RELEASE_NAME-lpia
-#Architecture: lpia
-#Depends: linux-backports-modules-alsa-${kernel-abi-version}-lpia
-#Description: Backported drivers for alsa-driver snapshot.
-# This empty package allows people to keep their alsa-driver snapshot
-# up-to-date when upgrading their Linux kernel.

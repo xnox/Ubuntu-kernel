@@ -24,24 +24,3 @@ Depends: linux-image-preempt (= ${binary:Version})
 Description: Complete Linux kernel for Low Latency Servers.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
-
-#Package: linux-backports-modules-headers-RELEASE_NAME-preempt
-#Architecture: amd64
-#Depends: linux-headers-lbm-${kernel-abi-version}-preempt
-#Description: Backported driver headers for preempt kernel image
-# This empty package allows people to keep their backported module
-# headers up-to-date when upgrading their Linux kernel.
-
-#Package: linux-backports-modules-wireless-RELEASE_NAME-preempt
-#Architecture: amd64
-#Depends: linux-backports-modules-${kernel-abi-version}-preempt
-#Description: Backported wireless drivers for preempt kernel image
-# This empty package allows people to keep their backported wireless modules
-# up-to-date when upgrading their Linux kernel.
-
-#Package: linux-backports-modules-alsa-RELEASE_NAME-preempt
-#Architecture: amd64
-#Depends: linux-backports-modules-alsa-${kernel-abi-version}-preempt
-#Description: Backported drivers for alsa-driver snapshot.
-# This empty package allows people to keep their alsa-driver snapshot
-# up-to-date when upgrading their Linux kernel.

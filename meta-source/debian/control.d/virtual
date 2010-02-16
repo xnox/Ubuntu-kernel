@@ -24,4 +24,3 @@ Depends: linux-image-virtual (= ${binary:Version})
 Description: Complete Linux kernel for virtual machines
  This package will always depend on the latest complete Linux kernel available
  for virtual machines.
-

@@ -25,23 +25,30 @@ Description: Complete Generic Linux kernel
  This package will always depend on the latest complete generic Linux kernel
  available.
 
-#Package: linux-backports-modules-headers-RELEASE_NAME-generic-pae
-#Architecture: i386
-#Depends: linux-headers-lbm-${kernel-abi-version}-generic-pae
-#Description: Backported driver headers for generic-pae kernel image
-# This empty package allows people to keep their backported module
-# headers up-to-date when upgrading their Linux kernel.
+Package: linux-backports-modules-headers-RELEASE_NAME-generic-pae
+Architecture: i386
+Depends: linux-headers-lbm-${kernel-abi-version}-generic-pae
+Description: Backported driver headers for generic-pae kernel image
+ This empty package allows people to keep their backported module
+ headers up-to-date when upgrading their Linux kernel.
 
-#Package: linux-backports-modules-wireless-RELEASE_NAME-generic-pae
-#Architecture: i386
-#Depends: linux-backports-modules-${kernel-abi-version}-generic-pae
-#Description: Backported wireless drivers for generic kernel image
-# This empty package allows people to keep their backported wireless modules
-# up-to-date when upgrading their Linux kernel.
+Package: linux-backports-modules-wireless-RELEASE_NAME-generic-pae
+Architecture: i386
+Depends: linux-backports-modules-${kernel-abi-version}-generic-pae
+Description: Backported wireless drivers for generic kernel image
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
 
-#Package: linux-backports-modules-alsa-RELEASE_NAME-generic-pae
-#Architecture: i386
-#Depends: linux-backports-modules-alsa-${kernel-abi-version}-generic-pae
-#Description: Backported drivers for alsa-driver snapshot.
-# This empty package allows people to keep their alsa-driver snapshot
-# up-to-date when upgrading their Linux kernel.
+Package: linux-backports-modules-alsa-RELEASE_NAME-generic-pae
+Architecture: i386
+Depends: linux-backports-modules-alsa-${kernel-abi-version}-generic-pae
+Description: Backported drivers for alsa-driver snapshot.
+ This empty package allows people to keep their alsa-driver snapshot
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-noveau-RELEASE_NAME-generic-pae
+Architecture: i386
+Depends: linux-backports-modules-noveau-${kernel-abi-version}-generic-pae
+Description: Backported drivers for Nouveau.
+ This empty package allows people to keep their Nouveau driver
+ up-to-date when upgrading their Linux kernel.
