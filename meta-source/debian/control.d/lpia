@@ -2,7 +2,7 @@ Package: linux-headers-lpia
 Architecture: lpia
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-lpia
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-lpia
 Description: Generic Linux kernel headers
  This package will always depend on the latest lpia kernel headers
  available.
@@ -11,7 +11,7 @@ Package: linux-image-lpia
 Architecture: lpia
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-lpia, linux-firmware
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-lpia, linux-firmware
 Description: Generic Linux kernel image
  This package will always depend on the latest lpia kernel image
  available.
@@ -20,7 +20,7 @@ Package: linux-lpia
 Architecture: lpia
 Section: metapackages
 Priority: optional
-Depends: linux-image-lpia (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-lpia (= ${binary:Version})
 Description: Complete Generic Linux kernel
  This package will always depend on the latest complete lpia Linux kernel
  available.

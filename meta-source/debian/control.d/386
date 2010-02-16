@@ -2,7 +2,7 @@ Package: linux-headers-386
 Architecture: i386 
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-386
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-386
 Description: Generic Linux kernel headers
  This package will always depend on the latest 386 kernel headers
  available.
@@ -11,7 +11,7 @@ Package: linux-image-386
 Architecture: i386
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-386, linux-firmware
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-386, linux-firmware
 Description: Generic Linux kernel image
  This package will always depend on the latest 386 kernel image
  available.
@@ -20,7 +20,7 @@ Package: linux-386
 Architecture: i386
 Section: metapackages
 Priority: optional
-Depends: linux-image-386 (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-386 (= ${binary:Version})
 Description: Complete Generic Linux kernel
  This package will always depend on the latest complete 386 Linux kernel
  available.

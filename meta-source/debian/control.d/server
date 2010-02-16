@@ -2,7 +2,7 @@ Package: linux-headers-server
 Architecture: amd64
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-server
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-server
 Description: Linux kernel headers on Server Equipment.
  This package will always depend on the latest kernel headers available
  for Server Equipment.
@@ -11,7 +11,7 @@ Package: linux-image-server
 Architecture: amd64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-server, linux-firmware
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-server, linux-firmware
 Description: Linux kernel image on Server Equipment.
  This package will always depend on the latest kernel image available
  for Server Equipment.
@@ -20,35 +20,35 @@ Package: linux-server
 Architecture: amd64
 Section: metapackages
 Priority: optional
-Depends: linux-image-server (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-server (= ${binary:Version})
 Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
 Package: linux-backports-modules-headers-RELEASE_NAME-server
 Architecture: amd64
-Depends: linux-headers-lbm-${kernel-abi-version}-server
+Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-server
 Description: Backported driver headers for server kernel image
  This empty package allows people to keep their backported module
  headers up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-wireless-RELEASE_NAME-server
 Architecture: amd64
-Depends: linux-backports-modules-${kernel-abi-version}-server
+Depends: ${misc:Depends}, linux-backports-modules-${kernel-abi-version}-server
 Description: Backported wireless drivers for server kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-alsa-RELEASE_NAME-server
 Architecture: amd64
-Depends: linux-backports-modules-alsa-${kernel-abi-version}-server
+Depends: ${misc:Depends}, linux-backports-modules-alsa-${kernel-abi-version}-server
 Description: Backported drivers for alsa-driver snapshot.
  This empty package allows people to keep their alsa-driver snapshot
  up-to-date when upgrading their Linux kernel.
 
 #Package: linux-backports-modules-nouveau-RELEASE_NAME-server
 #Architecture: amd64
-#Depends: linux-backports-modules-nouveau-${kernel-abi-version}-server
+#Depends: ${misc:Depends}, linux-backports-modules-nouveau-${kernel-abi-version}-server
 #Description: Backported drivers for Nouveau.
 # This empty package allows people to keep their Nouveau driver
 # up-to-date when upgrading their Linux kernel.

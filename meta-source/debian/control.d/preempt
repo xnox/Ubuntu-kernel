@@ -2,7 +2,7 @@ Package: linux-headers-preempt
 Architecture: amd64
 Section: devel
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-preempt
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-preempt
 Description: Linux kernel headers for Low Latency Servers.
  This package will always depend on the latest kernel headers available
  for Server Equipment.
@@ -11,7 +11,7 @@ Package: linux-image-preempt
 Architecture: amd64
 Section: metapackages
 Priority: optional
-Depends: linux-image-${kernel-abi-version}-preempt, linux-firmware
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-preempt, linux-firmware
 Description: Linux kernel image for Low Latency Servers.
  This package will always depend on the latest kernel image available
  for Server Equipment.
@@ -20,7 +20,7 @@ Package: linux-preempt
 Architecture: amd64
 Section: metapackages
 Priority: optional
-Depends: linux-image-preempt (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-preempt (= ${binary:Version})
 Description: Complete Linux kernel for Low Latency Servers.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.

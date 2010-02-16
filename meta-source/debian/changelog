@@ -4,6 +4,7 @@ linux-meta (2.6.32.13.14) UNRELEASED; urgency=low
   * add versatile arm flavour
   * reinstate the LBM meta packages
   * we are not using anything clever, move to debhelper version 5
+  * lintian -- clean up misc-depends warnings
 
  -- Andy Whitcroft <apw@canonical.com>  Thu, 11 Feb 2010 23:14:22 +0000
 
