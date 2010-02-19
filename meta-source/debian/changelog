@@ -4,6 +4,7 @@ linux-meta (2.6.32.14.15) UNRELEASED; urgency=low
     to -generic-pae.
       - LP: 399718
   * Lucid ABI 14
+  * Correct linkage between wireless packages
 
  -- Andy Whitcroft <apw@canonical.com>  Wed, 17 Feb 2010 17:12:58 +0000
 
