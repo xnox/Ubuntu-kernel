@@ -1,4 +1,4 @@
-linux-meta (2.6.32.14.15) UNRELEASED; urgency=low
+linux-meta (2.6.32.14.15) lucid; urgency=low
 
   * Reinstate transitional packages for i386 moving upgraders from -server
     to -generic-pae.
@@ -7,7 +7,7 @@ linux-meta (2.6.32.14.15) UNRELEASED; urgency=low
   * Correct linkage between wireless packages
   * Fix typo in i386 nouveau meta package name
 
- -- Andy Whitcroft <apw@canonical.com>  Wed, 17 Feb 2010 17:12:58 +0000
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 19 Feb 2010 19:13:24 +0000
 
 linux-meta (2.6.32.13.14) lucid; urgency=low
 
