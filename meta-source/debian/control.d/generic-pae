@@ -46,9 +46,9 @@ Description: Backported drivers for alsa-driver snapshot.
  This empty package allows people to keep their alsa-driver snapshot
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-backports-modules-noveau-RELEASE_NAME-generic-pae
+Package: linux-backports-modules-nouveau-RELEASE_NAME-generic-pae
 Architecture: i386
-Depends: ${misc:Depends}, linux-backports-modules-noveau-${kernel-abi-version}-generic-pae
+Depends: ${misc:Depends}, linux-backports-modules-nouveau-${kernel-abi-version}-generic-pae
 Description: Backported drivers for Nouveau.
  This empty package allows people to keep their Nouveau driver
  up-to-date when upgrading their Linux kernel.
