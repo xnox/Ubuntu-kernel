@@ -1,3 +1,9 @@
+linux-meta-fsl-imx51 (2.6.31.605.6) lucid; urgency=low
+
+  * Lucid ABI 605
+
+ -- Andy Whitcroft <apw@canonical.com>  Tue, 23 Feb 2010 08:52:19 +0000
+
 linux-meta-fsl-imx51 (2.6.31.604.5) lucid; urgency=low
 
   * Lucid ABI 604
