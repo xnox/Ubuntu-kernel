@@ -64,6 +64,14 @@ else:
 	pass
 
 #------------------------------------------------------------------------------
+# Libraries shared by all kteam-tools will be found here (../lib)
+#------------------------------------------------------------------------------
+cvescripts_common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
+cvescripts_common_lib = os.path.dirname(cvescripts_common_lib)
+cvescripts_common_lib = os.path.join(cvescripts_common_lib, "lib")
+sys.path.insert(0, cvescripts_common_lib)
+
+#------------------------------------------------------------------------------
 # Now with the path to the ubuntu-cve-tracker we can import libraries from
 # them.
 #------------------------------------------------------------------------------
