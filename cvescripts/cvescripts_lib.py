@@ -91,3 +91,11 @@ def ListRepos(series):
 
 	return repos
 
+def ListSupportedSeries():
+	series = cve_lib.releases
+	for eol in cve_lib.eol_releases:
+        	if eol in series:
+                	series.remove(eol)
+
+	return series
+
