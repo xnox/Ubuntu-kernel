@@ -70,6 +70,7 @@ cvescripts_common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
 cvescripts_common_lib = os.path.dirname(cvescripts_common_lib)
 cvescripts_common_lib = os.path.join(cvescripts_common_lib, "lib")
 sys.path.insert(0, cvescripts_common_lib)
+from git_lib import *
 
 #------------------------------------------------------------------------------
 # Now with the path to the ubuntu-cve-tracker we can import libraries from
@@ -78,18 +79,18 @@ sys.path.insert(0, cvescripts_common_lib)
 sys.path.insert(0, os.path.join(cvetracker_dir, "scripts"))
 import cve_lib
 
-def ListRepos(series):
-	repos = []
-	path = os.path.join(repo_path, series)
-	cmd = "ssh {0} ls -1 {1}".format(repo_host, path)
-
-	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-	for line in p.stdout:
-		repos.append(line.strip())
-	p.stdout.close()
-	p.stderr.close()
-
-	return repos
+#def ListRepos(series):
+#	repos = []
+#	path = os.path.join(repo_path, series)
+#	cmd = "ssh {0} ls -1 {1}".format(repo_host, path)
+#
+#	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+#	for line in p.stdout:
+#		repos.append(line.strip())
+#	p.stdout.close()
+#	p.stderr.close()
+#
+#	return repos
 
 def ListSupportedSeries():
 	series = cve_lib.releases
@@ -98,4 +99,88 @@ def ListSupportedSeries():
                 	series.remove(eol)
 
 	return series
+
+#------------------------------------------------------------------------------
+# PkgList is a dictionary containing per series information:
+# PkgList[<series>][<package-shortname>] = <package-name>
+#------------------------------------------------------------------------------
+PkgList = {}
+PkgList["dapper"] = dict([
+        ( "linux", "linux-source-2.6.15" ),
+        ( "lbm", "linux-backports-modules-2.6.15" )
+])
+PkgList["hardy"] = dict([
+	( "linux", "linux" ),
+	( "lbm", "linux-backports-modules-2.6.24" ),
+	( "lrm", "linux-restricted-modules-2.6.24" ),
+	( "lum", "linux-ubuntu-modules-2.6.24" )
+])
+PkgList["intrepid"] = dict([
+	( "linux", "linux" ),
+	( "lbm", "linux-backports-modules-2.6.27" ),
+	( "lrm", "linux-restricted-modules" )
+])
+PkgList["jaunty"] = dict([
+	( "linux", "linux" ),
+	( "lbm", "linux-backports-modules-2.6.28" ),
+	( "lrm", "linux-restricted-modules" )
+])
+PkgList["karmic"] = dict([
+	( "linux", "linux" ),
+	( "lbm", "linux-backports-modules-2.6.31" ),
+])
+PkgList["lucid"] = dict([
+	( "linux", "linux" ),
+	( "lbm", "linux-backports-modules-2.6.32" )
+])
+
+#------------------------------------------------------------------------------
+# Return a list of all working repositories (all series, all packages)
+#------------------------------------------------------------------------------
+def ListAllWorkareas():
+	list = []
+	for series in ListSupportedSeries():
+		if not series in PkgList.keys():
+			continue
+		for package in sorted(PkgList[series].keys()):
+			list.append(os.path.join(series, package))
+
+	return list
+
+#------------------------------------------------------------------------------
+# Verify whether all repositories are clean and return True or False
+#------------------------------------------------------------------------------
+def IsWorkareaClean():
+	clean = True
+	owd = os.getcwd()
+	for area in ListAllWorkareas():
+		os.chdir(area)
+		files = GitListFiles("--others --modified")
+		if files:
+			clean = False
+			print "WW: Workarea not clean " + area
+			for file in files:
+				print "WW: - " + file
+		os.chdir(owd)
+
+	return clean
+
+def GetUploadVersion(series, package, pocket="updates"):
+	if not pocket in [ "release", "updates", "security", "proposed" ]:
+		raise NameError(pocket)
+	cmd = "rmadison --arch=source " + package
+	version = None
+	stdout = Popen(cmd, shell=True, stdout=PIPE).stdout
+	for line in stdout:
+		fields = line.strip().split("|")
+		rpocket = fields[2].strip().split("/")[0]
+		if rpocket == series and not version:
+			version = fields[1].strip()
+			continue
+		if rpocket == series + "-" + pocket:
+			version = fields[1].strip()
+			break
+	stdout.close()
+	
+	return version
 

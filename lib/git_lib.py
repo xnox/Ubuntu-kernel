@@ -55,3 +55,17 @@ def GitGetCurrentBranch():
 
 	return branch
 
+#------------------------------------------------------------------------------
+# Return a list of files found
+#
+# opt: String containing git ls-files arguments
+#------------------------------------------------------------------------------
+def GitListFiles(opt):
+	list = []
+	stdout = Popen("git ls-files " + opt, shell=True, stdout=PIPE).stdout
+	for line in stdout:
+		list.append(line.strip())
+	stdout.close()
+
+	return list
+
