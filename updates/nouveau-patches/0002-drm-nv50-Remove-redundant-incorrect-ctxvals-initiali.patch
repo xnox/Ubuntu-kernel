@@ -1,0 +1,39 @@
+From 53293422072043e897c2d755d4139b5e4d5532de Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marcin=20Ko=C5=9Bcielnicki?= <koriakin@0x04.net>
+Date: Thu, 25 Feb 2010 18:53:37 +0000
+Subject: [PATCH] drm/nv50: Remove redundant/incorrect ctxvals initialisation.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+11c/004 offset corresponds to PGRAPH reg 0x400828, and is initialised
+earlier anyway by both our ctxprog generator and blob ctxvals. It's
+actually incorrect with the generator, since we use different layout
+on pre-NVA0.
+
+Signed-off-by: Marcin Kościelnicki <koriakin@0x04.net>
+Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
+(cherry-picked from 53293422072043e897c2d755d4139b5e4d5532de)
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ drivers/gpu/drm/nouveau/nv50_graph.c |    4 ----
+ 1 files changed, 0 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/gpu/drm/nouveau/nv50_graph.c b/drivers/gpu/drm/nouveau/nv50_graph.c
+index 857a096..08d87b7 100644
+--- a/drivers/gpu/drm/nouveau/nv50_graph.c
++++ b/drivers/gpu/drm/nouveau/nv50_graph.c
+@@ -229,10 +229,6 @@ nv50_graph_create_context(struct nouveau_channel *chan)
+ 		nouveau_grctx_vals_load(dev, ctx);
+ 	}
+ 	nv_wo32(dev, ctx, 0x00000/4, chan->ramin->instance >> 12);
+-	if ((dev_priv->chipset & 0xf0) == 0xa0)
+-		nv_wo32(dev, ctx, 0x00004/4, 0x00000000);
+-	else
+-		nv_wo32(dev, ctx, 0x0011c/4, 0x00000000);
+ 	dev_priv->engine.instmem.finish_access(dev);
+ 
+ 	return 0;
+-- 
+1.7.0
+
