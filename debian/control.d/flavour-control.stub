@@ -61,6 +61,6 @@ Description: Ubuntu supplied Linux modules for version PKGVER NOUVEAU snapshots.
  snapshots from linux mainline.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-alsa-FLAVOUR meta-package, which will ensure that upgrades work
+ the linux-backports-modules-nouveau-FLAVOUR meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
