@@ -131,7 +131,7 @@ function GetHostEnvironment()
 		return 1
 	fi
 	if [ "${HOSTARCH}" != "${ARCH}" ]; then
-		CHROOT="${DIST}-${ARCH}"
+		CHROOT="$(echo ${DIST}|cut -d- -f1)-${ARCH}"
 		if [ "${HOSTARCH}" = "amd64" ]; then
 			case ${ARCH} in
 				i386|lpia)
@@ -145,9 +145,9 @@ function GetHostEnvironment()
 		fi
 	else
 		if [ "${HOSTARCH}" = "amd64" ]; then
-			CHROOT="${DIST}-${ARCH}"
+			CHROOT="$(echo ${DIST}|cut -d- -f1)-${ARCH}"
 		else
-			CHROOT="${DIST}"
+			CHROOT="$(echo ${DIST}|cut -d- -f1)"
 		fi
 	fi
 	if [ "${CHROOTCMD}" = "schroot" ]; then
@@ -166,7 +166,7 @@ function GetHostEnvironment()
 		AUTO="-a"
 	fi
 	export HOSTARCH CHROOTCMD FAKEROOT BASE ARCHS HOST CHROOT
-	export BASEDIR="$BASE/$DIST-$ARCH"
+	export BASEDIR="$BASE/$(echo ${DIST}|cut -d- -f1)-$ARCH"
 	export BUILDING="$BASEDIR/build-status"
 	case $BUILDTARGET in
 		kernel)
