@@ -18,5 +18,5 @@ cp -rp "$drm"/*.[hc] nouveau/
 cp -rp "$src"/include/drm/ nouveau/include
 
 mkdir nouveau/include/linux
-cp /home/apw/git2/linux-2.6/include/linux/list_sort.h nouveau/include/linux/
-cp /home/apw/git2/linux-2.6/lib/list_sort.c nouveau/
+cp "$src"/include/linux/list_sort.h nouveau/include/linux/
+cp "$src"/lib/list_sort.c nouveau/
