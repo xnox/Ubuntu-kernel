@@ -20,3 +20,18 @@ cp -rp "$src"/include/drm/ nouveau/include
 mkdir nouveau/include/linux
 cp "$src"/include/linux/list_sort.h nouveau/include/linux/
 cp "$src"/lib/list_sort.c nouveau/
+
+# Work which update we are doing.
+version=`(cd "$src"; git describe HEAD)`
+git add nouveau
+git commit -s -m "UBUNTU: update Nouveau to $version"
+
+# Fix up the patches so that they can be applied.
+mkdir -p tmp-nouveau-patches
+for i in nouveau-patches/*
+do
+	sed -e 's@/drivers/gpu/drm/nouveau/@/updates/nouveau/nouveau/@g' \
+		 < "$i" >"tmp-$i"
+done
+git am -C1 tmp-nouveau-patches/*
+rm -rf tmp-nouveau-patches
