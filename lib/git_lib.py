@@ -69,3 +69,19 @@ def GitListFiles(opt):
 
 	return list
 
+#------------------------------------------------------------------------------
+# Get the SHA1 (or None on error) of the commit that is the common base for
+# both given branches.
+#------------------------------------------------------------------------------
+def GitMergeBase(branch1, branch2):
+	base = None
+	cmd = "git merge-base {0} {1}".format(branch1, branch2)
+	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+	for line in p.stdout:
+		base = line.strip()
+		break
+	p.stdout.close()
+	p.stderr.close()
+
+	return base
+
