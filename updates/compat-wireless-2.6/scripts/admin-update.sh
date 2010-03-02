@@ -203,7 +203,7 @@ DIR="drivers/net"
 echo > $DIR/Makefile
 cp $GIT_TREE/$DIR/b44.[ch] $DIR
 # Not yet
-#echo "obj-\$(CONFIG_B44) += b44.o" >> $DIR/Makefile
+echo "obj-\$(CONFIG_B44) += b44.o" >> $DIR/Makefile
 echo "obj-\$(CONFIG_ATL1) += atlx/" >> $DIR/Makefile
 echo "obj-\$(CONFIG_ATL2) += atlx/" >> $DIR/Makefile
 echo "obj-\$(CONFIG_ATL1E) += atl1e/" >> $DIR/Makefile
@@ -242,9 +242,15 @@ patchRefresh() {
 		mkdir patches.orig
 	fi
 
-	mv -u patches/* patches.orig/
+	export QUILT_PATCHES=$1
+
+	mv -u $1/* patches.orig/
 
 	for i in patches.orig/*.patch; do
+		if [ ! -f "$i" ]; then
+			echo -e "${RED}No patches found in $1${NORMAL}"
+			break;
+		fi
 		echo -e "${GREEN}Refresh backport patch${NORMAL}: ${BLUE}$i${NORMAL}"
 		quilt import $i
 		quilt push -f
@@ -253,29 +259,36 @@ patchRefresh() {
 			echo -e "${RED}Refreshing $i failed${NORMAL}, update it"
 			echo -e "use ${CYAN}quilt edit [filename]${NORMAL} to apply the failed part manually"
 			echo -e "use ${CYAN}quilt refresh${NORMAL} after the files are corrected and rerun this script"
-			cp patches.orig/README patches/README
+			cp patches.orig/README $1/README
 			exit $RET
 		fi
 		QUILT_DIFF_OPTS="-p" quilt refresh -p ab --no-index --no-timestamp
 	done
 	quilt pop -a
 
-	cp patches.orig/README patches/README
-	rm -rf patches.orig .pc patches/series
+	cp patches.orig/README $1/README
+	rm -rf patches.orig .pc $1/series
 }
 
 if [[ "$1" = "refresh" ]]; then
-	patchRefresh
+	patchRefresh patches
+	patchRefresh linux-next-cherry-picks
 fi
 
-for i in patches/*.patch; do
-	echo -e "${GREEN}Applying backport patch${NORMAL}: ${BLUE}$i${NORMAL}"
-	patch -p1 -N -t < $i
-	RET=$?
-	if [[ $RET -ne 0 ]]; then
-		echo -e "${RED}Patching $i failed${NORMAL}, update it"
-		exit $RET
+for dir in patches linux-next-cherry-picks; do
+	FOUND=$(find $dir/ -name \*.patch | wc -l)
+	if [ $FOUND -eq 0 ]; then
+		continue
 	fi
+	for i in $dir/*.patch; do
+		echo -e "${GREEN}Applying backport patch${NORMAL}: ${BLUE}$i${NORMAL}"
+		patch -p1 -N -t < $i
+		RET=$?
+		if [[ $RET -ne 0 ]]; then
+			echo -e "${RED}Patching $i failed${NORMAL}, update it"
+			exit $RET
+		fi
+	done
 done
 
 DIR="$PWD"

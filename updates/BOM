@@ -2,7 +2,7 @@ ALSA:
 ftp://ftp.alsa-project.org/pub/driver/alsa-driver-1.0.22.tar.bz2
 
 WIRELESS:
-http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.33/compat-wireless-2.6.33-rc5.tar.bz2
+http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.33/compat-wireless-2.6.33.tar.bz2
 
 NOUVEAU:
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git master

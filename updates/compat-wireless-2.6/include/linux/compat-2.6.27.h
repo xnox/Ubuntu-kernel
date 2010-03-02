@@ -5,6 +5,7 @@
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27))
 
+#include <linux/debugfs.h>
 #include <linux/list.h>
 #include <linux/pci.h>
 #include <linux/dma-mapping.h>
@@ -187,6 +188,37 @@ static inline int iwe_stream_lcp_len(struct iw_request_info *info)
 #endif
 	return IW_EV_LCP_LEN;
 }
+
+#ifdef CONFIG_ARM
+
+/*
+ * The caller asks to handle a range between offset and offset + size,
+ * but we process a larger range from 0 to offset + size due to lack of
+ * offset support.
+ */
+
+static inline void dma_sync_single_range_for_cpu(struct device *dev,
+		dma_addr_t handle, unsigned long offset, size_t size,
+		enum dma_data_direction dir)
+{
+	dma_sync_single_for_cpu(dev, handle, offset + size, dir);
+}
+
+static inline void dma_sync_single_range_for_device(struct device *dev,
+		dma_addr_t handle, unsigned long offset, size_t size,
+		enum dma_data_direction dir)
+{
+	dma_sync_single_for_device(dev, handle, offset + size, dir);
+}
+
+#endif /* arm */
+
+#if defined(CONFIG_DEBUG_FS)
+void debugfs_remove_recursive(struct dentry *dentry);
+#else
+static inline void debugfs_remove_recursive(struct dentry *dentry)
+{ }
+#endif
 
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27)) */
 
