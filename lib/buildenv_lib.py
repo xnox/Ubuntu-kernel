@@ -10,6 +10,10 @@
 import sys, os
 from subprocess import *
 
+#------------------------------------------------------------------------------
+# Get the directory where the debian config files are located. Usually this is
+# "./debian", but for abstracted debian it might be an alternate directory.
+#------------------------------------------------------------------------------
 def GetDebianDir():
 	cmd = "debian/rules printdebian"
 	debdir = "debian"
@@ -17,10 +21,21 @@ def GetDebianDir():
 	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 	for line in p.stdout:
 		debdir = line.strip()
+		break
 	p.stdout.close()
 	p.stderr.close()
 
 	return debdir
 
-print GetDebianDir()
-print sys.path
+def GetPackageName():
+	changelog = os.path.join(GetDebianDir(), "changelog")
+	pkg = None
+
+	try:
+		file = open(changelog, "r")
+		pkg = file.readline().strip().split()[0]
+		file.close()
+	except:
+		pass
+
+	return pkg
