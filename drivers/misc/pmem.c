@@ -795,7 +795,7 @@ void flush_pmem_file(struct file *file, unsigned long offset, unsigned long len)
 
 	id = get_id(file);
 	data = (struct pmem_data *)file->private_data;
-	if (!pmem[id].cached)
+	if (!pmem[id].cached || file->f_flags & O_SYNC)
 		return;
 
 	down_read(&data->sem);
@@ -1148,6 +1148,16 @@ static long pmem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		DLOG("connect\n");
 		return pmem_connect(arg, file);
 		break;
+	case PMEM_CACHE_FLUSH:
+		{
+			struct pmem_region region;
+			DLOG("flush\n");
+			if (copy_from_user(&region, (void __user *)arg,
+					   sizeof(struct pmem_region)))
+				return -EFAULT;
+			flush_pmem_file(file, region.offset, region.len);
+			break;
+		}
 	default:
 		if (pmem[id].ioctl)
 			return pmem[id].ioctl(file, cmd, arg);
