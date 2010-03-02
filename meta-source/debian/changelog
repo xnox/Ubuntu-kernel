@@ -1,3 +1,9 @@
+linux-meta (2.6.32.15.16) lucid; urgency=low
+
+  * Lucid ABI 15
+
+ -- Andy Whitcroft <apw@canonical.com>  Tue, 02 Mar 2010 11:07:13 +0000
+
 linux-meta (2.6.32.14.15) lucid; urgency=low
 
   * Reinstate transitional packages for i386 moving upgraders from -server
