@@ -1,0 +1,162 @@
+#!/usr/bin/python
+#==============================================================================
+# Author: Stefan Bader <stefan.bader@canonical.com>
+# Copyright (C) 2010
+#
+# This script is distributed under the terms and conditions of the GNU General
+# Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
+# for details.
+#==============================================================================
+import sys, os, optparse
+
+#------------------------------------------------------------------------------
+# Libraries shared by all kteam-tools will be found here (../lib)
+#------------------------------------------------------------------------------
+cvescripts_common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
+cvescripts_common_lib = os.path.dirname(cvescripts_common_lib)
+cvescripts_common_lib = os.path.join(cvescripts_common_lib, "lib")
+sys.path.insert(0, cvescripts_common_lib)
+
+from buildenv_lib import *
+from git_lib import *
+
+usage = "Usage: %prog [<options>] <branch> <target>"
+parser = optparse.OptionParser(usage)
+dsc = "Rebase a branch\n\n"
+dsc += "<branch> is the branch which should get rebased\n"
+parser.set_description(dsc)
+parser.add_option("--continue", action="store_true", default=False,
+	dest="continue_rebase", help="continue a disrupted rebase")
+(opts, args) = parser.parse_args()
+
+#------------------------------------------------------------------------------
+# First argument is the branch which should get rebased.
+#------------------------------------------------------------------------------
+try:
+	branch = args[0]
+except:
+	parser.print_usage()
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# Is that branch valid?
+#------------------------------------------------------------------------------
+if not branch in GitListBranches():
+	print "Branch invalid!"
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# FIXME: For the moment the branch must be UNRELEASED. Change this when there
+#        is code to the automatic retrieval of the ABI files.
+#------------------------------------------------------------------------------
+if GetPackageInfo(branch)[2] != "UNRELEASED":
+	print "E: The branch is not UNRELEASED!"
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# Second argument is the target (a tag or a sha1).
+#------------------------------------------------------------------------------
+try:
+	target = args[1]
+except:
+	parser.print_usage()
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# Is the target a valid object?
+#------------------------------------------------------------------------------
+try:
+	msg = GitLog(opts="-1 --pretty='%s' " + target)[0]
+except:
+	print "E: The target", target, "seems to be no valid object!"
+	sys.exit(1)
+
+if not msg.startswith("UBUNTU: Ubuntu-"):
+	print "E: The target", target, "does not seem to point to a release!"
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# Remember what version (from the changelog) should be the target.
+#------------------------------------------------------------------------------
+TargetVersion = GetPackageInfo(target)[1]
+TargetPocket = GetPackageInfo(target)[2]
+
+#------------------------------------------------------------------------------
+# Working tree must be clean
+#------------------------------------------------------------------------------
+if opts.continue_rebase == False:
+	print "Checking working tree ...",
+	if GitListFiles(opts="--others --modified") != []:
+		print "NOT CLEAN!"
+		sys.exit(1)
+	print "OK"
+
+
+	#----------------------------------------------------------------------
+	# First switch to the branch (to get of auto-tmp-rebase for sure).
+	#----------------------------------------------------------------------
+	print "Switching to", branch
+	os.system("git checkout " + branch)
+
+	#----------------------------------------------------------------------
+	# Then create the temporary rebase branch (delete it if already present)
+	#----------------------------------------------------------------------
+	if "auto-tmp-rebase" in GitListBranches():
+		os.system("git branch -D auto-tmp-rebase")
+	print "Creating temporary auto-tmp-rebase"
+	os.system("git checkout -b auto-tmp-rebase " + branch)
+
+#------------------------------------------------------------------------------
+# Get the sha1 of the last common commit with the master branch and remember
+# the version number of it. Then rebase the temporary branch on top of the
+# target release.
+#------------------------------------------------------------------------------
+MergeBase = GitMergeBase("origin/master", branch)
+BaseVersion = GetPackageInfo(sha1=MergeBase)[1]
+
+if opts.continue_rebase == False:
+	print "Rebasing from", BaseVersion, "to", TargetVersion
+	cmd = "git rebase --onto Ubuntu-{0} {1}".format(TargetVersion,
+		MergeBase)
+else:
+	cmd = "git rebase --continue"
+os.system(cmd)
+
+#------------------------------------------------------------------------------
+# Insert the changes of the master tree between the last base and the new
+# one. If the ABI changed between those, bump the ABI for the branch, too.
+#------------------------------------------------------------------------------
+debdir = GetDebianDir()
+changelog = os.path.join(debdir, "changelog")
+
+print "Inserting changes..."
+cmd = "./{0}/scripts/misc/insert-ubuntu-changes ".format(debdir)
+cmd += "{0} {1} ".format(changelog, BaseVersion.split("-")[1])
+cmd += TargetVersion.split("-")[1]
+os.system(cmd)
+
+if VersionGetABI(BaseVersion) != VersionGetABI(TargetVersion):
+	BumpABI()
+
+print "Committing changes..."
+cmd = "git add {0}".format(changelog)
+os.system(cmd)
+cmd = "git commit -s -m \"UBUNTU: Rebased to {0}\"".format(TargetVersion)
+os.system(cmd)
+
+#------------------------------------------------------------------------------
+# FIXME: Everything below can go into maint-close-release
+#------------------------------------------------------------------------------
+print "Inserting changes to close release..."
+PkgVersion = GetPackageInfo()[1]
+os.system("./debian/rules insertchanges")
+ModifyChangelog(SetRelease=TargetPocket)
+cmd = "git add {0}".format(changelog)
+os.system(cmd)
+tagname = "Ubuntu-{0}".format(PkgVersion)
+print "Committing release..."
+cmd = "git commit -s -m \"UBUNTU: {0}\"".format(tagname)
+os.system(cmd)
+print "Tagging release..."
+os.system("git tag -s -f -m {0} {0}".format(tagname))
+os.system("git clean -d -x -f")

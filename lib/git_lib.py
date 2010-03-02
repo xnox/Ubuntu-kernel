@@ -42,6 +42,26 @@ def GitListBranches(remote=False):
 	return list
 
 #------------------------------------------------------------------------------
+# Returns a string containing the output of "git describe".
+#
+# opts can contain additional options.
+#------------------------------------------------------------------------------
+def GitDescribe(object, opts=None):
+	info = None
+	cmd = "git describe"
+	if opts:
+		cmd += " " + opts
+	cmd += " " + object
+	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+	for line in p.stdout:
+		info = line.rstrip()
+		break
+	p.stdout.close()
+	p.stderr.close()
+
+	return info
+
+#------------------------------------------------------------------------------
 # Returns the name of the currently checked out branch or None
 #------------------------------------------------------------------------------
 def GitGetCurrentBranch():
@@ -58,13 +78,16 @@ def GitGetCurrentBranch():
 #------------------------------------------------------------------------------
 # Return a list of files found
 #
-# opt: String containing git ls-files arguments
+# opts: String containing git ls-files arguments
 #------------------------------------------------------------------------------
-def GitListFiles(opt):
+def GitListFiles(opts=None):
 	list = []
-	stdout = Popen("git ls-files " + opt, shell=True, stdout=PIPE).stdout
+	cmd = "git ls-files"
+	if opts:
+		cmd += " " + opts
+	stdout = Popen(cmd, shell=True, stdout=PIPE).stdout
 	for line in stdout:
-		list.append(line.strip())
+		list.append(line.rstrip())
 	stdout.close()
 
 	return list
@@ -84,4 +107,42 @@ def GitMergeBase(branch1, branch2):
 	p.stderr.close()
 
 	return base
+
+#------------------------------------------------------------------------------
+# Return a list containing the output of "git log"
+#
+# opts: string containing arguments (can be empty)
+#------------------------------------------------------------------------------
+def GitLog(opts=None):
+	list = []
+	cmd = "git log"
+	if opts and opts != "":
+		cmd += " " + opts
+	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+	for line in p.stdout:
+		list.append(line.rstrip())
+	p.stdout.close()
+	p.stderr.close()
+
+	return list
+	
+#------------------------------------------------------------------------------
+# Read and return the contents of a file in git. Default is the currently
+# active branch. This can be overridden by providing a sha1.
+#------------------------------------------------------------------------------
+def GitCatFile(file, sha1=None):
+	lines = []
+
+	if sha1:
+		cmd = "git show {0}:{1}".format(sha1, file)
+	else:
+		cmd = "git show HEAD:{0}".format(file)
+
+	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+	for line in p.stdout:
+		lines.append(line)
+	p.stdout.close()
+	p.stderr.close()
+
+	return lines
 
