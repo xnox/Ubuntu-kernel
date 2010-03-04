@@ -4,4 +4,3 @@
 
 include $(src)/.config
 
-obj-y += nouveau/

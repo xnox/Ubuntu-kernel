@@ -15,6 +15,7 @@ printenv:
 	@echo "prev_revision     = $(prev_revision)"
 	@echo "abinum            = $(abinum)"
 	@echo "flavours          = $(flavours)"
+	@echo "do_nouveau_package   = $(do_nouveau_package)"
 
 COMPAT_KDIR=/lib/modules/$(release)-$(abinum)-$(target_flavour)
 make_compat = make $(conc_level) KLIB=$(COMPAT_KDIR) MADWIFI=
@@ -29,7 +30,10 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
+ifeq ($(do_nouveau_package),true)
 	$(builddir)/build-$*/MUNGE-NOUVEAU
+	echo "obj-y += nouveau/" >>$(builddir)/build-$*/Makefile
+endif
 	mv $(builddir)/build-$*/MUNGE-CW $(builddir)/build-$*/compat-wireless-2.6
 	cd $(builddir)/build-$*/compat-wireless-2.6 && ./MUNGE-CW
 	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
@@ -113,6 +117,7 @@ install-%: $(stampdir)/stamp-build-%
 	#
 	# Build the NOUVEAU snapshot packages.
 	#
+ifeq ($(do_nouveau_package),true)
 	install -d $(nvmoddir)/updates/nouveau
 	find $(builddir)/build-$*/nouveau -type f -name '*.ko' | while read f ; do cp -v $${f} $(nvmoddir)/updates/nouveau/`basename $${f}`; done
 
@@ -124,6 +129,7 @@ install-%: $(stampdir)/stamp-build-%
 	       debian/control-scripts/$$script > $(nvpkgdir)/DEBIAN/$$script;	\
 	  chmod 755 $(nvpkgdir)/DEBIAN/$$script;					\
 	done
+endif
 
 	#
 	# The flavour specific headers package
@@ -145,15 +151,18 @@ install-%: $(stampdir)/stamp-build-%
 	dh_md5sums -p$(lbmhdrpkg)
 	dh_builddeb -p$(lbmhdrpkg)
 
+package_list =
+package_list += linux-backports-modules-wireless-$(release)-$(abinum)-$*
+package_list += linux-backports-modules-alsa-$(release)-$(abinum)-$*
+ifeq ($(do_nouveau_package),true)
+package_list += linux-backports-modules-nouveau-$(release)-$(abinum)-$*
+endif
 
-binary-modules-%: wirelessimg = linux-backports-modules-wireless-$(release)-$(abinum)-$*
-binary-modules-%: alsaimg = linux-backports-modules-alsa-$(release)-$(abinum)-$*
-binary-modules-%: nouveauimg = linux-backports-modules-nouveau-$(release)-$(abinum)-$*
 binary-modules-%: install-%
 	dh_testdir
 	dh_testroot
 
-	for i in $(wirelessimg) $(alsaimg) $(nouveauimg) ; do \
+	for i in $(package_list) ; do \
 	dh_installchangelogs -p$$i; \
 	dh_installdocs -p$$i; \
 	dh_compress -p$$i; \

@@ -25,6 +25,14 @@ builddir	:= $(CURDIR)/debian/build
 stampdir	:= $(CURDIR)/debian/stamps
 udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 
+# package selectors
+do_nouveau_package = $(shell grep -c '^Package: linux-backports-modules-nouveau' $(CURDIR)/debian/control.d/flavour-control.stub)
+ifeq ($(do_nouveau_package),1)
+do_nouveau_package = true
+else
+do_nouveau_package = false
+endif
+
 #
 # This is a way to support some external variables. A good example is
 # a local setup for ccache and distcc See LOCAL_ENV_CC and
