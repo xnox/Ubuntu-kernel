@@ -49,18 +49,18 @@ Description: Ubuntu supplied Linux modules for version PKGVER ALSA snapshots.
  the linux-backports-modules-alsa-FLAVOUR meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
-Package: linux-backports-modules-nouveau-PKGVER-ABINUM-FLAVOUR
-Architecture: ARCH
-Section: SECTION_IMAGE
-Priority: optional
-Provides:
-Depends: linux-image-PKGVER-ABINUM-FLAVOUR
-Pre-Depends: dpkg (>= 1.10.24)
-Description: Ubuntu supplied Linux modules for version PKGVER NOUVEAU snapshots.
- This package contains modules supplied by Ubuntu for Linux PKGVER NOUVEAU
- snapshots from linux mainline.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-nouveau-FLAVOUR meta-package, which will ensure that upgrades work
- correctly, and that supporting packages are also installed.
+#Package: linux-backports-modules-nouveau-PKGVER-ABINUM-FLAVOUR
+#Architecture: ARCH
+#Section: SECTION_IMAGE
+#Priority: optional
+#Provides:
+#Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+#Pre-Depends: dpkg (>= 1.10.24)
+#Description: Ubuntu supplied Linux modules for version PKGVER NOUVEAU snapshots.
+# This package contains modules supplied by Ubuntu for Linux PKGVER NOUVEAU
+# snapshots from linux mainline.
+# .
+# You likely do not want to install this package directly. Instead, install
+# the linux-backports-modules-nouveau-FLAVOUR meta-package, which will ensure that upgrades work
+# correctly, and that supporting packages are also installed.
 
