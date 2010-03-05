@@ -19,3 +19,4 @@ sed -i 's/#define.*IWL3945_FW_PRE.*\"iwlwifi-3945-\"/#define IWL3945_FW_PRE \"lb
 sed -i 's/#define.*IWL4965_FW_PRE.*\"iwlwifi-4965-\"/#define IWL4965_FW_PRE \"lbm-iwlwifi-4965-\"/' drivers/net/wireless/iwlwifi/iwl-4965.c
 sed -i 's/#define.*IWL5000_FW_PRE.*\"iwlwifi-5000-\"/#define IWL5000_FW_PRE \"lbm-iwlwifi-5000-\"/' drivers/net/wireless/iwlwifi/iwl-5000.c
 sed -i 's/#define.*IWL5150_FW_PRE.*\"iwlwifi-5150-\"/#define IWL5150_FW_PRE \"lbm-iwlwifi-5150-\"/' drivers/net/wireless/iwlwifi/iwl-5000.c
+sed -i 's/#define.*IWL6000_FW_PRE.*\"iwlwifi-6000-\"/#define IWL6000_FW_PRE \"lbm-iwlwifi-6000-\"/' drivers/net/wireless/iwlwifi/iwl-6000.c

@@ -80,6 +80,7 @@ install-%: $(stampdir)/stamp-build-%
 	cp firmware/iwlwifi/*3945*/*.ucode $(firmdir)/lbm-iwlwifi-3945-2.ucode
 	cp firmware/iwlwifi/*5000*/*.ucode $(firmdir)/lbm-iwlwifi-5000-1.ucode
 	cp firmware/iwlwifi/*5150*/*.ucode $(firmdir)/lbm-iwlwifi-5150-1.ucode
+	cp firmware/iwlwifi/*6000*/*.ucode $(firmdir)/lbm-iwlwifi-6000-4.ucode
 
 	#
 	# Build the compat wireless packages.
