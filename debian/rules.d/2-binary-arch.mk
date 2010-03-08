@@ -18,7 +18,11 @@ printenv:
 	@echo "do_nouveau_package   = $(do_nouveau_package)"
 
 COMPAT_KDIR=/lib/modules/$(release)-$(abinum)-$(target_flavour)
-make_compat = make $(conc_level) KLIB=$(COMPAT_KDIR) MADWIFI=
+make_compat = make $(conc_level)
+make_compat += KLIB=$(COMPAT_KDIR) KLIB_BUILD=$(COMPAT_KDIR)/build
+make_compat += MADWIFI=
+make_compat += OLD_IWL=
+
 ifneq ($(LOCAL_ENV_CC),)
 make_compat += CC=$(LOCAL_ENV_CC) DISTCC_HOSTS=$(LOCAL_ENV_DISTCC_HOSTS)
 endif
@@ -56,6 +60,7 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 # Install the finished build
 install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-wireless-$(release)-$(abinum)-$*
 install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
+install-%: cwsrcdir = $(CURDIR)/updates/compat-wireless-2.6
 install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: nvpkgdir = $(CURDIR)/debian/linux-backports-modules-nouveau-$(release)-$(abinum)-$*
@@ -97,6 +102,14 @@ install-%: $(stampdir)/stamp-build-%
 	       debian/control-scripts/$$script > $(cwpkgdir)/DEBIAN/$$script;	\
 	  chmod 755 $(cwpkgdir)/DEBIAN/$$script;					\
 	done
+
+	#
+	# the compat_firmware_class has its own rules.
+	#
+	install -d $(cwpkgdir)/lib/udev
+	install --mode=0755 $(cwsrcdir)/udev/ubuntu/compat_firmware.sh $(cwpkgdir)/lib/udev
+	install -d $(cwpkgdir)/lib/udev/rules.d
+	install --mode=0644 $(cwsrcdir)/udev/ubuntu/50-compat_firmware.rules $(cwpkgdir)/lib/udev/rules.d
 
 	#
 	# Build the ALSA snapshot packages.
