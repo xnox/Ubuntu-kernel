@@ -1,9 +1,9 @@
-linux-meta (2.6.32.16.16) UNRELEASED; urgency=low
+linux-meta (2.6.32.16.16) lucid; urgency=low
 
   * drop the nouveau meta packages
   * Lucid ABI 16
 
- -- Andy Whitcroft <apw@canonical.com>  Tue, 02 Mar 2010 11:07:13 +0000
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 08 Mar 2010 09:16:23 +0000
 
 linux-meta (2.6.32.15.16) lucid; urgency=low
 
