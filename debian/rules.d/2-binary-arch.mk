@@ -34,8 +34,6 @@ ifeq ($(do_nouveau_package),true)
 	$(builddir)/build-$*/MUNGE-NOUVEAU
 	echo "obj-y += nouveau/" >>$(builddir)/build-$*/Makefile
 endif
-	mv $(builddir)/build-$*/MUNGE-CW $(builddir)/build-$*/compat-wireless-2.6
-	cd $(builddir)/build-$*/compat-wireless-2.6 && ./MUNGE-CW
 	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
