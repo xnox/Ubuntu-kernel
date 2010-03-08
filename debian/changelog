@@ -1,3 +1,18 @@
+linux-backports-modules-2.6.32 (2.6.32-16.7) lucid; urgency=low
+
+  [ Tim Gardner ]
+
+  * Added preempt flavour
+    - LP: #527459
+  * udev looks for firmware in /lib/firmware/updates/`uname -r` first.
+    This allows the installation of compat firmware without having to
+    change files names.
+  * compat wireless has its own compat firmware class driver
+    This requires a new script and udev rule. Fixes firmware
+    load problems since 2.6.32-15.5.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 08 Mar 2010 12:07:39 -0700
+
 linux-backports-modules-2.6.32 (2.6.32-16.6) lucid; urgency=low
 
   [ Andy Whitcroft ]
