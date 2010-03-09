@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.32.16.11) lucid; urgency=low
+
+  * Bump ABI
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Tue, 09 Mar 2010 22:34:10 +1100
+
 linux-ports-meta (2.6.32.15.10) lucid; urgency=low
 
   * Bump ABI
