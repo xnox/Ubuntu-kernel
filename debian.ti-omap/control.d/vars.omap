@@ -1,0 +1,9 @@
+arch="armel"
+supported="omap"
+desc="OMAP3-based systems"
+target="Beagleboard"
+bootloader=""
+provides=""
+section_image="universe/admin"
+do_debug="Yes"
+

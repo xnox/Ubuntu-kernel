@@ -1,0 +1,5 @@
+linux-ti-omap (2.6.33-500.1) karmic; urgency=low
+
+  * Initial release of a 2.6.33-based OMAP kernel
+
+ -- Amit Kucheria <amit.kucheria@canonical.com>  Wed, 10 Mar 2010 02:28:15 +0200
