@@ -2,6 +2,8 @@ linux-ti-omap (2.6.33-500.1) lucid; urgency=low
 
   [ Amit Kucheria ]
 
+  [ Amit Kucheria ]
+
   * Initial release of a 2.6.33-based OMAP kernel
   * UBUNTU: [Upstream] Fix omap 1-wire driver compilation
   * UBUNTU: ubuntu: AppArmor -- update to mainline 2010-03-04
