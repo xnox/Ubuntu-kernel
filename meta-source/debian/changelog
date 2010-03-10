@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.32.202.5) lucid; urgency=low
+
+  * Lucid 2.6.32 ABI 202
+
+ -- Andy Whitcroft <apw@canonical.com>  Wed, 10 Mar 2010 13:18:52 +0000
+
 linux-meta-mvl-dove (2.6.32.201.4) lucid; urgency=low
 
   * Lucid 2.6.32 ABI 201
