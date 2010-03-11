@@ -1,3 +1,11 @@
+linux-meta-qcm-msm (2.6.31.800.1) lucid; urgency=low
+
+  * Initial version of qcm-msm branch.
+  * Lucid ABI 800
+    -LP: #531981
+
+ -- Andy Whitcroft <apw@canonical.com>  Thu, 11 Mar 2010 12:20:10 +0000
+
 linux-meta (2.6.32.16.17) lucid; urgency=low
 
   * add backport modules support for preempt flavour

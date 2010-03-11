@@ -1,0 +1,54 @@
+Package: linux-headers-st1-5
+Architecture: armel
+Section: devel
+Priority: optional
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-st1-5
+Description: Linux kernel headers -- st1-5
+ This package will always depend on the latest st1-5 kernel headers
+ available.
+
+Package: linux-image-st1-5
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-st1-5, linux-firmware
+Description: Linux kernel image -- st1-5
+ This package will always depend on the latest st1-5 kernel image
+ available.
+
+Package: linux-st1-5
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-st1-5 (= ${binary:Version})
+Description: Complete Linux kernel -- st1-5
+ This package will always depend on the latest complete st1-5 Linux kernel
+ available.
+
+#Package: linux-backports-modules-headers-RELEASE_NAME-st1-5
+#Architecture: armel
+#Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-st1-5
+#Description: Backported driver headers for st1-5 kernel image
+# This empty package allows people to keep their backported module
+# headers up-to-date when upgrading their Linux kernel.
+#
+#Package: linux-backports-modules-wireless-RELEASE_NAME-st1-5
+#Architecture: armel
+#Depends: ${misc:Depends}, linux-backports-modules-wireless-${kernel-abi-version}-st1-5
+#Description: Backported wireless drivers for st1-5 kernel image
+# This empty package allows people to keep their backported wireless modules
+# up-to-date when upgrading their Linux kernel.
+#
+#Package: linux-backports-modules-alsa-RELEASE_NAME-st1-5
+#Architecture: armel
+#Depends: ${misc:Depends}, linux-backports-modules-alsa-${kernel-abi-version}-st1-5
+#Description: Backported drivers for alsa-driver snapshot.
+# This empty package allows people to keep their alsa-driver snapshot
+# up-to-date when upgrading their Linux kernel.
+#
+#Package: linux-backports-modules-nouveau-RELEASE_NAME-st1-5
+#Architecture: armel
+#Depends: ${misc:Depends}, linux-backports-modules-nouveau-${kernel-abi-version}-st1-5
+#Description: Backported drivers for Nouveau.
+# This empty package allows people to keep their Nouveau driver
+# up-to-date when upgrading their Linux kernel.
