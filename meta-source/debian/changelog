@@ -1,3 +1,11 @@
+linux-meta-ti-omap (2.6.33.500.1) lucid; urgency=low
+
+  * Initial version of to-omap branch.
+    - LP: #536742
+  * Lucid ABI 500
+
+ -- Andy Whitcroft <apw@canonical.com>  Thu, 11 Mar 2010 12:20:10 +0000
+
 linux-meta (2.6.32.16.17) lucid; urgency=low
 
   * add backport modules support for preempt flavour

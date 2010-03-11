@@ -1,0 +1,54 @@
+Package: linux-headers-omap
+Architecture: armel
+Section: devel
+Priority: optional
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-omap
+Description: Linux kernel headers -- omap
+ This package will always depend on the latest omap kernel headers
+ available.
+
+Package: linux-image-omap
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-omap, linux-firmware
+Description: Linux kernel image -- omap
+ This package will always depend on the latest omap kernel image
+ available.
+
+Package: linux-omap
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-omap (= ${binary:Version})
+Description: Complete Linux kernel -- omap
+ This package will always depend on the latest complete omap Linux kernel
+ available.
+
+#Package: linux-backports-modules-headers-RELEASE_NAME-omap
+#Architecture: armel
+#Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-omap
+#Description: Backported driver headers for omap kernel image
+# This empty package allows people to keep their backported module
+# headers up-to-date when upgrading their Linux kernel.
+#
+#Package: linux-backports-modules-wireless-RELEASE_NAME-omap
+#Architecture: armel
+#Depends: ${misc:Depends}, linux-backports-modules-wireless-${kernel-abi-version}-omap
+#Description: Backported wireless drivers for omap kernel image
+# This empty package allows people to keep their backported wireless modules
+# up-to-date when upgrading their Linux kernel.
+#
+#Package: linux-backports-modules-alsa-RELEASE_NAME-omap
+#Architecture: armel
+#Depends: ${misc:Depends}, linux-backports-modules-alsa-${kernel-abi-version}-omap
+#Description: Backported drivers for alsa-driver snapshot.
+# This empty package allows people to keep their alsa-driver snapshot
+# up-to-date when upgrading their Linux kernel.
+#
+#Package: linux-backports-modules-nouveau-RELEASE_NAME-omap
+#Architecture: armel
+#Depends: ${misc:Depends}, linux-backports-modules-nouveau-${kernel-abi-version}-omap
+#Description: Backported drivers for Nouveau.
+# This empty package allows people to keep their Nouveau driver
+# up-to-date when upgrading their Linux kernel.
