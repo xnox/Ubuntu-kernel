@@ -145,25 +145,18 @@ git commit -a -m "default configs"
 #
 # Disable the ABI, module, and aliases checks.
 #
-cat - <<EOM >$debian/scripts/abi-check
+for i in debian/scripts/*-check debian.master/scripts/*-check
+do
+	if [ -f "$i" ]; then
+		cat - <<EOM >"$i"
 #!/bin/sh
 exit 0
 EOM
-chmod 755 $debian/scripts/abi-check
+		chmod 755 "$i"
+	fi
+done
 
-cat - <<EOM >$debian/scripts/module-check
-#!/bin/sh
-exit 0
-EOM
-chmod 755 $debian/scripts/module-check
-
-cat - <<EOM >$debian/tests/check-aliases
-#!/bin/sh
-exit 0
-EOM
-chmod 755 $debian/tests/check-aliases
-
-git commit -a -m "fix up abi checks, module checks, check aliases"
+git commit -a -m "fix up build checks"
 
 #
 # Build the source package.
