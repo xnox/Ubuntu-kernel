@@ -1,0 +1,57 @@
+From 9d2c6210c2e69fd482dd380ff2c66d59a98fe012 Mon Sep 17 00:00:00 2001
+From: Kernel PPA uploader dude <kernel-ppa@zinc.canonical.com>
+Date: Wed, 19 Aug 2009 12:42:16 +0100
+Subject: [PATCH] UBUNTU: allow us to build default configs for automated builds
+
+Allow us to request an automated update to the configs taking whatever
+the default answers are.  This allows us to automate builds of mainline
+kernels using our build infrastructure and configs.
+
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ debian.master/rules.d/1-maintainer.mk   |    5 +++++
+ debian.master/scripts/misc/kernelconfig |    5 +++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/debian.master/rules.d/1-maintainer.mk b/debian.master/rules.d/1-maintainer.mk
+index 9965408..58a43b6 100644
+--- a/debian.master/rules.d/1-maintainer.mk
++++ b/debian.master/rules.d/1-maintainer.mk
+@@ -41,6 +41,11 @@ updateconfigs:
+ 	$(SHELL) $(DEBIAN)/scripts/misc/kernelconfig oldconfig
+ 	rm -rf build
+ 
++defaultconfigs:
++	dh_testdir;
++	yes "" | $(SHELL) $(DEBIAN)/scripts/misc/kernelconfig defaultconfig
++	rm -rf build
++
+ editconfigs:
+ 	dh_testdir
+ 	$(SHELL) $(DEBIAN)/scripts/misc/kernelconfig editconfig
+diff --git a/debian.master/scripts/misc/kernelconfig b/debian.master/scripts/misc/kernelconfig
+index d0ef3a1..e5a8555 100755
+--- a/debian.master/scripts/misc/kernelconfig
++++ b/debian.master/scripts/misc/kernelconfig
+@@ -14,6 +14,7 @@ fi
+ mode=${1:?"Usage: $0 [oldconfig|editconfig]"}
+ case "$mode" in
+     oldconfig)  ;; # All is good
++    defaultconfig)  ;; # All is good
+     editconfig) ;; # All is good
+     genconfig)  ;; # All is good
+     *) echo "$0 called with invalid mode" 1>&2
+@@ -86,6 +87,10 @@ for arch in $archs; do
+ 				# Weed out incorrect config parameters
+ 				echo "* Run silentoldconfig on $arch/$config ..."
+ 				make O=`pwd`/build ARCH=$kernarch silentoldconfig ;;
++			    defaultconfig)
++				# Weed out incorrect config parameters
++				echo "* Run oldconfig on $arch/$config ..."
++				make O=`pwd`/build ARCH=$kernarch oldconfig ;;
+ 			    editconfig)
+ 				# Interactively edit config parameters
+ 				echo " * Run menuconfig on $arch/$config... Press a key."
+-- 
+1.5.4.3
+

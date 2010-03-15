@@ -1,0 +1,28 @@
+From 1f7703216e8f5c305a0a170fe7a5786ed442fe10 Mon Sep 17 00:00:00 2001
+From: Kernel PPA uploader dude <kernel-ppa@zinc.canonical.com>
+Date: Wed, 19 Aug 2009 12:44:10 +0100
+Subject: [PATCH] mainline build: allow us to force things on in the config
+
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ debian.master/scripts/misc/kernelconfig |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/debian.master/scripts/misc/kernelconfig b/debian.master/scripts/misc/kernelconfig
+index e5a8555..18894a1 100755
+--- a/debian.master/scripts/misc/kernelconfig
++++ b/debian.master/scripts/misc/kernelconfig
+@@ -73,6 +73,10 @@ for arch in $archs; do
+ 				cat $archconfdir/config.common.$arch >> "$fullconf"
+ 			fi
+ 			cat "$archconfdir/$config" >>"$fullconf"
++			if [ -f "$BUILD_CONFIG_OVERRIDE" ]; then
++				echo "Adding $BUILD_CONFIG_OVERRIDE to $config ... "
++				cat "$BUILD_CONFIG_OVERRIDE" >>"$fullconf"
++			fi
+ 			;;
+ 		esac
+ 	done
+-- 
+1.5.4.3
+
