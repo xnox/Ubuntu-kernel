@@ -433,6 +433,9 @@ static void pit_ioport_read(struct kvm_io_device *this,
 	struct kvm_kpit_channel_state *s;
 
 	addr &= KVM_PIT_CHANNEL_MASK;
+	if (addr == 3)
+		return;
+
 	s = &pit_state->channels[addr];
 
 	mutex_lock(&pit_state->lock);

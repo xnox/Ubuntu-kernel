@@ -5369,6 +5369,7 @@ EXPORT_SYMBOL vmlinux 0xa9b571cb	write_cache_pages
 EXPORT_SYMBOL vmlinux 0xa9bd2676	__vmalloc
 EXPORT_SYMBOL vmlinux 0xa9c6804d	pcibios_set_irq_routing
 EXPORT_SYMBOL vmlinux 0xa9fcf31d	wait_for_completion_interruptible
+EXPORT_SYMBOL vmlinux 0xa9fdaf7a	setup_new_exec
 EXPORT_SYMBOL vmlinux 0xaa3754f1	generic_show_options
 EXPORT_SYMBOL vmlinux 0xaa444bac	km_new_mapping
 EXPORT_SYMBOL vmlinux 0xaa5fd589	scsi_report_bus_reset

@@ -3649,6 +3649,7 @@ EXPORT_SYMBOL vmlinux 0x4acd93d3	release_resource
 EXPORT_SYMBOL vmlinux 0x4afc6652	tty_throttle
 EXPORT_SYMBOL vmlinux 0x4b21f1dd	is_container_init
 EXPORT_SYMBOL vmlinux 0x4b26457f	per_cpu__kstat
+EXPORT_SYMBOL vmlinux 0x4b5680cb	setup_new_exec
 EXPORT_SYMBOL vmlinux 0x4bbc3e5f	pm_flags
 EXPORT_SYMBOL vmlinux 0x4c1182cb	bitmap_scnprintf
 EXPORT_SYMBOL vmlinux 0x4c1dfd10	jbd2_journal_get_create_access

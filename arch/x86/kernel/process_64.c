@@ -525,6 +525,18 @@ void set_personality_64bit(void)
 	current->personality &= ~READ_IMPLIES_EXEC;
 }
 
+void set_personality_ia32(void)
+{
+	/* inherit personality from parent */
+
+	/* Make sure to be in 32bit mode */
+	set_thread_flag(TIF_IA32);
+	current->personality |= force_personality32;
+
+	/* Prepare the first "return" to user space */
+	current_thread_info()->status |= TS_COMPAT;
+}
+
 asmlinkage long
 sys_clone(unsigned long clone_flags, unsigned long newsp,
 	  void __user *parent_tid, void __user *child_tid, struct pt_regs *regs)

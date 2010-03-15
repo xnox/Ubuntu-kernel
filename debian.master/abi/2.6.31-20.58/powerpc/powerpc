@@ -5028,6 +5028,7 @@ EXPORT_SYMBOL vmlinux 0xc40ef14e	posix_lock_file
 EXPORT_SYMBOL vmlinux 0xc43a8a6d	fifo_create_dflt
 EXPORT_SYMBOL vmlinux 0xc4466baf	directly_mappable_cdev_bdi
 EXPORT_SYMBOL vmlinux 0xc458b2ea	gen_pool_add
+EXPORT_SYMBOL vmlinux 0xc496194b	setup_new_exec
 EXPORT_SYMBOL vmlinux 0xc49775ab	dma_pool_destroy
 EXPORT_SYMBOL vmlinux 0xc499ae1e	kstrdup
 EXPORT_SYMBOL vmlinux 0xc4c7709a	unlock_new_inode

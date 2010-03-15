@@ -4626,6 +4626,7 @@ EXPORT_SYMBOL vmlinux 0xd63d6819	drm_core_get_map_ofs
 EXPORT_SYMBOL vmlinux 0xd6a78d08	smp_call_function_single
 EXPORT_SYMBOL vmlinux 0xd6ad9765	add_disk
 EXPORT_SYMBOL vmlinux 0xd6b253b0	pci_scan_bus_parented
+EXPORT_SYMBOL vmlinux 0xd6d25231	pci_fixup_cardbus
 EXPORT_SYMBOL vmlinux 0xd6d68c6b	vm_stat
 EXPORT_SYMBOL vmlinux 0xd6e2ed3c	user_path_at
 EXPORT_SYMBOL vmlinux 0xd6edc8c8	bio_integrity_endio

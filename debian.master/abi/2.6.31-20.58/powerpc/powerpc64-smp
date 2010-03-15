@@ -5084,6 +5084,7 @@ EXPORT_SYMBOL vmlinux 0xc2e587d1	reset_devices
 EXPORT_SYMBOL vmlinux 0xc2ea63cb	sk_stream_error
 EXPORT_SYMBOL vmlinux 0xc2fb9ee1	_lv1_shutdown_logical_partition
 EXPORT_SYMBOL vmlinux 0xc314c3d2	__cputime_jiffies_factor
+EXPORT_SYMBOL vmlinux 0xc319934f	setup_new_exec
 EXPORT_SYMBOL vmlinux 0xc33f6f4c	on_each_cpu
 EXPORT_SYMBOL vmlinux 0xc34dca96	ps3_sb_event_receive_port_setup
 EXPORT_SYMBOL vmlinux 0xc3649ef2	linkwatch_fire_event

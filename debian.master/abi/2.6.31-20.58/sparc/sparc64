@@ -4790,6 +4790,7 @@ EXPORT_SYMBOL vmlinux 0xe80767cb	journal_create
 EXPORT_SYMBOL vmlinux 0xe84e9697	tcp_proc_register
 EXPORT_SYMBOL vmlinux 0xe86e5fc1	downgrade_write
 EXPORT_SYMBOL vmlinux 0xe86fb6f3	proc_symlink
+EXPORT_SYMBOL vmlinux 0xe879b53b	pci_fixup_cardbus
 EXPORT_SYMBOL vmlinux 0xe87d0f6e	cancel_dirty_page
 EXPORT_SYMBOL vmlinux 0xe87f6e60	drm_idlelock_take
 EXPORT_SYMBOL vmlinux 0xe887fcdc	i2c_use_client

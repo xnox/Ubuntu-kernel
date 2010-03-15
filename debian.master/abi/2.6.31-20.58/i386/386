@@ -6221,6 +6221,7 @@ EXPORT_SYMBOL vmlinux 0xea918aec	vlan_dev_vlan_id
 EXPORT_SYMBOL vmlinux 0xeaab19af	key_instantiate_and_link
 EXPORT_SYMBOL vmlinux 0xeade3afb	put_disk
 EXPORT_SYMBOL vmlinux 0xeae3dfd6	__const_udelay
+EXPORT_SYMBOL vmlinux 0xeb041dac	setup_new_exec
 EXPORT_SYMBOL vmlinux 0xeb1ddfa7	blk_queue_make_request
 EXPORT_SYMBOL vmlinux 0xeb1fabf6	interruptible_sleep_on
 EXPORT_SYMBOL vmlinux 0xeb6c7ed6	dcache_dir_open

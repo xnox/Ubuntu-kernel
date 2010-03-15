@@ -6125,6 +6125,7 @@ EXPORT_SYMBOL vmlinux 0xe487f002	bdi_destroy
 EXPORT_SYMBOL vmlinux 0xe48f3039	ida_get_new_above
 EXPORT_SYMBOL vmlinux 0xe4c1df3e	_read_lock_bh
 EXPORT_SYMBOL vmlinux 0xe4f1695e	cookie_check_timestamp
+EXPORT_SYMBOL vmlinux 0xe51eb502	setup_new_exec
 EXPORT_SYMBOL vmlinux 0xe523ad75	synchronize_irq
 EXPORT_SYMBOL vmlinux 0xe52b25d8	bioset_create
 EXPORT_SYMBOL vmlinux 0xe5342b43	md_set_array_sectors

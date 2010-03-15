@@ -4236,6 +4236,7 @@ EXPORT_SYMBOL vmlinux 0x636a5691	acpi_register_ioapic
 EXPORT_SYMBOL vmlinux 0x63727b77	remove_inode_hash
 EXPORT_SYMBOL vmlinux 0x63744fb1	vlan_dev_vlan_id
 EXPORT_SYMBOL vmlinux 0x6386c431	cap_netlink_recv
+EXPORT_SYMBOL vmlinux 0x63acb6e5	setup_new_exec
 EXPORT_SYMBOL vmlinux 0x63bbf7d5	pid_task
 EXPORT_SYMBOL vmlinux 0x63d48c62	i2c_smbus_read_word_data
 EXPORT_SYMBOL vmlinux 0x63dafc9d	eth_validate_addr

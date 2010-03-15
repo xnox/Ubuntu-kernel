@@ -3728,6 +3728,7 @@ EXPORT_SYMBOL vmlinux 0x5315f750	__wake_up_bit
 EXPORT_SYMBOL vmlinux 0x5328c24f	sock_no_getname
 EXPORT_SYMBOL vmlinux 0x53326531	mempool_alloc_pages
 EXPORT_SYMBOL vmlinux 0x533e5e28	write_cache_pages
+EXPORT_SYMBOL vmlinux 0x533f3edc	setup_new_exec
 EXPORT_SYMBOL vmlinux 0x535946f9	neigh_table_init
 EXPORT_SYMBOL vmlinux 0x5365e5c9	pci_enable_bridges
 EXPORT_SYMBOL vmlinux 0x53840dad	__tracepoint_kmem_cache_alloc
