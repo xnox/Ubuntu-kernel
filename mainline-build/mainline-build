@@ -93,18 +93,18 @@ if [ "$date" != "" ]; then
 	email=":"
 	"$here/mainline-build-crack" "$commit" "$master_release" 999 2>&1 | \
 		tee "$master_tree/BUILD.LOG"
-	html="$HOME/public_html/mainline/handmade/$date"
+	html="$HOME/public_html/mainline/handmade/$date-$master_release"
 elif [ "$abi" != "" ]; then
 	email=":"
 	"$here/mainline-build-crack" "$commit" "$master_release" "$abi" 2>&1 | \
 		tee "$master_tree/BUILD.LOG"
 	date="`date +%F`"
-	html="$HOME/public_html/mainline/$base/$date"
+	html="$HOME/public_html/mainline/$base/$date-$master_release"
 	ln -nsf "$date" "$HOME/public_html/mainline/$base/current"
 else
 	"$here/mainline-build-one" "$commit" "$master_release" 2>&1 | \
 		tee "$master_tree/BUILD.LOG"
-	html="$HOME/public_html/mainline/$commit"
+	html="$HOME/public_html/mainline/$commit-$master_release"
 fi
 
 mkdir -p "$html"
