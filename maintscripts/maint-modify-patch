@@ -1,0 +1,185 @@
+#!/usr/bin/python
+#=============================================================================
+# Script to add buglinks, acks, and signed-offs to a batch of patch files.
+#
+# Config file: ~/.maintscripts.cfg
+#
+# Config format:
+# [Default]
+# signer: <alias>
+#
+# [MailAliases]
+# <alias>: <name> "<" <email address> ">"
+#=============================================================================
+
+import sys, os, ConfigParser
+from getopt import *
+
+buglink		= "http://bugs.launchpad.net/bugs/"
+
+#
+# Read the mail aliases and the signer alias from the config file
+#
+MailAliases = {}
+config = ConfigParser.ConfigParser()
+config.read(os.path.expanduser('~/.maintscripts.cfg'))
+for key, val in config.items("MailAliases"):
+	MailAliases[key] = val
+try:
+	myself = MailAliases[config.get("Default", "signer")]
+except:
+	print "EE: Invalid alias defined as signer in config!"
+	sys.exit(1)
+else:
+	pass
+
+
+#-----------------------------------------------------------------------------
+# This function will open a file and write the modified contents to a new
+# file. This gets renamed into the original file as a last step.
+#-----------------------------------------------------------------------------
+def ModifyFile(file):
+	sobkeys = [ "Signed-off-by", "Acked-by", "Tested-by" ]
+
+	try:
+		infile = open(file, "r")
+	except:
+		print "EE: File " + infile + " not found!"
+		sys.exit(1)
+	else:
+		pass
+
+	try:
+		outfile = open(file + ".new", "w")
+	except:
+		print "EE: Could not open output file"
+		infile.close()
+		sys.exit(1)
+	else:
+		pass
+
+	sobblock = 0
+	bugblock = 0
+	lastsob  = ""
+	for line in infile:
+		key = line.strip().split(": ")
+
+		#-------------------------------------------------------------
+		# Write the BugLink lines directly after the Subject line.
+		# Add an empty line after that block (if there is not already
+		# one).
+		#-------------------------------------------------------------
+		if key[0] == "Subject" and bugline != "":
+			outfile.write(line)
+			bugblock = 1
+			continue
+		if bugblock == 1:
+			outfile.write(line)
+			# Wait for the first empty line after the subject
+			if line.strip() == "":
+				bugblock = 2
+			continue
+		if bugblock == 2:
+			# Hold off until after already present BugLinks
+			if key[0] == "BugLink":
+				outfile.write(line)
+				continue
+			outfile.write(bugline + "\n")
+			# There should be a blank line before the other stuff
+			if line.strip() != "":
+				outfile.write("\n")
+			bugblock = 3
+
+		#-------------------------------------------------------------
+		# Wait for a block which looks like the signed off section of
+		# the patch. Then go forward to the "---" which marks the end
+		# of it and insert the new signed-off-by at this position (if
+		# the last line is not the same as the new one.
+		#-------------------------------------------------------------
+		if sobblock == 0:
+			outfile.write(line)
+			if key[0] in sobkeys:
+				sobblock = 1
+			continue
+		if sobblock == 1:
+			if line.strip() == "---":
+				if newsob != "" and lastsob != newsob:
+					outfile.write(newsob + "\n")
+				sobblock = 2
+			else:
+				lastsob = line.strip()
+			outfile.write(line)
+			continue
+
+		#-------------------------------------------------------------
+		# If not in any other block, just write out the input file.
+		#-------------------------------------------------------------
+		outfile.write(line)
+
+	infile.close()
+	outfile.close()
+	os.rename(file + ".new", file)
+
+def PrintHelp(cmd):
+	cmd = os.path.basename(cmd)
+	print "Usage: " + cmd + " --bug=<bugnr> <file> ..."
+	print "       " + cmd + " --ack=<alias> <file> ..."
+	print "       " + cmd + " --sign <file> ..."
+	print "       " + cmd + " --list-aliases"
+
+#-----------------------------------------------------------------------------
+# Evaluate the command options
+#-----------------------------------------------------------------------------
+longopts = [ "list-aliases", "sign", "ack=", "bug=", "help" ]
+shortopts = "a:b:hs"
+newsob = ""
+bugline = ""
+options, sys.argv = gnu_getopt(sys.argv, shortopts, longopts)
+for opt, val in options:
+	if opt in [ "-a", "--ack" ]:
+		if newsob != "":
+			print "EE: Only one sob change per run allowed!"
+			sys.exit(1)
+		if val in MailAliases:
+			newsob = "Acked-by: " + MailAliases[val]
+		else:
+			print "EE: %s is not a valid alias" % val
+			sys.exit(1)
+	elif opt in [ "-b", "--bug" ]:
+		if val[0] < "0" or val[0] > "9":
+			print "EE: %s in not a number" % val
+			sys.exit(1)
+		bugline = "BugLink: " + buglink + val
+	elif opt in [ "-h", "--help" ]:
+		PrintHelp(sys.argv[0])
+		sys.exit(0)
+	elif opt in [ "-s", "--sign" ]:
+		if newsob != "":
+			print "EE: Only one sob change per run allowed!"
+			sys.exit(1)
+		newsob = "Signed-off-by: " + myself
+	elif opt in [ "--list-aliases" ]:
+		print "[MailAliases]"
+		for name in MailAliases:
+			print name + ": " + MailAliases[name]
+		print "\n[Signer]\n" + myself
+		sys.exit(0)
+	else:
+		print "WW: " + opt + " is unimplemented"
+
+#-----------------------------------------------------------------------------
+# If no argument was given, treat this as request for help.
+#-----------------------------------------------------------------------------
+if len(sys.argv) < 2:
+	PrintHelp(sys.argv[0])
+	sys.exit(0)
+
+#-----------------------------------------------------------------------------
+# Otherwise run the modifications on all the files provided.
+#-----------------------------------------------------------------------------
+for i in sys.argv:
+	if i == sys.argv[0]:
+		continue
+	if newsob != "" or bugline != "":
+		ModifyFile(i)
+

@@ -1,3 +1,5 @@
+doc:
+	Contains documentation or example config files.
 git-compare:
 	Takes a git commit (SHA1) and will display the patch and the whole
 	context of the files changed by the patch, using meld.
@@ -13,3 +15,6 @@ maint-make-bug-branch:
 	The branch is based on a version uploaded and is automtically named
 	and prepared (creating a special version in the changelog) for test
 	patch application.
+maint-modify-patch:
+	Can be used to mass modify patch files (add bug links, acks and
+	signing)
