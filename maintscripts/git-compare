@@ -1,0 +1,28 @@
+#!/bin/bash
+
+if [ "$#" -lt 1 -o "$#" -gt 2 ]; then
+	echo "Usage: $0 <from sha1> <to sha1>" 1>&2
+	echo "Usage: $0 <to sha1>" 1>&2
+	exit 1
+fi
+from="$1"
+to="$2"
+if [ "$#" -eq 1 ]; then
+	to="$from"
+	from="$from^"
+fi
+
+A="/tmp/A.$$"
+B="/tmp/B.$$"
+git log -p "$from..$to" >$A
+>$B
+git diff-tree -r "$from" "$to" | \
+while read omode nmode ohash nhash type name
+do
+	echo "--- $name ---" >>$A
+	git cat-file -p $ohash >>$A
+	echo "--- $name ---" >>$B
+	git cat-file -p $nhash >>$B
+done
+meld $A $B
+rm $A $B

@@ -3,3 +3,8 @@ maint-make-bug-branch:
 	The branch is based on a version uploaded and is automtically named
 	and prepared (creating a special version in the changelog) for test
 	patch application.
+git-compare:
+	Takes a git commit (SHA1) and will display the patch and the whole
+	context of the files changed by the patch, using meld.
+git-compare-all:
+	Takes a git range and then calls git-compare:

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# The inputs to this script is a range
+# of SHA1 IDs, or a set of labels. It compares the differences
+# between each difference.
+
+if [ "$#" -ne 2 ]
+then
+	echo $0 '<from sha1> <to sha1>'
+	exit 1
+fi
+
+git log --pretty=oneline --reverse $1..$2 | while read sha1 log
+do
+	##git show $sha1 | less
+	git-compare $sha1
+done
+
