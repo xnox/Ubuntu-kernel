@@ -1,0 +1,169 @@
+#!/usr/bin/python
+#==============================================================================
+# Helper script to get a range of git commits reviewd.
+#
+# Depends: meld, gvim, git-compare
+#==============================================================================
+import os, sys
+from getopt import *
+from subprocess import *
+
+def PrintHelp(cmd):
+	cmd = os.path.basename(cmd)
+	print "Usage: " + cmd + "<filename> <git range>"
+
+class Patch:
+	sha = ""
+	Author = ""
+	Subject = ""
+	Comment = ""
+
+def ParseLog(input):
+	patches = []
+	p = Patch()
+	for line in input:
+		if line[0:7] == "commit ":
+			if p.sha != "":
+				patches.append(p)
+			p = Patch()
+			p.sha = line.split(" ")[1].strip()
+			continue
+		if line[0:8] == "Author: ":
+			p.Author = line[8:].strip()
+			continue
+		if p.Subject == "":
+			if line[0:4] == "    " and len(line) > 4:
+				p.Subject = line[4:].strip()	
+			continue
+		if line.strip() != "":
+			p.Comment += line
+	if p.sha != "":
+		patches.append(p)
+
+	return patches
+
+def ParseGitLog(range):
+	cmd = "git log --reverse --pretty=short " + range
+
+	pipe = Popen(cmd, shell=True, bufsize=1, stdout=PIPE).stdout
+	patches = ParseLog(pipe)
+	pipe.close()
+
+	return patches
+
+def Progress(cur, tot):
+	s = "{0} of {1} done ({2}%)".format(cur, tot, cur*100/tot)
+
+	return s
+
+if len(sys.argv) < 3:
+	PrintHelp(sys.argv[0])
+	sys.exit(0)
+
+# Try reading the current content of the review file
+ReviewList = []
+ReviewFile = sys.argv[1]
+try:
+	file = open(ReviewFile, "r")
+except:
+	pass
+else:
+	sys.stderr.write("II: Evaluating current review file...\n")
+	ReviewList = ParseLog(file)
+	file.close()
+
+sys.stderr.write("II: Evaluating git log...\n")
+GitList = ParseGitLog(sys.argv[2])
+
+#------------------------------------------------------------------------------
+# Go through all patches exported from git and try to find the same subject in
+# the list extracted from the review file. If one is found, then remove it
+# from the review list and copy the comment over into the git list.
+# Otherwise its a new one and it gets marked as such.
+#------------------------------------------------------------------------------
+NumberNew   = 0
+NumberDone  = 0
+NewComment  = "# Type: NEW\n"
+for p1 in GitList:
+	found = 0
+	for p2 in ReviewList:
+		if p1.Subject == p2.Subject:
+			if p2.Comment != "" and p2.Comment != NewComment:
+				NumberDone += 1
+			p1.Comment = p2.Comment
+			ReviewList.remove(p2)
+			found = 1
+			break
+	if found == 0:
+		NumberNew += 1
+		p1.Comment = NewComment
+
+#------------------------------------------------------------------------------
+# Any patches which still are in the review list must have been dropped since
+# the last time the patchset has been imported.
+#------------------------------------------------------------------------------
+for p1 in ReviewList:
+	if p1.Comment != "":
+		NumberDone +=1
+	p1.Comment += "# Was dropped since the last review\n"
+	GitList.append(p1)
+NumberTotal = len(GitList)
+
+print "{0} new, {1} dropped".format(NumberNew, len(ReviewList))
+print
+
+#------------------------------------------------------------------------------
+# When the file given as review file exists, then make a backup of that before
+# proceeding.
+#------------------------------------------------------------------------------
+try:
+	file = open(ReviewFile, "r")
+except:
+	pass
+else:
+	file.close()
+	BackupFile = ReviewFile + ".bak"
+	print "II: {0} ==> {1}".format(ReviewFile, BackupFile)
+	try:
+		os.rename(ReviewFile, BackupFile)
+	except:
+		sys.stderr.write("EE: Could not create backup\n")
+		sys.exit(1)
+	else:
+		pass
+
+#------------------------------------------------------------------------------
+# Backup succeeded, now create the review file fresh from the collected data.
+#------------------------------------------------------------------------------
+try:
+	file = open(ReviewFile, "w")
+except:
+	sys.stderr.write("EE: Cannot create review file!\n")
+	sys.exit(1)
+else:
+	for p1 in GitList:
+		file.write("commit " + p1.sha + "\n")
+		file.write("Author: " + p1.Author + "\n\n")
+		file.write("    " + p1.Subject + "\n\n")
+		if p1.Comment != "":
+			file.write(p1.Comment + "\n")
+	file.close()
+	os.system("gvim " + ReviewFile + " 2>/dev/null 1>&2 &")
+
+#------------------------------------------------------------------------------
+# Now go through all the new and uncommented entries and call git-compare for
+# them.
+#------------------------------------------------------------------------------
+for p1 in GitList:
+	if p1.Comment == "" or p1.Comment == NewComment:
+		print Progress(NumberDone, NumberTotal)
+		print "About to show: " + p1.Subject[:60]
+		print "(C)ontinue, (q)uit? ",
+		line = sys.stdin.readline()
+		print "\b"
+		if line[0] == "q":
+			break
+		os.system("git-compare " + p1.sha)
+		NumberDone += 1
+print "done"
+
