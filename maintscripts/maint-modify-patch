@@ -124,13 +124,14 @@ def PrintHelp(cmd):
 	cmd = os.path.basename(cmd)
 	print "Usage: " + cmd + " --bug=<bugnr> <file> ..."
 	print "       " + cmd + " --ack=<alias> <file> ..."
+	print "       " + cmd + " --sob=<alias> <file> ..."
 	print "       " + cmd + " --sign <file> ..."
 	print "       " + cmd + " --list-aliases"
 
 #-----------------------------------------------------------------------------
 # Evaluate the command options
 #-----------------------------------------------------------------------------
-longopts = [ "list-aliases", "sign", "ack=", "bug=", "help" ]
+longopts = [ "list-aliases", "sign", "sob=", "ack=", "bug=", "help" ]
 shortopts = "a:b:hs"
 newsob = ""
 bugline = ""
@@ -142,6 +143,15 @@ for opt, val in options:
 			sys.exit(1)
 		if val in MailAliases:
 			newsob = "Acked-by: " + MailAliases[val]
+		else:
+			print "EE: %s is not a valid alias" % val
+			sys.exit(1)
+	elif opt in [ "--sob" ]:
+		if newsob != "":
+			print "EE: Only one sob change per run allowed!"
+			sys.exit(1)
+		if val in MailAliases:
+			newsob = "Signed-off-by: " + MailAliases[val]
 		else:
 			print "EE: %s is not a valid alias" % val
 			sys.exit(1)
