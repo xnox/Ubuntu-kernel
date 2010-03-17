@@ -44,7 +44,7 @@ def ModifyFile(file):
 	try:
 		infile = open(file, "r")
 	except:
-		print "EE: File " + infile + " not found!"
+		print "EE: File " + file + " not found!"
 		sys.exit(1)
 	else:
 		pass
