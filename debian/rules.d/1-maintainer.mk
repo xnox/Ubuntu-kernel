@@ -92,6 +92,14 @@ endif
 	@echo "bin package name  = $(bin_pkg_name)"
 	@echo "hdr package name  = $(hdrs_pkg_name)"
 	@echo "doc package name  = $(doc_pkg_name)"
+	@echo "do_doc_package            = $(do_doc_package)"
+	@echo "do_doc_package_content    = $(do_doc_package_content)"
+	@echo "do_source_package         = $(do_source_package)"
+	@echo "do_source_package_content = $(do_source_package_content)"
+	@echo "do_libc_dev_package       = $(do_libc_dev_package)"
+	@echo "do_common_headers_indep   = $(do_common_headers_indep)"
+	@echo "do_full_source            = $(do_full_source)"
+	@echo "do_tools                  = $(do_tools)"
 
 printchanges:
 	@baseCommit=$$(git log --pretty=format:'%H %s' | \

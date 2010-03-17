@@ -49,6 +49,9 @@ ifneq ($(PRINTSHAS),)
 ubuntu_log_opts += --print-shas
 endif
 
+# Get the kernels own extra version to be added to the release signature.
+extraversion=$(shell awk '/EXTRAVERSION =/ { print $$3 }' <Makefile)
+
 #
 # The debug packages are ginormous, so you probably want to skip
 # building them (as a developer).
@@ -86,7 +89,6 @@ stampdir	:= $(CURDIR)/debian/stamps
 # assumption that the binary package always starts with linux-image will never change.
 #
 bin_pkg_name=linux-image-$(abi_release)
-dbg_pkg_name=linux-image-debug-$(abi_release)
 hdrs_pkg_name=linux-headers-$(abi_release)
 #
 # The generation of content in the doc package depends on both 'AUTOBUILD=' and
@@ -95,6 +97,7 @@ hdrs_pkg_name=linux-headers-$(abi_release)
 # failures get sorted out. Finally, the doc package doesn't really need to be built
 # for developer testing (its kind of slow), so only do it if on a buildd.
 do_doc_package=true
+do_doc_package_content=true
 ifeq ($(wildcard /CurrentlyBuilding),)
 do_doc_package_content=false
 endif
@@ -105,8 +108,9 @@ doc_pkg_name=$(src_pkg_name)-doc
 # somewhat I/O intensive and utterly useless.
 #
 do_source_package=true
-ifneq ($(wildcard /CurrentlyBuilding),)
-do_linux_source_content=true
+do_source_package_content=true
+ifeq ($(wildcard /CurrentlyBuilding),)
+do_source_package_content=false
 endif
 
 # linux-libc-dev may not be needed, default to building it.
@@ -117,6 +121,14 @@ do_common_headers_indep=true
 
 # add a 'full source' mode
 do_full_source=false
+
+# build tools
+do_tools=false
+ifneq ($(wildcard $(CURDIR)/tools),)
+do_tools=true
+endif
+tools_pkg_name=$(src_pkg_name)-tools-$(abi_release)
+tools_common_pkg_name=$(src_pkg_name)-tools-common
 
 # Support parallel=<n> in DEB_BUILD_OPTIONS (see #209008)
 #

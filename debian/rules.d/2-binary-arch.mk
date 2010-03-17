@@ -21,11 +21,10 @@ $(stampdir)/stamp-prepare-tree-%: $(commonconfdir)/config.common.$(family) $(arc
 	touch $(builddir)/build-$*/ubuntu-build
 	[ "$(do_full_source)" != 'true' ] && true || \
 		rsync -a --exclude debian --exclude debian.master --exclude $(DEBIAN) * $(builddir)/build-$*
-	cat $^ | sed -e 's/.*CONFIG_VERSION_SIGNATURE.*/CONFIG_VERSION_SIGNATURE="Ubuntu $(release)-$(revision)-$*"/' > $(builddir)/build-$*/.config
+	cat $^ | sed -e 's/.*CONFIG_VERSION_SIGNATURE.*/CONFIG_VERSION_SIGNATURE="Ubuntu $(release)-$(revision)-$* $(release)$(extraversion)"/' > $(builddir)/build-$*/.config
 	find $(builddir)/build-$* -name "*.ko" | xargs rm -f
 	$(build_cd) $(kmake) $(build_O) silentoldconfig prepare scripts
 	touch $@
-
 
 # Do the actual build, including image and modules
 build-%: $(stampdir)/stamp-build-%
@@ -40,7 +39,7 @@ $(stampdir)/stamp-build-%: prepare-%
 # Install the finished build
 install-%: pkgdir = $(CURDIR)/debian/$(bin_pkg_name)-$*
 install-%: bindoc = $(pkgdir)/usr/share/doc/$(bin_pkg_name)-$*
-install-%: dbgpkgdir = $(CURDIR)/debian/$(dbg_pkg_name)-$*
+install-%: dbgpkgdir = $(CURDIR)/debian/$(bin_pkg_name)-$*-dbgsym
 install-%: basepkg = $(hdrs_pkg_name)
 install-%: hdrdir = $(CURDIR)/debian/$(basepkg)-$*/usr/src/$(basepkg)-$*
 install-%: target_flavour = $*
@@ -248,7 +247,7 @@ endif
 
 binary-%: pkgimg = $(bin_pkg_name)-$*
 binary-%: pkghdr = $(hdrs_pkg_name)-$*
-binary-%: dbgpkg = $(dbg_pkg_name)-$*
+binary-%: dbgpkg = $(bin_pkg_name)-$*-dbgsym
 binary-%: install-%
 	dh_testdir
 	dh_testroot
@@ -258,6 +257,7 @@ binary-%: install-%
 	dh_compress -p$(pkgimg)
 	dh_fixperms -p$(pkgimg)
 	dh_installdeb -p$(pkgimg)
+	dh_shlibdeps -p$(pkgimg)
 	dh_gencontrol -p$(pkgimg)
 	dh_md5sums -p$(pkgimg)
 	dh_builddeb -p$(pkgimg) -- -Zbzip2 -z9
@@ -319,7 +319,50 @@ endif
 $(stampdir)/stamp-flavours:
 	@echo $(flavours) > $@
 
-binary-debs: $(stampdir)/stamp-flavours $(addprefix binary-,$(flavours))
+#
+# per-architecture packages
+#
+$(stampdir)/stamp-prepare-perarch:
+	@echo "Preparing perarch ..."
+ifeq ($(do_tools),true)
+	install -d $(builddir)/tools-$*
+	for i in *; do ln -s $(CURDIR)/$$i $(builddir)/tools-$*/; done
+	rm $(builddir)/tools-$*/tools
+	rsync -a tools/ $(builddir)/tools-$*/tools/
+endif
+	touch $@
+
+$(stampdir)/stamp-build-perarch: prepare-perarch
+ifeq ($(do_tools),true)
+	cd $(builddir)/tools-$*/tools/perf && make
+endif
+	@touch $@
+
+install-perarch: toolspkgdir = $(CURDIR)/debian/$(tools_pkg_name)
+install-perarch: $(stampdir)/stamp-build-perarch
+	# Add the tools.
+ifeq ($(do_tools),true)
+	install -d $(toolspkgdir)/usr/bin
+	install -s -m755 $(builddir)/tools-$*/tools/perf/perf \
+		$(toolspkgdir)/usr/bin/perf_$(abi_release)
+endif
+
+binary-perarch: toolspkg = $(tools_pkg_name)
+binary-perarch: install-perarch
+	@# Empty for make to be happy
+ifeq ($(do_tools),true)
+	dh_installchangelogs -p$(toolspkg)
+	dh_installdocs -p$(toolspkg)
+	dh_compress -p$(toolspkg)
+	dh_fixperms -p$(toolspkg)
+	dh_shlibdeps -p$(toolspkg)
+	dh_installdeb -p$(toolspkg)
+	dh_gencontrol -p$(toolspkg)
+	dh_md5sums -p$(toolspkg)
+	dh_builddeb -p$(toolspkg)
+endif
+
+binary-debs: binary-perarch $(stampdir)/stamp-flavours $(addprefix binary-,$(flavours))
 
 build-arch:  $(addprefix build-,$(flavours))
 
