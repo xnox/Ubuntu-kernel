@@ -1,4 +1,4 @@
-libomap_notify = notify_driver.o notify.o drv_notify.o
+libomap_notify = notify_driver.o notify.o drv_notify.o plat/omap4_notify_setup.o
 
 
 
