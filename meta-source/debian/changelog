@@ -1,3 +1,9 @@
+linux-meta-ti-omap (2.6.33.500.2) lucid; urgency=low
+
+  * Makefile: Added -aarmel to the debuild commands
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 24 Mar 2010 11:32:19 +0100
+
 linux-meta-ti-omap (2.6.33.500.1) lucid; urgency=low
 
   * Initial version of to-omap branch.
