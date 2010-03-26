@@ -1,3 +1,11 @@
+linux-backports-modules-2.6.32 (2.6.32-18.8) lucid; urgency=low
+
+  [ Stefan Bader ]
+
+  * Bumping ABI to 18 to match kernel
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Fri, 26 Mar 2010 19:08:32 +0100
+
 linux-backports-modules-2.6.32 (2.6.32-16.7) lucid; urgency=low
 
   [ Tim Gardner ]
