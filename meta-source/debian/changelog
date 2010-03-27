@@ -1,3 +1,9 @@
+linux-meta-fsl-imx51 (2.6.31.606.7) lucid; urgency=low
+
+  * Lucid ABI 606
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Sat, 27 Mar 2010 10:15:51 +0100
+
 linux-meta-fsl-imx51 (2.6.31.605.6) lucid; urgency=low
 
   * Lucid ABI 605
