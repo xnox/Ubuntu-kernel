@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,6 +61,8 @@ static int __init au_cache_init(void)
 static void au_cache_fin(void)
 {
 	int i;
+
+	/* including AuCache_HNOTIFY */
 	for (i = 0; i < AuCache_Last; i++)
 		if (au_cachep[i]) {
 			kmem_cache_destroy(au_cachep[i]);
@@ -81,11 +83,6 @@ MODULE_AUTHOR("Junjiro R. Okajima <aufs-users@lists.sourceforge.net>");
 MODULE_DESCRIPTION(AUFS_NAME
 	" -- Advanced multi layered unification filesystem");
 MODULE_VERSION(AUFS_VERSION);
-
-/* it should be 'byte', but param_set_byte() prints it by "%c" */
-short aufs_nwkq = AUFS_NWKQ_DEF;
-MODULE_PARM_DESC(nwkq, "the number of workqueue thread, " AUFS_WKQ_NAME);
-module_param_named(nwkq, aufs_nwkq, short, S_IRUGO);
 
 /* this module parameter has no meaning when SYSFS is disabled */
 int sysaufs_brs = 1;
@@ -119,18 +116,13 @@ static int __init aufs_init(void)
 
 	sysaufs_brs_init();
 	au_debug_init();
-
-	err = -EINVAL;
-	if (unlikely(aufs_nwkq <= 0))
-		goto out;
-
 	err = sysaufs_init();
 	if (unlikely(err))
 		goto out;
 	err = au_wkq_init();
 	if (unlikely(err))
 		goto out_sysaufs;
-	err = au_hinotify_init();
+	err = au_hnotify_init();
 	if (unlikely(err))
 		goto out_wkq;
 	err = au_sysrq_init();
@@ -151,7 +143,7 @@ static int __init aufs_init(void)
  out_sysrq:
 	au_sysrq_fin();
  out_hin:
-	au_hinotify_fin();
+	au_hnotify_fin();
  out_wkq:
 	au_wkq_fin();
  out_sysaufs:
@@ -165,7 +157,7 @@ static void __exit aufs_exit(void)
 	unregister_filesystem(&aufs_fs_type);
 	au_cache_fin();
 	au_sysrq_fin();
-	au_hinotify_fin();
+	au_hnotify_fin();
 	au_wkq_fin();
 	sysaufs_fin();
 }

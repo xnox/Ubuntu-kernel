@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ void au_cpup_attr_timesizes(struct inode *inode)
 
 	h_inode = au_h_iptr(inode, au_ibstart(inode));
 	fsstack_copy_attr_times(inode, h_inode);
-	vfsub_copy_inode_size(inode, h_inode);
+	fsstack_copy_inode_size(inode, h_inode);
 }
 
 void au_cpup_attr_nlink(struct inode *inode, int force)
@@ -416,7 +416,7 @@ static int au_do_cpup_symlink(struct path *h_path, struct dentry *h_src,
 		goto out;
 
 	err = -ENOMEM;
-	sym = __getname();
+	sym = __getname_gfp(GFP_NOFS);
 	if (unlikely(!sym))
 		goto out;
 
@@ -912,6 +912,7 @@ int au_sio_cpup_wh(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
 		mutex_unlock(&h_inode->i_mutex);
 		mutex_lock_nested(&h_tmpdir->i_mutex, AuLsc_I_PARENT3);
 		mutex_lock_nested(&h_inode->i_mutex, AuLsc_I_CHILD);
+		/* todo: au_h_open_pre()? */
 	}
 
 	if (!au_test_h_perm_sio(h_tmpdir, MAY_EXEC | MAY_WRITE))
@@ -931,6 +932,7 @@ int au_sio_cpup_wh(struct dentry *dentry, aufs_bindex_t bdst, loff_t len,
 
 	if (h_orph) {
 		mutex_unlock(&h_tmpdir->i_mutex);
+		/* todo: au_h_open_post()? */
 		au_set_h_iptr(dir, bdst, NULL, 0);
 		au_set_h_iptr(dir, bdst, au_igrab(h_dir), /*flags*/0);
 		au_set_h_dptr(parent, bdst, NULL);

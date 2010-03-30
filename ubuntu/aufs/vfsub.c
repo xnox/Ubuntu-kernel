@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
  * sub-routines for VFS
  */
 
+#include <linux/file.h>
 #include <linux/ima.h>
 #include <linux/namei.h>
 #include <linux/security.h>
@@ -49,16 +50,49 @@ int vfsub_update_h_iattr(struct path *h_path, int *did)
 
 /* ---------------------------------------------------------------------- */
 
-struct file *vfsub_dentry_open(struct path *path, int flags,
-			       const struct cred *cred)
+static int au_conv_oflags(int flags)
+{
+	int mask = 0;
+
+#ifdef CONFIG_IMA
+	fmode_t fmode;
+
+	/* mask = MAY_OPEN; */
+	fmode = OPEN_FMODE(flags);
+	if (fmode & FMODE_READ)
+		mask |= MAY_READ;
+	if ((fmode & FMODE_WRITE)
+	    || (flags & O_TRUNC))
+		mask |= MAY_WRITE;
+	/*
+	 * if (flags & O_APPEND)
+	 *	mask |= MAY_APPEND;
+	 */
+	if (flags & vfsub_fmode_to_uint(FMODE_EXEC))
+		mask |= MAY_EXEC;
+
+	AuDbg("flags 0x%x, mask 0x%x\n", flags, mask);
+#endif
+
+	return mask;
+}
+
+struct file *vfsub_dentry_open(struct path *path, int flags)
 {
 	struct file *file;
+	int err;
 
-	file = dentry_open(path->dentry, path->mnt, flags, cred);
+	path_get(path);
+	file = dentry_open(path->dentry, path->mnt, flags, current_cred());
 	if (IS_ERR(file))
-		return file;
-	/* as NFSD does, just call ima_..._get() simply after dentry_open */
-	ima_counts_get(file);
+		goto out;
+
+	err = ima_file_check(file, au_conv_oflags(flags));
+	if (unlikely(err)) {
+		fput(file);
+		file = ERR_PTR(err);
+	}
+out:
 	return file;
 }
 
@@ -119,9 +153,12 @@ struct dentry *vfsub_lookup_hash(struct nameidata *nd)
 	IMustLock(nd->path.dentry->d_inode);
 
 	path.dentry = lookup_hash(nd);
-	if (!IS_ERR(path.dentry) && path.dentry->d_inode)
+	if (IS_ERR(path.dentry))
+		goto out;
+	if (path.dentry->d_inode)
 		vfsub_update_h_iattr(&path, /*did*/NULL); /*ignore*/
 
+ out:
 	AuTraceErrPtr(path.dentry);
 	return path.dentry;
 }
@@ -136,9 +173,9 @@ struct dentry *vfsub_lock_rename(struct dentry *d1, struct au_hinode *hdir1,
 	lockdep_off();
 	d = lock_rename(d1, d2);
 	lockdep_on();
-	au_hin_suspend(hdir1);
+	au_hn_suspend(hdir1);
 	if (hdir1 != hdir2)
-		au_hin_suspend(hdir2);
+		au_hn_suspend(hdir2);
 
 	return d;
 }
@@ -146,9 +183,9 @@ struct dentry *vfsub_lock_rename(struct dentry *d1, struct au_hinode *hdir1,
 void vfsub_unlock_rename(struct dentry *d1, struct au_hinode *hdir1,
 			 struct dentry *d2, struct au_hinode *hdir2)
 {
-	au_hin_resume(hdir1);
+	au_hn_resume(hdir1);
 	if (hdir1 != hdir2)
-		au_hin_resume(hdir2);
+		au_hn_resume(hdir2);
 	lockdep_off();
 	unlock_rename(d1, d2);
 	lockdep_on();

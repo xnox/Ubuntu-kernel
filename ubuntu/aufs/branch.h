@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ enum {AuBrWh_BASE, AuBrWh_PLINK, AuBrWh_ORPH, AuBrWh_Last};
 struct au_wbr {
 	struct au_rwsem		wbr_wh_rwsem;
 	struct dentry		*wbr_wh[AuBrWh_Last];
-	atomic_t 		wbr_wh_running;
+	atomic_t		wbr_wh_running;
 #define wbr_whbase		wbr_wh[AuBrWh_BASE]	/* whiteout base */
 #define wbr_plink		wbr_wh[AuBrWh_PLINK]	/* pseudo-link dir */
 #define wbr_orph		wbr_wh[AuBrWh_ORPH]	/* dir for orphans */
@@ -117,9 +117,9 @@ static inline int au_br_rdonly(struct au_branch *br)
 		? -EROFS : 0;
 }
 
-static inline int au_br_hinotifyable(int brperm __maybe_unused)
+static inline int au_br_hnotifyable(int brperm __maybe_unused)
 {
-#ifdef CONFIG_AUFS_HINOTIFY
+#ifdef CONFIG_AUFS_HNOTIFY
 	return brperm != AuBrPerm_RR && brperm != AuBrPerm_RRWH;
 #else
 	return 0;

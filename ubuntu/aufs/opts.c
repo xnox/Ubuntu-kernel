@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -202,17 +202,34 @@ const char *au_optstr_br_perm(int brperm)
 static match_table_t udbalevel = {
 	{AuOpt_UDBA_REVAL, "reval"},
 	{AuOpt_UDBA_NONE, "none"},
-#ifdef CONFIG_AUFS_HINOTIFY
-	{AuOpt_UDBA_HINOTIFY, "inotify"},
+#ifdef CONFIG_AUFS_HNOTIFY
+	{AuOpt_UDBA_HNOTIFY, "notify"}, /* abstraction */
+#ifdef CONFIG_AUFS_HFSNOTIFY
+	{AuOpt_UDBA_HNOTIFY, "fsnotify"},
+#else
+	{AuOpt_UDBA_HNOTIFY, "inotify"},
+#endif
 #endif
 	{-1, NULL}
 };
 
+static void au_warn_inotify(int val, char *str)
+{
+#ifdef CONFIG_AUFS_HINOTIFY
+	if (val == AuOpt_UDBA_HNOTIFY
+	    && !strcmp(str, "inotify"))
+		AuWarn1("udba=inotify is deprecated, use udba=notify\n");
+#endif
+}
+
 static int noinline_for_stack udba_val(char *str)
 {
+	int val;
 	substring_t args[MAX_OPT_ARGS];
 
-	return match_token(str, udbalevel, args);
+	val = match_token(str, udbalevel, args);
+	au_warn_inotify(val, str);
+	return val;
 }
 
 const char *au_optstr_udba(int udba)
@@ -1334,9 +1351,9 @@ int au_opts_verify(struct super_block *sb, unsigned long sb_flags,
 			pr_warning("shwh should be used with ro\n");
 	}
 
-	if (au_opt_test((sbinfo->si_mntflags | pending), UDBA_HINOTIFY)
+	if (au_opt_test((sbinfo->si_mntflags | pending), UDBA_HNOTIFY)
 	    && !au_opt_test(sbinfo->si_mntflags, XINO))
-		pr_warning("udba=inotify requires xino\n");
+		pr_warning("udba=*notify requires xino\n");
 
 	err = 0;
 	root = sb->s_root;
@@ -1397,13 +1414,13 @@ int au_opts_verify(struct super_block *sb, unsigned long sb_flags,
 			continue;
 
 		hdir = au_hi(dir, bindex);
-		au_hin_imtx_lock_nested(hdir, AuLsc_I_PARENT);
+		au_hn_imtx_lock_nested(hdir, AuLsc_I_PARENT);
 		if (wbr)
 			wbr_wh_write_lock(wbr);
 		err = au_wh_init(au_h_dptr(root, bindex), br, sb);
 		if (wbr)
 			wbr_wh_write_unlock(wbr);
-		au_hin_imtx_unlock(hdir);
+		au_hn_imtx_unlock(hdir);
 
 		if (!err && do_free) {
 			kfree(wbr);
@@ -1484,10 +1501,9 @@ int au_opts_mount(struct super_block *sb, struct au_opts *opts)
 	/* restore udba */
 	sbinfo->si_mntflags &= ~AuOptMask_UDBA;
 	sbinfo->si_mntflags |= (tmp & AuOptMask_UDBA);
-	if (au_opt_test(tmp, UDBA_HINOTIFY)) {
+	if (au_opt_test(tmp, UDBA_HNOTIFY)) {
 		struct inode *dir = sb->s_root->d_inode;
-		au_reset_hinotify(dir,
-				  au_hi_flags(dir, /*isdir*/1) & ~AuHi_XINO);
+		au_hn_reset(dir, au_hi_flags(dir, /*isdir*/1) & ~AuHi_XINO);
 	}
 
  out:

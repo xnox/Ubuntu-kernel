@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,12 +50,12 @@ struct au_finfo {
 			struct vm_operations_struct	*fi_h_vm_ops;
 			struct vm_operations_struct	*fi_vm_ops;
 			struct mutex			fi_vm_mtx;
+			struct mutex			fi_mmap;
 		};
 
 		/* dir only */
 		struct {
 			struct au_vdir		*fi_vdir_cache;
-			int			fi_maintain_plink;
 		};
 	};
 };
@@ -63,7 +63,7 @@ struct au_finfo {
 /* ---------------------------------------------------------------------- */
 
 /* file.c */
-extern struct address_space_operations aufs_aop;
+extern const struct address_space_operations aufs_aop;
 unsigned int au_file_roflags(unsigned int flags);
 struct file *au_h_open(struct dentry *dentry, aufs_bindex_t bindex, int flags,
 		       struct file *file);
@@ -79,9 +79,40 @@ int au_reval_and_lock_fdi(struct file *file, int (*reopen)(struct file *file),
 unsigned int aufs_poll(struct file *file, poll_table *wait);
 #endif
 
+#ifdef CONFIG_AUFS_BR_HFSPLUS
+/* hfsplus.c */
+struct file *au_h_open_pre(struct dentry *dentry, aufs_bindex_t bindex);
+void au_h_open_post(struct dentry *dentry, aufs_bindex_t bindex,
+		    struct file *h_file);
+#else
+static inline
+struct file *au_h_open_pre(struct dentry *dentry, aufs_bindex_t bindex)
+{
+	return NULL;
+}
+
+AuStubVoid(au_h_open_post, struct dentry *dentry, aufs_bindex_t bindex,
+	   struct file *h_file);
+#endif
+
 /* f_op.c */
 extern const struct file_operations aufs_file_fop;
 int aufs_flush(struct file *file, fl_owner_t id);
+int au_do_open_nondir(struct file *file, int flags);
+int aufs_release_nondir(struct inode *inode __maybe_unused, struct file *file);
+
+#ifdef CONFIG_AUFS_SP_IATTR
+/* f_op_sp.c */
+int au_special_file(umode_t mode);
+void au_init_special_fop(struct inode *inode, umode_t mode, dev_t rdev);
+#else
+AuStubInt0(au_special_file, umode_t mode)
+static inline void au_init_special_fop(struct inode *inode, umode_t mode,
+				       dev_t rdev)
+{
+	init_special_inode(inode, mode, rdev);
+}
+#endif
 
 /* finfo.c */
 void au_hfput(struct au_hfile *hf, struct file *file);
@@ -89,6 +120,8 @@ void au_set_h_fptr(struct file *file, aufs_bindex_t bindex,
 		   struct file *h_file);
 
 void au_update_figen(struct file *file);
+void au_fi_mmap_lock(struct file *file);
+void au_fi_mmap_unlock(struct file *file);
 
 void au_finfo_fin(struct file *file);
 int au_finfo_init(struct file *file);
@@ -170,7 +203,7 @@ static inline unsigned int au_figen(struct file *f)
 
 static inline int au_test_mmapped(struct file *f)
 {
-	/* FiMustAnyLock(f); */
+	FiMustAnyLock(f);
 	return !!(au_fi(f)->fi_h_vm_ops);
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -188,7 +188,8 @@ static int do_pri_file(aufs_bindex_t bindex, struct file *file)
 	    && file->f_dentry
 	    && au_test_aufs(file->f_dentry->d_sb)
 	    && au_fi(file))
-		snprintf(a, sizeof(a), ", mmapped %d", au_test_mmapped(file));
+		snprintf(a, sizeof(a), ", mmapped %d",
+			 !!au_fi(file)->fi_h_vm_ops);
 	dpri("f%d: mode 0x%x, flags 0%o, cnt %ld, pos %llu%s\n",
 	     bindex, file->f_mode, file->f_flags, (long)file_count(file),
 	     file->f_pos, a);
@@ -399,8 +400,8 @@ void au_debug_sbinfo_init(struct au_sbinfo *sbinfo __maybe_unused)
 #ifdef AuForceNoRefrof
 	au_opt_clr(sbinfo->si_mntflags, REFROF);
 #endif
-#ifdef AuForceHinotify
-	au_opt_set_udba(sbinfo->si_mntflags, UDBA_HINOTIFY);
+#ifdef AuForceHnotify
+	au_opt_set_udba(sbinfo->si_mntflags, UDBA_HNOTIFY);
 #endif
 #ifdef AuForceRd0
 	sbinfo->si_rdblk = 0;

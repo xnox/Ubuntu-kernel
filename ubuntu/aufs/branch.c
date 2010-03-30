@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -111,7 +111,9 @@ static struct au_branch *au_br_alloc(struct super_block *sb, int new_nbranch,
 {
 	struct au_branch *add_branch;
 	struct dentry *root;
+	int err;
 
+	err = -ENOMEM;
 	root = sb->s_root;
 	add_branch = kmalloc(sizeof(*add_branch), GFP_NOFS);
 	if (unlikely(!add_branch))
@@ -126,18 +128,20 @@ static struct au_branch *au_br_alloc(struct super_block *sb, int new_nbranch,
 			goto out_br;
 	}
 
-	if (unlikely(au_sbr_realloc(au_sbi(sb), new_nbranch)
-		     || au_di_realloc(au_di(root), new_nbranch)
-		     || au_ii_realloc(au_ii(root->d_inode), new_nbranch)))
-		goto out_wbr;
-	return add_branch; /* success */
+	err = au_sbr_realloc(au_sbi(sb), new_nbranch);
+	if (!err)
+		err = au_di_realloc(au_di(root), new_nbranch);
+	if (!err)
+		err = au_ii_realloc(au_ii(root->d_inode), new_nbranch);
+	if (!err)
+		return add_branch; /* success */
 
- out_wbr:
 	kfree(add_branch->br_wbr);
+
  out_br:
 	kfree(add_branch);
  out:
-	return ERR_PTR(-ENOMEM);
+	return ERR_PTR(err);
 }
 
 /*
@@ -147,13 +151,14 @@ static int test_br(struct inode *inode, int brperm, char *path)
 {
 	int err;
 
-	err = 0;
-	if (unlikely(au_br_writable(brperm) && IS_RDONLY(inode))) {
-		pr_err("write permission for readonly mount or inode, %s\n",
-		       path);
-		err = -EINVAL;
-	}
+	err = (au_br_writable(brperm) && IS_RDONLY(inode));
+	if (!err)
+		goto out;
 
+	err = -EINVAL;
+	pr_err("write permission for readonly mount or inode, %s\n", path);
+
+ out:
 	return err;
 }
 
@@ -267,7 +272,7 @@ static int au_br_init_wh(struct super_block *sb, struct au_branch *br,
 	bindex = au_br_index(sb, br->br_id);
 	if (0 <= bindex) {
 		hdir = au_hi(sb->s_root->d_inode, bindex);
-		au_hin_imtx_lock_nested(hdir, AuLsc_I_PARENT);
+		au_hn_imtx_lock_nested(hdir, AuLsc_I_PARENT);
 	} else {
 		h_mtx = &h_root->d_inode->i_mutex;
 		mutex_lock_nested(h_mtx, AuLsc_I_PARENT);
@@ -280,7 +285,7 @@ static int au_br_init_wh(struct super_block *sb, struct au_branch *br,
 		wbr_wh_write_unlock(wbr);
 	}
 	if (hdir)
-		au_hin_imtx_unlock(hdir);
+		au_hn_imtx_unlock(hdir);
 	else
 		mutex_unlock(h_mtx);
 	br->br_perm = old_perm;
@@ -406,7 +411,7 @@ static void au_br_do_add_hip(struct au_iinfo *iinfo, aufs_bindex_t bindex,
 	hip = iinfo->ii_hinode + bindex;
 	memmove(hip + 1, hip, sizeof(*hip) * amount);
 	hip->hi_inode = NULL;
-	au_hin_init(hip, NULL);
+	au_hn_init(hip);
 	iinfo->ii_bend++;
 	if (unlikely(bend < 0))
 		iinfo->ii_bstart = 0;
@@ -421,7 +426,7 @@ static void au_br_do_add(struct super_block *sb, struct dentry *h_dentry,
 
 	root = sb->s_root;
 	root_inode = root->d_inode;
-	au_plink_block_maintain(sb);
+	au_plink_maint_block(sb);
 	bend = au_sbend(sb);
 	amount = bend + 1 - bindex;
 	au_br_do_add_brp(au_sbi(sb), bindex, br, bend, amount);
@@ -480,7 +485,7 @@ int au_br_add(struct super_block *sb, struct au_opt_add *add, int remount)
 		au_add_nlink(root_inode, h_dentry->d_inode);
 
 	/*
-	 * this test/set prevents aufs from handling unnecesary inotify events
+	 * this test/set prevents aufs from handling unnecesary notify events
 	 * of xino files, in a case of re-adding a writable branch which was
 	 * once detached from aufs.
 	 */
@@ -647,6 +652,7 @@ static void au_br_do_del_brp(struct au_sbinfo *sbinfo,
 	p = krealloc(sbinfo->si_branch, sizeof(*p) * bend, GFP_NOFS);
 	if (p)
 		sbinfo->si_branch = p;
+	/* harmless error */
 }
 
 static void au_br_do_del_hdp(struct au_dinfo *dinfo, const aufs_bindex_t bindex,
@@ -665,6 +671,7 @@ static void au_br_do_del_hdp(struct au_dinfo *dinfo, const aufs_bindex_t bindex,
 	p = krealloc(dinfo->di_hdentry, sizeof(*p) * bend, GFP_NOFS);
 	if (p)
 		dinfo->di_hdentry = p;
+	/* harmless error */
 }
 
 static void au_br_do_del_hip(struct au_iinfo *iinfo, const aufs_bindex_t bindex,
@@ -678,12 +685,13 @@ static void au_br_do_del_hip(struct au_iinfo *iinfo, const aufs_bindex_t bindex,
 	if (bindex < bend)
 		memmove(hip, hip + 1, sizeof(*hip) * (bend - bindex));
 	iinfo->ii_hinode[0 + bend].hi_inode = NULL;
-	au_hin_init(iinfo->ii_hinode + bend, NULL);
+	au_hn_init(iinfo->ii_hinode + bend);
 	iinfo->ii_bend--;
 
 	p = krealloc(iinfo->ii_hinode, sizeof(*p) * bend, GFP_NOFS);
 	if (p)
 		iinfo->ii_hinode = p;
+	/* harmless error */
 }
 
 static void au_br_do_del(struct super_block *sb, aufs_bindex_t bindex,
@@ -698,7 +706,7 @@ static void au_br_do_del(struct super_block *sb, aufs_bindex_t bindex,
 
 	root = sb->s_root;
 	inode = root->d_inode;
-	au_plink_block_maintain(sb);
+	au_plink_maint_block(sb);
 	sbinfo = au_sbi(sb);
 	bend = sbinfo->si_bend;
 
@@ -912,7 +920,7 @@ int au_br_mod(struct super_block *sb, struct au_opt_mod *mod, int remount,
 	struct au_branch *br;
 
 	root = sb->s_root;
-	au_plink_block_maintain(sb);
+	au_plink_maint_block(sb);
 	bindex = au_find_dbindex(root, mod->h_root);
 	if (bindex < 0) {
 		if (remount)

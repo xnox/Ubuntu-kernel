@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 #include <linux/file.h>
 #include <linux/fs_stack.h>
-#include <linux/ima.h>
 #include <linux/mman.h>
 #include <linux/mm.h>
 #include <linux/security.h>
@@ -63,7 +62,7 @@ int aufs_flush(struct file *file, fl_owner_t id)
 
 /* ---------------------------------------------------------------------- */
 
-static int do_open_nondir(struct file *file, int flags)
+int au_do_open_nondir(struct file *file, int flags)
 {
 	int err;
 	aufs_bindex_t bindex;
@@ -78,11 +77,8 @@ static int do_open_nondir(struct file *file, int flags)
 	finfo = au_fi(file);
 	finfo->fi_h_vm_ops = NULL;
 	finfo->fi_vm_ops = NULL;
+	mutex_init(&finfo->fi_mmap); /* regular file only? */
 	bindex = au_dbstart(dentry);
-	/* O_TRUNC is processed already */
-	BUG_ON(au_test_ro(dentry->d_sb, bindex, dentry->d_inode)
-	       && (flags & O_TRUNC));
-
 	h_file = au_h_open(dentry, bindex, flags, file);
 	if (IS_ERR(h_file))
 		err = PTR_ERR(h_file);
@@ -100,18 +96,16 @@ static int do_open_nondir(struct file *file, int flags)
 static int aufs_open_nondir(struct inode *inode __maybe_unused,
 			    struct file *file)
 {
-	return au_do_open(file, do_open_nondir);
+	AuDbg("%.*s, f_ flags 0x%x, f_mode 0x%x\n",
+	      AuDLNPair(file->f_dentry), vfsub_file_flags(file),
+	      file->f_mode);
+	return au_do_open(file, au_do_open_nondir);
 }
 
-static int aufs_release_nondir(struct inode *inode __maybe_unused,
-			       struct file *file)
+int aufs_release_nondir(struct inode *inode __maybe_unused, struct file *file)
 {
-	struct super_block *sb = file->f_dentry->d_sb;
-
-	si_noflush_read_lock(sb);
 	kfree(au_fi(file)->fi_vm_ops);
 	au_finfo_fin(file);
-	si_read_unlock(sb);
 	return 0;
 }
 
@@ -188,6 +182,34 @@ static ssize_t aufs_write(struct file *file, const char __user *ubuf,
 	return err;
 }
 
+static ssize_t au_do_aio(struct file *h_file, int rw, struct kiocb *kio,
+			 const struct iovec *iov, unsigned long nv, loff_t pos)
+{
+	ssize_t err;
+	struct file *file;
+
+	err = security_file_permission(h_file, rw);
+	if (unlikely(err))
+		goto out;
+
+	file = kio->ki_filp;
+	if (!is_sync_kiocb(kio)) {
+		get_file(h_file);
+		fput(file);
+	}
+	kio->ki_filp = h_file;
+	if (rw == MAY_READ)
+		err = h_file->f_op->aio_read(kio, iov, nv, pos);
+	else if (rw == MAY_WRITE)
+		err = h_file->f_op->aio_write(kio, iov, nv, pos);
+	else
+		BUG();
+	/* do not restore kio->ki_filp */
+
+ out:
+	return err;
+}
+
 static ssize_t aufs_aio_read(struct kiocb *kio, const struct iovec *iov,
 			     unsigned long nv, loff_t pos)
 {
@@ -207,15 +229,7 @@ static ssize_t aufs_aio_read(struct kiocb *kio, const struct iovec *iov,
 	err = -ENOSYS;
 	h_file = au_h_fptr(file, au_fbstart(file));
 	if (h_file->f_op && h_file->f_op->aio_read) {
-		err = security_file_permission(h_file, MAY_READ);
-		if (unlikely(err))
-			goto out_unlock;
-		if (!is_sync_kiocb(kio)) {
-			get_file(h_file);
-			fput(file);
-		}
-		kio->ki_filp = h_file;
-		err = h_file->f_op->aio_read(kio, iov, nv, pos);
+		err = au_do_aio(h_file, MAY_READ, kio, iov, nv, pos);
 		/* todo: necessary? */
 		/* file->f_ra = h_file->f_ra; */
 		fsstack_copy_attr_atime(dentry->d_inode,
@@ -224,9 +238,9 @@ static ssize_t aufs_aio_read(struct kiocb *kio, const struct iovec *iov,
 		/* currently there is no such fs */
 		WARN_ON_ONCE(h_file->f_op && h_file->f_op->read);
 
- out_unlock:
 	di_read_unlock(dentry, AuLock_IR);
 	fi_read_unlock(file);
+
  out:
 	si_read_unlock(sb);
 	return err;
@@ -236,7 +250,6 @@ static ssize_t aufs_aio_write(struct kiocb *kio, const struct iovec *iov,
 			      unsigned long nv, loff_t pos)
 {
 	ssize_t err;
-	aufs_bindex_t bstart;
 	struct au_pin pin;
 	struct dentry *dentry;
 	struct inode *inode;
@@ -260,19 +273,10 @@ static ssize_t aufs_aio_write(struct kiocb *kio, const struct iovec *iov,
 		goto out_unlock;
 
 	err = -ENOSYS;
-	bstart = au_fbstart(file);
-	h_file = au_h_fptr(file, bstart);
+	h_file = au_h_fptr(file, au_fbstart(file));
 	au_unpin(&pin);
 	if (h_file->f_op && h_file->f_op->aio_write) {
-		err = security_file_permission(h_file, MAY_WRITE);
-		if (unlikely(err))
-			goto out_unlock;
-		if (!is_sync_kiocb(kio)) {
-			get_file(h_file);
-			fput(file);
-		}
-		kio->ki_filp = h_file;
-		err = h_file->f_op->aio_write(kio, iov, nv, pos);
+		err = au_do_aio(h_file, MAY_WRITE, kio, iov, nv, pos);
 		au_cpup_attr_timesizes(inode);
 		inode->i_mode = h_file->f_dentry->d_inode->i_mode;
 	} else
@@ -464,33 +468,57 @@ static struct vm_operations_struct aufs_vm_ops = {
 
 /* ---------------------------------------------------------------------- */
 
+/* cf. linux/include/linux/mman.h: calc_vm_prot_bits() */
+#define AuConv_VM_PROT(f, b)	_calc_vm_trans(f, VM_##b, PROT_##b)
+
+static unsigned long au_arch_prot_conv(unsigned long flags)
+{
+	/* currently ppc64 only */
+#ifdef CONFIG_PPC64
+	/* cf. linux/arch/powerpc/include/asm/mman.h */
+	AuDebugOn(arch_calc_vm_prot_bits(-1) != VM_SAO);
+	return AuConv_VM_PROT(flags, SAO);
+#else
+	AuDebugOn(arch_calc_vm_prot_bits(-1));
+	return 0;
+#endif
+}
+
 static unsigned long au_prot_conv(unsigned long flags)
 {
-	unsigned long prot;
+	return AuConv_VM_PROT(flags, READ)
+		| AuConv_VM_PROT(flags, WRITE)
+		| AuConv_VM_PROT(flags, EXEC)
+		| au_arch_prot_conv(flags);
+}
 
-	prot = 0;
-	if (flags & VM_READ)
-		prot |= PROT_READ;
-	if (flags & VM_WRITE)
-		prot |= PROT_WRITE;
-	if (flags & VM_EXEC)
-		prot |= PROT_EXEC;
-	return prot;
+/* cf. linux/include/linux/mman.h: calc_vm_flag_bits() */
+#define AuConv_VM_MAP(f, b)	_calc_vm_trans(f, VM_##b, MAP_##b)
+
+static unsigned long au_flag_conv(unsigned long flags)
+{
+	return AuConv_VM_MAP(flags, GROWSDOWN)
+		| AuConv_VM_MAP(flags, DENYWRITE)
+		| AuConv_VM_MAP(flags, EXECUTABLE)
+		| AuConv_VM_MAP(flags, LOCKED);
 }
 
 static struct vm_operations_struct *au_vm_ops(struct file *h_file,
 					      struct vm_area_struct *vma)
 {
 	struct vm_operations_struct *vm_ops;
+	unsigned long prot;
 	int err;
 
 	vm_ops = ERR_PTR(-ENODEV);
 	if (!h_file->f_op || !h_file->f_op->mmap)
 		goto out;
 
-	err = ima_file_mmap(h_file, au_prot_conv(vma->vm_flags));
+	prot = au_prot_conv(vma->vm_flags);
+	err = security_file_mmap(h_file, /*reqprot*/prot, prot,
+				 au_flag_conv(vma->vm_flags), vma->vm_start, 0);
 	vm_ops = ERR_PTR(err);
-	if (err)
+	if (unlikely(err))
 		goto out;
 
 	err = h_file->f_op->mmap(h_file, vma);
@@ -517,7 +545,7 @@ static int au_custom_vm_ops(struct au_finfo *finfo, struct vm_area_struct *vma)
 	int err;
 	struct vm_operations_struct *h_ops;
 
-	AuRwMustAnyLock(&finfo->fi_rwsem);
+	MtxMustLock(&finfo->fi_mmap);
 
 	err = 0;
 	h_ops = finfo->fi_h_vm_ops;
@@ -543,49 +571,116 @@ static int au_custom_vm_ops(struct au_finfo *finfo, struct vm_area_struct *vma)
 	return err;
 }
 
-static int aufs_mmap(struct file *file, struct vm_area_struct *vma)
+/*
+ * This is another ugly approach to keep the lock order, particularly
+ * mm->mmap_sem and aufs rwsem. The previous approach was reverted and you can
+ * find it in git-log, if you want.
+ *
+ * native readdir: i_mutex, copy_to_user, mmap_sem
+ * aufs readdir: i_mutex, rwsem, nested-i_mutex, copy_to_user, mmap_sem
+ *
+ * Before aufs_mmap() mmap_sem is acquired already, but aufs_mmap() has to
+ * acquire aufs rwsem. It introduces a circular locking dependency.
+ * To address this problem, aufs_mmap() delegates the part which requires aufs
+ * rwsem to its internal workqueue.
+ */
+
+/* very ugly approach */
+#ifdef CONFIG_DEBUG_MUTEXES
+#include <../kernel/mutex-debug.h>
+#else
+#include <../kernel/mutex.h>
+#endif
+
+struct au_mmap_pre_args {
+	/* input */
+	struct file *file;
+	struct vm_area_struct *vma;
+
+	/* output */
+	int *errp;
+	struct file *h_file;
+	int mmapped;
+};
+
+static int au_mmap_pre(struct file *file, struct vm_area_struct *vma,
+		       struct file **h_file, int *mmapped)
 {
 	int err;
-	unsigned char wlock, mmapped;
+	const unsigned char wlock
+		= !!(file->f_mode & FMODE_WRITE) && (vma->vm_flags & VM_SHARED);
 	struct dentry *dentry;
 	struct super_block *sb;
-	struct file *h_file;
-	struct vm_operations_struct *vm_ops;
 
 	dentry = file->f_dentry;
-	wlock = !!(file->f_mode & FMODE_WRITE) && (vma->vm_flags & VM_SHARED);
 	sb = dentry->d_sb;
-	si_read_lock(sb, AuLock_FLUSH);
+	si_read_lock(sb, !AuLock_FLUSH);
 	err = au_reval_and_lock_fdi(file, au_reopen_nondir, /*wlock*/1);
 	if (unlikely(err))
 		goto out;
 
-	mmapped = !!au_test_mmapped(file);
+	*mmapped = !!au_test_mmapped(file);
 	if (wlock) {
 		struct au_pin pin;
 
 		err = au_ready_to_write(file, -1, &pin);
-		di_downgrade_lock(dentry, AuLock_IR);
+		di_write_unlock(dentry);
 		if (unlikely(err))
 			goto out_unlock;
 		au_unpin(&pin);
 	} else
-		di_downgrade_lock(dentry, AuLock_IR);
+		di_write_unlock(dentry);
+	*h_file = au_h_fptr(file, au_fbstart(file));
+	get_file(*h_file);
+	au_fi_mmap_lock(file);
 
-	h_file = au_h_fptr(file, au_fbstart(file));
-	if (!mmapped && au_test_fs_bad_mapping(h_file->f_dentry->d_sb)) {
+out_unlock:
+	fi_write_unlock(file);
+out:
+	si_read_unlock(sb);
+	return err;
+}
+
+static void au_call_mmap_pre(void *args)
+{
+	struct au_mmap_pre_args *a = args;
+	*a->errp = au_mmap_pre(a->file, a->vma, &a->h_file, &a->mmapped);
+}
+
+static int aufs_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	int err, wkq_err;
+	struct au_finfo *finfo;
+	struct dentry *h_dentry;
+	struct vm_operations_struct *vm_ops;
+	struct au_mmap_pre_args args = {
+		.file		= file,
+		.vma		= vma,
+		.errp		= &err
+	};
+
+	wkq_err = au_wkq_wait(au_call_mmap_pre, &args);
+	if (unlikely(wkq_err))
+		err = wkq_err;
+	if (unlikely(err))
+		goto out;
+	finfo = au_fi(file);
+	mutex_set_owner(&finfo->fi_mmap);
+
+	h_dentry = args.h_file->f_dentry;
+	if (!args.mmapped && au_test_fs_bad_mapping(h_dentry->d_sb)) {
 		/*
 		 * by this assignment, f_mapping will differs from aufs inode
 		 * i_mapping.
 		 * if someone else mixes the use of f_dentry->d_inode and
 		 * f_mapping->host, then a problem may arise.
 		 */
-		file->f_mapping = h_file->f_mapping;
+		file->f_mapping = args.h_file->f_mapping;
 	}
 
 	vm_ops = NULL;
-	if (!mmapped) {
-		vm_ops = au_vm_ops(h_file, vma);
+	if (!args.mmapped) {
+		vm_ops = au_vm_ops(args.h_file, vma);
 		err = PTR_ERR(vm_ops);
 		if (IS_ERR(vm_ops))
 			goto out_unlock;
@@ -603,25 +698,23 @@ static int aufs_mmap(struct file *file, struct vm_area_struct *vma)
 		goto out_unlock;
 
 	vma->vm_ops = &aufs_vm_ops;
-	if (!mmapped) {
-		struct au_finfo *finfo = au_fi(file);
-
+	if (!args.mmapped) {
 		finfo->fi_h_vm_ops = vm_ops;
 		mutex_init(&finfo->fi_vm_mtx);
 	}
 
-	err = au_custom_vm_ops(au_fi(file), vma);
+	err = au_custom_vm_ops(finfo, vma);
 	if (unlikely(err))
 		goto out_unlock;
 
-	vfsub_file_accessed(h_file);
-	fsstack_copy_attr_atime(dentry->d_inode, h_file->f_dentry->d_inode);
+	vfsub_file_accessed(args.h_file);
+	/* update without lock, I don't think it a problem */
+	fsstack_copy_attr_atime(file->f_dentry->d_inode, h_dentry->d_inode);
 
  out_unlock:
-	di_read_unlock(dentry, AuLock_IR);
-	fi_write_unlock(file);
+	au_fi_mmap_unlock(file);
+	fput(args.h_file);
  out:
-	si_read_unlock(sb);
 	return err;
 }
 

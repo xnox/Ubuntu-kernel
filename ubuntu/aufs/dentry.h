@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2009 Junjiro R. Okajima
+ * Copyright (C) 2005-2010 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ struct au_dinfo {
 /* ---------------------------------------------------------------------- */
 
 /* dentry.c */
-extern struct dentry_operations aufs_dop;
+extern const struct dentry_operations aufs_dop;
 struct au_branch;
 struct dentry *au_lkup_one(struct qstr *name, struct dentry *h_parent,
 			   struct au_branch *br, struct nameidata *nd);
@@ -98,7 +98,7 @@ static inline struct au_dinfo *au_di(struct dentry *dentry)
 /* lock subclass for dinfo */
 enum {
 	AuLsc_DI_CHILD,		/* child first */
-	AuLsc_DI_CHILD2,	/* rename(2), link(2), and cpup at hinotify */
+	AuLsc_DI_CHILD2,	/* rename(2), link(2), and cpup at hnotify */
 	AuLsc_DI_CHILD3,	/* copyup dirs */
 	AuLsc_DI_PARENT,
 	AuLsc_DI_PARENT2,
@@ -210,22 +210,19 @@ static inline void au_set_dbdiropq(struct dentry *dentry, aufs_bindex_t bindex)
 
 /* ---------------------------------------------------------------------- */
 
-#ifdef CONFIG_AUFS_HINOTIFY
+#ifdef CONFIG_AUFS_HNOTIFY
 static inline void au_digen_dec(struct dentry *d)
 {
 	atomic_dec_return(&au_di(d)->di_generation);
 }
 
-static inline void au_hin_di_reinit(struct dentry *dentry)
+static inline void au_hn_di_reinit(struct dentry *dentry)
 {
 	dentry->d_fsdata = NULL;
 }
 #else
-static inline void au_hin_di_reinit(struct dentry *dentry __maybe_unused)
-{
-	/* empty */
-}
-#endif /* CONFIG_AUFS_HINOTIFY */
+AuStubVoid(au_hn_di_reinit, struct dentry *dentry __maybe_unused)
+#endif /* CONFIG_AUFS_HNOTIFY */
 
 #endif /* __KERNEL__ */
 #endif /* __AUFS_DENTRY_H__ */
