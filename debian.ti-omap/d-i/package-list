@@ -25,18 +25,13 @@ Depends: kernel-image, usb-modules
 Priority: standard
 Description: Support for various input methods
 
-Package: irda-modules
-Depends: kernel-image, nic-shared-modules
-Priority: standard
-Description: Support for Infrared protocols
-
 Package: md-modules
 Depends: kernel-image
 Priority: standard
 Description: Multi-device support (raid, device-mapper, lvm)
 
 Package: nic-modules
-Depends: kernel-image, nic-shared-modules
+Depends: kernel-image, nic-shared-modules, virtio-modules
 Priority: standard
 Description: Network interface support
 
@@ -44,6 +39,12 @@ Package: nic-usb-modules
 Depends: kernel-image, nic-shared-modules, usb-modules
 Priority: standard
 Description: USB network interface support
+
+Package: nic-shared-modules
+Depends: kernel-image, crypto-modules
+Priority: standard
+Description: nic shared modules
+  This package contains modules which support nic modules
 
 Package: parport-modules
 Depends: kernel-image
@@ -96,7 +97,7 @@ Description: NFS filesystem drivers
 
 Package: block-modules
 Priority: standard
-Depends: kernel-image, storage-core-modules, parport-modules
+Depends: kernel-image, storage-core-modules, parport-modules, virtio-modules
 Description: Block storage devices
  This package contains the block storage devices, including DAC960 and
  paraide.
@@ -117,3 +118,16 @@ Depends: kernel-image, input-modules, usb-modules
 Priority: extra
 Description: Mouse support
  This package contains mouse drivers for the Linux kernel.
+
+Package: squashfs-modules
+Depends: kernel-image
+Priority: extra
+Description: squashfs modules
+ This package contains squashfs modules.
+
+Package: vlan-modules
+Depends: kernel-image
+Priority: extra
+Description: vlan modules
+ This package contains vlan (8021.Q) modules.
+
