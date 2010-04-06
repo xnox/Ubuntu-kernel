@@ -112,7 +112,7 @@ git commit -a -m "base packaging"
 #
 if [ -d "$here/patches.$series" ]; then
 	echo "*** applying patches for series:$series ..."
-	git am -C0 "$here/patches.$series"/*
+	git am -C1 "$here/patches.$series"/*
 fi
 
 #
