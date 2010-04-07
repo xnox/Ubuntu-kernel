@@ -251,7 +251,8 @@ int cifs_posix_open(char *full_path, struct inode **pinode,
 		cifs_fattr_to_inode(*pinode, &fattr);
 	}
 
-	cifs_fill_fileinfo(*pinode, *pnetfid, cifs_sb->tcon, write_only);
+	if (cifs_sb->tcon)
+		cifs_fill_fileinfo(*pinode, *pnetfid, cifs_sb->tcon, write_only);
 
 posix_open_ret:
 	kfree(presp_data);
@@ -316,7 +317,7 @@ cifs_create(struct inode *inode, struct dentry *direntry, int mode,
 	if (nd && (nd->flags & LOOKUP_OPEN))
 		oflags = nd->intent.open.flags;
 	else
-		oflags = FMODE_READ;
+		oflags = FMODE_READ | SMB_O_CREAT;
 
 	if (tcon->unix_ext && (tcon->ses->capabilities & CAP_UNIX) &&
 	    (CIFS_UNIX_POSIX_PATH_OPS_CAP &
