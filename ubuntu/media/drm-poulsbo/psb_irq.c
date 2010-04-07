@@ -197,7 +197,7 @@ irqreturn_t psb_irq_handler(DRM_IRQ_ARGS)
 
 	if (vdc_stat) {
 #ifdef PSB_DETEAR
-		if(psb_blit_info.cmd_ready) {
+		if (drm_psb_detear && psb_blit_info.cmd_ready) {
 			psb_blit_info.cmd_ready = 0;
 			psb_blit_2d_reg_write(dev_priv, psb_blit_info.cmdbuf);
 			/* to resume the blocked psb_cmdbuf_2d() */

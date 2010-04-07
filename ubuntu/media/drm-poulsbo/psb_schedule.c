@@ -1208,7 +1208,7 @@ static int psb_setup_task_devlocked(struct drm_device *dev,
 		task->scene = psb_scene_ref(scene);
 
 #ifdef PSB_DETEAR
-	if(PSB_VIDEO_BLIT == arg->sVideoInfo.flag) {
+	if (drm_psb_detear && PSB_VIDEO_BLIT == arg->sVideoInfo.flag) {
 		task->bVideoFlag = PSB_VIDEO_BLIT;
 		task->x = arg->sVideoInfo.x;
 		task->y = arg->sVideoInfo.y;

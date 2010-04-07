@@ -177,7 +177,7 @@ int psb_2d_submit(struct drm_psb_private *dev_priv, uint32_t * cmdbuf,
 #ifdef PSB_DETEAR
 		/* delayed 2D blit tasks are not executed right now,
 		   let's save a copy of the task */
-		if(dev_priv->blit_2d) {
+		if (drm_psb_detear && dev_priv->blit_2d) {
 			/* FIXME: should use better approach other
 			   than the dev_priv->blit_2d to distinguish
 			   delayed 2D blit tasks */
@@ -929,7 +929,7 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 		return -EAGAIN;
 
 #ifdef PSB_DETEAR
-	if(arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT)) {
+	if (drm_psb_detear && arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT)) {
 		dev_priv->blit_2d = 1;
 	}
 #endif	/* PSB_DETEAR */
@@ -940,7 +940,7 @@ static int psb_cmdbuf_2d(struct drm_file *priv,
 		goto out_unlock;
 
 #ifdef PSB_DETEAR
-	if(arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT)) {
+	if (drm_psb_detear && arg->sVideoInfo.flag == (PSB_DELAYED_2D_BLIT)) {
 		arg->sVideoInfo.flag = 0;
 		clear_bit(0, &psb_blit_info.vdc_bit);
 		psb_blit_info.cmd_ready = 1;
