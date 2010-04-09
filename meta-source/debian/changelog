@@ -1,3 +1,10 @@
+linux-meta (2.6.32.19.21) UNRELEASED; urgency=low
+
+  * Add linux-tools meta package
+    - LP: #559027
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 09 Apr 2010 09:26:42 +0100
+
 linux-meta (2.6.32.19.20) lucid; urgency=low
 
   * Lucid ABI 19

@@ -46,3 +46,12 @@ Description: Linux kernel crashdump setup for the latest generic kernel
  system in such a way as to make information gathering impossible), then
  you can install this package to automatically enable capture of the
  vmcore on crashes.
+
+Package: linux-tools
+Architecture: i386 amd64
+Section: metapackages
+Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}
+Description: Linux kernel versioned Tools
+ This package will always depend on the latest Linux kernel versioned tools 
+ available. The Ubuntu patches have been applied.
+
