@@ -196,9 +196,9 @@ struct link_qual {
 	int tx_percentage;
 	int tx_success;
 	int tx_failed;
-#define WEIGHT_RSSI	20
-#define WEIGHT_RX	40
-#define WEIGHT_TX	40
+#define WEIGHT_RSSI	100
+#define WEIGHT_RX	0
+#define WEIGHT_TX	0
 };
 
 /*
