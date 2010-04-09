@@ -1,4 +1,4 @@
-linux-meta (2.6.32.20.21) UNRELEASED; urgency=low
+linux-meta (2.6.32.20.21) lucid; urgency=low
 
   * Add linux-tools meta package
     - LP: #559027
