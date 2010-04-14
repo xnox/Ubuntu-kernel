@@ -1,3 +1,9 @@
+linux-meta-ec2 (2.6.32.305.6) lucid; urgency=low
+
+  * Lucid ABI 305
+
+ -- Andy Whitcroft <apw@canonical.com>  Wed, 14 Apr 2010 13:40:39 +0100
+
 linux-meta-ec2 (2.6.32.304.5) lucid; urgency=low
 
   * Lucid ABI 304
