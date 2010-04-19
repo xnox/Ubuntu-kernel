@@ -91,7 +91,7 @@ git commit -a -m "base packaging"
 
 if [ -d "$here/patches.$series" ]; then
 	echo "*** applying patches for series:$series ..."
-	git am -C0 "$here/patches.$series"/*
+	git am -C1 "$here/patches.$series"/*
 fi
 
 #
@@ -113,6 +113,9 @@ git commit -a -m "debian changelog"
 #
 # Default any new configuration options.
 #
+if [ -f "$here/config.$series" ]; then
+        cp "$here/config.$series" "$debian/config/OVERRIDES"
+fi
 BUILD_CONFIG_OVERRIDE="$here/config.$series"
 dchroot --directory=`pwd` -c "$build_release" \
 	"BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' fakeroot debian/rules defaultconfigs"
@@ -122,25 +125,18 @@ git commit -a -m "default configs"
 #
 # Disable the ABI, module, and aliases checks.
 #
-cat - <<EOM >$debian/scripts/abi-check
+for i in debian/scripts/*-check debian.master/scripts/*-check
+do
+	if [ -f "$i" ]; then
+		cat - <<EOM >"$i"
 #!/bin/sh
 exit 0
 EOM
-chmod 755 $debian/scripts/abi-check
+		chmod 755 "$i"
+	fi
+done
 
-cat - <<EOM >$debian/scripts/module-check
-#!/bin/sh
-exit 0
-EOM
-chmod 755 $debian/scripts/module-check
-
-cat - <<EOM >$debian/tests/check-aliases
-#!/bin/sh
-exit 0
-EOM
-chmod 755 $debian/tests/check-aliases
-
-git commit -a -m "fix up abi checks, module checks, check aliases"
+git commit -a -m "fix up build checks"
 
 #
 # Build the source package.
@@ -150,12 +146,12 @@ git commit -a -m "fix up abi checks, module checks, check aliases"
 dchroot --directory=`pwd` -c "$build_release" \
         "fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules no_dumpfile=1 do_linux_source_content=true binary-indep"
+        "fakeroot debian/rules do_tools=0 no_dumpfile=1 do_linux_source_content=true binary-indep"
 dchroot --directory=`pwd` -c "$build_release" \
         "fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules no_dumpfile=1 binary-generic"
+        "fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic"
 linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
         "fakeroot debian/rules clean"
 linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
-        "fakeroot debian/rules no_dumpfile=1 binary-generic"
+        "fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic"
