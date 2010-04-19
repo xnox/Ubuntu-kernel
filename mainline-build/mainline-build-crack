@@ -146,12 +146,12 @@ git commit -a -m "fix up build checks"
 dchroot --directory=`pwd` -c "$build_release" \
         "fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules no_dumpfile=1 do_linux_source_content=true binary-indep"
+        "fakeroot debian/rules do_tools=0 no_dumpfile=1 do_linux_source_content=true binary-indep"
 dchroot --directory=`pwd` -c "$build_release" \
         "fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules no_dumpfile=1 binary-generic"
+        "fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic"
 linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
         "fakeroot debian/rules clean"
 linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
-        "fakeroot debian/rules no_dumpfile=1 binary-generic"
+        "fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic"
