@@ -116,4 +116,4 @@ if [ -f "$master_main/CHANGES" ]; then
 fi
 
 # All done report this to the kernel-team
-$email "$here/mainline-announce"  "$commit"
+$email "$here/mainline-announce"  "$commit" "$commit-$master_release"
