@@ -26,6 +26,7 @@
 #include <linux/i2c.h>
 #include <linux/gpio.h>
 #include <linux/regulator/consumer.h>
+#include <linux/slab.h>
 #include <sound/tpa6130a2-plat.h>
 #include <sound/soc.h>
 #include <sound/soc-dapm.h>
@@ -39,6 +40,11 @@ static struct i2c_client *tpa6130a2_client;
 static const char *tpa6130a2_supply_names[TPA6130A2_NUM_SUPPLIES] = {
 	"CPVSS",
 	"Vdd",
+};
+
+static const char *tpa6140a2_supply_names[TPA6130A2_NUM_SUPPLIES] = {
+	"HPVdd",
+	"AVdd",
 };
 
 /* This struct is used to save the context */
@@ -267,11 +273,7 @@ static const struct snd_kcontrol_new tpa6130a2_controls[] = {
  */
 static void tpa6130a2_channel_enable(u8 channel, int enable)
 {
-	struct	tpa6130a2_data *data;
 	u8	val;
-
-	BUG_ON(tpa6130a2_client == NULL);
-	data = i2c_get_clientdata(tpa6130a2_client);
 
 	if (enable) {
 		/* Enable channel */
@@ -378,8 +380,8 @@ int tpa6130a2_add_controls(struct snd_soc_codec *codec)
 }
 EXPORT_SYMBOL_GPL(tpa6130a2_add_controls);
 
-static int tpa6130a2_probe(struct i2c_client *client,
-			   const struct i2c_device_id *id)
+static int __devinit tpa6130a2_probe(struct i2c_client *client,
+				     const struct i2c_device_id *id)
 {
 	struct device *dev;
 	struct tpa6130a2_data *data;
@@ -424,8 +426,21 @@ static int tpa6130a2_probe(struct i2c_client *client,
 		gpio_direction_output(data->power_gpio, 0);
 	}
 
-	for (i = 0; i < ARRAY_SIZE(data->supplies); i++)
-		data->supplies[i].supply = tpa6130a2_supply_names[i];
+	switch (pdata->id) {
+	case TPA6130A2:
+		for (i = 0; i < ARRAY_SIZE(data->supplies); i++)
+			data->supplies[i].supply = tpa6130a2_supply_names[i];
+		break;
+	case TPA6140A2:
+		for (i = 0; i < ARRAY_SIZE(data->supplies); i++)
+			data->supplies[i].supply = tpa6140a2_supply_names[i];;
+		break;
+	default:
+		dev_warn(dev, "Unknown TPA model (%d). Assuming 6130A2\n",
+			 pdata->id);
+		for (i = 0; i < ARRAY_SIZE(data->supplies); i++)
+			data->supplies[i].supply = tpa6130a2_supply_names[i];
+	}
 
 	ret = regulator_bulk_get(dev, ARRAY_SIZE(data->supplies),
 				 data->supplies);
@@ -465,7 +480,7 @@ err_gpio:
 	return ret;
 }
 
-static int tpa6130a2_remove(struct i2c_client *client)
+static int __devexit tpa6130a2_remove(struct i2c_client *client)
 {
 	struct tpa6130a2_data *data = i2c_get_clientdata(client);
 

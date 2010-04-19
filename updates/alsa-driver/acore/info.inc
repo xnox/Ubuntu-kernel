@@ -1,12 +1,7 @@
-#define __NO_VERSION__
 #include "adriver.h"
-#ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
-#else
-#include <linux/config.h>
-#endif
-#include <linux/version.h>
-#include <linux/utsrelease.h>
+#include "alsa-autoconf.h"
+#define __NO_VERSION__
+
 #include <linux/proc_fs.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 0)

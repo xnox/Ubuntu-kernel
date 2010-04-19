@@ -18,6 +18,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/device.h>
+#include <linux/slab.h>
 #include <linux/delay.h>
 #include <linux/io.h>
 #include <linux/clk.h>
@@ -768,13 +769,12 @@ static int davinci_mcasp_trigger(struct snd_pcm_substream *substream,
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_RESUME:
+	case SNDRV_PCM_TRIGGER_START:
+	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
 		if (!dev->clk_active) {
 			clk_enable(dev->clk);
 			dev->clk_active = 1;
 		}
-		/* Fall through */
-	case SNDRV_PCM_TRIGGER_START:
-	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
 		davinci_mcasp_start(dev, substream->stream);
 		break;
 
@@ -918,7 +918,8 @@ static int davinci_mcasp_probe(struct platform_device *pdev)
 
 	dma_data->channel = res->start;
 	davinci_mcasp_dai[pdata->op_mode].private_data = dev;
-	davinci_mcasp_dai[pdata->op_mode].dma_data = dev->dma_params;
+	davinci_mcasp_dai[pdata->op_mode].capture.dma_data = dev->dma_params;
+	davinci_mcasp_dai[pdata->op_mode].playback.dma_data = dev->dma_params;
 	davinci_mcasp_dai[pdata->op_mode].dev = &pdev->dev;
 	ret = snd_soc_register_dai(&davinci_mcasp_dai[pdata->op_mode]);
 

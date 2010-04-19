@@ -25,6 +25,9 @@ Copyright AudioScience, Inc., 2003
 #ifndef _HPI6205_H_
 #define _HPI6205_H_
 
+/* transitional conditional compile shared between host and DSP */
+/* #define HPI6205_NO_HSR_POLL */
+
 #include "hpi_internal.h"
 
 /***********************************************************
@@ -37,7 +40,7 @@ Copyright AudioScience, Inc., 2003
 #define H620_HIF_DATA_MASK      0x10
 #define H620_HIF_SEND_DATA      0x14
 #define H620_HIF_GET_DATA       0x15
-#define H620_HIF_UNKNOWN                0xffff
+#define H620_HIF_UNKNOWN                0x0000ffff
 
 /***********************************************************
 	Types used for mixer control caching
@@ -48,34 +51,20 @@ Copyright AudioScience, Inc., 2003
 #define HPI_NMIXER_CONTROLS 2048
 
 /*********************************************************************
-This is used for background buffer bus mastering stream buffers.
-**********************************************************************/
-struct hostbuffer_status_6205 {
-	u32 dwSamplesProcessed;
-	u32 dwAuxiliaryDataAvailable;
-	u32 dwStreamState;
-	/* DSP index in to the host bus master buffer. */
-	u32 dwDSPIndex;
-	/* Host index in to the host bus master buffer. */
-	u32 dwHostIndex;
-	u32 dwSizeInBytes;
-};
-
-/*********************************************************************
 This is used for dynamic control cache allocation
 **********************************************************************/
 struct controlcache_6205 {
-	u32 dwNumberOfControls;
-	u32 dwPhysicalPCI32address;
-	u32 dwSizeInBytes;
+	u32 number_of_controls;
+	u32 physical_address32;
+	u32 size_in_bytes;
 };
 
 /*********************************************************************
 This is used for dynamic allocation of async event array
 **********************************************************************/
 struct async_event_buffer_6205 {
-	u32 dwPhysicalPCI32address;
-	u32 dwSpare;
+	u32 physical_address32;
+	u32 spare;
 	struct hpi_fifo_buffer b;
 };
 
@@ -85,20 +74,20 @@ in and out of.
 ************************************************************/
 #define HPI6205_SIZEOF_DATA (16*1024)
 struct bus_master_interface {
-	u32 dwHostCmd;
-	u32 dwDspAck;
-	u32 dwTransferSizeInBytes;
+	u32 host_cmd;
+	u32 dsp_ack;
+	u32 transfer_size_in_bytes;
 	union {
-		struct hpi_message MessageBuffer;
-		struct hpi_response ResponseBuffer;
-		u8 bData[HPI6205_SIZEOF_DATA];
+		struct hpi_message message_buffer;
+		struct hpi_response response_buffer;
+		u8 b_data[HPI6205_SIZEOF_DATA];
 	} u;
-	struct controlcache_6205 aControlCache;
-	struct async_event_buffer_6205 aAsyncBuffer;
-	struct hostbuffer_status_6205
-	 aInStreamHostBufferStatus[H620_MAX_ISTREAMS];
-	struct hostbuffer_status_6205
-	 aOutStreamHostBufferStatus[H620_MAX_OSTREAMS];
+	struct controlcache_6205 control_cache;
+	struct async_event_buffer_6205 async_buffer;
+	struct hpi_hostbuffer_status
+	 instream_host_buffer_status[H620_MAX_ISTREAMS];
+	struct hpi_hostbuffer_status
+	 outstream_host_buffer_status[H620_MAX_OSTREAMS];
 };
 
 #endif

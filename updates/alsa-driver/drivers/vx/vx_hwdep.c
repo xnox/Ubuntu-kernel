@@ -1,12 +1,6 @@
-#include "config.h"
+#include "alsa-autoconf.h"
 #define __NO_VERSION__
-/* to be in alsa-driver-specfici code */
-#ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
-#else
-#include <linux/config.h>
-#endif
-#include <linux/version.h>
+/* to be in alsa-driver-specific code */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
 #define CONFIG_USE_VXLOADER
 #endif

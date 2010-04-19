@@ -20,7 +20,6 @@
  *   Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
  */
 
-#include <linux/slab.h>
 #include <linux/delay.h>
 #include <sound/core.h>
 #include <sound/asoundef.h>
@@ -277,6 +276,7 @@ static struct snd_pcm_ops pdacf_pcm_capture_ops = {
 	.trigger =	pdacf_pcm_trigger,
 	.pointer =	pdacf_pcm_capture_pointer,
 	.page =		snd_pcm_lib_get_vmalloc_page,
+	.mmap =		snd_pcm_lib_mmap_vmalloc,
 };
 
 

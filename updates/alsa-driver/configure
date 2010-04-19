@@ -963,7 +963,7 @@ CONFIG_SOC_AU1200
 CONFIG_SOC_AU1550
 CONFIG_SND_SOC_AU1XPSC_I2S
 CONFIG_SND_SOC_AU1XPSC_AC97
-CONFIG_SND_SOC_SAMPLE_PSC_AC97
+CONFIG_SND_SOC_DB1200
 CONFIG_SND_BF5XX_I2S
 CONFIG_BLACKFIN
 CONFIG_SND_BF5XX_SOC_SSM2602
@@ -971,7 +971,7 @@ CONFIG_SND_BF5XX_SOC_AD73311
 CONFIG_SND_BFIN_AD73311_SE
 CONFIG_SND_BF5XX_TDM
 CONFIG_SND_BF5XX_SOC_AD1836
-CONFIG_SND_BF5XX_SOC_AD1938
+CONFIG_SND_BF5XX_SOC_AD193X
 CONFIG_SND_BF5XX_AC97
 CONFIG_SND_BF5XX_MMAP_SUPPORT
 CONFIG_SND_BF5XX_MULTICHAN_SUPPORT
@@ -987,10 +987,14 @@ CONFIG_SND_DAVINCI_SOC
 CONFIG_ARCH_DAVINCI
 CONFIG_SND_DAVINCI_SOC_I2S
 CONFIG_SND_DAVINCI_SOC_MCASP
+CONFIG_SND_DAVINCI_SOC_VCIF
 CONFIG_SND_DAVINCI_SOC_EVM
 CONFIG_MACH_DAVINCI_EVM
 CONFIG_MACH_DAVINCI_DM355_EVM
 CONFIG_MACH_DAVINCI_DM365_EVM
+CONFIG_SND_DM365_AIC3X_CODEC
+CONFIG_SND_DM365_VOICE_CODEC
+CONFIG_MFD_DAVINCI_VOICECODEC
 CONFIG_SND_DM6467_SOC_EVM
 CONFIG_MACH_DAVINCI_DM6467_EVM
 CONFIG_SND_DAVINCI_SOC_SFFSDR
@@ -1015,17 +1019,16 @@ CONFIG_SND_MPC52XX_SOC_PCM030
 CONFIG_PPC_MPC5200_SIMPLE
 CONFIG_SND_MPC52XX_SOC_EFIKA
 CONFIG_PPC_EFIKA
-CONFIG_SND_MX1_MX2_SOC
-CONFIG_ARCH_MX2
-CONFIG_ARCH_MX1
+CONFIG_SND_IMX_SOC
+CONFIG_ARCH_MXC
+CONFIG_FIQ
 CONFIG_SND_MXC_SOC_SSI
-CONFIG_SND_SOC_MX27VIS_WM8974
-CONFIG_MACH_MX27
-CONFIG_MACH_IMX27_VISSTRIM_M10
+CONFIG_SND_MXC_SOC_WM1133_EV1
 CONFIG_SND_OMAP_SOC
 CONFIG_ARCH_OMAP
 CONFIG_SND_OMAP_SOC_MCBSP
 CONFIG_OMAP_MCBSP
+CONFIG_SND_OMAP_SOC_MCPDM
 CONFIG_SND_OMAP_SOC_N810
 CONFIG_MACH_NOKIA_N810
 CONFIG_OMAP_MUX
@@ -1049,6 +1052,7 @@ CONFIG_SND_OMAP_SOC_OMAP3_PANDORA
 CONFIG_MACH_OMAP3_PANDORA
 CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE
 CONFIG_MACH_OMAP3_BEAGLE
+CONFIG_MACH_DEVKIT8000
 CONFIG_SND_OMAP_SOC_ZOOM2
 CONFIG_MACH_OMAP_ZOOM2
 CONFIG_SND_OMAP_SOC_IGEP0020
@@ -1061,6 +1065,8 @@ CONFIG_SND_PXA2XX_SOC_CORGI
 CONFIG_PXA_SHARP_C7XX
 CONFIG_SND_PXA2XX_SOC_SPITZ
 CONFIG_PXA_SHARP_CXX00
+CONFIG_SND_PXA2XX_SOC_Z2
+CONFIG_MACH_ZIPIT2
 CONFIG_SND_PXA2XX_SOC_POODLE
 CONFIG_MACH_POODLE
 CONFIG_SND_PXA2XX_SOC_TOSA
@@ -1100,7 +1106,7 @@ CONFIG_SND_S3C_I2SV2_SOC
 CONFIG_SND_S3C2412_SOC_I2S
 CONFIG_SND_S3C64XX_SOC_I2S
 CONFIG_SND_S3C_SOC_PCM
-CONFIG_SND_S3C2443_SOC_AC97
+CONFIG_SND_S3C_SOC_AC97
 CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753
 CONFIG_MACH_NEO1973_GTA01
 CONFIG_SND_S3C24XX_SOC_NEO1973_GTA02_WM8753
@@ -1117,21 +1123,29 @@ CONFIG_SND_S3C24XX_SOC_S3C24XX_UDA134X
 CONFIG_SND_S3C24XX_SOC_SIMTEC
 CONFIG_SND_S3C24XX_SOC_SIMTEC_TLV320AIC23
 CONFIG_SND_S3C24XX_SOC_SIMTEC_HERMES
+CONFIG_SND_SOC_SMDK_WM9713
 CONFIG_SND_S6000_SOC
 CONFIG_XTENSA_VARIANT_S6000
 CONFIG_SND_S6000_SOC_I2S
 CONFIG_SND_S6000_SOC_S6IPCAM
 CONFIG_XTENSA_PLATFORM_S6105
+CONFIG_ARCH_SHMOBILE
 CONFIG_SND_SOC_PCM_SH7760
 CONFIG_CPU_SUBTYPE_SH7760
 CONFIG_SH_DMABRG
 CONFIG_SND_SOC_SH4_HAC
 CONFIG_SND_SOC_SH4_SSI
 CONFIG_SND_SOC_SH4_FSI
-CONFIG_CPU_SUBTYPE_SH7724
+CONFIG_SND_SOC_SH4_SIU
+CONFIG_HAVE_CLK
+CONFIG_DMA_ENGINE
+CONFIG_DMADEVICES
+CONFIG_SH_DMAE
 CONFIG_SND_SH7760_AC97
 CONFIG_SND_FSI_AK4642
 CONFIG_SND_FSI_DA7210
+CONFIG_SND_SIU_MIGOR
+CONFIG_SH_MIGOR
 CONFIG_SND_SOC_TXX9ACLC
 CONFIG_HAS_TXX9_ACLC
 CONFIG_TXX9_DMAC
@@ -1142,7 +1156,7 @@ CONFIG_SND_SOC_ALL_CODECS
 CONFIG_SND_SOC_WM_HUBS
 CONFIG_SND_SOC_AC97_CODEC
 CONFIG_SND_SOC_AD1836
-CONFIG_SND_SOC_AD1938
+CONFIG_SND_SOC_AD193X
 CONFIG_SND_SOC_AD1980
 CONFIG_SND_SOC_AD73311
 CONFIG_SND_SOC_ADS117X
@@ -1150,6 +1164,7 @@ CONFIG_SND_SOC_AK4104
 CONFIG_SND_SOC_AK4535
 CONFIG_SND_SOC_AK4642
 CONFIG_SND_SOC_AK4671
+CONFIG_SND_SOC_CQ0093VC
 CONFIG_SND_SOC_CS4270
 CONFIG_SND_SOC_DA7210
 CONFIG_SND_SOC_CS4270_VD33_ERRATA
@@ -1165,6 +1180,7 @@ CONFIG_SND_SOC_TLV320AIC3X
 CONFIG_SND_SOC_TLV320DAC33
 CONFIG_SND_SOC_TWL4030
 CONFIG_TWL4030_CODEC
+CONFIG_SND_SOC_TWL6040
 CONFIG_SND_SOC_UDA134X
 CONFIG_SND_SOC_UDA1380
 CONFIG_SND_SOC_WM8350
@@ -1188,15 +1204,18 @@ CONFIG_SND_SOC_WM8960
 CONFIG_SND_SOC_WM8961
 CONFIG_SND_SOC_WM8971
 CONFIG_SND_SOC_WM8974
+CONFIG_SND_SOC_WM8978
 CONFIG_SND_SOC_WM8988
 CONFIG_SND_SOC_WM8990
 CONFIG_SND_SOC_WM8993
+CONFIG_SND_SOC_WM8994
 CONFIG_SND_SOC_WM9081
 CONFIG_SND_SOC_WM9705
 CONFIG_SND_SOC_WM9712
 CONFIG_SND_SOC_WM9713
 CONFIG_SND_SOC_MAX9877
 CONFIG_SND_SOC_TPA6130A2
+CONFIG_SND_SOC_WM2000
 CONFIG_SOUND_PRIME
 CONFIG_AC97_BUS
 c_opts
@@ -1850,38 +1869,38 @@ Optional Packages:
                             vxpocket, pdaudiocf, sun-amd7930, sun-cs4231,
                             sun-dbri, harmony, soc, atmel-soc,
                             at91-soc-sam9g20-wm8731, at32-soc-playpaq,
-                            at91-soc-afeb9260, soc-au1xpsc,
-                            soc-sample-psc-ac97, bf5xx-i2s,
-                            bf5xx-soc-ssm2602, bf5xx-soc-ad73311, bf5xx-tdm,
-                            bf5xx-soc-ad1836, bf5xx-soc-ad1938, bf5xx-ac97,
-                            bf5xx-soc-ad1980, davinci-soc, davinci-soc-evm,
-                            dm6467-soc-evm, davinci-soc-sffsdr,
-                            da830-soc-evm, da850-soc-evm, soc-mpc8610-hpcd,
-                            soc-mpc5200-i2s, soc-mpc5200-ac97,
-                            mpc52xx-soc-pcm030, mpc52xx-soc-efika,
-                            mx1-mx2-soc, soc-mx27vis-wm8974, omap-soc,
-                            omap-soc-n810, omap-soc-ams-delta,
+                            at91-soc-afeb9260, soc-au1xpsc, soc-db1200,
+                            bf5xx-i2s, bf5xx-soc-ssm2602, bf5xx-soc-ad73311,
+                            bf5xx-tdm, bf5xx-soc-ad1836, bf5xx-soc-ad193x,
+                            bf5xx-ac97, bf5xx-soc-ad1980, davinci-soc,
+                            davinci-soc-evm, dm6467-soc-evm,
+                            davinci-soc-sffsdr, da830-soc-evm, da850-soc-evm,
+                            soc-mpc8610-hpcd, soc-mpc5200-i2s,
+                            soc-mpc5200-ac97, mpc52xx-soc-pcm030,
+                            mpc52xx-soc-efika, imx-soc, mxc-soc-wm1133-ev1,
+                            omap-soc, omap-soc-n810, omap-soc-ams-delta,
                             omap-soc-osk5912, omap-soc-overo,
                             omap-soc-omap2evm, omap-soc-omap3evm,
                             omap-soc-am3517evm, omap-soc-sdp3430,
                             omap-soc-omap3-pandora, omap-soc-omap3-beagle,
                             omap-soc-zoom2, omap-soc-igep0020, pxa2xx-soc,
                             pxa2xx-soc-corgi, pxa2xx-soc-spitz,
-                            pxa2xx-soc-poodle, pxa2xx-soc-tosa,
-                            pxa2xx-soc-e740, pxa2xx-soc-e750,
-                            pxa2xx-soc-e800, pxa2xx-soc-em-x270,
-                            soc-zylonite, soc-raumfeld, pxa2xx-soc-magician,
-                            pxa2xx-soc-mioa701, s3c24xx-soc,
-                            s3c24xx-soc-neo1973-wm8753,
+                            pxa2xx-soc-z2, pxa2xx-soc-poodle,
+                            pxa2xx-soc-tosa, pxa2xx-soc-e740,
+                            pxa2xx-soc-e750, pxa2xx-soc-e800,
+                            pxa2xx-soc-em-x270, soc-zylonite, soc-raumfeld,
+                            pxa2xx-soc-magician, pxa2xx-soc-mioa701,
+                            s3c24xx-soc, s3c24xx-soc-neo1973-wm8753,
                             s3c24xx-soc-neo1973-gta02-wm8753,
                             s3c24xx-soc-jive-wm8750, s3c64xx-soc-wm8580,
                             s3c24xx-soc-smdk2443-wm9710,
                             s3c24xx-soc-ln2440sbc-alc650,
                             s3c24xx-soc-s3c24xx-uda134x,
                             s3c24xx-soc-simtec-tlv320aic23,
-                            s3c24xx-soc-simtec-hermes, s6000-soc,
-                            s6000-soc-s6ipcam, soc-pcm-sh7760, soc-sh4-fsi,
-                            sh7760-ac97, soc-txx9aclc, soc-txx9aclc-generic,
+                            s3c24xx-soc-simtec-hermes, soc-smdk-wm9713,
+                            s6000-soc, s6000-soc-s6ipcam, soc-pcm-sh7760,
+                            soc-sh4-fsi, sh7760-ac97, siu-migor,
+                            soc-txx9aclc, soc-txx9aclc-generic,
                             soc-tlv320aic26
   --with-card-options=<list> enable driver options in <list>;
                           options may be separated with commas;
@@ -1901,7 +1920,8 @@ Optional Packages:
                             hda-power-save, powermac-auto-drc,
                             usb-caiaq-input, at32-soc-playpaq-slave,
                             bf5xx-mmap-support, bf5xx-multichan-support,
-                            bf5xx-have-cold-reset, pxa2xx-soc-palm27x,
+                            bf5xx-have-cold-reset, dm365-aic3x-codec,
+                            dm365-voice-codec, pxa2xx-soc-palm27x,
                             fsi-ak4642, fsi-da7210
 
 Some influential environment variables:
@@ -2336,7 +2356,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-CONFIG_SND_VERSION="1.0.22.1"
+CONFIG_SND_VERSION="1.0.23"
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -4828,7 +4848,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SOC_AU1550=""
 	CONFIG_SND_SOC_AU1XPSC_I2S=""
 	CONFIG_SND_SOC_AU1XPSC_AC97=""
-	CONFIG_SND_SOC_SAMPLE_PSC_AC97=""
+	CONFIG_SND_SOC_DB1200=""
 	CONFIG_SND_BF5XX_I2S=""
 	CONFIG_BLACKFIN=""
 	CONFIG_SND_BF5XX_SOC_SSM2602=""
@@ -4836,7 +4856,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_BFIN_AD73311_SE=""
 	CONFIG_SND_BF5XX_TDM=""
 	CONFIG_SND_BF5XX_SOC_AD1836=""
-	CONFIG_SND_BF5XX_SOC_AD1938=""
+	CONFIG_SND_BF5XX_SOC_AD193X=""
 	CONFIG_SND_BF5XX_AC97=""
 	CONFIG_SND_BF5XX_MMAP_SUPPORT=""
 	CONFIG_SND_BF5XX_MULTICHAN_SUPPORT=""
@@ -4852,10 +4872,14 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_ARCH_DAVINCI=""
 	CONFIG_SND_DAVINCI_SOC_I2S=""
 	CONFIG_SND_DAVINCI_SOC_MCASP=""
+	CONFIG_SND_DAVINCI_SOC_VCIF=""
 	CONFIG_SND_DAVINCI_SOC_EVM=""
 	CONFIG_MACH_DAVINCI_EVM=""
 	CONFIG_MACH_DAVINCI_DM355_EVM=""
 	CONFIG_MACH_DAVINCI_DM365_EVM=""
+	CONFIG_SND_DM365_AIC3X_CODEC=""
+	CONFIG_SND_DM365_VOICE_CODEC=""
+	CONFIG_MFD_DAVINCI_VOICECODEC=""
 	CONFIG_SND_DM6467_SOC_EVM=""
 	CONFIG_MACH_DAVINCI_DM6467_EVM=""
 	CONFIG_SND_DAVINCI_SOC_SFFSDR=""
@@ -4880,17 +4904,16 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_PPC_MPC5200_SIMPLE=""
 	CONFIG_SND_MPC52XX_SOC_EFIKA=""
 	CONFIG_PPC_EFIKA=""
-	CONFIG_SND_MX1_MX2_SOC=""
-	CONFIG_ARCH_MX2=""
-	CONFIG_ARCH_MX1=""
+	CONFIG_SND_IMX_SOC=""
+	CONFIG_ARCH_MXC=""
+	CONFIG_FIQ=""
 	CONFIG_SND_MXC_SOC_SSI=""
-	CONFIG_SND_SOC_MX27VIS_WM8974=""
-	CONFIG_MACH_MX27=""
-	CONFIG_MACH_IMX27_VISSTRIM_M10=""
+	CONFIG_SND_MXC_SOC_WM1133_EV1=""
 	CONFIG_SND_OMAP_SOC=""
 	CONFIG_ARCH_OMAP=""
 	CONFIG_SND_OMAP_SOC_MCBSP=""
 	CONFIG_OMAP_MCBSP=""
+	CONFIG_SND_OMAP_SOC_MCPDM=""
 	CONFIG_SND_OMAP_SOC_N810=""
 	CONFIG_MACH_NOKIA_N810=""
 	CONFIG_OMAP_MUX=""
@@ -4914,6 +4937,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_MACH_OMAP3_PANDORA=""
 	CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE=""
 	CONFIG_MACH_OMAP3_BEAGLE=""
+	CONFIG_MACH_DEVKIT8000=""
 	CONFIG_SND_OMAP_SOC_ZOOM2=""
 	CONFIG_MACH_OMAP_ZOOM2=""
 	CONFIG_SND_OMAP_SOC_IGEP0020=""
@@ -4926,6 +4950,8 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_PXA_SHARP_C7XX=""
 	CONFIG_SND_PXA2XX_SOC_SPITZ=""
 	CONFIG_PXA_SHARP_CXX00=""
+	CONFIG_SND_PXA2XX_SOC_Z2=""
+	CONFIG_MACH_ZIPIT2=""
 	CONFIG_SND_PXA2XX_SOC_POODLE=""
 	CONFIG_MACH_POODLE=""
 	CONFIG_SND_PXA2XX_SOC_TOSA=""
@@ -4965,7 +4991,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_S3C2412_SOC_I2S=""
 	CONFIG_SND_S3C64XX_SOC_I2S=""
 	CONFIG_SND_S3C_SOC_PCM=""
-	CONFIG_SND_S3C2443_SOC_AC97=""
+	CONFIG_SND_S3C_SOC_AC97=""
 	CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753=""
 	CONFIG_MACH_NEO1973_GTA01=""
 	CONFIG_SND_S3C24XX_SOC_NEO1973_GTA02_WM8753=""
@@ -4982,21 +5008,29 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_S3C24XX_SOC_SIMTEC=""
 	CONFIG_SND_S3C24XX_SOC_SIMTEC_TLV320AIC23=""
 	CONFIG_SND_S3C24XX_SOC_SIMTEC_HERMES=""
+	CONFIG_SND_SOC_SMDK_WM9713=""
 	CONFIG_SND_S6000_SOC=""
 	CONFIG_XTENSA_VARIANT_S6000=""
 	CONFIG_SND_S6000_SOC_I2S=""
 	CONFIG_SND_S6000_SOC_S6IPCAM=""
 	CONFIG_XTENSA_PLATFORM_S6105=""
+	CONFIG_ARCH_SHMOBILE=""
 	CONFIG_SND_SOC_PCM_SH7760=""
 	CONFIG_CPU_SUBTYPE_SH7760=""
 	CONFIG_SH_DMABRG=""
 	CONFIG_SND_SOC_SH4_HAC=""
 	CONFIG_SND_SOC_SH4_SSI=""
 	CONFIG_SND_SOC_SH4_FSI=""
-	CONFIG_CPU_SUBTYPE_SH7724=""
+	CONFIG_SND_SOC_SH4_SIU=""
+	CONFIG_HAVE_CLK=""
+	CONFIG_DMA_ENGINE=""
+	CONFIG_DMADEVICES=""
+	CONFIG_SH_DMAE=""
 	CONFIG_SND_SH7760_AC97=""
 	CONFIG_SND_FSI_AK4642=""
 	CONFIG_SND_FSI_DA7210=""
+	CONFIG_SND_SIU_MIGOR=""
+	CONFIG_SH_MIGOR=""
 	CONFIG_SND_SOC_TXX9ACLC=""
 	CONFIG_HAS_TXX9_ACLC=""
 	CONFIG_TXX9_DMAC=""
@@ -5007,7 +5041,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_SOC_WM_HUBS=""
 	CONFIG_SND_SOC_AC97_CODEC=""
 	CONFIG_SND_SOC_AD1836=""
-	CONFIG_SND_SOC_AD1938=""
+	CONFIG_SND_SOC_AD193X=""
 	CONFIG_SND_SOC_AD1980=""
 	CONFIG_SND_SOC_AD73311=""
 	CONFIG_SND_SOC_ADS117X=""
@@ -5015,6 +5049,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_SOC_AK4535=""
 	CONFIG_SND_SOC_AK4642=""
 	CONFIG_SND_SOC_AK4671=""
+	CONFIG_SND_SOC_CQ0093VC=""
 	CONFIG_SND_SOC_CS4270=""
 	CONFIG_SND_SOC_DA7210=""
 	CONFIG_SND_SOC_CS4270_VD33_ERRATA=""
@@ -5030,6 +5065,7 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_SOC_TLV320DAC33=""
 	CONFIG_SND_SOC_TWL4030=""
 	CONFIG_TWL4030_CODEC=""
+	CONFIG_SND_SOC_TWL6040=""
 	CONFIG_SND_SOC_UDA134X=""
 	CONFIG_SND_SOC_UDA1380=""
 	CONFIG_SND_SOC_WM8350=""
@@ -5053,15 +5089,18 @@ echo "${ECHO_T}$SRCDIR" >&6; }
 	CONFIG_SND_SOC_WM8961=""
 	CONFIG_SND_SOC_WM8971=""
 	CONFIG_SND_SOC_WM8974=""
+	CONFIG_SND_SOC_WM8978=""
 	CONFIG_SND_SOC_WM8988=""
 	CONFIG_SND_SOC_WM8990=""
 	CONFIG_SND_SOC_WM8993=""
+	CONFIG_SND_SOC_WM8994=""
 	CONFIG_SND_SOC_WM9081=""
 	CONFIG_SND_SOC_WM9705=""
 	CONFIG_SND_SOC_WM9712=""
 	CONFIG_SND_SOC_WM9713=""
 	CONFIG_SND_SOC_MAX9877=""
 	CONFIG_SND_SOC_TPA6130A2=""
+	CONFIG_SND_SOC_WM2000=""
 	CONFIG_SOUND_PRIME=""
 	CONFIG_AC97_BUS=""
 
@@ -5104,7 +5143,19 @@ else
 
 fi
 
-ALSAKERNELDIR=$(cd "$alsakerneldir" && pwd)
+ALSAKERNELDIR=""
+if test -d "$alsakerneldir"; then
+  ALSAKERNELDIR=$(cd "$alsakerneldir" && pwd)
+elif test -d "alsa-kernel"; then
+  ALSAKERNELDIR=$(cd "alsa-kernel" && pwd)
+fi
+if test -z "$ALSAKERNELDIR"; then
+  cat << EOF
+The directory $alsakerneldir does not exist.
+Please obtain the ALSA linux kernel tree (alsa-kmirror or alsa-kernel).
+EOF
+  exit 1
+fi
 { echo "$as_me:$LINENO: result: $alsakerneldir" >&5
 echo "${ECHO_T}$alsakerneldir" >&6; }
 
@@ -5129,7 +5180,16 @@ else
 
 fi
 
-CONFIG_SND_KERNELDIR=$(cd "$kerneldir" && pwd)
+if test -d "$kerneldir"; then
+  CONFIG_SND_KERNELDIR=$(cd "$kerneldir" && pwd)
+else
+  cat << EOF
+Please install the package with full kernel sources for your distribution
+or use --with-kernel=dir option to specify another directory with kernel
+sources (default is $DEFAULT_KERNEL_DIR).
+EOF
+  exit 1
+fi
 { echo "$as_me:$LINENO: result: $kerneldir" >&5
 echo "${ECHO_T}$kerneldir" >&6; }
 
@@ -5150,42 +5210,111 @@ echo "${ECHO_T}$kernelbuild" >&6; }
 
 
 
-  { echo "$as_me:$LINENO: checking for kernel linux/version.h" >&5
-echo $ECHO_N "checking for kernel linux/version.h... $ECHO_C" >&6; }
+  INCLUDE_VERSION_H="linux/version.h"
+  { echo "$as_me:$LINENO: checking for kernel linux/version.h " >&5
+echo $ECHO_N "checking for kernel linux/version.h ... $ECHO_C" >&6; }
   if ! test -r $CONFIG_SND_KERNELDIR/include/linux/version.h; then
     if test -z "$kernelbuild" -o ! -f $kernelbuild/include/linux/version.h; then
-      { echo "$as_me:$LINENO: result: no" >&5
+      if test -n ""; then
+	INCLUDE_VERSION_H=""
+	if ! test -r $CONFIG_SND_KERNELDIR/include/; then
+	  if test -z "$kernelbuild" -o ! -f $kernelbuild/include/; then
+	    { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
-      cat << EOF
+	    cat << EOF
 The file $CONFIG_SND_KERNELDIR/include/linux/version.h does not exist.
+The file $CONFIG_SND_KERNELDIR/include/ does not exist.
 Please install the package with full kernel sources for your distribution
 or use --with-kernel=dir option to specify another directory with kernel
 sources (default is $DEFAULT_KERNEL_DIR).
 EOF
-      exit 1
+	    exit 1
+	  fi
+	fi
+      else
+        { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+        cat << EOF
+The file $CONFIG_SND_KERNELDIR/include/INCLUDE_VERSION_H does not exist.
+Please install the package with full kernel sources for your distribution
+or use --with-kernel=dir option to specify another directory with kernel
+sources (default is $DEFAULT_KERNEL_DIR).
+EOF
+        exit 1
+      fi
     fi
   fi
-  { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
+  { echo "$as_me:$LINENO: result: $INCLUDE_VERSION_H" >&5
+echo "${ECHO_T}$INCLUDE_VERSION_H" >&6; }
 
 
-  { echo "$as_me:$LINENO: checking for kernel linux/autoconf.h" >&5
-echo $ECHO_N "checking for kernel linux/autoconf.h... $ECHO_C" >&6; }
+  INCLUDE_AUTOCONF_H="linux/autoconf.h"
+  { echo "$as_me:$LINENO: checking for kernel linux/autoconf.h generated/autoconf.h" >&5
+echo $ECHO_N "checking for kernel linux/autoconf.h generated/autoconf.h... $ECHO_C" >&6; }
   if ! test -r $CONFIG_SND_KERNELDIR/include/linux/autoconf.h; then
     if test -z "$kernelbuild" -o ! -f $kernelbuild/include/linux/autoconf.h; then
-      { echo "$as_me:$LINENO: result: no" >&5
+      if test -n "generated/autoconf.h"; then
+	INCLUDE_AUTOCONF_H="generated/autoconf.h"
+	if ! test -r $CONFIG_SND_KERNELDIR/include/generated/autoconf.h; then
+	  if test -z "$kernelbuild" -o ! -f $kernelbuild/include/generated/autoconf.h; then
+	    { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
-      cat << EOF
+	    cat << EOF
 The file $CONFIG_SND_KERNELDIR/include/linux/autoconf.h does not exist.
+The file $CONFIG_SND_KERNELDIR/include/generated/autoconf.h does not exist.
 Please install the package with full kernel sources for your distribution
 or use --with-kernel=dir option to specify another directory with kernel
 sources (default is $DEFAULT_KERNEL_DIR).
 EOF
-      exit 1
+	    exit 1
+	  fi
+	fi
+      else
+        { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+        cat << EOF
+The file $CONFIG_SND_KERNELDIR/include/INCLUDE_AUTOCONF_H does not exist.
+Please install the package with full kernel sources for your distribution
+or use --with-kernel=dir option to specify another directory with kernel
+sources (default is $DEFAULT_KERNEL_DIR).
+EOF
+        exit 1
+      fi
     fi
   fi
-  { echo "$as_me:$LINENO: result: yes" >&5
-echo "${ECHO_T}yes" >&6; }
+  { echo "$as_me:$LINENO: result: $INCLUDE_AUTOCONF_H" >&5
+echo "${ECHO_T}$INCLUDE_AUTOCONF_H" >&6; }
+
+
+
+
+  INCLUDE_UTSRELEASE_H=""
+  { echo "$as_me:$LINENO: checking for kernel linux/utsrelease.h generated/utsrelease.h" >&5
+echo $ECHO_N "checking for kernel linux/utsrelease.h generated/utsrelease.h... $ECHO_C" >&6; }
+  if test -r $CONFIG_SND_KERNELDIR/include/linux/utsrelease.h; then
+    INCLUDE_UTSRELEASE_H="linux/utsrelease.h"
+  else
+    if test -n "$kernelbuild" -a -f $kernelbuild/include/linux/utsrelease.h; then
+      INCLUDE_UTSRELEASE_H="linux/utsrelease.h"
+    else
+      if test -n "generated/utsrelease.h"; then
+	if test -r $CONFIG_SND_KERNELDIR/include/generated/utsrelease.h; then
+	  INCLUDE_UTSRELEASE_H="generated/utsrelease.h"
+        else
+	  if test -n "$kernelbuild" -a -f $kernelbuild/include/generated/utsrelease.h; then
+	    INCLUDE_UTSRELEASE_H="generated/utsrelease.h"
+	  fi
+	fi
+      fi
+    fi
+  fi
+  if ! test -z "$INCLUDE_UTSRELEASE_H"; then
+    { echo "$as_me:$LINENO: result: $INCLUDE_UTSRELEASE_H" >&5
+echo "${ECHO_T}$INCLUDE_UTSRELEASE_H" >&6; }
+  else
+    { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+  fi
 
 
 { echo "$as_me:$LINENO: checking for kernel version" >&5
@@ -5206,7 +5335,7 @@ fi
 HACK_KERNEL_INC=""
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-if test -n "$kernelbuild" -a -f $kernelbuild/include/linux/version.h; then
+if test -n "$kernelbuild" -a -f $kernelbuild/include/$INCLUDE_VERSION_H; then
   KERNDIR=$kernelbuild
 else
   KERNDIR=$CONFIG_SND_KERNELDIR
@@ -5224,9 +5353,9 @@ cat >>conftest.$ac_ext <<_ACEOF
 #include <stdio.h>
 #include <ctype.h>
 #include <stdlib.h>
-#include "$KERNDIR/include/linux/version.h"
+#include "$KERNDIR/include/$INCLUDE_VERSION_H"
 #ifndef UTS_RELEASE
-#include "$KERNDIR/include/linux/utsrelease.h"
+#include "$KERNDIR/include/$INCLUDE_UTSRELEASE_H"
 #endif
 int main()
 {
@@ -5305,8 +5434,12 @@ kextraversion=`echo $kaversion | cut -d : -f 4`
 kversion=`expr $kversion + 0`
 kpatchlevel=`expr $kpatchlevel + 0`
 ksublevel=`expr $ksublevel + 0`
-if test -z "$kversion" || test -z "$kpatchlevel" || test -z "$ksublevel"; then
-  echo "failed (probably missing $CONFIG_SND_KERNELDIR/include/linux/version.h)"
+if test "$kversion" = "0" -a "$kpatchlevel" = "0" -a "$ksublevel" = "0"; then
+  { echo "$as_me:$LINENO: result: failed" >&5
+echo "${ECHO_T}failed" >&6; }
+  echo "  (probably missing $CONFIG_SND_KERNELDIR/include/linux/version.h or"
+  echo "                    $CONFIG_SND_KERNELDIR/include/linux/utsrelease.h or"
+  echo "                    $CONFIG_SND_KERNELDIR/include/generated/utsrelease.h)"
   exit 1
 fi
 kaversion="$kversion.$kpatchlevel.$ksublevel$kextraversion"
@@ -5445,7 +5578,7 @@ my_compiler=`$CROSS_COMPILE$CC --version | head -n 1`
       ;;
     [0-9].[0-9]*)
       if test -z "$ac_compiler_version"; then
-        ac_compiler_version="$i"
+        ac_compiler_version=`echo $i | sed -e 's|[^0-9]*\([0-9.]\+\).*$|\1|'`
       fi
       ;;
     esac
@@ -5486,7 +5619,7 @@ my_compiler=`$CROSS_COMPILE$CC --version | head -n 1`
       ;;
     [0-9].[0-9]*)
       if test -z "$ac_compiler_version"; then
-        ac_compiler_version="$i"
+        ac_compiler_version=`echo $i | sed -e 's|[^0-9]*\([0-9.]\+\).*$|\1|'`
       fi
       ;;
     esac
@@ -5553,7 +5686,7 @@ fi
 echo $ECHO_N "checking for built-in ALSA... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -5571,7 +5704,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #ifndef $boolvar
   exit(1);
@@ -5631,7 +5764,7 @@ fi
 echo $ECHO_N "checking for existing ALSA module... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -5649,7 +5782,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -5732,7 +5865,7 @@ echo "${ECHO_T}auto" >&6; }
 echo $ECHO_N "checking for Red Hat kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -5750,7 +5883,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -5831,7 +5964,7 @@ echo "${ECHO_T}auto" >&6; }
 echo $ECHO_N "checking for SUSE kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -5849,7 +5982,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -5940,6 +6073,8 @@ fi
 
 
 rm -f include/linux/*.h
+rm -rf include/linux/usb
+rm -rf include/linux/regulator
 rm -f include/asm/*.h
 
 
@@ -6099,7 +6234,7 @@ if test $kpatchlevel -ge 3; then
 echo $ECHO_N "checking for ISA support in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -6117,7 +6252,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -6188,7 +6323,7 @@ KCC=$CROSS_COMPILE$CC
 rm -f processor.id
 ac_save_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
   KERNDIR=$kernelbuild
 else
   KERNDIR=$CONFIG_SND_KERNELDIR
@@ -6206,7 +6341,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
 #include <stdio.h>
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main(void) {
 	FILE *file = fopen("processor.id", "w+");
 	if (file == NULL)
@@ -6501,7 +6636,7 @@ EOF
 echo $ECHO_N "checking for PPC PowerMac... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -6519,7 +6654,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -6762,7 +6897,7 @@ echo $ECHO_N "checking for i386 machine type... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
   rm -f machine.id
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -6782,8 +6917,8 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
 #include <stdio.h>
-#include "$KERNDIR/include/linux/autoconf.h"
-#include "$KERNDIR/include/linux/version.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
+#include "$KERNDIR/include/$INCLUDE_VERSION_H"
 int main(void) {
 	FILE *file = fopen("machine.id", "w+");
 	if (file == NULL)
@@ -6859,7 +6994,7 @@ echo $ECHO_N "checking for i386 machine type... $ECHO_C" >&6; }
 	ac_save_CFLAGS="$CFLAGS"
 	CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
 	rm -f machine.id
-	if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+	if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
 	  KERNDIR=$kernelbuild
 	else
 	  KERNDIR=$CONFIG_SND_KERNELDIR
@@ -6879,7 +7014,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
 #include <stdio.h>
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main(void) {
 	FILE *file = fopen("machine.id", "w+");
 	if (file == NULL)
@@ -6961,7 +7096,7 @@ if test "$kpatchlevel" = 6 -a "$ksublevel" -ge 12; then
 echo $ECHO_N "checking for ISA DMA API... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -6979,7 +7114,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -7041,7 +7176,7 @@ if test -n "$CONFIG_SPARC32" -o -n "$CONFIG_SPARC64"; then
 echo $ECHO_N "checking for SBUS support in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -7059,7 +7194,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -7118,7 +7253,7 @@ if test -n "$CONFIG_SND_BIT32_EMUL"; then
 echo $ECHO_N "checking for 32bit compat support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -7136,7 +7271,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -7267,25 +7402,23 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/config.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#ifndef _LINUX_CONFIG_H
 #define _LINUX_CONFIG_H
 #ifndef AUTOCONF_INCLUDED
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #endif
 #endif
 " ; then
         echo "Creating a dummy <linux/config.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/config.h
       else
         echo "Creating <linux/config.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#ifndef _LINUX_CONFIG_H
 #define _LINUX_CONFIG_H
 #ifndef AUTOCONF_INCLUDED
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #endif
 #endif
 " > include/linux/config.h
@@ -7308,6 +7441,13 @@ if test -r $KERNDIR/include/linux/config.h ; then
   fi
 else
   deprecated_config_h="1"
+fi
+if test -r $KERNDIR/include/generated/autoconf.h ; then
+  deprecated_config_h="0"
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_HAVE_GENERATED_AUTOCONF_H 1
+_ACEOF
+
 fi
 CONFIG_HAVE_DEPRECATED_CONFIG_H=$deprecated_config_h
 if test "$CONFIG_HAVE_DEPRECATED_CONFIG_H" = "1"; then
@@ -7367,15 +7507,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/utsrelease.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/utsrelease.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/utsrelease.h
       else
         echo "Creating <linux/utsrelease.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/utsrelease.h
       fi
     fi
@@ -7406,15 +7544,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/compiler.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/compiler.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/compiler.h
       else
         echo "Creating <linux/compiler.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/compiler.h
       fi
     fi
@@ -7445,15 +7581,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/pm.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/pm.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/pm.h
       else
         echo "Creating <linux/pm.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/pm.h
       fi
     fi
@@ -7484,15 +7618,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/spinlock.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/spinlock.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/spinlock.h
       else
         echo "Creating <linux/spinlock.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/spinlock.h
       fi
     fi
@@ -7523,15 +7655,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/irq.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/irq.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/irq.h
       else
         echo "Creating <linux/irq.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/irq.h
       fi
     fi
@@ -7562,15 +7692,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/threads.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/threads.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/threads.h
       else
         echo "Creating <linux/threads.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/threads.h
       fi
     fi
@@ -7601,15 +7729,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/rwsem.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/rwsem.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/rwsem.h
       else
         echo "Creating <linux/rwsem.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/rwsem.h
       fi
     fi
@@ -7640,15 +7766,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/gameport.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/gameport.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/gameport.h
       else
         echo "Creating <linux/gameport.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/gameport.h
       fi
     fi
@@ -7679,15 +7803,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/media/v4l2-dev.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <media/v4l2-dev.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/media/v4l2-dev.h
       else
         echo "Creating <media/v4l2-dev.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/media/v4l2-dev.h
       fi
     fi
@@ -7718,15 +7840,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/devfs_fs_kernel.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/devfs_fs_kernel.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/devfs_fs_kernel.h
       else
         echo "Creating <linux/devfs_fs_kernel.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/devfs_fs_kernel.h
       fi
     fi
@@ -7757,15 +7877,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/highmem.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/highmem.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/highmem.h
       else
         echo "Creating <linux/highmem.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/highmem.h
       fi
     fi
@@ -7796,15 +7914,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/workqueue.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/workqueue.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/workqueue.h
       else
         echo "Creating <linux/workqueue.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/workqueue.h
       fi
     fi
@@ -7844,15 +7960,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/dma-mapping.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/dma-mapping.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/dma-mapping.h
       else
         echo "Creating <linux/dma-mapping.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/dma-mapping.h
       fi
     fi
@@ -7883,15 +7997,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/asm/hw_irq.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <asm/hw_irq.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/asm/hw_irq.h
       else
         echo "Creating <asm/hw_irq.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/asm/hw_irq.h
       fi
     fi
@@ -7922,16 +8034,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/device.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"device_compat.h\"
 " ; then
         echo "Creating a dummy <linux/device.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/device.h
       else
         echo "Creating <linux/device.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"device_compat.h\"
 " > include/linux/device.h
       fi
@@ -7963,16 +8073,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/platform_device.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"platform_device_compat.h\"
 " ; then
         echo "Creating a dummy <linux/platform_device.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/platform_device.h
       else
         echo "Creating <linux/platform_device.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"platform_device_compat.h\"
 " > include/linux/platform_device.h
       fi
@@ -8004,16 +8112,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/isa.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"isa_compat.h\"
 " ; then
         echo "Creating a dummy <linux/isa.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/isa.h
       else
         echo "Creating <linux/isa.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"isa_compat.h\"
 " > include/linux/isa.h
       fi
@@ -8045,17 +8151,15 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/jiffies.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include <linux/sched.h>
 #include <linux/delay.h>
 " ; then
         echo "Creating a dummy <linux/jiffies.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/jiffies.h
       else
         echo "Creating <linux/jiffies.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include <linux/sched.h>
 #include <linux/delay.h>
 " > include/linux/jiffies.h
@@ -8088,16 +8192,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/compat.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"compat_64.h\"
 " ; then
         echo "Creating a dummy <linux/compat.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/compat.h
       else
         echo "Creating <linux/compat.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"compat_64.h\"
 " > include/linux/compat.h
       fi
@@ -8129,15 +8231,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/log2.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/log2.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/log2.h
       else
         echo "Creating <linux/log2.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/log2.h
       fi
     fi
@@ -8168,16 +8268,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/adb.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include <asm/adb.h>
 " ; then
         echo "Creating a dummy <linux/adb.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/adb.h
       else
         echo "Creating <linux/adb.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include <asm/adb.h>
 " > include/linux/adb.h
       fi
@@ -8209,16 +8307,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/cuda.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include <asm/cuda.h>
 " ; then
         echo "Creating a dummy <linux/cuda.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/cuda.h
       else
         echo "Creating <linux/cuda.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include <asm/cuda.h>
 " > include/linux/cuda.h
       fi
@@ -8250,16 +8346,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/pmu.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include <asm/pmu.h>
 " ; then
         echo "Creating a dummy <linux/pmu.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/pmu.h
       else
         echo "Creating <linux/pmu.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include <asm/pmu.h>
 " > include/linux/pmu.h
       fi
@@ -8291,16 +8385,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/io.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include <asm/io.h>
 " ; then
         echo "Creating a dummy <linux/io.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/io.h
       else
         echo "Creating <linux/io.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include <asm/io.h>
 " > include/linux/io.h
       fi
@@ -8332,15 +8424,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/moduleparam.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/moduleparam.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/moduleparam.h
       else
         echo "Creating <linux/moduleparam.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/moduleparam.h
       fi
     fi
@@ -8371,16 +8461,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/syscalls.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"syscalls_26.h\"
 " ; then
         echo "Creating a dummy <linux/syscalls.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/syscalls.h
       else
         echo "Creating <linux/syscalls.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"syscalls_26.h\"
 " > include/linux/syscalls.h
       fi
@@ -8412,16 +8500,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/firmware.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"firmware_compat.h\"
 " ; then
         echo "Creating a dummy <linux/firmware.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/firmware.h
       else
         echo "Creating <linux/firmware.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"firmware_compat.h\"
 " > include/linux/firmware.h
       fi
@@ -8453,16 +8539,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/err.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"err_compat.h\"
 " ; then
         echo "Creating a dummy <linux/err.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/err.h
       else
         echo "Creating <linux/err.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"err_compat.h\"
 " > include/linux/err.h
       fi
@@ -8494,16 +8578,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/bitmap.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"bitmap_compat.h\"
 " ; then
         echo "Creating a dummy <linux/bitmap.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/bitmap.h
       else
         echo "Creating <linux/bitmap.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"bitmap_compat.h\"
 " > include/linux/bitmap.h
       fi
@@ -8535,16 +8617,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/mutex.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"mutex_compat.h\"
 " ; then
         echo "Creating a dummy <linux/mutex.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/mutex.h
       else
         echo "Creating <linux/mutex.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"mutex_compat.h\"
 " > include/linux/mutex.h
       fi
@@ -8576,16 +8656,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/pm_qos_params.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"pm_qos_params_compat.h\"
 " ; then
         echo "Creating a dummy <linux/pm_qos_params.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/pm_qos_params.h
       else
         echo "Creating <linux/pm_qos_params.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"pm_qos_params_compat.h\"
 " > include/linux/pm_qos_params.h
       fi
@@ -8617,16 +8695,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/kthread.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"kthread_compat.h\"
 " ; then
         echo "Creating a dummy <linux/kthread.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/kthread.h
       else
         echo "Creating <linux/kthread.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"kthread_compat.h\"
 " > include/linux/kthread.h
       fi
@@ -8658,15 +8734,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/asm/irq_regs.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <asm/irq_regs.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/asm/irq_regs.h
       else
         echo "Creating <asm/irq_regs.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/asm/irq_regs.h
       fi
     fi
@@ -8697,15 +8771,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/seq_file.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/seq_file.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/seq_file.h
       else
         echo "Creating <linux/seq_file.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/seq_file.h
       fi
     fi
@@ -8736,15 +8808,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/debugfs.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/debugfs.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/debugfs.h
       else
         echo "Creating <linux/debugfs.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/debugfs.h
       fi
     fi
@@ -8775,15 +8845,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/gpio.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/gpio.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/gpio.h
       else
         echo "Creating <linux/gpio.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/gpio.h
       fi
     fi
@@ -8814,15 +8882,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/bug.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/bug.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/bug.h
       else
         echo "Creating <linux/bug.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/bug.h
       fi
     fi
@@ -8853,16 +8919,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/math64.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"math64_compat.h\"
 " ; then
         echo "Creating a dummy <linux/math64.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/math64.h
       else
         echo "Creating <linux/math64.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"math64_compat.h\"
 " > include/linux/math64.h
       fi
@@ -8894,16 +8958,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/regulator/consumer.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"regulator_consumer_compat.h\"
 " ; then
         echo "Creating a dummy <linux/regulator/consumer.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/regulator/consumer.h
       else
         echo "Creating <linux/regulator/consumer.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"regulator_consumer_compat.h\"
 " > include/linux/regulator/consumer.h
       fi
@@ -8935,16 +8997,14 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/dmi.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"dmi_compat.h\"
 " ; then
         echo "Creating a dummy <linux/dmi.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/dmi.h
       else
         echo "Creating <linux/dmi.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"dmi_compat.h\"
 " > include/linux/dmi.h
       fi
@@ -8976,15 +9036,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/bitrev.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/bitrev.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/bitrev.h
       else
         echo "Creating <linux/bitrev.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/bitrev.h
       fi
     fi
@@ -9015,15 +9073,13 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/hrtimer.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "" ; then
         echo "Creating a dummy <linux/hrtimer.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/hrtimer.h
       else
         echo "Creating <linux/hrtimer.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "" > include/linux/hrtimer.h
       fi
     fi
@@ -9054,18 +9110,53 @@ echo "${ECHO_T}yes" >&6; }
     { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
     if test ! -f include/linux/gcd.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
       if test -z "#include \"gcd_compat.h\"
 " ; then
         echo "Creating a dummy <linux/gcd.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         touch include/linux/gcd.h
       else
         echo "Creating <linux/gcd.h>..."
-        mkdir -p include/linux include/asm include/media
-	mkdir -p include/linux/regulator
         echo "#include \"gcd_compat.h\"
 " > include/linux/gcd.h
+      fi
+    fi
+  fi
+
+
+  { echo "$as_me:$LINENO: checking for kernel linux/gfp.h" >&5
+echo $ECHO_N "checking for kernel linux/gfp.h... $ECHO_C" >&6; }
+  if test -n "$kernelbuild" -a \( -f "$kernelbuild/include/linux/gfp.h" -o -f "$kernelbuild/include2/linux/gfp.h" -o -f "$kernelbuild/arch/$ARCHDIR/include/linux/gfp.h" \) ; then
+    KERNDIR=$kernelbuild
+  else
+    KERNDIR=$CONFIG_SND_KERNELDIR
+  fi
+  if test -n ""; then
+    eval =""
+  fi
+  if test -f "$KERNDIR/include/linux/gfp.h" -o -f "$KERNDIR/include2/linux/gfp.h" -o -f "$KERNDIR/arch/$ARCHDIR/include/linux/gfp.h"; then
+    { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+    if test -f include/linux/gfp.h; then
+      echo "Removing a dummy linux/gfp.h."
+      rm -f include/linux/gfp.h
+    fi
+    if test -n ""; then
+      eval ="y"
+    fi
+  else
+    { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+    if test ! -f include/linux/gfp.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
+      if test -z "" ; then
+        echo "Creating a dummy <linux/gfp.h>..."
+        touch include/linux/gfp.h
+      else
+        echo "Creating <linux/gfp.h>..."
+        echo "" > include/linux/gfp.h
       fi
     fi
   fi
@@ -9104,7 +9195,7 @@ fi
 echo $ECHO_N "checking for kernel module symbol versions... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9122,7 +9213,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -9181,7 +9272,7 @@ GENKSYMS="/sbin/genksyms -k $kversion.$kpatchlevel.$ksublevel"
 echo $ECHO_N "checking for has ioport support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9199,7 +9290,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -9259,7 +9350,7 @@ _ACEOF
 echo $ECHO_N "checking for PCI support in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9277,7 +9368,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -9334,7 +9425,7 @@ fi
 echo $ECHO_N "checking for I2C driver in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9351,7 +9442,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 #include <stdio.h>
 int main(void) {
 	FILE *file = fopen("tristate.result", "w+");
@@ -9428,7 +9519,7 @@ if test "$CONFIG_I2C" != ""; then
 echo $ECHO_N "checking for I2C_POWERMAC in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9445,7 +9536,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 #include <stdio.h>
 int main(void) {
 	FILE *file = fopen("tristate.result", "w+");
@@ -9523,7 +9614,7 @@ if test -n "$HAVE_FIRMWARE_H"; then
 echo $ECHO_N "checking for firmware loader... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9540,7 +9631,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 #include <stdio.h>
 int main(void) {
 	FILE *file = fopen("tristate.result", "w+");
@@ -9626,7 +9717,7 @@ else
 echo $ECHO_N "checking for input subsystem in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9643,7 +9734,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 #include <stdio.h>
 int main(void) {
 	FILE *file = fopen("tristate.result", "w+");
@@ -9717,7 +9808,7 @@ echo "${ECHO_T}$tristateres" >&6; }
 echo $ECHO_N "checking for pc-speaker platform in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9735,7 +9826,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -9794,7 +9885,7 @@ fi
 echo $ECHO_N "checking for SMP... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9812,7 +9903,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -9882,7 +9973,7 @@ if test $kpatchlevel -gt 2; then
 echo $ECHO_N "checking for Video device support in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -9900,7 +9991,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -9993,7 +10084,7 @@ if test "$CONFIG_ISAPNP_KERNEL" = y; then
 echo $ECHO_N "checking for Kernel ISA-PnP support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -10011,7 +10102,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -10067,7 +10158,7 @@ fi
 echo $ECHO_N "checking for Kernel ISA-PnP module support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -10085,7 +10176,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -10202,7 +10293,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -10291,7 +10382,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -10379,7 +10470,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -10474,7 +10565,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -10562,7 +10653,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -10650,7 +10741,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -10741,7 +10832,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -10828,7 +10919,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -10917,7 +11008,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11005,7 +11096,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11093,7 +11184,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11182,7 +11273,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11271,7 +11362,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11360,7 +11451,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11449,7 +11540,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11540,7 +11631,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11623,7 +11714,7 @@ if test "$kversion.$kpatchlevel" = "2.6" -a "$ksublevel" -gt 17; then
 echo $ECHO_N "checking for V4L1 layer... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -11641,7 +11732,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -11703,7 +11794,7 @@ if test "$kversion.$kpatchlevel" = "2.6" -a "$ksublevel" -gt 17; then
 echo $ECHO_N "checking for V4L2 layer... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -11721,7 +11812,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -11790,7 +11881,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11878,7 +11969,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -11966,7 +12057,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12054,7 +12145,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12226,7 +12317,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12315,7 +12406,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12403,7 +12494,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12491,7 +12582,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12580,7 +12671,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12668,7 +12759,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12758,7 +12849,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12850,7 +12941,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -12937,7 +13028,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -13167,7 +13258,7 @@ fi
 echo $ECHO_N "checking for RTC support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -13185,7 +13276,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -13242,7 +13333,7 @@ fi
 echo $ECHO_N "checking for HPET support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -13260,7 +13351,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -13317,7 +13408,7 @@ fi
 echo $ECHO_N "checking for Procfs support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -13335,7 +13426,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -13392,7 +13483,7 @@ fi
 echo $ECHO_N "checking for USB support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -13410,7 +13501,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -13466,7 +13557,7 @@ if test "$CONFIG_USB" != "y"; then
 echo $ECHO_N "checking for USB module support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -13484,7 +13575,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -13536,6 +13627,285 @@ fi
 fi
 
 
+if test -n "$CONFIG_USB"; then
+
+  { echo "$as_me:$LINENO: checking for kernel linux/usb/audio-v2.h" >&5
+echo $ECHO_N "checking for kernel linux/usb/audio-v2.h... $ECHO_C" >&6; }
+  if test -n "$kernelbuild" -a \( -f "$kernelbuild/include/linux/usb/audio-v2.h" -o -f "$kernelbuild/include2/linux/usb/audio-v2.h" -o -f "$kernelbuild/arch/$ARCHDIR/include/linux/usb/audio-v2.h" \) ; then
+    KERNDIR=$kernelbuild
+  else
+    KERNDIR=$CONFIG_SND_KERNELDIR
+  fi
+  if test -n ""; then
+    eval =""
+  fi
+  if test -f "$KERNDIR/include/linux/usb/audio-v2.h" -o -f "$KERNDIR/include2/linux/usb/audio-v2.h" -o -f "$KERNDIR/arch/$ARCHDIR/include/linux/usb/audio-v2.h"; then
+    { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+    if test -f include/linux/usb/audio-v2.h; then
+      echo "Removing a dummy linux/usb/audio-v2.h."
+      rm -f include/linux/usb/audio-v2.h
+    fi
+    if test -n ""; then
+      eval ="y"
+    fi
+  else
+    { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+    if test ! -f include/linux/usb/audio-v2.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
+      if test -z "#include \"usb_audio_v2_compat.h\"
+  " ; then
+        echo "Creating a dummy <linux/usb/audio-v2.h>..."
+        touch include/linux/usb/audio-v2.h
+      else
+        echo "Creating <linux/usb/audio-v2.h>..."
+        echo "#include \"usb_audio_v2_compat.h\"
+  " > include/linux/usb/audio-v2.h
+      fi
+    fi
+  fi
+
+
+  { echo "$as_me:$LINENO: checking for kernel linux/usb/audio.h" >&5
+echo $ECHO_N "checking for kernel linux/usb/audio.h... $ECHO_C" >&6; }
+  if test -n "$kernelbuild" -a \( -f "$kernelbuild/include/linux/usb/audio.h" -o -f "$kernelbuild/include2/linux/usb/audio.h" -o -f "$kernelbuild/arch/$ARCHDIR/include/linux/usb/audio.h" \) ; then
+    KERNDIR=$kernelbuild
+  else
+    KERNDIR=$CONFIG_SND_KERNELDIR
+  fi
+  if test -n ""; then
+    eval =""
+  fi
+  if test -f "$KERNDIR/include/linux/usb/audio.h" -o -f "$KERNDIR/include2/linux/usb/audio.h" -o -f "$KERNDIR/arch/$ARCHDIR/include/linux/usb/audio.h"; then
+    { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+    if test -f include/linux/usb/audio.h; then
+      echo "Removing a dummy linux/usb/audio.h."
+      rm -f include/linux/usb/audio.h
+    fi
+    if test -n ""; then
+      eval ="y"
+    fi
+  else
+    { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+    if test ! -f include/linux/usb/audio.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
+      if test -z "#include \"usb_audio_compat.h\"
+  " ; then
+        echo "Creating a dummy <linux/usb/audio.h>..."
+        touch include/linux/usb/audio.h
+      else
+        echo "Creating <linux/usb/audio.h>..."
+        echo "#include \"usb_audio_compat.h\"
+  " > include/linux/usb/audio.h
+      fi
+    fi
+  fi
+
+  { echo "$as_me:$LINENO: checking for valid v1 in linux/usb/audio.h" >&5
+echo $ECHO_N "checking for valid v1 in linux/usb/audio.h... $ECHO_C" >&6; }
+  usb_audio_valid="0"
+  ac_save_CFLAGS="$CFLAGS"
+  ac_save_CC="$CC"
+  CFLAGS="$KERNEL_CHECK_CFLAGS"
+  CC=$KCC
+  cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+#define __KERNEL__
+#ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
+#include <$INCLUDE_AUTOCONF_H>
+#else
+#include <linux/config.h>
+#endif
+#include <linux/usb/audio.h>
+
+int
+main ()
+{
+
+  struct uac_as_header_descriptor_v1 tmp;
+  tmp.bLength = 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag" || test ! -s conftest.err'
+  { (case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_try") 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_try") 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; };usb_audio_valid="1"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	{ echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; };usb_audio_valid="0"
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  if test "$usb_audio_valid" = "1"; then
+    { echo "$as_me:$LINENO: checking for invalid v2 in linux/usb/audio.h" >&5
+echo $ECHO_N "checking for invalid v2 in linux/usb/audio.h... $ECHO_C" >&6; }
+    cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+
+#define __KERNEL__
+#ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
+#include <$INCLUDE_AUTOCONF_H>
+#else
+#include <linux/config.h>
+#endif
+#include <linux/usb/audio.h>
+
+int
+main ()
+{
+
+  struct uac_as_header_descriptor_v2 tmp;
+  tmp.bLength = 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+rm -f conftest.$ac_objext
+if { (ac_try="$ac_compile"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_compile") 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag" || test ! -s conftest.err'
+  { (case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_try") 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
+  (eval "$ac_try") 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; };usb_audio_valid="0"
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+	{ echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; };usb_audio_valid="1"
+fi
+
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  fi
+  CFLAGS=$ac_save_CFLAGS
+  CC=$ac_save_CC
+  if test "$usb_audio_valid" != "1"; then
+    mkdir -p include/linux/usb
+    echo "Creating <linux/usb/audio.h>..."
+    echo "#include \"usb_audio_compat.h\"" > include/linux/usb/audio.h
+  fi
+
+
+  { echo "$as_me:$LINENO: checking for kernel linux/usb/ch9.h" >&5
+echo $ECHO_N "checking for kernel linux/usb/ch9.h... $ECHO_C" >&6; }
+  if test -n "$kernelbuild" -a \( -f "$kernelbuild/include/linux/usb/ch9.h" -o -f "$kernelbuild/include2/linux/usb/ch9.h" -o -f "$kernelbuild/arch/$ARCHDIR/include/linux/usb/ch9.h" \) ; then
+    KERNDIR=$kernelbuild
+  else
+    KERNDIR=$CONFIG_SND_KERNELDIR
+  fi
+  if test -n ""; then
+    eval =""
+  fi
+  if test -f "$KERNDIR/include/linux/usb/ch9.h" -o -f "$KERNDIR/include2/linux/usb/ch9.h" -o -f "$KERNDIR/arch/$ARCHDIR/include/linux/usb/ch9.h"; then
+    { echo "$as_me:$LINENO: result: yes" >&5
+echo "${ECHO_T}yes" >&6; }
+    if test -f include/linux/usb/ch9.h; then
+      echo "Removing a dummy linux/usb/ch9.h."
+      rm -f include/linux/usb/ch9.h
+    fi
+    if test -n ""; then
+      eval ="y"
+    fi
+  else
+    { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+    if test ! -f include/linux/usb/ch9.h; then
+      mkdir -p include/linux include/asm include/media
+      mkdir -p include/linux/regulator include/linux/usb
+      if test -z "" ; then
+        echo "Creating a dummy <linux/usb/ch9.h>..."
+        touch include/linux/usb/ch9.h
+      else
+        echo "Creating <linux/usb/ch9.h>..."
+        echo "" > include/linux/usb/ch9.h
+      fi
+    fi
+  fi
+
+fi
+
 if test "$kversion.$kpatchlevel" = "2.6"; then
   { echo "$as_me:$LINENO: checking for class_simple" >&5
 echo $ECHO_N "checking for class_simple... $ECHO_C" >&6; }
@@ -13553,7 +13923,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -13643,7 +14013,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -13733,7 +14103,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -13822,7 +14192,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -13912,7 +14282,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14001,7 +14371,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14089,7 +14459,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14177,7 +14547,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14273,7 +14643,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14365,7 +14735,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14457,7 +14827,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14547,7 +14917,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14637,7 +15007,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14727,7 +15097,7 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #define __KERNEL__
 #ifdef CONFIG_HAVE_DEPRECATED_CONFIG_H
-#include <linux/autoconf.h>
+#include <$INCLUDE_AUTOCONF_H>
 #else
 #include <linux/config.h>
 #endif
@@ -14895,7 +15265,7 @@ _ACEOF
 echo $ECHO_N "checking for x86-compatible PC... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -14913,7 +15283,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -14970,7 +15340,7 @@ if test "$kversion" -ge 2 -a "$kpatchlevel" -ge 6 -a "$ksublevel" -ge 22; then
 echo $ECHO_N "checking for High-Res timers... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -14988,7 +15358,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -15065,7 +15435,7 @@ if test "$pcmcia" = "kernel"; then
 echo $ECHO_N "checking for PCMCIA support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -15083,7 +15453,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -15139,7 +15509,7 @@ fi
 echo $ECHO_N "checking for PCMCIA module support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -15157,7 +15527,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -15233,7 +15603,7 @@ fi
 echo $ECHO_N "checking for PC9800 support in kernel... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -15251,7 +15621,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -15311,7 +15681,7 @@ else
 echo $ECHO_N "checking for parallel port support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -15329,7 +15699,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -15385,7 +15755,7 @@ fi
 echo $ECHO_N "checking for parallel port module support... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -15403,7 +15773,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -15466,7 +15836,7 @@ else
 echo $ECHO_N "checking for power management... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -15484,7 +15854,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -15543,7 +15913,7 @@ if test $kpatchlevel -ge 6 -a $ksublevel -ge 23; then
 echo $ECHO_N "checking for CONFIG_HAS_DMA... $ECHO_C" >&6; }
   ac_save_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS $KERNEL_INC $HACK_KERNEL_INC"
-  if test -n "$kernelbuild" -a -f "$kernelbuild/include/linux/autoconf.h"; then
+  if test -n "$kernelbuild" -a -f "$kernelbuild/include/$INCLUDE_AUTOCONF_H"; then
     KERNDIR=$kernelbuild
   else
     KERNDIR=$CONFIG_SND_KERNELDIR
@@ -15561,7 +15931,7 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 
-#include "$KERNDIR/include/linux/autoconf.h"
+#include "$KERNDIR/include/$INCLUDE_AUTOCONF_H"
 int main( void ) {
 #if !defined($boolvar) && !defined($boolvar1)
   exit(1);
@@ -16748,7 +17118,8 @@ alsa_check_kconfig_option () {
   fi
     if ( test "$CONFIG_SND_PCI" = "y" -o "$CONFIG_SND_PCI" = "m" ) &&
       ( test "$CONFIG_SND_HDA_INTEL" = "y" -o "$CONFIG_SND_HDA_INTEL" = "m" ) &&
-      ( test "$CONFIG_SND_HDA_CODEC_INTELHDMI" = "y" -o "$CONFIG_SND_HDA_CODEC_INTELHDMI" = "m" ); then
+      ( ( test "$CONFIG_SND_HDA_CODEC_INTELHDMI" = "y" -o "$CONFIG_SND_HDA_CODEC_INTELHDMI" = "m" ) ||
+      ( test "$CONFIG_SND_HDA_CODEC_NVHDMI" = "y" -o "$CONFIG_SND_HDA_CODEC_NVHDMI" = "m" ) ); then
       CONFIG_SND_HDA_ELD="y"
     fi
   if alsa_check_kconfig_option "hda-codec-cirrus"; then
@@ -17272,7 +17643,6 @@ alsa_check_kconfig_option () {
   if alsa_check_kconfig_card "usb-ua101"; then
     if ( ( test "$CONFIG_SND_USB" = "y" -o "$CONFIG_SND_USB" = "m" ) &&
       ( test "$CONFIG_USB" = "y" -o "$CONFIG_USB" = "m" ) ) &&
-      ( test "$CONFIG_EXPERIMENTAL" = "y" -o "$CONFIG_EXPERIMENTAL" = "m" ) &&
       ( test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 32 ); then
       CONFIG_SND_TIMER="m"
       CONFIG_SND_PCM="m"
@@ -17429,7 +17799,7 @@ alsa_check_kconfig_option () {
       CONFIG_SND_SOC_AU1XPSC="m"
     fi
   fi
-  if alsa_check_kconfig_card "soc-sample-psc-ac97"; then
+  if alsa_check_kconfig_card "soc-db1200"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( test "$CONFIG_SND_SOC_AU1XPSC" = "y" -o "$CONFIG_SND_SOC_AU1XPSC" = "m" ); then
       test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
@@ -17440,7 +17810,9 @@ alsa_check_kconfig_option () {
       CONFIG_SND_SOC_AC97_BUS="y"
       CONFIG_SND_SOC_AU1XPSC_AC97="m"
       CONFIG_SND_SOC_AC97_CODEC="m"
-      CONFIG_SND_SOC_SAMPLE_PSC_AC97="m"
+      CONFIG_SND_SOC_AU1XPSC_I2S="m"
+      CONFIG_SND_SOC_WM8731="m"
+      CONFIG_SND_SOC_DB1200="m"
     fi
   fi
   if alsa_check_kconfig_card "bf5xx-i2s"; then
@@ -17488,13 +17860,13 @@ alsa_check_kconfig_option () {
       CONFIG_SND_BF5XX_SOC_AD1836="m"
     fi
   fi
-  if alsa_check_kconfig_card "bf5xx-soc-ad1938"; then
+  if alsa_check_kconfig_card "bf5xx-soc-ad193x"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( test "$CONFIG_SND_BF5XX_TDM" = "y" -o "$CONFIG_SND_BF5XX_TDM" = "m" ); then
       CONFIG_SND_BF5XX_SOC_SPORT="m"
       CONFIG_SND_BF5XX_SOC_TDM="m"
-      CONFIG_SND_SOC_AD1938="m"
-      CONFIG_SND_BF5XX_SOC_AD1938="m"
+      CONFIG_SND_SOC_AD193X="m"
+      CONFIG_SND_BF5XX_SOC_AD193X="m"
     fi
   fi
   if alsa_check_kconfig_card "bf5xx-ac97"; then
@@ -17557,6 +17929,19 @@ alsa_check_kconfig_option () {
       CONFIG_SND_DAVINCI_SOC_I2S="m"
       CONFIG_SND_SOC_TLV320AIC3X="m"
       CONFIG_SND_DAVINCI_SOC_EVM="m"
+    fi
+  fi
+  if alsa_check_kconfig_option "dm365-aic3x-codec"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ); then
+      CONFIG_SND_DM365_AIC3X_CODEC="y"
+    fi
+  fi
+  if alsa_check_kconfig_option "dm365-voice-codec"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( test "$CONFIG_MFD_DAVINCI_VOICECODEC" = "y" -o "$CONFIG_MFD_DAVINCI_VOICECODEC" = "m" ); then
+      CONFIG_SND_DAVINCI_SOC_VCIF="m"
+      CONFIG_SND_SOC_CQ0093VC="m"
+      CONFIG_SND_DM365_VOICE_CODEC="y"
     fi
   fi
   if alsa_check_kconfig_card "dm6467-soc-evm"; then
@@ -17636,25 +18021,6 @@ alsa_check_kconfig_option () {
       CONFIG_SND_MPC52XX_SOC_EFIKA="m"
     fi
   fi
-  if alsa_check_kconfig_card "mx1-mx2-soc"; then
-    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
-      ( ( test "$CONFIG_ARCH_MX2" = "y" -o "$CONFIG_ARCH_MX2" = "m" ) ||
-      ( test "$CONFIG_ARCH_MX1" = "y" -o "$CONFIG_ARCH_MX1" = "m" ) ); then
-      CONFIG_SND_TIMER="m"
-      CONFIG_SND_PCM="m"
-      CONFIG_SND_MX1_MX2_SOC="m"
-    fi
-  fi
-  if alsa_check_kconfig_card "soc-mx27vis-wm8974"; then
-    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
-      ( ( test "$CONFIG_SND_MX1_MX2_SOC" = "y" -o "$CONFIG_SND_MX1_MX2_SOC" = "m" ) &&
-      ( test "$CONFIG_MACH_MX27" = "y" -o "$CONFIG_MACH_MX27" = "m" ) &&
-      ( test "$CONFIG_MACH_IMX27_VISSTRIM_M10" = "y" -o "$CONFIG_MACH_IMX27_VISSTRIM_M10" = "m" ) ); then
-      CONFIG_SND_MXC_SOC_SSI="m"
-      CONFIG_SND_SOC_WM8974="m"
-      CONFIG_SND_SOC_MX27VIS_WM8974="m"
-    fi
-  fi
   if alsa_check_kconfig_card "omap-soc"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( test "$CONFIG_ARCH_OMAP" = "y" -o "$CONFIG_ARCH_OMAP" = "m" ); then
@@ -17718,6 +18084,15 @@ alsa_check_kconfig_option () {
       CONFIG_SND_PXA2XX_SOC_I2S="m"
       CONFIG_SND_SOC_WM8750="m"
       CONFIG_SND_PXA2XX_SOC_SPITZ="m"
+    fi
+  fi
+  if alsa_check_kconfig_card "pxa2xx-soc-z2"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( ( test "$CONFIG_SND_PXA2XX_SOC" = "y" -o "$CONFIG_SND_PXA2XX_SOC" = "m" ) &&
+      ( test "$CONFIG_MACH_ZIPIT2" = "y" -o "$CONFIG_MACH_ZIPIT2" = "m" ) ); then
+      CONFIG_SND_PXA2XX_SOC_I2S="m"
+      CONFIG_SND_SOC_WM8750="m"
+      CONFIG_SND_PXA2XX_SOC_Z2="m"
     fi
   fi
   if alsa_check_kconfig_card "pxa2xx-soc-poodle"; then
@@ -17863,7 +18238,8 @@ alsa_check_kconfig_option () {
   fi
   if alsa_check_kconfig_card "soc-pcm-sh7760"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
-      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
+      ( ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) ||
+      ( test "$CONFIG_ARCH_SHMOBILE" = "y" -o "$CONFIG_ARCH_SHMOBILE" = "m" ) ) &&
       ( ( test "$CONFIG_CPU_SUBTYPE_SH7760" = "y" -o "$CONFIG_CPU_SUBTYPE_SH7760" = "m" ) &&
       ( test "$CONFIG_SH_DMABRG" = "y" -o "$CONFIG_SH_DMABRG" = "m" ) ); then
       CONFIG_SND_SOC_PCM_SH7760="m"
@@ -17871,14 +18247,15 @@ alsa_check_kconfig_option () {
   fi
   if alsa_check_kconfig_card "soc-sh4-fsi"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
-      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
-      ( test "$CONFIG_CPU_SUBTYPE_SH7724" = "y" -o "$CONFIG_CPU_SUBTYPE_SH7724" = "m" ); then
+      ( ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) ||
+      ( test "$CONFIG_ARCH_SHMOBILE" = "y" -o "$CONFIG_ARCH_SHMOBILE" = "m" ) ); then
       CONFIG_SND_SOC_SH4_FSI="m"
     fi
   fi
   if alsa_check_kconfig_card "sh7760-ac97"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
-      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
+      ( ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) ||
+      ( test "$CONFIG_ARCH_SHMOBILE" = "y" -o "$CONFIG_ARCH_SHMOBILE" = "m" ) ) &&
       ( ( test "$CONFIG_CPU_SUBTYPE_SH7760" = "y" -o "$CONFIG_CPU_SUBTYPE_SH7760" = "m" ) &&
       ( test "$CONFIG_SND_SOC_PCM_SH7760" = "y" -o "$CONFIG_SND_SOC_PCM_SH7760" = "m" ) ); then
       test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
@@ -17894,7 +18271,8 @@ alsa_check_kconfig_option () {
   fi
   if alsa_check_kconfig_option "fsi-ak4642"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
-      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
+      ( ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) ||
+      ( test "$CONFIG_ARCH_SHMOBILE" = "y" -o "$CONFIG_ARCH_SHMOBILE" = "m" ) ) &&
       ( test "$CONFIG_SND_SOC_SH4_FSI" = "y" -o "$CONFIG_SND_SOC_SH4_FSI" = "m" ); then
       CONFIG_SND_SOC_AK4642="m"
       CONFIG_SND_FSI_AK4642="y"
@@ -17902,10 +18280,21 @@ alsa_check_kconfig_option () {
   fi
   if alsa_check_kconfig_option "fsi-da7210"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
-      ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) &&
+      ( ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) ||
+      ( test "$CONFIG_ARCH_SHMOBILE" = "y" -o "$CONFIG_ARCH_SHMOBILE" = "m" ) ) &&
       ( test "$CONFIG_SND_SOC_SH4_FSI" = "y" -o "$CONFIG_SND_SOC_SH4_FSI" = "m" ); then
       CONFIG_SND_SOC_DA7210="m"
       CONFIG_SND_FSI_DA7210="y"
+    fi
+  fi
+  if alsa_check_kconfig_card "siu-migor"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( ( test "$CONFIG_SUPERH" = "y" -o "$CONFIG_SUPERH" = "m" ) ||
+      ( test "$CONFIG_ARCH_SHMOBILE" = "y" -o "$CONFIG_ARCH_SHMOBILE" = "m" ) ) &&
+      ( test "$CONFIG_SH_MIGOR" = "y" -o "$CONFIG_SH_MIGOR" = "m" ); then
+      CONFIG_SND_SOC_SH4_SIU="m"
+      CONFIG_SND_SOC_WM8978="m"
+      CONFIG_SND_SIU_MIGOR="m"
     fi
   fi
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ); then
@@ -17982,8 +18371,9 @@ alsa_check_kconfig_option () {
   if alsa_check_kconfig_card "atmel-ac97c"; then
     if ( ( test "$CONFIG_AVR32" = "y" -o "$CONFIG_AVR32" = "m" ) ||
       ( test "$CONFIG_ARCH_AT91" = "y" -o "$CONFIG_ARCH_AT91" = "m" ) ) &&
-      ( ( test "$CONFIG_DW_DMAC" = "y" -o "$CONFIG_DW_DMAC" = "m" ) &&
-      ( test "$CONFIG_AVR32" = "y" -o "$CONFIG_AVR32" = "m" ) ); then
+      ( ( ( test "$CONFIG_DW_DMAC" = "y" -o "$CONFIG_DW_DMAC" = "m" ) &&
+      ( test "$CONFIG_AVR32" = "y" -o "$CONFIG_AVR32" = "m" ) ) ||
+      ( test "$CONFIG_ARCH_AT91" = "y" -o "$CONFIG_ARCH_AT91" = "m" ) ); then
       CONFIG_SND_TIMER="m"
       CONFIG_SND_PCM="m"
       test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
@@ -18011,6 +18401,25 @@ alsa_check_kconfig_option () {
       CONFIG_SND_DAVINCI_SOC_I2S="m"
       CONFIG_SND_SOC_PCM3008="m"
       CONFIG_SND_DAVINCI_SOC_SFFSDR="m"
+    fi
+  fi
+  if alsa_check_kconfig_card "imx-soc"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( test "$CONFIG_ARCH_MXC" = "y" -o "$CONFIG_ARCH_MXC" = "m" ) &&
+      ( test "$CONFIG_FIQ" = "y" -o "$CONFIG_FIQ" = "m" ); then
+      CONFIG_SND_TIMER="m"
+      CONFIG_SND_PCM="m"
+      CONFIG_SND_SOC_AC97_BUS="y"
+      CONFIG_SND_IMX_SOC="m"
+    fi
+  fi
+  if alsa_check_kconfig_card "mxc-soc-wm1133-ev1"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( ( test "$CONFIG_SND_IMX_SOC" = "y" -o "$CONFIG_SND_IMX_SOC" = "m" ) &&
+      ( test "$CONFIG_EXPERIMENTAL" = "y" -o "$CONFIG_EXPERIMENTAL" = "m" ) ); then
+      CONFIG_SND_SOC_WM8350="m"
+      CONFIG_SND_MXC_SOC_SSI="m"
+      CONFIG_SND_MXC_SOC_WM1133_EV1="m"
     fi
   fi
   if alsa_check_kconfig_card "omap-soc-n810"; then
@@ -18078,8 +18487,9 @@ alsa_check_kconfig_option () {
   if alsa_check_kconfig_card "omap-soc-omap3-beagle"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( ( test "$CONFIG_TWL4030_CORE" = "y" -o "$CONFIG_TWL4030_CORE" = "m" ) &&
-      ( test "$CONFIG_SND_OMAP_SOC" = "y" -o "$CONFIG_SND_OMAP_SOC" = "m" ) &&
-      ( test "$CONFIG_MACH_OMAP3_BEAGLE" = "y" -o "$CONFIG_MACH_OMAP3_BEAGLE" = "m" ) ); then
+      ( test "$CONFIG_SND_OMAP_SOC" = "y" -o "$CONFIG_SND_OMAP_SOC" = "m" ) ) &&
+      ( ( ( test "$CONFIG_MACH_OMAP3_BEAGLE" = "y" -o "$CONFIG_MACH_OMAP3_BEAGLE" = "m" ) ||
+      ( test "$CONFIG_MACH_DEVKIT8000" = "y" -o "$CONFIG_MACH_DEVKIT8000" = "m" ) ) ); then
       CONFIG_SND_OMAP_SOC_MCBSP="m"
       CONFIG_SND_SOC_TWL4030="m"
       CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE="m"
@@ -18156,30 +18566,34 @@ alsa_check_kconfig_option () {
   if alsa_check_kconfig_card "s3c24xx-soc-smdk2443-wm9710"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( ( test "$CONFIG_SND_S3C24XX_SOC" = "y" -o "$CONFIG_SND_S3C24XX_SOC" = "m" ) &&
-      ( test "$CONFIG_MACH_SMDK2443" = "y" -o "$CONFIG_MACH_SMDK2443" = "m" ) ); then
-      test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
-      CONFIG_SND_SOC_AC97_BUS="y"
+      ( test "$CONFIG_MACH_SMDK2443" = "y" -o "$CONFIG_MACH_SMDK2443" = "m" ) ) &&
+      ( test "$CONFIG_S3C2410_DMA" = "y" -o "$CONFIG_S3C2410_DMA" = "m" ); then
       CONFIG_SND_TIMER="m"
       CONFIG_SND_PCM="m"
+      test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
       CONFIG_SND_VMASTER="y"
       CONFIG_SND_AC97_CODEC="m"
-      CONFIG_SND_S3C2443_SOC_AC97="m"
+      CONFIG_SND_SOC_AC97_BUS="y"
+      test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
       CONFIG_SND_SOC_AC97_CODEC="m"
+      CONFIG_SND_S3C_SOC_AC97="m"
       CONFIG_SND_S3C24XX_SOC_SMDK2443_WM9710="m"
     fi
   fi
   if alsa_check_kconfig_card "s3c24xx-soc-ln2440sbc-alc650"; then
     if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
       ( ( test "$CONFIG_SND_S3C24XX_SOC" = "y" -o "$CONFIG_SND_S3C24XX_SOC" = "m" ) &&
-      ( test "$CONFIG_ARCH_S3C2410" = "y" -o "$CONFIG_ARCH_S3C2410" = "m" ) ); then
-      test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
-      CONFIG_SND_SOC_AC97_BUS="y"
+      ( test "$CONFIG_ARCH_S3C2410" = "y" -o "$CONFIG_ARCH_S3C2410" = "m" ) ) &&
+      ( test "$CONFIG_S3C2410_DMA" = "y" -o "$CONFIG_S3C2410_DMA" = "m" ); then
       CONFIG_SND_TIMER="m"
       CONFIG_SND_PCM="m"
+      test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
       CONFIG_SND_VMASTER="y"
       CONFIG_SND_AC97_CODEC="m"
-      CONFIG_SND_S3C2443_SOC_AC97="m"
+      CONFIG_SND_SOC_AC97_BUS="y"
+      test "$kversion.$kpatchlevel" = "2.6" -a $ksublevel -ge 14 && CONFIG_AC97_BUS="m"
       CONFIG_SND_SOC_AC97_CODEC="m"
+      CONFIG_SND_S3C_SOC_AC97="m"
       CONFIG_SND_S3C24XX_SOC_LN2440SBC_ALC650="m"
     fi
   fi
@@ -18211,6 +18625,16 @@ alsa_check_kconfig_option () {
       CONFIG_SND_SOC_TLV320AIC3X="m"
       CONFIG_SND_S3C24XX_SOC_SIMTEC="m"
       CONFIG_SND_S3C24XX_SOC_SIMTEC_HERMES="m"
+    fi
+  fi
+  if alsa_check_kconfig_card "soc-smdk-wm9713"; then
+    if ( test "$CONFIG_SND_SOC" = "y" -o "$CONFIG_SND_SOC" = "m" ) &&
+      ( ( test "$CONFIG_SND_S3C24XX_SOC" = "y" -o "$CONFIG_SND_S3C24XX_SOC" = "m" ) &&
+      ( test "$CONFIG_MACH_SMDK6410" = "y" -o "$CONFIG_MACH_SMDK6410" = "m" ) ); then
+      CONFIG_SND_SOC_AC97_BUS="y"
+      CONFIG_SND_SOC_WM9713="m"
+      CONFIG_SND_S3C_SOC_AC97="m"
+      CONFIG_SND_SOC_SMDK_WM9713="m"
     fi
   fi
   if alsa_check_kconfig_card "s6000-soc"; then
@@ -19758,9 +20182,9 @@ if test -n "$CONFIG_SND_SOC_AU1XPSC_AC97"; then
 _ACEOF
 
 fi
-if test -n "$CONFIG_SND_SOC_SAMPLE_PSC_AC97"; then
+if test -n "$CONFIG_SND_SOC_DB1200"; then
   cat >>confdefs.h <<\_ACEOF
-#define CONFIG_SND_SOC_SAMPLE_PSC_AC97_MODULE 1
+#define CONFIG_SND_SOC_DB1200_MODULE 1
 _ACEOF
 
 fi
@@ -19800,9 +20224,9 @@ if test -n "$CONFIG_SND_BF5XX_SOC_AD1836"; then
 _ACEOF
 
 fi
-if test -n "$CONFIG_SND_BF5XX_SOC_AD1938"; then
+if test -n "$CONFIG_SND_BF5XX_SOC_AD193X"; then
   cat >>confdefs.h <<\_ACEOF
-#define CONFIG_SND_BF5XX_SOC_AD1938_MODULE 1
+#define CONFIG_SND_BF5XX_SOC_AD193X_MODULE 1
 _ACEOF
 
 fi
@@ -19890,9 +20314,27 @@ if test -n "$CONFIG_SND_DAVINCI_SOC_MCASP"; then
 _ACEOF
 
 fi
+if test -n "$CONFIG_SND_DAVINCI_SOC_VCIF"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_DAVINCI_SOC_VCIF_MODULE 1
+_ACEOF
+
+fi
 if test -n "$CONFIG_SND_DAVINCI_SOC_EVM"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_DAVINCI_SOC_EVM_MODULE 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_DM365_AIC3X_CODEC"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_DM365_AIC3X_CODEC 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_DM365_VOICE_CODEC"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_DM365_VOICE_CODEC 1
 _ACEOF
 
 fi
@@ -19968,9 +20410,9 @@ if test -n "$CONFIG_SND_MPC52XX_SOC_EFIKA"; then
 _ACEOF
 
 fi
-if test -n "$CONFIG_SND_MX1_MX2_SOC"; then
+if test -n "$CONFIG_SND_IMX_SOC"; then
   cat >>confdefs.h <<\_ACEOF
-#define CONFIG_SND_MX1_MX2_SOC_MODULE 1
+#define CONFIG_SND_IMX_SOC_MODULE 1
 _ACEOF
 
 fi
@@ -19980,9 +20422,9 @@ if test -n "$CONFIG_SND_MXC_SOC_SSI"; then
 _ACEOF
 
 fi
-if test -n "$CONFIG_SND_SOC_MX27VIS_WM8974"; then
+if test -n "$CONFIG_SND_MXC_SOC_WM1133_EV1"; then
   cat >>confdefs.h <<\_ACEOF
-#define CONFIG_SND_SOC_MX27VIS_WM8974_MODULE 1
+#define CONFIG_SND_MXC_SOC_WM1133_EV1_MODULE 1
 _ACEOF
 
 fi
@@ -19995,6 +20437,12 @@ fi
 if test -n "$CONFIG_SND_OMAP_SOC_MCBSP"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_OMAP_SOC_MCBSP_MODULE 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_OMAP_SOC_MCPDM"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_OMAP_SOC_MCPDM_MODULE 1
 _ACEOF
 
 fi
@@ -20106,6 +20554,12 @@ if test -n "$CONFIG_SND_PXA2XX_SOC_SPITZ"; then
 _ACEOF
 
 fi
+if test -n "$CONFIG_SND_PXA2XX_SOC_Z2"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_PXA2XX_SOC_Z2_MODULE 1
+_ACEOF
+
+fi
 if test -n "$CONFIG_SND_PXA2XX_SOC_POODLE"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_PXA2XX_SOC_POODLE_MODULE 1
@@ -20214,9 +20668,9 @@ if test -n "$CONFIG_SND_S3C_SOC_PCM"; then
 _ACEOF
 
 fi
-if test -n "$CONFIG_SND_S3C2443_SOC_AC97"; then
+if test -n "$CONFIG_SND_S3C_SOC_AC97"; then
   cat >>confdefs.h <<\_ACEOF
-#define CONFIG_SND_S3C2443_SOC_AC97_MODULE 1
+#define CONFIG_SND_S3C_SOC_AC97_MODULE 1
 _ACEOF
 
 fi
@@ -20280,6 +20734,12 @@ if test -n "$CONFIG_SND_S3C24XX_SOC_SIMTEC_HERMES"; then
 _ACEOF
 
 fi
+if test -n "$CONFIG_SND_SOC_SMDK_WM9713"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_SMDK_WM9713_MODULE 1
+_ACEOF
+
+fi
 if test -n "$CONFIG_SND_S6000_SOC"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_S6000_SOC_MODULE 1
@@ -20322,6 +20782,12 @@ if test -n "$CONFIG_SND_SOC_SH4_FSI"; then
 _ACEOF
 
 fi
+if test -n "$CONFIG_SND_SOC_SH4_SIU"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_SH4_SIU_MODULE 1
+_ACEOF
+
+fi
 if test -n "$CONFIG_SND_SH7760_AC97"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_SH7760_AC97_MODULE 1
@@ -20337,6 +20803,12 @@ fi
 if test -n "$CONFIG_SND_FSI_DA7210"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_FSI_DA7210 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_SIU_MIGOR"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SIU_MIGOR_MODULE 1
 _ACEOF
 
 fi
@@ -20394,9 +20866,9 @@ if test -n "$CONFIG_SND_SOC_AD1836"; then
 _ACEOF
 
 fi
-if test -n "$CONFIG_SND_SOC_AD1938"; then
+if test -n "$CONFIG_SND_SOC_AD193X"; then
   cat >>confdefs.h <<\_ACEOF
-#define CONFIG_SND_SOC_AD1938_MODULE 1
+#define CONFIG_SND_SOC_AD193X_MODULE 1
 _ACEOF
 
 fi
@@ -20439,6 +20911,12 @@ fi
 if test -n "$CONFIG_SND_SOC_AK4671"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_SOC_AK4671_MODULE 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_SOC_CQ0093VC"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_CQ0093VC_MODULE 1
 _ACEOF
 
 fi
@@ -20523,6 +21001,12 @@ fi
 if test -n "$CONFIG_SND_SOC_TWL4030"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_SOC_TWL4030_MODULE 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_SOC_TWL6040"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_TWL6040_MODULE 1
 _ACEOF
 
 fi
@@ -20664,6 +21148,12 @@ if test -n "$CONFIG_SND_SOC_WM8974"; then
 _ACEOF
 
 fi
+if test -n "$CONFIG_SND_SOC_WM8978"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_WM8978_MODULE 1
+_ACEOF
+
+fi
 if test -n "$CONFIG_SND_SOC_WM8988"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_SOC_WM8988_MODULE 1
@@ -20679,6 +21169,12 @@ fi
 if test -n "$CONFIG_SND_SOC_WM8993"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SND_SOC_WM8993_MODULE 1
+_ACEOF
+
+fi
+if test -n "$CONFIG_SND_SOC_WM8994"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_WM8994_MODULE 1
 _ACEOF
 
 fi
@@ -20718,6 +21214,12 @@ if test -n "$CONFIG_SND_SOC_TPA6130A2"; then
 _ACEOF
 
 fi
+if test -n "$CONFIG_SND_SOC_WM2000"; then
+  cat >>confdefs.h <<\_ACEOF
+#define CONFIG_SND_SOC_WM2000_MODULE 1
+_ACEOF
+
+fi
 if test -n "$CONFIG_SOUND_PRIME"; then
   cat >>confdefs.h <<\_ACEOF
 #define CONFIG_SOUND_PRIME_MODULE 1
@@ -20739,6 +21241,25 @@ if test "$CONFIG_SND_OSSEMUL" = "y"; then
     CONFIG_SND_SEQUENCER_OSS="y"
   fi
 fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -22485,7 +23006,7 @@ CONFIG_SOC_AU1200!$CONFIG_SOC_AU1200$ac_delim
 CONFIG_SOC_AU1550!$CONFIG_SOC_AU1550$ac_delim
 CONFIG_SND_SOC_AU1XPSC_I2S!$CONFIG_SND_SOC_AU1XPSC_I2S$ac_delim
 CONFIG_SND_SOC_AU1XPSC_AC97!$CONFIG_SND_SOC_AU1XPSC_AC97$ac_delim
-CONFIG_SND_SOC_SAMPLE_PSC_AC97!$CONFIG_SND_SOC_SAMPLE_PSC_AC97$ac_delim
+CONFIG_SND_SOC_DB1200!$CONFIG_SND_SOC_DB1200$ac_delim
 CONFIG_SND_BF5XX_I2S!$CONFIG_SND_BF5XX_I2S$ac_delim
 CONFIG_BLACKFIN!$CONFIG_BLACKFIN$ac_delim
 CONFIG_SND_BF5XX_SOC_SSM2602!$CONFIG_SND_BF5XX_SOC_SSM2602$ac_delim
@@ -22493,7 +23014,7 @@ CONFIG_SND_BF5XX_SOC_AD73311!$CONFIG_SND_BF5XX_SOC_AD73311$ac_delim
 CONFIG_SND_BFIN_AD73311_SE!$CONFIG_SND_BFIN_AD73311_SE$ac_delim
 CONFIG_SND_BF5XX_TDM!$CONFIG_SND_BF5XX_TDM$ac_delim
 CONFIG_SND_BF5XX_SOC_AD1836!$CONFIG_SND_BF5XX_SOC_AD1836$ac_delim
-CONFIG_SND_BF5XX_SOC_AD1938!$CONFIG_SND_BF5XX_SOC_AD1938$ac_delim
+CONFIG_SND_BF5XX_SOC_AD193X!$CONFIG_SND_BF5XX_SOC_AD193X$ac_delim
 CONFIG_SND_BF5XX_AC97!$CONFIG_SND_BF5XX_AC97$ac_delim
 CONFIG_SND_BF5XX_MMAP_SUPPORT!$CONFIG_SND_BF5XX_MMAP_SUPPORT$ac_delim
 CONFIG_SND_BF5XX_MULTICHAN_SUPPORT!$CONFIG_SND_BF5XX_MULTICHAN_SUPPORT$ac_delim
@@ -22509,10 +23030,14 @@ CONFIG_SND_DAVINCI_SOC!$CONFIG_SND_DAVINCI_SOC$ac_delim
 CONFIG_ARCH_DAVINCI!$CONFIG_ARCH_DAVINCI$ac_delim
 CONFIG_SND_DAVINCI_SOC_I2S!$CONFIG_SND_DAVINCI_SOC_I2S$ac_delim
 CONFIG_SND_DAVINCI_SOC_MCASP!$CONFIG_SND_DAVINCI_SOC_MCASP$ac_delim
+CONFIG_SND_DAVINCI_SOC_VCIF!$CONFIG_SND_DAVINCI_SOC_VCIF$ac_delim
 CONFIG_SND_DAVINCI_SOC_EVM!$CONFIG_SND_DAVINCI_SOC_EVM$ac_delim
 CONFIG_MACH_DAVINCI_EVM!$CONFIG_MACH_DAVINCI_EVM$ac_delim
 CONFIG_MACH_DAVINCI_DM355_EVM!$CONFIG_MACH_DAVINCI_DM355_EVM$ac_delim
 CONFIG_MACH_DAVINCI_DM365_EVM!$CONFIG_MACH_DAVINCI_DM365_EVM$ac_delim
+CONFIG_SND_DM365_AIC3X_CODEC!$CONFIG_SND_DM365_AIC3X_CODEC$ac_delim
+CONFIG_SND_DM365_VOICE_CODEC!$CONFIG_SND_DM365_VOICE_CODEC$ac_delim
+CONFIG_MFD_DAVINCI_VOICECODEC!$CONFIG_MFD_DAVINCI_VOICECODEC$ac_delim
 CONFIG_SND_DM6467_SOC_EVM!$CONFIG_SND_DM6467_SOC_EVM$ac_delim
 CONFIG_MACH_DAVINCI_DM6467_EVM!$CONFIG_MACH_DAVINCI_DM6467_EVM$ac_delim
 CONFIG_SND_DAVINCI_SOC_SFFSDR!$CONFIG_SND_DAVINCI_SOC_SFFSDR$ac_delim
@@ -22537,17 +23062,16 @@ CONFIG_SND_MPC52XX_SOC_PCM030!$CONFIG_SND_MPC52XX_SOC_PCM030$ac_delim
 CONFIG_PPC_MPC5200_SIMPLE!$CONFIG_PPC_MPC5200_SIMPLE$ac_delim
 CONFIG_SND_MPC52XX_SOC_EFIKA!$CONFIG_SND_MPC52XX_SOC_EFIKA$ac_delim
 CONFIG_PPC_EFIKA!$CONFIG_PPC_EFIKA$ac_delim
-CONFIG_SND_MX1_MX2_SOC!$CONFIG_SND_MX1_MX2_SOC$ac_delim
-CONFIG_ARCH_MX2!$CONFIG_ARCH_MX2$ac_delim
-CONFIG_ARCH_MX1!$CONFIG_ARCH_MX1$ac_delim
+CONFIG_SND_IMX_SOC!$CONFIG_SND_IMX_SOC$ac_delim
+CONFIG_ARCH_MXC!$CONFIG_ARCH_MXC$ac_delim
+CONFIG_FIQ!$CONFIG_FIQ$ac_delim
 CONFIG_SND_MXC_SOC_SSI!$CONFIG_SND_MXC_SOC_SSI$ac_delim
-CONFIG_SND_SOC_MX27VIS_WM8974!$CONFIG_SND_SOC_MX27VIS_WM8974$ac_delim
-CONFIG_MACH_MX27!$CONFIG_MACH_MX27$ac_delim
-CONFIG_MACH_IMX27_VISSTRIM_M10!$CONFIG_MACH_IMX27_VISSTRIM_M10$ac_delim
+CONFIG_SND_MXC_SOC_WM1133_EV1!$CONFIG_SND_MXC_SOC_WM1133_EV1$ac_delim
 CONFIG_SND_OMAP_SOC!$CONFIG_SND_OMAP_SOC$ac_delim
 CONFIG_ARCH_OMAP!$CONFIG_ARCH_OMAP$ac_delim
 CONFIG_SND_OMAP_SOC_MCBSP!$CONFIG_SND_OMAP_SOC_MCBSP$ac_delim
 CONFIG_OMAP_MCBSP!$CONFIG_OMAP_MCBSP$ac_delim
+CONFIG_SND_OMAP_SOC_MCPDM!$CONFIG_SND_OMAP_SOC_MCPDM$ac_delim
 CONFIG_SND_OMAP_SOC_N810!$CONFIG_SND_OMAP_SOC_N810$ac_delim
 CONFIG_MACH_NOKIA_N810!$CONFIG_MACH_NOKIA_N810$ac_delim
 CONFIG_OMAP_MUX!$CONFIG_OMAP_MUX$ac_delim
@@ -22567,9 +23091,6 @@ CONFIG_SND_OMAP_SOC_AM3517EVM!$CONFIG_SND_OMAP_SOC_AM3517EVM$ac_delim
 CONFIG_MACH_OMAP3517EVM!$CONFIG_MACH_OMAP3517EVM$ac_delim
 CONFIG_SND_OMAP_SOC_SDP3430!$CONFIG_SND_OMAP_SOC_SDP3430$ac_delim
 CONFIG_MACH_OMAP_3430SDP!$CONFIG_MACH_OMAP_3430SDP$ac_delim
-CONFIG_SND_OMAP_SOC_OMAP3_PANDORA!$CONFIG_SND_OMAP_SOC_OMAP3_PANDORA$ac_delim
-CONFIG_MACH_OMAP3_PANDORA!$CONFIG_MACH_OMAP3_PANDORA$ac_delim
-CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE!$CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -22611,7 +23132,11 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+CONFIG_SND_OMAP_SOC_OMAP3_PANDORA!$CONFIG_SND_OMAP_SOC_OMAP3_PANDORA$ac_delim
+CONFIG_MACH_OMAP3_PANDORA!$CONFIG_MACH_OMAP3_PANDORA$ac_delim
+CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE!$CONFIG_SND_OMAP_SOC_OMAP3_BEAGLE$ac_delim
 CONFIG_MACH_OMAP3_BEAGLE!$CONFIG_MACH_OMAP3_BEAGLE$ac_delim
+CONFIG_MACH_DEVKIT8000!$CONFIG_MACH_DEVKIT8000$ac_delim
 CONFIG_SND_OMAP_SOC_ZOOM2!$CONFIG_SND_OMAP_SOC_ZOOM2$ac_delim
 CONFIG_MACH_OMAP_ZOOM2!$CONFIG_MACH_OMAP_ZOOM2$ac_delim
 CONFIG_SND_OMAP_SOC_IGEP0020!$CONFIG_SND_OMAP_SOC_IGEP0020$ac_delim
@@ -22624,6 +23149,8 @@ CONFIG_SND_PXA2XX_SOC_CORGI!$CONFIG_SND_PXA2XX_SOC_CORGI$ac_delim
 CONFIG_PXA_SHARP_C7XX!$CONFIG_PXA_SHARP_C7XX$ac_delim
 CONFIG_SND_PXA2XX_SOC_SPITZ!$CONFIG_SND_PXA2XX_SOC_SPITZ$ac_delim
 CONFIG_PXA_SHARP_CXX00!$CONFIG_PXA_SHARP_CXX00$ac_delim
+CONFIG_SND_PXA2XX_SOC_Z2!$CONFIG_SND_PXA2XX_SOC_Z2$ac_delim
+CONFIG_MACH_ZIPIT2!$CONFIG_MACH_ZIPIT2$ac_delim
 CONFIG_SND_PXA2XX_SOC_POODLE!$CONFIG_SND_PXA2XX_SOC_POODLE$ac_delim
 CONFIG_MACH_POODLE!$CONFIG_MACH_POODLE$ac_delim
 CONFIG_SND_PXA2XX_SOC_TOSA!$CONFIG_SND_PXA2XX_SOC_TOSA$ac_delim
@@ -22663,7 +23190,7 @@ CONFIG_SND_S3C_I2SV2_SOC!$CONFIG_SND_S3C_I2SV2_SOC$ac_delim
 CONFIG_SND_S3C2412_SOC_I2S!$CONFIG_SND_S3C2412_SOC_I2S$ac_delim
 CONFIG_SND_S3C64XX_SOC_I2S!$CONFIG_SND_S3C64XX_SOC_I2S$ac_delim
 CONFIG_SND_S3C_SOC_PCM!$CONFIG_SND_S3C_SOC_PCM$ac_delim
-CONFIG_SND_S3C2443_SOC_AC97!$CONFIG_SND_S3C2443_SOC_AC97$ac_delim
+CONFIG_SND_S3C_SOC_AC97!$CONFIG_SND_S3C_SOC_AC97$ac_delim
 CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753!$CONFIG_SND_S3C24XX_SOC_NEO1973_WM8753$ac_delim
 CONFIG_MACH_NEO1973_GTA01!$CONFIG_MACH_NEO1973_GTA01$ac_delim
 CONFIG_SND_S3C24XX_SOC_NEO1973_GTA02_WM8753!$CONFIG_SND_S3C24XX_SOC_NEO1973_GTA02_WM8753$ac_delim
@@ -22680,34 +23207,28 @@ CONFIG_SND_S3C24XX_SOC_S3C24XX_UDA134X!$CONFIG_SND_S3C24XX_SOC_S3C24XX_UDA134X$a
 CONFIG_SND_S3C24XX_SOC_SIMTEC!$CONFIG_SND_S3C24XX_SOC_SIMTEC$ac_delim
 CONFIG_SND_S3C24XX_SOC_SIMTEC_TLV320AIC23!$CONFIG_SND_S3C24XX_SOC_SIMTEC_TLV320AIC23$ac_delim
 CONFIG_SND_S3C24XX_SOC_SIMTEC_HERMES!$CONFIG_SND_S3C24XX_SOC_SIMTEC_HERMES$ac_delim
+CONFIG_SND_SOC_SMDK_WM9713!$CONFIG_SND_SOC_SMDK_WM9713$ac_delim
 CONFIG_SND_S6000_SOC!$CONFIG_SND_S6000_SOC$ac_delim
 CONFIG_XTENSA_VARIANT_S6000!$CONFIG_XTENSA_VARIANT_S6000$ac_delim
 CONFIG_SND_S6000_SOC_I2S!$CONFIG_SND_S6000_SOC_I2S$ac_delim
 CONFIG_SND_S6000_SOC_S6IPCAM!$CONFIG_SND_S6000_SOC_S6IPCAM$ac_delim
 CONFIG_XTENSA_PLATFORM_S6105!$CONFIG_XTENSA_PLATFORM_S6105$ac_delim
+CONFIG_ARCH_SHMOBILE!$CONFIG_ARCH_SHMOBILE$ac_delim
 CONFIG_SND_SOC_PCM_SH7760!$CONFIG_SND_SOC_PCM_SH7760$ac_delim
 CONFIG_CPU_SUBTYPE_SH7760!$CONFIG_CPU_SUBTYPE_SH7760$ac_delim
 CONFIG_SH_DMABRG!$CONFIG_SH_DMABRG$ac_delim
 CONFIG_SND_SOC_SH4_HAC!$CONFIG_SND_SOC_SH4_HAC$ac_delim
 CONFIG_SND_SOC_SH4_SSI!$CONFIG_SND_SOC_SH4_SSI$ac_delim
 CONFIG_SND_SOC_SH4_FSI!$CONFIG_SND_SOC_SH4_FSI$ac_delim
-CONFIG_CPU_SUBTYPE_SH7724!$CONFIG_CPU_SUBTYPE_SH7724$ac_delim
+CONFIG_SND_SOC_SH4_SIU!$CONFIG_SND_SOC_SH4_SIU$ac_delim
+CONFIG_HAVE_CLK!$CONFIG_HAVE_CLK$ac_delim
+CONFIG_DMA_ENGINE!$CONFIG_DMA_ENGINE$ac_delim
+CONFIG_DMADEVICES!$CONFIG_DMADEVICES$ac_delim
+CONFIG_SH_DMAE!$CONFIG_SH_DMAE$ac_delim
 CONFIG_SND_SH7760_AC97!$CONFIG_SND_SH7760_AC97$ac_delim
 CONFIG_SND_FSI_AK4642!$CONFIG_SND_FSI_AK4642$ac_delim
 CONFIG_SND_FSI_DA7210!$CONFIG_SND_FSI_DA7210$ac_delim
-CONFIG_SND_SOC_TXX9ACLC!$CONFIG_SND_SOC_TXX9ACLC$ac_delim
-CONFIG_HAS_TXX9_ACLC!$CONFIG_HAS_TXX9_ACLC$ac_delim
-CONFIG_TXX9_DMAC!$CONFIG_TXX9_DMAC$ac_delim
-CONFIG_SND_SOC_TXX9ACLC_AC97!$CONFIG_SND_SOC_TXX9ACLC_AC97$ac_delim
-CONFIG_SND_SOC_TXX9ACLC_GENERIC!$CONFIG_SND_SOC_TXX9ACLC_GENERIC$ac_delim
-CONFIG_SND_SOC_I2C_AND_SPI!$CONFIG_SND_SOC_I2C_AND_SPI$ac_delim
-CONFIG_SND_SOC_ALL_CODECS!$CONFIG_SND_SOC_ALL_CODECS$ac_delim
-CONFIG_SND_SOC_WM_HUBS!$CONFIG_SND_SOC_WM_HUBS$ac_delim
-CONFIG_SND_SOC_AC97_CODEC!$CONFIG_SND_SOC_AC97_CODEC$ac_delim
-CONFIG_SND_SOC_AD1836!$CONFIG_SND_SOC_AD1836$ac_delim
-CONFIG_SND_SOC_AD1938!$CONFIG_SND_SOC_AD1938$ac_delim
-CONFIG_SND_SOC_AD1980!$CONFIG_SND_SOC_AD1980$ac_delim
-CONFIG_SND_SOC_AD73311!$CONFIG_SND_SOC_AD73311$ac_delim
+CONFIG_SND_SIU_MIGOR!$CONFIG_SND_SIU_MIGOR$ac_delim
 _ACEOF
 
   if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 97; then
@@ -22749,11 +23270,26 @@ _ACEOF
 ac_delim='%!_!# '
 for ac_last_try in false false false false false :; do
   cat >conf$$subs.sed <<_ACEOF
+CONFIG_SH_MIGOR!$CONFIG_SH_MIGOR$ac_delim
+CONFIG_SND_SOC_TXX9ACLC!$CONFIG_SND_SOC_TXX9ACLC$ac_delim
+CONFIG_HAS_TXX9_ACLC!$CONFIG_HAS_TXX9_ACLC$ac_delim
+CONFIG_TXX9_DMAC!$CONFIG_TXX9_DMAC$ac_delim
+CONFIG_SND_SOC_TXX9ACLC_AC97!$CONFIG_SND_SOC_TXX9ACLC_AC97$ac_delim
+CONFIG_SND_SOC_TXX9ACLC_GENERIC!$CONFIG_SND_SOC_TXX9ACLC_GENERIC$ac_delim
+CONFIG_SND_SOC_I2C_AND_SPI!$CONFIG_SND_SOC_I2C_AND_SPI$ac_delim
+CONFIG_SND_SOC_ALL_CODECS!$CONFIG_SND_SOC_ALL_CODECS$ac_delim
+CONFIG_SND_SOC_WM_HUBS!$CONFIG_SND_SOC_WM_HUBS$ac_delim
+CONFIG_SND_SOC_AC97_CODEC!$CONFIG_SND_SOC_AC97_CODEC$ac_delim
+CONFIG_SND_SOC_AD1836!$CONFIG_SND_SOC_AD1836$ac_delim
+CONFIG_SND_SOC_AD193X!$CONFIG_SND_SOC_AD193X$ac_delim
+CONFIG_SND_SOC_AD1980!$CONFIG_SND_SOC_AD1980$ac_delim
+CONFIG_SND_SOC_AD73311!$CONFIG_SND_SOC_AD73311$ac_delim
 CONFIG_SND_SOC_ADS117X!$CONFIG_SND_SOC_ADS117X$ac_delim
 CONFIG_SND_SOC_AK4104!$CONFIG_SND_SOC_AK4104$ac_delim
 CONFIG_SND_SOC_AK4535!$CONFIG_SND_SOC_AK4535$ac_delim
 CONFIG_SND_SOC_AK4642!$CONFIG_SND_SOC_AK4642$ac_delim
 CONFIG_SND_SOC_AK4671!$CONFIG_SND_SOC_AK4671$ac_delim
+CONFIG_SND_SOC_CQ0093VC!$CONFIG_SND_SOC_CQ0093VC$ac_delim
 CONFIG_SND_SOC_CS4270!$CONFIG_SND_SOC_CS4270$ac_delim
 CONFIG_SND_SOC_DA7210!$CONFIG_SND_SOC_DA7210$ac_delim
 CONFIG_SND_SOC_CS4270_VD33_ERRATA!$CONFIG_SND_SOC_CS4270_VD33_ERRATA$ac_delim
@@ -22769,6 +23305,7 @@ CONFIG_SND_SOC_TLV320AIC3X!$CONFIG_SND_SOC_TLV320AIC3X$ac_delim
 CONFIG_SND_SOC_TLV320DAC33!$CONFIG_SND_SOC_TLV320DAC33$ac_delim
 CONFIG_SND_SOC_TWL4030!$CONFIG_SND_SOC_TWL4030$ac_delim
 CONFIG_TWL4030_CODEC!$CONFIG_TWL4030_CODEC$ac_delim
+CONFIG_SND_SOC_TWL6040!$CONFIG_SND_SOC_TWL6040$ac_delim
 CONFIG_SND_SOC_UDA134X!$CONFIG_SND_SOC_UDA134X$ac_delim
 CONFIG_SND_SOC_UDA1380!$CONFIG_SND_SOC_UDA1380$ac_delim
 CONFIG_SND_SOC_WM8350!$CONFIG_SND_SOC_WM8350$ac_delim
@@ -22792,15 +23329,18 @@ CONFIG_SND_SOC_WM8960!$CONFIG_SND_SOC_WM8960$ac_delim
 CONFIG_SND_SOC_WM8961!$CONFIG_SND_SOC_WM8961$ac_delim
 CONFIG_SND_SOC_WM8971!$CONFIG_SND_SOC_WM8971$ac_delim
 CONFIG_SND_SOC_WM8974!$CONFIG_SND_SOC_WM8974$ac_delim
+CONFIG_SND_SOC_WM8978!$CONFIG_SND_SOC_WM8978$ac_delim
 CONFIG_SND_SOC_WM8988!$CONFIG_SND_SOC_WM8988$ac_delim
 CONFIG_SND_SOC_WM8990!$CONFIG_SND_SOC_WM8990$ac_delim
 CONFIG_SND_SOC_WM8993!$CONFIG_SND_SOC_WM8993$ac_delim
+CONFIG_SND_SOC_WM8994!$CONFIG_SND_SOC_WM8994$ac_delim
 CONFIG_SND_SOC_WM9081!$CONFIG_SND_SOC_WM9081$ac_delim
 CONFIG_SND_SOC_WM9705!$CONFIG_SND_SOC_WM9705$ac_delim
 CONFIG_SND_SOC_WM9712!$CONFIG_SND_SOC_WM9712$ac_delim
 CONFIG_SND_SOC_WM9713!$CONFIG_SND_SOC_WM9713$ac_delim
 CONFIG_SND_SOC_MAX9877!$CONFIG_SND_SOC_MAX9877$ac_delim
 CONFIG_SND_SOC_TPA6130A2!$CONFIG_SND_SOC_TPA6130A2$ac_delim
+CONFIG_SND_SOC_WM2000!$CONFIG_SND_SOC_WM2000$ac_delim
 CONFIG_SOUND_PRIME!$CONFIG_SOUND_PRIME$ac_delim
 CONFIG_AC97_BUS!$CONFIG_AC97_BUS$ac_delim
 c_opts!$c_opts$ac_delim
@@ -22812,7 +23352,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 61; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 80; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
@@ -23250,25 +23790,25 @@ ln -sf ../i2c-id_compat.h include/linux/i2c-id.h
 
 if test "$CONFIG_SND_MODULE" = y; then
   echo "Hacking autoconf.h..."
-  rm -f include/linux/autoconf.h
-  mkdir -p include/linux
-  if test -n "$kernelbuild" -a -r $kernelbuild/include/linux/autoconf.h ; then
-    kernconf="$kernelbuild/include/linux/autoconf.h"
-  elif test -r  $CONFIG_SND_KERNELDIR/include/linux/autoconf.h ; then
-    kernconf="$CONFIG_SND_KERNELDIR/include/linux/autoconf.h"
+  rm -f include/linux/autoconf.h include/generated/autoconf.h
+  mkdir -p include/linux include/generated
+  if test -n "$kernelbuild" -a -r $kernelbuild/include/$INCLUDE_AUTOCONF_H ; then
+    kernconf="$kernelbuild/include/$INCLUDE_AUTOCONF_H"
+  elif test -r  $CONFIG_SND_KERNELDIR/include/$INCLUDE_AUTOCONF_H ; then
+    kernconf="$CONFIG_SND_KERNELDIR/include/$INCLUDE_AUTOCONF_H"
   else
       cat << EOF
-File include/linux/autoconf.h does not exist in kernel tree.
+File include/$INCLUDE_AUTOCONF_H does not exist in kernel tree.
 Fatal error - aborting...
 EOF
       exit 1
   fi
-  grep -v CONFIG_SND_ $kernconf > include/linux/autoconf.h
+  grep -v CONFIG_SND_ $kernconf > include/$INCLUDE_AUTOCONF_H
   cat include/autoconf-extra.h include/config1.h | grep CONFIG_SND \
     | sed -e's@/\* #undef \([A-Za-z0-9_]\+\) .*$@#undef \1@g' \
-      >> include/linux/autoconf.h
+      >> include/$INCLUDE_AUTOCONF_H
 else
-  rm -f include/linux/autoconf.h
+  rm -f include/$INCLUDE_AUTOCONF_H
 fi
 
 if test "$update_version" != "yes"; then

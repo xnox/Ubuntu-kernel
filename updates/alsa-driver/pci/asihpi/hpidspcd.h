@@ -1,5 +1,5 @@
 /***********************************************************************/
-/*!
+/**
 
     AudioScience HPI driver
     Copyright (C) 1997-2003  AudioScience Inc. <support@audioscience.com>
@@ -19,13 +19,20 @@
 
 \file
 Functions for reading DSP code to load into DSP
-USE_ZLIB is forced to be undefined.
 
-If it is not defined, code is read from linked arrays.
-HPI_INCLUDE_**** must be defined
-and the appropriate hzz?????.c or hex?????.c linked in
+ hpi_dspcode_defines HPI DSP code loading method
+Define exactly one of these to select how the DSP code is supplied to
+the adapter.
 
-If USE_ZLIB is defined, hpizlib.c must also be linked
+End users writing applications that use the HPI interface do not have to
+use any of the below defines; they are only necessary for building drivers
+
+HPI_DSPCODE_FILE:
+DSP code is supplied as a file that is opened and read from by the driver.
+
+HPI_DSPCODE_FIRMWARE:
+DSP code is read using the hotplug firmware loader module.
+     Only valid when compiling the HPI kernel driver under Linux.
 */
 /***********************************************************************/
 #ifndef _HPIDSPCD_H_
@@ -40,16 +47,16 @@ If USE_ZLIB is defined, hpizlib.c must also be linked
 /** Descriptor for dspcode from firmware loader */
 struct dsp_code {
 	/**  Firmware descriptor */
-	const struct firmware *psFirmware;
-	struct pci_dev *psDev;
+	const struct firmware *ps_firmware;
+	struct pci_dev *ps_dev;
 	/** Expected number of words in the whole dsp code,INCL header */
-	long int dwBlockLength;
+	long int block_length;
 	/** Number of words read so far */
-	long int dwWordCount;
+	long int word_count;
 	/** Version read from dsp code file */
-	u32 dwVersion;
+	u32 version;
 	/** CRC read from dsp code file */
-	u32 dwCrc;
+	u32 crc;
 };
 
 #ifndef DISABLE_PRAGMA_PACK1
@@ -61,32 +68,27 @@ struct dsp_code {
 
 \return 0 for success, or error code if requested code is not available
 */
-short HpiDspCode_Open(
-	u32 nAdapter,		/*!< Adapter family */
-	/*!< Pointer to DSP code control structure */
-	struct dsp_code *psDspCode,
-	/*!< Pointer to dword to receive OS specific error code */
-	u32 *pdwOsErrorCode
-);
+short hpi_dsp_code_open(
+	/** Code identifier, usually adapter family */
+	u32 adapter,
+	/** Pointer to DSP code control structure */
+	struct dsp_code *ps_dsp_code,
+	/** Pointer to dword to receive OS specific error code */
+	u32 *pos_error_code);
 
-/*! Close the DSP code file */
-void HpiDspCode_Close(
-	struct dsp_code *psDspCode
-);
+/** Close the DSP code file */
+void hpi_dsp_code_close(struct dsp_code *ps_dsp_code);
 
-/*! Rewind to the beginning of the DSP code file (for verify) */
-void HpiDspCode_Rewind(
-	struct dsp_code *psDspCode
-);
+/** Rewind to the beginning of the DSP code file (for verify) */
+void hpi_dsp_code_rewind(struct dsp_code *ps_dsp_code);
 
-/*! Read one word from the dsp code file
+/** Read one word from the dsp code file
 	\return 0 for success, or error code if eof, or block length exceeded
 */
-short HpiDspCode_ReadWord(
-	struct dsp_code *psDspCode,
-	/*!< Where to store the read word */
-	u32 *pdwWord
-);
+short hpi_dsp_code_read_word(struct dsp_code *ps_dsp_code,
+				      /**< DSP code descriptor */
+	u32 *pword /**< where to store the read word */
+	);
 
 /** Get a block of dsp code into an internal buffer, and provide a pointer to
 that buffer. (If dsp code is already an array in memory, it is referenced,
@@ -94,11 +96,9 @@ not copied.)
 
 \return Error if requested number of words are not available
 */
-short HpiDspCode_ReadBlock(
-	size_t nWordsRequested,
-	struct dsp_code *psDspCode,
+short hpi_dsp_code_read_block(size_t words_requested,
+	struct dsp_code *ps_dsp_code,
 	/* Pointer to store (Pointer to code buffer) */
-	u32 **ppdwBlock
-);
+	u32 **ppblock);
 
 #endif

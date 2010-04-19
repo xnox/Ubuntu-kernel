@@ -23,6 +23,7 @@
 
 #include <linux/module.h>
 #include <linux/platform_device.h>
+#include <linux/slab.h>
 #include <sound/core.h>
 #include <sound/soc.h>
 #include <sound/initval.h>
@@ -200,6 +201,11 @@ static struct cs4270_mode_ratios cs4270_mode_ratios[] = {
  * This function must be called by the machine driver's 'startup' function,
  * otherwise the list of supported sample rates will not be available in
  * time for ALSA.
+ *
+ * For setups with variable MCLKs, pass 0 as 'freq' argument. This will cause
+ * theoretically possible sample rates to be enabled. Call it again with a
+ * proper value set one the external clock is set (most probably you would do
+ * that from a machine's driver 'hw_param' hook.
  */
 static int cs4270_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 				 int clk_id, unsigned int freq, int dir)
@@ -213,20 +219,27 @@ static int cs4270_set_dai_sysclk(struct snd_soc_dai *codec_dai,
 
 	cs4270->mclk = freq;
 
-	for (i = 0; i < NUM_MCLK_RATIOS; i++) {
-		unsigned int rate = freq / cs4270_mode_ratios[i].ratio;
-		rates |= snd_pcm_rate_to_rate_bit(rate);
-		if (rate < rate_min)
-			rate_min = rate;
-		if (rate > rate_max)
-			rate_max = rate;
-	}
-	/* FIXME: soc should support a rate list */
-	rates &= ~SNDRV_PCM_RATE_KNOT;
+	if (cs4270->mclk) {
+		for (i = 0; i < NUM_MCLK_RATIOS; i++) {
+			unsigned int rate = freq / cs4270_mode_ratios[i].ratio;
+			rates |= snd_pcm_rate_to_rate_bit(rate);
+			if (rate < rate_min)
+				rate_min = rate;
+			if (rate > rate_max)
+				rate_max = rate;
+		}
+		/* FIXME: soc should support a rate list */
+		rates &= ~SNDRV_PCM_RATE_KNOT;
 
-	if (!rates) {
-		dev_err(codec->dev, "could not find a valid sample rate\n");
-		return -EINVAL;
+		if (!rates) {
+			dev_err(codec->dev, "could not find a valid sample rate\n");
+			return -EINVAL;
+		}
+	} else {
+		/* enable all possible rates */
+		rates = SNDRV_PCM_RATE_8000_192000;
+		rate_min = 8000;
+		rate_max = 192000;
 	}
 
 	codec_dai->playback.rates = rates;
@@ -617,7 +630,16 @@ static int cs4270_probe(struct platform_device *pdev)
 	if (ret < 0)
 		goto error_free_pcms;
 
+	ret = regulator_bulk_enable(ARRAY_SIZE(cs4270->supplies),
+				    cs4270->supplies);
+	if (ret < 0)
+		goto error_free_regulators;
+
 	return 0;
+
+error_free_regulators:
+	regulator_bulk_free(ARRAY_SIZE(cs4270->supplies),
+			    cs4270->supplies);
 
 error_free_pcms:
 	snd_soc_free_pcms(socdev);
@@ -638,6 +660,7 @@ static int cs4270_remove(struct platform_device *pdev)
 	struct cs4270_private *cs4270 = codec->private_data;
 
 	snd_soc_free_pcms(socdev);
+	regulator_bulk_disable(ARRAY_SIZE(cs4270->supplies), cs4270->supplies);
 	regulator_bulk_free(ARRAY_SIZE(cs4270->supplies), cs4270->supplies);
 
 	return 0;

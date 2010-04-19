@@ -37,7 +37,9 @@
 #endif
 
 #include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 18)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 33)
+#include <generated/autoconf.h>
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 18)
 #include <linux/autoconf.h>
 #endif
 
@@ -58,6 +60,10 @@
 #include "sndversions.h"
 #endif
 #endif /* ALSA_BUILD && KERNEL < 2.6.0 */
+
+#ifndef RHEL_RELEASE_VERSION
+#define RHEL_RELEASE_VERSION(a, b) (((a) << 8) | (b))
+#endif
 
 #include <linux/module.h>
 
@@ -103,7 +109,9 @@ typedef __u32 __be32;
 
 /* other missing types */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 28)
+#if !defined(RHEL_RELEASE_CODE) || RHEL_RELEASE_CODE < RHEL_RELEASE_VERSION(5, 4)
 typedef unsigned int fmode_t;
+#endif
 #endif
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
@@ -635,6 +643,10 @@ struct usb_ctrlrequest {
 	__u16 wIndex;
 	__u16 wLength;
 } __attribute__ ((packed));
+#endif
+
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 18)
+#define usb_interrupt_msg	usb_bulk_msg
 #endif
 
 #endif /* SND_NEED_USB_WRAPPER && CONFIG_USB */
@@ -1413,6 +1425,7 @@ static inline int snd_pci_enable_msi(struct pci_dev *dev) { return -1; }
 /* kmemdup() wrapper */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19) || defined(CONFIG_SND_DEBUG_MEMORY)
 #include <linux/string.h>
+#include <linux/slab.h>
 static inline void *snd_kmemdup(const void *src, size_t len, gfp_t gfp)
 {
 	void *dst = kmalloc(len, gfp);
@@ -1625,15 +1638,25 @@ static inline u64 get_unaligned_be64(void *p)
 #define page_to_pfn(page)       (page_to_phys(page) >> PAGE_SHIFT)
 #endif
 
+/* strto*() wrappers */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
 /* lazy wrapper - always returns 0 */
-static inline int __strict_strtoul(const char *cp, unsigned int base,
-				 unsigned long *valp)
-{
-	*valp = simple_strtoul(cp, NULL, base);
-	return 0;
+#define XXX_DEFINE_STRTO(name, type) \
+static inline int __strict_strto##name(const char *cp, unsigned int base, \
+				       type *valp) \
+{ \
+	*valp = simple_strto##name(cp, NULL, base); \
+	return 0; \
 }
-#define strict_strtoul __strict_strtoul
+XXX_DEFINE_STRTO(l, long);
+XXX_DEFINE_STRTO(ul, unsigned long);
+XXX_DEFINE_STRTO(ll, long long);
+XXX_DEFINE_STRTO(ull, unsigned long long);
+#undef XXX_DEFINE_STRTO
+#define strict_strtol	__strict_strtol
+#define strict_strtoll	__strict_strtoll
+#define strict_strtoul	__strict_strtoul
+#define strict_strtoull	__strict_strtoull
 #endif /* < 2.6.25 */
 
 /* pr_xxx() macros */
@@ -1690,6 +1713,8 @@ static inline const char *dev_name(struct device *dev)
 /* force to redefine WARN_ON() */
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19)
 #undef WARN_ON
+#undef WARN_ON_ONCE
+#undef WARN_ONCE
 #endif
 
 #ifndef WARN_ON
@@ -1713,6 +1738,18 @@ static inline const char *dev_name(struct device *dev)
                 if (WARN_ON(!__warned))                         \
                         __warned = 1;                           \
         unlikely(__ret_warn_once);                              \
+})
+#endif
+
+#ifndef WARN_ONCE
+#define WARN_ONCE(condition, format...)	({			\
+	static int __warned;					\
+	int __ret_warn_once = !!(condition);			\
+								\
+	if (unlikely(__ret_warn_once))				\
+		if (WARN(!__warned, format)) 			\
+			__warned = 1;				\
+	unlikely(__ret_warn_once);				\
 })
 #endif
 
@@ -1789,7 +1826,9 @@ typedef int _Bool;
 #endif
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 19)
 #ifndef bool	/* just to be sure */
+#if !defined(RHEL_RELEASE_CODE) || RHEL_RELEASE_CODE < RHEL_RELEASE_VERSION(5, 4)
 typedef _Bool bool;
+#endif
 #define true	1
 #define false	0
 #endif
@@ -1824,18 +1863,8 @@ static inline void *snd_memdup_user(const void __user *src, size_t len)
 #endif
 #endif /* < 2.6.20 */
 
-/* strict_strtoull() */
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
-static inline int snd_strict_strtoull(const char *str, unsigned int base,
-				      unsigned long long *val)
-{
-	*val = simple_strtoull(str, NULL, base);
-	return 0;
-}
-#define strict_strtoull	snd_strict_strtoull
-#endif /* < 2.6.25 */
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 17)
+/* put_pid() function was not exported before 2.6.19 */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 19)
 #define CONFIG_SND_HAS_REFCOUNTED_STRUCT_PID
 #endif
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 19)
@@ -1893,6 +1922,93 @@ static inline pid_t pid_vnr(struct pid *pid)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 33)
 char *compat_skip_spaces(const char *);
 #define skip_spaces	compat_skip_spaces
+#endif
+
+/* subsys_initcall() wrapper */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 0)
+#include <linux/init.h>
+#ifndef subsys_initcall
+#define subsys_initcall(x) module_init(x)
+#endif
+#endif
+
+/* DEFINE_PCI_DEVICE_TABLE() */
+#ifdef CONFIG_PCI
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 25)
+#ifndef DEFINE_PCI_DEVICE_TABLE
+/* originally it's __devinitconst but we use __devinitdata to be compatible
+ * with older kernels
+ */
+#define DEFINE_PCI_DEVICE_TABLE(_table) \
+	const struct pci_device_id _table[] __devinitdata
+#endif
+#endif /* < 2.6.25 */
+#endif /* CONFIG_PCI */
+
+/* blocking_notifier */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 17)
+#include <linux/notifier.h>
+#ifndef BLOCKING_INIT_NOTIFIER_HEAD
+struct blocking_notifier_head {
+	struct rw_semaphore rwsem;
+	struct notifier_block *head;
+};
+
+#define BLOCKING_INIT_NOTIFIER_HEAD(name) do {	\
+		init_rwsem(&(name)->rwsem);	\
+		(name)->head = NULL;		\
+	} while (0)
+
+static inline int
+blocking_notifier_call_chain(struct blocking_notifier_head *nh,
+			     unsigned long val, void *v)
+{
+	int ret;
+	down_read(&nh->rwsem);
+	ret = notifier_call_chain(&nh->head, val, v);
+	up_read(&nh->rwsem);
+	return ret;
+}
+
+static inline int
+blocking_notifier_chain_register(struct blocking_notifier_head *nh,
+				 struct notifier_block *nb)
+{
+	int ret;
+	down_write(&nh->rwsem);
+	ret = notifier_chain_register(&nh->head, nb);
+	up_write(&nh->rwsem);
+	return ret;
+}
+
+static inline int
+blocking_notifier_chain_unregister(struct blocking_notifier_head *nh,
+				   struct notifier_block *nb)
+{
+	int ret;
+	down_write(&nh->rwsem);
+	ret = notifier_chain_unregister(&nh->head, nb);
+	up_write(&nh->rwsem);
+	return ret;
+}
+#endif /* BLOCKING_INIT_NOTIFIER_HEAD */
+#endif /* <2.6.17 */
+
+/* pgprot_noncached - 2.4 has different defines */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 5, 0)
+#ifndef pgprot_noncached
+#define pgprot_noncached(x) (x)
+#endif
+#endif
+
+/* no_llseek() */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 4, 0)
+#define no_llseek	NULL
+#endif
+
+/* nonseekable_open() */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 8)
+#define nonseekable_open(i,f) 0
 #endif
 
 #endif /* __SOUND_LOCAL_DRIVER_H */

@@ -32,12 +32,12 @@ extern "C" {
 #endif
 
 /* Define debugging levels.  */
-enum { HPI_DEBUG_LEVEL_ERROR = 0,	/* Always log errors */
+enum { HPI_DEBUG_LEVEL_ERROR = 0,	/* always log errors */
 	HPI_DEBUG_LEVEL_WARNING = 1,
 	HPI_DEBUG_LEVEL_NOTICE = 2,
 	HPI_DEBUG_LEVEL_INFO = 3,
 	HPI_DEBUG_LEVEL_DEBUG = 4,
-	HPI_DEBUG_LEVEL_VERBOSE = 5	/* Same printk level as DEBUG */
+	HPI_DEBUG_LEVEL_VERBOSE = 5	/* same printk level as DEBUG */
 };
 
 #define HPI_DEBUG_LEVEL_DEFAULT HPI_DEBUG_LEVEL_NOTICE
@@ -51,45 +51,48 @@ enum { HPI_DEBUG_LEVEL_ERROR = 0,	/* Always log errors */
 #define FILE_LINE  __FILE__ ":" __stringify(__LINE__) " "
 #endif
 
+#if defined(HPI_DEBUG) && defined(_WINDOWS)
+#define HPI_DEBUGBREAK() debug_break()
+#else
+#define HPI_DEBUGBREAK()
+#endif
+
+#define HPI_DEBUG_ASSERT(expression) \
+	do { \
+		if (!(expression)) {\
+			printk(KERN_ERR  FILE_LINE\
+				"ASSERT " __stringify(expression));\
+			HPI_DEBUGBREAK();\
+		} \
+	} while (0)
+
 #define HPI_DEBUG_LOG(level, ...) \
 	do { \
-		if (hpiDebugLevel >= HPI_DEBUG_LEVEL_##level) { \
+		if (hpi_debug_level >= HPI_DEBUG_LEVEL_##level) { \
 			printk(HPI_DEBUG_FLAG_##level \
 			FILE_LINE  __VA_ARGS__); \
 		} \
 	} while (0)
 
-void HPI_DebugInit(
-	void
-);
-int HPI_DebugLevelSet(
-	int level
-);
-int HPI_DebugLevelGet(
-	void
-);
+void hpi_debug_init(void);
+int hpi_debug_level_set(int level);
+int hpi_debug_level_get(void);
 /* needed by Linux driver for dynamic debug level changes */
-extern int hpiDebugLevel;
+extern int hpi_debug_level;
 
-void hpi_debug_message(
-	struct hpi_message *phm,
-	char *szFileline
-);
+void hpi_debug_message(struct hpi_message *phm, char *sz_fileline);
 
-void hpi_debug_data(
-	u16 *pdata,
-	u32 len
-);
+void hpi_debug_data(u16 *pdata, u32 len);
 
 #define HPI_DEBUG_DATA(pdata, len)                                      \
 	do {                                                            \
-		if (hpiDebugLevel >= HPI_DEBUG_LEVEL_VERBOSE) \
+		if (hpi_debug_level >= HPI_DEBUG_LEVEL_VERBOSE) \
 			hpi_debug_data(pdata, len); \
 	} while (0)
 
 #define HPI_DEBUG_MESSAGE(level, phm)                                   \
 	do {                                                            \
-		if (hpiDebugLevel >= HPI_DEBUG_LEVEL_##level) {         \
+		if (hpi_debug_level >= HPI_DEBUG_LEVEL_##level) {         \
 			hpi_debug_message(phm,HPI_DEBUG_FLAG_##level    \
 				FILE_LINE __stringify(level));\
 		}                                                       \
@@ -97,12 +100,12 @@ void hpi_debug_data(
 
 #define HPI_DEBUG_RESPONSE(phr)                                         \
 	do {                                                            \
-		if ((hpiDebugLevel >= HPI_DEBUG_LEVEL_DEBUG) && (phr->wError))\
+		if ((hpi_debug_level >= HPI_DEBUG_LEVEL_DEBUG) && (phr->error))\
 			HPI_DEBUG_LOG(ERROR, \
-				"HPI Response - error# %d\n", \
-				phr->wError); \
-		else if (hpiDebugLevel >= HPI_DEBUG_LEVEL_VERBOSE) \
-			HPI_DEBUG_LOG(VERBOSE, "HPI Response OK\n");\
+				"HPI response - error# %d\n", \
+				phr->error); \
+		else if (hpi_debug_level >= HPI_DEBUG_LEVEL_VERBOSE) \
+			HPI_DEBUG_LOG(VERBOSE, "HPI response OK\n");\
 	} while (0)
 
 #ifndef compile_time_assert
@@ -113,7 +116,7 @@ void hpi_debug_data(
 	  /* check that size is exactly some number */
 #define function_count_check(sym, size) \
     compile_time_assert((sym##_FUNCTION_COUNT) == (size),\
-	    strings_dont_match_defs_##sym)
+	    strings_match_defs_##sym)
 
 /* These strings should be generated using a macro which defines
    the corresponding symbol values.  */
@@ -148,8 +151,10 @@ void hpi_debug_data(
   "HPI_SUBSYS_READ_PORT_8",   \
   "HPI_SUBSYS_WRITE_PORT_8",  \
   "HPI_SUBSYS_GET_NUM_ADAPTERS",\
-  "HPI_SUBSYS_GET_ADAPTER"    \
+  "HPI_SUBSYS_GET_ADAPTER",   \
+  "HPI_SUBSYS_SET_NETWORK_INTERFACE"\
 }
+function_count_check(HPI_SUBSYS, 14);
 
 #define HPI_ADAPTER_STRINGS     \
 {                               \
@@ -199,8 +204,10 @@ function_count_check(HPI_ADAPTER, 18);
   "HPI_OSTREAM_GROUP_ADD",\
   "HPI_OSTREAM_GROUP_GETMAP", \
   "HPI_OSTREAM_GROUP_RESET", \
+  "HPI_OSTREAM_HOSTBUFFER_GET_INFO", \
+  "HPI_OSTREAM_WAIT_START", \
 }
-function_count_check(HPI_OSTREAM, 22);
+function_count_check(HPI_OSTREAM, 24);
 
 #define HPI_ISTREAM_STRINGS     \
 {                               \
@@ -221,8 +228,10 @@ function_count_check(HPI_OSTREAM, 22);
   "HPI_ISTREAM_GROUP_ADD", \
   "HPI_ISTREAM_GROUP_GETMAP", \
   "HPI_ISTREAM_GROUP_RESET", \
+  "HPI_ISTREAM_HOSTBUFFER_GET_INFO", \
+  "HPI_ISTREAM_WAIT_START", \
 }
-function_count_check(HPI_ISTREAM, 17);
+function_count_check(HPI_ISTREAM, 19);
 
 #define HPI_MIXER_STRINGS       \
 {                               \
@@ -305,7 +314,7 @@ function_count_check(HPI_ASYNCEVENT, 6);
 
 #define HPI_CONTROL_TYPE_STRINGS \
 { \
-	"no control (0"), \
+	"null control", \
 	"HPI_CONTROL_CONNECTION", \
 	"HPI_CONTROL_VOLUME", \
 	"HPI_CONTROL_METER", \
@@ -329,11 +338,13 @@ function_count_check(HPI_ASYNCEVENT, 6);
 	"HPI_CONTROL_COBRANET", \
 	"HPI_CONTROL_TONE_DETECT", \
 	"HPI_CONTROL_SILENCE_DETECT", \
-	"HPI_CONTROL_PAD" \
+	"HPI_CONTROL_PAD", \
+	"HPI_CONTROL_SRC" ,\
+	"HPI_CONTROL_UNIVERSAL" \
 }
 
-compile_time_assert((HPI_CONTROL_LAST_INDEX + 1) == (25),
-	controltype_strings_dont_match_defs);
+compile_time_assert((HPI_CONTROL_LAST_INDEX + 1 == 27),
+	controltype_strings_match_defs);
 
 #define HPI_SOURCENODE_STRINGS \
 { \
@@ -347,11 +358,12 @@ compile_time_assert((HPI_CONTROL_LAST_INDEX + 1) == (25),
 	"HPI_SOURCENODE_RAW_BITSTREAM", \
 	"HPI_SOURCENODE_MICROPHONE", \
 	"HPI_SOURCENODE_COBRANET", \
-	"HPI_SOURCENODE_ANALOG" \
+	"HPI_SOURCENODE_ANALOG", \
+	"HPI_SOURCENODE_ADAPTER" \
 }
 
 compile_time_assert((HPI_SOURCENODE_LAST_INDEX - HPI_SOURCENODE_BASE + 1) ==
-	(11), sourcenode_strings_dont_match_defs);
+	(12), sourcenode_strings_match_defs);
 
 #define HPI_DESTNODE_STRINGS \
 { \
@@ -365,7 +377,7 @@ compile_time_assert((HPI_SOURCENODE_LAST_INDEX - HPI_SOURCENODE_BASE + 1) ==
 	"HPI_DESTNODE_ANALOG" \
 }
 compile_time_assert((HPI_DESTNODE_LAST_INDEX - HPI_DESTNODE_BASE + 1) == (8),
-	destnode_strings_dont_match_defs);
+	destnode_strings_match_defs);
 
 #define HPI_CONTROL_CHANNEL_MODE_STRINGS \
 { \
