@@ -1,0 +1,82 @@
+#! /bin/bash
+
+P="cod-preproposed"
+
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $P <commit> <series> <tag>" 1>&2
+	exit 1
+fi
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+commit="$1"
+series="$2"
+tag="$3"
+
+echo "*** BUILDING PREPROPOSED: commit:$commit series:$series tag:$tag..."
+
+build_release="hardy"
+
+master_main="$HOME/mainline"
+master_tree="$master_main/build"
+
+cd "$master_tree" || exit 1
+
+# NOTE: a - in the branch name seems to be causing issues.
+branch="BUILD.preproposed.$series"
+branch=`echo "$branch" | sed -e 's/-/./g'`
+
+# Ensure we get the uptodate machinary.
+git fetch "$series"
+git checkout -f "$series/master"
+git branch -D "$branch"
+
+#
+# Checkout the source at the specified version.
+#
+git checkout -b "$branch" "$commit" -- || exit 1
+
+# Report the head for posterity.
+echo "vvv - build head"
+git --no-pager log -1 HEAD
+echo "^^^ - build head"
+
+#
+# Rebuild the changelog.
+#
+for debian in "debian.master" "debian"
+do
+	[ -d "$debian" ] && break
+done 
+changelog="$debian/changelog"
+
+unreleased=`grep -c UNRELEASED debian.master/changelog`
+if [ "$unreleased" -eq 0 ]; then
+	echo "$P: not UNRELEASED nothing to build ... exiting"
+	exit 0
+fi
+
+# Commit the changelog.
+sed -i -e "1 s/)/~pre$tag)/" -e "1 s/ UNRELEASED;/ $series;/" $changelog
+dchroot --directory=`pwd` -c "$build_release" \
+        "fakeroot debian/rules insertchanges"
+git commit -a -m "CHANGES"
+
+# Clean out the rubbish.
+rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes
+
+#
+# Build the source package.
+#
+git clean -x -f -d
+dchroot --directory=`pwd` -c "$build_release" \
+        "fakeroot debian/rules clean"
+dchroot --directory=`pwd` -c "$build_release" \
+	"dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa"
+
+# Upload it.
+dput pre-proposed "$master_main"/*.changes

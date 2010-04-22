@@ -13,7 +13,8 @@ commit="$1"
 master_main="$HOME/mainline"
 master_tree="$master_main/build"
 
-tags_list="$master_main/TAGS"
+master_tags="$master_main/upstream"
+tags_list="$master_tags/TAGS"
 
 cd "$master_tree" || exit 1
 
@@ -25,7 +26,33 @@ do
 	git fetch "$remote"
 done
 
-# Find all the new TAGS.
+#
+# UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
+#
+date=`date +%Y%m%d%H%M`
+for current in lucid
+do
+	curr="$master_main/ubuntu/$current"
+	branch="$current/master"
+
+	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
+	prev=`cat "$curr" 2>/dev/null || true`
+
+	echo "branch<$branch> tip<$tip> prev<$prev>"
+
+	if [ "$tip" != "$prev" ]; then
+		# Commit the new tip.
+		echo "$tip" >"$curr.new"
+		mv -f "$curr.new" "$curr"
+
+		"$here/cod-enqueue" "A.preproposed-$current" \
+			"$here/cod-preproposed" "$tip" "$current" "$date"
+	fi
+done
+
+#
+# UPSTREAM TAGS: Find all the new upstream release tags.
+#
 git tag -l >"$tags_list.new"
 
 diff /home/kernel-ppa/mainline/TAGS{,.new} | \
@@ -37,14 +64,18 @@ mv "$tags_list.new" "$tags_list"
 # Run the list.
 while read commit
 do
-	"$here/mainline-build" "$commit" || true
+	"$here/cod-enqueue" "B.mainline-$commit" \
+		"$here/mainline-build" "$commit"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
 
-while read curr branch abi base
+#
+# UPSTREAM COD: builds of upstream tree tips
+#
+while read current branch abi base
 do
-	curr="$master_main/$curr"
+	curr="$master_tags/$current"
 	# Check for upstream crack of the day.
 	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
 	prev=`cat "$curr" 2>/dev/null || true`
@@ -56,7 +87,8 @@ do
 		echo "$tip" >"$curr.new"
 		mv -f "$curr.new" "$curr"
 
-		"$here/mainline-build" "$branch" "$abi" "$base" || true
+		"$here/cod-enqueue" "C.cod-$current" \
+			"$here/mainline-build" "$branch" "$abi" "$base"
 	fi
 done <<EOL
 LINUS		linus/master			999	daily
