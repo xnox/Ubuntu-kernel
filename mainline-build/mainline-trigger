@@ -26,7 +26,9 @@ do
 	git fetch "$remote"
 done
 
-# Find all the new TAGS.
+#
+# UPSTREAM TAGS: Find all the new upstream release tags.
+#
 git tag -l >"$tags_list.new"
 
 diff /home/kernel-ppa/mainline/TAGS{,.new} | \
@@ -44,6 +46,9 @@ done <"$tags_list.added"
 
 rm -f "$tags_list.added"
 
+#
+# UPSTREAM COD: builds of upstream tree tips
+#
 while read current branch abi base
 do
 	curr="$master_tags/$current"
