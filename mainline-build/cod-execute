@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+# cod-execute -- pick up jobs from the COD queue and execute them sequentially
+#
+P="cod-execute"
+
+queue="$HOME/COD/queue"
+mkdir -p "$queue"
+
+lock_tmp="$queue/.LOCK-$$"
+lock="$queue/.LOCK"
+
+# One at a time please...
+echo "$$" >"$lock_tmp"
+if ! ln "$lock_tmp" "$lock" 2>/dev/null; then
+	rm -f "$lock_tmp"
+	echo "$P: queue runner already running ... quitting"
+	exit 0
+fi
+rm -f "$lock_tmp"
+
+# Run things in the queue.
+while :
+do
+	job=`ls /home/kernel-ppa/COD/queue | head -1`
+	if [ "$job" = '' ]; then
+		break
+	fi
+	jobf="$queue/$job"
+
+	echo "$P: executing $job ..."
+	cat "$jobf"
+	/bin/bash "$jobf"
+	echo "$P: complete $job (rc=$?)"
+	
+	rm -f "$jobf"
+done
+
+# We are done and out of here, let the next player have a turn.
+echo "$P: queue run complete"
+rm -f "$lock"

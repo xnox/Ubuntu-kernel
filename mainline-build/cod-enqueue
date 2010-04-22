@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# cod-enqueue <tag> <cmd> ...
+#
+# Enqueue the specified command for execution by the crack-of-the-day
+# builder.
+#
+P="cod-enqueue"
+
+queue="$HOME/COD/queue"
+mkdir -p "$queue"
+
+if [ "$#" -lt 2 ]; then
+	echo "Usage: $P <tag> <cmd> ..." 1>&2
+	exit 1
+fi
+tag="$1"
+shift
+
+time=`date +%s`
+entry="$time.$tag.$$"
+
+tmp="$queue/.$entry"
+tmp="$queue/.$entry"
+
+echo "$@" >"$tmp"
+
+if ! mv "$tmp" "$queue/$entry"; then
+	echo "$P: $tag -- enqueue failed" 1>&2
+	exit 1
+fi
+
+echo "$P: $tag -- enqueued"
