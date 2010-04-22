@@ -27,6 +27,30 @@ do
 done
 
 #
+# UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
+#
+date=`date +%Y%m%d%H%M`
+for current in lucid
+do
+	curr="$master_main/ubuntu/$current"
+	branch="$current/master"
+
+	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
+	prev=`cat "$curr" 2>/dev/null || true`
+
+	echo "branch<$branch> tip<$tip> prev<$prev>"
+
+	if [ "$tip" != "$prev" ]; then
+		# Commit the new tip.
+		echo "$tip" >"$curr.new"
+		mv -f "$curr.new" "$curr"
+
+		"$here/cod-enqueue" "A.preproposed-$current" \
+			"$here/cod-preproposed" "$tip" "$current" "$date"
+	fi
+done
+
+#
 # UPSTREAM TAGS: Find all the new upstream release tags.
 #
 git tag -l >"$tags_list.new"
@@ -40,7 +64,7 @@ mv "$tags_list.new" "$tags_list"
 # Run the list.
 while read commit
 do
-	"$here/cod-enqueue" "A-mainline-$commit" \
+	"$here/cod-enqueue" "B.mainline-$commit" \
 		"$here/mainline-build" "$commit"
 done <"$tags_list.added"
 
@@ -63,7 +87,7 @@ do
 		echo "$tip" >"$curr.new"
 		mv -f "$curr.new" "$curr"
 
-		"$here/cod-enqueue" "B-cod-$current" \
+		"$here/cod-enqueue" "C.cod-$current" \
 			"$here/mainline-build" "$branch" "$abi" "$base"
 	fi
 done <<EOL
