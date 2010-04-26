@@ -1,3 +1,9 @@
+linux-meta (2.6.32.21.23) UNRELEASED; urgency=low
+
+  * Lucid ABI 22
+
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 26 Apr 2010 10:44:50 +0100
+
 linux-meta (2.6.32.21.22) lucid; urgency=low
 
   * Lucid ABI 21
