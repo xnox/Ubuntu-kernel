@@ -30,10 +30,16 @@ endif
 prepare-%: $(stampdir)/stamp-prepare-%
 	@# Empty for make to be happy
 $(stampdir)/stamp-prepare-%: target_flavour = $*
+$(stampdir)/stamp-prepare-%: cw = $(builddir)/build-$*/compat-wireless-2.6
 $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
+	# Gross hackery to make the compat firmware class unique to this ABI
+	sed -i 's/compat_firmware/compat_firmware_'$(abinum)'/g' $(cw)/compat/compat_firmware_class.c $(cw)/compat/scripts/compat_firmware_install \
+		$(cw)/udev/ubuntu/50-compat_firmware.rules
+	mv $(cw)/udev/ubuntu/50-compat_firmware.rules $(cw)/udev/ubuntu/50-compat_firmware_$(abinum).rules
+	mv $(cw)/udev/ubuntu/compat_firmware.sh $(cw)/udev/ubuntu/compat_firmware_$(abinum).sh
 ifeq ($(do_nouveau_package),true)
 	$(builddir)/build-$*/MUNGE-NOUVEAU
 	echo "obj-y += nouveau/" >>$(builddir)/build-$*/Makefile
@@ -59,6 +65,7 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 
 # Install the finished build
 install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-wireless-$(release)-$(abinum)-$*
+install-%: cwblddir = $(builddir)/build-$*/compat-wireless-2.6
 install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: cwsrcdir = $(CURDIR)/updates/compat-wireless-2.6
 install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
@@ -107,9 +114,9 @@ install-%: $(stampdir)/stamp-build-%
 	# the compat_firmware_class has its own rules.
 	#
 	install -d $(cwpkgdir)/lib/udev
-	install --mode=0755 $(cwsrcdir)/udev/ubuntu/compat_firmware.sh $(cwpkgdir)/lib/udev
+	install --mode=0755 $(cwblddir)/udev/ubuntu/compat_firmware_$(abinum).sh $(cwpkgdir)/lib/udev
 	install -d $(cwpkgdir)/lib/udev/rules.d
-	install --mode=0644 $(cwsrcdir)/udev/ubuntu/50-compat_firmware.rules $(cwpkgdir)/lib/udev/rules.d
+	install --mode=0644 $(cwblddir)/udev/ubuntu/50-compat_firmware_$(abinum).rules $(cwpkgdir)/lib/udev/rules.d
 
 	#
 	# Build the ALSA snapshot packages.
