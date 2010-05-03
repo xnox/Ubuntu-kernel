@@ -71,11 +71,10 @@ $(obj)/dummy.o: mv_submake
 $(obj)/dummy_end.o: mv_submake_end
 
 ifneq ($(KBUILD_BUILTIN),)
-obj-y += dummy.o 										\
+obj-y +=  										\
 		common/ linux_oss/ mv_hal/audio/ mv_hal/pmu/ mv_hal/ddr/ddrmc/		\
 		mv_hal/usb/ mv_hal/eth/gbe/ mv_hal/eth-phy/ mv_hal/cesa/		\
-		mv_hal/cesa/AES/ mv_hal/nfc/ mv_hal/pdma/ mv_hal/sata/CoreDriver/	\
-	dummy_end.o
+		mv_hal/cesa/AES/ mv_hal/nfc/ mv_hal/pdma/ mv_hal/sata/CoreDriver/
 endif
 # core drivers part
 
