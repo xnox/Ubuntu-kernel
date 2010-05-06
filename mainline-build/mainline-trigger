@@ -30,7 +30,7 @@ done
 # UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
 #
 date=`date +%Y%m%d%H%M`
-for current in lucid
+for current in lucid maverick
 do
 	curr="$master_main/ubuntu/$current"
 	branch="$current/master"
