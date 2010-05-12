@@ -1,0 +1,41 @@
+#!/bin/bash
+
+set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+master_main="$HOME/COD"
+
+#
+# UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
+#
+date=`date +%Y%m%d%H%M`
+while read repo series branch
+do
+	current="${repo}_${series}_${branch}"
+	curr="$master_main/preproposed/$current"
+	branch="$series/$branch"
+
+	tip=`cd "$master_main/$repo" && git fetch "$series" && git log --pretty=format:%H $branch^..$branch | head -1`
+	prev=`cat "$curr" 2>/dev/null || true`
+
+	echo "reop<$repo> branch<$branch> tip<$tip> prev<$prev>"
+
+	if [ "$tip" != "$prev" ]; then
+		# Commit the new tip.
+		echo "$tip" >"$curr.new"
+		mv -f "$curr.new" "$curr"
+
+		"$here/cod-enqueue" "A.preproposed-$current" \
+			"$here/cod-preproposed" "$repo" "$series" "$tip" "$date"
+	fi
+done <<EOL
+linux lucid master
+linux-meta lucid master
+linux maverick master
+EOL
+#linux-meta maverick master
