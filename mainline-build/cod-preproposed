@@ -54,7 +54,7 @@ do
 done 
 changelog="$debian/changelog"
 
-unreleased=`grep -c UNRELEASED debian.master/changelog`
+unreleased=`head -1 debian.master/changelog | grep -c UNRELEASED`
 if [ "$unreleased" -eq 0 ]; then
 	echo "$P: not UNRELEASED nothing to build ... exiting"
 	exit 0
