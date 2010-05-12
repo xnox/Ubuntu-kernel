@@ -49,7 +49,7 @@ echo "^^^ - build head"
 #
 # Rebuild the changelog.
 #
-for debian in "debian.master" "debian"
+for debian in "debian.master" "debian" "meta-source/debian"
 do
 	[ -d "$debian" ] && break
 done 
@@ -74,10 +74,19 @@ rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes
 # Build the source package.
 #
 git clean -x -f -d
-dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules clean"
-dchroot --directory=`pwd` -c "$build_release" \
-	"dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa"
+if [ -d debian ]; then
+	dchroot --directory=`pwd` -c "$build_release" \
+		"fakeroot debian/rules clean"
+	dchroot --directory=`pwd` -c "$build_release" \
+		"dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa"
+
+elif [ -d meta-source ]; then
+	dchroot --directory=`pwd`/meta-source -c "$build_release" \
+		"fakeroot debian/rules clean"
+	dchroot --directory=`pwd`/meta-source -c "$build_release" \
+		"dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa"
+	mv *.tar.gz *.dsc *.changes ..
+fi
 
 # Upload it.
 dput pre-proposed "$master_main"/*.changes
