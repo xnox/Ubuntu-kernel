@@ -29,26 +29,7 @@ done
 #
 # UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
 #
-date=`date +%Y%m%d%H%M`
-for current in lucid maverick
-do
-	curr="$master_main/ubuntu/$current"
-	branch="$current/master"
-
-	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
-	prev=`cat "$curr" 2>/dev/null || true`
-
-	echo "branch<$branch> tip<$tip> prev<$prev>"
-
-	if [ "$tip" != "$prev" ]; then
-		# Commit the new tip.
-		echo "$tip" >"$curr.new"
-		mv -f "$curr.new" "$curr"
-
-		"$here/cod-enqueue" "A.preproposed-$current" \
-			"$here/cod-preproposed" "$tip" "$current" "$date"
-	fi
-done
+"$here/cod-preproposed-trigger"
 
 #
 # UPSTREAM TAGS: Find all the new upstream release tags.

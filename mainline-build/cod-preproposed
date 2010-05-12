@@ -2,8 +2,8 @@
 
 P="cod-preproposed"
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $P <commit> <series> <tag>" 1>&2
+if [ "$#" -ne 4 ]; then
+	echo "Usage: $P <repo> <series> <commit> <tag>" 1>&2
 	exit 1
 fi
 
@@ -13,16 +13,17 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-commit="$1"
+repo="$1"
 series="$2"
-tag="$3"
+commit="$3"
+tag="$4"
 
-echo "*** BUILDING PREPROPOSED: commit:$commit series:$series tag:$tag..."
+echo "*** BUILDING PREPROPOSED: repo:$repo commit:$commit series:$series tag:$tag..."
 
 build_release="hardy"
 
-master_main="$HOME/mainline"
-master_tree="$master_main/build"
+master_main="$HOME/COD"
+master_tree="$master_main/$repo"
 
 cd "$master_tree" || exit 1
 
@@ -54,7 +55,7 @@ do
 done 
 changelog="$debian/changelog"
 
-unreleased=`grep -c UNRELEASED debian.master/changelog`
+unreleased=`head -1 "$changelog" | grep -c UNRELEASED`
 if [ "$unreleased" -eq 0 ]; then
 	echo "$P: not UNRELEASED nothing to build ... exiting"
 	exit 0
