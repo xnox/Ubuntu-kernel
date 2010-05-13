@@ -1,6 +1,11 @@
-linux-meta (2.6.34.2.1) UNRELEASED; urgency=low
+linux-meta (2.6.34.2.1) maverick; urgency=low
 
-  * Initial Maverick linux-meta
+  [ Leann Ogasawara ]
+
+  * Initial Maverick ABI
+  * Drop 386 flavour
+  * Disable lbm
+  * Drop lpia
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 13 May 2010 13:37:43 +0200
 
