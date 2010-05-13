@@ -1,3 +1,9 @@
+linux-meta (2.6.34.2.1) UNRELEASED; urgency=low
+
+  * Initial Maverick linux-meta
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 13 May 2010 13:37:43 +0200
+
 linux-meta (2.6.32.22.23) lucid-proposed; urgency=low
 
   * Lucid ABI 22
