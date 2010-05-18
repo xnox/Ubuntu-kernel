@@ -16,13 +16,61 @@ master_tree="$master_main/build"
 master_tags="$master_main/upstream"
 tags_list="$master_tags/TAGS"
 
-cd "$master_tree" || exit 1
+master_repo="/srv/kernel.ubuntu.com/git/ubuntu/"
+
+# Build us a master tree if we do not have one.
+if [ ! -d "$master_tree" ]; then
+	echo "*** creating primary build tree ..."
+	mkdir -p "$master_tree"
+	cd "$master_tree"
+	git init
+else
+	cd "$master_tree"
+fi
+
+# Get an updated linus kernel, we always need that.
+if ! git remote show -n linus >/dev/null 2>&1; then
+	echo "*** adding linus remote ..."
+	git remote add linus \
+		git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+fi
+
+# Pull in all the supported series ...
+for series in dapper hardy intrepid jaunty karmic lucid maverick
+do
+	series_repo="$master_repo/ubuntu-$series.git"
+	if ! git remote show -n "$series" >/dev/null 2>&1; then
+		echo "*** adding $series remote ..."
+		git remote add "$series" "$series_repo"
+	fi
+done
+
+# We need to pre-fetch linus as we may add new remotes based on
+# its current tip.
+git fetch linus
+
+# Work out which stable branch we might need.
+current=`git describe --tags linus/master`
+current="${current%%-*}"
+current="${current#v2.6.}"
+
+let wanted=32
+while [ "$wanted" -lt "$current" ]; do
+	stable="2.6.${wanted%.*}.y"
+	
+	if ! git remote show -n "$stable" >/dev/null 2>&1; then
+		echo "*** adding $stable remote ..."
+		git remote add "$stable" \
+			git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-$stable.git
+	fi
+	let "wanted=$wanted+1"
+done
 
 # Update all the remotes in this tree.
 git remote | \
 while read remote
 do
-	echo "*** $remote ..."
+	echo "*** fetching $remote ..."
 	git fetch "$remote"
 done
 
