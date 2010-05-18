@@ -102,6 +102,7 @@ rm -f "$tags_list.added"
 #
 # UPSTREAM COD: builds of upstream tree tips
 #
+date="`date +%F`"
 while read current branch abi base
 do
 	curr="$master_tags/$current"
@@ -117,7 +118,7 @@ do
 		mv -f "$curr.new" "$curr"
 
 		"$here/cod-enqueue" "C.cod-$current" \
-			"$here/mainline-build" "$branch" "$abi" "$base"
+			"$here/mainline-build" "$tip" "$abi" "$base" "$date"
 	fi
 done <<EOL
 LINUS		linus/master			999	daily

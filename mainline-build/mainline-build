@@ -8,10 +8,9 @@ if [ "$1" = "--no-email" ]; then
 	shift
 fi
 
-if [ "$#" -ne 1 -a "$#" -ne 2 -a "$#" -ne 3 ]; then
+if [ "$#" -ne 1 -a "$#" -ne 4 ]; then
 	echo "Usage: $0 <tag>" 1>&2
-	echo "Usage: $0 <commit> <date>" 1>&2
-	echo "Usage: $0 <commit> <abi> <out>" 1>&2
+	echo "Usage: $0 <commit> <abi> <out> <date>" 1>&2
 	exit 1
 fi
 
@@ -22,12 +21,9 @@ case "$here" in
 esac
 
 commit="$1"
-if [ "$#" -eq 2 ]; then
-	date="$2"
-else
-	abi="$2"
-	base="$3"
-fi
+abi="$2"
+base="$3"
+date="$4"
 
 case "$commit" in
 v2.6.24*)	master_release="hardy" ;;
@@ -48,16 +44,11 @@ cd "$master_tree" || exit 1
 rm -f "$master_main"/*.deb
 
 # We finally have the tree in a consitant state, finally ask for the build
-if [ "$date" != "" ]; then
-	email=":"
-	"$here/mainline-build-crack" "$commit" "$master_release" 999 2>&1 | \
-		tee "$master_tree/BUILD.LOG"
-	html="$HOME/public_html/mainline/handmade/$date-$master_release"
-elif [ "$abi" != "" ]; then
+if [ "$abi" != "" ]; then
 	email=":"
 	"$here/mainline-build-crack" "$commit" "$master_release" "$abi" 2>&1 | \
 		tee "$master_tree/BUILD.LOG"
-	date="`date +%F`"
+	#date="`date +%F`"
 	html="$HOME/public_html/mainline/$base/$date-$master_release"
 	ln -nsf "$date-$master_release" "$HOME/public_html/mainline/$base/current"
 else
