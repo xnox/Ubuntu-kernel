@@ -10,7 +10,7 @@ fi
 
 GetHostEnvironment $1 || exit 1
 
-cat <<EOD | ssh -oConnectTimeout=5 $HOST 2>/dev/null
+cat <<EOD | ssh -oConnectTimeout=15 $HOST 2>/dev/null
 if [ ! -f "$BUILDING" ] ; then
 	exit 1
 fi
