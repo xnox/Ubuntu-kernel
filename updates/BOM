@@ -2,7 +2,10 @@ ALSA:
 ftp://ftp.alsa-project.org/pub/driver/alsa-driver-1.0.23.tar.bz2
 
 WIRELESS:
-http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.33/compat-wireless-2.6.33.tar.bz2
+http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.34/compat-wireless-2.6.34.tar.bz2
+
+Remember to remove the .gitignore file lest you not get all of the files committed that you thought.
+
 
 NOUVEAU:
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git master

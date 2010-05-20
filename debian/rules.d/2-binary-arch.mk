@@ -22,6 +22,7 @@ make_compat = make $(conc_level)
 make_compat += KLIB=$(COMPAT_KDIR) KLIB_BUILD=$(COMPAT_KDIR)/build
 make_compat += MADWIFI=
 make_compat += OLD_IWL=
+CWDIR=compat-wireless-2.6.34
 
 ifneq ($(LOCAL_ENV_CC),)
 make_compat += CC=$(LOCAL_ENV_CC) DISTCC_HOSTS=$(LOCAL_ENV_DISTCC_HOSTS)
@@ -30,13 +31,15 @@ endif
 prepare-%: $(stampdir)/stamp-prepare-%
 	@# Empty for make to be happy
 $(stampdir)/stamp-prepare-%: target_flavour = $*
-$(stampdir)/stamp-prepare-%: cw = $(builddir)/build-$*/compat-wireless-2.6
+$(stampdir)/stamp-prepare-%: cw = $(builddir)/build-$*/$(CWDIR)
 $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
 	# Gross hackery to make the compat firmware class unique to this ABI
-	sed -i 's/compat_firmware/compat_firmware_'$(abinum)'/g' $(cw)/compat/compat_firmware_class.c $(cw)/compat/scripts/compat_firmware_install \
+	sed -i 's/compat_firmware/compat_firmware_'$(abinum)'/g' \
+		$(cw)/compat/compat_firmware_class.c \
+		$(cw)/compat/scripts/compat_firmware_install \
 		$(cw)/udev/ubuntu/50-compat_firmware.rules
 	mv $(cw)/udev/ubuntu/50-compat_firmware.rules $(cw)/udev/ubuntu/50-compat_firmware_$(abinum).rules
 	mv $(cw)/udev/ubuntu/compat_firmware.sh $(cw)/udev/ubuntu/compat_firmware_$(abinum).sh
@@ -58,16 +61,16 @@ $(stampdir)/stamp-build-%: target_flavour = $*
 $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
-	cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat)
+	cd $(builddir)/build-$*/$(CWDIR) && $(make_compat)
 	cd $(builddir)/build-$*/alsa-driver && make $(conc_level)
 	$(kmake) $(conc_level) modules
 	@touch $@
 
 # Install the finished build
 install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-wireless-$(release)-$(abinum)-$*
-install-%: cwblddir = $(builddir)/build-$*/compat-wireless-2.6
+install-%: cwblddir = $(builddir)/build-$*/$(CWDIR)
 install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
-install-%: cwsrcdir = $(CURDIR)/updates/compat-wireless-2.6
+install-%: cwsrcdir = $(CURDIR)/updates/$(CWDIR)
 install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: nvpkgdir = $(CURDIR)/debian/linux-backports-modules-nouveau-$(release)-$(abinum)-$*
@@ -96,7 +99,7 @@ install-%: $(stampdir)/stamp-build-%
 	# Build the compat wireless packages.
 	#
 	install -d $(cwmoddir)/updates/cw
-	find $(builddir)/build-$*/compat-wireless-2.6 -type f -name '*.ko' | \
+	find $(builddir)/build-$*/$(CWDIR) -type f -name '*.ko' | \
 	while read f ; do \
 		cp -v $${f} $(cwmoddir)/updates/cw/`basename $${f}`; \
 	done
@@ -154,7 +157,7 @@ endif
 	# The flavour specific headers package
 	#
 	install -d $(hdrdir)/include
-	tar -C $(builddir)/build-$*/compat-wireless-2.6 -chf - include | tar -C $(hdrdir) -xf -
+	tar -C $(builddir)/build-$*/$(CWDIR) -chf - include | tar -C $(hdrdir) -xf -
 	for i in asm linux media sound; do \
 		tar -C $(builddir)/build-$*/alsa-driver/include -chf - $$i | tar -C $(hdrdir)/include -xf -; \
 	done

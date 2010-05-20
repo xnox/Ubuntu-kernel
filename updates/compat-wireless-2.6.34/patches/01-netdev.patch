@@ -1,0 +1,802 @@
+
+This patch backports the struct net_device_ops changes added
+on 2.6.29. It also backports the namespace changes added
+through net/wireless/wext.c. Note that there is another
+patch file which also addresses netns changes, we leave
+them separate as there is no easy way to split the stuff
+without creating a headache on maintenance of the pathes.
+
+--- a/drivers/net/usb/rndis_host.c
++++ b/drivers/net/usb/rndis_host.c
+@@ -275,6 +275,7 @@ response_error:
+ 	return -EDOM;
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ /* same as usbnet_netdev_ops but MTU change not allowed */
+ static const struct net_device_ops rndis_netdev_ops = {
+ 	.ndo_open		= usbnet_open,
+@@ -284,6 +285,7 @@ static const struct net_device_ops rndis
+ 	.ndo_set_mac_address 	= eth_mac_addr,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ };
++#endif
+ 
+ int
+ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
+@@ -346,7 +348,11 @@ generic_rndis_bind(struct usbnet *dev, s
+ 	dev->rx_urb_size &= ~(dev->maxpacket - 1);
+ 	u.init->max_transfer_size = cpu_to_le32(dev->rx_urb_size);
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	net->netdev_ops = &rndis_netdev_ops;
++#else
++	net->change_mtu = NULL;
++#endif
+ 
+ 	retval = rndis_command(dev, u.header, CONTROL_BUFFER_SIZE);
+ 	if (unlikely(retval < 0)) {
+--- a/drivers/net/usb/usbnet.c
++++ b/drivers/net/usb/usbnet.c
+@@ -1237,6 +1237,7 @@ void usbnet_disconnect (struct usb_inter
+ }
+ EXPORT_SYMBOL_GPL(usbnet_disconnect);
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops usbnet_netdev_ops = {
+ 	.ndo_open		= usbnet_open,
+ 	.ndo_stop		= usbnet_stop,
+@@ -1246,6 +1247,7 @@ static const struct net_device_ops usbne
+ 	.ndo_set_mac_address 	= eth_mac_addr,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ };
++#endif
+ 
+ /*-------------------------------------------------------------------------*/
+ 
+@@ -1325,7 +1327,15 @@ usbnet_probe (struct usb_interface *udev
+ 		net->features |= NETIF_F_HIGHDMA;
+ #endif
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	net->netdev_ops = &usbnet_netdev_ops;
++#else
++	net->change_mtu = usbnet_change_mtu;
++	net->hard_start_xmit = usbnet_start_xmit;
++	net->open = usbnet_open;
++	net->stop = usbnet_stop;
++	net->tx_timeout = usbnet_tx_timeout;
++#endif
+ 	net->watchdog_timeo = TX_TIMEOUT_JIFFIES;
+ 	net->ethtool_ops = &usbnet_ethtool_ops;
+ 
+--- a/drivers/net/wireless/rndis_wlan.c
++++ b/drivers/net/wireless/rndis_wlan.c
+@@ -2721,6 +2721,7 @@ static int bcm4320b_early_init(struct us
+ 	return 0;
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ /* same as rndis_netdev_ops but with local multicast handler */
+ static const struct net_device_ops rndis_wlan_netdev_ops = {
+ 	.ndo_open		= usbnet_open,
+@@ -2731,6 +2732,7 @@ static const struct net_device_ops rndis
+ 	.ndo_validate_addr	= eth_validate_addr,
+ 	.ndo_set_multicast_list	= rndis_wlan_set_multicast_list,
+ };
++#endif
+ 
+ static int rndis_wlan_bind(struct usbnet *usbdev, struct usb_interface *intf)
+ {
+@@ -2778,7 +2780,11 @@ static int rndis_wlan_bind(struct usbnet
+ 	 * rndis_host wants to avoid all OID as much as possible
+ 	 * so do promisc/multicast handling in rndis_wlan.
+ 	 */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	usbdev->net->netdev_ops = &rndis_wlan_netdev_ops;
++#else
++	usbdev->net->set_multicast_list = rndis_wlan_set_multicast_list;
++#endif
+ 
+ 	tmp = RNDIS_PACKET_TYPE_DIRECTED | RNDIS_PACKET_TYPE_BROADCAST;
+ 	retval = rndis_set_oid(usbdev, OID_GEN_CURRENT_PACKET_FILTER, &tmp,
+--- a/net/mac80211/iface.c
++++ b/net/mac80211/iface.c
+@@ -667,6 +667,7 @@ static u16 ieee80211_netdev_select_queue
+ 	return ieee80211_select_queue(IEEE80211_DEV_TO_SUB_IF(dev), skb);
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops ieee80211_dataif_ops = {
+ 	.ndo_open		= ieee80211_open,
+ 	.ndo_stop		= ieee80211_stop,
+@@ -677,6 +678,7 @@ static const struct net_device_ops ieee8
+ 	.ndo_set_mac_address 	= ieee80211_change_mac,
+ 	.ndo_select_queue	= ieee80211_netdev_select_queue,
+ };
++#endif
+ 
+ static u16 ieee80211_monitor_select_queue(struct net_device *dev,
+ 					  struct sk_buff *skb)
+@@ -711,6 +713,7 @@ static u16 ieee80211_monitor_select_queu
+ 	return ieee80211_downgrade_queue(local, skb);
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops ieee80211_monitorif_ops = {
+ 	.ndo_open		= ieee80211_open,
+ 	.ndo_stop		= ieee80211_stop,
+@@ -721,14 +724,28 @@ static const struct net_device_ops ieee8
+ 	.ndo_set_mac_address 	= eth_mac_addr,
+ 	.ndo_select_queue	= ieee80211_monitor_select_queue,
+ };
++#endif
+ 
+ static void ieee80211_if_setup(struct net_device *dev)
+ {
+ 	ether_setup(dev);
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	dev->netdev_ops = &ieee80211_dataif_ops;
++#else
++	dev->hard_start_xmit = ieee80211_subif_start_xmit;
++	dev->set_multicast_list = ieee80211_set_multicast_list;
++	dev->change_mtu = ieee80211_change_mtu;
++	dev->set_mac_address = ieee80211_change_mac;
++	dev->select_queue = ieee80211_netdev_select_queue;
++	dev->open = ieee80211_open;
++	dev->stop = ieee80211_stop;
++	/* we will validate the address ourselves in ->open */
++	dev->validate_addr = NULL;
++#endif
+ 	dev->destructor = free_netdev;
+ }
+ 
++
+ /*
+  * Helper function to initialise an interface to a specific type.
+  */
+@@ -740,7 +757,11 @@ static void ieee80211_setup_sdata(struct
+ 
+ 	/* and set some type-dependent values */
+ 	sdata->vif.type = type;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	sdata->dev->netdev_ops = &ieee80211_dataif_ops;
++#else
++	sdata->dev->hard_start_xmit = ieee80211_subif_start_xmit;
++#endif
+ 	sdata->wdev.iftype = type;
+ 
+ 	/* only monitor differs */
+@@ -763,7 +784,13 @@ static void ieee80211_setup_sdata(struct
+ 		break;
+ 	case NL80211_IFTYPE_MONITOR:
+ 		sdata->dev->type = ARPHRD_IEEE80211_RADIOTAP;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 		sdata->dev->netdev_ops = &ieee80211_monitorif_ops;
++#else
++		sdata->dev->hard_start_xmit = ieee80211_monitor_start_xmit;
++		sdata->dev->select_queue = ieee80211_monitor_select_queue;
++		sdata->dev->set_mac_address = eth_mac_addr;
++#endif
+ 		sdata->u.mntr_flags = MONITOR_FLAG_CONTROL |
+ 				      MONITOR_FLAG_OTHER_BSS;
+ 		break;
+@@ -832,6 +859,8 @@ int ieee80211_if_add(struct ieee80211_lo
+ 		return -ENOMEM;
+ 	dev_net_set(ndev, wiphy_net(local->hw.wiphy));
+ 
++/* This is an optimization, just ignore for older kernels */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,26))
+ 	ndev->needed_headroom = local->tx_headroom +
+ 				4*6 /* four MAC addresses */
+ 				+ 2 + 2 + 2 + 2 /* ctl, dur, seq, qos */
+@@ -840,6 +869,7 @@ int ieee80211_if_add(struct ieee80211_lo
+ 				- ETH_HLEN /* ethernet hard_header_len */
+ 				+ IEEE80211_ENCRYPT_HEADROOM;
+ 	ndev->needed_tailroom = IEEE80211_ENCRYPT_TAILROOM;
++#endif
+ 
+ 	ret = dev_alloc_name(ndev, ndev->name);
+ 	if (ret < 0)
+@@ -885,6 +915,10 @@ int ieee80211_if_add(struct ieee80211_lo
+ 	if (ret)
+ 		goto fail;
+ 
++#if (LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,28))
++	ndev->uninit = ieee80211_teardown_sdata;
++#endif
++
+ 	if (ieee80211_vif_is_mesh(&sdata->vif) &&
+ 	    params && params->mesh_id_len)
+ 		ieee80211_sdata_set_mesh_id(sdata,
+--- a/drivers/net/b44.c
++++ b/drivers/net/b44.c
+@@ -2110,6 +2110,7 @@ static int __devinit b44_get_invariants(
+ 	return err;
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops b44_netdev_ops = {
+ 	.ndo_open		= b44_open,
+ 	.ndo_stop		= b44_close,
+@@ -2125,6 +2126,7 @@ static const struct net_device_ops b44_n
+ 	.ndo_poll_controller	= b44_poll_controller,
+ #endif
+ };
++#endif
+ 
+ static int __devinit b44_init_one(struct ssb_device *sdev,
+ 				  const struct ssb_device_id *ent)
+@@ -2164,9 +2166,26 @@ static int __devinit b44_init_one(struct
+ 	bp->rx_pending = B44_DEF_RX_RING_PENDING;
+ 	bp->tx_pending = B44_DEF_TX_RING_PENDING;
+ 
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
++	dev->open = b44_open;
++	dev->stop = b44_close;
++	dev->hard_start_xmit = b44_start_xmit;
++	dev->get_stats = b44_get_stats;
++	dev->set_multicast_list = b44_set_rx_mode;
++	dev->set_mac_address = b44_set_mac_addr;
++	dev->do_ioctl = b44_ioctl;
++	dev->tx_timeout = b44_tx_timeout;
++	netif_napi_add(dev, &bp->napi, b44_poll, 64);
++	dev->watchdog_timeo = B44_TX_TIMEOUT;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	dev->poll_controller = b44_poll_controller;
++#endif
++	dev->change_mtu = b44_change_mtu;
++#else
+ 	dev->netdev_ops = &b44_netdev_ops;
+ 	netif_napi_add(dev, &bp->napi, b44_poll, 64);
+ 	dev->watchdog_timeo = B44_TX_TIMEOUT;
++#endif
+ 	dev->irq = sdev->irq;
+ 	SET_ETHTOOL_OPS(dev, &b44_ethtool_ops);
+ 
+--- a/net/wireless/wext-core.c
++++ b/net/wireless/wext-core.c
+@@ -341,6 +341,7 @@ static const int compat_event_type_size[
+ 
+ /* IW event code */
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
+ static int __net_init wext_pernet_init(struct net *net)
+ {
+ 	skb_queue_head_init(&net->wext_nlevents);
+@@ -383,6 +384,29 @@ static void wireless_nlevent_process(str
+ 
+ static DECLARE_WORK(wireless_nlevent_work, wireless_nlevent_process);
+ 
++#else
++/* Older kernels get the old way of doing stuff*/
++static struct sk_buff_head wireless_nlevent_queue;
++
++static int __init wireless_nlevent_init(void)
++{
++	skb_queue_head_init(&wireless_nlevent_queue);
++	return 0;
++}
++
++subsys_initcall(wireless_nlevent_init);
++
++static void wireless_nlevent_process(unsigned long data)
++{
++	struct sk_buff *skb;
++	while ((skb = skb_dequeue(&wireless_nlevent_queue)))
++		rtnl_notify(skb, &init_net, 0, RTNLGRP_LINK, NULL, GFP_ATOMIC);
++}
++
++static DECLARE_TASKLET(wireless_nlevent_tasklet, wireless_nlevent_process, 0);
++
++#endif
++
+ static struct nlmsghdr *rtnetlink_ifinfo_prep(struct net_device *dev,
+ 					      struct sk_buff *skb)
+ {
+@@ -593,8 +617,13 @@ void wireless_send_event(struct net_devi
+ 
+ 	skb_shinfo(skb)->frag_list = compskb;
+ #endif
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
+ 	skb_queue_tail(&dev_net(dev)->wext_nlevents, skb);
+ 	schedule_work(&wireless_nlevent_work);
++#else
++	skb_queue_tail(&wireless_nlevent_queue, skb);
++	tasklet_schedule(&wireless_nlevent_tasklet);
++#endif
+ }
+ EXPORT_SYMBOL(wireless_send_event);
+ 
+@@ -903,8 +932,13 @@ static int wireless_process_ioctl(struct
+ 			return private(dev, iwr, cmd, info, handler);
+ 	}
+ 	/* Old driver API : call driver ioctl handler */
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	if (dev->netdev_ops->ndo_do_ioctl)
+ 		return dev->netdev_ops->ndo_do_ioctl(dev, ifr, cmd);
++#else
++	if (dev->do_ioctl)
++		return dev->do_ioctl(dev, ifr, cmd);
++#endif
+ 	return -EOPNOTSUPP;
+ }
+ 
+--- a/drivers/net/wireless/ipw2x00/ipw2100.c
++++ b/drivers/net/wireless/ipw2x00/ipw2100.c
+@@ -6091,6 +6091,7 @@ static void ipw2100_rf_kill(struct work_
+ 
+ static void ipw2100_irq_tasklet(struct ipw2100_priv *priv);
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops ipw2100_netdev_ops = {
+ 	.ndo_open		= ipw2100_open,
+ 	.ndo_stop		= ipw2100_close,
+@@ -6101,6 +6102,7 @@ static const struct net_device_ops ipw21
+ 	.ndo_set_mac_address	= ipw2100_set_address,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ };
++#endif
+ 
+ /* Look into using netdev destructor to shutdown ieee80211? */
+ 
+@@ -6126,7 +6128,16 @@ static struct net_device *ipw2100_alloc_
+ 	priv->ieee->perfect_rssi = -20;
+ 	priv->ieee->worst_rssi = -85;
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	dev->netdev_ops = &ipw2100_netdev_ops;
++#else
++	dev->open = ipw2100_open;
++	dev->stop = ipw2100_close;
++	dev->init = ipw2100_net_init;
++	dev->tx_timeout = ipw2100_tx_timeout;
++	dev->set_mac_address = ipw2100_set_address;
++#endif
++
+ 	dev->ethtool_ops = &ipw2100_ethtool_ops;
+ 	dev->wireless_handlers = &ipw2100_wx_handler_def;
+ 	priv->wireless_data.libipw = priv->ieee;
+--- a/drivers/net/wireless/ipw2x00/ipw2200.c
++++ b/drivers/net/wireless/ipw2x00/ipw2200.c
+@@ -11651,6 +11651,7 @@ static netdev_tx_t ipw_prom_hard_start_x
+ 	return NETDEV_TX_OK;
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops ipw_prom_netdev_ops = {
+ 	.ndo_open 		= ipw_prom_open,
+ 	.ndo_stop		= ipw_prom_stop,
+@@ -11659,6 +11660,7 @@ static const struct net_device_ops ipw_p
+ 	.ndo_set_mac_address 	= eth_mac_addr,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ };
++#endif
+ 
+ static int ipw_prom_alloc(struct ipw_priv *priv)
+ {
+@@ -11679,7 +11681,13 @@ static int ipw_prom_alloc(struct ipw_pri
+ 	memcpy(priv->prom_net_dev->dev_addr, priv->mac_addr, ETH_ALEN);
+ 
+ 	priv->prom_net_dev->type = ARPHRD_IEEE80211_RADIOTAP;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	priv->prom_net_dev->netdev_ops = &ipw_prom_netdev_ops;
++#else
++	priv->prom_net_dev->open = ipw_prom_open;
++	priv->prom_net_dev->stop = ipw_prom_stop;
++	priv->prom_net_dev->hard_start_xmit = ipw_prom_hard_start_xmit;
++#endif
+ 
+ 	priv->prom_priv->ieee->iw_mode = IW_MODE_MONITOR;
+ 	SET_NETDEV_DEV(priv->prom_net_dev, &priv->pci_dev->dev);
+@@ -11707,6 +11715,7 @@ static void ipw_prom_free(struct ipw_pri
+ 
+ #endif
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops ipw_netdev_ops = {
+ 	.ndo_init		= ipw_net_init,
+ 	.ndo_open		= ipw_net_open,
+@@ -11717,6 +11726,7 @@ static const struct net_device_ops ipw_n
+ 	.ndo_change_mtu		= libipw_change_mtu,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ };
++#endif
+ 
+ static int __devinit ipw_pci_probe(struct pci_dev *pdev,
+ 				   const struct pci_device_id *ent)
+@@ -11818,7 +11828,15 @@ static int __devinit ipw_pci_probe(struc
+ 	priv->ieee->perfect_rssi = -20;
+ 	priv->ieee->worst_rssi = -85;
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	net_dev->netdev_ops = &ipw_netdev_ops;
++#else
++	net_dev->open = ipw_net_open;
++	net_dev->stop = ipw_net_stop;
++	net_dev->init = ipw_net_init;
++	net_dev->set_multicast_list = ipw_net_set_multicast_list;
++	net_dev->set_mac_address = ipw_net_set_mac_address;
++#endif
+ 	priv->wireless_data.spy_data = &priv->ieee->spy_data;
+ 	net_dev->wireless_data = &priv->wireless_data;
+ 	net_dev->wireless_handlers = &ipw_wx_handler_def;
+--- a/drivers/net/wireless/ipw2x00/libipw_module.c
++++ b/drivers/net/wireless/ipw2x00/libipw_module.c
+@@ -154,6 +154,10 @@ struct net_device *alloc_ieee80211(int s
+ 		goto failed;
+ 	}
+ 	ieee = netdev_priv(dev);
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
++	dev->hard_start_xmit = libipw_xmit;
++	dev->change_mtu = libipw_change_mtu;
++#endif
+ 
+ 	ieee->dev = dev;
+ 
+--- a/drivers/net/wireless/libertas/main.c
++++ b/drivers/net/wireless/libertas/main.c
+@@ -886,6 +886,7 @@ static void lbs_free_adapter(struct lbs_
+ 	lbs_deb_leave(LBS_DEB_MAIN);
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops lbs_netdev_ops = {
+ 	.ndo_open 		= lbs_dev_open,
+ 	.ndo_stop		= lbs_eth_stop,
+@@ -896,6 +897,7 @@ static const struct net_device_ops lbs_n
+ 	.ndo_change_mtu		= eth_change_mtu,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ };
++#endif
+ 
+ /**
+  * @brief This function adds the card. it will probe the
+@@ -941,7 +943,16 @@ struct lbs_private *lbs_add_card(void *c
+ 	wdev->netdev = dev;
+ 	priv->dev = dev;
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+  	dev->netdev_ops = &lbs_netdev_ops;
++#else
++	dev->open = lbs_dev_open;
++	dev->hard_start_xmit = lbs_hard_start_xmit;
++	dev->stop = lbs_eth_stop;
++	dev->set_mac_address = lbs_set_mac_address;
++	dev->tx_timeout = lbs_tx_timeout;
++	dev->set_multicast_list = lbs_set_multicast_list;
++#endif
+ 	dev->watchdog_timeo = 5 * HZ;
+ 	dev->ethtool_ops = &lbs_ethtool_ops;
+ #ifdef	WIRELESS_EXT
+@@ -1247,11 +1258,13 @@ out:
+ 	lbs_deb_leave(LBS_DEB_MAIN);
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops rtap_netdev_ops = {
+ 	.ndo_open = lbs_rtap_open,
+ 	.ndo_stop = lbs_rtap_stop,
+ 	.ndo_start_xmit = lbs_rtap_hard_start_xmit,
+ };
++#endif
+ 
+ static int lbs_add_rtap(struct lbs_private *priv)
+ {
+@@ -1272,7 +1285,13 @@ static int lbs_add_rtap(struct lbs_priva
+ 
+ 	memcpy(rtap_dev->dev_addr, priv->current_addr, ETH_ALEN);
+ 	rtap_dev->type = ARPHRD_IEEE80211_RADIOTAP;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	rtap_dev->netdev_ops = &rtap_netdev_ops;
++#else
++	rtap_dev->open = lbs_rtap_open;
++	rtap_dev->stop = lbs_rtap_stop;
++	rtap_dev->hard_start_xmit = lbs_rtap_hard_start_xmit;
++#endif
+ 	rtap_dev->ml_priv = priv;
+ 	SET_NETDEV_DEV(rtap_dev, priv->dev->dev.parent);
+ 
+--- a/drivers/net/wireless/libertas/mesh.c
++++ b/drivers/net/wireless/libertas/mesh.c
+@@ -332,6 +332,7 @@ static int lbs_mesh_dev_open(struct net_
+ 	return ret;
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops mesh_netdev_ops = {
+ 	.ndo_open		= lbs_mesh_dev_open,
+ 	.ndo_stop 		= lbs_mesh_stop,
+@@ -339,6 +340,7 @@ static const struct net_device_ops mesh_
+ 	.ndo_set_mac_address	= lbs_set_mac_address,
+ 	.ndo_set_multicast_list = lbs_set_multicast_list,
+ };
++#endif
+ 
+ /**
+  * @brief This function adds mshX interface
+@@ -363,7 +365,15 @@ int lbs_add_mesh(struct lbs_private *pri
+ 	mesh_dev->ml_priv = priv;
+ 	priv->mesh_dev = mesh_dev;
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	mesh_dev->netdev_ops = &mesh_netdev_ops;
++#else
++	mesh_dev->open = lbs_mesh_dev_open;
++	mesh_dev->hard_start_xmit = lbs_hard_start_xmit;
++	mesh_dev->stop = lbs_mesh_stop;
++	mesh_dev->set_mac_address = lbs_set_mac_address;
++	mesh_dev->set_multicast_list = lbs_set_multicast_list;
++#endif
+ 	mesh_dev->ethtool_ops = &lbs_ethtool_ops;
+ 	memcpy(mesh_dev->dev_addr, priv->dev->dev_addr, ETH_ALEN);
+ 
+--- a/drivers/net/wireless/libertas/defs.h
++++ b/drivers/net/wireless/libertas/defs.h
+@@ -16,6 +16,14 @@
+ #define DRV_NAME "libertas"
+ #endif
+ 
++/*
++ * Really nasty hack to avoid stuffing compat.diff with tons of ifdefs,
++ * we could add this to a compat header file but too lazy to check ml_priv
++ * is not used anywhere else
++ */
++#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,26))
++#define ml_priv priv
++#endif
+ 
+ #define LBS_DEB_ENTER	0x00000001
+ #define LBS_DEB_LEAVE	0x00000002
+--- a/drivers/net/wireless/mac80211_hwsim.c
++++ b/drivers/net/wireless/mac80211_hwsim.c
+@@ -1016,16 +1016,22 @@ static struct device_driver mac80211_hws
+ 	.name = "mac80211_hwsim"
+ };
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops hwsim_netdev_ops = {
+ 	.ndo_start_xmit 	= hwsim_mon_xmit,
+ 	.ndo_change_mtu		= eth_change_mtu,
+ 	.ndo_set_mac_address 	= eth_mac_addr,
+ 	.ndo_validate_addr	= eth_validate_addr,
+ };
++#endif
+ 
+ static void hwsim_mon_setup(struct net_device *dev)
+ {
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	dev->netdev_ops = &hwsim_netdev_ops;
++#else
++	dev->hard_start_xmit = hwsim_mon_xmit;
++#endif
+ 	dev->destructor = free_netdev;
+ 	ether_setup(dev);
+ 	dev->tx_queue_len = 0;
+--- a/net/bluetooth/bnep/netdev.c
++++ b/net/bluetooth/bnep/netdev.c
+@@ -168,8 +168,12 @@ static inline int bnep_net_proto_filter(
+ }
+ #endif
+ 
+-static netdev_tx_t bnep_net_xmit(struct sk_buff *skb,
+-				 struct net_device *dev)
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,31))
++static netdev_tx_t bnep_net_xmit(struct sk_buff *skb, struct net_device *dev)
++#else
++static int bnep_net_xmit(struct sk_buff *skb, struct net_device *dev)
++#endif
++
+ {
+ 	struct bnep_session *s = netdev_priv(dev);
+ 	struct sock *sk = s->sock->sk;
+@@ -210,6 +214,7 @@ static netdev_tx_t bnep_net_xmit(struct 
+ 	return NETDEV_TX_OK;
+ }
+ 
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
+ static const struct net_device_ops bnep_netdev_ops = {
+ 	.ndo_open            = bnep_net_open,
+ 	.ndo_stop            = bnep_net_close,
+@@ -221,6 +226,16 @@ static const struct net_device_ops bnep_
+ 	.ndo_change_mtu	     = eth_change_mtu,
+ 
+ };
++#else
++static struct net_device_stats *bnep_net_get_stats(struct net_device *dev)
++{
++	return &dev->stats;
++}
++static int bnep_net_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
++{
++	return -EINVAL;
++}
++#endif
+ 
+ void bnep_net_setup(struct net_device *dev)
+ {
+@@ -229,7 +244,18 @@ void bnep_net_setup(struct net_device *d
+ 	dev->addr_len = ETH_ALEN;
+ 
+ 	ether_setup(dev);
++#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,28))
+ 	dev->netdev_ops = &bnep_netdev_ops;
++#else
++	dev->open            = bnep_net_open;
++	dev->stop            = bnep_net_close;
++	dev->hard_start_xmit = bnep_net_xmit;
++	dev->get_stats       = bnep_net_get_stats;
++	dev->do_ioctl        = bnep_net_ioctl;
++	dev->set_mac_address = bnep_net_set_mac_addr;
++	dev->set_multicast_list = bnep_net_set_mc_list;
++	dev->tx_timeout      = bnep_net_timeout;
++#endif
+ 
+ 	dev->watchdog_timeo  = HZ * 2;
+ }
+--- a/drivers/net/atl1e/atl1e_main.c
++++ b/drivers/net/atl1e/atl1e_main.c
+@@ -2202,6 +2202,7 @@ static void atl1e_shutdown(struct pci_de
+ 	atl1e_suspend(pdev, PMSG_SUSPEND);
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops atl1e_netdev_ops = {
+ 	.ndo_open		= atl1e_open,
+ 	.ndo_stop		= atl1e_close,
+@@ -2219,6 +2220,7 @@ static const struct net_device_ops atl1e
+ #endif
+ 
+ };
++#endif
+ 
+ static int atl1e_init_netdev(struct net_device *netdev, struct pci_dev *pdev)
+ {
+@@ -2226,7 +2228,23 @@ static int atl1e_init_netdev(struct net_
+ 	pci_set_drvdata(pdev, netdev);
+ 
+ 	netdev->irq  = pdev->irq;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	netdev->netdev_ops = &atl1e_netdev_ops;
++#else
++	netdev->change_mtu = atl1e_change_mtu;
++	netdev->hard_start_xmit = atl1e_xmit_frame;
++	netdev->open = atl1e_open;
++	netdev->stop = atl1e_close;
++	netdev->tx_timeout = atl1e_tx_timeout;
++	netdev->set_mac_address = atl1e_set_mac_addr;
++	netdev->do_ioctl = atl1e_ioctl;
++	netdev->get_stats = atl1e_get_stats;
++	netdev->set_multicast_list = atl1e_set_multi;
++	netdev->vlan_rx_register = atl1e_vlan_rx_register;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	netdev->poll_controller = atl1e_netpoll;
++#endif
++#endif
+ 
+ 	netdev->watchdog_timeo = AT_TX_WATCHDOG;
+ 	atl1e_set_ethtool_ops(netdev);
+--- a/drivers/net/atl1c/atl1c_main.c
++++ b/drivers/net/atl1c/atl1c_main.c
+@@ -2534,6 +2534,7 @@ static void atl1c_shutdown(struct pci_de
+ 	atl1c_suspend(pdev, PMSG_SUSPEND);
+ }
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops atl1c_netdev_ops = {
+ 	.ndo_open		= atl1c_open,
+ 	.ndo_stop		= atl1c_close,
+@@ -2550,6 +2551,7 @@ static const struct net_device_ops atl1c
+ 	.ndo_poll_controller	= atl1c_netpoll,
+ #endif
+ };
++#endif
+ 
+ static int atl1c_init_netdev(struct net_device *netdev, struct pci_dev *pdev)
+ {
+@@ -2557,7 +2559,23 @@ static int atl1c_init_netdev(struct net_
+ 	pci_set_drvdata(pdev, netdev);
+ 
+ 	netdev->irq  = pdev->irq;
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	netdev->netdev_ops = &atl1c_netdev_ops;
++#else
++	netdev->change_mtu = atl1c_change_mtu;
++	netdev->hard_start_xmit = atl1c_xmit_frame;
++	netdev->open = atl1c_open;
++	netdev->stop = atl1c_close;
++	netdev->tx_timeout = atl1c_tx_timeout;
++	netdev->set_mac_address = atl1c_set_mac_addr;
++	netdev->do_ioctl = atl1c_ioctl;
++	netdev->get_stats = atl1c_get_stats;
++	netdev->set_multicast_list = atl1c_set_multi;
++	netdev->vlan_rx_register = atl1c_vlan_rx_register;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	netdev->poll_controller = atl1c_netpoll;
++#endif
++#endif
+ 	netdev->watchdog_timeo = AT_TX_WATCHDOG;
+ 	atl1c_set_ethtool_ops(netdev);
+ 
+--- a/drivers/net/atlx/atl1.c
++++ b/drivers/net/atlx/atl1.c
+@@ -2878,6 +2878,7 @@ static void atl1_poll_controller(struct 
+ }
+ #endif
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops atl1_netdev_ops = {
+ 	.ndo_open		= atl1_open,
+ 	.ndo_stop		= atl1_close,
+@@ -2893,6 +2894,7 @@ static const struct net_device_ops atl1_
+ 	.ndo_poll_controller	= atl1_poll_controller,
+ #endif
+ };
++#endif
+ 
+ /*
+  * atl1_probe - Device Initialization Routine
+@@ -2981,7 +2983,22 @@ static int __devinit atl1_probe(struct p
+ 	adapter->mii.phy_id_mask = 0x1f;
+ 	adapter->mii.reg_num_mask = 0x1f;
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	netdev->netdev_ops = &atl1_netdev_ops;
++#else
++	netdev->change_mtu = atl1_change_mtu;
++	netdev->hard_start_xmit = atl1_xmit_frame;
++	netdev->open = atl1_open;
++	netdev->stop = atl1_close;
++	netdev->tx_timeout = atlx_tx_timeout;
++	netdev->set_mac_address = atl1_set_mac;
++	netdev->do_ioctl = atlx_ioctl;
++	netdev->set_multicast_list = atlx_set_multi;
++	netdev->vlan_rx_register = atlx_vlan_rx_register;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	netdev->poll_controller = atl1_poll_controller;
++#endif
++#endif
+ 	netdev->watchdog_timeo = 5 * HZ;
+ 
+ 	netdev->ethtool_ops = &atl1_ethtool_ops;
+--- a/drivers/net/atlx/atl2.c
++++ b/drivers/net/atlx/atl2.c
+@@ -1307,6 +1307,7 @@ static void atl2_poll_controller(struct 
+ #endif
+ 
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ static const struct net_device_ops atl2_netdev_ops = {
+ 	.ndo_open		= atl2_open,
+ 	.ndo_stop		= atl2_close,
+@@ -1322,6 +1323,7 @@ static const struct net_device_ops atl2_
+ 	.ndo_poll_controller	= atl2_poll_controller,
+ #endif
+ };
++#endif
+ 
+ /*
+  * atl2_probe - Device Initialization Routine
+@@ -1396,7 +1398,22 @@ static int __devinit atl2_probe(struct p
+ 
+ 	atl2_setup_pcicmd(pdev);
+ 
++#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
+ 	netdev->netdev_ops = &atl2_netdev_ops;
++#else
++	netdev->change_mtu = atl2_change_mtu;
++	netdev->hard_start_xmit = atl2_xmit_frame;
++	netdev->open = atl2_open;
++	netdev->stop = atl2_close;
++	netdev->tx_timeout = atl2_tx_timeout;
++	netdev->set_mac_address = atl2_set_mac;
++	netdev->do_ioctl = atl2_ioctl;
++	netdev->set_multicast_list = atl2_set_multi;
++	netdev->vlan_rx_register = atl2_vlan_rx_register;
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	netdev->poll_controller = atl2_poll_controller;
++#endif
++#endif
+ 	atl2_set_ethtool_ops(netdev);
+ 	netdev->watchdog_timeo = 5 * HZ;
+ 	strncpy(netdev->name, pci_name(pdev), sizeof(netdev->name) - 1);
