@@ -37,5 +37,6 @@ done <<EOL
 linux lucid master
 linux-meta lucid master
 linux maverick master
+linux-meta maverick master
 EOL
 #linux-meta maverick master

@@ -8,10 +8,9 @@ if [ "$1" = "--no-email" ]; then
 	shift
 fi
 
-if [ "$#" -ne 1 -a "$#" -ne 2 -a "$#" -ne 3 ]; then
+if [ "$#" -ne 1 -a "$#" -ne 4 ]; then
 	echo "Usage: $0 <tag>" 1>&2
-	echo "Usage: $0 <commit> <date>" 1>&2
-	echo "Usage: $0 <commit> <abi> <out>" 1>&2
+	echo "Usage: $0 <commit> <abi> <out> <date>" 1>&2
 	exit 1
 fi
 
@@ -22,12 +21,9 @@ case "$here" in
 esac
 
 commit="$1"
-if [ "$#" -eq 2 ]; then
-	date="$2"
-else
-	abi="$2"
-	base="$3"
-fi
+abi="$2"
+base="$3"
+date="$4"
 
 case "$commit" in
 v2.6.24*)	master_release="hardy" ;;
@@ -42,64 +38,17 @@ master_repo="/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${master_release}.git"
 master_main="$HOME/mainline"
 master_tree="$master_main/build"
 
-# Build us a master tree if we do not have one.
-if [ ! -d "$master_tree" ]; then
-	echo "*** creating primary build tree ..."
-	mkdir -p "$master_tree"
-	cd "$master_tree"
-	git init
-else
-	cd "$master_tree"
-fi
-
-# Check if we have our upstream repository.
-if ! git remote show -n "$master_release" >/dev/null 2>&1; then
-	echo "*** updating $master_release remote ..."
-	git remote add "$master_release" "$master_repo"
-fi
-git fetch "$master_release"
+cd "$master_tree" || exit 1
 
 # Clean out the rubbish.
 rm -f "$master_main"/*.deb
 
-# Get an updated linus kernel, we always need that.
-echo "*** updating linus remote ..."
-if ! git remote show -n linus >/dev/null 2>&1; then
-	git remote add linus \
-		git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-fi
-git fetch linus
-
-# Work out which stable branch we might need.
-current=`git describe --tags linus/master`
-current="${current%%-*}"
-wanted=`git describe --tags linus/master`
-wanted="${wanted%%-*}"
-
-if [ "$wanted" != "linus/master" -a "$wanted" != "$current" ]; then
-	stable="${wanted#v2.6.}"
-	stable="2.6.${stable%.*}.y"
-
-	echo "*** updating stable-$stable ..."
-	
-	if ! git remote show -n "$stable" >/dev/null 2>&1; then
-		git remote add "$stable" \
-			git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-$stable.git
-	fi
-	git fetch "$stable"
-fi
-
 # We finally have the tree in a consitant state, finally ask for the build
-if [ "$date" != "" ]; then
-	email=":"
-	"$here/mainline-build-crack" "$commit" "$master_release" 999 2>&1 | \
-		tee "$master_tree/BUILD.LOG"
-	html="$HOME/public_html/mainline/handmade/$date-$master_release"
-elif [ "$abi" != "" ]; then
+if [ "$abi" != "" ]; then
 	email=":"
 	"$here/mainline-build-crack" "$commit" "$master_release" "$abi" 2>&1 | \
 		tee "$master_tree/BUILD.LOG"
-	date="`date +%F`"
+	#date="`date +%F`"
 	html="$HOME/public_html/mainline/$base/$date-$master_release"
 	ln -nsf "$date-$master_release" "$HOME/public_html/mainline/$base/current"
 else
