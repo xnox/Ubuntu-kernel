@@ -196,7 +196,7 @@ endif
 		$(pkgdir)/lib/modules/$(abi_release)-$*/_
 	if [ -f $(pkgdir)/lib/modules/$(abi_release)-$*/modules.builtin ] ; then \
 	    mv $(pkgdir)/lib/modules/$(abi_release)-$*/modules.builtin \
-		$(pkgdir)/lib/modules/$(abi_release)-$*/_modules.builtin; \
+		$(pkgdir)/lib/modules/$(abi_release)-$*/_; \
 	fi
 	rm -f $(pkgdir)/lib/modules/$(abi_release)-$*/modules.*
 	mv $(pkgdir)/lib/modules/$(abi_release)-$*/_/* \
