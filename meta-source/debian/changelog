@@ -1,3 +1,11 @@
+linux-meta (2.6.34.4.3) maverick; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Maverick ABI 4
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 25 May 2010 11:02:43 -0700
+
 linux-meta (2.6.34.3.2) maverick; urgency=low
 
   [ Leann Ogasawara ]
