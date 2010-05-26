@@ -1,4 +1,4 @@
-Source: linux-meta
+Source: linux-meta-lts-backport-maverick
 Section: devel
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
@@ -6,16 +6,16 @@ Standards-Version: 3.6.1
 Build-Depends: dpkg (>= 1.13.19), debhelper (>= 5), gawk
 Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-karmic-meta.git
 
-Package: linux
-Architecture: i386 amd64 lpia
+Package: linux-lts-backport-maverick
+Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-lts-backport-maverick (= ${binary:Version})
 Description: Generic complete Linux kernel.
  This package will always depend on the latest generic complete Linux kernel
  available.
 
-Package: linux-source
+Package: linux-source-lts-backport-maverick
 Architecture: all
 Section: devel
 Priority: optional
@@ -24,16 +24,16 @@ Description: Linux kernel source with Ubuntu patches
  This package will always depend on the latest Linux kernel source code
  available. The Ubuntu patches have been applied.
 
-Package: linux-image
+Package: linux-image-lts-backport-maverick
 Architecture: i386 amd64 lpia
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-${generic-depends} (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-server-lts-backport-maverick [amd64], linux-image-generic-pae-lts-backport-maverick [i386]
 Description: Generic Linux kernel image.
  This package will always depend on the latest generic Linux kernel image
  available.
 
-Package: linux-crashdump
+Package: linux-crashdump-lts-backport-maverick
 Architecture: i386 amd64
 Section: devel
 Depends: ${misc:Depends}, kexec-tools, makedumpfile, grub-pc (>= 1.96+20090611-1ubuntu2) | grub (>= 0.97-29ubuntu24)
@@ -47,7 +47,7 @@ Description: Linux kernel crashdump setup for the latest generic kernel
  you can install this package to automatically enable capture of the
  vmcore on crashes.
 
-Package: linux-tools
+Package: linux-tools-lts-backport-maverick
 Architecture: i386 amd64
 Section: metapackages
 Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}

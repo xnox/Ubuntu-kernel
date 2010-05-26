@@ -1,5 +1,5 @@
 LOG		:= meta-source/debian/changelog
-META_VERSION	:= $(shell head -1 $(LOG)|sed 's/.*(\(.*\)).*/\1/')
+META_VERSION	:= lts-backport-maverick-$(shell head -1 $(LOG)|sed 's/.*(\(.*\)).*/\1/')
 
 all: source
 

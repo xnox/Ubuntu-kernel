@@ -1,4 +1,4 @@
-Package: linux-headers-virtual
+Package: linux-headers-virtual-lts-backport-maverick
 Architecture: i386 amd64
 Section: devel
 Priority: optional
@@ -7,7 +7,7 @@ Description: Linux kernel headers for virtual machines
  This package will always depend on the latest kernel headers available
  for virtual machines (which are the same headers as for the server flavour).
 
-Package: linux-image-virtual
+Package: linux-image-virtual-lts-backport-maverick
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
@@ -16,11 +16,11 @@ Description: Linux kernel image for virtual machines
  This package will always depend on the latest kernel image available
  for virtual machines.
 
-Package: linux-virtual
+Package: linux-virtual-lts-backport-maverick
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-virtual (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-virtual-lts-backport-maverick (= ${binary:Version})
 Description: Complete Linux kernel for virtual machines
  This package will always depend on the latest complete Linux kernel available
  for virtual machines.
