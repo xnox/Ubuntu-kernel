@@ -1,3 +1,9 @@
+linux-meta-fsl-imx51 (2.6.31.608.9) lucid-security; urgency=low
+
+  * Bump linux-fsl-imx51 ABI to 608 for security update (first post release)
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 26 May 2010 07:32:44 +0000
+
 linux-meta-fsl-imx51 (2.6.31.607.8) lucid; urgency=low
 
   * Lucid ABI 607
