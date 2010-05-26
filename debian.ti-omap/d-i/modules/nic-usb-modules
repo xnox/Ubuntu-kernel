@@ -10,4 +10,17 @@ rt2500usb ?
 rt73usb ?
 rt2570 ?
 cdc_ether ?
+cdc_eem ?
+cdc-phonet ?
+cdc_subset ?
+dm9601 ?
+gl620a ?
+hso ?
+int51x1 ?
+mcs7830 ?
+net1080 ?
+plusb ?
+rndis_host ?
+smsc95xx ?
+zaurus ?
 asix ?
