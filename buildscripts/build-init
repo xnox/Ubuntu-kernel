@@ -19,7 +19,7 @@ fi
 if [ ! -d "${CONFDIR}/distros" ]; then
 	mkdir "${CONFDIR}/distros"
 fi
-for distro in dapper hardy intrepid jaunty karmic lucid maverick; do
+for distro in dapper hardy jaunty karmic lucid maverick; do
 	if [ ! -f "${CONFDIR}/distros/${distro}" ]; then
 		echo "Creating distro(${distro})"
 		cat <<-EOD >"${CONFDIR}/distros/${distro}"

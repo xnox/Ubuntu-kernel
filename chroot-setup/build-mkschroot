@@ -78,9 +78,6 @@ case $SUITE in
 		;;
 	hardy)
 		;;
-	intrepid)
-		ADDPKG="$ADDPKG makedumpfile"
-		;;
 	jaunty)
 		ADDPKG="$ADDPKG makedumpfile"
 		;;

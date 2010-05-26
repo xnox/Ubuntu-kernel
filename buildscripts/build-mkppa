@@ -126,7 +126,7 @@ DIST=$(awk '
 ' debian/changelog)
 
 case $DIST in
-	dapper|feisty|gutsy|hardy|intrepid|jaunty)
+	dapper|hardy|jaunty|karmic|lucid|maverick)
 		;;
 	*)
 		echo "Unknown release name ($DIST)!" >&2
