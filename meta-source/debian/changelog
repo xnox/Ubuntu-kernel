@@ -1,3 +1,9 @@
+linux-meta-ti-omap (2.6.33.501.3) lucid-security; urgency=low
+
+  * Bumped linux-ti-omap ABI to 501 for security release (first post release)
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 26 May 2010 10:08:20 +0200
+
 linux-meta-ti-omap (2.6.33.500.2) lucid; urgency=low
 
   * Makefile: Added -aarmel to the debuild commands
