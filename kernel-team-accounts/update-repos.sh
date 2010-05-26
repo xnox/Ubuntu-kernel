@@ -1,7 +1,7 @@
 #!/bin/bash
 
 LOCALDIR=/usr3/ubuntu
-REPOS="dapper hardy intrepid jaunty karmic lucid"
+REPOS="dapper hardy intrepid jaunty karmic lucid maverick"
 LINUX=linux-2.6
 LINUX_REPO=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/${LINUX}.git
 UBUNTU_REPO=git://kernel.ubuntu.com/ubuntu

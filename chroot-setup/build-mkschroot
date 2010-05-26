@@ -90,6 +90,9 @@ case $SUITE in
 	lucid)
 		ADDPKG="$ADDPKG makedumpfile"
 		;;
+	maverick)
+		ADDPKG="$ADDPKG makedumpfile"
+		;;
 	*)
 		if [ "$SUITE" != "" ]; then
 			echo "Unknown suite <$SUITE>!" >&2
