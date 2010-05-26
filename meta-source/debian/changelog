@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.34.4.1) maverick; urgency=low
+
+  * Bump kernel version and ABI
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Wed, 26 May 2010 20:58:19 +1000
+
 linux-ports-meta (2.6.32.21.16) lucid; urgency=low
 
   * Bump ABI
