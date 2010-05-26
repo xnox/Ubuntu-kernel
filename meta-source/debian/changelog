@@ -1,3 +1,9 @@
+linux-meta-ec2 (2.6.32.306.7) lucid-security; urgency=low
+
+  * Bump linux-ec2 ABI to 306 for security release (first post release)
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Wed, 26 May 2010 08:02:08 +0200
+
 linux-meta-ec2 (2.6.32.305.6) lucid; urgency=low
 
   * Lucid ABI 305
