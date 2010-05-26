@@ -1,5 +1,11 @@
 linux-meta-lts-backport-maverick (2.6.34.4.3) lucid; urgency=low
 
+  * First LTS meta-package upload
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 26 May 2010 09:11:24 -0600
+
+linux-meta (2.6.34.4.3) lucid; urgency=low
+
   [ Leann Ogasawara ]
 
   * Maverick ABI 4
