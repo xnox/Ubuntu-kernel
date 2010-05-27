@@ -1,35 +1,27 @@
 #!/bin/bash
 
-LOCALDIR=/usr3/ubuntu
-REPOS="dapper hardy jaunty karmic lucid maverick"
-LINUX=linux-2.6
-LINUX_REPO=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/${LINUX}.git
-UBUNTU_REPO=git://kernel.ubuntu.com/ubuntu
+LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+LREPO=linux-2.6.git
+UBUNTU=git://kernel.ubuntu.com/ubuntu
+RELEASES="dapper hardy jaunty karmic lucid maverick"
 
-if [ ! -d ${LOCALDIR} ]
-then
-	echo You must create ${LOCALDIR} first
-	exit 1
-fi
-cd ${LOCALDIR}
+cd `dirname $0`
 
-if [ ! -d ${LINUX} ]
+if [ ! -d ${LREPO} ]
 then
-	git clone ${LINUX_REPO}
+	git clone ${LINUX} ${LREPO}
+	(cd ${LREPO}; git fetch origin)
+else
+	(cd ${LREPO}; git fetch origin;git fetch origin master;git reset --hard FETCH_HEAD)
 fi
 
-(cd ${LINUX};
-git fetch origin
-git fetch --tags origin
-git rebase origin)
-
-for i in ${REPOS}
+for i in ${RELEASES}
 do
-	if [ ! -d ubuntu-$i ]
+	if [ ! -d ubuntu-${i}.git ]
 	then
-		git clone --reference ${LINUX} ${UBUNTU_REPO}/ubuntu-$i.git ubuntu-$i
+		git clone --reference ${LREPO} ${UBUNTU}/ubuntu-${i}.git ubuntu-${i}.git
 	else
-		(cd ubuntu-$i;git-force-update)
+		(cd ubuntu-${i}.git;git fetch origin;git fetch origin master;git reset --hard FETCH_HEAD;git gc;git prune)
 	fi
 done
 
