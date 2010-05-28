@@ -11,8 +11,11 @@ linux-backports-modules-2.6.32 (2.6.32-22.14) lucid-proposed; urgency=low
   [ Upstream Kernel Changes ]
 
   * Updating with the alsa-driver 1.0.23 release
+    - LP: #585921
   * Updated the BOM tar file version for alsa-driver that just got merged
+    - LP: #585921
   * ALSA: hda - Fix resume from StR of HP 2510p with docking-station
+    - LP: #585921
 
  -- Stefan Bader <stefan.bader@canonical.com>  Thu, 20 May 2010 15:30:41 +0200
 
