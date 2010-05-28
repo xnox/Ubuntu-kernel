@@ -10,4 +10,5 @@ You must run the command as root (sudo, not fakeroot).
 Sample invocation:
 
 $ sudo ./build-mkschroot --arch=i386 lucid /shared/lucid-i386
+$ sudo ./build-mkschroot --arch=armel lucid /shared/lucid-armel http://ports.ubuntu.com/ubuntu-ports
 

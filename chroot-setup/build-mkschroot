@@ -8,6 +8,8 @@
 #==============================================================================
 RC=0
 USER="$SUDO_USER"
+DEBOOTSTRAP=debootstrap
+
 if [ "$USER" = "" ]; then
 	echo "ERROR: You must run this command under sudo!" >&2
 	RC=1
@@ -16,7 +18,7 @@ if [ $(id -u) -ne 0 ]; then
 	echo "ERROR: You must be root to run this command!" >&2
 	RC=1
 fi
-for i in debootstrap schroot; do
+for i in $DEBOOTSTRAP schroot; do
 	if [ "$(type -p $i)" = "" ]; then
 		echo "ERROR: $i is required!" >&2
 		RC=1
@@ -98,6 +100,13 @@ case $SUITE in
 		;;
 esac
 
+# armel is only supported if the lsb-release is Lucid or higher.
+if [ "$ARCH" = "armel" ]
+then
+	ADDPKG="$ADDPKG qemu-kvm-extras-static"
+	DEBOOTSTRAP=qemu-debootstrap
+fi
+
 HOSTARCH=$(dpkg --print-architecture)
 if [ "$ARCH" = "" ]; then
 	NAME="$SUITE"
@@ -137,8 +146,8 @@ if $DOINSTALL; then
 	if [ "$(pwd)" = "$(dirname $TARGET)" ]; then
 		cd /tmp
 	fi
-	echo debootstrap $OPTIONS $SUITE "$TARGET" $MIRROR
-	debootstrap $OPTIONS $SUITE "$TARGET" $MIRROR || exit 1
+	echo $DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR
+	$DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR || exit 1
 	if [ -d "$TARGET/etc" ]; then
 		cp /etc/hosts /etc/sudoers "$TARGET/etc"
 	fi
