@@ -48,7 +48,7 @@ Description: Linux kernel crashdump setup for the latest generic kernel
  vmcore on crashes.
 
 Package: linux-tools
-Architecture: i386 amd64
+Architecture: i386 amd64 armel
 Section: metapackages
 Depends: ${misc:Depends}, linux-tools-${kernel-abi-version}
 Description: Linux kernel versioned Tools
