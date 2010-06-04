@@ -90,7 +90,7 @@ case $SUITE in
 		ADDPKG="$ADDPKG makedumpfile"
 		;;
 	maverick)
-		ADDPKG="$ADDPKG makedumpfile libdw-dev libdw1"
+		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc"
 		;;
 	*)
 		if [ "$SUITE" != "" ]; then
@@ -114,10 +114,10 @@ else
 	NAME="$SUITE-$ARCH"
 fi
 
-CFGFILE="/etc/schroot/schroot.conf"
+CFGFILE="/etc/schroot/chroot.d/$NAME"
 CFGEXISTS=false
-if [ "$(fgrep "[$NAME]" $CFGFILE 2>/dev/null)" != "" ]; then
-	echo "WARNING: An entry for $NAME already exists in $CFGFILE!" >&2
+if [ -f $CFGFILE ]; then
+	echo "WARNING: $CFGFILE already exists" >&2
 	CFGEXISTS=true
 fi
 
@@ -162,9 +162,9 @@ function UpdateConfig()
 	[$NAME]
 	description=Ubuntu $SUITE ($ARCH)
 	type=directory
-	location=$TARGET
-	users=$USER
-	run-setup-scripts=true
+	directory=$TARGET
+	groups=sbuild
+	#run-setup-scripts=true
 	EOD
 	case $ARCH in
 		i386|lpia)
@@ -179,4 +179,9 @@ function UpdateConfig()
 if ! $CFGEXISTS; then
 	UpdateConfig
 fi
-schroot -uroot -c$NAME -q apt-get -- install -y --force-yes $ADDPKG
+
+SCHROOTCMD="schroot -q --chroot=$NAME"
+
+${SCHROOTCMD} apt-get update
+echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} /usr/bin/debconf-communicate debconf
+${SCHROOTCMD} -- apt-get install -y --force-yes $ADDPKG

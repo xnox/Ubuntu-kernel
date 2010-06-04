@@ -1,14 +1,15 @@
-build-mkschroot.sh is used to created a chroot for compiling kernels. It
-consists of 3 steps:
-	- Creation of a chroot using deboostrap
-	- Installing additional packages inside the chroot that are needed for
-	  kernel compilation
-	- Update schroot.conf to that the chroot is accessible by name
+These chroot construction scripts will install a
+chroot in /usr3/chroots suitable for building kernels.
 
-You must run the command as root (sudo, not fakeroot).
+All of these scripts will ask for a sudo password.
 
-Sample invocation:
+Sample invocations:
 
-$ sudo ./build-mkschroot --arch=i386 lucid /shared/lucid-i386
-$ sudo ./build-mkschroot --arch=armel lucid /shared/lucid-armel http://ports.ubuntu.com/ubuntu-ports
+$ make_chroot maverick amd64 http://archive.ubuntu.com/ubuntu
+$ make_chroot maverick armel http://ports.ubuntu.com/ubuntu-ports
+$ make_release maverick http://archive.ubuntu.com/ubuntu http://ports.ubuntu.com/ubuntu-ports
+$ make_all
 
+$ remove_chroot maverick amd64
+$ remove_release maverick
+$ remove_all

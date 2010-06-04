@@ -1,0 +1,11 @@
+#!/bin/bash
+
+. `pwd`/scripts/chroot-defs.conf
+
+let index=0
+for i in ${releases[@]}
+do
+	./remove_release $i
+	let index=${index}+1
+done
+

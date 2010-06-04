@@ -1,0 +1,24 @@
+#!/bin/bash
+
+. `pwd`/scripts/chroot-defs.conf
+
+RELEASE=$1
+ARCH=$2
+
+if [ ! -d ${CH_ROOT} ]
+then
+	echo Error: ${CH_ROOT} does not exist.
+	exit 1
+fi
+
+if ! check_release_arch ${RELEASE} ${ARCH}
+then
+	echo usage: $0 RELEASE ARCH
+	echo example: $0 maverick amd64 
+	exit 1
+fi
+RELEASE_ARCH=${RELEASE}-${ARCH}
+
+echo Removing ${CH_ROOT}/${RELEASE}-${ARCH} /etc/schroot/chroot.d/${RELEASE}-${ARCH}
+sudo rm -rf ${CH_ROOT}/${RELEASE}-${ARCH} /etc/schroot/chroot.d/${RELEASE}-${ARCH}
+

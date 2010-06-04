@@ -1,0 +1,50 @@
+#!/bin/bash
+
+. `pwd`/scripts/chroot-defs.conf
+
+if [ $# -lt 2 ]
+then
+	echo usage: $0 RELEASE ARCH [MIRROR]
+	echo example: $0 lucid amd64 http://archive.ubuntu.com/ubuntu
+	exit 1
+fi
+
+RELEASE=$1
+ARCH=$2
+MIRROR=$3
+RELEASE_ARCH=
+
+if ! check_release_arch ${RELEASE} ${ARCH}
+then
+        echo usage: $0 RELEASE ARCH [MIRROR]
+        echo example: $0 maverick amd64 http://archive.ubuntu.com/ubuntu
+        exit 1
+fi
+RELEASE_ARCH=${RELEASE}-${ARCH}
+
+#
+# Make sure you've all of the prerequisite packages installed.
+#
+PRE_REQS="debootstrap dchroot kernel-wedge fakeroot gawk postfix qemu-kvm-extras-static"
+for i in ${PRE_REQS}
+do
+	if ! dpkg -l | grep $i > /dev/null 2>&1
+	then
+		echo Could not find $i
+		echo Installing $i
+		if ! apt-get install $i
+		then
+			echo Could not install $i
+			exit 1
+		fi
+	fi
+done
+
+if [ ! -d ${CH_ROOT} ]
+then
+	echo Error: ${CH_ROOT} does not exist.
+	exit 1
+fi
+
+cd scripts
+sudo ./build-mkschroot --arch=${ARCH} ${RELEASE} ${CH_ROOT}/${RELEASE}-${ARCH} ${MIRROR}

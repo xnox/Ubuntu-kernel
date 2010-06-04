@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#
+# Example: $0 maverick http://archive.ubuntu.com/ubuntu http://ports.ubuntu.com/ubuntu-ports
+
+. `pwd`/scripts/chroot-defs.conf
+
+RELEASE=$1
+MIRROR=$2
+PORTS_MIRROR=$3
+
+[ -z "${RELEASE}" ] && exit 1
+
+let index=0
+
+for i in "${releases[@]}"
+do
+	if [ "$i" = "$RELEASE" ]
+	then
+		for j in ${arches[${index}]}
+		do
+			_MIRROR=${MIRROR}
+			if ports_arch $j
+			then
+				_MIRROR=${PORTS_MIRROR}
+			fi
+			./make_chroot ${RELEASE} $j ${_MIRROR}
+		done
+	fi
+	let index=${index}+1
+done
+
