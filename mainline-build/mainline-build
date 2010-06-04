@@ -48,18 +48,18 @@ rm -f "$master_main"/*.deb
 if [ "$abi" != "" ]; then
 	email=":"
 	"$here/mainline-build-crack" "$commit" "$master_release" "$abi" 2>&1 | \
-		tee "$master_tree/BUILD.LOG"
+		tee "$master_main/BUILD.LOG"
 	#date="`date +%F`"
 	html="$HOME/public_html/mainline/$base/$date-$master_release"
 	ln -nsf "$date-$master_release" "$HOME/public_html/mainline/$base/current"
 else
 	"$here/mainline-build-one" "$commit" "$master_release" 2>&1 | \
-		tee "$master_tree/BUILD.LOG"
+		tee "$master_main/BUILD.LOG"
 	html="$HOME/public_html/mainline/$commit-$master_release"
 fi
 
 mkdir -p "$html"
-mv "$master_tree/BUILD.LOG" "$html"
+mv "$master_main/BUILD.LOG" "$html"
 mv "$master_main/"linux-{headers,image,source}-*.deb "$html"
 if [ -f "$master_main/CHANGES" ]; then
 	mv "$master_main/CHANGES" "$html"
