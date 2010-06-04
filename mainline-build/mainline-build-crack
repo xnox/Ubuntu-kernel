@@ -138,11 +138,13 @@ done
 
 git commit -a -m "fix up build checks"
 
+# Ensure the build directories are pristine.
+git clean -x -f -d
+
 #
 # Build the source package.
 #
 ##dpkg-buildpackage -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa
-
 dchroot --directory=`pwd` -c "$build_release" \
         "fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
