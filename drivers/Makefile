@@ -115,7 +115,6 @@ obj-y				+= platform/
 obj-y				+= ieee802154/
 obj-$(CONFIG_DMM_OMAP)		+= media/
 obj-$(CONFIG_TILER_OMAP)		+= media/
-obj-$(CONFIG_MPU_SYSLINK_PLATFORM)   += dsp/syslink/multicore_ipc/
 obj-$(CONFIG_MPU_SYSLINK_IPC)   += dsp/syslink/multicore_ipc/
 obj-$(CONFIG_SYSLINK_PROC)      += dsp/syslink/procmgr/
 obj-$(CONFIG_SYSLINK_PROC4430)  += dsp/syslink/procmgr/proc4430/
