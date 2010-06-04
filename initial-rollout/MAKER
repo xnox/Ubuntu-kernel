@@ -1,0 +1,108 @@
+#!/bin/bash
+
+set -e
+
+repos="$HOME/git2/ubuntu-"
+DEBIAN="${repos}debian"
+
+method_A() {
+	# Move the enforce script over to the new location else stub it out
+	if [ -f debian/config/enforce ]; then
+		cp debian/config/enforce debian.master/config/enforce
+	else
+		echo "# no configuration" >debian.master/config/enforce
+	fi
+	git add debian.master/config/enforce
+
+	# Preserve the current branch identifier.
+	cp debian/debian.env debian.env.$$
+
+	# Copy in the new debian.
+	git rm -rf debian
+	cp -rp $DEBIAN/debian debian/
+	git add debian
+	
+	# Restore the current branch identifier.
+	mv debian.env.$$ debian/debian.env
+	git add debian/debian.env
+}
+
+method_B() {
+	# Move the enforce script over to the new location else stub it out
+	if [ -f debian/config/enforce ]; then
+		cp debian/config/enforce debian.master/config/enforce
+	else
+		echo "# no configuration" >debian.master/config/enforce
+	fi
+	git add debian.master/config/enforce
+
+	# Copy in the new debian.
+	git rm -rf debian
+	cp -rp $DEBIAN/debian debian/
+	git add debian
+	
+	# Create the current branch identifier.
+	echo "DEBIAN=debian.$branch" >debian/debian.env
+	git add debian/debian.env
+
+	# Clean up the old debian copies.
+	git rm -rf debian.$branch/control-scripts
+	git rm -rf debian.$branch/rules debian.$branch/rules.d/?-*
+	git rm -rf debian.$branch/scripts
+
+	# Copy in the configuration for this branch.
+	mkdir debian.$branch/etc
+	. $DEBIAN/initial-rollout/$series-$branch
+	git add debian.$branch/etc
+}
+
+method_C() {
+	for i in debian.$branch/rules.d/*.mk
+	do
+		echo "do_tools	= false" >>"$i"
+		git add "$i"
+	done
+}
+
+while read series branch methods
+do
+	echo "*** series: $series branch: $branch methods: $methods ..."
+	cd "$repos$series"
+
+	# Get off any branch
+	git checkout -f HEAD^
+
+	# Create a working branch.
+	git branch -D A-$branch || true
+	git branch -D B-$branch || true
+	git branch A-$branch origin/$branch
+	git checkout -b B-$branch origin/$branch
+
+	# Do it
+	for method in $methods
+	do
+	echo "*** method: $method ..."
+		method_$method
+	done
+
+	# Insert the series.
+	sed -i -e "s/@@SERIES@@/$series/g" debian/rules.d/0-common-vars.mk
+	git add debian/rules.d/0-common-vars.mk
+
+	sha1=`(cd $DEBIAN; git log --format=%H HEAD^..HEAD)`
+	# Commit the result.
+	git commit -s -m "UBUNTU: update to ubuntu-debian:$sha1"
+done << EOB
+maverick	master		A
+lucid		master		A
+lucid		ec2		A
+lucid		mvl-dove	A
+lucid		fsl-imx51	B
+lucid		qcm-msm		B
+lucid		ti-omap		A
+karmic		master		B C
+karmic		ec2		B C
+karmic		fsl-imx51	B
+karmic		mvl-dove	B
+karmic		netbook		B C
+EOB

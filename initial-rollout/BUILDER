@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e
+
+repos="$HOME/git2/ubuntu-"
+DEBIAN="${repos}debian"
+
+while read series branch methods
+do
+	echo "*** series: $series branch: $branch methods: $methods ..." 2>&1
+	cd "$repos$series"
+
+	ubuntu-bld --no-patches --build "$methods" $2 $1-$branch </dev/null
+done << EOB
+maverick	master		indep i386/binary-generic amd64/binary-generic
+lucid		master		indep i386/binary-generic amd64/binary-generic
+lucid		ec2		indep i386/binary-ec2 amd64/binary-ec2
+lucid		fsl-imx51	armel/binary-arch
+lucid		mvl-dove	armel/binary-arch
+lucid		qcm-msm		armel/binary-arch
+lucid		ti-omap		armel/binary-arch
+karmic		master		indep i386/binary-generic amd64/binary-generic
+karmic		ec2		indep i386/binary-ec2 amd64/binary-ec2
+karmic		fsl-imx51	armel/binary-imx51
+karmic		mvl-dove	armel/binary-dove
+karmic		netbook		indep i386/binary-generic amd64/binary-generic
+EOB

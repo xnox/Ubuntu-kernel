@@ -1,0 +1,22 @@
+cat - >debian.$branch/etc/getabis <<EOM
+repo_list=(
+	"http://archive.ubuntu.com/ubuntu/pool/main/l/linux"
+	"http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux"
+	"http://archive.ubuntu.com/ubuntu/pool/universe/l/linux"
+	"http://ports.ubuntu.com/ubuntu-ports/pool/universe/l/linux"
+)
+
+getall amd64 ec2
+getall i386 ec2
+EOM
+cat - >debian.$branch/etc/kernelconfig <<EOM
+if [ "$variant" = "ports" ]; then
+	archs="sparc powerpc ia64"
+	family='ports'
+else
+	archs="amd64 i386"
+	family='ubuntu'
+fi
+EOM
+
+git add debian.$branch/etc
