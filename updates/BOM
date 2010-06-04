@@ -6,6 +6,8 @@ http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.34/compat-wirele
 
 Remember to remove the .gitignore file lest you not get all of the files committed that you thought.
 
+WIRELESS-STAGING:
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git v2.6.34
 
 NOUVEAU:
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git master

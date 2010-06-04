@@ -94,6 +94,7 @@ install-%: $(stampdir)/stamp-build-%
 	cp firmware/iwlwifi/*5000*/*.ucode $(firmdir)/lbm-iwlwifi-5000-1.ucode
 	cp firmware/iwlwifi/*5150*/*.ucode $(firmdir)/lbm-iwlwifi-5150-1.ucode
 	cp firmware/iwlwifi/*6000*/*.ucode $(firmdir)/lbm-iwlwifi-6000-4.ucode
+	cp firmware/rt28x0/rt2870.bin $(firmdir)/
 
 	#
 	# Build the compat wireless packages.
@@ -102,6 +103,12 @@ install-%: $(stampdir)/stamp-build-%
 	find $(builddir)/build-$*/$(CWDIR) -type f -name '*.ko' | \
 	while read f ; do \
 		cp -v $${f} $(cwmoddir)/updates/cw/`basename $${f}`; \
+	done
+
+	install -d $(cwmoddir)/updates/staging
+	find $(builddir)/build-$*/wireless-staging -type f -name '*.ko' | \
+	while read f ; do \
+		cp -v $${f} $(cwmoddir)/updates/staging/`basename $${f}`; \
 	done
 
 	find $(cwpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug

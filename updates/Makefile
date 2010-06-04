@@ -4,3 +4,4 @@
 
 include $(src)/.config
 
+obj-y	+= wireless-staging/
