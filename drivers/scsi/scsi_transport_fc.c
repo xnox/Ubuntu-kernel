@@ -496,7 +496,7 @@ MODULE_PARM_DESC(remove_on_dev_loss,
 		" device is removed.  Values: zero means do not remove,"
 		" non-zero means remove.  Default is zero.");
 
-/**
+/*
  * Netlink Infrastructure
  */
 
