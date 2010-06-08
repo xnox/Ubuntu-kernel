@@ -89,6 +89,11 @@ do
 	sed -i -e "s/@@SERIES@@/$series/g" debian/rules.d/0-common-vars.mk
 	git add debian/rules.d/0-common-vars.mk
 
+	# -Package: linux-image-debug-PKGVER-ABINUM-FLAVOUR
+	# +Package: linux-image-PKGVER-ABINUM-FLAVOUR-dbgsym
+	sed -i -e "s/linux-image-debug-PKGVER-ABINUM-FLAVOUR/linux-image-PKGVER-ABINUM-FLAVOUR-dbgsym/g" debian.$branch/control.d/flavour-control.stub
+	git add debian.$branch/control.d/flavour-control.stub
+
 	# Commit the result.
 	sha1=`(cd "$DEBIAN"; git log --format=%H HEAD^..HEAD)`
 	{
