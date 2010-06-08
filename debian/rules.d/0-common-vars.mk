@@ -54,10 +54,19 @@ endif
 extraversion=$(shell awk '/EXTRAVERSION =/ { print $$3 }' <Makefile)
 
 #
+# full_build -- are we doing a full buildd style build
+#
+ifeq ($(wildcard /CurrentlyBuilding),)
+full_build?=false
+else
+full_build?=true
+endif
+
+#
 # The debug packages are ginormous, so you probably want to skip
 # building them (as a developer).
 #
-ifeq ($(wildcard /CurrentlyBuilding),)
+ifeq ($(full_build),false)
 skipdbg=true
 endif
 
@@ -66,7 +75,7 @@ prev_abinum	:= $(shell echo $(prev_revision) | sed -e 's/\..*//')$(abi_suffix)
 abi_release	:= $(release)-$(abinum)
 
 uploadnum	:= $(shell echo $(revision) | sed -e 's/.*\.//')
-ifneq ($(wildcard /CurrentlyBuilding),)
+ifneq ($(full_build),false)
   uploadnum	:= $(uploadnum)-Ubuntu
 endif
 
@@ -99,7 +108,7 @@ hdrs_pkg_name=linux-headers-$(abi_release)
 # for developer testing (its kind of slow), so only do it if on a buildd.
 do_doc_package=true
 do_doc_package_content=true
-ifeq ($(wildcard /CurrentlyBuilding),)
+ifeq ($(full_build),false)
 do_doc_package_content=false
 endif
 doc_pkg_name=$(src_pkg_name)-doc
@@ -110,7 +119,7 @@ doc_pkg_name=$(src_pkg_name)-doc
 #
 do_source_package=true
 do_source_package_content=true
-ifeq ($(wildcard /CurrentlyBuilding),)
+ifeq ($(full_build),false)
 do_source_package_content=false
 endif
 
