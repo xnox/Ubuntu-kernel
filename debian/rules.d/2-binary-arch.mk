@@ -2,34 +2,44 @@
 .SECONDARY :
 
 # Prepare the out-of-tree build directory
+ifeq ($(do_full_source),true)
+build_cd = cd $(builddir)/build-$*; #
+build_O  =
+else
+build_cd =
+build_O  = O=$(builddir)/build-$*
+endif
 
 prepare-%: $(stampdir)/stamp-prepare-%
 	@# Empty for make to be happy
-$(stampdir)/stamp-prepare-%: target_flavour = $*
-$(stampdir)/stamp-prepare-%: $(commonconfdir)/config.common.$(family) $(archconfdir)/config.common.$(arch) $(archconfdir)/config.flavour.%
+$(stampdir)/stamp-prepare-%: $(stampdir)/stamp-prepare-tree-% prepare-checks-%
+	@touch $@
+$(stampdir)/stamp-prepare-tree-%: target_flavour = $*
+$(stampdir)/stamp-prepare-tree-%: $(commonconfdir)/config.common.$(family) $(archconfdir)/config.common.$(arch) $(archconfdir)/config.flavour.%
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	touch $(builddir)/build-$*/ubuntu-build
-	cat $^ | sed -e 's/.*CONFIG_VERSION_SIGNATURE.*/CONFIG_VERSION_SIGNATURE="Ubuntu $(release)-$(revision)-$*"/' > $(builddir)/build-$*/.config
+	[ "$(do_full_source)" != 'true' ] && true || \
+		rsync -a --exclude debian --exclude debian.master --exclude $(DEBIAN) * $(builddir)/build-$*
+	cat $^ | sed -e 's/.*CONFIG_VERSION_SIGNATURE.*/CONFIG_VERSION_SIGNATURE="Ubuntu $(release)-$(revision)-$* $(release)$(extraversion)"/' > $(builddir)/build-$*/.config
 	find $(builddir)/build-$* -name "*.ko" | xargs rm -f
-	$(kmake) O=$(builddir)/build-$* silentoldconfig prepare scripts
+	$(build_cd) $(kmake) $(build_O) silentoldconfig prepare scripts
 	touch $@
-
 
 # Do the actual build, including image and modules
 build-%: $(stampdir)/stamp-build-%
 	@# Empty for make to be happy
 $(stampdir)/stamp-build-%: target_flavour = $*
-$(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
+$(stampdir)/stamp-build-%: prepare-%
 	@echo "Building $*..."
-	$(kmake) O=$(builddir)/build-$* $(conc_level) $(build_image)
-	$(kmake) O=$(builddir)/build-$* $(conc_level) modules
+	$(build_cd) $(kmake) $(build_O) $(conc_level) $(build_image)
+	$(build_cd) $(kmake) $(build_O) $(conc_level) modules
 	@touch $@
 
 # Install the finished build
 install-%: pkgdir = $(CURDIR)/debian/$(bin_pkg_name)-$*
 install-%: bindoc = $(pkgdir)/usr/share/doc/$(bin_pkg_name)-$*
-install-%: dbgpkgdir = $(CURDIR)/debian/$(dbg_pkg_name)-$*
+install-%: dbgpkgdir = $(CURDIR)/debian/$(bin_pkg_name)-$*-dbgsym
 install-%: basepkg = $(hdrs_pkg_name)
 install-%: hdrdir = $(CURDIR)/debian/$(basepkg)-$*/usr/src/$(basepkg)-$*
 install-%: target_flavour = $*
@@ -64,9 +74,20 @@ ifeq ($(no_dumpfile),)
 		-x $(builddir)/build-$*/vmlinux
 endif
 
-	$(kmake) O=$(builddir)/build-$* modules_install \
+	$(build_cd) $(kmake) $(build_O) modules_install \
 		INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=$(pkgdir)/ \
 		INSTALL_FW_PATH=$(pkgdir)/lib/firmware/$(abi_release)-$*
+
+	#
+	# Remove all modules not in the inclusion list.
+	#
+	if [ -f $(DEBIAN)/control.d/$(target_flavour).inclusion-list ] ; then \
+		$(DROOT)/scripts/module-inclusion $(pkgdir)/lib/modules/$(abi_release)-$*/kernel \
+			$(DEBIAN)/control.d/$(target_flavour).inclusion-list 2>&1 | \
+				tee $(target_flavour).inclusion-list.log; \
+		/sbin/depmod -b $(pkgdir) -ea -F $(pkgdir)/boot/System.map-$(abi_release)-$* \
+			$(abi_release)-$* 2>&1 |tee $(target_flavour).depmod.log; \
+	fi
 
 ifeq ($(no_dumpfile),)
 	makedumpfile -g $(pkgdir)/boot/vmcoreinfo-$(abi_release)-$* \
@@ -87,20 +108,22 @@ endif
 	for script in postinst postrm preinst prerm; do				\
 	  sed -e 's/=V/$(abi_release)-$*/g' -e 's/=K/$(install_file)/g'		\
 	      -e 's/=L/$(loader)/g'         -e 's@=B@$(build_arch)@g'		\
-	       $(DEBIAN)/control-scripts/$$script > $(pkgdir)/DEBIAN/$$script;	\
+	       $(DROOT)/control-scripts/$$script > $(pkgdir)/DEBIAN/$$script;	\
 	  chmod 755 $(pkgdir)/DEBIAN/$$script;					\
 	done
 
 	# Install the full changelog.
+ifeq ($(do_doc_package),true)
 	install -d $(bindoc)
 	cat $(DEBIAN)/changelog $(DEBIAN)/changelog.historical | \
 		gzip -9 >$(bindoc)/changelog.Debian.old.gz
 	chmod 644 $(bindoc)/changelog.Debian.old.gz
+endif
 
 ifneq ($(skipsub),true)
 	for sub in $($(*)_sub); do					\
 		if ! (TO=$$sub FROM=$* ABI_RELEASE=$(abi_release) $(SHELL)		\
-			$(DEBIAN)/scripts/sub-flavour); then exit 1; fi;		\
+			$(DROOT)/scripts/sub-flavour); then exit 1; fi;		\
 		/sbin/depmod -b debian/$(bin_pkg_name)-$$sub		\
 			-ea -F debian/$(bin_pkg_name)-$$sub/boot/System.map-$(abi_release)-$* \
 			$(abi_release)-$*;					\
@@ -110,7 +133,7 @@ ifneq ($(skipsub),true)
 			    -e 's/=K/$(install_file)/g'				\
 			    -e 's/=L/$(loader)/g'				\
 			    -e 's@=B@$(build_arch)@g'				\
-				$(DEBIAN)/control-scripts/$$script >		\
+				$(DROOT)/control-scripts/$$script >		\
 				debian/$(bin_pkg_name)-$$sub/DEBIAN/$$script;\
 			chmod 755  debian/$(bin_pkg_name)-$$sub/DEBIAN/$$script;\
 		done;								\
@@ -121,7 +144,7 @@ ifneq ($(skipdbg),true)
 	# Debug image is simple
 	install -m644 -D $(builddir)/build-$*/vmlinux \
 		$(dbgpkgdir)/usr/lib/debug/boot/vmlinux-$(abi_release)-$*
-	$(kmake) O=$(builddir)/build-$* modules_install \
+	$(build_cd) $(kmake) $(build_O) modules_install \
 		INSTALL_MOD_PATH=$(dbgpkgdir)/usr/lib/debug
 	rm -f $(dbgpkgdir)/usr/lib/debug/lib/modules/$(abi_release)-$*/build
 	rm -f $(dbgpkgdir)/usr/lib/debug/lib/modules/$(abi_release)-$*/source
@@ -146,7 +169,7 @@ ifeq ($(arch),powerpc)
 	cp $(builddir)/build-$*/arch/powerpc/lib/*.o $(hdrdir)/arch/powerpc/lib
 endif
 	# Script to symlink everything up
-	$(SHELL) $(DEBIAN)/scripts/link-headers "$(hdrdir)" "$(basepkg)" "$*"
+	$(SHELL) $(DROOT)/scripts/link-headers "$(hdrdir)" "$(basepkg)" "$*"
 	# Setup the proper asm symlink
 	rm -f $(hdrdir)/include/asm
 	ln -s asm-$(asm_link) $(hdrdir)/include/asm
@@ -162,7 +185,7 @@ endif
 	install -d $(CURDIR)/debian/$(basepkg)-$*/DEBIAN
 	for script in postinst; do						\
 	  sed -e 's/=V/$(abi_release)-$*/g' -e 's/=K/$(install_file)/g'	\
-		$(DEBIAN)/control-scripts/headers-$$script > 			\
+		$(DROOT)/control-scripts/headers-$$script > 			\
 			$(CURDIR)/debian/$(basepkg)-$*/DEBIAN/$$script;		\
 	  chmod 755 $(CURDIR)/debian/$(basepkg)-$*/DEBIAN/$$script;		\
 	done
@@ -173,17 +196,23 @@ endif
 	 PREV_REVISION="$(prev_revision)" ABI_NUM="$(abinum)"		\
 	 PREV_ABI_NUM="$(prev_abinum)" BUILD_DIR="$(builddir)/build-$*"	\
 	 INSTALL_DIR="$(pkgdir)" SOURCE_DIR="$(CURDIR)"			\
-	 run-parts -v $(DEBIAN)/tests
+	 run-parts -v $(DROOT)/tests
 
 	#
-	# Remove files which are generated at installation by postinst, except for
-	# modules.order.
+	# Remove files which are generated at installation by postinst,
+	# except for modules.order and modules.builtin
 	#
+	mkdir $(pkgdir)/lib/modules/$(abi_release)-$*/_
 	mv $(pkgdir)/lib/modules/$(abi_release)-$*/modules.order \
-		$(pkgdir)/lib/modules/$(abi_release)-$*/_modules.order
+		$(pkgdir)/lib/modules/$(abi_release)-$*/_
+	if [ -f $(pkgdir)/lib/modules/$(abi_release)-$*/modules.builtin ] ; then \
+	    mv $(pkgdir)/lib/modules/$(abi_release)-$*/modules.builtin \
+		$(pkgdir)/lib/modules/$(abi_release)-$*/_; \
+	fi
 	rm -f $(pkgdir)/lib/modules/$(abi_release)-$*/modules.*
-	mv $(pkgdir)/lib/modules/$(abi_release)-$*/_modules.order \
-		$(pkgdir)/lib/modules/$(abi_release)-$*/modules.order
+	mv $(pkgdir)/lib/modules/$(abi_release)-$*/_/* \
+		$(pkgdir)/lib/modules/$(abi_release)-$*
+	rmdir $(pkgdir)/lib/modules/$(abi_release)-$*/_
 
 headers_tmp := $(CURDIR)/debian/tmp-headers
 headers_dir := $(CURDIR)/debian/linux-libc-dev
@@ -218,7 +247,7 @@ install-arch-headers:
 binary-arch-headers: install-arch-headers
 	dh_testdir
 	dh_testroot
-
+ifeq ($(do_libc_dev_package),true)
 	dh_installchangelogs -plinux-libc-dev
 	dh_installdocs -plinux-libc-dev
 	dh_compress -plinux-libc-dev
@@ -227,10 +256,11 @@ binary-arch-headers: install-arch-headers
 	dh_gencontrol -plinux-libc-dev
 	dh_md5sums -plinux-libc-dev
 	dh_builddeb -plinux-libc-dev
+endif
 
 binary-%: pkgimg = $(bin_pkg_name)-$*
 binary-%: pkghdr = $(hdrs_pkg_name)-$*
-binary-%: dbgpkg = $(dbg_pkg_name)-$*
+binary-%: dbgpkg = $(bin_pkg_name)-$*-dbgsym
 binary-%: install-%
 	dh_testdir
 	dh_testroot
@@ -240,6 +270,7 @@ binary-%: install-%
 	dh_compress -p$(pkgimg)
 	dh_fixperms -p$(pkgimg)
 	dh_installdeb -p$(pkgimg)
+	dh_shlibdeps -p$(pkgimg)
 	dh_gencontrol -p$(pkgimg)
 	dh_md5sums -p$(pkgimg)
 	dh_builddeb -p$(pkgimg) -- -Zbzip2 -z9
@@ -301,13 +332,61 @@ endif
 $(stampdir)/stamp-flavours:
 	@echo $(flavours) > $@
 
-binary-debs: $(stampdir)/stamp-flavours $(addprefix binary-,$(flavours)) \
-		binary-arch-headers
+#
+# per-architecture packages
+#
+$(stampdir)/stamp-prepare-perarch:
+	@echo "Preparing perarch ..."
+ifeq ($(do_tools),true)
+	install -d $(builddir)/tools-$*
+	for i in *; do ln -s $(CURDIR)/$$i $(builddir)/tools-$*/; done
+	rm $(builddir)/tools-$*/tools
+	rsync -a tools/ $(builddir)/tools-$*/tools/
+endif
+	touch $@
+
+$(stampdir)/stamp-build-perarch: prepare-perarch
+ifeq ($(do_tools),true)
+	cd $(builddir)/tools-$*/tools/perf && make
+endif
+	@touch $@
+
+install-perarch: toolspkgdir = $(CURDIR)/debian/$(tools_pkg_name)
+install-perarch: $(stampdir)/stamp-build-perarch
+	# Add the tools.
+ifeq ($(do_tools),true)
+	install -d $(toolspkgdir)/usr/bin
+	install -s -m755 $(builddir)/tools-$*/tools/perf/perf \
+		$(toolspkgdir)/usr/bin/perf_$(abi_release)
+endif
+
+binary-perarch: toolspkg = $(tools_pkg_name)
+binary-perarch: install-perarch
+	@# Empty for make to be happy
+ifeq ($(do_tools),true)
+	dh_installchangelogs -p$(toolspkg)
+	dh_installdocs -p$(toolspkg)
+	dh_compress -p$(toolspkg)
+	dh_fixperms -p$(toolspkg)
+	dh_shlibdeps -p$(toolspkg)
+	dh_installdeb -p$(toolspkg)
+	dh_gencontrol -p$(toolspkg)
+	dh_md5sums -p$(toolspkg)
+	dh_builddeb -p$(toolspkg)
+endif
+
+binary-debs: binary-perarch $(stampdir)/stamp-flavours $(addprefix binary-,$(flavours))
 
 build-arch:  $(addprefix build-,$(flavours))
 
 binary-arch-deps = binary-debs
 ifeq ($(AUTOBUILD),)
 binary-arch-deps += binary-udebs
+endif
+ifeq ($(do_libc_dev_package),true)
+binary-arch-deps += binary-arch-headers
+endif
+ifneq ($(do_common_headers_indep),true)
+binary-arch-deps += binary-headers
 endif
 binary-arch: $(binary-arch-deps)

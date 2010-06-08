@@ -8,3 +8,4 @@ kernel_file	= arch/$(build_arch)/boot/bzImage
 install_file	= vmlinuz
 do_debug_image	= true
 loader		= grub
+do_tools	= false

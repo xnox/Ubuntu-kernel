@@ -97,6 +97,7 @@ exit 0 unless ($ARGV[0] && $ARGV[0] =~ /remove/) ;
 
 # Paranoid check to make sure that the correct value is put in there
 if (! $kimage)                    { $kimage = "vmlinuz";} # Hmm. empty
+elsif ($kimage =~ m/^b?uImage$/o) { $kimage = "vmlinuz";} # these produce vmlinuz
 elsif ($kimage =~ m/^b?zImage$/o) { $kimage = "vmlinuz";} # these produce vmlinuz
 elsif ($kimage =~ m/^[iI]mage$/o) { my $nop = $kimage;  }
 elsif ($kimage =~ m/^vmlinux$/o)  { my $nop = $kimage;  }
@@ -284,7 +285,7 @@ sub success () {
     modules.ieee1394map modules.pnpbiosmap
     modules.alias modules.ccwmap modules.inputmap
     modules.symbols modules.ofmap modules.seriomap
-    modules.alias.bin modules.dep.bin modules.symbols.bin
+    modules.alias.bin modules.builtin.bin modules.dep.bin modules.symbols.bin
   };
 
   foreach my $extra_file (@files_to_remove) {

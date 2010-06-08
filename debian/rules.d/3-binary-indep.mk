@@ -53,7 +53,7 @@ install-source:
 	dh_clean -k -p$(srcpkg)
 
 	install -d $(srcdir)
-ifeq ($(do_linux_source_content),true)
+ifeq ($(do_source_package_content),true)
 	find . -path './debian' -prune -o -path './$(DEBIAN)' -prune -o \
 		-path './.*' -prune -o -print | \
 		cpio -pd --preserve-modification-time $(srcdir)
@@ -62,7 +62,42 @@ ifeq ($(do_linux_source_content),true)
 	rm -rf $(srcdir)
 endif
 
-install-indep: install-headers install-doc install-source
+install-tools: toolspkg = $(tools_common_pkg_name)
+install-tools: toolsbin = $(CURDIR)/debian/$(toolspkg)/usr/bin
+install-tools: toolsman = $(CURDIR)/debian/$(toolspkg)/usr/share/man
+install-tools:
+	dh_testdir
+	dh_testroot
+	dh_clean -k -p$(toolspkg)
+
+	install -d $(toolsbin)
+	install -d $(toolsman)/man1
+
+	install -m755 debian/tools/perf $(toolsbin)/perf
+
+	install -d $(builddir)/tools
+	for i in *; do ln -s $(CURDIR)/$$i $(builddir)/tools/; done
+	rm $(builddir)/tools/tools
+	rsync -a tools/ $(builddir)/tools/tools/
+
+	cd $(builddir)/tools/tools/perf && make man
+	install -m644 $(builddir)/tools/tools/perf/Documentation/*.1 \
+		$(toolsman)/man1
+
+install-indep-deps =
+ifeq ($(do_common_headers_indep),true)
+install-indep-deps += install-headers
+endif
+ifeq ($(do_doc_package),true)
+install-indep-deps += install-doc
+endif
+ifeq ($(do_source_package),true)
+install-indep-deps += install-source
+endif
+ifeq ($(do_tools),true)
+install-indep-deps += install-tools
+endif
+install-indep: $(install-indep-deps)
 
 # This is just to make it easy to call manually. Normally done in
 # binary-indep target during builds.

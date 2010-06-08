@@ -36,34 +36,42 @@ help:
 	@echo "                  : Use -jX for kernel compile"
 	@echo "  PRINTSHAS       : Include SHAs for commits in changelog"
 
+printdebian:
+	@echo "$(DEBIAN)"
+
 updateconfigs:
 	dh_testdir;
-	$(SHELL) $(DEBIAN)/scripts/misc/kernelconfig oldconfig
+	$(SHELL) $(DROOT)/scripts/misc/kernelconfig oldconfig
+	rm -rf build
+
+defaultconfigs:
+	dh_testdir;
+	yes "" | $(SHELL) $(DROOT)/scripts/misc/kernelconfig defaultconfig
 	rm -rf build
 
 editconfigs:
 	dh_testdir
-	$(SHELL) $(DEBIAN)/scripts/misc/kernelconfig editconfig
+	$(SHELL) $(DROOT)/scripts/misc/kernelconfig editconfig
 	rm -rf build
 
 genconfigs:
 	dh_testdir
-	$(SHELL) $(DEBIAN)/scripts/misc/kernelconfig genconfig
+	$(SHELL) $(DROOT)/scripts/misc/kernelconfig genconfig
 	rm -rf build
 
 updateportsconfigs:
 	dh_testdir;
-	$(SHELL) $(DEBIAN)/scripts/misc/kernelconfig oldconfig ports
+	$(SHELL) $(DROOT)/scripts/misc/kernelconfig oldconfig ports
 	rm -rf build
 
 editportsconfigs:
 	dh_testdir
-	$(SHELL) $(DEBIAN)/scripts/misc/kernelconfig editconfig ports
+	$(SHELL) $(DROOT)/scripts/misc/kernelconfig editconfig ports
 	rm -rf build
 
 genportsconfigs:
 	dh_testdir
-	$(SHELL) $(DEBIAN)/scripts/misc/kernelconfig genconfig ports
+	$(SHELL) $(DROOT)/scripts/misc/kernelconfig genconfig ports
 	rm -rf build
 
 printenv:
@@ -89,15 +97,23 @@ endif
 	@echo "bin package name  = $(bin_pkg_name)"
 	@echo "hdr package name  = $(hdrs_pkg_name)"
 	@echo "doc package name  = $(doc_pkg_name)"
+	@echo "do_doc_package            = $(do_doc_package)"
+	@echo "do_doc_package_content    = $(do_doc_package_content)"
+	@echo "do_source_package         = $(do_source_package)"
+	@echo "do_source_package_content = $(do_source_package_content)"
+	@echo "do_libc_dev_package       = $(do_libc_dev_package)"
+	@echo "do_common_headers_indep   = $(do_common_headers_indep)"
+	@echo "do_full_source            = $(do_full_source)"
+	@echo "do_tools                  = $(do_tools)"
 
 printchanges:
 	@baseCommit=$$(git log --pretty=format:'%H %s' | \
 		awk '/UBUNTU: '".*Ubuntu-$(release)-$(prev_revision)"'$$/ { print $$1; exit }'); \
 		git log "$$baseCommit"..HEAD | \
-		perl -w -f $(DEBIAN)/scripts/misc/git-ubuntu-log $(ubuntu_log_opts)
+		perl -w -f $(DROOT)/scripts/misc/git-ubuntu-log $(ubuntu_log_opts)
 
 insertchanges:
-	@perl -w -f $(DEBIAN)/scripts/misc/insert-changes.pl $(DEBIAN)
+	@perl -w -f $(DROOT)/scripts/misc/insert-changes.pl $(DROOT) $(DEBIAN) 
 
 diffupstream:
 	@git diff-tree -p refs/remotes/linux-2.6/master..HEAD $(shell ls | grep -vE '^(ubuntu|$(DEBIAN)|\.git.*)')

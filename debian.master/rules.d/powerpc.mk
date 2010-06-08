@@ -17,3 +17,4 @@ skipabi		= true
 skipmodule	= true
 
 family=ports
+do_tools	= false

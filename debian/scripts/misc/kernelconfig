@@ -14,6 +14,7 @@ fi
 mode=${1:?"Usage: $0 [oldconfig|editconfig]"}
 case "$mode" in
     oldconfig)  ;; # All is good
+    defaultconfig)  ;; # All is good
     editconfig) ;; # All is good
     genconfig)  ;; # All is good
     *) echo "$0 called with invalid mode" 1>&2
@@ -21,17 +22,15 @@ case "$mode" in
 esac
 kerneldir="`pwd`"
 confdir="$kerneldir/${DEBIAN}/config"
-ports=$2
-if [ "$ports" = "ports" ]; then
-	archs="sparc powerpc ia64"
-	family='ports'
-else
-	archs="amd64 i386 lpia"
-	family='ubuntu'
-fi
-bindir="`pwd`/${DEBIAN}/scripts/misc"
+sharedconfdir="$kerneldir/debian.master/config"
+variant="$2"
+
+. $DEBIAN/etc/kernelconfig
+
+bindir="`pwd`/${DROOT}/scripts/misc"
 common_conf="$confdir/config.common.$family"
 tmpdir=`mktemp -d`
+mkdir "$tmpdir/CONFIGS"
 
 if [ "$mode" = "genconfig" ]; then
 	keep=1
@@ -39,20 +38,19 @@ if [ "$mode" = "genconfig" ]; then
 	test -d CONFIGS || mkdir CONFIGS
 fi
 
-test -d build || mkdir build
-
 for arch in $archs; do
+	rm -rf build
+	mkdir build
+
 	# Map debian archs to kernel archs
 	case "$arch" in
 		amd64)	kernarch="x86_64"	;;
-		lpia)   kernarch="x86" ;;
+		lpia)   kernarch="x86" 		;;
 		sparc)	kernarch="sparc64"	;;
+		armel)	kernarch="arm"		;;
 		*)	kernarch="$arch"	;;
 	esac
 
-	echo ""
-	echo "***************************************"
-	echo "* Processing $arch ($kernarch) ... "
 	archconfdir=$confdir/$arch
 	flavourconfigs=$(cd $archconfdir && ls config.flavour.*)
 
@@ -72,6 +70,9 @@ for arch in $archs; do
 				cat $archconfdir/config.common.$arch >> "$fullconf"
 			fi
 			cat "$archconfdir/$config" >>"$fullconf"
+			if [ -f $confdir/OVERRIDES ]; then
+				cat $confdir/OVERRIDES >> "$fullconf"
+			fi
 			;;
 		esac
 	done
@@ -86,15 +87,32 @@ for arch in $archs; do
 				# Weed out incorrect config parameters
 				echo "* Run silentoldconfig on $arch/$config ..."
 				make O=`pwd`/build ARCH=$kernarch silentoldconfig ;;
+			    defaultconfig)
+				# Weed out incorrect config parameters
+				echo "* Run oldconfig on $arch/$config ..."
+				make O=`pwd`/build ARCH=$kernarch oldconfig ;;
 			    editconfig)
 				# Interactively edit config parameters
-				echo " * Run menuconfig on $arch/$config... Press a key."
-				read
-				make O=`pwd`/build ARCH=$kernarch menuconfig ;;
+				while : ; do
+					echo -n "Do you want to edit config: $arch/$config? [Y/n] "
+					read choice
+					
+					case "$choice" in
+					y* | Y* | "" )
+						make O=`pwd`/build ARCH=$kernarch menuconfig
+						break ;;
+					n* | N* )
+						break ;;
+					*)
+						echo "Entry not valid"
+					esac
+				done
+				;;
 			    *)  # Bad!
 				exit 1 ;;
 			esac
 			cat build/.config > $archconfdir/$config
+			cat build/.config > "$tmpdir/CONFIGS/$arch-$config"
 			if [ "$keep" = "1" ]; then
 				cat build/.config > CONFIGS/$arch-$config
 			fi
@@ -127,3 +145,27 @@ rm -f $common_conf
 			>$arch/config.common.$arch
 	done
 )
+
+echo ""
+echo "Running config-check for all configurations ..."
+echo ""
+fail=0
+for arch in $archs; do
+	archconfdir=$confdir/$arch
+	flavourconfigs=$(cd $archconfdir && ls config.flavour.*)
+	for config in $flavourconfigs; do
+		if [ -f $archconfdir/$config ]; then
+			fullconf="$tmpdir/CONFIGS/$arch-$config"
+			"$bindir/../config-check" "$fullconf" "$arch" "$config" "$sharedconfdir" "0" || let "fail=$fail+1"
+		fi
+	done
+done
+
+if [ "$fail" != 0 ]; then
+	echo ""
+	echo "*** ERROR: $fail config-check failures detected"
+	echo ""
+fi
+
+rm -rf build
+

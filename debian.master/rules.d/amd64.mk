@@ -10,3 +10,4 @@ install_file	= vmlinuz
 server_sub	= virtual
 
 loader		= grub
+do_tools	= false
