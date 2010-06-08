@@ -89,9 +89,30 @@ do
 	sed -i -e "s/@@SERIES@@/$series/g" debian/rules.d/0-common-vars.mk
 	git add debian/rules.d/0-common-vars.mk
 
-	sha1=`(cd $DEBIAN; git log --format=%H HEAD^..HEAD)`
 	# Commit the result.
-	git commit -s -m "UBUNTU: update to ubuntu-debian:$sha1"
+	sha1=`(cd "$DEBIAN"; git log --format=%H HEAD^..HEAD)`
+	{
+		cd "$DEBIAN"
+		echo "UBUNTU: update to ubuntu-debian:$sha1"
+		echo ""
+		git log "$sha1" | \
+			"$DEBIAN/initial-rollout/git-ubuntu-log" | \
+			awk '
+			  BEGIN 	{ bug = 0 }
+			  /LP: #/	{
+					  match($0, "- LP: #([0-9]*)", a);
+					  bugs[bug] = a[1];
+					  bug = bug + 1
+					}
+					{ print }
+				END	{
+					  print ""
+					  for (bug in bugs) {
+						print "BugLink: http://bugs.launchpad.net/bugs/" bugs[bug]
+					  }
+					}
+			'
+	} | git commit -s -F -
 done << EOB
 maverick	master		A
 lucid		master		A
