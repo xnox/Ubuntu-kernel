@@ -89,12 +89,7 @@ install-%: $(stampdir)/stamp-build-%
 	#
 	# This firmware file name has to be consistent with IWL4965_UCODE_API in iwl4965-base.c
 	#
-	cp firmware/iwlwifi/*4965*/*.ucode $(firmdir)/lbm-iwlwifi-4965-2.ucode
-	cp firmware/iwlwifi/*3945*/*.ucode $(firmdir)/lbm-iwlwifi-3945-2.ucode
-	cp firmware/iwlwifi/*5000*/*.ucode $(firmdir)/lbm-iwlwifi-5000-1.ucode
-	cp firmware/iwlwifi/*5150*/*.ucode $(firmdir)/lbm-iwlwifi-5150-1.ucode
-	cp firmware/iwlwifi/*6000*/*.ucode $(firmdir)/lbm-iwlwifi-6000-4.ucode
-	cp firmware/iwlwifi/*6050*/*.ucode $(firmdir)/lbm-iwlwifi-6050-4.ucode
+	cp firmware/iwlwifi/*/*.ucode $(firmdir)/
 	cp firmware/rt28x0/rt2870.bin $(firmdir)/
 
 	#
