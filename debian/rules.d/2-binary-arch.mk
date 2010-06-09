@@ -94,6 +94,7 @@ install-%: $(stampdir)/stamp-build-%
 	cp firmware/iwlwifi/*5000*/*.ucode $(firmdir)/lbm-iwlwifi-5000-1.ucode
 	cp firmware/iwlwifi/*5150*/*.ucode $(firmdir)/lbm-iwlwifi-5150-1.ucode
 	cp firmware/iwlwifi/*6000*/*.ucode $(firmdir)/lbm-iwlwifi-6000-4.ucode
+	cp firmware/iwlwifi/*6050*/*.ucode $(firmdir)/lbm-iwlwifi-6050-4.ucode
 	cp firmware/rt28x0/rt2870.bin $(firmdir)/
 
 	#
