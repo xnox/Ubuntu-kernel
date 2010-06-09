@@ -1,3 +1,16 @@
+linux-meta (2.6.35.2.2) maverick; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Maverick ABI 2 (2.6.35-2.2)
+  * Update linux-headers-virtual depends clause 
+
+  [ Loïc Minier ]
+
+  * Enable linux-tools on armel
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 08 Jun 2010 17:19:53 -0700
+
 linux-meta (2.6.35.1.1) maverick; urgency=low
 
   * Maverick ABI 1 (2.6.35-1.1)
