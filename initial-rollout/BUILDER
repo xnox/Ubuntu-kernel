@@ -12,7 +12,7 @@ do
 
 	ubuntu-bld --no-patches --build "$methods" $2 $1-$branch </dev/null
 done << EOB
-maverick	master		indep i386/binary-generic amd64/binary-generic
+maverick	master		i386/full_build=true@binary-indep i386/full_build=true@binary-arch amd64/full_build=true@binary-arch
 lucid		master		indep i386/binary-generic amd64/binary-generic
 lucid		ec2		indep i386/binary-ec2 amd64/binary-ec2
 lucid		fsl-imx51	armel/binary-arch

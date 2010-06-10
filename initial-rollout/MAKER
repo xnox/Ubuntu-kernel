@@ -63,6 +63,43 @@ method_C() {
 		git add "$i"
 	done
 }
+method_D() {
+	for i in debian.$branch/rules.d/*.mk
+	do
+		echo "disable_d_i	= true" >>"$i"
+		git add "$i"
+	done
+}
+method_E() {
+	for i in debian.$branch/rules.d/*.mk
+	do
+		echo "skipdbg	= true" >>"$i"
+		git add "$i"
+	done
+}
+method_F() {
+	for i in debian.$branch/rules.d/*.mk
+	do
+		echo "do_libc_dev_package	= false" >>"$i"
+		git add "$i"
+	done
+}
+method_G() {
+	cat - <<'EOM' >>debian.$branch/control.stub.in
+Package: linux-headers-PKGVER-ABINUM
+Architecture: armel
+Section: devel
+Priority: optional
+Depends: ${misc:Depends}, coreutils | fileutils (>= 4.0)
+#Provides: linux-headers, linux-headers-2.6
+Description: Header files related to SRCPKGNAME kernel version PKGVER
+ This package provides kernel header files for version PKGVER, for sites
+ that want the latest kernel headers. Please read
+ /usr/share/doc/linux-headers-PKGVER-ABINUM/debian.README.gz for details
+
+EOM
+	git add debian.$branch/control.stub.in
+}
 
 while read series branch methods
 do
@@ -75,8 +112,8 @@ do
 	# Create a working branch.
 	git branch -D A-$branch || true
 	git branch -D B-$branch || true
-	git branch A-$branch origin/$branch
-	git checkout -b B-$branch origin/$branch
+	git branch A-$branch $branch
+	git checkout -b B-$branch $branch
 
 	# Do it
 	for method in $methods
@@ -123,12 +160,12 @@ maverick	master		A
 lucid		master		A
 lucid		ec2		A
 lucid		mvl-dove	A
-lucid		fsl-imx51	B
-lucid		qcm-msm		B
+lucid		fsl-imx51	B E F G
+lucid		qcm-msm		B E G
 lucid		ti-omap		A
 karmic		master		B C
-karmic		ec2		B C
-karmic		fsl-imx51	B
+karmic		ec2		B C D F
+karmic		fsl-imx51	B E F G
 karmic		mvl-dove	B
 karmic		netbook		B C
 EOB
