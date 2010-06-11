@@ -118,7 +118,7 @@ if [ -f "$here/config.$series" ]; then
 fi
 BUILD_CONFIG_OVERRIDE="$here/config.$series"
 dchroot --directory=`pwd` -c "$build_release" \
-	"BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' fakeroot debian/rules defaultconfigs"
+	"BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' fakeroot debian/rules clean defaultconfigs"
 ##BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' schroot --directory=`pwd` -c "$build_release-i386" fakeroot debian/rules defaultconfigs
 git commit -a -m "default configs"
 
