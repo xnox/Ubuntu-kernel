@@ -10,8 +10,8 @@ esac
 
 commit="$1"
 
-master_main="$HOME/mainline"
-master_tree="$master_main/build"
+master_main="$HOME/COD"
+master_tree="$master_main/linux"
 
 master_tags="$master_main/upstream"
 tags_list="$master_tags/TAGS"

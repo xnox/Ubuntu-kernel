@@ -36,8 +36,8 @@ esac
 
 master_repo="/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${master_release}.git"
 
-master_main="$HOME/mainline"
-master_tree="$master_main/build"
+master_main="$HOME/COD"
+master_tree="$master_main/linux"
 
 cd "$master_tree" || exit 1
 
