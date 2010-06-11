@@ -10,6 +10,8 @@ esac
 
 master_main="$HOME/COD"
 
+master_repo="/srv/kernel.ubuntu.com/git/ubuntu/"
+
 #
 # UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
 #
@@ -20,7 +22,19 @@ do
 	curr="$master_main/preproposed/$current"
 	branch="$series/$branch"
 
-	tip=`cd "$master_main/$repo" && git fetch "$series" && git log --pretty=format:%H $branch^..$branch | head -1`
+	# Add the upstream repos as needed.
+	(
+		cd "$master_main/$repo"
+		series_repo=`echo "$repo" | sed -e "s/linux/ubuntu-$series/"`
+		series_repo="$master_repo/$series_repo.git"
+		if ! git remote show -n "$series" >/dev/null 2>&1; then
+			echo "*** adding $series remote ($series_repo)..."
+			git remote add "$series" "$series_repo"
+		fi
+		git fetch "$series"
+	)
+
+	tip=`cd "$master_main/$repo" && git log --pretty=format:%H $branch^..$branch | head -1`
 	prev=`cat "$curr" 2>/dev/null || true`
 
 	echo "reop<$repo> branch<$branch> tip<$tip> prev<$prev>"
