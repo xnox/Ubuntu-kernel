@@ -102,6 +102,18 @@ rm -f "$tags_list.added"
 #
 # UPSTREAM COD: builds of upstream tree tips
 #
+while read remote url
+do
+	if ! git remote show -n "$remote" >/dev/null 2>&1; then
+		echo "*** adding $remote remote ..."
+		git remote add "$remote" "$url"
+	fi
+	git fetch "$remote"
+done <<EOL
+drm-2.6 git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
+drm-intel git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel
+EOL
+
 date="`date +%F`"
 while read current branch abi base
 do
