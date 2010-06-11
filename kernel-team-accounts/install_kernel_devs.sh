@@ -24,6 +24,14 @@ PASSWD="$1"
 
 HOME=/home
 
+#
+# Make sure there is an sbuild group for schroot.
+#
+if [ ! grep sbuild /etc/group ]
+then
+	addgroup sbuild
+fi
+
 let index=0
 for i in ${kdev[@]}
 do
@@ -47,6 +55,7 @@ do
 	then
 		adduser $i admin
 	fi
+	adduser $i sbuild
 	let index=${index}+1
 done
 
