@@ -48,9 +48,14 @@ do
 			"$here/cod-preproposed" "$repo" "$series" "$tip" "$date"
 	fi
 done <<EOL
-linux lucid master
-linux-meta lucid master
 linux maverick master
 linux-meta maverick master
+linux lucid master
+linux-meta lucid master
+linux karmic master
+linux-meta karmic master
+linux jaunty master
+linux-meta jaunty master
+linux hardy master
+linux-meta hardy master
 EOL
-#linux-meta maverick master
