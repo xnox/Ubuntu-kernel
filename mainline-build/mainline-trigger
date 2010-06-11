@@ -36,7 +36,7 @@ if ! git remote show -n linus >/dev/null 2>&1; then
 fi
 
 # Pull in all the supported series ...
-for series in dapper hardy intrepid jaunty karmic lucid maverick
+for series in dapper hardy jaunty karmic lucid maverick
 do
 	series_repo="$master_repo/ubuntu-$series.git"
 	if ! git remote show -n "$series" >/dev/null 2>&1; then
