@@ -41,6 +41,9 @@ git branch -D "$branch"
 #
 git checkout -b "$branch" "$commit" -- || exit 1
 
+# Ensure the build directories are pristine.
+git clean -x -f -d
+
 # Report the head for posterity.
 echo "vvv - build head"
 git --no-pager log -1 HEAD
