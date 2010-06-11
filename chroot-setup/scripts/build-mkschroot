@@ -1,4 +1,5 @@
 #!/bin/bash
+. chroot-defs.conf
 #==============================================================================
 # This script is intended to automatically set up a schroot environment ready
 # to compile the kernel.
@@ -79,6 +80,7 @@ fi
 #------------------------------------------------------------------------------
 ADDPKG="vim fakeroot git-core kernel-wedge build-essential ccache devscripts"
 ADDPKG="$ADDPKG xmlto docbook-utils gs transfig sharutils"
+ADDPKG="$ADDPKG docbook-utils gawk m4"
 case $SUITE in
 	dapper)
 		ADDPKG="$ADDPKG kernel-package"
@@ -153,13 +155,22 @@ if $DOINSTALL; then
 	fi
 	echo $DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR
 	$DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR || exit 1
+	#
+	# Update the sources list.
+	#
 	SL="$TARGET/etc/apt/sources.list"
-	if [ -d "$TARGET/etc" ]; then
-		cp /etc/hosts /etc/sudoers "$TARGET/etc"
-		if [ ! -s "$SL" ]; then
+	echo Updating pockets
+	get_pockets ${SUITE} || exit 1
+	for i in ${POCKETS}
+	do
+		if [ "$i" = "release" ] ; then
+			echo "deb $MIRROR $SUITE main universe"
 			echo "deb $MIRROR $SUITE main universe" > $SL
+		else
+			echo "deb $MIRROR $SUITE-$i main universe"
+			echo "deb $MIRROR $SUITE-$i main universe" >> $SL
 		fi
-	fi
+	done
 fi
 
 function UpdateConfig()
@@ -192,6 +203,8 @@ fi
 SCHROOTCMD="schroot -q --chroot=$NAME"
 
 ${SCHROOTCMD} apt-get update
+
+${SCHROOTCMD} apt-get -u dist-upgrade -y --force-yes
 echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} /usr/bin/debconf-communicate debconf
 #
 # Add each package in a separate invocation, just ignore failures where the package
