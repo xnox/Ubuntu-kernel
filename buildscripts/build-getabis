@@ -42,9 +42,14 @@ if [ "$(git branch|grep "${BRANCH}")" = "" ]; then
 	exit 1
 fi
 
-eval $(git show ${BRANCH}:debian/rules|grep '^DEBIAN=')
-if [ "$DEBIAN" = "" ]; then
-	DEBIAN="debian"
+TMPVAL=$(git show ${BRANCH}:debian/debian.env 2>/dev/null)
+if [ "$TMPVAL" != "" ]; then
+	eval $TMPVAL
+else
+	eval $(git show ${BRANCH}:debian/rules|grep '^DEBIAN=')
+	if [ "$DEBIAN" = "" ]; then
+		DEBIAN="debian"
+	fi
 fi
 
 PKG_INFO="$(git show ${BRANCH}:${DEBIAN}/changelog | head -1)"
