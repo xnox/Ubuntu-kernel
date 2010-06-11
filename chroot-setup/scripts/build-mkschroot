@@ -69,6 +69,11 @@ if [ "$SUITE" = "" -o "$TARGET" = "" ]; then
 	exit 1
 fi
 
+if [ "$MIRROR" = "" ]
+then
+	MIRROR=http://archive.ubuntu.com/ubuntu
+fi
+
 #------------------------------------------------------------------------------
 # Make a list of package we additionally need (depending on suite).
 #------------------------------------------------------------------------------
@@ -148,8 +153,12 @@ if $DOINSTALL; then
 	fi
 	echo $DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR
 	$DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR || exit 1
+	SL="$TARGET/etc/apt/sources.list"
 	if [ -d "$TARGET/etc" ]; then
 		cp /etc/hosts /etc/sudoers "$TARGET/etc"
+		if [ ! -s "$SL" ]; then
+			echo "deb $MIRROR $SUITE main universe" > $SL
+		fi
 	fi
 fi
 
@@ -184,4 +193,11 @@ SCHROOTCMD="schroot -q --chroot=$NAME"
 
 ${SCHROOTCMD} apt-get update
 echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} /usr/bin/debconf-communicate debconf
-${SCHROOTCMD} -- apt-get install -y --force-yes $ADDPKG
+#
+# Add each package in a separate invocation, just ignore failures where the package
+# doesn't exist, e.g., makedumpfile in armel.
+#
+for i in $ADDPKG
+do
+	${SCHROOTCMD} -- apt-get install -y --force-yes $i
+done
