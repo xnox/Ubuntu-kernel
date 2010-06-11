@@ -1,3 +1,9 @@
+linux-meta-lts-backport-maverick (2.6.35.2.7) lucid; urgency=low
+
+  * linux-maverick 2.6.35-2.3
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 11 Jun 2010 06:40:04 -0600
+
 linux-meta-lts-backport-maverick (2.6.35.1.6) lucid; urgency=low
 
   * linux-maverick 2.6.35-1.1
