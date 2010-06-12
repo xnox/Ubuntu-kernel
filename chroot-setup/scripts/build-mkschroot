@@ -164,11 +164,9 @@ if $DOINSTALL; then
 	for i in ${POCKETS}
 	do
 		if [ "$i" = "release" ] ; then
-			echo "deb $MIRROR $SUITE main universe"
-			echo "deb $MIRROR $SUITE main universe" > $SL
+			echo "deb $MIRROR $SUITE main" > $SL
 		else
-			echo "deb $MIRROR $SUITE-$i main universe"
-			echo "deb $MIRROR $SUITE-$i main universe" >> $SL
+			echo "deb $MIRROR $SUITE-$i main" >> $SL
 		fi
 	done
 fi
