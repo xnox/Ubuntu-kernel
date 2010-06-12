@@ -145,6 +145,13 @@ fi
 
 if $DOINSTALL; then
 	#
+	# Make sure session recovery is disabled.
+	#
+	DEF_SCHROOT=/etc/default/schroot
+	if egrep "^SESSION" ${DEF_SCHROOT} > /dev/null ; then
+		sed -i 's/^SESSION/#SESSION/' ${DEF_SCHROOT}
+	fi
+	#
 	# Weirdly debootstrap seems to be confused if the current working
 	# directory is the place where the target direcory gets created.
 	# At least on Hardy it will bail out claiming the current working
