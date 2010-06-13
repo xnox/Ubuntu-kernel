@@ -208,8 +208,7 @@ fi
 SCHROOTCMD="schroot -q --chroot=$NAME"
 
 ${SCHROOTCMD} apt-get update
-
-${SCHROOTCMD} apt-get -u dist-upgrade -y --force-yes
+${SCHROOTCMD} apt-get -u -y dist-upgrade
 echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} /usr/bin/debconf-communicate debconf
 #
 # Add each package in a separate invocation, just ignore failures where the package
@@ -217,5 +216,5 @@ echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} /usr/bin/debconf-commun
 #
 for i in $ADDPKG
 do
-	${SCHROOTCMD} -- apt-get install -y --force-yes $i
+	${SCHROOTCMD} -- apt-get -y install $i
 done
