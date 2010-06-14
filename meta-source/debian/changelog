@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.32.206.9) lucid-proposed; urgency=low
+
+  * Lucid ABI 206 for proposed upload
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Mon, 14 Jun 2010 11:52:29 +0200
+
 linux-meta-mvl-dove (2.6.32.205.8) lucid-security; urgency=low
 
   * Bump linux-mvl-dove ABI to 205 for security update (first post release)
