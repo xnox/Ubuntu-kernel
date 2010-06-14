@@ -94,7 +94,7 @@ case $SUITE in
 		ADDPKG="$ADDPKG makedumpfile"
 		;;
 	lucid)
-		ADDPKG="$ADDPKG makedumpfile"
+		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev"
 		;;
 	maverick)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc"
