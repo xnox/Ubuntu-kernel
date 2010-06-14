@@ -1,3 +1,9 @@
+linux-meta-ti-omap (2.6.33.502.4) lucid-proposed; urgency=low
+
+  * Bumped linux-ti-omap ABI to 502 for proposed release
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Mon, 14 Jun 2010 16:20:18 +0200
+
 linux-meta-ti-omap (2.6.33.501.3) lucid-security; urgency=low
 
   * Bumped linux-ti-omap ABI to 501 for security release (first post release)
