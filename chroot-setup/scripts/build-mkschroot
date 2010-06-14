@@ -70,11 +70,6 @@ if [ "$SUITE" = "" -o "$TARGET" = "" ]; then
 	exit 1
 fi
 
-if [ "$MIRROR" = "" ]
-then
-	MIRROR=http://archive.ubuntu.com/ubuntu
-fi
-
 #------------------------------------------------------------------------------
 # Make a list of package we additionally need (depending on suite).
 #------------------------------------------------------------------------------
@@ -152,6 +147,14 @@ if $DOINSTALL; then
 		sed -i 's/^SESSION/#SESSION/' ${DEF_SCHROOT}
 	fi
 	#
+	# Look for a local mirror.
+	#
+	if [ "$MIRROR" = "" ]
+	then
+		get_suite_mirror ${SUITE}
+	fi
+
+	#
 	# Weirdly debootstrap seems to be confused if the current working
 	# directory is the place where the target direcory gets created.
 	# At least on Hardy it will bail out claiming the current working
@@ -162,20 +165,6 @@ if $DOINSTALL; then
 	fi
 	echo $DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR
 	$DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR || exit 1
-	#
-	# Update the sources list.
-	#
-	SL="$TARGET/etc/apt/sources.list"
-	echo Updating pockets
-	get_pockets ${SUITE} || exit 1
-	for i in ${POCKETS}
-	do
-		if [ "$i" = "release" ] ; then
-			echo "deb $MIRROR $SUITE main" > $SL
-		else
-			echo "deb $MIRROR $SUITE-$i main" >> $SL
-		fi
-	done
 fi
 
 function UpdateConfig()
@@ -207,9 +196,15 @@ fi
 
 SCHROOTCMD="schroot -q --chroot=$NAME"
 
-${SCHROOTCMD} apt-get update
-${SCHROOTCMD} apt-get -u -y dist-upgrade
-echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} /usr/bin/debconf-communicate debconf
+if [ "$MIRROR" = "" ]
+then
+	write_mirror ${SUITE} ${ARCH} $TARGET/etc/apt/sources.list
+fi
+
+
+${SCHROOTCMD} -- apt-get update
+${SCHROOTCMD} -- apt-get -u -y dist-upgrade
+echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
 #
 # Add each package in a separate invocation, just ignore failures where the package
 # doesn't exist, e.g., makedumpfile in armel.
