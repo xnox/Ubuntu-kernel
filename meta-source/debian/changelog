@@ -1,3 +1,12 @@
+linux-meta (2.6.35.3.3) maverick; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Maverick ABI 3 (2.6.35-3.4)
+  * Drop preempt
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 14 Jun 2010 10:40:24 -0700
+
 linux-meta (2.6.35.2.2) maverick; urgency=low
 
   [ Leann Ogasawara ]
