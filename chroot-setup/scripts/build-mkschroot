@@ -105,7 +105,6 @@ esac
 # armel is only supported if the lsb-release is Lucid or higher.
 if [ "$ARCH" = "armel" ]
 then
-	ADDPKG="$ADDPKG qemu-kvm-extras-static"
 	DEBOOTSTRAP=qemu-debootstrap
 fi
 
