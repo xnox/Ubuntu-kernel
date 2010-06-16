@@ -139,11 +139,12 @@ fi
 
 if $DOINSTALL; then
 	#
-	# Make sure session recovery is disabled.
+	# Make sure sessions are simply ended.
 	#
 	DEF_SCHROOT=/etc/default/schroot
-	if egrep "^SESSION" ${DEF_SCHROOT} > /dev/null ; then
-		sed -i 's/^SESSION/#SESSION/' ${DEF_SCHROOT}
+	SR="SESSIONS_RECOVER"
+	if egrep "${SR}" ${DEF_SCHROOT} > /dev/null ; then
+		sed -i 's/^.*'${SR}'.*$/'${SR}'="end"/' ${DEF_SCHROOT}
 	fi
 	#
 	# Look for a local mirror.
