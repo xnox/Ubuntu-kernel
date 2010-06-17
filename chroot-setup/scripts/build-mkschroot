@@ -89,10 +89,10 @@ case $SUITE in
 		ADDPKG="$ADDPKG makedumpfile"
 		;;
 	lucid)
-		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev"
+		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev uboot-mkimage"
 		;;
 	maverick)
-		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc"
+		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc uboot-mkimage"
 		;;
 	*)
 		if [ "$SUITE" != "" ]; then
