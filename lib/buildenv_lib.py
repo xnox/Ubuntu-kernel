@@ -77,9 +77,9 @@ def GetUploadVersion(series, package, pocket="updates"):
 	for line in stdout:
 		fields = line.strip().split("|")
 		rpocket = fields[2].strip().split("/")[0]
-		if rpocket == series and not version:
+		if pocket == "release" and rpocket == series:
 			version = fields[1].strip()
-			continue
+			break
 		if rpocket == series + "-" + pocket:
 			version = fields[1].strip()
 			break
