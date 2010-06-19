@@ -10,6 +10,7 @@
 RC=0
 USER="$SUDO_USER"
 DEBOOTSTRAP=debootstrap
+SBUILD_GRP=sbuild
 
 if [ "$USER" = "" ]; then
 	echo "ERROR: You must run this command under sudo!" >&2
@@ -184,7 +185,7 @@ function UpdateConfig()
 	description=Ubuntu $SUITE ($ARCH)
 	type=directory
 	directory=$TARGET
-	groups=sbuild
+	groups=${SBUILD_GRP}
 	#run-setup-scripts=true
 	EOD
 	case $ARCH in
@@ -198,6 +199,9 @@ function UpdateConfig()
 	esac
 }
 if ! $CFGEXISTS; then
+	if ! grep ${SBUILD_GRP} /etc/group ; then
+		addgroup ${SBUILD_GRP}
+	fi
 	UpdateConfig
 fi
 
