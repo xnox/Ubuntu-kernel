@@ -1,26 +1,26 @@
-Package: linux-headers-versatile
+Package: linux-headers-ti-omap4
 Architecture: armel
 Section: devel
 Priority: optional
-Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-versatile 
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-ti-omap4 
 Description: Linux kernel headers for the Versatile architecture.
  This package will always depend on the latest kernel headers available
- for ARM versatile systems.
+ for ARM ti-omap4 systems.
 
-Package: linux-image-versatile
+Package: linux-image-ti-omap4
 Architecture: armel
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-versatile, linux-firmware
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-ti-omap4, linux-firmware
 Description: Linux kernel image for the Versatile architecture.
  This package will always depend on the latest kernel image available
- for ARM versatile systems.
+ for ARM ti-omap4 systems.
 
-Package: linux-versatile
+Package: linux-ti-omap4
 Architecture: armel
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-versatile (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-ti-omap4 (= ${binary:Version})
 Description: Complete Linux kernel for the Versatile architecture.
  This package will always depend on the latest complete Linux kernel available
- for ARM versatile systems.
+ for ARM ti-omap4 systems.
