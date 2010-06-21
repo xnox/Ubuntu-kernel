@@ -1,0 +1,17 @@
+History of files:
+
+ * qcserial.c (v2.6.34:drivers/usb/serial)
+   + 0d4561947b8ddd5d944bdbbdc1ea1d6fd9a06041 (upstream)
+     usb serial: Add generic USB wwan support
+   + 3d7e59ad88fdb6bc50ae9b7e822d4bb5f68b68f9 (upstream)
+     USB: qcserial: Use generic USB wwan code
+   + e07896e62abbf7a741a5cd5b25ba7637bdf91ad0 (upstream)
+     USB: qcserial: Add support for Qualcomm Gobi 2000 devices
+
+ * gobi_loader-0.6 (http://www.codon.org.uk/~mjg59/gobi_loader/):
+   - http://www.codon.org.uk/~mjg59/gobi_loader/download/
+
+The qcserial driver/gobi_loader combination relies on firmware which cannot
+be redistributed (qmss.mbn, apps.mbn, UQCN.mbn). Some hints found on the
+gobi_loader page.
+
