@@ -12,3 +12,4 @@ KBUILD_EXTMOD	:= $(src)/alsa-driver
 
 obj-y	+= wireless-staging/
 obj-y	+= thinkpad-acpi/
+obj-y	+= wwan-drivers/

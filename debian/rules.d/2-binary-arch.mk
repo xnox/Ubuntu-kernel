@@ -63,6 +63,7 @@ $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
 	cd $(builddir)/build-$*/$(CWDIR) && $(make_compat)
 	cd $(builddir)/build-$*/alsa-driver && make $(conc_level)
+	cd $(builddir)/build-$*/wwan-drivers && make $(conc_level)
 	$(kmake) $(conc_level) modules
 	@touch $@
 
@@ -71,6 +72,9 @@ install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-wireless-$(releas
 install-%: cwblddir = $(builddir)/build-$*/$(CWDIR)
 install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: cwsrcdir = $(CURDIR)/updates/$(CWDIR)
+install-%: wwpkgdir = $(CURDIR)/debian/linux-backports-modules-wwan-$(release)-$(abinum)-$*
+install-%: wwmoddir = $(wwpkgdir)/lib/modules/$(release)-$(abinum)-$*
+install-%: wwsrcdir = $(CURDIR)/updates/wwan-drivers
 install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: nvpkgdir = $(CURDIR)/debian/linux-backports-modules-nouveau-$(release)-$(abinum)-$*
@@ -161,6 +165,24 @@ ifeq ($(do_nouveau_package),true)
 endif
 
 	#
+	# Build the wwan-drivers packages.
+	#
+	install -d $(wwmoddir)/updates/wwan
+	find $(builddir)/build-*/wwan-drivers -type f -name '*.ko' |	       \
+	while read f; do						       \
+		install -v $$f $(wwmoddir)/updates/wwan/;		       \
+		strip --strip-debug $(wwmoddir)/updates/wwan/$$(basename $$f); \
+	done
+	$(MAKE) -C $(wwsrcdir) prefix=$(wwpkgdir) install
+	install -d $(wwpkgdir)/DEBIAN
+	for script in postinst postrm; do				       \
+		sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'		       \
+			debian/control-scripts/$$script			       \
+			>$(wwpkgdir)/DEBIAN/$$script;			       \
+		chmod 755 $(wwpkgdir)/DEBIAN/$$script;			       \
+	done
+	
+	#
 	# The flavour specific headers package
 	#
 	install -d $(hdrdir)/include
@@ -186,6 +208,7 @@ package_list += linux-backports-modules-alsa-$(release)-$(abinum)-$*
 ifeq ($(do_nouveau_package),true)
 package_list += linux-backports-modules-nouveau-$(release)-$(abinum)-$*
 endif
+package_list += linux-backports-modules-wwan-$(release)-$(abinum)-$*
 
 binary-modules-%: install-%
 	dh_testdir
