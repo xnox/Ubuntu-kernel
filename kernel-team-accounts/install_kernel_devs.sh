@@ -45,6 +45,9 @@ do
 			mkdir -p ${HOME}/$i/.ssh
 			wget -O ${HOME}/$i/.ssh/authorized_keys2 ${kdev_key[${index}]}
 			chown $i.$i ${HOME}/$i/.ssh ${HOME}/$i/.ssh/authorized_keys2
+		else
+			mkdir -p ${HOME}/${i}
+			chown ${i}.warthogs ${HOME}/${i}
 		fi
 		#
 		# Allow sudo
