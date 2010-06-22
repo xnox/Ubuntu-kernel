@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.35.5.3) maverick; urgency=low
+
+  * bump ABI
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Tue, 22 Jun 2010 21:00:03 +1000
+
 linux-ports-meta (2.6.35.3.2) maverick; urgency=low
 
   * Bump ABI
