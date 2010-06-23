@@ -144,7 +144,7 @@ if opt.bumper:
 
 msg += "\nThe full changelog about all bug fixes contained in this upload can "
 msg += "be found at:\n\n"
-msg += "https://launchpad.net/ubuntu/lucid/+source/" + package + "/"
+msg += "https://launchpad.net/ubuntu/" + series + "/+source/" + package + "/"
 msg += target_version + "\n\n"
 msg += "-" + os.getenv("DEBFULLNAME", default="The Ubuntu kernel team")
 
