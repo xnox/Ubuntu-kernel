@@ -3,5 +3,22 @@ Linux kernels using Ubuntu configuration (as much as possible). This provides
 testers a way to confirm if the bug is fixed upstream and helps in testing of
 upstream kernels too.
 
-FIXME: Andy to document the working of the scripts
+For the most part these scripts assume that are on zinc, but you can
+build on other machines with a couple of preparation steps.
+
+1) mkdir -p $HOME/COD
+2) cd $HOME/COD; git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+3) Add remotes for the series agasinst which you want to build:
+	for i in dapper hardy jaunty karmic lucid maverick
+	do	
+		(cd $HOME/COD; git remote add $i git://kernel.ubuntu.com/ubuntu/ubuntu-$i.git)
+	done
+
+Now you can build against an arbitrary SHA1 using any series as a base. For example,
+
+	cd $HOME/COD/linux-2.6
+	$HOME/kteam-tools/mainline-build/mainline-build-one v2.6.33-rc1 maverick
+
+This will create a branch BUILD.020633rc1, pull the maverick debian bits, then build the kernel.
+
 
