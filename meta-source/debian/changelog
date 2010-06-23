@@ -1,3 +1,10 @@
+linux-meta (2.6.35.5.6) maverick; urgency=low
+
+  * Add meta-packages for ARM omap which is now in the main package.
+    - LP: #595949
+
+ -- Andy Whitcroft <apw@canonical.com>  Wed, 23 Jun 2010 10:03:02 +0100
+
 linux-meta (2.6.35.5.5) maverick; urgency=low
 
   [ Leann Ogasawara ]
