@@ -1,3 +1,11 @@
+linux-meta (2.6.35.6.7) maverick; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Maverick ABI 6 (2.6.35-6.7)
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 24 Jun 2010 15:45:17 -0700
+
 linux-meta (2.6.35.5.6) maverick; urgency=low
 
   * Add meta-packages for ARM omap which is now in the main package.
