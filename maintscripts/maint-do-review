@@ -148,7 +148,7 @@ else:
 		if p1.Comment != "":
 			file.write(p1.Comment + "\n")
 	file.close()
-	os.system("gvim " + ReviewFile + " 2>/dev/null 1>&2 &")
+	os.system("$EDITOR " + ReviewFile + " 2>/dev/null 1>&2 &")
 
 #------------------------------------------------------------------------------
 # Now go through all the new and uncommented entries and call git-compare for
