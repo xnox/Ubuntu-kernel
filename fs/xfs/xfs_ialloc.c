@@ -1133,6 +1133,69 @@ error0:
 	return error;
 }
 
+STATIC int
+xfs_imap_lookup(
+	struct xfs_mount	*mp,
+	struct xfs_trans	*tp,
+	xfs_agnumber_t		agno,
+	xfs_agino_t		agino,
+	xfs_agblock_t		agbno,
+	xfs_agblock_t		*chunk_agbno,
+	xfs_agblock_t		*offset_agbno,
+	int			flags)
+{
+	struct xfs_btree_cur	*cur;
+	struct xfs_buf		*agbp;
+	xfs_agino_t		startino;
+	xfs_agino_t		chunk_agino;	/* first agino in inode chunk */
+	__int32_t		chunk_cnt;	/* count of free inodes in chunk */
+	xfs_inofree_t		chunk_free;	/* mask of free inodes in chunk */
+	int			error;
+	int			i;
+
+	down_read(&mp->m_peraglock);
+	error = xfs_ialloc_read_agi(mp, tp, agno, &agbp);
+	up_read(&mp->m_peraglock);
+	if (error) {
+		xfs_fs_cmn_err(CE_ALERT, mp, "xfs_imap: "
+				"xfs_ialloc_read_agi() returned "
+				"error %d, agno %d",
+				error, agno);
+		return error;
+	}
+
+	/*
+	 * derive and lookup the exact inode record for the given agino. If the
+	 * record cannot be found, then it's an invalid inode number and we
+	 * should abort.
+	 */
+	cur = xfs_btree_init_cursor(mp, tp, agbp, agno, XFS_BTNUM_INO,
+		(xfs_inode_t *)0, 0);
+	startino = agino & ~(XFS_IALLOC_INODES(mp) - 1);
+	error = xfs_inobt_lookup_le(cur, startino, 0, 0, &i);
+	if (!error) {
+		if (i)
+			error = xfs_inobt_get_rec(cur, &chunk_agino, &chunk_cnt,
+						&chunk_free, &i);
+		if (!error && i == 0)
+			error = EINVAL;
+	}
+
+	xfs_trans_brelse(tp, agbp);
+	xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
+	if (error)
+		return error;
+
+	/* for untrusted inodes check it is allocated first */
+	if ((flags & XFS_IGET_BULKSTAT) &&
+	    (chunk_free & XFS_INOBT_MASK(agino - chunk_agino)))
+		return EINVAL;
+
+	*chunk_agbno = XFS_AGINO_TO_AGBNO(mp, chunk_agino);
+	*offset_agbno = agbno - *chunk_agbno;
+	return 0;
+}
+
 /*
  * Return the location of the inode in bno/off, for mapping it into a buffer.
  */
@@ -1200,6 +1263,24 @@ xfs_dilocate(
 #endif /* DEBUG */
 		return XFS_ERROR(EINVAL);
 	}
+
+	blks_per_cluster = XFS_INODE_CLUSTER_SIZE(mp) >> mp->m_sb.sb_blocklog;
+
+	/*
+	 * For bulkstat and handle lookups, we have an untrusted inode number
+	 * that we have to verify is valid. We cannot do this just by reading
+	 * the inode buffer as it may have been unlinked and removed leaving
+	 * inodes in stale state on disk. Hence we have to do a btree lookup
+	 * in all cases where an untrusted inode number is passed.
+	 */
+	if (flags & XFS_IGET_BULKSTAT) {
+		error = xfs_imap_lookup(mp, tp, agno, agino, agbno,
+					&chunk_agbno, &offset_agbno, flags);
+		if (error)
+			return error;
+		goto out_map;
+	}
+
 	if ((mp->m_sb.sb_blocksize >= XFS_INODE_CLUSTER_SIZE(mp)) ||
 	    !(flags & XFS_IMAP_LOOKUP)) {
 		offset = XFS_INO_TO_OFFSET(mp, ino);
@@ -1209,7 +1290,7 @@ xfs_dilocate(
 		*len = 1;
 		return 0;
 	}
-	blks_per_cluster = XFS_INODE_CLUSTER_SIZE(mp) >> mp->m_sb.sb_blocklog;
+
 	if (*bno != NULLFSBLOCK) {
 		offset = XFS_INO_TO_OFFSET(mp, ino);
 		ASSERT(offset < mp->m_sb.sb_inopblock);
@@ -1223,49 +1304,13 @@ xfs_dilocate(
 		offset_agbno = agbno & mp->m_inoalign_mask;
 		chunk_agbno = agbno - offset_agbno;
 	} else {
-		down_read(&mp->m_peraglock);
-		error = xfs_ialloc_read_agi(mp, tp, agno, &agbp);
-		up_read(&mp->m_peraglock);
-		if (error) {
-#ifdef DEBUG
-			xfs_fs_cmn_err(CE_ALERT, mp, "xfs_dilocate: "
-					"xfs_ialloc_read_agi() returned "
-					"error %d, agno %d",
-					error, agno);
-#endif /* DEBUG */
-			return error;
-		}
-		cur = xfs_btree_init_cursor(mp, tp, agbp, agno, XFS_BTNUM_INO,
-			(xfs_inode_t *)0, 0);
-		if ((error = xfs_inobt_lookup_le(cur, agino, 0, 0, &i))) {
-#ifdef DEBUG
-			xfs_fs_cmn_err(CE_ALERT, mp, "xfs_dilocate: "
-					"xfs_inobt_lookup_le() failed");
-#endif /* DEBUG */
-			goto error0;
-		}
-		if ((error = xfs_inobt_get_rec(cur, &chunk_agino, &chunk_cnt,
-				&chunk_free, &i))) {
-#ifdef DEBUG
-			xfs_fs_cmn_err(CE_ALERT, mp, "xfs_dilocate: "
-					"xfs_inobt_get_rec() failed");
-#endif /* DEBUG */
-			goto error0;
-		}
-		if (i == 0) {
-#ifdef DEBUG
-			xfs_fs_cmn_err(CE_ALERT, mp, "xfs_dilocate: "
-					"xfs_inobt_get_rec() failed");
-#endif /* DEBUG */
-			error = XFS_ERROR(EINVAL);
-		}
-		xfs_trans_brelse(tp, agbp);
-		xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
+		error = xfs_imap_lookup(mp, tp, agno, agino, agbno,
+					&chunk_agbno, &offset_agbno, flags);
 		if (error)
 			return error;
-		chunk_agbno = XFS_AGINO_TO_AGBNO(mp, chunk_agino);
-		offset_agbno = agbno - chunk_agbno;
 	}
+
+out_map:
 	ASSERT(agbno >= chunk_agbno);
 	cluster_agbno = chunk_agbno +
 		((offset_agbno / blks_per_cluster) * blks_per_cluster);
@@ -1275,10 +1320,6 @@ xfs_dilocate(
 	*off = offset;
 	*len = blks_per_cluster;
 	return 0;
-error0:
-	xfs_trans_brelse(tp, agbp);
-	xfs_btree_del_cursor(cur, XFS_BTREE_ERROR);
-	return error;
 }
 
 /*
