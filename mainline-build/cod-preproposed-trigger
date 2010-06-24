@@ -34,18 +34,36 @@ do
 		git fetch "$series"
 	)
 
-	tip=`cd "$master_main/$repo" && git log --pretty=format:%H $branch^..$branch | head -1`
+	# Find the first non-ignored commit, the first real change.
+	tip=`cd "$master_main/$repo" && git log "$branch" | awk '
+		BEGIN				{ sha1 = "" }
+		/^commit /			{ if (sha1 != "") { exit };
+						  sha1 = $2 }
+		/^ *Ignore: *yes/		{ sha1 = "" }
+		END				{ print sha1 }
+	'`
+
+	release=`cd "$master_main/$repo" && git log "$branch" | awk '
+		/^commit /			{ sha1 = $2 }
+		/^ *UBUNTU: *Ubuntu-2\.6\./	{ exit }
+		END				{ print sha1 }
+	'`
 	prev=`cat "$curr" 2>/dev/null || true`
 
-	echo "reop<$repo> branch<$branch> tip<$tip> prev<$prev>"
+	echo "repo<$repo> branch<$branch> tip<$tip> release<$release> prev<$prev>"
 
 	if [ "$tip" != "$prev" ]; then
 		# Commit the new tip.
 		echo "$tip" >"$curr.new"
 		mv -f "$curr.new" "$curr"
 
-		"$here/cod-enqueue" "A.preproposed-$current" \
-			"$here/cod-preproposed" "$repo" "$series" "$tip" "$date"
+		if [ "$tip" != "$release" ]; then
+			"$here/cod-enqueue" "A.preproposed-$current" \
+				"$here/cod-preproposed" "$repo" "$series" \
+					"$tip" "$date"
+		else
+			echo "tip represents release, nothing to do"
+		fi
 	fi
 done <<EOL
 linux maverick master
