@@ -1187,7 +1187,7 @@ xfs_imap_lookup(
 		return error;
 
 	/* for untrusted inodes check it is allocated first */
-	if ((flags & XFS_IGET_BULKSTAT) &&
+	if ((flags & XFS_IGET_UNTRUSTED) &&
 	    (chunk_free & XFS_INOBT_MASK(agino - chunk_agino)))
 		return EINVAL;
 
@@ -1294,15 +1294,6 @@ xfs_dilocate(
 		return 0;
 	}
 
-	if (*bno != NULLFSBLOCK) {
-		offset = XFS_INO_TO_OFFSET(mp, ino);
-		ASSERT(offset < mp->m_sb.sb_inopblock);
-		cluster_agbno = XFS_FSB_TO_AGBNO(mp, *bno);
-		*off = ((agbno - cluster_agbno) * mp->m_sb.sb_inopblock) +
-			offset;
-		*len = blks_per_cluster;
-		return 0;
-	}
 	if (mp->m_inoalign_mask) {
 		offset_agbno = agbno & mp->m_inoalign_mask;
 		chunk_agbno = agbno - offset_agbno;

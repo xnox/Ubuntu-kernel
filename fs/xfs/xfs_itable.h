@@ -28,7 +28,6 @@ typedef int (*bulkstat_one_pf)(struct xfs_mount	*mp,
 			       void		__user *buffer,
 			       int		ubsize,
 			       void		*private_data,
-			       xfs_daddr_t	bno,
 			       int		*ubused,
 			       void		*dip,
 			       int		*stat);
@@ -80,7 +79,6 @@ xfs_bulkstat_one(
 	void			__user *buffer,
 	int			ubsize,
 	void			*private_data,
-	xfs_daddr_t		bno,
 	int			*ubused,
 	void			*dibuff,
 	int			*stat);

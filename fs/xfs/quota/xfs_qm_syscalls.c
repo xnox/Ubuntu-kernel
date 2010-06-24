@@ -384,7 +384,7 @@ xfs_qm_scall_trunc_qfiles(
 	}
 
 	if ((flags & XFS_DQ_USER) && mp->m_sb.sb_uquotino != NULLFSINO) {
-		error = xfs_iget(mp, NULL, mp->m_sb.sb_uquotino, 0, 0, &qip, 0);
+		error = xfs_iget(mp, NULL, mp->m_sb.sb_uquotino, 0, 0, &qip);
 		if (! error) {
 			(void) xfs_truncate_file(mp, qip);
 			VN_RELE(XFS_ITOV(qip));
@@ -393,7 +393,7 @@ xfs_qm_scall_trunc_qfiles(
 
 	if ((flags & (XFS_DQ_GROUP|XFS_DQ_PROJ)) &&
 	    mp->m_sb.sb_gquotino != NULLFSINO) {
-		error = xfs_iget(mp, NULL, mp->m_sb.sb_gquotino, 0, 0, &qip, 0);
+		error = xfs_iget(mp, NULL, mp->m_sb.sb_gquotino, 0, 0, &qip);
 		if (! error) {
 			(void) xfs_truncate_file(mp, qip);
 			VN_RELE(XFS_ITOV(qip));
@@ -542,12 +542,12 @@ xfs_qm_scall_getqstat(
 	}
 	if (!uip && mp->m_sb.sb_uquotino != NULLFSINO) {
 		if (xfs_iget(mp, NULL, mp->m_sb.sb_uquotino,
-					0, 0, &uip, 0) == 0)
+					0, 0, &uip) == 0)
 			tempuqip = B_TRUE;
 	}
 	if (!gip && mp->m_sb.sb_gquotino != NULLFSINO) {
 		if (xfs_iget(mp, NULL, mp->m_sb.sb_gquotino,
-					0, 0, &gip, 0) == 0)
+					0, 0, &gip) == 0)
 			tempgqip = B_TRUE;
 	}
 	if (uip) {
@@ -1332,7 +1332,6 @@ xfs_qm_internalqcheck_adjust(
 	void		__user *buffer,	/* not used */
 	int		ubsize,		/* not used */
 	void		*private_data,	/* not used */
-	xfs_daddr_t	bno,		/* starting block of inode cluster */
 	int		*ubused,	/* not used */
 	void		*dip,		/* not used */
 	int		*res)		/* bulkstat result code */
@@ -1356,7 +1355,7 @@ xfs_qm_internalqcheck_adjust(
 	ipreleased = B_FALSE;
  again:
 	lock_flags = XFS_ILOCK_SHARED;
-	if ((error = xfs_iget(mp, NULL, ino, 0, lock_flags, &ip, bno))) {
+	if ((error = xfs_iget(mp, NULL, ino, 0, lock_flags, &ip))) {
 		*res = BULKSTAT_RV_NOTHING;
 		return (error);
 	}
