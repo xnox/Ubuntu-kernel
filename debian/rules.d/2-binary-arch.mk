@@ -131,6 +131,10 @@ install-%: $(stampdir)/stamp-build-%
 	find $(builddir)/build-$*/alsa-driver -type f -name '*.ko' | while read f ; do cp -v $${f} $(csmoddir)/updates/alsa/`basename $${f}`; done
 
 	find $(cspkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
+	# This platform driver needs to be included as it links to ALSA
+	cp $(builddir)/build-$*/thinkpad-acpi/thinkpad_acpi.ko \
+		$(csmoddir)/updates/alsa
+	strip --strip-debug $(csmoddir)/updates/alsa/thinkpad_acpi.ko
 
 	install -d $(cspkgdir)/DEBIAN
 	for script in postinst postrm; do					\

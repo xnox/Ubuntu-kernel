@@ -1,6 +1,9 @@
 ALSA:
 ftp://ftp.alsa-project.org/pub/driver/alsa-driver-1.0.23.tar.bz2
 
+thinkpad-acpi (related to ALSA as it implements a mixer device):
+git://kernel.ubuntu.com/ubuntu/ubuntu-lucid.git (backported from 2.6.34)
+
 WIRELESS:
 http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.34/compat-wireless-2.6.34.tar.bz2
 
