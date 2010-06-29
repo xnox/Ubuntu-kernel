@@ -17,11 +17,18 @@ http_host = "chinstrap.ubuntu.com"
 repo_path = os.path.join("/home", "kernel-ppa", "security")
 
 #------------------------------------------------------------------------------
+# Little helper to unquote a string
+#------------------------------------------------------------------------------
+def Unquote(s):
+	if s[0] == '"' and s[-1] == '"':
+		s = s[1:-1]
+	return s
+
+#------------------------------------------------------------------------------
 # Little helper to remove quotes and expand the '~' constructs in paths.
 #------------------------------------------------------------------------------
 def ParsePath(path):
-	if path[0] == '"' and path[-1] == '"':
-		path = path[1:-1]
+	path = Unquote(path)
 	if path[0] == '~':
 		path = os.path.expanduser(path)
 	return path
@@ -56,19 +63,19 @@ else:
 #------------------------------------------------------------------------------
 my_local_login = os.getlogin()
 try:
-	my_login = config.get(my_local_login, "login")
+	my_login = Unquote(config.get(my_local_login, "login"))
 except:
 	my_login = os.getlogin()
 else:
 	pass
 try:
-	my_ircnick = config.get(my_local_login, "ircnick")
+	my_ircnick = Unquote(config.get(my_local_login, "ircnick"))
 except:
 	my_ircnick = my_local_login
 else:
 	pass
 try:
-	my_fullname = config.get(my_local_login, "fullname")
+	my_fullname = Unquote(config.get(my_local_login, "fullname"))
 except:
 	my_fullname = os.getenv("DEBFULLNAME")
 	if not my_fullname:
@@ -77,7 +84,7 @@ except:
 else:
 	pass
 try:
-	my_email = config.get(my_local_login, "email")
+	my_email = Unquote(config.get(my_local_login, "email"))
 except:
 	my_email = os.getenv("DEBEMAIL")
 	if not my_email:
@@ -96,10 +103,28 @@ sys.path.insert(0, cvescripts_common_lib)
 
 from git_lib import *
 from cvetracker_lib import *
+
+#------------------------------------------------------------------------------
+# The scripts usually assume to be called from the base directory. The tracker
+# tries to find itsefl. So decide if that was successful.
+#------------------------------------------------------------------------------
+if not os.path.isdir(tracker_dir):
+	print "EE: Script called outside base directory!"
+	sys.exit(1)
+caller_dir = os.getcwd()
+os.chdir(os.path.dirname(tracker_dir))
+
 from workitem_lib import *
 import cve_lib
 
+#------------------------------------------------------------------------------
+# Make bzr use the name and email defined here.
+#------------------------------------------------------------------------------
+os.system("bzr whoami \"" + my_fullname + " <" + my_email + ">\"")
 
+#------------------------------------------------------------------------------
+# Return a list of currently supported releases.
+#------------------------------------------------------------------------------
 def ListSupportedSeries():
 	series = cve_lib.releases
 	for eol in cve_lib.eol_releases:
