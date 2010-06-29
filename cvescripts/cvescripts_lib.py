@@ -41,19 +41,6 @@ else:
 	pass
 
 #------------------------------------------------------------------------------
-# One required entry in the "Paths" section is the location of the
-# ubuntu-cve-tracker bazar branch.
-#------------------------------------------------------------------------------
-try:
-	cvetracker_dir = ParsePath(config.get("Paths", "cvetracker"))
-except:
-	print "No {0} in {1}!".format("cvetracker", "Paths")
-	sys.exit(1)
-else:
-	pass
-
-
-#------------------------------------------------------------------------------
 # There might or might not be a local clone of the upstream linux repo. This
 # will be used to speed up cloning and decrease disk usage.
 #------------------------------------------------------------------------------
@@ -106,27 +93,10 @@ cvescripts_common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
 cvescripts_common_lib = os.path.dirname(cvescripts_common_lib)
 cvescripts_common_lib = os.path.join(cvescripts_common_lib, "lib")
 sys.path.insert(0, cvescripts_common_lib)
-from git_lib import *
 
-#------------------------------------------------------------------------------
-# Now with the path to the ubuntu-cve-tracker we can import libraries from
-# them.
-#------------------------------------------------------------------------------
-sys.path.insert(0, os.path.join(cvetracker_dir, "scripts"))
+from git_lib import *
 import cve_lib
 
-#def ListRepos(series):
-#	repos = []
-#	path = os.path.join(repo_path, series)
-#	cmd = "ssh {0} ls -1 {1}".format(repo_host, path)
-#
-#	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-#	for line in p.stdout:
-#		repos.append(line.strip())
-#	p.stdout.close()
-#	p.stderr.close()
-#
-#	return repos
 
 def ListSupportedSeries():
 	series = cve_lib.releases
@@ -168,6 +138,9 @@ PkgList["karmic"] = dict([
 PkgList["lucid"] = dict([
 	( "linux", "linux" ),
 	( "lbm", "linux-backports-modules-2.6.32" )
+])
+PkgList["maverick"] = dict([
+	( "linux", "linux" )
 ])
 
 #------------------------------------------------------------------------------
@@ -241,8 +214,8 @@ class DebianPackage:
 	name = ""
 	family = ""
 	version = dict()
-class WorkItem:
 
+class WorkItem:
 	"""This class stores information about a work item (bug or CVE)"""
 	rawdata = dict()
 	packages = dict()
