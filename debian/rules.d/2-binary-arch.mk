@@ -53,7 +53,7 @@ $(stampdir)/stamp-build-%: target_flavour = $*
 $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
-	cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat)
+	#cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat)
 	cd $(builddir)/build-$*/alsa-driver && make $(conc_level)
 	$(kmake) $(conc_level) modules
 	@touch $@
