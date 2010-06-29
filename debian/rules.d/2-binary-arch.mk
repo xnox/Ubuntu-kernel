@@ -15,7 +15,6 @@ printenv:
 	@echo "prev_revision     = $(prev_revision)"
 	@echo "abinum            = $(abinum)"
 	@echo "flavours          = $(flavours)"
-	@echo "do_nouveau_package   = $(do_nouveau_package)"
 
 COMPAT_KDIR=/lib/modules/$(release)-$(abinum)-$(target_flavour)
 make_compat = make $(conc_level)
@@ -40,10 +39,6 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 		$(cw)/udev/ubuntu/50-compat_firmware.rules
 	mv $(cw)/udev/ubuntu/50-compat_firmware.rules $(cw)/udev/ubuntu/50-compat_firmware_$(abinum).rules
 	mv $(cw)/udev/ubuntu/compat_firmware.sh $(cw)/udev/ubuntu/compat_firmware_$(abinum).sh
-ifeq ($(do_nouveau_package),true)
-	$(builddir)/build-$*/MUNGE-NOUVEAU
-	echo "obj-y += nouveau/" >>$(builddir)/build-$*/Makefile
-endif
 	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
@@ -70,8 +65,6 @@ install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: cwsrcdir = $(CURDIR)/updates/compat-wireless-2.6
 install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
-install-%: nvpkgdir = $(CURDIR)/debian/linux-backports-modules-nouveau-$(release)-$(abinum)-$*
-install-%: nvmoddir = $(nvpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: firmdir = $(cwpkgdir)/lib/firmware/updates/$(release)-$(abinum)-$*
 install-%: lbmbasehdrpkg = linux-headers-lbm-$(release)$(debnum)
 install-%: lbmhdrpkg = $(lbmbasehdrpkg)-$*
@@ -134,23 +127,6 @@ install-%: $(stampdir)/stamp-build-%
 	done
 
 	#
-	# Build the NOUVEAU snapshot packages.
-	#
-ifeq ($(do_nouveau_package),true)
-	install -d $(nvmoddir)/updates/nouveau
-	find $(builddir)/build-$*/nouveau -type f -name '*.ko' | while read f ; do cp -v $${f} $(nvmoddir)/updates/nouveau/`basename $${f}`; done
-
-	find $(nvpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
-
-	install -d $(nvpkgdir)/DEBIAN
-	for script in postinst postrm; do					\
-	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
-	       debian/control-scripts/$$script > $(nvpkgdir)/DEBIAN/$$script;	\
-	  chmod 755 $(nvpkgdir)/DEBIAN/$$script;					\
-	done
-endif
-
-	#
 	# The flavour specific headers package
 	#
 	install -d $(hdrdir)/include
@@ -173,9 +149,6 @@ endif
 package_list =
 package_list += linux-backports-modules-wireless-$(release)-$(abinum)-$*
 package_list += linux-backports-modules-alsa-$(release)-$(abinum)-$*
-ifeq ($(do_nouveau_package),true)
-package_list += linux-backports-modules-nouveau-$(release)-$(abinum)-$*
-endif
 
 binary-modules-%: install-%
 	dh_testdir
