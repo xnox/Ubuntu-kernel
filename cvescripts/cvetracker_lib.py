@@ -31,16 +31,6 @@ if os.system("bzr help >/dev/null 2>&1"):
 	sys.exit(1)
 
 #------------------------------------------------------------------------------
-# Is the LP user set?
-#------------------------------------------------------------------------------
-output = Popen("bzr launchpad-login -q", shell="true", stdout=PIPE).stdout
-if output.readline().strip() == "":
-	print "EE: Need to set launchpad login (bzr launchpad-login <name>)!"
-	output.close()
-	sys.exit(1)
-output.close()
-
-#------------------------------------------------------------------------------
 # Change directory to the local branch. This assumes the current directory is
 # either one above or right in the local branch directory.
 #------------------------------------------------------------------------------
@@ -63,7 +53,7 @@ def TrackerPush():
 
 	try:
 		print "II: Pushing tracker updates to team branch."
-		os.system("bzr push " + team_branch)
+		os.system("bzr push -q " + team_branch)
 	except:
 		print "EE: Failed!"
 		raise
@@ -81,7 +71,7 @@ def TrackerMerge():
 	try:
 		rc = os.system("bzr missing -q --theirs-only " + origin_branch)
 	except:
-		print "EE: Failed!"
+		print "EE: Failed to check for pending master updates!"
 		raise
 
 	if rc:
@@ -105,7 +95,7 @@ def TrackerPull():
 
 	print "II: Pulling tracker changes from team branch."
 	try:
-		os.system("bzr pull " + team_branch)
+		os.system("bzr pull -q " + team_branch)
 	except:
 		print "EE: Failed!"
 		raise
@@ -115,9 +105,30 @@ def TrackerPull():
 	os.chdir(owd)
 
 #------------------------------------------------------------------------------
+# Commit a change
+#------------------------------------------------------------------------------
+def TrackerCommit(message):
+	owd = TrackerChangetoBranch()
+
+	print "II: Commiting changes to local branch."
+	if os.system("bzr commit -q -m '" + message + "'") == 0:
+		TrackerPush()
+
+#------------------------------------------------------------------------------
 # Create a local copy of the tracker (assumes to be in the base directory.
 #------------------------------------------------------------------------------
 def TrackerCreate():
+	#----------------------------------------------------------------------
+	# Is the LP user set?
+	#----------------------------------------------------------------------
+	p = Popen("bzr launchpad-login -q", shell="true", stdout=PIPE)
+	if p.stdout.readline().strip() == "":
+		print "EE: Need to set launchpad login " + \
+		      "(bzr launchpad-login <name>)!"
+		p.stdout.close()
+		sys.exit(1)
+	p.stdout.close()
+
 	if not os.path.isdir(local_branch):
 		print "II: Creating new tracker branch."
 		os.system("bzr branch " + team_branch + " " + local_branch)
