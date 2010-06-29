@@ -34,12 +34,16 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
+ifeq ($(do_compat_wireless),true)
 	# Gross hackery to make the compat firmware class unique to this ABI
 	sed -i 's/compat_firmware/compat_firmware_'$(abinum)'/g' $(cw)/compat/compat_firmware_class.c $(cw)/compat/scripts/compat_firmware_install \
 		$(cw)/udev/ubuntu/50-compat_firmware.rules
 	mv $(cw)/udev/ubuntu/50-compat_firmware.rules $(cw)/udev/ubuntu/50-compat_firmware_$(abinum).rules
 	mv $(cw)/udev/ubuntu/compat_firmware.sh $(cw)/udev/ubuntu/compat_firmware_$(abinum).sh
+endif
+ifeq ($(do_alsa),true)
 	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
+endif
 	cat $^ > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
@@ -53,8 +57,12 @@ $(stampdir)/stamp-build-%: target_flavour = $*
 $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
 $(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
 	@echo "Building $*..."
-	#cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat)
+ifeq ($(do_compat_wireless),true)
+	cd $(builddir)/build-$*/compat-wireless-2.6 && $(make_compat)
+endif
+ifeq ($(do_alsa),true)
 	cd $(builddir)/build-$*/alsa-driver && make $(conc_level)
+endif
 	$(kmake) $(conc_level) modules
 	@touch $@
 
@@ -85,6 +93,7 @@ install-%: $(stampdir)/stamp-build-%
 	cp firmware/iwlwifi/*5150*/*.ucode $(firmdir)/lbm-iwlwifi-5150-1.ucode
 	cp firmware/iwlwifi/*6000*/*.ucode $(firmdir)/lbm-iwlwifi-6000-4.ucode
 
+ifeq ($(do_compat_wireless),true)
 	#
 	# Build the compat wireless packages.
 	#
@@ -110,7 +119,9 @@ install-%: $(stampdir)/stamp-build-%
 	install --mode=0755 $(cwblddir)/udev/ubuntu/compat_firmware_$(abinum).sh $(cwpkgdir)/lib/udev
 	install -d $(cwpkgdir)/lib/udev/rules.d
 	install --mode=0644 $(cwblddir)/udev/ubuntu/50-compat_firmware_$(abinum).rules $(cwpkgdir)/lib/udev/rules.d
+endif
 
+ifeq ($(do_also),true)
 	#
 	# Build the ALSA snapshot packages.
 	#
@@ -125,15 +136,20 @@ install-%: $(stampdir)/stamp-build-%
 	       debian/control-scripts/$$script > $(cspkgdir)/DEBIAN/$$script;	\
 	  chmod 755 $(cspkgdir)/DEBIAN/$$script;					\
 	done
+endif
 
 	#
 	# The flavour specific headers package
 	#
 	install -d $(hdrdir)/include
+ifeq ($(do_compat_wireless),true)
 	tar -C $(builddir)/build-$*/compat-wireless-2.6 -chf - include | tar -C $(hdrdir) -xf -
+endif
+ifeq ($(do_also),true)
 	for i in asm linux media sound; do \
 		tar -C $(builddir)/build-$*/alsa-driver/include -chf - $$i | tar -C $(hdrdir)/include -xf -; \
 	done
+endif
 
 	dh_testdir
 	dh_testroot
