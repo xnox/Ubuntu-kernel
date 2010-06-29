@@ -12,8 +12,20 @@ from subprocess import *
 
 origin_branch  = "lp:~ubuntu-security/ubuntu-cve-tracker/master"
 team_branch    = "lp:~canonical-kernel-team/ubuntu-cve-tracker/kernel-team"
-local_branch   = "ubuntu-cve-tracker"
-tracker_dir    = os.path.join(os.getcwd(), local_branch)
+
+#------------------------------------------------------------------------------
+# A bit of hackery to allow scripts to successful include this library when
+# being called somewhere below the base directory. Fall back to current work
+# directory if nothing is found to allow for creation.
+#------------------------------------------------------------------------------
+tracker_name = "ubuntu-cve-tracker"
+tracker_dir  = os.path.join(os.getcwd(), tracker_name)
+while not os.path.isdir(tracker_dir):
+	tracker_libdir = os.path.dirname(os.path.dirname(tracker_dir))
+	if tracker_libdir == os.path.dirname(tracker_dir):
+		tracker_dir  = os.path.join(os.getcwd(), tracker_name)
+		break
+	tracker_dir = os.path.join(tracker_libdir, tracker_name)
 tracker_libdir = os.path.join(tracker_dir, "scripts")
 
 #------------------------------------------------------------------------------
@@ -31,16 +43,15 @@ if os.system("bzr help >/dev/null 2>&1"):
 	sys.exit(1)
 
 #------------------------------------------------------------------------------
-# Change directory to the local branch. This assumes the current directory is
-# either one above or right in the local branch directory.
+# Change directory to the local branch.
 #------------------------------------------------------------------------------
 def TrackerChangetoBranch():
 	owd = os.getcwd()
-	if not os.path.basename(owd) == local_branch:
+	if not owd == tracker_dir:
 		try:
-			os.chdir(local_branch)
+			os.chdir(tracker_dir)
 		except:
-			print "EE: Unable to change into " + local_branch + "!"
+			print "EE: Unable to change into " + tracker_dir + "!"
 			raise
 
 	return owd
@@ -61,28 +72,37 @@ def TrackerPush():
 	os.chdir(owd)
 
 #------------------------------------------------------------------------------
+# Commit a change
+#------------------------------------------------------------------------------
+def TrackerCommit(message):
+	owd = TrackerChangetoBranch()
+
+	print "II: Commiting changes to local branch."
+	if os.system("bzr commit -q -m '" + message + "'") == 0:
+		TrackerPush()
+
+#------------------------------------------------------------------------------
 # Check the origin branch for updates to be merge. If there are any, then
 # merge them and automatically push the result to the team branch.
 #------------------------------------------------------------------------------
 def TrackerMerge():
 	owd = TrackerChangetoBranch()
-	rc  = 0
 
-	try:
-		rc = os.system("bzr missing -q --theirs-only " + origin_branch)
-	except:
-		print "EE: Failed to check for pending master updates!"
-		raise
+	msg = ""
+	cmd = "bzr missing -q --theirs-only --line " + origin_branch
+	for line in Popen(cmd, shell=True, stdout=PIPE).stdout:
+		msg += line
 
-	if rc:
+	if msg != "":
 		try:
 			print "II: Merging tracker changes from origin."
-			os.system("bzr merge " + origin_branch)
+			os.system("bzr merge -q --pull " + origin_branch)
 		except:
 			print "EE: Failed!"
 			raise
 
-		TrackerPush()
+		msg = "Merge of changes to master\n\n" + msg
+		TrackerCommit(msg)
 
 	os.chdir(owd)
 
@@ -105,16 +125,6 @@ def TrackerPull():
 	os.chdir(owd)
 
 #------------------------------------------------------------------------------
-# Commit a change
-#------------------------------------------------------------------------------
-def TrackerCommit(message):
-	owd = TrackerChangetoBranch()
-
-	print "II: Commiting changes to local branch."
-	if os.system("bzr commit -q -m '" + message + "'") == 0:
-		TrackerPush()
-
-#------------------------------------------------------------------------------
 # Create a local copy of the tracker (assumes to be in the base directory.
 #------------------------------------------------------------------------------
 def TrackerCreate():
@@ -129,6 +139,7 @@ def TrackerCreate():
 		sys.exit(1)
 	p.stdout.close()
 
+	local_branch = os.path.basename(tracker_dir)
 	if not os.path.isdir(local_branch):
 		print "II: Creating new tracker branch."
 		os.system("bzr branch " + team_branch + " " + local_branch)
