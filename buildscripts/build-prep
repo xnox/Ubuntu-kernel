@@ -86,6 +86,9 @@ function PrepareHost()
 			exit 1
 		fi
 	fi
+	# GIT now plays really stupid. Yes we want to replace checked out
+	# branches, you silly tool.
+	git config receive.denyCurrentBranch ignore
 	if [ "$USE_DC" = 'yes' -a  "$URL" != '' ]; then
 		# Check if we have our upstream repository.
 		if ! git remote show -n "origin" >/dev/null 2>&1; then
