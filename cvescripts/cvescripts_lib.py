@@ -228,6 +228,29 @@ def IsWorkareaClean(branch=None):
 
 	return clean
 
-def GetHttpLink():
-	return "http://{0}/~{1}/CVEs/".format(http_host, my_login)
+
+#------------------------------------------------------------------------------
+# Return the URL to the personal CVE publishing page.
+#------------------------------------------------------------------------------
+def GetHttpLink(subdir):
+	return "http://{0}/~{1}/CVEs/{2}".format(http_host, my_login, subdir)
+
+#------------------------------------------------------------------------------
+# Pushes all files in the given subdirectory into a directory with the same
+# basename on the http host.
+#------------------------------------------------------------------------------
+def Publish(subdir):
+	rdir = os.path.basename(subdir)
+	if rdir == "":
+		print "EE: Refusing to publish when basename is empty!"
+		sys.exit(1)
+	print "II: Publishing " + rdir
+	rdir = os.path.join("public_html", "CVEs", rdir)
+	cmd = "ssh " + http_host + " test -d " + rdir + " && rm -rf " + rdir
+	os.system(cmd)
+	cmd = "ssh " + http_host + " mkdir -p " + rdir
+	os.system(cmd)
+	cmd  = "scp -r " + os.path.join(subdir, "*") + " " + http_host
+	cmd += ":" + rdir
+	os.system(cmd)
 
