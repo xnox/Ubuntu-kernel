@@ -72,14 +72,21 @@ def TrackerPush():
 	os.chdir(owd)
 
 #------------------------------------------------------------------------------
-# Commit a change
+# Commit a change. If there actually is no change to commit, there is no need
+# to commit and push.
+#
+# returns: 1 when there was actually something committed and 0 otherwise.
 #------------------------------------------------------------------------------
 def TrackerCommit(message):
 	owd = TrackerChangetoBranch()
-
-	print "II: Commiting changes to local branch."
-	if os.system("bzr commit -q -m '" + message + "'") == 0:
-		TrackerPush()
+	rc = 0
+	if os.system("bzr status -q >/dev/null 2>&1") != 0:
+		print "II: Commiting changes to local branch."
+		if os.system("bzr commit -q -m '" + message + "'") == 0:
+			TrackerPush()
+			rc = 1
+	os.chdir(owd)
+	return rc
 
 #------------------------------------------------------------------------------
 # Check the origin branch for updates to be merge. If there are any, then
@@ -96,13 +103,19 @@ def TrackerMerge():
 	if msg != "":
 		try:
 			print "II: Merging tracker changes from origin."
-			os.system("bzr merge -q --pull " + origin_branch)
+			os.system("bzr merge -q " + origin_branch)
 		except:
 			print "EE: Failed!"
 			raise
 
+		#--------------------------------------------------------------
+		# Argh, so if the master branch has merged back changes from
+		# the team branch, there will be need to push but nothing to
+		# commit!
+		#--------------------------------------------------------------
 		msg = "Merge of changes to master\n\n" + msg
-		TrackerCommit(msg)
+		if not TrackerCommit(msg)
+			TrackerPush()
 
 	os.chdir(owd)
 
