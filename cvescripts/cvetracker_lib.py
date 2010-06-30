@@ -80,7 +80,7 @@ def TrackerPush():
 def TrackerCommit(message):
 	owd = TrackerChangetoBranch()
 	rc = 0
-	if os.system("bzr status -q >/dev/null 2>&1") != 0:
+	if os.system("bzr diff -q >/dev/null 2>&1") != 0:
 		print "II: Commiting changes to local branch."
 		if os.system("bzr commit -q -m '" + message + "'") == 0:
 			TrackerPush()
@@ -114,7 +114,7 @@ def TrackerMerge():
 		# commit!
 		#--------------------------------------------------------------
 		msg = "Merge of changes to master\n\n" + msg
-		if not TrackerCommit(msg)
+		if not TrackerCommit(msg):
 			TrackerPush()
 
 	os.chdir(owd)
