@@ -126,7 +126,7 @@ os.system("bzr whoami \"" + my_fullname + " <" + my_email + ">\"")
 # Return a list of currently supported releases.
 #------------------------------------------------------------------------------
 def ListSupportedSeries():
-	series = cve_lib.releases
+	series = list(cve_lib.releases)
 	for eol in cve_lib.eol_releases:
 		if eol in series:
 			series.remove(eol)
