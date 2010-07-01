@@ -82,7 +82,7 @@ def TrackerCommit(message):
 	rc = 0
 	if os.system("bzr diff -q >/dev/null 2>&1") != 0:
 		print "II: Commiting changes to local branch."
-		if os.system("bzr commit -q -m '" + message + "'") == 0:
+		if os.system("bzr commit -q -m \"" + message + "\"") == 0:
 			TrackerPush()
 			rc = 1
 	os.chdir(owd)
