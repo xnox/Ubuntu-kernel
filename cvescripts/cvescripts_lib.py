@@ -173,15 +173,18 @@ PkgList["maverick"] = dict([
 #------------------------------------------------------------------------------
 # Make sure the given directory exists. Bail out if it cannot be created.
 #------------------------------------------------------------------------------
-def AssertDir(dir):
+def AssertDir(dir, verbose=True):
 	if not os.path.isdir(dir):
-		print "LL: Create " + dir + " ...",
+		if verbose:
+			print "LL: Create " + dir + " ...",
 		try:
 			os.makedirs(dir)
 		except:
-			print "failed!"
+			if verbose:
+				print "failed!"
 			sys.exit(1)
-		else:
+
+		if verbose:
 			print "ok"
 
 #------------------------------------------------------------------------------
