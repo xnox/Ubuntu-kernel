@@ -3,7 +3,9 @@
 #
 # Example: $0 maverick http://archive.ubuntu.com/ubuntu http://ports.ubuntu.com/ubuntu-ports
 
-. `pwd`/scripts/chroot-defs.conf
+CDIR="`dirname $0`"
+
+. "${CDIR}/scripts/chroot-defs.conf"
 
 RELEASE=$1
 MIRROR=$2
@@ -24,7 +26,7 @@ do
 			then
 				_MIRROR=${PORTS_MIRROR}
 			fi
-			./make_chroot ${RELEASE} $j ${_MIRROR}
+			${CDIR}/make_chroot ${RELEASE} $j ${_MIRROR}
 		done
 	fi
 	let index=${index}+1

@@ -1,5 +1,6 @@
 #!/bin/bash
-. chroot-defs.conf
+CDIR="`dirname $0`"
+. "${CDIR}/chroot-defs.conf"
 #==============================================================================
 # This script is intended to automatically set up a schroot environment ready
 # to compile the kernel.

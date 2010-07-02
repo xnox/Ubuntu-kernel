@@ -1,6 +1,8 @@
 #!/bin/bash
 
-. `pwd`/scripts/chroot-defs.conf
+CDIR="`dirname $0`"
+
+. "${CDIR}/scripts/chroot-defs.conf"
 
 RELEASE=$1
 ARCH=$2

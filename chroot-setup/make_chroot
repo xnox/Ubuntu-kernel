@@ -1,6 +1,8 @@
 #!/bin/bash
 
-. `pwd`/scripts/chroot-defs.conf
+CDIR="`dirname $0`"
+
+. "${CDIR}/scripts/chroot-defs.conf"
 
 if [ $# -lt 2 ]
 then
@@ -46,5 +48,5 @@ then
 	exit 1
 fi
 
-cd scripts
+cd ${CDIR}/scripts
 sudo ./build-mkschroot --arch=${ARCH} ${RELEASE} ${CH_ROOT}/${RELEASE}-${ARCH} ${MIRROR}

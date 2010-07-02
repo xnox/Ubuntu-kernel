@@ -1,11 +1,13 @@
 #!/bin/bash
 
-. `pwd`/scripts/chroot-defs.conf
+CDIR="`dirname $0`"
+
+. "${CDIR}/scripts/chroot-defs.conf"
 
 MIRROR=$1
 PORTS_MIRROR=$2
 
 for i in ${releases[@]}
 do
-	./make_release $i ${MIRROR} ${PORTS_MIRROR}
+	${CDIR}/make_release $i ${MIRROR} ${PORTS_MIRROR}
 done
