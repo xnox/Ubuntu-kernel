@@ -1,3 +1,11 @@
+linux-meta-ti-omap4 (2.6.35.900.2) UNRELEASED; urgency=low
+
+  * Bodge round incorrect meta-package version number, the kernel is
+    v2.6.34-900.1 not .35.  As we are going to have a real .35 based kernel
+    shortly it is not worth throwing in an EPOCH to fix this correctly.
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 02 Jul 2010 11:48:32 +0100
+
 linux-meta-ti-omap4 (2.6.35.900.1) maverick; urgency=low
 
   * Maverick ABI 900 (2.6.34-900.1)
