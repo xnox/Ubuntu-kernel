@@ -93,8 +93,11 @@ for series_name in [
 		if version not in version_pocket.keys():
 			version_pocket[version] = "&nbsp;"
 
-	# Sort the list by upload number.
-	deco = [ (v.split('-')[0] + "." + v.split('.')[-1].zfill(4), v)
+	# Sort the list by ABI hundreds, kernel minor, ABI tens, upload #
+	deco = [ (v.split('-')[1].split('.')[0].zfill(4)[0:2] + "." +
+		  v.split('-')[0] + "." +
+		  v.split('-')[1].split('.')[0].zfill(4)[2:4] + "." +
+                  v.split('.')[-1].zfill(4), v)
 			for v in tags.keys() ]
         #print deco
 	deco.sort(reverse = True)
