@@ -1,5 +1,6 @@
-linux-meta-ti-omap4 (2.6.35.900.2) UNRELEASED; urgency=low
+linux-meta-ti-omap4 (2.6.35.901.2) UNRELEASED; urgency=low
 
+  * Maverick ABI 901 (2.6.34-901.2)
   * Bodge round incorrect meta-package version number, the kernel is
     v2.6.34-900.1 not .35.  As we are going to have a real .35 based kernel
     shortly it is not worth throwing in an EPOCH to fix this correctly.
