@@ -67,6 +67,8 @@ print "<h1>Ubuntu to Mainline kernel version mapping</h1>"
 print "Ubuntu kernel to Mainline kernel version mappings as generated at "
 print time.strftime("%H:%M UTC", time.gmtime())
 
+#version_pocket = get_pocket()
+version_pocket = {}
 
 for series_name in [
 		"Maverick Meerkat",
@@ -85,7 +87,6 @@ for series_name in [
 		continue
 
 	version_map = dict()
-	version_pocket = get_pocket()
 	tags = get_tags_list(series)
 	for version in tags:
 		version_map[version] = get_tag_version(series, tags[version])
@@ -95,6 +96,7 @@ for series_name in [
 	# Sort the list by upload number.
 	deco = [ (v.split('-')[0] + "." + v.split('.')[-1].zfill(4), v)
 			for v in tags.keys() ]
+        #print deco
 	deco.sort(reverse = True)
 	version_order = [ v for _, v in deco ]
 
@@ -102,10 +104,11 @@ for series_name in [
 	print "<table border=1>"
 	print "<tr><th>Ubuntu Kernel Version"
 	print "<th>Mainline Kernel Version"
-	print "<th>Ubuntu Kernel Pocket"
+	#print "<th>Ubuntu Kernel Pocket"
 
 	for version in version_order:
-		print "<tr><td>%s<td>%s<td>%s" % (version, version_map[version], version_pocket[version])
+		#print "<tr><td>%s<td>%s<td>%s" % (version, version_map[version], version_pocket[version])
+		print "<tr><td>%s<td>%s" % (version, version_map[version])
 
 	print "</table>"
 
