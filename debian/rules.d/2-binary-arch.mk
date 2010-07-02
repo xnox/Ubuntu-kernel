@@ -37,12 +37,12 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	install -d $(builddir)/build-$*
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
 	# Gross hackery to make the compat firmware class unique to this ABI
-	sed -i 's/compat_firmware/compat_firmware_'$(abinum)'/g' \
+	sed -i 's/compat_firmware/compat_firmware_'$(abinum)_$(target_flavour)'/g' \
 		$(cw)/compat/compat_firmware_class.c \
 		$(cw)/compat/scripts/compat_firmware_install \
 		$(cw)/udev/ubuntu/50-compat_firmware.rules
-	mv $(cw)/udev/ubuntu/50-compat_firmware.rules $(cw)/udev/ubuntu/50-compat_firmware_$(abinum).rules
-	mv $(cw)/udev/ubuntu/compat_firmware.sh $(cw)/udev/ubuntu/compat_firmware_$(abinum).sh
+	mv $(cw)/udev/ubuntu/50-compat_firmware.rules $(cw)/udev/ubuntu/50-compat_firmware_$(abinum)_$(target_flavour).rules
+	mv $(cw)/udev/ubuntu/compat_firmware.sh $(cw)/udev/ubuntu/compat_firmware_$(abinum)_$(target_flavour).sh
 ifeq ($(do_nouveau_package),true)
 	$(builddir)/build-$*/MUNGE-NOUVEAU
 	echo "obj-y += nouveau/" >>$(builddir)/build-$*/Makefile
@@ -120,9 +120,9 @@ install-%: $(stampdir)/stamp-build-%
 	# the compat_firmware_class has its own rules.
 	#
 	install -d $(cwpkgdir)/lib/udev
-	install --mode=0755 $(cwblddir)/udev/ubuntu/compat_firmware_$(abinum).sh $(cwpkgdir)/lib/udev
+	install --mode=0755 $(cwblddir)/udev/ubuntu/compat_firmware_$(abinum)_$(target_flavour).sh $(cwpkgdir)/lib/udev
 	install -d $(cwpkgdir)/lib/udev/rules.d
-	install --mode=0644 $(cwblddir)/udev/ubuntu/50-compat_firmware_$(abinum).rules $(cwpkgdir)/lib/udev/rules.d
+	install --mode=0644 $(cwblddir)/udev/ubuntu/50-compat_firmware_$(abinum)_$(target_flavour).rules $(cwpkgdir)/lib/udev/rules.d
 
 	#
 	# Build the ALSA snapshot packages.
