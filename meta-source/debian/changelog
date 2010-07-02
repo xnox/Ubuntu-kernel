@@ -1,8 +1,8 @@
-linux-meta (2.6.32.24.25) UNRELEASED; urgency=low
+linux-meta (2.6.32.24.25) lucid-proposed; urgency=low
 
   * Lucid ABI 24
 
- -- Steve Conklin <sconklin@canonical.com>  Thu, 01 Jul 2010 17:08:00 +0100
+ -- Steve Conklin <sconklin@canonical.com>  Thu, 01 Jul 2010 17:08:00 -0600
 
 linux-meta (2.6.32.23.24) UNRELEASED; urgency=low
 
