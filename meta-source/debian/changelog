@@ -1,4 +1,4 @@
-linux-meta-ti-omap4 (2.6.35.901.2) UNRELEASED; urgency=low
+linux-meta-ti-omap4 (2.6.35.901.2) maverick; urgency=low
 
   * Maverick ABI 901 (2.6.34-901.2)
   * Bodge round incorrect meta-package version number, the kernel is
