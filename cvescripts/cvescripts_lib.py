@@ -102,6 +102,7 @@ cvescripts_common_lib = os.path.join(cvescripts_common_lib, "lib")
 sys.path.insert(0, cvescripts_common_lib)
 
 from git_lib import *
+from buildenv_lib import *
 from cvetracker_lib import *
 
 #------------------------------------------------------------------------------
@@ -184,6 +185,32 @@ def ListLinuxPackagesAndSeries():
 	return pands
 
 #------------------------------------------------------------------------------
+# Generate a list of workitems that have active or pending package status on
+# a kernel related package.
+#------------------------------------------------------------------------------
+def ListWorkItemsToDo(waiting=True, pending=True):
+	os.chdir(tracker_dir)
+
+	print "II: Searching for workitems..."
+	(cves, uems) = cve_lib.get_cve_list()
+	workitems = []
+	for cve in sorted(cves):
+		wi = WorkItem(cve_lib.find_cve(cve))
+		valid = False
+		for (pkg, series) in ListLinuxPackagesAndSeries():
+			if waiting and wi.is_pkg_waiting(pkg, series):
+				valid = True
+				break
+			if pending and wi.is_pkg_pending(pkg, series):
+				valid = True
+				break
+		if valid:
+			workitems.append(wi)
+
+	os.chdir(os.path.dirname(tracker_dir))
+	return workitems
+
+#------------------------------------------------------------------------------
 # Make sure the given directory exists. Bail out if it cannot be created.
 #------------------------------------------------------------------------------
 def AssertDir(dir, verbose=True):
@@ -203,11 +230,22 @@ def AssertDir(dir, verbose=True):
 #------------------------------------------------------------------------------
 # Return the path for saving workitem data/patches. Make sure path does exist.
 #------------------------------------------------------------------------------
-def GetSaveDir(base, name):
-	savedir = os.path.join(base, "workitems", name)
-	AssertDir(savedir)
+def GetSaveDir(name, create=True):
+	savedir = os.path.join(os.path.dirname(tracker_dir), "workitems", name)
+	if create:
+		AssertDir(savedir)
 
 	return savedir
+
+#------------------------------------------------------------------------------
+# Return the path for saving patches. Make sure the path does exist.
+#------------------------------------------------------------------------------
+def GetPatchDir(name, create=True):
+	patchdir = os.path.join(GetSaveDir(name, create=create), "patches")
+	if create:
+		AssertDir(patchdir)
+
+	return patchdir
 
 #------------------------------------------------------------------------------
 # Return a list of all working repositories (all series, all packages)
@@ -244,6 +282,29 @@ def IsWorkareaClean(branch=None):
 
 	return clean
 
+
+#------------------------------------------------------------------------------
+# Create a new branch for a package which is based on the last released
+# version of it.
+#------------------------------------------------------------------------------
+def CreateBranch(series, package, name, force=False):
+	pkgname = PkgList[series][package]
+
+	version = GetUploadVersion(series, pkgname)
+	if not version:
+		version = GetUploadVersion(series, pkgname, pocket="release")
+
+	print "  - " + package + "(" + version + ") -> " + name
+	if name in GitListBranches():
+		if force == False:
+			print "    EE: Branch " + name + " already exists"
+			raise BranchExists()
+		else:
+			print "    WW: Trhowing away previous " + name
+			os.system("git checkout -q master >/dev/null")
+			os.system("git branch -D " + name + " >/dev/null")
+	cmd = "git checkout -q -b " + name + " Ubuntu-" + version
+	return os.system(cmd)
 
 #------------------------------------------------------------------------------
 # Return the URL to the personal CVE publishing page.
