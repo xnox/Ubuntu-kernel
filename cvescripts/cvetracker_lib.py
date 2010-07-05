@@ -77,14 +77,15 @@ def TrackerPush():
 #
 # returns: 1 when there was actually something committed and 0 otherwise.
 #------------------------------------------------------------------------------
-def TrackerCommit(message):
+def TrackerCommit(message, push=True):
 	owd = TrackerChangetoBranch()
 	rc = 0
 	if os.system("bzr diff -q >/dev/null 2>&1") != 0:
 		print "II: Commiting changes to local branch."
 		if os.system("bzr commit -q -m \"" + message + "\"") == 0:
-			TrackerPush()
-			rc = 1
+			if push:
+				TrackerPush()
+				rc = 1
 	os.chdir(owd)
 	return rc
 
@@ -94,6 +95,12 @@ def TrackerCommit(message):
 #------------------------------------------------------------------------------
 def TrackerMerge():
 	owd = TrackerChangetoBranch()
+
+	#----------------------------------------------------------------------
+	# Failsafe commit. If there is nothing to commit it is a NOP but
+	# otherwise it keeps those separate from the merge.
+	#----------------------------------------------------------------------
+	TrackerCommit("Saving local changes before merge")
 
 	msg = ""
 	cmd = "bzr missing -q --theirs-only --line " + origin_branch
