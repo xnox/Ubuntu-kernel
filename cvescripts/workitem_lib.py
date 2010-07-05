@@ -54,13 +54,19 @@ class WorkItem:
 		s += str(self.msg) + "\n"
 		s += str(self.packages)
 		return s
+	def is_valid_status(self, status):
+		valid_list = [
+			"DNE", "ignored", "needs-triage", "needed", "active",
+			"not-affected", "pending", "deferred", "released"
+		]
+		return status.split(' ', 1)[0] in valid_list
 	def list_records(self):
 		"""Convert the class into records"""
 		header_fields = [
 			"PublicDateAtUSN", "Candidate", "PublicDate",
 			"References", "Description", "Ubuntu-Description",
 			"Notes", "Bugs", "Priority", "Discovered-by",
-			"Assigned-to"
+			"Assigned-to", "Approved-by"
 		]
 		l = []
 		data = self.rawdata
@@ -84,6 +90,8 @@ class WorkItem:
 					value = data[pkg][key]
 					l.append(field + " " + value)
 			for key in ["upstream"] + cve_lib.releases + ["devel"]:
+				if not data[pkg].has_key("status"):
+					continue
 				if not data[pkg]["status"].has_key(key):
 					continue
 				field = key + "_" + pkg + ": "
@@ -139,6 +147,18 @@ class WorkItem:
 		else:
 			st = status
 		self.packages[pkg]["status"][series] = st
+	def is_pkg_waiting(self, pkg, series):
+		st = self.get_status(pkg, series)
+		if (st == "needed"):
+			return True
+		if (st == "needs-triage"):
+			return True
+		return False
+	def is_pkg_pending(self, pkg, series):
+		st = self.get_status(pkg, series)
+		if (st == "pending"):
+			return True
+		return False
 	def list_packages(self):
 		return sorted(self.packages.keys())
 	def validate(self):
@@ -172,7 +192,8 @@ class WorkItem:
 		"""Loads the contents of a file and populates the class"""
 		immediate_fields = [
 			"Assigned-to", "PublicDate", "PublicDateAtUSN", "CRD",
-			"Discovered-by", "Candidate", "Priority", "Tags"
+			"Discovered-by", "Candidate", "Priority", "Tags",
+			"Approved-by"
 		]
 		list_fields = [
 			"Description", "Ubuntu-Description", "References",
@@ -181,6 +202,14 @@ class WorkItem:
 		fields_seen = []
 		field = None
 		tgt = None
+
+		#--------------------------------------------------------------
+		# Must initialise private data.
+		#--------------------------------------------------------------
+		self.rawdata = dict()
+		self.packages = dict()
+		self.valid = False
+		self.msg = []
 
 		if not os.path.exists(filename):
 			raise ValueError, "File does not exist: %s" % (filename)
@@ -254,7 +283,8 @@ class WorkItem:
 					print "need a package for %s" % (field)
 					continue
 				tgt.setdefault("status", dict())
-				tgt["status"][field] = value
+				if self.is_valid_status(value):
+					tgt["status"][field] = value
 			else:
 				print "unknown field: {0}".format(field)
 
@@ -275,4 +305,4 @@ def WorkItemNameValid(name):
 		valid = 1
 
 	return valid
-	
+
