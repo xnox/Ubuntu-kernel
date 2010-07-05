@@ -171,6 +171,19 @@ PkgList["maverick"] = dict([
 ])
 
 #------------------------------------------------------------------------------
+# Generate a list of [<package>, <series>] tuples for all currently supported
+# kernel packages and return it.
+#------------------------------------------------------------------------------
+def ListLinuxPackagesAndSeries():
+	pands = []
+
+	for series in ListSupportedSeries():
+		for pkg in PkgList[series]:
+			pands.append([pkg, series])
+
+	return pands
+
+#------------------------------------------------------------------------------
 # Make sure the given directory exists. Bail out if it cannot be created.
 #------------------------------------------------------------------------------
 def AssertDir(dir, verbose=True):
