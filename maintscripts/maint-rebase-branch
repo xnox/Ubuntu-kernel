@@ -42,15 +42,7 @@ except:
 # Is that branch valid?
 #------------------------------------------------------------------------------
 if not branch in GitListBranches():
-	print "Branch invalid!"
-	sys.exit(1)
-
-#------------------------------------------------------------------------------
-# FIXME: For the moment the branch must be UNRELEASED. Change this when there
-#        is code to the automatic retrieval of the ABI files.
-#------------------------------------------------------------------------------
-if GetPackageInfo(branch)[2] != "UNRELEASED":
-	print "E: The branch is not UNRELEASED!"
+	print "Branch", branch, "invalid!"
 	sys.exit(1)
 
 #------------------------------------------------------------------------------
@@ -82,6 +74,45 @@ TargetVersion = GetPackageInfo(target)[1]
 TargetPocket = GetPackageInfo(target)[2]
 
 #------------------------------------------------------------------------------
+# As a branch might be based on a different base than origin, we need to
+# collect all remote master branches.
+#------------------------------------------------------------------------------
+masters = []
+for line in GitListBranches(remote=True):
+	fields = line.rstrip().split(" ")[0].split("/")
+	if fields[0] != "remotes":
+		continue
+	if  fields[-1] == "master":
+		masters.append(fields[1] + "/" + fields[2])
+
+if not masters:
+	print "EE: There seem to be no remote master branches!"
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# FIXME: The library version only handles two branches
+#------------------------------------------------------------------------------
+cmd = "git merge-base " + branch
+for line in masters:
+	cmd += " " + line
+for line in Popen(cmd, shell=True, stdout=PIPE).stdout:
+	MergeBase = line.strip()
+	break
+BaseVersion = GetPackageInfo(sha1=MergeBase)[1]
+
+if BaseVersion == TargetVersion:
+	print "EE: This branch is already rebased to", TargetVersion
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# FIXME: For the moment the branch must be UNRELEASED. Change this when there
+#        is code to the automatic retrieval of the ABI files.
+#------------------------------------------------------------------------------
+if GetPackageInfo(branch)[2] != "UNRELEASED":
+	print "E: The branch is not UNRELEASED!"
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
 # Working tree must be clean
 #------------------------------------------------------------------------------
 if opts.continue_rebase == False:
@@ -111,9 +142,6 @@ if opts.continue_rebase == False:
 # the version number of it. Then rebase the temporary branch on top of the
 # target release.
 #------------------------------------------------------------------------------
-MergeBase = GitMergeBase("origin/master", branch)
-BaseVersion = GetPackageInfo(sha1=MergeBase)[1]
-
 if opts.continue_rebase == False:
 	print "Rebasing from", BaseVersion, "to", TargetVersion
 	cmd = "git rebase --onto Ubuntu-{0} {1}".format(TargetVersion,
@@ -129,9 +157,15 @@ os.system(cmd)
 debdir = GetDebianDir()
 changelog = os.path.join(debdir, "changelog")
 
+#------------------------------------------------------------------------------
+# COMPAT: Once the more current version of this script was in the abstracted
+# directory. But it might be in the generic directory now.
+#------------------------------------------------------------------------------
 print "Inserting changes..."
-cmd = "./{0}/scripts/misc/insert-ubuntu-changes ".format(debdir)
-cmd += "{0} {1} ".format(changelog, BaseVersion.split("-")[1])
+cmd = "./{0}/scripts/misc/insert-ubuntu-changes".format(debdir)
+if not os.path.isfile(cmd):
+	cmd = "./debian/scripts/misc/insert-ubuntu-changes"
+cmd += " {0} {1} ".format(changelog, BaseVersion.split("-")[1])
 cmd += TargetVersion.split("-")[1]
 os.system(cmd)
 
