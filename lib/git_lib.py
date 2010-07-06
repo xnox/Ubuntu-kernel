@@ -140,6 +140,8 @@ def GitCatFile(file, sha1=None):
 
 	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 	for line in p.stdout:
+		if line.startswith("tree ") or line == "\n":
+			continue
 		lines.append(line)
 	p.stdout.close()
 	p.stderr.close()
