@@ -1,0 +1,320 @@
+#!/usr/bin/python
+#==============================================================================
+# Author: Stefan Bader <stefan.bader@canonical.com>
+# Copyright (C) 2010
+#
+# This script is distributed under the terms and conditions of the GNU General
+# Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
+# for details.
+#==============================================================================
+import sys, os, optparse, re
+from subprocess import *
+
+#------------------------------------------------------------------------------
+# Libraries shared by all kteam-tools will be found here (../lib)
+#------------------------------------------------------------------------------
+common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
+common_lib = os.path.dirname(common_lib)
+common_lib = os.path.join(common_lib, "lib")
+sys.path.insert(0, common_lib)
+
+from buildenv_lib import *
+
+#------------------------------------------------------------------------------
+# Built-in quirk list
+#------------------------------------------------------------------------------
+IgnorePatterns = dict()
+IgnorePatterns["lucid"] = [ ".*_lpia.deb" ]
+
+#------------------------------------------------------------------------------
+# Setup the command line parser and run it.
+#------------------------------------------------------------------------------
+parser = optparse.OptionParser("Usage: %prog [options] <release tag>")
+dsc    = "Retrieves ABI files for the given release"
+parser.set_description(dsc)
+parser.add_option("--dry-run", action="store_true", dest="dryrun",
+		default=False, help="only print what would be done")
+parser.add_option("--local", action="store_true", dest="local",
+		default=False, help="extract the packages locally")
+parser.add_option("--host", action="store", dest="tgthost",
+		default="kernel.ubuntu.com",
+		help="fetch and extract the abi files on this host" +
+			" (%default)")
+(opts, args) = parser.parse_args()
+
+#------------------------------------------------------------------------------
+# The release tag (or SHA1) is a required argument
+#------------------------------------------------------------------------------
+if len(args) < 1:
+	parser.print_help()
+	sys.exit(1)
+release_tag = args[0]
+
+#------------------------------------------------------------------------------
+# Verify that the given name really is valid.
+#------------------------------------------------------------------------------
+if not GitDescribe(release_tag):
+	print "EE:", release_tag, "does not seem to be a valid name"
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# Get the location of the branch specific debian directory and the name,
+# version and pocket of the package at the time of the given tag or sha1.
+#------------------------------------------------------------------------------
+debian_dir = GetDebianDir(sha1=release_tag)
+(name, version, pocket) = GetPackageInfo(sha1=release_tag)[0:3]
+
+#------------------------------------------------------------------------------
+# If there is no ABI directory, then this is likely the wrong repo.
+#------------------------------------------------------------------------------
+if not os.path.isdir(os.path.join(debian_dir, "abi")):
+	print "EE: No abi directory found in", debian_dir
+	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# Look into flavour-control.stub to find out how the linux package is called
+# in this branch.
+#------------------------------------------------------------------------------
+def GetPkgName(sha1):
+	filename = os.path.join(debian_dir, "control.d")
+	filename = os.path.join(filename, "flavour-control.stub")
+
+	for line in GitCatFile(filename, sha1=sha1):
+		if "Package:" in line:
+			pkgname = line.rstrip().split(" ")[1]
+		if re.match("Provides:.*linux-image", line):
+			pkgname = re.sub("-PKGVER-ABINUM-FLAVOUR", "", pkgname)
+			break
+	else:
+		return None
+
+	return pkgname
+
+#------------------------------------------------------------------------------
+# The flavours which will be produced have definition files in the control.d.
+# In each definition file there is a list of target architectures. Return a
+# list of [<arch>, <flavour>] tuples for each combination found.
+#------------------------------------------------------------------------------
+def GetArchFlavourList(sha1):
+	filename = os.path.join(debian_dir, "control.d")
+
+	afl = []
+	for line1 in GitCatFile(filename, sha1=sha1):
+		if not line1.startswith("vars."):
+			continue
+		line1 = line1.rstrip()
+		flavour = line1.split(".")[1]
+		arches  = []
+		for line2 in open(os.path.join(filename, line1), "r"):
+			line2 = line2.rstrip()
+			if re.match("^arch=\".*\"$", line2):
+				line2 = re.sub("arch=\"(.*)\"", "\\1", line2)
+				arches = line2.split(" ")
+				break
+			elif re.match("^arch=.*$", line2):
+				arches = [ re.sub("arch=", "", line2) ]
+				break
+		for arch in arches:
+			afl.append([arch, flavour])
+
+	return afl
+
+#------------------------------------------------------------------------------
+# Set up some variables.
+#------------------------------------------------------------------------------
+series   = pocket.split("-")[0]
+kversion = version.split("-")[0]
+kabi     = version.split("-")[1].split(".")[0]
+pkgname  = GetPkgName(release_tag) + "-" + kversion + "-" + kabi
+
+#------------------------------------------------------------------------------
+# This runs a prepared script which downloads the package file.
+#------------------------------------------------------------------------------
+def DownloadPackage(pkgname):
+	cmd  = "repos=\""
+	cmd += "http://archive.ubuntu.com/ubuntu/pool/main/l/linux\n"
+	cmd += "http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux\n"
+	cmd += "http://archive.ubuntu.com/ubuntu/pool/universe/l/linux\n"
+	cmd += "http://ports.ubuntu.com/ubuntu-ports/pool/universe/l/linux\n"
+	cmd += "\"\n"
+	cmd += "pkg=" + pkgname + "\n"
+	cmd += "if test -f $pkg; then\n"
+	cmd += "	exit 0\n"
+	cmd += "fi\n"
+	cmd += "for repo in $repos; do\n"
+	cmd += "	if wget --quiet -c $repo/$pkg; then\n"
+	cmd += "		break\n"
+	cmd += "	fi\n"
+	cmd += "done\n"
+	cmd += "if ! test -f $pkg; then\n"
+	cmd += "	exit 1\n"
+	cmd += "fi\n"
+	cmd += "exit 0"
+
+	print "II: Downloading",
+	if not opts.local:
+		print "to", opts.tgthost,
+	print "...",
+	sys.stdout.flush()
+
+	rc = 0
+	if not opts.dryrun:
+		if opts.local:
+			(rc, out, err) = RunScript(cmd)
+		else:
+			(rc, out, err) = RunScript(cmd, host=opts.tgthost)
+	if rc:
+		print "FAILED!"
+	else:
+		print "done"
+
+	return not rc
+
+#------------------------------------------------------------------------------
+# Extract the ABI relevant files from a previously downloaded package and
+# remove the package on success.
+#------------------------------------------------------------------------------
+def ExtractPackage(pkg, tmpdir, abiversion, flavour):
+	cmd  = "tmpdir=" + tmpdir + "\n"
+	cmd += "pkg=" + pkg + "\n"
+	cmd += "abiver=" + abiversion + "\n"
+	cmd += "flavour=" + flavour + "\n"
+	cmd += "test -d $tmpdir && rm -rf $tmpdir\n"
+	cmd += "dpkg-deb --extract $pkg $tmpdir\n"
+	cmd += "if test $? -ne 0; then\n"
+	cmd += "	rm -rf $tmpdir\n"
+	cmd += "	exit 2\n"
+	cmd += "fi\n"
+	cmd += "rm $pkg\n"
+	cmd += "cd $tmpdir\n"
+	cmd += "mkdir abi\n"
+	cmd += "if ! test -f boot/abi-$abiver; then\n"
+	cmd += "	exit 1\n"
+	cmd += "fi\n"
+	cmd += "mv boot/abi-$abiver $flavour\n"
+	cmd += "find lib/modules/$abiver/kernel -name '*.ko'"
+	cmd += "	-exec basename {} .ko \\; | sort"
+	cmd += "	>$flavour.modules\n"
+	cmd += "exit 0"
+
+	print "II: Extracting",
+	if not opts.local:
+		print "on", opts.tgthost,
+	print "...",
+	sys.stdout.flush()
+
+	rc = 0
+	if not opts.dryrun:
+		if opts.local:
+			(rc, out, err) = RunScript(cmd)
+		else:
+			(rc, out, err) = RunScript(cmd, host=opts.tgthost)
+	if rc > 1:
+		print "FAILED!"
+	elif rc == 1:
+		print "no ABI files found"
+	else:
+		print "done"
+
+	return not rc
+
+#------------------------------------------------------------------------------
+# When not running in test mode, make sure the new abi directory exists.
+#------------------------------------------------------------------------------
+abi_dir = os.path.join(debian_dir, "abi", version)
+if not opts.dryrun and not os.path.isdir(abi_dir):
+	os.mkdir(abi_dir)
+
+#------------------------------------------------------------------------------
+# Process all flavours for all architectures defined.
+#------------------------------------------------------------------------------
+errors = False
+tmpdir = "abi-tmp"
+for (arch, flavour) in GetArchFlavourList(release_tag):
+	pkg = pkgname + "-" + flavour + "_" + version + "_" + arch + ".deb"
+
+	#----------------------------------------------------------------------
+	# There are some exceptions in which packages are really build and
+	# have ABI definitions.
+	#----------------------------------------------------------------------
+	ignore = False
+	if IgnorePatterns.has_key(series):
+		for pattern in IgnorePatterns[series]:
+			if re.match(pattern, pkg):
+				print "WW:", pkg, "(ignored)"
+				ignore = True
+				break
+	if ignore:
+		continue
+
+	#----------------------------------------------------------------------
+	# When not running in test mode, make sure the abi directory for the
+	# specific architecture exists.
+	#----------------------------------------------------------------------
+	abi_arch_dir = os.path.join(abi_dir, arch)
+	if not opts.dryrun and not os.path.isdir(abi_arch_dir):
+		os.mkdir(abi_arch_dir)
+
+	#----------------------------------------------------------------------
+	# If a file named like the flavour exists in the architectur specific
+	# ABI directory, assume it was already fetched in a previous run.
+	#----------------------------------------------------------------------
+	if os.path.isfile(os.path.join(abi_arch_dir, flavour)):
+		print "II:", arch + "/" + flavour, "exists (skipping)"
+		continue
+
+	#----------------------------------------------------------------------
+	# Download, extaction (and potentially copy to local)
+	#----------------------------------------------------------------------
+	print "II:", pkg
+	if DownloadPackage(pkg):
+		abiversion = kversion + "-" + kabi + "-" + flavour
+		if ExtractPackage(pkg, tmpdir, abiversion, flavour):
+			if opts.local:
+				cmd  = "cp " + os.path.join(tmpdir, flavour)
+				cmd += "* " + abi_arch_dir
+				os.system(cmd)
+			else:
+				print "II: Retrieving from", opts.tgthost,
+				print "...",
+				sys.stdout.flush()
+				cmd  = "scp -q " + opts.tgthost + ":"
+				cmd += os.path.join(tmpdir, flavour) + "* "
+				cmd += abi_arch_dir
+				if os.system(cmd):
+					print "FAILED!"
+				else:
+					print "done"
+		else:
+			errors = True
+	else:
+		errors = True
+
+#------------------------------------------------------------------------------
+# Try to clean up the temporary directory. But do not bother too much if this
+# fails.
+#------------------------------------------------------------------------------
+cmd = "rm -rf " + tmpdir
+print "II: Cleaning up",
+if not opts.local:
+	print "on", opts.tgthost,
+print "...",
+sys.stdout.flush()
+
+if not opts.local:
+	(rc, out, err) = RunScript(cmd, host=opts.tgthost)
+else:
+	(rc, out, err) = RunScript(cmd)
+
+if rc:
+	print "FAILED!"
+else:
+	print "done"
+	
+
+
+if errors:
+	print "EE: Some operations failed!"
+	sys.exit(1)
+
+open(os.path.join(abi_dir, "abiname"), "w").write(kabi + "\n")

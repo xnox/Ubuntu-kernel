@@ -13,6 +13,10 @@ maint-do-review:
 	file with the headers from the range and call an editor containing
 	that. Then it goes interactively and shows the patches using
 	git-compare.
+maint-getabis:
+	Retrieve the ABI files for a given release tag. By default the
+	required packages are downloaded to and extracted on a host in
+	the data center.
 maint-make-bug-branch:
 	This is used to create a branch which relates to a Launchpad bug.
 	The branch is based on a version uploaded and is automtically named
