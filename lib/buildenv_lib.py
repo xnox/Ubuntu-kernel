@@ -208,7 +208,7 @@ def RunScript(script, host=None, interpreter=None, timeout=60):
 		interpreter = "/bin/sh"
 	cmd = []
 	if host:
-		cmd.append([ "ssh", "-oConnectTimeout=" + str(timeout), host ])
+		cmd.extend([ "ssh", "-oConnectTimeout=" + str(timeout), host ])
 	cmd.append(interpreter)
 	p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 	(pout, perr) = p.communicate(input=script)
