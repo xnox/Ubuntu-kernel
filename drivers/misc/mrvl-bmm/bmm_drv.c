@@ -373,6 +373,36 @@ static void bmm_free(unsigned long vaddr)
 	spin_unlock_irqrestore(&bmm_lock, flags);
 }
 
+unsigned long bmm_malloc_kernel(size_t size, unsigned long attr)
+{
+	return bmm_malloc(size, attr);
+}
+EXPORT_SYMBOL(bmm_malloc_kernel);
+
+void bmm_free_kernel(unsigned long paddr)
+{
+	unsigned long flags;
+	bmm_block_t *pbmm;
+
+	spin_lock_irqsave(&bmm_lock, flags);
+	list_for_each_entry(pbmm, &(bmm_used_block.list), list) {
+		if(pbmm->paddr == paddr) {
+			pr_debug("\tbmm_free(paddr=0x%08lx)\n", pbmm->paddr);
+
+			list_del_init(&(pbmm->list));
+			pbmm->paddr = 0;
+			pbmm->vaddr = 0;
+			pbmm->attr = 0;
+			pbmm->pid = 0;
+			bmm_insert(&(bmm_free_block.list), pbmm, 1);
+			bmm_free_size += pbmm->size;
+			break;
+		}
+	}
+	spin_unlock_irqrestore(&bmm_lock, flags);
+}
+EXPORT_SYMBOL(bmm_free_kernel);
+
 static void bmm_vm_close(struct vm_area_struct *vma)
 {
 	pr_debug("vm_close(%p)\n", vma);
