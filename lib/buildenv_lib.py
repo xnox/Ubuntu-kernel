@@ -97,6 +97,10 @@ def VersionGetABI(version):
 		abi = int(version.split("-", 1)[1].split(".", 1)[0])
 	return abi
 
+'''BumpABI()
+
+	Increment the ABI number of the package (must be called from topdir)
+'''
 def VersionBumpABI(version):
 	if re.match("\d+\.\d+\.\d+-\d+\.", version):
 		(v1, v2) = version.split("-", 1)
@@ -105,9 +109,15 @@ def VersionBumpABI(version):
 		version = "{0}-{1}.{2}".format(v1, abi, rel)
 	return version
 
-'''BumpABI()
+'''ModifyChangelog(BumpABI=, BumpRelease=, SetRelease=)
 
-	Increment the ABI number of the package (must be called from topdir)
+	Modify the top entry of a changelog
+
+	@BumpABI	increments the ABI number if true
+	@BumpRelease	increments the release number if true
+	@SetRelease	set the release/pocket to the specified value
+
+	returns True if modifications were done, False otherwise
 '''
 def ModifyChangelog(BumpABI=False, BumpRelease=False, SetRelease=None):
 	changelog = os.path.join(GetDebianDir(), "changelog")
@@ -178,4 +188,30 @@ def GetPackageName():
 		pass
 
 	return pkg
+
+'''RunScript(script, host=None, interpreter=None)
+
+	Execute the given script either locally or on a remote host
+
+	@script		string containing the script
+	@host		name of the host to execute on
+	@interpreter	run the command/script by this interpreter (default
+			is /bin/sh)
+	@timeout	only used when running remotely, this is the ssh
+			timeout
+
+	Returns triple (<returncode>, <stdout>, <stderr>)
+		stdout and stderr are strings
+'''
+def RunScript(script, host=None, interpreter=None, timeout=60):
+	if not interpreter:
+		interpreter = "/bin/sh"
+	cmd = []
+	if host:
+		cmd.append([ "ssh", "-oConnectTimeout=" + str(timeout), host ])
+	cmd.append(interpreter)
+	p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	(pout, perr) = p.communicate(input=script)
+	
+	return (p.returncode, pout, perr)
 
