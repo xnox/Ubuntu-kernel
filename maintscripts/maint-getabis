@@ -24,6 +24,7 @@ from buildenv_lib import *
 # Built-in quirk list
 #------------------------------------------------------------------------------
 IgnorePatterns = dict()
+IgnorePatterns["dapper" ] = [ ".*_xen.deb", ".*_powerpc64.deb" ]
 IgnorePatterns["lucid"] = [ ".*_lpia.deb" ]
 
 #------------------------------------------------------------------------------
@@ -81,7 +82,6 @@ def GetPkgName(sha1):
 	filename = os.path.join(debian_dir, "control.d")
 	filename = os.path.join(filename, "flavour-control.stub")
 
-	print filename
 	for line in GitCatFile(filename, sha1=sha1):
 		if "Package:" in line:
 			pkgname = line.rstrip().split(" ")[1]
@@ -130,12 +130,31 @@ def GetArchFlavourList(sha1):
 	return afl
 
 #------------------------------------------------------------------------------
+# FIXME: Naturally Dapper is "different"
+#------------------------------------------------------------------------------
+def GetArchFlavourListDapper(sha1):
+	filename = os.path.join(debian_dir, "config", "archmap")
+
+	afl = []
+	for line1 in GitCatFile(filename, sha1=sha1):
+		if line1.startswith("#") or line1 == "\n":
+			continue
+		if line1.startswith("th-") or line1.startswith("headers-"):
+			continue
+		(flavour, arch) = line1.rstrip().split()[0:2]
+		afl.append([ arch, flavour ])
+	return afl
+
+#------------------------------------------------------------------------------
 # Set up some variables.
 #------------------------------------------------------------------------------
 series   = pocket.split("-")[0]
 kversion = version.split("-")[0]
 kabi     = version.split("-")[1].split(".")[0]
-pkgname  = GetPkgName(release_tag) + "-" + kversion + "-" + kabi
+if series == "dapper":
+	pkgname  = "linux-image-" + kversion + "-" + kabi
+else:
+	pkgname  = GetPkgName(release_tag) + "-" + kversion + "-" + kabi
 
 #------------------------------------------------------------------------------
 # This runs a prepared script which downloads the package file.
@@ -153,6 +172,7 @@ def DownloadPackage(pkgname, srcpkgname):
 	cmd += "	exit 0\n"
 	cmd += "fi\n"
 	cmd += "for repo in $repos; do\n"
+	cmd += "	echo $repo\n"
 	cmd += "	if wget --quiet -c $repo/$pkg; then\n"
 	cmd += "		break\n"
 	cmd += "	fi\n"
@@ -176,8 +196,8 @@ def DownloadPackage(pkgname, srcpkgname):
 			(rc, out, err) = RunScript(cmd, host=opts.tgthost)
 	if rc:
 		print "FAILED!"
-		print out.rstrip()
-		print err.rstrip()
+		if out != "\n":
+			print out.rstrip()
 	else:
 		print "done"
 
@@ -243,7 +263,12 @@ if not opts.dryrun and not os.path.isdir(abi_dir):
 #------------------------------------------------------------------------------
 errors = False
 tmpdir = "abi-tmp"
-for (arch, flavour) in GetArchFlavourList(release_tag):
+if series == "dapper":
+	archflavourlist = GetArchFlavourListDapper(release_tag)
+else:
+	archflavourlist = GetArchFlavourList(release_tag)
+
+for (arch, flavour) in archflavourlist:
 	pkg = pkgname + "-" + flavour + "_" + version + "_" + arch + ".deb"
 
 	#----------------------------------------------------------------------
