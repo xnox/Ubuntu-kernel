@@ -93,3 +93,25 @@ static int __init omap4_sar_ram_init(void)
 	return 0;
 }
 early_initcall(omap4_sar_ram_init);
+
+static struct platform_device omap4_syslink_device = {
+	.name          = "syslink_ipc",
+	.id            = -1,
+	.num_resources = 0,
+};
+
+static int __init omap4_syslink_init(void)
+{
+	int retval;
+
+	retval = platform_device_register(&omap4_syslink_device);
+
+	if (retval != 0)
+		pr_err("%s: Failed to register devices: %d\n", __func__,
+			retval);
+	else
+		pr_info("%s: Successfully registered devices\n", __func__);
+
+	return retval;
+}
+device_initcall(omap4_syslink_init);
