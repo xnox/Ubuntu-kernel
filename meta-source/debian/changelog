@@ -1,3 +1,9 @@
+linux-meta (2.6.35.7.8) maverick; urgency=low
+
+  * Maverick ABI 7 (2.6.35-7.10)
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 07 Jul 2010 11:42:16 -0600
+
 linux-meta (2.6.35.6.7) maverick; urgency=low
 
   [ Leann Ogasawara ]
