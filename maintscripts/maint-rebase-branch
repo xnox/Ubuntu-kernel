@@ -169,8 +169,14 @@ cmd += " {0} {1} ".format(changelog, BaseVersion.split("-")[1])
 cmd += TargetVersion.split("-")[1]
 os.system(cmd)
 
-if VersionGetABI(BaseVersion) != VersionGetABI(TargetVersion):
-	BumpABI()
+#------------------------------------------------------------------------------
+# The ABI needs to be bumped only if this hasn't been done already and the
+# rebase moves between ABI versions.
+#------------------------------------------------------------------------------
+if VersionGetABI(GetPackageInfo()[1]) == \
+   VersionGetABI(GetPackageInfo(prev=True)[1]):
+	if VersionGetABI(BaseVersion) != VersionGetABI(TargetVersion):
+		BumpABI()
 
 print "Committing changes..."
 cmd = "git add {0}".format(changelog)
