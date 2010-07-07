@@ -62,7 +62,7 @@ if not GitDescribe(release_tag):
 # version and pocket of the package at the time of the given tag or sha1.
 #------------------------------------------------------------------------------
 debian_dir = GetDebianDir(sha1=release_tag)
-(name, version, pocket) = GetPackageInfo(sha1=release_tag)[0:3]
+(srcpkgname, version, pocket) = GetPackageInfo(sha1=release_tag)[0:3]
 
 #------------------------------------------------------------------------------
 # If there is no ABI directory, then this is likely the wrong repo.
@@ -74,19 +74,29 @@ if not os.path.isdir(os.path.join(debian_dir, "abi")):
 #------------------------------------------------------------------------------
 # Look into flavour-control.stub to find out how the linux package is called
 # in this branch.
+# Some topic branches seem to have the Provides: line commented out, which
+# causes the match to fail.
 #------------------------------------------------------------------------------
 def GetPkgName(sha1):
 	filename = os.path.join(debian_dir, "control.d")
 	filename = os.path.join(filename, "flavour-control.stub")
 
+	print filename
 	for line in GitCatFile(filename, sha1=sha1):
 		if "Package:" in line:
 			pkgname = line.rstrip().split(" ")[1]
-		if re.match("Provides:.*linux-image", line):
+		if re.match("(# *)?Provides:.*linux-image", line):
 			pkgname = re.sub("-PKGVER-ABINUM-FLAVOUR", "", pkgname)
 			break
 	else:
-		return None
+		#--------------------------------------------------------------
+		# It is not very useful to continue if the matching did not
+		# find a potential package name.
+		# Give a reasonable explanation and bail out.
+		#--------------------------------------------------------------
+		print "EE: Could not read the potential package name from"
+		print "EE:", filename
+		sys.exit(1)
 
 	return pkgname
 
@@ -130,14 +140,15 @@ pkgname  = GetPkgName(release_tag) + "-" + kversion + "-" + kabi
 #------------------------------------------------------------------------------
 # This runs a prepared script which downloads the package file.
 #------------------------------------------------------------------------------
-def DownloadPackage(pkgname):
-	cmd  = "repos=\""
-	cmd += "http://archive.ubuntu.com/ubuntu/pool/main/l/linux\n"
-	cmd += "http://ports.ubuntu.com/ubuntu-ports/pool/main/l/linux\n"
-	cmd += "http://archive.ubuntu.com/ubuntu/pool/universe/l/linux\n"
-	cmd += "http://ports.ubuntu.com/ubuntu-ports/pool/universe/l/linux\n"
+def DownloadPackage(pkgname, srcpkgname):
+	cmd  = "pkg=" + pkgname + "\n"
+	cmd += "src=" + srcpkgname + "\n"
+	cmd += "repos=\""
+	cmd += "http://archive.ubuntu.com/ubuntu/pool/main/l/$src\n"
+	cmd += "http://ports.ubuntu.com/ubuntu-ports/pool/main/l/$src\n"
+	cmd += "http://archive.ubuntu.com/ubuntu/pool/universe/l/$src\n"
+	cmd += "http://ports.ubuntu.com/ubuntu-ports/pool/universe/l/$src\n"
 	cmd += "\"\n"
-	cmd += "pkg=" + pkgname + "\n"
 	cmd += "if test -f $pkg; then\n"
 	cmd += "	exit 0\n"
 	cmd += "fi\n"
@@ -165,6 +176,8 @@ def DownloadPackage(pkgname):
 			(rc, out, err) = RunScript(cmd, host=opts.tgthost)
 	if rc:
 		print "FAILED!"
+		print out.rstrip()
+		print err.rstrip()
 	else:
 		print "done"
 
@@ -267,7 +280,7 @@ for (arch, flavour) in GetArchFlavourList(release_tag):
 	# Download, extaction (and potentially copy to local)
 	#----------------------------------------------------------------------
 	print "II:", pkg
-	if DownloadPackage(pkg):
+	if DownloadPackage(pkg, srcpkgname):
 		abiversion = kversion + "-" + kabi + "-" + flavour
 		if ExtractPackage(pkg, tmpdir, abiversion, flavour):
 			if opts.local:
