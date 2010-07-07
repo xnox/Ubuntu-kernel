@@ -148,3 +148,20 @@ def GitCatFile(file, sha1=None):
 
 	return lines
 
+#------------------------------------------------------------------------------
+# Return the output of git diff as an array of lines.
+#------------------------------------------------------------------------------
+def GitDiff(filename=None, gitrange=None):
+	lines = []
+	cmd = "git diff"
+	if gitrange:
+		cmd += " " + gitrange
+	if filename:
+		cmd += " " + filename
+	p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
+	for line in p.stdout:
+		lines.append(line)
+	p.stdout.close()
+	p.stderr.close()
+
+	return lines
