@@ -252,6 +252,31 @@ def ExtractPackage(pkg, tmpdir, abiversion, flavour):
 	return not rc
 
 #------------------------------------------------------------------------------
+# Helper to either retrieve or copy the extracted ABI into place
+#------------------------------------------------------------------------------
+def RetrieveABI(tmpdir, abi_arch_dir, flavour):
+	if opts.local and not opts.dryrun:
+		print "II: Copying ...",
+		cmd  = "cp " + os.path.join(tmpdir, flavour)
+		cmd += "* " + abi_arch_dir
+	else:
+		print "II: Retrieving from", opts.tgthost, "...",
+		cmd  = "scp -q " + opts.tgthost + ":"
+		cmd += os.path.join(tmpdir, flavour) + "* " + abi_arch_dir
+
+	sys.stdout.flush()
+	rc = 0
+	if not opts.dryrun:
+		rc = os.system(cmd)
+
+	if rc:
+		print "FAILED!"
+	else:
+		print "done"
+
+	return not rc
+
+#------------------------------------------------------------------------------
 # When not running in test mode, make sure the new abi directory exists.
 #------------------------------------------------------------------------------
 abi_dir = os.path.join(debian_dir, "abi", version)
@@ -308,21 +333,8 @@ for (arch, flavour) in archflavourlist:
 	if DownloadPackage(pkg, srcpkgname):
 		abiversion = kversion + "-" + kabi + "-" + flavour
 		if ExtractPackage(pkg, tmpdir, abiversion, flavour):
-			if opts.local:
-				cmd  = "cp " + os.path.join(tmpdir, flavour)
-				cmd += "* " + abi_arch_dir
-				os.system(cmd)
-			else:
-				print "II: Retrieving from", opts.tgthost,
-				print "...",
-				sys.stdout.flush()
-				cmd  = "scp -q " + opts.tgthost + ":"
-				cmd += os.path.join(tmpdir, flavour) + "* "
-				cmd += abi_arch_dir
-				if os.system(cmd):
-					print "FAILED!"
-				else:
-					print "done"
+			if not RetrieveABI(tmpdir, abi_arch_dir, flavour):
+				errors = True
 		else:
 			errors = True
 	else:
@@ -339,20 +351,25 @@ if not opts.local:
 print "...",
 sys.stdout.flush()
 
-if not opts.local:
-	(rc, out, err) = RunScript(cmd, host=opts.tgthost)
-else:
-	(rc, out, err) = RunScript(cmd)
+rc = 0
+if not opts.dryrun:
+	if not opts.local:
+		rc = RunScript(cmd, host=opts.tgthost)[0]
+	else:
+		rc = RunScript(cmd)[0]
 
 if rc:
 	print "FAILED!"
 else:
 	print "done"
 	
-
+if not opts.dryrun:
+	try:
+		open(os.path.join(abi_dir, "abiname"), "w").write(kabi + "\n")
+	except:
+		print "EE: Failed to create \"abiname\" file!"
+		errors = True
 
 if errors:
 	print "EE: Some operations failed!"
 	sys.exit(1)
-
-open(os.path.join(abi_dir, "abiname"), "w").write(kabi + "\n")
