@@ -455,3 +455,5 @@ static void __exit ipc_exit(void)
  */
 module_init(ipc_init);
 module_exit(ipc_exit);
+
+MODULE_ALIAS("platform:" IPC_NAME);
