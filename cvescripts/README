@@ -43,3 +43,8 @@ directory or below.
   kernel related packages with patches saved, starts a new release and
   commits the saved patches.
 
+* cve-release-checkout
+  Switches back to the security branch, which is used for release.
+
+* cve-release-save
+  Pushes all local security branches to the central repo
