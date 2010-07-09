@@ -28,6 +28,10 @@ dsc    = "Starts a new release and commits the changes to git (also will "
 dsc   += "optionally fetch the ABI files)."
 parser.set_description(dsc)
 parser.add_option(
+	"--host", action="store", dest="tgthost", default=None,
+	help="hostname to be passed to maint-getabis (default is to use the "
+	     "one maint-getabis defaults to)")
+parser.add_option(
 	"--dry-run", action="store_true", dest="dryrun", default=False,
 	help="only print what would be done")
 (opts, args) = parser.parse_args()
@@ -72,7 +76,12 @@ def GetDateTime():
 #------------------------------------------------------------------------------
 # Try to get the new ABI files (note that version is not incremented, yet).
 #------------------------------------------------------------------------------
-if os.system("maint-getabis Ubuntu-" + version):
+cmd = "maint-getabis"
+if opts.tgthost:
+	cmd += " --host " + opts.tgthost
+if opts.dryrun:
+	cmd += " --dry-run"
+if os.system(cmd + " Ubuntu-" + version):
 	sys.exit(1)
 
 #------------------------------------------------------------------------------
@@ -81,9 +90,10 @@ if os.system("maint-getabis Ubuntu-" + version):
 #------------------------------------------------------------------------------
 print "II: Removing old ABI files and adding the new ones"
 old_abi_dir = os.path.join(debian_dir, "abi", GetPackageInfo(prev=True)[1])
-os.system("git rm --quiet -rf " + old_abi_dir)
-os.system("rm -rf " + old_abi_dir)
-os.system("git add " + os.path.join(debian_dir, "abi", version))
+if not opts.dryrun:
+	os.system("git rm --quiet -rf " + old_abi_dir)
+	os.system("rm -rf " + old_abi_dir)
+	os.system("git add " + os.path.join(debian_dir, "abi", version))
 
 #------------------------------------------------------------------------------
 # Next step is to create a new changelog with the new header first and the
@@ -124,13 +134,18 @@ except:
 	sys.exit(1)
 
 out.close()
-os.rename(changelog + ".new", changelog)
+if opts.dryrun:
+	os.system("head " + changelog + ".new")
+	os.unlink(changelog + ".new")
+else:
+	os.rename(changelog + ".new", changelog)
 
 #------------------------------------------------------------------------------
 # Finally add the changelog and commit everything.
 #------------------------------------------------------------------------------
 print "II: Committing new version", newversion
-os.system("git add " + changelog)
-msg = "UBUNTU: Start new release\n\nIgnore: yes\n\n"
-os.system("git commit -q -s -m \"" + msg + "\"")
+if not opts.dryrun:
+	os.system("git add " + changelog)
+	msg = "UBUNTU: Start new release\n\nIgnore: yes\n"
+	os.system("git commit -q -s -m \"" + msg + "\"")
 
