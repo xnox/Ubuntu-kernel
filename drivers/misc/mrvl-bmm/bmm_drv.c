@@ -390,7 +390,6 @@ void bmm_free_kernel(unsigned long paddr)
 			pr_debug("\tbmm_free(paddr=0x%08lx)\n", pbmm->paddr);
 
 			list_del_init(&(pbmm->list));
-			pbmm->paddr = 0;
 			pbmm->vaddr = 0;
 			pbmm->attr = 0;
 			pbmm->pid = 0;
