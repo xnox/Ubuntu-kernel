@@ -191,13 +191,16 @@ def DownloadPackage(pkgname, srcpkgname):
 	rc = 0
 	if not opts.dryrun:
 		if opts.local:
-			(rc, out, err) = RunScript(cmd)
+			rc = RunScript(cmd)[0]
 		else:
-			(rc, out, err) = RunScript(cmd, host=opts.tgthost)
+			rc = RunScript(cmd, opts.tgthost, timeout=30)[0]
 	if rc:
 		print "FAILED!"
-		if out != "\n":
-			print out.rstrip()
+		if rc == 255:
+			print "EE: The ssh connection to", opts.tgthost,
+			print "timed out!"
+			print "EE: Please check your ssh configuration!"
+			sys.exit(1)
 	else:
 		print "done"
 
