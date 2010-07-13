@@ -25,6 +25,7 @@ from buildenv_lib import *
 #------------------------------------------------------------------------------
 IgnorePatterns = dict()
 IgnorePatterns["dapper" ] = [ ".*_xen.deb", ".*_powerpc64.deb" ]
+IgnorePatterns["karmic" ] = [ ".*dove-z0.*" ]
 IgnorePatterns["lucid"] = [ ".*_lpia.deb" ]
 
 #------------------------------------------------------------------------------
