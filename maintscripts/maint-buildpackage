@@ -1,0 +1,3 @@
+#!/bin/bash
+fakeroot debian/rules clean
+dpkg-buildpackage -S -rfakeroot $*
