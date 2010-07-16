@@ -76,7 +76,6 @@ typedef struct {
 	struct list_head list;
 } bmm_block_t;
 
-static unsigned long bmm_vaddr;
 static unsigned long bmm_paddr;
 static unsigned long bmm_size;
 static unsigned long bmm_free_size;
@@ -132,7 +131,7 @@ unsigned long va_to_pa(unsigned long user_addr, unsigned int size)
 	int i = 0;
 	struct mm_struct *mm = current->mm;
 
-	if(vaddr == NULL)
+	if(vaddr == 0)
 		return 0;
 
 	paddr = uva_to_pa(mm, vaddr);
@@ -584,10 +583,10 @@ void bmm_consistent_sync(unsigned long start, size_t size, int direction)
 	paddr = bmm_get_paddr_inside_ex(start);
 
 	/* kernel space */
-	if (paddr == NULL)
+	if (paddr == 0)
 		paddr = bmm_get_paddr_ex(start, size);
 
-	if (paddr == NULL)
+	if (paddr == 0)
 		BUG();
 
 	switch (direction) {
@@ -907,27 +906,25 @@ static struct miscdevice bmm_misc = {
 static int __bmm_init(void)
 {
 	struct page *page;
-	unsigned long addr, size;
+	unsigned long size;
 
 	bmm_size = bmm_size_mb * 1024 * 1024;
 	pr_debug("Trying to allocate %ldMB memory with an order=%d\n", bmm_size_mb, get_order(bmm_size));
 	
-	page = alloc_pages(GFP_KERNEL, get_order(bmm_size));
+	page = alloc_pages(GFP_KERNEL | __GFP_HIGHMEM, get_order(bmm_size));
 	if (page == NULL){
 		printk(KERN_ERR "Error allocating memory %ldMB\n", bmm_size_mb);
 		return -ENOMEM;
 	}
 	
-	bmm_vaddr = (unsigned long)page_address(page);
-	bmm_paddr = virt_to_phys((void *)bmm_vaddr);
+	bmm_paddr = page_to_pfn(page) << PAGE_SHIFT;
 
-	pr_debug("page = 0x%08lx, va = 0x%08lx, pa = 0x%08lx\n", (unsigned long)page, bmm_vaddr, bmm_paddr);
+	pr_debug("bmm_init: allocate page = 0x%08lx, pa = 0x%08lx\n", (unsigned long)page, bmm_paddr);
 
-	addr = bmm_vaddr;
 	size = bmm_size;
 	while(size > 0) {
-		SetPageReserved(virt_to_page(addr));
-		addr += PAGE_SIZE;
+		SetPageReserved(page);
+		page++;
 		size -= PAGE_SIZE;
 	}
 	return 0;
@@ -935,19 +932,24 @@ static int __bmm_init(void)
 
 static void __bmm_exit(void)
 {
-	unsigned long addr, size;
+	unsigned long size;
+	struct page *page;
 
 	pr_debug("BMM free memory\n");
 
-	addr = bmm_vaddr;
+	page = pfn_to_page(bmm_paddr >> PAGE_SHIFT);
 	size = bmm_size;
 	while(size > 0) {
-		ClearPageReserved(virt_to_page(addr));
-		addr += PAGE_SIZE;
+		ClearPageReserved(page);
+		page++;
 		size -= PAGE_SIZE;
 	}
 
-	__free_pages(virt_to_page(bmm_vaddr), get_order(bmm_size));
+	page = pfn_to_page(bmm_paddr >> PAGE_SHIFT);
+
+	pr_debug("bmm_exit: free page = 0x%08lx, pa = 0x%08lx, size=0x%08lx\n", (unsigned long)page, bmm_paddr, bmm_size);
+
+	__free_pages(page, get_order(bmm_size));
 }
 #else
 static int __bmm_init(void)
