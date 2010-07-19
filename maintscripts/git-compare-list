@@ -1,0 +1,17 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+	echo "$(basename $0) <file>|<sha> [...]"
+	exit 1
+fi
+
+while [ $# -gt 0 ]; do
+	if [ -f "$1" ]; then
+		for SHA in $(cat "$1"); do
+			git-compare $SHA
+		done
+	else
+		git-compare $1
+	fi
+	shift
+done
