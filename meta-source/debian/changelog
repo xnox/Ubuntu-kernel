@@ -1,3 +1,9 @@
+linux-meta-ec2 (2.6.32.308.9) lucid-proposed; urgency=low
+
+  * Bump linux-ec2 ABI to 308 for proposed release
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Thu, 22 Jul 2010 11:13:16 +0200
+
 linux-meta-ec2 (2.6.32.307.8) lucid-proposed; urgency=low
 
   * Bump linux-ec2 ABI to 307 for proposed release
