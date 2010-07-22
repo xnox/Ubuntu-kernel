@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.32.24.18) lucid-proposed; urgency=low
+
+  * Bump linux-ports ABI to 24 for proposed release
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Thu, 22 Jul 2010 12:07:53 +0200
+
 linux-ports-meta (2.6.32.22.17) lucid-security; urgency=low
 
   * Bump linux-ports ABI to 22 for security release (first post release)
