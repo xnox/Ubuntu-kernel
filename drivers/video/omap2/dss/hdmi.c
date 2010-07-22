@@ -871,11 +871,13 @@ void hdmi_work_queue(struct hdmi_work_struct *work)
 	dssdev = omap_dss_find_device((void *)buf , match);
 	DSSDBG("found hdmi handle %s" , dssdev->name);
 
-	if ((r == 4 || r == 2) && (hpd_mode == 1)) {
+	if ((r == 4 || r == 2) && (hpd_mode == 1) &&
+		(dssdev->state != OMAP_DSS_DISPLAY_ACTIVE)) {
 		hdmi_phy_off(HDMI_WP);
 		hdmi_enable_clocks(1);
 		hdmi_power_on(dssdev);
 		mdelay(1000);
+		dssdev->state = OMAP_DSS_DISPLAY_ACTIVE;
 		DSSDBG(KERN_INFO "Display enabled");
 	}
 	if (r == 1 || r == 4)
@@ -895,6 +897,7 @@ void hdmi_work_queue(struct hdmi_work_struct *work)
 		if (dssdev->platform_enable)
 			dssdev->platform_enable(dssdev);
 
+		dssdev->state = OMAP_DSS_DISPLAY_DISABLED;
 		hdmi_min_enable();
 	}
 
