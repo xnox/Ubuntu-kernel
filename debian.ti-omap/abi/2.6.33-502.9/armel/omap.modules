@@ -725,7 +725,6 @@ mtd_subpagetest
 mtd_torturetest
 mtouch
 multipath
-musb_hdrc
 mxl5005s
 mxl5007t
 national
@@ -814,7 +813,6 @@ nls_koi8-r
 nls_koi8-ru
 nls_koi8-u
 nls_utf8
-nop-usb-xceiv
 ns558
 ntfs
 nxt200x
@@ -826,7 +824,6 @@ ocfs2_nodemanager
 ocfs2_stackglue
 ocfs2_stack_o2cb
 ocfs2_stack_user
-ohci-hcd
 old_belkin-sir
 omap
 omap2
@@ -1206,7 +1203,6 @@ tw9910
 twidjoy
 twl4030_keypad
 twl4030-pwrbutton
-twl4030-usb
 twl4030_wdt
 twofish
 twofish_common
