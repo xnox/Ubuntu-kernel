@@ -1,3 +1,9 @@
+linux-meta (2.6.35.10.11) maverick; urgency=low
+
+  * Maverick ABI 10 (2.6.35-10.15)
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 22 Jul 2010 12:48:18 +0200
+
 linux-meta (2.6.35.9.10) maverick; urgency=low
 
   * Maverick ABI 9 (2.6.35-9.14)
