@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (2.6.35.902.3) maverick; urgency=low
+
+  * Maverick ABI 902 (2.6.35.902.6)
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 23 Jul 2010 03:33:56 -0600
+
 linux-meta-ti-omap4 (2.6.35.901.2) maverick; urgency=low
 
   * Maverick ABI 901 (2.6.34-901.2)
