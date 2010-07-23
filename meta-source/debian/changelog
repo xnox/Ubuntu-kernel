@@ -1,3 +1,14 @@
+linux-meta (2.6.35.12.13) maverick; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Maverick ABI 12 (2.6.35-12.17)
+  * Change RELEASE_NAME from lucid to maverick
+  * Drop nouveau
+  * Enable lbm
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Wed, 28 Jul 2010 08:03:04 -0700
+
 linux-meta (2.6.35.11.12) maverick; urgency=low
 
   * Maverick ABI 11 (2.6.35-11.16)
