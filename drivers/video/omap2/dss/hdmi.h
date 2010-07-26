@@ -111,8 +111,8 @@ extern "C" {
 
 
 /*  Video Descriptor Block  */
-typedef struct {
-	u8   pixel_clock[2];          /* 54-55 */
+struct HDMI_EDID_DTD_VIDEO {
+	u16  pixel_clock;             /* 54-55 */
 	u8   horiz_active;            /* 56 */
 	u8   horiz_blanking;          /* 57 */
 	u8   horiz_high;              /* 58 */
@@ -129,13 +129,11 @@ typedef struct {
 	u8   horiz_border;            /* 69 */
 	u8   vert_border;             /* 70 */
 	u8   misc_settings;           /* 71 */
-}
-HDMI_EDID_DTD_VIDEO;
-
+};
 
 /*  Monitor Limits Descriptor Block  */
-typedef struct {
-	u8   pixel_clock[2];          	/* 54-55*/
+struct HDMI_EDID_DTD_MONITOR {
+	u16  pixel_clock;               /* 54-55*/
 	u8   _reserved1;             	/* 56 */
 	u8   block_type;              	/* 57 */
 	u8   _reserved2;             	/* 58 */
@@ -151,38 +149,32 @@ typedef struct {
 	u8   M[2];                   	/* 68-69 */
 	u8   K;                      	/* 70 */
 	u8   J;                      	/* 71 */
-}
-HDMI_EDID_DTD_MONITOR;
-
+} __attribute__ ((packed));
 
 /*  Text Descriptor Block  */
-typedef struct {
-	u8   pixel_clock[2];          	/* 54-55 */
+struct HDMI_EDID_DTD_TEXT {
+	u16  pixel_clock;               /* 54-55 */
 	u8   _reserved1;             	/* 56 */
 	u8   block_type;              	/* 57 */
 	u8   _reserved2;             	/* 58 */
 
 	u8   text[13];               	/* 59-71 */
-}
-HDMI_EDID_DTD_TEXT;
-
+} __attribute__ ((packed));
 
 /*  DTD Union  */
-typedef union {
-	HDMI_EDID_DTD_VIDEO     	video;
-	HDMI_EDID_DTD_TEXT      	monitor_name;
-	HDMI_EDID_DTD_TEXT      	monitor_serial_number;
-	HDMI_EDID_DTD_MONITOR   	monitor_limits;
-}
-HDMI_EDID_DTD;
-
+union HDMI_EDID_DTD {
+	struct HDMI_EDID_DTD_VIDEO     	video;
+	struct HDMI_EDID_DTD_TEXT      	monitor_name;
+	struct HDMI_EDID_DTD_TEXT      	monitor_serial_number;
+	struct HDMI_EDID_DTD_MONITOR   	monitor_limits;
+} __attribute__ ((packed));
 
 /*  EDID struct  */
-typedef struct {
-	u8   header[8];              	/* 00-07 */
-	u8   manufacturerID[2];      	/* 08-09 */
-	u8   product_id[2];           	/* 10-11 */
-	u8   serial_number[4];        	/* 12-15 */
+struct HDMI_EDID {
+	u8   header[8];                 /* 00-07 */
+	u16  manufacturerID;            /* 08-09 */
+	u16  product_id;                /* 10-11 */
+	u32  serial_number;             /* 12-15 */
 	u8   week_manufactured;       	/* 16 */
 	u8   year_manufactured;       	/* 17 */
 	u8   edid_version;            	/* 18 */
@@ -199,7 +191,7 @@ typedef struct {
 	u8   timing_3;              	/* 37 */
 	u8   std_timings[16];         	/* 38-53 */
 
-	HDMI_EDID_DTD   DTD[4];         /* 72-125 */
+	union HDMI_EDID_DTD   DTD[4];	/* 54-125 */
 
 	u8   extension_edid;          	/* 126 */
 	u8   checksum;			/* 127 */
@@ -211,8 +203,7 @@ typedef struct {
 
 	u8   data_block[123];		/* 04 - 126 */
 	u8   extension_checksum;	/* 127 */
- }
-HDMI_EDID;
+} __attribute__ ((packed));
 
 struct hdmi_work_struct {
 	struct work_struct work;
