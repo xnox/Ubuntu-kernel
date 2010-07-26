@@ -1,3 +1,9 @@
+linux-backports-modules-2.6.35 (2.6.35-11.3) maverick; urgency=low
+
+  * ABI bump
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 26 Jul 2010 06:56:57 -0600
+
 linux-backports-modules-2.6.35 (2.6.35-7.2) maverick; urgency=low
 
   * ABI bump
