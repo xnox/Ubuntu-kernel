@@ -113,10 +113,11 @@ if not os.path.isdir(tracker_dir):
 	print "EE: Script called outside base directory!"
 	sys.exit(1)
 caller_dir = os.getcwd()
-os.chdir(os.path.dirname(tracker_dir))
 
+os.chdir(tracker_dir)
 from workitem_lib import *
 import cve_lib
+os.chdir(os.path.dirname(tracker_dir))
 
 #------------------------------------------------------------------------------
 # Make bzr use the name and email defined here.
