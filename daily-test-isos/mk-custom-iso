@@ -40,10 +40,11 @@ function cmdline_usage()
     echo "  builds a new ISO. ISOs of the Ubuntu distribution currently in development can be"
     echo "  found at: http://cdimage.ubuntu.com/daily-live/current/"
     echo " "
-    echo "  Usage: ./mkiso -i <reference-iso>"
+    echo "  Usage: ./mkiso -i <reference-iso> [-f]"
     echo "  "
     echo "  Where:"
     echo "    -i <reference-iso>    is the path to the ISO image from which our customized image will originate"
+    echo "    -f                    build ISO image with only firmware test suite included and none of the other tests"
     echo "  "
     echo "  Example:"
     echo "      ./mkiso -i /tmp/ubuntu-9.10-desktop-amd64.iso"
@@ -56,12 +57,15 @@ function cmdline_usage()
 #
 function cmdline_process()
 {
-    while getopts "i:d:" option; do
+    while getopts "i:d:f" option; do
         case $option in
             i)  ISO="$OPTARG"
                 ;;
 
             d)  DEB_DIR="$OPTARG"
+                ;;
+
+	    f)  FWTS_TEST=1
                 ;;
 
             \?) echo -e "\n   *** Error: '$OPTARG' is not a valid option.\n"
@@ -156,6 +160,7 @@ function new_iso_remove_pkgs()
     # Remove packages we are not going to need to test with and are
     # big, thus reducing our size.
     #
+    set -x
     sudo chroot $CHROOT sudo apt-get purge -y gimp
     sudo chroot $CHROOT sudo apt-get purge -y gnome-mahjongg gbrainy aisleriot quadrapassel gnome-sudoku
     sudo chroot $CHROOT sudo apt-get purge -y f-spot
@@ -183,6 +188,18 @@ function new_iso_remove_pkgs()
     sudo chroot $CHROOT sudo apt-get purge -y hunspell-en-ca hunspell-en-us
     sudo chroot $CHROOT sudo apt-get purge -y wbritish 
     sudo chroot $CHROOT sudo apt-get purge -y aspell-en wamerican
+    sudo chroot $CHROOT sudo apt-get purge -y gwibber
+    sudo chroot $CHROOT sudo apt-get purge -y empathy
+    sudo chroot $CHROOT sudo apt-get purge -y tomboy
+    sudo chroot $CHROOT sudo apt-get purge -y totem
+    sudo chroot $CHROOT sudo apt-get purge -y gnomine
+    sudo chroot $CHROOT sudo apt-get purge -y brasero
+    sudo chroot $CHROOT sudo apt-get purge -y ubuntuone-client-gnome 
+    sudo chroot $CHROOT sudo apt-get purge -y simple-scan
+    sudo chroot $CHROOT sudo apt-get purge -y vinagre
+    sudo chroot $CHROOT sudo apt-get purge -y tsclient
+    sudo chroot $CHROOT sudo apt-get purge -y rhythmbox
+    sudo chroot $CHROOT sudo apt-get purge -y evolution
 }
 
 # new_iso_add_kernel_team_tests
@@ -225,6 +242,29 @@ function new_iso_add_kernel_team_tests()
     sudo rsync -arv $CWD/kernel-qa $CHROOT/home/ubuntu/
     sudo chown -R 999.000 $CHROOT/home/ubuntu/kernel-qa
     sudo chmod +x $CHROOT/home/ubuntu/kernel-qa/tests_starter
+}
+
+# new_iso_add_kernel_team_fwts_tests
+#
+# Install the firmware test suite tests into the custom iso and setup the default
+# login to automatically run the tests.
+#
+function new_iso_add_kernel_team_fwts_tests()
+{
+    sudo chroot $CHROOT sudo add-apt-repository ppa:firmware-testing-team/ppa-firmware-test-suite 
+    sudo chroot $CHROOT sudo apt-get update
+    sudo chroot $CHROOT sudo apt-get install -y --force-yes fwts
+
+    # Setup the autostart file so that as soon as the ubuntu user's
+    # desktop starts up, the tests start as well.
+    sudo mkdir -p $CHROOT/home/ubuntu/.config/autostart/
+    sudo cp $CWD/checkbox-kernel-qa.desktop $CHROOT/home/ubuntu/.config/autostart/
+    sudo cp $CWD/tests_first_stage_fwts $CHROOT/home/ubuntu/tests_first_stage
+    sudo cp $CWD/tests_fwts $CHROOT/home/ubuntu/tests_fwts
+    sudo chown 999.999 $CHROOT/home/ubuntu/tests_first_stage
+    sudo chown 999.999 $CHROOT/home/ubuntu/tests_fwts
+    sudo chmod +x $CHROOT/home/ubuntu/tests_first_stage
+    sudo chmod +x $CHROOT/home/ubuntu/tests_fwts
 }
 
 # new_iso_initialize
@@ -283,7 +323,11 @@ function new_iso_customize()
 
     sudo chroot $CHROOT sudo apt-get install -y patch
 
-    new_iso_add_kernel_team_tests
+    if [ -z "$FWTS_TEST" ]; then
+        new_iso_add_kernel_team_tests
+    else
+        new_iso_add_kernel_team_fwts_tests
+    fi
 }
 
 # new_iso_prepare_for_assemble

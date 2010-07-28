@@ -1,0 +1,32 @@
+#!/bin/bash
+cd /cdrom
+fwtsdate=`date +%d%m%Y`
+fwtstime=`date +%H%M`
+workdir=/isodevice/fwts/$fwtsdate/$fwtstime
+mkdir -p $workdir >& /dev/null
+if [ $? -ne 0 ]
+then
+  echo Could not create directory $workdir
+  echo "Press <Enter> Key"
+  read  
+  shutdown -h now
+else
+  echo "=========== Firmware Test Suite (fwts) ==========="
+  echo " "
+  echo "This will run a suite of firmware tests that will"
+  echo "check the BIOS and ACPI tables. It will also find"
+  echo "issues that can cause Linux problems. "
+  echo " "
+  echo "At the end of the tests, the machine will automatically"
+  echo "shutdown. "
+  echo " "
+  echo "The results can be found on the USB stick in the"
+  echo "directory: /fwts/$fwtsdate/$fwtstime/results.log"
+  echo " "
+  echo "Press <Enter> key to start the tests..."
+  read  
+  cd $workdir >& /dev/null
+  fwts --no-s3 --no-s4 -p
+  shutdown -h now
+fi
+
