@@ -24,7 +24,7 @@ from buildenv_lib import *
 # Built-in quirk list
 #------------------------------------------------------------------------------
 IgnorePatterns = dict()
-IgnorePatterns["dapper" ] = [ ".*_xen.deb", ".*_powerpc64.deb" ]
+IgnorePatterns["dapper" ] = [ ".*_xen.deb", ".*iseries-smp.*" ]
 IgnorePatterns["karmic" ] = [ ".*dove-z0.*" ]
 IgnorePatterns["lucid"] = [ ".*_lpia.deb" ]
 
@@ -143,6 +143,8 @@ def GetArchFlavourListDapper(sha1):
 		if line1.startswith("th-") or line1.startswith("headers-"):
 			continue
 		(flavour, arch) = line1.rstrip().split()[0:2]
+		if arch == "powerpc64":
+			arch = "powerpc"
 		afl.append([ arch, flavour ])
 	return afl
 
