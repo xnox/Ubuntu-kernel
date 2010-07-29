@@ -76,7 +76,13 @@ def GetDateTime():
 #------------------------------------------------------------------------------
 # Try to get the new ABI files (note that version is not incremented, yet).
 #------------------------------------------------------------------------------
-cmd = "maint-getabis"
+for path in sys.path:
+	cmd = os.path.join(path, "maint-getabis")
+	if os.path.isfile(cmd):
+		break
+else:
+	print "EE: maint-getabis not found!"
+	sys.exit(1)
 if opts.tgthost:
 	cmd += " --host " + opts.tgthost
 if opts.dryrun:
