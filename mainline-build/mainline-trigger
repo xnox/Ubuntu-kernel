@@ -66,6 +66,18 @@ while [ "$wanted" -lt "$current" ]; do
 	let "wanted=$wanted+1"
 done
 
+# Special trees we also need but we cannot calculate from the version number.
+while read remote url
+do
+	if ! git remote show -n "$remote" >/dev/null 2>&1; then
+		echo "*** adding $remote remote ..."
+		git remote add "$remote" "$url"
+	fi
+	git fetch "$remote"
+done <<EOL
+2.6.32.y.33.z git://git.kernel.org/pub/scm/linux/kernel/git/smb/linux-2.6.32.y-drm33.z.git
+EOL
+
 # Update all the remotes in this tree.
 git remote | \
 while read remote
