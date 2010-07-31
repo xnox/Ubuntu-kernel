@@ -1,8 +1,8 @@
-linux-meta (2.6.35.13.14) UNRELEASED; urgency=low
+linux-meta (2.6.35.13.14) maverick; urgency=low
 
   * Maverick ABI 13
 
- -- Andy Whitcroft <apw@canonical.com>  Fri, 30 Jul 2010 09:19:24 +0100
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Fri, 30 Jul 2010 18:01:22 -0700
 
 linux-meta (2.6.35.12.13) maverick; urgency=low
 
