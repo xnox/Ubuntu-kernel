@@ -43,6 +43,7 @@
 #include <plat/cafe-orion.h>
 #include "common.h"
 #include "clock.h"
+#include "idt5v49ee503.h"
 #include "mpp.h"
 #include "pmu/mvPmu.h"
 #include "pmu/mvPmuRegs.h"
@@ -336,7 +337,7 @@ void __init dove_db_clcd_init(void) {
 		if (lcd0_enable && lcd1_enable) {
 			dove_db_lcd1_dmi.use_external_refclk = 1;
 			dove_db_lcd1_dmi.ext_refclk = 1;
-			dove_db_lcd1_dmi.ext_refclk_name = "LCD_EXT_CLK1";
+			dove_db_lcd1_dmi.ext_refclk_name = "IDT_CLK1";
 		}
 		
 		switch(lcd0_clk) {
@@ -348,12 +349,12 @@ void __init dove_db_clcd_init(void) {
 		case 2:
 			lcd0_dmi->use_external_refclk = 1;
 			lcd0_dmi->ext_refclk = 0;
-			lcd0_dmi->ext_refclk_name = "LCD_EXT_CLK0";
+			lcd0_dmi->ext_refclk_name = "IDT_CLK0";
 			break;
 		case 3:
 			lcd0_dmi->use_external_refclk = 1;
 			lcd0_dmi->ext_refclk = 1;
-			lcd0_dmi->ext_refclk_name = "LCD_EXT_CLK1";
+			lcd0_dmi->ext_refclk_name = "IDT_CLK1";
 			break;
 		default:
 			printk("error: invalid value(%d) for lcd0_clk patameter\n", lcd0_clk);
@@ -368,15 +369,15 @@ void __init dove_db_clcd_init(void) {
 		case 2:
 			dove_db_lcd1_dmi.use_external_refclk = 1;
 			dove_db_lcd1_dmi.ext_refclk = 0;
-			dove_db_lcd1_dmi.ext_refclk_name = "LCD_EXT_CLK0";
+			dove_db_lcd1_dmi.ext_refclk_name = "IDT_CLK0";
 			break;
 		case 3:
 			dove_db_lcd1_dmi.use_external_refclk = 1;
 			dove_db_lcd1_dmi.ext_refclk = 1;
-			dove_db_lcd1_dmi.ext_refclk_name = "LCD_EXT_CLK1";
+			dove_db_lcd1_dmi.ext_refclk_name = "IDT_CLK1";
 			break;
 		default:
-			printk("error: invalid value(%d) for lcd0_clk patameter\n", lcd0_clk);
+			printk("error: invalid value(%d) for lcd1_clk patameter\n", lcd1_clk);
 		}
 	}
 	clcd_platform_init(lcd0_dmi, lcd0_vid_dmi,
@@ -670,8 +671,20 @@ static struct i2c_board_info __initdata i2c_a2d = {
 /*****************************************************************************
  * IDT clock 
  ****************************************************************************/
+static struct idt_data dove_db_idt_data = {
+	/* clock 0 connected to pin LCD_EXT_REF_CLK[0]*/
+	.clock0_enable = 1,
+	.clock0_out_id = IDT_OUT_ID_2,
+	.clock0_pll_id = IDT_PLL_1,
+	/* clock 1 connected to pin LCD_EXT_REF_CLK[1]*/
+	.clock1_enable = 1,
+	.clock1_out_id = IDT_OUT_ID_3,
+	.clock1_pll_id = IDT_PLL_2,
+};
+
 static struct i2c_board_info __initdata idt = {
 	I2C_BOARD_INFO("idt5v49ee503", 0x6A),
+	.platform_data = &dove_db_idt_data,
 };
 
 /*****************************************************************************
