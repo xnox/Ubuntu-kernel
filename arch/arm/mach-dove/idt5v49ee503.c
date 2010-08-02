@@ -28,6 +28,43 @@
 /********************/
 /* LOCLA DATA TYPES */
 /********************/
+/* Clock configuration ID */
+typedef enum
+{
+	IDT_CLK_CFG_0 = 0,
+	IDT_CLK_CFG_1 = 1,
+	IDT_CLK_CFG_2 = 2,
+	IDT_CLK_CFG_3 = 3,
+	IDT_CLK_CFG_4 = 4,
+	IDT_CLK_CFG_5 = 5,
+	IDT_CLK_CFG_NUM
+
+} idt_clock_cfg_id_t;
+
+/* Clock output divider */
+typedef enum
+{
+	IDT_OUT_DIV1 = 0,
+	IDT_OUT_DIV2,
+	IDT_OUT_DIV3,
+	IDT_OUT_DIV6,
+	IDT_OUT_DIV_NUM,
+	IDT_OUT_DIV_INV = IDT_OUT_DIV_NUM
+
+} idt_out_div_t;
+
+
+typedef struct _idt_clock_cfg_t
+{
+	int			bus_id;		/* i2c bus/adapter ID to use with i2c_get_adapter() */\
+	int			clk_src_clkin;  /* clock source is CLKIN(0) or XTAL/REFIN(0) */
+	idt_clock_id_t		clock_id;	/* clock ID to configure (PLL0-PLL3) */
+	idt_output_id_t		out_id;		/* output pin where PLL + output divider are connected */
+	idt_clock_cfg_id_t	cfg_id;		/* clock internal configuration ID */
+	unsigned int		cfg_act;	/* when !=0 this configuration is not just stored */
+						/* in the clock EEPROM, but also set as active  and */
+						/* PLL + output are enabled */
+} idt_clock_cfg_t;
 
 /* Clock source IDs (MUX names) */
 typedef enum
@@ -215,6 +252,11 @@ static idt_freq_ten_t idt5v49ee503_freq_tbl[] = {
 	{ 136358000, 25000000, 480, 11,  8},
 	{         0,        0,   0,  0,  0},
 };
+
+static idt_output_id_t clock0_out_id = IDT_OUT_ID_2;
+static idt_clock_id_t clock0_pll_id = IDT_PLL_1;
+static idt_output_id_t clock1_out_id = IDT_OUT_ID_3;
+static idt_clock_id_t clock1_pll_id = IDT_PLL_2;
 
 #define FIN 25000000ULL
 static int calc_freq_div(unsigned long long freq, idt_freq_ten_t *entry)
@@ -837,8 +879,8 @@ static ssize_t idt5v49ee503_store(struct device *dev, struct device_attribute *a
 		return -EINVAL;
 	}
 	cfg->clk_src_clkin = IDT_PRM_CLK_CRYSTAL;
-	cfg->clock_id = IDT_PLL_1;
-	cfg->out_id = IDT_OUT_ID_2;
+	cfg->clock_id = clock0_pll_id;
+	cfg->out_id = clock0_out_id;
 	cfg->cfg_id = IDT_CLK_CFG_0;
 	cfg->cfg_act = 1;
 		
@@ -876,8 +918,8 @@ static ssize_t idt5v49ee503_store2(struct device *dev, struct device_attribute *
 		return -EINVAL;
 	}
 	cfg->clk_src_clkin = IDT_PRM_CLK_CRYSTAL;
-	cfg->clock_id = IDT_PLL_2;
-	cfg->out_id = IDT_OUT_ID_3;
+	cfg->clock_id = clock1_pll_id;
+	cfg->out_id = clock1_out_id;
 	cfg->cfg_id = IDT_CLK_CFG_0;
 	cfg->cfg_act = 1;
 		
@@ -915,8 +957,8 @@ static ssize_t idt5v49ee503_storef(struct device *dev, struct device_attribute *
 		return -EINVAL;
 	}
 	cfg->clk_src_clkin = IDT_PRM_CLK_CRYSTAL;
-	cfg->clock_id = IDT_PLL_1;
-	cfg->out_id = IDT_OUT_ID_3;
+	cfg->clock_id = clock0_pll_id;
+	cfg->out_id = clock0_out_id;
 	cfg->cfg_id = IDT_CLK_CFG_0;
 	cfg->cfg_act = 1;
 		
@@ -949,9 +991,9 @@ static void  idt_clk_enable(struct clk *clk)
 {
 	idt_clock_id_t pll_id;
 	if (clk->flags == 0)
-		pll_id = IDT_PLL_1;
+		pll_id = clock0_pll_id;
 	else
-		pll_id = IDT_PLL_2;
+		pll_id = clock1_pll_id;
 		
 	idt5v49ee503_pll_enable(idt_drv_g, pll_id , 1);
 
@@ -963,9 +1005,9 @@ static void  idt_clk_disable(struct clk *clk)
 	idt_clock_id_t pll_id;
 
 	if (clk->flags == 0)
-		pll_id = IDT_PLL_1;
+		pll_id = clock0_pll_id;
 	else
-		pll_id = IDT_PLL_2;
+		pll_id = clock1_pll_id;
 		
 	idt5v49ee503_pll_enable(idt_drv_g, pll_id , 0);
 
@@ -980,11 +1022,11 @@ static int idt_clk_setrate(struct clk *clk, unsigned long rate)
 	int rc = 0;
 
 	if (clk->flags == 0) {
-		pll_id = IDT_PLL_1;
-		out_id = IDT_OUT_ID_2;
+		pll_id = clock0_pll_id;
+		out_id = clock0_out_id;
 	} else {
-		pll_id = IDT_PLL_2;
-		out_id = IDT_OUT_ID_3;
+		pll_id = clock1_pll_id;
+		out_id = clock1_out_id;
 	}
 
 	cfg = kzalloc(sizeof(idt_clock_cfg_t), GFP_KERNEL);
@@ -1029,11 +1071,11 @@ static struct clk idt_clk1 = {
 
 static struct clk_lookup idt_clocks[] = {
 	{
-		.con_id = "LCD_EXT_CLK0",
+		.con_id = "IDT_CLK0",
 		.clk	= &idt_clk0,
 	},
 	{
-		.con_id = "LCD_EXT_CLK1",
+		.con_id = "IDT_CLK1",
 		.clk	= &idt_clk1,
 	},
 };
@@ -1045,6 +1087,7 @@ static int idt5v49ee503_probe(struct i2c_client *client,
 			const struct i2c_device_id *id)
 {
 	idt_drv_info_t *idt_drv;
+	struct idt_data *data;
 	int i;
 	int rc;
 
@@ -1070,8 +1113,21 @@ static int idt5v49ee503_probe(struct i2c_client *client,
 	if (rc)
 		goto free;
 
-	for (i = 0; i < ARRAY_SIZE(idt_clocks); i++)
-                clkdev_add(&idt_clocks[i]);
+	data = client->dev.platform_data;
+	if (data) {
+		if (data->clock0_enable) {
+			clock0_out_id = data->clock0_out_id;
+			clock0_pll_id = data->clock0_pll_id;
+			clkdev_add(&idt_clocks[0]);
+		}
+		if (data->clock1_enable) {
+			clock1_out_id = data->clock1_out_id;
+			clock1_pll_id = data->clock1_pll_id;
+			clkdev_add(&idt_clocks[1]);
+		}
+	} else /* if no platform data provided, enable two clocks using the default configuration */
+		for (i = 0; i < ARRAY_SIZE(idt_clocks); i++)
+			clkdev_add(&idt_clocks[i]);
 
 	return rc;
  free:
