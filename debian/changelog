@@ -1,3 +1,9 @@
+linux-backports-modules-2.6.35 (2.6.35-14.4) maverick; urgency=low
+
+  * ABI bump
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 02 Aug 2010 08:24:31 -0700
+
 linux-backports-modules-2.6.35 (2.6.35-11.3) maverick; urgency=low
 
   * ABI bump
