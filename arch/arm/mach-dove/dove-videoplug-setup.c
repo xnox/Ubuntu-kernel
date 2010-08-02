@@ -41,6 +41,7 @@
 #include <plat/cafe-orion.h>
 #include "common.h"
 #include "clock.h"
+#include "idt5v49ee503.h"
 #include "mpp.h"
 #include "pmu/mvPmu.h"
 #include "pmu/mvPmuRegs.h"
@@ -73,7 +74,7 @@ static struct dovefb_mach_info dove_videoplug_lcd0_dmi = {
 
 	.use_external_refclk = 1, //enable using external clock
 	.ext_refclk = 1, // use clock 1
-	.ext_refclk_name = "LCD_EXT_CLK1", //use clock 1
+	.ext_refclk_name = "IDT_CLK1", //use clock 1
 
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
@@ -223,8 +224,20 @@ static struct i2c_board_info __initdata i2c_plug[] = {
 /*****************************************************************************
  * IDT clock 
  ****************************************************************************/
+static struct idt_data dove_videoplug_idt_data = {
+	/* clock 0 connected to pin LCD_EXT_REF_CLK[0]*/
+	.clock0_enable = 1,
+	.clock0_out_id = IDT_OUT_ID_2,
+	.clock0_pll_id = IDT_PLL_1,
+	/* clock 1 connected to pin LCD_EXT_REF_CLK[1]*/
+	.clock1_enable = 1,
+	.clock1_out_id = IDT_OUT_ID_3,
+	.clock1_pll_id = IDT_PLL_2,
+};
+
 static struct i2c_board_info __initdata idt = {
 	I2C_BOARD_INFO("idt5v49ee503", 0x6A),
+	.platform_data = &dove_videoplug_idt_data,
 };
 
 /*****************************************************************************
