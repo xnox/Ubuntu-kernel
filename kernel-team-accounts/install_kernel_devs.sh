@@ -27,7 +27,7 @@ HOME=/home
 #
 # Make sure there is an sbuild group for schroot.
 #
-if [ ! grep sbuild /etc/group ]
+if ! grep sbuild /etc/group
 then
 	addgroup sbuild
 fi
