@@ -1260,7 +1260,7 @@ static int hdmi_read_edid(struct omap_video_timings *dp)
 	return 0;
 }
 
-static void get_horz_vert_timing_info(union HDMI_EDID_DTD *edid_dtd, struct omap_video_timings *timings)
+static int get_horz_vert_timing_info(union HDMI_EDID_DTD *edid_dtd, struct omap_video_timings *timings)
 {
 	if (edid_dtd->video.pixel_clock) {
 		struct HDMI_EDID_DTD_VIDEO *vid = &edid_dtd->video;
@@ -1275,8 +1275,104 @@ static void get_horz_vert_timing_info(union HDMI_EDID_DTD *edid_dtd, struct omap
 		timings->vsw = (vid->vert_sync_pulse & 0x0f) | ((vid->sync_pulse_high & 0x03) << 4);
 		timings->vbp = (vid->vert_blanking | (((u16)vid->vert_high & 0x0f) << 8)) -
 				(timings->vfp + timings->vsw);
+		return 0;
 	} else {
-		printk(KERN_WARNING "unsupported EDID descriptor block format\n");
+		switch (edid_dtd->monitor_name.block_type) {
+			case HDMI_EDID_DTD_TAG_STANDARD_TIMING_DATA: {
+				DSSDBG("standard timing data\n");
+				return 1;
+			}
+			case HDMI_EDID_DTD_TAG_COLOR_POINT_DATA: {
+				DSSDBG("color point data\n");
+				return 1;
+			}
+			case HDMI_EDID_DTD_TAG_MONITOR_NAME: {
+				DSSDBG("monitor name: %s\n", edid_dtd->monitor_name.text);
+				return 1;
+			}
+			case HDMI_EDID_DTD_TAG_MONITOR_LIMITS: {
+				int i, max_area = 0, best_idx = -1;
+				struct HDMI_EDID_DTD_MONITOR *limits = &edid_dtd->monitor_limits;
+
+				DSSDBG("monitor limits\n");
+				DSSDBG("  min_vert_freq=%d\n", limits->min_vert_freq);
+				DSSDBG("  max_vert_freq=%d\n", limits->max_vert_freq);
+				DSSDBG("  min_horiz_freq=%d\n", limits->min_horiz_freq);
+				DSSDBG("  max_horiz_freq=%d\n", limits->max_horiz_freq);
+				DSSDBG("  pixel_clock_mhz=%d\n", limits->pixel_clock_mhz * 10);
+
+				/* loop through supported timings, and find the best matching
+				 * resolution.. where highest resolution (w*h) is considered
+				 * as best
+				 */
+/* XXX since this is mainly for DVI monitors, should we only support VESA
+ * timings?  My monitor at home would pick 1920x1080 otherwise, but that
+ * seems to not work well (monitor blanks out and comes back, and picture
+ * doesn't fill full screen, but leaves a black bar on left (native res is
+ * 2048x1152).  However if I only consider VESA timings, it picks 1680x1050
+ * and the picture is stable and fills whole screen..
+ */
+				for (i = 14; i < 31; i++) {
+					const struct omap_video_timings *timings =
+							&all_timings_direct[i];
+					int hz, hscan, pixclock;
+					int vtotal, htotal;
+
+					htotal = timings->hbp + timings->hfp + timings->hsw +
+							timings->x_res;
+					vtotal = timings->vbp + timings->vfp + timings->vsw +
+							timings->y_res;
+
+					/* NOTE: if we supported interlaced, we'd have to
+					 * compensate vtotal accordingly for interlaced modes..
+					 */
+
+					pixclock = timings->pixel_clock * 1000;
+					hscan = (pixclock + htotal / 2) / htotal;
+					hscan = (hscan + 500) / 1000 * 1000;
+					hz = (hscan + vtotal / 2) / vtotal;
+
+					hscan /= 1000;
+					pixclock /= 1000000;
+					DSSDBG("pixclock=%d, hscan=%d, hz=%d\n", pixclock, hscan, hz);
+
+					if ((pixclock < (limits->pixel_clock_mhz * 10)) &&
+							(limits->min_horiz_freq <= hscan) &&
+							(hscan <= limits->max_horiz_freq) &&
+							(limits->min_vert_freq <= hz) &&
+							(hz <= limits->max_vert_freq)) {
+						int area = timings->x_res * timings->y_res;
+
+						DSSDBG(" -> %d: %dx%d\n", i, timings->x_res,
+								timings->y_res);
+
+						if (area > max_area) {
+							max_area = area;
+							best_idx = i;
+						}
+					}
+				}
+
+				if (best_idx > 0) {
+					*timings = all_timings_direct[best_idx];
+					DSSDBG("found best resolution: %dx%d (%d)\n",
+							timings->x_res, timings->y_res, best_idx);
+				}
+				return 0;
+			}
+			case HDMI_EDID_DTD_TAG_ASCII_STRING: {
+				DSSDBG("ascii string: %s\n", edid_dtd->ascii.text);
+				return 1;
+			}
+			case HDMI_EDID_DTD_TAG_MONITOR_SERIALNUM: {
+				DSSDBG("monitor serialnum: %s\n", edid_dtd->monitor_serial_number.text);
+				return 1;
+			}
+			default: {
+				DSSDBG("unsupported EDID descriptor block format\n");
+				return 1;
+			}
+		}
 	}
 }
 
@@ -1293,23 +1389,128 @@ static int get_edid_timing_data(struct HDMI_EDID *edid)
 {
 	u8 count;
 	struct hdmi_cm cm;
-	struct omap_video_timings edid_timings;
+	struct omap_video_timings edid_timings = {0};
 
 	/* Search block 0, there are 4 DTDs arranged in priority order */
 	for (count = 0; count < EDID_SIZE_BLOCK0_TIMING_DESCRIPTOR; count++) {
-		get_horz_vert_timing_info(&edid->DTD[count], &edid_timings);
-		DSSDBG("Block0 [%d] timings:", count);
-		print_omap_video_timings(&edid_timings);
-		cm = hdmi_get_code(&edid_timings);
-		DSSDBG("Block0 [%d] value matches code = %d , mode = %d", count, cm.code, cm.mode);
-		if (cm.code != -1) {
-			hdmi.code = cm.code;
-			hdmi.mode = cm.mode;
-			return 1;
+		if (!get_horz_vert_timing_info(&edid->DTD[count], &edid_timings)) {
+			DSSDBG("Block0 [%d] timings:\n", count);
+			print_omap_video_timings(&edid_timings);
+			cm = hdmi_get_code(&edid_timings);
+			DSSDBG("Block0 [%d] value matches code = %d , mode = %d\n", count, cm.code, cm.mode);
+			if (cm.code != -1) {
+				hdmi.code = cm.code;
+				hdmi.mode = cm.mode;
+				return 1;
+			}
+		} else {
+			DSSDBG("Block0 [%d] unsupported!!\n", count);
 		}
 	}
 
-	/* todo: support extension_edid.. */
+	/* if we haven't yet found something suitable, check if extension-edid is
+	 * present:
+	 */
+	if (edid->extension_edid) {
+		DSSDBG("extension_edid=%d, extension_rev=%d, offset_dtd=%d, num_dtd=%d\n",
+				edid->extension_edid, edid->extention_rev,
+				edid->offset_dtd, edid->num_dtd);
+		/* todo: support extension_edid.. */
+		printk(KERN_WARNING "extension_edid not supported yet\n");
+	}
+
+	/* and as last resort, check for best standard timing supported:
+	 *
+	 * note: maybe we want an option to disable this in strict-hdmi
+	 * compliance mode?  The below is really for DVI monitors, but
+	 * should be ok as long as they don't populate timing_1 and
+	 * timing_2 with garbage data..
+	 */
+
+	/* no resolutions in edid->timing_3 are supported */
+
+	/* Bitfields for DPMS established timings 2:
+	 * Bit(s)	Description
+	 * 0	800x600 @ 72 Hz (VESA)
+	 * 1	800x600 @ 75 Hz (VESA)
+	 * 2	832x624 @ 75 Hz (Mac II)
+	 * 3	1024x768 @ 87 Hz interlaced (8514A)
+	 * 4	1024x768 @ 60 Hz (VESA)
+	 * 5	1024x768 @ 70 Hz (VESA)
+	 * 6	1024x768 @ 75 Hz (VESA)
+	 * 7	1280x1024 @ 75 Hz (VESA)
+	 */
+
+	if (edid->timing_2 & 0x01) {
+		DSSDBG("1280x1024@75Hz not supported\n");
+	}
+	if (edid->timing_2 & 0x02) {
+		DSSDBG("1024x768@75Hz not supported\n");
+	}
+	if (edid->timing_2 & 0x04) {
+		DSSDBG("1024x768@70Hz not supported\n");
+	}
+	if (edid->timing_2 & 0x08) {
+		DSSDBG("1024x768@60Hz\n");
+		hdmi.mode = 0;
+		hdmi.code = 16;
+		return 1;
+	}
+	if (edid->timing_2 & 0x10) {
+		DSSDBG("1024x768@87Hz Interlaced not supported\n");
+	}
+	if (edid->timing_2 & 0x20) {
+		DSSDBG("832x624@75Hz not supported\n");
+	}
+	if (edid->timing_2 & 0x40) {
+		DSSDBG("800x600@75Hz not supported\n");
+	}
+	if (edid->timing_2 & 0x80) {
+		DSSDBG("800x600@72Hz not supported\n");
+	}
+
+	/* Bitfields for DPMS established timings 1:
+	 * Bit(s)	Description
+	 * 0	720x400 @ 70 Hz (VGA 640x400, IBM)
+	 * 1	720x400 @ 88 Hz (XGA2)
+	 * 2	640x480 @ 60 Hz (VGA)
+	 * 3	640x480 @ 67 Hz (Mac II, Apple)
+	 * 4	640x480 @ 72 Hz (VESA)
+	 * 5	640x480 @ 75 Hz (VESA)
+	 * 6	800x600 @ 56 Hz (VESA)
+	 * 7	800x600 @ 60 Hz (VESA)  -- 9
+	 */
+
+	if (edid->timing_1 & 0x01) {
+		DSSDBG("800x600@60Hz\n");
+		hdmi.mode = 0;
+		hdmi.code = 16;
+		return 1;
+	}
+	if (edid->timing_1 & 0x02) {
+		DSSDBG("800x600@56Hz not supported\n");
+	}
+	if (edid->timing_1 & 0x04) {
+		DSSDBG("640x480@75Hz not supported\n");
+	}
+	if (edid->timing_1 & 0x08) {
+		DSSDBG("640x480@72Hz not supported\n");
+	}
+	if (edid->timing_1 & 0x10) {
+		DSSDBG("640x480@67Hz not supported\n");
+	}
+	if (edid->timing_1 & 0x20) {
+		DSSDBG("640x480@60Hz\n");
+		hdmi.mode = 1;
+		hdmi.code = 1;
+		return 1;
+	}
+	if (edid->timing_1 & 0x40) {
+		DSSDBG("720x400@88Hz not supported\n");
+	}
+	if (edid->timing_1 & 0x80) {
+		DSSDBG("720x400@70Hz not supported\n");
+	}
 
 	return 0;
 }

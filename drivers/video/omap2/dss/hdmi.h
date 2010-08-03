@@ -49,9 +49,12 @@
 #define HDMI_EDID_MAX_DTDS      4
 
 /* HDMI EDID DTD Tags  */
+#define HDMI_EDID_DTD_TAG_STANDARD_TIMING_DATA      0xFA
+#define HDMI_EDID_DTD_TAG_COLOR_POINT_DATA          0xFB
 #define HDMI_EDID_DTD_TAG_MONITOR_NAME              0xFC
-#define HDMI_EDID_DTD_TAG_MONITOR_SERIALNUM         0xFF
 #define HDMI_EDID_DTD_TAG_MONITOR_LIMITS            0xFD
+#define HDMI_EDID_DTD_TAG_ASCII_STRING              0xFE
+#define HDMI_EDID_DTD_TAG_MONITOR_SERIALNUM         0xFF
 
 
 /* HDMI EDID Extension Data Block Tags  */
@@ -166,6 +169,7 @@ union HDMI_EDID_DTD {
 	struct HDMI_EDID_DTD_VIDEO     	video;
 	struct HDMI_EDID_DTD_TEXT      	monitor_name;
 	struct HDMI_EDID_DTD_TEXT      	monitor_serial_number;
+	struct HDMI_EDID_DTD_TEXT       ascii;
 	struct HDMI_EDID_DTD_MONITOR   	monitor_limits;
 } __attribute__ ((packed));
 
