@@ -91,7 +91,7 @@ function PrepareHost()
 	git config receive.denyCurrentBranch ignore
 	if [ "$USE_DC" = 'yes' -a  "$URL" != '' ]; then
 		# Check if we have our upstream repository.
-		if ! git remote show -n "origin" >/dev/null 2>&1; then
+		if [ "\$(git remote show | grep origin)" == "" ]; then
 			echo "  remote: adding origin remote to DC"
 			git remote add "origin" "$URL"
 		fi
