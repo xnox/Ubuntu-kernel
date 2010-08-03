@@ -2,7 +2,9 @@ cherry-pick:
 	Cherry picks a list of commits supplied on the command line,
 	with optional sign-off
 doc:
-	Contains documentation or example config files.
+	Contains documentation or example config files. The file
+        example-maintscripts.cfg should be copied to:
+        $HOME/.maintscripts.cfg
 git-compare:
 	Takes a git commit (SHA1) and will display the patch and the whole
 	context of the files changed by the patch, using meld.
