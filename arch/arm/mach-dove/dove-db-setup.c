@@ -60,14 +60,6 @@ static unsigned int lcd2dvi = 0;
 module_param(lcd2dvi, uint, 0);
 MODULE_PARM_DESC(lcd2dvi, "set to 1 if the LCD2DVI connected");
 
-static unsigned int lcd0_clk = 0;
-module_param(lcd0_clk, uint, 0);
-MODULE_PARM_DESC(lcd0_clk, "set to 1 to force internal clk, 2 for external clk#0, 3 for external clk#1");
-
-static unsigned int lcd1_clk = 0;
-module_param(lcd1_clk, uint, 0);
-MODULE_PARM_DESC(lcd1_clk, "set to 1 to force internal clk, 2 for external clk#0, 3 for external clk#1");
-
 static unsigned int left_tact = 0;
 module_param(left_tact, uint, 0);
 MODULE_PARM_DESC(left_tact, "Use left tact as mouse");
@@ -221,6 +213,9 @@ static struct dovefb_mach_info dove_db_lcd1_dmi = {
 	.id_gfx			= "GFX Layer 1",
 	.id_ovly		= "Video Layer 1",
 	.sclk_clock		= LCD_SCLK,
+	.use_external_refclk	= 1,
+	.ext_refclk		= 1,
+	.ext_refclk_name	= "IDT_CLK1",
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
 	.pix_fmt		= PIX_FMT_RGB565,
@@ -332,54 +327,7 @@ void __init dove_db_clcd_init(void) {
 		lcd0_dmi = &dove_db_lcd0_dmi;
 		lcd0_vid_dmi = &dove_db_lcd0_vid_dmi;
 	}
-	if (rev >= DOVE_REV_A0) {
-		/* use external clock for LCD1 (VGA) by default when two lcd's enabled */
-		if (lcd0_enable && lcd1_enable) {
-			dove_db_lcd1_dmi.use_external_refclk = 1;
-			dove_db_lcd1_dmi.ext_refclk = 1;
-			dove_db_lcd1_dmi.ext_refclk_name = "IDT_CLK1";
-		}
-		
-		switch(lcd0_clk) {
-		case 0: //default
-			break;
-		case 1:
-			lcd0_dmi->use_external_refclk = 0;
-			break;
-		case 2:
-			lcd0_dmi->use_external_refclk = 1;
-			lcd0_dmi->ext_refclk = 0;
-			lcd0_dmi->ext_refclk_name = "IDT_CLK0";
-			break;
-		case 3:
-			lcd0_dmi->use_external_refclk = 1;
-			lcd0_dmi->ext_refclk = 1;
-			lcd0_dmi->ext_refclk_name = "IDT_CLK1";
-			break;
-		default:
-			printk("error: invalid value(%d) for lcd0_clk patameter\n", lcd0_clk);
-		}
-		
-		switch(lcd1_clk) {
-		case 0: //default
-			break;
-		case 1:
-			dove_db_lcd1_dmi.use_external_refclk = 0;
-			break;
-		case 2:
-			dove_db_lcd1_dmi.use_external_refclk = 1;
-			dove_db_lcd1_dmi.ext_refclk = 0;
-			dove_db_lcd1_dmi.ext_refclk_name = "IDT_CLK0";
-			break;
-		case 3:
-			dove_db_lcd1_dmi.use_external_refclk = 1;
-			dove_db_lcd1_dmi.ext_refclk = 1;
-			dove_db_lcd1_dmi.ext_refclk_name = "IDT_CLK1";
-			break;
-		default:
-			printk("error: invalid value(%d) for lcd1_clk patameter\n", lcd1_clk);
-		}
-	}
+
 	clcd_platform_init(lcd0_dmi, lcd0_vid_dmi,
 			   &dove_db_lcd1_dmi, &dove_db_lcd1_vid_dmi,
 			   &dove_db_backlight_data);
