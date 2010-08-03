@@ -44,6 +44,14 @@ module_param(lcd1_enable, uint, 0);
 MODULE_PARM_DESC(lcd1_enable, "set to 1 to enable LCD1 output.");
 unsigned int lcd_accurate_clock = 1;
 
+static unsigned int lcd0_clk = 0;
+module_param(lcd0_clk, uint, 0);
+MODULE_PARM_DESC(lcd0_clk, "set to 1 to force internal clk, 2 for external clk#0, 3 for external clk#1");
+
+static unsigned int lcd1_clk = 0;
+module_param(lcd1_clk, uint, 0);
+MODULE_PARM_DESC(lcd1_clk, "set to 1 to force internal clk, 2 for external clk#0, 3 for external clk#1");
+
 #if defined(CONFIG_FB_DOVE_CLCD_FLAREON_GV) || \
     defined(CONFIG_FB_DOVE_CLCD_FLAREON_GV_MODULE)
 	#ifndef CONFIG_ARCH_DOVENB_ON_TAHOE_AXI
@@ -591,6 +599,25 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 #ifdef CONFIG_FB_DOVE_CLCD
 	/* lcd0 */
 	if (lcd0_enable && lcd0_dmi_data && lcd0_vid_dmi_data) {
+		switch(lcd0_clk) {
+		case 0: //default
+			break;
+		case 1:
+			lcd0_dmi_data->use_external_refclk = 0;
+			break;
+		case 2:
+			lcd0_dmi_data->use_external_refclk = 1;
+			lcd0_dmi_data->ext_refclk = 0;
+			lcd0_dmi_data->ext_refclk_name = "IDT_CLK0";
+			break;
+		case 3:
+			lcd0_dmi_data->use_external_refclk = 1;
+			lcd0_dmi_data->ext_refclk = 1;
+			lcd0_dmi_data->ext_refclk_name = "IDT_CLK1";
+			break;
+			default:
+				printk("error: invalid value(%d) for lcd0_clk patameter\n", lcd0_clk);
+		}
 
 		lcd0_vid_dmi_data->modes = video_modes;
 		lcd0_vid_dmi_data->num_modes = ARRAY_SIZE(video_modes);
@@ -609,6 +636,26 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 #ifdef CONFIG_FB_DOVE_CLCD1
 	/* lcd1 */
 	if (lcd1_enable && lcd1_dmi_data && lcd1_vid_dmi_data) {
+		switch(lcd1_clk) {
+		case 0: //default
+			break;
+		case 1:
+			lcd1_dmi_data->use_external_refclk = 0;
+			break;
+		case 2:
+			lcd1_dmi_data->use_external_refclk = 1;
+			lcd1_dmi_data->ext_refclk = 0;
+			lcd1_dmi_data->ext_refclk_name = "IDT_CLK0";
+			break;
+		case 3:
+			lcd1_dmi_data->use_external_refclk = 1;
+			lcd1_dmi_data->ext_refclk = 1;
+			lcd1_dmi_data->ext_refclk_name = "IDT_CLK1";
+			break;
+		default:
+			printk("error: invalid value(%d) for lcd1_clk patameter\n", lcd1_clk);
+		}
+
 #ifdef CONFIG_FB_DOVE_CLCD
 		lcd1_dmi_data->enable_lcd0 = (lcd0_enable ? 0 : 1);
 #endif
