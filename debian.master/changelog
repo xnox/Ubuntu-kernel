@@ -1,25 +1,28 @@
-linux (2.6.31-22.61) karmic-proposed; urgency=low
-
-  [ Andy Whitcroft ]
-
-  * SAUCE: docs -- fix doc strings for fc_event_seq
-  * update to ubuntu-debian:7e708d33054c373faf41da23b73e8b48c342d958
-    - LP: #570500, #576274
-
-  [ Chase Douglas ]
-
-  * SAUCE: sched: update load count only once per cpu in 10 tick update
-    window
-    - LP: #513848
+linux (2.6.31-22.61) karmic-security; urgency=low
 
   [ Upstream Kernel Changes ]
 
-  * (pre-stable) x86-32, resume: do a global tlb flush in S4 resume
-    - LP: #531309
-  * PCI: Ensure we re-enable devices on resume
-    - LP: #566149
+  * sctp: Fix skb_over_panic resulting from multiple invalid parameter
+    errors (CVE-2010-1173) (v4)
+    - CVE-2010-1173
+  * sctp: fix append error cause to ERROR chunk correctly
+    - CVE-2010-1173
+  * GFS2: Fix writing to non-page aligned gfs2_quota structures
+    - CVE-2010-1436
+  * KEYS: find_keyring_by_name() can gain access to a freed keyring
+    - CVE-2010-1437
+  * sparc64: Fix sun4u execute bit check in TSB I-TLB load.
+    - CVE-2010-1451
+  * Btrfs: check for read permission on src file in the clone ioctl
+    - CVE-2010-1636
+  * GFS2: Fix permissions checking for setflags ioctl()
+    - CVE-2010-1641
+  * Btrfs: should add a permission check for setfacl
+    - CVE-2010-2071
+  * ecryptfs: Bugfix for error related to ecryptfs_hash_buckets
+    - CVE-2010-2492
 
- -- Stefan Bader <stefan.bader@canonical.com>  Wed, 09 Jun 2010 11:55:44 +0200
+ -- Stefan Bader <stefan.bader@canonical.com>  Tue, 20 Jul 2010 18:09:28 +0200
 
 linux (2.6.31-22.60) karmic-security; urgency=low
 
