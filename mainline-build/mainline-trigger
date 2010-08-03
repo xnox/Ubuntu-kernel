@@ -29,7 +29,7 @@ else
 fi
 
 # Get an updated linus kernel, we always need that.
-if ! git remote show -n linus >/dev/null 2>&1; then
+if ! git remote | grep linus >/dev/null 2>&1; then
 	echo "*** adding linus remote ..."
 	git remote add linus \
 		git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
@@ -39,7 +39,7 @@ fi
 for series in dapper hardy jaunty karmic lucid maverick
 do
 	series_repo="$master_repo/ubuntu-$series.git"
-	if ! git remote show -n "$series" >/dev/null 2>&1; then
+	if ! git remote | grep "$series" >/dev/null 2>&1; then
 		echo "*** adding $series remote ..."
 		git remote add "$series" "$series_repo"
 	fi
@@ -58,7 +58,7 @@ let wanted=32
 while [ "$wanted" -lt "$current" ]; do
 	stable="2.6.${wanted%.*}.y"
 	
-	if ! git remote show -n "$stable" >/dev/null 2>&1; then
+	if ! git remote | grep "$stable" >/dev/null 2>&1; then
 		echo "*** adding $stable remote ..."
 		git remote add "$stable" \
 			git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-$stable.git
@@ -69,7 +69,7 @@ done
 # Special trees we also need but we cannot calculate from the version number.
 while read remote url
 do
-	if ! git remote show -n "$remote" >/dev/null 2>&1; then
+	if ! git remote | grep "$remote" >/dev/null 2>&1; then
 		echo "*** adding $remote remote ..."
 		git remote add "$remote" "$url"
 	fi
@@ -116,7 +116,7 @@ rm -f "$tags_list.added"
 #
 while read remote url
 do
-	if ! git remote show -n "$remote" >/dev/null 2>&1; then
+	if ! git remote | grep "$remote" >/dev/null 2>&1; then
 		echo "*** adding $remote remote ..."
 		git remote add "$remote" "$url"
 	fi

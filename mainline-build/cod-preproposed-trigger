@@ -27,7 +27,7 @@ do
 		cd "$master_main/$repo"
 		series_repo=`echo "$repo" | sed -e "s/linux/ubuntu-$series/"`
 		series_repo="$master_repo/$series_repo.git"
-		if ! git remote show -n "$series" >/dev/null 2>&1; then
+		if ! git remote | grep "$series" >/dev/null 2>&1; then
 			echo "*** adding $series remote ($series_repo)..."
 			git remote add "$series" "$series_repo"
 		fi
