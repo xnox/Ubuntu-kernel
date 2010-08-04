@@ -39,6 +39,8 @@ OPTIONS=""
 SUITE=""
 TARGET=""
 MIRROR=""
+CL_MIRROR=""
+
 while [ $# -ne 0 ]; do
 	case $1 in
 		--arch=*)
@@ -58,6 +60,7 @@ while [ $# -ne 0 ]; do
 				fi
 			elif [ "$MIRROR" = "" ]; then
 				MIRROR="$1"
+				CL_MIRROR="$MIRROR"
 			else
 				echo "Too many arguments <$1>!" >&2
 				exit 1
@@ -158,7 +161,7 @@ if $DOINSTALL; then
 	#
 	# Look for a local mirror.
 	#
-	if [ "$MIRROR" = "" ]
+	if [ "$CL_MIRROR" = "" ]
 	then
 		get_suite_mirror ${SUITE}
 	fi
@@ -208,7 +211,7 @@ fi
 
 SCHROOTCMD="schroot -q --chroot=$NAME"
 
-if [ "$MIRROR" = "" ]
+if [ "$CL_MIRROR" = "" ]
 then
 	write_mirror ${SUITE} ${ARCH} $TARGET/etc/apt/sources.list
 fi
@@ -216,17 +219,12 @@ fi
 
 ${SCHROOTCMD} -- apt-get update
 ${SCHROOTCMD} -- apt-get -u -y dist-upgrade
-echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
-#
-# Add each package in a separate invocation, just ignore failures where the package
-# doesn't exist, e.g., makedumpfile in armel.
-#
-for i in $ADDPKG
-do
-	${SCHROOTCMD} -- apt-get -y install $i
-done
 
-for i in $ADDPKGDEP
-do
-	${SCHROOTCMD} -- apt-get -y build-dep $i
-done
+if $DOINSTALL; then
+	#
+	# Add some extra packages
+	#
+	echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
+	${SCHROOTCMD} -- apt-get -y install $ADDPKG
+	${SCHROOTCMD} -- apt-get -y build-dep $ADDPKGDEP
+fi
