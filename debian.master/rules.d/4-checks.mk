@@ -7,7 +7,7 @@ $(abidir)/%: $(stampdir)/stamp-build-%
 		$(builddir)/build-$*/Module.symvers | sort > $@
 
 abi-check-%: $(abidir)/%
-	@perl -f $(DROOT)/scripts/abi-check "$*" "$(prev_abinum)" "$(abinum)" \
+	@perl -f $(DEBIAN)/scripts/abi-check "$*" "$(prev_abinum)" "$(abinum)" \
 		"$(prev_abidir)" "$(abidir)" "$(skipabi)"
 
 # Check the module list against the last release (always)
@@ -19,16 +19,8 @@ $(abidir)/%.modules: $(stampdir)/stamp-build-%
 		sed -e 's/.*\/\([^\/]*\)\.ko/\1/' | sort > $@
 
 module-check-%: $(abidir)/%.modules
-	@perl -f $(DROOT)/scripts/module-check "$*" \
+	@perl -f $(DEBIAN)/scripts/module-check "$*" \
 		"$(prev_abidir)" "$(abidir)" $(skipmodule)
 
 checks-%: abi-check-% module-check-%
-	@# Will be calling more stuff later
-
-# Check the config against the known options list.
-config-prepare-check-%: $(stampdir)/stamp-prepare-tree-%
-	@perl -f $(DROOT)/scripts/config-check \
-		$(builddir)/build-$*/.config "$(arch)" "$*" "$(sharedconfdir)" "$(skipconfig)"
-
-prepare-checks-%: config-prepare-check-%
 	@# Will be calling more stuff later

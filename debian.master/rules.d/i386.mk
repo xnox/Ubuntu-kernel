@@ -10,4 +10,3 @@ install_file	= vmlinuz
 generic-pae_sub	= virtual
 
 loader		= grub
-do_tools	= false

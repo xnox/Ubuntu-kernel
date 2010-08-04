@@ -1,7 +1,5 @@
 #!/bin/bash
 
-. debian/debian.env
-
 if [ "$#" != "2" ]; then
 	echo "Usage: $0 <release> <revision>" 1>&2
 	exit 1
@@ -14,9 +12,14 @@ abi=$(echo $revision | awk -F. '{print $1}')
 verabi=$ver-$abi
 verfull=$ver-$revision
 
+repo="http://archive.ubuntu.com/ubuntu/pool/main/l"
+repo_ports="http://ports.ubuntu.com/ubuntu-ports/pool/main/l"
+repo_uni="http://archive.ubuntu.com/ubuntu/pool/universe/l"
+repo_ports_uni="http://ports.ubuntu.com/ubuntu-ports/pool/universe/l"
+
 WGET="wget --quiet -c"
 
-abidir="`pwd`/$DEBIAN/abi/$verfull"
+abidir="`pwd`/debian/abi/$verfull"
 tmpdir="`pwd`/abi-tmp-$verfull"
 origdir="`pwd`"
 
@@ -36,10 +39,10 @@ getall() {
 		echo -n "Fetching $sub..."
 		filename=linux-image-${verabi}-${sub}_${verfull}_${arch}.deb
 		cd $tmpdir
-		for r in "${repo_list[@]}"
+		for r in $repo $repo_ports $repo_uni $repo_ports_uni
 		do
 			if ! [ -f $filename ]; then
-				$WGET $r/$filename
+				$WGET $r/linux/$filename
 			fi
 		done
 		if [ "$?" = "0" ]; then
@@ -71,6 +74,13 @@ echo $abi > $abidir/abiname
 # NOTE: The flavours are hardcoded, because they may have changed from the
 # current build.
 
-. $DEBIAN/etc/getabis
+getall lpia lpia
+getall amd64 generic server
+getall i386 generic generic-pae 386
+
+# Ports arches and flavours.
+getall powerpc powerpc powerpc-smp powerpc64-smp
+getall ia64 ia64
+getall sparc sparc64 sparc64-smp
 
 rmdir $tmpdir
