@@ -1,0 +1,22 @@
+#!/bin/bash
+
+P="$0"
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $P <directory>" 1>&2
+	exit 1
+fi
+dir="$1"
+
+ls -1 "$dir" | grep -v current | head -n -10 | \
+while read which
+do
+	which="$dir/$which"
+
+	if [ ! -f "$which/BUILD.LOG" ]; then
+		echo "$P: $which: not a build, ignored" 1>&2
+		continue
+	fi
+
+	rm -rf "$which"
+done

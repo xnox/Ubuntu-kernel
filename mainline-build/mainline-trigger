@@ -151,3 +151,6 @@ DRM-NEXT	drm-2.6/drm-next		996	drm-next
 EOL
 # Also allocated
 # 995: sconklin -- wayland
+#
+# NOTE: if you add a daily build above ensure it is recorded on the
+# TopicBranches page, and also ensure you add it to the cleanup script.

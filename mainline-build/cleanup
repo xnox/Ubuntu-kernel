@@ -1,0 +1,14 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+# Cleanup the daily build
+"$here/cleanup-daily-one" "$HOME/public_html/mainline/daily"
+"$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-next"
+"$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-intel-next"
+
+exit 0
