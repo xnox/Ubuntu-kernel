@@ -1,12 +1,14 @@
 #!/bin/bash
 
-P="$0"
+P="`basename $0`"
 
 if [ "$#" -ne 1 ]; then
 	echo "Usage: $P <directory>" 1>&2
 	exit 1
 fi
 dir="$1"
+
+echo "$P: Cleaning $dir ..."
 
 ls -1 "$dir" | grep -v current | head -n -10 | \
 while read which
@@ -18,5 +20,6 @@ do
 		continue
 	fi
 
+	echo "$P: removing $which ..."
 	rm -rf "$which"
 done
