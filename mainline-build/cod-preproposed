@@ -66,8 +66,12 @@ else
 fi
 echo "using tag<$tag> for the changelog"
 
-# Commit the changelog.
-sed -i -e "1 s/)/$tag)/" -e "1 s/ UNRELEASED;/ $series;/" $changelog
+# Build the version number and pocket, and commit the changelog.
+sed -i \
+	-e "1 s/)/$tag)/" \
+	-e "1 s/ UNRELEASED;/ $series;/" \
+	-e "1 s/ $series-[^;]*;/ $series;/" \
+    $changelog
 dchroot --directory=`pwd` -c "$build_release" \
         "fakeroot debian/rules insertchanges"
 git commit -a -m "CHANGES"
