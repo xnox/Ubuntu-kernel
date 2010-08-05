@@ -118,6 +118,10 @@ esac
 if [ "$ARCH" = "armel" ]
 then
 	DEBOOTSTRAP=qemu-debootstrap
+	#
+	# makedumpfile does not exist in armel
+	#
+	ADDPKG="`echo $ADDPKG|sed 's/makedumpfile//'`"
 fi
 
 HOSTARCH=$(dpkg --print-architecture)
