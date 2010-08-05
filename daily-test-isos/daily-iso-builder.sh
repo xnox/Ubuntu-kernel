@@ -18,6 +18,9 @@ WORKING_DIR=$BASE/work         # The directory where the 'work' of building the 
                                # is done. This directory also contains the directory
                                # that is mirrored onto zinc.
 
+MIRROR_DIR=$WORKING_DIR/zinc-mirror
+                               # This directory is mirrored onto zinc every so often.
+
 git clone $KTEAM_REPO
 
 RELEASE=maverick
@@ -28,8 +31,10 @@ DESKTOP_I386=$RELEASE-desktop-i386
 # used because this build is being done on a system in the DC and the network
 # hose to where the daily-isos are is HUGE.
 #
-wget http://cdimage.ubuntu.com/daily-live/current/$DESKTOP_AMD64.iso
-wget http://cdimage.ubuntu.com/daily-live/current/$DESKTOP_I386.iso
+CONFIG_LIST="$DESKTOP_I386 $DESKTOP_AMD64"
+for config in $CONFIG_LIST; do
+    wget http://cdimage.ubuntu.com/daily-live/current/$config.iso
+done
 
 (
     cd kteam-tools/daily-test-isos
@@ -38,25 +43,54 @@ wget http://cdimage.ubuntu.com/daily-live/current/$DESKTOP_I386.iso
     #
     git clone git://kernel.ubuntu.com/manjo/kernel-qa.git
     rm -rf kernel-qa/.git    # This is removed to save space.
-    rm kernel-qa/tests/video # FIXME (bjf): removed because of changes to maverick's 
+    rm kernel-qa/tests/video # FIXME (bjf): removed because of changes to maverick's
                              #              userspace apps which prevented the test
                              #              from working. Should be re-evaluated.
 
-    # Build the kernel team's standard, test isos
-    #
-    ./mk-custom-iso -i $WORKING_DIR/$DESKTOP_I386.iso
-    ./mk-custom-iso -i $WORKING_DIR/$DESKTOP_AMD64.iso
+    CONFIG_LIST="$DESKTOP_I386 $DESKTOP_AMD64"
+    for config in $CONFIG_LIST; do
+        # Build the kernel team's standard, test isos
+        #
+        ./mk-custom-iso -i $WORKING_DIR/$config.iso
+        cp /tmp/$config-custom.iso  $MIRROR_DIR/$config-ktts.iso
 
-    cp /tmp/$DESKTOP_I386-custom.iso  $WORKING_DIR/zinc-mirror/$DESKTOP_I386-ktts.iso
-    cp /tmp/$DESKTOP_AMD64-custom.iso $WORKING_DIR/zinc-mirror/$DESKTOP_AMD64-ktts.iso
+        # Build the krenel team's "firmware test suite" enabled test isos
+        #
+        ./mk-custom-iso -f -i $WORKING_DIR/$config.iso
+        cp /tmp/$config-custom.iso  $MIRROR_DIR/$config-fwts.iso
 
-    # Build the krenel team's "firmware test suite" enabled test isos
-    #
-    ./mk-custom-iso -f -i $WORKING_DIR/$DESKTOP_I386.iso
-    ./mk-custom-iso -f -i $WORKING_DIR/$DESKTOP_AMD64.iso
+        # Colin King wants img files created which can just be "dd'd" onto a flash drive
+        # without having to use the "USB Startup disk creator". This is the code he developed
+        # to do that.
+        #
 
-    cp /tmp/$DESKTOP_I386-custom.iso  $WORKING_DIR/zinc-mirror/$DESKTOP_I386-fwts.iso
-    cp /tmp/$DESKTOP_AMD64-custom.iso $WORKING_DIR/zinc-mirror/$DESKTOP_AMD64-fwts.iso
+        # Get size of ISO image and add 64 MB of slack for fwts test results
+        #
+        iso=$MIRROR_DIR/$config-fwts.iso
+        sz=`stat -c "%s" $iso`
+        megs=$(((sz / (1024*1024)) + 64))
+        isofile=`basename $iso`
+        imgfile=$WORKING_DIR/${isofile%.*}.img
+
+        # Create empty image
+        #
+        echo Making clean $megs MB USB stick image..
+        dd if=/dev/zero of=$imgfile bs=1M count=$megs
+
+        # Generate an image
+        #
+        if [ -e $WORKING_DIR/lucid-server.qcow2 ]; then
+            echo Making bootable USB stick image..
+            qemu -hda $WORKING_DIR/lucid-server.qcow2 -hdb $imgfile -cdrom $iso -m 1024 -vga none -nographic
+            mv $imgfile $MIRROR_DIR/
+        else
+            echo **** Error: The virtual machine for creating the image file is missing!
+        fi
+
+        # Cleanup
+        #
+        rm $WORKING_DIR/$config.iso
+    done
 )
 
 
