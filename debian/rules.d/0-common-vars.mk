@@ -25,6 +25,12 @@ builddir	:= $(CURDIR)/debian/build
 stampdir	:= $(CURDIR)/debian/stamps
 udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 
+#
+# Compat wireless versions for which packages are created.
+#
+CWDIRS += compat-wireless-2.6.34
+CWDIRS += compat-wireless-2.6.35
+
 # package selectors
 do_nouveau_package = $(shell grep -c '^Package: linux-backports-modules-nouveau' $(CURDIR)/debian/control.d/flavour-control.stub)
 ifeq ($(do_nouveau_package),1)
