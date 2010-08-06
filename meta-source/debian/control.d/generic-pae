@@ -46,6 +46,13 @@ Description: Backported drivers for alsa-driver snapshot.
  This empty package allows people to keep their alsa-driver snapshot
  up-to-date when upgrading their Linux kernel.
 
+Package: linux-backports-modules-wwan-RELEASE_NAME-generic-pae
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-wwan-${kernel-abi-version}-generic-pae
+Description: Backported WWAN drivers for generic-pae kernel image
+ This empty package allows people to keep their backported WWAN modules
+ up-to-date when upgrading their Linux kernel.
+
 #Package: linux-backports-modules-nouveau-RELEASE_NAME-generic-pae
 #Architecture: i386
 #Depends: ${misc:Depends}, linux-backports-modules-nouveau-${kernel-abi-version}-generic-pae
