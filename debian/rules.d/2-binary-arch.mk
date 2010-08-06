@@ -22,7 +22,6 @@ make_compat = make $(conc_level)
 make_compat += KLIB=$(COMPAT_KDIR) KLIB_BUILD=$(COMPAT_KDIR)/build
 make_compat += MADWIFI=
 make_compat += OLD_IWL=
-CWDIR=compat-wireless-2.6.34
 
 ifneq ($(LOCAL_ENV_CC),)
 make_compat += CC=$(LOCAL_ENV_CC) DISTCC_HOSTS=$(LOCAL_ENV_DISTCC_HOSTS)
@@ -30,25 +29,33 @@ endif
 
 prepare-%: $(stampdir)/stamp-prepare-%
 	@# Empty for make to be happy
+
 $(stampdir)/stamp-prepare-%: target_flavour = $*
-$(stampdir)/stamp-prepare-%: cw = $(builddir)/build-$*/$(CWDIR)
 $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
+	#
+	# compat-wireless preparation
+	#
 	# Gross hackery to make the compat firmware class unique to this ABI
-	sed -i 's/compat_firmware/compat_firmware_'$(abinum)_$(target_flavour)'/g' \
-		$(cw)/compat/compat_firmware_class.c \
-		$(cw)/compat/scripts/compat_firmware_install \
-		$(cw)/udev/ubuntu/50-compat_firmware.rules
-	mv $(cw)/udev/ubuntu/50-compat_firmware.rules $(cw)/udev/ubuntu/50-compat_firmware_$(abinum)_$(target_flavour).rules
-	mv $(cw)/udev/ubuntu/compat_firmware.sh $(cw)/udev/ubuntu/compat_firmware_$(abinum)_$(target_flavour).sh
+	#
+	for i in $(CWDIRS); do \
+		cw_dir=$(builddir)/build-$*/$$i; \
+		sed -i 's/compat_firmware/compat_firmware_'$(abinum)_$(target_flavour)'/g' \
+			$${cw_dir}/compat/compat_firmware_class.c \
+			$${cw_dir}/compat/scripts/compat_firmware_install \
+			$${cw_dir}/udev/ubuntu/50-compat_firmware.rules; \
+		mv -v $${cw_dir}/udev/ubuntu/50-compat_firmware.rules $${cw_dir}/udev/ubuntu/50-compat_firmware_$(abinum)_$(target_flavour).rules; \
+		mv -v $${cw_dir}/udev/ubuntu/compat_firmware.sh $${cw_dir}/udev/ubuntu/compat_firmware_$(abinum)_$(target_flavour).sh; \
+	done
+
 ifeq ($(do_nouveau_package),true)
 	$(builddir)/build-$*/MUNGE-NOUVEAU
 	echo "obj-y += nouveau/" >>$(builddir)/build-$*/Makefile
 endif
 	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
-	cat $^ > $(builddir)/build-$*/.config
+	cat $(confdir)/$(arch) > $(builddir)/build-$*/.config
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
 	touch $(builddir)/build-$*/ubuntu-build
@@ -57,21 +64,20 @@ endif
 # Do the actual build, including image and modules
 build-modules-%: $(stampdir)/stamp-build-%
 	@# Empty for make to be happy
+
 $(stampdir)/stamp-build-%: target_flavour = $*
 $(stampdir)/stamp-build-%: build_arch_t = $(call custom_override,build_arch,$*)
-$(stampdir)/stamp-build-%: $(stampdir)/stamp-prepare-%
+$(stampdir)/stamp-build-%: prepare-%
 	@echo "Building $*..."
-	cd $(builddir)/build-$*/$(CWDIR) && $(make_compat)
+	for i in $(CWDIRS); do \
+		cd $(builddir)/build-$*/$$i && $(make_compat); \
+	done
 	cd $(builddir)/build-$*/alsa-driver && make $(conc_level)
 	cd $(builddir)/build-$*/wwan-drivers && make $(conc_level)
 	$(kmake) $(conc_level) modules
-	@touch $@
+	touch $@
 
 # Install the finished build
-install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-wireless-$(release)-$(abinum)-$*
-install-%: cwblddir = $(builddir)/build-$*/$(CWDIR)
-install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
-install-%: cwsrcdir = $(CURDIR)/updates/$(CWDIR)
 install-%: wwpkgdir = $(CURDIR)/debian/linux-backports-modules-wwan-$(release)-$(abinum)-$*
 install-%: wwmoddir = $(wwpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: wwsrcdir = $(CURDIR)/updates/wwan-drivers
@@ -79,54 +85,53 @@ install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: nvpkgdir = $(CURDIR)/debian/linux-backports-modules-nouveau-$(release)-$(abinum)-$*
 install-%: nvmoddir = $(nvpkgdir)/lib/modules/$(release)-$(abinum)-$*
-install-%: firmdir = $(cwpkgdir)/lib/firmware/updates/$(release)-$(abinum)-$*
 install-%: lbmbasehdrpkg = linux-headers-lbm-$(release)$(debnum)
 install-%: lbmhdrpkg = $(lbmbasehdrpkg)-$*
 install-%: hdrdir = $(CURDIR)/debian/$(lbmhdrpkg)/usr/src/$(lbmhdrpkg)
 install-%: target_flavour = $*
-install-%: $(stampdir)/stamp-build-%
+install-%: build-modules-%
 	dh_testdir
 	dh_testroot
-	dh_clean -k -plinux-backports-modules-wireless-$(release)-$(abinum)-$*
 
-	install -d $(firmdir)
-	#
-	# This firmware file name has to be consistent with IWL4965_UCODE_API in iwl4965-base.c
-	#
-	cp firmware/iwlwifi/*/*.ucode $(firmdir)/
-	cp firmware/rt28x0/rt2870.bin $(firmdir)/
-
-	#
-	# Build the compat wireless packages.
-	#
-	install -d $(cwmoddir)/updates/cw
-	find $(builddir)/build-$*/$(CWDIR) -type f -name '*.ko' | \
-	while read f ; do \
-		cp -v $${f} $(cwmoddir)/updates/cw/`basename $${f}`; \
+	for i in $(CWDIRS); do \
+		cw=$$i; \
+		cwpkgdir=$(CURDIR)/debian/linux-backports-modules-$${cw}-$(release)-$(abinum)-$(target_flavour); \
+		cwblddir=$(builddir)/build-$(target_flavour)/$${cw}; \
+		cwmoddir=$${cwpkgdir}/lib/modules/$(release)-$(abinum)-$(target_flavour)/updates; \
+		firmdir=$${cwpkgdir}/lib/firmware/updates/$(release)-$(abinum)-$(target_flavour); \
+\
+		dh_clean -k -plinux-backports-modules-$${cw}-$(release)-$(abinum)-$(target_flavour); \
+\
+		install -d $${cwmoddir}/$${cw}; \
+		find $(builddir)/build-$(target_flavour)/$${cw} -type f -name '*.ko' | \
+		while read f ; do \
+			cp -v $${f} $${cwmoddir}/$${cw}/`basename $${f}`; \
+		done; \
+\
+		install -d $${cwmoddir}/$${cw}-staging; \
+		find $(builddir)/build-$(target_flavour)/wireless-staging -type f -name '*.ko' | \
+		while read f ; do \
+			cp -v $${f} $${cwmoddir}/$${cw}-staging/`basename $${f}`; \
+		done; \
+\
+		find $${cwpkgdir}/ -type f -name \*.ko -print | xargs -r strip --strip-debug; \
+\
+		install -d $${cwpkgdir}/DEBIAN; \
+		for script in postinst postrm; do					\
+	  		sed -e 's/@@KVER@@/$(release)-$(abinum)-$(target_flavour)/g'				\
+	       			debian/control-scripts/$$script > $${cwpkgdir}/DEBIAN/$$script;	\
+	  		chmod 755 $${cwpkgdir}/DEBIAN/$$script;					\
+		done; \
+\
+		install -d $${cwpkgdir}/lib/udev; \
+		install --mode=0755 $${cwblddir}/udev/ubuntu/compat_firmware_$(abinum)_$(target_flavour).sh $${cwpkgdir}/lib/udev; \
+		install -d $${cwpkgdir}/lib/udev/rules.d; \
+		install --mode=0644 $${cwblddir}/udev/ubuntu/50-compat_firmware_$(abinum)_$(target_flavour).rules $${cwpkgdir}/lib/udev/rules.d; \
+\
+		install -d $${firmdir}; \
+		cp firmware/iwlwifi/*/*.ucode $${firmdir}/; \
+		cp firmware/rt28x0/rt2870.bin $${firmdir}/; \
 	done
-
-	install -d $(cwmoddir)/updates/staging
-	find $(builddir)/build-$*/wireless-staging -type f -name '*.ko' | \
-	while read f ; do \
-		cp -v $${f} $(cwmoddir)/updates/staging/`basename $${f}`; \
-	done
-
-	find $(cwpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
-
-	install -d $(cwpkgdir)/DEBIAN
-	for script in postinst postrm; do					\
-	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
-	       debian/control-scripts/$$script > $(cwpkgdir)/DEBIAN/$$script;	\
-	  chmod 755 $(cwpkgdir)/DEBIAN/$$script;					\
-	done
-
-	#
-	# the compat_firmware_class has its own rules.
-	#
-	install -d $(cwpkgdir)/lib/udev
-	install --mode=0755 $(cwblddir)/udev/ubuntu/compat_firmware_$(abinum)_$(target_flavour).sh $(cwpkgdir)/lib/udev
-	install -d $(cwpkgdir)/lib/udev/rules.d
-	install --mode=0644 $(cwblddir)/udev/ubuntu/50-compat_firmware_$(abinum)_$(target_flavour).rules $(cwpkgdir)/lib/udev/rules.d
 
 	#
 	# Build the ALSA snapshot packages.
@@ -186,7 +191,6 @@ endif
 	# The flavour specific headers package
 	#
 	install -d $(hdrdir)/include
-	tar -C $(builddir)/build-$*/$(CWDIR) -chf - include | tar -C $(hdrdir) -xf -
 	for i in asm linux media sound; do \
 		tar -C $(builddir)/build-$*/alsa-driver/include -chf - $$i | tar -C $(hdrdir)/include -xf -; \
 	done
@@ -202,8 +206,11 @@ endif
 	dh_md5sums -p$(lbmhdrpkg)
 	dh_builddeb -p$(lbmhdrpkg)
 
+cw_pkg_list_pre = $(addprefix linux-backports-modules-,$(CWDIRS))
+cw_pkg_list_suf = $(addsuffix -$(release)-$(abinum)-$*,$(cw_pkg_list_pre))
+
 package_list =
-package_list += linux-backports-modules-wireless-$(release)-$(abinum)-$*
+package_list += $(cw_pkg_list_suf)
 package_list += linux-backports-modules-alsa-$(release)-$(abinum)-$*
 ifeq ($(do_nouveau_package),true)
 package_list += linux-backports-modules-nouveau-$(release)-$(abinum)-$*
