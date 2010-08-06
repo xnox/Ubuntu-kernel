@@ -1209,7 +1209,8 @@ static irqreturn_t taal_te_isr(int irq, void *data)
 	int r;
 
 	if (td->force_update) {
-		queue_work(td->te_wq, &td->te_framedone_work);
+		if (!omap_dsi_recovery_state(DSI1))
+			queue_work(td->te_wq, &td->te_framedone_work);
 		return IRQ_HANDLED;
 	}
 
@@ -1243,9 +1244,10 @@ static irqreturn_t taal_te_isr2(int irq, void *data)
 	int r;
 
 	if (td->force_update) {
-		queue_work(td->te_wq, &td->te_framedone_work);
-		return IRQ_HANDLED;
-	}
+		if (!omap_dsi_recovery_state(DSI2))
+			queue_work(td->te_wq, &td->te_framedone_work);
+                return IRQ_HANDLED;
+        }
 
 	old = atomic_cmpxchg(&td->do_update, 1, 0);
 
