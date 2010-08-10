@@ -196,8 +196,8 @@ struct snd_soc_dai rt655_dai = 	{
 };
 EXPORT_SYMBOL_GPL(rt655_dai);
 static const char *rt655_record_source[] = {"Mic", "CD", "Mute", "AUX", 
-		"Line", "Stereo Mixer", "Mono Mixer", "Phone"};
-static const struct soc_enum rt655_record_enum = SOC_ENUM_DOUBLE(RT655_REC_SEL, 8, 0, 7, rt655_record_source);
+					    "Line", "Stereo Mixer", "Mono Mixer","Phone"};
+static const struct soc_enum rt655_record_enum = SOC_ENUM_DOUBLE(RT655_REC_SEL, 8, 0, 8, rt655_record_source);
 static const struct snd_kcontrol_new rt655_snd_ac97_controls[] = {
 SOC_DOUBLE("Front Playback Switch", RT655_MASTER_VOL, 15, 7, 1, 1),
 SOC_DOUBLE("Front Playback Volume", RT655_MASTER_VOL, 8, 0, 31, 1),
@@ -215,18 +215,18 @@ SOC_SINGLE("Mono Playback Switch", RT655_MONO_OUT_VOL, 15, 1, 1),
 SOC_SINGLE("Mono Playback Volume", RT655_MONO_OUT_VOL, 0, 31, 1),
 SOC_SINGLE("PC BEEP Playback Volume", RT655_PCBEEP_VOL, 1, 15, 1),
 SOC_SINGLE("PC BEEP Playback Switch", RT655_PCBEEP_VOL, 15, 1, 1),
-SOC_SINGLE("Phone Playback Volume", RT655_PHONE_VOL, 0, 31, 1),
-SOC_SINGLE("Phone Playback Switch", RT655_PHONE_VOL, 15, 1, 1),
-SOC_SINGLE("Mic Playback Volume", RT655_MIC_VOL, 0, 31, 1),
-SOC_SINGLE("Mic Playback Switch", RT655_MIC_VOL, 15, 1, 1),
-SOC_DOUBLE("Linein Playback Switch", RT655_LINEIN_VOL, 15, 7, 1, 1),
-SOC_DOUBLE("Linein Playback Volume", RT655_LINEIN_VOL, 8, 0, 1, 1),
-SOC_DOUBLE("CD Playback Switch", RT655_CD_VOL, 15, 7, 1, 1),
-SOC_DOUBLE("CD Playback Volume", RT655_CD_VOL, 8, 0, 1, 1),
-SOC_DOUBLE("AUXIN Playback Switch", RT655_AUX_VOL, 15, 7, 1, 1),
-SOC_DOUBLE("AUXIN Playback Volume", RT655_AUX_VOL, 8, 0, 1, 1),
-SOC_DOUBLE("Record Capture Gain", RT655_REC_GAIN, 8, 0, 15, 0),
-SOC_ENUM("Record Capture Sel", rt655_record_enum),
+SOC_SINGLE("Phone Capture Volume", RT655_PHONE_VOL, 0, 31, 1),
+SOC_SINGLE("Phone Capture Switch", RT655_PHONE_VOL, 15, 1, 1),
+SOC_SINGLE("Mic Capture Volume", RT655_MIC_VOL, 0, 31, 1),
+SOC_SINGLE("Mic Capture Switch", RT655_MIC_VOL, 15, 1, 1),
+SOC_DOUBLE("Line Capture Switch", RT655_LINEIN_VOL, 15, 7, 1, 1),
+SOC_DOUBLE("Line Capture Volume", RT655_LINEIN_VOL, 8, 0, 31, 1),
+SOC_DOUBLE("CD Capture Switch", RT655_CD_VOL, 15, 7, 1, 1),
+SOC_DOUBLE("CD Capture Volume", RT655_CD_VOL, 8, 0, 31, 1),
+SOC_DOUBLE("AUX Capture Switch", RT655_AUX_VOL, 15, 7, 1, 1),
+SOC_DOUBLE("AUX Capture Volume", RT655_AUX_VOL, 8, 0, 31, 1),
+SOC_DOUBLE("Record Gain Capture Volume", RT655_REC_GAIN, 8, 0, 15, 0),
+SOC_ENUM("Record Capture Switch", rt655_record_enum),
 };
 static int rt655_soc_probe(struct platform_device *pdev)
 {
