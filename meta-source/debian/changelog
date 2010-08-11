@@ -1,6 +1,6 @@
-linux-meta (2.6.35.15.16) UNRELEASED; urgency=low
+linux-meta (2.6.35.15.16) maverick; urgency=low
 
-  * Maverick ABI 15
+  * Maverick ABI 15 (2.6.35-15.20)
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 09 Aug 2010 13:20:00 -0700
 
