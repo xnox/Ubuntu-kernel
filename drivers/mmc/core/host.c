@@ -18,6 +18,9 @@
 #include <linux/leds.h>
 #include <linux/suspend.h>
 
+#include <linux/slab.h>
+#include <linux/suspend.h>
+
 #include <linux/mmc/host.h>
 
 #include "core.h"
