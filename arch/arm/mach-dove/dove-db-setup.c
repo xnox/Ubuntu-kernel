@@ -171,6 +171,7 @@ static struct dovefb_mach_info dove_db_fp_lcd0_dmi = {
 	.panel_rgb_reverse_lanes= 0,
 	.gpio_output_data	= 3,
 	.gpio_output_mask	= 3,
+	.ddc_polling_disable	= 1,
 #ifndef CONFIG_FB_DOVE_CLCD0_I2C_DEFAULT_SETTING
         .ddc_i2c_adapter        = CONFIG_FB_DOVE_CLCD0_I2C_CHANNEL,
         .ddc_i2c_address        = CONFIG_FB_DOVE_CLCD0_I2C_ADDRESS,
