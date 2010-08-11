@@ -33,8 +33,17 @@ Description: Backported driver headers for server kernel image
  headers up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-wireless-RELEASE_NAME-server
-Architecture: amd64
-Depends: ${misc:Depends}, linux-backports-modules-wireless-${kernel-abi-version}-server
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.34-${kernel-abi-version}-server
+Conflicts: linux-backports-modules-wireless-2.6.35-RELEASE_NAME-server
+Description: Backported wireless drivers for server kernel image
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-wireless-2.6.35-RELEASE_NAME-server
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.35-${kernel-abi-version}-server
+Conflicts: linux-backports-modules-wireless-RELEASE_NAME-server
 Description: Backported wireless drivers for server kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
