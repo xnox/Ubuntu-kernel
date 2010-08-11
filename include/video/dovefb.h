@@ -436,6 +436,10 @@ struct dovefb_mach_info {
 	 * I/O pin allocation.
 	 */
 	unsigned	io_pin_allocation:4;
+	/*
+	 * auto poll EDID data periodically
+	 */
+	unsigned ddc_polling_disable:1;
 
 	/*
 	 * I2C bus and address to read DDC data through. -1 not available

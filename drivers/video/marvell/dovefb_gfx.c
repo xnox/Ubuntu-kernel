@@ -1727,14 +1727,15 @@ int dovefb_gfx_init(struct dovefb_info *info, struct dovefb_mach_info *dmi)
 	/*
 	 * Initialize dynamic get edid timer
 	 */
-	init_timer(&dfli->get_edid_timer);
-	dfli->get_edid_timer.expires = jiffies + HZ;
-	dfli->get_edid_timer.data = (unsigned long)dfli;
-	dfli->get_edid_timer.function = dynamic_get_edid;
-	add_timer(&dfli->get_edid_timer);
+	if(!dmi->ddc_polling_disable) {
+		init_timer(&dfli->get_edid_timer);
+		dfli->get_edid_timer.expires = jiffies + HZ;
+		dfli->get_edid_timer.data = (unsigned long)dfli;
+		dfli->get_edid_timer.function = dynamic_get_edid;
+		add_timer(&dfli->get_edid_timer);
 
-	INIT_WORK(&dfli->work_queue, get_edid_work);
-
+		INIT_WORK(&dfli->work_queue, get_edid_work);
+	}
 
 	return 0;
 failed:
