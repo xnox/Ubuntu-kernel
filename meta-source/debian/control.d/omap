@@ -15,12 +15,3 @@ Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-omap, linux-firmware
 Description: Linux kernel image for the OMAP architecture.
  This package will always depend on the latest kernel image available
  for ARM TI OMAP3 systems.
-
-Package: linux-linaro-omap
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: ${misc:Depends}, linux-image-omap (= ${binary:Version})
-Description: Complete Linux kernel for the OMAP architecture.
- This package will always depend on the latest complete Linux kernel available
- for ARM TI OMAP3 systems.

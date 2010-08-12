@@ -15,12 +15,3 @@ Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-vexpress, linux-firm
 Description: Linux kernel image for the Versatile Express architecture.
  This package will always depend on the latest kernel image available
  for ARM Versatile Express systems.
-
-Package: linux-linaro-vexpress
-Architecture: armel
-Section: metapackages
-Priority: optional
-Depends: ${misc:Depends}, linux-image-vexpress (= ${binary:Version})
-Description: Complete Linux kernel for the Versatile Express architecture.
- This package will always depend on the latest complete Linux kernel available
- for ARM Versatile Express systems.
