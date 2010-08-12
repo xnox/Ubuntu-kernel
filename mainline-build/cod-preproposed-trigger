@@ -37,6 +37,7 @@ do
 	# Find the first non-ignored commit, the first real change.
 	tip=`cd "$master_main/$repo" && git log "$branch" | awk '
 		BEGIN				{ sha1 = "" }
+		/^ *UBUNTU: Bump ABI/		{ exit }
 		/^commit /			{ if (sha1 != "") { exit };
 						  sha1 = $2 }
 		/^ *Ignore: *yes/		{ sha1 = "" }
