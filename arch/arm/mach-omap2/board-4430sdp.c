@@ -507,6 +507,14 @@ static struct omap_dss_device sdp4430_picoDLP_device = {
 	.channel			= OMAP_DSS_CHANNEL_LCD2,
 };
 
+/* wl128x BT, FM, GPS connectivity chip */
+static int gpios[] = {55, -1, -1};
+static struct platform_device wl128x_device = {
+        .name           = "kim",
+        .id             = -1,
+        .dev.platform_data = &gpios,
+};
+
 static struct omap_dss_device *sdp4430_dss_devices[] = {
 	&sdp4430_lcd_device,
 	&sdp4430_lcd2_device,
@@ -528,6 +536,7 @@ static struct platform_device *sdp4430_devices[] __initdata = {
 	&sdp4430_proximity_device,
 	&sdp4430_leds_pwm,
 	&sdp4430_leds_gpio,
+        &wl128x_device,
 };
 
 static void __init omap_4430sdp_init_irq(void)
