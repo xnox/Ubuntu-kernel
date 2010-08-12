@@ -178,6 +178,8 @@ MV_32 mvBoardPhyAddrGet(MV_U32 ethPortNum)
 	     printk("error in %s: unknown board\n", __func__);
 #endif
 	MV_U32 ret = 8;
+//	if (machine_is_dove_db_b())
+		ret = 1;
 //	printk("%s: PhyAddr: %x\n", __func__, ret);
 	return ret;
 #endif
