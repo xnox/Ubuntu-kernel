@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (2.6.35.903.4) maverick; urgency=low
+
+  * Maverick ABI 903 (2.6.34-903.7)
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 12 Aug 2010 11:17:26 -0700
+
 linux-meta-ti-omap4 (2.6.35.902.3) maverick; urgency=low
 
   * Maverick ABI 902 (2.6.35.902.6)
