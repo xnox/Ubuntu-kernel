@@ -117,7 +117,6 @@ static struct omap_dss_board_info panda_dss_data = {
 };
 
 static struct platform_device *panda_devices[] __initdata = {
-	&panda_dss_device,
 	&wl127x_device
 };
 
@@ -134,6 +133,8 @@ static void __init omap4_display_init(void)
 
 static struct platform_device *panda_devices[] __initdata = {
 	&wl127x_device,
+	&panda_dss_device,
+	&sdp4430_hdmi_audio_device,
 };
 
 static void __init omap4_display_init(void) {}
