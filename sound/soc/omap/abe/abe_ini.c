@@ -51,7 +51,7 @@ void abe_hw_configuration()
  *  Return value :
  *
  */
-char aUplinkMuxing[16];
+char aUplinkMuxing[D_aUplinkRouting_sizeof];
 
 void abe_build_scheduler_table()
 {
@@ -314,8 +314,8 @@ void abe_build_scheduler_table()
 	/* abe_block_copy (COPY_FROM_HOST_TO_ABE, ABE_DMEM, D_pFastLoopBack_ADDR, (abe_uint32 *)&dFastLoopback, sizeof (dFastLoopback));*/
 
 	/* reset the uplink router */
-	n = D_aUplinkRouting_ADDR_END - D_aUplinkRouting_ADDR + 1;
-	for (i = 0; i < n; i++)
+	n = sizeof(aUplinkMuxing);
+	for(i = 0; i < n; i++)
 		aUplinkMuxing[i] = ZERO_labelID;
 
 	abe_block_copy(COPY_FROM_HOST_TO_ABE, ABE_DMEM, D_aUplinkRouting_ADDR, (abe_uint32 *)aUplinkMuxing, sizeof(aUplinkMuxing));
