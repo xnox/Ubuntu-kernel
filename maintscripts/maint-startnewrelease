@@ -62,8 +62,11 @@ if GitDiff(changelog):
 # Check whether the current release is not released. In that case there is
 # nothing to do but to warn.
 #------------------------------------------------------------------------------
-if pocket == "UNRELEASED;":
-	print "WW:", srcpkg + "-" + version, "unreleased. Nothing to do."
+if pocket == "UNRELEASED":
+	print("WW: %s-%s" % (srcpkg, version))
+	print(" ")
+	print("    The tree is in a state (UNRELEASED) that does not require a 'start new release'. ")
+	print("    Patches may be applied directly to the branch as it currently stands.")
 	sys.exit(0)
 
 #------------------------------------------------------------------------------
