@@ -39,6 +39,10 @@ MODULE_PARM_DESC(noscan, "set to 1 to disable pci scan.");
 
 #define PCIE_BASE	((void __iomem *)DOVE_PCIE0_VIRT_BASE)
 
+#define PCIE_PHY_INDIRECT_ACCESS_REG	0x1B00
+#define  PCIE_PHY_INDIRECT_ACCESS_RD_FLAG	(1 << 31)
+#define  PCIE_PHY_INDIRECT_ACCESS_OFFSET	16
+
 void __init dove_pcie_id(u32 *dev, u32 *rev)
 {
 	*dev = orion_pcie_dev_id(PCIE_BASE);
@@ -48,13 +52,28 @@ void __init dove_pcie_id(u32 *dev, u32 *rev)
 /*
  * Optimal setting for PCIe clocks current drive - 13.5mA
  */
-static int dove_pcie_clk_out_config(int nr)
+static void dove_pcie_clk_out_config(int nr)
 {
 	u32 reg = readl(DOVE_PCIE_PORT_CONTROL);
 	reg |= 3 << (nr * 2);
 	writel(reg, DOVE_PCIE_PORT_CONTROL);
 }
 
+static void dove_pcie_tune_phy(void __iomem *base)
+{
+	u32 reg;
+	/* request read access of register 0x92 */
+	writel(PCIE_PHY_INDIRECT_ACCESS_RD_FLAG|
+	       0x92 << PCIE_PHY_INDIRECT_ACCESS_OFFSET
+	       , base + PCIE_PHY_INDIRECT_ACCESS_REG);
+	reg = readl(base + PCIE_PHY_INDIRECT_ACCESS_REG);
+	/* set bit 7:0 to 0x8B */
+	reg &= ~0xFF;
+	reg |= 0x8B;
+	/* clear the read flag */
+	reg &= ~PCIE_PHY_INDIRECT_ACCESS_RD_FLAG;
+	writel(reg, base + PCIE_PHY_INDIRECT_ACCESS_REG);
+}
 static int __init dove_pcie_setup(int nr, struct pci_sys_data *sys)
 {
 	struct pcie_port *pp;
@@ -67,6 +86,9 @@ static int __init dove_pcie_setup(int nr, struct pci_sys_data *sys)
 
 	/* dove specific clock settings */
 	dove_pcie_clk_out_config(nr);
+
+	/* dove specific phy settings */
+	dove_pcie_tune_phy(pp->base);
 
 	/*
 	 * Generic PCIe unit setup.
@@ -285,6 +307,7 @@ void dove_restore_pcie_regs(void)
 		orion_pcie_set_local_bus_nr(pcie_port[i].base, pcie_port[i].root_bus_nr);
 		orion_pcie_setup(pcie_port[i].base, &dove_mbus_dram_info);
 		dove_pcie_clk_out_config(i);
+		dove_pcie_tune_phy(pcie_port[i].base);
 	}
 
 	/* Enable Link on both ports */
