@@ -24,7 +24,13 @@ do
 
 	# Add the upstream repos as needed.
 	(
-		cd "$master_main/$repo"
+		if [ ! -d "$master_main/$repo" ]; then
+			echo "*** creating initial repo ($repo) ..."
+			mkdir -p "$master_main/$repo"
+			cd "$master_main/$repo" && git init
+		else
+			cd "$master_main/$repo"
+		fi
 		series_repo=`echo "$repo" | sed -e "s/linux/ubuntu-$series/"`
 		series_repo="$master_repo/$series_repo.git"
 		if ! git remote | grep "$series" >/dev/null 2>&1; then
