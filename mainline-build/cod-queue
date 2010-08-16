@@ -1,0 +1,12 @@
+#!/bin/bash
+
+queue="$HOME/COD/queue"
+
+count=`ls -1 "$queue" | wc -l`
+
+for i in "$queue"/*
+do
+	read cmd args <"$i"
+	cmd=`basename "$cmd"`
+	echo "$cmd $args"
+done
