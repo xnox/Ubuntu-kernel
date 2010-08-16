@@ -169,7 +169,8 @@ PkgList["lucid"] = dict([
 	( "lbm", "linux-backports-modules-2.6.32" )
 ])
 PkgList["maverick"] = dict([
-	( "linux", "linux" )
+	( "linux", "linux" ),
+	( "lbm", "linux-backports-modules-2.6.35" )
 ])
 
 #------------------------------------------------------------------------------
