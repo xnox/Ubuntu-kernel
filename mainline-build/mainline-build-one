@@ -115,6 +115,9 @@ if [ -d "$here/patches.$series" ]; then
 	git am -C1 "$here/patches.$series"/*
 fi
 
+# XXX: common processing
+. "$here/mainline-build-common"
+
 #
 # Rebuild the changelog.
 #
