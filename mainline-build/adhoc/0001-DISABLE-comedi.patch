@@ -1,0 +1,26 @@
+From e0841db2e7eaa92ec76a40a041ef8722fd8cad89 Mon Sep 17 00:00:00 2001
+From: Andy Whitcroft <apw@canonical.com>
+Date: Mon, 16 Aug 2010 18:06:33 +0100
+Subject: [PATCH 1/2] DISABLE: comedi
+
+TRIGGER 47a4f33c4733880faa50f0e64a6e5c8f drivers/staging/comedi/drivers/das08_cs.c
+---
+ drivers/staging/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index ca5c03e..db03e0f 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -16,7 +16,7 @@ obj-$(CONFIG_ECHO)		+= echo/
+ obj-$(CONFIG_OTUS)		+= otus/
+ obj-$(CONFIG_RT2860)		+= rt2860/
+ obj-$(CONFIG_RT2870)		+= rt2870/
+-obj-$(CONFIG_COMEDI)		+= comedi/
++#obj-$(CONFIG_COMEDI)		+= comedi/
+ obj-$(CONFIG_ASUS_OLED)		+= asus_oled/
+ obj-$(CONFIG_PANEL)		+= panel/
+ obj-$(CONFIG_R8187SE)		+= rtl8187se/
+-- 
+1.7.0.4
+

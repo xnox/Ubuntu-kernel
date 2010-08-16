@@ -1,0 +1,26 @@
+From 80ac84e51166a52b4e8d7c34d2ef9e5f8e0717b3 Mon Sep 17 00:00:00 2001
+From: Andy Whitcroft <apw@canonical.com>
+Date: Mon, 16 Aug 2010 18:18:43 +0100
+Subject: [PATCH 2/2] DISABLE: ti-st
+
+TRIGGER b41944e0c30683bdedb6a66e11098892  drivers/staging/ti-st/st_kim.c
+---
+ drivers/staging/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index db03e0f..97b9daf 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -49,7 +49,7 @@ obj-$(CONFIG_FB_SM7XX)		+= sm7xx/
+ obj-$(CONFIG_VIDEO_DT3155)	+= dt3155v4l/
+ obj-$(CONFIG_CRYSTALHD)		+= crystalhd/
+ obj-$(CONFIG_CXT1E1)		+= cxt1e1/
+-obj-$(CONFIG_TI_ST)		+= ti-st/
++#obj-$(CONFIG_TI_ST)		+= ti-st/
+ obj-$(CONFIG_ADIS16255)		+= adis16255/
+ obj-$(CONFIG_FB_XGI)		+= xgifb/
+ obj-$(CONFIG_TOUCHSCREEN_MRSTOUCH)	+= mrst-touchscreen/
+-- 
+1.7.0.4
+
