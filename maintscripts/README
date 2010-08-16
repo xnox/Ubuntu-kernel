@@ -3,8 +3,8 @@ cherry-pick:
 	with optional sign-off
 doc:
 	Contains documentation or example config files. The file
-        example-maintscripts.cfg should be copied to:
-        $HOME/.maintscripts.cfg
+        example-kteam.rc should be copied to:
+        $HOME/.kteam.rc
 git-compare:
 	Takes a git commit (SHA1) and will display the patch and the whole
 	context of the files changed by the patch, using meld.
