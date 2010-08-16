@@ -2,6 +2,7 @@
 # FLAVOUR
 # DESC
 # ARCH
+# POCKET
 # =PROVIDES=
 #
 # Items marked with =FOO= are optional
@@ -21,7 +22,7 @@ Description: compat-wireless Linux modules for version PKGVER on DESC
  kernel PKGVER on DESC.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-compat-wireless-2.6.34-FLAVOUR meta-package, which will ensure
+ the linux-backports-modules-wireless-POCKET-FLAVOUR meta-package, which will ensure
  that upgrades work correctly, and that supporting packages are also installed.
 
 Package: linux-backports-modules-compat-wireless-2.6.35-PKGVER-ABINUM-FLAVOUR
@@ -37,7 +38,7 @@ Description: compat-wireless Linux modules for version PKGVER on DESC
  kernel PKGVER on DESC.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-compat-wireless-2.6.35-FLAVOUR meta-package, which will ensure
+ the linux-backports-modules-compat-wireless-2.6.35-POCKET-FLAVOUR meta-package, which will ensure
  that upgrades work correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-PKGVER-ABINUM-FLAVOUR
@@ -63,7 +64,7 @@ Description: Ubuntu supplied Linux modules for version PKGVER ALSA snapshots.
  snapshots from http://www.alsa-project.org/main/index.php/Main_Page
  .
  You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-alsa-FLAVOUR meta-package, which will ensure that upgrades work
+ the linux-backports-modules-alsa-POCKET-FLAVOUR meta-package, which will ensure that upgrades work
  correctly, and that supporting packages are also installed.
 
 Package: linux-backports-modules-wwan-PKGVER-ABINUM-FLAVOUR
@@ -77,7 +78,7 @@ Description: Ubuntu supplied Linux modules for version PKGVER on DESC.
  This package contains WWAN modules supplied by Ubuntu for Linux PKGVER.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-wwan-FLAVOUR meta-package, which will ensure that
+ the linux-backports-modules-wwan-POCKET-FLAVOUR meta-package, which will ensure that
  upgrades work correctly, and that supporting packages are also installed.
 
 #Package: linux-backports-modules-nouveau-PKGVER-ABINUM-FLAVOUR
@@ -92,6 +93,6 @@ Description: Ubuntu supplied Linux modules for version PKGVER on DESC.
 # snapshots from linux mainline.
 # .
 # You likely do not want to install this package directly. Instead, install
-# the linux-backports-modules-nouveau-FLAVOUR meta-package, which will ensure that upgrades work
+# the linux-backports-modules-nouveau-POCKET-FLAVOUR meta-package, which will ensure that upgrades work
 # correctly, and that supporting packages are also installed.
 

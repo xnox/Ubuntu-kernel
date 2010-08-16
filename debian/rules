@@ -75,8 +75,9 @@ debian/control.stub: debian/d-i/kernel-versions.in	\
 	flavours="$(wildcard debian/control.d/vars.*)";				\
 	for i in $$flavours; do							\
 	  $(SHELL) debian/scripts/control-create $$i |				\
-		sed -e 's/PKGVER/$(pkgversion)/g' -e 's/ABINUM/$(abinum)/g' >>	\
-		$@.tmp;						\
+		sed -e 's/PKGVER/$(pkgversion)/g' -e 's/ABINUM/$(abinum)/g'	\
+		-e 's/POCKET/$(pocket)/g'					\
+		>> $@.tmp;							\
 	done
 	rm -f $@
 	mv $@.tmp $@

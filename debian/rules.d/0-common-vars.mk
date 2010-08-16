@@ -1,3 +1,4 @@
+pocket=lucid
 release := $(shell sed -n '1s/^.*(\(.*\)-.*).*$$/\1/p' debian/changelog)
 
 pkgversion := $(shell sed -n '1s/^linux-backports-modules-\([^ ]*\) .*/\1/p' debian/changelog)
