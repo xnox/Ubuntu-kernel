@@ -22,3 +22,10 @@ Now you can build against an arbitrary SHA1 using any series as a base. For exam
 This will create a branch BUILD.020633rc1, pull the maverick debian bits, then build the kernel.
 
 
+== Ad Hoc patches ==
+
+The adhoc patches directory contains a series of automatically triggered patches.
+Each patch contains a TRIGGER line in the commentary section.  This lists the
+md5sum and filename of a file in the source tree.  When this file is found
+with the same sum the patch is applied, otherwise it is not.  This allows
+patches to be added for specific source combinations.
