@@ -74,12 +74,16 @@ do
 	fi
 done <<EOL
 linux maverick master
+linux-lbm maverick master
 linux-meta maverick master
 linux lucid master
+linux-lbm lucid master
 linux-meta lucid master
 linux karmic master
+linux-lbm karmic master
 linux-meta karmic master
 linux jaunty master
+linux-lbm jaunty master
 linux-meta jaunty master
 linux hardy master
 linux-meta hardy master
