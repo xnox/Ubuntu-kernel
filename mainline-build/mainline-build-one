@@ -48,8 +48,8 @@ if [ "$abinum" = "" ]; then
 	abinum="$long_abinum"
 fi
 
-# No upload number for tagged releases.
-upload=''
+# use the date as an upload number so we can tell different builds apart.
+upload=".`date +%Y%m%d%H%M`"
 
 # Produce CHANGES fragment.
 if [ "$log_enabled" -eq 1 ]; then

@@ -47,7 +47,7 @@ if [ "$abinum" = "" ]; then
 	abinum="$long_abinum"
 fi
 
-# Crack of the day is always ABI -999 or similar.
+# use the date as an upload number so we can tell different builds apart.
 upload=".`date +%Y%m%d%H%M`"
 
 # Produce CHANGES fragment.
