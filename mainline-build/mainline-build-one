@@ -62,9 +62,9 @@ fi
 # do not maintain this then the modules directory will not match uname -r.
 version=`echo "$full_version" | sed -e 's/\([0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\).*/\1/'`
 
-# Encode the real version number plus the abbreviated sha1 from git describe
-# output as the ABI.  We encode the version number by expanding the numbers
-# to be 2 digits and removing the '.' and '-' characters, for example:
+# Encode the real version number as the ABI.  We encode the version
+# number by expanding the numbers to be at least 2 digits and removing the
+# '.' and '-' characters, for example:
 #
 #  2.6.27.12	02062712
 #  2.6.29-rc3   020629rc3
