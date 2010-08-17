@@ -44,6 +44,9 @@ v*)
 	exit 1
 esac
 
+# No upload number for tagged releases.
+upload=''
+
 if [ "$log_enabled" -eq 1 ]; then
 	log_from=`git describe "$commit^"`
 	if [ "$?" -eq 0 ]; then
@@ -132,9 +135,9 @@ do
 done 
 changelog="$debian/changelog"
 rm -f "$changelog"
-EDITOR=":" dch -v "${version}-$abinum" --distribution "UNRELEASED" \
+EDITOR=":" dch -v "${version}-$abinum$upload" --distribution "$series" \
 	--package linux --create -c "$changelog" </dev/null
-sed -e "s/\* .*/* Mainline release $version/" \
+sed -e "s/\* .*/* Mainline build at commit: $long/" \
 	<"$changelog" >"$changelog.new"
 mv -f "$changelog.new" "$changelog"
 git commit -a -m "debian changelog"

@@ -41,7 +41,7 @@ v*)
 esac
 
 # Crack of the day is always ABI -999 or similar.
-upload=`date +%Y%m%d%H%M`
+upload=".`date +%Y%m%d%H%M`"
 
 # The base version is always the first X.Y.Z part of the version number.  If we
 # do not maintain this then the modules directory will not match uname -r.
@@ -104,9 +104,9 @@ do
 done 
 changelog="$debian/changelog"
 rm -f "$changelog"
-EDITOR=":" dch -v "${version}-$abinum.$upload" --distribution "$series" \
+EDITOR=":" dch -v "${version}-$abinum$upload" --distribution "$series" \
 	--package linux --create -c "$changelog" </dev/null
-sed -e "s/\* .*/* Crack of the day commit: $long/" \
+sed -e "s/\* .*/* Mainline build at commit: $long/" \
 	<"$changelog" >"$changelog.new"
 mv -f "$changelog.new" "$changelog"
 git commit -a -m "debian changelog"
