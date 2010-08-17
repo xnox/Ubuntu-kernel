@@ -114,6 +114,19 @@ echo "^^^ - build head"
 #
 git checkout "$series/master" -- debian
 git checkout "$series/master" -- debian.master
+
+# Disable the ABI, module, and aliases checks.
+for i in debian/scripts/*-check debian.master/scripts/*-check
+do
+	if [ -f "$i" ]; then
+		cat - <<EOM >"$i"
+#!/bin/sh
+exit 0
+EOM
+		chmod 755 "$i"
+	fi
+done
+# Commit the packaging.
 git commit -a -m "base packaging"
 
 #
@@ -167,20 +180,9 @@ dchroot --directory=`pwd` -c "$build_release" \
 git commit -a -m "default configs"
 
 #
-# Disable the ABI, module, and aliases checks.
+# Record the patches.
 #
-for i in debian/scripts/*-check debian.master/scripts/*-check
-do
-	if [ -f "$i" ]; then
-		cat - <<EOM >"$i"
-#!/bin/sh
-exit 0
-EOM
-		chmod 755 "$i"
-	fi
-done
-
-git commit -a -m "fix up build checks"
+git format-patch -o ".." "$commit..HEAD"
 
 # Ensure the build directories are pristine.
 git clean -x -f -d
@@ -193,7 +195,7 @@ git clean -x -f -d
 dchroot --directory=`pwd` -c "$build_release" \
 	"fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
-	"fakeroot debian/rules do_tools=0 no_dumpfile=1 do_linux_source_content=true binary-indep"
+	"fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-indep"
 dchroot --directory=`pwd` -c "$build_release" \
 	"fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \

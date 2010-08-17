@@ -42,7 +42,7 @@ master_tree="$master_main/linux"
 cd "$master_tree" || exit 1
 
 # Clean out the rubbish.
-rm -f "$master_main"/*.deb "$master_main/BUILD.LOG" "$master_main/CHANGES"
+rm -f "$master_main"/*.deb "$master_main/BUILD.LOG" "$master_main/CHANGES" "$master_main"/*.patch
 
 # We finally have the tree in a consitant state, finally ask for the build
 if [ "$abi" != "" ]; then
@@ -60,10 +60,11 @@ fi
 
 mkdir -p "$html"
 mv "$master_main/BUILD.LOG" "$html"
-mv "$master_main/"linux-{headers,image,source}-*.deb "$html"
+mv "$master_main/"linux-{headers,image}-*.deb "$html"
 if [ -f "$master_main/CHANGES" ]; then
 	mv "$master_main/CHANGES" "$html"
 fi
+mv "$master_main"/*.patch "$html"
 
 # All done report this to the kernel-team
 $email "$here/mainline-announce"  "$commit" "$commit-$master_release"
