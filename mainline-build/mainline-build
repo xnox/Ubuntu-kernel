@@ -47,7 +47,7 @@ rm -f "$master_main"/*.deb
 # We finally have the tree in a consitant state, finally ask for the build
 if [ "$abi" != "" ]; then
 	email=":"
-	"$here/mainline-build-crack" "$commit" "$master_release" "$abi" 2>&1 | \
+	"$here/mainline-build-one" "$commit" "$master_release" "$abi" 2>&1 | \
 		tee "$master_main/BUILD.LOG"
 	#date="`date +%F`"
 	html="$HOME/public_html/mainline/$base/$date-$master_release"
