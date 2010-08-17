@@ -87,8 +87,6 @@ git commit -a -m "base packaging"
 #
 # ALL: allow us to default new config options.
 #
-## XXX: git am -C0 "$here/0001-disable-udebs.patch"
-
 if [ -d "$here/patches.$series" ]; then
 	echo "*** applying patches for series:$series ..."
 	git am -C1 "$here/patches.$series"/*
@@ -122,7 +120,6 @@ fi
 BUILD_CONFIG_OVERRIDE="$here/config.$series"
 dchroot --directory=`pwd` -c "$build_release" \
 	"BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' fakeroot debian/rules clean defaultconfigs"
-##BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' schroot --directory=`pwd` -c "$build_release-i386" fakeroot debian/rules defaultconfigs
 git commit -a -m "default configs"
 
 #
@@ -147,7 +144,8 @@ git clean -x -f -d
 #
 # Build the source package.
 #
-##dpkg-buildpackage -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa
+#dpkg-buildpackage -S -sd -rfakeroot -I.git -I.gitignore -i'\.git.*'
+#dpkg-buildpackage -b
 dchroot --directory=`pwd` -c "$build_release" \
         "fakeroot debian/rules clean"
 dchroot --directory=`pwd` -c "$build_release" \
