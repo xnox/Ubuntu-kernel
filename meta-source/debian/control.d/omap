@@ -2,7 +2,7 @@ Package: linux-linaro-headers-omap
 Architecture: armel
 Section: devel
 Priority: optional
-Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-omap 
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-linaro-omap 
 Description: Linux kernel headers for the OMAP architecture.
  This package will always depend on the latest kernel headers available
  for ARM TI OMAP3 systems.
@@ -11,7 +11,7 @@ Package: linux-linaro-image-omap
 Architecture: armel
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-omap, linux-firmware
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-linaro-omap, linux-firmware
 Description: Linux kernel image for the OMAP architecture.
  This package will always depend on the latest kernel image available
  for ARM TI OMAP3 systems.
