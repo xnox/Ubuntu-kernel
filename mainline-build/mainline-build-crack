@@ -17,9 +17,11 @@ commit="$1"
 series="$2"
 abinum="$3"
 
+build_release="hardy"
+
 echo "*** BUILDING CRACK: commit:$1 series:$2 ..."
 
-build_release="hardy"
+log_enabled=0
 
 long=`git describe "$commit"`
 if [ "$?" -ne 0 ]; then
@@ -42,6 +44,17 @@ esac
 
 # Crack of the day is always ABI -999 or similar.
 upload=".`date +%Y%m%d%H%M`"
+
+# Produce CHANGES fragment.
+if [ "$log_enabled" -eq 1 ]; then
+	log_from=`git describe "$commit^"`
+	if [ "$?" -eq 0 ]; then
+		log_from="${log_from%-*}"
+		log_from="${log_from%-*}"
+
+		git shortlog "$log_from..$commit" >"../CHANGES"
+	fi
+fi
 
 # The base version is always the first X.Y.Z part of the version number.  If we
 # do not maintain this then the modules directory will not match uname -r.

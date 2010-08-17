@@ -47,6 +47,7 @@ esac
 # No upload number for tagged releases.
 upload=''
 
+# Produce CHANGES fragment.
 if [ "$log_enabled" -eq 1 ]; then
 	log_from=`git describe "$commit^"`
 	if [ "$?" -eq 0 ]; then
