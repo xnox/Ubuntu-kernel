@@ -78,10 +78,6 @@ abinum=`echo "$abinum" | awk -F'[.-]' '{
 	}
 }'`
 
-release=`pwd`
-release=${release#*/ubuntu-}
-release=${release%-build}
-
 echo "full_version<$full_version>"
 echo "version<$version>"
 echo "long<$long>"
