@@ -15,10 +15,11 @@ esac
 
 commit="$1"
 series="$2"
+abinum="$3"
 
 build_release="hardy"
 
-echo "*** BUILDING: commit:$1 series:$2 ..."
+echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
 
 log_enabled=0
 
@@ -32,17 +33,20 @@ v*-*[0-9]-g*)
 	full_version="${long#v}"
 	full_version="${full_version%-*}"
 	full_version="${full_version%-*}"
-	abinum="$full_version${long##*-}"
+	long_abinum="$full_version${long##*-}"
 	;;
 v*)
 	full_version="${long#v}"
-	abinum="$full_version"
+	long_abinum="$full_version"
 	log_enabled=1
 	;;
 *)
 	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
 	exit 1
 esac
+if [ "$abinum" = "" ]; then
+	abinum="$long_abinum"
+fi
 
 # No upload number for tagged releases.
 upload=''

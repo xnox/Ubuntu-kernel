@@ -19,7 +19,7 @@ abinum="$3"
 
 build_release="hardy"
 
-echo "*** BUILDING CRACK: commit:$1 series:$2 ..."
+echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
 
 log_enabled=0
 
@@ -33,14 +33,19 @@ v*-*[0-9]-g*)
 	full_version="${long#v}"
 	full_version="${full_version%-*}"
 	full_version="${full_version%-*}"
+	long_abinum="$full_version${long##*-}"
 	;;
 v*)
 	full_version="${long#v}"
+	long_abinum="$full_version"
 	;;
 *)
 	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
 	exit 1
 esac
+if [ "$abinum" = "" ]; then
+	abinum="$long_abinum"
+fi
 
 # Crack of the day is always ABI -999 or similar.
 upload=".`date +%Y%m%d%H%M`"
