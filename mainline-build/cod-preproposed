@@ -77,7 +77,7 @@ dchroot --directory=`pwd` -c "$build_release" \
 git commit -a -m "CHANGES"
 
 # Clean out the rubbish.
-rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes
+rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes "$master_main"/*.upload
 
 #
 # Build the source package.

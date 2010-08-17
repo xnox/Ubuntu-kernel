@@ -42,7 +42,7 @@ master_tree="$master_main/linux"
 cd "$master_tree" || exit 1
 
 # Clean out the rubbish.
-rm -f "$master_main"/*.deb
+rm -f "$master_main"/*.deb "$master_main/BUILD.LOG" "$master_main/CHANGES"
 
 # We finally have the tree in a consitant state, finally ask for the build
 if [ "$abi" != "" ]; then
