@@ -100,6 +100,11 @@ rm -rf .dotest
 #
 git checkout -b "$branch" "$commit" -- || exit 1
 
+# Report the head for posterity.
+echo "vvv - build head"
+git log -1 HEAD
+echo "^^^ - build head"
+
 #
 # Pull in the packaging from the head of our tree.
 #

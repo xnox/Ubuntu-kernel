@@ -70,7 +70,7 @@ rm -rf .dotest
 #
 # Checkout the source at the specified version.
 #
-git checkout -b "$branch" "$long" -- || exit 1
+git checkout -b "$branch" "$commit" -- || exit 1
 
 # Report the head for posterity.
 echo "vvv - build head"
