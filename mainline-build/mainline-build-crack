@@ -38,6 +38,7 @@ v*-*[0-9]-g*)
 v*)
 	full_version="${long#v}"
 	long_abinum="$full_version"
+	log_enabled=1
 	;;
 *)
 	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
