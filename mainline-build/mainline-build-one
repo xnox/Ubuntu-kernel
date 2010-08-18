@@ -2,8 +2,8 @@
 
 P="build-mainline-one"
 
-if [ "$#" -ne 2 ]; then
-	echo "Usage: $P <tag> <series>" 1>&2
+if [ "$#" -ne 2 -a "$#" -ne 3 ]; then
+	echo "Usage: $P <tag> <series> [<abinum>" 1>&2
 	exit 1
 fi
 
