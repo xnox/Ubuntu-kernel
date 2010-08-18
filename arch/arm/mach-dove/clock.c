@@ -25,6 +25,9 @@
 #include "mvOs.h"
 #include "pmu/mvPmuRegs.h"
 
+#define AXI_BASE_CLK	(2000000000ll)	/* 2000MHz */
+extern unsigned int lcd_accurate_clock;
+
 /* downstream clocks*/
 void ds_clks_disable_all(int include_pci0, int include_pci1)
 {
@@ -303,7 +306,7 @@ static int vmeta_set_clock(struct clk *clk, unsigned long rate)
 	return 0;
 }
 
-static void set_external_lcd_clock(u32 clock_div, u32 is_half_div)
+static void set_lcd_internal_ref_clock(u32 clock_div, u32 is_half_div)
 {
 	u32	reg;
 	u32	old_clock_div, old_half_div;
@@ -372,6 +375,129 @@ static void set_external_lcd_clock(u32 clock_div, u32 is_half_div)
 	return;
 }
 
+
+static inline u64 calc_diff(u64 a, u64 b)
+{
+	if (a > b)
+		return a - b;
+	else
+		return b - a;
+}
+static void calc_best_clock_div(u32 tar_freq, u32 *axi_div,
+		u32 *lcd_div, u32 *is_ext_rem)
+{
+	u64 req_div;
+	u64 best_rem = 0xFFFFFFFFFFFFFFFFll;
+	unsigned int best_axi_div = 0;
+	unsigned int best_lcd_div = 0;
+	u64 tmp_lcd_div;
+	int ext_rem = 0;
+	u32 i, borders;
+	u64 rem;
+	u64 temp;
+	int override = 0;	/* Used to mark special cases where the LCD */
+	int div_2_skip = 3;	/* divider value is not recommended.	    */
+				/* (in our case it's divider 3).	    */
+
+	/* Calculate required dividor */
+	req_div = AXI_BASE_CLK;
+	do_div(req_div, tar_freq);
+
+	/* Look for the whole division with the smallest remainder */
+	for (i = 5; i < 64; i++) {
+		temp = (u64)tar_freq * (u64)i;
+		borders = req_div;
+		do_div(borders, i);
+		/* The LCD divsion must be smaller than 64K */
+		if (borders < SZ_64K) {
+			tmp_lcd_div = AXI_BASE_CLK;
+			/* We cannot do 64-bit / 64-bit operations,
+			** thus... */
+			do_div(tmp_lcd_div, i);
+			do_div(tmp_lcd_div, tar_freq);
+			rem = calc_diff(AXI_BASE_CLK, (temp * tmp_lcd_div));
+			if ((rem < best_rem) ||
+			    ((override == 1) && (rem == best_rem))) {
+				best_rem = rem;
+				best_axi_div = i;
+				best_lcd_div = tmp_lcd_div;
+				override = ((best_lcd_div == div_2_skip) ?
+						1 : 0);
+			}
+			if ((best_rem == 0) && (override == 0))
+				break;
+			/* Check the next LCD divider */
+			tmp_lcd_div++;
+			rem = calc_diff((temp * tmp_lcd_div), AXI_BASE_CLK);
+			if ((rem < best_rem) ||
+			    ((override == 1) && (rem == best_rem))) {
+				best_rem = rem;
+				best_axi_div = i;
+				best_lcd_div = tmp_lcd_div;
+				override = ((best_lcd_div == div_2_skip) ?
+						1 : 0);
+			}
+			if ((best_rem == 0) && (override == 0))
+				break;
+		}
+	}
+
+	/* Look for the extended division with the smallest remainder */
+	if (best_rem != 0) {
+		req_div = AXI_BASE_CLK * 10;
+		do_div(req_div, tar_freq);
+		/* Half div can be between 12.5 & 31.5 */
+		for (i = 55; i <= 315; i += 10) {
+			temp = (u64)tar_freq * (u64)i;
+			borders = req_div;
+			do_div(borders, i);
+			if (borders < SZ_64K) {
+				tmp_lcd_div = AXI_BASE_CLK * 10;
+				/* We cannot do 64-bit / 64-bit operations,
+				** thus... */
+				do_div(tmp_lcd_div, i);
+				do_div(tmp_lcd_div, tar_freq);
+
+				rem = calc_diff(AXI_BASE_CLK * 10,
+						(tmp_lcd_div * temp));
+				do_div(rem, 10);
+				if ((rem < best_rem) ||
+				    ((override == 1) && (rem == best_rem))) {
+					ext_rem = 1;
+					best_rem = rem;
+					best_axi_div = i / 10;
+					best_lcd_div = tmp_lcd_div;
+					override = ((best_lcd_div == div_2_skip)
+							? 1 : 0);
+				}
+				if ((best_rem == 0) && (override == 0))
+					break;
+				/* Check next LCD divider */
+				tmp_lcd_div++;
+				rem = calc_diff((tmp_lcd_div * temp),
+						AXI_BASE_CLK * 10);
+				do_div(rem, 10);
+				if ((rem < best_rem) ||
+				    ((override == 1) && (rem == best_rem))) {
+					ext_rem = 1;
+					best_rem = rem;
+					best_axi_div = i / 10;
+					best_lcd_div = tmp_lcd_div;
+					override = ((best_lcd_div == div_2_skip)
+							? 1 : 0);
+				}
+				if ((best_rem == 0) && (override == 0))
+					break;
+			}
+		}
+	}
+
+	*is_ext_rem = ext_rem;
+	*lcd_div = best_lcd_div;
+	*axi_div = best_axi_div;
+	return;
+}
+
 static unsigned long lcd_get_clock(struct clk *clk)
 {
 	u32 c;
@@ -400,15 +526,19 @@ static unsigned long lcd_get_clock(struct clk *clk)
 	return c;
 }
 
- int lcd_set_clock(struct clk *clk, unsigned long rate)
+int lcd_set_clock(struct clk *clk, unsigned long rate)
 {
-	u32	clock_div, half_div;
+	u32 axi_div, lcd_div, is_ext = 0;
 
-	clock_div = 2000000000/rate;
-	half_div = ((2000000000%rate) - rate/2) ? 1:0;
+	if (lcd_accurate_clock)
+		calc_best_clock_div(rate, &axi_div, &lcd_div, &is_ext);
+	else
+		axi_div = 2000000000 / rate;
 
-	printk(KERN_INFO "set external divider to %d.%d\n", clock_div, half_div ? 5:0 );
-	set_external_lcd_clock(clock_div, half_div);
+	printk(KERN_INFO "set external divider to %d.%d\n", axi_div,
+	       is_ext ? 5 : 0);
+	set_lcd_internal_ref_clock(axi_div, is_ext);
+
 	return 0;
 }
 
@@ -637,6 +767,8 @@ const struct clkops axi_clk_ops = {
 const struct clkops lcd_clk_ops = {
 	.enable		= __lcd_clk_enable,
 	.disable	= __lcd_clk_disable,
+	.getrate	= lcd_get_clock,
+	.setrate	= lcd_set_clock,
 };
 
 int clk_enable(struct clk *clk)
