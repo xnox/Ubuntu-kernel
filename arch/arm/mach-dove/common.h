@@ -68,6 +68,10 @@ void dove_hwmon_init(void);
 void dove_ssp_init(struct dove_ssp_platform_data *pdata);
 void dove_ac97_setup(void);
 
+#ifdef CONFIG_USB_ANDROID
+void dove_udc_init(void);
+void android_add_usb_devices(void);
+#endif
 /*
  * Basic Dove PM functions
  */
