@@ -1011,6 +1011,11 @@ static void __init dove_rd_avng_init(void)
         android_add_pmem("pmem", 0x01800000UL, 1, 0);
         android_add_pmem("pmem_adsp", 0x04000000UL, 0, 0);
 #endif
+
+#ifdef CONFIG_USB_ANDROID
+	dove_udc_init();
+	android_add_usb_devices();
+#endif
 }
 
 MACHINE_START(DOVE_RD_AVNG, "Marvell MV88F6781-RD Avengers MID Board")

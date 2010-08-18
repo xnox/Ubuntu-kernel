@@ -59,6 +59,9 @@
 #include <mach/pm.h>
 #include "clock.h"
 #include "twsi.h"
+#ifdef CONFIG_USB_ANDROID
+#include <linux/usb/android_composite.h>
+#endif
 
 static unsigned int dove_vmeta_memory_start;
 static unsigned int dove_gpu_memory_start;
@@ -536,6 +539,7 @@ void __init dove_ehci1_init(void)
 #endif
 	platform_device_register(&dove_ehci1);
 }
+
 #ifdef CONFIG_MV_ETHERNET
 /*****************************************************************************
  * Ethernet
@@ -1991,4 +1995,83 @@ void dove_restore_int_regs(void)
 	DOVE_DWNSTRM_BRDG_RESTORE(ENDPOINT_MASK_HIGH);
 	DOVE_DWNSTRM_BRDG_RESTORE(PCIE_INTERRUPT_MASK);
 }
+#endif
+
+
+
+#ifdef CONFIG_USB_ANDROID
+static char *usb_functions[] = {
+#ifdef CONFIG_USB_ANDROID_ADB
+        "adb",
+#endif
+#ifdef CONFIG_USB_ANDROID_RNDIS
+        "rndis",
+#endif
+#ifdef CONFIG_USB_ANDROID_ACM
+        "acm",
+#endif
+#if defined(CONFIG_USB_ANDROID_MASS_STORAGE) || defined(CONFIG_USB_FILE_STORAG)
+        "usb_mass_storage",
+#endif
+};
+
+#if defined(CONFIG_USB_ANDROID_MASS_STORAGE) || defined(CONFIG_USB_FILE_STORAG)
+static struct usb_mass_storage_platform_data mass_storage_pdata = {
+        .nluns = 2,
+        .vendor = "Marvell     ",
+        .product = "Android   ",
+        .release = 0x0100,
+};
+
+
+static struct platform_device usb_mass_storage_device = {
+        .name = "usb_mass_storage",
+        .id = -1,
+        .dev = {
+                .platform_data = &mass_storage_pdata,
+        },
+};
+#endif
+
+static struct android_usb_platform_data android_usb_pdata = {
+        .vendor_id      = 0x0bb4, //temporary use HTC vendor name
+        .product_id     = 0x0c01,
+        .version        = 0x0100,
+        .product_name   = "Android",
+        .manufacturer_name = "Marvell",
+        .num_functions  = ARRAY_SIZE(usb_functions),
+        .functions      = &usb_functions,
+};
+
+static struct platform_device android_device_usb = {
+        .name   = "android_usb",
+        .id             = -1,
+        .dev            = {
+                .platform_data = &android_usb_pdata,
+        },
+};
+
+
+void android_add_usb_devices(void)
+{
+#if defined(CONFIG_USB_ANDROID_MASS_STORAGE) || defined(CONFIG_USB_FILE_STORAG)
+        platform_device_register(&usb_mass_storage_device);
+#endif
+        platform_device_register(&android_device_usb);
+}
+
+
+struct platform_device dove_udc = {
+        .name           = "mv_udc",
+        .id             = -1,
+        .resource       = dove_ehci1_resources,
+        .num_resources  = ARRAY_SIZE(dove_ehci1_resources),
+
+};
+
+void __init dove_udc_init(void)
+{
+        platform_device_register(&dove_udc);
+}
+
 #endif

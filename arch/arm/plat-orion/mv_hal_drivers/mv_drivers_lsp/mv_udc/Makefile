@@ -18,5 +18,5 @@ OBJS        := mv_udc_main.o ../$(USB_DEV_DIR)/mvUsbDevCh9.o ../$(USB_DEV_DIR)/m
 	       ../$(USB_DEV_DIR)/mvUsbHsDevUtl.o  ../$(USB_DEV_DIR)/mvUsbHsDevMain.o ../$(USB_DEV_DIR)/mvUsbHsDevCncl.o
 
 mv_udc-objs := $(OBJS)
-obj-m := mv_udc.o
+obj-$(CONFIG_USB_MRVL) := mv_udc.o
 
