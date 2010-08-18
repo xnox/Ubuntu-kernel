@@ -1012,7 +1012,11 @@ static int __init dovefb_probe(struct platform_device *pdev)
 		info->clk = clk_get(&pdev->dev, dmi->ext_refclk_name);
 		dev_info(&pdev->dev, "use external ref clock %s\n", dmi->ext_refclk_name);
 	} else
+#ifdef CONFIG_FB_DOVE_CLCD_USE_PLL_CLK
 		info->clk = clk_get(&pdev->dev, "LCDCLK");
+#else
+		info->clk = clk_get(&pdev->dev, "AXICLK");
+#endif
 
 	if (IS_ERR(info->clk))
 		dev_notice(&pdev->dev, "cannot get clkdev\n");

@@ -64,8 +64,6 @@ static const u8 edid_header[] = {
         0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00
 };
 
-static int init_inter_ref_divider;
-
 static void set_clock_divider(struct dovefb_layer_info *dfli,
 	const struct fb_videomode *m)
 {
@@ -74,7 +72,7 @@ static void set_clock_divider(struct dovefb_layer_info *dfli,
 	u64 div_result;
 	u32 x = 0, x_bk;
 	struct dovefb_info *info = dfli->info;
-	u32 axi_clk;
+	u32 ref_clk;
 	struct dovefb_mach_info *dmi = dfli->dev->platform_data;
 	u32 isInterlaced = 0;
 
@@ -92,59 +90,80 @@ static void set_clock_divider(struct dovefb_layer_info *dfli,
 		return;
 	}
 
+	/*
+	 * Check interlaced mode
+	 */
 	isInterlaced = (m->vmode & FB_VMODE_INTERLACED) ? 1 : 0;
 
-	/*
-	 * Using PLL/AXI clock.
+	/* Select clk source.
+	 * 0x0 = AXI Clock, 333MHz, We don't change it.
+	 * 0x1 = external reference clock#0
+	 * 0x2 = PLL Clock, Original PLL clock is 2GHz.
+	 *       a. when under inaccurate mode, we fix it to a specific
+	 *          speed according Kconfig(default 1GHz).
+	 *       b. When under accurate mode, PLL clk divider and LCD
+	 *          internal divider will be configured to apropriate
+	 *          value to get most accurate pixel clock.
+	 * 0x3 = external reference clock#1
 	 */
-#ifdef CONFIG_FB_DOVE_CLCD_USE_PLL_CLK
-	x = 0x80000000;
-#endif
-
-	/*
-	 * Calc divider according to refresh rate.
-	 */
-	div_result = 1000000000000ll;
-
-	if(info->fixed_output)
-		m = &info->out_vmode;
-
-	do_div(div_result, m->pixclock);
-	needed_pixclk = (u32)(isInterlaced ? (div_result/2) : div_result);
-
 	if (info->use_external_refclk) {
-		if (clk_set_rate(info->clk, needed_pixclk)) {
-			printk(KERN_ERR "failed to set external clk to rate %ud.\n", needed_pixclk);
-			return;
-		}
-		divider_int = 1; //don't use clk divider
-
-		/* SCLK Source Select */
 		if (info->ext_refclk == 0)
 			x = 1 << 30;
 		else
 			x = 3 << 30;
-	} else {
-		if (lcd_accurate_clock) {
+	} else
+#ifdef CONFIG_FB_DOVE_CLCD_USE_PLL_CLK
+		x = 2 << 30;
+#else
+		x = 0 << 30;
+#endif
+
+	/*
+	 * If under fixed output mode, choosing fixed video mode.
+	 */
+	if(info->fixed_output)
+		m = &info->out_vmode;
+
+	/*
+	 * fb video mode is pico second not pixel clock speed.
+	 * Pixel clock = 1000,000,000,000 / pico second
+	 */
+	div_result = 1000000000000ll;
+	do_div(div_result, m->pixclock);
+
+	/*
+	 * If turn on interlaced mode, pixel clock only needs half speed.
+	 */
+	needed_pixclk = (u32)(isInterlaced ? (div_result/2) : div_result);
+
+	/*
+	 * Configure reference clock speed and lcd internal internal divider.
+	 */
+	/*
+	 * 1. Set up reference clock speed.
+	 *    a. If select AXI as reference clk, skip configure ref clk speed.
+	 *    b. If not accurate mode, set to fixed speed as Kconfig.
+	 */
+	if (0 != x) {
+		if (!lcd_accurate_clock)
+			clk_set_rate(info->clk, dmi->sclk_clock);
+		else
 			clk_set_rate(info->clk, needed_pixclk);
-
-			axi_clk = clk_get_rate(info->clk);
-			divider_int = (axi_clk + (needed_pixclk / 2)) / needed_pixclk;
-		} else {
-			if (0 == init_inter_ref_divider) {
-				init_inter_ref_divider = 1;
-				clk_set_rate(info->clk, dmi->sclk_clock);
-			}
-
-			divider_int = (dmi->sclk_clock + (needed_pixclk / 2)) / needed_pixclk;
-			/* check whether divisor is too small. */
-			if (divider_int < 2) {
-				printk(KERN_WARNING "Warning: clock source is too slow."
-				       "Try smaller resolution\n");
-				divider_int = 2;
-			}
-		}
 	}
+
+	/*
+	 * 2. Calc LCD internal divider
+	 */
+	ref_clk = clk_get_rate(info->clk);
+	divider_int = (ref_clk + (needed_pixclk / 2)) / needed_pixclk;
+
+	/* check whether internal divisor is too small. */
+	if (divider_int < 1) {
+		printk(KERN_WARNING "Warning: clock source is too slow."
+		       "Try smaller resolution\n");
+		divider_int = 1;
+	}
+
 	/*
 	 * Set setting to reg.
 	 */
@@ -1420,8 +1439,6 @@ int dovefb_gfx_suspend(struct dovefb_layer_info *dfli, pm_message_t mesg)
 	printk(KERN_INFO "dovefb_gfx: suspend lcd %s\n", fi->fix.id);
 	printk(KERN_INFO "dovefb_gfx: save resolution: <%dx%d>\n",
 		var->xres, var->yres);
-
-	init_inter_ref_divider = 0;
 
 	if (mesg.event & PM_EVENT_SLEEP) {
 		fb_set_suspend(fi, 1);
