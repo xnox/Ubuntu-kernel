@@ -392,8 +392,8 @@ struct dovefb_info {
 
 	char				*mode_option;
 	struct clk			*clk;
-	int				use_external_refclk;
-	int				ext_refclk;
+	int				clk_src;
+	int				accurate_clk;
 	int				io_pin_allocation;
 
 	int			pix_fmt;
@@ -421,9 +421,9 @@ struct dovefb_mach_info {
 	char		id_gfx[16];
 	char		id_ovly[16];
 	unsigned int	sclk_clock;
-	int		use_external_refclk;
-	int		ext_refclk;
-	char		*ext_refclk_name;
+	int		clk_src;
+	int		accurate_clk;
+	char		*clk_name;
 	int		num_modes;
 	struct fb_videomode *modes;
 
