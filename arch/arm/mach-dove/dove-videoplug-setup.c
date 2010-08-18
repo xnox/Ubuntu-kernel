@@ -72,9 +72,8 @@ static struct dovefb_mach_info dove_videoplug_lcd0_dmi = {
 	.id_ovly		= "Video Layer 0",
 	.sclk_clock		= LCD_SCLK,
 
-	.use_external_refclk = 1, //enable using external clock
-	.ext_refclk = 1, // use clock 1
-	.ext_refclk_name = "IDT_CLK1", //use clock 1
+	.clk_src		= 1, /* enable using external clock */
+	.clk_name		= "IDT_CLK1", /* use clock 1 */
 
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
@@ -140,7 +139,7 @@ void __init dove_videoplug_clcd_init(void) {
 
 	/* LCD external clock supported only starting from rev A0 */
 	if (rev < DOVE_REV_A0)
-		dove_videoplug_lcd0_dmi.use_external_refclk = 0;
+		dove_videoplug_lcd0_dmi.clk_src = 1;
 
 	clcd_platform_init(&dove_videoplug_lcd0_dmi, &dove_videoplug_lcd0_vid_dmi,
 			   NULL, NULL, NULL);

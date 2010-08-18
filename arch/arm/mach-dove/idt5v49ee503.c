@@ -1013,6 +1013,10 @@ static void  idt_clk_disable(struct clk *clk)
 
 	return;
 }
+static unsigned long idt_clk_getrate(struct clk *clk)
+{
+	return *(clk->rate);
+}
 
 static int idt_clk_setrate(struct clk *clk, unsigned long rate)
 {
@@ -1053,6 +1057,7 @@ const struct clkops idt_clk_ops = {
 	.enable		= idt_clk_enable,
 	.disable	= idt_clk_disable,
 	.setrate	= idt_clk_setrate,
+	.getrate	= idt_clk_getrate,
 };
 static unsigned long idt_clk0_rate = 0;
 static unsigned long idt_clk1_rate = 0;

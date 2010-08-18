@@ -150,23 +150,19 @@ config FB_DOVE_CLCD_DCONB_BYPASS0
 
 endchoice
 
-menu "DOVE LCD clock source"
+menu "PLL clock speed when under inaccurate mode"
 	depends on FB_DOVE && (FB_DOVE_CLCD || FB_DOVE_CLCD1)
 
-config FB_DOVE_CLCD_USE_PLL_CLK
-	bool "Use PLL to be LCD's sclk input"
-	depends on FB_DOVE_CLCD || FB_DOVE_CLCD1
-	---help---
-	choose PLL to be LCD sclk input, otherwise use AXI bus clock.
-
 config FB_DOVE_CLCD_SCLK_VALUE
-	int "LCD SCLK setting"
-	default "266"
+	int "PLL clock speed"
+	default "1000"
 	depends on (FB_DOVE_CLCD || FB_DOVE_CLCD1)
 	---help---
 	This paramter (in MHz) determines the source clock rate.
-	The default is 266MHz(PLL). The real frquency depends on HW
-	setting. Change this if you know how to set it.
+	The default is 1000MHz(PLL). This value only is applied
+	when system is under inaccurate mode and two lcds use
+	PLL as refclk at the same time. The real frquency depends
+	on HW setting. Change this if you know how to set it.
 
 endmenu
 
