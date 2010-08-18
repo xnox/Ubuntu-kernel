@@ -1033,7 +1033,7 @@ int usb_gadget_register_driver (struct usb_gadget_driver *driver)
     if ( (driver == NULL)
             || (driver->speed != USB_SPEED_HIGH)
             || !driver->bind
-            || !driver->unbind
+//            || !driver->unbind
             || !driver->setup)
     {
         mvOsPrintf("ERROR: speed=%d, bind=%p,  unbind=%p, setup=%p\n",
