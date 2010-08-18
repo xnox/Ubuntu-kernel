@@ -56,7 +56,6 @@ static int dovefb_fill_edid(struct fb_info *fi,
 				struct dovefb_mach_info *dmi);
 static int wait_for_vsync(struct dovefb_layer_info *dfli);
 static void dovefb_set_defaults(struct dovefb_layer_info *dfli);
-extern unsigned int lcd_accurate_clock;
 
 #define AXI_BASE_CLK	(2000000000ll)	/* 2000MHz */
 
@@ -106,17 +105,7 @@ static void set_clock_divider(struct dovefb_layer_info *dfli,
 	 *          value to get most accurate pixel clock.
 	 * 0x3 = external reference clock#1
 	 */
-	if (info->use_external_refclk) {
-		if (info->ext_refclk == 0)
-			x = 1 << 30;
-		else
-			x = 3 << 30;
-	} else
-#ifdef CONFIG_FB_DOVE_CLCD_USE_PLL_CLK
-		x = 2 << 30;
-#else
-		x = 0 << 30;
-#endif
+	x = info->clk_src << 30;
 
 	/*
 	 * If under fixed output mode, choosing fixed video mode.
@@ -144,8 +133,8 @@ static void set_clock_divider(struct dovefb_layer_info *dfli,
 	 *    a. If select AXI as reference clk, skip configure ref clk speed.
 	 *    b. If not accurate mode, set to fixed speed as Kconfig.
 	 */
-	if (0 != x) {
-		if (!lcd_accurate_clock)
+	if (0 != info->clk_src) {
+		if ((!info->accurate_clk) && (info->clk_src == 2))
 			clk_set_rate(info->clk, dmi->sclk_clock);
 		else
 			clk_set_rate(info->clk, needed_pixclk);
@@ -725,12 +714,11 @@ static int dovefb_blank(int blank, struct fb_info *fi)
 		dfli->checkbuf_timer_exist = 0;
 	}
 
-	if (dfli->info->use_external_refclk) {
-		if(dfli->is_blanked)
-			clk_disable(dfli->info->clk);
-		else
-			clk_enable(dfli->info->clk);
-	}
+	if (dfli->is_blanked)
+		clk_disable(dfli->info->clk);
+	else
+		clk_enable(dfli->info->clk);
+
 	return 0;
 }
 

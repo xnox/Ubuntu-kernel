@@ -535,7 +535,7 @@ int lcd_set_clock(struct clk *clk, unsigned long rate)
 	else
 		axi_div = 2000000000 / rate;
 
-	printk(KERN_INFO "set external divider to %d.%d\n", axi_div,
+	printk(KERN_INFO "set internal refclk divider to %d.%d\n", axi_div,
 	       is_ext ? 5 : 0);
 	set_lcd_internal_ref_clock(axi_div, is_ext);
 
