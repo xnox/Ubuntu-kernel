@@ -1,0 +1,17 @@
+Package: linux-headers-linaro-mx51
+Architecture: armel
+Section: devel
+Priority: optional
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-linaro-mx51 
+Description: Linux kernel headers for the Freescale i.MX51 architecture.
+ This package will always depend on the latest kernel headers available
+ for Freescale i.MX51 systems.
+
+Package: linux-image-linaro-mx51
+Architecture: armel
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-linaro-mx51, linux-firmware
+Description: Linux kernel image for the Freescale i.MX51 architecture.
+ This package will always depend on the latest kernel image available
+ for Freescale i.MX51 systems.
