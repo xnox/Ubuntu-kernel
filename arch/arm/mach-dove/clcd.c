@@ -44,6 +44,14 @@ unsigned int lcd1_enable = 1;
 module_param(lcd1_enable, uint, 0);
 MODULE_PARM_DESC(lcd1_enable, "set to 1 to enable LCD1 output.");
 
+/*
+ * set lcd clock source in bootargs
+ * = 0, choose AXI, 333Mhz.
+ * = 1, choose PLL, auto use accurate mode if only one LCD refer to it.
+ * = 2, choose external clk#0, (available REV A0)
+ * = 3, choose external clk#1, (available REV A0)
+ * default setting LCD0 uses external clk#0, LCD1 use PLL.
+ */
 static unsigned int lcd0_clk = 2;
 module_param(lcd0_clk, uint, 0);
 MODULE_PARM_DESC(lcd0_clk, "set to 1 to force internal clk, 2 for external clk#0, 3 for external clk#1");
