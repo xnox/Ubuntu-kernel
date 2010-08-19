@@ -44,11 +44,11 @@ unsigned int lcd1_enable = 1;
 module_param(lcd1_enable, uint, 0);
 MODULE_PARM_DESC(lcd1_enable, "set to 1 to enable LCD1 output.");
 
-static unsigned int lcd0_clk = 0;
+static unsigned int lcd0_clk = 2;
 module_param(lcd0_clk, uint, 0);
 MODULE_PARM_DESC(lcd0_clk, "set to 1 to force internal clk, 2 for external clk#0, 3 for external clk#1");
 
-static unsigned int lcd1_clk = 0;
+static unsigned int lcd1_clk = 1;
 module_param(lcd1_clk, uint, 0);
 MODULE_PARM_DESC(lcd1_clk, "set to 1 to force internal clk, 2 for external clk#0, 3 for external clk#1");
 
@@ -597,10 +597,12 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 	}
 
 	/* Only one lcd uses internal refclk, we turn on accurate mode. */
-	if (1 == (lcd0_clk + lcd1_clk))
+	if ((1 == lcd0_clk) ^ (1 == lcd1_clk))
 		lcd_accurate_clock = 1;
 	else
 		lcd_accurate_clock = 0;
+
+	printk(KERN_WARNING "Turn on PLL accurate mode.\n");
 	lcd0_dmi_data->accurate_clk = (lcd0_clk == 1) ?
 		lcd_accurate_clock : 0;
 	lcd1_dmi_data->accurate_clk = (lcd1_clk == 1) ?
