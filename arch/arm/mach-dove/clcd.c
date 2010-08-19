@@ -52,7 +52,6 @@ static unsigned int lcd1_clk = 0;
 module_param(lcd1_clk, uint, 0);
 MODULE_PARM_DESC(lcd1_clk, "set to 1 to force internal clk, 2 for external clk#0, 3 for external clk#1");
 
-unsigned int lcd_accurate_clock;
 
 #if defined(CONFIG_FB_DOVE_CLCD_FLAREON_GV) || \
     defined(CONFIG_FB_DOVE_CLCD_FLAREON_GV_MODULE)
@@ -580,6 +579,7 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 	u32 total_x, total_y, i;
 	u64 div_result;
 	u32 dev, rev;
+	unsigned int lcd_accurate_clock;
 
 	dove_pcie_id(&dev, &rev);
 
@@ -595,6 +595,16 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 			(total_x * total_y * video_modes[i].refresh));
 		video_modes[i].pixclock	= div_result;
 	}
+
+	/* Only one lcd uses internal refclk, we turn on accurate mode. */
+	if (1 == (lcd0_clk + lcd1_clk))
+		lcd_accurate_clock = 1;
+	else
+		lcd_accurate_clock = 0;
+	lcd0_dmi_data->accurate_clk = (lcd0_clk == 1) ?
+		lcd_accurate_clock : 0;
+	lcd1_dmi_data->accurate_clk = (lcd1_clk == 1) ?
+		lcd_accurate_clock : 0;
 
 	/*
 	 * Because DCON depends on lcd0 & lcd1 clk. Here we
@@ -619,7 +629,10 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 			break;
 		case 1:
 			lcd0_dmi_data->clk_src = 2;
-			lcd0_dmi_data->clk_name = "LCDCLK";
+			if (lcd0_dmi_data->accurate_clk)
+				lcd0_dmi_data->clk_name = "accurate_LCDCLK";
+			else
+				lcd0_dmi_data->clk_name = "LCDCLK";
 			break;
 		case 2:
 			lcd0_dmi_data->clk_src = 1;
@@ -664,7 +677,10 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 			break;
 		case 1:
 			lcd1_dmi_data->clk_src = 2;
-			lcd1_dmi_data->clk_name = "LCDCLK";
+			if (lcd1_dmi_data->accurate_clk)
+				lcd1_dmi_data->clk_name = "accurate_LCDCLK";
+			else
+				lcd1_dmi_data->clk_name = "LCDCLK";
 			break;
 		case 2:
 			lcd1_dmi_data->clk_src = 1;
@@ -694,16 +710,6 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 		printk(KERN_INFO "LCD 1 disabled.\n");
 	}
 #endif
-
-	/* Only one lcd uses internal refclk, we turn on accurate mode. */
-	if (1 == (lcd0_dmi_data->clk_src + lcd1_dmi_data->clk_src))
-		lcd_accurate_clock = 1;
-	else
-		lcd_accurate_clock = 0;
-	lcd0_dmi_data->accurate_clk = (lcd0_dmi_data->clk_src == 1) ?
-		lcd_accurate_clock : 0;
-	lcd1_dmi_data->accurate_clk = (lcd1_dmi_data->clk_src == 1) ?
-		lcd_accurate_clock : 0;
 
 #ifdef CONFIG_FB_DOVE_DCON
 	if (lcd0_enable || lcd1_enable) {

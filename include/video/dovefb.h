@@ -420,7 +420,6 @@ struct dovefb_info {
 struct dovefb_mach_info {
 	char		id_gfx[16];
 	char		id_ovly[16];
-	unsigned int	sclk_clock;
 	int		clk_src;
 	int		accurate_clk;
 	char		*clk_name;
