@@ -1092,7 +1092,6 @@ static int dovefb_ovly_fb_sync(struct fb_info *info)
 static void checkbuf_func(unsigned long data){
 
 	struct dovefb_layer_info *dfli = (struct dovefb_layer_info *) data;
-	u32 reg;
 
 	/* wake up queue. */
 	atomic_set(&dfli->w_intr, 1);
