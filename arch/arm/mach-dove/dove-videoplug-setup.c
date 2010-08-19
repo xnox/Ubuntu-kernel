@@ -59,18 +59,9 @@ MODULE_PARM_DESC(use_hal_giga, "Use the HAL giga driver");
 extern unsigned int useHalDrivers;
 extern char *useNandHal;
 
-/*
- * LCD input clock.
- */
-#ifndef CONFIG_FB_DOVE_CLCD_SCLK_VALUE
-#define LCD_SCLK	(1000*1000*1000)
-#else
-#define LCD_SCLK	(CONFIG_FB_DOVE_CLCD_SCLK_VALUE*1000*1000)
-#endif
 static struct dovefb_mach_info dove_videoplug_lcd0_dmi = {
 	.id_gfx			= "GFX Layer 0",
 	.id_ovly		= "Video Layer 0",
-	.sclk_clock		= LCD_SCLK,
 
 	.clk_src		= 1, /* enable using external clock */
 	.clk_name		= "IDT_CLK1", /* use clock 1 */
@@ -101,7 +92,6 @@ static struct dovefb_mach_info dove_videoplug_lcd0_dmi = {
 
 static struct dovefb_mach_info dove_videoplug_lcd0_vid_dmi = {
 	.id_ovly		= "Video Layer 0",
-	.sclk_clock		= LCD_SCLK,
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
 	.pix_fmt		= PIX_FMT_RGB888PACK,
