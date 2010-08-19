@@ -22,20 +22,9 @@
 #include <plat/cafe-orion.h>
 #include "dove-front-panel-common.h"
 
-/*
- * LCD input clock.
- */
-#ifndef CONFIG_FB_DOVE_CLCD_SCLK_VALUE
-#define LCD_SCLK	(1000*1000*1000)
-#else
-#define LCD_SCLK	(CONFIG_FB_DOVE_CLCD_SCLK_VALUE*1000*1000)
-#endif
-
-
 static struct dovefb_mach_info dove_lcd0_dmi = {
 	.id_gfx			= "GFX Layer 0",
 	.id_ovly		= "Video Layer 0",
-	.sclk_clock		= LCD_SCLK,
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
 	.pix_fmt		= PIX_FMT_RGB888PACK,
@@ -61,7 +50,6 @@ static struct dovefb_mach_info dove_lcd0_dmi = {
 
 static struct dovefb_mach_info dove_lcd0_vid_dmi = {
 	.id_ovly		= "Video Layer 0",
-	.sclk_clock		= LCD_SCLK,
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
 	.pix_fmt		= PIX_FMT_RGB888PACK,
@@ -84,7 +72,6 @@ static struct dovefb_mach_info dove_lcd0_vid_dmi = {
 static struct dovefb_mach_info dove_lcd1_dmi = {
 	.id_gfx			= "GFX Layer 1",
 	.id_ovly		= "Video Layer 1",
-	.sclk_clock		= LCD_SCLK,
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
 	.pix_fmt		= PIX_FMT_RGB565,
@@ -110,7 +97,6 @@ static struct dovefb_mach_info dove_lcd1_dmi = {
 
 static struct dovefb_mach_info dove_lcd1_vid_dmi = {
 	.id_ovly		= "Video Layer 1",
-	.sclk_clock		= LCD_SCLK,
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
 	.pix_fmt		= PIX_FMT_RGB888PACK,

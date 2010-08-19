@@ -72,7 +72,6 @@ static void set_clock_divider(struct dovefb_layer_info *dfli,
 	u32 x = 0, x_bk;
 	struct dovefb_info *info = dfli->info;
 	u32 ref_clk;
-	struct dovefb_mach_info *dmi = dfli->dev->platform_data;
 	u32 isInterlaced = 0;
 
 	/*
@@ -130,16 +129,8 @@ static void set_clock_divider(struct dovefb_layer_info *dfli,
 	 */
 	/*
 	 * 1. Set up reference clock speed.
-	 *    a. If select AXI as reference clk, skip configure ref clk speed.
-	 *    b. If not accurate mode, set to fixed speed as Kconfig.
 	 */
-	if (0 != info->clk_src) {
-		if ((!info->accurate_clk) && (info->clk_src == 2))
-			clk_set_rate(info->clk, dmi->sclk_clock);
-		else
-			clk_set_rate(info->clk, needed_pixclk);
-	}
-
+	clk_set_rate(info->clk, needed_pixclk);
 	/*
 	 * 2. Calc LCD internal divider
 	 */

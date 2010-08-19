@@ -26,7 +26,6 @@
 #include "pmu/mvPmuRegs.h"
 
 #define AXI_BASE_CLK	(2000000000ll)	/* 2000MHz */
-extern unsigned int lcd_accurate_clock;
 
 /* downstream clocks*/
 void ds_clks_disable_all(int include_pci0, int include_pci1)
@@ -384,7 +383,7 @@ static inline u64 calc_diff(u64 a, u64 b)
 		return b - a;
 }
 static void calc_best_clock_div(u32 tar_freq, u32 *axi_div,
-		u32 *lcd_div, u32 *is_ext_rem)
+		u32 *is_ext_rem)
 {
 	u64 req_div;
 	u64 best_rem = 0xFFFFFFFFFFFFFFFFll;
@@ -493,7 +492,6 @@ static void calc_best_clock_div(u32 tar_freq, u32 *axi_div,
 	}
 
 	*is_ext_rem = ext_rem;
-	*lcd_div = best_lcd_div;
 	*axi_div = best_axi_div;
 	return;
 }
@@ -525,18 +523,32 @@ static unsigned long lcd_get_clock(struct clk *clk)
 
 	return c;
 }
-
+#ifndef CONFIG_FB_DOVE_CLCD_SCLK_VALUE
+#define LCD_SCLK	(1000*1000*1000)
+#else
+#define LCD_SCLK	(CONFIG_FB_DOVE_CLCD_SCLK_VALUE*1000*1000)
+#endif
 int lcd_set_clock(struct clk *clk, unsigned long rate)
 {
-	u32 axi_div, lcd_div, is_ext = 0;
+	u32 axi_div, is_ext = 0;
 
-	if (lcd_accurate_clock)
-		calc_best_clock_div(rate, &axi_div, &lcd_div, &is_ext);
-	else
-		axi_div = 2000000000 / rate;
+	rate = LCD_SCLK;
+	axi_div = 2000000000 / rate;
+	printk(KERN_INFO "set internal refclk divider to %d.%d\n",
+	       axi_div, is_ext ? 5 : 0);
+	set_lcd_internal_ref_clock(axi_div, is_ext);
 
-	printk(KERN_INFO "set internal refclk divider to %d.%d\n", axi_div,
-	       is_ext ? 5 : 0);
+	return 0;
+}
+
+int accrt_lcd_set_clock(struct clk *clk, unsigned long rate)
+{
+	u32 axi_div, is_ext = 0;
+
+	calc_best_clock_div(rate, &axi_div, &is_ext);
+
+	printk(KERN_INFO "set internal refclk divider to %d.%d."
+	       "(accurate mode)\n", axi_div, is_ext ? 5 : 0);
 	set_lcd_internal_ref_clock(axi_div, is_ext);
 
 	return 0;
@@ -771,6 +783,13 @@ const struct clkops lcd_clk_ops = {
 	.setrate	= lcd_set_clock,
 };
 
+const struct clkops accrt_lcd_clk_ops = {
+	.enable		= __lcd_clk_enable,
+	.disable	= __lcd_clk_disable,
+	.getrate	= lcd_get_clock,
+	.setrate	= accrt_lcd_set_clock,
+};
+
 int clk_enable(struct clk *clk)
 {
 	if (clk == NULL || IS_ERR(clk))
@@ -971,6 +990,11 @@ static struct clk clk_lcd = {
 	.ops	= &lcd_clk_ops,
 };
 
+static struct clk accrt_clk_lcd = {
+	.ops	= &accrt_lcd_clk_ops,
+};
+
+
 #define INIT_CK(dev,con,ck)			\
 	{ .dev_id = dev, .con_id = con, .clk = ck }
 
@@ -1000,6 +1024,7 @@ static struct clk_lookup dove_clocks[] = {
 	INIT_CK(NULL, "GCCLK", &clk_gpu),
 	INIT_CK(NULL, "AXICLK", &clk_axi),
 	INIT_CK(NULL, "LCDCLK", &clk_lcd),
+	INIT_CK(NULL, "accurate_LCDCLK", &accrt_clk_lcd),
 	INIT_CK(NULL, "vmeta", &clk_vpu),
 	INIT_CK(NULL, "ssp", &clk_ssp),
 };
