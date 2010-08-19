@@ -393,7 +393,6 @@ struct dovefb_info {
 	char				*mode_option;
 	struct clk			*clk;
 	int				clk_src;
-	int				accurate_clk;
 	int				io_pin_allocation;
 
 	int			pix_fmt;
