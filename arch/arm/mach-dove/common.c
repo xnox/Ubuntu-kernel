@@ -26,6 +26,7 @@
 #include <linux/gpio_mouse.h>
 #include <linux/dove_sdhci.h>
 #include <linux/gpio_keys.h>
+#include <linux/i2c-gpio.h>
 #include <linux/input.h>
 #include <asm/page.h>
 #include <asm/setup.h>
@@ -1075,6 +1076,26 @@ void __init dove_i2c_exp_init(int nr)
 	}
 #endif
 }
+
+#ifdef CONFIG_DOVE_DB_USE_GPIO_I2C
+static struct i2c_gpio_platform_data dove_gpio_i2c_pdata = {
+	.sda_pin	= 17,
+	.scl_pin	= 19,
+	.udelay		= 2, /* ~100 kHz */
+};
+
+static struct platform_device dove_gpio_i2c_device = {
+	.name                   = "i2c-gpio",
+	.id                     = 1,
+	.dev.platform_data      = &dove_gpio_i2c_pdata,
+};
+
+void __init dove_add_gpio_i2c(void)
+{
+	platform_device_register(&dove_gpio_i2c_device);
+}
+#endif
+
 /*****************************************************************************
  * Camera
  ****************************************************************************/
