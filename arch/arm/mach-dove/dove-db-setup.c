@@ -838,10 +838,14 @@ static struct dove_mpp_mode dove_db_b_mpp_modes[] __initdata = {
         { 14, MPP_GPIO },               /* 7segDebug Led */
         { 15, MPP_GPIO },               /* 7segDebug Led */
 	{ 16, MPP_SDIO0 },		/* SDIO0 */
+#ifdef CONFIG_DOVE_DB_USE_GPIO_I2C
+	{ 17, MPP_GPIO },
+	{ 19, MPP_GPIO },
+#else
 	{ 17, MPP_TWSI },
-	{ 18, MPP_GPIO },
 	{ 19, MPP_TWSI },
-
+#endif
+	{ 18, MPP_GPIO },
 	{ 20, MPP_SPI1 },
 	{ 21, MPP_SPI1 },
 	{ 22, MPP_SPI1 },
@@ -1076,7 +1080,11 @@ static void __init dove_db_init(void)
 	dove_uart1_init();
 	dove_i2c_init();
 	dove_i2c_exp_init(0);
+#ifdef CONFIG_DOVE_DB_USE_GPIO_I2C
+	dove_add_gpio_i2c();
+#else
 	dove_i2c_exp_init(1);
+#endif
 	dove_sdhci_cam_mbus_init();
 	dove_sdio0_init();
 	dove_sdio1_init();

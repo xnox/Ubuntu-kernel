@@ -49,6 +49,7 @@ void dove_spi0_init(int use_interrupt);
 void dove_spi1_init(int use_interrupt);
 void dove_i2c_init(void);
 void dove_i2c_exp_init(int);
+void dove_add_gpio_i2c(void);
 void dove_i2s_init(int port, struct orion_i2s_platform_data *i2s_data);
 void dove_cam_init(struct cafe_cam_platform_data *cafe_cam_data);
 void dove_sdhci_cam_mbus_init(void);
