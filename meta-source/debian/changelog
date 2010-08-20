@@ -1,3 +1,14 @@
+linux-meta-linaro (2.6.35.1002.7) maverick; urgency=low
+
+  * Changed source package name from linux-linaro-meta to linux-meta-linaro
+    https://lists.ubuntu.com/archives/kernel-team/2010-August/012285.html
+
+  * Changed binary package names from linux-linaro-image* to linux-image-linaro*
+
+  * Changed binary package names from linux-linaro-headers* to linux-headers-linaro*
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 20 Aug 2010 08:25:32 -0600
+
 linux-linaro-meta (2.6.35.1002.6) maverick; urgency=low
 
   * Linaro Maverick ABI 1002 (2.6.35-1002.6)
