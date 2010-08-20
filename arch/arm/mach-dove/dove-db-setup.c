@@ -84,11 +84,18 @@ MODULE_PARM_DESC(dvs_enable, "if 1 then enable DVS");
 
 extern unsigned int useHalDrivers;
 extern char *useNandHal;
-
-
-extern unsigned int lcd0_enable;
-extern unsigned int lcd1_enable;
-
+/*
+ * set lcd clock source in dovefb_mach_info, notice the sequence is not
+ * same to bootargs.
+ * = MRVL_AXI_CLK, choose AXI, 333Mhz.
+         name is "AXICLK"
+ * = MRVL_PLL_CLK, choose PLL, auto use accurate mode if only one LCD refer to it.
+         name is "LCDCLK" or "accurate_LCDCLK"
+ * = MRVL_EXT_CLK0, choose external clk#0, (available REV A0)
+         name is "IDT_CLK0"
+ * = MRVL_EXT_CLK1, choose external clk#1, (available REV A0)
+         name is "IDT_CLK1"
+ */
 /*
  * LCD HW output Red[0] to LDD[0] when set bit [19:16] of reg 0x190
  * to 0x0. Which means HW outputs BGR format default. All platforms
@@ -98,7 +105,8 @@ extern unsigned int lcd1_enable;
 static struct dovefb_mach_info dove_db_lcd0_dmi = {
 	.id_gfx			= "GFX Layer 0",
 	.id_ovly		= "Video Layer 0",
-
+	.clk_src		= MRVL_PLL_CLK,
+	.clk_name		= "accurate_LCDCLK",
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
 	.pix_fmt		= PIX_FMT_RGB888PACK,
@@ -147,6 +155,8 @@ static struct dovefb_mach_info dove_db_lcd0_vid_dmi = {
 static struct dovefb_mach_info dove_db_fp_lcd0_dmi = {
 	.id_gfx			= "GFX Layer 0",
 	.id_ovly		= "Video Layer 0",
+	.clk_src		= MRVL_PLL_CLK,
+	.clk_name		= "accurate_LCDCLK",
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
 	.pix_fmt		= PIX_FMT_RGB888PACK,
@@ -201,7 +211,7 @@ static struct dovefb_mach_info dove_db_fp_lcd0_vid_dmi = {
 static struct dovefb_mach_info dove_db_lcd1_dmi = {
 	.id_gfx			= "GFX Layer 1",
 	.id_ovly		= "Video Layer 1",
-	.clk_src		= 1,
+	.clk_src		= MRVL_EXT_CLK1,
 	.clk_name		= "IDT_CLK1",
 //	.num_modes		= ARRAY_SIZE(video_modes),
 //	.modes			= video_modes,
