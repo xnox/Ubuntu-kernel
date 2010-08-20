@@ -1,4 +1,4 @@
-Package: linux-linaro-headers-vexpress
+Package: linux-headers-linaro-vexpress
 Architecture: armel
 Section: devel
 Priority: optional
@@ -7,7 +7,7 @@ Description: Linux kernel headers for the ARM Versatile Express architecture.
  This package will always depend on the latest kernel headers available
  for ARM Versatile Express systems.
 
-Package: linux-linaro-image-vexpress
+Package: linux-image-linaro-vexpress
 Architecture: armel
 Section: metapackages
 Priority: optional
