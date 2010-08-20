@@ -1,8 +1,13 @@
-linux-meta (2.6.32.25.26) UNRELEASED; urgency=low
+linux-meta (2.6.32.25.27) UNRELEASED; urgency=low
+
+  * Bumped ABI to 25 for proposed upload
+
+linux-meta (2.6.32.24.26) lucid-proposed; urgency=low
 
   * Add definitions to create meta packages for WWAN modules
     - LP: #554099
-  * Bumped ABI to 25 for proposed upload
+  * Wireless package name change
+    - LP: #621185
 
  -- Stefan Bader <stefan.bader@canonical.com>  Fri, 06 Aug 2010 12:58:31 +0200
 
