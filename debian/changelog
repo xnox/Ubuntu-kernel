@@ -1,4 +1,4 @@
-linux-backports-modules-2.6.32 (2.6.32-24.18) lucid-proposed; urgency=low
+linux-backports-modules-2.6.32 (2.6.32-24.19) lucid-proposed; urgency=low
 
   [ Stefan Bader ]
 
@@ -10,15 +10,15 @@ linux-backports-modules-2.6.32 (2.6.32-24.18) lucid-proposed; urgency=low
   * Make udev firmware helper file name unique by ABI and flavour
     - LP: #535132
   * Added compat-wireless-2.6.35-1
-    - LP: #614426
+    - LP: #621185
   * Package multiple versions of compat-wireless
-    - LP: #614426
+    - LP: #621185
   * Update to compat-wireless-2.6.34.1
     - LP: #618578
   * Use POCKET in flavour stub to correctly reference meta files
-    - LP: #614426
+    - LP: #621185
 
- -- Stefan Bader <stefan.bader@canonical.com>  Fri, 20 Aug 2010 14:18:55 +0200
+ -- Stefan Bader <stefan.bader@canonical.com>  Fri, 20 Aug 2010 17:05:05 +0200
 
 linux-backports-modules-2.6.32 (2.6.32-24.17) lucid-proposed; urgency=low
 
