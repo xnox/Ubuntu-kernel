@@ -324,6 +324,11 @@ enum dovefb_type {
 	DOVEFB_OVLY_PLANE
 };
 
+#define MRVL_AXI_CLK		0
+#define MRVL_EXT_CLK0	1
+#define MRVL_PLL_CLK		2
+#define MRVL_EXT_CLK1	3
+
 struct dovefb_layer_info {
 	struct device		*dev;
 	enum dovefb_type	type;
