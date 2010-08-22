@@ -1,3 +1,10 @@
+linux-ports-meta (2.6.35.17.12) maverick; urgency=low
+
+  * Bump ABI
+  * Remove all references to ia64 and sparc
+
+ -- Luke Yelavich <themuso@ubuntu.com>  Mon, 23 Aug 2010 08:35:20 +1000
+
 linux-ports-meta (2.6.35.16.11) maverick; urgency=low
 
   * Bump ABI

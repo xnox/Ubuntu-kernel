@@ -4,21 +4,3 @@ Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.1
 Build-Depends: dpkg (>= 1.13.19), debhelper (>= 3), gawk
-
-Package: linux
-Architecture: ia64 sparc
-Section: restricted/metapackages
-Priority: optional
-Depends: linux-image (= ${binary:Version})
-Description: Generic complete Linux kernel.
- This package will always depend on the latest generic complete Linux kernel
- available.
-
-Package: linux-image
-Architecture: ia64 sparc
-Section: metapackages
-Priority: optional
-Depends: linux-image-${generic-depends} (= ${binary:Version})
-Description: Generic Linux kernel image.
- This package will always depend on the latest generic Linux kernel image
- available.
