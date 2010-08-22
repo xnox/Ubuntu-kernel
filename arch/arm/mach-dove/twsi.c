@@ -49,7 +49,8 @@ static void dove_twsi_option_set(dove_twsi_option option, unsigned int enable)
 	writel(reg, addr);	
 }
 
-static unsigned int port_id_old;
+static unsigned int port_id_old = -1;
+
 int dove_select_exp_port(unsigned int port_id)
 {
 	if(port_id_old != port_id)
@@ -69,5 +70,5 @@ int dove_select_exp_port(unsigned int port_id)
 
 void dove_reset_exp_port()
 {
-	port_id_old = 0;
+	port_id_old = -1;
 }
