@@ -398,6 +398,7 @@ static inline void local_flush_tlb_mm(struct mm_struct *mm)
 		/* flush the branch target cache */
 		asm("mcr p15, 0, %0, c7, c5, 6" : : "r" (zero) : "cc");
 		dsb();
+		isb();
 	}
 }
 
@@ -442,6 +443,7 @@ local_flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 		/* flush the branch target cache */
 		asm("mcr p15, 0, %0, c7, c5, 6" : : "r" (zero) : "cc");
 		dsb();
+		isb();
 	}
 }
 

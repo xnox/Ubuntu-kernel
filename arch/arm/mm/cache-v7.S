@@ -95,6 +95,8 @@ ENTRY(v7_flush_kern_cache_all)
 	mcr	p15, 0, r0, c7, c5, 0		@ I+BTB cache invalidate
 #endif
 	mcr	p15, 0, r0, c7, c5, 0		@ I+BTB cache invalidate
+	isb					@ ISB and DSB are required per
+	dsb					@ ARM spec
  ARM(	ldmfd	sp!, {r4-r5, r7, r9-r11, lr}	)
  THUMB(	ldmfd	sp!, {r4-r7, r9-r11, lr}	)
 	mov	pc, lr

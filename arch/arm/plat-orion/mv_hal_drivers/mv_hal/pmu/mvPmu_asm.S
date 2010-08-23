@@ -164,6 +164,7 @@ do_l2_clean:
 skip_l2_clean:
 	mcr     p15, 0, r0, c7, c10, 4          @ drain write buffer
 	mcr	p15, 0, r0, c7, c10, 5		@ data memory barrier
+	mcr	p15, 0, r0, c7, c5, 4		@ ISB
 	mov	pc, lr
 
 
@@ -183,6 +184,7 @@ ENTRY(mvPmuSramInvalidateCaches)
 	mcr	p15, 0, r1, c7, c5, 0		@ Invalidate both caches, BTC, BTAC
 	mcr	p15, 0, r1, c8, c7, 0		@ TLB invalidate	
 	mcr	p15, 1, r1, c7, c7, 0		@ Invalidate entire L2
+	mcr	p15, 0, r1, c7, c10, 4		@ DSB
 	mcr	p15, 0, r1, c7, c5, 4		@ Prefetch Flush - ISB
 	mov	pc, lr
 
@@ -338,7 +340,7 @@ resume_after_mmu:
 	mcr	p15, 1, r4, c7, c7, 3
 
 	mcr	p15, 0, r0, c8, c7, 0		@ TLB invalidate
-	
+	mcr     p15, 0, r0, c7, c5, 4		@ ISB
 	mov	r13, r9
 	mov	pc, lr
 
@@ -393,6 +395,7 @@ ENTRY(mvPmuSramDdrReconfigFunc)
 	 */
 	mcr     p15, 0, r0, c7, c10, 4          @ drain write buffer
 	mcr	p15, 0, r0, c7, c10, 5		@ data memory barrier
+	mcr     p15, 0, r0, c7, c5, 4		@ ISB
 
 	/*
 	 * Block all data requests to the MC from the SB
