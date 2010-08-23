@@ -298,6 +298,9 @@ __v7_setup:
 
 2:	mov	r10, #0
 #ifdef HARVARD_CACHE
+	#ifdef CONFIG_CPU_PJ4_ERRATA_4574_4731
+	mcr	p15, 0, r10, c7, c5, 0		@ I+BTB cache invalidate
+	#endif
 	mcr	p15, 0, r10, c7, c5, 0		@ I+BTB cache invalidate
 #endif
 	dsb

@@ -877,3 +877,11 @@ config CPU_WA_DISABLE
 	help
 	  Say Y to disable Write allocate support
 endchoice
+
+config CPU_PJ4_ERRATA_4574_4731
+	bool "Marvell CPU errata 4574 and 4731 S/W fix"
+	depends on CPU_PJ4
+	default y
+	help
+	  Say Y to enable Marvell CPU errata S/W work
+	  around for #4574 and #4731
