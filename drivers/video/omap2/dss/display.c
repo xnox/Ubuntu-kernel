@@ -283,55 +283,6 @@ static ssize_t display_wss_store(struct device *dev,
 	return size;
 }
 
-static ssize_t display_edid_show(struct device *dev,
-		struct device_attribute *attr, char *buf)
-{
-	struct omap_dss_device *dssdev = to_dss_device(dev);
-
-
-		if (!dssdev->driver->get_edid)
-		return -ENOENT;
-	dssdev->driver->get_edid(dssdev);
-	return snprintf(buf, PAGE_SIZE, "EDID-Information");
-
-}
-static ssize_t display_custom_edid_timing_store(struct device *dev,
-		struct device_attribute *attr, const char *buf, size_t size)
-{
-	struct omap_dss_device *dssdev = to_dss_device(dev);
-	int val, code, mode;
-	val = simple_strtoul(buf, NULL, 0);
-	code = val / 10;
-	mode = val % 10;
-		if (!dssdev->driver->set_custom_edid_timing_code)
-			return -ENOENT;
-	dssdev->driver->set_custom_edid_timing_code(dssdev, code, mode);
-	return snprintf((char *)buf, PAGE_SIZE, "EDID-Information %d mode % d code", mode, code);
-
-}
-
-static ssize_t display_hpd_enabled_store(struct device *dev,
-		struct device_attribute *attr,
-		const char *buf, size_t size)
-{
-	struct omap_dss_device *dssdev = to_dss_device(dev);
-	bool enabled, r;
-
-	enabled = simple_strtoul(buf, NULL, 10);
-
-	if (enabled != (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)) {
-		if (enabled) {
-			r = dssdev->driver->hpd_enable(dssdev);
-			if (r)
-				return r;
-		} else {
-			dssdev->driver->disable(dssdev);
-		}
-	}
-
-	return size;
-}
-
 static DEVICE_ATTR(enabled, S_IRUGO|S_IWUSR,
 		display_enabled_show, display_enabled_store);
 static DEVICE_ATTR(update_mode, S_IRUGO|S_IWUSR,
@@ -346,10 +297,6 @@ static DEVICE_ATTR(mirror, S_IRUGO|S_IWUSR,
 		display_mirror_show, display_mirror_store);
 static DEVICE_ATTR(wss, S_IRUGO|S_IWUSR,
 		display_wss_show, display_wss_store);
-static DEVICE_ATTR(custom_edid_timing, S_IRUGO|S_IWUSR,
-		display_edid_show, display_custom_edid_timing_store);
-static DEVICE_ATTR(hpd_enabled, S_IRUGO|S_IWUSR,
-		NULL, display_hpd_enabled_store);
 
 static struct device_attribute *display_sysfs_attrs[] = {
 	&dev_attr_enabled,
@@ -359,8 +306,6 @@ static struct device_attribute *display_sysfs_attrs[] = {
 	&dev_attr_rotate,
 	&dev_attr_mirror,
 	&dev_attr_wss,
-	&dev_attr_custom_edid_timing,
-	&dev_attr_hpd_enabled,
 	NULL
 };
 

@@ -56,7 +56,6 @@ static void hdmi_get_timings(struct omap_dss_device *dssdev,
 static void hdmi_set_timings(struct omap_dss_device *dssdev,
 			struct omap_video_timings *timings);
 static void hdmi_set_custom_edid_timing_code(struct omap_dss_device *dssdev, int code , int mode);
-static void hdmi_get_edid(struct omap_dss_device *dssdev);
 static int hdmi_check_timings(struct omap_dss_device *dssdev,
 			struct omap_video_timings *timings);
 static int hdmi_read_edid(struct omap_video_timings *);
@@ -64,6 +63,7 @@ static int get_edid_timing_data(u8 *edid);
 static irqreturn_t hdmi_irq_handler(int irq, void *arg);
 static int hdmi_enable_hpd(struct omap_dss_device *dssdev);
 static void hdmi_power_off(struct omap_dss_device *dssdev);
+static void hdmi_panel_disable(struct omap_dss_device *dssdev);
 
 #define HDMI_PLLCTRL		0x58006200
 #define HDMI_PHY		0x58006300
@@ -109,7 +109,8 @@ const struct omap_video_timings all_timings_direct[31] = {
 						{800, 600, 40000, 128, 40, 88, 4 , 1, 23},
 						{848, 480, 33750, 112, 16, 112, 8 , 6, 23},
 						{1280, 768, 71000, 128, 64, 192, 7 , 3, 20},
-						{1280, 800, 83500, 128, 72, 200, 6 , 3, 22}, 							{1360, 768, 85500, 112, 64, 256, 6 , 3, 18},
+						{1280, 800, 83500, 128, 72, 200, 6 , 3, 22},
+						{1360, 768, 85500, 112, 64, 256, 6 , 3, 18},
 						{1280, 960, 108000, 112, 96, 312, 3 , 1, 36},
 						{1280, 1024, 108000, 112, 48, 248, 3 , 1, 38},
 						{1024, 768, 65000, 136, 24, 160, 6, 3, 29},
@@ -119,7 +120,8 @@ const struct omap_video_timings all_timings_direct[31] = {
 						{1366, 768, 85500, 143, 70, 213, 3, 3, 24},
 						{1920, 1080, 148500, 44, 88, 80, 5, 4, 36},
 						{1280, 768, 68250, 32, 48, 80, 7, 3, 12},
-						{1400, 1050, 101000, 32, 48, 80, 4, 3, 23},    							{1680, 1050, 119000, 32, 48, 80, 6, 3, 21} } ;
+						{1400, 1050, 101000, 32, 48, 80, 4, 3, 23},
+						{1680, 1050, 119000, 32, 48, 80, 6, 3, 21} };
 
 /*This is a static Mapping array which maps the timing values with corresponding CEA / VESA code*/
 int code_index[31] = {1, 19, 4, 2, 37, 6, 21, 20, 5, 16, 17, 29, 31, 35,
@@ -226,6 +228,10 @@ static inline u32 hdmi_read_reg(u32 base, u16 idx)
 	hdmi_write_reg(b, i, FLD_MOD(hdmi_read_reg(b, i), v, s, e))
 
 
+/*
+ * "edid" sysfs file, allows userspace to read raw EDID, parse with tools
+ * such as parse-edid, etc
+ */
 
 static ssize_t hdmi_edid_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -242,6 +248,80 @@ static ssize_t hdmi_edid_store(struct device *dev,
 }
 
 static DEVICE_ATTR(edid, S_IRUGO, hdmi_edid_show, hdmi_edid_store);
+
+/*
+ * "custom_edid_timing" sysfs file, allows userspace to read or override
+ * current mode/code.  The value read/written is equal to:
+ *
+ *    val = (code * 10) + mode
+ *
+ * (ie. low digit is mode, 1 or 0, and upper digits are code)
+ */
+
+static ssize_t hdmi_custom_edid_timing_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	return sprintf(buf, "%d\n", (hdmi.code * 10) + hdmi.mode);
+}
+
+static ssize_t hdmi_custom_edid_timing_store(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t size)
+{
+	struct omap_dss_device *dssdev = to_dss_device(dev);
+	int val, code, mode;
+	val = simple_strtoul(buf, NULL, 0);
+	if (val) {
+		code = val / 10;
+		mode = val % 10;
+		hdmi_set_custom_edid_timing_code(dssdev, code, mode);
+		return size;
+	}
+
+	return -EINVAL;
+}
+
+static DEVICE_ATTR(custom_edid_timing, S_IRUGO|S_IWUSR,
+		hdmi_custom_edid_timing_show, hdmi_custom_edid_timing_store);
+
+/*
+ * "hpd_enabled" sysfs file, allows userspace to enable/disable hot plug
+ * detect
+ */
+
+static ssize_t hdmi_hpd_enabled_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	/* this is not quite right after the hpd event.. but is the best
+	 * that can be done without changing the hot plug detect logic..
+	 */
+	return sprintf(buf, "%d\n", hpd_mode);
+}
+
+static ssize_t hdmi_hpd_enabled_store(struct device *dev,
+		struct device_attribute *attr,
+		const char *buf, size_t size)
+{
+	struct omap_dss_device *dssdev = to_dss_device(dev);
+	bool enabled, r;
+
+	enabled = simple_strtoul(buf, NULL, 10);
+
+	if (enabled != (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)) {
+		if (enabled) {
+			r = hdmi_enable_hpd(dssdev);
+			if (r)
+				return r;
+		} else {
+			hdmi_panel_disable(dssdev);
+		}
+	}
+
+	return size;
+}
+
+static DEVICE_ATTR(hpd_enabled, S_IRUGO|S_IWUSR,
+		hdmi_hpd_enabled_show, hdmi_hpd_enabled_store);
 
 
 /*
@@ -535,7 +615,7 @@ static int get_timings_index(void)
 static int hdmi_panel_probe(struct omap_dss_device *dssdev)
 {
 	int code;
-	printk("ENTER hdmi_panel_probe()\n");
+	DSSDBG("ENTER hdmi_panel_probe()\n");
 
 	dssdev->panel.config = OMAP_DSS_LCD_TFT |
 			OMAP_DSS_LCD_IVS | OMAP_DSS_LCD_IHS;
@@ -543,7 +623,7 @@ static int hdmi_panel_probe(struct omap_dss_device *dssdev)
 	code = get_timings_index();
 
 	dssdev->panel.timings = all_timings_direct[code];
-	printk("hdmi_panel_probe x_res= %d y_res = %d", \
+	DSSDBG("hdmi_panel_probe x_res= %d y_res = %d", \
 		dssdev->panel.timings.x_res, dssdev->panel.timings.y_res);
 
 	mdelay(50);
@@ -598,9 +678,6 @@ static struct omap_dss_driver hdmi_driver = {
 	.get_timings	= hdmi_get_timings,
 	.set_timings	= hdmi_set_timings,
 	.check_timings	= hdmi_check_timings,
-	.get_edid	= hdmi_get_edid,
-	.set_custom_edid_timing_code	= hdmi_set_custom_edid_timing_code,
-	.hpd_enable	=	hdmi_enable_hpd,
 	.driver			= {
 		.name   = "hdmi_panel",
 		.owner  = THIS_MODULE,
@@ -612,7 +689,8 @@ int hdmi_init(struct platform_device *pdev)
 {
 	int r = 0, hdmi_irq;
 	struct resource *hdmi_mem;
-	printk("Enter hdmi_init()\n");
+
+	DSSDBG("Enter hdmi_init()\n");
 
 	hdmi.pdata = pdev->dev.platform_data;
 	hdmi.pdev = pdev;
@@ -797,13 +875,13 @@ void hdmi_work_queue(struct hdmi_work_struct *work)
 		hdmi_enable_clocks(1);
 		hdmi_power_on(dssdev);
 		mdelay(1000);
-		printk(KERN_INFO "Display enabled");
+		DSSDBG(KERN_INFO "Display enabled");
 	}
 	if (r == 1 || r == 4)
 		hpd_mode = 0;
 
 	if ((r == 3) && (dssdev->state != OMAP_DSS_DISPLAY_DISABLED)) {
-		printk(KERN_INFO "Display disabled");
+		DSSDBG(KERN_INFO "Display disabled");
 		hdmi_power_off(dssdev);
 		hpd_mode = 1;
 		/* PAD0_HDMI_HPD_PAD1_HDMI_CEC */
@@ -1103,7 +1181,7 @@ static struct hdmi_cm hdmi_get_code(struct omap_video_timings *timing)
 			temp_vsync = temp.vfp + temp.vsw + temp.vbp;
 			timing_vsync = timing->vfp + timing->vsw + timing->vbp;
 
-			printk("Temp_hsync = %d , temp_vsync = %d , \
+			DSSDBG("Temp_hsync = %d , temp_vsync = %d , \
 				timing_hsync = %d, timing_vsync = %d", \
 				temp_hsync, temp_hsync, timing_hsync, timing_vsync);
 
@@ -1117,127 +1195,10 @@ static struct hdmi_cm hdmi_get_code(struct omap_video_timings *timing)
 				DSSDBG("Hdmi_code = %d mode = %d\n", cm.code, cm.mode);
 				print_omap_video_timings(&temp);
 				break;
-			 }
+			}
 		}
-
 	}
 	return cm;
-}
-
-static void hdmi_get_edid(struct omap_dss_device *dssdev)
-{
-	u8 i = 0, flag = 0;
-	int count, offset, effective_addrs;
-	if (edid_set != 1) {
-		printk(KERN_WARNING "Display doesnt seem to be enabled invalid read\n");
-	if (HDMI_CORE_DDC_READEDID(HDMI_CORE_SYS, edid) != 0) {
-		printk(KERN_WARNING "HDMI failed to read E-EDID\n");
-	}
-			for (i = 0x00; i < 0x08; i++) {
-				if (edid[i] == header[i])
-					continue;
-				else {
-					flag = 1;
-					break;
-				}
-			}
-		if (flag == 0)
-			edid_set = 1;
-	}
-
-	mdelay(1000);
-
-	printk("\nHeader:\n");
-	for (i = 0x00; i < 0x08; i++)
-		printk("%02x	", edid[i]);
-	printk("\nVendor & Product:\n");
-	for (i = 0x08; i < 0x12; i++)
-		printk("%02x	", edid[i]);
-	printk("\nEDID Structure:\n");
-	for (i = 0x12; i < 0x14; i++)
-		printk("%02x	", edid[i]);
-	printk("\nBasic Display Parameter:\n");
-	for (i = 0x14; i < 0x19; i++)
-		printk("%02x	", edid[i]);
-	printk("\nColor Characteristics:\n");
-	for (i = 0x19; i < 0x23; i++)
-		printk("%02x	", edid[i]);
-	printk("\nEstablished timings:\n");
-	for (i = 0x23; i < 0x26; i++)
-		printk("%02x	", edid[i]);
-	printk("\nStandard timings:\n");
-	for (i = 0x26; i < 0x36; i++)
-		printk("%02x	", edid[i]);
-
-	for (count = 0; count < EDID_SIZE_BLOCK0_TIMING_DESCRIPTOR; count++) {
-		current_descriptor_addrs =
-			EDID_DESCRIPTOR_BLOCK0_ADDRESS +
-			count * EDID_TIMING_DESCRIPTOR_SIZE;
-		show_horz_vert_timing_info(edid);
-		}
-	if (edid[0x7e] != 0x00) {
-		offset = edid[EDID_DESCRIPTOR_BLOCK1_ADDRESS + 2];
-		printk("\n offset %x\n", offset);
-		if (offset != 0) {
-			effective_addrs = EDID_DESCRIPTOR_BLOCK1_ADDRESS
-				+ offset;
-			/*to determine the number of descriptor blocks */
-			for (count = 0;
-			      count < EDID_SIZE_BLOCK1_TIMING_DESCRIPTOR;
-			      count++) {
-			current_descriptor_addrs = effective_addrs +
-			count * EDID_TIMING_DESCRIPTOR_SIZE;
-		show_horz_vert_timing_info(edid);
-			}
-		}
-
-
-	}
-	hdmi_get_image_format();
-	hdmi_get_audio_format();
-
-}
-void show_horz_vert_timing_info(u8 *edid)
-{
-	struct omap_video_timings timings_value;
-
-	printk(KERN_INFO
-			 "EDID DTD block address	= 0x%x\n",
-			 current_descriptor_addrs
-			 );
-	/*X and Y resolution */
-	timings_value.x_res = (((edid[current_descriptor_addrs + 4] & 0xF0) << 4) |
-			 edid[current_descriptor_addrs + 2]);
-	timings_value.y_res = (((edid[current_descriptor_addrs + 7] & 0xF0) << 4) |
-			 edid[current_descriptor_addrs + 5]);
-	timings_value.pixel_clock = ((edid[current_descriptor_addrs + 1] << 8) |
-					edid[current_descriptor_addrs]);
-
-	timings_value.pixel_clock = 10 * timings_value.pixel_clock;
-
-	/*HORIZONTAL FRONT PORCH */
-	timings_value.hfp = edid[current_descriptor_addrs + 8];
-	/*HORIZONTAL SYNC WIDTH */
-	timings_value.hsw = edid[current_descriptor_addrs + 9];
-	/*HORIZONTAL BACK PORCH */
-	timings_value.hbp = (((edid[current_descriptor_addrs + 4]
-					  & 0x0F) << 8) |
-					edid[current_descriptor_addrs + 3]) -
-		(timings_value.hfp + timings_value.hsw);
-	/*VERTICAL FRONT PORCH */
-	timings_value.vfp = ((edid[current_descriptor_addrs + 10] &
-				       0xF0) >> 4);
-	/*VERTICAL SYNC WIDTH */
-	timings_value.vsw = (edid[current_descriptor_addrs + 10] &
-				      0x0F);
-	/*VERTICAL BACK PORCH */
-	timings_value.vbp = (((edid[current_descriptor_addrs + 7] &
-					0x0F) << 8) |
-				      edid[current_descriptor_addrs + 6]) -
-		(timings_value.vfp + timings_value.vsw);
-
-	hdmi_get_code(&timings_value);
-
 }
 
 static int hdmi_check_timings(struct omap_dss_device *dssdev,
@@ -1253,15 +1214,13 @@ static int hdmi_check_timings(struct omap_dss_device *dssdev,
 
 int hdmi_init_display(struct omap_dss_device *dssdev)
 {
-	printk("init_display\n");
+	DSSDBG("init_display\n");
 
 	/* register HDMI specific sysfs files */
-	/* note: custom_edid_timing should perhaps be moved here too,
-	 * instead of generic code?  Or edid sysfs file should be moved
-	 * to generic code.. either way they should be in same place..
-	 */
-	if (device_create_file(&dssdev->dev, &dev_attr_edid))
-		DSSERR("failed to create sysfs file\n");
+	if (device_create_file(&dssdev->dev, &dev_attr_edid) ||
+			device_create_file(&dssdev->dev, &dev_attr_custom_edid_timing) ||
+			device_create_file(&dssdev->dev, &dev_attr_hpd_enabled))
+		DSSERR("failed to create sysfs files\n");
 
 	return 0;
 }
@@ -1275,15 +1234,14 @@ static int hdmi_read_edid(struct omap_video_timings *dp)
 	if (!edid_set) {
 		ret = HDMI_CORE_DDC_READEDID(HDMI_CORE_SYS, edid);
 	}
-	if (ret != 0)
+	if (ret != 0) {
 		printk(KERN_WARNING "HDMI failed to read E-EDID\n");
-	else {
+	} else {
 		if (!memcmp(edid, header, sizeof(header))) {
 			/* search for timings of default resolution */
 			if (get_edid_timing_data(edid))
 				edid_set = true;
 		}
-
 	}
 
 	if (!edid_set) {
