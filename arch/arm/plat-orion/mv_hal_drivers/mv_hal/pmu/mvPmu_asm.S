@@ -141,6 +141,9 @@ ENTRY(mvPmuSramFlushCaches)
 	mov	r0, #0
 	mcr	p15, 0, r0, c7, c14, 0		@ D cache clean+invalidate
 	mcr     p15, 0, r0, c7, c5, 6           @ flush BTAC/BTB
+#ifdef CONFIG_CPU_PJ4_ERRATA_4574_4731
+	mcr	p15, 0, r0, c7, c5, 0		@ I+BTB cache invalidate
+#endif
 	mcr	p15, 0, r0, c7, c5, 0		@ I+BTB cache invalidate
 
 	mrc 	p15, 1, r1, c15, c12, 0
@@ -174,6 +177,9 @@ skip_l2_clean:
  **************************************************************/
 ENTRY(mvPmuSramInvalidateCaches)
 	mov	r1, #0
+#ifdef CONFIG_CPU_PJ4_ERRATA_4574_4731
+	mcr	p15, 0, r1, c7, c5, 0		@ Invalidate both caches, BTC, BTAC
+#endif
 	mcr	p15, 0, r1, c7, c5, 0		@ Invalidate both caches, BTC, BTAC
 	mcr	p15, 0, r1, c8, c7, 0		@ TLB invalidate	
 	mcr	p15, 1, r1, c7, c7, 0		@ Invalidate entire L2

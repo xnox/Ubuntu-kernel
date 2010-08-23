@@ -97,6 +97,9 @@ ENTRY(v7_flush_kern_cache_all)
  THUMB(	stmfd	sp!, {r4-r7, r9-r11, lr}	)
 	bl	v7_flush_dcache_all
 	mov	r0, #0
+#ifdef CONFIG_CPU_PJ4_ERRATA_4574_4731
+	mcr	p15, 0, r0, c7, c5, 0		@ I+BTB cache invalidate
+#endif
 	mcr	p15, 0, r0, c7, c5, 0		@ I+BTB cache invalidate
  ARM(	ldmfd	sp!, {r4-r5, r7, r9-r11, lr}	)
  THUMB(	ldmfd	sp!, {r4-r7, r9-r11, lr}	)
@@ -167,6 +170,9 @@ ENTRY(v7_coherent_user_range)
 1:
  USER(	mcr	p15, 0, r0, c7, c11, 1	)	@ clean D line to the point of unification
 	dsb
+#ifdef CONFIG_CPU_PJ4_ERRATA_4574_4731
+ USER(	mcr	p15, 0, r0, c7, c5, 1	)	@ invalidate I line
+#endif
  USER(	mcr	p15, 0, r0, c7, c5, 1	)	@ invalidate I line
 	add	r0, r0, r2
 2:
