@@ -53,6 +53,7 @@ ENTRY(v7wbi_flush_user_tlb_range)
 	mov	ip, #0
 	mcr	p15, 0, ip, c7, c5, 6		@ flush BTAC/BTB
 	dsb
+	isb
 	mov	pc, lr
 ENDPROC(v7wbi_flush_user_tlb_range)
 

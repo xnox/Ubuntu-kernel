@@ -441,6 +441,9 @@ static inline void __flush_icache_all(void)
 	    :
 	    : "r" (0));
 #endif
+	asm("mcr	p15, 0, %0, c7, c5, 4	@ ISB is required per ARM spec\n"
+	    :
+	    : "r" (0));
 }
 
 #define ARCH_HAS_FLUSH_ANON_PAGE
