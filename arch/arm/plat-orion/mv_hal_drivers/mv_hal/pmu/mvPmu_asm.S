@@ -174,7 +174,7 @@ skip_l2_clean:
  **************************************************************/
 ENTRY(mvPmuSramInvalidateCaches)
 	mov	r1, #0
-	mcr	p15, 0, r1, c5, c7, 0		@ Invalidate both caches, BTC, BTAC
+	mcr	p15, 0, r1, c7, c5, 0		@ Invalidate both caches, BTC, BTAC
 	mcr	p15, 0, r1, c8, c7, 0		@ TLB invalidate	
 	mcr	p15, 1, r1, c7, c7, 0		@ Invalidate entire L2
 	mcr	p15, 0, r1, c7, c5, 4		@ Prefetch Flush - ISB
