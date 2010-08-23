@@ -230,6 +230,7 @@
 
 #include <linux/sched.h>
 
+
 struct cpu_tlb_fns {
 	void (*flush_user_range)(unsigned long, unsigned long, struct vm_area_struct *);
 	void (*flush_kern_range)(unsigned long, unsigned long);
@@ -426,8 +427,16 @@ local_flush_tlb_page(struct vm_area_struct *vma, unsigned long uaddr)
 			asm("mcr p15, 0, %0, c8, c5, 0" : : "r" (zero) : "cc");
 	}
 
+#ifdef CONFIG_CPU_PJ4_ERRATA_4315
+	if (tlb_flag(TLB_V6_U_PAGE)) {
+		unsigned long asid;
+		asid  = ASID(vma->vm_mm);
+		asm("mcr p15, 0, %0, c8, c7, 2" : : "r" (asid) : "cc");
+	}
+#else
 	if (tlb_flag(TLB_V6_U_PAGE))
 		asm("mcr p15, 0, %0, c8, c7, 1" : : "r" (uaddr) : "cc");
+#endif
 	if (tlb_flag(TLB_V6_D_PAGE))
 		asm("mcr p15, 0, %0, c8, c6, 1" : : "r" (uaddr) : "cc");
 	if (tlb_flag(TLB_V6_I_PAGE))
@@ -467,9 +476,14 @@ static inline void local_flush_tlb_kernel_page(unsigned long kaddr)
 		asm("mcr p15, 0, %0, c8, c5, 1" : : "r" (kaddr) : "cc");
 	if (!tlb_flag(TLB_V4_I_PAGE) && tlb_flag(TLB_V4_I_FULL))
 		asm("mcr p15, 0, %0, c8, c5, 0" : : "r" (zero) : "cc");
-
+#ifdef CONFIG_CPU_PJ4_ERRATA_4315
+	/* Invalidate all bcoz no vma info */
+	if (tlb_flag(TLB_V6_U_PAGE))
+		asm("mcr p15, 0, %0, c8, c7, 0" : : "r" (0));
+#else
 	if (tlb_flag(TLB_V6_U_PAGE))
 		asm("mcr p15, 0, %0, c8, c7, 1" : : "r" (kaddr) : "cc");
+#endif
 	if (tlb_flag(TLB_V6_D_PAGE))
 		asm("mcr p15, 0, %0, c8, c6, 1" : : "r" (kaddr) : "cc");
 	if (tlb_flag(TLB_V6_I_PAGE))
