@@ -1,3 +1,10 @@
+linux-meta-linaro (2.6.35.1003.8) maverick; urgency=low
+
+  * Added mx51 flavour
+  * Linaro Maverick ABI 1003 (2.6.35-1003.8)
+
+ -- John Rigby <john.rigby@linaro.org>  Sun, 22 Aug 2010 22:09:40 -0600
+
 linux-meta-linaro (2.6.35.1002.7) maverick; urgency=low
 
   * Changed source package name from linux-linaro-meta to linux-meta-linaro
