@@ -225,6 +225,7 @@ SOC_DOUBLE("CD Capture Switch", RT655_CD_VOL, 15, 7, 1, 1),
 SOC_DOUBLE("CD Capture Volume", RT655_CD_VOL, 8, 0, 31, 1),
 SOC_DOUBLE("AUX Capture Switch", RT655_AUX_VOL, 15, 7, 1, 1),
 SOC_DOUBLE("AUX Capture Volume", RT655_AUX_VOL, 8, 0, 31, 1),
+SOC_SINGLE("Record Gain Capture Switch", RT655_REC_GAIN, 15, 1, 1),
 SOC_DOUBLE("Record Gain Capture Volume", RT655_REC_GAIN, 8, 0, 15, 0),
 SOC_ENUM("Record Capture Switch", rt655_record_enum),
 };
