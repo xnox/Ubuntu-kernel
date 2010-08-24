@@ -586,7 +586,7 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 	u32 total_x, total_y, i;
 	u64 div_result;
 	u32 dev, rev;
-	unsigned int lcd_accurate_clock;
+	unsigned int lcd_accurate_clock = 1;
 
 	dove_pcie_id(&dev, &rev);
 
@@ -604,10 +604,10 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 	}
 
 	/* Only one lcd uses internal refclk, we turn on accurate mode. */
-	if ((MRVL_PLL_CLK == lcd0_clk) && (MRVL_PLL_CLK == lcd1_clk))
-		lcd_accurate_clock = 0;
-	else
-		lcd_accurate_clock = 1;
+	if (lcd0_enable && lcd0_dmi_data && lcd1_enable && lcd1_dmi_data)
+		if (((1 == lcd0_clk) || (lcd0_dmi_data->clk_src == MRVL_PLL_CLK))
+		    && ((1 == lcd1_clk) || (lcd1_dmi_data->clk_src == MRVL_PLL_CLK)))
+			lcd_accurate_clock = 0;
 
 	printk(KERN_WARNING "Turn %s PLL accurate mode.\n",
 	       lcd_accurate_clock ? "on" : "off");
@@ -620,9 +620,6 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 #ifdef CONFIG_FB_DOVE_CLCD
 	/* lcd0 */
 	if (lcd0_enable && lcd0_dmi_data && lcd0_vid_dmi_data) {
-		lcd0_dmi_data->accurate_clk = (lcd0_clk == MRVL_PLL_CLK) ?
-			lcd_accurate_clock : 0;
-
 		/* LCD external clock supported only starting from rev A0 */
 		if ((rev < DOVE_REV_A0) && (lcd0_clk > 1)) {
 			lcd0_dmi_data->clk_src = MRVL_PLL_CLK;
@@ -640,10 +637,6 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 			break;
 		case 1:
 			lcd0_dmi_data->clk_src = MRVL_PLL_CLK;
-			if (lcd0_dmi_data->accurate_clk)
-				lcd0_dmi_data->clk_name = "accurate_LCDCLK";
-			else
-				lcd0_dmi_data->clk_name = "LCDCLK";
 			break;
 		case 2:
 			lcd0_dmi_data->clk_src = MRVL_EXT_CLK0;
@@ -659,6 +652,13 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 
 		}
 
+		if (lcd0_dmi_data->clk_src == MRVL_PLL_CLK) {
+			lcd0_dmi_data->accurate_clk = lcd_accurate_clock;
+			if (lcd0_dmi_data->accurate_clk)
+				lcd0_dmi_data->clk_name = "accurate_LCDCLK";
+			else
+				lcd0_dmi_data->clk_name = "LCDCLK";
+		}
 		lcd0_vid_dmi_data->modes = video_modes;
 		lcd0_vid_dmi_data->num_modes = ARRAY_SIZE(video_modes);
 		lcd0_vid_platform_device.dev.platform_data = lcd0_vid_dmi_data;
@@ -676,8 +676,6 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 #ifdef CONFIG_FB_DOVE_CLCD1
 	/* lcd1 */
 	if (lcd1_enable && lcd1_dmi_data && lcd1_vid_dmi_data) {
-		lcd1_dmi_data->accurate_clk = (lcd1_clk == MRVL_PLL_CLK) ?
-			lcd_accurate_clock : 0;
 
 		/* LCD external clock supported only starting from rev A0 */
 		if ((rev < DOVE_REV_A0) && (lcd1_clk > 1)) {
@@ -695,10 +693,6 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 			break;
 		case 1:
 			lcd1_dmi_data->clk_src = MRVL_PLL_CLK;
-			if (lcd1_dmi_data->accurate_clk)
-				lcd1_dmi_data->clk_name = "accurate_LCDCLK";
-			else
-				lcd1_dmi_data->clk_name = "LCDCLK";
 			break;
 		case 2:
 			lcd1_dmi_data->clk_src = MRVL_EXT_CLK0;
@@ -711,6 +705,14 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 		default:
 			printk(KERN_ERR "error: invalid value(%d) for lcd1_clk patameter\n",
 			       lcd1_clk);
+		}
+
+		if (lcd1_dmi_data->clk_src == MRVL_PLL_CLK) {
+			lcd1_dmi_data->accurate_clk = lcd_accurate_clock;
+			if (lcd1_dmi_data->accurate_clk)
+				lcd1_dmi_data->clk_name = "accurate_LCDCLK";
+			else
+				lcd1_dmi_data->clk_name = "LCDCLK";
 		}
 
 #ifdef CONFIG_FB_DOVE_CLCD
