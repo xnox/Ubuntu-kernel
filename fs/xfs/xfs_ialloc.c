@@ -1146,7 +1146,6 @@ xfs_imap_lookup(
 {
 	struct xfs_btree_cur	*cur;
 	struct xfs_buf		*agbp;
-	xfs_agino_t		startino;
 	xfs_agino_t		chunk_agino;	/* first agino in inode chunk */
 	__int32_t		chunk_cnt;	/* count of free inodes in chunk */
 	xfs_inofree_t		chunk_free;	/* mask of free inodes in chunk */
@@ -1165,14 +1164,14 @@ xfs_imap_lookup(
 	}
 
 	/*
-	 * derive and lookup the exact inode record for the given agino. If the
-	 * record cannot be found, then it's an invalid inode number and we
-	 * should abort.
+	 * Lookup the inode record for the given agino. If the record cannot be
+	 * found, then it's an invalid inode number and we should abort. Once
+	 * we have a record, we need to ensure it contains the inode number
+	 * we are looking up.
 	 */
 	cur = xfs_btree_init_cursor(mp, tp, agbp, agno, XFS_BTNUM_INO,
 		(xfs_inode_t *)0, 0);
-	startino = agino & ~(XFS_IALLOC_INODES(mp) - 1);
-	error = xfs_inobt_lookup_le(cur, startino, 0, 0, &i);
+	error = xfs_inobt_lookup_le(cur, agino, 0, 0, &i);
 	if (!error) {
 		if (i)
 			error = xfs_inobt_get_rec(cur, &chunk_agino, &chunk_cnt,
@@ -1185,6 +1184,11 @@ xfs_imap_lookup(
 	xfs_btree_del_cursor(cur, XFS_BTREE_NOERROR);
 	if (error)
 		return error;
+
+	/* check that the returned record contains the required inode */
+	if (chunk_agino > agino ||
+	    chunk_agino + XFS_IALLOC_INODES(mp) <= agino)
+		return EINVAL;
 
 	/* for untrusted inodes check it is allocated first */
 	if ((flags & XFS_IGET_UNTRUSTED) &&
