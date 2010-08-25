@@ -577,6 +577,44 @@ static struct platform_device backlight_platform_device = {
 
 #endif /* CONFIG_FB_DOVE_DCON */
 
+int compatibility_check(int lcd_args, struct dovefb_mach_info *lcd_dmi_data)
+{
+	u32 dev, rev;
+
+	if (!lcd_dmi_data)
+		return -1;
+
+	/* Get chip version. */
+	dove_pcie_id(&dev, &rev);
+
+	/* LCD external clock supported only starting from rev A0 */
+	if ((rev < DOVE_REV_A0) && ((lcd_args > 1) ||
+		(MRVL_EXT_CLK0 == lcd_dmi_data->clk_src) ||
+		(MRVL_EXT_CLK1 == lcd_dmi_data->clk_src))) {
+		lcd_dmi_data->clk_src = MRVL_PLL_CLK;
+		lcd_dmi_data->clk_name = "accurate_LCDCLK";
+		lcd_dmi_data->accurate_clk = 1;
+		printk(KERN_WARNING "Bootargs choose wrong refclk for %s.\n",
+			lcd_dmi_data->id_gfx);
+	}
+
+	return 0;
+}
+
+int is_clksrc_pll(int lcd_args, struct dovefb_mach_info *lcd_dmi_data)
+{
+	int use_pll = 0;
+
+	/* check bootargs first. */
+	if ((lcd_args != -1) && (1 == lcd_args))
+		use_pll = 1;
+	/* then, check platform info */
+	else if (lcd_dmi_data && (MRVL_PLL_CLK == lcd_dmi_data->clk_src))
+		use_pll = 1;
+
+	return use_pll;
+}
+
 int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 		       struct dovefb_mach_info *lcd0_vid_dmi_data,
 		       struct dovefb_mach_info *lcd1_dmi_data,
@@ -587,6 +625,8 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 	u64 div_result;
 	u32 dev, rev;
 	unsigned int lcd_accurate_clock = 1;
+	unsigned int lcd0_use_pll;
+	unsigned int lcd1_use_pll;
 
 	dove_pcie_id(&dev, &rev);
 
@@ -603,11 +643,20 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 		video_modes[i].pixclock	= div_result;
 	}
 
+	/* check compatibility for different chip. */
+	compatibility_check(lcd0_clk, lcd0_dmi_data);
+	compatibility_check(lcd1_clk, lcd1_dmi_data);
+
 	/* Only one lcd uses internal refclk, we turn on accurate mode. */
-	if (lcd0_enable && lcd0_dmi_data && lcd1_enable && lcd1_dmi_data)
-		if (((1 == lcd0_clk) || (lcd0_dmi_data->clk_src == MRVL_PLL_CLK))
-		    && ((1 == lcd1_clk) || (lcd1_dmi_data->clk_src == MRVL_PLL_CLK)))
-			lcd_accurate_clock = 0;
+	lcd0_use_pll = is_clksrc_pll(lcd0_clk, lcd0_dmi_data);
+	lcd1_use_pll = is_clksrc_pll(lcd1_clk, lcd1_dmi_data);
+
+	printk(KERN_WARNING "LCD0 %s PLL mode.\n", lcd0_use_pll ?
+		"uses":"doesn't use");
+	printk(KERN_WARNING "LCD1 %s PLL mode.\n", lcd1_use_pll ?
+		"uses":"doesn't use");
+	if (lcd0_use_pll && lcd1_use_pll)
+		lcd_accurate_clock = 0;
 
 	printk(KERN_WARNING "Turn %s PLL accurate mode.\n",
 	       lcd_accurate_clock ? "on" : "off");
@@ -620,13 +669,6 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 #ifdef CONFIG_FB_DOVE_CLCD
 	/* lcd0 */
 	if (lcd0_enable && lcd0_dmi_data && lcd0_vid_dmi_data) {
-		/* LCD external clock supported only starting from rev A0 */
-		if ((rev < DOVE_REV_A0) && (lcd0_clk > 1)) {
-			lcd0_dmi_data->clk_src = MRVL_PLL_CLK;
-			lcd0_dmi_data->clk_name = "LCDCLK";
-			printk(KERN_WARNING "Bootargs choose wrong refclk for lcd0.\n");
-		}
-
 		switch(lcd0_clk) {
 		case -1: /* default, using dovefb_mach_info */
 			break;
@@ -676,14 +718,6 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 #ifdef CONFIG_FB_DOVE_CLCD1
 	/* lcd1 */
 	if (lcd1_enable && lcd1_dmi_data && lcd1_vid_dmi_data) {
-
-		/* LCD external clock supported only starting from rev A0 */
-		if ((rev < DOVE_REV_A0) && (lcd1_clk > 1)) {
-			lcd1_dmi_data->clk_src = MRVL_PLL_CLK;
-			lcd1_dmi_data->clk_name = "LCDCLK";
-			printk(KERN_WARNING "Bootargs choose wrong refclk for lcd1.\n");
-		}
-
 		switch(lcd1_clk) {
 		case -1: /* default, using dovefb_mach_info */
 			break;
