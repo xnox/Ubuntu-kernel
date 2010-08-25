@@ -35,6 +35,11 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 	@echo "Preparing $*..."
 	install -d $(builddir)/build-$*
 	cd updates; tar cf - * | tar -C $(builddir)/build-$* -xf -
+	if ls debian/patches/*.patch; then \
+		for i in debian/patches/*.patch; do \
+			patch -d $(builddir)/build-$* -p2 < $$i; \
+		done; \
+	fi
 	#
 	# compat-wireless preparation
 	#
