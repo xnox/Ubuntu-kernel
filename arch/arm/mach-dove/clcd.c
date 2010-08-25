@@ -605,11 +605,12 @@ int is_clksrc_pll(int lcd_args, struct dovefb_mach_info *lcd_dmi_data)
 {
 	int use_pll = 0;
 
-	/* check bootargs first. */
-	if ((lcd_args != -1) && (1 == lcd_args))
-		use_pll = 1;
-	/* then, check platform info */
-	else if (lcd_dmi_data && (MRVL_PLL_CLK == lcd_dmi_data->clk_src))
+	/* Check whether bootargs existed first. */
+	if (-1 != lcd_args) {
+		if(1 == lcd_args)
+			use_pll = 1;
+	/* No bootargs, than check platform info. */
+	} else if (lcd_dmi_data && (MRVL_PLL_CLK == lcd_dmi_data->clk_src))
 		use_pll = 1;
 
 	return use_pll;
@@ -651,9 +652,9 @@ int clcd_platform_init(struct dovefb_mach_info *lcd0_dmi_data,
 	lcd0_use_pll = is_clksrc_pll(lcd0_clk, lcd0_dmi_data);
 	lcd1_use_pll = is_clksrc_pll(lcd1_clk, lcd1_dmi_data);
 
-	printk(KERN_WARNING "LCD0 %s PLL mode.\n", lcd0_use_pll ?
+	printk(KERN_WARNING "LCD0 %s PLL.\n", lcd0_use_pll ?
 		"uses":"doesn't use");
-	printk(KERN_WARNING "LCD1 %s PLL mode.\n", lcd1_use_pll ?
+	printk(KERN_WARNING "LCD1 %s PLL.\n", lcd1_use_pll ?
 		"uses":"doesn't use");
 	if (lcd0_use_pll && lcd1_use_pll)
 		lcd_accurate_clock = 0;
