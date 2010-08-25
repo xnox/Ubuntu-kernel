@@ -601,7 +601,11 @@ static int cs42l51_resume(struct platform_device *pdev)
 	CS42L51_DEBUG("");
 
 	cs42l51_sync_cache(codec);
+#if 0
 	cs42l51_set_bias_level(codec, codec->suspend_bias_level);
+#else
+	cs42l51_set_bias_level(codec, SND_SOC_BIAS_ON);
+#endif
 	return 0;
 }
 
