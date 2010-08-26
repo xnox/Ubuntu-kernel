@@ -689,7 +689,7 @@ typedef struct {
 	abe_port_protocol_t protocol;
 	abe_dma_t_offset dma;			/* pointer and iteration counter of the xDMA */
 	abe_uint16 feature_index[MAXFEATUREPORT]; /* list of features associated to a port (EQ, APS, ... , ends with 0) */
-	 /* abe_millibel gain_calibration;	/* gain tuning, default=0dB */
+	 /* abe_millibel gain_calibration;*/	/* gain tuning, default=0dB */
 	char name[NBCHARPORTNAME];
 } abe_port_t;
 

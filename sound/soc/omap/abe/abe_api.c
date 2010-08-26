@@ -1389,14 +1389,14 @@ void abe_write_asrc(abe_asrc_id id, abe_drift_t dppm)
 	 *	 - deltaalpha = 4194.3 ~ 4195 => 0x00418c
 	 */
 	 /* examples for -6250 ppm */
-	 /* atempvalue32[0] = 4;		  /* d_constalmost0 */
-	 /* atempvalue32[1] = -1;		   /* d_driftsign */
-	 /* atempvalue32[2] = 15;		  /* d_subblock */
-	 /* atempvalue32[3] = 0x00066668; /* d_deltaalpha */
-	 /* atempvalue32[4] = 0xfff99998; /* d_minusdeltaalpha */
-	 /* atempvalue32[5] = 0x003ccccc; /* d_oneminusepsilon */
-	 /* atempvalue32[6] = 0x00000000; /* d_alphazero */
-	 /* atempvalue32[7] = 0x00400000; /* d_betaone */
+	 /* atempvalue32[0] = 4;*/		  /* d_constalmost0 */
+	 /* atempvalue32[1] = -1;*/		   /* d_driftsign */
+	 /* atempvalue32[2] = 15;*/		  /* d_subblock */
+	 /* atempvalue32[3] = 0x00066668;*/ /* d_deltaalpha */
+	 /* atempvalue32[4] = 0xfff99998;*/ /* d_minusdeltaalpha */
+	 /* atempvalue32[5] = 0x003ccccc;*/ /* d_oneminusepsilon */
+	 /* atempvalue32[6] = 0x00000000;*/ /* d_alphazero */
+	 /* atempvalue32[7] = 0x00400000;*/ /* d_betaone */
 
 	/* compute new value for the ppm */
 	if (dppm > 0) {

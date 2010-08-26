@@ -357,8 +357,8 @@ typedef struct {
  * ---------------
  * 18 = TOTAL
  */
-/*#define smem_g0			S_GTarget_ADDR	/* [9] 2 gains in 1 SM address */
-/*#define smem_g1			S_GCurrent_ADDR	/* [9] 2 gains in 1 SM address */
+/*#define smem_g0			S_GTarget_ADDR*/	/* [9] 2 gains in 1 SM address */
+/*#define smem_g1			S_GCurrent_ADDR*/	/* [9] 2 gains in 1 SM address */
 
 /*
  * COEFFICIENTS AREA
