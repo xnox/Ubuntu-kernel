@@ -209,11 +209,6 @@ struct HDMI_EDID {
 	u8   extension_checksum;	/* 127 */
 } __attribute__ ((packed));
 
-struct hdmi_work_struct {
-	struct work_struct work;
-	int r;
-};
-
 void show_horz_vert_timing_info(u8 *edid);
 int hdmi_get_image_format(void);
 int hdmi_get_audio_format(void);
