@@ -1020,13 +1020,19 @@ static int dovefb_gfx_ioctl(struct fb_info *info, unsigned int cmd,
 		dfli->edid_info.change = 0;
 		break;
 	case DOVEFB_IOCTL_GET_EDID_DATA:
-		if (copy_to_user(argp, dfli->raw_edid,
-				EDID_LENGTH * (dfli->edid_info.extension+1)))
-			return -EFAULT;
+		if (dfli->raw_edid != NULL) {
+			if (copy_to_user(argp, dfli->raw_edid, EDID_LENGTH *
+					 (dfli->edid_info.extension + 1)))
+				return -EFAULT;
+		}
 		break;
 	case DOVEFB_IOCTL_SET_EDID_INTERVAL:
-		dfli->edid_info.interval = (arg>0) ? arg : DEFAULT_EDID_INTERVAL;
-		mod_timer(&dfli->get_edid_timer, jiffies + dfli->edid_info.interval * HZ);
+		if (!dfli->ddc_polling_disable) {
+			dfli->edid_info.interval = (arg > 0) ? arg :
+				DEFAULT_EDID_INTERVAL;
+			mod_timer(&dfli->get_edid_timer, jiffies +
+				  dfli->edid_info.interval * HZ);
+		}
 		break;
 
 	default:
@@ -1323,11 +1329,13 @@ static int dovefb_init_mode(struct fb_info *fi,
 	/*
 	 * Fill up mode data to modelist.
 	 */
-	if (dovefb_fill_edid(fi, dmi))
+	dfli->raw_edid = NULL;
+	if (dovefb_fill_edid(fi, dmi)) {
 		fb_videomode_to_modelist(dmi->modes,
 					dmi->num_modes,
 					&fi->modelist);
-
+		dfli->raw_edid = make_fake_edid();
+	}
 	/*
 	 * Print all video mode in current mode list.
 	 */
@@ -1573,6 +1581,7 @@ int dovefb_gfx_init(struct dovefb_info *info, struct dovefb_mach_info *dmi)
 	/*
 	 * Initialize dynamic get edid timer
 	 */
+	dfli->ddc_polling_disable = dmi->ddc_polling_disable;
 	if(!dmi->ddc_polling_disable) {
 		init_timer(&dfli->get_edid_timer);
 		dfli->get_edid_timer.expires = jiffies + HZ;
@@ -1581,6 +1590,10 @@ int dovefb_gfx_init(struct dovefb_info *info, struct dovefb_mach_info *dmi)
 		add_timer(&dfli->get_edid_timer);
 
 		INIT_WORK(&dfli->work_queue, get_edid_work);
+	} else {
+		dfli->edid_info.connect = 1;
+		dfli->edid_info.change = 1;
+		dfli->edid_info.extension = dfli->raw_edid[0x7e];
 	}
 
 	return 0;
