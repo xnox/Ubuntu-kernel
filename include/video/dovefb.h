@@ -352,6 +352,7 @@ struct dovefb_layer_info {
 	struct tasklet_struct	tasklet;
 	char			*mode_option;
 
+	int			ddc_polling_disable;
 	struct timer_list	get_edid_timer;
 	unsigned char*		raw_edid;
 	struct _sEdidInfo	edid_info;
