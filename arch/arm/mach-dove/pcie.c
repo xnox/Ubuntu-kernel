@@ -108,10 +108,10 @@ static int __init dove_pcie_setup(int nr, struct pci_sys_data *sys)
 	pp->io_space_name[sizeof(pp->io_space_name) - 1] = 0;
 	pp->res[0].name = pp->io_space_name;
 	if (pp->index == 0) {
-		pp->res[0].start = DOVE_PCIE0_IO_PHYS_BASE;
+		pp->res[0].start = DOVE_PCIE0_IO_BUS_BASE;
 		pp->res[0].end = pp->res[0].start + DOVE_PCIE0_IO_SIZE - 1;
 	} else {
-		pp->res[0].start = DOVE_PCIE1_IO_PHYS_BASE;
+		pp->res[0].start = DOVE_PCIE1_IO_BUS_BASE;
 		pp->res[0].end = pp->res[0].start + DOVE_PCIE1_IO_SIZE - 1;
 	}
 	pp->res[0].flags = IORESOURCE_IO;
