@@ -409,6 +409,10 @@ static struct orion_i2s_platform_data i2s0_data = {
 };
 
 static struct mv643xx_eth_platform_data dove_db_ge00_data = {
+	.phy_addr	= MV643XX_ETH_PHY_ADDR_DEFAULT,
+};
+
+static struct mv643xx_eth_platform_data dove_db_b_ge00_data = {
 	.phy_addr	= 1,
 };
 
@@ -1060,7 +1064,10 @@ static void __init dove_db_init(void)
 		dove_mv_eth_init();
 	else
 #endif
-	dove_ge00_init(&dove_db_ge00_data);
+	if (rev >= DOVE_REV_A0)
+		dove_ge00_init(&dove_db_b_ge00_data);
+	else
+		dove_ge00_init(&dove_db_ge00_data);
 	dove_ehci0_init();
 	dove_ehci1_init();
 
