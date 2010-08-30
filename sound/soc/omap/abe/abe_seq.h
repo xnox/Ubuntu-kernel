@@ -1,11 +1,22 @@
 /*
- * ==========================================================================
- *               Texas Instruments OMAP(TM) Platform Firmware
- * (c) Copyright 2009, Texas Instruments Incorporated.  All Rights Reserved.
+ * ALSA SoC OMAP ABE driver
  *
- *  Use of this firmware is controlled by the terms and conditions found
- *  in the license agreement under which this firmware has been supplied.
- * ==========================================================================
+ * Author:	Laurent Le Faucheur <l-le-faucheur@ti.com>
+ * 		Liam Girdwood <lrg@slimlogic.co.uk>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA
  */
 
 void abe_init_subroutine_table(void);
@@ -15,9 +26,13 @@ void abe_init_subroutine_table(void);
  *
  * 1. Power on sequence
  *
- * The modules HSLDO, NCP, LSLDO, LPPLL are enabled/disabled automatically by the TWL6040 power state machine after pin AUDPWRON transitions from 0 ' 1. No register writes are necessary.
+ * The modules HSLDO, NCP, LSLDO, LPPLL are enabled/disabled automatically by
+ * the TWL6040 power state machine after pin AUDPWRON transitions from 0 ' 1.
+ * No register writes are necessary.
  *
- * For the purposes of test it is possible to bypass the power state machine and manually enable these modules in the same order as described in Fig 2-XX. This can be done after VIO comes up and I2C register writes are possible.
+ * For the purposes of test it is possible to bypass the power state machine
+ * and manually enable these modules in the same order as described in Fig 2-XX.
+ * This can be done after VIO comes up and I2C register writes are possible.
  *
  * The manual sequence could be as follows
  * LDOCTL = 0x04 (Enable HSLDO)
@@ -25,9 +40,11 @@ void abe_init_subroutine_table(void);
  * LDOCTL = 0x05 (Enable LSLDO)
  * LPPLLCTL = 0x09 (Enable LPPLL with output frequency = 19.2MHz)
  *
- * Please see Fig 2-64 for details on details to be maintained between successive I2C register writes.
+ * Please see Fig 2-64 for details on details to be maintained between successive
+ * I2C register writes.
  *
- * Further if the system MCLK is active the HPPLL could be enabled instead of the LPPLL.
+ * Further if the system MCLK is active the HPPLL could be enabled instead of the
+ * LPPLL.
  * (a) For a square wave where slicer is not required
  * HPPLLCTL = 0x11 (Select HPPLL output, Enable HPPLL)
  * (a) For a sine wave where slicer is required
@@ -106,7 +123,6 @@ void abe_init_subroutine_table(void);
  *
  */
 
-
 /*
  * 5. Setting up a handset call
  *
@@ -122,6 +138,7 @@ void abe_init_subroutine_table(void);
  *
  * HSLCTL = 0x01 (Enable HSDACL, HP mode)
  * Wait 80us
- * EARCTL = 0x03 (Enable EAR, Gain = min, by default enabling EAR connects HSDACL output to EAR)
+ * EARCTL = 0x03 (Enable EAR, Gain = min, by default enabling EAR connects
+ * HSDACL output to EAR)
  *
  */
