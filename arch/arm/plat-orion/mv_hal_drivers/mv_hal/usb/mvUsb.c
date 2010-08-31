@@ -68,6 +68,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "mvSysUsbConfig.h"
 #include "mvUsbRegs.h"
 #include "mvUsb.h"
+#include "mvDeviceId.h"
 
 static MV_USB_HAL_DATA	usbHalData;
 
@@ -255,6 +256,7 @@ void    mvUsbPhy65nmNewInit(int dev)
 static void    mvUsbPhy6781Init(int dev)
 {
     MV_U32          regVal;
+
     /******* USB PHY PLL Control Register 0x410 *******/
     regVal = MV_REG_READ(MV_USB_PHY_PLL_CTRL_REG(dev)); 
 	
@@ -275,12 +277,21 @@ static void    mvUsbPhy6781Init(int dev)
     /* bit[12]	(REG_RCAL_START) = 1 */ 
     regVal |= (0x1 << 12);
 
+    /* Bit[16:14] (IMP_CAL_VTH)
+     *     510 = 101
+     *     others = unchanged
+     */
+    if (usbHalData.ctrlModel == MV_510_DEV_ID) {
+        regVal &= ~(0x7 << 14);
+        regVal |= (0x5 << 14);
+    }
+
     /* bit[21]	(TX_BLOCK_EN)	= 0 */ 
     regVal &= ~(0x1 << 21);
 
     /* bit[31]  (HS_STRESS_CTRL) = 0 */
     regVal &= ~(0x1 << 31);
-	
+
     MV_REG_WRITE(MV_USB_PHY_TX_CTRL_REG(dev), regVal); 
     /* Force impedance auto calibrate */
     /* bit[12]	(REG_RCAL_START) = 0 */ 
@@ -290,13 +301,25 @@ static void    mvUsbPhy6781Init(int dev)
 
     /******* USB PHY Rx Control Register 0x430 *******/
     regVal = MV_REG_READ(MV_USB_PHY_RX_CTRL_REG(dev)); 
-    
-    /* bits[3:2]	LPL_COEF	= 0x0 (1/8) */
-    regVal &= ~(0x3 << 2);
 
-    /* bits[7:4]	SQ_THRESH	= 0x7 */
+    /* bits[3:2]	LPL_COEF
+     *   510      = 01
+     *   else     = 00  */
+    regVal &= ~(0x3 << 2);
+    if (usbHalData.ctrlModel == MV_510_DEV_ID) {
+        regVal |= (0x1 << 2);
+    }
+
+    /* bits[7:4]	SQ_THRESH
+     *      510       = 1100
+     *      else      = 0111
+     */
     regVal &= ~(0xf << 4);
-    regVal |= (0x7 << 4);
+    if (usbHalData.ctrlModel == MV_510_DEV_ID) {
+        regVal |= (0xC << 4);
+    } else {
+        regVal |= (0x7 << 4);
+    }
 
     /* bits[16:15]	REG_SQ_LENGTH	= 0x1 */
     regVal &= ~(0x3 << 15);
@@ -336,9 +359,6 @@ static void    mvUsbPhy6781Init(int dev)
 /* USB Phy init (change from defaults) specific for 65nm (6781-Y0 device) */
 static void    mvUsbPhy6781Y0Init(int dev)
 {
-    /* TODO - nearly identical to 6781Init, the only difference is */
-    /* SQ_THRESH = 0x8 instead of 0x7. Consider merging both functions. */
-
     MV_U32          regVal;
     /******* USB PHY PLL Control Register 0x410 *******/
     regVal = MV_REG_READ(MV_USB_PHY_PLL_CTRL_REG(dev)); 
@@ -346,8 +366,8 @@ static void    mvUsbPhy6781Y0Init(int dev)
     /* VCO recalibrate */
     regVal |= (0x1 << 21);
     MV_REG_WRITE(MV_USB_PHY_PLL_CTRL_REG(dev), regVal); 
-    /* wait 100 usec */
-    mvOsUDelay(100);
+    /* wait 500 usec */
+    mvOsUDelay(500);
     regVal &= ~(0x1 << 21);
     MV_REG_WRITE(MV_USB_PHY_PLL_CTRL_REG(dev), regVal); 
     /*-------------------------------------------------*/
@@ -373,8 +393,8 @@ static void    mvUsbPhy6781Y0Init(int dev)
 	
     MV_REG_WRITE(MV_USB_PHY_TX_CTRL_REG(dev), regVal);
 
-    /* wait 100 usec */
-    mvOsUDelay(100);
+    /* wait 500 usec */
+    mvOsUDelay(500);
  
     /* Force impedance auto calibrate */
     /* bit[12]	(REG_RCAL_START) = 0 */ 
@@ -385,13 +405,13 @@ static void    mvUsbPhy6781Y0Init(int dev)
     /******* USB PHY Rx Control Register 0x430 *******/
     regVal = MV_REG_READ(MV_USB_PHY_RX_CTRL_REG(dev)); 
     
-    /* bits[3:2]	LPL_COEF	= 0x1 (1/4) */
+    /* bits[3:2]	LPL_COEF	= 0x1 (1/8) */
     regVal &= ~(0x3 << 2);
-    regVal |= 1 << 2;
+    regVal |= (0x1 << 2);
 
-    /* bits[7:4]	SQ_THRESH	= 0x8 */
+    /* bits[7:4]	SQ_THRESH	= 0xC */
     regVal &= ~(0xf << 4);
-    regVal |= (0xc << 4);
+    regVal |= (0xC << 4);
 
     /* bits[16:15]	REG_SQ_LENGTH	= 0x1 */
     regVal &= ~(0x3 << 15);
@@ -704,10 +724,10 @@ static void    mvUsbPhyInit(int dev)
      *      64560, 64660                = 0x1
      *      5181, 5182, 5281, 6082, etc = 0x0
      */
+
     regVal &= ~(0xf << 4);
     if( (usbHalData.ctrlModel == MV64560_DEV_ID) ||
-        (usbHalData.ctrlModel == MV64660_DEV_ID))
-    {
+        (usbHalData.ctrlModel == MV64660_DEV_ID)) {
         regVal |= (0x1 << 4);
     }
 
@@ -818,7 +838,7 @@ MV_STATUS   mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData)
     {
         /* Do nothing */
     }
-    else if (usbHalData.ctrlModel == MV_6781_DEV_ID)
+    else if ((usbHalData.ctrlModel == MV_6781_DEV_ID) || (usbHalData.ctrlModel == MV_510_DEV_ID))
     {
         /* Change value of new register 0x360 */
         regVal = MV_REG_READ(MV_USB_BRIDGE_IPG_REG(dev));
@@ -850,33 +870,39 @@ MV_STATUS   mvUsbHalInit(int dev, MV_BOOL isHost, MV_USB_HAL_DATA *halData)
     }
 
     /********* Update USB PHY configuration **********/
-    if(	(usbHalData.ctrlModel == MV_78100_DEV_ID) || 
-	    (usbHalData.ctrlModel == MV_78200_DEV_ID))
-    {
-        mvUsbPhy65nmNewInit(dev);
-    }
-    else if((usbHalData.ctrlModel == MV_6281_DEV_ID) ||
-	        (usbHalData.ctrlModel == MV_6192_DEV_ID) ||
-	        (usbHalData.ctrlModel == MV_6180_DEV_ID) || 
-	        (usbHalData.ctrlModel == MV_78XX0_DEV_ID) )
-    {
-        mvUsbPhy65nmInit(dev);
-    }
-    else if( usbHalData.ctrlModel == MV_6183_DEV_ID )
-    {
-        mvUsbPhy90nmInit(dev);
-    }
-    else if (usbHalData.ctrlModel == MV_6781_DEV_ID)
-    {
-	if ( (usbHalData.ctrlRev == MV_6781_Z0_REV) || (usbHalData.ctrlRev == MV_6781_Z1_REV) )
-		mvUsbPhy6781Init(dev);
-	else
-		mvUsbPhy6781Y0Init(dev);
-    }
-    else
-    {
-        mvUsbPhyInit(dev);
-    }
+	switch (usbHalData.ctrlModel) {
+		case MV_78100_DEV_ID:
+		case MV_78200_DEV_ID:
+			mvUsbPhy65nmNewInit(dev);
+		break;
+		case MV_6281_DEV_ID:
+		case MV_6192_DEV_ID:
+		case MV_6180_DEV_ID:
+		case MV_78XX0_DEV_ID:
+			mvUsbPhy65nmInit(dev);
+		break;
+		case MV_6183_DEV_ID:
+			mvUsbPhy90nmInit(dev);
+		break;
+		case MV_6781_DEV_ID:
+			switch (usbHalData.ctrlRev) {
+				case MV_6781_Z0_REV:
+				case MV_6781_Z1_REV:
+				case MV_6781_X0_REV:
+					mvUsbPhy6781Init(dev);
+				break;
+				default:
+					mvUsbPhy6781Y0Init(dev);
+				break;
+			}
+		break;
+		case MV_510_DEV_ID:
+			mvUsbPhy6781Init(dev);
+		break;
+		default:
+			mvUsbPhyInit(dev);
+		break;
+	}
 
     /* Set Mode register (Stop and Reset USB Core before) */
     /* Stop the controller */

@@ -166,18 +166,31 @@ extern "C" {
 #define MV_78XX0_A0_NAME	"MV78XX0 A0"
 
 /* dove */
-#define MV_6781_DEV_ID          	0x6781
+#define MV_6781_DEV_ID			0x6781
+#define MV_510_DEV_ID			0x0510
 
-#define MV_6781_Z0_REV         		0x0
-#define MV_6781_Z0_ID          		((MV_6781_DEV_ID << 16) | MV_6781_Z0_REV)
-#define MV_6781_Z0_NAME         	"88F6781 Z0"
+#define MV_6781_Z0_REV			0x0
+#define MV_6781_Z0_ID			((MV_6781_DEV_ID << 16) | MV_6781_Z0_REV)
+#define MV_6781_Z0_NAME			"88F6781 Z0"
 
-#define MV_6781_Z1_REV         		0x1
-#define MV_6781_Z1_ID          		((MV_6781_DEV_ID << 16) | MV_6781_Z1_REV)
-#define MV_6781_Z1_NAME         	"88F6781 Z1"
+#define MV_6781_Z1_REV			0x1
+#define MV_6781_Z1_ID			((MV_6781_DEV_ID << 16) | MV_6781_Z1_REV)
+#define MV_6781_Z1_NAME			"88F6781 Z1"
 
-#define MV_6781_Y0_REV         		0x2
-#define MV_6781_Y0_ID          		((MV_6781_DEV_ID << 16) | MV_6781_Y0_REV)
-#define MV_6781_Y0_NAME         	"88F6781 Y0"
+#define MV_6781_Y0_REV			0x2
+#define MV_6781_Y0_ID			((MV_6781_DEV_ID << 16) | MV_6781_Y0_REV)
+#define MV_6781_Y0_NAME			"88F6781 Y0"
+
+#define MV_6781_Y1_REV			0x3
+#define MV_6781_Y1_ID			((MV_6781_DEV_ID << 16) | MV_6781_Y1_REV)
+#define MV_6781_Y1_NAME			"88AP510 (Y1)"
+
+#define MV_6781_X0_REV			0x4
+#define MV_6781_X0_ID			((MV_6781_DEV_ID << 16) | MV_6781_X0_REV)
+#define MV_6781_X0_NAME			"88AP510 (X0)"
+
+#define MV_6781_A0_REV			0x6
+#define MV_6781_A0_ID			((MV_510_DEV_ID << 16) | MV_6781_A0_REV)
+#define MV_6781_A0_NAME			"88AP510 (A0)"
 
 #endif /* __INCmvDeviceIdh */
