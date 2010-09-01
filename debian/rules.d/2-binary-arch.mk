@@ -74,6 +74,8 @@ install-%: cwsrcdir = $(CURDIR)/updates/compat-wireless-2.6
 install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: firmdir = $(cwpkgdir)/lib/firmware/updates/$(release)-$(abinum)-$*
+install-%: netpkgdir = $(CURDIR)/debian/linux-backports-modules-net-$(release)-$(abinum)-$*
+install-%: netmoddir = $(netpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: lbmbasehdrpkg = linux-headers-lbm-$(release)$(debnum)
 install-%: lbmhdrpkg = $(lbmbasehdrpkg)-$*
 install-%: hdrdir = $(CURDIR)/debian/$(lbmhdrpkg)/usr/src/$(lbmhdrpkg)
@@ -138,6 +140,26 @@ ifeq ($(do_also),true)
 	done
 endif
 
+ifeq ($(do_net),true)
+	#
+	# Build the network package.
+	#
+	install -d $(netmoddir)/updates/net
+	find $(builddir)/build-$*/net -type f -name '*.ko' | \
+	while read f ; do \
+		cp -v $${f} $(netmoddir)/updates/net/`basename $${f}`; \
+	done
+
+	find $(netpkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
+
+	install -d $(netpkgdir)/DEBIAN
+	for script in postinst postrm; do					\
+	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
+	       debian/control-scripts/$$script > $(netpkgdir)/DEBIAN/$$script;	\
+	  chmod 755 $(netpkgdir)/DEBIAN/$$script;					\
+	done
+endif
+
 	#
 	# The flavour specific headers package
 	#
@@ -150,7 +172,9 @@ ifeq ($(do_also),true)
 		tar -C $(builddir)/build-$*/alsa-driver/include -chf - $$i | tar -C $(hdrdir)/include -xf -; \
 	done
 endif
-
+ifeq ($(do_net),true)
+	tar -C $(builddir)/build-$*/net -chf - include | tar -C $(hdrdir) -xf -
+endif
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs -p$(lbmhdrpkg)
@@ -165,6 +189,7 @@ endif
 package_list =
 package_list += linux-backports-modules-wireless-$(release)-$(abinum)-$*
 package_list += linux-backports-modules-alsa-$(release)-$(abinum)-$*
+package_list += linux-backports-modules-net-$(release)-$(abinum)-$*
 
 binary-modules-%: install-%
 	dh_testdir

@@ -53,6 +53,7 @@ no_compat_wireless_flavours="xen virtual"
 #
 do_alsa=false
 do_compat_wireless=false
+do_net=true
 
 # Support parallel=<n> in DEB_BUILD_OPTIONS (see #209008)
 COMMA=,
