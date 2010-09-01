@@ -59,6 +59,7 @@ else
 fi
 
 mkdir -p "$html"
+echo "$commit" >"$html/COMMIT"
 mv "$master_main/BUILD.LOG" "$html"
 mv "$master_main/"linux-{headers,image}-*.deb "$html"
 if [ -f "$master_main/CHANGES" ]; then
