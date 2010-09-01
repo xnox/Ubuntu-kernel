@@ -1379,7 +1379,7 @@ void HDMI_W1_HPD_handler(int *r)
 			*r = 1;
 		DBG("HPD is set you can read edid");
 	}
-	if (((val & 0x04000000) == 0x04000000) && (count_hpd == 0)) {
+	if (((val & 0x04000000) == 0x04000000) && ((set & 0x00000002) != 0x00000002)) {
 		*r = 3;
 		count = 0;
 		count_hpd = 0;
