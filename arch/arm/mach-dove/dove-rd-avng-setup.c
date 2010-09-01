@@ -38,6 +38,7 @@
 #include <plat/cafe-orion.h>
 #include "common.h"
 #include "clock.h"
+#include "idt5v49ee503.h"
 #include "mpp.h"
 #include "mach/pm.h"
 #include "pmu/mvPmu.h"
@@ -279,6 +280,25 @@ static struct i2c_board_info __initdata dove_rd_avng_i2c_bus1_devs[] = {
 		I2C_BOARD_INFO("adi9889_edid_i2c", 0x3F),
 	},
 #endif
+};
+
+/*****************************************************************************
+ * IDT clock
+ ****************************************************************************/
+static struct idt_data dove_uc2_idt_data = {
+	/* clock 0 connected to pin LCD_EXT_REF_CLK[0]*/
+	.clock0_enable = 1,
+	.clock0_out_id = IDT_OUT_ID_2,
+	.clock0_pll_id = IDT_PLL_2,
+	/* clock 1 connected to pin LCD_EXT_REF_CLK[1]*/
+	.clock1_enable = 1,
+	.clock1_out_id = IDT_OUT_ID_1,
+	.clock1_pll_id = IDT_PLL_1,
+};
+
+static struct i2c_board_info __initdata idt = {
+	I2C_BOARD_INFO("idt5v49ee503", 0x6A),
+	.platform_data = &dove_uc2_idt_data,
 };
 
 /*****************************************************************************
@@ -978,6 +998,10 @@ static void __init dove_rd_avng_init(void)
 		i2c_register_board_info(1, dove_rd_avng_i2c_bus1_devs,
 					ARRAY_SIZE(dove_rd_avng_i2c_bus1_devs));
 	}
+
+	if (rev >= DOVE_REV_A0)
+		i2c_register_board_info(0, &idt, 1);
+
 	spi_register_board_info(dove_rd_avng_spi_flash_info,
 				ARRAY_SIZE(dove_rd_avng_spi_flash_info));
 #ifdef CONFIG_BATTERY_MCU
