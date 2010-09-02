@@ -1,3 +1,12 @@
+linux-meta (2.6.35.20.21) maverick; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Add linux-backports-modules-net meta package
+  * Maverick ABI 20 (2.6.35-20.29)
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 02 Sep 2010 16:40:20 -0700
+
 linux-meta (2.6.35.19.20) maverick; urgency=low
 
   * Maverick ABI 19 (2.6.35-19.25)
