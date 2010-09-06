@@ -364,8 +364,8 @@ static void bmm_free(unsigned long vaddr)
 			pbmm->vaddr = 0;
 			pbmm->attr = 0;
 			pbmm->pid = 0;
-			bmm_insert(&(bmm_free_block.list), pbmm, 1);
 			bmm_free_size += pbmm->size;
+			bmm_insert(&(bmm_free_block.list), pbmm, 1);
 			break;
 		}
 	}
@@ -392,8 +392,8 @@ void bmm_free_kernel(unsigned long paddr)
 			pbmm->vaddr = 0;
 			pbmm->attr = 0;
 			pbmm->pid = 0;
-			bmm_insert(&(bmm_free_block.list), pbmm, 1);
 			bmm_free_size += pbmm->size;
+			bmm_insert(&(bmm_free_block.list), pbmm, 1);
 			break;
 		}
 	}
