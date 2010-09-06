@@ -78,7 +78,8 @@ MV_STATUS mvCesaInit (int numOfSession, int queueDepth, char* pSramBase, void *o
 #endif
 
 MV_U32 mvCtrlUsbMaxGet(void);
-
+MV_32 mvBoardUSBVbusGpioPinGet(int devId);
+MV_32 mvBoardUSBVbusEnGpioPinGet(int devId);
 MV_U32 mv_crypto_base_get(void);
 MV_U32 mv_crypto_phys_base_get(void);
 MV_U32 mv_crypto_irq_get(void);

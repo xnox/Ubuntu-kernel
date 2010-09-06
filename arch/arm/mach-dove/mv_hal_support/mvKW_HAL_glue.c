@@ -490,3 +490,45 @@ MV_U32 mv_crypto_irq_get(void)
 {
 	return IRQ_DOVE_CRYPTO; 
 }
+/*******************************************************************************
+* mvBoardUSBVbusGpioPinGet - return Vbus input GPP
+*
+* DESCRIPTION:
+*
+* INPUT:
+*		int  devNo.
+*
+* OUTPUT:
+*		None.
+*
+* RETURN:
+*       GPIO pin number. The function return -1 for bad parameters.
+*
+*******************************************************************************/
+MV_32 mvBoardUSBVbusGpioPinGet(int devId)
+{
+	if (machine_is_dove_db() || machine_is_dove_db_b())
+		return 9;
+	return N_A;
+}
+
+/*******************************************************************************
+* mvBoardUSBVbusEnGpioPinGet - return Vbus Enable output GPP
+*
+* DESCRIPTION:
+*
+* INPUT:
+*		int  devNo.
+*
+* OUTPUT:
+*		None.
+*
+* RETURN:
+*       GPIO pin number. The function return -1 for bad parameters.
+*
+*******************************************************************************/
+MV_32 mvBoardUSBVbusEnGpioPinGet(int devId)
+{
+	return  N_A;
+}
+

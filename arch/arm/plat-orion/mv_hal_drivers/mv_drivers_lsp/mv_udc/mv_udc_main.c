@@ -90,8 +90,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MV_USB_CONNECTED	1
 #define MV_USB_DISCONNECTED	2
 
-static int mv_usb_initialize_kobject (void);
-
 #endif /* MV_USB_VOLTAGE_FIX */
 
 #if defined(CONFIG_MV645xx) || defined(CONFIG_MV646xx)
@@ -275,7 +273,7 @@ int mv_usb_find_idma_engine(int idma_no)
 #define DRIVER_DESC "Marvell Gadget USB Peripheral Controller"
 
 struct mv_usb_dev;
-
+static int mv_usb_initialize_kobject (struct mv_usb_dev    *mv_dev);
 struct mv_usb_ep 
 {
     struct usb_ep       ep;
@@ -978,10 +976,10 @@ static irqreturn_t mv_usb_dev_irq (int irq, void *_dev)
 * OUTPUTS:      N/A
 * RETURNS:      status USB_OK on success
 *******************************************************************************/
-static int mv_usb_initialize_kobject (void)
+static int mv_usb_initialize_kobject (struct mv_usb_dev       *mv_dev)
 {
 	int retval = 1;
-
+	int vbus_change;
 	/* init device */
 	device_initialize(&mv_usb_device);
 
@@ -997,12 +995,15 @@ static int mv_usb_initialize_kobject (void)
 	}
 
 	/* add kobject */
-	retval = kobject_add(&mv_usb_device.kobj);
+	retval = kobject_add(&mv_usb_device.kobj, NULL, "mv_udc_d");
 	if(retval != USB_OK)
 	{
 		mvOsPrintf("ERROR: %d, kobject_add() failed\n",retval);
 		return retval;
 	}
+	vbus_change = mvUsbBackVoltageUpdate(mv_dev->dev_no, (int)mv_dev->vbus_gpp_no);
+	usb_state=(vbus_change==2) ? MV_USB_DISCONNECTED : MV_USB_CONNECTED;
+	mv_usb_work_struct_routine(NULL);
 	return USB_OK;
 }
 #endif /* MV_USB_VOLTAGE_FIX */
@@ -1634,7 +1635,8 @@ static int __init mv_usb_gadget_probe(struct platform_device *pdev)
 
     if(mv_dev->vbus_gpp_no != (MV_U8)N_A)
     {
-        if (request_irq (IRQ_GPP_START + mv_dev->vbus_gpp_no, mv_usb_vbus_irq, IRQF_DISABLED, 
+        if (request_irq (IRQ_GPP_START + mv_dev->vbus_gpp_no, mv_usb_vbus_irq, IRQF_DISABLED |
+			 IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING, 
                      driver_name, mv_dev) != 0) 
         {
             mvOsPrintf("%s probe: request interrupt %d failed\n", 
@@ -1791,7 +1793,7 @@ static int __init mv_usb_gadget_probe(struct platform_device *pdev)
 	}
 
 	/* create and init kobject */
- 	retval = mv_usb_initialize_kobject();
+ 	retval = mv_usb_initialize_kobject(mv_dev);
 	if(retval != USB_OK)
 	{
 		mvOsPrintf("ERROR: %d, kobject_init() failed\n", retval);
