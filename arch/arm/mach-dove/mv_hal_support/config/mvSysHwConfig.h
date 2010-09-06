@@ -84,7 +84,7 @@ disclaimer.
 #ifdef CONFIG_MV_INCLUDE_USB
 #define MV_INCLUDE_USB
 #define IRQ_USB_CTRL(dev_no)	(IRQ_DOVE_USB0 + (dev_no))
-//#define MV_USB_VOLTAGE_FIX
+#define MV_USB_VOLTAGE_FIX
 #endif
 #ifdef CONFIG_MV_INCLUDE_NAND
 #define MV_INCLUDE_NAND
