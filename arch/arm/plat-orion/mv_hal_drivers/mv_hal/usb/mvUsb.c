@@ -78,7 +78,7 @@ MV_U32  mvUsbGetCapRegAddr(int devNo)
 }
 
 #ifdef MV_USB_VOLTAGE_FIX
-
+#if 0
 /* GPIO Settings for Back voltage problem workaround */
 MV_U8  mvUsbGppInit(int dev)
 {
@@ -199,6 +199,73 @@ int    mvUsbBackVoltageUpdate(int dev, MV_U8 gppNo)
 
     return vbusChange;
 }
+#else
+#include <linux/gpio.h>
+#include "mvKW_HAL_glue.h"
+/* GPIO Settings for Back voltage problem workaround */
+MV_U8  mvUsbGppInit(int dev)
+{
+    MV_U32  regVal;
+    MV_U8   gppNo = (MV_U8)mvBoardUSBVbusGpioPinGet(dev);
+    MV_U8   gppVbusEnNo = (MV_U8)mvBoardUSBVbusEnGpioPinGet(dev);
+
+    /* DDR1 => gpp5, DDR2 => gpp1 */
+    if(gppNo != (MV_U8)N_A)
+    {
+	    /*mvOsPrintf("mvUsbGppInit: gppNo=%d\n", gppNo);*/
+	    if (gpio_request(gppNo, "USB VBUS") != 0 ||
+		gpio_direction_input(gppNo) != 0)
+		    pr_err(" failed to setup USB VBUS GPIO\n");
+
+
+	    regVal = MV_REG_READ(MV_USB_PHY_POWER_CTRL_REG(dev));
+	    regVal &= ~(7 << 24);
+	    MV_REG_WRITE(MV_USB_PHY_POWER_CTRL_REG(dev), regVal);
+    }
+
+    /* for device - reset vbus enable gpp, for host - set by default */
+    if(gppVbusEnNo != (MV_U8)N_A)
+    {
+	/*mvOsPrintf("mvUsbGppInit: gppVbusEnNo = %d \n", gppVbusEnNo);*/
+	    if (gpio_request(gppNo, "USB VBUS EN") != 0 ||
+		gpio_direction_output(gppNo, 0) != 0)
+		    pr_err(" failed to setup USB VBUS EN GPIO\n");
+    }
+
+    return gppNo;
+}
+
+int    mvUsbBackVoltageUpdate(int dev, MV_U8 gppNo)
+{
+    int     vbusChange = 0;
+    MV_U32  gppData, regVal;
+
+    gppData = gpio_get_value(gppNo);
+    regVal = MV_REG_READ(MV_USB_PHY_POWER_CTRL_REG(dev));
+
+    if(gppData != 0)
+    {
+        /* VBUS appear */
+        regVal |= (7 << 24);
+	    
+        mvOsPrintf("VBUS appear: dev=%d, gpp=%d\n", dev, gppNo);
+        vbusChange = 1;
+    }
+    else
+    {
+        /* VBUS disappear */
+        regVal &= ~(7 << 24);
+
+        mvOsPrintf("VBUS disappear: dev=%d, gpp=%d\n", dev, gppNo);
+        vbusChange = 2;
+    }
+
+    MV_REG_WRITE(MV_USB_PHY_POWER_CTRL_REG(dev), regVal);
+
+    return vbusChange;
+}
+
+#endif
 #endif /* MV_USB_VOLTAGE_FIX */
 
 /* USB Phy init (change from defaults) specific for 65nm (78100 78200 A0 and later) */
