@@ -9,12 +9,8 @@
 
 RELEASE_NAME=lucid
 
-# XXX: remove when the kernel really moves to 2.6.35.  Note that this will mean
-#      we have to skip any ABI numbers already used on 2.6.34, we cannot reset
-#      to -900.  Otherwise we have to have an EPOCH *scream*.
 KERNEL_VERSION=$(shell dpkg-parsechangelog | grep ^Version | sed -e \
-	's/Version: \([0-9]*\.[0-9]*\.[0-9]*\)\..*/\1/' -e \
-	's/2\.6\.35/2.6.34/' )
+	's/Version: \([0-9]*\.[0-9]*\.[0-9]*\)\..*/\1/')
 KERNEL_ABI=$(shell head -n1 < debian/changelog | gawk '{n=split($$0,v,"."); print v[4];}')
 KERNEL_ABI_VERSION=$(KERNEL_VERSION)-$(KERNEL_ABI)
 
