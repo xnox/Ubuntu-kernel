@@ -48,6 +48,8 @@
 #include <linux/proc_fs.h>
 #include <linux/init.h>
 #include <linux/file.h>
+#define CONFIG_PCI	/* hack, PCI is not enabled globally
+					 * enabling it locally here. TODO: clean */
 #include <linux/pci.h>
 #include <linux/jiffies.h>
 #include <linux/smp_lock.h>	/* For (un)lock_kernel */
