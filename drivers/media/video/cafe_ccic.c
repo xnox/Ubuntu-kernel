@@ -908,7 +908,8 @@ static int cafe_cam_configure(struct cafe_camera *cam)
 	struct v4l2_format fmt;
 	int ret;
 
-	if (cam->state != S_IDLE)
+	/* we need to configure the cam on resume when the state is S_STREAMING */
+	if (cam->state != S_IDLE && cam->state != S_STREAMING)
 		return -EINVAL;
 	fmt.fmt.pix = cam->pix_format;
 	ret = sensor_call(cam, core, init, 0);
