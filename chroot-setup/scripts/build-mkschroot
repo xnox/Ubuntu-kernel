@@ -220,15 +220,25 @@ then
 	write_mirror ${SUITE} ${ARCH} $TARGET/etc/apt/sources.list
 fi
 
+#
+# Some hacks to add the ARM cross compiler to the Maverick x86/amd64 chroots
+#
+case $SUITE in
+	maverick)
+		echo "deb http://people.canonical.com/~hrw/ubuntu-maverick-armel-cross-compilers/ ./" > $TARGET/etc/apt/sources.list.d/cross-compiler.list
+		ADDPKG="$ADDPKG gcc-arm-linux-gnueabi g++-arm-linux-gnueabi"
+		;;
+esac
 
-${SCHROOTCMD} -- apt-get update
-${SCHROOTCMD} -- apt-get -u -y dist-upgrade
+
+${SCHROOTCMD} -- apt-get -y --force-yes update
+${SCHROOTCMD} -- apt-get -u -y --force-yes dist-upgrade
 
 if $DOINSTALL; then
 	#
 	# Add some extra packages
 	#
 	echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
-	${SCHROOTCMD} -- apt-get -y install $ADDPKG
-	${SCHROOTCMD} -- apt-get -y build-dep $ADDPKGDEP
+	${SCHROOTCMD} -- apt-get -y --force-yes install $ADDPKG
+	${SCHROOTCMD} -- apt-get -y --force-yes build-dep $ADDPKGDEP
 fi
