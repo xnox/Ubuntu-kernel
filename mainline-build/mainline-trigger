@@ -55,7 +55,7 @@ current="${current%%-*}"
 current="${current#v2.6.}"
 
 let wanted=32
-while [ "$wanted" -lt "$current" ]; do
+while [ "$wanted" -le "$current" ]; do
 	stable="2.6.${wanted%.*}.y"
 	
 	if ! git remote | grep "$stable" >/dev/null 2>&1; then
@@ -83,7 +83,7 @@ git remote | \
 while read remote
 do
 	echo "*** fetching $remote ..."
-	git fetch "$remote"
+	git fetch "$remote" || true
 done
 
 #
