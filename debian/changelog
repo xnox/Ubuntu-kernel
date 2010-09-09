@@ -1,3 +1,12 @@
+linux-backports-modules-2.6.32 (2.6.32-25.23) lucid-proposed; urgency=low
+
+  [ Brad Figg ]
+
+  * SAUCE: ALSA: HDA: Enable internal mic on Dell E6410 and Dell E6510
+    - LP: #605047, #628961
+
+ -- Brad Figg <brad.figg@canonical.com>  Thu, 09 Sep 2010 10:44:36 -0700
+
 linux-backports-modules-2.6.32 (2.6.32-25.22) lucid-proposed; urgency=low
 
   [ Stefan Bader ]
