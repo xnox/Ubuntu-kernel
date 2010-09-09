@@ -78,8 +78,9 @@ def get_tags_list(series, branch, abi):
 		if nabi == None or nabi != abi:
 			continue
 
-                if not tag.startswith('Ubuntu-2') and \
-		   not tag.startswith('Linaro-2'):
+                if tag.startswith('Ubuntu-lts-') or \
+		   (not tag.startswith('Ubuntu-') and \
+		   not tag.startswith('Linaro-2')):
                         continue
 
 		m = re.search('.*-(2\.6\.\d+-.*)', tag)
@@ -155,6 +156,8 @@ for series in [
 	    abi = get_branch_abi_range(series, branch)
 	    if abi == None:
 		continue
+	    if branch.startswith('lts-backport-'):
+		continue
 
 	    version_map = dict()
 	    tags = get_tags_list(series, branch, abi)
@@ -178,6 +181,9 @@ for series in [
 	    print "<tr><th>Ubuntu Kernel Version"
 	    print "<th>Mainline Kernel Version"
 	    #print "<th>Ubuntu Kernel Pocket"
+
+	    tip = get_tag_version(series, branch)
+	    print "<tr><td>%s<td>%s" % ('<b>TIP</b>', tip)
 
 	    for version in version_order:
 		    #print "<tr><td>%s<td>%s<td>%s" % (version, version_map[version], version_pocket[version])
