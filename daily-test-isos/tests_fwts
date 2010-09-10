@@ -1,32 +1,155 @@
 #!/bin/bash
+#
+# Copyright (C) 2010 Canonical
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation; either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+FWTS="Firmware Test Suite"
+OPTIONS="/tmp/options.$$"
+
+FWTS_DATE=`date +%d%m%Y`
+FWTS_TIME=`date +%H%M`
+WORK_DIR=/isodevice/fwts/$FWTS_DATE/$FWTS_TIME
+
+#
+#  Get ftws progress into a form that dialog can understand
+#  This needs to be integrated into fwts
+#
+progress()
+{
+        I=1
+	count=0
+	while true
+	do
+        	read -t 1 txt
+		ret=$?
+		if [ $ret -gt 128 ]; then
+			#
+			# Read timeout, update info
+			#
+			count=$((count+1))
+                	echo XXX
+                	echo $PC
+			echo Test $I of $1   [ Busy $count secs ]
+			echo
+			echo Log:
+			echo
+			tail -12 results.log | cut -c24- | cut -c1-78
+			echo $log
+                	echo XXX
+		else
+			if [ $ret -ne 0 ]; then
+				return
+			fi
+			count=0
+			completed=`echo "$txt" | grep ": Test" | grep "completed (" | wc -l`
+			skipped=`echo "$txt" | grep ": Test" | grep "Test skipped" | wc -l`
+			aborted=`echo "$txt" | grep ": Test" | grep "Test aborted" | wc -l`
+			if [ $skipped -gt 0 -o $aborted -gt 0 ]; then
+                		echo XXX
+                		echo $PC
+				echo Test $I of $1
+				echo
+				echo Log:
+				echo
+				tail -12 results.log | cut -c24- | cut -c1-78
+                		echo XXX
+                		I=$((I+1))
+			fi
+			if [ $completed -gt 0 ]; then
+				info=`echo $txt | tr '\r' '\n' | grep Test`
+				m=`echo $info | awk '{ print $4 }'`
+				n=`echo $info | awk '{ print $6 }'`
+				PC=$((I * 100 / $1))
+					
+                		echo XXX
+                		echo $PC
+				echo Test $I of $1
+				echo
+				echo Log:
+				echo
+				tail -12 results.log | cut -c24- | cut -c1-78
+                		echo XXX
+				if [ $m -eq $n ]; then
+                			I=$((I+1))
+				fi
+			fi
+		fi
+        done
+}
+
+#
+#  Run a bunch of tests and monitor progress
+#
+do_test()
+{
+	
+	num_tests=`fwts $1 --show-tests | wc -l`
+	num_tests=$((num_tests - 1))
+	if [ $num_tests -gt 0 ]; then
+  		fwts --no-s3 --no-s4 $1 -p 2>&1 | progress $num_tests | dialog --title "$2" --gauge "" 23 80 0
+	fi
+}
+
 cd /cdrom
-fwtsdate=`date +%d%m%Y`
-fwtstime=`date +%H%M`
-workdir=/isodevice/fwts/$fwtsdate/$fwtstime
-mkdir -p $workdir >& /dev/null
-if [ $? -ne 0 ]
-then
-  echo Could not create directory $workdir
-  echo "Press <Enter> Key"
-  read  
-  shutdown -h now
+mkdir -p $WORK_DIR >& /dev/null
+if [ $? -ne 0 ]; then
+	dialog --ok-label "Shutdown" --backtitle "$FWTS" --title "Error" --msgbox "Could not create directory fwts/$FWTS_DATE/$FWTS_TIME.\n          Press Enter to shutdown." 6 50 
+	# shutdown -h now
+	exit
 else
-  echo "=========== Firmware Test Suite (fwts) ==========="
-  echo " "
-  echo "This will run a suite of firmware tests that will"
-  echo "check the BIOS and ACPI tables. It will also find"
-  echo "issues that can cause Linux problems. "
-  echo " "
-  echo "At the end of the tests, the machine will automatically"
-  echo "shutdown. "
-  echo " "
-  echo "The results can be found on the USB stick in the"
-  echo "directory: /fwts/$fwtsdate/$fwtstime/results.log"
-  echo " "
-  echo "Press <Enter> key to start the tests..."
-  read  
-  cd $workdir >& /dev/null
-  fwts --no-s3 --no-s4 -p
-  shutdown -h now
+  	dialog --backtitle "$FWTS" --title "Select Tests" --checklist \
+  	"This will run a suite of firmware tests that will check the BIOS and ACPI tables. It will also find issues that can cause Linux problems.\n\n\
+The default below is to run just all the Batch Tests, but you can select more tests below if required.\n\nPlease Select Tests and press Enter to continue:" \
+	17 70 2 \
+	1 "Batch Tests" on \
+	2 "Experimental Batch Tests" off \
+2> $OPTIONS
+	cd $WORK_DIR >& /dev/null
+
+	run=0
+#
+#  See what needs running
+#
+  	for i in `cat $OPTIONS`
+  	do
+		case $i in
+		'"1"')
+  			do_test "--batch" 'Running Batch Tests'
+			run=1
+		;;
+		'"2"')
+			do_test "--batch-experimental" 'Running Experimental Batch Tests'
+			run=1
+		;;
+		esac
+	done
+	
+#
+# All done, get ready to shutdown
+#
+	if [ $run -eq 0 ]; then
+	dialog  --backtitle "$FWTS" --title "No Tests Run!" --msgbox \
+"   You did not select any tests to be run.\n
+          Press Enter to shutdown." 7 50
+	else
+	dialog  --backtitle "$FWTS" --title "Information" --msgbox \
+"The results can be found on the USB stick in the\n
+the directory: /fwts/$FWTS_DATE/$FWTS_TIME/results.log\n\n
+            Press Enter to shutdown" 9 55
+	fi
+  	shutdown -h now
 fi
 
