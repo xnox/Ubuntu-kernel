@@ -1,3 +1,11 @@
+linux-meta (2.6.35.21.22) UNRELEASED; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Bump ABI - Maverick ABI 21
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Fri, 10 Sep 2010 14:37:29 -0700
+
 linux-meta (2.6.35.20.21) maverick; urgency=low
 
   [ Leann Ogasawara ]
