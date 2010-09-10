@@ -9,5 +9,6 @@ esac
 # Cleanup the daily build
 "$here/cleanup-daily-one" "$HOME/public_html/mainline/daily"
 "$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-next"
+"$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-intel-next"
 
 exit 0

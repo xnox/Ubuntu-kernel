@@ -123,6 +123,7 @@ do
 	git fetch "$remote"
 done <<EOL
 drm-2.6 git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
+drm-intel git://git.kernel.org/pub/scm/linux/kernel/git/ickle/drm-intel
 EOL
 
 date="`date +%F`"
@@ -145,6 +146,7 @@ do
 	fi
 done <<EOL
 LINUS		linus/master			999	daily
+DRM-INTEL-NEXT	drm-intel/drm-intel-next	997	drm-intel-next
 DRM-NEXT	drm-2.6/drm-next		996	drm-next
 EOL
 # Also allocated
