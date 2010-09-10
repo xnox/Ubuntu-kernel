@@ -155,6 +155,7 @@ abehal_status abe_set_opp_processing(u32 opp);
  */
 abehal_status abe_set_ping_pong_buffer(u32 port, u32 n_bytes);
 
+
 /**
  * abe_read_next_ping_pong_buffer
  * @port: ABE portID
@@ -277,8 +278,7 @@ abehal_status abe_connect_cbpr_dmareq_port(u32 id, abe_data_format_t *f, u32 d,
  * "s" bytes and switch to the "pong" buffer for a new buffer exchange.
  */
 abehal_status abe_connect_dmareq_ping_pong_port(u32 id, abe_data_format_t *f,
-						u32 d, u32 s,
-						abe_dma_t *returned_dma_t);
+					u32 d, u32 s, abe_dma_t *returned_dma_t);
 
 /**
  * abe_connect_irq_ping_pong_port
@@ -446,7 +446,7 @@ abehal_status abe_read_mixer(u32 id, u32 *f_g, u32 p);
  * route the samples to three directions : REC1 mixer, 2 EANC DMIC source of
  * filtering and MM recording audio path.
  */
-abehal_status abe_set_router_configuration(u32 id, u32 k, u32 *param);
+abehal_status abe_set_router_configuration (u32 id, u32 k, u16 *param);
 
 /**
  * abe_select_data_source
@@ -502,5 +502,6 @@ abehal_status abe_remote_debugger_interface(u32 n, u8 *p);
  *
  */
 abehal_status abe_enable_test_pattern(u32 smem_id, u32 on_off);
+
 
 #endif /* _ABE_API_H_ */
