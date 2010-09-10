@@ -1291,7 +1291,8 @@ long keyctl_session_to_parent(void)
 		goto not_permitted;
 
 	/* the keyrings must have the same UID */
-	if (pcred->tgcred->session_keyring->uid != mycred->euid ||
+	if ((pcred->tgcred->session_keyring &&
+	     pcred->tgcred->session_keyring->uid != mycred->euid) ||
 	    mycred->tgcred->session_keyring->uid != mycred->euid)
 		goto not_permitted;
 
