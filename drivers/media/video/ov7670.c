@@ -195,7 +195,7 @@ struct ov7670_format_struct;  /* coming later */
 struct ov7670_info {
 	struct v4l2_subdev sd;
 	struct ov7670_format_struct *fmt;  /* Current format */
-	unsigned char sat;		/* Saturation value */
+	int sat;		/* Saturation value */
 	int hue;			/* Hue value */
 };
 
