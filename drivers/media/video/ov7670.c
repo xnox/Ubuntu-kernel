@@ -644,9 +644,9 @@ static struct ov7670_win_size {
 		.width		= QVGA_WIDTH,
 		.height		= QVGA_HEIGHT,
 		.com7_bit	= COM7_FMT_QVGA,
-		.hstart		= 164,		/* Empirically determined */
-		.hstop		=  20,
-		.vstart		=  14,
+		.hstart		= 172,		/* Empirically determined */
+		.hstop		=  32,
+		.vstart		=  13,
 		.vstop		= 494,
 		.regs 		= NULL,
 	},
