@@ -1042,6 +1042,8 @@ static unsigned char ov7670_sm_to_abs(unsigned char v)
 {
 	if ((v & 0x80) == 0)
 		return v + 128;
+	if (v == 0x80)
+		return 0;
 	return 128 - (v & 0x7f);
 }
 
