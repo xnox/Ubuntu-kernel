@@ -20,6 +20,7 @@
 
 #define IDT5V49EE503_SW_MODE_CTL_REG		0x0
 #define IDT5V49EE503_CFG_SEL_REG		0x1
+#define IDT5V49EE503_OUT_ENA_REG		0x2
 #define IDT5V49EE503_OUT_SUSPEND_REG		0x3
 #define IDT5V49EE503_PLL_SUSPEND_REG		0x4
 #define IDT5V49EE503_XTCLKSEL_REG		0x5
@@ -1114,6 +1115,14 @@ static int idt5v49ee503_probe(struct i2c_client *client,
 	idt5v49ee503_write_reg(idt_drv,
 			       IDT5V49EE503_PLL_SUSPEND_REG,
 			       0);
+	idt5v49ee503_write_reg(idt_drv,
+			       IDT5V49EE503_OUT_ENA_REG,
+			       0);
+	idt5v49ee503_write_reg(idt_drv,
+			       IDT5V49EE503_OUT_SUSPEND_REG,
+			       0);
+
+
 	rc = sysfs_create_group(&client->dev.kobj, &idt5v49ee503_group);
 	if (rc)
 		goto free;
