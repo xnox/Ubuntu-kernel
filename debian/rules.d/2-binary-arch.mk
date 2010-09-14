@@ -185,6 +185,26 @@ endif
 	done
 	$(MAKE) -C $(wwsrcdir) prefix=$(wwpkgdir) install
 	install -d $(wwpkgdir)/DEBIAN
+
+	#
+	# Hack to make the udev rule and firmware loader specific to the
+	# package.
+	#
+	POSTFIX="$(abinum)-$(target_flavour)"				\
+	R='PROGRAM="\/bin\/uname -r",';					\
+	R=$$R' RESULT!="'$(release)-$$POSTFIX'",';			\
+	R=$$R' GOTO="gobi_rules_end"';					\
+	sed -i -e "s/^\(LABEL=\"gobi_rules\"\)$$/\0\n$$R\n/"		\
+	    -e "s/\(gobi_loader\)/\0-$$POSTFIX/"			\
+	    $(wwpkgdir)/lib/udev/rules.d/60-gobi.rules
+
+	TGTFILE="$(wwpkgdir)/lib/udev/rules.d/60-gobi";			\
+	chmod 644 $${TGTFILE}.rules;					\
+	mv $${TGTFILE}.rules $${TGTFILE}-$(abinum)-$(target_flavour).rules
+
+	TGTFILE="$(wwpkgdir)/lib/udev/gobi_loader";			\
+	mv $$TGTFILE $$TGTFILE-$(abinum)-$(target_flavour)
+
 	for script in postinst postrm; do				       \
 		sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'		       \
 			debian/control-scripts/$$script			       \
