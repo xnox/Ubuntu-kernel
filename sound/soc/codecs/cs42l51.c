@@ -401,10 +401,7 @@ static int cs42l51_init(struct snd_soc_device *socdev)
 	codec->owner = THIS_MODULE;
 	codec->name = "CS42L51";
 	codec->dai = &cs42l51_dai;
-#warning "fixme"
-#if 0
 	codec->set_bias_level = cs42l51_set_bias_level;
-#endif
 	codec->num_dai = 1;
 	codec->reg_cache_size = CS42L51_CACHE_SIZE;
 	codec->reg_cache = kzalloc(codec->reg_cache_size, GFP_KERNEL);
@@ -435,6 +432,8 @@ static int cs42l51_init(struct snd_soc_device *socdev)
 	cs42l51_write(codec, CS42L51_REG_VOL_OUTB_CTRL, cs42l51_vol2reg(4));
 	/* swap channels */
 	cs42l51_write(codec, CS42L51_REG_CHANNEL_MIXER, 0xff);
+
+	cs42l51_set_bias_level(codec, SND_SOC_BIAS_STANDBY);
 
 	/* register pcms */
 	ret = snd_soc_new_pcms(socdev, SNDRV_DEFAULT_IDX1, SNDRV_DEFAULT_STR1);
@@ -601,11 +600,8 @@ static int cs42l51_resume(struct platform_device *pdev)
 	CS42L51_DEBUG("");
 
 	cs42l51_sync_cache(codec);
-#if 0
 	cs42l51_set_bias_level(codec, codec->suspend_bias_level);
-#else
-	cs42l51_set_bias_level(codec, SND_SOC_BIAS_ON);
-#endif
+
 	return 0;
 }
 
