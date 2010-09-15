@@ -1,4 +1,4 @@
-linux-meta (2.6.35.22.23) UNRELEASED; urgency=low
+linux-meta (2.6.35.22.23) maverick; urgency=low
 
   * Bump ABI - Maverick ABI 22
 
