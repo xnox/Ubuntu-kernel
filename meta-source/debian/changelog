@@ -1,6 +1,13 @@
 linux-meta (2.6.35.22.23) maverick; urgency=low
 
+  [ Leann Ogasawara ]
+
   * Bump ABI - Maverick ABI 22
+
+  [ Andy Whitcroft ] 
+
+  * Fix OMAP3 descriptions.
+    - LP: #623297
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 14 Sep 2010 16:21:55 -0700
 
