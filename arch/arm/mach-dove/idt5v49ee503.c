@@ -970,6 +970,73 @@ static ssize_t idt5v49ee503_storef(struct device *dev, struct device_attribute *
 
 	return count;
 }
+unsigned char  reg_addr;
+static ssize_t idt5v49ee503_store_reg(struct device *dev, struct device_attribute *attr,
+			    const char *buf, size_t count)
+{
+	char *endp;
+	u64 val;
+
+	dev_dbg(dev, "idt5v49ee503_store_reg() called on %s\n", attr->attr.name);
+
+	/* Decode input */
+	val = simple_strtoull(buf, &endp, 0);
+	if (buf == endp) {
+		dev_dbg(dev, "input string not a number\n");
+		return -EINVAL;
+	}
+	reg_addr = val;
+
+	return count;
+}
+static ssize_t idt5v49ee503_show_reg(struct device *dev, struct device_attribute *attr,
+			   char *buf)
+{
+	dev_dbg(dev, "idt5v49ee503_show_reg() called on %s\n", attr->attr.name);
+
+	/* Format the output string and return # of bytes */
+	return sprintf(buf, "%x\n", reg_addr);
+}
+
+static ssize_t idt5v49ee503_store_reg_val(struct device *dev, struct device_attribute *attr,
+			    const char *buf, size_t count)
+{
+	struct i2c_client *client = to_i2c_client(dev);
+	idt_drv_info_t *idt_drv = i2c_get_clientdata(client);
+	char *endp;
+	unsigned int val;
+
+	dev_dbg(dev, "idt5v49ee503_store_reg_val() called on %s\n", attr->attr.name);
+
+	/* Decode input */
+	val = simple_strtoul(buf, &endp, 0);
+	if (buf == endp) {
+		dev_dbg(dev, "input string not a number\n");
+		return -EINVAL;
+	}
+	dev_printk(KERN_INFO, dev, "idt5v49ee503 write 0x%x to register 0x%x \n", val, (unsigned int)reg_addr);
+	idt5v49ee503_write_reg(idt_drv,
+			       reg_addr,
+			       val);
+
+	return count;
+}
+static ssize_t idt5v49ee503_show_reg_val(struct device *dev, struct device_attribute *attr,
+			   char *buf)
+{
+	struct i2c_client *client = to_i2c_client(dev);
+	idt_drv_info_t *idt_drv = i2c_get_clientdata(client);
+	int           rval;
+	unsigned char val = 0;
+
+	dev_dbg(dev, "idt5v49ee503_show_reg_val() called on %s\n", attr->attr.name);
+	dev_printk(KERN_INFO, dev, "idt5v49ee503 read from register 0x%x \n", (unsigned int)reg_addr);
+	if ((rval = idt5v49ee503_read_reg(idt_drv, reg_addr, &val)) != 0)
+                return rval;
+
+	/* Format the output string and return # of bytes */
+	return sprintf(buf, "%x\n", val);
+}
 
 /*
  * Simple register attributes
@@ -978,12 +1045,16 @@ static ssize_t idt5v49ee503_storef(struct device *dev, struct device_attribute *
 static DEVICE_ATTR(clk0, S_IRUGO | S_IWUSR, idt5v49ee503_show, idt5v49ee503_store);
 static DEVICE_ATTR(clk1, S_IRUGO | S_IWUSR, idt5v49ee503_show, idt5v49ee503_store2);
 static DEVICE_ATTR(clkf, S_IRUGO | S_IWUSR, idt5v49ee503_show, idt5v49ee503_storef);
+static DEVICE_ATTR(reg, S_IRUGO | S_IWUSR, idt5v49ee503_show_reg, idt5v49ee503_store_reg);
+static DEVICE_ATTR(val, S_IRUGO | S_IWUSR, idt5v49ee503_show_reg_val, idt5v49ee503_store_reg_val);
 
 static const struct attribute_group idt5v49ee503_group = {
 	.attrs = (struct attribute *[]) {
 		&dev_attr_clk0.attr,
 		&dev_attr_clk1.attr,
 		&dev_attr_clkf.attr,
+		&dev_attr_reg.attr,
+		&dev_attr_val.attr,
 		NULL,
 	},
 };
