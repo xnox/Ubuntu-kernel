@@ -1,3 +1,9 @@
+linux-meta-linaro (2.6.35.1006.11) maverick; urgency=low
+
+  * Linaro Maverick ABI 1006 (2.6.35-1006.11)
+
+ -- John Rigby <john.rigby@linaro.org>  Thu, 16 Sep 2010 17:14:56 -0600
+
 linux-meta-linaro (2.6.35.1005.10) maverick; urgency=low
 
   * Linaro Maverick ABI 1005 (2.6.35-1005.10)
