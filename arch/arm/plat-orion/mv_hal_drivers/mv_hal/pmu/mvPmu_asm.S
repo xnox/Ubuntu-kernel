@@ -231,10 +231,11 @@ ENTRY(mvPmuSramSaveCP15)
 	mrc	p15, 0, r8, c1, c0, 1		@ save CP15 - Aux CR
 	mov	r9, r13				@ save resume SP
 	stmfd	sp!, {r2-r9}
+	mrc	p15, 1, r5, c15, c1, 1		@ save CP15 - Aux Debug Modes Ctrl 1
 	mrc     p15, 0, r6, c9, c14, 0		@ save CP15 - PMC
 	mrc	p15, 0, r7, c10, c2, 0		@ save CP15 - PRRR
 	mrc	p15, 0, r8, c10, c2, 1		@ save CP15 - NMRR
-	stmfd	sp!, {r6-r8}
+	stmfd	sp!, {r5-r8}
 	mov	pc, lr
 
 /***************************************************************
@@ -249,7 +250,8 @@ ENTRY(mvPmuSramSaveCP15)
  **************************************************************/
 ENTRY(mvPmuSramResumeCP15)
 	ldr	r0, saved_sp			@ stack phys addr
-	ldmfd	r0!, {r6-r8}
+	ldmfd	r0!, {r5-r8}
+	mcr	p15, 1, r5, c15, c1, 1		@ restore CP15 - Aux Debug Modes Ctrl 1
 	mcr	p15, 0, r8, c10, c2, 1		@ restore CP15 - NMRR
 	mcr	p15, 0, r7, c10, c2, 0		@ restore CP15 - PRRR
 	mcr     p15, 0, r6, c9, c14, 0		@ restore CP15 - PMC
