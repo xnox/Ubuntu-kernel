@@ -913,6 +913,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	blk_plug_device
 EXPORT_SYMBOL vmlinux 0x00000000	blk_plug_device_unlocked
 EXPORT_SYMBOL vmlinux 0x00000000	blk_put_request
 EXPORT_SYMBOL vmlinux 0x00000000	blk_queue_alignment_offset
+EXPORT_SYMBOL vmlinux 0x00000000	blk_queue_bounce
 EXPORT_SYMBOL vmlinux 0x00000000	blk_queue_bounce_limit
 EXPORT_SYMBOL vmlinux 0x00000000	blk_queue_dma_alignment
 EXPORT_SYMBOL vmlinux 0x00000000	blk_queue_dma_pad
@@ -1213,6 +1214,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	dm_kcopyd_copy
 EXPORT_SYMBOL vmlinux 0x00000000	dm_put_device
 EXPORT_SYMBOL vmlinux 0x00000000	dm_register_target
 EXPORT_SYMBOL vmlinux 0x00000000	dm_snap_cow
+EXPORT_SYMBOL vmlinux 0x00000000	dm_snap_origin
 EXPORT_SYMBOL vmlinux 0x00000000	dm_table_event
 EXPORT_SYMBOL vmlinux 0x00000000	dm_table_get
 EXPORT_SYMBOL vmlinux 0x00000000	dm_table_get_md
@@ -1886,6 +1888,9 @@ EXPORT_SYMBOL vmlinux 0x00000000	km_report
 EXPORT_SYMBOL vmlinux 0x00000000	km_state_expired
 EXPORT_SYMBOL vmlinux 0x00000000	km_state_notify
 EXPORT_SYMBOL vmlinux 0x00000000	kmalloc_caches
+EXPORT_SYMBOL vmlinux 0x00000000	kmap
+EXPORT_SYMBOL vmlinux 0x00000000	kmap_atomic
+EXPORT_SYMBOL vmlinux 0x00000000	kmap_high
 EXPORT_SYMBOL vmlinux 0x00000000	kmem_cache_alloc
 EXPORT_SYMBOL vmlinux 0x00000000	kmem_cache_create
 EXPORT_SYMBOL vmlinux 0x00000000	kmem_cache_destroy
@@ -1916,6 +1921,9 @@ EXPORT_SYMBOL vmlinux 0x00000000	kthread_bind
 EXPORT_SYMBOL vmlinux 0x00000000	kthread_create
 EXPORT_SYMBOL vmlinux 0x00000000	kthread_should_stop
 EXPORT_SYMBOL vmlinux 0x00000000	kthread_stop
+EXPORT_SYMBOL vmlinux 0x00000000	kunmap
+EXPORT_SYMBOL vmlinux 0x00000000	kunmap_atomic
+EXPORT_SYMBOL vmlinux 0x00000000	kunmap_high
 EXPORT_SYMBOL vmlinux 0x00000000	kvasprintf
 EXPORT_SYMBOL vmlinux 0x00000000	kzfree
 EXPORT_SYMBOL vmlinux 0x00000000	laptop_mode
@@ -2188,6 +2196,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	outer_cache
 EXPORT_SYMBOL vmlinux 0x00000000	overflowgid
 EXPORT_SYMBOL vmlinux 0x00000000	overflowuid
 EXPORT_SYMBOL vmlinux 0x00000000	override_creds
+EXPORT_SYMBOL vmlinux 0x00000000	page_address
 EXPORT_SYMBOL vmlinux 0x00000000	page_follow_link_light
 EXPORT_SYMBOL vmlinux 0x00000000	page_put_link
 EXPORT_SYMBOL vmlinux 0x00000000	page_readlink
@@ -3105,6 +3114,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	time_to_tm
 EXPORT_SYMBOL vmlinux 0x00000000	timespec_to_jiffies
 EXPORT_SYMBOL vmlinux 0x00000000	timespec_trunc
 EXPORT_SYMBOL vmlinux 0x00000000	timeval_to_jiffies
+EXPORT_SYMBOL vmlinux 0x00000000	totalhigh_pages
 EXPORT_SYMBOL vmlinux 0x00000000	totalram_pages
 EXPORT_SYMBOL vmlinux 0x00000000	touch_all_softlockup_watchdogs
 EXPORT_SYMBOL vmlinux 0x00000000	touch_atime
