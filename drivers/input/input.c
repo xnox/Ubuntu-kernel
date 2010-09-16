@@ -33,25 +33,6 @@ MODULE_LICENSE("GPL");
 
 #define INPUT_DEVICES	256
 
-/*
- * EV_ABS events which should not be cached are listed here.
- */
-static unsigned int input_abs_bypass_init_data[] __initdata = {
-	ABS_MT_TOUCH_MAJOR,
-	ABS_MT_TOUCH_MINOR,
-	ABS_MT_WIDTH_MAJOR,
-	ABS_MT_WIDTH_MINOR,
-	ABS_MT_ORIENTATION,
-	ABS_MT_POSITION_X,
-	ABS_MT_POSITION_Y,
-	ABS_MT_TOOL_TYPE,
-	ABS_MT_BLOB_ID,
-	ABS_MT_TRACKING_ID,
-	ABS_MT_PRESSURE,
-	0
-};
-static unsigned long input_abs_bypass[BITS_TO_LONGS(ABS_CNT)];
-
 static LIST_HEAD(input_dev_list);
 static LIST_HEAD(input_handler_list);
 
@@ -181,6 +162,56 @@ static void input_stop_autorepeat(struct input_dev *dev)
 #define INPUT_PASS_TO_DEVICE	2
 #define INPUT_PASS_TO_ALL	(INPUT_PASS_TO_HANDLERS | INPUT_PASS_TO_DEVICE)
 
+static int input_handle_abs_event(struct input_dev *dev,
+				  unsigned int code, int *pval)
+{
+	bool is_mt_event;
+	int *pold;
+
+	if (code == ABS_MT_SLOT) {
+		/*
+		 * "Stage" the event; we'll flush it later, when we
+		 * get actiual touch data.
+		 */
+		if (*pval >= 0 && *pval < dev->mtsize)
+			dev->slot = *pval;
+
+		return INPUT_IGNORE_EVENT;
+	}
+
+	is_mt_event = code >= ABS_MT_FIRST && code <= ABS_MT_LAST;
+
+	if (!is_mt_event) {
+		pold = &dev->abs[code];
+	} else if (dev->mt) {
+		struct input_mt_slot *mtslot = &dev->mt[dev->slot];
+		pold = &mtslot->abs[code - ABS_MT_FIRST];
+	} else {
+		/*
+		 * Bypass filtering for multitouch events when
+		 * not employing slots.
+		 */
+		pold = NULL;
+	}
+
+	if (pold) {
+		*pval = input_defuzz_abs_event(*pval, *pold,
+						dev->absfuzz[code]);
+		if (*pold == *pval)
+			return INPUT_IGNORE_EVENT;
+
+		*pold = *pval;
+	}
+
+	/* Flush pending "slot" event */
+	if (is_mt_event && dev->slot != dev->abs[ABS_MT_SLOT]) {
+		dev->abs[ABS_MT_SLOT] = dev->slot;
+		input_pass_event(dev, EV_ABS, ABS_MT_SLOT, dev->slot);
+	}
+
+	return INPUT_PASS_TO_HANDLERS;
+}
+
 static void input_handle_event(struct input_dev *dev,
 			       unsigned int type, unsigned int code, int value)
 {
@@ -233,21 +264,9 @@ static void input_handle_event(struct input_dev *dev,
 		break;
 
 	case EV_ABS:
-		if (is_event_supported(code, dev->absbit, ABS_MAX)) {
+		if (is_event_supported(code, dev->absbit, ABS_MAX))
+			disposition = input_handle_abs_event(dev, code, &value);
 
-			if (test_bit(code, input_abs_bypass)) {
-				disposition = INPUT_PASS_TO_HANDLERS;
-				break;
-			}
-
-			value = input_defuzz_abs_event(value,
-					dev->abs[code], dev->absfuzz[code]);
-
-			if (dev->abs[code] != value) {
-				dev->abs[code] = value;
-				disposition = INPUT_PASS_TO_HANDLERS;
-			}
-		}
 		break;
 
 	case EV_REL:
@@ -568,6 +587,11 @@ static void input_disconnect_device(struct input_dev *dev)
 	spin_unlock_irq(&dev->event_lock);
 }
 
+/*
+ * Those routines handle the default case where no [gs]etkeycode() is
+ * defined. In this case, an array indexed by the scancode is used.
+ */
+
 static int input_fetch_keycode(struct input_dev *dev, int scancode)
 {
 	switch (dev->keycodesize) {
@@ -582,27 +606,74 @@ static int input_fetch_keycode(struct input_dev *dev, int scancode)
 	}
 }
 
-static int input_default_getkeycode(struct input_dev *dev,
-				    unsigned int scancode,
-				    unsigned int *keycode)
+/*
+ * Supports only 8, 16 and 32 bit scancodes. It wouldn't be that
+ * hard to write some machine-endian logic to support 24 bit scancodes,
+ * but it seemed overkill. It should also be noticed that, since there
+ * are, in general, less than 256 scancodes sparsed into the scancode
+ * space, even with 16 bits, the codespace is sparsed, with leads into
+ * memory and code ineficiency, when retrieving the entire scancode
+ * space.
+ * So, it is highly recommended to implement getkeycodebig/setkeycodebig
+ * instead of using a normal table approach, when more than 8 bits is
+ * needed for the scancode.
+ */
+static int input_fetch_scancode(struct keycode_table_entry *kt_entry,
+				u32 *scancode)
 {
+	switch (kt_entry->len) {
+	case 1:
+		*scancode = *((u8 *)kt_entry->scancode);
+		break;
+	case 2:
+		*scancode = *((u16 *)kt_entry->scancode);
+		break;
+	case 4:
+		*scancode = *((u32 *)kt_entry->scancode);
+		break;
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
+
+static int input_default_getkeycode_from_index(struct input_dev *dev,
+				    struct keycode_table_entry *kt_entry)
+{
+	u32 scancode = kt_entry->index;
+
 	if (!dev->keycodesize)
 		return -EINVAL;
 
 	if (scancode >= dev->keycodemax)
 		return -EINVAL;
 
-	*keycode = input_fetch_keycode(dev, scancode);
+	kt_entry->keycode = input_fetch_keycode(dev, scancode);
+	memcpy(kt_entry->scancode, &scancode, 4);
 
 	return 0;
 }
 
-static int input_default_setkeycode(struct input_dev *dev,
-				    unsigned int scancode,
-				    unsigned int keycode)
+static int input_default_getkeycode_from_scancode(struct input_dev *dev,
+				    struct keycode_table_entry *kt_entry)
 {
-	int old_keycode;
+	if (input_fetch_scancode(kt_entry, &kt_entry->index))
+		return -EINVAL;
+
+	return input_default_getkeycode_from_index(dev, kt_entry);
+}
+
+
+static int input_default_setkeycode(struct input_dev *dev,
+				    struct keycode_table_entry *kt_entry)
+{
+	u32 old_keycode;
 	int i;
+	u32 scancode;
+
+	if (input_fetch_scancode(kt_entry, &scancode))
+		return -EINVAL;
 
 	if (scancode >= dev->keycodemax)
 		return -EINVAL;
@@ -610,32 +681,33 @@ static int input_default_setkeycode(struct input_dev *dev,
 	if (!dev->keycodesize)
 		return -EINVAL;
 
-	if (dev->keycodesize < sizeof(keycode) && (keycode >> (dev->keycodesize * 8)))
+	if (dev->keycodesize < sizeof(dev->keycode) &&
+	    (kt_entry->keycode >> (dev->keycodesize * 8)))
 		return -EINVAL;
 
 	switch (dev->keycodesize) {
 		case 1: {
 			u8 *k = (u8 *)dev->keycode;
 			old_keycode = k[scancode];
-			k[scancode] = keycode;
+			k[scancode] = kt_entry->keycode;
 			break;
 		}
 		case 2: {
 			u16 *k = (u16 *)dev->keycode;
 			old_keycode = k[scancode];
-			k[scancode] = keycode;
+			k[scancode] = kt_entry->keycode;
 			break;
 		}
 		default: {
 			u32 *k = (u32 *)dev->keycode;
 			old_keycode = k[scancode];
-			k[scancode] = keycode;
+			k[scancode] = kt_entry->keycode;
 			break;
 		}
 	}
 
 	__clear_bit(old_keycode, dev->keybit);
-	__set_bit(keycode, dev->keybit);
+	__set_bit(kt_entry->keycode, dev->keybit);
 
 	for (i = 0; i < dev->keycodemax; i++) {
 		if (input_fetch_keycode(dev, i) == old_keycode) {
@@ -646,6 +718,110 @@ static int input_default_setkeycode(struct input_dev *dev,
 
 	return 0;
 }
+
+/**
+ * input_get_keycode_big - retrieve keycode currently mapped to a given scancode
+ * @dev: input device which keymap is being queried
+ * @kt_entry: keytable entry
+ *
+ * This function should be called by anyone interested in retrieving current
+ * keymap. Presently evdev handlers use it.
+ */
+int input_get_keycode_big(struct input_dev *dev,
+			  struct keycode_table_entry *kt_entry)
+{
+	if (dev->getkeycode) {
+		u32 scancode = kt_entry->index;
+
+		/*
+		 * Support for legacy drivers, that don't implement the new
+		 * ioctls
+		 */
+		memcpy(kt_entry->scancode, &scancode, 4);
+		return dev->getkeycode(dev, scancode,
+				       &kt_entry->keycode);
+	} else
+		return dev->getkeycodebig_from_index(dev, kt_entry);
+}
+EXPORT_SYMBOL(input_get_keycode_big);
+
+/**
+ * input_set_keycode_big - attribute a keycode to a given scancode
+ * @dev: input device which keymap is being queried
+ * @kt_entry: keytable entry
+ *
+ * This function should be called by anyone needing to update current
+ * keymap. Presently keyboard and evdev handlers use it.
+ */
+int input_set_keycode_big(struct input_dev *dev,
+			  struct keycode_table_entry *kt_entry)
+{
+	unsigned long flags;
+	int old_keycode;
+	int retval = -EINVAL;
+	u32 uninitialized_var(scancode);
+
+	if (kt_entry->keycode < 0 || kt_entry->keycode > KEY_MAX)
+		return -EINVAL;
+
+	spin_lock_irqsave(&dev->event_lock, flags);
+
+	/*
+	 * We need to know the old scancode, in order to generate a
+	 * keyup effect, if the set operation happens successfully
+	 */
+	if (dev->getkeycode) {
+		/*
+		 * Support for legacy drivers, that don't implement the new
+		 * ioctls
+		 */
+		if (!dev->setkeycode)
+			goto out;
+
+		retval = input_fetch_scancode(kt_entry, &scancode);
+		if (retval)
+			goto out;
+
+		retval = dev->getkeycode(dev, scancode,
+					 &old_keycode);
+	} else {
+		int new_keycode = kt_entry->keycode;
+
+		retval = dev->getkeycodebig_from_scancode(dev, kt_entry);
+		old_keycode = kt_entry->keycode;
+		kt_entry->keycode = new_keycode;
+	}
+
+	if (retval)
+		goto out;
+
+	if (dev->getkeycode)
+		retval = dev->setkeycode(dev, scancode,
+					 kt_entry->keycode);
+	else
+		retval = dev->setkeycodebig(dev, kt_entry);
+	if (retval)
+		goto out;
+
+	/*
+	 * Simulate keyup event if keycode is not present
+	 * in the keymap anymore
+	 */
+	if (test_bit(EV_KEY, dev->evbit) &&
+	    !is_event_supported(old_keycode, dev->keybit, KEY_MAX) &&
+	    __test_and_clear_bit(old_keycode, dev->key)) {
+
+		input_pass_event(dev, EV_KEY, old_keycode, 0);
+		if (dev->sync)
+			input_pass_event(dev, EV_SYN, SYN_REPORT, 1);
+	}
+
+ out:
+	spin_unlock_irqrestore(&dev->event_lock, flags);
+
+	return retval;
+}
+EXPORT_SYMBOL(input_set_keycode_big);
 
 /**
  * input_get_keycode - retrieve keycode currently mapped to a given scancode
@@ -661,13 +837,35 @@ int input_get_keycode(struct input_dev *dev,
 		      unsigned int scancode, unsigned int *keycode)
 {
 	unsigned long flags;
-	int retval;
 
-	spin_lock_irqsave(&dev->event_lock, flags);
-	retval = dev->getkeycode(dev, scancode, keycode);
-	spin_unlock_irqrestore(&dev->event_lock, flags);
+	if (dev->getkeycode) {
+		/*
+		 * Use the legacy calls
+		 */
+		return dev->getkeycode(dev, scancode, keycode);
+	} else {
+		int retval;
+		struct keycode_table_entry kt_entry;
 
-	return retval;
+		/*
+		 * Userspace is using a legacy call with a driver ported
+		 * to the new way. This is a bad idea with long sparsed
+		 * tables, since lots of the retrieved values will be in
+		 * blank. Also, it makes sense only if the table size is
+		 * lower than 2^32.
+		 */
+		memset(&kt_entry, 0, sizeof(kt_entry));
+		kt_entry.len = 4;
+		kt_entry.index = scancode;
+		kt_entry.scancode = (char *)&scancode;
+
+		spin_lock_irqsave(&dev->event_lock, flags);
+		retval = dev->getkeycodebig_from_index(dev, &kt_entry);
+		spin_unlock_irqrestore(&dev->event_lock, flags);
+
+		*keycode = kt_entry.keycode;
+		return retval;
+	}
 }
 EXPORT_SYMBOL(input_get_keycode);
 
@@ -692,13 +890,42 @@ int input_set_keycode(struct input_dev *dev,
 
 	spin_lock_irqsave(&dev->event_lock, flags);
 
-	retval = dev->getkeycode(dev, scancode, &old_keycode);
-	if (retval)
-		goto out;
+	if (dev->getkeycode) {
+		/*
+		 * Use the legacy calls
+		 */
+		retval = dev->getkeycode(dev, scancode, &old_keycode);
+		if (retval)
+			goto out;
 
-	retval = dev->setkeycode(dev, scancode, keycode);
-	if (retval)
-		goto out;
+		retval = dev->setkeycode(dev, scancode, keycode);
+		if (retval)
+			goto out;
+	} else {
+		struct keycode_table_entry kt_entry;
+
+		/*
+		 * Userspace is using a legacy call with a driver ported
+		 * to the new way. This is a bad idea with long sparsed
+		 * tables, since lots of the retrieved values will be in
+		 * blank. Also, it makes sense only if the table size is
+		 * lower than 2^32.
+		 */
+		memset(&kt_entry, 0, sizeof(kt_entry));
+		kt_entry.len = 4;
+		kt_entry.scancode = (char *)&scancode;
+
+		retval = dev->getkeycodebig_from_scancode(dev, &kt_entry);
+		if (retval)
+			goto out;
+
+		old_keycode = kt_entry.keycode;
+		kt_entry.keycode = keycode;
+
+		retval = dev->setkeycodebig(dev, &kt_entry);
+		if (retval)
+			goto out;
+	}
 
 	/* Make sure KEY_RESERVED did not get enabled. */
 	__clear_bit(KEY_RESERVED, dev->keybit);
@@ -1278,6 +1505,7 @@ static void input_dev_release(struct device *device)
 	struct input_dev *dev = to_input_dev(device);
 
 	input_ff_destroy(dev);
+	input_mt_destroy_slots(dev);
 	kfree(dev);
 
 	module_put(THIS_MODULE);
@@ -1518,6 +1746,49 @@ void input_free_device(struct input_dev *dev)
 EXPORT_SYMBOL(input_free_device);
 
 /**
+ * input_mt_create_slots() - create MT input slots
+ * @dev: input device supporting MT events and finger tracking
+ * @num_slots: number of slots used by the device
+ *
+ * This function allocates all necessary memory for MT slot handling in the
+ * input device, and adds ABS_MT_SLOT to the device capabilities. All slots
+ * are initially unused with ABS_MT_TRACKING_ID == -1.
+ */
+int input_mt_create_slots(struct input_dev *dev, unsigned int num_slots)
+{
+	if (!num_slots)
+		return 0;
+
+	dev->mt = kcalloc(num_slots, sizeof(struct input_mt_slot), GFP_KERNEL);
+	if (!dev->mt)
+		return -ENOMEM;
+
+	dev->mtsize = num_slots;
+	input_set_abs_params(dev, ABS_MT_SLOT, 0, num_slots - 1, 0, 0);
+	/* the slot abs array starts at ABS_MT_FIRST to save memory */
+	while (num_slots--)
+		dev->mt[num_slots].abs[ABS_MT_TRACKING_ID - ABS_MT_FIRST] = -1;
+
+	return 0;
+}
+EXPORT_SYMBOL(input_mt_create_slots);
+
+/**
+ * input_mt_destroy_slots() - frees the MT slots of the input device
+ * @dev: input device with allocated MT slots
+ *
+ * This function is only needed in error path as the input core will
+ * automatically free the MT slots when the device is destroyed.
+ */
+void input_mt_destroy_slots(struct input_dev *dev)
+{
+	kfree(dev->mt);
+	dev->mt = NULL;
+	dev->mtsize = 0;
+}
+EXPORT_SYMBOL(input_mt_destroy_slots);
+
+/**
  * input_set_capability - mark device as capable of a certain event
  * @dev: device that is capable of emitting or accepting event
  * @type: type of the event (EV_KEY, EV_REL, etc...)
@@ -1636,11 +1907,17 @@ int input_register_device(struct input_dev *dev)
 		dev->rep[REP_PERIOD] = 33;
 	}
 
-	if (!dev->getkeycode)
-		dev->getkeycode = input_default_getkeycode;
+	if (!dev->getkeycode) {
+		if (!dev->getkeycodebig_from_index)
+			dev->getkeycodebig_from_index = input_default_getkeycode_from_index;
+		if (!dev->getkeycodebig_from_scancode)
+			dev->getkeycodebig_from_scancode = input_default_getkeycode_from_scancode;
+	}
 
-	if (!dev->setkeycode)
-		dev->setkeycode = input_default_setkeycode;
+	if (!dev->setkeycode) {
+		if (!dev->setkeycodebig)
+			dev->setkeycodebig = input_default_setkeycode;
+	}
 
 	dev_set_name(&dev->dev, "input%ld",
 		     (unsigned long) atomic_inc_return(&input_no) - 1);
@@ -1926,19 +2203,9 @@ static const struct file_operations input_fops = {
 	.open = input_open_file,
 };
 
-static void __init input_init_abs_bypass(void)
-{
-	const unsigned int *p;
-
-	for (p = input_abs_bypass_init_data; *p; p++)
-		input_abs_bypass[BIT_WORD(*p)] |= BIT_MASK(*p);
-}
-
 static int __init input_init(void)
 {
 	int err;
-
-	input_init_abs_bypass();
 
 	err = class_register(&input_class);
 	if (err) {

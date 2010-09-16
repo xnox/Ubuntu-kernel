@@ -93,7 +93,9 @@ enum {
 	STAC_92HD83XXX_REF,
 	STAC_92HD83XXX_PWR_REF,
 	STAC_DELL_S14,
+	STAC_DELL_E6410,
 	STAC_92HD83XXX_HP,
+	STAC_DELL_M6500,
 	STAC_92HD83XXX_MODELS
 };
 
@@ -202,6 +204,7 @@ struct sigmatel_spec {
 	unsigned int spdif_mute: 1;
 	unsigned int check_volume_offset:1;
 	unsigned int auto_mic:1;
+	unsigned int linear_tone_beep:1;
 
 	/* gpio lines */
 	unsigned int eapd_mask;
@@ -1631,10 +1634,26 @@ static unsigned int dell_s14_pin_configs[10] = {
 	0x40f000f0, 0x40f000f0,
 };
 
+/* Deliberately turn off 0x0f (Dock Mic) to make it choose Int Mic instead */
+static unsigned int dell_e6410_pin_configs[10] = {
+	0x04a11020, 0x0421101f, 0x400000f0, 0x90170110,
+	0x23011050, 0x40f000f0, 0x400000f0, 0x90a60130,
+	0x40f000f0, 0x40f000f0,
+};
+
+/* Dell Precision M6500, make sure 0x0e is silenced */
+static unsigned int dell_m6500_pin_configs[10] = {
+	0x03a11030, 0x0321101f, 0x400000f0, 0x90170110,
+	0x400000f0, 0x23011050, 0x400000f0, 0x90a10120,
+	0x014613b0, 0x400000f0,
+};
+
 static unsigned int *stac92hd83xxx_brd_tbl[STAC_92HD83XXX_MODELS] = {
 	[STAC_92HD83XXX_REF] = ref92hd83xxx_pin_configs,
 	[STAC_92HD83XXX_PWR_REF] = ref92hd83xxx_pin_configs,
 	[STAC_DELL_S14] = dell_s14_pin_configs,
+	[STAC_DELL_E6410] = dell_e6410_pin_configs,
+	[STAC_DELL_M6500] = dell_m6500_pin_configs,
 };
 
 static const char *stac92hd83xxx_models[STAC_92HD83XXX_MODELS] = {
@@ -1642,6 +1661,8 @@ static const char *stac92hd83xxx_models[STAC_92HD83XXX_MODELS] = {
 	[STAC_92HD83XXX_REF] = "ref",
 	[STAC_92HD83XXX_PWR_REF] = "mic-ref",
 	[STAC_DELL_S14] = "dell-s14",
+	[STAC_DELL_E6410] = "dell-e6410",
+	[STAC_DELL_M6500] = "dell-m6500",
 	[STAC_92HD83XXX_HP] = "hp",
 };
 
@@ -1653,6 +1674,12 @@ static struct snd_pci_quirk stac92hd83xxx_cfg_tbl[] = {
 		      "DFI LanParty", STAC_92HD83XXX_REF),
 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x02ba,
 		      "unknown Dell", STAC_DELL_S14),
+	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x040a,
+		      "Dell E6410", STAC_DELL_E6410),
+	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x040b,
+		      "Dell E6510", STAC_DELL_E6410),
+	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x02ef,
+		      "Dell M6500", STAC_DELL_M6500),
 	SND_PCI_QUIRK_MASK(PCI_VENDOR_ID_HP, 0xff00, 0x3600,
 		      "HP", STAC_92HD83XXX_HP),
 	{} /* terminator */
@@ -3802,7 +3829,7 @@ static int stac92xx_parse_auto_config(struct hda_codec *codec, hda_nid_t dig_out
 			return err;
 		if (codec->beep) {
 			/* IDT/STAC codecs have linear beep tone parameter */
-			codec->beep->linear_tone = 1;
+			codec->beep->linear_tone = spec->linear_tone_beep;
 			/* if no beep switch is available, make its own one */
 			caps = query_amp_caps(codec, nid, HDA_OUTPUT);
 			if (!(caps & AC_AMPCAP_MUTE)) {
@@ -5005,6 +5032,7 @@ static int patch_stac9200(struct hda_codec *codec)
 
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 1;
 	spec->num_pins = ARRAY_SIZE(stac9200_pin_nids);
 	spec->pin_nids = stac9200_pin_nids;
 	spec->board_config = snd_hda_check_board_config(codec, STAC_9200_MODELS,
@@ -5068,6 +5096,7 @@ static int patch_stac925x(struct hda_codec *codec)
 
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 1;
 	spec->num_pins = ARRAY_SIZE(stac925x_pin_nids);
 	spec->pin_nids = stac925x_pin_nids;
 
@@ -5153,6 +5182,7 @@ static int patch_stac92hd73xx(struct hda_codec *codec)
 
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 0;
 	codec->slave_dig_outs = stac92hd73xx_slave_dig_outs;
 	spec->num_pins = ARRAY_SIZE(stac92hd73xx_pin_nids);
 	spec->pin_nids = stac92hd73xx_pin_nids;
@@ -5300,6 +5330,7 @@ static int patch_stac92hd83xxx(struct hda_codec *codec)
 
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 1;
 	codec->slave_dig_outs = stac92hd83xxx_slave_dig_outs;
 	spec->digbeep_nid = 0x21;
 	spec->mux_nids = stac92hd83xxx_mux_nids;
@@ -5522,6 +5553,7 @@ static int patch_stac92hd71bxx(struct hda_codec *codec)
 
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 0;
 	codec->patch_ops = stac92xx_patch_ops;
 	spec->num_pins = STAC92HD71BXX_NUM_PINS;
 	switch (codec->vendor_id) {
@@ -5779,6 +5811,7 @@ static int patch_stac922x(struct hda_codec *codec)
 
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 1;
 	spec->num_pins = ARRAY_SIZE(stac922x_pin_nids);
 	spec->pin_nids = stac922x_pin_nids;
 	spec->board_config = snd_hda_check_board_config(codec, STAC_922X_MODELS,
@@ -5883,6 +5916,7 @@ static int patch_stac927x(struct hda_codec *codec)
 
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 1;
 	codec->slave_dig_outs = stac927x_slave_dig_outs;
 	spec->num_pins = ARRAY_SIZE(stac927x_pin_nids);
 	spec->pin_nids = stac927x_pin_nids;
@@ -6018,6 +6052,7 @@ static int patch_stac9205(struct hda_codec *codec)
 
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 1;
 	spec->num_pins = ARRAY_SIZE(stac9205_pin_nids);
 	spec->pin_nids = stac9205_pin_nids;
 	spec->board_config = snd_hda_check_board_config(codec, STAC_9205_MODELS,
@@ -6174,6 +6209,7 @@ static int patch_stac9872(struct hda_codec *codec)
 		return -ENOMEM;
 	codec->no_trigger_sense = 1;
 	codec->spec = spec;
+	spec->linear_tone_beep = 1;
 	spec->num_pins = ARRAY_SIZE(stac9872_pin_nids);
 	spec->pin_nids = stac9872_pin_nids;
 

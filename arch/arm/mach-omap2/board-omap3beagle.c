@@ -232,12 +232,19 @@ static struct platform_device beagle_dss_device = {
 static struct regulator_consumer_supply beagle_vdac_supply =
 	REGULATOR_SUPPLY("vdda_dac", "omapdss");
 
-static struct regulator_consumer_supply beagle_vdvi_supply =
-	REGULATOR_SUPPLY("vdds_dsi", "omapdss");
+static struct regulator_consumer_supply beagle_vdds_supplies[] = {
+	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
+	REGULATOR_SUPPLY("vdds_sdi", "omapdss"),
+};
 
 static void __init beagle_display_init(void)
 {
 	int r;
+
+       if (cpu_is_omap3630())
+               beagle_dvi_device.reset_gpio = 129;
+       else
+               beagle_dvi_device.reset_gpio = 170;
 
 	r = gpio_request(beagle_dvi_device.reset_gpio, "DVI reset");
 	if (r < 0) {
@@ -293,12 +300,22 @@ static int beagle_twl_gpio_setup(struct device *dev,
 	 * power switch and overcurrent detect
 	 */
 
-	gpio_request(gpio + 1, "EHCI_nOC");
-	gpio_direction_input(gpio + 1);
+       if (cpu_is_omap3630()) {
+               gpio_request(gpio + 1, "nDVI_PWR_EN");
+               gpio_direction_output(gpio + 1, 0);
+ 
+               /* TWL4030_GPIO_MAX + 0 == ledA, EHCI nEN_USB_PWR (out, active low) */
+               gpio_request(gpio + TWL4030_GPIO_MAX, "nEN_USB_PWR");
+               gpio_direction_output(gpio + TWL4030_GPIO_MAX, 1);
+       }
+       else {
+               gpio_request(gpio + 1, "EHCI_nOC");
+               gpio_direction_input(gpio + 1);
 
-	/* TWL4030_GPIO_MAX + 0 == ledA, EHCI nEN_USB_PWR (out, active low) */
-	gpio_request(gpio + TWL4030_GPIO_MAX, "nEN_USB_PWR");
-	gpio_direction_output(gpio + TWL4030_GPIO_MAX, 0);
+               /* TWL4030_GPIO_MAX + 0 == ledA, EHCI nEN_USB_PWR (out, active low) */
+               gpio_request(gpio + TWL4030_GPIO_MAX, "nEN_USB_PWR");
+               gpio_direction_output(gpio + TWL4030_GPIO_MAX, 0);
+       }
 
 	/* TWL4030_GPIO_MAX + 1 == ledB, PMU_STAT (out, active low LED) */
 	gpio_leds[2].gpio = gpio + TWL4030_GPIO_MAX + 1;
@@ -364,7 +381,6 @@ static struct regulator_init_data beagle_vdac = {
 /* VPLL2 for digital video outputs */
 static struct regulator_init_data beagle_vpll2 = {
 	.constraints = {
-		.name			= "VDVI",
 		.min_uV			= 1800000,
 		.max_uV			= 1800000,
 		.valid_modes_mask	= REGULATOR_MODE_NORMAL
@@ -372,8 +388,8 @@ static struct regulator_init_data beagle_vpll2 = {
 		.valid_ops_mask		= REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 	},
-	.num_consumer_supplies	= 1,
-	.consumer_supplies	= &beagle_vdvi_supply,
+	.num_consumer_supplies  = ARRAY_SIZE(beagle_vdds_supplies),
+	.consumer_supplies      = beagle_vdds_supplies,
 };
 
 static struct twl4030_usb_data beagle_usb_data = {
@@ -412,13 +428,19 @@ static struct i2c_board_info __initdata beagle_i2c_boardinfo[] = {
 	},
 };
 
+static struct i2c_board_info __initdata beagle_i2c_eeprom[] = {
+       {
+               I2C_BOARD_INFO("eeprom", 0x50),
+       },
+};
+
 static int __init omap3_beagle_i2c_init(void)
 {
 	omap_register_i2c_bus(1, 2600, beagle_i2c_boardinfo,
 			ARRAY_SIZE(beagle_i2c_boardinfo));
 	/* Bus 3 is attached to the DVI port where devices like the pico DLP
 	 * projector don't work reliably with 400kHz */
-	omap_register_i2c_bus(3, 100, NULL, 0);
+	omap_register_i2c_bus(3, 100, beagle_i2c_eeprom, ARRAY_SIZE(beagle_i2c_eeprom));
 	return 0;
 }
 
@@ -559,11 +581,6 @@ static void __init omap3_beagle_init(void)
 	platform_add_devices(omap3_beagle_devices,
 			ARRAY_SIZE(omap3_beagle_devices));
 	omap_serial_init();
-
-	omap_mux_init_gpio(170, OMAP_PIN_INPUT);
-	gpio_request(170, "DVI_nPD");
-	/* REVISIT leave DVI powered down until it's needed ... */
-	gpio_direction_output(170, true);
 
 	usb_musb_init(&musb_board_data);
 	usb_ehci_init(&ehci_pdata);

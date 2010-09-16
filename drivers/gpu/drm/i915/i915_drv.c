@@ -42,7 +42,7 @@ module_param_named(modeset, i915_modeset, int, 0400);
 unsigned int i915_fbpercrtc = 0;
 module_param_named(fbpercrtc, i915_fbpercrtc, int, 0400);
 
-unsigned int i915_powersave = 1;
+unsigned int i915_powersave = 0;
 module_param_named(powersave, i915_powersave, int, 0400);
 
 unsigned int i915_lvds_downclock = 0;
@@ -180,7 +180,12 @@ static const struct pci_device_id pciidlist[] = {
 	INTEL_VGA_DEVICE(0x0042, &intel_ironlake_d_info),
 	INTEL_VGA_DEVICE(0x0046, &intel_ironlake_m_info),
 	INTEL_VGA_DEVICE(0x0102, &intel_sandybridge_d_info),
+	INTEL_VGA_DEVICE(0x0112, &intel_sandybridge_d_info),
+	INTEL_VGA_DEVICE(0x0122, &intel_sandybridge_d_info),
 	INTEL_VGA_DEVICE(0x0106, &intel_sandybridge_m_info),
+	INTEL_VGA_DEVICE(0x0116, &intel_sandybridge_m_info),
+	INTEL_VGA_DEVICE(0x0126, &intel_sandybridge_m_info),
+	INTEL_VGA_DEVICE(0x010A, &intel_sandybridge_d_info),
 	{0, 0, 0}
 };
 

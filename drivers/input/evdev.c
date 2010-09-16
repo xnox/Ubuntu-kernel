@@ -10,7 +10,8 @@
 
 #define EVDEV_MINOR_BASE	64
 #define EVDEV_MINORS		32
-#define EVDEV_BUFFER_SIZE	64
+#define EVDEV_MIN_BUFFER_SIZE	64U
+#define EVDEV_BUF_PACKETS	8
 
 #include <linux/poll.h>
 #include <linux/sched.h>
@@ -36,13 +37,14 @@ struct evdev {
 };
 
 struct evdev_client {
-	struct input_event buffer[EVDEV_BUFFER_SIZE];
 	int head;
 	int tail;
 	spinlock_t buffer_lock; /* protects access to buffer, head and tail */
 	struct fasync_struct *fasync;
 	struct evdev *evdev;
 	struct list_head node;
+	int bufsize;
+	struct input_event buffer[];
 };
 
 static struct evdev *evdev_table[EVDEV_MINORS];
@@ -52,11 +54,15 @@ static void evdev_pass_event(struct evdev_client *client,
 			     struct input_event *event)
 {
 	/*
-	 * Interrupts are disabled, just acquire the lock
+	 * Interrupts are disabled, just acquire the lock.
+	 * Make sure we don't leave with the client buffer
+	 * "empty" by having client->head == client->tail.
 	 */
 	spin_lock(&client->buffer_lock);
-	client->buffer[client->head++] = *event;
-	client->head &= EVDEV_BUFFER_SIZE - 1;
+	do {
+		client->buffer[client->head++] = *event;
+		client->head &= client->bufsize - 1;
+	} while (client->head == client->tail);
 	spin_unlock(&client->buffer_lock);
 
 	if (event->type == EV_SYN)
@@ -242,11 +248,21 @@ static int evdev_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
+static unsigned int evdev_compute_buffer_size(struct input_dev *dev)
+{
+	unsigned int n_events =
+		max(dev->hint_events_per_packet * EVDEV_BUF_PACKETS,
+		    EVDEV_MIN_BUFFER_SIZE);
+
+	return roundup_pow_of_two(n_events);
+}
+
 static int evdev_open(struct inode *inode, struct file *file)
 {
 	struct evdev *evdev;
 	struct evdev_client *client;
 	int i = iminor(inode) - EVDEV_MINOR_BASE;
+	unsigned int bufsize;
 	int error;
 
 	if (i >= EVDEV_MINORS)
@@ -263,12 +279,17 @@ static int evdev_open(struct inode *inode, struct file *file)
 	if (!evdev)
 		return -ENODEV;
 
-	client = kzalloc(sizeof(struct evdev_client), GFP_KERNEL);
+	bufsize = evdev_compute_buffer_size(evdev->handle.dev);
+
+	client = kzalloc(sizeof(struct evdev_client) +
+				bufsize * sizeof(struct input_event),
+			 GFP_KERNEL);
 	if (!client) {
 		error = -ENOMEM;
 		goto err_put_evdev;
 	}
 
+	client->bufsize = bufsize;
 	spin_lock_init(&client->buffer_lock);
 	client->evdev = evdev;
 	evdev_attach_client(evdev, client);
@@ -334,7 +355,7 @@ static int evdev_fetch_next_event(struct evdev_client *client,
 	have_event = client->head != client->tail;
 	if (have_event) {
 		*event = client->buffer[client->tail++];
-		client->tail &= EVDEV_BUFFER_SIZE - 1;
+		client->tail &= client->bufsize - 1;
 	}
 
 	spin_unlock_irq(&client->buffer_lock);
@@ -515,6 +536,8 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
 	struct input_absinfo abs;
 	struct ff_effect effect;
 	int __user *ip = (int __user *)p;
+	struct keycode_table_entry kt, *kt_p = p;
+	char scancode[16];
 	unsigned int i, t, u, v;
 	int error;
 
@@ -568,6 +591,43 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
 			return -EFAULT;
 
 		return input_set_keycode(dev, t, v);
+
+	case EVIOCGKEYCODEBIG:
+		if (copy_from_user(&kt, kt_p, sizeof(kt)))
+			return -EFAULT;
+
+		if (kt.len > sizeof(scancode))
+			return -EINVAL;
+
+		kt.scancode = scancode;
+
+		error = input_get_keycode_big(dev, &kt);
+		if (error)
+			return error;
+
+		if (copy_to_user(kt_p, &kt, sizeof(kt)))
+			return -EFAULT;
+
+		/* FIXME: probably need some compat32 code */
+		if (copy_to_user(kt_p->scancode, kt.scancode, kt.len))
+			return -EFAULT;
+
+		return 0;
+
+	case EVIOCSKEYCODEBIG:
+		if (copy_from_user(&kt, kt_p, sizeof(kt)))
+			return -EFAULT;
+
+		if (kt.len > sizeof(scancode))
+			return -EINVAL;
+
+		kt.scancode = scancode;
+
+		/* FIXME: probably need some compat32 code */
+		if (copy_from_user(kt.scancode, kt_p->scancode, kt.len))
+			return -EFAULT;
+
+		return input_set_keycode_big(dev, &kt);
 
 	case EVIOCRMFF:
 		return input_ff_erase(dev, (int)(unsigned long) p, file);
@@ -664,6 +724,10 @@ static long evdev_do_ioctl(struct file *file, unsigned int cmd,
 								  _IOC_SIZE(cmd),
 								  sizeof(struct input_absinfo))))
 					return -EFAULT;
+
+				/* We can't change number of reserved MT slots */
+				if (t == ABS_MT_SLOT)
+					return -EINVAL;
 
 				/*
 				 * Take event lock to ensure that we are not
