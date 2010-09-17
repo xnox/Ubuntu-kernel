@@ -7966,6 +7966,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xbf4f9196	fuse_request_send_background
 EXPORT_SYMBOL_GPL vmlinux 0xbf74eb20	probe_kernel_write
 EXPORT_SYMBOL_GPL vmlinux 0xbf8b50eb	device_create_bin_file
 EXPORT_SYMBOL_GPL vmlinux 0xbfa4da4c	vfs_lock_file
+EXPORT_SYMBOL_GPL vmlinux 0xbffde8ec	compat_alloc_user_space
 EXPORT_SYMBOL_GPL vmlinux 0xc019c141	relay_close
 EXPORT_SYMBOL_GPL vmlinux 0xc0a38452	crypto_givcipher_type
 EXPORT_SYMBOL_GPL vmlinux 0xc0c23a0d	sysdev_register
