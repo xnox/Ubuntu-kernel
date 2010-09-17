@@ -81,7 +81,7 @@ static unsigned long bmm_size;
 static unsigned long bmm_free_size;
 static bmm_block_t bmm_free_block;
 static bmm_block_t bmm_used_block;
-static spinlock_t bmm_lock;	/* spin lock for block list */
+static struct mutex bmm_mutex;	/* mutex for block list */
 
 #define UNUSED_PARAM(x)	(void)(x)
 
@@ -176,68 +176,64 @@ static void bmm_dump_all(void)
 
 static bmm_block_t * bmm_search_vaddr(struct list_head *head, unsigned long vaddr)
 {
-	unsigned long flags;
 	bmm_block_t *pbmm;
 
-	spin_lock_irqsave(&bmm_lock, flags);
+	mutex_lock(&bmm_mutex);
 	list_for_each_entry(pbmm, head, list) {
 		if(pbmm->vaddr == vaddr && pbmm->pid == current->tgid) {
-			spin_unlock_irqrestore(&bmm_lock, flags);
+			mutex_unlock(&bmm_mutex);
 			return pbmm;
 		}
 	}
-	spin_unlock_irqrestore(&bmm_lock, flags);
+	mutex_unlock(&bmm_mutex);
 
 	return NULL;
 }
 
 static bmm_block_t * bmm_search_vaddr_ex(struct list_head *head, unsigned long vaddr)
 {
-	unsigned long flags;
 	bmm_block_t *pbmm;
 
-	spin_lock_irqsave(&bmm_lock, flags);
+	mutex_lock(&bmm_mutex);
 	list_for_each_entry(pbmm, head, list) {
 		if(pbmm->vaddr <= vaddr && pbmm->vaddr + pbmm->size > vaddr && pbmm->pid == current->tgid) {
-			spin_unlock_irqrestore(&bmm_lock, flags);
+			mutex_unlock(&bmm_mutex);
 			return pbmm;
 		}
 	}
-	spin_unlock_irqrestore(&bmm_lock, flags);
+	mutex_unlock(&bmm_mutex);
 
 	return NULL;
 }
 
 static bmm_block_t * bmm_search_paddr_ex(struct list_head *head, unsigned long paddr)
 {
-	unsigned long flags;
 	bmm_block_t *pbmm;
 
-	spin_lock_irqsave(&bmm_lock, flags);
+	mutex_lock(&bmm_mutex);
 	list_for_each_entry(pbmm, head, list) {
 		if(pbmm->paddr <= paddr && pbmm->paddr + pbmm->size > paddr) {
-			spin_unlock_irqrestore(&bmm_lock, flags);
+			mutex_unlock(&bmm_mutex);
 			return pbmm;
 		}
 	}
-	spin_unlock_irqrestore(&bmm_lock, flags);
+	mutex_unlock(&bmm_mutex);
 
 	return NULL;
 }
 
 static bmm_block_t * bmm_search_paddr(struct list_head *head, unsigned long paddr)
 {
-	unsigned long flags;
 	bmm_block_t *pbmm;
 
-	spin_lock_irqsave(&bmm_lock, flags);
+	mutex_lock(&bmm_mutex);
 	list_for_each_entry(pbmm, head, list) {
 		if(pbmm->paddr == paddr) {
-			spin_unlock_irqrestore(&bmm_lock, flags);
+			mutex_unlock(&bmm_mutex);
 			return pbmm;
 		}
 	}
-	spin_unlock_irqrestore(&bmm_lock, flags);
+	mutex_unlock(&bmm_mutex);
 
 	return NULL;
 }
@@ -305,13 +301,12 @@ static unsigned long bmm_malloc(size_t size, unsigned long attr)
 	bmm_block_t *pbmm;
 	bmm_block_t *new;
 	unsigned long paddr = 0;
-	unsigned long flags;
 
 	size = PAGE_ALIGN(size);
 	if(size == 0 || size > bmm_free_size || size > TASK_SIZE)
 		return 0;
 
-	spin_lock_irqsave(&bmm_lock, flags);
+	mutex_lock(&bmm_mutex);
 	list_for_each_entry(pbmm, &(bmm_free_block.list), list) {
 		if(pbmm->size == size) {	/* Found an exact match */
 			list_del_init(&(pbmm->list));
@@ -339,7 +334,7 @@ static unsigned long bmm_malloc(size_t size, unsigned long attr)
 			break;
 		}
 	}
-	spin_unlock_irqrestore(&bmm_lock, flags);
+	mutex_unlock(&bmm_mutex);
 
 	pr_debug("bmm_malloc return paddr=0x%08lx\n", paddr);
 
@@ -348,13 +343,12 @@ static unsigned long bmm_malloc(size_t size, unsigned long attr)
 
 static void bmm_free(unsigned long vaddr)
 {
-	unsigned long flags;
 	bmm_block_t *pbmm;
 	pid_t pid = current->tgid;
 
 	pr_debug("bmm_free(vaddr=0x%08lx) pid=%d\n", vaddr, pid);
 
-	spin_lock_irqsave(&bmm_lock, flags);
+	mutex_lock(&bmm_mutex);
 	list_for_each_entry(pbmm, &(bmm_used_block.list), list) {
 		pr_debug("\t(vaddr=0x%08lx, pid=0x%08x)\n", pbmm->vaddr, pbmm->pid);
 		if(pbmm->vaddr == vaddr && pbmm->pid == pid) {
@@ -369,7 +363,7 @@ static void bmm_free(unsigned long vaddr)
 			break;
 		}
 	}
-	spin_unlock_irqrestore(&bmm_lock, flags);
+	mutex_unlock(&bmm_mutex);
 }
 
 unsigned long bmm_malloc_kernel(size_t size, unsigned long attr)
@@ -380,10 +374,9 @@ EXPORT_SYMBOL(bmm_malloc_kernel);
 
 void bmm_free_kernel(unsigned long paddr)
 {
-	unsigned long flags;
 	bmm_block_t *pbmm;
 
-	spin_lock_irqsave(&bmm_lock, flags);
+	mutex_lock(&bmm_mutex);
 	list_for_each_entry(pbmm, &(bmm_used_block.list), list) {
 		if(pbmm->paddr == paddr) {
 			pr_debug("\tbmm_free(paddr=0x%08lx)\n", pbmm->paddr);
@@ -397,7 +390,7 @@ void bmm_free_kernel(unsigned long paddr)
 			break;
 		}
 	}
-	spin_unlock_irqrestore(&bmm_lock, flags);
+	mutex_unlock(&bmm_mutex);
 }
 EXPORT_SYMBOL(bmm_free_kernel);
 
@@ -454,16 +447,15 @@ static int bmm_mmap(struct file *file, struct vm_area_struct *vma)
 
 static unsigned long bmm_get_allocated_size(void)
 {
-	unsigned long flags;
 	unsigned long size = 0;
 	bmm_block_t *pbmm;
 
-	spin_lock_irqsave(&bmm_lock, flags);
+	mutex_lock(&bmm_mutex);
 	list_for_each_entry(pbmm, &(bmm_used_block.list), list) {
 		if(pbmm->pid == current->tgid)
 			size += pbmm->size;
 	}
-	spin_unlock_irqrestore(&bmm_lock, flags);
+	mutex_unlock(&bmm_mutex);
 
 	return size;
 }
@@ -993,7 +985,7 @@ static int __init bmm_init(void)
 	if(IS_ERR((void *)__bmm_init()))
 		return -ENOMEM;
 
-	spin_lock_init(&bmm_lock);
+	mutex_init(&bmm_mutex);
 
 	bmm_free_size = bmm_size;
 	INIT_LIST_HEAD(&(bmm_free_block.list));
