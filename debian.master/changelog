@@ -1,4 +1,4 @@
-linux (2.6.31-22.66) UNRELEASED; urgency=low
+linux (2.6.31-22.66) karmic-proposed; urgency=low
 
   [ Brad Figg ]
 
@@ -18,7 +18,7 @@ linux (2.6.31-22.66) UNRELEASED; urgency=low
   * PCI: Ensure we re-enable devices on resume
     - LP: #566149
 
- -- Stefan Bader <stefan.bader@canonical.com>  Fri, 20 Aug 2010 11:25:21 +0000
+ -- Stefan Bader <stefan.bader@canonical.com>  Fri, 17 Sep 2010 18:30:58 +0200
 
 linux (2.6.31-22.65) karmic-security; urgency=low
 
