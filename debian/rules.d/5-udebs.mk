@@ -26,8 +26,7 @@ do-binary-udebs:
 	export SOURCEDIR=$(CURDIR)/debian/d-i-${arch} && \
 	  cd $(builddir) && \
 	  kernel-wedge install-files && \
-	  kernel-wedge check || \
-	  true
+	  kernel-wedge check
 
         # Build just the udebs
 	dilist=$$(dh_listpackages -s | grep "\-di$$") && \
