@@ -289,7 +289,7 @@ def IsWorkareaClean(branch=None):
 # Create a new branch for a package which is based on the last released
 # version of it.
 #------------------------------------------------------------------------------
-def CreateBranch(series, package, name, force=False):
+def CreateBranch(series, package, name, force=False, checkout=True):
 	pkgname = PkgList[series][package]
 
 	version = GetUploadVersion(series, pkgname)
@@ -305,8 +305,11 @@ def CreateBranch(series, package, name, force=False):
 			print "    WW: Trhowing away previous " + name
 			os.system("git checkout -q master >/dev/null")
 			os.system("git branch -D " + name + " >/dev/null")
-	cmd = "git checkout -q -b " + name + " Ubuntu-" + version
-	return os.system(cmd)
+	rc = os.system("git branch " + name + " Ubuntu-" + version)
+	if rc == 0 and checkout:
+		rc = os.system("git checkout -q " + name)
+
+	return rc
 
 #------------------------------------------------------------------------------
 # Return the URL to the personal CVE publishing page.
