@@ -36,6 +36,12 @@ directory or below.
 * cve-item-checkout <CVE-####-####|BUG-#>
   Switches back to a previously saved workitem.
 
+== Pulling things together ==
+
+* cve-item-fetch
+  Creates local branches for a work-item that was processed and saved by
+  somebody else.
+
 == Preparing a release ==
 
 * cve-release-start
