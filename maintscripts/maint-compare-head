@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Compa
+# Compare a patch file with the topmost commit at HEAD
 
 if [ "$#" -ne 1 ]; then
 	echo "Usage: $0 <patch file>" 1>&2
@@ -11,13 +11,14 @@ if [ "$#" -ne 1 ]; then
 fi
 
 
-PATCH=$1
-if [ -z "${PATCH}" ] || [ ! -f ${PATCH} ]
+PATCH="$1"
+if [ -z "${PATCH}" ] || [ ! -f "${PATCH}" ]
 then
-	echo You must provide the name of a patch file.
+	echo "You must provide the name of a patch file."
 	exit 1
 fi
 
 A="/tmp/topcommit.$$"
+trap "rm -f $A" 0
 git format-patch -1 --stdout HEAD > $A
-meld $A $1
+meld "$A" "$PATCH"
