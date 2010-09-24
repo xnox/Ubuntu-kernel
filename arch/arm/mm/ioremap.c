@@ -434,7 +434,7 @@ __arm_multi_strided_ioremap(int sections,
 							~SUPERSECTION_MASK)) {
 				area->flags |= VM_ARM_SECTION_MAPPING;
 				err = remap_area_supersections(addr_i, pfns[i],
-								size[i], type);
+							phys_size[i], type);
 			} else if (!((__pfn_to_phys(pfns[i]) | vstride | addr_i)
 								& ~PMD_MASK)) {
 				area->flags |= VM_ARM_SECTION_MAPPING;
