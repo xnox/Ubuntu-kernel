@@ -116,6 +116,21 @@ Description: Ubuntu supplied Linux modules for version PKGVER on DESC.
  the linux-backports-modules-wwan-POCKET-FLAVOUR meta-package, which will ensure that
  upgrades work correctly, and that supporting packages are also installed.
 
+Package: linux-backports-modules-input-PKGVER-ABINUM-FLAVOUR
+Architecture: ARCH
+Section: SECTION_IMAGE
+Priority: optional
+Provides:
+Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Ubuntu supplied Linux modules for version PKGVER on DESC.
+ This package contains input modules supplied by Ubuntu for Linux PKGVER.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-input-POCKET-FLAVOUR meta-package, which will
+ ensure that upgrades work correctly, and that supporting packages are also
+ installed.
+
 #Package: linux-backports-modules-nouveau-PKGVER-ABINUM-FLAVOUR
 #Architecture: ARCH
 #Section: SECTION_IMAGE

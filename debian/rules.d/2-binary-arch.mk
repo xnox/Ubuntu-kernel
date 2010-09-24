@@ -83,6 +83,8 @@ $(stampdir)/stamp-build-%: prepare-%
 	touch $@
 
 # Install the finished build
+install-%: impkgdir = $(CURDIR)/debian/linux-backports-modules-input-$(release)-$(abinum)-$*
+install-%: immoddir = $(impkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: wwpkgdir = $(CURDIR)/debian/linux-backports-modules-wwan-$(release)-$(abinum)-$*
 install-%: wwmoddir = $(wwpkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: wwsrcdir = $(CURDIR)/updates/wwan-drivers
@@ -213,6 +215,18 @@ endif
 	done
 	
 	#
+	# Build the input-drivers package.
+	#
+	install -d $(immoddir)/updates/input
+	find $(builddir)/build-*/input-drivers -type f -name '*.ko' |	       \
+	while read f; do						       \
+		install -v $$f $(immoddir)/updates/input/;		       \
+		strip --strip-debug $(immoddir)/updates/input/$$(basename $$f);\
+	done
+	#$(MAKE) -C $(imsrcdir) prefix=$(impkgdir) install
+	install -d $(impkgdir)/DEBIAN
+
+	#
 	# The flavour specific headers package
 	#
 	install -d $(hdrdir)/include
@@ -241,6 +255,7 @@ ifeq ($(do_nouveau_package),true)
 package_list += linux-backports-modules-nouveau-$(release)-$(abinum)-$*
 endif
 package_list += linux-backports-modules-wwan-$(release)-$(abinum)-$*
+package_list += linux-backports-modules-input-$(release)-$(abinum)-$*
 
 binary-modules-%: install-%
 	dh_testdir
