@@ -19,6 +19,37 @@
 ##############################################################################
 
 
-ARCH_TYPE	?= arm
-SDK_DIR		?= $(AQROOT)/build/sdk
-USE_3D_VG	= 1
+
+#
+# Linux build file for architecture dependent kernel HAL layer.
+#
+#
+
+
+################################################################################
+# Include common definitions.
+
+include $(AQROOT)/makefile.linux.def
+
+################################################################################
+# Define a shortcut for the main target.
+
+STATIC = 1
+TARGET_NAME = libhalarchkernel.a
+
+################################################################################
+# Supply additional include directories.
+
+INCLUDE += -I$(AQROOT)/hal/inc
+INCLUDE += -I$(AQROOT)/hal/kernel
+INCLUDE += -I$(AQARCH)/hal/kernel
+INCLUDE += -I$(AQARCH)/cmodel/inc
+
+CFLAGS += $(INCLUDE) -Werror -ansi
+
+################################################################################
+# Describe object files.
+
+OBJECTS = $(OBJ_DIR)/gc_hal_kernel_hardware.o
+
+include $(AQROOT)/common.target
