@@ -1,27 +1,8 @@
-##############################################################################
-#  
-#    Copyright (C) 2005 - 2009 by Vivante Corp.
-#  
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public Lisence as published by
-#    the Free Software Foundation; either version 2 of the license, or
-#    (at your option) any later version.
-#  
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-#    GNU General Public Lisence for more details.
-#  
-#    You should have received a copy of the GNU General Public License
-#    along with this program; if not write to the Free Software
-#    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-#  
-##############################################################################
 PWD := $(srctree)/arch/arm/mach-dove/gc600_driver_dove/galcore_ko_src
 
 ARCH=arm
-CROSS_COMPILE = arm-marvell-linux-gnueabi-
-GPU_TYPE = Unified
+#CROSS_COMPILE ?= /usr/local/arm-marvell-linux-gnueabi/bin/arm-marvell-linux-gnueabi-
+GPU_TYPE = unified
 KERNEL_DIR = ${PWD}/linux
 
 DEBUG = 0
@@ -39,15 +20,15 @@ BUILD_OPTIONS += NO_DMA_COHERENT=${NO_DMA_COHERENT}
 BUILD_OPTIONS += CONFIG_DOVE_GPU=${CONFIG_DOVE_GPU}
 BUILD_OPTIONS += ANDROID=${ANDROID}
 BUILD_OPTIONS += ENABLE_GPU_CLOCK_BY_DRIVER=${ENABLE_GPU_CLOCK_BY_DRIVER}
-AQROOT := $(PWD)
-AQARCH = ${PWD}/arch/${GPU_TYPE}
 
+#AQROOT := ${PWD}
+AQROOT := $(srctree)/arch/arm/mach-dove/gc600_driver_dove/galcore_ko_src
+AQARCH=${PWD}/arch/${GPU_TYPE}
+GCX00_COMPILE_ENV = ${BUILD_OPTIONS} ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}\
+	AQROOT=${PWD}  AQARCH=${PWD}/arch/${GPU_TYPE} KERNEL_DIR=${KERNEL_DIR}
 
-#
-# Linux build file for kernel HAL driver.
-#
-include $(srctree)/arch/arm/mach-dove/gc600_driver_dove/galcore_ko_src/config
-#include $(AQROOT)/config
+# from Kbuild
+include $(AQROOT)/config
 
 DRIVER_OUT_DIR = hal/driver
 KERNEL_DIR ?= $(TOOL_DIR)/kernel
@@ -58,34 +39,34 @@ HAL_KERNEL_DIR  := hal/kernel
 
 EXTRA_CFLAGS += -Werror
 
-OBJS := $(OS_KERNEL_DIR)/Driver.o \
-        $(OS_KERNEL_DIR)/Device.o \
-        $(OS_KERNEL_DIR)/Debug.o \
-        $(OS_KERNEL_DIR)/Kernel.o \
-        $(OS_KERNEL_DIR)/Os.o
+OBJS := $(OS_KERNEL_DIR)/gc_hal_kernel_debug.o \
+        $(OS_KERNEL_DIR)/gc_hal_kernel_device.o \
+        $(OS_KERNEL_DIR)/gc_hal_kernel_driver.o \
+        $(OS_KERNEL_DIR)/gc_hal_kernel_linux.o \
+        $(OS_KERNEL_DIR)/gc_hal_kernel_os.o
 
 ifeq ($(USE_3D_VG), 1)
 
-OBJS += $(HAL_KERNEL_DIR)/Command.o \
-        $(HAL_KERNEL_DIR)/Event.o \
-        $(HAL_KERNEL_DIR)/Heap.o \
-        $(HAL_KERNEL_DIR)/Kernel.o \
-        $(HAL_KERNEL_DIR)/Mmu.o \
-        $(HAL_KERNEL_DIR)/VidMem.o
+OBJS += $(HAL_KERNEL_DIR)/gc_hal_kernel.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_command.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_event.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_heap.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_mmu.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_video_memory.o
 
-OBJS += $(ARCH_KERNEL_DIR)/Hardware.o
+OBJS += $(ARCH_KERNEL_DIR)/gc_hal_kernel_hardware.o
 
 else
 
-OBJS += $(HAL_KERNEL_DIR)/Command.o \
-        $(HAL_KERNEL_DIR)/Heap.o \
-        $(HAL_KERNEL_DIR)/Kernel.o \
-        $(HAL_KERNEL_DIR)/Mmu.o \
-        $(HAL_KERNEL_DIR)/VidMem.o \
-        $(HAL_KERNEL_DIR)/Interrupt.o
+OBJS += $(HAL_KERNEL_DIR)/gc_hal_kernel.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_command.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_heap.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_interrupt.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_mmu.o \
+        $(HAL_KERNEL_DIR)/gc_hal_kernel_video_memory.o
 
-OBJS += $(ARCH_KERNEL_DIR)/Command.o \
-        $(ARCH_KERNEL_DIR)/Hardware.o
+OBJS += $(ARCH_KERNEL_DIR)/gc_hal_kernel_hardware.o \
+        $(ARCH_KERNEL_DIR)/gc_hal_kernel_hardware_command.o
 
 endif
 
@@ -111,7 +92,6 @@ else
 
 
 EXTRA_CFLAGS += -DLINUX -DDRIVER
-EXTRA_CFLAGS += -Werror
 
 ifeq ($(ENUM_WORKAROUND), 1)
 EXTRA_CFLAGS += -DENUM_WORKAROUND=1
@@ -166,9 +146,15 @@ EXTRA_CFLAGS += -DENABLE_GPU_CLOCK_BY_DRIVER=0
 endif
 
 ifeq ($(USE_NEW_LINUX_SIGNAL), 1)
-        EXTRA_CFLAGS += -DUSE_NEW_LINUX_SIGNAL=1
+EXTRA_CFLAGS += -DUSE_NEW_LINUX_SIGNAL=1
 else
-        EXTRA_CFLAGS += -DUSE_NEW_LINUX_SIGNAL=0
+EXTRA_CFLAGS += -DUSE_NEW_LINUX_SIGNAL=0
+endif
+
+ifeq ($(NO_USER_DIRECT_ACCESS_FROM_KERNEL), 1)
+EXTRA_CFLAGS += -DNO_USER_DIRECT_ACCESS_FROM_KERNEL=1
+else
+EXTRA_CFLAGS += -DNO_USER_DIRECT_ACCESS_FROM_KERNEL=0
 endif
 
 EXTRA_CFLAGS += -I$(AQROOT)/hal/inc
@@ -177,8 +163,18 @@ EXTRA_CFLAGS += -I$(AQARCH)/hal/kernel
 EXTRA_CFLAGS += -I$(AQARCH)/cmodel/inc
 EXTRA_CFLAGS += -I$(AQROOT)/hal/user
 
-galcore-objs = $(OBJS)
-
+galcore-objs  = $(OBJS)
 obj-$(CONFIG_DOVE_GC600) = galcore.o
 
 endif
+
+
+#all:
+#	make ${GCX00_COMPILE_ENV} -C ${PWD} -f Kbuild
+#	cp $(PWD)/hal/driver/galcore.ko .
+
+#clean:
+#	make ${GCX00_COMPILE_ENV} -C ${PWD} -f Kbuild clean
+
+
+
