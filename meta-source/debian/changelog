@@ -1,3 +1,10 @@
+linux-meta-ti-omap4 (2.6.35.903.6) UNRELEASED; urgency=low
+
+  * fix descriptions of the OMAP4 meta packages
+    - LP: #623297
+    
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 27 Sep 2010 10:22:27 +0100
+
 linux-meta-ti-omap4 (2.6.35.903.5) maverick; urgency=low
 
   * Remove 35->34 bodge from 2.6.35.901.2.
