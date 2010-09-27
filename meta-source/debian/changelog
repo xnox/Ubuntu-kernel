@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.32.410.2) maverick; urgency=low
+
+  * linux-mvl-dove 2.6.32-410.26
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Sun, 26 Sep 2010 23:06:52 -0700
+
 linux-meta-mvl-dove (2.6.32.409.1) maverick; urgency=low
 
   * linux-mvl-dove 2.6.32.409.25
