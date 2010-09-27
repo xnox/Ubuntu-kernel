@@ -336,3 +336,46 @@ def Publish(subdir):
 	cmd += ":" + rdir
 	os.system(cmd)
 
+#------------------------------------------------------------------------------
+# Extracts the patches from the work repositories and saves them into the save
+# directory. Optionally pushes to the personal repositories.
+#------------------------------------------------------------------------------
+def SavePatches(winame, push=False):
+	workdir = os.path.dirname(tracker_dir)
+
+	print "II: Extracting patches..."
+	for area in ListWorkareas():
+		areaprinted = False
+		patchdir = os.path.join(GetPatchDir(winame), area)
+		AssertDir(patchdir, verbose=False)
+		#--------------------------------------------------------------
+		# Remove the files currently in patchdir (not to gather dead
+		# entries).
+		#--------------------------------------------------------------
+		for file in os.listdir(patchdir):
+			if file.split(".")[-1] == "txt":
+				os.unlink(os.path.join(patchdir, file))
+		#--------------------------------------------------------------
+		# Export all patches since the branch was split off.
+		#--------------------------------------------------------------
+		os.chdir(os.path.join(workdir, area))
+		mergebase = GitMergeBase("ubuntu/master", winame)
+		if not mergebase:
+			print "EE: Failed to find a mergebase for", area
+			sys.exit(1)
+		cmd  = "git format-patch --suffix=.txt -o " + patchdir
+		cmd += " " + mergebase + ".." + winame
+		for line in Popen(cmd, shell=True, stdout=PIPE).stdout:
+			if not areaprinted:
+				print "II:", area
+				areaprinted = True
+			print "II:", os.path.basename(line.strip())
+		#--------------------------------------------------------------
+		# While we are there and there are patches, push the branch.
+		#--------------------------------------------------------------
+		if areaprinted and push:
+			print "II: Updating personal security repo."
+			cmd = "git push -q origin +" + winame
+			os.system(cmd)
+		os.chdir(workdir)
+
