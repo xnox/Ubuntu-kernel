@@ -104,7 +104,12 @@ case $SUITE in
 		;;
 	maverick)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc uboot-mkimage"
-		ADDPKGDEP="$ADDPKGDEP linux xorg-server"
+		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
+		case ${ARCH} in
+			i386|amd64)
+				ADDPKG="$ADDPKG gcc-arm-linux-gnueabi g++-arm-linux-gnueabi";
+			;;
+		esac
 		;;
 	*)
 		if [ "$SUITE" != "" ]; then
@@ -219,17 +224,6 @@ if [ "$CL_MIRROR" = "" ]
 then
 	write_mirror ${SUITE} ${ARCH} $TARGET/etc/apt/sources.list
 fi
-
-#
-# Some hacks to add the ARM cross compiler to the Maverick x86/amd64 chroots
-#
-case $SUITE in
-	maverick)
-		echo "deb http://people.canonical.com/~hrw/ubuntu-maverick-armel-cross-compilers/ ./" > $TARGET/etc/apt/sources.list.d/cross-compiler.list
-		ADDPKG="$ADDPKG gcc-arm-linux-gnueabi g++-arm-linux-gnueabi"
-		;;
-esac
-
 
 ${SCHROOTCMD} -- apt-get -y --force-yes update
 ${SCHROOTCMD} -- apt-get -u -y --force-yes dist-upgrade
