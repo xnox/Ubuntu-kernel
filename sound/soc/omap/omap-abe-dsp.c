@@ -247,7 +247,7 @@ void abe_dsp_disable_data_transfer(int port)
 	/* TODO: do not use abe global structure to assign pdev */
 	struct platform_device *pdev = abe->pdev;
 
-	abe_enable_data_transfer(port);
+	abe_disable_data_transfer(port);
 	pm_runtime_put_sync(&pdev->dev);
 }
 
