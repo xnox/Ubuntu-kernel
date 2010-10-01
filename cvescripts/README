@@ -24,6 +24,10 @@ directory or below.
 
 == Processing workitems ==
 
+* cve-item-list
+  Shows all work-items which are either waiting to be picked, in progress
+  or ready for release.
+
 * cve-item-start <CVE-####-####|BUG-#>
   This will assign the cve in the tracker, create branches with that name in
   all repos and create a link called current-item in the base directory.
