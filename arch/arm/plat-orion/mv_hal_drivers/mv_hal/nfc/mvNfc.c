@@ -286,6 +286,27 @@ MV_NFC_FLASH_INFO flashDeviceInfo[] = {
 		.id = 0x882C,	/* Device ID 0xDevice,Vendor */
 		.model = "Micron 64Gb 8bit",
 		.bb_page = 0,	/* Manufacturer Bad block marking page in block */
+	},
+
+	{			/* Samsung 2Gb */
+		.tADL = 100,	/* tADL, Address to write data delay */
+		.tCH = 5,	/* tCH, Enable signal hold time */
+		.tCS = 20,	/* tCS, Enable signal setup time */
+		.tWH = 10,	/* tWH, ND_nWE high duration */
+		.tWP = 12,	/* tWP, ND_nWE pulse time */
+		.tRH = 100,	/* tRH, ND_nRE high duration */
+		.tRP = 12,	/* tRP, ND_nRE pulse width */
+		.tR = 25000, 	/* tR = data transfer from cell to register */
+		.tWHR = 60,	/* tWHR, ND_nWE high to ND_nRE low delay for status read */
+		.tAR = 10,	/* tAR, ND_ALE low to ND_nRE low delay */
+		.tRHW = 100,	/* tRHW, ND_nRE high to ND_nWE low delay */
+		.pgPrBlk = 64,	/* Pages per block - detected */
+		.pgSz = 2048,	/* Page size */
+		.oobSz = 64,	/* Spare size */
+		.blkNum = 2048,	/* Number of blocks/sectors in the flash */
+		.id = 0xDAEC,	/* Device ID 0xDevice,Vendor */
+		.model = "Samsung 2Gb 8bit - new!",
+		.bb_page = 0,	/* Manufacturer Bad block marking page in block */
 	}
 
 	};
