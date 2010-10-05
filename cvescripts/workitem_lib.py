@@ -296,7 +296,7 @@ def WorkItemReleaseName():
 def WorkItemNameValid(name):
 	valid = 0
 	if name.startswith("CVE-"):
-		if re.match("CVE-[0-9]{4}-[0-9]{4}$", name):
+		if re.match("CVE-[0-9]{4}-[N0-9]{4}$", name):
 			valid = 1
 	elif name.startswith("BUG-"):
 		if re.match("BUG-[0-9]+$", name):
