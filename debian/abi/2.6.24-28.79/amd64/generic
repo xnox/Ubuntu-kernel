@@ -6693,6 +6693,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xbdae5ac6	skb_pull_rcsum
 EXPORT_SYMBOL_GPL vmlinux 0xbe5d6b23	rtc_device_register
 EXPORT_SYMBOL_GPL vmlinux 0xbe7ec58e	pci_unblock_user_cfg_access
 EXPORT_SYMBOL_GPL vmlinux 0xbf8334dd	debugfs_create_u16
+EXPORT_SYMBOL_GPL vmlinux 0xbffde8ec	compat_alloc_user_space
 EXPORT_SYMBOL_GPL vmlinux 0xc00ea93b	class_unregister
 EXPORT_SYMBOL_GPL vmlinux 0xc1334e32	pci_block_user_cfg_access
 EXPORT_SYMBOL_GPL vmlinux 0xc162caa6	unregister_pernet_device

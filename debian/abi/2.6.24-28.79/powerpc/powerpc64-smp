@@ -6981,6 +6981,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xbd4025be	inotify_find_watch
 EXPORT_SYMBOL_GPL vmlinux 0xbeca70b9	pmac_i2c_get_type
 EXPORT_SYMBOL_GPL vmlinux 0xbef9267b	pci_address_to_pio
 EXPORT_SYMBOL_GPL vmlinux 0xbf1cc04b	tty_termios_encode_baud_rate
+EXPORT_SYMBOL_GPL vmlinux 0xbffde8ec	compat_alloc_user_space
 EXPORT_SYMBOL_GPL vmlinux 0xc02cc8dc	sysfs_add_device_to_node
 EXPORT_SYMBOL_GPL vmlinux 0xc12148cc	devres_release_group
 EXPORT_SYMBOL_GPL vmlinux 0xc13eb6bf	ide_dma_intr

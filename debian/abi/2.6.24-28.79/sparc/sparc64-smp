@@ -5832,6 +5832,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xbddd209c	debugfs_create_blob
 EXPORT_SYMBOL_GPL vmlinux 0xbf8f8dc5	simple_attr_close
 EXPORT_SYMBOL_GPL vmlinux 0xbf94a97f	kobject_get_path
 EXPORT_SYMBOL_GPL vmlinux 0xbfded276	rt_mutex_trylock
+EXPORT_SYMBOL_GPL vmlinux 0xbffde8ec	compat_alloc_user_space
 EXPORT_SYMBOL_GPL vmlinux 0xc0053415	pci_restore_bars
 EXPORT_SYMBOL_GPL vmlinux 0xc00b78eb	nf_unregister_sysctl_table
 EXPORT_SYMBOL_GPL vmlinux 0xc0176f89	crypto_enqueue_request

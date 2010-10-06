@@ -4369,6 +4369,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xbf480f4b	inet_csk_route_req
 EXPORT_SYMBOL_GPL vmlinux 0xbf979917	do_sync_mapping_range
 EXPORT_SYMBOL_GPL vmlinux 0xbf9d7eb9	class_device_add
 EXPORT_SYMBOL_GPL vmlinux 0xbfd011cd	crypto_shoot_alg
+EXPORT_SYMBOL_GPL vmlinux 0xbffde8ec	compat_alloc_user_space
 EXPORT_SYMBOL_GPL vmlinux 0xc05b4366	crypto_unregister_alg
 EXPORT_SYMBOL_GPL vmlinux 0xc1031af3	vfs_removexattr
 EXPORT_SYMBOL_GPL vmlinux 0xc1f8052f	tty_ldisc_ref_wait

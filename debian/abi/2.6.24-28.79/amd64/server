@@ -6723,6 +6723,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xbe94a39a	class_device_add
 EXPORT_SYMBOL_GPL vmlinux 0xbf1aa731	put_driver
 EXPORT_SYMBOL_GPL vmlinux 0xbf2661bd	queue_delayed_work_on
 EXPORT_SYMBOL_GPL vmlinux 0xbf7cb21b	vfs_kern_mount
+EXPORT_SYMBOL_GPL vmlinux 0xbffde8ec	compat_alloc_user_space
 EXPORT_SYMBOL_GPL vmlinux 0xc04637fb	crypto_init_spawn
 EXPORT_SYMBOL_GPL vmlinux 0xc06b25c1	inet6_hash_connect
 EXPORT_SYMBOL_GPL vmlinux 0xc13c4ddf	transport_class_register

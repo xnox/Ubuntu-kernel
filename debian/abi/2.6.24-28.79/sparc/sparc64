@@ -5768,6 +5768,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xbdd1c040	led_trigger_event
 EXPORT_SYMBOL_GPL vmlinux 0xbeea7a2b	srcu_notifier_chain_unregister
 EXPORT_SYMBOL_GPL vmlinux 0xbf3a18a5	user_describe
 EXPORT_SYMBOL_GPL vmlinux 0xbfe9ca98	debugfs_create_symlink
+EXPORT_SYMBOL_GPL vmlinux 0xbffde8ec	compat_alloc_user_space
 EXPORT_SYMBOL_GPL vmlinux 0xc00ab338	tty_ldisc_get
 EXPORT_SYMBOL_GPL vmlinux 0xc1f53237	tty_prepare_flip_string
 EXPORT_SYMBOL_GPL vmlinux 0xc2a55bfe	scatterwalk_map
