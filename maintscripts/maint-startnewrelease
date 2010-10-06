@@ -77,32 +77,42 @@ def GetDateTime():
 	return Popen("date -R", shell=True, stdout=PIPE).stdout.readline()
 
 #------------------------------------------------------------------------------
-# Try to get the new ABI files (note that version is not incremented, yet).
+# Only need to take care of the ABI files for the linux-kernel package.
 #------------------------------------------------------------------------------
-for path in sys.path:
-	cmd = os.path.join(path, "maint-getabis")
-	if os.path.isfile(cmd):
-		break
-else:
-	print "EE: maint-getabis not found!"
-	sys.exit(1)
-if opts.tgthost:
-	cmd += " --host " + opts.tgthost
-if opts.dryrun:
-	cmd += " --dry-run"
-if os.system(cmd + " Ubuntu-" + version):
-	sys.exit(1)
+if srcpkg == "linux" or srcpkg.startswith("linux-source"):
+	#----------------------------------------------------------------------
+	# Try to get the new ABI files (note that version is not incremented,
+	# yet).
+	#----------------------------------------------------------------------
+	for path in sys.path:
+		cmd = os.path.join(path, "maint-getabis")
+		if os.path.isfile(cmd):
+			break
+	else:
+		print "EE: maint-getabis not found!"
+		sys.exit(1)
+	if opts.tgthost:
+		cmd += " --host " + opts.tgthost
+	if opts.dryrun:
+		cmd += " --dry-run"
+	if os.system(cmd + " Ubuntu-" + version):
+		sys.exit(1)
 
-#------------------------------------------------------------------------------
-# Remove the old ABI files (as the changelog is not modified, yet, this should
-# be the version number before. Then add the new abi directory to be committed.
-#------------------------------------------------------------------------------
-print "II: Removing old ABI files and adding the new ones"
-old_abi_dir = os.path.join(debian_dir, "abi", GetPackageInfo(prev=True)[1])
-if not opts.dryrun:
-	os.system("git rm --quiet -rf " + old_abi_dir)
-	os.system("rm -rf " + old_abi_dir)
-	os.system("git add " + os.path.join(debian_dir, "abi", version))
+	#----------------------------------------------------------------------
+	# Remove the old ABI files (as the changelog is not modified, yet,
+	# this should be the version number before. Then add the new abi
+	# directory to be committed.
+	#----------------------------------------------------------------------
+	print "II: Removing old ABI files and adding the new ones"
+	old_abi_dir = os.path.join(
+		debian_dir,
+		"abi",
+		GetPackageInfo(prev=True)[1]
+	)
+	if not opts.dryrun:
+		os.system("git rm --quiet -rf " + old_abi_dir)
+		os.system("rm -rf " + old_abi_dir)
+		os.system("git add " + os.path.join(debian_dir, "abi", version))
 
 #------------------------------------------------------------------------------
 # Next step is to create a new changelog with the new header first and the
