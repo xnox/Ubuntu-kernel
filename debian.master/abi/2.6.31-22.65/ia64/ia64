@@ -8606,6 +8606,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xbf74eb20	probe_kernel_write
 EXPORT_SYMBOL_GPL vmlinux 0xbf7c044d	usb_reset_device
 EXPORT_SYMBOL_GPL vmlinux 0xbfa1d364	crypto_shash_update
 EXPORT_SYMBOL_GPL vmlinux 0xbfb44fb3	debugfs_create_symlink
+EXPORT_SYMBOL_GPL vmlinux 0xbffde8ec	compat_alloc_user_space
 EXPORT_SYMBOL_GPL vmlinux 0xc0a8266d	driver_add_kobj
 EXPORT_SYMBOL_GPL vmlinux 0xc126e890	klist_del
 EXPORT_SYMBOL_GPL vmlinux 0xc1479d03	get_current_tty
