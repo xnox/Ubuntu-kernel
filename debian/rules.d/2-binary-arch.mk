@@ -67,6 +67,8 @@ endif
 	@touch $@
 
 # Install the finished build
+install-%: impkgdir = $(CURDIR)/debian/linux-backports-modules-input-$(release)-$(abinum)-$*
+install-%: immoddir = $(impkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: cwpkgdir = $(CURDIR)/debian/linux-backports-modules-wireless-$(release)-$(abinum)-$*
 install-%: cwblddir = $(builddir)/build-$*/compat-wireless-2.6
 install-%: cwmoddir = $(cwpkgdir)/lib/modules/$(release)-$(abinum)-$*
@@ -160,6 +162,25 @@ ifeq ($(do_net),true)
 	done
 endif
 
+ifeq ($(do_input),true)
+	#
+	# Build the input-drivers package.
+     	#
+	install -d $(immoddir)/updates/input
+	find $(builddir)/build-$*/input-drivers -type f -name '*.ko' |         \
+	while read f; do                                                       \
+		install -v $$f $(immoddir)/updates/input/;                     \
+		strip --strip-debug $(immoddir)/updates/input/$$(basename $$f);\
+	done
+
+	install -d $(impkgdir)/DEBIAN
+	for script in postinst postrm; do				       \
+	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'			       \
+	       debian/control-scripts/$$script > $(impkgdir)/DEBIAN/$$script;  \
+	  chmod 755 $(impkgdir)/DEBIAN/$$script;			       \
+	done
+endif
+
 	#
 	# The flavour specific headers package
 	#
@@ -190,6 +211,7 @@ package_list =
 package_list += linux-backports-modules-wireless-$(release)-$(abinum)-$*
 package_list += linux-backports-modules-alsa-$(release)-$(abinum)-$*
 package_list += linux-backports-modules-net-$(release)-$(abinum)-$*
+package_list += linux-backports-modules-input-$(release)-$(abinum)-$*
 
 binary-modules-%: install-%
 	dh_testdir
