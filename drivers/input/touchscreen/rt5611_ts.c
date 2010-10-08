@@ -38,7 +38,7 @@ static const int delay_table[] = {
 	667,  /*	0x11b=>32 */
 };
 
-static u16 delay_sel = (CB1_DEL_32F >> 7); /* default delay selection */
+static u16 delay_sel = (CB1_DEL_16F >> 7); /* default delay selection */
 
 static inline void poll_delay(int d)
 {
@@ -109,9 +109,9 @@ static int rt5611_ts_poll_coord(struct rt5611_ts *rt, struct rt5611_ts_data *dat
 	data->x = MAX_ADC_VAL;
 	data->y = MAX_ADC_VAL;
 	data->p = MAX_ADC_VAL;
+
+	poll_delay(delay_sel);
 	for (i = 0; i < MAX_CONVERSIONS; i++) {
-		/*wait some delay- delay for conversion */
-		poll_delay(delay_sel);
 		val = rt5611_ts_reg_read(rt, RT_TP_INDICATION);
 		if (!(val & CB3_PD_STATUS))
 			return RC_PENUP;
@@ -125,12 +125,19 @@ static int rt5611_ts_poll_coord(struct rt5611_ts *rt, struct rt5611_ts_data *dat
 		} else if (!FoundPSample && ((val&CB3_ADCSRC_MASK) == CB3_ADCSRC_PRE)) {
 			data->p = val & CB3_ADC_DATA;  /* get Presure sample */
 			FoundPSample = 1;
+		} else if ((val&CB3_ADCSRC_MASK) == CB3_ADCSRC_NON) {
+			//when busy, using a smaller delay
+			udelay(100);
+			continue;
 		}
+			
 
 		if (FoundXSample && FoundYSample && FoundPSample)
 			break;
+		/*wait some delay- delay for conversion */
+		poll_delay(delay_sel);
 	}
-	if (!(FoundXSample && FoundYSample && FoundPSample))
+	if (i == MAX_CONVERSIONS)
 		return RC_AGAIN;
 	else
 		return RC_VALID;
@@ -247,6 +254,8 @@ static void rt5611_ts_enable(struct rt5611_ts *rt, int enable)
 
 		/* Enable GPIO wakeup control */
 		rt5611_ts_reg_write_mask(rt, RT_MISC_CTRL, GPIO_WAKEUP_CTRL, GPIO_WAKEUP_CTRL);	
+
+		udelay(300);
 	}else{
 		rt5611_ts_reg_write_mask(rt, RT_PWR_MANAG_ADD1, 0, PWR_IP_ENA);
 		rt5611_ts_reg_write_mask(rt, RT_PWR_MANAG_ADD2, 0, PWR_TP_ADC);
@@ -260,7 +269,7 @@ static int rt5611_ts_read_samples(struct rt5611_ts *rt)
 {
 	struct rt5611_ts_data data;
 	int rc = 0;
-	static u16 X0 = 0,Y0 = 0;
+
 	RT5611_TS_DEBUG("rt5611_ts_read_samples\n");
 
 	mutex_lock(&rt->codec->mutex);
@@ -272,6 +281,7 @@ static int rt5611_ts_read_samples(struct rt5611_ts *rt)
 		if (rt->pen_is_down) {
 			rt->pen_is_down = 0;
 			RT5611_TS_DEBUG("rt5611_ts: pen up\n");
+			printk("pen up\n");
 			input_report_abs(rt->input_dev, ABS_PRESSURE, 0);
 			input_report_key(rt->input_dev, BTN_TOUCH, 0);
 			input_sync(rt->input_dev);
@@ -299,22 +309,15 @@ static int rt5611_ts_read_samples(struct rt5611_ts *rt)
 #ifdef SWAP_Y
 		data.y = 4095 - data.y;
 #endif
-		if(X0 != 0 && Y0 != 0)
-		{
-			if (ABS(data.x - X0) / 100 > 0 || ABS(data.y - Y0)/ 100 > 0) {
-				RT5611_TS_DEBUG("Ignore this sampling");
-			} else {
-				input_report_abs(rt->input_dev, ABS_X, data.x);
-				input_report_abs(rt->input_dev, ABS_Y, data.y);
-				input_report_abs(rt->input_dev, ABS_PRESSURE, data.p);
-				input_report_key(rt->input_dev, BTN_TOUCH, 1);
-				input_sync(rt->input_dev);
-				RT5611_TS_DEBUG("pen down: x=%d, y=%d, p=%d\n",
-						data.x, data.y, data.p);
-			}
-		}
-		X0 = data.x;
-		Y0 = data.y;
+		
+		input_report_abs(rt->input_dev, ABS_X, data.x);
+		input_report_abs(rt->input_dev, ABS_Y, data.y);
+		input_report_abs(rt->input_dev, ABS_PRESSURE, data.p);
+		input_report_key(rt->input_dev, BTN_TOUCH, 1);
+		input_sync(rt->input_dev);
+		RT5611_TS_DEBUG("pen down: x=%d, y=%d, p=%d\n",
+				data.x, data.y, data.p);
+
 		rt->pen_is_down = 1;
 		rt->ts_reader_interval = rt->ts_reader_min_interval;
 	}
