@@ -459,14 +459,22 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 		return -EBADF;
 	obj_priv = to_intel_bo(obj);
 
-	/* Bounds check source.
-	 *
-	 * XXX: This could use review for overflow issues...
-	 */
-	if (args->offset > obj->size || args->size > obj->size ||
-	    args->offset + args->size > obj->size) {
+	/* Bounds check source.  */
+	if (args->offset > obj->size || args->size > obj->size - args->offset) {
 		drm_gem_object_unreference_unlocked(obj);
 		return -EINVAL;
+	}
+
+	if (!access_ok(VERIFY_WRITE,
+		       (char __user *)(uintptr_t)args->data_ptr,
+		       args->size)) {
+		drm_gem_object_unreference_unlocked(obj);
+		return -EFAULT;
+	}
+
+	if (args->size == 0) {
+		drm_gem_object_unreference_unlocked(obj);
+		return 0;
 	}
 
 	if (i915_gem_object_needs_bit17_swizzle(obj)) {
@@ -479,7 +487,6 @@ i915_gem_pread_ioctl(struct drm_device *dev, void *data,
 	}
 
 	drm_gem_object_unreference_unlocked(obj);
-
 	return ret;
 }
 
@@ -568,8 +575,6 @@ i915_gem_gtt_pwrite_fast(struct drm_device *dev, struct drm_gem_object *obj,
 
 	user_data = (char __user *) (uintptr_t) args->data_ptr;
 	remain = args->size;
-	if (!access_ok(VERIFY_READ, user_data, remain))
-		return -EFAULT;
 
 
 	mutex_lock(&dev->struct_mutex);
@@ -915,21 +920,29 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 	struct drm_i915_gem_pwrite *args = data;
 	struct drm_gem_object *obj;
 	struct drm_i915_gem_object *obj_priv;
-	int ret = 0;
+	int ret;
 
 	obj = drm_gem_object_lookup(dev, file_priv, args->handle);
 	if (obj == NULL)
 		return -EBADF;
 	obj_priv = to_intel_bo(obj);
 
-	/* Bounds check destination.
-	 *
-	 * XXX: This could use review for overflow issues...
-	 */
-	if (args->offset > obj->size || args->size > obj->size ||
-	    args->offset + args->size > obj->size) {
+	/* Bounds check destination. */
+	if (args->offset > obj->size || args->size > obj->size - args->offset) {
 		drm_gem_object_unreference_unlocked(obj);
 		return -EINVAL;
+	}
+
+	if (args->size == 0) {
+		drm_gem_object_unreference_unlocked(obj);
+		return 0;
+	}
+
+	if (!access_ok(VERIFY_READ,
+		       (char __user *)(uintptr_t)args->data_ptr,
+		       args->size)) {
+		drm_gem_object_unreference_unlocked(obj);
+		return -EFAULT;
 	}
 
 	/* We can only do the GTT pwrite on untiled buffers, as otherwise
@@ -964,7 +977,6 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
 #endif
 
 	drm_gem_object_unreference_unlocked(obj);
-
 	return ret;
 }
 

@@ -686,6 +686,24 @@ static int nouveau_remove_conflicting_drivers(struct drm_device *dev)
 	return 0;
 }
 
+static void nouveau_apply_noaccel_quirks (struct drm_device *dev)
+{
+	struct drm_nouveau_private *dev_priv = dev->dev_private;
+	if (nouveau_noaccel == -1) {
+		/* If not specified, noaccel should default off */
+		nouveau_noaccel = 0;
+
+		/* MacBook Pro laptops with 9600GT cards hang with acceleration */
+		/* See https://bugs.launchpad.net/bugs/546393 */
+		if ((dev->pdev->device == 0x0647) &&
+		    (dev->pdev->subsystem_vendor == 0x106b)) {
+			nouveau_noaccel = 1;
+			NV_INFO(dev, "Detected MacBook Pro 9600GT chip. "
+				 "Disabling acceleration\n");
+		}
+	}
+}
+
 int nouveau_load(struct drm_device *dev, unsigned long flags)
 {
 	struct drm_nouveau_private *dev_priv;
@@ -810,6 +828,9 @@ int nouveau_load(struct drm_device *dev, unsigned long flags)
 		dev_priv->flags |= NV_NFORCE;
 	else if (dev->pci_device == 0x01f0)
 		dev_priv->flags |= NV_NFORCE2;
+
+	/* Apply noaccel quirks */
+	nouveau_apply_noaccel_quirks(dev);
 
 	/* For kernel modesetting, init card now and bring up fbcon */
 	if (drm_core_check_feature(dev, DRIVER_MODESET)) {

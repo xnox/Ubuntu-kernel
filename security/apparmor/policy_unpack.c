@@ -576,6 +576,17 @@ static struct aa_profile *unpack_profile(struct aa_ext *e)
 	size = unpack_array(e, "net_allowed_af");
 	if (size) {
 		for (i = 0; i < size; i++) {
+			/* discard extraneous rules that this kernel will
+			 * never request
+			 */
+			if (size > AF_MAX) {
+				u16 tmp;
+				if (!unpack_u16(e, &tmp, NULL) ||
+				    !unpack_u16(e, &tmp, NULL) ||
+				    !unpack_u16(e, &tmp, NULL))
+					goto fail;
+				continue;
+			}
 			if (!unpack_u16(e, &profile->net.allow[i], NULL))
 				goto fail;
 			if (!unpack_u16(e, &profile->net.audit[i], NULL))
