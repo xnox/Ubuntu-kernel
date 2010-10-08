@@ -79,7 +79,7 @@ def GetDateTime():
 #------------------------------------------------------------------------------
 # Only need to take care of the ABI files for the linux-kernel package.
 #------------------------------------------------------------------------------
-if srcpkg == "linux" or srcpkg.startswith("linux-source"):
+if os.path.isdir(os.path.join(debian_dir, "abi")):
 	#----------------------------------------------------------------------
 	# Try to get the new ABI files (note that version is not incremented,
 	# yet).
