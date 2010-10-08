@@ -310,8 +310,16 @@ static struct omap_dss_device igep2_dvi_device = {
 	.platform_disable	= igep2_disable_dvi,
 };
 
+static struct omap_dss_device igep2_tv_device = {
+	.name			= "tv",
+	.driver_name		= "venc",
+	.type			= OMAP_DISPLAY_TYPE_VENC,
+	.phy.venc.type		= OMAP_DSS_VENC_TYPE_SVIDEO,
+};
+
 static struct omap_dss_device *igep2_dss_devices[] = {
-	&igep2_dvi_device
+	&igep2_dvi_device,
+	&igep2_tv_device,
 };
 
 static struct omap_dss_board_info igep2_dss_data = {
@@ -328,9 +336,29 @@ static struct platform_device igep2_dss_device = {
 	},
 };
 
-static struct regulator_consumer_supply igep2_vpll2_supply = {
-	.supply	= "vdds_dsi",
-	.dev	= &igep2_dss_device.dev,
+static struct regulator_consumer_supply igep2_vdda_dac_supply = {
+	.supply = "vdda_dac",
+	.dev    = &igep2_dss_device.dev,
+};
+
+/* VDAC for DSS driving S-Video (8 mA unloaded, max 65 mA) */
+static struct regulator_init_data igep2_vdac = {
+	.constraints = {
+		.min_uV			= 1800000,
+		.max_uV			= 1800000,
+		.valid_modes_mask	= REGULATOR_MODE_NORMAL
+					| REGULATOR_MODE_STANDBY,
+		.valid_ops_mask		= REGULATOR_CHANGE_MODE
+					| REGULATOR_CHANGE_STATUS,
+	},
+	.num_consumer_supplies	= 1,
+	.consumer_supplies	= &igep2_vdda_dac_supply,
+};
+
+/* VPLL2 for digital video outputs */
+static struct regulator_consumer_supply igep2_vdds_supplies[] = {
+	REGULATOR_SUPPLY("vdds_sdi", "omapdss"),
+	REGULATOR_SUPPLY("vdds_dsi", "omapdss"),
 };
 
 static struct regulator_init_data igep2_vpll2 = {
@@ -344,8 +372,8 @@ static struct regulator_init_data igep2_vpll2 = {
 		.valid_ops_mask		= REGULATOR_CHANGE_MODE
 					| REGULATOR_CHANGE_STATUS,
 	},
-	.num_consumer_supplies	= 1,
-	.consumer_supplies	= &igep2_vpll2_supply,
+	.num_consumer_supplies	= ARRAY_SIZE(igep2_vdds_supplies),
+	.consumer_supplies	= igep2_vdds_supplies,
 };
 
 static void __init igep2_display_init(void)
@@ -429,7 +457,7 @@ static struct twl4030_platform_data igep2_twldata = {
 	.vmmc1          = &igep2_vmmc1,
 	.vmmc2		= &igep2_vmmc2,
 	.vpll2		= &igep2_vpll2,
-
+	.vdac		= &igep2_vdac,
 };
 
 static struct i2c_board_info __initdata igep2_i2c_boardinfo[] = {
