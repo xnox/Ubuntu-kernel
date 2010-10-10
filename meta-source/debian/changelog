@@ -1,3 +1,10 @@
+linux-meta-lts-backport-maverick (2.6.35.22.34) lucid-proposed; urgency=low
+
+  * First official Lucid upload for LTS backports.
+    https://wiki.ubuntu.com/KernelTeam/Specs/KernelMaverickNewKernelOnLTS
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Sun, 10 Oct 2010 04:37:49 -0600
+
 linux-meta-lts-backport-maverick (2.6.35.22.24) lucid; urgency=low
 
   * linux-maverick 2.6.35-22.33
