@@ -281,7 +281,6 @@ static int rt5611_ts_read_samples(struct rt5611_ts *rt)
 		if (rt->pen_is_down) {
 			rt->pen_is_down = 0;
 			RT5611_TS_DEBUG("rt5611_ts: pen up\n");
-			printk("pen up\n");
 			input_report_abs(rt->input_dev, ABS_PRESSURE, 0);
 			input_report_key(rt->input_dev, BTN_TOUCH, 0);
 			input_sync(rt->input_dev);
