@@ -42,9 +42,9 @@
 /* public */
 #define UIO_VMETA_NAME		"ap510-vmeta"
 #define UIO_VMETA_BUS_IRQ_NAME  UIO_VMETA_NAME"-bus"
-#define UIO_VMETA_VERSION	"build-003"
+#define UIO_VMETA_VERSION	"build-004"
 
-#define VMETA_DEBUG 1
+#define VMETA_DEBUG 0
 
 #if VMETA_DEBUG
 #define vmeta_print printk
@@ -69,6 +69,7 @@ struct vmeta_instance {
 	int power_status;//0-off 1-on
 	int clk_status;//0-off 1-400MHz 2-500MHz
 	struct semaphore *sema;
+	struct semaphore *priv_sema;
 	wait_queue_head_t 	wait;
 };
 
@@ -93,8 +94,7 @@ static void set_dvfm_constraint(struct vmeta_instance* vi)
 		dvfm_disable_op_name("D0CS", dvfm_lock.dev_idx);
 		dvfm_disable_op_name("D1", dvfm_lock.dev_idx);
 		dvfm_disable_op_name("D2", dvfm_lock.dev_idx);
-		if (cpu_is_pxa935() || cpu_is_pxa950() || cpu_is_pxa955())
-			dvfm_disable_op_name("CG", dvfm_lock.dev_idx);
+		dvfm_disable_op_name("CG", dvfm_lock.dev_idx);
 #endif
 		if(ret) {
 			printk(KERN_ERR "vmeta dvfm disable error with %d\n", ret);
@@ -125,8 +125,7 @@ static void __unset_dvfm_constraint(struct vmeta_instance* vi)
 		dvfm_enable_op_name("D0CS", dvfm_lock.dev_idx);
 		dvfm_enable_op_name("D1", dvfm_lock.dev_idx);
 		dvfm_enable_op_name("D2", dvfm_lock.dev_idx);
-		if (cpu_is_pxa935() || cpu_is_pxa950() || cpu_is_pxa955())
-			dvfm_enable_op_name("CG", dvfm_lock.dev_idx);
+		dvfm_enable_op_name("CG", dvfm_lock.dev_idx);
 #endif
 		vi->power_constraint = 0;
 	}
@@ -240,6 +239,7 @@ static struct notifier_block vmeta_pm_notifier = {
 void vmeta_lock_init(struct vmeta_instance *vi)
 {
 	sema_init(vi->sema, 1);
+	sema_init(vi->priv_sema, 1);
 }
 
 
@@ -259,6 +259,29 @@ int vmeta_unlock(struct vmeta_instance *vi)
 		return 0;
 	}
 	else if(vi->sema->count == 1) {
+		return 0;
+	}
+	else {
+		return -1;
+	}
+}
+
+int vmeta_priv_lock(unsigned long ms, struct vmeta_instance *vi)
+{
+	int ret;
+
+	ret = down_timeout(vi->priv_sema,msecs_to_jiffies(ms));
+
+	return ret;
+}
+
+int vmeta_priv_unlock(struct vmeta_instance *vi)
+{
+	if(vi->priv_sema->count == 0) {
+		up(vi->priv_sema);
+		return 0;
+	}
+	else if(vi->priv_sema->count == 1) {
 		return 0;
 	}
 	else {
@@ -564,6 +587,12 @@ static int vmeta_ioctl(struct uio_info *info, unsigned int cmd, unsigned long ar
 		case VMETA_CMD_UNLOCK:
 			ret = vmeta_unlock(priv);
 			break;
+		case VMETA_CMD_PRIV_LOCK:
+			ret = vmeta_priv_lock(arg,priv);
+			break;
+		case VMETA_CMD_PRIV_UNLOCK:
+			ret = vmeta_priv_unlock(priv);
+			break;
 		case VMETA_CMD_SUSPEND_CHECK: {
 			int vmeta_suspend_check = 0;
 			if(vmeta_pm_suspend_available.counter)
@@ -640,7 +669,9 @@ static int vmeta_probe(struct platform_device *pdev)
 	vmeta_priv_vi = vi;
 
 	vi->sema = (struct semaphore *)kzalloc(sizeof(struct semaphore),GFP_KERNEL);
-	if (vi->sema == NULL) {
+	vi->priv_sema = (struct semaphore *)kzalloc(sizeof(struct semaphore),GFP_KERNEL);
+
+	if (vi->sema == NULL || vi->priv_sema == NULL) {
 		printk(KERN_ERR "vmeta->sema: out of memory\n");
 		return -ENOMEM;
 	}
@@ -785,6 +816,7 @@ out_free:
 	if (!IS_ERR(vi->axi_clk))
 		clk_put(vi->axi_clk);
 	kfree(vi->sema);
+	kfree(vi->priv_sema);
 	kfree(vi);
 
 	return ret;
@@ -818,6 +850,7 @@ static int vmeta_remove(struct platform_device *pdev)
 
 	iounmap(vi->reg_base);
 	kfree(vi->sema);
+	kfree(vi->priv_sema);
 	kfree(vi);
 
 	vmeta_priv_vi = NULL;
