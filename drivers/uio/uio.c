@@ -523,13 +523,18 @@ static unsigned int uio_poll(struct file *filep, poll_table *wait)
 {
 	struct uio_listener *listener = filep->private_data;
 	struct uio_device *idev = listener->dev;
+	s32 event_count;
 
 	if (idev->info->irq == UIO_IRQ_NONE)
 		return -EIO;
 
 	poll_wait(filep, &idev->wait, wait);
-	if (listener->event_count != atomic_read(&idev->event))
+
+	event_count = atomic_read(&idev->event);
+	if (listener->event_count != event_count){
+		listener->event_count = event_count;
 		return POLLIN | POLLRDNORM;
+	}
 	return 0;
 }
 
