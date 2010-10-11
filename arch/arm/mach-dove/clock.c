@@ -1025,7 +1025,7 @@ static struct clk_lookup dove_clocks[] = {
 	INIT_CK(NULL, "AXICLK", &clk_axi),
 	INIT_CK(NULL, "LCDCLK", &clk_lcd),
 	INIT_CK(NULL, "accurate_LCDCLK", &accrt_clk_lcd),
-	INIT_CK(NULL, "vmeta", &clk_vpu),
+	INIT_CK(NULL, "VMETA_CLK", &clk_vpu),
 	INIT_CK(NULL, "ssp", &clk_ssp),
 };
 
