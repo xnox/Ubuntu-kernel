@@ -65,7 +65,7 @@ static unsigned int dove_gpu_memory_start;
 
 
 /* used for memory allocation for the VMETA video engine */
-#ifdef CONFIG_UIO_DOVE_VMETA
+#ifdef CONFIG_UIO_VMETA
 #define UIO_DOVE_VMETA_MEM_SIZE (CONFIG_UIO_DOVE_VMETA_MEM_SIZE << 20)
 #else
 #define UIO_DOVE_VMETA_MEM_SIZE 0
@@ -1291,12 +1291,23 @@ static struct resource dove_vmeta_resources[] = {
 		.start  = IRQ_DOVE_VMETA_DMA1,
 		.end    = IRQ_DOVE_VMETA_DMA1,
 		.flags  = IORESOURCE_IRQ,
-	}
+	},
+};
+
+static struct platform_device dove_vmeta = {
+	.name		= "ap510-vmeta",
+	.id		= 0,
+	.dev		= {
+		.dma_mask		= DMA_BIT_MASK(32),
+		.coherent_dma_mask	= DMA_BIT_MASK(32),
+	},
+	.resource	= dove_vmeta_resources,
+	.num_resources	= ARRAY_SIZE(dove_vmeta_resources),
 };
 
 void __init dove_vmeta_init(void)
 {
-#ifdef CONFIG_UIO_DOVE_VMETA
+#ifdef CONFIG_UIO_VMETA
 	if (vmeta_size == 0) {
 		printk("memory allocation for VMETA failed\n");
 		return;
@@ -1305,9 +1316,7 @@ void __init dove_vmeta_init(void)
 	dove_vmeta_resources[1].start = dove_vmeta_memory_start;
 	dove_vmeta_resources[1].end = dove_vmeta_memory_start + vmeta_size - 1;
 
-	platform_device_register_simple("dove_vmeta_uio", 0,
-			dove_vmeta_resources,
-			ARRAY_SIZE(dove_vmeta_resources));
+	platform_device_register(&dove_vmeta);
 #endif
 }
 
