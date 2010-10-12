@@ -15,13 +15,3 @@ Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-server [amd64], linu
 Description: Linux kernel image on Server Equipment.
  This package will always depend on the latest kernel image available
  for Server Equipment.
-
-Package: linux-server-lts-backport-maverick
-Architecture: amd64 i386
-Section: metapackages
-Priority: optional
-Depends: ${misc:Depends}, linux-image-server-lts-backport-maverick (= ${binary:Version})
-Description: Complete Linux kernel on Server Equipment.
- This package will always depend on the latest complete Linux kernel available
- for Server Equipment.
-

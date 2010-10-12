@@ -15,13 +15,3 @@ Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-generic-pae, linux-f
 Description: Generic Linux kernel image
  This package will always depend on the latest generic PAE kernel image
  available.
-
-Package: linux-generic-pae-lts-backport-maverick
-Architecture: i386
-Section: metapackages
-Priority: optional
-Depends: ${misc:Depends}, linux-image-generic-pae-lts-backport-maverick (= ${binary:Version})
-Description: Complete Generic Linux kernel
- This package will always depend on the latest generic PAE Linux kernel
- available.
-

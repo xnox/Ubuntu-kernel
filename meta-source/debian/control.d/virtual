@@ -15,12 +15,3 @@ Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-virtual, linux-firmw
 Description: Linux kernel image for virtual machines
  This package will always depend on the latest kernel image available
  for virtual machines.
-
-Package: linux-virtual-lts-backport-maverick
-Architecture: i386 amd64
-Section: metapackages
-Priority: optional
-Depends: ${misc:Depends}, linux-image-virtual-lts-backport-maverick (= ${binary:Version})
-Description: Complete Linux kernel for virtual machines
- This package will always depend on the latest complete Linux kernel available
- for virtual machines.
