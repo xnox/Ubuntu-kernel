@@ -1218,6 +1218,9 @@ static MV_U32 mvPmuGetPllFreq(void)
 {
 	MV_U32 n, m, k, reg;
 	
+	reg = MV_REG_READ(MPP_SAMPLE_AT_RESET_REG1);
+	if (reg & (1 << 13)) /* if SaR45 is set, pll is overriden*/
+	    return 2000;
 	/* Get current DDR frequency to be configured in resume */
 	reg = MV_REG_READ(PMU_PLL_CTRL_0_REG);
 	n = ((reg & PMU_PLL_N_DIVIDER_MASK) >> PMU_PLL_N_DIVIDER_OFFS) + 1;
