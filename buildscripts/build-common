@@ -10,12 +10,16 @@ function Help()
 	echo "        --lum"
 	echo " "
 	echo "        -d | --dist"
+	echo "                      The 'distribution' that is to be built. This actually is "
+	echo "                      usually the ubuntu release name. It corresponds to what  "
+	echo "                      is defined in ~/.ubuild/distros. "
 	echo " "
 	echo "        -t | --target"
 	echo " "
 	echo "        -v | --verbose"
 	echo " "
 	echo "        -h | --help"
+	echo "                      Prints out the messages that you are looking at right now."
 	echo " "
 
 	ScriptSpecificHelp

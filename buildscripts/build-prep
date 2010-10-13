@@ -10,6 +10,10 @@ function ScriptSpecificHelp()
 	echo "                      The specified git repository branch is used to prepare"
 	echo "                      for building rather than the default branch (master)."
 	echo " "
+	
+	echo "    Examples:"
+	echo "        $(basename $0) --dist jaunty builder"
+	echo "        $(basename $0) --dist lucid --branch ec2 builder-amd64 builder-i386"
 }
 
 CDIR=$(cd $(dirname $0); pwd)
