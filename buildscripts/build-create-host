@@ -1,16 +1,19 @@
 #!/bin/bash
-CMDNAME=$(basename $0)
+function ScriptUsage()
+{
+	echo "    Usage: $(basename $0) [<options>] <system> [...]"
+}
+
+function ScriptSpecificHelp()
+{
+	echo
+}
 
 . $(dirname $0)/build-common
 
-function PrintUsage()
-{
-	echo "Usage: ${CMDNAME} "'<system>'
-}
-
 HOST="$1"
 if [ "${HOST}" = "" ]; then
-	PrintUsage
+	ScriptUsage
 	exit 1
 fi
 

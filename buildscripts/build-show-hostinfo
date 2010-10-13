@@ -1,8 +1,18 @@
 #!/bin/bash
+function ScriptUsage()
+{
+	echo "    Usage: $(basename $0) [<options>] <system> [...]"
+}
+
+function ScriptSpecificHelp()
+{
+	echo
+}
+
 . $(dirname $0)/build-common
 
 if [ "$1" = "" ]; then
-	echo "Usage: $(basename $0) <system>"
+	ScriptUsage
 	exit
 fi
 

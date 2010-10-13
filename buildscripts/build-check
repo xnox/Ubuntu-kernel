@@ -1,4 +1,14 @@
 #!/bin/bash
+function ScriptUsage()
+{
+	echo "    Usage: $(basename $0) [<options>] <system> [...]"
+}
+
+function ScriptSpecificHelp()
+{
+	echo
+}
+
 
 export BUILD_DIST_PRINTED=1
 . $(dirname $0)/build-common

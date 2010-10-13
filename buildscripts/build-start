@@ -1,9 +1,19 @@
 #!/bin/bash
+function ScriptUsage()
+{
+	echo "    Usage: $(basename $0) [<options>] <system|group> [...]"
+}
+
+function ScriptSpecificHelp()
+{
+	echo
+}
+
 CMDDIR=$(dirname $0)
 . $CMDDIR/build-common
 
 if [ "$1" = "" ]; then
-	echo "Usage: $0 <system|group> [...]"
+	ScriptUsage
 	exit 1
 fi
 

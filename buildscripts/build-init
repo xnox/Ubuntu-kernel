@@ -1,4 +1,14 @@
 #!/bin/bash
+function ScriptUsage()
+{
+	echo "    Usage: $(basename $0) [<options>] <system> [...]"
+}
+
+function ScriptSpecificHelp()
+{
+	echo
+}
+
 if [ "${UBUILDDIR}" = "" ]; then
 	CONFDIR="${HOME}/.ubuild"
 else

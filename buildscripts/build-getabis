@@ -1,4 +1,17 @@
 #!/bin/bash
+function ScriptUsage()
+{
+	echo "    Usage: $(basename $0) [<options>] <system> [...]"
+}
+
+function ScriptSpecificHelp()
+{
+	echo "        -b | --branch <branch>"
+	echo "                      The specified git repository branch is used "
+	echo "                      rather than the default branch (master)."
+	echo " "
+}
+
 . $(dirname $0)/build-common
 
 BRANCH="master"

@@ -1,4 +1,14 @@
 #!/bin/bash
+function ScriptUsage()
+{
+	echo "    Usage: $(basename $0) [<options>] <system> [...]"
+}
+
+function ScriptSpecificHelp()
+{
+	echo
+}
+
 . $(dirname $0)/build-common
 
 ARGS=""
@@ -7,7 +17,7 @@ if $VERBOSE; then
 fi
 
 if [ "$1" = "" ]; then
-	echo "Usage: $0 [-v] <system> [systems ...]"
+	ScriptUsage
 	exit 1
 fi
 

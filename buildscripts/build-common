@@ -1,3 +1,26 @@
+function Help()
+{
+	ScriptUsage
+
+	echo " "
+	echo "    Where <options> are:"
+	echo " "
+	echo "        -a | --auto"
+	echo " "
+	echo "        --lum"
+	echo " "
+	echo "        -d | --dist"
+	echo " "
+	echo "        -t | --target"
+	echo " "
+	echo "        -v | --verbose"
+	echo " "
+	echo "        -h | --help"
+	echo " "
+
+	ScriptSpecificHelp
+}
+
 if [ "${DIST}" = "" ]; then
 	export DIST="hardy"
 fi
@@ -41,6 +64,10 @@ while [ $# -gt 0 ]; do
 		-v|--verbose)
 			VERBOSE=true
 			;;
+                -h|--help)
+			Help
+			exit 0
+		        ;;
 		*)
 			break
 			;;

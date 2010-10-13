@@ -1,4 +1,17 @@
 #!/bin/bash
+function ScriptUsage()
+{
+	echo "    Usage: $(basename $0) [<options>] <system|group> [...]"
+}
+
+function ScriptSpecificHelp()
+{
+	echo "        -b | --branch <branch>"
+	echo "                      The specified git repository branch is used to prepare"
+	echo "                      for building rather than the default branch (master)."
+	echo " "
+}
+
 CDIR=$(cd $(dirname $0); pwd)
 . $CDIR/build-common
 
@@ -22,7 +35,7 @@ while [ $# -gt 0 ]; do
 done
 
 if [ "${TARGETS}" = "" ]; then
-	echo "Usage: $(basename $0) [<options>] <system|group> [...]"
+	ScriptUsage
 	exit 1
 fi
 
