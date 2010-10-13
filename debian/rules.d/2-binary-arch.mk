@@ -123,7 +123,7 @@ ifeq ($(do_compat_wireless),true)
 	install --mode=0644 $(cwblddir)/udev/ubuntu/50-compat_firmware_$(abinum).rules $(cwpkgdir)/lib/udev/rules.d
 endif
 
-ifeq ($(do_also),true)
+ifeq ($(do_alsa),true)
 	#
 	# Build the ALSA snapshot packages.
 	#
@@ -167,7 +167,7 @@ endif
 ifeq ($(do_compat_wireless),true)
 	tar -C $(builddir)/build-$*/compat-wireless-2.6 -chf - include | tar -C $(hdrdir) -xf -
 endif
-ifeq ($(do_also),true)
+ifeq ($(do_alsa),true)
 	for i in asm linux media sound; do \
 		tar -C $(builddir)/build-$*/alsa-driver/include -chf - $$i | tar -C $(hdrdir)/include -xf -; \
 	done
