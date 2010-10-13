@@ -7,7 +7,7 @@ Build-Depends: dpkg (>= 1.13.19), debhelper (>= 5), gawk
 Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-karmic-meta.git
 
 Package: linux
-Architecture: i386 amd64 lpia
+Architecture: i386 amd64 
 Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-image (= ${binary:Version})
@@ -25,7 +25,7 @@ Description: Linux kernel source with Ubuntu patches
  available. The Ubuntu patches have been applied.
 
 Package: linux-image
-Architecture: i386 amd64 lpia
+Architecture: i386 amd64 
 Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-image-${generic-depends} (= ${binary:Version})

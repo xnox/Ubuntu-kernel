@@ -1,6 +1,7 @@
 linux-meta (2.6.36.0.1) UNRELEASED; urgency=low
 
   * Initial Natty kernel version and ABI (2.6.36-0)
+  * drop last vestiges of lpia architecture
 
  -- Andy Whitcroft <apw@canonical.com>  Wed, 13 Oct 2010 11:22:15 +0100
 

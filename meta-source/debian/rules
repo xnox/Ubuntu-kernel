@@ -16,7 +16,6 @@ KERNEL_ABI_VERSION=$(KERNEL_VERSION)-$(KERNEL_ABI)
 
 GENERIC_i386=generic
 GENERIC_amd64=generic
-GENERIC_lpia=lpia
 
 GENERIC=$(value GENERIC_$(shell dpkg-architecture -qDEB_HOST_ARCH))
 GENERIC_DEP=$(if $(GENERIC),$(GENERIC),)
