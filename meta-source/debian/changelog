@@ -1,3 +1,9 @@
+linux-meta (2.6.36.0.1) UNRELEASED; urgency=low
+
+  * Initial Natty kernel version and ABI (2.6.36-0)
+
+ -- Andy Whitcroft <apw@canonical.com>  Wed, 13 Oct 2010 11:22:15 +0100
+
 linux-meta (2.6.35.22.23) maverick; urgency=low
 
   [ Leann Ogasawara ]
