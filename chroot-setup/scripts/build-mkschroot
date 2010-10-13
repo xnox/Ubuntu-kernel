@@ -218,7 +218,7 @@ if ! $CFGEXISTS; then
 	UpdateConfig
 fi
 
-SCHROOTCMD="schroot -q --chroot=$NAME"
+SCHROOTCMD="schroot -q --directory=/ --chroot=$NAME"
 
 if [ "$CL_MIRROR" = "" ]
 then
