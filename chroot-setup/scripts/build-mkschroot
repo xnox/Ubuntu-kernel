@@ -84,7 +84,7 @@ ADDPKG="$ADDPKG docbook-utils gawk m4"
 ADDPKGDEP=
 case $SUITE in
 	dapper)
-		ADDPKG="$ADDPKG kernel-package";
+		ADDPKG="$ADDPKG kernel-package linux32";
 		ADDPKGDEP="$ADDPKGDEP kernel-package";
 		;;
 	hardy)
