@@ -59,10 +59,14 @@ class StdApp:
     # Expands an irc alias to full email address
     #
     def expand_alias(self, alias):
-        if not self.cfg["irc-aliases"].has_key(alias):
-           print "  ** Error, alias", alias, "not defined!"
-           _exit(1)
-        return self.cfg["irc-aliases"][alias]
+        if "irc-aliases" in self.cfg:
+            if not self.cfg["irc-aliases"].has_key(alias):
+               print "  ** Error, alias", alias, "not defined!"
+               _exit(1)
+            return self.cfg["irc-aliases"][alias]
+        else:
+            print "  ** Error, you probably don't have the config file installed in your $HOME!"
+            _exit(1)
 
     # merge_config_options
     #
