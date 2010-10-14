@@ -657,7 +657,7 @@ u32 abe_current_event_id;
  * ABE CONST AREA FOR PARAMETERS TRANSLATION
  */
 const u32 abe_db2lin_table[sizeof_db2lin_table] = {
-
+#if 0
 	0x00000000,		/* SMEM coding of -120 dB */
 	0x00000000,		/* SMEM coding of -119 dB */
 	0x00000000,		/* SMEM coding of -118 dB */
@@ -688,6 +688,7 @@ const u32 abe_db2lin_table[sizeof_db2lin_table] = {
 	0x00000005,		/* SMEM coding of -93 dB */
 	0x00000006,		/* SMEM coding of -92 dB */
 	0x00000007,		/* SMEM coding of -91 dB */
+#endif
 	0x00000008,		/* SMEM coding of -90 dB */
 	0x00000009,		/* SMEM coding of -89 dB */
 	0x0000000A,		/* SMEM coding of -88 dB */

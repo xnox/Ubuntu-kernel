@@ -246,7 +246,7 @@
 /*
  * ABE CONST AREA FOR PARAMETERS TRANSLATION
  */
-#define min_mdb (-12000)
+#define min_mdb (-9000)
 #define max_mdb (3000)
 #define sizeof_db2lin_table (1 + ((max_mdb - min_mdb)/100))
 #define sizeof_alpha_iir_table 61
