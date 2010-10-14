@@ -717,8 +717,8 @@ static struct snd_soc_dai_link sdp4430_dai[] = {
 
 /* Audio machine driver */
 static struct snd_soc_card snd_soc_sdp4430 = {
-	.name = "SDP4430",
-	.long_name = "TI OMAP4 SDP4430 Board",
+	.driver_name = "OMAP4",
+	.long_name = "TI OMAP4 Board",
 	.dai_link = sdp4430_dai,
 	.num_links = ARRAY_SIZE(sdp4430_dai),
 };
@@ -735,6 +735,11 @@ static int __init sdp4430_soc_init(void)
 		return -ENODEV;
 	}
 	printk(KERN_INFO "SDP4430 SoC init\n");
+
+	if (machine_is_omap_4430sdp())
+		snd_soc_sdp4430.name = "SDP4430";
+	else if (machine_is_omap4_panda())
+		snd_soc_sdp4430.name = "Panda";
 
 	sdp4430_snd_device = platform_device_alloc("soc-audio", -1);
 	if (!sdp4430_snd_device) {

@@ -1773,7 +1773,7 @@ static void snd_soc_instantiate_card(struct snd_soc_card *card)
 	snprintf(card->snd_card->longname, sizeof(card->snd_card->longname),
 		 "%s", card->long_name);
 	snprintf(card->snd_card->driver, sizeof(card->snd_card->driver),
-		 "%s", card->name);
+		 "%s", card->driver_name);
 
 	ret = snd_card_register(card->snd_card);
 	if (ret < 0) {
