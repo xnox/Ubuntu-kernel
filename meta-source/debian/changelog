@@ -1,4 +1,4 @@
-linux-meta (2.6.36.0.1) UNRELEASED; urgency=low
+linux-meta (2.6.36.0.1) natty; urgency=low
 
   * Initial Natty kernel version and ABI (2.6.36-0)
   * drop last vestiges of lpia architecture
