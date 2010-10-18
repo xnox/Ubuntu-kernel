@@ -619,6 +619,8 @@ static int vmeta_ioctl(struct uio_info *info, unsigned int cmd, unsigned long ar
 		case VMETA_CMD_SUSPEND_SET:
 			atomic_set(&vmeta_pm_suspend_available, 1);
 			break;
+		case VMETA_CMD_SUSPEND_UNSET:
+			atomic_set(&vmeta_pm_suspend_available, 0);
 		default:
 			break;
 	}
