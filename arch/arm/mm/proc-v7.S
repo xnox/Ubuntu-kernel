@@ -331,6 +331,10 @@ __v7_setup:
 	bicne	r0, #0x3 << 4
 	orrne	r0, r0, #CONFIG_CPU_WRITECO_CYCLE << 4	@ X0
 	mcrne   p15, 1, r0, c15, c2, 0          @ Write Marvell Auxiliary Function Reg
+#else
+	mrc     p15, 1, r0, c15, c1, 0          @ Read Marvell Extra Features Reg
+	bic 	r0, r0, #0x100
+	mcr     p15, 1, r0, c15, c1, 0          @ Write Marvell Extra Features Reg
 #endif
 	mcr	p15, 0, r4, c2, c0, 1		@ load TTB1
 	mov	r10, #0x1f			@ domains 0, 1 = manager
