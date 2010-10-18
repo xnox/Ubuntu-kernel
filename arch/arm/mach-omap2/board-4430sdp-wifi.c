@@ -25,6 +25,7 @@
 
 #include <asm/gpio.h>
 #include <asm/io.h>
+#include <asm/mach-types.h>
 #include <plat/wifi_tiwlan.h>
 
 #define SDP4430_WIFI_PMENA_GPIO	 43
@@ -119,6 +120,9 @@ static struct platform_device sdp4430_wifi_device = {
 static int __init sdp4430_wifi_init(void)
 {
 	int ret;
+
+	if (!machine_is_omap4_panda())
+		return -ENODEV;
 
 	printk(KERN_WARNING"%s: start\n", __func__);
 	ret = gpio_request(SDP4430_WIFI_IRQ_GPIO, "wifi_irq");
