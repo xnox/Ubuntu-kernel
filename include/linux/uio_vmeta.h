@@ -51,5 +51,6 @@ typedef struct _kernel_share
 #define VMETA_CMD_SUSPEND_CHECK		_IOR(IOP_MAGIC, 9, int)
 #define VMETA_CMD_SUSPEND_READY		_IO(IOP_MAGIC, 10)
 #define VMETA_CMD_SUSPEND_SET		_IO(IOP_MAGIC, 11)
+#define VMETA_CMD_SUSPEND_UNSET		_IO(IOP_MAGIC, 12)
 
 #endif /* __UIO_VMETA_H */
