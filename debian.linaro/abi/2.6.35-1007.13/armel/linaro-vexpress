@@ -3194,6 +3194,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	udp_flush_pending_frames
 EXPORT_SYMBOL vmlinux 0x00000000	udp_ioctl
 EXPORT_SYMBOL vmlinux 0x00000000	udp_lib_get_port
 EXPORT_SYMBOL vmlinux 0x00000000	udp_lib_getsockopt
+EXPORT_SYMBOL vmlinux 0x00000000	udp_lib_rehash
 EXPORT_SYMBOL vmlinux 0x00000000	udp_lib_setsockopt
 EXPORT_SYMBOL vmlinux 0x00000000	udp_lib_unhash
 EXPORT_SYMBOL vmlinux 0x00000000	udp_memory_allocated
