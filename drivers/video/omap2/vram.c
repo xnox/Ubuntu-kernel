@@ -30,7 +30,6 @@
 #include <linux/debugfs.h>
 #include <linux/jiffies.h>
 #include <linux/module.h>
-#include <linux/io.h>
 
 #include <asm/setup.h>
 
@@ -426,15 +425,6 @@ void omap_vram_get_info(unsigned long *vram,
 }
 EXPORT_SYMBOL(omap_vram_get_info);
 
-void __iomem *omap_vram_remap(size_t size, unsigned long paddr)
-{
-	if (region_mem_type(paddr) == OMAP_VRAM_MEMTYPE_SDRAM)
-		return phys_to_virt(paddr);
-
-	return ioremap_wc(paddr, size);
-}
-EXPORT_SYMBOL(omap_vram_remap);
-
 #if defined(CONFIG_DEBUG_FS)
 static int vram_debug_show(struct seq_file *s, void *unused)
 {
@@ -585,6 +575,8 @@ void __init omap_vram_reserve_sdram_memblock(void)
 		}
 	} else {
 		paddr = memblock_alloc_base(size, PAGE_SIZE, MEMBLOCK_REAL_LIMIT);
+		memblock_free(paddr, size);
+		memblock_remove(paddr, size);
 	}
 
 	omap_vram_add_region(paddr, size);
