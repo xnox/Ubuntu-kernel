@@ -1,3 +1,9 @@
+linux-meta (2.6.36.1.2) natty; urgency=low
+
+  * Natty ABI 1
+
+ -- Andy Whitcroft <apw@canonical.com>  Thu, 21 Oct 2010 21:31:35 +0100
+
 linux-meta (2.6.36.0.1) natty; urgency=low
 
   * Initial Natty kernel version and ABI (2.6.36-0)
