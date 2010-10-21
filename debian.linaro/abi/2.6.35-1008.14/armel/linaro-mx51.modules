@@ -140,7 +140,6 @@ mcs7830
 mg_disk
 michael_mic
 mii
-mmc_block
 msdos
 multipath
 nbd
@@ -206,8 +205,6 @@ scsi_tgt
 scsi_transport_fc
 scsi_transport_iscsi
 scsi_wait_scan
-sdhci
-sdhci-pltfm
 serport
 sha1_generic
 sierra_net

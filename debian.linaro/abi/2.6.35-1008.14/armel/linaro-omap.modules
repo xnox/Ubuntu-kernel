@@ -1290,7 +1290,7 @@ scsi_transport_srp
 scsi_wait_scan
 sctp
 sctp_probe
-sdhci-pltfm
+sdhci-platform
 sdio_uart
 se401
 seed
