@@ -12,54 +12,138 @@
 # If no kernel is specified we use the latest rc-release, which will be on the
 # remove master branch. Your master branch should be clean.
 
+# Pretty colors
+GREEN="\033[01;32m"
+YELLOW="\033[01;33m"
+NORMAL="\033[00m"
+BLUE="\033[34m"
+RED="\033[31m"
+PURPLE="\033[35m"
+CYAN="\033[36m"
+UNDERLINE="\033[02m"
+
 ALL_STABLE_TREE="linux-2.6-allstable"
 STAGING=/tmp/staging/compat-wireless/
 
-if [[ $# -gt 1 ]]; then
-	echo "Usage: $0 <linux-2.6.X.y>"
+function usage()
+{
+	echo -e "Usage: ${GREEN}$1${NORMAL} ${BLUE}[ -n | -p | -c | -f ]${NORMAL} ${CYAN}[ linux-2.6.X.y ]${NORMAL}"
 	echo
 	echo Examples usages:
 	echo
-	echo  $0
-	echo  $0 linux-2.6.29.y
-	echo  $0 linux-2.6.30.y
+	echo  -e "${PURPLE}${1}${NORMAL}"
+	echo  -e "${PURPLE}${1} ${CYAN}linux-2.6.29.y${NORMAL}"
+	echo  -e "${PURPLE}${1} ${CYAN}linux-2.6.30.y${NORMAL}"
 	echo
-	echo "If no kernel is specified we try to make a release based on the latest RC kernel."
-	echo "If a kernel release is specified X is the next stable release as 31 in 2.6.31.y."
+	echo -e "If no kernel is specified we try to make a release based on the latest RC kernel."
+	echo -en "If a kernel release is specified ${CYAN}X${NORMAL} is the next stable release "
+	echo -en "as ${CYAN}35${NORMAL} in ${CYAN}2.6.35.y${NORMAL}\n"
 	exit
-fi
+}
 
-# branch we want to use from hpa's tree
-BRANCH="$1"
+UPDATE_ARGS=""
+# branch we want to use from hpa's tree, by default
+# this is origin/master as this will get us the latest
+# RC kernel.
+LOCAL_BRANCH="master"
+POSTFIX_RELEASE_TAG="-"
+
+# By default we will not do a git fetch and reset of the branch,
+# use -f if you want to force an update, this will delete all
+# of your local patches so be careful.
+FORCE_UPDATE="no"
+
+while [ $# -ne 0 ]; do
+	if [[ "$1" = "-s" ]]; then
+		UPDATE_ARGS="${UPDATE_ARGS} $1 refresh"
+		POSTFIX_RELEASE_TAG="${POSTFIX_RELEASE_TAG}s"
+		shift; continue;
+	fi
+	if [[ "$1" = "-n" ]]; then
+		UPDATE_ARGS="${UPDATE_ARGS} $1"
+		POSTFIX_RELEASE_TAG="${POSTFIX_RELEASE_TAG}n"
+		shift; continue;
+	fi
+	if [[ "$1" = "-p" ]]; then
+		UPDATE_ARGS="${UPDATE_ARGS} $1"
+		POSTFIX_RELEASE_TAG="${POSTFIX_RELEASE_TAG}p"
+		shift; continue;
+	fi
+	if [[ "$1" = "-c" ]]; then
+		UPDATE_ARGS="${UPDATE_ARGS} $1"
+		POSTFIX_RELEASE_TAG="${POSTFIX_RELEASE_TAG}c"
+		shift; continue;
+	fi
+	if [[ "$1" = "-f" ]]; then
+		FORCE_UPDATE="yes"
+		shift; continue;
+	fi
+
+	if [[ $(expr "$1" : '^linux-') -eq 6 ]]; then
+		LOCAL_BRANCH="$1"
+		shift; continue;
+	fi
+
+	echo -e "Unexpected argument passed: ${RED}${1}${NORMAL}"
+	usage $0
+	exit
+done
 
 export GIT_TREE=$HOME/$ALL_STABLE_TREE
 COMPAT_WIRELESS_DIR=$(pwd)
+COMPAT_WIRELESS_BRANCH=$(git branch | grep \* | awk '{print $2}')
 
 cd $GIT_TREE
 # --abbrev=0 on branch should work but I guess it doesn't on some releases
-LOCAL_BRANCH=$(git branch | grep \* | awk '{print $2}')
+EXISTING_BRANCH=$(git branch | grep \* | awk '{print $2}')
 
 case $LOCAL_BRANCH in
 "master") # Preparing a new stable compat-wireless release based on an RC kernel
-	git checkout -f
-	git pull
-	# Rebase will be done automatically if our tree is clean
+	if [[ $FORCE_UPDATE = "yes" || "$EXISTING_BRANCH" != "$LOCAL_BRANCH" ]]; then
+		git checkout -f
+		git fetch
+		git reset --hard origin
+	fi
 	echo "On master branch on $ALL_STABLE_TREE"
 	;;
 *) # Based on a stable 2.6.x.y release, lets just move to the master branch,
    # git pull, nuke the old branch and start a fresh new branch.
+	if [[ $FORCE_UPDATE = "yes" || "$EXISTING_BRANCH" != "$LOCAL_BRANCH" ]]; then
+		git checkout -f
+		git fetch
+		if [[ "$EXISTING_BRANCH" = "$LOCAL_BRANCH" ]]; then
+			git branch -m crap-foo-compat
+		fi
+		git branch -D $LOCAL_BRANCH
+		git checkout -b $LOCAL_BRANCH origin/$LOCAL_BRANCH
+		if [[ "$EXISTING_BRANCH" -eq "$LOCAL_BRANCH" ]]; then
+			git branch -D crap-foo-compat
+		fi
+	fi
 	echo "On non-master branch on $ALL_STABLE_TREE: $LOCAL_BRANCH"
-	git checkout -f
-	git checkout master
-	git pull
-	git branch -D $LOCAL_BRANCH
-	git checkout -b $LOCAL_BRANCH origin/$LOCAL_BRANCH
 	;;
 esac
 
-# We should now be on the branch we want
-KERNEL_RELEASE=$(git describe --abbrev=0 | sed -e 's/v//g')
-RELEASE="compat-wireless-$KERNEL_RELEASE"
+# At this point your linux-2.6-allstable tree should be up to date
+# with the target kernel you want to use. Lets now make sure you are
+# on matching compat-wireless branch.
+
+# This is a super hack, but let me know if you figure out a cleaner way
+TARGET_KERNEL_RELEASE=$(make VERSION="linux-2" EXTRAVERSION=".y" kernelversion)
+
+if [[ $COMPAT_WIRELESS_BRANCH != $TARGET_KERNEL_RELEASE ]]; then
+	echo -e "You are on the compat-wireless ${GREEN}${COMPAT_WIRELESS_BRANCH}${NORMAL} but are "
+	echo -en "on the ${RED}${TARGET_KERNEL_RELEASE}${NORMAL} branch... "
+	echo -e "try changing to that first."
+	exit
+fi
+
+
+cd $COMPAT_WIRELESS_DIR
+RELEASE=$(git describe --abbrev=0 | sed -e 's/v//g')
+if [[ $POSTFIX_RELEASE_TAG != "-" ]]; then
+	RELEASE="${RELEASE}${POSTFIX_RELEASE_TAG}"
+fi
 RELEASE_TAR="$RELEASE.tar.bz2"
 
 rm -rf $STAGING
@@ -67,7 +151,7 @@ mkdir -p $STAGING
 cp -a $COMPAT_WIRELESS_DIR $STAGING/$RELEASE
 cd $STAGING/$RELEASE
 
-./scripts/admin-update.sh
+./scripts/admin-update.sh $UPDATE_ARGS
 rm -rf $STAGING/$RELEASE/.git
 
 # Remove any gunk

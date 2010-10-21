@@ -313,7 +313,27 @@ static int hidp_send_report(struct hidp_session *session, struct hid_report *rep
 	return hidp_queue_report(session, buf, rsize);
 }
 
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
+static int hidp_output_raw_report(struct hid_device *hid, unsigned char *data, size_t count,
+		unsigned char report_type)
+{
+	switch (report_type) {
+	case HID_FEATURE_REPORT:
+		report_type = HIDP_TRANS_SET_REPORT | HIDP_DATA_RTYPE_FEATURE;
+		break;
+	case HID_OUTPUT_REPORT:
+		report_type = HIDP_TRANS_DATA | HIDP_DATA_RTYPE_OUPUT;
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	if (hidp_send_ctrl_message(hid->driver_data, report_type,
+			data, count))
+		return -ENOMEM;
+	return count;
+}
+#elif (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
 static int hidp_output_raw_report(struct hid_device *hid, unsigned char *data, size_t count)
 {
 	if (hidp_send_ctrl_message(hid->driver_data,
@@ -552,8 +572,8 @@ static int hidp_session(void *arg)
 
 	init_waitqueue_entry(&ctrl_wait, current);
 	init_waitqueue_entry(&intr_wait, current);
-	add_wait_queue(ctrl_sk->sk_sleep, &ctrl_wait);
-	add_wait_queue(intr_sk->sk_sleep, &intr_wait);
+	add_wait_queue(sk_sleep(ctrl_sk), &ctrl_wait);
+	add_wait_queue(sk_sleep(intr_sk), &intr_wait);
 	while (!atomic_read(&session->terminate)) {
 		set_current_state(TASK_INTERRUPTIBLE);
 
@@ -575,8 +595,8 @@ static int hidp_session(void *arg)
 		schedule();
 	}
 	set_current_state(TASK_RUNNING);
-	remove_wait_queue(intr_sk->sk_sleep, &intr_wait);
-	remove_wait_queue(ctrl_sk->sk_sleep, &ctrl_wait);
+	remove_wait_queue(sk_sleep(intr_sk), &intr_wait);
+	remove_wait_queue(sk_sleep(ctrl_sk), &ctrl_wait);
 
 	down_write(&hidp_session_sem);
 
@@ -587,16 +607,16 @@ static int hidp_session(void *arg)
 		session->input = NULL;
 	}
 
-  if (session->hid) {
+	if (session->hid) {
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
-    hid_destroy_device(session->hid);
-    session->hid = NULL;
+		hid_destroy_device(session->hid);
+		session->hid = NULL;
 #else
-    if (session->hid->claimed & HID_CLAIMED_INPUT)
-      hidinput_disconnect(session->hid);
-    hid_free_device(session->hid);
+		if (session->hid->claimed & HID_CLAIMED_INPUT)
+			hidinput_disconnect(session->hid);
+		hid_free_device(session->hid);
 #endif
-  }
+	}
 
 	/* Wakeup user-space polling for socket errors */
 	session->intr_sock->sk->sk_err = EUNATCH;
@@ -606,7 +626,7 @@ static int hidp_session(void *arg)
 
 	fput(session->intr_sock->file);
 
-	wait_event_timeout(*(ctrl_sk->sk_sleep),
+	wait_event_timeout(*(sk_sleep(ctrl_sk)),
 		(ctrl_sk->sk_state == BT_CLOSED), msecs_to_jiffies(500));
 
 	fput(session->ctrl_sock->file);
@@ -717,20 +737,20 @@ static const struct {
 	/* Apple wireless Mighty Mouse */
 	{ 0x05ac, 0x030c, HID_QUIRK_MIGHTYMOUSE | HID_QUIRK_INVERT_HWHEEL },
 
-	{ }     /* Terminating entry */
+	{ }	/* Terminating entry */
 };
-
 static void hidp_setup_quirks(struct hid_device *hid)
 {
 	unsigned int n;
 
 	for (n = 0; hidp_blacklist[n].idVendor; n++)
 		if (hidp_blacklist[n].idVendor == le16_to_cpu(hid->vendor) &&
-		    hidp_blacklist[n].idProduct == le16_to_cpu(hid->product))
-		hid->quirks = hidp_blacklist[n].quirks;
+				hidp_blacklist[n].idProduct == le16_to_cpu(hid->product))
+			hid->quirks = hidp_blacklist[n].quirks;
 }
+
 static void hidp_setup_hid(struct hidp_session *session,
-			   struct hidp_connadd_req *req)
+				struct hidp_connadd_req *req)
 {
 	struct hid_device *hid = session->hid;
 	struct hid_report *report;

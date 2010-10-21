@@ -22,6 +22,7 @@
 #include <linux/etherdevice.h>
 #include <linux/ethtool.h>
 #include <linux/workqueue.h>
+#include <linux/slab.h>
 #include <linux/mii.h>
 #include <linux/usb.h>
 #include <linux/usb/cdc.h>
@@ -57,8 +58,8 @@
  */
 void rndis_status(struct usbnet *dev, struct urb *urb)
 {
-	devdbg(dev, "rndis status urb, len %d stat %d",
-		urb->actual_length, urb->status);
+	netdev_dbg(dev->net, "rndis status urb, len %d stat %d\n",
+		   urb->actual_length, urb->status);
 	// FIXME for keepalives, respond immediately (asynchronously)
 	// if not an RNDIS status, do like cdc_status(dev,urb) does
 }
@@ -274,7 +275,6 @@ response_error:
 	return -EDOM;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 /* same as usbnet_netdev_ops but MTU change not allowed */
 static const struct net_device_ops rndis_netdev_ops = {
 	.ndo_open		= usbnet_open,
@@ -284,7 +284,6 @@ static const struct net_device_ops rndis_netdev_ops = {
 	.ndo_set_mac_address 	= eth_mac_addr,
 	.ndo_validate_addr	= eth_validate_addr,
 };
-#endif
 
 int
 generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
@@ -337,8 +336,8 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 
 	dev->maxpacket = usb_maxpacket(dev->udev, dev->out, 1);
 	if (dev->maxpacket == 0) {
-		if (netif_msg_probe(dev))
-			dev_dbg(&intf->dev, "dev->maxpacket can't be 0\n");
+		netif_dbg(dev, probe, dev->net,
+			  "dev->maxpacket can't be 0\n");
 		retval = -EINVAL;
 		goto fail_and_release;
 	}
@@ -347,9 +346,9 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 	dev->rx_urb_size &= ~(dev->maxpacket - 1);
 	u.init->max_transfer_size = cpu_to_le32(dev->rx_urb_size);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
-	net->netdev_ops = &rndis_netdev_ops;
-#else
+	netdev_attach_ops(net, &rndis_netdev_ops);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
+	/* can't we remove this? */
 	net->change_mtu = NULL;
 #endif
 
@@ -400,17 +399,15 @@ generic_rndis_bind(struct usbnet *dev, struct usb_interface *intf, int flags)
 	}
 	if ((flags & FLAG_RNDIS_PHYM_WIRELESS) &&
 			*phym != RNDIS_PHYSICAL_MEDIUM_WIRELESS_LAN) {
-		if (netif_msg_probe(dev))
-			dev_dbg(&intf->dev, "driver requires wireless "
-				"physical medium, but device is not.\n");
+		netif_dbg(dev, probe, dev->net,
+			  "driver requires wireless physical medium, but device is not\n");
 		retval = -ENODEV;
 		goto halt_fail_and_release;
 	}
 	if ((flags & FLAG_RNDIS_PHYM_NOT_WIRELESS) &&
 			*phym == RNDIS_PHYSICAL_MEDIUM_WIRELESS_LAN) {
-		if (netif_msg_probe(dev))
-			dev_dbg(&intf->dev, "driver requires non-wireless "
-				"physical medium, but device is wireless.\n");
+		netif_dbg(dev, probe, dev->net,
+			  "driver requires non-wireless physical medium, but device is wireless.\n");
 		retval = -ENODEV;
 		goto halt_fail_and_release;
 	}
@@ -503,9 +500,9 @@ int rndis_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			     skb->len < msg_len ||
 			     (data_offset + data_len + 8) > msg_len)) {
 			dev->net->stats.rx_frame_errors++;
-			devdbg(dev, "bad rndis message %d/%d/%d/%d, len %d",
-				le32_to_cpu(hdr->msg_type),
-				msg_len, data_offset, data_len, skb->len);
+			netdev_dbg(dev->net, "bad rndis message %d/%d/%d/%d, len %d\n",
+				   le32_to_cpu(hdr->msg_type),
+				   msg_len, data_offset, data_len, skb->len);
 			return 0;
 		}
 		skb_pull(skb, 8 + data_offset);

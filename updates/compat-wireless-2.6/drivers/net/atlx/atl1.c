@@ -84,7 +84,7 @@
 
 #define ATLX_DRIVER_VERSION "2.1.3"
 MODULE_AUTHOR("Xiong Huang <xiong.huang@atheros.com>, \
-	Chris Snook <csnook@redhat.com>, Jay Cliburn <jcliburn@gmail.com>");
+Chris Snook <csnook@redhat.com>, Jay Cliburn <jcliburn@gmail.com>");
 MODULE_LICENSE("GPL");
 MODULE_VERSION(ATLX_DRIVER_VERSION);
 
@@ -232,7 +232,7 @@ static void __devinit atl1_check_options(struct atl1_adapter *adapter)
 /*
  * atl1_pci_tbl - PCI Device ID Table
  */
-static const struct pci_device_id atl1_pci_tbl[] = {
+static DEFINE_PCI_DEVICE_TABLE(atl1_pci_tbl) = {
 	{PCI_DEVICE(PCI_VENDOR_ID_ATTANSIC, PCI_DEVICE_ID_ATTANSIC_L1)},
 	/* required last entry */
 	{0,}
@@ -1251,6 +1251,12 @@ static void atl1_free_ring_resources(struct atl1_adapter *adapter)
 
 	rrd_ring->desc = NULL;
 	rrd_ring->dma = 0;
+
+	adapter->cmb.dma = 0;
+	adapter->cmb.cmb = NULL;
+
+	adapter->smb.dma = 0;
+	adapter->smb.smb = NULL;
 }
 
 static void atl1_setup_mac_ctrl(struct atl1_adapter *adapter)
@@ -1830,8 +1836,6 @@ static void atl1_rx_checksum(struct atl1_adapter *adapter,
 		adapter->hw_csum_good++;
 		return;
 	}
-
-	return;
 }
 
 /*
@@ -2347,7 +2351,7 @@ static netdev_tx_t atl1_xmit_frame(struct sk_buff *skb,
 {
 	struct atl1_adapter *adapter = netdev_priv(netdev);
 	struct atl1_tpd_ring *tpd_ring = &adapter->tpd_ring;
-	int len = skb->len;
+	int len;
 	int tso;
 	int count = 1;
 	int ret_val;
@@ -2359,7 +2363,7 @@ static netdev_tx_t atl1_xmit_frame(struct sk_buff *skb,
 	unsigned int f;
 	unsigned int proto_hdr_len;
 
-	len -= skb->data_len;
+	len = skb_headlen(skb);
 
 	if (unlikely(skb->len <= 0)) {
 		dev_kfree_skb_any(skb);
@@ -2849,10 +2853,11 @@ static int atl1_resume(struct pci_dev *pdev)
 	pci_enable_wake(pdev, PCI_D3cold, 0);
 
 	atl1_reset_hw(&adapter->hw);
-	adapter->cmb.cmb->int_stats = 0;
 
-	if (netif_running(netdev))
+	if (netif_running(netdev)) {
+		adapter->cmb.cmb->int_stats = 0;
 		atl1_up(adapter);
+	}
 	netif_device_attach(netdev);
 
 	return 0;
@@ -2878,7 +2883,6 @@ static void atl1_poll_controller(struct net_device *netdev)
 }
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 static const struct net_device_ops atl1_netdev_ops = {
 	.ndo_open		= atl1_open,
 	.ndo_stop		= atl1_close,
@@ -2894,7 +2898,6 @@ static const struct net_device_ops atl1_netdev_ops = {
 	.ndo_poll_controller	= atl1_poll_controller,
 #endif
 };
-#endif
 
 /*
  * atl1_probe - Device Initialization Routine
@@ -2983,17 +2986,7 @@ static int __devinit atl1_probe(struct pci_dev *pdev,
 	adapter->mii.phy_id_mask = 0x1f;
 	adapter->mii.reg_num_mask = 0x1f;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
-	netdev->netdev_ops = &atl1_netdev_ops;
-#else
-	netdev->change_mtu = atl1_change_mtu;
-	netdev->hard_start_xmit = atl1_xmit_frame;
-	netdev->open = atl1_open;
-	netdev->stop = atl1_close;
-	netdev->tx_timeout = atlx_tx_timeout;
-	netdev->set_mac_address = atl1_set_mac;
-	netdev->do_ioctl = atlx_ioctl;
-#endif
+	netdev_attach_ops(netdev, &atl1_netdev_ops);
 	netdev->watchdog_timeo = 5 * HZ;
 
 	netdev->ethtool_ops = &atl1_ethtool_ops;
@@ -3402,7 +3395,6 @@ static void atl1_get_wol(struct net_device *netdev,
 	wol->wolopts = 0;
 	if (adapter->wol & ATLX_WUFC_MAG)
 		wol->wolopts |= WAKE_MAGIC;
-	return;
 }
 
 static int atl1_set_wol(struct net_device *netdev,

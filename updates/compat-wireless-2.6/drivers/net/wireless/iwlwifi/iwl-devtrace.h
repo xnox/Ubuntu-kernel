@@ -27,10 +27,7 @@
 #if !defined(__IWLWIFI_DEVICE_TRACE) || defined(TRACE_HEADER_MULTI_READ)
 #define __IWLWIFI_DEVICE_TRACE
 
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27))
 #include <linux/tracepoint.h>
-#endif /* (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,27)) */
-#include "iwl-dev.h"
 
 #if !defined(CONFIG_IWLWIFI_DEVICE_TRACING) || defined(__CHECKER__)
 #undef TRACE_EVENT
@@ -93,6 +90,50 @@ TRACE_EVENT(iwlwifi_dev_iowrite32,
 );
 
 #undef TRACE_SYSTEM
+#define TRACE_SYSTEM iwlwifi_ucode
+
+TRACE_EVENT(iwlwifi_dev_ucode_cont_event,
+	TP_PROTO(struct iwl_priv *priv, u32 time, u32 data, u32 ev),
+	TP_ARGS(priv, time, data, ev),
+	TP_STRUCT__entry(
+		PRIV_ENTRY
+
+		__field(u32, time)
+		__field(u32, data)
+		__field(u32, ev)
+	),
+	TP_fast_assign(
+		PRIV_ASSIGN;
+		__entry->time = time;
+		__entry->data = data;
+		__entry->ev = ev;
+	),
+	TP_printk("[%p] EVT_LOGT:%010u:0x%08x:%04u",
+		  __entry->priv, __entry->time, __entry->data, __entry->ev)
+);
+
+TRACE_EVENT(iwlwifi_dev_ucode_wrap_event,
+	TP_PROTO(struct iwl_priv *priv, u32 wraps, u32 n_entry, u32 p_entry),
+	TP_ARGS(priv, wraps, n_entry, p_entry),
+	TP_STRUCT__entry(
+		PRIV_ENTRY
+
+		__field(u32, wraps)
+		__field(u32, n_entry)
+		__field(u32, p_entry)
+	),
+	TP_fast_assign(
+		PRIV_ASSIGN;
+		__entry->wraps = wraps;
+		__entry->n_entry = n_entry;
+		__entry->p_entry = p_entry;
+	),
+	TP_printk("[%p] wraps=#%02d n=0x%X p=0x%X",
+		  __entry->priv, __entry->wraps, __entry->n_entry,
+		  __entry->p_entry)
+);
+
+#undef TRACE_SYSTEM
 #define TRACE_SYSTEM iwlwifi
 
 TRACE_EVENT(iwlwifi_dev_hcmd,
@@ -152,7 +193,7 @@ TRACE_EVENT(iwlwifi_dev_tx,
 		__entry->framelen = buf0_len + buf1_len;
 		memcpy(__get_dynamic_array(tfd), tfd, tfdlen);
 		memcpy(__get_dynamic_array(buf0), buf0, buf0_len);
-		memcpy(__get_dynamic_array(buf1), buf1, buf0_len);
+		memcpy(__get_dynamic_array(buf1), buf1, buf1_len);
 	),
 	TP_printk("[%p] TX %.2x (%zu bytes)",
 		  __entry->priv,
@@ -222,6 +263,4 @@ TRACE_EVENT(iwlwifi_dev_ucode_event,
 #define TRACE_INCLUDE_PATH .
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE iwl-devtrace
-#if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,30))
 #include <trace/define_trace.h>
-#endif

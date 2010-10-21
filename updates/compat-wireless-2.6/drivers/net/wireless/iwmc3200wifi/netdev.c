@@ -46,6 +46,7 @@
  *              -> sdio_disable_func()
  */
 #include <linux/netdevice.h>
+#include <linux/slab.h>
 
 #include "iwm.h"
 #include "commands.h"
@@ -128,7 +129,7 @@ void *iwm_if_alloc(int sizeof_bus, struct device *dev,
 		goto out_priv;
 	}
 
-	ndev->netdev_ops = &iwm_netdev_ops;
+	netdev_attach_ops(ndev, &iwm_netdev_ops);
 	ndev->ieee80211_ptr = wdev;
 	SET_NETDEV_DEV(ndev, wiphy_dev(wdev->wiphy));
 	wdev->netdev = ndev;

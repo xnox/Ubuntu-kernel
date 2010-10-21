@@ -5,6 +5,8 @@
 obj-$(CONFIG_IPW2100) += ipw2x00/
 obj-$(CONFIG_IPW2200) += ipw2x00/
 
+obj-$(CONFIG_HERMES)		+= orinoco/
+
 obj-$(CONFIG_AT76C50X_USB)      += at76c50x-usb.o
 
 obj-$(CONFIG_B43)		+= b43/
@@ -13,8 +15,11 @@ obj-$(CONFIG_ZD1211RW)		+= zd1211rw/
 obj-$(CONFIG_RTL8180)		+= rtl818x/
 obj-$(CONFIG_RTL8187)		+= rtl818x/
 
-obj-$(CONFIG_USB_NET_RNDIS_WLAN)	+= rndis_wlan.o
+obj-$(CONFIG_USB_NET_COMPAT_RNDIS_WLAN)	+= rndis_wlan.o
 
+obj-$(CONFIG_LIBERTAS)		+= libertas/
+
+obj-$(CONFIG_LIBERTAS_THINFIRM)	+= libertas_tf/
 
 obj-$(CONFIG_ADM8211)	+= adm8211.o
 

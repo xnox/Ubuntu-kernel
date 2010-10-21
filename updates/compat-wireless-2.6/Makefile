@@ -15,33 +15,42 @@ DESTDIR?=
 
 ifneq ($(KERNELRELEASE),)
 
-NOSTDINC_FLAGS := -I$(M)/include/ -include $(M)/include/linux/compat-2.6.h $(CFLAGS)
+NOSTDINC_FLAGS := -I$(M)/include/ \
+	-include $(M)/include/linux/compat-2.6.h \
+	$(CFLAGS)
 
 obj-y := compat/
 
 obj-$(CONFIG_COMPAT_RFKILL) += net/rfkill/
 
+ifeq ($(BT),)
 obj-$(CONFIG_COMPAT_WIRELESS) += net/wireless/ net/mac80211/
 obj-$(CONFIG_COMPAT_WIRELESS_MODULES) += drivers/net/wireless/
 
 obj-$(CONFIG_COMPAT_NET_USB_MODULES) += drivers/net/usb/
 
-obj-$(CONFIG_COMPAT_BLUETOOTH) += net/bluetooth/
-obj-$(CONFIG_COMPAT_BLUETOOTH_MODULES) += drivers/bluetooth/
-
 obj-$(CONFIG_COMPAT_NETWORK_MODULES) += drivers/net/
 obj-$(CONFIG_COMPAT_VAR_MODULES) +=  drivers/ssb/ drivers/misc/eeprom/
+endif
+
+obj-$(CONFIG_COMPAT_BLUETOOTH) += net/bluetooth/
+obj-$(CONFIG_COMPAT_BLUETOOTH_MODULES) += drivers/bluetooth/
 
 else
 
 export PWD :=	$(shell pwd)
+CFLAGS += \
+        -DCOMPAT_BASE_TREE="\"$(shell cat compat_base_tree)\"" \
+        -DCOMPAT_BASE_TREE_VERSION="\"$(shell cat compat_base_tree_version)\"" \
+        -DCOMPAT_PROJECT="\"Compat-wireless\"" \
+        -DCOMPAT_VERSION="\"$(shell cat compat_version)\""
 
 # These exported as they are used by the scripts
 # to check config and compat autoconf
 export COMPAT_CONFIG=config.mk
 export CONFIG_CHECK=.$(COMPAT_CONFIG)_md5sum.txt
 export COMPAT_AUTOCONF=include/linux/compat_autoconf.h
-export CREL=$(shell cat $(PWD)/compat-release)
+export CREL=$(shell cat $(PWD)/compat_version)
 export CREL_PRE:=.compat_autoconf_
 export CREL_CHECK:=$(CREL_PRE)$(CREL)
 
@@ -54,6 +63,11 @@ modules: $(CREL_CHECK)
 	$(MAKE) -C $(KLIB_BUILD) M=$(PWD) modules
 	@touch $@
 
+bt: $(CREL_CHECK)
+	@./scripts/check_config.sh
+	$(MAKE) -C $(KLIB_BUILD) M=$(PWD) BT=TRUE modules
+	@touch $@
+
 # With the above and this we make sure we generate a new compat autoconf per
 # new relase of compat-wireless-2.6 OR when the user updates the 
 # $(COMPAT_CONFIG) file
@@ -63,6 +77,54 @@ $(CREL_CHECK):
 	@./scripts/check_config.sh
 	@touch $@
 	@md5sum $(COMPAT_CONFIG) > $(CONFIG_CHECK)
+
+btinstall: btuninstall bt-install-modules
+
+bt-install-modules: bt
+	$(MAKE) -C $(KLIB_BUILD) M=$(PWD) $(KMODDIR_ARG) $(KMODPATH_ARG) BT=TRUE \
+		modules_install
+	@/sbin/depmod -ae
+	@echo
+	@echo "Currently detected bluetooth subsystem modules:"
+	@echo
+	@$(MODPROBE) -l sco
+	@$(MODPROBE) -l l2cap
+	@$(MODPROBE) -l hidp
+	@$(MODPROBE) -l rfcomm
+	@$(MODPROBE) -l bnep
+	@$(MODPROBE) -l btusb
+	@$(MODPROBE) -l bluetooth
+	@echo
+	@echo Now run:
+	@echo
+	@echo sudo make btunload:
+	@echo
+	@echo And the load the needed bluetooth modules. If unsure reboot.
+	@echo
+
+btuninstall:
+	@# New location, matches upstream
+	@rm -rf $(KLIB)/$(KMODDIR)/net/bluetooth/
+	@rm -rf $(KLIB)/$(KMODDIR)/drivers/bluetooth/
+	@# Lets only remove the stuff we are sure we are providing
+	@# on the misc directory.
+	@/sbin/depmod -ae
+	@echo
+	@echo "Your old bluetooth subsystem modules were left intact:"
+	@echo
+	@$(MODPROBE) -l sco
+	@$(MODPROBE) -l l2cap
+	@$(MODPROBE) -l hidp
+	@$(MODPROBE) -l rfcomm
+	@$(MODPROBE) -l bnep
+	@$(MODPROBE) -l btusb
+	@$(MODPROBE) -l bluetooth
+	@
+	@echo
+
+btclean:
+	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) BT=TRUE clean
+	@rm -f $(CREL_PRE)*
 
 install: uninstall install-modules install-scripts
 
@@ -191,6 +253,7 @@ install-scripts:
 
 uninstall:
 	@# New location, matches upstream
+	@rm -rf $(KLIB)/$(KMODDIR)/compat/
 	@rm -rf $(KLIB)/$(KMODDIR)/net/mac80211/
 	@rm -rf $(KLIB)/$(KMODDIR)/net/rfkill/
 	@rm -rf $(KLIB)/$(KMODDIR)/net/wireless/
@@ -293,7 +356,7 @@ wlunload:
 wlload: wlunload
 	@./scripts/wlload.sh
 
-.PHONY: all clean install uninstall unload load btunload btload wlunload wlload modules
+.PHONY: all clean install uninstall unload load btunload btload wlunload wlload modules bt
 
 endif
 

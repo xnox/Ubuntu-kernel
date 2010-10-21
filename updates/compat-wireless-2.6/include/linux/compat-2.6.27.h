@@ -18,6 +18,8 @@
 #include <net/iw_handler.h>
 #include <asm-generic/bug.h>
 #include <linux/wireless.h>
+#include <linux/skbuff.h>
+#include <net/sch_generic.h>
 
 #define PCI_PM_CAP_PME_SHIFT	11
 
@@ -47,6 +49,12 @@ static inline void netif_tx_start_all_queues(struct net_device *dev)
 static inline void netif_tx_stop_all_queues(struct net_device *dev)
 {
 	netif_stop_queue(dev);
+}
+
+/* Are all TX queues of the device empty?  */
+static inline bool qdisc_all_tx_empty(const struct net_device *dev)
+{
+	return skb_queue_empty(&dev->qdisc->q);
 }
 
 bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
@@ -219,6 +227,16 @@ void debugfs_remove_recursive(struct dentry *dentry);
 static inline void debugfs_remove_recursive(struct dentry *dentry)
 { }
 #endif
+
+#define device_create(cls, parent, devt, drvdata, fmt, ...)		\
+({									\
+	struct device *_dev;						\
+	_dev = (device_create)(cls, parent, devt, fmt, __VA_ARGS__);	\
+	dev_set_drvdata(_dev, drvdata);					\
+	_dev;								\
+})
+
+#define dev_name(dev) dev_name((struct device *)dev)
 
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,27)) */
 

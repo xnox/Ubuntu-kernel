@@ -34,6 +34,7 @@
 
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
+#include "fwload.h"
 
 #define VERSION "0.6"
 
@@ -55,9 +56,32 @@ static struct usb_driver btusb_driver;
 #define BTUSB_BROKEN_ISOC	0x20
 #define BTUSB_WRONG_SCO_MTU	0x40
 
+static struct usb_device_id ath_table[] = {
+	/* Atheros AR3011 */
+	{ USB_DEVICE(0x0CF3, 0x3002) },
+	{ USB_DEVICE(0x13D3, 0x3304) },
+	{ }	/* Terminating entry */
+};
+
+/* Add firmware file, load and unload function
+ * to download the firmware to target RAM
+ */
+static struct fw_cb_config btusb_fwcbs[] = {
+	{
+		.fwfile = "ath3k-1.fw",
+		.usb_id_table = ath_table,
+		.fwload = ath_fw_load,
+		.fwunload = ath_fw_unload
+	},
+	{}
+};
+
 static struct usb_device_id btusb_table[] = {
 	/* Generic Bluetooth USB device */
 	{ USB_DEVICE_INFO(0xe0, 0x01, 0x01) },
+
+	/* Apple iMac11,1 */
+	{ USB_DEVICE(0x05ac, 0x8215) },
 
 	/* AVM BlueFRITZ! USB v2.0 */
 	{ USB_DEVICE(0x057c, 0x3800) },
@@ -146,6 +170,7 @@ static struct usb_device_id blacklist_table[] = {
 #define BTUSB_BULK_RUNNING	1
 #define BTUSB_ISOC_RUNNING	2
 #define BTUSB_SUSPENDING	3
+#define BTUSB_DID_ISO_RESUME	4
 
 struct btusb_data {
 	struct hci_dev       *hdev;
@@ -179,7 +204,6 @@ struct btusb_data {
 	unsigned int sco_num;
 	int isoc_altsetting;
 	int suspend_count;
-	int did_iso_resume:1;
 };
 
 static int inc_tx(struct btusb_data *data)
@@ -807,7 +831,7 @@ static void btusb_work(struct work_struct *work)
 	int err;
 
 	if (hdev->conn_hash.sco_num > 0) {
-		if (!data->did_iso_resume) {
+		if (!test_bit(BTUSB_DID_ISO_RESUME, &data->flags)) {
 			err = usb_autopm_get_interface(data->isoc);
 			if (err < 0) {
 				clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
@@ -815,7 +839,7 @@ static void btusb_work(struct work_struct *work)
 				return;
 			}
 
-			data->did_iso_resume = 1;
+			set_bit(BTUSB_DID_ISO_RESUME, &data->flags);
 		}
 		if (data->isoc_altsetting != 2) {
 			clear_bit(BTUSB_ISOC_RUNNING, &data->flags);
@@ -836,10 +860,8 @@ static void btusb_work(struct work_struct *work)
 		usb_kill_anchored_urbs(&data->isoc_anchor);
 
 		__set_isoc_interface(hdev, 0);
-		if (data->did_iso_resume) {
-			data->did_iso_resume = 0;
+		if (test_and_clear_bit(BTUSB_DID_ISO_RESUME, &data->flags))
 			usb_autopm_put_interface(data->isoc);
-		}
 	}
 }
 
@@ -862,6 +884,7 @@ static int btusb_probe(struct usb_interface *intf,
 	struct btusb_data *data;
 	struct hci_dev *hdev;
 	int i, err;
+	const struct usb_device_id *match;
 
 	BT_DBG("intf %p id %p", intf, id);
 
@@ -921,6 +944,19 @@ static int btusb_probe(struct usb_interface *intf,
 	data->udev = interface_to_usbdev(intf);
 	data->intf = intf;
 
+	for (i = 0; btusb_fwcbs[i].fwfile; i++) {
+		match = usb_match_id(intf, btusb_fwcbs[i].usb_id_table);
+		if (match) {
+			if (btusb_fwcbs[i].fwload) {
+				btusb_fwcbs[i].data =
+					btusb_fwcbs[i].fwload(intf,
+						btusb_fwcbs[i].fwfile,
+						&btusb_fwcbs[i].bsuspend);
+			}
+			break;
+		}
+	}
+
 	spin_lock_init(&data->lock);
 
 	INIT_WORK(&data->work, btusb_work);
@@ -939,7 +975,7 @@ static int btusb_probe(struct usb_interface *intf,
 		return -ENOMEM;
 	}
 
-	hdev->type = HCI_USB;
+	hdev->bus = HCI_USB;
 	hdev->driver_data = data;
 
 	data->hdev = hdev;
@@ -1029,11 +1065,25 @@ static void btusb_disconnect(struct usb_interface *intf)
 {
 	struct btusb_data *data = usb_get_intfdata(intf);
 	struct hci_dev *hdev;
+	const struct usb_device_id *match;
+	int i;
 
 	BT_DBG("intf %p", intf);
 
 	if (!data)
 		return;
+
+	for (i = 0; btusb_fwcbs[i].fwfile; i++) {
+		match = usb_match_id(intf, btusb_fwcbs[i].usb_id_table);
+		if (match) {
+			if (btusb_fwcbs[i].fwunload) {
+				btusb_fwcbs[i].fwunload(btusb_fwcbs[i].data,
+						btusb_fwcbs[i].bsuspend);
+				btusb_fwcbs[i].data = NULL;
+			}
+			break;
+		}
+	}
 
 	hdev = data->hdev;
 
@@ -1060,11 +1110,21 @@ static void btusb_disconnect(struct usb_interface *intf)
 static int btusb_suspend(struct usb_interface *intf, pm_message_t message)
 {
 	struct btusb_data *data = usb_get_intfdata(intf);
+	const struct usb_device_id *match;
+	int i;
 
 	BT_DBG("intf %p", intf);
 
 	if (data->suspend_count++)
 		return 0;
+
+	for (i = 0; btusb_fwcbs[i].fwfile; i++) {
+		match = usb_match_id(intf, btusb_fwcbs[i].usb_id_table);
+		if (match) {
+			btusb_fwcbs[i].bsuspend = 1;
+			break;
+		}
+	}
 
 	spin_lock_irq(&data->txlock);
 	if (!((message.event & PM_EVENT_AUTO) && data->tx_in_flight)) {
@@ -1178,6 +1238,14 @@ static int __init btusb_init(void)
 
 static void __exit btusb_exit(void)
 {
+	int i;
+	for (i = 0; btusb_fwcbs[i].fwfile; i++) {
+		if (btusb_fwcbs[i].fwunload && btusb_fwcbs[i].data) {
+			btusb_fwcbs[i].fwunload(btusb_fwcbs[i].data,
+					btusb_fwcbs[i].bsuspend);
+			btusb_fwcbs[i].data = NULL;
+		}
+	}
 	usb_deregister(&btusb_driver);
 }
 

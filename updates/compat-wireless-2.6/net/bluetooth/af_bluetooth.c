@@ -31,7 +31,6 @@
 #include <linux/errno.h>
 #include <linux/kernel.h>
 #include <linux/sched.h>
-#include <linux/slab.h>
 #include <linux/skbuff.h>
 #include <linux/init.h>
 #include <linux/poll.h>
@@ -269,7 +268,7 @@ int bt_sock_recvmsg(struct kiocb *iocb, struct socket *sock,
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,32))
 		sock_recv_ts_and_drops(msg, sk, skb);
 #else
-	  sock_recv_timestamp(msg, sk, skb);
+		sock_recv_timestamp(msg, sk, skb);
 #endif
 
 	skb_free_datagram(sk, skb);
@@ -301,7 +300,7 @@ unsigned int bt_sock_poll(struct file * file, struct socket *sock, poll_table *w
 
 	BT_DBG("sock %p, sk %p", sock, sk);
 
-	poll_wait(file, sk->sk_sleep, wait);
+	poll_wait(file, sk_sleep(sk), wait);
 
 	if (sk->sk_state == BT_LISTEN)
 		return bt_accept_poll(sk);
@@ -353,7 +352,7 @@ int bt_sock_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(2,6,31))
 		amount = sk->sk_sndbuf - sk_wmem_alloc_get(sk);
 #else
-    amount = sk->sk_sndbuf - atomic_read(&sk->sk_wmem_alloc);
+		amount = sk->sk_sndbuf - atomic_read(&sk->sk_wmem_alloc);
 #endif
 		if (amount < 0)
 			amount = 0;
@@ -395,7 +394,7 @@ int bt_sock_wait_state(struct sock *sk, int state, unsigned long timeo)
 
 	BT_DBG("sk %p", sk);
 
-	add_wait_queue(sk->sk_sleep, &wait);
+	add_wait_queue(sk_sleep(sk), &wait);
 	while (sk->sk_state != state) {
 		set_current_state(TASK_INTERRUPTIBLE);
 
@@ -418,7 +417,7 @@ int bt_sock_wait_state(struct sock *sk, int state, unsigned long timeo)
 			break;
 	}
 	set_current_state(TASK_RUNNING);
-	remove_wait_queue(sk->sk_sleep, &wait);
+	remove_wait_queue(sk_sleep(sk), &wait);
 	return err;
 }
 EXPORT_SYMBOL(bt_sock_wait_state);

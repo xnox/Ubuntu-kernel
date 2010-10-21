@@ -13,10 +13,12 @@ MODULES="$MODULES libertas_tf libertas_tf_usb"
 MODULES="$MODULES adm8211 zd1211rw"
 MODULES="$MODULES b43 b43legacy ssb"
 MODULES="$MODULES iwl3945 iwlagn iwlcore"
-MODULES="$MODULES ath9k ath5k ar9170usb ath"
+MODULES="$MODULES ath9k ath9k_htc ath9k_common ath9k_hw "
+MODULES="$MODULES ath5k ar9170usb ath"
 MODULES="$MODULES p54pci p54usb p54spi p54common"
 MODULES="$MODULES rt2400pci rt2500pci rt61pci"
 MODULES="$MODULES rt2500usb rt73usb"
+MODULES="$MODULES rt2800usb rt2800lib"
 MODULES="$MODULES rt2x00usb rt2x00lib"
 MODULES="$MODULES rtl8180 rtl8187"
 MODULES="$MODULES mwl8k mac80211_hwsim"
@@ -28,9 +30,10 @@ MODULES="$MODULES eeprom_93cx6"
 MODULES="$MODULES lib80211_crypt_ccmp lib80211_crypt_tkip lib80211_crypt_wep"
 MODULES="$MODULES mac80211 cfg80211 lib80211"
 MODULES="$MODULES hidp rfcomm bnep l2cap sco btusb bluetooth"
+MODULES="$MODULES compat"
 echo Stoping bluetooth service..
-sudo service bluetooth stop
-sudo service bluetooth status
+/etc/init.d/bluetooth stop
+/etc/init.d/bluetooth status
 MADWIFI_MODULES="ath_pci ath_rate_sample wlan_scan_sta wlan ath_hal"
 IPW3945D="/sbin/ipw3945d-`uname -r`"
 

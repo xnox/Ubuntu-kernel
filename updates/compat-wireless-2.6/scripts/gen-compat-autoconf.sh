@@ -11,9 +11,9 @@
 
 # This indicates which is the oldest kernel we support
 # Update this if you are adding support for older kernels.
-OLDEST_KERNEL_SUPPORTED="2.6.25"
-COMPAT_RELEASE="compat-release"
-KERNEL_RELEASE="git-describe"
+OLDEST_KERNEL_SUPPORTED="2.6.24"
+COMPAT_RELEASE="compat_version"
+KERNEL_RELEASE="compat_base_tree_version"
 MULT_DEP_FILE=".compat_pivot_dep"
 
 if [ $# -ne 1 ]; then
@@ -144,40 +144,37 @@ EOF
 # Checks user is compiling against a kernel we support
 kernel_version_req $OLDEST_KERNEL_SUPPORTED
 
-# Handle core kernel wireless depenencies here
-define_config_req CONFIG_WIRELESS_EXT
-
 # For each CONFIG_FOO=x option
-for i in $(grep '^CONFIG_' $COMPAT_CONFIG); do
-	# Get the element on the left of the "="
-	VAR=$(echo $i | cut -d"=" -f 1)
-	# Get the element on the right of the "="
-	VALUE=$(echo $i | cut -d"=" -f 2)
-
-	# skip vars that weren't actually set due to dependencies
-	#if [ "${!VAR}" = "" ] ; then
-	#	continue
-	#fi
-
-	# Handle core kernel module depenencies here.
-	case $VAR in
-	CONFIG_USB_NET_RNDIS_WLAN)
-		define_config_dep $VAR $VALUE CONFIG_USB_NET_CDCETHER
+for i in $(egrep '^CONFIG_|^ifdef CONFIG_|^ifndef CONFIG_|^endif #CONFIG_|^else #CONFIG_' $COMPAT_CONFIG | sed 's/ /+/'); do
+	case $i in
+	'ifdef+CONFIG_'* | 'ifndef+CONFIG_'* ) #
+		echo "#$i" | sed 's/+/ /' | sed 's/\(ifdef CONFIG_COMPAT_KERNEL_\)\([0-9]*\)/if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,\2))/'
 		continue
 		;;
-	CONFIG_USB_NET_RNDIS_HOST)
-		define_config_dep $VAR $VALUE CONFIG_USB_NET_CDCETHER
+	'else+#CONFIG_'* | 'endif+#CONFIG_'* )
+		echo "#$i */" |sed -e 's/+#/ \/* /g'
 		continue
 		;;
-	# ignore this, we have a special hanlder for this at the botttom
-	# instead. We still need to keep this in config.mk to let Makefiles
-	# know its enabled so just ignore it here.
-	CONFIG_MAC80211_QOS)
+	CONFIG_* )
+		# Get the element on the left of the "="
+		VAR=$(echo $i | cut -d"=" -f 1)
+		# Get the element on the right of the "="
+		VALUE=$(echo $i | cut -d"=" -f 2)
+
+		# Handle core kernel module depenencies here.
+		case $VAR in
+		# ignore this, we have a special hanlder for this at the botttom
+		# instead. We still need to keep this in config.mk to let Makefiles
+		# know its enabled so just ignore it here.
+		CONFIG_MAC80211_QOS)
+			continue
+			;;
+		esac
+		# Any other module which can *definitely* be built as a module goes here
+		define_config $VAR $VALUE
 		continue
 		;;
 	esac
-	# Any other module which can *definitely* be built as a module goes here
-	define_config $VAR $VALUE
 done
 
 # Deal with special cases. CONFIG_MAC80211_QOS is such a case.
@@ -194,6 +191,10 @@ if [ -f $KLIB_BUILD/Makefile ]; then
 		echo CONFIG_NETDEVICES_MULTIQUEUE >> $MULT_DEP_FILE
 		define_config_multiple_deps CONFIG_MAC80211_QOS y $ALL_DEPS
 		rm -f $MULT_DEP_FILE
+		# Kernels >= 2.6.32 can disable WEXT :D
+		if [ $SUBLEVEL -le 32 ]; then
+			define_config_dep CONFIG_CFG80211_WEXT 1 CONFIG_WIRELESS_EXT
+		fi
 	fi
 fi
 echo "#endif /* COMPAT_AUTOCONF_INCLUDED */"

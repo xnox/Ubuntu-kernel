@@ -9,6 +9,7 @@
 #include <linux/compat.h>
 #include <net/iw_handler.h>
 #include <linux/workqueue.h>
+#include <net/genetlink.h>
 
 #define SDIO_VENDOR_ID_INTEL			0x0089
 #define SDIO_DEVICE_ID_INTEL_IWMC3200WIMAX	0x1402
@@ -47,6 +48,7 @@ static inline void flush_delayed_work(struct delayed_work *dwork)
 /* net namespace is lost */
 #define genlmsg_multicast_netns(a, b, c, d, e)	genlmsg_multicast(b, c, d, e)
 #define genlmsg_multicast_allns(a, b, c, d)	genlmsg_multicast(a, b, c, d)
+#define genlmsg_unicast(net, skb, pid)	genlmsg_unicast(skb, pid)
 
 #define dev_change_net_namespace(a, b, c) (-EOPNOTSUPP)
 
@@ -89,6 +91,10 @@ struct dev_pm_ops name = { \
 
 /* The export symbol in changed in compat/patches/15-symbol-export-conflicts.patch */
 #define ieee80211_rx(hw, skb) mac80211_ieee80211_rx(hw, skb)
+
+#define dev_to_sdio_func(d)	container_of(d, struct sdio_func, dev)
+
+#define lockdep_assert_held(l)			do { } while (0)
 
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,32)) */
 
