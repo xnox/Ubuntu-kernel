@@ -4,7 +4,7 @@ linux-meta (2.6.35.23.25) UNRELEASED; urgency=low
 
  -- Stefan Bader <stefan.bader@canonical.com>  Thu, 21 Oct 2010 12:06:36 +0200
 
-linux-meta (2.6.35.23.24) maverick; urgency=low
+linux-meta (2.6.35.23.24) maverick-proposed; urgency=low
 
   [ Leann Ogasawara ]
 
