@@ -219,7 +219,7 @@ static void show_map_vma(struct seq_file *m, struct vm_area_struct *vma)
 
 	/* We don't show the stack guard page in /proc/maps */
 	start = vma->vm_start;
-	if (vma->vm_flags & VM_GROWSDOWN)
+	if (stack_guard_page(vma, start))
 		start += PAGE_SIZE;
 
 	seq_printf(m, "%08lx-%08lx %c%c%c%c %08llx %02x:%02x %lu %n",
