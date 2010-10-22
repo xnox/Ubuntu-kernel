@@ -1,3 +1,9 @@
+linux-meta-linaro (2.6.35.1008.13) maverick-proposed; urgency=low
+
+  * Linaro Maverick ABI 1008 (2.6.35-1008.15)
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 22 Oct 2010 07:01:02 -0600
+
 linux-meta-linaro (2.6.35.1007.12) maverick-proposed; urgency=low
 
   * Linaro Maverick ABI 1007 (2.6.35-1007.12)
