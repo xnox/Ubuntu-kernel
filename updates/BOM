@@ -9,3 +9,6 @@ Remember to remove the .gitignore file lest you not get all of the files committ
 
 E1000E:
 git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+
+IR:
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git

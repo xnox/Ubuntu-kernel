@@ -80,6 +80,8 @@ install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: netpkgdir = $(CURDIR)/debian/linux-backports-modules-net-$(release)-$(abinum)-$*
 install-%: netmoddir = $(netpkgdir)/lib/modules/$(release)-$(abinum)-$*
+install-%: mediapkgdir = $(CURDIR)/debian/linux-backports-modules-media-$(release)-$(abinum)-$*
+install-%: mediamoddir = $(mediapkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: lbmbasehdrpkg = linux-headers-lbm-$(release)$(debnum)
 install-%: lbmhdrpkg = $(lbmbasehdrpkg)-$*
 install-%: hdrdir = $(CURDIR)/debian/$(lbmhdrpkg)/usr/src/$(lbmhdrpkg)
@@ -176,6 +178,26 @@ ifeq ($(do_input),true)
 	done
 endif
 
+ifeq ($(do_media),true)
+	#
+	# Build the media package.
+	#
+	install -d $(mediamoddir)/updates/media
+	find $(builddir)/build-$*/media -type f -name '*.ko' | \
+	while read f ; do \
+		cp -v $${f} $(mediamoddir)/updates/media/`basename $${f}`; \
+	done
+
+	find $(mediapkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
+
+	install -d $(mediapkgdir)/DEBIAN
+	for script in postinst postrm; do					\
+	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
+	       debian/control-scripts/$$script > $(mediapkgdir)/DEBIAN/$$script;	\
+	  chmod 755 $(mediapkgdir)/DEBIAN/$$script;					\
+	done
+endif
+
 	#
 	# The flavour specific headers package
 	#
@@ -187,6 +209,9 @@ ifeq ($(do_alsa),true)
 endif
 ifeq ($(do_net),true)
 	tar -C $(builddir)/build-$*/net -chf - include | tar -C $(hdrdir) -xf -
+endif
+ifeq ($(do_media),true)
+	tar -C $(builddir)/build-$*/media -chf - include | tar -C $(hdrdir) -xf -
 endif
 	dh_testdir
 	dh_testroot
@@ -207,6 +232,7 @@ package_list += $(cw_pkg_list_suf)
 package_list += linux-backports-modules-alsa-$(release)-$(abinum)-$*
 package_list += linux-backports-modules-net-$(release)-$(abinum)-$*
 package_list += linux-backports-modules-input-$(release)-$(abinum)-$*
+package_list += linux-backports-modules-media-$(release)-$(abinum)-$*
 
 binary-modules-%: install-%
 	dh_testdir

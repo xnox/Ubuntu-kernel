@@ -95,3 +95,18 @@ Description: Linux input modules for version PKGVER on DESC
  You likely do not want to install this package directly. Instead, install
  the linux-backports-modules-input-FLAVOUR meta-package, which will ensure
  that upgrades work correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-media-PKGVER-ABINUM-FLAVOUR
+Architecture: ARCH
+Section: SECTION_IMAGE
+Priority: optional
+Provides: =PROVIDES=
+Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+Pre-Depends: dpkg (>= 1.10.24)
+Description: Linux media modules for version PKGVER on DESC
+ This package contains media modules supplied by Ubuntu for Linux
+ kernel PKGVER on DESC.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-media-FLAVOUR meta-package, which will ensure
+ that upgrades work correctly, and that supporting packages are also installed.

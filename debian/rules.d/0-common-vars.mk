@@ -56,6 +56,7 @@ do_compat_wireless_2.6.36=true
 do_compat_wireless_2.6.37=false
 do_net=true
 do_input=true
+do_media=true
 
 #
 # Compat wireless versions for which packages are created.
