@@ -75,3 +75,10 @@ Description: Backported wireless drivers for server kernel image
 #Description: Backported wireless drivers for server kernel image
 # This empty package allows people to keep their backported wireless modules
 # up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-media-RELEASE_NAME-server
+Architecture: amd64
+Depends: ${misc:Depends}, linux-backports-modules-media-${kernel-abi-version}-server
+Description: Backported media drivers for server kernel image
+ This empty package allows people to keep their backported media modules
+ up-to-date when upgrading their Linux kernel.
