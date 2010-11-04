@@ -14,7 +14,7 @@ Architecture: ARCH
 Section: SECTION_IMAGE
 Priority: optional
 Provides: =PROVIDES=
-Conflicts: linux-backports-modules-compat-wireless-2.6.35-PKGVER-ABINUM-FLAVOUR, linux-backports-modules-wireless-PKGVER-ABINUM-FLAVOUR
+Conflicts: linux-backports-modules-compat-wireless-2.6.35-PKGVER-ABINUM-FLAVOUR, linux-backports-modules-compat-wireless-2.6.36-PKGVER-ABINUM-FLAVOUR, linux-backports-modules-wireless-PKGVER-ABINUM-FLAVOUR
 Replaces: linux-backports-modules-wireless-PKGVER-ABINUM-FLAVOUR
 Depends: linux-image-PKGVER-ABINUM-FLAVOUR
 Pre-Depends: dpkg (>= 1.10.24)
@@ -22,8 +22,7 @@ Description: compat-wireless Linux modules for version PKGVER on DESC
  This package contains compat-wireless modules supplied by Ubuntu for Linux
  kernel PKGVER on DESC. It replaces the original package linux-backports-modules-wireless
  with linux-backports-modules-compat-wireless-2.6.34, a name which is more consistent with
- subsequent compat-wireless stable update packages, e.g., linux-backports-modules-compat-wireless-2.6.35,
- linux-backports-modules-compat-wireless-2.6.36, etc.
+ subsequent compat-wireless stable update packages, e.g., linux-backports-modules-compat-wireless-2.6.35, linux-backports-modules-compat-wireless-2.6.36, etc.
  .
  You likely do not want to install this package directly. Instead, install
  the linux-backports-modules-wireless-POCKET-FLAVOUR meta-package, which will ensure
@@ -34,7 +33,7 @@ Architecture: ARCH
 Section: SECTION_IMAGE
 Priority: optional
 Provides: =PROVIDES=
-Conflicts: linux-backports-modules-compat-wireless-2.6.34-PKGVER-ABINUM-FLAVOUR, linux-backports-modules-wireless-PKGVER-ABINUM-FLAVOUR
+Conflicts: linux-backports-modules-compat-wireless-2.6.34-PKGVER-ABINUM-FLAVOUR, linux-backports-modules-compat-wireless-2.6.36-PKGVER-ABINUM-FLAVOUR, linux-backports-modules-wireless-PKGVER-ABINUM-FLAVOUR
 Depends: linux-image-PKGVER-ABINUM-FLAVOUR
 Pre-Depends: dpkg (>= 1.10.24)
 Description: compat-wireless Linux modules for version PKGVER on DESC
@@ -43,6 +42,22 @@ Description: compat-wireless Linux modules for version PKGVER on DESC
  .
  You likely do not want to install this package directly. Instead, install
  the linux-backports-modules-compat-wireless-2.6.35-POCKET-FLAVOUR meta-package, which will ensure
+ that upgrades work correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-compat-wireless-2.6.36-PKGVER-ABINUM-FLAVOUR
+Architecture: ARCH
+Section: SECTION_IMAGE
+Priority: optional
+Provides: =PROVIDES=
+Conflicts: linux-backports-modules-compat-wireless-2.6.34-PKGVER-ABINUM-FLAVOUR, linux-backports-modules-compat-wireless-2.6.35-PKGVER-ABINUM-FLAVOUR, linux-backports-modules-wireless-PKGVER-ABINUM-FLAVOUR
+Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+Pre-Depends: dpkg (>= 1.10.24)
+Description: compat-wireless Linux modules for version PKGVER on DESC
+ This package contains compat-wireless modules supplied by Ubuntu for Linux
+ kernel PKGVER on DESC.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-compat-wireless-2.6.36-POCKET-FLAVOUR meta-package, which will ensure
  that upgrades work correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-PKGVER-ABINUM-FLAVOUR
