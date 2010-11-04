@@ -1,0 +1,42 @@
+#!/bin/bash
+
+if [ "$#" -lt 1 -o "$#" -gt 2 ]; then
+	echo "Usage: $0 [<source abi>] <destination abi>" 1>&2
+	exit 1
+fi
+if [ "$#" -eq 2 ]; then
+	src="$1"
+	dst="$2"
+else
+	src="$1"
+	dst="$1"
+fi
+
+# Copy over the architecture names.
+for i in "$src"/*
+do
+	arch=`basename "$i"`
+	[ ! -d "$i" ] && continue
+	mkdir -p "$dst/$arch"
+	echo "1" >"$dst/$arch/ignore"
+	echo "1" >"$dst/$arch/ignore.modules"
+	echo "* disabled $arch ..."
+done
+
+# Check if there is an abiname.
+if [ ! -d "$dst/abiname" ]; then
+	abi=`basename "$dst"`
+	abi="${abi#*-}"
+	abi="${abi%.*}"
+
+	echo "* adding abiname $abi ..."
+	echo "$abi" > "$dst/abiname"
+fi
+	
+# Update the index to match.
+git add "$dst"
+if [ "$src" != "$dst" ]; then
+	git rm -rf "$src"
+	rmdir "$src"
+fi
+#git commit -m 'ABI disable'
