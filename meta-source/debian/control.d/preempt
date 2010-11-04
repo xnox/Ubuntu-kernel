@@ -35,7 +35,7 @@ Description: Backported driver headers for preempt kernel image
 Package: linux-backports-modules-wireless-RELEASE_NAME-preempt
 Architecture: amd64 i386
 Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.34-${kernel-abi-version}-preempt
-Conflicts: linux-backports-modules-wireless-2.6.35-RELEASE_NAME-preempt
+Conflicts: linux-backports-modules-wireless-2.6.35-RELEASE_NAME-preempt, linux-backports-modules-wireless-2.6.36-RELEASE_NAME-preempt
 Description: Backported wireless drivers for preempt kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
@@ -43,7 +43,15 @@ Description: Backported wireless drivers for preempt kernel image
 Package: linux-backports-modules-wireless-2.6.35-RELEASE_NAME-preempt
 Architecture: amd64 i386
 Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.35-${kernel-abi-version}-preempt
-Conflicts: linux-backports-modules-wireless-RELEASE_NAME-preempt
+Conflicts: linux-backports-modules-wireless-RELEASE_NAME-preempt, linux-backports-modules-wireless-2.6.36-RELEASE_NAME-preempt
+Description: Backported wireless drivers for preempt kernel image
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-wireless-2.6.36-RELEASE_NAME-preempt
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.36-${kernel-abi-version}-preempt
+Conflicts: linux-backports-modules-wireless-RELEASE_NAME-preempt, linux-backports-modules-wireless-2.6.35-RELEASE_NAME-preempt
 Description: Backported wireless drivers for preempt kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
