@@ -172,6 +172,9 @@ PkgList["maverick"] = dict([
 	( "linux", "linux" ),
 	( "lbm", "linux-backports-modules-2.6.35" )
 ])
+PkgList["natty"] = dict([
+	( "linux", "linux")
+])
 
 #------------------------------------------------------------------------------
 # Generate a list of [<package>, <series>] tuples for all currently supported

@@ -102,7 +102,7 @@ case $SUITE in
 		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev uboot-mkimage"
 		ADDPKGDEP="$ADDPKGDEP linux";
 		;;
-	maverick)
+	maverick|natty)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc uboot-mkimage"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
