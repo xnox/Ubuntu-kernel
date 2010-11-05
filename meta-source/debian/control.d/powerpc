@@ -1,0 +1,30 @@
+#
+# PowerPC
+#
+Package: linux-powerpc
+Architecture: powerpc
+Section: restricted/metapackages
+Priority: optional
+Depends: linux-image-powerpc (= ${binary:Version})
+Description: Complete Linux kernel on PowerPC.
+ This package will always depend on the latest complete Linux kernel available
+ for PowerPC.
+
+Package: linux-image-powerpc
+Architecture: powerpc
+Section: metapackages
+Priority: optional
+Depends: linux-image-${kernel-abi-version}-powerpc, linux-firmware
+Description: Linux kernel image on PowerPC
+ This package will always depend on the latest kernel image available
+ for PowerPC support.
+
+Package: linux-headers-powerpc
+Architecture: powerpc
+Section: devel
+Priority: optional
+Depends: linux-headers-${kernel-abi-version}-powerpc
+Description: Linux kernel headers on PowerPC
+ This package will always depend on the latest kernel headers available
+ for PowerPC.
+
