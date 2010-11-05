@@ -1,6 +1,7 @@
-linux-meta (2.6.36.1.3) UNRELEASED; urgency=low
+linux-meta (2.6.36.2.3) UNRELEASED; urgency=low
 
   * Pull in powerpc, powerpc-smp, powerpc64-smp into the master branch.
+  * Natty ABI 2
 
  -- Andy Whitcroft <apw@canonical.com>  Fri, 05 Nov 2010 14:24:10 +0000
 
