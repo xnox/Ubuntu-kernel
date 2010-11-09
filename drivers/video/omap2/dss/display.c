@@ -321,17 +321,22 @@ void default_get_overlay_fifo_thresholds(enum omap_plane plane,
 		u32 fifo_size, enum omap_burst_size *burst_size,
 		u32 *fifo_low, u32 *fifo_high)
 {
-	unsigned burst_size_bytes;
+	unsigned burst_size_reg;
 
-	*burst_size = OMAP_DSS_BURST_16x32;
-	if (cpu_is_omap44xx())
-		burst_size_bytes = 8 * 128 / 8; /* OMAP4: highest
-							burst size is 8x128*/
-	else
-		burst_size_bytes = 16 * 32 / 8;
-
+	*burst_size = OMAP_DSS_BURST_16x32;	/* 8 x 128 bits on OMAP4 */
+	/* On omap4, one unit in the BUF_SIZE_STATUS
+	 * and BUF_THRESHOLD registers represent
+	 * 128 bits in comparison to 8 bits on omap3
+	 */
+	if (cpu_is_omap44xx()) {
+		/* Unit is 128 bits */
+		burst_size_reg = 8 * 128 / 128;
+	} else {
+		/* Unit is bytes*/
+		burst_size_reg = 16 * 32 / 8;
+	}
 	*fifo_high = fifo_size - 1;
-	*fifo_low = fifo_size - burst_size_bytes;
+	*fifo_low = fifo_size - burst_size_reg;
 }
 
 int omapdss_default_get_recommended_bpp(struct omap_dss_device *dssdev)
