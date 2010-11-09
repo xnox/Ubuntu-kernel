@@ -123,7 +123,6 @@ binfmt_misc
 block2mtd
 blowfish
 bluetooth
-bmm_drv
 bnep
 bonding
 bpa10x
@@ -398,7 +397,6 @@ fujitsu_ts
 funsoft
 g760a
 gadgetfs
-galcore
 gamecon
 gameport
 garmin_gps
@@ -599,6 +597,7 @@ isight_firmware
 isl29003
 isl6405
 isl6421
+isl6423
 isp116x-hcd
 isp1760
 it87
@@ -1155,7 +1154,9 @@ stv0288
 stv0297
 stv0299
 stv0900
+stv090x
 stv6110
+stv6110x
 sundance
 sunhme
 sunkbd
