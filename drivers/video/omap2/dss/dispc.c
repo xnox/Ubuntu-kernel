@@ -279,7 +279,7 @@ struct dispc_irq_stats {
 static struct {
 	void __iomem    *base;
 
-	u32	fifo_size[3];
+	u32	fifo_size[5];
 
 	spinlock_t irq_lock;
 	u32 irq_error_mask;
