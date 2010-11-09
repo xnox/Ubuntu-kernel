@@ -59,3 +59,10 @@ Depends: ${misc:Depends}, linux-backports-modules-input-${kernel-abi-version}-ge
 Description: Backported input drivers for generic kernel image.
  This empty package allows people to keep their backported input modules
  up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-compat-wireless-2.6.36-RELEASE_NAME-generic
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.36-${kernel-abi-version}-generic
+Description: Backported wireless drivers for generic kernel image.
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
