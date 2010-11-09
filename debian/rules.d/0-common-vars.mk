@@ -53,6 +53,7 @@ no_compat_wireless_flavours="xen virtual"
 #
 do_alsa=false
 do_compat_wireless_2.6.36=true
+do_compat_wireless_2.6.37=false
 do_net=true
 do_input=true
 
@@ -61,6 +62,10 @@ do_input=true
 #
 ifeq ($(do_compat_wireless_2.6.36),true)
 	CWDIRS += compat-wireless-2.6.36
+endif
+
+ifeq ($(do_compat_wireless_2.6.37),true)
+	CWDIRS += compat-wireless-2.6.37
 endif
 
 # Support parallel=<n> in DEB_BUILD_OPTIONS (see #209008)
