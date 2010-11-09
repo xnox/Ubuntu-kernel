@@ -5,13 +5,15 @@ do-binary-udebs:
 	imagelist=$$(cat $(udebdir)/kernel-versions | grep ^${arch} | \
 		     awk '{print $$4}') && \
 	for i in $$imagelist; do \
-	  dpkg -x $$(ls ../linux-backports-modules-wireless-$$i\_$(release)-$(revision)_${arch}.deb) \
+	  for j in $(CWDIRS); do \
+	    dpkg -x $$(ls ../linux-backports-modules-$$j-$$i\_$(release)-$(revision)_${arch}.deb) \
 		$(udebdir)/; \
-	  if [ -d $(udebdir)/lib/modules/$$i ]; then \
-	    /sbin/depmod -b $(udebdir) $$i; \
-	  else \
-	    touch $(udebdir)/no-modules; \
-	  fi; \
+	    if [ -d $(udebdir)/lib/modules/$$i ]; then \
+	      /sbin/depmod -b $(udebdir) $$i; \
+	    else \
+	      touch $(udebdir)/no-modules; \
+	    fi; \
+	  done; \
 	done
 
 	#
