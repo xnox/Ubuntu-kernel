@@ -1,0 +1,307 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from os                                 import path
+from os                                 import unlink
+from getopt                             import getopt, GetoptError
+import json
+import re
+import apt_pkg
+import urllib
+import atexit
+import shutil
+import time
+from lpltk.service                      import LaunchpadService
+from ktl.utils                          import stdo
+from ktl.std_app                        import StdApp
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'config=', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+            if result: # No errors yet
+
+                # At lease one source package must be specified.
+                #
+                if len(args) > 0:
+                    self.cfg['source_pkgs'] = args
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        return
+
+
+# SruReport
+#
+class SruReport(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+        self.defaults['configuration_file'] = path.join(path.expanduser('~'), "sru.cfg")
+
+        self.archive_root = 'http://archive.ubuntu.com/ubuntu'
+        self.ports_root   = 'http://ports.ubuntu.com/ubuntu'
+
+        self.components   = ['main', 'universe']
+        self.suites       = ['dapper', 'hardy', 'karmic', 'lucid', 'maverick']
+
+        self.tempdir = None
+
+    # initialize
+    #
+    def initialize(self):
+        self.dbg('core', "initialize: enter\n")
+        apt_pkg.init_system()
+        # note that only 'LP: #1234' is official, but sometimes people get it wrong
+        self.changelog_bug_pattern = re.compile('(?:lp:? ?#?|href="/bugs/)([0-9]+)')
+        self.published_date_pattern = re.compile('Published.*\n.*on ([-0-9]+)')
+        self.service = LaunchpadService()
+        self.dbg('core', "initialize: leave\n")
+        return
+
+    # decompress_open
+    #
+    def decompress_open(self, tagfile):
+        if tagfile.startswith('http:') or tagfile.startswith('ftp:'):
+            url = tagfile
+            tagfile = urllib.urlretrieve(url)[0]
+            atexit.register(unlink, tagfile)
+
+        if tagfile.endswith('.gz'):
+            import gzip
+            import tempfile
+            if not self.tempdir:
+                self.tempdir = tempfile.mkdtemp(prefix='suite-diff')
+                atexit.register(shutil.rmtree, self.tempdir, True)
+            decompressed = tempfile.mktemp(dir=self.tempdir)
+            fin = gzip.GzipFile(filename=tagfile)
+            fout = open(decompressed, 'wb')
+            fout.write(fin.read())
+            fout.close()
+            atexit.register(unlink, decompressed)
+            return open(decompressed, 'r')
+        else:
+            return open(tagfile, 'r')
+
+    # tagfile_to_dict
+    #
+    def tagfile_to_dict(self, tagfile):
+        suite = {}
+        p = apt_pkg.TagFile(self.decompress_open(tagfile))
+        while p.step() == 1:
+            suite[p.section["Package"]] = p.section["Version"]
+        return suite
+
+    # get_changelog_info
+    #
+    def get_changelog_info(self, url):
+        '''Parse LP per-version/per-release page URL and return tuple (date, bugs)
+        with a publishing date (time record) and a bug list string.'''
+
+        # enable this for quick testing
+        #return (time.localtime(), '')
+
+        chlog = urllib.urlopen(url).read()
+
+        m = self.published_date_pattern.search(chlog)
+        if m:
+            date = time.strptime(m.group(1), '%Y-%m-%d')
+        else:
+            # less than a day ago (Soyuz uses "... hours ago")
+            date = time.localtime()
+
+        # cut out the actual changelog
+        chlog = chlog[chlog.find('<pre '):chlog.find('</pre>')]
+
+        bugnums = []
+        for m in self.changelog_bug_pattern.finditer(chlog):
+            bug = m.group(1)
+            if bug.startswith('#'):
+                bug = bug[1:]
+            if bug not in bugnums:
+                bugnums.append(bug)
+
+        return (date, bugnums)
+
+    # main
+    #
+    def main(self):
+        results = {}
+        pending = {}             # suite -> package -> (release_ver, proposed_ver, update_ver)
+        security_superseded = {} # suite -> package -> (proposed_ver, security_ver)
+        cleanup = {}             # suite -> package
+        cmdline = Cmdline()
+        kernel_rc = re.compile('^linux.*$')
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.initialize()
+
+            for suite in self.suites:
+                self.dbg('core', "Suite: '%s'\n" % (suite))
+                for component in self.components:
+                    self.dbg('core', "    Component: '%s'\n" % (component))
+
+                    release  = self.tagfile_to_dict('%s/dists/%s/%s/source/Sources.gz'          % (self.archive_root, suite, component))
+                    proposed = self.tagfile_to_dict('%s/dists/%s-proposed/%s/source/Sources.gz' % (self.archive_root, suite, component))
+                    updates  = self.tagfile_to_dict('%s/dists/%s-updates/%s/source/Sources.gz'  % (self.archive_root, suite, component))
+                    security = self.tagfile_to_dict('%s/dists/%s-security/%s/source/Sources.gz' % (self.archive_root, suite, component))
+
+                    for package in sorted(proposed.keys()):
+                        if 'linux' not in package: continue
+                        self.dbg('core', "        Package: '%s'\n" % (package))
+                        update_ver = updates.get(package, '')
+                        if apt_pkg.version_compare(proposed[package], update_ver) > 0:
+                            pending.setdefault(suite, {})[package] = (release.get(package, ''), proposed[package], update_ver)
+
+                            security_ver = security.get(package, '')
+                            if apt_pkg.version_compare(proposed[package], security_ver) < 0:
+                                security_superseded.setdefault(suite, {})[package] = (proposed[package], security_ver)
+                        else:
+                            cleanup.setdefault(suite, []).append(package)
+
+
+            # Pending Ubuntu Stable Release Updates
+            #
+            for suite in self.suites:
+                results[suite] = {}
+                if suite in pending:
+                    pkgs = pending[suite].keys()
+                    for pkg in pkgs:
+                        lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (suite, pkg)
+                        (vrel, vprop, vupd) = pending[suite][pkg]
+
+                        (date, bugs) = self.get_changelog_info(lpurl+vprop)
+                        age = int((time.time()-time.mktime(date))/86400)
+
+                        results[suite][pkg] = {}
+                        results[suite][pkg]['url'     ] = lpurl
+                        results[suite][pkg]['release' ] = vrel
+                        results[suite][pkg]['proposed'] = vprop
+                        results[suite][pkg]['update'  ] = vupd
+                        results[suite][pkg]['age'     ] = age
+                        results[suite][pkg]['bugs'    ] = {}
+
+                        for bug in bugs:
+                            results[suite][pkg]['bugs'][bug] = {}
+                            lp_bug = self.service.get_bug(bug)
+                            if   'verification-failed' in lp_bug.tags: state = 'failed'
+                            elif 'verification-done'   in lp_bug.tags: state = 'verified'
+                            elif 'verification-needed' in lp_bug.tags: state = 'needed'
+                            else: state = 'missing'
+
+                            if 'hw-specific' in lp_bug.tags:
+                                attrib = '(hw)'
+
+                            results[suite][pkg]['bugs'][bug]['title'] = lp_bug.title
+                            results[suite][pkg]['bugs'][bug]['owner'] = lp_bug.owner.display_name
+                            results[suite][pkg]['bugs'][bug]['state'] = state
+
+            print json.dumps(results, sort_keys=True, indent=4)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle ommand line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        return
+
+if __name__ == '__main__':
+    app = SruReport()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
