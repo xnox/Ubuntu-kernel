@@ -1783,6 +1783,13 @@ void dispc_setup_plane_fifo(enum omap_plane plane, u32 low, u32 high)
 		dispc_write_reg(ftrs_reg[plane],
 				FLD_VAL(high, 31, 16) | FLD_VAL(low, 15, 0));
 
+	/* Setting this bit to 1 gives issues on omap3,
+	 * doing this only for omap4 for now
+	 */
+	if (cpu_is_omap44xx()) {
+		u8 bit = plane == OMAP_DSS_GFX ? 11 : 19;
+		REG_FLD_MOD(dispc_reg_att[plane], 0x1, bit, bit);
+	}
 	enable_clocks(0);
 }
 
@@ -4548,6 +4555,9 @@ static void _omap_dispc_initial_config(void)
 	dispc_set_loadmode(OMAP_DSS_LOAD_FRAME_ONLY);
 
 	dispc_read_plane_fifo_sizes();
+
+	if (cpu_is_omap44xx())
+		dispc_move_wb_buffers(false);
 }
 
 int dispc_init(struct platform_device *pdev)
@@ -4647,6 +4657,23 @@ int dispc_setup_plane(enum omap_plane plane,
 }
 
 /* Writeback*/
+int dispc_move_wb_buffers(bool buffer_state)
+{
+	if (buffer_state) {
+		/* return buffers to writeback pipeline */
+		REG_FLD_MOD(DISPC_GLOBAL_BUFFER, 0x4, 26, 24);
+		REG_FLD_MOD(DISPC_GLOBAL_BUFFER, 0x4, 29, 26);
+		dispc_write_reg(DISPC_GFX_FIFO_THRESHOLD,
+			FLD_VAL(0x4FF, 31, 16) | FLD_VAL(0x4F8, 15, 0));
+	} else {
+		/* Only move buffers to GFX for now */
+		REG_FLD_MOD(DISPC_GLOBAL_BUFFER, 0x0, 29, 24);
+		dispc_write_reg(DISPC_GFX_FIFO_THRESHOLD,
+			FLD_VAL(0xCFF, 31, 16) | FLD_VAL(0xCF8, 15, 0));
+	}
+	return 0;
+}
+
 int dispc_setup_wb(struct writeback_cache_data *wb)
 {
 	unsigned long mir_x, mir_y;

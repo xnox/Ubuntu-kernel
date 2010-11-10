@@ -467,6 +467,7 @@ int dispc_get_clock_div(enum omap_channel channel,
 void dispc_go_wb(void);
 void dispc_flush_wb(struct writeback_cache_data *wb);
 int dispc_setup_wb(struct writeback_cache_data *wb);
+int dispc_move_wb_buffers(bool buffer_state);
 
 /* VENC */
 #ifdef CONFIG_OMAP2_DSS_VENC

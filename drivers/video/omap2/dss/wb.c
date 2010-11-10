@@ -35,20 +35,79 @@
 
 static struct list_head wb_list;
 
+static ssize_t wb_buffer_state_show(struct omap_writeback *wb, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%d\n", wb->info.buffer_state);
+}
+
+static ssize_t wb_buffer_state_store(struct omap_writeback *wb, const char *buf,
+		size_t size)
+{
+	int r;
+	struct omap_writeback_info info;
+
+	wb->get_wb_info(wb, &info);
+
+	info.buffer_state = simple_strtoul(buf, NULL, 10);
+
+	r = dispc_move_wb_buffers(info.buffer_state);
+	if (r) {
+		DSSERR("failed to move buffers\n");
+		return r;
+	}
+	r = wb->set_wb_info(wb, &info);
+	if (r)
+		return r;
+
+	return size;
+}
+
+struct wb_attribute {
+	struct attribute attr;
+	ssize_t (*show)(struct omap_writeback *, char *);
+	ssize_t	(*store)(struct omap_writeback *, const char *, size_t);
+};
+
+#define WB_ATTR(_name, _mode, _show, _store) \
+	struct wb_attribute wb_attr_##_name = \
+	__ATTR(_name, _mode, _show, _store)
+
+static WB_ATTR(buffer_state, S_IRUGO|S_IWUSR,
+		wb_buffer_state_show, wb_buffer_state_store);
+
 static struct attribute *writeback_sysfs_attrs[] = {
+	&wb_attr_buffer_state.attr,
 	NULL
 };
 
 static ssize_t writeback_attr_show(struct kobject *kobj, struct attribute *attr,
 		char *buf)
 {
-return 0;
+	struct omap_writeback *wb;
+	struct wb_attribute *wb_attr;
+
+	wb = container_of(kobj, struct omap_writeback, kobj);
+	wb_attr = container_of(attr, struct wb_attribute, attr);
+
+	if (!wb_attr->show)
+		return -ENOENT;
+
+	return wb_attr->show(wb, buf);
 }
 
 static ssize_t writeback_attr_store(struct kobject *kobj, struct attribute *attr,
 		const char *buf, size_t size)
 {
-return 0;
+	struct omap_writeback *wb;
+	struct wb_attribute *wb_attr;
+
+	wb = container_of(kobj, struct omap_writeback, kobj);
+	wb_attr = container_of(attr, struct wb_attribute, attr);
+
+	if (!wb_attr->store)
+		return -ENOENT;
+
+	return wb_attr->store(wb, buf, size);
 }
 
 static struct sysfs_ops writeback_sysfs_ops = {
@@ -175,5 +234,4 @@ void dss_init_writeback(struct platform_device *pdev)
 		if (r) {
 			DSSERR("failed to create sysfs file\n");
 		}
-
 }

@@ -495,6 +495,7 @@ struct omap_writeback_info {
 		unsigned long				paddr;
 		/* NV12 support*/
 		unsigned long				puv_addr;
+		bool					buffer_state;
 
 };
 
@@ -511,7 +512,6 @@ struct omap_writeback {
 
 	int (*set_wb_info)(struct omap_writeback *wb, struct omap_writeback_info *info);
 	void (*get_wb_info)(struct omap_writeback *wb, struct omap_writeback_info *info);
-
 };
 
 struct omap_dss_device {
