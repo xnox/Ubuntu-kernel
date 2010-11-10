@@ -34,3 +34,6 @@ list-not-verified
         sru-report > srus.json
 	list-not-verified srus.json
 
+bug-mod
+    Takes a list of bug-ids from stdin and makes modifications to the relevant
+    launchpad bug.

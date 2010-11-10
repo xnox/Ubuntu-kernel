@@ -1,0 +1,231 @@
+#!/usr/bin/env python
+#
+
+from sys                                import stdin, argv
+from os                                 import path
+from getopt                             import getopt, GetoptError
+from lpltk.service                      import LaunchpadService
+from ktl.utils                          import stdo
+from ktl.std_app                        import StdApp
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>] <srus.json>             \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'status=', 'tags=', 'comment=', 'verification-check']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verification-check'):
+                    self.cfg['verification-test'] = True
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--status'):
+                    self.cfg['status'] = val.strip()
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+                elif opt in ('--tags'):
+                    self.cfg['tags'] = []
+                    for v in val.split(','):
+                        self.cfg['tags'].append(v.strip())
+
+                elif opt in ('--comment'):
+                    self.cfg['comment'] = val
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        # If a comment is to be added to the bugs, verify that the comment file
+        # exists.
+        #
+        if 'comment' in self.cfg:
+            if not path.exists(self.cfg['comment']):
+                raise CmdlineError("\n   *** Error: The file specified by the --comment command line option (%s) does not exist.\n" % (self.cfg['comment']))
+        return
+
+
+# BugMod
+#
+class BugMod(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+        #self.defaults['launchpad_services_root'] = 'staging'
+
+    # initialize
+    #
+    def initialize(self):
+        self.dbg('core', "initialize: enter\n")
+        self.service = LaunchpadService(self.cfg)
+
+        # If a comment is to be added to the bug, read the comment file into a buffer
+        # so we have it ready when we need it.
+        #
+        if 'comment' in self.cfg:
+            with open(self.cfg['comment'], 'r') as f:
+                self.cfg['comment-text'] = f.read()
+
+        self.dbg('core', "initialize: leave\n")
+        return
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.initialize()
+
+            for line in stdin:
+                bug_id = line.strip()
+                lp_bug = self.service.get_bug(bug_id)
+
+                print("%s: %25s: %s" % (bug_id, lp_bug.title, lp_bug.owner.display_name))
+                if 'verification-check' in self.cfg and self.cfg['verification-check']:
+                    # Make sure the tags on the bug are the ones we expect. Just in case the
+                    # bug got changed between when the bug list got generated and when this
+                    # script was run.
+                    #
+                    if 'verification-failed' in lp_bug.tags or 'verification-needed' in lp_bug.tags:
+                        if 'verification-done' in lp_bug.tags:
+                            print("%s: has mixed verification flags, manual intervention required." % (bug_id))
+                            continue
+                        else:
+                            print("%s: has the proper tags." % (bug_id))
+
+                # Add and/or remove the requested tags.
+                #
+                if 'tags' in self.cfg:
+                    for tag in self.cfg['tags']:
+                        if tag[0] == '+':
+                            lp_bug.tags.append(tag[1:])
+                        elif tag[0] == '-':
+                            if tag in lp_bug.tags:
+                                lp_bug.tags.remove(tag[1:])
+                        else:
+                            lp_bug.tags.append(tag[1:])
+
+                # Add the comment (if there's one to add).
+                #
+                if 'comment-text' in self.cfg:
+                    lp_bug.add_comment(self.cfg['comment-text'])
+
+                # Change the bugs status.
+                #
+                if 'status' in self.cfg:
+                    tasks = lp_bug.tasks
+                    if len(tasks) == 1:
+                        print("Setting the status to '%s'." % (self.cfg['status']))
+                        task = tasks[0]
+                        tasks[0].status = self.cfg['status']
+                    else:
+                        print("   ** Warning: This bug contains multiple bug tasks, not able to set the status.")
+
+                break # FIXME bjf, for debugging purposes we only want to do one
+
+                #if 'hw-specific' in lp_bug.tags:
+                #    attrib = '(hw)'
+
+                #results[suite][pkg]['bugs'][bug]['title'] = lp_bug.title
+                #results[suite][pkg]['bugs'][bug]['owner'] = lp_bug.owner.display_name
+                #results[suite][pkg]['bugs'][bug]['state'] = state
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle ommand line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        return
+
+if __name__ == '__main__':
+    app = BugMod()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
