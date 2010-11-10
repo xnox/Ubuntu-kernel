@@ -29,9 +29,23 @@ udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 #
 # Compat wireless versions for which packages are created.
 #
-CWDIRS += compat-wireless-2.6.34
+do_compat_wireless_2.6.34=true
+do_compat_wireless_2.6.35=true
+do_compat_wireless_2.6.36=true
+do_compat_wireless_2.6.37=false
+
+ifeq ($(do_compat_wireless_2.6.34),true)
+	CWDIRS += compat-wireless-2.6.34
+endif
+ifeq ($(do_compat_wireless_2.6.35),true)
 CWDIRS += compat-wireless-2.6.35
+endif
+ifeq ($(do_compat_wireless_2.6.36),true)
 CWDIRS += compat-wireless-2.6.36
+endif
+ifeq ($(do_compat_wireless_2.6.37),true)
+CWDIRS += compat-wireless-2.6.37
+endif
 
 # package selectors
 do_nouveau_package = $(shell grep -c '^Package: linux-backports-modules-nouveau' $(CURDIR)/debian/control.d/flavour-control.stub)
