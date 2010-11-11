@@ -188,6 +188,7 @@ struct drm_i915_display_funcs {
 struct intel_overlay;
 
 struct intel_device_info {
+	u8 gen;
 	u8 is_mobile : 1;
 	u8 is_i8xx : 1;
 	u8 is_i85x : 1;
@@ -200,8 +201,9 @@ struct intel_device_info {
 	u8 need_gfx_hws : 1;
 	u8 is_g4x : 1;
 	u8 is_pineview : 1;
+	u8 is_broadwater : 1;
+	u8 is_crestline : 1;
 	u8 is_ironlake : 1;
-	u8 is_gen6 : 1;
 	u8 has_fbc : 1;
 	u8 has_rc6 : 1;
 	u8 has_pipe_cxsr : 1;
@@ -1128,13 +1130,14 @@ extern int intel_trans_dp_port_sel (struct drm_crtc *crtc);
 #define IS_845G(dev)		((dev)->pci_device == 0x2562)
 #define IS_I85X(dev)		(INTEL_INFO(dev)->is_i85x)
 #define IS_I865G(dev)		((dev)->pci_device == 0x2572)
-#define IS_GEN2(dev)		(INTEL_INFO(dev)->is_i8xx)
 #define IS_I915G(dev)		(INTEL_INFO(dev)->is_i915g)
 #define IS_I915GM(dev)		((dev)->pci_device == 0x2592)
 #define IS_I945G(dev)		((dev)->pci_device == 0x2772)
 #define IS_I945GM(dev)		(INTEL_INFO(dev)->is_i945gm)
 #define IS_I965G(dev)		(INTEL_INFO(dev)->is_i965g)
 #define IS_I965GM(dev)		(INTEL_INFO(dev)->is_i965gm)
+#define IS_BROADWATER(dev)	(INTEL_INFO(dev)->is_broadwater)
+#define IS_CRESTLINE(dev)	(INTEL_INFO(dev)->is_crestline)
 #define IS_GM45(dev)		((dev)->pci_device == 0x2A42)
 #define IS_G4X(dev)		(INTEL_INFO(dev)->is_g4x)
 #define IS_PINEVIEW_G(dev)	((dev)->pci_device == 0xa001)
@@ -1145,27 +1148,13 @@ extern int intel_trans_dp_port_sel (struct drm_crtc *crtc);
 #define IS_IRONLAKE_M(dev)	((dev)->pci_device == 0x0046)
 #define IS_IRONLAKE(dev)	(INTEL_INFO(dev)->is_ironlake)
 #define IS_I9XX(dev)		(INTEL_INFO(dev)->is_i9xx)
-#define IS_GEN6(dev)		(INTEL_INFO(dev)->is_gen6)
 #define IS_MOBILE(dev)		(INTEL_INFO(dev)->is_mobile)
 
-#define IS_GEN3(dev)	(IS_I915G(dev) ||			\
-			 IS_I915GM(dev) ||			\
-			 IS_I945G(dev) ||			\
-			 IS_I945GM(dev) ||			\
-			 IS_G33(dev) || \
-			 IS_PINEVIEW(dev))
-#define IS_GEN4(dev)	((dev)->pci_device == 0x2972 ||		\
-			 (dev)->pci_device == 0x2982 ||		\
-			 (dev)->pci_device == 0x2992 ||		\
-			 (dev)->pci_device == 0x29A2 ||		\
-			 (dev)->pci_device == 0x2A02 ||		\
-			 (dev)->pci_device == 0x2A12 ||		\
-			 (dev)->pci_device == 0x2E02 ||		\
-			 (dev)->pci_device == 0x2E12 ||		\
-			 (dev)->pci_device == 0x2E22 ||		\
-			 (dev)->pci_device == 0x2E32 ||		\
-			 (dev)->pci_device == 0x2A42 ||		\
-			 (dev)->pci_device == 0x2E42)
+#define IS_GEN2(dev)	(INTEL_INFO(dev)->gen == 2)
+#define IS_GEN3(dev)	(INTEL_INFO(dev)->gen == 3)
+#define IS_GEN4(dev)	(INTEL_INFO(dev)->gen == 4)
+#define IS_GEN5(dev)	(INTEL_INFO(dev)->gen == 5)
+#define IS_GEN6(dev)	(INTEL_INFO(dev)->gen == 6)
 
 #define HAS_BSD(dev)            (IS_IRONLAKE(dev) || IS_G4X(dev))
 #define I915_NEED_GFX_HWS(dev)	(INTEL_INFO(dev)->need_gfx_hws)
