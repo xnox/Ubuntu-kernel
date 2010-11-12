@@ -1,0 +1,187 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+from ktl.utils                          import stdo
+from ktl.std_app                        import StdApp
+from ktl.git                            import git
+import json
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>] <srus.json>             \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'bugs=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+                elif opt in ('--bugs'):
+                    self.cfg['bug_ids'] = []
+                    for v in val.split(','):
+                        self.cfg['bug_ids'].append(v.strip())
+
+            if result: # No errors yet
+                pass
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        return
+
+
+# GitLog
+#
+class GitLog(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+
+    # initialize
+    #
+    def initialize(self):
+        self.dbg('core', "initialize: enter\n")
+        self.dbg('core', "initialize: leave\n")
+        return
+
+    # The commit dictionary should be a user defined dictionary and the sha1 lookup
+    # should be a method of that class.
+    #
+    def lookup_sha1(self, commits, sha1):
+        retval = None
+
+        for x in commits['commits']:
+            if sha1 == x['sha1']:
+                retval = x
+                break
+
+        return retval
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.initialize()
+
+            gl = git.log()
+            #print json.dumps(gl, sort_keys=True, indent=4)
+
+            if 'bug_ids' in self.cfg:
+                for bug_id in self.cfg['bug_ids']:
+                    print("Looking for %s" % (bug_id))
+                    if bug_id in gl['buglink-index']:
+                        for sha1 in gl['buglink-index'][bug_id]:
+                            commit = self.lookup_sha1(gl, sha1)
+
+                            if commit != None:
+                                print("%s" % (commit['sha1']))
+                                for line in commit['txt']:
+                                    print("%s" % (line))
+                    else:
+                        print("   * No commits were found with the bug id: %s" % (bug_id))
+            else:
+                print("No bug ids specified")
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle ommand line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        return
+
+if __name__ == '__main__':
+    app = GitLog()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
