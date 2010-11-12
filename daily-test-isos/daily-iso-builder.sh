@@ -23,7 +23,7 @@ MIRROR_DIR=$WORKING_DIR/zinc-mirror
 
 git clone $KTEAM_REPO
 
-RELEASE=maverick
+RELEASE=natty
 DESKTOP_AMD64=$RELEASE-desktop-amd64
 DESKTOP_I386=$RELEASE-desktop-i386
 
