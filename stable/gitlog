@@ -3,10 +3,9 @@
 
 from sys                                import argv
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo
+from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
-from ktl.git                            import git
-import json
+from ktl.git                            import Git, GitError
 
 # CmdlineError
 #
@@ -143,8 +142,8 @@ class GitLog(StdApp):
 
             self.initialize()
 
-            gl = git.log()
-            #print json.dumps(gl, sort_keys=True, indent=4)
+            Git.is_repo()   # This will raise an exception if it fails
+            gl = Git.log()
 
             if 'bug_ids' in self.cfg:
                 for bug_id in self.cfg['bug_ids']:
@@ -167,10 +166,15 @@ class GitLog(StdApp):
         except KeyboardInterrupt:
             pass
 
-        # Handle ommand line errors.
+        # Handle command line errors.
         #
         except CmdlineError as e:
             cmdline.error(e.msg, self.defaults)
+
+        # Git errors.
+        #
+        except GitError as e:
+            eout(e.msg[0])
 
         return
 

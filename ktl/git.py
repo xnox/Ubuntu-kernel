@@ -5,21 +5,38 @@ from ktl.utils                  import run_command, o2ascii
 from re                         import compile
 import json
 
-class gitError(Exception):
+class GitError(Exception):
     # __init__
     #
     def __init__(self, error):
         self.msg = error
 
-class git:
+class Git:
     verbose = False
-    #commit_rc = compile('^commit/s+([a-f0-9]+)')
     commit_rc  = compile('^commit\s+([a-f0-9]+)\s*$')
     author_rc  = compile('^Author:\s+(.*)\s+<(.*)>$')
     date_rc    = compile('^Date:\s+(.*)$')
     buglink_rc = compile('^\s+BugLink:\s+http.*launchpad\.net/bugs/([0-9]+)$')
     sob_rc     = compile('^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
     ack_rc     = compile('^\s+Acked-by:\s+(.*)\s+<(.*)>$')
+
+    # is_repo
+    #
+    # If a "git branch" returns a 0 status and a non-empty result, then we
+    # are in a git repository.
+    #
+    @classmethod
+    def is_repo(cls):
+        retval = False
+        try:
+            branches = cls.branches()
+            if branches != "":
+                retval = True
+
+        except GitError as e:
+            raise GitError(e.msg)
+
+        return retval
 
     # branches
     #
@@ -30,12 +47,12 @@ class git:
         retval = []
         status, result = run_command("git branch", cls.verbose)
         if status == 0:
-            for line in result.split('\n'):
+            for line in result:
                 if line[0] == '*':
                     line = line[1:]
                 retval.append(line.strip())
         else:
-            raise gitError(result)
+            raise GitError(result)
 
         return retval
 
@@ -48,12 +65,12 @@ class git:
         retval = ""
         status, result = run_command("git branch", cls.verbose)
         if status == 0:
-            for line in result.split('\n'):
+            for line in result:
                 if line[0] == '*':
                     retval = line[1:].strip()
                     break
         else:
-            raise gitError(result)
+            raise GitError(result)
 
         return retval
 
@@ -171,7 +188,7 @@ class git:
                     commit_text.append(line)
 
         else:
-            raise gitError(result)
+            raise GitError(result)
 
         return retval
 
