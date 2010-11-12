@@ -1,3 +1,9 @@
+linux-meta (2.6.37.3.5) natty; urgency=low
+
+  * Natty ABI 3
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 12 Nov 2010 17:29:08 +0000
+
 linux-meta (2.6.37.2.4) natty; urgency=low
 
   * Track correct master version number.
