@@ -99,7 +99,7 @@ case $SUITE in
 		ADDPKGDEP="$ADDPKGDEP linux";
 		;;
 	lucid)
-		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev uboot-mkimage"
+		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev uboot-mkimage asciidoc"
 		ADDPKGDEP="$ADDPKGDEP linux";
 		;;
 	maverick|natty)
