@@ -681,7 +681,7 @@ static int input_default_setkeycode(struct input_dev *dev,
 	if (!dev->keycodesize)
 		return -EINVAL;
 
-	if (dev->keycodesize < sizeof(dev->keycode) &&
+	if (dev->keycodesize < sizeof(kt_entry->keycode) &&
 	    (kt_entry->keycode >> (dev->keycodesize * 8)))
 		return -EINVAL;
 
