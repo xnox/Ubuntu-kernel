@@ -1032,9 +1032,6 @@ EXPORT_SYMBOL drivers/thermal/thermal_sys 0x717ba1fc	thermal_zone_device_unregis
 EXPORT_SYMBOL drivers/thermal/thermal_sys 0x7dfc5378	thermal_cooling_device_unregister
 EXPORT_SYMBOL drivers/thermal/thermal_sys 0x80a04e7f	thermal_zone_unbind_cooling_device
 EXPORT_SYMBOL drivers/thermal/thermal_sys 0xceb44fe4	thermal_zone_device_update
-EXPORT_SYMBOL drivers/usb/gadget/../../../arch/arm/plat-orion/mv_hal_drivers/mv_drivers_lsp/mv_udc/mv_udc 0x0ab00a59	mv_usb_show
-EXPORT_SYMBOL drivers/usb/gadget/../../../arch/arm/plat-orion/mv_hal_drivers/mv_drivers_lsp/mv_udc/mv_udc 0x66e14c38	usb_gadget_register_driver
-EXPORT_SYMBOL drivers/usb/gadget/../../../arch/arm/plat-orion/mv_hal_drivers/mv_drivers_lsp/mv_udc/mv_udc 0xf0b4da3c	usb_gadget_unregister_driver
 EXPORT_SYMBOL drivers/usb/host/sl811-hcd 0x329a9759	sl811h_driver
 EXPORT_SYMBOL drivers/usb/otg/nop-usb-xceiv 0xa64a4cea	usb_nop_xceiv_unregister
 EXPORT_SYMBOL drivers/usb/otg/nop-usb-xceiv 0xd0e43207	usb_nop_xceiv_register
