@@ -1,10 +1,33 @@
-linux-backports-modules-2.6.35 (2.6.35-23.13) UNRELEASED; urgency=low
+linux-backports-modules-2.6.35 (2.6.35-23.13) maverick-proposed; urgency=low
+
+  [ Brad Figg ]
+
+  * Changed the Vcs line in the control.stub.in to point at the
+    correct git repo.
+
+  [ Leann Ogasawara ]
+
+  * Allow multiple versions of compat-wireless
+    - LP: #673191
+  * Add compat-wireless-2.6.37
+    - LP: #673245
+
+  [ Stefan Bader ]
+
+  * Add input drivers backports
+    - LP: #527912
+
+  [ Tim Gardner ]
+
+  * Update to iwlwifi-6000-ucode-9.221.4.1
+  * Add iwlwifi-6050 firmware
+  * Added compat-wireless-2.6.36
 
   [ Leann Ogasawara ]
 
   * ABI bump
 
- -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 05 Oct 2010 11:11:42 -0700
+ -- Brad Figg <brad.figg@canonical.com>  Thu, 18 Nov 2010 08:53:54 -0800
 
 linux-backports-modules-2.6.35 (2.6.35-22.12) maverick; urgency=low
 
