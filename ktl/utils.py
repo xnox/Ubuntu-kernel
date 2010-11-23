@@ -4,6 +4,7 @@
 from sys                    import stdout, stderr
 from commands               import getstatusoutput
 from decimal                            import Decimal
+import json
 
 # o2ascii
 #
@@ -74,5 +75,8 @@ def stdo(ostr):
     stdout.write(ostr)
     stdout.flush()
     return
+
+def dump(obj):
+    stdo(json.dumps(obj, sort_keys=True, indent=4))
 
 # vi:set ts=4 sw=4 expandtab:

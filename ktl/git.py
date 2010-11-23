@@ -12,13 +12,14 @@ class GitError(Exception):
         self.msg = error
 
 class Git:
-    verbose = False
+    debug = False
     commit_rc  = compile('^commit\s+([a-f0-9]+)\s*$')
     author_rc  = compile('^Author:\s+(.*)\s+<(.*)>$')
     date_rc    = compile('^Date:\s+(.*)$')
     buglink_rc = compile('^\s+BugLink:\s+http.*launchpad\.net/bugs/([0-9]+)$')
     sob_rc     = compile('^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
     ack_rc     = compile('^\s+Acked-by:\s+(.*)\s+<(.*)>$')
+    log_results = {}
 
     # is_repo
     #
@@ -34,7 +35,7 @@ class Git:
                 retval = True
 
         except GitError as e:
-            raise GitError(e.msg)
+            retval = False
 
         return retval
 
@@ -45,7 +46,7 @@ class Git:
     @classmethod
     def branches(cls):
         retval = []
-        status, result = run_command("git branch", cls.verbose)
+        status, result = run_command("git branch", cls.debug)
         if status == 0:
             for line in result:
                 if line[0] == '*':
@@ -63,7 +64,7 @@ class Git:
     @classmethod
     def current_branch(cls):
         retval = ""
-        status, result = run_command("git branch", cls.verbose)
+        status, result = run_command("git branch", cls.debug)
         if status == 0:
             for line in result:
                 if line[0] == '*':
@@ -74,6 +75,25 @@ class Git:
 
         return retval
 
+    # show
+    #
+    @classmethod
+    def show(cls, obj, branch=''):
+        cmd = 'git show '
+        if branch != '':
+            cmd += branch + ':'
+        cmd += obj
+
+        status, result = run_command(cmd, cls.debug)
+        if status != 0:
+            raise GitError(result)
+
+        return result
+
+    @classmethod
+    def __process_log_commit(cls):
+        pass
+
     # log
     #
     # The idea here is to take the output from "git log" and turn it into
@@ -82,12 +102,15 @@ class Git:
     # dictionary is a list of commits indexed by the related buglink.
     #
     @classmethod
-    def log(cls):
+    def log(cls, num=-1):
         debug = False
-        retval = {}
-        retval['commits']       = []
-        retval['buglink-index'] = {}
-        status, result = run_command("git log", cls.verbose)
+        cls.log_results = {}
+        cls.log_results['commits']       = []
+        cls.log_results['buglink-index'] = {}
+        if num != -1:
+            status, result = run_command("git log -%d" % (num), cls.debug)
+        else:
+            status, result = run_command("git log", cls.debug)
         commit = {}
         commit_text = []
         cn = 0
@@ -124,13 +147,13 @@ class Git:
                                 m = cls.buglink_rc.match(txt)         # BugLink
                                 if m != None:
                                     bug = m.group(1)
-                                    if bug not in retval['buglink-index']:
-                                        retval['buglink-index'][bug] = []
+                                    if bug not in cls.log_results['buglink-index']:
+                                        cls.log_results['buglink-index'][bug] = []
 
                                     if 'buglink' not in commit:
                                         commit['buglink'] = []
 
-                                    retval['buglink-index'][bug].append(commit['sha1'])
+                                    cls.log_results['buglink-index'][bug].append(commit['sha1'])
                                     commit['buglink'].append(bug)
                                     commit['txt'].append(txt)
                                     break
@@ -162,7 +185,7 @@ class Git:
                                 commit['txt'].append(txt)
                                 break
 
-                        retval['commits'].append(commit)
+                        cls.log_results['commits'].append(commit)
                         cn += 1
 
                         # Reset out working variables
@@ -170,10 +193,6 @@ class Git:
                         commit = {}
                         commit_text = []
                         commit['sha1'] = sha1
-                        #if sha1 == "3ce5c896fc76921cfea33e1c4a85187f1001f23b":
-                        #    debug = True
-                        #else:
-                        #    debug = False
 
                     else:
                         # This is the very first sha1
@@ -190,6 +209,6 @@ class Git:
         else:
             raise GitError(result)
 
-        return retval
+        return cls.log_results
 
 # vi:set ts=4 sw=4 expandtab:
