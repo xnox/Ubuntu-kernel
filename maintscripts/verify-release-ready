@@ -246,7 +246,7 @@ class VerifyReleaseReady(StdApp):
 
             expected = 'UBUNTU: Ubuntu-%s' % (cl1['version'])
             msg = 'closing release commit'
-            if len(commit) != 1:  # There should only be a single line in the commit
+            if len(commit) != 1:        # There should only be a single line in the commit
                 self.status(msg, False)
                 self.verbose("too many lines of text")
             elif commit[0] != expected:
@@ -255,11 +255,19 @@ class VerifyReleaseReady(StdApp):
             else:
                 self.status(msg, True)
 
-            dump(log)
-
             # Check: Make sure the commit corresponds to the tag.
-
-            # Check: Make sure the correct tag exists.
+            #
+            msg = 'tag exists on final commit'
+            expected = 'Ubuntu-%s' % (cl1['version'])
+            tags = Git.tags(contains=log['commits'][0]['sha1'])
+            if len(tags) != 1:          # There should only be a sigle tag associated with
+                self.status(msg, False) # the specified commit.
+                self.verbose("too many tags associated with the commit")
+            elif tags[0] != expected:
+                self.status(msg, False) # the specified commit.
+                self.verbose("expected '%s', got '%s'" % (expected, tags[0]))
+            else:
+                self.status(msg, True)
 
         # Handle the user presses <ctrl-C>.
         #
