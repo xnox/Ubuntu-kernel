@@ -1,3 +1,13 @@
+linux-meta (2.6.35.23.26) maverick-proposed; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Add linux-backports-modules-media meta package
+  * Add compat-wireless-2.6.37 meta package placeholder
+  * Add compat-wireless-2.6.36 meta package
+
+ -- Brad Figg <brad.figg@canonical.com>  Tue, 23 Nov 2010 15:45:31 -0800
+
 linux-meta (2.6.35.23.25) maverick-proposed; urgency=low
 
   [ Stefan Bader ]
