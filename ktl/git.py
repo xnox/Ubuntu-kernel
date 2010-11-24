@@ -91,8 +91,66 @@ class Git:
         return result
 
     @classmethod
-    def __process_log_commit(cls):
-        pass
+    def __process_log_commit(cls, commit_text):
+        results = {}
+        results['text'] = []
+        for text in commit_text:
+
+            while True:
+                m = cls.author_rc.match(text)          # Author
+                if m != None:
+                    id = {}
+                    id['name'] = m.group(1)
+                    id['email'] = m.group(2)
+                    results['author'] = id
+                    break
+
+                m = cls.date_rc.match(text)            # Date
+                if m != None:
+                    results['date'] = m.group(1)
+                    break
+
+                m = cls.buglink_rc.match(text)         # BugLink
+                if m != None:
+                    bug = m.group(1)
+                    if bug not in cls.log_results['buglink-index']:
+                        cls.log_results['buglink-index'][bug] = []
+
+                    if 'buglink' not in results:
+                        results['buglink'] = []
+
+                    cls.log_results['buglink-index'][bug].append(results['sha1'])
+                    results['buglink'].append(bug)
+                    results['text'].append(text)
+                    break
+
+                m = cls.sob_rc.match(text)             # Signed-off-by
+                if m != None:
+                    if 'sob' not in results:
+                        results['sob'] = []
+
+                    id = {}
+                    id['name'] = m.group(1)
+                    id['email'] = m.group(2)
+                    results['sob'].append(id)
+                    results['text'].append(text)
+                    break
+
+                m = cls.ack_rc.match(text)             # Acked-by
+                if m != None:
+                    if 'acks' not in results:
+                        results['acks'] = []
+
+                    id = {}
+                    id['name'] = m.group(1)
+                    id['email'] = m.group(2)
+                    results['acks'].append(id)
+                    results['text'].append(text)
+                    break
+
+                results['text'].append(text)
+                break
+        return results
 
     # log
     #
@@ -111,9 +169,9 @@ class Git:
             status, result = run_command("git log -%d" % (num), cls.debug)
         else:
             status, result = run_command("git log", cls.debug)
-        commit = {}
-        commit_text = []
-        cn = 0
+        commit       = {}
+        commit_text  = []
+        current_sha1 = ''
         if status == 0:
             for line in result:
                 m = cls.commit_rc.match(line)
@@ -127,77 +185,20 @@ class Git:
                     # available via dictionary keys.
                     #
                     if len(commit_text) > 0:
-                        commit['txt'] = []
-                        for txt in commit_text:
-
-                            while True:
-                                m = cls.author_rc.match(txt)          # Author
-                                if m != None:
-                                    id = {}
-                                    id['name'] = m.group(1)
-                                    id['email'] = m.group(2)
-                                    commit['author'] = id
-                                    break
-
-                                m = cls.date_rc.match(txt)            # Date
-                                if m != None:
-                                    commit['date'] = m.group(1)
-                                    break
-
-                                m = cls.buglink_rc.match(txt)         # BugLink
-                                if m != None:
-                                    bug = m.group(1)
-                                    if bug not in cls.log_results['buglink-index']:
-                                        cls.log_results['buglink-index'][bug] = []
-
-                                    if 'buglink' not in commit:
-                                        commit['buglink'] = []
-
-                                    cls.log_results['buglink-index'][bug].append(commit['sha1'])
-                                    commit['buglink'].append(bug)
-                                    commit['txt'].append(txt)
-                                    break
-
-                                m = cls.sob_rc.match(txt)             # Signed-off-by
-                                if m != None:
-                                    if 'sob' not in commit:
-                                        commit['sob'] = []
-
-                                    id = {}
-                                    id['name'] = m.group(1)
-                                    id['email'] = m.group(2)
-                                    commit['sob'].append(id)
-                                    commit['txt'].append(txt)
-                                    break
-
-                                m = cls.ack_rc.match(txt)             # Acked-by
-                                if m != None:
-                                    if 'acks' not in commit:
-                                        commit['acks'] = []
-
-                                    id = {}
-                                    id['name'] = m.group(1)
-                                    id['email'] = m.group(2)
-                                    commit['acks'].append(id)
-                                    commit['txt'].append(txt)
-                                    break
-
-                                commit['txt'].append(txt)
-                                break
-
+                        commit = cls.__process_log_commit(commit_text)
+                        commit['sha1'] = current_sha1
                         cls.log_results['commits'].append(commit)
-                        cn += 1
 
-                        # Reset out working variables
+                        # Reset working variables
                         #
                         commit = {}
                         commit_text = []
-                        commit['sha1'] = sha1
+                        current_sha1 = sha1
 
                     else:
                         # This is the very first sha1
                         #
-                        commit['sha1'] = m.group(1)
+                        current_sha1 = m.group(1)
                 else:
                     # This is text between two SHA1s, just add it to the working
                     # buffer for the current commit.
@@ -205,6 +206,11 @@ class Git:
                     if debug:
                         print line
                     commit_text.append(line)
+
+            if len(commit_text) > 0:
+                commit = cls.__process_log_commit(commit_text)
+                commit['sha1'] = current_sha1
+                cls.log_results['commits'].append(commit)
 
         else:
             raise GitError(result)
