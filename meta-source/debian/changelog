@@ -1,16 +1,9 @@
-linux-meta (2.6.35.23.25) UNRELEASED; urgency=low
+linux-meta (2.6.35.23.25) maverick-proposed; urgency=low
 
-  * 
+  [ Stefan Bader ]
 
- -- Stefan Bader <stefan.bader@canonical.com>  Thu, 21 Oct 2010 12:06:36 +0200
-
-linux-meta (2.6.35.23.24) maverick-proposed; urgency=low
-
-  [ Leann Ogasawara ]
-
-  * Bump ABI - Maverick ABI 23
-
- -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 05 Oct 2010 11:15:29 -0700
+  * Add input driver meta definition
+      - LP: #527912
 
 linux-meta (2.6.35.22.23) maverick; urgency=low
 
@@ -18,7 +11,7 @@ linux-meta (2.6.35.22.23) maverick; urgency=low
 
   * Bump ABI - Maverick ABI 22
 
-  [ Andy Whitcroft ] 
+  [ Andy Whitcroft ]
 
   * Fix OMAP3 descriptions.
     - LP: #623297
