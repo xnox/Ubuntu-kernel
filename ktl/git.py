@@ -57,6 +57,26 @@ class Git:
 
         return retval
 
+    # tags
+    #
+    @classmethod
+    def tags(cls, contains=''):
+        retval = []
+        cmd = "git tag"
+        if contains != '':
+            cmd += ' --contains %s' % (contains)
+
+        status, result = run_command(cmd, cls.debug)
+        if status == 0:
+            for line in result:
+                if line[0] == '*':
+                    line = line[1:]
+                retval.append(line.strip())
+        else:
+            raise GitError(result)
+
+        return retval
+
     # current_branch
     #
     # Return a string that is the current branch checked out.
