@@ -180,6 +180,7 @@ class VerifyReleaseReady(StdApp):
             if not Git.is_repo():
                 raise AppError('This script can only be run from within a git repository.')
             self.status('is valid git repo', True)
+            branch = Git.current_branch()
 
             changelog = Debian.changelog()
 
@@ -233,6 +234,11 @@ class VerifyReleaseReady(StdApp):
 
                 break
 
+            if cl1['package'] != 'linux':
+                tag_prefix = 'Ubuntu-' + cl1['package'].replace('linux-', '')
+            else:
+                tag_prefix = 'Ubuntu'
+
             # Check: Make sure the commit of the version is the correct text.
             #
             log = Git.log(num=1) # Only interested in the last commit
@@ -244,7 +250,7 @@ class VerifyReleaseReady(StdApp):
                     if 'Signed-off-by' not in line:
                         commit.append(line)
 
-            expected = 'UBUNTU: Ubuntu-%s' % (cl1['version'])
+            expected = 'UBUNTU: %s-%s' % (tag_prefix, cl1['version'])
             msg = 'closing release commit'
             if len(commit) != 1:        # There should only be a single line in the commit
                 self.status(msg, False)
@@ -258,7 +264,7 @@ class VerifyReleaseReady(StdApp):
             # Check: Make sure the commit corresponds to the tag.
             #
             msg = 'tag exists on final commit'
-            expected = 'Ubuntu-%s' % (cl1['version'])
+            expected = '%s-%s' % (tag_prefix, cl1['version'])
             tags = Git.tags(contains=log['commits'][0]['sha1'])
             if len(tags) != 1:          # There should only be a sigle tag associated with
                 self.status(msg, False) # the specified commit.

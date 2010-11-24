@@ -21,7 +21,7 @@ class DebianError(Exception):
 
 class Debian:
     debug = False
-    version_line_rc = compile("^linux \(([0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+)\) (\S+); urgency=\S+$")
+    version_line_rc = compile("^(linux[-\S]*) \(([0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+)\) (\S+); urgency=\S+$")
 
     # changelog
     #
@@ -60,8 +60,9 @@ class Debian:
                 version = ""
                 release = ""
                 pocket  = ""
-                version = m.group(1)
-                rp = m.group(2)
+                package = m.group(1)
+                version = m.group(2)
+                rp = m.group(3)
                 if '-' in rp:
                     release, pocket = rp.split('-')
                 else:
@@ -72,6 +73,7 @@ class Debian:
                 section['release'] = release
                 section['pocket']  = pocket
                 section['content'] = content
+                section['package'] = package
                 retval.append(section)
                 content = []
             else:
