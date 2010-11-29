@@ -1,3 +1,17 @@
+wireless-crda (1.13) natty; urgency=low
+
+  * Updated wireless-regdb to master-2010-11-24
+    wireless-regdb: update sha1sum.txt in Makefile and fix REGDB_CHANGED
+    wireless-regdb: CZ updates
+    wireless-regdb: Add A band in IL
+    wireless-regdb: Update the regulatory domain for a few countries.
+    wireless-regdb: Enable 40MHz operation for some countries.
+    wireless-regdb: update rules for DE
+    wireless-regdb: update regulatory.bin based on preceding changes.
+    wireless-regdb: _correctly_ update regulatory.bin based on preceding changes
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 29 Nov 2010 09:04:56 -0700
+
 wireless-crda (1.12) lucid; urgency=low
 
   * CRDA update - Allows runtime loading of RSA public keys
