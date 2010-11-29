@@ -57,7 +57,6 @@ class Cmdline:
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
-        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
 
     # process
     #
@@ -86,13 +85,6 @@ class Cmdline:
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
-
-            if result: # No errors yet
-
-                # At lease one source package must be specified.
-                #
-                if len(args) > 0:
-                    self.cfg['source_pkgs'] = args
 
         except GetoptError, error:
             print(error, defaults)
@@ -128,7 +120,7 @@ class AppTemplate(StdApp):
         except KeyboardInterrupt:
             pass
 
-        # Handle ommand line errors.
+        # Handle command line errors.
         #
         except CmdlineError as e:
             cmdline.error(e.msg, self.defaults)
