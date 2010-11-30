@@ -3,6 +3,8 @@ linux-meta (2.6.35.23.27) UNRELEASED; urgency=low
   [ Andy Whitcroft ]
 
   * Add compat-wireless-2.6.36/37 support for generic-pae.
+  * Point linux-backports-modules-wireless meta package to the replacement
+    linux-backports-modules-compat-wireless-2.6.36.  (LP: #681727)
 
  -- Andy Whitcroft <apw@canonical.com>  Fri, 26 Nov 2010 14:33:46 +0000
 
