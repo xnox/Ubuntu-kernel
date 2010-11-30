@@ -111,7 +111,7 @@ class CreateTrackingBug(StdApp):
     # initialize
     #
     def initialize(self):
-        if self.cfg['staging']:
+        if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'staging'
         self.lp = LaunchpadService(self.defaults)
 
@@ -160,7 +160,7 @@ class CreateTrackingBug(StdApp):
                     f.write(line)
                     f.write("\n")
 
-            if self.cfg['staging']:
+            if 'staging' in self.cfg:
                 print("https://bugs.staging.launchpad.net/bugs/%s" % (bug.id))
             else:
                 print("https://bugs.launchpad.net/bugs/%s" % (bug.id))
