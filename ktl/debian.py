@@ -23,10 +23,10 @@ class Debian:
     debug = False
     version_line_rc = compile("^(linux[-\S]*) \(([0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+)\) (\S+); urgency=\S+$")
 
-    # changelog
+    # raw_changelog
     #
     @classmethod
-    def changelog(cls):
+    def raw_changelog(cls):
         retval = []
 
         # Find the correct changelog for this branch of this repository.
@@ -37,15 +37,24 @@ class Debian:
         #
         cl_path = 'debian/changelog'
         try:
-            changelog_contents = Git.show(cl_path, branch=current_branch)
+            retval = Git.show(cl_path, branch=current_branch)
         except GitError:
             # If this is a kernel tree, the changelog is in a debian.<branch> directory.
             #
             cl_path = 'debian.' + current_branch + '/changelog'
             try:
-                changelog_contents = Git.show(cl_path, branch=current_branch)
+                retval = Git.show(cl_path, branch=current_branch)
             except GitError:
                 raise DebianError('Failed to find the changelog.')
+        return retval, cl_path
+
+    # changelog
+    #
+    @classmethod
+    def changelog(cls):
+        retval = []
+
+        changelog_contents, changelog_path = cls.raw_changelog()
 
         # The first line of the changelog should always be a version line.
         #
