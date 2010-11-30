@@ -73,7 +73,7 @@ do
 		fi
 	fi
 done <<EOL
-linux natty master
+linux natty master-next
 linux-meta natty master
 linux maverick master-next
 linux-lbm maverick master
