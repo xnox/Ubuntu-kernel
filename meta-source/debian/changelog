@@ -1,3 +1,11 @@
+linux-meta (2.6.35.23.27) UNRELEASED; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * Add compat-wireless-2.6.36/37 support for generic-pae.
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 26 Nov 2010 14:33:46 +0000
+
 linux-meta (2.6.35.23.26) maverick-proposed; urgency=low
 
   [ Leann Ogasawara ]
