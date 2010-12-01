@@ -84,6 +84,13 @@ Description: Backported WWAN drivers for generic kernel image
  This empty package allows people to keep their backported WWAN modules
  up-to-date when upgrading their Linux kernel.
 
+Package: linux-backports-modules-input-RELEASE_NAME-generic
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-input-${kernel-abi-version}-generic
+Description: Backported input drivers for generic kernel image
+ This empty package allows people to keep their backported input modules
+ up-to-date when upgrading their Linux kernel.
+
 #Package: linux-backports-modules-nouveau-RELEASE_NAME-generic
 #Architecture: amd64 i386
 #Depends: ${misc:Depends}, linux-backports-modules-nouveau-${kernel-abi-version}-generic
