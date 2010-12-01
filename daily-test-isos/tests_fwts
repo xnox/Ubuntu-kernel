@@ -25,73 +25,6 @@ FWTS_TIME=`date +%H%M`
 WORK_DIR=/isodevice/fwts/$FWTS_DATE/$FWTS_TIME
 
 #
-#  Get ftws progress into a form that dialog can understand
-#  This needs to be integrated into fwts
-#
-progress()
-{
-        I=1
-	count=0
-	while true
-	do
-        	read -t 1 txt
-		ret=$?
-		if [ $ret -gt 128 ]; then
-			#
-			# Read timeout, update info
-			#
-			count=$((count+1))
-                	echo XXX
-                	echo $PC
-			echo Test $I of $1   [ Busy $count secs ]
-			echo
-			echo Log:
-			echo
-			tail -12 results.log | cut -c24- | cut -c1-78
-			echo $log
-                	echo XXX
-		else
-			if [ $ret -ne 0 ]; then
-				return
-			fi
-			count=0
-			completed=`echo "$txt" | grep ": Test" | grep "completed (" | wc -l`
-			skipped=`echo "$txt" | grep ": Test" | grep "Test skipped" | wc -l`
-			aborted=`echo "$txt" | grep ": Test" | grep "Test aborted" | wc -l`
-			if [ $skipped -gt 0 -o $aborted -gt 0 ]; then
-                		echo XXX
-                		echo $PC
-				echo Test $I of $1
-				echo
-				echo Log:
-				echo
-				tail -12 results.log | cut -c24- | cut -c1-78
-                		echo XXX
-                		I=$((I+1))
-			fi
-			if [ $completed -gt 0 ]; then
-				info=`echo $txt | tr '\r' '\n' | grep Test`
-				m=`echo $info | awk '{ print $4 }'`
-				n=`echo $info | awk '{ print $6 }'`
-				PC=$((I * 100 / $1))
-					
-                		echo XXX
-                		echo $PC
-				echo Test $I of $1
-				echo
-				echo Log:
-				echo
-				tail -12 results.log | cut -c24- | cut -c1-78
-                		echo XXX
-				if [ $m -eq $n ]; then
-                			I=$((I+1))
-				fi
-			fi
-		fi
-        done
-}
-
-#
 #  Run a bunch of tests and monitor progress
 #
 do_test()
@@ -100,7 +33,7 @@ do_test()
 	num_tests=`fwts $1 --show-tests | wc -l`
 	num_tests=$((num_tests - 1))
 	if [ $num_tests -gt 0 ]; then
-  		fwts --no-s3 --no-s4 $1 -p 2>&1 | progress $num_tests | dialog --title "$2" --gauge "" 23 80 0
+  		fwts --skip-test=s3,s4 $1 --show-progress-dialog | dialog --title "$2" --gauge "" 15 80 0
 	fi
 }
 
@@ -140,7 +73,7 @@ select_tests()
 	if [ $x -eq 0 ]; then
 		run=0
 	else
-  		fwts $run_tests -p 2>&1 | progress $x | dialog --title "$2" --gauge "" 23 80 0
+  		fwts $run_tests --show-progress-dialog | dialog --title "$2" --gauge "" 15 80 0
 		run=1
 	fi
 }
