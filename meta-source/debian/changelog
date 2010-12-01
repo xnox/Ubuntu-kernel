@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.32.26.19) lucid-security; urgency=low
+
+  * Bump linux-ports ABI to 26 for security release
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Wed, 01 Dec 2010 11:06:57 -0800
+
 linux-ports-meta (2.6.32.24.18) lucid-proposed; urgency=low
 
   * Bump linux-ports ABI to 24 for proposed release
