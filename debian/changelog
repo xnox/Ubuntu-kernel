@@ -1,4 +1,8 @@
-linux-backports-modules-2.6.35 (2.6.35-24.15) UNRELEASED; urgency=low
+linux-backports-modules-2.6.35 (2.6.35-24.15) maverick-proposed; urgency=low
+
+  [ Brad Figg ]
+
+  * Bump ABI - Maverick 24
 
  -- Brad Figg <brad.figg@canonical.com>  Tue, 30 Nov 2010 20:11:03 -0800
 
