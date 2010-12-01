@@ -1,3 +1,7 @@
+linux-backports-modules-2.6.35 (2.6.35-23.15) UNRELEASED; urgency=low
+
+ -- Brad Figg <brad.figg@canonical.com>  Tue, 30 Nov 2010 20:11:03 -0800
+
 linux-backports-modules-2.6.35 (2.6.35-23.14) maverick-proposed; urgency=low
 
   [ Leann Ogasawara ]
