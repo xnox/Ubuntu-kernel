@@ -1,3 +1,7 @@
+linux-meta (2.6.32.26.29) lucid-proposed; urgency=low
+
+ -- Brad Figg <brad.figg@canonical.com>  Tue, 30 Nov 2010 16:35:50 -0800
+
 linux-meta (2.6.32.26.28) lucid-proposed; urgency=low
 
   * Bump ABI to 26 for proposed upload
