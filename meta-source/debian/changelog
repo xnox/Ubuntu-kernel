@@ -1,4 +1,8 @@
-linux-meta (2.6.35.24.28) UNRELEASED; urgency=low
+linux-meta (2.6.35.24.28) maverick-proposed; urgency=low
+
+  [ Brad Figg ]
+
+  * Bump ABI - Maverick ABI 24
 
  -- Brad Figg <brad.figg@canonical.com>  Tue, 30 Nov 2010 19:37:42 -0800
 
