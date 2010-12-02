@@ -144,10 +144,13 @@ class ListNotVerified(StdApp):
             # indicates it still needs it's fix verified.
             #
             reverts = set()
-            for rls in sorted(sru.keys()):
-                rdict = sru[rls]
+            for rls in sorted(sru['releases'].keys()):
+                rdict = sru['releases'][rls]
+                self.dbg("core", "release: '%s'\n" % (rls))
                 for pkg in rdict.keys():
+                    self.dbg("core", "    package: '%s'\n" % (pkg))
                     for bug in rdict[pkg]['bugs'].keys():
+                        self.dbg("core", "        bug: '%s'\n" % (bug))
                         if rdict[pkg]['bugs'][bug]['state'] == 'needed':
                             reverts.add(bug)
 

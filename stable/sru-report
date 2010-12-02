@@ -2,9 +2,9 @@
 #
 
 from sys                                import argv
-from os                                 import path
 from os                                 import unlink
 from getopt                             import getopt, GetoptError
+from datetime                           import datetime
 import json
 import re
 import apt_pkg
@@ -124,13 +124,12 @@ class SruReport(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
-        self.defaults['configuration_file'] = path.join(path.expanduser('~'), "sru.cfg")
 
         self.archive_root = 'http://archive.ubuntu.com/ubuntu'
         self.ports_root   = 'http://ports.ubuntu.com/ubuntu'
 
         self.components   = ['main', 'universe']
-        self.suites       = ['dapper', 'hardy', 'karmic', 'lucid', 'maverick']
+        self.release      = ['dapper', 'hardy', 'karmic', 'lucid', 'maverick']
 
         self.tempdir = None
 
@@ -173,11 +172,11 @@ class SruReport(StdApp):
     # tagfile_to_dict
     #
     def tagfile_to_dict(self, tagfile):
-        suite = {}
+        rls = {}
         p = apt_pkg.TagFile(self.decompress_open(tagfile))
         while p.step() == 1:
-            suite[p.section["Package"]] = p.section["Version"]
-        return suite
+            rls[p.section["Package"]] = p.section["Version"]
+        return rls
 
     # get_changelog_info
     #
@@ -225,66 +224,73 @@ class SruReport(StdApp):
 
             self.initialize()
 
-            for suite in self.suites:
-                self.dbg('core', "Suite: '%s'\n" % (suite))
+            for rls in self.release:
+                self.dbg('core', "Release: '%s'\n" % (rls))
                 for component in self.components:
                     self.dbg('core', "    Component: '%s'\n" % (component))
 
-                    release  = self.tagfile_to_dict('%s/dists/%s/%s/source/Sources.gz'          % (self.archive_root, suite, component))
-                    proposed = self.tagfile_to_dict('%s/dists/%s-proposed/%s/source/Sources.gz' % (self.archive_root, suite, component))
-                    updates  = self.tagfile_to_dict('%s/dists/%s-updates/%s/source/Sources.gz'  % (self.archive_root, suite, component))
-                    security = self.tagfile_to_dict('%s/dists/%s-security/%s/source/Sources.gz' % (self.archive_root, suite, component))
+                    release  = self.tagfile_to_dict('%s/dists/%s/%s/source/Sources.gz'          % (self.archive_root, rls, component))
+                    proposed = self.tagfile_to_dict('%s/dists/%s-proposed/%s/source/Sources.gz' % (self.archive_root, rls, component))
+                    updates  = self.tagfile_to_dict('%s/dists/%s-updates/%s/source/Sources.gz'  % (self.archive_root, rls, component))
+                    security = self.tagfile_to_dict('%s/dists/%s-security/%s/source/Sources.gz' % (self.archive_root, rls, component))
 
                     for package in sorted(proposed.keys()):
                         if 'linux' not in package: continue
                         self.dbg('core', "        Package: '%s'\n" % (package))
                         update_ver = updates.get(package, '')
                         if apt_pkg.version_compare(proposed[package], update_ver) > 0:
-                            pending.setdefault(suite, {})[package] = (release.get(package, ''), proposed[package], update_ver)
+                            pending.setdefault(rls, {})[package] = (release.get(package, ''), proposed[package], update_ver)
 
                             security_ver = security.get(package, '')
                             if apt_pkg.version_compare(proposed[package], security_ver) < 0:
-                                security_superseded.setdefault(suite, {})[package] = (proposed[package], security_ver)
+                                security_superseded.setdefault(rls, {})[package] = (proposed[package], security_ver)
                         else:
-                            cleanup.setdefault(suite, []).append(package)
+                            cleanup.setdefault(rls, []).append(package)
 
 
             # Pending Ubuntu Stable Release Updates
             #
-            for suite in self.suites:
-                results[suite] = {}
-                if suite in pending:
-                    pkgs = pending[suite].keys()
+            results['releases'] = {}
+            for rls in self.release:
+                results['releases'][rls] = {}
+                if rls in pending:
+                    pkgs = pending[rls].keys()
                     for pkg in pkgs:
-                        lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (suite, pkg)
-                        (vrel, vprop, vupd) = pending[suite][pkg]
+                        lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (rls, pkg)
+                        (vrel, vprop, vupd) = pending[rls][pkg]
 
                         (date, bugs) = self.get_changelog_info(lpurl+vprop)
                         age = int((time.time()-time.mktime(date))/86400)
 
-                        results[suite][pkg] = {}
-                        results[suite][pkg]['url'     ] = lpurl
-                        results[suite][pkg]['release' ] = vrel
-                        results[suite][pkg]['proposed'] = vprop
-                        results[suite][pkg]['update'  ] = vupd
-                        results[suite][pkg]['age'     ] = age
-                        results[suite][pkg]['bugs'    ] = {}
+                        results['releases'][rls][pkg] = {}
+                        results['releases'][rls][pkg]['url'     ] = lpurl
+                        results['releases'][rls][pkg]['release' ] = vrel
+                        results['releases'][rls][pkg]['proposed'] = vprop
+                        results['releases'][rls][pkg]['update'  ] = vupd
+                        results['releases'][rls][pkg]['age'     ] = age
+                        results['releases'][rls][pkg]['bugs'    ] = {}
 
                         for bug in bugs:
-                            results[suite][pkg]['bugs'][bug] = {}
-                            lp_bug = self.service.get_bug(bug)
-                            if   'verification-failed' in lp_bug.tags: state = 'failed'
-                            elif 'verification-done'   in lp_bug.tags: state = 'verified'
-                            elif 'verification-needed' in lp_bug.tags: state = 'needed'
-                            else: state = 'missing'
+                            results['releases'][rls][pkg]['bugs'][bug] = {}
+                            try:
+                                lp_bug = self.service.get_bug(bug)
+                                if   'verification-failed' in lp_bug.tags: state = 'failed'
+                                elif 'verification-done'   in lp_bug.tags: state = 'verified'
+                                elif 'verification-needed' in lp_bug.tags: state = 'needed'
+                                else: state = 'missing'
 
-                            if 'hw-specific' in lp_bug.tags:
-                                attrib = '(hw)'
+                                if 'hw-specific' in lp_bug.tags:
+                                    attrib = '(hw)'
 
-                            results[suite][pkg]['bugs'][bug]['title'] = lp_bug.title
-                            results[suite][pkg]['bugs'][bug]['owner'] = lp_bug.owner.display_name
-                            results[suite][pkg]['bugs'][bug]['state'] = state
+                                results['releases'][rls][pkg]['bugs'][bug]['title'] = lp_bug.title
+                                results['releases'][rls][pkg]['bugs'][bug]['owner'] = lp_bug.owner.display_name
+                                results['releases'][rls][pkg]['bugs'][bug]['state'] = state
+                            except:
+                                results['releases'][rls][pkg]['bugs'][bug]['title'] = "--- Error accessing this bugs Launchpad information. Possibly private?"
+                                results['releases'][rls][pkg]['bugs'][bug]['owner'] = "unknown"
+                                results['releases'][rls][pkg]['bugs'][bug]['state'] = "unknown"
 
+            results['updated'] = datetime.utcnow().strftime("%A, %d. %B %Y %H:%M UTC")
             print json.dumps(results, sort_keys=True, indent=4)
 
         # Handle the user presses <ctrl-C>.
