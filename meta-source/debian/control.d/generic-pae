@@ -63,7 +63,6 @@ Description: Backported input drivers for generic-pae kernel image
 Package: linux-backports-modules-compat-wireless-2.6.36-RELEASE_NAME-generic-pae
 Architecture: amd64 i386
 Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.36-${kernel-abi-version}-generic-pae
-#Conflicts: linux-backports-modules-compat-wireless-2.6.37-RELEASE_NAME-generic-pae
 Description: Backported wireless drivers for generic-pae kernel image.
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
@@ -71,7 +70,6 @@ Description: Backported wireless drivers for generic-pae kernel image.
 #Package: linux-backports-modules-compat-wireless-2.6.37-RELEASE_NAME-generic-pae
 #Architecture: amd64 i386
 #Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.37-${kernel-abi-version}-generic-pae
-#Conflicts: linux-backports-modules-compat-wireless-2.6.36-RELEASE_NAME-generic-pae
 #Description: Backported wireless drivers for generic-pae kernel image.
 # This empty package allows people to keep their backported wireless modules
 # up-to-date when upgrading their Linux kernel.
