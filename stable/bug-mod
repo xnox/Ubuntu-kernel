@@ -51,15 +51,15 @@ class Cmdline:
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
         stdo("                                                                                             \n")
-        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
-        stdo("                         running.                                                            \n")
+        stdo("        --staging        Use the 'staging' Launchpad service. This means the changes are     \n")
+        stdo("                         not permanent.                                                      \n")
         stdo("                                                                                             \n")
         stdo("        --config=<cfg file>                                                                  \n")
         stdo("                         The full path to the configuration file to use instead of           \n")
         stdo("                         the default location.                                               \n")
         stdo("                                                                                             \n")
         stdo("        --debug=<debug options>                                                              \n")
-        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         Generates additional output related to the options enabled and      \n")
         stdo("                         the application defined support for the option.                     \n")
         stdo("                                                                                             \n")
         stdo("        --status=<lp status>                                                                 \n")
@@ -82,8 +82,7 @@ class Cmdline:
         stdo("                         new comment.                                                        \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
-        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
-        stdo("        %s --verbose --status=Incomplete --tags=\"-verification-needed\" --verification-check\n" % self.cfg['app_name'])
+        stdo("        %s --status=Incomplete --tags=\"-verification-needed\" --verification-check          \n" % self.cfg['app_name'])
 
     # process
     #
@@ -97,7 +96,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'status=', 'tags=', 'comment=', 'verification-check']
+            optsLong  = ['help', 'staging', 'config=', 'debug=', 'status=', 'tags=', 'comment=', 'verification-check']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -107,8 +106,9 @@ class Cmdline:
                 elif (opt == '--verification-check'):
                     self.cfg['verification-test'] = True
 
-                elif (opt == '--verbose'):
-                    self.cfg['verbose'] = True
+                elif (opt == '--staging'):
+                    self.cfg['launchpad_services_root'] = 'staging'
+                    self.cfg['staging'] = True
 
                 elif opt in ('--config'):
                     self.cfg['configuration_file'] = val
@@ -153,7 +153,6 @@ class BugMod(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
-        #self.defaults['launchpad_services_root'] = 'staging'
 
     # initialize
     #
@@ -171,7 +170,65 @@ class BugMod(StdApp):
         self.dbg('core', "initialize: leave\n")
         return
 
+    # check_verification_tags
+    #
+    # Make sure that the correct tags are on the bug. If it is missing certain tags
+    # it won't have additional procesing performed on it.
+    #
+    def check_verification_tags(self, bug):
+        retval = False
+        if 'verification-check' in self.cfg and self.cfg['verification-check']:
+            # Make sure the tags on the bug are the ones we expect. Just in case the
+            # bug got changed between when the bug list got generated and when this
+            # script was run.
+            #
+            if 'verification-failed' in bug.tags or 'verification-needed' in bug.tags:
+                if 'verification-done' in bug.tags:
+                    print("%s: has mixed verification flags, manual intervention required." % (bug.id))
+                else:
+                    print("%s: has the proper tags." % (bug.id))
+                    retval = True
+        return retval
+
+    # modify_bug_tags
+    #
+    # Handle the details associated with the addition of new tags or the removal
+    # of existing tags as specified on the command line.
+    #
+    def modify_bug_tags(self, bug):
+        for tag in self.cfg['tags']:
+            if tag[0] == '+':
+                bug.tags.append(tag[1:])
+            elif tag[0] == '-':
+                if tag in bug.tags:
+                    bug.tags.remove(tag[1:])
+            else:
+                bug.tags.append(tag)
+        pass
+
+    # add_bug_comment
+    #
+    # Add the comment text to the bug.
+    #
+    def add_bug_comment(self, bug):
+        bug.add_comment(self.cfg['comment-text'])
+
+    # modify_bug_status
+    #
+    # Change the bugs status.
+    #
+    def modify_bug_status(self, bug):
+        tasks = bug.tasks
+        if len(tasks) == 1:
+            print("Setting the status to '%s'." % (self.cfg['status']))
+            task = tasks[0]
+            tasks[0].status = self.cfg['status']
+        else:
+            print("   ** Warning: This bug contains multiple bug tasks, not able to set the status.")
+
     # main
+    #
+    # This does the sequencing to get everything done in the right order.
     #
     def main(self):
         cmdline = Cmdline()
@@ -186,54 +243,13 @@ class BugMod(StdApp):
                 lp_bug = self.service.get_bug(bug_id)
 
                 print("%s: %25s: %s" % (bug_id, lp_bug.title, lp_bug.owner.display_name))
-                if 'verification-check' in self.cfg and self.cfg['verification-check']:
-                    # Make sure the tags on the bug are the ones we expect. Just in case the
-                    # bug got changed between when the bug list got generated and when this
-                    # script was run.
-                    #
-                    if 'verification-failed' in lp_bug.tags or 'verification-needed' in lp_bug.tags:
-                        if 'verification-done' in lp_bug.tags:
-                            print("%s: has mixed verification flags, manual intervention required." % (bug_id))
-                            continue
-                        else:
-                            print("%s: has the proper tags." % (bug_id))
 
-                # Add and/or remove the requested tags.
-                #
-                if 'tags' in self.cfg:
-                    for tag in self.cfg['tags']:
-                        if tag[0] == '+':
-                            lp_bug.tags.append(tag[1:])
-                        elif tag[0] == '-':
-                            if tag in lp_bug.tags:
-                                lp_bug.tags.remove(tag[1:])
-                        else:
-                            lp_bug.tags.append(tag[1:])
+                if not self.check_verification_tags(lp_bug):
+                    continue
 
-                # Add the comment (if there's one to add).
-                #
-                if 'comment-text' in self.cfg:
-                    lp_bug.add_comment(self.cfg['comment-text'])
-
-                # Change the bugs status.
-                #
-                if 'status' in self.cfg:
-                    tasks = lp_bug.tasks
-                    if len(tasks) == 1:
-                        print("Setting the status to '%s'." % (self.cfg['status']))
-                        task = tasks[0]
-                        tasks[0].status = self.cfg['status']
-                    else:
-                        print("   ** Warning: This bug contains multiple bug tasks, not able to set the status.")
-
-                break # FIXME bjf, for debugging purposes we only want to do one
-
-                #if 'hw-specific' in lp_bug.tags:
-                #    attrib = '(hw)'
-
-                #results[suite][pkg]['bugs'][bug]['title'] = lp_bug.title
-                #results[suite][pkg]['bugs'][bug]['owner'] = lp_bug.owner.display_name
-                #results[suite][pkg]['bugs'][bug]['state'] = state
+                if 'tags'         in self.cfg: self.modify_bug_tags(lp_bug)
+                if 'comment-text' in self.cfg: self.add_bug_comment(lp_bug)
+                if 'status'       in self.cfg: self.modify_bug_status(lp_bug)
 
         # Handle the user presses <ctrl-C>.
         #
