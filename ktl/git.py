@@ -69,7 +69,7 @@ class Git:
         status, result = run_command(cmd, cls.debug)
         if status == 0:
             for line in result:
-                if line[0] == '*':
+                if line != '' and line[0] == '*':
                     line = line[1:]
                 retval.append(line.strip())
         else:
@@ -87,7 +87,7 @@ class Git:
         status, result = run_command("git branch", cls.debug)
         if status == 0:
             for line in result:
-                if line[0] == '*':
+                if line != '' and line[0] == '*':
                     retval = line[1:].strip()
                     break
         else:

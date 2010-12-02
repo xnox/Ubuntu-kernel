@@ -45,7 +45,8 @@ def run_command(cmd, dbg=False, dry_run=False):
 # Print strings to standard out preceeded by "error:".
 #
 def error(out):
-   stdout.write("\n ** Error: %s\n" % out)
+    stderr.write("\n ** Error: %s\n" % out)
+    stderr.flush()
 
 # debug
 #
