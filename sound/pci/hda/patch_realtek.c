@@ -286,6 +286,7 @@ struct alc_customize_define {
 	unsigned int  platform_type:1;
 	unsigned int  swap:1;
 	unsigned int  override:1;
+	unsigned int  fixup:1; /* Means that this sku is set by driver, not read from hw */
 };
 
 struct alc_spec {
@@ -1261,6 +1262,11 @@ static void alc_init_auto_mic(struct hda_codec *codec)
 	spec->unsol_event = alc_sku_unsol_event;
 }
 
+/* Could be any non-zero and even value. When used as fixup, tells
+ * the driver to ignore any present sku defines.
+ */
+#define ALC_FIXUP_SKU_IGNORE (2)
+
 static int alc_auto_parse_customize_define(struct hda_codec *codec)
 {
 	unsigned int ass, tmp, i;
@@ -1268,6 +1274,13 @@ static int alc_auto_parse_customize_define(struct hda_codec *codec)
 	struct alc_spec *spec = codec->spec;
 
 	spec->cdefine.enable_pcbeep = 1; /* assume always enabled */
+
+	if (spec->cdefine.fixup) {
+		ass = spec->cdefine.sku_cfg;
+		if (ass == ALC_FIXUP_SKU_IGNORE)
+			return -1;
+		goto do_sku;
+	}
 
 	ass = codec->subsystem_id & 0xffff;
 	if (ass != codec->bus->pci->subsystem_device && (ass & 1))
@@ -1335,6 +1348,13 @@ static int alc_subsystem_id(struct hda_codec *codec,
 	unsigned int ass, tmp, i;
 	unsigned nid;
 	struct alc_spec *spec = codec->spec;
+
+	if (spec->cdefine.fixup) {
+		ass = spec->cdefine.sku_cfg;
+		if (ass == ALC_FIXUP_SKU_IGNORE)
+			return 0;
+		goto do_sku;
+	}
 
 	ass = codec->subsystem_id & 0xffff;
 	if ((ass != codec->bus->pci->subsystem_device) && (ass & 1))
@@ -1455,6 +1475,7 @@ struct alc_pincfg {
 };
 
 struct alc_fixup {
+	unsigned int sku;
 	const struct alc_pincfg *pins;
 	const struct hda_verb *verbs;
 };
@@ -1465,12 +1486,22 @@ static void alc_pick_fixup(struct hda_codec *codec,
 			   int pre_init)
 {
 	const struct alc_pincfg *cfg;
+	struct alc_spec *spec;
 
 	quirk = snd_pci_quirk_lookup(codec->bus->pci, quirk);
 	if (!quirk)
 		return;
 	fix += quirk->value;
 	cfg = fix->pins;
+	if (pre_init && fix->sku) {
+#ifdef CONFIG_SND_DEBUG_VERBOSE
+		snd_printdd(KERN_INFO "hda_codec: %s: Apply sku override for %s\n",
+			    codec->chip_name, quirk->name);
+#endif
+		spec = codec->spec;
+		spec->cdefine.sku_cfg = fix->sku;
+		spec->cdefine.fixup = 1;
+	}
 	if (pre_init && cfg) {
 #ifdef CONFIG_SND_DEBUG_VERBOSE
 		snd_printdd(KERN_INFO "hda_codec: %s: Apply pincfg for %s\n",
@@ -10267,7 +10298,8 @@ static struct alc_config_preset alc882_presets[] = {
  * Pin config fixes
  */
 enum {
-	PINFIX_ABIT_AW9D_MAX
+	PINFIX_ABIT_AW9D_MAX,
+	PINFIX_ACER_ASPIRE_7736,
 };
 
 static struct alc_pincfg alc882_abit_aw9d_pinfix[] = {
@@ -10281,10 +10313,14 @@ static const struct alc_fixup alc882_fixups[] = {
 	[PINFIX_ABIT_AW9D_MAX] = {
 		.pins = alc882_abit_aw9d_pinfix
 	},
+	[PINFIX_ACER_ASPIRE_7736] = {
+		.sku = ALC_FIXUP_SKU_IGNORE,
+	},
 };
 
 static struct snd_pci_quirk alc882_fixup_tbl[] = {
 	SND_PCI_QUIRK(0x147b, 0x107a, "Abit AW9D-MAX", PINFIX_ABIT_AW9D_MAX),
+	SND_PCI_QUIRK(0x1025, 0x0296, "Acer Aspire 7736z", PINFIX_ACER_ASPIRE_7736),
 	{}
 };
 
@@ -10541,8 +10577,6 @@ static int patch_alc882(struct hda_codec *codec)
 
 	codec->spec = spec;
 
-	alc_auto_parse_customize_define(codec);
-
 	switch (codec->vendor_id) {
 	case 0x10ec0882:
 	case 0x10ec0885:
@@ -10569,6 +10603,8 @@ static int patch_alc882(struct hda_codec *codec)
 
 	if (board_config == ALC882_AUTO)
 		alc_pick_fixup(codec, alc882_fixup_tbl, alc882_fixups, 1);
+
+	alc_auto_parse_customize_define(codec);
 
 	if (board_config == ALC882_AUTO) {
 		/* automatic parse from the BIOS config */
@@ -14253,7 +14289,8 @@ static const struct alc_fixup alc269_fixups[] = {
 };
 
 static struct snd_pci_quirk alc269_fixup_tbl[] = {
-	SND_PCI_QUIRK_VENDOR(0x104d, "Sony VAIO", ALC269_FIXUP_SONY_VAIO),
+	SND_PCI_QUIRK(0x104d, 0x9071, "Sony VAIO", ALC269_FIXUP_SONY_VAIO),
+	SND_PCI_QUIRK(0x104d, 0x9077, "Sony VAIO", ALC269_FIXUP_SONY_VAIO),
 	SND_PCI_QUIRK(0x1028, 0x0470, "Dell M101z", ALC269_FIXUP_DELL_M101Z),
 	{}
 };
@@ -18356,6 +18393,8 @@ static inline hda_nid_t alc662_mix_to_dac(hda_nid_t nid)
 		return 0x02;
 	else if (nid >= 0x0c && nid <= 0x0e)
 		return nid - 0x0c + 0x02;
+	else if (nid == 0x26) /* ALC887-VD has this DAC too */
+		return 0x25;
 	else
 		return 0;
 }
@@ -18364,7 +18403,7 @@ static inline hda_nid_t alc662_mix_to_dac(hda_nid_t nid)
 static hda_nid_t alc662_dac_to_mix(struct hda_codec *codec, hda_nid_t pin,
 				   hda_nid_t dac)
 {
-	hda_nid_t mix[4];
+	hda_nid_t mix[5];
 	int i, num;
 
 	num = snd_hda_get_connections(codec, pin, mix, ARRAY_SIZE(mix));
@@ -18783,7 +18822,10 @@ static int patch_alc888(struct hda_codec *codec)
 {
 	if ((alc_read_coef_idx(codec, 0) & 0x00f0)==0x0030){
 		kfree(codec->chip_name);
-		codec->chip_name = kstrdup("ALC888-VD", GFP_KERNEL);
+		if (codec->vendor_id == 0x10ec0887)
+			codec->chip_name = kstrdup("ALC887-VD", GFP_KERNEL);
+		else
+			codec->chip_name = kstrdup("ALC888-VD", GFP_KERNEL);
 		if (!codec->chip_name) {
 			alc_free(codec);
 			return -ENOMEM;
@@ -18825,7 +18867,7 @@ static struct hda_codec_preset snd_hda_preset_realtek[] = {
 	{ .id = 0x10ec0885, .rev = 0x100103, .name = "ALC889A",
 	  .patch = patch_alc882 },
 	{ .id = 0x10ec0885, .name = "ALC885", .patch = patch_alc882 },
-	{ .id = 0x10ec0887, .name = "ALC887", .patch = patch_alc882 },
+	{ .id = 0x10ec0887, .name = "ALC887", .patch = patch_alc888 },
 	{ .id = 0x10ec0888, .rev = 0x100101, .name = "ALC1200",
 	  .patch = patch_alc882 },
 	{ .id = 0x10ec0888, .name = "ALC888", .patch = patch_alc888 },
