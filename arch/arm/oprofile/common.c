@@ -102,6 +102,7 @@ static int op_create_counter(int cpu, int event)
 	if (IS_ERR(pevent)) {
 		ret = PTR_ERR(pevent);
 	} else if (pevent->state != PERF_EVENT_STATE_ACTIVE) {
+		perf_event_release_kernel(pevent);
 		pr_warning("oprofile: failed to enable event %d "
 				"on CPU %d\n", event, cpu);
 		ret = -EBUSY;
@@ -350,6 +351,8 @@ static void arm_backtrace(struct pt_regs * const regs, unsigned int depth)
 int __init oprofile_arch_init(struct oprofile_operations *ops)
 {
 	int cpu, ret = 0;
+
+	memset(&perf_events, 0, sizeof(perf_events));
 
 	perf_num_counters = armpmu_get_max_events();
 
