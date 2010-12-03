@@ -382,7 +382,6 @@ CONFIG_OABI_COMPAT=y
 # CONFIG_PHONE is not set
 # CONFIG_PHONET is not set
 # CONFIG_PID_NS is not set
-# CONFIG_POSIX_MQUEUE is not set
 # CONFIG_POWER_SUPPLY is not set
 # CONFIG_PPS is not set
 CONFIG_PREEMPT_NONE=y
