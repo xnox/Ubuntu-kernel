@@ -1,3 +1,10 @@
+linux-meta-linaro (2.6.35.1010.14) maverick-proposed; urgency=low
+
+  * Linaro Maverick ABI 1010 (2.6.35-1010.17)
+    - LP: #686071
+
+ -- John Rigby <john.rigby@linaro.org>  Fri, 03 Dec 2010 21:45:54 -0700
+
 linux-meta-linaro (2.6.35.1008.13) maverick-proposed; urgency=low
 
   * Linaro Maverick ABI 1008 (2.6.35-1008.15)
