@@ -1,3 +1,9 @@
+linux-meta (2.6.37.8.10) natty; urgency=low
+
+  * Natty ABI 8
+
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 06 Dec 2010 15:23:28 +0000
+
 linux-meta (2.6.37.7.9) natty; urgency=low
 
   * Natty ABI 7
