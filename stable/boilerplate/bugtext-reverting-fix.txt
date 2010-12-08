@@ -1,0 +1,10 @@
+Verification that this bug is fixed has not been completed by the deadline for the current stable kernel release cycle.
+The change will be reverted and this bug is being set to incomplete.
+
+In order to have this fix considered for reapplication to the kernel, please follow the process documented here:
+
+https://wiki.ubuntu.com/Kernel/StableReleaseCadence
+
+Discussions about the new process tend to take place in #ubuntu-kernel on IRC, so please contribute to the discussion there if you would like.
+
+Thank you!

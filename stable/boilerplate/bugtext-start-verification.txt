@@ -1,0 +1,5 @@
+This bug is awaiting verification that the kernel in -proposed solves the problem. Please test the kernel and update this bug with the results. If the problem is solved, change the tag 'verification-needed' to 'verification-done'.
+
+If verification is not done by one week from today, this fix will be dropped from the source code, and this bug will be closed.
+
+See https://wiki.ubuntu.com/Testing/EnableProposed for documentation how to enable and use -proposed. Thank you!
