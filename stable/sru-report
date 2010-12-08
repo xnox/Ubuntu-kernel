@@ -1,8 +1,12 @@
 #!/usr/bin/env python
 #
 
+from sys                                import stdout
+from sys                                import stdin
 from sys                                import argv
+from os                                 import path
 from os                                 import unlink
+from os                                 import _exit
 from getopt                             import getopt, GetoptError
 from datetime                           import datetime
 import json
@@ -13,8 +17,78 @@ import atexit
 import shutil
 import time
 from lpltk.service                      import LaunchpadService
-from ktl.utils                          import stdo
-from ktl.std_app                        import StdApp
+
+# stdo
+#
+# My own version of print but won't automatically add a linefeed to the end.
+#
+def stdo(ostr):
+    stdout.write(ostr)
+    stdout.flush()
+    return
+
+# StdApp
+#
+# Base class for all applications. This takes care of getting options from a
+# configuration file in the user's home directory.
+#
+class StdApp:
+
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+        self.cfg['configuration_file'] = path.join(path.expanduser('~'), "sru.cfg")
+
+    # __load_user_config
+    #
+    # If the users home directory contains a configuration file, load that in. The
+    # name of the configuration file is '.kteam.rc'. The format of the file is
+    # json. The json format should be an array. The contents of that array will
+    # be merged with the default one 'self.cfg' in this class.
+    #
+    def __load_user_config(self):
+        cfg_path = self.cfg['configuration_file']
+        if path.exists(cfg_path):
+            with open(cfg_path, 'r') as f:
+                user_config = json.load(f)
+            for k in user_config:
+                self.cfg[k] = user_config[k]
+
+    # merge_config_options
+    #
+    # 1. Defaults
+    # 2. User config file overrides defaults
+    # 3. Command line overrides user config and defaults
+    #
+    def merge_config_options(self, defaults, cmdline_options):
+        for k in defaults:
+            self.cfg[k] = defaults[k]
+
+        if 'configuration_file' in cmdline_options:
+            self.cfg['configuration_file'] = cmdline_options['configuration_file']
+        if '~' in self.cfg['configuration_file']:
+            self.cfg['configuration_file'] = self.cfg['configuration_file'].replace('~', path.expanduser('~'))
+
+        self.__load_user_config()
+
+        for k in cmdline_options:
+            self.cfg[k] = cmdline_options[k]
+
+        if ('debug' in self.cfg) and ('cfg' in self.cfg['debug']):
+            stdo("Configuration:\n")
+            stdo("-------------------------------------------------\n")
+            for k in self.cfg:
+                str = "%s" % (k)
+                stdo('    %-25s = "%s"\n' % (str, self.cfg[k]))
+            if 'exit' in self.cfg['debug']: _exit(0)
+
+        return
+
+    def dbg(self, system, msg):
+        if 'debug' in self.cfg:
+            if system in self.cfg['debug']:
+                stdo("dbg: %s" % (msg))
 
 # CmdlineError
 #
@@ -274,7 +348,8 @@ class SruReport(StdApp):
                             results['releases'][rls][pkg]['bugs'][bug] = {}
                             try:
                                 lp_bug = self.service.get_bug(bug)
-                                if   'verification-failed' in lp_bug.tags: state = 'failed'
+                                if   'kernel-tracking-bug' in lp_bug.tags: state = 'tracker'
+                                elif 'verification-failed' in lp_bug.tags: state = 'failed'
                                 elif 'verification-done'   in lp_bug.tags: state = 'verified'
                                 elif 'verification-needed' in lp_bug.tags: state = 'needed'
                                 else: state = 'missing'
