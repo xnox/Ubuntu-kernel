@@ -5,7 +5,7 @@ from sys                                import stdin, argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
 from lpltk.service                      import LaunchpadService
-from ktl.utils                          import stdo
+from ktl.utils                          import stdo, debug
 from ktl.std_app                        import StdApp
 
 # CmdlineError
@@ -188,6 +188,8 @@ class BugMod(StdApp):
                 else:
                     print("%s: has the proper tags." % (bug.id))
                     retval = True
+        else:
+            retval = True
         return retval
 
     # modify_bug_tags
@@ -196,6 +198,7 @@ class BugMod(StdApp):
     # of existing tags as specified on the command line.
     #
     def modify_bug_tags(self, bug):
+        self.dbg("bug", "modify_bug_tags enter\n")
         for tag in self.cfg['tags']:
             if tag[0] == '+':
                 bug.tags.append(tag[1:])
@@ -203,8 +206,9 @@ class BugMod(StdApp):
                 if tag in bug.tags:
                     bug.tags.remove(tag[1:])
             else:
+                self.dbg("bug", "adding the tag: '%s'\n" % (tag))
                 bug.tags.append(tag)
-        pass
+        self.dbg("bug", "modify_bug_tags leave\n")
 
     # add_bug_comment
     #
