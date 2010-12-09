@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 
-from ktl.utils                  import run_command, o2ascii
+from ktl.utils                  import run_command, dump
 from re                         import compile
 import json
 
@@ -16,7 +16,7 @@ class Git:
     commit_rc  = compile('^commit\s+([a-f0-9]+)\s*$')
     author_rc  = compile('^Author:\s+(.*)\s+<(.*)>$')
     date_rc    = compile('^Date:\s+(.*)$')
-    buglink_rc = compile('^\s+BugLink:\s+http.*launchpad\.net/bugs/([0-9]+)$')
+    buglink_rc = compile('^\s+BugLink:\s+http.*launchpad\.net/.*/([0-9]+)$')
     sob_rc     = compile('^\s+Signed-off-by:\s+(.*)\s+<(.*)>$')
     ack_rc     = compile('^\s+Acked-by:\s+(.*)\s+<(.*)>$')
     log_results = {}
@@ -111,8 +111,9 @@ class Git:
         return result
 
     @classmethod
-    def __process_log_commit(cls, commit_text):
+    def __process_log_commit(cls, commit_text, sha1):
         results = {}
+        results['sha1'] = sha1
         results['text'] = []
         for text in commit_text:
 
@@ -191,49 +192,49 @@ class Git:
             status, result = run_command("git log", cls.debug)
         commit       = {}
         commit_text  = []
-        current_sha1 = ''
-        if status == 0:
-            for line in result:
-                m = cls.commit_rc.match(line)
-                if m != None:
-                    sha1 = m.group(1)
-                    # This is a new commit sha1. We are going to build up a dictionary entry
-                    # for this one commit and then add it to the dictionary of all commits.
-                    #
-                    # When building up this commit's dictionary entry, we go back through the
-                    # commit text looking for information we want to pull out and make easily
-                    # available via dictionary keys.
-                    #
-                    if len(commit_text) > 0:
-                        commit = cls.__process_log_commit(commit_text)
-                        commit['sha1'] = current_sha1
-                        cls.log_results['commits'].append(commit)
-
-                        # Reset working variables
-                        #
-                        commit = {}
-                        commit_text = []
-                        current_sha1 = sha1
-
-                    else:
-                        # This is the very first sha1
-                        #
-                        current_sha1 = m.group(1)
-                else:
-                    # This is text between two SHA1s, just add it to the working
-                    # buffer for the current commit.
-                    #
-                    if debug:
-                        print line
-                    commit_text.append(line)
-
-            if len(commit_text) > 0:
-                commit = cls.__process_log_commit(commit_text)
-                commit['sha1'] = current_sha1
-                cls.log_results['commits'].append(commit)
-
-        else:
+        current_sha1 = 'unknown'
+        if status != 0:
             raise GitError(result)
+
+        for line in result:
+            if debug: print("debug: %s" % line)
+            m = cls.commit_rc.match(line)
+            if m != None:
+                sha1 = m.group(1)
+                # This is a new commit sha1. We are going to build up a dictionary entry
+                # for this one commit and then add it to the dictionary of all commits.
+                #
+                # When building up this commit's dictionary entry, we go back through the
+                # commit text looking for information we want to pull out and make easily
+                # available via dictionary keys.
+                #
+                if len(commit_text) > 0:
+                    commit = cls.__process_log_commit(commit_text, current_sha1)
+                    cls.log_results['commits'].append(commit)
+
+                    # Reset working variables
+                    #
+                    if debug: print("debug: commit reset")
+                    commit = {}
+                    commit_text = []
+                    current_sha1 = sha1
+                    if debug: print("debug: sha1: %s" % current_sha1)
+
+                else:
+                    # This is the very first sha1
+                    #
+                    current_sha1 = m.group(1)
+                    if debug: print("debug: sha1: %s" % current_sha1)
+            else:
+                # This is text between two SHA1s, just add it to the working
+                # buffer for the current commit.
+                #
+                if debug: print line
+                commit_text.append(line)
+
+        if len(commit_text) > 0:
+            commit = cls.__process_log_commit(commit_text, current_sha1)
+            cls.log_results['commits'].append(commit)
 
         return cls.log_results
 

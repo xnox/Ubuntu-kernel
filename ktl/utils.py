@@ -79,5 +79,6 @@ def stdo(ostr):
 
 def dump(obj):
     stdo(json.dumps(obj, sort_keys=True, indent=4))
+    stdo('\n')
 
 # vi:set ts=4 sw=4 expandtab:

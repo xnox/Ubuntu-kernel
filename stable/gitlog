@@ -3,7 +3,7 @@
 
 from sys                                import argv
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, eout
+from ktl.utils                          import stdo, eout, dump
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 
@@ -40,20 +40,17 @@ class Cmdline:
     #
     def usage(self, defaults):
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("        %s [--debug=<dbg options>]                                                           \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
-        stdo("                                                                                             \n")
-        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
-        stdo("                         running.                                                            \n")
         stdo("                                                                                             \n")
         stdo("        --bugs=<bug list>                                                                    \n")
         stdo("                         A list of launchpad bug ids which to find the commit information    \n")
         stdo("                         for.                                                                \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
-        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s                                                                                   \n" % self.cfg['app_name'])
 
     # process
     #
@@ -67,18 +64,12 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'bugs=']
+            optsLong  = ['help', 'debug=', 'bugs=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
                 if (opt == '--help'):
                     raise CmdlineError('')
-
-                elif (opt == '--verbose'):
-                    self.cfg['verbose'] = True
-
-                elif opt in ('--config'):
-                    self.cfg['configuration_file'] = val
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
@@ -154,7 +145,7 @@ class GitLog(StdApp):
 
                             if commit != None:
                                 print("%s" % (commit['sha1']))
-                                for line in commit['txt']:
+                                for line in commit['text']:
                                     print("%s" % (line))
                     else:
                         print("   * No commits were found with the bug id: %s" % (bug_id))
