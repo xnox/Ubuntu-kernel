@@ -104,7 +104,7 @@ class Cmdline:
                     raise CmdlineError('')
 
                 elif (opt == '--verification-check'):
-                    self.cfg['verification-test'] = True
+                    self.cfg['verification-check'] = True
 
                 elif (opt == '--staging'):
                     self.cfg['launchpad_services_root'] = 'staging'
@@ -248,6 +248,8 @@ class BugMod(StdApp):
 
                 print("%s: %25s: %s" % (bug_id, lp_bug.title, lp_bug.owner.display_name))
 
+                # If the verification fails, no changes are made to the bug.
+                #
                 if not self.check_verification_tags(lp_bug):
                     continue
 
