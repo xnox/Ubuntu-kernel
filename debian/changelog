@@ -1,3 +1,13 @@
+linux-firmware (1.38.2) maverick-proposed; urgency=low
+
+  * iwlwifi: 17.168.5.1 iwlwifi-6000g2a-5.ucode
+    - LP: #690222
+
+  * iwlwifi: 41.28.5.1 iwlwifi-6050-5.ucode
+    - LP: #690222
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 14 Dec 2010 09:13:44 -0700
+
 linux-firmware (1.38.1) maverick-proposed; urgency=low
 
   [ Upstream ]
