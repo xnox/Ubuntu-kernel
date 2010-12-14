@@ -26,7 +26,7 @@ class FormatTable:
     '''Format some data into a table with constraints on the widths of the
     columns and the alignment of the text inside the columns.
     '''
-    def __init__(self, columninfo, rows, spacer=' | ', retain_newlines=True):
+    def __init__(self, columninfo, rows, spacer=' || ', retain_newlines=True):
         '''
         "columninfo"   is a list of tuples (width in chars, alignment) where
                     alignment is one of LEFT, CENTER or RIGHT.
