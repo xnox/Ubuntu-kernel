@@ -1,3 +1,17 @@
+linux-meta (2.6.35.24.29) maverick-proposed; urgency=low
+
+  [ Tim Gardner ]
+
+  * UBUNTU: linux-backports-modules-wireless-maverick-${flavour} does not track the correct LBM package
+    - LP: #681727
+
+  [ Leann Ogasawara ]
+
+  * UBUNTU: Remove conflicts statements for compat-wireless meta packages
+    - LP: #683944
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 15 Dec 2010 09:35:08 -0700
+
 linux-meta (2.6.35.24.28) maverick-proposed; urgency=low
 
   [ Brad Figg ]
