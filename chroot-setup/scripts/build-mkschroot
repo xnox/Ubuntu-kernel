@@ -102,8 +102,17 @@ case $SUITE in
 		ADDPKG="$ADDPKG makedumpfile libelf-dev binutils-dev uboot-mkimage asciidoc"
 		ADDPKGDEP="$ADDPKGDEP linux";
 		;;
-	maverick|natty)
+	maverick)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc uboot-mkimage"
+		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
+		case ${ARCH} in
+			i386|amd64)
+				ADDPKG="$ADDPKG gcc-arm-linux-gnueabi g++-arm-linux-gnueabi";
+			;;
+		esac
+		;;
+	natty)
+		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
 			i386|amd64)
