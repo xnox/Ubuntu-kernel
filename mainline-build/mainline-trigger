@@ -47,7 +47,7 @@ done
 
 # We need to pre-fetch linus as we may add new remotes based on
 # its current tip.
-git fetch linus
+git fetch linus || true
 
 # Work out which stable branch we might need.
 current=`git describe --tags linus/master`
@@ -73,7 +73,8 @@ do
 		echo "*** adding $remote remote ..."
 		git remote add "$remote" "$url"
 	fi
-	git fetch "$remote"
+	echo "*** fetching $remote remote ..."
+	git fetch "$remote" || true
 done <<EOL
 2.6.32.y.33.z git://git.kernel.org/pub/scm/linux/kernel/git/smb/linux-2.6.32.y-drm33.z.git
 EOL
@@ -120,7 +121,8 @@ do
 		echo "*** adding $remote remote ..."
 		git remote add "$remote" "$url"
 	fi
-	git fetch "$remote"
+	echo "*** fetching $remote remote ..."
+	git fetch "$remote" || true
 done <<EOL
 drm-2.6 git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
 drm-intel git://git.kernel.org/pub/scm/linux/kernel/git/ickle/drm-intel

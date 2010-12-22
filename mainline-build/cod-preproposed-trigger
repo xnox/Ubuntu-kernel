@@ -37,7 +37,7 @@ do
 			echo "*** adding $series remote ($series_repo)..."
 			git remote add "$series" "$series_repo"
 		fi
-		git fetch "$series"
+		git fetch "$series" || true
 	)
 
 	# Find the first non-ignored commit, the first real change.
