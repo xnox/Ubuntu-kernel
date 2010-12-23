@@ -1,3 +1,16 @@
+linux-ti-omap4 (2.6.35-903.20) maverick-proposed; urgency=low
+
+  [ Ricardo Salveti de Araujo ] 
+
+  * OMAP: DSS2: Use Writeback buffers for GFX as a temporary fix
+    - LP: #653002
+  * OMAP: DSS2: Fix FIFO Threshold calculations for dispc pipelines
+    - LP: #653002
+  * OMAP: DSS2: Fix array size which stores dispc fifo sizes
+    - LP: #653002
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Thu, 23 Dec 2010 08:25:50 -0700
+
 linux-ti-omap4 (2.6.35-903.19) maverick-proposed; urgency=low
 
   [ Upstream Kernel Changes ]
