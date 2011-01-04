@@ -1,3 +1,9 @@
+linux-meta-lts-backport-natty (2.6.37.11.11) lucid; urgency=low
+
+  * linux-natty 2.6.37-11.25
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 03 Jan 2011 21:20:05 -0700
+
 linux-meta-lts-backport-natty (2.6.37.10.10~lucid1) lucid; urgency=low
 
   * linux-natty 2.6.37-10.24
