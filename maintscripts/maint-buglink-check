@@ -1,0 +1,9 @@
+#!/bin/bash
+
+for FILE in `ls *patch`
+do
+  if ! grep "BugLink" ${FILE} > /dev/null
+  then
+      echo No Buglink in "$FILE"
+  fi
+done
