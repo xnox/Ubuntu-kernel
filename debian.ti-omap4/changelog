@@ -1,3 +1,10 @@
+linux-ti-omap4 (2.6.35-903.21) maverick-proposed; urgency=low
+
+  * OMAP: enable CONFIG_TASK_	options for iotop to work
+    - LP: #694461
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Wed, 05 Jan 2011 06:45:45 -0700
+
 linux-ti-omap4 (2.6.35-903.20) maverick-proposed; urgency=low
 
   [ Ricardo Salveti de Araujo ] 
