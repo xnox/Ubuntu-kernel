@@ -10,6 +10,9 @@ git-compare:
 	context of the files changed by the patch, using meld.
 git-compare-all:
 	Takes a git range and then calls git-compare:
+maint-check-deviations:
+	List the deviations or check one or more patches for touching files
+	that are affected.
 maint-do-review:
 	Takes a text file and a git range as arguments. Will update the text
 	file with the headers from the range and call an editor containing
