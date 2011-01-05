@@ -1,3 +1,11 @@
+linux-firmware (1.34.3) lucid-proposed; urgency=low
+
+  * iwlwifi: add new firmware for 6030 devices
+    17.168.5.1 iwlwifi-6000g2b-5.ucode
+    - LP: #697768
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 05 Jan 2011 10:59:20 -0700
+
 linux-firmware (1.34.2) lucid-proposed; urgency=low
 
   * iwlwifi: 17.168.5.1 iwlwifi-6000g2a-5.ucode
