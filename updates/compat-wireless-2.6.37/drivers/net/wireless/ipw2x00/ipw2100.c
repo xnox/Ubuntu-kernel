@@ -174,11 +174,7 @@ that only one external action is invoked at a time.
 #define DRV_DESCRIPTION	"Intel(R) PRO/Wireless 2100 Network Driver"
 #define DRV_COPYRIGHT	"Copyright(c) 2003-2006 Intel Corporation"
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 static struct pm_qos_request_list ipw2100_pm_qos_req;
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-static struct pm_qos_request_list *ipw2100_pm_qos_req;
-#endif
 
 /* Debugging stuff */
 #ifdef CONFIG_IPW2100_DEBUG
@@ -1745,13 +1741,7 @@ static int ipw2100_up(struct ipw2100_priv *priv, int deferred)
 	/* the ipw2100 hardware really doesn't want power management delays
 	 * longer than 175usec
 	 */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	pm_qos_update_request(&ipw2100_pm_qos_req, 175);
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-	pm_qos_update_request(ipw2100_pm_qos_req, 175);
-#else
-	pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100", 175);
-#endif
 
 	/* If the interrupt is enabled, turn it off... */
 	spin_lock_irqsave(&priv->low_lock, flags);
@@ -1899,14 +1889,7 @@ static void ipw2100_down(struct ipw2100_priv *priv)
 	ipw2100_disable_interrupts(priv);
 	spin_unlock_irqrestore(&priv->low_lock, flags);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	pm_qos_update_request(&ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-	pm_qos_update_request(ipw2100_pm_qos_req, PM_QOS_DEFAULT_VALUE);
-#else
-	pm_qos_update_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100",
-				  PM_QOS_DEFAULT_VALUE);
-#endif
 
 	/* We have to signal any supplicant if we are disassociating */
 	if (associated)
@@ -6678,16 +6661,8 @@ static int __init ipw2100_init(void)
 	printk(KERN_INFO DRV_NAME ": %s, %s\n", DRV_DESCRIPTION, DRV_VERSION);
 	printk(KERN_INFO DRV_NAME ": %s\n", DRV_COPYRIGHT);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	pm_qos_add_request(&ipw2100_pm_qos_req, PM_QOS_CPU_DMA_LATENCY,
 			   PM_QOS_DEFAULT_VALUE);
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-	ipw2100_pm_qos_req = pm_qos_add_request(PM_QOS_CPU_DMA_LATENCY,
-						PM_QOS_DEFAULT_VALUE);
-#else
-	pm_qos_add_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100",
-			       PM_QOS_DEFAULT_VALUE);
-#endif
 
 	ret = pci_register_driver(&ipw2100_pci_driver);
 	if (ret)
@@ -6714,13 +6689,7 @@ static void __exit ipw2100_exit(void)
 			   &driver_attr_debug_level);
 #endif
 	pci_unregister_driver(&ipw2100_pci_driver);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	pm_qos_remove_request(&ipw2100_pm_qos_req);
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-	pm_qos_remove_request(ipw2100_pm_qos_req);
-#else
-	pm_qos_remove_requirement(PM_QOS_CPU_DMA_LATENCY, "ipw2100");
-#endif
 }
 
 module_init(ipw2100_init);
