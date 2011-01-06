@@ -32,7 +32,7 @@ udebdir		:= $(CURDIR)/debian/d-i-$(arch)
 do_compat_wireless_2.6.34=true
 do_compat_wireless_2.6.35=true
 do_compat_wireless_2.6.36=true
-do_compat_wireless_2.6.37=false
+do_compat_wireless_2.6.37=true
 
 ifeq ($(do_compat_wireless_2.6.34),true)
 	CWDIRS += compat-wireless-2.6.34
