@@ -1,4 +1,4 @@
-linux-meta (2.6.37.12.14) UNRELEASED; urgency=low
+linux-meta (2.6.37.12.14) natty; urgency=low
 
   * Natty ABI 12
   * reinstate omap flavour
