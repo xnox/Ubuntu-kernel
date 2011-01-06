@@ -1,8 +1,16 @@
+linux (2.6.24-28.83) hardy-proposed; urgency=low
+
+  [ Steve Conklin ]
+
+  * Tracking Bug
+    - LP: #698185
+
+ -- Steve Conklin <sconklin@canonical.com>  Thu, 06 Jan 2011 12:39:01 -0600
+
 linux (2.6.24-28.82) hardy-proposed; urgency=low
 
   [ Leann Ogasawara ]
 
-  - LP: #683755
   * Revert "SAUCE: AF_ECONET saddr->cookie prevent NULL pointer
     dereference"
   * Revert "SAUCE: AF_ECONET SIOCSIFADDR ioctl does not check privileges"
