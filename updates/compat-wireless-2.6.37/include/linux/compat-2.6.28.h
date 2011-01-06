@@ -234,6 +234,10 @@ extern void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page,
 extern int n_tty_ioctl_helper(struct tty_struct *tty, struct file *file,
 		       unsigned int cmd, unsigned long arg);
 
+int pci_wake_from_d3(struct pci_dev *dev, bool enable);
+
+#define alloc_workqueue(name, flags, max_active) __create_workqueue(name, flags, max_active)
+
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,28)) */
 
 #endif /* LINUX_26_28_COMPAT_H */

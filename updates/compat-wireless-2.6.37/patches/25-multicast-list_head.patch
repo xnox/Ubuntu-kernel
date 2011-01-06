@@ -69,7 +69,7 @@ This also backport commit 2f787b0b76bf5de2eaa3ca3a29d89123ae03c856
  }
 --- a/drivers/net/b44.c
 +++ b/drivers/net/b44.c
-@@ -1689,7 +1689,11 @@ static int __b44_load_mcast(struct b44 *
+@@ -1688,7 +1688,11 @@ static int __b44_load_mcast(struct b44 *
  	netdev_for_each_mc_addr(ha, dev) {
  		if (i == num_ents)
  			break;
@@ -162,7 +162,7 @@ This also backport commit 2f787b0b76bf5de2eaa3ca3a29d89123ae03c856
  }
 --- a/drivers/net/wireless/ath/ath5k/base.c
 +++ b/drivers/net/wireless/ath/ath5k/base.c
-@@ -2973,20 +2973,42 @@ unlock:
+@@ -2976,20 +2976,42 @@ unlock:
  }
  
  static u64 ath5k_prepare_multicast(struct ieee80211_hw *hw,
@@ -205,7 +205,7 @@ This also backport commit 2f787b0b76bf5de2eaa3ca3a29d89123ae03c856
  		pos ^= (val >> 18) ^ (val >> 12) ^ (val >> 6) ^ val;
  		pos &= 0x3f;
  		mfilt[pos / 32] |= (1 << (pos % 32));
-@@ -2995,6 +3017,9 @@ static u64 ath5k_prepare_multicast(struc
+@@ -2998,6 +3020,9 @@ static u64 ath5k_prepare_multicast(struc
  		* neet to inform below to not reset the mcast */
  		/* ath5k_hw_set_mcast_filterindex(ah,
  		 *      ha->addr[5]); */
@@ -255,7 +255,7 @@ This also backport commit 2f787b0b76bf5de2eaa3ca3a29d89123ae03c856
  }
 --- a/drivers/net/wireless/libertas/main.c
 +++ b/drivers/net/wireless/libertas/main.c
-@@ -242,18 +242,34 @@ static int lbs_add_mcast_addrs(struct cm
+@@ -249,18 +249,34 @@ static int lbs_add_mcast_addrs(struct cm
  	netif_addr_lock_bh(dev);
  	cnt = netdev_mc_count(dev);
  	netdev_for_each_mc_addr(ha, dev) {
@@ -678,7 +678,7 @@ This also backport commit 2f787b0b76bf5de2eaa3ca3a29d89123ae03c856
  
 --- a/net/mac80211/iface.c
 +++ b/net/mac80211/iface.c
-@@ -440,8 +440,13 @@ static void ieee80211_do_stop(struct iee
+@@ -443,8 +443,13 @@ static void ieee80211_do_stop(struct iee
  
  	netif_addr_lock_bh(sdata->dev);
  	spin_lock_bh(&local->filter_lock);

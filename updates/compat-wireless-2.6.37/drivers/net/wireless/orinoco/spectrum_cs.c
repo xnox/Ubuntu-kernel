@@ -319,17 +319,6 @@ spectrum_cs_config(struct pcmcia_device *link)
 		goto failed;
 	}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-	ret = pcmcia_request_irq(link, orinoco_interrupt);
-#else
-	ret = pcmcia_request_irq(link, &link->irq);
-#endif
-	if (ret)
-		goto failed;
-
-	/* We initialize the hermes structure before completing PCMCIA
-	 * configuration just in case the interrupt handler gets
-	 * called. */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36)
 	mem = ioport_map(link->resource[0]->start,
 			resource_size(link->resource[0]));
@@ -339,8 +328,19 @@ spectrum_cs_config(struct pcmcia_device *link)
 	if (!mem)
 		goto failed;
 
+	/* We initialize the hermes structure before completing PCMCIA
+	 * configuration just in case the interrupt handler gets
+	 * called. */
 	hermes_struct_init(hw, mem, HERMES_16BIT_REGSPACING);
 	hw->eeprom_pda = true;
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+	ret = pcmcia_request_irq(link, orinoco_interrupt);
+#else
+	ret = pcmcia_request_irq(link, &link->irq);
+#endif
+	if (ret)
+		goto failed;
 
 	ret = pcmcia_enable_device(link);
 	if (ret)
