@@ -1,6 +1,7 @@
 linux-meta (2.6.37.12.14) UNRELEASED; urgency=low
 
   * Natty ABI 12
+  * reinstate omap flavour
 
  -- Andy Whitcroft <apw@canonical.com>  Thu, 06 Jan 2011 11:01:28 +0000
 
