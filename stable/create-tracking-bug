@@ -155,6 +155,7 @@ class CreateTrackingBug(StdApp):
                 f.write("\n")
                 f.write("  [ %s ]\n" % (bug.owner.display_name))
                 f.write("\n")
+                f.write("  * Tracking Bug\n")
                 f.write("  - LP: #%s\n" % (bug.id))
                 for line in changelog[1:]:
                     f.write(line)
