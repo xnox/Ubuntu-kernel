@@ -133,7 +133,7 @@ class CreateTrackingBug(StdApp):
             changelog = Debian.changelog()
 
             # Title: <release>: <version> -proposed tracker
-            title = "%s: %s -proposed tracker" % (Kernel.release().capitalize(), changelog[0]['version'])
+            title = "%s: %s -proposed tracker" % (changelog[0]['package'], changelog[0]['version'])
 
             # Description:
             #    This bug is for tracking the <version> upload package. This bug will
