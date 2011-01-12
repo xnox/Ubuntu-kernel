@@ -1,9 +1,17 @@
-linux (2.6.24-28.83) hardy-proposed; urgency=low
+linux (2.6.24-28.84) hardy-proposed; urgency=low
 
   [ Steve Conklin ]
 
   * Tracking Bug
     - LP: #698185
+
+ -- Steve Conklin <sconklin@canonical.com>  Wed, 12 Jan 2011 09:01:01 -0600
+
+linux (2.6.24-28.83) hardy-proposed; urgency=low
+
+  [ Steve Conklin ]
+  * tracking bug moved from here to latest entry
+
 
  -- Steve Conklin <sconklin@canonical.com>  Thu, 06 Jan 2011 12:39:01 -0600
 
