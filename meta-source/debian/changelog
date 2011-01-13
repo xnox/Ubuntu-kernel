@@ -1,3 +1,9 @@
+linux-meta (2.6.35.25.31) maverick-proposed; urgency=low
+
+  * Temporarily remove omap and versatile, as so kernels were built for these for this version
+
+ -- Steve Conklin <sconklin@canonical.com>  Tue, 13 Jan 2011 15:35:13 -0700
+
 linux-meta (2.6.35.24.30) maverick-proposed; urgency=low
 
   * Fix copy/paste error. While fixing LP681727 I inadvertantly added an
