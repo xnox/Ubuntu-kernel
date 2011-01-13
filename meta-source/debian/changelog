@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.35.25.19) maverick-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Steve Conklin <sconklin@canonical.com>  Thu, 13 Jan 2011 17:04:10 -0800
+
 linux-ports-meta (2.6.35.24.18) maverick-proposed; urgency=low
 
   * Bump ABI
