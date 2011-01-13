@@ -310,6 +310,7 @@ class SruReport(StdApp):
 
                     for package in sorted(proposed.keys()):
                         if 'linux' not in package: continue
+                        if 'linaro' in package: continue
                         self.dbg('core', "        Package: '%s'\n" % (package))
                         update_ver = updates.get(package, '')
                         if apt_pkg.version_compare(proposed[package], update_ver) > 0:
