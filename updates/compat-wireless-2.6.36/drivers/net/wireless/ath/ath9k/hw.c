@@ -2446,7 +2446,7 @@ void ath9k_hw_setrxfilter(struct ath_hw *ah, u32 bits)
 		phybits |= AR_PHY_ERR_RADAR;
 	if (bits & ATH9K_RX_FILTER_PHYERR)
 		phybits |= AR_PHY_ERR_OFDM_TIMING | AR_PHY_ERR_CCK_TIMING;
-	REG_WRITE(ah, AR_PHY_ERR, 0xffffffff);
+	REG_WRITE(ah, AR_PHY_ERR, phybits);
 
 	if (phybits)
 		REG_WRITE(ah, AR_RXCFG,

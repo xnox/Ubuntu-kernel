@@ -1,7 +1,7 @@
 From f209f5298217cf54cd5a9163e18b08d093faf8d9 Mon Sep 17 00:00:00 2001
 From: Felix Fietkau <nbd@openwrt.org>
 Date: Fri, 1 Oct 2010 01:06:53 +0200
-Subject: [PATCH 23/30] ath9k: fix channel flag / regd issues with multiple cards
+Subject: [PATCH 23/44] ath9k: fix channel flag / regd issues with multiple cards
 
 Since the regulatory code touches the channel array, it needs to be
 copied for each device instance. That way the original channel array
@@ -14,9 +14,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  drivers/net/wireless/ath/ath9k/init.c |   37 +++++++++++++++++++++++++++-----
  1 files changed, 31 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/net/wireless/ath/ath9k/init.c b/drivers/net/wireless/ath/ath9k/init.c
+index 11dc3ac..282bb48 100644
 --- a/drivers/net/wireless/ath/ath9k/init.c
 +++ b/drivers/net/wireless/ath/ath9k/init.c
-@@ -56,7 +56,7 @@ MODULE_PARM_DESC(blink, "Enable LED blin
+@@ -56,7 +56,7 @@ MODULE_PARM_DESC(blink, "Enable LED blink on activity");
   * on 5 MHz steps, we support the channels which we know
   * we have calibration data for all cards though to make
   * this static */
@@ -25,7 +27,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  	CHAN2G(2412, 0), /* Channel 1 */
  	CHAN2G(2417, 1), /* Channel 2 */
  	CHAN2G(2422, 2), /* Channel 3 */
-@@ -77,7 +77,7 @@ static struct ieee80211_channel ath9k_2g
+@@ -77,7 +77,7 @@ static struct ieee80211_channel ath9k_2ghz_chantable[] = {
   * on 5 MHz steps, we support the channels which we know
   * we have calibration data for all cards though to make
   * this static */
@@ -54,7 +56,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  		sc->sbands[IEEE80211_BAND_2GHZ].band = IEEE80211_BAND_2GHZ;
  		sc->sbands[IEEE80211_BAND_2GHZ].n_channels =
  			ARRAY_SIZE(ath9k_2ghz_chantable);
-@@ -490,7 +497,15 @@ static void ath9k_init_channels_rates(st
+@@ -490,7 +497,15 @@ static void ath9k_init_channels_rates(struct ath_softc *sc)
  	}
  
  	if (test_bit(ATH9K_MODE_11A, sc->sc_ah->caps.wireless_modes)) {
@@ -71,7 +73,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  		sc->sbands[IEEE80211_BAND_5GHZ].band = IEEE80211_BAND_5GHZ;
  		sc->sbands[IEEE80211_BAND_5GHZ].n_channels =
  			ARRAY_SIZE(ath9k_5ghz_chantable);
-@@ -499,6 +514,7 @@ static void ath9k_init_channels_rates(st
+@@ -499,6 +514,7 @@ static void ath9k_init_channels_rates(struct ath_softc *sc)
  		sc->sbands[IEEE80211_BAND_5GHZ].n_bitrates =
  			ARRAY_SIZE(ath9k_legacy_rates) - 4;
  	}
@@ -79,7 +81,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  }
  
  static void ath9k_init_misc(struct ath_softc *sc)
-@@ -593,8 +609,11 @@ static int ath9k_init_softc(u16 devid, s
+@@ -594,8 +610,11 @@ static int ath9k_init_softc(u16 devid, struct ath_softc *sc, u16 subsysid,
  	if (ret)
  		goto err_btcoex;
  
@@ -92,7 +94,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  	ath9k_init_misc(sc);
  
  	return 0;
-@@ -752,6 +771,12 @@ static void ath9k_deinit_softc(struct at
+@@ -755,6 +774,12 @@ static void ath9k_deinit_softc(struct ath_softc *sc)
  {
  	int i = 0;
  
@@ -105,3 +107,6 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
          if ((sc->btcoex.no_stomp_timer) &&
  	    sc->sc_ah->btcoex_hw.scheme == ATH_BTCOEX_CFG_3WIRE)
  		ath_gen_timer_free(sc->sc_ah, sc->btcoex.no_stomp_timer);
+-- 
+1.7.3.2.90.gd4c43
+

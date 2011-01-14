@@ -292,7 +292,7 @@ static void ath_edma_start_recv(struct ath_softc *sc)
 
 	ath_opmode_init(sc);
 
-	ath9k_hw_startpcureceive(sc->sc_ah, (sc->sc_flags & SC_OP_OFFCHANNEL));
+	ath9k_hw_startpcureceive(sc->sc_ah, (sc->sc_flags & SC_OP_SCANNING));
 }
 
 static void ath_edma_stop_recv(struct ath_softc *sc)
@@ -498,7 +498,7 @@ int ath_startrecv(struct ath_softc *sc)
 start_recv:
 	spin_unlock_bh(&sc->rx.rxbuflock);
 	ath_opmode_init(sc);
-	ath9k_hw_startpcureceive(ah, (sc->sc_flags & SC_OP_OFFCHANNEL));
+	ath9k_hw_startpcureceive(ah, (sc->sc_flags & SC_OP_SCANNING));
 
 	return 0;
 }
@@ -631,7 +631,7 @@ static void ath_rx_ps(struct ath_softc *sc, struct sk_buff *skb)
 		 * No more broadcast/multicast frames to be received at this
 		 * point.
 		 */
-		sc->ps_flags &= ~(PS_WAIT_FOR_CAB | PS_WAIT_FOR_BEACON);
+		sc->ps_flags &= ~PS_WAIT_FOR_CAB;
 		ath_print(common, ATH_DBG_PS,
 			  "All PS CAB frames received, back to sleep\n");
 	} else if ((sc->ps_flags & PS_WAIT_FOR_PSPOLL_DATA) &&
@@ -870,18 +870,15 @@ static bool ath9k_rx_accept(struct ath_common *common,
 		if (rx_stats->rs_status & ATH9K_RXERR_DECRYPT) {
 			*decrypt_error = true;
 		} else if (rx_stats->rs_status & ATH9K_RXERR_MIC) {
-			/*
-			 * The MIC error bit is only valid if the frame
-			 * is not a control frame or fragment, and it was
-			 * decrypted using a valid TKIP key.
-			 */
-			if (!ieee80211_is_ctl(fc) &&
-			    !ieee80211_has_morefrags(fc) &&
-			    !(le16_to_cpu(hdr->seq_ctrl) & IEEE80211_SCTL_FRAG) &&
-			    test_bit(rx_stats->rs_keyix, common->tkip_keymap))
-				rxs->flag |= RX_FLAG_MMIC_ERROR;
-			else
+			if (ieee80211_is_ctl(fc))
+				/*
+				 * Sometimes, we get invalid
+				 * MIC failures on valid control frames.
+				 * Remove these mic errors.
+				 */
 				rx_stats->rs_status &= ~ATH9K_RXERR_MIC;
+			else
+				rxs->flag |= RX_FLAG_MMIC_ERROR;
 		}
 		/*
 		 * Reject error frames with the exception of
@@ -1083,7 +1080,6 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush, bool hp)
 	struct ieee80211_rx_status *rxs;
 	struct ath_hw *ah = sc->sc_ah;
 	struct ath_common *common = ath9k_hw_common(ah);
-	u32 *rx_desc = NULL;
 	/*
 	 * The hw can techncically differ from common->hw when using ath9k
 	 * virtual wiphy so to account for that we iterate over the active
@@ -1100,7 +1096,6 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush, bool hp)
 	u8 rx_status_len = ah->caps.rx_status_len;
 	u64 tsf = 0;
 	u32 tsf_lower = 0;
-	unsigned long flags;
 
 	if (edma)
 		dma_type = DMA_BIDIRECTIONAL;
@@ -1176,23 +1171,11 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush, bool hp)
 				 dma_type);
 
 		skb_put(skb, rs.rs_datalen + ah->caps.rx_status_len);
-		if (ah->caps.rx_status_len) {
-			rx_desc = kzalloc(ah->caps.rx_status_len, GFP_ATOMIC);
-			if (rx_desc == NULL)
-				BUG_ON(1);
-			memcpy(rx_desc, skb->data, ah->caps.rx_status_len);
+		if (ah->caps.rx_status_len)
 			skb_pull(skb, ah->caps.rx_status_len);
-		}
 
 		ath9k_rx_skb_postprocess(common, skb, &rs,
 					 rxs, decrypt_error);
-
-		if (rx_desc) {
-			ath_pktlog_rx(sc, (void *) rx_desc, skb);
-			kfree(rx_desc);
-		} else {
-			ath_pktlog_rx(sc, bf->bf_desc, skb);
-		}
 
 		/* We will now give hardware our shiny new allocated skb */
 		bf->bf_mpdu = requeue_skb;
@@ -1221,13 +1204,11 @@ int ath_rx_tasklet(struct ath_softc *sc, int flush, bool hp)
 			sc->rx.rxotherant = 0;
 		}
 
-		spin_lock_irqsave(&sc->sc_pm_lock, flags);
 		if (unlikely(ath9k_check_auto_sleep(sc) ||
 			     (sc->ps_flags & (PS_WAIT_FOR_BEACON |
 					      PS_WAIT_FOR_CAB |
 					      PS_WAIT_FOR_PSPOLL_DATA))))
 			ath_rx_ps(sc, skb);
-		spin_unlock_irqrestore(&sc->sc_pm_lock, flags);
 
 		ath_rx_send_to_mac80211(hw, sc, skb, rxs);
 

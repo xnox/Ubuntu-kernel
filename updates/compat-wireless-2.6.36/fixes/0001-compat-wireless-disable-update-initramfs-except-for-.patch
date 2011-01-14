@@ -1,0 +1,67 @@
+From 3cb9b0ff0d49241a5ae8832527d001d1d1ca737d Mon Sep 17 00:00:00 2001
+From: Walter Goldens <goldenstranger@yahoo.com>
+Date: Thu, 28 Oct 2010 09:42:27 -0700
+Subject: [PATCH 1/2] compat-wireless: disable update-initramfs except for b4xx/ssb
+
+Currently, the only drivers requiring update of the initramfs image
+are b43/legacy/b44/ssb, yet the process is in place for every other
+driver, including driver-select entries. Disable update-initramfs
+for all but b4xx/ssb.
+
+Signed-off-by: Walter Goldens <goldenstranger@yahoo.com>
+---
+ scripts/driver-select |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
+
+diff --git a/scripts/driver-select b/scripts/driver-select
+index 4f71240..6e07489 100755
+--- a/scripts/driver-select
++++ b/scripts/driver-select
+@@ -169,6 +169,7 @@ function disable_bt_usb_ethernet_var {
+ 	disable_ethernet
+ 	disable_var_03
+ 	disable_bt
++	disable_update-initramfs
+ } 
+ 
+ function enable_only_ethernet {
+@@ -187,6 +188,7 @@ function disable_var {
+ 	disable_ssb
+ 	disable_usbnet
+ 	disable_eeprom
++	disable_update-initramfs
+ } 
+ 
+ function disable_var_01 {
+@@ -199,6 +201,7 @@ function disable_var_02 {
+ 	disable_lib80211
+ 	disable_ssb
+ 	disable_usbnet
++	disable_update-initramfs
+ }
+ 
+ function disable_staging {
+@@ -216,6 +219,12 @@ function disable_brcm80211 {
+ 	perl -i -ne 'print if ! /brcm80211/ ' Makefile
+ }
+ 
++function disable_update-initramfs
++{
++	backup_file Makefile
++	perl -i -ne 'print if ! /update-initramfs/' Makefile
++}
++
+ function select_ath_driver 
+ {
+ 	backup_file $ATH_MAKEFILE
+@@ -408,6 +417,7 @@ case $1 in
+ 		select_drivers		CONFIG_ATL1 CONFIG_ATL2 CONFIG_ATL1E CONFIG_ATL1C
+ 		enable_only_ethernet
+ 		disable_b44
++		disable_update-initramfs
+ 		;;
+ 	bt)
+ 		select_driver 		CONFIG_BT
+-- 
+1.7.3.2.90.gd4c43
+

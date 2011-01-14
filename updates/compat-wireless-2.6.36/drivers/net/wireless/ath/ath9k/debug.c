@@ -15,7 +15,6 @@
  */
 
 #include <linux/slab.h>
-#include <linux/vmalloc.h>
 #include <asm/unaligned.h>
 
 #include "ath9k.h"
@@ -30,19 +29,6 @@ static struct dentry *ath9k_debugfs_root;
 static int ath9k_debugfs_open(struct inode *inode, struct file *file)
 {
 	file->private_data = inode->i_private;
-	return 0;
-}
-
-static ssize_t ath9k_debugfs_read_buf(struct file *file, char __user *user_buf,
-				      size_t count, loff_t *ppos)
-{
-	u8 *buf = file->private_data;
-	return simple_read_from_buffer(user_buf, count, ppos, buf, strlen(buf));
-}
-
-static int ath9k_debugfs_release_buf (struct inode *inode, struct file *file)
-{
-	vfree(file->private_data);
 	return 0;
 }
 
@@ -907,38 +893,7 @@ static ssize_t write_file_regval(struct file *file, const char __user *user_buf,
 static const struct file_operations fops_regval = {
 	.read = read_file_regval,
 	.write = write_file_regval,
-};
-
-#define REGDUMP_LINE_SIZE	20
-#define REGDUMP_NUM_REGS	(0x16bd4 / 4 + 1)
-#define REGDUMP_DATA_LEN	(REGDUMP_NUM_REGS * REGDUMP_LINE_SIZE + 1)
-
-static int open_file_regdump(struct inode *inode, struct file *file)
-{
-	struct ath_softc *sc = inode->i_private;
-	unsigned int len = 0;
-	u8 *buf;
-	int i;
-
-	buf = vmalloc(REGDUMP_DATA_LEN);
-	if (!buf)
-		return -ENOMEM;
-
-	ath9k_ps_wakeup(sc);
-	for (i = 0; i < REGDUMP_NUM_REGS; i++)
-		len += scnprintf(buf + len, REGDUMP_DATA_LEN - len,
-			"0x%06x 0x%08x\n", i << 2, REG_READ(sc->sc_ah, i << 2));
-	ath9k_ps_restore(sc);
-
-	file->private_data = buf;
-
-	return 0;
-}
-
-static const struct file_operations fops_regdump = {
-	.open = open_file_regdump,
-	.read = ath9k_debugfs_read_buf,
-	.release = ath9k_debugfs_release_buf,
+	.open = ath9k_debugfs_open,
 	.owner = THIS_MODULE
 };
 
@@ -1006,14 +961,6 @@ int ath9k_init_debug(struct ath_hw *ah)
 		goto err;
 
 	sc->debug.regidx = 0;
-
-	if (!debugfs_create_file("regdump", S_IRUSR, sc->debug.debugfs_phy,
-			sc, &fops_regdump))
-		goto err;
-
-	if (ath9k_init_pktlog(sc) != 0)
-		goto err;
-
 	return 0;
 err:
 	ath9k_exit_debug(ah);
@@ -1025,8 +972,6 @@ void ath9k_exit_debug(struct ath_hw *ah)
 	struct ath_common *common = ath9k_hw_common(ah);
 	struct ath_softc *sc = (struct ath_softc *) common->priv;
 
-	ath9k_deinit_pktlog(sc);
-	debugfs_remove(sc->debug.debugfs_regdump);
 	debugfs_remove_recursive(sc->debug.debugfs_phy);
 }
 

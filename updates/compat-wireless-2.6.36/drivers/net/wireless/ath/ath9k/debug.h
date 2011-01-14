@@ -156,14 +156,6 @@ struct ath_stats {
 struct ath9k_debug {
 	struct dentry *debugfs_phy;
 	u32 regidx;
-	struct dentry *debugfs_debug;
-	struct dentry *debugfs_dma;
-	struct dentry *debugfs_interrupt;
-	struct dentry *debugfs_rcstat;
-	struct dentry *debugfs_wiphy;
-	struct dentry *debugfs_xmit;
-	struct dentry *debugfs_recv;
-	struct dentry *debugfs_regdump;
 	struct ath_stats stats;
 };
 

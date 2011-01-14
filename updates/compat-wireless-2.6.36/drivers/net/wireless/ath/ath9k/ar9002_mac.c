@@ -215,8 +215,7 @@ static void ar9002_hw_fill_txdesc(struct ath_hw *ah, void *ds, u32 seglen,
 }
 
 static int ar9002_hw_proc_txdesc(struct ath_hw *ah, void *ds,
-				 struct ath_tx_status *ts,
-				 void *txs_desc)
+				 struct ath_tx_status *ts)
 {
 	struct ar5416_desc *ads = AR5416DESC(ds);
 

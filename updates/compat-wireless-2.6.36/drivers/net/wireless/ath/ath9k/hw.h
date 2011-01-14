@@ -607,7 +607,7 @@ struct ath_hw_ops {
 			    const void *ds0, dma_addr_t buf_addr,
 			    unsigned int qcu);
 	int (*proc_txdesc)(struct ath_hw *ah, void *ds,
-			   struct ath_tx_status *ts, void* txs_desc);
+			   struct ath_tx_status *ts);
 	void (*set11n_txdesc)(struct ath_hw *ah, void *ds,
 			      u32 pktLen, enum ath9k_pkt_type type,
 			      u32 txPower, u32 keyIx,
@@ -836,8 +836,6 @@ struct ath_hw {
 	 * this register when in sleep states.
 	 */
 	u32 WARegVal;
-
-	bool is_pkt_logging;
 };
 
 static inline struct ath_common *ath9k_hw_common(struct ath_hw *ah)
