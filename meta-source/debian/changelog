@@ -1,14 +1,25 @@
-linux-meta (2.6.32.27.30) UNRELEASED; urgency=low
+linux-meta (2.6.32.28.31) lucid-proposed; urgency=low
 
-  * 
+  [ Steve Conklin ]
 
- -- Stefan Bader <stefan.bader@canonical.com>  Fri, 03 Dec 2010 10:36:46 +0100
+  * Bump ABI to 28 for proposed upload
+  * Temporarily remove versatile
+
+  [ Leann Ogasawara ]
+
+  * UBUNTU: Remove conflicts statements for compat-wireless meta packages
+
+  [ Stefan Bader ]
+
+  * UBUNTU: Add meta package information for lbm-input modules
+
+ -- Steve Conklin <sconklin@canonical.com>  Fri, 14 Jan 2011 09:57:46 -0800
 
 linux-meta (2.6.32.27.29) lucid-proposed; urgency=low
 
   [ Leann Ogasawara ]
 
-  * Bump ABI to 27 for proposed upload 
+  * Bump ABI to 27 for proposed upload
 
  -- Brad Figg <brad.figg@canonical.com>  Tue, 30 Nov 2010 16:35:50 -0800
 
