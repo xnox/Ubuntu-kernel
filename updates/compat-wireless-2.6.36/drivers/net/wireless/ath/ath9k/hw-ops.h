@@ -67,10 +67,9 @@ static inline void ath9k_hw_filltxdesc(struct ath_hw *ah, void *ds, u32 seglen,
 }
 
 static inline int ath9k_hw_txprocdesc(struct ath_hw *ah, void *ds,
-				      struct ath_tx_status *ts,
-				      void *txs_desc)
+				      struct ath_tx_status *ts)
 {
-	return ath9k_hw_ops(ah)->proc_txdesc(ah, ds, ts, txs_desc);
+	return ath9k_hw_ops(ah)->proc_txdesc(ah, ds, ts);
 }
 
 static inline void ath9k_hw_set11n_txdesc(struct ath_hw *ah, void *ds,

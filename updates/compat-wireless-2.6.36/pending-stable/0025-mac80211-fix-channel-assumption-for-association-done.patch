@@ -1,7 +1,7 @@
 From e7480bbb926c5816e4fbfca70748096bbe0e4978 Mon Sep 17 00:00:00 2001
 From: Luis R. Rodriguez <lrodriguez@atheros.com>
 Date: Fri, 1 Oct 2010 17:05:19 -0400
-Subject: [PATCH 25/30] mac80211: fix channel assumption for association done work
+Subject: [PATCH 25/44] mac80211: fix channel assumption for association done work
 
 Be consistent and use the wk->chan instead of the
 local->hw.conf.channel for the association done work.
@@ -23,9 +23,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  net/mac80211/mlme.c |    6 +++---
  1 files changed, 3 insertions(+), 3 deletions(-)
 
+diff --git a/net/mac80211/mlme.c b/net/mac80211/mlme.c
+index 2b29827..cd13aa8 100644
 --- a/net/mac80211/mlme.c
 +++ b/net/mac80211/mlme.c
-@@ -1284,7 +1284,7 @@ static bool ieee80211_assoc_success(stru
+@@ -1291,7 +1291,7 @@ static bool ieee80211_assoc_success(struct ieee80211_work *wk,
  
  	rates = 0;
  	basic_rates = 0;
@@ -34,7 +36,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  
  	for (i = 0; i < elems.supp_rates_len; i++) {
  		int rate = (elems.supp_rates[i] & 0x7f) * 5;
-@@ -1320,11 +1320,11 @@ static bool ieee80211_assoc_success(stru
+@@ -1327,11 +1327,11 @@ static bool ieee80211_assoc_success(struct ieee80211_work *wk,
  		}
  	}
  
@@ -48,3 +50,6 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  	    have_higher_than_11mbit)
  		sdata->flags |= IEEE80211_SDATA_OPERATING_GMODE;
  	else
+-- 
+1.7.3.2.90.gd4c43
+

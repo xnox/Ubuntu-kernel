@@ -32,13 +32,6 @@ config ATH9K_DEBUGFS
 
 	  Also required for changing debug message flags at run time.
 
-config ATH9K_PKTLOG
-	bool "ath9k packet logging support"
-	depends on ATH9K_DEBUGFS
-	---help---
-	Say Y to dump frame information during tx/rx, rate information
-	and ani state.
-
 config ATH9K_HTC
        tristate "Atheros HTC based wireless cards support"
        depends on USB && MAC80211
@@ -60,4 +53,3 @@ config ATH9K_HTC_DEBUGFS
 	depends on ATH9K_HTC && DEBUG_FS
 	---help---
 	  Say Y, if you need access to ath9k_htc's statistics.
-

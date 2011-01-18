@@ -1,22 +1,14 @@
 
 [36mcompat-wireless code metrics[00m
 
-[35m    494785[00m - Total upstream lines of code being pulled
+[35m    494846[00m - Total upstream lines of code being pulled
 [01;32m      1708[00m - backport code changes
 [01;32m      1470[00m - backport code additions
 [01;32m       238[00m - backport code deletions
-[01;32m      5990[00m - backport from compat module
-[01;32m      7698[00m - total backport code
-[31m    1.5558[00m - % of code consists of backport work
-[31m      1533[00m - Crap changes not yet posted
-[31m      1489[00m - Crap additions not yet posted
-[31m        44[00m - Crap deletions not yet posted
-[31m    0.3098[00m - % of crap code
-[01;33m       481[00m - Code changes brought in from pending-stable
-[01;33m       292[00m - Code additions brought in from pending-stable
-[01;33m       189[00m - Code deletions brought in from pending-stable
-[31m    0.0972[00m - % of code being cherry picked from pending-stable
+[01;32m      6282[00m - backport from compat module
+[01;32m      7990[00m - total backport code
+[31m    1.6146[00m - % of code consists of backport work
 
 Base tree: [01;32mlinux-2.6-allstable.git[00m
-Base tree version: [35mv2.6.36-rc8[00m
-compat-wireless release: [01;33mcompat-wireless-v2.6.36-rc8-1-cs[00m
+Base tree version: [35mv2.6.36[00m
+compat-wireless release: [01;33mcompat-wireless-v2.6.36-4[00m

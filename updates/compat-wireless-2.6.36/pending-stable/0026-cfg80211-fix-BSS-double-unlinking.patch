@@ -1,7 +1,7 @@
 From 3207390a8b58bfc1335750f91cf6783c48ca19ca Mon Sep 17 00:00:00 2001
 From: Johannes Berg <johannes.berg@intel.com>
 Date: Wed, 6 Oct 2010 21:18:04 +0200
-Subject: [PATCH 26/30] cfg80211: fix BSS double-unlinking
+Subject: [PATCH 26/44] cfg80211: fix BSS double-unlinking
 
 When multiple interfaces are actively trying
 to associate with the same BSS, they may both
@@ -26,9 +26,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  net/wireless/scan.c |   12 ++++++------
  1 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/net/wireless/scan.c b/net/wireless/scan.c
+index 5ca8c71..503ebb8 100644
 --- a/net/wireless/scan.c
 +++ b/net/wireless/scan.c
-@@ -660,14 +660,14 @@ void cfg80211_unlink_bss(struct wiphy *w
+@@ -650,14 +650,14 @@ void cfg80211_unlink_bss(struct wiphy *wiphy, struct cfg80211_bss *pub)
  	bss = container_of(pub, struct cfg80211_internal_bss, pub);
  
  	spin_lock_bh(&dev->bss_lock);
@@ -49,3 +51,6 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  }
  EXPORT_SYMBOL(cfg80211_unlink_bss);
  
+-- 
+1.7.3.2.90.gd4c43
+

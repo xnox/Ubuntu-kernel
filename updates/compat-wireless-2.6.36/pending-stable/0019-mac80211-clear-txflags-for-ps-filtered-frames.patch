@@ -1,7 +1,7 @@
 From eb7d3066cf864342e8ae6a5c1126a1602c4d06c0 Mon Sep 17 00:00:00 2001
 From: Christian Lamparter <chunkeey@googlemail.com>
 Date: Tue, 21 Sep 2010 21:36:18 +0200
-Subject: [PATCH 19/30] mac80211: clear txflags for ps-filtered frames
+Subject: [PATCH 19/44] mac80211: clear txflags for ps-filtered frames
 
 This patch fixes stale mac80211_tx_control_flags for
 filtered / retried frames.
@@ -19,9 +19,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  net/mac80211/status.c  |    1 +
  2 files changed, 17 insertions(+), 0 deletions(-)
 
+diff --git a/include/net/mac80211.h b/include/net/mac80211.h
+index 12a49f0..5d1187d 100644
 --- a/include/net/mac80211.h
 +++ b/include/net/mac80211.h
-@@ -315,6 +315,9 @@ struct ieee80211_bss_conf {
+@@ -321,6 +321,9 @@ struct ieee80211_bss_conf {
   * @IEEE80211_TX_CTL_LDPC: tells the driver to use LDPC for this frame
   * @IEEE80211_TX_CTL_STBC: Enables Space-Time Block Coding (STBC) for this
   *	frame and selects the maximum number of streams that it can use.
@@ -31,7 +33,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
   */
  enum mac80211_tx_control_flags {
  	IEEE80211_TX_CTL_REQ_TX_STATUS		= BIT(0),
-@@ -344,6 +347,19 @@ enum mac80211_tx_control_flags {
+@@ -350,6 +353,19 @@ enum mac80211_tx_control_flags {
  
  #define IEEE80211_TX_CTL_STBC_SHIFT		23
  
@@ -51,9 +53,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  /**
   * enum mac80211_rate_control_flags - per-rate flags set by the
   *	Rate Control algorithm.
+diff --git a/net/mac80211/status.c b/net/mac80211/status.c
+index 571b32b..dd85006 100644
 --- a/net/mac80211/status.c
 +++ b/net/mac80211/status.c
-@@ -58,6 +58,7 @@ static void ieee80211_handle_filtered_fr
+@@ -58,6 +58,7 @@ static void ieee80211_handle_filtered_frame(struct ieee80211_local *local,
  	info->control.vif = &sta->sdata->vif;
  	info->flags |= IEEE80211_TX_INTFL_NEED_TXPROCESSING |
  		       IEEE80211_TX_INTFL_RETRANSMISSION;
@@ -61,3 +65,6 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  
  	sta->tx_filtered_count++;
  
+-- 
+1.7.3.2.90.gd4c43
+

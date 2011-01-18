@@ -1,7 +1,7 @@
 From 2234362c427e2ef667595b9b81c0125003ac5607 Mon Sep 17 00:00:00 2001
 From: Johannes Berg <johannes.berg@intel.com>
 Date: Thu, 30 Sep 2010 22:17:43 +0200
-Subject: [PATCH 22/30] cfg80211: fix locking
+Subject: [PATCH 22/44] cfg80211: fix locking
 
 Add missing unlocking of the wiphy in set_channel,
 and don't try to unlock a non-existing wiphy in
@@ -14,9 +14,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  net/wireless/nl80211.c |   11 +++++++----
  1 files changed, 7 insertions(+), 4 deletions(-)
 
+diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
+index cbbbe9a..21061cc 100644
 --- a/net/wireless/nl80211.c
 +++ b/net/wireless/nl80211.c
-@@ -763,11 +763,13 @@ static int nl80211_set_channel(struct sk
+@@ -821,11 +821,13 @@ static int nl80211_set_channel(struct sk_buff *skb, struct genl_info *info)
  
  	result = get_rdev_dev_by_info_ifindex(info, &rdev, &netdev);
  	if (result)
@@ -32,7 +34,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  	rtnl_unlock();
  
  	return result;
-@@ -5000,7 +5002,7 @@ static int nl80211_set_cqm_rssi(struct g
+@@ -5097,7 +5099,7 @@ static int nl80211_set_cqm_rssi(struct genl_info *info,
  
  	err = get_rdev_dev_by_info_ifindex(info, &rdev, &dev);
  	if (err)
@@ -41,7 +43,7 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  
  	wdev = dev->ieee80211_ptr;
  
-@@ -5017,9 +5019,10 @@ static int nl80211_set_cqm_rssi(struct g
+@@ -5115,9 +5117,10 @@ static int nl80211_set_cqm_rssi(struct genl_info *info,
  	err = rdev->ops->set_cqm_rssi_config(wdev->wiphy, dev,
  					     threshold, hysteresis);
  
@@ -53,3 +55,6 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  	rtnl_unlock();
  
  	return err;
+-- 
+1.7.3.2.90.gd4c43
+

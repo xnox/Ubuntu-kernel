@@ -234,8 +234,7 @@ static void ar9003_hw_fill_txdesc(struct ath_hw *ah, void *ds, u32 seglen,
 }
 
 static int ar9003_hw_proc_txdesc(struct ath_hw *ah, void *ds,
-				 struct ath_tx_status *ts,
-				 void *txs_desc)
+				 struct ath_tx_status *ts)
 {
 	struct ar9003_txs *ads;
 
@@ -306,7 +305,6 @@ static int ar9003_hw_proc_txdesc(struct ath_hw *ah, void *ds,
 
 	ts->tid = MS(ads->status8, AR_TxTid);
 
-	memcpy(txs_desc, ads, sizeof(*ads));
 	memset(ads, 0, sizeof(*ads));
 
 	return 0;
@@ -618,8 +616,7 @@ int ath9k_hw_process_rxdesc_edma(struct ath_hw *ah, struct ath_rx_status *rxs,
 			rxs->rs_status |= ATH9K_RXERR_DECRYPT;
 		} else if (rxsp->status11 & AR_MichaelErr) {
 			rxs->rs_status |= ATH9K_RXERR_MIC;
-		} else if (rxsp->status11 & AR_KeyMiss)
-			rxs->rs_status |= ATH9K_RXERR_DECRYPT;
+		}
 	}
 
 	return 0;

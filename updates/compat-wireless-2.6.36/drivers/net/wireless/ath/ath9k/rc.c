@@ -610,7 +610,7 @@ static u8 ath_rc_setvalid_htrates(struct ath_rate_priv *ath_rc_priv,
 static u8 ath_rc_get_highest_rix(struct ath_softc *sc,
 			         struct ath_rate_priv *ath_rc_priv,
 				 const struct ath_rate_table *rate_table,
-				 int *is_probing, u16 ac)
+				 int *is_probing)
 {
 	u32 best_thruput, this_thruput, now_msec;
 	u8 rate, next_rate, best_rate, maxindex, minindex;
@@ -701,8 +701,6 @@ static u8 ath_rc_get_highest_rix(struct ath_softc *sc,
 
 	rate = ath_rc_priv->valid_rate_index[0];
 
-      ath9k_pktlog_rc(sc, ath_rc_priv,  rate_table->info[rate].ratecode,
-		      rate, *is_probing, ac);
 	return rate;
 }
 
@@ -794,7 +792,7 @@ static void ath_get_rate(void *priv, struct ieee80211_sta *sta, void *priv_sta,
 	try_per_rate = 4;
 
 	rate_table = sc->cur_rate_table;
-	rix = ath_rc_get_highest_rix(sc, ath_rc_priv, rate_table, &is_probe, skb_get_queue_mapping(skb));
+	rix = ath_rc_get_highest_rix(sc, ath_rc_priv, rate_table, &is_probe);
 
 	/*
 	 * If we're in HT mode and both us and our peer supports LDPC.
@@ -1034,8 +1032,7 @@ static bool ath_rc_update_per(struct ath_softc *sc,
 static void ath_rc_update_ht(struct ath_softc *sc,
 			     struct ath_rate_priv *ath_rc_priv,
 			     struct ieee80211_tx_info *tx_info,
-			     int tx_rate, int xretries, int retries,
-			     u16 ac)
+			     int tx_rate, int xretries, int retries)
 {
 	u32 now_msec = jiffies_to_msecs(jiffies);
 	int rate;
@@ -1104,9 +1101,6 @@ static void ath_rc_update_ht(struct ath_softc *sc,
 	ath_debug_stat_retries(sc, tx_rate, xretries, retries,
 			       ath_rc_priv->per[tx_rate]);
 
-	ath9k_pktlog_rcupdate(sc, ath_rc_priv, tx_rate,
-			rate_table->info[tx_rate].ratecode,
-			xretries, retries, tx_info->status.ack_signal, ac);
 }
 
 static int ath_rc_get_rateindex(const struct ath_rate_table *rate_table,
@@ -1139,8 +1133,7 @@ static int ath_rc_get_rateindex(const struct ath_rate_table *rate_table,
 static void ath_rc_tx_status(struct ath_softc *sc,
 			     struct ath_rate_priv *ath_rc_priv,
 			     struct ieee80211_tx_info *tx_info,
-			     int final_ts_idx, int xretries, int long_retry,
-			     u16 ac)
+			     int final_ts_idx, int xretries, int long_retry)
 {
 	const struct ath_rate_table *rate_table;
 	struct ieee80211_tx_rate *rates = tx_info->status.rates;
@@ -1169,7 +1162,7 @@ static void ath_rc_tx_status(struct ath_softc *sc,
 				rix = ath_rc_get_rateindex(rate_table, &rates[i]);
 				ath_rc_update_ht(sc, ath_rc_priv, tx_info,
 						rix, xretries ? 1 : 2,
-						rates[i].count, ac);
+						rates[i].count);
 			}
 		}
 	} else {
@@ -1191,7 +1184,7 @@ static void ath_rc_tx_status(struct ath_softc *sc,
 		return;
 
 	rix = ath_rc_get_rateindex(rate_table, &rates[i]);
-	ath_rc_update_ht(sc, ath_rc_priv, tx_info, rix, xretries, long_retry, ac);
+	ath_rc_update_ht(sc, ath_rc_priv, tx_info, rix, xretries, long_retry);
 }
 
 static const
@@ -1366,12 +1359,6 @@ static void ath_tx_status(void *priv, struct ieee80211_supported_band *sband,
 	if (tx_info->flags & IEEE80211_TX_STAT_TX_FILTERED)
 		return;
 
-	if (!(tx_info->flags & IEEE80211_TX_STAT_AMPDU)) {
-		tx_info->status.ampdu_ack_len =
-			(tx_info->flags & IEEE80211_TX_STAT_ACK ? 1 : 0);
-		tx_info->status.ampdu_len = 1;
-	}
-
 	/*
 	 * If an underrun error is seen assume it as an excessive retry only
 	 * if max frame trigger level has been reached (2 KB for singel stream,
@@ -1392,8 +1379,7 @@ static void ath_tx_status(void *priv, struct ieee80211_supported_band *sband,
 		tx_status = 1;
 
 	ath_rc_tx_status(sc, ath_rc_priv, tx_info, final_ts_idx, tx_status,
-			 (is_underrun) ? sc->hw->max_rate_tries : long_retry,
-			 skb_get_queue_mapping(skb));
+			 (is_underrun) ? sc->hw->max_rate_tries : long_retry);
 
 	/* Check if aggregation has to be enabled for this tid */
 	if (conf_is_ht(&sc->hw->conf) &&

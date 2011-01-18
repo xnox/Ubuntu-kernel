@@ -1,7 +1,7 @@
 From 231c3a1f0630c07a584905507a1cb7b705a56ab7 Mon Sep 17 00:00:00 2001
 From: Felix Fietkau <nbd@openwrt.org>
 Date: Mon, 20 Sep 2010 19:35:28 +0200
-Subject: [PATCH 17/30] ath9k: fix an aggregation start related race condition
+Subject: [PATCH 17/44] ath9k: fix an aggregation start related race condition
 
 A new aggregation session start can be issued by mac80211, even when the
 cleanup of the previous session has not completed yet. Since the data structure
@@ -18,9 +18,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  drivers/net/wireless/ath/ath9k/xmit.c  |   10 ++++++++--
  3 files changed, 13 insertions(+), 6 deletions(-)
 
+diff --git a/drivers/net/wireless/ath/ath9k/ath9k.h b/drivers/net/wireless/ath/ath9k/ath9k.h
+index 79217c3c..004533d 100644
 --- a/drivers/net/wireless/ath/ath9k/ath9k.h
 +++ b/drivers/net/wireless/ath/ath9k/ath9k.h
-@@ -347,8 +347,8 @@ void ath_tx_tasklet(struct ath_softc *sc
+@@ -346,8 +346,8 @@ void ath_tx_tasklet(struct ath_softc *sc);
  void ath_tx_edma_tasklet(struct ath_softc *sc);
  void ath_tx_cabq(struct ieee80211_hw *hw, struct sk_buff *skb);
  bool ath_tx_aggr_check(struct ath_softc *sc, struct ath_node *an, u8 tidno);
@@ -31,9 +33,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  void ath_tx_aggr_stop(struct ath_softc *sc, struct ieee80211_sta *sta, u16 tid);
  void ath_tx_aggr_resume(struct ath_softc *sc, struct ieee80211_sta *sta, u16 tid);
  void ath9k_enable_ps(struct ath_softc *sc);
+diff --git a/drivers/net/wireless/ath/ath9k/main.c b/drivers/net/wireless/ath/ath9k/main.c
+index 5056733..8b327bc 100644
 --- a/drivers/net/wireless/ath/ath9k/main.c
 +++ b/drivers/net/wireless/ath/ath9k/main.c
-@@ -1971,8 +1971,9 @@ static int ath9k_ampdu_action(struct iee
+@@ -1970,8 +1970,9 @@ static int ath9k_ampdu_action(struct ieee80211_hw *hw,
  		break;
  	case IEEE80211_AMPDU_TX_START:
  		ath9k_ps_wakeup(sc);
@@ -45,9 +49,11 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  		ath9k_ps_restore(sc);
  		break;
  	case IEEE80211_AMPDU_TX_STOP:
+diff --git a/drivers/net/wireless/ath/ath9k/xmit.c b/drivers/net/wireless/ath/ath9k/xmit.c
+index 5323a4d..d629bfb 100644
 --- a/drivers/net/wireless/ath/ath9k/xmit.c
 +++ b/drivers/net/wireless/ath/ath9k/xmit.c
-@@ -787,17 +787,23 @@ static void ath_tx_sched_aggr(struct ath
+@@ -783,17 +783,23 @@ static void ath_tx_sched_aggr(struct ath_softc *sc, struct ath_txq *txq,
  		 status != ATH_AGGR_BAW_CLOSED);
  }
  
@@ -73,3 +79,6 @@ Signed-off-by: John W. Linville <linville@tuxdriver.com>
  }
  
  void ath_tx_aggr_stop(struct ath_softc *sc, struct ieee80211_sta *sta, u16 tid)
+-- 
+1.7.3.2.90.gd4c43
+
