@@ -1,3 +1,15 @@
+linux-backports-modules-2.6.35 (2.6.35-25.16) maverick-proposed; urgency=low
+
+  [ Tim Gardner ]
+
+  * Updated to compat-wireless-2.6.37-4
+  * enable compat-wireless-2.6.37 build
+  * Update compat-wireless-2.6.36 to compat-wireless-2.6.36.3
+  * Updated BOM
+    - LP: #704503
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 18 Jan 2011 09:41:03 -0700
+
 linux-backports-modules-2.6.35 (2.6.35-24.15) maverick-proposed; urgency=low
 
   [ Brad Figg ]
