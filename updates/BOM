@@ -2,8 +2,8 @@ ALSA:
 ftp://ftp.alsa-project.org/pub/driver/alsa-driver-1.0.23.tar.bz2
 
 WIRELESS:
-http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.36/compat-wireless-2.6.36-rc8-1-cs.tar.bz2
-http://www.orbit-lab.org/kernel/compat-wireless-2.6/compat-wireless-2010-11-08.tar.bz2
+http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.36/compat-wireless-2.6.36-4.tar.bz2
+http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.37/compat-wireless-2.6.37-4.tar.bz2
 
 Remember to remove the .gitignore file lest you not get all of the files committed that you thought.
 
