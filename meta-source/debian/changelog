@@ -1,3 +1,10 @@
+linux-meta (2.6.35.25.32) maverick-proposed; urgency=low
+
+  * Enabled compat-wireless-2.6.37 packages in linux-backports-modules-2.6.35
+    - LP: #704503
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 18 Jan 2011 11:06:31 -0700
+
 linux-meta (2.6.35.25.31) maverick-proposed; urgency=low
 
   * Temporarily remove omap and versatile, as so kernels were built for these for this version
