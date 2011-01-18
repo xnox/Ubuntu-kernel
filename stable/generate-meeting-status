@@ -141,7 +141,7 @@ class GenerateMeetingStatus(StdApp):
                 with open(self.cfg['sru'], 'r') as f:
                     sru = json.load(f)
 
-            tformat = ((40, LEFT), (20, LEFT), (20, LEFT), (4, RIGHT), (8, RIGHT))
+            tformat = ((42, LEFT), (20, LEFT), (20, LEFT), (4, RIGHT), (8, RIGHT))
             rows = []
             # Headers
             rows.append(('Package', 'Upd/Sec', 'Proposed', 'TiP', 'Verified'))
