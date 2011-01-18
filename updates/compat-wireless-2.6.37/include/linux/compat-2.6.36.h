@@ -90,17 +90,6 @@ struct pm_qos_request_list {
 
 #endif
 
-/*
- * Dummy printk for disabled debugging statements to use whilst maintaining
- * gcc's format and side-effect checking.
- */
-static inline __attribute__ ((format (printf, 1, 2)))
-int no_printk(const char *s, ...) { return 0; }
-
-#ifndef alloc_workqueue
-#define alloc_workqueue(name, flags, max_active) __create_workqueue(name, flags, max_active, 0)
-#endif
-
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36)) */
 
 #endif /* LINUX_26_36_COMPAT_H */

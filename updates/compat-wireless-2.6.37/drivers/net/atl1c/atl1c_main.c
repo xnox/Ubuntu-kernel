@@ -2881,6 +2881,34 @@ static struct pci_error_handlers atl1c_err_handler = {
 	.resume = atl1c_io_resume,
 };
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,29))
+static int atl1c_suspend_compat(struct pci_dev *pdev, pm_message_t state)
+{
+	int r;
+
+	r = atl1c_suspend(&pdev->dev);
+	if (r)
+		return r;
+
+	pci_save_state(pdev);
+	pci_disable_device(pdev);
+	pci_set_power_state(pdev, PCI_D3hot);
+	return 0;
+}
+
+static int atl1c_resume_compat(struct pci_dev *pdev)
+{
+	int r;
+
+	pci_restore_state(pdev);
+	r = pci_enable_device(pdev);
+	if (r)
+		return r;
+
+	return atl1c_resume(&pdev->dev);
+}
+#endif
+
 static SIMPLE_DEV_PM_OPS(atl1c_pm_ops, atl1c_suspend, atl1c_resume);
 
 static struct pci_driver atl1c_driver = {
@@ -2890,7 +2918,12 @@ static struct pci_driver atl1c_driver = {
 	.remove   = __devexit_p(atl1c_remove),
 	.shutdown = atl1c_shutdown,
 	.err_handler = &atl1c_err_handler,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,29))
 	.driver.pm = &atl1c_pm_ops,
+#elif defined(CONFIG_PM_SLEEP)
+	.suspend        = atl1c_suspend_compat,
+	.resume         = atl1c_resume_compat,
+#endif
 };
 
 /*

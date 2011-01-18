@@ -609,11 +609,7 @@ void ieee80211_recalc_ps(struct ieee80211_local *local, s32 latency)
 		s32 beaconint_us;
 
 		if (latency < 0)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 			latency = pm_qos_request(PM_QOS_NETWORK_LATENCY);
-#else
-			latency = pm_qos_requirement(PM_QOS_NETWORK_LATENCY);
-#endif
 
 		beaconint_us = ieee80211_tu_to_usec(
 					found->vif.bss_conf.beacon_int);
