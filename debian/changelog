@@ -1,3 +1,9 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-28.47) hardy-security; urgency=low
+
+  * No change rebuild to debug lpia FTBS
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 20 Jan 2011 15:54:40 +0000
+
 linux-ubuntu-modules-2.6.24 (2.6.24-28.46) hardy-security; urgency=low
 
   [Stefan Bader]
