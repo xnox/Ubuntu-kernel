@@ -1,3 +1,12 @@
+linux-meta-ti-omap4 (2.6.35.1101.3) natty; urgency=low
+
+  [ Bryan Wu ]
+
+  * UBUNTU: fix the RELEASENAME to natty
+  * UBUNTU: Add the linux-tools package to TI OMAP4
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 20 Jan 2011 06:54:15 -0700
+
 linux-meta-ti-omap4 (2.6.35.1101.2) natty; urgency=low
 
   * linux-ti-omap4 2.6.35-1101.3
