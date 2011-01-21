@@ -11,9 +11,9 @@ CDIR="`dirname $0`"
 #
 # Make sure some required packages are installed.
 #
-if ! grep backports /etc/apt/sources.list
+if ! egrep "backports.*universe" /etc/apt/sources.list
 then
-	echo You must enable backports in your apt repository
+	echo You must enable backports and universe in your apt repository
 	exit 1
 fi
 
