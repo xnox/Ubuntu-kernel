@@ -530,20 +530,6 @@ static inline struct kvm_mmu_page *page_header(hpa_t shadow_page)
 	return (struct kvm_mmu_page *)page_private(page);
 }
 
-static inline u16 read_fs(void)
-{
-	u16 seg;
-	asm("mov %%fs, %0" : "=g"(seg));
-	return seg;
-}
-
-static inline u16 read_gs(void)
-{
-	u16 seg;
-	asm("mov %%gs, %0" : "=g"(seg));
-	return seg;
-}
-
 static inline u16 read_ldt(void)
 {
 	u16 ldt;
@@ -551,15 +537,13 @@ static inline u16 read_ldt(void)
 	return ldt;
 }
 
-static inline void load_fs(u16 sel)
-{
-	asm("mov %0, %%fs" : : "rm"(sel));
-}
-
-static inline void load_gs(u16 sel)
-{
-	asm("mov %0, %%gs" : : "rm"(sel));
-}
+/*
+ * Save a segment register away
+ */
+#ifndef savesegment
+#define savesegment(seg, value)					\
+	asm("mov %%" #seg ",%0":"=r" (value) : : "memory")
+#endif
 
 #ifndef load_ldt
 static inline void load_ldt(u16 sel)

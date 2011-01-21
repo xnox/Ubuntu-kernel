@@ -1608,8 +1608,8 @@ static void svm_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
 	pre_svm_run(svm);
 
 	save_host_msrs(vcpu);
-	fs_selector = read_fs();
-	gs_selector = read_gs();
+	savesegment(fs, fs_selector);
+	savesegment(gs, gs_selector);
 	ldt_selector = read_ldt();
 	svm->host_cr2 = kvm_read_cr2();
 	svm->host_dr6 = read_dr6();
@@ -1743,10 +1743,15 @@ static void svm_vcpu_run(struct kvm_vcpu *vcpu, struct kvm_run *kvm_run)
 	write_dr7(svm->host_dr7);
 	kvm_write_cr2(svm->host_cr2);
 
-	load_fs(fs_selector);
-	load_gs(gs_selector);
-	load_ldt(ldt_selector);
 	load_host_msrs(vcpu);
+	loadsegment(fs, fs_selector);
+#ifdef CONFIG_X86_64
+	load_gs_index(gs_selector);
+	wrmsrl(MSR_KERNEL_GS_BASE, current->thread.gs);
+#else
+	loadsegment(gs, gs_selector);
+#endif
+	load_ldt(ldt_selector);
 
 	reload_tss(vcpu);
 
