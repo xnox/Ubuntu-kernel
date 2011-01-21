@@ -1,0 +1,39 @@
+#!/bin/bash
+
+#
+# Run this script in order to prepare a server for chroot installation.
+#
+
+CDIR="`dirname $0`"
+
+. "${CDIR}/scripts/chroot-defs.conf"
+
+#
+# Make sure some required packages are installed.
+#
+if ! grep backports /etc/apt/sources.list
+then
+	echo You must enable backports in your apt repository
+	exit 1
+fi
+
+REQ_PKGS="schroot debootstrap"
+for i in ${REQ_PKGS}
+do
+	if ! dpkg -l | grep "$i" > /dev/null
+	then
+		echo Installing $i
+		apt-get install $i || exit 1
+	fi
+done
+
+#
+# Make sure the chroots directory exists.
+#
+if [ ! -L /${DEF_DIR} ] && [ ! -d /${DEF_DIR} ]
+then
+	echo You must make the chroots directory by hand. Typically this will be:
+	echo mkdir /home/usr3; ln -s /home/usr3 /usr3
+	exit 1
+fi
+mkdir -p ${CH_ROOT}
