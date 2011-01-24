@@ -1,4 +1,12 @@
-linux-meta-ti-omap4 (2.6.35.903.6) UNRELEASED; urgency=low
+linux-meta-ti-omap4 (2.6.35.903.6) maverick-proposed; urgency=low
+
+  [ Bryan Wu ]
+
+  * Add linux-tools-omap4 meta package
+    - LP: #706757
+  * Misc typo corrections
+
+  [ Andy Whitcroft ]
 
   * fix descriptions of the OMAP4 meta packages
     - LP: #623297
