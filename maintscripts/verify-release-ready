@@ -275,6 +275,14 @@ class VerifyReleaseReady(StdApp):
             else:
                 self.status(msg, True)
 
+            # Look to see if a tracking bug has been added to the changelog
+            #
+            found_tracker = False
+            for line in changelog[1]['content']:
+                if 'Tracking Bug' in line:
+                    found_tracker = True
+            self.status('release tracking bug', found_tracker)
+
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
