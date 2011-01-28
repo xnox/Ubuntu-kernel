@@ -1,3 +1,9 @@
+linux-meta (2.6.35.26.33) maverick-proposed; urgency=low
+
+  * Bump ABI - Maverick ABI 26
+
+ -- Steve Conklin <sconklin@canonical.com>  Fri, 28 Jan 2011 14:50:56 -0600
+
 linux-meta (2.6.35.25.32) maverick-proposed; urgency=low
 
   * Enabled compat-wireless-2.6.37 packages in linux-backports-modules-2.6.35
