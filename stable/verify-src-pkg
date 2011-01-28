@@ -155,7 +155,7 @@ class CheckPackage(StdApp):
                                 if record[state] != chksum:
                                    error("It _DIDN'T_ match\n")
                                 checked += 1
-                            state = ''
+                                state = ''
                             continue
 
                         # Detect the section containing the md5 checksum for the orig.tar.gz
@@ -163,7 +163,7 @@ class CheckPackage(StdApp):
                         if 'Files' in line:
                             state = 'md5'
                             continue
-                        elif state == 'files':
+                        elif state == 'md5':
                             if 'orig.tar.gz' in line:
                                 (chksum, size, j1, j2, filename) = line.split()
                                 if record[state] == chksum:
@@ -171,12 +171,12 @@ class CheckPackage(StdApp):
                                 else:
                                    error("It _DIDN'T_ match\n")
                                 checked += 1
-                            state = ''
+                                state = ''
                             continue
 
 
                 if checked < 2:
-                    error("%s doesn't have both the checksums\n           (sha1 and md5). This could be due to not using the '-sa' command line\n           option when creating the package.\n" % cf)
+                    error("%s doesn't have both checksums\n           (sha1 and md5). This could be due to not using the '-sa' command line\n           option when creating the package.\n" % cf)
 
         # Handle the user presses <ctrl-C>.
         #
