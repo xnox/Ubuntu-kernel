@@ -147,24 +147,30 @@ class CreateTrackingBug(StdApp):
             #    kernel-tracking-bug
             #
             bug.tags.append('kernel-tracking-bug')
+            id = bug.id
+            name = bug.owner.display_name
 
+            # Pull the entire changelog file into a list
+            #
             changelog, changelog_path = Debian.raw_changelog()
+            with open(changelog_path, 'r') as f:
+                thelog = f.readlines()
+
             with open(changelog_path, 'w') as f:
-                f.write(changelog[0])
+                f.write(thelog[0])
+                f.write(thelog[1])
+                f.write("  [ %s ]\n" % (name))
                 f.write("\n")
+                f.write("  * Release Tracking Bug\n")
+                f.write("    - LP: #%s\n" % (id))
                 f.write("\n")
-                f.write("  [ %s ]\n" % (bug.owner.display_name))
-                f.write("\n")
-                f.write("  * Tracking Bug\n")
-                f.write("    - LP: #%s\n" % (bug.id))
-                for line in changelog[1:]:
+                for line in thelog[2:]:
                     f.write(line)
-                    f.write("\n")
 
             if 'staging' in self.cfg:
-                print("https://bugs.staging.launchpad.net/bugs/%s" % (bug.id))
+                print("https://bugs.staging.launchpad.net/bugs/%s" % (id))
             else:
-                print("https://bugs.launchpad.net/bugs/%s" % (bug.id))
+                print("https://bugs.launchpad.net/bugs/%s" % (id))
 
         # Handle the user presses <ctrl-C>.
         #
