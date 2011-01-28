@@ -152,8 +152,6 @@ class CheckPackage(StdApp):
                         elif state == 'sha1':
                             if 'orig.tar.gz' in line:
                                 (chksum, size, filename) = line.split()
-                                if record[state] != chksum:
-                                   error("It _DIDN'T_ match\n")
                                 checked += 1
                                 state = ''
                             continue
@@ -166,10 +164,6 @@ class CheckPackage(StdApp):
                         elif state == 'md5':
                             if 'orig.tar.gz' in line:
                                 (chksum, size, j1, j2, filename) = line.split()
-                                if record[state] == chksum:
-                                   error("It matched\n")
-                                else:
-                                   error("It _DIDN'T_ match\n")
                                 checked += 1
                                 state = ''
                             continue
