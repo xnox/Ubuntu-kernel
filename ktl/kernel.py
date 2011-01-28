@@ -2,17 +2,16 @@
 #
 
 from ktl.git                            import Git, GitError
-from re                                 import search
 
 map_kernel_version_to_ubuntu_release = {
-    '2.6.35' : { 'number' : '10.10', 'name'  : 'maverick' },
-    '2.6.32' : { 'number' : '10.04', 'name'  : 'lucid'    },
-    '2.6.31' : { 'number' : '9.10',  'name'  : 'karmic'   },
-    '2.6.28' : { 'number' : '9.04',  'name'  : 'jaunty'   },
-    '2.6.27' : { 'number' : '8.10',  'name'  : 'intrepid' },
-    '2.6.24' : { 'number' : '8.04',  'name'  : 'hardy'    },
-    '2.6.22' : { 'number' : '7.10',  'name'  : 'gutsy'    },
-    '2.6.20' : { 'number' : '7.04',  'name'  : 'feisty'   }
+    '2.6.35' : { 'number' : '10.10', 'name'  : 'maverick', 'sha1' : 'a2422f9281766ffe2f615903712819b9b0d9dd52', 'md5' : '62001687bd94d1c0dd9a3654c64257d6' },
+    '2.6.32' : { 'number' : '10.04', 'name'  : 'lucid',    'sha1' : '298cbfdb55fc64d1135f06b3bed3c8748123c183', 'md5' : '4b1f6f6fac43a23e783079db589fc7e2' },
+    '2.6.31' : { 'number' : '9.10',  'name'  : 'karmic',   'sha1' : '6b19c2987b0e2d74dcdca2aadebd5081bc143b72', 'md5' : '16c0355d3612806ef87addf7c9f8c9f9' },
+    '2.6.28' : { 'number' : '9.04',  'name'  : 'jaunty',   'sha1' : '92d6a293200566646fbb9215e0633b4b9312ad38', 'md5' : '062c29b626a55f09a65532538a6184d4' },
+    '2.6.27' : { 'number' : '8.10',  'name'  : 'intrepid', 'sha1' : '', 'md5' : '' },
+    '2.6.24' : { 'number' : '8.04',  'name'  : 'hardy',    'sha1' : 'ccccdc4759fd780a028000a1b7b15dbd9c60363b', 'md5' : 'e4aad2f8c445505cbbfa92864f5941ab' },
+    '2.6.22' : { 'number' : '7.10',  'name'  : 'gutsy',    'sha1' : '', 'md5' : '' },
+    '2.6.20' : { 'number' : '7.04',  'name'  : 'feisty',   'sha1' : '', 'md5' : '' }
 }
 
 map_release_number_to_ubuntu_release = {

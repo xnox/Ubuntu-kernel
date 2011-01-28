@@ -1,0 +1,65 @@
+#!/usr/bin/env python
+#
+
+import argparse
+from ktl.utils                          import debug
+from ktl.std_app                        import StdApp
+
+# CveItemStart
+#
+class Builder(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+        self.el = True
+
+    # main
+    #
+    def main(self):
+        try:
+            # -----------------------------------------------------------------
+            # Commandline Argument Parsing
+            #
+
+            # Create the top-level parser
+            top = argparse.ArgumentParser()
+            subs = top.add_subparsers(dest='subparser_name')
+
+            # "start" parser
+            p_start = subs.add_parser('start', help='the start command')
+            p_start.set_defaults(func=self.sub_command_start)
+
+            # "prepare" parser
+            p_list  = subs.add_parser('prepare', help='the prepare command')
+            p_list.set_defaults(func=self.sub_command_prepare)
+
+            args = top.parse_args()
+            args.func()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        return
+
+    # sub_command_start
+    #
+    def sub_command_start(self):
+        debug('sub_command_start: enter\n', self.el)
+        return
+
+    # sub_command_prepare
+    #
+    def sub_command_prepare(self):
+        debug('sub_command_prepare: enter\n', self.el)
+        return
+
+if __name__ == '__main__':
+    app = Builder()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
