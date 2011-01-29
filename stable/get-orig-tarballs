@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 
-from sys                                import argv, exit
+from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, run_command
 from ktl.std_app                        import StdApp
@@ -35,7 +35,6 @@ class Cmdline:
     def error(self, e, defaults):
         if e != '': print e
         self.usage(defaults)
-        exit()
 
     # usage
     #
@@ -136,6 +135,8 @@ class AppTemplate(StdApp):
         #
         except CmdlineError as e:
             cmdline.error(e.msg, self.defaults)
+            return
+
         reportfile = 'orig-tarball-report.txt'
         rf = open(reportfile, 'w+')
         for package in self.packages:
