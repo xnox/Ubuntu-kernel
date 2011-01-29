@@ -153,7 +153,8 @@ class AppTemplate(StdApp):
                     regex = 'href *= *\"(.*?)\"'
                     match = re.search(regex, line, re.I)
                     fname =  match.group(1)
-                    print >>rf, fname, '     ',
+                    rf.write(fname)
+                    rf.write('     ')
                     print "Fetching ", fname, "     ",
                     # now download it
                     urlretrieve(url + fname, fname)
@@ -164,7 +165,8 @@ class AppTemplate(StdApp):
                         print "ERROR: Error running command <", cmdline, ">"
                     else:
                         sum = output[0].split()[0]
-                        print >>rf, sum
+                        rf.write(sum)
+                        rf.write('\n')
                         print sum
         rf.close()
         print '\n\n List of tarballs and md5sums is in ', reportfile
