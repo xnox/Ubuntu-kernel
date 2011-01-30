@@ -162,7 +162,7 @@ class PPAinfo(StdApp):
                         line = f.readline()
                         if not line:
                             break
-                        if contains(line, 'Checksums-Sha1:'):
+                        if line.startswith('Files:'):
                             parsing = True
                             continue
                         if parsing:
@@ -171,7 +171,7 @@ class PPAinfo(StdApp):
                                 parsing = False
                             else:
                                 if contains(line, 'orig.tar.gz'):
-                                    print "Sha1 in .dsc file: ", line.split()[0]
+                                    print "MD5sum in .dsc file: ", line.split()[0]
 
                 elif g.endswith('.orig.tar.gz'):
                     print 'Orig tarball name: ', basename(g)
