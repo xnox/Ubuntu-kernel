@@ -178,18 +178,6 @@ class PPAinfo(StdApp):
 
         return
 
-        # get the canonical-kernel-team
-        self.dumpinfo()
-        ppalist = self.get_ppas()
-        # for kernel, we only care about the one named "ppa"
-        cktppa = self.get_ppa_byname('ppa')
-        print '-'
-        for key, val in cktppa.items():
-            print key, ': ', val
-
-
-        return
-
 if __name__ == '__main__':
 #    app = PPAinfo('sconklin')
     app = PPAinfo('canonical-kernel-team', 'ppa')
