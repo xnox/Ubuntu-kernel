@@ -1,0 +1,30 @@
+
+These are the scripts that I use to do the irc meeting reports
+that I do.
+
+1. Take all the channel ouput from before the #startmeeting to
+   after the #endmeeting and paste that into a file. I usually
+   name this file todays-date.txt.
+
+2. Run: irc2moin < todays-date.txt > todays-date.moin
+
+3. Hand edit todays-date.moin to remove the nicks from the beginning
+   of the lines and cleanup any text that I feel like. I may also
+   add some <<BR>> lines where appropriate for line breaks.
+
+4. Create the new wiki page for the meeting minutes and paste
+   todays-date.moin into it.
+
+   Look over the results and edit the file as necessary.
+
+5. Run: moin2blog < todays-date.moin > todays-date.html
+
+6. Create a new blog entry at voices.canonical.com/kernelteam/,
+   pasting in the text from todays-date.html.
+
+   Preview the results, make whatever adjustments necessary and
+   publish it.
+
+For more details and the names of the mailing lists to send
+the notes out to see:
+    https://wiki.ubuntu.com/KernelTeam/RunningTheIRCMeeting
