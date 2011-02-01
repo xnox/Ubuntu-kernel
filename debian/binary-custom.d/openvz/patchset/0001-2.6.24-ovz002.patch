@@ -90161,15 +90161,6 @@ Index: kernel/net/packet/af_packet.c
  	if (dev) {
  		strlcpy(uaddr->sa_data, dev->name, 15);
  		dev_put(dev);
-@@ -1165,7 +1181,7 @@
- 	sll->sll_family = AF_PACKET;
- 	sll->sll_ifindex = po->ifindex;
- 	sll->sll_protocol = po->num;
--	dev = dev_get_by_index(&init_net, po->ifindex);
-+	dev = dev_get_by_index(current->nsproxy->net_ns, po->ifindex);
- 	if (dev) {
- 		sll->sll_hatype = dev->type;
- 		sll->sll_halen = dev->addr_len;
 @@ -1217,7 +1233,7 @@
  	rtnl_lock();
  
