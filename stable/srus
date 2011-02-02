@@ -1,0 +1,105 @@
+#!/usr/bin/env python
+#
+
+import argparse
+from os                                 import path
+import json
+from ktl.utils                          import debug, error
+from ktl.std_app                        import StdApp
+
+# Sru
+#
+class Sru(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+        self.el = True
+
+    # main
+    #
+    def main(self):
+        try:
+            # -----------------------------------------------------------------
+            # Commandline Argument Parsing
+            #
+
+            # Create the top-level parser
+            top = argparse.ArgumentParser()
+            subs = top.add_subparsers(dest='subparser_name')
+
+            # "bugs" parser
+            p_bugs = subs.add_parser('bugs', help='the start command')
+            p_bugs.set_defaults(func=self.sub_command_bugs)
+            p_bugs.add_argument('--release',      dest='release',      type=str,
+                                help='Specifies which releases are to be included.')
+            p_bugs.add_argument('--verified',     dest='verified',     action='store_true',
+                                help='Interested in bugs that are marked verification-done.')
+            p_bugs.add_argument('--not-verified', dest='not_verified', action='store_true',
+                                help='Interested in bugs that are not marked verification-done.')
+            p_bugs.add_argument('--package',      dest='package',      type=str,
+                                help='List of the source packages to be included.')
+            p_bugs.add_argument('sru_report', type=str,
+                                help='A json file obtained from running sru-report.')
+
+            args = top.parse_args()
+            args.func(args)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        return
+
+    # load
+    #
+    # Return a python object of the loaded json file.
+    #
+    def load(self, fname):
+        retval = None
+        if path.exists(fname):
+            with open(fname, 'r') as f:
+                retval = json.load(f)
+        else:
+            # Really, I want to throw an exception here.
+            #
+            error("The file (%s) doesn't exist." % fname)
+        return retval
+
+    # sub_command_bugs
+    #
+    def sub_command_bugs(self, args):
+        debug('sub_command_start: enter\n', self.el)
+        proposed = self.load(args.sru_report)
+
+        # Lets build a dictionary of all the bugs for all the releases
+        # we care about.
+        #
+        for rls in args.release.split(','):
+            print("release: %s" % (rls))
+            bugs = {}
+            for pkg in proposed['releases'][rls].keys():
+                if (args.package != None) and (pkg not in args.package): continue
+
+                for bugid in proposed['releases'][rls][pkg]['bugs'].keys():
+                    bugs[bugid] = proposed['releases'][rls][pkg]['bugs'][bugid]
+
+            for bug in bugs:
+                print bug
+
+        if proposed != None:
+            if args.verified:
+               print args.release
+               print args.verified
+               print args.not_verified
+            print("So far so good.")
+        return
+
+if __name__ == '__main__':
+    app = Sru()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
