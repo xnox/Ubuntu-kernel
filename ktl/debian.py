@@ -7,6 +7,7 @@
 
 from ktl.git                            import Git, GitError
 from re                                 import compile
+from os                                 import path
 
 # DebianError
 #
@@ -21,7 +22,7 @@ class DebianError(Exception):
 
 class Debian:
     debug = False
-    version_line_rc = compile("^(linux[-\S]*) \(([0-9]+\.[0-9]+\.[0-9]+-[0-9]+\.[0-9]+)\) (\S+); urgency=\S+$")
+    version_line_rc = compile("^(linux[-\S]*) \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+)\) (\S+); urgency=\S+$")
 
     # raw_changelog
     #
@@ -45,7 +46,16 @@ class Debian:
             try:
                 retval = Git.show(cl_path, branch=current_branch)
             except GitError:
-                raise DebianError('Failed to find the changelog.')
+                # If this is a kernel meta package, its in a sub-directory of meta-source.
+                #
+                if path.exists('meta-source'):
+                    cl_path = 'meta-source/debian/changelog'
+                    try:
+                        retval = Git.show(cl_path, branch=current_branch)
+                    except GitError:
+                        raise DebianError('Failed to find the changelog.')
+                else:
+                    raise DebianError('Failed to find the changelog.')
         return retval, cl_path
 
     # changelog
