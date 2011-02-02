@@ -309,9 +309,7 @@ class SruReport(StdApp):
                     security = self.tagfile_to_dict('%s/dists/%s-security/%s/source/Sources.gz' % (self.archive_root, rls, component))
 
                     for package in sorted(proposed.keys()):
-                        if 'linux' not in package: continue
-                        if 'linaro' in package: continue
-                        if 'util-linux' in package: continue
+                        if 'linux' != package[:5]: continue
                         self.dbg('core', "        Package: '%s'\n" % (package))
                         update_ver = updates.get(package, '')
                         if apt_pkg.version_compare(proposed[package], update_ver) > 0:
