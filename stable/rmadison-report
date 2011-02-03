@@ -146,7 +146,6 @@ class rMadison(StdApp):
 
         resultinfo = {}
         for package in kernel_package_names:
-            packageinfo = {}
             print 'Fetching information for ', package
             cmdline = 'rmadison -asource ' + package
             status, result = run_command(cmdline)
@@ -154,6 +153,10 @@ class rMadison(StdApp):
                 print "ERROR: Error running command <", cmdline, ">"
             else:
                 for line in result:
+                    # if package not found, we get a single empty line
+                    if len(line) == 0:
+                        continue
+                    print 'LINE: ', line
                     packagename, version, distpocket, package_type = line.split('|')
                     pktparts =  distpocket.strip().split('-')
                     if len(pktparts) == 1:
@@ -161,15 +164,21 @@ class rMadison(StdApp):
                         continue
                     else:
                         pocket =  distpocket.strip().split('-')[-1]
+                        rdist =  distpocket.strip().split('-')[0]
+
                     rm = re.match('[0-9]\.[0-9]\.[0-9][0-9]', version.strip())
                     baseversion = rm.group(0)
                     distribution = map_kernel_version_to_ubuntu_release[baseversion]['name']
 
+                    packageinfo = {}
                     packageinfo['name'] = packagename.strip()
                     packageinfo['version'] = version.strip()
                     packageinfo['pocket'] = pocket.strip()
                     packageinfo['distribution'] = distribution.strip()
-                    resultkey = package.strip() + '-' + version.strip()
+                    resultkey = package.strip() + '-' + version.strip() + '-' + pocket.strip()
+
+                    print resultkey, ':', packageinfo
+
                     resultinfo[resultkey] = packageinfo
                     
         jf.write(json.dumps(resultinfo, sort_keys=True, indent=4))
