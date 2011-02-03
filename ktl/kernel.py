@@ -3,6 +3,14 @@
 
 from ktl.git                            import Git, GitError
 
+# Hopefully, this is the only dictionary that we'll have to change to keep tools current
+
+
+# Karmic 9.10: Freescale, Marvell
+# Lucid 10.04: Freescale, Marvell
+# Maverick 10.10: TI (OMAP 4, OMAP 3), and maybe Marvell have to ask OEM as they are funding that, I'll ask them directly.
+# Natty 11.04: TI OMAP 4, OMAP 3 is nice to have but not mandatory
+
 map_kernel_version_to_ubuntu_release = {
     '2.6.38' : { 'number' : '11.04', 'name'  : 'natty', 'sha1' : '', 'md5' : '' },
     '2.6.35' : { 'number' : '10.10', 'name'  : 'maverick', 'sha1' : 'a2422f9281766ffe2f615903712819b9b0d9dd52', 'md5' : '62001687bd94d1c0dd9a3654c64257d6' },
@@ -17,29 +25,55 @@ map_kernel_version_to_ubuntu_release = {
 }
 
 map_release_number_to_ubuntu_release = {
-    '10.10'  : { 'kernel' : '2.6.35', 'name' : 'maverick' },
-    '10.04'  : { 'kernel' : '2.6.32', 'name' : 'lucid'    },
-    '9.10'   : { 'kernel' : '2.6.31', 'name' : 'karmic'   },
-    '9.04'   : { 'kernel' : '2.6.28', 'name' : 'jaunty'   },
-    '8.10'   : { 'kernel' : '2.6.27', 'name' : 'intrepid' },
-    '8.04'   : { 'kernel' : '2.6.24', 'name' : 'hardy'    },
-    '7.10'   : { 'kernel' : '2.6.22', 'name' : 'gutsy'    },
-    '7.04'   : { 'kernel' : '2.6.20', 'name' : 'feisty'   }
+    '10.10'  : { 'kernel' : '2.6.35', 'name' : 'maverick', 'supported' : True,
+                 'packages' : ['linux', 'linux-ti-omap4', 'linux-mvl-dove', 'linux-ec2',
+                               'linux-meta', 'linux-ports-meta', 'linux-meta-ec2', 'linux-meta-mvl-dove', 'linux-meta-ti-omap4'
+                               'linux-backports-modules-2.6.35']},
+    '10.04'  : { 'kernel' : '2.6.32', 'name' : 'lucid', 'supported' : True,
+                 'packages' : ['linux', 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2',
+                               'linux-meta', 'linux-ports-meta', 'linux-meta-ec2', 'linux-meta-mvl-dove', 'linux-meta-fsl-imx51',
+                               'linux-backports-modules-2.6.32', 'linux-lts-backport-maverick', 'linux-lts-backport-natty'
+                               ]},
+    '9.10'   : { 'kernel' : '2.6.31', 'name' : 'karmic', 'supported' : True,
+                 'packages' : ['linux', 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2',
+                               'linux-meta', 'linux-ports-meta', 'linux-meta-ec2', 'linux-meta-mvl-dove', 'linux-meta-fsl-imx51',
+                               'linux-backports-modules-2.6.31']},
+    '9.04'   : { 'kernel' : '2.6.28', 'name' : 'jaunty', 'supported' : False, 'packages' : []},
+    '8.10'   : { 'kernel' : '2.6.27', 'name' : 'intrepid', 'supported' : False, 'packages' : []},
+    '8.04'   : { 'kernel' : '2.6.24', 'name' : 'hardy', 'supported' : True,
+                 'packages' : ['linux',
+                               'linux-meta', 'linux-ports-meta',
+                               'linux-backports-modules-2.6.24', 'linux-ubuntu-modules', 'linux-restricted-modules'
+                               ]},
+    '7.10'   : { 'kernel' : '2.6.22', 'name' : 'gutsy', 'supported' : False, 'packages' : []},
+    '7.04'   : { 'kernel' : '2.6.20', 'name' : 'feisty', 'supported' : False, 'packages' : []},
+    '6.06'   : { 'kernel' : '2.6.15', 'name' : 'dapper', 'supported' : True,
+                 'packages' : ['linux-source-2.6.15', 'linux-backports-modules-2.6.15']},
 }
 
 kernel_package_names = [
     'linux',
+    'linux-ti-omap4', # maverick, natty
+    'linux-mvl-dove', # maverick, karmic, lucid
+    'linux-fsl-imx51', # karmic, lucid
     'linux-ec2',
     'linux-meta',
     'linux-meta-ec2',
+    'linux-meta-mvl-dove', # maverick, karmic, lucid
+    'linux-meta-ti-omap4', # maverick, natty
+    'linux-meta-fsl-imx51', # karmic, lucid ?
     'linux-ports-meta',
-    'linux-source-2.6.15', # remove when dapper is dead
+    'linux-source-2.6.15',
     'linux-backports-modules-2.6.15',
+    'linux-backports-modules-2.6.31',
     'linux-backports-modules-2.6.32',
     'linux-restricted-modules-2.6.24',
     'linux-ubuntu-modules-2.6.24',
     'linux-backports-modules-2.6.35',
     'linux-lts-backport-maverick',
+    'linux-lts-backport-natty',
+    'linux-meta-lts-backport-maverick',
+    'linux-meta-lts-backport-natty',
 ]
 
 # KernelError
