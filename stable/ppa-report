@@ -146,8 +146,8 @@ class PPAinfo(StdApp):
         self.defaults = {}
         cachedir = "/tmp/.launchpadlib/cache/"
 
-        self.name = name
-        self.ppaname = ppaname
+        self.name = 'canonical-kernel-team'
+        self.ppaname = 'ppa'
         self.person = None
         self.ppa = None
 
