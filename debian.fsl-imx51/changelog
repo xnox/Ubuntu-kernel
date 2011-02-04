@@ -1,3 +1,44 @@
+linux-fsl-imx51 (2.6.31-608.22) lucid; urgency=low
+
+  [ Tim Gardner ]
+
+  * rebased to 2.6.31-22.72
+  * Tracking bug
+    - LP: #713266
+
+  [ Upstream Kernel Changes ]
+
+  * Karmic SRU: thinkpad-acpi: lock down video output state access, CVE-2010-3448
+    - LP: #706999
+    - CVE-2010-3448
+  * USB: serial/mos*: prevent reading uninitialized stack memory,
+    CVE-2010-4074
+    - LP: #706149
+    - CVE-2010-4074
+  * KVM: Fix fs/gs reload oops with invalid ldt
+    - LP: #707000
+    - CVE-2010-3698
+  * drivers/video/sis/sis_main.c: prevent reading uninitialized stack
+    memory, CVE-2010-4078
+    - LP: #707579
+    - CVE-2010-4078
+  * V4L/DVB: ivtvfb: prevent reading uninitialized stack memory,
+    CVE-2010-4079
+    - LP: #707649
+    - CVE-2010-4079
+
+  [ Upstream Kernel Changes ]
+
+  * ipc: initialize structure memory to zero for compat functions
+  * tcp: Increase TCP_MAXSEG socket option minimum.
+    - CVE-2010-4165
+  * perf_events: Fix perf_counter_mmap() hook in mprotect()
+    - CVE-2010-4169
+  * af_unix: limit unix_tot_inflight
+    - CVE-2010-4249
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Fri, 04 Feb 2011 11:39:27 -0700
+
 linux-fsl-imx51 (2.6.31-608.21) lucid-proposed; urgency=low
 
   [ Leann Ogasawara ]
