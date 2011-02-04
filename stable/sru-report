@@ -349,14 +349,11 @@ class SruReport(StdApp):
                             try:
                                 lp_bug = self.service.get_bug(bug)
                                 state = 'missing'
-                                if   'kernel-tracking-bug'    in lp_bug.tags: state = 'tracker'
-                                elif 'kernel-release-tracker' in lp_bug.tags: state = 'tracker'
-                                else:
-                                    for tag in lp_bug.tags:
-                                        if 'verification-'    in tag:
-                                            if   '-failed'    in tag: state = 'failed'
-                                            elif '-done'      in tag: state = 'verified'
-                                            elif '-needed'    in tag: state = 'needed'
+                                if   'kernel-tracking-bug'          in lp_bug.tags: state = 'tracker'
+                                elif 'kernel-release-tracker'       in lp_bug.tags: state = 'tracker'
+                                elif 'verification-failed-%s' % rls in lp_bug.tags: state = 'failed'
+                                elif 'verification-done-%s'   % rls in lp_bug.tags: state = 'verified'
+                                elif 'verification-needed-%s' % rls in lp_bug.tags: state = 'needed'
 
                                 if 'hw-specific' in lp_bug.tags:
                                     attrib = '(hw)'
