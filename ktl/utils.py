@@ -5,6 +5,8 @@ from sys                    import stdout, stderr
 from commands               import getstatusoutput
 from decimal                            import Decimal
 import json
+from os.path                import exists, getmtime
+from time                   import time
 
 # o2ascii
 #
@@ -20,6 +22,16 @@ def o2ascii(obj):
     else:
         retval = obj
     return retval
+
+# fileage
+#
+def fileage(filename):
+    # get time last modified
+    if not exists(filename):
+        return None
+    
+    # time in seconds since last change to file
+    return time() - getmtime(filename)
 
 # run_command
 #
