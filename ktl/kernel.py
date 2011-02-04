@@ -3,13 +3,6 @@
 
 from ktl.git                            import Git, GitError
 
-# Hopefully, this is the only dictionary that we'll have to change to keep tools current
-
-
-# Karmic 9.10: Freescale, Marvell
-# Lucid 10.04: Freescale, Marvell
-# Maverick 10.10: TI (OMAP 4, OMAP 3), and maybe Marvell have to ask OEM as they are funding that, I'll ask them directly.
-# Natty 11.04: TI OMAP 4, OMAP 3 is nice to have but not mandatory
 
 map_kernel_version_to_ubuntu_release = {
     '2.6.38' : { 'number' : '11.04', 'name'  : 'natty', 'sha1' : '', 'md5' : '' },
