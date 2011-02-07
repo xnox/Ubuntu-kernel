@@ -4571,6 +4571,7 @@ EXPORT_SYMBOL vmlinux 0x4fafe8ba	mark_page_accessed
 EXPORT_SYMBOL vmlinux 0x4fbe93a7	inet_frag_destroy
 EXPORT_SYMBOL vmlinux 0x4fca59e3	journal_force_commit_nested
 EXPORT_SYMBOL vmlinux 0x4fdee897	i8042_command
+EXPORT_SYMBOL vmlinux 0x4ff1c9bc	populate_rootfs_wait
 EXPORT_SYMBOL vmlinux 0x50211ee3	tcp_free_md5sig_pool
 EXPORT_SYMBOL vmlinux 0x5029f0cf	bio_alloc_bioset
 EXPORT_SYMBOL vmlinux 0x502c7a3f	tcp_v4_do_rcv

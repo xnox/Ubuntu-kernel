@@ -4585,6 +4585,7 @@ EXPORT_SYMBOL vmlinux 0x4f75bd40	create_proc_entry
 EXPORT_SYMBOL vmlinux 0x4f783f30	acpi_read
 EXPORT_SYMBOL vmlinux 0x4fbe93a7	inet_frag_destroy
 EXPORT_SYMBOL vmlinux 0x4fdee897	i8042_command
+EXPORT_SYMBOL vmlinux 0x4ff1c9bc	populate_rootfs_wait
 EXPORT_SYMBOL vmlinux 0x4ff39fba	napi_complete
 EXPORT_SYMBOL vmlinux 0x4ff7bdb0	nf_ct_attach
 EXPORT_SYMBOL vmlinux 0x50204471	ps2_begin_command

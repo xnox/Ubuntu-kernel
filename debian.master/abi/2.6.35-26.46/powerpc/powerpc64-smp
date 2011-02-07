@@ -4058,6 +4058,7 @@ EXPORT_SYMBOL vmlinux 0x4fd2f037	i2c_del_driver
 EXPORT_SYMBOL vmlinux 0x4fd86c93	journal_restart
 EXPORT_SYMBOL vmlinux 0x4fdee897	i8042_command
 EXPORT_SYMBOL vmlinux 0x4fecfb57	security_task_getsecid
+EXPORT_SYMBOL vmlinux 0x4ff1c9bc	populate_rootfs_wait
 EXPORT_SYMBOL vmlinux 0x4ff7d6d9	shrink_dcache_sb
 EXPORT_SYMBOL vmlinux 0x50211ee3	tcp_free_md5sig_pool
 EXPORT_SYMBOL vmlinux 0x502a3812	xfrm_policy_alloc

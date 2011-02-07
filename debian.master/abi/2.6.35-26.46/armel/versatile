@@ -3379,6 +3379,7 @@ EXPORT_SYMBOL vmlinux 0x4f566998	check_disk_size_change
 EXPORT_SYMBOL vmlinux 0x4f66d546	tcp_md5_hash_header
 EXPORT_SYMBOL vmlinux 0x4faaea12	blk_peek_request
 EXPORT_SYMBOL vmlinux 0x4fc9f82d	mb_cache_entry_find_next
+EXPORT_SYMBOL vmlinux 0x4ff1c9bc	populate_rootfs_wait
 EXPORT_SYMBOL vmlinux 0x50019752	mmc_power_restore_host
 EXPORT_SYMBOL vmlinux 0x50211ee3	tcp_free_md5sig_pool
 EXPORT_SYMBOL vmlinux 0x5025052a	block_prepare_write

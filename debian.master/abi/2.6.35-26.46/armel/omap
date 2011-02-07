@@ -2594,6 +2594,7 @@ EXPORT_SYMBOL vmlinux 0x4f816e9b	snd_pcm_format_big_endian
 EXPORT_SYMBOL vmlinux 0x4f89c9de	gpmc_cs_free
 EXPORT_SYMBOL vmlinux 0x4fd77b2d	slow_work_cancel
 EXPORT_SYMBOL vmlinux 0x4fd8ae9d	__generic_file_aio_write
+EXPORT_SYMBOL vmlinux 0x4ff1c9bc	populate_rootfs_wait
 EXPORT_SYMBOL vmlinux 0x50125845	dev_get_flags
 EXPORT_SYMBOL vmlinux 0x5013851b	snd_pcm_lib_writev
 EXPORT_SYMBOL vmlinux 0x50211ee3	tcp_free_md5sig_pool

@@ -4036,6 +4036,7 @@ EXPORT_SYMBOL vmlinux 0x4f971b99	clear_user_page
 EXPORT_SYMBOL vmlinux 0x4f9a80da	default_file_splice_read
 EXPORT_SYMBOL vmlinux 0x4fdee897	i8042_command
 EXPORT_SYMBOL vmlinux 0x4fe99583	atomic64_dec_if_positive
+EXPORT_SYMBOL vmlinux 0x4ff1c9bc	populate_rootfs_wait
 EXPORT_SYMBOL vmlinux 0x4ffdd794	tty_name
 EXPORT_SYMBOL vmlinux 0x500eec7f	__ide_dma_bad_drive
 EXPORT_SYMBOL vmlinux 0x501d8cb8	of_match_device

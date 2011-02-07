@@ -4037,6 +4037,7 @@ EXPORT_SYMBOL vmlinux 0x4fdd8b2c	clear_inode
 EXPORT_SYMBOL vmlinux 0x4fdee897	i8042_command
 EXPORT_SYMBOL vmlinux 0x4fe107d5	proc_create_data
 EXPORT_SYMBOL vmlinux 0x4fe99583	atomic64_dec_if_positive
+EXPORT_SYMBOL vmlinux 0x4ff1c9bc	populate_rootfs_wait
 EXPORT_SYMBOL vmlinux 0x500517af	blk_get_request
 EXPORT_SYMBOL vmlinux 0x50211ee3	tcp_free_md5sig_pool
 EXPORT_SYMBOL vmlinux 0x5028e33c	blk_insert_request
