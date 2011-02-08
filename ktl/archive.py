@@ -266,7 +266,7 @@ class Archive:
             self.distro = masteroutdict
         else:
             # read from the local file
-            f = open(self.ppafilename, 'r')
+            f = open(self.distrofilename, 'r')
             self.distro = json.load(f)
             f.close()
             if self.debug:
