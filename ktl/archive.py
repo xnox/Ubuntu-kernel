@@ -7,6 +7,18 @@ from   launchpadlib.launchpad   import Launchpad
 from   urllib                   import urlopen
 import json
 import re
+    
+def compare_versions(version1, version2):
+    #print 'comparing ', version1, 'and', version2
+    # 2.6.35-26.46
+
+    r1 = re.split('[-\.\~]', version1)
+    r2 = re.split('[-\.\~]', version2)
+    for i in range(0, len(r1)):
+        if r1[i] != r2[i]:
+            return  int(r1[i]) - int(r2[i])
+
+    return 0
 
 # KernelError
 #
@@ -28,7 +40,8 @@ class Archive:
     #file_lifetime = 900 # 15 minutes
     file_lifetime = 60 # 1 minute (for testing)
 
-    statuses = ['Pending', 'Published']
+    #statuses = ['Pending', 'Published']
+    statuses = ['Published']
 
     # related to the kernel ppa
     __ppa_get_deleted       = False
@@ -142,84 +155,124 @@ class Archive:
             jf = open(self.ppafilename, 'w+')
 
             lp = Launchpad.login_anonymously('kernel team tools', 'production', self.cachedir)
-            outdict = {}
+            masteroutdict = {}
 
             # get a list of the series that we want info about
             #for key, info in map_release_number_to_ubuntu_release.items():
             #    if not info['supported']:
             #        continue
 
+#
+#
+
             #archive = lp.distributions['ubuntu'].getSeries(name_or_version=info['name']).main_archive
             archive = lp.distributions['ubuntu'].getArchive(name='primary')
 
             for astatus in statuses:
                 for pname in kernel_package_names:
+                    print 'fetching for package', pname
+                    print 'fetching for status', astatus
+                    outdict = {}
+                    psrc = archive.getPublishedSources(status=astatus, exact_match = True, source_name = pname)
+                    for p in  psrc:
+                        fd = urlopen(p.self_link)
+                        sourceinfo = json.load(fd)
+                        #print json.dumps(sourceinfo, sort_keys=True, indent=4)
+
+                        # Add some plain text fields for some info
+                        field = sourceinfo['package_creator_link']
+                        if field:
+                            sourceinfo['creator'] = field.split('/')[-1].strip('~') 
+                        else:
+                            sourceinfo['creator'] = 'Unknown'
+                        field = sourceinfo['package_signer_link']
+                        if field:
+                            sourceinfo['signer'] = field.split('/')[-1].strip('~') 
+                        else:
+                            sourceinfo['signer'] = 'Unknown'
+                        rm = re.match('[0-9]\.[0-9]\.[0-9][0-9]', sourceinfo['source_package_version'])
+                        version = rm.group(0)
+                        try:
+                            sourceinfo['series'] = map_kernel_version_to_ubuntu_release[version]['name']
+                        except:
+                            sourceinfo['series'] = 'Unknown'
+                        # And strip some things we don't care about
+                        if not self.allppainfo:
+                            for delkey in ['archive_link', 'distro_series_link', 'http_etag', 'package_maintainer_link', \
+                                               'resource_type_link', 'package_creator_link', 'package_signer_link', \
+                                               'section_name', 'scheduled_deletion_date', 'removal_comment', 'removed_by_link']:
+                                del sourceinfo[delkey]
+
+                        key = p.source_package_name + '-' + p.source_package_version
+                        print '    found: ', key
+                        outdict[key] = sourceinfo
+
+                    if len(outdict) == 0:
+                        print 'Nothing from ', astatus, pname
+                        continue
+
+                    #
+                    # Now we have every package in the archive
+                    # Remove all the unsupported ones
+                    # we add Unknown because we used it to flag some funky dapper packages earlier
+                    unsupported = ['Unknown']
+                    resultsbyseries = {}
                     for key, release in map_release_number_to_ubuntu_release.items():
                         if not release['supported']:
                             if self.debug:
-                                print 'DEBUG: Fetching from archive, skipping release ', release['name']
+                                print 'DEBUG: Fetching from archive, will skip release ', release['name']
+                            unsupported.append(release['name'])
+                        else:
+                            resultsbyseries[release['name']] = dict()
+
+                    # remove unwanted ones and group by series
+                    print 'items in outdict BEFORE:', len(outdict)
+                    for name, sourceinfo in outdict.items():
+                        if sourceinfo['series'] in unsupported:
+                            if self.debug:
+                                print 'DEBUG: Fetching from archive, skipping ', name
+                            del(outdict[name])
+                        else:
+                            print '$$', name
+                            print '|||', sourceinfo['series']
+                            #print sourceinfo
+                            resultsbyseries[sourceinfo['series']][name] = outdict[name]
+
+                    print 'items in outdict AFTER:', len(outdict)
+                    print 'we have results for', len(resultsbyseries), 'series'
+                    #print json.dumps(resultsbyseries, sort_keys=True, indent=4)
+
+                    # Order them within series and remove all but the highest version
+                    for seriesname, seriespackages in resultsbyseries.items():
+                        if len(seriespackages) == 0:
                             continue
+                        # now for each series collection, we want the highest version number
+                        tmplist = {}
+                        for dname, tpinfo in resultsbyseries[seriesname].items():
+                            if self.debug:
+                                print 'Name', dname, 'tpinfo', tpinfo
+                            tmplist[tpinfo['source_package_version']] = dname
 
-                        series = lp.distributions['ubuntu'].getSeries(name_or_version=release['name'])
-                        psrc = archive.getPublishedSources(status=astatus, exact_match = True, source_name = pname, distro_series = series)
-                        #psrc = archive.getPublishedSources(status=astatus, exact_match = True, source_name = pname)
-                        for p in  psrc:
-                            fd = urlopen(p.self_link)
-                            sourceinfo = json.load(fd)
-                            #print json.dumps(sourceinfo, sort_keys=True, indent=4)
+                            slist = sorted(tmplist, compare_versions, reverse=True)
 
-                            # Add some plain text fields for some info
-                            field = sourceinfo['package_creator_link']
-                            if field:
-                                sourceinfo['creator'] = field.split('/')[-1].strip('~') 
-                            else:
-                                sourceinfo['creator'] = 'Unknown'
-                            field = sourceinfo['package_signer_link']
-                            if field:
-                                sourceinfo['signer'] = field.split('/')[-1].strip('~') 
-                            else:
-                                sourceinfo['signer'] = 'Unknown'
-                            rm = re.match('[0-9]\.[0-9]\.[0-9][0-9]', sourceinfo['source_package_version'])
-                            version = rm.group(0)
-                            try:
-                                sourceinfo['series'] = map_kernel_version_to_ubuntu_release[version]['name']
-                            except:
-                                sourceinfo['series'] = 'Unknown'
-                            # And strip some things we don't care about
-                            if not self.allppainfo:
-                                for delkey in ['archive_link', 'distro_series_link', 'http_etag', 'package_maintainer_link', \
-                                                   'resource_type_link', 'package_creator_link', 'package_signer_link', \
-                                                   'section_name', 'scheduled_deletion_date', 'removal_comment', 'removed_by_link']:
-                                    del sourceinfo[delkey]
+                        print '111'
+                        print tmplist
+                        print slist
+                        print '222'
+                        for k in range(1, len(slist)):
+                            print 'deleting', tmplist[slist[k]]
+                            del(outdict[tmplist[slist[k]]])
+                    masteroutdict.update(outdict)
 
-                            key = p.source_package_name + '-' + p.source_package_version
-                            print '    found: ', key
-                            outdict[key] = sourceinfo
-            jf.write(json.dumps(outdict, sort_keys=True, indent=4))
+            jf.write(json.dumps(masteroutdict, sort_keys=True, indent=4))
             jf.close()
-            self.ppa = outdict
+            self.ppa = masteroutdict
         else:
             # read from the local file
             f = open(self.ppafilename, 'r')
             # read it
             self.ppa = json.load(f)
             f.close()
-        return
-
-#lp.distributions['ubuntu'].getSeries(name_or_version='maverick').main_archive
-
-#(12:05:09 PM) pitti: >>> lp.distributions['ubuntu'].getSeries(name_or_version='maverick').main_archive.getPublishedSources(exact_match=True, source_name='linux')[0].source_package_version
-#(12:05:11 PM) pitti: u'2.6.38-1.28'
-
-#(12:07:39 PM) pitti: >>> maverick.main_archive.getPublishedSources(exact_match=True, source_name='linux', pocket='Updates')[0].source_package_version
-#(12:07:39 PM) pitti: u'2.6.35-25.44'
-#(12:07:41 PM) pitti: that seems to work
-
-#(12:08:29 PM) pitti: and you have to specify distro_series as well
-#(12:08:36 PM) pitti: >>> maverick.main_archive.getPublishedSources(exact_match=True, source_name='linux', pocket='Release', distro_series=maverick)[0].source_package_version
-#(12:08:37 PM) pitti: u'2.6.35-22.33'
-#(12:08:46 PM) pitti: >>> maverick.main_archive.getPublishedSources(exact_match=True, source_name='linux', pocket='Updates', distro_series=maverick)[0].source_package_version
-#(12:08:47 PM) pitti: u'2.6.35-25.44'
-
+        return self.ppa
 
 # vi:set ts=4 sw=4 expandtab:
