@@ -37,8 +37,8 @@ class Archive:
     cachedir = "/tmp/.launchpadlib/cache/"
 
     # How often should we fetch files? (seconds)
-    #file_lifetime = 900 # 15 minutes
-    file_lifetime = 60 # 1 minute (for testing)
+    file_lifetime = 900 # 15 minutes
+    #file_lifetime = 60 # 1 minute (for testing)
 
     #statuses = ['Pending', 'Published']
     statuses = ['Published']
@@ -142,7 +142,8 @@ class Archive:
 
         if force or (not age) or (age > self.file_lifetime):
             # fetch from the PPA
-            print 'Fetching from Distro archives'
+            if self.debug:
+                print 'Fetching from Distro archives'
 
             statuses = list(self.statuses)
             if self.__distro_get_deleted:
@@ -152,32 +153,24 @@ class Archive:
             if self.__distro_get_superseded:
                 statuses.append('Superseded')
 
-            jf = open(self.ppafilename, 'w+')
+            jf = open(self.distrofilename, 'w+')
 
             lp = Launchpad.login_anonymously('kernel team tools', 'production', self.cachedir)
             masteroutdict = {}
-
-            # get a list of the series that we want info about
-            #for key, info in map_release_number_to_ubuntu_release.items():
-            #    if not info['supported']:
-            #        continue
-
-#
-#
 
             #archive = lp.distributions['ubuntu'].getSeries(name_or_version=info['name']).main_archive
             archive = lp.distributions['ubuntu'].getArchive(name='primary')
 
             for astatus in statuses:
                 for pname in kernel_package_names:
-                    print 'fetching for package', pname
-                    print 'fetching for status', astatus
+                    if self.debug:
+                        print 'fetching for package', pname
+                        print 'fetching for status', astatus
                     outdict = {}
                     psrc = archive.getPublishedSources(status=astatus, exact_match = True, source_name = pname)
                     for p in  psrc:
                         fd = urlopen(p.self_link)
                         sourceinfo = json.load(fd)
-                        #print json.dumps(sourceinfo, sort_keys=True, indent=4)
 
                         # Add some plain text fields for some info
                         field = sourceinfo['package_creator_link']
@@ -204,11 +197,13 @@ class Archive:
                                 del sourceinfo[delkey]
 
                         key = p.source_package_name + '-' + p.source_package_version
-                        print '    found: ', key
+                        if self.debug:
+                            print '    found: ', key
                         outdict[key] = sourceinfo
 
                     if len(outdict) == 0:
-                        print 'Nothing from ', astatus, pname
+                        if self.debug:
+                            print 'Nothing from ', astatus, pname
                         continue
 
                     #
@@ -226,21 +221,13 @@ class Archive:
                             resultsbyseries[release['name']] = dict()
 
                     # remove unwanted ones and group by series
-                    print 'items in outdict BEFORE:', len(outdict)
                     for name, sourceinfo in outdict.items():
                         if sourceinfo['series'] in unsupported:
                             if self.debug:
                                 print 'DEBUG: Fetching from archive, skipping ', name
                             del(outdict[name])
                         else:
-                            print '$$', name
-                            print '|||', sourceinfo['series']
-                            #print sourceinfo
                             resultsbyseries[sourceinfo['series']][name] = outdict[name]
-
-                    print 'items in outdict AFTER:', len(outdict)
-                    print 'we have results for', len(resultsbyseries), 'series'
-                    #print json.dumps(resultsbyseries, sort_keys=True, indent=4)
 
                     # Order them within series and remove all but the highest version
                     for seriesname, seriespackages in resultsbyseries.items():
@@ -255,24 +242,20 @@ class Archive:
 
                             slist = sorted(tmplist, compare_versions, reverse=True)
 
-                        print '111'
-                        print tmplist
-                        print slist
-                        print '222'
                         for k in range(1, len(slist)):
-                            print 'deleting', tmplist[slist[k]]
+                            if self.debug:
+                                print 'deleting', tmplist[slist[k]]
                             del(outdict[tmplist[slist[k]]])
                     masteroutdict.update(outdict)
 
             jf.write(json.dumps(masteroutdict, sort_keys=True, indent=4))
             jf.close()
-            self.ppa = masteroutdict
+            self.distro = masteroutdict
         else:
             # read from the local file
             f = open(self.ppafilename, 'r')
-            # read it
-            self.ppa = json.load(f)
+            self.distro = json.load(f)
             f.close()
-        return self.ppa
+        return
 
 # vi:set ts=4 sw=4 expandtab:
