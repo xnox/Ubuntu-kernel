@@ -20,6 +20,8 @@ def compare_versions(version1, version2):
 
     return 0
 
+pocket_list = ['Proposed', 'Updates', 'Security', 'Release']
+
 # KernelError
 #
 class KernelError(Exception):
@@ -129,7 +131,9 @@ class Archive:
             f = open(self.ppafilename, 'r')
             # read it
             self.ppa = json.load(f)
-            f.close()
+            f.close() 
+            if self.debug:
+                print 'Read cached PPA data, records:', len(self.ppa)
         return
 
 
@@ -164,13 +168,14 @@ class Archive:
             for astatus in statuses:
                 for pname in kernel_package_names:
                     if self.debug:
-                        print 'fetching for package', pname
-                        print 'fetching for status', astatus
+                        print 'fetching for package', pname, 'status', astatus
                     outdict = {}
                     psrc = archive.getPublishedSources(status=astatus, exact_match = True, source_name = pname)
                     for p in  psrc:
                         fd = urlopen(p.self_link)
                         sourceinfo = json.load(fd)
+                        if self.debug:
+                            print 'fetched', sourceinfo['source_package_name'], sourceinfo['source_package_version']
 
                         # Add some plain text fields for some info
                         field = sourceinfo['package_creator_link']
@@ -196,7 +201,7 @@ class Archive:
                                                'section_name', 'scheduled_deletion_date', 'removal_comment', 'removed_by_link']:
                                 del sourceinfo[delkey]
 
-                        key = p.source_package_name + '-' + p.source_package_version
+                        key = p.source_package_name + '-' + p.source_package_version + '-' + p.pocket
                         if self.debug:
                             print '    found: ', key
                         outdict[key] = sourceinfo
@@ -207,45 +212,53 @@ class Archive:
                         continue
 
                     #
-                    # Now we have every package in the archive
+                    # Now we have all the data for this package name and status
                     # Remove all the unsupported ones
                     # we add Unknown because we used it to flag some funky dapper packages earlier
+                    if self.debug:
+                        print 'records in outdict after fetch', len(outdict)
                     unsupported = ['Unknown']
-                    resultsbyseries = {}
+                    serieslist = []
                     for key, release in map_release_number_to_ubuntu_release.items():
                         if not release['supported']:
                             if self.debug:
                                 print 'DEBUG: Fetching from archive, will skip release ', release['name']
                             unsupported.append(release['name'])
                         else:
-                            resultsbyseries[release['name']] = dict()
-
-                    # remove unwanted ones and group by series
+                            serieslist.append(release['name'])
+                    # remove unwanted ones
                     for name, sourceinfo in outdict.items():
                         if sourceinfo['series'] in unsupported:
                             if self.debug:
                                 print 'DEBUG: Fetching from archive, skipping ', name
                             del(outdict[name])
-                        else:
-                            resultsbyseries[sourceinfo['series']][name] = outdict[name]
 
-                    # Order them within series and remove all but the highest version
-                    for seriesname, seriespackages in resultsbyseries.items():
-                        if len(seriespackages) == 0:
-                            continue
-                        # now for each series collection, we want the highest version number
-                        tmplist = {}
-                        for dname, tpinfo in resultsbyseries[seriesname].items():
-                            if self.debug:
-                                print 'Name', dname, 'tpinfo', tpinfo
-                            tmplist[tpinfo['source_package_version']] = dname
+                    #
+                    # We now have a collection of all supported packages for a given
+                    # package name and status. Within each permutation of series and
+                    # pocket, keep only the highest version
+                    for series in serieslist:
+                        for pocket in pocket_list:
+                            templist = {}
+                            for name, sourceinfo in outdict.items():
+                                if sourceinfo['pocket'] == pocket and sourceinfo['series'] == series:
+                                    if self.debug:
+                                        print 'found matching',  json.dumps(sourceinfo, sort_keys=True, indent=4)
+                                    templist[sourceinfo['source_package_version']] = name
+                            # Now sort the templist
+                            slist = sorted(templist, compare_versions, reverse=True)
+                            # and delete all but the highest version from the main list
+                            for k in range(1, len(slist)):
+                                if self.debug:
+                                    print 'deleting', templist[slist[k]]
+                                # If the same version was in Security and Updates . . .
+                                del(outdict[templist[slist[k]]])
 
-                            slist = sorted(tmplist, compare_versions, reverse=True)
-
-                        for k in range(1, len(slist)):
-                            if self.debug:
-                                print 'deleting', tmplist[slist[k]]
-                            del(outdict[tmplist[slist[k]]])
+                    if self.debug:
+                        print "Updating Master"
+                        print 'records in outdict', len(outdict)
+                        print 'records in masteroutdict', len(masteroutdict)
+                        #print json.dumps(outdict, sort_keys=True, indent=4)
                     masteroutdict.update(outdict)
 
             jf.write(json.dumps(masteroutdict, sort_keys=True, indent=4))
@@ -256,6 +269,8 @@ class Archive:
             f = open(self.ppafilename, 'r')
             self.distro = json.load(f)
             f.close()
+            if self.debug:
+                print 'Read cached PPA data, records:', len(self.distro)
         return
 
 # vi:set ts=4 sw=4 expandtab:
