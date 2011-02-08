@@ -108,11 +108,15 @@ class Archive:
                     sourceinfo = json.load(fd)
 
                     # Add some plain text fields for some info
+                    # -spc-
+                    print json.dumps(sourceinfo, sort_keys=True, indent=4)
                     sourceinfo['creator'] = sourceinfo['package_creator_link'].split('/')[-1].strip('~') 
                     sourceinfo['signer'] = sourceinfo['package_signer_link'].split('/')[-1].strip('~') 
                     rm = re.match('[0-9]\.[0-9]\.[0-9][0-9]', sourceinfo['source_package_version'])
                     version = rm.group(0)
-                    sourceinfo['series'] = map_kernel_version_to_ubuntu_release[version]['name']
+                    # TODO fix this
+                    #sourceinfo['series'] = map_kernel_version_to_ubuntu_release[version]['name']
+                    sourceinfo['series'] = sourceinfo['display_name'].split()[-1]
                     # And strip some things we don't care about
                     if not self.allppainfo:
                         for delkey in ['archive_link', 'distro_series_link', 'http_etag', 'package_maintainer_link', \
@@ -190,10 +194,7 @@ class Archive:
                             sourceinfo['signer'] = 'Unknown'
                         rm = re.match('[0-9]\.[0-9]\.[0-9][0-9]', sourceinfo['source_package_version'])
                         version = rm.group(0)
-                        try:
-                            sourceinfo['series'] = map_kernel_version_to_ubuntu_release[version]['name']
-                        except:
-                            sourceinfo['series'] = 'Unknown'
+                        sourceinfo['series'] = sourceinfo['display_name'].split()[-1]
                         # And strip some things we don't care about
                         if not self.allppainfo:
                             for delkey in ['archive_link', 'distro_series_link', 'http_etag', 'package_maintainer_link', \
@@ -214,10 +215,9 @@ class Archive:
                     #
                     # Now we have all the data for this package name and status
                     # Remove all the unsupported ones
-                    # we add Unknown because we used it to flag some funky dapper packages earlier
                     if self.debug:
                         print 'records in outdict after fetch', len(outdict)
-                    unsupported = ['Unknown']
+                    unsupported = []
                     serieslist = []
                     for key, release in map_release_number_to_ubuntu_release.items():
                         if not release['supported']:
