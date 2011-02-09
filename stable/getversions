@@ -124,20 +124,14 @@ class report(StdApp):
     def getversions(self, distname, pname):
         packageinfo = {}
         # get versions from ppa and archive info and return them in a dictionary
-        pname_printed = False
 
         # Do ppa
+        version = ''
         for key, record in self.ppa.items():
-            version = ''
             if (record['source_package_name'] == pname) and (record['series'] == distname):
+                #print 'pkg:', pname, 'dist', ':', distname, ':', json.dumps(record, sort_keys=True, indent=4)
                 version = record['source_package_version']
-                if self.debug:
-                    if not pname_printed:
-                        print '----- %s -----' % pname
-                        pname_printed = True
-                    print '    PPA:       ', version
-
-            packageinfo['PPA'] = version
+        packageinfo['PPA'] = version
 
         # do pockets from archive info
         pockets = ['Proposed', 'Updates', 'Security']
@@ -149,12 +143,6 @@ class report(StdApp):
                 #    print record
                 if (record['source_package_name'] == pname) and (record['series'] == distname) and (record['pocket'] == pocket):
                     version = record['source_package_version']
-                    if self.debug:
-                        if not pname_printed:
-                            print '----- %s -----' % pname
-                            #print '    Archive:'
-                            pname_printed = True
-                        print '   ', pocket, ': ', version
             packageinfo[pocket] = version
 
         return packageinfo
