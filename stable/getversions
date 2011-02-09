@@ -1,0 +1,252 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+from ktl.utils                          import stdo, run_command
+from ktl.std_app                        import StdApp
+from ktl.kernel                         import *
+from ktl.archive                        import *
+from launchpadlib.launchpad             import Launchpad
+from os.path                            import basename
+from urllib                             import urlopen
+import json
+import re
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Fetch package information from the kernel team PPA and put it into a json file           \n")
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'config=', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+                
+            self.cfg['args'] = args
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        return
+
+def contains(theString, theQueryValue):
+  return theString.find(theQueryValue) > -1
+
+# 
+#
+class report(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+        self.debug = False
+
+    def getversions(self, distname, pname):
+        packageinfo = {}
+        # get versions from ppa and archive info and return them in a dictionary
+        pname_printed = False
+
+        # Do ppa
+        for key, record in self.ppa.items():
+            version = ''
+            if (record['source_package_name'] == pname) and (record['series'] == distname):
+                version = record['source_package_version']
+                if self.debug:
+                    if not pname_printed:
+                        print '----- %s -----' % pname
+                        pname_printed = True
+                    print '    PPA:       ', version
+
+            packageinfo['PPA'] = version
+
+        # do pockets from archive info
+        pockets = ['Proposed', 'Updates', 'Security']
+        for pocket in pockets:
+            #print '*****testing pocket:', pocket, 'series:', distname, 'pname:', pname
+            version = ''
+            for key, record in self.distro.items():
+                #if (record['source_package_name'] == pname) and (record['series'] == distname):
+                #    print record
+                if (record['source_package_name'] == pname) and (record['series'] == distname) and (record['pocket'] == pocket):
+                    version = record['source_package_version']
+                    if self.debug:
+                        if not pname_printed:
+                            print '----- %s -----' % pname
+                            #print '    Archive:'
+                            pname_printed = True
+                        print '   ', pocket, ': ', version
+            packageinfo[pocket] = version
+
+        return packageinfo
+
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+            return
+
+        # Do the work
+        #
+        # Get the info
+        ar = Archive()
+        self.ppa = ar.ppa_versions(force=False)
+        self.distro = ar.distro_versions(force=False)
+
+        # Have a section for each release
+        releases = map_release_number_to_ubuntu_release
+        allinfo = {}
+        for num in sorted(releases.iterkeys(), key=lambda x:releases[x]['name']):
+            seriesdata = releases[num]
+            seriesname = seriesdata['name']
+
+            # skip unsupported kernels
+            if not seriesdata['supported']:
+                #print "%s is not supported" % seriesdata['name']
+                continue
+
+            series_packages = seriesdata['packages']
+
+            if self.debug:
+                print '================================================='
+                print "Release %s (%s)" % (seriesname, num)
+
+            # We list these here to determine the order they present in
+            pnames = [
+                'linux',
+                'linux-source-2.6.15',
+                'linux-meta',
+                'linux-ports-meta',
+                'linux-backports-modules-2.6.15',
+                'linux-backports-modules-2.6.31',
+                'linux-backports-modules-2.6.32',
+                'linux-restricted-modules-2.6.24',
+                'linux-backports-modules-2.6.35',
+                'linux-ubuntu-modules-2.6.24',
+                'linux-ec2',
+                'linux-meta-ec2',
+                'linux-ti-omap4',
+                'linux-meta-ti-omap4',
+                'linux-mvl-dove',
+                'linux-meta-mvl-dove',
+                'linux-fsl-imx51',
+                'linux-meta-fsl-imx51',
+                'linux-lts-backport-maverick',
+                'linux-meta-lts-backport-maverick',
+                'linux-lts-backport-natty',
+                'linux-meta-lts-backport-natty']
+            seriesinfo = {}
+            for package in pnames:
+                if package in series_packages:
+                    pinfo = self.getversions(seriesname, package)
+                    if len(pinfo):
+                        seriesinfo[package] = pinfo
+                        #print 'pinfo:', package, ':', json.dumps(pinfo, sort_keys=True, indent=4)
+            if len(seriesinfo):
+                allinfo[seriesname] = seriesinfo
+                #print 'seriesinfo:', seriesname, ':', json.dumps(seriesinfo, sort_keys=True, indent=4)
+
+        print json.dumps(allinfo, sort_keys=True, indent=4)
+
+        return
+
+if __name__ == '__main__':
+#    app = PPAinfo('sconklin')
+    app = report()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
