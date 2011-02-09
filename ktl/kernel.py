@@ -3,6 +3,11 @@
 
 from ktl.git                            import Git, GitError
 
+#
+# Warning - using the following dictionary to get the series name from the kernel version works for the linux package,
+# but not for some others (some ARM packages are known to be wrong). This is because the ARM kernels used for some
+# series are not the same as the main kernels
+#
 
 map_kernel_version_to_ubuntu_release = {
     '2.6.38' : { 'number' : '11.04', 'name'  : 'natty', 'sha1' : '', 'md5' : '' },
@@ -24,13 +29,13 @@ map_release_number_to_ubuntu_release = {
                                'linux-meta', 'linux-ports-meta', 'linux-meta-ec2', 'linux-meta-mvl-dove', 'linux-meta-ti-omap4'
                                ]},
     '10.10'  : { 'kernel' : '2.6.35', 'name' : 'maverick', 'supported' : True,
-                 'packages' : ['linux', 'linux-ti-omap4', 'linux-mvl-dove', 'linux-ec2',
-                               'linux-meta', 'linux-ports-meta', 'linux-meta-ec2', 'linux-meta-mvl-dove', 'linux-meta-ti-omap4',
+                 'packages' : ['linux', 'linux-ti-omap4', 'linux-mvl-dove',
+                               'linux-meta', 'linux-ports-meta', 'linux-meta-mvl-dove', 'linux-meta-ti-omap4',
                                'linux-backports-modules-2.6.35']},
     '10.04'  : { 'kernel' : '2.6.32', 'name' : 'lucid', 'supported' : True,
                  'packages' : ['linux', 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2',
                                'linux-meta', 'linux-ports-meta', 'linux-meta-ec2', 'linux-meta-mvl-dove', 'linux-meta-fsl-imx51',
-                               'linux-backports-modules-2.6.32', 'linux-lts-backport-maverick', 'linux-lts-backport-natty'
+                               'linux-backports-modules-2.6.32', 'linux-lts-backport-maverick' #, 'linux-lts-backport-natty'
                                ]},
     '9.10'   : { 'kernel' : '2.6.31', 'name' : 'karmic', 'supported' : True,
                  'packages' : ['linux', 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2',
@@ -40,8 +45,7 @@ map_release_number_to_ubuntu_release = {
     '8.10'   : { 'kernel' : '2.6.27', 'name' : 'intrepid', 'supported' : False, 'packages' : []},
     '8.04'   : { 'kernel' : '2.6.24', 'name' : 'hardy', 'supported' : True,
                  'packages' : ['linux',
-                               'linux-meta', 'linux-ports-meta',
-                               'linux-backports-modules-2.6.24', 'linux-ubuntu-modules', 'linux-restricted-modules'
+                               'linux-meta', 'linux-backports-modules-2.6.24', 'linux-ubuntu-modules', 'linux-restricted-modules'
                                ]},
     '7.10'   : { 'kernel' : '2.6.22', 'name' : 'gutsy', 'supported' : False, 'packages' : []},
     '7.04'   : { 'kernel' : '2.6.20', 'name' : 'feisty', 'supported' : False, 'packages' : []},
