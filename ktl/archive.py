@@ -95,7 +95,8 @@ class Archive:
                 print 'Got nothing for PPA from cached results, fetching from Launchpad'
 
         # fetch from the PPA
-        print 'Fetching from Launchpad'
+        if self.debug:
+            print 'Fetching from Launchpad'
 
         statuses = list(self.statuses)
         if self.__ppa_get_deleted:
