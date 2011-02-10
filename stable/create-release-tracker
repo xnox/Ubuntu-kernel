@@ -8,7 +8,7 @@ from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.kernel                         import Kernel, KernelError
-from lpltk.service                      import LaunchpadService
+from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 from lazr.restfulclient.errors          import HTTPError
 
 # CmdlineError
@@ -113,7 +113,11 @@ class CreateTrackingBug(StdApp):
     def initialize(self):
         if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'staging'
-        self.lp = LaunchpadService(self.defaults)
+        try:
+            self.lp = LaunchpadService(self.defaults)
+        except LaunchpadServiceError, e:
+            print(e.msg)
+            raise
 
     # main
     #
@@ -149,6 +153,13 @@ class CreateTrackingBug(StdApp):
             bug.tags.append('kernel-tracking-bug')
             id = bug.id
             name = bug.owner.display_name
+
+            # Get the one task and modify the status and importance.
+            #
+            for task in bug.tasks:
+                task.status = "In Progress"
+                task.importance = "Medium"
+                break
 
             # Pull the entire changelog file into a list
             #
