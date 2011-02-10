@@ -1,3 +1,9 @@
+linux-meta (2.6.38.3.17) natty; urgency=low
+
+  * Bump ABI
+
+ -- Andy Whitcroft <apw@canonical.com>  Thu, 10 Feb 2011 09:50:33 +0000
+
 linux-meta (2.6.38.2.16) natty; urgency=low
 
   * Bump ABI
