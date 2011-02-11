@@ -26,7 +26,6 @@ from buildenv_lib import *
 #------------------------------------------------------------------------------
 announce_targets = [
 	"ubuntu-installer@lists.ubuntu.com",
-	"ubuntu-mobile@lists.ubuntu.com",
 	"kernel-team@lists.ubuntu.com"
 ]
 
