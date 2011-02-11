@@ -1,3 +1,11 @@
+linux-firmware (1.38.4) maverick-proposed; urgency=low
+
+  * iwlwifi: Updated iwlwifi-6000g2a-5.ucode and iwlwifi-6000g2b-5.ucode to 17.168.5.2
+    17.168.5.2 fixes a showstopper issue that it can't connect to a 5G hidden SSID.
+    -LP: #716832
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 11 Feb 2011 07:14:52 -0700
+
 linux-firmware (1.38.3) maverick-proposed; urgency=low
 
   * iwlwifi: add new firmware for 6030 devices
