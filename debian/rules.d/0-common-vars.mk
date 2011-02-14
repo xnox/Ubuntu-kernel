@@ -52,8 +52,7 @@ no_compat_wireless_flavours="xen virtual"
 # Explicitly enable alsa and compat-wireless at release time.
 #
 do_alsa=false
-do_compat_wireless_2.6.36=true
-do_compat_wireless_2.6.37=true
+do_compat_wireless=2.6.36 2.6.37
 do_net=true
 do_input=true
 do_media=true
@@ -61,13 +60,7 @@ do_media=true
 #
 # Compat wireless versions for which packages are created.
 #
-ifeq ($(do_compat_wireless_2.6.36),true)
-	CWDIRS += compat-wireless-2.6.36
-endif
-
-ifeq ($(do_compat_wireless_2.6.37),true)
-	CWDIRS += compat-wireless-2.6.37
-endif
+CWDIRS=$(foreach ver,$(do_compat_wireless),compat-wireless-$(ver))
 
 # Support parallel=<n> in DEB_BUILD_OPTIONS (see #209008)
 COMMA=,
