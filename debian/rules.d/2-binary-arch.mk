@@ -227,18 +227,18 @@ endif
 cw_pkg_list_pre = $(addprefix linux-backports-modules-,$(CWDIRS))
 cw_pkg_list_suf = $(addsuffix -$(release)-$(abinum)-$*,$(cw_pkg_list_pre))
 
-package_list =
-package_list += $(cw_pkg_list_suf)
-package_list += linux-backports-modules-alsa-$(release)-$(abinum)-$*
-package_list += linux-backports-modules-net-$(release)-$(abinum)-$*
-package_list += linux-backports-modules-input-$(release)-$(abinum)-$*
-package_list += linux-backports-modules-media-$(release)-$(abinum)-$*
+packages-true =
+packages-true += $(cw_pkg_list_suf)
+packages-$(do_alsa) += linux-backports-modules-alsa-$(release)-$(abinum)-$*
+packages-$(do_net) += linux-backports-modules-net-$(release)-$(abinum)-$*
+packages-$(do_input) += linux-backports-modules-input-$(release)-$(abinum)-$*
+packages-$(do_media) += linux-backports-modules-media-$(release)-$(abinum)-$*
 
 binary-modules-%: install-%
 	dh_testdir
 	dh_testroot
 
-	for i in $(package_list) ; do \
+	for i in $(packages-true) ; do \
 	dh_installchangelogs -p$$i; \
 	dh_installdocs -p$$i; \
 	dh_compress -p$$i; \
