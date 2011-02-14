@@ -1,0 +1,181 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from os                                 import path
+from getopt                             import getopt, GetoptError
+import json
+from ktl.utils                          import stdo
+from ktl.std_app                        import StdApp
+from ktl.archive                        import Archive
+from ktl.utils                          import dump
+from ktl.debian                         import Debian
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--debug] --release=<rls> --package=<pkg> --pocket=<pkt>                          \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Where:                                                                                   \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --release=<rls>  Specifies for which release the version is to be returned.          \n")
+        stdo("                         At this time, dapper, hardy, karmic, lucid and maverick are         \n")
+        stdo("                         valid releases.                                                     \n")
+        stdo("                                                                                             \n")
+        stdo("        --package=<pkg>  Specifies for which package the version is to be returned.          \n")
+        stdo("                         Most likely a value of linux or linux-meta.                         \n")
+        stdo("                                                                                             \n")
+        stdo("        --pocket=<pkt>   Specifies for which pocket the version is to be returned.           \n")
+        stdo("                         Valid values for this are release, update or proposed.              \n")
+        stdo("                                                                                             \n")
+        stdo("        --abi            Report just the abi number of the version found.                    \n")
+        stdo("                                                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'debug=', 'release=', 'package=', 'pocket=', 'abi']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif opt in ('--release'):
+                    self.cfg['release'] = val
+
+                elif opt in ('--package'):
+                    self.cfg['package'] = val
+
+                elif opt in ('--pocket'):
+                    self.cfg['pocket'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val
+
+                elif opt in ('--abi'):
+                    self.cfg['abi'] = True
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        if ('release' not in self.cfg) or ('package' not in self.cfg) or ('pocket' not in self.cfg):
+            raise CmdlineError('--release, --package and --pocket are required command line parameters.')
+
+        return
+
+
+# ReportPackageVersion
+#
+class ReportPackageVersion(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+
+    # initialize
+    #
+    def initialize(self):
+        self.dbg('core', "initialize: enter\n")
+        self.dbg('core', "initialize: leave\n")
+        return
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.initialize()
+
+            ar = Archive()
+            distro = ar.distro_versions()
+            if 'debug' in self.cfg:
+                dump(distro)
+
+            version = ''
+            for dv in distro:
+                if self.cfg['package'] == distro[dv]['source_package_name']:
+                    if self.cfg['release'] == distro[dv]['series']:
+                        if self.cfg['pocket'] == distro[dv]['pocket']:
+                            version = distro[dv]['source_package_version']
+
+            if version != '':
+                if 'abi' in self.cfg and self.cfg['abi']:
+                    m = Debian.version_rc.match(version)
+                    if m != None:
+                        print(m.group(2))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle ommand line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        return
+
+if __name__ == '__main__':
+    app = ReportPackageVersion()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
