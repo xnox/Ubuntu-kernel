@@ -1,0 +1,259 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from os                                 import path
+from getopt                             import getopt, GetoptError
+import json
+from ktl.utils                          import stdo
+from ktl.std_app                        import StdApp
+from lpltk.service                      import LaunchpadService
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>] <srus.json>             \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("        --release=<rls>  Specifies for which release the version is to be returned.          \n")
+        stdo("                         At this time, dapper, hardy, karmic, lucid and maverick are         \n")
+        stdo("                         valid releases.                                                     \n")
+        stdo("                                                                                             \n")
+        stdo("        --package=<pkg>  Specifies for which package the version is to be returned.          \n")
+        stdo("                         Most likely a value of linux or linux-meta.                         \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'release=', 'package=', 'comment=', 'status=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+                elif opt in ('--release'):
+                    self.cfg['release'] = val
+
+                elif opt in ('--package'):
+                    self.cfg['package'] = val
+
+                elif opt in ('--comment'):
+                    self.cfg['comment'] = val
+
+                elif opt in ('--status'):
+                    self.cfg['status'] = val.strip()
+
+            if result: # No errors yet
+
+                # At lease one source package must be specified.
+                #
+                if len(args) > 0:
+                    self.cfg['sru'] = args[0]
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        if ('release' not in self.cfg) or ('package' not in self.cfg):
+            raise CmdlineError('--release and --package are required command line parameters.')
+
+        if 'sru' not in self.cfg:
+            raise CmdlineError('A json file containing the sru information is required. This is generated by the sru-report script.')
+        return
+
+
+# SpamProposedReleaseBugs
+#
+class SpamProposedReleaseBugs(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+
+    # initialize
+    #
+    def initialize(self):
+        self.dbg('core', "initialize: enter\n")
+
+        self.service = LaunchpadService(self.cfg)
+
+        # If a comment is to be added to the bug, read the comment file into a buffer
+        # so we have it ready when we need it.
+        #
+        if 'comment' in self.cfg:
+            with open(self.cfg['comment'], 'r') as f:
+                self.cfg['comment-text'] = f.read()
+
+        self.dbg('core', "initialize: leave\n")
+        return
+
+    def print_bug_info(self, bug_id, bug):
+        bug_link = 'https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s' % bug_id
+        print("%s    %40s    %s" % (bug_id, bug_link, bug.title))
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.initialize()
+
+            if path.exists(self.cfg['sru']):
+                with open(self.cfg['sru'], 'r') as f:
+                    sru = json.load(f)
+
+
+            # Find the bugs in the specified release and package that need spamming.
+            #
+            for bug_id in sru['releases'][self.cfg['release']][self.cfg['package']]['bugs']:
+                bug = self.service.get_bug(bug_id)
+                should_be_spammed = False
+                is_tracker_bug    = True
+
+                # RULE: Do not add verification tags or comments to bugs that exist
+                #       as "tracking" bugs.
+                #
+                while (True):
+                    if 'kernel-cve-tracker' in bug.tags:
+                        break # This is a bug used to track a CVE patch
+
+                    if 'kernel-release-tracker' in bug.tags:
+                        break # This is a bug used to track the status of a particular release
+
+                    if 'kernel-tracking-bug' in bug.tags:
+                        break # Old tag that was previously used for this.
+
+                    is_tracker_bug = False
+                    break
+
+                # RULE: If a bug already has the appropriate verification tags on
+                #       it, we don't add them again.
+                #
+                while (not is_tracker_bug):
+                    if 'verification-failed-%s' % self.cfg['release'] in bug.tags:
+                        break  # The tag exists
+
+                    if 'verification-needed-%s' % self.cfg['release'] in bug.tags:
+                        break  # The tag exists
+
+                    if 'verification-done-%s'   % self.cfg['release'] in bug.tags:
+                        break  # The tag exists
+
+                    # None of the tags that we are checking for exist, lets hook em up.
+                    #
+                    should_be_spammed = True
+                    break
+
+                if should_be_spammed:
+                    print("Still a work in progress ... bug Brad to finish this!")
+                    return
+
+                    self.print_bug_info(bug_id, bug)
+                    #bug.tags.append('verification-needed-%s' % self.cfg['release'])
+                    bug.add_comment(self.cfg['comment-text'])
+                    #self.add_bug_comment(bug)
+                    #self.modify_bug_status(bug)
+
+                    # Task status
+                    #
+                    tasks = bug.tasks
+                    if len(tasks) == 1:
+                        print("Setting the status to '%s'." % (self.cfg['status']))
+                        task = tasks[0]
+                        tasks[0].status = self.cfg['status']
+                    else:
+                        print("   ** Warning: This bug contains multiple bug tasks, not able to set the status.")
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle ommand line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        return
+
+if __name__ == '__main__':
+    app = SpamProposedReleaseBugs()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
