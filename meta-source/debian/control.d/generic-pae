@@ -25,6 +25,9 @@ Description: Complete Generic Linux kernel
  This package will always depend on the latest complete generic Linux kernel
  available.
 
+#
+# LBM generic-pae packages are only built for i386
+#
 Package: linux-backports-modules-headers-RELEASE_NAME-generic-pae
 Architecture: i386
 Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-generic-pae
@@ -33,28 +36,28 @@ Description: Backported driver headers for generic-pae kernel image
  headers up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-wireless-RELEASE_NAME-generic-pae
-Architecture: amd64 i386
+Architecture: i386
 Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.34-${kernel-abi-version}-generic-pae
 Description: Backported wireless drivers for generic-pae kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-wireless-2.6.35-RELEASE_NAME-generic-pae
-Architecture: amd64 i386
+Architecture: i386
 Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.35-${kernel-abi-version}-generic-pae
 Description: Backported wireless drivers for generic-pae kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-wireless-2.6.36-RELEASE_NAME-generic-pae
-Architecture: amd64 i386
+Architecture: i386
 Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.36-${kernel-abi-version}-generic-pae
 Description: Backported wireless drivers for generic-pae kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-wireless-2.6.37-RELEASE_NAME-generic-pae
-Architecture: amd64 i386
+Architecture: i386
 Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.37-${kernel-abi-version}-generic-pae
 Description: Backported wireless drivers for generic-pae kernel image
  This empty package allows people to keep their backported wireless modules
@@ -68,14 +71,14 @@ Description: Backported drivers for alsa-driver snapshot.
  up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-wwan-RELEASE_NAME-generic-pae
-Architecture: amd64 i386
+Architecture: i386
 Depends: ${misc:Depends}, linux-backports-modules-wwan-${kernel-abi-version}-generic-pae
 Description: Backported WWAN drivers for generic-pae kernel image
  This empty package allows people to keep their backported WWAN modules
  up-to-date when upgrading their Linux kernel.
 
 Package: linux-backports-modules-input-RELEASE_NAME-generic-pae
-Architecture: amd64 i386
+Architecture: i386
 Depends: ${misc:Depends}, linux-backports-modules-input-${kernel-abi-version}-generic-pae
 Description: Backported input drivers for generic-pae kernel image
  This empty package allows people to keep their backported input modules
