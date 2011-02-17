@@ -9,6 +9,40 @@ linux-mvl-dove (2.6.32-215.31) lucid; urgency=low
     lets forget it ever happened, start afresh
     from Ubuntu-2.6.32-213.29, and just apply CVE patches.
 
+  * inet_diag: Make sure we actually run the same bytecode we audited, CVE-2010-3880
+    -LP: #711341
+    CVE-2010-3880
+  * net: tipc: fix information leak to userland, CVE-2010-3877
+    -LP: #711291
+    CVE-2010-3877
+  * net: packet: fix information leak to userland, CVE-2010-3876
+    -LP: #711045
+    CVE-2010-3876
+  * net: ax25: fix information leak to userland harder, CVE-2010-3875
+    -LP: #710714
+    CVE-2010-3875
+  * net: ax25: fix information leak to userland, CVE-2010-3875
+    -LP: #710714
+    CVE-2010-3875
+  * net: fix rds_iovec page count overflow, CVE-2010-3865
+    -LP: #709153
+    CVE-2010-3865
+  * KVM: VMX: fix vmx null pointer dereference on debug register access, CVE-2010-0435
+    -LP: #712615
+    CVE-2010-0435
+  * af_unix: limit unix_tot_inflight, CVE-2010-4249
+    -LP: #720959
+    CVE-2010-4249
+  * perf_events: Fix perf_counter_mmap() hook in mprotect(), CVE-2010-4169
+    -LP: #720966
+    CVE-2010-4169
+  * tcp: Increase TCP_MAXSEG socket option minimum., CVE-2010-4165
+    -LP: #720967
+    CVE-2010-4165
+  * ipc: initialize structure memory to zero for compat functions, CVE-2010-4073
+    -LP: #720968
+    CVE-2010-4073
+
  -- Tim Gardner <tim.gardner@canonical.com>  Thu, 17 Feb 2011 13:05:01 -0700
 
 linux-mvl-dove (2.6.32-214.30) lucid; urgency=low
