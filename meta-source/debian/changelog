@@ -1,6 +1,13 @@
 linux-meta (2.6.32.29.35) UNRELEASED; urgency=low
 
-  * 
+  [ Tim Gardner ]
+
+  * LBM generic-pae packages are only built for i386
+    - LP: #720139
+  * LBM preempt packages are only built for amd64
+    - LP: #720139
+  * LBM server packages are only built for amd64
+    - LP: #720139
 
  -- Stefan Bader <stefan.bader@canonical.com>  Thu, 17 Feb 2011 11:56:28 +0100
 
