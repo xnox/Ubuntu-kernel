@@ -1,4 +1,4 @@
-linux-meta (2.6.38.4.18) UNRELEASED; urgency=low
+linux-meta (2.6.38.4.18) natty; urgency=low
 
   * Bump ABI
 
