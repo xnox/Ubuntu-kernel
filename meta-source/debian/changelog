@@ -1,4 +1,4 @@
-linux-meta (2.6.35.27.35) UNRELEASED; urgency=low
+linux-meta (2.6.35.27.35) maverick-proposed; urgency=low
 
   [ Tim Gardner ]
 
@@ -6,7 +6,6 @@ linux-meta (2.6.35.27.35) UNRELEASED; urgency=low
     - LP: #720139
   * LBM server packages are only built for amd64
     - LP: #720139
-  * 
 
  -- Stefan Bader <stefan.bader@canonical.com>  Thu, 17 Feb 2011 14:55:31 +0100
 
