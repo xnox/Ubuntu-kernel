@@ -1,3 +1,15 @@
+linux-firmware (1.34.5) lucid-proposed; urgency=low
+
+  [ Stefan Bader ]
+
+  * Pull firmware for ath9k-htc from Natty
+    The ath9k-htc module is contained in the compat-wireless-2.6.37
+    backports for Lucid and Maverick. However the firmware for that module
+    is missing.
+    - LP: #721393
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 18 Feb 2011 10:50:45 -0700
+
 linux-firmware (1.34.4) lucid-proposed; urgency=low
 
   * iwlwifi: Updated iwlwifi-6000g2a-5.ucode and iwlwifi-6000g2b-5.ucode to 17.168.5.2
