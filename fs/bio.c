@@ -615,6 +615,9 @@ static struct bio *__bio_map_user_iov(struct request_queue *q,
 		if (end < start)
 			return ERR_PTR(-EINVAL);
 
+		if (!len)
+			return ERR_PTR(-EINVAL);
+
 		nr_pages += end - start;
 		/*
 		 * buffer must be aligned to at least hardsector size for now
