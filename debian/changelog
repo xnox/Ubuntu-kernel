@@ -1,3 +1,20 @@
+linux-firmware (1.38.5) maverick-proposed; urgency=low
+
+  [ Stefan Bader ]
+
+  * Pull firmware for ath9k-htc from Natty
+    The ath9k-htc module is contained in the compat-wireless-2.6.37
+    backports for Lucid and Maverick. However the firmware for that module
+    is missing.
+    - LP: #721393
+
+  * Add link for RTL8192SU firmware
+    Create a link from RTL8192SU -> RTL8192SE as testing proved the same
+    firmware works for both.
+    - LP: #721356
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 18 Feb 2011 10:58:40 -0700
+
 linux-firmware (1.38.4) maverick-proposed; urgency=low
 
   * iwlwifi: Updated iwlwifi-6000g2a-5.ucode and iwlwifi-6000g2b-5.ucode to 17.168.5.2
