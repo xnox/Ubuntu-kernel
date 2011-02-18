@@ -1,3 +1,10 @@
+linux-meta-mvl-dove (2.6.32.215.16) lucid; urgency=low
+
+  * Bump linux-mvl-dove ABI to 215 for proposed upload
+    - LP: #712610
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 18 Feb 2011 09:08:53 -0700
+
 linux-meta-mvl-dove (2.6.32.214.15) lucid; urgency=low
 
   * Bump linux-mvl-dove ABI to 214 for proposed upload
