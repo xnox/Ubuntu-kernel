@@ -48,5 +48,9 @@ then
 	exit 1
 fi
 
+echo
+echo "## $0 $1 $2 ##"
+echo
+
 cd ${CDIR}/scripts
 sudo ./build-mkschroot --arch=${ARCH} ${RELEASE} ${CH_ROOT}/${RELEASE}-${ARCH} ${MIRROR}
