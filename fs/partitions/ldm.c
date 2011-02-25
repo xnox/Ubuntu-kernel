@@ -251,6 +251,10 @@ static bool ldm_parse_vmdb (const u8 *data, struct vmdb *vm)
 	}
 
 	vm->vblk_size     = BE32 (data + 0x08);
+	if (vm->vblk_size == 0) {
+		ldm_error ("Illegal VBLK size");
+		return false;
+	}
 	vm->vblk_offset   = BE32 (data + 0x0C);
 	vm->last_vblk_seq = BE32 (data + 0x04);
 
