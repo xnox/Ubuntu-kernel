@@ -1,3 +1,9 @@
+linux-meta (2.6.24.29.31) hardy-proposed; urgency=low
+
+  * ABI bump to -29 by proposed update
+
+ -- Steve Conklin <sconklin@canonical.com>  Fri, 25 Feb 2011 12:53:32 +0600
+
 linux-meta (2.6.24.28.30) hardy-security; urgency=low
 
   * ABI bump to -28 by security update
