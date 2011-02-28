@@ -251,7 +251,7 @@ function new_iso_add_kernel_team_tests()
 #
 function new_iso_add_kernel_team_fwts_tests()
 {
-    sudo chroot $CHROOT sudo add-apt-repository ppa:firmware-testing-team/ppa-firmware-test-suite-dev
+    sudo chroot $CHROOT sudo add-apt-repository ppa:firmware-testing-team/ppa-fwts-stable
     sudo chroot $CHROOT sudo apt-get update
     sudo chroot $CHROOT sudo apt-get install -y --force-yes fwts
     sudo chroot $CHROOT sudo apt-get install -y --force-yes dialog
