@@ -1,3 +1,11 @@
+linux-backports-modules-2.6.35 (2.6.35-28.19) maverick-proposed; urgency=low
+
+  [ Brad Figg ]
+
+  * Bump ABI - Maverick 28
+
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 28 Feb 2011 14:48:22 -0800
+
 linux-backports-modules-2.6.35 (2.6.35-27.18) maverick-proposed; urgency=low
 
   [ Brad Figg ]
