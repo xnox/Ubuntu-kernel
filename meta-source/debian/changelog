@@ -1,3 +1,9 @@
+linux-meta (2.6.35.28.36) maverick-proposed; urgency=low
+
+  * Bump ABI - Maverick ABI 28
+
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 28 Feb 2011 14:46:01 -0800
+
 linux-meta (2.6.35.27.35) maverick-proposed; urgency=low
 
   [ Tim Gardner ]
