@@ -1,0 +1,253 @@
+body {
+       background: #1b1b1b;
+            color: #ddd;
+      font-family: 'Cantarell', serif;
+        font-size: 12px;
+
+    /*  background: #003333; /* FIXME bjf - just ising this background color for debugging */
+    /* font-family: 'Josefin Sans Std Light', serif; */
+    /* font-family: 'Molengo', serif; */
+    /* font-family: 'Neuton', serif; */
+    /* font-family: 'PT Sans', serif; */
+}
+
+a:link
+{
+    color:#00CC00;
+}
+
+a:visited
+{
+    color:#009900;
+}
+
+a:active
+{
+    color:#FF0000;
+}
+
+a:hover
+{
+    color:#00CCFF;
+}
+
+#header {
+       background: none repeat scroll 0 0 #0a0a0a;
+    border-bottom: 1px solid #242424;
+          padding: 0 0 10px 0;
+     /*
+     border-style: solid;
+     border-color: #0099ff;
+     border-width: 1px;
+     */
+}
+
+.outermost {
+           margin: 0px 20px 0px 20px;
+          padding: none;
+}
+
+#summary {
+      font-weight: bold;
+        font-size: 16px;
+          padding: none;
+           margin: 15px 0px 15px 0px;
+}
+
+/* -------------------------------------------------------------------------------
+*/
+.details {
+            width: 100%
+          padding: none;
+           margin: 15px 0px 15px 0px;
+     /*
+     border-style: solid;
+     border-color: red;
+     border-width: 1px;
+     */
+}
+
+.details table {
+        font-size: 12px;
+}
+
+.details .column {
+   vertical-align: top;
+            width: 50%;
+}
+
+.details .label {
+      font-weight: bold;
+       text-align: right;
+   vertical-align: top;
+            width: 100px;
+}
+
+.details .value {
+      font-weight: normal;
+       text-align: left;
+   vertical-align: top;
+}
+
+/* -------------------------------------------------------------------------------
+*/
+.tasks {
+            width: 100%
+          padding: none;
+           margin: 15px 0px 15px 0px;
+     /*
+     border-style: solid;
+     border-color: red;
+     border-width: 1px;
+     */
+}
+
+.tasks .id
+{
+    width: 50px;
+}
+
+.tasks .owner
+{
+    width: 200px;
+}
+
+.tasks .importance
+{
+    width: 100px;
+}
+
+.tasks .status
+{
+    width: 100px;
+}
+
+.tasks .assignee
+{
+    width: 100px;
+}
+
+
+/* -------------------------------------------------------------------------------
+*/
+.description {
+           margin: 15px 0px 15px 0px;
+          padding: none;
+        font-size: 12px;
+}
+
+h1 {
+      font-weight: bold;
+        font-size: 20px;
+       background: none repeat scroll 0 0 #333333;
+          padding: 2px 0px 2px 0px;
+}
+
+code {
+            font: 13px/1.231 arial,helvetica,clean,sans-serif;
+}
+
+/* -------------------------------------------------------------------------------
+*/
+
+.section {
+     /* border-style: solid;   */
+     /* border-width: 1px;     */
+     /* border-color: #ff4500; */  /* Vibrant orange */
+     /* border-color: #ffff00; */  /* Yellow         */
+     /* border-color: #ff0000; */  /* Red            */
+     /* border-color: #00ff00; */  /* Lime green     */
+     /* border-color: #ff4500; */  /* Vibrant orange */
+     /* border-color: #0099ff; */  /* Electric Blue  */
+           margin: 2px 0px 0px 0px;
+}
+
+.section .heading {
+      font-weight: bold;
+        font-size: 16px;
+       background: none repeat scroll 0 0 #333333;
+          padding: 2px 0px 2px 0px;
+}
+
+.section .body {
+}
+
+.major-section {
+     border-style: solid;
+     border-width: 1px;
+     border-color: #ff4500;   /* Vibrant orange */
+     /* border-color: #ffff00; */  /* Yellow         */
+     /* border-color: #ff0000; */  /* Red            */
+     /* border-color: #00ff00; */  /* Lime green     */
+     /* border-color: #ff4500; */  /* Vibrant orange */
+     /* border-color: #0099ff; */  /* Electric Blue  */
+           margin: 20px 0px 0px 0px;
+}
+
+.major-section .heading {
+      font-weight: bold;
+        font-size: 16px;
+       background: none repeat scroll 0 0 #333333;
+          padding: 2px 0px 2px 0px;
+}
+
+.major-section .body {
+}
+
+
+/* -------------------------------------------------------------------------------
+*/
+
+.idTabs {
+        font-size: 14px;
+      font-weight: bold;
+          padding: 5px;
+     border-style: solid;
+     border-color: #0099ff;
+     border-width: 1px;
+}
+
+.idTabs li {
+       list-style: none;
+            float: left;
+          padding: 0 15px 0 15px;
+}
+
+.idTabs ul li a:link {
+  text-decoration: none!important;
+}
+
+.idTabs ul li a:hover {
+  text-decoration: none!important;
+}
+
+.idTabs ul li a:selected {
+  text-decoration: none!important;
+}
+
+.idTabs li.current a {
+ background-color: #0099ff;
+      font-weight: bold;
+}
+.idTabs li.current a {
+            color: #000000;
+      font-weight: bold;
+}
+
+/* -------------------------------------------------------------------------------
+*/
+
+.expand_heading {
+           margin: 1px;
+            color: #ddd;
+          padding: 3px 10px;
+           cursor: pointer;
+         position: relative;
+       background: none repeat scroll 0 0 #444444;
+}
+.expand_content {
+          padding: 5px 10px;
+/* background-color: #fafafa; */
+}
+
+/* vi:set ts=4 sw=4 expandtab: */
