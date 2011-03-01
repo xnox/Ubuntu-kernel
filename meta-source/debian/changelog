@@ -1,3 +1,9 @@
+linux-meta (2.6.38.6.20) UNRELEASED; urgency=low
+
+  * Bump ABI
+
+ -- Andy Whitcroft <apw@canonical.com>  Tue, 01 Mar 2011 16:31:13 +0000
+
 linux-meta (2.6.38.5.19) natty; urgency=low
 
   * Bump ABI
