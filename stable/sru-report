@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 #
 
-from sys                                import stdout
-from sys                                import stdin
-from sys                                import argv
-from os                                 import path
-from os                                 import unlink
-from os                                 import _exit
+from sys                                import stdout, argv
+from os                                 import path, unlink, _exit
 from getopt                             import getopt, GetoptError
 from datetime                           import datetime
 import json
@@ -17,6 +13,8 @@ import atexit
 import shutil
 import time
 from lpltk.service                      import LaunchpadService
+from ktl.kernel                         import *
+from ktl.archive                        import Archive
 
 # stdo
 #
@@ -123,7 +121,7 @@ class Cmdline:
     #
     def usage(self, defaults):
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>] [--archive-versions]    \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
@@ -139,6 +137,9 @@ class Cmdline:
         stdo("                         Performs additional output related to the option enabled and        \n")
         stdo("                         the application defined support for the option.                     \n")
         stdo("                                                                                             \n")
+        stdo("        --archive-versions                                                                   \n")
+        stdo("                         Include all the version information for all the packages in         \n")
+        stdo("                         the archive, in the output data.                                    \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
@@ -152,10 +153,11 @@ class Cmdline:
     #
     def process(self, argv, defaults):
         self.cfg['app_name'] = argv[0]
+        self.cfg['archive-versions'] = False
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'archive-versions']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -170,6 +172,9 @@ class Cmdline:
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
+
+                elif opt in ('--archive-versions'):
+                    self.cfg['archive-versions'] = True
 
             if result: # No errors yet
 
@@ -217,6 +222,12 @@ class SruReport(StdApp):
         self.published_date_pattern = re.compile('Published.*\n.*on ([-0-9]+)')
         self.service = LaunchpadService()
         self.dbg('core', "initialize: leave\n")
+
+        if self.cfg['archive-versions']:
+            ar = Archive()
+            self.ppa       = ar.ppa_versions(force=False)
+            self.dversions = ar.distro_versions(force=False)
+
         return
 
     # decompress_open
@@ -298,6 +309,53 @@ class SruReport(StdApp):
 
             self.initialize()
 
+            results['releases'] = {}
+            if self.cfg['archive-versions']:
+                #-----------------------------------------------------------------------------
+                # Go through the archive data and find all the relevant series and packages
+                # and thier versions. Seed the results dictionary with this information.
+                #
+                m = map_release_number_to_ubuntu_release
+                for num in sorted(m.iterkeys(), key=lambda x:m[x]['name']):
+                    if not m[num]['supported']:
+                        continue
+
+                    series      = m[num]['name']
+                    series_pkgs = m[num]['packages']
+                    results['releases'][series] = {}
+
+                    # Add any versions from the ppa
+                    #
+                    for ppa_entry in self.ppa:
+                        if self.ppa[ppa_entry]['series'] != series:
+                            continue
+
+                        sp     = self.ppa[ppa_entry]['source_package_name']
+                        pocket = 'ppa'
+                        spv    = self.ppa[ppa_entry]['source_package_version']
+                        if sp not in results['releases'][series]:
+                            results['releases'][series][sp] = {}
+                        results['releases'][series][sp][pocket] = spv
+
+                    # Add all the versions from the archive
+                    #
+                    for archive_entry in self.dversions:
+                        if self.dversions[archive_entry]['series'] != series:
+                            continue
+
+                        sp     = self.dversions[archive_entry]['source_package_name']
+                        pocket = self.dversions[archive_entry]['pocket']
+                        spv    = self.dversions[archive_entry]['source_package_version']
+                        if sp not in results['releases'][series]:
+                            results['releases'][series][sp] = {}
+                        results['releases'][series][sp][pocket] = spv
+
+            #-----------------------------------------------------------------------------
+            # Now go through all the packages that are currently in proposed and pull out
+            # the bug (and any other) information.
+            #
+
+
             for rls in self.release:
                 self.dbg('core', "Release: '%s'\n" % (rls))
                 for component in self.components:
@@ -313,34 +371,41 @@ class SruReport(StdApp):
                         self.dbg('core', "        Package: '%s'\n" % (package))
                         update_ver = updates.get(package, '')
                         if apt_pkg.version_compare(proposed[package], update_ver) > 0:
-                            pending.setdefault(rls, {})[package] = (release.get(package, ''), proposed[package], update_ver)
-
                             security_ver = security.get(package, '')
-                            if apt_pkg.version_compare(proposed[package], security_ver) < 0:
-                                security_superseded.setdefault(rls, {})[package] = (proposed[package], security_ver)
+                            pending.setdefault(rls, {})[package] = (release.get(package, ''), proposed[package], update_ver, security_ver)
+
+                            #security_ver = security.get(package, '')
+                            #if apt_pkg.version_compare(proposed[package], security_ver) < 0:
+                            #    security_superseded.setdefault(rls, {})[package] = (proposed[package], security_ver)
                         else:
                             cleanup.setdefault(rls, []).append(package)
 
-
             # Pending Ubuntu Stable Release Updates
             #
-            results['releases'] = {}
             for rls in self.release:
-                results['releases'][rls] = {}
+                if rls not in results['releases']:
+                    results['releases'][rls] = {}
                 if rls in pending:
                     pkgs = pending[rls].keys()
                     for pkg in pkgs:
                         lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (rls, pkg)
-                        (vrel, vprop, vupd) = pending[rls][pkg]
+                        (vrel, vprop, vupd, vsec) = pending[rls][pkg]
 
                         (date, bugs) = self.get_changelog_info(lpurl+vprop)
                         age = int((time.time()-time.mktime(date))/86400)
 
-                        results['releases'][rls][pkg] = {}
+                        if pkg not in results['releases'][rls]:
+                            results['releases'][rls][pkg] = {}
+
+                        if 'Release' not in results['releases'][rls][pkg]:
+                            results['releases'][rls][pkg]['Release' ] = vrel
+                        if 'Proposed' not in results['releases'][rls][pkg]:
+                            results['releases'][rls][pkg]['Proposed'] = vprop
+                        if 'Updates' not in results['releases'][rls][pkg]:
+                            results['releases'][rls][pkg]['Updates' ] = vupd
+                        if 'Security' not in results['releases'][rls][pkg]:
+                            results['releases'][rls][pkg]['Security' ] = vupd
                         results['releases'][rls][pkg]['url'     ] = lpurl
-                        results['releases'][rls][pkg]['release' ] = vrel
-                        results['releases'][rls][pkg]['proposed'] = vprop
-                        results['releases'][rls][pkg]['update'  ] = vupd
                         results['releases'][rls][pkg]['age'     ] = age
                         results['releases'][rls][pkg]['bugs'    ] = {}
 
