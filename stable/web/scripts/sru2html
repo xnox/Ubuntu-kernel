@@ -131,7 +131,7 @@ class SruReport:
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
         <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" type="text/css" href="css/neo-bug-page-style.css" />
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
 
     </head>
         '''
@@ -169,25 +169,25 @@ class SruReport:
                     ppaurl = 'https://launchpad.net/~canonical-kernel-team/+archive/ppa/+packages'
                     retval += '                        <tr>\n'
                     retval += '                            <td width="400" valign="top"><a href="%s"        >%s  </a></td>\n' % (lpurl, pkg)
-                    if self.data['releases'][rls][pkg]['release'] == '':
+                    if self.data['releases'][rls][pkg]['Release'] == '':
                         retval += '                            <td width="200" valign="top">&nbsp;</td>\n'
                     else:
                         tmp = ppaurl
-                        retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-release)</td>\n' % (tmp, self.data['releases'][rls][pkg]['release'])
+                        retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-release)</td>\n' % (tmp, self.data['releases'][rls][pkg]['Release'])
 
-                    if self.data['releases'][rls][pkg]['update'] == '':
+                    if self.data['releases'][rls][pkg]['Updates'] == '':
                         retval += '                            <td width="200" valign="top">&nbsp;</td>\n'
                     else:
-                        tmp = lpurl + self.data['releases'][rls][pkg]['update']
-                        retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-updates)</td>\n' % (tmp, self.data['releases'][rls][pkg]['update'])
+                        tmp = lpurl + self.data['releases'][rls][pkg]['Updates']
+                        retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-updates)</td>\n' % (tmp, self.data['releases'][rls][pkg]['Updates'])
 
-                    if self.data['releases'][rls][pkg]['proposed'] == '':
+                    if self.data['releases'][rls][pkg]['Proposed'] == '':
                         retval += '                            <td width="200" valign="top">&nbsp;</td>\n'
                         proposed_version = None
                     else:
-                        proposed_version = self.data['releases'][rls][pkg]['proposed']
+                        proposed_version = self.data['releases'][rls][pkg]['Proposed']
                         tmp = lpurl + proposed_version
-                        retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-proposed)</td>\n' % (tmp, self.data['releases'][rls][pkg]['proposed'])
+                        retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-proposed)</td>\n' % (tmp, self.data['releases'][rls][pkg]['Proposed'])
                     retval += '                            <td>&nbsp;</td>\n'
                     retval += '                            <td width="10">%s</td>\n' % (self.data['releases'][rls][pkg]['age'])
                     retval += '                        </tr>\n'
