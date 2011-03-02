@@ -1,3 +1,9 @@
+linux-meta-ec2 (2.6.32.314.15) lucid-proposed; urgency=low
+
+  * Bump linux-ec2 ABI to 314 for proposed release
+
+ -- Steve Conklin <sconklin@canonical.com>  Wed, 02 Mar 2011 23:02:18 -0600
+
 linux-meta-ec2 (2.6.32.313.14) lucid-proposed; urgency=low
 
   * Bump linux-ec2 ABI to 313 for proposed release
