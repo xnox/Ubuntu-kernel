@@ -7,7 +7,7 @@ from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
-from ktl.kernel                         import Kernel, KernelError
+from ktl.kernel                         import Kernel, KernelError, map_kernel_version_to_ubuntu_release
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 from lazr.restfulclient.errors          import HTTPError
 
@@ -148,7 +148,8 @@ class CreateTrackingBug(StdApp):
             #
             description = "This bug is for tracking the %s upload package. This bug will contain status and testing results releated to that upload." % (changelog[0]['version'])
 
-            bug = self.lp.create_bug(project='ubuntu', package='linux', title=title, description=description)
+            package = changelog[0]['package']
+            bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
 
             # Tags:
             #    kernel-tracking-bug
@@ -173,6 +174,17 @@ class CreateTrackingBug(StdApp):
             for team in teams:
                 lp_team = self.lp.launchpad.people[team]
                 bug.lpbug.subscribe(person=lp_team)
+
+            # For the given version, figure out the series and nominate that series.
+            #
+            lp = self.lp.launchpad
+            ubuntu = lp.distributions["ubuntu"]
+            sc = ubuntu.series_collection
+            for s in sc:
+                if s.name == changelog[0]['release']:
+                    nomination = bug.lpbug.addNomination(target=s)
+                    if nomination.canApprove():
+                        nomination.approve()
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
