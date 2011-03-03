@@ -1,3 +1,10 @@
+linux-firmware (1.34.6) lucid-proposed; urgency=low
+
+  * iwlwifi: 9.201.4.1 iwlwifi-6050-4.ucode
+    - LP: #727653
+
+ -- Andy Whitcroft <apw@canonical.com>  Thu, 03 Mar 2011 08:51:43 +0000
+
 linux-firmware (1.34.5) lucid-proposed; urgency=low
 
   [ Stefan Bader ]
