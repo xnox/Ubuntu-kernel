@@ -154,7 +154,10 @@ class GenerateMeetingStatus(StdApp):
                 rlsname = rls
                 for pkg in rdict.keys():
                     rowt = []
-                    release = rdict[pkg]['release']
+                    try:
+                        release = rdict[pkg]['Release']
+                    except KeyError:
+                        release = ' '
                     total_bugs = 0
                     verified_bugs = 0
                     self.dbg("core", "    package: '%s'\n" % (pkg))
@@ -163,20 +166,27 @@ class GenerateMeetingStatus(StdApp):
                     rlsname = "---"
                     # first column - release
                     rowt.append(rlstext)
-                    proposed = rdict[pkg]['proposed']
-                    update = rdict[pkg]['update']
+                    try:
+                        proposed = rdict[pkg]['Proposed']
+                    except KeyError:
+                        proposed = ' '
+                    update = rdict[pkg]['Updates']
                     rowt.append(update)
                     rowt.append(proposed)
-                    for bug in rdict[pkg]['bugs'].keys():
-                        self.dbg("core", "        bug: '%s'\n" % (bug))
-                        state = rdict[pkg]['bugs'][bug]['state']
-                        if state == 'needed':
-                            total_bugs = total_bugs + 1
-                        elif state == 'verified':
-                            total_bugs = total_bugs + 1
-                            verified_bugs = verified_bugs + 1
-                    rowt.append(str(total_bugs))
-                    rowt.append(str(verified_bugs))
+                    if 'bugs' in rdict[pkg]:
+                        for bug in rdict[pkg]['bugs'].keys():
+                            self.dbg("core", "        bug: '%s'\n" % (bug))
+                            state = rdict[pkg]['bugs'][bug]['state']
+                            if state == 'needed':
+                                total_bugs = total_bugs + 1
+                            elif state == 'verified':
+                                total_bugs = total_bugs + 1
+                                verified_bugs = verified_bugs + 1
+                        rowt.append(str(total_bugs))
+                        rowt.append(str(verified_bugs))
+                    else:
+                        rowt.append(' ')
+                        rowt.append(' ')
                     rows.append(rowt)
                 rows.append((' ', ' ', ' ', ' ', ' '))
 
