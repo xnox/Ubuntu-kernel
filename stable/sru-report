@@ -427,6 +427,7 @@ class SruReport(StdApp):
                                 if 'verification-failed-%s' % rls in lp_bug.tags: state = 'failed'
                                 elif 'verification-done-%s'   % rls in lp_bug.tags: state = 'verified'
                                 elif 'verification-needed-%s' % rls in lp_bug.tags: state = 'needed'
+                                elif 'verification-done' in lp_bug.tags: state = 'verfied'
 
                                 if 'hw-specific' in lp_bug.tags:
                                     attrib = '(hw)'
