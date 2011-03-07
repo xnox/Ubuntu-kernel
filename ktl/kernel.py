@@ -35,7 +35,7 @@ map_release_number_to_ubuntu_release = {
     '10.04'  : { 'kernel' : '2.6.32', 'name' : 'lucid', 'supported' : True,
                  'packages' : ['linux', 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2',
                                'linux-meta', 'linux-ports-meta', 'linux-meta-ec2', 'linux-meta-mvl-dove', 'linux-meta-fsl-imx51',
-                               'linux-backports-modules-2.6.32', 'linux-lts-backport-maverick' #, 'linux-lts-backport-natty'
+                               'linux-backports-modules-2.6.32', 'linux-lts-backport-maverick', 'linux-meta-lts-backport-maverick' #, 'linux-lts-backport-natty'
                                ]},
     '9.10'   : { 'kernel' : '2.6.31', 'name' : 'karmic', 'supported' : True,
                  'packages' : ['linux', 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2',
