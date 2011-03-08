@@ -1,3 +1,13 @@
+linux-fsl-imx51 (2.6.31-608.23) lucid; urgency=low
+
+  [ Upstream Kernel Changes ]
+
+  * ARM: 5746/1: Handle possible translation errors in ARMv6/v7
+    coherent_user_range
+    - LP: #605042
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 08 Mar 2011 06:27:45 -0700
+
 linux-fsl-imx51 (2.6.31-608.22) lucid; urgency=low
 
   [ Tim Gardner ]
