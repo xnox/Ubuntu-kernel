@@ -12,7 +12,7 @@ ARCH=
 
 usage()
 {
-	echo $0 --arch=ARCH [--repo=REPO] --release=RELEASE --branch=BRANCH [--clean]
+	echo $0 [--arch=ARCH] [--repo=REPO] --release=RELEASE --branch=BRANCH [--clean]
 	echo ex: $0 --arch=amd64 --release=lucid --branch=master-next
 	exit 1
 }
@@ -64,8 +64,12 @@ fi
 #
 if [ -z "$ARCH" ]
 then
-	echo You must specify an architecture
-	usage
+	if [ "$HOST_ARCH" = "amd64" ]
+	then
+		echo You must specify and architecture on amd64.
+		usage
+	fi
+	ARCH="$HOST_ARCH"
 fi
 if ! find $UKB_DB/$RELEASE -maxdepth 1 | grep $ARCH 2>&1 > /dev/null
 then
@@ -104,6 +108,9 @@ fi
 
 RDIR=$BDIR/ubuntu-$RELEASE
 
+#
+# Do a pre-clean
+#
 if [ ! -z "$CLEAN" ] && [ -f $RDIR/Makefile ]
 then
 	rm -rf $RDIR
@@ -140,15 +147,19 @@ popd
 #
 # Finally, do the build
 #
+get_chroot $RELEASE $ARCH
+echo CHROOT $CHROOT
 pushd $RDIR
+
 if [ ! -f debian/control ]
 then
-	echo "fakeroot debian/rules clean arch=$ARCH" | schroot -c $RELEASE-$ARCH
+	echo "fakeroot debian/rules clean arch=$ARCH" | $CHROOT --directory=`pwd`
 fi
-if ! echo "debuild -B -us -uc 2>&1 |tee log.txt"|schroot -c $RELEASE-$ARCH
+
+if ! echo "debuild -B -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
 then
 	echo $RELEASE $ARCH $BRANCH failed.
 	exit 1
 fi
-exit 0
 
+popd

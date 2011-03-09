@@ -11,8 +11,6 @@ usage()
 	echo ex: $0 --release=lucid --branch=master-next
 }
 
-HOST_ARCH="`dpkg-architecture -qDEB_HOST_ARCH`"
-
 while [ $# -ne 0 ]; do
 	case $1 in
 		--repo=*)
