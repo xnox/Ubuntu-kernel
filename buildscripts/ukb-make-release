@@ -1,0 +1,55 @@
+#!/bin/bash
+#
+# This script builds a release based on the host architecture.
+#
+CDIR="`dirname $0`"
+. $CDIR/ukb.conf
+
+usage()
+{
+	echo $0 [--repo=REPO] --release=RELEASE --branch=BRANCH [--clean]
+	echo ex: $0 --release=lucid --branch=master-next
+}
+
+while [ $# -ne 0 ]; do
+	case $1 in
+		--repo=*)
+			REPO="--repo=$(echo $1|cut -d= -f2)"
+			;;
+		--release=*)
+			RELEASE="--release=$(echo $1|cut -d= -f2)"
+			;;
+		--branch=*)
+			BRANCH="--branch=$(echo $1|cut -d= -f2)"
+			;;
+		--clean)
+			CLEAN="--clean"
+			;;
+		--help)
+			usage
+			;;
+		*)
+			echo Unknown option \'$1\`
+			usage
+			;;
+	esac
+	shift
+done
+
+case $HOST_ARCH in
+	amd64)
+		for i in i386 amd64 armel
+		do
+			if ! $CDIR/ukb-make --arch=$i $REPO $RELEASE $BRANCH $CLEAN
+			then
+				exit 1
+			fi
+		done
+		;;
+	*)
+		$CDIR/ukb-make --arch=$HOST_ARCH $REPO $RELEASE $BRANCH $CLEAN
+		;;
+esac
+
+exit 0
+
