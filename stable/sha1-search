@@ -1,0 +1,256 @@
+#!/usr/bin/env python
+#
+
+from sys          import argv
+from getopt       import getopt, GetoptError
+from ktl.utils    import stdo
+from ktl.std_app  import StdApp
+import urllib2
+from string       import find
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--full] [--verbose] [--config=<cfg file>] [--debug=<dbg options>] sha1           \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --full        Print the entire patch                                                 \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("        sha1                                                                                 \n")
+        stdo("                         The sha1 to search for in upstream git repos                        \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'full', 'verbose', 'config=', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            if len(args) != 1:
+                raise CmdlineError('You must supply a sha1 to search for\n\n')
+                
+            self.cfg['args'] = args
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif (opt == '--full'):
+                    self.cfg['full'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        return
+
+# Sha1search
+#
+class Sha1search(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+
+        sha1 = self.cfg['args'][0]
+
+        #
+        # Gitweb doesn't return useful information from our repos because a sha1 can match in any branch
+        # in the repo, and (for example) the natty-backports branch in Lucid will match anything in Natty
+        # as if it were in Lucid
+        #
+        gitweb = {'Linus' : 'http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=patch;h=',
+                  'Linux-next' : 'http://git.kernel.org/?p=linux/kernel/git/next/linux-next.git;a=patch;h='}
+                  #'Natty' : 'http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-natty.git;a=patch;h=',
+                  #'Maverick' : 'http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-maverick.git;a=patch;h=',
+                  #'Lucid' : 'http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-lucid.git;a=patch;h=',
+                  #'Karmic' : 'http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-karmic.git;a=patch;h=',
+                  #'Hardy' : 'http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-hardy.git;a=patch;h=',
+                  #'Dapper' : 'http://kernel.ubuntu.com/git?p=ubuntu/ubuntu-dapper.git;a=patch;h='
+                  #}
+
+        # What order to display in?
+        ordering = ['Linus', 'Linux-next']
+                    #'Natty',
+                    #'Maverick',
+                    #'Lucid',
+                    #'Karmic',
+                    #'Hardy',
+                    #'Dapper'
+                    #]
+
+        maxnmlen = 0
+        for nm in ordering:
+            if len(nm) > maxnmlen:
+                maxnmlen = len(nm)
+
+        fieldwidth = maxnmlen + 7
+        across = 0
+        maxacross = 4
+
+        # max number of reloads
+        maxretries = 10
+
+        # storage for results
+        patchinfo = None
+        repolist = '\n--\n|'
+    
+        for name in ordering:
+            #print '---- testing ' + name + '----'
+            nextkurl = gitweb[name] + (sha1)
+            kurl = nextkurl
+
+            req = urllib2.Request(kurl)
+
+            try:
+                # Gitweb can continuously return refresh requests until it's done
+                gotit = False
+                retries = 0
+                while not gotit:
+                    f = urllib2.urlopen(req)
+                    page = f.read()
+                    fres = find(page, 'meta http-equiv="refresh" content="0"')
+                    if fres < 0:
+                        # This is not a page refresh request
+                        unoff = find(page, '404 - Unknown commit object')
+                        if unoff > 0:
+                            # We got this string in a successful page load, gitweb is apparently broken sometimes
+                            repolist = repolist + ' ' + name + ': ' + '--' + '|'
+                        else:
+                            gotit = True
+                    else:
+                        # we got a request to reload the page
+                        if 'verbose' in self.cfg:
+                            print 'retry . . .'
+                        retries = retries + 1
+                        if retries > maxretries:
+                            repolist = repolist + ' ' + name + ': ' + '-- (too many reloads)' + '|'
+                            gotit = True
+        
+                repolist = repolist + ' ' + name + ': ' + 'Yes' + ' |'
+
+                if patchinfo is None:
+                    if 'full' in self.cfg:
+                        patchinfo = page
+                    else:
+                        patchinfo = page.split('\n\n')[0]
+
+            except urllib2.URLError, e:
+                if 'verbose' in self.cfg:
+                    print '----> ' + str(e.code)
+                if e.code == 404:
+                    repolist = repolist + ' ' + name + ': ' + '--' + '|'
+                elif e.code == 500:
+                    repolist = repolist + ' ' + name + ': ' + '-- (server error)' + '|'
+                    #results =  name + ': 404'
+            across = across + 1
+            if across == maxacross:
+                across = 0
+                repolist = repolist + '\n'
+
+        if not patchinfo:
+            print 'No commit found'
+        else:
+            print patchinfo,
+            print repolist
+
+        #irc.reply(results)
+
+        #add = wrap(add, ['something', 'text'])
+        # Search for a sha1 
+        return
+
+if __name__ == '__main__':
+    app = Sha1search()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
