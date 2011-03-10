@@ -37,7 +37,7 @@
 #include <ctrlEnv/mvCtrlEnvRegs.h>
 #include "common.h"
 
-unsigned int lcd0_enable = 1;
+unsigned int lcd0_enable;
 module_param(lcd0_enable, uint, 0);
 MODULE_PARM_DESC(lcd0_enable, "set to 1 to enable LCD0 output.");
 unsigned int lcd1_enable = 1;
