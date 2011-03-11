@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (2.6.38.1204.4) natty; urgency=low
+
+  * First 2.6.38 based upload.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 11 Mar 2011 02:01:09 -0700
+
 linux-meta-ti-omap4 (2.6.35.1101.3) natty; urgency=low
 
   [ Bryan Wu ]
