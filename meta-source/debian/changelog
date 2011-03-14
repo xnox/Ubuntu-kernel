@@ -1,8 +1,8 @@
-linux-meta (2.6.32.31.37) UNRELEASED; urgency=low
+linux-meta (2.6.32.31.37) lucid-proposed; urgency=low
 
   * Bump ABI
 
- -- Tim Gardner <tim.gardner@canonical.com>  Fri, 04 Mar 2011 10:37:49 -0700
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 14 Mar 2011 11:59:50 -0700
 
 linux-meta (2.6.32.30.36) lucid-proposed; urgency=low
 
