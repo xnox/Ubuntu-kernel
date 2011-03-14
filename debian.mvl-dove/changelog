@@ -1,3 +1,22 @@
+linux-mvl-dove (2.6.32-215.32) lucid; urgency=low
+
+  [ Tim Gardner ]
+
+  * Tracking Bug
+    -LP: #712610
+
+  [Paolo Pisati]
+
+  * UBUNTU: SAUCE: Clear new_profile in error path
+    Fixes kernel oops.
+    -LP: #732700
+
+  * Revert "dove: enable lcd0 by default"
+    Fixes screen corruption regression.
+    -LP: #732721
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Mon, 14 Mar 2011 11:29:35 -0600
+
 linux-mvl-dove (2.6.32-215.31) lucid; urgency=low
 
   [ Tim Gardner ]
