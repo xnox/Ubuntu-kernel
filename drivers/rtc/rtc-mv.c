@@ -112,7 +112,7 @@ static int mv_rtc_read_alarm(struct device *dev, struct rtc_wkalrm *alm)
 
 	day = rtc_date & 0x3f;
 	month = (rtc_date >> RTC_MONTH_OFFS) & 0x3f;
-	year = (rtc_date >> RTC_YEAR_OFFS) & 0xff;
+	year = (rtc_date >> RTC_YEAR_OFFS) & 0x7f;
 
 	alm->time.tm_sec = bcd2bin(second);
 	alm->time.tm_min = bcd2bin(minute);
