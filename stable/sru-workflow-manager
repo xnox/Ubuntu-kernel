@@ -1,0 +1,223 @@
+#!/usr/bin/env python
+#
+# shank is the "stable bot" or "stab-bot".
+#
+
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+from ktl.utils                          import stdo, error
+from ktl.std_app                        import StdApp
+from lpltk.service                      import LaunchpadService
+from datetime                           import datetime
+from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_release_map
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("        --staging                                                                            \n")
+        stdo("                         Use the staging LP service instead of the production one.           \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+                elif (opt == '--staging'):
+                    self.cfg['staging'] = True
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        return
+
+
+# Shank
+#
+class Shank(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+
+        state_map = {
+            # Task, Current State, Action
+            'certification-testing' : {'state':'New', 'action':None},
+            'upload-to-ppa'         : {'state':'New', 'action':None},
+            'promote-to-proposed'   : {'state':'New', 'action':None},
+            'promote-to-updates'    : {'state':'New', 'action':None},
+            'promote-to-security'   : {'state':'New', 'action':None},
+            'regression-testing'    : {'state':'New', 'action':None},
+            'security-signoff'      : {'state':'New', 'action':None},
+            'verification-testing'  : {'state':'New', 'action':None},
+        }
+
+    # initialize
+    #
+    def initialize(self):
+        if 'staging' in self.cfg:
+            self.defaults['launchpad_services_root'] = 'staging'
+        self.lp = LaunchpadService(self.defaults)
+
+        # The service.distributions property is a collection of distributions. We
+        # pretty much only care about one, 'ubuntu'.
+        #
+        self.distro = self.lp.distributions['ubuntu']
+
+        return
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.initialize()
+
+            # All source projects the kernel team are interesed in.
+            #
+            interested_source_packages = []
+            for release in ubuntu_release_map:
+                for package_name in ubuntu_release_map[release]['packages']:
+                    if package_name not in interested_source_packages:
+                        interested_source_packages.append(package_name)
+
+            #interested_source_packages = ['kernel-sru-workflow']
+            for package_name in interested_source_packages:
+                self.verbose('%s\n' % package_name)
+
+                # Within a distribution are many source packages. We actually care about
+                # several, but _mostly_ the 'linux' source package.
+                #
+                source_package = self.distro.get_source_package(package_name)
+                print repr(source_package)
+                if source_package == None:
+                    error("The source package does not exist.")
+                    raise
+
+                # Searching for bug tasks, the search can be quite complicated and made up
+                # of several components. The following can be combined in many ways to get
+                # the search you want. The search happens on the server and returns a
+                # collection of bug tasks that match the search criteria.
+                #
+                # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
+                #                          status=self.cfg['task_search_status'], modified_since=search_since)
+                #
+                search_tags            = [   # A list of the tags we care about
+                        'kernel-release-tracking-bug'
+                    ]
+                search_tags_combinator = "All"
+                search_status          = ["New","Invalid","Fix Committed"] # A list of the bug statuses that we care about
+                search_since           = datetime(year=2011, month=1, day=1)
+                tasks = source_package.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
+
+                for task in tasks:
+                    bug = task.bug
+                    self.verbose("    %s\n" % (bug.id))
+
+                    for t in bug.tasks:
+                        task       = t.bug_target_name
+                        state      = t.status
+                        importance = t.importance
+                        asignee    = t.owner.display_name
+
+                        self.verbose("%25s  %15s  %10s  %s\n" % (task, state, importance, asignee))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        return
+
+if __name__ == '__main__':
+    app = Shank()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
