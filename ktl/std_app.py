@@ -69,4 +69,8 @@ class StdApp:
             if system in self.cfg['debug']:
                 stdo("dbg: %s" % (msg))
 
+    def verbose(self, msg):
+        if 'verbose' in self.cfg and self.cfg['verbose']:
+            stdo(msg)
+
 # vi:set ts=4 sw=4 expandtab:
