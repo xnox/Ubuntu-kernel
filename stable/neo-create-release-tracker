@@ -1,0 +1,260 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+from ktl.utils                          import stdo, eout
+from ktl.std_app                        import StdApp
+from ktl.git                            import Git, GitError
+from ktl.debian                         import Debian, DebianError
+from ktl.kernel                         import Kernel, KernelError, map_kernel_version_to_ubuntu_release
+from lpltk.service                      import LaunchpadService, LaunchpadServiceError
+from lazr.restfulclient.errors          import HTTPError
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [options]                                                                         \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --staging        Use the staging LP server to create the bug. This is just for       \n")
+        stdo("                         testing and will go away when the database is reset.                \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --staging                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'staging']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--staging'):
+                    self.cfg['staging'] = True
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        return
+
+
+# AppError
+#
+# A general exception that can be raised when an error is encountered in the app.
+#
+class AppError(Exception):
+    # __init__
+    #
+    def __init__(self, error=''):
+        self.msg = error
+
+# CreateTrackingBug
+#
+class CreateTrackingBug(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+
+    # initialize
+    #
+    def initialize(self):
+        if 'staging' in self.cfg:
+            self.defaults['launchpad_services_root'] = 'staging'
+        try:
+            self.lp = LaunchpadService(self.defaults)
+        except LaunchpadServiceError, e:
+            print(e.msg)
+            raise
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+            self.initialize()
+
+            # Check: Are we currently in a git repository?
+            #
+            if not Git.is_repo():
+                raise AppError('This script can only be run from within a git repository.')
+            branch = Git.current_branch()
+
+            changelog = Debian.changelog()
+
+            #-------------------------------------------------------------------------------------
+            # B U G   W O R K
+
+            # Title: <release>: <version> -proposed tracker
+            title = "%s: %s -proposed tracker" % (changelog[0]['package'], changelog[0]['version'])
+
+            # Description:
+            #    This bug is for tracking the <version> upload package. This bug will
+            #    contain status and testing results related to that upload.
+            #
+            description  = "This bug is for tracking the %s upload package. This bug will contain status and testing results releated to that upload." % (changelog[0]['version'])
+            description += "\n\n"
+            description += "For an explanation of the tasks and the associated workflow see: https://wiki.ubuntu.com/Kernel/kernel-sru-workflow"
+
+            package = changelog[0]['package']
+            bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
+
+            id = bug.id
+            if 'staging' in self.cfg:
+                print("https://bugs.staging.launchpad.net/bugs/%s" % (id))
+            else:
+                print("https://bugs.launchpad.net/bugs/%s" % (id))
+
+
+            # Tags:
+            #    kernel-tracking-bug
+            #
+            bug.tags.append('kernel-release-tracking-bug')
+            name = bug.owner.display_name
+
+            # Get the one task and modify the status and importance.
+            #
+            for task in bug.tasks:
+                task.status = "In Progress"
+                task.importance = "Medium"
+                break
+
+            # Teams / individuals to be automatically subscribed to the tracking bugs
+            #   Hardware Certification Team     "hardware-certification"
+            #   SRU Verification                "sru-verification"
+            #   Ubuntu Stable Release           "ubuntu-sru"
+            #
+            teams = ["sru-verification", "ubuntu-sru", "hardware-certification"]
+            for team in teams:
+                lp_team = self.lp.launchpad.people[team]
+                bug.lpbug.subscribe(person=lp_team)
+
+            # For the given version, figure out the series and nominate that series.
+            #
+            lp = self.lp.launchpad
+            ubuntu = lp.distributions["ubuntu"]
+            sc = ubuntu.series_collection
+            for s in sc:
+                if s.name == changelog[0]['release']:
+                    nomination = bug.lpbug.addNomination(target=s)
+                    if nomination.canApprove():
+                        nomination.approve()
+
+            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # Add a task for kernel-sru-workflow and then nominate all the series that belong
+            # to that project.
+            #
+            lp = self.lp.launchpad
+            ubuntu = lp.distributions["ubuntu"]
+            project = 'kernel-sru-workflow'
+            proj = lp.projects[project]
+            bug.lpbug.addTask(target=proj)
+
+            sc = proj.series_collection
+            for s in sc:
+                if s.active and s.name not in ['trunk', 'latest']:
+                    nomination = bug.lpbug.addNomination(target=s)
+                    if nomination.canApprove():
+                        nomination.approve()
+
+            #-------------------------------------------------------------------------------------
+            # C H A N G E L O G   W O R K
+
+            # Pull the entire changelog file into a list
+            #
+            changelog, changelog_path = Debian.raw_changelog()
+            with open(changelog_path, 'r') as f:
+                thelog = f.readlines()
+
+            with open(changelog_path, 'w') as f:
+                f.write(thelog[0])
+                f.write(thelog[1])
+                f.write("  [ %s ]\n" % (name))
+                f.write("\n")
+                f.write("  * Release Tracking Bug\n")
+                f.write("    - LP: #%s\n" % (id))
+                f.write("\n")
+                for line in thelog[2:]:
+                    f.write(line)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle ommand line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        except GitError as e:
+            eout(e.msg[0])
+
+        except DebianError as e:
+            eout(e.msg)
+
+        except KernelError as e:
+            eout(e.msg)
+
+        return
+
+if __name__ == '__main__':
+    app = CreateTrackingBug()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
