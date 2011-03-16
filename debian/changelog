@@ -1,3 +1,11 @@
+linux-backports-modules-2.6.24 (2.6.24-29.38) hardy-proposed; urgency=low
+
+  [Brad Figg]
+
+  * Bump ABI to -29
+
+ -- Brad Figg <brad.figg@canonical.com>  Wed, 16 Mar 2011 11:35:41 -0700
+
 linux-backports-modules-2.6.24 (2.6.24-28.37) hardy-security; urgency=low
 
   [Stefan Bader]
