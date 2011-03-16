@@ -1,3 +1,11 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-29.48) hardy-proposed; urgency=low
+
+  [Brad Figg]
+
+  * Bump ABI to -29
+
+ -- Brad Figg <brad.figg@canonical.com>  Wed, 16 Mar 2011 08:12:08 -0700
+
 linux-ubuntu-modules-2.6.24 (2.6.24-28.47) hardy-security; urgency=low
 
   * No change rebuild to debug lpia FTBS
