@@ -1,10 +1,10 @@
-linux-restricted-modules-2.6.24 (2.6.24.18-29.8) hardy-proposed; urgency=low
+linux-restricted-modules-2.6.24 (2.6.24.18-29.9) hardy-proposed; urgency=low
 
-  [Stefan Bader]
+  [Brad Figg]
 
   * Bump ABI to -29
 
- -- Brad Figg <brad.figg@canonical.com>  Wed, 16 Mar 2011 11:41:15 -0700
+ -- Brad Figg <brad.figg@canonical.com>  Thu, 17 Mar 2011 10:18:13 -0700
 
 linux-restricted-modules-2.6.24 (2.6.24.18-28.7) hardy-proposed; urgency=low
 
