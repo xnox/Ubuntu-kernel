@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.32.415.5) maverick; urgency=low
+
+  * linux-mvl-dove 2.6.32-415.32
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 17 Mar 2011 11:06:59 -0600
+
 linux-meta-mvl-dove (2.6.32.414.4) maverick; urgency=low
 
   * linux-mvl-dove 2.6.32-414.30
