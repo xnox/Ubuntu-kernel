@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.32.215.17) lucid; urgency=low
+
+  * No change rebuild. Launchpad hates me.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 17 Mar 2011 10:54:21 -0600
+
 linux-meta-mvl-dove (2.6.32.215.16) lucid; urgency=low
 
   * Bump linux-mvl-dove ABI to 215 for proposed upload
