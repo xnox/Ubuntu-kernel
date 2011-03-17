@@ -34,6 +34,8 @@ parser.add_option("--continue", action="store_true", default=False,
     dest="continue_rebase", help="continue a disrupted rebase")
 parser.add_option("--debug", action="store_true", default=False,
     dest="debug", help="print loads of verbose messages that might give a clue as to what's going on")
+parser.add_option("--skip", action="store_true", default=False,
+    dest="skip_rebase", help="continue a disrupted rebase skipping next commit")
 
 (opts, args) = parser.parse_args()
 
@@ -142,7 +144,7 @@ if GetPackageInfo(branch)[2] != "UNRELEASED":
 #------------------------------------------------------------------------------
 # Working tree must be clean
 #------------------------------------------------------------------------------
-if opts.continue_rebase == False:
+if opts.continue_rebase == False and opts.skip_rebase == False:
     print "Checking working tree ...",
     if GitListFiles(opts="--others --modified") != []:
         print "NOT CLEAN!"
@@ -169,11 +171,14 @@ if opts.continue_rebase == False:
 # the version number of it. Then rebase the temporary branch on top of the
 # target release.
 #------------------------------------------------------------------------------
-if opts.continue_rebase == False:
+if opts.continue_rebase == False and opts.skip_rebase == False:
     print "Rebasing from", BaseVersion, "to", TargetVersion
     cmd = "git rebase --onto Ubuntu-{0} {1}".format(TargetVersion, MergeBase)
 else:
-    cmd = "git rebase --continue"
+    if opts.continue_rebase == True:
+        cmd = "git rebase --continue"
+    else:
+        cmd = "git rebase --skip"
 p = Popen(cmd, shell=True)
 status = os.waitpid(p.pid, 0)[1]
 if status > 0:
