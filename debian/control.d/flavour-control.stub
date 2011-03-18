@@ -73,7 +73,7 @@ Description: compat-wireless Linux modules for version PKGVER on DESC
  kernel PKGVER on DESC.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-compat-wireless-2.6.37-POCKET-FLAVOUR meta-package, which will ensure
+ the linux-backports-modules-compat-wireless-2.6.38-POCKET-FLAVOUR meta-package, which will ensure
  that upgrades work correctly, and that supporting packages are also installed.
 
 Package: linux-headers-lbm-PKGVER-ABINUM-FLAVOUR

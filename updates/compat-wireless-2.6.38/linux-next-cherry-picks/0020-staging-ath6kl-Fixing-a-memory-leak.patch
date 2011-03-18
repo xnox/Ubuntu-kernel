@@ -1,0 +1,25 @@
+From 1581595dd918481e2df9927e08c71c5635b9af1e Mon Sep 17 00:00:00 2001
+From: Vipin Mehta <vmehta@atheros.com>
+Date: Fri, 18 Feb 2011 13:13:10 -0800
+Subject: [PATCH] staging: ath6kl: Fixing a memory leak
+
+Fix for a memory leak discovered during suspend/resume testing.
+
+Signed-off-by: Vipin Mehta <vmehta@atheros.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/ath6kl/os/linux/ar6000_drv.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+--- a/drivers/staging/ath6kl/os/linux/ar6000_drv.c
++++ b/drivers/staging/ath6kl/os/linux/ar6000_drv.c
+@@ -2072,6 +2072,9 @@ ar6000_stop_endpoint(struct net_device *
+     }
+        /* Done with cookies */
+     ar6000_cookie_cleanup(ar);
++
++    /* cleanup any allocated AMSDU buffers */
++    ar6000_cleanup_amsdu_rxbufs(ar);
+ }
+ /*
+  * We need to differentiate between the surprise and planned removal of the

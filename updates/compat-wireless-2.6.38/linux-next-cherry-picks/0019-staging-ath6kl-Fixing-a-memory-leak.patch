@@ -1,0 +1,56 @@
+From 774c1fe2fe9f14c657deb63705ef044f7af9a6cb Mon Sep 17 00:00:00 2001
+From: Vipin Mehta <vmehta@atheros.com>
+Date: Fri, 18 Feb 2011 13:13:09 -0800
+Subject: [PATCH] staging: ath6kl: Fixing a memory leak
+
+Virtual Scatter Gather Lists not getting freed during the HTCStop(). The
+patch adds some clean up code in the code path.
+
+Signed-off-by: Vipin Mehta <vmehta@atheros.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/staging/ath6kl/htc2/AR6000/ar6k.c |    9 +++++++++
+ drivers/staging/ath6kl/htc2/AR6000/ar6k.h |    2 ++
+ drivers/staging/ath6kl/htc2/htc.c         |    2 ++
+ 3 files changed, 13 insertions(+), 0 deletions(-)
+
+--- a/drivers/staging/ath6kl/htc2/AR6000/ar6k.c
++++ b/drivers/staging/ath6kl/htc2/AR6000/ar6k.c
+@@ -810,6 +810,15 @@ static A_STATUS DevSetupVirtualScatterSu
+     return status;
+ }
+ 
++int DevCleanupMsgBundling(AR6K_DEVICE *pDev)
++{
++    if(NULL != pDev)
++    {
++        DevCleanupVirtualScatterSupport(pDev);
++    }
++
++    return 0;
++}
+ 
+ A_STATUS DevSetupMsgBundling(AR6K_DEVICE *pDev, int MaxMsgsPerTransfer)
+ {
+--- a/drivers/staging/ath6kl/htc2/AR6000/ar6k.h
++++ b/drivers/staging/ath6kl/htc2/AR6000/ar6k.h
+@@ -293,6 +293,8 @@ static INLINE A_STATUS DEV_PREPARE_SCATT
+         
+     
+ A_STATUS DevSetupMsgBundling(AR6K_DEVICE *pDev, int MaxMsgsPerTransfer);
++
++int DevCleanupMsgBundling(AR6K_DEVICE *pDev);
+                                   
+ #define DEV_GET_MAX_MSG_PER_BUNDLE(pDev)        (pDev)->HifScatterInfo.MaxScatterEntries
+ #define DEV_GET_MAX_BUNDLE_LENGTH(pDev)         (pDev)->HifScatterInfo.MaxTransferSizePerScatterReq
+--- a/drivers/staging/ath6kl/htc2/htc.c
++++ b/drivers/staging/ath6kl/htc2/htc.c
+@@ -486,6 +486,8 @@ void HTCStop(HTC_HANDLE HTCHandle)
+         /* flush all recv buffers */
+     HTCFlushRecvBuffers(target);
+ 
++    DevCleanupMsgBundling(&target->Device);
++
+     ResetEndpointStates(target);
+    
+     AR_DEBUG_PRINTF(ATH_DEBUG_TRC, ("-HTCStop \n"));
