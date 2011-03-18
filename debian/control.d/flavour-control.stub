@@ -8,38 +8,38 @@
 #
 # XXX: Leave the blank line before the first package!!
 
-Package: linux-backports-modules-compat-wireless-2.6.36-PKGVER-ABINUM-FLAVOUR
-Architecture: ARCH
-Section: SECTION_IMAGE
-Priority: optional
-Provides: =PROVIDES=
-Conflicts: linux-backports-modules-compat-wireless-2.6.37-PKGVER-ABINUM-FLAVOUR
-Depends: linux-image-PKGVER-ABINUM-FLAVOUR
-Pre-Depends: dpkg (>= 1.10.24)
-Description: compat-wireless Linux modules for version PKGVER on DESC
- This package contains compat-wireless modules supplied by Ubuntu for Linux
- kernel PKGVER on DESC.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-compat-wireless-2.6.36-FLAVOUR meta-package, which will ensure
- that upgrades work correctly, and that supporting packages are also installed.
-
-Package: linux-backports-modules-compat-wireless-2.6.37-PKGVER-ABINUM-FLAVOUR
-Architecture: ARCH
-Section: SECTION_IMAGE
-Priority: optional
-Provides: =PROVIDES=
-Conflicts: linux-backports-modules-compat-wireless-2.6.36-PKGVER-ABINUM-FLAVOUR
-Depends: linux-image-PKGVER-ABINUM-FLAVOUR
-Pre-Depends: dpkg (>= 1.10.24)
-Description: compat-wireless Linux modules for version PKGVER on DESC
- This package contains compat-wireless modules supplied by Ubuntu for Linux
- kernel PKGVER on DESC.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-compat-wireless-2.6.37-FLAVOUR meta-package, which will ensure
- that upgrades work correctly, and that supporting packages are also installed.
-
+#Package: linux-backports-modules-compat-wireless-2.6.36-PKGVER-ABINUM-FLAVOUR
+#Architecture: ARCH
+#Section: SECTION_IMAGE
+#Priority: optional
+#Provides: =PROVIDES=
+#Conflicts: linux-backports-modules-compat-wireless-2.6.37-PKGVER-ABINUM-FLAVOUR
+#Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+#Pre-Depends: dpkg (>= 1.10.24)
+#Description: compat-wireless Linux modules for version PKGVER on DESC
+# This package contains compat-wireless modules supplied by Ubuntu for Linux
+# kernel PKGVER on DESC.
+# .
+# You likely do not want to install this package directly. Instead, install
+# the linux-backports-modules-compat-wireless-2.6.36-FLAVOUR meta-package, which will ensure
+# that upgrades work correctly, and that supporting packages are also installed.
+#
+#Package: linux-backports-modules-compat-wireless-2.6.37-PKGVER-ABINUM-FLAVOUR
+#Architecture: ARCH
+#Section: SECTION_IMAGE
+#Priority: optional
+#Provides: =PROVIDES=
+#Conflicts: linux-backports-modules-compat-wireless-2.6.36-PKGVER-ABINUM-FLAVOUR
+#Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+#Pre-Depends: dpkg (>= 1.10.24)
+#Description: compat-wireless Linux modules for version PKGVER on DESC
+# This package contains compat-wireless modules supplied by Ubuntu for Linux
+# kernel PKGVER on DESC.
+# .
+# You likely do not want to install this package directly. Instead, install
+# the linux-backports-modules-compat-wireless-2.6.37-FLAVOUR meta-package, which will ensure
+# that upgrades work correctly, and that supporting packages are also installed.
+ 
 Package: linux-headers-lbm-PKGVER-ABINUM-FLAVOUR
 Architecture: ARCH
 Section: SECTION_HEADERS
@@ -66,47 +66,47 @@ Description: Header files related to linux-backports-modules version PKGVER
 # the linux-backports-modules-alsa-FLAVOUR meta-package, which will ensure that upgrades work
 # correctly, and that supporting packages are also installed.
 #
-Package: linux-backports-modules-net-PKGVER-ABINUM-FLAVOUR
-Architecture: ARCH
-Section: SECTION_IMAGE
-Priority: optional
-Provides: =PROVIDES=
-Depends: linux-image-PKGVER-ABINUM-FLAVOUR
-Pre-Depends: dpkg (>= 1.10.24)
-Description: Linux ethernet modules for version PKGVER on DESC
- This package contains ethernet modules supplied by Ubuntu for Linux
- kernel PKGVER on DESC.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-net-FLAVOUR meta-package, which will ensure
- that upgrades work correctly, and that supporting packages are also installed.
+#Package: linux-backports-modules-net-PKGVER-ABINUM-FLAVOUR
+#Architecture: ARCH
+#Section: SECTION_IMAGE
+#Priority: optional
+#Provides: =PROVIDES=
+#Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+#Pre-Depends: dpkg (>= 1.10.24)
+#Description: Linux ethernet modules for version PKGVER on DESC
+# This package contains ethernet modules supplied by Ubuntu for Linux
+# kernel PKGVER on DESC.
+# .
+# You likely do not want to install this package directly. Instead, install
+# the linux-backports-modules-net-FLAVOUR meta-package, which will ensure
+# that upgrades work correctly, and that supporting packages are also installed.
 
-Package: linux-backports-modules-input-PKGVER-ABINUM-FLAVOUR
-Architecture: ARCH
-Section: SECTION_IMAGE
-Priority: optional
-Provides: =PROVIDES=
-Depends: linux-image-PKGVER-ABINUM-FLAVOUR
-Pre-Depends: dpkg (>= 1.10.24)
-Description: Linux input modules for version PKGVER on DESC
- This package contains input modules supplied by Ubuntu for Linux
- kernel PKGVER on DESC.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-input-FLAVOUR meta-package, which will ensure
- that upgrades work correctly, and that supporting packages are also installed.
+#Package: linux-backports-modules-input-PKGVER-ABINUM-FLAVOUR
+#Architecture: ARCH
+#Section: SECTION_IMAGE
+#Priority: optional
+#Provides: =PROVIDES=
+#Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+#Pre-Depends: dpkg (>= 1.10.24)
+#Description: Linux input modules for version PKGVER on DESC
+# This package contains input modules supplied by Ubuntu for Linux
+# kernel PKGVER on DESC.
+# .
+# You likely do not want to install this package directly. Instead, install
+# the linux-backports-modules-input-FLAVOUR meta-package, which will ensure
+# that upgrades work correctly, and that supporting packages are also installed.
 
-Package: linux-backports-modules-media-PKGVER-ABINUM-FLAVOUR
-Architecture: ARCH
-Section: SECTION_IMAGE
-Priority: optional
-Provides: =PROVIDES=
-Depends: linux-image-PKGVER-ABINUM-FLAVOUR
-Pre-Depends: dpkg (>= 1.10.24)
-Description: Linux media modules for version PKGVER on DESC
- This package contains media modules supplied by Ubuntu for Linux
- kernel PKGVER on DESC.
- .
- You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-media-FLAVOUR meta-package, which will ensure
- that upgrades work correctly, and that supporting packages are also installed.
+#Package: linux-backports-modules-media-PKGVER-ABINUM-FLAVOUR
+#Architecture: ARCH
+#Section: SECTION_IMAGE
+#Priority: optional
+#Provides: =PROVIDES=
+#Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+#Pre-Depends: dpkg (>= 1.10.24)
+#Description: Linux media modules for version PKGVER on DESC
+# This package contains media modules supplied by Ubuntu for Linux
+# kernel PKGVER on DESC.
+# .
+# You likely do not want to install this package directly. Instead, install
+# the linux-backports-modules-media-FLAVOUR meta-package, which will ensure
+# that upgrades work correctly, and that supporting packages are also installed.
