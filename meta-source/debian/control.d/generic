@@ -74,6 +74,13 @@ Description: Backported wireless drivers for generic kernel image.
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
+Package: linux-backports-modules-compat-wireless-2.6.38-RELEASE_NAME-generic
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-2.6.38-${kernel-abi-version}-generic
+Description: Backported wireless drivers for generic kernel image.
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
+
 Package: linux-backports-modules-media-RELEASE_NAME-generic
 Architecture: amd64 i386
 Depends: ${misc:Depends}, linux-backports-modules-media-${kernel-abi-version}-generic
