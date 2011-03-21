@@ -33,7 +33,7 @@ while [ "$1" != "" ]; do
 	shift
 
 	PREFIX="$SYSNAME"
-	cat <<-EOD | ssh $HOST
+	cat <<-EOD | ssh $HOST sh
 	if [ -d $BASEDIR ]; then
 		cd $BASEDIR
 		if [ -x ./run-status ]; then
