@@ -151,14 +151,14 @@ get_chroot $RELEASE $ARCH
 echo CHROOT $CHROOT
 pushd $RDIR
 
-if [ ! -f debian/control ]
+if [ ! -f debian/control ] || [ ! -z "$CLEAN" ]
 then
 	echo "fakeroot debian/rules clean arch=$ARCH" | $CHROOT --directory=`pwd`
 fi
 
 CL="`cat /proc/cpuinfo |grep "^processor"|wc -l`"
 
-if ! echo "CONCURRENCY_LEVEL=$CL dpkg-buildpackage -B -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
+if ! echo "CONCURRENCY_LEVEL=$CL fakeroot dpkg-buildpackage -B -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
 then
 	echo $RELEASE $ARCH $BRANCH failed.
 	exit 1
