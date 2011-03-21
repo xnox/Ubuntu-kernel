@@ -5,7 +5,7 @@ from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
 import json
-from ktl.utils                          import stdo
+from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 
@@ -33,7 +33,7 @@ class Cmdline:
     # error
     #
     def error(self, e, defaults):
-        if e != '': print e
+        if e != '': error(e)
         self.usage(defaults)
 
     # usage
@@ -52,7 +52,7 @@ class Cmdline:
         stdo("                                                                                             \n")
         stdo("                                                                                             \n")
         stdo(" Usage:                                                                                      \n")
-        stdo("     %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>] <srus.json>                \n" % self.cfg['app_name'])
+        stdo("     %s <options> <srus.json>                                                                \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
         stdo(" Options:                                                                                    \n")
         stdo("     --help           Prints this text.                                                      \n")
@@ -60,24 +60,31 @@ class Cmdline:
         stdo("     --verbose        Give some feedback of what is happening while the script is            \n")
         stdo("                      running.                                                               \n")
         stdo("                                                                                             \n")
-        stdo("     --config=<cfg file>                                                                     \n")
-        stdo("                      The full path to the configuration file to use instead of              \n")
-        stdo("                      the default location.                                                  \n")
-        stdo("                                                                                             \n")
-        stdo("     --debug=<debug options>                                                                 \n")
-        stdo("                      Performs additional output related to the option enabled and           \n")
-        stdo("                      the application defined support for the option.                        \n")
-        stdo("                                                                                             \n")
-        stdo("     --release=<rls>  Specifies for which release the version is to be returned.             \n")
+        #stdo("     --config=<cfg file>                                                                     \n")
+        #stdo("                      The full path to the configuration file to use instead of              \n")
+        #stdo("                      the default location.                                                  \n")
+        #stdo("                                                                                             \n")
+        #stdo("     --debug=<debug options>                                                                 \n")
+        #stdo("                      Performs additional output related to the option enabled and           \n")
+        #stdo("                      the application defined support for the option.                        \n")
+        #stdo("                                                                                             \n")
+        stdo("     --series=<rls>   Specifies for which series the version is to be returned.              \n")
         stdo("                      At this time, dapper, hardy, karmic, lucid and maverick are            \n")
-        stdo("                      valid releases.                                                        \n")
+        stdo("                      valid series.                                                          \n")
         stdo("                                                                                             \n")
         stdo("     --package=<pkg>  Specifies for which package the version is to be returned.             \n")
         stdo("                      Most likely a value of linux or linux-meta.                            \n")
         stdo("                                                                                             \n")
+        stdo("     --comment=<file>                                                                        \n")
+        stdo("                      Text is read from the indicated file and added to each bug as a        \n")
+        stdo("                      new comment.                                                           \n")
+        stdo("                                                                                             \n")
+        stdo("     --dryrun                                                                                \n")
+        stdo("                      Don't commit the changes to the bug.                                   \n")
+        stdo("                                                                                             \n")
         stdo(" Examples:                                                                                   \n")
         stdo("     %s --verbose                                                                            \n" % self.cfg['app_name'])
-        stdo("     %s --verbose                                                                            \n" % self.cfg['app_name'])
+        stdo("     %s --series=hardy --package=linux                                                       \n" % self.cfg['app_name'])
 
     # process
     #
@@ -91,7 +98,8 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'release=', 'package=', 'comment=', 'status=']
+            #optsLong  = ['help', 'verbose', 'config=', 'debug=', 'series=', 'package=', 'comment=', 'status=']
+            optsLong  = ['help', 'verbose', 'series=', 'package=', 'comment=', 'status=', 'dryrun']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -101,14 +109,17 @@ class Cmdline:
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
 
-                elif opt in ('--config'):
-                    self.cfg['configuration_file'] = val
+                elif (opt == '--dryrun'):
+                    self.cfg['dryrun'] = True
+
+                #elif opt in ('--config'):
+                #    self.cfg['configuration_file'] = val
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
 
-                elif opt in ('--release'):
-                    self.cfg['release'] = val
+                elif opt in ('--series'):
+                    self.cfg['series'] = val
 
                 elif opt in ('--package'):
                     self.cfg['package'] = val
@@ -135,7 +146,7 @@ class Cmdline:
     # verify_options
     #
     def verify_options(self, cfg):
-        if ('release' not in self.cfg) or ('package' not in self.cfg):
+        if ('series' not in self.cfg) or ('package' not in self.cfg):
             raise CmdlineError('--release and --package are required command line parameters.')
 
         if 'sru' not in self.cfg:
@@ -151,6 +162,7 @@ class SpamProposedReleaseBugs(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
+        self.defaults['dryrun'] = False
 
     # initialize
     #
@@ -170,8 +182,21 @@ class SpamProposedReleaseBugs(StdApp):
         return
 
     def print_bug_info(self, bug_id, bug):
-        bug_link = 'https://bugs.launchpad.net/ubuntu/+source/linux/+bug/%s' % bug_id
-        print("%s    %40s    %s" % (bug_id, bug_link, bug.title))
+        bug_link = 'https://bugs.launchpad.net/bugs/%s' % bug_id
+        self.verbose("%s    %40s    %s\n" % (bug_id, bug_link, bug.title))
+
+    # modify_bug_status
+    #
+    # Change the bugs status.
+    #
+    def modify_bug_status(self, bug):
+        tasks = bug.tasks
+        if len(tasks) == 1:
+            self.verbose('        . changing status to: %s'(self.cfg['status']))
+            #task = tasks[0]
+            #tasks[0].status = self.cfg['status']
+        else:
+            print("   ** Warning: This bug contains multiple bug tasks, not able to set the status.")
 
     # main
     #
@@ -183,6 +208,8 @@ class SpamProposedReleaseBugs(StdApp):
 
             self.initialize()
 
+            # Pull in the sru-data.json file for use.
+            #
             if path.exists(self.cfg['sru']):
                 with open(self.cfg['sru'], 'r') as f:
                     sru = json.load(f)
@@ -190,8 +217,9 @@ class SpamProposedReleaseBugs(StdApp):
 
             # Find the bugs in the specified release and package that need spamming.
             #
-            for bug_id in sru['releases'][self.cfg['release']][self.cfg['package']]['bugs']:
+            for bug_id in sru['releases'][self.cfg['series']][self.cfg['package']]['bugs']:
                 bug = self.service.get_bug(bug_id)
+                self.print_bug_info(bug_id, bug)
                 should_be_spammed = False
                 is_tracker_bug    = True
 
@@ -200,14 +228,30 @@ class SpamProposedReleaseBugs(StdApp):
                 #
                 while (True):
                     if 'kernel-cve-tracker' in bug.tags:
+                        self.verbose('    . has kernel-cve-tracker tag\n')
+                        break # This is a bug used to track a CVE patch
+
+                    if 'kernel-cve-tracking-bug' in bug.tags:
+                        self.verbose('    . has kernel-cve-tracking-bug tag\n')
                         break # This is a bug used to track a CVE patch
 
                     if 'kernel-release-tracker' in bug.tags:
+                        self.verbose('    . has kernel-release-tracker tag\n')
+                        break # This is a bug used to track the status of a particular release
+
+                    if 'kernel-release-tracking-bug' in bug.tags:
+                        self.verbose('    . has kernel-release-tracking-bug tag\n')
                         break # This is a bug used to track the status of a particular release
 
                     if 'kernel-tracking-bug' in bug.tags:
+                        self.verbose('    . has kernel-tracking-bug tag\n')
                         break # Old tag that was previously used for this.
 
+                    if 'kernel-stable-tracking-bug' in bug.tags:
+                        self.verbose('    . has kernel-stable-tracking-bug tag\n')
+                        break # Old tag that was previously used for this.
+
+                    self.verbose('    . no tracking tags\n')
                     is_tracker_bug = False
                     break
 
@@ -215,39 +259,51 @@ class SpamProposedReleaseBugs(StdApp):
                 #       it, we don't add them again.
                 #
                 while (not is_tracker_bug):
-                    if 'verification-failed-%s' % self.cfg['release'] in bug.tags:
+                    if 'verification-failed-%s' % self.cfg['series'] in bug.tags:
+                        self.verbose('    . has verification-failed-%s tag\n' % self.cfg['series'])
                         break  # The tag exists
 
-                    if 'verification-needed-%s' % self.cfg['release'] in bug.tags:
+                    if 'verification-needed-%s' % self.cfg['series'] in bug.tags:
+                        self.verbose('    . has verification-needed-%s tag\n' % self.cfg['series'])
                         break  # The tag exists
 
-                    if 'verification-done-%s'   % self.cfg['release'] in bug.tags:
+                    if 'verification-done-%s'   % self.cfg['series'] in bug.tags:
+                        self.verbose('    . has verification-done-%s tag\n' % self.cfg['series'])
                         break  # The tag exists
 
                     # None of the tags that we are checking for exist, lets hook em up.
                     #
+                    self.verbose('    . no verification tags\n')
                     should_be_spammed = True
                     break
 
                 if should_be_spammed:
-                    print("Still a work in progress ... bug Brad to finish this!")
-                    return
+                    self.verbose('    . should be spammed\n')
 
-                    self.print_bug_info(bug_id, bug)
-                    #bug.tags.append('verification-needed-%s' % self.cfg['release'])
-                    bug.add_comment(self.cfg['comment-text'])
-                    #self.add_bug_comment(bug)
-                    #self.modify_bug_status(bug)
-
-                    # Task status
+                    # Tags
                     #
-                    tasks = bug.tasks
-                    if len(tasks) == 1:
-                        print("Setting the status to '%s'." % (self.cfg['status']))
-                        task = tasks[0]
-                        tasks[0].status = self.cfg['status']
-                    else:
-                        print("   ** Warning: This bug contains multiple bug tasks, not able to set the status.")
+                    self.verbose('        . adding tag: verification-needed-%s\n' % (self.cfg['series']))
+                    if not self.cfg['dryrun']:
+                        bug.tags.append('verification-needed-%s' % self.cfg['series'])
+
+                    # Comment
+                    #
+                    if 'comment-text' in self.cfg:
+                        self.verbose('        . adding comment\n')
+                        if not self.cfg['dryrun']:
+                            bug.add_comment(self.cfg['comment-text'])
+
+                    # Status
+                    #
+                    if 'status' in self.cfg:
+                        tasks = bug.tasks
+                        if len(tasks) == 1:
+                            self.verbose('        . changing status to: %s\n'(self.cfg['status']))
+                            task = tasks[0]
+                            if not self.cfg['dryrun']:
+                                tasks[0].status = self.cfg['status']
+                        else:
+                            print("   ** Warning: This bug contains multiple bug tasks, not able to set the status.")
 
         # Handle the user presses <ctrl-C>.
         #
