@@ -156,7 +156,9 @@ then
 	echo "fakeroot debian/rules clean arch=$ARCH" | $CHROOT --directory=`pwd`
 fi
 
-if ! echo "debuild -B -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
+CL="`cat /proc/cpuinfo |grep "^processor"|wc -l`"
+
+if ! echo "CONCURRENCY_LEVEL=$CL dpkg-buildpackage -B -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
 then
 	echo $RELEASE $ARCH $BRANCH failed.
 	exit 1
