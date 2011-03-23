@@ -58,11 +58,17 @@ class Cmdline:
         stdo("                         Performs additional output related to the option enabled and        \n")
         stdo("                         the application defined support for the option.                     \n")
         stdo("                                                                                             \n")
+        stdo("                         debian - Enable debugging in the Debian class which determins       \n")
+        stdo("                                  where the changelog is and parses it.                      \n")
+        stdo("                                                                                             \n")
         stdo("        --verbose                                                                            \n")
         stdo("                         Give more detailed output for each of the checks being performed.   \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s                                                                                   \n" % self.cfg['app_name'])
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s --debug=debian                                                                    \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
 
     # process
     #
@@ -141,6 +147,10 @@ class VerifyReleaseReady(StdApp):
             (self.is_repo, True, 'is valid git repo'),
         ]
 
+        if 'debug' in self.cfg:
+            if 'debian' in self.cfg['debug']:
+                Debian.debug = True
+
     # Are we currently in a git repository?
     #
     def is_repo(self):
@@ -194,17 +204,20 @@ class VerifyReleaseReady(StdApp):
             # Verify the version information in the changelog
             #
             (cl1_version, abi_build) = cl1['version'].split('-')  # Current version line
-            (cl1_abi, cl1_build)     = abi_build.split('.')
+            cl1_abi   = cl1['ABI']
+            cl1_build = cl1['upload-number']
 
             cl2 = changelog[1]
             (cl2_version, abi_build) = cl2['version'].split('-')  # Previous version line
-            (cl2_abi, cl2_build)     = abi_build.split('.')
+            cl2_abi   = cl2['ABI']
+            cl2_build = cl2['upload-number']
             while True:
                 # Version is correct
                 #
                 msg = 'kernel version (%s)' % (Kernel.version())
                 if cl1_version != Kernel.version():
                     self.status(msg, False)
+                    self.verbose("expected '%s' but got: '%s'" % (Kernel.version(), cl1_version))
                     break
                 self.status(msg, True)
 
@@ -213,6 +226,7 @@ class VerifyReleaseReady(StdApp):
                 msg = 'build number (%d)' % (int(cl2_build) + 1)
                 if int(cl1_build) != int(cl2_build) + 1:
                     self.status(msg, False)
+                    self.verbose("expected %d but got: %d" % (int(cl2_build), int(cl1_build)))
                     break
                 self.status(msg, True)
 
@@ -221,6 +235,7 @@ class VerifyReleaseReady(StdApp):
                 msg = 'release (%s)' % (Kernel.release())
                 if cl1['release'] != Kernel.release():
                     self.status(msg, False)
+                    self.verbose("expected '%s' but got: '%s'" % (Kernel.release(), cl1['release']))
                     break
                 self.status(msg, True)
 
@@ -251,30 +266,38 @@ class VerifyReleaseReady(StdApp):
                     if 'Signed-off-by' not in line:
                         commit.append(line)
 
-            expected = 'UBUNTU: %s-%s' % (tag_prefix, cl1['version'])
+            # **NOTE: Because we are inconsistent with the exact text used in the last commit
+            #         I'm loosing up the matching a bit but making sure that what is in the
+            #         last commit matches the tag
+            #
+            m = re.match('^UBUNTU: (Ubuntu[-\S]*-%s-%s.%s)$' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number']), commit[0])
             msg = 'closing release commit'
             if len(commit) != 1:        # There should only be a single line in the commit
                 self.status(msg, False)
                 self.verbose("too many lines of text")
-            elif commit[0] != expected:
+            elif m == None:
                 self.status(msg, False)
+                expected = '^UBUNTU: (Ubuntu[-\S]*-%s-%s.%s)$' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number'])
                 self.verbose("expected '%s', got '%s'" % (expected, commit[0]))
             else:
+                expected = m.group(1) # This should be the tag text
                 self.status(msg, True)
 
             # Check: Make sure the commit corresponds to the tag.
             #
+            # **NOTE: There can be multiple tags associated with the specific commit.
+            #
+            tag_found = False
             msg = 'tag exists on final commit'
-            expected = '%s-%s' % (tag_prefix, cl1['version'])
             tags = Git.tags(contains=log['commits'][0]['sha1'])
-            if len(tags) != 1:          # There should only be a sigle tag associated with
+            for tag in tags:
+                if tag == expected:
+                    self.status(msg, True)
+                    tag_found = True
+                    break
+            if not tag_found:
                 self.status(msg, False) # the specified commit.
-                self.verbose("too many tags associated with the commit")
-            elif tags[0] != expected:
-                self.status(msg, False) # the specified commit.
-                self.verbose("expected '%s', got '%s'" % (expected, tags[0]))
-            else:
-                self.status(msg, True)
+                self.verbose("unable to find any tag that matched (%s) on the last commit " % (expected))
 
             # Look to see if a tracking bug has been added to the changelog
             #
