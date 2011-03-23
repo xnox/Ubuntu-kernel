@@ -101,12 +101,18 @@ class Kernel:
         cls.__fetch_if_needed()
         return cls.__version
 
+    # series
+    #
+    @classmethod
+    def series(cls):
+        cls.__fetch_if_needed()
+        return cls.__release
+
     # release
     #
     @classmethod
     def release(cls):
-        cls.__fetch_if_needed()
-        return cls.__release
+        return cls.series()
 
     # __fetch_if_needed
     #
