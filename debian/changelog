@@ -1,3 +1,12 @@
+linux-backports-modules-2.6.24 (2.6.24-29.39) hardy; urgency=low
+
+  [Upstream Kernel Changes]
+
+  * Correctly regenerate debian/control, etc. The previous upload was
+    still referring to the 28 ABI.
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Wed, 23 Mar 2011 21:38:41 +0000
+
 linux-backports-modules-2.6.24 (2.6.24-29.38) hardy-proposed; urgency=low
 
   [Brad Figg]
