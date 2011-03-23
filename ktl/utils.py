@@ -64,9 +64,11 @@ def error(out):
 #
 # Print strings to standard out preceeded by "debug:".
 #
-def debug(out, dbg=False):
+def debug(out, dbg=False, prefix=True):
     if dbg:
-       stdout.write("debug: %s" % out)
+        if prefix:
+            stdo("debug: ")
+        stdo(out)
 
 # eout
 #
