@@ -134,7 +134,7 @@ class Shank(StdApp):
     #
     def initialize(self):
         if 'staging' in self.cfg:
-            self.defaults['launchpad_services_root'] = 'staging'
+            self.defaults['launchpad_services_root'] = 'qastaging'
         self.lp = LaunchpadService(self.defaults)
 
         # The service.distributions property is a collection of distributions. We

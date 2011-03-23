@@ -5,7 +5,7 @@ from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo
 from ktl.std_app                        import StdApp
-from lpltk.service                      import LaunchpadService
+from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
 #
@@ -71,7 +71,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -86,6 +86,9 @@ class Cmdline:
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
+
+                elif (opt == '--staging'):
+                    self.cfg['staging'] = True
 
             if result: # No errors yet
 
@@ -118,7 +121,13 @@ class BugInfo(StdApp):
     # initialize
     #
     def initialize(self):
-        self.lp = LaunchpadService(self.defaults)
+        if 'staging' in self.cfg:
+            self.defaults['launchpad_services_root'] = 'qastaging'
+        try:
+            self.lp = LaunchpadService(self.defaults)
+        except LaunchpadServiceError, e:
+            print(e.msg)
+            raise
 
         # The service.distributions property is a collection of distributions. We
         # pretty much only care about one, 'ubuntu'.
