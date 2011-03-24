@@ -1,5 +1,5 @@
 body {
-       background: #1b1b1b;
+       background: #000000;
             color: #ddd;
       font-family: 'Cantarell', serif;
         font-size: 12px;
@@ -32,7 +32,7 @@ a:hover
 }
 
 #header {
-       background: none repeat scroll 0 0 #0a0a0a;
+       background: none repeat scroll 0 0 #1a1a1a;
     border-bottom: 1px solid #242424;
           padding: 0 0 10px 0;
      /*

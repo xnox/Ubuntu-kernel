@@ -127,7 +127,7 @@ class SruReport:
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>Kernel SRU Report</title>
+        <title>Kernel Packages Versions</title>
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
         <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
@@ -165,7 +165,7 @@ class SruReport:
                 retval += '                        <tr><th>Package</th><th align="left">PPA</th><th align="left">Release</th><th align="left">Updates</th><th align="left">Proposed</th><th align="left">&nbsp;</th></tr>\n'
                 for pkg in pkg_keys:
                     if odd_row:
-                        row_color = '222200'
+                        row_color = '1b1b1b'
                         odd_row   = False
                     else:
                         row_color = '000000'

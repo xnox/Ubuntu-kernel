@@ -165,23 +165,27 @@ class SruReport:
                 retval += "                        <tr><th>Package</th><th>-release</th><th>-updates</th><th>-proposed</th><th>&nbsp;</th><th>days</th></tr>\n"
                 retval += "                        -->\n"
                 for pkg in pkg_keys:
-                    lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (rls, pkg)
+                    if 'Proposed' not in self.data['releases'][rls][pkg]: continue
+
+                    #lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (rls, pkg)
+                    lpurl = 'https://launchpad.net/ubuntu/+source/%s/' % (pkg)
                     ppaurl = 'https://launchpad.net/~canonical-kernel-team/+archive/ppa/+packages'
                     retval += '                        <tr>\n'
                     retval += '                            <td width="400" valign="top"><a href="%s"        >%s  </a></td>\n' % (lpurl, pkg)
-                    if self.data['releases'][rls][pkg]['Release'] == '':
+
+                    if 'Release' not in self.data['releases'][rls][pkg] or self.data['releases'][rls][pkg]['Release'] == '':
                         retval += '                            <td width="200" valign="top">&nbsp;</td>\n'
                     else:
                         tmp = ppaurl
                         retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-release)</td>\n' % (tmp, self.data['releases'][rls][pkg]['Release'])
 
-                    if self.data['releases'][rls][pkg]['Updates'] == '':
+                    if 'Updates' not in self.data['releases'][rls][pkg] or self.data['releases'][rls][pkg]['Updates'] == '':
                         retval += '                            <td width="200" valign="top">&nbsp;</td>\n'
                     else:
                         tmp = lpurl + self.data['releases'][rls][pkg]['Updates']
                         retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-updates)</td>\n' % (tmp, self.data['releases'][rls][pkg]['Updates'])
 
-                    if self.data['releases'][rls][pkg]['Proposed'] == '':
+                    if 'Proposed' not in self.data['releases'][rls][pkg] or self.data['releases'][rls][pkg]['Proposed'] == '':
                         retval += '                            <td width="200" valign="top">&nbsp;</td>\n'
                         proposed_version = None
                     else:
@@ -189,10 +193,13 @@ class SruReport:
                         tmp = lpurl + proposed_version
                         retval += '                            <td width="200" valign="top"><a href="%s" >%s</a> (-proposed)</td>\n' % (tmp, self.data['releases'][rls][pkg]['Proposed'])
                     retval += '                            <td>&nbsp;</td>\n'
-                    retval += '                            <td width="10">%s</td>\n' % (self.data['releases'][rls][pkg]['age'])
+                    if 'age' not in self.data['releases'][rls][pkg]:
+                        retval += '                            <td width="10">&nbsp</td>\n'
+                    else:
+                        retval += '                            <td width="10">%s</td>\n' % (self.data['releases'][rls][pkg]['age'])
                     retval += '                        </tr>\n'
 
-                    if len(self.data['releases'][rls][pkg]['bugs']):
+                    if 'bugs' in self.data['releases'][rls][pkg] and len(self.data['releases'][rls][pkg]['bugs']):
                         retval += '                        <tr>\n'
                         retval += '                            <td colspan="6">\n'
                         retval += '                                <table width="100%">\n'
