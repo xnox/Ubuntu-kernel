@@ -1,3 +1,13 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-29.49) hardy; urgency=low
+
+  [Tim Gardner]
+
+  * remove generated files from git repository
+  * [Config] use 'git log' instead of 'git-log' for insertchanges
+  * Correctly generate debian/control etc
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 24 Mar 2011 08:07:10 -0600
+
 linux-ubuntu-modules-2.6.24 (2.6.24-29.48) hardy-proposed; urgency=low
 
   [Brad Figg]
