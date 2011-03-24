@@ -7,7 +7,7 @@ from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
-from ktl.kernel                         import map_kernel_version_to_ubuntu_release
+from ktl.kernel                         import map_kernel_version_to_ubuntu_release, Kernel
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 from lazr.restfulclient.errors          import HTTPError
 
@@ -139,14 +139,15 @@ class CreateTrackingBug(StdApp):
             #-------------------------------------------------------------------------------------
             # B U G   W O R K
             print("version: %s" % self.cfg['version'])
-            m = Debian.version_rc.match(self.cfg['version'])
-            if m == None:
-                raise AppError("The version (%s) is not a recognized version string." % (self.cfg['version']))
-            version = m.group(1)
-            abi     = m.group(2)
+            version = self.cfg['version']
+            #m = Debian.version_rc.match(self.cfg['version'])
+            #if m == None:
+            #    raise AppError("The version (%s) is not a recognized version string." % (self.cfg['version']))
+            #version = m.group(1)
+            #abi     = m.group(2)
 
             vur = map_kernel_version_to_ubuntu_release
-            series = vur[m.group(1)]['name']
+            series = Kernel.series()
 
             # Title:
             title = "%s update to %s stable release" % (series.title(), self.cfg['version'])
@@ -160,7 +161,7 @@ class CreateTrackingBug(StdApp):
        in scope to the Ubuntu SRU process, e.g., each patch has to
        demonstrably fix a bug, and each patch is vetted by upstream
        by originating either directly from Linus' tree or in a minimally
-       backported form of that patch. The %s.%s upstream stable
+       backported form of that patch. The %s upstream stable
        patch set is now available. It should be included in the Ubuntu
        kernel as well.
 
@@ -168,9 +169,9 @@ class CreateTrackingBug(StdApp):
 
     TEST CASE: TBD
 
-       The following patches are in the %s.%s stable release:
+       The following patches are in the %s stable release:
 
-            """ % (version, abi, version, abi)
+            """ % (version, version)
 
             bug = self.lp.create_bug(project='ubuntu', package='linux', title=title, description=description)
 
@@ -201,7 +202,7 @@ class CreateTrackingBug(StdApp):
                         nomination.approve()
 
             if 'staging' in self.cfg:
-                print("https://bugs.qastaging.launchpad.net/bugs/%s" % (bug.id))
+                print("https://bugs.staging.launchpad.net/bugs/%s" % (bug.id))
             else:
                 print("https://bugs.launchpad.net/bugs/%s" % (bug.id))
 
@@ -219,6 +220,9 @@ class CreateTrackingBug(StdApp):
             eout(e.msg[0])
 
         except DebianError as e:
+            eout(e.msg)
+
+        except AppError as e:
             eout(e.msg)
 
         return
