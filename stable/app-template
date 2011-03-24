@@ -107,6 +107,14 @@ class AppTemplate(StdApp):
         StdApp.__init__(self)
         self.defaults = {}
 
+    # initialize
+    #
+    # A separate initialize that we can control when it gets called (not
+    # when the object is instantiated).
+    #
+    def initialize(self):
+        return
+
     # main
     #
     def main(self):
@@ -114,6 +122,8 @@ class AppTemplate(StdApp):
         try:
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
+
+            self.initialize()
 
         # Handle the user presses <ctrl-C>.
         #
