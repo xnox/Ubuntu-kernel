@@ -41,7 +41,7 @@ printenv-e:
 	@echo "gitver             = $(gitver)"
 
 printchanges:
-	@git-log Ubuntu-$(prev_lrm_version)..HEAD | \
+	@git log Ubuntu-$(prev_lrm_version)..HEAD | \
 		perl -w -f debian/scripts/misc/git-ubuntu-log $(ubuntu_log_opts)
 
 insertchanges:
