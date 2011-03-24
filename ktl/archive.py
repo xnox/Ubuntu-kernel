@@ -3,11 +3,12 @@
 
 from   ktl.utils                import fileage
 from   ktl.kernel               import *
-from   launchpadlib.launchpad   import Launchpad   
+from   launchpadlib.launchpad   import Launchpad
 from   urllib                   import urlopen
 import json
 import re
-    
+from   os                       import path, mkdir
+
 def compare_versions(version1, version2):
     #print 'comparing ', version1, 'and', version2
     # 2.6.35-26.46
@@ -22,9 +23,9 @@ def compare_versions(version1, version2):
 
 pocket_list = ['Proposed', 'Updates', 'Security', 'Release']
 
-# KernelError
+# ArchiveError
 #
-class KernelError(Exception):
+class ArchiveError(Exception):
     # __init__
     #
     def __init__(self, error):
@@ -36,11 +37,18 @@ class Archive:
     debug               = False
 
     # for Launchpad API
-    cachedir = "/tmp/.launchpadlib/cache/"
+    lp_cachedir = path.join(path.expanduser('~'), '.cache', 'ktl.archive.lp')
+
+    # For the ckt-ppa.json and distro-archive.json files. By having them in a central
+    # location, all apps wherever they are run can take advantage of them.
+    #
+    archive_cachedir = path.join(path.expanduser('~'), '.cache', 'ktl.archive')
+    if not path.exists(archive_cachedir):
+        mkdir(archive_cachedir)
 
     # How often should we fetch files? (seconds)
-    file_lifetime = 900 # 15 minutes
-    #file_lifetime = 60 # 1 minute (for testing)
+    archive_cache_lifetime = 900 # 15 minutes
+    #archive_cache_lifetime = 60 # 1 minute (for testing)
 
     #statuses = ['Pending', 'Published']
     statuses = ['Published']
@@ -53,7 +61,7 @@ class Archive:
     allppainfo = False
     teamname = 'canonical-kernel-team'
     ppaname = 'ppa'
-    ppafilename = 'ckt-ppa.json'
+    ppafilename = path.join(archive_cachedir, 'ckt-ppa.json')
 
     # related to the kernel distro archive
     __distro_get_deleted       = False
@@ -61,7 +69,7 @@ class Archive:
     __distro_get_superseded    = False
     distro = None
     alldistroinfo = False
-    distrofilename = 'distro-archive.json'
+    distrofilename = path.join(archive_cachedir, 'distro-archive.json')
 
     # version
     #
@@ -82,7 +90,7 @@ class Archive:
         # if there is, return the data
         age = fileage(self.ppafilename)
 
-        if (not force) and age and (age < self.file_lifetime):
+        if (not force) and age and (age < self.archive_cache_lifetime):
             # Try to fetch from the local file
             f = open(self.ppafilename, 'r')
             self.ppa = json.load(f)
@@ -107,7 +115,7 @@ class Archive:
             statuses.append('Superseded')
 
         outdict = {}
-        lp = Launchpad.login_anonymously('kernel team tools', 'production', self.cachedir)
+        lp = Launchpad.login_anonymously('kernel team tools', 'production', self.lp_cachedir)
         person = lp.people[self.teamname]
         ppa = person.getPPAByName(name=self.ppaname)
 
@@ -148,7 +156,7 @@ class Archive:
         # if there is, return the data
         age = fileage(self.distrofilename)
 
-        if (not force) and age and (age < self.file_lifetime):
+        if (not force) and age and (age < self.archive_cache_lifetime):
             # read from the local file
             f = open(self.distrofilename, 'r')
             self.distro = json.load(f)
@@ -172,7 +180,7 @@ class Archive:
         if self.__distro_get_superseded:
             statuses.append('Superseded')
 
-        lp = Launchpad.login_anonymously('kernel team tools', 'production', self.cachedir)
+        lp = Launchpad.login_anonymously('kernel team tools', 'production', self.lp_cachedir)
         masteroutdict = {}
 
         #archive = lp.distributions['ubuntu'].getSeries(name_or_version=info['name']).main_archive
