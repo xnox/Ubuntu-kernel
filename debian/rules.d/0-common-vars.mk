@@ -53,7 +53,7 @@ no_compat_wireless_flavours="xen virtual"
 #
 do_alsa=false
 do_compat_wireless=
-do_net=false
+do_net=true
 do_input=false
 do_media=false
 
