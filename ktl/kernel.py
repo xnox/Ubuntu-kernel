@@ -23,11 +23,23 @@ map_kernel_version_to_ubuntu_release = {
 }
 
 map_release_number_to_ubuntu_release = {
-    '11.04'  : { 'kernel' : '2.6.38', 'name' : 'natty', 'supported' : False,
-                 # adjust packages when this goes live
-                 'packages' : ['linux', 'linux-ti-omap4', 'linux-mvl-dove', 'linux-ec2',
-                               'linux-meta', 'linux-ports-meta', 'linux-meta-ec2', 'linux-meta-mvl-dove', 'linux-meta-ti-omap4'
-                               ]},
+    '11.04'  : {
+        'kernel'    : '2.6.38',
+        'name'      : 'natty',
+        'supported' : False,
+        # adjust packages when this goes live
+        'packages'  : [
+            'linux',
+            'linux-ti-omap4',
+            'linux-mvl-dove',
+            'linux-ec2',
+            'linux-meta',
+            'linux-ports-meta',
+            'linux-meta-ec2',
+            'linux-meta-mvl-dove',
+            'linux-meta-ti-omap4'
+            ]
+        },
     '10.10'  : { 'kernel' : '2.6.35', 'name' : 'maverick', 'supported' : True,
                  'packages' : ['linux', 'linux-ti-omap4', 'linux-mvl-dove',
                                'linux-meta', 'linux-ports-meta', 'linux-meta-mvl-dove', 'linux-meta-ti-omap4',
@@ -45,12 +57,12 @@ map_release_number_to_ubuntu_release = {
     '8.10'   : { 'kernel' : '2.6.27', 'name' : 'intrepid', 'supported' : False, 'packages' : []},
     '8.04'   : { 'kernel' : '2.6.24', 'name' : 'hardy', 'supported' : True,
                  'packages' : ['linux',
-                               'linux-meta', 'linux-backports-modules-2.6.24', 'linux-ubuntu-modules', 'linux-restricted-modules'
+                               'linux-meta', 'linux-backports-modules-2.6.24', 'linux-ubuntu-modules-2.6.24', 'linux-restricted-modules-2.6.24'
                                ]},
     '7.10'   : { 'kernel' : '2.6.22', 'name' : 'gutsy', 'supported' : False, 'packages' : []},
     '7.04'   : { 'kernel' : '2.6.20', 'name' : 'feisty', 'supported' : False, 'packages' : []},
     '6.06'   : { 'kernel' : '2.6.15', 'name' : 'dapper', 'supported' : True,
-                 'packages' : ['linux-source-2.6.15', 'linux-backports-modules-2.6.15']},
+                 'packages' : ['linux-source-2.6.15', 'linux-backports-modules-2.6.15', 'linux-restricted-modules-2.6.15']},
 }
 
 kernel_package_names = [
@@ -66,12 +78,18 @@ kernel_package_names = [
     'linux-meta-fsl-imx51', # karmic, lucid ?
     'linux-ports-meta',
     'linux-source-2.6.15',
+
     'linux-backports-modules-2.6.15',
+    'linux-backports-modules-2.6.24',
     'linux-backports-modules-2.6.31',
     'linux-backports-modules-2.6.32',
-    'linux-restricted-modules-2.6.24',
-    'linux-ubuntu-modules-2.6.24',
     'linux-backports-modules-2.6.35',
+
+    'linux-restricted-modules-2.6.15',
+    'linux-restricted-modules-2.6.24',
+
+    'linux-ubuntu-modules-2.6.24',
+
     'linux-lts-backport-maverick',
     'linux-lts-backport-natty',
     'linux-meta-lts-backport-maverick',
