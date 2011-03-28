@@ -25,13 +25,13 @@ Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
-#Package: linux-backports-modules-headers-RELEASE_NAME-server
-#Architecture: amd64
-#Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-server
-#Description: Backported driver headers for server kernel image
-# This empty package allows people to keep their backported module
-# headers up-to-date when upgrading their Linux kernel.
-#
+Package: linux-backports-modules-headers-RELEASE_NAME-server
+Architecture: amd64
+Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-server
+Description: Backported driver headers for server kernel image
+ This empty package allows people to keep their backported module
+ headers up-to-date when upgrading their Linux kernel.
+
 #Package: linux-backports-modules-cw-2.6.39-RELEASE_NAME-server
 #Architecture: amd64
 #Depends: ${misc:Depends}, linux-backports-modules-cw-2.6.39-${kernel-abi-version}-server
@@ -46,9 +46,9 @@ Description: Complete Linux kernel on Server Equipment.
 # This empty package allows people to keep their alsa-driver snapshot
 # up-to-date when upgrading their Linux kernel.
 #
-#Package: linux-backports-modules-net-RELEASE_NAME-server
-#Architecture: amd64
-#Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-server
-#Description: Backported ethernet drivers for server kernel image
-# This empty package allows people to keep their backported ethernet modules
-# up-to-date when upgrading their Linux kernel.
+Package: linux-backports-modules-net-RELEASE_NAME-server
+Architecture: amd64
+Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-server
+Description: Backported ethernet drivers for server kernel image
+ This empty package allows people to keep their backported ethernet modules
+ up-to-date when upgrading their Linux kernel.
