@@ -136,6 +136,14 @@ a:hover
         font-size: 12px;
 }
 
+.title {
+      font-weight: bold;
+        font-size: 20px;
+            color: #ff4500;  /* Vibrant orange */
+       text-align: center;
+          padding: 2px 0px 20px 0px;
+}
+
 h1 {
       font-weight: bold;
         font-size: 20px;
@@ -160,6 +168,13 @@ code {
      /* border-color: #ff4500; */  /* Vibrant orange */
      /* border-color: #0099ff; */  /* Electric Blue  */
            margin: 2px 0px 0px 0px;
+}
+
+.section .table-heading {
+      font-weight: bold;
+        font-size: 20px;
+      /* background: none repeat scroll 0 0 #333333;*/
+          padding: 2px 0px 2px 0px;
 }
 
 .section .heading {

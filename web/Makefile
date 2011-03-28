@@ -30,16 +30,16 @@ regressions-update-data.json: scripts/collect-regressions-data
 	scripts/collect-regressions-data --update --db=$@
 
 
-regressions-reports: regressions-potential-report.html regressions-release-report.html regressions-updates-report.html
+regressions-reports: regressions-data regressions-potential-report.html regressions-release-report.html regressions-update-report.html
 
-regressions-potential-report.html: scripts/mk-regressions-report
-	scripts/mk-regressions-report --potential > $@
+regressions-potential-report.html: regressions-potential-data.json
+	scripts/mk-regressions-report $< > $@
 
-regressions-release-report.html: scripts/mk-regressions-report
-	scripts/mk-regressions-report --release > $@
+regressions-release-report.html: regressions-release-data.json
+	scripts/mk-regressions-report $< > $@
 
-regressions-updates-report.html: scripts/mk-regressions-report
-	scripts/mk-regressions-report --updates > $@
+regressions-update-report.html: regressions-update-data.json
+	scripts/mk-regressions-report $< > $@
 
 clean:
 	rm -f *.json sru-report.html versions.html
