@@ -1,0 +1,4144 @@
+{
+    "packages": {
+        "linux": {
+            "bugs": {
+                "147250": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "Alternate install CD (both x86, AMD64) not booting on HP NX6325, HP 6510b and HP 2510p"
+                }, 
+                "201957": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "no sound from headphones in macbook core 2 duo (2nd gen)"
+                }, 
+                "207446": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[ndiswrapper] [wg511] fails to associate"
+                }, 
+                "210222": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Confirmed", 
+                    "title": "Special Laptop Keys don't work anymore (Toshiba M200)"
+                }, 
+                "222527": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "Since 2.6.24-16 HP Omnibook 6100 ACPI No cooling fan"
+                }, 
+                "241307": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "[Geode SC] [DBE60] kernels >= 2.6.22 fail to boot [A20 interrupt]"
+                }, 
+                "271258": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "Acer Orbicam gspca's module fails"
+                }, 
+                "271428": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Triaged", 
+                    "title": "After resume, SD card always behaves as if just inserted"
+                }, 
+                "279342": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "External ieee1394 drive not recognized 2.6.27-5"
+                }, 
+                "290153": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Confirmed", 
+                    "title": "Fails to find boot device in Intel D945Gnt"
+                }, 
+                "319053": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "Bluetooth Mighty Mouse Left and Right Clicks do not register in 8.10"
+                }, 
+                "328440": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "general protection fault: 0000 during resume"
+                }, 
+                "333565": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Confirmed", 
+                    "title": "pulseaudio reports several errors from alsa-utils after upgrade to 9.04"
+                }, 
+                "342802": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "Jaunty REGRESSION: No WLAN / WiFi with a MacBook Pro rev. 3 - worked ok with Intrepid"
+                }, 
+                "352197": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "ata timeout exception with ahci libata driver (was with 2.6.28-11, but i confirmed it affewcts previous kernels too)"
+                }, 
+                "352699": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Brightness up/down key sensibility on fujitsu u9200"
+                }, 
+                "361781": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[Jaunty] Brightness buttons don't work on Sony VGN-Z540"
+                }, 
+                "361784": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[Jaunty] Resume from hibernate doesn't work on a Toshiba Tecra M10 (Nvidia)"
+                }, 
+                "361836": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[Jaunty] Resume from hibernate doesn't work on Toshiba Satellite A200"
+                }, 
+                "361852": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[Jaunty] Resume from hibernate doesn't work on a Dell XPS M1330"
+                }, 
+                "362340": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Regression: network-manager sometimes doesn't detect wireless network; race"
+                }, 
+                "363150": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "ipw2200 page allocation fault - no wlan until reboot"
+                }, 
+                "365006": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "mp3 player like Ali. Corp Audio PLayer"
+                }, 
+                "382864": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[i945GM] xrandr cycling is all messed up with KMS"
+                }, 
+                "387559": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Unable to use STV680 based webcam with Jaunty (REGRESSION)"
+                }, 
+                "387620": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "[karmic] laptop overheats and shuts off -- fans at low speed"
+                }, 
+                "404421": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "\"Failed to restore crtc configuration: -22\" on i915"
+                }, 
+                "406466": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "2.6.31 - Can't see files in CIFS-mounted directories"
+                }, 
+                "410984": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Regression: HP hdx 9300 often hangs on boot with acpi enabled"
+                }, 
+                "413082": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "[LENOVO 7417CTO] suspend/resume failure"
+                }, 
+                "425756": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[regression karmic] cd/dvd drive not detected"
+                }, 
+                "428671": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[TOSHIBA TOSHIBA NB205] hibernate/resume failure"
+                }, 
+                "433972": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Internet ping is very slow"
+                }, 
+                "434956": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "screen backlight off after resume-from-suspend when using ATI KMS"
+                }, 
+                "438318": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "[karmic] no sound on toshiba nb205"
+                }, 
+                "442714": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "mp3 player sansa e280 automatically mount"
+                }, 
+                "445314": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "cannot start my toshiba 1130 Z31 without acpi=off or acpi=ht "
+                }, 
+                "448811": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[Karmic] DiBcom an2235 DVB tuner not working after Karmic upgrade"
+                }, 
+                "451337": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "CPU cooling fan does not start at all"
+                }, 
+                "460654": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "speakers don't mute when plugging in a headphone"
+                }, 
+                "461769": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "ath9k driver randomly disconnects and can only reconnect by reloading the module"
+                }, 
+                "463977": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Triaged", 
+                    "title": "Sansa Fuze (via usb-storage) in \"auto-detect\" mode stopped working in Karmic"
+                }, 
+                "464710": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "LiveCD freeze on Dell Optiplex 740"
+                }, 
+                "466935": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "No Video Output in Karmic with ID 046d:09a1 Logitech, Inc. QuickCam Communicate MP/S5500"
+                }, 
+                "467781": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[staging] WARNING: at /build/buildd/linux-2.6.31/drivers/staging/at76_usb/at76_usb.c:4048 at76_work_start_scan+0x152/0x1b0 [at76_usb]()"
+                }, 
+                "472503": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "Deskpro EN p733 ubuntu 9.10 can't find sound chip; 9.04 was (and still is) OK"
+                }, 
+                "473876": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[LENOVO 7454CTO] suspend/resume failure"
+                }, 
+                "475165": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Can not tune DSB-R100 USB radio via Video4Linux v1 after upgrading to Karmic"
+                }, 
+                "479440": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "unfortunate configuration makes virtualbox perform poorly"
+                }, 
+                "480444": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "packet storm with linux NFSv4 client when calling ftruncate()"
+                }, 
+                "485108": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[IBM 1834RTG] late resume failure"
+                }, 
+                "486063": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "pata_via causes system freeze"
+                }, 
+                "486643": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "New", 
+                    "title": "regression: hp laserjet 4L worked with jaunty, doesnt work with karmic"
+                }, 
+                "488884": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "In Progress", 
+                    "title": "please backport pvrusb2 fix for FX2 16KB firmware"
+                }, 
+                "492853": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "Toshiba NB100 freezes randomly with UNR 9.10"
+                }, 
+                "500284": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "ubuntu can't mount or does not see my 2nd DVD ROM drive"
+                }, 
+                "507914": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Triaged", 
+                    "title": "known regression with rt61pci"
+                }, 
+                "508369": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Thermal control broken after resume"
+                }, 
+                "515090": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "New", 
+                    "title": "Amilo Xi 3650: WLAN/BT hotkey doesn't work"
+                }, 
+                "515109": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "New", 
+                    "title": "cannot suspend usb devices on lucid"
+                }, 
+                "534474": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "In Progress", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.32/drivers/gpu/drm/i915/i915_gem_tiling.c:492 i915_gem_set_tiling+0x1d9/0x1e0 [i915]()"
+                }, 
+                "539467": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "SATA link power management causes disk errors and corruption"
+                }, 
+                "540134": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Confirmed", 
+                    "title": "Screen backlight doesn't come on again after opening the lid"
+                }, 
+                "542660": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Confirmed", 
+                    "title": "New Apple iMac (Core i5) fails to display anything"
+                }, 
+                "543883": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "System freezes when inserting any CD/DVD"
+                }, 
+                "546728": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "[Lucid] Huawei USB Modems not detected since upgrade. E620, E169 modems - need to install usb-modeswitch(-data)"
+                }, 
+                "550312": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[RESUME 11.790s] WARNING: at /build/buildd/linux-2.6.32/kernel/power/suspend_test.c:53 suspend_test_finish 0x88/0x90()"
+                }, 
+                "552218": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.32/net/ipv4/tcp_input.c:2540 tcp_mark_head_lost+0x1d1/0x1f0()"
+                }, 
+                "553948": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.32/mm/page_alloc.c:1806 __alloc_pages_slowpath+0x433/0x4a0()"
+                }, 
+                "555709": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "New", 
+                    "title": "Laptop display maximum dim at startup"
+                }, 
+                "556232": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Radeon HD 2600 - Dualscreen problem"
+                }, 
+                "556946": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.32/kernel/power/suspend_test.c:53 suspend_test_finish+0x89/0x90()"
+                }, 
+                "557224": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "resume broken on ATI radeon RV250"
+                }, 
+                "561062": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Belkin USB adaptor is recognised under lsusb but not in iwconfig"
+                }, 
+                "561190": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.32/net/wireless/core.c:614 wdev_cleanup_work+0xa7/0xd0 [cfg80211]()"
+                }, 
+                "566853": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "megaraid_sas constantly reports errors"
+                }, 
+                "569332": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "not mountable digital camera (Sony Cybershot DSC-S40)"
+                }, 
+                "571534": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Lucid - Mouse stops working after shortly after login"
+                }, 
+                "571768": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "RT2860 wifi card does not work with kernel 2.6.32"
+                }, 
+                "572162": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Sudden reboot happens randomly on MacBook Pro 2,2"
+                }, 
+                "573587": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "network not accessible after boot"
+                }, 
+                "573984": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Screen brightness can not be adjusted in Lucid with Intel Arrandale graphics"
+                }, 
+                "574225": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Boot screen is black"
+                }, 
+                "574923": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "No boot on new kernet after release upgrade"
+                }, 
+                "574929": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Sundance Technology IPG Triple-Speed Ethernet: WARNING: at /build/buildd/linux-2.6.32/net/sched/sch_generic.c:261 dev_watchdog+0x1fe/0x210()"
+                }, 
+                "574944": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "ath5k phy0: failed to wakeup the MAC Chip"
+                }, 
+                "575030": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Triaged", 
+                    "title": "[Dell Studio 1537] No sensors and fan control if there is no battery present on wakeup from suspend"
+                }, 
+                "575213": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "wlan is unstable since lucid"
+                }, 
+                "575985": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "kernel: [...] i915 0000:00:02.0: LVDS-1: EDID invalid."
+                }, 
+                "576135": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Crash on Suspend to RAM in Lenovo T500 Laptop"
+                }, 
+                "576302": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "regression: root device not found (mptspi)"
+                }, 
+                "576352": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "Ubuntu 10.04 hangs/locks up often"
+                }, 
+                "576947": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-headers-2.6.32-22-generic 2.6.32-22.33 failed to install/upgrade:"
+                }, 
+                "577157": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "No wireless connection after update to Lucid"
+                }, 
+                "577785": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Lost IRQ drop harddisk"
+                }, 
+                "577842": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Triaged", 
+                    "title": "shpchp cannot reserve mmio region"
+                }, 
+                "577916": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "lucid regression: does not resume from hibernation"
+                }, 
+                "578173": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[regression-release] Computer locks when switching screen, forcing user to do a hard poweroff, so causing massive data loss and hardware damage"
+                }, 
+                "578495": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-22-generic 2.6.32-22.33 failed to install/upgrade: "
+                }, 
+                "578506": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[Kernel] ACPI: EC: input buffer is not empty, aborting transaction"
+                }, 
+                "578810": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "System hangs trying to wake up from suspend"
+                }, 
+                "579671": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Display Corruption Using KMS on Radeon HD 3400"
+                }, 
+                "580750": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "error mounting /proc/bus/usb on boot"
+                }, 
+                "580757": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Hibernate/resume is very slow and work once"
+                }, 
+                "581010": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "In attempting to boot machine goes to sleep or hibernates"
+                }, 
+                "581284": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "ath5k kernel panic"
+                }, 
+                "581441": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "iwl3945: immediately after boot goes into loop of \"Microcode SW error detected. Restarting 0x82000008\""
+                }, 
+                "581466": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "matroxfb causes corruption in both virtual consoles and xorg"
+                }, 
+                "584700": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Suspend fails with freeze"
+                }, 
+                "584780": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "ath5k driver with WPA2 breaks on Lucid kernel 2.6.32-22"
+                }, 
+                "584866": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "lucid regression: suspend to RAM broken on HP Compaq 6710b"
+                }, 
+                "585258": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "switching to external VGA monitor does not work anymore on dell precision M4400 and Ubuntu 10.04"
+                }, 
+                "585619": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-22-preempt 2.6.32-22.33 failed to install/upgrade: el paquete linux-image-2.6.32-22-preempt ya est instalado y configurado"
+                }, 
+                "585765": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Ubuntu 10.04 random freezes"
+                }, 
+                "586142": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-22-generic (not installed) failed to install/upgrade: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "586894": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Huawei E620 does not connect in GPRS mode anymore, only UMTS"
+                }, 
+                "587134": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Logitech PS2 mouse fails to initialize"
+                }, 
+                "588019": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "eeePC 700 Celeron: ondemand and conservative governor didn't work"
+                }, 
+                "588046": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "\"task blocked for more than 120 seconds\" freezes system in Lucid: xfs"
+                }, 
+                "588439": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Sata exeption Emask failed command READ FPDMA QUEUED "
+                }, 
+                "590030": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "[Lucid] Wireless network often ruined after resume or normal boot"
+                }, 
+                "590250": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-22-generic 2.6.32-22.36 failed to install/upgrade: Unterprozess installiertes post-installation-Skript gab den Fehlerwert 2 zurck"
+                }, 
+                "590516": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "resume hangs kernel with nouveau drivers"
+                }, 
+                "590537": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "\"lo: Disabled Privacy Extensions\" keeps showing up in the system log"
+                }, 
+                "592030": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "Sony DVD+-RW D-Q58A drive does not recognise DVD-R disks"
+                }, 
+                "592474": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-22-generic 2.6.32-22.36 failed to install/upgrade: podproces instalovan post-installation skript vrtil chybov status 2"
+                }, 
+                "593427": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "CPU only uses one of two cores (Intel E6600)"
+                }, 
+                "593635": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "HDD freezes caused by ata exception that results in soft resetting of link"
+                }, 
+                "593650": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "periodic kernel crash and system reboot"
+                }, 
+                "594129": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "X crashs on Intel 945 video (GPU hung: render error detected/task i915: blocked for more than 120 seconds)"
+                }, 
+                "594151": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "i865g needs i915.modeset=1 to boot"
+                }, 
+                "594269": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Dell Optiplex GX620 will not resume"
+                }, 
+                "594282": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "kernel fails to boot,  SRST failed (errno > = -16) but will boot after first booting windows"
+                }, 
+                "594327": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "thinkpad t40 fan runs constantly"
+                }, 
+                "595448": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "Slow boot caused by SATA controller reset"
+                }, 
+                "597934": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Intermittent and random crash, cant reliably reproduce."
+                }, 
+                "597995": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Realtek RTL8111/8168B NIC not working - regression from 9.10"
+                }, 
+                "598525": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WLAN doesn't work after turning the wlan card on in Lucid"
+                }, 
+                "598645": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Backlight off after resume from suspend (on lid-close only) on Compaq Mini 110c-1000"
+                }, 
+                "598696": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "instantaneous kernel freeze on intel server"
+                }, 
+                "599147": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "system won't resume after suspend on 2.6.32-22"
+                }, 
+                "599174": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Frequent kernel panics after switching to Lucid (netbook)"
+                }, 
+                "599366": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Internal Microphone problem on Acer Aspire 5100"
+                }, 
+                "599841": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel out of memory"
+                }, 
+                "599984": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "Sound stutters and hangs with 2.6.35-6, prior kernels work fine."
+                }, 
+                "600284": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] r8169 driver crashes machine when communicating with prosilica GigE camera"
+                }, 
+                "600633": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-23-generic 2.6.32-23.37 failed to install/upgrade: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "602740": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "file copy hangs system"
+                }, 
+                "603422": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "screen goes blank and monitor repeatedly tries to initialize"
+                }, 
+                "603875": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Cannot change brightness in HP 6735s using hotkeys"
+                }, 
+                "604123": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/net/sched/sch_generic.c:258 dev_watchdog 0x25f/0x270()"
+                }, 
+                "604252": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "system freeze before entering suspend"
+                }, 
+                "604630": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "boot sequence no longer honors SHM_SIZE set in /etc/defaults/tmpfs"
+                }, 
+                "604935": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": " cannot set the tx power over 20 dBm, wrong contry code  "
+                }, 
+                "605133": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Suspend/hibernate/resume failure in Ubuntu 10.04 64-bit on HP Pavilion dv4t-1000"
+                }, 
+                "605519": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Regression (2.6.32-24): sound card not recognized"
+                }, 
+                "605912": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Touching touchpad too soon after resume causes lock up and breaks init."
+                }, 
+                "605939": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "LSI 1068E (including LSI SAS 3442E-R and LSI 3081E-R) instabilities"
+                }, 
+                "606684": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Wired connection stops on some websites (mostly when playing videos)"
+                }, 
+                "606839": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "D-Link DWA-140 B2 (RT3071-based) can connect to 802.11n-mode AP, but always set 54 Mbit/s connection speed"
+                }, 
+                "606928": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "intel 5300 abgn not work on maverick"
+                }, 
+                "607056": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "BUG: soft lockup - CPU#0 stuck for 61s! [events/0:6] on Pentium III 733MHz, SOYO 7BVA"
+                }, 
+                "607164": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Intel wireless adapter failure during Flash video playback"
+                }, 
+                "607486": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at 00000001"
+                }, 
+                "608504": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System crash connecting USB Felica reader after boot"
+                }, 
+                "609094": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel paging request at 00f30000"
+                }, 
+                "609328": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/mm/vmalloc.c:1361 __vunmap+0xa0/0xe0()"
+                }, 
+                "609474": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at 00000008"
+                }, 
+                "610126": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Booting up lucid machine doesn't always work the first time"
+                }, 
+                "610391": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "UDP checksum offload breaks DHCP on virtual machines"
+                }, 
+                "610565": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Fan, Network are on and mointors went blank after Hibernate. Only full re-boot by the power button can wake up the system, still reume fails.  This bug is similar to bug #596164  "
+                }, 
+                "610631": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "system freezes completely on random occasions, esp. while playing video"
+                }, 
+                "610683": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/drivers/gpu/drm/i915/i915_gem_tiling.c:337 i915_gem_set_tiling+0x212/0x220 [i915]()"
+                }, 
+                "610716": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "incredibly slow resu,e from suspend"
+                }, 
+                "610996": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "at boot, kernel _intermittently_ (sometime yes, sometimes no) fails to recognize 2 of 3 CPUs, as evidenced by attached dmesg"
+                }, 
+                "611149": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "DViCO Fusion Dual 4 issue returned in Ubuntu 10.4"
+                }, 
+                "611167": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Suspend/Resume fails with non-responsive machine"
+                }, 
+                "611470": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Graphics do not work after a boot"
+                }, 
+                "612077": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System freeze when plugging in USB audio device"
+                }, 
+                "612591": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Maverick kernel treats touchpad's middle button as ClickPad"
+                }, 
+                "613273": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "kernel panic on ec2 in system_call_fastpath"
+                }, 
+                "614533": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Davicom DM9601 USB ethernet module has broken symbols"
+                }, 
+                "614708": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "key repeat error on 10.04"
+                }, 
+                "615227": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/kernel/trace/ring_buffer.c:2017 rb_add_time_stamp+0x70/0x220()"
+                }, 
+                "615242": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Latest 2.6.35 Kernel crashes WINE on several application"
+                }, 
+                "616076": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "wireless switch not working (HP Pavilion dv1550se w/ 2200BG)"
+                }, 
+                "616186": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "resume fails after suspend / hibernate  (regression) with 2.6.32-24-generic "
+                }, 
+                "616727": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "rt73usb device fails to resume from suspend"
+                }, 
+                "617995": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-headers-2.6.32-23-generic 2.6.32-23.37 failed to install/upgrade: sub-processo script post-installation instalado retornou estado de sada de erro 2"
+                }, 
+                "618685": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "USB keyboard switched back from another machine via KVM doesn't reflect correct lights (e.g. Caps lock)."
+                }, 
+                "618770": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-24-generic-pae 2.6.32-24.39 failed to install/upgrade: el subproceso script post-installation instalado devolvi el cdigo de salida de error 2"
+                }, 
+                "619028": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/net/sched/sch_generic.c:258 dev_watchdog 0x1fd/0x210()"
+                }, 
+                "619343": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "High CPU on events/0 or 1 and on board networkcard non functional"
+                }, 
+                "619354": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "when closing ttyHSx: BUG: scheduling while atomic: swapper/0/0x10010000"
+                }, 
+                "619841": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "[REGRESSION] e1000e doesnt work on 2.6.35."
+                }, 
+                "620455": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System time drifts when idle"
+                }, 
+                "620761": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-24-generic 2.6.32-24.41 failed to install/upgrade: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "621058": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "wireless ipw2200 driver don't load"
+                }, 
+                "621074": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel BUG at /build/buildd/linux-2.6.35/arch/x86/mm/highmem_32.c:45!"
+                }, 
+                "621265": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "Slow Wireless Connection in Intel 3945abg"
+                }, 
+                "622130": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Atheros AR2413 wireless card works very unstable"
+                }, 
+                "622977": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[18446744060.406749] Resume while running compiz results unresponsive display"
+                }, 
+                "623015": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/arch/x86/kernel/check.c:134 check_for_bios_corruption 0xe5/0xf0()"
+                }, 
+                "623214": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "screen freeze on startup (nouveau)"
+                }, 
+                "623704": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Kernel 2.6.35-17-generic-pae does not boot at all"
+                }, 
+                "624246": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Broadcom BCM5761e Ethernet controller on Latitude 13 running Ubuntu 10.04 not working"
+                }, 
+                "624341": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "After installing 10.04, gdm just constantly restarts"
+                }, 
+                "624350": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/kernel/power/suspend_test.c:53 suspend_test_finish 0x89/0x90()"
+                }, 
+                "624760": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Thinkpad X31 fails to power off on shutdown"
+                }, 
+                "624967": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-24-generic 2.6.32-24.42 failed to install/upgrade: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "625134": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "external usb storage does not work with intel D945GCLF motherboard"
+                }, 
+                "625495": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Optical drives not unmounting when media removed"
+                }, 
+                "626579": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "crash in ath5k under load"
+                }, 
+                "626622": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "daily maverick live cd won't boot with acpi on"
+                }, 
+                "626715": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/kernel/trace/ring_buffer.c:2017 rb_add_time_stamp 0x70/0x220()"
+                }, 
+                "626753": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "HITACHI external USB disk won't automount always"
+                }, 
+                "627213": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/arch/x86/kernel/check.c:134 check_for_bios_corruption 0xe5/0xf0()"
+                }, 
+                "629358": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Incorrect response to Brightness Up/Down keys"
+                }, 
+                "630195": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "disproportional display on boot spash screen"
+                }, 
+                "630219": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Repeated prompt for disk unlocking passphrase"
+                }, 
+                "631323": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Max brightness level is too low on eee pc"
+                }, 
+                "631824": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Intermittent halts with kernel 2.6.35-19-generic"
+                }, 
+                "632014": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "framebuffer not working anymore after kernel update to .25"
+                }, 
+                "632068": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-24-generic 2.6.32-24.39 failed to install/upgrade: subprocess rm cleanup killed by signal (Segmentation fault)"
+                }, 
+                "632391": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "In Progress", 
+                    "title": "Dell 1440 overheats on 2.6.32-23.37 and later (ok on 2.6.32-22.36)"
+                }, 
+                "632453": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Intel Graphic Card Frozen"
+                }, 
+                "632595": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "boot with 2.6.35-20 gen. Intel 855 faild"
+                }, 
+                "632710": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "After system update, 2.6.32-24 kernel can't boot"
+                }, 
+                "633256": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Ubuntu freezes during startup (hit esc solves this)"
+                }, 
+                "633596": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Confirmed", 
+                    "title": "blank screen on bootup with HP Touchsmart tm2t laptop"
+                }, 
+                "633700": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/fs/sysfs/dir.c:451 sysfs_add_one+0xa1/0x110()"
+                }, 
+                "633983": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Confirmed", 
+                    "title": "Can't boot Maverick beta amd64 live cd on macbook (EFI)"
+                }, 
+                "634572": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/fs/sysfs/dir.c:451 sysfs_add_one+0xc5/0x130()"
+                }, 
+                "634945": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/arch/x86/kernel/check.c:134 check_for_bios_corruption 0xcb/0xe0()"
+                }, 
+                "635429": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "sdasds"
+                }, 
+                "636572": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/kernel/power/suspend_test.c:53 suspend_test_finish 0x89/0x90()"
+                }, 
+                "639750": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Laptop freezes with capslock and scrolllock blinking"
+                }, 
+                "640100": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "In Progress", 
+                    "title": "Maverick fails to wake up on Samsung N150"
+                }, 
+                "640751": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/kernel/power/suspend_test.c:53 suspend_test_finish+0x88/0x90()"
+                }, 
+                "641658": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Rhine II ain't working in Lucid"
+                }, 
+                "642091": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "No resume after suspend - [ACPI: _PSW execution failed] dell 1012 - aspireone 721"
+                }, 
+                "642792": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "ALT+PrtSc not recognised: breaks built-in screenshot function"
+                }, 
+                "644522": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Sony Vaio FN Keys stopped working"
+                }, 
+                "644782": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Ubuntu 10.10: Cannot enable usb port for internal device - webcam"
+                }, 
+                "645211": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "USB HDD and Flash Drives no longer recognized"
+                }, 
+                "646963": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "boot hangs for 30 second"
+                }, 
+                "647043": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "In Progress", 
+                    "title": "Dell Studio 1536 Unable to detect USB ports (Maverick)"
+                }, 
+                "647816": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "???"
+                }, 
+                "647993": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "10.04 freeze"
+                }, 
+                "648975": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Bose Companion 5 Lucid 10.04 USB Audio System"
+                }, 
+                "650809": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "linux-image-2.6.32-24-generic does not boot linux-image-2.6.32-23-generic does"
+                }, 
+                "651008": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Regression in wireless performance under Maverick when on battery power (broadcom)"
+                }, 
+                "652138": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "lucid->maverick rtl8192 stops working"
+                }, 
+                "653263": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Computer slowed down after upgrading from Karmic to Lucid"
+                }, 
+                "653593": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Wireless rt3090sta/rt2860sta/rt2800pci problems"
+                }, 
+                "653945": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "MacBook Pro 5.2 - Wifi unusable (wl driver)"
+                }, 
+                "654311": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "POSTROUTING NAT doesn't operate on ISAKMP traffic"
+                }, 
+                "654791": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Kernel oops - Winfast USB DTV Dongle"
+                }, 
+                "654936": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Maverick 10.10 server does not boot on IBM x3650 M2"
+                }, 
+                "657479": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel paging request at ffffc90001c00000 - r600_ioctl_wait_idle+0x43"
+                }, 
+                "657744": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Periodic machine lockups/hangs, every 10 seconds"
+                }, 
+                "657754": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Since upgrading to Lucid: have to restart CUPS each time I boot, some .pdf documents don't print, had to run update manager manually & error message mediawiki failed to install when updating "
+                }, 
+                "657981": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Intel 4965AGN Can't Do 5Ghz, 40Mhz in Maverick"
+                }, 
+                "658032": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "continuous noise from internal speakers"
+                }, 
+                "658311": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Suspend failure on Sony Vaio SZ650"
+                }, 
+                "658363": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System fans running at high speed"
+                }, 
+                "658460": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "VLAN support broken"
+                }, 
+                "658461": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "-virtual kernel missing dependent modules (ahci fails to load)"
+                }, 
+                "658584": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "system freezes after 30min of uptime"
+                }, 
+                "658937": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Hangs on hibernate"
+                }, 
+                "658955": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Slow suspend to RAM with clocksource TSC on Maverick AMD64"
+                }, 
+                "659348": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Kernel Oops - unable to handle kernel paging request; EIP is at videobuf_dma_unmap+0x43/0xb0"
+                }, 
+                "659358": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Apps freeze because of BUG at fs/ext4/inode.c:2003"
+                }, 
+                "659449": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "lirc_it87 module does not create /dev/lirc0; causes a kernel soft freeze on remove"
+                }, 
+                "659523": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "oss4 doesn't produce working /dev/mixer, doesn't play sound"
+                }, 
+                "659662": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "pcmcia_socket pcmcia_socket0: cs: cardbus cards are not supported"
+                }, 
+                "659681": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Suspend/Resume doesn't work after upgrade to 10.10"
+                }, 
+                "659705": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "hard lock (hang) after a few minutes with APIC enabled"
+                }, 
+                "659712": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "New device name enumerated after suspend/resume cycle"
+                }, 
+                "659774": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "iwlagn stops responding random time with No space for Tx  "
+                }, 
+                "659864": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "box periodically freezes up for a snippet of time"
+                }, 
+                "660266": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "wired/wireless networking unstable on Dell Inspiron 9100"
+                }, 
+                "660380": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "855gm and kernel 2.6.35-22.34 mouse cursor invisible"
+                }, 
+                "660454": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "bluetooth does not work after resume on Dell Inspiron 1520"
+                }, 
+                "660601": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "module lirc_atiusb does not load/build with kernel 2.6.35-22"
+                }, 
+                "660815": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Ubuntu 10.10 is frozen"
+                }, 
+                "660982": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System locks up (and often restarts) on (and since upgrade to) Maverick"
+                }, 
+                "661128": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-generic 2.6.32.25.27 failed to install/upgrade: problemas de dependncia - deixando desconfigurado"
+                }, 
+                "661206": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Wireless does not reconnect when resuming on EEEPC 901"
+                }, 
+                "661321": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Opening /dev/ttyUSB0 hangs, pl2303.ko module"
+                }, 
+                "661394": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Compal/nvidia breakage in system76 laptops"
+                }, 
+                "661411": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Multi-core load balancing not working properly after suspend to disk"
+                }, 
+                "661600": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "USB devices not recognized on VAIO P series"
+                }, 
+                "661682": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] rt2860sta drops out when running on battery power, worked in Lucid"
+                }, 
+                "661711": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Hibernate fails on Thinkpads"
+                }, 
+                "661790": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] Ubuntu unsuable after return from suspend to ram"
+                }, 
+                "661811": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] Ubuntu fails to go to sleep and is unusable after"
+                }, 
+                "661954": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[Maverick] RTL8180L wireless fails to connect"
+                }, 
+                "661957": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "update to Maverick causes Evolution to be removed"
+                }, 
+                "662189": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "i would boot my system, I have it on auto log in, i get a massage an app has crashed, and its asks for key to log me in, its will not let me type or do anything, everything freezes menu etc"
+                }, 
+                "662946": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "linux kernel 2.6.35 slows down the whole system because of kslowdxxx processes"
+                }, 
+                "662971": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "wifi often does not resume after hibernate (rt2860)"
+                }, 
+                "663191": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Upgrade to Maverick breaks KVM"
+                }, 
+                "663298": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "No wifi connection possible with intel centrino wireless-n 1000 on Maverick while Bluetooth is turned off"
+                }, 
+                "663417": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel is improperly detecting the refresh rate of Monitor as 87Hz"
+                }, 
+                "663575": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Hibernate on Dell laptop occasionally hangs"
+                }, 
+                "663651": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "Streamzap remote control not operating correctly"
+                }, 
+                "663784": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Ubuntu 10.10 crashes on resume from suspend on Asus Eee 701"
+                }, 
+                "663806": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Confirmed", 
+                    "title": "Touchpad middle button not  working in Dell precision m6400/m6500 after maverick upgrade"
+                }, 
+                "664161": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "suspend to RAM does not work anymore after upgrade to Maverick Meerkat 10.10"
+                }, 
+                "664190": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "2.6.35 kernel regression in video / High CPU Xorg on Resume"
+                }, 
+                "664269": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "hibernate on maverick fails, goes to blinking cursor"
+                }, 
+                "664442": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "opengl total freeze ubuntu 10.10 ATI X700"
+                }, 
+                "664625": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "system freeze related to rfcomm"
+                }, 
+                "664717": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "touchpad on/off hotkeys do not work anymore after upgrading to Maverick 10.10"
+                }, 
+                "665108": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Massive delay of Mulitmedia / Volume buttons on Asus N90Sc Notebook"
+                }, 
+                "665163": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel panic with 'rejecting i/o to offline device'"
+                }, 
+                "665364": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "RT2561 (rt61pci) connectivity close to unusable again"
+                }, 
+                "665473": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Hibernation fails on Lenovo x301 when Firefox is open on 10.10 x86"
+                }, 
+                "665624": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "System freeze when disconnecting AC-adaptor"
+                }, 
+                "665718": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] Kernel panic after wake up from Hibernating/Suspending, in battery mode, using r8187se "
+                }, 
+                "665891": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Dell Latitude E6410: System freeze on S3 resume with Intel Core i7 CPUs (affects any OS)"
+                }, 
+                "666371": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Broadcom B43 driver does not survive a suspent/resume"
+                }, 
+                "666493": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Maverick's imon kernel module does not support protocol switching (regression)"
+                }, 
+                "666852": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Packard Bell EasyNote MZ35 freezes when AC unplugged and wireless on"
+                }, 
+                "667405": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Toshiba Satellite R630 freezes while running on battery"
+                }, 
+                "667423": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Compaq 6710b does not go to sleep when lid is closed"
+                }, 
+                "667641": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "sony vaio CPU overheats"
+                }, 
+                "667768": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Intel Pro/Wireless 4965 hard blocked by rfkill"
+                }, 
+                "668017": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "freeze when starting X (intel) from the recovery console"
+                }, 
+                "668075": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "android phone doesn't work with usb in ubuntu 10.10"
+                }, 
+                "668461": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "2.6.32-25 kernel breaks vmware fusion 3 shared folders"
+                }, 
+                "668554": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Blank display at startup in Sony Vaio CW series"
+                }, 
+                "668763": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "hibernate does not work since maverick"
+                }, 
+                "668813": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "nfs4 hangs, unkillable, using lots of CPU time"
+                }, 
+                "668978": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "invisible mouse pointer with Intel 855 graphic chip"
+                }, 
+                "669019": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Reopening laptop lid screen remains black"
+                }, 
+                "669170": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-25-generic 2.6.32-25.45 failed to install/upgrade: ErrorMessage: subprocess installed post-installation script returned error exit status 1"
+                }, 
+                "669343": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Triaged", 
+                    "title": "[staging] phison Module broken: ExpressCard SSD not usable"
+                }, 
+                "669399": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "Triaged", 
+                    "title": "Touchpad bottom edge unresponsive in ubuntu 10.10 64-bit"
+                }, 
+                "669486": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "JMicron Reader detects and removes SD card"
+                }, 
+                "669500": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "TIPC 2.0 API/ABI breaking changes"
+                }, 
+                "669586": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Thinkpad X61-tablet (7764CTO) crash during sleep, hibernate, resume"
+                }, 
+                "669621": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "MCE being triggered"
+                }, 
+                "669779": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Graphical corruption on dock or undock on Thinkpad X40 (855GM)"
+                }, 
+                "669786": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.32/drivers/gpu/drm/i915/i915_gem_tiling.c:486 i915_gem_set_tiling 0x249/0x260 [i915]()"
+                }, 
+                "670117": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "After some io activity kernel bug in dmesg, then server freezes (pings still working)"
+                }, 
+                "670181": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Dell Precision M6300 SD Card Reader (Ricoh R5C592 memory stick) Will Not Mount After Upgrade To 10.10"
+                }, 
+                "670272": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "connecting canon camera _or_ starting shotwell causes lirc/ir_core crash => camera and shotwell not functioning"
+                }, 
+                "670459": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Folder view plasmoid does not show thumbnails"
+                }, 
+                "670597": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Kernel hangs on boot for about 30 seconds before init"
+                }, 
+                "670685": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "suspend usually fails"
+                }, 
+                "670707": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Toshiba L300D laptop overheats if in anything else but \"Powersave\" mode."
+                }, 
+                "670895": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Restoring from hibernate fails, goes to logon screen"
+                }, 
+                "671692": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "New", 
+                    "title": "touchpad not working on fujitsu-siemens esprimo mobile V6505"
+                }, 
+                "671762": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "x freeze on i915_gem.c line 2107"
+                }, 
+                "672052": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "ata errors leading to system hang: \"soft resetting link\" repeated many times before hang"
+                }, 
+                "672516": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "usbfs is bugged with 2.6.35-22 when running 32-bit apps on a 64-bit kernel (breaks, Qemu, sane scanners, ...) "
+                }, 
+                "672564": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Kernel hangs roughly every 5-20 minutes since getting a fresh Maverick install"
+                }, 
+                "672591": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Can't resume after suspend with r8187se module loaded"
+                }, 
+                "672793": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "system is wedged, new ssh connections are closed instantly and console is black with a mouse but does not accept keyboard input"
+                }, 
+                "673198": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "ubuntu 10.10 occasionaly locks up at boot"
+                }, 
+                "673339": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "eee pc 900 fails to resume from sleep. ubuntu 10.10. ssd and wifi LEDs lit, power cycle needed to restart."
+                }, 
+                "673571": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Trackpoint and then Trackpad and keyboard dead after n-th suspend-resume"
+                }, 
+                "673652": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Under Ubuntu 10.10 don't work my microphone (Acer752, internal mic)"
+                }, 
+                "673657": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel 2.6.32-25 audio failure / glib warning Lenovo T410i"
+                }, 
+                "673682": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "USB Ralink Technology, Corp. RT2501/RT2573 Wireless Adapter crashes kernel .37"
+                }, 
+                "674075": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Maverick won't resume (lucid will) on Lenovo S10-3"
+                }, 
+                "674343": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-25-generic 2.6.32-25.45 failed to install/upgrade: sub-processo script post-installation instalado retornou estado de sada de erro 2"
+                }, 
+                "674375": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Mute light always remain on the laptop"
+                }, 
+                "674479": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Error during boot sequence and no sound since ubuntu 10.10 installation"
+                }, 
+                "674542": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "USB Wireless driver load fault on Ubuntu 9.10"
+                }, 
+                "675015": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "A4tech webcams stop working in 10.10"
+                }, 
+                "675220": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System hangs when resuming from sleep"
+                }, 
+                "675330": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "[Maverick] rtl819xSE worked 100% in Lucid. After 10.10 upgrade became only 80% stable."
+                }, 
+                "675449": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] Hangs on Resume on Suspend and/or Hibernate on Maverick 10.10 (MSI Wind U100)"
+                }, 
+                "675618": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "cd/dvd not recognised"
+                }, 
+                "675703": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Fails to shutdown/restart/logout/suspend/resume."
+                }, 
+                "676171": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "readdir(3) fails for cifs mount in 32-bit process on amd64"
+                }, 
+                "676845": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-headers-2.6.35-23 2.6.35-23.40 failed to install/upgrade: subprocess dpkg-deb --fsys-tarfile returned error exit status 2"
+                }, 
+                "677118": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "suspend to ram does not work after reboot"
+                }, 
+                "677469": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-26-generic 2.6.32-26.47 failed to install/upgrade: il sottoprocesso vecchio script di post-installation ha restituito lo stato di errore 2"
+                }, 
+                "677701": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Wired network eth0 not working with 2.6.35-22-generic and Intel e1000e driver version 1.0.2-k4"
+                }, 
+                "677746": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.35-22-generic 2.6.35-22.35 failed to install/upgrade: ErrorMessage: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "677748": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.35-23-generic 2.6.35-23.40 failed to install/upgrade: ErrorMessage: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "677749": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-headers-2.6.35-23-generic 2.6.35-23.40 failed to install/upgrade: ErrorMessage: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "677894": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Ubuntu 10.10 complete system freeze on an Asus EeePc 1005PE"
+                }, 
+                "678062": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "rt2860sta driver fails to properly scan. connects ok as if network was hidden"
+                }, 
+                "678063": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "suspend crashes on 2.6.35+ but not 2.6.32"
+                }, 
+                "680239": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "ar8152 v2.0 fast ethernet nic stops working"
+                }, 
+                "681189": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "A continuous stream of pulseaudio-related messages in /var/log/syslog"
+                }, 
+                "681450": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "grub2 menu does not include updated kernel"
+                }, 
+                "681742": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Toshiba Satellite U500 fails to resume from suspend"
+                }, 
+                "681803": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Rosewill RCR-IC002 Card Reader stopped working in Ubuntu 10.04"
+                }, 
+                "681852": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-26-generic (not installed) failed to install/upgrade:"
+                }, 
+                "681911": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Suspend process doesn't finish in Maverick Meerkat at the new kernel"
+                }, 
+                "682128": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Webcam fails to initialize 25% and flickers 75% of remaining times"
+                }, 
+                "682262": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Linux on Thinkpad x61s doesn't suspend when booted in docking station (does if not though)"
+                }, 
+                "682275": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Wireless-N connection drops with 2.6.32.26 kernel"
+                }, 
+                "682293": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/kernel/power/suspend_test.c:53 suspend_test_finish 0x89/0x90()"
+                }, 
+                "682334": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[2.6.35] Suspend fail with an USB HUB plugged before booting"
+                }, 
+                "682339": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "suspend to ram does not work at all"
+                }, 
+                "682455": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-26-generic (not installed) failed to install/upgrade: Unterprozess dpkg-deb --fsys-tarfile gab den Fehlerwert 2 zurck"
+                }, 
+                "683013": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "High load averages on Lucid while idling [#574910 via ubuntu-bug]"
+                }, 
+                "683089": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Error in coretemp device for core 1"
+                }, 
+                "683780": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Natty Alpha 1, i915 has blank screen after boot"
+                }, 
+                "683959": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "unexpected load with 0% CPU and no activity"
+                }, 
+                "683980": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Suspend freezes or take time after 3th or 4th successfull attempt"
+                }, 
+                "684164": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Complete system freeze usually after suspend/resume"
+                }, 
+                "684654": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "system hangs due to blocked filesystem tasks"
+                }, 
+                "684694": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[855GM] i915 kernel bug: casual (gpu) lockup on acpid client change"
+                }, 
+                "684890": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Case #00013913 - Gobi Loader fails to load firmware on boot, but loads find when loaded from command line once the system is up"
+                }, 
+                "684918": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "no panels no brightness control"
+                }, 
+                "685999": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "suspend/resume logs me out of my session"
+                }, 
+                "686070": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "New", 
+                    "title": "black screen (no more gdm/X server) with nvidia propriatery after gfxpayload=keep activation"
+                }, 
+                "686252": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Disconnects from wireless network every 1-5 minutes"
+                }, 
+                "686558": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "No sound output (Intel) since upgrade to 10.10"
+                }, 
+                "686696": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "suddenly shudown since installed ( new ! ) 10.10"
+                }, 
+                "686703": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "USB mouse does not get detected on bootup 25% of the time (USB bus reset)"
+                }, 
+                "687355": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-26-generic 2.6.32-26.48 failed to install/upgrade: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "687489": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Random freezes and no desktop effects after upgrading to maverick (radeon driver, ATI Mobility Radeon 9600)"
+                }, 
+                "687599": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: Scheduling while atomic in fuse_notify_inval_entry"
+                }, 
+                "688510": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "lost swap after installing mainline kernel (requested for debugging)"
+                }, 
+                "688667": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Whenever I shut down the computer, it freezes on the ubuntu logo and I have to hold down the button on the computer to turn the computer off."
+                }, 
+                "688977": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "linux-image-server-lts-backport-natty  2.6.37.9.9~lucid1 appears to be a xen kernel"
+                }, 
+                "689012": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] rt2860sta: NULL pointer dereference causes WIFI to stop working"
+                }, 
+                "689194": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "drm noveau error while loading a huge picture"
+                }, 
+                "689262": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System hang under high load - kswapd"
+                }, 
+                "690801": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Any keyboard activity causes 10-sec hang"
+                }, 
+                "691007": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Crash in ecryptfs_flush"
+                }, 
+                "691014": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Lenovo x100e runs hot"
+                }, 
+                "691102": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[kernel-key-gfxpayload] Boot leaves me with no means to login, etc.: black screen"
+                }, 
+                "692164": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Hewlett-Packard HP Pavilion dv6 fails to resume from suspend"
+                }, 
+                "692249": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "virtualbox + apt-get linux-virtual = can't boot"
+                }, 
+                "692324": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "boot freeze during pcmcia_socket : cs: IO port probe"
+                }, 
+                "692683": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System restarts after hibernate/suspend instead of resume"
+                }, 
+                "692947": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Internal Ricoh R5C822 Card Reader recognizes SD-Cards only after suspend/resume or restart"
+                }, 
+                "693013": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "usb automount does not work"
+                }, 
+                "693093": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Confirmed", 
+                    "title": "[i945gme] 2.6.37-10.24: Black Screen on Boot"
+                }, 
+                "693508": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Shutdown fails, freezes on \"ubuntu\" screen"
+                }, 
+                "693574": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "Regression: 0c45:613c Microdia PC Camera (SN9C120) not working"
+                }, 
+                "693828": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Confirmed", 
+                    "title": "Fatal exception in interrupt: Kernel panic on 2.6.37-10-generic and 2.6.37-11-generic"
+                }, 
+                "693917": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Samsung LN-T5265F display resolution wrong"
+                }, 
+                "694029": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "[natty] kvm guests become unstable after a while"
+                }, 
+                "694325": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "lenovo T400 laptop heating up under load and shutsdown abruptly"
+                }, 
+                "694609": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Computer crash on shutdown"
+                }, 
+                "694709": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "bluetooth doesn't load at startup"
+                }, 
+                "695126": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "strange noise with very up and very low volume"
+                }, 
+                "695130": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "pochi secondi di schermata nera ATI x1650"
+                }, 
+                "695699": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] Network disconnects sometimes with kernel 2.6.37 (wifi and wired)"
+                }, 
+                "695703": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.35/mm/slub.c:2794 ksize+0x88/ 0x90()"
+                }, 
+                "696019": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Two network cards, one used. Card used on boot doesn't work"
+                }, 
+                "696042": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "sporadic boot hang; possible kernel panic"
+                }, 
+                "696164": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "HP Pavilion dv6 loses display permanently when lid is left closed"
+                }, 
+                "696248": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-27-generic 2.6.32-27.49 failed to install/upgrade: trasig filsystemstarfil - trasigt paketarkiv"
+                }, 
+                "696322": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-27-generic 2.6.32-27.49 failed to install/upgrade:"
+                }, 
+                "696327": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "i915 DRM: BUG_ON(obj_priv->pin_count < 0) at i915_gem.c:4224"
+                }, 
+                "696854": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "lsusb -v hangs system"
+                }, 
+                "696959": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "sysfs: cannot create duplicate filename '/class/bluetooth/hci0:6'"
+                }, 
+                "698160": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "New", 
+                    "title": "Natty: Kernel 2.6.37 - suspend broken"
+                }, 
+                "699756": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "ACPI Exception: AE_NOT_FOUND Evaluating _PRW"
+                }, 
+                "700817": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "streamzap IR module floods dmesg"
+                }, 
+                "700938": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "e1000e NIC doesn't work in docking station after resume from suspend"
+                }, 
+                "701167": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Kernel crash, possible related to iwlagn"
+                }, 
+                "701259": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "dell-laptop module hard blocks wifi on Dell Vostro 1520"
+                }, 
+                "702287": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "USB TV stick [MyGica D689] does not work"
+                }, 
+                "702385": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "nfs4/krb5 mounts hang on server kernel 2.6.32-27-generic"
+                }, 
+                "703546": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "cpu temperature too high"
+                }, 
+                "703562": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Avermedia E568 DVB card with dvb-usb-dib0700 firmware crash when looking for channel"
+                }, 
+                "703798": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "No USB device works (regression)"
+                }, 
+                "703957": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "New", 
+                    "title": "kernel BUG at /build/buildd/linux-2.6.35/net/sunrpc/rpc_pipe.c:474!"
+                }, 
+                "706032": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Sometimes I get a Kernel panic during system startup"
+                }, 
+                "706532": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[Regression] Freezes since kernel 2.6.35-23"
+                }, 
+                "708088": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel panic when booting from USB disk"
+                }, 
+                "708307": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Atheros AR8151 driver will load but not work for wire ethernet, but does work for WiFi."
+                }, 
+                "709330": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel paging request at fffffffffffffff1"
+                }, 
+                "709611": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[natty] usb storage device/mouse is not mounted automatically"
+                }, 
+                "709637": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Acer 1830T : assertion failed in wlc_mac80211.c with kernel package 2.6.38-1"
+                }, 
+                "709642": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "acpid client disconnected restarts gnome session"
+                }, 
+                "709693": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Broadcom 802.11 Linux STA wireless driver crash after kernel update"
+                }, 
+                "710625": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Oops in intel_tv_detect when docking laptop, or starting X with it already docked"
+                }, 
+                "710763": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] Cannot tether over mobile phone"
+                }, 
+                "711284": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "After natty update today, system is unresponsive and freezes often"
+                }, 
+                "711510": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-28-generic (not installed) failed to install/upgrade: subprocess dpkg-deb --fsys-tarfile returned error exit status 2"
+                }, 
+                "711954": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Cannot use external monitor at its native resolution"
+                }, 
+                "712075": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "In Progress", 
+                    "title": "[drm:drm_edid_block_valid] *ERROR* EDID checksum is invalid"
+                }, 
+                "712092": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-28-generic 2.6.32-28.55 failed to install/upgrade: subprocess installed post-installation script returned error exit status 1"
+                }, 
+                "712113": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "Kernel crash imediate"
+                }, 
+                "712302": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "rt2x00pci wireless driver cannot reconnect to network after resuming from suspend"
+                }, 
+                "712625": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "panic on resume from suspend, everytime, thinkpad x201"
+                }, 
+                "713478": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "ExpressCard compact flash card fails to hotplug"
+                }, 
+                "714285": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING]"
+                }, 
+                "714635": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[i945gme] 2.6.38-2: Black screen on boot _after_ visible splash"
+                }, 
+                "714933": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.38-2-generic (not installed) failed to install/upgrade: subprocess new pre-installation script returned error exit status 128"
+                }, 
+                "715370": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "cdc_phonet blocks access to USB device"
+                }, 
+                "715438": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "hermes-I wireless interface will not associate with open access point"
+                }, 
+                "715594": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Resume from suspend sometimes fails in lenovo X61"
+                }, 
+                "715850": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "hibernation hangs"
+                }, 
+                "715855": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "locks screen instead of hibernating"
+                }, 
+                "715862": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "doesn't (sometimes) resume from hibernation"
+                }, 
+                "715865": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "suspend hangs forever"
+                }, 
+                "715870": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "doesn't hibernate when battery is low"
+                }, 
+                "716147": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "cursor disappears on one screen of dual monitor setup"
+                }, 
+                "716235": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "saa7164 causes kernel BUG event, card stops working"
+                }, 
+                "716415": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-29-generic 2.6.32-29.57 failed to install/upgrade: subprocess installed post-installation script returned error exit status 1"
+                }, 
+                "716660": {
+                    "assignee": "Unassigned", 
+                    "importance": "Low", 
+                    "status": "In Progress", 
+                    "title": "Module b2c2_flexcop_pci error in dmesg."
+                }, 
+                "716807": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel paging request at ffffffc1"
+                }, 
+                "716938": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "tp-smapi crashes 2.6.38 kernel"
+                }, 
+                "717485": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "aufs au_new_inode:412:cc1[11919]: Warning: Un-notified UDBA or repeatedly renamed dir"
+                }, 
+                "717816": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Early boot failure with i5 processor + DH57JG motherboard in ubuntu 10.10 and later"
+                }, 
+                "717828": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "New", 
+                    "title": "[natty] DVD burning regression in 2.6.38"
+                }, 
+                "717889": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "New", 
+                    "title": "(via ttm_bo_ref_bug) BUG: unable to handle kernel paging request at fffffffffffffff8"
+                }, 
+                "717914": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "New", 
+                    "title": "iphone usb internet tethering gives no ip, while bluetooth does"
+                }, 
+                "718021": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[i946gz] GPU lockup f3077a7e (ESR: 0x00000001 IPEHR: 0x87000000) - WARNING: at /build/buildd/linux-2.6.35/mm/page_alloc.c:1986 __alloc_pages_slowpath+0x36d/0x4b0()"
+                }, 
+                "718316": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Maverick sometimes fails to resume from suspend"
+                }, 
+                "718513": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "lenovo t410s fails to resume with kernel version 2.6.38.3"
+                }, 
+                "719334": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System 76 Lemur does not wake from suspend"
+                }, 
+                "719446": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Triaged", 
+                    "title": "systematic freezes on any kernel version post 2.6.35-22 "
+                }, 
+                "719474": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "HP ProBook 6550b - System doesn't resume after suspend"
+                }, 
+                "719620": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "Toshiba Tecra A11 - System doesn't resume after suspend"
+                }, 
+                "719680": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-28-generic 2.6.32-28.55 failed to install/upgrade: subprocess installed post-installation script returned error exit status 1"
+                }, 
+                "719873": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "sky2 module causes network problems"
+                }, 
+                "720167": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "External CD-rom trouble mounting"
+                }, 
+                "721044": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "aufs_d_revalidate+0x100/0x1f0: [102464.314427] BUG: unable to handle kernel NULL pointer dereference at 0000000000000100"
+                }, 
+                "721449": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "slow wifi (atheros driver issue)"
+                }, 
+                "721950": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "mythtv dvb usb stop working"
+                }, 
+                "721996": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "CMOS crc error on next boot"
+                }, 
+                "722006": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "error in b2c2_flexcop module"
+                }, 
+                "722026": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "MacBookPro3,1 will not suspend."
+                }, 
+                "722540": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "touchpad fails at or sometime after boot  on eee 1008HA"
+                }, 
+                "722755": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Unable to install \"linux-image-2.6.35-25-generic\" and update-intramfs failed to generate /boot/intrd.img-2.6.32-28-generic and /boot/intrd.img-2.6.35-25-generic"
+                }, 
+                "723323": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.38-4-generic 2.6.38-4.31 failed to install/upgrade: ErrorMessage: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "723827": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "atheros wireless is highly unstable"
+                }, 
+                "725254": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "linux-headers-2.6.35-25 suspend/hibernate not working"
+                }, 
+                "725896": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.38-5-generic 2.6.38-5.32 failed to install/upgrade: ErrorMessage: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "726353": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "second monitor displays random flickering"
+                }, 
+                "726401": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "CDMA2000 1X USB Modem is not working in natty"
+                }, 
+                "726737": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "imon kernel driver, endless remote control repeats"
+                }, 
+                "726800": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-29-generic (not installed) failed to install/upgrade:"
+                }, 
+                "727204": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Wlan pci card hotplug doesn't work"
+                }, 
+                "727256": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Can't suspend on Lenovo ThinkPad T500"
+                }, 
+                "728033": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "firewire - \"blocked for more than 120 seconds\""
+                }, 
+                "728430": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Kernel panic after update 2.6.32-29 because of trailing dots in /boot/initrd file"
+                }, 
+                "728506": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "no virtual consoles with savage gfx (Thinkpad T23)"
+                }, 
+                "728923": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x36f/0x3e0 [radeon]()"
+                }, 
+                "729171": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "NETDEV WATCHDOG: eth0 (atl1c): transmit queue 0 timed out"
+                }, 
+                "729421": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "bug occurred upon resume from suspend"
+                }, 
+                "729494": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x36f/0x3e0 [radeon]()"
+                }, 
+                "729611": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x2a0/0x2b0()"
+                }, 
+                "729675": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[Natty] Cannot shutdown from with GDM/Gnome Session"
+                }, 
+                "729724": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait 0x2ea/0x350 [radeon]()"
+                }, 
+                "729732": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x2ea/0x360 [radeon]()"
+                }, 
+                "729900": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel BUG at /build/buildd/linux-2.6.38/fs/inode.c:1422!"
+                }, 
+                "729942": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/cgroup.c:4450 __css_put+0x78/0x90()"
+                }, 
+                "730004": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait 0x2ea/0x350 [radeon]()"
+                }, 
+                "730212": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Triaged", 
+                    "title": "Toshiba NB100 CPU stepping (frequency scaling) does not work"
+                }, 
+                "730303": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish 0x89/0x90()"
+                }, 
+                "730404": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "wifi and webcam drivers crashed completely in normal use apps"
+                }, 
+                "730541": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog 0x213/0x220()"
+                }, 
+                "730625": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at 000001e4"
+                }, 
+                "730665": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel paging request at e08317d0"
+                }, 
+                "730823": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Input device button/click not working on fresh Natty Alpha 3 install"
+                }, 
+                "730972": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "IdeaPad U160 Broadcom wifi not connecting"
+                }, 
+                "731014": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "user session does not resume after suspend - IdeaPad U160"
+                }, 
+                "731445": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x36f/0x3e0 [radeon]()"
+                }, 
+                "731530": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel BUG at /build/buildd/linux-2.6.38/fs/inode.c:1422!"
+                }, 
+                "731542": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel BUG at /build/buildd/linux-2.6.38/fs/inode.c:1422!"
+                }, 
+                "731549": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x36f/0x3e0 [radeon]()"
+                }, 
+                "731611": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x2ea/0x350 [radeon]()"
+                }, 
+                "731614": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x2a0/0x2b0()"
+                }, 
+                "731798": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "731893": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog 0x2a0/0x2b0()"
+                }, 
+                "732130": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "732172": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Random freezes with kernel 2.6.38-*"
+                }, 
+                "732174": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Intel Wireless Adapter \"iwl3945\" not working after sleep"
+                }, 
+                "732243": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Acer Logitech, Inc. Orbicam fails to start working."
+                }, 
+                "732363": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[Asus M4A87TD EVO] If USB3 is enabled, kernel hangs when intilizing ethernet"
+                }, 
+                "732606": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] "
+                }, 
+                "732632": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait 0x36f/0x3e0 [radeon]()"
+                }, 
+                "732651": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog 0x213/0x220()"
+                }, 
+                "732732": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.38-6-generic (not installed) failed to install/upgrade:    pre-installation    128"
+                }, 
+                "733049": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at 000001e4"
+                }, 
+                "733220": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x89/0x90()"
+                }, 
+                "733302": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "fails to resume after suspend"
+                }, 
+                "733461": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "733482": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": ">[10487.008163] WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x213/0x220()"
+                }, 
+                "733648": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] No audio from internal soundcard on EeePC 1000H"
+                }, 
+                "733654": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[thinkpad x200] lcd brightness very low after dist-upgrade"
+                }, 
+                "733972": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Ubuntu cannot be resumed from suspend-to-RAM"
+                }, 
+                "734021": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "nouveau_bo_wr32+0x27/0x30 -> WARNING: at /build/buildd/linux-2.6.38/lib/iomap.c:43 bad_io_access+0x45/0x50()"
+                }, 
+                "734139": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Kernel crashes (hangs system) upon physical removal of mounted USB drive"
+                }, 
+                "734239": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog 0x213/0x220()"
+                }, 
+                "734536": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "thinkpad_acpi: WARNING: Outdated ThinkPad BIOS/EC firmware"
+                }, 
+                "734667": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x89/0x90()"
+                }, 
+                "734805": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "New", 
+                    "title": "Radeon S-Video Out has become black and white. Worked fine in 2.6.37"
+                }, 
+                "734824": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "734859": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "734865": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] RT2860 Wireless will not authenticate and connect when on battery power."
+                }, 
+                "734923": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "System fails to boot"
+                }, 
+                "734990": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "734996": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING]Cannot access the text console."
+                }, 
+                "735266": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait 0x2ea/0x360 [radeon]()"
+                }, 
+                "735285": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "thinkpad_acpi: WARNING: sysfs attribute hotkey_enable is deprecated and will be removed. Hotkey reporting is always enabled"
+                }, 
+                "735391": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel paging request at 11bbcedc"
+                }, 
+                "735601": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] Eee PC 1015PEM unstable on 2.6.38-6-generic"
+                }, 
+                "735608": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x89/0x90()"
+                }, 
+                "735757": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/mm/page_alloc.c:2012 __alloc_pages_nodemask+0x575/0x710()"
+                }, 
+                "735761": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "062] thinkpad_acpi: WARNING: This firmware may be missing critical bug fixes and/or important features"
+                }, 
+                "735868": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Shutdown restarts the computer"
+                }, 
+                "736178": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x213/0x220()"
+                }, 
+                "736474": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at   (null)"
+                }, 
+                "736542": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Update to 2.6.38-6 makes OS unbootable"
+                }, 
+                "736653": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] "
+                }, 
+                "736831": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "NETDEV WATCHDOG: eth0 (atl1c): transmit queue 0 timed out"
+                }, 
+                "736837": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "thinkpad_acpi: WARNING: Outdated ThinkPad BIOS/EC firmware"
+                }, 
+                "737051": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Alps touchpad detected, but scrolling not working"
+                }, 
+                "737067": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[ath9k] connection lost after 30MB download"
+                }, 
+                "737080": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Machine goes into controlled shutdown (possibly overheating) when converting books with calibre"
+                }, 
+                "737463": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "NETDEV WATCHDOG: eth0 (via-rhine): transmit queue 0 timed out"
+                }, 
+                "737556": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/fs/inode.c:1401 iput_final+0x1d0/0x1e0()"
+                }, 
+                "737643": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING]"
+                }, 
+                "737724": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "resuming from hybernate, black screen with strips. [irq 18 try booting with the \"irqpoll\" option]"
+                }, 
+                "737896": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "738104": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x36f/0x3e0 [radeon]()"
+                }, 
+                "738150": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: Bad page map in process wscthread_5.14_  pte:8000000048647067 pmd:12fa7c067"
+                }, 
+                "738292": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x213/0x220()"
+                }, 
+                "738334": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x213/0x220()"
+                }, 
+                "738501": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Dell Inspiron 2650 doesn't boot without acpi=off"
+                }, 
+                "738563": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "] thinkpad_acpi: WARNING: Outdated ThinkPad BIOS/EC firmware"
+                }, 
+                "738586": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "USB 3.0 ports stopped working with 2.6.35-28-generic"
+                }, 
+                "738657": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Broadcom BCM43225 no longer works"
+                }, 
+                "738832": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog 0x2a0/0x2b0()"
+                }, 
+                "738876": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at 00000000000000f0"
+                }, 
+                "738883": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel paging request at ffffe8007d002300"
+                }, 
+                "738989": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "80989] BUG: recent printk recursion!"
+                }, 
+                "739182": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/wireless/mlme.c:307 __cfg80211_auth_remove+0x60/0xb0 [cfg80211]()"
+                }, 
+                "739194": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "739448": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel oops in [<ffffffffa01a70bc>] rs600_gart_set_page+0x3c/0x50 [radeon]"
+                }, 
+                "739877": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish 0x89/0x90()"
+                }, 
+                "739930": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Dell e4310 will not connect to home 5Ghz Wifi"
+                }, 
+                "739967": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x89/0x90()"
+                }, 
+                "740122": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "740253": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog 0x213/0x220()"
+                }, 
+                "740327": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "Confirmed", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "740416": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Boot Drops to Shell if external hdd is connected"
+                }, 
+                "740679": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/pci/pci.c:118 pci_ioremap_bar+0x57/0x60()"
+                }, 
+                "740705": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel BUG at /build/buildd/linux-2.6.38/fs/ecryptfs/crypto.c:349!"
+                }, 
+                "740928": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel panic in Natty Aplha 3 after sleep"
+                }, 
+                "740959": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/mm/page_alloc.c:2012 __alloc_pages_nodemask 0x575/0x710()"
+                }, 
+                "741282": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x2ea/0x350 [radeon]()"
+                }, 
+                "741390": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Kernel OOPS on shutdown/reboot"
+                }, 
+                "741520": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "741635": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] "
+                }, 
+                "741776": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "741809": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Erro do kernel."
+                }, 
+                "741983": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish 0x86/0x90()"
+                }, 
+                "741999": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.38-7-generic 2.6.38-7.38 failed to install/upgrade: subprocess new pre-installation script returned error exit status 128"
+                }, 
+                "742103": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/wireless/mlme.c:307 __cfg80211_auth_remove+0x60/0xb0 [cfg80211]()"
+                }, 
+                "742105": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.38-7-generic 2.6.38-7.38 failed to install/upgrade: ErrorMessage: subprocess installed post-installation script returned error exit status 2"
+                }, 
+                "742168": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "kernel BUG at /build/buildd/linux-2.6.38/drivers/gpu/drm/i915/i915_gem.c:3250!"
+                }, 
+                "742211": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "742290": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at   (null)"
+                }, 
+                "742479": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x213/0x220()"
+                }, 
+                "742621": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Wifi silently stops working occasionally"
+                }, 
+                "742697": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[atl1c] WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x213/0x220()"
+                }, 
+                "742779": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/drivers/gpu/drm/radeon/radeon_fence.c:248 radeon_fence_wait+0x36f/0x3e0 [radeon]()"
+                }, 
+                "742808": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "[STAGING] "
+                }, 
+                "743174": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/mm/page_alloc.c:2012 __alloc_pages_nodemask 0x575/0x710()"
+                }, 
+                "743222": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/kernel/power/suspend_test.c:53 suspend_test_finish+0x86/0x90()"
+                }, 
+                "743361": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel paging request at ffff80006787fdc8"
+                }, 
+                "743483": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at   (null)"
+                }, 
+                "743509": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Radeon, Evergreen - switcheroo; BUG: unable to handle kernel paging request at fa5a4ffc"
+                }, 
+                "743620": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at   (null)"
+                }, 
+                "743743": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at 00000014"
+                }, 
+                "743747": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "package linux-image-2.6.32-30-generic (not installed) failed to install/upgrade: unable to securely remove '/boot/vmlinuz-2.6.32-30-generic.dpkg-new': Read-only file system"
+                }, 
+                "743753": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "BUG: unable to handle kernel NULL pointer dereference at   (null)"
+                }, 
+                "743804": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-2.6.38/net/sched/sch_generic.c:256 dev_watchdog+0x213/0x220()"
+                }, 
+                "743865": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Natty Thinkpad T40 wireless won't connect "
+                }, 
+                "76924": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Confirmed", 
+                    "title": "non-functioning hotkeys on Vaio TX2"
+                }, 
+                "77010": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "Triaged", 
+                    "title": "Overuse of system beep without volume control"
+                }
+            }
+        }, 
+        "linux-backports-modules-2.6.31": {
+            "bugs": {
+                "396563": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "Headphone jack regression in 2.6.31-1"
+                }, 
+                "414560": {
+                    "assignee": "Unassigned", 
+                    "importance": "High", 
+                    "status": "Confirmed", 
+                    "title": "ath9k disassociates/reassociates a lot"
+                }
+            }
+        }, 
+        "linux-backports-modules-2.6.32": {
+            "bugs": {
+                "190515": {
+                    "assignee": "Unassigned", 
+                    "importance": "Medium", 
+                    "status": "New", 
+                    "title": "[Hardy][Intrepid] Low bandwidth with rt2400 / rt2500 drivers"
+                }
+            }
+        }, 
+        "linux-lts-backport-maverick": {
+            "bugs": {
+                "718826": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "computer cannot boot with linux-image-2.6.35-*"
+                }
+            }
+        }, 
+        "linux-meta": {
+            "bugs": {
+                "663724": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "alsa bug in ubuntustudio 64 bit 10.10 and 10.04 + linux-backports-modules-alsa-lucid when using jack"
+                }, 
+                "743797": {
+                    "assignee": "Unassigned", 
+                    "importance": "Undecided", 
+                    "status": "New", 
+                    "title": "WARNING: at /build/buildd/linux-/kernel/power/suspend_test.c:53 suspend_test_finish 0x86/0x90()"
+                }
+            }
+        }
+    }, 
+    "tags": [
+        "regression-release"
+    ], 
+    "updated": "Monday, 28. March 2011 02:12 UTC"
+}

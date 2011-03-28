@@ -1,0 +1,452 @@
+#!/usr/bin/env python
+#
+# This script is intended to produce an html, report of all the bugs in any "open"
+# state that have been tagged with a "regression" tag.
+#
+
+from sys                                import argv
+from os                                 import path
+from getopt                             import getopt, GetoptError
+from ktl.utils                          import stdo, error, dump
+from ktl.std_app                        import StdApp
+from lpltk.service                      import LaunchpadService
+from datetime                           import datetime
+from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_db
+from re                                 import match
+import json
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': error(e)
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'potential', 'release', 'update', 'db=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif (opt == '--potential'):
+                    self.cfg['search_tags'] = 'regression-potential'
+
+                elif (opt == '--release'):
+                    self.cfg['search_tags'] = 'regression-release'
+
+                elif (opt == '--update'):
+                    self.cfg['search_tags'] = 'regression-update'
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--db'):
+                    self.cfg['database'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+        except GetoptError as e:
+            print(e, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        if 'database' not in self.cfg:
+            raise CmdlineError('The --db command line parameter is required.\n')
+        return
+
+
+# RegressionsReport
+#
+class RegressionsReport():
+    # __init__
+    #
+    def __init__(self, lp, db):
+        self.db = db
+        self.lp = lp
+        return
+
+    # __str__
+    #
+    def __str__(self):
+        retval  = self.__head()
+        retval += self.__body()
+        retval += self.__tail()
+        return retval
+
+    # __head
+    #
+    # The begining of the html file.
+    #
+    def __head(self):
+        return '''
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <title>The Regressions Report</title>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+
+        <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+
+    </head>
+        '''
+
+    # __tail
+    #
+    def __tail(self):
+        return '''
+
+</html>
+        '''
+
+    # __body
+    #
+    def __body(self):
+        retval =  '''
+    <body class="bugbody">
+        <div class="outermost">'''
+        retval += '\n'
+
+        retval += '''
+            <div>
+                <strong>The Regressions Report</strong>
+            </div>'''
+        retval += '\n'
+
+        for pkg in self.db:
+            retval += "                <h1>%s</h1>\n" % pkg
+            retval += '                    <table width="100%">\n'
+            retval += '                        <thead>\n'
+            retval += '                            <tr>\n'
+            retval += '                                <th><strong>Bug</strong></th>\n'
+            retval += '                                <th><strong>Summary</strong></th>\n'
+            retval += '                                <th><strong>Importance</strong></th>\n'
+            retval += '                                <th><strong>Status</strong></th>\n'
+            retval += '                                <th><strong>Assignee</strong></th>\n'
+            retval += '                            </tr>\n'
+            retval += '                        </thead>\n'
+
+            retval += '                        <tbody>\n'
+            for bug_id in self.db[pkg]:
+                retval += self.__bug_details(bug_id, pkg)
+            retval += '                        </tbody>\n'
+
+            retval += '                    </table>\n'
+        retval += '''
+
+        </div> <!-- Outermost -->
+    </body>
+        '''
+        return retval
+
+    # __bug_details
+    #
+    def __bug_details(self, bug_id, pkg):
+        retval  = '<tr>\n'
+
+        try:
+            bug  = self.lp.get_bug(bug_id)
+
+            try:
+                task = self.__get_relevant_task(bug, pkg)
+
+                item = "bug_id"
+                try:
+                    bug_url = "http://launchpad.net/bugs/%s" % bug_id
+                    retval += '    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)    # Bug
+                    item = "title"
+                    retval += '    <td>%s</td>\n' % bug.title                             # Summary
+                    item = "importance"
+                    retval += '    <td>%s</td>\n' % task.importance                       # Importance
+                    item = "status"
+                    retval += '    <td>%s</td>\n' % task.status                           # Status
+
+                    item = "owner"
+                    assignee = task.owner
+                    if assignee != None:
+                        item = "owner name"
+                        name = assignee.display_name
+                    else:
+                        name = 'None'
+                    retval += '    <td>%s</td>\n' % name                                  # Assignee
+
+                except:
+                    error("Exception caught while accessing task field (%s) of bug id %s.\n" % (item, bug_id))
+
+            except:
+                error("Exception caught while finding the relevant task for bug id %s.\n" % bug_id)
+
+        except:
+            error("Exception caught fetching the bug for bug id %s.\n" % bug_id)
+
+        retval += '</tr>\n'
+        return retval
+
+# CollectRegressionsDataError
+#
+class CollectRegressionsDataError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# CollectRegressionsData
+#
+class CollectRegressionsData(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+        self.defaults['search_tags'] = [   # A list of the tags we care about
+            'regression-potential',
+            'regression-release',
+            'regression-update'
+        ]
+
+    # __initialize
+    #
+    # A separate initialize that we can control when it gets called (not
+    # when the object is instantiated).
+    #
+    def __initialize(self):
+        if 'staging' in self.cfg:
+            self.defaults['launchpad_services_root'] = 'qastaging'
+        self.verbose(" . Connecting to Launchpad\n")
+        self.lp = LaunchpadService(self.defaults)
+
+        # The service.distributions property is a collection of distributions. We
+        # pretty much only care about one, 'ubuntu'.
+        #
+        self.distro = self.lp.distributions['ubuntu']
+        return
+
+    # __get_relevant_task
+    #
+    def __get_relevant_task(self, bug, pkg):
+        retval = None
+        for t in bug.tasks:
+            task       = t.bug_target_name
+            p = task.replace(' (Ubuntu)', '')
+            if pkg == p:
+                retval = t
+                break
+        return retval
+
+    # __verbose_bug_info
+    #
+    def __verbose_bug_info(self, bug):
+        if 'verbose' in self.cfg and self.cfg['verbose']:
+            print(" ")
+            print("    %s: %s" % (bug.id, bug.title))
+            print(" ")
+
+            tags = ""
+            for t in bug.tags:
+                tags += t
+                tags += " "
+            print("        Tags:")
+            print("            %s" % (tags))
+
+            tasks = bug.tasks
+            print("        Tasks:")
+            for task in tasks:
+                print("            %45s %20s %20s" % (task.bug_target_name, task.status, task.importance))
+
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        using_search_since = False
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.__initialize()
+
+            bug_ct = 0
+            if path.exists(self.cfg['database']):
+                with open(self.cfg['database'], 'r') as f:
+                    bugs_db = json.load(f)
+
+                using_search_since = True
+                search_since = datetime.strptime(bugs_db['updated'], '%A, %d. %B %Y %H:%M UTC')
+            else:
+                bugs_db = {}
+                bugs_db['tags']    = self.cfg['search_tags']   # Can be used by the report script for the report title
+                bugs_db['packages'] = {}
+            bugs_db['updated'] = datetime.utcnow().strftime("%A, %d. %B %Y %H:%M UTC")
+            bugs_db_packages = bugs_db['packages']
+
+            # All source projects the kernel team are interesed in.
+            #
+            interested_source_packages = []
+            for release in ubuntu_db:
+                for package_name in ubuntu_db[release]['packages']:
+                    if package_name not in interested_source_packages:
+                        interested_source_packages.append(package_name)
+
+            for package_name in interested_source_packages:
+                self.verbose('%s\n' % package_name)
+
+                # Within a distribution are many source packages. We actually care about
+                # several, but _mostly_ the 'linux' source package.
+                #
+                source_package = self.distro.get_source_package(package_name)
+                if source_package == None:
+                    error("The source package does not exist.")
+                    raise
+
+                # Searching for bug tasks, the search can be quite complicated and made up
+                # of several components. The following can be combined in many ways to get
+                # the search you want. The search happens on the server and returns a
+                # collection of bug tasks that match the search criteria.
+                #
+                # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
+                #                          status=self.cfg['task_search_status'], modified_since=search_since)
+                #
+                search_tags_combinator = "Any"
+                search_status          = ["New","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
+
+                try:
+                    self.verbose(" . Searching ...")
+                    if using_search_since:
+                        self.verbose("   since: %s" % (search_since))
+                        tasks = source_package.search_tasks(status=search_status, tags=self.cfg['search_tags'], tags_combinator=search_tags_combinator, modified_since=search_since)
+                    else:
+                        self.verbose("   since: The Beginning")
+                        tasks = source_package.search_tasks(status=search_status, tags=self.cfg['search_tags'], tags_combinator=search_tags_combinator)
+                    self.verbose("\n")
+
+                    #limit = 5
+                    this_package_bugs = None
+                    for task in tasks:
+                        if package_name not in bugs_db_packages:
+                            bugs_db_packages[package_name] = {}
+                            bugs_db_packages[package_name]['bugs'] = {}
+                        this_package_bugs = bugs_db_packages[package_name]['bugs']
+
+                        bug = task.bug
+                        task = self.__get_relevant_task(bug, package_name)
+                        self.__verbose_bug_info(bug)
+
+                        bug_item               = {}
+                        bug_item['status']     = task.status
+                        bug_item['importance'] = task.importance
+                        bug_item['title']      = bug.title
+
+                        owner = task.owner
+                        if owner != None:
+                            bug_item['assignee'] = owner.display_name
+                        else:
+                            bug_item['assignee'] = 'Unassigned'
+
+                        this_package_bugs[bug.id] = bug_item
+
+                        #if limit == 0:
+                        #    break
+                        #limit -= 1
+
+                except:
+                    error("Exception caught processing the tasks, building the bugs database.\n")
+                    bugs_db = None
+                    raise
+
+            if bugs_db != None:
+                with open(self.cfg['database'], 'w') as f:
+                    f.write(json.dumps(bugs_db, sort_keys=True, indent=4))
+                #report = RegressionsReport(self.lp, bugs_db)
+                #print(report)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Keyboard interrupt")
+            pass
+
+        # Handle application errors.
+        #
+        except CollectRegressionsDataError as e:
+            error(e.msg)
+
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        return
+
+if __name__ == '__main__':
+    app = CollectRegressionsData()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
