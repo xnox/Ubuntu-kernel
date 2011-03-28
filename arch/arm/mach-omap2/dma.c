@@ -275,7 +275,7 @@ static int __init omap2_system_dma_init_dev(struct omap_hwmod *oh, void *unused)
 	}
 
 	/* Check the capabilities register for descriptor loading feature */
-	if (dma_read(CAPS_0, 0) & DMA_HAS_DESCRIPTOR_CAPS)
+	if (dma_read(CAPS_0, 0) & DMA_HAS_DESCRIPTOR_CAPS || cpu_is_omap5430())
 		dma_common_ch_end = CCDN;
 	else
 		dma_common_ch_end = CCFN;
