@@ -1,3 +1,13 @@
+linux-backports-modules-2.6.24 (2.6.24-29.41) hardy; urgency=low
+
+  [Tim Gardner]
+
+  * Disable compat-wireless for HPPA
+    Fixes HPPA FTBS
+    - LP: #745216
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Tue, 29 Mar 2011 14:21:28 -0600
+
 linux-backports-modules-2.6.24 (2.6.24-29.40) hardy; urgency=low
 
   [Tim Gardner]
