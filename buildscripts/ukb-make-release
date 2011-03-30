@@ -7,7 +7,7 @@ CDIR="`dirname $0`"
 
 usage()
 {
-	echo $0 [--repo=REPO] --release=RELEASE --branch=BRANCH [--clean]
+	echo $0 [--repo=REPO] --release=RELEASE --branch=BRANCH [--bdir=BUILD_DIR] [--clean]
 	echo ex: $0 --release=lucid --branch=master-next
 }
 
@@ -21,6 +21,9 @@ while [ $# -ne 0 ]; do
 			;;
 		--branch=*)
 			BRANCH="--branch=$(echo $1|cut -d= -f2)"
+			;;
+		--bdir=*)
+			BDIR="--bdir=$(echo $1|cut -d= -f2)"
 			;;
 		--clean)
 			CLEAN="--clean"
@@ -40,14 +43,14 @@ case $HOST_ARCH in
 	amd64)
 		for i in i386 amd64 armel
 		do
-			if ! $CDIR/ukb-make --arch=$i $REPO $RELEASE $BRANCH $CLEAN
+			if ! $CDIR/ukb-make --arch=$i $REPO $RELEASE $BRANCH $BDIR $CLEAN
 			then
 				exit 1
 			fi
 		done
 		;;
 	*)
-		$CDIR/ukb-make --arch=$HOST_ARCH $REPO $RELEASE $BRANCH $CLEAN
+		$CDIR/ukb-make --arch=$HOST_ARCH $REPO $RELEASE $BRANCH $BDIR $CLEAN
 		;;
 esac
 
