@@ -154,54 +154,35 @@ class Shank(StdApp):
 
             self.initialize()
 
-            # All source projects the kernel team are interesed in.
+            project = self.lp.projects['kernel-sru-workflow']
+
+            # Searching for bug tasks, the search can be quite complicated and made up
+            # of several components. The following can be combined in many ways to get
+            # the search you want. The search happens on the server and returns a
+            # collection of bug tasks that match the search criteria.
             #
-            interested_source_packages = []
-            for release in ubuntu_release_map:
-                for package_name in ubuntu_release_map[release]['packages']:
-                    if package_name not in interested_source_packages:
-                        interested_source_packages.append(package_name)
+            # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
+            #                          status=self.cfg['task_search_status'], modified_since=search_since)
+            #
+            search_tags            = [   # A list of the tags we care about
+                    'kernel-release-tracking-bug'
+                ]
+            search_tags_combinator = "All"
+            search_status          = ["New","Invalid","Fix Committed"] # A list of the bug statuses that we care about
+            search_since           = datetime(year=2011, month=1, day=1)
+            tasks = project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
 
-            #interested_source_packages = ['kernel-sru-workflow']
-            for package_name in interested_source_packages:
-                self.verbose('%s\n' % package_name)
+            for task in tasks:
+                bug = task.bug
+                self.verbose("    %s\n" % (bug.id))
 
-                # Within a distribution are many source packages. We actually care about
-                # several, but _mostly_ the 'linux' source package.
-                #
-                source_package = self.distro.get_source_package(package_name)
-                print repr(source_package)
-                if source_package == None:
-                    error("The source package does not exist.")
-                    raise
+                for t in bug.tasks:
+                    task       = t.bug_target_name
+                    state      = t.status
+                    importance = t.importance
+                    asignee    = t.owner.display_name
 
-                # Searching for bug tasks, the search can be quite complicated and made up
-                # of several components. The following can be combined in many ways to get
-                # the search you want. The search happens on the server and returns a
-                # collection of bug tasks that match the search criteria.
-                #
-                # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
-                #                          status=self.cfg['task_search_status'], modified_since=search_since)
-                #
-                search_tags            = [   # A list of the tags we care about
-                        'kernel-release-tracking-bug'
-                    ]
-                search_tags_combinator = "All"
-                search_status          = ["New","Invalid","Fix Committed"] # A list of the bug statuses that we care about
-                search_since           = datetime(year=2011, month=1, day=1)
-                tasks = source_package.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
-
-                for task in tasks:
-                    bug = task.bug
-                    self.verbose("    %s\n" % (bug.id))
-
-                    for t in bug.tasks:
-                        task       = t.bug_target_name
-                        state      = t.status
-                        importance = t.importance
-                        asignee    = t.owner.display_name
-
-                        self.verbose("%25s  %15s  %10s  %s\n" % (task, state, importance, asignee))
+                    self.verbose("%25s  %15s  %10s  %s\n" % (task, state, importance, asignee))
 
         # Handle the user presses <ctrl-C>.
         #
