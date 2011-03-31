@@ -8,6 +8,7 @@ from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error, dump
+from ktl.bugs                           import Bugs, DeltaTime
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
@@ -120,135 +121,6 @@ class Cmdline:
             raise CmdlineError('The --db command line parameter is required.\n')
         return
 
-
-# RegressionsReport
-#
-class RegressionsReport():
-    # __init__
-    #
-    def __init__(self, lp, db):
-        self.db = db
-        self.lp = lp
-        return
-
-    # __str__
-    #
-    def __str__(self):
-        retval  = self.__head()
-        retval += self.__body()
-        retval += self.__tail()
-        return retval
-
-    # __head
-    #
-    # The begining of the html file.
-    #
-    def __head(self):
-        return '''
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>The Regressions Report</title>
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
-
-        <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" type="text/css" href="css/style.css" />
-
-    </head>
-        '''
-
-    # __tail
-    #
-    def __tail(self):
-        return '''
-
-</html>
-        '''
-
-    # __body
-    #
-    def __body(self):
-        retval =  '''
-    <body class="bugbody">
-        <div class="outermost">'''
-        retval += '\n'
-
-        retval += '''
-            <div>
-                <strong>The Regressions Report</strong>
-            </div>'''
-        retval += '\n'
-
-        for pkg in self.db:
-            retval += "                <h1>%s</h1>\n" % pkg
-            retval += '                    <table width="100%">\n'
-            retval += '                        <thead>\n'
-            retval += '                            <tr>\n'
-            retval += '                                <th><strong>Bug</strong></th>\n'
-            retval += '                                <th><strong>Summary</strong></th>\n'
-            retval += '                                <th><strong>Importance</strong></th>\n'
-            retval += '                                <th><strong>Status</strong></th>\n'
-            retval += '                                <th><strong>Assignee</strong></th>\n'
-            retval += '                            </tr>\n'
-            retval += '                        </thead>\n'
-
-            retval += '                        <tbody>\n'
-            for bug_id in self.db[pkg]:
-                retval += self.__bug_details(bug_id, pkg)
-            retval += '                        </tbody>\n'
-
-            retval += '                    </table>\n'
-        retval += '''
-
-        </div> <!-- Outermost -->
-    </body>
-        '''
-        return retval
-
-    # __bug_details
-    #
-    def __bug_details(self, bug_id, pkg):
-        retval  = '<tr>\n'
-
-        try:
-            bug  = self.lp.get_bug(bug_id)
-
-            try:
-                task = self.__get_relevant_task(bug, pkg)
-
-                item = "bug_id"
-                try:
-                    bug_url = "http://launchpad.net/bugs/%s" % bug_id
-                    retval += '    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)    # Bug
-                    item = "title"
-                    retval += '    <td>%s</td>\n' % bug.title                             # Summary
-                    item = "importance"
-                    retval += '    <td>%s</td>\n' % task.importance                       # Importance
-                    item = "status"
-                    retval += '    <td>%s</td>\n' % task.status                           # Status
-
-                    item = "owner"
-                    assignee = task.owner
-                    if assignee != None:
-                        item = "owner name"
-                        name = assignee.display_name
-                    else:
-                        name = 'None'
-                    retval += '    <td>%s</td>\n' % name                                  # Assignee
-
-                except:
-                    error("Exception caught while accessing task field (%s) of bug id %s.\n" % (item, bug_id))
-
-            except:
-                error("Exception caught while finding the relevant task for bug id %s.\n" % bug_id)
-
-        except:
-            error("Exception caught fetching the bug for bug id %s.\n" % bug_id)
-
-        retval += '</tr>\n'
-        return retval
-
 # CollectRegressionsDataError
 #
 class CollectRegressionsDataError(Exception):
@@ -320,6 +192,81 @@ class CollectRegressionsData(StdApp):
             for task in tasks:
                 print("            %45s %20s %20s" % (task.bug_target_name, task.status, task.importance))
 
+    # date_to_string
+    #
+    def date_to_string(self, date):
+        return date.strftime("%A, %d. %B %Y %H:%M UTC")
+
+    # string_to_date
+    #
+    def string_to_date(self, date):
+        return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+
+    # bug_needs_attention
+    #
+    def bug_needs_attention(self, bug, package, db):
+        retval = False
+
+        if bug.id in db['packages'][package]['bugs']:
+            retval = True
+        else:
+            retval = False
+
+        return retval
+
+    # bug_info
+    #
+    def bug_info(self, bug_id, now, task=None):
+        bug_item  = {}
+
+        bug = self.lp.get_bug(bug_id)
+
+        # Bug info (non task specific)
+        #
+        bug_item['title']      = bug.title
+
+        for tag in bug.tags:
+            if 'tags' not in bug_item:
+                bug_item['tags'] = []
+            bug_item['tags'].append(tag)
+
+        bug_item['date created']      = self.date_to_string(bug.date_created)
+        bug_item['date last updated'] = self.date_to_string(bug.date_last_updated)
+        bug_item['date last message'] = self.date_to_string(bug.date_last_message)
+
+        messages = bug.messages
+        bug_item['number of messages'] = len(messages)
+
+        # Task info:
+        #
+        if task == None:
+            for task in bug.tasks:
+                task_item = {}
+                if 'tasks' not in bug_item:
+                    bug_item['tasks'] = []
+
+                task_item['name']       = task.bug_target_display_name
+                task_item['status']     = task.status
+                task_item['importance'] = task.importance
+
+                assignee = task.assignee
+                if assignee is None:
+                    task_item['assignee'] = 'Unassigned'
+                else:
+                    task_item['assignee'] = assignee.display_name
+                bug_item['tasks'].append(task_item)
+        else:
+            bug_item['status']     = task.status
+            bug_item['importance'] = task.importance
+
+            assignee = task.assignee
+            if assignee is None:
+                bug_item['assignee'] = 'Unassigned'
+            else:
+                bug_item['assignee'] = assignee.display_name
+
+        bug_item['gravity']         = Bugs.calculate_bug_gravity(bug, now)
+        return bug_item
 
     # main
     #
@@ -331,6 +278,7 @@ class CollectRegressionsData(StdApp):
             cmdline.verify_options(self.cfg)
 
             self.__initialize()
+            now = datetime.utcnow()
 
             bug_ct = 0
             if path.exists(self.cfg['database']):
@@ -343,7 +291,7 @@ class CollectRegressionsData(StdApp):
                 bugs_db = {}
                 bugs_db['tags']    = self.cfg['search_tags']   # Can be used by the report script for the report title
                 bugs_db['packages'] = {}
-            bugs_db['updated'] = datetime.utcnow().strftime("%A, %d. %B %Y %H:%M UTC")
+            bugs_db['updated'] = now.strftime("%A, %d. %B %Y %H:%M UTC")
             bugs_db_packages = bugs_db['packages']
 
             # All source projects the kernel team are interesed in.
@@ -374,7 +322,7 @@ class CollectRegressionsData(StdApp):
                 #                          status=self.cfg['task_search_status'], modified_since=search_since)
                 #
                 search_tags_combinator = "Any"
-                search_status          = ["New","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
+                search_status          = ["New","Incomplete","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
 
                 try:
                     self.verbose(" . Searching ...")
@@ -398,22 +346,28 @@ class CollectRegressionsData(StdApp):
                         task = self.__get_relevant_task(bug, package_name)
                         self.__verbose_bug_info(bug)
 
-                        bug_item               = {}
-                        bug_item['status']     = task.status
-                        bug_item['importance'] = task.importance
-                        bug_item['title']      = bug.title
+                        # Try to determine two things:
+                        #   1. Can we calculate some kind of value based on the information in the bug
+                        #      that indicates we should look at this bug as opposed to others?
+                        #
+                        #   2. Can we determine if we should go visit this bug? A change in status from
+                        #      "Incomplete" to "Confirmed" or "Triaged" would be such an indication.
+                        #
 
-                        owner = task.owner
-                        if owner != None:
-                            bug_item['assignee'] = owner.display_name
-                        else:
-                            bug_item['assignee'] = 'Unassigned'
+                        #bug_item['needs attention'] = self.bug_needs_attention(bug, package_name, bugs_db)
 
-                        this_package_bugs[bug.id] = bug_item
+                        this_package_bugs[bug.id] = self.bug_info(bug.id, now, task)
 
                         #if limit == 0:
                         #    break
                         #limit -= 1
+
+                    # Even if nothing changed on a bug, the gravity may have changed as the bug
+                    # ages.
+                    #
+                    if package_name in bugs_db_packages and 'bugs' in bugs_db_packages[package_name]:
+                        for bug_id in bugs_db_packages[package_name]['bugs']:
+                            bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = Bugs.calculate_bug_gravity(self.lp.get_bug(bug_id), now)
 
                 except:
                     error("Exception caught processing the tasks, building the bugs database.\n")

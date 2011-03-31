@@ -8,7 +8,9 @@ from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error, stde
+from ktl.bugs                           import DeltaTime
 from ktl.std_app                        import StdApp
+from datetime                           import datetime
 import json
 
 # CmdlineError
@@ -118,6 +120,30 @@ class RegressionsReport():
     #
     def __init__(self, db):
         self.db = db
+        self.importance_color = {
+                "Unknown"       : "#000000",
+                "Critical"      : "#ff4500", # "#cc0033",
+                "High"          : "#ffff22", # "#ff00cc",
+                "Medium"        : "#33ff11", # "#009900",
+                "Low"           : "#66ffff", # "#cc9900",
+                "Wishlist"      : "#ffffff", # "#0066cc",
+                "Undecided"     : "#000000"  # "#999999"
+            }
+        self.status_color     = {
+                "New"           : "#ffffff", #"#ff00cc",
+                "Incomplete"    : "#ffff22",
+                "Opinion"       : "#000000",
+                "Invalid"       : "#000000",
+                "Won't Fix"     : "#000000",
+                "Expired"       : "#000000",
+                "Confirmed"     : "#66ffff", #"#0066cc",
+                "Triaged"       : "#33ff11", #"#ff9933",
+                "In Progress"   : "#ff88ff",
+                "Fix Committed" : "#000000", #"#006600",
+                "Fix Released"  : "#000000", #"#009900",
+                "Unknown"       : "#000000"
+            }
+
         return
 
     # __str__
@@ -136,8 +162,17 @@ class RegressionsReport():
         retval = '''<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>The Regressions Report</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'''
+        if   self.db['tags'] == 'regression-potential':
+            retval += '        <title>Regressions-Proposed Report</title>\n'
+        elif self.db['tags'] == 'regression-release':
+            retval += '        <title>Regressions-Release Report</title>\n'
+        elif self.db['tags'] == 'regression-update':
+            retval += '        <title>Regressions-Update Report</title>\n'
+        else:
+            retval += '        <title>The Regressions Report</title>\n'
+
+        retval += '''
 
 
         <link rel="stylesheet" href="css/themes/bjf/style.css" type="text/css" media="print, projection, screen" />
@@ -177,11 +212,11 @@ class RegressionsReport():
         retval += '\n'
 
         retval += '            <div class="title">\n'
-        if   self.db['tags'] == ['regression-potential']:
+        if   self.db['tags'] == 'regression-potential':
             retval += '                The Regressions-Proposed Report\n'
-        elif self.db['tags'] == ['regression-release']:
+        elif self.db['tags'] == 'regression-release':
             retval += '                The Regressions-Release Report\n'
-        elif self.db['tags'] == ['regression-update']:
+        elif self.db['tags'] == 'regression-update':
             retval += '                The Regressions-Update Report\n'
         else:
             retval += '                The Regressions Report\n'
@@ -193,11 +228,13 @@ class RegressionsReport():
             retval += '                    <table id="%s" class="tablesorter" border="0" cellpadding="0" cellspacing="1" width="100%%">\n' % pkg.replace('.', '_')
             retval += '                        <thead>\n'
             retval += '                            <tr>\n'
-            retval += '                                <th>Bug</th>\n'
+            retval += '                                <th width="40">Bug</th>\n'
             retval += '                                <th>Summary</th>\n'
-            retval += '                                <th>Importance</th>\n'
-            retval += '                                <th>Status</th>\n'
-            retval += '                                <th>Assignee</th>\n'
+            retval += '                                <th width="80">Importance</th>\n'
+            retval += '                                <th width="80">Status</th>\n'
+            retval += '                                <th width="80">Assignee</th>\n'
+            retval += '                                <th width="40">Age</th>\n'
+            retval += '                                <th width="40">&nbsp; C &nbsp;</th>\n'
             retval += '                            </tr>\n'
             retval += '                        </thead>\n'
 
@@ -210,12 +247,52 @@ class RegressionsReport():
             retval += '                </div>\n'
             retval += '                <br />\n'
             retval += '                <br />\n'
+        retval += '            <div>\n'
+        retval += '                <br />\n'
+        retval += '                <hr />\n'
+        retval += '                %s\n' % self.db['updated']
+        retval += '                <br />\n'
+        retval += '                <br />\n'
+        retval += '            </div>\n'
         retval += '''
 
         </div> <!-- Outermost -->
     </body>
         '''
         return retval
+
+    # date_to_string
+    #
+    def date_to_string(self, date):
+        return date.strftime("%A, %d. %B %Y %H:%M UTC")
+
+    # string_to_date
+    #
+    def string_to_date(self, date):
+        return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+
+    def how_long_ago(self, date):
+        now = datetime.utcnow()
+        now.replace(tzinfo=None)
+        ago = DeltaTime(self.string_to_date(date), now)
+        #if ago.days > 1:
+        #    when = '%d days' % (ago.days)
+        #elif ago.days == 1:
+        #    when = '1 day, %h hours' % (ago.hours)
+        #elif ago.hours > 1:
+        #    when = '%h hours' % (ago.hours)
+        #elif ago.hours == 1:
+        #    when = '1 hour, %d mintues' % (ago.minutes)
+        #when = '%d:%02d:%02d' % (ago.days, ago.hours, ago.minutes)
+        when = '%d.%d.%d' % (ago.days, ago.hours, ago.minutes)
+        when_style = ''
+        if ago.days == 0:
+            if ago.hours == 0:
+                when_style = 'style="color: #ff0000"'
+            else:
+                when_style = 'style="color: #ffff00"'
+
+        return when_style, when
 
     # __bug_details
     #
@@ -224,11 +301,13 @@ class RegressionsReport():
         bug = self.db['packages'][pkg]['bugs'][bug_id]
 
         retval  = '                                <tr>\n'
-        retval += '                                    <td width="40"><a href="%s">%s</a></td>\n' % (bug_url, bug_id)     # Bug
-        retval += '                                    <td>%s</td>\n' % bug['title']                                      # Summary
-        retval += '                                    <td width="80">%s</td>\n' % bug['importance']                     # Importance
-        retval += '                                    <td width="80">%s</td>\n' % bug['status']                         # Status
-        retval += '                                    <td width="80">%s</td>\n' % bug['assignee']                       # Assignee
+        retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)     # Bug
+        retval += '                                    <td>%s</td>\n' % bug['title']                           # Summary
+        retval += '                                    <td style="color: %s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
+        retval += '                                    <td style="color: %s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
+        retval += '                                    <td>%s</td>\n' % bug['assignee']                        # Assignee
+        retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])      # Age
+        retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message']) # Last comment
         retval += '                                </tr>\n'
         return retval
 
