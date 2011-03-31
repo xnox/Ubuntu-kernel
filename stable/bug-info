@@ -159,7 +159,12 @@ class BugInfo(StdApp):
                 tasks = bug.tasks
                 print("    Tasks:")
                 for task in tasks:
-                    print("        %s    %s    %s" % (task.bug_target_name, task.status, task.importance))
+                    assignee = task.assignee
+                    if assignee is None:
+                        assignee = "Unknown"
+                    else:
+                        assignee = assignee.display_name
+                    print("        %s    %s    %s    %s" % (task.bug_target_name, task.status, task.importance, assignee))
 
 
 
