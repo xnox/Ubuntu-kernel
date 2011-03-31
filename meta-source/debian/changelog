@@ -1,8 +1,14 @@
-linux-meta (2.6.38.8.22) UNRELEASED; urgency=low
+linux-meta (2.6.38.8.22) natty; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * UBUNTU: Enable LBM for Natty
+
+  [ Tim Gardner ]
 
   * Bump ABI
 
- -- Tim Gardner <tim.gardner@canonical.com>  Fri, 25 Mar 2011 06:43:34 -0600
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 04 Apr 2011 06:23:14 -0700
 
 linux-meta (2.6.38.7.21) natty; urgency=low
 
