@@ -170,7 +170,6 @@ class Shank(StdApp):
                 # several, but _mostly_ the 'linux' source package.
                 #
                 source_package = self.distro.get_source_package(package_name)
-                print repr(source_package)
                 if source_package == None:
                     error("The source package does not exist.")
                     raise
