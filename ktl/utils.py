@@ -91,6 +91,11 @@ def stdo(ostr):
     stdout.flush()
     return
 
+def stde(ostr):
+    stderr.write(ostr)
+    stderr.flush()
+    return
+
 def dump(obj):
     stdo(json.dumps(obj, sort_keys=True, indent=4))
     stdo('\n')
