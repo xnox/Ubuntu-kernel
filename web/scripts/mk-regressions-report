@@ -164,7 +164,7 @@ class RegressionsReport():
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'''
         if   self.db['tags'] == 'regression-potential':
-            retval += '        <title>Regressions-Proposed Report</title>\n'
+            retval += '        <title>Regressions-Potential Report</title>\n'
         elif self.db['tags'] == 'regression-release':
             retval += '        <title>Regressions-Release Report</title>\n'
         elif self.db['tags'] == 'regression-update':
@@ -213,7 +213,7 @@ class RegressionsReport():
 
         retval += '            <div class="title">\n'
         if   self.db['tags'] == 'regression-potential':
-            retval += '                The Regressions-Proposed Report\n'
+            retval += '                The Regressions-Potential Report\n'
         elif self.db['tags'] == 'regression-release':
             retval += '                The Regressions-Release Report\n'
         elif self.db['tags'] == 'regression-update':
