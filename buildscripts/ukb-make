@@ -12,7 +12,7 @@ ARCH=
 
 usage()
 {
-	echo $0 [--arch=ARCH] [--repo=REPO] --release=RELEASE --branch=BRANCH [--clean]
+	echo $0 [--arch=ARCH] [--repo=REPO] --release=RELEASE --branch=BRANCH [--bdir=BUILD_DIR] [--clean]
 	echo ex: $0 --arch=amd64 --release=lucid --branch=master-next
 	exit 1
 }
@@ -30,6 +30,9 @@ while [ $# -ne 0 ]; do
 			;;
 		--branch=*)
 			BRANCH=$(echo $1|cut -d= -f2)
+			;;
+		--bdir=*)
+			UKB_DEF_BUILD_DIR_BASE=$(echo $1|cut -d= -f2)
 			;;
 		--clean)
 			CLEAN=yes
