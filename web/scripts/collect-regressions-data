@@ -137,6 +137,7 @@ class CollectRegressionsData(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
+        self.defaults['read_only'] = True
         self.defaults['search_tags'] = [   # A list of the tags we care about
             'regression-potential',
             'regression-release',
