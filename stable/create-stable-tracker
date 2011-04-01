@@ -52,7 +52,7 @@ class Cmdline:
         stdo("        --staging        Use the staging LP server to create the bug. This is just for       \n")
         stdo("                         testing and will go away when the database is reset.                \n")
         stdo("                                                                                             \n")
-        stdo("        -version         What is the version number of the stable release. This is used      \n")
+        stdo("        --version        What is the version number of the stable release. This is used      \n")
         stdo("                         for the bug title, to determine the series, etcl.                   \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
