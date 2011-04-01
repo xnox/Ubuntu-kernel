@@ -132,15 +132,15 @@ class RegressionsReport():
         self.status_color     = {
                 "New"           : "#ffffff", #"#ff00cc",
                 "Incomplete"    : "#ffff22",
-                "Opinion"       : "#000000",
-                "Invalid"       : "#000000",
-                "Won't Fix"     : "#000000",
-                "Expired"       : "#000000",
                 "Confirmed"     : "#66ffff", #"#0066cc",
                 "Triaged"       : "#33ff11", #"#ff9933",
                 "In Progress"   : "#ff88ff",
                 "Fix Committed" : "#000000", #"#006600",
                 "Fix Released"  : "#000000", #"#009900",
+                "Invalid"       : "#000000",
+                "Won't Fix"     : "#000000",
+                "Opinion"       : "#000000",
+                "Expired"       : "#000000",
                 "Unknown"       : "#000000"
             }
 
@@ -182,16 +182,60 @@ class RegressionsReport():
         <script type="text/javascript" src="js/jquery.tablesorter.js"></script>'''
 
         retval += '\n'
-        retval += '        <script type="text/javascript">\n'
-        retval += '            $(function() {\n'
+        retval += '        <script type="text/javascript">'
+        retval += '''
+           // add parser through the tablesorter addParser method
+           $.tablesorter.addParser({
+               // set a unique id
+               id: 'importance',
+               is: function(s) {
+                   // return false so this parser is not auto detected
+                   return false;
+               },
+               format: function(s) {
+                   // format your data for normalization
+                       return s.toLowerCase().replace(/critical/,6).replace(/high/,5).replace(/medium/,4).replace(/low/,3).replace(/wishlist/,2).replace(/undecided/,1).replace(/unknown/,0);
+               },
+               // set type, either numeric or text
+               type: 'numeric'
+           });
+
+           // add parser through the tablesorter addParser method
+           $.tablesorter.addParser({
+               // set a unique id
+               id: 'status',
+               is: function(s) {
+                   // return false so this parser is not auto detected
+                   return false;
+               },
+               format: function(s) {
+                   // format your data for normalization
+                       return s.toLowerCase().replace(/new/,12).replace(/incomplete/,11).replace(/confirmed/,10).replace(/triaged/,9).replace(/in progress/,8).replace(/fix committed/,7).replace(/fix released/,6).replace(/invalid/,6).replace(/won't fix/,5).replace(/confirmed/,4).replace(/opinion/,3).replace(/expired/,2).replace(/unknown/,1);
+               },
+               // set type, either numeric or text
+               type: 'numeric'
+           });
+           '''
+
+        retval += '$(function() {\n'
         for pkg in self.db['packages']:
-            retval += '                $("#%s").tablesorter({widgets: [\'zebra\']});\n' % pkg.replace('.', '_')
-        retval += '            });\n'
+            retval += '                $("#%s").tablesorter({\n' % pkg.replace('.', '_')
+            retval += '                    headers: {\n'
+            retval += '                        3: {\n'
+            retval += '                            sorter:\'importance\'\n'
+            retval += '                        },\n'
+            retval += '                        4: {\n'
+            retval += '                            sorter:\'status\'\n'
+            retval += '                        }\n'
+            retval += '                    },\n'
+            retval += '                    widgets: [\'zebra\']\n'
+            retval += '                });\n'
+            retval += '            });\n'
         retval += '        </script>\n'
 
-        retval += '''
-    </head>
-        '''
+        retval += '\n'
+        retval += '    </head>\n'
+        retval += '\n'
 
         return retval
 
