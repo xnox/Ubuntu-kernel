@@ -230,11 +230,12 @@ class RegressionsReport():
             retval += '                            <tr>\n'
             retval += '                                <th width="40">Bug</th>\n'
             retval += '                                <th>Summary</th>\n'
+            retval += '                                <th width="80">Series</th>\n'
             retval += '                                <th width="80">Importance</th>\n'
             retval += '                                <th width="80">Status</th>\n'
             retval += '                                <th width="80">Assignee</th>\n'
-            retval += '                                <th width="40">Age</th>\n'
-            retval += '                                <th width="40">&nbsp; C &nbsp;</th>\n'
+            retval += '                                <th width="50">Age</th>\n'
+            retval += '                                <th width="50">&nbsp; C &nbsp;</th>\n'
             retval += '                            </tr>\n'
             retval += '                        </thead>\n'
 
@@ -303,6 +304,7 @@ class RegressionsReport():
         retval  = '                                <tr>\n'
         retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)     # Bug
         retval += '                                    <td>%s</td>\n' % bug['title']                           # Summary
+        retval += '                                    <td style="color: #ffffff">%s</td>\n' % (bug['series name']) # Series
         retval += '                                    <td style="color: %s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
         retval += '                                    <td style="color: %s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
         retval += '                                    <td>%s</td>\n' % bug['assignee']                        # Assignee

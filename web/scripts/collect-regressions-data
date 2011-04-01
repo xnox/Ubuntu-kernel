@@ -80,7 +80,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'potential', 'release', 'update', 'db=']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'potential', 'release', 'update', 'db=', 'as-me']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -107,6 +107,10 @@ class Cmdline:
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
+
+                elif opt == '--as-me':
+                    self.cfg['as me'] = True
+
 
         except GetoptError as e:
             print(e, defaults)
@@ -137,7 +141,6 @@ class CollectRegressionsData(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
-        self.defaults['read_only'] = True
         self.defaults['search_tags'] = [   # A list of the tags we care about
             'regression-potential',
             'regression-release',
@@ -150,10 +153,13 @@ class CollectRegressionsData(StdApp):
     # when the object is instantiated).
     #
     def __initialize(self):
+        if 'as me' not in self.cfg:
+            self.cfg['read_only'] = True
+
         if 'staging' in self.cfg:
-            self.defaults['launchpad_services_root'] = 'qastaging'
+            self.cfg['launchpad_services_root'] = 'qastaging'
         self.verbose(" . Connecting to Launchpad\n")
-        self.lp = LaunchpadService(self.defaults)
+        self.lp = LaunchpadService(self.cfg)
 
         # The service.distributions property is a collection of distributions. We
         # pretty much only care about one, 'ubuntu'.
@@ -266,6 +272,7 @@ class CollectRegressionsData(StdApp):
             else:
                 bug_item['assignee'] = assignee.display_name
 
+        (bug_item['series name'], bug_item['series version']) = Bugs.determine_series(bug)
         bug_item['gravity']         = Bugs.calculate_bug_gravity(bug, now)
         return bug_item
 
