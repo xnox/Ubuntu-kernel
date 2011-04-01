@@ -118,17 +118,32 @@ class Shank(StdApp):
         StdApp.__init__(self)
         self.defaults = {}
 
-        state_map = {
+        self.task_map = {
+            # who to assign to
+            'certification-testing' : {'assignee':'New'},
+            'upload-to-ppa'         : {'assignee':'New'},
+            'promote-to-proposed'   : {'assignee':'New'},
+            'promote-to-updates'    : {'assignee':'New'},
+            'promote-to-security'   : {'assignee':'New'},
+            'regression-testing'    : {'assignee':'New'},
+            'security-signoff'      : {'assignee':'New'},
+            'verification-testing'  : {'assignee':'New'},
+            }
+        
+
+        self.state_map = {
             # Task, Current State, Action
-            'certification-testing' : {'state':'New', 'action':None},
-            'upload-to-ppa'         : {'state':'New', 'action':None},
-            'promote-to-proposed'   : {'state':'New', 'action':None},
-            'promote-to-updates'    : {'state':'New', 'action':None},
-            'promote-to-security'   : {'state':'New', 'action':None},
-            'regression-testing'    : {'state':'New', 'action':None},
-            'security-signoff'      : {'state':'New', 'action':None},
-            'verification-testing'  : {'state':'New', 'action':None},
-        }
+            'kernel-sru-workflow'     : {'New' : {'action':None}}, # easier to put in the table with no actions than to special case
+            'prepare-package'         : {'New' : {'action':None}, 'In Progress' : {'action':self.prep_package_in_progress}},
+            'certification-testing'   : {'New' : {'action':None}},
+            'upload-to-ppa'           : {'New' : {'action':None}},
+            'promote-to-proposed'     : {'New' : {'action':None}},
+            'promote-to-updates'      : {'New' : {'action':None}},
+            'promote-to-security'     : {'New' : {'action':None}},
+            'regression-testing'      : {'New' : {'action':None}},
+            'security-signoff'        : {'New' : {'action':None}},
+            'verification-testing'    : {'New' : {'action':None}},
+        } 
 
     # initialize
     #
@@ -180,9 +195,53 @@ class Shank(StdApp):
                     task       = t.bug_target_name
                     state      = t.status
                     importance = t.importance
-                    asignee    = t.owner.display_name
+                    assignee    = t.owner.display_name
+                    assignee    = t.assignee
+                    if assignee == None:
+                        assignee = '*Unassigned'
+                    else:
+                        assignee = assignee.display_name
 
-                    self.verbose("%25s  %15s  %10s  %s\n" % (task, state, importance, asignee))
+                    # bug_target_name includes both the main and sub task in the string
+                    # so for example it could be "kernel-sru-workflow prepare-package"
+                    # so we have to strip off the right hand part
+                    # The task can also be just the single parent task i.e. "kernel-sru-workflow"
+                    parts = task.split()
+                    mastertask = parts[0]
+                    if len(parts) == 1:
+                        if mastertask == 'kernel-sru-workflow':
+                            self.verbose('Skipping empty master workflow task \n')
+                            continue
+                    else:
+                        task = parts[1]
+
+                    # Ignore the tasks assigned to the actual package, we care about workflow only
+                    if mastertask != "kernel-sru-workflow":
+                        #self.verbose('Skipping non-workflow task %s:%s\n' % (mastertask, task))
+                        continue
+
+                    self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task, state, importance, assignee))
+
+                    try:
+                        taskstates = self.state_map[task]
+                    except KeyError:
+                        print "I don't know how to handle the task <%s>, skipping\n" % (task)
+                        continue
+
+                    # now call the processing method for this state and task.
+                    try:
+                        action = taskstates[state]['action']
+                    except KeyError:
+                        print("ERROR: No action found for state <%s> and task <%s>" % (state, task))
+                        raise
+
+                    if  action is None:
+                        self.verbose('ACTION: No action for task %s in state %s\n' % (task, state))
+                    else:
+                        newstate = action(t)
+                        self.verbose('ACTION: Action was taken to change task %s state from %s to %s\n' % (task, state, newstate))
+                        
+                self.verbose('--\n')
 
         # Handle the user presses <ctrl-C>.
         #
@@ -195,6 +254,19 @@ class Shank(StdApp):
             cmdline.error(e.msg, self.defaults)
 
         return
+
+    #
+    # Begin action methods for state transitions
+    #
+
+    # prep-package_in_progress
+    #
+    def prep_package_in_progress(self, taskobj):
+        # This is where the tests and actions will be coded for each task and state
+
+        print '*** In action method for in-progress/prep-package ***'
+        # don't change anything right now
+        return taskobj.status
 
 if __name__ == '__main__':
     app = Shank()
