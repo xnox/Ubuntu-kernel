@@ -130,19 +130,125 @@ class Shank(StdApp):
             'verification-testing'  : {'assignee':'New'},
             }
         
-
         self.state_map = {
             # Task, Current State, Action
-            'kernel-sru-workflow'     : {'New' : {'action':None}}, # easier to put in the table with no actions than to special case
-            'prepare-package'         : {'New' : {'action':None}, 'In Progress' : {'action':self.prep_package_in_progress}},
-            'certification-testing'   : {'New' : {'action':None}},
-            'upload-to-ppa'           : {'New' : {'action':None}},
-            'promote-to-proposed'     : {'New' : {'action':None}},
-            'promote-to-updates'      : {'New' : {'action':None}},
-            'promote-to-security'     : {'New' : {'action':None}},
-            'regression-testing'      : {'New' : {'action':None}},
-            'security-signoff'        : {'New' : {'action':None}},
-            'verification-testing'    : {'New' : {'action':None}},
+            'prepare-package'         : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'certification-testing'   : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'upload-to-ppa'           : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'promote-to-proposed'     : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'promote-to-updates'      : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'promote-to-security'     : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'regression-testing'      : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'security-signoff'        : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'verification-testing'    : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
         } 
 
     # initialize
@@ -197,7 +303,7 @@ class Shank(StdApp):
                     importance = t.importance
                     assignee    = t.owner.display_name
                     assignee    = t.assignee
-                    if assignee == None:
+                    if assignee is None:
                         assignee = '*Unassigned'
                     else:
                         assignee = assignee.display_name
@@ -261,8 +367,38 @@ class Shank(StdApp):
 
     # prep-package_in_progress
     #
+
+    # Tasks:
+    #
+    # prepare-package
+    # certification-testing
+    # upload-to-ppa
+    # promote-to-proposed
+    # promote-to-updates
+    # promote-to-security
+    # regression-testing
+    # security-signoff
+    # verification-testing
+
+    # Status/States
+    #
+    # New
+    # Incomplete
+    # Opinion
+    # Invalid
+    # Won't Fix
+    # Expired
+    # Confirmed
+    # Triaged
+    # In Progress
+    # Fix Committed
+    # Fix Released
+    # Unknown
+
     def prep_package_in_progress(self, taskobj):
-        # This is where the tests and actions will be coded for each task and state
+        """
+        This is where the tests and actions will be coded for each task and state
+        """
 
         print '*** In action method for in-progress/prep-package ***'
         # don't change anything right now
