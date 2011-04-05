@@ -23,10 +23,19 @@ map_kernel_version_to_ubuntu_release = {
 }
 
 map_release_number_to_ubuntu_release = {
+    '11.10'  : {
+        'kernel'    : '2.6.39',
+        'name'      : 'oneiric',
+        'supported' : False,
+        # adjust packages when this goes live
+        'packages'  : [
+            'linux',
+            ]
+        },
     '11.04'  : {
         'kernel'    : '2.6.38',
         'name'      : 'natty',
-        'supported' : False,
+        'supported' : True,
         # adjust packages when this goes live
         'packages'  : [
             'linux',

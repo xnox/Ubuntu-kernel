@@ -80,7 +80,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'potential', 'release', 'update', 'db=', 'as-me']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'proposed', 'potential', 'release', 'update', 'db=', 'as-me']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -89,6 +89,9 @@ class Cmdline:
 
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
+
+                elif (opt == '--proposed'):
+                    self.cfg['search_tags'] = 'regression-proposed'
 
                 elif (opt == '--potential'):
                     self.cfg['search_tags'] = 'regression-potential'
@@ -142,6 +145,7 @@ class CollectRegressionsData(StdApp):
         StdApp.__init__(self)
         self.defaults = {}
         self.defaults['search_tags'] = [   # A list of the tags we care about
+            'regression-proposed',
             'regression-potential',
             'regression-release',
             'regression-update'
