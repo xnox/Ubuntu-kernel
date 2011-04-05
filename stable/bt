@@ -54,7 +54,7 @@ class Cmdline:
     #
     def usage(self, defaults):
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("        %s <options>                                                                         \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
@@ -69,6 +69,14 @@ class Cmdline:
         stdo("        --debug=<debug options>                                                              \n")
         stdo("                         Performs additional output related to the option enabled and        \n")
         stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("        --update                                                                             \n")
+        stdo("        --staging                                                                            \n")
+        stdo("        --db=<db-name>                                                                       \n")
+        stdo("        --add=<bug-list>                                                                     \n")
+        stdo("        --rm=<bug-list>                                                                      \n")
+        stdo("        --nv=<name-value-pairs>                                                              \n")
+        stdo("        --report                                                                             \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
@@ -371,6 +379,10 @@ class BugTracker(StdApp):
         # pretty much only care about one, 'ubuntu'.
         #
         self.distro = self.lp.distributions['ubuntu']
+
+        if not pynotify.init("Basics"):
+            print("*** Warning: Failed to initialize the pynotify library.")
+
         return
 
     # date_to_string
@@ -386,61 +398,77 @@ class BugTracker(StdApp):
     # notify
     #
     def notify(self, summary, body):
-        pynotify.Notification(summary, body)
+        n = pynotify.Notification(summary, body)
+        if not n.show():
+            print "Failed to send notification"
         return
 
     # notify_if_new_comment
     #
     def notify_if_new_comment(self, bug_id, bugs_db):
-        bug = self.lp.get_bug(bug_id)
-        messages = bug.messages
-        if 'number of messages' in bugs_db['bugs'][bug_id]:
-            if len(messages) > bugs_db['bugs'][bug_id]['number of messages']:
-                self.notify(bug_id, 'A comment has been added.')
+        try:
+            bug = self.lp.get_bug(bug_id)
+            messages = bug.messages
+            if 'number of messages' in bugs_db['bugs'][bug_id]:
+                print('    len(messages) : %d' % len(messages))
+                print('number of messages: %d' % bugs_db['bugs'][bug_id]['number of messages'])
+                if len(messages) > bugs_db['bugs'][bug_id]['number of messages']:
+                    print("there are new messages")
+                    self.notify(bug_id, 'A comment has been added.')
+                else:
+                    print("there are NO new messages")
+
+        except:
+            # Could be we are running against the qastaging server and the bug doesn't exist there
+            pass
         return
 
     # bug_info
     #
     def bug_info(self, bug_id, now):
-        bug_item  = {}
+        bug_item = None
+        try:
+            bug_item  = {}
+            bug = self.lp.get_bug(bug_id)
 
-        bug = self.lp.get_bug(bug_id)
+            # Bug info (non task specific)
+            #
+            bug_item['title']      = bug.title
 
-        # Bug info (non task specific)
-        #
-        bug_item['title']      = bug.title
+            for tag in bug.tags:
+                if 'tags' not in bug_item:
+                    bug_item['tags'] = []
+                bug_item['tags'].append(tag)
 
-        for tag in bug.tags:
-            if 'tags' not in bug_item:
-                bug_item['tags'] = []
-            bug_item['tags'].append(tag)
+            bug_item['date created']      = self.date_to_string(bug.date_created)
+            bug_item['date last updated'] = self.date_to_string(bug.date_last_updated)
+            bug_item['date last message'] = self.date_to_string(bug.date_last_message)
 
-        bug_item['date created']      = self.date_to_string(bug.date_created)
-        bug_item['date last updated'] = self.date_to_string(bug.date_last_updated)
-        bug_item['date last message'] = self.date_to_string(bug.date_last_message)
+            messages = bug.messages
+            bug_item['number of messages'] = len(messages)
 
-        messages = bug.messages
-        bug_item['number of messages'] = len(messages)
+            # Task info:
+            #
+            for task in bug.tasks:
+                task_item = {}
+                if 'tasks' not in bug_item:
+                    bug_item['tasks'] = []
 
-        # Task info:
-        #
-        for task in bug.tasks:
-            task_item = {}
-            if 'tasks' not in bug_item:
-                bug_item['tasks'] = []
+                task_item['name']       = task.bug_target_display_name
+                task_item['status']     = task.status
+                task_item['importance'] = task.importance
 
-            task_item['name']       = task.bug_target_display_name
-            task_item['status']     = task.status
-            task_item['importance'] = task.importance
+                assignee = task.assignee
+                if assignee is None:
+                    task_item['assignee'] = 'Unassigned'
+                else:
+                    task_item['assignee'] = assignee.display_name
+                bug_item['tasks'].append(task_item)
 
-            assignee = task.assignee
-            if assignee is None:
-                task_item['assignee'] = 'Unassigned'
-            else:
-                task_item['assignee'] = assignee.display_name
-            bug_item['tasks'].append(task_item)
-
-        bug_item['gravity']         = Bugs.calculate_bug_gravity(bug, now)
+            bug_item['gravity']         = Bugs.calculate_bug_gravity(bug, now)
+        except:
+            # Could be we are running against the qastaging server and the bug doesn't exist there
+            pass
         return bug_item
 
     # main
@@ -473,7 +501,9 @@ class BugTracker(StdApp):
             if 'add' in self.cfg['operations']:
                 self.verbose('adding bugs\n')
                 for bug_id in self.cfg['+bugs']:
-                    bugs_db['bugs'][bug_id] = self.bug_info(bug_id, now)
+                    bi = self.bug_info(bug_id, now)
+                    if bi is not None:
+                        bugs_db['bugs'][bug_id] = bi
 
             if 'rm' in self.cfg['operations']:
                 self.verbose('removing bugs\n')
