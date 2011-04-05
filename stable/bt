@@ -410,13 +410,8 @@ class BugTracker(StdApp):
             bug = self.lp.get_bug(bug_id)
             messages = bug.messages
             if 'number of messages' in bugs_db['bugs'][bug_id]:
-                print('    len(messages) : %d' % len(messages))
-                print('number of messages: %d' % bugs_db['bugs'][bug_id]['number of messages'])
                 if len(messages) > bugs_db['bugs'][bug_id]['number of messages']:
-                    print("there are new messages")
                     self.notify(bug_id, 'A comment has been added.')
-                else:
-                    print("there are NO new messages")
 
         except:
             # Could be we are running against the qastaging server and the bug doesn't exist there
