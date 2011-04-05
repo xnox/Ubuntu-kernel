@@ -118,17 +118,17 @@ class Shank(StdApp):
         StdApp.__init__(self)
         self.defaults = {}
 
-        self.task_map = {
-            # who to assign to
-            'certification-testing' : {'assignee':'New'},
-            'upload-to-ppa'         : {'assignee':'New'},
-            'promote-to-proposed'   : {'assignee':'New'},
-            'promote-to-updates'    : {'assignee':'New'},
-            'promote-to-security'   : {'assignee':'New'},
-            'regression-testing'    : {'assignee':'New'},
-            'security-signoff'      : {'assignee':'New'},
-            'verification-testing'  : {'assignee':'New'},
-            }
+        #self.task_map = {
+        #    # who to assign to
+        #    'certification-testing' : {'assignee':'New'},
+        #    'upload-to-ppa'         : {'assignee':'New'},
+        #    'promote-to-proposed'   : {'assignee':'New'},
+        #    'promote-to-updates'    : {'assignee':'New'},
+        #    'promote-to-security'   : {'assignee':'New'},
+        #    'regression-testing'    : {'assignee':'New'},
+        #    'security-signoff'      : {'assignee':'New'},
+        #    'verification-testing'  : {'assignee':'New'},
+        #    }
         
         self.state_map = {
             # Task, Current State, Action
@@ -251,6 +251,92 @@ class Shank(StdApp):
                                          },
         } 
 
+        #
+        # State transition listing
+        #
+        # https://wiki.ubuntu.com/Kernel/kernel-sru-workflow
+        #
+        # Tasks:
+        #
+        #   prepare-package
+        #         New -> 'In Progress' MANUAL When stable team begins package prep
+        #               Triggers: nothing
+        #         'In Progress' -> 'Fix Released' MANUAL when PPA builds are complete (future automation)
+        #               Triggers: promote-to-proposed changes to 'Confirmed'
+        #
+        #   upload-to-ppa - this state not used at this time
+        #
+        #   promote-to-proposed
+        #         'Confirmed' -> 'In Progress' MANUAL When archive admin takes the task
+        #               Triggers: Nothing
+        #         'In Progress' -> 'Fix Released' MANUAL when packages are in -proposed
+        #               Triggers: verification-testing set to 'In Progress'
+        #
+        #   verification-testing
+        #         New -> 'In Progress' AUTO
+        #               Triggers: Affected bugs marked 'verification needed' and spammed with text
+        #         'In Progress' -> 'Fix Released' MANUAL when all bugs are verified (future automation)
+        #               Triggers: certification-testing, regression-testing, and security-signoff set to 'Confirmed'
+        #
+        #   certification-testing
+        #         New -> 'Confirmed' AUTO
+        #               Triggers: Nothing
+        #         'Confirmed' -> 'In Progress' MANUAL When someone takes the task
+        #               Triggers: Nothing
+        #         'In Progress' -> 'Fix Released' MANUAL when testing is complete
+        #                           NOTE: certification-testing-passed or certification-testing-failed tag must be added
+        #               Triggers: Release Test
+        #
+        #   regression-testing
+        #         New -> 'Confirmed' AUTO
+        #               Triggers: Nothing
+        #         'Confirmed' -> 'In Progress' MANUAL When someone takes the task
+        #               Triggers: Nothing
+        #         'In Progress' -> 'Fix Released' MANUAL when testing is complete
+        #                           NOTE: qa-testing-passed or qa-testing-failed tag must be added
+        #               Triggers: Release Test
+        #
+        #   security-signoff
+        #         New -> 'Confirmed' AUTO
+        #               Triggers: Nothing
+        #         'Confirmed' -> 'In Progress' MANUAL When someone takes the task
+        #               Triggers: Nothing
+        #         'In Progress' -> 'Invalid' MANUAL if not required to be published to -security
+        #               Triggers: Release Test
+        #         'In Progress' -> 'Fix Released' MANUAL if publiching to -security required
+        #               Triggers: Release Test
+        #
+        #   promote-to-updates
+        #         New -> 'Confirmed' AUTO
+        #               Triggers: Nothing
+        #         'Confirmed' -> 'In Progress' MANUAL When archive admin takes the task
+        #               Triggers: Nothing
+        #         'In Progress' -> 'Fix Released' MANUAL when packages are in -updates
+        #               Triggers: Nothing
+        #
+        #   promote-to-security
+        #         New -> 'Confirmed' AUTO
+        #               Triggers: Nothing
+        #         'Confirmed' -> 'In Progress' MANUAL When archive admin takes the task
+        #               Triggers: Nothing
+        #         'In Progress' -> 'Fix Released' MANUAL when packages are in -security
+        #               Triggers: Nothing
+        #
+        ######
+        #
+        # 'Release Test' - triggered to be run by several states
+        #
+        #     IF -failed tag present for qa or cert, then TODO DO SOMETHING (email the SRU list?)
+        #
+        #     IF  certification-testing task and regression-testing tasks are both 'Fix Released'
+        #     AND both those tasks have tags for -passed
+        #     then:
+        #        set promote-to-updates to 'Confirmed'
+        #        IF security-signoff is 'Fix Released'
+        #            set promote-to-security to 'Confirmed'
+        #
+
+
     # initialize
     #
     def initialize(self):
@@ -292,6 +378,7 @@ class Shank(StdApp):
             search_status          = ["New","Invalid","Fix Committed"] # A list of the bug statuses that we care about
             search_since           = datetime(year=2011, month=1, day=1)
             tasks = project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
+            performReleaseTest = False
 
             for task in tasks:
                 bug = task.bug
@@ -349,6 +436,11 @@ class Shank(StdApp):
                         
                 self.verbose('--\n')
 
+            # Now process any tests which require information from multiple tasks
+            # will require info stored in class variables during task processing
+            if performReleaseTest:
+                self.perform_release_test()
+
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
@@ -367,34 +459,6 @@ class Shank(StdApp):
 
     # prep-package_in_progress
     #
-
-    # Tasks:
-    #
-    # prepare-package
-    # certification-testing
-    # upload-to-ppa
-    # promote-to-proposed
-    # promote-to-updates
-    # promote-to-security
-    # regression-testing
-    # security-signoff
-    # verification-testing
-
-    # Status/States
-    #
-    # New
-    # Incomplete
-    # Opinion
-    # Invalid
-    # Won't Fix
-    # Expired
-    # Confirmed
-    # Triaged
-    # In Progress
-    # Fix Committed
-    # Fix Released
-    # Unknown
-
     def prep_package_in_progress(self, taskobj):
         """
         This is where the tests and actions will be coded for each task and state
@@ -403,6 +467,19 @@ class Shank(StdApp):
         print '*** In action method for in-progress/prep-package ***'
         # don't change anything right now
         return taskobj.status
+
+    # perform_release_test
+    #
+    def perform_release_test(self):
+        """
+        Check results from multiple tasks to see whether release
+        to -updates and -security are required
+        """
+        
+        print '*** Performing release test'
+        # nothing yet
+        # Not associated with a task so no status returned
+        return
 
 if __name__ == '__main__':
     app = Shank()
