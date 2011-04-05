@@ -5,6 +5,7 @@ import re
 from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_series_db
 from ktl.kernel                         import map_kernel_version_to_ubuntu_release as ubuntu_version_db
 from ktl.utils                          import stdo
+from ktl.ubuntu                         import Ubuntu
 
 # DeltaTime
 #
@@ -62,16 +63,6 @@ class Bugs():
         if cls.verbose:
             stdo(msg)
 
-    # has_required_logs
-    #
-    @classmethod
-    def has_required_logs(cls, bug):
-       """
-       Examines a bug and determines if it has all the logs that the kernel
-       team requires.
-       """
-       return False
-
     # calculate_bug_gravity
     #
     @classmethod
@@ -127,6 +118,15 @@ class Bugs():
             else:
                 cls.vout('    - didn\'t match series version pattern\n')
 
+        if series_name == '':
+            ubuntu = Ubuntu()
+            try:
+                rec = ubuntu.lookup(version)
+                series_name = rec['name']
+                series_version = rec['series_version']
+            except KeyError:
+                pass
+
         cls.vout('    - returning (%s)\n' % series_name)
         return (series_name, series_version)
 
@@ -139,21 +139,6 @@ class Bugs():
                 retval = version
                 break
         return retval
-
-    # find_distro_in_title
-    #
-    # Scan title for a pattern that looks like a distro name or version, and
-    # return the newest release version found.
-    #
-    @classmethod
-    def find_distro_in_title(cls, ars_bug):
-        results = []
-        for rel_num, rel in ubuntu_series_db.iteritems():
-            pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" %(rel['name'], rel_num.replace(".", "\."))
-            regex = re.compile(pat, re.IGNORECASE)
-            if regex.search(ars_bug.title):
-                results.append(rel['name'])
-        return results
 
     # find_series_in_description
     #
@@ -208,13 +193,26 @@ class Bugs():
             cls.vout('     - Not found\n')
         return (series_name, series_version)
 
-    # find_distro_in_attachments
+    @classmethod
+    def find_linux_version(cls, attachment):
+        retval = ''
+        file = attachment.data.open()
+        for line in file:
+            m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+            if (m != None):
+                cls.vout('       - found\n')
+                retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                break
+        file.close()
+        return retval
+
+    # find_series_in_attachments
     #
     # Look through the various files attached to the bug, by the original
     # submitter/owner and see if we can determine the distro from there.
     #
     @classmethod
-    def find_distro_in_attachments(cls, bug):
+    def find_series_in_attachments(cls, bug):
         cls.vout(' . Looking for the series in the attachments\n')
         series_name = ''
         series_version = ''
@@ -226,25 +224,42 @@ class Bugs():
                 raise # Will get eaten at the bottom
 
             owner = bug.owner.display_name.encode('utf-8')
-            for attachment in bug.bug.attachments_collection:
+            for attachment in bug.attachments:
+                cls.vout('     - attachment: "%s"\n' % (attachment.title))
                 try:
                     # Short circuit the loop, if the attachment isn't from the bug
                     # submitter, we don't really care.
                     #
                     if (attachment.message.owner.display_name.encode('utf-8') != owner):
+                        cls.vout('     - skipped, not the original bug submitter\n')
                         continue
+
+                    # kern.log
+                    #
+                    m = re.search('kern.log]*', attachment.title)
+                    if m != None:
+                        cls.vout('         - examining\n')
+                        kernel_version = cls.find_linux_version(attachment)
+                        if kernel_version != '':
+                            (series_name, series_version) = cls.ubuntu_series_lookup(kernel_version)
+                            break
+
+                    # BootDmesg.txt
+                    #
+                    m = re.search('Boot[Dd]mesg[.txt|.log]*', attachment.title)
+                    if m != None:
+                        cls.vout('     - BootDmesg.log\n')
+                        kernel_version = cls.find_linux_version(attachment)
+                        if kernel_version != '':
+                            (series_name, series_version) = cls.ubuntu_series_lookup(kernel_version)
+                            break
 
                     # Dmesg.txt / dmesg.log
                     #
                     m = re.search('[Dd]mesg[.txt|.log]*', attachment.title)
                     if m != None:
                         cls.vout('     - Dmesg.log\n')
-                        for line in attachment.data:
-                            m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
-                            if (m != None):
-                                cls.vout('       - found\n')
-                                kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
-                                break
+                        kernel_version = cls.find_linux_version(attachment)
                         if kernel_version != '':
                             (series_name, series_version) = cls.ubuntu_series_lookup(kernel_version)
                             break
@@ -254,12 +269,14 @@ class Bugs():
                     if series_name == '':
                         if 'alsa-info' in attachment.title:
                             cls.vout('     - alsa-info.log\n')
-                            for line in attachment.data:
+                            file = attachment.data.open()
+                            for line in file:
                                 m = re.search('Kernel release:\s+([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', line)
                                 if (m != None):
                                     cls.vout('       - found\n')
                                     kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
                                     break
+                            file.close()
                             if kernel_version != '':
                                 (series_name, series_version) = cls.ubuntu_series_lookup(kernel_version)
                                 break
@@ -270,20 +287,54 @@ class Bugs():
                         m = re.search('[Xx]org\.0\.log.*', attachment.title)
                         if m != None:
                             cls.vout('     - Xorg.0.log\n')
-                            for line in attachment.data:
+                            file = attachment.data.open()
+                            for line in file:
                                 m = re.search('Linux ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
                                 if (m != None):
                                     cls.vout('       - found\n')
                                     kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
                                     break
+                            file.close()
                             if kernel_version != '':
                                 (series_name, series_version) = cls.ubuntu_series_lookup(kernel_version)
                                 break
 
                 except:
+                    raise
                     pass # Just eat any exceptions
         except:
+            raise
             pass # Just eat any exceptions
+
+        return (series_name, series_version)
+
+    # find_series_in_title
+    #
+    # Scan title for a pattern that looks like a distro name or version, and
+    # return the newest release version found.
+    #
+    @classmethod
+    def find_series_in_title(cls, bug):
+        cls.vout(' . Looking for the series in the title\n')
+        series_name = ''
+        series_version = ''
+        for rel_num, rel in ubuntu_series_db.iteritems():
+            pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" %(rel['name'], rel_num.replace(".", "\."))
+            regex = re.compile(pat, re.IGNORECASE)
+            if regex.search(bug.title):
+                (series_name, series_version) = cls.ubuntu_series_lookup(rel['name'])
+        return (series_name, series_version)
+
+    @classmethod
+    def find_series_in_tags(cls, bug):
+        cls.vout(' . Looking for the series in the tags\n')
+        series_name = ''
+        series_version = ''
+
+        for series in Ubuntu.index_by_series_name:
+            if series in bug.tags:
+                (series_name, series_version) = cls.ubuntu_series_lookup(series)
+                break
 
         return (series_name, series_version)
 
@@ -298,8 +349,29 @@ class Bugs():
         (series_name, series_version) = cls.find_series_in_description(bug)
 
         if (series_name == ''):
-            (series_name, series_version) = cls.find_distro_in_attachments(bug)
+            (series_name, series_version) = cls.find_series_in_attachments(bug)
+
+        if (series_name == ''):
+            (series_name, series_version) = cls.find_series_in_tags(bug)
+
+        if (series_name == ''):
+            (series_name, series_version) = cls.find_series_in_title(bug)
 
         return (series_name, series_version)
+
+    # against_supported_series
+    #
+    @classmethod
+    def against_supported_series(cls, bug, series_version=None):
+        retval = False
+
+        if series_version is None:
+            (series_name, series_version) = cls.determine_series(bug)
+            cls.vout('The bug was filed against the series: "%s" (%s)\n' % (series_name, series_version))
+
+        if series_version != '':
+            retval = ubuntu_series_db[series_version]['supported']
+
+        return retval
 
 # vi:set ts=4 sw=4 expandtab:
