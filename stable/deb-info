@@ -1,0 +1,257 @@
+#!/usr/bin/env python
+#
+
+from ktl.utils                          import stdo, eout, dump
+from ktl.std_app                        import StdApp
+from ktl.git                            import Git, GitError
+from ktl.debian                         import Debian, DebianError
+from ktl.kernel                         import Kernel, KernelError
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+import re
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': print e
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("                                                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s                                                                                   \n" % self.cfg['app_name'])
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = 'abckprv'
+            optsLong  = ['help', 'version', 'pocket', 'release', 'abi', 'build', 'kernel', 'changes']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif opt in ('-a', '--abi'):
+                    self.cfg['abi'] = True
+
+                elif opt in ('-b', '--build'):
+                    self.cfg['build'] = True
+
+                elif opt in ('-c', '--changes'):
+                    self.cfg['changes'] = True
+
+                elif opt in ('-k', '--kernel'):
+                    self.cfg['build'] = True
+
+                elif opt in ('-p', '--pocket'):
+                    self.cfg['pocket'] = True
+
+                elif opt in ('-r', '--release'):
+                    self.cfg['release'] = True
+
+                elif opt in ('-v', '--version'):
+                    self.cfg['version'] = True
+
+            if result: # No errors yet
+
+                # At lease one source package must be specified.
+                #
+                if len(args) > 0:
+                    self.cfg['source_pkgs'] = args
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        return
+
+# AppError
+#
+# A general exception that can be raised when an error is encountered in the app.
+#
+class AppError(Exception):
+    # __init__
+    #
+    def __init__(self, error=''):
+        self.msg = error
+
+
+# deb
+#
+class deb(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+        self.defaults['abi']     = False
+        self.defaults['build']   = False
+        self.defaults['changes'] = False
+        self.defaults['kernel']  = False
+        self.defaults['pocket']  = False
+        self.defaults['release'] = False
+        self.defaults['version'] = False
+        self.passed = 0
+        self.failed = 0
+        self.delimiter = 40
+
+    # initialize
+    #
+    def initialize(self):
+        validation_sequence = [
+            (self.is_repo, True, 'is valid git repo'),
+        ]
+
+    # Are we currently in a git repository?
+    #
+    def is_repo(self):
+        retval = True
+        if not Git.is_repo():
+            raise AppError('This script can only be run from within a git repository.')
+        return retval
+
+    def status(self, msg, flag):
+        indent = self.delimiter - len(msg)
+        if indent <= 0:
+            indent = 0
+
+        stdo('%s' % (' ' * indent) + msg + ':')
+        if flag:
+            self.passed += 1
+            stdo(' pass\n')
+        else:
+            self.failed += 1
+            stdo(' fail\n')
+
+    def verbose(self, msg):
+        if 'verbose' in self.cfg and self.cfg['verbose']:
+            stdo(msg)
+            stdo('\n')
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+            self.initialize()
+
+            # Check: Are we currently in a git repository?
+            #
+            if not Git.is_repo():
+                raise AppError('This script can only be run from within a git repository.')
+            branch = Git.current_branch()
+
+            changelog = Debian.changelog()
+
+            if self.cfg['version']:
+                rec = changelog[1]
+                print(rec['version'])
+
+            if self.cfg['pocket']:
+                rec = changelog[1]
+                print(rec['pocket'])
+
+            if self.cfg['release']:
+                rec = changelog[1]
+                print(rec['release'])
+
+            if self.cfg['abi']:
+                rec = changelog[1]
+                version = rec['version']
+                m = Debian.version_rc.match(version)
+                if m != None:
+                    print(m.group(2))
+
+            if self.cfg['build']:
+                rec = changelog[1]
+                version = rec['version']
+                m = Debian.version_rc.match(version)
+                if m != None:
+                    print(m.group(3))
+
+            if self.cfg['changes']:
+                rec = changelog[1]
+                for line in rec['content']:
+                    print line
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        # Handle all application errors
+        #
+        except AppError as e:
+            eout(e.msg)
+
+        except DebianError as e:
+            eout(e.msg)
+
+        except GitError as e:
+            eout(e.msg[0])
+
+        except KernelError as e:
+            eout(e.msg)
+
+        return
+
+if __name__ == '__main__':
+    app = deb()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
