@@ -125,7 +125,7 @@ fi
 if [ ! -f $RDIR/Makefile ]
 then
 	pushd $BDIR
-	if ! git clone $RREF $REPO_URL
+	if ! git clone $RREF $REPO_URL `basename $RDIR`
 	then
 		echo Could not checkout $REPO_URL
 		exit 1
