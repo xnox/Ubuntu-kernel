@@ -3,7 +3,7 @@
 LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 LREPO=linux-2.6.git
 UBUNTU=git://kernel.ubuntu.com/ubuntu
-RELEASES="dapper hardy karmic lucid maverick natty"
+RELEASES="dapper hardy karmic lucid maverick natty oneiric"
 
 cd `dirname $0`
 
