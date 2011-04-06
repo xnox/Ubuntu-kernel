@@ -62,6 +62,9 @@ class Cmdline:
         stdo("                         Performs additional output related to the option enabled and        \n")
         stdo("                         the application defined support for the option.                     \n")
         stdo("                                                                                             \n")
+        stdo("        --xtra                                                                               \n")
+        stdo("                         There are other columns that will be reported.                      \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
 
@@ -77,7 +80,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=' ]
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'xtra' ]
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -86,6 +89,9 @@ class Cmdline:
 
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
+
+                elif (opt == '--xtra'):
+                    self.cfg['xtra'] = True
 
                 elif opt in ('--config'):
                     self.cfg['configuration_file'] = val
@@ -118,7 +124,7 @@ class Cmdline:
 class RegressionsReport():
     # __init__
     #
-    def __init__(self, db):
+    def __init__(self, db, xtra=False):
         self.db = db
         self.importance_color = {
                 "Unknown"       : "#000000",
@@ -144,6 +150,7 @@ class RegressionsReport():
                 "Unknown"       : "#000000"
             }
 
+        self.show_xtra = xtra
         return
 
     # __str__
@@ -284,8 +291,9 @@ class RegressionsReport():
             retval += '                                <th width="80">Assignee</th>\n'
             retval += '                                <th width="50">Age</th>\n'
             retval += '                                <th width="50">&nbsp; C &nbsp;</th>\n'
-            retval += '                                <th width="30">&nbsp; T &nbsp;</th>\n'
-            retval += '                                <th width="30">&nbsp; E &nbsp;</th>\n'
+            if self.show_xtra:
+                retval += '                                <th width="30">&nbsp; T &nbsp;</th>\n'
+                retval += '                                <th width="30">&nbsp; E &nbsp;</th>\n'
 
             retval += '                            </tr>\n'
             retval += '                        </thead>\n'
@@ -362,21 +370,22 @@ class RegressionsReport():
         retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                       # Age
         retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                                  # Last comment
 
-        msg    = 'kj-triage'
-        if 'kj-triage' in bug['tags']:
-            img    = 'img/tick.png'
-            retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
-        else:
-            img    = 'img/error.png'
-            retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
+        if self.show_xtra:
+            msg    = 'kj-triage'
+            if 'kj-triage' in bug['tags']:
+                img    = 'img/tick.png'
+                retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
+            else:
+                img    = 'img/error.png'
+                retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
 
-        msg    = 'kj-expired'
-        if 'kj-expired' in bug['tags']:
-            img    = 'img/tick.png'
-            retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
-        else:
-            img    = 'img/error.png'
-            retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
+            msg    = 'kj-expired'
+            if 'kj-expired' in bug['tags']:
+                img    = 'img/tick.png'
+                retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
+            else:
+                img    = 'img/error.png'
+                retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
 
         retval += '                                </tr>\n'
         return retval
@@ -426,7 +435,10 @@ class MkRegressionsReport(StdApp):
                 raise MkRegressionsReportError('The specified database file (%s) does not exist.' % self.cfg['database'])
 
             if bugs_db != None:
-                report = RegressionsReport(bugs_db)
+                if 'xtra' in self.cfg and self.cfg['xtra']:
+                    report = RegressionsReport(bugs_db, True)
+                else:
+                    report = RegressionsReport(bugs_db, False)
                 print(report)
 
         # Handle the user presses <ctrl-C>.
