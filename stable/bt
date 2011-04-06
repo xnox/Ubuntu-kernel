@@ -408,63 +408,23 @@ class BugTracker(StdApp):
     def notify_if_new_comment(self, bug_id, bugs_db):
         try:
             bug = self.lp.get_bug(bug_id)
+        except:
+            # Could be we are running against the qastaging server and the bug doesn't exist there
+            pass
+
+        else:
             messages = bug.messages
             if 'number of messages' in bugs_db['bugs'][bug_id]:
-                if len(messages) > bugs_db['bugs'][bug_id]['number of messages']:
-                    self.notify(bug_id, 'A comment has been added.')
+                #if len(messages) > bugs_db['bugs'][bug_id]['number of messages']:
+                prev = bugs_db['bugs'][bug_id]['number of messages']
+                crnt = len(messages)
+                if prev < crnt:
+                    for i in range(prev, crnt):
+                        title = "Bug: %s" % bug_id
+                        subject = messages[i].content
+                        self.notify(title, subject)
 
-        except:
-            # Could be we are running against the qastaging server and the bug doesn't exist there
-            pass
         return
-
-    # bug_info
-    #
-    def bug_info(self, bug_id, now):
-        bug_item = None
-        try:
-            bug_item  = {}
-            bug = self.lp.get_bug(bug_id)
-
-            # Bug info (non task specific)
-            #
-            bug_item['title']      = bug.title
-
-            for tag in bug.tags:
-                if 'tags' not in bug_item:
-                    bug_item['tags'] = []
-                bug_item['tags'].append(tag)
-
-            bug_item['date created']      = self.date_to_string(bug.date_created)
-            bug_item['date last updated'] = self.date_to_string(bug.date_last_updated)
-            bug_item['date last message'] = self.date_to_string(bug.date_last_message)
-
-            messages = bug.messages
-            bug_item['number of messages'] = len(messages)
-
-            # Task info:
-            #
-            for task in bug.tasks:
-                task_item = {}
-                if 'tasks' not in bug_item:
-                    bug_item['tasks'] = []
-
-                task_item['name']       = task.bug_target_display_name
-                task_item['status']     = task.status
-                task_item['importance'] = task.importance
-
-                assignee = task.assignee
-                if assignee is None:
-                    task_item['assignee'] = 'Unassigned'
-                else:
-                    task_item['assignee'] = assignee.display_name
-                bug_item['tasks'].append(task_item)
-
-            bug_item['gravity']         = Bugs.calculate_bug_gravity(bug, now)
-        except:
-            # Could be we are running against the qastaging server and the bug doesn't exist there
-            pass
-        return bug_item
 
     # main
     #
@@ -496,9 +456,17 @@ class BugTracker(StdApp):
             if 'add' in self.cfg['operations']:
                 self.verbose('adding bugs\n')
                 for bug_id in self.cfg['+bugs']:
-                    bi = self.bug_info(bug_id, now)
-                    if bi is not None:
-                        bugs_db['bugs'][bug_id] = bi
+                    try:
+                        bug = self.lp.get_bug(bug_id)
+                        bi = Bugs.bug_info(bug, now)
+                        if bi is not None:
+                            bugs_db['bugs'][bug_id] = bi
+                    except:
+                        if 'staging' in self.cfg and self.cfg['staging']:
+                            # It's possible the bug is not in the staging server's database
+                            pass
+                        else:
+                            error("The specified bug (%s) does not exist in Launchpad.\n" % (bug_id))
 
             if 'rm' in self.cfg['operations']:
                 self.verbose('removing bugs\n')
@@ -516,7 +484,17 @@ class BugTracker(StdApp):
             if 'update' in self.cfg['operations']:
                 for bug_id in bugs_db['bugs']:
                     self.notify_if_new_comment(bug_id, bugs_db)
-                    bugs_db['bugs'][bug_id] = self.bug_info(bug_id, now)
+                    try:
+                        bug = self.lp.get_bug(bug_id)
+                        bi = Bugs.bug_info(bug, now)
+                        bugs_db['bugs'][bug_id] = bi
+                    except:
+                        if 'staging' in self.cfg and self.cfg['staging']:
+                            # It's possible the bug is not in the staging server's database
+                            pass
+                        else:
+                            error("The specified bug (%s) does not exist in Launchpad.\n" % (bug_id))
+                            raise
 
             if'report' in self.cfg['operations']:
                 report = BugTrackerReport(bugs_db)
