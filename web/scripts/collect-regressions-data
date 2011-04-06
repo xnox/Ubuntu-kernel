@@ -225,61 +225,6 @@ class CollectRegressionsData(StdApp):
 
         return retval
 
-    # bug_info
-    #
-    def bug_info(self, bug_id, now, task=None):
-        bug_item  = {}
-
-        bug = self.lp.get_bug(bug_id)
-
-        # Bug info (non task specific)
-        #
-        bug_item['title']      = bug.title
-
-        for tag in bug.tags:
-            if 'tags' not in bug_item:
-                bug_item['tags'] = []
-            bug_item['tags'].append(tag)
-
-        bug_item['date created']      = self.date_to_string(bug.date_created)
-        bug_item['date last updated'] = self.date_to_string(bug.date_last_updated)
-        bug_item['date last message'] = self.date_to_string(bug.date_last_message)
-
-        messages = bug.messages
-        bug_item['number of messages'] = len(messages)
-
-        # Task info:
-        #
-        if task == None:
-            for task in bug.tasks:
-                task_item = {}
-                if 'tasks' not in bug_item:
-                    bug_item['tasks'] = []
-
-                task_item['name']       = task.bug_target_display_name
-                task_item['status']     = task.status
-                task_item['importance'] = task.importance
-
-                assignee = task.assignee
-                if assignee is None:
-                    task_item['assignee'] = 'Unassigned'
-                else:
-                    task_item['assignee'] = assignee.display_name
-                bug_item['tasks'].append(task_item)
-        else:
-            bug_item['status']     = task.status
-            bug_item['importance'] = task.importance
-
-            assignee = task.assignee
-            if assignee is None:
-                bug_item['assignee'] = 'Unassigned'
-            else:
-                bug_item['assignee'] = assignee.display_name
-
-        (bug_item['series name'], bug_item['series version']) = Bugs.determine_series(bug)
-        bug_item['gravity']         = Bugs.calculate_bug_gravity(bug, now)
-        return bug_item
-
     # main
     #
     def main(self):
@@ -368,7 +313,7 @@ class CollectRegressionsData(StdApp):
 
                         #bug_item['needs attention'] = self.bug_needs_attention(bug, package_name, bugs_db)
 
-                        this_package_bugs[bug.id] = self.bug_info(bug.id, now, task)
+                        this_package_bugs[bug.id] = Bugs.bug_info(bug, now, task)
 
                         #if limit == 0:
                         #    break

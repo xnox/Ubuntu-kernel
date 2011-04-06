@@ -6,6 +6,7 @@ from ktl.kernel                         import map_release_number_to_ubuntu_rele
 from ktl.kernel                         import map_kernel_version_to_ubuntu_release as ubuntu_version_db
 from ktl.utils                          import stdo
 from ktl.ubuntu                         import Ubuntu
+from datetime                           import datetime
 
 # DeltaTime
 #
@@ -373,5 +374,74 @@ class Bugs():
             retval = ubuntu_series_db[series_version]['supported']
 
         return retval
+
+    # date_to_string
+    #
+    @classmethod
+    def date_to_string(cls, date):
+        return date.strftime("%A, %d. %B %Y %H:%M UTC")
+
+    # string_to_date
+    #
+    @classmethod
+    def string_to_date(cls, date):
+        return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+
+    # bug_info
+    #
+    @classmethod
+    def bug_info(cls, bug, now, task=None):
+        """
+        Access specific elements of a LP bug and build up a dictionary of it's properties.
+        """
+        bug_item  = {}
+
+        # Bug info (non task specific)
+        #
+        bug_item['title']      = bug.title
+
+        for tag in bug.tags:
+            if 'tags' not in bug_item:
+                bug_item['tags'] = []
+            bug_item['tags'].append(tag)
+
+        bug_item['date created']      = cls.date_to_string(bug.date_created)
+        bug_item['date last updated'] = cls.date_to_string(bug.date_last_updated)
+        bug_item['date last message'] = cls.date_to_string(bug.date_last_message)
+
+        messages = bug.messages
+        bug_item['number of messages'] = len(messages)
+
+        # Task info:
+        #
+        if task == None:
+            for task in bug.tasks:
+                task_item = {}
+                if 'tasks' not in bug_item:
+                    bug_item['tasks'] = []
+
+                task_item['name']       = task.bug_target_display_name
+                task_item['status']     = task.status
+                task_item['importance'] = task.importance
+
+                assignee = task.assignee
+                if assignee is None:
+                    task_item['assignee'] = 'Unassigned'
+                else:
+                    task_item['assignee'] = assignee.display_name
+                bug_item['tasks'].append(task_item)
+        else:
+            bug_item['status']     = task.status
+            bug_item['importance'] = task.importance
+
+            assignee = task.assignee
+            if assignee is None:
+                bug_item['assignee'] = 'Unassigned'
+            else:
+                bug_item['assignee'] = assignee.display_name
+
+        (bug_item['series name'], bug_item['series version']) = Bugs.determine_series(bug)
+        bug_item['gravity']         = Bugs.calculate_bug_gravity(bug, now)
+        return bug_item
 
 # vi:set ts=4 sw=4 expandtab:
