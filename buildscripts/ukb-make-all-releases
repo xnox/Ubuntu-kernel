@@ -10,6 +10,7 @@ usage()
 {
 	echo $0 --branch=BRANCH [--bdir=BUILD_DIR] [--clean]
 	echo ex: $0 --branch=master-next
+	exit 1
 }
 
 while [ $# -ne 0 ]; do
@@ -34,11 +35,17 @@ while [ $# -ne 0 ]; do
 	shift
 done
 
+if [ -z "$BRANCH" ]
+then
+	echo --branch cannot be empty.
+	usage
+fi
+
 for i in "${releases[@]}"
 do
 	if ! $CDIR/ukb-make-release --release=$i $BRANCH $BDIR $CLEAN 
 	then
-		exit
+		exit 1
 	fi
 done
 
