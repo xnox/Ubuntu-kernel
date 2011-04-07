@@ -214,7 +214,7 @@ int osd_schedule_callback(struct workqueue_struct *wq,
 {
 	struct osd_callback_struct *cb;
 
-	cb = kmalloc(sizeof(*cb), GFP_KERNEL);
+	cb = kmalloc(sizeof(*cb), GFP_ATOMIC);
 	if (!cb) {
 		printk(KERN_ERR "unable to allocate memory in osd_schedule_callback\n");
 		return -1;
