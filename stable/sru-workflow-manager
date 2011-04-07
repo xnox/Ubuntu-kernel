@@ -4,6 +4,7 @@
 #
 
 from sys                                import argv
+from os                                 import path
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
@@ -11,6 +12,8 @@ from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
 from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_release_map
 from urllib2                            import HTTPError
+from smtplib                            import SMTP
+from email.mime.text                    import MIMEText
 
 # CmdlineError
 #
@@ -240,15 +243,15 @@ class Shank(StdApp):
                                          },
         } 
 
+        # Meta-information for this script is tracked in the kernel-sru-workflow task
         #
-        # bjf: kernel-sru-workflow Status: New               <- Just created
-        # bjf:                     Status: In-progress       <- Actively monitored by the bot
-        # bjf:                     Status: Incomplete        <- Something bad happened
-        # bjf:                     Status: Invalid           <- Replaced by a new tracking bug
-        # bjf:                     Status: Fix-Released      <- Everything went good, done!
+        # kernel-sru-workflow Status: New               <- Just created
+        #                     Status: In-progress       <- Actively monitored by the bot
+        #                     Status: Incomplete        <- Something bad happened
+        #                     Status: Invalid           <- Replaced by a new tracking bug
+        #                     Status: Fix-Released      <- Everything went good, done!
         #
         #
-
         #
         # State transition listing
         #
@@ -358,6 +361,10 @@ class Shank(StdApp):
     def main(self):
         cmdline = Cmdline()
         try:
+            # set our config file, which can be overridden on the command line
+            self.defaults['configuration_file'] = path.dirname(__file__) + '/sru-workflow.cfg'
+            #print('config file = %s' % self.defaults['configuration_file'])
+
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
 
@@ -385,16 +392,20 @@ class Shank(StdApp):
             for task in tasks:
                 bug = task.bug
                 if 'staging' in self.cfg:
-                    lpserver = 'bugs.qastaging.launchpad.net'
+                    self.cfg['lpserver'] = 'bugs.qastaging.launchpad.net'
                 else:
-                    lpserver = 'bugs.launchpad.net'
+                    self.cfg['lpserver'] = 'bugs.launchpad.net'
 
-                self.verbose("    Processing -> https://%s/ubuntu/+source/linux/+bug/%s\n" % (lpserver, bug.id))
+                bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], bug.id)
+                self.verbose('    Processing -> %s' % bugurl)
 
                 # initialize any per-bug variables that we use for the release test
                 self.bugtags = []
                 for atag in bug.tags:
                     self.bugtags.append(atag)
+                self.certification_complete = False
+                self.regression_testing_complete = False
+                self.security_publishing_requiied = False
 
                 # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
                 # TODO This is a bit sloppy and I should probably build one list and walk it twice.
@@ -451,8 +462,6 @@ class Shank(StdApp):
                     else:
                         assignee = assignee.display_name
 
-
-
                     self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task, state, importance, assignee))
 
                     try:
@@ -493,6 +502,24 @@ class Shank(StdApp):
 
         return
 
+    # end of main
+
+    def send_email(self, task, subject, body):
+        self.verbose('Sending email')
+        bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
+        mcfg = self.cfg['mail_notify']
+        body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n\n' % bugurl
+        msg = MIMEText(body_top + body)
+        msg['Subject'] = '[ShankBot] ' + subject
+        msg['From'] = mcfg['from_address']
+        msg['To'] = mcfg['to_address']
+        # Send the message via our own SMTP server, but don't include the
+        # envelope header.
+        s = smtplib.SMTP()
+        s.sendmail(me, [you], msg.as_string())
+        s.quit()
+        return
+
     def set_task_to_state(self, taskname, state):
         """
         Set a task with a given name to the desired state
@@ -500,7 +527,7 @@ class Shank(StdApp):
         """
         # TODO could add error handling and retries here if needed
         if self.taskbyname[taskname].status != state:
-            self.verbose('Setting Task <%s> to State <%s>\n', (taskname, state))
+            self.verbose('Setting Task <%s> to State <%s>\n' % (taskname, state))
             self.taskbyname[taskname].status = state
             return True
         else:
@@ -516,27 +543,32 @@ class Shank(StdApp):
         when the prep-package task is set to Fix Released, we set the
         promote-to-proposed task to Confirmed
         """
-        self.set_task_to_state('promote-to-proposed', 'Confirmed')
+        if self.taskbyname['promote-to-proposed'].status == 'New':
+            self.set_task_to_state('promote-to-proposed', 'Confirmed')
 
     def promote_to_proposed_fix_released(self, taskobj):
         """
         When promote-to-proposed is set to Fix Released, we begin verification testing by setting
         verification-testing to In Progress, add tags to the bugs, and spam with text
         """
-        if self.set_task_to_state('verification-testing', 'In Progress'):
-            # we did change the state, weren't already in it
-            # Now tag all bugs verification-needed and spam with a comment
-            # TODO  - call a script
-            print 'Here is where we would tag and spam the verification bugs'
+        if self.taskbyname['verification-testing'].status == 'New':
+            if self.set_task_to_state('verification-testing', 'In Progress'):
+                # we did change the state, weren't already in it
+                # Now tag all bugs verification-needed and spam with a comment
+                # TODO  - call a script
+                print 'Here is where we would tag and spam the verification bugs'
 
     def verification_testing_fix_released(self, taskobj):
         """
         When verification-testing is set to Fix Released, we set three tasks to Confirmed.
         These are certification-testing, regression-testing, and security-signoff
         """
-        self.set_task_to_state('certification-testing', 'Confirmed')
-        self.set_task_to_state('regression-testing', 'Confirmed')
-        self.set_task_to_state('security-signoff', 'Confirmed')
+        if self.taskbyname['certification-testing'].status == 'New':
+            self.set_task_to_state('certification-testing', 'Confirmed')
+        if self.taskbyname['regression-testing'].status == 'New':
+            self.set_task_to_state('regression-testing', 'Confirmed')
+        if self.taskbyname['security-signoff'].status == 'New':
+            self.set_task_to_state('security-signoff', 'Confirmed')
 
     def certification_testing_fix_released(self, taskobj):
         """
@@ -545,18 +577,24 @@ class Shank(StdApp):
         If certification-testing-passed then we save the tag and state and trigger
         running of the test to see if we're ready for publishing
         """
-        # self.bugtags has all the tags for this bug
-        #self.set_task_to_state('certification-testing', 'Confirmed')
         if 'certification-testing-failed' in self.bugtags:
             self.verbose('Certification tagged as FAIL\n')
-            # Send email -spc- TODO
+            # Send email and possibly a status update -spc- TODO
+            msgbody = 'The bug was tagged as certification-failed\n'
+            self.send_email(taskobj, 'Certification FAILURE', msgbody)
+            # stop further processing by this bot
             self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
         elif 'certification-testing-passed' in self.bugtags:
-            self.verbose('Certification tagged as PASS\n')
-            # -spc- TODO
+            self.verbose('Certification tagged as PASSED\n')
+            # TODO send a status.net update?
+            self.certification_complete = True
         else:
             self.verbose('certification-testing task set to Fix Released but no status tag!\n')
-            # -spc- TODO
+            # Send email and possibly a status update -spc- TODO
+            msgbody = 'The certification-testing task was set to Fix Released but neither the certification-testing-passed or certification-testing-failed tag was applied\n'
+            self.send_email(taskobj, 'Certification completed but no status tags applied', msgbody)
+            # stop further processing by this bot
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
 
     #
     # This is not performed during processing for a specific task but only if several tasks are
@@ -572,6 +610,9 @@ class Shank(StdApp):
         
         print '*** Performing release test'
         # nothing yet
+        if (self.certification_complete and self.regression_testing_complete):
+            self.verbose('Cert and regression testing both complete')
+        self.security_publishing_requiied
         # Not associated with a task so no status returned
         return
 
