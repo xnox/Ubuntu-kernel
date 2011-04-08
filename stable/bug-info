@@ -1,10 +1,16 @@
 #!/usr/bin/env python
 #
+# Sometimes when you are debugging a script that talks to LP, you want a way
+# to dump out information about a bug and compare that with what you are
+# getting yourself. This script can help in that way. It can also give you
+# some ideas on how to use the lpltk library to talk to LP.
+#
 
 from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo
 from ktl.std_app                        import StdApp
+from ktl.bugs                           import Bugs
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
@@ -134,6 +140,98 @@ class BugInfo(StdApp):
         #
         self.distro = self.lp.distributions['ubuntu']
 
+    # __verbose_bug_info
+    #
+    def __print_bug_info(self, bug):
+        print(" ")
+        print("    %s: %s" % (bug.id, bug.title))
+        print(" ")
+
+        print("                 Owner: %s" % ("None" if bug.owner is None else bug.owner.display_name))
+
+        #print("            Can Expire: %s" % bug.can_expire)
+        print("               Created: %s" % (Bugs.date_to_string(bug.date_created)))
+        print("          Last Message: %s" % (Bugs.date_to_string(bug.date_last_message)))
+        print("          Last Updated: %s" % (Bugs.date_to_string(bug.date_last_updated)))
+        print("               Private: %s" % bug.private)
+        print("              Security: %s" % bug.security_related)
+        print("             Duplicate: %s" % bug.duplicate_of)
+        print("                  Heat: %s" % bug.heat)
+        print("          Latest Patch: %s" % (Bugs.date_to_string(bug.date_latest_patch_uploaded)))
+
+        tags = ""
+        for t in bug.tags:
+            tags += t
+            tags += " "
+        print(" ")
+        print("        Tags:")
+        print("        -----------------------------------------------------------------------------------")
+        print("            %s" % (tags))
+
+        tasks = bug.tasks
+        print(" ")
+        print("        Tasks:")
+        print("        -----------------------------------------------------------------------------------")
+        #print("                                           Task  Status                Importance            Assignee")
+        #print("          -------------------------------------  --------------------  --------------------  -----------------------")
+        #for task in tasks:
+        #    assignee = task.assignee
+        #    if assignee is None:
+        #        assignee = "Unknown"
+        #    else:
+        #        assignee = assignee.display_name
+        #    print("  %45s  %-20s  %-20s  %-s" % (task.bug_target_name, task.status, task.importance, assignee))
+        for task in tasks:
+            assignee = task.assignee
+            if assignee is None:
+                assignee = "Unknown"
+            else:
+                assignee = assignee.display_name
+            print("            %s (%s)" % (task.bug_target_name, task.bug_target_display_name))
+            print("                       Status: %-20s  Importance: %-20s  Assignee: %-s" % (task.status, task.importance, assignee))
+            print("                      Created: %s" % (Bugs.date_to_string(task.date_created)))
+            print("                    Confirmed: %s" % (Bugs.date_to_string(task.date_confirmed)))
+            print("                     Assigned: %s" % (Bugs.date_to_string(task.date_assigned)))
+            print("                       Closed: %s" % (Bugs.date_to_string(task.date_closed)))
+            print("                Fix Committed: %s" % (Bugs.date_to_string(task.date_fix_committed)))
+            print("                 Fix Released: %s" % (Bugs.date_to_string(task.date_fix_released)))
+            print("                  In Progress: %s" % (Bugs.date_to_string(task.date_in_progress)))
+            print("                   Incomplete: %s" % (Bugs.date_to_string(task.date_incomplete)))
+            print("                  Left Closed: %s" % (Bugs.date_to_string(task.date_left_closed)))
+            print("                     Left New: %s" % (Bugs.date_to_string(task.date_left_new)))
+            print("                      Triaged: %s" % (Bugs.date_to_string(task.date_triaged)))
+            print("                  Is Complete: %s" % (task.is_complete))
+            print("                        Owner: %s" % (task.owner.display_name))
+            print("                        Title: %s" % (task.title))
+            print("                       Target: %s" % (task.target))
+            print("                   Watch Link: %s" % (task.bug_watch))
+
+            milestone = task.milestone
+            if milestone is not None:
+                print("                    Milestone: %s" % (milestone.name))
+            else:
+                print("                    Milestone: None")
+
+            print(" ")
+            print("                Related Tasks:")
+            print("                ---------------------------------------------------------------------------")
+            if len(task.related_tasks) > 0:
+                for related_task in task.related_tasks:
+                    print("                    %s (%s)" % (related_task.bug_target_name, related_task.bug_target_display_name))
+            else:
+                print("                    None")
+
+            #print("                        resource type: %s" % (task.resource_type))
+            #print("                        web: %s" % (task.web))
+
+
+            print(" ")
+
+        print("        Attachments:")
+        print("        -----------------------------------------------------------------------------------")
+        for attachment in bug.attachments:
+            print("            %-40s  %s" % (attachment.title, "None" if attachment.owner is None else attachment.owner.display_name))
+
     # main
     #
     def main(self):
@@ -144,31 +242,23 @@ class BugInfo(StdApp):
 
             self.initialize()
 
+            # Go through all the bug-ids that the user specified on the command line.
+            #
             for id in self.cfg['bugs']:
-                bug = self.lp.get_bug(id)
 
-                print("%s: %s" % (bug.id, bug.title))
+                # Get an instance of a bug object based on a bug-id. If the bug
+                # id does not exist or if it is not visibile to you with the LP
+                # credentials you are using, an exception will be thrown.
+                #
+                try:
+                    bug = self.lp.get_bug(id)
+                except:
+                    print("Either the bug id specified (%s) does not exist in the LP server database or you are not authrorized to view it." % (id))
 
-                tags = ""
-                for t in bug.tags:
-                    tags += t
-                    tags += " "
-                print("    Tags:")
-                print("        %s" % (tags))
+                else:
+                    self.__print_bug_info(bug)
 
-                tasks = bug.tasks
-                print("    Tasks:")
-                for task in tasks:
-                    assignee = task.assignee
-                    if assignee is None:
-                        assignee = "Unknown"
-                    else:
-                        assignee = assignee.display_name
-                    print("        %s    %s    %s    %s" % (task.bug_target_name, task.status, task.importance, assignee))
-
-
-
-                print(" ") # A line break between bug info
+                    print(" ") # A line break between bug info
 
         # Handle the user presses <ctrl-C>.
         #
