@@ -387,7 +387,6 @@ class Shank(StdApp):
             search_status          = ["New","In Progress","Invalid","Fix Committed"] # A list of the bug statuses that we care about
             search_since           = datetime(year=2011, month=1, day=1)
             tasks = project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
-            performReleaseTest = False
 
             for task in tasks:
                 bug = task.bug
@@ -403,9 +402,10 @@ class Shank(StdApp):
                 self.bugtags = []
                 for atag in bug.tags:
                     self.bugtags.append(atag)
+                performReleaseTest = False
                 self.certification_complete = False
                 self.regression_testing_complete = False
-                self.security_publishing_requiied = False
+                self.security_publishing_required = False
 
                 # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
                 # TODO This is a bit sloppy and I should probably build one list and walk it twice.
@@ -480,7 +480,8 @@ class Shank(StdApp):
                     if  action is None:
                         self.verbose('ACTION: No action for task %s in state %s\n' % (task, state))
                     else:
-                        action(t)
+                        if action(t):
+                            performReleaseTest = True
 
                 # Now process any tests which require information from multiple tasks
                 # will require info stored in class variables during task processing
@@ -515,8 +516,12 @@ class Shank(StdApp):
         msg['To'] = mcfg['to_address']
         # Send the message via our own SMTP server, but don't include the
         # envelope header.
-        s = smtplib.SMTP()
-        s.sendmail(me, [you], msg.as_string())
+        s = SMTP(mcfg['smtp_server'], 587)
+        #s.set_debuglevel(1)
+        s.ehlo()
+        s.starttls()
+        s.login(mcfg['smtp_user'].encode('UTF-8'),mcfg['smtp_pass'].encode('UTF-8'))
+        s.sendmail(mcfg['from_address'], [mcfg['to_address']], msg.as_string())
         s.quit()
         return
 
@@ -545,6 +550,7 @@ class Shank(StdApp):
         """
         if self.taskbyname['promote-to-proposed'].status == 'New':
             self.set_task_to_state('promote-to-proposed', 'Confirmed')
+        return False
 
     def promote_to_proposed_fix_released(self, taskobj):
         """
@@ -557,6 +563,7 @@ class Shank(StdApp):
                 # Now tag all bugs verification-needed and spam with a comment
                 # TODO  - call a script
                 print 'Here is where we would tag and spam the verification bugs'
+        return False
 
     def verification_testing_fix_released(self, taskobj):
         """
@@ -569,6 +576,7 @@ class Shank(StdApp):
             self.set_task_to_state('regression-testing', 'Confirmed')
         if self.taskbyname['security-signoff'].status == 'New':
             self.set_task_to_state('security-signoff', 'Confirmed')
+        return False
 
     def certification_testing_fix_released(self, taskobj):
         """
@@ -584,10 +592,12 @@ class Shank(StdApp):
             self.send_email(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
             self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
             # TODO send a status.net update?
             self.certification_complete = True
+            return True
         else:
             self.verbose('certification-testing task set to Fix Released but no status tag!\n')
             # Send email and possibly a status update -spc- TODO
@@ -595,6 +605,7 @@ class Shank(StdApp):
             self.send_email(taskobj, 'Certification completed but no status tags applied', msgbody)
             # stop further processing by this bot
             self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            return False
 
     #
     # This is not performed during processing for a specific task but only if several tasks are
@@ -612,7 +623,8 @@ class Shank(StdApp):
         # nothing yet
         if (self.certification_complete and self.regression_testing_complete):
             self.verbose('Cert and regression testing both complete')
-        self.security_publishing_requiied
+        if self.security_publishing_required:
+            self.verbose('Requires publishing to the -security pocket')
         # Not associated with a task so no status returned
         return
 
