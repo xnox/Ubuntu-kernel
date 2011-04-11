@@ -12,6 +12,8 @@ from ktl.utils                          import stdo
 from ktl.std_app                        import StdApp
 from ktl.bugs                           import Bugs
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
+from re                                 import match
+from datetime                           import datetime
 
 # CmdlineError
 #
@@ -231,6 +233,41 @@ class BugInfo(StdApp):
         print("        -----------------------------------------------------------------------------------")
         for attachment in bug.attachments:
             print("            %-40s  %s" % (attachment.title, "None" if attachment.owner is None else attachment.owner.display_name))
+
+
+        print(" ")
+        print("        -----------------------------------------------------------------------------------")
+        print("        -----------------------------------------------------------------------------------")
+        print(" ")
+        now = datetime.utcnow()
+        now.replace(tzinfo=None)
+        bi = Bugs.bug_info(bug, now)
+        target_task = "linux (Ubuntu Natty)"
+        #task_nominations = {}
+        #for task in tasks:
+        #    if '(' in task.bug_target_name:
+        #        m = match('(^\S+)\s+\(Ubuntu\s(\S+)\)$', task.bug_target_name)
+        #        if m is not None:
+        #            if m.group(1) not in task_nominations:
+        #                task_nominations[m.group(1)] = {}
+        #            task_nominations[m.group(1)][m.group(2)] = task.bug_target_name
+        #    else:
+        #        if task.bug_target_name not in task_nominations:
+        #            task_nominations[task.bug_target_name] = {}
+        #        task_nominations[task.bug_target_name]['!'] = task.bug_target_name
+
+        #for task in task_nominations:
+        #    for nom in sorted(task_nominations[task].keys()):
+        #        index = task_nominations[task][nom]
+
+        #        if nom == '!':
+        #            print(task)
+        #            if len(task_nominations[task]) == 1:
+        #                print("      just one")
+        #            else:
+        #                print("      none")
+        #        else:
+        #            print(nom)
 
     # main
     #

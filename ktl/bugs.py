@@ -379,7 +379,7 @@ class Bugs():
     #
     @classmethod
     def date_to_string(cls, date):
-        return date.strftime("%A, %d. %B %Y %H:%M UTC")
+        return "None" if date is None else date.strftime("%A, %d. %B %Y %H:%M UTC")
 
     # string_to_date
     #
