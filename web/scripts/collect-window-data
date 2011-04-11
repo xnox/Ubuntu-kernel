@@ -1,0 +1,338 @@
+#!/usr/bin/env python
+#
+# This script is to maintain a database of new bug information. That bug
+# information is relative to a specific length of time, such as the last
+# 24 hours.
+#
+
+from sys                                import argv
+from os                                 import path
+from getopt                             import getopt, GetoptError
+from ktl.utils                          import stdo, error, dump
+from ktl.bugs                           import Bugs, DeltaTime
+from ktl.std_app                        import StdApp
+from lpltk.service                      import LaunchpadService
+from datetime                           import datetime, timedelta
+from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_db
+from re                                 import match
+import json
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+# Do all the command line processing.
+#
+class Cmdline:
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        if e != '': error(e)
+        self.usage(defaults)
+
+    # usage
+    #
+    # Prints out the help text which explains the command line options.
+    #
+    def usage(self, defaults):
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("        --db=<database>                                                                      \n")
+        stdo("                         The name of the json file that is to be used to track the bug       \n")
+        stdo("                         information.                                                        \n")
+        stdo("                                                                                             \n")
+        stdo("        --window=<time>                                                                      \n")
+        stdo("                         The delta from now that we are interested in new bugs having        \n")
+        stdo("                         been created within.                                                \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    # As you can probably tell from the name, this method is responsible
+    # for calling the getopt function to process the command line. All
+    # parameters are processed into class variables for use by other
+    # methods.
+    #
+    def process(self, argv, defaults):
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'db=', 'as-me', 'window=', 'title=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--db'):
+                    self.cfg['database'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+                elif opt == '--as-me':
+                    self.cfg['as me'] = True
+
+                elif opt in ('--window'):
+                    self.cfg['window'] = val
+
+                elif opt in ('--title'):
+                    self.cfg['title'] = val
+
+        except GetoptError as e:
+            print(e, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        if 'database' not in self.cfg:
+            raise CmdlineError('The --db command line parameter is required.\n')
+        return
+
+# CollectRegressionsDataError
+#
+class CollectRegressionsDataError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# CollectRegressionsData
+#
+class CollectRegressionsData(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+
+    # __initialize
+    #
+    # A separate initialize that we can control when it gets called (not
+    # when the object is instantiated).
+    #
+    def __initialize(self):
+        if 'as me' not in self.cfg:
+            self.cfg['read_only'] = True
+
+        if 'staging' in self.cfg:
+            self.cfg['launchpad_services_root'] = 'qastaging'
+        self.verbose(" . Connecting to Launchpad\n")
+        self.lp = LaunchpadService(self.cfg)
+
+        # The service.distributions property is a collection of distributions. We
+        # pretty much only care about one, 'ubuntu'.
+        #
+        self.distro = self.lp.distributions['ubuntu']
+        return
+
+    # __get_relevant_task
+    #
+    def __get_relevant_task(self, bug, pkg):
+        retval = None
+        for t in bug.tasks:
+            task       = t.bug_target_name
+            p = task.replace(' (Ubuntu)', '')
+            if pkg == p:
+                retval = t
+                break
+        return retval
+
+    # __verbose_bug_info
+    #
+    def __verbose_bug_info(self, bug):
+        if 'verbose' in self.cfg and self.cfg['verbose']:
+            print(" ")
+            print("    %s: %s" % (bug.id, bug.title))
+            print(" ")
+
+            print("                 Owner: %s" % ("None" if bug.owner is None else bug.owner.display_name))
+            print("               Created: %s" % (Bugs.date_to_string(bug.date_created)))
+            tags = ""
+            for t in bug.tags:
+                tags += t
+                tags += " "
+            print("        Tags:")
+            print("            %s" % (tags))
+
+            tasks = bug.tasks
+            print("        Tasks:")
+            for task in tasks:
+                print("            %45s %20s %20s" % (task.bug_target_name, task.status, task.importance))
+
+    # date_to_string
+    #
+    def date_to_string(self, date):
+        return date.strftime("%A, %d. %B %Y %H:%M UTC")
+
+    # string_to_date
+    #
+    def string_to_date(self, date):
+        return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+
+    # bug_needs_attention
+    #
+    def bug_needs_attention(self, bug, package, db):
+        retval = False
+
+        if bug.id in db['packages'][package]['bugs']:
+            retval = True
+        else:
+            retval = False
+
+        return retval
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        using_search_since = False
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.__initialize()
+            now = datetime.utcnow()
+
+            if 'window' in self.cfg:
+                search_since = datetime.utcnow() - timedelta(days=int(self.cfg['window']))
+            else:
+                search_since = datetime.utcnow() - timedelta(days=1)
+            search_since_notz = search_since
+            search_since_notz = search_since_notz.replace(tzinfo=None)
+
+            bugs_db = {}
+            bugs_db['packages'] = {}
+            bugs_db['updated'] = now.strftime("%A, %d. %B %Y %H:%M UTC")
+            bugs_db_packages = bugs_db['packages']
+            if 'title' in self.cfg:
+                bugs_db['title'] = self.cfg['title']
+
+            # All source projects the kernel team are interesed in.
+            #
+            interested_source_packages = []
+            for release in ubuntu_db:
+                for package_name in ubuntu_db[release]['packages']:
+                    if package_name not in interested_source_packages:
+                        interested_source_packages.append(package_name)
+
+            for package_name in interested_source_packages:
+                self.verbose('%s\n' % package_name)
+
+                # Within a distribution are many source packages. We actually care about
+                # several, but _mostly_ the 'linux' source package.
+                #
+                source_package = self.distro.get_source_package(package_name)
+                if source_package == None:
+                    error("The source package does not exist.")
+                    raise
+
+                # We want all the bugs that have been modified since the last time we searched. Once
+                # we have that list, we eliminate any that have not been created within the time
+                # window we are interested in.
+                #
+                search_status          = ["New","Incomplete","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
+
+                try:
+                    self.verbose(" . Searching ...")
+                    self.verbose("   since: %s" % (search_since))
+                    tasks = source_package.search_tasks(status=search_status, modified_since=search_since)
+                    self.verbose("\n")
+
+                    this_package_bugs = None
+                    for task in tasks:
+                        bug = task.bug
+                        task = self.__get_relevant_task(bug, package_name)
+                        self.__verbose_bug_info(bug)
+
+                        ago = DeltaTime(bug.date_created, now)
+                        if ago.days < (int(self.cfg['window']) if 'window' in self.cfg else 1):
+                            if package_name not in bugs_db_packages:
+                                bugs_db_packages[package_name] = {}
+                                bugs_db_packages[package_name]['bugs'] = {}
+                            this_package_bugs = bugs_db_packages[package_name]['bugs']
+                            this_package_bugs[bug.id] = Bugs.bug_info(bug, now, task)
+                        else:
+                            self.verbose('    *** Skipping, was not created with the time window.\n')
+
+                    # Even if nothing changed on a bug, the gravity may have changed as the bug
+                    # ages.
+                    #
+                    if package_name in bugs_db_packages and 'bugs' in bugs_db_packages[package_name]:
+                        for bug_id in bugs_db_packages[package_name]['bugs']:
+                            bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = Bugs.calculate_bug_gravity(self.lp.get_bug(bug_id), now)
+
+                except:
+                    error("Exception caught processing the tasks, building the bugs database.\n")
+                    bugs_db = None
+                    raise
+
+            if bugs_db != None:
+                with open(self.cfg['database'], 'w') as f:
+                    f.write(json.dumps(bugs_db, sort_keys=True, indent=4))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            print("Keyboard interrupt")
+            pass
+
+        # Handle application errors.
+        #
+        except CollectRegressionsDataError as e:
+            error(e.msg)
+
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        return
+
+if __name__ == '__main__':
+    app = CollectRegressionsData()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
