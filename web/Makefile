@@ -1,5 +1,5 @@
 
-reports: fetch-data sru-report.html versions.html
+reports: fetch-data sru-report.html versions.html regressions-report bug-window.html
 
 fetch-data:
 	@kteam-tools/stable/sru-report --archive-versions > sru-data-tmp.json
@@ -50,3 +50,10 @@ regressions-proposed-report.html: regressions-proposed-data.json
 
 clean:
 	rm -f *.json sru-report.html versions.html
+
+bug-window-data.json:
+	scripts/collect-window-data --window=30 --db=$@ --title="30 Days of New Bugs"
+
+bug-window.html: bug-window-data.json
+	scripts/mk-regressions-report $< > $@
+	rm $<
