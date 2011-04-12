@@ -1,0 +1,14 @@
+{
+    "mail_notify": {
+    	"smtp_server": "smtp.some.domain",
+	"smtp_user": "spmtuser",
+	"smtp_pass": "smtppass",
+        "from_address": "someone@somewhere.com", 
+        "to_address": "someoneelse@somewhere.com"
+    },
+    "status_net": {
+        "user": "git", 
+        "url": "status.ai4qr.com",
+	"pass": "password"
+    } 
+}

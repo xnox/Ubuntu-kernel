@@ -4,6 +4,7 @@
 #
 
 from sys                                import argv
+from os                                 import path
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
@@ -11,6 +12,8 @@ from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
 from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_release_map
 from urllib2                            import HTTPError
+from smtplib                            import SMTP
+from email.mime.text                    import MIMEText
 
 # CmdlineError
 #
@@ -134,6 +137,19 @@ class Shank(StdApp):
                                          'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
+            'upload-to-ppa'           : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
             'promote-to-proposed'     : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
@@ -147,6 +163,19 @@ class Shank(StdApp):
                                          'Fix Released' : {'action':self.promote_to_proposed_fix_released},
                                          'Unknown' : {'action':None},
                                          },
+            'verification-testing'    : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':None},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':self.verification_testing_fix_released},
+                                         'Unknown' : {'action':None},
+                                         },
             'certification-testing'   : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
@@ -157,10 +186,10 @@ class Shank(StdApp):
                                          'Triaged' : {'action':None},
                                          'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.certification_testing_fix_released},
                                          'Unknown' : {'action':None},
                                          },
-            'upload-to-ppa'           : {'New' : {'action':None},
+            'regression-testing'      : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
                                          'Invalid' : {'action':None},
@@ -170,7 +199,7 @@ class Shank(StdApp):
                                          'Triaged' : {'action':None},
                                          'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.regression_testing_fix_released},
                                          'Unknown' : {'action':None},
                                          },
             'promote-to-updates'      : {'New' : {'action':None},
@@ -199,47 +228,30 @@ class Shank(StdApp):
                                          'Fix Released' : {'action':None},
                                          'Unknown' : {'action':None},
                                          },
-            'regression-testing'      : {'New' : {'action':None},
-                                         'Incomplete' : {'action':None},
-                                         'Opinion' : {'action':None},
-                                         'Invalid' : {'action':None},
-                                         "Won't Fix" : {'action':None},
-                                         'Expired' : {'action':None},
-                                         'Confirmed' : {'action':None},
-                                         'Triaged' : {'action':None},
-                                         'In Progress' : {'action':None},
-                                         'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
-                                         'Unknown' : {'action':None},
-                                         },
             'security-signoff'        : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
-                                         'Invalid' : {'action':None},
+                                         'Invalid' : {'action':self.security_signoff_finished},
                                          "Won't Fix" : {'action':None},
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
                                          'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
-                                         'Unknown' : {'action':None},
-                                         },
-            'verification-testing'    : {'New' : {'action':None},
-                                         'Incomplete' : {'action':None},
-                                         'Opinion' : {'action':None},
-                                         'Invalid' : {'action':None},
-                                         "Won't Fix" : {'action':None},
-                                         'Expired' : {'action':None},
-                                         'Confirmed' : {'action':None},
-                                         'Triaged' : {'action':None},
-                                         'In Progress' : {'action':None},
-                                         'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.security_signoff_finished},
                                          'Unknown' : {'action':None},
                                          },
         } 
 
+        # Meta-information for this script is tracked in the kernel-sru-workflow task
+        #
+        # kernel-sru-workflow Status: New               <- Just created
+        #                     Status: In-progress       <- Actively monitored by the bot
+        #                     Status: Incomplete        <- Something bad happened
+        #                     Status: Invalid           <- Replaced by a new tracking bug
+        #                     Status: Fix-Released      <- Everything went good, done!
+        #
+        #
         #
         # State transition listing
         #
@@ -247,36 +259,38 @@ class Shank(StdApp):
         #
         # Tasks:
         #
-        #   prepare-package
+        #   * prepare-package
         #         New -> 'In Progress' MANUAL When stable team begins package prep
         #               Triggers: nothing
         #         'In Progress' -> 'Fix Released' MANUAL when PPA builds are complete (future automation)
         #               Triggers: promote-to-proposed changes to 'Confirmed'
         #
-        #   upload-to-ppa - this state not used at this time
+        #   * upload-to-ppa - this state not used at this time
         #
-        #   promote-to-proposed
+        #   * promote-to-proposed
         #         'Confirmed' -> 'In Progress' MANUAL When archive admin takes the task
         #               Triggers: Nothing
         #         'In Progress' -> 'Fix Released' MANUAL when packages are in -proposed
         #               Triggers: verification-testing set to 'In Progress'
+        #                         Affected bugs marked 'verification needed' and spammed with text
         #
-        #   verification-testing
+        #   * verification-testing
         #         New -> 'In Progress' AUTO
-        #               Triggers: Affected bugs marked 'verification needed' and spammed with text
+        #               Triggers:Nothing
         #         'In Progress' -> 'Fix Released' MANUAL when all bugs are verified (future automation)
         #               Triggers: certification-testing, regression-testing, and security-signoff set to 'Confirmed'
         #
-        #   certification-testing
+        #   * certification-testing
         #         New -> 'Confirmed' AUTO
         #               Triggers: Nothing
         #         'Confirmed' -> 'In Progress' MANUAL When someone takes the task
         #               Triggers: Nothing
         #         'In Progress' -> 'Fix Released' MANUAL when testing is complete
         #                           NOTE: certification-testing-passed or certification-testing-failed tag must be added
+        #                                 BEFORE changing to Fix Released
         #               Triggers: Release Test
         #
-        #   regression-testing
+        #   * regression-testing
         #         New -> 'Confirmed' AUTO
         #               Triggers: Nothing
         #         'Confirmed' -> 'In Progress' MANUAL When someone takes the task
@@ -285,7 +299,7 @@ class Shank(StdApp):
         #                           NOTE: qa-testing-passed or qa-testing-failed tag must be added
         #               Triggers: Release Test
         #
-        #   security-signoff
+        #   * security-signoff
         #         New -> 'Confirmed' AUTO
         #               Triggers: Nothing
         #         'Confirmed' -> 'In Progress' MANUAL When someone takes the task
@@ -313,7 +327,7 @@ class Shank(StdApp):
         #
         ######
         #
-        # 'Release Test' - triggered to be run by several states
+        # * 'Release Test' - triggered to be run by several states
         #
         #     IF -failed tag present for qa or cert, then TODO DO SOMETHING (email the SRU list?)
         #
@@ -347,6 +361,10 @@ class Shank(StdApp):
     def main(self):
         cmdline = Cmdline()
         try:
+            # set our config file, which can be overridden on the command line
+            self.defaults['configuration_file'] = path.dirname(__file__) + '/sru-workflow.cfg'
+            #print('config file = %s' % self.defaults['configuration_file'])
+
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
 
@@ -366,32 +384,53 @@ class Shank(StdApp):
                     'kernel-release-tracking-bug'
                 ]
             search_tags_combinator = "All"
-            search_status          = ["New","Invalid","Fix Committed"] # A list of the bug statuses that we care about
+            search_status          = ["New","In Progress","Invalid","Fix Committed"] # A list of the bug statuses that we care about
             search_since           = datetime(year=2011, month=1, day=1)
             tasks = project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
-            performReleaseTest = False
 
             for task in tasks:
                 bug = task.bug
                 if 'staging' in self.cfg:
-                    lpserver = 'bugs.qastaging.launchpad.net'
+                    self.cfg['lpserver'] = 'bugs.qastaging.launchpad.net'
                 else:
-                    lpserver = 'bugs.launchpad.net'
+                    self.cfg['lpserver'] = 'bugs.launchpad.net'
 
-                self.verbose("    Processing -> https://%s/ubuntu/+source/linux/+bug/%s\n" % (lpserver, bug.id))
+                bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], bug.id)
+                self.verbose('    Processing -> %s' % bugurl)
+
+                # initialize any per-bug variables that we use for the release test
+                self.bugtags = []
+                for atag in bug.tags:
+                    self.bugtags.append(atag)
+                performReleaseTest = False
+                self.certification_complete = False
+                self.regression_testing_complete = False
+                self.security_signoff_complete = False
+                self.security_publishing_required = False
 
                 # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
                 # TODO This is a bit sloppy and I should probably build one list and walk it twice.
-                for t in bug.tasks:
-                    task       = t.bug_target_name
-                    parts = task.split()
-                    mastertask = parts[0]
-                    if len(parts) == 1:
-                        if mastertask == 'kernel-sru-workflow':
-                            continue
-                    else:
-                        task = parts[1]
-                    self.taskbyname[task] = t
+                try:
+                    for t in bug.tasks:
+                        task       = t.bug_target_name
+                        parts = task.split()
+                        mastertask = parts[0]
+                        if len(parts) == 1:
+                            # we save a pointer to the master task and check to make sure we should process this bug
+                            if mastertask == 'kernel-sru-workflow':
+                                self.taskbyname[mastertask] = t
+                                if t.status == 'In Progress':
+                                    continue
+                                else:
+                                    self.verbose('Not processing this bug because master task state is set to %s\n' % (t.status))
+                                    raise RuntimeError
+                        else:
+                            task = parts[1]
+                        self.taskbyname[task] = t
+                except RuntimeError:
+                    # end processing for this bug
+                    self.verbose('Quitting\n')
+                    continue
 
                 # now walk them one at a time
                 for t in bug.tasks:
@@ -424,8 +463,6 @@ class Shank(StdApp):
                     else:
                         assignee = assignee.display_name
 
-
-
                     self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task, state, importance, assignee))
 
                     try:
@@ -444,8 +481,8 @@ class Shank(StdApp):
                     if  action is None:
                         self.verbose('ACTION: No action for task %s in state %s\n' % (task, state))
                     else:
-                        newstate = action(t)
-                        self.verbose('ACTION: Action was taken to change task %s state from %s to %s\n' % (task, state, newstate))
+                        if action(t):
+                            performReleaseTest = True
 
                 # Now process any tests which require information from multiple tasks
                 # will require info stored in class variables during task processing
@@ -467,32 +504,169 @@ class Shank(StdApp):
 
         return
 
+    # end of main
+
+    def send_email(self, task, subject, body):
+        self.verbose('Sending email')
+        bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
+        mcfg = self.cfg['mail_notify']
+        body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n\n' % bugurl
+        msg = MIMEText(body_top + body)
+        msg['Subject'] = '[ShankBot] ' + subject
+        msg['From'] = mcfg['from_address']
+        msg['To'] = mcfg['to_address']
+        # Send the message via our own SMTP server, but don't include the
+        # envelope header.
+        s = SMTP(mcfg['smtp_server'], 587)
+        #s.set_debuglevel(1)
+        s.ehlo()
+        s.starttls()
+        s.login(mcfg['smtp_user'].encode('UTF-8'),mcfg['smtp_pass'].encode('UTF-8'))
+        s.sendmail(mcfg['from_address'], [mcfg['to_address']], msg.as_string())
+        s.quit()
+        return
+
+    def send_status_update(self, message):
+        scfg = self.cfg['status_net']
+        curl = 'curl -s -u %s:%s -d status="%s" %s' % (scfg['user'],scfg['pass'],message,scfg['url'])
+        pipe = popen(curl, 'r')
+        return
+
+    def set_task_to_state(self, taskname, state):
+        """
+        Set a task with a given name to the desired state
+        returns True if we changed the state and False if it was already at the desired state
+        """
+        # TODO could add error handling and retries here if needed
+        if self.taskbyname[taskname].status != state:
+            self.verbose('Setting Task <%s> to State <%s>\n' % (taskname, state))
+            self.taskbyname[taskname].status = state
+            return True
+        else:
+            self.verbose('Task <%s> was already in state <%s>\n' % (taskname, state))
+            return False
+
     #
     # Begin action methods for state transitions
     #
 
-    # prep-package_fix_released
-    #
     def prep_package_fix_released(self, taskobj):
         """
         when the prep-package task is set to Fix Released, we set the
         promote-to-proposed task to Confirmed
         """
-        if self.taskbyname['promote-to-proposed'].status != 'Confirmed':
-            self.verbose('prep-package is Fix Released, setting promote-to-proposed to Confirmed\n')
-            self.taskbyname['promote-to-proposed'].status = 'Confirmed'
-        # don't change the status of the prep-package task
-        return taskobj.status
+        if self.taskbyname['promote-to-proposed'].status == 'New':
+            self.set_task_to_state('promote-to-proposed', 'Confirmed')
+        return False
 
-    # prep-package_fix_released
-    #
     def promote_to_proposed_fix_released(self, taskobj):
         """
+        When promote-to-proposed is set to Fix Released, we begin verification testing by setting
+        verification-testing to In Progress, add tags to the bugs, and spam with text
         """
-        self.verbose('promote-to-proposed is Fix Released, setting  verification-testing to Confirmed\n')
-        self.taskbyname['verification-testing'].status = 'Confirmed'
-        # don't change the status of the promote-to-proposed task
-        return taskobj.status
+        if self.taskbyname['verification-testing'].status == 'New':
+            if self.set_task_to_state('verification-testing', 'In Progress'):
+                # we did change the state, weren't already in it
+                # Now tag all bugs verification-needed and spam with a comment
+                # TODO  - call a script
+                print 'Here is where we would tag and spam the verification bugs'
+        return False
+
+    def verification_testing_fix_released(self, taskobj):
+        """
+        When verification-testing is set to Fix Released, we set three tasks to Confirmed.
+        These are certification-testing, regression-testing, and security-signoff
+        """
+        if self.taskbyname['certification-testing'].status == 'New':
+            self.set_task_to_state('certification-testing', 'Confirmed')
+        if self.taskbyname['regression-testing'].status == 'New':
+            self.set_task_to_state('regression-testing', 'Confirmed')
+        if self.taskbyname['security-signoff'].status == 'New':
+            self.set_task_to_state('security-signoff', 'Confirmed')
+        return False
+
+    def certification_testing_fix_released(self, taskobj):
+        """
+        When certification-testing is set to Fix Released, we check the tags
+        If tagged certification-testing-failed then we alert people
+        If certification-testing-passed then we save the tag and state and trigger
+        running of the test to see if we're ready for publishing
+        """
+        if 'certification-testing-failed' in self.bugtags:
+            self.verbose('Certification tagged as FAIL\n')
+            # Send email and possibly a status update -spc- TODO
+            msgbody = 'The bug was tagged as certification-testing-failed\n'
+            self.send_email(taskobj, 'Certification FAILURE', msgbody)
+            # stop further processing by this bot
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            return False
+        elif 'certification-testing-passed' in self.bugtags:
+            self.verbose('Certification tagged as PASSED\n')
+            # TODO send a status.net update?
+            self.certification_complete = True
+            return True
+        else:
+            self.verbose('certification-testing task set to Fix Released but no status tag!\n')
+            # Send email and possibly a status update -spc- TODO
+            msgbody = 'The certification-testing task was set to Fix Released but neither the certification-testing-passed or certification-testing-failed tag was applied\n'
+            self.send_email(taskobj, 'Certification completed but no status tags applied', msgbody)
+            # stop further processing by this bot
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            return False
+
+    def regression_testing_fix_released(self, taskobj):
+        """
+        When regression-testing is set to Fix Released, we check the tags
+        If tagged regression-testing-failed then we alert people
+        If regression-testing-passed then we save the tag and state and trigger
+        running of the test to see if we're ready for publishing
+        """
+        if 'regression-testing-failed' in self.bugtags:
+            self.verbose('Regression Testing tagged as FAIL\n')
+            # Send email and possibly a status update -spc- TODO
+            msgbody = 'The bug was tagged as regression-testing-failed\n'
+            self.send_email(taskobj, 'Regression Testing FAILURE', msgbody)
+            # stop further processing by this bot
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            return False
+        elif 'regression-testing-passed' in self.bugtags:
+            self.verbose('Regression Testing tagged as PASSED\n')
+            # TODO send a status.net update?
+            self.regression_complete = True
+            return True
+        else:
+            self.verbose('regression-testing task set to Fix Released but no status tag!\n')
+            # Send email and possibly a status update -spc- TODO
+            msgbody = 'The regression-testing task was set to Fix Released but neither the regression-testing-passed or regression-testing-failed tag was applied\n'
+            self.send_email(taskobj, 'Regression Testing completed but no status tags applied', msgbody)
+            # stop further processing by this bot
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            return False
+
+    def security_signoff_finished(self, taskobj):
+        """
+        When security-signoff is set to either Invalid or Fix Released, it is done.
+        If set to Fix Released, we set a flag to indicate that the package must
+        be copied to the -security pocket.
+        """
+        self.security_signoff_complete = True
+        # Trigger the release test
+        return True
+
+    def release_test_state_check(self, taskname, desired_state_list):
+        taskobj = self.taskbyname[taskname]
+        if taskobj.status not in desired_state_list:
+            self.verbose('ERROR: %s task set to Unexpected state!\n' % taskname)
+            # Send email and possibly a status update
+            msgbody = 'The %s task was not set to one of the following statesduring the release test:\n' % taskname
+            for statename in desired_state_list:
+                msgbody = msgbody + statename + ', '
+            msgbody = msgbody + '\n'
+            msgbody = msgbody + '%s task was set to state %s\n' % (taskname, taskobj.status)
+            msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
+            self.send_email(taskobj, '%s task not set to correct state during release test' % taskname, msgbody)
+            # stop further processing by this bot
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
 
     #
     # This is not performed during processing for a specific task but only if several tasks are
@@ -506,10 +680,58 @@ class Shank(StdApp):
         to -updates and -security are required
         """
         
-        print '*** Performing release test'
-        # nothing yet
-        # Not associated with a task so no status returned
-        return
+        self.verbose('*** Performing release test')
+
+        # Some general sanity checks before we pull the lever to publish
+        self.release_test_state_check('prepare-package', ['Fix Released'])
+        self.release_test_state_check('promote-to-proposed', ['Fix Released'])
+        self.release_test_state_check('verification-testing', ['Fix Released'])
+        self.release_test_state_check('certification-testing', ['Fix Released'])
+        self.release_test_state_check('regression-testing', ['Fix Released'])
+        self.release_test_state_check('security-signoff', ['Invalid', 'Fix Released'])
+        self.release_test_state_check('promote-to-security', ['New'])
+        self.release_test_state_check('promote-to-updates', ['New'])
+
+        # If we found any problems, we've halted processing and set this
+        if self.taskbyname['kernel-sru-workflow'].status is not 'In Progress':
+            self.verbose('*** Exiting release test without triggering any publishing')
+            return
+
+        if self.taskbyname['security-signoff'].status == 'Fix Released':
+            # publishing to security is required
+            self.security_publishing_required = True
+
+        if (self.certification_complete and self.regression_testing_complete and self.security_signoff_complete):
+            self.verbose('Cert and regression testing and security signoff all complete')
+            # one last check for test results
+            if 'regression-testing-passed' in self.bugtags and 'certification-testing-passed' in self.bugtags:
+                # we're all good
+                if self.security_publishing_required:
+                    self.verbose('Requires publishing to the -security pocket')
+                    if self.taskbyname['promote-to-security'].status == 'New':
+                        self.set_task_to_state('promote-to-security', 'Confirmed')
+                if self.taskbyname['promote-to-updates'].status == 'New':
+                    self.set_task_to_state('promote-to-updates', 'Confirmed')
+                # Now send a happy email
+                msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
+                self.send_email(taskobj, 'Package is ready for publication', msgbody)
+                
+            else:
+                # don't have required testing signoffs
+                self.verbose('ERROR: test completion tags not founr during release test!\n')
+                # Send email and possibly a status update
+                msgbody = 'During the release test either the certification-testing-passed or the regression-testing-passed tag was not found\n'
+                msgbody = msgbody + 'Tags on this bug are:\n'
+                for ftag in self.bugtags:
+                    msgbody = msgbody + '    ' + ftag + '\n'
+                msgbody = msgbody + '\n'
+                msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
+                self.send_email(taskobj, 'Test completion tags not found during release test', msgbody)
+                # stop further processing by this bot
+                self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+    
+        # this method is not associated with a task state transition so no status returned
+        return 
 
 if __name__ == '__main__':
     app = Shank()
