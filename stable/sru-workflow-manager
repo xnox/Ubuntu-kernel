@@ -384,7 +384,7 @@ class Shank(StdApp):
                     'kernel-release-tracking-bug'
                 ]
             search_tags_combinator = "All"
-            search_status          = ["New","In Progress","Invalid","Fix Committed"] # A list of the bug statuses that we care about
+            search_status          = ["New","In Progress","Invalid", "Incomplete", "Fix Committed"] # A list of the bug statuses that we care about
             search_since           = datetime(year=2011, month=1, day=1)
             tasks = project.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator, modified_since=search_since)
 
@@ -403,7 +403,7 @@ class Shank(StdApp):
                 for atag in bug.tags:
                     self.bugtags.append(atag)
                 performReleaseTest = False
-                self.certification_complete = False
+                self.certification_testing_complete = False
                 self.regression_testing_complete = False
                 self.security_signoff_complete = False
                 self.security_publishing_required = False
@@ -423,7 +423,7 @@ class Shank(StdApp):
                                     continue
                                 else:
                                     self.verbose('Not processing this bug because master task state is set to %s\n' % (t.status))
-                                    raise RuntimeError
+                                    continue
                         else:
                             task = parts[1]
                         self.taskbyname[task] = t
@@ -507,7 +507,7 @@ class Shank(StdApp):
     # end of main
 
     def send_email(self, task, subject, body):
-        self.verbose('Sending email')
+        self.verbose('Sending email\n')
         bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
         mcfg = self.cfg['mail_notify']
         body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n\n' % bugurl
@@ -603,7 +603,7 @@ class Shank(StdApp):
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
             # TODO send a status.net update?
-            self.certification_complete = True
+            self.certification_testing_complete = True
             return True
         else:
             self.verbose('certification-testing task set to Fix Released but no status tag!\n')
@@ -632,7 +632,7 @@ class Shank(StdApp):
         elif 'regression-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
             # TODO send a status.net update?
-            self.regression_complete = True
+            self.regression_testing_complete = True
             return True
         else:
             self.verbose('regression-testing task set to Fix Released but no status tag!\n')
@@ -682,39 +682,48 @@ class Shank(StdApp):
         
         self.verbose('*** Performing release test')
 
-        # Some general sanity checks before we pull the lever to publish
-        self.release_test_state_check('prepare-package', ['Fix Released'])
-        self.release_test_state_check('promote-to-proposed', ['Fix Released'])
-        self.release_test_state_check('verification-testing', ['Fix Released'])
-        self.release_test_state_check('certification-testing', ['Fix Released'])
-        self.release_test_state_check('regression-testing', ['Fix Released'])
-        self.release_test_state_check('security-signoff', ['Invalid', 'Fix Released'])
-        self.release_test_state_check('promote-to-security', ['New'])
-        self.release_test_state_check('promote-to-updates', ['New'])
 
-        # If we found any problems, we've halted processing and set this
-        if self.taskbyname['kernel-sru-workflow'].status is not 'In Progress':
-            self.verbose('*** Exiting release test without triggering any publishing')
-            return
+        # No need to do anything until these three are all complete
+        if (self.certification_testing_complete and self.regression_testing_complete and self.security_signoff_complete):
+            self.verbose('Cert and regression testing and security signoff all complete\n')
 
-        if self.taskbyname['security-signoff'].status == 'Fix Released':
-            # publishing to security is required
-            self.security_publishing_required = True
+            # Some general sanity checks before we pull the lever to publish
+            self.release_test_state_check('prepare-package', ['Fix Released'])
+            self.release_test_state_check('promote-to-proposed', ['Fix Released'])
+            self.release_test_state_check('verification-testing', ['Fix Released'])
+            self.release_test_state_check('certification-testing', ['Fix Released'])
+            self.release_test_state_check('regression-testing', ['Fix Released'])
+            self.release_test_state_check('security-signoff', ['Invalid', 'Fix Released'])
+            # confirmed is in the next two in case we rerun the release test after
+            # a dumb failure like email send fail or something
+            self.release_test_state_check('promote-to-security', ['New', 'Confirmed'])
+            self.release_test_state_check('promote-to-updates', ['New', 'Confirmed'])
 
-        if (self.certification_complete and self.regression_testing_complete and self.security_signoff_complete):
-            self.verbose('Cert and regression testing and security signoff all complete')
+            # If we found any problems, we've halted processing and set this
+            if self.taskbyname['kernel-sru-workflow'].status != 'In Progress':
+                self.verbose('*** Exiting release test without triggering any publishing\n')
+                return
+
+            if self.taskbyname['security-signoff'].status == 'Fix Released':
+                # publishing to security is required
+                self.security_publishing_required = True
+
             # one last check for test results
             if 'regression-testing-passed' in self.bugtags and 'certification-testing-passed' in self.bugtags:
                 # we're all good
                 if self.security_publishing_required:
-                    self.verbose('Requires publishing to the -security pocket')
+                    self.verbose('Requires publishing to the -security pocket\n')
                     if self.taskbyname['promote-to-security'].status == 'New':
                         self.set_task_to_state('promote-to-security', 'Confirmed')
+                else:
+                    if self.taskbyname['promote-to-security'].status == 'New':
+                        self.set_task_to_state('promote-to-security', 'Invalid')
+
                 if self.taskbyname['promote-to-updates'].status == 'New':
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
                 # Now send a happy email
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
-                self.send_email(taskobj, 'Package is ready for publication', msgbody)
+                self.send_email(self.taskbyname['kernel-sru-workflow'], 'Package is ready for publication', msgbody)
                 
             else:
                 # don't have required testing signoffs
@@ -726,7 +735,7 @@ class Shank(StdApp):
                     msgbody = msgbody + '    ' + ftag + '\n'
                 msgbody = msgbody + '\n'
                 msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
-                self.send_email(taskobj, 'Test completion tags not found during release test', msgbody)
+                self.send_email(self.taskbyname['kernel-sru-workflow'], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
                 self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
     
