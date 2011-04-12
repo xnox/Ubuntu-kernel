@@ -235,15 +235,25 @@ class CollectRegressionsData(StdApp):
             self.__initialize()
             now = datetime.utcnow()
 
-            if 'window' in self.cfg:
-                search_since = datetime.utcnow() - timedelta(days=int(self.cfg['window']))
-            else:
-                search_since = datetime.utcnow() - timedelta(days=1)
-            search_since_notz = search_since
-            search_since_notz = search_since_notz.replace(tzinfo=None)
+            if path.exists(self.cfg['database']):
+                with open(self.cfg['database'], 'r') as f:
+                    bugs_db = json.load(f)
 
-            bugs_db = {}
-            bugs_db['packages'] = {}
+                using_search_since = True
+                search_since = datetime.strptime(bugs_db['updated'], '%A, %d. %B %Y %H:%M UTC')
+                self.cfg['window'] = bugs_db['bug creation window']
+            else:
+                bugs_db = {}
+                if 'window' in self.cfg:
+                    bugs_db['bug creation window'] = self.cfg['window']
+                    search_since = datetime.utcnow() - timedelta(days=int(self.cfg['window']))
+                else:
+                    bugs_db['bug creation window'] = 1
+                    search_since = datetime.utcnow() - timedelta(days=1)
+                bugs_db['tags']    = self.cfg['search_tags']   # Can be used by the report script for the report title
+                bugs_db['packages'] = {}
+            bug_creation_window = int(bugs_db['bug creation window'])
+
             bugs_db['updated'] = now.strftime("%A, %d. %B %Y %H:%M UTC")
             bugs_db_packages = bugs_db['packages']
             if 'title' in self.cfg:
@@ -280,6 +290,7 @@ class CollectRegressionsData(StdApp):
                     tasks = source_package.search_tasks(status=search_status, modified_since=search_since)
                     self.verbose("\n")
 
+                    deletion_list = []
                     this_package_bugs = None
                     for task in tasks:
                         bug = task.bug
@@ -287,7 +298,7 @@ class CollectRegressionsData(StdApp):
                         self.__verbose_bug_info(bug)
 
                         ago = DeltaTime(bug.date_created, now)
-                        if ago.days < (int(self.cfg['window']) if 'window' in self.cfg else 1):
+                        if ago.days < bug_creation_window:
                             if package_name not in bugs_db_packages:
                                 bugs_db_packages[package_name] = {}
                                 bugs_db_packages[package_name]['bugs'] = {}
@@ -301,7 +312,14 @@ class CollectRegressionsData(StdApp):
                     #
                     if package_name in bugs_db_packages and 'bugs' in bugs_db_packages[package_name]:
                         for bug_id in bugs_db_packages[package_name]['bugs']:
-                            bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = Bugs.calculate_bug_gravity(self.lp.get_bug(bug_id), now)
+                            ago = DeltaTime(self.string_to_date(bugs_db_packages[package_name]['bugs'][bug_id]['date created']), now)
+                            if ago.days < bug_creation_window:
+                                bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = Bugs.calculate_bug_gravity(self.lp.get_bug(bug_id), now)
+                            else:
+                                deletion_list.append(bug_id)
+
+                        for bug_id in deletion_list:
+                            del bugs_db_packages[package_name]['bugs'][bug_id]
 
                 except:
                     error("Exception caught processing the tasks, building the bugs database.\n")
