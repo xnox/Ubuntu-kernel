@@ -4,7 +4,7 @@
 #
 
 from sys                                import argv
-from os                                 import path
+from os                                 import path, popen
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
@@ -12,6 +12,7 @@ from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
 from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_release_map
 from urllib2                            import HTTPError
+from urllib                             import quote
 from smtplib                            import SMTP
 from email.mime.text                    import MIMEText
 
@@ -526,7 +527,9 @@ class Shank(StdApp):
         s.quit()
         return
 
-    def send_status_update(self, message):
+    def send_status_update(self, task, message):
+        bugurl = quote('https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id))
+        message = bugurl + ' : ' + message
         scfg = self.cfg['status_net']
         curl = 'curl -s -u %s:%s -d status="%s" %s' % (scfg['user'],scfg['pass'],message,scfg['url'])
         pipe = popen(curl, 'r')
@@ -564,12 +567,14 @@ class Shank(StdApp):
         When promote-to-proposed is set to Fix Released, we begin verification testing by setting
         verification-testing to In Progress, add tags to the bugs, and spam with text
         """
-        if self.taskbyname['verification-testing'].status == 'New':
+        task = self.taskbyname['verification-testing']
+        if task.status == 'New':
             if self.set_task_to_state('verification-testing', 'In Progress'):
                 # we did change the state, weren't already in it
                 # Now tag all bugs verification-needed and spam with a comment
                 # TODO  - call a script
                 print 'Here is where we would tag and spam the verification bugs'
+                self.send_status_update(task, 'New kernel package packagename available in -proposed.')
         return False
 
     def verification_testing_fix_released(self, taskobj):
@@ -696,7 +701,7 @@ class Shank(StdApp):
             self.release_test_state_check('security-signoff', ['Invalid', 'Fix Released'])
             # confirmed is in the next two in case we rerun the release test after
             # a dumb failure like email send fail or something
-            self.release_test_state_check('promote-to-security', ['New', 'Confirmed'])
+            self.release_test_state_check('promote-to-security', ['New', 'Confirmed', 'Invalid'])
             self.release_test_state_check('promote-to-updates', ['New', 'Confirmed'])
 
             # If we found any problems, we've halted processing and set this
@@ -721,13 +726,15 @@ class Shank(StdApp):
 
                 if self.taskbyname['promote-to-updates'].status == 'New':
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
-                # Now send a happy email
+                # Now send a happy email 
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
-                self.send_email(self.taskbyname['kernel-sru-workflow'], 'Package is ready for publication', msgbody)
+                task = self.taskbyname['kernel-sru-workflow']
+                self.send_email(task, 'Package is ready for publication', msgbody)
+                self.send_status_update(task, 'Tested kernel package available for publication.')
                 
             else:
                 # don't have required testing signoffs
-                self.verbose('ERROR: test completion tags not founr during release test!\n')
+                self.verbose('ERROR: test completion tags not found during release test!\n')
                 # Send email and possibly a status update
                 msgbody = 'During the release test either the certification-testing-passed or the regression-testing-passed tag was not found\n'
                 msgbody = msgbody + 'Tags on this bug are:\n'
