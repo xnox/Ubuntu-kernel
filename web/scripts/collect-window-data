@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 #
-# This script is intended to produce an html, report of all the bugs in any "open"
-# state that have been tagged with a "regression" tag.
+# This script is to maintain a database of new bug information. That bug
+# information is relative to a specific length of time, such as the last
+# 24 hours.
 #
 
 from sys                                import argv
@@ -11,7 +12,7 @@ from ktl.utils                          import stdo, error, dump
 from ktl.bugs                           import Bugs, DeltaTime
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
-from datetime                           import datetime
+from datetime                           import datetime, timedelta
 from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_db
 from re                                 import match
 import json
@@ -65,6 +66,14 @@ class Cmdline:
         stdo("                         Performs additional output related to the option enabled and        \n")
         stdo("                         the application defined support for the option.                     \n")
         stdo("                                                                                             \n")
+        stdo("        --db=<database>                                                                      \n")
+        stdo("                         The name of the json file that is to be used to track the bug       \n")
+        stdo("                         information.                                                        \n")
+        stdo("                                                                                             \n")
+        stdo("        --window=<time>                                                                      \n")
+        stdo("                         The delta from now that we are interested in new bugs having        \n")
+        stdo("                         been created within.                                                \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
 
@@ -80,7 +89,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'proposed', 'potential', 'release', 'update', 'db=', 'as-me']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'db=', 'as-me', 'window=', 'title=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -89,18 +98,6 @@ class Cmdline:
 
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
-
-                elif (opt == '--proposed'):
-                    self.cfg['search_tags'] = 'regression-proposed'
-
-                elif (opt == '--potential'):
-                    self.cfg['search_tags'] = 'regression-potential'
-
-                elif (opt == '--release'):
-                    self.cfg['search_tags'] = 'regression-release'
-
-                elif (opt == '--update'):
-                    self.cfg['search_tags'] = 'regression-update'
 
                 elif opt in ('--config'):
                     self.cfg['configuration_file'] = val
@@ -114,6 +111,11 @@ class Cmdline:
                 elif opt == '--as-me':
                     self.cfg['as me'] = True
 
+                elif opt in ('--window'):
+                    self.cfg['window'] = val
+
+                elif opt in ('--title'):
+                    self.cfg['title'] = val
 
         except GetoptError as e:
             print(e, defaults)
@@ -144,12 +146,6 @@ class CollectRegressionsData(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
-        self.defaults['search_tags'] = [   # A list of the tags we care about
-            'regression-proposed',
-            'regression-potential',
-            'regression-release',
-            'regression-update'
-        ]
 
     # __initialize
     #
@@ -191,6 +187,8 @@ class CollectRegressionsData(StdApp):
             print("    %s: %s" % (bug.id, bug.title))
             print(" ")
 
+            print("                 Owner: %s" % ("None" if bug.owner is None else bug.owner.display_name))
+            print("               Created: %s" % (Bugs.date_to_string(bug.date_created)))
             tags = ""
             for t in bug.tags:
                 tags += t
@@ -237,19 +235,19 @@ class CollectRegressionsData(StdApp):
             self.__initialize()
             now = datetime.utcnow()
 
-            bug_ct = 0
-            if path.exists(self.cfg['database']):
-                with open(self.cfg['database'], 'r') as f:
-                    bugs_db = json.load(f)
-
-                using_search_since = True
-                search_since = datetime.strptime(bugs_db['updated'], '%A, %d. %B %Y %H:%M UTC')
+            if 'window' in self.cfg:
+                search_since = datetime.utcnow() - timedelta(days=int(self.cfg['window']))
             else:
-                bugs_db = {}
-                bugs_db['tags']    = self.cfg['search_tags']   # Can be used by the report script for the report title
-                bugs_db['packages'] = {}
+                search_since = datetime.utcnow() - timedelta(days=1)
+            search_since_notz = search_since
+            search_since_notz = search_since_notz.replace(tzinfo=None)
+
+            bugs_db = {}
+            bugs_db['packages'] = {}
             bugs_db['updated'] = now.strftime("%A, %d. %B %Y %H:%M UTC")
             bugs_db_packages = bugs_db['packages']
+            if 'title' in self.cfg:
+                bugs_db['title'] = self.cfg['title']
 
             # All source projects the kernel team are interesed in.
             #
@@ -270,54 +268,33 @@ class CollectRegressionsData(StdApp):
                     error("The source package does not exist.")
                     raise
 
-                # Searching for bug tasks, the search can be quite complicated and made up
-                # of several components. The following can be combined in many ways to get
-                # the search you want. The search happens on the server and returns a
-                # collection of bug tasks that match the search criteria.
+                # We want all the bugs that have been modified since the last time we searched. Once
+                # we have that list, we eliminate any that have not been created within the time
+                # window we are interested in.
                 #
-                # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
-                #                          status=self.cfg['task_search_status'], modified_since=search_since)
-                #
-                search_tags_combinator = "Any"
                 search_status          = ["New","Incomplete","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
 
                 try:
                     self.verbose(" . Searching ...")
-                    if using_search_since:
-                        self.verbose("   since: %s" % (search_since))
-                        tasks = source_package.search_tasks(status=search_status, tags=self.cfg['search_tags'], tags_combinator=search_tags_combinator, modified_since=search_since)
-                    else:
-                        self.verbose("   since: The Beginning")
-                        tasks = source_package.search_tasks(status=search_status, tags=self.cfg['search_tags'], tags_combinator=search_tags_combinator)
+                    self.verbose("   since: %s" % (search_since))
+                    tasks = source_package.search_tasks(status=search_status, modified_since=search_since)
                     self.verbose("\n")
 
-                    #limit = 5
                     this_package_bugs = None
                     for task in tasks:
-                        if package_name not in bugs_db_packages:
-                            bugs_db_packages[package_name] = {}
-                            bugs_db_packages[package_name]['bugs'] = {}
-                        this_package_bugs = bugs_db_packages[package_name]['bugs']
-
                         bug = task.bug
                         task = self.__get_relevant_task(bug, package_name)
                         self.__verbose_bug_info(bug)
 
-                        # Try to determine two things:
-                        #   1. Can we calculate some kind of value based on the information in the bug
-                        #      that indicates we should look at this bug as opposed to others?
-                        #
-                        #   2. Can we determine if we should go visit this bug? A change in status from
-                        #      "Incomplete" to "Confirmed" or "Triaged" would be such an indication.
-                        #
-
-                        #bug_item['needs attention'] = self.bug_needs_attention(bug, package_name, bugs_db)
-
-                        this_package_bugs[bug.id] = Bugs.bug_info(bug, now, task)
-
-                        #if limit == 0:
-                        #    break
-                        #limit -= 1
+                        ago = DeltaTime(bug.date_created, now)
+                        if ago.days < (int(self.cfg['window']) if 'window' in self.cfg else 1):
+                            if package_name not in bugs_db_packages:
+                                bugs_db_packages[package_name] = {}
+                                bugs_db_packages[package_name]['bugs'] = {}
+                            this_package_bugs = bugs_db_packages[package_name]['bugs']
+                            this_package_bugs[bug.id] = Bugs.bug_info(bug, now, task)
+                        else:
+                            self.verbose('    *** Skipping, was not created with the time window.\n')
 
                     # Even if nothing changed on a bug, the gravity may have changed as the bug
                     # ages.
@@ -334,8 +311,6 @@ class CollectRegressionsData(StdApp):
             if bugs_db != None:
                 with open(self.cfg['database'], 'w') as f:
                     f.write(json.dumps(bugs_db, sort_keys=True, indent=4))
-                #report = RegressionsReport(self.lp, bugs_db)
-                #print(report)
 
         # Handle the user presses <ctrl-C>.
         #

@@ -1,0 +1,19 @@
+
+Theory of Operation of Scripts for Processing Bugs Tagged Regression-*
+======================================================================
+
+
+proc-new-regressions
+--------------------
+
+Any bug with a status of "New" and with one of the regression tags on it
+will be processed by this script. After processing by this script, the
+bug should be either "Confirmed" or "Incomplete".
+
+The bug will be changed to "Confirmed" if it has all the log files the Kernel
+Team has deemed to be essential attached by the original bug submitter.
+
+The bug will be changed to "Incomplete" and a comment added if it does
+not have the required logs.
+
+No further action is taken, no tags are added.

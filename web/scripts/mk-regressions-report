@@ -170,16 +170,19 @@ class RegressionsReport():
 <html xmlns="http://www.w3.org/1999/xhtml" dir="ltr" lang="en-US">
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'''
-        if   self.db['tags'] == 'regression-potential':
-            retval += '        <title>Regressions-Potential Report</title>\n'
-        elif self.db['tags'] == 'regression-release':
-            retval += '        <title>Regressions-Release Report</title>\n'
-        elif self.db['tags'] == 'regression-update':
-            retval += '        <title>Regressions-Update Report</title>\n'
-        elif self.db['tags'] == 'regression-proposed':
-            retval += '        <title>Regressions-Proposed Report</title>\n'
-        else:
-            retval += '        <title>The Regressions Report</title>\n'
+        if 'tags' in self.db:
+            if   self.db['tags'] == 'regression-potential':
+                retval += '        <title>Regressions-Potential Report</title>\n'
+            elif self.db['tags'] == 'regression-release':
+                retval += '        <title>Regressions-Release Report</title>\n'
+            elif self.db['tags'] == 'regression-update':
+                retval += '        <title>Regressions-Update Report</title>\n'
+            elif self.db['tags'] == 'regression-proposed':
+                retval += '        <title>Regressions-Proposed Report</title>\n'
+            else:
+                retval += '        <title>The Regressions Report</title>\n'
+        elif 'title' in self.db:
+            retval += '        <title>%s</title>\n' % (self.db['title'])
 
         retval += '''
 
@@ -265,16 +268,19 @@ class RegressionsReport():
         retval += '\n'
 
         retval += '            <div class="title">\n'
-        if   self.db['tags'] == 'regression-potential':
-            retval += '                The Regressions-Potential Report\n'
-        elif self.db['tags'] == 'regression-release':
-            retval += '                The Regressions-Release Report\n'
-        elif self.db['tags'] == 'regression-update':
-            retval += '                The Regressions-Update Report\n'
-        elif self.db['tags'] == 'regression-proposed':
-            retval += '                The Regressions-Proposed Report\n'
-        else:
-            retval += '                The Regressions Report\n'
+        if 'tags' in self.db:
+            if   self.db['tags'] == 'regression-potential':
+                retval += '                The Regressions-Potential Report\n'
+            elif self.db['tags'] == 'regression-release':
+                retval += '                The Regressions-Release Report\n'
+            elif self.db['tags'] == 'regression-update':
+                retval += '                The Regressions-Update Report\n'
+            elif self.db['tags'] == 'regression-proposed':
+                retval += '                The Regressions-Proposed Report\n'
+            else:
+                retval += '                The Regressions Report\n'
+        elif 'title' in self.db:
+            retval += self.db['title']
         retval += '            </div>\n'
 
         for pkg in self.db['packages']:
