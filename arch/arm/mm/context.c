@@ -113,7 +113,6 @@ static void reset_context(void *info)
 	flush_context();
 	set_mm_context(mm, asid);
 
-	/* set the new ASID */
 	cpu_switch_mm(mm->pgd, mm);
 }
 
