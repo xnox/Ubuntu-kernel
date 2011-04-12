@@ -294,7 +294,7 @@ class RegressionsReport():
             retval += '                                <th width="80">Series</th>\n'
             retval += '                                <th width="80">Importance</th>\n'
             retval += '                                <th width="80">Status</th>\n'
-            retval += '                                <th width="120">Assignee</th>\n'
+            retval += '                                <th width="80">Assignee</th>\n'
             retval += '                                <th width="50">Age</th>\n'
             retval += '                                <th width="50">&nbsp; C &nbsp;</th>\n'
             if self.show_xtra:
