@@ -206,7 +206,7 @@ class RegressionsReport():
                },
                format: function(s) {
                    // format your data for normalization
-                       return parsInt(s.replace(/./,''));
+                   return parseInt(s.replace(/\./g,''), 10);
                },
                // set type, either numeric or text
                type: 'numeric'
