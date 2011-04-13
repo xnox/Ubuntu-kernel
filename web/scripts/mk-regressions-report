@@ -284,6 +284,8 @@ class RegressionsReport():
         retval += '            </div>\n'
 
         for pkg in self.db['packages']:
+            if len(self.db['packages'][pkg]['bugs']) == 0:
+                continue
             retval += '                <div class="section">\n'
             retval += '                        <div class="table-heading">&nbsp;%s &nbsp;&nbsp(%d)</div>\n' % (pkg, len(self.db['packages'][pkg]['bugs']))
             retval += '                    <table id="%s" class="tablesorter" border="0" cellpadding="0" cellspacing="1" width="100%%">\n' % pkg.replace('.', '_')
