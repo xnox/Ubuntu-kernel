@@ -206,7 +206,12 @@ class RegressionsReport():
                },
                format: function(s) {
                    // format your data for normalization
-                   return parseInt(s.replace(/\./g,''), 10);
+                   fields  = s.split('.')
+                   days    = parseInt(fields[0], 10) * (60 * 24);
+                   hours   = parseInt(fields[1], 10) * 60;
+                   minutes = parseInt(fields[2]);
+                   total   = minutes + hours + days
+                   return total;
                },
                // set type, either numeric or text
                type: 'numeric'
