@@ -1,5 +1,5 @@
 
-reports: fetch-data sru-report.html versions.html regressions-report bug-window.html 30-day-new.html 7-day-new.html 1-day-new.html
+reports: fetch-data sru-report.html versions.html regressions-reports 30-day-new.html 7-day-new.html 1-day-new.html
 
 fetch-data:
 	@kteam-tools/stable/sru-report --archive-versions > sru-data-tmp.json
@@ -19,19 +19,19 @@ regressions-data: regressions-potential-data.json regressions-release-data.json 
 
 .PHONY : regressions-potential-data.json
 regressions-potential-data.json: scripts/collect-regressions-data
-	scripts/collect-regressions-data --potential --db=$@ --as-me
+	scripts/collect-regressions-data --potential --db=$@
 
 .PHONY : regressions-release-data.json
 regressions-release-data.json: scripts/collect-regressions-data
-	scripts/collect-regressions-data --release --db=$@ --as-me
+	scripts/collect-regressions-data --release --db=$@
 
 .PHONY : regressions-update-data.json
 regressions-update-data.json: scripts/collect-regressions-data
-	scripts/collect-regressions-data --update --db=$@ --as-me
+	scripts/collect-regressions-data --update --db=$@
 
 .PHONY : regressions-proposed-data.json
 regressions-proposed-data.json: scripts/collect-regressions-data
-	scripts/collect-regressions-data --proposed --db=$@ --as-me
+	scripts/collect-regressions-data --proposed --db=$@
 
 
 regressions-reports: regressions-data regressions-potential-report.html regressions-release-report.html regressions-update-report.html regressions-proposed-report.html
