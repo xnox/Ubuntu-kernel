@@ -22,6 +22,18 @@
 static __initdata char chosen_lsm[SECURITY_NAME_MAX + 1] =
 	CONFIG_DEFAULT_SECURITY;
 
+#if CONFIG_SECURITY_YAMA
+extern int yama_ptrace_access_check(struct task_struct *child,
+				    unsigned int mode);
+extern int yama_path_link(struct dentry *old_dentry, struct path *new_dir,
+			  struct dentry *new_dentry);
+extern int yama_inode_follow_link(struct dentry *dentry,
+				  struct nameidata *nameidata);
+extern void yama_task_free(struct task_struct *task);
+extern int yama_task_prctl(int option, unsigned long arg2, unsigned long arg3,
+			   unsigned long arg4, unsigned long arg5);
+#endif
+
 /* things that live in capability.c */
 extern void __init security_fixup_ops(struct security_operations *ops);
 
@@ -129,6 +141,12 @@ int __init register_security(struct security_operations *ops)
 
 int security_ptrace_access_check(struct task_struct *child, unsigned int mode)
 {
+#if CONFIG_SECURITY_YAMA
+	int rc;
+	rc = yama_ptrace_access_check(child, mode);
+	if (rc || security_ops->ptrace_access_check == yama_ptrace_access_check)
+		return rc;
+#endif
 	return security_ops->ptrace_access_check(child, mode);
 }
 
@@ -359,6 +377,7 @@ int security_path_mkdir(struct path *dir, struct dentry *dentry, int mode)
 		return 0;
 	return security_ops->path_mkdir(dir, dentry, mode);
 }
+EXPORT_SYMBOL(security_path_mkdir);
 
 int security_path_rmdir(struct path *dir, struct dentry *dentry)
 {
@@ -366,6 +385,7 @@ int security_path_rmdir(struct path *dir, struct dentry *dentry)
 		return 0;
 	return security_ops->path_rmdir(dir, dentry);
 }
+EXPORT_SYMBOL(security_path_rmdir);
 
 int security_path_unlink(struct path *dir, struct dentry *dentry)
 {
@@ -373,6 +393,7 @@ int security_path_unlink(struct path *dir, struct dentry *dentry)
 		return 0;
 	return security_ops->path_unlink(dir, dentry);
 }
+EXPORT_SYMBOL(security_path_unlink);
 
 int security_path_symlink(struct path *dir, struct dentry *dentry,
 			  const char *old_name)
@@ -381,14 +402,21 @@ int security_path_symlink(struct path *dir, struct dentry *dentry,
 		return 0;
 	return security_ops->path_symlink(dir, dentry, old_name);
 }
+EXPORT_SYMBOL(security_path_symlink);
 
 int security_path_link(struct dentry *old_dentry, struct path *new_dir,
 		       struct dentry *new_dentry)
 {
 	if (unlikely(IS_PRIVATE(old_dentry->d_inode)))
 		return 0;
+#if CONFIG_SECURITY_YAMA
+	int rc = yama_path_link(old_dentry, new_dir, new_dentry);
+	if (rc || security_ops->path_link == yama_path_link)
+		return rc;
+#endif
 	return security_ops->path_link(old_dentry, new_dir, new_dentry);
 }
+EXPORT_SYMBOL(security_path_link);
 
 int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
 			 struct path *new_dir, struct dentry *new_dentry)
@@ -399,6 +427,7 @@ int security_path_rename(struct path *old_dir, struct dentry *old_dentry,
 	return security_ops->path_rename(old_dir, old_dentry, new_dir,
 					 new_dentry);
 }
+EXPORT_SYMBOL(security_path_rename);
 
 int security_path_truncate(struct path *path)
 {
@@ -406,6 +435,7 @@ int security_path_truncate(struct path *path)
 		return 0;
 	return security_ops->path_truncate(path);
 }
+EXPORT_SYMBOL(security_path_truncate);
 
 int security_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
 			mode_t mode)
@@ -414,6 +444,7 @@ int security_path_chmod(struct dentry *dentry, struct vfsmount *mnt,
 		return 0;
 	return security_ops->path_chmod(dentry, mnt, mode);
 }
+EXPORT_SYMBOL(security_path_chmod);
 
 int security_path_chown(struct path *path, uid_t uid, gid_t gid)
 {
@@ -421,6 +452,7 @@ int security_path_chown(struct path *path, uid_t uid, gid_t gid)
 		return 0;
 	return security_ops->path_chown(path, uid, gid);
 }
+EXPORT_SYMBOL(security_path_chown);
 
 int security_path_chroot(struct path *path)
 {
@@ -497,11 +529,17 @@ int security_inode_readlink(struct dentry *dentry)
 		return 0;
 	return security_ops->inode_readlink(dentry);
 }
+EXPORT_SYMBOL(security_inode_readlink);
 
 int security_inode_follow_link(struct dentry *dentry, struct nameidata *nd)
 {
 	if (unlikely(IS_PRIVATE(dentry->d_inode)))
 		return 0;
+#if CONFIG_SECURITY_YAMA
+	int rc = yama_inode_follow_link(dentry, nd);
+	if (rc || security_ops->inode_follow_link == yama_inode_follow_link)
+		return rc;
+#endif
 	return security_ops->inode_follow_link(dentry, nd);
 }
 
@@ -511,6 +549,7 @@ int security_inode_permission(struct inode *inode, int mask)
 		return 0;
 	return security_ops->inode_permission(inode, mask);
 }
+EXPORT_SYMBOL(security_inode_permission);
 
 int security_inode_exec_permission(struct inode *inode, unsigned int flags)
 {
@@ -619,6 +658,7 @@ int security_file_permission(struct file *file, int mask)
 
 	return fsnotify_perm(file, mask);
 }
+EXPORT_SYMBOL(security_file_permission);
 
 int security_file_alloc(struct file *file)
 {
@@ -646,6 +686,7 @@ int security_file_mmap(struct file *file, unsigned long reqprot,
 		return ret;
 	return ima_file_mmap(file, prot);
 }
+EXPORT_SYMBOL(security_file_mmap);
 
 int security_file_mprotect(struct vm_area_struct *vma, unsigned long reqprot,
 			    unsigned long prot)
@@ -693,6 +734,16 @@ int security_dentry_open(struct file *file, const struct cred *cred)
 int security_task_create(unsigned long clone_flags)
 {
 	return security_ops->task_create(clone_flags);
+}
+
+void security_task_free(struct task_struct *task)
+{
+#if CONFIG_SECURITY_YAMA
+	yama_task_free(task);
+	if (security_ops->task_free == yama_task_free)
+		return;
+#endif
+	security_ops->task_free(task);
 }
 
 int security_cred_alloc_blank(struct cred *cred, gfp_t gfp)
@@ -807,6 +858,12 @@ int security_task_wait(struct task_struct *p)
 int security_task_prctl(int option, unsigned long arg2, unsigned long arg3,
 			 unsigned long arg4, unsigned long arg5)
 {
+#if CONFIG_SECURITY_YAMA
+	int rc;
+	rc = yama_task_prctl(option, arg2, arg3, arg4, arg5);
+	if (rc != -ENOSYS || security_ops->task_prctl == yama_task_prctl)
+		return rc;
+#endif
 	return security_ops->task_prctl(option, arg2, arg3, arg4, arg5);
 }
 

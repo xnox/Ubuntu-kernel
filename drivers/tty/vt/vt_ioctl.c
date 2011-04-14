@@ -38,6 +38,8 @@
 #include <linux/kbd_diacr.h>
 #include <linux/selection.h>
 
+#define max_font_size 65536
+
 char vt_dont_switch;
 extern struct tty_driver *console_driver;
 
@@ -1344,9 +1346,9 @@ eperm:
 	goto out;
 }
 
-void reset_vc(struct vc_data *vc)
+void reset_vc(struct vc_data *vc, int mode)
 {
-	vc->vc_mode = KD_TEXT;
+	vc->vc_mode = mode;
 	kbd_table[vc->vc_num].kbdmode = default_utf8 ? VC_UNICODE : VC_XLATE;
 	vc->vt_mode.mode = VT_AUTO;
 	vc->vt_mode.waitv = 0;
@@ -1377,7 +1379,7 @@ void vc_SAK(struct work_struct *work)
 		 */
 		if (tty)
 			__do_SAK(tty);
-		reset_vc(vc);
+		reset_vc(vc, KD_TEXT);
 	}
 	console_unlock();
 }
@@ -1592,6 +1594,7 @@ static void complete_change_console(struct vc_data *vc)
 {
 	unsigned char old_vc_mode;
 	int old = fg_console;
+	struct vc_data *oldvc = vc_cons[fg_console].d;
 
 	last_console = fg_console;
 
@@ -1600,9 +1603,31 @@ static void complete_change_console(struct vc_data *vc)
 	 * KD_TEXT mode or vice versa, which means we need to blank or
 	 * unblank the screen later.
 	 */
-	old_vc_mode = vc_cons[fg_console].d->vc_mode;
+	old_vc_mode = oldvc->vc_mode;
+
+#if defined(CONFIG_VGA_CONSOLE)
+	if (old_vc_mode == KD_TEXT && oldvc->vc_sw == &vga_con &&
+	    oldvc->vc_sw->con_font_get) {
+		if (!oldvc->vc_font.data)
+			oldvc->vc_font.data = kmalloc(max_font_size, 
+						      GFP_KERNEL);
+		lock_kernel();
+		oldvc->vc_sw->con_font_get(oldvc, &oldvc->vc_font);
+		unlock_kernel();
+	}
+#endif
 	switch_screen(vc);
 
+#if defined(CONFIG_VGA_CONSOLE)
+	if (vc->vc_mode == KD_TEXT && vc->vc_sw == &vga_con &&
+	    vc->vc_sw->con_font_set) {
+		if (vc->vc_font.data) {
+			lock_kernel();
+			vc->vc_sw->con_font_set(vc, &vc->vc_font, 0);
+			unlock_kernel();
+		}
+	}
+#endif
 	/*
 	 * This can't appear below a successful kill_pid().  If it did,
 	 * then the *blank_screen operation could occur while X, having
@@ -1641,7 +1666,7 @@ static void complete_change_console(struct vc_data *vc)
 		 * this outside of VT_PROCESS but there is no single process
 		 * to account for and tracking tty count may be undesirable.
 		 */
-			reset_vc(vc);
+			reset_vc(vc, KD_TEXT);
 
 			if (old_vc_mode != vc->vc_mode) {
 				if (vc->vc_mode == KD_TEXT)
@@ -1713,7 +1738,7 @@ void change_console(struct vc_data *new_vc)
 		 * this outside of VT_PROCESS but there is no single process
 		 * to account for and tracking tty count may be undesirable.
 		 */
-		reset_vc(vc);
+		reset_vc(vc, KD_TEXT);
 
 		/*
 		 * Fall through to normal (VT_AUTO) handling of the switch...
