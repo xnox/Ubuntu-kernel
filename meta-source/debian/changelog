@@ -1,5 +1,10 @@
-linux-meta (2.6.39.0.1) UNRELEASED; urgency=low
+linux-meta (2.6.39.0.1) oneiric; urgency=low
 
+  [ Leann Ogasawara ]
+
+  * UBUNTU: Remove linux-backports-modules-cw-2.6.39
+  * UBUNTU: Remove linux-backports-modules-net
+  * UBUNTU: disable linux-backports-modules
   * Initial Oneiric kernel version and ABI (2.6.39-0)
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 19 Apr 2011 09:41:48 -0700
