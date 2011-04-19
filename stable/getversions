@@ -5,6 +5,7 @@ from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, run_command
 from ktl.std_app                        import StdApp
+from ktl.ubuntu                         import Ubuntu
 from ktl.kernel                         import *
 from ktl.archive                        import *
 from launchpadlib.launchpad             import Launchpad
@@ -175,7 +176,8 @@ class report(StdApp):
         self.distro = ar.distro_versions(force=False)
 
         # Have a section for each release
-        releases = map_release_number_to_ubuntu_release
+        ubuntu = Ubuntu()
+        releases = ubuntu.db
         allinfo = {}
         for num in sorted(releases.iterkeys(), key=lambda x:releases[x]['name']):
             seriesdata = releases[num]
