@@ -10,11 +10,10 @@ from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
-from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_release_map
 from urllib2                            import HTTPError
 from urllib                             import quote
 from smtplib                            import SMTP
-from email.mime.text                    import MIMEText
+from ktl.messaging                          import Email, Status
 
 # CmdlineError
 #
@@ -353,6 +352,13 @@ class Shank(StdApp):
         #
         self.distro = self.lp.distributions['ubuntu']
 
+        # Get set up for email and status messages
+        mcfg = self.cfg['mail_notify']
+        self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
+
+        scfg = self.cfg['status_net']
+        self.status = Status(scfg['url'], scfg['user'], scfg['pass'])
+
         self.taskbyname = {}
 
         return
@@ -509,30 +515,26 @@ class Shank(StdApp):
 
     def send_email(self, task, subject, body):
         self.verbose('Sending email\n')
-        bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
+        if 'staging' in self.cfg:
+            bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
+        else:
+            bugurl = 'http://pad.lv/%s' % (task.bug.id)
+
         mcfg = self.cfg['mail_notify']
         body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n\n' % bugurl
         msg = MIMEText(body_top + body)
-        msg['Subject'] = '[ShankBot] ' + subject
-        msg['From'] = mcfg['from_address']
-        msg['To'] = mcfg['to_address']
-        # Send the message via our own SMTP server, but don't include the
-        # envelope header.
-        s = SMTP(mcfg['smtp_server'], 587)
-        #s.set_debuglevel(1)
-        s.ehlo()
-        s.starttls()
-        s.login(mcfg['smtp_user'].encode('UTF-8'),mcfg['smtp_pass'].encode('UTF-8'))
-        s.sendmail(mcfg['from_address'], [mcfg['to_address']], msg.as_string())
-        s.quit()
+        subj =  '[ShankBot] ' + subject
+        self.email.send(mcfg['from_address'], mcfg['to_address'], subj, msg)
         return
 
     def send_status_update(self, task, message):
-        bugurl = quote('https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id))
-        message = bugurl + ' : ' + message
-        scfg = self.cfg['status_net']
-        curl = 'curl -s -u %s:%s -d status="%s" %s' % (scfg['user'],scfg['pass'],message,scfg['url'])
-        pipe = popen(curl, 'r')
+        self.verbose('Sending Status\n')
+        if 'staging' in self.cfg:
+            bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
+        else:
+            bugurl = 'http://pad.lv/%s' % (task.bug.id)
+
+        self.status.update(bugurl + ' : ' + message)
         return
 
     def set_task_to_state(self, taskname, state):
