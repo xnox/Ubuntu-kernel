@@ -13,7 +13,7 @@ import atexit
 import shutil
 import time
 from lpltk.service                      import LaunchpadService
-from ktl.kernel                         import *
+from ktl.ubuntu                         import Ubuntu
 from ktl.archive                        import Archive
 
 # stdo
@@ -304,6 +304,7 @@ class SruReport(StdApp):
         cleanup = {}             # suite -> package
         cmdline = Cmdline()
         kernel_rc = re.compile('^linux.*$')
+        ubuntu = Ubuntu()
         try:
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
@@ -316,7 +317,7 @@ class SruReport(StdApp):
                 # Go through the archive data and find all the relevant series and packages
                 # and thier versions. Seed the results dictionary with this information.
                 #
-                m = map_release_number_to_ubuntu_release
+                m = ubuntu.db
                 for num in sorted(m.iterkeys(), key=lambda x:m[x]['name']):
                     if not m[num]['supported']:
                         continue
