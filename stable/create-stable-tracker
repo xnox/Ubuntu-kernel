@@ -5,11 +5,8 @@ from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
-from ktl.git                            import Git, GitError
-from ktl.debian                         import Debian, DebianError
-from ktl.kernel                         import map_kernel_version_to_ubuntu_release, Kernel
+from ktl.kernel                         import Kernel
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
-from lazr.restfulclient.errors          import HTTPError
 
 # CmdlineError
 #
@@ -140,14 +137,7 @@ class CreateTrackingBug(StdApp):
             # B U G   W O R K
             print("version: %s" % self.cfg['version'])
             version = self.cfg['version']
-            #m = Debian.version_rc.match(self.cfg['version'])
-            #if m == None:
-            #    raise AppError("The version (%s) is not a recognized version string." % (self.cfg['version']))
-            #version = m.group(1)
-            #abi     = m.group(2)
-
-            vur = map_kernel_version_to_ubuntu_release
-            series = Kernel.series()
+            series = Kernel.series_name()
 
             # Title:
             title = "%s update to %s stable release" % (series.title(), self.cfg['version'])
@@ -215,12 +205,6 @@ class CreateTrackingBug(StdApp):
         #
         except CmdlineError as e:
             cmdline.error(e.msg, self.defaults)
-
-        except GitError as e:
-            eout(e.msg[0])
-
-        except DebianError as e:
-            eout(e.msg)
 
         except AppError as e:
             eout(e.msg)
