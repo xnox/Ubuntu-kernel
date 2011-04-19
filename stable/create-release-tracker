@@ -7,7 +7,6 @@ from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
-from ktl.kernel                         import Kernel, KernelError, map_kernel_version_to_ubuntu_release
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 from lazr.restfulclient.errors          import HTTPError
 
@@ -225,9 +224,6 @@ class CreateTrackingBug(StdApp):
             eout(e.msg[0])
 
         except DebianError as e:
-            eout(e.msg)
-
-        except KernelError as e:
             eout(e.msg)
 
         return

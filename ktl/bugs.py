@@ -2,8 +2,6 @@
 #
 
 import re
-from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_series_db
-from ktl.kernel                         import map_kernel_version_to_ubuntu_release as ubuntu_version_db
 from ktl.utils                          import stdo
 from ktl.ubuntu                         import Ubuntu
 from datetime                           import datetime
@@ -58,6 +56,7 @@ class Bugs():
     """
 
     verbose = False
+    ubuntu = Ubuntu()
 
     @classmethod
     def vout(cls, msg):
@@ -101,9 +100,9 @@ class Bugs():
             m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', version)
             if m is not None:
                 kver = "%s.%s.%s" % (m.group(1), m.group(2), m.group(3))
-                if kver in ubuntu_version_db:
-                    series_name    = ubuntu_version_db[kver]['name']
-                    series_version = ubuntu_version_db[kver]['number']
+                if kver in cls.ubuntu.index_by_kernel_version:
+                    series_name    = cls.ubuntu.index_by_kernel_version[kver]['name']
+                    series_version = cls.ubuntu.index_by_kernel_version[kver]['number']
                     cls.vout('    - found kernel version in the db\n')
             else:
                 cls.vout('    - didn\'t match kernel version pattern\n')
@@ -112,17 +111,16 @@ class Bugs():
             m = re.search('([0-9+)\.([0-9]+)', version)
             if m is not None:
                 dnum = m.group(1)
-                if dnum in ubuntu_series_db:
-                    series_name   = ubuntu_series_db[dnum]['name']
+                if dnum in cls.ubuntu.db:
+                    series_name   = cls.ubuntu.db[dnum]['name']
                     series_version = dnum
                     cls.vout('    - found series version in the db\n')
             else:
                 cls.vout('    - didn\'t match series version pattern\n')
 
         if series_name == '':
-            ubuntu = Ubuntu()
             try:
-                rec = ubuntu.lookup(version)
+                rec = cls.ubuntu.lookup(version)
                 series_name = rec['name']
                 series_version = rec['series_version']
             except KeyError:
@@ -135,8 +133,8 @@ class Bugs():
     def ubuntu_series_version_lookup(cls, series_name):
         cls.vout(' . Looking up the series version for (%s)\n' % series_name)
         retval = ''
-        for version in ubuntu_version_db:
-            if series_name == ubuntu_version_db[version]['name']:
+        for version in cls.ubuntu.index_by_kernel_version:
+            if series_name == cls.ubuntu.index_by_kernel_version[version]['name']:
                 retval = version
                 break
         return retval
@@ -319,7 +317,7 @@ class Bugs():
         cls.vout(' . Looking for the series in the title\n')
         series_name = ''
         series_version = ''
-        for rel_num, rel in ubuntu_series_db.iteritems():
+        for rel_num, rel in cls.ubuntu.db.iteritems():
             pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" %(rel['name'], rel_num.replace(".", "\."))
             regex = re.compile(pat, re.IGNORECASE)
             if regex.search(bug.title):
@@ -371,7 +369,7 @@ class Bugs():
             cls.vout('The bug was filed against the series: "%s" (%s)\n' % (series_name, series_version))
 
         if series_version != '':
-            retval = ubuntu_series_db[series_version]['supported']
+            retval = cls.ubuntu.db[series_version]['supported']
 
         return retval
 

@@ -2,6 +2,7 @@
 #
 
 from ktl.git                            import Git, GitError
+from ktl.ubuntu                         import Ubuntu
 
 #
 # Warning - using the following dictionary to get the series name from the kernel version works for the linux package,
@@ -118,8 +119,9 @@ class KernelError(Exception):
 class Kernel:
     debug               = False
     __makefile_contents = ''
-    __version           = ''
-    __release           = ''
+    __version           = ''   # kernel version
+    __series_version    = ''
+    __series_name       = ''
 
     # version
     #
@@ -128,12 +130,12 @@ class Kernel:
         cls.__fetch_if_needed()
         return cls.__version
 
-    # series
+    # series_name
     #
     @classmethod
-    def series(cls):
+    def series_name(cls):
         cls.__fetch_if_needed()
-        return cls.__release
+        return cls.__series_name
 
     # release
     #
@@ -156,27 +158,38 @@ class Kernel:
                 cls.__makefile_contents = Git.show(cl_path, branch=current_branch)
 
                 for line in cls.__makefile_contents:
+                    # Ths only works because we know what the first 4 lines of the Makefile
+                    # should be.
+                    #
                     if version == '':
                         if 'VERSION' in line:
                             variable, value = line.split(' = ')
-                            version = value
+                            version = value.strip()
                             continue
                     elif patchlevel == '':
                         if 'PATCHLEVEL' in line:
                             variable, value = line.split(' = ')
-                            patchlevel = value
+                            patchlevel = value.strip()
                             continue
                     elif sublevel == '':
                         if 'SUBLEVEL' in line:
                             variable, value = line.split(' = ')
-                            sublevel = value
+                            sublevel = value.strip()
                             continue
                     elif extraversion == '':
-                        cls.__version = version.strip() + '.' + patchlevel.strip() + '.' + sublevel.strip()
+                        if 'EXTRAVERSION' in line:
+                            variable, value = line.split(' = ')
+                            extraversion = value.strip()
+                            cls.__version = version + '.' + patchlevel + '.' + sublevel
 
-                        if cls.__version in map_kernel_version_to_ubuntu_release:
-                            cls.__release = map_kernel_version_to_ubuntu_release[cls.__version]['name']
-                        break
+                            ubuntu = Ubuntu()
+                            rec = ubuntu.lookup(cls.__version)
+                            cls.__series_name    = rec['name']
+                            cls.__series_version = rec['series_version']
+                            if cls.__series_name == '':
+                                raise KernelError("Failed to find a series with the given kernel version.")
+                        else:
+                            raise KernelError("The makefile didn't contain the expected 4 lines.")
                     else:
                         break
 

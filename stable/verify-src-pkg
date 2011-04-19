@@ -6,7 +6,7 @@ from os                                 import path, _exit
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
-from ktl.kernel                         import map_kernel_version_to_ubuntu_release
+from ktl.ubuntu                         import Ubuntu
 
 # CmdlineError
 #
@@ -123,6 +123,7 @@ class CheckPackage(StdApp):
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
 
+            ubuntu = Ubuntu()
             for cf in self.cfg['changes']:
                 state = ''
                 checked = 0
@@ -138,7 +139,7 @@ class CheckPackage(StdApp):
                         if 'Version: 2.6' in line:
                             (key, val) = line.split()
                             (ver, abi) = val.split('-')
-                            record = map_kernel_version_to_ubuntu_release[ver]
+                            record = ubuntu.lookup(ver)
                             if record == None:
                                 error("Failed to find the matching version (%s) in the kernel-version to ubuntu-release map dictionary." % ver)
                                 _exit(-1)

@@ -199,6 +199,27 @@ class RegressionsReport():
            // add parser through the tablesorter addParser method
            $.tablesorter.addParser({
                // set a unique id
+               id: 'age',
+               is: function(s) {
+                   // return false so this parser is not auto detected
+                   return false;
+               },
+               format: function(s) {
+                   // format your data for normalization
+                   fields  = s.split('.')
+                   days    = parseInt(fields[0], 10) * (60 * 24);
+                   hours   = parseInt(fields[1], 10) * 60;
+                   minutes = parseInt(fields[2]);
+                   total   = minutes + hours + days
+                   return total;
+               },
+               // set type, either numeric or text
+               type: 'numeric'
+           });
+
+           // add parser through the tablesorter addParser method
+           $.tablesorter.addParser({
+               // set a unique id
                id: 'importance',
                is: function(s) {
                    // return false so this parser is not auto detected
@@ -231,6 +252,8 @@ class RegressionsReport():
 
         retval += '$(function() {\n'
         for pkg in self.db['packages']:
+            if len(self.db['packages'][pkg]['bugs']) == 0:
+                continue
             retval += '                $("#%s").tablesorter({\n' % pkg.replace('.', '_')
             retval += '                    headers: {\n'
             retval += '                        3: {\n'
@@ -238,6 +261,12 @@ class RegressionsReport():
             retval += '                        },\n'
             retval += '                        4: {\n'
             retval += '                            sorter:\'status\'\n'
+            retval += '                        },\n'
+            retval += '                        6: {\n'
+            retval += '                            sorter:\'age\'\n'
+            retval += '                        },\n'
+            retval += '                        7: {\n'
+            retval += '                            sorter:\'age\'\n'
             retval += '                        }\n'
             retval += '                    },\n'
             retval += '                    widgets: [\'zebra\']\n'
@@ -284,6 +313,8 @@ class RegressionsReport():
         retval += '            </div>\n'
 
         for pkg in self.db['packages']:
+            if len(self.db['packages'][pkg]['bugs']) == 0:
+                continue
             retval += '                <div class="section">\n'
             retval += '                        <div class="table-heading">&nbsp;%s &nbsp;&nbsp(%d)</div>\n' % (pkg, len(self.db['packages'][pkg]['bugs']))
             retval += '                    <table id="%s" class="tablesorter" border="0" cellpadding="0" cellspacing="1" width="100%%">\n' % pkg.replace('.', '_')

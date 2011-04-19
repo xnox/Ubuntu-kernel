@@ -150,6 +150,7 @@ done <<EOL
 LINUS		linus/master			999	daily
 DRM-INTEL-NEXT	drm-intel/drm-intel-next	997	drm-intel-next
 DRM-NEXT	drm-2.6/drm-next		996	drm-next
+DRM-INTEL-NEXT-PROPOSED	drm-intel/drm-intel-next-proposed 994 drm-intel-next-proposed
 EOL
 # Also allocated
 # 995: sconklin -- wayland
