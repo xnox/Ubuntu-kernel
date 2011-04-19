@@ -10,10 +10,9 @@ from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
-from urllib2                            import HTTPError
 from urllib                             import quote
-from smtplib                            import SMTP
-from ktl.messaging                          import Email, Status
+from urllib2                            import HTTPError
+from ktl.messaging                      import Email, Status
 
 # CmdlineError
 #
@@ -354,10 +353,15 @@ class Shank(StdApp):
 
         # Get set up for email and status messages
         mcfg = self.cfg['mail_notify']
-        self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
+        self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
 
         scfg = self.cfg['status_net']
         self.status = Status(scfg['url'], scfg['user'], scfg['pass'])
+
+        # Get the text for spamming bugs
+        spamtextpath =  path.join(path.dirname(__file__), self.cfg['bug_spam']['text_filename'])
+        self.verbose('Bug spam text is from file %s\n' % spamtextpath)
+        self.spamtext = open(spamtextpath, 'r').read()
 
         self.taskbyname = {}
 
@@ -522,7 +526,7 @@ class Shank(StdApp):
 
         mcfg = self.cfg['mail_notify']
         body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n\n' % bugurl
-        msg = MIMEText(body_top + body)
+        msg = body_top + body
         subj =  '[ShankBot] ' + subject
         self.email.send(mcfg['from_address'], mcfg['to_address'], subj, msg)
         return
@@ -533,6 +537,8 @@ class Shank(StdApp):
             bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
         else:
             bugurl = 'http://pad.lv/%s' % (task.bug.id)
+
+        bugurl = quote(bugurl)
 
         self.status.update(bugurl + ' : ' + message)
         return
@@ -686,9 +692,7 @@ class Shank(StdApp):
         Check results from multiple tasks to see whether release
         to -updates and -security are required
         """
-        
         self.verbose('*** Performing release test')
-
 
         # No need to do anything until these three are all complete
         if (self.certification_testing_complete and self.regression_testing_complete and self.security_signoff_complete):

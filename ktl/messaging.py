@@ -7,7 +7,9 @@
 #import json
 #from os.path                import exists, getmtime
 #from time                   import time
+from os                      import popen
 from email.mime.text         import MIMEText
+from smtplib                 import SMTP
 
 
 
@@ -16,7 +18,7 @@ class Email:
     """
     This class encapsulates sending email.
     """
-    def __init__(self, smpt_server = None, smpt_user = None, smpt_password = None, port = 587):
+    def __init__(self, smtp_server = None, smtp_user = None, smtp_password = None, port = 587):
         """
         Save the information needed to contact an smtp server
         """
@@ -49,8 +51,8 @@ class Email:
             s.set_debuglevel(1)
         s.ehlo()
         s.starttls()
-        s.login(self.smtp_user.encode('UTF-8'),self.smtp_pass.encode('UTF-8'))
-        s.sendmail(self.from_address, self.to_address, msg.as_string())
+        s.login(self.smtp_user.encode('UTF-8'),self.smtp_password.encode('UTF-8'))
+        s.sendmail(from_address, to_address, msg.as_string())
         s.quit()
         return
 
