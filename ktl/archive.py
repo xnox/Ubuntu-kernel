@@ -8,6 +8,7 @@ from   urllib                   import urlopen
 import json
 import re
 from   os                       import path, mkdir
+from   ktl.ubuntu               import Ubuntu
 
 def compare_versions(version1, version2):
     #print 'comparing ', version1, 'and', version2
@@ -185,6 +186,7 @@ class Archive:
 
         #archive = lp.distributions['ubuntu'].getSeries(name_or_version=info['name']).main_archive
         archive = lp.distributions['ubuntu'].getArchive(name='primary')
+        ubuntu  = Ubuntu()
 
         for astatus in statuses:
             for pname in kernel_package_names:
@@ -236,7 +238,7 @@ class Archive:
                     print 'records in outdict after fetch', len(outdict)
                 unsupported = []
                 serieslist = []
-                for key, release in map_release_number_to_ubuntu_release.items():
+                for key, release in ubuntu.db:
                     if not release['supported']:
                         if self.debug:
                             print 'DEBUG: Fetching from archive, will skip release ', release['name']
