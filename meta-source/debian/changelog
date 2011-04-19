@@ -1,8 +1,8 @@
-linux-meta (2.6.38.9.23) UNRELEASED; urgency=low
+linux-meta (2.6.39.0.1) UNRELEASED; urgency=low
 
-  * 
+  * Initial Oneiric kernel version and ABI (2.6.39-0)
 
- -- Tim Gardner <tim.gardner@canonical.com>  Thu, 14 Apr 2011 07:32:59 -0600
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 19 Apr 2011 09:41:48 -0700
 
 linux-meta (2.6.38.8.22) natty; urgency=low
 
