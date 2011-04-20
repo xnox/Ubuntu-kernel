@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.32.32.24) lucid-proposed; urgency=low
+
+  * Bump linux-ports ABI to 32 for proposed release
+
+ -- Brad Figg <brad.figg@canonical.com>  Wed, 20 Apr 2011 15:48:56 -0700
+
 linux-ports-meta (2.6.32.31.23) lucid-proposed; urgency=low
 
   * Bump linux-ports ABI to 31 for proposed release
