@@ -8,5 +8,5 @@ for i in "$queue"/*
 do
 	read cmd args <"$i"
 	cmd=`basename "$cmd"`
-	echo "$cmd $args"
+	echo "$cmd $args" | sed -r -e 's/([0-9a-f]{8})[0-9a-f]{32}/\1/g'
 done
