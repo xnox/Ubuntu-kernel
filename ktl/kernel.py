@@ -141,7 +141,7 @@ class Kernel:
     #
     @classmethod
     def release(cls):
-        return cls.series()
+        return cls.series_name()
 
     # __fetch_if_needed
     #
