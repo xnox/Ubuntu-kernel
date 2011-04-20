@@ -1,11 +1,11 @@
-linux-meta (2.6.32.32.38) UNRELEASED; urgency=low
+linux-meta (2.6.32.32.38) lucid-proposed; urgency=low
 
   [ Tim Gardner ]
 
   * Added compat-wireless-2.6.38
     -LP: #737669
 
- -- Tim Gardner <tim.gardner@canonical.com>  Fri, 18 Mar 2011 11:30:23 -0600
+ -- Brad Figg <brad.figg@canonical.com>  Wed, 20 Apr 2011 15:42:04 -0700
 
 linux-meta (2.6.32.31.37) lucid-proposed; urgency=low
 
