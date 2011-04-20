@@ -10,11 +10,9 @@ from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
-from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_release_map
-from urllib2                            import HTTPError
 from urllib                             import quote
-from smtplib                            import SMTP
-from email.mime.text                    import MIMEText
+from urllib2                            import HTTPError
+from ktl.messaging                      import Email, Status
 
 # CmdlineError
 #
@@ -353,6 +351,18 @@ class Shank(StdApp):
         #
         self.distro = self.lp.distributions['ubuntu']
 
+        # Get set up for email and status messages
+        mcfg = self.cfg['mail_notify']
+        self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
+
+        scfg = self.cfg['status_net']
+        self.status = Status(scfg['url'], scfg['user'], scfg['pass'])
+
+        # Get the text for spamming bugs
+        spamtextpath =  path.join(path.dirname(__file__), self.cfg['bug_spam']['text_filename'])
+        self.verbose('Bug spam text is from file %s\n' % spamtextpath)
+        self.spamtext = open(spamtextpath, 'r').read()
+
         self.taskbyname = {}
 
         return
@@ -423,14 +433,14 @@ class Shank(StdApp):
                                 if t.status == 'In Progress':
                                     continue
                                 else:
-                                    self.verbose('Not processing this bug because master task state is set to %s\n' % (t.status))
-                                    continue
+                                    self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
+                                    raise RuntimeError
                         else:
                             task = parts[1]
                         self.taskbyname[task] = t
                 except RuntimeError:
                     # end processing for this bug
-                    self.verbose('Quitting\n')
+                    self.verbose('    Quitting this bug\n')
                     continue
 
                 # now walk them one at a time
@@ -508,31 +518,35 @@ class Shank(StdApp):
     # end of main
 
     def send_email(self, task, subject, body):
+        """
+        Send email to the configured list or recipient
+        """
         self.verbose('Sending email\n')
-        bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
+        if 'staging' in self.cfg:
+            bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
+        else:
+            bugurl = 'http://pad.lv/%s' % (task.bug.id)
+
         mcfg = self.cfg['mail_notify']
         body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n\n' % bugurl
-        msg = MIMEText(body_top + body)
-        msg['Subject'] = '[ShankBot] ' + subject
-        msg['From'] = mcfg['from_address']
-        msg['To'] = mcfg['to_address']
-        # Send the message via our own SMTP server, but don't include the
-        # envelope header.
-        s = SMTP(mcfg['smtp_server'], 587)
-        #s.set_debuglevel(1)
-        s.ehlo()
-        s.starttls()
-        s.login(mcfg['smtp_user'].encode('UTF-8'),mcfg['smtp_pass'].encode('UTF-8'))
-        s.sendmail(mcfg['from_address'], [mcfg['to_address']], msg.as_string())
-        s.quit()
+        msg = body_top + body
+        subj =  '[ShankBot] ' + subject
+        self.email.send(mcfg['from_address'], mcfg['to_address'], subj, msg)
         return
 
     def send_status_update(self, task, message):
-        bugurl = quote('https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id))
-        message = bugurl + ' : ' + message
-        scfg = self.cfg['status_net']
-        curl = 'curl -s -u %s:%s -d status="%s" %s' % (scfg['user'],scfg['pass'],message,scfg['url'])
-        pipe = popen(curl, 'r')
+        """
+        Send a status update to twitter, status.net, identi.ca, etc
+        """
+        self.verbose('Sending Status\n')
+        if 'staging' in self.cfg:
+            bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
+        else:
+            bugurl = 'http://pad.lv/%s' % (task.bug.id)
+
+        bugurl = quote(bugurl)
+
+        self.status.update(bugurl + ' : ' + message)
         return
 
     def set_task_to_state(self, taskname, state):
@@ -572,8 +586,10 @@ class Shank(StdApp):
             if self.set_task_to_state('verification-testing', 'In Progress'):
                 # we did change the state, weren't already in it
                 # Now tag all bugs verification-needed and spam with a comment
-                # TODO  - call a script
+                # Automate this in the future but for now send an email
                 print 'Here is where we would tag and spam the verification bugs'
+                msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
+                self.send_email(taskobj, 'Bug spamming required', msgbody)
                 self.send_status_update(task, 'New kernel package packagename available in -proposed.')
         return False
 
@@ -684,9 +700,7 @@ class Shank(StdApp):
         Check results from multiple tasks to see whether release
         to -updates and -security are required
         """
-        
         self.verbose('*** Performing release test')
-
 
         # No need to do anything until these three are all complete
         if (self.certification_testing_complete and self.regression_testing_complete and self.security_signoff_complete):
