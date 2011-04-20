@@ -433,14 +433,14 @@ class Shank(StdApp):
                                 if t.status == 'In Progress':
                                     continue
                                 else:
-                                    self.verbose('Not processing this bug because master task state is set to %s\n' % (t.status))
-                                    continue
+                                    self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
+                                    raise RuntimeError
                         else:
                             task = parts[1]
                         self.taskbyname[task] = t
                 except RuntimeError:
                     # end processing for this bug
-                    self.verbose('Quitting\n')
+                    self.verbose('    Quitting this bug\n')
                     continue
 
                 # now walk them one at a time
