@@ -1,0 +1,26 @@
+From 4d295c2f09178fe6dc92ed24f5cdc536a0f12230 Mon Sep 17 00:00:00 2001
+From: Kernel PPA uploader dude <kernel-ppa@zinc.canonical.com>
+Date: Wed, 20 Apr 2011 07:10:41 +0000
+Subject: [PATCH] DISABLE: hyperv
+
+TRIGGER afd5524c29871a8293518f0be50a7474 drivers/staging/hv/hv_mouse.c
+---
+ drivers/staging/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/staging/Makefile b/drivers/staging/Makefile
+index cfd13cd..2691a0e 100644
+--- a/drivers/staging/Makefile
++++ b/drivers/staging/Makefile
+@@ -38,7 +38,7 @@ obj-$(CONFIG_USB_SERIAL_QUATECH_USB2)	+= quatech_usb2/
+ obj-$(CONFIG_OCTEON_ETHERNET)	+= octeon/
+ obj-$(CONFIG_VT6655)		+= vt6655/
+ obj-$(CONFIG_VT6656)		+= vt6656/
+-obj-$(CONFIG_HYPERV)		+= hv/
++#obj-$(CONFIG_HYPERV)		+= hv/
+ obj-$(CONFIG_VME_BUS)		+= vme/
+ obj-$(CONFIG_MRST_RAR_HANDLER)	+= memrar/
+ obj-$(CONFIG_DX_SEP)            += sep/
+-- 
+1.7.0.4
+
