@@ -1,0 +1,141 @@
+#!/usr/bin/perl
+
+use strict;
+
+my @all;
+#my @needed;
+my %commit;
+my %upstream;
+my %revert;
+my %ignore;
+
+my %result;
+
+my $Sall = 0;
+my $Signored = 0;
+my $Supstream = 0;
+my $Sreverted = 0;
+my $Sneeded = 0;
+my $Sdebian = 0;
+my $Subuntu = 0;
+my $Ssauce = 0;
+
+my ($sha1, $title, $up, $base, $needed);
+
+my ($base, $from, $to) = @ARGV;
+
+open(LOG, "git log --pretty=oneline $base..$from|") ||
+	die "$0: git log failed - $!\n";
+while (<LOG>) {
+	chomp;
+	($sha1, $title) = split(' ', $_, 2);
+
+	warn "$sha1 $title\n";
+	push(@all, $sha1);
+	$Sall++;
+
+	$commit{$sha1} = $title;
+
+	if ($title =~ /^Linux 2\.6\./) {
+		$result{$sha1} = 'IGNORE:version';
+		warn "  IGNORED\n";
+		$Signored++;
+		next;
+	}
+
+#foreach my $rev (sort keys %revert) { print "    REV: $rev\n"; }
+
+	if ($title =~ /^Revert "(.*)"/) {
+		$revert{$1} = $sha1;
+		warn "  MAY REVERT '$1'\n";
+	}
+	if (exists $revert{$title}) {
+		$result{$sha1} = 'IGNORE:reverted';
+		warn "  REVERTED\n";
+		$ignore{$revert{$title}} = 1;
+		delete $revert{$title};
+		$Sreverted += 2;
+		$Signored += 2;
+		next;
+	}
+
+	$needed = 1;
+
+	# Look up this commit and see if there is an upstream link.
+	my ($debian_in, $debian_out) = (0, 0);
+	open(SHOW, "git show --raw $sha1|") ||
+		die "$0: git show failed - $!\n";
+	while (<SHOW>) {
+		if (/upstream\scommit:?\s(\S{40})/i ||
+		    /commit:?\s(\S{40})\supstream/i ||
+		    /cherry\spicked\sfrom\s(\S{40})/i ||
+		    /upstream:?\s(\S{40})/i ||
+		    /backported from\s(\S{40})/i ||
+		    /cherry[\s-]picked\sfrom\scommit\s(\S{40})/i) {
+			$up = $1;
+
+			open(BASE, "git merge-base $up $to|") ||
+				die "$0: git merge-base failed\n";
+			$base = <BASE>;
+			chomp($base);
+			close(BASE);
+			if ($up eq $base) {
+				$upstream{$sha1} = $up;
+				$result{$sha1} = "IGNORE:IN:$up";
+				warn "  IN: $up\n";
+				$needed = 0;
+				$Supstream++;
+				$Signored++;
+			}
+		}
+		if (/^:/) {
+			my ($file) = (split(' ', $_, 6))[5];
+			if ($file =~ /^debian/) {
+				$debian_in++;
+			} elsif ($file !~ /^debian/) {
+				$debian_out++;
+			}
+			#print "debian_in<$debian_in> debian_out<$debian_out> FILE: $file\n"
+		}
+	}
+	close(SHOW);
+
+	if ($needed) {
+		if ($title =~ /UBUNTU: ubuntu/ ||
+		    $title =~ /UBUNTU: \[Config\].* -- enable/) {
+			$result{$sha1} = "NEEDED:ubuntu-driver";
+			warn "  NEEDED -- ubuntu driver\n";
+			$Subuntu++;
+		} elsif ($debian_in && !$debian_out) {
+			$result{$sha1} = "NEEDED:debian";
+			warn "  DEBIAN\n";
+			$Sdebian++;
+		} elsif (!$debian_in && $debian_out) {
+			$result{$sha1} = "NEEDED";
+			warn "  NEEDED\n";
+			$Ssauce++;
+		} else {
+			$result{$sha1} = "NEEDED:split-debian";
+			warn "  NEEDED (needs debian split out)\n";
+			$Ssauce++;
+		}
+		##push(@needed, $sha1);
+		$Sneeded++;
+	}
+}
+close(LOG);
+
+for $sha1 (@all) {
+	if ($ignore{$sha1}) {
+		$result{$sha1} = "IGNORE:revert";
+		$Sneeded--;
+		next;
+	}
+	#print "$sha1 $commit{$sha1}\n";
+}
+
+print "=== total: $Sall ignored: $Signored (upstreamed: $Supstream reverted: $Sreverted) needed: $Sneeded (debian: $Sdebian ubuntu: $Subuntu sauce: $Ssauce) ===\n";
+
+for $sha1 (@all) {
+	print "$sha1 $result{$sha1} $commit{$sha1}\n";
+}

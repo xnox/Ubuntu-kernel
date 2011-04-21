@@ -1,0 +1,5 @@
+Useful Development related scripts:
+
+reconcile-generic -- categorises patches on an old base against a newer
+  base.  This allows us to work out what of the ubuntu delta is still required
+  and what can and should be safely dropped.
