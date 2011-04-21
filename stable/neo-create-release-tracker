@@ -196,6 +196,18 @@ class CreateTrackingBug(StdApp):
             # Add a task for kernel-sru-workflow and then nominate all the series that belong
             # to that project.
             #
+            taskAssignments = {
+                'prepare-package'       : 'canonical-kernel-team',
+                'upload-to-ppa'         : 'canonical-kernel-team',
+                'promote-to-proposed'   : 'ubuntu-sru',
+                'verification-testing'  : 'canonical-kernel-team',
+                'certification-testing' : 'hardware-certification',
+                'regression-testing'    : 'canonical-platform-qa',
+                'promote-to-updates'    : 'ubuntu-sru',
+                'promote-to-security'   : 'ubuntu-sru',
+                'security-signoff'      : 'canonical-security'
+                }
+
             lp = self.lp.launchpad
             ubuntu = lp.distributions["ubuntu"]
             project = 'kernel-sru-workflow'
@@ -208,6 +220,25 @@ class CreateTrackingBug(StdApp):
                     nomination = bug.lpbug.addNomination(target=s)
                     if nomination.canApprove():
                         nomination.approve()
+
+            # Task assignments
+            # Set status of the master task so the bot will start processing
+            #
+            for t in bug.tasks:
+                task       = t.bug_target_name
+                parts = task.split()
+                mastertask = parts[0]
+                if len(parts) == 1:
+                    if mastertask == 'kernel-sru-workflow':
+                        t.status = "In Progress"
+                else:
+                    if mastertask == 'linux':
+                        continue
+                    task = parts[1]
+                    if task in taskAssignments:
+                        t.assignee = self.lp.launchpad.people[taskAssignments[task]]
+                    else:
+                        print 'Warning: Found a workflow task named %s with no automatic assignee, leaving unassigned' % s.name
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
