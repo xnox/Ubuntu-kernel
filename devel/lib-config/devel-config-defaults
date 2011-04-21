@@ -1,0 +1,36 @@
+#! /bin/bash
+
+. debian/debian.env
+
+# Ensure the configs are clean in tree.
+git checkout -f >&2
+
+# Add a new option to the configuration to ensure we get configuration output
+#cat - <<EOM >>drivers/Kconfig
+#config __TICKLE__
+#	bool "__TICKLE__"
+#EOM
+
+fakeroot debian/rules dumpconfigs dumpportsconfigs 2>&1 | \
+perl -e '
+	while (<>) {
+		while ($_ =~ /\(([^\)]*)\) \[([^\]]*)\]\s+(\S+)/g) {
+			($option, $default, $value) = ($1, $2, $3);
+			next if ($option eq "");
+
+			$default =~ s@/\?$@@;
+
+			$def = $default;
+			$def = "n" if ($default =~ /[nN]/);
+			$def = "y" if ($default =~ /[yY]/);
+			$def = "m" if ($default =~ /[mM]/);
+
+			$option = "CONFIG_$option";
+
+			print "$option $default $def\n";
+		}
+	}
+' | sort -u
+
+# Ensure the configs are clean in tree once more.
+git checkout -f >&2

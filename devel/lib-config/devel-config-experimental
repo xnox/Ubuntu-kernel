@@ -1,0 +1,54 @@
+#! /bin/bash
+
+. debian/debian.env
+
+# Ensure the configs are clean in tree.
+git checkout -f >&2
+
+over="$DEBIAN/config/OVERRIDES"
+
+fakeroot debian/rules clean >/dev/null 2>&1
+
+# Remove all options which depend on EXPERIMENTAL
+echo "# CONFIG_EXPERIMENTAL is not set" >"$over"
+fakeroot debian/rules defaultconfigs defaultportsconfigs >/dev/null 2>&1
+
+# Enable EXPERIMENTAL and rebuild the configs, all options which are interesting
+# and depend on it will appear as NEW.
+echo "CONFIG_EXPERIMENTAL=y" >"$over"
+fakeroot debian/rules defaultconfigs defaultportsconfigs 2>&1 | \
+perl -e '
+	while (<>) {
+		while ($_ =~ /\(([^\)]*)\) \[([^\]]*)\]\s+\(NEW\)/g) {
+			($option, $default) = ($1, $2);
+			next if ($option eq "");
+
+			#$value = "n";
+			#$value = "y" if ($default =~ /[yY]/);
+			#$value = "m" if ($default =~ /[mM]/);
+
+			$option = "CONFIG_$option";
+
+			print "$option\n";
+		}
+	}
+'
+
+## Get configurations with EXPERIMENTAL enabled
+#echo "*** generating configs with EXPERIMENTAL enabled ..."
+#
+#rm -rf "$over" CONFIGS CONFIGS-enabled
+#fakeroot debian/rules genconfigs >/dev/null 2>/dev/null
+#mv CONFIGS CONFIGS-enabled
+
+## Get configurations with EXPERIMENTAL disabled
+#echo "*** generating configs with EXPERIMENTAL enabled ..."
+#
+#rm -rf "$over" CONFIGS CONFIGS-disabled
+#echo "# CONFIG_EXPERIMENTAL is not set" >"$over"
+#fakeroot debian/rules genconfigs >/dev/null 2>/dev/null
+#mv CONFIGS CONFIGS-disabled
+
+# Ensure the configs are clean in tree once more.
+git checkout -f >&2
+rm -f "$over"

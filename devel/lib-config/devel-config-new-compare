@@ -1,0 +1,78 @@
+#!/bin/bash
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+from="$1"
+to="$2"
+experimental="$3"
+configs="$4"
+
+all=`ls -1 "$configs"`
+#cmp=''
+#for i in $all
+#do
+#	cmp="$cmp `echo "$i" | sed -e 's/config\.flavour\.//'`"
+#done
+#echo "cmp<$cmp>"
+
+rm -rf tmp
+mkdir -p tmp
+
+level='===='
+
+function rebuild() {
+	local what="$1"
+	local out
+	for i in $all
+	do
+		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
+		egrep -h "$what" "$configs/$i" | sort >"tmp/$out"
+	done
+}
+function config-cmp() {
+	call=""
+	for i in $all
+	do
+		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
+		call="$call $out"
+	done
+	(cd tmp; "$here/config-compare" --experimental "../$experimental" $call "$@")
+}
+
+
+pattern=`
+	diff -u "$from" "$to" | \
+		grep ^+C | \
+		sort -u | \
+		sed -e 's/^+//' | \
+		while read conf default expected
+		do
+			echo -n "|$conf"
+		done | \
+		sed -e 's/^|/(/' -e 's/$/)[ =]/'
+`
+rebuild "$pattern"
+
+diff -u "$from" "$to" | \
+	grep ^+C | \
+	sort -u | \
+	sed -e 's/^+//' | \
+	while read conf default expected
+	do
+		exp=`grep -c "^$conf$" "$experimental"`
+		if [ "$exp" -ne 0 ]; then
+			expected='n'
+		fi
+		case "$expected" in
+		n)	echo "# $conf is not set" ;;
+		*)	echo "$conf=$expected" ;;
+		esac
+	done >"tmp/Policy"
+
+echo "$level New Options $level"
+config-cmp Policy
+echo ""

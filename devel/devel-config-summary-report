@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# devel-config-summary-report -- generate a configuration summary for UDS
+#
+P="$0"
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $P <current series> <next series>" 1>&2
+	exit 1
+fi
+current="$1"
+next="$2"
+
+"$here/lib-config/devel-config-compare" "$next/CONFIGS-experimental" "$next/CONFIGS"
+"$here/lib-config/devel-config-experimental-compare" "$current/CONFIGS-experimental" "$next/CONFIGS-experimental" "$next/CONFIGS-defaults" "$next/CONFIGS"
+"$here/lib-config/devel-config-new-compare" "$current/CONFIGS-defaults" "$next/CONFIGS-defaults" "$next/CONFIGS-experimental" "$next/CONFIGS"
