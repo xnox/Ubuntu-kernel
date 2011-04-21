@@ -151,7 +151,7 @@ class BugInfo(StdApp):
 
         print("                 Owner: %s" % ("None" if bug.owner is None else bug.owner.display_name))
 
-        #print("            Can Expire: %s" % bug.can_expire)
+        print("            Can Expire: %s" % bug.can_expire)
         print("               Created: %s" % (Bugs.date_to_string(bug.date_created)))
         print("          Last Message: %s" % (Bugs.date_to_string(bug.date_last_message)))
         print("          Last Updated: %s" % (Bugs.date_to_string(bug.date_last_updated)))
