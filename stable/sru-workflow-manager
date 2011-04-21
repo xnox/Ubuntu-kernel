@@ -433,14 +433,14 @@ class Shank(StdApp):
                                 if t.status == 'In Progress':
                                     continue
                                 else:
-                                    self.verbose('Not processing this bug because master task state is set to %s\n' % (t.status))
-                                    continue
+                                    self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
+                                    raise RuntimeError
                         else:
                             task = parts[1]
                         self.taskbyname[task] = t
                 except RuntimeError:
                     # end processing for this bug
-                    self.verbose('Quitting\n')
+                    self.verbose('    Quitting this bug\n')
                     continue
 
                 # now walk them one at a time
@@ -518,6 +518,9 @@ class Shank(StdApp):
     # end of main
 
     def send_email(self, task, subject, body):
+        """
+        Send email to the configured list or recipient
+        """
         self.verbose('Sending email\n')
         if 'staging' in self.cfg:
             bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
@@ -532,6 +535,9 @@ class Shank(StdApp):
         return
 
     def send_status_update(self, task, message):
+        """
+        Send a status update to twitter, status.net, identi.ca, etc
+        """
         self.verbose('Sending Status\n')
         if 'staging' in self.cfg:
             bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
@@ -580,8 +586,10 @@ class Shank(StdApp):
             if self.set_task_to_state('verification-testing', 'In Progress'):
                 # we did change the state, weren't already in it
                 # Now tag all bugs verification-needed and spam with a comment
-                # TODO  - call a script
+                # Automate this in the future but for now send an email
                 print 'Here is where we would tag and spam the verification bugs'
+                msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
+                self.send_email(taskobj, 'Bug spamming required', msgbody)
                 self.send_status_update(task, 'New kernel package packagename available in -proposed.')
         return False
 
