@@ -104,7 +104,6 @@ bfusb
 binfmt_aout
 block2mtd
 blowfish
-bluetooth
 bnep
 bonding
 bpa10x
@@ -115,7 +114,6 @@ br2684
 bridge
 broadcom
 bsd_comp
-bt_drv
 btrfs
 btsdio
 btusb
@@ -447,6 +445,7 @@ hid-twinhan
 hid-wacom
 hid-zpff
 hidp
+hmc5843
 hostap
 hp4x
 hpfs
@@ -610,6 +609,7 @@ llc2
 lm63
 lm70
 lm73
+lm75
 lm77
 lm78
 lm80
@@ -1171,7 +1171,6 @@ squashfs
 sr_mod
 ssb
 ssfdc
-st_drv
 stb0899
 stb6000
 stb6100
@@ -1234,8 +1233,6 @@ touchit213
 touchright
 touchwin
 tps65010
-tps65023-regulator
-tps6507x-regulator
 trancevibrator
 tranzport
 ts_bm
@@ -1255,11 +1252,7 @@ tveeprom
 tvp5150
 tw9910
 twidjoy
-twl4030-pwrbutton
-twl4030-usb
 twl4030-vibra
-twl4030_keypad
-twl4030_wdt
 twofish_common
 twofish_generic
 udf
