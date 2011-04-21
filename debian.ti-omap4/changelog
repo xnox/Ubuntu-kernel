@@ -4,6 +4,31 @@ linux-ti-omap4 (2.6.38-1208.12) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ u1 of for-ubuntu ]
+
+  * ARM: EXYNOS4: CPUIDLE Support
+  * ARM: EXYNOS4: Fix incorrect mapping of gpio pull-up macro to register
+    setting
+  * ARM: EXYNOS4: Fix card insert/removal event detection on smdkv310 board
+  * ARM: 6864/1: hw_breakpoint: clear DBGVCR out of reset
+  * ARM: 6865/1: perf: ensure pass through zero is counted on overflow
+  * ARM: 6866/1: Do not restrict HIGHPTE to !OUTER_CACHE
+  * ARM: 6867/1: Introduce THREAD_NOTIFY_COPY for copy_thread() hooks
+  * ARM: 6868/1: Preserve the VFP state during fork
+  * ARM: EXYNOS4: CPUIDLE Support
+  * config slim down reference defconfig
+  * MAKEFILE correct using shawn dtb method
+  * omap2 sdp4430 protect hdmi with hdmi sound config
+  * Subject: [PATCH 3/3] usb: musb: Moving the Vbus enable function call
+    from to workqueue.
+  * omap2 4430sdp board file rearrange
+  * alsa soc implement abe constraint test
+  * omap2 panda neutral reodering of structs
+  * omap2 hwmod 44xx neutral reordering
+  * alsa panda hdmi audio ensure cpu dai gets built
+  * omap2 hwmod 2420 mmc devattr name fix
+  * enable build omap3 boards
+
   [ Ubuntu: 2.6.38-8.42 ]
 
   * SAUCE: (drop after 2.6.38) ALSA: HDA: Fix dock mic for Lenovo
