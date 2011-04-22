@@ -9,6 +9,7 @@ from os                                 import path, mkdir
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error, dump
 from ktl.bugs                           import Bugs, DeltaTime
+from ktl.kernel_bug                     import KernelBug
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
@@ -504,7 +505,7 @@ class BugTracker(StdApp):
                 self.verbose('adding bugs\n')
                 for bug_id in self.cfg['+bugs']:
                     try:
-                        bug = self.lp.get_bug(bug_id)
+                        bug = KernelBug(self.lp.get_bug(bug_id))
                         bi = Bugs.bug_info(bug, now)
                         if bi is not None:
                             if 'tasks' in self.cfg:
@@ -534,7 +535,7 @@ class BugTracker(StdApp):
                 for bug_id in bugs_db['bugs']:
                     self.notify_if_new_comment(bug_id, bugs_db)
                     try:
-                        bug = self.lp.get_bug(bug_id)
+                        bug = KernelBug(self.lp.get_bug(bug_id))
 
                         task_tracked = None
                         if 'tasks tracked' in bugs_db['bugs'][bug_id]:

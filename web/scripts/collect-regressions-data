@@ -9,6 +9,7 @@ from os                                 import path
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error, dump
 from ktl.bugs                           import Bugs, DeltaTime
+from ktl.kernel_bug                     import KernelBug
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
@@ -284,8 +285,13 @@ class CollectRegressionsData(StdApp):
                 try:
                     self.verbose(" . Searching ...")
                     if using_search_since:
+                        # Issue: We could have collected a bug that has it's status set to one of those listed above
+                        #        and in subsequent runs, it's status could have changed to "Won't Fix". It's also
+                        #        possible that the release tag has been removed. Since we want to notice those changes,
+                        #        and remove the bug from our db, we want to do the search strictly on a "since" basis.
+                        #
                         self.verbose("   since: %s" % (search_since))
-                        tasks = source_package.search_tasks(status=search_status, tags=self.cfg['search_tags'], tags_combinator=search_tags_combinator, modified_since=search_since)
+                        tasks = source_package.search_tasks(modified_since=search_since)
                     else:
                         self.verbose("   since: The Beginning")
                         tasks = source_package.search_tasks(status=search_status, tags=self.cfg['search_tags'], tags_combinator=search_tags_combinator)
@@ -299,7 +305,7 @@ class CollectRegressionsData(StdApp):
                             bugs_db_packages[package_name]['bugs'] = {}
                         this_package_bugs = bugs_db_packages[package_name]['bugs']
 
-                        bug = task.bug
+                        bug = KernelBug(task.bug)
                         task = self.__get_relevant_task(bug, package_name)
                         self.__verbose_bug_info(bug)
 
@@ -313,7 +319,19 @@ class CollectRegressionsData(StdApp):
 
                         #bug_item['needs attention'] = self.bug_needs_attention(bug, package_name, bugs_db)
 
-                        this_package_bugs[bug.id] = Bugs.bug_info(bug, now, task)
+                        if using_search_since:
+                            bad_bug = True
+                            if task.status in search_status:
+                                for tag in self.cfg['search_tags']:
+                                    if tag in bug.tags:
+                                        this_package_bugs[bug.id] = Bugs.bug_info(bug, now, task)
+                                        bad_bug = False
+                                        break
+
+                            if bad_bug and bug.id in this_package_bugs:
+                                del this_package_bugs[bug.id]
+                        else:
+                            this_package_bugs[bug.id] = Bugs.bug_info(bug, now, task)
 
                         #if limit == 0:
                         #    break
@@ -324,7 +342,7 @@ class CollectRegressionsData(StdApp):
                     #
                     if package_name in bugs_db_packages and 'bugs' in bugs_db_packages[package_name]:
                         for bug_id in bugs_db_packages[package_name]['bugs']:
-                            bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = Bugs.calculate_bug_gravity(self.lp.get_bug(bug_id), now)
+                            bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = bug.gravity
 
                 except:
                     error("Exception caught processing the tasks, building the bugs database.\n")

@@ -3,10 +3,11 @@
 
 from sys                    import stdout, stderr
 from commands               import getstatusoutput
-from decimal                            import Decimal
+from decimal                import Decimal
 import json
 from os.path                import exists, getmtime
 from time                   import time
+from datetime               import datetime
 
 # o2ascii
 #
@@ -29,7 +30,7 @@ def fileage(filename):
     # get time last modified
     if not exists(filename):
         return None
-    
+
     # time in seconds since last change to file
     return time() - getmtime(filename)
 
@@ -99,5 +100,22 @@ def stde(ostr):
 def dump(obj):
     stdo(json.dumps(obj, sort_keys=True, indent=4))
     stdo('\n')
+
+# date_to_string
+#
+def date_to_string(date):
+    """
+    Return a standard, string representation of the date given. It is assumed that the
+    date is UTC based.
+    """
+    return "None" if date is None else date.strftime("%A, %d. %B %Y %H:%M UTC")
+
+# string_to_date
+#
+def string_to_date(date):
+    """
+    Return a datetime object based on the string in a well known format.
+    """
+    return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
 
 # vi:set ts=4 sw=4 expandtab:

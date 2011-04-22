@@ -8,13 +8,13 @@
 from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error, dump
+from ktl.utils                          import stdo, error, date_to_string
 from ktl.bugs                           import Bugs, DeltaTime
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime, timedelta
-from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_db
-from re                                 import match
+from ktl.kernel_bug                     import KernelBug
+from ktl.ubuntu                         import Ubuntu
 import json
 
 # CmdlineError
@@ -188,7 +188,7 @@ class CollectRegressionsData(StdApp):
             print(" ")
 
             print("                 Owner: %s" % ("None" if bug.owner is None else bug.owner.display_name))
-            print("               Created: %s" % (Bugs.date_to_string(bug.date_created)))
+            print("               Created: %s" % (date_to_string(bug.date_created)))
             tags = ""
             for t in bug.tags:
                 tags += t
@@ -262,8 +262,9 @@ class CollectRegressionsData(StdApp):
             # All source projects the kernel team are interesed in.
             #
             interested_source_packages = []
-            for release in ubuntu_db:
-                for package_name in ubuntu_db[release]['packages']:
+            ubuntu = Ubuntu
+            for release in ubuntu.db:
+                for package_name in ubuntu.db[release]['packages']:
                     if package_name not in interested_source_packages:
                         interested_source_packages.append(package_name)
 
@@ -293,7 +294,7 @@ class CollectRegressionsData(StdApp):
                     deletion_list = []
                     this_package_bugs = None
                     for task in tasks:
-                        bug = task.bug
+                        bug = KernelBug(task.bug)
                         task = self.__get_relevant_task(bug, package_name)
                         self.__verbose_bug_info(bug)
 
@@ -314,7 +315,7 @@ class CollectRegressionsData(StdApp):
                         for bug_id in bugs_db_packages[package_name]['bugs']:
                             ago = DeltaTime(self.string_to_date(bugs_db_packages[package_name]['bugs'][bug_id]['date created']), now)
                             if ago.days < bug_creation_window:
-                                bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = Bugs.calculate_bug_gravity(self.lp.get_bug(bug_id), now)
+                                bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = bug.gravity
                             else:
                                 deletion_list.append(bug_id)
 

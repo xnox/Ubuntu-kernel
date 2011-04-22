@@ -13,7 +13,7 @@ from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from ktl.ubuntu                         import Ubuntu
-from ktl.bugs                           import Bugs
+from ktl.kernel_bug                     import KernelBug
 from datetime                           import datetime
 import re
 
@@ -140,45 +140,6 @@ class Cmdline:
             raise CmdlineError('You must specify a source package for the bugs specified.')
         return
 
-# DeltaTime
-#
-class DeltaTime():
-    # __init__
-    #
-    def __init__(self, date, now):
-        delta = now - date.replace(tzinfo=None)
-        seconds_diff = (delta.days * 86400) + delta.seconds
-
-        sec_p_hr = 60 * 60
-        __hours = delta.seconds / sec_p_hr
-        dhs = __hours * sec_p_hr
-        remaining_seconds = delta.seconds - dhs
-
-        self.__minutes = (delta.seconds - dhs) / 60
-        dhm = self.__minutes * 60
-        self.__seconds = remaining_seconds - dhm
-
-        self.__days = delta.days
-
-        return
-
-    @property
-    def days(self):
-        return self.__days
-
-    @property
-    def hours(self):
-        return self.__hours
-
-    @property
-    def minutes(self):
-        return self.__mintues
-
-    @property
-    def seconds(self):
-        return self.__seconds
-
-
 # ProcessNewRegressionBugsErrors
 #
 class ProcessNewRegressionBugsErrors(Exception):
@@ -207,30 +168,6 @@ class ProcessNewRegressionBugs(StdApp):
         ]
         StdApp.__init__(self)
 
-        self.file_regexes = [
-            # added via ubuntu-bug or apport-collect
-            {'name':'BootDmesg',        're':'BootDmesg\.txt',               'type' : 'dmesg',           },
-            {'name':'CurrentDmesg',     're':'CurrentDmesg\.txt',            'type' : 'dmesg',           },
-            {'name':'Dependencies',     're':'Dependencies\.txt',            'type' : 'dependencies',    },
-            {'name':'HalComputerInfo',  're':'HalComputerInfo\.txt',         'type' : 'hal',             },
-            {'name':'LsUsb',            're':'LsUsb\.txt',                   'type' : 'lsusb',           },
-            {'name':'Lspci',            're':'Lspci\.txt',                   'type' : 'lspci',           },
-            {'name':'ProcCpuInfo',      're':'ProcCpuInfo\.txt',             'type' : 'proc_cpu',        },
-            {'name':'ProcInterrupts',   're':'ProcInterrupts\.txt',          'type' : 'proc_interrupts', },
-            {'name':'ProcModules',      're':'ProcModules\.txt',             'type' : 'proc_modules',    },
-
-            {'name':'kernlog',          're':'kern\.log',                    'type' : 'dmesg',           },
-            {'name':'dmesg',            're':'dmesg',                        'type' : 'dmesg',           },
-            {'name':'lshw',             're':'lshw',                         'type' : 'lshw',            },
-            {'name':'lspci',            're':'lspci',                        'type' : 'lspci',           },
-            {'name':'lsusb',            're':'lsusb',                        'type' : 'lsusb',           },
-            {'name':'lshal',            're':'lshal',                        'type' : 'lshal',           },
-            {'name':'lsmod',            're':'lsmod',                        'type' : 'lsmod',           },
-        ]
-
-        for file_regex in self.file_regexes:
-            file_regex['rc'] = re.compile(file_regex['re'], re.IGNORECASE)
-
         self.toshow = ''
 
     # __initialize
@@ -239,8 +176,7 @@ class ProcessNewRegressionBugs(StdApp):
     # when the object is instantiated).
     #
     def __initialize(self):
-        #if 'verbose' in self.cfg and self.cfg['verbose']:
-        #    Bugs.verbose = True
+        self.ubuntu = Ubuntu()
 
         if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'qastaging'
@@ -251,6 +187,10 @@ class ProcessNewRegressionBugs(StdApp):
         # pretty much only care about one, 'ubuntu'.
         #
         self.distro = self.lp.distributions['ubuntu']
+
+        if 'debug' in self.cfg and 'kbug' in self.cfg['debug']:
+            KernelBug.debug = True
+
         return
 
     # __get_relevant_task
@@ -337,7 +277,7 @@ class ProcessNewRegressionBugs(StdApp):
                         tasks = source_package.search_tasks(status=search_status, tags=self.cfg['search_tags'], tags_combinator=search_tags_combinator)
                         self.verbose("\n")
 
-                        limit = 500
+                        limit = 5
                         this_package_bugs = None
                         for task in tasks:
                             self.toshow = ''
@@ -379,7 +319,7 @@ class ProcessNewRegressionBugs(StdApp):
     def bug_task_process(self, task):
         try:
             self.verbose('----------------------------------------------------------------------------------------------\n')
-            bug = task.bug
+            bug = KernelBug(task.bug)
             self.__verbose_bug_info(bug)
             self.verbose("        Checks:\n")
 
@@ -389,9 +329,9 @@ class ProcessNewRegressionBugs(StdApp):
             #
             # Is the bug filed against a series we no longer support?
             #
-            (series_name, series_version) = Bugs.determine_series(bug)
+            (series_name, series_version) = bug.series
             if series_name != '':
-                if Bugs.against_supported_series(bug):
+                if self.ubuntu.is_supported_series(series_name):
                     self.verbose("           - Supported series.\n")
                 else:
                     self.verbose("           - Filed against a series that is no longer supported.\n")
@@ -400,18 +340,19 @@ class ProcessNewRegressionBugs(StdApp):
 
             # Logs
             #
-            if self.has_required_logs(bug):
+            if bug.has_required_logs:
                 if self.toshow == '':
                     self.toshow += 'Bug: %s  ' % bug.id
                 self.toshow += 'Status: "%s" -> "Confirmed"; ' % (bi['status'])
                 self.verbose("           - Has the required logs.\n")
 
-                if task.status == "New":
-                    task.status = "Confirmed"  # Make the status change
+                #if task.status == "New":
+                #    task.status = "Confirmed"  # Make the status change
             else:
                 self.verbose("           - Does not have the required logs.\n")
 
         except:
+            raise
             msg  = "An exception whas caught.\n"
             msg += "            bug-id: %d.\n" % (bug.id)
             if task is not None:
@@ -421,60 +362,6 @@ class ProcessNewRegressionBugs(StdApp):
             raise
 
         return
-
-
-    # has_required_logs
-    #
-    def has_required_logs(self, bug):
-        """
-        Examines a bug and determines if it has all the logs that the kernel
-        team requires.
-        """
-        retval = False
-
-        # For the kernel, I want at least one Dmesg and one Lspci log file.
-        #
-        required = ['dmesg', 'lspci']
-
-        try:
-            owner = bug.owner.display_name
-        except:
-            #self.verbose("Exception encountered while getting the bug owner's display_name for bug (%s)\n" % (bug.id))
-            pass
-
-        else:
-            try:
-                for attachment in bug.attachments:
-                    attachment_owner = attachment.message.owner
-                    if attachment_owner is None:
-                        continue
-
-                    try:
-                        if attachment_owner.display_name != owner:
-                            continue
-                    except:
-                        continue
-
-                    for file_regex in self.file_regexes:
-                        if not file_regex['rc'].search(attachment.title):
-                            continue
-
-                        if file_regex['type'] in required:
-                            required.remove(file_regex['type'])
-                        break
-
-                    if len(required) == 0:
-                        # We have all required logs
-                        retval = True
-                        break
-
-            except:
-                self.verbose("Exception encountered while going through attachments for bug (%s)\n" % (bug.id))
-                raise
-
-        return retval
-
-
 
 
 if __name__ == '__main__':

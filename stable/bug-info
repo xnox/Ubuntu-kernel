@@ -8,9 +8,8 @@
 
 from sys                                import argv
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo
+from ktl.utils                          import stdo, date_to_string
 from ktl.std_app                        import StdApp
-from ktl.bugs                           import Bugs
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 from re                                 import match
 from datetime                           import datetime
@@ -151,15 +150,15 @@ class BugInfo(StdApp):
 
         print("                 Owner: %s" % ("None" if bug.owner is None else bug.owner.display_name))
 
-        print("            Can Expire: %s" % bug.can_expire)
-        print("               Created: %s" % (Bugs.date_to_string(bug.date_created)))
-        print("          Last Message: %s" % (Bugs.date_to_string(bug.date_last_message)))
-        print("          Last Updated: %s" % (Bugs.date_to_string(bug.date_last_updated)))
+        print("               Created: %s" % (date_to_string(bug.date_created)))
+        print("          Last Message: %s" % (date_to_string(bug.date_last_message)))
+        print("          Last Updated: %s" % (date_to_string(bug.date_last_updated)))
         print("               Private: %s" % bug.private)
         print("              Security: %s" % bug.security_related)
         print("             Duplicate: %s" % bug.duplicate_of)
         print("                  Heat: %s" % bug.heat)
-        print("          Latest Patch: %s" % (Bugs.date_to_string(bug.date_latest_patch_uploaded)))
+        print("          Latest Patch: %s" % (date_to_string(bug.date_latest_patch_uploaded)))
+        print("          Is Expirable: %s" % bug.is_expirable())
 
         tags = ""
         for t in bug.tags:
@@ -191,17 +190,17 @@ class BugInfo(StdApp):
                 assignee = assignee.display_name
             print("            %s (%s)" % (task.bug_target_name, task.bug_target_display_name))
             print("                       Status: %-20s  Importance: %-20s  Assignee: %-s" % (task.status, task.importance, assignee))
-            print("                      Created: %s" % (Bugs.date_to_string(task.date_created)))
-            print("                    Confirmed: %s" % (Bugs.date_to_string(task.date_confirmed)))
-            print("                     Assigned: %s" % (Bugs.date_to_string(task.date_assigned)))
-            print("                       Closed: %s" % (Bugs.date_to_string(task.date_closed)))
-            print("                Fix Committed: %s" % (Bugs.date_to_string(task.date_fix_committed)))
-            print("                 Fix Released: %s" % (Bugs.date_to_string(task.date_fix_released)))
-            print("                  In Progress: %s" % (Bugs.date_to_string(task.date_in_progress)))
-            print("                   Incomplete: %s" % (Bugs.date_to_string(task.date_incomplete)))
-            print("                  Left Closed: %s" % (Bugs.date_to_string(task.date_left_closed)))
-            print("                     Left New: %s" % (Bugs.date_to_string(task.date_left_new)))
-            print("                      Triaged: %s" % (Bugs.date_to_string(task.date_triaged)))
+            print("                      Created: %s" % (date_to_string(task.date_created)))
+            print("                    Confirmed: %s" % (date_to_string(task.date_confirmed)))
+            print("                     Assigned: %s" % (date_to_string(task.date_assigned)))
+            print("                       Closed: %s" % (date_to_string(task.date_closed)))
+            print("                Fix Committed: %s" % (date_to_string(task.date_fix_committed)))
+            print("                 Fix Released: %s" % (date_to_string(task.date_fix_released)))
+            print("                  In Progress: %s" % (date_to_string(task.date_in_progress)))
+            print("                   Incomplete: %s" % (date_to_string(task.date_incomplete)))
+            print("                  Left Closed: %s" % (date_to_string(task.date_left_closed)))
+            print("                     Left New: %s" % (date_to_string(task.date_left_new)))
+            print("                      Triaged: %s" % (date_to_string(task.date_triaged)))
             print("                  Is Complete: %s" % (task.is_complete))
             print("                        Owner: %s" % (task.owner.display_name))
             print("                        Title: %s" % (task.title))
@@ -236,38 +235,38 @@ class BugInfo(StdApp):
 
 
         print(" ")
-        print("        -----------------------------------------------------------------------------------")
-        print("        -----------------------------------------------------------------------------------")
-        print(" ")
-        now = datetime.utcnow()
-        now.replace(tzinfo=None)
-        bi = Bugs.bug_info(bug, now)
-        target_task = "linux (Ubuntu Natty)"
-        #task_nominations = {}
-        #for task in tasks:
-        #    if '(' in task.bug_target_name:
-        #        m = match('(^\S+)\s+\(Ubuntu\s(\S+)\)$', task.bug_target_name)
-        #        if m is not None:
-        #            if m.group(1) not in task_nominations:
-        #                task_nominations[m.group(1)] = {}
-        #            task_nominations[m.group(1)][m.group(2)] = task.bug_target_name
-        #    else:
-        #        if task.bug_target_name not in task_nominations:
-        #            task_nominations[task.bug_target_name] = {}
-        #        task_nominations[task.bug_target_name]['!'] = task.bug_target_name
+        # print("        -----------------------------------------------------------------------------------")
+        # print("        -----------------------------------------------------------------------------------")
+        # print(" ")
+        # now = datetime.utcnow()
+        # now.replace(tzinfo=None)
+        # bi = Bugs.bug_info(bug, now)
+        # target_task = "linux (Ubuntu Natty)"
+        # #task_nominations = {}
+        # #for task in tasks:
+        # #    if '(' in task.bug_target_name:
+        # #        m = match('(^\S+)\s+\(Ubuntu\s(\S+)\)$', task.bug_target_name)
+        # #        if m is not None:
+        # #            if m.group(1) not in task_nominations:
+        # #                task_nominations[m.group(1)] = {}
+        # #            task_nominations[m.group(1)][m.group(2)] = task.bug_target_name
+        # #    else:
+        # #        if task.bug_target_name not in task_nominations:
+        # #            task_nominations[task.bug_target_name] = {}
+        # #        task_nominations[task.bug_target_name]['!'] = task.bug_target_name
 
-        #for task in task_nominations:
-        #    for nom in sorted(task_nominations[task].keys()):
-        #        index = task_nominations[task][nom]
+        # #for task in task_nominations:
+        # #    for nom in sorted(task_nominations[task].keys()):
+        # #        index = task_nominations[task][nom]
 
-        #        if nom == '!':
-        #            print(task)
-        #            if len(task_nominations[task]) == 1:
-        #                print("      just one")
-        #            else:
-        #                print("      none")
-        #        else:
-        #            print(nom)
+        # #        if nom == '!':
+        # #            print(task)
+        # #            if len(task_nominations[task]) == 1:
+        # #                print("      just one")
+        # #            else:
+        # #                print("      none")
+        # #        else:
+        # #            print(nom)
 
     # main
     #

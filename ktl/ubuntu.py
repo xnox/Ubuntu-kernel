@@ -244,6 +244,10 @@ class Ubuntu:
     # lookup
     #
     def lookup(self, key):
+        """
+        Using the given key, find the matching record in the db and return that record.
+        Note, the key argument can be a series-name, series-version or a kernel-version.
+        """
         if key in Ubuntu.db:
             record = Ubuntu.db[key]
         elif key in Ubuntu.index_by_kernel_version:
@@ -254,6 +258,21 @@ class Ubuntu:
             raise KeyError(key)
 
         return record
+
+    # is_supported_series
+    #
+    def is_supported_series(self, series):
+        """
+        Lookup the given series and return whether it is still supported or not. Note, since
+        this uses the 'lookup' method, the series argument can be a series-name, series-version
+        or a kernel-version.
+        """
+        retval = False
+
+        rec = self.lookup(series)
+        retval = rec['supported']
+
+        return retval
 
 if __name__ == '__main__':
     ubuntu = Ubuntu()
