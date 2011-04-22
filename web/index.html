@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" >
+    <head runat="server" >
+        <title>Ubuntu Kernel Team</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
+
+        <style type="text/css">
+
+            html{
+                          top: 0;
+                       height: 100%;
+                   text-align: center;
+                       margin: 0 auto;
+                      padding: 0;
+            }
+
+            body {
+                          top: 0;
+                       height: 100%;
+                        width: 100%;
+                       margin: 0 auto;
+                      padding: 0;
+                   text-align: left;
+                  font-family: 'Cantarell', serif;
+                    font-size: 14px;
+                  line-height: 1.5em;
+
+            }
+
+            a:link { color: #CF7F18; }
+            a:visited { color: #AD660C; }
+            a:hover, a:focus { color: #FF9814;   text-decoration:none; }
+
+            p {  margin:1em 0; }
+            h1 { color: #838A32; font-size:24px; margin-bottom: 0.5em;}
+
+            h2 { color: #169BA7; font-size:20px; margin-bottom: 0.5em;}
+
+            em {font-style:italic;}
+
+            strong {font-weight:bold;}
+
+            em strong, strong em { font-weight:bold; font-style:italic; }
+
+            #bjf {
+                display:block;
+                padding:0;
+                width:100%;
+                background:#fff;
+                top:50%;
+                border:solid #E69623;
+                border-width:3px 0 3px 0;
+                margin:50px 0 0 0;
+                background-image: url(../img/logo.svg);
+                background-repeat: no-repeat;
+                background-position: center center;
+                background-size: 80%;
+            }
+
+            #bjf-table {
+                display:block;
+                padding:0;
+                width:100%;
+                background:#fff;
+
+                opacity: 0.90;
+                -moz-opacity: 0.90;
+                filter: alpha(opacity=90);
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <div id="bjf" >
+            <table id="bjf-table" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                    <td width="50" valign="top">&nbsp;</td>   <!-- padding on the left -->
+
+                    <!--
+                    <td valign="top" width="200"> <a id="logo" href="http://www.ubuntu.com">Ubuntu</a> </td>
+                    -->
+                    <td valign="top">
+                        <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr> <td>&nbsp;</td> </tr><!-- padding on the top -->
+                            <tr>
+                                <td valign="top"> <h1>Ubuntu Kernel Team</h1> </td>
+                            </tr>
+                            <tr>
+                                <td valign="top">
+                                        This site is for accessing various information that is important for the Ubuntu
+                                        Kernel Team. Various reports, and tools that help work with the bugs in
+                                        Launchpad.
+                                </td>
+                            </tr>
+
+                            <tr> <td>&nbsp;</td> </tr><!-- padding -->
+
+                            <tr>
+                                <td valign="top"> <h2>Reports</h1> </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <table width="100%" cellpadding="5" cellspacing="0">
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top" width="230"><a href="sru-report.html">The SRU Report</a></td>
+                                            <td>A list of all the supported series that have packaegs currently in -proposed. This also shows all associated bugs and their status with respect to being verified.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top"><a href="versions.html">Package Versions</a></td>
+                                            <td>A table showing all the Kernel Teams' packages and the latest version in any pocket.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top"><a href="regressions-potential-report.html">Regression Potential</a></td>
+                                            <td>Open bugs tagged "regression-potential".</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top"><a href="regressions-proposed-report.html">Regression Proposed</a></td>
+                                            <td>Open bugs tagged "regression-proposed".</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top"><a href="regressions-update-report.html">Regression Update</a></td>
+                                            <td>Open bugs tagged "regression-update".</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top"><a href="regressions-release-report.html">Regression Release</a></td>
+                                            <td>Open bugs tagged "regression-release".</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top"><a href="1-day-new.html">New, Last 24 Hours</a></td>
+                                            <td>All bugs in any Kernel Team package that have been created in the last 24 hours.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top"><a href="7-day-new.html">New, Last 7 Days</a></td>
+                                            <td>All bugs in any Kernel Team package that have been created in the last 7 days.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="10">&nbsp;</td>
+                                            <td valign="top"><a href="30-day-new.html">New, Last 30 Days</a></td>
+                                            <td>All bugs in any Kernel Team package that have been created in the last 30 days.</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+
+                    <td width="50" valign="top">&nbsp;</td>   <!-- padding on the right -->
+                </tr>
+                <tr> <td>&nbsp;</td> </tr><!-- padding on the bottom -->
+            </table>
+
+        </div>
+
+    </body>
+</html>
+<!-- vi:set ts=4 sw=4 expandtab: -->
