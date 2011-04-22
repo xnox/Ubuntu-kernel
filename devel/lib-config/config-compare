@@ -1,0 +1,78 @@
+#!/usr/bin/perl
+
+use strict;
+
+my %options;
+my @options;
+my %values;
+
+my %experimental;
+if ($ARGV[0] eq '--experimental') {
+	open(EXP, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
+	while (<EXP>) {
+		chomp;
+		$experimental{$_} = 1;
+	}
+	close(EXP);
+	shift @ARGV;
+	shift @ARGV;
+}
+
+my $opt;
+my $is;
+for my $column (@ARGV) {
+	open(CONFIG, "<$column") || die "$0: $column: open failed - $!\n";
+	while (<CONFIG>) {
+		chomp;
+
+		if ($_ =~ /^# (\S+) is not set/) {
+			$opt = $1;
+			$is = 'n';
+		} elsif ($_ =~ /(\S+)=(\S+)/) {
+			$opt = $1;
+			$is = $2;
+		} else {
+			next;
+		}
+
+		$values{$column, $opt} = $is;
+
+		if (!defined $options{$opt}) {
+			$options{$opt} = 1;
+			push(@options, $opt);
+		}
+	}
+	close(CONFIG);
+}
+
+print "|| '''Option'''";
+for my $column (@ARGV) {
+	print " || '''$column'''";
+}
+print " || '''Comments''' ||\n";
+my $val;
+my $cmt;
+my $all;
+for my $option (@options) {
+	$all = '';
+	$cmt = '';
+	print "|| $option";
+	for my $column (@ARGV) {
+		$is = (defined $values{$column, $option})?
+				$values{$column, $option} : '-';
+		print " || $is";
+		if ($is ne '-') {
+			$all = $is if ($all eq '');
+			if ($all ne $is) {
+				$all = '-';
+			}
+		}
+	}
+	if ($all eq '-') {
+		$cmt .= " '''Inconsistent'''";
+	}
+	if ($experimental{$option}) {
+		$cmt .= " '''EXPERIMENTAL'''";
+	}
+	print " || $cmt ||\n";
+}

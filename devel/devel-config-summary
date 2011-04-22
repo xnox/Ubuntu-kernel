@@ -1,0 +1,36 @@
+#!/bin/bash
+#
+# devel-config-summary -- generate a configuration settings summary for UDS
+#
+P="$0"
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $P <current series> <next series>" 1>&2
+	exit 1
+fi
+current="$1"
+next="$2"
+
+
+(
+	cd "$current" || exit 1
+	"$here/lib-config/devel-config-experimental" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-defaults" >"CONFIGS-defaults"
+	#fakeroot debian/rules genconfigs
+)
+
+(
+	cd "$next" || exit 1
+	"$here/lib-config/devel-config-experimental" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-defaults" >"CONFIGS-defaults"
+	fakeroot debian/rules genconfigs >/dev/null 2>&1
+	fakeroot debian/rules genportsconfigs >/dev/null 2>&1
+)
+
+"$here/devel-config-summary-report" "$current" "$next"
