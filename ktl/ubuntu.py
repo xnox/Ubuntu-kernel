@@ -43,12 +43,8 @@ class Ubuntu:
             [
                 'linux',
                 'linux-ti-omap4',
-                'linux-mvl-dove',
-                'linux-ec2',
                 'linux-meta',
                 'linux-ports-meta',
-                'linux-meta-ec2',
-                'linux-meta-mvl-dove',
                 'linux-meta-ti-omap4'
             ]
         },
