@@ -145,7 +145,7 @@ class CreateTrackingBug(StdApp):
             #    This bug is for tracking the <version> upload package. This bug will
             #    contain status and testing results related to that upload.
             #
-            description = "This bug is for tracking the %s upload package. This bug will contain status and testing results releated to that upload." % (changelog[0]['version'])
+            description = "This bug is for tracking the %s upload package. This bug will contain status and testing results related to that upload." % (changelog[0]['version'])
 
             package = changelog[0]['package']
             bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
