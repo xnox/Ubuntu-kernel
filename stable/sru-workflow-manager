@@ -528,7 +528,8 @@ class Shank(StdApp):
             bugurl = 'http://pad.lv/%s' % (task.bug.id)
 
         mcfg = self.cfg['mail_notify']
-        body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n\n' % bugurl
+        body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n' % bugurl
+        body_top = body_top + ('%s\n\n' % task.bug.title)
         msg = body_top + body
         subj =  '[ShankBot] ' + subject
         self.email.send(mcfg['from_address'], mcfg['to_address'], subj, msg)
@@ -590,7 +591,10 @@ class Shank(StdApp):
                 print 'Here is where we would tag and spam the verification bugs'
                 msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
                 self.send_email(taskobj, 'Bug spamming required', msgbody)
-                self.send_status_update(task, 'New kernel package packagename available in -proposed.')
+                btitle = task.bug.title
+                packagename = btitle.split(':')[0]
+                version = btitle.split(':')[1].split()[0]
+                self.send_status_update(task, 'New kernel package %s %s available in -proposed.' % (packagename, version))
         return False
 
     def verification_testing_fix_released(self, taskobj):
