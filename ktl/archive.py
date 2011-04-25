@@ -189,7 +189,7 @@ class Archive:
         ubuntu  = Ubuntu()
 
         for astatus in statuses:
-            for pname in kernel_package_names:
+            for pname in Ubuntu.kernel_source_packages:
                 if self.debug:
                     print 'fetching for package', pname, 'status', astatus
                 outdict = {}
@@ -238,13 +238,13 @@ class Archive:
                     print 'records in outdict after fetch', len(outdict)
                 unsupported = []
                 serieslist = []
-                for key, release in ubuntu.db:
-                    if not release['supported']:
+                for key in ubuntu.db:
+                    if not ubuntu.db[key]['supported']:
                         if self.debug:
-                            print 'DEBUG: Fetching from archive, will skip release ', release['name']
-                        unsupported.append(release['name'])
+                            print 'DEBUG: Fetching from archive, will skip release ', ubuntu.db[key]['name']
+                        unsupported.append(ubuntu.db[key]['name'])
                     else:
-                        serieslist.append(release['name'])
+                        serieslist.append(ubuntu.db[key]['name'])
                 # remove unwanted ones
                 for name, sourceinfo in outdict.items():
                     if sourceinfo['series'] in unsupported:

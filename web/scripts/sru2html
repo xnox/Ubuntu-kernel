@@ -131,8 +131,11 @@ class SruReport:
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
         <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
-        <link rel="stylesheet" type="text/css" href="css/style.css" />
-
+        <link title="dark" rel="stylesheet" href="css/themes/bjf/style.css" type="text/css" media="print, projection, screen" />
+        <link title="dark" rel="stylesheet" href="css/dark.css" type="text/css" media="print, projection, screen" />
+        <link title="light" rel="stylesheet" href="css/themes/blue/style.css" type="text/css" media="print, projection, screen" />
+        <link title="light" rel="stylesheet" href="css/light.css" type="text/css" media="print, projection, screen" />
+        <script type="text/javascript" src="js/styleswitcher.js"></script>
     </head>
         '''
 
@@ -284,8 +287,19 @@ class SruReport:
         retval += '            <div>\n'
         retval += '                <br />\n'
         retval += '                <hr />\n'
-        retval += '                %s\n' % self.data['updated']
-        retval += '                <br />\n'
+        retval += '                <table width="100%" cellspacing="0" cellpadding="0">\n'
+        retval += '                    <tr>\n'
+        retval += '                        <td>\n'
+        retval += '                            %s\n' % self.data['updated']
+        retval += '                        </td>\n'
+        retval += '                        <td align="right">\n'
+        retval += '                            Themes:&nbsp;&nbsp;\n'
+        retval += '                            <a href=\'#\' onclick="setActiveStyleSheet(\'dark\'); return false;">DARK</a>\n'
+        retval += '                            &nbsp;\n'
+        retval += '                            <a href=\'#\' onclick="setActiveStyleSheet(\'light\'); return false;">LIGHT</a>\n'
+        retval += '                        </td>\n'
+        retval += '                    </tr>\n'
+        retval += '                </table>\n'
         retval += '                <br />\n'
         retval += '            </div>\n'
         retval += '''

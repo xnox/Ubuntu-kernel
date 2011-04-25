@@ -13,8 +13,7 @@ from ktl.kernel_bug                     import KernelBug
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
-from ktl.kernel                         import map_release_number_to_ubuntu_release as ubuntu_db
-from re                                 import match
+from ktl.ubuntu                         import Ubuntu
 import json
 
 # CmdlineError
@@ -255,8 +254,9 @@ class CollectRegressionsData(StdApp):
             # All source projects the kernel team are interesed in.
             #
             interested_source_packages = []
-            for release in ubuntu_db:
-                for package_name in ubuntu_db[release]['packages']:
+            ubuntu = Ubuntu
+            for release in ubuntu.db:
+                for package_name in ubuntu.db[release]['packages']:
                     if package_name not in interested_source_packages:
                         interested_source_packages.append(package_name)
 
