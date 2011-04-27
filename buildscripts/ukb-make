@@ -69,12 +69,12 @@ if [ -z "$ARCH" ]
 then
 	if [ "$HOST_ARCH" = "amd64" ]
 	then
-		echo You must specify and architecture on amd64.
+		echo You must specify an architecture on amd64.
 		usage
 	fi
 	ARCH="$HOST_ARCH"
 fi
-if ! find $UKB_DB/$RELEASE -maxdepth 1 | grep $ARCH 2>&1 > /dev/null
+if ! arch_supported $UKB_DB $RELEASE $ARCH
 then
 	echo Could not find arch \'$ARCH\'
 	exit 1

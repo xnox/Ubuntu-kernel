@@ -17,7 +17,7 @@ while [ $# -ne 0 ]; do
 			REPO="--repo=$(echo $1|cut -d= -f2)"
 			;;
 		--release=*)
-			RELEASE="--release=$(echo $1|cut -d= -f2)"
+			RELEASE="$(echo $1|cut -d= -f2)"
 			;;
 		--branch=*)
 			BRANCH="--branch=$(echo $1|cut -d= -f2)"
@@ -39,13 +39,25 @@ while [ $# -ne 0 ]; do
 	shift
 done
 
+#
+# Make sure the release exists
+#
+if [ -z "$RELEASE" ]
+then
+        echo You must specify a release
+        usage
+fi
+
 case $HOST_ARCH in
 	amd64)
 		for i in i386 amd64 armel
 		do
-			if ! $CDIR/ukb-make --arch=$i $REPO $RELEASE $BRANCH $BDIR $CLEAN
+			if arch_supported $CDIR/ukb $RELEASE $i
 			then
-				exit 1
+				if ! $CDIR/ukb-make --arch=$i $REPO --release=$RELEASE $BRANCH $BDIR $CLEAN
+				then
+					exit 1
+				fi
 			fi
 		done
 		;;
