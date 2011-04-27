@@ -1,0 +1,446 @@
+#!/usr/bin/env python
+#
+
+from lpltk.LaunchpadService             import LaunchpadService
+from lpltk.bug                          import Bug
+from ktl.bugs                           import DeltaTime
+from ktl.ubuntu                         import Ubuntu
+from ktl.utils                          import debug as dout
+from datetime                           import datetime
+import re
+
+# KernelLPService
+#
+class KernelLPService(LaunchpadService):
+    """
+    A customized version of the LPLTK LaunchpadService class. The reason for
+    this is that I wanted to subclass the LPLTK Bug class. Since the LaunchpadService
+    method get_bug returns an instance of a Bug class, and since I couldn't figure
+    out how to cast a Bug object into a KernelBug object, I needed this subclass.
+    """
+
+    def __init__(self, config=None):
+        """
+        See: lpltk.LaunchpadService.__init__
+        """
+        LaunchpadService.__init__(self, config)
+
+
+    # get_bug
+    #
+    def get_bug(self, bug_id):
+        """
+        Return an instance of a KernelBug object based on the LP object related
+        to the specified bug_number.
+        """
+        return KernelBug(self, bug_id)
+
+# KernelBug
+#
+class KernelBug(Bug):
+    """
+    A subclass of the standard lpltk bug class which adds methods of interest
+    to the kernel team.
+    """
+    debug  = False
+
+    # __init__
+    #
+    #def __init__(self, bug_id, commit_changes=True):
+    def __init__(self, bug):
+        Bug.__init__(self, bug.service, bug.id, bug.commit_changes)
+
+        self.file_regexes = [
+            # added via ubuntu-bug or apport-collect
+            {'name':'BootDmesg',        're':'BootDmesg\.txt',               'type' : 'dmesg',           },
+            {'name':'CurrentDmesg',     're':'CurrentDmesg\.txt',            'type' : 'dmesg',           },
+            {'name':'Dependencies',     're':'Dependencies\.txt',            'type' : 'dependencies',    },
+            {'name':'HalComputerInfo',  're':'HalComputerInfo\.txt',         'type' : 'hal',             },
+            {'name':'LsUsb',            're':'LsUsb\.txt',                   'type' : 'lsusb',           },
+            {'name':'Lspci',            're':'Lspci\.txt',                   'type' : 'lspci',           },
+            {'name':'ProcCpuInfo',      're':'ProcCpuInfo\.txt',             'type' : 'proc_cpu',        },
+            {'name':'ProcInterrupts',   're':'ProcInterrupts\.txt',          'type' : 'proc_interrupts', },
+            {'name':'ProcModules',      're':'ProcModules\.txt',             'type' : 'proc_modules',    },
+
+            {'name':'kernlog',          're':'kern\.log',                    'type' : 'dmesg',           },
+            {'name':'dmesg',            're':'dmesg',                        'type' : 'dmesg',           },
+            {'name':'lshw',             're':'lshw',                         'type' : 'lshw',            },
+            {'name':'lspci',            're':'lspci',                        'type' : 'lspci',           },
+            {'name':'lsusb',            're':'lsusb',                        'type' : 'lsusb',           },
+            {'name':'lshal',            're':'lshal',                        'type' : 'lshal',           },
+            {'name':'lsmod',            're':'lsmod',                        'type' : 'lsmod',           },
+        ]
+
+        for file_regex in self.file_regexes:
+            file_regex['rc'] = re.compile(file_regex['re'], re.IGNORECASE)
+
+        self.ubuntu = Ubuntu()
+        return
+
+    # dbg
+    #
+    def dbg(self, msg):
+        dout(msg, self.debug)
+
+    # has_required_logs
+    #
+    @property
+    def has_required_logs(self):
+        """
+        Examines a bug and determines if it has all the logs that the kernel
+        team requires.
+        """
+        retval = False
+
+        # For the kernel, I want at least one Dmesg and one Lspci log file.
+        #
+        required = ['dmesg', 'lspci']
+
+        try:
+            owner = self.owner.display_name
+
+        except:
+            #self.verbose("Exception encountered while getting the bug owner's display_name for bug (%s)\n" % (bug.id))
+            pass
+
+        else:
+            try:
+                for attachment in self.attachments:
+                    attachment_owner = attachment.message.owner
+                    if attachment_owner is None:
+                        continue
+
+                    try:
+                        if attachment_owner.display_name != owner:
+                            continue
+                    except:
+                        continue
+
+                    for file_regex in self.file_regexes:
+                        if not file_regex['rc'].search(attachment.title):
+                            continue
+
+                        if file_regex['type'] in required:
+                            required.remove(file_regex['type'])
+                        break
+
+                    if len(required) == 0:
+                        # We have all required logs
+                        retval = True
+                        break
+
+            except:
+                self.verbose("Exception encountered while going through attachments for bug (%s)\n" % (self.id))
+                raise
+
+        return retval
+
+    # gravity
+    #
+    @property
+    def gravity(self):
+        """
+        Try to come up with an integer value that represents the need of this
+        bug to be addressed. The higher the number, the more attention it deserves.
+        """
+        gravity = 0
+
+        now = datetime.utcnow()
+
+        # Calculate a value based on how long before now the bug was created. The longer
+        # ago, the lower the value.
+        #
+        ago = DeltaTime(self.date_created, now)
+        if   ago.days <  7: gravity += 1000
+        elif ago.days < 14: gravity += 500
+        elif ago.days < 21: gravity += 250
+        elif ago.days < 30: gravity += 100
+
+        ago = DeltaTime(self.date_last_message, now)
+        if   ago.days <  7: gravity += 1000
+        elif ago.days < 14: gravity += 500
+        elif ago.days < 21: gravity += 250
+        elif ago.days < 30: gravity += 100
+
+        return gravity
+
+    # _ubuntu_series_lookup
+    #
+    def _ubuntu_series_lookup(self, version):
+        """
+        Given a version find the corresponding series name and version. The version
+        could be a kernel version or a series version.
+
+        This method returns a (series_name, series_version) tuple.
+        """
+        self.dbg(' . Looking up the series name for (%s)\n' % version)
+        series_name = ''
+        series_version = ''
+        if series_name == '':
+            m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', version)
+            if m is not None:
+                kver = "%s.%s.%s" % (m.group(1), m.group(2), m.group(3))
+                if kver in self.ubuntu.index_by_kernel_version:
+                    series_name    = self.ubuntu.index_by_kernel_version[kver]['name']
+                    series_version = self.ubuntu.index_by_kernel_version[kver]['series_version']
+                    self.dbg('    - found kernel version in the db\n')
+            else:
+                self.dbg('    - didn\'t match kernel version pattern\n')
+
+        if series_name == '':
+            m = re.search('([0-9+)\.([0-9]+)', version)
+            if m is not None:
+                dnum = m.group(1)
+                if dnum in self.ubuntu.db:
+                    series_name   = self.ubuntu.db[dnum]['name']
+                    series_version = dnum
+                    self.dbg('    - found series version in the db\n')
+            else:
+                self.dbg('    - didn\'t match series version pattern\n')
+
+        if series_name == '':
+            try:
+                rec = self.ubuntu.lookup(version)
+                series_name = rec['name']
+                series_version = rec['series_version']
+            except KeyError:
+                pass
+
+        self.dbg('    - returning (%s)\n' % series_name)
+        return (series_name, series_version)
+
+    # _ubuntu_series_version_lookup
+    #
+    def _ubuntu_series_version_lookup(self, series_name):
+        self.dbg(' . Looking up the series version for (%s)\n' % series_name)
+        retval = ''
+        for version in self.ubuntu.index_by_kernel_version:
+            if series_name == self.ubuntu.index_by_kernel_version[version]['name']:
+                retval = version
+                break
+        return retval
+
+    # _find_series_in_description
+    #
+    def _find_series_in_description(self, bug):
+        """
+        Look in the bugs description to see if we can determine which distro the
+        the user is running (hardy/intrepid/jaunty/karmic/lucid/etc.).
+        """
+        self.dbg(' . Looking for the series in the description\n')
+        series_name = ''
+        series_version = ''
+
+        desc_lines = bug.description.split('\n')
+        for line in desc_lines:
+            # Sometimes there is a "DistroRelease:" line in the description.
+            #
+            m = re.search('DistroRelease:\s*(.*)', line)
+            if m is not None:
+                (series_name, series_version) = self._ubuntu_series_lookup(m.group(1))
+                break
+
+            # Sometimes there is the results of 'uname -a' or a dmesg in
+            # the description.
+            #
+            m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+            if m is not None:
+                kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
+                break
+
+            if 'Description:' in line:
+                m = re.search('Description:\s*([0-9]+\.[0-9]+)', line)
+                if m is not None:
+                    (series_name, series_version) = self._ubuntu_series_lookup(m.group(1))
+                    break
+
+            if 'Release:' in line:
+                m = re.search('Release:\s+([0-9]+\.[0-9]+)', line)
+                if m is not None:
+                    (series_name, series_version) = self._ubuntu_series_lookup(m.group(1))
+                    break
+
+            # Sometimes it's just in the description
+            #
+            m = re.search('Ubuntu ((hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric)) [0-9]+\.[0-9]+', line)
+            if (m != None):
+                series_name = m.group(1)
+                series_version = self._ubuntu_series_version_lookup(series_name)
+
+        if series_name == '':
+            self.dbg('     - Not found\n')
+        return (series_name, series_version)
+
+    # _find_linux_version
+    #
+    def _find_linux_version(self, attachment):
+        retval = ''
+        file = attachment.data.open()
+        for line in file:
+            m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+            if (m != None):
+                self.dbg('       - found\n')
+                retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                break
+        file.close()
+        return retval
+
+    # _find_series_in_attachments
+    #
+    def _find_series_in_attachments(self, bug):
+        """
+        Look through the various files attached to the bug, by the original
+        submitter/owner and see if we can determine the distro from there.
+        """
+        self.dbg(' . Looking for the series in the attachments\n')
+        series_name = ''
+        series_version = ''
+        kernel_version = ''
+
+        try:
+            owner = bug.owner
+            if owner is None:
+                raise # Will get eaten at the bottom
+
+            owner = bug.owner.display_name.encode('utf-8')
+            for attachment in bug.attachments:
+                self.dbg('     - attachment: "%s"\n' % (attachment.title))
+                try:
+                    # Short circuit the loop, if the attachment isn't from the bug
+                    # submitter, we don't really care.
+                    #
+                    if (attachment.message.owner.display_name.encode('utf-8') != owner):
+                        self.dbg('     - skipped, not the original bug submitter\n')
+                        continue
+
+                    # kern.log
+                    #
+                    m = re.search('kern.log]*', attachment.title)
+                    if m != None:
+                        self.dbg('         - examining\n')
+                        kernel_version = self._find_linux_version(attachment)
+                        if kernel_version != '':
+                            (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
+                            break
+
+                    # BootDmesg.txt
+                    #
+                    m = re.search('Boot[Dd]mesg[.txt|.log]*', attachment.title)
+                    if m != None:
+                        self.dbg('     - BootDmesg.log\n')
+                        kernel_version = self._find_linux_version(attachment)
+                        if kernel_version != '':
+                            (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
+                            break
+
+                    # Dmesg.txt / dmesg.log
+                    #
+                    m = re.search('[Dd]mesg[.txt|.log]*', attachment.title)
+                    if m != None:
+                        self.dbg('     - Dmesg.log\n')
+                        kernel_version = self._find_linux_version(attachment)
+                        if kernel_version != '':
+                            (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
+                            break
+
+                    # alsa-info
+                    #
+                    if series_name == '':
+                        if 'alsa-info' in attachment.title:
+                            self.dbg('     - alsa-info.log\n')
+                            file = attachment.data.open()
+                            for line in file:
+                                m = re.search('Kernel release:\s+([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', line)
+                                if (m != None):
+                                    self.dbg('       - found\n')
+                                    kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                                    break
+                            file.close()
+                            if kernel_version != '':
+                                (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
+                                break
+
+                    # xorg.0.log
+                    #
+                    if series_name == '':
+                        m = re.search('[Xx]org\.0\.log.*', attachment.title)
+                        if m != None:
+                            self.dbg('     - Xorg.0.log\n')
+                            file = attachment.data.open()
+                            for line in file:
+                                m = re.search('Linux ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+                                if (m != None):
+                                    self.dbg('       - found\n')
+                                    kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                                    break
+                            file.close()
+                            if kernel_version != '':
+                                (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
+                                break
+
+                except:
+                    raise
+                    pass # Just eat any exceptions
+        except:
+            raise
+            pass # Just eat any exceptions
+
+        return (series_name, series_version)
+
+    # _find_series_in_title
+    #
+    # Scan title for a pattern that looks like a distro name or version, and
+    # return the newest release version found.
+    #
+    def _find_series_in_title(self, bug):
+        self.dbg(' . Looking for the series in the title\n')
+        series_name = ''
+        series_version = ''
+        for rel_num, rel in self.ubuntu.db.iteritems():
+            pat = "(%s|[^0-9\.\-]%s[^0-9\.\-])" %(rel['name'], rel_num.replace(".", "\."))
+            regex = re.compile(pat, re.IGNORECASE)
+            if regex.search(bug.title):
+                (series_name, series_version) = self._ubuntu_series_lookup(rel['name'])
+        return (series_name, series_version)
+
+    # _find_series_in_tags
+    #
+    def _find_series_in_tags(self, bug):
+        """
+        Search through all the tags on a bug to see if we can find the series that the
+        bug was filed against.
+        """
+        self.dbg(' . Looking for the series in the tags\n')
+        series_name = ''
+        series_version = ''
+
+        for series in Ubuntu.index_by_series_name:
+            if series in bug.tags:
+                (series_name, series_version) = self._ubuntu_series_lookup(series)
+                break
+
+        return (series_name, series_version)
+
+    # series
+    #
+    # Try to figure out which distro version the bug submitter is running
+    # and has file the bug against.
+    #
+    @property
+    def series(self):
+        result = ''
+        (series_name, series_version) = self._find_series_in_description(self)
+
+        if (series_name == ''):
+            (series_name, series_version) = self._find_series_in_attachments(self)
+
+        if (series_name == ''):
+            (series_name, series_version) = self._find_series_in_tags(self)
+
+        if (series_name == ''):
+            (series_name, series_version) = self._find_series_in_title(self)
+
+        return (series_name, series_version)
+
+# vi:set ts=4 sw=4 expandtab:
