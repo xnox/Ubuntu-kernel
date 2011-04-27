@@ -49,20 +49,5 @@ do
 	fi
 done
 
-case $HOST_ARCH in
-	amd64)
-		for i in i386 amd64 armel
-		do
-			if ! $CDIR/ukb-make --arch=$i $REPO $RELEASE $BRANCH $BDIR $CLEAN
-			then
-				exit 1
-			fi
-		done
-		;;
-	*)
-		$CDIR/ukb-make --arch=$HOST_ARCH $REPO $RELEASE $BRANCH $BDIR $CLEAN
-		;;
-esac
-
 exit 0
 
