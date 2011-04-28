@@ -127,27 +127,27 @@ class RegressionsReport():
     def __init__(self, db, xtra=False):
         self.db = db
         self.importance_color = {
-                "Unknown"       : "#000000",
-                "Critical"      : "#ff4500", # "#cc0033",
-                "High"          : "#ffff22", # "#ff00cc",
-                "Medium"        : "#33ff11", # "#009900",
-                "Low"           : "#66ffff", # "#cc9900",
-                "Wishlist"      : "#ffffff", # "#0066cc",
-                "Undecided"     : "#000000"  # "#999999"
+                "Unknown"       : "importance-unknown",
+                "Critical"      : "importance-critical",
+                "High"          : "importance-high",
+                "Medium"        : "importance-medium",
+                "Low"           : "importance-low",
+                "Wishlist"      : "importance-wishlist",
+                "Undecided"     : "importance-undecided"
             }
         self.status_color     = {
-                "New"           : "#ffffff", #"#ff00cc",
-                "Incomplete"    : "#ffff22",
-                "Confirmed"     : "#66ffff", #"#0066cc",
-                "Triaged"       : "#33ff11", #"#ff9933",
-                "In Progress"   : "#ff88ff",
-                "Fix Committed" : "#000000", #"#006600",
-                "Fix Released"  : "#000000", #"#009900",
-                "Invalid"       : "#000000",
-                "Won't Fix"     : "#000000",
-                "Opinion"       : "#000000",
-                "Expired"       : "#000000",
-                "Unknown"       : "#000000"
+                "New"           : "status-new",
+                "Incomplete"    : "status-incomplete",
+                "Confirmed"     : "status-confirmed",
+                "Triaged"       : "status-triaged",
+                "In Progress"   : "status-in_progress",
+                "Fix Committed" : "status-fix_committed",
+                "Fix Released"  : "status-fix_released",
+                "Invalid"       : "status-invalid",
+                "Won't Fix"     : "status-wont_fix",
+                "Opinion"       : "status-opinion",
+                "Expired"       : "status-expired",
+                "Unknown"       : "status-unknown"
             }
 
         self.show_xtra = xtra
@@ -403,9 +403,9 @@ class RegressionsReport():
         when_style = ''
         if ago.days == 0:
             if ago.hours == 0:
-                when_style = 'style="color: #ff0000"'
+                when_style = 'class="date-age-1"'
             else:
-                when_style = 'style="color: #ffff00"'
+                when_style = 'class="date-age-2"'
 
         return when_style, when
 
@@ -417,11 +417,11 @@ class RegressionsReport():
 
         retval  = '                                <tr>\n'
         retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                              # Bug
-        retval += '                                    <td>%s</td>\n' % bug['title']                                                                    # Summary
-        retval += '                                    <td style="color: #ffffff">%s</td>\n' % (bug['series name'])                                     # Series
-        retval += '                                    <td style="color: %s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
-        retval += '                                    <td style="color: %s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
-        retval += '                                    <td>%s</td>\n' % bug['assignee']                                                                 # Assignee
+        retval += '                                    <td class="bug-title">%s</td>\n' % bug['title']                                                                    # Summary
+        retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                     # Series
+        retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
+        retval += '                                    <td class="assignee">%s</td>\n' % bug['assignee']                                                                 # Assignee
         retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                       # Age
         retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                                  # Last comment
 

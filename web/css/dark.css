@@ -209,6 +209,33 @@ code {
 .major-section .body {
 }
 
+.importance-unknown   { color: #000000; }
+.importance-critical  { color: #ff4500; }
+.importance-high      { color: #ffff22; }
+.importance-medium    { color: #33ff11; }
+.importance-low       { color: #66ffff; }
+.importance-wishlist  { color: #ffffff; }
+.importance-undecided { color: #000000; }
+
+.status-new           { color: #ffffff; }
+.status-incomplete    { color: #ffff22; }
+.status-confirmed     { color: #66ffff; }
+.status-triaged       { color: #33ff11; }
+.status-in_progress   { color: #ff88ff; }
+.status-fix_committed { color: #000000; }
+.status-fix_released  { color: #000000; }
+.status-invalid       { color: #000000; }
+.status-wont_fix      { color: #000000; }
+.status-opinion       { color: #000000; }
+.status-expired       { color: #000000; }
+.status-unknown       { color: #000000; }
+
+.series-name          { color: #ffffff; }
+
+.date-age-1           { color: #ff0000; }
+.date-age-2           { color: #ffff00; }
+
+.bug-title            { color: #ffffff; }
 
 /* -------------------------------------------------------------------------------
 */
