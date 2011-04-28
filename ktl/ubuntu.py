@@ -30,7 +30,10 @@ class Ubuntu:
             'packages'  :
             [
                 'linux',
-            ]
+                'linux-meta'
+            ],
+            'sha1' : '',
+            'md5' : ''
         },
         '11.04' :
         {
@@ -46,7 +49,9 @@ class Ubuntu:
                 'linux-meta',
                 'linux-ports-meta',
                 'linux-meta-ti-omap4'
-            ]
+            ],
+            'sha1' : '0770b9d2483eaeee4b80aec1fd448586b882003e',
+            'md5' : 'cf0b587742611328f095da4b329e9fc7'
         },
         '10.10' :
         {
