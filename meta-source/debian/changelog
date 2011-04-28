@@ -1,8 +1,10 @@
-linux-meta (2.6.38.9.23) UNRELEASED; urgency=low
+linux-meta (2.6.38.9.23) natty-proposed; urgency=low
 
-  * 
+  [ Tim Gardner ]
 
- -- Tim Gardner <tim.gardner@canonical.com>  Thu, 14 Apr 2011 07:32:59 -0600
+  * Bump ABI
+
+ -- Brad Figg <brad.figg@canonical.com>  Thu, 28 Apr 2011 08:28:53 -0700
 
 linux-meta (2.6.38.8.22) natty; urgency=low
 
