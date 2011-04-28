@@ -4,6 +4,15 @@ linux-ti-omap4 (2.6.38-1208.13) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ u2 of for-ubuntu ]
+
+  * arm/dt: vexpress: Update basic DT to use skeleton.dtsi file.
+  * arm/dt: Fix broken dtbs rule.
+  * OMAP: Fixed gpio polarity of gpio USB-phy reset.
+  * ARM: vexpress: add basic dts DT source
+  * ARM: vexpress: add basic DT platform matching support
+  * ARM: EXYNOS4: Register HSMMC2 before HSMMC0 on SMDKV310 board
+
   [ Ubuntu: 2.6.38-9.43 ]
 
   * Release Tracking Bug
