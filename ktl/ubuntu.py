@@ -41,14 +41,13 @@ class Ubuntu:
             'kernel'    : '2.6.38',
             'name'      : 'natty',
             'supported' : True,
-            # adjust packages when this goes live
             'packages'  :
             [
                 'linux',
-                'linux-ti-omap4',
                 'linux-meta',
-                'linux-ports-meta',
-                'linux-meta-ti-omap4'
+                'linux-ti-omap4',
+                'linux-meta-ti-omap4',
+                'linux-backports-modules-2.6.38'
             ],
             'sha1' : '0770b9d2483eaeee4b80aec1fd448586b882003e',
             'md5' : 'cf0b587742611328f095da4b329e9fc7'
@@ -102,7 +101,7 @@ class Ubuntu:
             'series_version' : '9.10',
             'kernel' : '2.6.31',
             'name' : 'karmic',
-            'supported' : True,
+            'supported' : False,
             'packages' :
             [
                 'linux',
