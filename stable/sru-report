@@ -207,9 +207,10 @@ class SruReport(StdApp):
 
         self.archive_root = 'http://archive.ubuntu.com/ubuntu'
         self.ports_root   = 'http://ports.ubuntu.com/ubuntu'
+        self.ubuntu = Ubuntu()
 
         self.components   = ['main', 'universe']
-        self.release      = ['dapper', 'hardy', 'karmic', 'lucid', 'maverick']
+        self.serieses     = self.ubuntu.supported_serieses
 
         self.tempdir = None
 
@@ -222,13 +223,13 @@ class SruReport(StdApp):
         self.changelog_bug_pattern = re.compile('(?:lp:? ?#?|href="/bugs/)([0-9]+)')
         self.published_date_pattern = re.compile('Published.*\n.*on ([-0-9]+)')
         self.service = LaunchpadService(self.cfg)
-        self.dbg('core', "initialize: leave\n")
 
         if self.cfg['archive-versions']:
             ar = Archive()
             self.ppa       = ar.ppa_versions(force=False)
             self.dversions = ar.distro_versions(force=False)
 
+        self.dbg('core', "initialize: leave\n")
         return
 
     # decompress_open
@@ -258,10 +259,13 @@ class SruReport(StdApp):
     # tagfile_to_dict
     #
     def tagfile_to_dict(self, tagfile):
+        self.dbg('core', "    tagfile_to_dict Enter\n")
+        self.dbg('core', "        tagfile: '%s'\n" % (tagfile))
         rls = {}
         p = apt_pkg.TagFile(self.decompress_open(tagfile))
         while p.step() == 1:
             rls[p.section["Package"]] = p.section["Version"]
+        self.dbg('core', "    tagfile_to_dict Leave\n")
         return rls
 
     # get_changelog_info
@@ -304,7 +308,6 @@ class SruReport(StdApp):
         cleanup = {}             # suite -> package
         cmdline = Cmdline()
         kernel_rc = re.compile('^linux.*$')
-        ubuntu = Ubuntu()
         try:
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
@@ -317,7 +320,7 @@ class SruReport(StdApp):
                 # Go through the archive data and find all the relevant series and packages
                 # and thier versions. Seed the results dictionary with this information.
                 #
-                m = ubuntu.db
+                m = self.ubuntu.db
                 for num in sorted(m.iterkeys(), key=lambda x:m[x]['name']):
                     if not m[num]['supported']:
                         continue
@@ -356,10 +359,9 @@ class SruReport(StdApp):
             # Now go through all the packages that are currently in proposed and pull out
             # the bug (and any other) information.
             #
-
-
-            for rls in self.release:
-                self.dbg('core', "Release: '%s'\n" % (rls))
+            for rls in self.serieses:
+                self.dbg('core', "Series: '%s'\n" % (rls))
+                self.dbg('core', "    Coponents: '%s'\n" % (self.components))
                 for component in self.components:
                     self.dbg('core', "    Component: '%s'\n" % (component))
 
@@ -370,7 +372,7 @@ class SruReport(StdApp):
 
                     for package in sorted(proposed.keys()):
                         if 'linux' != package[:5]: continue
-                        self.dbg('core', "        Package: '%s'\n" % (package))
+                        self.dbg('core', "        Proposed Package: '%s'\n" % (package))
                         update_ver = updates.get(package, '')
                         if apt_pkg.version_compare(proposed[package], update_ver) > 0:
                             security_ver = security.get(package, '')
@@ -384,7 +386,7 @@ class SruReport(StdApp):
 
             # Pending Ubuntu Stable Release Updates
             #
-            for rls in self.release:
+            for rls in self.serieses:
                 if rls not in results['releases']:
                     results['releases'][rls] = {}
                 if rls in pending:
@@ -412,6 +414,7 @@ class SruReport(StdApp):
                         results['releases'][rls][pkg]['bugs'    ] = {}
 
                         for bug in bugs:
+                            self.dbg('core', "        bug: '%s'\n" % (bug))
                             results['releases'][rls][pkg]['bugs'][bug] = {}
                             try:
                                 lp_bug = self.service.get_bug(bug)

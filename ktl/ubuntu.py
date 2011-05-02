@@ -274,6 +274,20 @@ class Ubuntu:
 
         return retval
 
+    # supported_serieses
+    #
+    @property
+    def supported_serieses(self):
+        """
+        A list of all the currently supported series names.
+        """
+        retval = []
+        for series in self.db:
+            if self.db[series]['supported']:
+                retval.append(self.db[series]['name'])
+
+        return retval
+
 if __name__ == '__main__':
     ubuntu = Ubuntu()
     db = ubuntu.db
