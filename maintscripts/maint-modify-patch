@@ -1,313 +1,433 @@
 #!/usr/bin/env python
-#==============================================================================
-# Authors: Stefan Bader <stefan.bader@canonical.com>
-#          Brad Figg <brad.figg@canonical.com>
-# Copyright (C) 2009, 2010
 #
-# This script is distributed under the terms and conditions of the GNU General
-# Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
-# for details.
-#==============================================================================
-from sys                                import stdout
+
 from sys                                import argv
-from os                                 import path
-from os                                 import _exit
-from os                                 import rename
-from os                                 import fdopen
-from tempfile                           import mkstemp
-from optparse                                import OptionParser, OptParseError
-import json
+from os                                 import path, rename
+from getopt                             import getopt, GetoptError
+from tempfile                           import NamedTemporaryFile
+from ktl.utils                          import stdo, error
+from ktl.std_app                        import StdApp
+from re                                 import compile
 
-# stdo
+# CmdlineError
 #
-# My own version of print but won't automatically add a linefeed to the end.
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
 #
-def stdo(ostr):
-    stdout.write(ostr)
-    stdout.flush()
-    return
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
 
-# StdApp
+# Cmdline
 #
-# Base class for all applications. This takes care of getting options from a
-# configuration file in the user's home directory.
-#
-class StdApp:
-
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
     # __init__
     #
     def __init__(self):
         self.cfg = {}
 
-    # __load_user_config
+    # error
     #
-    # If the users home directory contains a configuration file, load that in.
-    # The name of the configuration file is '.kteam.rc'. The format of the
-    # file is json. The json format should be an array. The contents of that
-    # array will be merged with the default one 'self.cfg' in this class.
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error(e)
+        self.usage(defaults)
+
+    # usage
     #
-    def __load_user_config(self):
-        cfg_path = self.cfg['configuration_file']
-        if path.exists(cfg_path):
-            with open(cfg_path, 'r') as f:
-                user_config = json.load(f)
-            for k in user_config:
-                self.cfg[k] = user_config[k]
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s <options> <patch-files>                                                           \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("        --ack=<a-list>                                                                       \n")
+        stdo("                         A comma separated list of irc nicknames which will be expanded      \n")
+        stdo("                         to full email addresses and added as 'Acked-by:' lines to each      \n")
+        stdo("                         patch specified on the command line.                                \n")
+        stdo("                                                                                             \n")
+        stdo("        --bugid=<lp-id-list>                                                                 \n")
+        stdo("                         A comma separated list of Launchpad bug-ids which will be used      \n")
+        stdo("                         to generate BugLink URLs to be added to each specirfied patch       \n")
+        stdo("                         file.                                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --cve=<cve-id>                                                                       \n")
+        stdo("                         A single CVE number which will be inserted into the commit body.    \n")
+        stdo("                                                                                             \n")
+        stdo("        --sob=<a-list>                                                                       \n")
+        stdo("                         A comma separated list of irc nicknames which will be expanded      \n")
+        stdo("                         to full email addresses and added as 'Signed-off-by:' lines to      \n")
+        stdo("                         each patch specified on the command line.                           \n")
+        stdo("                                                                                             \n")
+        stdo("        --list-aliases                                                                       \n")
+        stdo("                         Show all aliases currently defined in the configuration file.       \n")
+        stdo("                                                                                             \n")
+        stdo("        --cp=<sha1-list>                                                                     \n")
+        stdo("                         A list of git commit ids that will make up 'cherry-pick' lines      \n")
+        stdo("                         in the signed-off-by block of the commit.                           \n")
+        stdo("                                                                                             \n")
+        stdo("        --bp=<sha1-list>                                                                     \n")
+        stdo("                         A list of git commit ids that will make up 'back-port' lines        \n")
+        stdo("                         in the signed-off-by block of the commit.                           \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --list-aliases                                                                    \n" % self.cfg['app_name'])
+        stdo('        %s --bug=772543 --sob=bjf --ack="smb,ogasawara" *.patch                              \n' % self.cfg['app_name'])
+        stdo('        %s --bug=772543 --sob=bjf --cve=2011-1182 *.patch                                    \n' % self.cfg['app_name'])
 
-    # expand_alias
+    # process
     #
-    # Expands an irc alias to full email address
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = 'va:b:c:s:d:'
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'ack=', 'bugid=', 'cve=', 'sob=', 'list-aliases', 'cp=', 'bp=', 'dry-run']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if opt == '--help':
+                    raise CmdlineError('')
+
+                elif opt in ('-v', '--verbose'):              # verbose
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):                     # config
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('-d', '--debug'):                # debug
+                    self.cfg['debug'] = val.split(',')
+
+                elif opt in ('-a', '--ack'):                  # ack
+                    self.cfg['modify-operation'] = True
+                    self.cfg['acks'] = []
+                    for k in val.split(','):
+                        self.cfg['acks'].append(k.strip())
+
+                elif opt in ('-b', '--bugid', '--bugs'):      # bugid
+                    self.cfg['modify-operation'] = True
+                    self.cfg['bugids'] = []
+                    for k in val.split(','):
+                        self.cfg['bugids'].append(k.strip())
+
+                elif opt in ('-c', '--cve'):                  # cve
+                    self.cfg['modify-operation'] = True
+                    self.cfg['cveid'] = val
+
+                elif opt in ('-s', '--sob'):                  # sob
+                    self.cfg['modify-operation'] = True
+                    self.cfg['sobs'] = []
+                    for k in val.split(','):
+                        self.cfg['sobs'].append(k.strip())
+
+                elif opt in ('--bp'):                          # bp
+                    self.cfg['modify-operation'] = True
+                    self.cfg['bps'] = []
+                    for k in val.split(','):
+                        self.cfg['bps'].append(k.strip())
+
+                elif opt in ('--cp'):                          # cp
+                    self.cfg['modify-operation'] = True
+                    self.cfg['cps'] = []
+                    for k in val.split(','):
+                        self.cfg['cps'].append(k.strip())
+
+                elif opt in ('--list-aliases'):               # list-aliases
+                    self.cfg['list-aliases'] = True
+
+                elif opt in ('--dry-run'):                    # dry-run
+                    self.cfg['dry-run'] = True
+
+            if result: # No errors yet
+                if len(args) > 0:
+                    self.cfg['modify-operation'] = True
+                    self.cfg['patch-files'] = args
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
     #
-    def expand_alias(self, alias):
-        if "irc-aliases" in self.cfg:
-            if not self.cfg["irc-aliases"].has_key(alias):
-               print "  ** Error, alias", alias, "not defined!"
-               _exit(1)
-            return self.cfg["irc-aliases"][alias]
-        else:
-            print "  ** Error, you probably don't have the config file installed in your $HOME!"
-            _exit(1)
+    def verify_options(self, cfg):
+        """
+        Used to verify that all required parameters are present and correct.
+        """
 
-    # merge_config_options
-    #
-    # 1. Defaults
-    # 2. User config file overrides defaults
-    # 3. Command line overrides user config and defaults
-    #
-    def merge_config_options(self, defaults, cmdline_options, cmdline_args):
-        for k in defaults:
-            self.cfg[k] = defaults[k]
+        # At lease one patch file must be specified.
+        #
+        if 'patch-files' not in cfg:
+            raise CmdlineError('No patch files were specified on the command line.\n')
 
-        if "~" in cmdline_options.config:
-                cmdline_options.config = path.expanduser(cmdline_options.config)
-        self.cfg['configuration_file'] = cmdline_options.config
-                        
-        self.__load_user_config()
-
-        self.cfg["sob"] = []
-        if cmdline_options.acklist:
-            for k in cmdline_options.acklist:
-                for j in k.split(","):
-                    sobline = "Acked-by: " + self.expand_alias(j)
-                    self.cfg["sob"].append(sobline)
-        if cmdline_options.soblist:
-            for k in cmdline_options.soblist:
-                for j in k.split(","):
-                    sobline = "Signed-off-by: " + self.expand_alias(j)
-                    self.cfg["sob"].append(sobline)
-        self.cfg["bugid"] = []
-        if cmdline_options.buglist:
-            for k in cmdline_options.buglist:
-                self.cfg["bugid"].extend(k.split(","))
-        if cmdline_args:
-                self.cfg["patches-to-modify"] = cmdline_args
-
-        if "cfg" in cmdline_options.debug:
-            stdo("Configuration:\n")
-            stdo("-------------------------------------------------\n")
-            for k in self.cfg:
-                str = "%s" % (k)
-                stdo('    %-25s = "%s"\n' % (str, self.cfg[k]))
-            if 'exit' in cmdline_options.debug: _exit(0)
-
+        # If we have sob or ack we need to have the irc-aliases
+        #
+        if 'acks' in cfg or 'sobs' in cfg:
+            if not 'irc-aliases' in cfg:
+                raise CmdlineError('No aliases found, the required configuration file may be missing. Copy the file kteam-tools/maintscripts/doc/example_kteam.rc to ~/.kteam.rc.')
         return
 
-#
-# This uses OptionParser to parse the command line.
-#
-OptParser = OptionParser(
-        "Usage: %prog [options] <filename> [...]",
-        epilog="Example:\t\t\t\t\t\t\t\t" + path.basename(argv[0]) + " " +
-               "--bugid=578673,561802 --ack=bjf,rtg 0001-test.patch"
-               "\t\t---\t\t\t\t\t\t\t\t\t\t"
-               "Any acks will be placed before sob lines. Within acks and "
-               "sobs the order of appearance is used. The script also tries "
-               "to prevent duplicate bug IDs and repeating acks and sobs of "
-               "the same person."
-)
-OptParser.add_option("-b", "--bugid",
-                     action="append", dest="buglist",
-                     help="A comma seperated list of bug numbers which will "
-                          "be used to generate BugLink URLs to be added to "
-                          "each specified patch file.")
-OptParser.add_option("-a", "--ack",
-                     action="append", dest="acklist",
-                     help="A comma seperated list of irc nicknames which will "
-                          "be expanded to full email addresses and added as "
-                          "'Acked-by:' lines to each patch.")
-OptParser.add_option("-s", "--sob",
-                     action="append", dest="soblist",
-                     help="A comma seperated list of irc nicknames which will "
-                          "be expanded to full email addresses and added as "
-                          "'Signed-off-by:' lines to each patch.")
-OptParser.add_option("--config",
-                     action="store",
-                     default=path.expanduser(path.join("~", ".kteam.rc")),
-                     help="The full path to the configuration file to be used "
-                          "instead of the default (%default).")
-OptParser.add_option("--list-aliases",
-                     action="store_true", default=False, dest="listaliases",
-                     help="Show all aliases currently defined in the "
-                          "configuration file.")
-OptParser.add_option("-d", "--debug",
-                     action="store", default="",
-                     help="Performs additional output to the option "
-                          "enabled and the applications defined support "
-                          "for the option.")
-OptParser.add_option("-v", "--verbose",
-                     action="store_true", default=False,
-                     help="Give some feedback of what is happening when the "
-                          "script is running.")
 
-# AppTemplate
+# ModifyPatch
 #
-class AppTemplate(StdApp):
+class ModifyPatch(StdApp):
     # __init__
     #
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
+        self.defaults['configuration_file'] = path.join('~', '.kteam.rc')
+        self.defaults['list-aliases']     = False
+        self.defaults['modify-operation'] = False
+        self.defaults['dry-run']          = False
         self.defaults['buglink_base_url'] = "http://bugs.launchpad.net/bugs/"
 
-    # verify_config
-    #
-    def verify_config(self):
-        # Make sure there are patch files to be modified.
-        #
-        if 'patches-to-modify' not in self.cfg:
-            OptParser.print_usage()
-            print "  ** Error, no patch files specified!"
-            _exit(1)
-        else:
-            for patch in self.cfg['patches-to-modify']:
-                if not path.exists(patch):
-                    print "  ** Error, file", patch, "does not exist!"
-                    _exit(1)
+        self.cp_rc = compile('\(cherry picked from commit ([0-9a-zA-Z]+)\)')
+        self.bp_rc = compile('\(backported from commit ([0-9a-zA-Z]+) upstream\)')
 
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
         return
+
+    # sob_block
+    #
+    def sob_block(self, existing_acks, existing_sobs, existing_cps, existing_bps):
+        """
+        Create the block of text that will be inserted that contains all the sob and ack
+        text.
+        """
+
+        retval = ''
+
+        if 'acks' in self.cfg:
+            for ack in self.cfg['acks']:
+                expanded = self.cfg['irc-aliases'][ack]
+                if expanded not in existing_acks:
+                    retval += 'Acked-by: %s\n' % (expanded)
+
+        if 'bps' in self.cfg:
+            for bp in self.cfg['bps']:
+                if bp not in existing_bps:
+                    retval += '(backported from commit %s upstream)\n' % (bp)
+
+        if 'cps' in self.cfg:
+            for cp in self.cfg['cps']:
+                if cp not in existing_cps:
+                    retval += '(cherry picked from commit %s)\n' % (cp)
+
+        if 'sobs' in self.cfg:
+            for sob in self.cfg['sobs']:
+                expanded = self.cfg['irc-aliases'][sob]
+                if expanded not in existing_sobs:
+                    retval += 'Signed-off-by: %s\n' % (expanded)
+
+        return retval
 
     # main
     #
     def main(self):
-        (opts, args) = OptParser.parse_args()
+        cmdline = Cmdline()
         try:
-            self.merge_config_options(self.defaults, opts, args)
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
 
-            if opts.listaliases:
+            if self.cfg['modify-operation']:
+                cmdline.verify_options(self.cfg)
+
+            if self.cfg['list-aliases']:
                 for alias in self.cfg['irc-aliases']:
-                    stdo("%15s : %s\n" %
-                        (alias, self.cfg['irc-aliases'][alias]))
-            else:
-                self.verify_config()
+                   stdo("%15s : %s\n" % (alias, self.cfg['irc-aliases'][alias]))
 
-                for patch in self.cfg['patches-to-modify']:
-                    self.modify(patch)
+            self.initialize()
+
+            for patch_file in self.cfg['patch-files']:
+                self.modify(patch_file)
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
             pass
 
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
         return
 
     # modify
     #
-    # Open a file and write it's modified contents out to a temp file.
-    # The temp file will be renamed to the original file as the last step.
-    #
-    def modify(self, file):
-        try:
-            sobkeys = [ "Signed-off-by", "Acked-by", "Tested-by" ]
+    def modify(self, patch):
+        """
+        Open a file and write it's modified contents out to a temp file.
+        The temp file will be renamed to the original file as the last step.
+        """
+        existing_cves     = []
+        existing_buglinks = []
+        existing_acks     = []
+        existing_sobs     = []
+        existing_bps      = []
+        existing_cps      = []
+        looking_4_subject_line            = True
+        subject_line                      = False
+        cve_insertion_point               = False
 
-            infile = open(file, "r")
-            (fd, outfile_name) = mkstemp(dir="./")
-            outfile = fdopen(fd, "w")
+        looking_4_buglink_insertion_point = False
+        buglink_insertion_point           = False
 
-            sobblock = 0
-            bugblock = 0
-            lastsob  = ""
-            for line in infile:
-                key = line.strip().split(": ")
+        looking_4_sob_insertion_point     = False
+        sob_insertion_point               = False
+        just_copy                         = False
 
-                # Write the BugLink lines directly after the Subject line.
-                # Add an empty line after that block (if there is not already
-                # one).
-                #
-                if key[0] == "Subject" and 'bugid' in self.cfg:
-                    outfile.write(line)
-                    bugblock = 1
-                    continue
-                if bugblock == 1:
-                    outfile.write(line)
-                    # Wait for the first empty line after the subject
-                    if line.strip() == "":
-                        bugblock = 2
-                    continue
-                if bugblock == 2:
-                    # Hold off until after already present BugLinks and remove
-                    # already present numbers from the list of new IDs.
-                    if key[0] == "BugLink":
-                        bugid = line.rstrip().split("/")[-1]
-                        if bugid in self.cfg["bugid"]:
-                            self.cfg["bugid"].remove(bugid)
-                        outfile.write(line)
+        with open(patch, 'r') as src:
+            with NamedTemporaryFile(dir='./', delete=False) as dst:
+
+                for line in src:
+
+                    if just_copy:
+                        dst.write(line)
                         continue
 
-                    for link in self.cfg['bugid']:
-                        outfile.write("BugLink: %s%s\n" %
-                                      (self.cfg['buglink_base_url'], link))
+                    if looking_4_sob_insertion_point:
+                        if line.strip() == '---':
+                            sob_insertion_point = True
+                            looking_4_sob_insertion_point = False
+                        else:
+                            if 'Acked-by:' in line:
+                                user_id = line.replace('Acked-by:', '').strip()
+                                if user_id not in existing_acks:
+                                    existing_acks.append(user_id)
+                            elif 'Signed-off-by:' in line:
+                                user_id = line.replace('Signed-off-by:', '').strip()
+                                if user_id not in existing_sobs:
+                                    existing_sobs.append(user_id)
+                            elif 'cherry picked' in line:
+                                m = self.cp_rc.search(line)
+                                if m is not None:
+                                    existing_cps.append(m.group(1))
+                                pass
+                            elif 'backported from' in line:
+                                m = self.bp_rc.search(line)
+                                if m is not None:
+                                    existing_bps.append(m.group(1))
+                                pass
 
-                    # There should be a blank line before the other stuff
-                    if line.strip() != "":
-                        outfile.write("\n")
-                    bugblock = 3
+                    if sob_insertion_point:
+                        dst.write(self.sob_block(existing_acks, existing_sobs, existing_cps, existing_bps))
+                        sob_insertion_point = False
+                        just_copy = True
 
-                # Wait for a block which looks like the signed off section of
-                # the patch. Then go forward to the "---" which marks the end
-                # of it and insert the new signed-off-by at this position (if
-                # the last line is not the same as the new one.
-                #
-                if sobblock == 0:
-                    # There might be no SOB line present at all
-                    if line.strip() == "---":
-                        sobblock = 1
-                    else:
-                        outfile.write(line)
-                        if key[0] in sobkeys:
-                            sobblock = 1
-                        continue
-                if sobblock == 1:
-                    if line.strip() == "---":
-                        if self.cfg["sob"]:
-                            for sob in self.cfg["sob"]:
-                                if sob == lastsob:
-                                    continue
-                                outfile.write(sob + "\n")
-                                lastsob = sob
-                        sobblock = 2
-                    else:
-                        lastsob = line.strip()
-                    outfile.write(line)
-                    continue
+                    # After the first blank line after the subject line is where we
+                    # want to insert out CVE lines if we need to insert any.
+                    #
+                    if cve_insertion_point:
+                        # Skip past any existing CVE lines and don't duplicate any
+                        # existing CVE lines
+                        #
+                        if 'CVE' in line:
+                            cve_id = line.strip().replace('CVE-', '')
+                            existing_cves.append(cve_id)
+                        else:
+                            # Add the CVE id here.
+                            #
+                            if 'cveid' in self.cfg and len(self.cfg['cveid']) > 0:
+                                if self.cfg['cveid'] not in existing_cves:
+                                    dst.write('CVE-%s\n' % self.cfg['cveid'])
+                                    dst.write('\n') # One blank line after the CVE line
 
-                # If not in any other block, just write out the input file.
-                #
-                outfile.write(line)
+                            cve_insertion_point = False # Done!
+                            looking_4_buglink_insertion_point = True
 
-            infile.close()
-            outfile.close()
-            rename(outfile_name, file)
+                            # We don't know at this point, if we are going to insert a BugLink
+                            # so we can't write out the current line of text.
 
-        except:
-            # If we get an exception, we just go ahead and raise it.
-            # No sense trying to handle it.
-            #
-            raise
+                    # After the first blank line after the CVE lines is where the BugLinks are
+                    # to be inserted.
+                    #
+                    if looking_4_buglink_insertion_point:
+                        if line.strip() != '':
+                            looking_4_buglink_insertion_point = False
+                            buglink_insertion_point = True
 
+                    if buglink_insertion_point:
+                        # Skip past any existing BugLink lines and build a list of existing
+                        # buglinks so we don't duplicate any.
+                        #
+                        if line.startswith('BugLink:'):
+                            bug_id = line.rstrip().split('/')[-1]
+                            existing_buglinks.append(bug_id)
+                        else:
+                            # Add the buglinks.
+                            #
+                            if 'bugids' in self.cfg and len(self.cfg['bugids']) > 0:
+                                for bug_id in self.cfg['bugids']:
+                                    if bug_id not in existing_buglinks:
+                                        dst.write('BugLink: %s%s\n' % (self.cfg['buglink_base_url'], bug_id))
+                                        dst.write('\n') # One blank line after the BugLink line
+                            buglink_insertion_point = False
+                            looking_4_sob_insertion_point = True
+
+                            # We've inserted any BugLinks that we intend to, so we should now
+                            # print out the line of text we've been holding. We do that by falling
+                            # through to the end of the loop.
+
+                    # Once we've found the subject line, we look for the first blank
+                    # line after it.
+                    #
+                    if subject_line:
+                        if line.strip() == '':
+                            cve_insertion_point = True
+                            subject_line = False
+
+                    # All the modifications that we make, are made after the subject
+                    # line, so that's the first things we look for.
+                    #
+                    if looking_4_subject_line:
+                        if 'Subject:' in line:
+                            subject_line = True
+                            looking_4_subject_line = False
+
+                    dst.write(line) # Print out the current line of text.
+
+                temp = dst.name
+        if not self.cfg['dry-run']:
+            rename(temp, patch)
         return
 
 if __name__ == '__main__':
-    app = AppTemplate()
+    app = ModifyPatch()
     app.main()
 
 # vi:set ts=4 sw=4 expandtab:
+
