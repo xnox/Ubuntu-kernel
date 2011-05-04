@@ -25,7 +25,7 @@ class Ubuntu:
             'series_version' : '11.10',
             'kernel'    : '2.6.39',
             'name'      : 'oneiric',
-            'supported' : False,
+            'supported' : True,
             # adjust packages when this goes live
             'packages'  :
             [
@@ -185,6 +185,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
+        '2.6.40'   : db['11.10'],
         '2.6.38'   : db['11.04'],
         '2.6.35'   : db['10.10'],
         '2.6.32'   : db['10.04'],
@@ -198,6 +199,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
+        'oneiric'  : db['11.10'],
         'natty'    : db['11.04'],
         'maverick' : db['10.10'],
         'lucid'    : db['10.04'],
