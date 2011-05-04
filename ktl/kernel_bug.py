@@ -100,37 +100,42 @@ class KernelBug(Bug):
             owner = self.owner.display_name
 
         except:
-            #self.verbose("Exception encountered while getting the bug owner's display_name for bug (%s)\n" % (bug.id))
             pass
 
         else:
             try:
                 for attachment in self.attachments:
-                    attachment_owner = attachment.message.owner
-                    if attachment_owner is None:
-                        continue
+                    self.dbg("Attachment title: '%s'\n" % (attachment.title))
 
                     try:
+                        msg = attachment.message
+                        if msg is None:
+                            continue
+
+                        attachment_owner = msg.owner
+                        if attachment_owner is None:
+                            continue
+
                         if attachment_owner.display_name != owner:
                             continue
+
+                        for file_regex in self.file_regexes:
+                            if not file_regex['rc'].search(attachment.title):
+                                continue
+
+                            if file_regex['type'] in required:
+                                required.remove(file_regex['type'])
+                            break
+
+                        if len(required) == 0:
+                            # We have all required logs
+                            retval = True
+                            break
                     except:
-                        continue
-
-                    for file_regex in self.file_regexes:
-                        if not file_regex['rc'].search(attachment.title):
-                            continue
-
-                        if file_regex['type'] in required:
-                            required.remove(file_regex['type'])
-                        break
-
-                    if len(required) == 0:
-                        # We have all required logs
-                        retval = True
-                        break
+                        continue # If any exceptions are thrown for a given attachment, it is skipped
 
             except:
-                self.verbose("Exception encountered while going through attachments for bug (%s)\n" % (self.id))
+                #self.verbose("Exception encountered while going through attachments for bug (%s)\n" % (self.id))
                 raise
 
         return retval
