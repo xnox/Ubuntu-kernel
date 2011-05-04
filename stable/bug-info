@@ -172,7 +172,9 @@ class BugInfo(StdApp):
         print(" ")
         print("        Nominations:")
         print("        -----------------------------------------------------------------------------------")
-        for nomination in bug.nominations:
+        nominations = bug.nominations
+        print("                       Number: %d" % len(nominations))
+        for nomination in nominations:
             print("                       Target: %s" % (nomination.target.name))
             print("                       Status: %s" % (nomination.status))
             print("                Distro Series: %s" % ("None" if nomination.distro_series is None else nomination.distro_series.name))
@@ -180,7 +182,6 @@ class BugInfo(StdApp):
             print("                      Created: %s" % (date_to_string(nomination.date_created)))
             print("                      Decided: %s" % (date_to_string(nomination.date_decided)))
             print(" ")
-            
 
         tasks = bug.tasks
         print(" ")
