@@ -1,0 +1,30 @@
+From 7ec793515a05a2b4fa7955186a4e4ac6273adc51 Mon Sep 17 00:00:00 2001
+From: Leann Ogasawara <leann.ogasawara@canonical.com>
+Date: Wed, 6 Apr 2011 11:56:32 -0700
+Subject: [PATCH 1/2] UBUNTU: olpc_dcon_xo_1 needs delay.h
+
+ubuntu-2.6/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c:168:3: error:
+implicit declaration of function 'udelay'
+
+Signed-off-by: Leann Ogasawara <leann.ogasawara@canonical.com>
+
+TRIGGER 6a0ae9f73f4878052202473bb952d6e4  drivers/staging/olpc_dcon/olpc_dcon_xo_1.c
+---
+ drivers/staging/olpc_dcon/olpc_dcon_xo_1.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c b/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c
+index b5d21f6..f018ec0 100644
+--- a/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c
++++ b/drivers/staging/olpc_dcon/olpc_dcon_xo_1.c
+@@ -13,6 +13,7 @@
+ #include <linux/cs5535.h>
+ #include <linux/gpio.h>
+ #include <asm/olpc.h>
++#include <linux/delay.h>
+ 
+ #include "olpc_dcon.h"
+ 
+-- 
+1.7.4.1
+
