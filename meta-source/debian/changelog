@@ -1,6 +1,8 @@
-linux-meta (2.6.39.0.2) UNRELEAED; urgency=low
+linux-meta (2.6.39.1.2) UNRELEAED; urgency=low
 
-  * 
+  [ Leann Ogasawara ]
+
+  * Bump ABI
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 05 May 2011 11:13:41 -0700
 
