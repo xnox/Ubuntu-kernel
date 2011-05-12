@@ -448,4 +448,37 @@ class KernelBug(Bug):
 
         return (series_name, series_version)
 
+    # find_attachment
+    #
+    def find_attachment(self, attachment_title):
+        """
+        Return a list of all the lines in the desired attachment.
+
+        NOTE: This isn't really the right way to do this, I think I should return a file handle
+              which gets cleaned up when it goes out of scope.
+        """
+        retval = None
+        try:
+            if self.owner is None:
+                raise # Will get eaten at the bottom
+
+            owner = self.owner.display_name.encode('utf-8')
+            for attachment in self.attachments:
+                self.dbg('     - attachment: "%s"\n' % (attachment.title))
+
+                # Short circuit the loop, if the attachment isn't from the bug
+                # submitter, we don't really care.
+                #
+                if (attachment.message.owner.display_name.encode('utf-8') != owner):
+                    self.dbg('     - skipped, not the original bug submitter\n')
+                    continue
+
+                if attachment_title == attachment.title:
+                    retval = attachment.content
+        except:
+            if self.dbg:
+                raise
+            pass # Just eat any exceptions
+        return retval
+
 # vi:set ts=4 sw=4 expandtab:
