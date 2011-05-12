@@ -7,12 +7,14 @@
 #
 
 from sys                                import argv
+from os                                 import unlink
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, date_to_string
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
-from re                                 import match
-from datetime                           import datetime
+from ktl.kernel_bug                     import KernelBug
+from tempfile                           import NamedTemporaryFile
+from subprocess                         import Popen, PIPE
 
 # CmdlineError
 #
@@ -47,24 +49,27 @@ class Cmdline:
     #
     def usage(self, defaults):
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("        %s <options> <bug-id> [<bug-id> ]+                                                   \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
-        stdo("    Options:                                                                                 \n")
+        stdo("    Where <options>:                                                                         \n")
         stdo("        --help           Prints this text.                                                   \n")
         stdo("                                                                                             \n")
-        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
-        stdo("                         running.                                                            \n")
+        stdo("        --staging        Use the staging service to lookup the bug rather than the production\n")
+        stdo("                         service.                                                            \n")
         stdo("                                                                                             \n")
-        stdo("        --config=<cfg file>                                                                  \n")
-        stdo("                         The full path to the configuration file to use instead of           \n")
-        stdo("                         the default location.                                               \n")
+        stdo("        --acpi           If the bug has an AcpiTables.txt file attached to it, run that      \n")
+        stdo("                         through fwts for processing and show the results.                   \n")
         stdo("                                                                                             \n")
-        stdo("        --debug=<debug options>                                                              \n")
-        stdo("                         Performs additional output related to the option enabled and        \n")
-        stdo("                         the application defined support for the option.                     \n")
+        stdo("        --fwts=<fwts-tests>                                                                  \n")
+        stdo("                         The specific list of tests that want fwts to run.                   \n")
+        stdo("                                                                                             \n")
+        stdo("    Where <bug-id> is the Launchpad bug number that is to be dumped.                         \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
-        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s 781441                                                                            \n" % self.cfg['app_name'])
+        stdo("        %s --staging 781441                                                                  \n" % self.cfg['app_name'])
+        stdo("        %s --acpi 781441                                                                     \n" % self.cfg['app_name'])
+        stdo('        %s --fwts="acpidump acpitables syntaxcheck" 781441                                   \n' % self.cfg['app_name'])
 
     # process
     #
@@ -78,24 +83,21 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging']
+            optsLong  = ['help', 'staging', 'acpi', 'fwts=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
                 if (opt == '--help'):
                     raise CmdlineError('')
 
-                elif (opt == '--verbose'):
-                    self.cfg['verbose'] = True
-
-                elif opt in ('--config'):
-                    self.cfg['configuration_file'] = val
-
-                elif opt in ('--debug'):
-                    self.cfg['debug'] = val.split(',')
-
                 elif (opt == '--staging'):
                     self.cfg['staging'] = True
+
+                elif (opt == '--acpi'):
+                    self.cfg['show acpi'] = True
+
+                elif (opt == '--fwts'):
+                    self.cfg['fwts'] = val
 
             if result: # No errors yet
 
@@ -195,15 +197,6 @@ class BugInfo(StdApp):
         print(" ")
         print("        Tasks:")
         print("        -----------------------------------------------------------------------------------")
-        #print("                                           Task  Status                Importance            Assignee")
-        #print("          -------------------------------------  --------------------  --------------------  -----------------------")
-        #for task in tasks:
-        #    assignee = task.assignee
-        #    if assignee is None:
-        #        assignee = "Unknown"
-        #    else:
-        #        assignee = assignee.display_name
-        #    print("  %45s  %-20s  %-20s  %-s" % (task.bug_target_name, task.status, task.importance, assignee))
         for task in tasks:
             assignee = task.assignee
             if assignee is None:
@@ -244,10 +237,6 @@ class BugInfo(StdApp):
             else:
                 print("                    None")
 
-            #print("                        resource type: %s" % (task.resource_type))
-            #print("                        web: %s" % (task.web))
-
-
             print(" ")
 
         print("        Attachments:")
@@ -257,38 +246,55 @@ class BugInfo(StdApp):
 
 
         print(" ")
-        # print("        -----------------------------------------------------------------------------------")
-        # print("        -----------------------------------------------------------------------------------")
-        # print(" ")
-        # now = datetime.utcnow()
-        # now.replace(tzinfo=None)
-        # bi = Bugs.bug_info(bug, now)
-        # target_task = "linux (Ubuntu Natty)"
-        # #task_nominations = {}
-        # #for task in tasks:
-        # #    if '(' in task.bug_target_name:
-        # #        m = match('(^\S+)\s+\(Ubuntu\s(\S+)\)$', task.bug_target_name)
-        # #        if m is not None:
-        # #            if m.group(1) not in task_nominations:
-        # #                task_nominations[m.group(1)] = {}
-        # #            task_nominations[m.group(1)][m.group(2)] = task.bug_target_name
-        # #    else:
-        # #        if task.bug_target_name not in task_nominations:
-        # #            task_nominations[task.bug_target_name] = {}
-        # #        task_nominations[task.bug_target_name]['!'] = task.bug_target_name
 
-        # #for task in task_nominations:
-        # #    for nom in sorted(task_nominations[task].keys()):
-        # #        index = task_nominations[task][nom]
 
-        # #        if nom == '!':
-        # #            print(task)
-        # #            if len(task_nominations[task]) == 1:
-        # #                print("      just one")
-        # #            else:
-        # #                print("      none")
-        # #        else:
-        # #            print(nom)
+        # Acpi Tables
+        #
+        if 'show acpi' in self.cfg:
+            print("        Acpi Tables:")
+            print("        -----------------------------------------------------------------------------------")
+            content = bug.find_attachment('AcpiTables.txt')
+            if content is not None:
+                with NamedTemporaryFile(dir='./', delete=False) as acpi_fid:
+                    acpi_fid.write(content)
+
+                for line in self.run_fwts(acpi_fid.name).split('\n'):
+                    print line
+
+                unlink(acpi_fid.name)
+
+        # fwts
+        #
+        if 'fwts' in self.cfg:
+            print("        Framework Test Suite:")
+            print("        -----------------------------------------------------------------------------------")
+            content = bug.find_attachment('AcpiTables.txt')
+            if content is not None:
+                with NamedTemporaryFile(dir='./', delete=False) as acpi_fid:
+                    acpi_fid.write(content)
+
+                for line in self.run_fwts(acpi_fid.name).split('\n'):
+                    print line
+
+                unlink(acpi_fid.name)
+
+    # run_fwts
+    #
+    def run_fwts(self, fid):
+        retval = ''
+
+        if 'fwts' in self.cfg:
+            cmd = "fwts --dumpfile=%s %s -" % (fid, self.cfg['fwts'])
+        else:
+            cmd = "fwts --dumpfile=%s  syntaxcheck acpitables acpidump -" % (fid)
+        tags = []
+        try:
+            for line in Popen(cmd, shell=True, stdout=PIPE).stdout:
+                retval += line
+        except:
+            print("        An exception was caught running the fwts. Make sure you have it installed.")
+
+        return retval
 
     # main
     #
@@ -309,7 +315,7 @@ class BugInfo(StdApp):
                 # credentials you are using, an exception will be thrown.
                 #
                 try:
-                    bug = self.lp.get_bug(id)
+                    bug = KernelBug(self.lp.get_bug(id))
                 except:
                     print("Either the bug id specified (%s) does not exist in the LP server database or you are not authrorized to view it." % (id))
 
@@ -335,4 +341,3 @@ if __name__ == '__main__':
     app.main()
 
 # vi:set ts=4 sw=4 expandtab:
-
