@@ -7,14 +7,12 @@
 #
 
 from sys                                import argv
-from os                                 import unlink
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, date_to_string, cout
+from ktl.utils                          import stdo, date_to_string
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
-from ktl.kernel_bug                     import KernelBug
-from tempfile                           import NamedTemporaryFile
-from subprocess                         import Popen, PIPE
+from re                                 import match
+from datetime                           import datetime
 
 # CmdlineError
 #
@@ -49,39 +47,24 @@ class Cmdline:
     #
     def usage(self, defaults):
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s <options> <bug-id> [<bug-id> ]+                                                   \n" % self.cfg['app_name'])
+        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
-        stdo("    Where <options>:                                                                         \n")
+        stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
         stdo("                                                                                             \n")
-        stdo("        --staging        Use the staging service to lookup the bug rather than the production\n")
-        stdo("                         service.                                                            \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
         stdo("                                                                                             \n")
-        stdo("        --acpi           If the bug has an AcpiTables.txt file attached to it, run that      \n")
-        stdo("                         through fwts for processing and show the results.                   \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
         stdo("                                                                                             \n")
-        stdo("        --fwts=<fwts-tests>                                                                  \n")
-        stdo("                         The specific list of tests that want fwts to run.                   \n")
-        stdo("                                                                                             \n")
-        stdo("        --tasks                                                                              \n")
-        stdo("                         Dump the bugs individual task information.                          \n")
-        stdo("                                                                                             \n")
-        stdo("        --nominations                                                                        \n")
-        stdo("                         Dump the bugs individual nomination information.                    \n")
-        stdo("                                                                                             \n")
-        stdo("        --attachments                                                                        \n")
-        stdo("                         Dump a list of all the attachments for a bug.                       \n")
-        stdo("                                                                                             \n")
-        stdo("        --tags                                                                               \n")
-        stdo("                         Dump a list of all the tags on a bug.                               \n")
-        stdo("                                                                                             \n")
-        stdo("    Where <bug-id> is the Launchpad bug number that is to be dumped.                         \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
-        stdo("        %s 781441                                                                            \n" % self.cfg['app_name'])
-        stdo("        %s --staging 781441                                                                  \n" % self.cfg['app_name'])
-        stdo("        %s --acpi 781441                                                                     \n" % self.cfg['app_name'])
-        stdo('        %s --fwts="acpidump acpitables syntaxcheck" 781441                                   \n' % self.cfg['app_name'])
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
 
     # process
     #
@@ -92,42 +75,27 @@ class Cmdline:
     #
     def process(self, argv, defaults):
         self.cfg['app_name'] = argv[0]
-        self.cfg['request'] = []
-        self.cfg['needs acpitables attachment'] = False
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'staging', 'acpi', 'fwts=', 'tasks', 'nominations', 'attachments', 'tags']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
                 if (opt == '--help'):
                     raise CmdlineError('')
 
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
                 elif (opt == '--staging'):
                     self.cfg['staging'] = True
-
-                elif (opt == '--acpi'):
-                    self.cfg['show acpi'] = True
-                    self.cfg['request'].append('acpi')
-                    self.cfg['needs acpitables attachment'] = True
-
-                elif (opt == '--fwts'):
-                    self.cfg['fwts'] = val
-                    self.cfg['request'].append('fwts')
-                    self.cfg['needs acpitables attachment'] = True
-
-                elif (opt == '--tasks'):
-                    self.cfg['request'].append('tasks')
-
-                elif (opt == '--nominations'):
-                    self.cfg['request'].append('nominations')
-
-                elif (opt == '--attachments'):
-                    self.cfg['request'].append('attachments')
-
-                elif (opt == '--tags'):
-                    self.cfg['request'].append('tags')
 
             if result: # No errors yet
 
@@ -176,160 +144,151 @@ class BugInfo(StdApp):
     # __verbose_bug_info
     #
     def __print_bug_info(self, bug):
-        stdo("\n")
-        stdo("    %s: %s\n" % (bug.id, bug.title))
-        stdo("\n")
+        print(" ")
+        print("    %s: %s" % (bug.id, bug.title))
+        print(" ")
 
-        stdo("                 Owner: %s\n" % ("None" if bug.owner is None else bug.owner.display_name))
+        print("                 Owner: %s" % ("None" if bug.owner is None else bug.owner.display_name))
 
-        stdo("               Created: %s\n" % (date_to_string(bug.date_created)))
-        stdo("          Last Message: %s\n" % (date_to_string(bug.date_last_message)))
-        stdo("          Last Updated: %s\n" % (date_to_string(bug.date_last_updated)))
-        stdo("               Private: %s\n" % bug.private)
-        stdo("              Security: %s\n" % bug.security_related)
-        stdo("             Duplicate: %s\n" % bug.duplicate_of)
-        stdo("                  Heat: %s\n" % bug.heat)
-        stdo("          Latest Patch: %s\n" % (date_to_string(bug.date_latest_patch_uploaded)))
-        stdo("          Is Expirable: %s\n" % bug.is_expirable())
-        stdo("\n")
+        print("               Created: %s" % (date_to_string(bug.date_created)))
+        print("          Last Message: %s" % (date_to_string(bug.date_last_message)))
+        print("          Last Updated: %s" % (date_to_string(bug.date_last_updated)))
+        print("               Private: %s" % bug.private)
+        print("              Security: %s" % bug.security_related)
+        print("             Duplicate: %s" % bug.duplicate_of)
+        print("                  Heat: %s" % bug.heat)
+        print("          Latest Patch: %s" % (date_to_string(bug.date_latest_patch_uploaded)))
+        print("          Is Expirable: %s" % bug.is_expirable())
 
-        if 'tags' in self.cfg['request']:
-            tags = ""
-            for t in bug.tags:
-                tags += t
-                tags += " "
-            stdo("        Tags:\n")
-            stdo("        -----------------------------------------------------------------------------------\n")
-            stdo("            %s\n" % (tags))
-            stdo("\n")
+        tags = ""
+        for t in bug.tags:
+            tags += t
+            tags += " "
+        print(" ")
+        print("        Tags:")
+        print("        -----------------------------------------------------------------------------------")
+        print("            %s" % (tags))
 
-        if 'nominations' in self.cfg['request']:
-            stdo("\n")
-            stdo("        Nominations:\n")
-            stdo("        -----------------------------------------------------------------------------------\n")
-            nominations = bug.nominations
-            stdo("                 Number: %d\n" % len(nominations))
-            stdo("\n")
-            for nomination in nominations:
-                stdo("                 Target: %-15s" % (nomination.target.name))
-                stdo("Status: %-15s\n" % (nomination.status))
+        print(" ")
+        print("        Nominations:")
+        print("        -----------------------------------------------------------------------------------")
+        nominations = bug.nominations
+        print("                       Number: %d" % len(nominations))
+        print(" ")
+        for nomination in nominations:
+            print("                       Target: %s" % (nomination.target.name))
+            print("                       Status: %s" % (nomination.status))
 
-                ds = nomination.distro_series
-                if ds is None:
-                    stdo("          Distro Series: None\n")
-                else:
-                    stdo("          Distro Series: %-15s" % (ds.name))
-                    stdo("Active: %-15s" % (ds.active))
-                    stdo("  Supported: %s\n" % (ds.supported))
-                stdo("         Product Series: %s\n" % ("None" if nomination.product_series is None else nomination.product_series.name))
-                stdo("                Created: %-35s" % (date_to_string(nomination.date_created)))
-                stdo("       Decided: %s\n" % (date_to_string(nomination.date_decided)))
-                stdo("\n")
+            ds = nomination.distro_series
+            if ds is None:
+                print("                Distro Series: None")
+            else:
+                print("                Distro Series: %s" % (ds.name))
+                print("                       Active: %s" % (ds.active))
+                print("                    Supported: %s" % (ds.supported))
+            print("               Product Series: %s" % ("None" if nomination.product_series is None else nomination.product_series.name))
+            print("                      Created: %s" % (date_to_string(nomination.date_created)))
+            print("                      Decided: %s" % (date_to_string(nomination.date_decided)))
+            print(" ")
 
-        if 'tasks' in self.cfg['request']:
-            tasks = bug.tasks
-            stdo("\n")
-            stdo("        Tasks:\n")
-            stdo("        -----------------------------------------------------------------------------------\n")
-            for task in tasks:
-                assignee = task.assignee
-                if assignee is None:
-                    assignee = "Unknown"
-                else:
-                    assignee = assignee.display_name
-                stdo("        %s (%s)\n" % (task.bug_target_name, task.bug_target_display_name))
-                stdo("\n")
+        tasks = bug.tasks
+        print(" ")
+        print("        Tasks:")
+        print("        -----------------------------------------------------------------------------------")
+        #print("                                           Task  Status                Importance            Assignee")
+        #print("          -------------------------------------  --------------------  --------------------  -----------------------")
+        #for task in tasks:
+        #    assignee = task.assignee
+        #    if assignee is None:
+        #        assignee = "Unknown"
+        #    else:
+        #        assignee = assignee.display_name
+        #    print("  %45s  %-20s  %-20s  %-s" % (task.bug_target_name, task.status, task.importance, assignee))
+        for task in tasks:
+            assignee = task.assignee
+            if assignee is None:
+                assignee = "Unknown"
+            else:
+                assignee = assignee.display_name
+            print("            %s (%s)" % (task.bug_target_name, task.bug_target_display_name))
+            print("                       Status: %-20s  Importance: %-20s  Assignee: %-s" % (task.status, task.importance, assignee))
+            print("                      Created: %s" % (date_to_string(task.date_created)))
+            print("                    Confirmed: %s" % (date_to_string(task.date_confirmed)))
+            print("                     Assigned: %s" % (date_to_string(task.date_assigned)))
+            print("                       Closed: %s" % (date_to_string(task.date_closed)))
+            print("                Fix Committed: %s" % (date_to_string(task.date_fix_committed)))
+            print("                 Fix Released: %s" % (date_to_string(task.date_fix_released)))
+            print("                  In Progress: %s" % (date_to_string(task.date_in_progress)))
+            print("                   Incomplete: %s" % (date_to_string(task.date_incomplete)))
+            print("                  Left Closed: %s" % (date_to_string(task.date_left_closed)))
+            print("                     Left New: %s" % (date_to_string(task.date_left_new)))
+            print("                      Triaged: %s" % (date_to_string(task.date_triaged)))
+            print("                  Is Complete: %s" % (task.is_complete))
+            print("                        Owner: %s" % (task.owner.display_name))
+            print("                        Title: %s" % (task.title))
+            print("                       Target: %s" % (task.target))
+            print("                   Watch Link: %s" % (task.bug_watch))
 
-                stdo("                  Title: %s\n" % (task.title))
-                stdo("                 Status: %-20s\n             Importance: %-20s\n               Assignee: %-s\n" % (task.status, task.importance, assignee))
-                stdo("\n")
-                stdo("                Created: %-35s" % (date_to_string(task.date_created)))
-                stdo("       Confirmed: %-20s\n" % (date_to_string(task.date_confirmed)))
-                stdo("               Assigned: %-35s" % (date_to_string(task.date_assigned)))
-                stdo("          Closed: %-20s\n" % (date_to_string(task.date_closed)))
-                stdo("          Fix Committed: %-35s" % (date_to_string(task.date_fix_committed)))
-                stdo("    Fix Released: %-20s\n" % (date_to_string(task.date_fix_released)))
-                stdo("            In Progress: %-35s" % (date_to_string(task.date_in_progress)))
-                stdo("      Incomplete: %-20s\n" % (date_to_string(task.date_incomplete)))
-                stdo("            Left Closed: %-35s" % (date_to_string(task.date_left_closed)))
-                stdo("        Left New: %s\n" % (date_to_string(task.date_left_new)))
-                stdo("                Triaged: %s\n" % (date_to_string(task.date_triaged)))
-                stdo("            Is Complete: %s\n" % (task.is_complete))
-                stdo("                  Owner: %s\n" % (task.owner.display_name))
-                stdo("             Watch Link: %s\n" % (task.bug_watch))
-                stdo("                 Target: %s\n" % (task.target))
+            milestone = task.milestone
+            if milestone is not None:
+                print("                    Milestone: %s" % (milestone.name))
+            else:
+                print("                    Milestone: None")
 
-                milestone = task.milestone
-                if milestone is not None:
-                    stdo("              Milestone: %s\n" % (milestone.name))
-                else:
-                    stdo("              Milestone: None\n")
+            print(" ")
+            print("                Related Tasks:")
+            print("                ---------------------------------------------------------------------------")
+            if len(task.related_tasks) > 0:
+                for related_task in task.related_tasks:
+                    print("                    %s (%s)" % (related_task.bug_target_name, related_task.bug_target_display_name))
+            else:
+                print("                    None")
 
-                stdo("\n")
-                stdo("          Related Tasks:\n")
-                stdo("          ---------------------------------------------------------------------------\n")
-                if len(task.related_tasks) > 0:
-                    for related_task in task.related_tasks:
-                        stdo("          %s (%s)\n" % (related_task.bug_target_name, related_task.bug_target_display_name))
-                else:
-                    stdo("          None\n")
-
-                stdo("\n")
-
-        if 'attachments' in self.cfg['request']:
-            stdo("        Attachments:\n")
-            stdo("        -----------------------------------------------------------------------------------\n")
-            for attachment in bug.attachments:
-                stdo("            %-40s  %s\n" % (attachment.title, "None" if attachment.owner is None else attachment.owner.display_name))
-            stdo("\n")
+            #print("                        resource type: %s" % (task.resource_type))
+            #print("                        web: %s" % (task.web))
 
 
-        # Acpi Tables
-        #
-        acpi_fidname = ''
-        if self.cfg['needs acpitables attachment']:
-            content = bug.find_attachment('AcpiTables.txt')
-            if content is not None:
-                with NamedTemporaryFile(dir='./', delete=False) as acpi_fid:
-                    acpi_fid.write(content)
-                acpi_fidname = acpi_fid.name
+            print(" ")
 
-        if 'acpi' in self.cfg['request']:
-            stdo("        Acpi Tables:")
-            stdo("        -----------------------------------------------------------------------------------\n")
-            if acpi_fidname != '':
-                for line in self.run_fwts(acpi_fid.name).split('\n'):
-                    stdo(line + '\n')
+        print("        Attachments:")
+        print("        -----------------------------------------------------------------------------------")
+        for attachment in bug.attachments:
+            print("            %-40s  %s" % (attachment.title, "None" if attachment.owner is None else attachment.owner.display_name))
 
-        # fwts
-        #
-        if 'fwts' in self.cfg['request']:
-            stdo("        Framework Test Suite:\n")
-            stdo("        -----------------------------------------------------------------------------------\n")
-            if acpi_fidname != '':
-                for line in self.run_fwts(acpi_fid.name).split('\n'):
-                    stdo(line + '\n')
 
-        if acpi_fidname != '':
-            unlink(acpi_fidname)
+        print(" ")
+        # print("        -----------------------------------------------------------------------------------")
+        # print("        -----------------------------------------------------------------------------------")
+        # print(" ")
+        # now = datetime.utcnow()
+        # now.replace(tzinfo=None)
+        # bi = Bugs.bug_info(bug, now)
+        # target_task = "linux (Ubuntu Natty)"
+        # #task_nominations = {}
+        # #for task in tasks:
+        # #    if '(' in task.bug_target_name:
+        # #        m = match('(^\S+)\s+\(Ubuntu\s(\S+)\)$', task.bug_target_name)
+        # #        if m is not None:
+        # #            if m.group(1) not in task_nominations:
+        # #                task_nominations[m.group(1)] = {}
+        # #            task_nominations[m.group(1)][m.group(2)] = task.bug_target_name
+        # #    else:
+        # #        if task.bug_target_name not in task_nominations:
+        # #            task_nominations[task.bug_target_name] = {}
+        # #        task_nominations[task.bug_target_name]['!'] = task.bug_target_name
 
-    # run_fwts
-    #
-    def run_fwts(self, fid):
-        retval = ''
+        # #for task in task_nominations:
+        # #    for nom in sorted(task_nominations[task].keys()):
+        # #        index = task_nominations[task][nom]
 
-        if 'fwts' in self.cfg:
-            cmd = "fwts --dumpfile=%s %s -" % (fid, self.cfg['fwts'])
-        else:
-            cmd = "fwts --dumpfile=%s  syntaxcheck acpitables acpidump -" % (fid)
-        tags = []
-        try:
-            for line in Popen(cmd, shell=True, stdout=PIPE).stdout:
-                retval += line
-        except:
-            stdo("        An exception was caught running the fwts. Make sure you have it installed.")
-
-        return retval
+        # #        if nom == '!':
+        # #            print(task)
+        # #            if len(task_nominations[task]) == 1:
+        # #                print("      just one")
+        # #            else:
+        # #                print("      none")
+        # #        else:
+        # #            print(nom)
 
     # main
     #
@@ -350,14 +309,14 @@ class BugInfo(StdApp):
                 # credentials you are using, an exception will be thrown.
                 #
                 try:
-                    bug = KernelBug(self.lp.get_bug(id))
+                    bug = self.lp.get_bug(id)
                 except:
-                    stdo("Either the bug id specified (%s) does not exist in the LP server database or you are not authrorized to view it." % (id))
+                    print("Either the bug id specified (%s) does not exist in the LP server database or you are not authrorized to view it." % (id))
 
                 else:
                     self.__print_bug_info(bug)
 
-                    stdo(" ") # A line break between bug info
+                    print(" ") # A line break between bug info
 
         # Handle the user presses <ctrl-C>.
         #
@@ -376,3 +335,4 @@ if __name__ == '__main__':
     app.main()
 
 # vi:set ts=4 sw=4 expandtab:
+
