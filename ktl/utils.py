@@ -20,6 +20,8 @@ def o2ascii(obj):
             retval = obj.encode('ascii', 'ignore')
         elif type(obj) == Decimal:
             retval = str(obj)
+        elif type(obj) == int:
+            retval = str(obj)
     else:
         retval = obj
     return retval
