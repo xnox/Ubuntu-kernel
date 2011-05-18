@@ -62556,7 +62556,7 @@ Index: kernel/kernel/pid.c
 +	return pid;
 +}
 +
- static int next_pidmap(struct pid_namespace *pid_ns, int last)
+ static int next_pidmap(struct pid_namespace *pid_ns, unsigned int last)
  {
  	int offset;
 @@ -198,6 +231,7 @@
