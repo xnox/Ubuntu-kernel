@@ -8,7 +8,6 @@ from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
-from lazr.restfulclient.errors          import HTTPError
 
 # CmdlineError
 #
@@ -145,16 +144,24 @@ class CreateTrackingBug(StdApp):
             #    This bug is for tracking the <version> upload package. This bug will
             #    contain status and testing results related to that upload.
             #
-            description = "This bug is for tracking the %s upload package. This bug will contain status and testing results related to that upload." % (changelog[0]['version'])
+            description  = "This bug is for tracking the %s upload package. This bug will contain status and testing results releated to that upload." % (changelog[0]['version'])
+            description += "\n\n"
+            description += "For an explanation of the tasks and the associated workflow see: https://wiki.ubuntu.com/Kernel/kernel-sru-workflow"
 
             package = changelog[0]['package']
             bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
+
+            id = bug.id
+            if 'staging' in self.cfg:
+                print("https://bugs.qastaging.launchpad.net/bugs/%s" % (id))
+            else:
+                print("https://bugs.launchpad.net/bugs/%s" % (id))
+
 
             # Tags:
             #    kernel-tracking-bug
             #
             bug.tags.append('kernel-release-tracking-bug')
-            id = bug.id
             name = bug.owner.display_name
 
             # Get the one task and modify the status and importance.
@@ -185,6 +192,54 @@ class CreateTrackingBug(StdApp):
                     if nomination.canApprove():
                         nomination.approve()
 
+            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+            # Add a task for kernel-sru-workflow and then nominate all the series that belong
+            # to that project.
+            #
+            taskAssignments = {
+                'prepare-package'       : 'canonical-kernel-team',
+                'upload-to-ppa'         : 'canonical-kernel-team',
+                'promote-to-proposed'   : 'ubuntu-sru',
+                'verification-testing'  : 'canonical-kernel-team',
+                'certification-testing' : 'hardware-certification',
+                'regression-testing'    : 'canonical-platform-qa',
+                'promote-to-updates'    : 'ubuntu-sru',
+                'promote-to-security'   : 'ubuntu-sru',
+                'security-signoff'      : 'canonical-security'
+                }
+
+            lp = self.lp.launchpad
+            ubuntu = lp.distributions["ubuntu"]
+            project = 'kernel-sru-workflow'
+            proj = lp.projects[project]
+            bug.lpbug.addTask(target=proj)
+
+            sc = proj.series_collection
+            for s in sc:
+                if s.active and s.name not in ['trunk', 'latest']:
+                    nomination = bug.lpbug.addNomination(target=s)
+                    if nomination.canApprove():
+                        nomination.approve()
+
+            # Task assignments
+            # Set status of the master task so the bot will start processing
+            #
+            for t in bug.tasks:
+                task       = t.bug_target_name
+                parts = task.split()
+                mastertask = parts[0]
+                if len(parts) == 1:
+                    if mastertask == 'kernel-sru-workflow':
+                        t.status = "In Progress"
+                else:
+                    if mastertask == 'linux':
+                        continue
+                    task = parts[1]
+                    if task in taskAssignments:
+                        t.assignee = self.lp.launchpad.people[taskAssignments[task]]
+                    else:
+                        print 'Warning: Found a workflow task named %s with no automatic assignee, leaving unassigned' % s.name
+
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
 
@@ -204,11 +259,6 @@ class CreateTrackingBug(StdApp):
                 f.write("\n")
                 for line in thelog[2:]:
                     f.write(line)
-
-            if 'staging' in self.cfg:
-                print("https://bugs.qastaging.launchpad.net/bugs/%s" % (id))
-            else:
-                print("https://bugs.launchpad.net/bugs/%s" % (id))
 
         # Handle the user presses <ctrl-C>.
         #
