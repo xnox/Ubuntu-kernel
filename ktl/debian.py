@@ -64,7 +64,7 @@ class Debian:
                 #
                 debug('Getting the series from the Makefile: ', cls.debug)
                 try:
-                    series = Kernel.series()
+                    series = Kernel.series_name()
                     debug("SUCCEEDED\n", cls.debug, False)
 
                     cl_path = 'debian.' + series + '/changelog'
