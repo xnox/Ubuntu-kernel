@@ -16,6 +16,12 @@ ARCH=$2
 MIRROR=$3
 RELEASE_ARCH=
 
+if ! not_expired_release ${RELEASE}
+then
+	echo ${RELEASE} is expired.
+	exit 1
+fi
+
 if ! check_release_arch ${RELEASE} ${ARCH}
 then
         echo usage: $0 RELEASE ARCH [MIRROR]
