@@ -65,7 +65,7 @@ do
 		mv -f "$curr.new" "$curr"
 
 		if [ "$tip" != "$release" ]; then
-			"$here/cod-enqueue" "A.preproposed-$current" \
+			"$here/cod-enqueue" "A" \
 				"$here/cod-preproposed" "$repo" "$series" \
 					"$tip" "$date"
 		else

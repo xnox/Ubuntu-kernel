@@ -11,16 +11,23 @@ queue="$HOME/COD/queue"
 mkdir -p "$queue"
 
 if [ "$#" -lt 2 ]; then
-	echo "Usage: $P <tag> <cmd> ..." 1>&2
+	echo "Usage: $P <priority A|B|C> <cmd> ..." 1>&2
 	exit 1
 fi
-tag="$1"
+priority="$1"
 shift
 
-time=`date +%s`
-entry="$time.$tag.$$"
+tag()
+{
+	cmd=`basename "$1"`
+	shift
+	echo "$cmd $@" | sed -r -e 's/([0-9a-f]{8})[0-9a-f]{32}/\1/g' -e 's/ /_/g'
+}
+tag=`tag "$@"`
 
-tmp="$queue/.$entry"
+time=`date +%s`
+entry="$priority.$time.$tag.$$"
+
 tmp="$queue/.$entry"
 
 echo "$@" >"$tmp"

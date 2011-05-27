@@ -106,8 +106,7 @@ mv "$tags_list.new" "$tags_list"
 # Run the list.
 while read commit
 do
-	"$here/cod-enqueue" "B.mainline-$commit" \
-		"$here/mainline-build" "$commit"
+	"$here/cod-enqueue" "B" "$here/mainline-build" "$commit"
 done <"$tags_list.added"
 
 rm -f "$tags_list.added"
@@ -143,7 +142,7 @@ do
 		echo "$tip" >"$curr.new"
 		mv -f "$curr.new" "$curr"
 
-		"$here/cod-enqueue" "C.cod-$current" \
+		"$here/cod-enqueue" "C" \
 			"$here/mainline-build" "$tip" "$abi" "$base" "$date"
 	fi
 done <<EOL
