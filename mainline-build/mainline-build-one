@@ -198,9 +198,35 @@ dchroot --directory=`pwd` -c "$build_release" \
 	"fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-indep"
 dchroot --directory=`pwd` -c "$build_release" \
 	"fakeroot debian/rules clean"
-dchroot --directory=`pwd` -c "$build_release" \
-	"fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic"
+{
+	cat - <<EOM
+	ccache="$CCACHE_DIR"
+EOM
+	cat - <<'EOM'
+	if [ "$ccache" != "" -a -d /usr/lib/ccache ]; then
+		export PATH=/usr/lib/ccache:$PATH
+		export CCACHE_DIR="$ccache"
+
+		echo "Using ccache in $CCACHE_DIR"
+		test -d $CCACHE_DIR || mkdir -p $CCACHE_DIR
+	fi
+	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
+EOM
+} | dchroot --directory=`pwd` -c "$build_release" "/bin/bash"
 linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
 	"fakeroot debian/rules clean"
-linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
-	"fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic"
+{
+	cat - <<EOM
+	ccache="$CCACHE_DIR"
+EOM
+	cat - <<'EOM'
+	if [ "$ccache" != "" -a -d /usr/lib/ccache ]; then
+		export PATH=/usr/lib/ccache:$PATH
+		export CCACHE_DIR="$ccache"
+
+		echo "Using ccache in $CCACHE_DIR"
+		test -d $CCACHE_DIR || mkdir -p $CCACHE_DIR
+	fi
+	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
+EOM
+} | linux32 dchroot --directory=`pwd` -c "$build_release-i386" "/bin/bash"
