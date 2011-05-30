@@ -226,15 +226,13 @@ class CreateTrackingBug(StdApp):
             #
             for t in bug.tasks:
                 task       = t.bug_target_name
-                parts = task.split()
-                mastertask = parts[0]
-                if len(parts) == 1:
-                    if mastertask == 'kernel-sru-workflow':
-                        t.status = "In Progress"
+                parts = task.partition(proj.display_name)
+                if parts[0] == '' and parts[1] == proj.display_name and parts[2] == '':
+                    t.status = "In Progress"
                 else:
-                    if mastertask == 'linux':
+                    if parts[0] != '':
                         continue
-                    task = parts[1]
+                    task = parts[2].strip()
                     if task in taskAssignments:
                         t.assignee = self.lp.launchpad.people[taskAssignments[task]]
                     else:
