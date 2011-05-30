@@ -238,7 +238,7 @@ class CreateTrackingBug(StdApp):
                     if task in taskAssignments:
                         t.assignee = self.lp.launchpad.people[taskAssignments[task]]
                     else:
-                        print 'Warning: Found a workflow task named %s with no automatic assignee, leaving unassigned' % s.name
+                        print 'Warning: Found a workflow task named %s with no automatic assignee, leaving unassigned' % task
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
