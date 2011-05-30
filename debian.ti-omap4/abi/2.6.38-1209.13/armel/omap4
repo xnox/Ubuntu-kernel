@@ -678,6 +678,7 @@ EXPORT_SYMBOL net/atm/atm 0x00000000	atm_charge
 EXPORT_SYMBOL net/atm/atm 0x00000000	atm_dev_deregister
 EXPORT_SYMBOL net/atm/atm 0x00000000	atm_dev_lookup
 EXPORT_SYMBOL net/atm/atm 0x00000000	atm_dev_register
+EXPORT_SYMBOL net/atm/atm 0x00000000	atm_dev_release_vccs
 EXPORT_SYMBOL net/atm/atm 0x00000000	atm_dev_signal_change
 EXPORT_SYMBOL net/atm/atm 0x00000000	atm_init_aal5
 EXPORT_SYMBOL net/atm/atm 0x00000000	atm_pcr_goal
@@ -1286,6 +1287,8 @@ EXPORT_SYMBOL vmlinux 0x00000000	_find_first_bit_le
 EXPORT_SYMBOL vmlinux 0x00000000	_find_first_zero_bit_le
 EXPORT_SYMBOL vmlinux 0x00000000	_find_next_bit_le
 EXPORT_SYMBOL vmlinux 0x00000000	_find_next_zero_bit_le
+EXPORT_SYMBOL vmlinux 0x00000000	_kstrtol
+EXPORT_SYMBOL vmlinux 0x00000000	_kstrtoul
 EXPORT_SYMBOL vmlinux 0x00000000	_local_bh_enable
 EXPORT_SYMBOL vmlinux 0x00000000	_lock_kernel
 EXPORT_SYMBOL vmlinux 0x00000000	_memcpy_fromio
@@ -2216,6 +2219,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	eth_rebuild_header
 EXPORT_SYMBOL vmlinux 0x00000000	eth_type_trans
 EXPORT_SYMBOL vmlinux 0x00000000	eth_validate_addr
 EXPORT_SYMBOL vmlinux 0x00000000	ether_setup
+EXPORT_SYMBOL vmlinux 0x00000000	ethtool_invalid_flags
 EXPORT_SYMBOL vmlinux 0x00000000	ethtool_ntuple_flush
 EXPORT_SYMBOL vmlinux 0x00000000	ethtool_op_get_flags
 EXPORT_SYMBOL vmlinux 0x00000000	ethtool_op_get_link
@@ -3080,6 +3084,14 @@ EXPORT_SYMBOL vmlinux 0x00000000	ksize
 EXPORT_SYMBOL vmlinux 0x00000000	kstat
 EXPORT_SYMBOL vmlinux 0x00000000	kstrdup
 EXPORT_SYMBOL vmlinux 0x00000000	kstrndup
+EXPORT_SYMBOL vmlinux 0x00000000	kstrtoint
+EXPORT_SYMBOL vmlinux 0x00000000	kstrtoll
+EXPORT_SYMBOL vmlinux 0x00000000	kstrtos16
+EXPORT_SYMBOL vmlinux 0x00000000	kstrtos8
+EXPORT_SYMBOL vmlinux 0x00000000	kstrtou16
+EXPORT_SYMBOL vmlinux 0x00000000	kstrtou8
+EXPORT_SYMBOL vmlinux 0x00000000	kstrtouint
+EXPORT_SYMBOL vmlinux 0x00000000	kstrtoull
 EXPORT_SYMBOL vmlinux 0x00000000	kthread_bind
 EXPORT_SYMBOL vmlinux 0x00000000	kthread_create
 EXPORT_SYMBOL vmlinux 0x00000000	kthread_should_stop
@@ -4489,7 +4501,6 @@ EXPORT_SYMBOL vmlinux 0x00000000	snd_pcm_lib_free_vmalloc_buffer
 EXPORT_SYMBOL vmlinux 0x00000000	snd_pcm_lib_get_vmalloc_page
 EXPORT_SYMBOL vmlinux 0x00000000	snd_pcm_lib_ioctl
 EXPORT_SYMBOL vmlinux 0x00000000	snd_pcm_lib_malloc_pages
-EXPORT_SYMBOL vmlinux 0x00000000	snd_pcm_lib_mmap_noncached
 EXPORT_SYMBOL vmlinux 0x00000000	snd_pcm_lib_preallocate_free_for_all
 EXPORT_SYMBOL vmlinux 0x00000000	snd_pcm_lib_preallocate_pages
 EXPORT_SYMBOL vmlinux 0x00000000	snd_pcm_lib_preallocate_pages_for_all
@@ -4601,10 +4612,6 @@ EXPORT_SYMBOL vmlinux 0x00000000	strchr
 EXPORT_SYMBOL vmlinux 0x00000000	strcmp
 EXPORT_SYMBOL vmlinux 0x00000000	strcpy
 EXPORT_SYMBOL vmlinux 0x00000000	strcspn
-EXPORT_SYMBOL vmlinux 0x00000000	strict_strtol
-EXPORT_SYMBOL vmlinux 0x00000000	strict_strtoll
-EXPORT_SYMBOL vmlinux 0x00000000	strict_strtoul
-EXPORT_SYMBOL vmlinux 0x00000000	strict_strtoull
 EXPORT_SYMBOL vmlinux 0x00000000	strim
 EXPORT_SYMBOL vmlinux 0x00000000	string_get_size
 EXPORT_SYMBOL vmlinux 0x00000000	strlcat
@@ -5769,6 +5776,7 @@ EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x00000000	usbip_event_
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x00000000	usbip_event_happened
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x00000000	usbip_header_correct_endian
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x00000000	usbip_pack_pdu
+EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x00000000	usbip_pad_iso
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x00000000	usbip_recv_iso
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x00000000	usbip_recv_xbuff
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x00000000	usbip_start_eh
