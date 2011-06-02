@@ -1,0 +1,38 @@
+{
+    "app_name": "./neo", 
+    "bugs_database": {
+        "packages": {
+            "linux": {
+                "bugs": {}
+            }, 
+            "linux-backports-modules-2.6.32": {
+                "bugs": {}
+            }, 
+            "linux-fsl-imx51": {
+                "bugs": {}
+            }, 
+            "linux-lts-backport-maverick": {
+                "bugs": {}
+            }, 
+            "linux-meta": {
+                "bugs": {}
+            }, 
+            "linux-restricted-modules-2.6.24": {
+                "bugs": {}
+            }, 
+            "linux-ti-omap4": {
+                "bugs": {}
+            }
+        }, 
+        "updated": "Friday, 06. May 2011 17:28 UTC"
+    }, 
+    "configuration_file": "open.rc", 
+    "search-criteria-status": [
+        "New", 
+        "Confirmed", 
+        "Triaged", 
+        "In Progress"
+    ], 
+    "show": true, 
+    "update-config": true
+}
