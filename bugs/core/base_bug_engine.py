@@ -18,7 +18,12 @@ from ktl.termcolor                      import colored
 import json
 import re
 
-from cmdline                            import Cmdline, CmdlineError   # FIXME bjf - needs a general solution.
+# FIXME bjf - Right now, the two scripts that are based off of the bug engine use the
+#             same command line options so this is fine. However, there will come new
+#             scripts that we will want to have handle different command line options.
+#             We need to be able to pass in the command line handler.
+#
+from cmdline                            import Cmdline, CmdlineError
 
 # BaseBugEngineError
 #
