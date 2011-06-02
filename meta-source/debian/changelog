@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.35.30.23) maverick-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 02 Jun 2011 10:13:06 -0300
+
 linux-ports-meta (2.6.35.29.22) maverick-proposed; urgency=low
 
   * Bump ABI
