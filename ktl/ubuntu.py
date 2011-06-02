@@ -290,6 +290,22 @@ class Ubuntu:
 
         return retval
 
+    # active_packages
+    #
+    @property
+    def active_packages(self):
+        """
+        A list of all the packages for all the supported series.
+        """
+        retval = []
+        for series in self.db:
+            if self.db[series]['supported']:
+                for pkg in self.db[series]['packages']:
+                    if pkg not in retval:
+                        retval.append(pkg)
+
+        return retval
+
 if __name__ == '__main__':
     ubuntu = Ubuntu()
     db = ubuntu.db
