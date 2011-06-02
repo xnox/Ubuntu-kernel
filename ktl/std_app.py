@@ -73,4 +73,8 @@ class StdApp:
         if 'verbose' in self.cfg and self.cfg['verbose']:
             stdo(msg)
 
+    def vout(self, lvl, msg):
+        if 'verbosity' in self.cfg and lvl <= self.cfg['verbosity']:
+            stdo(msg)
+
 # vi:set ts=4 sw=4 expandtab:
