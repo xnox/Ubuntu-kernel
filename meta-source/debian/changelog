@@ -3,6 +3,7 @@ linux-meta (3.0.0.1) UNRELEASED; urgency=low
   [ Leann Ogasawara ]
 
   * Open v3.0
+  * Convert from x.y.z to x.y version scheme
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 02 Jun 2011 11:50:49 -0700
 
