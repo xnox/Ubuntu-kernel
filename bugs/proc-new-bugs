@@ -1,21 +1,23 @@
 #!/usr/bin/env python
 #
 
-from core.base_bug_engine               import BaseBugEngine, BaseBugEngineError
+from core.bug_engine                    import BugEngine, BugEngineError
 from core.bug_handler                   import BugHandler
-import bug_handlers.new
+
+import bug_handlers.new  # This imports all the bug handler plugins that this script
+                         # will use.
 
 # OpenEngineError
 #
-class OpenEngineError(BaseBugEngineError):
+class OpenEngineError(BugEngineError):
     # __init__
     #
     def __init__(self, error):
-        BaseBugEngineError(self, error)
+        BugEngineError(self, error)
 
 # OpenEngine
 #
-class OpenEngine(BaseBugEngine):
+class OpenEngine(BugEngine):
     """
     This class is all about working on any "Open" bugs. "Open" bugs
     have a status of: "New", "Confirmed", "Triaged" or "In Progress".
@@ -29,7 +31,7 @@ class OpenEngine(BaseBugEngine):
         """
         defaults = {}
         defaults['configuration_file'] = 'new.rc'
-        BaseBugEngine.__init__(self, defaults)
+        BugEngine.__init__(self, defaults)
 
     # bug_handler_startup
     #

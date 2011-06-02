@@ -25,17 +25,17 @@ import re
 #
 from cmdline                            import Cmdline, CmdlineError
 
-# BaseBugEngineError
+# BugEngineError
 #
-class BaseBugEngineError(Exception):
+class BugEngineError(Exception):
     # __init__
     #
     def __init__(self, error):
         self.msg = error
 
-# BaseBugEngine
+# BugEngine
 #
-class BaseBugEngine(StdApp):
+class BugEngine(StdApp):
     # __init__
     #
     def __init__(self, default_config={}):
@@ -153,7 +153,7 @@ class BaseBugEngine(StdApp):
                 if 'updated' in self.bdb:
                     search_since = string_to_date(self.bdb['updated'])
                 else:
-                    raise BaseBugEngineError("There is no timestamp in the configuration file. This is not good.")
+                    raise BugEngineError("There is no timestamp in the configuration file. This is not good.")
 
                 if 'search-criteria-status' in self.cfg:
                     search_criteria_status = self.cfg['search-criteria-status']
@@ -174,7 +174,7 @@ class BaseBugEngine(StdApp):
                     try:
                         source_package = self.distro.get_source_package(package_name)
                         if source_package == None:
-                            raise BaseBugEngineError("The source package (%s) does not exist in LaunchPad." % (package_name))
+                            raise BugEngineError("The source package (%s) does not exist in LaunchPad." % (package_name))
 
                         self.vout(5, "   since: %s" % (search_since))
                         tasks = source_package.search_tasks(status=search_criteria_status, modified_since=search_since)
@@ -210,7 +210,7 @@ class BaseBugEngine(StdApp):
 
                     except:
                         raise
-                        raise BaseBugEngineError("Exception caught processing the tasks, building the bugs database.\n")
+                        raise BugEngineError("Exception caught processing the tasks, building the bugs database.\n")
 
         # Handle command line errors.
         #
@@ -252,7 +252,7 @@ class BaseBugEngine(StdApp):
 
         # Handle application errors.
         #
-        except BaseBugEngineError as e:
+        except BugEngineError as e:
             error(e.msg)
 
         return
