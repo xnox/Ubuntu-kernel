@@ -3,7 +3,7 @@
 
 from sys                                import argv
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo
+from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 
 # CmdlineError
@@ -19,9 +19,10 @@ class CmdlineError(Exception):
 
 # Cmdline
 #
-# Do all the command line processing.
-#
 class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
     # __init__
     #
     def __init__(self):
@@ -30,14 +31,18 @@ class Cmdline:
     # error
     #
     def error(self, e, defaults):
-        if e != '': print e
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error(e)
         self.usage(defaults)
 
     # usage
     #
-    # Prints out the help text which explains the command line options.
-    #
     def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
         stdo("    Usage:                                                                                   \n")
         stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
@@ -60,12 +65,11 @@ class Cmdline:
 
     # process
     #
-    # As you can probably tell from the name, this method is responsible
-    # for calling the getopt function to process the command line. All
-    # parameters are processed into class variables for use by other
-    # methods.
-    #
     def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
         self.cfg['app_name'] = argv[0]
         result = True
         try:
@@ -95,6 +99,9 @@ class Cmdline:
     # verify_options
     #
     def verify_options(self, cfg):
+        """
+        Used to verify that all required parameters are present and correct.
+        """
         return
 
 
@@ -109,10 +116,11 @@ class AppTemplate(StdApp):
 
     # initialize
     #
-    # A separate initialize that we can control when it gets called (not
-    # when the object is instantiated).
-    #
     def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
         return
 
     # main
