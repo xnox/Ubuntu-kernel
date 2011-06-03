@@ -1,3 +1,11 @@
+linux-meta (2.6.38.10.24) natty-proposed; urgency=low
+
+  [ Steve Conklin ]
+
+  * Bump ABI
+
+ -- Steve Conklin <sconklin@canonical.com>  Fri, 3 Jun 2011 09:55:42 -0500
+
 linux-meta (2.6.38.9.23) natty-proposed; urgency=low
 
   [ Tim Gardner ]
