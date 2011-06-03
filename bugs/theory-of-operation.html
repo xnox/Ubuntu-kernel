@@ -592,7 +592,45 @@ via the <strong>bug_handlers/new.py</strong> module are run against all matching
 <h4 id="_proc_open_bugs">proc-open-bugs</h4>
 <div class="paragraph"><p>All bugs which are in a <strong>Open</strong> status are processed. The plugins which are imported
 via the <strong>bug_handlers/open.py</strong> module are run against all matching bugs. The bug
-statuses that define <strong>Open</strong> are <strong>New</strong>, <strong>Confirmed</strong>, <strong>In Progress</strong> or <strong>Triaged</strong>.</p></div>
+statuses that define <strong>Open</strong> are <strong>New</strong>, <strong>Confirmed</strong>, <strong>In Progress</strong> and <strong>Triaged</strong>.</p></div>
+<h3 id="_how_to_create">How To Create</h3><div style="clear:left"></div>
+<div class="olist arabic"><ol class="arabic">
+<li>
+<p>
+Make a copy of <strong>process-open-bugs</strong>.
+</p>
+</li>
+<li>
+<p>
+Make a copy of <strong>new.rc</strong> which <strong>process-open-bugs</strong> uses.
+</p>
+</li>
+<li>
+<p>
+Change the code in the new script to use the new configuration file.
+</p>
+</li>
+<li>
+<p>
+Decide which plugins you want the new script to use.
+</p>
+<div class="olist loweralpha"><ol class="loweralpha">
+<li>
+<p>
+If you want to use all the same plugins as a different <strong>repeater</strong> script, then
+import the same master plugin file as that script.
+</p>
+</li>
+<li>
+<p>
+If you want to use different plugins than other other <strong>repeater</strong> scripts or
+different combinations of plugins then create a new master plugin file and import
+that.
+</p>
+</li>
+</ol></div>
+</li>
+</ol></div>
 </div>
 <h2 id="_single_shots">Single-shots</h2>
 <div class="sectionbody">
@@ -612,7 +650,7 @@ not have the required logs.</p></div>
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2011-06-02 14:19:43 PDT
+Last updated 2011-06-02 15:57:08 PDT
 </div>
 </div>
 </body>
