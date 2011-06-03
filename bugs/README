@@ -1,0 +1,29 @@
+
+File / Direcotry		Description
+---------------------------	---------------------------------------------------------------
+bug_handlers                    A python module directory containing all the plugins that derive
+				from the BugHandler class.
+
+core				A python module directory containing the BugEngine and BugHandler
+				base classes.
+
+ktl				A symbolic link to the ktl python module directory.
+
+new.rc				The configuration file used by the proc-new-bugs script.
+
+open.rc				The configuration file used by the proc-open-bugs script.
+
+proc-new-bugs			A script for working on all "New" bugs.
+
+proc-new-regressions		A script for working on all bugs with one of the "regressions"
+				tags applied to them.
+
+proc-open-bugs			A script for working on all "Open" bugs.
+
+theory-of-operation.html	Documentation for the scripts and the python modules that they
+				use.
+
+theory-of-operation.txt		Source of the documentation (it's AsciiDoc format).
+
+todo				A list of the things that need to be addressed in the scripts
+				and the modules.
