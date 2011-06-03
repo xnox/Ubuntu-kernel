@@ -481,4 +481,16 @@ class KernelBug(Bug):
             pass # Just eat any exceptions
         return retval
 
+    # get_relevant_task
+    #
+    def get_relevant_task(self, pkg):
+        retval = None
+        for t in self.tasks:
+            task       = t.bug_target_name
+            p = task.replace(' (Ubuntu)', '')
+            if pkg == p:
+                retval = t
+                break
+        return retval
+
 # vi:set ts=4 sw=4 expandtab:

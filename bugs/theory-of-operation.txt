@@ -1,7 +1,62 @@
+Theory of Operation of LP Scripts
+=================================
 
-Theory of Operation of Scripts for Processing Bugs Tagged Regression-*
-======================================================================
+There are two kinds of scripts that will be run against LP.
 
+. The first is scripts that are run regularly to process bugs that have changed
+since the last time that script has been run.
++
+Scripts of this type will be referred to as *repeaters*.
++
+An example of such a script is one that runs every hour and looks at any bugs that
+have changed since the last time it rand and those bugs have a status of "New".
+
+. The second, is scripts that are run only occasionally. These are often done to
+search for bugs of a certain type and perform the same operation on all of them.
++
+Scripts of this type will be referred to as *single-shots*.
++
+An example of such a script is one which searches for all bugs that were opened
+against a series that is no longer supported and marks the status of those bugs
+as "Invalid" with a comment as to why.
+
+
+Repeaters
+---------
+
+
+Based on a common *bug engine* design. The bug engine takes care of the work of
+searching LP for the desired bug state, calling out to the derived class for it's
+particular needs and updating the related configuration file.
+
+Examples
+~~~~~~~~
+
+proc-new-bugs
+^^^^^^^^^^^^^
+All bugs which are in a *New* status are processed. The plugins which are imported
+via the *bug_handlers/new.py* module are run against all matching bugs.
+
+proc-open-bugs
+^^^^^^^^^^^^^^
+All bugs which are in a *Open* status are processed. The plugins which are imported
+via the *bug_handlers/open.py* module are run against all matching bugs. The bug
+statuses that define *Open* are *New*, *Confirmed*, *In Progress* and *Triaged*.
+
+How To Create
+~~~~~~~~~~~~~
+. Make a copy of *process-open-bugs*.
+. Make a copy of *new.rc* which *process-open-bugs* uses.
+. Change the code in the new script to use the new configuration file.
+. Decide which plugins you want the new script to use.
+.. If you want to use all the same plugins as a different *repeater* script, then
+import the same master plugin file as that script.
+.. If you want to use different plugins than other other *repeater* scripts or
+different combinations of plugins then create a new master plugin file and import
+that.
+
+Single-shots
+------------
 
 proc-new-regressions
 --------------------
