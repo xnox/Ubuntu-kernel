@@ -653,8 +653,8 @@ class Shank(StdApp):
         We consider the task to be 'done' in that we trigger a release test,
         but we don't check any tags
         """
-            self.certification_testing_complete = True
-            return True
+        self.certification_testing_complete = True
+        return True
 
     def regression_testing_fix_released(self, taskobj):
         """
