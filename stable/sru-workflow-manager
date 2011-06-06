@@ -422,22 +422,27 @@ class Shank(StdApp):
                 # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
                 # TODO This is a bit sloppy and I should probably build one list and walk it twice.
                 try:
+                    mtstring = "Kernel SRU Workflow"
                     for t in bug.tasks:
                         task       = t.bug_target_name
-                        parts = task.split()
-                        mastertask = parts[0]
-                        if len(parts) == 1:
+
+                        if task == mtstring:
                             # we save a pointer to the master task and check to make sure we should process this bug
-                            if mastertask == 'kernel-sru-workflow':
-                                self.taskbyname[mastertask] = t
-                                if t.status == 'In Progress':
-                                    continue
-                                else:
-                                    self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
-                                    raise RuntimeError
-                        else:
-                            task = parts[1]
-                        self.taskbyname[task] = t
+                            self.taskbyname[mtstring] = t
+                            if t.status == 'In Progress':
+                                continue
+                            else:
+                                self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
+                                raise RuntimeError
+
+                        if not task.startswith(mtstring):
+                            # Ignore the tasks assigned to the actual package, we care about workflow only
+                            self.verbose('Skipping non-workflow task %s:%s\n' % (mtstring, task))
+                            continue
+
+                        therest = task[len(mtstring):].strip()
+                        self.taskbyname[therest] = t
+
                 except RuntimeError:
                     # end processing for this bug
                     self.verbose('    Quitting this bug\n')
@@ -445,25 +450,25 @@ class Shank(StdApp):
 
                 # now walk them one at a time
                 for t in bug.tasks:
-                    task       = t.bug_target_name
+                    atask       = t.bug_target_name
+                    task = atask.strip()
                     # bug_target_name includes both the main and sub task in the string
-                    # so for example it could be "kernel-sru-workflow prepare-package"
+                    # so for example it could be "Kernel SRU Workflow prepare-package"
                     # so we have to strip off the right hand part
-                    # The task can also be just the single parent task i.e. "kernel-sru-workflow"
-                    parts = task.split()
-                    mastertask = parts[0]
+                    # The task can also be just the single parent task i.e. "Kernel SRU Workflow"
+                    #
 
-                    if len(parts) == 1:
-                        if mastertask == 'kernel-sru-workflow':
-                            self.verbose('Skipping empty master workflow task \n')
-                            continue
-                    else:
-                        task = parts[1]
-
-                    # Ignore the tasks assigned to the actual package, we care about workflow only
-                    if mastertask != "kernel-sru-workflow":
-                        #self.verbose('Skipping non-workflow task %s:%s\n' % (mastertask, task))
+                    if task == mtstring:
+                        self.verbose('Skipping empty master workflow task \n')
                         continue
+
+                    if not task.startswith(mtstring):
+                        # Ignore the tasks assigned to the actual package, we care about workflow only
+                        self.verbose('Skipping non-workflow task %s\n' % (task))
+                        continue
+
+                    therest = task[len(mtstring):].strip()
+                    task = therest
 
                     state      = t.status
                     importance = t.importance
