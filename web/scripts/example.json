@@ -1,0 +1,201 @@
+{
+    "lp": {
+        "task-status": ["New","Incomplete","Confirmed","Triaged","In Progress"],
+	"bug-tags": [],
+	"bug-tags-combinator": "all",
+	"projects": ["hwe-sutton"]
+    },
+    "report": {
+        "title": "Sutton"
+    },
+    "bug-collections": {
+        "hwe-sutton": {
+            "bugs": {
+                "705058": {
+                    "date created": "Wednesday, 19. January 2011 18:59 UTC", 
+                    "date last message": "Thursday, 20. January 2011 21:43 UTC", 
+                    "date last updated": "Friday, 15. April 2011 17:52 UTC", 
+                    "gravity": 0, 
+                    "number of messages": 2, 
+                    "series name": "maverick", 
+                    "series version": "10.10", 
+                    "tags": [
+                        "cqa-verified", 
+                        "edge15-amd", 
+                        "hwe-audio", 
+                        "maverick"
+                    ], 
+                    "tasks": [
+                        {
+                            "assignee": "Manoj Iyer", 
+                            "importance": "Critical", 
+                            "name": "Canonical HWE Sutton", 
+                            "status": "Triaged"
+                        }, 
+                        {
+                            "assignee": "Steve Magoun", 
+                            "importance": "Critical", 
+                            "name": "The Sutton Project", 
+                            "status": "Fix Released"
+                        }
+                    ], 
+                    "title": "Loud crackle/hiss noise from speakers when entering hibernate"
+                }, 
+                "706961": {
+                    "date created": "Monday, 24. January 2011 15:10 UTC", 
+                    "date last message": "Monday, 21. March 2011 20:53 UTC", 
+                    "date last updated": "Tuesday, 26. April 2011 21:20 UTC", 
+                    "gravity": 0, 
+                    "number of messages": 4, 
+                    "series name": "maverick", 
+                    "series version": "10.10", 
+                    "tags": [
+                        "cqa-verified", 
+                        "e420s", 
+                        "hwe-networking-wifi", 
+                        "maverick"
+                    ], 
+                    "tasks": [
+                        {
+                            "assignee": "Manoj Iyer", 
+                            "importance": "Critical", 
+                            "name": "Canonical HWE Sutton", 
+                            "status": "New"
+                        }, 
+                        {
+                            "assignee": "James Ferguson", 
+                            "importance": "Critical", 
+                            "name": "The Sutton Project", 
+                            "status": "Fix Released"
+                        }
+                    ], 
+                    "title": "WLAN not functional"
+                }, 
+                "708802": {
+                    "date created": "Thursday, 27. January 2011 18:27 UTC", 
+                    "date last message": "Friday, 11. February 2011 16:53 UTC", 
+                    "date last updated": "Thursday, 17. February 2011 20:16 UTC", 
+                    "gravity": 0, 
+                    "number of messages": 16, 
+                    "series name": "maverick", 
+                    "series version": "10.10", 
+                    "tags": [
+                        "apport-bug", 
+                        "hwe-kernel-suspend-resume", 
+                        "l512", 
+                        "maverick", 
+                        "pm"
+                    ], 
+                    "tasks": [
+                        {
+                            "assignee": "Manoj Iyer", 
+                            "importance": "Critical", 
+                            "name": "Canonical HWE Sutton", 
+                            "status": "New"
+                        }, 
+                        {
+                            "assignee": "Steve Magoun", 
+                            "importance": "Critical", 
+                            "name": "The Sutton Project", 
+                            "status": "Confirmed"
+                        }
+                    ], 
+                    "title": "Suspend and hibernate can cause unresponsive system.  Power button led blinks rapidly"
+                }, 
+                "718751": {
+                    "date created": "Monday, 14. February 2011 14:03 UTC", 
+                    "date last message": "Friday, 18. March 2011 17:16 UTC", 
+                    "date last updated": "Tuesday, 22. March 2011 15:52 UTC", 
+                    "gravity": 0, 
+                    "number of messages": 6, 
+                    "series name": "maverick", 
+                    "series version": "10.10", 
+                    "tags": [
+                        "apport-bug", 
+                        "hwe-kernel-suspend-resume", 
+                        "l420", 
+                        "maverick", 
+                        "pm"
+                    ], 
+                    "tasks": [
+                        {
+                            "assignee": "Manoj Iyer", 
+                            "importance": "Critical", 
+                            "name": "Canonical HWE Sutton", 
+                            "status": "New"
+                        }, 
+                        {
+                            "assignee": "James Ferguson", 
+                            "importance": "Medium", 
+                            "name": "The Sutton Project", 
+                            "status": "Confirmed"
+                        }
+                    ], 
+                    "title": "Hibernate stress test fails after 30-40 iterations"
+                }, 
+                "733380": {
+                    "date created": "Friday, 11. March 2011 16:54 UTC", 
+                    "date last message": "Monday, 14. March 2011 15:54 UTC", 
+                    "date last updated": "Friday, 22. April 2011 19:43 UTC", 
+                    "gravity": 0, 
+                    "number of messages": 6, 
+                    "series name": "maverick", 
+                    "series version": "10.10", 
+                    "tags": [
+                        "cqa-verified", 
+                        "hwe-graphics", 
+                        "maverick", 
+                        "t420-nvidia"
+                    ], 
+                    "tasks": [
+                        {
+                            "assignee": "Robert Hooker", 
+                            "importance": "Critical", 
+                            "name": "Canonical HWE Sutton", 
+                            "status": "New"
+                        }, 
+                        {
+                            "assignee": "James Ferguson", 
+                            "importance": "Critical", 
+                            "name": "The Sutton Project", 
+                            "status": "Fix Released"
+                        }
+                    ], 
+                    "title": "NVidia Optimus graphics - cannot start X on fresh install"
+                }, 
+                "734961": {
+                    "date created": "Monday, 14. March 2011 17:12 UTC", 
+                    "date last message": "Friday, 18. March 2011 17:15 UTC", 
+                    "date last updated": "Tuesday, 24. May 2011 20:24 UTC", 
+                    "gravity": 0, 
+                    "number of messages": 9, 
+                    "series name": "maverick", 
+                    "series version": "10.10", 
+                    "tags": [
+                        "apport-bug", 
+                        "hwe-kernel-suspend-resume", 
+                        "maverick", 
+                        "pm", 
+                        "x120e"
+                    ], 
+                    "tasks": [
+                        {
+                            "assignee": "Manoj Iyer", 
+                            "importance": "Critical", 
+                            "name": "Canonical HWE Sutton", 
+                            "status": "Incomplete"
+                        }, 
+                        {
+                            "assignee": "James Ferguson", 
+                            "importance": "Critical", 
+                            "name": "The Sutton Project", 
+                            "status": "Confirmed"
+                        }
+                    ], 
+                    "title": "hibernate fails to suspend"
+                }
+            }
+        }
+    }, 
+    "updated": "Friday, 03. June 2011 22:28 UTC"
+}
