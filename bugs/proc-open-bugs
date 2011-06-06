@@ -2,7 +2,6 @@
 #
 
 from core.bug_engine                    import BugEngine
-from core.bug_handler                   import BugHandler
 
 import bug_handlers.open  # This imports all the bug handler plugins that this script
                           # will use.
@@ -25,27 +24,6 @@ class OpenEngine(BugEngine):
         defaults = {}
         defaults['configuration_file'] = 'open.rc'
         BugEngine.__init__(self, defaults)
-
-    # bug_handler_startup
-    #
-    def bug_handler_startup(self):
-        """
-        Setup the list of bug handler plugins that this script will use.
-
-        The plugin list is pulled in here because we only want to do it once
-        and not every time the bug_handler is called. And also, because this
-        method is called after the base class has created self.lp.
-
-        Note: This will probably move into the base class.
-        """
-        self.bug_handlers = BugHandler.get_plugins(self.lp, self.vout)
-
-        if 'verbose' in self.cfg:
-            BugHandler.verbose = self.cfg['verbose']
-
-        if 'verbosity' in self.cfg:
-            BugHandler.verbosity = self.cfg['verbosity']
-
 
 if __name__ == '__main__':
     app = OpenEngine()

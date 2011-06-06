@@ -7,22 +7,18 @@
 #
 
 from sys                                import argv, exit
-from ktl.utils                          import error, date_to_string, string_to_date, stdo
-from ktl.std_app                        import StdApp
-from lpltk.service                      import LaunchpadService
-from ktl.ubuntu                         import Ubuntu
-from ktl.kernel_bug                     import KernelBug
 from datetime                           import datetime
 from datetime                           import timedelta
-from ktl.termcolor                      import colored
 import json
-import re
 
-# FIXME bjf - Right now, the two scripts that are based off of the bug engine use the
-#             same command line options so this is fine. However, there will come new
-#             scripts that we will want to have handle different command line options.
-#             We need to be able to pass in the command line handler.
-#
+from lpltk.service                      import LaunchpadService
+from ktl.utils                          import error, date_to_string, string_to_date, stdo
+from ktl.std_app                        import StdApp
+from ktl.ubuntu                         import Ubuntu
+from ktl.kernel_bug                     import KernelBug
+from ktl.termcolor                      import colored
+from bug_handler                        import BugHandler
+
 from cmdline                            import Cmdline, CmdlineError
 
 # BugEngineError
@@ -38,11 +34,15 @@ class BugEngineError(Exception):
 class BugEngine(StdApp):
     # __init__
     #
-    def __init__(self, default_config={}):
+    def __init__(self, default_config={}, cmdline=None):
         self.defaults = default_config
         self.defaults['show'] = False
         StdApp.__init__(self)
         self.bdb = None
+        if cmdline is None:
+            self.cmdline = Cmdline()
+        else:
+            self.cmdline = cmdline
 
         self.show_buff = ''
 
@@ -92,24 +92,13 @@ class BugEngine(StdApp):
 
         return
 
-    # bug_handler_startup
-    #
-    def bug_handler_startup(self):
-        pass
-
-    # bug_handler_shutdown
-    #
-    def bug_handler_shutdown(self):
-        pass
-
     # run
     #
     def run(self):
-        cmdline = Cmdline()
         using_search_since = False
         try:
-            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
-            cmdline.verify_options(self.cfg)
+            self.merge_config_options(self.defaults, self.cmdline.process(argv, self.defaults))
+            self.cmdline.verify_options(self.cfg)
 
             self.__initialize()
 
@@ -215,10 +204,37 @@ class BugEngine(StdApp):
         # Handle command line errors.
         #
         except CmdlineError as e:
-            cmdline.error(e.msg, self.defaults)
+            self.cmdline.error(e.msg, self.defaults)
             exit(0)
 
         return
+
+    # bug_handler_startup
+    #
+    def bug_handler_startup(self):
+        """
+        Setup the list of bug handler plugins that this script will use.
+
+        The plugin list is pulled in here because we only want to do it once
+        and not every time the bug_handler is called. And also, because this
+        method is called after the base class has created self.lp.
+        """
+        self.bug_handlers = BugHandler.get_plugins(self.lp, self.vout)
+
+        # Yes, the verbose handling is a little stupid right now, it will get
+        # cleaned up "soon".
+        #
+        if 'verbose' in self.cfg:
+            BugHandler.verbose = self.cfg['verbose']
+
+        if 'verbosity' in self.cfg:
+            BugHandler.verbosity = self.cfg['verbosity']
+        pass
+
+    # bug_handler_shutdown
+    #
+    def bug_handler_shutdown(self):
+        pass
 
     # bug_handler
     #

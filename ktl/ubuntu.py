@@ -90,6 +90,8 @@ class Ubuntu:
                 'linux-meta-mvl-dove',
                 'linux-meta-fsl-imx51',
                 'linux-backports-modules-2.6.32',
+                'linux-lts-backport-natty',
+                'linux-meta-lts-backport-natty', #, 'linux-lts-backport-natty'
                 'linux-lts-backport-maverick',
                 'linux-meta-lts-backport-maverick' #, 'linux-lts-backport-natty'
             ],
@@ -174,7 +176,7 @@ class Ubuntu:
             'series_version' : '6.06',
             'kernel' : '2.6.15',
             'name' : 'dapper',
-            'supported' : True,
+            'supported' : False,
             'packages' :
             [
                 'linux-source-2.6.15',

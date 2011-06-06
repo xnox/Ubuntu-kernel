@@ -1,10 +1,6 @@
 
-1. Fixup the cmdline handling in bug_engine so it can be modified
-   by the deriving class.
-
 2. Fix the handling of modified bugs so that their current status
    is compared to the status indicated in the configuration file.
 
 3. Fix verbose handling.
 
-4. Move the bug_handler in the derived classes into the base class.
