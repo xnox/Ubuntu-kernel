@@ -70,7 +70,7 @@ devel_tasks = linux_series.searchTasks(omit_targeted=False)
 # Should be fixed in later version, so we could do len(tasks)
 nominated = devel_tasks._wadl_resource.representation['total_size']
 (change, change_num) = calculate_change(nominated, "nominated")
-output['release'] += "=== %s nominated bugs ===\n" % (series.name)
+output['release'] += "==== %s nominated bugs ====\n" % (series.name)
 output['release'] += " * %d linux kernel bugs (%s %d)\n" % (nominated, change, change_num)
 
 # Release Metrics (Ubuntu <current_milestone> bugs)
@@ -79,7 +79,7 @@ milestone = series.active_milestones[size - 1]
 linux_milestone = linux.searchTasks(milestone=milestone)
 milestoned = linux_milestone._wadl_resource.representation['total_size']
 (change, change_num) = calculate_change(milestoned, "milestoned")
-output['release'] += "=== %s bugs ===\n" % (milestone.title)
+output['release'] += "==== %s bugs ====\n" % (milestone.title)
 output['release'] += " * %s linux kernel bugs (%s %d)\n" % (milestoned, change, change_num)
 
 for release_name in releases:
@@ -90,7 +90,7 @@ for release_name in releases:
     update_bugs = release._wadl_resource.representation['total_size']
     (change, change_num) = calculate_change(update_bugs, "%s-updates" % (release_name))
     stats[milestone_name] = update_bugs
-    output['milestone'] += "=== %s-updates bugs ===\n" % (release_name)
+    output['milestone'] += "==== %s-updates bugs ====\n" % (release_name)
     output['milestone'] += " * %d linux kernel bugs (%s %d)\n" % (update_bugs, change, change_num)
 
     # Incoming Bugs
@@ -110,14 +110,14 @@ for release_name in releases:
         stats[stat_name] = num_regressions
         output[regression] += " * %d %s bugs (%s %d)\n" % (num_regressions, release_name, change, change_num)
 
-print "== Release Metrics =="
+print "=== Release Metrics ==="
 print output['release']
 print output['milestone']
-print "== Incoming Bugs =="
+print "=== Incoming Bugs ==="
 print output['incoming']
-print "== Regressions =="
+print "=== Regressions ==="
 for regression in regressions:
-    print "=== %s bugs ===" % (regression)
+    print "==== %s bugs ====" % (regression)
     print output[regression]
 
 # Save the meeting stats to use next week
