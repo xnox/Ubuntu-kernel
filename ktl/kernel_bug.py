@@ -281,14 +281,18 @@ class KernelBug(Bug):
     #
     def _find_linux_version(self, attachment):
         retval = ''
-        file = attachment.data.open()
-        for line in file:
-            m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
-            if (m != None):
-                self.dbg('       - found\n')
-                retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
-                break
-        file.close()
+        try:
+            file = attachment.data.open()
+            for line in file:
+                m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+                if (m != None):
+                    self.dbg('       - found\n')
+                    retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                    break
+            file.close()
+        except:
+            print("  ** Warning: Exception thrown attempting to open an attachment. (%s)" % (attachment.title))
+            pass
         return retval
 
     # _find_series_in_attachments
@@ -354,14 +358,18 @@ class KernelBug(Bug):
                     if series_name == '':
                         if 'alsa-info' in attachment.title:
                             self.dbg('     - alsa-info.log\n')
-                            file = attachment.data.open()
-                            for line in file:
-                                m = re.search('Kernel release:\s+([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', line)
-                                if (m != None):
-                                    self.dbg('       - found\n')
-                                    kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
-                                    break
-                            file.close()
+                            try:
+                                file = attachment.data.open()
+                                for line in file:
+                                    m = re.search('Kernel release:\s+([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?)', line)
+                                    if (m != None):
+                                        self.dbg('       - found\n')
+                                        kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                                        break
+                                file.close()
+                            except:
+                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s)" % (attachment.title))
+                                pass
                             if kernel_version != '':
                                 (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
                                 break
@@ -372,14 +380,18 @@ class KernelBug(Bug):
                         m = re.search('[Xx]org\.0\.log.*', attachment.title)
                         if m != None:
                             self.dbg('     - Xorg.0.log\n')
-                            file = attachment.data.open()
-                            for line in file:
-                                m = re.search('Linux ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
-                                if (m != None):
-                                    self.dbg('       - found\n')
-                                    kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
-                                    break
-                            file.close()
+                            try:
+                                file = attachment.data.open()
+                                for line in file:
+                                    m = re.search('Linux ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+                                    if (m != None):
+                                        self.dbg('       - found\n')
+                                        kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                                        break
+                                file.close()
+                            except:
+                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s)" % (attachment.title))
+                                pass
                             if kernel_version != '':
                                 (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
                                 break

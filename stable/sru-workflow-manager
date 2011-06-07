@@ -178,7 +178,7 @@ class Shank(StdApp):
             'certification-testing'   : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
-                                         'Invalid' : {'action':None},
+                                         'Invalid' : {'action':self.certification_testing_invalid},
                                          "Won't Fix" : {'action':None},
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
@@ -287,6 +287,8 @@ class Shank(StdApp):
         #         'In Progress' -> 'Fix Released' MANUAL when testing is complete
         #                           NOTE: certification-testing-passed or certification-testing-failed tag must be added
         #                                 BEFORE changing to Fix Released
+        #               Triggers: Release Test 
+        #         'anything' -> 'Invalid' MANUAL When Cert will not test this release
         #               Triggers: Release Test
         #
         #   * regression-testing
@@ -644,6 +646,16 @@ class Shank(StdApp):
             self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
             return False
 
+    def certification_testing_invalid(self, taskobj):
+        """
+        When certification-testing is set to Invalid, this indicates
+        that certification testing will not be performed on this release.
+        We consider the task to be 'done' in that we trigger a release test,
+        but we don't check any tags
+        """
+        self.certification_testing_complete = True
+        return True
+
     def regression_testing_fix_released(self, taskobj):
         """
         When regression-testing is set to Fix Released, we check the tags
@@ -719,7 +731,7 @@ class Shank(StdApp):
             self.release_test_state_check('prepare-package', ['Fix Released'])
             self.release_test_state_check('promote-to-proposed', ['Fix Released'])
             self.release_test_state_check('verification-testing', ['Fix Released'])
-            self.release_test_state_check('certification-testing', ['Fix Released'])
+            self.release_test_state_check('certification-testing', ['Invalid', 'Fix Released'])
             self.release_test_state_check('regression-testing', ['Fix Released'])
             self.release_test_state_check('security-signoff', ['Invalid', 'Fix Released'])
             # confirmed is in the next two in case we rerun the release test after
