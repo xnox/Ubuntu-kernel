@@ -7225,7 +7225,6 @@ EXPORT_SYMBOL_GPL drivers/char/agp/agpgart 0xd6feefa5	agp_num_entries
 EXPORT_SYMBOL_GPL drivers/char/agp/agpgart 0xe089cfcc	agp_memory_reserved
 EXPORT_SYMBOL_GPL drivers/char/scx200_gpio 0xc7903682	scx200_gpio_ops
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x02088402	tpm_get_timeouts
-EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x0ea81da4	tpm_show_timeouts
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x108e59aa	tpm_release
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x15ab16c4	tpm_store_cancel
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x2299a639	tpm_continue_selftest
@@ -8197,6 +8196,7 @@ EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xcaf0ac05	usbip_stop_t
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xd02753dc	usbip_header_correct_endian
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xd19f5e62	usbip_stop_eh
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xe1ea0586	usbip_dump_header
+EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xe3c98125	usbip_pad_iso
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xee079afb	usbip_pack_pdu
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xf12cd04f	usbip_start_eh
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xfedbac81	usbip_task_init

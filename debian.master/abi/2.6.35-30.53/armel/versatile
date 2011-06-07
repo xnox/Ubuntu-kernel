@@ -6253,6 +6253,7 @@ EXPORT_SYMBOL_GPL drivers/staging/echo/echo 0xfabc3747	oslec_update
 EXPORT_SYMBOL_GPL drivers/staging/ti-st/st_drv 0x0b64beb3	st_unregister
 EXPORT_SYMBOL_GPL drivers/staging/ti-st/st_drv 0x94233e48	st_register
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x045d8800	usbip_pack_pdu
+EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x065c0483	usbip_pad_iso
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x066eec5c	usbip_recv_iso
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x0e1c9a5c	usbip_stop_eh
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x106b4c22	dev_attr_usbip_debug

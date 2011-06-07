@@ -7092,7 +7092,6 @@ EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x60b29fb2	tpm_show_enabled
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x7d5ab020	tpm_store_cancel
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x9435de5d	tpm_show_active
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x9ba53624	tpm_get_timeouts
-EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0xa54938ff	tpm_show_timeouts
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0xa936f0e8	tpm_show_owned
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0xadf6aa4d	tpm_pcr_read
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0xc37226a5	tpm_pcr_extend
@@ -8053,6 +8052,7 @@ EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x94d997c7	usbip_start_
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xcf348e72	usbip_stop_eh
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xd02753dc	usbip_header_correct_endian
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xe1ea0586	usbip_dump_header
+EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xe5f6cc59	usbip_pad_iso
 EXPORT_SYMBOL_GPL drivers/uio/uio 0x117b663d	uio_unregister_device
 EXPORT_SYMBOL_GPL drivers/uio/uio 0x1ff43ac1	__uio_register_device
 EXPORT_SYMBOL_GPL drivers/uio/uio 0xce4dbd40	uio_event_notify

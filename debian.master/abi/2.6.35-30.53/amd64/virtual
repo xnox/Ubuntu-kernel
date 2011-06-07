@@ -7083,7 +7083,6 @@ EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x0aaef6b8	tpm_register_hardware
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x0df773bd	tpm_dev_vendor_release
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x21349ea0	tpm_show_active
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x2dc41213	tpm_read
-EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x335cd30e	tpm_show_timeouts
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x34fe0d9b	tpm_release
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x4688b2b7	tpm_open
 EXPORT_SYMBOL_GPL drivers/char/tpm/tpm 0x5cab91db	tpm_show_caps
@@ -8034,6 +8033,7 @@ EXPORT_SYMBOL_GPL drivers/staging/ti-st/st_drv 0x3bdde7e8	st_register
 EXPORT_SYMBOL_GPL drivers/staging/tm6000/tm6000 0x8267a626	tm6000_set_audio_bitrate
 EXPORT_SYMBOL_GPL drivers/staging/tm6000/tm6000 0xa73acdd7	tm6000_set_reg
 EXPORT_SYMBOL_GPL drivers/staging/tm6000/tm6000 0xc3d94877	tm6000_get_reg
+EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x06685d4b	usbip_pad_iso
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x10ebdfc3	usbip_recv_xbuff
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x36383376	usbip_stop_eh
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x37f63bb8	usbip_task_init

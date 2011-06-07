@@ -5589,6 +5589,7 @@ EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x7994c76b	usbip_stop_t
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x842f031e	usbip_pack_pdu
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0x8a500665	usbip_event_add
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xa2122516	usbip_xmit
+EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xab54fbaa	usbip_pad_iso
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xd02753dc	usbip_header_correct_endian
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xd30d655e	usbip_event_happened
 EXPORT_SYMBOL_GPL drivers/staging/usbip/usbip_common_mod 0xdf6b228c	usbip_task_init
