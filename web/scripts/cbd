@@ -105,7 +105,7 @@ class Cmdline:
                     self.cfg['debug'] = val.split(',')
 
                 elif opt == '--as-me':
-                    self.cfg['as me'] = True
+                    self.cfg['as-me'] = True
 
 
         except GetoptError as e:
@@ -137,7 +137,6 @@ class CollectRegressionsData(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
-        self.defaults['as me'] = True
 
     # __initialize
     #
@@ -145,9 +144,6 @@ class CollectRegressionsData(StdApp):
     # when the object is instantiated).
     #
     def __initialize(self):
-        if 'as me' not in self.cfg:
-            self.cfg['read_only'] = True
-
         if 'staging' in self.cfg:
             self.cfg['launchpad_services_root'] = 'qastaging'
         self.verbose(" . Connecting to Launchpad\n")
