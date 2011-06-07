@@ -1,3 +1,11 @@
+linux-firmware (1.52.1) natty-proposed; urgency=low
+
+  * Update rt2800 firmware
+    -LP: #762987
+    -LP: #770232
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 07 Jun 2011 11:53:33 -0600
+
 linux-firmware (1.52) natty; urgency=low
 
   * Update Broadcom firmware for 2.6.38 (which requires some file
