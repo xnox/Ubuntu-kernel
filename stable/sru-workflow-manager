@@ -425,9 +425,9 @@ class Shank(StdApp):
                 try:
                     mtstring = "Kernel SRU Workflow"
                     for t in bug.tasks:
-                        task       = t.bug_target_name
+                        task_name       = t.bug_target_name
 
-                        if task == mtstring:
+                        if task_name == mtstring:
                             # we save a pointer to the master task and check to make sure we should process this bug
                             self.taskbyname[mtstring] = t
                             if t.status == 'In Progress':
@@ -436,12 +436,12 @@ class Shank(StdApp):
                                 self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
                                 raise RuntimeError
 
-                        if not task.startswith(mtstring):
+                        if not task_name.startswith(mtstring):
                             # Ignore the tasks assigned to the actual package, we care about workflow only
-                            self.verbose('Skipping non-workflow task %s:%s\n' % (mtstring, task))
+                            self.verbose('Skipping non-workflow task %s:%s\n' % (mtstring, task_name))
                             continue
 
-                        therest = task[len(mtstring):].strip()
+                        therest = task_name[len(mtstring):].strip()
                         self.taskbyname[therest] = t
 
                 except RuntimeError:
@@ -451,24 +451,24 @@ class Shank(StdApp):
 
                 # now walk them one at a time
                 for t in bug.tasks:
-                    task = t.bug_target_name.strip()
+                    task_name = t.bug_target_name.strip()
                     # bug_target_name includes both the main and sub task in the string
                     # so for example it could be "Kernel SRU Workflow prepare-package"
                     # so we have to strip off the right hand part
                     # The task can also be just the single parent task i.e. "Kernel SRU Workflow"
                     #
 
-                    if task == mtstring:
+                    if task_name == mtstring:
                         self.verbose('Skipping empty master workflow task \n')
                         continue
 
-                    if not task.startswith(mtstring):
+                    if not task_name.startswith(mtstring):
                         # Ignore the tasks assigned to the actual package, we care about workflow only
-                        self.verbose('Skipping non-workflow task %s\n' % (task))
+                        self.verbose('Skipping non-workflow task %s\n' % (task_name))
                         continue
 
-                    therest = task[len(mtstring):].strip()
-                    task = therest
+                    therest = task_name[len(mtstring):].strip()
+                    task_name = therest
 
                     state      = t.status
                     importance = t.importance
@@ -478,20 +478,20 @@ class Shank(StdApp):
                     else:
                         assignee = assignee.display_name
 
-                    self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task, state, importance, assignee))
+                    self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task_name, state, importance, assignee))
 
-                    if task not in self.state_map:
-                        print("I don't know how to handle the task <%s>, skipping\n" % (task))
+                    if task_name not in self.state_map:
+                        print("I don't know how to handle the task <%s>, skipping\n" % (task_name))
                         continue
 
-                    if 'action' not in self.state_map[task]:
-                        print("ERROR: No action found for state <%s> and task <%s>" % (state, task))
+                    if 'action' not in self.state_map[task_name]:
+                        print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
                         raise
 
-                    action = self.state_map[task]['action']
+                    action = self.state_map[task_name]['action']
 
                     if  action is None:
-                        self.verbose('ACTION: No action for task %s in state %s\n' % (task, state))
+                        self.verbose('ACTION: No action for task %s in state %s\n' % (task_name, state))
                     else:
                         if action(t):
                             performReleaseTest = True
