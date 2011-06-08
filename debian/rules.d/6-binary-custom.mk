@@ -23,7 +23,8 @@ $(stampdir)/stamp-custom-prepare-%: debian/binary-custom.d/%/config.$(arch) \
 		echo $$patch; \
 		patch -p1 -d $(origsrc) < $$patch ;\
 	done
-	cat $< > $(srcdir)/.config
+	cat $< | sed -e 's/.*CONFIG_VERSION_SIGNATURE.*/CONFIG_VERSION_SIGNATURE="Ubuntu $(release)-$(revision)-$*"/' > $(srcdir)/.config
+
 	$(kmake) -C $(origsrc) O=$(srcdir) silentoldconfig prepare scripts
 	touch $@
 
