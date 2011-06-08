@@ -1,3 +1,10 @@
+linux-meta-lts-backport-maverick (2.6.35.30.38) lucid-proposed; urgency=low
+
+  * linux-lts-backport-maverick 2.6.35-30.54
+    -LP: #792542
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 08 Jun 2011 09:52:03 -0300
+
 linux-meta-lts-backport-maverick (2.6.35.28.37) lucid; urgency=low
 
   * linux-lts-backport-maverick 2.6.35-28.50
