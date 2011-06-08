@@ -1,0 +1,48 @@
+From 09dff00d73a3462625ffd6e6577c8182f130a0a0 Mon Sep 17 00:00:00 2001
+From: Andy Whitcroft <apw@canonical.com>
+Date: Wed, 8 Jun 2011 13:20:08 +0100
+Subject: [PATCH] x86 idle: APM requires pm_idle always when it is a module
+
+The commit below removed the export for pm_idle/default_idle unless the
+apm module was modularised and CONFIG_APM_CPU_IDLE was set.  The apm
+module uses pm_idle/default_idle unconditionally, CONFIG_APM_CPU_IDLE
+only affects the bios idle threshold.  Adjust the export accordingly.
+
+    commit 06ae40ce073daf233607a3c54a489f2c1e44683e
+    Author: Len Brown <len.brown@intel.com>
+    Date:   Fri Apr 1 15:28:09 2011 -0400
+
+	x86 idle: EXPORT_SYMBOL(default_idle, pm_idle) only when APM demands it
+
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+
+TRIGGER 86d7336f3b09b98a0ee53eb866e66666  arch/x86/kernel/process.c
+---
+ arch/x86/kernel/process.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 2e4928d..b8265d0 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -337,7 +337,7 @@ EXPORT_SYMBOL(boot_option_idle_override);
+  * Powermanagement idle function, if any..
+  */
+ void (*pm_idle)(void);
+-#if defined(CONFIG_APM_MODULE) && defined(CONFIG_APM_CPU_IDLE)
++#if defined(CONFIG_APM_MODULE)
+ EXPORT_SYMBOL(pm_idle);
+ #endif
+ 
+@@ -399,7 +399,7 @@ void default_idle(void)
+ 		cpu_relax();
+ 	}
+ }
+-#if defined(CONFIG_APM_MODULE) && defined(CONFIG_APM_CPU_IDLE)
++#if defined(CONFIG_APM_MODULE)
+ EXPORT_SYMBOL(default_idle);
+ #endif
+ 
+-- 
+1.7.4.1
+
