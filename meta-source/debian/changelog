@@ -1,9 +1,14 @@
-linux-meta (3.0.0.1) UNRELEASED; urgency=low
+linux-meta (3.0.0.0.1) UNRELEASED; urgency=low
 
   [ Leann Ogasawara ]
 
   * Open v3.0
   * Convert from x.y.z to x.y version scheme
+
+  [ Andy Whitcroft ]
+
+  * temporarily move meta _only_ back to 3 digit kernel numbering (5 total)
+    to allow us to choose later which scheme to use
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 02 Jun 2011 11:50:49 -0700
 
