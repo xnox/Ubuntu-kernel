@@ -630,7 +630,7 @@ class Shank(StdApp):
             msgbody = 'The bug was tagged as certification-testing-failed\n'
             self.send_email(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
@@ -643,7 +643,7 @@ class Shank(StdApp):
             msgbody = 'The certification-testing task was set to Fix Released but neither the certification-testing-passed or certification-testing-failed tag was applied\n'
             self.send_email(taskobj, 'Certification completed but no status tags applied', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
 
     def certification_testing_invalid(self, taskobj):
@@ -669,7 +669,7 @@ class Shank(StdApp):
             msgbody = 'The bug was tagged as regression-testing-failed\n'
             self.send_email(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
         elif 'regression-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
@@ -682,7 +682,7 @@ class Shank(StdApp):
             msgbody = 'The regression-testing task was set to Fix Released but neither the regression-testing-passed or regression-testing-failed tag was applied\n'
             self.send_email(taskobj, 'Regression Testing completed but no status tags applied', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
 
     def security_signoff_finished(self, taskobj):
@@ -708,7 +708,7 @@ class Shank(StdApp):
             msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
             self.send_email(taskobj, '%s task not set to correct state during release test' % taskname, msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
 
     #
     # This is not performed during processing for a specific task but only if several tasks are
@@ -740,7 +740,7 @@ class Shank(StdApp):
             self.release_test_state_check('promote-to-updates', ['New', 'Confirmed'])
 
             # If we found any problems, we've halted processing and set this
-            if self.taskbyname['kernel-sru-workflow'].status != 'In Progress':
+            if self.taskbyname['Kernel SRU Workflow'].status != 'In Progress':
                 self.verbose('*** Exiting release test without triggering any publishing\n')
                 return
 
@@ -763,7 +763,7 @@ class Shank(StdApp):
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
                 # Now send a happy email 
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
-                task = self.taskbyname['kernel-sru-workflow']
+                task = self.taskbyname['Kernel SRU Workflow']
                 self.send_email(task, 'Package is ready for publication', msgbody)
                 self.send_status_update(task, 'Tested kernel package available for publication.')
                 
@@ -777,9 +777,9 @@ class Shank(StdApp):
                     msgbody = msgbody + '    ' + ftag + '\n'
                 msgbody = msgbody + '\n'
                 msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
-                self.send_email(self.taskbyname['kernel-sru-workflow'], 'Test completion tags not found during release test', msgbody)
+                self.send_email(self.taskbyname['Kernel SRU Workflow'], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
-                self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+                self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
     
         # this method is not associated with a task state transition so no status returned
         return 
