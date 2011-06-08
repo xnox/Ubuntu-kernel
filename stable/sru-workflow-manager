@@ -738,6 +738,12 @@ class Shank(StdApp):
                 self.verbose('*** Exiting release test without triggering any publishing\n')
                 return
 
+            if ((self.taskbyname['promote-to-security'].status == 'Confirmed' or
+                 self.taskbyname['promote-to-security'].status == 'Invalid') and
+                self.taskbyname['promote-to-updates'].status == 'Confirmed'):
+                self.verbose('*** Exiting release test, all set\n')
+                return
+
             if self.taskbyname['security-signoff'].status == 'Fix Released':
                 # publishing to security is required
                 self.security_publishing_required = True
