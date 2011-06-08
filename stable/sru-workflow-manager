@@ -451,8 +451,7 @@ class Shank(StdApp):
 
                 # now walk them one at a time
                 for t in bug.tasks:
-                    atask       = t.bug_target_name
-                    task = atask.strip()
+                    task = t.bug_target_name.strip()
                     # bug_target_name includes both the main and sub task in the string
                     # so for example it could be "Kernel SRU Workflow prepare-package"
                     # so we have to strip off the right hand part
@@ -481,18 +480,15 @@ class Shank(StdApp):
 
                     self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task, state, importance, assignee))
 
-                    try:
-                        taskstates = self.state_map[task]
-                    except KeyError:
-                        print "I don't know how to handle the task <%s>, skipping\n" % (task)
+                    if task not in self.state_map:
+                        print("I don't know how to handle the task <%s>, skipping\n" % (task))
                         continue
 
-                    # now call the processing method for this state and task.
-                    try:
-                        action = taskstates[state]['action']
-                    except KeyError:
+                    if 'action' not in self.state_map[task]:
                         print("ERROR: No action found for state <%s> and task <%s>" % (state, task))
                         raise
+
+                    action = self.state_map[task]['action']
 
                     if  action is None:
                         self.verbose('ACTION: No action for task %s in state %s\n' % (task, state))
@@ -504,7 +500,7 @@ class Shank(StdApp):
                 # will require info stored in class variables during task processing
                 if performReleaseTest:
                     self.perform_release_test()
-                        
+
                 self.verbose('--\n')
 
 
