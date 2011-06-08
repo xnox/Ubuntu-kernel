@@ -16,7 +16,7 @@ only affects the bios idle threshold.  Adjust the export accordingly.
 
 Signed-off-by: Andy Whitcroft <apw@canonical.com>
 
-TRIGGER 86d7336f3b09b98a0ee53eb866e66666  arch/x86/kernel/process.c
+TRIGGER 1ded15dd3a3cb622df182d60160ff826  arch/x86/kernel/process.c
 ---
  arch/x86/kernel/process.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
