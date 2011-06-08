@@ -473,7 +473,6 @@ class Shank(StdApp):
 
                     state      = t.status
                     importance = t.importance
-                    assignee    = t.owner.display_name
                     assignee    = t.assignee
                     if assignee is None:
                         assignee = '*Unassigned'
