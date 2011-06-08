@@ -60,7 +60,7 @@ do_media=false
 #
 # Compat wireless versions for which packages are created.
 #
-CWDIRS=$(foreach ver,$(do_compat_wireless),compat-wireless-$(ver))
+CWDIRS=$(foreach ver,$(do_compat_wireless),cw-$(ver))
 
 # Support parallel=<n> in DEB_BUILD_OPTIONS (see #209008)
 COMMA=,
