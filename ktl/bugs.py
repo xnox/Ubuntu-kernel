@@ -80,23 +80,7 @@ class Bugs():
 
         # Task info:
         #
-        if task == None:
-            for task in bug.tasks:
-                task_item = {}
-                if 'tasks' not in bug_item:
-                    bug_item['tasks'] = []
-
-                task_item['name']       = task.bug_target_display_name
-                task_item['status']     = task.status
-                task_item['importance'] = task.importance
-
-                assignee = task.assignee
-                if assignee is None:
-                    task_item['assignee'] = 'Unassigned'
-                else:
-                    task_item['assignee'] = assignee.display_name
-                bug_item['tasks'].append(task_item)
-        else:
+        if task is not None:
             bug_item['status']     = task.status
             bug_item['importance'] = task.importance
 
@@ -106,6 +90,24 @@ class Bugs():
             else:
                 bug_item['assignee'] = assignee.display_name
 
+        for task in bug.tasks:
+            task_item = {}
+            if 'tasks' not in bug_item:
+                bug_item['tasks'] = []
+
+            task_item['name']       = task.bug_target_display_name
+            task_item['status']     = task.status
+            task_item['importance'] = task.importance
+
+            assignee = task.assignee
+            if assignee is None:
+                task_item['assignee'] = 'Unassigned'
+            else:
+                task_item['assignee'] = assignee.display_name
+            bug_item['tasks'].append(task_item)
+
+        # Misc.
+        #
         (bug_item['series name'], bug_item['series version']) = bug.series
         bug_item['gravity']         = bug.gravity
         return bug_item
