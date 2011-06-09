@@ -2,8 +2,8 @@
 
 P="cod-preproposed"
 
-if [ "$#" -ne 4 ]; then
-	echo "Usage: $P <repo> <series> <commit> <tag>" 1>&2
+if [ "$#" -ne 4 -a "$#" -ne 5 ]; then
+	echo "Usage: $P <repo> <series> <commit> <tag> [<abi override>]" 1>&2
 	exit 1
 fi
 
@@ -17,6 +17,7 @@ repo="$1"
 series="$2"
 commit="$3"
 tag="$4"
+abi="$5"
 
 echo "*** BUILDING PREPROPOSED: repo:$repo commit:$commit series:$series tag:$tag..."
 
@@ -67,6 +68,10 @@ fi
 echo "using tag<$tag> for the changelog"
 
 # Build the version number and pocket, and commit the changelog.
+if [ "$abi" != "" ]; then
+	sed -i -e"1s/^\\(.*(.*\\.\\)[^\\.]*\\(\\.[^\\.]*).*\\)/\\1$abi\\2/" \
+		$changelog
+fi
 sed -i \
 	-e "1 s/)/$tag)/" \
 	-e "1 s/ UNRELEASED;/ $series;/" \

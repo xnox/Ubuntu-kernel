@@ -13,16 +13,14 @@ master_main="$HOME/COD"
 master_repo="/srv/kernel.ubuntu.com/git/ubuntu/"
 
 #
-# UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
+# Add and update the upstream repositories as needed.
 #
-date=`date +%Y%m%d%H%M`
-while read repo series branch
-do
-	current="${repo}_${series}_${branch}"
-	curr="$master_main/preproposed/$current"
-	branch="$series/$branch"
+update_repo()
+{
+	local repo="$1"
+	local series="$2"
+	local series_repo
 
-	# Add the upstream repos as needed.
 	(
 		if [ ! -d "$master_main/$repo" ]; then
 			echo "*** creating initial repo ($repo) ..."
@@ -39,6 +37,19 @@ do
 		fi
 		git fetch "$series" || true
 	)
+}
+
+#
+# UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
+#
+date=`date +%Y%m%d%H%M`
+while read series repo branch repo2 branch2
+do
+	current="${repo}_${series}_${branch}"
+	curr="$master_main/preproposed/$current"
+	branch="$series/$branch"
+
+	update_repo "$repo" "$series"
 
 	# Find the first non-ignored commit, the first real change.
 	tip=`cd "$master_main/$repo" && git log "$branch" | awk '
@@ -59,6 +70,7 @@ do
 
 	echo "repo<$repo> branch<$branch> tip<$tip> release<$release> prev<$prev>"
 
+	changed=0
 	if [ "$tip" != "$prev" ]; then
 		# Commit the new tip.
 		echo "$tip" >"$curr.new"
@@ -68,22 +80,60 @@ do
 			"$here/cod-enqueue" "A" \
 				"$here/cod-preproposed" "$repo" "$series" \
 					"$tip" "$date"
+			changed=1
 		else
 			echo "tip represents release, nothing to do"
 		fi
 	fi
+
+	# If we are dealing with linux then we need to ensure that linux-meta
+	# is uploaded with an appropriate ABI number.
+	if [ "$repo2" = "" -o "$changed" = 0 ]; then
+		continue
+	fi
+
+	update_repo "$repo2" "$series"
+
+	current="${repo2}_${series}_${branch2}.ABI"
+	curr2="$master_main/preproposed/$current"
+	branch2="$series/$branch2"
+
+        # Find the abi number for the tip.
+        changelog=`cd "$master_main/$repo" && \
+                { git cat-file -p "$tip:debian/debian.env" 2>/dev/null ||
+                echo "DEBIAN=debian"; } | sed -e 's/DEBIAN=//'
+	`
+        abi_tip=`cd "$master_main/$repo" && \
+                git cat-file -p "$tip:$changelog/changelog" | \
+		sed -n '1s/.*(.*-\\([^\\.]*\\)\\..*).*/\\1/p'
+	`
+#        abi_meta=`cd "$master_main/$repo2" && \
+#                git cat-file -p "$branch2:meta-source/debian/changelog" | \
+#		sed -n '1s/.*(.*\\.\\([^\\.]*\\)\\.[^\\.]*).*/\\1/p'
+#	`
+
+	prev2=`cat "$curr2" 2>/dev/null || echo 0`
+
+	echo "repo2<$repo2> branch2<$branch2> abi_tip<$abi_tip> prev2<$prev2>"
+
+	# If the meta abi number is behind then organise getting it updated.
+	if [ "$prev2" -lt "$abi_tip" ]; then
+		# Commit the new tip.
+		echo "$abi_tip" >"$curr2.new"
+		mv -f "$curr2.new" "$curr2"
+
+		echo "$here/cod-enqueue" "A" \
+			"$here/cod-preproposed" "$repo2" "$series" \
+				"$branch2" "$date" "$abi_tip"
+		"$here/cod-enqueue" "A" \
+			"$here/cod-preproposed" "$repo2" "$series" \
+				"$branch2" "$date" "$abi_tip"
+	fi
 done <<EOL
-linux natty master-next
-linux-meta natty master
-linux maverick master-next
-linux-lbm maverick master
-linux-meta maverick master
-linux lucid master-next
-linux-lbm lucid master
-linux-meta lucid master
-linux karmic master
-linux-lbm karmic master
-linux-meta karmic master
-linux hardy master
-linux-meta hardy master
+natty linux master-next linux-meta master
+maverick linux master-next linux-meta master
+maverick linux-lbm master
+lucid linux master-next linux-meta master
+lucid linux-lbm master
+hardy linux master linux-meta master
 EOL

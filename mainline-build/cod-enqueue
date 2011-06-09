@@ -21,7 +21,7 @@ tag()
 {
 	cmd=`basename "$1"`
 	shift
-	echo "$cmd $@" | sed -r -e 's/([0-9a-f]{8})[0-9a-f]{32}/\1/g' -e 's/ /_/g'
+	echo "$cmd $@" | sed -r -e 's/([0-9a-f]{8})[0-9a-f]{32}/\1/g' -e 's@[ /]@_@g'
 }
 tag=`tag "$@"`
 
