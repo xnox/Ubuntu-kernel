@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.32.417.7) maverick-proposed; urgency=low
+
+  * linux-mvl-dove 2.6.32-417.34
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 09 Jun 2011 14:50:07 -0300
+
 linux-meta-mvl-dove (2.6.32.416.6) maverick; urgency=low
 
   * linux-mvl-dove 2.6.32-416.33
