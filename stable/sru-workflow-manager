@@ -408,8 +408,7 @@ class Shank(StdApp):
                 else:
                     self.cfg['lpserver'] = 'bugs.launchpad.net'
 
-                bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], bug.id)
-                self.verbose('    Processing -> %s' % bugurl)
+                self.verbose('%s : (%s)\n' % (bug.id, self.bug_url(bug.id)))
 
                 # initialize any per-bug variables that we use for the release test
                 self.bugtags = []
@@ -426,9 +425,9 @@ class Shank(StdApp):
                 try:
                     mtstring = "Kernel SRU Workflow"
                     for t in bug.tasks:
-                        task       = t.bug_target_name
+                        task_name       = t.bug_target_name
 
-                        if task == mtstring:
+                        if task_name == mtstring:
                             # we save a pointer to the master task and check to make sure we should process this bug
                             self.taskbyname[mtstring] = t
                             if t.status == 'In Progress':
@@ -437,12 +436,12 @@ class Shank(StdApp):
                                 self.verbose('    Not processing this bug because master task state is set to %s\n' % (t.status))
                                 raise RuntimeError
 
-                        if not task.startswith(mtstring):
+                        if not task_name.startswith(mtstring):
                             # Ignore the tasks assigned to the actual package, we care about workflow only
-                            self.verbose('Skipping non-workflow task %s:%s\n' % (mtstring, task))
+                            self.verbose('Skipping non-workflow task %s:%s\n' % (mtstring, task_name))
                             continue
 
-                        therest = task[len(mtstring):].strip()
+                        therest = task_name[len(mtstring):].strip()
                         self.taskbyname[therest] = t
 
                 except RuntimeError:
@@ -452,52 +451,47 @@ class Shank(StdApp):
 
                 # now walk them one at a time
                 for t in bug.tasks:
-                    atask       = t.bug_target_name
-                    task = atask.strip()
+                    task_name = t.bug_target_name.strip()
                     # bug_target_name includes both the main and sub task in the string
                     # so for example it could be "Kernel SRU Workflow prepare-package"
                     # so we have to strip off the right hand part
                     # The task can also be just the single parent task i.e. "Kernel SRU Workflow"
                     #
 
-                    if task == mtstring:
+                    if task_name == mtstring:
                         self.verbose('Skipping empty master workflow task \n')
                         continue
 
-                    if not task.startswith(mtstring):
+                    if not task_name.startswith(mtstring):
                         # Ignore the tasks assigned to the actual package, we care about workflow only
-                        self.verbose('Skipping non-workflow task %s\n' % (task))
+                        self.verbose('Skipping non-workflow task %s\n' % (task_name))
                         continue
 
-                    therest = task[len(mtstring):].strip()
-                    task = therest
+                    therest = task_name[len(mtstring):].strip()
+                    task_name = therest
 
                     state      = t.status
                     importance = t.importance
-                    assignee    = t.owner.display_name
                     assignee    = t.assignee
                     if assignee is None:
                         assignee = '*Unassigned'
                     else:
                         assignee = assignee.display_name
 
-                    self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task, state, importance, assignee))
+                    self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task_name, state, importance, assignee))
 
-                    try:
-                        taskstates = self.state_map[task]
-                    except KeyError:
-                        print "I don't know how to handle the task <%s>, skipping\n" % (task)
+                    if task_name not in self.state_map:
+                        print("I don't know how to handle the task <%s>, skipping\n" % (task_name))
                         continue
 
-                    # now call the processing method for this state and task.
-                    try:
-                        action = taskstates[state]['action']
-                    except KeyError:
-                        print("ERROR: No action found for state <%s> and task <%s>" % (state, task))
+                    if 'action' not in self.state_map[task_name]:
+                        print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
                         raise
 
+                    action = self.state_map[task_name]['action']
+
                     if  action is None:
-                        self.verbose('ACTION: No action for task %s in state %s\n' % (task, state))
+                        self.verbose('ACTION: No action for task %s in state %s\n' % (task_name, state))
                     else:
                         if action(t):
                             performReleaseTest = True
@@ -506,7 +500,7 @@ class Shank(StdApp):
                 # will require info stored in class variables during task processing
                 if performReleaseTest:
                     self.perform_release_test()
-                        
+
                 self.verbose('--\n')
 
 
@@ -524,18 +518,22 @@ class Shank(StdApp):
 
     # end of main
 
+    def bug_url(self, bug_id):
+        retval = ''
+        if 'staging' in self.cfg:
+            retval = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], bug_id)
+        else:
+            retval = 'http://pad.lv/%s' % (bug_id)
+        return retval
+
     def send_email(self, task, subject, body):
         """
         Send email to the configured list or recipient
         """
         self.verbose('Sending email\n')
-        if 'staging' in self.cfg:
-            bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
-        else:
-            bugurl = 'http://pad.lv/%s' % (task.bug.id)
 
         mcfg = self.cfg['mail_notify']
-        body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n' % bugurl
+        body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n' % self.bug_url(task.bug.id)
         body_top = body_top + ('%s\n\n' % task.bug.title)
         msg = body_top + body
         subj =  '[ShankBot] ' + subject
@@ -547,12 +545,8 @@ class Shank(StdApp):
         Send a status update to twitter, status.net, identi.ca, etc
         """
         self.verbose('Sending Status\n')
-        if 'staging' in self.cfg:
-            bugurl = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], task.bug.id)
-        else:
-            bugurl = 'http://pad.lv/%s' % (task.bug.id)
 
-        bugurl = quote(bugurl)
+        bugurl = quote(self.bug_url(task.bug.id))
 
         self.status.update(bugurl + ' : ' + message)
         return
@@ -630,7 +624,7 @@ class Shank(StdApp):
             msgbody = 'The bug was tagged as certification-testing-failed\n'
             self.send_email(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
@@ -643,7 +637,7 @@ class Shank(StdApp):
             msgbody = 'The certification-testing task was set to Fix Released but neither the certification-testing-passed or certification-testing-failed tag was applied\n'
             self.send_email(taskobj, 'Certification completed but no status tags applied', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
 
     def certification_testing_invalid(self, taskobj):
@@ -669,7 +663,7 @@ class Shank(StdApp):
             msgbody = 'The bug was tagged as regression-testing-failed\n'
             self.send_email(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
         elif 'regression-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
@@ -682,7 +676,7 @@ class Shank(StdApp):
             msgbody = 'The regression-testing task was set to Fix Released but neither the regression-testing-passed or regression-testing-failed tag was applied\n'
             self.send_email(taskobj, 'Regression Testing completed but no status tags applied', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
 
     def security_signoff_finished(self, taskobj):
@@ -708,7 +702,7 @@ class Shank(StdApp):
             msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
             self.send_email(taskobj, '%s task not set to correct state during release test' % taskname, msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
 
     #
     # This is not performed during processing for a specific task but only if several tasks are
@@ -740,8 +734,14 @@ class Shank(StdApp):
             self.release_test_state_check('promote-to-updates', ['New', 'Confirmed'])
 
             # If we found any problems, we've halted processing and set this
-            if self.taskbyname['kernel-sru-workflow'].status != 'In Progress':
+            if self.taskbyname['Kernel SRU Workflow'].status != 'In Progress':
                 self.verbose('*** Exiting release test without triggering any publishing\n')
+                return
+
+            if ((self.taskbyname['promote-to-security'].status == 'Confirmed' or
+                 self.taskbyname['promote-to-security'].status == 'Invalid') and
+                self.taskbyname['promote-to-updates'].status == 'Confirmed'):
+                self.verbose('*** Exiting release test, all set\n')
                 return
 
             if self.taskbyname['security-signoff'].status == 'Fix Released':
@@ -763,7 +763,7 @@ class Shank(StdApp):
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
                 # Now send a happy email 
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
-                task = self.taskbyname['kernel-sru-workflow']
+                task = self.taskbyname['Kernel SRU Workflow']
                 self.send_email(task, 'Package is ready for publication', msgbody)
                 self.send_status_update(task, 'Tested kernel package available for publication.')
                 
@@ -777,9 +777,9 @@ class Shank(StdApp):
                     msgbody = msgbody + '    ' + ftag + '\n'
                 msgbody = msgbody + '\n'
                 msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
-                self.send_email(self.taskbyname['kernel-sru-workflow'], 'Test completion tags not found during release test', msgbody)
+                self.send_email(self.taskbyname['Kernel SRU Workflow'], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
-                self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+                self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
     
         # this method is not associated with a task state transition so no status returned
         return 
