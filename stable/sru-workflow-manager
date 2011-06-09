@@ -484,11 +484,11 @@ class Shank(StdApp):
                         print("I don't know how to handle the task <%s>, skipping\n" % (task_name))
                         continue
 
-                    if 'action' not in self.state_map[task_name]:
+                    if 'action' not in self.state_map[task_name][state]:
                         print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
-                        raise
+                        raise ValueError
 
-                    action = self.state_map[task_name]['action']
+                    action = self.state_map[task_name][state]['action']
 
                     if  action is None:
                         self.verbose('ACTION: No action for task %s in state %s\n' % (task_name, state))
