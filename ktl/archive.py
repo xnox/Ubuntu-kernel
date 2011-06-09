@@ -211,7 +211,10 @@ class Archive:
                         sourceinfo['signer'] = field.split('/')[-1].strip('~') 
                     else:
                         sourceinfo['signer'] = 'Unknown'
-                    rm = re.match('[0-9]\.[0-9]\.[0-9][0-9]', sourceinfo['source_package_version'])
+                    rm = re.match('[0-9]\.[0-9](\.[0-9][0-9])*', sourceinfo['source_package_version'])
+                    if rm is None:
+                        print("  ** Error: The source package version failed to match the regular expression.")
+                        raise
                     version = rm.group(0)
                     sourceinfo['series'] = sourceinfo['display_name'].split()[-1]
                     # And strip some things we don't care about
