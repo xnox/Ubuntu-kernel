@@ -49,22 +49,16 @@ then
 fi
 
 #
-# Pull in any source repo updates.
+# Fetch the upstream branch.
 #
-#git remote rm ${SOURCE_RELEASE}
-#git remote add ${SOURCE_RELEASE} ${RELEASE_REPO}
-#if ! git fetch ${SOURCE_RELEASE} || ! git fetch ${SOURCE_RELEASE} ${SOURCE_RELEASE_BRANCH}
-#if ! git fetch ${SOURCE_RELEASE} ${SOURCE_RELEASE_BRANCH}
-#then
-#	exit 1
-#fi
+git fetch ${RELEASE_REPO} ${SOURCE_RELEASE_BRANCH} || exit 1
 
 #
 # Find the most recent tag on ${SOURCE_RELEASE} ${SOURCE_RELEASE_BRANCH}, then
 # rebase against it. This avoids the case where there have been some
 # commits since the last official tag.
 #
-MASTER_COMMIT=`git log --pretty=one refs/remotes/${SOURCE_RELEASE}/${SOURCE_RELEASE_BRANCH} | \
+MASTER_COMMIT=`git log --pretty=one FETCH_HEAD | \
     awk '
 	/Ubuntu-/ {
 		if (match($0, /UBUNTU: Ubuntu-[0-9]/)) {
