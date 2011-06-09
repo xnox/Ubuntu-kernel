@@ -1,5 +1,5 @@
 
-reports: fetch-data sru-report.html versions.html regressions-reports 30-day-new.html 7-day-new.html 1-day-new.html
+reports: fetch-data sru-report.html versions.html regressions-reports 30-day-new.html 7-day-new.html 1-day-new.html kernel-sru-workflow.html
 
 fetch-data:
 	@kteam-tools/stable/sru-report --archive-versions > sru-data-tmp.json
@@ -71,3 +71,10 @@ clean:
 
 1-day-new.html: 1-day-window.json
 	scripts/mk-regressions-report $< > $@
+
+.PHONY : kernel-sru-workflow.json
+kernel-sru-workflow.json:
+	scripts/cbd --db=$@
+
+kernel-sru-workflow.html: kernel-sru-workflow.json
+	scripts/gen-bug-report --tasks $< > $@
