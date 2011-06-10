@@ -7,7 +7,7 @@
 from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error, stde
+from ktl.utils                          import stdo, error, stde, dump
 from ktl.bugs                           import DeltaTime
 from ktl.std_app                        import StdApp
 from datetime                           import datetime
@@ -76,11 +76,15 @@ class Cmdline:
     # methods.
     #
     def process(self, argv, defaults):
+        self.cfg['tasks']    = False
+        self.cfg['xtra']     = False
+        self.cfg['verbose']  = False
+        self.cfg['debug']    = []
         self.cfg['app_name'] = argv[0]
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'xtra' ]
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'xtra', 'tasks' ]
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -89,6 +93,9 @@ class Cmdline:
 
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
+
+                elif (opt == '--tasks'):
+                    self.cfg['tasks'] = True
 
                 elif (opt == '--xtra'):
                     self.cfg['xtra'] = True
@@ -124,7 +131,7 @@ class Cmdline:
 class RegressionsReport():
     # __init__
     #
-    def __init__(self, db, xtra=False):
+    def __init__(self, db, xtra=False, tasks=False):
         self.db = db
         self.importance_color = {
                 "Unknown"       : "importance-unknown",
@@ -151,6 +158,7 @@ class RegressionsReport():
             }
 
         self.show_xtra = xtra
+        self.show_tasks = tasks
         return
 
     # __str__
@@ -249,21 +257,80 @@ class RegressionsReport():
         for pkg in self.db['bug-collections']:
             if len(self.db['bug-collections'][pkg]['bugs']) == 0:
                 continue
-            retval += '                $("#%s").tablesorter({\n' % pkg.replace('.', '_')
-            retval += '                    headers: {\n'
-            retval += '                        3: {\n'
-            retval += '                            sorter:\'importance\'\n'
-            retval += '                        },\n'
-            retval += '                        4: {\n'
-            retval += '                            sorter:\'status\'\n'
-            retval += '                        },\n'
-            retval += '                        6: {\n'
-            retval += '                            sorter:\'age\'\n'
-            retval += '                        },\n'
-            retval += '                        7: {\n'
-            retval += '                            sorter:\'age\'\n'
-            retval += '                        }\n'
-            retval += '                    },\n'
+            if self.show_tasks:
+                for bug_id in self.db['bug-collections'][pkg]['bugs']:
+                    retval += '                $("#%s-tasks-table").tablesorter({\n' % bug_id
+                    retval += '                    headers: {\n'
+                    retval += '                        0: {\n'
+                    retval += '                            sorter: false\n'
+                    retval += '                        },\n'
+                    retval += '                        1: {\n'
+                    retval += '                            sorter: false\n'
+                    retval += '                        },\n'
+                    retval += '                        2: {\n'
+                    retval += '                            sorter: false\n'
+                    retval += '                        },\n'
+                    retval += '                        3: {\n'
+                    retval += '                            sorter: false\n'
+                    retval += '                        },\n'
+                    retval += '                        4: {\n'
+                    retval += '                            sorter: false\n'
+                    retval += '                        },\n'
+                    retval += '                        5: {\n'
+                    retval += '                            sorter: false\n'
+                    retval += '                        },\n'
+                    retval += '                        6: {\n'
+                    retval += '                            sorter: false\n'
+                    retval += '                        },\n'
+                    retval += '                        7: {\n'
+                    retval += '                            sorter: false\n'
+                    retval += '                        }\n'
+                    retval += '                    },\n'
+                    retval += '                    widgets: [\'zebra\']\n'
+                    retval += '                });\n'
+                retval += '                $("#%s").tablesorter({\n' % pkg.replace('.', '_')
+                retval += '                    headers: {\n'
+                retval += '                        0: {\n'
+                retval += '                            sorter: false\n'
+                retval += '                        },\n'
+                retval += '                        1: {\n'
+                retval += '                            sorter: false\n'
+                retval += '                        },\n'
+                retval += '                        2: {\n'
+                retval += '                            sorter: false\n'
+                retval += '                        },\n'
+                retval += '                        3: {\n'
+                retval += '                            sorter: false\n'
+                retval += '                        },\n'
+                retval += '                        4: {\n'
+                retval += '                            sorter: false\n'
+                retval += '                        },\n'
+                retval += '                        5: {\n'
+                retval += '                            sorter: false\n'
+                retval += '                        },\n'
+                retval += '                        6: {\n'
+                retval += '                            sorter: false\n'
+                retval += '                        },\n'
+                retval += '                        7: {\n'
+                retval += '                            sorter: false\n'
+                retval += '                        }\n'
+                retval += '                    },\n'
+            else:
+                retval += '                $("#%s").tablesorter({\n' % pkg.replace('.', '_')
+                retval += '                    headers: {\n'
+                retval += '                        3: {\n'
+                retval += '                            sorter:\'importance\'\n'
+                retval += '                        },\n'
+                retval += '                        4: {\n'
+                retval += '                            sorter:\'status\'\n'
+                retval += '                        },\n'
+                retval += '                        6: {\n'
+                retval += '                            sorter:\'age\'\n'
+                retval += '                        },\n'
+                retval += '                        7: {\n'
+                retval += '                            sorter:\'age\'\n'
+                retval += '                        }\n'
+                retval += '                    },\n'
             retval += '                    widgets: [\'zebra\']\n'
             retval += '                });\n'
         retval += '            });\n'
@@ -306,9 +373,10 @@ class RegressionsReport():
             retval += '                                <th width="40">Bug</th>\n'
             retval += '                                <th>Summary</th>\n'
             retval += '                                <th width="80">Series</th>\n'
-            retval += '                                <th width="80">Importance</th>\n'
-            retval += '                                <th width="80">Status</th>\n'
-            retval += '                                <th width="120">Assignee</th>\n'
+            if not self.show_tasks:
+                retval += '                                <th width="80">Importance</th>\n'
+                retval += '                                <th width="80">Status</th>\n'
+                retval += '                                <th width="120">Assignee</th>\n'
             retval += '                                <th width="50">Age</th>\n'
             retval += '                                <th width="50">&nbsp; C &nbsp;</th>\n'
             if self.show_xtra:
@@ -391,36 +459,77 @@ class RegressionsReport():
         bug_url = "http://launchpad.net/bugs/%s" % bug_id
         bug = self.db['bug-collections'][pkg]['bugs'][bug_id]
 
-        retval  = '                                <tr>\n'
-        retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                              # Bug
-        retval += '                                    <td class="bug-title">%s</td>\n' % bug['title']                                                                    # Summary
-        retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                     # Series
-        retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
-        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
-        retval += '                                    <td class="assignee">%s</td>\n' % bug['assignee']                                                                 # Assignee
-        retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                       # Age
-        retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                                  # Last comment
+        if self.show_tasks:
+            retval  = '                                <tr>\n'
+            retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                       # Bug
+            retval += '                                    <td class="bug-title">%s</td>\n' % bug['title']                                           # Summary
+            retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                 # Series
+            retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                # Age
+            retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                           # Last comment
+            retval  = '                                </tr>\n'
 
-        if self.show_xtra:
-            msg    = 'kj-triage'
-            if 'kj-triage' in bug['tags']:
-                img    = 'img/tick.png'
-                retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
-            else:
-                img    = 'img/error.png'
-                retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
 
-            msg    = 'kj-expired'
-            if 'kj-expired' in bug['tags']:
-                img    = 'img/tick.png'
-                retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
-            else:
-                img    = 'img/error.png'
-                retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
+            retval += '                                <tr>\n'
+            retval += '                                    <td style="background : #000000">&nbsp;</td>\n'
+            retval += '                                    <td colspan="4">\n'
+            retval += '                                        <table id="%s-tasks-table" class="tablesorter" border="0" cellpadding="0" cellspacing="1" width="100%%">\n' % (bug_id)
+            retval += '                                            <thead>\n'
+            retval += '                                                <tr>\n'
+            retval += '                                                    <th width="80">Task Name</th>\n'
+            retval += '                                                    <th width="80">Importance</th>\n'
+            retval += '                                                    <th width="80">Status</th>\n'
+            retval += '                                                    <th width="120">Assignee</th>\n'
+            retval += '                                                </tr>\n'
+            retval += '                                            </thead>\n'
+            for t in self.db['bug-collections'][pkg]['bugs'][bug_id]['tasks']:
+                retval += self.__task_details(t)
+            retval += '                                       </table>\n'
+            retval += '                                   </td>\n'
+            retval += '                               </tr>\n'
 
-        retval += '                                </tr>\n'
+            retval += '                                </tr>\n'
+        else:
+            retval  = '                                <tr>\n'
+            retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                       # Bug
+            retval += '                                    <td class="bug-title">%s</td>\n' % bug['title']                                           # Summary
+            retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                 # Series
+            retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
+            retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
+            retval += '                                    <td class="assignee">%s</td>\n' % bug['assignee']                                         # Assignee
+            retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                # Age
+            retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                           # Last comment
+
+            if self.show_xtra:
+                msg    = 'kj-triage'
+                if 'kj-triage' in bug['tags']:
+                    img    = 'img/tick.png'
+                    retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
+                else:
+                    img    = 'img/error.png'
+                    retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
+
+                msg    = 'kj-expired'
+                if 'kj-expired' in bug['tags']:
+                    img    = 'img/tick.png'
+                    retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
+                else:
+                    img    = 'img/error.png'
+                    retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
+
+            retval += '                                </tr>\n'
         return retval
 
+    # __task_details
+    #
+    def __task_details(self, task):
+        retval = ''
+        retval += '<tr>\n'
+        retval += '                                    <td class="task-name">%s</td>\n' % (task['name'])                                           # Task Name
+        retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[task['importance']], task['importance']) # Importance
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['status'])             # Status
+        retval += '                                    <td class="assignee">%s</td>\n' % task['assignee']                                          # Assignee
+        retval += '</tr>\n'
+        return retval
 
 # MkRegressionsReportError
 #
@@ -466,10 +575,7 @@ class MkRegressionsReport(StdApp):
                 raise MkRegressionsReportError('The specified database file (%s) does not exist.' % self.cfg['database'])
 
             if bugs_db != None:
-                if 'xtra' in self.cfg and self.cfg['xtra']:
-                    report = RegressionsReport(bugs_db, True)
-                else:
-                    report = RegressionsReport(bugs_db, False)
+                report = RegressionsReport(bugs_db, self.cfg['xtra'], self.cfg['tasks'])
                 print(report)
 
         # Handle the user presses <ctrl-C>.

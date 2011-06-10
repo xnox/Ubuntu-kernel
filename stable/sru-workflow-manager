@@ -211,7 +211,7 @@ class Shank(StdApp):
                                          'Triaged' : {'action':None},
                                          'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.check_for_final_close},
                                          'Unknown' : {'action':None},
                                          },
             'promote-to-security'     : {'New' : {'action':None},
@@ -224,7 +224,7 @@ class Shank(StdApp):
                                          'Triaged' : {'action':None},
                                          'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
+                                         'Fix Released' : {'action':self.check_for_final_close},
                                          'Unknown' : {'action':None},
                                          },
             'security-signoff'        : {'New' : {'action':None},
@@ -484,11 +484,11 @@ class Shank(StdApp):
                         print("I don't know how to handle the task <%s>, skipping\n" % (task_name))
                         continue
 
-                    if 'action' not in self.state_map[task_name]:
+                    if 'action' not in self.state_map[task_name][state]:
                         print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
-                        raise
+                        raise ValueError
 
-                    action = self.state_map[task_name]['action']
+                    action = self.state_map[task_name][state]['action']
 
                     if  action is None:
                         self.verbose('ACTION: No action for task %s in state %s\n' % (task_name, state))
@@ -548,7 +548,12 @@ class Shank(StdApp):
 
         bugurl = quote(self.bug_url(task.bug.id))
 
-        self.status.update(bugurl + ' : ' + message)
+        btitle = task.bug.title
+        packagename = btitle.split(':')[0]
+        version = btitle.split(':')[1].split()[0]
+        pkgid = 'Package %s %s ' % (packagename, version)
+
+        self.status.update(bugurl + ' : ' + pkgid + ' ' + message)
         return
 
     def set_task_to_state(self, taskname, state):
@@ -592,10 +597,7 @@ class Shank(StdApp):
                 print 'Here is where we would tag and spam the verification bugs'
                 msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
                 self.send_email(taskobj, 'Bug spamming required', msgbody)
-                btitle = task.bug.title
-                packagename = btitle.split(':')[0]
-                version = btitle.split(':')[1].split()[0]
-                self.send_status_update(task, 'New kernel package %s %s available in -proposed.' % (packagename, version))
+                self.send_status_update(task, 'available in -proposed.')
         return False
 
     def verification_testing_fix_released(self, taskobj):
@@ -694,7 +696,7 @@ class Shank(StdApp):
         if taskobj.status not in desired_state_list:
             self.verbose('ERROR: %s task set to Unexpected state!\n' % taskname)
             # Send email and possibly a status update
-            msgbody = 'The %s task was not set to one of the following statesduring the release test:\n' % taskname
+            msgbody = 'The %s task was not set to one of the following states during the release test:\n' % taskname
             for statename in desired_state_list:
                 msgbody = msgbody + statename + ', '
             msgbody = msgbody + '\n'
@@ -715,7 +717,7 @@ class Shank(StdApp):
         Check results from multiple tasks to see whether release
         to -updates and -security are required
         """
-        self.verbose('*** Performing release test')
+        self.verbose('*** Performing release test\n')
 
         # No need to do anything until these three are all complete
         if (self.certification_testing_complete and self.regression_testing_complete and self.security_signoff_complete):
@@ -730,8 +732,8 @@ class Shank(StdApp):
             self.release_test_state_check('security-signoff', ['Invalid', 'Fix Released'])
             # confirmed is in the next two in case we rerun the release test after
             # a dumb failure like email send fail or something
-            self.release_test_state_check('promote-to-security', ['New', 'Confirmed', 'Invalid'])
-            self.release_test_state_check('promote-to-updates', ['New', 'Confirmed'])
+            self.release_test_state_check('promote-to-security', ['New', 'Confirmed', 'Invalid', 'Fix Released'])
+            self.release_test_state_check('promote-to-updates', ['New', 'Confirmed', 'Fix Released'])
 
             # If we found any problems, we've halted processing and set this
             if self.taskbyname['Kernel SRU Workflow'].status != 'In Progress':
@@ -764,8 +766,9 @@ class Shank(StdApp):
                 # Now send a happy email 
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
                 task = self.taskbyname['Kernel SRU Workflow']
+                # zzz
                 self.send_email(task, 'Package is ready for publication', msgbody)
-                self.send_status_update(task, 'Tested kernel package available for publication.')
+                self.send_status_update(task, 'available for publication.')
                 
             else:
                 # don't have required testing signoffs
@@ -783,6 +786,30 @@ class Shank(StdApp):
     
         # this method is not associated with a task state transition so no status returned
         return 
+
+    def check_for_final_close(self, taskobj):
+        """
+        If either of the publishing tasks is set to complete (Fix Released) we
+        make a check to see whether we can set the entire tracking bug to Fix Released (done)
+        """
+        self.verbose('*** Performing check for final close test\n')
+
+        if (( self.taskbyname['promote-to-updates'].status == 'Fix Released') and
+            (self.taskbyname['promote-to-security'].status == 'Invalid' or
+            self.taskbyname['promote-to-security'].status == 'Fix Released')):
+
+            print ' Everything is done, setting bug to Fix Released'
+            self.set_task_to_state('Kernel SRU Workflow', 'Fix Released')
+
+            # Send email and possibly a status update -spc- TODO
+            msgbody = 'The package has been published and the bug is being set to Fix Released\n'
+            self.send_email(taskobj, 'Package Released!', msgbody)
+
+            task = self.taskbyname['promote-to-updates']
+            self.send_status_update(task, 'has been published.')
+
+        # We should never trigger a release test from this, since it should have lready been done
+        return False
 
 if __name__ == '__main__':
     app = Shank()
