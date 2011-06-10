@@ -41,52 +41,34 @@ class Debian:
         #
         current_branch = Git.current_branch()
 
-        # The standard location for a changelog is in a directory named 'debian'.
-        #
-        cl_path = 'debian/changelog'
-        debug("Trying '%s': " % cl_path, cls.debug)
+        # If we have a debian/debian.env then open and extract the DEBIAN=...
+        # location.
+        debug("Checking debian/debian.env", cls.debug)
+        cl_paths = []
         try:
-            retval = Git.show(cl_path, branch=current_branch)
+            debian_env = Git.show("debian/debian.env", branch=current_branch)
+            for line in debian_env:
+                (var, val) = line.split('=', 1)
+                val = val.rstrip()
+
+                if var == 'DEBIAN':
+                    cl_paths.append(val + "/changelog")
             debug("SUCCEEDED\n", cls.debug, False)
         except GitError:
             debug("FAILED\n", cls.debug, False)
-            # If this is a kernel tree, the changelog is in a debian.<branch> directory.
-            #
-            cl_path = 'debian.' + current_branch + '/changelog'
+
+        # Try probabal paths.
+        cl_paths += [ 'debian/changelog', 'meta-source/debian/changelog' ]
+        for cl_path in cl_paths:
             debug("Trying '%s': " % cl_path, cls.debug)
             try:
                 retval = Git.show(cl_path, branch=current_branch)
-                debug("SUCCEEDED\n", cls.debug, False)
+                return retval, cl_path
             except GitError:
                 debug("FAILED\n", cls.debug, False)
-                # If this is a 'backport' kernel then it could be in the debian.<series>
-                # directory.
-                #
-                debug('Getting the series from the Makefile: ', cls.debug)
-                try:
-                    series = Kernel.series_name()
-                    debug("SUCCEEDED\n", cls.debug, False)
 
-                    cl_path = 'debian.' + series + '/changelog'
-                    debug("Trying '%s': " % cl_path, cls.debug)
-                    retval = Git.show(cl_path, branch=current_branch)
-                    debug("SUCCEEDED\n", cls.debug, False)
-                except GitError:
-                    debug("FAILED\n", cls.debug, False)
-
-                    # If this is a kernel meta package, its in a sub-directory of meta-source.
-                    #
-                    if path.exists('meta-source'):
-                        cl_path = 'meta-source/debian/changelog'
-                        debug("Trying '%s': " % cl_path, cls.debug)
-                        try:
-                            retval = Git.show(cl_path, branch=current_branch)
-                        except GitError:
-                            debug("FAILED\n", cls.debug, False)
-                            raise DebianError('Failed to find the changelog.')
-                    else:
-                        raise DebianError('Failed to find the changelog.')
-        return retval, cl_path
+        # Not there anywhere, barf
+        raise DebianError('Failed to find the changelog.')
 
     # changelog
     #
