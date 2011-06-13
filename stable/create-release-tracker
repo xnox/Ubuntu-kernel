@@ -157,12 +157,16 @@ class CreateTrackingBug(StdApp):
             else:
                 print("https://bugs.launchpad.net/bugs/%s" % (id))
 
-
             # Tags:
             #    kernel-tracking-bug
             #
             bug.tags.append('kernel-release-tracking-bug')
             name = bug.owner.display_name
+
+            # Any special case tags based on package name
+            #
+            if changelog[0]['package'] in ['linux-mvl-dove', 'linux-ti-omap4', 'linux-fsl-imx51']:
+                bug.tags.append('armel')
 
             # Get the one task and modify the status and importance.
             #
@@ -196,17 +200,74 @@ class CreateTrackingBug(StdApp):
             # Add a task for kernel-sru-workflow and then nominate all the series that belong
             # to that project.
             #
-            taskAssignments = {
-                'prepare-package'       : 'canonical-kernel-team',
-                'upload-to-ppa'         : 'canonical-kernel-team',
-                'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'canonical-kernel-team',
-                'certification-testing' : 'canonical-hw-cert',
-                'regression-testing'    : 'canonical-platform-qa',
-                'promote-to-updates'    : 'ubuntu-sru',
-                'promote-to-security'   : 'ubuntu-sru',
-                'security-signoff'      : 'canonical-security'
+
+            # Tasks vary according to the package name
+            taskAssignmentsByPackage = {
+                'linux' :  {
+                    'prepare-package'       : 'canonical-kernel-team',
+                    'upload-to-ppa'         : 'canonical-kernel-team',
+                    'promote-to-proposed'   : 'ubuntu-sru',
+                    'verification-testing'  : 'canonical-kernel-team',
+                    'certification-testing' : 'canonical-hw-cert',
+                    'regression-testing'    : 'canonical-platform-qa',
+                    'promote-to-updates'    : 'ubuntu-sru',
+                    'promote-to-security'   : 'ubuntu-sru',
+                    'security-signoff'      : 'canonical-security'
+                    },
+                'linux-mvl-dove' :  {
+                    'prepare-package'       : 'canonical-kernel-team',
+                    'upload-to-ppa'         : 'canonical-kernel-team',
+                    'promote-to-proposed'   : 'ubuntu-sru',
+                    'verification-testing'  : 'canonical-kernel-team',
+                    #'certification-testing' : 'ubuntu-armel-qa',
+                    'regression-testing'    : 'ubuntu-armel-qa',
+                    'promote-to-updates'    : 'ubuntu-sru',
+                    'promote-to-security'   : 'ubuntu-sru',
+                    'security-signoff'      : 'canonical-security'
+                    },
+                'linux-fsl-imx51' :  {
+                    'prepare-package'       : 'canonical-kernel-team',
+                    'upload-to-ppa'         : 'canonical-kernel-team',
+                    'promote-to-proposed'   : 'ubuntu-sru',
+                    'verification-testing'  : 'canonical-kernel-team',
+                    #'certification-testing' : 'ubuntu-armel-qa',
+                    'regression-testing'    : 'ubuntu-armel-qa',
+                    'promote-to-updates'    : 'ubuntu-sru',
+                    'promote-to-security'   : 'ubuntu-sru',
+                    'security-signoff'      : 'canonical-security'
+                    },
+                'linux-ti-omap4' :  {
+                    'prepare-package'       : 'canonical-kernel-team',
+                    'upload-to-ppa'         : 'canonical-kernel-team',
+                    'promote-to-proposed'   : 'ubuntu-sru',
+                    'verification-testing'  : 'canonical-kernel-team',
+                    #'certification-testing' : 'ubuntu-armel-qa',
+                    'regression-testing'    : 'ubuntu-armel-qa',
+                    'promote-to-updates'    : 'ubuntu-sru',
+                    'promote-to-security'   : 'ubuntu-sru',
+                    'security-signoff'      : 'canonical-security'
+                    },
+                'default' :  {
+                    'prepare-package'       : 'canonical-kernel-team',
+                    'upload-to-ppa'         : 'canonical-kernel-team',
+                    'promote-to-proposed'   : 'ubuntu-sru',
+                    'verification-testing'  : 'canonical-kernel-team',
+                    'certification-testing' : 'canonical-hw-cert',
+                    'regression-testing'    : 'canonical-platform-qa',
+                    'promote-to-updates'    : 'ubuntu-sru',
+                    'promote-to-security'   : 'ubuntu-sru',
+                    'security-signoff'      : 'canonical-security'
+                    }
                 }
+
+            # Get task assignments based on package name
+            #
+
+            if changelog[0]['package'] in taskAssignmentsByPackage:
+                taskAssignments = taskAssignmentsByPackage[changelog[0]['package']]
+            else:
+                print ' **** Note: Using default task assignments because package name <%s> has no custom task assignments' % changelog[0]['package']
+                taskAssignments = taskAssignmentsByPackage['default']
 
             lp = self.lp.launchpad
             ubuntu = lp.distributions["ubuntu"]
@@ -236,7 +297,8 @@ class CreateTrackingBug(StdApp):
                     if task in taskAssignments:
                         t.assignee = self.lp.launchpad.people[taskAssignments[task]]
                     else:
-                        print 'Warning: Found a workflow task named %s with no automatic assignee, leaving unassigned' % task
+                        print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
+                        t.status = "Invalid"
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
