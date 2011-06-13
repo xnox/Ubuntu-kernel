@@ -16,6 +16,7 @@
 # you'll get incorrect rate of change values for the week.
 
 from arsenal_lib import *
+from datetime import *
 import urllib
 
 #calculate the change in numbers from last week
@@ -110,7 +111,10 @@ for release_name in releases:
         stats[stat_name] = num_regressions
         output[regression] += " * %d %s bugs (%s %d)\n" % (num_regressions, release_name, change, change_num)
 
+now = datetime.utcnow()
+print "Last Updated: %s\n" % (now)
 print "=== Release Metrics ==="
+print "[LINK] http://reports.qa.ubuntu.com/reports/ogasawara/kt-meeting.txt\n"
 print output['release']
 print output['milestone']
 print "=== Incoming Bugs ==="
