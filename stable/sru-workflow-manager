@@ -131,7 +131,7 @@ class Shank(StdApp):
                                          'Expired' : {'action':None},
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
-                                         'In Progress' : {'action':None},
+                                         'In Progress' : {'action':self.prep_package_in_progress},
                                          'Fix Committed' : {'action':None},
                                          'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
@@ -573,6 +573,35 @@ class Shank(StdApp):
     #
     # Begin action methods for state transitions
     #
+
+    def prep_package_in_progress(self, taskobj):
+        """
+        when the prep-package task is set to In Progress, kernel team
+        builds the packages; check the build status and update tasks
+        """
+        title = taskobj.bug.title
+        pkg_name = re.findall('linux[^:]*', task.bug.title)[0]
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', task.bug.title)[0]
+        ckt = self.lp.launchpad.people['canonical-kernel-team']
+        ppa = ckt.getPPAByName(name='ppa')
+        matches = [ p for p in ppa.getPublishedSources(source_name=pkg_name)
+                            if p.status.lower() == 'published' and
+                               p.source_package_version == pkg_ver ]
+        if not matches:
+            self.verbose('Can\'t find <%s> <%s> build on c-k-t ppa\n' % (pkg_name, pkg_ver))
+        for pkg in matches:
+            src_id = str(pkg.self).rsplit('/', 1)[1]
+            build_summaries = ppa.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+            if build_summaries['status'] == 'FULLYBUILT':
+                self.verbose('<%s> <%s> built, prep-package is Fix Released\n'
+                             % (pkg_name, pkg_ver))
+                self.set_task_to_state('prepare-package', 'Fix Released')
+                if self.taskbyname['promote-to-proposed'].status == 'New':
+                    self.set_task_to_state('promote-to-proposed', 'Confirmed')
+            else:
+                self.verbose('<%s> <%s> not fully built yet, skipping\n'
+                             % (pkg_name, pkg_ver))
+        return False
 
     def prep_package_fix_released(self, taskobj):
         """
