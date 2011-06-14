@@ -6,6 +6,19 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 
+# *** You may remove this comment block from your application
+#
+# This script is a template for applications which provides common
+# functionality, command line, processing, and use of configuration
+# files. In order to create a new script, run:
+#
+# init-script <class-name> <script-name>
+#
+# using the name of the script you'd like to create and the name
+# for the main class wrapper inside it.
+#
+# *** You may remove this comment block from your application
+
 # CmdlineError
 #
 # The type of exception that will be raised by Cmdline.process() if there

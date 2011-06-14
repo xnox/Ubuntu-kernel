@@ -2,6 +2,17 @@
 This README covers the stable directory scripts and other files located
 within the kteam-tools directory tree.
 
+App template and creating new scripts
+----------------------
+
+We use a template for applications which provides common functionality, command line,
+processing, and use of configuration files. In order to create a new script, run:
+
+init-script <class-name> <script-name>
+
+using the name of the script you'd like to create and the name for the main class
+wrapper inside it.
+
 Dependencies
 ----------------------
 Several of the scripts get bug information from launchpad via the launchpad
