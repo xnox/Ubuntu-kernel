@@ -114,7 +114,7 @@ class Workflow:
             if taskname in self.tdb[packagename]['task_assignment']:
                 return self.tdb[packagename]['task_assignment'][taskname]
             else:
-                raise KeyError(taskname)
+                return None
         else:
                 return self.tdb['default']['task_assignment'][taskname]
 
@@ -150,6 +150,7 @@ if __name__ == '__main__':
     #    print db[record]
 
     print(workflow.assignee('linux', 'prepare-package'))
+    print(workflow.assignee('linux', 'nonexistent-task'))
     print(workflow.initial_tags('linux-ti-omap4'))
     print(workflow.subscribers('linux-ti-omap4'))
 
