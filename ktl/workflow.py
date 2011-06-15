@@ -28,7 +28,9 @@ class Workflow:
                 'security-signoff'      : 'canonical-security'
                 },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug']
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru", "hardware-certification"]
             },
         'linux-mvl-dove' :  {
             'task_assignment' : {
@@ -43,7 +45,9 @@ class Workflow:
                 'security-signoff'      : 'canonical-security'
                 },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'armel']
+                ['kernel-release-tracking-bug', 'armel'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru", "ubuntu-armel-qa"]
             },
         'linux-fsl-imx51' :  {
             'task_assignment' : {
@@ -58,7 +62,9 @@ class Workflow:
                 'security-signoff'      : 'canonical-security'
                 },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'armel']
+                ['kernel-release-tracking-bug', 'armel'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru", "ubuntu-armel-qa"]
             },
         'linux-ti-omap4' :  {
             'task_assignment' : {
@@ -73,7 +79,9 @@ class Workflow:
                 'security-signoff'      : 'canonical-security'
                 },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'armel']
+                ['kernel-release-tracking-bug', 'armel'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru", "ubuntu-armel-qa"]
             },
         'default' :  {
             'task_assignment' : {
@@ -88,7 +96,9 @@ class Workflow:
                 'security-signoff'      : 'canonical-security'
                 },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug']
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru", "hardware-certification"]
             }
         }
 
@@ -120,6 +130,18 @@ class Workflow:
         else:
                 return self.tdb['default']['initial_bug_tags']
 
+    # subscribers
+    #
+    def subscribers(self, packagename):
+        """
+        Lookup the given package name and return a list of
+        teams who should be initially subscribed to the tracking bug
+        """
+        if packagename in self.tdb:
+                return self.tdb[packagename]['subscribers']
+        else:
+                return self.tdb['default']['subscribers']
+
 if __name__ == '__main__':
     workflow = Workflow()
     db = workflow.tdb
@@ -129,5 +151,6 @@ if __name__ == '__main__':
 
     print(workflow.assignee('linux', 'prepare-package'))
     print(workflow.initial_tags('linux-ti-omap4'))
+    print(workflow.subscribers('linux-ti-omap4'))
 
 # vi:set ts=4 sw=4 expandtab:
