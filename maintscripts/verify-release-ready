@@ -230,6 +230,14 @@ class VerifyReleaseReady(StdApp):
                     break
                 self.status(msg, True)
 
+                # Check: Make sure that the abi directory has the previous version
+                msg = 'previous abi present (%s)' % (cl2['version'])
+                abi = Debian.abi()
+                if  cl2['version'] not in abi:
+                    self.status(msg, False)
+                    break
+                self.status(msg, True)
+
                 # Check: That the release information is correct.
                 #
                 msg = 'release (%s)' % (Kernel.release())
