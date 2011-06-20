@@ -75,7 +75,6 @@ at24
 at25
 at76c50x-usb
 at76_usb
-aten
 ath
 ati_remote
 ati_remote2
@@ -122,8 +121,6 @@ bluecard_cs
 bnep
 bonding
 bpa10x
-bpck
-bpck6
 bpqether
 bq24022
 bq27x00_battery
@@ -179,7 +176,6 @@ cm4040_cs
 cmtp
 cobra
 coda
-comm
 configfs
 core
 cp210x
@@ -259,7 +255,6 @@ ds2490
 ds2760_battery
 ds2782_battery
 dsbr100
-dstr
 dtl1_cs
 dummy
 dvb-core
@@ -333,8 +328,6 @@ empeg
 em_text
 em_u32
 enclosure
-epat
-epia
 eql
 esi-sir
 esp4
@@ -353,12 +346,8 @@ fb_sys_fops
 fcrypt
 fdomain_cs
 ff-memless
-fit2
-fit3
 fmvj18x_cs
 freevxfs
-friq
-frpw
 fscache
 ftdi-elan
 ftdi_sio
@@ -499,7 +488,6 @@ idmouse
 ifb
 iforce
 ili9320
-imm
 imx_sim
 inexio
 inftl
@@ -603,7 +591,6 @@ joydev
 joydump
 kafs
 kaweth
-kbic
 kbtab
 kernelcapi
 keyspan
@@ -613,12 +600,10 @@ khazad
 kingsun-sir
 kl5kusb105
 kobil_sct
-ks0108
 ks8842
 ks8851
 ks959-sir
 ksdazzle-sir
-ktti
 l1oip
 lapb
 lapbether
@@ -887,8 +872,6 @@ ocfs2_stack_user
 old_belkin-sir
 omfs
 omninet
-on20
-on26
 onenand
 onenand_sim
 oprofile
@@ -911,19 +894,15 @@ p8022
 p8023
 p9auth
 panel
-paride
 parkbd
 parport
 parport_ax88796
-parport_cs
-parport_pc
 pata_pcmcia
 pbe5
 pc87360
 pc87427
 pca9539
 pcbc
-pcd
 pcf50633-adc
 pcf50633-charger
 pcf50633-core
@@ -937,12 +916,9 @@ pcmcia
 pcmcia_core
 pcnet_cs
 pcwd_usb
-pd
 pda_power
 pegasus
 penmount
-pf
-pg
 phonet
 phram
 physmap
@@ -955,7 +931,6 @@ plusb
 pn_pep
 pohmelfs
 powermate
-ppa
 ppdev
 ppp_async
 ppp_deflate
@@ -967,7 +942,6 @@ pppox
 ppp_synctty
 psmouse
 psnap
-pt
 pvrusb2
 pwm
 pwm_bl
