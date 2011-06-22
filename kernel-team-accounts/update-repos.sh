@@ -5,8 +5,6 @@ LREPO=linux-2.6.git
 UBUNTU=git://kernel.ubuntu.com/ubuntu
 RELEASES="dapper hardy karmic lucid maverick natty oneiric"
 
-cd `dirname $0`
-
 if [ ! -d ${LREPO} ]
 then
 	git clone ${LINUX} ${LREPO}
