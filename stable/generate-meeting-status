@@ -141,6 +141,10 @@ class GenerateMeetingStatus(StdApp):
                 with open(self.cfg['sru'], 'r') as f:
                     sru = json.load(f)
 
+            print '||'
+            print '|| Current Kernel versions are always available here: http://people.canonical.com/~kernel/reports/versions.html'
+            print '||'
+
             tformat = ((42, LEFT), (20, LEFT), (20, LEFT), (4, RIGHT), (8, RIGHT))
             rows = []
             # Headers
@@ -188,10 +192,10 @@ class GenerateMeetingStatus(StdApp):
                         rowt.append(' ')
                         rowt.append(' ')
                     rows.append(rowt)
-                rows.append((' ', ' ', ' ', ' ', ' '))
+                #rows.append((' ', ' ', ' ', ' ', ' '))
 
             print FormatTable(tformat, rows, retain_newlines=True)
-
+            print '||'
 
         # Handle the user presses <ctrl-C>.
         #
