@@ -18,7 +18,6 @@ class Workflow:
         'linux' :  {
             'task_assignment' : {
                 'prepare-package'       : 'canonical-kernel-team',
-                'upload-to-ppa'         : 'canonical-kernel-team',
                 'promote-to-proposed'   : 'ubuntu-sru',
                 'verification-testing'  : 'canonical-kernel-team',
                 'certification-testing' : 'canonical-hw-cert',
@@ -35,7 +34,6 @@ class Workflow:
         'linux-mvl-dove' :  {
             'task_assignment' : {
                 'prepare-package'       : 'canonical-kernel-team',
-                'upload-to-ppa'         : 'canonical-kernel-team',
                 'promote-to-proposed'   : 'ubuntu-sru',
                 'verification-testing'  : 'canonical-kernel-team',
                 #'certification-testing' : 'ubuntu-armel-qa',
@@ -52,7 +50,6 @@ class Workflow:
         'linux-fsl-imx51' :  {
             'task_assignment' : {
                 'prepare-package'       : 'canonical-kernel-team',
-                'upload-to-ppa'         : 'canonical-kernel-team',
                 'promote-to-proposed'   : 'ubuntu-sru',
                 'verification-testing'  : 'canonical-kernel-team',
                 #'certification-testing' : 'ubuntu-armel-qa',
@@ -69,7 +66,6 @@ class Workflow:
         'linux-ti-omap4' :  {
             'task_assignment' : {
                 'prepare-package'       : 'canonical-kernel-team',
-                'upload-to-ppa'         : 'canonical-kernel-team',
                 'promote-to-proposed'   : 'ubuntu-sru',
                 'verification-testing'  : 'canonical-kernel-team',
                 #'certification-testing' : 'ubuntu-armel-qa',
@@ -86,7 +82,6 @@ class Workflow:
         'default' :  {
             'task_assignment' : {
                 'prepare-package'       : 'canonical-kernel-team',
-                'upload-to-ppa'         : 'canonical-kernel-team',
                 'promote-to-proposed'   : 'ubuntu-sru',
                 'verification-testing'  : 'canonical-kernel-team',
                 'certification-testing' : 'canonical-hw-cert',
