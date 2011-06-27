@@ -585,19 +585,19 @@ class Shank(StdApp):
     def regression_testing_fix_released(self, taskobj):
         """
         When regression-testing is set to Fix Released, we check the tags
-        If tagged regression-testing-failed then we alert people
-        If regression-testing-passed then we save the tag and state and trigger
+        If tagged qa-testing-failed then we alert people
+        If qa-testing-passed then we save the tag and state and trigger
         running of the test to see if we're ready for publishing
         """
-        if 'regression-testing-failed' in self.bugtags:
+        if 'qa-testing-failed' in self.bugtags:
             self.verbose('Regression Testing tagged as FAIL\n')
             # Send email and possibly a status update -spc- TODO
-            msgbody = 'The bug was tagged as regression-testing-failed\n'
+            msgbody = 'The bug was tagged as qa-testing-failed\n'
             self.send_email(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
             self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
-        elif 'regression-testing-passed' in self.bugtags:
+        elif 'qa-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
             # TODO send a status.net update?
             self.regression_testing_complete = True
@@ -605,7 +605,7 @@ class Shank(StdApp):
         else:
             self.verbose('regression-testing task set to Fix Released but no status tag!\n')
             # Send email and possibly a status update -spc- TODO
-            msgbody = 'The regression-testing task was set to Fix Released but neither the regression-testing-passed or regression-testing-failed tag was applied\n'
+            msgbody = 'The regression-testing task was set to Fix Released but neither the qa-testing-passed or qa-testing-failed tag was applied\n'
             self.send_email(taskobj, 'Regression Testing completed but no status tags applied', msgbody)
             # stop further processing by this bot
             self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
@@ -681,7 +681,7 @@ class Shank(StdApp):
                 self.security_publishing_required = True
 
             # one last check for test results
-            if 'regression-testing-passed' in self.bugtags and 'certification-testing-passed' in self.bugtags:
+            if 'qa-testing-passed' in self.bugtags and 'certification-testing-passed' in self.bugtags:
                 # we're all good
                 if self.security_publishing_required:
                     self.verbose('Requires publishing to the -security pocket\n')
@@ -704,7 +704,7 @@ class Shank(StdApp):
                 # don't have required testing signoffs
                 self.verbose('ERROR: test completion tags not found during release test!\n')
                 # Send email and possibly a status update
-                msgbody = 'During the release test either the certification-testing-passed or the regression-testing-passed tag was not found\n'
+                msgbody = 'During the release test either the certification-testing-passed or the qa-testing-passed tag was not found\n'
                 msgbody = msgbody + 'Tags on this bug are:\n'
                 for ftag in self.bugtags:
                     msgbody = msgbody + '    ' + ftag + '\n'
