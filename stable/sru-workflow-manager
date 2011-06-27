@@ -13,6 +13,7 @@ from datetime                           import datetime
 from urllib                             import quote
 from urllib2                            import HTTPError
 from ktl.messaging                      import Email, Status
+import re
 
 # CmdlineError
 #
@@ -481,8 +482,8 @@ class Shank(StdApp):
         builds the packages; check the build status and update tasks
         """
         title = taskobj.bug.title
-        pkg_name = re.findall('linux[^:]*', task.bug.title)[0]
-        pkg_ver = re.findall('([0-9]+\.[^ ]+)', task.bug.title)[0]
+        pkg_name = re.findall('linux[^:]*', title)[0]
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
         ckt = self.lp.launchpad.people['canonical-kernel-team']
         ppa = ckt.getPPAByName(name='ppa')
         matches = [ p for p in ppa.getPublishedSources(source_name=pkg_name)
