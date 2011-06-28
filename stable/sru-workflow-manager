@@ -682,7 +682,8 @@ class Shank(StdApp):
                 self.security_publishing_required = True
 
             # one last check for test results
-            if 'qa-testing-passed' in self.bugtags and 'certification-testing-passed' in self.bugtags:
+            if 'qa-testing-passed' in self.bugtags and \
+                    ('certification-testing-passed' in self.bugtags or self.taskbyname['certification-testing'].status == 'Invalid'):
                 # we're all good
                 if self.security_publishing_required:
                     self.verbose('Requires publishing to the -security pocket\n')
