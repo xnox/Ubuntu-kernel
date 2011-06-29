@@ -8,6 +8,7 @@ from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.workflow                       import Workflow
+from ktl.ubuntu                         import Ubuntu
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
@@ -136,6 +137,7 @@ class CreateTrackingBug(StdApp):
             changelog = Debian.changelog()
 
             wf = Workflow()
+            ub = Ubuntu()
 
             #-------------------------------------------------------------------------------------
             # B U G   W O R K
@@ -193,6 +195,24 @@ class CreateTrackingBug(StdApp):
                     nomination = bug.lpbug.addNomination(target=s)
                     if nomination.canApprove():
                         nomination.approve()
+                    break
+
+            # search for dependent packages
+            found = {}
+            for entry in iter(ub.db):
+                if ub.db[entry]['name'] == s.name.lower():
+                    found = ub.db[entry]
+            if found:
+                dep_list = []
+                if 'dependent-packages' in found:
+                    for dep in iter(found['dependent-packages']):
+                        if dep == package:
+                            dep_list = found['dependent-packages'][dep]
+                            break
+                if dep_list and changelog[0]['ABI'] != changelog[1]['ABI']:
+                    for pkg in dep_list:
+                        src_pkg = ubuntu.getSourcePackage(name=pkg)
+                        bug.lpbug.addTask(target=src_pkg)
 
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Add a task for kernel-sru-workflow and then nominate all the series that belong
