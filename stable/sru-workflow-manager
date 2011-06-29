@@ -7,6 +7,7 @@ from sys                                import argv
 from os                                 import path, popen
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
+from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
@@ -249,6 +250,7 @@ class Shank(StdApp):
         if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'qastaging'
         self.lp = LaunchpadService(self.defaults)
+        self.ubuntu = Ubuntu()
 
         # The service.distributions property is a collection of distributions. We
         # pretty much only care about one, 'ubuntu'.
@@ -449,7 +451,9 @@ class Shank(StdApp):
         btitle = task.bug.title
         packagename = btitle.split(':')[0]
         version = btitle.split(':')[1].split()[0]
-        pkgid = 'Package %s %s ' % (packagename, version)
+        kinfo = self.ubuntu.lookup(version.split('-')[0])
+        series_name = kinfo['name']
+        pkgid = '%s package %s %s ' % (series_name, packagename, version)
 
         self.status.update(bugurl + ' : ' + pkgid + ' ' + message)
         return
