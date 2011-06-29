@@ -426,6 +426,14 @@ class Shank(StdApp):
         retval = 'https://%s/bugs/%s' % (self.cfg['lpserver'], bug_id)
         return retval
 
+    def send_comment(self, task, subject, body):
+        """
+        Add comment to tracking bug
+        """
+        self.verbose('Adding comment to tracking bug\n')
+
+        task.bug.add_comment(body, subject)
+
     def send_email(self, task, subject, body):
         """
         Send email to the configured list or recipient
@@ -526,9 +534,10 @@ class Shank(StdApp):
                 # Now tag all bugs verification-needed and spam with a comment
                 # Automate this in the future but for now send an email
                 print 'Here is where we would tag and spam the verification bugs'
-                msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
-                self.send_email(taskobj, 'Bug spamming required', msgbody)
-                self.send_status_update(task, 'available in -proposed.')
+                # FIXME: not sending emails anymore, we can remove later the 3 lines below
+                #msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
+                #self.send_email(taskobj, 'Bug spamming required', msgbody)
+                #self.send_status_update(task, 'available in -proposed.')
         return False
 
     def verification_testing_fix_released(self, taskobj):
@@ -555,7 +564,7 @@ class Shank(StdApp):
             self.verbose('Certification tagged as FAIL\n')
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The bug was tagged as certification-testing-failed\n'
-            self.send_email(taskobj, 'Certification FAILURE', msgbody)
+            self.send_comment(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
             self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
@@ -568,7 +577,9 @@ class Shank(StdApp):
             self.verbose('certification-testing task set to Fix Released but no status tag!\n')
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The certification-testing task was set to Fix Released but neither the certification-testing-passed or certification-testing-failed tag was applied\n'
-            self.send_email(taskobj, 'Certification completed but no status tags applied', msgbody)
+            self.send_comment(taskobj, 'Certification completed but no status tags applied', msgbody)
+            # reset task state so Certification team fix it
+            self.set_task_to_state('certification-testing', 'Confirmed')
             # stop further processing by this bot
             self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
@@ -594,7 +605,7 @@ class Shank(StdApp):
             self.verbose('Regression Testing tagged as FAIL\n')
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The bug was tagged as qa-testing-failed\n'
-            self.send_email(taskobj, 'Regression Testing FAILURE', msgbody)
+            self.send_comment(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
             self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
@@ -607,7 +618,9 @@ class Shank(StdApp):
             self.verbose('regression-testing task set to Fix Released but no status tag!\n')
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The regression-testing task was set to Fix Released but neither the qa-testing-passed or qa-testing-failed tag was applied\n'
-            self.send_email(taskobj, 'Regression Testing completed but no status tags applied', msgbody)
+            self.send_comment(taskobj, 'Regression Testing completed but no status tags applied', msgbody)
+            # reset task so QA team can fix it
+            self.set_task_to_state('regression-testing', 'Confirmed')
             # stop further processing by this bot
             self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
             return False
@@ -633,7 +646,7 @@ class Shank(StdApp):
             msgbody = msgbody + '\n'
             msgbody = msgbody + '%s task was set to state %s\n' % (taskname, taskobj.status)
             msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
-            self.send_email(taskobj, '%s task not set to correct state during release test' % taskname, msgbody)
+            self.send_comment(taskobj, '%s task not set to correct state during release test' % taskname, msgbody)
             # stop further processing by this bot
             self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
 
@@ -699,7 +712,7 @@ class Shank(StdApp):
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
                 task = self.taskbyname['Kernel SRU Workflow']
                 # zzz
-                self.send_email(task, 'Package is ready for publication', msgbody)
+                #self.send_email(task, 'Package is ready for publication', msgbody)
                 #self.send_status_update(task, 'available for publication.')
                 
             else:
@@ -712,7 +725,7 @@ class Shank(StdApp):
                     msgbody = msgbody + '    ' + ftag + '\n'
                 msgbody = msgbody + '\n'
                 msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
-                self.send_email(self.taskbyname['Kernel SRU Workflow'], 'Test completion tags not found during release test', msgbody)
+                self.send_comment(self.taskbyname['Kernel SRU Workflow'], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
                 self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
     
@@ -735,7 +748,7 @@ class Shank(StdApp):
 
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The package has been published and the bug is being set to Fix Released\n'
-            self.send_email(taskobj, 'Package Released!', msgbody)
+            self.send_comment(taskobj, 'Package Released!', msgbody)
 
             task = self.taskbyname['promote-to-updates']
             self.send_status_update(task, 'has been published.')
