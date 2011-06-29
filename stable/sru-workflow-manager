@@ -421,11 +421,7 @@ class Shank(StdApp):
     # end of main
 
     def bug_url(self, bug_id):
-        retval = ''
-        if 'staging' in self.cfg:
-            retval = 'https://%s/ubuntu/+source/linux/+bug/%s\n' % (self.cfg['lpserver'], bug_id)
-        else:
-            retval = 'http://pad.lv/%s' % (bug_id)
+        retval = 'https://%s/bugs/%s' % (self.cfg['lpserver'], bug_id)
         return retval
 
     def send_email(self, task, subject, body):
