@@ -696,7 +696,7 @@ class Shank(StdApp):
                 task = self.taskbyname['Kernel SRU Workflow']
                 # zzz
                 self.send_email(task, 'Package is ready for publication', msgbody)
-                self.send_status_update(task, 'available for publication.')
+                #self.send_status_update(task, 'available for publication.')
                 
             else:
                 # don't have required testing signoffs
