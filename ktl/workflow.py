@@ -33,9 +33,9 @@ class Workflow:
             },
         'linux-mvl-dove' :  {
             'task_assignment' : {
-                'prepare-package'       : 'canonical-kernel-team',
+                'prepare-package'       : 'ubuntu-armel-kernel',
                 'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'canonical-kernel-team',
+                'verification-testing'  : 'ubuntu-armel-kernel',
                 #'certification-testing' : 'ubuntu-armel-qa',
                 'regression-testing'    : 'ubuntu-armel-qa',
                 'promote-to-updates'    : 'ubuntu-sru',
@@ -49,9 +49,9 @@ class Workflow:
             },
         'linux-fsl-imx51' :  {
             'task_assignment' : {
-                'prepare-package'       : 'canonical-kernel-team',
+                'prepare-package'       : 'ubuntu-armel-kernel',
                 'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'canonical-kernel-team',
+                'verification-testing'  : 'ubuntu-armel-kernel',
                 #'certification-testing' : 'ubuntu-armel-qa',
                 'regression-testing'    : 'ubuntu-armel-qa',
                 'promote-to-updates'    : 'ubuntu-sru',
@@ -65,9 +65,9 @@ class Workflow:
             },
         'linux-ti-omap4' :  {
             'task_assignment' : {
-                'prepare-package'       : 'canonical-kernel-team',
+                'prepare-package'       : 'ubuntu-armel-kernel',
                 'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'canonical-kernel-team',
+                'verification-testing'  : 'ubuntu-armel-kernel',
                 #'certification-testing' : 'ubuntu-armel-qa',
                 'regression-testing'    : 'ubuntu-armel-qa',
                 'promote-to-updates'    : 'ubuntu-sru',
