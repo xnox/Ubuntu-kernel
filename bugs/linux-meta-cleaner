@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+#
+# Tutorial:
+#    The difference between this tutorial/example and tut.01 is that this shows
+#    how to point at one of the other Launchpad services.
+#
+#    The staging service, exists for testing various things. This is running
+#    against a snapshot of the database. Changes made on the staging server are
+#    not permanent changes and will disapear when the database is reloaded (once
+#    each day).
+#
+
+from lpltk.service                   import LaunchpadService
+from datetime                        import datetime
+
+# LinuxMetaCleaner
+#
+class LinuxMetaCleaner():
+    # main
+    #
+    def main(self):
+        configuration = {}
+        #configuration['launchpad_services_root'] = 'qastaging'
+        #configuration['launchpad_client_name']   = 'kernel-team-linux-meta-cleaner'
+
+        lp = LaunchpadService(configuration)
+
+        distro        = lp.distributions['ubuntu']
+        linux_package = distro.get_source_package('linux')
+        meta_package  = distro.get_source_package('linux-meta')
+
+        # Searching for bug tasks, the search can be quite complicated and made up
+        # of several components. The following can be combined in many ways to get
+        # the search you want. The search happens on the server and returns a
+        # collection of bug tasks that match the search criteria.
+        #
+        # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
+        #                          status=self.cfg['task_search_status'], modified_since=since)
+        #
+        search_tags            = ['-kj-triage'] # A list of the tags we care about
+        search_tags_combinator = "All"
+        search_status          = ["New", "Confirmed"] # A list of the bug statuses that we care about
+        tasks = meta_package.search_tasks(status=search_status, tags=search_tags, tags_combinator=search_tags_combinator)
+
+        for task in tasks:
+            try:
+                # Temp. Hack
+                task.target = linux_package.lp_source_package
+                bug = task.bug
+                print(bug.id)
+            except:
+                bug = task.bug
+                print(bug.id)
+                print("  *** Warning: Exception thrown while processing %s" % (bug.id))
+
+if __name__ == '__main__':
+    app = LinuxMetaCleaner()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+
