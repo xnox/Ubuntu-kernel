@@ -9,7 +9,7 @@ from ktl.git                            import Git, GitError
 from ktl.utils                          import debug, dump
 from ktl.kernel                         import Kernel
 from re                                 import compile
-from os                                 import path
+from os                                 import path, listdir
 
 # DebianError
 #
@@ -31,6 +31,36 @@ class Debian:
     package_rc = compile("^(linux[-\S])*.*$")
     ver_rc     = compile("^linux[-\S]* \(([0-9]+\.[0-9]+\.[0-9]+[-\.][0-9]+\.[0-9]+[~a-z0-9]*)\).*$")
 
+    # debian_directories
+    #
+    @classmethod
+    def debian_directories(cls):
+        retval = []
+
+        # Find the correct debian directory for this branch of this repository.
+        #
+        current_branch = Git.current_branch()
+
+        # If we have a debian/debian.env then open and extract the DEBIAN=...
+        # location.
+        debug("Checking debian/debian.env", cls.debug)
+        debdirs = []
+        try:
+            debian_env = Git.show("debian/debian.env", branch=current_branch)
+            for line in debian_env:
+                (var, val) = line.split('=', 1)
+                val = val.rstrip()
+
+                if var == 'DEBIAN':
+                    debdirs.append(val)
+            debug("SUCCEEDED\n", cls.debug, False)
+        except GitError:
+            debug("FAILED\n", cls.debug, False)
+            debdirs += [ 'debian', 'meta-source/debian' ]
+
+        return debdirs
+
+
     # raw_changelog
     #
     @classmethod
@@ -41,29 +71,14 @@ class Debian:
         #
         current_branch = Git.current_branch()
 
-        # If we have a debian/debian.env then open and extract the DEBIAN=...
-        # location.
-        debug("Checking debian/debian.env", cls.debug)
-        cl_paths = []
-        try:
-            debian_env = Git.show("debian/debian.env", branch=current_branch)
-            for line in debian_env:
-                (var, val) = line.split('=', 1)
-                val = val.rstrip()
-
-                if var == 'DEBIAN':
-                    cl_paths.append(val + "/changelog")
-            debug("SUCCEEDED\n", cls.debug, False)
-        except GitError:
-            debug("FAILED\n", cls.debug, False)
-
-        # Try probabal paths.
-        cl_paths += [ 'debian/changelog', 'meta-source/debian/changelog' ]
-        for cl_path in cl_paths:
-            debug("Trying '%s': " % cl_path, cls.debug)
+        # Check each possible directory for a changelog
+        debian_dirs = cls.debian_directories()
+        for debdir in debian_dirs:
+            chglog = debdir + '/changelog'
+            debug("Trying '%s': " % chglog, cls.debug)
             try:
-                retval = Git.show(cl_path, branch=current_branch)
-                return retval, cl_path
+                retval = Git.show(chglog, branch=current_branch)
+                return retval, chglog
             except GitError:
                 debug("FAILED\n", cls.debug, False)
 
@@ -130,5 +145,28 @@ class Debian:
                 content.append(line)
 
         return retval
+
+    # abi
+    #
+    @classmethod
+    def abi(cls):
+
+        # Check each possible directory for an abi file
+        debian_dirs = cls.debian_directories()
+        retvals = []
+        for debdir in debian_dirs:
+            abidir = debdir + '/abi'
+            debug("Trying '%s': \n" % abidir, cls.debug)
+            if path.isdir(abidir):
+                debug("  '%s' is a directory\n" % abidir, cls.debug)
+                contents = listdir(abidir)
+                for item in contents:
+                    debug("  Contains: '%s'\n" % item, cls.debug)
+                    if path.isdir(abidir + '/' + item):
+                        retvals.append(item)
+                return retvals
+
+        # Not there anywhere, barf
+        raise DebianError('Failed to find the abi files.')
 
 # vi:set ts=4 sw=4 expandtab:

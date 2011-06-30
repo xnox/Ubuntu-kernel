@@ -7,6 +7,7 @@ from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
+from ktl.workflow                       import Workflow
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
@@ -134,6 +135,8 @@ class CreateTrackingBug(StdApp):
 
             changelog = Debian.changelog()
 
+            wf = Workflow()
+
             #-------------------------------------------------------------------------------------
             # B U G   W O R K
 
@@ -158,15 +161,12 @@ class CreateTrackingBug(StdApp):
                 print("https://bugs.launchpad.net/bugs/%s" % (id))
 
             # Tags:
-            #    kernel-tracking-bug
-            #
-            bug.tags.append('kernel-release-tracking-bug')
-            name = bug.owner.display_name
+            #    add all tags for this package name
+            taglist = wf.initial_tags(package)
+            for itag in taglist:
+                bug.tags.append(itag)
 
-            # Any special case tags based on package name
-            #
-            if changelog[0]['package'] in ['linux-mvl-dove', 'linux-ti-omap4', 'linux-fsl-imx51']:
-                bug.tags.append('armel')
+            name = bug.owner.display_name
 
             # Get the one task and modify the status and importance.
             #
@@ -176,11 +176,9 @@ class CreateTrackingBug(StdApp):
                 break
 
             # Teams / individuals to be automatically subscribed to the tracking bugs
-            #   Hardware Certification Team     "hardware-certification"
-            #   SRU Verification                "sru-verification"
-            #   Ubuntu Stable Release           "ubuntu-sru"
+            #   These vary per package
             #
-            teams = ["sru-verification", "ubuntu-sru", "hardware-certification"]
+            teams = wf.subscribers(package)
             for team in teams:
                 lp_team = self.lp.launchpad.people[team]
                 bug.lpbug.subscribe(person=lp_team)
@@ -200,74 +198,6 @@ class CreateTrackingBug(StdApp):
             # Add a task for kernel-sru-workflow and then nominate all the series that belong
             # to that project.
             #
-
-            # Tasks vary according to the package name
-            taskAssignmentsByPackage = {
-                'linux' :  {
-                    'prepare-package'       : 'canonical-kernel-team',
-                    'upload-to-ppa'         : 'canonical-kernel-team',
-                    'promote-to-proposed'   : 'ubuntu-sru',
-                    'verification-testing'  : 'canonical-kernel-team',
-                    'certification-testing' : 'canonical-hw-cert',
-                    'regression-testing'    : 'canonical-platform-qa',
-                    'promote-to-updates'    : 'ubuntu-sru',
-                    'promote-to-security'   : 'ubuntu-sru',
-                    'security-signoff'      : 'canonical-security'
-                    },
-                'linux-mvl-dove' :  {
-                    'prepare-package'       : 'canonical-kernel-team',
-                    'upload-to-ppa'         : 'canonical-kernel-team',
-                    'promote-to-proposed'   : 'ubuntu-sru',
-                    'verification-testing'  : 'canonical-kernel-team',
-                    #'certification-testing' : 'ubuntu-armel-qa',
-                    'regression-testing'    : 'ubuntu-armel-qa',
-                    'promote-to-updates'    : 'ubuntu-sru',
-                    'promote-to-security'   : 'ubuntu-sru',
-                    'security-signoff'      : 'canonical-security'
-                    },
-                'linux-fsl-imx51' :  {
-                    'prepare-package'       : 'canonical-kernel-team',
-                    'upload-to-ppa'         : 'canonical-kernel-team',
-                    'promote-to-proposed'   : 'ubuntu-sru',
-                    'verification-testing'  : 'canonical-kernel-team',
-                    #'certification-testing' : 'ubuntu-armel-qa',
-                    'regression-testing'    : 'ubuntu-armel-qa',
-                    'promote-to-updates'    : 'ubuntu-sru',
-                    'promote-to-security'   : 'ubuntu-sru',
-                    'security-signoff'      : 'canonical-security'
-                    },
-                'linux-ti-omap4' :  {
-                    'prepare-package'       : 'canonical-kernel-team',
-                    'upload-to-ppa'         : 'canonical-kernel-team',
-                    'promote-to-proposed'   : 'ubuntu-sru',
-                    'verification-testing'  : 'canonical-kernel-team',
-                    #'certification-testing' : 'ubuntu-armel-qa',
-                    'regression-testing'    : 'ubuntu-armel-qa',
-                    'promote-to-updates'    : 'ubuntu-sru',
-                    'promote-to-security'   : 'ubuntu-sru',
-                    'security-signoff'      : 'canonical-security'
-                    },
-                'default' :  {
-                    'prepare-package'       : 'canonical-kernel-team',
-                    'upload-to-ppa'         : 'canonical-kernel-team',
-                    'promote-to-proposed'   : 'ubuntu-sru',
-                    'verification-testing'  : 'canonical-kernel-team',
-                    'certification-testing' : 'canonical-hw-cert',
-                    'regression-testing'    : 'canonical-platform-qa',
-                    'promote-to-updates'    : 'ubuntu-sru',
-                    'promote-to-security'   : 'ubuntu-sru',
-                    'security-signoff'      : 'canonical-security'
-                    }
-                }
-
-            # Get task assignments based on package name
-            #
-
-            if changelog[0]['package'] in taskAssignmentsByPackage:
-                taskAssignments = taskAssignmentsByPackage[changelog[0]['package']]
-            else:
-                print ' **** Note: Using default task assignments because package name <%s> has no custom task assignments' % changelog[0]['package']
-                taskAssignments = taskAssignmentsByPackage['default']
 
             lp = self.lp.launchpad
             ubuntu = lp.distributions["ubuntu"]
@@ -294,11 +224,12 @@ class CreateTrackingBug(StdApp):
                     if parts[0] != '':
                         continue
                     task = parts[2].strip()
-                    if task in taskAssignments:
-                        t.assignee = self.lp.launchpad.people[taskAssignments[task]]
-                    else:
+                    assignee = wf.assignee(package, task)
+                    if assignee is None:
                         print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
                         t.status = "Invalid"
+                    else:
+                        t.assignee = self.lp.launchpad.people[assignee]
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
@@ -312,7 +243,7 @@ class CreateTrackingBug(StdApp):
             with open(changelog_path, 'w') as f:
                 f.write(thelog[0])
                 f.write(thelog[1])
-                f.write("  [ %s ]\n" % (name))
+                f.write("  [%s]\n" % (name))
                 f.write("\n")
                 f.write("  * Release Tracking Bug\n")
                 f.write("    - LP: #%s\n" % (id))
@@ -325,7 +256,7 @@ class CreateTrackingBug(StdApp):
         except KeyboardInterrupt:
             pass
 
-        # Handle ommand line errors.
+        # Handle command line errors.
         #
         except CmdlineError as e:
             cmdline.error(e.msg, self.defaults)
