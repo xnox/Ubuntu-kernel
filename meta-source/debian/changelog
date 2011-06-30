@@ -1,3 +1,13 @@
+linux-meta (3.0.0.3.4) oneiric; urgency=low
+
+  [ Leann Ogasawara ]
+  * Bump ABI 
+
+  [ Andy Whitcroft ]
+  * Drop armel versatile flavour to match main kernel
+
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 04 Jul 2011 13:22:45 +0100
+
 linux-meta (3.0.0.2.3) oneiric; urgency=low
 
   [ Leann Ogasawara ]
