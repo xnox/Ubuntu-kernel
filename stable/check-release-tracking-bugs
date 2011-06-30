@@ -681,9 +681,13 @@ class CheckTrackingBugs(StdApp):
             task_name = task.bug_target_name
             if (task_name != self.prjname and
                 task_name.startswith(self.prjname)):
-                self.verify_bug_task(task, target)
+                self.verify_workflow_task(task, target)
                 workflow_task = task_name[len(self.prjname):].strip()
                 task_tbl[workflow_task] = task.status # cache status for later checks
+            elif task_name == self.prjname:
+                self.verify_none_assignment(task)
+            elif task_name == "%s (Ubuntu)" % (target):
+                self.verify_none_assignment(task)
         for task in iter(assignments):
             if not task in task_tbl:
                 self.err("Required workflow task %s not found (target = '%s')" % (task, target))
@@ -772,7 +776,7 @@ class CheckTrackingBugs(StdApp):
             target = pkg_title
         return target
 
-    def verify_bug_task(self, task, target):
+    def verify_workflow_task(self, task, target):
         # check if the task is valid
         task_name = task.bug_target_name
         workflow_task = task_name[len(self.prjname):].strip()
@@ -811,6 +815,11 @@ class CheckTrackingBugs(StdApp):
                            % (aname, workflow_task)):
                 task.assignee = lp_team
         return
+
+    def verify_none_assignment(self, task):
+        if task.assignee != None:
+            if self.handle("%s main task shouldn't have any assignee" % (task.bug_target_name)):
+                task.assignee = None
 
     def verify_bug_tags(self, bug, task, status, taglist):
         tagcount = 0
