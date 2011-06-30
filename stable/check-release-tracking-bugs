@@ -80,6 +80,10 @@ class Cmdline:
         stdo("                         Invalidate a tracking bug. Requires that you specify the bug number \n")
         stdo("                         with --bug option (doesn't allow invalidating all tracking bugs)    \n")
         stdo("                                                                                             \n")
+        stdo("        --reset-status                                                                       \n")
+        stdo("                         Reset all task status to New state (helps when bugs get             \n")
+        stdo("                         vandalized...)                                                      \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
 
@@ -94,7 +98,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'bug=', 'fix', 'invalidate']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'bug=', 'fix', 'invalidate', 'reset-status']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -121,6 +125,9 @@ class Cmdline:
 
                 elif (opt == '--invalidate'):
                     self.cfg['invalidate'] = True
+
+                elif (opt == '--reset-status'):
+                    self.cfg['reset-status'] = True
 
         except GetoptError, error:
             print(error, defaults)
@@ -587,7 +594,9 @@ class CheckTrackingBugs(StdApp):
             if 'bug' in self.cfg:
                 bug = self.lp.get_bug(self.cfg['bug'])
                 is_track_bug = self.verify_tracking_bug(bug)
-                if 'invalidate' in self.cfg:
+                if 'invalidate' in self.cfg and 'reset-status' in self.cfg:
+                    self.err("Conflicting options specified: --invalidate and --reset-status")
+                elif 'invalidate' in self.cfg:
                     if is_track_bug:
                         for task in bug.tasks:
                             task.status = 'Invalid'
@@ -598,8 +607,18 @@ class CheckTrackingBugs(StdApp):
                     else:
                         self.err("Not invalidating %s, as it doesn't look like a tracking bug"
                                  % (self.cfg['bug']))
+                elif 'reset-status' in self.cfg:
+                    if is_track_bug:
+                        for task in bug.tasks:
+                            task.status = 'New'
+                        stdo("Successfuly reset all tasks to 'New' on bug %s\n" % (self.cfg['bug']))
+                    else:
+                        self.err("Not reseting statuses on %s, it doesn't look like a tracking bug"
+                                 % (self.cfg['bug']))
             elif 'invalidate' in self.cfg:
                 self.err("You must specify the bug number to invalidate (--bug=<number>)")
+            elif 'reset-status' in self.cfg:
+                self.err("You must specify the bug number to reset tasks (--bug=<number>)")
             else:
                 project = self.project
                 search_tags = [ 'kernel-release-tracking-bug' ]
@@ -653,7 +672,7 @@ class CheckTrackingBugs(StdApp):
         if not master_task:
             self.err("Didn't found any %s tasks! Unable to do more checks on this bug" % (self.prjname))
             return False
-        elif 'invalidate' in self.cfg: # if invalidating, no need for more checks
+        elif 'invalidate' in self.cfg or 'reset-status' in self.cfg: # if invalidating/resetting, no need for more checks
             return True
 
         # verify kernel sru workflow tasks for this package
