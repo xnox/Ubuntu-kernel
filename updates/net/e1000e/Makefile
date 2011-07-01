@@ -32,6 +32,5 @@
 
 obj-m += e1000e.o
 
-e1000e-objs := 82571.o ich8lan.o es2lan.o \
-	       lib.o phy.o param.o ethtool.o netdev.o
-
+e1000e-objs :=	80003es2lan.o 82571.o ethtool.o ich8lan.o kcompat.o \
+		mac.o manage.o netdev.o nvm.o param.o phy.o
