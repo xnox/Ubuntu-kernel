@@ -5,6 +5,7 @@ from sys                                import argv, stderr
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo
 from ktl.std_app                        import StdApp
+from ktl.ubuntu                         import Ubuntu
 from ktl.workflow                       import Workflow
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
@@ -746,6 +747,7 @@ class CheckTrackingBugs(StdApp):
             return target
         pkg_title = pkg_title[0]
         assignments = self.workflow.tdb
+        ub = Ubuntu()
         real_target = ''
         for task in bug.tasks:
             task_name = task.bug_target_name
@@ -758,14 +760,38 @@ class CheckTrackingBugs(StdApp):
                     target = pkg
                     real_target = target
                 elif pkg != real_target:
-                    self.err("Bug is set to more than one source package! ('%s' != '%s')" % (target, pkg))
+                    self.err("Bug is set to more than one main source package! ('%s' != '%s')" % (target, pkg))
                     continue
             else:
                 if not target:
                     target = 'default'
                     real_target = pkg
                 elif pkg != real_target:
-                    self.err("Invalid target/task, or more than one source package set (%s)" % (task_name))
+                    if task.status == 'Invalid':
+                        continue
+                    found = {}
+                    pkg_ver = re.findall('([0-9]+\.[^ ]+)', bug.title)
+                    if not pkg_ver:
+                        self.err("Bug title doesn't contain the package version, can't verify %s" % (task_name))
+                        continue
+                    pkg_ver = pkg_ver[0]
+                    for entry in iter(ub.db):
+                        if pkg_ver.startswith(ub.db[entry]['kernel']):
+                            found = ub.db[entry]
+                            break
+                    handle = 0
+                    if found:
+                        if 'dependent-packages' in found:
+                            if target in found['dependent-packages']:
+                                if pkg in found['dependent-packages'][target]:
+                                    continue
+                            handle = self.handle("Invalid dependent source package found (%s)" % (pkg))
+                        else:
+                            handle = self.handle("Invalid task or source package found (%s)" % (task_name))
+                    else:
+                        handle = self.handle("Invalid version or source package task (%s - %s)" % (pkg_ver, task_name))
+                    if handle:
+                        task.status = 'Invalid'
                     continue
                 else:
                     continue
