@@ -1,3 +1,14 @@
+linux-firmware (1.52.2) natty-proposed; urgency=low
+
+  * Add firmware to support compat-wireless backports
+    linux-firmware: add new firmware for RTL8168E-VL
+    linux-firmware: update firmware for RTL8111E
+    linux-firmware: Add firmware for RTL8168/8111E
+    linux-firmware: Add firmware for RTL8105E
+    -LP: #804671
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 05 Jul 2011 14:07:09 -0600
+
 linux-firmware (1.52.1) natty-proposed; urgency=low
 
   * Update rt2800 firmware
