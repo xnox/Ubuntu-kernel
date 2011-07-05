@@ -35,3 +35,11 @@ cronjob on cranberry.canonical.com.  The output, which can be copy and
 pasted unto the meeting each week, can be found at:
 
 http://kernel.ubuntu.com/~kernel-ppa/reports/kt-meeting.html
+
+The stable kernel team statistics can be created with sru-report +
+generate-meeting-status scripts, eg.:
+sru-report > report.json
+generate-meeting-status report.json
+
+The same stable kernel statistics is also available online at:
+http://people.canonical.com/~kernel/reports/versions.html
