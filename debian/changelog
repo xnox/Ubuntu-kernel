@@ -1,3 +1,15 @@
+linux-firmware (1.34.11) lucid-proposed; urgency=low
+
+  * Added firmware files to support compat-wireless
+    linux-firmware: add new firmware for RTL8168E-VL
+    linux-firmware: update firmware for RTL8111E
+    linux-firmware: Add firmware for RTL8168/8111E
+    linux-firmware: Add firmware for RTL8105E
+    rtl_nic: Add firmware for RTL8111D(L)
+    -LP: #804671
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 05 Jul 2011 14:22:43 -0600
+
 linux-firmware (1.34.10) lucid-proposed; urgency=low
 
   * Added carl9170.fw for Atheros wireless AR9170 based devices.
