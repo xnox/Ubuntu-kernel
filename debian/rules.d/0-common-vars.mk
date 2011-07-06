@@ -55,6 +55,7 @@ do_alsa=false
 do_compat_wireless_2.6.36=true
 do_compat_wireless_2.6.37=true
 do_compat_wireless_2.6.38=true
+do_compat_wireless_2.6.39=true
 do_net=true
 do_input=true
 do_media=true
@@ -72,6 +73,10 @@ endif
 
 ifeq ($(do_compat_wireless_2.6.38),true)
 	CWDIRS += compat-wireless-2.6.38
+endif
+
+ifeq ($(do_compat_wireless_2.6.39),true)
+	CWDIRS += compat-wireless-2.6.39
 endif
 
 # Support parallel=<n> in DEB_BUILD_OPTIONS (see #209008)
