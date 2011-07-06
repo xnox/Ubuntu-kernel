@@ -811,8 +811,8 @@ class CheckTrackingBugs(StdApp):
         elif lp_team:
             invalid_assignee = True
         if invalid_assignee:
-            if self.handle("Invalid or missing assignee (%s) for workflow task %s"
-                           % (aname, workflow_task)):
+            if self.handle("Invalid or missing assignee (%s) for workflow task %s (should be %s or a member of it)"
+                           % (aname, workflow_task, tname)):
                 task.assignee = lp_team
         return
 
