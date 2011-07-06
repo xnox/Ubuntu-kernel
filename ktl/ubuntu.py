@@ -30,7 +30,9 @@ class Ubuntu:
             'packages'  :
             [
                 'linux',
-                'linux-meta'
+                'linux-meta',
+                'linux-ti-omap4',
+                'linux-meta-ti-omap4'
             ],
             'sha1' : '',
             'md5' : ''
