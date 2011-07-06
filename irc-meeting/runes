@@ -1,0 +1,81 @@
+
+#
+# lets "get 'er done"!
+#
+
+#startmeeting
+
+##
+## This is the Ubuntu Kernel Team weekly status meeting.
+##
+
+
+[LINK] https://wiki.ubuntu.com/KernelTeam/Meeting
+[LINK] https://wiki.ubuntu.com/KernelTeam/ReleaseStatus/Oneiric
+
+# Meeting Etiquette
+#
+# NOTE: '..' indicates that you are finished with your input.
+#       'o/' indicates you have something you'd like to add (wait until you are recognized)
+#
+
+[TOPIC] ARM Status (ppisati)
+
+[TOPIC] Release Metrics and Incoming Bugs (ogasawara)
+
+[TOPIC] Blueprints: Oneiric Delta Review (ogasawara)
+[LINK] https://blueprints.launchpad.net/ubuntu/+spec/other-kernel-o-ubuntu-delta-review
+
+[TOPIC] Blueprints: Oneiric Server Requirements (smb)
+[LINK] https://blueprints.launchpad.net/ubuntu/+spec/other-kernel-o-server-requirements
+
+[TOPIC] Status: General Oneiric (ogasawara)
+
+[TOPIC] Status: Stable Kernel Team (sconklin)
+
+[TOPIC] Security & bugfix kernels - Maverick/Lucid/Hardy (sconklin)
+
+[TOPIC] Open Discussion or Questions: Raise your hand to be recognized (o/)
+[TOPIC] Blueprints: Oneiric Bug Handling
+[LINK] https://blueprints.launchpad.net/ubuntu/+spec/other-kernel-o-bug-handling
+
+
+thanks everyone
+#endmeeting
+
+##
+## Kernel team meeting today @ 17:00 UTC
+##
+
+##
+## Kernel team meeting in one hour
+##
+
+##
+## Kernel team meeting in 30 minutes
+##
+
+##
+## Meeting starting now
+##
+
+##
+## Meeting starting now - #ubuntu-meeting
+##      agenda: https://wiki.ubuntu.com/KernelTeam/Meeting
+##
+
+##
+## Ubuntu Kernel Team Meeting - in 30 minutes - #ubuntu-meeting
+##
+
+##
+## Ubuntu Kernel Team Meeting - Today @ 17:00 UTC - #ubuntu-meeting
+##      agenda: https://wiki.ubuntu.com/KernelTeam/Meeting
+##
+JFo, apw, tgardner, sconklin,  kerton, jjohansen, sforshee, smb, pgragner, cking, manjo
+
+
+/msg chanserv op #ubuntu-kernel
+/msg chanserv deop #ubuntu-kernel
+
+
