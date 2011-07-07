@@ -258,8 +258,9 @@ class Shank(StdApp):
         self.distro = self.lp.distributions['ubuntu']
 
         # Get set up for email and status messages
-        mcfg = self.cfg['mail_notify']
-        self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
+        if 'mail_notify' in self.cfg:
+            mcfg = self.cfg['mail_notify']
+            self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
 
         scfg = self.cfg['status_net']
         self.status = Status(scfg['url'], scfg['user'], scfg['pass'])
@@ -439,6 +440,10 @@ class Shank(StdApp):
         Send email to the configured list or recipient
         """
         self.verbose('Sending email\n')
+
+        if not 'mail_notify' in self.cfg:
+            self.verbose('No mail_notify config found, can\'t send email\n')
+            return
 
         mcfg = self.cfg['mail_notify']
         body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n' % self.bug_url(task.bug.id)
