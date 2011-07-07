@@ -10,5 +10,8 @@
         "user": "git", 
         "url": "status.ai4qr.com",
 	"pass": "password"
-    } 
+    },
+    "bug_spam": {
+        "text_filename": "boilerplate/bugtext-start-verification.txt"
+    }
 }
