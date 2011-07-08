@@ -14,6 +14,7 @@ from datetime                           import datetime
 from urllib                             import quote
 from urllib2                            import HTTPError
 from ktl.messaging                      import Email, Status
+from ktl.ubuntu                         import Ubuntu
 import re
 
 # CmdlineError
@@ -499,6 +500,49 @@ class Shank(StdApp):
         pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
         ckt = self.lp.launchpad.people['canonical-kernel-team']
         ppa = ckt.getPPAByName(name='ppa')
+
+        ub = Ubuntu()
+        found = {}
+        for entry in iter(ub.db):
+            if pkg_ver.startswith(ub.db[entry]['kernel']):
+                found = ub.db[entry]
+                break
+        dep_list = []
+        if found:
+            if 'dependent-packages' in found:
+                if pkg_name in found['dependent-packages']:
+                    dep_list = found['dependent-packages'][pkg_name]
+                    pkg_abi = re.findall('-[0-9]+[^.]+', pkg_ver)[0]
+                    pkg_abi = pkg_abi.lstrip('-')
+                    dep_ver1 = '%s-%s' % (found['kernel'], pkg_abi)
+                    dep_ver2 = '%s.%s' % (found['kernel'], pkg_abi)
+        pkg_tasks = {}
+        for task in taskobj.bug.tasks:
+            for dep in dep_list:
+                task_name = task.bug_target_name
+                if task_name.startswith(dep):
+                    if task.status != 'Fix Released':
+                        pkg_tasks[dep] = task
+        dep_built = True
+        for entry in iter(pkg_tasks):
+            dep_matches = [ p for p in ppa.getPublishedSources(source_name=entry)
+                              if p.status.lower() == 'published' and
+                                 (p.source_package_version.startswith(dep_ver1) or
+                                  p.source_package_version.startswith(dep_ver2)) ]
+            for dep_pkg in dep_matches:
+                src_id = str(dep_pkg.self).rsplit('/', 1)[1]
+                build_summaries = ppa.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+                if build_summaries['status'] == 'FULLYBUILT':
+                    self.verbose('<%s> <%s> built, src-pkg target is Fix Released\n'
+                                 % (entry, dep_pkg.source_package_version))
+                    pkg_tasks[entry].status = 'Fix Released'
+                else:
+                    self.verbose('<%s> <%s> not fully built yet, skipping\n'
+                                 % (entry, dep_pkg.source_package_version))
+                    dep_built = False
+        if not dep_built:
+            return False
+
         matches = [ p for p in ppa.getPublishedSources(source_name=pkg_name)
                             if p.status.lower() == 'published' and
                                p.source_package_version == pkg_ver ]
