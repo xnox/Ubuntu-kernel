@@ -1,10 +1,10 @@
-linux-meta (3.0.0.4.5) UNRELEASED; urgency=low
+linux-meta (3.0.0.4.5) oneiric; urgency=low
 
   [ Andy Whitcroft ]
   * follow main kernel switch to 3.0.0
   * Bump ABI
 
- -- Andy Whitcroft <apw@canonical.com>  Mon, 11 Jul 2011 11:22:52 +0100
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 11 Jul 2011 11:24:30 +0100
 
 linux-meta (3.0.0.3.4) oneiric; urgency=low
 
