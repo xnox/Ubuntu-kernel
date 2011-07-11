@@ -1,3 +1,12 @@
+linux-firmware (1.34.12) lucid-proposed; urgency=low
+
+  * Added firmware files to support Oneiric LTS backport
+    linux-firmware: Add a new FW 7.0.20.0
+    bnx2x: Adding FW 7.0.23.0
+    -LP: #808884
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 11 Jul 2011 11:11:45 -0600
+
 linux-firmware (1.34.11) lucid-proposed; urgency=low
 
   * Added firmware files to support compat-wireless
