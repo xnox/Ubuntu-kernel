@@ -1,6 +1,7 @@
-linux-meta (3.0.0.4.6) UNRELEASED; urgency=low
+linux-meta (3.0.0.5.6) UNRELEASED; urgency=low
 
-  * 
+  [ Leann Ogasawara ]
+  * Bump ABI 
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 12 Jul 2011 10:36:26 -0700
 
