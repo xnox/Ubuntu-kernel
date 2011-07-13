@@ -768,7 +768,7 @@ class Shank(StdApp):
                     for der_pkg in der_list:
                         bug = tb.open(der_pkg,
                                       '<to be filled by KT>',
-                                      '<to be filled by KT>',
+                                      found['name'],
                                       True)
                         print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
                         bug_list.append([der_pkg, bug.id])
