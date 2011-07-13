@@ -29,7 +29,7 @@ do
 	jobf="$queue/$job"
 
 	echo "$P: executing $job ..."
-	cat "$jobf"
+	echo "$P: `cat '$jobf'`"
 	/bin/bash "$jobf"
 	echo "$P: complete $job (rc=$?)"
 	
