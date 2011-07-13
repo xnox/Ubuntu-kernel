@@ -67,7 +67,7 @@ class TrackingBug:
                 nomination = bug.lpbug.addNomination(target=s)
                 if nomination.canApprove():
                     nomination.approve()
-                    break
+                break
 
         # search for dependent packages
         found = {}
