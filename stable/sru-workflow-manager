@@ -762,7 +762,7 @@ class Shank(StdApp):
                     if 'derivative-packages' in found:
                         if pkg_name in found['derivative-packages']:
                             der_list = found['derivative-packages'][pkg_name]
-                bug_list = []
+                der_bug_list = []
                 if der_list:
                     tb = TrackingBug(self.lp, 'staging' in self.cfg)
                     for der_pkg in der_list:
@@ -771,14 +771,39 @@ class Shank(StdApp):
                                       found['name'],
                                       True)
                         print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
-                        bug_list.append([der_pkg, bug.id])
+                        der_bug_list.append([der_pkg, bug.id])
+
+                # open new tracking bugs for backport packages if needed
+                bp_list = []
+                if found:
+                    for entry in iter(ub.db):
+                        if 'backport-packages' in ub.db[entry]:
+                            bp_entries = ub.db[entry]['backport-packages']
+                            for bp_entry in iter(bp_entries):
+                                if (bp_entries[bp_entry][0] == pkg_name and
+                                    bp_entries[bp_entry][1] == found['series_version']):
+                                    bp_list.append([bp_entry, ub.db[entry]['name']])
+                bp_bug_list = []
+                if bp_list:
+                    tb = TrackingBug(self.lp, 'staging' in self.cfg)
+                    for bp_pkg in bp_list:
+                        bug = tb.open(bp_pkg[0],
+                                      '%s~%s1' % (pkg_ver, bp_pkg[1]),
+                                      bp_pkg[1], True)
+                        print 'Opened tracking bug %s for backport package %s\n' % (bug.id, bp_pkg[0])
+                        bp_bug_list.append([bp_pkg[0], bug.id])
 
                 # comment about publishing and possible new tracking bugs opened
                 msgbody  = 'All tests are complete, packages in this bug can be published'
-                if bug_list:
+                if der_bug_list:
                     msgbody += '\n\nDerivative packages from packages here can be worked on,'
                     msgbody += ' the following tracking bugs were opened for them:'
-                    for pkg_bug in bug_list:
+                    for pkg_bug in der_bug_list:
+                        msgbody += '\n%s - bug %s' % (pkg_bug[0], pkg_bug[1])
+                if bp_bug_list:
+                    msgbody += '\n\nBackport packages from packages here can be worked on,'
+                    msgbody += ' the following tracking bugs were opened for them:'
+                    for pkg_bug in bp_bug_list:
                         msgbody += '\n%s - bug %s' % (pkg_bug[0], pkg_bug[1])
                 task = self.taskbyname['Kernel SRU Workflow']
                 self.send_comment(task, 'Packages are ready for publication', msgbody)
