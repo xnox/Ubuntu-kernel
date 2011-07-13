@@ -10,6 +10,8 @@ mkdir -p "$queue"
 lock_tmp="$queue/.LOCK-$$"
 lock="$queue/.LOCK"
 
+current="$queue/.CURRENT"
+
 # One at a time please...
 echo "$$" >"$lock_tmp"
 if ! ln "$lock_tmp" "$lock" 2>/dev/null; then
@@ -30,7 +32,9 @@ do
 
 	echo "$P: executing $job ..."
 	echo "$P: `cat '$jobf'`"
+	ln -f "$jobf" "$current"
 	/bin/bash "$jobf"
+	rm -f "$current"
 	echo "$P: complete $job (rc=$?)"
 	
 	rm -f "$jobf"
