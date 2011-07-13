@@ -6,6 +6,8 @@ from lpltk.bug                          import Bug
 from ktl.bugs                           import DeltaTime
 from ktl.ubuntu                         import Ubuntu
 from ktl.utils                          import debug as dout
+from ktl.dbg                            import Dbg
+from ktl.termcolor                      import colored
 from datetime                           import datetime
 import re
 
@@ -397,10 +399,8 @@ class KernelBug(Bug):
                                 break
 
                 except:
-                    raise
                     pass # Just eat any exceptions
         except:
-            raise
             pass # Just eat any exceptions
 
         return (series_name, series_version)
@@ -504,5 +504,12 @@ class KernelBug(Bug):
                 retval = t
                 break
         return retval
+
+    def print_verbose_info(self):
+        if 'verbose' in Dbg.levels:
+            print(" ")
+            print(colored("    %s: %s" % (self.id, self.title), 'blue'))
+            print(" ")
+            print("        Owner: %s" % ("None" if self.owner is None else self.owner.display_name))
 
 # vi:set ts=4 sw=4 expandtab:
