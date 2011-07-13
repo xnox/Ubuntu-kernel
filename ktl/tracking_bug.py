@@ -120,7 +120,10 @@ class TrackingBug:
                     print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
                     t.status = "Invalid"
                 else:
-                    t.assignee = self.lp.launchpad.people[assignee]
+                    try:
+                        t.assignee = self.lp.launchpad.people[assignee]
+                    except KeyError:
+                        print("Can't find '%s' team in Launchpad!" % (assignee))
 
         return bug
 
