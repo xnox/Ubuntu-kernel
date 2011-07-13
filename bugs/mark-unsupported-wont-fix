@@ -1,0 +1,254 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+
+from lpltk.service                      import LaunchpadService
+
+from ktl.kernel_bug                     import KernelBug
+from ktl.utils                          import stdo, error
+from ktl.dbg                            import Dbg
+from ktl.cfg                            import Cfg, CfgError
+from ktl.ubuntu                         import Ubuntu
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--debug=<dbg options>] [bug-id,bug-id,..]                            \n" % defaults['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("                         Recognized debug options:                                           \n")
+        stdo("                             enter                                                           \n")
+        stdo("                             leave                                                           \n")
+        stdo("                             verbose                                                         \n")
+        stdo("                             cfg                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --debug=\"enter,leave,verbose\"                                                   \n" % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            cfg = {}
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    cfg['verbose'] = True
+                    if 'verbose' not in Dbg.levels:
+                        Dbg.levels.append('verbose')
+
+                elif opt in ('--debug'):
+                    cfg['debug'] = val.split(',')
+                    for level in cfg['debug']:
+                        if level not in Dbg.levels:
+                            Dbg.levels.append(level)
+
+            if result: # No errors yet
+                # There might be some bugs listed on the command line.
+                #
+                if len(args) > 0:
+                    cfg['bug-ids'] = args
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+        return cfg
+
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# MarkUnsupportedWontFix
+#
+class MarkUnsupportedWontFix():
+    """
+    This class/script examines all 'open' bugs. If a given bug was filed against a
+    version of Ubuntu that is no longer supported, change the status of that bug
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("MarkUnsupportedWontFix.__init__")
+
+        self.cfg    = cfg
+        self.ubuntu = Ubuntu()
+
+        self.comment = "This bug was filed against a series that is no longer supported and so is being marked as Won't Fix. If this issue still exists in a supported series, please file a new bug.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
+        self.comment_subject = "Unsupported series, setting status to \"Won't Fix\"."
+
+        Dbg.leave("MarkUnsupportedWontFix.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        Dbg.enter("MarkUnsupportedWontFix.initialize")
+
+        try:
+            # Process the command line arguments, and any configuration file options. Make sure
+            # that any required parameters have been provided.
+            #
+            self.cfg = Cfg.merge_options(defaults, self.cfg)
+
+            Dbg.verbose("Connecting to LaunchPad...")
+            self.lp = LaunchpadService(self.cfg)
+            Dbg.verbose("  connected.\n")
+
+            self.distro        = self.lp.distributions['ubuntu']
+            self.linux_package = self.distro.get_source_package('linux')
+
+        except CfgError as e:
+            error(e)
+            Dbg.leave("MarkUnsupportedWontFix.initialize")
+            raise Exit()
+
+        Dbg.leave("MarkUnsupportedWontFix.initialize")
+        return
+
+    # bug_operation
+    #
+    def bug_operation(self, bug):
+        """
+        This is the method that actually works on the individual bugs. Making changes
+        to status, adding comments, adding tags, etc. are all done here.
+        """
+        try:
+            bug.print_verbose_info()
+
+            series_name, series_version = bug.series
+            Dbg.verbose("      Series: %s" % (series_name))
+
+            if not self.ubuntu.is_supported_series(series_name):
+                Dbg.verbose(" (%s)\n" % "unsupported")
+                linux_task = bug.get_relevant_task("linux")
+                if linux_task is not None:
+                    Dbg.verbose("Chaning the status from (%s) to Won't Fix.\n" % (linux_task.status))
+                    linux_task.status = "Won't Fix"
+
+                    Dbg.verbose("Adding comment.\n")
+                    bug.add_comment(self.comment, self.comment_subject)
+
+                else:
+                    error("Failed to find the relevant task for bug (%s).\n" % (bug.id))
+
+            else:
+                Dbg.verbose(" (%s)\n" % "supported")
+
+        except:
+            print(bug.id)
+            print("  *** Warning: Exception thrown while processing %s" % (bug.id))
+            raise
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("MarkUnsupportedWontFix.main")
+
+        try:
+            self.initialize()
+
+            if len(self.cfg['bug-ids']) > 0:
+                for bid in self.cfg['bug-ids']:
+                    self.bug_operation(KernelBug(self.lp.get_bug(bid)))
+            else:
+                search_status          = ["New", "Confirmed", "Triaged", "Incomplete", "In Progress"] # A list of the bug statuses that we care about
+
+                Dbg.verbose("Searching the package for matching tasks.")
+                tasks = self.linux_package.search_tasks(status=search_status)
+
+                for task in tasks:
+                    self.bug_operation(KernelBug(task.bug))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("MarkUnsupportedWontFix.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    #defaults['launchpad_services_root'] = 'qastaging'
+    defaults['launchpad_client_name']   = 'kernel-team-mark-unsupported-wont-fix'
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = MarkUnsupportedWontFix(cmdline.process(argv))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+
