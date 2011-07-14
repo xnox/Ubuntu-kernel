@@ -230,6 +230,10 @@ class CreateTrackingBug(StdApp):
                         t.status = "Invalid"
                     else:
                         t.assignee = self.lp.launchpad.people[assignee]
+                        if 'linux-version' in changelog[0]:
+                            version = changelog[0]['linux-version']
+                            if wf.is_task_invalid(package, task, version):
+                                t.status = "Invalid"
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K

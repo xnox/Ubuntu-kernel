@@ -29,7 +29,10 @@ class Workflow:
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
             'subscribers' :
-                ["sru-verification", "ubuntu-sru", "hardware-certification"]
+                ["sru-verification", "ubuntu-sru", "hardware-certification"],
+            'invalidate_tasks' : {
+                'certification-testing' : [ '2.6.24' ]
+                }
             },
         'linux-mvl-dove' :  {
             'task_assignment' : {
@@ -136,6 +139,21 @@ class Workflow:
                 return self.tdb[packagename]['subscribers']
         else:
                 return self.tdb['default']['subscribers']
+
+    # is task invalid for that series version
+    #
+    def is_task_invalid(self, packagename, taskname, version):
+        """
+        Return if the task is invalid for that package version
+        """
+        if not packagename in self.tdb:
+            return False
+        if not 'invalidate_tasks' in self.tdb[packagename]:
+            return False
+        if not taskname in self.tdb[packagename]['invalidate_tasks']:
+            return False
+        version_list = self.tdb[packagename]['invalidate_tasks'][taskname]
+        return (version in version_list)
 
 if __name__ == '__main__':
     workflow = Workflow()
