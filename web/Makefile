@@ -1,5 +1,5 @@
 
-reports: fetch-data sru-report.html versions.html regressions-reports 30-day-new.html 7-day-new.html 1-day-new.html kernel-sru-workflow.html
+reports: fetch-data sru-report.html versions.html regressions-reports 30-day-new.html 7-day-new.html 1-day-new.html kernel-sru-workflow.html kernel-cves.html
 
 fetch-data:
 	@kteam-tools/stable/sru-report --archive-versions > sru-data-tmp.json
@@ -78,3 +78,7 @@ kernel-sru-workflow.json:
 
 kernel-sru-workflow.html: kernel-sru-workflow.json
 	scripts/gen-bug-report --tasks $< > $@
+
+.PHONY : kernel-cves.html
+kernel-cves.html: scripts/kernel-cves
+	scripts/kernel-cves
