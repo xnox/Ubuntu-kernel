@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 # Generate the weekly bug stats for the Ubuntu Kernel Team IRC meeting.
-
-# This should be run within the kernel arsenal tree:
 #
 #   bzr branch lp:~canonical-kernel-team/arsenal/kernel kernel_arsenal
 #   cp kt-meeting-stats.py kernel_arsenal/contrib/linux/
@@ -15,8 +13,10 @@
 # run of this script.  If you run this more frequently than once a week,
 # you'll get incorrect rate of change values for the week.
 
-from arsenal_lib import *
+from launchpadlib.launchpad import Launchpad
+from ktl.ubuntu import Ubuntu
 from datetime import *
+import os
 import urllib
 
 #calculate the change in numbers from last week
@@ -35,9 +35,9 @@ def calculate_change(stat, key):
 
 stats = {}
 
-filename = "kt-meeting-stats.txt"
+filename = "/home/kernel/public_html/reports/kt-meeting-stats.txt"
 if not os.path.exists(filename):
-    urllib.urlretrieve("http://reports.qa.ubuntu.com/reports/ogasawara/%s" %(filename), filename)
+    urllib.urlretrieve("http://people.canonical.com/~kernel/reports/kt-meeting-stats.txt", filename)
 
 # Import last week's stats
 FILE = open(filename, 'r')
@@ -48,7 +48,10 @@ for line in FILE:
     stats[key] = int(key_val[1])
 FILE.close()
 
-releases = ['oneiric', 'natty', 'maverick', 'lucid', 'hardy']
+ubuntu = Ubuntu()
+releases = sorted(ubuntu.supported_serieses, reverse=True)
+#releases = ['oneiric', 'natty', 'maverick', 'lucid', 'hardy']
+
 regressions = ['regression-update', 'regression-release', 'regression-proposed']
 output = {'release':'',
           'milestone':'',
@@ -57,10 +60,11 @@ output = {'release':'',
           'regression-release':'',
           'regression-proposed': ''}
 
-arsenal = Arsenal()
-ubuntu = arsenal.load_project('ubuntu')
-linux = ubuntu.getSourcePackage(name='linux')
-series = ubuntu.current_series
+cachedir = os.path.expanduser("~/.cache/")
+lp = Launchpad.login_anonymously('kernel team tools', 'production', cachedir)
+distro = lp.distributions['ubuntu']
+linux = distro.getSourcePackage(name='linux')
+series = distro.current_series
 linux_series = series.getSourcePackage(name='linux')
 
 # Release Metrics (nominated bugs)
@@ -86,7 +90,7 @@ output['release'] += " * %s linux kernel bugs (%s %d)\n" % (milestoned, change, 
 for release_name in releases:
     # Release Metrics (<release>-updates bugs)
     milestone_name = "%s-updates" % (release_name)
-    milestone = ubuntu.getMilestone(name=milestone_name)
+    milestone = distro.getMilestone(name=milestone_name)
     release = linux.searchTasks(milestone=milestone)
     update_bugs = release._wadl_resource.representation['total_size']
     (change, change_num) = calculate_change(update_bugs, "%s-updates" % (release_name))
@@ -114,7 +118,7 @@ for release_name in releases:
 now = datetime.utcnow()
 print "Last Updated: %s\n" % (now)
 print "=== Release Metrics ==="
-print "[LINK] http://reports.qa.ubuntu.com/reports/ogasawara/kt-meeting.txt\n"
+print "[LINK] http://people.canonical.com/~kernel/reports/kt-meeting.txt\n"
 print output['release']
 print output['milestone']
 print "=== Incoming Bugs ==="
