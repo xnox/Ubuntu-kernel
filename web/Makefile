@@ -1,5 +1,5 @@
 
-reports: fetch-data sru-report.html versions.html regressions-reports 30-day-new.html 7-day-new.html 1-day-new.html kernel-sru-workflow.html kernel-cves.html
+reports: fetch-data sru-report.html versions.html regressions-reports 30-day-new.html 7-day-new.html 1-day-new.html kernel-sru-workflow.html kernel-cves.html kt-meeting.txt
 
 fetch-data:
 	@kteam-tools/stable/sru-report --archive-versions > sru-data-tmp.json
@@ -82,3 +82,7 @@ kernel-sru-workflow.html: kernel-sru-workflow.json
 .PHONY : kernel-cves.html
 kernel-cves.html: scripts/kernel-cves
 	scripts/kernel-cves
+
+.PHONY : kt-meeting.txt
+kt-meeting.txt: scripts/kt-meeting-stats
+	scripts/kt-meeting-stats
