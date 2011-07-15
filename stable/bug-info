@@ -10,6 +10,7 @@ from sys                                import argv
 from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, date_to_string
 from ktl.std_app                        import StdApp
+from ktl.kernel_bug                     import KernelBug
 from lpltk.service                      import LaunchpadService, LaunchpadServiceError
 from re                                 import match
 from datetime                           import datetime
@@ -159,6 +160,8 @@ class BugInfo(StdApp):
         print("                  Heat: %s" % bug.heat)
         print("          Latest Patch: %s" % (date_to_string(bug.date_latest_patch_uploaded)))
         print("          Is Expirable: %s" % bug.is_expirable())
+        print("           Series Name: %s" % (bug.series[0]))
+        print("        Series Version: %s" % (bug.series[1]))
 
         tags = ""
         for t in bug.tags:
@@ -314,7 +317,7 @@ class BugInfo(StdApp):
                     print("Either the bug id specified (%s) does not exist in the LP server database or you are not authrorized to view it." % (id))
 
                 else:
-                    self.__print_bug_info(bug)
+                    self.__print_bug_info(KernelBug(bug))
 
                     print(" ") # A line break between bug info
 
