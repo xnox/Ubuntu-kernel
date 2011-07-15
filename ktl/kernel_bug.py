@@ -268,6 +268,12 @@ class KernelBug(Bug):
                     (series_name, series_version) = self._ubuntu_series_lookup(m.group(1))
                     break
 
+            m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+            if m is not None:
+                kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
+                break
+
             # Sometimes it's just in the description
             #
             m = re.search('Ubuntu ((hardy|intrepid|jaunty|karmic|lucid|maverick|natty|oneiric)) [0-9]+\.[0-9]+', line)
