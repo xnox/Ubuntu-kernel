@@ -245,7 +245,8 @@ class KernelBug(Bug):
             m = re.search('DistroRelease:\s*(.*)', line)
             if m is not None:
                 (series_name, series_version) = self._ubuntu_series_lookup(m.group(1))
-                break
+                if series_name != '':
+                    break
 
             # Sometimes there is the results of 'uname -a' or a dmesg in
             # the description.
@@ -254,25 +255,29 @@ class KernelBug(Bug):
             if m is not None:
                 kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
                 (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
-                break
+                if series_name != '':
+                    break
 
             if 'Description:' in line:
                 m = re.search('Description:\s*([0-9]+\.[0-9]+)', line)
                 if m is not None:
                     (series_name, series_version) = self._ubuntu_series_lookup(m.group(1))
-                    break
+                    if series_name != '':
+                        break
 
             if 'Release:' in line:
                 m = re.search('Release:\s+([0-9]+\.[0-9]+)', line)
                 if m is not None:
                     (series_name, series_version) = self._ubuntu_series_lookup(m.group(1))
-                    break
+                    if series_name != '':
+                        break
 
             m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
             if m is not None:
                 kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
                 (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
-                break
+                if series_name != '':
+                    break
 
             # Sometimes it's just in the description
             #
@@ -339,7 +344,8 @@ class KernelBug(Bug):
                         kernel_version = self._find_linux_version(attachment)
                         if kernel_version != '':
                             (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
-                            break
+                            if series_name != '':
+                                break
 
                     # BootDmesg.txt
                     #
@@ -349,7 +355,8 @@ class KernelBug(Bug):
                         kernel_version = self._find_linux_version(attachment)
                         if kernel_version != '':
                             (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
-                            break
+                            if series_name != '':
+                                break
 
                     # Dmesg.txt / dmesg.log
                     #
@@ -359,7 +366,8 @@ class KernelBug(Bug):
                         kernel_version = self._find_linux_version(attachment)
                         if kernel_version != '':
                             (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
-                            break
+                            if series_name != '':
+                                break
 
                     # alsa-info
                     #
@@ -380,7 +388,8 @@ class KernelBug(Bug):
                                 pass
                             if kernel_version != '':
                                 (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
-                                break
+                                if series_name != '':
+                                    break
 
                     # xorg.0.log
                     #
@@ -402,7 +411,8 @@ class KernelBug(Bug):
                                 pass
                             if kernel_version != '':
                                 (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
-                                break
+                                if series_name != '':
+                                    break
 
                 except:
                     pass # Just eat any exceptions
@@ -441,7 +451,8 @@ class KernelBug(Bug):
         for series in Ubuntu.index_by_series_name:
             if series in bug.tags:
                 (series_name, series_version) = self._ubuntu_series_lookup(series)
-                break
+                if series_name != '':
+                    break
 
         return (series_name, series_version)
 
