@@ -249,7 +249,7 @@ class MorningBugReport():
             bugs = self.get_24hr_bug_data()
             the_report = self.report(bugs)
 
-            self.email.send(self.cfg['mail_notify']['from_address'], self.cfg['mail_notify']['from_address'], 'The Morning Bug Report for %s' % bugs['updated'], the_report)
+            self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Morning Bug Report for %s' % bugs['updated'], the_report)
 
         # Handle the user presses <ctrl-C>.
         #
