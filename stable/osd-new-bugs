@@ -45,7 +45,12 @@ class Cmdline:
     #
     def usage(self, defaults):
         """
-        Prints out the help text which explains the command line options.
+        This is a tool for displaying an OSD message for any new bugs that come in since the last time
+        it was run. To have it check every 5 minutes for new bugs and report them, add the following
+        line to your crontab:
+           */12      *          *              *               *             DISPLAY=:0 /<path>/kteam-tools/stable/osd-new-bugs
+
+        Change the '<path>' string to the path to your kteam-tools directory.
         """
         stdo("    Usage:                                                                                   \n")
         stdo("        %s [--verbose] [--debug=<dbg options>]                                               \n" % defaults['app_name'])
@@ -214,13 +219,22 @@ class OsdNewBugs():
             bugs_now    = self.get_24hr_bug_data()
             bugs_before = self.ljf(self.cache_24hr_data)
 
-            # If there is nothing previously cached, then just cache what we just got.
-            #
             if bugs_before is not None:
-                title = "Bug: %s" % '000000'
-                subject = "Hey! Look at me!"
-                self.notify(title, subject)
+                for pkg in bugs_now['packages']:
+                    if pkg in bugs_before['packages']:
+                        for bug in bugs_now['packages'][pkg]['bugs']:
+                            if bug not in bugs_before['packages'][pkg]['bugs']:
+                                title   = "Bug: %s" % bug
+                                subject = bugs_now['packages'][pkg]['bugs'][bug]['title']
+                                self.notify(title, subject)
+                    else:
+                        for bug in bugs_now['packages'][pkg]['bugs']:
+                            title   = "Bug: %s" % bug
+                            subject = bugs_now['packages'][pkg]['bugs'][bug]['title']
+                            self.notify(title, subject)
 
+            # Cache the new data we just fetched for comparison next time.
+            #
             self.sjf(bugs_now, self.cache_24hr_data)
 
         # Handle the user presses <ctrl-C>.
