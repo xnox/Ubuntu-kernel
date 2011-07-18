@@ -1,0 +1,282 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from os                                 import path
+from getopt                             import getopt, GetoptError
+from urllib2                            import urlopen, URLError
+
+import json
+
+from ktl.utils                          import stdo, error
+from ktl.dbg                            import Dbg
+from ktl.cfg                            import Cfg, CfgError
+from ktl.messaging                      import Email
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--debug=<dbg options>]                                               \n" % defaults['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("                         Recognized debug options:                                           \n")
+        stdo("                             enter                                                           \n")
+        stdo("                             leave                                                           \n")
+        stdo("                             verbose                                                         \n")
+        stdo("                             cfg                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --debug=\"enter,leave,verbose\"                                                   \n" % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            cfg = {}
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    cfg['verbose'] = True
+                    if 'verbose' not in Dbg.levels:
+                        Dbg.levels.append('verbose')
+
+                elif opt in ('--debug'):
+                    cfg['debug'] = val.split(',')
+                    for level in cfg['debug']:
+                        if level not in Dbg.levels:
+                            Dbg.levels.append(level)
+
+            if result: # No errors yet
+                # There might be some bugs listed on the command line.
+                #
+                if len(args) > 0:
+                    cfg['bug-ids'] = args
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+        return cfg
+
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# MorningBugReport
+#
+class MorningBugReport():
+    """
+    This class/script examines all 'open' bugs. If a given bug was filed against a
+    version of Ubuntu that is no longer supported, change the status of that bug
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("MorningBugReport.__init__")
+        self.cfg    = cfg
+        self.title_max = 60
+        Dbg.leave("MorningBugReport.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        Dbg.enter("MorningBugReport.initialize")
+
+        try:
+            # Process the command line arguments, and any configuration file options. Make sure
+            # that any required parameters have been provided.
+            #
+            self.cfg = Cfg.merge_options(defaults, self.cfg)
+
+            if 'mail_notify' in self.cfg:
+                mcfg = self.cfg['mail_notify']
+                self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
+
+        except CfgError as e:
+            error(e)
+            Dbg.leave("MorningBugReport.initialize")
+            raise Exit()
+
+        Dbg.leave("MorningBugReport.initialize")
+        return
+
+    # get_24hr_bug_data
+    #
+    def get_24hr_bug_data(self):
+        """
+        Download the latest bug data from the kernel report web site.
+        """
+        retval = None
+        try:
+            response = urlopen('http://people.canonical.com/~kernel/reports/1-day-window.json')
+            retval = json.loads(response.read())
+        except URLError as e:
+            print(e.reason)
+            raise Exit
+        return retval
+
+    # per_bug_report
+    #
+    def per_bug_report(self, bid, data):
+        """
+        Generate the report for a single bug.
+        """
+        retval = ""
+
+        retval += '%-7s' % (bid)
+
+        # Chop the title to a specific length
+        #
+        if len(data['title']) > self.title_max:
+            title = data['title'][:self.title_max - 3]
+            retval += '   %-*s...' % (self.title_max - 3, title)
+        else:
+            retval += '   %-*s' % (self.title_max, data['title'])
+
+        retval += '    %-8s' % (data['series name'])
+        retval += '    %-12s' % (data['importance'])
+        retval += '    %-12s' % (data['status'])
+        retval += '    %-s' % (data['assignee'])
+
+        retval += '\n'
+
+        return retval
+
+    # per_package_report
+    #
+    def per_package_report(self, pkg, data):
+        """
+        Generate the report for a single package.
+        """
+        retval = ""
+        if len(data['bugs']) > 0:
+            retval += 'The %s package acquired %d new bugs in the last 24 hrs.\n' % (pkg, len(data['bugs']))
+            retval += '\n'
+            retval += '%-7s   %-*s    %-8s    %-12s    %-12s    %-s' % ('Bug', self.title_max, 'Title', 'Series', 'Importance', 'Status', 'Assignee')
+            retval += '\n'
+            retval += '-------   ------------------------------------------------------------    --------    ------------    ------------    ---------------------\n'
+            for bug in sorted(data['bugs']):
+                retval += self.per_bug_report(bug, data['bugs'][bug])
+
+        return retval
+
+    # report
+    #
+    def report(self, data):
+        """
+        Generate the actual text of The Morning Bug Report.
+        """
+        retval = ""
+        retval += 'The Morning Bug Report\n'
+        retval += '%s\n' % (data['updated'])
+        retval += '\n'
+
+        for pkg in data['packages']:
+            retval += self.per_package_report(pkg, data['packages'][pkg])
+
+        retval += '\n'
+        retval += 'An online version of this report can be found at: http://people.canonical.com/~kernel/reports/1-day-new.html\n'
+        return retval
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("MorningBugReport.main")
+
+        try:
+            self.initialize()
+            bugs = self.get_24hr_bug_data()
+            the_report = self.report(bugs)
+
+            self.email.send(self.cfg['mail_notify']['from_address'], self.cfg['mail_notify']['from_address'], 'The Morning Bug Report for %s' % bugs['updated'], the_report)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("MorningBugReport.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    defaults['configuration_file'] = path.dirname(__file__) + '/sru-workflow.cfg'
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = MorningBugReport(cmdline.process(argv))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+
