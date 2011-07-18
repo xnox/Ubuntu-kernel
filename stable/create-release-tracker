@@ -193,6 +193,7 @@ class CreateTrackingBug(StdApp):
                     nomination = bug.lpbug.addNomination(target=s)
                     if nomination.canApprove():
                         nomination.approve()
+                    bug.tags.append(str(s.name).lower())
 
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Add a task for kernel-sru-workflow and then nominate all the series that belong
