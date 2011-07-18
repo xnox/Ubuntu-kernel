@@ -8,9 +8,9 @@ from core.bug_engine                    import BugEngine
 import bug_handlers.new  # This imports all the bug handler plugins that this script
                          # will use.
 
-# NewEngine
+# ProcNewBugs
 #
-class NewEngine(BugEngine):
+class ProcNewBugs(BugEngine):
     """
     This class is all about working on any "New" bugs. "New" bugs
     have a status of: "New".
@@ -25,10 +25,11 @@ class NewEngine(BugEngine):
         """
         defaults = {}
         defaults['configuration_file'] = 'new.rc'
+        defaults['launchpad_client_name'] = 'lpltk.kernel.ProcNewBugs'
         BugEngine.__init__(self, defaults)
 
 if __name__ == '__main__':
-    app = NewEngine()
+    app = ProcNewBugs()
     app.main()
 
 # vi:set ts=4 sw=4 expandtab:
