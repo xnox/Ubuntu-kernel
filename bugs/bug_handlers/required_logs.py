@@ -76,7 +76,7 @@ class RequiredLogs(BugHandler):
                 retval = True
                 break
 
-            if 'stable-next' in bug.tags:
+            if ('stable-next' in bug.tags) or ('kernel-stable-next' in bug.tags):
                 retval = True
                 break
 
