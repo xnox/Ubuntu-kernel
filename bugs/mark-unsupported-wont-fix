@@ -168,6 +168,39 @@ class MarkUnsupportedWontFix():
         Dbg.leave("MarkUnsupportedWontFix.initialize")
         return
 
+    # hands_off
+    #
+    def hands_off(self, bug, task, package_name):
+        """
+        There are certain bugs that we shouldn't mess with. This method tries to
+        know about those and returns True if they are supposed to be ignored.
+        """
+        retval = False
+
+        while True:
+            if 'kernel-cve-tracking-bug' in bug.tags:
+                retval = True
+                break
+
+            if 'kernel-release-tracking-bug' in bug.tags:
+                retval = True
+                break
+
+            if 'stable-next' in bug.tags:
+                retval = True
+                break
+
+            if bug.private:
+                retval = True
+                break
+
+            if task.status not in ['New', 'Confirmed', 'Triaged', 'In Progress', 'Incomplete']:
+                retval = True
+                break
+
+            break;
+        return retval
+
     # bug_operation
     #
     def bug_operation(self, bug):
@@ -185,11 +218,12 @@ class MarkUnsupportedWontFix():
                 Dbg.verbose(" (%s)\n" % "unsupported")
                 linux_task = bug.get_relevant_task("linux")
                 if linux_task is not None:
-                    Dbg.verbose("Chaning the status from (%s) to Won't Fix.\n" % (linux_task.status))
-                    linux_task.status = "Won't Fix"
+                    if not self.hands_off(bug, linux_task, 'linux'):
+                        Dbg.verbose("Chaning the status from (%s) to Won't Fix.\n" % (linux_task.status))
+                        linux_task.status = "Won't Fix"
 
-                    Dbg.verbose("Adding comment.\n")
-                    bug.add_comment(self.comment, self.comment_subject)
+                        Dbg.verbose("Adding comment.\n")
+                        bug.add_comment(self.comment, self.comment_subject)
 
                 else:
                     error("Failed to find the relevant task for bug (%s).\n" % (bug.id))
