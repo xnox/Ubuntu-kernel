@@ -33,7 +33,7 @@ class RequiredLogs(BugHandler):
     def __init__(self, lp, vout):
         BugHandler.__init__(self, lp, vout)
 
-        self.comment = "This bug is missing log files that will aid in dianosing the problem. From a terminal window please run:\n\napport-collect %s\n\nand then change the status of the bug back to 'New'.\n\nIf, due to the nature of the issue you have encountered, you are unable to run this command, please add a comment stating that fact and change the bug status to 'Confirmed'.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
+        self.comment = "This bug is missing log files that will aid in dianosing the problem. From a terminal window please run:\n\napport-collect %s\n\nand then change the status of the bug to 'Confirmed'.\n\nIf, due to the nature of the issue you have encountered, you are unable to run this command, please add a comment stating that fact and change the bug status to 'Confirmed'.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
         self.comment_subject = "Missing required logs."
 
     # change_status
@@ -58,18 +58,49 @@ class RequiredLogs(BugHandler):
             if task.status == "New":
                 task.status = new_status  # Make the status change
 
+    # hands_off
+    #
+    def hands_off(self, bug, task, package_name):
+        """
+        There are certain bugs that we shouldn't mess with. This method tries to
+        know about those and returns True if they are supposed to be ignored.
+        """
+        retval = False
+
+        while True:
+            if 'kernel-cve-tracking-bug' in bug.tags:
+                retval = True
+                break
+
+            if 'kernel-release-tracking-bug' in bug.tags:
+                retval = True
+                break
+
+            if 'stable-next' in bug.tags:
+                retval = True
+                break
+
+            if bug.private:
+                retval = True
+                break
+
+            break;
+        return retval
+
     # run
     #
     def run(self, bug, task, package_name):
         retval = True
-        if task.status == "New":
-            if bug.has_required_logs:
+
+        if not self.hands_off(bug, task, package_name):
+            if task.status == "New":
                 if self.show_buff == '':
                     self.show_buff += 'Bug: %s  ' % bug.id
-                self.change_status(bug, task, package_name, "Confirmed")
-            else:
-                bug.add_comment(self.comment % (bug.id), self.comment_subject)
-                self.change_status(bug, task, package_name, "Incomplete")
+                if bug.has_required_logs:
+                    self.change_status(bug, task, package_name, "Confirmed")
+                else:
+                    bug.add_comment(self.comment % (bug.id), self.comment_subject)
+                    self.change_status(bug, task, package_name, "Incomplete")
 
         return retval
 
