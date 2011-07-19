@@ -322,6 +322,10 @@ class CollectRegressionsData(StdApp):
                             task = self.__get_relevant_task(bug, package_name)
                             if task is None:
                                 deletion_list.append(bug_id)
+
+                            if task.status not in ['New', 'Confirmed', 'Triaged', 'In Progress', 'Incomplete']:
+                                deletion_list.append(bug_id)
+
                             bugs_db_packages[package_name]['bugs'][bug_id] = Bugs.bug_info(bug, now, task)
                             ago = DeltaTime(self.string_to_date(bugs_db_packages[package_name]['bugs'][bug_id]['date created']), now)
                             if ago.days < bug_creation_window:
