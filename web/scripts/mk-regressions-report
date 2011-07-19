@@ -412,37 +412,41 @@ class RegressionsReport():
     # __bug_details
     #
     def __bug_details(self, bug_id, pkg):
-        bug_url = "http://launchpad.net/bugs/%s" % bug_id
-        bug = self.db['packages'][pkg]['bugs'][bug_id]
+        try:
+            bug_url = "http://launchpad.net/bugs/%s" % bug_id
+            bug = self.db['packages'][pkg]['bugs'][bug_id]
 
-        retval  = '                                <tr>\n'
-        retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                              # Bug
-        retval += '                                    <td class="bug-title">%s</td>\n' % bug['title']                                                                    # Summary
-        retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                     # Series
-        retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
-        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
-        retval += '                                    <td class="assignee">%s</td>\n' % bug['assignee']                                                                 # Assignee
-        retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                       # Age
-        retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                                  # Last comment
+            retval  = '                                <tr>\n'
+            retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                              # Bug
+            retval += '                                    <td class="bug-title">%s</td>\n' % bug['title']                                                                    # Summary
+            retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                     # Series
+            retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
+            retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
+            retval += '                                    <td class="assignee">%s</td>\n' % bug['assignee']                                                                 # Assignee
+            retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                       # Age
+            retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                                  # Last comment
 
-        if self.show_xtra:
-            msg    = 'kj-triage'
-            if 'kj-triage' in bug['tags']:
-                img    = 'img/tick.png'
-                retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
-            else:
-                img    = 'img/error.png'
-                retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
+            if self.show_xtra:
+                msg    = 'kj-triage'
+                if 'kj-triage' in bug['tags']:
+                    img    = 'img/tick.png'
+                    retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
+                else:
+                    img    = 'img/error.png'
+                    retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
 
-            msg    = 'kj-expired'
-            if 'kj-expired' in bug['tags']:
-                img    = 'img/tick.png'
-                retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
-            else:
-                img    = 'img/error.png'
-                retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
+                msg    = 'kj-expired'
+                if 'kj-expired' in bug['tags']:
+                    img    = 'img/tick.png'
+                    retval += '                                   <td title="%s" align="center"><img src="%s"></img></td>\n' % (msg, img)
+                else:
+                    img    = 'img/error.png'
+                    retval += '                                   <td title="%s" align="center">&nbsp;</td>\n' % (msg)
 
-        retval += '                                </tr>\n'
+            retval += '                                </tr>\n'
+        except:
+            print("Exception caught on bug: %s" % (bug_id))
+            raise
         return retval
 
 
