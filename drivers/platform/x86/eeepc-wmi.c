@@ -122,10 +122,12 @@ static const struct key_entry eeepc_wmi_keymap[] = {
 	{ KE_KEY, 0x5d, { KEY_WLAN } },
 	{ KE_KEY, 0x6b, { KEY_F13 } }, /* Disable Touchpad */
 	{ KE_KEY, 0x88, { KEY_WLAN } },
+	{ KE_KEY, 0xbd, { KEY_CAMERA } },
 	{ KE_KEY, 0xcc, { KEY_SWITCHVIDEOMODE } },
 	{ KE_KEY, 0xe0, { KEY_PROG1 } }, /* Task Manager */
 	{ KE_KEY, 0xe1, { KEY_F14 } }, /* Change Resolution */
 	{ KE_KEY, HOME_PRESS, { KEY_CONFIG } },
+	{ KE_KEY, 0xe8, { KEY_SCREENLOCK } },
 	{ KE_KEY, 0xe9, { KEY_BRIGHTNESS_ZERO } },
 	{ KE_END, 0},
 };
