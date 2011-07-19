@@ -68,19 +68,38 @@ class RequiredLogs(BugHandler):
         retval = False
 
         while True:
+
+            # A bug that is filed for a particular CVE. This is part of the CVE/SRU
+            # process.
+            #
             if 'kernel-cve-tracking-bug' in bug.tags:
                 retval = True
                 break
 
+            # A bug that is used for workflow processes and is part of the kernel
+            # stable teams workflow.
+            #
             if 'kernel-release-tracking-bug' in bug.tags:
                 retval = True
                 break
 
+            # The kernel stable team adds this tag onto bugs that get filed as part
+            # of a commit revert. It's so the team doesn't forget about the revert.
+            #
             if ('stable-next' in bug.tags) or ('kernel-stable-next' in bug.tags):
                 retval = True
                 break
 
+            # As you'd expect, we shouldn't be touching private bugs.
+            #
             if bug.private:
+                retval = True
+                break
+
+            # We should not be trying to change the status of "bug watch" tasks.
+            #
+            watch_link = task.bug_watch
+            if watch_link is not None:
                 retval = True
                 break
 

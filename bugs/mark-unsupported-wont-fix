@@ -179,22 +179,33 @@ class MarkUnsupportedWontFix():
 
         while True:
             if 'kernel-cve-tracking-bug' in bug.tags:
+                Dbg.verbose("Marked with 'kernel-cve-tracking-bug', ")
                 retval = True
                 break
 
             if 'kernel-release-tracking-bug' in bug.tags:
+                Dbg.verbose("Marked with 'kernel-release-tracking-bug', ")
                 retval = True
                 break
 
             if ('stable-next' in bug.tags) or ('kernel-stable-next' in bug.tags):
+                Dbg.verbose("Marked with 'stable-next' or 'kernel-stable-next', ")
                 retval = True
                 break
 
             if bug.private:
+                Dbg.verbose("Is a private bug, ")
                 retval = True
                 break
 
             if task.status not in ['New', 'Confirmed', 'Triaged', 'In Progress', 'Incomplete']:
+                Dbg.verbose("Is not 'open', ")
+                retval = True
+                break
+
+            watch_link = task.bug_watch
+            if watch_link is not None:
+                Dbg.verbose("Upstream bug watch task.")
                 retval = True
                 break
 
@@ -224,6 +235,8 @@ class MarkUnsupportedWontFix():
 
                         Dbg.verbose("Adding comment.\n")
                         bug.add_comment(self.comment, self.comment_subject)
+                    else:
+                        Dbg.verbose("Skipping.\n")
 
                 else:
                     error("Failed to find the relevant task for bug (%s).\n" % (bug.id))
@@ -248,7 +261,7 @@ class MarkUnsupportedWontFix():
                 for bid in self.cfg['bug-ids']:
                     self.bug_operation(KernelBug(self.lp.get_bug(bid)))
             else:
-                search_status          = ["New", "Confirmed", "Triaged", "Incomplete", "In Progress"] # A list of the bug statuses that we care about
+                search_status = ["New", "Confirmed", "Triaged", "Incomplete", "In Progress"] # A list of the bug statuses that we care about
 
                 Dbg.verbose("Searching the package for matching tasks.")
                 tasks = self.linux_package.search_tasks(status=search_status)
