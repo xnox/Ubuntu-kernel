@@ -1,3 +1,17 @@
+linux-backports-modules-2.6.32 (2.6.32-33.34) lucid-proposed; urgency=low
+
+  [ Stefan Bader ]
+
+  * SAUCE: Fix stupid packaging bug for wwan and input
+    - LP: #814186
+
+  [ Tim Gardner ]
+
+  * Added compat-wireless 2.6.39
+    - LP: #806597
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Thu, 21 Jul 2011 17:53:46 +0000
+
 linux-backports-modules-2.6.32 (2.6.32-33.33) lucid-proposed; urgency=low
 
   [ Steve Conklin ]
