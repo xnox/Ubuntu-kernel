@@ -1125,7 +1125,10 @@ class CheckTrackingBugs(StdApp):
             self.err("Bug title doesn't have the expected package version")
         else:
             pkg_ver = pkg_ver[0]
-            expected_series = self.expected_series_name(pkg_name, pkg_ver)
+            expected_series = self.workflow.expected_series_name(self.ub.db, pkg_name, pkg_ver)
+            if not expected_series:
+                stderr.write("** Warning: can't find series for %s %s\n"
+                             % (package, version))
 
         # sanity check for master workflow task
         master_task = False
@@ -1332,39 +1335,6 @@ class CheckTrackingBugs(StdApp):
             if tagcount > 1:
                 self.err("Inconsistent tags for %s results (two or more set)" % (task))
         return
-
-    def expected_series_name(self, package, version):
-        if (package == 'linux' or
-            package == 'linux-ti-omap4' or
-            package == 'linux-ec2'):
-            for s in iter(self.ub.db):
-                if version.startswith(self.ub.db[s]['kernel']):
-                    return self.ub.db[s]['name']
-        if package.startswith('linux-lts-backport'):
-            for s in iter(self.ub.db):
-                if self.ub.db[s]['name'] in version:
-                    return self.ub.db[s]['name']
-        if package == 'linux-mvl-dove' or package == 'linux-fsl-imx51':
-            version, release = version.split('-')
-            if release:
-                abi, upload = release.split('.')
-                try:
-                    abi_n = int(abi)
-                except ValueError:
-                    abi_n = 0
-                if abi_n:
-                    if package == 'linux-mvl-dove':
-                        if abi_n < 400:
-                            return 'lucid'
-                        else:
-                            return 'maverick'
-                    if package == 'linux-fsl-imx51':
-                        if abi_n < 600:
-                            return 'karmic'
-                        else:
-                            return 'lucid'
-        stderr.write("** Warning: can't find tag for %s %s\n" % (package, version))
-        return None
 
     def bug_url(self, bug_id):
         return 'http://%s/bugs/%s' % (self.cfg['lpserver'], bug_id)
