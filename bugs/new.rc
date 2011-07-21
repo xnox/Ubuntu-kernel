@@ -24,9 +24,10 @@
                 "bugs": {}
             }
         }, 
-        "updated": "Thursday, 02. June 2011 19:03 UTC"
+        "updated": "Thursday, 21. July 2011 20:15 UTC"
     }, 
     "configuration_file": "new.rc", 
+    "launchpad_client_name": "lpltk.kernel.ProcNewBugs", 
     "search-criteria-status": [
         "New"
     ], 
