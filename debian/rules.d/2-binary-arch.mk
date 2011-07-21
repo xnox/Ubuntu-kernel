@@ -180,7 +180,7 @@ endif
 	# Build the wwan-drivers packages.
 	#
 	install -d $(wwmoddir)/updates/wwan
-	find $(builddir)/build-*/wwan-drivers -type f -name '*.ko' |	       \
+	find $(builddir)/build-$*/wwan-drivers -type f -name '*.ko' |	       \
 	while read f; do						       \
 		install -v $$f $(wwmoddir)/updates/wwan/;		       \
 		strip --strip-debug $(wwmoddir)/updates/wwan/$$(basename $$f); \
@@ -218,7 +218,7 @@ endif
 	# Build the input-drivers package.
 	#
 	install -d $(immoddir)/updates/input
-	find $(builddir)/build-*/input-drivers -type f -name '*.ko' |	       \
+	find $(builddir)/build-$*/input-drivers -type f -name '*.ko' |	       \
 	while read f; do						       \
 		install -v $$f $(immoddir)/updates/input/;		       \
 		strip --strip-debug $(immoddir)/updates/input/$$(basename $$f);\
