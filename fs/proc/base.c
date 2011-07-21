@@ -222,6 +222,24 @@ out:
 	return NULL;
 }
 
+struct mm_struct *mm_for_maps2(struct task_struct *task)
+{
+	struct mm_struct *mm = get_task_mm(task);
+	if (!mm)
+		return NULL;
+	task_lock(task);
+	if (task->mm != mm)
+		goto out;
+	if (task->mm != current->mm && __ptrace_may_attach(task) < 0)
+		goto out;
+	task_unlock(task);
+	return mm;
+out:
+	task_unlock(task);
+	mmput(mm);
+	return NULL;
+}
+
 static int proc_pid_cmdline(struct task_struct *task, char * buffer)
 {
 	int res = 0;
@@ -262,7 +280,7 @@ out:
 static int proc_pid_auxv(struct task_struct *task, char *buffer)
 {
 	int res = 0;
-	struct mm_struct *mm = get_task_mm(task);
+	struct mm_struct *mm = mm_for_maps2(task);
 	if (mm) {
 		unsigned int nwords = 0;
 		do
@@ -827,9 +845,6 @@ static ssize_t environ_read(struct file *file, char __user *buf,
 	if (!task)
 		goto out_no_task;
 
-	if (!ptrace_may_attach(task))
-		goto out;
-
 	ret = -ENOMEM;
 	page = (char *)__get_free_page(GFP_TEMPORARY);
 	if (!page)
@@ -837,7 +852,7 @@ static ssize_t environ_read(struct file *file, char __user *buf,
 
 	ret = 0;
 
-	mm = get_task_mm(task);
+	mm = mm_for_maps2(task);
 	if (!mm)
 		goto out_free;
 
