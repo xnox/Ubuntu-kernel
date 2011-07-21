@@ -33,7 +33,7 @@ class RequiredLogs(BugHandler):
     def __init__(self, lp, vout):
         BugHandler.__init__(self, lp, vout)
 
-        self.comment = "This bug is missing log files that will aid in dianosing the problem. From a terminal window please run:\n\napport-collect %s\n\nand then change the status of the bug to 'Confirmed'.\n\nIf, due to the nature of the issue you have encountered, you are unable to run this command, please add a comment stating that fact and change the bug status to 'Confirmed'.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
+        self.comment = "This bug is missing log files that will aid in diagnosing the problem. From a terminal window please run:\n\napport-collect %s\n\nand then change the status of the bug to 'Confirmed'.\n\nIf, due to the nature of the issue you have encountered, you are unable to run this command, please add a comment stating that fact and change the bug status to 'Confirmed'.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
         self.comment_subject = "Missing required logs."
 
     # change_status
