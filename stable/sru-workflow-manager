@@ -257,6 +257,8 @@ class Shank(StdApp):
         #
         self.distro = self.lp.distributions['ubuntu']
 
+        self.project = self.lp.projects['kernel-sru-workflow']
+
         # Get set up for email and status messages
         if 'mail_notify' in self.cfg:
             mcfg = self.cfg['mail_notify']
@@ -328,7 +330,10 @@ class Shank(StdApp):
                 # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
                 # TODO This is a bit sloppy and I should probably build one list and walk it twice.
                 try:
-                    mtstring = "Kernel SRU Workflow"
+                    # TODO revisit this, but hardcode for now
+                    #mtstring = self.project.display_name
+                    mtstring = "kernel-sru-workflow"
+
                     for t in bug.tasks:
                         task_name       = t.bug_target_name
 
@@ -343,10 +348,11 @@ class Shank(StdApp):
 
                         if not task_name.startswith(mtstring):
                             # Ignore the tasks assigned to the actual package, we care about workflow only
-                            self.verbose('Skipping non-workflow task %s:%s\n' % (mtstring, task_name))
+                            self.verbose('Skipping non-workflow task <%s>:<%s>\n' % (mtstring, task_name))
                             continue
 
-                        therest = task_name[len(mtstring):].strip()
+                        # add one to account for the trailing /
+                        therest = task_name[len(mtstring)+1:].strip()
                         self.taskbyname[therest] = t
 
                 except RuntimeError:
@@ -372,7 +378,7 @@ class Shank(StdApp):
                         self.verbose('Skipping non-workflow task %s\n' % (task_name))
                         continue
 
-                    therest = task_name[len(mtstring):].strip()
+                    therest = task_name[len(mtstring)+1:].strip()
                     task_name = therest
 
                     state      = t.status

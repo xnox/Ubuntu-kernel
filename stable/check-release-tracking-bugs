@@ -668,7 +668,7 @@ class CheckTrackingBugs(StdApp):
         # sanity check for master workflow task
         master_task = False
         for task in bug.tasks:
-            if task.bug_target_name == self.prjname:
+            if task.bug_target_display_name == self.prjname:
                     master_task = True
                     break
         if not master_task:
@@ -680,7 +680,7 @@ class CheckTrackingBugs(StdApp):
         # verify kernel sru workflow tasks for this package
         task_tbl = {}
         for task in bug.tasks:
-            task_name = task.bug_target_name
+            task_name = task.bug_target_display_name
             if (task_name != self.prjname and
                 task_name.startswith(self.prjname)):
                 self.verify_workflow_task(task, target)
@@ -778,7 +778,7 @@ class CheckTrackingBugs(StdApp):
         assignments = self.workflow.tdb
         real_target = ''
         for task in bug.tasks:
-            task_name = task.bug_target_name
+            task_name = task.bug_target_display_name
             if (task_name == self.prjname or
                 task_name.startswith(self.prjname)):
                 continue
@@ -808,7 +808,7 @@ class CheckTrackingBugs(StdApp):
 
     def verify_workflow_task(self, task, target):
         # check if the task is valid
-        task_name = task.bug_target_name
+        task_name = task.bug_target_display_name
         workflow_task = task_name[len(self.prjname):].strip()
         tname = self.workflow.assignee(target, workflow_task)
         if (not tname and task.status != 'Invalid'):
@@ -848,7 +848,7 @@ class CheckTrackingBugs(StdApp):
 
     def verify_none_assignment(self, task):
         if task.assignee != None:
-            if self.handle("%s main task shouldn't have any assignee" % (task.bug_target_name)):
+            if self.handle("%s main task shouldn't have any assignee" % (task.bug_target_display_name)):
                 task.assignee = None
 
     def verify_bug_tags(self, bug, task, status, taglist):
@@ -904,7 +904,7 @@ class CheckTrackingBugs(StdApp):
 
     def is_task_status(self, bug, name, status):
         for task in bug.tasks:
-            task_name = task.bug_target_name
+            task_name = task.bug_target_display_name
             if (task_name == self.prjname or
                 not task_name.startswith(self.prjname)):
                 continue
