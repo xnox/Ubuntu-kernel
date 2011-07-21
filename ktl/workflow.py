@@ -82,6 +82,54 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "ubuntu-armel-qa"]
             },
+        'linux-lts-backport-oneiric' :  {
+            'task_assignment' : {
+                'prepare-package'       : 'canonical-kernel-team',
+                'promote-to-proposed'   : 'ubuntu-sru',
+                'verification-testing'  : 'canonical-kernel-team',
+                #'certification-testing' : 'canonical-hw-cert',
+                'regression-testing'    : 'canonical-platform-qa',
+                'promote-to-updates'    : 'ubuntu-sru',
+                'promote-to-security'   : 'ubuntu-sru',
+                'security-signoff'      : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"],
+            },
+        'linux-lts-backport-natty' :  {
+            'task_assignment' : {
+                'prepare-package'       : 'canonical-kernel-team',
+                'promote-to-proposed'   : 'ubuntu-sru',
+                'verification-testing'  : 'canonical-kernel-team',
+                #'certification-testing' : 'canonical-hw-cert',
+                'regression-testing'    : 'canonical-platform-qa',
+                'promote-to-updates'    : 'ubuntu-sru',
+                'promote-to-security'   : 'ubuntu-sru',
+                'security-signoff'      : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"],
+            },
+        'linux-lts-backport-maverick' :  {
+            'task_assignment' : {
+                'prepare-package'       : 'canonical-kernel-team',
+                'promote-to-proposed'   : 'ubuntu-sru',
+                'verification-testing'  : 'canonical-kernel-team',
+                #'certification-testing' : 'canonical-hw-cert',
+                'regression-testing'    : 'canonical-platform-qa',
+                'promote-to-updates'    : 'ubuntu-sru',
+                'promote-to-security'   : 'ubuntu-sru',
+                'security-signoff'      : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"],
+            },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'       : 'canonical-kernel-team',
