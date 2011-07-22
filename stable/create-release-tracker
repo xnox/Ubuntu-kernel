@@ -217,7 +217,7 @@ class CreateTrackingBug(StdApp):
             # Set status of the master task so the bot will start processing
             #
             for t in bug.tasks:
-                task       = t.bug_target_name
+                task       = t.bug_target_display_name
                 parts = task.partition(proj.display_name)
                 if parts[0] == '' and parts[1] == proj.display_name and parts[2] == '':
                     t.status = "In Progress"
