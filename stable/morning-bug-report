@@ -228,7 +228,7 @@ class MorningBugReport():
         Generate the actual text of The Morning Bug Report.
         """
         retval = ""
-        retval += 'The Morning Bug Report\n'
+        retval += 'The Daily Bug Report\n'
         retval += '%s\n' % (data['updated'])
         retval += '\n'
 
@@ -249,7 +249,7 @@ class MorningBugReport():
             bugs = self.get_24hr_bug_data()
             the_report = self.report(bugs)
 
-            self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Morning Bug Report for %s' % bugs['updated'], the_report)
+            self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Daily Bug Report for %s' % bugs['updated'], the_report)
 
         # Handle the user presses <ctrl-C>.
         #
