@@ -274,6 +274,8 @@ class Shank(StdApp):
 
         self.taskbyname = {}
 
+        self.printlink = "(No link)"
+
         return
 
     # main
@@ -315,7 +317,8 @@ class Shank(StdApp):
                 else:
                     self.cfg['lpserver'] = 'bugs.launchpad.net'
 
-                print '%s : (%s)\n' % (bug.id, self.bug_url(bug.id))
+                self.printlink =  '%s : (%s)\n' % (bug.id, self.bug_url(bug.id))
+                self.verbose('Processing: %s' % self.printlink)
 
                 # initialize any per-bug variables that we use for the release test
                 self.bugtags = []
@@ -392,10 +395,12 @@ class Shank(StdApp):
                     self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task_name, state, importance, assignee))
 
                     if task_name not in self.state_map:
+                        print self.printlink
                         print("I don't know how to handle the task <%s>, skipping\n" % (task_name))
                         continue
 
                     if 'action' not in self.state_map[task_name][state]:
+                        print self.printlink
                         print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
                         raise ValueError
 
@@ -484,6 +489,7 @@ class Shank(StdApp):
         """
         # TODO could add error handling and retries here if needed
         if self.taskbyname[taskname].status != state:
+            print self.printlink
             print 'Setting Task <%s> to State <%s>\n' % (taskname, state)
             self.taskbyname[taskname].status = state
             return True
@@ -544,6 +550,7 @@ class Shank(StdApp):
                 # we did change the state, weren't already in it
                 # Now tag all bugs verification-needed and spam with a comment
                 # Automate this in the future but for now send an email
+                print self.printlink
                 print 'Here is where we would tag and spam the verification bugs'
                 # FIXME: not sending emails anymore, we can remove later the 3 lines below
                 #msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
@@ -754,6 +761,7 @@ class Shank(StdApp):
             (self.taskbyname['promote-to-security'].status == 'Invalid' or
             self.taskbyname['promote-to-security'].status == 'Fix Released')):
 
+            print self.printlink
             print ' Everything is done, setting bug to Fix Released'
             self.set_task_to_state('Kernel SRU Workflow', 'Fix Released')
 
