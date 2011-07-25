@@ -94,6 +94,14 @@ class KernelBug(Bug):
         """
         retval = False
 
+        # If we've determined the problem type to be "Package" and the bug has been
+        # tagged with "apport-package" then it's pretty safe to assume that apport
+        # collected the necessary logs.
+        #
+        if (self.problem_type == 'Package') and ('apport-package' in self.tags):
+            retval = True
+            return retval # FIXME bjf - I don't like returning out of the middle of functions/methods
+
         # For the kernel, I want at least one Dmesg and one Lspci log file.
         #
         required = ['dmesg', 'lspci']
@@ -226,6 +234,23 @@ class KernelBug(Bug):
                 retval = version
                 break
         return retval
+
+    # problem_type
+    #
+    @property
+    def problem_type(self):
+        """
+        Look in the bug description to see if we can determine the type of problem
+        that the bug is about. We are looking for a "ProblemType:" line in the
+        description to help.
+        """
+        retval = None
+        for line in self.description.split('\n'):
+            m = re.search('ProblemType:\s*(.*)', line)
+            if m is not None:
+                retval = m.group(1)
+        return retval
+
 
     # _find_series_in_description
     #
