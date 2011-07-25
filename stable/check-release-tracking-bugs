@@ -172,19 +172,19 @@ class CheckTrackingBugs(StdApp):
         self.prjname = self.project.display_name
         # TODO: workflow class looks the best place for these:
         self.valid_task_states = {
-            'prepare-package'            : [ 'New', 'In Progress', 'Incomplete', 'Fix Released' ],
+            'prepare-package'            : [ 'New', 'In Progress', 'Fix Released' ],
             'prepare-package-lbm'        : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
             'prepare-package-lrm'        : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
             'prepare-package-lum'        : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
             'prepare-package-meta'       : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
             'prepare-package-ports-meta' : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
-            'promote-to-proposed'        : [ 'New', 'Confirmed', 'In Progress', 'Incomplete', 'Fix Released' ],
-            'verification-testing'       : [ 'New', 'In Progress', 'Incomplete', 'Fix Released' ],
-            'certification-testing'      : [ 'New', 'Confirmed', 'In Progress', 'Invalid', 'Incomplete', 'Fix Released' ],
-            'regression-testing'         : [ 'New', 'Confirmed', 'In Progress', 'Incomplete', 'Fix Released' ],
-            'promote-to-updates'         : [ 'New', 'Confirmed', 'Incomplete', 'Fix Released' ],
-            'promote-to-security'        : [ 'New', 'Confirmed', 'Invalid', 'Incomplete', 'Fix Released' ],
-            'security-signoff'           : [ 'New', 'Confirmed', 'In Progress', 'Invalid', 'Incomplete', 'Fix Released' ]
+            'promote-to-proposed'        : [ 'New', 'Confirmed', 'In Progress', 'Fix Released' ],
+            'verification-testing'       : [ 'New', 'In Progress', 'Fix Released' ],
+            'certification-testing'      : [ 'New', 'Confirmed', 'In Progress', 'Invalid', 'Fix Released' ],
+            'regression-testing'         : [ 'New', 'Confirmed', 'In Progress', 'Fix Released' ],
+            'promote-to-updates'         : [ 'New', 'Confirmed', 'Fix Released' ],
+            'promote-to-security'        : [ 'New', 'Confirmed', 'Invalid', 'Fix Released' ],
+            'security-signoff'           : [ 'New', 'Confirmed', 'In Progress', 'Invalid', 'Fix Released' ]
             }
         self.certification_tags = [ 'certification-testing-passed', 'certification-testing-failed' ]
         self.qa_tags = [ 'qa-testing-passed', 'qa-testing-failed' ]
@@ -239,28 +239,19 @@ class CheckTrackingBugs(StdApp):
                                      'promote-to-security'        : { 'New' : 0 },
                                      'security-signoff'           : { 'New' : 0 }
                                    },
-                  'Incomplete'   :  {
-                                     'promote-to-proposed'   : { 'New' : 2 },
-                                     'verification-testing'  : { 'New' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
-                                   },
                   'Fix Released' : {
                                      'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 3, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 3, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'prepare-package-lbm' :
@@ -299,13 +290,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
                                      'prepare-package'            : { 'In Progress' : 0, 'Fix Released' : 0 },
@@ -313,13 +304,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'prepare-package-lrm' :
@@ -358,13 +349,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
                                      'prepare-package'            : { 'In Progress' : 0, 'Fix Released' : 0 },
@@ -372,13 +363,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'prepare-package-lum' :
@@ -417,13 +408,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
                                      'prepare-package'            : { 'In Progress' : 0, 'Fix Released' : 0 },
@@ -431,13 +422,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'prepare-package-meta' :
@@ -476,13 +467,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
                                      'prepare-package'            : { 'In Progress' : 0, 'Fix Released' : 0 },
@@ -490,13 +481,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'prepare-package-ports-meta' :
@@ -535,13 +526,13 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
                                      'prepare-package'       : { 'In Progress' : 0, 'Fix Released' : 0 },
@@ -549,19 +540,19 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lrm'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'  : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'  : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing' : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'    : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'promote-to-proposed' :
                 {
                   'New'          : { 
-                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 3 },
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 3 },
                                      'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
@@ -602,15 +593,6 @@ class CheckTrackingBugs(StdApp):
                                      'promote-to-security'        : { 'New' : 0 },
                                      'security-signoff'           : { 'New' : 0 }
                                    },
-                  'Incomplete'   : { 
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
-                                   },
                   'Fix Released' : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
@@ -618,24 +600,24 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 5, 'In Progress' : 6, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'verification-testing'       : { 'New' : 5, 'In Progress' : 6, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'verification-testing' :
                 {
                   'New'          : {
-                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 5 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 5 },
                                      'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
                                      'regression-testing'         : { 'New' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
@@ -656,15 +638,6 @@ class CheckTrackingBugs(StdApp):
                                      'promote-to-security'        : { 'New' : 0 },
                                      'security-signoff'           : { 'New' : 0 }
                                    },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 6 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
-                                   },
                   'Fix Released' : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
@@ -673,24 +646,24 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
-                                     'regression-testing'         : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'certification-testing'      : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'certification-testing' :
                 {
                   'New'          : {
-                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 7 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 7 },
                                      'regression-testing'         : { 'New' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
                                      'promote-to-security'        : { 'New' : 0 },
@@ -705,10 +678,10 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 8 },
-                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
                                      'promote-to-security'        : { 'New' : 0 },
-                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'In Progress'  : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
@@ -719,33 +692,24 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 9 },
-                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
                                      'promote-to-security'        : { 'New' : 0 },
-                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 9 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Invalid'      : {
-                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 10, 'In Progress' : 10, 'Incomplete' : 0, 'Fix Released' : 10 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 10, 'In Progress' : 10, 'Fix Released' : 10 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
@@ -756,23 +720,23 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'regression-testing' :
                 {
                   'New'          : {
-                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 7 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 7 },
                                      'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
                                      'promote-to-security'        : { 'New' : 0 },
@@ -787,10 +751,10 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 11 },
-                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
                                      'promote-to-security'        : { 'New' : 0 },
-                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'In Progress'  : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
@@ -801,19 +765,10 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 12 },
-                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
                                      'promote-to-security'        : { 'New' : 0 },
-                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 12 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
@@ -824,23 +779,23 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'security-signoff' :
                 {
                   'New'          : {
-                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 7 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 7 },
                                      'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
                                      'regression-testing'         : { 'New' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
@@ -855,8 +810,8 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 13 },
-                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
                                      'promote-to-security'        : { 'New' : 0 }
                                    },
@@ -869,19 +824,10 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 14 },
-                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'promote-to-updates'         : { 'New' : 0 },
                                      'promote-to-security'        : { 'New' : 0 }
-                                   },
-                  'Incomplete'  : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 14 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 }
                                    },
                   'Invalid'      : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
@@ -892,9 +838,9 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 15 },
-                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
                                      'promote-to-security'        : { 'New' : 0, 'Invalid' : 0 }
                                    },
                   'Fix Released' : {
@@ -906,27 +852,27 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 16, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 }
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 16, 'Confirmed' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'promote-to-security' :
                 {
                   'New'          : {
-                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress': 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 17, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0, 'Invalid' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress': 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 17, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0, 'Invalid' : 0 }
                                    },
                   'Confirmed'    : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
@@ -939,17 +885,8 @@ class CheckTrackingBugs(StdApp):
                                      'verification-testing'       : { 'Fix Released' : 0 },
                                      'certification-testing'      : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'regression-testing'         : { 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'Confirmed' : 17, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'Confirmed' : 17, 'Fix Released' : 0 },
                                      'security-signoff'           : { 'Fix Released' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'Confirmed' : 17, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Fix Released' : 0 }
                                    },
                   'Invalid'      : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
@@ -960,9 +897,9 @@ class CheckTrackingBugs(StdApp):
                                      'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'promote-to-proposed'        : { 'Fix Released' : 0 },
                                      'verification-testing'       : { 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
-                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 17, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 17, 'Fix Released' : 0 },
                                      'security-signoff'           : { 'Invalid' : 0 }
                                    },
                   'Fix Released' : {
@@ -983,18 +920,18 @@ class CheckTrackingBugs(StdApp):
             'promote-to-updates' :
                 {
                   'New'          : {
-                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 18, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 18, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Confirmed'    : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
@@ -1007,17 +944,8 @@ class CheckTrackingBugs(StdApp):
                                      'verification-testing'       : { 'Fix Released' : 0 },
                                      'certification-testing'      : { 'Invalid' : 0, 'Fix Released' : 0 },
                                      'regression-testing'         : { 'Fix Released' : 0 },
-                                     'promote-to-security'        : { 'Confirmed' : 18, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'Confirmed' : 18, 'Invalid' : 0, 'Fix Released' : 0 },
                                      'security-signoff'           : { 'Invalid' : 0, 'Fix Released' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'Confirmed' : 18, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
                                      'prepare-package'            : { 'Fix Released' : 0 },
