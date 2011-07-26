@@ -8,7 +8,7 @@
 from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error, date_to_string, o2ascii
+from ktl.utils                          import stdo, error, date_to_string, o2ascii, stde
 from ktl.bugs                           import Bugs, DeltaTime
 from ktl.std_app                        import StdApp
 from lpltk.service                      import LaunchpadService
@@ -295,8 +295,8 @@ class CollectRegressionsData(StdApp):
                     self.verbose("\n")
 
                     deletion_list = []
-                    for task in tasks:
-                        bug = KernelBug(task.bug)
+                    for t in tasks:
+                        bug = KernelBug(t.bug)
                         task = self.__get_relevant_task(bug, package_name)
                         #self.__verbose_bug_info(bug)
 
@@ -318,14 +318,26 @@ class CollectRegressionsData(StdApp):
                     #
                     if package_name in bugs_db_packages and 'bugs' in bugs_db_packages[package_name]:
                         for bug_id in bugs_db_packages[package_name]['bugs']:
-                            ago = DeltaTime(self.string_to_date(bugs_db_packages[package_name]['bugs'][bug_id]['date created']), now)
-                            if ago.days < bug_creation_window:
-                                bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = bug.gravity
-                            else:
+                            bug_id = o2ascii(bug_id)
+                            bug = KernelBug(self.lp.get_bug(bug_id))
+                            task = self.__get_relevant_task(bug, package_name)
+                            if task is None:
                                 deletion_list.append(bug_id)
 
+                            else:
+                                if task.status not in ['New', 'Confirmed', 'Triaged', 'In Progress', 'Incomplete']:
+                                    deletion_list.append(bug_id)
+
+                                bugs_db_packages[package_name]['bugs'][bug_id] = Bugs.bug_info(bug, now, task)
+                                ago = DeltaTime(self.string_to_date(bugs_db_packages[package_name]['bugs'][bug_id]['date created']), now)
+                                if ago.days < bug_creation_window:
+                                    bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = bug.gravity
+                                else:
+                                    deletion_list.append(bug_id)
+
                         for bug_id in deletion_list:
-                            del bugs_db_packages[package_name]['bugs'][bug_id]
+                            if bug_id in bugs_db_packages[package_name]['bugs']:
+                                del bugs_db_packages[package_name]['bugs'][bug_id]
 
                 except:
                     error("Exception caught processing the tasks, building the bugs database.\n")

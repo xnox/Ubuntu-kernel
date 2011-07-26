@@ -17,14 +17,19 @@ class Workflow:
     tdb = {
         'linux' :  {
             'task_assignment' : {
-                'prepare-package'       : 'canonical-kernel-team',
-                'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'canonical-kernel-team',
-                'certification-testing' : 'canonical-hw-cert',
-                'regression-testing'    : 'canonical-platform-qa',
-                'promote-to-updates'    : 'ubuntu-sru',
-                'promote-to-security'   : 'ubuntu-sru',
-                'security-signoff'      : 'canonical-security'
+                'prepare-package'            : 'canonical-kernel-team',
+                'prepare-package-lbm'        : 'canonical-kernel-team',
+                'prepare-package-lrm'        : 'canonical-kernel-team',
+                'prepare-package-lum'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'canonical-kernel-team',
+                'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'canonical-kernel-team',
+                'certification-testing'      : 'canonical-hw-cert',
+                'regression-testing'         : 'canonical-platform-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
@@ -36,14 +41,19 @@ class Workflow:
             },
         'linux-mvl-dove' :  {
             'task_assignment' : {
-                'prepare-package'       : 'ubuntu-armel-kernel',
-                'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'ubuntu-armel-kernel',
-                #'certification-testing' : 'ubuntu-armel-qa',
-                'regression-testing'    : 'ubuntu-armel-qa',
-                'promote-to-updates'    : 'ubuntu-sru',
-                'promote-to-security'   : 'ubuntu-sru',
-                'security-signoff'      : 'canonical-security'
+                'prepare-package'            : 'ubuntu-armel-kernel',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                #'prepare-package-lrm'        : 'canonical-kernel-team',
+                #'prepare-package-lum'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'canonical-kernel-team',
+                #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'ubuntu-armel-kernel',
+                #'certification-testing    ' : 'ubuntu-armel-qa',
+                'regression-testing'         : 'ubuntu-armel-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armel'],
@@ -52,14 +62,19 @@ class Workflow:
             },
         'linux-fsl-imx51' :  {
             'task_assignment' : {
-                'prepare-package'       : 'ubuntu-armel-kernel',
-                'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'ubuntu-armel-kernel',
-                #'certification-testing' : 'ubuntu-armel-qa',
-                'regression-testing'    : 'ubuntu-armel-qa',
-                'promote-to-updates'    : 'ubuntu-sru',
-                'promote-to-security'   : 'ubuntu-sru',
-                'security-signoff'      : 'canonical-security'
+                'prepare-package'            : 'ubuntu-armel-kernel',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                #'prepare-package-lrm'        : 'canonical-kernel-team',
+                #'prepare-package-lum'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'canonical-kernel-team',
+                #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'ubuntu-armel-kernel',
+                #'certification-testing'     : 'ubuntu-armel-qa',
+                'regression-testing'         : 'ubuntu-armel-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armel'],
@@ -68,30 +83,103 @@ class Workflow:
             },
         'linux-ti-omap4' :  {
             'task_assignment' : {
-                'prepare-package'       : 'ubuntu-armel-kernel',
-                'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'ubuntu-armel-kernel',
-                #'certification-testing' : 'ubuntu-armel-qa',
-                'regression-testing'    : 'ubuntu-armel-qa',
-                'promote-to-updates'    : 'ubuntu-sru',
-                'promote-to-security'   : 'ubuntu-sru',
-                'security-signoff'      : 'canonical-security'
+                'prepare-package'            : 'ubuntu-armel-kernel',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                #'prepare-package-lrm'        : 'canonical-kernel-team',
+                #'prepare-package-lum'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'canonical-kernel-team',
+                #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'ubuntu-armel-kernel',
+                #'certification-testing'     : 'ubuntu-armel-qa',
+                'regression-testing'         : 'ubuntu-armel-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armel'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru", "ubuntu-armel-qa"]
             },
+        'linux-lts-backport-oneiric' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'canonical-kernel-team',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                #'prepare-package-lrm'        : 'canonical-kernel-team',
+                #'prepare-package-lum'        : 'canonical-kernel-team',
+                #'prepare-package-meta'       : 'canonical-kernel-team',
+                #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'canonical-kernel-team',
+                #'certification-testing'     : 'canonical-hw-cert',
+                'regression-testing'         : 'canonical-platform-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"],
+            },
+        'linux-lts-backport-natty' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'canonical-kernel-team',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                #'prepare-package-lrm'        : 'canonical-kernel-team',
+                #'prepare-package-lum'        : 'canonical-kernel-team',
+                #'prepare-package-meta'       : 'canonical-kernel-team',
+                #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'canonical-kernel-team',
+                #'certification-testing'     : 'canonical-hw-cert',
+                'regression-testing'         : 'canonical-platform-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"],
+            },
+        'linux-lts-backport-maverick' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'canonical-kernel-team',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                #'prepare-package-lrm'        : 'canonical-kernel-team',
+                #'prepare-package-lum'        : 'canonical-kernel-team',
+                #'prepare-package-meta'       : 'canonical-kernel-team',
+                #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'canonical-kernel-team',
+                #'certification-testing'     : 'canonical-hw-cert',
+                'regression-testing'         : 'canonical-platform-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"],
+            },
         'default' :  {
             'task_assignment' : {
-                'prepare-package'       : 'canonical-kernel-team',
-                'promote-to-proposed'   : 'ubuntu-sru',
-                'verification-testing'  : 'canonical-kernel-team',
-                'certification-testing' : 'canonical-hw-cert',
-                'regression-testing'    : 'canonical-platform-qa',
-                'promote-to-updates'    : 'ubuntu-sru',
-                'promote-to-security'   : 'ubuntu-sru',
-                'security-signoff'      : 'canonical-security'
+                'prepare-package'            : 'canonical-kernel-team',
+                'prepare-package-lbm'        : 'canonical-kernel-team',
+                'prepare-package-lrm'        : 'canonical-kernel-team',
+                'prepare-package-lum'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'canonical-kernel-team',
+                'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'canonical-kernel-team',
+                'certification-testing'      : 'canonical-hw-cert',
+                'regression-testing'         : 'canonical-platform-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug'],
@@ -154,6 +242,43 @@ class Workflow:
             return False
         version_list = self.tdb[packagename]['invalidate_tasks'][taskname]
         return (version in version_list)
+
+    # series where that package version is found
+    #
+    def expected_series_name(self, db, package, version):
+        """
+        Return the series name where that package-version is found
+        """
+        if (package == 'linux' or
+            package == 'linux-ti-omap4' or
+            package == 'linux-ec2'):
+            for entry in db.itervalues():
+                if version.startswith(entry['kernel']):
+                    return entry['name']
+        if package.startswith('linux-lts-backport'):
+            for entry in db.itervalues():
+                if entry['name'] in version:
+                    return entry['name']
+        if package == 'linux-mvl-dove' or package == 'linux-fsl-imx51':
+            version, release = version.split('-')
+            if release:
+                abi, upload = release.split('.')
+                try:
+                    abi_n = int(abi)
+                except ValueError:
+                    abi_n = 0
+                if abi_n:
+                    if package == 'linux-mvl-dove':
+                        if abi_n < 400:
+                            return 'lucid'
+                        else:
+                            return 'maverick'
+                    if package == 'linux-fsl-imx51':
+                        if abi_n < 600:
+                            return 'karmic'
+                        else:
+                            return 'lucid'
+        return None
 
 if __name__ == '__main__':
     workflow = Workflow()

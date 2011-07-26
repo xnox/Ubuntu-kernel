@@ -1,0 +1,170 @@
+#!/usr/bin/env python
+#
+
+from sys                            import argv
+from getopt                         import getopt, GetoptError
+from ktl.utils                      import stdo, error
+from ktl.ubuntu                     import Ubuntu
+from launchpadlib.launchpad         import Launchpad
+import os
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                               \n")
+        stdo("        %s <series>                                      \n" % defaults['app_name'])
+        stdo("                                                         \n")
+        stdo("    Options:                                             \n")
+        stdo("        --help           Prints this text.               \n")
+        stdo("                                                         \n")
+        stdo("    Examples:                                            \n")
+        stdo("        %s karmic                                        \n" % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+            if result: # No errors yet
+                # There might be some bugs listed on the command line.
+                #
+                if len(args) == 1:
+                    return args[0]
+                else:
+                    Cmdline.usage(self, defaults)
+                    return None
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# CloseNominations
+#
+class CloseNominations():
+    """
+    This class/script examines all 'open' bugs for a given series. If
+    a given bug was filed against a version of Ubuntu that is no longer
+    supported, change the status of the bug task representing expired series
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, series):
+        self.comment = "This bug was nominated against a series that is no longer supported, ie %s.  The bug task representing the %s nomination is being closed as Won't Fix.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team." % (series, series)
+        self.subject = "Closing unsupported series nomination."
+
+    # initialize
+    #
+    def initialize(self, series):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        # Process the command line arguments, and any configuration file options. Make sure
+        # that any required parameters have been provided.
+        #
+
+        cachedir = os.path.expanduser("~/.cache/")
+        self.lp = Launchpad.login_with('kernel team tools', 'production', cachedir)
+
+        self.distro        = self.lp.distributions['ubuntu']
+        self.series        = self.distro.getSeries(name_or_version=series)
+        self.linux = self.series.getSourcePackage(name='linux')
+
+        return
+
+    # main
+    #
+    def main(self, series):
+        try:
+            self.initialize(series)
+            # LP:320596 - Series.searchTasks() always returns an empty collection
+            # Should be fixed in later versions to not require omit_targeted=False
+            tasks = self.linux.searchTasks(omit_targeted=False)
+            for task in tasks:
+		print task.bug.id, task.bug.title
+                task.status = "Won't Fix"
+                task.bug.newMessage(subject=self.subject, content=self.comment)
+		task.lp_save()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        return
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    defaults['launchpad_client_name']   = 'close-eol-nominations'
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    ubuntu = Ubuntu()
+    cmdline = Cmdline()
+    series = cmdline.process(argv)
+    series = series.lower()
+    try:
+        if series and not ubuntu.is_supported_series(series):
+            app = CloseNominations(series)
+            app.main(series)
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+

@@ -2,15 +2,18 @@
 #
 
 from sys                                import argv
+from os                                 import path
 from getopt                             import getopt, GetoptError
+from urllib2                            import urlopen, URLError
 
-from lpltk.service                      import LaunchpadService
+import json
 
-from ktl.kernel_bug                     import KernelBug
 from ktl.utils                          import stdo, error
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
-from ktl.ubuntu                         import Ubuntu
+import pygtk
+pygtk.require('2.0')
+import pynotify
 
 # CmdlineError
 #
@@ -42,10 +45,15 @@ class Cmdline:
     #
     def usage(self, defaults):
         """
-        Prints out the help text which explains the command line options.
+        This is a tool for displaying an OSD message for any new bugs that come in since the last time
+        it was run. To have it check every 5 minutes for new bugs and report them, add the following
+        line to your crontab:
+           */12      *          *              *               *             DISPLAY=:0 /<path>/kteam-tools/stable/osd-new-bugs
+
+        Change the '<path>' string to the path to your kteam-tools directory.
         """
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--debug=<dbg options>] [bug-id,bug-id,..]                            \n" % defaults['app_name'])
+        stdo("        %s [--verbose] [--debug=<dbg options>]                                               \n" % defaults['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
@@ -116,9 +124,9 @@ class Exit():
     """
     pass
 
-# MarkUnsupportedWontFix
+# OsdNewBugs
 #
-class MarkUnsupportedWontFix():
+class OsdNewBugs():
     """
     This class/script examines all 'open' bugs. If a given bug was filed against a
     version of Ubuntu that is no longer supported, change the status of that bug
@@ -128,15 +136,10 @@ class MarkUnsupportedWontFix():
     # __init__
     #
     def __init__(self, cfg):
-        Dbg.enter("MarkUnsupportedWontFix.__init__")
-
+        Dbg.enter("OsdNewBugs.__init__")
         self.cfg    = cfg
-        self.ubuntu = Ubuntu()
-
-        self.comment = "This bug was filed against a series that is no longer supported and so is being marked as Won't Fix. If this issue still exists in a supported series, please file a new bug.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
-        self.comment_subject = "Unsupported series, setting status to \"Won't Fix\"."
-
-        Dbg.leave("MarkUnsupportedWontFix.__init__")
+        self.cache_24hr_data = path.join(path.expanduser('~'), '.cache', '24hr_bug_data.json')
+        Dbg.leave("OsdNewBugs.__init__")
 
     # initialize
     #
@@ -145,7 +148,7 @@ class MarkUnsupportedWontFix():
         A separate initialize that we can control when it gets called (not
         when the object is instantiated).
         """
-        Dbg.enter("MarkUnsupportedWontFix.initialize")
+        Dbg.enter("OsdNewBugs.initialize")
 
         try:
             # Process the command line arguments, and any configuration file options. Make sure
@@ -153,121 +156,86 @@ class MarkUnsupportedWontFix():
             #
             self.cfg = Cfg.merge_options(defaults, self.cfg)
 
-            Dbg.verbose("Connecting to LaunchPad...")
-            self.lp = LaunchpadService(self.cfg)
-            Dbg.verbose("  connected.\n")
-
-            self.distro        = self.lp.distributions['ubuntu']
-            self.linux_package = self.distro.get_source_package('linux')
-
         except CfgError as e:
             error(e)
-            Dbg.leave("MarkUnsupportedWontFix.initialize")
+            Dbg.leave("OsdNewBugs.initialize")
             raise Exit()
 
-        Dbg.leave("MarkUnsupportedWontFix.initialize")
+        Dbg.leave("OsdNewBugs.initialize")
         return
 
-    # hands_off
+    # ljf
     #
-    def hands_off(self, bug, task, package_name):
+    def ljf(self, fname):
         """
-        There are certain bugs that we shouldn't mess with. This method tries to
-        know about those and returns True if they are supposed to be ignored.
+        Load JSON File.
         """
-        retval = False
-
-        while True:
-            if 'kernel-cve-tracking-bug' in bug.tags:
-                Dbg.verbose("Marked with 'kernel-cve-tracking-bug', ")
-                retval = True
-                break
-
-            if 'kernel-release-tracking-bug' in bug.tags:
-                Dbg.verbose("Marked with 'kernel-release-tracking-bug', ")
-                retval = True
-                break
-
-            if ('stable-next' in bug.tags) or ('kernel-stable-next' in bug.tags):
-                Dbg.verbose("Marked with 'stable-next' or 'kernel-stable-next', ")
-                retval = True
-                break
-
-            if bug.private:
-                Dbg.verbose("Is a private bug, ")
-                retval = True
-                break
-
-            if task.status not in ['New', 'Confirmed', 'Triaged', 'In Progress', 'Incomplete']:
-                Dbg.verbose("Is not 'open', ")
-                retval = True
-                break
-
-            watch_link = task.bug_watch
-            if watch_link is not None:
-                Dbg.verbose("Upstream bug watch task.")
-                retval = True
-                break
-
-            break;
+        retval = None
+        if path.exists(fname):
+            with open(fname, 'r') as f:
+                retval = json.load(f)
         return retval
 
-    # bug_operation
+    # sjf
     #
-    def bug_operation(self, bug):
+    def sjf(self, obj, fname):
         """
-        This is the method that actually works on the individual bugs. Making changes
-        to status, adding comments, adding tags, etc. are all done here.
+        Store object in JSON File.
         """
+        with open(fname, 'w') as f:
+            f.write(json.dumps(obj, sort_keys=True, indent=4))
+        return
+
+    # get_24hr_bug_data
+    #
+    def get_24hr_bug_data(self):
+        """
+        Download the latest bug data from the kernel report web site.
+        """
+        retval = None
         try:
-            bug.print_verbose_info()
+            response = urlopen('http://people.canonical.com/~kernel/reports/1-day-window.json')
+            retval = json.loads(response.read())
+        except URLError as e:
+            print(e.reason)
+            raise Exit
+        return retval
 
-            series_name, series_version = bug.series
-            Dbg.verbose("      Series: %s" % (series_name))
-
-            if not self.ubuntu.is_supported_series(series_name):
-                Dbg.verbose(" (%s)\n" % "unsupported")
-                linux_task = bug.get_relevant_task("linux")
-                if linux_task is not None:
-                    if not self.hands_off(bug, linux_task, 'linux'):
-                        Dbg.verbose("Chaning the status from (%s) to Won't Fix.\n" % (linux_task.status))
-                        linux_task.status = "Won't Fix"
-
-                        Dbg.verbose("Adding comment.\n")
-                        bug.add_comment(self.comment, self.comment_subject)
-                    else:
-                        Dbg.verbose("Skipping.\n")
-
-                else:
-                    error("Failed to find the relevant task for bug (%s).\n" % (bug.id))
-
-            else:
-                Dbg.verbose(" (%s)\n" % "supported")
-
-        except:
-            print(bug.id)
-            print("  *** Warning: Exception thrown while processing %s" % (bug.id))
-            raise
+    # notify
+    #
+    def notify(self, summary, body):
+        n = pynotify.Notification(summary, body)
+        if not n.show():
+            error("Failed to send notification.")
+        return
 
     # main
     #
     def main(self):
-        Dbg.enter("MarkUnsupportedWontFix.main")
+        Dbg.enter("OsdNewBugs.main")
 
         try:
             self.initialize()
+            bugs_now    = self.get_24hr_bug_data()
+            bugs_before = self.ljf(self.cache_24hr_data)
 
-            if len(self.cfg['bug-ids']) > 0:
-                for bid in self.cfg['bug-ids']:
-                    self.bug_operation(KernelBug(self.lp.get_bug(bid)))
-            else:
-                search_status = ["New", "Confirmed", "Triaged", "Incomplete", "In Progress"] # A list of the bug statuses that we care about
+            if bugs_before is not None:
+                for pkg in bugs_now['packages']:
+                    if pkg in bugs_before['packages']:
+                        for bug in bugs_now['packages'][pkg]['bugs']:
+                            if bug not in bugs_before['packages'][pkg]['bugs']:
+                                title   = "Bug: %s" % bug
+                                subject = bugs_now['packages'][pkg]['bugs'][bug]['title']
+                                self.notify(title, subject)
+                    else:
+                        for bug in bugs_now['packages'][pkg]['bugs']:
+                            title   = "Bug: %s" % bug
+                            subject = bugs_now['packages'][pkg]['bugs'][bug]['title']
+                            self.notify(title, subject)
 
-                Dbg.verbose("Searching the package for matching tasks.")
-                tasks = self.linux_package.search_tasks(status=search_status)
-
-                for task in tasks:
-                    self.bug_operation(KernelBug(task.bug))
+            # Cache the new data we just fetched for comparison next time.
+            #
+            self.sjf(bugs_now, self.cache_24hr_data)
 
         # Handle the user presses <ctrl-C>.
         #
@@ -277,22 +245,21 @@ class MarkUnsupportedWontFix():
         except Exit:
             pass
 
-        Dbg.leave("MarkUnsupportedWontFix.main")
+        Dbg.leave("OsdNewBugs.main")
         return
 
 
 if __name__ == '__main__':
     defaults = {}
     defaults['app_name'] = argv[0]
-    #defaults['launchpad_services_root'] = 'qastaging'
-    defaults['launchpad_client_name']   = 'kernel-team-mark-unsupported-wont-fix'
+    defaults['configuration_file'] = path.dirname(__file__) + '/sru-workflow.cfg'
 
     # The cmdline processing is done here partially so the debug options
     # can be processed right away.
     #
     cmdline = Cmdline()
     try:
-        app = MarkUnsupportedWontFix(cmdline.process(argv))
+        app = OsdNewBugs(cmdline.process(argv))
         app.main()
     except CmdlineError as e:
         cmdline.error(e.msg, defaults)

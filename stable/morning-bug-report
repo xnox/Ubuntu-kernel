@@ -2,15 +2,16 @@
 #
 
 from sys                                import argv
+from os                                 import path
 from getopt                             import getopt, GetoptError
+from urllib2                            import urlopen, URLError
 
-from lpltk.service                      import LaunchpadService
+import json
 
-from ktl.kernel_bug                     import KernelBug
 from ktl.utils                          import stdo, error
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
-from ktl.ubuntu                         import Ubuntu
+from ktl.messaging                      import Email
 
 # CmdlineError
 #
@@ -45,7 +46,7 @@ class Cmdline:
         Prints out the help text which explains the command line options.
         """
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--debug=<dbg options>] [bug-id,bug-id,..]                            \n" % defaults['app_name'])
+        stdo("        %s [--verbose] [--debug=<dbg options>]                                               \n" % defaults['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
@@ -116,9 +117,9 @@ class Exit():
     """
     pass
 
-# MarkUnsupportedWontFix
+# MorningBugReport
 #
-class MarkUnsupportedWontFix():
+class MorningBugReport():
     """
     This class/script examines all 'open' bugs. If a given bug was filed against a
     version of Ubuntu that is no longer supported, change the status of that bug
@@ -128,15 +129,10 @@ class MarkUnsupportedWontFix():
     # __init__
     #
     def __init__(self, cfg):
-        Dbg.enter("MarkUnsupportedWontFix.__init__")
-
+        Dbg.enter("MorningBugReport.__init__")
         self.cfg    = cfg
-        self.ubuntu = Ubuntu()
-
-        self.comment = "This bug was filed against a series that is no longer supported and so is being marked as Won't Fix. If this issue still exists in a supported series, please file a new bug.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
-        self.comment_subject = "Unsupported series, setting status to \"Won't Fix\"."
-
-        Dbg.leave("MarkUnsupportedWontFix.__init__")
+        self.title_max = 60
+        Dbg.leave("MorningBugReport.__init__")
 
     # initialize
     #
@@ -145,7 +141,7 @@ class MarkUnsupportedWontFix():
         A separate initialize that we can control when it gets called (not
         when the object is instantiated).
         """
-        Dbg.enter("MarkUnsupportedWontFix.initialize")
+        Dbg.enter("MorningBugReport.initialize")
 
         try:
             # Process the command line arguments, and any configuration file options. Make sure
@@ -153,121 +149,107 @@ class MarkUnsupportedWontFix():
             #
             self.cfg = Cfg.merge_options(defaults, self.cfg)
 
-            Dbg.verbose("Connecting to LaunchPad...")
-            self.lp = LaunchpadService(self.cfg)
-            Dbg.verbose("  connected.\n")
-
-            self.distro        = self.lp.distributions['ubuntu']
-            self.linux_package = self.distro.get_source_package('linux')
+            if 'mail_notify' in self.cfg:
+                mcfg = self.cfg['mail_notify']
+                self.email = Email(mcfg['smtp_server'].encode('UTF-8'), mcfg['smtp_user'].encode('UTF-8'), mcfg['smtp_pass'].encode('UTF-8'))
 
         except CfgError as e:
             error(e)
-            Dbg.leave("MarkUnsupportedWontFix.initialize")
+            Dbg.leave("MorningBugReport.initialize")
             raise Exit()
 
-        Dbg.leave("MarkUnsupportedWontFix.initialize")
+        Dbg.leave("MorningBugReport.initialize")
         return
 
-    # hands_off
+    # get_24hr_bug_data
     #
-    def hands_off(self, bug, task, package_name):
+    def get_24hr_bug_data(self):
         """
-        There are certain bugs that we shouldn't mess with. This method tries to
-        know about those and returns True if they are supposed to be ignored.
+        Download the latest bug data from the kernel report web site.
         """
-        retval = False
-
-        while True:
-            if 'kernel-cve-tracking-bug' in bug.tags:
-                Dbg.verbose("Marked with 'kernel-cve-tracking-bug', ")
-                retval = True
-                break
-
-            if 'kernel-release-tracking-bug' in bug.tags:
-                Dbg.verbose("Marked with 'kernel-release-tracking-bug', ")
-                retval = True
-                break
-
-            if ('stable-next' in bug.tags) or ('kernel-stable-next' in bug.tags):
-                Dbg.verbose("Marked with 'stable-next' or 'kernel-stable-next', ")
-                retval = True
-                break
-
-            if bug.private:
-                Dbg.verbose("Is a private bug, ")
-                retval = True
-                break
-
-            if task.status not in ['New', 'Confirmed', 'Triaged', 'In Progress', 'Incomplete']:
-                Dbg.verbose("Is not 'open', ")
-                retval = True
-                break
-
-            watch_link = task.bug_watch
-            if watch_link is not None:
-                Dbg.verbose("Upstream bug watch task.")
-                retval = True
-                break
-
-            break;
+        retval = None
+        try:
+            response = urlopen('http://people.canonical.com/~kernel/reports/1-day-window.json')
+            retval = json.loads(response.read())
+        except URLError as e:
+            print(e.reason)
+            raise Exit
         return retval
 
-    # bug_operation
+    # per_bug_report
     #
-    def bug_operation(self, bug):
+    def per_bug_report(self, bid, data):
         """
-        This is the method that actually works on the individual bugs. Making changes
-        to status, adding comments, adding tags, etc. are all done here.
+        Generate the report for a single bug.
         """
-        try:
-            bug.print_verbose_info()
+        retval = ""
 
-            series_name, series_version = bug.series
-            Dbg.verbose("      Series: %s" % (series_name))
+        retval += '%-7s' % (bid)
 
-            if not self.ubuntu.is_supported_series(series_name):
-                Dbg.verbose(" (%s)\n" % "unsupported")
-                linux_task = bug.get_relevant_task("linux")
-                if linux_task is not None:
-                    if not self.hands_off(bug, linux_task, 'linux'):
-                        Dbg.verbose("Chaning the status from (%s) to Won't Fix.\n" % (linux_task.status))
-                        linux_task.status = "Won't Fix"
+        # Chop the title to a specific length
+        #
+        if len(data['title']) > self.title_max:
+            title = data['title'][:self.title_max - 3]
+            retval += '   %-*s...' % (self.title_max - 3, title)
+        else:
+            retval += '   %-*s' % (self.title_max, data['title'])
 
-                        Dbg.verbose("Adding comment.\n")
-                        bug.add_comment(self.comment, self.comment_subject)
-                    else:
-                        Dbg.verbose("Skipping.\n")
+        retval += '    %-8s' % (data['series name'])
+        retval += '    %-12s' % (data['importance'])
+        retval += '    %-12s' % (data['status'])
+        retval += '    %-s' % (data['assignee'])
 
-                else:
-                    error("Failed to find the relevant task for bug (%s).\n" % (bug.id))
+        retval += '\n'
 
-            else:
-                Dbg.verbose(" (%s)\n" % "supported")
+        return retval
 
-        except:
-            print(bug.id)
-            print("  *** Warning: Exception thrown while processing %s" % (bug.id))
-            raise
+    # per_package_report
+    #
+    def per_package_report(self, pkg, data):
+        """
+        Generate the report for a single package.
+        """
+        retval = ""
+        if len(data['bugs']) > 0:
+            retval += 'The %s package acquired %d new bugs in the last 24 hrs.\n' % (pkg, len(data['bugs']))
+            retval += '\n'
+            retval += '%-7s   %-*s    %-8s    %-12s    %-12s    %-s' % ('Bug', self.title_max, 'Title', 'Series', 'Importance', 'Status', 'Assignee')
+            retval += '\n'
+            retval += '-------   ------------------------------------------------------------    --------    ------------    ------------    ---------------------\n'
+            for bug in sorted(data['bugs']):
+                retval += self.per_bug_report(bug, data['bugs'][bug])
+
+        return retval
+
+    # report
+    #
+    def report(self, data):
+        """
+        Generate the actual text of The Morning Bug Report.
+        """
+        retval = ""
+        retval += 'The Daily Bug Report\n'
+        retval += '%s\n' % (data['updated'])
+        retval += '\n'
+
+        for pkg in data['packages']:
+            retval += self.per_package_report(pkg, data['packages'][pkg])
+
+        retval += '\n'
+        retval += 'An online version of this report can be found at: http://people.canonical.com/~kernel/reports/1-day-new.html\n'
+        return retval
 
     # main
     #
     def main(self):
-        Dbg.enter("MarkUnsupportedWontFix.main")
+        Dbg.enter("MorningBugReport.main")
 
         try:
             self.initialize()
+            bugs = self.get_24hr_bug_data()
+            the_report = self.report(bugs)
 
-            if len(self.cfg['bug-ids']) > 0:
-                for bid in self.cfg['bug-ids']:
-                    self.bug_operation(KernelBug(self.lp.get_bug(bid)))
-            else:
-                search_status = ["New", "Confirmed", "Triaged", "Incomplete", "In Progress"] # A list of the bug statuses that we care about
-
-                Dbg.verbose("Searching the package for matching tasks.")
-                tasks = self.linux_package.search_tasks(status=search_status)
-
-                for task in tasks:
-                    self.bug_operation(KernelBug(task.bug))
+            self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Daily Bug Report for %s' % bugs['updated'], the_report)
 
         # Handle the user presses <ctrl-C>.
         #
@@ -277,22 +259,21 @@ class MarkUnsupportedWontFix():
         except Exit:
             pass
 
-        Dbg.leave("MarkUnsupportedWontFix.main")
+        Dbg.leave("MorningBugReport.main")
         return
 
 
 if __name__ == '__main__':
     defaults = {}
     defaults['app_name'] = argv[0]
-    #defaults['launchpad_services_root'] = 'qastaging'
-    defaults['launchpad_client_name']   = 'kernel-team-mark-unsupported-wont-fix'
+    defaults['configuration_file'] = path.dirname(__file__) + '/sru-workflow.cfg'
 
     # The cmdline processing is done here partially so the debug options
     # can be processed right away.
     #
     cmdline = Cmdline()
     try:
-        app = MarkUnsupportedWontFix(cmdline.process(argv))
+        app = MorningBugReport(cmdline.process(argv))
         app.main()
     except CmdlineError as e:
         cmdline.error(e.msg, defaults)

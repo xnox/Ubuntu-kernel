@@ -9,6 +9,7 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
+from ktl.workflow                       import Workflow
 from lpltk.service                      import LaunchpadService
 from datetime                           import datetime
 from urllib                             import quote
@@ -138,6 +139,71 @@ class Shank(StdApp):
                                          'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
+            'prepare-package-lbm'     : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_lbm_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'prepare-package-lrm'     : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_lrm_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'prepare-package-lum'     : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_lum_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'prepare-package-meta'    : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_meta_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'prepare-package-ports-meta':{'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_ports_meta_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
             'upload-to-ppa'           : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
@@ -251,11 +317,14 @@ class Shank(StdApp):
             self.defaults['launchpad_services_root'] = 'qastaging'
         self.lp = LaunchpadService(self.defaults)
         self.ubuntu = Ubuntu()
+        self.wf = Workflow()
 
         # The service.distributions property is a collection of distributions. We
         # pretty much only care about one, 'ubuntu'.
         #
         self.distro = self.lp.distributions['ubuntu']
+
+        self.project = self.lp.projects['kernel-sru-workflow']
 
         # Get set up for email and status messages
         if 'mail_notify' in self.cfg:
@@ -271,6 +340,8 @@ class Shank(StdApp):
         self.spamtext = open(spamtextpath, 'r').read()
 
         self.taskbyname = {}
+
+        self.printlink = "(No link)"
 
         return
 
@@ -313,7 +384,8 @@ class Shank(StdApp):
                 else:
                     self.cfg['lpserver'] = 'bugs.launchpad.net'
 
-                print '%s : (%s)\n' % (bug.id, self.bug_url(bug.id))
+                self.printlink =  '%s : (%s)\n' % (bug.id, self.bug_url(bug.id)),
+                self.verbose('Processing: %s' % self.printlink)
 
                 # initialize any per-bug variables that we use for the release test
                 self.bugtags = []
@@ -328,7 +400,10 @@ class Shank(StdApp):
                 # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
                 # TODO This is a bit sloppy and I should probably build one list and walk it twice.
                 try:
-                    mtstring = "Kernel SRU Workflow"
+                    # TODO revisit this, but hardcode for now
+                    #mtstring = self.project.display_name
+                    mtstring = "kernel-sru-workflow"
+
                     for t in bug.tasks:
                         task_name       = t.bug_target_name
 
@@ -343,10 +418,11 @@ class Shank(StdApp):
 
                         if not task_name.startswith(mtstring):
                             # Ignore the tasks assigned to the actual package, we care about workflow only
-                            self.verbose('Skipping non-workflow task %s:%s\n' % (mtstring, task_name))
+                            self.verbose('Skipping non-workflow task <%s>:<%s>\n' % (mtstring, task_name))
                             continue
 
-                        therest = task_name[len(mtstring):].strip()
+                        # add one to account for the trailing /
+                        therest = task_name[len(mtstring)+1:].strip()
                         self.taskbyname[therest] = t
 
                 except RuntimeError:
@@ -372,7 +448,7 @@ class Shank(StdApp):
                         self.verbose('Skipping non-workflow task %s\n' % (task_name))
                         continue
 
-                    therest = task_name[len(mtstring):].strip()
+                    therest = task_name[len(mtstring)+1:].strip()
                     task_name = therest
 
                     state      = t.status
@@ -386,10 +462,12 @@ class Shank(StdApp):
                     self.verbose("TASK: %25s  %15s  %10s  %s\n" % (task_name, state, importance, assignee))
 
                     if task_name not in self.state_map:
-                        print("I don't know how to handle the task <%s>, skipping\n" % (task_name))
+                        print self.printlink,
+                        print("I don't know how to handle the task <%s>, skipping" % (task_name))
                         continue
 
                     if 'action' not in self.state_map[task_name][state]:
+                        print self.printlink,
                         print("ERROR: No action found for state <%s> and task <%s>" % (state, task_name))
                         raise ValueError
 
@@ -478,22 +556,129 @@ class Shank(StdApp):
         """
         # TODO could add error handling and retries here if needed
         if self.taskbyname[taskname].status != state:
-            print 'Setting Task <%s> to State <%s>\n' % (taskname, state)
+            print self.printlink,
+            print 'Setting Task <%s> to State <%s>' % (taskname, state)
             self.taskbyname[taskname].status = state
             return True
         else:
             self.verbose('Task <%s> was already in state <%s>\n' % (taskname, state))
             return False
 
+    def is_prep_pkg_closed(self, taskname):
+        if taskname in self.taskbyname:
+            if (self.taskbyname[taskname].status != "Fix Released" and
+                self.taskbyname[taskname].status != "Invalid"):
+                return False
+        return True
+
+    def check_dep_pkg_built(self, taskobj, deptype):
+        title = taskobj.bug.title
+        pkg_name = re.findall('linux[^:]*', title)[0]
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
+        series = self.wf.expected_series_name(self.ubuntu.db, pkg_name, pkg_ver)
+        if not series:
+            print("ERROR: Can't find series for %s-%s to check %s dependency\n" %
+                  (pkg_name, pkg_ver, deptype))
+            return False
+        kinfo = self.ubuntu.lookup(series)
+        dep_name = ''
+        if 'dependent-packages' in kinfo:
+            if pkg_name in kinfo['dependent-packages']:
+                if deptype in kinfo['dependent-packages'][pkg_name]:
+                    dep_name = kinfo['dependent-packages'][pkg_name][deptype]
+        if not dep_name:
+            print("ERROR: can't find %s package name for %s-%s\n" %
+                  (deptype, pkg_name, pkg_ver))
+            return False
+        pkg_abi = re.findall('-[0-9]+[^.]+', pkg_ver)[0]
+        pkg_kernel = re.findall('-[0-9]+[^ ]+', pkg_ver)[0]
+        pkg_kernel = pkg_ver.replace(pkg_kernel, '', 1)
+        pkg_abi = pkg_abi.lstrip('-')
+        dep_ver1 = '%s-%s' % (pkg_kernel, pkg_abi)
+        dep_ver2 = '%s.%s' % (pkg_kernel, pkg_abi)
+        ckt = self.lp.launchpad.people['canonical-kernel-team']
+        ppa = ckt.getPPAByName(name='ppa')
+        dep_matches = [ p for p in ppa.getPublishedSources(source_name=dep_name)
+                          if p.status.lower() == 'published' and
+                             (p.source_package_version.startswith(dep_ver1) or
+                              p.source_package_version.startswith(dep_ver2)) ]
+        if not dep_matches:
+            self.verbose('Can\'t find <%s> (<%s> or <%s>) build on c-k-t ppa\n' %
+                         (dep_name, dep_ver1, dep_ver2))
+        for dep_pkg in dep_matches:
+            src_id = str(dep_pkg.self).rsplit('/', 1)[1]
+            build_summaries = ppa.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+            task_name = taskobj.bug_target_name
+            workflow_task = task_name[len("kernel-sru-workflow")+1:].strip()
+            if build_summaries['status'] == 'FULLYBUILT':
+                self.verbose('<%s> <%s> built, %s is Fix Released\n'
+                             % (dep_name, dep_pkg.source_package_version, workflow_task))
+                taskobj.status = 'Fix Released'
+            else:
+                self.verbose('<%s> <%s> not fully built yet, %s still In Progress\n'
+                             % (dep_name, dep_pkg.source_package_version, workflow_task))
+        return False
+
     #
     # Begin action methods for state transitions
     #
+
+    def prep_lbm_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-lbm task and it's set to In
+        Progress, the package have a dependent linux-backports-modules
+        package to be built; update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'lbm')
+        return False
+
+    def prep_lrm_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-lrm task and it's set to In
+        Progress, the package have a dependent linux-restricted-modules
+        package to be built; update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'lrm')
+        return False
+
+    def prep_lum_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-lum task and it's set to In
+        Progress, the package have a dependent linux-ubuntu-modules
+        package to be built; update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'lum')
+        return False
+
+    def prep_meta_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-meta task and it's set to In
+        Progress, the package have a dependent meta package to be built;
+        update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'meta')
+        return False
+
+    def prep_ports_meta_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-ports-meta task and it's set to
+        In Progress, the package have a dependent ports-meta package to
+        be built; update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'ports-meta')
+        return False
 
     def prep_package_in_progress(self, taskobj):
         """
         when the prep-package task is set to In Progress, kernel team
         builds the packages; check the build status and update tasks
         """
+        if (not (self.is_prep_pkg_closed('prepare-package-lbm') and
+                 self.is_prep_pkg_closed('prepare-package-lrm') and
+                 self.is_prep_pkg_closed('prepare-package-lum') and
+                 self.is_prep_pkg_closed('prepare-package-meta') and
+                 self.is_prep_pkg_closed('prepare-package-ports-meta'))):
+            return False
         title = taskobj.bug.title
         pkg_name = re.findall('linux[^:]*', title)[0]
         pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
@@ -538,6 +723,7 @@ class Shank(StdApp):
                 # we did change the state, weren't already in it
                 # Now tag all bugs verification-needed and spam with a comment
                 # Automate this in the future but for now send an email
+                print self.printlink,
                 print 'Here is where we would tag and spam the verification bugs'
                 # FIXME: not sending emails anymore, we can remove later the 3 lines below
                 #msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
@@ -571,7 +757,7 @@ class Shank(StdApp):
             msgbody = 'The bug was tagged as certification-testing-failed\n'
             self.send_comment(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
             return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
@@ -586,7 +772,7 @@ class Shank(StdApp):
             # reset task state so Certification team fix it
             self.set_task_to_state('certification-testing', 'Confirmed')
             # stop further processing by this bot
-            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
             return False
 
     def certification_testing_invalid(self, taskobj):
@@ -612,7 +798,7 @@ class Shank(StdApp):
             msgbody = 'The bug was tagged as qa-testing-failed\n'
             self.send_comment(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
             return False
         elif 'qa-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
@@ -627,7 +813,7 @@ class Shank(StdApp):
             # reset task so QA team can fix it
             self.set_task_to_state('regression-testing', 'Confirmed')
             # stop further processing by this bot
-            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
             return False
 
     def security_signoff_finished(self, taskobj):
@@ -653,7 +839,7 @@ class Shank(StdApp):
             msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
             self.send_comment(taskobj, '%s task not set to correct state during release test' % taskname, msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
+            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
 
     #
     # This is not performed during processing for a specific task but only if several tasks are
@@ -685,7 +871,7 @@ class Shank(StdApp):
             self.release_test_state_check('promote-to-updates', ['New', 'Confirmed', 'Fix Released'])
 
             # If we found any problems, we've halted processing and set this
-            if self.taskbyname['Kernel SRU Workflow'].status != 'In Progress':
+            if self.taskbyname['kernel-sru-workflow'].status != 'In Progress':
                 self.verbose('*** Exiting release test without triggering any publishing\n')
                 return
 
@@ -715,7 +901,7 @@ class Shank(StdApp):
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
                 # Now send a happy email 
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
-                task = self.taskbyname['Kernel SRU Workflow']
+                task = self.taskbyname['kernel-sru-workflow']
                 # zzz
                 #self.send_email(task, 'Package is ready for publication', msgbody)
                 #self.send_status_update(task, 'available for publication.')
@@ -730,9 +916,9 @@ class Shank(StdApp):
                     msgbody = msgbody + '    ' + ftag + '\n'
                 msgbody = msgbody + '\n'
                 msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
-                self.send_comment(self.taskbyname['Kernel SRU Workflow'], 'Test completion tags not found during release test', msgbody)
+                self.send_comment(self.taskbyname['kernel-sru-workflow'], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
-                self.set_task_to_state('Kernel SRU Workflow', 'Incomplete')
+                self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
     
         # this method is not associated with a task state transition so no status returned
         return 
@@ -748,8 +934,9 @@ class Shank(StdApp):
             (self.taskbyname['promote-to-security'].status == 'Invalid' or
             self.taskbyname['promote-to-security'].status == 'Fix Released')):
 
+            print self.printlink,
             print ' Everything is done, setting bug to Fix Released'
-            self.set_task_to_state('Kernel SRU Workflow', 'Fix Released')
+            self.set_task_to_state('kernel-sru-workflow', 'Fix Released')
 
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The package has been published and the bug is being set to Fix Released\n'

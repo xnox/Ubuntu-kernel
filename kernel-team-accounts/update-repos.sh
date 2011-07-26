@@ -1,14 +1,17 @@
 #!/bin/bash
 
-LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-LREPO=linux-2.6.git
+LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+LLREPO=linux-2.6.git
+LREPO=linux.git
 UBUNTU=git://kernel.ubuntu.com/ubuntu
-RELEASES="dapper hardy karmic lucid maverick natty oneiric"
+RELEASES="hardy lucid maverick natty oneiric"
 
 if [ ! -d ${LREPO} ]
 then
 	git clone ${LINUX} ${LREPO}
 	(cd ${LREPO}; git fetch origin)
+	rm -rf ${LLREPO}
+	ln -s ${LREPO} ${LLREPO}
 else
 	(cd ${LREPO}; git fetch origin;git fetch origin master;git reset --hard FETCH_HEAD)
 fi
