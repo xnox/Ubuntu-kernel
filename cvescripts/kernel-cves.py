@@ -133,7 +133,7 @@ def StoreHtml(bug, open_tasks, cvelist):
 cachedir = os.path.expanduser("~/.cache/")
 lp = Launchpad.login_anonymously('kernel team tools', 'production', cachedir)
 ubuntu = lp.distributions['ubuntu']
-cves = ubuntu.searchTasks(tags=['kernel-cve-tracking-bug'])
+cves = ubuntu.searchTasks(tags=['kernel-cve-tracking-bug', 'kernel-cve-tracker'])
 htmlfile = "./kernel-cves.html"
 date = commands.getoutput('date -u +"%b %e %G %k:%M %Z"')
 uniq_list = []
