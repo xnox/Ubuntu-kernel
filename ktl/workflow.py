@@ -23,6 +23,7 @@ class Workflow:
                 'prepare-package-lum'        : 'canonical-kernel-team',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'prepare-package-ports-meta' : 'canonical-kernel-team',
+                #'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 'certification-testing'      : 'canonical-hw-cert',
@@ -39,6 +40,28 @@ class Workflow:
                 'certification-testing' : [ '2.6.24' ]
                 }
             },
+        'linux-ec2' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'stefan-bader-canonical',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                #'prepare-package-lrm'        : 'canonical-kernel-team',
+                #'prepare-package-lum'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'canonical-kernel-team',
+                #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'upload-to-ppa'              : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'canonical-kernel-team',
+                'certification-testing'      : 'canonical-hw-cert',
+                'regression-testing'         : 'canonical-platform-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru", "hardware-certification"]
+            },
         'linux-mvl-dove' :  {
             'task_assignment' : {
                 'prepare-package'            : 'ubuntu-armel-kernel',
@@ -47,6 +70,7 @@ class Workflow:
                 #'prepare-package-lum'        : 'canonical-kernel-team',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'ubuntu-armel-kernel',
                 #'certification-testing    ' : 'ubuntu-armel-qa',
@@ -68,6 +92,7 @@ class Workflow:
                 #'prepare-package-lum'        : 'canonical-kernel-team',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'ubuntu-armel-kernel',
                 #'certification-testing'     : 'ubuntu-armel-qa',
@@ -89,6 +114,7 @@ class Workflow:
                 #'prepare-package-lum'        : 'canonical-kernel-team',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'ubuntu-armel-kernel',
                 #'certification-testing'     : 'ubuntu-armel-qa',
@@ -110,6 +136,7 @@ class Workflow:
                 #'prepare-package-lum'        : 'canonical-kernel-team',
                 #'prepare-package-meta'       : 'canonical-kernel-team',
                 #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                #'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 #'certification-testing'     : 'canonical-hw-cert',
@@ -131,6 +158,7 @@ class Workflow:
                 #'prepare-package-lum'        : 'canonical-kernel-team',
                 #'prepare-package-meta'       : 'canonical-kernel-team',
                 #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                #'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 #'certification-testing'     : 'canonical-hw-cert',
@@ -152,6 +180,7 @@ class Workflow:
                 #'prepare-package-lum'        : 'canonical-kernel-team',
                 #'prepare-package-meta'       : 'canonical-kernel-team',
                 #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                #'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 #'certification-testing'     : 'canonical-hw-cert',
@@ -173,6 +202,7 @@ class Workflow:
                 'prepare-package-lum'        : 'canonical-kernel-team',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'prepare-package-ports-meta' : 'canonical-kernel-team',
+                #'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'canonical-kernel-team',
                 'certification-testing'      : 'canonical-hw-cert',
