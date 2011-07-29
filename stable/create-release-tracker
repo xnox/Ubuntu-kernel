@@ -127,6 +127,8 @@ class CreateTrackingBug(StdApp):
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
             self.initialize()
+            wf = Workflow()
+            ub = Ubuntu()
 
             # Check: Are we currently in a git repository?
             #
@@ -135,25 +137,42 @@ class CreateTrackingBug(StdApp):
             branch = Git.current_branch()
 
             changelog = Debian.changelog()
+            package = changelog[0]['package']
+            version = changelog[0]['version']
 
-            wf = Workflow()
-            ub = Ubuntu()
+            # For the given version, figure out the series.
+            # If we can't find the series, don't continue.
+            #
+            series_target = None
+            series = wf.expected_series_name(ub.db, package, version)
+            if series:
+                lp = self.lp.launchpad
+                ubuntu = lp.distributions["ubuntu"]
+                sc = ubuntu.series_collection
+                for s in sc:
+                    if s.name == series:
+                        series_target = s
+                        break
+            if not series_target:
+                raise AppError('Can\'t figure out what series this is for.')
 
             #-------------------------------------------------------------------------------------
             # B U G   W O R K
 
             # Title: <release>: <version> -proposed tracker
-            title = "%s: %s -proposed tracker" % (changelog[0]['package'], changelog[0]['version'])
+            title = "%s: %s -proposed tracker" % (package, version)
 
             # Description:
             #    This bug is for tracking the <version> upload package. This bug will
             #    contain status and testing results related to that upload.
             #
-            description  = "This bug is for tracking the %s upload package. This bug will contain status and testing results releated to that upload." % (changelog[0]['version'])
+            description  = "This bug is for tracking the %s upload package. " % (version)
+            description += "This bug will contain status and testing results related to "
+            description += "that upload."
             description += "\n\n"
-            description += "For an explanation of the tasks and the associated workflow see: https://wiki.ubuntu.com/Kernel/kernel-sru-workflow"
+            description += "For an explanation of the tasks and the associated workflow see:"
+            description += " https://wiki.ubuntu.com/Kernel/kernel-sru-workflow"
 
-            package = changelog[0]['package']
             bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
 
             id = bug.id
@@ -185,18 +204,12 @@ class CreateTrackingBug(StdApp):
                 lp_team = self.lp.launchpad.people[team]
                 bug.lpbug.subscribe(person=lp_team)
 
-            # For the given version, figure out the series and nominate that series.
+            # Nominate the series for this package.
             #
-            lp = self.lp.launchpad
-            ubuntu = lp.distributions["ubuntu"]
-            sc = ubuntu.series_collection
-            for s in sc:
-                if s.name == changelog[0]['release']:
-                    nomination = bug.lpbug.addNomination(target=s)
-                    if nomination.canApprove():
-                        nomination.approve()
-                    bug.tags.append(str(s.name).lower())
-                    break
+            nomination = bug.lpbug.addNomination(target=series_target)
+            if nomination.canApprove():
+                nomination.approve()
+            bug.tags.append(series)
 
             # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
             # Add a task for kernel-sru-workflow and then nominate all the series that belong
@@ -216,7 +229,7 @@ class CreateTrackingBug(StdApp):
             has_meta = False
             has_ports_meta = False
             try:
-                found = ub.lookup(s.name.lower())
+                found = ub.lookup(series)
             except KeyError:
                 found = {}
             if found:
@@ -266,8 +279,8 @@ class CreateTrackingBug(StdApp):
                     else:
                         t.assignee = self.lp.launchpad.people[assignee]
                         if 'linux-version' in changelog[0]:
-                            version = changelog[0]['linux-version']
-                            if wf.is_task_invalid(package, task, version):
+                            lin_ver = changelog[0]['linux-version']
+                            if wf.is_task_invalid(package, task, lin_ver):
                                 t.status = "Invalid"
                                 continue
                         abi_change = changelog[0]['ABI'] != changelog[1]['ABI']
