@@ -11,7 +11,7 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, date_to_string
 from ktl.std_app                        import StdApp
 from ktl.kernel_bug                     import KernelBug
-from lpltk.service                      import LaunchpadService, LaunchpadServiceError
+from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
 from re                                 import match
 from datetime                           import datetime
 

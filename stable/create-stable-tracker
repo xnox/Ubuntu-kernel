@@ -6,7 +6,7 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
 from ktl.kernel                         import Kernel
-from lpltk.service                      import LaunchpadService, LaunchpadServiceError
+from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
 #

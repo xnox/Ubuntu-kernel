@@ -7,7 +7,7 @@ from ktl.utils                          import stdo
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Workflow
 from ktl.ubuntu                         import Ubuntu
-from lpltk.service                      import LaunchpadService
+from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
 import re
 

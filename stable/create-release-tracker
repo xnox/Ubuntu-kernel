@@ -9,7 +9,7 @@ from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.workflow                       import Workflow
 from ktl.ubuntu                         import Ubuntu
-from lpltk.service                      import LaunchpadService, LaunchpadServiceError
+from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
 #

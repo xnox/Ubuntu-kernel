@@ -11,7 +11,7 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error, date_to_string, o2ascii, stde
 from ktl.bugs                           import Bugs, DeltaTime
 from ktl.std_app                        import StdApp
-from lpltk.service                      import LaunchpadService
+from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime, timedelta
 from ktl.kernel_bug                     import KernelBug
 from ktl.ubuntu                         import Ubuntu

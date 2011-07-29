@@ -10,7 +10,7 @@ from ktl.utils                          import stdo, error
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Workflow
-from lpltk.service                      import LaunchpadService
+from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
 from urllib                             import quote
 from urllib2                            import HTTPError

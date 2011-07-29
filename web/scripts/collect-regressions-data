@@ -11,7 +11,7 @@ from ktl.utils                          import stdo, error, dump
 from ktl.bugs                           import Bugs, DeltaTime
 from ktl.kernel_bug                     import KernelBug
 from ktl.std_app                        import StdApp
-from lpltk.service                      import LaunchpadService
+from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
 from ktl.ubuntu                         import Ubuntu
 import json
