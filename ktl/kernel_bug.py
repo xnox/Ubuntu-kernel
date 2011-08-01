@@ -145,7 +145,7 @@ class KernelBug(Bug):
                         continue # If any exceptions are thrown for a given attachment, it is skipped
 
             except:
-                #self.verbose("Exception encountered while going through attachments for bug (%s)\n" % (self.id))
+                print("Exception encountered while going through attachments for bug (%s)\n" % (self.id))
                 raise
 
         return retval
@@ -317,7 +317,7 @@ class KernelBug(Bug):
 
     # _find_linux_version
     #
-    def _find_linux_version(self, attachment):
+    def _find_linux_version(self, attachment, bug):
         retval = ''
         try:
             file = attachment.data.open()
@@ -329,7 +329,7 @@ class KernelBug(Bug):
                     break
             file.close()
         except:
-            print("  ** Warning: Exception thrown attempting to open an attachment. (%s)" % (attachment.title))
+            print("  ** Warning: Exception thrown attempting to open an attachment. (%s) [%s]" % (attachment.title, bug.id))
             pass
         return retval
 
@@ -366,7 +366,7 @@ class KernelBug(Bug):
                     m = re.search('kern.log]*', attachment.title)
                     if m != None:
                         self.dbg('         - examining\n')
-                        kernel_version = self._find_linux_version(attachment)
+                        kernel_version = self._find_linux_version(attachment, bug)
                         if kernel_version != '':
                             (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
                             if series_name != '':
@@ -377,7 +377,7 @@ class KernelBug(Bug):
                     m = re.search('Boot[Dd]mesg[.txt|.log]*', attachment.title)
                     if m != None:
                         self.dbg('     - BootDmesg.log\n')
-                        kernel_version = self._find_linux_version(attachment)
+                        kernel_version = self._find_linux_version(attachment, bug)
                         if kernel_version != '':
                             (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
                             if series_name != '':
@@ -388,7 +388,7 @@ class KernelBug(Bug):
                     m = re.search('[Dd]mesg[.txt|.log]*', attachment.title)
                     if m != None:
                         self.dbg('     - Dmesg.log\n')
-                        kernel_version = self._find_linux_version(attachment)
+                        kernel_version = self._find_linux_version(attachment, bug)
                         if kernel_version != '':
                             (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
                             if series_name != '':
@@ -409,7 +409,7 @@ class KernelBug(Bug):
                                         break
                                 file.close()
                             except:
-                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s)" % (attachment.title))
+                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s) [%s]" % (attachment.title, bug.id))
                                 pass
                             if kernel_version != '':
                                 (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
@@ -432,7 +432,7 @@ class KernelBug(Bug):
                                         break
                                 file.close()
                             except:
-                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s)" % (attachment.title))
+                                print("  ** Warning: Exception thrown attempting to open an attachment. (%s) [%s]" % (attachment.title, bug.id))
                                 pass
                             if kernel_version != '':
                                 (series_name, series_version) = self._ubuntu_series_lookup(kernel_version)
