@@ -87,6 +87,8 @@ milestoned = linux_milestone._wadl_resource.representation['total_size']
 output['release'] += "==== %s bugs ====\n" % (milestone.title)
 output['release'] += " * %s linux kernel bugs (%s %d)\n" % (milestoned, change, change_num)
 
+output['milestone'] += "==== <series>-updates bugs ====\n"
+
 for release_name in releases:
     # Release Metrics (<release>-updates bugs)
     milestone_name = "%s-updates" % (release_name)
@@ -95,8 +97,7 @@ for release_name in releases:
     update_bugs = release._wadl_resource.representation['total_size']
     (change, change_num) = calculate_change(update_bugs, "%s-updates" % (release_name))
     stats[milestone_name] = update_bugs
-    output['milestone'] += "==== %s-updates bugs ====\n" % (release_name)
-    output['milestone'] += " * %d linux kernel bugs (%s %d)\n" % (update_bugs, change, change_num)
+    output['milestone'] += " * %d %s linux kernel bugs (%s %d)\n" % (update_bugs, release_name, change, change_num)
 
     # Incoming Bugs
     release_bugs = linux.searchTasks(tags=release_name)

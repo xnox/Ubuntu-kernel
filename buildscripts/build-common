@@ -96,7 +96,7 @@ function QueryChroots()
 	cat <<-EOD | ssh ${HOST}
 	if [ "\`type -p schroot\`" != "" ]; then
 		schroot -l 2>/dev/null | \
-			sed -e 's/^.*: //' \
+			sed -e 's/^.*: *//' \
 				-e 's/ *\[default\]//' \
 				-e 's/, */ /g' | \
 		tr '\n' ' ' 2>/dev/null

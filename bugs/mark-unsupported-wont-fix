@@ -4,7 +4,7 @@
 from sys                                import argv
 from getopt                             import getopt, GetoptError
 
-from lpltk.service                      import LaunchpadService
+from lpltk.LaunchpadService             import LaunchpadService
 
 from ktl.kernel_bug                     import KernelBug
 from ktl.utils                          import stdo, error

@@ -36,6 +36,16 @@ parser.add_option(
 	help="only print what would be done")
 (opts, args) = parser.parse_args()
 
+
+#
+# Make sure the DEBEMAIL is a canonical address
+#
+debem = os.getenv("DEBEMAIL")
+if debem is not None:
+	if 'canonical' not in debem:
+		print 'DEBEMAIL is set to non-canonical address'
+		sys.exit(1)
+
 #------------------------------------------------------------------------------
 # Find the abstracted debian directory and make sure it is there (IOW we are
 # in the right directory).

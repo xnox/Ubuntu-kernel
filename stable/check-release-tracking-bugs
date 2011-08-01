@@ -7,7 +7,7 @@ from ktl.utils                          import stdo
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Workflow
 from ktl.ubuntu                         import Ubuntu
-from lpltk.service                      import LaunchpadService
+from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
 import re
 
@@ -172,14 +172,19 @@ class CheckTrackingBugs(StdApp):
         self.prjname = self.project.display_name
         # TODO: workflow class looks the best place for these:
         self.valid_task_states = {
-            'prepare-package'       : [ 'New', 'In Progress', 'Incomplete', 'Fix Released' ],
-            'promote-to-proposed'   : [ 'New', 'Confirmed', 'In Progress', 'Incomplete', 'Fix Released' ],
-            'verification-testing'  : [ 'New', 'In Progress', 'Incomplete', 'Fix Released' ],
-            'certification-testing' : [ 'New', 'Confirmed', 'In Progress', 'Invalid', 'Incomplete', 'Fix Released' ],
-            'regression-testing'    : [ 'New', 'Confirmed', 'In Progress', 'Incomplete', 'Fix Released' ],
-            'promote-to-updates'    : [ 'New', 'Confirmed', 'Incomplete', 'Fix Released' ],
-            'promote-to-security'   : [ 'New', 'Confirmed', 'Invalid', 'Incomplete', 'Fix Released' ],
-            'security-signoff'      : [ 'New', 'Confirmed', 'In Progress', 'Invalid', 'Incomplete', 'Fix Released' ]
+            'prepare-package'            : [ 'New', 'In Progress', 'Fix Released' ],
+            'prepare-package-lbm'        : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
+            'prepare-package-lrm'        : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
+            'prepare-package-lum'        : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
+            'prepare-package-meta'       : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
+            'prepare-package-ports-meta' : [ 'New', 'In Progress', 'Invalid', 'Fix Released' ],
+            'promote-to-proposed'        : [ 'New', 'Confirmed', 'In Progress', 'Fix Released' ],
+            'verification-testing'       : [ 'New', 'In Progress', 'Fix Released' ],
+            'certification-testing'      : [ 'New', 'Confirmed', 'In Progress', 'Invalid', 'Fix Released' ],
+            'regression-testing'         : [ 'New', 'Confirmed', 'In Progress', 'Fix Released' ],
+            'promote-to-updates'         : [ 'New', 'Confirmed', 'Fix Released' ],
+            'promote-to-security'        : [ 'New', 'Confirmed', 'Invalid', 'Fix Released' ],
+            'security-signoff'           : [ 'New', 'Confirmed', 'In Progress', 'Invalid', 'Fix Released' ]
             }
         self.certification_tags = [ 'certification-testing-passed', 'certification-testing-failed' ]
         self.qa_tags = [ 'qa-testing-passed', 'qa-testing-failed' ]
@@ -207,7 +212,293 @@ class CheckTrackingBugs(StdApp):
             'prepare-package' :
                 { 
                   'New'          : {
-                                     'promote-to-proposed'   : { 'New' : 1 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'Invalid' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'Invalid' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'Invalid' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'Invalid' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'Invalid' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 1 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'In Progress'  : {
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 2 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'Fix Released' : {
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 3, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   }
+                },
+            'prepare-package-lbm' :
+                {
+                  'New'          : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'In Progress'  : {
+                                     'prepare-package'            : { 'In Progress' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'Invalid'      : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   },
+                  'Fix Released' : {
+                                     'prepare-package'            : { 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   }
+                },
+            'prepare-package-lrm' :
+                {
+                  'New'          : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'In Progress'  : {
+                                     'prepare-package'            : { 'In Progress' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'Invalid'      : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   },
+                  'Fix Released' : {
+                                     'prepare-package'            : { 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   }
+                },
+            'prepare-package-lum' :
+                {
+                  'New'          : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'In Progress'  : {
+                                     'prepare-package'            : { 'In Progress' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'Invalid'      : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   },
+                  'Fix Released' : {
+                                     'prepare-package'            : { 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   }
+                },
+            'prepare-package-meta' :
+                {
+                  'New'          : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'In Progress'  : {
+                                     'prepare-package'            : { 'In Progress' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
+                                   },
+                  'Invalid'      : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   },
+                  'Fix Released' : {
+                                     'prepare-package'            : { 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                   }
+                },
+            'prepare-package-ports-meta' :
+                {
+                  'New'          : {
+                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0 },
+                                     'prepare-package-lbm'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'  : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'   : { 'New' : 0 },
                                      'verification-testing'  : { 'New' : 0 },
                                      'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
                                      'regression-testing'    : { 'New' : 0 },
@@ -216,7 +507,12 @@ class CheckTrackingBugs(StdApp):
                                      'security-signoff'      : { 'New' : 0 }
                                    },
                   'In Progress'  : {
-                                     'promote-to-proposed'   : { 'New' : 2 },
+                                     'prepare-package'       : { 'In Progress' : 0 },
+                                     'prepare-package-lbm'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'  : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'   : { 'New' : 0 },
                                      'verification-testing'  : { 'New' : 0 },
                                      'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
                                      'regression-testing'    : { 'New' : 0 },
@@ -224,359 +520,446 @@ class CheckTrackingBugs(StdApp):
                                      'promote-to-security'   : { 'New' : 0 },
                                      'security-signoff'      : { 'New' : 0 }
                                    },
-                  'Incomplete'  :  {
-                                     'promote-to-proposed'   : { 'New' : 2 },
-                                     'verification-testing'  : { 'New' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
+                  'Invalid'      : {
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
-                                     'promote-to-proposed'   : { 'New' : 3, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'       : { 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'   : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'  : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'  : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing' : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'    : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'promote-to-proposed' :
                 {
                   'New'          : { 
-                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 3 },
-                                     'verification-testing'  : { 'New' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 3 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
                                    },
                   'Confirmed'    : {
-                                     'prepare-package'       : { 'Fix Released' : 4 },
-                                     'verification-testing'  : { 'New' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 4 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
                                    },
                   'In Progress'  : {
-                                     'prepare-package'       : { 'Fix Released' : 4 },
-                                     'verification-testing'  : { 'New' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
-                                   },
-                  'Incomplete'   : { 
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 4 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
                                    },
                   'Fix Released' : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 5, 'In Progress' : 6, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 5, 'In Progress' : 6, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'verification-testing' :
                 {
                   'New'          : {
-                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 5 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 5 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
                                    },
                   'In Progress'  : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 6 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 6 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 6 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
                                    },
                   'Fix Released' : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 7, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'certification-testing' :
                 {
                   'New'          : {
-                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 7 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 7 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
                                    },
                   'Confirmed'    : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 8 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 8 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'In Progress'  : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 9 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 9 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 9 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Invalid'      : {
-                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 10, 'In Progress' : 10, 'Incomplete' : 0, 'Fix Released' : 10 },
-                                     'regression-testing'    : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 10, 'In Progress' : 10, 'Fix Released' : 10 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'regression-testing' :
                 {
                   'New'          : {
-                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 7 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'New' : 0 }
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 7 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'New' : 0 }
                                    },
                   'Confirmed'    : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 11 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 11 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'In Progress'  : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 12 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 12 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 12 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 },
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'security-signoff' :
                 {
                   'New'          : {
-                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 7 },
-                                     'certification-testing' : { 'New' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 }
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 7 },
+                                     'certification-testing'      : { 'New' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 }
                                    },
                   'Confirmed'    : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 13 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 13 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 }
                                    },
                   'In Progress'  : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 14 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 }
-                                   },
-                  'Incomplete'  : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 14 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0 },
-                                     'promote-to-security'   : { 'New' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 14 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0 },
+                                     'promote-to-security'        : { 'New' : 0 }
                                    },
                   'Invalid'      : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 15 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Invalid' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 15 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Invalid' : 0 }
                                    },
                   'Fix Released' : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 16, 'Confirmed' : 0, 'Incomplete' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 16, 'Confirmed' : 0, 'Fix Released' : 0 }
                                    }
                 },
             'promote-to-security' :
                 {
                   'New'          : {
-                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'Incomplete' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0, 'In Progress': 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 17, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0, 'Invalid' : 0 }
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress': 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 17, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0, 'Invalid' : 0 }
                                    },
                   'Confirmed'    : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'Confirmed' : 17, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Fix Released' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'Confirmed' : 17, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'Confirmed' : 17, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Fix Released' : 0 }
                                    },
                   'Invalid'      : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'New' : 0, 'Confirmed' : 17, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Invalid' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'New' : 0, 'Confirmed' : 17, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Invalid' : 0 }
                                    },
                   'Fix Released' : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Fix Released' : 0, 'Invalid' : 0 },
-                                     'regression-testing'    : { 'Fix Released' : 0 },
-                                     'promote-to-updates'    : { 'Confirmed' : 17, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Fix Released' : 0, 'Invalid' : 0 },
+                                     'regression-testing'         : { 'Fix Released' : 0 },
+                                     'promote-to-updates'         : { 'Confirmed' : 17, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Fix Released' : 0 }
                                    }
                 },
             'promote-to-updates' :
                 {
                   'New'          : {
-                                     'prepare-package'       : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'New' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'certification-testing' : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'New' : 0, 'Confirmed' : 18, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'New' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'New' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'New' : 0, 'Confirmed' : 18, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'New' : 0, 'Confirmed' : 0, 'In Progress' : 0, 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Confirmed'    : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'Confirmed' : 18, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Invalid' : 0, 'Fix Released' : 0 }
-                                   },
-                  'Incomplete'   : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'Confirmed' : 18, 'Incomplete' : 0, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'Confirmed' : 18, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Invalid' : 0, 'Fix Released' : 0 }
                                    },
                   'Fix Released' : {
-                                     'prepare-package'       : { 'Fix Released' : 0 },
-                                     'promote-to-proposed'   : { 'Fix Released' : 0 },
-                                     'verification-testing'  : { 'Fix Released' : 0 },
-                                     'certification-testing' : { 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'regression-testing'    : { 'Fix Released' : 0 },
-                                     'promote-to-security'   : { 'Confirmed' : 18, 'Invalid' : 0, 'Fix Released' : 0 },
-                                     'security-signoff'      : { 'Invalid' : 0, 'Fix Released' : 0 }
+                                     'prepare-package'            : { 'Fix Released' : 0 },
+                                     'prepare-package-lbm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lrm'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-lum'        : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-meta'       : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'prepare-package-ports-meta' : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'promote-to-proposed'        : { 'Fix Released' : 0 },
+                                     'verification-testing'       : { 'Fix Released' : 0 },
+                                     'certification-testing'      : { 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'regression-testing'         : { 'Fix Released' : 0 },
+                                     'promote-to-security'        : { 'Confirmed' : 18, 'Invalid' : 0, 'Fix Released' : 0 },
+                                     'security-signoff'           : { 'Invalid' : 0, 'Fix Released' : 0 }
                                    }
                 }
         }
@@ -658,12 +1041,22 @@ class CheckTrackingBugs(StdApp):
     def verify_tracking_bug(self, bug):
         print "--- Processing bug %s (%s)" % (bug.id, self.bug_url(bug.id))
 
-        # sanity check source package target, and get workflow tasks
+        # sanity check source package target, and get tasks/version/series
         target, pkg_name = self.verify_bug_target(bug)
         if not target in self.workflow.tdb:
             self.err("Unknown package name (%s), unable to do more checks on this bug" % (target))
             return False
         assignments = self.workflow.tdb[target]['task_assignment']
+        expected_series = ''
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', bug.title)
+        if not pkg_ver:
+            self.err("Bug title doesn't have the expected package version")
+        else:
+            pkg_ver = pkg_ver[0]
+            expected_series = self.workflow.expected_series_name(self.ub.db, pkg_name, pkg_ver)
+            if not expected_series:
+                stderr.write("** Warning: can't find series for %s %s\n"
+                             % (package, version))
 
         # sanity check for master workflow task
         master_task = False
@@ -691,6 +1084,17 @@ class CheckTrackingBugs(StdApp):
             elif task_name == "%s (Ubuntu)" % (target):
                 self.verify_none_assignment(task)
         for task in iter(assignments):
+            if task.startswith('prepare-package-'):
+                has_prepare_task = False
+                if expected_series:
+                    found = self.ub.lookup(expected_series)
+                    if 'dependent-packages' in found:
+                        if pkg_name in found['dependent-packages']:
+                            iname = task.replace('prepare-package-', '', 1)
+                            if iname in found['dependent-packages'][pkg_name]:
+                                has_prepare_task = True
+                if not has_prepare_task:
+                    continue
             if not task in task_tbl:
                 self.err("Required workflow task %s not found (target = '%s')" % (task, target))
 
@@ -712,12 +1116,6 @@ class CheckTrackingBugs(StdApp):
         series_tags = { }
         for s in iter(self.ub.db):
             series_tags[self.ub.db[s]['name']] = self.ub.db[s]['kernel']
-        pkg_ver = re.findall('([0-9]+\.[^ ]+)', bug.title)
-        if not pkg_ver:
-            self.err("Bug title doesn't have the expected package version")
-        else:
-            pkg_ver = pkg_ver[0]
-            expected_tag = self.expected_series_tag(pkg_name, pkg_ver)
         fix_series_tag = False
         has_series_tag = False
         series_tag_list = [ ]
@@ -725,21 +1123,21 @@ class CheckTrackingBugs(StdApp):
             if not tag in allowed_tags and not tag in series_tags:
                 self.err("Unknown tag in tracking bug: %s" % (tag))
             if pkg_ver and tag in series_tags:
-                if tag != expected_tag:
+                if tag != expected_series:
                     if self.handle("Wrong tag %s for %s version %s, should be %s"
-                                   % (tag, pkg_name, pkg_ver, expected_tag)):
+                                   % (tag, pkg_name, pkg_ver, expected_series)):
                         fix_series_tag = True
                         series_tag_list.append(str(tag))
                 else:
                         has_series_tag = True
-        if not has_series_tag and pkg_ver and expected_tag:
+        if not has_series_tag and pkg_ver and expected_series:
             if self.handle("Tracking bug doesn't have series name tag"):
                 fix_series_tag = True
         if fix_series_tag:
             for tag in series_tag_list:
                 bug.tags.remove(tag)
-            if not has_series_tag and expected_tag:
-                bug.tags.append(expected_tag)
+            if not has_series_tag and expected_series:
+                bug.tags.append(expected_series)
 
         # verify bug state
         valid_status = True
@@ -865,39 +1263,6 @@ class CheckTrackingBugs(StdApp):
             if tagcount > 1:
                 self.err("Inconsistent tags for %s results (two or more set)" % (task))
         return
-
-    def expected_series_tag(self, package, version):
-        if (package == 'linux' or
-            package == 'linux-ti-omap4' or
-            package == 'linux-ec2'):
-            for s in iter(self.ub.db):
-                if version.startswith(self.ub.db[s]['kernel']):
-                    return self.ub.db[s]['name']
-        if package.startswith('linux-lts-backport'):
-            for s in iter(self.ub.db):
-                if self.ub.db[s]['name'] in version:
-                    return self.ub.db[s]['name']
-        if package == 'linux-mvl-dove' or package == 'linux-fsl-imx51':
-            version, release = version.split('-')
-            if release:
-                abi, upload = release.split('.')
-                try:
-                    abi_n = int(abi)
-                except ValueError:
-                    abi_n = 0
-                if abi_n:
-                    if package == 'linux-mvl-dove':
-                        if abi_n < 400:
-                            return 'lucid'
-                        else:
-                            return 'maverick'
-                    if package == 'linux-fsl-imx51':
-                        if abi_n < 600:
-                            return 'karmic'
-                        else:
-                            return 'lucid'
-        stderr.write("** Warning: can't find tag for %s %s\n" % (package, version))
-        return None
 
     def bug_url(self, bug_id):
         return 'http://%s/bugs/%s' % (self.cfg['lpserver'], bug_id)

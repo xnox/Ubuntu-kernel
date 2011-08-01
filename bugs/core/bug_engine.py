@@ -11,7 +11,7 @@ from datetime                           import datetime
 from datetime                           import timedelta
 import json
 
-from lpltk.service                      import LaunchpadService
+from lpltk.LaunchpadService             import LaunchpadService
 from ktl.utils                          import error, date_to_string, string_to_date, stdo
 from ktl.std_app                        import StdApp
 from ktl.ubuntu                         import Ubuntu

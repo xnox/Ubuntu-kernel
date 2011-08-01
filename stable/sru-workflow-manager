@@ -9,7 +9,8 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
-from lpltk.service                      import LaunchpadService
+from ktl.workflow                       import Workflow
+from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
 from urllib                             import quote
 from urllib2                            import HTTPError
@@ -138,6 +139,71 @@ class Shank(StdApp):
                                          'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
+            'prepare-package-lbm'     : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_lbm_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'prepare-package-lrm'     : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_lrm_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'prepare-package-lum'     : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_lum_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'prepare-package-meta'    : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_meta_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
+            'prepare-package-ports-meta':{'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.prep_ports_meta_package_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':None},
+                                         'Unknown' : {'action':None},
+                                         },
             'upload-to-ppa'           : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
@@ -251,6 +317,7 @@ class Shank(StdApp):
             self.defaults['launchpad_services_root'] = 'qastaging'
         self.lp = LaunchpadService(self.defaults)
         self.ubuntu = Ubuntu()
+        self.wf = Workflow()
 
         # The service.distributions property is a collection of distributions. We
         # pretty much only care about one, 'ubuntu'.
@@ -497,15 +564,121 @@ class Shank(StdApp):
             self.verbose('Task <%s> was already in state <%s>\n' % (taskname, state))
             return False
 
+    def is_prep_pkg_closed(self, taskname):
+        if taskname in self.taskbyname:
+            if (self.taskbyname[taskname].status != "Fix Released" and
+                self.taskbyname[taskname].status != "Invalid"):
+                return False
+        return True
+
+    def check_dep_pkg_built(self, taskobj, deptype):
+        title = taskobj.bug.title
+        pkg_name = re.findall('linux[^:]*', title)[0]
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
+        series = self.wf.expected_series_name(self.ubuntu.db, pkg_name, pkg_ver)
+        if not series:
+            print("ERROR: Can't find series for %s-%s to check %s dependency\n" %
+                  (pkg_name, pkg_ver, deptype))
+            return False
+        kinfo = self.ubuntu.lookup(series)
+        dep_name = ''
+        if 'dependent-packages' in kinfo:
+            if pkg_name in kinfo['dependent-packages']:
+                if deptype in kinfo['dependent-packages'][pkg_name]:
+                    dep_name = kinfo['dependent-packages'][pkg_name][deptype]
+        if not dep_name:
+            print("ERROR: can't find %s package name for %s-%s\n" %
+                  (deptype, pkg_name, pkg_ver))
+            return False
+        pkg_abi = re.findall('-[0-9]+[^.]+', pkg_ver)[0]
+        pkg_kernel = re.findall('-[0-9]+[^ ]+', pkg_ver)[0]
+        pkg_kernel = pkg_ver.replace(pkg_kernel, '', 1)
+        pkg_abi = pkg_abi.lstrip('-')
+        dep_ver1 = '%s-%s' % (pkg_kernel, pkg_abi)
+        dep_ver2 = '%s.%s' % (pkg_kernel, pkg_abi)
+        ckt = self.lp.launchpad.people['canonical-kernel-team']
+        ppa = ckt.getPPAByName(name='ppa')
+        dep_matches = [ p for p in ppa.getPublishedSources(source_name=dep_name)
+                          if p.status.lower() == 'published' and
+                             (p.source_package_version.startswith(dep_ver1) or
+                              p.source_package_version.startswith(dep_ver2)) ]
+        if not dep_matches:
+            self.verbose('Can\'t find <%s> (<%s> or <%s>) build on c-k-t ppa\n' %
+                         (dep_name, dep_ver1, dep_ver2))
+        for dep_pkg in dep_matches:
+            src_id = str(dep_pkg.self).rsplit('/', 1)[1]
+            build_summaries = ppa.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
+            task_name = taskobj.bug_target_name
+            workflow_task = task_name[len("kernel-sru-workflow")+1:].strip()
+            if build_summaries['status'] == 'FULLYBUILT':
+                self.verbose('<%s> <%s> built, %s is Fix Released\n'
+                             % (dep_name, dep_pkg.source_package_version, workflow_task))
+                taskobj.status = 'Fix Released'
+            else:
+                self.verbose('<%s> <%s> not fully built yet, %s still In Progress\n'
+                             % (dep_name, dep_pkg.source_package_version, workflow_task))
+        return False
+
     #
     # Begin action methods for state transitions
     #
+
+    def prep_lbm_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-lbm task and it's set to In
+        Progress, the package have a dependent linux-backports-modules
+        package to be built; update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'lbm')
+        return False
+
+    def prep_lrm_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-lrm task and it's set to In
+        Progress, the package have a dependent linux-restricted-modules
+        package to be built; update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'lrm')
+        return False
+
+    def prep_lum_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-lum task and it's set to In
+        Progress, the package have a dependent linux-ubuntu-modules
+        package to be built; update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'lum')
+        return False
+
+    def prep_meta_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-meta task and it's set to In
+        Progress, the package have a dependent meta package to be built;
+        update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'meta')
+        return False
+
+    def prep_ports_meta_package_in_progress(self, taskobj):
+        """
+        when we have a prepare-package-ports-meta task and it's set to
+        In Progress, the package have a dependent ports-meta package to
+        be built; update the task if package is built
+        """
+        self.check_dep_pkg_built(taskobj, 'ports-meta')
+        return False
 
     def prep_package_in_progress(self, taskobj):
         """
         when the prep-package task is set to In Progress, kernel team
         builds the packages; check the build status and update tasks
         """
+        if (not (self.is_prep_pkg_closed('prepare-package-lbm') and
+                 self.is_prep_pkg_closed('prepare-package-lrm') and
+                 self.is_prep_pkg_closed('prepare-package-lum') and
+                 self.is_prep_pkg_closed('prepare-package-meta') and
+                 self.is_prep_pkg_closed('prepare-package-ports-meta'))):
+            return False
         title = taskobj.bug.title
         pkg_name = re.findall('linux[^:]*', title)[0]
         pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]

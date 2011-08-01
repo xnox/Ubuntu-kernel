@@ -10,7 +10,7 @@
 #    each day).
 #
 
-from lpltk.service                   import LaunchpadService
+from lpltk.LaunchpadService          import LaunchpadService
 from datetime                        import datetime
 
 # LinuxMetaCleaner
