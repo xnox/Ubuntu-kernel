@@ -251,7 +251,7 @@ class CollectRegressionsData(StdApp):
                     error("The project (%s) does not exist." % project)
                     raise
 
-                self.verbose('%s (%s)\n' % (project, lp_project.display_name))
+                self.verbose('%s (%s)\n' % (project, lp_project.name))
 
                 # Searching for bug tasks, the search can be quite complicated and made up
                 # of several components. The following can be combined in many ways to get
@@ -288,7 +288,7 @@ class CollectRegressionsData(StdApp):
                         this_package_bugs = bugs_db_projects[project]['bugs']
 
                         bug = KernelBug(task.bug)
-                        primary_task = self.__get_relevant_task(bug, lp_project.display_name)
+                        primary_task = self.__get_relevant_task(bug, lp_project.name)
                         self.__verbose_bug_info(bug)
 
                         if using_search_since:
