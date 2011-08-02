@@ -58,6 +58,8 @@ class Cmdline:
         stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
         stdo("                         running.                                                            \n")
         stdo("                                                                                             \n")
+        stdo("        --dryrun         Don't actually change any bugs, just print info.                    \n")
+        stdo("                                                                                             \n")
         stdo("        --config=<cfg file>                                                                  \n")
         stdo("                         The full path to the configuration file to use instead of           \n")
         stdo("                         the default location.                                               \n")
@@ -84,7 +86,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'dryrun']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -93,6 +95,9 @@ class Cmdline:
 
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
+
+                elif (opt == '--dryrun'):
+                    self.cfg['dryrun'] = True
 
                 elif opt in ('--config'):
                     self.cfg['configuration_file'] = val
@@ -509,14 +514,20 @@ class Shank(StdApp):
         """
         Add comment to tracking bug
         """
-        self.verbose('Adding comment to tracking bug\n')
-
-        task.bug.add_comment(body, subject)
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Adding comment to tracking bug\n')
+        else:
+            self.verbose('Adding comment to tracking bug\n')
+            task.bug.add_comment(body, subject)
 
     def send_email(self, task, subject, body):
         """
         Send email to the configured list or recipient
         """
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Sending email\n')
+            return
+
         self.verbose('Sending email\n')
 
         if not 'mail_notify' in self.cfg:
@@ -535,6 +546,10 @@ class Shank(StdApp):
         """
         Send a status update to twitter, status.net, identi.ca, etc
         """
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Sending Status\n')
+            return
+
         self.verbose('Sending Status\n')
 
         bugurl = quote(self.bug_url(task.bug.id))
@@ -554,6 +569,10 @@ class Shank(StdApp):
         Set a task with a given name to the desired state
         returns True if we changed the state and False if it was already at the desired state
         """
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Set task %s to state %s\n' % (taskname, state))
+            return
+
         # TODO could add error handling and retries here if needed
         if self.taskbyname[taskname].status != state:
             print self.printlink,
