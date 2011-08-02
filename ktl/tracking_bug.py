@@ -72,7 +72,11 @@ class TrackingBug:
         #
         teams = wf.subscribers(package)
         for team in teams:
-            lp_team = self.lp.launchpad.people[team]
+            try:
+                lp_team = self.lp.launchpad.people[team]
+            except KeyError:
+                print("Can't subscribe '%s', team not found in Launchpad!" % (team))
+                continue
             bug.lpbug.subscribe(person=lp_team)
 
         # Nominate the series for this package.
@@ -148,7 +152,10 @@ class TrackingBug:
                     print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
                     t.status = "Invalid"
                 else:
-                    t.assignee = self.lp.launchpad.people[assignee]
+                    try:
+                        t.assignee = self.lp.launchpad.people[assignee]
+                    except KeyError:
+                        print("Can't assign '%s', team not found in Launchpad!" % (assignee))
                     lin_ver = re.findall('([0-9]+\.[^-]+)', version)
                     if lin_ver:
                         lin_ver = lin_ver[0]
