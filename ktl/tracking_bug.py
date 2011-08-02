@@ -11,7 +11,7 @@ class TrackingBug:
         self.lp = lp
         self.staging = staging
 
-    def open(self, package, version, new_abi):
+    def open(self, package, version, new_abi, der_series = None):
         wf = Workflow()
         ub = Ubuntu()
 
@@ -19,7 +19,9 @@ class TrackingBug:
         # If we can't find the series, don't continue.
         #
         series_target = None
-        series = wf.expected_series_name(ub.db, package, version)
+        series = der_series
+        if not der_series:
+            series = wf.expected_series_name(ub.db, package, version)
         if series:
             lp = self.lp.launchpad
             ubuntu = lp.distributions["ubuntu"]
@@ -121,6 +123,8 @@ class TrackingBug:
         sc = proj.series_collection
         for s in sc:
             if s.active and s.name not in ['trunk', 'latest']:
+                if s.name == 'upload-to-ppa' and not der_series:
+                    continue
                 if s.name == 'prepare-package-lbm' and not has_lbm:
                     continue
                 if s.name == 'prepare-package-lrm' and not has_lrm:
