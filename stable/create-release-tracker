@@ -7,8 +7,7 @@ from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
-from ktl.workflow                       import Workflow
-from ktl.ubuntu                         import Ubuntu
+from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
@@ -127,8 +126,6 @@ class CreateTrackingBug(StdApp):
             self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
             cmdline.verify_options(self.cfg)
             self.initialize()
-            wf = Workflow()
-            ub = Ubuntu()
 
             # Check: Are we currently in a git repository?
             #
@@ -137,155 +134,14 @@ class CreateTrackingBug(StdApp):
             branch = Git.current_branch()
 
             changelog = Debian.changelog()
-            package = changelog[0]['package']
-            version = changelog[0]['version']
-
-            # For the given version, figure out the series.
-            # If we can't find the series, don't continue.
-            #
-            series_target = None
-            series = wf.expected_series_name(ub.db, package, version)
-            if series:
-                lp = self.lp.launchpad
-                ubuntu = lp.distributions["ubuntu"]
-                sc = ubuntu.series_collection
-                for s in sc:
-                    if s.name == series:
-                        series_target = s
-                        break
-            if not series_target:
-                raise AppError('Can\'t figure out what series this is for.')
 
             #-------------------------------------------------------------------------------------
             # B U G   W O R K
 
-            # Title: <release>: <version> -proposed tracker
-            title = "%s: %s -proposed tracker" % (package, version)
-
-            # Description:
-            #    This bug is for tracking the <version> upload package. This bug will
-            #    contain status and testing results related to that upload.
-            #
-            description  = "This bug is for tracking the %s upload package. " % (version)
-            description += "This bug will contain status and testing results related to "
-            description += "that upload."
-            description += "\n\n"
-            description += "For an explanation of the tasks and the associated workflow see:"
-            description += " https://wiki.ubuntu.com/Kernel/kernel-sru-workflow"
-
-            bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
-
-            id = bug.id
-            if 'staging' in self.cfg:
-                print("https://bugs.qastaging.launchpad.net/bugs/%s" % (id))
-            else:
-                print("https://bugs.launchpad.net/bugs/%s" % (id))
-
-            # Tags:
-            #    add all tags for this package name
-            taglist = wf.initial_tags(package)
-            for itag in taglist:
-                bug.tags.append(itag)
-
-            name = bug.owner.display_name
-
-            # Get the one task and modify the status and importance.
-            #
-            for task in bug.tasks:
-                task.status = "In Progress"
-                task.importance = "Medium"
-                break
-
-            # Teams / individuals to be automatically subscribed to the tracking bugs
-            #   These vary per package
-            #
-            teams = wf.subscribers(package)
-            for team in teams:
-                lp_team = self.lp.launchpad.people[team]
-                bug.lpbug.subscribe(person=lp_team)
-
-            # Nominate the series for this package.
-            #
-            nomination = bug.lpbug.addNomination(target=series_target)
-            if nomination.canApprove():
-                nomination.approve()
-            bug.tags.append(series)
-
-            # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-            # Add a task for kernel-sru-workflow and then nominate all the series that belong
-            # to that project.
-            #
-
-            lp = self.lp.launchpad
-            ubuntu = lp.distributions["ubuntu"]
-            project = 'kernel-sru-workflow'
-            proj = lp.projects[project]
-            bug.lpbug.addTask(target=proj)
-
-            # check the need for dependent packages tasks
-            has_lbm = False
-            has_lrm = False
-            has_lum = False
-            has_meta = False
-            has_ports_meta = False
-            try:
-                found = ub.lookup(series)
-            except KeyError:
-                found = {}
-            if found:
-                if 'dependent-packages' in found:
-                    for dep in iter(found['dependent-packages']):
-                        if dep == package:
-                            has_lbm = 'lbm' in found['dependent-packages'][dep]
-                            has_lrm = 'lrm' in found['dependent-packages'][dep]
-                            has_lum = 'lum' in found['dependent-packages'][dep]
-                            has_meta = 'meta' in found['dependent-packages'][dep]
-                            has_ports_meta = 'ports-meta' in found['dependent-packages'][dep]
-                            break
-
-            sc = proj.series_collection
-            for s in sc:
-                if s.active and s.name not in ['trunk', 'latest']:
-                    if s.name == 'prepare-package-lbm' and not has_lbm:
-                        continue
-                    if s.name == 'prepare-package-lrm' and not has_lrm:
-                        continue
-                    if s.name == 'prepare-package-lum' and not has_lum:
-                        continue
-                    if s.name == 'prepare-package-meta' and not has_meta:
-                        continue
-                    if s.name == 'prepare-package-ports-meta' and not has_ports_meta:
-                        continue
-                    nomination = bug.lpbug.addNomination(target=s)
-                    if nomination.canApprove():
-                        nomination.approve()
-
-            # Task assignments
-            # Set status of the master task so the bot will start processing
-            #
-            for t in bug.tasks:
-                task       = t.bug_target_display_name
-                parts = task.partition(proj.display_name)
-                if parts[0] == '' and parts[1] == proj.display_name and parts[2] == '':
-                    t.status = "In Progress"
-                else:
-                    if parts[0] != '':
-                        continue
-                    task = parts[2].strip()
-                    assignee = wf.assignee(package, task)
-                    if assignee is None:
-                        print 'Note: Found a workflow task named %s with no automatic assignee, leaving unassigned and setting to invalid' % task
-                        t.status = "Invalid"
-                    else:
-                        t.assignee = self.lp.launchpad.people[assignee]
-                        if 'linux-version' in changelog[0]:
-                            lin_ver = changelog[0]['linux-version']
-                            if wf.is_task_invalid(package, task, lin_ver):
-                                t.status = "Invalid"
-                                continue
-                        abi_change = changelog[0]['ABI'] != changelog[1]['ABI']
-                        if not abi_change and task.startswith('prepare-package-'):
-                            t.status = "Invalid"
+            tb = TrackingBug(self.lp, 'staging' in self.cfg)
+            bug = tb.open(changelog[0]['package'],
+                          changelog[0]['version'],
+                          changelog[0]['ABI'] != changelog[1]['ABI'])
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
@@ -299,10 +155,10 @@ class CreateTrackingBug(StdApp):
             with open(changelog_path, 'w') as f:
                 f.write(thelog[0])
                 f.write(thelog[1])
-                f.write("  [%s]\n" % (name))
+                f.write("  [%s]\n" % (bug.owner.display_name))
                 f.write("\n")
                 f.write("  * Release Tracking Bug\n")
-                f.write("    - LP: #%s\n" % (id))
+                f.write("    - LP: #%s\n" % (bug.id))
                 f.write("\n")
                 for line in thelog[2:]:
                     f.write(line)
