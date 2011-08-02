@@ -162,6 +162,7 @@ class BugInfo(StdApp):
         print("          Is Expirable: %s" % bug.is_expirable())
         print("           Series Name: %s" % (bug.series[0]))
         print("        Series Version: %s" % (bug.series[1]))
+        print("          Problem Type: %s" % (bug.problem_type))
 
         tags = ""
         for t in bug.tags:
