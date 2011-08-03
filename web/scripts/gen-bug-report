@@ -466,7 +466,7 @@ class RegressionsReport():
             retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                 # Series
             retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                # Age
             retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                           # Last comment
-            retval  = '                                </tr>\n'
+            retval += '                                </tr>\n'
 
 
             retval += '                                <tr>\n'
