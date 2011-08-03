@@ -132,10 +132,10 @@ class CloseNominations():
             # Should be fixed in later versions to not require omit_targeted=False
             tasks = self.linux.searchTasks(omit_targeted=False)
             for task in tasks:
-		print task.bug.id, task.bug.title
+                print task.bug.id, task.bug.title
                 task.status = "Won't Fix"
                 task.bug.newMessage(subject=self.subject, content=self.comment)
-		task.lp_save()
+                task.lp_save()
 
         # Handle the user presses <ctrl-C>.
         #
