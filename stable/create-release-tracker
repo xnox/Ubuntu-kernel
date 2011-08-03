@@ -171,7 +171,7 @@ class CreateTrackingBug(StdApp):
             description += "that upload."
             description += "\n\n"
             description += "For an explanation of the tasks and the associated workflow see:"
-            description += " https://wiki.ubuntu.com/Kernel/kernel-sru-workflow"
+            description += " https://wiki.ubuntu.com/Kernel/kernel-sru-workflow\n"
 
             bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
 
