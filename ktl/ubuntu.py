@@ -153,6 +153,11 @@ class Ubuntu:
             {
                 'linux' : [ 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2' ]
             },
+            'backport-packages' :
+            {
+                'linux-lts-backport-natty' : [ 'linux', '11.04' ],
+                'linux-lts-backport-maverick' : [ 'linux', '10.10' ],
+            },
             'sha1' : '298cbfdb55fc64d1135f06b3bed3c8748123c183',
             'md5' : '4b1f6f6fac43a23e783079db589fc7e2'
         },
