@@ -10,6 +10,7 @@ from ktl.utils                          import stdo, error
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Workflow
+from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
 from urllib                             import quote
@@ -144,6 +145,19 @@ class Shank(StdApp):
                                          'Fix Released' : {'action':self.prep_package_fix_released},
                                          'Unknown' : {'action':None},
                                          },
+            'upload-to-ppa'           : {'New' : {'action':None},
+                                         'Incomplete' : {'action':None},
+                                         'Opinion' : {'action':None},
+                                         'Invalid' : {'action':None},
+                                         "Won't Fix" : {'action':None},
+                                         'Expired' : {'action':None},
+                                         'Confirmed' : {'action':None},
+                                         'Triaged' : {'action':None},
+                                         'In Progress' : {'action':self.upload_to_ppa_in_progress},
+                                         'Fix Committed' : {'action':None},
+                                         'Fix Released' : {'action':self.upload_to_ppa_fix_released},
+                                         'Unknown' : {'action':None},
+                                         },
             'prepare-package-lbm'     : {'New' : {'action':None},
                                          'Incomplete' : {'action':None},
                                          'Opinion' : {'action':None},
@@ -205,19 +219,6 @@ class Shank(StdApp):
                                          'Confirmed' : {'action':None},
                                          'Triaged' : {'action':None},
                                          'In Progress' : {'action':self.prep_ports_meta_package_in_progress},
-                                         'Fix Committed' : {'action':None},
-                                         'Fix Released' : {'action':None},
-                                         'Unknown' : {'action':None},
-                                         },
-            'upload-to-ppa'           : {'New' : {'action':None},
-                                         'Incomplete' : {'action':None},
-                                         'Opinion' : {'action':None},
-                                         'Invalid' : {'action':None},
-                                         "Won't Fix" : {'action':None},
-                                         'Expired' : {'action':None},
-                                         'Confirmed' : {'action':None},
-                                         'Triaged' : {'action':None},
-                                         'In Progress' : {'action':None},
                                          'Fix Committed' : {'action':None},
                                          'Fix Released' : {'action':None},
                                          'Unknown' : {'action':None},
@@ -689,9 +690,14 @@ class Shank(StdApp):
 
     def prep_package_in_progress(self, taskobj):
         """
-        when the prep-package task is set to In Progress, kernel team
-        builds the packages; check the build status and update tasks
+        when the prep-package task is set to In Progress and no
+        upload-to-ppa task is present, kernel team builds the packages;
+        check the build status and update tasks
         """
+        task_name = taskobj.bug_target_name
+        workflow_task = task_name[len("kernel-sru-workflow")+1:].strip()
+        if ('upload-to-ppa' in self.taskbyname and workflow_task == 'prepare-package'):
+            return False
         if (not (self.is_prep_pkg_closed('prepare-package-lbm') and
                  self.is_prep_pkg_closed('prepare-package-lrm') and
                  self.is_prep_pkg_closed('prepare-package-lum') and
@@ -724,12 +730,75 @@ class Shank(StdApp):
 
     def prep_package_fix_released(self, taskobj):
         """
-        when the prep-package task is set to Fix Released, we set the
-        promote-to-proposed task to Confirmed
+        when the prep-package task is set to Fix Released and there is
+        no upload-to-ppa task, we create new tracking bugs for
+        derivative packages, and set the promote-to-proposed task to
+        Confirmed. Otherwise, if upload-to-ppa task is present, just set
+        it to Confirmed if necessary
         """
+        task_name = taskobj.bug_target_name
+        workflow_task = task_name[len("kernel-sru-workflow")+1:].strip()
+        if ('upload-to-ppa' in self.taskbyname and workflow_task == 'prepare-package'):
+            if self.taskbyname['upload-to-ppa'].status == 'New':
+                self.set_task_to_state('upload-to-ppa', 'Confirmed')
+            return False
+
         if self.taskbyname['promote-to-proposed'].status == 'New':
+            # open new tracking bugs for derivative packages if needed
+            title = taskobj.bug.title
+            pkg_name = re.findall('linux[^:]*', title)[0]
+            pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
+            series = self.wf.expected_series_name(self.ubuntu.db, pkg_name, pkg_ver)
+            if not series:
+                print("ERROR: Can't find series for %s-%s to get derivatives\n"
+                      % (pkg_name, pkg_ver))
+                return False
+            der_list = []
+            found = self.ubuntu.lookup(series)
+            if 'derivative-packages' in found:
+                if pkg_name in found['derivative-packages']:
+                    der_list = found['derivative-packages'][pkg_name]
+            bug_list = []
+            if der_list:
+                tb = TrackingBug(self.lp, 'staging' in self.cfg)
+                for der_pkg in der_list:
+                    if 'dryrun' in self.cfg:
+                        self.verbose('Dryrun - Would open tracking bug for derivative package %s\n'
+                                     % (der_pkg))
+                        continue
+                    bug = tb.open(der_pkg, '<version to be filled>', True, series)
+                    print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
+                    bug_list.append([der_pkg, bug.id])
+
+            # comment about publishing and possible new tracking bugs opened
+            msgbody  = 'All builds are complete, packages in this bug can be'
+            msgbody += ' copied to -proposed.'
+            if bug_list:
+                msgbody += '\n\nDerivative packages from packages here can be worked on,'
+                msgbody += ' the following tracking bugs were opened for them:'
+                for pkg_bug in bug_list:
+                    msgbody += '\n%s - bug %s' % (pkg_bug[0], pkg_bug[1])
+            task = self.taskbyname['kernel-sru-workflow']
+            self.send_comment(task, 'Packages are ready for -proposed', msgbody)
+
+            # Set promote-to-proposed
             self.set_task_to_state('promote-to-proposed', 'Confirmed')
         return False
+
+    def upload_to_ppa_in_progress(self, taskobj):
+        """
+        When the upload-to-ppa task is set to In Progress, kernel team
+        builds the packages; check the build status and update tasks
+        """
+        return self.prep_package_in_progress(taskobj)
+
+    def upload_to_ppa_fix_released(self, taskobj):
+        """
+        When the upload-to-ppa task is set to Fix Released we create new
+        tracking bugs for derivative packages, and set the
+        promote-to-proposed task to Confirmed.
+        """
+        return self.prep_package_fix_released(taskobj)
 
     def promote_to_proposed_fix_released(self, taskobj):
         """
