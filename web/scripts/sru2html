@@ -152,7 +152,7 @@ class SruReport:
             <div class="section">'''
         retval += '\n'
 
-        trackers_only_packages = ['linux-lts-backport-maverick']
+        trackers_only_packages = ['linux-lts-backport-maverick', 'linux-lts-backport-natty', 'linux-lts-backport-oneiric']
         suite_keys = self.data['releases'].keys()
         suite_keys.sort()
         for rls in suite_keys:
@@ -208,7 +208,7 @@ class SruReport:
                         retval += '                                <table width="100%">\n'
                         for bug in self.data['releases'][rls][pkg]['bugs']:
                             state = self.data['releases'][rls][pkg]['bugs'][bug]['state']
-                            if state == 'tracker' or pkg not in trackers_only_packages:
+                            if state == 'release-tracker' or pkg not in trackers_only_packages:
                                 retval += '                                   <tr>\n'
                                 retval += '                                       <td width="20">\n'
                                 retval += '                                           &nbsp;\n'
@@ -281,6 +281,7 @@ class SruReport:
                         retval += '                               </table>\n'
                         retval += '                           </td>\n'
                         retval += '                       </tr>\n'
+
                 retval += '                   </table>\n'
 
         retval += '            </div>\n'

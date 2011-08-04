@@ -39,6 +39,10 @@ class Ubuntu:
                 'linux' : { 'meta' : 'linux-meta' },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' }
             },
+            'derivative-packages' :
+            {
+                'linux' : [ 'linux-ti-omap4' ]
+            },
             'sha1' : '',
             'md5' : ''
         },
@@ -63,6 +67,10 @@ class Ubuntu:
                     'lbm'  : 'linux-backports-modules-2.6.38'
                 },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' }
+            },
+            'derivative-packages' :
+            {
+                'linux' : [ 'linux-ti-omap4' ]
             },
             'sha1' : '0770b9d2483eaeee4b80aec1fd448586b882003e',
             'md5' : 'cf0b587742611328f095da4b329e9fc7'
@@ -93,6 +101,10 @@ class Ubuntu:
                 },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
                 'linux-mvl-dove' : { 'meta' :  'linux-meta-mvl-dove' }
+            },
+            'derivative-packages' :
+            {
+                'linux' : [ 'linux-ti-omap4', 'linux-mvl-dove' ]
             },
             'sha1' : 'a2422f9281766ffe2f615903712819b9b0d9dd52',
             'md5' : '62001687bd94d1c0dd9a3654c64257d6'
@@ -136,6 +148,15 @@ class Ubuntu:
                 'linux-lts-backport-maverick' : {
                     'meta' : 'linux-meta-lts-backport-maverick'
                 }
+            },
+            'derivative-packages' :
+            {
+                'linux' : [ 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2' ]
+            },
+            'backport-packages' :
+            {
+                'linux-lts-backport-natty' : [ 'linux', '11.04' ],
+                'linux-lts-backport-maverick' : [ 'linux', '10.10' ],
             },
             'sha1' : '298cbfdb55fc64d1135f06b3bed3c8748123c183',
             'md5' : '4b1f6f6fac43a23e783079db589fc7e2'
