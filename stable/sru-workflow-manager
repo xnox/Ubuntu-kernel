@@ -119,6 +119,34 @@ class Cmdline:
     def verify_options(self, cfg):
         return
 
+def setProperty(bug, name, value):
+    """
+    Set a key:value pair in the bug description. This
+    follows a convention established in lpltk
+    """
+    # Set a name:value pair in a bug description
+    olddescr = bug.description
+    newdscr = ''
+    props = bug.properties
+    re_kvp            = re.compile("^(\s*)([\.\-\w]+):\s*(.*)$")
+    # copy everything, removing an existing one with this name if it exists
+    for line in olddescr.split("\n"):
+        m = re_kvp.match(line)
+        if m:
+            # There is a property on this line (assume only one per line)
+            # see if it matches the one we're adding
+            level = m.group(1)
+            item = m.group(2)
+            value = m.group(3)
+            key = item
+            if len(level) > 0:
+                key = "%s.%s" %(last_key[''], item)
+            continue
+        newdscr = newdscr + line + '\n'
+
+    newdescr = newdscr + '%s:%s\n' % (name, value)
+    bug.description = newdescr
+    return
 
 # Shank
 #
@@ -401,6 +429,15 @@ class Shank(StdApp):
                 self.regression_testing_complete = False
                 self.security_signoff_complete = False
                 self.security_publishing_required = False
+
+                #
+                # list any Properties from bug description
+                props = bug.properties
+                for prop in props:
+                    self.verbose('    Bug has Property:  %s:%s' % (prop, props[prop]))
+
+                # Now Example! add some
+                #setProperty(bug, 'kernel-stable-release-phase', 'Prepare')
 
                 # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
                 # TODO This is a bit sloppy and I should probably build one list and walk it twice.
