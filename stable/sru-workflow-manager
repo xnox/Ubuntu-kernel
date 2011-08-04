@@ -640,7 +640,7 @@ class Shank(StdApp):
             if build_summaries['status'] == 'FULLYBUILT':
                 self.verbose('<%s> <%s> built, %s is Fix Released\n'
                              % (dep_name, dep_pkg.source_package_version, workflow_task))
-                taskobj.status = 'Fix Released'
+                self.set_task_to_state(workflow_task, 'Fix Released')
             else:
                 self.verbose('<%s> <%s> not fully built yet, %s still In Progress\n'
                              % (dep_name, dep_pkg.source_package_version, workflow_task))
