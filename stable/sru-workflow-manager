@@ -410,6 +410,7 @@ class Shank(StdApp):
                     #mtstring = self.project.display_name
                     mtstring = "kernel-sru-workflow"
 
+                    self.taskbyname = {}
                     for t in bug.tasks:
                         task_name       = t.bug_target_name
 
