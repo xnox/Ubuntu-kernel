@@ -329,7 +329,9 @@ class Shank(StdApp):
         #
         self.distro = self.lp.distributions['ubuntu']
 
-        self.project = self.lp.projects['kernel-sru-workflow']
+        self.projectname = 'kernel-sru-workflow'
+
+        self.project = self.lp.projects[self.projectname]
 
         # Get set up for email and status messages
         if 'mail_notify' in self.cfg:
@@ -364,7 +366,7 @@ class Shank(StdApp):
 
             self.initialize()
 
-            project = self.lp.projects['kernel-sru-workflow']
+            project = self.lp.projects[self.projectname]
 
             # Searching for bug tasks, the search can be quite complicated and made up
             # of several components. The following can be combined in many ways to get
@@ -416,7 +418,7 @@ class Shank(StdApp):
                 try:
                     # TODO revisit this, but hardcode for now
                     #mtstring = self.project.display_name
-                    mtstring = "kernel-sru-workflow"
+                    mtstring = self.projectname
 
                     self.taskbyname = {}
                     for t in bug.tasks:
@@ -451,7 +453,7 @@ class Shank(StdApp):
                     # bug_target_name includes both the main and sub task in the string
                     # so for example it could be "Kernel SRU Workflow prepare-package"
                     # so we have to strip off the right hand part
-                    # The task can also be just the single parent task i.e. "Kernel SRU Workflow"
+                    # The task can also be just the single parent task
                     #
 
                     if task_name == mtstring:
@@ -644,7 +646,7 @@ class Shank(StdApp):
             src_id = str(dep_pkg.self).rsplit('/', 1)[1]
             build_summaries = ppa.getBuildSummariesForSourceIds(source_ids=[src_id])[src_id]
             task_name = taskobj.bug_target_name
-            workflow_task = task_name[len("kernel-sru-workflow")+1:].strip()
+            workflow_task = task_name[len(self.projectname)+1:].strip()
             if build_summaries['status'] == 'FULLYBUILT':
                 self.verbose('<%s> <%s> built, %s is Fix Released\n'
                              % (dep_name, dep_pkg.source_package_version, workflow_task))
@@ -710,7 +712,7 @@ class Shank(StdApp):
         check the build status and update tasks
         """
         task_name = taskobj.bug_target_name
-        workflow_task = task_name[len("kernel-sru-workflow")+1:].strip()
+        workflow_task = task_name[len(self.projectname)+1:].strip()
         if ('upload-to-ppa' in self.taskbyname and workflow_task == 'prepare-package'):
             return False
         if (not (self.is_prep_pkg_closed('prepare-package-lbm') and
@@ -752,7 +754,7 @@ class Shank(StdApp):
         it to Confirmed if necessary
         """
         task_name = taskobj.bug_target_name
-        workflow_task = task_name[len("kernel-sru-workflow")+1:].strip()
+        workflow_task = task_name[len(self.projectname)+1:].strip()
         if ('upload-to-ppa' in self.taskbyname and workflow_task == 'prepare-package'):
             if self.taskbyname['upload-to-ppa'].status == 'New':
                 self.set_task_to_state('upload-to-ppa', 'Confirmed')
@@ -821,7 +823,7 @@ class Shank(StdApp):
                 msgbody += ' the following tracking bugs were opened for them:'
                 for pkg_bug in bp_bug_list:
                     msgbody += '\n%s (%s) - bug %s' % (pkg_bug[0], pkg_bug[1], pkg_bug[2])
-            task = self.taskbyname['kernel-sru-workflow']
+            task = self.taskbyname[self.projectname]
             self.send_comment(task, 'Packages are ready for -proposed', msgbody)
 
             # Set promote-to-proposed
@@ -888,7 +890,7 @@ class Shank(StdApp):
             msgbody = 'The bug was tagged as certification-testing-failed\n'
             self.send_comment(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state(self.projectname, 'Incomplete')
             return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
@@ -903,7 +905,7 @@ class Shank(StdApp):
             # reset task state so Certification team fix it
             self.set_task_to_state('certification-testing', 'Confirmed')
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state(self.projectname, 'Incomplete')
             return False
 
     def certification_testing_invalid(self, taskobj):
@@ -929,7 +931,7 @@ class Shank(StdApp):
             msgbody = 'The bug was tagged as qa-testing-failed\n'
             self.send_comment(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state(self.projectname, 'Incomplete')
             return False
         elif 'qa-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
@@ -944,7 +946,7 @@ class Shank(StdApp):
             # reset task so QA team can fix it
             self.set_task_to_state('regression-testing', 'Confirmed')
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state(self.projectname, 'Incomplete')
             return False
 
     def security_signoff_finished(self, taskobj):
@@ -970,7 +972,7 @@ class Shank(StdApp):
             msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
             self.send_comment(taskobj, '%s task not set to correct state during release test' % taskname, msgbody)
             # stop further processing by this bot
-            self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+            self.set_task_to_state(self.projectname, 'Incomplete')
 
     #
     # This is not performed during processing for a specific task but only if several tasks are
@@ -1002,7 +1004,7 @@ class Shank(StdApp):
             self.release_test_state_check('promote-to-updates', ['New', 'Confirmed', 'Fix Released'])
 
             # If we found any problems, we've halted processing and set this
-            if self.taskbyname['kernel-sru-workflow'].status != 'In Progress':
+            if self.taskbyname[self.projectname].status != 'In Progress':
                 self.verbose('*** Exiting release test without triggering any publishing\n')
                 return
 
@@ -1032,8 +1034,7 @@ class Shank(StdApp):
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
                 # Now send a happy email 
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
-                task = self.taskbyname['kernel-sru-workflow']
-                # zzz
+                task = self.taskbyname[self.projectname]
                 #self.send_email(task, 'Package is ready for publication', msgbody)
                 #self.send_status_update(task, 'available for publication.')
                 
@@ -1047,9 +1048,9 @@ class Shank(StdApp):
                     msgbody = msgbody + '    ' + ftag + '\n'
                 msgbody = msgbody + '\n'
                 msgbody = msgbody + 'Further processing of this bug by Workflow Manager is halted.\n'
-                self.send_comment(self.taskbyname['kernel-sru-workflow'], 'Test completion tags not found during release test', msgbody)
+                self.send_comment(self.taskbyname[self.projectname], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
-                self.set_task_to_state('kernel-sru-workflow', 'Incomplete')
+                self.set_task_to_state(self.projectname, 'Incomplete')
     
         # this method is not associated with a task state transition so no status returned
         return 
@@ -1067,7 +1068,7 @@ class Shank(StdApp):
 
             print self.printlink,
             print ' Everything is done, setting bug to Fix Released'
-            self.set_task_to_state('kernel-sru-workflow', 'Fix Released')
+            self.set_task_to_state(self.projectname, 'Fix Released')
 
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The package has been published and the bug is being set to Fix Released\n'
