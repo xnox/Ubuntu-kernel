@@ -8,6 +8,7 @@ import json
 from os.path                import exists, getmtime
 from time                   import time
 from datetime               import datetime
+import re
 
 # o2ascii
 #
@@ -119,5 +120,41 @@ def string_to_date(date):
     Return a datetime object based on the string in a well known format.
     """
     return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+
+# setBugProperties
+#
+def setBugProperties(bug, newprops):
+    """
+    Set key:value pairs in the bug description. This
+    follows a convention established in lpltk
+    Input: a lpltk bug object and a dictionary
+    of key:value pairs
+    """
+    # Set a name:value pair in a bug description
+    olddescr = bug.description
+    newdscr = ''
+    props = bug.properties
+    re_kvp            = re.compile("^(\s*)([\.\-\w]+):\s*(.*)$")
+    # copy everything, removing an existing one with this name if it exists
+    for line in olddescr.split("\n"):
+        m = re_kvp.match(line)
+        if m:
+            # There is a property on this line (assume only one per line)
+            # see if it matches the one we're adding
+            level = m.group(1)
+            item = m.group(2)
+            value = m.group(3)
+            key = item
+            if len(level) > 0:
+                key = "%s.%s" %(last_key[''], item)
+            if key in newprops:
+                # we're going to be adding this one, remove the existing one
+                continue
+        newdscr = newdscr + line + '\n'
+
+    for k in newprops:
+        newdscr = newdscr + '%s:%s\n' % (k, newprops[k])
+    bug.description = newdscr
+    return
 
 # vi:set ts=4 sw=4 expandtab:

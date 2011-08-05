@@ -3,6 +3,8 @@
 
 from ktl.workflow                       import Workflow
 from ktl.ubuntu                         import Ubuntu
+from datetime                           import datetime
+from ktl.utils                          import date_to_string, setBugProperties
 import re
 
 class TrackingBug:
@@ -47,7 +49,6 @@ class TrackingBug:
         description += "\n\n"
         description += "For an explanation of the tasks and the associated workflow see:"
         description += " https://wiki.ubuntu.com/Kernel/kernel-sru-workflow\n"
-        description += "kernel-stable-phase:Preparation\n"
 
         bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
 
@@ -62,6 +63,13 @@ class TrackingBug:
         taglist = wf.initial_tags(package)
         for itag in taglist:
             bug.tags.append(itag)
+
+        # Add phase and time stamp
+        now = datetime.utcnow()
+        now.replace(tzinfo=None)
+        tstamp = date_to_string(now)
+        props = {'kernel-stable-phase':'Preparation', 'kernel-stable-phase-changed':tstamp}
+        setBugProperties(bug, props)
 
         # Get the one task and modify the status and importance.
         #

@@ -6,7 +6,7 @@
 from sys                                import argv
 from os                                 import path, popen
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error
+from ktl.utils                          import stdo, error, setBugProperties
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Workflow
@@ -119,35 +119,6 @@ class Cmdline:
     #
     def verify_options(self, cfg):
         return
-
-def setProperty(bug, name, value):
-    """
-    Set a key:value pair in the bug description. This
-    follows a convention established in lpltk
-    """
-    # Set a name:value pair in a bug description
-    olddescr = bug.description
-    newdscr = ''
-    props = bug.properties
-    re_kvp            = re.compile("^(\s*)([\.\-\w]+):\s*(.*)$")
-    # copy everything, removing an existing one with this name if it exists
-    for line in olddescr.split("\n"):
-        m = re_kvp.match(line)
-        if m:
-            # There is a property on this line (assume only one per line)
-            # see if it matches the one we're adding
-            level = m.group(1)
-            item = m.group(2)
-            value = m.group(3)
-            key = item
-            if len(level) > 0:
-                key = "%s.%s" %(last_key[''], item)
-            continue
-        newdscr = newdscr + line + '\n'
-
-    newdescr = newdscr + '%s:%s\n' % (name, value)
-    bug.description = newdescr
-    return
 
 # Shank
 #
