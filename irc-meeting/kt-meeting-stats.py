@@ -49,7 +49,7 @@ for line in FILE:
 FILE.close()
 
 ubuntu = Ubuntu()
-releases = sorted(ubuntu.supported_serieses, reverse=True)
+releases = sorted(ubuntu.supported_series, reverse=True)
 #releases = ['oneiric', 'natty', 'maverick', 'lucid', 'hardy']
 
 regressions = ['regression-update', 'regression-release', 'regression-proposed']

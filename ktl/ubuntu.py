@@ -329,10 +329,10 @@ class Ubuntu:
 
         return retval
 
-    # supported_serieses
+    # supported_series
     #
     @property
-    def supported_serieses(self):
+    def supported_series(self):
         """
         A list of all the currently supported series names.
         """
