@@ -3,7 +3,7 @@ Section: admin
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
 Standards-Version: 3.6.2.1
-Build-Depends: debhelper (>= 5.0.0), pkg-config, libgcrypt11-dev, libnl-dev
+Build-Depends: debhelper (>= 5.0.0), pkg-config, libgcrypt11-dev, libnl3-dev
 Vcs-Git: git://kernel.ubuntu.com/ubuntu/wireless-crda.git
 
 Package: wireless-crda
