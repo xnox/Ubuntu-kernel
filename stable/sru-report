@@ -430,6 +430,7 @@ class SruReport(StdApp):
                                 # can add the correct state for tracking bugs.
                                 #
                                 if 'verification-failed-%s' % rls in lp_bug.tags: state = 'failed'
+                                elif 'verification-reverted-%s' % rls in lp_bug.tags: state = 'reverted'
                                 elif 'verification-done-%s'   % rls in lp_bug.tags: state = 'verified'
                                 elif 'verification-needed-%s' % rls in lp_bug.tags: state = 'needed'
                                 elif 'verification-done' in lp_bug.tags: state = 'verified'
