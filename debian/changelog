@@ -1,3 +1,14 @@
+wireless-crda (1.14) oneiric; urgency=low
+
+  * Updated wireless-regdb to master-2011-04-28
+    wireless-regdb: update regulatory.bin based on preceding changes
+    Update regulatory rules for Netherlands (NL)
+    regdb: fix moinmoin plugin license
+
+  * Added crda support for libnl-3.0
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 08 Aug 2011 10:35:36 -0600
+
 wireless-crda (1.13) natty; urgency=low
 
   * Updated wireless-regdb to master-2010-11-24
