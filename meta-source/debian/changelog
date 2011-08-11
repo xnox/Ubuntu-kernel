@@ -1,3 +1,14 @@
+linux-meta (2.6.32.34.40) lucid-proposed; urgency=low
+
+  [ Tim Gardner ]
+
+  * Added compat-wireless 2.6.39
+    - LP: #806597
+  * Added compat-wireless 3.0.0
+    - LP: #819512
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 11 Aug 2011 10:29:45 -0300
+
 linux-meta (2.6.32.33.39) lucid-proposed; urgency=low
 
   * Bump ABI
