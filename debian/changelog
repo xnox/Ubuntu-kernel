@@ -1,6 +1,16 @@
-linux-backports-modules-3.0.0 (3.0.0-8.1) UNRELEASED; urgency=low
+linux-backports-modules-3.0.0 (3.0.0-8.1) oneiric; urgency=low
+
+  [ Andy Whitcroft ]
 
   * Open Oneiric LBM
+
+  [ Tim Gardner ]
+  
+  * UBUNTU: Remove obsolete iwlwifi firmware
+  * UBUNTU: Removed obsolete alsa infrastructure
+  * UBUNTU: Removed obsolete media infrastructure
+  * UBUNTU: Removed obsolete input infrastructure
+  * UBUNTU: removal of net drivers
 
  -- Andy Whitcroft <apw@canonical.com>  Fri, 12 Aug 2011 12:56:05 +0100
 
