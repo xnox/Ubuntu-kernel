@@ -52,9 +52,6 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 ifeq ($(do_net),true)
 	cat $(confdir)/$(arch) > $(builddir)/build-$*/net/.config
 endif
-ifeq ($(do_input),true)
-	cat $(confdir)/$(arch) > $(builddir)/build-$*/input-drivers/.config
-endif
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
 	touch $(builddir)/build-$*/ubuntu-build
@@ -73,14 +70,9 @@ $(stampdir)/stamp-build-%: prepare-%
 ifeq ($(do_net),true)
 	$(kmake) $(conc_level) obj=net modules
 endif
-ifeq ($(do_input),true)
-	$(kmake) $(conc_level) obj=input-modules modules
-endif
 	touch $@
 
 # Install the finished build
-install-%: impkgdir = $(CURDIR)/debian/linux-backports-modules-input-$(release)-$(abinum)-$*
-install-%: immoddir = $(impkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: netpkgdir = $(CURDIR)/debian/linux-backports-modules-net-$(release)-$(abinum)-$*
 install-%: netmoddir = $(netpkgdir)/lib/modules/$(release)-$(abinum)-$*
@@ -144,25 +136,6 @@ ifeq ($(do_net),true)
 	done
 endif
 
-ifeq ($(do_input),true)
-	#
-	# Build the input-drivers package.
-     	#
-	install -d $(immoddir)/updates/input
-	find $(builddir)/build-$*/input-drivers -type f -name '*.ko' |         \
-	while read f; do                                                       \
-		install -v $$f $(immoddir)/updates/input/;                     \
-		strip --strip-debug $(immoddir)/updates/input/$$(basename $$f);\
-	done
-
-	install -d $(impkgdir)/DEBIAN
-	for script in postinst postrm; do				       \
-	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'			       \
-	       debian/control-scripts/$$script > $(impkgdir)/DEBIAN/$$script;  \
-	  chmod 755 $(impkgdir)/DEBIAN/$$script;			       \
-	done
-endif
-
 	#
 	# The flavour specific headers package
 	#
@@ -187,7 +160,6 @@ cw_pkg_list_suf = $(addsuffix -$(release)-$(abinum)-$*,$(cw_pkg_list_pre))
 packages-true =
 packages-true += $(cw_pkg_list_suf)
 packages-$(do_net) += linux-backports-modules-net-$(release)-$(abinum)-$*
-packages-$(do_input) += linux-backports-modules-input-$(release)-$(abinum)-$*
 
 binary-modules-%: install-%
 	dh_testdir
