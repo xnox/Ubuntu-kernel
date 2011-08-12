@@ -8,10 +8,6 @@ install-headers:
 	dh_testdir
 	dh_testroot
 	dh_clean -k -p$(indep_hdrpkg)
-	if grep 'CONFIG_ALSA=m' $(confdir)/$(arch) > /dev/null ; then \
-	  install -d $(snd_incl); \
-	  cp --preserve=timestamps `find ubuntu/sound/alsa-kernel/include -type f` $(snd_incl); \
-	fi
 
 install-indep: install-headers
 

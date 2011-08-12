@@ -49,9 +49,8 @@ is_ppa_build    := $(shell if [ -f $(ppa_file) ] ; then echo yes; fi;)
 no_compat_wireless_flavours="xen virtual"
 
 #
-# Explicitly enable alsa and compat-wireless at release time.
+# Explicitly enable compat-wireless at release time.
 #
-do_alsa=false
 do_compat_wireless := 
 do_net=false
 do_input=false

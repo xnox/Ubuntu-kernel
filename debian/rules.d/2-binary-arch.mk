@@ -48,9 +48,6 @@ $(stampdir)/stamp-prepare-%: $(confdir)/$(arch)
 		mv -v $${cw_dir}/udev/ubuntu/compat_firmware.sh $${cw_dir}/udev/ubuntu/compat_firmware_$(abinum)_$(target_flavour).sh; \
 	done
 
-ifeq ($(do_alsa),true)
-	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
-endif
 	cat $(confdir)/$(arch) > $(builddir)/build-$*/.config
 ifeq ($(do_net),true)
 	cat $(confdir)/$(arch) > $(builddir)/build-$*/net/.config
@@ -76,9 +73,6 @@ $(stampdir)/stamp-build-%: prepare-%
 	for i in $(CWDIRS); do \
 		cd $(builddir)/build-$*/$$i && $(make_compat); \
 	done
-ifeq ($(do_alsa),true)
-	cd $(builddir)/build-$*/alsa-driver && make $(conc_level)
-endif
 ifeq ($(do_net),true)
 	$(kmake) $(conc_level) obj=net modules
 endif
@@ -93,7 +87,6 @@ endif
 # Install the finished build
 install-%: impkgdir = $(CURDIR)/debian/linux-backports-modules-input-$(release)-$(abinum)-$*
 install-%: immoddir = $(impkgdir)/lib/modules/$(release)-$(abinum)-$*
-install-%: cspkgdir = $(CURDIR)/debian/linux-backports-modules-alsa-$(release)-$(abinum)-$*
 install-%: csmoddir = $(cspkgdir)/lib/modules/$(release)-$(abinum)-$*
 install-%: netpkgdir = $(CURDIR)/debian/linux-backports-modules-net-$(release)-$(abinum)-$*
 install-%: netmoddir = $(netpkgdir)/lib/modules/$(release)-$(abinum)-$*
@@ -138,23 +131,6 @@ install-%: build-modules-%
 		install -d $${firmdir}; \
 		if [ -d firmware/iwlwifi ] ; then cp firmware/iwlwifi/*/*.ucode $${firmdir}/; fi; \
 	done
-
-ifeq ($(do_alsa),true)
-	#
-	# Build the ALSA snapshot packages.
-	#
-	install -d $(csmoddir)/updates/alsa
-	find $(builddir)/build-$*/alsa-driver -type f -name '*.ko' | while read f ; do cp -v $${f} $(csmoddir)/updates/alsa/`basename $${f}`; done
-
-	find $(cspkgdir)/ -type f -name \*.ko -print | xargs -r strip --strip-debug
-
-	install -d $(cspkgdir)/DEBIAN
-	for script in postinst postrm; do					\
-	  sed -e 's/@@KVER@@/$(release)-$(abinum)-$*/g'				\
-	       debian/control-scripts/$$script > $(cspkgdir)/DEBIAN/$$script;	\
-	  chmod 755 $(cspkgdir)/DEBIAN/$$script;					\
-	done
-endif
 
 ifeq ($(do_net),true)
 	#
@@ -219,11 +195,6 @@ endif
 	# The flavour specific headers package
 	#
 	install -d $(hdrdir)/include
-ifeq ($(do_alsa),true)
-	for i in asm linux media sound; do \
-		tar -C $(builddir)/build-$*/alsa-driver/include -chf - $$i | tar -C $(hdrdir)/include -xf -; \
-	done
-endif
 ifeq ($(do_net),true)
 	tar -C $(builddir)/build-$*/net -chf - include | tar -C $(hdrdir) -xf -
 endif
@@ -246,7 +217,6 @@ cw_pkg_list_suf = $(addsuffix -$(release)-$(abinum)-$*,$(cw_pkg_list_pre))
 
 packages-true =
 packages-true += $(cw_pkg_list_suf)
-packages-$(do_alsa) += linux-backports-modules-alsa-$(release)-$(abinum)-$*
 packages-$(do_net) += linux-backports-modules-net-$(release)-$(abinum)-$*
 packages-$(do_input) += linux-backports-modules-input-$(release)-$(abinum)-$*
 packages-$(do_media) += linux-backports-modules-media-$(release)-$(abinum)-$*
