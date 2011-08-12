@@ -1,17 +1,10 @@
-ALSA:
-ftp://ftp.alsa-project.org/pub/driver/alsa-driver-1.0.23.tar.bz2
-
 WIRELESS:
-http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.39/compat-wireless-2.6.39-1.tar.bz2
-http://www.orbit-lab.org/kernel/compat-wireless-3.0-stable/v3.0.0/compat-wireless-3.0-2.tar.bz2
+#http://www.orbit-lab.org/kernel/compat-wireless-3.0-stable/v3.0.0/compat-wireless-3.0-2.tar.bz2
 
 Remember to remove the .gitignore file lest you not get all of the files committed that you thought.
 
 E1000E:
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-
-IR:
-git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+#git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 
 IGB:
-http://sourceforge.net/projects/e1000/files/igb%20stable/
+#http://sourceforge.net/projects/e1000/files/igb%20stable/
