@@ -4,7 +4,7 @@
 from ktl.workflow                       import Workflow
 from ktl.ubuntu                         import Ubuntu
 from datetime                           import datetime
-from ktl.utils                          import date_to_string, setBugProperties
+from ktl.utils                          import date_to_string, setStablePhase
 import re
 
 class TrackingBug:
@@ -64,12 +64,9 @@ class TrackingBug:
         for itag in taglist:
             bug.tags.append(itag)
 
-        # Add phase and time stamp
-        now = datetime.utcnow()
-        now.replace(tzinfo=None)
-        tstamp = date_to_string(now)
-        props = {'kernel-stable-phase':'Preparation', 'kernel-stable-phase-changed':tstamp}
-        setBugProperties(bug, props)
+        # Phase:
+        # Set the key:value pairs in the bug description showing when we started prep
+        setStablePhase(bug, 'Preparation')
 
         # Get the one task and modify the status and importance.
         #

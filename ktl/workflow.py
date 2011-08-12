@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #
 
+from utils import date_to_string
+
 # UbuntuError
 #
 class UbuntuError(Exception):
@@ -8,6 +10,60 @@ class UbuntuError(Exception):
     #
     def __init__(self, error):
         self.msg = error
+
+# Methods related to workflow in tracking bugs
+#
+
+# setBugProperties
+#
+# Note - this should perhaps be in lpltk
+def setBugProperties(bug, newprops):
+    """
+    Set key:value pairs in the bug description. This
+    follows a convention established in lpltk
+    Input: a lpltk bug object and a dictionary
+    of key:value pairs
+    """
+    # Set a name:value pair in a bug description
+    olddescr = bug.description
+    newdscr = ''
+    props = bug.properties
+    re_kvp            = re.compile("^(\s*)([\.\-\w]+):\s*(.*)$")
+    # copy everything, removing an existing one with this name if it exists
+    for line in olddescr.split("\n"):
+        m = re_kvp.match(line)
+        if m:
+            # There is a property on this line (assume only one per line)
+            # see if it matches the one we're adding
+            level = m.group(1)
+            item = m.group(2)
+            value = m.group(3)
+            key = item
+            if len(level) > 0:
+                key = "%s.%s" %(last_key[''], item)
+            if key in newprops:
+                # we're going to be adding this one, remove the existing one
+                continue
+        newdscr = newdscr + line + '\n'
+
+    for k in newprops:
+        newdscr = newdscr + '%s:%s\n' % (k, newprops[k])
+    bug.description = newdscr
+    return
+
+# setStablePhase
+#
+"""
+Add the phase we're entering as a 'property',
+along with a time stamp
+"""
+def setStablePhase(bug, phasetext):
+    # Add phase and time stamp
+    now = datetime.utcnow()
+    now.replace(tzinfo=None)
+    tstamp = date_to_string(now)
+    props = {'kernel-stable-phase':phasetext, 'kernel-stable-phase-changed':tstamp}
+    setBugProperties(bug, props)
 
 # Workflow
 #

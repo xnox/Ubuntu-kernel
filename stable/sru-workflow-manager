@@ -6,7 +6,7 @@
 from sys                                import argv
 from os                                 import path, popen
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error, setBugProperties
+from ktl.utils                          import stdo, error, setStablePhase
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Workflow
