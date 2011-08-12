@@ -1,0 +1,25 @@
+{
+    "bug-collections": {
+        "kernel-sru-workflow": {
+            "bugs": {
+            }
+        }
+    }, 
+    "lp": {
+        "bug-tags": [], 
+        "bug-tags-combinator": "all", 
+        "projects": [
+            "kernel-sru-workflow"
+        ], 
+        "task-status": [
+            "New", 
+            "Incomplete", 
+            "Confirmed", 
+            "Triaged", 
+            "In Progress"
+        ]
+    }, 
+    "report": {
+        "title": "Kernel SRU Workflow"
+    }
+}

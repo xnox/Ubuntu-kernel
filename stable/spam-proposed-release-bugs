@@ -263,6 +263,10 @@ class SpamProposedReleaseBugs(StdApp):
                         self.verbose('    . has verification-failed-%s tag\n' % self.cfg['series'])
                         break  # The tag exists
 
+                    if 'verification-reverted-%s' % self.cfg['series'] in bug.tags:
+                        self.verbose('    . has verification-reverted-%s tag\n' % self.cfg['series'])
+                        break  # The tag exists
+
                     if 'verification-needed-%s' % self.cfg['series'] in bug.tags:
                         self.verbose('    . has verification-needed-%s tag\n' % self.cfg['series'])
                         break  # The tag exists

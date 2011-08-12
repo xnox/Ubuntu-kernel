@@ -226,6 +226,10 @@ class SruReport:
                                     colour = '#ff0000' # Red
                                     img    = 'img/error.png'
                                     msg    = 'This bug has failed verification'
+                                elif state == 'reverted':
+                                    colour = '#ff0000' # Red
+                                    img    = 'img/exclamation.png'
+                                    msg    = 'Patch for this bug was reverted after it failed verification'
                                 elif state == 'missing':
                                     colour = '#ff4500' # Vibrant orange
                                     img    = 'img/warning.png'

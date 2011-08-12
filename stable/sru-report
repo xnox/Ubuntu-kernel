@@ -210,7 +210,7 @@ class SruReport(StdApp):
         self.ubuntu = Ubuntu()
 
         self.components   = ['main', 'universe']
-        self.serieses     = self.ubuntu.supported_serieses
+        self.all_series   = self.ubuntu.supported_series
 
         self.tempdir = None
 
@@ -359,7 +359,7 @@ class SruReport(StdApp):
             # Now go through all the packages that are currently in proposed and pull out
             # the bug (and any other) information.
             #
-            for rls in self.serieses:
+            for rls in self.all_series:
                 self.dbg('core', "Series: '%s'\n" % (rls))
                 self.dbg('core', "    Coponents: '%s'\n" % (self.components))
                 for component in self.components:
@@ -386,7 +386,7 @@ class SruReport(StdApp):
 
             # Pending Ubuntu Stable Release Updates
             #
-            for rls in self.serieses:
+            for rls in self.all_series:
                 if rls not in results['releases']:
                     results['releases'][rls] = {}
                 if rls in pending:
@@ -430,6 +430,7 @@ class SruReport(StdApp):
                                 # can add the correct state for tracking bugs.
                                 #
                                 if 'verification-failed-%s' % rls in lp_bug.tags: state = 'failed'
+                                elif 'verification-reverted-%s' % rls in lp_bug.tags: state = 'reverted'
                                 elif 'verification-done-%s'   % rls in lp_bug.tags: state = 'verified'
                                 elif 'verification-needed-%s' % rls in lp_bug.tags: state = 'needed'
                                 elif 'verification-done' in lp_bug.tags: state = 'verified'

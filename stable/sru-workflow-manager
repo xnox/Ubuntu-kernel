@@ -738,8 +738,6 @@ class Shank(StdApp):
                 self.verbose('<%s> <%s> built, prep-package is Fix Released\n'
                              % (pkg_name, pkg_ver))
                 self.set_task_to_state('prepare-package', 'Fix Released')
-                if self.taskbyname['promote-to-proposed'].status == 'New':
-                    self.set_task_to_state('promote-to-proposed', 'Confirmed')
             else:
                 self.verbose('<%s> <%s> not fully built yet, skipping\n'
                              % (pkg_name, pkg_ver))
