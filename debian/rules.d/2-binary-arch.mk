@@ -52,9 +52,15 @@ ifeq ($(do_alsa),true)
 	cd $(builddir)/build-$*/alsa-driver && ./configure --with-kernel=$(COMPAT_KDIR)/build
 endif
 	cat $(confdir)/$(arch) > $(builddir)/build-$*/.config
+ifeq ($(do_net),true)
 	cat $(confdir)/$(arch) > $(builddir)/build-$*/net/.config
+endif
+ifeq ($(do_input),true)
 	cat $(confdir)/$(arch) > $(builddir)/build-$*/input-drivers/.config
+endif
+ifeq ($(do_media),true)
 	cat $(confdir)/$(arch) > $(builddir)/build-$*/media/.config
+endif
 	# XXX: generate real config
 	touch $(builddir)/build-$*/ubuntu-config.h
 	touch $(builddir)/build-$*/ubuntu-build
@@ -73,9 +79,15 @@ $(stampdir)/stamp-build-%: prepare-%
 ifeq ($(do_alsa),true)
 	cd $(builddir)/build-$*/alsa-driver && make $(conc_level)
 endif
+ifeq ($(do_net),true)
 	$(kmake) $(conc_level) obj=net modules
+endif
+ifeq ($(do_input),true)
 	$(kmake) $(conc_level) obj=input-modules modules
+endif
+ifeq ($(do_media),true)
 	$(kmake) $(conc_level) obj=media modules
+endif
 	touch $@
 
 # Install the finished build

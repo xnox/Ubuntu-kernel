@@ -52,8 +52,8 @@ no_compat_wireless_flavours="xen virtual"
 # Explicitly enable alsa and compat-wireless at release time.
 #
 do_alsa=false
-do_compat_wireless := 2.6.39 3.0.0
-do_net=true
+do_compat_wireless := 
+do_net=false
 do_input=false
 do_media=false
 

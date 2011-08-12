@@ -1,3 +1,9 @@
+linux-backports-modules-3.0.0 (3.0.0-8.1) UNRELEASED; urgency=low
+
+  * Open Oneiric LBM
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 12 Aug 2011 12:56:05 +0100
+
 linux-backports-modules-2.6.38 (2.6.38-11.7) natty; urgency=low
 
   [ Steve Conklin ]
