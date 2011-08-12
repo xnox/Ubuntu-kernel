@@ -1212,7 +1212,14 @@ class CheckTrackingBugs(StdApp):
                 if not has_prepare_task:
                     continue
             if not task in task_tbl:
-                self.err("Required workflow task %s not found (target = '%s')" % (task, target))
+                if self.handle("Required workflow task %s not found (target = '%s')" % (task, target)):
+                    lp = self.lp.launchpad
+                    proj = lp.projects['kernel-sru-workflow']
+                    for s in proj.series_collection:
+                        if s.active and s.name == task:
+                            nomination = bug.lpbug.addNomination(target=s)
+                            if nomination.canApprove():
+                                nomination.approve()
 
         # verify bug tags
         initial_tags = self.workflow.initial_tags(target)
