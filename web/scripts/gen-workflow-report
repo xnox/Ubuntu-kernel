@@ -1,0 +1,435 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from os                                 import path
+from getopt                             import getopt, GetoptError
+from datetime                           import datetime
+import json
+
+from ktl.utils                          import stdo, error, dump
+from ktl.dbg                            import Dbg
+from ktl.cfg                            import Cfg, CfgError
+from ktl.ubuntu                         import Ubuntu
+from ktl.bugs                           import DeltaTime
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--debug=<dbg options>] <database-file>                               \n" % defaults['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("                         Recognized debug options:                                           \n")
+        stdo("                             enter                                                           \n")
+        stdo("                             leave                                                           \n")
+        stdo("                             verbose                                                         \n")
+        stdo("                             cfg                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --debug=\"enter,leave,verbose\" kernel-sru-workflow.json                          \n" % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            cfg = defaults
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    cfg['verbose'] = True
+                    if 'verbose' not in Dbg.levels:
+                        Dbg.levels.append('verbose')
+
+                elif opt in ('--debug'):
+                    cfg['debug'] = val.split(',')
+                    for level in cfg['debug']:
+                        if level not in Dbg.levels:
+                            Dbg.levels.append(level)
+
+            if result: # No errors yet
+                # There might be some bugs listed on the command line.
+                #
+                if len(args) > 0:
+                    cfg['database-file'] = args[0]
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+        return cfg
+
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# GenWorkflowReport
+#
+class GenWorkflowReport():
+    """
+    This class/script examines all 'open' bugs. If a given bug was filed against a
+    version of Ubuntu that is no longer supported, change the status of that bug
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("GenWorkflowReport.__init__")
+
+        self.cfg    = cfg
+        self.importance_color = {
+                "Unknown"       : "importance-unknown",
+                "Critical"      : "importance-critical",
+                "High"          : "importance-high",
+                "Medium"        : "importance-medium",
+                "Low"           : "importance-low",
+                "Wishlist"      : "importance-wishlist",
+                "Undecided"     : "importance-undecided"
+            }
+        self.status_color     = {
+                "New"           : "ksw-new",
+                "Incomplete"    : "ksw-incomplete",
+                "Confirmed"     : "ksw-confirmed",
+                "Triaged"       : "ksw-triaged",
+                "In Progress"   : "ksw-in_progress",
+                "Fix Committed" : "ksw-fix_committed",
+                "Fix Released"  : "ksw-fix_released",
+                "Invalid"       : "ksw-invalid",
+                "Won't Fix"     : "ksw-wont_fix",
+                "Opinion"       : "ksw-opinion",
+                "Expired"       : "ksw-expired",
+                "Unknown"       : "ksw-unknown"
+            }
+
+
+        Dbg.leave("GenWorkflowReport.__init__")
+
+    # json_load
+    #
+    def json_load(self, file_name):
+        """
+        Load the indicated json format file, returning the created object.
+        """
+        Dbg.enter("json_load")
+
+        retval = None
+        if path.exists(file_name):
+            with open(file_name, 'r') as f:
+                retval = json.load(f)
+        else:
+            error("The json file could not be found at: %s\n" % file_name)
+            Dbg.leave("json_load")
+            raise Exit()
+
+        Dbg.leave("json_load")
+        return retval
+
+    # file_load
+    #
+    def file_load(self, file_name):
+        """
+        Load the indicated file into a string and return the string.
+        """
+        Dbg.enter("file_load")
+
+        retval = None
+        if path.exists(file_name):
+            with open(file_name, 'r') as f:
+                retval = f.read()
+        else:
+            error("The file could not be found at: %s\n" % file_name)
+            Dbg.leave("file_load")
+            raise Exit()
+
+        Dbg.leave("file_load")
+        return retval
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        Dbg.enter("GenWorkflowReport.initialize")
+
+        try:
+            # Process the command line arguments, and any configuration file options. Make sure
+            # that any required parameters have been provided.
+            #
+            self.cfg = Cfg.merge_options(defaults, self.cfg)
+
+            self.html_template = self.file_load('%ssru-workflow-template.html' % argv[0].replace('gen-workflow-report', ''))
+            self.bugs_db = self.json_load(self.cfg['database-file'])
+            self.ubuntu  = Ubuntu()
+
+        except CfgError as e:
+            error(e)
+            Dbg.leave("GenWorkflowReport.initialize")
+            raise Exit()
+
+        Dbg.leave("GenWorkflowReport.initialize")
+        return
+
+    # date_to_string
+    #
+    def date_to_string(self, date):
+        return date.strftime("%A, %d. %B %Y %H:%M UTC")
+
+    # string_to_date
+    #
+    def string_to_date(self, date):
+        return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+
+    def how_long_ago(self, date):
+        now = datetime.utcnow()
+        now.replace(tzinfo=None)
+        ago = DeltaTime(self.string_to_date(date), now)
+        when = '%d.%d.%d' % (ago.days, ago.hours, ago.minutes)
+        when_style = ''
+        if ago.days == 0:
+            if ago.hours == 0:
+                when_style = 'class="date-age-1"'
+            else:
+                when_style = 'class="date-age-2"'
+
+        return when_style, when
+
+    # __tablesort
+    #
+    def __tablesort(self):
+        retval = ''
+
+        for bug_id in self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs']:
+            retval += '                $("#%s-bug-table").tablesorter({\n' % bug_id
+            retval += '                    headers: {\n'
+            retval += '                        0: { sorter: false },\n'
+            retval += '                        1: { sorter: false },\n'
+            retval += '                        2: { sorter: false },\n'
+            retval += '                        3: { sorter: false },\n'
+            retval += '                        4: { sorter: false },\n'
+            retval += '                        5: { sorter: false },\n'
+            retval += '                        6: { sorter: false },\n'
+            retval += '                        7: { sorter: false }\n'
+            retval += '                    },\n'
+            retval += '                    widgets: [\'zebra\']\n'
+            retval += '                });\n'
+            retval += '                $("#%s-tasks-table").tablesorter({\n' % bug_id
+            retval += '                    headers: {\n'
+            retval += '                        0: { sorter: false },\n'
+            retval += '                        1: { sorter: false },\n'
+            retval += '                        2: { sorter: false },\n'
+            retval += '                        3: { sorter: false },\n'
+            retval += '                        4: { sorter: false },\n'
+            retval += '                        5: { sorter: false },\n'
+            retval += '                        6: { sorter: false },\n'
+            retval += '                        7: { sorter: false }\n'
+            retval += '                    },\n'
+            retval += '                    widgets: [\'zebra\']\n'
+            retval += '                });\n'
+
+        return retval
+
+    # __bug_details
+    #
+    def __bug_details(self, bug_id, pkg):
+        bug_url = "http://launchpad.net/bugs/%s" % bug_id
+        bug = self.bugs_db['bug-collections'][pkg]['bugs'][bug_id]
+
+
+        retval  = '\n'
+
+        #----------------------------------------------------------------------------
+        retval += '<div style="border-bottom: 1px solid #1d89c8;">\n'
+        retval += '<table width="100%" border="0" cellpadding="0" cellspacing="0">\n'
+        retval += '    <tr>\n'
+
+        title = bug['title']
+        package, other = title.split(':')
+        other = other.strip()
+        version, other = other.split(' ', 1)
+        retval += '        <td width="210" style="font-weight: bold; font-size:14px;" >%s &nbsp; %s</td>\n' % (package, version)
+
+        retval += '        <td width="30"><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                       # Bug
+        retval += '    </tr>\n'
+        retval += '</table>\n'
+        retval += '</div>\n'
+
+        retval += '\n'
+        retval += '                    <table width="100%">\n'
+        retval += '                        <tbody>\n'
+        retval += '                            <tr>\n'
+        retval += '                                <td style="background : #000000" width="20">&nbsp;</td>\n'
+        retval += '                                <td colspan="4">\n'
+        retval += '                                    <table width="100%" border="0" cellpadding="0" cellspacing="0">\n'
+        retval += '                                        <td width="30" align="right"> Tags: </td>\n'
+        retval += '                                        <td width="2">&nbsp;</td>\n'
+        retval += '                                        <td> %s </td>\n' % ', '.join(bug['tags'])
+        retval += '                                    </table>\n'
+        retval += '                                </td>\n'
+        retval += '                            </tr>\n'
+        retval += '                            <tr>\n'
+        retval += '                                <td style="background : #000000" width="20">&nbsp;</td>\n'
+        retval += '                                <td colspan="4">\n'
+        retval += '                                    <table id="%s-tasks-table" class="tablesorter" border="0" cellpadding="0" cellspacing="1" width="100%%">\n' % (bug_id)
+        retval += '                                        <thead>\n'
+        retval += '                                            <tr>\n'
+        retval += '                                                <th width="80">Task Name</th>\n'
+        retval += '                                                <th width="120">Assignee</th>\n'
+        retval += '                                                <th width="80">Status</th>\n'
+        retval += '                                            </tr>\n'
+        retval += '                                        </thead>\n'
+        for t in self.bugs_db['bug-collections'][pkg]['bugs'][bug_id]['tasks']:
+            retval += self.__task_details(t)
+        retval += '                                    </table>\n'
+        retval += '                                </td>\n'
+        retval += '                            </tr>\n'
+        retval += '                        <tbody>\n'
+        retval += '                    </table>\n'
+
+        return retval
+
+    # __task_details
+    #
+    def __task_details(self, task):
+        retval = ''
+        retval += '<tr>\n'
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['name'])                                           # Task Name
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['assignee'])                                          # Assignee
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['status'])             # Status
+        retval += '</tr>\n'
+        return retval
+
+    # report
+    #
+    def report(self):
+        Dbg.enter("GenWorkflowReport.report")
+
+
+        retval = ''
+        for ss in sorted(self.ubuntu.supported_series):
+            Dbg.verbose('%s\n' % ss)
+            retval += '<h1>%s</h1>\n' % ss
+
+            # Find all the packages for this series. This lets us sort the packages in
+            # the report.
+            #
+            pkgs = {}
+            for b in self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs']:
+                bug = self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs'][b]
+                title = bug['title']
+                package, other = title.split(':')
+                if bug['series name'] == ss:
+                    pkgs[package] = b
+
+            # Get the bug details for all the packages in this series.
+            #
+            for pkg in sorted(pkgs):
+                bug = self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs'][pkgs[pkg]]
+                retval += self.__bug_details(pkgs[pkg], 'kernel-sru-workflow')
+
+
+        Dbg.leave("GenWorkflowReport.report")
+        return retval
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("GenWorkflowReport.main")
+
+        try:
+            self.initialize()
+            print(self.html_template % ('Kernel SRU Workflow', self.__tablesort(), 'Kernel SRU Workflow', self.report(), datetime.utcnow()))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("GenWorkflowReport.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = GenWorkflowReport(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+
