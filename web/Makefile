@@ -77,7 +77,7 @@ kernel-sru-workflow.json:
 	scripts/cbd --db=$@
 
 kernel-sru-workflow.html: kernel-sru-workflow.json
-	scripts/gen-workflow-report --tasks $< > $@
+	scripts/gen-workflow-report $< > $@
 
 .PHONY : kernel-cves.html
 kernel-cves.html: scripts/kernel-cves
