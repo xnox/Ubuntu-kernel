@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 #
 
-from utils import date_to_string
+from utils              import date_to_string
+from datetime           import datetime
+import re
 
 # UbuntuError
 #
@@ -27,12 +29,16 @@ def setBugProperties(bug, newprops):
     # Set a name:value pair in a bug description
     olddescr = bug.description
     newdscr = ''
-    props = bug.properties
     re_kvp            = re.compile("^(\s*)([\.\-\w]+):\s*(.*)$")
     # copy everything, removing an existing one with this name if it exists
+    foundProp = False
     for line in olddescr.split("\n"):
+        # Skip empty lines after we start properties
+        if line == '' and foundProp:
+            continue
         m = re_kvp.match(line)
         if m:
+            foundProp = True
             # There is a property on this line (assume only one per line)
             # see if it matches the one we're adding
             level = m.group(1)
@@ -50,6 +56,20 @@ def setBugProperties(bug, newprops):
         newdscr = newdscr + '%s:%s\n' % (k, newprops[k])
     bug.description = newdscr
     return
+
+# setTaggedTimestamp
+#
+"""
+Add the supplied key with a timestamp. We do not replace existing keys
+"""
+def setTaggedTimestamp(bug, keyvalue):
+    if keyvalue in  bug.properties:
+        return
+    now = datetime.utcnow()
+    now.replace(tzinfo=None)
+    tstamp = date_to_string(now)
+    props = {keyvalue:tstamp}
+    setBugProperties(bug, props)
 
 # setStablePhase
 #

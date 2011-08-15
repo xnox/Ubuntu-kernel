@@ -8,7 +8,6 @@ import json
 from os.path                import exists, getmtime
 from time                   import time
 from datetime               import datetime
-import re
 
 # o2ascii
 #

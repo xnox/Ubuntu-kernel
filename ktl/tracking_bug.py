@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 #
 
-from ktl.workflow                       import Workflow
+from ktl.workflow                       import Workflow, setStablePhase, setTaggedTimestamp
 from ktl.ubuntu                         import Ubuntu
-from datetime                           import datetime
-from ktl.utils                          import date_to_string, setStablePhase
+from ktl.utils                          import date_to_string
 import re
 
 class TrackingBug:
@@ -66,7 +65,8 @@ class TrackingBug:
 
         # Phase:
         # Set the key:value pairs in the bug description showing when we started prep
-        setStablePhase(bug, 'Preparation')
+        setStablePhase(bug, 'Prepare')
+        setTaggedTimestamp(bug, 'kernel-stable-prepare-start')
 
         # Get the one task and modify the status and importance.
         #
