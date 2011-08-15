@@ -59,6 +59,8 @@ class Cmdline:
         stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
         stdo("                         running.                                                            \n")
         stdo("                                                                                             \n")
+        stdo("        --bugs=<bug list>  Only process the included bugs                                    \n")
+        stdo("                                                                                             \n")
         stdo("        --dryrun         Don't actually change any bugs, just print info.                    \n")
         stdo("                                                                                             \n")
         stdo("        --config=<cfg file>                                                                  \n")
@@ -87,7 +89,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'dryrun']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'dryrun', 'bugs=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -102,6 +104,12 @@ class Cmdline:
 
                 elif opt in ('--config'):
                     self.cfg['configuration_file'] = val
+
+                elif opt in '--bugs':
+                    buglist = []
+                    for bugnum in val.split(','):
+                        buglist.append(bugnum)
+                    self.cfg['buglist'] = buglist
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
@@ -386,11 +394,9 @@ class Shank(StdApp):
 
             for task in tasks:
                 bug = task.bug
-                # Use this for debugging using a single test bug
-                #if bug.id != 800193:
-                #    print 'Debugging - skipping bug', bug.id
-                #    continue
-                # End of debugging code
+                if 'buglist' in self.cfg:
+                    if str(bug.id) not in self.cfg['buglist']:
+                        continue
                 if 'staging' in self.cfg:
                     self.cfg['lpserver'] = 'bugs.qastaging.launchpad.net'
                 else:
