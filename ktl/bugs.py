@@ -78,6 +78,10 @@ class Bugs():
         messages = bug.messages
         bug_item['number of messages'] = len(messages)
 
+        bug_item['properties'] = {}
+        for x in bug.properties:
+            bug_item['properties'][x] = bug.properties[x]
+
         # Task info:
         #
         if task is not None:
