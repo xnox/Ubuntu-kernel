@@ -17,16 +17,20 @@ my %expected;
 my @a;
 
 if ($ARGV[0] eq '--info') {
+	my ($config, $default, $expected, $options, $option, $value);
 	open(INFO, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
 	while (<INFO>) {
 		chomp;
-		@a = split(' ');
-		for my $a (@a) {
-			if ($a =~ /^flag:(.*)/) {
-				$flags{$a[0]} .= " '''$1'''";
+		($config, $default, $expected, $options) = split(' ', $_, 4);
+		while ($options =~ /\s*(\S+)<(.*?)?>/g) {
+			($option, $value) = ($1, $2);
+			if ($option eq 'flag') {
+				$flags{$config} .= " '''$value'''";
+			} elsif ($option eq 'note') {
+				$flags{$config} .= " $2";
 			}
 		}
-		$values{'Policy', $a[0]} = $a[2];
+		$values{'Policy', $config} = $expected;
 	}
 	close(INFO);
 	shift @ARGV;
