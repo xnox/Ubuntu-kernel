@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 #
 
-from ktl.workflow                       import Workflow, setStablePhase, setTaggedTimestamp
+from ktl.workflow                       import Workflow
 from ktl.ubuntu                         import Ubuntu
 from ktl.utils                          import date_to_string
+from datetime                           import datetime
 import re
 
 class TrackingBug:
@@ -49,6 +50,17 @@ class TrackingBug:
         description += "For an explanation of the tasks and the associated workflow see:"
         description += " https://wiki.ubuntu.com/Kernel/kernel-sru-workflow\n"
 
+        # Add new properties to the description
+        now = datetime.utcnow()
+        now.replace(tzinfo=None)
+        tstamp = date_to_string(now)
+        ourprops = {}
+        ourprops['kernel-stable-prepare-start'] = tstamp
+        ourprops['kernel-stable-phase'] = 'Prepare'
+        ourprops['kernel-stable-phase-changed'] = tstamp
+        for k in ourprops:
+            description = description + '%s:%s\n' % (k, ourprops[k])
+
         bug = self.lp.create_bug(project='ubuntu', package=package, title=title, description=description)
 
         id = bug.id
@@ -62,11 +74,6 @@ class TrackingBug:
         taglist = wf.initial_tags(package)
         for itag in taglist:
             bug.tags.append(itag)
-
-        # Phase:
-        # Set the key:value pairs in the bug description showing when we started prep
-        setStablePhase(bug, 'Prepare')
-        setTaggedTimestamp(bug, 'kernel-stable-prepare-start')
 
         # Get the one task and modify the status and importance.
         #

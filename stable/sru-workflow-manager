@@ -6,10 +6,10 @@
 from sys                                import argv
 from os                                 import path, popen
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error
+from ktl.utils                          import stdo, error, date_to_string
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
-from ktl.workflow                       import Workflow, setStablePhase, setTaggedTimestamp
+from ktl.workflow                       import Workflow, Properties
 from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
@@ -61,7 +61,7 @@ class Cmdline:
         stdo("                                                                                             \n")
         stdo("        --bugs=<bug list>  Only process the included bugs                                    \n")
         stdo("                                                                                             \n")
-        stdo("        --dryrun         Don't actually change any bugs, just print info.                    \n")
+        stdo("        --dry-run         Don't actually change any bugs, just print info.                   \n")
         stdo("                                                                                             \n")
         stdo("        --config=<cfg file>                                                                  \n")
         stdo("                         The full path to the configuration file to use instead of           \n")
@@ -89,7 +89,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'dryrun', 'bugs=']
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'dry-run', 'bugs=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -99,7 +99,7 @@ class Cmdline:
                 elif (opt == '--verbose'):
                     self.cfg['verbose'] = True
 
-                elif (opt == '--dryrun'):
+                elif (opt == '--dry-run'):
                     self.cfg['dryrun'] = True
 
                 elif opt in ('--config'):
@@ -415,14 +415,13 @@ class Shank(StdApp):
                 self.security_signoff_complete = False
                 self.security_publishing_required = False
 
+                # Initialize the properties object
+                self.props = Properties(bug)
                 #
                 # list any Properties from bug description
                 props = bug.properties
                 for prop in props:
                     self.verbose('    Bug has Property:  %s:%s' % (prop, props[prop]))
-
-                # Now Example! add some
-                #setProperty(bug, 'kernel-stable-release-phase', 'Prepare')
 
                 # We iterate through tasks on a bug but we need access to the other tasks, so first build a list up from of all tasks on this bug
                 # TODO This is a bit sloppy and I should probably build one list and walk it twice.
@@ -512,6 +511,8 @@ class Shank(StdApp):
                 if performReleaseTest:
                     self.perform_release_test()
 
+                # Now flush any property changes to the bug description
+                self.props.flush()
                 self.verbose('--\n')
 
 
@@ -605,6 +606,55 @@ class Shank(StdApp):
         else:
             self.verbose('Task <%s> was already in state <%s>\n' % (taskname, state))
             return False
+
+    # set_tagged_timestamp
+    #
+    """
+    Add the supplied key with a timestamp. We do not replace existing keys
+    """
+    def set_tagged_timestamp(self, taskobj, keyvalue):
+        bug = taskobj.bug
+        if keyvalue in  bug.properties:
+            self.verbose('tagged timestamp <%s> already in the tracking bug, not replacing\n' % keyvalue)
+            return
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Adding tagged timestamp <%s> to tracking bug\n' % keyvalue)
+            return
+        else:
+            self.verbose('Adding tagged timestamp <%s> to tracking bug\n' % keyvalue)
+
+            now = datetime.utcnow()
+            now.replace(tzinfo=None)
+            tstamp = date_to_string(now)
+            props = {keyvalue:tstamp}
+            self.props.set(props)
+
+    # set_stable_phase
+    #
+    """
+    Add the phase we're entering as a 'property',
+    along with a time stamp
+    """
+    def set_stable_phase(self, taskobj, phasetext):
+        bug = taskobj.bug
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Changing stable phase to <%s>\n' % phasetext)
+            return
+        else:
+            self.verbose('Changing stable phase to <%s>\n' % phasetext)
+        # We have to check here to see whether the same status is already set,
+        # or we will overwrite the timestamp needlessly
+        if 'kernel-stable-phase' in taskobj.bug.properties:
+            if taskobj.bug.properties['kernel-stable-phase'] == phasetext:
+                # we already have this one
+                self.verbose('Not overwriting identical phase property\n')
+                return
+        # Add phase and time stamp
+        now = datetime.utcnow()
+        now.replace(tzinfo=None)
+        tstamp = date_to_string(now)
+        props = {'kernel-stable-phase':phasetext, 'kernel-stable-phase-changed':tstamp}
+        self.props.set(props)
 
     def is_prep_pkg_closed(self, taskname):
         if taskname in self.taskbyname:
@@ -838,10 +888,9 @@ class Shank(StdApp):
             # Set promote-to-proposed
             self.set_task_to_state('promote-to-proposed', 'Confirmed')
             # Add time stamp and status
-            bug = taskobj.bug
-            setTaggedTimestamp(bug, 'kernel-stable-prepare-end')
-            setTaggedTimestamp(bug, 'kernel-stable-copy-to-proposed-start')
-            setStablePhase(bug, 'CopyToProposed')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-prepare-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-copy-to-proposed-start')
+            self.set_stable_phase(taskobj, 'CopyToProposed')
         return False
 
     def upload_to_ppa_in_progress(self, taskobj):
@@ -865,14 +914,13 @@ class Shank(StdApp):
         verification-testing to In Progress, add tags to the bugs, and spam with text
         """
         # Add time stamp and status
-        bug = taskobj.bug
-        setTaggedTimestamp(bug, 'kernel-stable-copy-to-proposed-end')
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-copy-to-proposed-end')
         task = self.taskbyname['verification-testing']
         if task.status == 'New':
             if self.set_task_to_state('verification-testing', 'In Progress'):
                 # we did change the state, weren't already in it
-                setTaggedTimestamp(bug, 'kernel-stable-verification-start')
-                setStablePhase(bug, 'Verification')
+                self.set_tagged_timestamp(taskobj, 'kernel-stable-verification-start')
+                self.set_stable_phase(taskobj, 'Verification')
                 # Now tag all bugs verification-needed and spam with a comment
                 # Automate this in the future but for now send an email
                 print self.printlink,
@@ -889,19 +937,18 @@ class Shank(StdApp):
         These are certification-testing, regression-testing, and security-signoff
         """
         # Add time stamp and status
-        bug = taskobj.bug
-        setTaggedTimestamp(bug, 'kernel-stable-verification-end')
-        setStablePhase(bug, 'Testing')
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-verification-end')
+        self.set_stable_phase(taskobj, 'Testing')
 
         if self.taskbyname['certification-testing'].status == 'New':
             self.set_task_to_state('certification-testing', 'Confirmed')
-            setTaggedTimestamp(bug, 'kernel-stable-certification-start')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-certification-start')
         if self.taskbyname['regression-testing'].status == 'New':
             self.set_task_to_state('regression-testing', 'Confirmed')
-            setTaggedTimestamp(bug, 'kernel-stable-qa-start')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-qa-start')
         if self.taskbyname['security-signoff'].status == 'New':
             self.set_task_to_state('security-signoff', 'Confirmed')
-            setTaggedTimestamp(bug, 'kernel-stable-security-signoff-start')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-security-signoff-start')
         return False
 
     def certification_testing_fix_released(self, taskobj):
@@ -911,10 +958,9 @@ class Shank(StdApp):
         If certification-testing-passed then we save the tag and state and trigger
         running of the test to see if we're ready for publishing
         """
-        bug = taskobj.bug
         if 'certification-testing-failed' in self.bugtags:
             self.verbose('Certification tagged as FAIL\n')
-            setTaggedTimestamp(bug, 'kernel-stable-certification-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-certification-end')
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The bug was tagged as certification-testing-failed\n'
             self.send_comment(taskobj, 'Certification FAILURE', msgbody)
@@ -923,7 +969,7 @@ class Shank(StdApp):
             return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
-            setTaggedTimestamp(bug, 'kernel-stable-certification-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-certification-end')
             # TODO send a status.net update?
             self.certification_testing_complete = True
             return True
@@ -945,9 +991,8 @@ class Shank(StdApp):
         We consider the task to be 'done' in that we trigger a release test,
         but we don't check any tags
         """
-        bug = taskobj.bug
         self.certification_testing_complete = True
-        setTaggedTimestamp(bug, 'kernel-stable-certification-end')
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-certification-end')
         return True
 
     def regression_testing_fix_released(self, taskobj):
@@ -957,10 +1002,9 @@ class Shank(StdApp):
         If qa-testing-passed then we save the tag and state and trigger
         running of the test to see if we're ready for publishing
         """
-        bug = taskobj.bug
         if 'qa-testing-failed' in self.bugtags:
             self.verbose('Regression Testing tagged as FAIL\n')
-            setTaggedTimestamp(bug, 'kernel-stable-qa-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-qa-end')
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The bug was tagged as qa-testing-failed\n'
             self.send_comment(taskobj, 'Regression Testing FAILURE', msgbody)
@@ -969,7 +1013,7 @@ class Shank(StdApp):
             return False
         elif 'qa-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
-            setTaggedTimestamp(bug, 'kernel-stable-qa-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-qa-end')
             # TODO send a status.net update?
             self.regression_testing_complete = True
             return True
@@ -990,9 +1034,8 @@ class Shank(StdApp):
         If set to Fix Released, we set a flag to indicate that the package must
         be copied to the -security pocket.
         """
-        bug = taskobj.bug
         self.security_signoff_complete = True
-        setTaggedTimestamp(bug, 'kernel-stable-security-signoff-end')
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-security-signoff-end')
         # Trigger the release test
         return True
 
@@ -1058,6 +1101,7 @@ class Shank(StdApp):
             # one last check for test results
             if 'qa-testing-passed' in self.bugtags and \
                     ('certification-testing-passed' in self.bugtags or self.taskbyname['certification-testing'].status == 'Invalid'):
+                task = self.taskbyname[self.projectname]
                 # we're all good
                 if self.security_publishing_required:
                     self.verbose('Requires publishing to the -security pocket\n')
@@ -1069,13 +1113,12 @@ class Shank(StdApp):
 
                 if self.taskbyname['promote-to-updates'].status == 'New':
                     bug = self.taskbyname['promote-to-updates'].bug
-                    setStablePhase(bug, 'Testing')
+                    self.set_stable_phase(task, 'Testing')
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
-                    setTaggedTimestamp(bug, 'kernel-stable-copy-to-updates-start')
-                    setStablePhase(bug, 'CopyToUpdates')
+                    self.set_tagged_timestamp(task, 'kernel-stable-copy-to-updates-start')
+                    self.set_stable_phase(task, 'CopyToUpdates')
                 # Now send a happy email 
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
-                task = self.taskbyname[self.projectname]
                 #self.send_email(task, 'Package is ready for publication', msgbody)
                 #self.send_status_update(task, 'available for publication.')
                 
@@ -1110,9 +1153,8 @@ class Shank(StdApp):
             print self.printlink,
             print ' Everything is done, setting bug to Fix Released'
             self.set_task_to_state(self.projectname, 'Fix Released')
-            bug = taskobj.bug
-            setTaggedTimestamp(bug, 'kernel-stable-copy-to-updates-end')
-            setStablePhase(bug, 'Released')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-copy-to-updates-end')
+            self.set_stable_phase(taskobj, 'Released')
 
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The package has been published and the bug is being set to Fix Released\n'
