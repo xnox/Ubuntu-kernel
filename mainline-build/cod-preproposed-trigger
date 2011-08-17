@@ -135,5 +135,5 @@ maverick linux master-next linux-meta master
 maverick linux-lbm master
 lucid linux master-next linux-meta master
 lucid linux-lbm master
-hardy linux master linux-meta master
+hardy linux master-next linux-meta master
 EOL

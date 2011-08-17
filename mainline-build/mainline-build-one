@@ -34,6 +34,7 @@ v*-*[0-9]-g*)
 	full_version="${full_version%-*}"
 	full_version="${full_version%-*}"
 	long_abinum="$full_version${long##*-}"
+	log_enabled=1
 	;;
 v*)
 	full_version="${long#v}"

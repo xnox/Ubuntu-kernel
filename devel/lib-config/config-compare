@@ -6,21 +6,60 @@ my %options;
 my @options;
 my %values;
 
-my %experimental;
-if ($ARGV[0] eq '--experimental') {
-	open(EXP, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
-	while (<EXP>) {
+if ($ARGV[0] eq '--required') {
+	open(RQRD, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
+	while (<RQRD>) {
 		chomp;
-		$experimental{$_} = 1;
+
+		if (!defined $options{$_}) {
+			$options{$_} = 1;
+			push(@options, $_);
+		}
 	}
-	close(EXP);
+	close(RQRD);
 	shift @ARGV;
 	shift @ARGV;
 }
 
+my $policy = 1;
+if ($ARGV[0] eq '--no-policy') {
+	$policy = 0;
+	shift @ARGV;
+}
+
+my %flags;
+my %expected;
+my @a;
+
+if ($ARGV[0] eq '--info') {
+	my ($config, $default, $expected, $options, $option, $value);
+	open(INFO, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
+	while (<INFO>) {
+		chomp;
+		($config, $default, $expected, $options) = split(' ', $_, 4);
+		while ($options =~ /\s*(\S+)<(.*?)?>/g) {
+			($option, $value) = ($1, $2);
+			if ($option eq 'flag') {
+				$flags{$config} .= " '''$value'''";
+			} elsif ($option eq 'note') {
+				$flags{$config} .= " $2";
+			}
+		}
+		$values{'Policy', $config} = $expected;
+	}
+	close(INFO);
+	shift @ARGV;
+	shift @ARGV;
+
+} else {
+	$policy = 0;
+}
+
+my @columns = @ARGV;
+
 my $opt;
 my $is;
-for my $column (@ARGV) {
+for my $column (@columns) {
 	open(CONFIG, "<$column") || die "$0: $column: open failed - $!\n";
 	while (<CONFIG>) {
 		chomp;
@@ -45,8 +84,10 @@ for my $column (@ARGV) {
 	close(CONFIG);
 }
 
+push(@columns, "Policy") if ($policy);
+
 print "|| '''Option'''";
-for my $column (@ARGV) {
+for my $column (@columns) {
 	print " || '''$column'''";
 }
 print " || '''Comments''' ||\n";
@@ -57,7 +98,7 @@ for my $option (@options) {
 	$all = '';
 	$cmt = '';
 	print "|| $option";
-	for my $column (@ARGV) {
+	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
 		print " || $is";
@@ -68,11 +109,13 @@ for my $option (@options) {
 			}
 		}
 	}
-	if ($all eq '-') {
+	if ($all eq '') {
+		$cmt .= " '''GONE'''";
+	} elsif ($all eq '-') {
 		$cmt .= " '''Inconsistent'''";
 	}
-	if ($experimental{$option}) {
-		$cmt .= " '''EXPERIMENTAL'''";
+	if ($flags{$option}) {
+		$cmt .= $flags{$option};
 	}
 	print " || $cmt ||\n";
 }

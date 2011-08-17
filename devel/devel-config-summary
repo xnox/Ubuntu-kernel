@@ -20,15 +20,29 @@ next="$2"
 
 (
 	cd "$current" || exit 1
-	"$here/lib-config/devel-config-experimental" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-depends-on" \
+		"CONFIG_EXPERIMENTAL" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-depends-on" \
+		"CONFIG_STAGING" >"CONFIGS-staging"
 	"$here/lib-config/devel-config-defaults" >"CONFIGS-defaults"
-	#fakeroot debian/rules genconfigs
+
+	"$here/lib-config/devel-config-tag" \
+		"CONFIGS-defaults" "CONFIGS-experimental" "CONFIGS-staging" \
+		"$here/OVERRIDES" >"CONFIGS-info"
 )
 
 (
 	cd "$next" || exit 1
-	"$here/lib-config/devel-config-experimental" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-depends-on" \
+		"CONFIG_EXPERIMENTAL" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-depends-on" \
+		"CONFIG_STAGING" >"CONFIGS-staging"
 	"$here/lib-config/devel-config-defaults" >"CONFIGS-defaults"
+
+	"$here/lib-config/devel-config-tag" \
+		"CONFIGS-defaults" "CONFIGS-experimental" "CONFIGS-staging" \
+		"$here/OVERRIDES" >"CONFIGS-info"
+
 	fakeroot debian/rules genconfigs >/dev/null 2>&1
 	fakeroot debian/rules genportsconfigs >/dev/null 2>&1
 )

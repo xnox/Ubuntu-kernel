@@ -7,10 +7,10 @@ case "$here" in
 esac
 
 if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <experimental> <defaults> <config directory>" 1>&2
+	echo "Usage: $0 <info> <defaults> <config directory>" 1>&2
 	exit 1
 fi
-experimental="$1"
+info="$1"
 defaults="$2"
 configs="$3"
 
@@ -38,7 +38,10 @@ function rebuild() {
 	done
 }
 function config-cmp() {
-	(cd tmp; "$here/config-compare" --experimental "../$experimental" *)
+	(cd tmp; "$here/config-compare" --info "../$info" *)
+}
+function config-cmp-nopolicy() {
+	(cd tmp; "$here/config-compare" --no-policy --info "../$info" *)
 }
 
 what='_FS[ =]'
@@ -97,12 +100,28 @@ echo "$level HID Drivers $level"
 config-cmp $cmp
 echo ""
 
+what='CONFIG_SENSORS_'
+rebuild "$what"
+
+echo ""
+echo "$level Sensor Drivers $level"
+config-cmp $cmp
+echo ""
+
+what='CONFIG_NETFILTER_XT_'
+rebuild "$what"
+
+echo ""
+echo "$level Netfilter Match/Targets $level"
+config-cmp $cmp
+echo ""
+
 rebuild ""
 awk '/m$/ { print $1 "=m" }' <"$defaults" >"tmp/000-MODULES"
 
 echo ""
 echo "$level Non-modular modules $level"
-config-cmp $cmp | \
+config-cmp-nopolicy $cmp | \
 	awk '
 		($4 != "-")	{
 					printf("%s", $1 " " $2)
