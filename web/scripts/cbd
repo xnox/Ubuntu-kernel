@@ -242,6 +242,16 @@ class CollectRegressionsData(StdApp):
             #-------------------------------------------------------------------------------------------
             #
             projects_of_interest = bugs_db['lp']['projects']
+            if 'task-status' in bugs_db['lp']:
+                search_status          = bugs_db['lp']['task-status']
+            else:
+                search_status          = ["New","Incomplete","Confirmed","Triaged","In Progress"] # A list of the bug statuses that we care about
+
+            if 'bug-tags-combinator' in bugs_db['lp']:
+                search_tags_combinator = bugs_db['lp']['bug-tags-combinator']
+            else:
+                search_tags_combinator = "Any"
+
             for project in projects_of_interest:
 
                 #
@@ -252,17 +262,6 @@ class CollectRegressionsData(StdApp):
                     raise
 
                 self.verbose('%s (%s)\n' % (project, lp_project.name))
-
-                # Searching for bug tasks, the search can be quite complicated and made up
-                # of several components. The following can be combined in many ways to get
-                # the search you want. The search happens on the server and returns a
-                # collection of bug tasks that match the search criteria.
-                #
-                # tasks = pkg.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator,
-                #                          status=self.cfg['task_search_status'], modified_since=search_since)
-                #
-                search_tags_combinator = "Any"
-                search_status          = ["New","Incomplete","Confirmed","Triaged","In Progress"] # A list of the bug statuses that we care about
 
                 try:
                     self.verbose(" . Searching ...")

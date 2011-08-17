@@ -23,6 +23,8 @@
 
 [TOPIC] Release Metrics and Incoming Bugs (ogasawara)
 
+[TOPIC] <insert milestone> Work Items
+
 [TOPIC] Blueprints: Oneiric Delta Review (ogasawara)
 [LINK] https://blueprints.launchpad.net/ubuntu/+spec/other-kernel-o-ubuntu-delta-review
 
@@ -33,14 +35,9 @@
 
 [TOPIC] Status: CVEs (apw)
 
-[TOPIC] Status: Stable Kernel Team (sconklin)
-
-[TOPIC] Security & bugfix kernels - Maverick/Lucid/Hardy (sconklin)
+[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Natty/Maverick/Lucid/Hardy (sconklin)
 
 [TOPIC] Open Discussion or Questions: Raise your hand to be recognized (o/)
-[TOPIC] Blueprints: Oneiric Bug Handling
-[LINK] https://blueprints.launchpad.net/ubuntu/+spec/other-kernel-o-bug-handling
-
 
 thanks everyone
 #endmeeting
