@@ -966,6 +966,7 @@ class Shank(StdApp):
             self.send_comment(taskobj, 'Certification FAILURE', msgbody)
             # stop further processing by this bot
             self.set_task_to_state(self.projectname, 'Incomplete')
+            self.set_stable_phase(taskobj, 'TestFail')
             return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
@@ -978,10 +979,8 @@ class Shank(StdApp):
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The certification-testing task was set to Fix Released but neither the certification-testing-passed or certification-testing-failed tag was applied\n'
             self.send_comment(taskobj, 'Certification completed but no status tags applied', msgbody)
-            # reset task state so Certification team fix it
-            self.set_task_to_state('certification-testing', 'Confirmed')
-            # stop further processing by this bot
-            self.set_task_to_state(self.projectname, 'Incomplete')
+            # reset task state so Certification team fixes it
+            self.set_task_to_state('certification-testing', 'Incomplete')
             return False
 
     def certification_testing_invalid(self, taskobj):
@@ -1010,6 +1009,7 @@ class Shank(StdApp):
             self.send_comment(taskobj, 'Regression Testing FAILURE', msgbody)
             # stop further processing by this bot
             self.set_task_to_state(self.projectname, 'Incomplete')
+            self.set_stable_phase(taskobj, 'TestFail')
             return False
         elif 'qa-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
@@ -1023,9 +1023,10 @@ class Shank(StdApp):
             msgbody = 'The regression-testing task was set to Fix Released but neither the qa-testing-passed or qa-testing-failed tag was applied\n'
             self.send_comment(taskobj, 'Regression Testing completed but no status tags applied', msgbody)
             # reset task so QA team can fix it
-            self.set_task_to_state('regression-testing', 'Confirmed')
+            self.set_task_to_state('regression-testing', 'Incomplete')
             # stop further processing by this bot
             self.set_task_to_state(self.projectname, 'Incomplete')
+            self.set_stable_phase(taskobj, 'OnHold')
             return False
 
     def security_signoff_finished(self, taskobj):
@@ -1135,7 +1136,7 @@ class Shank(StdApp):
                 self.send_comment(self.taskbyname[self.projectname], 'Test completion tags not found during release test', msgbody)
                 # stop further processing by this bot
                 self.set_task_to_state(self.projectname, 'Incomplete')
-    
+                self.set_stable_phase(task, 'OnHold')
         # this method is not associated with a task state transition so no status returned
         return 
 
