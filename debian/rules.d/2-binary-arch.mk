@@ -360,7 +360,8 @@ endif
 
 $(stampdir)/stamp-build-perarch: prepare-perarch
 ifeq ($(do_tools),true)
-	cd $(builddir)/tools-$*/tools/perf && make $(CROSS_COMPILE)
+	cd $(builddir)/tools-$*/tools/perf && \
+		make HAVE_CPLUS_DEMANGLE=1 $(CROSS_COMPILE)
 endif
 	@touch $@
 
