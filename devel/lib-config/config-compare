@@ -74,7 +74,9 @@ for my $option (@options) {
 			}
 		}
 	}
-	if ($all eq '-') {
+	if ($all eq '') {
+		$cmt .= " '''GONE'''";
+	} elsif ($all eq '-') {
 		$cmt .= " '''Inconsistent'''";
 	}
 	if ($flags{$option}) {
