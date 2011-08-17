@@ -25,6 +25,10 @@ next="$2"
 	"$here/lib-config/devel-config-depends-on" \
 		"CONFIG_STAGING" >"CONFIGS-staging"
 	"$here/lib-config/devel-config-defaults" >"CONFIGS-defaults"
+
+	"$here/lib-config/devel-config-tag" \
+		"CONFIGS-defaults" "CONFIGS-experimental" "CONFIGS-staging" \
+		>"CONFIGS-info"
 )
 
 (
@@ -34,6 +38,11 @@ next="$2"
 	"$here/lib-config/devel-config-depends-on" \
 		"CONFIG_STAGING" >"CONFIGS-staging"
 	"$here/lib-config/devel-config-defaults" >"CONFIGS-defaults"
+
+	"$here/lib-config/devel-config-tag" \
+		"CONFIGS-defaults" "CONFIGS-experimental" "CONFIGS-staging" \
+		>"CONFIGS-info"
+
 	fakeroot debian/rules genconfigs >/dev/null 2>&1
 	fakeroot debian/rules genportsconfigs >/dev/null 2>&1
 )

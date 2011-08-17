@@ -1,0 +1,43 @@
+#!/usr/bin/perl
+
+use strict;
+
+if ($#ARGV != 2) {
+	die "Usage: $0 <defaults> <experimental> <staging>\n";
+}
+
+my ($defaults, $experimental, $staging) = @ARGV;
+my %options;
+
+my ($option, $rest);
+open(DEFAULTS, "<$defaults") || die "$0: $defaults: open failed - $!\n";
+while (<DEFAULTS>) {
+	chomp;
+
+	($option, $rest) = split(' ', $_, 2);
+
+	$options{$option} = $rest;
+}
+close(DEFAULTS);
+
+open(EXPERIMENTAL, "<$experimental") ||
+	die "$0: $experimental: open failed - $!\n";
+while (<EXPERIMENTAL>) {
+	chomp;
+
+	$options{$_} .= " flag:EXPERIMENTAL";
+}
+close(EXPERIMENTAL);
+
+open(STAGING, "<$staging") ||
+	die "$0: $staging: open failed - $!\n";
+while (<STAGING>) {
+	chomp;
+
+	$options{$_} .= " flag:STAGING";
+}
+close(STAGING);
+
+foreach my $key (sort keys %options) {
+	print "$key $options{$key}\n";
+}
