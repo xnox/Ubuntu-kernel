@@ -7,10 +7,10 @@ case "$here" in
 esac
 
 if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <experimental> <defaults> <config directory>" 1>&2
+	echo "Usage: $0 <info> <defaults> <config directory>" 1>&2
 	exit 1
 fi
-experimental="$1"
+info="$1"
 defaults="$2"
 configs="$3"
 
@@ -38,7 +38,7 @@ function rebuild() {
 	done
 }
 function config-cmp() {
-	(cd tmp; "$here/config-compare" --experimental "../$experimental" *)
+	(cd tmp; "$here/config-compare" --info "../$info" *)
 }
 
 what='_FS[ =]'

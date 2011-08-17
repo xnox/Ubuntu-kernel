@@ -6,14 +6,20 @@ my %options;
 my @options;
 my %values;
 
-my %experimental;
-if ($ARGV[0] eq '--experimental') {
-	open(EXP, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
-	while (<EXP>) {
+my %flags;
+my @a;
+if ($ARGV[0] eq '--info') {
+	open(INFO, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
+	while (<INFO>) {
 		chomp;
-		$experimental{$_} = 1;
+		@a = split(' ');
+		for my $a (@a) {
+			if ($a =~ /^flag:(.*)/) {
+				$flags{$a[0]} .= " '''$1'''";
+			}
+		}
 	}
-	close(EXP);
+	close(INFO);
 	shift @ARGV;
 	shift @ARGV;
 }
@@ -71,8 +77,8 @@ for my $option (@options) {
 	if ($all eq '-') {
 		$cmt .= " '''Inconsistent'''";
 	}
-	if ($experimental{$option}) {
-		$cmt .= " '''EXPERIMENTAL'''";
+	if ($flags{$option}) {
+		$cmt .= $flags{$option};
 	}
 	print " || $cmt ||\n";
 }
