@@ -6,10 +6,11 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-from="$1"
-to="$2"
-defaults="$3"
-configs="$4"
+which="$1"
+from="$2"
+to="$3"
+defaults="$4"
+configs="$5"
 
 all=`ls -1 "$configs"`
 #cmp=''
@@ -77,6 +78,6 @@ diff -u "$from" "$to" | \
 		esac
 	done >"tmp/Policy"
 
-echo "$level No longer EXPERIMENTAL $level"
+echo "$level No longer $which $level"
 config-cmp Policy
 echo ""
