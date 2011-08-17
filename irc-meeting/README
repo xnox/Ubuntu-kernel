@@ -6,6 +6,12 @@ that I do.
    after the #endmeeting and paste that into a file. I usually
    name this file todays-date.txt.
 
+1b. Note: If the meetingology bot was in the channel, it records the
+    minutes in moin format and pastes an url upon #endmeeting.  eg.
+    http://ubottu.com/meetingology/logs/ubuntu-meeting/2011/ubuntu-meeting.2011-08-16-17.00.moin.txt
+    So you can skip steps 2, 3, and 4 by copying and pasting the above
+    moin.txt into https://wiki.ubuntu.com/KernelTeam/Meeting/YYYY-MM-DD
+
 2. Run: irc2moin < todays-date.txt > todays-date.moin
 
 3. Hand edit todays-date.moin to remove the nicks from the beginning
