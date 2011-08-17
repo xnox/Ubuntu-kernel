@@ -20,12 +20,18 @@ while (<DEFAULTS>) {
 }
 close(DEFAULTS);
 
+my @a;
 open(EXPERIMENTAL, "<$experimental") ||
 	die "$0: $experimental: open failed - $!\n";
 while (<EXPERIMENTAL>) {
 	chomp;
 
-	$options{$_} .= " flag:EXPERIMENTAL";
+	@a = split(' ', $options{$_});
+	# We default EXPERIMENTAL options off by default.
+	@a[1] = 'n';
+	push(@a, "flag:EXPERIMENTAL");
+
+	$options{$_} = join(' ', @a);
 }
 close(EXPERIMENTAL);
 
