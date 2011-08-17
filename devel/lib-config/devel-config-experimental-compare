@@ -60,6 +60,9 @@ pattern=`
 		done | \
 		sed -e 's/^|/(/' -e 's/$/)[ =]/'
 `
+if [ "$pattern" = "" ]; then
+	pattern="nothing-to-see-here"
+fi
 rebuild "$pattern"
 
 diff -u "$from" "$to" | \
@@ -68,7 +71,7 @@ diff -u "$from" "$to" | \
 	sed -e 's/^-//' | \
 	while read C
 	do
-		egrep "^$C " "$defaults"
+		egrep "^$C " "$defaults" || echo "$C - -"
 	done | \
 	while read conf default expected
 	do
