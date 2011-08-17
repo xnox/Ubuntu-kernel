@@ -1,11 +1,11 @@
-CONFIG_ADFS_FS m
-CONFIG_AFFS_FS m
-CONFIG_AFS_FS m
-CONFIG_AUFS_FS m
-CONFIG_BEFS_FS m
-CONFIG_BFS_FS m
-CONFIG_BTRFS_FS m
-CONFIG_CEPH_FS m
-CONFIG_EFS_FS m
-CONFIG_HFS_FS m
-CONFIG_NILFS2_FS m
+CONFIG_ADFS_FS m note<FSs are opt-in>
+CONFIG_AFFS_FS m note<FSs are opt-in>
+CONFIG_AFS_FS m note<FSs are opt-in>
+CONFIG_AUFS_FS m note<FSs are opt-in>
+CONFIG_BEFS_FS m note<FSs are opt-in>
+CONFIG_BFS_FS m note<FSs are opt-in>
+CONFIG_BTRFS_FS m note<FSs are opt-in>
+CONFIG_CEPH_FS m note<FSs are opt-in>
+CONFIG_EFS_FS m note<FSs are opt-in>
+CONFIG_HFS_FS m note<FSs are opt-in>
+CONFIG_NILFS2_FS m note<FSs are opt-in>
