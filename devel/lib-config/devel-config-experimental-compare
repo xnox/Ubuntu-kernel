@@ -9,7 +9,7 @@ esac
 which="$1"
 from="$2"
 to="$3"
-defaults="$4"
+info="$4"
 configs="$5"
 
 all=`ls -1 "$configs"`
@@ -36,16 +36,17 @@ function rebuild() {
 	done
 }
 function config-cmp() {
-	call=""
+	opts=''
 	if [ -f tmp/.required ]; then
-		call="$call --required .required"
+		opts="$opts --required .required"
 	fi
+	call=''
 	for i in $all
 	do
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
 		call="$call $out"
 	done
-	(cd tmp; "$here/config-compare" $call "$@")
+	(cd tmp; "$here/config-compare" $opts --info "../$info" $call "$@")
 }
 
 pattern=`
@@ -55,9 +56,9 @@ pattern=`
 		sed -e 's/^-//' | \
 		while read C
 		do
-			egrep "^$C " "$defaults"
+			egrep "^$C " "$info"
 		done | \
-		while read conf default expected
+		while read conf default expected options
 		do
 			echo -n "|$conf"
 		done | \
