@@ -40,6 +40,9 @@ function rebuild() {
 function config-cmp() {
 	(cd tmp; "$here/config-compare" --info "../$info" *)
 }
+function config-cmp-nopolicy() {
+	(cd tmp; "$here/config-compare" --no-policy --info "../$info" *)
+}
 
 what='_FS[ =]'
 rebuild "$what"
@@ -118,7 +121,7 @@ awk '/m$/ { print $1 "=m" }' <"$defaults" >"tmp/000-MODULES"
 
 echo ""
 echo "$level Non-modular modules $level"
-config-cmp $cmp | \
+config-cmp-nopolicy $cmp | \
 	awk '
 		($4 != "-")	{
 					printf("%s", $1 " " $2)
