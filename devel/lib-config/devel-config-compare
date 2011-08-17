@@ -97,6 +97,22 @@ echo "$level HID Drivers $level"
 config-cmp $cmp
 echo ""
 
+what='CONFIG_SENSORS_'
+rebuild "$what"
+
+echo ""
+echo "$level Sensor Drivers $level"
+config-cmp $cmp
+echo ""
+
+what='CONFIG_NETFILTER_XT_'
+rebuild "$what"
+
+echo ""
+echo "$level Netfilter Match/Targets $level"
+config-cmp $cmp
+echo ""
+
 rebuild ""
 awk '/m$/ { print $1 "=m" }' <"$defaults" >"tmp/000-MODULES"
 
