@@ -219,7 +219,7 @@ code {
 
 .status-new           { font-weight: bold; color: #000000; }
 .status-incomplete    { font-weight: bold; color: #ff0000; }
-.status-confirmed     { font-weight: bold; color: #000000; }
+.status-confirmed     { font-weight: bold; color: #808000; }
 .status-triaged       { font-weight: bold; color: #008000; }
 .status-in_progress   { font-weight: bold; color: #ff00ff; }
 .status-fix_committed { font-weight: bold; color: #0000a0; }
