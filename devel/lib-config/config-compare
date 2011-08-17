@@ -50,6 +50,9 @@ if ($ARGV[0] eq '--info') {
 	close(INFO);
 	shift @ARGV;
 	shift @ARGV;
+
+} else {
+	$policy = 0;
 }
 
 my @columns = @ARGV;
