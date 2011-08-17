@@ -6,6 +6,21 @@ my %options;
 my @options;
 my %values;
 
+if ($ARGV[0] eq '--required') {
+	open(RQRD, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
+	while (<RQRD>) {
+		chomp;
+
+		if (!defined $options{$_}) {
+			$options{$_} = 1;
+			push(@options, $_);
+		}
+	}
+	close(RQRD);
+	shift @ARGV;
+	shift @ARGV;
+}
+
 my $policy = 1;
 if ($ARGV[0] eq '--no-policy') {
 	$policy = 0;

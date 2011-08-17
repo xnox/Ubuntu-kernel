@@ -28,6 +28,7 @@ level='===='
 function rebuild() {
 	local what="$1"
 	local out
+	rm -f tmp/.required
 	for i in $all
 	do
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
@@ -36,6 +37,9 @@ function rebuild() {
 }
 function config-cmp() {
 	call=""
+	if [ -f tmp/.required ]; then
+		call="$call --required .required"
+	fi
 	for i in $all
 	do
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
@@ -43,7 +47,6 @@ function config-cmp() {
 	done
 	(cd tmp; "$here/config-compare" $call "$@")
 }
-
 
 pattern=`
 	diff -u "$from" "$to" | \
@@ -64,6 +67,12 @@ if [ "$pattern" = "" ]; then
 	pattern="nothing-to-see-here"
 fi
 rebuild "$pattern"
+
+diff -u "$from" "$to" | \
+	grep ^-C | \
+	sort -u | \
+	sed -e 's/^-//' >tmp/.required
+
 
 echo "$level No longer $which $level"
 config-cmp
