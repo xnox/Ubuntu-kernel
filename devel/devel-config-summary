@@ -20,14 +20,19 @@ next="$2"
 
 (
 	cd "$current" || exit 1
-	"$here/lib-config/devel-config-experimental" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-depends-on" \
+		"CONFIG_EXPERIMENTAL" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-depends-on" \
+		"CONFIG_STAGING" >"CONFIGS-staging"
 	"$here/lib-config/devel-config-defaults" >"CONFIGS-defaults"
-	#fakeroot debian/rules genconfigs
 )
 
 (
 	cd "$next" || exit 1
-	"$here/lib-config/devel-config-experimental" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-depends-on" \
+		"CONFIG_EXPERIMENTAL" >"CONFIGS-experimental"
+	"$here/lib-config/devel-config-depends-on" \
+		"CONFIG_STAGING" >"CONFIGS-staging"
 	"$here/lib-config/devel-config-defaults" >"CONFIGS-defaults"
 	fakeroot debian/rules genconfigs >/dev/null 2>&1
 	fakeroot debian/rules genportsconfigs >/dev/null 2>&1
