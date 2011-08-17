@@ -58,22 +58,6 @@ pattern=`
 `
 rebuild "$pattern"
 
-diff -u "$from" "$to" | \
-	grep ^+C | \
-	sort -u | \
-	sed -e 's/^+//' | \
-	while read conf default expected
-	do
-		exp=`grep -c "^$conf$" "$experimental"`
-		if [ "$exp" -ne 0 ]; then
-			expected='n'
-		fi
-		case "$expected" in
-		n)	echo "# $conf is not set" ;;
-		*)	echo "$conf=$expected" ;;
-		esac
-	done >"tmp/Policy"
-
 echo "$level New Options $level"
-config-cmp Policy
+config-cmp
 echo ""

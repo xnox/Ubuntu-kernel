@@ -6,8 +6,16 @@ my %options;
 my @options;
 my %values;
 
+my $policy = 1;
+if ($ARGV[0] eq '--no-policy') {
+	$policy = 0;
+	shift @ARGV;
+}
+
 my %flags;
+my %expected;
 my @a;
+
 if ($ARGV[0] eq '--info') {
 	open(INFO, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
 	while (<INFO>) {
@@ -18,15 +26,18 @@ if ($ARGV[0] eq '--info') {
 				$flags{$a[0]} .= " '''$1'''";
 			}
 		}
+		$values{'Policy', $a[0]} = $a[2];
 	}
 	close(INFO);
 	shift @ARGV;
 	shift @ARGV;
 }
 
+my @columns = @ARGV;
+
 my $opt;
 my $is;
-for my $column (@ARGV) {
+for my $column (@columns) {
 	open(CONFIG, "<$column") || die "$0: $column: open failed - $!\n";
 	while (<CONFIG>) {
 		chomp;
@@ -51,8 +62,10 @@ for my $column (@ARGV) {
 	close(CONFIG);
 }
 
+push(@columns, "Policy") if ($policy);
+
 print "|| '''Option'''";
-for my $column (@ARGV) {
+for my $column (@columns) {
 	print " || '''$column'''";
 }
 print " || '''Comments''' ||\n";
@@ -63,7 +76,7 @@ for my $option (@options) {
 	$all = '';
 	$cmt = '';
 	print "|| $option";
-	for my $column (@ARGV) {
+	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
 		print " || $is";

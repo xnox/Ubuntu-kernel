@@ -65,22 +65,6 @@ if [ "$pattern" = "" ]; then
 fi
 rebuild "$pattern"
 
-diff -u "$from" "$to" | \
-	grep ^-C | \
-	sort -u | \
-	sed -e 's/^-//' | \
-	while read C
-	do
-		egrep "^$C " "$defaults" || echo "$C - -"
-	done | \
-	while read conf default expected
-	do
-		case "$expected" in
-		n)	echo "# $conf is not set" ;;
-		*)	echo "$conf=$expected" ;;
-		esac
-	done >"tmp/Policy"
-
 echo "$level No longer $which $level"
-config-cmp Policy
+config-cmp
 echo ""
