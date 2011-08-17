@@ -51,6 +51,8 @@ open(OVERRIDES, "<$overrides") ||
 while (<OVERRIDES>) {
 	chomp;
 
+	next if ($_ =~ /^$/ || $_ =~ /^#/);
+
 	@ea = split(' ');
 
 	@oa = split(' ', $options{$ea[0]});
