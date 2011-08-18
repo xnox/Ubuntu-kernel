@@ -25,6 +25,11 @@ CONFIG_AGP_INTEL y note<not autoloadable>
 CONFIG_AGP_VIA y note<not autoloadable>
 CONFIG_AGP_AMD y note<not autoloadable>
 CONFIG_AGP_NVIDIA y note<not autoloadable>
+#  cpu governers:
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE y note<not autoloadable>
+CONFIG_CPU_FREQ_GOV_ONDEMAND y note<not autoloadable>
+CONFIG_CPU_FREQ_GOV_POWERSAVE y note<not autoloadable>
+CONFIG_CPU_FREQ_GOV_USERSPACE y note<not autoloadable>
 
 # Boot essential items are always =y
 #  subsystems:
