@@ -19,5 +19,21 @@ CONFIG_EXT4_FS y note<default filesystem>
 CONFIG_FUSE_FS y note<not autoloadable>
 
 # Boot essential items are always =y
+#  subsystems:
 CONFIG_ATA y note<boot essential>
 CONFIG_USB y note<boot essential>
+#  network protocols:
+CONFIG_UNIX y note<boot essential>
+# IPv6 packets trigger auto-loading of this module and it is easy to trigger
+# a DOS unless this is builtin.  It is also a critical protocol going forward
+# and will become boot essential.
+CONFIG_IPV6 y note<boot essential>
+
+# EXPERIMENTAL Network protocols are generally enabled to allow testing.
+CONFIG_ECONET m note<network protocol -- opt-in>
+CONFIG_IEEE802154 m note<network protocol -- opt-in>
+CONFIG_LAPB m note<network protocol -- opt-in>
+CONFIG_NET_DSA m note<network protocol -- opt-in>
+CONFIG_RDS m note<network protocol -- opt-in>
+CONFIG_TIPC m note<network protocol -- opt-in>
+CONFIG_X25 m note<network protocol -- opt-in>
