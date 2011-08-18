@@ -45,6 +45,8 @@ next="$2"
 
 	fakeroot debian/rules genconfigs >/dev/null 2>&1
 	fakeroot debian/rules genportsconfigs >/dev/null 2>&1
+
+	rm -f CONFIGS/ppc64-*
 )
 
 "$here/devel-config-summary-report" "$current" "$next"
