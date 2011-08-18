@@ -36,6 +36,9 @@ while (<EXPERIMENTAL>) {
 
 	if ($_ =~ /^CONFIG_SENSORS_/ && $oa[2] eq 'm') {
 		($mode, $note) = ('m', "sensors are opt-in");
+
+	} elsif ($_ =~ /^CONFIG_[^_]*_FS$/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "filesystems are opt-in");
 	}
 
 	@oa[2] = $mode;

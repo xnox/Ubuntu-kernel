@@ -1,16 +1,3 @@
-# EXPERIMENTAL filesystems are generally enabled to allow testing.
-CONFIG_ADFS_FS m note<FSs are opt-in>
-CONFIG_AFFS_FS m note<FSs are opt-in>
-CONFIG_AFS_FS m note<FSs are opt-in>
-CONFIG_AUFS_FS m note<FSs are opt-in>
-CONFIG_BEFS_FS m note<FSs are opt-in>
-CONFIG_BFS_FS m note<FSs are opt-in>
-CONFIG_BTRFS_FS m note<FSs are opt-in>
-CONFIG_CEPH_FS m note<FSs are opt-in>
-CONFIG_EFS_FS m note<FSs are opt-in>
-CONFIG_HFS_FS m note<FSs are opt-in>
-CONFIG_NILFS2_FS m note<FSs are opt-in>
-
 # Default filesystems are generally built-in
 CONFIG_EXT3_FS y note<default filesystem>
 CONFIG_EXT4_FS y note<default filesystem>
