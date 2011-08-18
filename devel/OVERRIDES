@@ -16,7 +16,15 @@ CONFIG_EXT3_FS y note<default filesystem>
 CONFIG_EXT4_FS y note<default filesystem>
 
 # Some modules have no clear way to autoload them.
+#  filesystems:
 CONFIG_FUSE_FS y note<not autoloadable>
+#  AGP drivers:
+CONFIG_AGP y note<not autoloadable>
+CONFIG_AGP_AMD64 y note<not autoloadable>
+CONFIG_AGP_INTEL y note<not autoloadable>
+CONFIG_AGP_VIA y note<not autoloadable>
+CONFIG_AGP_AMD y note<not autoloadable>
+CONFIG_AGP_NVIDIA y note<not autoloadable>
 
 # Boot essential items are always =y
 #  subsystems:
