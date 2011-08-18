@@ -67,16 +67,6 @@ CONFIG_PATA_ACPI y note<boot essential on i386/amd64>
 CONFIG_PATA_SIS y note<boot essential on i386/amd64>
 CONFIG_SATA_SVW y note<boot essential on powerpc>
 
-# EXPERIMENTAL ATA controllers are generally enabled to allow testing.
-CONFIG_PATA_CYPRESS m note<ATA driver -- opt-in>
-CONFIG_PATA_IT8213 m note<ATA driver -- opt-in>
-CONFIG_PATA_LEGACY m note<ATA driver -- opt-in>
-CONFIG_PATA_OPTIDMA m note<ATA driver -- opt-in>
-CONFIG_PATA_RADISYS m note<ATA driver -- opt-in>
-CONFIG_SATA_SX4 m note<ATA driver -- opt-in>
-CONFIG_PATA_CS5535 m note<ATA driver -- opt-in>
-CONFIG_PATA_WINBOND_VLB m note<ATA driver -- opt-in>
-
 # EXPERIMENTAL input controllers are generally enabled to allow testing.
 CONFIG_INPUT_CM109 m note<input driver -- opt-in>
 CONFIG_INPUT_KEYSPAN_REMOTE m note<input driver -- opt-in>
