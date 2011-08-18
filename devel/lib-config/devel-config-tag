@@ -22,15 +22,25 @@ while (<DEFAULTS>) {
 close(DEFAULTS);
 
 my @oa;
+my ($note, $mode);
 open(EXPERIMENTAL, "<$experimental") ||
 	die "$0: $experimental: open failed - $!\n";
 while (<EXPERIMENTAL>) {
 	chomp;
 
 	@oa = split(' ', $options{$_});
+
 	# We default EXPERIMENTAL options off by default.
-	@oa[2] = 'n';
+	$mode = 'n';
+	$note = '';
+
+	if ($_ =~ /^CONFIG_SENSORS_/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "sensors are opt-in");
+	}
+
+	@oa[2] = $mode;
 	push(@oa, "flag<EXPERIMENTAL>");
+	push(@oa, "note<$note>") if ($note);
 
 	$options{$_} = join(' ', @oa);
 }
