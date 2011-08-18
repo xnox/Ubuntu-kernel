@@ -17,3 +17,7 @@ CONFIG_EXT4_FS y note<default filesystem>
 
 # Some modules have no clear way to autoload them.
 CONFIG_FUSE_FS y note<not autoloadable>
+
+# Boot essential items are always =y
+CONFIG_ATA y note<boot essential>
+CONFIG_USB y note<boot essential>
