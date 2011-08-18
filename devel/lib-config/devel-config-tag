@@ -48,6 +48,9 @@ while (<EXPERIMENTAL>) {
 
 	} elsif ($_ =~ /^CONFIG_NETFILTER_XT_/ && $oa[2] eq 'm') {
 		($mode, $note) = ('m', "netfilter targets are opt-in");
+
+	} elsif ($_ =~ /^CONFIG_HID_/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "HID drivers are opt-in");
 	}
 
 	$oa[2] = $mode;
