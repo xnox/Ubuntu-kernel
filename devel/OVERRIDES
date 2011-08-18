@@ -56,6 +56,13 @@ CONFIG_IPV6 y note<boot essential>
 CONFIG_INPUT_EVDEV y note<boot essential>
 CONFIG_INPUT_MOUSEDEV y note<boot essential>
 CONFIG_INPUT_UINPUT y note<boot essential>
+#  ACPI drivers
+CONFIG_ACPI_AC y note<boot essential>
+CONFIG_ACPI_BATTERY y note<boot essential>
+CONFIG_ACPI_BUTTON y note<boot essential>
+CONFIG_ACPI_FAN y note<boot essential>
+CONFIG_ACPI_PROCESSOR y note<boot essential>
+CONFIG_ACPI_THERMAL y note<boot essential>
 
 # EXPERIMENTAL Network protocols are generally enabled to allow testing.
 CONFIG_ECONET m note<network protocol -- opt-in>
