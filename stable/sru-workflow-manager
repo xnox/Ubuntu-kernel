@@ -637,11 +637,6 @@ class Shank(StdApp):
     """
     def set_stable_phase(self, taskobj, phasetext):
         bug = taskobj.bug
-        if 'dryrun' in self.cfg:
-            self.verbose('Dryrun - Changing stable phase to <%s>\n' % phasetext)
-            return
-        else:
-            self.verbose('Changing stable phase to <%s>\n' % phasetext)
         # We have to check here to see whether the same status is already set,
         # or we will overwrite the timestamp needlessly
         if 'kernel-stable-phase' in taskobj.bug.properties:
@@ -649,6 +644,12 @@ class Shank(StdApp):
                 # we already have this one
                 self.verbose('Not overwriting identical phase property\n')
                 return
+        # Handle dryrun mode
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Changing stable phase to <%s>\n' % phasetext)
+            return
+        else:
+            self.verbose('Changing stable phase to <%s>\n' % phasetext)
         # Add phase and time stamp
         now = datetime.utcnow()
         now.replace(tzinfo=None)
