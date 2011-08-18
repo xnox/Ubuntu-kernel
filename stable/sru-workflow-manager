@@ -937,8 +937,13 @@ class Shank(StdApp):
         These are certification-testing, regression-testing, and security-signoff
         """
         # Add time stamp and status
-        self.set_tagged_timestamp(taskobj, 'kernel-stable-verification-end')
-        self.set_stable_phase(taskobj, 'Testing')
+        if ((self.taskbyname['certification-testing'].status != 'Fix Released' and
+             self.taskbyname['certification-testing'].status != 'Invalid') or
+            (self.taskbyname['security-signoff'].status != 'Fix Released' and
+             self.taskbyname['security-signoff'].status != 'Invalid') or
+            self.taskbyname['regression-testing'].status != 'Fix Released'):
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-verification-end')
+            self.set_stable_phase(taskobj, 'Testing')
 
         if self.taskbyname['certification-testing'].status == 'New':
             self.set_task_to_state('certification-testing', 'Confirmed')
@@ -1114,7 +1119,6 @@ class Shank(StdApp):
 
                 if self.taskbyname['promote-to-updates'].status == 'New':
                     bug = self.taskbyname['promote-to-updates'].bug
-                    self.set_stable_phase(task, 'Testing')
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
                     self.set_tagged_timestamp(task, 'kernel-stable-copy-to-updates-start')
                     self.set_stable_phase(task, 'CopyToUpdates')
