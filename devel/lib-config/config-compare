@@ -26,10 +26,6 @@ if ($ARGV[0] eq '--no-policy') {
 	$policy = 0;
 	shift @ARGV;
 }
-if ($ARGV[0] eq '--policy-first') {
-	$policy = -1;
-	shift @ARGV;
-}
 
 my %flags;
 my %expected;
@@ -88,8 +84,7 @@ for my $column (@columns) {
 	close(CONFIG);
 }
 
-unshift(@columns, "Policy") if ($policy < 0);
-push(@columns, "Policy") if ($policy > 0);
+push(@columns, "Policy") if ($policy);
 
 print "|| '''Option'''";
 for my $column (@columns) {

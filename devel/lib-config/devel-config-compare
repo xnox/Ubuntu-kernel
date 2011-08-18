@@ -6,13 +6,12 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <info> <defaults> <config directory>" 1>&2
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <info> <config directory>" 1>&2
 	exit 1
 fi
 info="$1"
-defaults="$2"
-configs="$3"
+configs="$2"
 
 all=`ls -1 "$configs"`
 #cmp=''
@@ -122,13 +121,13 @@ config-cmp $cmp
 echo ""
 
 rebuild ""
-awk '/m$/ { print $1 "=m" }' <"$defaults" >"tmp/000-MODULES"
+awk '($3 == "m") { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
 
 echo ""
 echo "$level Non-modular modules $level"
 config-cmp-nopolicy $cmp | \
 	awk '
-		($4 != "-")	{
+		($4 == "m" || NR == 1) {
 					printf("%s", $1 " " $2)
 					for (i = 5; i <= NF; i++) {
 						printf("%s", " " $i)
