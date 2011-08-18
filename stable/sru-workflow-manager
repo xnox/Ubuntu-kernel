@@ -636,7 +636,6 @@ class Shank(StdApp):
     along with a time stamp
     """
     def set_stable_phase(self, taskobj, phasetext):
-        bug = taskobj.bug
         # We have to check here to see whether the same status is already set,
         # or we will overwrite the timestamp needlessly
         if 'kernel-stable-phase' in taskobj.bug.properties:
