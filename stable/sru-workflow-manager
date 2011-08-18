@@ -4,9 +4,9 @@
 #
 
 from sys                                import argv
-from os                                 import path, popen
+from os                                 import path
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error, date_to_string
+from ktl.utils                          import stdo, date_to_string
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Workflow, Properties
@@ -86,7 +86,6 @@ class Cmdline:
     #
     def process(self, argv, defaults):
         self.cfg['app_name'] = argv[0]
-        result = True
         try:
             optsShort = ''
             optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'dry-run', 'bugs=']
@@ -636,12 +635,6 @@ class Shank(StdApp):
     along with a time stamp
     """
     def set_stable_phase(self, taskobj, phasetext):
-        bug = taskobj.bug
-        if 'dryrun' in self.cfg:
-            self.verbose('Dryrun - Changing stable phase to <%s>\n' % phasetext)
-            return
-        else:
-            self.verbose('Changing stable phase to <%s>\n' % phasetext)
         # We have to check here to see whether the same status is already set,
         # or we will overwrite the timestamp needlessly
         if 'kernel-stable-phase' in taskobj.bug.properties:
@@ -649,6 +642,12 @@ class Shank(StdApp):
                 # we already have this one
                 self.verbose('Not overwriting identical phase property\n')
                 return
+        # Handle dryrun mode
+        if 'dryrun' in self.cfg:
+            self.verbose('Dryrun - Changing stable phase to <%s>\n' % phasetext)
+            return
+        else:
+            self.verbose('Changing stable phase to <%s>\n' % phasetext)
         # Add phase and time stamp
         now = datetime.utcnow()
         now.replace(tzinfo=None)
@@ -937,8 +936,13 @@ class Shank(StdApp):
         These are certification-testing, regression-testing, and security-signoff
         """
         # Add time stamp and status
-        self.set_tagged_timestamp(taskobj, 'kernel-stable-verification-end')
-        self.set_stable_phase(taskobj, 'Testing')
+        if ((self.taskbyname['certification-testing'].status != 'Fix Released' and
+             self.taskbyname['certification-testing'].status != 'Invalid') or
+            (self.taskbyname['security-signoff'].status != 'Fix Released' and
+             self.taskbyname['security-signoff'].status != 'Invalid') or
+            self.taskbyname['regression-testing'].status != 'Fix Released'):
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-verification-end')
+            self.set_stable_phase(taskobj, 'Testing')
 
         if self.taskbyname['certification-testing'].status == 'New':
             self.set_task_to_state('certification-testing', 'Confirmed')
@@ -1113,8 +1117,6 @@ class Shank(StdApp):
                         self.set_task_to_state('promote-to-security', 'Invalid')
 
                 if self.taskbyname['promote-to-updates'].status == 'New':
-                    bug = self.taskbyname['promote-to-updates'].bug
-                    self.set_stable_phase(task, 'Testing')
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
                     self.set_tagged_timestamp(task, 'kernel-stable-copy-to-updates-start')
                     self.set_stable_phase(task, 'CopyToUpdates')
