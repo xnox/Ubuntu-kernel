@@ -50,7 +50,7 @@ pattern=`
 		grep ^+C | \
 		sort -u | \
 		sed -e 's/^+//' | \
-		while read conf default expected
+		while read conf maybe default expected options
 		do
 			echo -n "|$conf"
 		done | \

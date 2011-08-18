@@ -58,7 +58,7 @@ pattern=`
 		do
 			egrep "^$C " "$info"
 		done | \
-		while read conf default expected options
+		while read conf maybe default expected options
 		do
 			echo -n "|$conf"
 		done | \

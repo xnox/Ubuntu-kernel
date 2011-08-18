@@ -36,11 +36,11 @@ my %expected;
 my @a;
 
 if ($ARGV[0] eq '--info') {
-	my ($config, $default, $expected, $options, $option, $value);
+	my ($config, $maybe, $default, $expected, $options, $option, $value);
 	open(INFO, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
 	while (<INFO>) {
 		chomp;
-		($config, $default, $expected, $options) = split(' ', $_, 4);
+		($config, $maybe, $default, $expected, $options) = split(' ', $_, 5);
 		while ($options =~ /\s*(\S+)<(.*?)?>/g) {
 			($option, $value) = ($1, $2);
 			if ($option eq 'flag') {
