@@ -47,8 +47,9 @@ while (<EXPERIMENTAL>) {
 		($mode, $note) = ('m', "input drivers are opt-in");
 	}
 
-	@oa[2] = $mode;
+	$oa[2] = $mode;
 	push(@oa, "flag<EXPERIMENTAL>");
+	push(@oa, "flag<policy=$mode>") if ($mode ne 'n');
 	push(@oa, "note<$note>") if ($note);
 
 	$options{$_} = join(' ', @oa);
