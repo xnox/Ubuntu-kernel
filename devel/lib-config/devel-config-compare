@@ -90,7 +90,7 @@ config-cmp $cmp
 echo ""
 
 what='CONFIG_INPUT_'
-rebuild "$what"
+rebuild "$what" "CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]"
 
 echo ""
 echo "$level Input Drivers $level"
