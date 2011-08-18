@@ -4,9 +4,9 @@
 #
 
 from sys                                import argv
-from os                                 import path, popen
+from os                                 import path
 from getopt                             import getopt, GetoptError
-from ktl.utils                          import stdo, error, date_to_string
+from ktl.utils                          import stdo, date_to_string
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
 from ktl.workflow                       import Workflow, Properties
@@ -86,7 +86,6 @@ class Cmdline:
     #
     def process(self, argv, defaults):
         self.cfg['app_name'] = argv[0]
-        result = True
         try:
             optsShort = ''
             optsLong  = ['help', 'verbose', 'config=', 'debug=', 'staging', 'dry-run', 'bugs=']
@@ -1118,7 +1117,6 @@ class Shank(StdApp):
                         self.set_task_to_state('promote-to-security', 'Invalid')
 
                 if self.taskbyname['promote-to-updates'].status == 'New':
-                    bug = self.taskbyname['promote-to-updates'].bug
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
                     self.set_tagged_timestamp(task, 'kernel-stable-copy-to-updates-start')
                     self.set_stable_phase(task, 'CopyToUpdates')
