@@ -45,6 +45,9 @@ while (<EXPERIMENTAL>) {
 
 	} elsif ($_ =~ /^CONFIG_INPUT_/ && $oa[2] eq 'm') {
 		($mode, $note) = ('m', "input drivers are opt-in");
+
+	} elsif ($_ =~ /^CONFIG_NETFILTER_XT_/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "netfilter targets are opt-in");
 	}
 
 	$oa[2] = $mode;
