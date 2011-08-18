@@ -29,12 +29,17 @@ level='===='
 
 function rebuild() {
 	local what="$1"
+	local not="$2"
 	local out
 	rm -f "tmp/*"
+
+	[ "$not" = "" ] && not="^NOT_VALID"
+
 	for i in $all
 	do
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
-		egrep -h "$what" "$configs/$i" | sort >"tmp/$out"
+		egrep -h "$what" "$configs/$i" | egrep -h -v "$not" | \
+			sort >"tmp/$out"
 	done
 }
 function config-cmp() {
@@ -45,7 +50,7 @@ function config-cmp-nopolicy() {
 }
 
 what='_FS[ =]'
-rebuild "$what"
+rebuild "$what" "CONFIG_(.*_DEBUG_FS)[ =]"
 
 echo ""
 echo "$level Filesystems $level"
