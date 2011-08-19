@@ -1,0 +1,100 @@
+#!/usr/bin/perl
+
+use strict;
+
+if ($#ARGV != 3) {
+	die "Usage: $0 <defaults> <experimental> <staging> <overrides>\n";
+}
+
+my ($defaults, $experimental, $staging, $overrides) = @ARGV;
+my %options;
+
+my ($option, $maybe, $default);
+open(DEFAULTS, "<$defaults") || die "$0: $defaults: open failed - $!\n";
+while (<DEFAULTS>) {
+	chomp;
+
+	($option, $maybe, $default) = split(' ');
+
+	# Create the 'expected' column.
+	$options{$option} = join(' ', ($maybe, $default, $default));
+}
+close(DEFAULTS);
+
+my @oa;
+my ($note, $mode);
+open(EXPERIMENTAL, "<$experimental") ||
+	die "$0: $experimental: open failed - $!\n";
+while (<EXPERIMENTAL>) {
+	chomp;
+
+	@oa = split(' ', $options{$_});
+
+	# We default EXPERIMENTAL options off by default.
+	$mode = 'n';
+	$note = '';
+
+	if ($_ =~ /^CONFIG_SENSORS_/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "sensors are opt-in");
+
+	} elsif ($_ =~ /^CONFIG_[^_]*_FS$/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "filesystems are opt-in");
+
+	} elsif ($_ =~ /^CONFIG_[SP]ATA_/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "ATA drivers are opt-in");
+
+	} elsif ($_ =~ /^CONFIG_INPUT_/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "input drivers are opt-in");
+
+	} elsif ($_ =~ /^CONFIG_NETFILTER_XT_/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "netfilter targets are opt-in");
+
+	} elsif ($_ =~ /^CONFIG_HID_/ && $oa[2] eq 'm') {
+		($mode, $note) = ('m', "HID drivers are opt-in");
+	}
+
+	$oa[2] = $mode;
+	push(@oa, "flag<EXPERIMENTAL>");
+	push(@oa, "flag<policy=$mode>") if ($mode ne 'n');
+	push(@oa, "note<$note>") if ($note);
+
+	$options{$_} = join(' ', @oa);
+}
+close(EXPERIMENTAL);
+
+open(STAGING, "<$staging") ||
+	die "$0: $staging: open failed - $!\n";
+while (<STAGING>) {
+	chomp;
+
+	$options{$_} .= " flag<STAGING>";
+}
+close(STAGING);
+
+my @ea;
+my @oa;
+open(OVERRIDES, "<$overrides") ||
+	die "$0: $overrides: open failed - $!\n";
+while (<OVERRIDES>) {
+	chomp;
+
+	next if ($_ =~ /^$/ || $_ =~ /^#/);
+
+	@ea = split(' ');
+
+	@oa = split(' ', $options{$ea[0]});
+
+	# Set the option to the specified value and add any other options
+	if ($oa[2] ne $ea[1]) {
+		push(@oa, "flag<policy=$ea[1]>");
+	}
+	$oa[2] = $ea[1];
+	push(@oa, @ea[2..$#ea]);
+
+	$options{$ea[0]} = join(' ', @oa);
+}
+close(OVERRIDES);
+
+foreach my $key (sort keys %options) {
+	print "$key $options{$key}\n";
+}

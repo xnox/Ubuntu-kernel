@@ -9,7 +9,8 @@ esac
 from="$1"
 to="$2"
 experimental="$3"
-configs="$4"
+info="$4"
+configs="$5"
 
 all=`ls -1 "$configs"`
 #cmp=''
@@ -40,7 +41,7 @@ function config-cmp() {
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
 		call="$call $out"
 	done
-	(cd tmp; "$here/config-compare" --experimental "../$experimental" $call "$@")
+	(cd tmp; "$here/config-compare" --info "../$info" $call "$@")
 }
 
 
@@ -49,7 +50,7 @@ pattern=`
 		grep ^+C | \
 		sort -u | \
 		sed -e 's/^+//' | \
-		while read conf default expected
+		while read conf maybe default expected options
 		do
 			echo -n "|$conf"
 		done | \
@@ -57,22 +58,6 @@ pattern=`
 `
 rebuild "$pattern"
 
-diff -u "$from" "$to" | \
-	grep ^+C | \
-	sort -u | \
-	sed -e 's/^+//' | \
-	while read conf default expected
-	do
-		exp=`grep -c "^$conf$" "$experimental"`
-		if [ "$exp" -ne 0 ]; then
-			expected='n'
-		fi
-		case "$expected" in
-		n)	echo "# $conf is not set" ;;
-		*)	echo "$conf=$expected" ;;
-		esac
-	done >"tmp/Policy"
-
 echo "$level New Options $level"
-config-cmp Policy
+config-cmp
 echo ""

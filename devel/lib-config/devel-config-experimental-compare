@@ -6,10 +6,11 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-from="$1"
-to="$2"
-defaults="$3"
-configs="$4"
+which="$1"
+from="$2"
+to="$3"
+info="$4"
+configs="$5"
 
 all=`ls -1 "$configs"`
 #cmp=''
@@ -27,6 +28,7 @@ level='===='
 function rebuild() {
 	local what="$1"
 	local out
+	rm -f tmp/.required
 	for i in $all
 	do
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
@@ -34,15 +36,18 @@ function rebuild() {
 	done
 }
 function config-cmp() {
-	call=""
+	opts=''
+	if [ -f tmp/.required ]; then
+		opts="$opts --required .required"
+	fi
+	call=''
 	for i in $all
 	do
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
 		call="$call $out"
 	done
-	(cd tmp; "$here/config-compare" $call "$@")
+	(cd tmp; "$here/config-compare" $opts --info "../$info" $call "$@")
 }
-
 
 pattern=`
 	diff -u "$from" "$to" | \
@@ -51,32 +56,25 @@ pattern=`
 		sed -e 's/^-//' | \
 		while read C
 		do
-			egrep "^$C " "$defaults"
+			egrep "^$C " "$info"
 		done | \
-		while read conf default expected
+		while read conf maybe default expected options
 		do
 			echo -n "|$conf"
 		done | \
 		sed -e 's/^|/(/' -e 's/$/)[ =]/'
 `
+if [ "$pattern" = "" ]; then
+	pattern="nothing-to-see-here"
+fi
 rebuild "$pattern"
 
 diff -u "$from" "$to" | \
 	grep ^-C | \
 	sort -u | \
-	sed -e 's/^-//' | \
-	while read C
-	do
-		egrep "^$C " "$defaults"
-	done | \
-	while read conf default expected
-	do
-		case "$expected" in
-		n)	echo "# $conf is not set" ;;
-		*)	echo "$conf=$expected" ;;
-		esac
-	done >"tmp/Policy"
+	sed -e 's/^-//' >tmp/.required
 
-echo "$level No longer EXPERIMENTAL $level"
-config-cmp Policy
+
+echo "$level No longer $which $level"
+config-cmp
 echo ""

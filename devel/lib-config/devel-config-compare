@@ -6,13 +6,12 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 3 ]; then
-	echo "Usage: $0 <experimental> <defaults> <config directory>" 1>&2
+if [ "$#" -ne 2 ]; then
+	echo "Usage: $0 <info> <config directory>" 1>&2
 	exit 1
 fi
-experimental="$1"
-defaults="$2"
-configs="$3"
+info="$1"
+configs="$2"
 
 all=`ls -1 "$configs"`
 #cmp=''
@@ -29,20 +28,28 @@ level='===='
 
 function rebuild() {
 	local what="$1"
+	local not="$2"
 	local out
 	rm -f "tmp/*"
+
+	[ "$not" = "" ] && not="^NOT_VALID"
+
 	for i in $all
 	do
 		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
-		egrep -h "$what" "$configs/$i" | sort >"tmp/$out"
+		egrep -h "$what" "$configs/$i" | egrep -h -v "$not" | \
+			sort >"tmp/$out"
 	done
 }
 function config-cmp() {
-	(cd tmp; "$here/config-compare" --experimental "../$experimental" *)
+	(cd tmp; "$here/config-compare" --info "../$info" *)
+}
+function config-cmp-nopolicy() {
+	(cd tmp; "$here/config-compare" --no-policy --info "../$info" *)
 }
 
 what='_FS[ =]'
-rebuild "$what"
+rebuild "$what" "CONFIG_(.*_DEBUG_FS)[ =]"
 
 echo ""
 echo "$level Filesystems $level"
@@ -82,7 +89,7 @@ config-cmp $cmp
 echo ""
 
 what='CONFIG_INPUT_'
-rebuild "$what"
+rebuild "$what" "CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]"
 
 echo ""
 echo "$level Input Drivers $level"
@@ -114,13 +121,13 @@ config-cmp $cmp
 echo ""
 
 rebuild ""
-awk '/m$/ { print $1 "=m" }' <"$defaults" >"tmp/000-MODULES"
+awk '($3 == "m") { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
 
 echo ""
 echo "$level Non-modular modules $level"
-config-cmp $cmp | \
+config-cmp-nopolicy $cmp | \
 	awk '
-		($4 != "-")	{
+		($4 == "m" || NR == 1) {
 					printf("%s", $1 " " $2)
 					for (i = 5; i <= NF; i++) {
 						printf("%s", " " $i)

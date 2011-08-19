@@ -1,0 +1,68 @@
+# Default filesystems are generally built-in
+CONFIG_EXT3_FS y note<default filesystem>
+CONFIG_EXT4_FS y note<default filesystem>
+
+# Some modules have no clear way to autoload them.
+#  filesystems:
+CONFIG_FUSE_FS y note<not autoloadable>
+#  AGP drivers:
+CONFIG_AGP y note<not autoloadable>
+CONFIG_AGP_AMD64 y note<not autoloadable>
+CONFIG_AGP_INTEL y note<not autoloadable>
+CONFIG_AGP_VIA y note<not autoloadable>
+CONFIG_AGP_AMD y note<not autoloadable>
+CONFIG_AGP_NVIDIA y note<not autoloadable>
+#  cpu governers:
+CONFIG_CPU_FREQ_GOV_CONSERVATIVE y note<not autoloadable>
+CONFIG_CPU_FREQ_GOV_ONDEMAND y note<not autoloadable>
+CONFIG_CPU_FREQ_GOV_POWERSAVE y note<not autoloadable>
+CONFIG_CPU_FREQ_GOV_USERSPACE y note<not autoloadable>
+#  cpufreq drivers
+CONFIG_X86_ACPI_CPUFREQ y note<not autoloadable>
+CONFIG_X86_LONGHAUL y note<not autoloadable>
+CONFIG_X86_LONGRUN y note<not autoloadable>
+CONFIG_X86_POWERNOW_K6 y note<not autoloadable>
+CONFIG_X86_POWERNOW_K7 y note<not autoloadable>
+CONFIG_X86_POWERNOW_K8 y note<not autoloadable>
+CONFIG_X86_SPEEDSTEP_CENTRINO y note<not autoloadable>
+CONFIG_X86_SPEEDSTEP_ICH y note<not autoloadable>
+CONFIG_X86_GX_SUSPMOD y note<not autoloadable>
+CONFIG_X86_SPEEDSTEP_SMI y note<not autoloadable>
+
+# Boot essential items are always =y
+#  subsystems:
+CONFIG_ATA y note<boot essential>
+CONFIG_USB y note<boot essential>
+#  network protocols:
+CONFIG_UNIX y note<boot essential>
+# IPv6 packets trigger auto-loading of this module and it is easy to trigger
+# a DOS unless this is builtin.  It is also a critical protocol going forward
+# and will become boot essential.
+CONFIG_IPV6 y note<boot essential>
+#  input devices
+CONFIG_INPUT_EVDEV y note<boot essential>
+CONFIG_INPUT_MOUSEDEV y note<boot essential>
+CONFIG_INPUT_UINPUT y note<boot essential>
+#  ACPI drivers
+CONFIG_ACPI_AC y note<boot essential>
+CONFIG_ACPI_BATTERY y note<boot essential>
+CONFIG_ACPI_BUTTON y note<boot essential>
+CONFIG_ACPI_FAN y note<boot essential>
+CONFIG_ACPI_PROCESSOR y note<boot essential>
+CONFIG_ACPI_THERMAL y note<boot essential>
+
+# EXPERIMENTAL Network protocols are generally enabled to allow testing.
+CONFIG_ECONET m note<network protocol -- opt-in>
+CONFIG_IEEE802154 m note<network protocol -- opt-in>
+CONFIG_LAPB m note<network protocol -- opt-in>
+CONFIG_NET_DSA m note<network protocol -- opt-in>
+CONFIG_RDS m note<network protocol -- opt-in>
+CONFIG_TIPC m note<network protocol -- opt-in>
+CONFIG_X25 m note<network protocol -- opt-in>
+
+# ATA controolers: some are boot essential on specific architectures
+CONFIG_ATA_GENERIC y note<boot essential on i386/amd64>
+CONFIG_ATA_PIIX y note<boot essential on i386/amd64>
+CONFIG_PATA_ACPI y note<boot essential on i386/amd64>
+CONFIG_PATA_SIS y note<boot essential on i386/amd64>
+CONFIG_SATA_SVW y note<boot essential on powerpc>
