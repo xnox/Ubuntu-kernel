@@ -234,6 +234,15 @@ def ExtractPackage(pkg, tmpdir, abiversion, flavour):
 	cmd += "find lib/modules/$abiver/kernel -name '*.ko'"
 	cmd += "	-exec basename {} .ko \\; | sort"
 	cmd += "	>$flavour.modules\n"
+        cmd += "ko=`find lib/modules/$abiver/kernel -name '*.ko' | head -1`\n"
+        cmd += "readelf -p .comment \"$ko\" | awk '"
+        cmd += "        ($1 == \"[\") {"
+        cmd += "                printf(\"%s\", $3);"
+        cmd += "                for (n=4; n<=NF; n++) {"
+        cmd += "                        printf(\" %s\", $n);"
+        cmd += "                }"
+        cmd += "                print \"\";"
+        cmd += "        }' | sort -u >$flavour.compiler\n"
 	cmd += "exit 0"
 
 	print "II: Extracting",
