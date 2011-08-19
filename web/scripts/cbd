@@ -272,7 +272,7 @@ class CollectRegressionsData(StdApp):
                         #        and remove the bug from our db, we want to do the search strictly on a "since" basis.
                         #
                         self.verbose("   since: %s" % (search_since))
-                        tasks = lp_project.search_tasks(modified_since=search_since)
+                        tasks = lp_project.search_tasks(status=search_status, modified_since=search_since)
                     else:
                         self.verbose("   since: The Beginning")
                         tasks = lp_project.search_tasks(status=search_status)
