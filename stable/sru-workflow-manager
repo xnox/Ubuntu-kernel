@@ -797,7 +797,10 @@ class Shank(StdApp):
             if build_summaries['status'] == 'FULLYBUILT':
                 self.verbose('<%s> <%s> built, prep-package is Fix Released\n'
                              % (pkg_name, pkg_ver))
-                self.set_task_to_state('prepare-package', 'Fix Released')
+                if not 'upload-to-ppa' in self.taskbyname:
+                    self.set_task_to_state('prepare-package', 'Fix Released')
+                else:
+                    self.set_task_to_state('upload-to-ppa', 'Fix Released')
             else:
                 self.verbose('<%s> <%s> not fully built yet, skipping\n'
                              % (pkg_name, pkg_ver))
