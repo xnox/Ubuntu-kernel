@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (3.0.0.1203.3) oneiric; urgency=low
+
+  * linux-ti-omap4 3.0.0-1203.7
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 22 Aug 2011 08:13:44 -0600
+
 linux-meta-ti-omap4 (3.0.0.1202.2) oneiric; urgency=low
 
   * linux-ti-omap4 3.0.0-1202.6
