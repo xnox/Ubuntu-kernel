@@ -1,3 +1,9 @@
+linux-meta-mvl-dove (2.6.32.218.20) lucid-proposed; urgency=low
+
+  * Bump linux-mvl-dove ABI to 218
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 22 Aug 2011 17:25:57 -0300
+
 linux-meta-mvl-dove (2.6.32.217.19) lucid-proposed; urgency=low
 
   * Bump linux-mvl-dove ABI to 217
