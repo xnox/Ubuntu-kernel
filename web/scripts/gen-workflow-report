@@ -324,11 +324,18 @@ class GenWorkflowReport():
         retval += '                        <tbody>\n'
         retval += '                            <tr>\n'
         retval += '                                <td style="background : #000000" width="20">&nbsp;</td>\n'
-        retval += '                                <td colspan="4">\n'
+        retval += '                                <td colspan="4" >\n'
         retval += '                                    <table width="100%" border="0" cellpadding="0" cellspacing="0">\n'
-        retval += '                                        <td width="30" align="right"> Tags: </td>\n'
-        retval += '                                        <td width="2">&nbsp;</td>\n'
-        retval += '                                        <td> %s </td>\n' % ', '.join(bug['tags'])
+        retval += '                                        <tr style="font-weight: bold;">\n'
+        retval += '                                            <td width="30" align="right"> Phase: </td>\n'
+        retval += '                                            <td width="2">&nbsp;</td>\n'
+        retval += '                                            <td> %s </td>\n' % bug['properties']['kernel-stable-phase']
+        retval += '                                        </tr>\n'
+        retval += '                                        <tr style="font-weight: bold;">\n'
+        retval += '                                            <td width="30" align="right"> Tags: </td>\n'
+        retval += '                                            <td width="2">&nbsp;</td>\n'
+        retval += '                                            <td> %s </td>\n' % ', '.join(bug['tags'])
+        retval += '                                        </tr>\n'
         retval += '                                    </table>\n'
         retval += '                                </td>\n'
         retval += '                            </tr>\n'
