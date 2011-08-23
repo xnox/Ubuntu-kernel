@@ -74,6 +74,7 @@ clean:
 
 .PHONY : kernel-sru-workflow.json
 kernel-sru-workflow.json:
+	cp kernel-sru-workflow-bare.json kernel-sru-workflow.json
 	scripts/cbd --db=$@
 
 kernel-sru-workflow.html: kernel-sru-workflow.json
