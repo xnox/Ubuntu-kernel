@@ -345,8 +345,8 @@ class GenWorkflowReport():
         retval += '                                    <table id="%s-tasks-table" class="tablesorter" border="0" cellpadding="0" cellspacing="1" width="100%%">\n' % (bug_id)
         retval += '                                        <thead>\n'
         retval += '                                            <tr>\n'
-        retval += '                                                <th width="80">Task Name</th>\n'
-        retval += '                                                <th width="120">Assignee</th>\n'
+        retval += '                                                <th           >Task Name</th>\n'
+        retval += '                                                <th width="250">Assignee</th>\n'
         retval += '                                                <th width="80">Status</th>\n'
         retval += '                                            </tr>\n'
         retval += '                                        </thead>\n'
