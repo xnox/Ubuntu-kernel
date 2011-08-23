@@ -159,9 +159,16 @@ then
 	echo "fakeroot debian/rules clean arch=$ARCH" | $CHROOT --directory=`pwd`
 fi
 
-CL="`cat /proc/cpuinfo |grep "^processor"|wc -l`"
+CPUS="`getconf _NPROCESSORS_ONLN`"
+BLD_CPUS="`expr ${CPUS} \* 2`"
 
-if ! echo "CONCURRENCY_LEVEL=$CL fakeroot dpkg-buildpackage -B -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
+case $RELEASE in
+	oneiric )
+		CL="-j${BLD_CPUS}"
+		;;
+esac
+
+if ! echo "dpkg-buildpackage ${CL} -rfakeroot -B -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
 then
 	echo $RELEASE $ARCH $BRANCH failed.
 	exit 1
