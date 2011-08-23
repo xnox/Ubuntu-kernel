@@ -42,8 +42,6 @@ class Ireport:
                 else:
                     continue
 
-            print(msg)
-
             # Ignore everything until the meeting gets started
             #
             if not started:
