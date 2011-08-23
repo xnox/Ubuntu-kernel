@@ -42,25 +42,27 @@ class Ireport:
                 else:
                     continue
 
+            print(msg)
+
             # Ignore everything until the meeting gets started
             #
             if not started:
-                if '#startmeeting' in msg:
+                if msg.startswith('#startmeeting'):
                     started = True
                     report.start()
                 continue
 
             # Ignore everything after the meeting has ended.
             #
-            if '#endmeeting' in msg:
+            if msg.startswith('#endmeeting'):
                 report.finish()
                 started = False
                 continue
 
-            if 'MootBot' == nic: continue
-            if '[LINK]' in msg: continue
+            if 'meetingology' == nic: continue
+            if msg.startswith('[LINK]'): continue
 
-            if '[TOPIC]' in msg:
+            if msg.startswith('[TOPIC]'):
                 msg = msg.replace('[TOPIC]', '')
                 msg = msg.replace(': Anyone have anything?', '')
                 m = re.match('^\s*(.*)\s*\(\S*\)\s*$', msg)
