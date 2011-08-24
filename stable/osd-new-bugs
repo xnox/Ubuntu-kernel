@@ -204,9 +204,10 @@ class OsdNewBugs():
     # notify
     #
     def notify(self, summary, body):
-        n = pynotify.Notification(summary, body)
-        if not n.show():
-            error("Failed to send notification.")
+        if pynotify.init("osd-new-bugs"):
+            n = pynotify.Notification(summary, body)
+            if not n.show():
+                error("Failed to send notification.")
         return
 
     # main
