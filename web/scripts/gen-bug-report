@@ -377,8 +377,8 @@ class RegressionsReport():
                 retval += '                                <th width="80">Importance</th>\n'
                 retval += '                                <th width="80">Status</th>\n'
                 retval += '                                <th width="120">Assignee</th>\n'
+            retval += '                                <th width="50">Heat</th>\n'
             retval += '                                <th width="50">Age</th>\n'
-            retval += '                                <th width="50">&nbsp; C &nbsp;</th>\n'
             if self.show_xtra:
                 retval += '                                <th width="30">&nbsp; T &nbsp;</th>\n'
                 retval += '                                <th width="30">&nbsp; E &nbsp;</th>\n'
@@ -464,8 +464,8 @@ class RegressionsReport():
             retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                       # Bug
             retval += '                                    <td class="bug-title">%s</td>\n' % bug['title']                                           # Summary
             retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                 # Series
+            retval += '                                    <td >%s</td>\n' % bug['heat'])                                                            # Heat
             retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                # Age
-            retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                           # Last comment
             retval += '                                </tr>\n'
 
 
@@ -496,8 +496,8 @@ class RegressionsReport():
             retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[bug['importance']], bug['importance']) # Importance
             retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
             retval += '                                    <td class="assignee">%s</td>\n' % bug['assignee']                                         # Assignee
+            retval += '                                    <td >%s</td>\n' % bug['heat'])                                                            # Heat
             retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                # Age
-            retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date last message'])                           # Last comment
 
             if self.show_xtra:
                 msg    = 'kj-triage'
