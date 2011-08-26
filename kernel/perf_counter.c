@@ -3515,12 +3515,8 @@ int perf_counter_overflow(struct perf_counter *counter, int nmi,
 	if (events && atomic_dec_and_test(&counter->event_limit)) {
 		ret = 1;
 		counter->pending_kill = POLL_HUP;
-		if (nmi) {
-			counter->pending_disable = 1;
-			perf_pending_queue(&counter->pending,
-					   perf_pending_counter);
-		} else
-			perf_counter_disable(counter);
+		counter->pending_disable = 1;
+		perf_pending_queue(&counter->pending, perf_pending_counter);
 	}
 
 	perf_counter_output(counter, nmi, data);
