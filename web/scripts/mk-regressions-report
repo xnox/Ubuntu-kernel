@@ -481,7 +481,11 @@ class RegressionsReport():
             retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
             retval += '                                    <td class="assignee">%s</td>\n' % bug['assignee']                                         # Assignee
             retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                 # Series
-            retval += '                                    <td class="series-name">%s %s</td>\n' % (flag, bug['booted_kernel_version'])              # Booted Kernel Version
+
+            if 'booted_kernel_version' in bug:
+                retval += '                                    <td class="series-name">%s %s</td>\n' % (flag, bug['booted_kernel_version'])          # Booted Kernel Version
+            else:
+                retval += '                                    <td class="series-name">%nbsp;</td>\n'                                                # Booted Kernel Version
 
             retval += '                                    <td >%s</td>\n' % bug['heat'] if 'heat' in bug else '&nbsp;'                              # Heat
             retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                # Age
