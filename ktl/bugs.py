@@ -71,6 +71,14 @@ class Bugs():
                 bug_item['tags'] = []
             bug_item['tags'].append(tag)
 
+        bug_item['heat']               = bug.heat
+        bug_item['number_of_messages'] = len(bug.messages)
+        bug_item['number_affected']    = bug.lpbug.users_affected_count
+        subs_num = 0
+        for sub in bug.lpbug.subscriptions:
+            subs_num += 1
+        bug_item['number_subscribed']  = subs_num
+
         bug_item['date created']      = date_to_string(bug.date_created)
         bug_item['date last updated'] = date_to_string(bug.date_last_updated)
         bug_item['date last message'] = date_to_string(bug.date_last_message)
