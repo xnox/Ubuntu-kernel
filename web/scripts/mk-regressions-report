@@ -10,8 +10,39 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, error, stde
 from ktl.bugs                           import DeltaTime
 from ktl.std_app                        import StdApp
+from ktl.dbg                            import Dbg
 from datetime                           import datetime
 import json
+
+# FileDoesntExist
+#
+class FileDoesntExist():
+    def __init__(self, file_name=''):
+        self.file_name = file_name
+
+    def print_std_error(self):
+        error('The file (%s) does not exist.\n' % self.file_name)
+
+    def print_std_warning(self):
+        stde('** Warning: The file (%s) does not exist.\n' % self.file_name)
+
+# json_load
+#
+def json_load(file_name):
+    """
+    Load the indicated json format file, returning the created object.
+    """
+    Dbg.enter("json_load")
+
+    retval = None
+    if path.exists(file_name):
+        with open(file_name, 'r') as f:
+            retval = json.load(f)
+    else:
+        raise FileDoesntExist(file_name)
+
+    Dbg.leave("json_load")
+    return retval
 
 # CmdlineError
 #
@@ -65,6 +96,9 @@ class Cmdline:
         stdo("        --xtra                                                                               \n")
         stdo("                         There are other columns that will be reported.                      \n")
         stdo("                                                                                             \n")
+        stdo("        --sru                                                                                \n")
+        stdo("                         Path to a sru.json data file.                                       \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
 
@@ -80,7 +114,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'xtra' ]
+            optsLong  = ['help', 'verbose', 'config=', 'debug=', 'xtra', 'sru=' ]
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -98,6 +132,9 @@ class Cmdline:
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
+
+                elif (opt == '--sru'):
+                    self.cfg['sru_data_file'] = val
 
             if result: # No errors yet
 
@@ -124,7 +161,7 @@ class Cmdline:
 class RegressionsReport():
     # __init__
     #
-    def __init__(self, db, xtra=False):
+    def __init__(self, db, xtra=False, sru_data=None):
         self.db = db
         self.importance_color = {
                 "Unknown"       : "importance-unknown",
@@ -151,6 +188,11 @@ class RegressionsReport():
             }
 
         self.show_xtra = xtra
+
+        self.use_sru_data = False
+        self.sru_data = sru_data
+        if sru_data is not None:
+            self.use_sru_data = True
         return
 
     # __str__
@@ -330,6 +372,7 @@ class RegressionsReport():
             retval += '                                <th width="80">Status</th>\n'
             retval += '                                <th width="120">Assignee</th>\n'
             retval += '                                <th width="80">Series</th>\n'
+            retval += '                                <th width="90">Kernel</th>\n'
             retval += '                                <th width="50">Heat</th>\n'
             retval += '                                <th width="50">Age</th>\n'
             if self.show_xtra:
@@ -413,6 +456,24 @@ class RegressionsReport():
             bug_url = "http://launchpad.net/bugs/%s" % bug_id
             bug = self.db['packages'][pkg]['bugs'][bug_id]
 
+            flag = ''
+            try:
+                if self.use_sru_data and bug['series name'] != '' and bug['booted_kernel_version'] != '':
+                    for pocket in self.sru_data['releases'][bug['series name']]['linux']:
+                        if self.sru_data['releases'][bug['series name']]['linux'][pocket] == bug['booted_kernel_version']:
+                            if pocket == 'Proposed':
+                                flag = '<span style="font-weight : bold; color : yellow;">[P]</span>'
+                            elif pocket == 'Updates':
+                                flag = '<span style="font-weight : bold; color : yellow;">[U]</span>'
+                            elif pocket == 'Release':
+                                #flag = '<span style="font-weight : bold; color : yellow;">[R]</span>'
+                                pass
+                            elif pocket == 'Security' or pocket == 'ppa':
+                                continue
+                            break
+            except KeyError:
+                pass
+
             retval  = '                                <tr>\n'
             retval += '                                    <td><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                       # Bug
             retval += '                                    <td class="bug-title">%s</td>\n' % bug['title']                                           # Summary
@@ -420,6 +481,8 @@ class RegressionsReport():
             retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[bug['status']], bug['status'])             # Status
             retval += '                                    <td class="assignee">%s</td>\n' % bug['assignee']                                         # Assignee
             retval += '                                    <td class="series-name">%s</td>\n' % (bug['series name'])                                 # Series
+            retval += '                                    <td class="series-name">%s %s</td>\n' % (flag, bug['booted_kernel_version'])              # Booted Kernel Version
+
             retval += '                                    <td >%s</td>\n' % bug['heat'] if 'heat' in bug else '&nbsp;'                              # Heat
             retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                # Age
 
@@ -483,6 +546,10 @@ class MkRegressionsReport(StdApp):
 
             self.__initialize()
 
+            self.sru_data = None
+            if 'sru_data_file' in self.cfg:
+                self.sru_data = json_load(self.cfg['sru_data_file'])
+
             if path.exists(self.cfg['database']):
                 with open(self.cfg['database'], 'r') as f:
                     bugs_db = json.load(f)
@@ -492,10 +559,13 @@ class MkRegressionsReport(StdApp):
 
             if bugs_db != None:
                 if 'xtra' in self.cfg and self.cfg['xtra']:
-                    report = RegressionsReport(bugs_db, True)
+                    report = RegressionsReport(bugs_db, True, sru_data=self.sru_data)
                 else:
-                    report = RegressionsReport(bugs_db, False)
+                    report = RegressionsReport(bugs_db, False, sru_data=self.sru_data)
                 print(report)
+
+        except FileDoesntExist as e:
+            e.print_std_error()
 
         # Handle the user presses <ctrl-C>.
         #
