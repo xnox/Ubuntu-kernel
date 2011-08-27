@@ -554,4 +554,77 @@ class KernelBug(Bug):
             print(" ")
             print("        Owner: %s" % ("None" if self.owner is None else self.owner.display_name))
 
+    # _get_version_from_property
+    #
+    def _get_version_from_property(self, key):
+        Dbg.enter('DecodeKernelVersion._get_version_from_property')
+
+        retval = None
+        m = re.search('([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\.([0-9]+)', self.properties[key])
+        Dbg.verbose('%s found\n' % key)
+        if m is not None:
+            Dbg.verbose('%s match found\n' % key)
+            retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+
+        Dbg.ret('DecodeKernelVersion._get_version_from_property', retval)
+        return retval
+
+    # _find_kernel_version_in_description
+    #
+    def _find_kernel_version_in_description(self):
+        '''
+        The kernel version can be in different lines in the description. Try to
+        find one of them with the full version.
+        '''
+        Dbg.enter('KernelBug._find_kernel_version_in_description')
+        retval = None
+        desc_lines = self.description.split('\n')
+        for line in desc_lines:
+            m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+            if m is not None:
+                retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                Dbg.verbose("Kernel version: %s" % retval)
+                break
+
+            m = re.search('(\d+)\.(\d+)\.(\d+)[\-|\.](\d+)-\S+ #(\d+)', line)
+            if m is not None:
+                retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                Dbg.verbose("Kernel version: %s" % retval)
+                break
+
+        Dbg.ret('KernelBug._find_kernel_version_in_description', retval)
+        return retval
+
+    # booted_kernel_version
+    #
+    @property
+    def booted_kernel_version(self):
+        '''
+        Look at various data in the bug and determine the kernel version that was booted.
+        '''
+        Dbg.enter('KernelBug.kernel_version')
+        retval = None
+
+        while True:
+            # "ProcVersionSignature": "Ubuntu 2.6.35-22.33-generic 2.6.35.4",
+            #
+            try:
+                retval = self._get_version_from_property('ProcVersionSignature')
+                break
+            except KeyError:
+                pass
+
+            #  "Uname": "Linux 2.6.35-22-generic i686"
+            #
+            try:
+                retval = self._get_version_from_property('Uname')
+                break
+            except KeyError:
+                pass
+
+            retval = self._find_kernel_version_in_description()
+
+        Dbg.ret('KernelBug.kernel_version', retval)
+        return retval
+
 # vi:set ts=4 sw=4 expandtab:
