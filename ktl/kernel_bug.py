@@ -564,7 +564,7 @@ class KernelBug(Bug):
         Dbg.verbose('%s found\n' % key)
         if m is not None:
             Dbg.verbose('%s match found\n' % key)
-            retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+            retval = "%s.%s.%s-%s.%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
 
         Dbg.ret('DecodeKernelVersion._get_version_from_property', retval)
         return retval
@@ -582,13 +582,13 @@ class KernelBug(Bug):
         for line in desc_lines:
             m = re.search('Linux version ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
             if m is not None:
-                retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                retval = "%s.%s.%s-%s.%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
                 Dbg.verbose("Kernel version: %s" % retval)
                 break
 
             m = re.search('(\d+)\.(\d+)\.(\d+)[\-|\.](\d+)-\S+ #(\d+)', line)
             if m is not None:
-                retval = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
+                retval = "%s.%s.%s-%s.%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
                 Dbg.verbose("Kernel version: %s" % retval)
                 break
 
