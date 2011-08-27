@@ -37,16 +37,16 @@ regressions-proposed-data.json: scripts/collect-regressions-data
 regressions-reports: regressions-data regressions-potential-report.html regressions-release-report.html regressions-update-report.html regressions-proposed-report.html
 
 regressions-potential-report.html: regressions-potential-data.json
-	scripts/mk-regressions-report $< > $@
+	scripts/mk-regressions-report --sru=sru-data.json $< > $@
 
 regressions-release-report.html: regressions-release-data.json
-	scripts/mk-regressions-report $< > $@
+	scripts/mk-regressions-report --sru=sru-data.json $< > $@
 
 regressions-update-report.html: regressions-update-data.json
-	scripts/mk-regressions-report $< > $@
+	scripts/mk-regressions-report --sru=sru-data.json $< > $@
 
 regressions-proposed-report.html: regressions-proposed-data.json
-	scripts/mk-regressions-report $< > $@
+	scripts/mk-regressions-report --sru=sru-data.json $< > $@
 
 clean:
 	rm -f *.json sru-report.html versions.html
@@ -56,21 +56,21 @@ clean:
 	scripts/collect-window-data --window=30 --db=$@ --title="30 Days of New Bugs"
 
 30-day-new.html: 30-day-window.json
-	scripts/mk-regressions-report $< > $@
+	scripts/mk-regressions-report --sru=sru-data.json $< > $@
 
 .PHONY : 7-day-window.json
 7-day-window.json:
 	scripts/collect-window-data --window=7 --db=$@ --title="7 Days of New Bugs"
 
 7-day-new.html: 7-day-window.json
-	scripts/mk-regressions-report $< > $@
+	scripts/mk-regressions-report --sru=sru-data.json $< > $@
 
 .PHONY : 1-day-window.json
 1-day-window.json:
 	scripts/collect-window-data --window=1 --db=$@ --title="24 Hours of New Bugs"
 
 1-day-new.html: 1-day-window.json
-	scripts/mk-regressions-report $< > $@
+	scripts/mk-regressions-report --sru=sru-data.json $< > $@
 
 .PHONY : kernel-sru-workflow.json
 kernel-sru-workflow.json:
