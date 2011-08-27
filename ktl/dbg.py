@@ -45,6 +45,7 @@ class Dbg:
         Print a debug message preceeded by 'Leave'.
         """
         if 'leave' in cls.levels:
+            cls.indent_level -= 1
             cls.__print("Return: %s (%s)\n" % (txt, o2ascii(result)))
 
     @classmethod
