@@ -623,6 +623,7 @@ class KernelBug(Bug):
                 pass
 
             retval = self._find_kernel_version_in_description()
+            break
 
         Dbg.ret('KernelBug.kernel_version', retval)
         return retval
