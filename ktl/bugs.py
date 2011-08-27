@@ -114,6 +114,7 @@ class Bugs():
         #
         (bug_item['series name'], bug_item['series version']) = bug.series
         bug_item['gravity']         = bug.gravity
+        bug_item['booted_kernel_version'] = bug.booted_kernel_version if bug.booted_kernel_version is not None else ''
         return bug_item
 
 # vi:set ts=4 sw=4 expandtab:
