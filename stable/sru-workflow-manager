@@ -846,6 +846,9 @@ class Shank(StdApp):
                             bp_list.append([bp_entry, entry['name']])
             der_bug_list = []
             bp_bug_list = []
+            msgder =  "This tracking bug was opened to be worked from "
+            msgder += "%s-%s update (bug %s)" % (pkg_name, pkg_ver, taskobj.bug.id)
+            subder =  "Derivative package tracking bug"
             tb = TrackingBug(self.lp, 'staging' in self.cfg)
             for der_pkg in der_list:
                 if 'dryrun' in self.cfg:
@@ -853,6 +856,7 @@ class Shank(StdApp):
                                  % (der_pkg))
                     continue
                 bug = tb.open(der_pkg, '<version to be filled>', True, series)
+                bug.add_comment(msgder, subder)
                 print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
                 der_bug_list.append([der_pkg, bug.id])
             for bp_pkg in bp_list:
