@@ -282,6 +282,51 @@ class RegressionsReport():
                type: 'numeric'
            });
 
+
+           // add parser through the tablesorter addParser method
+           $.tablesorter.addParser({
+               // set a unique id
+               id: 'kv',
+               is: function(s) {
+                   // return false so this parser is not auto detected
+                   return false;
+               },
+               format: function(s) {
+                   // format your data for normalization
+                   x = s;
+                   x = x.replace(/\[\S+\]/,'');
+                   x = x.replace(/^\s+|\s+$/g, '');
+                   if (x != '') {
+                       version = x
+                       fields = version.split('-');
+                       lvn  = fields[0];
+                       xtra = fields[1];
+
+                       // x.y.z
+                       fields = lvn.split('.');
+                       v1 = parseInt(fields[0], 10) * 100000000; // x
+                       v2 = parseInt(fields[1], 10) * 10000000;  // y
+                       v3 = parseInt(fields[2], 10) * 100000;    // z
+
+                       fields = xtra.split('.');
+                       abi = parseInt(fields[0], 10) * 1000;
+                       upld = parseInt(fields[1], 10);
+
+                       // 2.6.38-10.46     2*100,000,000 + 6*10,000,000 + 38*100000 + 10*1000 + 46
+                       // 2.6.38-9.42
+                       // 2.6.32-33.72
+
+                       total = v1 + v2 + v3 + abi + upld;
+                   }
+                   else {
+                       total = 0;
+                   }
+                   return total;
+               },
+               // set type, either numeric or text
+               type: 'numeric'
+           });
+
            // add parser through the tablesorter addParser method
            $.tablesorter.addParser({
                // set a unique id
@@ -310,6 +355,9 @@ class RegressionsReport():
             retval += '                        },\n'
             retval += '                        3: {\n'
             retval += '                            sorter:\'status\'\n'
+            retval += '                        },\n'
+            retval += '                        6: {\n'
+            retval += '                            sorter:\'kv\'\n'
             retval += '                        },\n'
             retval += '                        7: {\n'
             retval += '                            sorter:\'age\'\n'
@@ -485,9 +533,12 @@ class RegressionsReport():
             if 'booted_kernel_version' in bug:
                 retval += '                                    <td class="series-name">%s %s</td>\n' % (flag, bug['booted_kernel_version'])          # Booted Kernel Version
             else:
-                retval += '                                    <td class="series-name">%nbsp;</td>\n'                                                # Booted Kernel Version
+                retval += '                                    <td class="series-name">&nbsp;</td>\n'                                                # Booted Kernel Version
 
-            retval += '                                    <td >%s</td>\n' % bug['heat'] if 'heat' in bug else '&nbsp;'                              # Heat
+            if 'heat' in bug:
+                retval += '                                    <td >%s</td>\n' % bug['heat']
+            else:
+                retval += '                                    <td >&nbsp;</td>\n'
             retval += '                                    <td %s>%s</td>\n' % self.how_long_ago(bug['date created'])                                # Age
 
             if self.show_xtra:
