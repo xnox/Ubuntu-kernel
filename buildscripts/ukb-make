@@ -160,7 +160,7 @@ then
 fi
 
 CPUS="`getconf _NPROCESSORS_ONLN`"
-BLD_CPUS="`expr ${CPUS} \+ 1`"
+BLD_CPUS="`expr ${CPUS} \* 2`"
 
 #
 # Detect make parallel ability. I happen to know that this target did not exist until
