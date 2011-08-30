@@ -359,7 +359,7 @@ class RegressionsReport():
             retval += '                        6: {\n'
             retval += '                            sorter:\'kv\'\n'
             retval += '                        },\n'
-            retval += '                        7: {\n'
+            retval += '                        9: {\n'
             retval += '                            sorter:\'age\'\n'
             retval += '                        }\n'
             retval += '                    },\n'
