@@ -894,8 +894,8 @@ class Shank(StdApp):
             # Set promote-to-proposed
             self.set_task_to_state('promote-to-proposed', 'Confirmed')
             # Add time stamp and status
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-prepare-end')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-copy-to-proposed-start')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Prepare-package-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-start')
             self.set_stable_phase(taskobj, 'CopyToProposed')
         return False
 
@@ -920,12 +920,12 @@ class Shank(StdApp):
         verification-testing to In Progress, add tags to the bugs, and spam with text
         """
         # Add time stamp and status
-        self.set_tagged_timestamp(taskobj, 'kernel-stable-copy-to-proposed-end')
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-end')
         task = self.taskbyname['verification-testing']
         if task.status == 'New':
             if self.set_task_to_state('verification-testing', 'In Progress'):
                 # we did change the state, weren't already in it
-                self.set_tagged_timestamp(taskobj, 'kernel-stable-verification-start')
+                self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
                 self.set_stable_phase(taskobj, 'Verification')
                 # Now tag all bugs verification-needed and spam with a comment
                 # Automate this in the future but for now send an email
@@ -948,18 +948,18 @@ class Shank(StdApp):
             (self.taskbyname['security-signoff'].status != 'Fix Released' and
              self.taskbyname['security-signoff'].status != 'Invalid') or
             self.taskbyname['regression-testing'].status != 'Fix Released'):
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-verification-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-end')
             self.set_stable_phase(taskobj, 'Testing')
 
         if self.taskbyname['certification-testing'].status == 'New':
             self.set_task_to_state('certification-testing', 'Confirmed')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-certification-start')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Certification-testing-start')
         if self.taskbyname['regression-testing'].status == 'New':
             self.set_task_to_state('regression-testing', 'Confirmed')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-qa-start')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Regression-testing-start')
         if self.taskbyname['security-signoff'].status == 'New':
             self.set_task_to_state('security-signoff', 'Confirmed')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-security-signoff-start')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Security-signoff-start')
         return False
 
     def certification_testing_fix_released(self, taskobj):
@@ -971,7 +971,7 @@ class Shank(StdApp):
         """
         if 'certification-testing-failed' in self.bugtags:
             self.verbose('Certification tagged as FAIL\n')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-certification-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Certification-testing-end')
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The bug was tagged as certification-testing-failed\n'
             self.send_comment(taskobj, 'Certification FAILURE', msgbody)
@@ -981,7 +981,7 @@ class Shank(StdApp):
             return False
         elif 'certification-testing-passed' in self.bugtags:
             self.verbose('Certification tagged as PASSED\n')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-certification-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Certification-testing-end')
             # TODO send a status.net update?
             self.certification_testing_complete = True
             return True
@@ -1002,7 +1002,7 @@ class Shank(StdApp):
         but we don't check any tags
         """
         self.certification_testing_complete = True
-        self.set_tagged_timestamp(taskobj, 'kernel-stable-certification-end')
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-Certification-testing-end')
         return True
 
     def regression_testing_fix_released(self, taskobj):
@@ -1014,7 +1014,7 @@ class Shank(StdApp):
         """
         if 'qa-testing-failed' in self.bugtags:
             self.verbose('Regression Testing tagged as FAIL\n')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-qa-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Regression-testing-end')
             # Send email and possibly a status update -spc- TODO
             msgbody = 'The bug was tagged as qa-testing-failed\n'
             self.send_comment(taskobj, 'Regression Testing FAILURE', msgbody)
@@ -1024,7 +1024,7 @@ class Shank(StdApp):
             return False
         elif 'qa-testing-passed' in self.bugtags:
             self.verbose('Regression Testing tagged as PASSED\n')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-qa-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Regression-testing-end')
             # TODO send a status.net update?
             self.regression_testing_complete = True
             return True
@@ -1047,7 +1047,7 @@ class Shank(StdApp):
         be copied to the -security pocket.
         """
         self.security_signoff_complete = True
-        self.set_tagged_timestamp(taskobj, 'kernel-stable-security-signoff-end')
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-Security-signoff-end')
         # Trigger the release test
         return True
 
@@ -1125,7 +1125,7 @@ class Shank(StdApp):
 
                 if self.taskbyname['promote-to-updates'].status == 'New':
                     self.set_task_to_state('promote-to-updates', 'Confirmed')
-                    self.set_tagged_timestamp(task, 'kernel-stable-copy-to-updates-start')
+                    self.set_tagged_timestamp(task, 'kernel-stable-Promote-to-updates-start')
                     self.set_stable_phase(task, 'CopyToUpdates')
                 # Now send a happy email 
                 msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
@@ -1163,7 +1163,7 @@ class Shank(StdApp):
             print self.printlink,
             print ' Everything is done, setting bug to Fix Released'
             self.set_task_to_state(self.projectname, 'Fix Released')
-            self.set_tagged_timestamp(taskobj, 'kernel-stable-copy-to-updates-end')
+            self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-updates-end')
             self.set_stable_phase(taskobj, 'Released')
 
             # Send email and possibly a status update -spc- TODO

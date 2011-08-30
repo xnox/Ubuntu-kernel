@@ -55,7 +55,7 @@ class TrackingBug:
         now.replace(tzinfo=None)
         tstamp = date_to_string(now)
         ourprops = {}
-        ourprops['kernel-stable-prepare-start'] = tstamp
+        ourprops['kernel-stable-Prepare-package-start'] = tstamp
         ourprops['kernel-stable-phase'] = 'Prepare'
         ourprops['kernel-stable-phase-changed'] = tstamp
         for k in ourprops:
