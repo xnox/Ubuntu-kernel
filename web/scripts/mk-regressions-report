@@ -510,9 +510,9 @@ class RegressionsReport():
                     for pocket in self.sru_data['releases'][bug['series name']]['linux']:
                         if self.sru_data['releases'][bug['series name']]['linux'][pocket] == bug['booted_kernel_version']:
                             if pocket == 'Proposed':
-                                flag = '<span style="font-weight : bold; color : yellow;">[P]</span>'
+                                flag = '<span style="font-weight : bold; color : red;">[P]</span>'
                             elif pocket == 'Updates':
-                                flag = '<span style="font-weight : bold; color : yellow;">[U]</span>'
+                                flag = '<span style="font-weight : bold; color : red;">[U]</span>'
                             elif pocket == 'Release':
                                 #flag = '<span style="font-weight : bold; color : yellow;">[R]</span>'
                                 pass
