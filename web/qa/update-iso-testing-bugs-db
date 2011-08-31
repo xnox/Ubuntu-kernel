@@ -191,7 +191,7 @@ class UpdateIsoTestingBugsDB():
         team_name_xref = {
             'foundations-bugs' : 'Foundations Team',
             'ubuntu-server'    : 'Server Team',
-            'desktop-bugs'     : 'Desktop Team'
+            'desktop-packages' : 'Desktop Team'
         }
 
         self.team_xref['linux'] = 'Kernel Team'
