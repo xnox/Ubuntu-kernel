@@ -103,7 +103,10 @@
                             <th width="80">Status</th>
                             <th width="140">Assignee</th>
                             <th width="120">Milestone</th>
-                            <th width="80">Nominations</th>
+                            <th width="30">CO</th>
+                            <th width="30">SU</th>
+                            <th width="30">AM</th>
+                            <th width="30">DU</th>
                         </tr>
                     </thead>
 		    <tbody>
@@ -165,7 +168,10 @@
                             <td class="${status_class}">${status}</td>
                             <td>${assignee}</td>
                             <td>${t['milestone']}</td>
-                            <td align="center">${nominations}</td>
+                            <td>${t['bug']['number_of_messages']}</td>
+                            <td>${t['bug']['number_subscribed']}</td>
+                            <td>${t['bug']['number_affected']}</td>
+                            <td>${t['bug']['number_of_duplicates']}</td>
                         </tr>
                     % endfor
                 % endfor

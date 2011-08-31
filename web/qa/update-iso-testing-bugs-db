@@ -186,12 +186,20 @@ class UpdateIsoTestingBugsDB():
     # initialize_team_package_crossreference
     #
     def initialize_team_package_crossreference(self):
-        self.team_xref = {}
+        self.team_xref = {
+            'linux'           : 'Kernel Team',
+            'linux-ti-omap4'  : 'Kernel Team',
+            'indicator-sound' : 'DX Team',
+        }
 
         team_name_xref = {
-            'foundations-bugs' : 'Foundations Team',
-            'ubuntu-server'    : 'Server Team',
-            'desktop-packages' : 'Desktop Team'
+            'foundations-bugs'            : 'Foundations Team',
+            'ubuntu-server'               : 'Server Team',
+            'desktop-packages'            : 'Desktop Team',
+            'unity-bugs'                  : 'DX Team',
+            'unity-2d-team'               : 'DX Team',
+            'indicator-applet-developers' : 'DX Team',
+            'ubuntuone-hackers'           : 'Ubuntu One Team'
         }
 
         self.team_xref['linux'] = 'Kernel Team'
@@ -210,10 +218,7 @@ class UpdateIsoTestingBugsDB():
             self.initialize()
 
             search_start = datetime.utcnow()
-            search_status = ["New", "Confirmed", "Triaged", "Incomplete", "In Progress", "Fix Committed"] # A list of the bug statuses that we care about
-            search_tags   = ['iso-testing']
-            search_tags_combinator = "Any"
-            tasks = self.distro.search_tasks(tags=search_tags, status=search_status)
+            tasks = self.distro.search_tasks(tags=self.iso_config['search_criteria']['tags'], status=self.iso_config['search_criteria']['status'])
 
             iso_tasks = {}
             for task in tasks:
@@ -259,17 +264,17 @@ class UpdateIsoTestingBugsDB():
         except:
             t['assignee'] = 'Unassigned'
 
-        t['date_created']       = date_to_string(task.date_created)
-        t['date_confirmed']     = date_to_string(task.date_confirmed)
-        t['date_assigned']      = date_to_string(task.date_assigned)
-        t['date_closed']        = date_to_string(task.date_closed)
+        t['date_created'] = date_to_string(task.date_created)
+        t['date_confirmed'] = date_to_string(task.date_confirmed)
+        t['date_assigned'] = date_to_string(task.date_assigned)
+        t['date_closed'] = date_to_string(task.date_closed)
         t['date_fix_committed'] = date_to_string(task.date_fix_committed)
-        t['date_fix_released']  = date_to_string(task.date_fix_released)
-        t['date_in_progress']   = date_to_string(task.date_in_progress)
-        t['date_incomplete']    = date_to_string(task.date_incomplete)
-        t['date_left_closed']   = date_to_string(task.date_left_closed)
-        t['date_left_new']      = date_to_string(task.date_left_new)
-        t['date_triaged']       = date_to_string(task.date_triaged)
+        t['date_fix_released'] = date_to_string(task.date_fix_released)
+        t['date_in_progress'] = date_to_string(task.date_in_progress)
+        t['date_incomplete'] = date_to_string(task.date_incomplete)
+        t['date_left_closed'] = date_to_string(task.date_left_closed)
+        t['date_left_new'] = date_to_string(task.date_left_new)
+        t['date_triaged'] = date_to_string(task.date_triaged)
         t['is_complete'] = task.is_complete
         t['owner'] = task.owner.display_name
         t['title'] = task.title
@@ -293,6 +298,13 @@ class UpdateIsoTestingBugsDB():
         b['date_last_message'] = date_to_string(bug.date_last_message)
         b['date_last_updated'] = date_to_string(bug.date_last_updated)
         b['heat']              = bug.heat
+        b['number_of_duplicates'] = bug.lpbug.number_of_duplicates
+        b['number_of_messages'] = len(bug.messages)
+        b['number_affected']    = bug.lpbug.users_affected_count
+        subs_num = 0
+        for sub in bug.lpbug.subscriptions:
+            subs_num += 1
+        b['number_subscribed']  = subs_num
 
         b['nominations'] = []
         for nom in bug.nominations:

@@ -7,12 +7,8 @@
         "distribution": "ubuntu", 
         "series": "oneiric", 
         "status": [
-            "New", 
-            "Confirmed", 
-            "Triaged", 
-            "Incomplete", 
-            "In Progress", 
-            "Fix Committed"
+            "Fix Released", 
+            "Won't Fix" 
         ], 
         "tags": [
             "iso-testing"
