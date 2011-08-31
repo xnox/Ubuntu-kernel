@@ -9,7 +9,6 @@ import json
 from ktl.dbg                            import Dbg
 from ktl.utils                          import stdo, error, json_load, file_load, FileDoesntExist, dump, date_to_string
 from ktl.cfg                            import Cfg, CfgError
-from iso_bug                            import IsoBug
 
 from lpltk.LaunchpadService             import LaunchpadService
 
