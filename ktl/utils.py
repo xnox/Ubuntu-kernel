@@ -8,6 +8,7 @@ import json
 from os.path                import exists, getmtime
 from time                   import time
 from datetime               import datetime
+from dbg                    import Dbg
 
 # o2ascii
 #
@@ -119,6 +120,54 @@ def string_to_date(date):
     Return a datetime object based on the string in a well known format.
     """
     return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
+
+# FileDoesntExist
+#
+class FileDoesntExist():
+    def __init__(self, file_name=''):
+        self.file_name = file_name
+
+    def print_std_error(self):
+        error('The file (%s) does not exist.\n' % self.file_name)
+
+    def print_std_warning(self):
+        stde('** Warning: The file (%s) does not exist.\n' % self.file_name)
+
+# json_load
+#
+def json_load(file_name):
+    """
+    Load the indicated json format file, returning the created object.
+    """
+    Dbg.enter("json_load")
+
+    retval = None
+    if exists(file_name):
+        with open(file_name, 'r') as f:
+            retval = json.load(f)
+    else:
+        raise FileDoesntExist(file_name)
+
+    Dbg.leave("json_load")
+    return retval
+
+# file_load
+#
+def file_load(file_name):
+    """
+    Load the indicated file into a string and return the string.
+    """
+    Dbg.enter("file_load")
+
+    retval = None
+    if exists(file_name):
+        with open(file_name, 'r') as f:
+            retval = f.read()
+    else:
+        raise FileDoesntExist(file_name)
+
+    Dbg.leave("file_load")
+    return retval
 
 # vi:set ts=4 sw=4 expandtab:
 
