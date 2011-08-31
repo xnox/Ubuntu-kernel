@@ -1,0 +1,298 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv, stdout
+from getopt                             import getopt, GetoptError
+from datetime                           import datetime
+import json
+
+from ktl.dbg                            import Dbg
+from ktl.utils                          import stdo, error, json_load, file_load, FileDoesntExist, dump, date_to_string
+from ktl.cfg                            import Cfg, CfgError
+from iso_bug                            import IsoBug
+
+from lpltk.LaunchpadService             import LaunchpadService
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo('    Usage:                                                                                   \n')
+        stdo('        %s [Options] <json-db-file>                                                          \n' % defaults['app_name'])
+        stdo('                                                                                             \n')
+        stdo('    Options:                                                                                 \n')
+        stdo('        --help           Prints this text.                                                   \n')
+        stdo('                                                                                             \n')
+        stdo('        --debug=<debug options>                                                              \n')
+        stdo('                         Performs additional output related to the option enabled and        \n')
+        stdo('                         the application defined support for the option.                     \n')
+        stdo('                                                                                             \n')
+        stdo('                         Recognized debug options:                                           \n')
+        stdo('                             enter                                                           \n')
+        stdo('                             leave                                                           \n')
+        stdo('                             verbose                                                         \n')
+        stdo('                             cfg                                                             \n')
+        stdo('                                                                                             \n')
+        stdo('    Examples:                                                                                \n')
+        stdo('        %s iso-testing-bugs.json                                                             \n' % defaults['app_name'])
+        stdo('        %s --debug="enter,leave,verbose"                                                     \n' % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            cfg = defaults
+            optsShort = ''
+            optsLong  = ['help', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif opt in ('--debug'):
+                    cfg['debug'] = val.split(',')
+                    for level in cfg['debug']:
+                        if level not in Dbg.levels:
+                            Dbg.levels.append(level)
+
+            if result: # No errors yet
+                # There might be some bugs listed on the command line.
+                #
+                if len(args) > 0:
+                    cfg['json_file'] = args
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+        # Verify we have all the command line options that are required.
+        #
+        if 'json_file' not in cfg:
+            raise CmdlineError("A single json data file must be specified.\n")
+
+        if len(cfg['json_file']) > 1:
+            raise CmdlineError("A single json data file must be specified.\n")
+
+        cfg['json_file'] = cfg['json_file'][0]
+
+        return cfg
+
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# UpdateIsoTestingBugsDB
+#
+class UpdateIsoTestingBugsDB():
+    """
+    Load a json file and a mako html template file, pass the resulting python object to
+    the mako template renderer. This is a general class that can take any json file and
+    any mako template file and produce an html file. The template file is, of course,
+    specific to the json data.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("UpdateIsoTestingBugsDB.__init__")
+
+        self.cfg    = cfg
+
+        Dbg.leave("UpdateIsoTestingBugsDB.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        Dbg.enter("UpdateIsoTestingBugsDB.initialize")
+
+        try:
+            # Process the command line arguments, and any configuration file options. Make sure
+            # that any required parameters have been provided.
+            #
+            self.cfg = Cfg.merge_options(defaults, self.cfg)
+
+            self.iso_config = json_load(self.cfg['json_file'])
+
+            Dbg.verbose(' . Connecting to Launchpad\n')
+            self.lp = LaunchpadService(self.iso_config['launchpad_config'])
+
+            # The service.distributions property is a collection of distributions. We
+            # pretty much only care about one, 'ubuntu'.
+            #
+            distro = "%s/%s" % (self.iso_config['search_criteria']['distribution'], self.iso_config['search_criteria']['series'])
+            self.distro = self.lp.distributions[distro]
+
+        except KeyboardInterrupt:
+            Dbg.leave("UpdateIsoTestingBugsDB.initialize")
+            raise Exit()
+
+        except CfgError as e:
+            error(e)
+            Dbg.leave("UpdateIsoTestingBugsDB.initialize")
+            raise Exit()
+
+        except FileDoesntExist as e:
+            e.print_std_error()
+            Dbg.leave("UpdateIsoTestingBugsDB.initialize")
+            raise Exit()
+
+        Dbg.leave("UpdateIsoTestingBugsDB.initialize")
+        return
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("UpdateIsoTestingBugsDB.main")
+
+        try:
+            self.initialize()
+
+            search_start = datetime.utcnow()
+            search_status = ["New", "Confirmed", "Triaged", "Incomplete", "In Progress", "Fix Committed"] # A list of the bug statuses that we care about
+            search_tags   = ['iso-testing']
+            search_tags_combinator = "Any"
+            tasks = self.distro.search_tasks(tags=search_tags, status=search_status)
+
+            iso_tasks = {}
+            for task in tasks:
+                Dbg.verbose("%s\n" % task.bug.id)
+
+                if task.bug.id not in iso_tasks:
+                    iso_tasks[task.bug.id] = []
+                iso_tasks[task.bug.id].append(self.get_task_info(task))
+
+            self.iso_config['tasks'] = iso_tasks
+
+            self.iso_config['udpate_timestamp'] = date_to_string(search_start)
+            with open(self.cfg['json_file'], 'w') as f:
+                Dbg.verbose("Updating the database file.\n")
+                f.write(json.dumps(self.iso_config, sort_keys=True, indent=4))
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("UpdateIsoTestingBugsDB.main")
+        return
+
+    # get_task_info
+    #
+    def get_task_info(self, task):
+
+        t = {}
+        t['bug_target_name'] = task.bug_target_name
+        t['status'] = task.status
+        t['importance'] = task.importance
+
+        try:
+            t['assignee'] = task.assignee.display_name
+        except:
+            t['assignee'] = 'Unassigned'
+
+        t['date_created']       = date_to_string(task.date_created)
+        t['date_confirmed']     = date_to_string(task.date_confirmed)
+        t['date_assigned']      = date_to_string(task.date_assigned)
+        t['date_closed']        = date_to_string(task.date_closed)
+        t['date_fix_committed'] = date_to_string(task.date_fix_committed)
+        t['date_fix_released']  = date_to_string(task.date_fix_released)
+        t['date_in_progress']   = date_to_string(task.date_in_progress)
+        t['date_incomplete']    = date_to_string(task.date_incomplete)
+        t['date_left_closed']   = date_to_string(task.date_left_closed)
+        t['date_left_new']      = date_to_string(task.date_left_new)
+        t['date_triaged']       = date_to_string(task.date_triaged)
+        t['is_complete'] = task.is_complete
+        t['owner'] = task.owner.display_name
+        t['title'] = task.title
+
+        try:
+            t['milestone'] = task.milestone.name
+        except:
+            t['milestone'] = ''
+
+        b = {}
+        bug = task.bug
+        b['id'] = bug.id
+
+        b['tags'] = []
+        for tag in bug.tags:
+            b['tags'].append(tag)
+
+        b['title'] = bug.title
+
+        b['date_created']      = date_to_string(bug.date_created)
+        b['date_last_message'] = date_to_string(bug.date_last_message)
+        b['date_last_updated'] = date_to_string(bug.date_last_updated)
+        b['heat']              = bug.heat
+
+        b['nominations'] = []
+        for nom in bug.nominations:
+            if nom.status == 'Approved':
+                b['nominations'].append(nom.target.name)
+
+        t['bug'] = b
+
+        return t
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = UpdateIsoTestingBugsDB(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+

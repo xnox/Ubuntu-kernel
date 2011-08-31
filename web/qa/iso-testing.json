@@ -1,0 +1,21 @@
+{
+    "launchpad_config": {
+        "launchpad_client_name": "qa-team-update-iso-testing-bugs-db", 
+        "read_only": true
+    }, 
+    "search_criteria": {
+        "distribution": "ubuntu", 
+        "series": "oneiric", 
+        "status": [
+            "New", 
+            "Confirmed", 
+            "Triaged", 
+            "Incomplete", 
+            "In Progress", 
+            "Fix Committed"
+        ], 
+        "tags": [
+            "iso-testing"
+        ]
+    }
+}
