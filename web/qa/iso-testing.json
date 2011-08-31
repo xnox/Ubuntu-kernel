@@ -1,7 +1,7 @@
 {
     "launchpad_config": {
         "launchpad_client_name": "qa-team-update-iso-testing-bugs-db", 
-        "read_only": true
+        "read_only": false
     }, 
     "search_criteria": {
         "distribution": "ubuntu", 
@@ -17,5 +17,2836 @@
         "tags": [
             "iso-testing"
         ]
-    }
+    }, 
+    "tasks": {
+        "507062": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Wednesday, 13. January 2010 16:37 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 18:37 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 18:37 UTC", 
+                    "heat": 2760, 
+                    "id": 507062, 
+                    "nominations": [
+                        "lucid", 
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-crash", 
+                        "crash", 
+                        "i386", 
+                        "iso-testing", 
+                        "lucid", 
+                        "natty", 
+                        "needs-xorglog"
+                    ], 
+                    "title": "synaptic assert failure: synaptic: ../../src/xcb_io.c:385: _XAllocID: Assertion `ret != inval_id' failed."
+                }, 
+                "bug_target_name": "libx11", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 15. April 2011 21:16 UTC", 
+                "date_created": "Monday, 06. June 2011 21:26 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "Tuesday, 30. March 2010 17:11 UTC", 
+                "date_left_new": "Thursday, 04. March 2010 12:57 UTC", 
+                "date_triaged": "Friday, 15. April 2011 21:16 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #507062 in libx11 (Ubuntu Oneiric): \"synaptic assert failure: synaptic: ../../src/xcb_io.c:385: _XAllocID: Assertion `ret != inval_id' failed.\""
+            }
+        ], 
+        "644198": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Tuesday, 21. September 2010 08:39 UTC", 
+                    "date_last_message": "Friday, 26. August 2011 14:49 UTC", 
+                    "date_last_updated": "Friday, 26. August 2011 14:49 UTC", 
+                    "heat": 24, 
+                    "id": 644198, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "maverick"
+                    ], 
+                    "title": "Ubuntu LIve Cd does not enable bluetooth before choice menu in live-cd"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Friday, 27. May 2011 10:59 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 05. October 2010 10:59 UTC", 
+                "date_created": "Thursday, 12. May 2011 15:24 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 05. October 2010 10:59 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-2", 
+                "owner": "Scott Kitterman", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #644198 in ubiquity (Ubuntu Oneiric): \"Ubuntu LIve Cd does not enable bluetooth before choice menu in live-cd\""
+            }
+        ], 
+        "645818": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Thursday, 23. September 2010 07:47 UTC", 
+                    "date_last_message": "Thursday, 18. August 2011 18:20 UTC", 
+                    "date_last_updated": "Monday, 22. August 2011 17:18 UTC", 
+                    "heat": 357, 
+                    "id": 645818, 
+                    "nominations": [
+                        "lucid", 
+                        "maverick", 
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "iso-testing", 
+                        "maverick"
+                    ], 
+                    "title": "Unknown keyword in configuration file: gfxboot"
+                }, 
+                "bug_target_name": "usb-creator", 
+                "date_assigned": "Monday, 25. April 2011 09:10 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Monday, 25. April 2011 09:09 UTC", 
+                "date_created": "Monday, 25. April 2011 09:08 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 25. April 2011 09:09 UTC", 
+                "date_triaged": "Monday, 25. April 2011 09:09 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10", 
+                "owner": "Pete Graner", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #645818 in usb-creator (Ubuntu Oneiric): \"Unknown keyword in configuration file: gfxboot\""
+            }
+        ], 
+        "651932": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Thursday, 30. September 2010 10:44 UTC", 
+                    "date_last_message": "Wednesday, 27. April 2011 16:47 UTC", 
+                    "date_last_updated": "Wednesday, 11. May 2011 22:12 UTC", 
+                    "heat": 11, 
+                    "id": 651932, 
+                    "nominations": [
+                        "maverick", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "iso-testing", 
+                        "maverick"
+                    ], 
+                    "title": "Without internet connection, the installer shouldn't recommend the updates during installation, or third party software"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Wednesday, 27. April 2011 13:50 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Wednesday, 27. April 2011 13:50 UTC", 
+                "date_created": "Wednesday, 27. April 2011 13:50 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Wednesday, 27. April 2011 13:50 UTC", 
+                "date_triaged": "Wednesday, 27. April 2011 13:50 UTC", 
+                "importance": "Low", 
+                "is_complete": false, 
+                "milestone": "oneiric-alpha-1", 
+                "owner": "Colin Watson", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #651932 in ubiquity (Ubuntu Oneiric): \"Without internet connection, the installer shouldn't recommend the updates during installation, or third party software\""
+            }
+        ], 
+        "656004": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Wednesday, 06. October 2010 21:40 UTC", 
+                    "date_last_message": "Wednesday, 20. April 2011 15:54 UTC", 
+                    "date_last_updated": "Wednesday, 27. April 2011 22:18 UTC", 
+                    "heat": 79, 
+                    "id": 656004, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "installers (both ubiquity and d-i) allow single character passwords and encryption passphrases."
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Wednesday, 27. April 2011 21:24 UTC", 
+                "date_created": "Wednesday, 27. April 2011 21:23 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Wednesday, 27. April 2011 21:24 UTC", 
+                "date_triaged": "Wednesday, 27. April 2011 21:24 UTC", 
+                "importance": "Wishlist", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10", 
+                "owner": "Jamie Strandboge", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #656004 in ubiquity (Ubuntu Oneiric): \"installers (both ubiquity and d-i) allow single character passwords and encryption passphrases.\""
+            }
+        ], 
+        "656486": [
+            {
+                "assignee": "Canonical Kernel Team", 
+                "bug": {
+                    "date_created": "Thursday, 07. October 2010 19:08 UTC", 
+                    "date_last_message": "Monday, 15. August 2011 20:11 UTC", 
+                    "date_last_updated": "Tuesday, 16. August 2011 17:49 UTC", 
+                    "heat": 43, 
+                    "id": 656486, 
+                    "nominations": [
+                        "lucid", 
+                        "maverick", 
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "apport-collected", 
+                        "iso-testing", 
+                        "kernel-handoff-graphics", 
+                        "kubuntu", 
+                        "maverick", 
+                        "natty", 
+                        "oneiric", 
+                        "ubuntu", 
+                        "xubuntu"
+                    ], 
+                    "title": "error de Video - [DRM: radeon_ttm_backend_bind] * * ERROR failed to bind 1772 pages at 0x00000000"
+                }, 
+                "bug_target_name": "linux", 
+                "date_assigned": "Wednesday, 10. August 2011 09:52 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Monday, 25. April 2011 03:53 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "Monday, 15. August 2011 13:28 UTC", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 25. April 2011 03:53 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Incomplete", 
+                "team": "Kernel Team", 
+                "title": "Bug #656486 in linux (Ubuntu Oneiric): \"error de Video - [DRM: radeon_ttm_backend_bind] * * ERROR failed to bind 1772 pages at 0x00000000\""
+            }
+        ], 
+        "657397": [
+            {
+                "assignee": "Canonical Foundations Team", 
+                "bug": {
+                    "date_created": "Saturday, 09. October 2010 17:18 UTC", 
+                    "date_last_message": "Tuesday, 05. July 2011 17:37 UTC", 
+                    "date_last_updated": "Wednesday, 03. August 2011 00:39 UTC", 
+                    "heat": 9, 
+                    "id": 657397, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "maverick", 
+                        "ubiquity-2.4.8"
+                    ], 
+                    "title": "Install alongside option displays incorrect device designations"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Monday, 18. April 2011 12:53 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Monday, 18. April 2011 12:53 UTC", 
+                "date_created": "Tuesday, 07. June 2011 20:51 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 18. April 2011 12:53 UTC", 
+                "date_triaged": "Monday, 18. April 2011 12:53 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-1", 
+                "owner": "Kate Stewart", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #657397 in ubiquity (Ubuntu Oneiric): \"Install alongside option displays incorrect device designations\""
+            }
+        ], 
+        "709245": [
+            {
+                "assignee": "Ming Lei", 
+                "bug": {
+                    "date_created": "Friday, 28. January 2011 13:37 UTC", 
+                    "date_last_message": "Wednesday, 31. August 2011 02:27 UTC", 
+                    "date_last_updated": "Wednesday, 31. August 2011 02:28 UTC", 
+                    "heat": 76, 
+                    "id": 709245, 
+                    "nominations": [
+                        "maverick", 
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "armel", 
+                        "iso-testing", 
+                        "kernel-bug", 
+                        "patch"
+                    ], 
+                    "title": "ARM SMP scheduler performance bug"
+                }, 
+                "bug_target_name": "linux-ti-omap4", 
+                "date_assigned": "Wednesday, 31. August 2011 02:28 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 19. July 2011 18:04 UTC", 
+                "date_created": "Friday, 29. July 2011 01:39 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 19. July 2011 18:04 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Confirmed", 
+                "team": "", 
+                "title": "Bug #709245 in linux-ti-omap4 (Ubuntu Oneiric): \"ARM SMP scheduler performance bug\""
+            }
+        ], 
+        "712654": [
+            {
+                "assignee": "Ubuntu Foundations Team", 
+                "bug": {
+                    "date_created": "Thursday, 03. February 2011 18:25 UTC", 
+                    "date_last_message": "Saturday, 30. July 2011 06:45 UTC", 
+                    "date_last_updated": "Saturday, 30. July 2011 06:45 UTC", 
+                    "heat": 39, 
+                    "id": 712654, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-collected", 
+                        "iso-testing", 
+                        "natty", 
+                        "qa", 
+                        "ubiquity-2.5.14"
+                    ], 
+                    "title": "system does not reboot after installation is complete - virtual box"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Monday, 18. April 2011 16:41 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Monday, 18. April 2011 16:41 UTC", 
+                "date_created": "Monday, 18. April 2011 16:41 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 18. April 2011 16:41 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Robbie Williamson", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #712654 in ubiquity (Ubuntu Oneiric): \"system does not reboot after installation is complete - virtual box\""
+            }
+        ], 
+        "712677": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Thursday, 03. February 2011 19:01 UTC", 
+                    "date_last_message": "Thursday, 24. February 2011 16:02 UTC", 
+                    "date_last_updated": "Friday, 15. April 2011 17:27 UTC", 
+                    "heat": 3, 
+                    "id": 712677, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "Does not report crashes during \"Install Ubuntu\" installs"
+                }, 
+                "bug_target_name": "apport", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Friday, 15. April 2011 17:16 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "None", 
+                "date_triaged": "None", 
+                "importance": "Undecided", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "New", 
+                "team": "", 
+                "title": "Bug #712677 in apport (Ubuntu Oneiric): \"Does not report crashes during \"Install Ubuntu\" installs\""
+            }, 
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Thursday, 03. February 2011 19:01 UTC", 
+                    "date_last_message": "Thursday, 24. February 2011 16:02 UTC", 
+                    "date_last_updated": "Friday, 15. April 2011 17:27 UTC", 
+                    "heat": 3, 
+                    "id": 712677, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "Does not report crashes during \"Install Ubuntu\" installs"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Friday, 15. April 2011 17:16 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "None", 
+                "date_triaged": "None", 
+                "importance": "Undecided", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "New", 
+                "team": "Foundations Team", 
+                "title": "Bug #712677 in ubiquity (Ubuntu Oneiric): \"Does not report crashes during \"Install Ubuntu\" installs\""
+            }
+        ], 
+        "716714": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Thursday, 10. February 2011 21:53 UTC", 
+                    "date_last_message": "Saturday, 09. July 2011 15:14 UTC", 
+                    "date_last_updated": "Saturday, 13. August 2011 18:28 UTC", 
+                    "heat": 160, 
+                    "id": 716714, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "WARNING **: Failed to load applet WnckletFactory::WindowListApplet: GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: No such interface `org.gnome.panel.applet.AppletFactory' on  object at path /org/gnome/panel/applet/WnckletFactory"
+                }, 
+                "bug_target_name": "gnome-panel", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Monday, 25. April 2011 03:57 UTC", 
+                "date_created": "Monday, 25. April 2011 03:57 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 25. April 2011 03:57 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Confirmed", 
+                "team": "Desktop Team", 
+                "title": "Bug #716714 in gnome-panel (Ubuntu Oneiric): \"WARNING **: Failed to load applet WnckletFactory::WindowListApplet: GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: No such interface `org.gnome.panel.applet.AppletFactory' on  object at path /org/gnome/panel/applet/WnckletFactory\""
+            }
+        ], 
+        "736743": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Thursday, 17. March 2011 10:21 UTC", 
+                    "date_last_message": "Thursday, 21. July 2011 17:18 UTC", 
+                    "date_last_updated": "Sunday, 21. August 2011 18:28 UTC", 
+                    "heat": 265, 
+                    "id": 736743, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "natty", 
+                        "running-unity"
+                    ], 
+                    "title": "environment block not implemented on btrfs"
+                }, 
+                "bug_target_name": "grub2", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 15. April 2011 14:51 UTC", 
+                "date_created": "Friday, 15. April 2011 14:48 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 15. April 2011 14:51 UTC", 
+                "date_triaged": "Friday, 15. April 2011 14:51 UTC", 
+                "importance": "Wishlist", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #736743 in grub2 (Ubuntu Oneiric): \"environment block not implemented on btrfs\""
+            }
+        ], 
+        "744836": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 29. March 2011 08:53 UTC", 
+                    "date_last_message": "Wednesday, 25. May 2011 08:52 UTC", 
+                    "date_last_updated": "Friday, 24. June 2011 09:49 UTC", 
+                    "heat": 56, 
+                    "id": 744836, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-crash", 
+                        "i386", 
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "gvfsd-metadata crashed with SIGSEGV"
+                }, 
+                "bug_target_name": "gvfs", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Monday, 18. April 2011 09:25 UTC", 
+                "date_created": "Friday, 29. April 2011 17:59 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 18. April 2011 09:25 UTC", 
+                "date_triaged": "Monday, 18. April 2011 09:25 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Triaged", 
+                "team": "Desktop Team", 
+                "title": "Bug #744836 in gvfs (Ubuntu Oneiric): \"gvfsd-metadata crashed with SIGSEGV\""
+            }
+        ], 
+        "745960": [
+            {
+                "assignee": "Canonical Foundations Team", 
+                "bug": {
+                    "date_created": "Wednesday, 30. March 2011 18:53 UTC", 
+                    "date_last_message": "Thursday, 25. August 2011 09:36 UTC", 
+                    "date_last_updated": "Thursday, 25. August 2011 09:36 UTC", 
+                    "heat": 96, 
+                    "id": 745960, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "Cannot boot grub after installing to LVM"
+                }, 
+                "bug_target_name": "grub2", 
+                "date_assigned": "Friday, 29. July 2011 00:47 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Sunday, 17. April 2011 17:25 UTC", 
+                "date_created": "Tuesday, 12. April 2011 02:00 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Sunday, 17. April 2011 17:25 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-1", 
+                "owner": "Kate Stewart", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #745960 in grub2 (Ubuntu Oneiric): \"Cannot boot grub after installing to LVM\""
+            }
+        ], 
+        "746133": [
+            {
+                "assignee": "Canonical Kernel Team", 
+                "bug": {
+                    "date_created": "Wednesday, 30. March 2011 23:59 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 17:04 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 17:05 UTC", 
+                    "heat": 24, 
+                    "id": 746133, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "armel", 
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "Video loses sync on omap4"
+                }, 
+                "bug_target_name": "linux-ti-omap4", 
+                "date_assigned": "Wednesday, 10. August 2011 13:46 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 17:05 UTC", 
+                "date_created": "Wednesday, 10. August 2011 13:47 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 15. April 2011 14:58 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Confirmed", 
+                "team": "", 
+                "title": "Bug #746133 in linux-ti-omap4 (Ubuntu Oneiric): \"Video loses sync on omap4\""
+            }
+        ], 
+        "747229": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Friday, 01. April 2011 12:26 UTC", 
+                    "date_last_message": "Tuesday, 28. June 2011 04:18 UTC", 
+                    "date_last_updated": "Tuesday, 28. June 2011 10:22 UTC", 
+                    "heat": 7, 
+                    "id": 747229, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "weird color change during oem-config debconf package removal step in serial installs"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Thursday, 28. April 2011 14:02 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "Tuesday, 28. June 2011 08:04 UTC", 
+                "date_left_new": "Monday, 18. April 2011 10:16 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10", 
+                "owner": "Kate Stewart", 
+                "status": "New", 
+                "team": "Foundations Team", 
+                "title": "Bug #747229 in ubiquity (Ubuntu Oneiric): \"weird color change during oem-config debconf package removal step in serial installs\""
+            }
+        ], 
+        "750173": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Monday, 04. April 2011 11:08 UTC", 
+                    "date_last_message": "Monday, 04. April 2011 11:08 UTC", 
+                    "date_last_updated": "Wednesday, 27. July 2011 15:30 UTC", 
+                    "heat": 10, 
+                    "id": 750173, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "Choosing \"Try Ubuntu\" briefly shows console text"
+                }, 
+                "bug_target_name": "casper", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 26. April 2011 21:17 UTC", 
+                "date_created": "Tuesday, 26. April 2011 21:16 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 26. April 2011 21:17 UTC", 
+                "date_triaged": "Tuesday, 26. April 2011 21:17 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #750173 in casper (Ubuntu Oneiric): \"Choosing \"Try Ubuntu\" briefly shows console text\""
+            }
+        ], 
+        "753071": [
+            {
+                "assignee": "Ubuntu Kernel Team", 
+                "bug": {
+                    "date_created": "Wednesday, 06. April 2011 23:42 UTC", 
+                    "date_last_message": "Friday, 26. August 2011 13:24 UTC", 
+                    "date_last_updated": "Friday, 26. August 2011 13:24 UTC", 
+                    "heat": 14, 
+                    "id": 753071, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "armel", 
+                        "iso-testing"
+                    ], 
+                    "title": "Include DRM OMAP driver to have proper EDID detection"
+                }, 
+                "bug_target_name": "linux", 
+                "date_assigned": "Tuesday, 07. June 2011 20:03 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Friday, 15. April 2011 14:38 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "Friday, 26. August 2011 13:24 UTC", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 15. April 2011 14:38 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jeremy Foshee", 
+                "status": "Incomplete", 
+                "team": "Kernel Team", 
+                "title": "Bug #753071 in linux (Ubuntu Oneiric): \"Include DRM OMAP driver to have proper EDID detection\""
+            }
+        ], 
+        "758486": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 12. April 2011 07:23 UTC", 
+                    "date_last_message": "Sunday, 24. July 2011 19:37 UTC", 
+                    "date_last_updated": "Thursday, 04. August 2011 17:59 UTC", 
+                    "heat": 21, 
+                    "id": 758486, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "armel", 
+                        "iso-testing", 
+                        "kernel-graphics", 
+                        "natty"
+                    ], 
+                    "title": "omapdss DISPC error on Panda platform"
+                }, 
+                "bug_target_name": "linux-ti-omap4", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Thursday, 04. August 2011 17:59 UTC", 
+                "date_created": "Monday, 25. April 2011 10:04 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Thursday, 04. August 2011 17:59 UTC", 
+                "date_triaged": "None", 
+                "importance": "Undecided", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Pete Graner", 
+                "status": "Confirmed", 
+                "team": "", 
+                "title": "Bug #758486 in linux-ti-omap4 (Ubuntu Oneiric): \"omapdss DISPC error on Panda platform\""
+            }
+        ], 
+        "759545": [
+            {
+                "assignee": "Colin Watson", 
+                "bug": {
+                    "date_created": "Wednesday, 13. April 2011 08:06 UTC", 
+                    "date_last_message": "Monday, 29. August 2011 14:01 UTC", 
+                    "date_last_updated": "Monday, 29. August 2011 14:01 UTC", 
+                    "heat": 28, 
+                    "id": 759545, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "natty", 
+                        "patch", 
+                        "server-o-ro"
+                    ], 
+                    "title": "user prompted to update unmodified grub configuration during Ubuntu server upgrade"
+                }, 
+                "bug_target_name": "grub2", 
+                "date_assigned": "Monday, 25. April 2011 13:42 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Monday, 25. April 2011 13:41 UTC", 
+                "date_created": "Monday, 25. April 2011 13:41 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 25. April 2011 13:41 UTC", 
+                "date_triaged": "Monday, 25. April 2011 13:41 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-1", 
+                "owner": "Scott Kitterman", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #759545 in grub2 (Ubuntu Oneiric): \"user prompted to update unmodified grub configuration during Ubuntu server upgrade\""
+            }
+        ], 
+        "760111": [
+            {
+                "assignee": "Mikkel Kamstrup Erlandsen", 
+                "bug": {
+                    "date_created": "Wednesday, 13. April 2011 18:57 UTC", 
+                    "date_last_message": "Tuesday, 19. April 2011 10:19 UTC", 
+                    "date_last_updated": "Friday, 29. April 2011 18:17 UTC", 
+                    "heat": 39, 
+                    "id": 760111, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "a11y", 
+                        "apport-crash", 
+                        "i386", 
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "zeitgeist-daemon crashed with OSError in makedirs(): [Errno 13] Permission denied: '/home/ubuntu/.local/share/zeitgeist'"
+                }, 
+                "bug_target_name": "zeitgeist", 
+                "date_assigned": "Monday, 18. April 2011 09:30 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Monday, 18. April 2011 09:28 UTC", 
+                "date_created": "Friday, 29. April 2011 18:15 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 18. April 2011 09:28 UTC", 
+                "date_triaged": "Monday, 18. April 2011 09:28 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #760111 in zeitgeist (Ubuntu Oneiric): \"zeitgeist-daemon crashed with OSError in makedirs(): [Errno 13] Permission denied: '/home/ubuntu/.local/share/zeitgeist'\""
+            }
+        ], 
+        "760275": [
+            {
+                "assignee": "Ubuntu Simplified Chinese Translators", 
+                "bug": {
+                    "date_created": "Wednesday, 13. April 2011 21:36 UTC", 
+                    "date_last_message": "Thursday, 14. April 2011 11:11 UTC", 
+                    "date_last_updated": "Friday, 29. April 2011 18:14 UTC", 
+                    "heat": 2, 
+                    "id": 760275, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "natty", 
+                        "qa"
+                    ], 
+                    "title": "simplified chinese has missing label translations for applets"
+                }, 
+                "bug_target_name": "Ubuntu Oneiric", 
+                "date_assigned": "Friday, 29. April 2011 18:14 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Thursday, 14. April 2011 11:11 UTC", 
+                "date_created": "Friday, 29. April 2011 18:13 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Thursday, 14. April 2011 11:11 UTC", 
+                "date_triaged": "Thursday, 14. April 2011 11:11 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #760275 in Ubuntu Oneiric: \"simplified chinese has missing label translations for applets\""
+            }
+        ], 
+        "766265": [
+            {
+                "assignee": "Canonical Foundations Team", 
+                "bug": {
+                    "date_created": "Tuesday, 19. April 2011 17:02 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 10:46 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 10:46 UTC", 
+                    "heat": 31, 
+                    "id": 766265, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-collected", 
+                        "iso-testing", 
+                        "natty", 
+                        "ubiquity-2.6.9"
+                    ], 
+                    "title": "Ubiquity proceeds to use free space without warning"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Friday, 27. May 2011 02:43 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 26. April 2011 12:41 UTC", 
+                "date_created": "Friday, 27. May 2011 02:44 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 26. April 2011 12:41 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #766265 in ubiquity (Ubuntu Oneiric): \"Ubiquity proceeds to use free space without warning\""
+            }
+        ], 
+        "769350": [
+            {
+                "assignee": "Canonical Foundations Team", 
+                "bug": {
+                    "date_created": "Saturday, 23. April 2011 04:41 UTC", 
+                    "date_last_message": "Sunday, 24. April 2011 02:01 UTC", 
+                    "date_last_updated": "Thursday, 28. April 2011 14:26 UTC", 
+                    "heat": 3, 
+                    "id": 769350, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-collected", 
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "resized partition size doesn't count swap space size."
+                }, 
+                "bug_target_name": "partman-auto", 
+                "date_assigned": "Saturday, 23. April 2011 23:09 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Saturday, 23. April 2011 14:15 UTC", 
+                "date_created": "Thursday, 28. April 2011 14:26 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Saturday, 23. April 2011 14:15 UTC", 
+                "date_triaged": "Saturday, 23. April 2011 23:09 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #769350 in partman-auto (Ubuntu Oneiric): \"resized partition size doesn't count swap space size.\""
+            }
+        ], 
+        "769704": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Sunday, 24. April 2011 02:57 UTC", 
+                    "date_last_message": "Wednesday, 27. April 2011 05:58 UTC", 
+                    "date_last_updated": "Wednesday, 27. April 2011 09:54 UTC", 
+                    "heat": 9, 
+                    "id": 769704, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing", 
+                        "natty"
+                    ], 
+                    "title": "Install doesn't proceed because of I/O error for floppy disk drive"
+                }, 
+                "bug_target_name": "debian-installer", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Wednesday, 27. April 2011 07:14 UTC", 
+                "date_created": "Wednesday, 27. April 2011 07:14 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Wednesday, 27. April 2011 07:14 UTC", 
+                "date_triaged": "Wednesday, 27. April 2011 07:14 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #769704 in debian-installer (Ubuntu Oneiric): \"Install doesn't proceed because of I/O error for floppy disk drive\""
+            }
+        ], 
+        "770320": [
+            {
+                "assignee": "Ubuntu Installer Team", 
+                "bug": {
+                    "date_created": "Monday, 25. April 2011 15:20 UTC", 
+                    "date_last_message": "Monday, 25. April 2011 15:45 UTC", 
+                    "date_last_updated": "Monday, 22. August 2011 16:47 UTC", 
+                    "heat": 7, 
+                    "id": 770320, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "Sorting non-English list: French installer sorts accented names at end of alphabet"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Tuesday, 07. June 2011 19:52 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 26. April 2011 09:24 UTC", 
+                "date_created": "Wednesday, 08. June 2011 22:08 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 26. April 2011 09:24 UTC", 
+                "date_triaged": "Tuesday, 26. April 2011 09:24 UTC", 
+                "importance": "Low", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-1", 
+                "owner": "Brian Murray", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #770320 in ubiquity (Ubuntu Oneiric): \"Sorting non-English list: French installer sorts accented names at end of alphabet\""
+            }
+        ], 
+        "770711": [
+            {
+                "assignee": "Ubuntu Installer Team", 
+                "bug": {
+                    "date_created": "Tuesday, 26. April 2011 07:55 UTC", 
+                    "date_last_message": "Tuesday, 26. April 2011 07:55 UTC", 
+                    "date_last_updated": "Saturday, 06. August 2011 04:29 UTC", 
+                    "heat": 8, 
+                    "id": 770711, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "Prefers to install to USB rather than to HD"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Tuesday, 07. June 2011 19:49 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Wednesday, 08. June 2011 22:09 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "None", 
+                "date_triaged": "None", 
+                "importance": "Low", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-1", 
+                "owner": "Brian Murray", 
+                "status": "New", 
+                "team": "Foundations Team", 
+                "title": "Bug #770711 in ubiquity (Ubuntu Oneiric): \"Prefers to install to USB rather than to HD\""
+            }
+        ], 
+        "771268": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 26. April 2011 14:27 UTC", 
+                    "date_last_message": "Tuesday, 26. April 2011 14:27 UTC", 
+                    "date_last_updated": "Wednesday, 11. May 2011 22:25 UTC", 
+                    "heat": 4, 
+                    "id": 771268, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "LTSP environment always in English in LTSP Live and installed LTSP"
+                }, 
+                "bug_target_name": "edubuntu-live", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 26. April 2011 14:29 UTC", 
+                "date_created": "Tuesday, 26. April 2011 14:28 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 26. April 2011 14:29 UTC", 
+                "date_triaged": "Tuesday, 26. April 2011 14:29 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Stphane Graber", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #771268 in edubuntu-live (Ubuntu Oneiric): \"LTSP environment always in English in LTSP Live and installed LTSP\""
+            }, 
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 26. April 2011 14:27 UTC", 
+                    "date_last_message": "Tuesday, 26. April 2011 14:27 UTC", 
+                    "date_last_updated": "Wednesday, 11. May 2011 22:25 UTC", 
+                    "heat": 4, 
+                    "id": 771268, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "LTSP environment always in English in LTSP Live and installed LTSP"
+                }, 
+                "bug_target_name": "ltsp", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 26. April 2011 14:29 UTC", 
+                "date_created": "Tuesday, 26. April 2011 14:28 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 26. April 2011 14:29 UTC", 
+                "date_triaged": "Tuesday, 26. April 2011 14:29 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Stphane Graber", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #771268 in ltsp (Ubuntu Oneiric): \"LTSP environment always in English in LTSP Live and installed LTSP\""
+            }
+        ], 
+        "775124": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Sunday, 01. May 2011 20:30 UTC", 
+                    "date_last_message": "Tuesday, 16. August 2011 16:22 UTC", 
+                    "date_last_updated": "Tuesday, 16. August 2011 16:22 UTC", 
+                    "heat": 65, 
+                    "id": 775124, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "natty", 
+                        "running-unity", 
+                        "ubiquity-2.6.10"
+                    ], 
+                    "title": "Ubiquity should have a command line option to override the free space check"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Monday, 16. May 2011 13:43 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 13. May 2011 14:37 UTC", 
+                "date_created": "Wednesday, 25. May 2011 17:26 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 13. May 2011 14:37 UTC", 
+                "date_triaged": "Friday, 13. May 2011 14:37 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10", 
+                "owner": "Brian Murray", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #775124 in ubiquity (Ubuntu Oneiric): \"Ubiquity should have a command line option to override the free space check\""
+            }
+        ], 
+        "780972": [
+            {
+                "assignee": "Ubuntu One hackers", 
+                "bug": {
+                    "date_created": "Wednesday, 11. May 2011 08:25 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 06:54 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 20:40 UTC", 
+                    "heat": 1464, 
+                    "id": 780972, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-crash", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "desktopcouch-service crashed with Unauthorized in request(): ('unauthorized', 'Authentication required.')"
+                }, 
+                "bug_target_name": "desktopcouch", 
+                "date_assigned": "Sunday, 28. August 2011 21:05 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Thursday, 23. June 2011 13:06 UTC", 
+                "date_created": "Monday, 29. August 2011 06:12 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Thursday, 23. June 2011 13:06 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-2", 
+                "owner": "Martin Pitt", 
+                "status": "Confirmed", 
+                "team": "", 
+                "title": "Bug #780972 in desktopcouch (Ubuntu Oneiric): \"desktopcouch-service crashed with Unauthorized in request(): ('unauthorized', 'Authentication required.')\""
+            }
+        ], 
+        "790712": [
+            {
+                "assignee": "Stefan Bader", 
+                "bug": {
+                    "date_created": "Tuesday, 31. May 2011 14:16 UTC", 
+                    "date_last_message": "Friday, 15. July 2011 14:06 UTC", 
+                    "date_last_updated": "Monday, 18. July 2011 06:55 UTC", 
+                    "heat": 18, 
+                    "id": 790712, 
+                    "nominations": [
+                        "natty", 
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing", 
+                        "kernel-server", 
+                        "oneiric", 
+                        "qa", 
+                        "server-o-ro"
+                    ], 
+                    "title": "20110531 i386 server ISO: order 5 allocation failure during install"
+                }, 
+                "bug_target_name": "linux", 
+                "date_assigned": "Thursday, 07. July 2011 03:31 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Thursday, 23. June 2011 16:36 UTC", 
+                "date_created": "Thursday, 07. July 2011 03:32 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Thursday, 23. June 2011 16:36 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Confirmed", 
+                "team": "Kernel Team", 
+                "title": "Bug #790712 in linux (Ubuntu Oneiric): \"20110531 i386 server ISO: order 5 allocation failure during install\""
+            }
+        ], 
+        "791467": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Wednesday, 01. June 2011 17:42 UTC", 
+                    "date_last_message": "Friday, 10. June 2011 18:18 UTC", 
+                    "date_last_updated": "Friday, 10. June 2011 18:18 UTC", 
+                    "heat": 5, 
+                    "id": 791467, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "bitesize", 
+                        "iso-testing"
+                    ], 
+                    "title": "gcdmaster not built on Oneiric: breaks ubuntustudio installation with  additional software"
+                }, 
+                "bug_target_name": "ubuntustudio-meta", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 10. June 2011 16:15 UTC", 
+                "date_created": "Friday, 10. June 2011 16:15 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 10. June 2011 16:15 UTC", 
+                "date_triaged": "Friday, 10. June 2011 16:15 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #791467 in ubuntustudio-meta (Ubuntu Oneiric): \"gcdmaster not built on Oneiric: breaks ubuntustudio installation with  additional software\""
+            }, 
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Wednesday, 01. June 2011 17:42 UTC", 
+                    "date_last_message": "Friday, 10. June 2011 18:18 UTC", 
+                    "date_last_updated": "Friday, 10. June 2011 18:18 UTC", 
+                    "heat": 5, 
+                    "id": 791467, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "bitesize", 
+                        "iso-testing"
+                    ], 
+                    "title": "gcdmaster not built on Oneiric: breaks ubuntustudio installation with  additional software"
+                }, 
+                "bug_target_name": "cdrdao", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Wednesday, 01. June 2011 17:42 UTC", 
+                "date_created": "Thursday, 02. June 2011 14:20 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Wednesday, 01. June 2011 17:42 UTC", 
+                "date_triaged": "Thursday, 02. June 2011 14:19 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #791467 in cdrdao (Ubuntu Oneiric): \"gcdmaster not built on Oneiric: breaks ubuntustudio installation with  additional software\""
+            }
+        ], 
+        "791607": [
+            {
+                "assignee": "Ubuntu Server Team", 
+                "bug": {
+                    "date_created": "Wednesday, 01. June 2011 23:15 UTC", 
+                    "date_last_message": "Friday, 26. August 2011 07:12 UTC", 
+                    "date_last_updated": "Friday, 26. August 2011 13:38 UTC", 
+                    "heat": 12, 
+                    "id": 791607, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing", 
+                        "server-o-rs"
+                    ], 
+                    "title": "Oneiric Eucalyptus fails to start up"
+                }, 
+                "bug_target_name": "eucalyptus", 
+                "date_assigned": "Friday, 22. July 2011 03:23 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Thursday, 09. June 2011 16:09 UTC", 
+                "date_created": "Friday, 15. July 2011 17:54 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Thursday, 09. June 2011 16:09 UTC", 
+                "date_triaged": "Thursday, 25. August 2011 23:16 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-1", 
+                "owner": "Kate Stewart", 
+                "status": "Triaged", 
+                "team": "Server Team", 
+                "title": "Bug #791607 in eucalyptus (Ubuntu Oneiric): \"Oneiric Eucalyptus fails to start up\""
+            }
+        ], 
+        "793486": [
+            {
+                "assignee": "Canonical Kernel Team", 
+                "bug": {
+                    "date_created": "Monday, 06. June 2011 12:25 UTC", 
+                    "date_last_message": "Wednesday, 10. August 2011 17:01 UTC", 
+                    "date_last_updated": "Wednesday, 10. August 2011 17:01 UTC", 
+                    "heat": 30, 
+                    "id": 793486, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "apport-collected", 
+                        "compiz-0.9", 
+                        "iso-testing", 
+                        "kernel-needs-reviewkernel-handoff-graphics", 
+                        "oneiric", 
+                        "regression-release", 
+                        "running-unity", 
+                        "ubuntu", 
+                        "unity-2d"
+                    ], 
+                    "title": "Invisible pointer (Regression in kernel from 2.6.39.4 to 3.0.0-0300rc1)"
+                }, 
+                "bug_target_name": "linux", 
+                "date_assigned": "Wednesday, 10. August 2011 09:54 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Wednesday, 10. August 2011 15:43 UTC", 
+                "date_created": "Wednesday, 10. August 2011 09:53 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Monday, 06. June 2011 13:21 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Confirmed", 
+                "team": "Kernel Team", 
+                "title": "Bug #793486 in linux (Ubuntu Oneiric): \"Invisible pointer (Regression in kernel from 2.6.39.4 to 3.0.0-0300rc1)\""
+            }
+        ], 
+        "797868": [
+            {
+                "assignee": "Mathieu Trudel-Lapierre", 
+                "bug": {
+                    "date_created": "Wednesday, 15. June 2011 19:02 UTC", 
+                    "date_last_message": "Thursday, 25. August 2011 10:25 UTC", 
+                    "date_last_updated": "Friday, 26. August 2011 22:37 UTC", 
+                    "heat": 215, 
+                    "id": 797868, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-crash", 
+                        "iso-testing", 
+                        "oneiric"
+                    ], 
+                    "title": "NetworkManager crashed with SIGSEGV in g_type_instance_get_private()"
+                }, 
+                "bug_target_name": "network-manager", 
+                "date_assigned": "Tuesday, 26. July 2011 20:35 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 26. July 2011 18:37 UTC", 
+                "date_created": "Monday, 15. August 2011 12:18 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 26. July 2011 18:37 UTC", 
+                "date_triaged": "Monday, 15. August 2011 12:18 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Pedro Villavicencio", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #797868 in network-manager (Ubuntu Oneiric): \"NetworkManager crashed with SIGSEGV in g_type_instance_get_private()\""
+            }
+        ], 
+        "800561": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Wednesday, 22. June 2011 08:44 UTC", 
+                    "date_last_message": "Wednesday, 03. August 2011 21:16 UTC", 
+                    "date_last_updated": "Wednesday, 03. August 2011 21:17 UTC", 
+                    "heat": 18, 
+                    "id": 800561, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "unity-2d"
+                    ], 
+                    "title": "No way to add other keymap than english on Live CD"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 08. July 2011 21:48 UTC", 
+                "date_created": "Wednesday, 22. June 2011 10:47 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Thursday, 23. June 2011 06:32 UTC", 
+                "date_triaged": "Friday, 08. July 2011 21:48 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #800561 in ubiquity (Ubuntu Oneiric): \"No way to add other keymap than english on Live CD\""
+            }
+        ], 
+        "800675": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Wednesday, 22. June 2011 13:04 UTC", 
+                    "date_last_message": "Wednesday, 22. June 2011 13:04 UTC", 
+                    "date_last_updated": "Friday, 29. July 2011 20:22 UTC", 
+                    "heat": 20, 
+                    "id": 800675, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "hardy", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity", 
+                        "ubiquity-1.8.7", 
+                        "unity-2d"
+                    ], 
+                    "title": "Power, Volume and Network indicator displayed on top panel during Wubi installation"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Wednesday, 22. June 2011 13:04 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 08. July 2011 20:41 UTC", 
+                "date_created": "Wednesday, 22. June 2011 13:04 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 08. July 2011 20:41 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #800675 in ubiquity (Ubuntu Oneiric): \"Power, Volume and Network indicator displayed on top panel during Wubi installation\""
+            }
+        ], 
+        "806076": [
+            {
+                "assignee": "Canonical Foundations Team", 
+                "bug": {
+                    "date_created": "Tuesday, 05. July 2011 17:22 UTC", 
+                    "date_last_message": "Friday, 22. July 2011 13:24 UTC", 
+                    "date_last_updated": "Friday, 05. August 2011 02:16 UTC", 
+                    "heat": 6, 
+                    "id": 806076, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing", 
+                        "ui"
+                    ], 
+                    "title": "Minimal Setup progress bar at 100% while downloading"
+                }, 
+                "bug_target_name": "pkgsel", 
+                "date_assigned": "Friday, 05. August 2011 02:16 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 19. July 2011 13:20 UTC", 
+                "date_created": "Friday, 05. August 2011 02:16 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Wednesday, 06. July 2011 09:43 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #806076 in pkgsel (Ubuntu Oneiric): \"Minimal Setup progress bar at 100% while downloading\""
+            }
+        ], 
+        "806358": [
+            {
+                "assignee": "Jay Taoko", 
+                "bug": {
+                    "date_created": "Wednesday, 06. July 2011 07:51 UTC", 
+                    "date_last_message": "Friday, 26. August 2011 15:55 UTC", 
+                    "date_last_updated": "Friday, 26. August 2011 15:55 UTC", 
+                    "heat": 18, 
+                    "id": 806358, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "no menu bar on top, compositing bug?"
+                }, 
+                "bug_target_name": "unity", 
+                "date_assigned": "Wednesday, 06. July 2011 10:24 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 12. August 2011 12:58 UTC", 
+                "date_created": "Friday, 05. August 2011 02:35 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 12. August 2011 12:58 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Confirmed", 
+                "team": "", 
+                "title": "Bug #806358 in unity (Ubuntu Oneiric): \"no menu bar on top, compositing bug?\""
+            }
+        ], 
+        "806559": [
+            {
+                "assignee": "Robert Ancell", 
+                "bug": {
+                    "date_created": "Wednesday, 06. July 2011 16:30 UTC", 
+                    "date_last_message": "Monday, 11. July 2011 05:37 UTC", 
+                    "date_last_updated": "Monday, 29. August 2011 07:13 UTC", 
+                    "heat": 14, 
+                    "id": 806559, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing"
+                    ], 
+                    "title": "debconf prompt about DM to use during natty->oneiric"
+                }, 
+                "bug_target_name": "lightdm", 
+                "date_assigned": "Wednesday, 06. July 2011 21:46 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Wednesday, 06. July 2011 21:46 UTC", 
+                "date_created": "Wednesday, 06. July 2011 21:47 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Wednesday, 06. July 2011 21:46 UTC", 
+                "date_triaged": "Wednesday, 06. July 2011 21:46 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #806559 in lightdm (Ubuntu Oneiric): \"debconf prompt about DM to use during natty->oneiric\""
+            }
+        ], 
+        "806672": [
+            {
+                "assignee": "Janne Jokitalo", 
+                "bug": {
+                    "date_created": "Wednesday, 06. July 2011 20:41 UTC", 
+                    "date_last_message": "Monday, 11. July 2011 07:30 UTC", 
+                    "date_last_updated": "Saturday, 23. July 2011 09:36 UTC", 
+                    "heat": 9, 
+                    "id": 806672, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "iso-testing", 
+                        "ubuntustudio"
+                    ], 
+                    "title": "UbuntuStudio Oneiric Alpha2 fails to install - unmet dependencies"
+                }, 
+                "bug_target_name": "ubuntustudio-meta", 
+                "date_assigned": "Monday, 11. July 2011 18:15 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 08. July 2011 08:30 UTC", 
+                "date_created": "Friday, 08. July 2011 16:54 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 08. July 2011 08:30 UTC", 
+                "date_triaged": "Friday, 08. July 2011 08:30 UTC", 
+                "importance": "Critical", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #806672 in ubuntustudio-meta (Ubuntu Oneiric): \"UbuntuStudio Oneiric Alpha2 fails to install - unmet dependencies\""
+            }
+        ], 
+        "806751": [
+            {
+                "assignee": "Michael Casadevall", 
+                "bug": {
+                    "date_created": "Thursday, 07. July 2011 01:50 UTC", 
+                    "date_last_message": "Monday, 29. August 2011 17:16 UTC", 
+                    "date_last_updated": "Monday, 29. August 2011 17:16 UTC", 
+                    "heat": 12, 
+                    "id": 806751, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "armel", 
+                        "iso-testing"
+                    ], 
+                    "title": "Boot partition on SD is too small on omap/omap4"
+                }, 
+                "bug_target_name": "debian-installer", 
+                "date_assigned": "Monday, 29. August 2011 17:15 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Friday, 08. July 2011 17:01 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "Monday, 29. August 2011 17:15 UTC", 
+                "date_left_new": "Friday, 08. July 2011 17:01 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "New", 
+                "team": "Foundations Team", 
+                "title": "Bug #806751 in debian-installer (Ubuntu Oneiric): \"Boot partition on SD is too small on omap/omap4\""
+            }
+        ], 
+        "806784": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Thursday, 07. July 2011 04:34 UTC", 
+                    "date_last_message": "Tuesday, 02. August 2011 21:21 UTC", 
+                    "date_last_updated": "Tuesday, 02. August 2011 21:21 UTC", 
+                    "heat": 14, 
+                    "id": 806784, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "installer-crash", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "ubiquity-2.7.10"
+                    ], 
+                    "title": "Oneiric installer crash: not enough space to unpack kernel headers"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Friday, 08. July 2011 12:35 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Thursday, 07. July 2011 09:33 UTC", 
+                "date_created": "Friday, 05. August 2011 02:14 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Thursday, 07. July 2011 09:33 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Kate Stewart", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #806784 in ubiquity (Ubuntu Oneiric): \"Oneiric installer crash: not enough space to unpack kernel headers\""
+            }
+        ], 
+        "809714": [
+            {
+                "assignee": "Canonical Desktop Team", 
+                "bug": {
+                    "date_created": "Wednesday, 13. July 2011 06:02 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 08:31 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 08:31 UTC", 
+                    "heat": 36, 
+                    "id": 809714, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-crash", 
+                        "iso-testing", 
+                        "oneiric"
+                    ], 
+                    "title": "ibus-engine-sunpinyin crashed with SIGSEGV in std::basic_string<char, std::char_traits<char>, std::allocator<char> >::assign()"
+                }, 
+                "bug_target_name": "ibus-sunpinyin", 
+                "date_assigned": "Thursday, 04. August 2011 10:47 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Thursday, 04. August 2011 10:45 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "Tuesday, 30. August 2011 08:31 UTC", 
+                "date_left_closed": "None", 
+                "date_left_new": "Saturday, 30. July 2011 14:01 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Incomplete", 
+                "team": "", 
+                "title": "Bug #809714 in ibus-sunpinyin (Ubuntu Oneiric): \"ibus-engine-sunpinyin crashed with SIGSEGV in std::basic_string<char, std::char_traits<char>, std::allocator<char> >::assign()\""
+            }
+        ], 
+        "819624": [
+            {
+                "assignee": "Canonical Foundations Team", 
+                "bug": {
+                    "date_created": "Tuesday, 02. August 2011 04:41 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 14:00 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 14:00 UTC", 
+                    "heat": 37, 
+                    "id": 819624, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric"
+                    ], 
+                    "title": "casper doesn't configure autologin for lightdm properly"
+                }, 
+                "bug_target_name": "casper", 
+                "date_assigned": "Thursday, 04. August 2011 14:18 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 02. August 2011 17:16 UTC", 
+                "date_created": "Tuesday, 02. August 2011 17:17 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "Tuesday, 02. August 2011 22:13 UTC", 
+                "date_left_new": "Tuesday, 02. August 2011 17:16 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #819624 in casper (Ubuntu Oneiric): \"casper doesn't configure autologin for lightdm properly\""
+            }
+        ], 
+        "820466": [
+            {
+                "assignee": "Paolo Pisati", 
+                "bug": {
+                    "date_created": "Wednesday, 03. August 2011 16:20 UTC", 
+                    "date_last_message": "Friday, 26. August 2011 13:17 UTC", 
+                    "date_last_updated": "Friday, 26. August 2011 13:17 UTC", 
+                    "heat": 10, 
+                    "id": 820466, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "armel", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "No sound on omap4 pandaboard"
+                }, 
+                "bug_target_name": "linux-ti-omap4", 
+                "date_assigned": "Wednesday, 10. August 2011 13:40 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Thursday, 04. August 2011 13:26 UTC", 
+                "date_created": "Wednesday, 10. August 2011 13:40 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Thursday, 04. August 2011 13:26 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Confirmed", 
+                "team": "", 
+                "title": "Bug #820466 in linux-ti-omap4 (Ubuntu Oneiric): \"No sound on omap4 pandaboard\""
+            }
+        ], 
+        "820514": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Wednesday, 03. August 2011 18:31 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 17:20 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 17:26 UTC", 
+                    "heat": 14, 
+                    "id": 820514, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "armel", 
+                        "iso-testing", 
+                        "oem-config", 
+                        "oneiric", 
+                        "running-unity", 
+                        "ubiquity-2.7.14"
+                    ], 
+                    "title": "oem-config-remove-gtk not found during preinstalled desktop initialization"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Wednesday, 10. August 2011 09:59 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 17:20 UTC", 
+                "date_created": "Wednesday, 10. August 2011 10:00 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 26. August 2011 13:49 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #820514 in ubiquity (Ubuntu Oneiric): \"oem-config-remove-gtk not found during preinstalled desktop initialization\""
+            }
+        ], 
+        "829570": [
+            {
+                "assignee": "Didier Roche", 
+                "bug": {
+                    "date_created": "Friday, 19. August 2011 15:21 UTC", 
+                    "date_last_message": "Monday, 29. August 2011 04:55 UTC", 
+                    "date_last_updated": "Monday, 29. August 2011 16:19 UTC", 
+                    "heat": 184, 
+                    "id": 829570, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-crash", 
+                        "bugpattern-written", 
+                        "iso-testing", 
+                        "oneiric"
+                    ], 
+                    "title": "oneconf-service crashed with OSError in _execute_child(): [Errno 2] No such file or directory"
+                }, 
+                "bug_target_name": "oneconf", 
+                "date_assigned": "Monday, 29. August 2011 15:28 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Wednesday, 24. August 2011 06:23 UTC", 
+                "date_created": "Monday, 29. August 2011 15:27 UTC", 
+                "date_fix_committed": "Monday, 29. August 2011 16:18 UTC", 
+                "date_fix_released": "None", 
+                "date_in_progress": "Monday, 29. August 2011 16:18 UTC", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Wednesday, 24. August 2011 06:23 UTC", 
+                "date_triaged": "Monday, 29. August 2011 16:18 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-2", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Fix Committed", 
+                "team": "", 
+                "title": "Bug #829570 in oneconf (Ubuntu Oneiric): \"oneconf-service crashed with OSError in _execute_child(): [Errno 2] No such file or directory\""
+            }
+        ], 
+        "830946": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Monday, 22. August 2011 09:29 UTC", 
+                    "date_last_message": "Monday, 22. August 2011 09:29 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 09:55 UTC", 
+                    "heat": 6, 
+                    "id": 830946, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "regression-release", 
+                        "running-unity", 
+                        "ubiquity-2.7.15"
+                    ], 
+                    "title": "Nothing displayed on embedded terminal."
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Monday, 22. August 2011 09:30 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "None", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "New", 
+                "team": "Foundations Team", 
+                "title": "Bug #830946 in ubiquity (Ubuntu Oneiric): \"Nothing displayed on embedded terminal.\""
+            }
+        ], 
+        "831026": [
+            {
+                "assignee": "Robert Ancell", 
+                "bug": {
+                    "date_created": "Monday, 22. August 2011 11:57 UTC", 
+                    "date_last_message": "Friday, 26. August 2011 00:44 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 12:55 UTC", 
+                    "heat": 6, 
+                    "id": 831026, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "greeter is in english after a non-english installation"
+                }, 
+                "bug_target_name": "lightdm", 
+                "date_assigned": "Tuesday, 23. August 2011 13:12 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 23. August 2011 13:12 UTC", 
+                "date_created": "Monday, 22. August 2011 12:52 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 23. August 2011 13:12 UTC", 
+                "date_triaged": "Tuesday, 23. August 2011 13:12 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #831026 in lightdm (Ubuntu Oneiric): \"greeter is in english after a non-english installation\""
+            }
+        ], 
+        "831488": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Monday, 22. August 2011 16:44 UTC", 
+                    "date_last_message": "Monday, 29. August 2011 16:39 UTC", 
+                    "date_last_updated": "Monday, 29. August 2011 16:40 UTC", 
+                    "heat": 6, 
+                    "id": 831488, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric"
+                    ], 
+                    "title": "Xubuntu should not call gnome-control-center"
+                }, 
+                "bug_target_name": "gnome-bluetooth", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 26. August 2011 17:05 UTC", 
+                "date_created": "Friday, 26. August 2011 17:05 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 26. August 2011 17:05 UTC", 
+                "date_triaged": "Monday, 29. August 2011 16:39 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Sebastien Bacher", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #831488 in gnome-bluetooth (Ubuntu Oneiric): \"Xubuntu should not call gnome-control-center\""
+            }
+        ], 
+        "832603": [
+            {
+                "assignee": "Rodrigo Moya", 
+                "bug": {
+                    "date_created": "Wednesday, 24. August 2011 08:48 UTC", 
+                    "date_last_message": "Wednesday, 31. August 2011 00:59 UTC", 
+                    "date_last_updated": "Wednesday, 31. August 2011 00:59 UTC", 
+                    "heat": 584, 
+                    "id": 832603, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-crash", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric"
+                    ], 
+                    "title": "gnome-settings-daemon crashed with SIGSEGV in g_simple_async_result_complete()"
+                }, 
+                "bug_target_name": "gnome-settings-daemon", 
+                "date_assigned": "Monday, 29. August 2011 17:53 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Wednesday, 24. August 2011 12:33 UTC", 
+                "date_created": "Monday, 29. August 2011 17:53 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Wednesday, 24. August 2011 12:33 UTC", 
+                "date_triaged": "Wednesday, 24. August 2011 13:44 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Pedro Villavicencio", 
+                "status": "Triaged", 
+                "team": "Desktop Team", 
+                "title": "Bug #832603 in gnome-settings-daemon (Ubuntu Oneiric): \"gnome-settings-daemon crashed with SIGSEGV in g_simple_async_result_complete()\""
+            }
+        ], 
+        "834045": [
+            {
+                "assignee": "Alberto Mardegan", 
+                "bug": {
+                    "date_created": "Thursday, 25. August 2011 19:39 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 09:59 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 22:49 UTC", 
+                    "heat": 622, 
+                    "id": 834045, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-crash", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "unity-2d-panel crashed with SIGSEGV in QConfSchema::findKey()"
+                }, 
+                "bug_target_name": "unity-2d", 
+                "date_assigned": "Friday, 26. August 2011 21:19 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Friday, 26. August 2011 09:03 UTC", 
+                "date_created": "Friday, 26. August 2011 21:19 UTC", 
+                "date_fix_committed": "Tuesday, 30. August 2011 14:25 UTC", 
+                "date_fix_released": "None", 
+                "date_in_progress": "Tuesday, 30. August 2011 08:47 UTC", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Friday, 26. August 2011 09:03 UTC", 
+                "date_triaged": "Tuesday, 30. August 2011 08:47 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-1", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Fix Committed", 
+                "team": "", 
+                "title": "Bug #834045 in unity-2d (Ubuntu Oneiric): \"unity-2d-panel crashed with SIGSEGV in QConfSchema::findKey()\""
+            }
+        ], 
+        "835129": [
+            {
+                "assignee": "Gary Lasker", 
+                "bug": {
+                    "date_created": "Friday, 26. August 2011 22:47 UTC", 
+                    "date_last_message": "Monday, 29. August 2011 09:12 UTC", 
+                    "date_last_updated": "Monday, 29. August 2011 15:30 UTC", 
+                    "heat": 181, 
+                    "id": 835129, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-crash", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "software-center-gtk3 crashed with AttributeError in _append_new(): 'NoneType' object has no attribute 'query'"
+                }, 
+                "bug_target_name": "software-center", 
+                "date_assigned": "Monday, 29. August 2011 14:58 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Saturday, 27. August 2011 07:27 UTC", 
+                "date_created": "Monday, 29. August 2011 14:58 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Saturday, 27. August 2011 07:27 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #835129 in software-center (Ubuntu Oneiric): \"software-center-gtk3 crashed with AttributeError in _append_new(): 'NoneType' object has no attribute 'query'\""
+            }
+        ], 
+        "836587": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Monday, 29. August 2011 10:47 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 07:43 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 20:28 UTC", 
+                    "heat": 44, 
+                    "id": 836587, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "[dash] Invalid UTF-8 in the dash"
+                }, 
+                "bug_target_name": "unity-2d", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 07:41 UTC", 
+                "date_created": "Tuesday, 30. August 2011 12:56 UTC", 
+                "date_fix_committed": "Tuesday, 30. August 2011 20:28 UTC", 
+                "date_fix_released": "None", 
+                "date_in_progress": "Tuesday, 30. August 2011 12:57 UTC", 
+                "date_incomplete": "None", 
+                "date_left_closed": "Tuesday, 30. August 2011 07:41 UTC", 
+                "date_left_new": "Monday, 29. August 2011 12:02 UTC", 
+                "date_triaged": "Tuesday, 30. August 2011 12:57 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Fix Committed", 
+                "team": "", 
+                "title": "Bug #836587 in unity-2d (Ubuntu Oneiric): \"[dash] Invalid UTF-8 in the dash\""
+            }
+        ], 
+        "837042": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Monday, 29. August 2011 22:18 UTC", 
+                    "date_last_message": "Monday, 29. August 2011 22:19 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 19:31 UTC", 
+                    "heat": 8, 
+                    "id": 837042, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "oem-config", 
+                        "oneiric", 
+                        "ubiquity-2.7.17"
+                    ], 
+                    "title": "wrong encoding for input in oem-config"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Tuesday, 30. August 2011 19:31 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 19:23 UTC", 
+                "date_created": "Tuesday, 30. August 2011 19:31 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 30. August 2011 19:23 UTC", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-2", 
+                "owner": "Brian Murray", 
+                "status": "Confirmed", 
+                "team": "Foundations Team", 
+                "title": "Bug #837042 in ubiquity (Ubuntu Oneiric): \"wrong encoding for input in oem-config\""
+            }
+        ], 
+        "837054": [
+            {
+                "assignee": "Ubuntu Installer Team", 
+                "bug": {
+                    "date_created": "Monday, 29. August 2011 22:36 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 10:13 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 10:13 UTC", 
+                    "heat": 8, 
+                    "id": 837054, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity", 
+                        "ubiquity-2.7.17"
+                    ], 
+                    "title": "Time Zone selection shows about 20 different \"New York\"s and doesn't autoselect my location"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Tuesday, 30. August 2011 10:13 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 10:13 UTC", 
+                "date_created": "Tuesday, 30. August 2011 10:13 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 30. August 2011 10:13 UTC", 
+                "date_triaged": "Tuesday, 30. August 2011 10:13 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #837054 in ubiquity (Ubuntu Oneiric): \"Time Zone selection shows about 20 different \"New York\"s and doesn't autoselect my location\""
+            }
+        ], 
+        "837161": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 30. August 2011 04:15 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 04:15 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 19:35 UTC", 
+                    "heat": 6, 
+                    "id": 837161, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity", 
+                        "ubiquity-2.7.17"
+                    ], 
+                    "title": "\"New Partiton Table\" option doesn't actually create a new partition table, despite warnings"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Tuesday, 30. August 2011 19:35 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "None", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "New", 
+                "team": "Foundations Team", 
+                "title": "Bug #837161 in ubiquity (Ubuntu Oneiric): \"\"New Partiton Table\" option doesn't actually create a new partition table, despite warnings\""
+            }
+        ], 
+        "837217": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 30. August 2011 08:18 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 08:18 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 19:36 UTC", 
+                    "heat": 6, 
+                    "id": 837217, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity", 
+                        "ubiquity-1.8.7"
+                    ], 
+                    "title": "Time Zone selector hangs and ubiquity freezes if network connection is firewalled"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Tuesday, 30. August 2011 19:36 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "None", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "New", 
+                "team": "Foundations Team", 
+                "title": "Bug #837217 in ubiquity (Ubuntu Oneiric): \"Time Zone selector hangs and ubiquity freezes if network connection is firewalled\""
+            }
+        ], 
+        "837246": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 30. August 2011 09:30 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 09:30 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 16:59 UTC", 
+                    "heat": 14, 
+                    "id": 837246, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "amd64", 
+                        "apport-bug", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "User name shown as [Invalid UTF-8] in live session"
+                }, 
+                "bug_target_name": "indicator-session", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 09:56 UTC", 
+                "date_created": "Tuesday, 30. August 2011 12:31 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "Tuesday, 30. August 2011 09:56 UTC", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 30. August 2011 09:56 UTC", 
+                "date_triaged": "Tuesday, 30. August 2011 09:56 UTC", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "In Progress", 
+                "team": "", 
+                "title": "Bug #837246 in indicator-session (Ubuntu Oneiric): \"User name shown as [Invalid UTF-8] in live session\""
+            }
+        ], 
+        "837248": [
+            {
+                "assignee": "Evan Dandrea", 
+                "bug": {
+                    "date_created": "Tuesday, 30. August 2011 09:38 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 09:38 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 19:37 UTC", 
+                    "heat": 6, 
+                    "id": 837248, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "oem-config", 
+                        "oneiric", 
+                        "running-unity", 
+                        "ubiquity-1.8.7"
+                    ], 
+                    "title": "Poor layout of OEM language selector"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Tuesday, 30. August 2011 19:37 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "None", 
+                "date_created": "Tuesday, 30. August 2011 19:37 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "None", 
+                "date_triaged": "None", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Brian Murray", 
+                "status": "New", 
+                "team": "Foundations Team", 
+                "title": "Bug #837248 in ubiquity (Ubuntu Oneiric): \"Poor layout of OEM language selector\""
+            }
+        ], 
+        "837261": [
+            {
+                "assignee": "Robert Ancell", 
+                "bug": {
+                    "date_created": "Tuesday, 30. August 2011 09:48 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 14:17 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 14:32 UTC", 
+                    "heat": 6, 
+                    "id": 837261, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "function() got an unexpected keyword argument 'icon'"
+                }, 
+                "bug_target_name": "unity-greeter", 
+                "date_assigned": "Tuesday, 30. August 2011 14:32 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 14:18 UTC", 
+                "date_created": "Tuesday, 30. August 2011 14:17 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "Tuesday, 30. August 2011 14:18 UTC", 
+                "date_left_new": "Tuesday, 30. August 2011 13:22 UTC", 
+                "date_triaged": "None", 
+                "importance": "Medium", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Confirmed", 
+                "team": "", 
+                "title": "Bug #837261 in unity-greeter (Ubuntu Oneiric): \"function() got an unexpected keyword argument 'icon'\""
+            }
+        ], 
+        "837287": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 30. August 2011 10:36 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 22:41 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 23:33 UTC", 
+                    "heat": 6, 
+                    "id": 837287, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "corruption", 
+                        "i386", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity", 
+                        "ubuntu"
+                    ], 
+                    "title": "live cd panel / top menu is cropped"
+                }, 
+                "bug_target_name": "casper", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 22:42 UTC", 
+                "date_created": "Tuesday, 30. August 2011 23:33 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 30. August 2011 22:42 UTC", 
+                "date_triaged": "Tuesday, 30. August 2011 22:42 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10-beta-2", 
+                "owner": "Brian Murray", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #837287 in casper (Ubuntu Oneiric): \"live cd panel / top menu is cropped\""
+            }
+        ], 
+        "837503": [
+            {
+                "assignee": "Ubuntu Installer Team", 
+                "bug": {
+                    "date_created": "Tuesday, 30. August 2011 16:04 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 21:51 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 21:51 UTC", 
+                    "heat": 6, 
+                    "id": 837503, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "i386", 
+                        "iso-testing", 
+                        "need-duplicate-check", 
+                        "oneiric", 
+                        "running-unity", 
+                        "ubiquity-2.7.20"
+                    ], 
+                    "title": "'Prepare for shipping' not available on DVDs"
+                }, 
+                "bug_target_name": "ubiquity", 
+                "date_assigned": "Tuesday, 30. August 2011 16:05 UTC", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 21:51 UTC", 
+                "date_created": "Tuesday, 30. August 2011 16:04 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 30. August 2011 21:51 UTC", 
+                "date_triaged": "Tuesday, 30. August 2011 21:51 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "", 
+                "owner": "Jean-Baptiste Lallement", 
+                "status": "Triaged", 
+                "team": "Foundations Team", 
+                "title": "Bug #837503 in ubiquity (Ubuntu Oneiric): \"'Prepare for shipping' not available on DVDs\""
+            }
+        ], 
+        "837685": [
+            {
+                "assignee": "Unassigned", 
+                "bug": {
+                    "date_created": "Tuesday, 30. August 2011 20:54 UTC", 
+                    "date_last_message": "Tuesday, 30. August 2011 22:13 UTC", 
+                    "date_last_updated": "Tuesday, 30. August 2011 22:13 UTC", 
+                    "heat": 6, 
+                    "id": 837685, 
+                    "nominations": [
+                        "oneiric"
+                    ], 
+                    "tags": [
+                        "apport-bug", 
+                        "armel", 
+                        "iso-testing", 
+                        "oneiric", 
+                        "running-unity"
+                    ], 
+                    "title": "Firefox segfaults on launch on armel"
+                }, 
+                "bug_target_name": "firefox", 
+                "date_assigned": "None", 
+                "date_closed": "None", 
+                "date_confirmed": "Tuesday, 30. August 2011 21:16 UTC", 
+                "date_created": "Tuesday, 30. August 2011 21:16 UTC", 
+                "date_fix_committed": "None", 
+                "date_fix_released": "None", 
+                "date_in_progress": "None", 
+                "date_incomplete": "None", 
+                "date_left_closed": "None", 
+                "date_left_new": "Tuesday, 30. August 2011 21:16 UTC", 
+                "date_triaged": "Tuesday, 30. August 2011 21:16 UTC", 
+                "importance": "High", 
+                "is_complete": false, 
+                "milestone": "ubuntu-11.10", 
+                "owner": "Micah Gersten", 
+                "status": "Triaged", 
+                "team": "", 
+                "title": "Bug #837685 in firefox (Ubuntu Oneiric): \"Firefox segfaults on launch on armel\""
+            }
+        ]
+    }, 
+    "udpate_timestamp": "Wednesday, 31. August 2011 03:10 UTC"
 }

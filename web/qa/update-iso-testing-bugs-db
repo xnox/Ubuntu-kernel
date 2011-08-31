@@ -164,6 +164,8 @@ class UpdateIsoTestingBugsDB():
             distro = "%s/%s" % (self.iso_config['search_criteria']['distribution'], self.iso_config['search_criteria']['series'])
             self.distro = self.lp.distributions[distro]
 
+            self.initialize_team_package_crossreference()
+
         except KeyboardInterrupt:
             Dbg.leave("UpdateIsoTestingBugsDB.initialize")
             raise Exit()
@@ -180,6 +182,24 @@ class UpdateIsoTestingBugsDB():
 
         Dbg.leave("UpdateIsoTestingBugsDB.initialize")
         return
+
+    # initialize_team_package_crossreference
+    #
+    def initialize_team_package_crossreference(self):
+        self.team_xref = {}
+
+        team_name_xref = {
+            'foundations-bugs' : 'Foundations Team',
+            'ubuntu-server'    : 'Server Team',
+            'desktop-bugs'     : 'Desktop Team'
+        }
+
+        self.team_xref['linux'] = 'Kernel Team'
+        self.team_xref['linux-ti-omap4'] = 'Kernel Team'
+        for a_team in team_name_xref:
+            team = self.lp.launchpad.people[a_team]
+            for p in team.getBugSubscriberPackages():
+                self.team_xref[p.name] = team_name_xref[a_team]
 
     # main
     #
@@ -226,7 +246,11 @@ class UpdateIsoTestingBugsDB():
     def get_task_info(self, task):
 
         t = {}
-        t['bug_target_name'] = task.bug_target_name
+        t['bug_target_name'] = task.bug_target_name.replace('(Ubuntu Oneiric)', '').strip()
+        if t['bug_target_name'] in self.team_xref:
+            t['team'] = self.team_xref[t['bug_target_name']]
+        else:
+            t['team'] = ''
         t['status'] = task.status
         t['importance'] = task.importance
 

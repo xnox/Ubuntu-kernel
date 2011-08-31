@@ -71,10 +71,10 @@
            $(function() {
                 $("#linux").tablesorter({
                     headers: {
-                        3: {
+                        4: {
                             sorter:'importance'
                         },
-                        4: {
+                        5: {
                             sorter:'status'
                         }
                     },
@@ -97,6 +97,7 @@
                         <tr>
                             <th width="40">Bug</th>
                             <th>Summary</th>
+                            <th width="100">Owner</th>
                             <th width="100">Task</th>
                             <th width="80">Importance</th>
                             <th width="80">Status</th>
@@ -158,7 +159,8 @@
                         <tr>
                             <td><a href="http://launchpad.net/bugs/${bid}">${bid}</a></td>
                             <td>${t['bug']['title']}</td>
-                            <td>${task_name}
+                            <td>${t['team']}</td>
+                            <td>${task_name}</td>
                             <td class="${importance_class}">${importance}</td>
                             <td class="${status_class}">${status}</td>
                             <td>${assignee}</td>
