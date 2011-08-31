@@ -1,7 +1,22 @@
 #!/usr/bin/env python
 #
 
-from utils                              import stdo, o2ascii
+from sys                                import stdout
+
+# _o2ascii
+#
+# Convert a unicode string or a decial.Decimal object to a str.
+#
+def _o2ascii(obj):
+    retval = None
+    if type(obj) != str:
+        if type(obj) == unicode:
+            retval = obj.encode('ascii', 'ignore')
+        else:
+            retval = str(obj)
+    else:
+        retval = obj
+    return retval
 
 # Dbg
 #
@@ -15,7 +30,8 @@ class Dbg:
 
     @classmethod
     def __print(cls, txt):
-        stdo("%*s%s" % (cls.indent_level * 4, ' ', txt))
+        stdout.write("%*s%s" % (cls.indent_level * 4, ' ', txt))
+        stdout.flush()
 
     @classmethod
     def p(cls, txt):
@@ -46,7 +62,7 @@ class Dbg:
         """
         if 'leave' in cls.levels:
             cls.indent_level -= 1
-            cls.__print("Return: %s (%s)\n" % (txt, o2ascii(result)))
+            cls.__print("Return: %s (%s)\n" % (txt, _o2ascii(result)))
 
     @classmethod
     def verbose(cls, txt):
