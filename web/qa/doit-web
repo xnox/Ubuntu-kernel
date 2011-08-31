@@ -1,0 +1,6 @@
+#!/bin/sh -x
+set -e
+cp iso-testing.json iso-testing-working.json
+./update-iso-testing-bugs-db iso-testing-working.json
+../scripts/reporter --title="Iso Testing Bugs" --template=iso-testing-report.mako iso-testing-working.json > iso-testing.html
+scp iso-testing.html cranberry.canonical.com:/srv/qa.ubuntu.com/reports/kernel-bugs/reports/
