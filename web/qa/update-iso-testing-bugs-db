@@ -158,12 +158,6 @@ class UpdateIsoTestingBugsDB():
             Dbg.verbose(' . Connecting to Launchpad\n')
             self.lp = LaunchpadService(self.iso_config['launchpad_config'])
 
-            # The service.distributions property is a collection of distributions. We
-            # pretty much only care about one, 'ubuntu'.
-            #
-            distro = "%s/%s" % (self.iso_config['search_criteria']['distribution'], self.iso_config['search_criteria']['series'])
-            self.distro = self.lp.distributions[distro]
-
             self.initialize_team_package_crossreference()
 
         except KeyboardInterrupt:
@@ -186,6 +180,7 @@ class UpdateIsoTestingBugsDB():
     # initialize_team_package_crossreference
     #
     def initialize_team_package_crossreference(self):
+        Dbg.enter("UpdateIsoTestingBugsDB.initialize_team_package_crossreference")
         self.team_xref = {
             'linux'           : 'Kernel Team',
             'linux-ti-omap4'  : 'Kernel Team',
@@ -202,12 +197,50 @@ class UpdateIsoTestingBugsDB():
             'ubuntuone-hackers'           : 'Ubuntu One Team'
         }
 
-        self.team_xref['linux'] = 'Kernel Team'
-        self.team_xref['linux-ti-omap4'] = 'Kernel Team'
         for a_team in team_name_xref:
+            Dbg.verbose(a_team)
             team = self.lp.launchpad.people[a_team]
             for p in team.getBugSubscriberPackages():
                 self.team_xref[p.name] = team_name_xref[a_team]
+
+        Dbg.leave("UpdateIsoTestingBugsDB.initialize_team_package_crossreference")
+
+    # tasks_search
+    #
+    def tasks_search(self, search_criteria):
+        Dbg.enter("UpdateIsoTestingBugsDB.tasks_search")
+
+        # Pull all the search parameters from the configuration dictionary
+        #
+        distro_name = search_criteria['distribution']
+
+        try:
+            series_spec = search_criteria['series'].strip()
+        except KeyError:
+            series_spec = ''
+
+        if series_spec != '':
+            distro_name = "%s/%s" % (distro_name, series_spec)
+
+        distro = self.lp.distributions[distro_name]
+
+        try:
+            search_tags = search_criteria['tags']
+        except KeyError:
+            search_tags = []
+
+        try:
+            search_tags_combinator = search_criteria['tags_combinator']
+        except KeyError:
+            search_tags_combinator = 'Any'
+
+        try:
+            search_status = search_criteria['status']
+        except KeyError:
+            search_status = []
+
+        Dbg.leave("UpdateIsoTestingBugsDB.tasks_search")
+        return distro.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator, status=search_status)
 
     # main
     #
@@ -218,18 +251,24 @@ class UpdateIsoTestingBugsDB():
             self.initialize()
 
             search_start = datetime.utcnow()
-            tasks = self.distro.search_tasks(tags=self.iso_config['search_criteria']['tags'], status=self.iso_config['search_criteria']['status'])
-
             iso_tasks = {}
-            for task in tasks:
-                Dbg.verbose("%s\n" % task.bug.id)
+            for sc in self.iso_config['search_criteria']:
+                for task in self.tasks_search(sc):
+                    Dbg.verbose("%s\n" % task.bug.id)
 
-                if task.bug.id not in iso_tasks:
-                    iso_tasks[task.bug.id] = []
-                iso_tasks[task.bug.id].append(self.get_task_info(task))
+                    if task.bug.id not in iso_tasks:
+                        iso_tasks[task.bug.id] = []
 
+                    try:
+                        if (task.bug.id not in iso_tasks) and (not task.bug.private):
+                            iso_tasks[task.bug.id].append(self.get_task_info(task))
+                    except:
+                        print('Exception caught processing bug: %s' % task.bug.id)
+                        pass
+
+            # Update the configuration file with the LP data and the timestamp
+            #
             self.iso_config['tasks'] = iso_tasks
-
             self.iso_config['udpate_timestamp'] = date_to_string(search_start)
             with open(self.cfg['json_file'], 'w') as f:
                 Dbg.verbose("Updating the database file.\n")
@@ -249,9 +288,12 @@ class UpdateIsoTestingBugsDB():
     # get_task_info
     #
     def get_task_info(self, task):
+        Dbg.enter("UpdateIsoTestingBugsDB.get_task_info")
 
         t = {}
-        t['bug_target_name'] = task.bug_target_name.replace('(Ubuntu Oneiric)', '').strip()
+        name = task.bug_target_name.replace('(Ubuntu)', '').strip()
+        name = name.replace('(Ubuntu Oneiric)', '').strip()
+        t['bug_target_name'] = name
         if t['bug_target_name'] in self.team_xref:
             t['team'] = self.team_xref[t['bug_target_name']]
         else:
@@ -313,6 +355,7 @@ class UpdateIsoTestingBugsDB():
 
         t['bug'] = b
 
+        Dbg.leave("UpdateIsoTestingBugsDB.get_task_info")
         return t
 
 if __name__ == '__main__':

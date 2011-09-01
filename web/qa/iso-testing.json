@@ -3,6 +3,41 @@
         "launchpad_client_name": "qa-team-update-iso-testing-bugs-db", 
         "read_only": false
     }, 
+    "searches"  :
+    [
+	    {
+		"distribution": "ubuntu", 
+		"series": "oneiric", 
+		"status": [
+		    "New", 
+		    "Confirmed", 
+		    "Triaged", 
+		    "Incomplete", 
+		    "In Progress", 
+		    "Fix Committed"
+		], 
+		"tags": [
+		    "iso-testing"
+		],
+		"tags_combinator": "Any"
+	    },
+	    {
+		"distribution": "ubuntu", 
+		"series": "oneiric", 
+		"status": [
+		    "New", 
+		    "Confirmed", 
+		    "Triaged", 
+		    "Incomplete", 
+		    "In Progress", 
+		    "Fix Committed"
+		], 
+		"tags": [
+		    "iso-testing", "oneiric"
+		],
+		"tags_combinator": "All"
+	    }
+    ],
     "search_criteria": {
         "distribution": "ubuntu", 
         "series": "oneiric", 
