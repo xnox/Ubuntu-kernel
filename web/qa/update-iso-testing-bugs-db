@@ -5,10 +5,13 @@ from sys                                import argv, stdout
 from getopt                             import getopt, GetoptError
 from datetime                           import datetime
 import json
+import re
 
 from ktl.dbg                            import Dbg
 from ktl.utils                          import stdo, error, json_load, file_load, FileDoesntExist, dump, date_to_string
 from ktl.cfg                            import Cfg, CfgError
+from ktl.bugs                           import DeltaTime
+from ktl.kernel_bug                     import KernelBug
 
 from lpltk.LaunchpadService             import LaunchpadService
 
@@ -158,7 +161,8 @@ class UpdateIsoTestingBugsDB():
             Dbg.verbose(' . Connecting to Launchpad\n')
             self.lp = LaunchpadService(self.iso_config['launchpad_config'])
 
-            self.initialize_team_package_crossreference()
+            self.team_xref = {}
+            #self.initialize_team_package_crossreference()
 
         except KeyboardInterrupt:
             Dbg.leave("UpdateIsoTestingBugsDB.initialize")
@@ -198,7 +202,7 @@ class UpdateIsoTestingBugsDB():
         }
 
         for a_team in team_name_xref:
-            Dbg.verbose(a_team)
+            Dbg.verbose("%s\n" % a_team)
             team = self.lp.launchpad.people[a_team]
             for p in team.getBugSubscriberPackages():
                 self.team_xref[p.name] = team_name_xref[a_team]
@@ -270,9 +274,14 @@ class UpdateIsoTestingBugsDB():
 
                             if not matched:
                                 iso_tasks[task.bug.id].append(t)
+
+                        else:
+                            print("it's private")
                     except:
                         print('Exception caught processing bug: %s' % task.bug.id)
-                        pass
+                        raise
+
+                    #break # FIXME just do one for debugging
 
             # Update the configuration file with the LP data and the timestamp
             #
@@ -335,7 +344,7 @@ class UpdateIsoTestingBugsDB():
             t['milestone'] = ''
 
         b = {}
-        bug = task.bug
+        bug = KernelBug(task.bug)
         b['id'] = bug.id
 
         b['tags'] = []
@@ -344,7 +353,8 @@ class UpdateIsoTestingBugsDB():
 
         b['title'] = bug.title
 
-        b['date_created']      = date_to_string(bug.date_created)
+        created = bug.date_created
+        b['date_created']      = date_to_string(created)
         b['date_last_message'] = date_to_string(bug.date_last_message)
         b['date_last_updated'] = date_to_string(bug.date_last_updated)
         b['heat']              = bug.heat
@@ -361,10 +371,39 @@ class UpdateIsoTestingBugsDB():
             if nom.status == 'Approved':
                 b['nominations'].append(nom.target.name)
 
+        (b['age_days'], b['age_hours'], b['age_minutes']) = self.how_long_ago(bug.date_created)
+        b['iso_date_created']  = '%s (%d)' % (created.strftime("%Y/%m/%d"), b['age_days'])
+
+        (b['series_name'], b['series_version']) = bug.series
+
+        # LiveMediaBuild property
+        #
+        try:
+            lmb = bug.properties['LiveMediaBuild']
+            print(lmb)
+            #m = re.search('\S+ \d+.\d+.\d+.*"\S+ \S+" - \S+ \S+', lmb)
+            m = re.search('(\S+) (\d+.\d+[.\d+]).*"(\S+ \S+)" - (\S+) (\S+) \((\d+)\)', lmb)
+            if m is not None:
+                print("matched")
+            else:
+                print("no match")
+
+        except:
+            print("No LiveMediaBuild")
+            pass
+
         t['bug'] = b
 
         Dbg.leave("UpdateIsoTestingBugsDB.get_task_info")
         return t
+
+    def how_long_ago(self, date):
+        now = datetime.utcnow()
+        now.replace(tzinfo=None)
+        ago = DeltaTime(date, now)
+        when = '%d.%d.%d' % (ago.days, ago.hours, ago.minutes)
+
+        return (ago.days, ago.hours, ago.minutes)
 
 if __name__ == '__main__':
     defaults = {}

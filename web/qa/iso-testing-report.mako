@@ -102,11 +102,13 @@
                             <th width="80">Importance</th>
                             <th width="80">Status</th>
                             <th width="140">Assignee</th>
+                            <th width="80">Series</th>
                             <th width="120">Milestone</th>
                             <th width="30">CO</th>
                             <th width="30">SU</th>
                             <th width="30">AM</th>
                             <th width="30">DU</th>
+                            <th width="100">Created</th>
                         </tr>
                     </thead>
 		    <tbody>
@@ -158,6 +160,16 @@
                                 nominations += n.title()[0]
 
                             task_name = t['bug_target_name'].replace('(Ubuntu Oneiric)', '').strip()
+
+                            when = ''
+                            if t['bug']['age_days'] > 1:
+                                when = '%d days' % (t['bug']['age_days'])
+                            elif t['bug']['age_days'] == 1:
+                                when = '1 day, %d hours' % (t['bug']['age_hours'])
+                            elif t['bug']['age_hours'] > 1:
+                                when = '%d hours' % (t['bug']['age_hours'])
+                            elif t['bug']['age_hours'] == 1:
+                                when = '1 hour, %d mintues' % (t['bug']['age_minutes'])
                         %>
                         <tr>
                             <td><a href="http://launchpad.net/bugs/${bid}">${bid}</a></td>
@@ -167,11 +179,13 @@
                             <td class="${importance_class}">${importance}</td>
                             <td class="${status_class}">${status}</td>
                             <td>${assignee}</td>
+                            <td>${t['bug']['series_name']}</td>
                             <td>${t['milestone']}</td>
                             <td>${t['bug']['number_of_messages']}</td>
                             <td>${t['bug']['number_subscribed']}</td>
                             <td>${t['bug']['number_affected']}</td>
                             <td>${t['bug']['number_of_duplicates']}</td>
+                            <td>${t['bug']['iso_date_created']}</td>
                         </tr>
                     % endfor
                 % endfor
