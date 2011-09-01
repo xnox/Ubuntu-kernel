@@ -126,52 +126,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #653571 in ubiquity (Ubuntu Oneiric): \"ubiquity crashed with DBusException in call_blocking() when the option \"Install 3rd party software\" is checked.\""
-            }, 
-            {
-                "assignee": "Ubuntu Installer Team", 
-                "bug": {
-                    "date_created": "Saturday, 02. October 2010 12:27 UTC", 
-                    "date_last_message": "Friday, 26. August 2011 17:28 UTC", 
-                    "date_last_updated": "Monday, 29. August 2011 12:30 UTC", 
-                    "heat": 598, 
-                    "id": 653571, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 14, 
-                    "number_of_duplicates": 66, 
-                    "number_of_messages": 6, 
-                    "number_subscribed": 7, 
-                    "tags": [
-                        "apport-crash", 
-                        "bugpattern-needed", 
-                        "i386", 
-                        "iso-testing", 
-                        "maverick", 
-                        "oneiric", 
-                        "ubiquity-2.4.4"
-                    ], 
-                    "title": "ubiquity crashed with DBusException in call_blocking() when the option \"Install 3rd party software\" is checked."
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Wednesday, 24. August 2011 20:30 UTC", 
-                "date_closed": "Friday, 26. August 2011 17:28 UTC", 
-                "date_confirmed": "Wednesday, 24. August 2011 02:34 UTC", 
-                "date_created": "Saturday, 02. October 2010 12:27 UTC", 
-                "date_fix_committed": "Friday, 26. August 2011 17:28 UTC", 
-                "date_fix_released": "Friday, 26. August 2011 17:28 UTC", 
-                "date_in_progress": "Friday, 26. August 2011 17:28 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 24. August 2011 02:34 UTC", 
-                "date_triaged": "Friday, 26. August 2011 17:28 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "ubuntu-11.10-beta-1", 
-                "owner": "Alex", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #653571 in ubiquity (Ubuntu): \"ubiquity crashed with DBusException in call_blocking() when the option \"Install 3rd party software\" is checked.\""
             }
         ], 
         "656777": [
@@ -241,7 +195,7 @@
                     ], 
                     "title": "jockey-gtk crashed with DBusException in call_blocking()"
                 }, 
-                "bug_target_name": "jockey (Ubuntu)", 
+                "bug_target_name": "jockey", 
                 "date_assigned": "None", 
                 "date_closed": "Tuesday, 30. August 2011 10:15 UTC", 
                 "date_confirmed": "Monday, 25. July 2011 13:22 UTC", 
@@ -258,7 +212,7 @@
                 "milestone": "", 
                 "owner": "Fred Stephens", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #657829 in jockey (Ubuntu): \"jockey-gtk crashed with DBusException in call_blocking()\""
             }
         ], 
@@ -834,50 +788,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #781076 in doc-base (Ubuntu Oneiric): \"package doc-base 0.9.5ubuntu2 failed to install/upgrade: Byte order is not compatible at ../../lib/Storable.pm\""
-            }, 
-            {
-                "assignee": "Michael Vogt", 
-                "bug": {
-                    "date_created": "Wednesday, 11. May 2011 11:12 UTC", 
-                    "date_last_message": "Thursday, 07. July 2011 16:07 UTC", 
-                    "date_last_updated": "Thursday, 11. August 2011 11:41 UTC", 
-                    "heat": 298, 
-                    "id": 781076, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 3, 
-                    "number_of_duplicates": 41, 
-                    "number_of_messages": 8, 
-                    "number_subscribed": 6, 
-                    "tags": [
-                        "apport-package", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "unity-2d"
-                    ], 
-                    "title": "package doc-base 0.9.5ubuntu2 failed to install/upgrade: Byte order is not compatible at ../../lib/Storable.pm"
-                }, 
-                "bug_target_name": "doc-base (Ubuntu)", 
-                "date_assigned": "Friday, 10. June 2011 14:41 UTC", 
-                "date_closed": "Thursday, 07. July 2011 16:06 UTC", 
-                "date_confirmed": "Sunday, 03. July 2011 08:27 UTC", 
-                "date_created": "Wednesday, 11. May 2011 11:12 UTC", 
-                "date_fix_committed": "Thursday, 07. July 2011 16:06 UTC", 
-                "date_fix_released": "Thursday, 07. July 2011 16:06 UTC", 
-                "date_in_progress": "Thursday, 07. July 2011 16:06 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Saturday, 21. May 2011 21:00 UTC", 
-                "date_triaged": "Sunday, 03. July 2011 08:27 UTC", 
-                "importance": "Critical", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "John Lenton", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #781076 in doc-base (Ubuntu): \"package doc-base 0.9.5ubuntu2 failed to install/upgrade: Byte order is not compatible at ../../lib/Storable.pm\""
             }
         ], 
         "784209": [
@@ -924,50 +834,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #784209 in nautilus (Ubuntu Oneiric): \"Background fails to redraw\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Team", 
-                "bug": {
-                    "date_created": "Tuesday, 17. May 2011 18:36 UTC", 
-                    "date_last_message": "Friday, 17. June 2011 08:37 UTC", 
-                    "date_last_updated": "Friday, 17. June 2011 08:37 UTC", 
-                    "heat": 25, 
-                    "id": 784209, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 4, 
-                    "number_of_duplicates": 4, 
-                    "number_of_messages": 14, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity"
-                    ], 
-                    "title": "Background fails to redraw"
-                }, 
-                "bug_target_name": "nautilus (Ubuntu)", 
-                "date_assigned": "Wednesday, 01. June 2011 09:37 UTC", 
-                "date_closed": "Friday, 17. June 2011 08:36 UTC", 
-                "date_confirmed": "Wednesday, 01. June 2011 08:57 UTC", 
-                "date_created": "Wednesday, 01. June 2011 08:57 UTC", 
-                "date_fix_committed": "Friday, 17. June 2011 08:36 UTC", 
-                "date_fix_released": "Friday, 17. June 2011 08:36 UTC", 
-                "date_in_progress": "Friday, 17. June 2011 08:36 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 01. June 2011 08:57 UTC", 
-                "date_triaged": "Wednesday, 01. June 2011 10:41 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "oneiric-alpha-2", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #784209 in nautilus (Ubuntu): \"Background fails to redraw\""
             }
         ], 
         "784937": [
@@ -1015,51 +881,6 @@
                 "status": "Fix Released", 
                 "team": "Kernel Team", 
                 "title": "Bug #784937 in linux (Ubuntu Oneiric): \"/mnt not mounted, swap not used, disk is xvde\""
-            }, 
-            {
-                "assignee": "Stefan Bader", 
-                "bug": {
-                    "date_created": "Thursday, 19. May 2011 01:28 UTC", 
-                    "date_last_message": "Monday, 22. August 2011 19:42 UTC", 
-                    "date_last_updated": "Monday, 22. August 2011 19:42 UTC", 
-                    "heat": 19, 
-                    "id": 784937, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 12, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "apport-bug", 
-                        "ec2-images", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "server-o-ro"
-                    ], 
-                    "title": "/mnt not mounted, swap not used, disk is xvde"
-                }, 
-                "bug_target_name": "linux (Ubuntu)", 
-                "date_assigned": "Thursday, 14. July 2011 15:45 UTC", 
-                "date_closed": "Saturday, 20. August 2011 18:50 UTC", 
-                "date_confirmed": "Thursday, 07. July 2011 13:49 UTC", 
-                "date_created": "Thursday, 07. July 2011 13:48 UTC", 
-                "date_fix_committed": "Wednesday, 17. August 2011 14:38 UTC", 
-                "date_fix_released": "Saturday, 20. August 2011 18:50 UTC", 
-                "date_in_progress": "Wednesday, 17. August 2011 14:38 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 07. July 2011 13:49 UTC", 
-                "date_triaged": "Wednesday, 17. August 2011 14:38 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Scott Moser", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #784937 in linux (Ubuntu): \"/mnt not mounted, swap not used, disk is xvde\""
             }
         ], 
         "787610": [
@@ -1086,7 +907,7 @@
                     ], 
                     "title": "udevd fails to start: bind failed: Address already in use"
                 }, 
-                "bug_target_name": "udev (Ubuntu)", 
+                "bug_target_name": "udev", 
                 "date_assigned": "Tuesday, 28. June 2011 18:57 UTC", 
                 "date_closed": "Tuesday, 28. June 2011 22:45 UTC", 
                 "date_confirmed": "Sunday, 26. June 2011 19:09 UTC", 
@@ -1103,7 +924,7 @@
                 "milestone": "", 
                 "owner": "Hernando Torque", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #787610 in udev (Ubuntu): \"udevd fails to start: bind failed: Address already in use\""
             }
         ], 
@@ -1151,50 +972,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #788710 in orbit2 (Ubuntu Oneiric): \"gnome-settings-daemon crashed with SIGSEGV in exit()\""
-            }, 
-            {
-                "assignee": "Rodrigo Moya", 
-                "bug": {
-                    "date_created": "Thursday, 26. May 2011 16:25 UTC", 
-                    "date_last_message": "Wednesday, 13. July 2011 14:20 UTC", 
-                    "date_last_updated": "Wednesday, 13. July 2011 14:38 UTC", 
-                    "heat": 408, 
-                    "id": 788710, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 93, 
-                    "number_of_duplicates": 32, 
-                    "number_of_messages": 28, 
-                    "number_subscribed": 19, 
-                    "tags": [
-                        "amd64", 
-                        "apport-crash", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric"
-                    ], 
-                    "title": "gnome-settings-daemon crashed with SIGSEGV in exit()"
-                }, 
-                "bug_target_name": "orbit2 (Ubuntu)", 
-                "date_assigned": "Tuesday, 14. June 2011 14:54 UTC", 
-                "date_closed": "Wednesday, 13. July 2011 14:20 UTC", 
-                "date_confirmed": "Monday, 30. May 2011 08:11 UTC", 
-                "date_created": "Thursday, 26. May 2011 16:25 UTC", 
-                "date_fix_committed": "Wednesday, 13. July 2011 14:20 UTC", 
-                "date_fix_released": "Wednesday, 13. July 2011 14:20 UTC", 
-                "date_in_progress": "Tuesday, 14. June 2011 14:54 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "Friday, 10. June 2011 20:21 UTC", 
-                "date_left_new": "Monday, 30. May 2011 08:11 UTC", 
-                "date_triaged": "Tuesday, 14. June 2011 14:54 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Eliah Kagan", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #788710 in orbit2 (Ubuntu): \"gnome-settings-daemon crashed with SIGSEGV in exit()\""
             }
         ], 
         "788714": [
@@ -1242,51 +1019,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #788714 in gnome-user-share (Ubuntu Oneiric): \"gnome-user-share crashed with SIGABRT in g_option_context_parse() - needs porting to GTK3\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Team", 
-                "bug": {
-                    "date_created": "Thursday, 26. May 2011 16:31 UTC", 
-                    "date_last_message": "Monday, 11. July 2011 19:02 UTC", 
-                    "date_last_updated": "Monday, 11. July 2011 19:02 UTC", 
-                    "heat": 441, 
-                    "id": 788714, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 9, 
-                    "number_of_duplicates": 83, 
-                    "number_of_messages": 14, 
-                    "number_subscribed": 6, 
-                    "tags": [
-                        "amd64", 
-                        "apport-crash", 
-                        "i386", 
-                        "iso-testing", 
-                        "need-i386-retrace", 
-                        "oneiric"
-                    ], 
-                    "title": "gnome-user-share crashed with SIGABRT in g_option_context_parse() - needs porting to GTK3"
-                }, 
-                "bug_target_name": "gnome-user-share (Ubuntu)", 
-                "date_assigned": "Thursday, 02. June 2011 12:32 UTC", 
-                "date_closed": "Tuesday, 07. June 2011 10:45 UTC", 
-                "date_confirmed": "Thursday, 26. May 2011 19:14 UTC", 
-                "date_created": "Thursday, 26. May 2011 16:31 UTC", 
-                "date_fix_committed": "Tuesday, 07. June 2011 10:45 UTC", 
-                "date_fix_released": "Tuesday, 07. June 2011 10:45 UTC", 
-                "date_in_progress": "Tuesday, 07. June 2011 10:45 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 26. May 2011 19:14 UTC", 
-                "date_triaged": "Tuesday, 07. June 2011 10:45 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Eliah Kagan", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #788714 in gnome-user-share (Ubuntu): \"gnome-user-share crashed with SIGABRT in g_option_context_parse() - needs porting to GTK3\""
             }
         ], 
         "789333": [
@@ -1359,7 +1091,7 @@
                     ], 
                     "title": "about:startpage returns 404 Not Found"
                 }, 
-                "bug_target_name": "ubufox (Ubuntu)", 
+                "bug_target_name": "ubufox", 
                 "date_assigned": "None", 
                 "date_closed": "Wednesday, 01. June 2011 03:48 UTC", 
                 "date_confirmed": "Wednesday, 01. June 2011 10:40 UTC", 
@@ -1428,54 +1160,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #791081 in compiz (Ubuntu Oneiric): \"Missing windows buttons\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Experience Team", 
-                "bug": {
-                    "date_created": "Wednesday, 01. June 2011 07:24 UTC", 
-                    "date_last_message": "Tuesday, 07. June 2011 13:02 UTC", 
-                    "date_last_updated": "Monday, 04. July 2011 13:43 UTC", 
-                    "heat": 75, 
-                    "id": 791081, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 18, 
-                    "number_of_duplicates": 4, 
-                    "number_of_messages": 5, 
-                    "number_subscribed": 10, 
-                    "tags": [
-                        "apport-bug", 
-                        "compiz-0.9", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "possible-manual-nvidia-install", 
-                        "running-unity", 
-                        "ubuntu", 
-                        "unity-2d"
-                    ], 
-                    "title": "Missing windows buttons"
-                }, 
-                "bug_target_name": "compiz (Ubuntu)", 
-                "date_assigned": "Thursday, 02. June 2011 09:20 UTC", 
-                "date_closed": "Tuesday, 07. June 2011 13:02 UTC", 
-                "date_confirmed": "Thursday, 02. June 2011 09:20 UTC", 
-                "date_created": "Wednesday, 01. June 2011 07:24 UTC", 
-                "date_fix_committed": "Tuesday, 07. June 2011 13:02 UTC", 
-                "date_fix_released": "Tuesday, 07. June 2011 13:02 UTC", 
-                "date_in_progress": "Tuesday, 07. June 2011 13:02 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 02. June 2011 09:20 UTC", 
-                "date_triaged": "Tuesday, 07. June 2011 13:02 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #791081 in compiz (Ubuntu): \"Missing windows buttons\""
             }
         ], 
         "791083": [
@@ -1502,7 +1186,7 @@
                     ], 
                     "title": "unity-2d-places crashed with SIGSEGV"
                 }, 
-                "bug_target_name": "unity-2d (Ubuntu)", 
+                "bug_target_name": "unity-2d", 
                 "date_assigned": "None", 
                 "date_closed": "Wednesday, 01. June 2011 13:58 UTC", 
                 "date_confirmed": "Wednesday, 01. June 2011 13:58 UTC", 
@@ -1519,7 +1203,7 @@
                 "milestone": "", 
                 "owner": "Fabio Marconi", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "DX Team", 
                 "title": "Bug #791083 in unity-2d (Ubuntu): \"unity-2d-places crashed with SIGSEGV\""
             }
         ], 
@@ -1568,51 +1252,6 @@
                 "status": "Fix Released", 
                 "team": "DX Team", 
                 "title": "Bug #791127 in unity-2d (Ubuntu Oneiric): \"unity-2d-places crashed with SIGSEGV in QTJSC::Structure::materializePropertyMap()\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Experience Team", 
-                "bug": {
-                    "date_created": "Wednesday, 01. June 2011 09:24 UTC", 
-                    "date_last_message": "Monday, 13. June 2011 15:28 UTC", 
-                    "date_last_updated": "Monday, 13. June 2011 15:37 UTC", 
-                    "heat": 5, 
-                    "id": 791127, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 5, 
-                    "number_subscribed": 1, 
-                    "tags": [
-                        "amd64", 
-                        "apport-crash", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "unity-2d-places crashed with SIGSEGV in QTJSC::Structure::materializePropertyMap()"
-                }, 
-                "bug_target_name": "unity-2d (Ubuntu)", 
-                "date_assigned": "Thursday, 02. June 2011 07:37 UTC", 
-                "date_closed": "Monday, 13. June 2011 15:28 UTC", 
-                "date_confirmed": "Thursday, 02. June 2011 07:36 UTC", 
-                "date_created": "Wednesday, 01. June 2011 09:24 UTC", 
-                "date_fix_committed": "Monday, 13. June 2011 15:28 UTC", 
-                "date_fix_released": "Monday, 13. June 2011 15:28 UTC", 
-                "date_in_progress": "Monday, 13. June 2011 15:28 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 02. June 2011 07:36 UTC", 
-                "date_triaged": "Monday, 13. June 2011 15:28 UTC", 
-                "importance": "Critical", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Martin Pitt", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #791127 in unity-2d (Ubuntu): \"unity-2d-places crashed with SIGSEGV in QTJSC::Structure::materializePropertyMap()\""
             }
         ], 
         "791159": [
@@ -1639,7 +1278,7 @@
                     ], 
                     "title": "OEM Install: No launcher or desktop shortcut to prepare for shipping"
                 }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
+                "bug_target_name": "ubiquity", 
                 "date_assigned": "None", 
                 "date_closed": "Wednesday, 06. July 2011 07:32 UTC", 
                 "date_confirmed": "Wednesday, 06. July 2011 07:32 UTC", 
@@ -1656,7 +1295,7 @@
                 "milestone": "", 
                 "owner": "Jean-Baptiste Lallement", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #791159 in ubiquity (Ubuntu): \"OEM Install: No launcher or desktop shortcut to prepare for shipping\""
             }
         ], 
@@ -1705,51 +1344,6 @@
                 "status": "Fix Released", 
                 "team": "DX Team", 
                 "title": "Bug #791183 in indicator-sound (Ubuntu Oneiric): \"sound indicator not working\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Team", 
-                "bug": {
-                    "date_created": "Wednesday, 01. June 2011 11:32 UTC", 
-                    "date_last_message": "Sunday, 17. July 2011 12:47 UTC", 
-                    "date_last_updated": "Sunday, 17. July 2011 12:47 UTC", 
-                    "heat": 40, 
-                    "id": 791183, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 3, 
-                    "number_of_duplicates": 6, 
-                    "number_of_messages": 16, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "screencast", 
-                        "unity-2d"
-                    ], 
-                    "title": "sound indicator not working"
-                }, 
-                "bug_target_name": "indicator-sound (Ubuntu)", 
-                "date_assigned": "Thursday, 23. June 2011 08:52 UTC", 
-                "date_closed": "Sunday, 17. July 2011 12:47 UTC", 
-                "date_confirmed": "Thursday, 02. June 2011 15:08 UTC", 
-                "date_created": "Wednesday, 01. June 2011 11:32 UTC", 
-                "date_fix_committed": "Sunday, 17. July 2011 12:47 UTC", 
-                "date_fix_released": "Sunday, 17. July 2011 12:47 UTC", 
-                "date_in_progress": "Sunday, 17. July 2011 12:47 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 02. June 2011 00:00 UTC", 
-                "date_triaged": "Sunday, 17. July 2011 12:47 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Fabio Marconi", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #791183 in indicator-sound (Ubuntu): \"sound indicator not working\""
             }
         ], 
         "791188": [
@@ -1776,7 +1370,7 @@
                     ], 
                     "title": "no dash when Ubuntu logo is clicked in oneiric"
                 }, 
-                "bug_target_name": "unity-2d (Ubuntu)", 
+                "bug_target_name": "unity-2d", 
                 "date_assigned": "None", 
                 "date_closed": "Thursday, 09. June 2011 15:54 UTC", 
                 "date_confirmed": "Thursday, 09. June 2011 15:54 UTC", 
@@ -1793,7 +1387,7 @@
                 "milestone": "", 
                 "owner": "Charlie Kravetz", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "DX Team", 
                 "title": "Bug #791188 in unity-2d (Ubuntu): \"no dash when Ubuntu logo is clicked in oneiric\""
             }
         ], 
@@ -1842,51 +1436,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #791213 in qt4-x11 (Ubuntu Oneiric): \"unity-2d-places crashed with SIGSEGV in QMetaObject::metacall()\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Experience Team", 
-                "bug": {
-                    "date_created": "Wednesday, 01. June 2011 12:35 UTC", 
-                    "date_last_message": "Thursday, 09. June 2011 23:10 UTC", 
-                    "date_last_updated": "Friday, 29. July 2011 04:04 UTC", 
-                    "heat": 182, 
-                    "id": 791213, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 7, 
-                    "number_of_duplicates": 26, 
-                    "number_of_messages": 16, 
-                    "number_subscribed": 4, 
-                    "tags": [
-                        "apport-crash", 
-                        "i386", 
-                        "iso-testing", 
-                        "need-i386-retrace", 
-                        "oneiric", 
-                        "unity-2d"
-                    ], 
-                    "title": "unity-2d-places crashed with SIGSEGV in QMetaObject::metacall()"
-                }, 
-                "bug_target_name": "qt4-x11 (Ubuntu)", 
-                "date_assigned": "Thursday, 02. June 2011 09:33 UTC", 
-                "date_closed": "Wednesday, 08. June 2011 15:51 UTC", 
-                "date_confirmed": "Wednesday, 01. June 2011 13:28 UTC", 
-                "date_created": "Wednesday, 01. June 2011 12:35 UTC", 
-                "date_fix_committed": "Wednesday, 08. June 2011 15:51 UTC", 
-                "date_fix_released": "Wednesday, 08. June 2011 15:51 UTC", 
-                "date_in_progress": "Wednesday, 08. June 2011 15:51 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 01. June 2011 13:28 UTC", 
-                "date_triaged": "Wednesday, 08. June 2011 15:51 UTC", 
-                "importance": "Critical", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Didier Roche", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #791213 in qt4-x11 (Ubuntu): \"unity-2d-places crashed with SIGSEGV in QMetaObject::metacall()\""
             }
         ], 
         "791214": [
@@ -1913,7 +1462,7 @@
                     ], 
                     "title": "Dash and application menu fail to open in unity-2d"
                 }, 
-                "bug_target_name": "unity-2d (Ubuntu)", 
+                "bug_target_name": "unity-2d", 
                 "date_assigned": "None", 
                 "date_closed": "Thursday, 09. June 2011 12:52 UTC", 
                 "date_confirmed": "Thursday, 09. June 2011 12:52 UTC", 
@@ -1930,7 +1479,7 @@
                 "milestone": "", 
                 "owner": "Erick Brunzell", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "DX Team", 
                 "title": "Bug #791214 in unity-2d (Ubuntu): \"Dash and application menu fail to open in unity-2d\""
             }
         ], 
@@ -1957,7 +1506,7 @@
                     ], 
                     "title": "Edubuntu does not fall back to 2d mode if 3d not supported"
                 }, 
-                "bug_target_name": "edubuntu-meta (Ubuntu)", 
+                "bug_target_name": "edubuntu-meta", 
                 "date_assigned": "None", 
                 "date_closed": "Wednesday, 01. June 2011 23:18 UTC", 
                 "date_confirmed": "Wednesday, 01. June 2011 23:18 UTC", 
@@ -2000,7 +1549,7 @@
                     ], 
                     "title": "zeitgeist-daemon crashed with GError in start_datahub(): Failed to execute child process \"zeitgeist-datahub\" (No such file or directory)"
                 }, 
-                "bug_target_name": "zeitgeist (Ubuntu)", 
+                "bug_target_name": "zeitgeist", 
                 "date_assigned": "Friday, 22. July 2011 21:23 UTC", 
                 "date_closed": "Monday, 25. July 2011 10:06 UTC", 
                 "date_confirmed": "Thursday, 14. July 2011 11:38 UTC", 
@@ -2065,50 +1614,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #791446 in ubiquity (Ubuntu Oneiric): \"kubuntu installer crashes daily-live 6-1-11: AttributeError: 'QCheckBox' object has no attribute 'set_sensitive'\""
-            }, 
-            {
-                "assignee": "Mackenzie Morgan", 
-                "bug": {
-                    "date_created": "Wednesday, 01. June 2011 17:04 UTC", 
-                    "date_last_message": "Wednesday, 27. July 2011 21:55 UTC", 
-                    "date_last_updated": "Wednesday, 27. July 2011 22:17 UTC", 
-                    "heat": 48, 
-                    "id": 791446, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 5, 
-                    "number_of_duplicates": 5, 
-                    "number_of_messages": 22, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "11.04", 
-                        "5.1.11", 
-                        "iso-testing", 
-                        "kubuntu", 
-                        "oneiric"
-                    ], 
-                    "title": "kubuntu installer crashes daily-live 6-1-11: AttributeError: 'QCheckBox' object has no attribute 'set_sensitive'"
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Wednesday, 01. June 2011 19:12 UTC", 
-                "date_closed": "Thursday, 16. June 2011 22:45 UTC", 
-                "date_confirmed": "Wednesday, 01. June 2011 17:20 UTC", 
-                "date_created": "Wednesday, 01. June 2011 17:04 UTC", 
-                "date_fix_committed": "Thursday, 16. June 2011 13:41 UTC", 
-                "date_fix_released": "Thursday, 16. June 2011 22:45 UTC", 
-                "date_in_progress": "Wednesday, 01. June 2011 19:12 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 01. June 2011 17:20 UTC", 
-                "date_triaged": "Wednesday, 01. June 2011 19:12 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "oneiric-alpha-2", 
-                "owner": "cpatrick08", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #791446 in ubiquity (Ubuntu): \"kubuntu installer crashes daily-live 6-1-11: AttributeError: 'QCheckBox' object has no attribute 'set_sensitive'\""
             }
         ], 
         "791454": [
@@ -2247,98 +1752,6 @@
                 "status": "Fix Released", 
                 "team": "Kernel Team", 
                 "title": "Bug #791552 in linux-ti-omap4 (Ubuntu Oneiric): \"No USB support on Armel\""
-            }, 
-            {
-                "assignee": "Unassigned", 
-                "bug": {
-                    "date_created": "Wednesday, 01. June 2011 20:44 UTC", 
-                    "date_last_message": "Friday, 19. August 2011 05:48 UTC", 
-                    "date_last_updated": "Friday, 19. August 2011 05:49 UTC", 
-                    "heat": 25, 
-                    "id": 791552, 
-                    "nominations": [
-                        "natty", 
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 18, 
-                    "number_subscribed": 5, 
-                    "tags": [
-                        "apport-bug", 
-                        "armel", 
-                        "iso-testing", 
-                        "linaro", 
-                        "oneiric", 
-                        "verification-done-natty"
-                    ], 
-                    "title": "No USB support on Armel"
-                }, 
-                "bug_target_name": "linux (Ubuntu)", 
-                "date_assigned": "None", 
-                "date_closed": "Wednesday, 22. June 2011 13:31 UTC", 
-                "date_confirmed": "Wednesday, 22. June 2011 12:45 UTC", 
-                "date_created": "Wednesday, 01. June 2011 20:44 UTC", 
-                "date_fix_committed": "Wednesday, 22. June 2011 13:31 UTC", 
-                "date_fix_released": "Wednesday, 22. June 2011 13:31 UTC", 
-                "date_in_progress": "Wednesday, 22. June 2011 12:45 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 22. June 2011 12:45 UTC", 
-                "date_triaged": "Wednesday, 22. June 2011 12:45 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "oneiric-alpha-2", 
-                "owner": "Tobin Davis", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #791552 in linux (Ubuntu): \"No USB support on Armel\""
-            }, 
-            {
-                "assignee": "Bryan Wu", 
-                "bug": {
-                    "date_created": "Wednesday, 01. June 2011 20:44 UTC", 
-                    "date_last_message": "Friday, 19. August 2011 05:48 UTC", 
-                    "date_last_updated": "Friday, 19. August 2011 05:49 UTC", 
-                    "heat": 25, 
-                    "id": 791552, 
-                    "nominations": [
-                        "natty", 
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 18, 
-                    "number_subscribed": 5, 
-                    "tags": [
-                        "apport-bug", 
-                        "armel", 
-                        "iso-testing", 
-                        "linaro", 
-                        "oneiric", 
-                        "verification-done-natty"
-                    ], 
-                    "title": "No USB support on Armel"
-                }, 
-                "bug_target_name": "linux-ti-omap4 (Ubuntu)", 
-                "date_assigned": "Wednesday, 06. July 2011 05:53 UTC", 
-                "date_closed": "Wednesday, 06. July 2011 09:30 UTC", 
-                "date_confirmed": "Wednesday, 22. June 2011 13:32 UTC", 
-                "date_created": "Wednesday, 22. June 2011 13:32 UTC", 
-                "date_fix_committed": "Wednesday, 06. July 2011 09:30 UTC", 
-                "date_fix_released": "Wednesday, 06. July 2011 09:30 UTC", 
-                "date_in_progress": "Wednesday, 06. July 2011 05:53 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "Tuesday, 05. July 2011 21:31 UTC", 
-                "date_left_new": "Wednesday, 22. June 2011 13:32 UTC", 
-                "date_triaged": "Wednesday, 06. July 2011 05:53 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Tim Gardner", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #791552 in linux-ti-omap4 (Ubuntu): \"No USB support on Armel\""
             }
         ], 
         "791850": [
@@ -2386,51 +1799,6 @@
                 "status": "Fix Released", 
                 "team": "Kernel Team", 
                 "title": "Bug #791850 in linux (Ubuntu Oneiric): \"oneiric cluster compute (hvm) instances do not boot\""
-            }, 
-            {
-                "assignee": "Stefan Bader", 
-                "bug": {
-                    "date_created": "Thursday, 02. June 2011 13:42 UTC", 
-                    "date_last_message": "Saturday, 20. August 2011 18:50 UTC", 
-                    "date_last_updated": "Saturday, 20. August 2011 18:50 UTC", 
-                    "heat": 43, 
-                    "id": 791850, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 5, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 17, 
-                    "number_subscribed": 7, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "ec2-images", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "server-o-ro"
-                    ], 
-                    "title": "oneiric cluster compute (hvm) instances do not boot"
-                }, 
-                "bug_target_name": "linux (Ubuntu)", 
-                "date_assigned": "Friday, 15. July 2011 21:18 UTC", 
-                "date_closed": "Saturday, 20. August 2011 18:50 UTC", 
-                "date_confirmed": "Wednesday, 06. July 2011 00:09 UTC", 
-                "date_created": "Thursday, 02. June 2011 13:42 UTC", 
-                "date_fix_committed": "Wednesday, 17. August 2011 14:38 UTC", 
-                "date_fix_released": "Saturday, 20. August 2011 18:50 UTC", 
-                "date_in_progress": "Wednesday, 17. August 2011 14:38 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 06. July 2011 00:09 UTC", 
-                "date_triaged": "Friday, 15. July 2011 15:48 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Scott Moser", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #791850 in linux (Ubuntu): \"oneiric cluster compute (hvm) instances do not boot\""
             }
         ], 
         "792579": [], 
@@ -2456,7 +1824,7 @@
                     ], 
                     "title": "software-center crashed with AttributeError in _search_gmenu_dir(): 'NoneType' object has no attribute 'get_contents'"
                 }, 
-                "bug_target_name": "software-center (Ubuntu)", 
+                "bug_target_name": "software-center", 
                 "date_assigned": "Tuesday, 12. July 2011 20:02 UTC", 
                 "date_closed": "Wednesday, 13. July 2011 14:30 UTC", 
                 "date_confirmed": "Friday, 10. June 2011 20:23 UTC", 
@@ -2473,7 +1841,7 @@
                 "milestone": "", 
                 "owner": "Carl Smuck", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #793024 in software-center (Ubuntu): \"software-center crashed with AttributeError in _search_gmenu_dir(): 'NoneType' object has no attribute 'get_contents'\""
             }
         ], 
@@ -2502,7 +1870,7 @@
                     ], 
                     "title": "zeitgeist-daemon crashed with AttributeError in close(): 'NoneType' object has no attribute 'execute'"
                 }, 
-                "bug_target_name": "zeitgeist (Ubuntu)", 
+                "bug_target_name": "zeitgeist", 
                 "date_assigned": "None", 
                 "date_closed": "Thursday, 07. July 2011 17:15 UTC", 
                 "date_confirmed": "Friday, 10. June 2011 05:34 UTC", 
@@ -2571,54 +1939,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #794248 in ubiquity-slideshow-ubuntu (Ubuntu Oneiric): \"ubiquity-slideshow-lubuntu Welcome slide has version 11.04 on Oneiric\""
-            }, 
-            {
-                "assignee": "Unassigned", 
-                "bug": {
-                    "date_created": "Tuesday, 07. June 2011 20:10 UTC", 
-                    "date_last_message": "Wednesday, 03. August 2011 19:09 UTC", 
-                    "date_last_updated": "Friday, 26. August 2011 13:39 UTC", 
-                    "heat": 34, 
-                    "id": 794248, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 3, 
-                    "number_of_messages": 5, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "apport-bug", 
-                        "edubuntu", 
-                        "i386", 
-                        "iso-testing", 
-                        "kubuntu", 
-                        "lubuntu", 
-                        "oneiric", 
-                        "ubuntu", 
-                        "xubuntu"
-                    ], 
-                    "title": "ubiquity-slideshow-lubuntu Welcome slide has version 11.04 on Oneiric"
-                }, 
-                "bug_target_name": "ubiquity-slideshow-ubuntu (Ubuntu)", 
-                "date_assigned": "None", 
-                "date_closed": "Friday, 26. August 2011 13:38 UTC", 
-                "date_confirmed": "Wednesday, 03. August 2011 19:02 UTC", 
-                "date_created": "Tuesday, 07. June 2011 20:10 UTC", 
-                "date_fix_committed": "Friday, 26. August 2011 13:38 UTC", 
-                "date_fix_released": "Friday, 26. August 2011 13:38 UTC", 
-                "date_in_progress": "Friday, 26. August 2011 13:38 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 03. August 2011 19:02 UTC", 
-                "date_triaged": "Friday, 26. August 2011 13:38 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Eliah Kagan", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #794248 in ubiquity-slideshow-ubuntu (Ubuntu): \"ubiquity-slideshow-lubuntu Welcome slide has version 11.04 on Oneiric\""
             }
         ], 
         "795046": [
@@ -2665,50 +1985,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #795046 in lightdm (Ubuntu Oneiric): \"xauth broken after logging in with lightdm\""
-            }, 
-            {
-                "assignee": "Robert Ancell", 
-                "bug": {
-                    "date_created": "Thursday, 09. June 2011 13:47 UTC", 
-                    "date_last_message": "Friday, 29. July 2011 14:44 UTC", 
-                    "date_last_updated": "Friday, 29. July 2011 14:44 UTC", 
-                    "heat": 34, 
-                    "id": 795046, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 5, 
-                    "number_of_duplicates": 2, 
-                    "number_of_messages": 7, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "unity-2d"
-                    ], 
-                    "title": "xauth broken after logging in with lightdm"
-                }, 
-                "bug_target_name": "lightdm (Ubuntu)", 
-                "date_assigned": "Friday, 08. July 2011 10:42 UTC", 
-                "date_closed": "Friday, 29. July 2011 14:44 UTC", 
-                "date_confirmed": "Friday, 10. June 2011 04:10 UTC", 
-                "date_created": "Thursday, 09. June 2011 13:47 UTC", 
-                "date_fix_committed": "Friday, 29. July 2011 14:44 UTC", 
-                "date_fix_released": "Friday, 29. July 2011 14:44 UTC", 
-                "date_in_progress": "Friday, 29. July 2011 14:44 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Friday, 10. June 2011 04:10 UTC", 
-                "date_triaged": "Friday, 10. June 2011 04:13 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Scott Moser", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #795046 in lightdm (Ubuntu): \"xauth broken after logging in with lightdm\""
             }
         ], 
         "796793": [
@@ -2733,7 +2009,7 @@
                     ], 
                     "title": "accessibilty and shutdown menu are missing icons"
                 }, 
-                "bug_target_name": "lightdm (Ubuntu)", 
+                "bug_target_name": "lightdm", 
                 "date_assigned": "Friday, 17. June 2011 16:37 UTC", 
                 "date_closed": "Wednesday, 03. August 2011 10:45 UTC", 
                 "date_confirmed": "Tuesday, 14. June 2011 12:00 UTC", 
@@ -2750,7 +2026,7 @@
                 "milestone": "", 
                 "owner": "Micah Gersten", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #796793 in lightdm (Ubuntu): \"accessibilty and shutdown menu are missing icons\""
             }, 
             {
@@ -2774,7 +2050,7 @@
                     ], 
                     "title": "accessibilty and shutdown menu are missing icons"
                 }, 
-                "bug_target_name": "gnome-icon-theme (Ubuntu)", 
+                "bug_target_name": "gnome-icon-theme", 
                 "date_assigned": "None", 
                 "date_closed": "Saturday, 18. June 2011 10:00 UTC", 
                 "date_confirmed": "None", 
@@ -2791,7 +2067,7 @@
                 "milestone": "", 
                 "owner": "Sebastien Bacher", 
                 "status": "Won't Fix", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #796793 in gnome-icon-theme (Ubuntu): \"accessibilty and shutdown menu are missing icons\""
             }
         ], 
@@ -2818,7 +2094,7 @@
                     ], 
                     "title": "lightdm crashed with SIGSEGV in g_main_context_dispatch()"
                 }, 
-                "bug_target_name": "lightdm (Ubuntu)", 
+                "bug_target_name": "lightdm", 
                 "date_assigned": "None", 
                 "date_closed": "Wednesday, 31. August 2011 08:10 UTC", 
                 "date_confirmed": "Tuesday, 19. July 2011 22:46 UTC", 
@@ -2835,7 +2111,7 @@
                 "milestone": "", 
                 "owner": "Jussi Pakkanen", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #798716 in lightdm (Ubuntu): \"lightdm crashed with SIGSEGV in g_main_context_dispatch()\""
             }
         ], 
@@ -2883,50 +2159,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #798962 in accountsservice (Ubuntu Oneiric): \"g-c-c \"automatic login\" settings not working with lightdm\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Team", 
-                "bug": {
-                    "date_created": "Friday, 17. June 2011 21:06 UTC", 
-                    "date_last_message": "Friday, 12. August 2011 23:11 UTC", 
-                    "date_last_updated": "Sunday, 14. August 2011 11:22 UTC", 
-                    "heat": 56, 
-                    "id": 798962, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 6, 
-                    "number_of_duplicates": 3, 
-                    "number_of_messages": 20, 
-                    "number_subscribed": 8, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "unity-2d"
-                    ], 
-                    "title": "g-c-c \"automatic login\" settings not working with lightdm"
-                }, 
-                "bug_target_name": "accountsservice (Ubuntu)", 
-                "date_assigned": "Wednesday, 10. August 2011 14:19 UTC", 
-                "date_closed": "Thursday, 11. August 2011 19:25 UTC", 
-                "date_confirmed": "Tuesday, 12. July 2011 15:47 UTC", 
-                "date_created": "Friday, 17. June 2011 21:06 UTC", 
-                "date_fix_committed": "Thursday, 11. August 2011 19:25 UTC", 
-                "date_fix_released": "Thursday, 11. August 2011 19:25 UTC", 
-                "date_in_progress": "Thursday, 11. August 2011 19:25 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Monday, 20. June 2011 08:54 UTC", 
-                "date_triaged": "Tuesday, 12. July 2011 16:02 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Carl Karsten", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #798962 in accountsservice (Ubuntu): \"g-c-c \"automatic login\" settings not working with lightdm\""
             }
         ], 
         "799238": [
@@ -2953,7 +2185,7 @@
                     ], 
                     "title": "Xubuntu i386 and amd64 xserver abort"
                 }, 
-                "bug_target_name": "xorg (Ubuntu)", 
+                "bug_target_name": "xorg", 
                 "date_assigned": "None", 
                 "date_closed": "Friday, 05. August 2011 14:19 UTC", 
                 "date_confirmed": "Friday, 05. August 2011 14:19 UTC", 
@@ -2997,7 +2229,7 @@
                     ], 
                     "title": "Macbook Bluetooth not working"
                 }, 
-                "bug_target_name": "linux (Ubuntu)", 
+                "bug_target_name": "linux", 
                 "date_assigned": "None", 
                 "date_closed": "Friday, 15. July 2011 13:19 UTC", 
                 "date_confirmed": "Wednesday, 22. June 2011 14:00 UTC", 
@@ -3014,7 +2246,7 @@
                 "milestone": "", 
                 "owner": "Jussi Pakkanen", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Kernel Team", 
                 "title": "Bug #800697 in linux (Ubuntu): \"Macbook Bluetooth not working\""
             }
         ], 
@@ -3041,7 +2273,7 @@
                     ], 
                     "title": "Xubuntu session using wrong settings"
                 }, 
-                "bug_target_name": "xubuntu-default-settings (Ubuntu)", 
+                "bug_target_name": "xubuntu-default-settings", 
                 "date_assigned": "None", 
                 "date_closed": "Sunday, 24. July 2011 22:06 UTC", 
                 "date_confirmed": "Saturday, 02. July 2011 13:08 UTC", 
@@ -3107,51 +2339,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #804709 in jockey (Ubuntu Oneiric): \"jockey-backend crashed with SystemError: E:Sub-process /usr/bin/dpkg returned an error code (1)\""
-            }, 
-            {
-                "assignee": "Martin Pitt", 
-                "bug": {
-                    "date_created": "Saturday, 02. July 2011 11:06 UTC", 
-                    "date_last_message": "Monday, 22. August 2011 10:10 UTC", 
-                    "date_last_updated": "Monday, 29. August 2011 11:04 UTC", 
-                    "heat": 552, 
-                    "id": 804709, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 3, 
-                    "number_of_duplicates": 67, 
-                    "number_of_messages": 10, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "apport-crash", 
-                        "bugpattern-written", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "unity-2d"
-                    ], 
-                    "title": "jockey-backend crashed with SystemError: E:Sub-process /usr/bin/dpkg returned an error code (1)"
-                }, 
-                "bug_target_name": "jockey (Ubuntu)", 
-                "date_assigned": "Tuesday, 19. July 2011 22:52 UTC", 
-                "date_closed": "Monday, 22. August 2011 10:10 UTC", 
-                "date_confirmed": "Thursday, 18. August 2011 09:50 UTC", 
-                "date_created": "Saturday, 02. July 2011 11:06 UTC", 
-                "date_fix_committed": "Thursday, 18. August 2011 15:17 UTC", 
-                "date_fix_released": "Monday, 22. August 2011 10:10 UTC", 
-                "date_in_progress": "Thursday, 18. August 2011 09:50 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Monday, 18. July 2011 18:12 UTC", 
-                "date_triaged": "Thursday, 18. August 2011 09:50 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Blmchen Blau", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #804709 in jockey (Ubuntu): \"jockey-backend crashed with SystemError: E:Sub-process /usr/bin/dpkg returned an error code (1)\""
             }
         ], 
         "805244": [
@@ -3199,51 +2386,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #805244 in ubuntu-sso-client (Ubuntu Oneiric): \"Method \"Create Collection\" with signature \"a{sv}\" on interface \"org.freedesktop.Secret.Service\" doesn't exist\""
-            }, 
-            {
-                "assignee": "Rodney Dawes", 
-                "bug": {
-                    "date_created": "Sunday, 03. July 2011 21:25 UTC", 
-                    "date_last_message": "Monday, 25. July 2011 19:40 UTC", 
-                    "date_last_updated": "Monday, 29. August 2011 20:44 UTC", 
-                    "heat": 20, 
-                    "id": 805244, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 1, 
-                    "number_of_messages": 6, 
-                    "number_subscribed": 1, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "Method \"Create Collection\" with signature \"a{sv}\" on interface \"org.freedesktop.Secret.Service\" doesn't exist"
-                }, 
-                "bug_target_name": "ubuntu-sso-client (Ubuntu)", 
-                "date_assigned": "Sunday, 03. July 2011 22:02 UTC", 
-                "date_closed": "Monday, 25. July 2011 19:40 UTC", 
-                "date_confirmed": "Tuesday, 05. July 2011 12:55 UTC", 
-                "date_created": "Sunday, 03. July 2011 21:25 UTC", 
-                "date_fix_committed": "Monday, 25. July 2011 19:40 UTC", 
-                "date_fix_released": "Monday, 25. July 2011 19:40 UTC", 
-                "date_in_progress": "Friday, 22. July 2011 20:06 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Tuesday, 05. July 2011 12:55 UTC", 
-                "date_triaged": "Tuesday, 05. July 2011 12:55 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "ukasz Wieczorek", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #805244 in ubuntu-sso-client (Ubuntu): \"Method \"Create Collection\" with signature \"a{sv}\" on interface \"org.freedesktop.Secret.Service\" doesn't exist\""
             }
         ], 
         "805783": [
@@ -3291,51 +2433,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #805783 in glib2.0 (Ubuntu Oneiric): \"nautilus crashed with SIGSEGV in ffi_call()\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Team", 
-                "bug": {
-                    "date_created": "Tuesday, 05. July 2011 03:43 UTC", 
-                    "date_last_message": "Monday, 11. July 2011 14:39 UTC", 
-                    "date_last_updated": "Monday, 11. July 2011 14:39 UTC", 
-                    "heat": 92, 
-                    "id": 805783, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 21, 
-                    "number_of_duplicates": 5, 
-                    "number_of_messages": 21, 
-                    "number_subscribed": 11, 
-                    "tags": [
-                        "amd64", 
-                        "apport-crash", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "nautilus crashed with SIGSEGV in ffi_call()"
-                }, 
-                "bug_target_name": "glib2.0 (Ubuntu)", 
-                "date_assigned": "Tuesday, 05. July 2011 08:03 UTC", 
-                "date_closed": "Friday, 08. July 2011 15:11 UTC", 
-                "date_confirmed": "Tuesday, 05. July 2011 08:02 UTC", 
-                "date_created": "Tuesday, 05. July 2011 03:43 UTC", 
-                "date_fix_committed": "Friday, 08. July 2011 15:11 UTC", 
-                "date_fix_released": "Friday, 08. July 2011 15:11 UTC", 
-                "date_in_progress": "Friday, 08. July 2011 15:11 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Tuesday, 05. July 2011 08:02 UTC", 
-                "date_triaged": "Friday, 08. July 2011 15:11 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "cariboo907", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #805783 in glib2.0 (Ubuntu): \"nautilus crashed with SIGSEGV in ffi_call()\""
             }
         ], 
         "805938": [
@@ -3430,98 +2527,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #805938 in desktop-file-utils (Ubuntu Oneiric): \"Totem set as default music player after install instead of Banshee\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Experience Team", 
-                "bug": {
-                    "date_created": "Tuesday, 05. July 2011 13:02 UTC", 
-                    "date_last_message": "Wednesday, 13. July 2011 14:02 UTC", 
-                    "date_last_updated": "Saturday, 13. August 2011 04:17 UTC", 
-                    "heat": 24, 
-                    "id": 805938, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 15, 
-                    "number_subscribed": 6, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "patch", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "Totem set as default music player after install instead of Banshee"
-                }, 
-                "bug_target_name": "unity (Ubuntu)", 
-                "date_assigned": "Thursday, 07. July 2011 04:49 UTC", 
-                "date_closed": "Wednesday, 13. July 2011 14:00 UTC", 
-                "date_confirmed": "Wednesday, 06. July 2011 19:09 UTC", 
-                "date_created": "Wednesday, 06. July 2011 19:09 UTC", 
-                "date_fix_committed": "Wednesday, 13. July 2011 14:00 UTC", 
-                "date_fix_released": "Wednesday, 13. July 2011 14:00 UTC", 
-                "date_in_progress": "Wednesday, 13. July 2011 14:00 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 06. July 2011 19:09 UTC", 
-                "date_triaged": "Wednesday, 06. July 2011 19:09 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Chow Loong Jin", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #805938 in unity (Ubuntu): \"Totem set as default music player after install instead of Banshee\""
-            }, 
-            {
-                "assignee": "Unassigned", 
-                "bug": {
-                    "date_created": "Tuesday, 05. July 2011 13:02 UTC", 
-                    "date_last_message": "Wednesday, 13. July 2011 14:02 UTC", 
-                    "date_last_updated": "Saturday, 13. August 2011 04:17 UTC", 
-                    "heat": 24, 
-                    "id": 805938, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 15, 
-                    "number_subscribed": 6, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "patch", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "Totem set as default music player after install instead of Banshee"
-                }, 
-                "bug_target_name": "desktop-file-utils (Ubuntu)", 
-                "date_assigned": "None", 
-                "date_closed": "Wednesday, 13. July 2011 13:40 UTC", 
-                "date_confirmed": "Friday, 08. July 2011 18:42 UTC", 
-                "date_created": "Friday, 08. July 2011 18:42 UTC", 
-                "date_fix_committed": "Wednesday, 13. July 2011 13:40 UTC", 
-                "date_fix_released": "Wednesday, 13. July 2011 13:40 UTC", 
-                "date_in_progress": "Wednesday, 13. July 2011 13:40 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Friday, 08. July 2011 18:42 UTC", 
-                "date_triaged": "Friday, 08. July 2011 18:42 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Chow Loong Jin", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #805938 in desktop-file-utils (Ubuntu): \"Totem set as default music player after install instead of Banshee\""
             }
         ], 
         "805960": [
@@ -3547,7 +2552,7 @@
                     ], 
                     "title": "quickaccess widget not found"
                 }, 
-                "bug_target_name": "kubuntu-default-settings (Ubuntu)", 
+                "bug_target_name": "kubuntu-default-settings", 
                 "date_assigned": "Wednesday, 06. July 2011 12:55 UTC", 
                 "date_closed": "Friday, 19. August 2011 14:50 UTC", 
                 "date_confirmed": "Wednesday, 06. July 2011 11:39 UTC", 
@@ -3673,7 +2678,7 @@
                     ], 
                     "title": "Series of segfaults early in the kernel boot process on omap."
                 }, 
-                "bug_target_name": "linux (Ubuntu)", 
+                "bug_target_name": "linux", 
                 "date_assigned": "Thursday, 07. July 2011 15:15 UTC", 
                 "date_closed": "Friday, 15. July 2011 16:19 UTC", 
                 "date_confirmed": "Friday, 15. July 2011 15:41 UTC", 
@@ -3690,7 +2695,7 @@
                 "milestone": "", 
                 "owner": "Tobin Davis", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Kernel Team", 
                 "title": "Bug #806113 in linux (Ubuntu): \"Series of segfaults early in the kernel boot process on omap.\""
             }
         ], 
@@ -3738,50 +2743,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #806247 in ubiquity (Ubuntu Oneiric): \"oem-config/ubiquity fails to configure lightdm for auto-login\""
-            }, 
-            {
-                "assignee": "Colin Watson", 
-                "bug": {
-                    "date_created": "Tuesday, 05. July 2011 23:24 UTC", 
-                    "date_last_message": "Saturday, 09. July 2011 16:00 UTC", 
-                    "date_last_updated": "Saturday, 09. July 2011 16:00 UTC", 
-                    "heat": 9, 
-                    "id": 806247, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 5, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "unity-2d"
-                    ], 
-                    "title": "oem-config/ubiquity fails to configure lightdm for auto-login"
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Friday, 08. July 2011 12:15 UTC", 
-                "date_closed": "Saturday, 09. July 2011 16:00 UTC", 
-                "date_confirmed": "Thursday, 07. July 2011 09:26 UTC", 
-                "date_created": "Tuesday, 05. July 2011 23:24 UTC", 
-                "date_fix_committed": "Friday, 08. July 2011 15:10 UTC", 
-                "date_fix_released": "Saturday, 09. July 2011 16:00 UTC", 
-                "date_in_progress": "Friday, 08. July 2011 14:30 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 07. July 2011 09:26 UTC", 
-                "date_triaged": "Friday, 08. July 2011 14:30 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Chad A. Davis", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #806247 in ubiquity (Ubuntu): \"oem-config/ubiquity fails to configure lightdm for auto-login\""
             }
         ], 
         "806349": [
@@ -3871,51 +2832,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #806399 in vinagre (Ubuntu Oneiric): \"vinagre completely unusable with Unusual Screen size\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Team", 
-                "bug": {
-                    "date_created": "Wednesday, 06. July 2011 10:21 UTC", 
-                    "date_last_message": "Wednesday, 17. August 2011 20:12 UTC", 
-                    "date_last_updated": "Wednesday, 17. August 2011 20:12 UTC", 
-                    "heat": 13, 
-                    "id": 806399, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 1, 
-                    "number_of_messages": 8, 
-                    "number_subscribed": 1, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "vinagre completely unusable with Unusual Screen size"
-                }, 
-                "bug_target_name": "vinagre (Ubuntu)", 
-                "date_assigned": "Monday, 11. July 2011 07:24 UTC", 
-                "date_closed": "Wednesday, 17. August 2011 20:12 UTC", 
-                "date_confirmed": "Thursday, 07. July 2011 18:48 UTC", 
-                "date_created": "Wednesday, 06. July 2011 10:21 UTC", 
-                "date_fix_committed": "Wednesday, 17. August 2011 20:12 UTC", 
-                "date_fix_released": "Wednesday, 17. August 2011 20:12 UTC", 
-                "date_in_progress": "Wednesday, 17. August 2011 20:12 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 07. July 2011 18:48 UTC", 
-                "date_triaged": "Thursday, 07. July 2011 18:48 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Efren D. Montales Jr.", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #806399 in vinagre (Ubuntu): \"vinagre completely unusable with Unusual Screen size\""
             }
         ], 
         "806408": [
@@ -3940,7 +2856,7 @@
                     ], 
                     "title": "After xubuntu upgrade or installation, default session on greeter must be xubuntu"
                 }, 
-                "bug_target_name": "lightdm (Ubuntu)", 
+                "bug_target_name": "lightdm", 
                 "date_assigned": "None", 
                 "date_closed": "Sunday, 14. August 2011 20:45 UTC", 
                 "date_confirmed": "Wednesday, 06. July 2011 12:35 UTC", 
@@ -3957,7 +2873,7 @@
                 "milestone": "", 
                 "owner": "Jean-Baptiste Lallement", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #806408 in lightdm (Ubuntu): \"After xubuntu upgrade or installation, default session on greeter must be xubuntu\""
             }, 
             {
@@ -3981,7 +2897,7 @@
                     ], 
                     "title": "After xubuntu upgrade or installation, default session on greeter must be xubuntu"
                 }, 
-                "bug_target_name": "xubuntu-default-settings (Ubuntu)", 
+                "bug_target_name": "xubuntu-default-settings", 
                 "date_assigned": "Wednesday, 10. August 2011 12:51 UTC", 
                 "date_closed": "Sunday, 14. August 2011 20:44 UTC", 
                 "date_confirmed": "Tuesday, 02. August 2011 17:59 UTC", 
@@ -4261,141 +3177,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #807306 in udev (Ubuntu Oneiric): \"[oneiric] Keyboard & mouse not working in X - incomplete migration to /run\""
-            }, 
-            {
-                "assignee": "Martin Pitt", 
-                "bug": {
-                    "date_created": "Friday, 08. July 2011 00:57 UTC", 
-                    "date_last_message": "Monday, 01. August 2011 20:45 UTC", 
-                    "date_last_updated": "Monday, 01. August 2011 20:51 UTC", 
-                    "heat": 340, 
-                    "id": 807306, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 64, 
-                    "number_of_duplicates": 10, 
-                    "number_of_messages": 83, 
-                    "number_subscribed": 40, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "ubuntu", 
-                        "unity-2d"
-                    ], 
-                    "title": "[oneiric] Keyboard & mouse not working in X - incomplete migration to /run"
-                }, 
-                "bug_target_name": "initramfs-tools (Ubuntu)", 
-                "date_assigned": "Monday, 11. July 2011 07:30 UTC", 
-                "date_closed": "Tuesday, 12. July 2011 08:40 UTC", 
-                "date_confirmed": "Monday, 11. July 2011 07:18 UTC", 
-                "date_created": "Friday, 08. July 2011 00:57 UTC", 
-                "date_fix_committed": "Tuesday, 12. July 2011 08:40 UTC", 
-                "date_fix_released": "Tuesday, 12. July 2011 08:40 UTC", 
-                "date_in_progress": "Tuesday, 12. July 2011 08:30 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Friday, 08. July 2011 15:38 UTC", 
-                "date_triaged": "Tuesday, 12. July 2011 04:28 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Dave Gilbert", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #807306 in initramfs-tools (Ubuntu): \"[oneiric] Keyboard & mouse not working in X - incomplete migration to /run\""
-            }, 
-            {
-                "assignee": "Canonical Foundations Team", 
-                "bug": {
-                    "date_created": "Friday, 08. July 2011 00:57 UTC", 
-                    "date_last_message": "Monday, 01. August 2011 20:45 UTC", 
-                    "date_last_updated": "Monday, 01. August 2011 20:51 UTC", 
-                    "heat": 340, 
-                    "id": 807306, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 64, 
-                    "number_of_duplicates": 10, 
-                    "number_of_messages": 83, 
-                    "number_subscribed": 40, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "ubuntu", 
-                        "unity-2d"
-                    ], 
-                    "title": "[oneiric] Keyboard & mouse not working in X - incomplete migration to /run"
-                }, 
-                "bug_target_name": "mountall (Ubuntu)", 
-                "date_assigned": "Tuesday, 12. July 2011 08:31 UTC", 
-                "date_closed": "Monday, 01. August 2011 20:45 UTC", 
-                "date_confirmed": "Monday, 11. July 2011 21:17 UTC", 
-                "date_created": "Monday, 11. July 2011 19:43 UTC", 
-                "date_fix_committed": "Monday, 01. August 2011 20:45 UTC", 
-                "date_fix_released": "Monday, 01. August 2011 20:45 UTC", 
-                "date_in_progress": "Monday, 01. August 2011 20:45 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Monday, 11. July 2011 21:17 UTC", 
-                "date_triaged": "Monday, 11. July 2011 21:17 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Bryce Harrington", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #807306 in mountall (Ubuntu): \"[oneiric] Keyboard & mouse not working in X - incomplete migration to /run\""
-            }, 
-            {
-                "assignee": "Martin Pitt", 
-                "bug": {
-                    "date_created": "Friday, 08. July 2011 00:57 UTC", 
-                    "date_last_message": "Monday, 01. August 2011 20:45 UTC", 
-                    "date_last_updated": "Monday, 01. August 2011 20:51 UTC", 
-                    "heat": 340, 
-                    "id": 807306, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 64, 
-                    "number_of_duplicates": 10, 
-                    "number_of_messages": 83, 
-                    "number_subscribed": 40, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "ubuntu", 
-                        "unity-2d"
-                    ], 
-                    "title": "[oneiric] Keyboard & mouse not working in X - incomplete migration to /run"
-                }, 
-                "bug_target_name": "udev (Ubuntu)", 
-                "date_assigned": "Tuesday, 12. July 2011 04:47 UTC", 
-                "date_closed": "Tuesday, 12. July 2011 06:45 UTC", 
-                "date_confirmed": "Tuesday, 12. July 2011 04:47 UTC", 
-                "date_created": "Tuesday, 12. July 2011 04:47 UTC", 
-                "date_fix_committed": "Tuesday, 12. July 2011 06:01 UTC", 
-                "date_fix_released": "Tuesday, 12. July 2011 06:45 UTC", 
-                "date_in_progress": "Tuesday, 12. July 2011 04:47 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Tuesday, 12. July 2011 04:47 UTC", 
-                "date_triaged": "Tuesday, 12. July 2011 04:47 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Martin Pitt", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #807306 in udev (Ubuntu): \"[oneiric] Keyboard & mouse not working in X - incomplete migration to /run\""
             }
         ], 
         "807636": [
@@ -4483,49 +3264,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #809714 in ibus-sunpinyin (Ubuntu Oneiric): \"ibus-engine-sunpinyin crashed with SIGSEGV in std::basic_string<char, std::char_traits<char>, std::allocator<char> >::assign()\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Team", 
-                "bug": {
-                    "date_created": "Wednesday, 13. July 2011 06:02 UTC", 
-                    "date_last_message": "Wednesday, 31. August 2011 22:39 UTC", 
-                    "date_last_updated": "Wednesday, 31. August 2011 22:39 UTC", 
-                    "heat": 36, 
-                    "id": 809714, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 3, 
-                    "number_of_messages": 7, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "amd64", 
-                        "apport-crash", 
-                        "iso-testing", 
-                        "oneiric"
-                    ], 
-                    "title": "ibus-engine-sunpinyin crashed with SIGSEGV in std::basic_string<char, std::char_traits<char>, std::allocator<char> >::assign()"
-                }, 
-                "bug_target_name": "ibus-sunpinyin (Ubuntu)", 
-                "date_assigned": "Thursday, 04. August 2011 10:47 UTC", 
-                "date_closed": "Wednesday, 31. August 2011 22:39 UTC", 
-                "date_confirmed": "Wednesday, 31. August 2011 22:39 UTC", 
-                "date_created": "Wednesday, 13. July 2011 06:02 UTC", 
-                "date_fix_committed": "Wednesday, 31. August 2011 22:39 UTC", 
-                "date_fix_released": "Wednesday, 31. August 2011 22:39 UTC", 
-                "date_in_progress": "Wednesday, 31. August 2011 22:39 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Saturday, 30. July 2011 14:01 UTC", 
-                "date_triaged": "Wednesday, 31. August 2011 22:39 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "gfrog", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #809714 in ibus-sunpinyin (Ubuntu): \"ibus-engine-sunpinyin crashed with SIGSEGV in std::basic_string<char, std::char_traits<char>, std::allocator<char> >::assign()\""
             }
         ], 
         "810971": [
@@ -4574,52 +3312,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #810971 in compiz (Ubuntu Oneiric): \"External monitor causes screen corruption\""
-            }, 
-            {
-                "assignee": "Jay Taoko", 
-                "bug": {
-                    "date_created": "Friday, 15. July 2011 10:07 UTC", 
-                    "date_last_message": "Tuesday, 30. August 2011 13:24 UTC", 
-                    "date_last_updated": "Tuesday, 30. August 2011 13:24 UTC", 
-                    "heat": 34, 
-                    "id": 810971, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 1, 
-                    "number_of_messages": 14, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "corruption", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "External monitor causes screen corruption"
-                }, 
-                "bug_target_name": "compiz (Ubuntu)", 
-                "date_assigned": "Friday, 15. July 2011 11:10 UTC", 
-                "date_closed": "Friday, 19. August 2011 13:48 UTC", 
-                "date_confirmed": "Friday, 15. July 2011 12:13 UTC", 
-                "date_created": "Friday, 15. July 2011 10:07 UTC", 
-                "date_fix_committed": "Tuesday, 02. August 2011 09:10 UTC", 
-                "date_fix_released": "Friday, 19. August 2011 13:48 UTC", 
-                "date_in_progress": "Tuesday, 02. August 2011 09:10 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Friday, 15. July 2011 10:11 UTC", 
-                "date_triaged": "Tuesday, 02. August 2011 09:10 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Jussi Pakkanen", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #810971 in compiz (Ubuntu): \"External monitor causes screen corruption\""
             }
         ], 
         "811642": [
@@ -4648,7 +3340,7 @@
                     ], 
                     "title": "\"_Install Now\" text shown"
                 }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
+                "bug_target_name": "ubiquity", 
                 "date_assigned": "None", 
                 "date_closed": "Monday, 22. August 2011 09:46 UTC", 
                 "date_confirmed": "Saturday, 16. July 2011 20:29 UTC", 
@@ -4665,7 +3357,7 @@
                 "milestone": "ubuntu-11.10-beta-1", 
                 "owner": "Greg Auger", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #811642 in ubiquity (Ubuntu): \"\"_Install Now\" text shown\""
             }
         ], 
@@ -4713,50 +3405,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #812022 in plymouth (Ubuntu Oneiric): \"plymouth regression: text missing in initramfs (again)\""
-            }, 
-            {
-                "assignee": "Steve Langasek", 
-                "bug": {
-                    "date_created": "Sunday, 17. July 2011 21:20 UTC", 
-                    "date_last_message": "Monday, 15. August 2011 18:36 UTC", 
-                    "date_last_updated": "Monday, 15. August 2011 18:36 UTC", 
-                    "heat": 26, 
-                    "id": 812022, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 3, 
-                    "number_of_duplicates": 1, 
-                    "number_of_messages": 11, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "unity-2d"
-                    ], 
-                    "title": "plymouth regression: text missing in initramfs (again)"
-                }, 
-                "bug_target_name": "plymouth (Ubuntu)", 
-                "date_assigned": "Sunday, 17. July 2011 21:22 UTC", 
-                "date_closed": "Monday, 15. August 2011 05:23 UTC", 
-                "date_confirmed": "Sunday, 17. July 2011 21:23 UTC", 
-                "date_created": "Sunday, 17. July 2011 21:20 UTC", 
-                "date_fix_committed": "Monday, 15. August 2011 05:23 UTC", 
-                "date_fix_released": "Monday, 15. August 2011 05:23 UTC", 
-                "date_in_progress": "Monday, 15. August 2011 05:23 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Sunday, 17. July 2011 21:23 UTC", 
-                "date_triaged": "Sunday, 17. July 2011 21:23 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Steve Langasek", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #812022 in plymouth (Ubuntu): \"plymouth regression: text missing in initramfs (again)\""
             }
         ], 
         "813359": [
@@ -4806,53 +3454,6 @@
                 "status": "Fix Released", 
                 "team": "DX Team", 
                 "title": "Bug #813359 in unity (Ubuntu Oneiric): \"'Super' shortcuts for the launcher doesn't work anymore\""
-            }, 
-            {
-                "assignee": "Jason Smith", 
-                "bug": {
-                    "date_created": "Wednesday, 20. July 2011 07:59 UTC", 
-                    "date_last_message": "Wednesday, 10. August 2011 12:49 UTC", 
-                    "date_last_updated": "Monday, 15. August 2011 12:57 UTC", 
-                    "heat": 72, 
-                    "id": 813359, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 4, 
-                    "number_of_duplicates": 6, 
-                    "number_of_messages": 6, 
-                    "number_subscribed": 1, 
-                    "tags": [
-                        "0.9.5.0", 
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "regression-release", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "'Super' shortcuts for the launcher doesn't work anymore"
-                }, 
-                "bug_target_name": "unity (Ubuntu)", 
-                "date_assigned": "Wednesday, 20. July 2011 09:01 UTC", 
-                "date_closed": "Monday, 15. August 2011 12:57 UTC", 
-                "date_confirmed": "Wednesday, 20. July 2011 09:01 UTC", 
-                "date_created": "Wednesday, 20. July 2011 07:59 UTC", 
-                "date_fix_committed": "Wednesday, 03. August 2011 10:15 UTC", 
-                "date_fix_released": "Monday, 15. August 2011 12:57 UTC", 
-                "date_in_progress": "Wednesday, 03. August 2011 10:15 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "Wednesday, 10. August 2011 12:49 UTC", 
-                "date_left_new": "Wednesday, 20. July 2011 09:01 UTC", 
-                "date_triaged": "Wednesday, 20. July 2011 09:01 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #813359 in unity (Ubuntu): \"'Super' shortcuts for the launcher doesn't work anymore\""
             }
         ], 
         "815077": [
@@ -4900,51 +3501,6 @@
                 "status": "Fix Released", 
                 "team": "DX Team", 
                 "title": "Bug #815077 in indicator-session (Ubuntu Oneiric): \"restart is missing from SessionMenu\""
-            }, 
-            {
-                "assignee": "Conor Curran", 
-                "bug": {
-                    "date_created": "Saturday, 23. July 2011 14:11 UTC", 
-                    "date_last_message": "Saturday, 13. August 2011 11:13 UTC", 
-                    "date_last_updated": "Monday, 29. August 2011 07:19 UTC", 
-                    "heat": 394, 
-                    "id": 815077, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 67, 
-                    "number_of_duplicates": 13, 
-                    "number_of_messages": 21, 
-                    "number_subscribed": 16, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "restart is missing from SessionMenu"
-                }, 
-                "bug_target_name": "indicator-session (Ubuntu)", 
-                "date_assigned": "Saturday, 23. July 2011 14:11 UTC", 
-                "date_closed": "Wednesday, 10. August 2011 20:45 UTC", 
-                "date_confirmed": "Saturday, 23. July 2011 15:08 UTC", 
-                "date_created": "Saturday, 23. July 2011 14:11 UTC", 
-                "date_fix_committed": "Wednesday, 10. August 2011 20:45 UTC", 
-                "date_fix_released": "Wednesday, 10. August 2011 20:45 UTC", 
-                "date_in_progress": "Wednesday, 10. August 2011 20:45 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Saturday, 23. July 2011 15:08 UTC", 
-                "date_triaged": "Wednesday, 10. August 2011 20:45 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Omer Akram", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #815077 in indicator-session (Ubuntu): \"restart is missing from SessionMenu\""
             }
         ], 
         "815271": [
@@ -4992,51 +3548,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #815271 in accountsservice (Ubuntu Oneiric): \"Cannot login if user account does not have a password\""
-            }, 
-            {
-                "assignee": "Michael Terry", 
-                "bug": {
-                    "date_created": "Sunday, 24. July 2011 02:57 UTC", 
-                    "date_last_message": "Tuesday, 16. August 2011 21:15 UTC", 
-                    "date_last_updated": "Tuesday, 16. August 2011 22:09 UTC", 
-                    "heat": 21, 
-                    "id": 815271, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 3, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 5, 
-                    "number_subscribed": 5, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "unity-2d"
-                    ], 
-                    "title": "Cannot login if user account does not have a password"
-                }, 
-                "bug_target_name": "accountsservice (Ubuntu)", 
-                "date_assigned": "Friday, 12. August 2011 11:52 UTC", 
-                "date_closed": "Tuesday, 16. August 2011 21:15 UTC", 
-                "date_confirmed": "Thursday, 28. July 2011 11:26 UTC", 
-                "date_created": "Sunday, 24. July 2011 02:57 UTC", 
-                "date_fix_committed": "Tuesday, 16. August 2011 21:15 UTC", 
-                "date_fix_released": "Tuesday, 16. August 2011 21:15 UTC", 
-                "date_in_progress": "Tuesday, 16. August 2011 21:15 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 28. July 2011 11:26 UTC", 
-                "date_triaged": "Tuesday, 16. August 2011 21:15 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Eric Appleman", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #815271 in accountsservice (Ubuntu): \"Cannot login if user account does not have a password\""
             }
         ], 
         "816395": [
@@ -5062,7 +3573,7 @@
                     ], 
                     "title": "gsettings-data-convert crashed with signal 5 in g_settings_set_value()"
                 }, 
-                "bug_target_name": "gedit (Ubuntu)", 
+                "bug_target_name": "gedit", 
                 "date_assigned": "None", 
                 "date_closed": "Wednesday, 03. August 2011 11:57 UTC", 
                 "date_confirmed": "Tuesday, 30. August 2011 19:02 UTC", 
@@ -5079,7 +3590,7 @@
                 "milestone": "", 
                 "owner": "Dmitry Chibisov", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #816395 in gedit (Ubuntu): \"gsettings-data-convert crashed with signal 5 in g_settings_set_value()\""
             }
         ], 
@@ -5128,51 +3639,6 @@
                 "status": "Fix Released", 
                 "team": "DX Team", 
                 "title": "Bug #817896 in unity-2d (Ubuntu Oneiric): \"unity-2d-places crashed with SIGSEGV in QDeclarativePropertyPrivate::initProperty()\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Experience Team", 
-                "bug": {
-                    "date_created": "Friday, 29. July 2011 07:50 UTC", 
-                    "date_last_message": "Tuesday, 02. August 2011 14:10 UTC", 
-                    "date_last_updated": "Tuesday, 02. August 2011 15:13 UTC", 
-                    "heat": 117, 
-                    "id": 817896, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 17, 
-                    "number_of_messages": 7, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "amd64", 
-                        "apport-crash", 
-                        "apport-failed-retrace", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity"
-                    ], 
-                    "title": "unity-2d-places crashed with SIGSEGV in QDeclarativePropertyPrivate::initProperty()"
-                }, 
-                "bug_target_name": "unity-2d (Ubuntu)", 
-                "date_assigned": "Sunday, 31. July 2011 21:28 UTC", 
-                "date_closed": "Tuesday, 02. August 2011 14:10 UTC", 
-                "date_confirmed": "Saturday, 30. July 2011 06:00 UTC", 
-                "date_created": "Friday, 29. July 2011 07:50 UTC", 
-                "date_fix_committed": "Tuesday, 02. August 2011 12:05 UTC", 
-                "date_fix_released": "Tuesday, 02. August 2011 14:10 UTC", 
-                "date_in_progress": "Tuesday, 02. August 2011 12:05 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Saturday, 30. July 2011 06:00 UTC", 
-                "date_triaged": "Tuesday, 02. August 2011 12:05 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "ukasz Daniel", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #817896 in unity-2d (Ubuntu): \"unity-2d-places crashed with SIGSEGV in QDeclarativePropertyPrivate::initProperty()\""
             }
         ], 
         "818521": [
@@ -5198,7 +3664,7 @@
                     ], 
                     "title": "aptd crashed with AttributeError in _on_queue_changed(): 'AptDaemon' object has no attribute 'PropertyChanged'"
                 }, 
-                "bug_target_name": "aptdaemon (Ubuntu)", 
+                "bug_target_name": "aptdaemon", 
                 "date_assigned": "None", 
                 "date_closed": "Saturday, 06. August 2011 12:53 UTC", 
                 "date_confirmed": "Sunday, 31. July 2011 18:36 UTC", 
@@ -5215,7 +3681,7 @@
                 "milestone": "", 
                 "owner": "Cristian Aravena", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #818521 in aptdaemon (Ubuntu): \"aptd crashed with AttributeError in _on_queue_changed(): 'AptDaemon' object has no attribute 'PropertyChanged'\""
             }
         ], 
@@ -5263,50 +3729,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #819506 in notification-daemon (Ubuntu Oneiric): \"jockey-gtk crashed with GError in function(): GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files\""
-            }, 
-            {
-                "assignee": "Martin Pitt", 
-                "bug": {
-                    "date_created": "Monday, 01. August 2011 20:36 UTC", 
-                    "date_last_message": "Saturday, 20. August 2011 15:09 UTC", 
-                    "date_last_updated": "Saturday, 20. August 2011 15:09 UTC", 
-                    "heat": 27, 
-                    "id": 819506, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 2, 
-                    "number_of_messages": 9, 
-                    "number_subscribed": 4, 
-                    "tags": [
-                        "apport-crash", 
-                        "i386", 
-                        "iso-testing", 
-                        "need-duplicate-check", 
-                        "oneiric"
-                    ], 
-                    "title": "jockey-gtk crashed with GError in function(): GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files"
-                }, 
-                "bug_target_name": "notification-daemon (Ubuntu)", 
-                "date_assigned": "Wednesday, 10. August 2011 14:29 UTC", 
-                "date_closed": "Saturday, 20. August 2011 15:09 UTC", 
-                "date_confirmed": "Friday, 19. August 2011 16:13 UTC", 
-                "date_created": "Monday, 01. August 2011 20:36 UTC", 
-                "date_fix_committed": "Saturday, 20. August 2011 15:09 UTC", 
-                "date_fix_released": "Saturday, 20. August 2011 15:09 UTC", 
-                "date_in_progress": "Saturday, 20. August 2011 15:09 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Tuesday, 02. August 2011 17:53 UTC", 
-                "date_triaged": "Friday, 19. August 2011 16:13 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Julien Lavergne", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #819506 in notification-daemon (Ubuntu): \"jockey-gtk crashed with GError in function(): GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files\""
             }
         ], 
         "819528": [
@@ -5332,7 +3754,7 @@
                     ], 
                     "title": "Indicators don't work on lxpanel"
                 }, 
-                "bug_target_name": "lxpanel (Ubuntu)", 
+                "bug_target_name": "lxpanel", 
                 "date_assigned": "Wednesday, 10. August 2011 12:48 UTC", 
                 "date_closed": "Tuesday, 16. August 2011 19:50 UTC", 
                 "date_confirmed": "Monday, 01. August 2011 23:30 UTC", 
@@ -5375,7 +3797,7 @@
                     ], 
                     "title": "LightDM has two Xubuntu Session options after upgrade to xubuntu-default-settings on 2011-08-01"
                 }, 
-                "bug_target_name": "xubuntu-default-settings (Ubuntu)", 
+                "bug_target_name": "xubuntu-default-settings", 
                 "date_assigned": "Wednesday, 10. August 2011 09:48 UTC", 
                 "date_closed": "Sunday, 14. August 2011 20:32 UTC", 
                 "date_confirmed": "Tuesday, 02. August 2011 14:31 UTC", 
@@ -5416,7 +3838,7 @@
                     ], 
                     "title": "LightDM has two Xubuntu Session options after upgrade to xubuntu-default-settings on 2011-08-01"
                 }, 
-                "bug_target_name": "lightdm (Ubuntu)", 
+                "bug_target_name": "lightdm", 
                 "date_assigned": "Tuesday, 09. August 2011 10:01 UTC", 
                 "date_closed": "Sunday, 14. August 2011 20:33 UTC", 
                 "date_confirmed": "Thursday, 04. August 2011 13:31 UTC", 
@@ -5433,7 +3855,7 @@
                 "milestone": "", 
                 "owner": "Lionel Le Folgoc", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #819585 in lightdm (Ubuntu): \"LightDM has two Xubuntu Session options after upgrade to xubuntu-default-settings on 2011-08-01\""
             }
         ], 
@@ -5482,51 +3904,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #819609 in casper (Ubuntu Oneiric): \"Oneiric live CD boots to login screen\""
-            }, 
-            {
-                "assignee": "Unassigned", 
-                "bug": {
-                    "date_created": "Tuesday, 02. August 2011 03:43 UTC", 
-                    "date_last_message": "Thursday, 04. August 2011 09:12 UTC", 
-                    "date_last_updated": "Thursday, 04. August 2011 09:12 UTC", 
-                    "heat": 55, 
-                    "id": 819609, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 9, 
-                    "number_of_duplicates": 2, 
-                    "number_of_messages": 11, 
-                    "number_subscribed": 4, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "regression-release", 
-                        "running-unity"
-                    ], 
-                    "title": "Oneiric live CD boots to login screen"
-                }, 
-                "bug_target_name": "casper (Ubuntu)", 
-                "date_assigned": "None", 
-                "date_closed": "Tuesday, 02. August 2011 22:00 UTC", 
-                "date_confirmed": "Tuesday, 02. August 2011 20:39 UTC", 
-                "date_created": "Tuesday, 02. August 2011 20:39 UTC", 
-                "date_fix_committed": "Tuesday, 02. August 2011 22:00 UTC", 
-                "date_fix_released": "Tuesday, 02. August 2011 22:00 UTC", 
-                "date_in_progress": "Tuesday, 02. August 2011 22:00 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Tuesday, 02. August 2011 20:39 UTC", 
-                "date_triaged": "Tuesday, 02. August 2011 20:39 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #819609 in casper (Ubuntu): \"Oneiric live CD boots to login screen\""
             }
         ], 
         "819739": [
@@ -5572,49 +3949,6 @@
                 "status": "Fix Released", 
                 "team": "DX Team", 
                 "title": "Bug #819739 in nux (Ubuntu Oneiric): \"compiz crashed with SIGSEGV in nux::IOpenGLVertexShader::IOpenGLVertexShader()\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Experience Team", 
-                "bug": {
-                    "date_created": "Tuesday, 02. August 2011 10:40 UTC", 
-                    "date_last_message": "Wednesday, 03. August 2011 15:33 UTC", 
-                    "date_last_updated": "Wednesday, 03. August 2011 15:33 UTC", 
-                    "heat": 128, 
-                    "id": 819739, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 10, 
-                    "number_of_duplicates": 11, 
-                    "number_of_messages": 14, 
-                    "number_subscribed": 6, 
-                    "tags": [
-                        "apport-crash", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric"
-                    ], 
-                    "title": "compiz crashed with SIGSEGV in nux::IOpenGLVertexShader::IOpenGLVertexShader()"
-                }, 
-                "bug_target_name": "nux (Ubuntu)", 
-                "date_assigned": "Tuesday, 02. August 2011 12:28 UTC", 
-                "date_closed": "Tuesday, 02. August 2011 15:00 UTC", 
-                "date_confirmed": "Tuesday, 02. August 2011 12:28 UTC", 
-                "date_created": "Tuesday, 02. August 2011 10:40 UTC", 
-                "date_fix_committed": "Tuesday, 02. August 2011 15:00 UTC", 
-                "date_fix_released": "Tuesday, 02. August 2011 15:00 UTC", 
-                "date_in_progress": "Tuesday, 02. August 2011 15:00 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Tuesday, 02. August 2011 12:28 UTC", 
-                "date_triaged": "Tuesday, 02. August 2011 15:00 UTC", 
-                "importance": "Critical", 
-                "is_complete": true, 
-                "milestone": "oneiric-alpha-3", 
-                "owner": "psamuel", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #819739 in nux (Ubuntu): \"compiz crashed with SIGSEGV in nux::IOpenGLVertexShader::IOpenGLVertexShader()\""
             }
         ], 
         "819904": [
@@ -5661,50 +3995,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #819904 in casper (Ubuntu Oneiric): \"Shutdown doesn't works in live session\""
-            }, 
-            {
-                "assignee": "Canonical Desktop Team", 
-                "bug": {
-                    "date_created": "Tuesday, 02. August 2011 16:28 UTC", 
-                    "date_last_message": "Wednesday, 03. August 2011 20:03 UTC", 
-                    "date_last_updated": "Tuesday, 30. August 2011 12:09 UTC", 
-                    "heat": 22, 
-                    "id": 819904, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 3, 
-                    "number_of_duplicates": 1, 
-                    "number_of_messages": 6, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity"
-                    ], 
-                    "title": "Shutdown doesn't works in live session"
-                }, 
-                "bug_target_name": "casper (Ubuntu)", 
-                "date_assigned": "Tuesday, 02. August 2011 20:44 UTC", 
-                "date_closed": "Wednesday, 03. August 2011 20:04 UTC", 
-                "date_confirmed": "Tuesday, 02. August 2011 18:28 UTC", 
-                "date_created": "Tuesday, 02. August 2011 16:28 UTC", 
-                "date_fix_committed": "Wednesday, 03. August 2011 20:04 UTC", 
-                "date_fix_released": "Wednesday, 03. August 2011 20:04 UTC", 
-                "date_in_progress": "Wednesday, 03. August 2011 20:04 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Tuesday, 02. August 2011 18:28 UTC", 
-                "date_triaged": "Wednesday, 03. August 2011 20:04 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Paolo Sammicheli", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #819904 in casper (Ubuntu): \"Shutdown doesn't works in live session\""
             }
         ], 
         "819979": [
@@ -5751,50 +4041,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #819979 in ubiquity (Ubuntu Oneiric): \"Top Panel is Cut Off During Installation\""
-            }, 
-            {
-                "assignee": "Evan Dandrea", 
-                "bug": {
-                    "date_created": "Tuesday, 02. August 2011 19:07 UTC", 
-                    "date_last_message": "Friday, 26. August 2011 17:28 UTC", 
-                    "date_last_updated": "Friday, 26. August 2011 17:28 UTC", 
-                    "heat": 14, 
-                    "id": 819979, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 5, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "ubiquity-2.7.10"
-                    ], 
-                    "title": "Top Panel is Cut Off During Installation"
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Wednesday, 03. August 2011 09:54 UTC", 
-                "date_closed": "Friday, 26. August 2011 17:28 UTC", 
-                "date_confirmed": "Wednesday, 03. August 2011 07:15 UTC", 
-                "date_created": "Tuesday, 02. August 2011 19:07 UTC", 
-                "date_fix_committed": "Friday, 26. August 2011 17:28 UTC", 
-                "date_fix_released": "Friday, 26. August 2011 17:28 UTC", 
-                "date_in_progress": "Friday, 26. August 2011 17:28 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 03. August 2011 07:15 UTC", 
-                "date_triaged": "Friday, 26. August 2011 17:28 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Kent Baxley", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #819979 in ubiquity (Ubuntu): \"Top Panel is Cut Off During Installation\""
             }
         ], 
         "820098": [
@@ -5821,7 +4067,7 @@
                     ], 
                     "title": "Can't select RDP in Vinagre"
                 }, 
-                "bug_target_name": "vinagre (Ubuntu)", 
+                "bug_target_name": "vinagre", 
                 "date_assigned": "None", 
                 "date_closed": "Tuesday, 16. August 2011 10:00 UTC", 
                 "date_confirmed": "Wednesday, 03. August 2011 00:53 UTC", 
@@ -5838,7 +4084,7 @@
                 "milestone": "", 
                 "owner": "Jason Wood", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #820098 in vinagre (Ubuntu): \"Can't select RDP in Vinagre\""
             }
         ], 
@@ -5885,49 +4131,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #820111 in mdadm (Ubuntu Oneiric): \"boot degraded question is asked twice\""
-            }, 
-            {
-                "assignee": "Clint Byrum", 
-                "bug": {
-                    "date_created": "Tuesday, 02. August 2011 23:47 UTC", 
-                    "date_last_message": "Monday, 29. August 2011 04:29 UTC", 
-                    "date_last_updated": "Monday, 29. August 2011 04:29 UTC", 
-                    "heat": 16, 
-                    "id": 820111, 
-                    "nominations": [
-                        "natty", 
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 8, 
-                    "number_subscribed": 4, 
-                    "tags": [
-                        "iso-testing", 
-                        "oneiric", 
-                        "verification-needed"
-                    ], 
-                    "title": "boot degraded question is asked twice"
-                }, 
-                "bug_target_name": "mdadm (Ubuntu)", 
-                "date_assigned": "Wednesday, 03. August 2011 19:58 UTC", 
-                "date_closed": "Wednesday, 24. August 2011 17:00 UTC", 
-                "date_confirmed": "Thursday, 04. August 2011 12:37 UTC", 
-                "date_created": "Tuesday, 02. August 2011 23:47 UTC", 
-                "date_fix_committed": "Wednesday, 24. August 2011 17:00 UTC", 
-                "date_fix_released": "Wednesday, 24. August 2011 17:00 UTC", 
-                "date_in_progress": "Wednesday, 24. August 2011 17:00 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Thursday, 04. August 2011 12:37 UTC", 
-                "date_triaged": "Thursday, 04. August 2011 12:37 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "ubuntu-11.10-beta-1", 
-                "owner": "Clint Byrum", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #820111 in mdadm (Ubuntu): \"boot degraded question is asked twice\""
             }
         ], 
         "820126": [
@@ -5954,7 +4157,7 @@
                     ], 
                     "title": "update-manager crashed with TypeError in update_count(): unsupported operand type(s) for /: 'NoneType' and 'int'"
                 }, 
-                "bug_target_name": "update-manager (Ubuntu)", 
+                "bug_target_name": "update-manager", 
                 "date_assigned": "Friday, 05. August 2011 08:21 UTC", 
                 "date_closed": "Friday, 05. August 2011 12:50 UTC", 
                 "date_confirmed": "Wednesday, 03. August 2011 14:23 UTC", 
@@ -5971,7 +4174,7 @@
                 "milestone": "", 
                 "owner": "Tobin Davis", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #820126 in update-manager (Ubuntu): \"update-manager crashed with TypeError in update_count(): unsupported operand type(s) for /: 'NoneType' and 'int'\""
             }
         ], 
@@ -6002,7 +4205,7 @@
                     ], 
                     "title": "battery indicator shown in a desktop pc"
                 }, 
-                "bug_target_name": "indicator-power (Ubuntu)", 
+                "bug_target_name": "indicator-power", 
                 "date_assigned": "None", 
                 "date_closed": "Wednesday, 10. August 2011 10:27 UTC", 
                 "date_confirmed": "Wednesday, 03. August 2011 12:01 UTC", 
@@ -6066,49 +4269,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #820284 in casper (Ubuntu Oneiric): \"Oneiric DVD 20110802.1 i386 failed to install: /usr/lib/ubiquity/target-config/30accessibility: 41: log_end_msg: not found\""
-            }, 
-            {
-                "assignee": "Canonical Foundations Team", 
-                "bug": {
-                    "date_created": "Wednesday, 03. August 2011 10:35 UTC", 
-                    "date_last_message": "Wednesday, 03. August 2011 11:05 UTC", 
-                    "date_last_updated": "Wednesday, 03. August 2011 11:05 UTC", 
-                    "heat": 14, 
-                    "id": 820284, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 4, 
-                    "number_subscribed": 1, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric"
-                    ], 
-                    "title": "Oneiric DVD 20110802.1 i386 failed to install: /usr/lib/ubiquity/target-config/30accessibility: 41: log_end_msg: not found"
-                }, 
-                "bug_target_name": "casper (Ubuntu)", 
-                "date_assigned": "Wednesday, 03. August 2011 10:59 UTC", 
-                "date_closed": "Wednesday, 03. August 2011 11:05 UTC", 
-                "date_confirmed": "Wednesday, 03. August 2011 11:03 UTC", 
-                "date_created": "Wednesday, 03. August 2011 10:59 UTC", 
-                "date_fix_committed": "Wednesday, 03. August 2011 11:03 UTC", 
-                "date_fix_released": "Wednesday, 03. August 2011 11:05 UTC", 
-                "date_in_progress": "Wednesday, 03. August 2011 11:03 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 03. August 2011 11:03 UTC", 
-                "date_triaged": "Wednesday, 03. August 2011 11:03 UTC", 
-                "importance": "Critical", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Evan Dandrea", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #820284 in casper (Ubuntu): \"Oneiric DVD 20110802.1 i386 failed to install: /usr/lib/ubiquity/target-config/30accessibility: 41: log_end_msg: not found\""
             }
         ], 
         "820372": [
@@ -6134,7 +4294,7 @@
                     ], 
                     "title": "default session set to GNOME and fails. Should be Unity"
                 }, 
-                "bug_target_name": "gnome-session (Ubuntu)", 
+                "bug_target_name": "gnome-session", 
                 "date_assigned": "Thursday, 04. August 2011 20:26 UTC", 
                 "date_closed": "Friday, 05. August 2011 06:00 UTC", 
                 "date_confirmed": "Thursday, 04. August 2011 14:25 UTC", 
@@ -6151,7 +4311,7 @@
                 "milestone": "", 
                 "owner": "Jean-Baptiste Lallement", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #820372 in gnome-session (Ubuntu): \"default session set to GNOME and fails. Should be Unity\""
             }
         ], 
@@ -6242,51 +4402,6 @@
                 "status": "Fix Released", 
                 "team": "Desktop Team", 
                 "title": "Bug #820485 in gnome-keyring (Ubuntu Oneiric): \"ubiquity stops installation at 'Configuring target system'\""
-            }, 
-            {
-                "assignee": "Stphane Graber", 
-                "bug": {
-                    "date_created": "Wednesday, 03. August 2011 17:07 UTC", 
-                    "date_last_message": "Wednesday, 03. August 2011 20:38 UTC", 
-                    "date_last_updated": "Wednesday, 17. August 2011 12:53 UTC", 
-                    "heat": 12, 
-                    "id": 820485, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 4, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity", 
-                        "ubiquity-2.7.14"
-                    ], 
-                    "title": "ubiquity stops installation at 'Configuring target system'"
-                }, 
-                "bug_target_name": "gnome-keyring (Ubuntu)", 
-                "date_assigned": "Wednesday, 03. August 2011 17:08 UTC", 
-                "date_closed": "Wednesday, 03. August 2011 20:53 UTC", 
-                "date_confirmed": "Wednesday, 03. August 2011 20:33 UTC", 
-                "date_created": "Wednesday, 03. August 2011 17:07 UTC", 
-                "date_fix_committed": "Wednesday, 03. August 2011 20:35 UTC", 
-                "date_fix_released": "Wednesday, 03. August 2011 20:53 UTC", 
-                "date_in_progress": "Wednesday, 03. August 2011 20:35 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 03. August 2011 20:33 UTC", 
-                "date_triaged": "Wednesday, 03. August 2011 20:35 UTC", 
-                "importance": "Critical", 
-                "is_complete": true, 
-                "milestone": "oneiric-alpha-3", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #820485 in gnome-keyring (Ubuntu): \"ubiquity stops installation at 'Configuring target system'\""
             }
         ], 
         "820554": [
@@ -6311,7 +4426,7 @@
                     ], 
                     "title": "wrong keyboard layout when layout detection used"
                 }, 
-                "bug_target_name": "console-setup (Ubuntu)", 
+                "bug_target_name": "console-setup", 
                 "date_assigned": "Thursday, 04. August 2011 23:28 UTC", 
                 "date_closed": "Friday, 12. August 2011 15:15 UTC", 
                 "date_confirmed": "Thursday, 04. August 2011 23:11 UTC", 
@@ -6328,7 +4443,7 @@
                 "milestone": "", 
                 "owner": "Philip Mukovac", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #820554 in console-setup (Ubuntu): \"wrong keyboard layout when layout detection used\""
             }
         ], 
@@ -6441,7 +4556,7 @@
                     ], 
                     "title": "Oneiric Ocelot Xubuntu Desktop images fail to install"
                 }, 
-                "bug_target_name": "casper (Ubuntu)", 
+                "bug_target_name": "casper", 
                 "date_assigned": "None", 
                 "date_closed": "Friday, 05. August 2011 17:04 UTC", 
                 "date_confirmed": "Thursday, 04. August 2011 15:20 UTC", 
@@ -6458,7 +4573,7 @@
                 "milestone": "", 
                 "owner": "Charlie Kravetz", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #820731 in casper (Ubuntu): \"Oneiric Ocelot Xubuntu Desktop images fail to install\""
             }
         ], 
@@ -6550,52 +4665,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #829987 in ubiquity (Ubuntu Oneiric): \"ubiquity crashed with TypeError: cell_data_func() takes exactly 4 arguments (5 given)\""
-            }, 
-            {
-                "assignee": "Evan Dandrea", 
-                "bug": {
-                    "date_created": "Saturday, 20. August 2011 10:16 UTC", 
-                    "date_last_message": "Wednesday, 31. August 2011 20:41 UTC", 
-                    "date_last_updated": "Wednesday, 31. August 2011 20:41 UTC", 
-                    "heat": 32, 
-                    "id": 829987, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 3, 
-                    "number_of_messages": 4, 
-                    "number_subscribed": 3, 
-                    "tags": [
-                        "amd64", 
-                        "apport-crash", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "regression-retracer", 
-                        "running-unity", 
-                        "ubiquity-2.7.15"
-                    ], 
-                    "title": "ubiquity crashed with TypeError: cell_data_func() takes exactly 4 arguments (5 given)"
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Tuesday, 30. August 2011 21:17 UTC", 
-                "date_closed": "Wednesday, 31. August 2011 20:41 UTC", 
-                "date_confirmed": "Wednesday, 24. August 2011 07:32 UTC", 
-                "date_created": "Saturday, 20. August 2011 10:16 UTC", 
-                "date_fix_committed": "Wednesday, 31. August 2011 20:41 UTC", 
-                "date_fix_released": "Wednesday, 31. August 2011 20:41 UTC", 
-                "date_in_progress": "Wednesday, 31. August 2011 20:41 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 24. August 2011 07:32 UTC", 
-                "date_triaged": "Wednesday, 31. August 2011 20:41 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Paul Hoell", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #829987 in ubiquity (Ubuntu): \"ubiquity crashed with TypeError: cell_data_func() takes exactly 4 arguments (5 given)\""
             }
         ], 
         "830061": [
@@ -6642,50 +4711,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #830061 in ubiquity (Ubuntu Oneiric): \"ubiquity-dm crashed with AttributeError in run(): 'Pixbuf' object has no attribute 'render_pixmap_and_mask'\""
-            }, 
-            {
-                "assignee": "Evan Dandrea", 
-                "bug": {
-                    "date_created": "Saturday, 20. August 2011 13:41 UTC", 
-                    "date_last_message": "Sunday, 28. August 2011 23:21 UTC", 
-                    "date_last_updated": "Monday, 29. August 2011 22:20 UTC", 
-                    "heat": 186, 
-                    "id": 830061, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 17, 
-                    "number_of_duplicates": 12, 
-                    "number_of_messages": 4, 
-                    "number_subscribed": 11, 
-                    "tags": [
-                        "amd64", 
-                        "apport-crash", 
-                        "bugpattern-needed", 
-                        "iso-testing", 
-                        "oneiric"
-                    ], 
-                    "title": "ubiquity-dm crashed with AttributeError in run(): 'Pixbuf' object has no attribute 'render_pixmap_and_mask'"
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Wednesday, 24. August 2011 08:04 UTC", 
-                "date_closed": "Sunday, 28. August 2011 23:21 UTC", 
-                "date_confirmed": "Wednesday, 24. August 2011 07:20 UTC", 
-                "date_created": "Saturday, 20. August 2011 13:41 UTC", 
-                "date_fix_committed": "Sunday, 28. August 2011 23:21 UTC", 
-                "date_fix_released": "Sunday, 28. August 2011 23:21 UTC", 
-                "date_in_progress": "Sunday, 28. August 2011 23:21 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 24. August 2011 07:20 UTC", 
-                "date_triaged": "Wednesday, 24. August 2011 08:03 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "ubuntu-11.10-beta-1", 
-                "owner": "Matteo Scotuzzi", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #830061 in ubiquity (Ubuntu): \"ubiquity-dm crashed with AttributeError in run(): 'Pixbuf' object has no attribute 'render_pixmap_and_mask'\""
             }
         ], 
         "830923": [
@@ -6734,52 +4759,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #830923 in ubiquity (Ubuntu Oneiric): \"Create partition: FS and mount point lists not legible\""
-            }, 
-            {
-                "assignee": "Evan Dandrea", 
-                "bug": {
-                    "date_created": "Monday, 22. August 2011 08:52 UTC", 
-                    "date_last_message": "Tuesday, 30. August 2011 16:28 UTC", 
-                    "date_last_updated": "Tuesday, 30. August 2011 16:34 UTC", 
-                    "heat": 40, 
-                    "id": 830923, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 3, 
-                    "number_of_duplicates": 3, 
-                    "number_of_messages": 5, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "regression-release", 
-                        "running-unity", 
-                        "ubiquity-1.8.7"
-                    ], 
-                    "title": "Create partition: FS and mount point lists not legible"
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Monday, 22. August 2011 08:53 UTC", 
-                "date_closed": "Tuesday, 30. August 2011 16:29 UTC", 
-                "date_confirmed": "Monday, 22. August 2011 15:17 UTC", 
-                "date_created": "Monday, 22. August 2011 08:52 UTC", 
-                "date_fix_committed": "Tuesday, 30. August 2011 14:29 UTC", 
-                "date_fix_released": "Tuesday, 30. August 2011 16:29 UTC", 
-                "date_in_progress": "Tuesday, 30. August 2011 14:29 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Monday, 22. August 2011 15:17 UTC", 
-                "date_triaged": "Tuesday, 30. August 2011 14:29 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #830923 in ubiquity (Ubuntu): \"Create partition: FS and mount point lists not legible\""
             }
         ], 
         "830940": [
@@ -6828,52 +4807,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #830940 in ubiquity (Ubuntu Oneiric): \"Where are you: No location selected by default\""
-            }, 
-            {
-                "assignee": "Evan Dandrea", 
-                "bug": {
-                    "date_created": "Monday, 22. August 2011 09:13 UTC", 
-                    "date_last_message": "Tuesday, 30. August 2011 16:28 UTC", 
-                    "date_last_updated": "Tuesday, 30. August 2011 16:29 UTC", 
-                    "heat": 22, 
-                    "id": 830940, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 2, 
-                    "number_of_duplicates": 1, 
-                    "number_of_messages": 4, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "regression-release", 
-                        "running-unity", 
-                        "ubiquity-2.7.15"
-                    ], 
-                    "title": "Where are you: No location selected by default"
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Monday, 22. August 2011 09:14 UTC", 
-                "date_closed": "Tuesday, 30. August 2011 16:29 UTC", 
-                "date_confirmed": "Monday, 29. August 2011 20:30 UTC", 
-                "date_created": "Monday, 22. August 2011 09:13 UTC", 
-                "date_fix_committed": "Tuesday, 30. August 2011 13:32 UTC", 
-                "date_fix_released": "Tuesday, 30. August 2011 16:29 UTC", 
-                "date_in_progress": "Tuesday, 30. August 2011 13:32 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Monday, 29. August 2011 20:30 UTC", 
-                "date_triaged": "Tuesday, 30. August 2011 13:32 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #830940 in ubiquity (Ubuntu): \"Where are you: No location selected by default\""
             }
         ], 
         "831026": [
@@ -6920,50 +4853,6 @@
                 "status": "Fix Released", 
                 "team": "", 
                 "title": "Bug #831026 in unity-greeter (Ubuntu Oneiric): \"greeter is in english after a non-english installation\""
-            }, 
-            {
-                "assignee": "Unassigned", 
-                "bug": {
-                    "date_created": "Monday, 22. August 2011 11:57 UTC", 
-                    "date_last_message": "Friday, 26. August 2011 00:44 UTC", 
-                    "date_last_updated": "Tuesday, 30. August 2011 12:55 UTC", 
-                    "heat": 6, 
-                    "id": 831026, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 6, 
-                    "number_subscribed": 1, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity"
-                    ], 
-                    "title": "greeter is in english after a non-english installation"
-                }, 
-                "bug_target_name": "unity-greeter (Ubuntu)", 
-                "date_assigned": "None", 
-                "date_closed": "Wednesday, 24. August 2011 09:12 UTC", 
-                "date_confirmed": "Wednesday, 24. August 2011 09:05 UTC", 
-                "date_created": "Monday, 22. August 2011 12:52 UTC", 
-                "date_fix_committed": "Wednesday, 24. August 2011 09:05 UTC", 
-                "date_fix_released": "Wednesday, 24. August 2011 09:12 UTC", 
-                "date_in_progress": "Wednesday, 24. August 2011 09:05 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 24. August 2011 09:05 UTC", 
-                "date_triaged": "Wednesday, 24. August 2011 09:05 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #831026 in unity-greeter (Ubuntu): \"greeter is in english after a non-english installation\""
             }
         ], 
         "833297": [], 
@@ -7036,7 +4925,7 @@
                     ], 
                     "title": "ubiquity crashed with GError in function(): Failed to open '/var/lib/ubiquity/webcam_photo.png' for writing: Permission denied"
                 }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
+                "bug_target_name": "ubiquity", 
                 "date_assigned": "None", 
                 "date_closed": "Monday, 29. August 2011 18:02 UTC", 
                 "date_confirmed": "Monday, 29. August 2011 18:02 UTC", 
@@ -7053,7 +4942,7 @@
                 "milestone": "", 
                 "owner": "Chad A. Davis", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #836802 in ubiquity (Ubuntu): \"ubiquity crashed with GError in function(): Failed to open '/var/lib/ubiquity/webcam_photo.png' for writing: Permission denied\""
             }
         ], 
@@ -7080,7 +4969,7 @@
                     ], 
                     "title": "When I choose \"Install Ubuntu\" from the menu, I get Live Environment instead"
                 }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
+                "bug_target_name": "ubiquity", 
                 "date_assigned": "None", 
                 "date_closed": "Tuesday, 30. August 2011 08:27 UTC", 
                 "date_confirmed": "Tuesday, 30. August 2011 08:27 UTC", 
@@ -7097,7 +4986,7 @@
                 "milestone": "", 
                 "owner": "Jeff Lane", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Foundations Team", 
                 "title": "Bug #837045 in ubiquity (Ubuntu): \"When I choose \"Install Ubuntu\" from the menu, I get Live Environment instead\""
             }
         ], 
@@ -7124,7 +5013,7 @@
                     ], 
                     "title": "ubuntu-bug ubiquity causes a traceback due to an UnboundLocalError"
                 }, 
-                "bug_target_name": "apport (Ubuntu)", 
+                "bug_target_name": "apport", 
                 "date_assigned": "Tuesday, 30. August 2011 04:36 UTC", 
                 "date_closed": "Tuesday, 30. August 2011 05:47 UTC", 
                 "date_confirmed": "Tuesday, 30. August 2011 04:36 UTC", 
@@ -7141,7 +5030,7 @@
                 "milestone": "", 
                 "owner": "Jeff Lane", 
                 "status": "Fix Released", 
-                "team": "", 
+                "team": "Desktop Team", 
                 "title": "Bug #837048 in apport (Ubuntu): \"ubuntu-bug ubiquity causes a traceback due to an UnboundLocalError\""
             }
         ], 
@@ -7167,7 +5056,7 @@
                     ], 
                     "title": "Ubiquity renders with ugly pink boxes rather than titles and status"
                 }, 
-                "bug_target_name": "mythbuntu-default-settings (Ubuntu)", 
+                "bug_target_name": "mythbuntu-default-settings", 
                 "date_assigned": "None", 
                 "date_closed": "Wednesday, 31. August 2011 05:15 UTC", 
                 "date_confirmed": "Wednesday, 31. August 2011 00:40 UTC", 
@@ -7234,52 +5123,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #837165 in user-setup (Ubuntu Oneiric): \"\"Log in automatically\" option in Ubiquity not honored by LightDM\""
-            }, 
-            {
-                "assignee": "Evan Dandrea", 
-                "bug": {
-                    "date_created": "Tuesday, 30. August 2011 04:45 UTC", 
-                    "date_last_message": "Tuesday, 30. August 2011 15:53 UTC", 
-                    "date_last_updated": "Tuesday, 30. August 2011 16:08 UTC", 
-                    "heat": 28, 
-                    "id": 837165, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 4, 
-                    "number_of_duplicates": 1, 
-                    "number_of_messages": 4, 
-                    "number_subscribed": 2, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "need-duplicate-check", 
-                        "oneiric", 
-                        "running-unity", 
-                        "ubiquity-2.7.17"
-                    ], 
-                    "title": "\"Log in automatically\" option in Ubiquity not honored by LightDM"
-                }, 
-                "bug_target_name": "user-setup (Ubuntu)", 
-                "date_assigned": "Tuesday, 30. August 2011 15:40 UTC", 
-                "date_closed": "Tuesday, 30. August 2011 15:53 UTC", 
-                "date_confirmed": "Tuesday, 30. August 2011 14:40 UTC", 
-                "date_created": "Tuesday, 30. August 2011 14:04 UTC", 
-                "date_fix_committed": "Tuesday, 30. August 2011 15:40 UTC", 
-                "date_fix_released": "Tuesday, 30. August 2011 15:53 UTC", 
-                "date_in_progress": "Tuesday, 30. August 2011 15:40 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Tuesday, 30. August 2011 14:40 UTC", 
-                "date_triaged": "Tuesday, 30. August 2011 15:40 UTC", 
-                "importance": "High", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Evan Dandrea", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #837165 in user-setup (Ubuntu): \"\"Log in automatically\" option in Ubiquity not honored by LightDM\""
             }
         ], 
         "837261": [
@@ -7326,50 +5169,6 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #837261 in ubiquity (Ubuntu Oneiric): \"function() got an unexpected keyword argument 'icon'\""
-            }, 
-            {
-                "assignee": "Ubuntu Installer Team", 
-                "bug": {
-                    "date_created": "Tuesday, 30. August 2011 09:48 UTC", 
-                    "date_last_message": "Wednesday, 31. August 2011 09:54 UTC", 
-                    "date_last_updated": "Wednesday, 31. August 2011 09:54 UTC", 
-                    "heat": 6, 
-                    "id": 837261, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 10, 
-                    "number_subscribed": 1, 
-                    "tags": [
-                        "apport-bug", 
-                        "i386", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity"
-                    ], 
-                    "title": "function() got an unexpected keyword argument 'icon'"
-                }, 
-                "bug_target_name": "ubiquity (Ubuntu)", 
-                "date_assigned": "Wednesday, 31. August 2011 07:57 UTC", 
-                "date_closed": "Wednesday, 31. August 2011 09:54 UTC", 
-                "date_confirmed": "Tuesday, 30. August 2011 14:18 UTC", 
-                "date_created": "Tuesday, 30. August 2011 09:48 UTC", 
-                "date_fix_committed": "Wednesday, 31. August 2011 09:54 UTC", 
-                "date_fix_released": "Wednesday, 31. August 2011 09:54 UTC", 
-                "date_in_progress": "Wednesday, 31. August 2011 09:54 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "Tuesday, 30. August 2011 14:18 UTC", 
-                "date_left_new": "Tuesday, 30. August 2011 13:22 UTC", 
-                "date_triaged": "Wednesday, 31. August 2011 09:54 UTC", 
-                "importance": "Medium", 
-                "is_complete": true, 
-                "milestone": "", 
-                "owner": "Jean-Baptiste Lallement", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #837261 in ubiquity (Ubuntu): \"function() got an unexpected keyword argument 'icon'\""
             }
         ], 
         "837681": [
@@ -7416,52 +5215,8 @@
                 "status": "Fix Released", 
                 "team": "Foundations Team", 
                 "title": "Bug #837681 in parted (Ubuntu Oneiric): \"Automatic partitioning corrupts GUID partition table (GPT)\""
-            }, 
-            {
-                "assignee": "Colin Watson", 
-                "bug": {
-                    "date_created": "Tuesday, 30. August 2011 20:50 UTC", 
-                    "date_last_message": "Wednesday, 31. August 2011 22:53 UTC", 
-                    "date_last_updated": "Wednesday, 31. August 2011 22:53 UTC", 
-                    "heat": 6, 
-                    "id": 837681, 
-                    "nominations": [
-                        "oneiric"
-                    ], 
-                    "number_affected": 1, 
-                    "number_of_duplicates": 0, 
-                    "number_of_messages": 7, 
-                    "number_subscribed": 1, 
-                    "tags": [
-                        "amd64", 
-                        "apport-bug", 
-                        "iso-testing", 
-                        "oneiric", 
-                        "running-unity"
-                    ], 
-                    "title": "Automatic partitioning corrupts GUID partition table (GPT)"
-                }, 
-                "bug_target_name": "parted (Ubuntu)", 
-                "date_assigned": "Tuesday, 30. August 2011 22:02 UTC", 
-                "date_closed": "Wednesday, 31. August 2011 22:53 UTC", 
-                "date_confirmed": "Wednesday, 31. August 2011 22:40 UTC", 
-                "date_created": "Tuesday, 30. August 2011 20:50 UTC", 
-                "date_fix_committed": "Wednesday, 31. August 2011 22:40 UTC", 
-                "date_fix_released": "Wednesday, 31. August 2011 22:53 UTC", 
-                "date_in_progress": "Wednesday, 31. August 2011 22:40 UTC", 
-                "date_incomplete": "None", 
-                "date_left_closed": "None", 
-                "date_left_new": "Wednesday, 31. August 2011 22:40 UTC", 
-                "date_triaged": "Wednesday, 31. August 2011 22:40 UTC", 
-                "importance": "Critical", 
-                "is_complete": true, 
-                "milestone": "ubuntu-11.10-beta-1", 
-                "owner": "Chad A. Davis", 
-                "status": "Fix Released", 
-                "team": "", 
-                "title": "Bug #837681 in parted (Ubuntu): \"Automatic partitioning corrupts GUID partition table (GPT)\""
             }
         ]
     }, 
-    "udpate_timestamp": "Thursday, 01. September 2011 04:21 UTC"
+    "udpate_timestamp": "Thursday, 01. September 2011 06:14 UTC"
 }

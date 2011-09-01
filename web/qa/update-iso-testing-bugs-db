@@ -260,8 +260,16 @@ class UpdateIsoTestingBugsDB():
                         iso_tasks[task.bug.id] = []
 
                     try:
-                        if (task.bug.id not in iso_tasks) and (not task.bug.private):
-                            iso_tasks[task.bug.id].append(self.get_task_info(task))
+                        if not task.bug.private:
+                            t = self.get_task_info(task)
+                            t_name = t['bug_target_name']
+                            matched = False
+                            for tt in iso_tasks[task.bug.id]:
+                                if t_name == tt['bug_target_name']:
+                                    matched = True
+
+                            if not matched:
+                                iso_tasks[task.bug.id].append(t)
                     except:
                         print('Exception caught processing bug: %s' % task.bug.id)
                         pass
