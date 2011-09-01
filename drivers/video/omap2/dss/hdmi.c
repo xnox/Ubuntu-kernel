@@ -44,6 +44,8 @@
 #define HDMI_DEFAULT_REGN 15
 #define HDMI_DEFAULT_REGM2 1
 #include <plat/edid.h>
+#define HDMI_DEFAULT_REGN 15
+#define HDMI_DEFAULT_REGM2 1
 
 static struct {
 	struct mutex lock;
