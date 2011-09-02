@@ -161,8 +161,8 @@ class UpdateIsoTestingBugsDB():
             Dbg.verbose(' . Connecting to Launchpad\n')
             self.lp = LaunchpadService(self.iso_config['launchpad_config'])
 
-            self.team_xref = {}
-            #self.initialize_team_package_crossreference()
+            self.initialize_team_package_crossreference()
+            self.initialize_milestone_date_crossreference('oneiric')
 
         except KeyboardInterrupt:
             Dbg.leave("UpdateIsoTestingBugsDB.initialize")
@@ -208,6 +208,57 @@ class UpdateIsoTestingBugsDB():
                 self.team_xref[p.name] = team_name_xref[a_team]
 
         Dbg.leave("UpdateIsoTestingBugsDB.initialize_team_package_crossreference")
+
+    # initial_milestone_date_crossreference
+    #
+    def initialize_milestone_date_crossreference(self, series):
+        Dbg.enter("UpdateIsoTestingBugsDB.initialize_milestone_date_crossreference")
+
+        self.milestone_date_xref = {}
+        lp_distro = self.lp.distributions['ubuntu/%s' % series]
+        lp_active = lp_distro.all_milestones
+        for lp_milestone in lp_active:
+            if lp_milestone.date_targeted is None: continue
+            milestone = self.decode_milestone(lp_milestone.name)
+            self.milestone_date_xref[milestone] = lp_milestone.date_targeted
+
+        Dbg.enter("UpdateIsoTestingBugsDB.initialize_milestone_date_crossreference")
+
+    def decode_milestone(self, milestone_name):
+        Dbg.enter("UpdateIsoTestingBugsDB.decode_milestone")
+
+        retval = ''
+        if 'alpha' in milestone_name or 'beta' in milestone_name:
+            fields = milestone_name.split('-')
+            which = fields[len(fields)-1]
+            if which.isdigit():
+                retval = '%s-%s' % (fields[len(fields)-2], which)
+            else:
+                retval = '%s-1' % (which)
+        else:
+            retval = 'release'
+
+        Dbg.leave("UpdateIsoTestingBugsDB.decode_milestone")
+        return retval
+
+    # determine_milestone_found
+    #
+    def determine_milestone_found(self, date):
+        Dbg.enter("UpdateIsoTestingBugsDB.determine_milestone_found")
+
+        retval = ''
+
+        comp = date.replace(tzinfo=None)
+        prev_milestone = ''
+        for m in sorted(self.milestone_date_xref):
+            if comp < self.milestone_date_xref[m]:
+                retval = prev_milestone
+                break
+            prev_milestone = m
+
+        print('milestone: "%s"' % retval)
+        Dbg.leave("UpdateIsoTestingBugsDB.determine_milestone_found")
+        return retval
 
     # tasks_search
     #
@@ -279,9 +330,7 @@ class UpdateIsoTestingBugsDB():
                             print("it's private")
                     except:
                         print('Exception caught processing bug: %s' % task.bug.id)
-                        raise
-
-                    #break # FIXME just do one for debugging
+                        pass
 
             # Update the configuration file with the LP data and the timestamp
             #
@@ -339,9 +388,11 @@ class UpdateIsoTestingBugsDB():
         t['title'] = task.title
 
         try:
-            t['milestone'] = task.milestone.name
+            t['milestone_target'] = self.decode_milestone(task.milestone.name)
         except:
-            t['milestone'] = ''
+            t['milestone_target'] = ''
+
+        t['milestone_found'] = self.determine_milestone_found(task.date_created)
 
         b = {}
         bug = KernelBug(task.bug)
@@ -380,16 +431,18 @@ class UpdateIsoTestingBugsDB():
         #
         try:
             lmb = bug.properties['LiveMediaBuild']
-            print(lmb)
-            #m = re.search('\S+ \d+.\d+.\d+.*"\S+ \S+" - \S+ \S+', lmb)
             m = re.search('(\S+) (\d+.\d+[.\d+]).*"(\S+ \S+)" - (\S+) (\S+) \((\d+)\)', lmb)
             if m is not None:
-                print("matched")
-            else:
-                print("no match")
+                lmb = {}
+                lmb['distro'] = m.group(1)
+                lmb['version'] = m.group(2)
+                lmb['name'] = m.group(3)
+                lmb['milestone'] = m.group(4)
+                lmb['arch'] = m.group(5)
+                lmb['date'] = m.group(6)
+                b['LiveMediaBuild'] = lmb
 
         except:
-            print("No LiveMediaBuild")
             pass
 
         t['bug'] = b

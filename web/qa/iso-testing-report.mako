@@ -98,12 +98,13 @@
                             <th width="40">Bug</th>
                             <th>Summary</th>
                             <th width="100">Owner</th>
-                            <th width="100">Task</th>
+                            <th width="100">Package</th>
                             <th width="80">Importance</th>
                             <th width="80">Status</th>
                             <th width="140">Assignee</th>
-                            <th width="80">Series</th>
-                            <th width="120">Milestone</th>
+                            <th width="60">Series</th>
+                            <th width="60">Found</th>
+                            <th width="60">Target</th>
                             <th width="30">CO</th>
                             <th width="30">SU</th>
                             <th width="30">AM</th>
@@ -180,7 +181,8 @@
                             <td class="${status_class}">${status}</td>
                             <td>${assignee}</td>
                             <td>${t['bug']['series_name']}</td>
-                            <td>${t['milestone']}</td>
+                            <td>${t['milestone_found']}</td>
+                            <td>${t['milestone_target']}</td>
                             <td>${t['bug']['number_of_messages']}</td>
                             <td>${t['bug']['number_subscribed']}</td>
                             <td>${t['bug']['number_affected']}</td>
@@ -194,6 +196,36 @@
             </div>
             <br />
             <br />
+            <div>
+                <br />
+                <hr />
+                <table width="100%%" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr>
+                            <td width="100">Column</td>
+                            <td>Description</td>
+                        </tr>
+                    </th>
+                    <tbody>
+                        <tr><td>Bug       </td><td>The Launcpad Bug number and a link the the Launchpad Bug.            </td></tr>
+                        <tr><td>Summary   </td><td>The 'summary' or 'title' from the bug.                               </td></tr>
+                        <tr><td>Owner     </td><td>The team that is responsible for bugs affecting the specific package.</td></tr>
+                        <tr><td>Package   </td><td>The package a bug task was created for relating to the specific bug. </td></tr>
+                        <tr><td>Importance</td><td>The bug task's importance.                                           </td></tr>
+                        <tr><td>Status    </td><td>The bug task's status.                                               </td></tr>
+                        <tr><td>Assignee  </td><td>The person or team assigned to work on the bug.                      </td></tr>
+                        <tr><td>Series    </td><td>The Ubuntu series name that the bug was filed against.               </td></tr>
+                        <tr><td>Found     </td><td>The milestone the bug task found during.                             </td></tr>
+                        <tr><td>Target    </td><td>The milestone the bug task is targeted to be fixed.                  </td></tr>
+                        <tr><td>CO        </td><td>The number of comments that have been added to the bug.              </td></tr>
+                        <tr><td>SU        </td><td>The number of subscribers to the bug.                                </td></tr>
+                        <tr><td>AM        </td><td>The number of "affects me" for the bug.                              </td></tr>
+                        <tr><td>DU        </td><td>The number of duplicates of the bug.                                 </td></tr>
+                        <tr><td>Created   </td><td>The date the bug was created.                                        </td></tr>
+                    </tbody>
+                </table>
+                <br />
+            </div>
             <div>
                 <br />
                 <hr />
