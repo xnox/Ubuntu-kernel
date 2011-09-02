@@ -262,20 +262,16 @@ class UpdateIsoTestingBugsDB():
 
     # tasks_search
     #
-    def tasks_search(self, search_criteria):
+    def tasks_search(self, search_criteria, series):
         Dbg.enter("UpdateIsoTestingBugsDB.tasks_search")
 
         # Pull all the search parameters from the configuration dictionary
         #
         distro_name = search_criteria['distribution']
 
-        try:
-            series_spec = search_criteria['series'].strip()
-        except KeyError:
-            series_spec = ''
-
-        if series_spec != '':
-            distro_name = "%s/%s" % (distro_name, series_spec)
+        if series != 'NONE':
+            distro_name = "%s/%s" % (distro_name, series)
+        Dbg.verbose('search: distro_name: \'%s\'\n' % distro_name)
 
         distro = self.lp.distributions[distro_name]
 
@@ -283,16 +279,19 @@ class UpdateIsoTestingBugsDB():
             search_tags = search_criteria['tags']
         except KeyError:
             search_tags = []
+        Dbg.verbose('search: tags: \'%s\'\n' % ','.join(search_tags))
 
         try:
             search_tags_combinator = search_criteria['tags_combinator']
         except KeyError:
             search_tags_combinator = 'Any'
+        Dbg.verbose('search: tags_combinator: \'%s\'\n' % search_tags_combinator)
 
         try:
             search_status = search_criteria['status']
         except KeyError:
             search_status = []
+        Dbg.verbose('search: status: \'%s\'\n' % ','.join(search_status))
 
         Dbg.leave("UpdateIsoTestingBugsDB.tasks_search")
         return distro.search_tasks(tags=search_tags, tags_combinator=search_tags_combinator, status=search_status)
@@ -308,29 +307,35 @@ class UpdateIsoTestingBugsDB():
             search_start = datetime.utcnow()
             iso_tasks = {}
             for sc in self.iso_config['search_criteria']:
-                for task in self.tasks_search(sc):
-                    Dbg.verbose("%s\n" % task.bug.id)
+                try:
+                    series = sc['series']
+                except KeyError:
+                    series = ["NONE"]
 
-                    if task.bug.id not in iso_tasks:
-                        iso_tasks[task.bug.id] = []
+                for s in series:
+                    for task in self.tasks_search(sc, s):
+                        Dbg.verbose("%s\n" % task.bug.id)
 
-                    try:
-                        if not task.bug.private:
-                            t = self.get_task_info(task)
-                            t_name = t['bug_target_name']
-                            matched = False
-                            for tt in iso_tasks[task.bug.id]:
-                                if t_name == tt['bug_target_name']:
-                                    matched = True
+                        if task.bug.id not in iso_tasks:
+                            iso_tasks[task.bug.id] = []
 
-                            if not matched:
-                                iso_tasks[task.bug.id].append(t)
+                        try:
+                            if not task.bug.private:
+                                t = self.get_task_info(task)
+                                t_name = t['bug_target_name']
+                                matched = False
+                                for tt in iso_tasks[task.bug.id]:
+                                    if t_name == tt['bug_target_name']:
+                                        matched = True
 
-                        else:
-                            print("it's private")
-                    except:
-                        print('Exception caught processing bug: %s' % task.bug.id)
-                        pass
+                                if not matched:
+                                    iso_tasks[task.bug.id].append(t)
+
+                            else:
+                                print("it's private")
+                        except:
+                            print('Exception caught processing bug: %s' % task.bug.id)
+                            pass
 
             # Update the configuration file with the LP data and the timestamp
             #
