@@ -35,7 +35,8 @@ class DevSeriesSpammer(BugHandler):
 
         self.change_status(bug, task, package_name, "Incomplete")
         bug.add_comment(comment, self.comment_subject)
-        bug.tags.append('kernel-request-%s' % self.cfg['released_development_kernel'])
+        tag = 'kernel-request-%s' % self.cfg['released_development_kernel']
+        bug.tags.append(tag)
 
         return retval
 

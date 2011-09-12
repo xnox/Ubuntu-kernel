@@ -9,6 +9,7 @@ import bug_handlers.dev_series  # This imports all the bug handler plugins that 
                                 # will use.
 
 from ktl.ubuntu                         import Ubuntu
+from ktl.utils                          import o2ascii
 
 # ProcDevSeriesBugs
 #
@@ -59,7 +60,7 @@ class ProcDevSeriesBugs(BugEngine):
         self.cfg['search-criteria-tags-combinator'] = 'Any'
 
         self.cfg['development_series'] = dev_series
-        self.cfg['released_development_kernel'] = release_kernel
+        self.cfg['released_development_kernel'] = o2ascii(release_kernel)
 
 if __name__ == '__main__':
     app = ProcDevSeriesBugs()
