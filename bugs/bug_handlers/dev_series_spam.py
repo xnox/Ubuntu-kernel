@@ -35,9 +35,7 @@ class DevSeriesSpammer(BugHandler):
 
         self.change_status(bug, task, package_name, "Incomplete")
         bug.add_comment(comment, self.comment_subject)
-        bug.tags.append('kernel-request-%s' % bug.booted_kernel_version)
-
-        print("http://pad.lv/%s" % bug.id)
+        bug.tags.append('kernel-request-%s' % self.cfg['released_development_kernel'])
 
         return retval
 
