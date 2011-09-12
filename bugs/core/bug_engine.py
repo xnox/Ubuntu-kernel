@@ -12,7 +12,7 @@ from datetime                           import timedelta
 import json
 
 from lpltk.LaunchpadService             import LaunchpadService
-from ktl.utils                          import error, date_to_string, string_to_date, stdo
+from ktl.utils                          import error, date_to_string, string_to_date, stdo, json_load, FileDoesntExist
 from ktl.std_app                        import StdApp
 from ktl.ubuntu                         import Ubuntu
 from ktl.kernel_bug                     import KernelBug
@@ -37,6 +37,7 @@ class BugEngine(StdApp):
     def __init__(self, default_config={}, cmdline=None):
         self.defaults = default_config
         self.defaults['show'] = False
+        self.defaults['search_all'] = False
         StdApp.__init__(self)
         self.bdb = None
         if cmdline is None:
@@ -66,6 +67,12 @@ class BugEngine(StdApp):
 
         if 'debug' in self.cfg and 'kbug' in self.cfg['debug']:
             KernelBug.debug = True
+
+        if 'sru_data_file' in self.cfg:
+            try:
+                self.cfg['sru_data'] = json_load(self.cfg['sru_data_file'])
+            except FileDoesntExist as e:
+                e.print_std_error()
 
         return
 
@@ -101,6 +108,7 @@ class BugEngine(StdApp):
             self.cmdline.verify_options(self.cfg)
 
             self.__initialize()
+            self.startup()
 
             if 'bug ids' in self.cfg:
                 self.bug_handler_startup()
@@ -149,6 +157,16 @@ class BugEngine(StdApp):
                 else:
                     search_criteria_status = ["New"] # A list of the bug statuses that we care about
 
+                try:
+                    search_criteria_tags = self.cfg['search-criteria-tags']
+                except KeyError:
+                    search_criteria_tags = []
+
+                try:
+                    search_criteria_tags_combinator = self.cfg['search-criteria-tags-combinator']
+                except KeyError:
+                    search_criteria_tags_combinator = "Any"
+
                 now = datetime.utcnow()
                 self.bdb['updated'] = date_to_string(now)
 
@@ -166,8 +184,15 @@ class BugEngine(StdApp):
                             raise BugEngineError("The source package (%s) does not exist in LaunchPad." % (package_name))
 
                         self.vout(5, "   since: %s" % (search_since))
-                        tasks = source_package.search_tasks(status=search_criteria_status, modified_since=search_since)
-                        #tasks = source_package.search_tasks(status=search_criteria_status)
+                        if self.cfg['search_all']:
+                            tasks = source_package.search_tasks(status=search_criteria_status,
+                                                                tags=search_criteria_tags,
+                                                                tags_combinator=search_criteria_tags_combinator)
+                        else:
+                            tasks = source_package.search_tasks(status=search_criteria_status,
+                                                                tags=search_criteria_tags,
+                                                                tags_combinator=search_criteria_tags_combinator,
+                                                                modified_since=search_since)
 
                         this_package_bugs = None
                         self.bug_handler_startup()
@@ -201,6 +226,8 @@ class BugEngine(StdApp):
                         raise
                         raise BugEngineError("Exception caught processing the tasks, building the bugs database.\n")
 
+            self.shutdown()
+
         # Handle command line errors.
         #
         except CmdlineError as e:
@@ -219,7 +246,7 @@ class BugEngine(StdApp):
         and not every time the bug_handler is called. And also, because this
         method is called after the base class has created self.lp.
         """
-        self.bug_handlers = BugHandler.get_plugins(self.lp, self.vout)
+        self.bug_handlers = BugHandler.get_plugins(self.cfg, self.lp, self.vout)
 
         # Yes, the verbose handling is a little stupid right now, it will get
         # cleaned up "soon".
@@ -257,9 +284,7 @@ class BugEngine(StdApp):
         Run the base class methods.
         """
         try:
-            self.startup()
             self.run()
-            self.shutdown()
 
         # Handle the user presses <ctrl-C>.
         #

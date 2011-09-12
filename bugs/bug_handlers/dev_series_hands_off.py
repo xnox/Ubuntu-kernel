@@ -57,6 +57,28 @@ class NewHandsOff(BugHandler):
                 retval = False
                 break
 
+            # If the bug has been assigned to someone, leave it alone.
+            #
+            assignee = task.assignee
+            if assignee is not None:
+                retval = False
+                break
+
+            # If it was submitted against the kernel version that is currently in
+            # the 'release' pocket, leave it alone.
+            #
+            bk = bug.booted_kernel_version
+            if bk == self.cfg['released_development_kernel']:
+                retval = False
+                break
+
+            # If we've already asked this kernel version be tested, leave it alone.
+            #
+            rt = "kernel-request-%s" % bk
+            if rt in bug.tags:
+                retval = False
+                break
+
             break;
         return retval
 
