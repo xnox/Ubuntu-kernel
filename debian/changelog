@@ -1,3 +1,9 @@
+linux-firmware (1.52.4) natty-proposed; urgency=low
+
+  * no change upload with version difference.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 12 Sep 2011 19:28:14 -0600
+
 linux-firmware (1.52.3) natty-proposed; urgency=low
 
   * Revert: linux-firmware: rt2800pci: rt2800usb: Firmware update
