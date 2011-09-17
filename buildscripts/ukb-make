@@ -9,10 +9,12 @@ UKB_DB="$CDIR/ukb"
 RELEASE=
 BRANCH=
 ARCH=
+RHOST=
+CMDLINE="$*"
 
 usage()
 {
-	echo $0 [--arch=ARCH] [--repo=REPO] --release=RELEASE --branch=BRANCH [--bdir=BUILD_DIR] [--clean]
+	echo $0 [--arch=ARCH] [--repo=REPO] --release=RELEASE --branch=BRANCH [--bdir=BUILD_DIR] [--remote=HOST] [--clean]
 	echo ex: $0 --arch=amd64 --release=lucid --branch=master-next
 	exit 1
 }
@@ -34,6 +36,9 @@ while [ $# -ne 0 ]; do
 		--bdir=*)
 			UKB_DEF_BUILD_DIR_BASE=$(echo $1|cut -d= -f2)
 			;;
+		--remote=*)
+			RHOST=$(echo $1|cut -d= -f2)
+			;;
 		--clean)
 			CLEAN=yes
 			;;
@@ -47,6 +52,14 @@ while [ $# -ne 0 ]; do
 	esac
 	shift
 done
+
+if [ ! -z "$RHOST" ]
+then
+	RCMDLINE="`echo $CMDLINE|sed 's/--remote=[A-Za-z0-9.-]*[ \t]*//'`"
+	echo RCMDLINE $RCMDLINE
+	ssh $RHOST "screen -d -m ~/kteam-tools/buildscripts/`basename $0` $RCMDLINE"
+	exit 0
+fi
 
 #
 # Make sure the release exists

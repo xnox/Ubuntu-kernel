@@ -12,8 +12,8 @@ class SuspendTestFinish(BugHandler):
 
     # __init__
     #
-    def __init__(self, lp, vout):
-        BugHandler.__init__(self, lp, vout)
+    def __init__(self, cfg, lp, vout):
+        BugHandler.__init__(self, cfg, lp, vout)
 
     # run
     #

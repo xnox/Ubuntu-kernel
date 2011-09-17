@@ -1,0 +1,70 @@
+#!/usr/bin/env python
+#
+# A script for processing all the "New" bugs.
+#
+
+from core.bug_engine                    import BugEngine
+
+import bug_handlers.dev_series  # This imports all the bug handler plugins that this script
+                                # will use.
+
+from ktl.ubuntu                         import Ubuntu
+from ktl.utils                          import o2ascii
+
+# ProcDevSeriesBugs
+#
+class ProcDevSeriesBugs(BugEngine):
+    """
+    This class is all about working on any "New" bugs. "New" bugs
+    have a status of: "New".
+    """
+
+    # __init__
+    #
+    def __init__(self):
+        """
+        The most important things we do here are set the default for the configuration
+        file that this script uses and then calls the base class to initialize it.
+        """
+        defaults = {}
+        defaults['configuration_file'] = 'dev-series.rc'
+        defaults['launchpad_client_name'] = 'lpltk.kernel.ProcDevSeriesBugs'
+        BugEngine.__init__(self, defaults)
+
+    # startup
+    #
+    def startup(self):
+        # Figure out what the development series is.
+        #
+        ubuntu = Ubuntu()
+        for k in ubuntu.db:
+            rec = ubuntu.db[k]
+            if 'development' in rec and rec['development']:
+                dev_series = rec['name']
+                break
+
+        # Figure out which kernel version for the development series is in the
+        # release pocket.
+        #
+        release_kernel = self.cfg['sru_data']['releases'][dev_series]['linux']['Release']
+
+        try:
+            search_tags = self.cfg['search_criteria_tags']
+        except KeyError:
+            search_tags = []
+
+        if dev_series not in search_tags:
+            search_tags.append(dev_series)
+
+        self.cfg['search-criteria-tags'] = search_tags
+        self.cfg['search-criteria-tags-combinator'] = 'Any'
+
+        self.cfg['development_series'] = dev_series
+        self.cfg['released_development_kernel'] = o2ascii(release_kernel)
+
+if __name__ == '__main__':
+    app = ProcDevSeriesBugs()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+

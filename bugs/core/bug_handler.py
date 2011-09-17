@@ -15,10 +15,11 @@ class BugHandler:
 
     # __init__
     #
-    def __init__(self, lp, vout):
+    def __init__(self, cfg, lp, vout):
         self.lp = lp
         self.show_buff = ''
         self.vout = vout
+        self.cfg = cfg
 
     def show(self):
         stdo(self.show_buf)

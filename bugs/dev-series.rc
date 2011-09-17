@@ -1,0 +1,38 @@
+{
+    "app_name": "./proc-new-bugs", 
+    "bugs_database": {
+        "packages": {
+            "linux": {
+                "bugs": {}
+            }, 
+            "linux-backports-modules-2.6.32": {
+                "bugs": {}
+            }, 
+            "linux-fsl-imx51": {
+                "bugs": {}
+            }, 
+            "linux-lts-backport-maverick": {
+                "bugs": {}
+            }, 
+            "linux-meta": {
+                "bugs": {}
+            }, 
+            "linux-restricted-modules-2.6.24": {
+                "bugs": {}
+            }, 
+            "linux-ti-omap4": {
+                "bugs": {}
+            }
+        }, 
+        "updated": "Monday, 12. September 2011 15:55 UTC"
+    }, 
+    "configuration_file": "new.rc", 
+    "launchpad_client_name": "lpltk.kernel.ProcNewBugs", 
+    "search-criteria-status": [
+        "New",
+	"Confirmed"
+    ], 
+    "show": true, 
+    "update-config": true, 
+    "verbose": true
+}

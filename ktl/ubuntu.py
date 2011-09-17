@@ -22,8 +22,9 @@ class Ubuntu:
     db = {
         '11.10' :
         {
+            'development' : True,        # This is the version that is currently under development
             'series_version' : '11.10',
-            'kernel'    : '2.6.39',
+            'kernel'    : '3.0.0',
             'name'      : 'oneiric',
             'supported' : True,
             # adjust packages when this goes live
@@ -259,7 +260,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
-        '2.6.40'   : db['11.10'],
+        '3.0.0'    : db['11.10'],
         '2.6.38'   : db['11.04'],
         '2.6.35'   : db['10.10'],
         '2.6.32'   : db['10.04'],
@@ -334,6 +335,18 @@ class Ubuntu:
             raise KeyError(key)
 
         return record
+
+    # is_development_series
+    #
+    def is_development_series(self, series):
+        '''
+        Returns True if the series passed in is the current series under development.
+        '''
+        try:
+            retval = self.db['series']['development']
+        except KeyError:
+            retval = False
+        return retval
 
     # is_supported_series
     #

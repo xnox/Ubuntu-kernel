@@ -69,6 +69,13 @@ class Cmdline:
         stdo("                         A less verbose, verbose for when you just want to know what         \n")
         stdo("                         changes the script is making to bugs.                               \n")
         stdo("                                                                                             \n")
+        stdo("        --search-all     Normally, the last modified timestamp in the config file is         \n")
+        stdo("                         uses for searching 'modified_since'. However, this flag will        \n")
+        stdo("                         cause that to be ignored and all relevant bugs will be processed.   \n")
+        stdo("                                                                                             \n")
+        stdo("        --sru-data=<sru-data-file>                                                           \n")
+        stdo("                         Some scripts may wan the sru data for some reason.                  \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s                                                                                   \n" % self.cfg['app_name'])
         stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
@@ -93,8 +100,7 @@ class Cmdline:
             # --v1
             # --v2
 
-            #optsLong  = ['help', 'verbose', 'config=', 'debug=', 'bugs=', 'package=', 'show' ]
-            optsLong  = ['help', 'verbose', 'verbosity', 'config=', 'debug=', 'bugs=', 'package=', 'show' ]
+            optsLong  = ['help', 'verbose', 'verbosity', 'config=', 'debug=', 'bugs=', 'package=', 'show', 'search-all', 'sru-data=' ]
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -110,8 +116,14 @@ class Cmdline:
                 elif (opt == '--show'):
                     self.cfg['show'] = True
 
+                elif (opt == '--search-all'):
+                    self.cfg['search_all'] = True
+
                 elif opt in ('--config'):
                     self.cfg['configuration_file'] = val
+
+                elif opt in ('--sru-data'):
+                    self.cfg['sru_data_file'] = val
 
                 elif opt in ('--debug'):
                     self.cfg['debug'] = val.split(',')
