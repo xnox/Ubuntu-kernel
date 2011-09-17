@@ -4,6 +4,7 @@
 #
 
 from core.bug_engine                    import BugEngine
+from core.dbg                           import Dbg
 
 import bug_handlers.dev_series  # This imports all the bug handler plugins that this script
                                 # will use.
@@ -63,6 +64,7 @@ class ProcDevSeriesBugs(BugEngine):
         self.cfg['released_development_kernel'] = o2ascii(release_kernel)
 
 if __name__ == '__main__':
+    Dbg.levels = ['verbose', 'what', 'why', 'vbi']
     app = ProcDevSeriesBugs()
     app.main()
 
