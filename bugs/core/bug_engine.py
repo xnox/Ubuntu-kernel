@@ -18,6 +18,7 @@ from ktl.ubuntu                         import Ubuntu
 from ktl.kernel_bug                     import KernelBug
 from ktl.termcolor                      import colored
 from bug_handler                        import BugHandler
+from dbg                                import Dbg
 
 from cmdline                            import Cmdline, CmdlineError
 
@@ -27,7 +28,9 @@ class BugEngineError(Exception):
     # __init__
     #
     def __init__(self, error):
+        Dbg.enter("BugEngineError.__init__")
         self.msg = error
+        Dbg.leave("BugEngineError.__init__")
 
 # BugEngine
 #
@@ -35,6 +38,8 @@ class BugEngine(StdApp):
     # __init__
     #
     def __init__(self, default_config={}, cmdline=None):
+        Dbg.enter("BugEngine.__init__")
+
         self.defaults = default_config
         self.defaults['show'] = False
         self.defaults['search_all'] = False
@@ -47,18 +52,27 @@ class BugEngine(StdApp):
 
         self.show_buff = ''
 
+        Dbg.leave("BugEngine.__init__")
+
     # __initialize
     #
     # A separate initialize that we can control when it gets called (not
     # when the object is instantiated).
     #
     def __initialize(self):
+        Dbg.enter("BugEngine.__initialize")
+
         self.ubuntu = Ubuntu()
 
+        Dbg.verbose('Connecting to LaunchPad')
         if 'staging' in self.cfg:
+            Dbg.verbose(' (qastaging)')
             self.defaults['launchpad_services_root'] = 'qastaging'
-        self.vout(5, " . Connecting to Launchpad\n")
+        else:
+            Dbg.verbose(' (production)')
+        Dbg.verbose(' ... ')
         self.lp = LaunchpadService(self.defaults)
+        Dbg.verbose('connected.\n')
 
         # The service.distributions property is a collection of distributions. We
         # pretty much only care about one, 'ubuntu'.
@@ -74,6 +88,7 @@ class BugEngine(StdApp):
             except FileDoesntExist as e:
                 e.print_std_error()
 
+        Dbg.leave("BugEngine.__initialize")
         return
 
     # startup
@@ -82,6 +97,8 @@ class BugEngine(StdApp):
         """
         Performs tasks that need to be done before "main" is run.
         """
+        Dbg.enter("BugEngine.startup")
+        Dbg.leave("BugEngine.startup")
         return
 
     # shutdown
@@ -90,6 +107,7 @@ class BugEngine(StdApp):
         """
         Performs any cleanup tasks.
         """
+        Dbg.enter("BugEngine.shutdown")
 
         if self.bdb is not None:
             self.cfg['bugs_database'] = self.bdb
@@ -97,11 +115,14 @@ class BugEngine(StdApp):
                 with open(self.cfg['configuration_file'], 'w') as f:
                     f.write(json.dumps(self.cfg, sort_keys=True, indent=4))
 
+        Dbg.leave("BugEngine.shutdown")
         return
 
     # run
     #
     def run(self):
+        Dbg.enter("BugEngine.run")
+
         using_search_since = False
         try:
             self.merge_config_options(self.defaults, self.cmdline.process(argv, self.defaults))
@@ -176,14 +197,14 @@ class BugEngine(StdApp):
                                                                   #            package? there's plenty to work on with just the one
                                                                   #            but we don't want to ignore the others either.
                 for package_name in ['linux']:
-                    self.vout(5, '%s\n' % package_name)
+                    Dbg.verbose('Package: %s\n' % package_name)
 
                     try:
                         source_package = self.distro.get_source_package(package_name)
                         if source_package == None:
                             raise BugEngineError("The source package (%s) does not exist in LaunchPad." % (package_name))
 
-                        self.vout(5, "   since: %s" % (search_since))
+                        Dbg.verbose('   since: %s\n' % (search_since))
                         if self.cfg['search_all']:
                             tasks = source_package.search_tasks(status=search_criteria_status,
                                                                 tags=search_criteria_tags,
@@ -203,7 +224,7 @@ class BugEngine(StdApp):
                             this_package_bugs = self.bdb['packages'][package_name]['bugs']
 
                             bug = KernelBug(task.bug)
-                            stdo('%s (%s)\r' % (bug.id, package_name))
+                            Dbg.what('%s (%s)\n' % (bug.id, package_name))
                             self.__verbose_bug_info(bug)
 
                             try:
@@ -232,8 +253,10 @@ class BugEngine(StdApp):
         #
         except CmdlineError as e:
             self.cmdline.error(e.msg, self.defaults)
+            Dbg.leave("BugEngine.run")
             exit(0)
 
+        Dbg.leave("BugEngine.run")
         return
 
     # bug_handler_startup
@@ -246,6 +269,8 @@ class BugEngine(StdApp):
         and not every time the bug_handler is called. And also, because this
         method is called after the base class has created self.lp.
         """
+        Dbg.enter("BugEngine.bug_handler_startup")
+
         self.bug_handlers = BugHandler.get_plugins(self.cfg, self.lp, self.vout)
 
         # Yes, the verbose handling is a little stupid right now, it will get
@@ -256,12 +281,14 @@ class BugEngine(StdApp):
 
         if 'verbosity' in self.cfg:
             BugHandler.verbosity = self.cfg['verbosity']
-        pass
+
+        Dbg.leave("BugEngine.bug_handler_startup")
 
     # bug_handler_shutdown
     #
     def bug_handler_shutdown(self):
-        pass
+        Dbg.enter("BugEngine.bug_handler_shutdown")
+        Dbg.leave("BugEngine.bug_handler_shutdown")
 
     # bug_handler
     #
@@ -269,12 +296,15 @@ class BugEngine(StdApp):
         """
         Called for every bug that is found via a task search.
         """
+        Dbg.enter("BugEngine.bug_handler")
+
         for handler in self.bug_handlers:
             handler.show_buff = ''
             result = handler.run(bug, self.get_relevant_task(bug, package_name), package_name)
             if not result: break
             self.show_buff += handler.show_buff
 
+        Dbg.leave("BugEngine.bug_handler")
         return
 
     # main
@@ -283,12 +313,15 @@ class BugEngine(StdApp):
         """
         Run the base class methods.
         """
+        Dbg.enter("BugEngine.main")
+
         try:
             self.run()
 
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
+            Dbg.leave("BugEngine.main")
             exit(0)
 
         # Handle application errors.
@@ -296,12 +329,13 @@ class BugEngine(StdApp):
         except BugEngineError as e:
             error(e.msg)
 
+        Dbg.leave("BugEngine.main")
         return
 
     # __verbose_bug_info
     #
     def __verbose_bug_info(self, bug):
-        if 'verbosity' in self.cfg and self.cfg['verbosity'] < 2:
+        if 'vbi' in Dbg.levels:
             print(" ")
             print(colored("    %s: %s" % (bug.id, bug.title), 'blue'))
             print(" ")

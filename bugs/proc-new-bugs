@@ -4,6 +4,7 @@
 #
 
 from core.bug_engine                    import BugEngine
+from core.dbg                           import Dbg
 
 import bug_handlers.new  # This imports all the bug handler plugins that this script
                          # will use.
@@ -29,6 +30,7 @@ class ProcNewBugs(BugEngine):
         BugEngine.__init__(self, defaults)
 
 if __name__ == '__main__':
+    Dbg.levels = ['verbose', 'what', 'why']
     app = ProcNewBugs()
     app.main()
 

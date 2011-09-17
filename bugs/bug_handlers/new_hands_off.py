@@ -2,6 +2,7 @@
 #
 
 from core.bug_handler                   import BugHandler
+from core.dbg                           import Dbg
 
 class NewHandsOff(BugHandler):
     """
@@ -10,7 +11,9 @@ class NewHandsOff(BugHandler):
     # __init__
     #
     def __init__(self, cfg, lp, vout):
+        Dbg.enter('NewHandsOff.__init__')
         BugHandler.__init__(self, cfg, lp, vout)
+        Dbg.leave('NewHandsOff.__init__')
 
     # run
     #
@@ -19,6 +22,8 @@ class NewHandsOff(BugHandler):
         There are certain bugs that we shouldn't mess with. This method tries to
         know about those and returns True if they are supposed to be ignored.
         """
+        Dbg.enter('NewHandsOff.run')
+
         retval = True
 
         while True:
@@ -28,6 +33,7 @@ class NewHandsOff(BugHandler):
             #
             if 'kernel-cve-tracking-bug' in bug.tags:
                 retval = False
+                Dbg.why('kernel-cve-tracking-bug tag exists\n')
                 break
 
             # A bug that is used for workflow processes and is part of the kernel
@@ -35,6 +41,7 @@ class NewHandsOff(BugHandler):
             #
             if 'kernel-release-tracking-bug' in bug.tags:
                 retval = False
+                Dbg.why('kernel-release-tracking-bug tag exists\n')
                 break
 
             # The kernel stable team adds this tag onto bugs that get filed as part
@@ -42,12 +49,14 @@ class NewHandsOff(BugHandler):
             #
             if ('stable-next' in bug.tags) or ('kernel-stable-next' in bug.tags):
                 retval = False
+                Dbg.why('kernel-stable-next tag exists\n')
                 break
 
             # As you'd expect, we shouldn't be touching private bugs.
             #
             if bug.private:
                 retval = False
+                Dbg.why('Private bug\n')
                 break
 
             # We should not be trying to change the status of "bug watch" tasks.
@@ -55,9 +64,12 @@ class NewHandsOff(BugHandler):
             watch_link = task.bug_watch
             if watch_link is not None:
                 retval = False
+                Dbg.why('Has a watch link.\n')
                 break
 
             break;
+
+        Dbg.ret('NewHandsOff.run', retval)
         return retval
 
 # vi:set ts=4 sw=4 expandtab:
