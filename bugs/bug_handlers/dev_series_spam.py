@@ -35,10 +35,10 @@ class DevSeriesSpammer(BugHandler):
         comment = self.comment.replace('<previous-status>', task.status)
 
         Dbg.verbose('Modifying this bug.\n')
-        #self.change_status(bug, task, package_name, "Incomplete")
-        #bug.add_comment(comment, self.comment_subject)
-        #tag = 'kernel-request-%s' % self.cfg['released_development_kernel']
-        #bug.tags.append(tag)
+        self.change_status(bug, task, package_name, "Incomplete")
+        bug.add_comment(comment, self.comment_subject)
+        tag = 'kernel-request-%s' % self.cfg['released_development_kernel']
+        bug.tags.append(tag)
 
         return retval
 
