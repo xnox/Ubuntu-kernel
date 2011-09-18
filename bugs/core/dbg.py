@@ -78,7 +78,7 @@ class Dbg:
         Print a debug message preceeded by 'Leave'.
         """
         if 'verbose' in cls.levels:
-            cls.__print('What: %s' % txt)
+            cls.__print('%s' % txt)
 
     @classmethod
     def why(cls, txt):

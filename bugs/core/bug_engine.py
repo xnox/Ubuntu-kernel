@@ -204,16 +204,33 @@ class BugEngine(StdApp):
                         if source_package == None:
                             raise BugEngineError("The source package (%s) does not exist in LaunchPad." % (package_name))
 
-                        Dbg.verbose('   since: %s\n' % (search_since))
+                        Dbg.verbose('Search Criteria\n-------------------------------------------------------------------------------------\n')
                         if self.cfg['search_all']:
-                            tasks = source_package.search_tasks(status=search_criteria_status,
-                                                                tags=search_criteria_tags,
-                                                                tags_combinator=search_criteria_tags_combinator)
+                            Dbg.verbose('              since: All\n')
+                            Dbg.verbose('             status: "%s"\n' % ','.join(search_criteria_status))
+                            if len(search_criteria_tags) > 0:
+                                Dbg.verbose('               tags: "%s"\n' % ','.join(search_criteria_tags))
+                                Dbg.verbose('    tags combinator: "%s"\n' % search_criteria_tags_combinator)
+                                tasks = source_package.search_tasks(status=search_criteria_status,
+                                                                    tags=search_criteria_tags,
+                                                                    tags_combinator=search_criteria_tags_combinator)
+                            else:
+                                Dbg.verbose('    tags: None\n')
+                                tasks = source_package.search_tasks(status=search_criteria_status)
                         else:
-                            tasks = source_package.search_tasks(status=search_criteria_status,
-                                                                tags=search_criteria_tags,
-                                                                tags_combinator=search_criteria_tags_combinator,
-                                                                modified_since=search_since)
+                            Dbg.verbose('              since: %s\n' % (search_since))
+                            Dbg.verbose('             status: "%s"\n' % ','.join(search_criteria_status))
+                            if len(search_criteria_tags) > 0:
+                                Dbg.verbose('               tags: "%s"\n' % ','.join(search_criteria_tags))
+                                Dbg.verbose('    tags combinator: "%s"\n' % search_criteria_tags_combinator)
+                                tasks = source_package.search_tasks(status=search_criteria_status,
+                                                                    tags=search_criteria_tags,
+                                                                    tags_combinator=search_criteria_tags_combinator,
+                                                                    modified_since=search_since)
+                            else:
+                                Dbg.verbose('    tags: None\n')
+                                tasks = source_package.search_tasks(status=search_criteria_status,
+                                                                    modified_since=search_since)
 
                         this_package_bugs = None
                         self.bug_handler_startup()

@@ -28,6 +28,13 @@ class NewHandsOff(BugHandler):
 
         while True:
 
+            # The bugs status must be "New".
+            #
+            if task.status != "New":
+                retval = False
+                Dbg.why('The tasks status is not "New" (%s).\n' % task.status)
+                break
+
             # A bug that is filed for a particular CVE. This is part of the CVE/SRU
             # process.
             #
