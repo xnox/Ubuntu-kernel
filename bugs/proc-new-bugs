@@ -30,7 +30,7 @@ class ProcNewBugs(BugEngine):
         BugEngine.__init__(self, defaults)
 
 if __name__ == '__main__':
-    Dbg.levels = ['verbose', 'what', 'why']
+    Dbg.levels = ['verbose', 'what', 'why', 'vbi']
     app = ProcNewBugs()
     app.main()
 
