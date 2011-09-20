@@ -1,9 +1,77 @@
-linux-lts-backport-maverick (2.6.35-30.59~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-maverick (2.6.35-30.60~lucid1) lucid-proposed; urgency=low
 
   [Herton R. Krzesinski]
 
   * Release Tracking Bug
-    - LP: #838043
+    - LP: #854430
+
+  [ Stefan Bader ]
+
+  * [Config] Force perf to use libiberty for demangling
+    - LP: #783660
+
+  [ Tim Gardner ]
+
+  * [Config] Simplify binary-udebs dependencies
+  * [Config] kernel preparation cannot be parallelized
+  * [Config] Linearize module/abi checks
+  * [Config] Linearize and simplify tree preparation rules
+  * [Config] Build kernel image in parallel with modules
+  * [Config] Set concurrency for kmake invocations
+  * [Config] Improve install-arch-headers speed
+  * [Config] Fix binary-perarch dependencies
+  * [Config] Removed stamp-flavours target
+  * [Config] Serialize binary indep targets
+  * [Config] Use build stamp directly
+  * [Config] Restore prepare-% target
+  * [Config] Fix binary-% build target
+
+  [ Upstream Kernel Changes ]
+
+  * Add mount option to check uid of device being mounted = expect uid,
+    CVE-2011-1833
+    - LP: #732628
+    - CVE-2011-1833
+  * ipv6: make fragment identifications less predictable, CVE-2011-2699
+    - LP: #827685
+    - CVE-2011-2699
+  * perf: Fix software event overflow, CVE-2011-2918
+    - LP: #834121
+    - CVE-2011-2918
+  * cifs: fix possible memory corruption in CIFSFindNext, CVE-2011-3191
+    - LP: #834135
+    - CVE-2011-3191
+  * befs: Validate length of long symbolic links, CVE-2011-2928
+    - LP: #834124
+    - CVE-2011-2928
+  * gro: Only reset frag0 when skb can be pulled, CVE-2011-2723
+    - LP: #844371
+    - CVE-2011-2723
+  * Validate size of EFI GUID partition entries, CVE-2011-1776
+    - LP: #844365
+    - CVE-2011-1776
+  * inet_diag: fix inet_diag_bc_audit(), CVE-2011-2213
+    - LP: #838421
+    - CVE-2011-2213
+  * si4713-i2c: avoid potential buffer overflow on si4713, CVE-2011-2700
+    - LP: #844370
+    - CVE-2011-2700
+  * Bluetooth: Prevent buffer overflow in l2cap config request,
+    CVE-2011-2497
+    - LP: #838423
+    - CVE-2011-2497
+  * core: Fix memory leak/corruption on VLAN GRO_DROP, CVE-2011-1576
+    - LP: #844361
+    - CVE-2011-1576
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 20 Sep 2011 11:03:51 -0300
+
+linux (2.6.35-30.59) maverick-proposed; urgency=low
+
+  [Herton R. Krzesinski]
+
+  * Release Tracking Bug
+    - LP: #837449
 
   [ Upstream Kernel Changes ]
 
@@ -11,7 +79,7 @@ linux-lts-backport-maverick (2.6.35-30.59~lucid1) lucid-proposed; urgency=low
     see"
   * Revert "eCryptfs: Handle failed metadata read in lookup"
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 01 Sep 2011 13:40:57 -0300
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 30 Aug 2011 12:11:13 -0300
 
 linux (2.6.35-30.58) maverick-proposed; urgency=low
 
