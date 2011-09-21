@@ -164,6 +164,16 @@ popd
 # Finally, do the build
 #
 get_chroot $RELEASE $ARCH
+#
+# Cross compile armel.
+#
+if [ "${ARCH}" = "armel" ]
+then
+	BLD_ENV="do_tools=false"
+	BLD_OPTS="-aarmel"
+	CHROOT="schroot -c $RELEASE-amd64"
+fi
+
 echo CHROOT $CHROOT
 pushd $RDIR
 
@@ -184,7 +194,7 @@ then
 	CL="-j${BLD_CPUS}"
 fi
 
-if ! echo "dpkg-buildpackage ${CL} -rfakeroot -b -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
+if ! echo "${BLD_ENV} dpkg-buildpackage ${CL} -rfakeroot -b ${BLD_OPTS} -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
 then
 	echo $RELEASE $ARCH $BRANCH failed.
 	exit 1
