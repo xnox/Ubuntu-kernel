@@ -184,7 +184,7 @@ then
 	CL="-j${BLD_CPUS}"
 fi
 
-if ! echo "dpkg-buildpackage ${CL} -rfakeroot -B -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
+if ! echo "dpkg-buildpackage ${CL} -rfakeroot -b -us -uc 2>&1 | tee log.txt" | $CHROOT --directory=`pwd`
 then
 	echo $RELEASE $ARCH $BRANCH failed.
 	exit 1
