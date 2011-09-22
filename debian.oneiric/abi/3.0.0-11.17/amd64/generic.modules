@@ -174,7 +174,6 @@ adxl34x
 adxl34x-i2c
 adxl34x-spi
 adxrs450
-aes_generic
 aesni-intel
 aes-x86_64
 af_802154
@@ -602,10 +601,16 @@ dm-crypt
 dme1737
 dmfe
 dmi-sysfs
+dm-log
+dm-mirror
+dm-multipath
 dm-queue-length
 dm-raid
 dm-raid45
+dm-region-hash
+dm-round-robin
 dm-service-time
+dm-snapshot
 dmx3191d
 dm-zero
 dnet
@@ -741,7 +746,6 @@ em_text
 emu10k1-gp
 em_u32
 enclosure
-encrypted
 ene_ir
 eni
 enic
@@ -1283,6 +1287,7 @@ iwlagn
 iwl-legacy
 iwmc3200top
 iwmc3200wifi
+iw_nes
 ix2505v
 ixgb
 ixgbe
@@ -1356,6 +1361,7 @@ leds-88pm860x
 leds-adp5520
 leds-alix2
 leds-bd2802
+leds-clevo-mail
 leds-da903x
 leds-dac124s085
 leds-gpio
@@ -1464,6 +1470,7 @@ mac80211_hwsim
 machzwd
 macmodes
 macvlan
+macvtap
 magellan
 mantis
 mantis_core
@@ -2017,7 +2024,6 @@ raid6_pq
 raid6test
 raid_class
 ramoops
-ramzswap
 raw
 ray_cs
 rbd
@@ -2336,8 +2342,6 @@ serport
 serqt_usb2
 ses
 sfc
-sha1_generic
-sha256_generic
 sha512_generic
 shpchp
 sht15
@@ -2791,9 +2795,7 @@ toshiba_bluetooth
 touchit213
 touchright
 touchwin
-tpm
 tpm_atmel
-tpm_bios
 tpm_infineon
 tpm_nsc
 tpm_tis
@@ -2810,7 +2812,6 @@ tps65910-regulator
 trancevibrator
 tranzport
 tridentfb
-trusted
 ts5500_flash
 ts_bm
 tsc2005
@@ -2965,6 +2966,7 @@ vme_vmivme7805
 vmk80xx
 vmlfb
 vmw_balloon
+vmwgfx
 vmw_pvscsi
 vmxnet3
 vp27smpx
@@ -3164,6 +3166,7 @@ xt_statistic
 xt_string
 xt_tcpmss
 xt_TCPMSS
+xt_TCPOPTSTRIP
 xt_tcpudp
 xt_TEE
 xt_time
@@ -3171,7 +3174,6 @@ xt_TPROXY
 xt_TRACE
 xt_u32
 xusbatm
-xvmalloc
 xz_dec_test
 yam
 yealink
