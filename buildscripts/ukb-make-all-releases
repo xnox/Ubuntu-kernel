@@ -43,9 +43,13 @@ fi
 
 for i in "${releases[@]}"
 do
-	if ! $CDIR/ukb-make-release --release=$i $BRANCH $BDIR $CLEAN 
+	echo release $i
+	if not_expired_release $i
 	then
-		exit 1
+		if ! $CDIR/ukb-make-release --release=$i $BRANCH $BDIR $CLEAN 
+		then
+			exit 1
+		fi
 	fi
 done
 
