@@ -14,7 +14,6 @@ act_pedit
 act_police
 act_simple
 act_skbedit
-aes_generic
 aes-i586
 aesni-intel
 af_802154
@@ -40,6 +39,7 @@ async_raid6_recov
 async_tx
 async_xor
 atm
+aufs
 authenc
 authencesn
 auth_rpcgss
@@ -94,9 +94,15 @@ decnet
 deflate
 des_generic
 dm-crypt
+dm-log
+dm-mirror
+dm-multipath
 dm-queue-length
 dm-raid
+dm-region-hash
+dm-round-robin
 dm-service-time
+dm-snapshot
 dm-zero
 dn_rtmsg
 dummy
@@ -244,6 +250,8 @@ lru_cache
 lrw
 lzo
 mac80211
+macvlan
+macvtap
 mce-inject
 mce-xeon75xx
 md4
@@ -381,8 +389,6 @@ seqiv
 serio_raw
 serpent
 serport
-sha1_generic
-sha256_generic
 sha512_generic
 sit
 slip
@@ -528,6 +534,7 @@ xt_statistic
 xt_string
 xt_tcpmss
 xt_TCPMSS
+xt_TCPOPTSTRIP
 xt_tcpudp
 xt_TEE
 xt_time
