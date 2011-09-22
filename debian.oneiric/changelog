@@ -1,4 +1,291 @@
-linux-lts-backport-oneiric (3.0.0-8.11~lucid1) lucid; urgency=low
+linux-lts-backport-oneiric (3.0.0-11.18~lucid1) lucid; urgency=low
+
+  [ Jiri Kosina ]
+
+  * SAUCE: HID: magicmouse: ignore 'ivalid report id' while switching modes
+
+  [ Leann Ogasawara ]
+
+  * SAUCE: x86: reboot: Make Dell Optiplex 790 use reboot=pci
+    - LP: #818933
+  * SAUCE: (drop after 3.0) x86, x2apic: enable the bios request for x2apic
+    optout
+    - LP: #797548
+
+  [ Ming Lei ]
+
+  * SAUCE: fireware: add NO_MSI quirks for o2micro controller
+    - LP: #801719
+
+  [ Rene Bolldorf ]
+
+  * SAUCE: (drop after 3.0) ideapad: Check if acpi already handle backlight
+    power in 'ideapad_backlight_notify_power' to avoid a page fault
+
+  [ Upstream Kernel Changes ]
+
+  * savagedb: Fix typo causing regression in savage4 series video chip
+    detection
+  * cifs: fix possible memory corruption in CIFSFindNext, CVE-2011-3191
+    - LP: #834135
+    - CVE-2011-3191
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 12 Sep 2011 06:45:02 -0700
+
+linux (3.0.0-11.17) oneiric; urgency=low
+
+  [ Chase Douglas ]
+
+  * SAUCE: HID: magicmouse: Set resolution of touch surfaces
+
+  [ Jiri Kosina ]
+
+  * SAUCE: HID: add MacBookAir4, 2 to hid_have_special_driver[]
+
+  [ Joshua V. Dillon ]
+
+  * SAUCE: HID: add support for MacBookAir4,2 keyboard.
+
+  [ Leann Ogasawara ]
+
+  * [Config] Add aufs to virtual flavor inclusion list
+    - LP: #844159
+
+  [ Luke Yelavich ]
+
+  * [Config] Disable legacy IDE drivers on powerpc
+
+  [ Upstream Kernel Changes ]
+
+  * drm/i915: set GFX_MODE to pre-Ivybridge default value even on Ivybridge
+  * rt2x00: Move rt2800_txdone and rt2800_txdone_entry_check to rt2800usb.
+    - LP: #842955
+  * rt2x00: fix crash in rt2800usb_get_txwi
+    - LP: #842955
+  * rt2x00: fix crash in rt2800usb_write_tx_desc
+    - LP: #842955
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 06 Sep 2011 10:18:13 -0700
+
+linux (3.0.0-10.16) oneiric; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * Revert "ubuntu: compcache -- follow changes to bd_claim/bd_release"
+    - LP: #832694
+  * Revert "ubuntu: compcache -- version 0.5.3"
+    - LP: #832694
+  * [Config] dropping compcache configuration options
+
+  [ David Henningsson ]
+
+  * SAUCE: ALSA: HDA: hdmi: Emit pcm device index for jack input devices
+
+  [ Kees Cook ]
+
+  * [Config] enable and enforce SECCOMP_FILTER on x86
+
+  [ Leann Ogasawara ]
+
+  * [Config] Update CONFIG_EFI_VARS enforcer check
+  * [Config] Enable CONFIG_ECHO=m on powerpc
+  * [Config] Enable CONFIG_ET131X=m on powerpc
+  * [Config] Set CONFIG_FB_MATROX=m
+  * [Config] Enable CONFIG_FB_UDL=m on powerpc
+  * [Config] Set CONFIG_FB_VIRTUAL=n
+  * [Config] Enable CONFIG_FB_VGA16=m on powerpc
+  * [Config] Enable CONFIG_GPIO_MAX732X=m on arm
+  * [Config] Enable CONFIG_GPIO_PCF857X=m on arm
+  * [Config] Set CONFIG_HOTPLUG_PCI_FAKE=m
+  * [Config] Enable CONFIG_HOTPLUG_PCI=y on powerpc
+  * [Config] Enable CONFIG_HOTPLUG_PCI_CPCI=y on powerpc
+  * [Config] Enable CONFIG_HP_ILO=m on powerpc-smp
+  * [Config] Enable CONFIG_I2C_PASEMI=m on powerpc
+  * [Config] Enable CONFIG_IBM_BSR=m on powerpc
+  * [Config] Enable CONFIG_IBMVETH=m on powerpc
+  * [Config] Enable CONFIG_IDE_PHISON=m on powerpc
+  * [Config] Enable CONFIG_IGB=m on powerpc
+  * [Config] Enable CONFIG_IIO=m on powerpc
+  * [Config] Enable CONFIG_INFINIBAND_NES=m
+  * [Config] Enable CONFIG_IPMI_HANDLER=m on arm
+  * [Config] Enable CONFIG_IWL3945=m on powerpc
+  * [Config] Disable CONFIG_KVM_BOOK3S_64
+  * [Config] Enable CONFIG_LAPBETHER=m on arm
+  * [Config] Enable CONFIG_LEDS_GPIO=m on powerpc
+  * [Config] Enable CONFIG_LEDS_CLEVO_MAIL=m all arch's
+  * [Config] Enable CONFIG_LEDS_PCA9532=m on powerpc
+  * [Config] Enable CONFIG_LEDS_PCA955X=m on powerpc
+  * [Config] Enable CONFIG_LEDS_TRIGGER_DEFAULT_ON=m on powerpc
+  * [Config] Set CONFIG_LEDS_TRIGGER_HEARTBEAT=m on arm and powerpc
+  * [Config] Set CONFIG_LEDS_TRIGGER_TIMER=m on powerpc
+  * [Config] Enable CONFIG_LINE6_USB=m on arm and powerpc
+  * [Config] Enable CONFIG_MEMSTICK=m on arm
+  * [Config] Enable CONFIG_MTD_AFS_PARTS=m on arm
+  * [Config] Enable CONFIG_MTD_ALAUDA=m on arm
+  * [Config] Enable CONFIG_MTD_AR7_PARTS=m on arm
+  * [Config] Enable CONFIG_MTD_ARM_INTEGRATOR=m on arm
+  * [Config] Enable CONFIG_MOXA_SMARTIO=m on powerpc
+  * [Config] Enable CONFIG_MTD_DATAFLASH=m on arm
+  * [Config] Enable CONFIG_MTD_GPIO_ADDR=m on arm
+  * [Config] Enable CONFIG_MTD_IMPA7=m on arm
+  * [Config] Enable CONFIG_MTD_NAND_GPIO=m on arm
+  * [Config] Enable CONFIG_MTD_NAND_NANDSIM=m on arm
+  * [Config] Enable CONFIG_MTD_NAND_PASEMI=m on powerpc
+  * [Config] Enable CONFIG_MTD_NAND_PLATFORM=m on arm
+  * [Config] Enable CONFIG_MTD_NAND_TMIO=m on arm
+  * [Config] Enable CONFIG_MTD_SST25L=m on arm
+  * [Config] Enable CONFIG_NET_CLS_CGROUP=y on arm
+  * [Config] Enable CONFIG_NET_CLS_FLOW=m on arm
+  * [Config] Enable CONFIG_NET_CLS_U32=m on arm
+  * [Config] Enable CONFIG_NET_DCCPPROBE=m on arm
+  * [Config] Enable CONFIG_NET_SCH_INGRESS=m on arm
+  * [Config] Enable CONFIG_NET_TCPPROBE=m on arm
+  * [Config] Enable CONFIG_PASEMI_MAC=m on powerpc
+  * [Config] Enable CONFIG_PATA_NS87410=m on powerpc
+  * [Config] Enable CONFIG_I2C_GPIO=m on powerpc64-smp
+  * [Config] Enable CONFIG_PANEL=m on powerpc
+  * [Config] Enable CONFIG_PATA_CMD640_PCI=m on powerpc
+  * rebase to v3.0.4
+  * SAUCE: x86: reboot: Make Dell Latitude E6520 use reboot=pci
+    - LP: #833705
+
+  [ Seth Forshee ]
+
+  * SAUCE: (no-up) Input: elantech - Add v3 hardware support
+    - LP: #681904
+  * SAUCE: (drop after 3.1) usb_storage: Don't freeze in usb-stor-scan
+    - LP: #810020
+
+  [ Stefan Bader ]
+
+  * SAUCE: xen: Do not use pv spinlocks on HVM
+    - LP: #838026
+
+  [ Tim Gardner ]
+
+  * [Config] Simplify binary-udebs dependencies
+  * [Config] kernel preparation cannot be parallelized
+  * [Config] Linearize module/abi checks
+  * [Config] Linearize and simplify tree preparation rules
+  * [Config] Build kernel image in parallel with modules
+  * [Config] Set concurrency for kmake invocations
+  * [Config] Improve install-arch-headers speed
+  * [Config] Fix binary-perarch dependencies
+  * [Config] Removed stamp-flavours target
+  * [Config] Serialize binary indep targets
+  * [Config] Use build stamp directly
+  * [Config] Restore prepare-% target
+
+  [ Upstream Kernel Changes ]
+
+  * Input: bcm5974 - add support for touchpads found in MacBookAir4,2
+  * Input: bcm5974 - Add support for newer MacBookPro8,2
+
+  [ Will Drewry ]
+
+  * SAUCE: seccomp_filter: new mode with configurable syscall filters
+  * SAUCE: seccomp_filter: add process state reporting
+  * SAUCE: seccomp_filter: Document what seccomp_filter is and how it
+    works.
+  * SAUCE: seccomp_filter: add HAVE_SECCOMP_FILTER and seccomp_execve
+
+  [ Upstream Kernel Changes ]
+
+  * rebase to v3.0.4
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 30 Aug 2011 08:53:51 -0700
+
+linux (3.0.0-9.15) oneiric; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Revert "[Config] Set CONFIG_EFI_VARS=m on amd64 and i386"
+    - LP: #837332
+  * [Config] Add CONFIG_EFI_VARS=y to the enforcer
+    - LP: #837332
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 30 Aug 2011 06:41:45 -0700
+
+linux (3.0.0-9.14) oneiric; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * [Config] re-fix ECRYPT_FS=y
+    - LP: #827197
+  * enforcer -- ensure we have CONFIG_ECRYPT_FS=y
+    - LP: #827197
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 23 Aug 2011 08:32:55 -0700
+
+linux (3.0.0-9.13) oneiric; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * [Config] enable CONFIG_DRM_VMWGFX=m
+    - LP: #698009
+
+  [ Kamal Mostafa ]
+
+  * SAUCE: i915: do not setup intel_backlight twice
+    - LP: #831542
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 22 Aug 2011 06:22:25 -0700
+
+linux (3.0.0-9.12) oneiric; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * [Config] standardise CONFIG_NETFILTER_XT_TARGET_TCPOPTSTRIP=m
+  * [Config] move ECRYPT_FS back to =y for all architectures
+    - LP: #827197
+  * record the compiler in the ABI and check for inconsistant builds
+
+  [ Leann Ogasawara ]
+
+  * Revert "SAUCE: OMAP: DSS2: enable hsclk in dsi_pll_init for OMAP36XX"
+  * Revert "SAUCE: OMAP: DSS2: check for both cpu type and revision, rather
+    than just revision"
+  * Revert "SAUCE: ARM: OMAP: Add macros for comparing silicon revision"
+  * rebase to v3.0.2
+  * rebase to v3.0.3
+  * Temporarily ignore module check
+  * [Config] Set CONFIG_DM_MIRROR=m on amd64, i386, and arm
+  * [Config] Set CONFIG_DM_MULTIPATH=m on amd64, i386, and arm
+  * [Config] Set CONFIG_DM_SNAPSHOT=m on amd64, i386, and arm
+  * [Config] Enable CONFIG_EDAC_AMD8111=m on powerpc
+  * [Config] Enable CONFIG_EDAC_AMD8131=m on powerpc
+  * [Config] Enable CONFIG_EDAC_CPC925=m on powerpc
+  * [Config] Enable CONFIG_EDAC_PASEMI=m on powerpc
+  * [Config] Set CONFIG_EFI_VARS=m on amd64 and i386
+
+  [ Stefan Bader ]
+
+  * [Upstream] xen-blkfront: Drop name and minor adjustments for emulated
+    scsi devices
+    - LP: #784937
+  * [Config] Force perf to use libiberty for demangling
+    - LP: #783660
+
+  [ Stefano Stabellini ]
+
+  * [Upstream] xen: Do not enable PV IPIs when vector callback not present
+    - LP: #791850
+
+  [ Tim Gardner ]
+
+  * [Config] updateconfigs after rebase to 3.0.2
+
+  [ Upstream Kernel Changes ]
+
+  * Not all systems expose a firmware or platform mechanism for changing
+    the backlight intensity on i915, so add native driver support.
+    - LP: #568611
+  * rebase to v3.0.2
+  * rebase to v3.0.3
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 15 Aug 2011 13:35:57 -0700
+
+linux (3.0.0-8.11) oneiric; urgency=low
 
   [ Andy Whitcroft ]
 
@@ -39,7 +326,7 @@ linux-lts-backport-oneiric (3.0.0-8.11~lucid1) lucid; urgency=low
   * mac80211: be more careful in suspend/resume
     - LP: #811214
 
- -- Andy Whitcroft <apw@canonical.com>  Wed, 17 Aug 2011 09:23:18 +0100
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 08 Aug 2011 06:23:16 -0700
 
 linux (3.0.0-8.10) oneiric; urgency=low
 

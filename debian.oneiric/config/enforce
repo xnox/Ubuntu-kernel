@@ -14,6 +14,7 @@ value CONFIG_SYN_COOKIES y
 value CONFIG_DEFAULT_SECURITY_APPARMOR y
 # For architectures which support this option ensure it is enabled.
 !exists CONFIG_SECCOMP | value CONFIG_SECCOMP y
+!exists CONFIG_HAVE_SECCOMP_FILTER | value CONFIG_SECCOMP_FILTER y
 !exists CONFIG_CC_STACKPROTECTOR | value CONFIG_CC_STACKPROTECTOR y
 !exists CONFIG_DEBUG_RODATA | value CONFIG_DEBUG_RODATA y
 !exists CONFIG_DEBUG_SET_MODULE_RONX | value CONFIG_DEBUG_SET_MODULE_RONX y
@@ -76,3 +77,11 @@ value CONFIG_IMA n
 # Ensure CONFIG_IPV6 is y, if this is a module we get a module load for
 # every ipv6 packet, bad.
 value CONFIG_IPV6 y
+
+# Ensure ECRYPT_FS is y as it cannot be autoloaded and it has complex
+# dependancies which can pull it =m at a whim.
+value CONFIG_ECRYPT_FS y
+
+# Ensure CONFIG_EFI_VARS is y as debian-installer relies on having
+# access to efivars when installing in EFI mode. See LP:837332
+value CONFIG_EFI_VARS y | !exists CONFIG_EFI_VARS
