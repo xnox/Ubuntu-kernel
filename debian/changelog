@@ -1,3 +1,9 @@
+linux-backports-modules-3.0.0 (3.0.0-12.4) oneiric; urgency=low
+
+  * Bump ABI - Oneiric ABI 12
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Fri, 23 Sep 2011 13:42:36 -0700
+
 linux-backports-modules-3.0.0 (3.0.0-11.3) oneiric; urgency=low
 
   * Bump ABI - Oneiric ABI 11
