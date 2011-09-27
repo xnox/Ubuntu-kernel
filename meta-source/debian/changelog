@@ -1,8 +1,15 @@
 linux-meta (2.6.38.12.27) natty-proposed; urgency=low
 
-  *
+  [ Herton Ronaldo Krzesinski ]
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 27 Sep 2011 18:10:19 -0300
+  * Bump ABI
+
+  [ Tim Gardner ]
+
+  * Added compat-wireless 3.0.0
+    - LP: #819484
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 27 Sep 2011 18:15:59 -0300
 
 linux-meta (2.6.38.11.26) natty-proposed; urgency=low
 
