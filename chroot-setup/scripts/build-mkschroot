@@ -244,8 +244,9 @@ if $DOINSTALL; then
 	# Add some extra packages
 	#
 	echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
-	echo ADDPKG=${ADDPKG}
-	for i in ${ADDPKG} ; do ${SCHROOTCMD} -- apt-get -y --force-yes install $i; done
-	echo ADDPKGDEP=${ADDPKGDEP}
-	${SCHROOTCMD} -- apt-get -y --force-yes build-dep --only-source $ADDPKGDEP
 fi
+
+echo ADDPKG=${ADDPKG}
+for i in ${ADDPKG} ; do ${SCHROOTCMD} -- apt-get -y --force-yes install $i; done
+echo ADDPKGDEP=${ADDPKGDEP}
+${SCHROOTCMD} -- apt-get -y --force-yes build-dep --only-source $ADDPKGDEP
