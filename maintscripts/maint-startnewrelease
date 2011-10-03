@@ -34,6 +34,10 @@ parser.add_option(
 parser.add_option(
 	"--dry-run", action="store_true", dest="dryrun", default=False,
 	help="only print what would be done")
+parser.add_option(
+	"--local", action="store_true", dest="local", default=False,
+	help="pass --local to maint-getabis, to extract the packages "
+             "locally")
 (opts, args) = parser.parse_args()
 
 
@@ -105,6 +109,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 		cmd += " --host " + opts.tgthost
 	if opts.dryrun:
 		cmd += " --dry-run"
+	if opts.local:
+		cmd += " --local"
 	if os.system(cmd + " Ubuntu-" + version):
 		sys.exit(1)
 
