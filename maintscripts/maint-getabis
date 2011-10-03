@@ -42,6 +42,8 @@ parser.add_option("--host", action="store", dest="tgthost",
 		default="kernel.ubuntu.com",
 		help="fetch and extract the abi files on this host" +
 			" (%default)")
+parser.add_option("--ckt-ppa", action="store_true", dest="cktppa",
+		default=False, help="add c-k-t ppa as an abi source")
 (opts, args) = parser.parse_args()
 
 #------------------------------------------------------------------------------
@@ -170,6 +172,9 @@ def DownloadPackage(pkgname, srcpkgname):
 	cmd += "http://ports.ubuntu.com/ubuntu-ports/pool/main/l/$src\n"
 	cmd += "http://archive.ubuntu.com/ubuntu/pool/universe/l/$src\n"
 	cmd += "http://ports.ubuntu.com/ubuntu-ports/pool/universe/l/$src\n"
+	if opts.cktppa:
+		cmd += "http://ppa.launchpad.net/canonical-kernel-team/"
+		cmd += "ppa/ubuntu/pool/main/l/$src\n"
 	cmd += "\"\n"
 	cmd += "if test -f $pkg; then\n"
 	cmd += "	exit 0\n"

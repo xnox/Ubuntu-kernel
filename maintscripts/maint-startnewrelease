@@ -37,7 +37,11 @@ parser.add_option(
 parser.add_option(
 	"--local", action="store_true", dest="local", default=False,
 	help="pass --local to maint-getabis, to extract the packages "
-             "locally")
+	     "locally")
+parser.add_option(
+	"--ckt-ppa", action="store_true", dest="cktppa", default=False,
+	help="pass --ckt-ppa to maint-getabis, to add c-k-t ppa as an "
+	     "abi source")
 (opts, args) = parser.parse_args()
 
 
@@ -111,6 +115,8 @@ if os.path.isdir(os.path.join(debian_dir, "abi")):
 		cmd += " --dry-run"
 	if opts.local:
 		cmd += " --local"
+	if opts.cktppa:
+		cmd += " --ckt-ppa"
 	if os.system(cmd + " Ubuntu-" + version):
 		sys.exit(1)
 
