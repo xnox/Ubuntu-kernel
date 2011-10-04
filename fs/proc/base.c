@@ -2256,6 +2256,9 @@ static int proc_base_fill_cache(struct file *filp, void *dirent,
 #ifdef CONFIG_TASK_IO_ACCOUNTING
 static int proc_pid_io_accounting(struct task_struct *task, char *buffer)
 {
+	if (!ptrace_may_attach(task))
+		return -EACCES;
+
 	return sprintf(buffer,
 #ifdef CONFIG_TASK_XACCT
 			"rchar: %llu\n"
@@ -2342,7 +2345,7 @@ static const struct pid_entry tgid_base_stuff[] = {
 	REG("coredump_filter", S_IRUGO|S_IWUSR, coredump_filter),
 #endif
 #ifdef CONFIG_TASK_IO_ACCOUNTING
-	INF("io",	S_IRUGO, pid_io_accounting),
+	INF("io",	S_IRUSR, pid_io_accounting),
 #endif
 };
 
