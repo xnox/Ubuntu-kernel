@@ -120,9 +120,9 @@ obj-$(CONFIG_ARCH_OMAP3)		+= powerdomain2xxx_3xxx.o
 obj-$(CONFIG_ARCH_OMAP3)		+= powerdomains3xxx_data.o
 obj-$(CONFIG_ARCH_OMAP3)		+= powerdomains2xxx_3xxx_data.o
 obj-$(CONFIG_ARCH_OMAP4)		+= $(powerdomain-common)
-obj-$(CONFIG_ARCH_OMAP4)		+= powerdomain44xx.o
+obj-$(CONFIG_ARCH_OMAP4)		+= powerdomain4xxx_5xxx.o
 obj-$(CONFIG_ARCH_OMAP4)		+= powerdomains44xx_data.o
-obj-$(CONFIG_ARCH_OMAP5)		+= $(powerdomain-common) powerdomain44xx.o
+obj-$(CONFIG_ARCH_OMAP5)		+= $(powerdomain-common) powerdomain4xxx_5xxx.o
 obj-$(CONFIG_ARCH_OMAP5)		+= powerdomains54xx_data.o
 									
 
