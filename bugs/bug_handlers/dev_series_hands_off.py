@@ -44,6 +44,13 @@ class DevSeriesHandsOff(BugHandler):
                 Dbg.why('kernel-release-tracking-bug tag exists\n')
                 break
 
+            # A bug that is filed for a particular upstream stable release.
+            #
+            if 'kernel-stable-tracking-bug' in bug.tags:
+                retval = False
+                Dbg.why('kernel-stable-tracking-bug tag exists\n')
+                break
+
             # The kernel stable team adds this tag onto bugs that get filed as part
             # of a commit revert. It's so the team doesn't forget about the revert.
             #
