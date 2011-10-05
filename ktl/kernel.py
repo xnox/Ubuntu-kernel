@@ -67,22 +67,22 @@ class Kernel:
                     #
                     if version == '':
                         if 'VERSION' in line:
-                            variable, value = line.split(' = ')
+                            variable, value = line.split('=')
                             version = value.strip()
                             continue
                     elif patchlevel == '':
                         if 'PATCHLEVEL' in line:
-                            variable, value = line.split(' = ')
+                            variable, value = line.split('=')
                             patchlevel = value.strip()
                             continue
                     elif sublevel == '':
                         if 'SUBLEVEL' in line:
-                            variable, value = line.split(' = ')
+                            variable, value = line.split('=')
                             sublevel = value.strip()
                             continue
                     elif extraversion == '':
                         if 'EXTRAVERSION' in line:
-                            variable, value = line.split(' = ')
+                            variable, value = line.split('=')
                             extraversion = value.strip()
                             cls.__version = version + '.' + patchlevel + '.' + sublevel
 
