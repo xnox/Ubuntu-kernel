@@ -71,20 +71,20 @@ version_inc()
 	RET="$base.$minor"
 }
 
-wanted="2.6.32"
-while :; do
-	stable="$wanted.y"
-	
-	if ! git remote | grep "$stable" >/dev/null 2>&1; then
-		echo "*** adding $stable remote ..."
-		git remote add "$stable" \
-			git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-$stable.git
-	fi
-	if [ "$wanted" = "$current" ]; then
-		break
-	fi
-	version_inc "$wanted"; wanted="$RET"
-done
+#wanted="2.6.32"
+#while :; do
+#	stable="$wanted.y"
+#	
+#	if ! git remote | grep "$stable" >/dev/null 2>&1; then
+#		echo "*** adding $stable remote ..."
+#		git remote add "$stable" \
+#			git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-$stable.git
+#	fi
+#	if [ "$wanted" = "$current" ]; then
+#		break
+#	fi
+#	version_inc "$wanted"; wanted="$RET"
+#done
 
 # Special trees we also need but we cannot calculate from the version number.
 while read remote url
@@ -97,6 +97,7 @@ do
 	git fetch "$remote" || true
 done <<EOL
 2.6.32.y.33.z git://git.kernel.org/pub/scm/linux/kernel/git/smb/linux-2.6.32.y-drm33.z.git
+linux-stable git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
 EOL
 
 # Update all the remotes in this tree.
@@ -145,6 +146,7 @@ do
 done <<EOL
 drm-2.6 git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
 drm-intel git://git.kernel.org/pub/scm/linux/kernel/git/ickle/drm-intel
+debloat-testing git://git.infradead.org/debloat-testing.git
 EOL
 
 date="`date +%F`"
@@ -170,6 +172,7 @@ LINUS		linus/master			999	daily
 DRM-INTEL-NEXT	drm-intel/drm-intel-next	997	drm-intel-next
 DRM-NEXT	drm-2.6/drm-next		996	drm-next
 DRM-INTEL-NEXT-PROPOSED	drm-intel/drm-intel-next-proposed 994 drm-intel-next-proposed
+DEBLOAT-TESTING	debloat-testing/master		993	debloat-testing
 EOL
 # Also allocated
 # 995: sconklin -- wayland

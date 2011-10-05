@@ -43,6 +43,13 @@ class NewHandsOff(BugHandler):
                 Dbg.why('kernel-cve-tracking-bug tag exists\n')
                 break
 
+            # A bug that is filed for a particular upstream stable release.
+            #
+            if 'kernel-stable-tracking-bug' in bug.tags:
+                retval = False
+                Dbg.why('kernel-stable-tracking-bug tag exists\n')
+                break
+
             # A bug that is used for workflow processes and is part of the kernel
             # stable teams workflow.
             #
