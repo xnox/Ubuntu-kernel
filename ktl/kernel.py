@@ -84,6 +84,12 @@ class Kernel:
                         if 'EXTRAVERSION' in line:
                             variable, value = line.split('=')
                             extraversion = value.strip()
+                            if extraversion == '':
+                                # not used, just need to set something to continue
+                                extraversion = 'XXX'
+                            # for 3.0 and after, sublevel takes the meaning of what was extraversion
+                            if int(version) >= 3:
+                                sublevel = '0'
                             cls.__version = version + '.' + patchlevel + '.' + sublevel
 
                             ubuntu = Ubuntu()
