@@ -1,3 +1,10 @@
+linux-meta (2.6.35.30.39) maverick; urgency=low
+
+  * Added compat-wireless-2.6.39
+    -LP: #806597
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 06 Oct 2011 11:32:26 -0600
+
 linux-meta (2.6.35.30.38) maverick-proposed; urgency=low
 
   * Bump ABI - Maverick ABI 30
