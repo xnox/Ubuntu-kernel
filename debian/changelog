@@ -1,3 +1,12 @@
+linux-backports-modules-2.6.35 (2.6.35-30.23) maverick; urgency=low
+
+  [ Tim Gardner ]
+
+  * Added compat-wireless 2.6.39
+    - LP: #806597
+
+ --  Tim Gardner <tim.gardner@canonical.com>  Thu, 06 Oct 2011 11:22:52 -0600
+
 linux-backports-modules-2.6.35 (2.6.35-30.22) maverick-proposed; urgency=low
 
   [ Herton Ronaldo Krzesinski ]
