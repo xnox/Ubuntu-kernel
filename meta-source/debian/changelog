@@ -1,3 +1,14 @@
+linux-meta (3.0.0.12.14) oneiric; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Add linux-image-extra-virtual meta package
+    - LP: #869220
+  * Re-enable linux-backports-modules 
+    - LP: #869224
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 06 Oct 2011 06:49:26 -0700
+
 linux-meta (3.0.0.12.13) oneiric; urgency=low
 
   [ Leann Ogasawara ]
