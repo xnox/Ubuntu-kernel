@@ -1,3 +1,9 @@
+linux-meta (2.6.32.35.41) lucid-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 10 Oct 2011 15:41:10 -0300
+
 linux-meta (2.6.32.34.40) lucid-proposed; urgency=low
 
   [ Tim Gardner ]
