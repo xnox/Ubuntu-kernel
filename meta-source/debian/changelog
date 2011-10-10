@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.32.35.27) lucid-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 10 Oct 2011 15:52:04 -0300
+
 linux-ports-meta (2.6.32.34.26) lucid-proposed; urgency=low
 
   * Bump ABI
