@@ -21,7 +21,7 @@ cd ${WORK_DIR}
 
 if [ ! -d ${MIRROR_REPO_PATH} ]
 then
-	git clone ${SOURCE_REPO_HOST}/${MIRROR_REPO_PATH}.git || exit 1
+	git clone ${MIRROR_REPO_HOST}/${MIRROR_REPO_PATH}.git || exit 1
 fi
 
 cd ${MIRROR_REPO_PATH}
