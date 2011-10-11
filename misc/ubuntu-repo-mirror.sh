@@ -11,7 +11,7 @@
 MIRROR_REPO_PATH=Ubuntu-kernel
 MIRROR_REPO_HOST=git@github.com:Canonical-kernel
 SOURCE_REPO_HOST=git://kernel.ubuntu.com/ubuntu
-RELEASES="hardy lucid maverick natty oneiric"
+RELEASES="hardy lucid maverick natty oneiric precise"
 WORK_DIR=~/ubuntu-repo-mirror
 REMOTE=ubuntu
 
