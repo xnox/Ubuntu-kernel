@@ -1,0 +1,182 @@
+body {
+       background: #FFFFFF;
+            color: #000000;
+      font-family: 'Cantarell', serif;
+        font-size: 12px;
+
+    /*  background: #003333; /* FIXME bjf - just ising this background color for debugging */
+    /* font-family: 'Josefin Sans Std Light', serif; */
+    /* font-family: 'Molengo', serif; */
+    /* font-family: 'Neuton', serif; */
+    /* font-family: 'PT Sans', serif; */
+}
+
+a:link    { color:#009900; }
+a:visited { color:#0000ff; }
+a:active  { color:#FF0000; }
+a:hover   { color:#00CCFF; }
+
+.outermost {
+           margin: 0px 20px 0px 20px;
+          padding: none;
+}
+
+/* -------------------------------------------------------------------------------
+*/
+.title {
+        font-size: 26px;
+   letter-spacing: -2px;
+            color: #000000;
+       text-align: center;
+          padding: 2px 0px 20px 0px;
+}
+
+h1 {
+      font-weight: bold;
+        font-size: 20px;
+       /*background: none repeat scroll 0 0 #333333;*/
+          padding: 2px 0px 2px 0px;
+}
+
+code {
+            font: 13px/1.231 arial,helvetica,clean,sans-serif;
+}
+
+/* -------------------------------------------------------------------------------
+*/
+/* border-style: solid;   */
+/* border-width: 1px;     */
+/* border-color: #ff4500; */  /* Vibrant orange */
+/* border-color: #ffff00; */  /* Yellow         */
+/* border-color: #ff0000; */  /* Red            */
+/* border-color: #00ff00; */  /* Lime green     */
+/* border-color: #ff4500; */  /* Vibrant orange */
+/* border-color: #0099ff; */  /* Electric Blue  */
+
+.l1-section-heading {
+      font-weight: bold;
+        font-size: 20px;
+          padding: 2px 0px 2px 0px;
+           margin: 2px 0px 20px 0px;
+    border-bottom: 4px solid #1d89c8;
+}
+
+.l2-section-heading {
+      font-weight: bold;
+        font-size: 16px;
+          padding: 2px 0px 2px 0px;
+    border-bottom: 2px solid #1d89c8;
+}
+
+.section {
+           margin: 2px 0px 20px 0px;
+}
+
+.section .table-heading {
+      font-weight: bold;
+        font-size: 20px;
+          padding: 2px 0px 2px 0px;
+}
+
+.section-heading {
+      font-weight: bold;
+        font-size: 16px;
+          padding: 2px 0px 2px 0px;
+    border-bottom: 2px solid #1d89c8;
+}
+
+.section .heading {
+      font-weight: bold;
+        font-size: 16px;
+       background: none repeat scroll 0 0 #333333;
+          padding: 2px 0px 2px 0px;
+}
+
+.importance-unknown   { font-weight: bold; color: #c0c0c0; }
+.importance-critical  { font-weight: bold; color: #ff0000; }
+.importance-high      { font-weight: bold; color: #ff00ff; }
+.importance-medium    { font-weight: bold; color: #008000; }
+.importance-low       { font-weight: bold; color: #0000a0; }
+.importance-wishlist  { font-weight: bold; color: #000000; }
+.importance-undecided { font-weight: bold; color: #c0c0c0; }
+
+.status-new           { font-weight: bold; color: #000000; }
+.status-incomplete    { font-weight: bold; color: #ff0000; }
+.status-confirmed     { font-weight: bold; color: #808000; }
+.status-triaged       { font-weight: bold; color: #008000; }
+.status-in_progress   { font-weight: bold; color: #ff00ff; }
+.status-fix_committed { font-weight: bold; color: #0000a0; }
+.status-fix_released  { font-weight: bold; color: #000000; }
+.status-invalid       { font-weight: bold; color: #000000; }
+.status-wont_fix      { font-weight: bold; color: #000000; }
+.status-opinion       { font-weight: bold; color: #000000; }
+.status-expired       { font-weight: bold; color: #000000; }
+.status-unknown       { font-weight: bold; color: #000000; }
+
+.series-name          { color: #000000; }
+
+.date-age-1           { color: #000000; }
+.date-age-2           { color: #000000; }
+
+.bug-title            { color: #000000; }
+
+/* -------------------------------------------------------------------------------
+** Kernel SRU Workflow
+*/
+.ksw-new           { color: #0099ff; }
+.ksw-incomplete    { color: #ffff22; }
+.ksw-confirmed     { color: #ff4500; }
+.ksw-triaged       { color: #33ff11; }
+.ksw-in_progress   { color: #ff00ff; }
+.ksw-fix_committed { color: #ffffff; }
+.ksw-fix_released  { color: #006600; }
+.ksw-invalid       { color: #909090; }
+.ksw-wont_fix      { color: #ffffff; }
+.ksw-opinion       { color: #ffffff; }
+.ksw-expired       { color: #ffffff; }
+.ksw-unknown       { color: #ffffff; }
+
+/* -------------------------------------------------------------------------------
+*/
+tr.table-zebra-odd  { background-color: #ffffff; }
+tr.table-zebra-even { background-color: #f8f8f8; }
+
+/* tables */
+table.tablesorter {
+         font-family: arial;
+    background-color: #d8d8d8;  /* Table cell border. */
+              margin: 10px 0pt 15px;
+           font-size: 8pt;
+               width: 100%;
+          text-align: left;
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+    background-color: #c8c8c8;  /* Table column heder, background (non-sorted). */
+           font-size: 8pt;
+             padding: 4px;
+}
+table.tablesorter thead tr .header {
+    background-image: url(bg-light.gif);
+   background-repeat: no-repeat;
+ background-position: center right;
+              cursor: pointer;
+}
+table.tablesorter tbody td {
+             padding: 4px;
+    background-color: #FFF;
+      vertical-align: top;
+}
+table.tablesorter tbody tr.odd td {
+    background-color: #f8f8f8;  /* Odd row, background. (zebra plugin) */
+}
+table.tablesorter thead tr .headerSortUp {
+    background-image: url(asc-light.gif);
+}
+table.tablesorter thead tr .headerSortDown {
+    background-image: url(desc-light.gif);
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+    background-color: #a8a8a8;  /* Table column header, background (sorted). */
+}
+
+/* vi:set ts=4 sw=4 expandtab: */
