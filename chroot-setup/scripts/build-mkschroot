@@ -112,7 +112,7 @@ case $SUITE in
 		esac
 		;;
 	natty|oneiric)
-		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc"
+		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
 			i386|amd64)
