@@ -154,12 +154,12 @@ class SruReport:
         suite_keys.sort()
         for rls in suite_keys:
             if len(self.data['releases'][rls]) == 0:
-                retval += "                    <div class=\"section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls
+                retval += "                    <div class=\"l2-section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls
             else:
                 pkg_keys = self.data['releases'][rls].keys()
                 pkg_keys.sort()
 
-                retval += "                <div class=\"section-heading\">%s</div>\n" % rls
+                retval += "                <div class=\"l2-section-heading\">%s</div>\n" % rls
                 retval += '            <div class="section">\n'
                 retval += '                    <table width="100%">\n'
                 retval += "                        <!--\n"
