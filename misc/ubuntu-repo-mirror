@@ -1,0 +1,70 @@
+#!/bin/make
+#
+# This makefile mirrors git repositories from zinc.canonical.com onto github.com.
+# This assumes that the account running this makefile has the keys from
+# kernel-ppa@canonical.com. You must also use some .ssh/config magic:
+#
+# Host github.com
+#    IdentityFile /home/timg/.ssh/kernel_ppa_rsa
+#
+
+MIRROR_REPO_NAME=Ubuntu-kernel
+MIRROR_REPO_HOST=git@github.com:Canonical-kernel
+SOURCE_REPO_HOST=git://kernel.ubuntu.com/ubuntu
+RELEASES="hardy lucid maverick natty oneiric precise"
+REMOTE=ubuntu
+
+REPOS += linux-firmware
+REPOS += ubuntu-debian
+REPOS += ubuntu-hardy
+REPOS += ubuntu-hardy-lbm
+REPOS += ubuntu-hardy-lrm
+REPOS += ubuntu-hardy-lum
+REPOS += ubuntu-hardy-meta
+REPOS += ubuntu-lucid
+REPOS += ubuntu-lucid-lbm
+REPOS += ubuntu-lucid-meta
+REPOS += ubuntu-maverick
+REPOS += ubuntu-maverick-lbm
+REPOS += ubuntu-maverick-meta
+REPOS += ubuntu-natty
+REPOS += ubuntu-natty-lbm
+REPOS += ubuntu-natty-meta
+REPOS += ubuntu-oneiric
+REPOS += ubuntu-oneiric-lbm
+REPOS += ubuntu-oneiric-meta
+REPOS += ubuntu-precise
+REPOS += wireless-crda
+
+all: repo
+
+$(MIRROR_REPO_NAME)/Makefile:
+	git clone $(MIRROR_REPO_HOST)/$(MIRROR_REPO_NAME).git
+
+CMRN += cd $(MIRROR_REPO_NAME)
+
+$(REPOS): $(MIRROR_REPO_NAME)/Makefile
+	($(CMRN); git checkout -f master)
+	#
+	# Clean out all remotes so that fetches get all new branches.
+	#
+	($(CMRN); git remote show | grep -v origin | while read r; do git remote rm $$r; done;)
+	#
+	# Drop all local branches except master
+	#
+	($(CMRN); for i in `git branch -a | grep -v remotes | egrep -v "^\*[ \t]*master"`; do git branch -D $${i}; done;)
+	#
+	# Replicate the branches in each repository, substituting '/' for '-' since
+	# github doesn't seem to support branch names of the form RELEASE/master. It really
+	# wants something like RELEASE-master.
+	#
+	($(CMRN); git remote add $@ ${SOURCE_REPO_HOST}/$@.git;)
+	($(CMRN); git fetch $@; )
+	($(CMRN); for j in `git branch -a | egrep "remotes\/$@"|grep -v origin|sed "s;remotes\/$@\/;;"` ; \
+        do \
+                git branch $@-$${j} remotes/$@/$${j}; \
+                git push origin +$@-$${j}; \
+        done; )
+
+repo: $(REPOS)
+	($(CMRN); git push origin --tags; )
