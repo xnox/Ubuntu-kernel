@@ -31,7 +31,7 @@ def get_branches(series):
 
 
 def tag_to_abi_range(tag):
-    m = re.search('-2\.6\.\d+-(\d+)\.\d+', tag)
+    m = re.search('-\d+\.\d+\.\d+-(\d+)\.\d+', tag)
     if not m:
         return None
 
@@ -62,7 +62,7 @@ def get_branch_abi_range(series, branch):
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     changelog = p.communicate()[0]
 
-    m = re.search("^[^\s]+\s+\(2\.6\.\d+-(\d+)\.\d+", changelog)
+    m = re.search("^[^\s]+\s+\(\d+\.\d+\.\d+-(\d+)\.\d+", changelog)
     if not m:
         return None
 
@@ -86,7 +86,7 @@ def get_tags_list(series, branch, abi):
            not tag.startswith('Linaro-2')):
             continue
 
-        m = re.search('.*-(2\.6\.\d+-.*)', tag)
+        m = re.search('.*-(\d+\.\d+\.\d+-.*)', tag)
         if m:
             version = m.group(1)
         else:
