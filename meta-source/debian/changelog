@@ -1,3 +1,9 @@
+linux-meta-fsl-imx51 (2.6.31.611.11) lucid-proposed; urgency=low
+
+  * Bump linux-fsl-imx51 ABI to 611
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 13 Oct 2011 13:08:13 -0300
+
 linux-meta-fsl-imx51 (2.6.31.610.10) lucid-proposed; urgency=low
 
   * Bump linux-fsl-imx51 ABI to 610
