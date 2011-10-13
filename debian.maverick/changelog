@@ -1,9 +1,58 @@
-linux-lts-backport-maverick (2.6.35-30.60~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-maverick (2.6.35-30.61~lucid1) lucid-proposed; urgency=low
 
   [Herton R. Krzesinski]
 
   * Release Tracking Bug
-    - LP: #854430
+    - LP: #872660
+
+  [ Stefan Bader ]
+
+  * [Config] Include all filesystem modules for virtual
+    - LP: #761809
+
+  [ Upstream Kernel Changes ]
+
+  * crypto: Move md5_transform to lib/md5.c, CVE-2011-3188
+    - LP: #834129
+    - CVE-2011-3188
+  * net: Compute protocol sequence numbers and fragment IDs using MD5,
+    CVE-2011-3188
+    - LP: #834129
+    - CVE-2011-3188
+  * ext4: Fix max file size and logical block counting of extent format
+    file, CVE-2011-2695
+    - LP: #819574
+    - CVE-2011-2695
+  * cifs: add fallback in is_path_accessible for old servers, CVE-2011-3363
+    - LP: #866034
+    - CVE-2011-3363
+  * Make TASKSTATS require root access, CVE-2011-2494
+    - LP: #866021
+    - CVE-2011-2494
+  * proc: restrict access to /proc/PID/io, CVE-2011-2495
+    - LP: #866025
+    - CVE-2011-2495
+  * proc: fix a race in do_io_accounting(), CVE-2011-2495
+    - LP: #866025
+    - CVE-2011-2495
+  * inotify: fix double free/corruption of stuct user
+    - LP: #869203
+    - CVE-2011-1479
+  * staging: comedi: fix infoleak to userspace, CVE-2011-2909
+    - LP: #869261
+    - CVE-2011-2909
+  * perf tools: do not look at ./config for configuration, CVE-2011-2905
+    - LP: #869259
+    - CVE-2011-2905
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 13 Oct 2011 14:45:27 -0300
+
+linux (2.6.35-30.60) maverick-proposed; urgency=low
+
+  [Herton R. Krzesinski]
+
+  * Release Tracking Bug
+    - LP: #854092
 
   [ Stefan Bader ]
 
@@ -64,7 +113,7 @@ linux-lts-backport-maverick (2.6.35-30.60~lucid1) lucid-proposed; urgency=low
     - LP: #844361
     - CVE-2011-1576
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 20 Sep 2011 11:03:51 -0300
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 19 Sep 2011 15:10:43 -0300
 
 linux (2.6.35-30.59) maverick-proposed; urgency=low
 
