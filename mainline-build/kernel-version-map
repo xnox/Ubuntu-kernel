@@ -24,7 +24,7 @@ def get_branches(series):
             branch = line
         branch = branch.strip()
         # master-next is the key branch, so ignore master.
-        if branch != 'master' or branch.startswith('Ubuntu-'):
+        if branch != 'master' or not branch.startswith('Ubuntu-'):
             branches.append(branch)
 
     return branches
