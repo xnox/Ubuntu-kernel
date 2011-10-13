@@ -131,10 +131,8 @@ class SruReport:
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
         <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
-        <link title="dark" rel="stylesheet" href="css/themes/bjf/style.css" type="text/css" media="print, projection, screen" />
-        <link title="dark" rel="stylesheet" href="css/dark.css" type="text/css" media="print, projection, screen" />
-        <link title="light" rel="stylesheet" href="css/themes/blue/style.css" type="text/css" media="print, projection, screen" />
-        <link title="light" rel="stylesheet" href="css/light.css" type="text/css" media="print, projection, screen" />
+        <link title="light" rel="stylesheet" href="css/light-style.css" type="text/css" media="print, projection, screen" />
+        <link title="dark" rel="stylesheet" href="css/dark-style.css" type="text/css" media="print, projection, screen" />
         <script type="text/javascript" src="js/styleswitcher.js"></script>
     </head>
         '''
@@ -148,8 +146,7 @@ class SruReport:
     def body(self):
         retval =  '''
     <body class="bugbody">
-        <div class="outermost">
-            <div class="section">'''
+        <div class="outermost">'''
         retval += '\n'
 
         trackers_only_packages = ['linux-lts-backport-maverick', 'linux-lts-backport-natty', 'linux-lts-backport-oneiric']
@@ -157,12 +154,13 @@ class SruReport:
         suite_keys.sort()
         for rls in suite_keys:
             if len(self.data['releases'][rls]) == 0:
-                retval += "                    <h1>%s</h1>\n                    No packages in proposed.\n" % rls
+                retval += "                    <div class=\"l2-section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls
             else:
                 pkg_keys = self.data['releases'][rls].keys()
                 pkg_keys.sort()
 
-                retval += "                <h1>%s</h1>\n" % rls
+                retval += "                <div class=\"l2-section-heading\">%s</div>\n" % rls
+                retval += '            <div class="section">\n'
                 retval += '                    <table width="100%">\n'
                 retval += "                        <!--\n"
                 retval += "                        <tr><th>Package</th><th>-release</th><th>-updates</th><th>-proposed</th><th>&nbsp;</th><th>days</th></tr>\n"
@@ -287,8 +285,8 @@ class SruReport:
                         retval += '                       </tr>\n'
 
                 retval += '                   </table>\n'
+                retval += '            </div>\n'
 
-        retval += '            </div>\n'
         retval += '            <div>\n'
         retval += '                <br />\n'
         retval += '                <hr />\n'

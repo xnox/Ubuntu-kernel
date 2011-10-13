@@ -131,10 +131,10 @@ class SruReport:
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js" type="text/javascript" charset="utf-8"></script>
 
         <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
-        <link title="dark" rel="stylesheet" href="css/themes/bjf/style.css" type="text/css" media="print, projection, screen" />
-        <link title="dark" rel="stylesheet" href="css/dark.css" type="text/css" media="print, projection, screen" />
-        <link title="light" rel="stylesheet" href="css/themes/blue/style.css" type="text/css" media="print, projection, screen" />
-        <link title="light" rel="stylesheet" href="css/light.css" type="text/css" media="print, projection, screen" />
+
+        <link title="light" rel="stylesheet" href="css/light-style.css" type="text/css" media="print, projection, screen" />
+        <link title="dark" rel="stylesheet" href="css/dark-style.css" type="text/css" media="print, projection, screen" />
+
         <script type="text/javascript" src="js/styleswitcher.js"></script>
 
     </head>
@@ -149,8 +149,7 @@ class SruReport:
     def body(self):
         retval =  '''
     <body class="bugbody">
-        <div class="outermost">
-            <div class="section">'''
+        <div class="outermost">'''
         retval += '\n'
 
         trackers_only_packages = ['linux-lts-backport-maverick']
@@ -158,26 +157,27 @@ class SruReport:
         suite_keys.sort()
         for rls in suite_keys:
             if len(self.data['releases'][rls]) == 0:
-                retval += "                    <h1>%s</h1>\n                    No packages in proposed.\n" % rls
+                retval += "                    <div class=\"l2-section-heading\">%s</div>\n<div class=\"section\">                    No packages in proposed.</div>\n" % rls
             else:
                 pkg_keys = self.data['releases'][rls].keys()
                 pkg_keys.sort()
                 odd_row = False
 
-                retval += "                <h1>%s</h1>\n" % rls
+                retval += "            <div class=\"l2-section-heading\">%s</div>\n" % rls
+                retval += '            <div class=\"section\">\n'
                 retval += '                    <table width="100%" cellpadding="2" cellspacing="0">\n'
                 retval += '                        <tr><th>Package</th><th align="left">PPA</th><th align="left">Release</th><th align="left">Updates</th><th align="left">Proposed</th><th align="left">&nbsp;</th></tr>\n'
                 for pkg in pkg_keys:
                     if odd_row:
-                        row_color = '1b1b1b'
+                        row_color = 'table-zebra-odd'
                         odd_row   = False
                     else:
-                        row_color = '000000'
+                        row_color = 'table-zebra-even'
                         odd_row   = True
 
                     lpurl = 'https://launchpad.net/ubuntu/%s/+source/%s/' % (rls, pkg)
                     ppaurl = 'https://launchpad.net/~canonical-kernel-team/+archive/ppa/+packages'
-                    retval += '                        <tr bgcolor="%s">\n' % (row_color)
+                    retval += '                        <tr class="%s">\n' % (row_color)
                     retval += '                            <td width="400" valign="top"><a href="%s"        >%s  </a></td>\n' % (lpurl, pkg)
 
                     # ppa
@@ -219,8 +219,8 @@ class SruReport:
 
                 retval += '                   </table>\n'
                 retval += '                   <br />\n'
+                retval += '            </div>\n'
 
-        retval += '            </div>\n'
         retval += '            <div>\n'
         retval += '                <br />\n'
         retval += '                <hr />\n'

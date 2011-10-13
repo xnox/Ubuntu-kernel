@@ -184,11 +184,8 @@ class RegressionsReport():
         retval += '        <title>%s</title>\n' % (self.db['report']['title'])
 
         retval += '''
-        <link title="dark" rel="stylesheet" href="css/themes/bjf/style.css" type="text/css" media="print, projection, screen" />
-        <link title="dark" rel="stylesheet" href="css/dark.css" type="text/css" media="print, projection, screen" />
-
-        <link title="light" rel="stylesheet" href="css/themes/blue/style.css" type="text/css" media="print, projection, screen" />
-        <link title="light" rel="stylesheet" href="css/light.css" type="text/css" media="print, projection, screen" />
+        <link title="light" rel="stylesheet" href="css/light-style.css" type="text/css" media="print, projection, screen" />
+        <link title="dark" rel="stylesheet" href="css/dark-style.css" type="text/css" media="print, projection, screen" />
 
         <script type="text/javascript" src="js/styleswitcher.js"></script>
 

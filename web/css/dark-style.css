@@ -1,0 +1,203 @@
+body {
+       background: #000000;
+            color: #ddd;
+      font-family: 'Cantarell', serif;
+        font-size: 12px;
+
+    /*  background: #003333; /* FIXME bjf - just ising this background color for debugging */
+    /* font-family: 'Josefin Sans Std Light', serif; */
+    /* font-family: 'Molengo', serif; */
+    /* font-family: 'Neuton', serif; */
+    /* font-family: 'PT Sans', serif; */
+}
+
+a:link    { color:#00CC00; }
+a:visited { color:#009900; }
+a:active  { color:#FF0000; }
+a:hover   { color:#00CCFF; }
+
+.outermost {
+           margin: 0px 20px 0px 20px;
+          padding: none;
+}
+
+/* -------------------------------------------------------------------------------
+*/
+.title {
+      font-weight: bold;
+        font-size: 20px;
+            color: #ff4500;  /* Vibrant orange */
+       text-align: center;
+          padding: 2px 0px 20px 0px;
+}
+
+h1 {
+      font-weight: bold;
+        font-size: 20px;
+       background: none repeat scroll 0 0 #333333;
+          padding: 2px 0px 2px 0px;
+}
+
+code {
+            font: 13px/1.231 arial,helvetica,clean,sans-serif;
+}
+
+/* -------------------------------------------------------------------------------
+*/
+/* border-style: solid;   */
+/* border-width: 1px;     */
+/* border-color: #ff4500; */  /* Vibrant orange */
+/* border-color: #ffff00; */  /* Yellow         */
+/* border-color: #ff0000; */  /* Red            */
+/* border-color: #00ff00; */  /* Lime green     */
+/* border-color: #ff4500; */  /* Vibrant orange */
+/* border-color: #0099ff; */  /* Electric Blue  */
+
+.l1-section-heading {
+      font-weight: bold;
+        font-size: 20px;
+          padding: 2px 0px 2px 0px;
+           margin: 2px 0px 20px 0px;
+    border-bottom: 4px solid #1d89c8;
+}
+
+.l2-section-heading {
+      font-weight: bold;
+        font-size: 16px;
+          padding: 2px 0px 2px 0px;
+    border-bottom: 2px solid #1d89c8;
+}
+
+.section-heading {
+      font-weight: bold;
+        font-size: 16px;
+          padding: 2px 0px 2px 0px;
+    border-bottom: 2px solid #1d89c8;
+}
+
+.section {
+           margin: 2px 0px 20px 0px;
+}
+
+.section .table-heading {
+      font-weight: bold;
+        font-size: 20px;
+      /* background: none repeat scroll 0 0 #333333;*/
+          padding: 2px 0px 2px 0px;
+}
+
+.section .heading {
+      font-weight: bold;
+        font-size: 16px;
+       background: none repeat scroll 0 0 #333333;
+          padding: 2px 0px 2px 0px;
+}
+
+.section .body {
+}
+
+.importance-unknown   { color: #000000; }
+.importance-critical  { color: #ff4500; }
+.importance-high      { color: #ffff22; }
+.importance-medium    { color: #33ff11; }
+.importance-low       { color: #66ffff; }
+.importance-wishlist  { color: #ffffff; }
+.importance-undecided { color: #000000; }
+
+.status-new           { color: #ffffff; }
+.status-incomplete    { color: #ffff22; }
+.status-confirmed     { color: #66ffff; }
+.status-triaged       { color: #33ff11; }
+.status-in_progress   { color: #ff88ff; }
+.status-fix_committed { color: #000000; }
+.status-fix_released  { color: #000000; }
+.status-invalid       { color: #000000; }
+.status-wont_fix      { color: #000000; }
+.status-opinion       { color: #000000; }
+.status-expired       { color: #000000; }
+.status-unknown       { color: #000000; }
+
+.series-name          { color: #ffffff; }
+
+.date-age-1           { color: #ff0000; }
+.date-age-2           { color: #ffff00; }
+
+.bug-title            { color: #ffffff; }
+
+/* -------------------------------------------------------------------------------
+** Kernel SRU Workflow
+*/
+.ksw-new           { color: #ffffff; }
+.ksw-incomplete    { color: #ffff22; }
+.ksw-confirmed     { color: #ffff22; }
+.ksw-triaged       { color: #33ff11; }
+.ksw-in_progress   { color: #ff88ff; }
+.ksw-fix_committed { color: #000000; }
+.ksw-fix_released  { color: #33ff11; }
+.ksw-invalid       { color: #333333; }
+.ksw-wont_fix      { color: #000000; }
+.ksw-opinion       { color: #000000; }
+.ksw-expired       { color: #000000; }
+.ksw-unknown       { color: #000000; }
+
+/* -------------------------------------------------------------------------------
+*/
+tr.table-zebra-odd  { background-color: #000000; }
+tr.table-zebra-even { background-color: #1b1b1b; }
+
+/* tables */
+table.tablesorter {
+       background: #000000;
+            color: #ffffff;
+	margin:10px 0pt 15px;
+	font-size: 8pt;
+	width: 100%;
+	text-align: left;
+}
+table.tablesorter thead tr th, table.tablesorter tfoot tr th {
+	background-color: #3d3d3d;
+            color: #ffffff;
+	border: 1px solid #000000;
+	font-size: 8pt;
+	padding: 4px;
+}
+table.tablesorter thead tr .header {
+	background-image: url(bg-dark.gif);
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+table.tablesorter tbody td {
+	padding: 4px;
+	background-color: #FFF;
+	vertical-align: top;
+}
+table.tablesorter tbody td a:link {
+     color: #99ff00;   /* Lime green     */
+}
+table.tablesorter tbody td a:hover {
+     color: #00ff00;   /* Lime green     */
+}
+table.tablesorter tbody td a:visited {
+     color: #00ff00;   /* Lime green     */
+}
+table.tablesorter tbody td a:active {
+     color: #00ff00;   /* Lime green     */
+}
+table.tablesorter tbody tr.even td {
+	background-color: #5d5d5d;
+}
+table.tablesorter tbody tr.odd td {
+	background-color: #6e6e6e;
+}
+table.tablesorter thead tr .headerSortUp {
+	background-image: url(asc-dark.gif);
+}
+table.tablesorter thead tr .headerSortDown {
+	background-image: url(desc-dark.gif);
+}
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+background-color: #4d4d4d;
+}
+
+/* vi:set ts=4 sw=4 expandtab: */

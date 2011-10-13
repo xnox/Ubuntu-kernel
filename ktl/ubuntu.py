@@ -20,6 +20,33 @@ class UbuntuError(Exception):
 class Ubuntu:
 
     db = {
+        '12.04' :
+        {
+            'development' : True,        # This is the version that is currently under development
+            'series_version' : '12.04',
+            'kernel'    : '3.2.0',
+            'name'      : 'precise',
+            'supported' : False,
+            # adjust packages when this goes live
+            'packages'  :
+            [
+                'linux',
+                'linux-meta',
+                'linux-ti-omap4',
+                'linux-meta-ti-omap4'
+            ],
+            'dependent-packages' :
+            {
+                'linux' : { 'meta' : 'linux-meta' },
+                'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' }
+            },
+            'derivative-packages' :
+            {
+                'linux' : [ 'linux-ti-omap4' ]
+            },
+            'sha1' : '',
+            'md5' : ''
+        },
         '11.10' :
         {
             'development' : True,        # This is the version that is currently under development
