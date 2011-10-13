@@ -4266,6 +4266,7 @@ EXPORT_SYMBOL vmlinux 0x61eef2c9	_insb
 EXPORT_SYMBOL vmlinux 0x61ffbb9a	macio_register_driver
 EXPORT_SYMBOL vmlinux 0x620ea602	switch_mmu_context
 EXPORT_SYMBOL vmlinux 0x621eee0b	__scm_destroy
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6230013b	blk_queue_update_dma_alignment
 EXPORT_SYMBOL vmlinux 0x623d7182	_chrp_type
 EXPORT_SYMBOL vmlinux 0x624e178e	dm_io_client_destroy
@@ -5939,6 +5940,7 @@ EXPORT_SYMBOL vmlinux 0xe186a232	jbd2_journal_try_to_free_buffers
 EXPORT_SYMBOL vmlinux 0xe1b316e1	kobject_put
 EXPORT_SYMBOL vmlinux 0xe1c338ef	generic_pipe_buf_steal
 EXPORT_SYMBOL vmlinux 0xe1cf3e48	sock_wake_async
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe2304303	mac_map_monitor_sense
 EXPORT_SYMBOL vmlinux 0xe238fc0c	dev_get_flags
 EXPORT_SYMBOL vmlinux 0xe23ae481	blk_iopoll_complete

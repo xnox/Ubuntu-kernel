@@ -4337,6 +4337,7 @@ EXPORT_SYMBOL vmlinux 0x61c54b34	__sk_mem_schedule
 EXPORT_SYMBOL vmlinux 0x61dcdcd3	_lv1_pause
 EXPORT_SYMBOL vmlinux 0x61eef2c9	_insb
 EXPORT_SYMBOL vmlinux 0x61facfe6	wait_for_key_construction
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x623b41a2	inode_permission
 EXPORT_SYMBOL vmlinux 0x6258ff7a	panic_notifier_list
 EXPORT_SYMBOL vmlinux 0x62737e1d	sock_unregister
@@ -6069,6 +6070,7 @@ EXPORT_SYMBOL vmlinux 0xe18510e5	scsi_device_resume
 EXPORT_SYMBOL vmlinux 0xe1aa7c27	ip_mc_dec_group
 EXPORT_SYMBOL vmlinux 0xe1b66e8d	pci_bus_write_config_byte
 EXPORT_SYMBOL vmlinux 0xe1d3f57f	journal_invalidatepage
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe20c3ef3	blk_remove_plug
 EXPORT_SYMBOL vmlinux 0xe20c63e7	_lv1_unmap_device_mmio_region
 EXPORT_SYMBOL vmlinux 0xe21f56da	ilookup5_nowait

@@ -4843,6 +4843,7 @@ EXPORT_SYMBOL vmlinux 0x61b7b126	simple_strtoull
 EXPORT_SYMBOL vmlinux 0x61f7fffe	ilookup5_nowait
 EXPORT_SYMBOL vmlinux 0x62049256	acpi_disable
 EXPORT_SYMBOL vmlinux 0x6223cafb	_raw_spin_unlock_bh
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x622ed307	simple_write_begin
 EXPORT_SYMBOL vmlinux 0x623183e9	ethtool_op_set_sg
 EXPORT_SYMBOL vmlinux 0x62320198	generic_file_aio_read
@@ -6614,6 +6615,7 @@ EXPORT_SYMBOL vmlinux 0xe1761617	security_inet_conn_request
 EXPORT_SYMBOL vmlinux 0xe1a962e1	xfrm_find_acq
 EXPORT_SYMBOL vmlinux 0xe1e1b838	get_write_access
 EXPORT_SYMBOL vmlinux 0xe1f762d0	proc_mkdir
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe203bac5	do_munmap
 EXPORT_SYMBOL vmlinux 0xe2195912	thaw_super
 EXPORT_SYMBOL vmlinux 0xe23ae481	blk_iopoll_complete
