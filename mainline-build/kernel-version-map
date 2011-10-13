@@ -142,7 +142,7 @@ print time.strftime("%H:%M UTC", time.gmtime())
 version_pocket = {}
 
 for series in [
-	  'natty', 'maverick', 'lucid', 'karmic', 'jaunty', 'hardy', 'dapper'
+	  'oneiric', 'natty', 'maverick', 'lucid', 'karmic', 'jaunty', 'hardy', 'dapper'
 	]:
 	series_name = series.capitalize()
 	
