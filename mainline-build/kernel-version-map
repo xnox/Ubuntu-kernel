@@ -10,7 +10,7 @@ tree_base = "/srv/kernel.ubuntu.com/git/ubuntu"
 
 def get_branches(series):
 	branches = list()
-	if series == 'dapper' or series == 'hardy':
+	if series == 'hardy':
 		branches.append('master')
 		return branches
 
@@ -142,7 +142,7 @@ print time.strftime("%H:%M UTC", time.gmtime())
 version_pocket = {}
 
 for series in [
-	  'oneiric', 'natty', 'maverick', 'lucid', 'karmic', 'jaunty', 'hardy', 'dapper'
+	  'oneiric', 'natty', 'maverick', 'lucid', 'karmic', 'jaunty', 'hardy'
 	]:
 	series_name = series.capitalize()
 	
