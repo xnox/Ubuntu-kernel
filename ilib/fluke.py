@@ -29,7 +29,7 @@
 #import serial
 
 from telnetlib          import Telnet
-from time               import sleep
+from time               import sleep, localtime, strftime
 
 class Model():
     def __init__(self, modelname):
@@ -153,6 +153,52 @@ class m8846A():
         id = self.receive()
         return id
 
+    def getCalDate(self):
+        """
+        Return the ID and version information
+        """
+        self.send('CAL:DATE?\r')
+        cd = self.receive()
+        return cd
+
+    def reset(self):
+        """
+        Reset the instrument to power-on state
+        """
+        self.send('*rst\r')
+
+    def selfTest(self):
+        """
+        Perform instrument self test.
+        Returns True if pass, False if fail
+        """
+        self.send('*tst\r')
+        st = self.receive().strip
+        if st == '0':
+            return False
+        elif st == '1':
+            return True
+        else:
+            raise RuntimeError("received unexpected return value of %s from self test" % st)
+
+    def checkStatus(self):
+        """
+        Check to see if anything's set in the status register. Ultimately,
+        probably need to drill down to get details about what happened, but
+        let's see what we need first
+        """
+        rs = ''
+        self.send('*stb?\r')
+        stb = self.receive()
+        chkbits = 8 + 16 + 32
+        return int(stb) & chkbits
+
+    def clearStatus(self):
+        """
+        Clear the status byte summary and all event registers
+        """
+        self.send('*cls\r')
+
     def __boolean(self, value, bit):
         if int(value) & bit:
             rv = '1'
@@ -237,3 +283,86 @@ class m8846A():
         stb = self.receive()
 
         return rs
+
+    def setPanelMsg(self, message):
+        """
+        print a message on the meter front panel
+        """
+        cmd = 'DISP:TEXT "%s"\r' % message.strip()
+        print 'cmd = ', cmd
+        self.send(cmd)
+        return
+
+    def clearPanelMsg(self):
+        """
+        clears the message on the meter front panel
+        """
+        self.send('DISP:TEXT:CLE\r')
+        return
+
+    def getDate(self):
+        """
+        Return meter date
+        """
+        self.send('SYST:DATE?\r')
+        d = self.receive()
+        return d
+
+    def getTime(self):
+        """
+        Return meter time
+        """
+        self.send('SYST:TIME?\r')
+        d = self.receive()
+        return d
+
+    def setDateTime(self):
+        """
+        Sets meter date and time to local system date and time
+        """
+        lt = localtime()
+        datestr = strftime('%m/%d/%Y', lt) # mm/dd/yyyy
+        timestr = strftime('%H:%M:%S', lt) # hh:mm:ss
+        print 'datestr = ', datestr
+        print 'timestr = ', timestr
+        self.send('SYST:DATE %s\r' % datestr)
+        self.send('SYST:TIME %s\r' % timestr)
+        
+        return
+
+
+    def displayOn(self):
+        """
+        Turns the meter front panel on
+        """
+        self.send('DISP ON\r')
+        return
+        
+    def displayOff(self):
+        """
+        Turns the meter front panel off
+        """
+        self.send('DISP OFF\r')
+        return
+
+    def setVoltage(self, mtype, mrange = 'Auto', mresolution = 'MAX', mbandwidth = None):
+        """
+        Set to voltage measurement mode
+        mtype = 'AC' or 'DC'
+        mrange = 'Auto', 'Min', 'Max', or a value
+        mresolution = 'Min', 'Max', or a value
+        mbadnwidth = 3, 20, or 200
+        """
+        mtype = mtype.upper()
+        mrange = mrange.upper()
+        mresolution = mresolution.upper()
+        mbandwidth = mbandwidth.upper()
+        
+        
+        return
+
+    def setCurrent(self):
+        """
+        Set to current measurement mode
+        """
+        return
