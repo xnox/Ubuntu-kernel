@@ -152,3 +152,88 @@ class m8846A():
         self.send('*idn?\r')
         id = self.receive()
         return id
+
+    def __boolean(self, value, bit):
+        if int(value) & bit:
+            rv = '1'
+        else:
+            rv = '0'
+        return rv
+
+    def getStatusDump(self):
+        """
+        Return the ID and version information
+        """
+        rs = ''
+        self.send('*stb?\r')
+        stb = self.receive()
+        rs = rs + 'Status Byte (STB):\n'
+        rs = rs + '    Not Used            0: %s\n' % self.__boolean(stb, 1)
+        rs = rs + '    Not Used            1: %s\n' % self.__boolean(stb, 2)
+        rs = rs + '    Not Used            2: %s\n' % self.__boolean(stb, 4)
+        rs = rs + '    Questionable Data   3: %s\n' % self.__boolean(stb, 8)
+        rs = rs + '    Message Available   4: %s\n' % self.__boolean(stb, 16)
+        rs = rs + '    Standard Event      5: %s\n' % self.__boolean(stb, 32)
+        rs = rs + '    Request Service     6: %s\n' % self.__boolean(stb, 64)
+        rs = rs + '    Not Used            7: %s\n' % self.__boolean(stb, 128)
+
+        self.send('*sre?\r')
+        stb = self.receive()
+        rs = rs + 'Status Byte Enable (SRE):\n'
+        rs = rs + '    Not Used            0: %s\n' % self.__boolean(stb, 1)
+        rs = rs + '    Not Used            1: %s\n' % self.__boolean(stb, 2)
+        rs = rs + '    Not Used            2: %s\n' % self.__boolean(stb, 4)
+        rs = rs + '    Questionable Data   3: %s\n' % self.__boolean(stb, 8)
+        rs = rs + '    Message Available   4: %s\n' % self.__boolean(stb, 16)
+        rs = rs + '    Standard Event      5: %s\n' % self.__boolean(stb, 32)
+        rs = rs + '    Request Service     6: %s\n' % self.__boolean(stb, 64)
+        rs = rs + '    Not Used            7: %s\n' % self.__boolean(stb, 128)
+
+        self.send('*esr?\r')
+        stb = self.receive()
+        rs = rs + 'Standard Event Register (ESR):\n'
+        rs = rs + '    Operation Complete  0: %s\n' % self.__boolean(stb, 1)
+        rs = rs + '    Not Used            1: %s\n' % self.__boolean(stb, 2)
+        rs = rs + '    Query Error         2: %s\n' % self.__boolean(stb, 4)
+        rs = rs + '    Device Error        3: %s\n' % self.__boolean(stb, 8)
+        rs = rs + '    Execution Error     4: %s\n' % self.__boolean(stb, 16)
+        rs = rs + '    Command Error       5: %s\n' % self.__boolean(stb, 32)
+        rs = rs + '    Not Used            6: %s\n' % self.__boolean(stb, 64)
+        rs = rs + '    Power On            7: %s\n' % self.__boolean(stb, 128)
+
+        self.send('*ese?\r')
+        stb = self.receive()
+        rs = rs + 'Standard Event Register Enable (ESE):\n'
+        rs = rs + '    Operation Complete  0: %s\n' % self.__boolean(stb, 1)
+        rs = rs + '    Not Used            1: %s\n' % self.__boolean(stb, 2)
+        rs = rs + '    Query Error         2: %s\n' % self.__boolean(stb, 4)
+        rs = rs + '    Device Error        3: %s\n' % self.__boolean(stb, 8)
+        rs = rs + '    Execution Error     4: %s\n' % self.__boolean(stb, 16)
+        rs = rs + '    Command Error       5: %s\n' % self.__boolean(stb, 32)
+        rs = rs + '    Not Used            6: %s\n' % self.__boolean(stb, 64)
+        rs = rs + '    Power On            7: %s\n' % self.__boolean(stb, 128)
+
+        self.send('STAT:QUES:EVEN?\r')
+        stb = self.receive()
+        rs = rs + 'Questionable Data Event Register:\n'
+        rs = rs + '    Voltage Overload    0: %s\n' % self.__boolean(stb, 1)
+        rs = rs + '    Current Overload    1: %s\n' % self.__boolean(stb, 2)
+        rs = rs + '    Not Used            2: %s\n' % self.__boolean(stb, 4)
+        rs = rs + '    Not Used            3: %s\n' % self.__boolean(stb, 8)
+        rs = rs + '    Not Used            4: %s\n' % self.__boolean(stb, 16)
+        rs = rs + '    Not Used            5: %s\n' % self.__boolean(stb, 32)
+        rs = rs + '    Not Used            6: %s\n' % self.__boolean(stb, 64)
+        rs = rs + '    Not Used            7: %s\n' % self.__boolean(stb, 128)
+        rs = rs + '    Not Used            8: %s\n' % self.__boolean(stb, 256)
+        rs = rs + '    Ohms Overload       9: %s\n' % self.__boolean(stb, 512)
+        rs = rs + '    Not Used           10: %s\n' % self.__boolean(stb, 256)
+        rs = rs + '    Limit Test Fail LO 11: %s\n' % self.__boolean(stb, 512)
+        rs = rs + '    Limit Test Fail HI 12: %s\n' % self.__boolean(stb, 1024)
+        rs = rs + '    Remote Mode        13: %s\n' % self.__boolean(stb, 2048)
+        rs = rs + '    Not Used           14: %s\n' % self.__boolean(stb, 4096)
+        rs = rs + '    Not Used           14: %s\n' % self.__boolean(stb, 8192)
+
+        self.send('STAT:QUES:ENAB?\r')
+        stb = self.receive()
+
+        return rs
