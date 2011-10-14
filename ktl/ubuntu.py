@@ -420,6 +420,43 @@ class Ubuntu:
 
         return retval
 
+    # series where that package-version is found
+    #
+    def series_name(self, package, version):
+        """
+        Return the series name where that package-version is found
+        """
+        if (package == 'linux' or
+            package == 'linux-ti-omap4' or
+            package == 'linux-ec2'):
+            for entry in self.db.itervalues():
+                if version.startswith(entry['kernel']):
+                    return entry['name']
+        if package.startswith('linux-lts-backport'):
+            for entry in self.db.itervalues():
+                if entry['name'] in version:
+                    return entry['name']
+        if package == 'linux-mvl-dove' or package == 'linux-fsl-imx51':
+            version, release = version.split('-')
+            if release:
+                abi, upload = release.split('.')
+                try:
+                    abi_n = int(abi)
+                except ValueError:
+                    abi_n = 0
+                if abi_n:
+                    if package == 'linux-mvl-dove':
+                        if abi_n < 400:
+                            return 'lucid'
+                        else:
+                            return 'maverick'
+                    if package == 'linux-fsl-imx51':
+                        if abi_n < 600:
+                            return 'karmic'
+                        else:
+                            return 'lucid'
+        return None
+
 if __name__ == '__main__':
     ubuntu = Ubuntu()
     db = ubuntu.db
