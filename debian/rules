@@ -8,15 +8,12 @@
 #
 
 ifeq ($(DEBIAN),)
-DEBIAN=debian.fsl-imx51
+DEBIAN=$(shell awk -F= '($$1 == "DEBIAN") { print $$2 }' <debian/debian.env)
 endif
-
-DENV=debian/debian.env
 
 printdebian:
 	@echo "$(DEBIAN)"
 
 # Debian Build System targets
 %:
-	@if [ ! -f $(DENV) ] ; then echo DEBIAN=$(DEBIAN) > $(DENV); chmod +x $(DENV); fi
 	@$(MAKE) --no-print-directory -f $(DEBIAN)/rules $@ DEBIAN=$(DEBIAN)
