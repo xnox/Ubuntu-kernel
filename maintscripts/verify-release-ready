@@ -6,6 +6,7 @@ from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
 from ktl.debian                         import Debian, DebianError
 from ktl.kernel                         import Kernel, KernelError
+from ktl.ubuntu                         import Ubuntu
 from sys                                import argv
 from getopt                             import getopt, GetoptError
 import re
@@ -240,8 +241,10 @@ class VerifyReleaseReady(StdApp):
 
                 # Check: That the release information is correct.
                 #
-                msg = 'release (%s)' % (Kernel.release())
-                if cl1['release'] != Kernel.release():
+                ub = Ubuntu()
+                series = ub.series_name(cl1['package'], cl1['version'])
+                msg = 'release (%s)' % (series)
+                if cl1['release'] != series:
                     self.status(msg, False)
                     self.verbose("expected '%s' but got: '%s'" % (Kernel.release(), cl1['release']))
                     break
