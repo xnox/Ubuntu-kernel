@@ -7,7 +7,6 @@ from ktl.utils                          import stdo, eout
 from ktl.std_app                        import StdApp
 from ktl.debian                         import Debian
 from ktl.ubuntu                         import Ubuntu
-from ktl.workflow                       import Workflow
 from lpltk.LaunchpadService             import LaunchpadService, LaunchpadServiceError
 
 # CmdlineError
@@ -140,9 +139,8 @@ class CreateTrackingBug(StdApp):
             print("version: %s" % self.cfg['version'])
             version = self.cfg['version']
             changelog = Debian.changelog()
-            wf = Workflow()
             ub = Ubuntu()
-            series = wf.expected_series_name(ub.db, changelog[0]['package'], changelog[0]['version'])
+            series = ub.series_name(changelog[0]['package'], changelog[0]['version'])
 
             # Title:
             title = "%s update to %s stable release" % (series.title(), self.cfg['version'])

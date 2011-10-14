@@ -23,7 +23,7 @@ class TrackingBug:
         series_target = None
         series = der_series
         if not der_series:
-            series = wf.expected_series_name(ub.db, package, version)
+            series = ub.series_name(package, version)
         if series:
             lp = self.lp.launchpad
             ubuntu = lp.distributions["ubuntu"]

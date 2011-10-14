@@ -1169,7 +1169,7 @@ class CheckTrackingBugs(StdApp):
                 self.err("Bug title doesn't have the expected package version")
         else:
             pkg_ver = pkg_ver[0]
-            expected_series = self.workflow.expected_series_name(self.ub.db, pkg_name, pkg_ver)
+            expected_series = self.ub.series_name(pkg_name, pkg_ver)
             if not expected_series:
                 stderr.write("** Warning: can't find series for %s %s\n"
                              % (package, version))

@@ -9,7 +9,7 @@ from getopt                             import getopt, GetoptError
 from ktl.utils                          import stdo, date_to_string
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
-from ktl.workflow                       import Workflow, Properties
+from ktl.workflow                       import Properties
 from ktl.tracking_bug                   import TrackingBug
 from lpltk.LaunchpadService             import LaunchpadService
 from datetime                           import datetime
@@ -329,7 +329,6 @@ class Shank(StdApp):
             self.defaults['launchpad_services_root'] = 'qastaging'
         self.lp = LaunchpadService(self.defaults)
         self.ubuntu = Ubuntu()
-        self.wf = Workflow()
 
         # The service.distributions property is a collection of distributions. We
         # pretty much only care about one, 'ubuntu'.
@@ -672,7 +671,7 @@ class Shank(StdApp):
         title = taskobj.bug.title
         pkg_name = re.findall('linux[^:]*', title)[0]
         pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
-        series = self.wf.expected_series_name(self.ubuntu.db, pkg_name, pkg_ver)
+        series = self.ubuntu.series_name(pkg_name, pkg_ver)
         if not series:
             print("ERROR: Can't find series for %s-%s to check %s dependency\n" %
                   (pkg_name, pkg_ver, deptype))
@@ -826,7 +825,7 @@ class Shank(StdApp):
             title = taskobj.bug.title
             pkg_name = re.findall('linux[^:]*', title)[0]
             pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
-            series = self.wf.expected_series_name(self.ubuntu.db, pkg_name, pkg_ver)
+            series = self.ubuntu.series_name(pkg_name, pkg_ver)
             if not series:
                 print("ERROR: Can't find series for %s-%s to get derivatives\n"
                       % (pkg_name, pkg_ver))
