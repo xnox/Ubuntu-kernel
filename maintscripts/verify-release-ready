@@ -278,11 +278,13 @@ class VerifyReleaseReady(StdApp):
             #         I'm loosing up the matching a bit but making sure that what is in the
             #         last commit matches the tag
             #
+            closed = True
             m = re.match('^UBUNTU: (Ubuntu[-\S]*-%s-%s.%s)$' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number']), commit[0])
             msg = 'closing release commit'
             if len(commit) != 1:        # There should only be a single line in the commit
                 self.status(msg, False)
                 self.verbose("too many lines of text")
+                closed = False
             elif m == None:
                 self.status(msg, False)
                 expected = '^UBUNTU: (Ubuntu[-\S]*-%s-%s.%s)$' % (cl1['linux-version'], cl1['ABI'], cl1['upload-number'])
@@ -292,20 +294,22 @@ class VerifyReleaseReady(StdApp):
                 self.status(msg, True)
 
             # Check: Make sure the commit corresponds to the tag.
+            #        Only runs if we have the expected tag.
             #
             # **NOTE: There can be multiple tags associated with the specific commit.
             #
-            tag_found = False
-            msg = 'tag exists on final commit'
-            tags = Git.tags(contains=log['commits'][0]['sha1'])
-            for tag in tags:
-                if tag == expected:
-                    self.status(msg, True)
-                    tag_found = True
-                    break
-            if not tag_found:
-                self.status(msg, False) # the specified commit.
-                self.verbose("unable to find any tag that matched (%s) on the last commit " % (expected))
+            if closed:
+                tag_found = False
+                msg = 'tag exists on final commit'
+                tags = Git.tags(contains=log['commits'][0]['sha1'])
+                for tag in tags:
+                    if tag == expected:
+                        self.status(msg, True)
+                        tag_found = True
+                        break
+                if not tag_found:
+                    self.status(msg, False) # the specified commit.
+                    self.verbose("unable to find any tag that matched (%s) on the last commit " % (expected))
 
             # Look to see if a tracking bug has been added to the changelog
             #
