@@ -26,6 +26,8 @@
 #from array import *
 #import serial
 
+from time import sleep
+
 from instrument import Instrument
 
 meter = Instrument('fluke', '8846A')
@@ -34,6 +36,38 @@ url = '172.31.0.157'
 port = '3490'
 
 meter.initNet(url, port)
+
 id = meter.getIdent()
 print 'id = ', id.strip()
 
+md = meter.device
+
+cd = md.getCalDate()
+print 'Calibration Date = ', cd.strip()
+
+md.clearStatus()
+
+d = md.getDate()
+print 'meter date = ', d.strip()
+t = md.getTime()
+print 'meter time = ', t.strip()
+
+#md.setDateTime()
+
+# Doesn't work
+#md.selfTest()
+
+#md.displayOff()
+#sleep(1)
+#md.displayOn()
+
+# Doesn't work
+#md.setPanelMsg("Testing")
+#sleep(1)
+#md.clearPanelMsg()
+
+st = md.checkStatus()
+if st:
+    print 'BAD STATUS = %d' % st
+#os = md.getStatusDump()
+#print os
