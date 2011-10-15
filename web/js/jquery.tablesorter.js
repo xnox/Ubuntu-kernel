@@ -793,6 +793,9 @@
                             me, $headers);
                             // rebuild the cache map
                             cache = buildCache(me);
+			    if (me.config.sortList.length > 0) {
+				$this.trigger("sorton", [me.config.sortList]);
+			    }
                         }, 1);
                     }).bind("updateCell", function (e, cell) {
                         var config = this.config;
