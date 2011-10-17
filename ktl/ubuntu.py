@@ -342,6 +342,8 @@ class Ubuntu:
         'linux-backports-modules-2.6.31',
         'linux-backports-modules-2.6.32',
         'linux-backports-modules-2.6.35',
+        'linux-backports-modules-2.6.38',
+        'linux-backports-modules-3.0.0',
 
         'linux-restricted-modules-2.6.15',
         'linux-restricted-modules-2.6.24',
