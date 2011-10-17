@@ -158,10 +158,12 @@ class Ubuntu:
                 'linux-meta-mvl-dove',
                 'linux-meta-fsl-imx51',
                 'linux-backports-modules-2.6.32',
+                'linux-lts-backport-oneiric',
+                'linux-meta-lts-backport-oneiric',
                 'linux-lts-backport-natty',
-                'linux-meta-lts-backport-natty', #, 'linux-lts-backport-natty'
+                'linux-meta-lts-backport-natty',
                 'linux-lts-backport-maverick',
-                'linux-meta-lts-backport-maverick' #, 'linux-lts-backport-natty'
+                'linux-meta-lts-backport-maverick'
             ],
             'dependent-packages' :
             {
@@ -173,6 +175,9 @@ class Ubuntu:
                 'linux-fsl-imx51' : { 'meta' : 'linux-meta-fsl-imx51' },
                 'linux-mvl-dove' : { 'meta' : 'linux-meta-mvl-dove' },
                 'linux-ec2' : { 'meta' : 'linux-meta-ec2' },
+                'linux-lts-backport-oneiric' : {
+                    'meta' : 'linux-meta-lts-backport-oneiric'
+                },
                 'linux-lts-backport-natty' : {
                     'meta' : 'linux-meta-lts-backport-natty'
                 },
@@ -186,6 +191,7 @@ class Ubuntu:
             },
             'backport-packages' :
             {
+                'linux-lts-backport-oneiric' : [ 'linux', '11.10' ],
                 'linux-lts-backport-natty' : [ 'linux', '11.04' ],
                 'linux-lts-backport-maverick' : [ 'linux', '10.10' ],
             },
@@ -344,8 +350,10 @@ class Ubuntu:
 
         'linux-lts-backport-maverick',
         'linux-lts-backport-natty',
+        'linux-lts-backport-oneiric',
         'linux-meta-lts-backport-maverick',
         'linux-meta-lts-backport-natty',
+        'linux-meta-lts-backport-oneiric',
     ]
 
     # lookup
