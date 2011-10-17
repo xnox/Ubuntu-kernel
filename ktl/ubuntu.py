@@ -64,7 +64,10 @@ class Ubuntu:
             ],
             'dependent-packages' :
             {
-                'linux' : { 'meta' : 'linux-meta' },
+                'linux' : { 
+                    'meta' : 'linux-meta',
+                    'lbm'  : 'linux-backports-modules-3.0.0'
+                },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' }
             },
             'derivative-packages' :
