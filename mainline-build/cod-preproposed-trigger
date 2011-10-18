@@ -10,7 +10,9 @@ esac
 
 master_main="$HOME/COD"
 
-master_repo="/srv/kernel.ubuntu.com/git/ubuntu/"
+#master_repo="/srv/kernel.ubuntu.com/git/ubuntu/"
+master_repo="git://kernel.ubuntu.com/ubuntu"
+
 
 #
 # Add and update the upstream repositories as needed.

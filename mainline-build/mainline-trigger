@@ -16,7 +16,8 @@ master_tree="$master_main/linux"
 master_tags="$master_main/upstream"
 tags_list="$master_tags/TAGS"
 
-master_repo="/srv/kernel.ubuntu.com/git/ubuntu/"
+#master_repo="/srv/kernel.ubuntu.com/git/ubuntu"
+master_repo="git://kernel.ubuntu.com/ubuntu"
 
 # Build us a master tree if we do not have one.
 if [ ! -d "$master_tree" ]; then
