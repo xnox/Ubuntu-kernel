@@ -122,7 +122,7 @@ do
 
 	echo "branch<$branch> tip<$tip> prev<$prev>"
 
-	if [ "$tip" != "$prev" ]; then
+	if [ "$tip" != "" -a "$tip" != "$prev" ]; then
 		# Commit the new tip.
 		echo "$tip" >"$curr.new"
 		mv -f "$curr.new" "$curr"
