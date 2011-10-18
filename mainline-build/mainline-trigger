@@ -37,7 +37,7 @@ if ! git remote | grep linus >/dev/null 2>&1; then
 fi
 
 # Pull in all the supported series ...
-for series in hardy lucid maverick oneiric
+for series in hardy lucid maverick natty oneiric
 do
 	series_repo="$master_repo/ubuntu-$series.git"
 	if ! git remote | grep "$series" >/dev/null 2>&1; then
