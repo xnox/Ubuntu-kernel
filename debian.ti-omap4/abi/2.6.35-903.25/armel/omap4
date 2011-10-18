@@ -3053,6 +3053,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	mb_cache_shrink
 EXPORT_SYMBOL vmlinux 0x00000000	mbox_1_info
 EXPORT_SYMBOL vmlinux 0x00000000	mbox_2_info
 EXPORT_SYMBOL vmlinux 0x00000000	mbox_dsp_info
+EXPORT_SYMBOL vmlinux 0x00000000	md5_transform
 EXPORT_SYMBOL vmlinux 0x00000000	mdio_bus_type
 EXPORT_SYMBOL vmlinux 0x00000000	mdiobus_alloc
 EXPORT_SYMBOL vmlinux 0x00000000	mdiobus_free
@@ -3971,6 +3972,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	scsilun_to_int
 EXPORT_SYMBOL vmlinux 0x00000000	search_binary_handler
 EXPORT_SYMBOL vmlinux 0x00000000	secpath_dup
 EXPORT_SYMBOL vmlinux 0x00000000	secure_dccp_sequence_number
+EXPORT_SYMBOL vmlinux 0x00000000	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0x00000000	secure_tcpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0x00000000	security_d_instantiate
 EXPORT_SYMBOL vmlinux 0x00000000	security_file_mmap
