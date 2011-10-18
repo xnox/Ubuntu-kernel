@@ -7,7 +7,7 @@
 # Copyright (c) 2004 Jens Schmalzing <jensen@debian.org>
 #
 
-RELEASE_NAME=oneiric
+RELEASE_NAME=precise
 
 # 5 digit versions (2.6.38.<abi>.<upload>, 3 digit kernel base versions (2.6.38)
 KERNEL_VERSION=$(shell dpkg-parsechangelog | grep ^Version | sed -e \
