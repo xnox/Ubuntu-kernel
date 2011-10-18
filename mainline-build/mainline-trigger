@@ -52,8 +52,6 @@ do
 		echo "*** adding $remote remote ..."
 		git remote add "$remote" "$url"
 	fi
-	echo "*** fetching $remote remote ..."
-	git fetch "$remote" || true
 done <<EOL
 2.6.32.y.33.z git://git.kernel.org/pub/scm/linux/kernel/git/smb/linux-2.6.32.y-drm33.z.git
 linux-stable git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
