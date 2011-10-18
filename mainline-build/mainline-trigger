@@ -44,6 +44,8 @@ do
 		echo "*** adding $series remote ..."
 		git remote add "$series" "$series_repo"
 	fi
+	echo "*** fetching $series remote ..."
+	git fetch "$series" || true
 done
 
 # Special trees we also need but we cannot calculate from the version number.
