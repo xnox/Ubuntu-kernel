@@ -19,6 +19,32 @@ abinum="$3"
 
 build_release="hardy"
 
+slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
+dlist="`dchroot -l 2>/dev/null`,"
+do_chroot()
+{
+	typeset chroot="$1"
+	typeset series
+	typeset cmd
+	shift
+
+	# Some systems use <series> for <series>-amd64, so try both.
+	series="${chroot%-amd64}"
+	case "$slist$dlist" in
+	*\ $chroot[\ ,]*)	;;
+	*\ $series[\ ,]*)	chroot="$series" ;;
+	*)	echo "$chroot: chroot not found ($slist::$dlist)" 1>&2; exit 1 ;;
+	esac
+
+	# Ok we do have the chroot in one of the tools, fire it up.
+	case "$slist" in
+	*\ $chroot[\ ,]*)	cmd='schroot' ;;
+	*)			cmd='dchroot' ;;
+	esac
+	echo -- "$cmd" -c "$chroot" --directory=`pwd` -- "$@"
+	"$cmd" -c "$chroot" --directory=`pwd` -- "$@"
+}
+
 echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
 
 log_enabled=0
@@ -178,9 +204,9 @@ git commit -a -m "debian changelog"
 if [ -f "$here/config.$series" ]; then
 	cp "$here/config.$series" "$debian/config/OVERRIDES"
 fi
-BUILD_CONFIG_OVERRIDE="$here/config.$series"
-dchroot --directory=`pwd` -c "$build_release" \
-	"BUILD_CONFIG_OVERRIDE='$BUILD_CONFIG_OVERRIDE' fakeroot debian/rules clean defaultconfigs"
+#BUILD_CONFIG_OVERRIDE="$here/config.$series"
+do_chroot "$build_release-amd64" \
+	fakeroot debian/rules clean defaultconfigs
 git commit -a -m "default configs"
 
 #
@@ -196,12 +222,12 @@ git clean -x -f -d
 #
 #dpkg-buildpackage -S -sd -rfakeroot -I.git -I.gitignore -i'\.git.*'
 #dpkg-buildpackage -b
-dchroot --directory=`pwd` -c "$build_release" \
-	"fakeroot debian/rules clean"
-dchroot --directory=`pwd` -c "$build_release" \
-	"fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-indep"
-dchroot --directory=`pwd` -c "$build_release" \
-	"fakeroot debian/rules clean"
+do_chroot "$build_release-amd64" \
+	fakeroot debian/rules clean
+do_chroot "$build_release-amd64" \
+	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-indep
+do_chroot "$build_release-amd64" \
+	fakeroot debian/rules clean
 {
 	cat - <<EOM
 	ccache="$CCACHE_DIR"
@@ -216,9 +242,9 @@ EOM
 	fi
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
 EOM
-} | dchroot --directory=`pwd` -c "$build_release" "/bin/bash"
-linux32 dchroot --directory=`pwd` -c "$build_release-i386" \
-	"fakeroot debian/rules clean"
+} | do_chroot "$build_release-amd64" "/bin/bash"
+do_chroot "$build_release-i386" \
+	fakeroot debian/rules clean
 {
 	cat - <<EOM
 	ccache="$CCACHE_DIR"
@@ -233,4 +259,4 @@ EOM
 	fi
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
 EOM
-} | linux32 dchroot --directory=`pwd` -c "$build_release-i386" "/bin/bash"
+} | do_chroot "$build_release-i386" "/bin/bash"
