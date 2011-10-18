@@ -166,7 +166,7 @@ case "${BUILDTARGET}" in
 		if [ ! -z "${CL}" ]; then
 			echo "ACTION=headers" >>$STATUSFILE
 			echo "ACTION=kernel" >>$STATUSFILE
-			dpkg-buildpackage -B ${CL} -us -uc >>$LOG 2>&1
+			dpkg-buildpackage -B ${CL} -us -uc >>$LOG 2>&1 &
 		else
 			echo "ACTION=headers" >>$STATUSFILE
 			fakeroot debian/rules binary-headers \
