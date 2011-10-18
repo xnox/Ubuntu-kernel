@@ -45,47 +45,6 @@ do
 	fi
 done
 
-# We need to pre-fetch linus as we may add new remotes based on
-# its current tip.
-git fetch linus || true
-
-# Work out which stable branch we might need.
-current=`git describe --tags linus/master`
-current="${current%%-*}"
-current="${current#v}"
-
-version_inc()
-{
-	local base="$1"
-	local minor
-
-	minor="${base##*.}"
-	base="${base%.*}"
-
-	if [ "$base" = "2.6" -a "$minor" -eq 39 ]; then
-		base="3"
-		minor=-1
-	fi
-	let "minor = $minor + 1" || true
-
-	RET="$base.$minor"
-}
-
-#wanted="2.6.32"
-#while :; do
-#	stable="$wanted.y"
-#	
-#	if ! git remote | grep "$stable" >/dev/null 2>&1; then
-#		echo "*** adding $stable remote ..."
-#		git remote add "$stable" \
-#			git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-$stable.git
-#	fi
-#	if [ "$wanted" = "$current" ]; then
-#		break
-#	fi
-#	version_inc "$wanted"; wanted="$RET"
-#done
-
 # Special trees we also need but we cannot calculate from the version number.
 while read remote url
 do
