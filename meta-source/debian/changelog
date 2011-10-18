@@ -1,8 +1,9 @@
-linux-meta (3.1.0.1.1) UNRELEASED; urgency=low
+linux-meta (3.1.0.1.1) precise; urgency=low
 
   [ Leann Ogasawara ]
 
   * Open Precise
+  * Temporarily disable lbm
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 18 Oct 2011 11:12:28 -0700
 
