@@ -24,7 +24,7 @@ rm -f "$lock_tmp"
 # Run things in the queue.
 while :
 do
-	job=`ls /home/kernel-ppa/COD/queue | head -1`
+	job=`ls $HOME/COD/queue | head -1`
 	if [ "$job" = '' ]; then
 		break
 	fi
