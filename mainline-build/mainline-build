@@ -2,12 +2,6 @@
 
 set -e
 
-email=''
-if [ "$1" = "--no-email" ]; then
-	email=":"
-	shift
-fi
-
 if [ "$#" -ne 1 -a "$#" -ne 4 ]; then
 	echo "Usage: $0 <tag>" 1>&2
 	echo "Usage: $0 <commit> <abi> <out> <date>" 1>&2
@@ -73,6 +67,3 @@ if [ -f "$master_main/CHANGES" ]; then
 	mv "$master_main/CHANGES" "$html"
 fi
 mv "$master_main"/*.patch "$html"
-
-# All done report this to the kernel-team
-$email "$here/mainline-announce"  "$commit" "$commit-$master_release"
