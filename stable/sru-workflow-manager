@@ -17,6 +17,7 @@ from urllib                             import quote
 from urllib2                            import HTTPError
 from ktl.messaging                      import Email, Status
 import re
+import traceback
 
 # CmdlineError
 #
@@ -845,6 +846,7 @@ class Shank(StdApp):
                             bp_list.append([bp_entry, entry['name']])
             der_bug_list = []
             bp_bug_list = []
+            m_bug_list = []
             msgder =  "This tracking bug was opened to be worked from "
             msgder += "%s-%s update (bug %s)" % (pkg_name, pkg_ver, taskobj.bug.id)
             subder =  "Derivative package tracking bug"
@@ -854,10 +856,17 @@ class Shank(StdApp):
                     self.verbose('Dryrun - Would open tracking bug for derivative package %s\n'
                                  % (der_pkg))
                     continue
-                bug = tb.open(der_pkg, '<version to be filled>', True, series)
-                bug.add_comment(msgder, subder)
-                print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
-                der_bug_list.append([der_pkg, bug.id])
+                try:
+                    bug = tb.open(der_pkg, '<version to be filled>', True, series)
+                except:
+                    traceback.print_exc()
+                    bug = None
+                if bug:
+                    bug.add_comment(msgder, subder)
+                    print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
+                    der_bug_list.append([der_pkg, bug.id])
+                else:
+                    m_bug_list.append('%s' % (der_pkg))
             for bp_pkg in bp_list:
                 if 'dryrun' in self.cfg:
                     self.verbose('Dryrun - Would open tracking bug for backport package %s\n'
@@ -869,10 +878,17 @@ class Shank(StdApp):
                            self.is_prep_pkg_released('prepare-package-lum') and
                            self.is_prep_pkg_released('prepare-package-meta') and
                            self.is_prep_pkg_released('prepare-package-ports-meta'))
-                bug = tb.open(bp_pkg[0], '%s~%s1' % (pkg_ver, bp_pkg[1]), new_abi)
-                print('Opened tracking bug %s for backport package %s (%s)\n'
-                      % (bug.id, bp_pkg[0], bp_pkg[1]))
-                bp_bug_list.append([bp_pkg[0], bp_pkg[1], bug.id])
+                try:
+                    bug = tb.open(bp_pkg[0], '%s~%s1' % (pkg_ver, bp_pkg[1]), new_abi)
+                except:
+                    traceback.print_exc()
+                    bug = None
+                if bug:
+                    print('Opened tracking bug %s for backport package %s (%s)\n'
+                          % (bug.id, bp_pkg[0], bp_pkg[1]))
+                    bp_bug_list.append([bp_pkg[0], bp_pkg[1], bug.id])
+                else:
+                    m_bug_list.append('%s (%s)' % (bp_pkg[0], bp_pkg[1]))
 
             # comment about publishing and possible new tracking bugs opened
             msgbody  = 'All builds are complete, packages in this bug can be'
@@ -887,6 +903,13 @@ class Shank(StdApp):
                 msgbody += ' the following tracking bugs were opened for them:'
                 for pkg_bug in bp_bug_list:
                     msgbody += '\n%s (%s) - bug %s' % (pkg_bug[0], pkg_bug[1], pkg_bug[2])
+            if m_bug_list:
+                msgbody += '\n\nIt was not possible to create or handle the'
+                msgbody += ' tracking bugs for the following packages'
+                msgbody += ' (their tracking bugs based on this update'
+                msgbody += ' must be handled manually):'
+                for ln in m_bug_list:
+                    msgbody += '\n%s' % (ln)
             task = self.taskbyname[self.projectname]
             self.send_comment(task, 'Packages are ready for -proposed', msgbody)
 
