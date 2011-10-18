@@ -13,11 +13,14 @@ commit="$1"
 master_main="$HOME/COD"
 master_tree="$master_main/linux"
 
-master_tags="$master_main/upstream"
+master_tags="$master_main/state/upstream"
 tags_list="$master_tags/TAGS"
 
 #master_repo="/srv/kernel.ubuntu.com/git/ubuntu"
 master_repo="git://kernel.ubuntu.com/ubuntu"
+
+# Ensure our master state exists.
+mkdir -p "$master_tags"
 
 # Build us a master tree if we do not have one.
 if [ ! -d "$master_tree" ]; then
