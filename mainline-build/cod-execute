@@ -36,6 +36,11 @@ do
 	/bin/bash "$jobf"
 	rm -f "$current"
 	echo "$P: complete $job (rc=$?)"
+
+	# HOOL: check if we have a post job publication hook.
+	if [ -e "$HOME/COD/hook-publish" ]; then
+		"$HOME/COD/hook-publish"
+	fi
 	
 	rm -f "$jobf"
 done
