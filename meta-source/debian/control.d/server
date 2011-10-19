@@ -1,17 +1,17 @@
-Package: linux-headers-server-lts-backport-natty
+Package: linux-headers-server-lts-backport-oneiric
 Architecture: amd64 i386
 Section: devel
 Priority: optional
-Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-server [amd64], linux-headers-generic-pae-lts-backport-natty [i386]
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-server [amd64], linux-headers-generic-pae-lts-backport-oneiric [i386]
 Description: Linux kernel headers on Server Equipment.
  This package will always depend on the latest kernel headers available
  for Server Equipment.
 
-Package: linux-image-server-lts-backport-natty
+Package: linux-image-server-lts-backport-oneiric
 Architecture: amd64 i386
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-server [amd64], linux-firmware [amd64], linux-image-generic-pae-lts-backport-natty [i386]
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-server [amd64], linux-firmware [amd64], linux-image-generic-pae-lts-backport-oneiric [i386]
 Description: Linux kernel image on Server Equipment.
  This package will always depend on the latest kernel image available
  for Server Equipment.

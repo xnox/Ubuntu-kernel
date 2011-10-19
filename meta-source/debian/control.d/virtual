@@ -1,4 +1,4 @@
-Package: linux-headers-virtual-lts-backport-natty
+Package: linux-headers-virtual-lts-backport-oneiric
 Architecture: i386 amd64
 Section: devel
 Priority: optional
@@ -7,7 +7,7 @@ Description: Linux kernel headers for virtual machines
  This package will always depend on the latest kernel headers available
  for virtual machines (which are the same headers as for the server flavour).
 
-Package: linux-image-virtual-lts-backport-natty
+Package: linux-image-virtual-lts-backport-oneiric
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional

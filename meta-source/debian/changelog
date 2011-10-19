@@ -1,3 +1,9 @@
+linux-meta-lts-backport-oneiric (3.0.0.13.1) lucid-proposed; urgency=low
+
+  * linux-oneiric 3.0.0-13.21
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 18 Oct 2011 19:30:49 -0200
+
 linux-meta-lts-backport-natty (2.6.38.12.22) lucid-proposed; urgency=low
 
   * linux-natty 2.6.38-12.51
