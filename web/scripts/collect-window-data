@@ -156,6 +156,7 @@ class CollectRegressionsData(StdApp):
         if 'as me' not in self.cfg:
             self.cfg['read_only'] = True
 
+        self.cfg['launchpad_client_name'] = 'kernel-team-bjf-collect-window-data'
         if 'staging' in self.cfg:
             self.cfg['launchpad_services_root'] = 'qastaging'
         self.verbose(" . Connecting to Launchpad\n")
