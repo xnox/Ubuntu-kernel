@@ -37,7 +37,7 @@ do
 
 	echo "$P: $build: publishing ..."
 	if [ -d "$outgoing/$build" ]; then
-		echo "$P: $build: result already published"
+		echo "$P: $build: result already published, removing previous ..."
 		rm -rf "$outgoing/$build"
 	fi
 	announce=0
@@ -81,3 +81,5 @@ done
 
 # We are done.
 rm -f "$lock"
+
+echo "$P: publishing run complete"
