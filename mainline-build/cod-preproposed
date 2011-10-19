@@ -132,6 +132,6 @@ elif [ -d meta-source ]; then
 fi
 
 # Move the upload to the incoming directory.
-mkdir -p "$HOME/public_html/upload/preproposed"
+mkdir -p "$HOME/public_html/upload/pre-proposed"
 mv "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes \
-	"$HOME/public_html/upload/preproposed"
+	"$HOME/public_html/upload/pre-proposed"

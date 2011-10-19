@@ -54,5 +54,30 @@ do
 	fi
 done
 
+# Look for any uploads for various PPAs.
+for ppa in pre-proposed
+do
+	(
+		cd "$incoming/upload/$ppa" || exit 1
+
+		for package in *_source.changes
+		do
+			package=${package%_source.changes}
+			if [ "$package" = "*" ]; then
+				continue
+			fi
+
+			echo "$P: $package: uploading ..."
+
+			# Sign the package we are meant to be uploading.
+			echo "n" | debsign -kkernel-ppa "${package}_source.changes"
+
+			# And upload it.
+			dput "$ppa" ${package}_source.changes && \
+				rm -f "${package}"*
+		done
+	)
+done
+
 # We are done.
 rm -f "$lock"
