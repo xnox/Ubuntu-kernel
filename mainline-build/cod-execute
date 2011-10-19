@@ -31,7 +31,7 @@ do
 	jobf="$queue/$job"
 
 	echo "$P: executing $job ..."
-	echo "$P: `cat '$jobf'`"
+	echo "$P: `cat "$jobf"`"
 	ln -f "$jobf" "$current"
 	/bin/bash "$jobf"
 	rm -f "$current"
