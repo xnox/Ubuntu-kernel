@@ -161,13 +161,14 @@ class CheckTrackingBugs(StdApp):
         A separate initialize that we can control when it gets called (not
         when the object is instantiated).
         """
+        self.cfg['launchpad_client_name'] = 'kernel-team-check-release-tracking-bugs'
         if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'qastaging'
             self.cfg['lpserver'] = 'bugs.qastaging.launchpad.net'
         else:
             self.cfg['lpserver'] = 'bugs.launchpad.net'
         self.workflow = Workflow()
-        self.lp = LaunchpadService(self.defaults)
+        self.lp = LaunchpadService(self.cfg)
         self.project = self.lp.projects['kernel-sru-workflow']
         self.prjname = self.project.display_name
         # TODO: workflow class looks the best place for these:
