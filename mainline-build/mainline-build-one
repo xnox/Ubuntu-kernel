@@ -54,25 +54,33 @@ if [ "$?" -ne 0 ]; then
 	echo "$P: $commit: invalid commit" 1>&2
 	exit 1
 fi
-case "$long" in
-v*-*[0-9]-g*)
-	full_version="${long#v}"
-	full_version="${full_version%-*}"
-	full_version="${full_version%-*}"
-	long_abinum="$full_version${long##*-}"
-	log_enabled=1
-	;;
-v*)
-	full_version="${long#v}"
-	long_abinum="$full_version"
-	log_enabled=1
-	;;
-*)
-	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
-	exit 1
-esac
+#case "$long" in
+#v*-*[0-9]-g*)
+#	full_version="${long#v}"
+#	full_version="${full_version%-*}"
+#	full_version="${full_version%-*}"
+#	long_abinum="$full_version${long##*-}"
+#	log_enabled=1
+#	;;
+#v*)
+#	full_version="${long#v}"
+#	long_abinum="$full_version"
+#	log_enabled=1
+#	;;
+#*)
+#	echo "$P: $commit: mapped to '$long' unable to process" 1>&2
+#	exit 1
+#esac
+full_version=`git cat-file -p "$commit:Makefile" | awk '
+	/^VERSION/	{ version=$3 }
+	/^PATCHLEVEL/	{ patchlevel=$3 }
+	/^SUBLEVEL/	{ sublevel=$3 }
+	/^EXTRAVERSION/	{ extraversion=$3 }
+	END		{ print version "." patchlevel "." sublevel extraversion }
+'`
+
 if [ "$abinum" = "" ]; then
-	abinum="$long_abinum"
+	abinum="$full_version"
 fi
 
 # use the date as an upload number so we can tell different builds apart.
@@ -156,6 +164,10 @@ EOM
 		chmod 755 "$i"
 	fi
 done
+
+# Ensure we do not have any unexpected version tags.
+rm -f localversion-*
+
 # Commit the packaging.
 git commit -a -m "base packaging"
 
