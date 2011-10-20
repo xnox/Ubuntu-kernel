@@ -88,9 +88,13 @@ done
 	do
 		dir=`dirname "$current"`
 		latest=`ls -1 "$dir" | grep -v '^current$' | tail -1`
-	
-		ln -s "$latest" "$current.new"
-		mv "$current.new" "$current"
+
+		is=`readlink "$current"`
+		if [ "$is" != "$latest" ]; then
+			echo "$P: $dir: updating current to $latest"
+			ln -s "$latest" "$current.new"
+			mv "$current.new" "$current"
+		fi
 	done
 )
 # We are done.
