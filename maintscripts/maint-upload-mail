@@ -117,10 +117,11 @@ if updates_version == None:
 #------------------------------------------------------------------------------
 # Extract the ABI numbers (see wheter we got an ABI bump).
 #------------------------------------------------------------------------------
-updates_abi = updates_version.split("-")[1].split(".")[0]
-target_abi = target_version.split("-")[1].split(".")[0]
-if updates_abi != target_abi:
-	opt.bumper = True
+if updates_version:
+	updates_abi = updates_version.split("-")[1].split(".")[0]
+	target_abi = target_version.split("-")[1].split(".")[0]
+	if updates_abi != target_abi:
+		opt.bumper = True
 
 #------------------------------------------------------------------------------
 # Now we stich together the mail message.
