@@ -1,4 +1,5 @@
 #!/bin/bash
+P="mainline-trigger-hourly"
 
 set -e
 
@@ -12,3 +13,5 @@ esac
 # MAINLINE TAGS: tagged versions in mainline trees.
 #
 "$here/cod-tags-trigger"
+
+echo "$P: trigger run complete"

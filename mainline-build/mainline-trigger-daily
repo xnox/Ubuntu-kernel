@@ -1,4 +1,5 @@
 #!/bin/bash
+P="mainline-trigger-daily"
 
 set -e
 
@@ -17,3 +18,5 @@ esac
 # MAINLINE CRACK: tips of various mainline trees.
 #
 "$here/cod-crack-trigger"
+
+echo "$P: trigger run complete"
