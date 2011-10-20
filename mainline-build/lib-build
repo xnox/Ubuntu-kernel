@@ -1,0 +1,78 @@
+#
+# lib-build -- helpers for triggers and build recipies
+#
+master_main="$HOME/COD"
+master_tree="$master_main/linux"
+
+master_state="$master_main/state"
+
+#master_repo="/srv/kernel.ubuntu.com/git/ubuntu"
+master_repo="git://kernel.ubuntu.com/ubuntu"
+
+# Select the master tree, creating it if necessary.
+master_tree_select()
+{
+	# Build us a master tree if we do not have one.
+	if [ ! -d "$master_tree" ]; then
+		echo "$P: creating primary build tree ..."
+		mkdir -p "$master_tree"
+		cd "$master_tree"
+		git init
+	else
+		cd "$master_tree"
+	fi
+}
+
+ubuntu_series="hardy lucid maverick natty oneiric"
+
+# Map remote names to real URLs for use when remotes are missing.
+repo_remote_url()
+{
+	local match="$1"
+	local remote
+	local url
+
+	case " $ubuntu_series " in
+	*\ $remote\ *)
+		RET="$master_repo/ubuntu-$remote.git"; 
+		return
+		;;
+	esac
+
+	while read remote url
+	do
+		[ "$remote" = "$match" ] && break;
+	done <<EORL
+linus		git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+2.6.32.y.33.z	git://kernel.ubuntu.com/smb/linux-2.6.32.y-drm33.z.git
+linux-stable	git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+drm-2.6		git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
+drm-intel	git://git.kernel.org/pub/scm/linux/kernel/git/ickle/drm-intel
+debloat-testing	git://git.infradead.org/debloat-testing.git
+EORL
+	RET="$url"
+}
+
+# Update a specific remote to the latest available, if the remote is missing
+# then add it using the urls above.
+repo_remote_update()
+{
+	local remote="$1"
+	local url
+
+ 	if ! git remote | grep "^$remote$" >/dev/null 2>&1; then
+		repo_remote_url "$remote"; url="$RET"
+ 		echo "$P: adding $remote remote ($url) ..."
+ 		git remote add "$remote" "$url"
+ 	fi
+ 	echo "$P: fetching $remote remote ..."
+ 	git fetch "$remote" || true
+}
+
+repo_remote_update_list()
+{
+	for remote in "$@"
+	do
+		repo_remote_update "$remote"
+	done
+}
