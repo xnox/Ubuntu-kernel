@@ -79,6 +79,20 @@ do
 	)
 done
 
+# Finally re-evaluate any 'current' links.
+(
+	cd "$outgoing" || exit 1
+
+	find . -name current | \
+	while read current
+	do
+		dir=`dirname "$current"`
+		latest=`ls -1 "$dir" | grep -v '^current$' | tail -1`
+	
+		ln -s "$latest" "$current.new"
+		mv "$current.new" "$current"
+	done
+)
 # We are done.
 rm -f "$lock"
 
