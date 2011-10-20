@@ -10,76 +10,17 @@ esac
 
 commit="$1"
 
-. "$here/lib-build"
-
-master_tags="$master_state/upstream"
-tags_list="$master_tags/TAGS"
-
-# Ensure our master state exists.
-mkdir -p "$master_tags"
-
-# We are going to use the master linux build tree.
-master_tree_select
-
-# Pull in all trees containing tags we wish to build.
-repo_remote_update_list $ubuntu_series linus 2.6.32.y.33.z linux-stable
-
 #
 # UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
 #
 "$here/cod-preproposed-trigger"
 
 #
-# UPSTREAM TAGS: Find all the new upstream release tags.
+# MAINLINE TAGS: tagged versions in mainline trees.
 #
-git tag -l >"$tags_list.new"
-
-diff "$tags_list" "$tags_list.new" | \
-	awk '/>/ && $2 ~ /^v/ { print $2 }' | tac >"$tags_list.added"
-
-# Commit the list.
-mv "$tags_list.new" "$tags_list"
-
-# Run the list.
-while read commit
-do
-	"$here/cod-enqueue" "B" "$here/mainline-build" "$commit"
-done <"$tags_list.added"
-
-rm -f "$tags_list.added"
+"$here/cod-tags-trigger"
 
 #
-# UPSTREAM COD: builds of upstream tree tips
+# MAINLINE CRACK: tips of various mainline trees.
 #
-repo_remote_update_list linus drm-2.6 drm-intel debloat-testing
-
-date="`date +%F`"
-while read current branch abi base
-do
-	curr="$master_tags/$current"
-	# Check for upstream crack of the day.
-	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
-	prev=`cat "$curr" 2>/dev/null || true`
-
-	echo "branch<$branch> tip<$tip> prev<$prev>"
-
-	if [ "$tip" != "" -a "$tip" != "$prev" ]; then
-		# Commit the new tip.
-		echo "$tip" >"$curr.new"
-		mv -f "$curr.new" "$curr"
-
-		"$here/cod-enqueue" "C" \
-			"$here/mainline-build" "$tip" "$abi" "$base" "$date"
-	fi
-done <<EOL
-LINUS		linus/master			999	daily
-DRM-INTEL-NEXT	drm-intel/drm-intel-next	997	drm-intel-next
-DRM-NEXT	drm-2.6/drm-next		996	drm-next
-DRM-INTEL-NEXT-PROPOSED	drm-intel/drm-intel-next-proposed 994 drm-intel-next-proposed
-DEBLOAT-TESTING	debloat-testing/master		993	debloat-testing
-EOL
-# Also allocated
-# 995: sconklin -- wayland
-#
-# NOTE: if you add a daily build above ensure it is recorded on the
-# TopicBranches page, and also ensure you add it to the cleanup script.
+"$here/cod-crack-trigger"
