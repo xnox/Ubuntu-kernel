@@ -137,6 +137,7 @@ class CollectRegressionsData(StdApp):
     def __init__(self):
         StdApp.__init__(self)
         self.defaults = {}
+        self.defaults['as-me'] = False
 
     # __initialize
     #
@@ -144,6 +145,8 @@ class CollectRegressionsData(StdApp):
     # when the object is instantiated).
     #
     def __initialize(self):
+        if not self.cfg['as-me']:
+            self.cfg['read_only'] = True
         self.cfg['launchpad_client_name'] = 'kernel-team-bjf-collect-bug-data'
         if 'staging' in self.cfg:
             self.cfg['launchpad_services_root'] = 'qastaging'
