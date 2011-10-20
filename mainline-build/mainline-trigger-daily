@@ -8,17 +8,10 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-commit="$1"
-
 #
 # UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
 #
 "$here/cod-preproposed-trigger"
-
-#
-# MAINLINE TAGS: tagged versions in mainline trees.
-#
-"$here/cod-tags-trigger"
 
 #
 # MAINLINE CRACK: tips of various mainline trees.

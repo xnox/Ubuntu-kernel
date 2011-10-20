@@ -48,7 +48,8 @@ Finally we need to enable the regular triggers and builds by installing
 the following cronjobs:
 
     {{{
-0 04    *   *   *   USER=<username> $HOME/kteam-tools/mainline-build/mainline-trigger >>$HOME/logs/mainline-trigger-`date +\%Y-\%U` 2>&1
+0 04    *   *   *   USER=apw $HOME/kteam-tools/mainline-build/mainline-trigger-daily >>$HOME/logs/mainline-trigger-`date +\%Y-\%U` 2>&1
+30 *    *   *   *   USER=apw $HOME/kteam-tools/mainline-build/mainline-trigger-hourly >>$HOME/logs/mainline-trigger-`date +\%Y-\%U` 2>&1
 15  *    *   *   *   USER=<username> $HOME/kteam-tools/mainline-build/cod-execute >>$HOME/logs/cod-execute-`date +\%Y-\%U` 2>&1
 }}}
 
