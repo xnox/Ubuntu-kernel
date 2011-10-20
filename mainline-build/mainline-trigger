@@ -32,14 +32,8 @@ else
 	cd "$master_tree"
 fi
 
-# Get an updated linus kernel, we always need that.
-if ! git remote | grep linus >/dev/null 2>&1; then
-	echo "*** adding linus remote ..."
-	git remote add linus \
-		git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
-fi
-
-# Pull in all the supported series ...
+# Ensure we have branches for the series we are going to pull configuration
+# etc from.
 for series in hardy lucid maverick natty oneiric
 do
 	series_repo="$master_repo/ubuntu-$series.git"
@@ -58,18 +52,13 @@ do
 		echo "*** adding $remote remote ..."
 		git remote add "$remote" "$url"
 	fi
+	echo "*** fetching $remote remote ..."
+	git fetch "$remote" || true
 done <<EOL
+linus git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 2.6.32.y.33.z git://git.kernel.org/pub/scm/linux/kernel/git/smb/linux-2.6.32.y-drm33.z.git
 linux-stable git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
 EOL
-
-# Update all the remotes in this tree.
-git remote | \
-while read remote
-do
-	echo "*** fetching $remote ..."
-	git fetch "$remote" || true
-done
 
 #
 # UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
@@ -107,6 +96,7 @@ do
 	echo "*** fetching $remote remote ..."
 	git fetch "$remote" || true
 done <<EOL
+linux git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 drm-2.6 git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
 drm-intel git://git.kernel.org/pub/scm/linux/kernel/git/ickle/drm-intel
 debloat-testing git://git.infradead.org/debloat-testing.git
