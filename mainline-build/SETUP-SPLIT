@@ -1,0 +1,96 @@
+= Mainline Build Split Server Setup =
+
+The mainline builds are designed to be split into at least two parts.
+A central publishing server and a build server.  The build server is
+responsible for the monitoring of remote sources and triggering builds
+for those.  The results are then pushed centrally to the publishing server
+which makes them available to consumers and announces them as required.
+
+== Build Server ==
+
+The build server is responsible for two aspects.  Firstly it monitors
+the upstream trees for changes generating appropriate build requests.
+Secondly it executes these build requests to generate complete builds
+ready for publishing.
+
+=== Setup and Configuration ===
+
+The build server has a copy of the kteam-tools installed in the build
+users home directory:
+
+    {{{
+git clone git://kernel.ubuntu.com/ubuntu/kteam-tools
+}}}
+
+Next we will need to pull down the existing build state (to prevent
+retriggering of updates).  This is on the publishing server in
+{{{incoming/state}}} and should be placed in public_html/state and
+symlinked to COD/state:
+
+    {{{
+mkdir -p $HOME/public_html $HOME/COD
+scp -r zinc.ubuntu.com:incoming/state/ $HOME/public_html/state
+ln -s ../public_html/state $HOME/COD/state
+}}}
+
+We also require the publishing hook to be installed, this ensures that
+the final builds are pushed to the publishing server when complete:
+
+    {{{
+ln -s ../kteam-tools/mainline-build/hook-publish $HOME/COD/hook-publish
+}}}
+
+We next need to install the appropriate private key (which will need to be
+obtained from ~apw or a new one generated).  The key should be installed
+as {{{$HOME/.ssh/mainline-publish}}}.
+
+Finally we need to enable the regular triggers and builds by installing
+the following cronjobs:
+
+    {{{
+0 04    *   *   *   USER=<username> $HOME/kteam-tools/mainline-build/mainline-trigger >>$HOME/logs/mainline-trigger-`date +\%Y-\%U` 2>&1
+15  *    *   *   *   USER=<username> $HOME/kteam-tools/mainline-build/cod-execute >>$HOME/logs/cod-execute-`date +\%Y-\%U` 2>&1
+}}}
+
+== Publishing Server ==
+
+At the center of the configuration is the publishing server,
+kernel.ubuntu.com.  Here completed builds are pushed out to the web
+server and announcements are sent.  For source packages they are signed
+and uploaded to the appropriate PPAs.
+
+Incoming publishin requests are pushed into the {{{$HOME/incoming}}}
+directory and from there picked up by the publisher.
+
+=== Setup and Configuration ===
+
+The publishing server has a copy of the kteam-tools installed in the build
+users home directory:
+
+    {{{
+git clone git://kernel.ubuntu.com/ubuntu/kteam-tools
+}}}
+
+Next we need to install the ssh configuration for the build server access
+to incoming.  First we need to install the ssh validator command which needs
+to be copied into {{{$HOME/bin}}}.
+
+    {{{
+mkdir -p $HOME/bin
+cp $HOME/kteam-tools/mainline-builds/ssh-mainline-publish $HOME/bin
+}}}
+
+Then a record similar to the below needs to be added to the users
+authorized_keys file:
+
+    {{{
+command="bin/ssh-mainline-publish" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDGH6XysTtsaqviWguJ556ZLZ+/zrOYvL0NwOSXEe8wX6ogj2TUvTHbOHf01yfPkVQIG/w9j1rdUlcmRmKkaNBg00S4dnY2DAC0kSmS4R1TJcsDTnAGaNhOZQwLYOTOlbkhWs/r6K/HZmMBAoJxlgo55pkL0L/WJyGsXZTQpEvBc+cjlY28dGw9SeYTEc/+GGuL3W0E68zMfO+nD3YCAjuoJlPW/6wi2ePbE06Q5g9NrSP0OfbeHWHLHFf5qGvNNm5emQyObplQ/Ec4ncNIOhYPlrJkaqpLE24ZATLONUp1sw/sJjBEvpk7NJzRqU+7ime9KjkDy3nuYSTh2TA0ni4R testing-publish
+}}}
+
+Finally we need to enable publishing and cleanup by installing the following
+cronjobs:
+
+    {{{
+0 08    *   *   *   USER=<username> $HOME/kteam-tools/mainline-build/cleanup >>$HOME/logs/cleanup-`date +\%Y-\%U` 2>&1
+0,30  *    *   *   *   USER=<username> $HOME/kteam-tools/mainline-build/cod-incoming-publish >>$HOME/logs/cod-incoming-publish-`date +\%Y-\%U` 2>&1
+}}}
