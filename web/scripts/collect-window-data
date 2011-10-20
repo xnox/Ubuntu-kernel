@@ -156,6 +156,7 @@ class CollectRegressionsData(StdApp):
         if 'as me' not in self.cfg:
             self.cfg['read_only'] = True
 
+        self.cfg['launchpad_client_name'] = 'kernel-team-bjf-collect-window-data'
         if 'staging' in self.cfg:
             self.cfg['launchpad_services_root'] = 'qastaging'
         self.verbose(" . Connecting to Launchpad\n")
@@ -319,7 +320,10 @@ class CollectRegressionsData(StdApp):
                     if package_name in bugs_db_packages and 'bugs' in bugs_db_packages[package_name]:
                         for bug_id in bugs_db_packages[package_name]['bugs']:
                             bug_id = o2ascii(bug_id)
-                            bug = KernelBug(self.lp.get_bug(bug_id))
+                            try:
+                                bug = KernelBug(self.lp.get_bug(bug_id))
+                            except KeyError:
+                                continue
                             task = self.__get_relevant_task(bug, package_name)
                             if task is None:
                                 deletion_list.append(bug_id)

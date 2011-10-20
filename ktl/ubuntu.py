@@ -158,8 +158,8 @@ class Ubuntu:
                 'linux-meta-mvl-dove',
                 'linux-meta-fsl-imx51',
                 'linux-backports-modules-2.6.32',
-                'linux-lts-backport-oneiric',
-                'linux-meta-lts-backport-oneiric',
+                #'linux-lts-backport-oneiric',
+                #'linux-meta-lts-backport-oneiric',
                 'linux-lts-backport-natty',
                 'linux-meta-lts-backport-natty',
                 'linux-lts-backport-maverick',
@@ -352,10 +352,10 @@ class Ubuntu:
 
         'linux-lts-backport-maverick',
         'linux-lts-backport-natty',
-        'linux-lts-backport-oneiric',
+        #'linux-lts-backport-oneiric',
         'linux-meta-lts-backport-maverick',
         'linux-meta-lts-backport-natty',
-        'linux-meta-lts-backport-oneiric',
+        #'linux-meta-lts-backport-oneiric',
     ]
 
     # lookup

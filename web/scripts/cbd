@@ -144,6 +144,7 @@ class CollectRegressionsData(StdApp):
     # when the object is instantiated).
     #
     def __initialize(self):
+        self.cfg['launchpad_client_name'] = 'kernel-team-bjf-collect-bug-data'
         if 'staging' in self.cfg:
             self.cfg['launchpad_services_root'] = 'qastaging'
         self.verbose(" . Connecting to Launchpad\n")

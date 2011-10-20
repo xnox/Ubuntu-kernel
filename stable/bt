@@ -406,6 +406,7 @@ class BugTracker(StdApp):
         StdApp.__init__(self)
         self.defaults = {}
         self.defaults['readonly'] = True
+        self.defaults['launchpad_client_name'] = 'kernel-team-bjf-bt'
         self.cfg_dir = path.join(path.expanduser('~'), ".tracker")
         if not path.exists(self.cfg_dir):
             mkdir(self.cfg_dir)

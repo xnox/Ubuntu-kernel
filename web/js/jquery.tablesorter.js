@@ -805,16 +805,19 @@
                         cache.normalized[pos[0]][pos[1]] = config.parsers[pos[1]].format(
                         getElementText(config, cell), cell);
                     }).bind("sorton", function (e, list) {
-                        $(this).trigger("sortStart");
-                        config.sortList = list;
-                        // update and store the sortlist
-                        var sortList = config.sortList;
-                        // update header count index
-                        updateHeaderSortCount(this, sortList);
-                        // set css for headers
-                        setHeadersCss(this, $headers, sortList, sortCSS);
-                        // sort the table and append it to the dom
-                        appendToTable(this, multisort(this, sortList, cache));
+			var me = this;
+			setTimeout(function () {
+                            $(this).trigger("sortStart");
+                            config.sortList = list;
+                            // update and store the sortlist
+                            var sortList = config.sortList;
+                            // update header count index
+                            updateHeaderSortCount(me, sortList);
+                            // set css for headers
+                            setHeadersCss(me, $headers, sortList, sortCSS);
+                            // sort the table and append it to the dom
+                            appendToTable(me, multisort(me, sortList, cache));
+			}, 1);
                     }).bind("appendCache", function () {
                         appendToTable(this, cache);
                     }).bind("applyWidgetId", function (e, id) {

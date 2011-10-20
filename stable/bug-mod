@@ -158,6 +158,7 @@ class BugMod(StdApp):
     #
     def initialize(self):
         self.dbg('core', "initialize: enter\n")
+        self.cfg['launchpad_client_name'] = 'kernel-team-bug-mod'
         self.service = LaunchpadService(self.cfg)
 
         # If a comment is to be added to the bug, read the comment file into a buffer

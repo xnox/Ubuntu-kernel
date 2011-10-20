@@ -110,6 +110,7 @@ class CreateTrackingBug(StdApp):
     # initialize
     #
     def initialize(self):
+        self.defaults['launchpad_client_name'] = 'kernel-team-create-release-tracker'
         if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'qastaging'
         try:
