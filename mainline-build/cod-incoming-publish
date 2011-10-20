@@ -92,8 +92,8 @@ done
 		is=`readlink "$current"`
 		if [ "$is" != "$latest" ]; then
 			echo "$P: $dir: updating current to $latest"
-			ln -s "$latest" "$current.new"
-			mv "$current.new" "$current"
+			rm -f "$current"
+			ln -s "$latest" "$current"
 		fi
 	done
 )
