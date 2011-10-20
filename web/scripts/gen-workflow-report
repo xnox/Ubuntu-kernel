@@ -7,7 +7,7 @@ from getopt                             import getopt, GetoptError
 from datetime                           import datetime
 import json
 
-from ktl.utils                          import stdo, error, dump
+from ktl.utils                          import stdo, stde, error, dump, string_to_date
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
 from ktl.ubuntu                         import Ubuntu
@@ -245,11 +245,9 @@ class GenWorkflowReport():
     def string_to_date(self, date):
         return datetime.strptime(date, '%A, %d. %B %Y %H:%M UTC')
 
-    def how_long_ago(self, date):
-        now = datetime.utcnow()
-        now.replace(tzinfo=None)
-        ago = DeltaTime(self.string_to_date(date), now)
-        when = '%d.%d.%d' % (ago.days, ago.hours, ago.minutes)
+    def time_delta(self, date1, date2):
+        ago = DeltaTime(date1, date2)
+        when = '%d days, %d hours' % (ago.days, ago.hours)
         when_style = ''
         if ago.days == 0:
             if ago.hours == 0:
@@ -349,10 +347,11 @@ class GenWorkflowReport():
         retval += '                                                <th           >Task Name</th>\n'
         retval += '                                                <th width="250">Assignee</th>\n'
         retval += '                                                <th width="80">Status</th>\n'
+        retval += '                                                <th width="100">Duration</th>\n'
         retval += '                                            </tr>\n'
         retval += '                                        </thead>\n'
         for t in self.bugs_db['bug-collections'][pkg]['bugs'][bug_id]['tasks']:
-            retval += self.__task_details(t)
+            retval += self.__task_details(self.bugs_db['bug-collections'][pkg]['bugs'][bug_id], t)
         retval += '                                    </table>\n'
         retval += '                                </td>\n'
         retval += '                            </tr>\n'
@@ -364,12 +363,49 @@ class GenWorkflowReport():
 
     # __task_details
     #
-    def __task_details(self, task):
+    def __task_details(self, bug, task):
+        name = task['name']
+        if name == 'Kernel SRU Workflow':
+            start_timestamp = string_to_date(bug['date created'])
+            end_timestamp = datetime.utcnow()
+            ago = DeltaTime(start_timestamp, end_timestamp)
+            if ago.days == 0:
+                duration = '%d Hours' % (ago.hours)
+            else:
+                duration = '%d Days, %d Hours' % (ago.days, ago.hours)
+        else:
+            name = name.replace('Kernel SRU Workflow', '')
+            name = name.strip()
+            duration = '?'
+            start_property_key = 'kernel-stable-%s-start' % name.capitalize()
+            end_property_key = 'kernel-stable-%s-end' % name.capitalize()
+
+            try:
+                start_timestamp = string_to_date(bug['properties'][start_property_key])
+
+                try:
+                    end_timestamp = string_to_date(bug['properties'][end_property_key])
+                except KeyError:
+                    end_timestamp = datetime.utcnow()
+
+                ago = DeltaTime(start_timestamp, end_timestamp)
+                if ago.days == 0:
+                    if ago.hours < 2:
+                        duration = '%d Hour' % (ago.hours)
+                    else:
+                        duration = '%d Hours' % (ago.hours)
+                else:
+                    duration = '%d Days, %d Hours' % (ago.days, ago.hours)
+
+            except KeyError:
+                duration = ''
+
         retval = ''
         retval += '<tr>\n'
-        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['name'])                                           # Task Name
-        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['assignee'])                                          # Assignee
-        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['status'])             # Status
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['name'])    # Task Name
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['assignee'])# Assignee
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], task['status'])  # Status
+        retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[task['status']], duration)        # Duration
         retval += '</tr>\n'
         return retval
 
