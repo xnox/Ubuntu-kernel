@@ -2,12 +2,6 @@
 
 set -e
 
-email=''
-if [ "$1" = "--no-email" ]; then
-	email=":"
-	shift
-fi
-
 if [ "$#" -ne 1 -a "$#" -ne 4 ]; then
 	echo "Usage: $0 <tag>" 1>&2
 	echo "Usage: $0 <commit> <abi> <out> <date>" 1>&2
@@ -58,7 +52,6 @@ if [ "$abi" != "" ]; then
 	#date="`date +%F`"
 	html="$HOME/public_html/mainline/$base/$date-$master_release"
 	mkdir -p "$HOME/public_html/mainline/$base"
-	ln -nsf "$date-$master_release" "$HOME/public_html/mainline/$base/current"
 else
 	"$here/mainline-build-one" "$commit" "$master_release" 2>&1 | \
 		tee "$master_main/BUILD.LOG"
@@ -73,6 +66,3 @@ if [ -f "$master_main/CHANGES" ]; then
 	mv "$master_main/CHANGES" "$html"
 fi
 mv "$master_main"/*.patch "$html"
-
-# All done report this to the kernel-team
-$email "$here/mainline-announce"  "$commit" "$commit-$master_release"

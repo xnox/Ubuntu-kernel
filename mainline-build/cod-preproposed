@@ -19,6 +19,32 @@ commit="$3"
 tag="$4"
 abi="$5"
 
+slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
+dlist="`dchroot -l 2>/dev/null`,"
+do_chroot()
+{
+	typeset chroot="$1"
+	typeset series
+	typeset cmd
+	shift
+
+	# Some systems use <series> for <series>-amd64, so try both.
+	series="${chroot%-amd64}"
+	case "$slist$dlist" in
+	*\ $chroot[\ ,]*)	;;
+	*\ $series[\ ,]*)	chroot="$series" ;;
+	*)	echo "$chroot: chroot not found ($slist::$dlist)" 1>&2; exit 1 ;;
+	esac
+
+	# Ok we do have the chroot in one of the tools, fire it up.
+	case "$slist" in
+	*\ $chroot[\ ,]*)	cmd='schroot' ;;
+	*)			cmd='dchroot' ;;
+	esac
+	echo -- "$cmd" -c "$chroot" --directory=`pwd` -- "$@"
+	"$cmd" -c "$chroot" --directory=`pwd` -- "$@"
+}
+
 echo "*** BUILDING PREPROPOSED: repo:$repo commit:$commit series:$series tag:$tag..."
 
 build_release="hardy"
@@ -77,8 +103,8 @@ sed -i \
 	-e "1 s/ UNRELEASED;/ $series;/" \
 	-e "1 s/ $series-[^;]*;/ $series;/" \
     $changelog
-dchroot --directory=`pwd` -c "$build_release" \
-        "fakeroot debian/rules insertchanges"
+do_chroot "$build_release-amd64" \
+        fakeroot debian/rules insertchanges
 git commit -a -m "CHANGES"
 
 # Clean out the rubbish.
@@ -89,18 +115,23 @@ rm -f "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes "$ma
 #
 git clean -x -f -d
 if [ -d debian ]; then
-	dchroot --directory=`pwd` -c "$build_release" \
-		"fakeroot debian/rules clean"
-	dchroot --directory=`pwd` -c "$build_release" \
-		"dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa"
+	do_chroot "$build_release-amd64" \
+		fakeroot debian/rules clean
+	do_chroot "$build_release-amd64" \
+		dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa
 
 elif [ -d meta-source ]; then
-	dchroot --directory=`pwd`/meta-source -c "$build_release" \
-		"fakeroot debian/rules clean"
-	dchroot --directory=`pwd`/meta-source -c "$build_release" \
-		"dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa"
+	(
+		cd meta-source
+		do_chroot "$build_release-amd64" \
+			fakeroot debian/rules clean
+		do_chroot "$build_release-amd64" \
+			dpkg-buildpackage -kkernel-ppa@canonical.com -S -rfakeroot -I.git -I.gitignore -i'\.git.*' -sa
+	)
 	mv *.tar.gz *.dsc *.changes ..
 fi
 
-# Upload it.
-dput pre-proposed "$master_main"/*.changes
+# Move the upload to the incoming directory.
+mkdir -p "$HOME/public_html/upload/pre-proposed"
+mv "$master_main"/*.tar.gz "$master_main"/*.dsc "$master_main"/*.changes \
+	"$HOME/public_html/upload/pre-proposed"

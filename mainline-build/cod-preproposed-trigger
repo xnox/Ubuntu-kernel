@@ -1,4 +1,5 @@
 #!/bin/bash
+P="cod-preproposed-trigger"
 
 set -e
 
@@ -10,7 +11,9 @@ esac
 
 master_main="$HOME/COD"
 
-master_repo="/srv/kernel.ubuntu.com/git/ubuntu/"
+#master_repo="/srv/kernel.ubuntu.com/git/ubuntu/"
+master_repo="git://kernel.ubuntu.com/ubuntu"
+
 
 #
 # Add and update the upstream repositories as needed.
@@ -23,7 +26,7 @@ update_repo()
 
 	(
 		if [ ! -d "$master_main/$repo" ]; then
-			echo "*** creating initial repo ($repo) ..."
+			echo "$P: creating initial repo ($repo) ..."
 			mkdir -p "$master_main/$repo"
 			cd "$master_main/$repo" && git init
 		else
@@ -32,12 +35,15 @@ update_repo()
 		series_repo=`echo "$repo" | sed -e "s/linux/ubuntu-$series/"`
 		series_repo="$master_repo/$series_repo.git"
 		if ! git remote | grep "$series" >/dev/null 2>&1; then
-			echo "*** adding $series remote ($series_repo)..."
+			echo "$P: adding $series remote ($series_repo)..."
 			git remote add "$series" "$series_repo"
 		fi
 		git fetch "$series" || true
 	)
 }
+
+# Ensure we have our state directory.
+mkdir -p "$master_main/state/preproposed"
 
 #
 # UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
@@ -46,7 +52,7 @@ date=`date +%Y%m%d%H%M`
 while read series repo branch repo2 branch2
 do
 	current="${repo}_${series}_${branch}"
-	curr="$master_main/preproposed/$current"
+	curr="$master_main/state/preproposed/$current"
 	branch="$series/$branch"
 
 	update_repo "$repo" "$series"
@@ -95,7 +101,7 @@ do
 	update_repo "$repo2" "$series"
 
 	current="${repo2}_${series}_${branch2}.ABI"
-	curr2="$master_main/preproposed/$current"
+	curr2="$master_main/state/preproposed/$current"
 	branch2="$series/$branch2"
 
         # Find the abi number for the tip.
@@ -130,7 +136,10 @@ do
 				"$branch2" "$date" "$abi_tip"
 	fi
 done <<EOL
+oneiric linux master-next linux-meta master
+oneiric linux-lbm master
 natty linux master-next linux-meta master
+natty linux-lbm master
 maverick linux master-next linux-meta master
 maverick linux-lbm master
 lucid linux master-next linux-meta master

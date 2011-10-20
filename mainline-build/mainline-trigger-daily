@@ -1,0 +1,22 @@
+#!/bin/bash
+P="mainline-trigger-daily"
+
+set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+#
+# UBUNTU PRE-PROPOSED: tips of the ubuntu trees.
+#
+"$here/cod-preproposed-trigger"
+
+#
+# MAINLINE CRACK: tips of various mainline trees.
+#
+"$here/cod-crack-trigger"
+
+echo "$P: trigger run complete"

@@ -1,0 +1,17 @@
+#!/bin/bash
+P="mainline-trigger-hourly"
+
+set -e
+
+here=`dirname $0`
+case "$here" in
+/*) ;;
+*)  here="`pwd`/$here" ;;
+esac
+
+#
+# MAINLINE TAGS: tagged versions in mainline trees.
+#
+"$here/cod-tags-trigger"
+
+echo "$P: trigger run complete"

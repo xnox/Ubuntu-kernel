@@ -1,0 +1,16 @@
+#!/bin/bash
+P="hook-resync (zinc)"
+
+key="$HOME/.ssh/mainline-publish"
+
+if [ ! -f "$key" ]; then
+	echo "$P: $key: no sync key found ... sync skipped"
+	exit 1
+fi
+
+echo "$P: syncing results to kernel.ubuntu.com ..."
+
+rsync -e "ssh -i $HOME/.ssh/mainline-publish" -a -v $HOME/public_html/* kernel-ppa@zinc.ubuntu.com:incoming/ && rm -rf "$HOME/public_html/mainline" "$HOME/public_html/upload"
+
+echo "$P: sync complete"
+exit 0
