@@ -17,7 +17,7 @@ commit="$1"
 series="$2"
 abinum="$3"
 
-build_release="hardy"
+build_release="$series"
 
 slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
 dlist="`dchroot -l 2>/dev/null`,"
