@@ -17,7 +17,12 @@ commit="$1"
 series="$2"
 abinum="$3"
 
-build_release="$series"
+# Previous LTS.
+case "$series" in
+hardy)					build_release="hardy" ;;
+lucid|maverick|natty|oneiric) 		build_release="lucid" ;;
+*)					build_release="lucid" ;;
+esac
 
 slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
 dlist="`dchroot -l 2>/dev/null`,"
