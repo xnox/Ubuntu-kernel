@@ -59,7 +59,7 @@ do_chroot()
 
 echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
 
-log_enabled=0
+log_enabled=1
 
 long=`git describe "$commit"`
 if [ "$?" -ne 0 ]; then
