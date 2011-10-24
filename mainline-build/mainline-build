@@ -65,4 +65,7 @@ mv "$master_main/"linux-{headers,image}-*.deb "$html"
 if [ -f "$master_main/CHANGES" ]; then
 	mv "$master_main/CHANGES" "$html"
 fi
+if [ -f "$master_main/BUILT" ]; then
+	mv "$master_main/BUILT" "$html"
+fi
 mv "$master_main"/*.patch "$html"

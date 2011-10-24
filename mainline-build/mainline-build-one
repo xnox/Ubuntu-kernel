@@ -24,6 +24,13 @@ lucid|maverick|natty|oneiric) 		build_release="lucid" ;;
 *)					build_release="lucid" ;;
 esac
 
+{
+	time=`date +%s`
+	echo "Release: $build_release"
+	echo "Host: `hostname`"
+	echo "Start: $time"
+} >../BUILT
+
 slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
 dlist="`dchroot -l 2>/dev/null`,"
 do_chroot()
@@ -277,3 +284,8 @@ EOM
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
 EOM
 } | do_chroot "$build_release-i386" "/bin/bash"
+
+{
+	time=`date +%s`
+	echo "End: $time"
+} >>../BUILT
