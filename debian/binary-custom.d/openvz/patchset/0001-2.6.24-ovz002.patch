@@ -45460,7 +45460,7 @@ Index: kernel/kernel/cpt/cpt_kernel.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
 +++ kernel/kernel/cpt/cpt_kernel.h	2008-11-24 15:47:46.000000000 +0100
-@@ -0,0 +1,95 @@
+@@ -0,0 +1,99 @@
 +/* Interface to kernel vars which we had to _add_. */
 +
 +#define PRIO_TO_NICE(prio)	((prio) - MAX_RT_PRIO - 20)
@@ -45546,13 +45546,17 @@ Index: kernel/kernel/cpt/cpt_kernel.h
 +_ns_to_timespec(const s64 nsec)
 +{
 +	struct timespec ts;
++	s32 rem;
 +
 +	if (!nsec)
 +		return (struct timespec) {0, 0};
 +
-+	ts.tv_sec = div_long_long_rem_signed(nsec, NSEC_PER_SEC, &ts.tv_nsec);
-+	if (unlikely(nsec < 0))
-+		_set_normalized_timespec(&ts, ts.tv_sec, ts.tv_nsec);
++	ts.tv_sec = div_s64_rem(nsec, NSEC_PER_SEC, &rem);
++	if (unlikely(rem < 0)) {
++		ts.tv_sec--;
++		rem += NSEC_PER_SEC;
++	}
++	ts.tv_nsec = rem;
 +
 +	return ts;
 +}
@@ -62896,10 +62900,11 @@ Index: kernel/kernel/posix-cpu-timers.c
 ===================================================================
 --- kernel.orig/kernel/posix-cpu-timers.c	2008-11-18 01:19:47.000000000 +0100
 +++ kernel/kernel/posix-cpu-timers.c	2008-11-24 15:47:46.000000000 +0100
-@@ -6,6 +6,7 @@
+@@ -6,7 +6,8 @@
  #include <linux/posix-timers.h>
- #include <asm/uaccess.h>
  #include <linux/errno.h>
+ #include <linux/math64.h>
+ #include <asm/uaccess.h>
 +#include <linux/pid_namespace.h>
  
  static int check_clock(const clockid_t which_clock)
