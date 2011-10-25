@@ -12,6 +12,14 @@ logdir=/srv/www/shank-log
 oldlogdir="$logdir/old"
 shankdir=/home/yourhome/run/kteam-tools/stable
 
+# check if directories above exist
+for d in $logdir $oldlogdir $shankdir; do
+	if [ ! -d $d ]; then
+		echo "Directory $d doesn't exist, aborting"
+		exit 1
+	fi
+done
+
 # locking, to avoid concurrent runs in case we got stuck in a previous run
 if ! (set -o noclobber; echo "$$" > "$lockfile") 2> /dev/null; then
 	if ! kill -n 0 `cat "$lockfile"` 2>/dev/null; then
@@ -31,7 +39,6 @@ cur_log="$logdir/shank-log.txt"
 [ -f "$cur_log" ] && cp -f "$cur_log" "$cur_log.tmp"
 LC_ALL=C date > "$logdir/shank-last-run.txt"
 cd "$shankdir"
-export DISPLAY=:0
 exec {so}>&1 1>"$cur_log" {se}>&2 2>&1
 timeout 1h ./sru-workflow-manager --verbose
 exec 1>&$so {so}>&- 2>&$se {se}>&-
@@ -49,8 +56,8 @@ if [ -f "$cur_log.tmp" ]; then
 fi
 
 # "rotation" of old logs (move to another place)
-find "$logdir" -name difflog-\*.txt -mtime +20 -print0 | xargs --null \
+find "$logdir" -name difflog-\*.txt -mtime +20 -print0 | xargs -r --null \
   sh -c "test -n \"\$0\" || exit 0; mv \"\$0\" \"$oldlogdir/old-\`basename \$0\`\""
-find "$logdir" -name shank-log-\*.txt -mtime +20 -print0 | xargs --null \
+find "$logdir" -name shank-log-\*.txt -mtime +20 -print0 | xargs -r --null \
   sh -c "test -n \"\$0\" || exit 0; mv \"\$0\" \"$oldlogdir/old-\`basename \$0\`\""
 
