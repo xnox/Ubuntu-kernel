@@ -148,6 +148,18 @@ then
 	# makedumpfile does not exist in armel
 	#
 	ADDPKG="`echo $ADDPKG|sed 's/makedumpfile//'`"
+
+	#
+	# Check for a minimum version of qemu-kvm-extras-static
+	#
+	QEMU_KVM_EXTRAS_STATIC_MINVERSION=0.15.50-2011.08-0ubuntu4~ppa10.04.1
+	QEMU_KVM_EXTRAS_STATIC_VERSION=`dpkg-query --show qemu-kvm-extras-static|cut -f 2`
+	if ! dpkg --compare-versions ${QEMU_KVM_EXTRAS_STATIC_MINVERSION} ge ${QEMU_KVM_EXTRAS_STATIC_VERSION}
+	then
+		echo qemu-kvm-extras-static must be at a minimum version of ${QEMU_KVM_EXTRAS_STATIC_MINVERSION} to support armel.
+		echo Try 'echo deb http://ppa.launchpad.net/linaro-maintainers/tools/ubuntu lucid main | sudo tee /etc/apt/sources.list.d/linaro.list'
+		exit 1
+	fi
 fi
 
 HOSTARCH=$(dpkg --print-architecture)
