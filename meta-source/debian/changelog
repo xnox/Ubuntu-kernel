@@ -1,3 +1,11 @@
+linux-meta (3.1.0.2.2) precise; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Bump ABI
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Wed, 26 Oct 2011 11:07:35 -0700
+
 linux-meta (3.1.0.1.1) precise; urgency=low
 
   [ Leann Ogasawara ]
