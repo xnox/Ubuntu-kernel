@@ -128,9 +128,21 @@ case $SUITE in
 		;;
 esac
 
+#
 # armel is only supported if the lsb-release is Lucid or higher.
+# Furthermore you must have a minimum version of debootstrap
+# installed (usually by enabling -backports)
+#
 if [ "$ARCH" = "armel" ]
 then
+	DEBOOTSTRAP_MINVERSION=1.0.37ubuntu1~lucid1
+	DEBOOTSTRAP_VERSION=`dpkg-query --show debootstrap|cut -f 2`
+	if ! dpkg --compare-versions ${DEBOOTSTRAP_MINVERSION} ge ${DEBOOTSTRAP_VERSION}
+	then
+		echo debootstrap must be at a minimum version of ${DEBOOTSTRAP_MINVERSION} to support armel.
+		echo Try enabling -backports and then update your packages.
+		exit 1
+	fi
 	DEBOOTSTRAP=qemu-debootstrap
 	#
 	# makedumpfile does not exist in armel
