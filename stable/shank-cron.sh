@@ -56,8 +56,8 @@ if [ -f "$cur_log.tmp" ]; then
 fi
 
 # "rotation" of old logs (move to another place)
-find "$logdir" -name difflog-\*.txt -mtime +20 -print0 | xargs -r --null \
-  sh -c "test -n \"\$0\" || exit 0; mv \"\$0\" \"$oldlogdir/old-\`basename \$0\`\""
-find "$logdir" -name shank-log-\*.txt -mtime +20 -print0 | xargs -r --null \
-  sh -c "test -n \"\$0\" || exit 0; mv \"\$0\" \"$oldlogdir/old-\`basename \$0\`\""
+find "$logdir" -name difflog-\*.txt -mtime +20 -print0 | xargs -n 1 -r --null \
+	sh -c "mv \"\$0\" \"$oldlogdir/old-\`basename \$0\`\""
+find "$logdir" -name shank-log-\*.txt -mtime +20 -print0 | xargs -n 1 -r --null \
+	sh -c "mv \"\$0\" \"$oldlogdir/old-\`basename \$0\`\""
 
