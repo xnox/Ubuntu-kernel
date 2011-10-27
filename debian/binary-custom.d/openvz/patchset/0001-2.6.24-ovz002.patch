@@ -87081,46 +87081,36 @@ Index: kernel/net/ipv6/sit.c
  }
  
  static int __init sit_init(void)
-@@ -832,23 +944,35 @@
- 		return -EAGAIN;
- 	}
+@@ -827,11 +939,17 @@ static int __init sit_init(void)
+ 
+ 	printk(KERN_INFO "IPv6 over IPv4 tunneling driver\n");
  
 +#ifdef CONFIG_VE
 +	err = sit_ve_start(get_exec_env());
 +	if (err)
-+		goto err1;
++		goto out;
 +#endif
 +
  	ipip6_fb_tunnel_dev = alloc_netdev(sizeof(struct ip_tunnel), "sit0",
  					   ipip6_tunnel_setup);
  	if (!ipip6_fb_tunnel_dev) {
  		err = -ENOMEM;
--		goto err1;
-+		goto err2;
+-		goto out;
++		goto err0;
  	}
  
  	ipip6_fb_tunnel_dev->init = ipip6_fb_tunnel_init;
- 
- 	if ((err =  register_netdev(ipip6_fb_tunnel_dev)))
--		goto err2;
-+		goto err3;
-+
-+	ve_hook_register(VE_SS_CHAIN, &sit_ve_hook);
- 
-  out:
- 	return err;
-- err2:
-+ err3:
+@@ -851,6 +969,10 @@ static int __init sit_init(void)
+ 	unregister_netdev(ipip6_fb_tunnel_dev);
+  err1:
  	free_netdev(ipip6_fb_tunnel_dev);
-- err1:
-+ err2:
++ err0:
 +#ifdef CONFIG_VE
 +	sit_ve_stop(get_exec_env());
-+err1:
 +#endif
- 	xfrm4_tunnel_deregister(&sit_handler, AF_INET6);
  	goto out;
  }
+ 
 Index: kernel/net/ipv6/tcp_ipv6.c
 ===================================================================
 --- kernel.orig/net/ipv6/tcp_ipv6.c	2008-11-18 01:19:47.000000000 +0100
