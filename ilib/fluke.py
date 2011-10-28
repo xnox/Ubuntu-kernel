@@ -354,9 +354,14 @@ class m8846A():
         mbadnwidth = 3, 20, or 200
         """
         mtype = mtype.upper()
+        if mtype not in ['AC', 'DC']:
+            raise ValueError("Invalid Voltage measurement type")
         mrange = mrange.upper()
+        if mrange not in ['', '']:
+            raise valueError("Inavlid range for voltage measurement")
         mresolution = mresolution.upper()
         mbandwidth = mbandwidth.upper()
+        # Send a CONFigure Command
         
         
         return
