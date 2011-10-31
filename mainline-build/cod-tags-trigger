@@ -23,7 +23,7 @@ mkdir -p "$master_tags"
 master_tree_select
 
 # Pull in all trees containing tags we wish to build.
-repo_remote_update_list $ubuntu_series linus 2.6.32.y.33.z linux-stable
+repo_remote_update_list linus 2.6.32.y.33.z linux-stable
 
 #
 # UPSTREAM TAGS: Find all the new upstream release tags.
@@ -37,8 +37,13 @@ diff "$tags_list" "$tags_list.new" | \
 mv "$tags_list.new" "$tags_list"
 
 # Run the list.
+refresh=1
 while read commit
 do
+	if [ "$refresh" -eq 1 ]; then
+		repo_remote_update_list $ubuntu_series
+		refresh=0
+	fi
 	"$here/cod-enqueue" "B" "$here/mainline-build" "$commit"
 done <"$tags_list.added"
 

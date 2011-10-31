@@ -17,7 +17,19 @@ commit="$1"
 series="$2"
 abinum="$3"
 
-build_release="$series"
+# Previous LTS.
+case "$series" in
+hardy)					build_release="hardy" ;;
+lucid|maverick|natty|oneiric) 		build_release="lucid" ;;
+*)					build_release="lucid" ;;
+esac
+
+{
+	time=`date +%s`
+	echo "Release: $build_release"
+	echo "Host: `hostname`"
+	echo "Start: $time"
+} >../BUILT
 
 slist="`schroot --list 2>/dev/null | sed -e 's/^/ /' -e 's/$/ /'`"
 dlist="`dchroot -l 2>/dev/null`,"
@@ -47,7 +59,7 @@ do_chroot()
 
 echo "*** BUILDING: commit:$commit series:$series abinum:$abinum ..."
 
-log_enabled=0
+log_enabled=1
 
 long=`git describe "$commit"`
 if [ "$?" -ne 0 ]; then
@@ -272,3 +284,8 @@ EOM
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
 EOM
 } | do_chroot "$build_release-i386" "/bin/bash"
+
+{
+	time=`date +%s`
+	echo "End: $time"
+} >>../BUILT

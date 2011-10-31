@@ -129,19 +129,15 @@ for $sha1 (@all) {
 	if ($ignore{$sha1}) {
 		if ($result{$sha1} eq "NEEDED:ubuntu-driver") {
 			$Subuntu--;
-			print "ubuntu: $Subuntu\n";
 		}
 		elsif ($result{$sha1} eq "NEEDED:debian") {
 			$Sdebian--;
-			print "debin: $Sdebian\n";
 		}
 		elsif ($result{$sha1} eq "NEEDED") {
 			$Ssauce--;
-			print "sauce: $Ssauce\n";
 		}
 		elsif ($result{$sha1} eq "NEEDED:split-debian") {
 			$Ssauce--;
-			print "sauce: $Ssauce\n";
 		}
 		$result{$sha1} = "IGNORE:revert";
 		$Sneeded--;

@@ -4,7 +4,7 @@ LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 LLREPO=linux-2.6.git
 LREPO=linux.git
 UBUNTU=git://kernel.ubuntu.com/ubuntu
-RELEASES="hardy lucid maverick natty oneiric"
+RELEASES="hardy lucid maverick natty oneiric precise"
 
 if [ ! -d ${LREPO} ]
 then
