@@ -59,6 +59,14 @@ class DevSeriesHandsOff(BugHandler):
                 Dbg.why('kernel-stable-next tag exists\n')
                 break
 
+            # If there is an instance where someone has decided the bot should stop
+            # spamming bugs.
+            #
+            if 'kernel-stop-nagging' in bug.tags:
+                retval = False
+                Dbg.why('kernel-stop-nagging tag exists\n')
+                break
+
             # As you'd expect, we shouldn't be touching private bugs.
             #
             if bug.private:
