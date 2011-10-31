@@ -62,9 +62,9 @@ class DevSeriesHandsOff(BugHandler):
             # If there is an instance where someone has decided the bot should stop
             # spamming bugs.
             #
-            if 'kernel-bot-stop-nagging' in bug.tags:
+            if 'bot-stop-nagging' in bug.tags:
                 retval = False
-                Dbg.why('kernel-bot-stop-nagging tag exists\n')
+                Dbg.why('bot-stop-nagging tag exists\n')
                 break
 
             # As you'd expect, we shouldn't be touching private bugs.
