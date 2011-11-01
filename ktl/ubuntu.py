@@ -49,7 +49,6 @@ class Ubuntu:
         },
         '11.10' :
         {
-            'development' : True,        # This is the version that is currently under development
             'series_version' : '11.10',
             'kernel'    : '3.0.0',
             'name'      : 'oneiric',
