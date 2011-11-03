@@ -1307,7 +1307,7 @@ static int omap_gpio_runtime_resume(struct device *dev)
 						bank->regs->leveldetect1);
 		}
 
-		if (bank->regs->irqstatus_raw0) {
+		if (bank->regs->irqstatus_raw0 || cpu_is_omap54xx()) {
 			__raw_writel(old0 | l, bank->base +
 						bank->regs->leveldetect0);
 			__raw_writel(old1 | l, bank->base +
