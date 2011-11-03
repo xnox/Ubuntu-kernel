@@ -1,4 +1,23 @@
-linux-lts-backport-oneiric (3.0.0-13.21~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-13.22~lucid1) lucid-proposed; urgency=low
+
+  [Herton R. Krzesinski]
+
+  * Release Tracking Bug
+    - LP: #885468
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * Revert "SAUCE: Add a new entry (413c:8197) to Bluetooth USB device ID
+    table"
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 03 Nov 2011 09:57:06 -0400
+
+linux (3.0.0-13.21) oneiric-proposed; urgency=low
+
+  [Herton R. Krzesinski]
+
+  * Release Tracking Bug
+    - LP: #876701
 
   [ Leann Ogasawara ]
 
@@ -563,7 +582,7 @@ linux-lts-backport-oneiric (3.0.0-13.21~lucid1) lucid-proposed; urgency=low
   * e1000e: workaround for packet drop on 82579 at 100Mbps
     - LP: #870127
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 18 Oct 2011 19:13:08 -0200
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 17 Oct 2011 15:38:24 -0200
 
 linux (3.0.0-12.20) oneiric-proposed; urgency=low
 
