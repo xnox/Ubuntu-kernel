@@ -39,3 +39,9 @@ Description: Backported driver headers for server kernel image
 # This empty package allows people to keep their alsa-driver snapshot
 # up-to-date when upgrading their Linux kernel.
 #
+Package: linux-backports-modules-net-RELEASE_NAME-server
+Architecture: amd64
+Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-server
+Description: Backported ethernet drivers for server kernel image
+ This empty package allows people to keep their backported ethernet modules
+ up-to-date when upgrading their Linux kernel.
