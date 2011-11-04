@@ -8,3 +8,4 @@
 
 #obj-$(CONFIG_IGB) += net/igb/
 
+obj-$(CONFIG_R8169) += net/r8169.o

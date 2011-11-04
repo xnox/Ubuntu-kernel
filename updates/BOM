@@ -8,3 +8,6 @@ E1000E:
 
 IGB:
 #http://sourceforge.net/projects/e1000/files/igb%20stable/
+
+R8169:
+git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git v3.1
