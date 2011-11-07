@@ -2381,6 +2381,7 @@ EXPORT_SYMBOL vmlinux 0x61d9569e	udp_sendmsg
 EXPORT_SYMBOL vmlinux 0x61ffa8cb	udp_prot
 EXPORT_SYMBOL vmlinux 0x62049256	acpi_disable
 EXPORT_SYMBOL vmlinux 0x620a52cd	ps2_handle_ack
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6237f6b5	acpi_enable_event
 EXPORT_SYMBOL vmlinux 0x6241fd2c	acpi_install_address_space_handler
 EXPORT_SYMBOL vmlinux 0x625acc81	__down_failed_interruptible
@@ -3594,6 +3595,7 @@ EXPORT_SYMBOL vmlinux 0xe190b8c5	blk_rq_unmap_user
 EXPORT_SYMBOL vmlinux 0xe1a0989f	security_d_instantiate
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
 EXPORT_SYMBOL vmlinux 0xe1fd77e7	pci_find_bus
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe24d3a97	jiffies_64
 EXPORT_SYMBOL vmlinux 0xe26c73b5	seq_escape
 EXPORT_SYMBOL vmlinux 0xe2a6bcc4	netpoll_print_options
@@ -5099,6 +5101,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcf084797	crypto_spawn_tfm
 EXPORT_SYMBOL_GPL vmlinux 0xcf9a532b	cpufreq_freq_attr_scaling_available_freqs
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xd01fc97a	init_user_ns
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd0b57d99	__ide_abort
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd0e9495f	do_add_mount

@@ -3323,6 +3323,7 @@ EXPORT_SYMBOL vmlinux 0x61b7b126	simple_strtoull
 EXPORT_SYMBOL vmlinux 0x61dd06a0	sock_wake_async
 EXPORT_SYMBOL vmlinux 0x61e2342f	request_key_async
 EXPORT_SYMBOL vmlinux 0x62049256	acpi_disable
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6237f6b5	acpi_enable_event
 EXPORT_SYMBOL vmlinux 0x6241fd2c	acpi_install_address_space_handler
 EXPORT_SYMBOL vmlinux 0x6245092f	iov_iter_copy_from_user
@@ -4546,6 +4547,7 @@ EXPORT_SYMBOL vmlinux 0xe1761617	security_inet_conn_request
 EXPORT_SYMBOL vmlinux 0xe17ac493	d_validate
 EXPORT_SYMBOL vmlinux 0xe1ceb1f7	pnp_manual_config_dev
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe2044747	__page_symlink
 EXPORT_SYMBOL vmlinux 0xe24d3a97	jiffies_64
 EXPORT_SYMBOL vmlinux 0xe27cd7f9	register_8022_client
@@ -6704,6 +6706,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xcfd1e138	klist_next
 EXPORT_SYMBOL_GPL vmlinux 0xd01f9014	anon_inode_getfd
 EXPORT_SYMBOL_GPL vmlinux 0xd01fc97a	init_user_ns
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd0a6a8ac	srcu_read_lock
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd0f80d1f	fb_deferred_io_open

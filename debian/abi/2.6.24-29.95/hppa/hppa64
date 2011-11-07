@@ -1824,6 +1824,7 @@ EXPORT_SYMBOL vmlinux 0x6198b709	uart_register_driver
 EXPORT_SYMBOL vmlinux 0x61b7b126	simple_strtoull
 EXPORT_SYMBOL vmlinux 0x61cf7e88	scsi_ioctl
 EXPORT_SYMBOL vmlinux 0x6214344a	tcf_hash_create
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x62737e1d	sock_unregister
 EXPORT_SYMBOL vmlinux 0x62b51c23	generic_file_mmap
 EXPORT_SYMBOL vmlinux 0x62b9fe9b	udp_ioctl
@@ -2944,6 +2945,7 @@ EXPORT_SYMBOL vmlinux 0xe1761617	security_inet_conn_request
 EXPORT_SYMBOL vmlinux 0xe178e840	gnet_stats_start_copy_compat
 EXPORT_SYMBOL vmlinux 0xe1ad9555	unregister_con_driver
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe24b9aee	rtnl_notify
 EXPORT_SYMBOL vmlinux 0xe24d3a97	jiffies_64
 EXPORT_SYMBOL vmlinux 0xe2634fb4	task_pid_nr_ns
@@ -4413,6 +4415,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcdf5a0ac	crypto_hash_type
 EXPORT_SYMBOL_GPL vmlinux 0xcec01071	scsi_internal_device_unblock
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xcffa2aff	spi_populate_width_msg
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd16712f3	crypto_check_attr_type
 EXPORT_SYMBOL_GPL vmlinux 0xd232a082	transport_destroy_device

@@ -3307,6 +3307,7 @@ EXPORT_SYMBOL vmlinux 0x62001345	page_address
 EXPORT_SYMBOL vmlinux 0x62049256	acpi_disable
 EXPORT_SYMBOL vmlinux 0x620de508	ethtool_op_set_tx_hw_csum
 EXPORT_SYMBOL vmlinux 0x6220b0ab	xfrm_policy_delete
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6237f6b5	acpi_enable_event
 EXPORT_SYMBOL vmlinux 0x6241fd2c	acpi_install_address_space_handler
 EXPORT_SYMBOL vmlinux 0x625acc81	__down_failed_interruptible
@@ -4563,6 +4564,7 @@ EXPORT_SYMBOL vmlinux 0xe1c3e85e	pneigh_lookup
 EXPORT_SYMBOL vmlinux 0xe1c6fa9e	inet_ioctl
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
 EXPORT_SYMBOL vmlinux 0xe1e2fac2	llc_add_pack
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe2021c7c	shrink_dcache_parent
 EXPORT_SYMBOL vmlinux 0xe22eb68f	serial8250_register_port
 EXPORT_SYMBOL vmlinux 0xe234f7c6	dev_unicast_add
@@ -6770,6 +6772,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xd0181591	__rtnl_link_unregister
 EXPORT_SYMBOL_GPL vmlinux 0xd01fc97a	init_user_ns
 EXPORT_SYMBOL_GPL vmlinux 0xd0243111	sysdev_remove_file
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd040eb49	fib_rules_lookup
 EXPORT_SYMBOL_GPL vmlinux 0xd0bfa628	tcp_reno_cong_avoid
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart

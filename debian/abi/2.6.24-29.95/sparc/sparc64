@@ -2278,6 +2278,7 @@ EXPORT_SYMBOL vmlinux 0x34a73eab	blk_start_queueing
 EXPORT_SYMBOL vmlinux 0x34da56ad	pci_get_slot
 EXPORT_SYMBOL vmlinux 0x34e8e918	elv_rb_del
 EXPORT_SYMBOL vmlinux 0x34f9e7d5	idr_destroy
+EXPORT_SYMBOL vmlinux 0x35459ae2	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0x355157cd	pci_unregister_driver
 EXPORT_SYMBOL vmlinux 0x356486ad	sock_no_ioctl
 EXPORT_SYMBOL vmlinux 0x358a1bb6	find_task_by_pid_ns
@@ -2701,6 +2702,7 @@ EXPORT_SYMBOL vmlinux 0x61967f13	blk_queue_start_tag
 EXPORT_SYMBOL vmlinux 0x61b7b126	simple_strtoull
 EXPORT_SYMBOL vmlinux 0x61daaea7	sk_dst_check
 EXPORT_SYMBOL vmlinux 0x61f7633f	drm_vbl_send_signals
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6227c983	seq_escape
 EXPORT_SYMBOL vmlinux 0x625b2da5	console_start
 EXPORT_SYMBOL vmlinux 0x6272c6b9	pci_remove_bus_device
@@ -5811,6 +5813,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcf4d79ac	platform_device_add
 EXPORT_SYMBOL_GPL vmlinux 0xcf863b4a	pci_walk_bus
 EXPORT_SYMBOL_GPL vmlinux 0xcf992d9d	usb_interrupt_msg
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd0eb2b3a	spi_sync
 EXPORT_SYMBOL_GPL vmlinux 0xd16712f3	crypto_check_attr_type

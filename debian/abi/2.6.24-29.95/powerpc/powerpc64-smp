@@ -3019,6 +3019,7 @@ EXPORT_SYMBOL vmlinux 0x3490aebf	pci_set_power_state
 EXPORT_SYMBOL vmlinux 0x349cba85	strchr
 EXPORT_SYMBOL vmlinux 0x34c106fb	_lv1_add_lpm_event_bookmark
 EXPORT_SYMBOL vmlinux 0x35146399	bioset_free
+EXPORT_SYMBOL vmlinux 0x35459ae2	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0x35aaf9a0	simple_sync_file
 EXPORT_SYMBOL vmlinux 0x35aed63e	sock_init_data
 EXPORT_SYMBOL vmlinux 0x35c2ba9e	refrigerator
@@ -3471,6 +3472,7 @@ EXPORT_SYMBOL vmlinux 0x61eef2c9	_insb
 EXPORT_SYMBOL vmlinux 0x61ff6ff0	elv_queue_empty
 EXPORT_SYMBOL vmlinux 0x62201243	end_that_request_first
 EXPORT_SYMBOL vmlinux 0x6220b988	_spin_lock_irq
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x624cfb04	proc_dointvec_userhz_jiffies
 EXPORT_SYMBOL vmlinux 0x626fbcb5	alloc_etherdev_mq
 EXPORT_SYMBOL vmlinux 0x62737e1d	sock_unregister
@@ -7037,6 +7039,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xd0177bf5	spu_add_sysdev_attr_group
 EXPORT_SYMBOL_GPL vmlinux 0xd01fc97a	init_user_ns
 EXPORT_SYMBOL_GPL vmlinux 0xd026332a	devres_remove_group
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd084ae3a	ps3_vuart_port_driver_unregister
 EXPORT_SYMBOL_GPL vmlinux 0xd0a666bc	of_irq_map_one
 EXPORT_SYMBOL_GPL vmlinux 0xd0a7ebe4	class_device_create_bin_file

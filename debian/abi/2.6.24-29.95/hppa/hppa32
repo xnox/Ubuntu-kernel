@@ -1980,6 +1980,7 @@ EXPORT_SYMBOL vmlinux 0x61c8a7f3	finish_wait
 EXPORT_SYMBOL vmlinux 0x61cd6e7b	xdr_encode_array2
 EXPORT_SYMBOL vmlinux 0x61d69f59	__xfrm_state_delete
 EXPORT_SYMBOL vmlinux 0x621b855c	simple_prepare_write
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x62737e1d	sock_unregister
 EXPORT_SYMBOL vmlinux 0x62d3250f	kernel_read
 EXPORT_SYMBOL vmlinux 0x62de9094	igrab
@@ -3158,6 +3159,7 @@ EXPORT_SYMBOL vmlinux 0xe193a682	filemap_fdatawait
 EXPORT_SYMBOL vmlinux 0xe1955262	inetdev_by_index
 EXPORT_SYMBOL vmlinux 0xe1b20fc3	is_bad_inode
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe24d3a97	jiffies_64
 EXPORT_SYMBOL vmlinux 0xe25760a0	proc_doulongvec_minmax
 EXPORT_SYMBOL vmlinux 0xe2bbd43a	outb
@@ -4740,6 +4742,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcfcff7b9	scatterwalk_copychunks
 EXPORT_SYMBOL_GPL vmlinux 0xcfe5de5e	spi_register_driver
 EXPORT_SYMBOL_GPL vmlinux 0xcffa2aff	spi_populate_width_msg
 EXPORT_SYMBOL_GPL vmlinux 0xd037629f	bus_for_each_dev
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd051e438	scsi_eh_ready_devs
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd0f6d93d	sysdev_class_remove_file

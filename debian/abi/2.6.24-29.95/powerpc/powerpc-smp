@@ -3493,6 +3493,7 @@ EXPORT_SYMBOL vmlinux 0x61eab561	tty_wait_until_sent
 EXPORT_SYMBOL vmlinux 0x61eef2c9	_insb
 EXPORT_SYMBOL vmlinux 0x621be407	input_close_device
 EXPORT_SYMBOL vmlinux 0x6220b988	_spin_lock_irq
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x623d7182	_chrp_type
 EXPORT_SYMBOL vmlinux 0x62493493	kobject_unregister
 EXPORT_SYMBOL vmlinux 0x6264650b	skb_seq_read
@@ -4725,6 +4726,7 @@ EXPORT_SYMBOL vmlinux 0xe1b2dca9	tcp_mtup_init
 EXPORT_SYMBOL vmlinux 0xe1defeb0	iov_iter_copy_from_user_atomic
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
 EXPORT_SYMBOL vmlinux 0xe1e1c9b0	_atomic_dec_and_lock
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe212fdad	__alloc_pages
 EXPORT_SYMBOL vmlinux 0xe2304303	mac_map_monitor_sense
 EXPORT_SYMBOL vmlinux 0xe24d3a97	jiffies_64
@@ -6906,6 +6908,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcf2f2495	fib_rules_lookup
 EXPORT_SYMBOL_GPL vmlinux 0xcf9db23f	rt_mutex_timed_lock
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xd01fc97a	init_user_ns
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd085f45e	fb_bl_default_curve
 EXPORT_SYMBOL_GPL vmlinux 0xd0b6aa00	ip_route_output_flow
 EXPORT_SYMBOL_GPL vmlinux 0xd0bccdf2	pci_find_ht_capability

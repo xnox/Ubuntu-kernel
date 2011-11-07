@@ -2285,6 +2285,7 @@ EXPORT_SYMBOL vmlinux 0x34edc16f	fb_pan_display
 EXPORT_SYMBOL vmlinux 0x34f98486	proc_mkdir
 EXPORT_SYMBOL vmlinux 0x3515e255	remove_inode_hash
 EXPORT_SYMBOL vmlinux 0x352cd507	vio_send_sid
+EXPORT_SYMBOL vmlinux 0x35459ae2	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0x35507e08	fb_get_mode
 EXPORT_SYMBOL vmlinux 0x358e1a3d	xfrm_unregister_km
 EXPORT_SYMBOL vmlinux 0x35a6bebb	reset_files_struct
@@ -2729,6 +2730,7 @@ EXPORT_SYMBOL vmlinux 0x6203969e	xfrm_policy_register_afinfo
 EXPORT_SYMBOL vmlinux 0x620cc2eb	pci_bus_read_config_dword
 EXPORT_SYMBOL vmlinux 0x621d3a06	sock_recvmsg
 EXPORT_SYMBOL vmlinux 0x621e07d8	unlock_super
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x62317440	sk_reset_timer
 EXPORT_SYMBOL vmlinux 0x623f5c16	kernel_recvmsg
 EXPORT_SYMBOL vmlinux 0x62737e1d	sock_unregister
@@ -5887,6 +5889,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcf75fc3c	crypto_register_template
 EXPORT_SYMBOL_GPL vmlinux 0xcf821caf	spi_register_master
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xd020d4a7	devres_get
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd08fa7c5	fb_deferred_io_open
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd12b45db	debugfs_rename

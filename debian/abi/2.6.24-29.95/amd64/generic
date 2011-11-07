@@ -3272,6 +3272,7 @@ EXPORT_SYMBOL vmlinux 0x615f1469	kobject_get
 EXPORT_SYMBOL vmlinux 0x618b61a7	tcf_em_register
 EXPORT_SYMBOL vmlinux 0x61b7b126	simple_strtoull
 EXPORT_SYMBOL vmlinux 0x62049256	acpi_disable
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6237f6b5	acpi_enable_event
 EXPORT_SYMBOL vmlinux 0x625a8d4f	load_nls
 EXPORT_SYMBOL vmlinux 0x62737e1d	sock_unregister
@@ -4522,6 +4523,7 @@ EXPORT_SYMBOL vmlinux 0xe1761617	security_inet_conn_request
 EXPORT_SYMBOL vmlinux 0xe17812a1	xfrm_state_insert
 EXPORT_SYMBOL vmlinux 0xe1bfa8a2	pnp_activate_dev
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe21acb82	pcim_enable_device
 EXPORT_SYMBOL vmlinux 0xe2237068	blk_queue_bounce
 EXPORT_SYMBOL vmlinux 0xe238c8c5	skb_make_writable
@@ -6737,6 +6739,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcfc39e6e	kobject_get_path
 EXPORT_SYMBOL_GPL vmlinux 0xcfc58001	inet_csk_reqsk_queue_hash_add
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xd01d0941	platform_device_register_simple
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd0b1a212	anon_transport_class_unregister
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd0e46be9	__rtnl_link_unregister

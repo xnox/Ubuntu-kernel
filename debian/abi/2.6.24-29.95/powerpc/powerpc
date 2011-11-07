@@ -3476,6 +3476,7 @@ EXPORT_SYMBOL vmlinux 0x61eef2c9	_insb
 EXPORT_SYMBOL vmlinux 0x62087833	udplite_prot
 EXPORT_SYMBOL vmlinux 0x620ebf92	atm_init_aal5
 EXPORT_SYMBOL vmlinux 0x621a606a	sk_stream_error
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x623d7182	_chrp_type
 EXPORT_SYMBOL vmlinux 0x626f9445	generic_permission
 EXPORT_SYMBOL vmlinux 0x62737e1d	sock_unregister
@@ -4685,6 +4686,7 @@ EXPORT_SYMBOL vmlinux 0xe1de38a2	of_device_uevent
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
 EXPORT_SYMBOL vmlinux 0xe1ee686f	ip_route_me_harder
 EXPORT_SYMBOL vmlinux 0xe1f63af1	ppc_ide_md
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe20488d0	register_snap_client
 EXPORT_SYMBOL vmlinux 0xe208aaf4	macio_release_resources
 EXPORT_SYMBOL vmlinux 0xe2304303	mac_map_monitor_sense
@@ -6839,6 +6841,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcfbe0c96	input_ff_destroy
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xcfd1e138	klist_next
 EXPORT_SYMBOL_GPL vmlinux 0xd01fc97a	init_user_ns
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd0a6a8ac	srcu_read_lock
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd0deb6f3	crypto_free_tfm

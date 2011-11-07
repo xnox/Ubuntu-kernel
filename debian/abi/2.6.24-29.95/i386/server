@@ -3340,6 +3340,7 @@ EXPORT_SYMBOL vmlinux 0x61e60dde	do_splice_to
 EXPORT_SYMBOL vmlinux 0x61fb5a29	block_commit_write
 EXPORT_SYMBOL vmlinux 0x62049256	acpi_disable
 EXPORT_SYMBOL vmlinux 0x621bdf7d	call_usermodehelper_exec
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6237f6b5	acpi_enable_event
 EXPORT_SYMBOL vmlinux 0x623fd391	copy_strings_kernel
 EXPORT_SYMBOL vmlinux 0x6241fd2c	acpi_install_address_space_handler
@@ -4563,6 +4564,7 @@ EXPORT_SYMBOL vmlinux 0xe17aa634	bio_phys_segments
 EXPORT_SYMBOL vmlinux 0xe19e538d	input_register_device
 EXPORT_SYMBOL vmlinux 0xe1d67043	input_inject_event
 EXPORT_SYMBOL vmlinux 0xe1df1e5f	sysctl_tcp_tso_win_divisor
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe204d208	netdev_features_change
 EXPORT_SYMBOL vmlinux 0xe23a5e08	dev_mc_add
 EXPORT_SYMBOL vmlinux 0xe23e4912	dma_alloc_coherent
@@ -6829,6 +6831,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xcf88ebc0	inet_csk_bind_conflict
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
 EXPORT_SYMBOL_GPL vmlinux 0xd01fc97a	init_user_ns
 EXPORT_SYMBOL_GPL vmlinux 0xd0243111	sysdev_remove_file
+EXPORT_SYMBOL_GPL vmlinux 0xd03c7700	secure_ipv4_port_ephemeral
 EXPORT_SYMBOL_GPL vmlinux 0xd044f13c	pci_block_user_cfg_access
 EXPORT_SYMBOL_GPL vmlinux 0xd0a9f119	file_ra_state_init
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
