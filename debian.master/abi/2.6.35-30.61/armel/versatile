@@ -3594,6 +3594,7 @@ EXPORT_SYMBOL vmlinux 0x61b67ce6	unregister_nls
 EXPORT_SYMBOL vmlinux 0x61b7b126	simple_strtoull
 EXPORT_SYMBOL vmlinux 0x61dbf958	pci_set_dma_seg_boundary
 EXPORT_SYMBOL vmlinux 0x620d6014	inet_csk_init_xmit_timers
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x62426581	phy_start_interrupts
 EXPORT_SYMBOL vmlinux 0x624e04eb	posix_unblock_lock
 EXPORT_SYMBOL vmlinux 0x62737e1d	sock_unregister
@@ -5194,6 +5195,7 @@ EXPORT_SYMBOL vmlinux 0xe1c6cf14	scsi_remove_device
 EXPORT_SYMBOL vmlinux 0xe1d3c7dc	ppp_input_error
 EXPORT_SYMBOL vmlinux 0xe1e1705f	proc_symlink
 EXPORT_SYMBOL vmlinux 0xe1f1de1a	kernel_read
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe206b3df	filemap_flush
 EXPORT_SYMBOL vmlinux 0xe228ce30	i2c_register_driver
 EXPORT_SYMBOL vmlinux 0xe23ae481	blk_iopoll_complete

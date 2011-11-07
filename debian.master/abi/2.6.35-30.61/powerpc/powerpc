@@ -4255,6 +4255,7 @@ EXPORT_SYMBOL vmlinux 0x61b7b126	simple_strtoull
 EXPORT_SYMBOL vmlinux 0x61eef2c9	_insb
 EXPORT_SYMBOL vmlinux 0x6215f3f4	pci_assign_resource
 EXPORT_SYMBOL vmlinux 0x6218a792	of_dev_get
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x623d7182	_chrp_type
 EXPORT_SYMBOL vmlinux 0x62530c5d	scsi_set_medium_removal
 EXPORT_SYMBOL vmlinux 0x626a4fcd	neigh_update
@@ -5891,6 +5892,7 @@ EXPORT_SYMBOL vmlinux 0xe192ad50	read_cache_pages
 EXPORT_SYMBOL vmlinux 0xe1d9925d	pcim_iomap_regions_request_all
 EXPORT_SYMBOL vmlinux 0xe1d992d2	netdev_class_create_file
 EXPORT_SYMBOL vmlinux 0xe1f1fe91	tcp_setsockopt
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe2117bd5	log_start_commit
 EXPORT_SYMBOL vmlinux 0xe229cc9d	deny_write_access
 EXPORT_SYMBOL vmlinux 0xe2304303	mac_map_monitor_sense
