@@ -1,3 +1,9 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-30.50) hardy-proposed; urgency=low
+
+  * Bump ABI to -30
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 08 Nov 2011 12:49:30 -0200
+
 linux-ubuntu-modules-2.6.24 (2.6.24-29.49) hardy; urgency=low
 
   [Tim Gardner]
