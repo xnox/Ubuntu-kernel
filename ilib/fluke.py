@@ -138,7 +138,7 @@ class m8846A():
             print 'Serial port not supported yet (send)'
         elif self.comm == 'net':
             while 1:
-                return self.telnet.read_until('\r\n')
+                return self.telnet.read_until('\r\n', 1)
         elif self.comm == 'gpib':
             print 'GPIB not supported yet (receive)'
         else:
@@ -284,6 +284,21 @@ class m8846A():
 
         return rs
 
+    def setRemoteMode(self):
+        """
+        Place the meter into remote mode. Front Panel keys are disabled
+        except for the 'local' button.
+        """
+        self.send('SYST:REM\r')
+        return
+
+    def setLocalMode(self):
+        """
+        Place the meter into local mode. Front panel keys enabled.
+        """
+        self.send('SYST:LOC\r')
+        return
+
     def setPanelMsg(self, message):
         """
         print a message on the meter front panel
@@ -345,13 +360,68 @@ class m8846A():
         self.send('DISP OFF\r')
         return
 
+# MEAS? - quick and simple
+# CONF - to change one or two parameters
+# READ? - take a measurement the next time a trigger happens
+#
+
+    def measureVoltage(self, macdc, mrange = 'Def', mresolution = 'Min'):
+        # TODO not finished or tested
+        """
+        Set to voltage measurement mode
+        macdc = 'AC' or 'DC'
+        mrange = ['Def'|'Min'|'Max']
+        mresolution = ['Def'|'Min'|'Max']
+        """
+        macdc = macdc.upper()
+        if macdc not in ['AC', 'DC']:
+            raise ValueError("Invalid Voltage measurement type")
+        mrange = mrange.upper()
+        if mrange not in ['DEF', 'MIN', 'MAX']:
+            raise valueError("Inavlid range for voltage measurement")
+        mresolution = mresolution.upper()
+        if mresolution not in ['DEF', 'MIN', 'MAX']:
+            raise valueError("Inavlid resolution for voltage measurement")
+
+        # Send a MEAS? Command
+        # TODO - What does "SCAL" do?
+        # MEAS:CURR:DC?DEF,MIN
+        command = 'MEAS:VOLT:%s?%s,%s\r' % (macdc, mrange, mresolution)
+        self.send(command)
+        stb = self.receive()
+        return stb
+
+    def measureCurrent(self, macdc, mrange = 'Def', mresolution = 'Min'):
+        """
+        Set to voltage measurement mode - Max rate is around 3.5 measurements/second
+        macdc = 'AC' or 'DC'
+        mrange = ['Def'|'Min'|'Max']
+        mresolution = ['Def'|'Min'|'Max']
+        """
+        macdc = macdc.upper()
+        if macdc not in ['AC', 'DC']:
+            raise ValueError("Invalid Voltage measurement type")
+        mrange = mrange.upper()
+        if mrange not in ['DEF', 'MIN', 'MAX']:
+            raise valueError("Inavlid range for voltage measurement")
+        mresolution = mresolution.upper()
+        if mresolution not in ['DEF', 'MIN', 'MAX']:
+            raise valueError("Inavlid resolution for voltage measurement")
+
+        command = 'MEAS:CURR:%s? %s,%s\r' % (macdc, mrange, mresolution)
+
+        self.send(command)
+
+        stb = self.receive()
+        return stb
+
     def setVoltage(self, mtype, mrange = 'Auto', mresolution = 'MAX', mbandwidth = None):
         """
         Set to voltage measurement mode
         mtype = 'AC' or 'DC'
         mrange = 'Auto', 'Min', 'Max', or a value
         mresolution = 'Min', 'Max', or a value
-        mbadnwidth = 3, 20, or 200
+        mbandwidth = 3, 20, or 200
         """
         mtype = mtype.upper()
         if mtype not in ['AC', 'DC']:

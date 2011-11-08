@@ -26,7 +26,9 @@
 #from array import *
 #import serial
 
-from time import sleep
+import time
+
+from time import sleep, time
 
 from instrument import Instrument
 
@@ -69,5 +71,25 @@ print 'meter time = ', t.strip()
 st = md.checkStatus()
 if st:
     print 'BAD STATUS = %d' % st
+
+md.setRemoteMode()
+
+# For Measuring Current -
+# Range of MAX selects the 10A input
+# Range of DEF selects the 400 mA input
+
+# The measureCurrent method can make a maximum of around 3.5 requests/second
+
+tstart = time()
+for i in range(100):
+    st = md.measureCurrent('DC', 'Max')
+tend = time()
+et = tend - tstart
+print "Elapsed time = ", et
+print "requests/second = ", (100.0/et)
+
+
+md.setLocalMode()
+
 #os = md.getStatusDump()
 #print os
