@@ -21,10 +21,10 @@ import urllib
 
 #calculate the change in numbers from last week
 def calculate_change(stat, key):
-    if stat > stats[key]:
+    if key in stats.keys() and stat > stats[key]:
         change = "up"
         change_num = stat - stats[key]
-    elif stat < stats[key]:
+    elif key in stats.keys() and stat < stats[key]:
         change = "down"
         change_num = stats[key] - stat
     else:

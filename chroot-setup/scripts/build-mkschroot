@@ -112,7 +112,7 @@ case $SUITE in
 		esac
 		;;
 	natty|oneiric|precise)
-		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev"
+		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
 			i386|amd64)
@@ -154,7 +154,7 @@ then
 	#
 	QEMU_KVM_EXTRAS_STATIC_MINVERSION=0.15.50-2011.08-0ubuntu4~ppa10.04.1
 	QEMU_KVM_EXTRAS_STATIC_VERSION=`dpkg-query --show qemu-kvm-extras-static|cut -f 2`
-	if ! dpkg --compare-versions ${QEMU_KVM_EXTRAS_STATIC_MINVERSION} ge ${QEMU_KVM_EXTRAS_STATIC_VERSION}
+	if dpkg --compare-versions ${QEMU_KVM_EXTRAS_STATIC_VERSION} lt ${QEMU_KVM_EXTRAS_STATIC_MINVERSION}
 	then
 		echo qemu-kvm-extras-static must be at a minimum version of ${QEMU_KVM_EXTRAS_STATIC_MINVERSION} to support armel.
 		echo Try 'echo deb http://ppa.launchpad.net/linaro-maintainers/tools/ubuntu lucid main | sudo tee /etc/apt/sources.list.d/linaro.list'

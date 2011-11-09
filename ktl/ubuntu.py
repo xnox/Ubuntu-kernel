@@ -26,7 +26,7 @@ class Ubuntu:
             'series_version' : '12.04',
             'kernel'    : '3.2.0',
             'name'      : 'precise',
-            'supported' : False,
+            'supported' : True,
             # adjust packages when this goes live
             'packages'  :
             [
@@ -49,7 +49,6 @@ class Ubuntu:
         },
         '11.10' :
         {
-            'development' : True,        # This is the version that is currently under development
             'series_version' : '11.10',
             'kernel'    : '3.0.0',
             'name'      : 'oneiric',
@@ -173,7 +172,6 @@ class Ubuntu:
                     'lbm' : 'linux-backports-modules-2.6.32'
                 },
                 'linux-fsl-imx51' : { 'meta' : 'linux-meta-fsl-imx51' },
-                'linux-mvl-dove' : { 'meta' : 'linux-meta-mvl-dove' },
                 'linux-ec2' : { 'meta' : 'linux-meta-ec2' },
                 'linux-lts-backport-oneiric' : {
                     'meta' : 'linux-meta-lts-backport-oneiric'
@@ -187,7 +185,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-fsl-imx51', 'linux-mvl-dove', 'linux-ec2' ]
+                'linux' : [ 'linux-fsl-imx51', 'linux-ec2' ]
             },
             'backport-packages' :
             {
