@@ -26,7 +26,7 @@ class Ubuntu:
             'series_version' : '12.04',
             'kernel'    : '3.2.0',
             'name'      : 'precise',
-            'supported' : False,
+            'supported' : True,
             # adjust packages when this goes live
             'packages'  :
             [
