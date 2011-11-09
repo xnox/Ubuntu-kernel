@@ -29,7 +29,7 @@
 #import serial
 
 from telnetlib          import Telnet
-from time               import sleep, localtime, strftime
+from time               import sleep, localtime, strftime, time
 
 class Model():
     def __init__(self, modelname):
@@ -49,6 +49,8 @@ class m8846A():
         TODO
         """
         self.comm = None
+        self.dump = False
+        self.rxtimeout = 5.0
         return
 
     def __del__(self):
@@ -102,6 +104,11 @@ class m8846A():
 
     def send(self, output):
         # Send output to the device
+        if self.dump:
+            print '%2.2f sending:  <' % time(),
+            for ch in output:
+                print "%02X" % ord(ch),
+            print '> (%s)' % output.rstrip()
         if self.comm is None:
             print 'connection not initialized for send'
         elif self.comm == 'serial':
@@ -131,19 +138,24 @@ class m8846A():
 
     def receive(self):
         # receive from the device
-        results = ''
+        result = ''
         if self.comm is None:
             print 'connection not initialized for receive'
         elif self.comm == 'serial':
             print 'Serial port not supported yet (send)'
         elif self.comm == 'net':
-            while 1:
-                return self.telnet.read_until('\r\n', 1)
+            result =  self.telnet.read_until('\r\n', self.rxtimeout)
         elif self.comm == 'gpib':
             print 'GPIB not supported yet (receive)'
         else:
             raise RuntimeError("unexpected comm type of <%s> found internally on receive" % self.comm)
-        return results
+
+        if self.dump:
+            print '%2.2f received: <' % time(),
+            for ch in result:
+                print "%02X" % ord(ch),
+            print '> (%s)' % result.rstrip()
+        return result
 
     def getIdent(self):
         """
@@ -381,12 +393,9 @@ class m8846A():
             raise valueError("Inavlid range for voltage measurement")
         mresolution = mresolution.upper()
         if mresolution not in ['DEF', 'MIN', 'MAX']:
-            raise valueError("Inavlid resolution for voltage measurement")
+            raise valueError("Invalid resolution for voltage measurement")
 
-        # Send a MEAS? Command
-        # TODO - What does "SCAL" do?
-        # MEAS:CURR:DC?DEF,MIN
-        command = 'MEAS:VOLT:%s?%s,%s\r' % (macdc, mrange, mresolution)
+        command = 'MEAS:VOLT:%s? %s,%s\r' % (macdc, mrange, mresolution)
         self.send(command)
         stb = self.receive()
         return stb
@@ -406,12 +415,10 @@ class m8846A():
             raise valueError("Inavlid range for voltage measurement")
         mresolution = mresolution.upper()
         if mresolution not in ['DEF', 'MIN', 'MAX']:
-            raise valueError("Inavlid resolution for voltage measurement")
+            raise valueError("Invalid resolution for voltage measurement")
 
         command = 'MEAS:CURR:%s? %s,%s\r' % (macdc, mrange, mresolution)
-
         self.send(command)
-
         stb = self.receive()
         return stb
 

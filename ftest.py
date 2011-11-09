@@ -74,22 +74,42 @@ if st:
 
 md.setRemoteMode()
 
+# =================
+# Measuring Current
+# =================
+
 # For Measuring Current -
 # Range of MAX selects the 10A input
 # Range of DEF selects the 400 mA input
+if False:
+    st = md.measureCurrent('DC', 'Max')
+    print 'Measured Current = ', st
 
 # The measureCurrent method can make a maximum of around 3.5 requests/second
+# according to this measurement
+if False:
+    tstart = time()
+    for i in range(100):
+        st = md.measureCurrent('DC', 'Max')
+    tend = time()
+    et = tend - tstart
+    print "Elapsed time = ", et
+    print "requests/second = ", (100.0/et)
 
-tstart = time()
-for i in range(100):
-    st = md.measureCurrent('DC', 'Max')
-tend = time()
-et = tend - tstart
-print "Elapsed time = ", et
-print "requests/second = ", (100.0/et)
+# =================
+# Measuring Voltage
+# =================
 
+# For Measuring Voltage -
+# Some measurements take longer than 1 second
+if True:
+    st = md.measureVoltage('DC', 'Max')
+    print 'Measured DC Voltage = ', st.strip()
+    st = md.measureVoltage('AC', 'Def')
+    print 'Measured AC Voltage = ', st.strip()
 
-md.setLocalMode()
 
 #os = md.getStatusDump()
 #print os
+
+md.setLocalMode()
