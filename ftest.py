@@ -74,9 +74,9 @@ if st:
 
 md.setRemoteMode()
 
-# =================
-# Measuring Current
-# =================
+# =======================================
+# Measuring Current with a single command
+# =======================================
 
 # For Measuring Current -
 # Range of MAX selects the 10A input
@@ -96,18 +96,65 @@ if False:
     print "Elapsed time = ", et
     print "requests/second = ", (100.0/et)
 
-# =================
-# Measuring Voltage
-# =================
+# =======================================
+# Measuring Voltage with a single command
+# =======================================
 
 # For Measuring Voltage -
 # Some measurements take longer than 1 second
-if True:
+if False:
     st = md.measureVoltage('DC', 'Max')
     print 'Measured DC Voltage = ', st.strip()
     st = md.measureVoltage('AC', 'Def')
     print 'Measured AC Voltage = ', st.strip()
 
+# =======================================
+# Measuring Voltage with set and read
+# =======================================
+
+if False:
+    print 'sending set'
+    md.setVoltage('DC', 'Max')
+    print 'sending read'
+    st = md.read()
+    print 'Measured DC Voltage = ', st.strip()
+
+if False:
+    print 'sending set'
+    md.setVoltage('AC', 'Max')
+    print 'sending read'
+    st = md.read()
+    print 'Measured AC Voltage = ', st.strip()
+
+# ================================================
+# speed test - Measuring Voltage with set and read
+# ================================================
+# for DC voltage, rate is around 4/second
+# For AC Voltage, rate is around 0.4/second
+if True:
+    print 'sending set DC'
+    md.setVoltage('DC', 'Max')
+    sleep(1.0)
+    print 'sending reads'
+    tstart = time()
+    for i in range(100):
+        st = md.read()
+    tend = time()
+    et = tend - tstart
+    print "Elapsed time = ", et
+    print "requests/second = ", (100.0/et)
+
+    print 'sending set AC'
+    md.setVoltage('AC', 'Max')
+    sleep(1.0)
+    print 'sending reads'
+    tstart = time()
+    for i in range(100):
+        st = md.read()
+    tend = time()
+    et = tend - tstart
+    print "Elapsed time = ", et
+    print "requests/second = ", (100.0/et)
 
 #os = md.getStatusDump()
 #print os

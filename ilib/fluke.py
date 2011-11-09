@@ -422,29 +422,42 @@ class m8846A():
         stb = self.receive()
         return stb
 
-    def setVoltage(self, mtype, mrange = 'Auto', mresolution = 'MAX', mbandwidth = None):
+    def setVoltage(self, macdc, mrange = 'Def', mresolution = 'Min'):
         """
-        Set to voltage measurement mode
+        Set up the instrument using a CONF command to make current measurements,
+        with actual measurements requested by a subsequent READ? command
         mtype = 'AC' or 'DC'
         mrange = 'Auto', 'Min', 'Max', or a value
         mresolution = 'Min', 'Max', or a value
         mbandwidth = 3, 20, or 200
         """
-        mtype = mtype.upper()
-        if mtype not in ['AC', 'DC']:
+        macdc = macdc.upper()
+        if macdc not in ['AC', 'DC']:
             raise ValueError("Invalid Voltage measurement type")
         mrange = mrange.upper()
-        if mrange not in ['', '']:
+        if mrange not in ['DEF', 'MIN', 'MAX']:
             raise valueError("Inavlid range for voltage measurement")
         mresolution = mresolution.upper()
-        mbandwidth = mbandwidth.upper()
-        # Send a CONFigure Command
-        
-        
+        if mresolution not in ['DEF', 'MIN', 'MAX']:
+            raise valueError("Invalid resolution for voltage measurement")
+
+        command = 'CONF:VOLT:%s %s,%s\r' % (macdc, mrange, mresolution)
+        #command = 'CONF:VOLT:DC 10\r'
+        self.send(command)
         return
+
+    def read(self):
+        """
+        Read the measurement set up by a previous call to setVoltage() or setCurrent()
+        """
+        command = 'READ?\r'
+        self.send(command)
+        stb = self.receive()
+        return stb
 
     def setCurrent(self):
         """
-        Set to current measurement mode
+        Set up the instrument using a CONF command to make current measurements,
+        with actual measurements requested by a subsequent READ? command
         """
         return
