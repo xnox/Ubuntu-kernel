@@ -1,3 +1,12 @@
+linux-restricted-modules-2.6.24 (2.6.24.18-30.11) hardy-proposed; urgency=low
+
+  * Bump upload number, for reupload to c-k-t PPA with fixed source package
+    (previous version had its source package wrongly created, with missing
+    .o files required for build, due to stock -I option passed to
+    dpkg-buildpackage)
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 09 Nov 2011 20:37:57 -0200
+
 linux-restricted-modules-2.6.24 (2.6.24.18-30.10) hardy-proposed; urgency=low
 
   [Tim Gardner]
