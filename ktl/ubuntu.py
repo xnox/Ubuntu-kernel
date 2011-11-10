@@ -294,6 +294,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
+        '3.2.0'    : db['12.04'],
         '3.0.0'    : db['11.10'],
         '2.6.38'   : db['11.04'],
         '2.6.35'   : db['10.10'],
@@ -308,6 +309,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
+        'precise'  : db['12.04'],
         'oneiric'  : db['11.10'],
         'natty'    : db['11.04'],
         'maverick' : db['10.10'],
