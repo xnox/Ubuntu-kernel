@@ -1,3 +1,9 @@
+linux-meta-lts-backport-natty (2.6.38.13.23) lucid-proposed; urgency=low
+
+  * linux-natty 2.6.38-13.52
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 10 Nov 2011 15:58:40 -0200
+
 linux-meta-lts-backport-natty (2.6.38.12.22) lucid-proposed; urgency=low
 
   * linux-natty 2.6.38-12.51
