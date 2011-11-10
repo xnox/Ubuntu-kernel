@@ -4841,6 +4841,7 @@ EXPORT_SYMBOL vmlinux 0x62028288	neigh_seq_next
 EXPORT_SYMBOL vmlinux 0x62049256	acpi_disable
 EXPORT_SYMBOL vmlinux 0x62193598	pnp_range_reserved
 EXPORT_SYMBOL vmlinux 0x6223cafb	_raw_spin_unlock_bh
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6237f6b5	acpi_enable_event
 EXPORT_SYMBOL vmlinux 0x6241a2ab	__copy_from_user_ll_nocache
 EXPORT_SYMBOL vmlinux 0x624e9bd9	skb_gro_reset_offset
@@ -6638,6 +6639,7 @@ EXPORT_SYMBOL vmlinux 0xe19e2393	jbd2_journal_force_commit
 EXPORT_SYMBOL vmlinux 0xe1abffa2	mb_cache_entry_get
 EXPORT_SYMBOL vmlinux 0xe1c3ed75	slow_work_cancel
 EXPORT_SYMBOL vmlinux 0xe1dff18f	mmc_detect_change
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe21fb6bd	vfs_getattr
 EXPORT_SYMBOL vmlinux 0xe23ae481	blk_iopoll_complete
 EXPORT_SYMBOL vmlinux 0xe24d3a97	jiffies_64

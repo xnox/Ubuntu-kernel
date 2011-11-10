@@ -1,9 +1,48 @@
-linux-lts-backport-maverick (2.6.35-30.61~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-maverick (2.6.35-31.62~lucid1) lucid-proposed; urgency=low
 
   [Herton R. Krzesinski]
 
   * Release Tracking Bug
-    - LP: #872660
+    - LP: #888571
+
+  [ Upstream Kernel Changes ]
+
+  * ipv6: restore correct ECN handling on TCP xmit
+    - LP: #872179
+  * nl80211: fix overflow in ssid_len - CVE-2011-2517
+    - LP: #869245
+    - CVE-2011-2517
+  * vm: fix vm_pgoff wrap in stack expansion - CVE-2011-2496
+    - LP: #869243
+    - CVE-2011-2496
+  * vm: fix vm_pgoff wrap in upward expansion - CVE-2011-2496
+    - LP: #869243
+    - CVE-2011-2496
+  * ksm: fix NULL pointer dereference in scan_get_next_rmap_item() -
+    CVE-2011-2183
+    - LP: #869227
+    - CVE-2011-2183
+  * NLM: Don't hang forever on NLM unlock requests - CVE-2011-2491
+    - LP: #869237
+    - CVE-2011-2491
+  * cifs: clean up cifs_find_smb_ses (try #2), CVE-2011-1585
+    - LP: #869208
+    - CVE-2011-1585
+  * cifs: fix NULL pointer dereference in cifs_find_smb_ses, CVE-2011-1585
+    - LP: #869208
+    - CVE-2011-1585
+  * cifs: check for NULL session password, CVE-2011-1585
+    - LP: #869208
+    - CVE-2011-1585
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 10 Nov 2011 15:25:11 -0200
+
+linux (2.6.35-30.61) maverick-proposed; urgency=low
+
+  [Herton R. Krzesinski]
+
+  * Release Tracking Bug
+    - LP: #871912
 
   [ Stefan Bader ]
 
@@ -45,7 +84,7 @@ linux-lts-backport-maverick (2.6.35-30.61~lucid1) lucid-proposed; urgency=low
     - LP: #869259
     - CVE-2011-2905
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 13 Oct 2011 14:45:27 -0300
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 10 Oct 2011 14:37:08 -0300
 
 linux (2.6.35-30.60) maverick-proposed; urgency=low
 

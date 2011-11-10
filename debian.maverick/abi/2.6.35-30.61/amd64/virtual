@@ -4695,6 +4695,7 @@ EXPORT_SYMBOL vmlinux 0x61ee39dd	bio_sector_offset
 EXPORT_SYMBOL vmlinux 0x62049256	acpi_disable
 EXPORT_SYMBOL vmlinux 0x621515f2	sock_init_data
 EXPORT_SYMBOL vmlinux 0x6223cafb	_raw_spin_unlock_bh
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x6237f6b5	acpi_enable_event
 EXPORT_SYMBOL vmlinux 0x62406b5c	noop_qdisc
 EXPORT_SYMBOL vmlinux 0x625f8af8	netif_carrier_off
@@ -6458,6 +6459,7 @@ EXPORT_SYMBOL vmlinux 0xe1b49388	pskb_expand_head
 EXPORT_SYMBOL vmlinux 0xe1d01090	swiotlb_dma_supported
 EXPORT_SYMBOL vmlinux 0xe1f3bef2	pm860x_set_bits
 EXPORT_SYMBOL vmlinux 0xe1f58412	pci_claim_resource
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe23ae481	blk_iopoll_complete
 EXPORT_SYMBOL vmlinux 0xe24050c7	scnprintf
 EXPORT_SYMBOL vmlinux 0xe245b1cd	nf_log_bind_pf
