@@ -2862,6 +2862,7 @@ EXPORT_SYMBOL vmlinux 0x61f9cdbc	skb_add_rx_frag
 EXPORT_SYMBOL vmlinux 0x61ff2633	crypto_freereq
 EXPORT_SYMBOL vmlinux 0x6212704b	create_proc_entry
 EXPORT_SYMBOL vmlinux 0x62150c03	sock_release
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x622e85e6	netif_notify_peers
 EXPORT_SYMBOL vmlinux 0x6247cf6c	ds2782_reg_get
 EXPORT_SYMBOL vmlinux 0x624944d3	scsi_rescan_device
@@ -4443,6 +4444,7 @@ EXPORT_SYMBOL vmlinux 0xe1b89435	grab_cache_page_write_begin
 EXPORT_SYMBOL vmlinux 0xe1c36f63	register_sound_dsp
 EXPORT_SYMBOL vmlinux 0xe1d14305	skb_free_datagram
 EXPORT_SYMBOL vmlinux 0xe1e2aac7	__xfrm_lookup
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe20c9214	snd_iprintf
 EXPORT_SYMBOL vmlinux 0xe224e127	elv_rb_find
 EXPORT_SYMBOL vmlinux 0xe23ae481	blk_iopoll_complete
