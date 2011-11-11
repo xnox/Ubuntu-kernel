@@ -51,7 +51,7 @@ no_compat_wireless_flavours="xen virtual"
 #
 # Explicitly enable compat-wireless at release time.
 #
-do_compat_wireless := 
+do_compat_wireless := 3.1.0 
 do_net=true
 
 #
