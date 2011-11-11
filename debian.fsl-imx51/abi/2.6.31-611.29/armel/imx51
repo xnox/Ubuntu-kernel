@@ -2620,6 +2620,7 @@ EXPORT_SYMBOL vmlinux 0x61d3d91c	sah_insert_skha_algorithm
 EXPORT_SYMBOL vmlinux 0x6207d380	genl_unregister_ops
 EXPORT_SYMBOL vmlinux 0x62147c35	__serio_register_port
 EXPORT_SYMBOL vmlinux 0x621af6fb	skb_kill_datagram
+EXPORT_SYMBOL vmlinux 0x6225637e	md5_transform
 EXPORT_SYMBOL vmlinux 0x623851f3	udp_lib_get_port
 EXPORT_SYMBOL vmlinux 0x623fa2df	neigh_ifdown
 EXPORT_SYMBOL vmlinux 0x6241f82c	ps2_drain
@@ -4236,6 +4237,7 @@ EXPORT_SYMBOL vmlinux 0xe1aa1dac	snd_pcm_notify
 EXPORT_SYMBOL vmlinux 0xe1c77f0f	mxc_dma_disable
 EXPORT_SYMBOL vmlinux 0xe1db4985	init_timer_key
 EXPORT_SYMBOL vmlinux 0xe1f17b1f	task_nice
+EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe2288002	unregister_md_personality
 EXPORT_SYMBOL vmlinux 0xe24d3a97	jiffies_64
 EXPORT_SYMBOL vmlinux 0xe28f7687	security_d_instantiate
