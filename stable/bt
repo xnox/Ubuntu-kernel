@@ -170,7 +170,8 @@ class Cmdline:
 
                 elif opt in ('--tasks'):
                     self.cfg['operations'].append('add tasks')
-                    for t in val.replace(' ', '').split(','):
+                    self.cfg['tasks'] = []
+                    for t in val.split(','):
                         self.cfg['tasks'].append(t)
 
         except GetoptError as e:
@@ -194,27 +195,27 @@ class BugTrackerReport():
     def __init__(self, db):
         self.db = db
         self.importance_color = {
-                "Unknown"       : "#000000",
-                "Critical"      : "#ff4500", # "#cc0033",
-                "High"          : "#ffff22", # "#ff00cc",
-                "Medium"        : "#33ff11", # "#009900",
-                "Low"           : "#66ffff", # "#cc9900",
-                "Wishlist"      : "#ffffff", # "#0066cc",
-                "Undecided"     : "#000000"  # "#999999"
+            "Unknown"       : "importance-unknown",
+            "Critical"      : "importance-critical",
+            "High"          : "importance-high",
+            "Medium"        : "importance-medium",
+            "Low"           : "importance-low",
+            "Wishlist"      : "importance-wishlist",
+            "Undecided"     : "importance-undecided"
             }
         self.status_color     = {
-                "New"           : "#ffffff", #"#ff00cc",
-                "Incomplete"    : "#ffff22",
-                "Opinion"       : "#000000",
-                "Invalid"       : "#000000",
-                "Won't Fix"     : "#000000",
-                "Expired"       : "#000000",
-                "Confirmed"     : "#66ffff", #"#0066cc",
-                "Triaged"       : "#33ff11", #"#ff9933",
-                "In Progress"   : "#ff88ff",
-                "Fix Committed" : "#000000", #"#006600",
-                "Fix Released"  : "#000000", #"#009900",
-                "Unknown"       : "#000000"
+            "New"           : "status-new",
+            "Incomplete"    : "status-incomplete",
+            "Confirmed"     : "status-confirmed",
+            "Triaged"       : "status-triaged",
+            "In Progress"   : "status-in_progress",
+            "Fix Committed" : "status-fix_committed",
+            "Fix Released"  : "status-fix_released",
+            "Invalid"       : "status-invalid",
+            "Won't Fix"     : "status-wont_fix",
+            "Opinion"       : "status-opinion",
+            "Expired"       : "status-expired",
+            "Unknown"       : "status-unknown"
             }
 
         return
@@ -243,8 +244,7 @@ class BugTrackerReport():
             retval += '        <title>%s</title>\n' % self.db['title']
 
         retval += '''
-        <link rel="stylesheet" href="css/themes/bjf/style.css" type="text/css" media="print, projection, screen" />
-        <link rel="stylesheet" href="css/style.css" type="text/css" media="print, projection, screen" />
+        <link rel="stylesheet" href="css/light-style.css" type="text/css" media="print, projection, screen" />
         <link href='http://fonts.googleapis.com/css?family=Cantarell&subset=latin'              rel='stylesheet' type='text/css'>
         <script type="text/javascript" src="js/jquery-latest.js"></script>
         <script type="text/javascript" src="js/jquery.tablesorter.js"></script>'''
@@ -355,9 +355,9 @@ class BugTrackerReport():
         when_style = ''
         if ago.days == 0:
             if ago.hours == 0:
-                when_style = 'style="color: #ff0000"'
+                when_style = "importance-critical"
             else:
-                when_style = 'style="color: #ffff00"'
+                when_style = "importance-medium"
 
         retval = ''
 
@@ -365,26 +365,26 @@ class BugTrackerReport():
             for t in self.db['bugs'][bug_id]['tasks']:
                 if t['name'] in self.db['bugs'][bug_id]['tasks tracked']:
                     retval += '                                <tr>\n'
-                    retval += '                                    <td ><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                         # Bug
-                    retval += '                                    <td >%s</td>\n' % t['name'].replace(' (Ubuntu)', '').replace('Ubuntu ', '')                  # Task Name
-                    retval += '                                    <td>%s</td>\n' % bug['title']                                                                # Summary
-                    retval += '                                    <td style="color: %s">%s</td>\n' % (self.importance_color[t['importance']], t['importance']) # Importance
-                    retval += '                                    <td style="color: %s">%s</td>\n' % (self.status_color[t['status']], t['status'])             # Status
-                    retval += '                                    <td >%s</td>\n' % t['assignee']                                                              # Assignee
-                    retval += '                                    <td %s>%s</td>\n' % (when_style, when)                                                       # Last comment
-                    retval += '                                    <td >%d</td>\n' % bug['gravity']                                                             # Gravity
+                    retval += '                                    <td ><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                  # Bug
+                    retval += '                                    <td >%s</td>\n' % t['name'].replace(' (Ubuntu)', '').replace('Ubuntu ', '')           # Task Name
+                    retval += '                                    <td>%s</td>\n' % bug['title']                                                         # Summary
+                    retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[t['importance']], t['importance']) # Importance
+                    retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[t['status']], t['status'])             # Status
+                    retval += '                                    <td >%s</td>\n' % t['assignee']                                                       # Assignee
+                    retval += '                                    <td class="%s">%s</td>\n' % (when_style, when)                                        # Last comment
+                    retval += '                                    <td >%d</td>\n' % bug['gravity']                                                      # Gravity
                     retval += '                                </tr>\n'
         else:
             for t in self.db['bugs'][bug_id]['tasks']:
                 retval += '                                <tr>\n'
-                retval += '                                    <td ><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                         # Bug
-                retval += '                                    <td >%s</td>\n' % t['name'].replace(' (Ubuntu)', '').replace('Ubuntu ', '')                  # Task Name
-                retval += '                                    <td>%s</td>\n' % bug['title']                                                                # Summary
-                retval += '                                    <td style="color: %s">%s</td>\n' % (self.importance_color[t['importance']], t['importance']) # Importance
-                retval += '                                    <td style="color: %s">%s</td>\n' % (self.status_color[t['status']], t['status'])             # Status
-                retval += '                                    <td >%s</td>\n' % t['assignee']                                                              # Assignee
-                retval += '                                    <td %s>%s</td>\n' % (when_style, when)                                                       # Last comment
-                retval += '                                    <td >%d</td>\n' % bug['gravity']                                                             # Gravity
+                retval += '                                    <td ><a href="%s">%s</a></td>\n' % (bug_url, bug_id)                                      # Bug
+                retval += '                                    <td >%s</td>\n' % t['name'].replace(' (Ubuntu)', '').replace('Ubuntu ', '')               # Task Name
+                retval += '                                    <td>%s</td>\n' % bug['title']                                                             # Summary
+                retval += '                                    <td class="%s">%s</td>\n' % (self.importance_color[t['importance']], t['importance'])     # Importance
+                retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[t['status']], t['status'])                 # Status
+                retval += '                                    <td >%s</td>\n' % t['assignee']                                                           # Assignee
+                retval += '                                    <td class="%s">%s</td>\n' % (when_style, when)                                            # Last comment
+                retval += '                                    <td >%d</td>\n' % bug['gravity']                                                          # Gravity
                 retval += '                                </tr>\n'
         return retval
 
@@ -449,7 +449,7 @@ class BugTracker(StdApp):
     def notify(self, summary, body):
         n = pynotify.Notification(summary, body)
         if not n.show():
-            print "Failed to send notification"
+            error("Failed to send notification.")
         return
 
     # notify_if_new_comment
