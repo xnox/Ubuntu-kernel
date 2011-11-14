@@ -6,9 +6,13 @@ from os                                 import path
 from getopt                             import getopt, GetoptError
 from ilib.utils                         import stdo
 from ilib.std_app                       import StdApp
+from threading                          import Lock
 
 from socket                             import inet_aton
 from instrument                         import Instrument
+
+
+import SocketServer
 
 
 # CmdlineError
@@ -194,6 +198,31 @@ class Cmdline:
 
         return
 
+# ThreadedMeterUDPHandler
+#
+class ThreadedMeterUDPHandler(SocketServer.BaseRequestHandler):
+    """
+    This class implements a UDP handler which listens for
+    messages which will be inserted into the log. It it called
+    in a separate thread, and we lock to make sure we don't
+    interleave lines of output.
+    """
+
+    def handle(self):
+        data = self.request[0].strip()
+        self.meterLock.acquire()
+        self.meterOutHandler(data)
+        self.meterLock.release()
+
+    def setOutputHandler(self, ohandler):
+        self.meterOutHandler = ohandler
+
+    def setLock(self, lock):
+        self.meterLock = lock
+
+# ThreadingUDPServer
+# See SocketServer man page
+class ThreadingUDPServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer): pass
 
 # LogMeter
 #
@@ -204,12 +233,16 @@ class LogMeter(StdApp):
         StdApp.__init__(self)
         self.defaults = {} # default configs
         self.logfile = None
+        self.udpserver = None
+        self.lock = None
 
     # __del__
     #
     def __del__(self):
         if self.logfile is not None:
             self.logfile.close()
+        if self.udpserver is not None:
+            self.udpserver.shutdown()
 
     # initialize
     #
@@ -232,16 +265,15 @@ class LogMeter(StdApp):
     # writeOutput
     #
     def writeOutput(self, output):
+        if self.lock is not None:
+            self.lock.acquire()
         out = output.rstrip() + '\n'
         if self.logfile is not None:
             self.logfile.write(out)
         else:
             stdo(out)
-        return
-
-    # startTagListener
-    #
-    def startTagListener(self, tagport):
+        if self.lock is not None:
+            self.lock.release()
         return
 
     # main
@@ -288,7 +320,16 @@ class LogMeter(StdApp):
         self.writeOutput('INFO: meter time = %s' % t)
 
         if 'tagport' in self.cfg:
-            print 'Requested tagport %d' % int(self.cfg['tagport'])
+            portno = int(self.cfg['tagport'])
+            self.udpserver = ThreadingUDPServer(('localhost', portno), ThreadedMeterUDPHandler)
+            self.udpserver.setOutputHandler(writeOutput)
+            self.lock = Lock()
+            self.udpserver.setLock(self.lock)
+            server_thread = threading.Thread(target=server.serve_forever)
+            # Exit the server thread when the main thread terminates
+            server_thread.daemon = True
+            server_thread.start()
+            self.writeOutput('INFO: listening for tags on UDP port %d' % portno)
 
         if 'interval' in self.cfg:
             print 'Requested %f interval' % float(self.cfg['interval'])
