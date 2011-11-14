@@ -77,7 +77,7 @@ class Cmdline:
         stdo("                                                                                             \n")
         stdo("        --interval=<time delay(float)>                                                       \n")
         stdo("                         The time delay between samples. The measurement intervals           \n")
-        stdo("                         may not mach this precisely. If measurements take longer than       \n")
+        stdo("                         may not match this precisely. If measurements take longer than       \n")
         stdo("                         the specified interval, they will be taken at the fastest rate      \n")
         stdo("                         possible. A value of zero reads at the fastest possible rate.       \n")
         stdo("                                                                                             \n")
@@ -320,9 +320,9 @@ class LogMeter(StdApp):
         if 'tagport' in self.cfg:
             portno = int(self.cfg['tagport'])
             self.udpserver = ThreadingUDPServer(('localhost', portno), ThreadedMeterUDPHandler)
-            self.udpserver.setOutputHandler(writeOutput)
+            self.udpserver.RequestHandlerClass.setOutputHandler(writeOutput)
             self.lock = Lock()
-            self.udpserver.setLock(self.lock)
+            self.udpserver.RequestHandlerClass.setLock(self.lock)
             server_thread = threading.Thread(target=server.serve_forever)
             # Exit the server thread when the main thread terminates
             server_thread.daemon = True
