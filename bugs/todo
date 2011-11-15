@@ -1,6 +1,46 @@
+The following is a list of modifications needed for the kteam-tools reports, and bug bots.
 
-2. Fix the handling of modified bugs so that their current status
-   is compared to the status indicated in the configuration file.
+##############################
+# REPORTS
+##############################
+1. Add the top 10 bugs from the hot list to the daily bug email. 
+	- Based on heat of bug.
+	- Cleanup kernel team hot list.  
+		- Should not be more than 25 bugs.
+		- If a bug is assigned to an Engineer, remove it from the hot list.
+		- If a bug is assigned to canonical-kernel-team, keep on the hot list. 
 
-3. Fix verbose handling.
+2. Create a defect analysts hot list.  
+	- Bot will add bugs opened by Mark, Jane, or senior management.  
+		- The defect analyst will then move the bug to the kernel team hot list if needed.
+	- Add bugs here for triage before adding to hot list.
 
+3. Create report that shows what bugs should be expired.  
+
+4. There is a tag that the Xorg guys use when they change a bug to be kernel instead of Xorg.  We seem to be missing that handoff. 
+	- Generate a daily (or however frequently as you want) report which finds these handoffs.
+	- In the report generation code that is used for the release manager reports. It's in the arsenal bzr repository. There is a "reports" directory. You might use this code for this report.
+
+5. Create report for bugs fixed upstream, reporting what kernel fixed issue.
+
+6. Break out iso testing report by series.
+
+7. ISO testing report: Maybe have iso-testing for released series and iso-testing-current for development series?
+
+
+
+
+##############################
+# BUG BOTS
+##############################
+1. Put bugs from Mark, Jane, Rick, or Pete on the Defect Analyst hot list.
+	- Modify new bug bot.
+
+2. Automate upstream kernel test request.
+	- Clone of how proc_new_bugs works.
+
+
+##############################
+# Misc
+##############################
+1. Centralise kernel bots/jobs/reports on cranberry.
