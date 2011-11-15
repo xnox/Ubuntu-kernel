@@ -66,3 +66,4 @@ CONFIG_ATA_PIIX y note<boot essential on i386/amd64>
 CONFIG_PATA_ACPI y note<boot essential on i386/amd64>
 CONFIG_PATA_SIS y note<boot essential on i386/amd64>
 CONFIG_SATA_SVW y note<boot essential on powerpc>
+CONFIG_SATA_AHCI y note<boot essential on i386/amd64>
