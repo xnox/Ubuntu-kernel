@@ -88,10 +88,12 @@ while (<OVERRIDES>) {
 	$oa[2] = '-' if ($oa[2] eq '');
 
 	# Set the option to the specified value and add any other options
-	if ($oa[2] ne $ea[1]) {
-		push(@oa, "flag<policy=$ea[1]>");
+	if ($ea[1] ne '-') {
+		if ($oa[2] ne $ea[1]) {
+			push(@oa, "flag<policy=$ea[1]>");
+		}
+		$oa[2] = $ea[1];
 	}
-	$oa[2] = $ea[1];
 	push(@oa, @ea[2..$#ea]);
 
 	$options{$ea[0]} = join(' ', @oa);
