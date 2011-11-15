@@ -35,6 +35,7 @@ CONFIG_ATA y note<boot essential>
 CONFIG_USB y note<boot essential>
 #  network protocols:
 CONFIG_UNIX y note<boot essential>
+CONFIG_PACKET y note<boot essential>
 # IPv6 packets trigger auto-loading of this module and it is easy to trigger
 # a DOS unless this is builtin.  It is also a critical protocol going forward
 # and will become boot essential.
