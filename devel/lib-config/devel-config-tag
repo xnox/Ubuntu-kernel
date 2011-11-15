@@ -83,6 +83,9 @@ while (<OVERRIDES>) {
 	@ea = split(' ');
 
 	@oa = split(' ', $options{$ea[0]});
+	$oa[0] = '-' if ($oa[0] eq '');
+	$oa[1] = '-' if ($oa[1] eq '');
+	$oa[2] = '-' if ($oa[2] eq '');
 
 	# Set the option to the specified value and add any other options
 	if ($oa[2] ne $ea[1]) {
