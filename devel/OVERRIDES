@@ -67,3 +67,8 @@ CONFIG_PATA_ACPI y note<boot essential on i386/amd64>
 CONFIG_PATA_SIS y note<boot essential on i386/amd64>
 CONFIG_SATA_SVW y note<boot essential on powerpc>
 CONFIG_SATA_AHCI y note<boot essential on i386/amd64>
+
+# ARM requires FAT for kernel installation.
+CONFIG_FAT_FS y note<installation essential on arm>
+CONFIG_VFAT_FS y note<installation essential on arm>
+CONFIG_NLS_CODEPAGE_437 y note<installation essential on arm>
