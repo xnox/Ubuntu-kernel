@@ -84,9 +84,9 @@ Description: Backported wireless drivers for server kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-backports-modules-wireless-3.1.0-RELEASE_NAME-server
+Package: linux-backports-modules-wireless-3.1-RELEASE_NAME-server
 Architecture: amd64
-Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-3.1.0-${kernel-abi-version}-server
+Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-3.1-${kernel-abi-version}-server
 Description: Backported wireless drivers for server kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
