@@ -46,9 +46,9 @@ Description: Backported ethernet drivers for generic kernel image.
  This empty package allows people to keep their backported ethernet modules
  up-to-date when upgrading their Linux kernel.
 
-Package: linux-backports-modules-cw-3.1.0-RELEASE_NAME-generic
+Package: linux-backports-modules-cw-3.1-RELEASE_NAME-generic
 Architecture: amd64 i386
-Depends: ${misc:Depends}, linux-backports-modules-cw-3.1.0-${kernel-abi-version}-generic
+Depends: ${misc:Depends}, linux-backports-modules-cw-3.1-${kernel-abi-version}-generic
 Description: Backported wireless drivers for generic kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
