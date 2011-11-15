@@ -85,3 +85,6 @@ CONFIG_NLS_CODEPAGE_437 - note<installation essential on arm>
 
 # Security risk.
 CONFIG_ACPI_CUSTOM_METHOD n note<Security: allows arbitrary execution>
+
+# DM_RAID45 only appears in PC BIOS based systems
+CONFIG_DM_RAID45 - note<PC BIOS specific>
