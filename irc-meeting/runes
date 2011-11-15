@@ -1,43 +1,31 @@
 
-#
-# lets "get 'er done"!
-#
-
+Roll Call
 #startmeeting
-
 ##
 ## This is the Ubuntu Kernel Team weekly status meeting.
 ##
-
-
 [LINK] https://wiki.ubuntu.com/KernelTeam/Meeting
-[LINK] https://wiki.ubuntu.com/KernelTeam/ReleaseStatus/Oneiric
+[LINK] https://wiki.ubuntu.com/KernelTeam/ReleaseStatus/Precise
 
 # Meeting Etiquette
 #
 # NOTE: '..' indicates that you are finished with your input.
-#       'o/' indicates you have something you'd like to add (wait until you are recognized)
-#
+#       'o/' indicates you have something to add (please wait until you are recognized)
 
 [TOPIC] ARM Status (ppisati)
 
 [TOPIC] Release Metrics and Incoming Bugs (ogasawara)
+[LINK] http://people.canonical.com/~kernel/reports/kt-meeting.txt
 
-[TOPIC] <insert milestone> Work Items
+[TOPIC] Milestone Targeted Work Items (ogasawara)
 
-[TOPIC] Blueprints: Oneiric Delta Review (ogasawara)
-[LINK] https://blueprints.launchpad.net/ubuntu/+spec/other-kernel-o-ubuntu-delta-review
+[TOPIC] Status: Precise Development Kernel (ogasawara)
 
-[TOPIC] Blueprints: Oneiric Server Requirements (smb)
-[LINK] https://blueprints.launchpad.net/ubuntu/+spec/other-kernel-o-server-requirements
+[TOPIC] Status: CVE's (apw)
 
-[TOPIC] Status: General Oneiric (ogasawara)
+[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Oneiric/Natty/Maverick/Lucid/Hardy (bjf/herton)
 
-[TOPIC] Status: CVEs (apw)
-
-[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Natty/Maverick/Lucid/Hardy (sconklin)
-
-[TOPIC] Open Discussion or Questions: Raise your hand to be recognized (o/)
+[TOPIC] Open Discussion or Questions? Raise your hand to be recognized (o/)
 
 thanks everyone
 #endmeeting
@@ -51,7 +39,7 @@ thanks everyone
 ##
 
 ##
-## Kernel team meeting in 30 minutes
+## Kernel team meeting in 5 minutes
 ##
 
 ##
@@ -64,17 +52,14 @@ thanks everyone
 ##
 
 ##
-## Ubuntu Kernel Team Meeting - in 30 minutes - #ubuntu-meeting
+## Ubuntu Kernel Team Meeting - in 15 minutes - #ubuntu-meeting
 ##
 
 ##
 ## Ubuntu Kernel Team Meeting - Today @ 17:00 UTC - #ubuntu-meeting
 ##      agenda: https://wiki.ubuntu.com/KernelTeam/Meeting
 ##
-JFo, apw, tgardner, sconklin,  kerton, jjohansen, sforshee, smb, pgragner, cking, manjo
-
 
 /msg chanserv op #ubuntu-kernel
 /msg chanserv deop #ubuntu-kernel
-
 
