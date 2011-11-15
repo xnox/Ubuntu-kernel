@@ -19,7 +19,7 @@ Description: Header files related to linux-backports-modules version PKGVER
  that want the latest linux-backports-modules headers. Please read
  /usr/share/doc/linux-headers-lbm-PKGVER-ABINUM/debian.README.gz for details
 
-Package: linux-backports-modules-cw-3.1.0-PKGVER-ABINUM-FLAVOUR
+Package: linux-backports-modules-cw-3.1-PKGVER-ABINUM-FLAVOUR
 Architecture: ARCH
 Section: SECTION_IMAGE
 Priority: optional
@@ -31,7 +31,7 @@ Description: compat-wireless Linux modules for version PKGVER on DESC
  kernel PKGVER on DESC.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-cw-3.1.0-FLAVOUR meta-package, which will ensure
+ the linux-backports-modules-cw-3.1-FLAVOUR meta-package, which will ensure
  that upgrades work correctly, and that supporting packages are also installed.
 
 Package: linux-backports-modules-net-PKGVER-ABINUM-FLAVOUR
