@@ -49,7 +49,7 @@ function config-cmp-nopolicy() {
 }
 
 what='_FS[ =]'
-rebuild "$what" "CONFIG_(.*_DEBUG_FS)[ =]"
+rebuild "$what" "CONFIG_(.*_DEBUG_FS|.*_PROC_FS)[ =]"
 
 echo ""
 echo "$level Filesystems $level"
