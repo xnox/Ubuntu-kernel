@@ -73,3 +73,6 @@ CONFIG_SATA_AHCI y note<boot essential on i386/amd64>
 CONFIG_FAT_FS y note<installation essential on arm>
 CONFIG_VFAT_FS y note<installation essential on arm>
 CONFIG_NLS_CODEPAGE_437 y note<installation essential on arm>
+
+# Security risk.
+CONFIG_ACPI_CUSTOM_METHOD n note<Security: allows arbitrary execution>
