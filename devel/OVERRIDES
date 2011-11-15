@@ -52,6 +52,15 @@ CONFIG_ACPI_FAN y note<boot essential>
 CONFIG_ACPI_PROCESSOR y note<boot essential>
 CONFIG_ACPI_THERMAL y note<boot essential>
 
+# Boot essential dependancies
+CONFIG_BLK_CGROUP - note<depandancy of boot essential>
+CONFIG_BLK_DEV_DM - note<depandancy of boot essential>
+CONFIG_BLK_DEV_LOOP - note<depandancy of boot essential>
+CONFIG_BLK_DEV_MD - note<depandancy of boot essential>
+CONFIG_BLK_DEV_RAM - note<depandancy of boot essential>
+CONFIG_BLK_DEV_SD - note<depandancy of boot essential>
+CONFIG_BLK_DEV_SR - note<depandancy of boot essential>
+
 # EXPERIMENTAL Network protocols are generally enabled to allow testing.
 CONFIG_ECONET m note<network protocol -- opt-in>
 CONFIG_IEEE802154 m note<network protocol -- opt-in>
