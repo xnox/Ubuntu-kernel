@@ -289,9 +289,11 @@ class LogMeter(StdApp, MetaData):
     #
     def openLog(self, logpath):
         if path.exists(logpath):
+            stdo("Existing file <%s> found, appending new information\n" % logpath)
             # maybe in the future rename or rotate logs
-            raise RuntimeError('An output file with the specified name already exists')
-        self.logfile = open(logpath, 'w')
+            self.logfile = open(logpath, 'a')
+        else:
+            self.logfile = open(logpath, 'w')
         return
 
     # writeOutput
@@ -327,11 +329,14 @@ class LogMeter(StdApp, MetaData):
         # Open output file if requested
         #
         if 'out' in self.cfg:
-            print 'Need to write output to', self.cfg['out']
             self.openLog(self.cfg['out'])
 
         meter = Instrument('fluke', '8846A')
         meter.initNet(self.cfg['addr'], self.cfg['port'])
+
+        self.writeOutput('START: *****************************************')
+        self.writeOutput('START: **            New Log Start            **')
+        self.writeOutput('START: *****************************************')
 
         mid = meter.getIdent()
         self.writeOutput('INFO: id = %s' % mid)
