@@ -231,9 +231,7 @@ class MetaData():
     interleaving output within a line.
     """
     outputLock = None
-    MeterOutHandler = None
-
-
+    meterOutHandler = None
 
 # ThreadedMeterUDPHandler
 #
@@ -246,11 +244,8 @@ class ThreadedMeterUDPHandler(SocketServer.BaseRequestHandler, MetaData):
     """
 
     def handle(self):
-        data = self.request[0].strip()
-        self.meterOutHandler(data)
-
-    def setOutputHandler(self, ohandler):
-        self.meterOutHandler = ohandler
+        data = 'TAG: ' + self.request[0].strip()
+        MetaData.meterOutHandler(data)
 
 # ThreadingUDPServer
 # See SocketServer man page
@@ -352,7 +347,7 @@ class LogMeter(StdApp, MetaData):
         t = md.getTime()
         self.writeOutput('INFO: meter time = %s' % t)
 
-        self.meterOutHandler = self.writeOutput
+        MetaData.meterOutHandler = self.writeOutput
 
         if 'tagport' in self.cfg:
             portno = int(self.cfg['tagport'])
