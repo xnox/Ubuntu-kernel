@@ -112,6 +112,14 @@ echo "$level Sensor Drivers $level"
 config-cmp $cmp
 echo ""
 
+what='CONFIG_CRYPTO_'
+rebuild "$what"
+
+echo ""
+echo "$level Crypto $level"
+config-cmp $cmp
+echo ""
+
 what='CONFIG_NETFILTER_XT_'
 rebuild "$what"
 
