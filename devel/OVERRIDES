@@ -98,3 +98,7 @@ CONFIG_EFI_VARS y note<EFI boot requirement (d-i)>
 
 # IDE is derecated on i386/amd64.
 CONFIG_IDE - note<IDE is deprecated>
+
+# Debugging options are off by default, we want those below.
+CONFIG_DEBUG_FS y note<required debug option>
+CONFIG_DEBUG_KERNEL y note<required debug option>
