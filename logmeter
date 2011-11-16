@@ -7,6 +7,8 @@ from getopt                             import getopt, GetoptError
 from ilib.utils                         import stdo
 from ilib.std_app                       import StdApp
 from threading                          import Lock, Thread
+from time                               import sleep
+from datetime                           import datetime
 
 from socket                             import inet_aton
 from instrument                         import Instrument
@@ -71,6 +73,9 @@ class Cmdline:
         stdo("                         c = current (400 mA max)                                            \n")
         stdo("                         hc = high current (10A max)                                         \n")
         stdo("                                                                                             \n")
+        stdo("        --acdc=[ac|dc]                                                                       \n")
+        stdo("                         Select AC or DC measurement                                         \n")
+        stdo("                                                                                             \n")
         stdo("        --samples=<number>                                                                   \n")
         stdo("                         The number of measurements to make.                                 \n")
         stdo("                         A value of zero runs forever until killed.                          \n")
@@ -115,7 +120,7 @@ class Cmdline:
         try:
             optsShort = ''
             optsLong  = ['help', 'verbose', 'config=', 'measure=', 'debug=', 'samples=', 'interval=',
-                         'addr=', 'port=', 'out=', 'tagport=']
+                         'addr=', 'port=', 'out=', 'tagport=', 'acdc=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -130,6 +135,9 @@ class Cmdline:
 
                 elif opt in ('--measure'):
                     self.cfg['measure'] = val
+
+                elif opt in ('--acdc'):
+                    self.cfg['acdc'] = val
 
                 elif opt in ('--samples'):
                     self.cfg['samples'] = val
@@ -179,8 +187,23 @@ class Cmdline:
                 stdo("Sample interval (--interval=) not specified, defaulting to fastest possible\n")
                 cfg['interval'] = 0
 
+        if 'measure' not in cfg:
+            stdo("You must specify a measurement type to make (--measure)\n")
+            raise ValueError
+        else:
+            if cfg['measure'].upper() not in ['V', 'C', 'HC']:
+                raise ValueError('Invalid measurement type specified')
+
+        if 'acdc' not in cfg:
+            stdo("You must specify AC or DC measurement (--acdc)\n")
+            raise ValueError
+        else:
+            if cfg['acdc'].upper() not in ['AC', 'DC']:
+                raise ValueError('Invalid value for AC or DC')
+
         if 'addr' not in cfg:
             stdo("You must specify an IP address for the meter\n")
+            raise ValueError
         else:
             try:
                 inet_aton(cfg['addr'])
@@ -274,8 +297,9 @@ class LogMeter(StdApp, MetaData):
     # writeOutput
     #
     def writeOutput(self, output):
+        dt = datetime.utcnow().isoformat()
         self.outputLock.acquire()
-        out = output.rstrip() + '\n'
+        out = dt + ' ' + output.rstrip() + '\n'
         self.logfile.write(out)
         self.outputLock.release()
         return
@@ -339,13 +363,30 @@ class LogMeter(StdApp, MetaData):
             print 'Requested %f interval' % float(self.cfg['interval'])
 
         # Set up for the requested measurement type
+        mtype = self.cfg['measure'].upper()
+        print 'measure type = ', mtype
+        acdc = self.cfg['acdc'].upper()
+
+        if mtype == 'V':
+            md.setVoltage(acdc, 'Max')
+        elif mtype == 'C':
+            md.setCurrent(acdc, 'Def')
+        elif mtype == 'HC':
+            md.setCurrent(acdc, 'Max')
+        else:
+            raise RuntimeError('Unexpected value for measurement type')
 
         print 'Requested %d samples' % int(self.cfg['samples'])
         num = int(self.cfg['samples'])
+        idelay = float(self.cfg['interval'])
         while num:
-            print 'making a sample'
+            st = md.read()
+            dt = 'datetime'
+            print 'made a sample:', st.strip()
+            self.writeOutput('SAMPLE: %s' % st)
             num = num - 1
-
+            if idelay:
+                sleep(idelay)
         return
 
 if __name__ == '__main__':
@@ -353,4 +394,3 @@ if __name__ == '__main__':
     app.main()
 
 # vi:set ts=4 sw=4 expandtab:
-
