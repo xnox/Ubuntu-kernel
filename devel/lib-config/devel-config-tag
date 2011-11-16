@@ -16,6 +16,11 @@ while (<DEFAULTS>) {
 
 	($option, $maybe, $default) = split(' ');
 
+	# We default DEBUG options off.
+	if ($option =~ /_DEBUG(_FS$|_|$)/) {
+		$default = 'n';
+	}
+
 	# Create the 'expected' column.
 	$options{$option} = join(' ', ($maybe, $default, $default));
 }
