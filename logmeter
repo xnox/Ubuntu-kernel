@@ -362,6 +362,8 @@ class LogMeter(StdApp, MetaData):
         if 'interval' in self.cfg:
             print 'Requested %f interval' % float(self.cfg['interval'])
 
+        if 'debug' in self.cfg and 'dump' in self.cfg['debug']:
+            md.dump = True
         # Set up for the requested measurement type
         mtype = self.cfg['measure'].upper()
         print 'measure type = ', mtype
