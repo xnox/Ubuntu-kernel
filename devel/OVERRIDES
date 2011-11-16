@@ -84,6 +84,9 @@ CONFIG_FAT_FS - note<installation essential on arm>
 CONFIG_VFAT_FS - note<installation essential on arm>
 CONFIG_NLS_CODEPAGE_437 - note<installation essential on arm>
 
+# ARM commonly use sd cards as root disks.
+CONFIG_MMC_SDHCI - note<installation essential on arm>
+
 # Security risk.
 CONFIG_ACPI_CUSTOM_METHOD n note<Security: allows arbitrary execution>
 
