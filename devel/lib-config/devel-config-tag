@@ -8,6 +8,7 @@ if ($#ARGV != 3) {
 
 my ($defaults, $experimental, $staging, $overrides) = @ARGV;
 my %options;
+my %modenote;
 
 my ($option, $maybe, $default);
 open(DEFAULTS, "<$defaults") || die "$0: $defaults: open failed - $!\n";
@@ -15,11 +16,6 @@ while (<DEFAULTS>) {
 	chomp;
 
 	($option, $maybe, $default) = split(' ');
-
-	# We default DEBUG options off.
-	if ($option =~ /_DEBUG(_FS$|_|$)/) {
-		$default = 'n';
-	}
 
 	# Create the 'expected' column.
 	$options{$option} = join(' ', ($maybe, $default, $default));
@@ -36,8 +32,7 @@ while (<EXPERIMENTAL>) {
 	@oa = split(' ', $options{$_});
 
 	# We default EXPERIMENTAL options off by default.
-	$mode = 'n';
-	$note = '';
+	($mode, $note) = ('n', '');
 
 	if ($_ =~ /^CONFIG_SENSORS_/ && $oa[2] eq 'm') {
 		($mode, $note) = ('m', "sensors are opt-in");
@@ -60,13 +55,13 @@ while (<EXPERIMENTAL>) {
 	} elsif ($_ =~ /^CONFIG_CRYPTO_/ && $oa[2] eq 'm') {
 		($mode, $note) = ('m', "CRYPTO drivers are opt-in");
 	}
+	$oa[2] = 'n';
 
-	$oa[2] = $mode;
 	push(@oa, "flag<EXPERIMENTAL>");
-	push(@oa, "flag<policy=$mode>") if ($mode ne 'n');
-	push(@oa, "note<$note>") if ($note);
-
 	$options{$_} = join(' ', @oa);
+
+	$note = "note<$note>" if ($note);
+	$modenote{$_} = [$mode, $note] if ($mode ne 'n');
 }
 close(EXPERIMENTAL);
 
@@ -79,8 +74,27 @@ while (<STAGING>) {
 }
 close(STAGING);
 
-my @ea;
 my @oa;
+my ($mode, $note);
+foreach my $key (sort keys %options) {
+	($mode, $note) = ('', undef);
+
+	@oa = split(' ', $options{$key});
+
+	# We default DEBUG options off.
+	if ($key =~ /_DEBUG(_FS$|_|$)/) {
+		($mode, $note) = ('n', undef);
+		$oa[2] = 'n';
+	}
+
+	$options{$key} = join(' ', @oa);
+	if ($mode) {
+		$note = "note<$note>" if ($note);
+		$modenote{$key} = [$mode, $note];
+	}
+}
+
+my @ea;
 open(OVERRIDES, "<$overrides") ||
 	die "$0: $overrides: open failed - $!\n";
 while (<OVERRIDES>) {
@@ -96,18 +110,25 @@ while (<OVERRIDES>) {
 	$oa[2] = '-' if ($oa[2] eq '');
 
 	# Set the option to the specified value and add any other options
-	if ($ea[1] ne '-') {
-		if ($oa[2] ne $ea[1]) {
-			push(@oa, "flag<policy=$ea[1]>");
-		}
-		$oa[2] = $ea[1];
-	}
-	push(@oa, @ea[2..$#ea]);
+	$modenote{$ea[0]} = [$ea[1], join(' ', @ea[2..$#ea])];
 
 	$options{$ea[0]} = join(' ', @oa);
 }
 close(OVERRIDES);
 
 foreach my $key (sort keys %options) {
+	if ($modenote{$key}) {
+		($mode, $note) = @{$modenote{$key}};
+
+		@oa = split(' ', $options{$key});
+		if ($mode && $mode ne '-') {
+			if ($oa[2] ne $mode && $note) {
+				push(@oa, "flag<policy=$mode>");
+			}
+			$oa[2] = $mode;
+		}
+		push(@oa, $note) if ($note);
+		$options{$key} = join(' ', @oa);
+	}
 	print "$key $options{$key}\n";
 }
