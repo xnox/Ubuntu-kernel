@@ -85,6 +85,10 @@ foreach my $key (sort keys %options) {
 	if ($key =~ /_DEBUG(_FS$|_|$)/) {
 		($mode, $note) = ('n', undef);
 		$oa[2] = 'n';
+
+	# NET_VENDOR_* represents vendor specific groupings, alway enable.
+	} elsif ($oa[2] ne 'y' && $key =~ /^CONFIG_NET_VENDOR_/) {
+		($mode, $note) = ('y', "VENDOR driver group always enabled");
 	}
 
 	$options{$key} = join(' ', @oa);
