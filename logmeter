@@ -387,11 +387,15 @@ class LogMeter(StdApp, MetaData):
         idelay = float(self.cfg['interval'])
         while num:
             st = md.read()
+            if st == '':
+                ss = md.checkStatus()
+                for ln in ss:
+                    stdo('%s\n' % ln)
             dt = 'datetime'
             print 'made a sample:', st.strip()
             self.writeOutput('SAMPLE: %s' % st)
             num = num - 1
-            if idelay:
+            if idelay and (num > 1):
                 sleep(idelay)
 
         md.setLocalMode()

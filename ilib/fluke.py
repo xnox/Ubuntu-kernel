@@ -44,6 +44,26 @@ class Model():
 
 
 class m8846A():
+
+    # Status Byte
+    SB_QD = 8    # Questionable Data
+    SB_MA = 16   # Message Available
+    SB_SE = 32   # Standard Event
+    # Questionable Data
+    QD_VO = 1    # Voltage Overload
+    QD_CO = 2    # Current Overload
+    QD_OO = 512  # Ohms Overload
+    QD_LL = 2048 # Limit Test Fail LO
+    QD_LH = 4096 # Limit Test Fail HI
+    QD_RM = 8192 # Remote Mode
+    # Standard Event
+    SE_OC = 1    # Operation Complete
+    SE_QE = 4    # Query Error
+    SE_DE = 8    # Device Error
+    SE_EE = 16   # Execution Error
+    SE_CE = 32   # Command Error
+    SE_PO = 128  # Power On
+
     def __init__(self):
         """
         TODO
@@ -199,11 +219,50 @@ class m8846A():
         probably need to drill down to get details about what happened, but
         let's see what we need first
         """
-        rs = ''
+        rs = []
         self.send('*stb?\r')
-        stb = self.receive()
-        chkbits = 8 + 16 + 32
-        return int(stb) & chkbits
+        stb = int(self.receive())
+        chkbits = self.SB_QD + self.SB_MA + self.SB_SE
+        if not chkbits & stb:
+            return rs
+
+        rs.append('Status Bits Set:')
+        if stb & self.SB_QD:
+            # Questionable Data register
+            self.send('*stat:ques:even?\r')
+            qdr = self.receive()
+            if qdr & self.QD_VO:
+                rs.append['  Voltage Overload']
+            if qdr & self.QD_CO:
+                rs.append['  Current Overload']
+            if qdr & self.QD_OO:
+                rs.append['  Ohms Overload']
+            if qdr & self.QD_LL:
+                rs.append['  Limit Test Fail LO']
+            if qdr & self.QD_LH:
+                rs.append['  Limit Test Fail HI']
+            if qdr & self.QD_RM:
+                rs.append['  Remote Mode']
+        if stb & self.SB_MA:
+            # Message Available
+            rs.append['  Message Available']
+        if stb & self.SB_SE:
+            # Standard Event
+            self.send('*esr?\r')
+            ser = self.receive()
+            if ser & self.SE_OC:
+                rs.append['  Operation Complete']
+            if ser & self.SE_QE:
+                rs.append['  Query Error']
+            if ser & self.SE_DE:
+                rs.append['  Device Error']
+            if ser & self.SE_EE:
+                rs.append['  Execution Error']
+            if ser & self.SE_CE:
+                rs.append['  Command Error']
+            if ser & self.SE_PO:
+                rs.append['  Power On']
+        return rs
 
     def clearStatus(self):
         """
