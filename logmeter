@@ -261,6 +261,7 @@ class LogMeter(StdApp, MetaData):
         self.defaults = {} # default configs
         self.logfile = None
         self.udpserver = None
+        self.meter = None
         self.outputLock = Lock()
 
     # __del__
@@ -314,6 +315,8 @@ class LogMeter(StdApp, MetaData):
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
+            if self.meter is not None:
+                self.meter.device.setLocalMode()
             pass
 
         # Handle command line errors.
@@ -326,16 +329,17 @@ class LogMeter(StdApp, MetaData):
         if 'out' in self.cfg:
             self.openLog(self.cfg['out'])
 
-        meter = Instrument('fluke', '8846A')
-        meter.initNet(self.cfg['addr'], self.cfg['port'])
+        self.meter = Instrument('fluke', '8846A')
+        self.meter.initNet(self.cfg['addr'], self.cfg['port'])
 
         self.writeOutput('START: *****************************************')
         self.writeOutput('START: **            New Log Start            **')
         self.writeOutput('START: *****************************************')
 
-        mid = meter.getIdent()
+        mid = self.meter.getIdent()
         self.writeOutput('INFO: id = %s' % mid)
-        md = meter.device
+        md = self.meter.device
+        md.setRemoteMode()
 
         cd = md.getCalDate()
         self.writeOutput('INFO: Calibration Date = %s' % cd)
@@ -389,6 +393,9 @@ class LogMeter(StdApp, MetaData):
             num = num - 1
             if idelay:
                 sleep(idelay)
+
+        md.setLocalMode()
+        self.meter = None
         return
 
 if __name__ == '__main__':
