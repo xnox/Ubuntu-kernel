@@ -51,8 +51,8 @@ function config-cmp-interesting() {
 	(cd tmp; "$here/config-compare" --info "../$info" *) | grep -v '||  ||$'
 }
 
-what='_FS[ =]'
-rebuild "$what" "CONFIG_(.*_DEBUG_FS|.*_PROC_FS)[ =]"
+what='FS[ =]'
+rebuild "$what" "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS)[ =]"
 
 echo ""
 echo "$level Filesystems $level"
