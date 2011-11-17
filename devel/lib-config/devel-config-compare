@@ -47,13 +47,16 @@ function config-cmp() {
 function config-cmp-nopolicy() {
 	(cd tmp; "$here/config-compare" --no-policy --info "../$info" *)
 }
+function config-cmp-interesting() {
+	(cd tmp; "$here/config-compare" --info "../$info" *) | grep -v '||  ||$'
+}
 
 what='_FS[ =]'
 rebuild "$what" "CONFIG_(.*_DEBUG_FS|.*_PROC_FS)[ =]"
 
 echo ""
 echo "$level Filesystems $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 ##what='CONFIG_(LSM_MMAP_MIN_ADDR|DEFAULT_MMAP_MIN_ADDR|APPARMOR|SELINUX|TOMOYO|COMPAT_BRK|DEVKMEM|SYN_COOKIES|SECURITY|SECCOMP|COMPAT_VDSO|DEBUG_RODATA|STRICT_DEVMEM|SECURITY_FILE_CAPABILITIES|SECURITY_SMACK|CC_STACKPROTECTOR)[ =]'
@@ -69,7 +72,7 @@ rebuild "$what"
 
 echo ""
 echo "$level Subsystems $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 what="(CONFIG_NET_9P|CONFIG_ATM|CONFIG_AX25|CONFIG_BRIDGE|CONFIG_CAIF|CONFIG_CAN|CONFIG_DCB|CONFIG_DECNET|CONFIG_DNS_RESOLVER|CONFIG_NET_DSA|CONFIG_ECONET|CONFIG_NET_ETHERNET|CONFIG_IEEE802154|CONFIG_IPV6|CONFIG_IPX|CONFIG_IRDA|CONFIG_NET_KEY|CONFIG_L2TP|CONFIG_LAPB|CONFIG_LLC|CONFIG_MAC80211|CONFIG_NETFILTER|CONFIG_NETLABEL|CONFIG_NETROM|CONFIG_PACKET|CONFIG_PHONET|CONFIG_RDS|CONFIG_RFKILL|CONFIG_ROSE|CONFIG_NET_SCHED|CONFIG_SUNRPC|CONFIG_TIPC|CONFIG_UNIX|CONFIG_WIMAX|CONFIG_WIRELESS|CONFIG_X25|CONFIG_XFRM)[ =]"
@@ -77,7 +80,7 @@ rebuild "$what"
 
 echo ""
 echo "$level Network Protocols $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 what='CONFIG_(ATA|SATA|PATA)_'
@@ -85,7 +88,7 @@ rebuild "$what"
 
 echo ""
 echo "$level {,S,P}ATA Drivers $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 what='CONFIG_INPUT_'
@@ -93,7 +96,7 @@ rebuild "$what" "CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]"
 
 echo ""
 echo "$level Input Drivers $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 what='CONFIG_HID_'
@@ -101,7 +104,7 @@ rebuild "$what"
 
 echo ""
 echo "$level HID Drivers $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 what='CONFIG_SENSORS_'
@@ -109,7 +112,7 @@ rebuild "$what"
 
 echo ""
 echo "$level Sensor Drivers $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 what='CONFIG_CRYPTO_'
@@ -117,7 +120,7 @@ rebuild "$what"
 
 echo ""
 echo "$level Crypto $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 what='CONFIG_NETFILTER_XT_'
@@ -125,7 +128,7 @@ rebuild "$what"
 
 echo ""
 echo "$level Netfilter Match/Targets $level"
-config-cmp $cmp
+config-cmp-interesting $cmp
 echo ""
 
 rebuild ""
