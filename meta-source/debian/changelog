@@ -1,3 +1,15 @@
+linux-meta (3.2.0.1.1) precise; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * amd64 server installs will be fed a -generic kernel
+
+  [ Leann Ogasawara ]
+
+  * Bump Version for v3.2
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Fri, 18 Nov 2011 09:11:54 -0800
+
 linux-meta (3.1.0.2.2) precise; urgency=low
 
   [ Leann Ogasawara ]
