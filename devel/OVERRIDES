@@ -5,6 +5,7 @@ CONFIG_EXT4_FS y note<default filesystem>
 # Some modules have no clear way to autoload them.
 #  filesystems:
 CONFIG_FUSE_FS y note<not autoloadable>
+CONFIG_ECRYPT_FS y note<not autoloadable>
 #  AGP drivers:
 CONFIG_AGP y note<not autoloadable>
 CONFIG_AGP_AMD64 y note<not autoloadable>
