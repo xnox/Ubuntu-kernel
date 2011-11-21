@@ -811,6 +811,14 @@ static inline u32 rfc3390_bytes_to_packets(const u32 smss)
 extern void tcp_enter_cwr(struct sock *sk, const int set_ssthresh);
 extern __u32 tcp_init_cwnd(struct tcp_sock *tp, struct dst_entry *dst);
 
+/* The maximum number of MSS of available cwnd for which TSO defers
+ * sending if not using sysctl_tcp_tso_win_divisor.
+ */
+static inline __u32 tcp_max_tso_deferred_mss(const struct tcp_sock *tp)
+{
+	return 3;
+}
+
 /* Slow start with delack produces 3 packets of burst, so that
  * it is safe "de facto".  This will be the default - same as
  * the default reordering threshold - but if reordering increases,
