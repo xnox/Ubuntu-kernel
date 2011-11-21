@@ -9,7 +9,7 @@ if (len(argv) < 4):
    exit()
 
 HOST, PORT = argv[1], int(argv[2])
-data = " ".join(argv[2:])
+data = " ".join(argv[3:])
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
