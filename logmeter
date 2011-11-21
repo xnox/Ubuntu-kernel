@@ -7,7 +7,7 @@ from getopt                             import getopt, GetoptError
 from ilib.utils                         import stdo
 from ilib.std_app                       import StdApp
 from threading                          import Lock, Thread
-from time                               import sleep
+from time                               import sleep, time
 from datetime                           import datetime
 
 from socket                             import inet_aton
@@ -385,7 +385,11 @@ class LogMeter(StdApp, MetaData):
         print 'Requested %d samples' % int(self.cfg['samples'])
         num = int(self.cfg['samples'])
         idelay = float(self.cfg['interval'])
+	start_time = time()
+	wake_time = start_time
+
         while num:
+            wake_time = wake_time + idelay
             st = md.read()
             if st == '':
                 ss = md.checkStatus()
@@ -396,7 +400,9 @@ class LogMeter(StdApp, MetaData):
             self.writeOutput('SAMPLE: %s' % st)
             num = num - 1
             if idelay and (num > 1):
-                sleep(idelay)
+                sleep_delay = wake_time - time()
+		if sleep_delay > 0:
+                	sleep(sleep_delay)
 
         md.setLocalMode()
         self.meter = None
