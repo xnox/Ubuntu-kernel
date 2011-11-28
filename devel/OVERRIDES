@@ -112,3 +112,6 @@ CONFIG_DEBUG_KERNEL y note<required debug option>
 # Non-obvious filesystems.
 CONFIG_USB_FUNCTIONFS m note<filesystems are opt-in>
 CONFIG_USB_GADGETFS m note<filesystems are opt-in>
+
+# ARM omap3
+CONFIG_PANEL_DVI - note<required for omap3 video>
