@@ -1,3 +1,9 @@
+wireless-crda (1.15) precise; urgency=low
+
+  * Convert to a meta package that simply depends on crda.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 28 Nov 2011 10:00:15 -0700
+
 wireless-crda (1.14) oneiric; urgency=low
 
   * Updated wireless-regdb to master-2011-04-28
