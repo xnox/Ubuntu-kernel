@@ -8,7 +8,7 @@ Vcs-Git: git://kernel.ubuntu.com/ubuntu/wireless-crda.git
 
 Package: wireless-crda
 Architecture: any
-Depends: crda
+Depends: crda (>= 1.1.1-1ubuntu2)
 Description: Wireless Central Regulatory Domain Agent
  This package depends on the CRDA agent for wireless drivers to
  determine the regulatory domain channel and power settings.
