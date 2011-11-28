@@ -1,3 +1,10 @@
+wireless-crda (1.16) precise; urgency=low
+
+  * Depend on a minimum 1.1.1-1ubuntu2 crda version. Older versions were
+    uninstallable.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 28 Nov 2011 10:48:18 -0700
+
 wireless-crda (1.15) precise; urgency=low
 
   * Convert to a meta package that simply depends on crda.
