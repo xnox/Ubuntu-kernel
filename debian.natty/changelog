@@ -1,9 +1,47 @@
-linux-lts-backport-natty (2.6.38-13.52~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-13.53~lucid1) lucid-proposed; urgency=low
+
+  [Brad Figg]
+
+  * Release Tracking Bug
+    - LP: #897567
+
+  [ Upstream Kernel Changes ]
+
+  * cifs, freezer: add wait_event_freezekillable and have cifs use it
+    - LP: #24330
+  * Fixup trivial checkpatch warning
+    - LP: #24330
+  * Fix build break when freezer not configured
+    - LP: #24330
+  * PM / Freezer: Reimplement wait_event_freezekillable using
+    freezer_do_not_count/freezer_count
+    - LP: #24330
+  * crypto: ghash - Avoid null pointer dereference if no key is set
+    - LP: #887299
+    - CVE-2011-4081
+  * ata_piix: make DVD Drive recognisable on systems with Intel Sandybridge
+    chipsets(v2)
+    - LP: #737388, #782389, #794642
+  * drm/i915: fix CB tuning check for ILK+
+    - LP: #891031
+  * xfs: Fix possible memory corruption in xfs_readlink, CVE-2011-4077
+    - LP: #887298
+    - CVE-2011-4077
+  * jbd/jbd2: validate sb->s_first in journal_get_superblock()
+    - LP: #893148
+    - CVE-2011-4132
+  * hfs: add sanity check for file name length, CVE-2011-4330
+    - LP: #894374
+    - CVE-2011-4330
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 29 Nov 2011 10:31:28 -0200
+
+linux (2.6.38-13.52) natty-proposed; urgency=low
 
   [Herton R. Krzesinski]
 
   * Release Tracking Bug
-    - LP: #888575
+    - LP: #887379
 
   [ Konrad Rzeszutek Wilk ]
 
@@ -65,7 +103,7 @@ linux-lts-backport-natty (2.6.38-13.52~lucid1) lucid-proposed; urgency=low
   * drm/i915: add pipe/plane enable/disable functions
     - LP: #812638
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 10 Nov 2011 15:40:52 -0200
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 07 Nov 2011 22:11:51 -0200
 
 linux (2.6.38-12.51) natty-proposed; urgency=low
 
