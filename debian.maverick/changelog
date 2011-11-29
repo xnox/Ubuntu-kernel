@@ -1,9 +1,36 @@
-linux-lts-backport-maverick (2.6.35-31.62~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-maverick (2.6.35-31.63~lucid1) lucid-proposed; urgency=low
 
   [Herton R. Krzesinski]
 
   * Release Tracking Bug
-    - LP: #888571
+    - LP: #897744
+
+  [ Upstream Kernel Changes ]
+
+  * crypto: ghash - Avoid null pointer dereference if no key is set
+    - LP: #887299
+    - CVE-2011-4081
+  * xfs: Fix possible memory corruption in xfs_readlink, CVE-2011-4077
+    - LP: #887298
+    - CVE-2011-4077
+  * jbd/jbd2: validate sb->s_first in journal_get_superblock()
+    - LP: #893148
+    - CVE-2011-4132
+  * hfs: add sanity check for file name length, CVE-2011-4330
+    - LP: #894374
+    - CVE-2011-4330
+  * ipv6: udp: fix the wrong headroom check
+    - LP: #894373
+    - CVE-2011-4326
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 29 Nov 2011 15:42:23 -0200
+
+linux (2.6.35-31.62) maverick-proposed; urgency=low
+
+  [Herton R. Krzesinski]
+
+  * Release Tracking Bug
+    - LP: #887378
 
   [ Upstream Kernel Changes ]
 
@@ -35,7 +62,7 @@ linux-lts-backport-maverick (2.6.35-31.62~lucid1) lucid-proposed; urgency=low
     - LP: #869208
     - CVE-2011-1585
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 10 Nov 2011 15:25:11 -0200
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 07 Nov 2011 21:56:31 -0200
 
 linux (2.6.35-30.61) maverick-proposed; urgency=low
 
