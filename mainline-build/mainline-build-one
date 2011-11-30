@@ -281,6 +281,7 @@ EOM
 		echo "Using ccache in $CCACHE_DIR"
 		test -d $CCACHE_DIR || mkdir -p $CCACHE_DIR
 	fi
+	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic-pae
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
 EOM
 } | do_chroot "$build_release-i386" "/bin/bash"
