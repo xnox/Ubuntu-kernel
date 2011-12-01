@@ -5,6 +5,7 @@ from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
 from urllib2                            import urlopen, URLError
+import operator
 
 import json
 
@@ -176,6 +177,38 @@ class MorningBugReport():
             raise Exit
         return retval
 
+    # get_kernel_hot_list_data
+    #
+    def get_kernel_hot_list_data(self):
+        """
+        Download the latest bug data from the kernel report web site.
+        """
+        retval = None
+        try:
+            response = urlopen('http://people.canonical.com/~kernel/reports/_kernel_hot_.json')
+            raw = json.loads(response.read())
+
+            # In this case, we are only interested in the top 10. That's determined by bug heat.
+            #
+            heat = {}
+            for bid in raw:
+                heat[bid] = raw[bid]['heat']
+
+            if len(heat) > 0:
+                retval = {}
+                retval['bugs'] = {}
+                entries = 0
+                for bid in sorted(heat.iteritems(), key=operator.itemgetter(1)):
+                    retval['bugs'][bid[0]] = raw[bid[0]]
+                    entries += 1
+                    if entries == 10: # NOTE! If you want have more bugs in the hotlist, change this!
+                        break
+
+        except URLError as e:
+            print(e.reason)
+            raise Exit
+        return retval
+
     # per_bug_report
     #
     def per_bug_report(self, bid, data):
@@ -194,10 +227,17 @@ class MorningBugReport():
         else:
             retval += '   %-*s' % (self.title_max, data['title'])
 
-        retval += '    %-8s' % (data['series name'])
-        retval += '    %-12s' % (data['importance'])
-        retval += '    %-12s' % (data['status'])
-        retval += '    %-s' % (data['assignee'])
+        # Yes! This is a little hackish
+        try:
+            retval += '    %-8s' % (data['series name'])
+            retval += '    %-12s' % (data['importance'])
+            retval += '    %-12s' % (data['status'])
+            retval += '    %-s' % (data['assignee'])
+        except KeyError:
+            retval += '    %-8s' % (data['series_name'])
+            retval += '    %-12s' % (data['tasks']['importance'])
+            retval += '    %-12s' % (data['tasks']['status'])
+            retval += '    %-s' % (data['tasks']['assignee'])
 
         retval += '\n'
 
@@ -211,8 +251,9 @@ class MorningBugReport():
         """
         retval = ""
         if len(data['bugs']) > 0:
-            retval += 'The %s package acquired %d new bugs in the last 24 hrs.\n' % (pkg, len(data['bugs']))
-            retval += '\n'
+            if pkg is not None:
+                retval += 'The %s package acquired %d new bugs in the last 24 hrs.\n' % (pkg, len(data['bugs']))
+                retval += '\n'
             retval += '%-7s   %-*s    %-8s    %-12s    %-12s    %-s' % ('Bug', self.title_max, 'Title', 'Series', 'Importance', 'Status', 'Assignee')
             retval += '\n'
             retval += '-------   ------------------------------------------------------------    --------    ------------    ------------    ---------------------\n'
@@ -223,20 +264,30 @@ class MorningBugReport():
 
     # report
     #
-    def report(self, data):
+    def report(self, new_bugs, hot_bugs):
         """
         Generate the actual text of The Morning Bug Report.
         """
         retval = ""
         retval += 'The Daily Bug Report\n'
-        retval += '%s\n' % (data['updated'])
+        retval += '%s\n' % (new_bugs['updated'])
         retval += '\n'
 
-        for pkg in data['packages']:
-            retval += self.per_package_report(pkg, data['packages'][pkg])
+        for pkg in new_bugs['packages']:
+            retval += self.per_package_report(pkg, new_bugs['packages'][pkg])
 
         retval += '\n'
         retval += 'An online version of this report can be found at: http://people.canonical.com/~kernel/reports/1-day-new.html\n'
+
+        retval += '\n\n\n'
+        retval += 'The Top 10 Hot List Bugs (based on bug heat)\n\n'
+
+        for bid in hot_bugs:
+            retval += self.per_package_report(None, hot_bugs)
+
+        retval += '\n'
+        retval += 'The full Kernel Team Host List can be found at: http://people.canonical.com/~kernel/reports/_kernel_hot_.html\n'
+
         return retval
 
     # main
@@ -246,10 +297,11 @@ class MorningBugReport():
 
         try:
             self.initialize()
-            bugs = self.get_24hr_bug_data()
-            the_report = self.report(bugs)
+            new_bugs = self.get_24hr_bug_data()
+            hot_bugs = self.get_kernel_hot_list_data()
+            the_report = self.report(new_bugs, hot_bugs)
 
-            self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Daily Bug Report for %s' % bugs['updated'], the_report)
+            self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Daily Bug Report for %s' % new_bugs['updated'], the_report)
 
         # Handle the user presses <ctrl-C>.
         #
