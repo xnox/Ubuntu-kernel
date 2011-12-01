@@ -327,8 +327,7 @@ class MorningBugReport():
             hot_bugs = self.get_kernel_hot_list_data()
             the_report = self.report(new_bugs, hot_bugs)
 
-            #self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Daily Bug Report for %s' % new_bugs['updated'], the_report)
-            self.email.send(self.cfg['mail_notify']['from_address'], 'brad.figg@canonical.com', 'The Daily Bug Report for %s' % new_bugs['updated'], the_report)
+            self.email.send(self.cfg['mail_notify']['from_address'], 'kernel-team@lists.ubuntu.com', 'The Daily Bug Report for %s' % new_bugs['updated'], the_report)
 
         # Handle the user presses <ctrl-C>.
         #
