@@ -1,3 +1,18 @@
+linux-backports-modules-2.6.32 (2.6.32-37.38) lucid-proposed; urgency=low
+
+  [ Leann Ogasawra ]
+
+  * Add compat-wireless 3.1.0 meta package
+    - LP: #888769
+  * Replace compat-wireless meta package 3.1.0 with 3.1.1
+    - LP: #890715
+
+  [ Brad Figg ]
+
+  * Start new release (and bump ABI)
+
+ -- Brad Figg <brad.figg@canonical.com>  Fri, 02 Dec 2011 12:55:17 -0800
+
 linux-backports-modules-2.6.32 (2.6.32-36.37) lucid-proposed; urgency=low
 
   * Start new release (and bump ABI)
