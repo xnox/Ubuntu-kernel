@@ -1,3 +1,12 @@
+linux-meta (3.2.0.3.3) precise; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Bump ABI
+  * Add armhf to linux-meta
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Fri, 02 Dec 2011 21:25:42 -0800
+
 linux-meta (3.2.0.2.2) precise; urgency=low
 
   * Bump ABI
