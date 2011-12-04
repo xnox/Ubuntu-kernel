@@ -260,8 +260,6 @@ class MorningBugReport():
             retval += '-------   ------------------------------------------------------------    --------    ------------    -------------    ---------------------\n'
             for bug in sorted(data['bugs']):
                 retval += self.per_bug_report(bug, data['bugs'][bug])
-        else:
-            retval = "There were no new bugs found in the last 24 hrs."
 
         return retval
 
@@ -283,9 +281,6 @@ class MorningBugReport():
 
             for bug in sorted(heat.iteritems(), key=operator.itemgetter(1), reverse=True):
                 retval += self.per_bug_report(bug[0], data[bug[0]])
-
-        else:
-            retval = "There are no bugs on the Kernel Team Hot List."
 
         return retval
 
