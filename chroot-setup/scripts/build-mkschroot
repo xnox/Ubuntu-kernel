@@ -129,11 +129,11 @@ case $SUITE in
 esac
 
 #
-# armel is only supported if the lsb-release is Lucid or higher.
+# armel/armhf is only supported if the lsb-release is Lucid or higher.
 # Furthermore you must have a minimum version of debootstrap
 # installed (usually by enabling -backports)
 #
-if [ "$ARCH" = "armel" ]
+if [ "$ARCH" = "armel" ] || [ "$ARCH" = "armhf" ]
 then
 	DEBOOTSTRAP_MINVERSION=1.0.37ubuntu1~lucid1
 	DEBOOTSTRAP_VERSION=`dpkg-query --show debootstrap|cut -f 2`
