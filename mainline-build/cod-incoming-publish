@@ -59,6 +59,7 @@ for ppa in pre-proposed
 do
 	(
 		cd "$incoming/upload/$ppa" || exit 1
+		mkdir -p failed
 
 		for package in *_source.changes
 		do
@@ -74,7 +75,7 @@ do
 
 			# And upload it.
 			dput "$ppa" ${package}_source.changes && \
-				rm -f "${package}"*
+				rm -f "${package}"* || mv "${package}"* failed
 		done
 	)
 done
