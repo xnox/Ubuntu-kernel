@@ -1,3 +1,10 @@
+linux-meta-ti-omap4 (3.0.0.1401.1) precise; urgency=low
+ 
+  * Bump ABI for linux-ti-omap4 3.0.0-1401
+  * Add armhf support, in anticipation of same from linux-ti-omap4
+ 
+ -- Adam Conrad <adconrad@ubuntu.com>  Tue, 06 Dec 2011 02:32:23 -0700
+ 
 linux-meta-ti-omap4 (3.0.0.1205.0) oneiric; urgency=low
 
   * Bump ti-omap4 ABI to 3.0.0-1205
