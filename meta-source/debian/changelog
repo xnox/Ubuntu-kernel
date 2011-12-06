@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (3.0.0.1205.0) oneiric; urgency=low
+
+  * Bump ti-omap4 ABI to 3.0.0-1205
+
+ -- Adam Conrad <adconrad@0c3.net>   Thu, 29 Sep 2011 20:32:12 -0600
+
 linux-meta-ti-omap4 (3.0.0.1204.4) oneiric; urgency=low
 
   * linux-ti-omap4 3.0.0-1204.9
