@@ -287,9 +287,9 @@ class LogMeter(StdApp, MetaData):
         if path.exists(logpath):
             stdo("Existing file <%s> found, appending new information\n" % logpath)
             # maybe in the future rename or rotate logs
-            self.logfile = open(logpath, 'a')
+            self.logfile = open(logpath, 'a', 0)
         else:
-            self.logfile = open(logpath, 'w')
+            self.logfile = open(logpath, 'w', 0)
         return
 
     # writeOutput
