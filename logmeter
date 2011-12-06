@@ -396,7 +396,7 @@ class LogMeter(StdApp, MetaData):
                 for ln in ss:
                     stdo('%s\n' % ln)
             dt = 'datetime'
-            print 'made a sample:', st.strip()
+            print 'Sample:', datetime.utcnow().isoformat(), st.strip()
             self.writeOutput('SAMPLE: %s' % st)
             num = num - 1
             if idelay and (num > 1):
