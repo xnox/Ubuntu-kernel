@@ -16,6 +16,7 @@ from datetime                           import datetime
 from urllib                             import quote
 from urllib2                            import HTTPError
 from ktl.messaging                      import Email, Status
+from ktl.bugs                           import DeltaTime
 import re
 import traceback
 
@@ -942,22 +943,83 @@ class Shank(StdApp):
         When promote-to-proposed is set to Fix Released, we begin verification testing by setting
         verification-testing to In Progress, add tags to the bugs, and spam with text
         """
-        # Add time stamp and status
-        self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-end')
+        # Exit if processed already
         task = self.taskbyname['verification-testing']
-        if task.status == 'New':
-            if self.set_task_to_state('verification-testing', 'In Progress'):
-                # we did change the state, weren't already in it
-                self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
-                self.set_stable_phase(taskobj, 'Verification')
-                # Now tag all bugs verification-needed and spam with a comment
-                # Automate this in the future but for now send an email
-                print self.printlink,
-                print 'Here is where we would tag and spam the verification bugs'
-                # FIXME: not sending emails anymore, we can remove later the 3 lines below
-                #msgbody = 'The stable kernel team should now add bug comments and tags\nas required. This is a manual step for now.'
-                #self.send_email(taskobj, 'Bug spamming required', msgbody)
-                #self.send_status_update(task, 'available in -proposed.')
+        if task.status != 'New':
+            return False
+
+        bug = taskobj.bug
+
+        # Update promote-to-proposed timestamp first, used for checking
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-end')
+
+        # Check if packages were copied to the right pocket->component (main)
+        ubuntu = self.lp.launchpad.distributions["ubuntu"]
+        archive = ubuntu.main_archive
+        title = bug.title
+        pkg_name = re.findall('linux[^:]*', title)[0]
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
+        series_name = self.ubuntu.series_name(pkg_name, pkg_ver)
+        series = ubuntu.getSeries(name_or_version=series_name)
+        ps = archive.getPublishedSources(exact_match=True,
+                                         source_name=pkg_name,
+                                         distro_series=series,
+                                         pocket="Proposed",
+                                         version=pkg_ver)
+        if ps:
+            src_pkg = ps[0]
+            mis_lst = []
+            if src_pkg.component_name != 'main':
+                mis_lst.append('%s %s - in %s' %
+                               (src_pkg.source_package_name,
+                                src_pkg.source_package_version,
+                                src_pkg.component_name))
+            for bin_pkg in src_pkg.getPublishedBinaries():
+                if bin_pkg.component_name != 'main':
+                    mis_lst.append('%s %s - in %s' %
+                                   (bin_pkg.binary_package_name,
+                                    bin_pkg.binary_package_version,
+                                    bin_pkg.component_name))
+            if mis_lst:
+                self.set_task_to_state('promote-to-proposed', 'Incomplete')
+                msgbody  = "The following packages ended up in the wrong"
+                msgbody += " component in the -proposed pocket:\n"
+                for ln in mis_lst:
+                    msgbody += '\n%s' % (ln)
+                msgbody += "\n\nOnce this is fixed, set the "
+                msgbody += "promote-to-proposed to Fix Released again"
+                self.send_comment(task, 'Packages outside of main', msgbody)
+                self.props.set({'kernel-stable-Promote-to-proposed-end':None})
+                return False
+        else:
+            # We wait for ~1 day before complaining if we don't find the
+            # packages published to -proposed, this gives some time in
+            # the case copy/publishing take some minutes or hours after
+            # promote-to-proposed is set to Fix Released
+            if 'kernel-stable-Promote-to-proposed-end' in bug.properties:
+                date_str = bug.properties['kernel-stable-Promote-to-proposed-end']
+                timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
+                delta = DeltaTime(timestamp, datetime.utcnow())
+                if delta.days >= 1:
+                    self.set_task_to_state('promote-to-proposed', 'Incomplete')
+                    msgbody  = "Promote-to-proposed is Fix Released, but "
+                    msgbody += "packages for this update aren't published "
+                    msgbody += "in Launchpad, on -proposed pocket\n"
+                    self.send_comment(task, 'Can\'t find packages published in -proposed', msgbody)
+                    self.props.set({'kernel-stable-Promote-to-proposed-end':None})
+                    return False
+            self.verbose('Didn\'t found <%s> <%s> on -proposed yet, check on next run\n'
+                         % (pkg_name, pkg_ver))
+            return False
+
+        # Update remaining time stamps and status
+        self.set_task_to_state('verification-testing', 'In Progress')
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-Verification-testing-start')
+        self.set_stable_phase(taskobj, 'Verification')
+        # Now tag all bugs verification-needed and spam with a comment
+        # Automate this in the future but for now send an email
+        print self.printlink,
+        print 'Here is where we would tag and spam the verification bugs'
         return False
 
     def verification_testing_fix_released(self, taskobj):
