@@ -88,7 +88,8 @@ class Properties:
             newdscr = newdscr + line + '\n'
 
         for k in self.newprops:
-            newdscr = newdscr + '%s:%s\n' % (k, self.newprops[k])
+            if self.newprops[k]:
+                newdscr = newdscr + '%s:%s\n' % (k, self.newprops[k])
         self.bug.description = newdscr
         return
 
