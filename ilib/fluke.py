@@ -221,7 +221,12 @@ class m8846A():
         """
         rs = []
         self.send('*stb?\r')
-        stb = int(self.receive())
+	try:
+        	stb = int(self.receive())
+	except ValueError:
+		rs.append['ValueError ']
+		return rs
+
         chkbits = self.SB_QD + self.SB_MA + self.SB_SE
         if not chkbits & stb:
             return rs
