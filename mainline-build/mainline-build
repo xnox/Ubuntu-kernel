@@ -33,19 +33,14 @@ v2.6.39*|v3.0*)			master_release="oneiric" ;;
 *)				master_release="precise" ;;
 esac
 
+master_tree_select
+
 # Ensure we have the latest and greatest code in the master release.
 repo_remote_update "$master_release"
-
-master_repo="/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${master_release}.git"
-
-master_main="$HOME/COD"
-master_tree="$master_main/linux"
 
 CCACHE_DIR="$master_main/ccache"
 test -d "$CCACHE_DIR" || mkdir -p "$CCACHE_DIR"
 export CCACHE_DIR
-
-cd "$master_tree" || exit 1
 
 # Clean out the rubbish.
 rm -f "$master_main"/*.deb "$master_main/BUILD.LOG" "$master_main/CHANGES" "$master_main"/*.patch

@@ -33,8 +33,8 @@ repo_remote_url()
 	local url
 
 	case " $ubuntu_series " in
-	*\ $remote\ *)
-		RET="$master_repo/ubuntu-$remote.git"; 
+	*\ $match\ *)
+		RET="$master_repo/ubuntu-$match.git"; 
 		return
 		;;
 	esac
