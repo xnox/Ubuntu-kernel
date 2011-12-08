@@ -224,7 +224,7 @@ class m8846A():
 	try:
         	stb = int(self.receive())
 	except ValueError:
-		rs.append['ValueError ']
+		rs.append('ValueError ')
 		return rs
 
         chkbits = self.SB_QD + self.SB_MA + self.SB_SE
@@ -237,36 +237,36 @@ class m8846A():
             self.send('*stat:ques:even?\r')
             qdr = self.receive()
             if qdr & self.QD_VO:
-                rs.append['  Voltage Overload']
+                rs.append('  Voltage Overload')
             if qdr & self.QD_CO:
-                rs.append['  Current Overload']
+                rs.append('  Current Overload')
             if qdr & self.QD_OO:
-                rs.append['  Ohms Overload']
+                rs.append('  Ohms Overload')
             if qdr & self.QD_LL:
-                rs.append['  Limit Test Fail LO']
+                rs.append('  Limit Test Fail LO')
             if qdr & self.QD_LH:
-                rs.append['  Limit Test Fail HI']
+                rs.append('  Limit Test Fail HI')
             if qdr & self.QD_RM:
-                rs.append['  Remote Mode']
+                rs.append('  Remote Mode')
         if stb & self.SB_MA:
             # Message Available
-            rs.append['  Message Available']
+            rs.append('  Message Available')
         if stb & self.SB_SE:
             # Standard Event
             self.send('*esr?\r')
             ser = self.receive()
             if ser & self.SE_OC:
-                rs.append['  Operation Complete']
+                rs.append('  Operation Complete')
             if ser & self.SE_QE:
-                rs.append['  Query Error']
+                rs.append('  Query Error')
             if ser & self.SE_DE:
-                rs.append['  Device Error']
+                rs.append('  Device Error')
             if ser & self.SE_EE:
-                rs.append['  Execution Error']
+                rs.append('  Execution Error')
             if ser & self.SE_CE:
-                rs.append['  Command Error']
+                rs.append('  Command Error')
             if ser & self.SE_PO:
-                rs.append['  Power On']
+                rs.append('  Power On')
         return rs
 
     def clearStatus(self):
