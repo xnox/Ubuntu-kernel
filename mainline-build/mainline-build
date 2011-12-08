@@ -14,6 +14,8 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
+. "$here/lib-build"
+
 commit="$1"
 abi="$2"
 base="$3"
@@ -30,6 +32,9 @@ v2.6.36*|v2.6.37*|v2.6.38*)	master_release="natty" ;;
 v2.6.39*|v3.0*)			master_release="oneiric" ;;
 *)				master_release="precise" ;;
 esac
+
+# Ensure we have the latest and greatest code in the master release.
+repo_remote_update "$master_release"
 
 master_repo="/srv/kernel.ubuntu.com/git/ubuntu/ubuntu-${master_release}.git"
 
