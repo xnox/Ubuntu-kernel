@@ -23,6 +23,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/init.h>
@@ -153,8 +155,8 @@ static void dell_wmi_notify(u32 value, void *context)
 		u16 *buffer_entry = (u16 *)obj->buffer.pointer;
 
 		if (dell_new_hk_type && (buffer_entry[1] != 0x10)) {
-			printk(KERN_INFO "dell-wmi: Received unknown WMI event"
-					 " (0x%x)\n", buffer_entry[1]);
+			pr_debug("Received unknown WMI event (0x%x)\n",
+				 buffer_entry[1]);
 			kfree(obj);
 			return;
 		}
