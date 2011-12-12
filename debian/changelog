@@ -1,3 +1,9 @@
+linux-backports-modules-3.0.0 (3.0.0-15.7) oneiric-proposed; urgency=low
+
+  * Bump ABI - Oneiric ABI 15
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 12 Dec 2011 12:22:43 -0200
+
 linux-backports-modules-3.0.0 (3.0.0-14.6) oneiric-proposed; urgency=low
 
   [ Leann Ogasawara ]
