@@ -98,7 +98,7 @@ class KernelBug(Bug):
         # tagged with "apport-package" then it's pretty safe to assume that apport
         # collected the necessary logs.
         #
-        if (self.problem_type == 'Package') and ('apport-package' in self.tags):
+        if (self.problem_type == 'Package') and (('apport-package' in self.tags) or ('apport-collected' in self.tags)):
             retval = True
             return retval # FIXME bjf - I don't like returning out of the middle of functions/methods
 
