@@ -429,13 +429,17 @@ class GenWorkflowReport():
                 title = bug['title']
                 package, other = title.split(':')
                 if bug['series name'] == ss:
-                    pkgs[package] = b
+                    if package in pkgs:
+                        pkgs[package].append(b)
+                    else:
+                        pkgs[package] = [ b ]
 
             # Get the bug details for all the packages in this series.
             #
             for pkg in sorted(pkgs):
-                bug = self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs'][pkgs[pkg]]
-                retval += self.__bug_details(pkgs[pkg], 'kernel-sru-workflow')
+                for b in pkgs[pkg]:
+                    bug = self.bugs_db['bug-collections']['kernel-sru-workflow']['bugs'][b]
+                    retval += self.__bug_details(b, 'kernel-sru-workflow')
 
 
         Dbg.leave("GenWorkflowReport.report")
