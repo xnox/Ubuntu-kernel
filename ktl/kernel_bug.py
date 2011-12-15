@@ -425,7 +425,8 @@ class KernelBug(Bug):
                             try:
                                 file = attachment.data.open()
                                 for line in file:
-                                    m = re.search('Linux ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
+                                    if "Current Operating System" not in line: continue
+                                    m = re.search('Linux \S+ ([0-9]+)\.([0-9]+)\.([0-9]+)\-([0-9]+)\-(.*?) .*', line)
                                     if (m != None):
                                         self.dbg('       - found\n')
                                         kernel_version = "%s.%s.%s-%s-%s" % (m.group(1), m.group(2), m.group(3), m.group(4), m.group(5))
