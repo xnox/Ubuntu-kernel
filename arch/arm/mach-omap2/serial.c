@@ -77,6 +77,7 @@ static struct omap_uart_port_info omap_serial_default_info[] __initdata = {
 		.dma_rx_poll_rate = DEFAULT_RXDMA_POLLRATE,
 		.dma_rx_timeout = DEFAULT_RXDMA_TIMEOUT,
 		.autosuspend_timeout = DEFAULT_AUTOSUSPEND_DELAY,
+		.wer = OMAP_UART_WER_MOD_WKUP,
 	},
 };
 
@@ -350,6 +351,7 @@ void __init omap_serial_init_port(struct omap_board_data *bdata,
 	omap_up.dma_rx_timeout = info->dma_rx_timeout;
 	omap_up.dma_rx_poll_rate = info->dma_rx_poll_rate;
 	omap_up.autosuspend_timeout = info->autosuspend_timeout;
+	omap_up.wer = info->wer;
 
 	pdata = &omap_up;
 	pdata_size = sizeof(struct omap_uart_port_info);
