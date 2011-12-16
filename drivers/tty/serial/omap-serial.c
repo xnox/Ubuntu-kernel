@@ -596,7 +596,7 @@ static int serial_omap_startup(struct uart_port *port)
 	serial_out(up, UART_IER, up->ier);
 
 	/* Enable module level wake up */
-	serial_out(up, UART_OMAP_WER, OMAP_UART_WER_MOD_WKUP);
+	serial_out(up, UART_OMAP_WER, up->wer);
 
 	pm_runtime_mark_last_busy(&up->pdev->dev);
 	pm_runtime_put_autosuspend(&up->pdev->dev);
@@ -1515,6 +1515,7 @@ static int serial_omap_probe(struct platform_device *pdev)
 						"%d\n", DEFAULT_CLK_SPEED);
 	}
 	up->uart_dma.uart_base = mem->start;
+	up->wer = omap_up_info->wer;
 
 	if (omap_up_info->dma_enabled) {
 		up->uart_dma.uart_dma_tx = dma_tx->start;
@@ -1643,6 +1644,7 @@ static void serial_omap_restore_context(struct uart_omap_port *up)
 		serial_omap_mdr1_errataset(up, up->mdr1);
 	else
 		serial_out(up, UART_OMAP_MDR1, up->mdr1);
+	serial_out(up, UART_OMAP_WER, up->wer);
 }
 
 static int serial_omap_runtime_suspend(struct device *dev)
