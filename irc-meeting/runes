@@ -1,5 +1,4 @@
-
-Roll Call
+Roll Call for Ubuntu Kernel Weekly Status Meeting
 #startmeeting
 ##
 ## This is the Ubuntu Kernel Team weekly status meeting.
@@ -15,6 +14,8 @@ Roll Call
 [TOPIC] ARM Status (ppisati)
 
 [TOPIC] Release Metrics and Incoming Bugs (jsalisbury)
+
+Release metrics and incomming bug data can be reviewed at the following link:
 [LINK] http://people.canonical.com/~kernel/reports/kt-meeting.txt
 
 [TOPIC] Milestone Targeted Work Items (ogasawara)
@@ -29,7 +30,7 @@ Roll Call
 
 [TOPIC] Open Discussion or Questions? Raise your hand to be recognized (o/)
 
-thanks everyone
+Thanks everyone
 #endmeeting
 
 ##
