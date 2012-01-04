@@ -872,6 +872,7 @@ fore_200e
 freevxfs
 friq
 frpw
+fsam7400
 fscache
 fschmd
 ft1000
@@ -2140,6 +2141,8 @@ quota_tree
 quota_v1
 quota_v2
 r128
+r592
+r6040
 r8169
 r8187se
 r8192e_pci
