@@ -201,8 +201,10 @@ class CheckForFixes(StdApp):
             src = re.compile(re.escape(s))
             for res in result:
                 if src.search(res):
-                    picked.append(res.split(' ')[0])
-                break
+                    sub = res.partition(' ')[2]
+                    if sub == s:
+                        picked.append(res.split(' ')[0])
+                        break
             r += 1
         return picked
 
