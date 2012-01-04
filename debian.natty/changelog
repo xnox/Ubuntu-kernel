@@ -1,9 +1,52 @@
-linux-lts-backport-natty (2.6.38-13.53~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-13.54~lucid1) lucid-proposed; urgency=low
+
+  [Herton R. Krzesinski]
+
+  * Release Tracking Bug
+    - LP: #911710
+
+  [ Alex Bligh ]
+
+  * (config) Change Xen paravirt drivers to be built-in
+    - LP: #886521
+
+  [ Paolo Pisati ]
+
+  * [Config] DEFAULT_MMAP_MIN_ADDR=32k on arm
+    - LP: #903346
+
+  [ Seth Forshee ]
+
+  * SAUCE: dell-wmi: Demote unknown WMI event message to pr_debug
+    - LP: #581312
+
+  [ Upstream Kernel Changes ]
+
+  * VFS: Fix vfsmount overput on simultaneous automount
+    - LP: #769927
+  * TPM: Zero buffer after copying to userspace, CVE-2011-1162
+    - LP: #899463
+    - CVE-2011-1162
+  * hfs: fix hfs_find_init() sb->ext_tree NULL ptr oops, CVE-2011-2203
+    - LP: #899466
+    - CVE-2011-2203
+  * KEYS: Fix a NULL pointer deref in the user-defined key type,
+    CVE-2011-4110
+    - LP: #894369
+    - CVE-2011-4110
+  * nfsd4: permit read opens of executable-only files
+    - LP: #833300
+  * Support for Terratec G1
+    - LP: #821061
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 04 Jan 2012 09:47:24 -0200
+
+linux (2.6.38-13.53) natty-proposed; urgency=low
 
   [Brad Figg]
 
   * Release Tracking Bug
-    - LP: #897567
+    - LP: #897320
 
   [ Upstream Kernel Changes ]
 
@@ -34,7 +77,7 @@ linux-lts-backport-natty (2.6.38-13.53~lucid1) lucid-proposed; urgency=low
     - LP: #894374
     - CVE-2011-4330
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 29 Nov 2011 10:31:28 -0200
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 28 Nov 2011 09:48:40 -0800
 
 linux (2.6.38-13.52) natty-proposed; urgency=low
 
