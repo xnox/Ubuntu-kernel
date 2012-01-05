@@ -1,3 +1,11 @@
+linux-meta (3.2.0.7.8) precise; urgency=low
+
+  * linux-image should point to the recommended kernel, move it to
+    generic-pae on 32bit to match the rest of the CD.
+    - LP: #897786
+
+ -- Andy Whitcroft <apw@canonical.com>  Thu, 05 Jan 2012 17:44:26 +0000
+
 linux-meta (3.2.0.7.7) precise; urgency=low
 
   * Bump ABI
