@@ -85,7 +85,6 @@ class Cmdline:
         line. All parameters are processed into class variables for use by other methods.
         """
         self.cfg['app_name'] = argv[0]
-        result = True
         try:
             optsShort = ''
             optsLong  = ['help', 'verbose', 'base=', 'debug=', 'repo=']
