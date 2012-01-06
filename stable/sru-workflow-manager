@@ -949,24 +949,33 @@ class Shank(StdApp):
             return False
 
         bug = taskobj.bug
+        title = bug.title
+        pkg_name = re.findall('linux[^:]*', title)[0]
+        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
+        series_name = self.ubuntu.series_name(pkg_name, pkg_ver)
 
-        # Update promote-to-proposed timestamp first, used for checking
+        # Get the version which landed in archive, inside Proposed pocket
+        import sys, os
+        common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
+        common_lib = os.path.dirname(common_lib)
+        common_lib = os.path.join(common_lib, "lib")
+        sys.path.insert(0, common_lib)
+        from buildenv_lib import GetUploadVersion
+        proposed_ver = GetUploadVersion(series_name, pkg_name, pocket="proposed")
+
+        # Set promote-to-proposed timestamp first, used for checking below
         self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-end')
 
         # Check if packages were copied to the right pocket->component (main)
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
         archive = ubuntu.main_archive
-        title = bug.title
-        pkg_name = re.findall('linux[^:]*', title)[0]
-        pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
-        series_name = self.ubuntu.series_name(pkg_name, pkg_ver)
         series = ubuntu.getSeries(name_or_version=series_name)
         ps = archive.getPublishedSources(exact_match=True,
                                          source_name=pkg_name,
                                          distro_series=series,
                                          pocket="Proposed",
                                          version=pkg_ver)
-        if ps:
+        if proposed_ver == pkg_ver and ps:
             src_pkg = ps[0]
             mis_lst = []
             if src_pkg.component_name != 'main':
