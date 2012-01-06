@@ -53,6 +53,11 @@ sub emit()
 		$default = 'n';
 	}
 
+	# DANGEROUS: clearly we do not want these enabled by default.
+	if ($flags{'DANGEROUS'}) {
+		$default = 'n';
+	}
+
 	$options{$option} = join(' ', ($maybe, $default, $default));
 	for my $flag (sort keys %flags) {
 		$options{$option} .= " flag<$flag>";

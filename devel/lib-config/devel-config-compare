@@ -131,6 +131,21 @@ echo "$level Netfilter Match/Targets $level"
 config-cmp-interesting $cmp
 echo ""
 
+function what_flag()
+{
+	typeset flag="$1"
+
+	what=`awk '/flag<'"$flag"'>/ { print $1 }' <"$info" |
+		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)/'`
+}
+what_flag 'DANGEROUS'
+rebuild "$what"
+
+echo ""
+echo "$level DANGEROUS Options $level"
+config-cmp-interesting $cmp
+echo ""
+
 rebuild ""
 awk '($2 ~ /[Mm]/) { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
 
