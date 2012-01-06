@@ -89,6 +89,11 @@ foreach my $key (sort keys %options) {
 	# NET_VENDOR_* represents vendor specific groupings, alway enable.
 	} elsif ($oa[2] ne 'y' && $key =~ /^CONFIG_NET_VENDOR_/) {
 		($mode, $note) = ('y', "VENDOR driver group always enabled");
+	
+	# *_PHY represent network PHY devices, always enable.
+	#   http://marc.info/?l=linux-netdev&m=125700321922154&w=2
+	} elsif ($_ =~ /^CONFIG_.*_PHY/ && $oa[2] eq 'm') {
+		($mode, $note) = ('y', "PHY drivers are not autoloadable");
 	}
 
 	$options{$key} = join(' ', @oa);
