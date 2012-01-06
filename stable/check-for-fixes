@@ -131,8 +131,8 @@ def process_commit_check(line):
     lock.release()
 
     res = {}
-    status, body = getstatusoutput('git log %s^..%s --format=%%B'
-                                   % (line, line))
+    status, body = getstatusoutput('git log -n 1 --format=%%B %s'
+                                   % (line))
     if status != 0:
         raise GitError(body)
     body = body.replace('\n', ' ')
@@ -182,9 +182,8 @@ class CheckForFixes(StdApp):
         if status != 0:
             raise GitError(result)
         for match in pattern.finditer(result):
-            status, commit = run_command('git log --format=%%h %s^..%s' %
-                                         (match.group(1), match.group(1)),
-                                         self.debug_run)
+            status, commit = run_command('git log -n 1 --format=%%h %s' %
+                                         (match.group(1)), self.debug_run)
             if status != 0:
                 continue
             picked.append(commit[0])
@@ -305,8 +304,8 @@ class CheckForFixes(StdApp):
             else:
                 picked = merged
             for change in set(picked):
-                status, subject = run_command('git log --format=%%s %s^..%s' %
-                                              (change, change), self.debug_run)
+                status, subject = run_command('git log -n 1 --format=%%s %s' %
+                                              (change), self.debug_run)
                 if status != 0:
                     raise GitError("\n".join(subject))
                 clist.append([re.compile(change),
