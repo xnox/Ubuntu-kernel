@@ -15,6 +15,14 @@ sub emit()
 {
 	return if (!$option || !$prompt);
 
+	if ($prompt =~ s/\(DEPRECATED\)//) {
+		$flags{'DEPRECATED'} = 1;
+	}
+	if ($prompt =~ s/\(DANGEROUS\)//) {
+		$flags{'DANGEROUS'} = 1;
+	}
+	$prompt =~ s/\s*$//;
+
 	if ($flags{'EXPERIMENTAL'}) {
 		# We default EXPERIMENTAL options off by default.
 		my ($mode, $note) = ('n', '');
