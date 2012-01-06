@@ -132,7 +132,7 @@ config-cmp-interesting $cmp
 echo ""
 
 rebuild ""
-awk '($3 == "m") { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
+awk '($2 ~ /[Mm]/) { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
 
 echo ""
 echo "$level Non-modular modules $level"

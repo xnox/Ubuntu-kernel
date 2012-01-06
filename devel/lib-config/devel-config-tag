@@ -1,78 +1,118 @@
-#!/usr/bin/perl
-
+#!/usr/bin/perl 
 use strict;
 
-if ($#ARGV != 3) {
-	die "Usage: $0 <defaults> <experimental> <staging> <overrides>\n";
+if ($#ARGV != 1) {
+	die "Usage: $0 <dump> <overrides>\n";
 }
 
-my ($defaults, $experimental, $staging, $overrides) = @ARGV;
+my ($dump, $overrides) = @ARGV;
 my %options;
 my %modenote;
+my %desc;
 
-my ($option, $maybe, $default);
-open(DEFAULTS, "<$defaults") || die "$0: $defaults: open failed - $!\n";
-while (<DEFAULTS>) {
-	chomp;
+my ($option, $maybe, $default, %flags, $prompt);
+sub emit()
+{
+	return if (!$option || !$prompt);
 
-	($option, $maybe, $default) = split(' ');
+	if ($flags{'EXPERIMENTAL'}) {
+		# We default EXPERIMENTAL options off by default.
+		my ($mode, $note) = ('n', '');
 
-	# Create the 'expected' column.
-	$options{$option} = join(' ', ($maybe, $default, $default));
-}
-close(DEFAULTS);
+		if ($option =~ /^CONFIG_SENSORS_/ && $default eq 'm') {
+			($mode, $note) = ('m', "sensors are opt-in");
 
-my @oa;
-my ($note, $mode);
-open(EXPERIMENTAL, "<$experimental") ||
-	die "$0: $experimental: open failed - $!\n";
-while (<EXPERIMENTAL>) {
-	chomp;
+		} elsif ($option =~ /^CONFIG_[^_]*_?FS$/ && $default eq 'm') {
+			($mode, $note) = ('m', "filesystems are opt-in");
 
-	@oa = split(' ', $options{$_});
+		} elsif ($option =~ /^CONFIG_[SP]ATA_/ && $default eq 'm') {
+			($mode, $note) = ('m', "ATA drivers are opt-in");
 
-	# We default EXPERIMENTAL options off by default.
-	($mode, $note) = ('n', '');
+		} elsif ($option =~ /^CONFIG_INPUT_/ && $default eq 'm') {
+			($mode, $note) = ('m', "input drivers are opt-in");
 
-	if ($_ =~ /^CONFIG_SENSORS_/ && $oa[2] eq 'm') {
-		($mode, $note) = ('m', "sensors are opt-in");
+		} elsif ($option =~ /^CONFIG_NETFILTER_XT_/ && $default eq 'm') {
+			($mode, $note) = ('m', "netfilter targets are opt-in");
 
-	} elsif ($_ =~ /^CONFIG_[^_]*_?FS$/ && $oa[2] eq 'm') {
-		($mode, $note) = ('m', "filesystems are opt-in");
+		} elsif ($option =~ /^CONFIG_HID_/ && $default eq 'm') {
+			($mode, $note) = ('m', "HID drivers are opt-in");
 
-	} elsif ($_ =~ /^CONFIG_[SP]ATA_/ && $oa[2] eq 'm') {
-		($mode, $note) = ('m', "ATA drivers are opt-in");
-
-	} elsif ($_ =~ /^CONFIG_INPUT_/ && $oa[2] eq 'm') {
-		($mode, $note) = ('m', "input drivers are opt-in");
-
-	} elsif ($_ =~ /^CONFIG_NETFILTER_XT_/ && $oa[2] eq 'm') {
-		($mode, $note) = ('m', "netfilter targets are opt-in");
-
-	} elsif ($_ =~ /^CONFIG_HID_/ && $oa[2] eq 'm') {
-		($mode, $note) = ('m', "HID drivers are opt-in");
-
-	} elsif ($_ =~ /^CONFIG_CRYPTO_/ && $oa[2] eq 'm') {
-		($mode, $note) = ('m', "CRYPTO drivers are opt-in");
+		} elsif ($option =~ /^CONFIG_CRYPTO_/ && $default eq 'm') {
+			($mode, $note) = ('m', "CRYPTO drivers are opt-in");
+		}
+		$note = "note<$note>" if ($note);
+		$modenote{$option} = [$mode, $note] if ($mode ne 'n');
+		$default = 'n';
 	}
-	$oa[2] = 'n';
 
-	push(@oa, "flag<EXPERIMENTAL>");
-	$options{$_} = join(' ', @oa);
+	$options{$option} = join(' ', ($maybe, $default, $default));
+	for my $flag (sort keys %flags) {
+		$options{$option} .= " flag<$flag>";
+	}
+	$desc{$option} = $prompt;
 
-	$note = "note<$note>" if ($note);
-	$modenote{$_} = [$mode, $note] if ($mode ne 'n');
+	# Reset for the next option ...
+	($maybe, $default, $prompt) = ('', '', '');
+	undef %flags;
 }
-close(EXPERIMENTAL);
-
-open(STAGING, "<$staging") ||
-	die "$0: $staging: open failed - $!\n";
-while (<STAGING>) {
+my ($note, $mode);
+open(DUMP, "<$dump") || die "$0: $dump: open failed - $!\n";
+while (<DUMP>) {
 	chomp;
 
-	$options{$_} .= " flag<STAGING>";
+	# New record markers ...
+	if (/^config\s(\S*)\s*$/) {
+		emit();
+		$option = "CONFIG_$1";
+
+	} elsif (/^choice\s*$/) {
+		emit();
+		$option = '';
+
+	} elsif (/^menu\s*$/) {
+		emit();
+		$option = '';
+
+	# Type specifiers ...
+	} elsif (/^\s\sboolean\s*$/) {
+		$maybe = "y/n";
+		$default = 'y';
+
+	} elsif (/^\s\stristate\s*$/) {
+		$maybe = "y/m/n";
+		$default = 'm';
+
+	} elsif (/^\s\sstring\s*$/) {
+		$maybe = '-';
+		$default = '-';
+
+	} elsif (/^\s\sinteger\s*$/) {
+		$maybe = '-';
+		$default = '-';
+
+	# Description ...
+	} elsif (/^\s\s(?:prompt|menu)\s"([^"]*)"\s*(.*)/) {
+		my ($cond) = ($2);
+		$prompt = $1;
+		if ($cond =~ /\bSTAGING\b/) {
+			$flags{'STAGING'} = 1;
+		}
+		if ($cond =~ /\bEXPERIMENTAL\b/) {
+			$flags{'EXPERIMENTAL'} = 1;
+		}
+
+	# Dependancies ...           Defaults ...
+	} elsif (/^\s\sdepends\s/ || /^\s\sdefault\s/) {
+		if (/\bSTAGING\b/) {
+			$flags{'STAGING'} = 1;
+		}
+		if (/\bEXPERIMENTAL\b/) {
+			$flags{'EXPERIMENTAL'} = 1;
+		}
+	}
+
 }
-close(STAGING);
+close(DUMP);
 
 my @oa;
 my ($mode, $note);
@@ -139,5 +179,5 @@ foreach my $key (sort keys %options) {
 		push(@oa, $note) if ($note);
 		$options{$key} = join(' ', @oa);
 	}
-	print "$key $options{$key}\n";
+	print "$key $options{$key} desc<$desc{$key}>\n";
 }
