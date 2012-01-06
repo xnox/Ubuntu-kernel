@@ -134,7 +134,8 @@ def process_commit_check(line):
     status, body = getstatusoutput('git log -n 1 --format=%%B %s'
                                    % (line))
     if status != 0:
-        raise GitError(body)
+        eout(body)
+        return [ None, None ]
     body = body.replace('\n', ' ')
     for commit in plist:
         commit_rc = commit[0]
