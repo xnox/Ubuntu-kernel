@@ -989,7 +989,8 @@ class Shank(StdApp):
                 msgbody += "\n\nOnce this is fixed, set the "
                 msgbody += "promote-to-proposed to Fix Released again"
                 self.send_comment(task, 'Packages outside of main', msgbody)
-                self.props.set({'kernel-stable-Promote-to-proposed-end':None})
+                if not 'dryrun' in self.cfg:
+                    self.props.set({'kernel-stable-Promote-to-proposed-end':None})
                 return False
         else:
             # We wait for ~1 day before complaining if we don't find the
@@ -1006,7 +1007,8 @@ class Shank(StdApp):
                     msgbody += "packages for this update aren't published "
                     msgbody += "in Launchpad, on -proposed pocket\n"
                     self.send_comment(task, 'Can\'t find packages published in -proposed', msgbody)
-                    self.props.set({'kernel-stable-Promote-to-proposed-end':None})
+                    if not 'dryrun' in self.cfg:
+                        self.props.set({'kernel-stable-Promote-to-proposed-end':None})
                     return False
             self.verbose('Didn\'t found <%s> <%s> on -proposed yet, check on next run\n'
                          % (pkg_name, pkg_ver))
