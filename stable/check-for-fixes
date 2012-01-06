@@ -56,7 +56,7 @@ class Cmdline:
         Prints out the help text which explains the command line options.
         """
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("        %s [--config=<cfg file>] [--debug=<dbg options>]                                     \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
@@ -87,7 +87,7 @@ class Cmdline:
         self.cfg['app_name'] = argv[0]
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'base=', 'debug=', 'repo=']
+            optsLong  = ['help', 'base=', 'debug=', 'repo=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
