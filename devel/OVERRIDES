@@ -121,3 +121,6 @@ CONFIG_USB_OTG - note<ARM specific feature>
 
 # powerpc64-smp requires this as CONFIG_MAPLE is enabled
 CONFIG_ATA_NONSTANDARD - note<required for powerpc64-smp dep of CONFIG_MAPLE>
+
+# CONFIG_LLC is =y due to CONFIG_TR other than ARM
+CONFIG_LLC - note<CONFIG_TR triggers =m on ARM =y otherwise>
