@@ -59,17 +59,27 @@ CONFIG_ACPI_PROCESSOR y note<core ACPI driver>
 CONFIG_ACPI_THERMAL y note<core ACPI driver>
 
 # Boot essential dependancies
-CONFIG_BLK_CGROUP - note<depandancy of boot essential>
-CONFIG_BLK_DEV_DM - note<depandancy of boot essential>
-CONFIG_BLK_DEV_LOOP - note<depandancy of boot essential>
-CONFIG_BLK_DEV_MD - note<depandancy of boot essential>
-CONFIG_BLK_DEV_RAM - note<depandancy of boot essential>
-CONFIG_BLK_DEV_SD - note<depandancy of boot essential>
-CONFIG_BLK_DEV_SR - note<depandancy of boot essential>
+CONFIG_BLK_CGROUP - note<dependancy of boot essential>
+CONFIG_BLK_DEV_DM - note<dependancy of boot essential>
+CONFIG_BLK_DEV_LOOP - note<dependancy of boot essential>
+CONFIG_BLK_DEV_MD - note<dependancy of boot essential>
+CONFIG_BLK_DEV_RAM - note<dependancy of boot essential>
+CONFIG_BLK_DEV_SD - note<dependancy of boot essential>
+CONFIG_BLK_DEV_SR - note<dependancy of boot essential>
 #  CONFIG_ECRYPTFS or CONFIG_DM
-CONFIG_CRYPTO_CRC32C y note<depandancy of boot essential>
-CONFIG_CRYPTO_CRC32C_INTEL y note<depandancy of boot essential>
-CONFIG_CRYPTO_DEV_PADLOCK y note <depandancy of boot essential>
+CONFIG_CRYPTO_CRC32C y note<dependancy of boot essential>
+CONFIG_CRYPTO_CRC32C_INTEL y note<dependancy of boot essential>
+CONFIG_CRYPTO_DEV_PADLOCK y note <dependancy of boot essential>
+CONFIG_CRYPTO_CRC32C y note<dependancy of boot essential>
+CONFIG_CRYPTO_AES y note<dependancy of boot essential>
+CONFIG_CRYPTO_CBC y note<dependancy of boot essential>
+CONFIG_CRYPTO_MANAGER y note<dependancy of boot essential>
+CONFIG_CRYPTO_MD5 y note<dependancy of boot essential>
+CONFIG_CRYPTO_SHA1 y note<dependancy of boot essential>
+CONFIG_CRYPTO_SHA256 y note<dependancy of boot essential>
+CONFIG_CRYPTO_CRC16 y note<dependancy of boot essential>
+CONFIG_CRYPTO_CRC32 y note<dependancy of boot essential>
+CONFIG_CRYPTO_ENCRYPTED_KEYS y note<dependancy of boot essential>
 
 # EXPERIMENTAL Network protocols are generally enabled to allow testing.
 CONFIG_ECONET m note<network protocol -- opt-in>
