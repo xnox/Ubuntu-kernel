@@ -21,6 +21,9 @@ sub emit()
 	if ($prompt =~ s/\(DANGEROUS\)//) {
 		$flags{'DANGEROUS'} = 1;
 	}
+	if ($prompt =~ s/\(EXPERIMENTAL\)//) {
+		$flags{'EXPERIMENTAL'} = 1;
+	}
 	$prompt =~ s/\s*$//;
 
 	if ($flags{'EXPERIMENTAL'}) {
