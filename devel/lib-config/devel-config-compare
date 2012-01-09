@@ -49,10 +49,11 @@ function config-cmp-nopolicy() {
 }
 function config-cmp-interesting() {
 	(cd tmp; "$here/config-compare" --info "../$info" *) | grep -v '||  ||$'
+	(cd tmp; "$here/config-compare" --info "../$info" *) | grep '||  ||$'
 }
 
 what='FS[ =]'
-rebuild "$what" "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS)[ =]"
+rebuild "$what" "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
 
 echo ""
 echo "$level Filesystems $level"
