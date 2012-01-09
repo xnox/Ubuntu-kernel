@@ -32,10 +32,12 @@ CONFIG_X86_SPEEDSTEP_SMI y note<not autoloadable>
 
 # Boot essential items are always =y
 #  subsystems:
-CONFIG_ATA y note<boot essential -- subsystem>
-CONFIG_USB y note<boot essential -- subsystem>
-CONFIG_RFKILL y note<boot essential -- subsystem>
-CONFIG_NFC y note<boot essential -- subsystem>
+CONFIG_ATA y note<core subsystem>
+CONFIG_USB y note<core subsystem>
+CONFIG_RFKILL y note<core subsystem>
+CONFIG_NFC y note<core subsystem>
+CONFIG_INPUT y note<core subsystem>
+CONFIG_SCSI y note<core subsystem>
 #  network protocols:
 CONFIG_UNIX y note<boot essential>
 CONFIG_PACKET y note<boot essential>
