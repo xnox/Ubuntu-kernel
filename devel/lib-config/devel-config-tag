@@ -153,7 +153,7 @@ foreach my $key (sort keys %options) {
 	
 	# *_PHY represent network PHY devices, always enable.
 	#   http://marc.info/?l=linux-netdev&m=125700321922154&w=2
-	} elsif ($_ =~ /^CONFIG_.*_PHY/ && $oa[2] eq 'm') {
+	} elsif ($key =~ /^CONFIG_.*_PHY$/ && $oa[2] eq 'm') {
 		($mode, $note) = ('y', "PHY drivers are not autoloadable");
 	}
 
