@@ -1,0 +1,74 @@
+#!/usr/bin/perl
+#
+# bomb-reorder -- reorder the patches in this mailbox into numerical order.
+#
+$P = 'bomb-reorder';
+
+@order = ();
+
+$header = 0;
+$record = 0;
+$line = '';
+while (($_ = <>) || eof()) {
+	# New message starts here ...
+	if (/^From / || eof()) {
+		$header = 1;
+
+		if ($num != 0) {
+			warn "$P: found $num/$of '$name' ...\n";
+
+			$order[$num - 1] = [ @lines ];
+			@lines = ();
+
+		} else {
+			warn "$P: skipping $subject ...\n" if ($subject);
+			@lines = ();
+		}
+		$num = 0;
+		$subject = '';
+
+		last if (eof());
+
+		$record = 0;
+			
+	}
+
+	push(@lines, $_);
+
+	if ($header) {
+		if (/^\s/) {
+			$line .= $_;
+			chop($line);
+		} else {
+			#warn "HEAD: $line\n";
+			# Subject: [PATCH 1/10] Add __GFP_EASYRCLM flag and update callers
+			if ($line =~ /^Subject:\s+(.*\S)\s*$/) {
+				$subject = $1;
+			}
+			## if ($line =~ /^Subject:\s+(\[.*]\s+)?\[([^]]*\s+)?(\d+)\/(\d+)(\s+[^]]*)?]\s+(.*\S)\s*$/) {
+			if ($line =~ /^Subject:\s+.*\[([^]]*\s+)?(\d+)\/(\d+)(\s+[^]]*)?\]\s+(.*\S)\s*$/) {
+				($num, $of, $name) = ($2, $3, $5);
+			}
+
+			$line = $_;
+			chop($line);
+		}
+	}
+	if ($header && /^$/) {
+		$header = 0;
+	}
+}
+
+$have = $#order + 1;
+if ($have != $of) {
+	for ($n = 0; $n <= $of; $n++) {
+	        if (not exists $order[$n]) {
+			warn "$P: $n: patch missing??\n";
+		}
+	}
+	die "$P: patch set incomplete.\n";
+}
+
+for ($n = 0; $n <= $#order; $n++) {
+	print @{$order[$n]};
+}
