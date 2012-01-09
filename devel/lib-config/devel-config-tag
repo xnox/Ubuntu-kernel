@@ -61,6 +61,11 @@ sub emit()
 		$default = 'n';
 	}
 
+	# DEPRECATED: clearly we do not want these enabled by default.
+	if ($flags{'DEPRECATED'}) {
+		$default = 'n';
+	}
+
 	$options{$option} = join(' ', ($maybe, $default, $default));
 	for my $flag (sort keys %flags) {
 		$options{$option} .= " flag<$flag>";
