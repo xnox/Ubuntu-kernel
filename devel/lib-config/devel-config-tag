@@ -155,6 +155,10 @@ foreach my $key (sort keys %options) {
 	#   http://marc.info/?l=linux-netdev&m=125700321922154&w=2
 	} elsif ($key =~ /^CONFIG_.*_PHY$/ && $oa[2] eq 'm') {
 		($mode, $note) = ('y', "PHY drivers are not autoloadable");
+	
+	# *_PARTITION_* represent partition table decoders
+	} elsif ($key =~ /^CONFIG_.*_(PARTITION|DISKLABEL)$/) {
+		($mode, $note) = ('y', "partition table decoders are not autoloadable");
 	}
 
 	$options{$key} = join(' ', @oa);
