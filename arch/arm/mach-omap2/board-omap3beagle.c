@@ -61,8 +61,7 @@
  *	AXBX	= GPIO173, GPIO172, GPIO171: 1 1 1
  *	C1_3	= GPIO173, GPIO172, GPIO171: 1 1 0
  *	C4	= GPIO173, GPIO172, GPIO171: 1 0 1
- *	XMA	= GPIO173, GPIO172, GPIO171: 0 0 0
- *	XMB	= GPIO173, GPIO172, GPIO171: 0 0 1
+ *	XM	= GPIO173, GPIO172, GPIO171: 0 0 0
  */
 enum {
 	OMAP3BEAGLE_BOARD_UNKN = 0,
@@ -122,11 +121,7 @@ static void __init omap3_beagle_init_rev(void)
 		omap3_beagle_version = OMAP3BEAGLE_BOARD_C4;
 		break;
 	case 0:
-		printk(KERN_INFO "OMAP3 Beagle Rev: xM A\n");
-		omap3_beagle_version = OMAP3BEAGLE_BOARD_XM;
-		break;
-	case 1:
-		printk(KERN_INFO "OMAP3 Beagle Rev: xM B\n");
+		printk(KERN_INFO "OMAP3 Beagle Rev: xM\n");
 		omap3_beagle_version = OMAP3BEAGLE_BOARD_XM;
 		break;
 	default:
