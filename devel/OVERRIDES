@@ -118,3 +118,6 @@ CONFIG_PANEL_DVI - note<required for omap3 video>
 
 # ARM gadget mode
 CONFIG_USB_OTG - note<ARM specific feature>
+
+# powerpc64-smp requires this as CONFIG_MAPLE is enabled
+CONFIG_ATA_NONSTANDARD - note<required for powerpc64-smp dep of CONFIG_MAPLE>
