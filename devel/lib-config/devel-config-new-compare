@@ -43,7 +43,9 @@ function config-cmp() {
 	done
 	(cd tmp; "$here/config-compare" --info "../$info" $call "$@")
 }
-
+function colourise() {
+	awk '/\|\|  \|\|/ { print; next } { gsub("\\|\\| ", "||<#ffbac8> "); print }'
+}
 
 pattern=`
 	diff -u "$from" "$to" | \
@@ -59,5 +61,5 @@ pattern=`
 rebuild "$pattern"
 
 echo "$level New Options $level"
-config-cmp
+config-cmp | colourise
 echo ""

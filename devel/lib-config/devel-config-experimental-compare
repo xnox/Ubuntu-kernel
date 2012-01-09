@@ -53,6 +53,9 @@ function config-cmp() {
 	done
 	(cd tmp; "$here/config-compare" $opts --info "../$to_info" $call "$@")
 }
+function colourise() {
+	awk '/\|\|  \|\|/ { print; next } { gsub("\\|\\| ", "||<#ffbac8> "); print }'
+}
 
 pattern=`
 	diff -u "$from" "$to" | \
@@ -81,7 +84,7 @@ diff -u "$from" "$to" | \
 
 
 echo "$level No longer $which $level"
-config-cmp
+config-cmp | colourise
 echo ""
 
 rm -f "$from" "$to"
