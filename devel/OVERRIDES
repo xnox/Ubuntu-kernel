@@ -67,6 +67,7 @@ CONFIG_BLK_DEV_SR - note<depandancy of boot essential>
 #  CONFIG_ECRYPTFS or CONFIG_DM
 CONFIG_CRYPTO_CRC32C y note<depandancy of boot essential>
 CONFIG_CRYPTO_CRC32C_INTEL y note<depandancy of boot essential>
+CONFIG_CRYPTO_DEV_PADLOCK y note <depandancy of boot essential>
 
 # EXPERIMENTAL Network protocols are generally enabled to allow testing.
 CONFIG_ECONET m note<network protocol -- opt-in>
