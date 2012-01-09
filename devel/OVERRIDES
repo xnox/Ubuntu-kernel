@@ -115,3 +115,6 @@ CONFIG_USB_GADGETFS m note<filesystems are opt-in>
 
 # ARM omap3
 CONFIG_PANEL_DVI - note<required for omap3 video>
+
+# ARM gadget mode
+CONFIG_USB_OTG - note<ARM specific feature>
