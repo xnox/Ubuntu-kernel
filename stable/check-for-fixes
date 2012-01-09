@@ -56,7 +56,7 @@ class Cmdline:
         Prints out the help text which explains the command line options.
         """
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--config=<cfg file>] [--debug=<dbg options>]                         \n" % self.cfg['app_name'])
+        stdo("        %s [--config=<cfg file>] [--debug=<dbg options>]                                     \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
@@ -85,10 +85,9 @@ class Cmdline:
         line. All parameters are processed into class variables for use by other methods.
         """
         self.cfg['app_name'] = argv[0]
-        result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'base=', 'debug=', 'repo=']
+            optsLong  = ['help', 'base=', 'debug=', 'repo=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -131,10 +130,11 @@ def process_commit_check(line):
     lock.release()
 
     res = {}
-    status, body = getstatusoutput('git log %s^..%s --format=%%B'
-                                   % (line, line))
+    status, body = getstatusoutput('git log -n 1 --format=%%B %s'
+                                   % (line))
     if status != 0:
-        raise GitError(body)
+        eout(body)
+        return [ None, None ]
     body = body.replace('\n', ' ')
     for commit in plist:
         commit_rc = commit[0]
@@ -182,9 +182,8 @@ class CheckForFixes(StdApp):
         if status != 0:
             raise GitError(result)
         for match in pattern.finditer(result):
-            status, commit = run_command('git log --format=%%h %s^..%s' %
-                                         (match.group(1), match.group(1)),
-                                         self.debug_run)
+            status, commit = run_command('git log -n 1 --format=%%h %s' %
+                                         (match.group(1)), self.debug_run)
             if status != 0:
                 continue
             picked.append(commit[0])
@@ -201,8 +200,10 @@ class CheckForFixes(StdApp):
             src = re.compile(re.escape(s))
             for res in result:
                 if src.search(res):
-                    picked.append(res.split(' ')[0])
-                break
+                    sub = res.partition(' ')[2]
+                    if sub == s:
+                        picked.append(res.split(' ')[0])
+                        break
             r += 1
         return picked
 
@@ -303,8 +304,8 @@ class CheckForFixes(StdApp):
             else:
                 picked = merged
             for change in set(picked):
-                status, subject = run_command('git log --format=%%s %s^..%s' %
-                                              (change, change), self.debug_run)
+                status, subject = run_command('git log -n 1 --format=%%s %s' %
+                                              (change), self.debug_run)
                 if status != 0:
                     raise GitError("\n".join(subject))
                 clist.append([re.compile(change),
