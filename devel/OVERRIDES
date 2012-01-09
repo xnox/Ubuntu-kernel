@@ -39,24 +39,24 @@ CONFIG_NFC y note<core subsystem>
 CONFIG_INPUT y note<core subsystem>
 CONFIG_SCSI y note<core subsystem>
 #  network protocols:
-CONFIG_UNIX y note<boot essential>
-CONFIG_PACKET y note<boot essential>
+CONFIG_UNIX y note<core protocol>
+CONFIG_PACKET y note<core protocol>
 CONFIG_FDDI y note <core protocol>
 # IPv6 packets trigger auto-loading of this module and it is easy to trigger
 # a DOS unless this is builtin.  It is also a critical protocol going forward
 # and will become boot essential.
-CONFIG_IPV6 y note<boot essential>
+CONFIG_IPV6 y note<core protocol>
 #  input devices
-CONFIG_INPUT_EVDEV y note<boot essential>
-CONFIG_INPUT_MOUSEDEV y note<boot essential>
-CONFIG_INPUT_UINPUT y note<boot essential>
+CONFIG_INPUT_EVDEV y note<core input device>
+CONFIG_INPUT_MOUSEDEV y note<core input device>
+CONFIG_INPUT_UINPUT y note<core input device>
 #  ACPI drivers
-CONFIG_ACPI_AC y note<boot essential>
-CONFIG_ACPI_BATTERY y note<boot essential>
-CONFIG_ACPI_BUTTON y note<boot essential>
-CONFIG_ACPI_FAN y note<boot essential>
-CONFIG_ACPI_PROCESSOR y note<boot essential>
-CONFIG_ACPI_THERMAL y note<boot essential>
+CONFIG_ACPI_AC y note<core ACPI driver>
+CONFIG_ACPI_BATTERY y note<core ACPI driver>
+CONFIG_ACPI_BUTTON y note<core ACPI driver>
+CONFIG_ACPI_FAN y note<core ACPI driver>
+CONFIG_ACPI_PROCESSOR y note<core ACPI driver>
+CONFIG_ACPI_THERMAL y note<core ACPI driver>
 
 # Boot essential dependancies
 CONFIG_BLK_CGROUP - note<depandancy of boot essential>
