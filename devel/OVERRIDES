@@ -66,6 +66,7 @@ CONFIG_ACPI_BUTTON y note<core ACPI driver>
 CONFIG_ACPI_FAN y note<core ACPI driver>
 CONFIG_ACPI_PROCESSOR y note<core ACPI driver>
 CONFIG_ACPI_THERMAL y note<core ACPI driver>
+CONFIG_ACPI_HED y note<core ACPI driver>
 
 # Boot essential disk devices
 CONFIG_IOSCHED_CFQ y note<core disk support>
