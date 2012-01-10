@@ -140,6 +140,11 @@ CONFIG_MMC_BLOCK - note<boot essential on arm module otherwise>
 CONFIG_MMC_OMAP_HS y note<boot essential on arm>
 CONFIG_FB_OMAP2 y note<boot essential on arm>
 
+# POWERPC boot essential devices
+CONFIG_FB_VOODOO1 - note<boot essential no powerpc>
+CONFIG_FB_3DFX - note<boot essential no powerpc>
+CONFIG_FB_PS3 y note<boot essential no powerpc>
+
 # GRUB2 boot requirement
 CONFIG_FRAMEBUFFER_CONSOLE y note<boot essential for grub2 console>
 
