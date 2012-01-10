@@ -105,6 +105,10 @@ CONFIG_FAT_FS - note<installation essential on arm>
 CONFIG_VFAT_FS - note<installation essential on arm>
 CONFIG_NLS_CODEPAGE_437 - note<installation essential on arm>
 
+# TESTING options
+CONFIG_DMATEST n note<test only option>
+CONFIG_DEBUG_NX_TEST n note<test only option>
+
 # ARM commonly use sd cards as root disks.
 CONFIG_MMC_SDHCI - note<installation essential on arm>
 
