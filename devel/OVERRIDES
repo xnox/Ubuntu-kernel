@@ -44,6 +44,7 @@ CONFIG_HOTPLUG_PCI y note<core subsystem>
 CONFIG_HOTPLUG_PCI_PCIE y note<core subsystem>
 CONFIG_HWMON y note<core subsystem>
 CONFIG_HW_RANDOM y note<core subsystem>
+CONFIG_MMC y note<core subsystem>
 #  networking:
 CONFIG_INET_LRO y note<core networking>
 #  network protocols:
@@ -121,6 +122,17 @@ CONFIG_SATA_AHCI - note<boot essential on i386/amd64>
 CONFIG_FAT_FS - note<installation essential on arm>
 CONFIG_VFAT_FS - note<installation essential on arm>
 CONFIG_NLS_CODEPAGE_437 - note<installation essential on arm>
+
+# ARM boot essential devices
+CONFIG_MTD - note<boot essential on arm module otherwise>
+CONFIG_MTD_BLKDEVS - note<boot essential on arm module otherwise>
+CONFIG_MTD_BLOCK - note<boot essential on arm module otherwise>
+CONFIG_MTD_CHAR - note<boot essential on arm module otherwise>
+CONFIG_MTD_NAND - note<boot essential on arm module otherwise>
+CONFIG_MTD_NAND_OMAP2 y note<boot essential on arm>
+CONFIG_MTD_OF_PARTS - note<boot essential on arm module otherwise>
+CONFIG_MMC_BLOCK - note<boot essential on arm module otherwise>
+CONFIG_MMC_OMAP_HS y note<boot essential on arm>
 
 # TESTING options
 CONFIG_DMATEST n note<test only option>
