@@ -54,7 +54,7 @@ class Cmdline:
         Prints out the help text which explains the command line options.
         """
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s <series> <package>                                                                \n" % self.cfg['app_name'])
+        stdo("        %s <series> <source package>                                                         \n" % self.cfg['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
@@ -71,6 +71,10 @@ class Cmdline:
         stdo("        --pocket_version=<version>                                                           \n")
         stdo("                         Don't check the archive, just use the specified pocket version      \n")
         stdo("                                                                                             \n")
+        stdo("        --list                                                                               \n")
+        stdo("                         Just list the component where the packages are in, don't do any     \n")
+        stdo("                         mismatch check                                                      \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s oneiric linux                                                                     \n" % self.cfg['app_name'])
 
@@ -85,7 +89,8 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'staging', 'component=', 'pocket=', 'pocket_version=']
+            optsLong  = ['help', 'staging', 'component=', 'pocket=',
+                         'pocket_version=', 'list']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -103,6 +108,9 @@ class Cmdline:
 
                 elif opt in '--pocket_version':
                     self.cfg['pocket_version'] = val
+
+                elif opt in '--list':
+                    self.cfg['list'] = True
 
             if len(args) < 2:
                 raise CmdlineError('Missing series and/or package arguments')
@@ -180,17 +188,26 @@ class CheckComponent(StdApp):
                                              version=pocket_ver)
             if ps:
                 src_pkg = ps[0]
-                if src_pkg.component_name != component:
-                    print("%s %s - is in %s instead of %s" % 
-                          (src_pkg.source_package_name,
-                           src_pkg.source_package_version,
-                           src_pkg.component_name, component))
-                for bin_pkg in src_pkg.getPublishedBinaries():
-                    if bin_pkg.component_name != component:
+                if not 'list' in self.cfg:
+                    if src_pkg.component_name != component:
                         print("%s %s - is in %s instead of %s" % 
-                              (bin_pkg.binary_package_name,
-                               bin_pkg.binary_package_version,
-                               bin_pkg.component_name, component))
+                              (src_pkg.source_package_name,
+                               src_pkg.source_package_version,
+                               src_pkg.component_name, component))
+                    for bin_pkg in src_pkg.getPublishedBinaries():
+                        if bin_pkg.component_name != component:
+                            print("%s %s - is in %s instead of %s" % 
+                                  (bin_pkg.binary_package_name,
+                                   bin_pkg.binary_package_version,
+                                   bin_pkg.component_name, component))
+                else:
+                    print("%s %s - in %s" % (src_pkg.source_package_name,
+                          src_pkg.source_package_version,
+                          src_pkg.component_name))
+                    for bin_pkg in src_pkg.getPublishedBinaries():
+                        print("%s %s - in %s" % (bin_pkg.binary_package_name,
+                              bin_pkg.binary_package_version,
+                              bin_pkg.component_name))
             else:
                 error("No results returned by getPublishedSources")
                 sys.exit(1)
