@@ -135,3 +135,6 @@ CONFIG_USB_OTG - note<ARM specific feature>
 
 # powerpc64-smp requires this as CONFIG_MAPLE is enabled
 CONFIG_ATA_NONSTANDARD - note<required for powerpc64-smp dep of CONFIG_MAPLE>
+
+# APM Emulation is deliberately off on ARM to prevent new use.
+CONFIG_APM_EMULATION - note<deliberatly forced off for ARM>
