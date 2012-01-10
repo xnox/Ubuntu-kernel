@@ -63,6 +63,9 @@ CONFIG_ACPI_THERMAL y note<core ACPI driver>
 # Boot essential disk devices
 CONFIG_EDD y note<core disk support>
 
+# Core CPU drivers
+CONFIG_FW_LOADER y note<core CPU firmware updater>
+
 # Boot essential dependancies
 CONFIG_BLK_CGROUP - note<dependancy of boot essential>
 CONFIG_BLK_DEV_DM - note<dependancy of boot essential>
