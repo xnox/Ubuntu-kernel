@@ -16,6 +16,7 @@ CONFIG_AGP_NVIDIA y note<not autoloadable>
 #  cpu governers:
 CONFIG_CPU_FREQ_GOV_CONSERVATIVE y note<not autoloadable>
 CONFIG_CPU_FREQ_GOV_ONDEMAND y note<not autoloadable>
+CONFIG_CPU_FREQ_GOV_PERFORMANCE y note<not autoloadable>
 CONFIG_CPU_FREQ_GOV_POWERSAVE y note<not autoloadable>
 CONFIG_CPU_FREQ_GOV_USERSPACE y note<not autoloadable>
 #  cpufreq drivers
