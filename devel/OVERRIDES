@@ -138,3 +138,6 @@ CONFIG_ATA_NONSTANDARD - note<required for powerpc64-smp dep of CONFIG_MAPLE>
 
 # APM Emulation is deliberately off on ARM to prevent new use.
 CONFIG_APM_EMULATION - note<deliberatly forced off for ARM>
+
+# BLK_DEV_XD -- ancient drives
+CONFIG_BLK_DEV_XD n note<ancient drives from pre-history>
