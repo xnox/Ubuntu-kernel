@@ -44,6 +44,8 @@ CONFIG_HOTPLUG_PCI y note <core subsystem>
 CONFIG_HOTPLUG_PCI_PCIE y note <core subsystem>
 CONFIG_HWMON y note <core subsystem>
 CONFIG_HW_RANDOM y note <core subsystem>
+#  networking:
+CONFIG_INET_LRO y note<core networking>
 #  network protocols:
 CONFIG_UNIX y note<core protocol>
 CONFIG_PACKET y note<core protocol>
