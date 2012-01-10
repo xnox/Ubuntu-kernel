@@ -39,17 +39,17 @@ CONFIG_RFKILL y note<core subsystem>
 CONFIG_NFC y note<core subsystem>
 CONFIG_INPUT y note<core subsystem>
 CONFIG_SCSI y note<core subsystem>
-CONFIG_LLC y note <core subsystem>
-CONFIG_HOTPLUG_PCI y note <core subsystem>
-CONFIG_HOTPLUG_PCI_PCIE y note <core subsystem>
-CONFIG_HWMON y note <core subsystem>
-CONFIG_HW_RANDOM y note <core subsystem>
+CONFIG_LLC y note<core subsystem>
+CONFIG_HOTPLUG_PCI y note<core subsystem>
+CONFIG_HOTPLUG_PCI_PCIE y note<core subsystem>
+CONFIG_HWMON y note<core subsystem>
+CONFIG_HW_RANDOM y note<core subsystem>
 #  networking:
 CONFIG_INET_LRO y note<core networking>
 #  network protocols:
 CONFIG_UNIX y note<core protocol>
 CONFIG_PACKET y note<core protocol>
-CONFIG_FDDI y note <core protocol>
+CONFIG_FDDI y note<core protocol>
 # IPv6 packets trigger auto-loading of this module and it is easy to trigger
 # a DOS unless this is builtin.  It is also a critical protocol going forward
 # and will become boot essential.
@@ -83,7 +83,7 @@ CONFIG_BLK_DEV_SR - note<dependancy of boot essential>
 #  CONFIG_ECRYPTFS or CONFIG_DM
 CONFIG_CRYPTO_CRC32C y note<dependancy of boot essential>
 CONFIG_CRYPTO_CRC32C_INTEL y note<dependancy of boot essential>
-CONFIG_CRYPTO_DEV_PADLOCK y note <dependancy of boot essential>
+CONFIG_CRYPTO_DEV_PADLOCK y note<dependancy of boot essential>
 CONFIG_CRYPTO_CRC32C y note<dependancy of boot essential>
 CONFIG_CRYPTO_AES y note<dependancy of boot essential>
 CONFIG_CRYPTO_CBC y note<dependancy of boot essential>
