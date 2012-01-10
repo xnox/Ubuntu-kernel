@@ -53,7 +53,7 @@ function config-cmp-interesting() {
 }
 
 function colourise() {
-	awk '/\|\|  \|\|/ { print; next } { gsub("\\|\\| ", "||<#ffbac8> "); print }'
+	awk '/Inconsistent/ { gsub("\\|\\| ", "||<#ffbac8> "); } {print }'
 }
 function colourise_inverse() {
 	awk '/\|\|  \|\|/ { gsub("\\|\\| ", "||<#ffbac8> ")} { print }'

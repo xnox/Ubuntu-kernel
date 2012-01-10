@@ -46,6 +46,7 @@ CONFIG_HWMON y note<core subsystem>
 CONFIG_HW_RANDOM y note<core subsystem>
 CONFIG_MMC y note<core subsystem>
 CONFIG_CRYPTO y note<core subsystem>
+CONFIG_FB y note<core subsystem>
 #  networking:
 CONFIG_INET_LRO y note<core networking>
 #  network protocols:
@@ -137,11 +138,13 @@ CONFIG_MTD_NAND_OMAP2 y note<boot essential on arm>
 CONFIG_MTD_OF_PARTS - note<boot essential on arm module otherwise>
 CONFIG_MMC_BLOCK - note<boot essential on arm module otherwise>
 CONFIG_MMC_OMAP_HS y note<boot essential on arm>
+CONFIG_FB_OMAP2 y note<boot essential on arm>
 
 # TESTING options
 CONFIG_DMATEST n note<test only option>
 CONFIG_DEBUG_NX_TEST n note<test only option>
 CONFIG_BACKTRACE_SELF_TEST n note<test only option>
+CONFIG_FB_VIRTUAL n note<test only option>
 
 # ARM commonly use sd cards as root disks.
 CONFIG_MMC_SDHCI - note<installation essential on arm>
