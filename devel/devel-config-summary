@@ -18,22 +18,11 @@ current="$1"
 next="$2"
 
 
-(
-	cd "$current" || exit 1
-	"$here/lib-config/devel-config-defaults" >"CONFIGS-dump"
-
-	"$here/lib-config/devel-config-tag" \
-		"CONFIGS-dump" "$here/OVERRIDES" >"CONFIGS-info"
-	awk '{ print $1 " " $2 " " $3 }' <"CONFIGS-info" >"CONFIGS-defaults"
-)
+"$here/lib-config/devel-info-dump" "$here/OVERRIDES" "$current"
+"$here/lib-config/devel-info-dump" "$here/OVERRIDES" "$next"
 
 (
 	cd "$next" || exit 1
-	"$here/lib-config/devel-config-defaults" >"CONFIGS-dump"
-
-	"$here/lib-config/devel-config-tag" \
-		"CONFIGS-dump" "$here/OVERRIDES" >"CONFIGS-info"
-	awk '{ print $1 " " $2 " " $3 }' <"CONFIGS-info" >"CONFIGS-defaults"
 
 	fakeroot debian/rules genconfigs >/dev/null 2>&1
 	fakeroot debian/rules genportsconfigs >/dev/null 2>&1
