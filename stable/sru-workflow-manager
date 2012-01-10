@@ -545,7 +545,7 @@ class Shank(StdApp):
             self.verbose('Adding comment to tracking bug\n')
             task.bug.add_comment(body, subject)
 
-    def send_email(self, task, subject, body):
+    def send_email(self, task, subject, body, to_address=None):
         """
         Send email to the configured list or recipient
         """
@@ -560,11 +560,13 @@ class Shank(StdApp):
             return
 
         mcfg = self.cfg['mail_notify']
+        if not to_address:
+            to_address = mcfg['to_address']
         body_top = 'The following message is regarding the following Kernel SRU Tracking bug:\n%s\n' % self.bug_url(task.bug.id)
         body_top = body_top + ('%s\n\n' % task.bug.title)
         msg = body_top + body
         subj =  '[ShankBot] ' + subject
-        self.email.send(mcfg['from_address'], mcfg['to_address'], subj, msg)
+        self.email.send(mcfg['from_address'], to_address, subj, msg)
         return
 
     def send_status_update(self, task, message):
@@ -995,11 +997,14 @@ class Shank(StdApp):
                 msgbody += " component in the -proposed pocket:\n"
                 for ln in mis_lst:
                     msgbody += '\n%s' % (ln)
-                msgbody += "\n\nOnce this is fixed, set the "
-                msgbody += "promote-to-proposed to Fix Released again"
-                self.send_comment(task, 'Packages outside of main', msgbody)
+                bugbody = msgbody
+                bugbody += "\n\nOnce this is fixed, set the "
+                bugbody += "promote-to-proposed to Fix Released again"
+                self.send_comment(task, 'Packages outside of main', bugbody)
                 if not 'dryrun' in self.cfg:
                     self.props.set({'kernel-stable-Promote-to-proposed-end':None})
+                self.send_email(task, '[bug %s] Packages copied to the wrong component'
+                                % (task.bug.id), msgbody)
                 return False
         else:
             # We wait for ~1 day before complaining if we don't find the
