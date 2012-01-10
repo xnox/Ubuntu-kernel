@@ -42,6 +42,7 @@ CONFIG_SCSI y note<core subsystem>
 CONFIG_LLC y note <core subsystem>
 CONFIG_HOTPLUG_PCI y note <core subsystem>
 CONFIG_HOTPLUG_PCI_PCIE y note <core subsystem>
+CONFIG_HWMON y note <core subsystem>
 #  network protocols:
 CONFIG_UNIX y note<core protocol>
 CONFIG_PACKET y note<core protocol>
