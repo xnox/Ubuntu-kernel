@@ -68,6 +68,9 @@ class Cmdline:
         stdo("        --pocket=<pocket>                                                                    \n")
         stdo("                         Use the specified pocket instead of the default (proposed)          \n")
         stdo("                                                                                             \n")
+        stdo("        --pocket_version=<version>                                                           \n")
+        stdo("                         Don't check the archive, just use the specified pocket version      \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s oneiric linux                                                                     \n" % self.cfg['app_name'])
 
@@ -82,7 +85,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'staging', 'component=', 'pocket=']
+            optsLong  = ['help', 'staging', 'component=', 'pocket=', 'pocket_version=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -97,6 +100,9 @@ class Cmdline:
 
                 elif opt in '--pocket':
                     self.cfg['pocket'] = val
+
+                elif opt in '--pocket_version':
+                    self.cfg['pocket_version'] = val
 
             if len(args) < 2:
                 raise CmdlineError('Missing series and/or package arguments')
@@ -156,11 +162,14 @@ class CheckComponent(StdApp):
             package = self.cfg['package']
             component = self.cfg['component']
             pocket = self.cfg['pocket']
-            pocket_ver = GetUploadVersion(series, package, pocket=pocket)
-            if pocket_ver == None:
-                error("No upload of %s for %s is currently available in"
-                      " the %s pocket" % (package, series, pocket))
-                sys.exit(1)
+            if not 'pocket_version' in self.cfg:
+                pocket_ver = GetUploadVersion(series, package, pocket=pocket)
+                if pocket_ver == None:
+                    error("No upload of %s for %s is currently available in"
+                          " the %s pocket" % (package, series, pocket))
+                    sys.exit(1)
+            else:
+                pocket_ver = self.cfg['pocket_version']
             ubuntu = self.lp.launchpad.distributions["ubuntu"]
             archive = ubuntu.main_archive
             lp_series = ubuntu.getSeries(name_or_version=series)
