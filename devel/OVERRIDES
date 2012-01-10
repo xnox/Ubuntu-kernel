@@ -140,6 +140,9 @@ CONFIG_MMC_BLOCK - note<boot essential on arm module otherwise>
 CONFIG_MMC_OMAP_HS y note<boot essential on arm>
 CONFIG_FB_OMAP2 y note<boot essential on arm>
 
+# GRUB2 boot requirement
+CONFIG_FRAMEBUFFER_CONSOLE y note<boot essential for grub2 console>
+
 # TESTING options
 CONFIG_DMATEST n note<test only option>
 CONFIG_DEBUG_NX_TEST n note<test only option>
