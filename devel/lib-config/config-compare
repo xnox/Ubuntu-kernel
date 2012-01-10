@@ -94,24 +94,31 @@ print " || '''Comments''' ||\n";
 my $val;
 my $cmt;
 my $all;
+my $one;
+
+$all = '';
 for my $option (@options) {
 	$all = '';
 	$cmt = '';
+	$one = '';
 	print "|| $option";
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
 		print " || $is";
+		if ($is !~ m@/@ && $is ne '-') {
+			$all .= $is . '/' if ($all !~ /$is/);
+		}
 		if ($is ne '-') {
-			$all = $is if ($all eq '');
-			if ($all ne $is) {
-				$all = '-';
-			}
+			$one = $is;
 		}
 	}
+	chop($all);
+	$all = join('/', sort(split(m@/@, $all)));
+
 	if ($all eq '') {
 		$cmt .= " '''GONE'''";
-	} elsif ($all eq '-') {
+	} elsif ($all ne $one) {
 		$cmt .= " '''Inconsistent'''";
 	}
 	if ($flags{$option}) {
