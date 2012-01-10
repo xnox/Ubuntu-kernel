@@ -68,8 +68,9 @@ class Cmdline:
         stdo("        --pocket=<pocket>                                                                    \n")
         stdo("                         Use the specified pocket instead of the default (proposed)          \n")
         stdo("                                                                                             \n")
-        stdo("        --pocket_version=<version>                                                           \n")
-        stdo("                         Don't check the archive, just use the specified pocket version      \n")
+        stdo("        --package_version=<version>                                                          \n")
+        stdo("                         Don't use the latest version from the archive, use the specified    \n")
+        stdo("                         package version                                                     \n")
         stdo("                                                                                             \n")
         stdo("        --list                                                                               \n")
         stdo("                         Just list the component where the packages are in, don't do any     \n")
@@ -90,7 +91,7 @@ class Cmdline:
         try:
             optsShort = ''
             optsLong  = ['help', 'staging', 'component=', 'pocket=',
-                         'pocket_version=', 'list']
+                         'package_version=', 'list']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -106,8 +107,8 @@ class Cmdline:
                 elif opt in '--pocket':
                     self.cfg['pocket'] = val
 
-                elif opt in '--pocket_version':
-                    self.cfg['pocket_version'] = val
+                elif opt in '--package_version':
+                    self.cfg['package_version'] = val
 
                 elif opt in '--list':
                     self.cfg['list'] = True
@@ -170,14 +171,14 @@ class CheckComponent(StdApp):
             package = self.cfg['package']
             component = self.cfg['component']
             pocket = self.cfg['pocket']
-            if not 'pocket_version' in self.cfg:
-                pocket_ver = GetUploadVersion(series, package, pocket=pocket)
-                if pocket_ver == None:
+            if not 'package_version' in self.cfg:
+                pkg_ver = GetUploadVersion(series, package, pocket=pocket)
+                if pkg_ver == None:
                     error("No upload of %s for %s is currently available in"
                           " the %s pocket" % (package, series, pocket))
                     sys.exit(1)
             else:
-                pocket_ver = self.cfg['pocket_version']
+                pkg_ver = self.cfg['package_version']
             ubuntu = self.lp.launchpad.distributions["ubuntu"]
             archive = ubuntu.main_archive
             lp_series = ubuntu.getSeries(name_or_version=series)
@@ -185,7 +186,7 @@ class CheckComponent(StdApp):
                                              source_name=package,
                                              distro_series=lp_series,
                                              pocket=pocket.title(),
-                                             version=pocket_ver)
+                                             version=pkg_ver)
             if ps:
                 src_pkg = ps[0]
                 if not 'list' in self.cfg:
