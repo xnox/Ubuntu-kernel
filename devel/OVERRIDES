@@ -172,6 +172,8 @@ CONFIG_FB_VIRTUAL n note<test only option>
 CONFIG_MMC_TEST n note<test only option>
 CONFIG_MMIOTRACE_TEST n note<test only option>
 CONFIG_RCU_TORTURE_TEST n note<test only option>
+CONFIG_IEEE802154_FAKEHARD n note<test only option>
+CONFIG_LKDTM n note<test only option>
 
 # DEBUGGING option
 CONFIG_BRCMDBG n note<debugging only>
