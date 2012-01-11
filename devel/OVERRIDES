@@ -236,7 +236,7 @@ CONFIG_BLK_DEV_XD n note<ancient drives from pre-history>
 CONFIG_CS5535_MFGPT n note<should be disabled by default>
 
 # DVB_DUMMY_FE only recommended for experts
-CONFGI_DVB_DUMMY_FE n note<expert use only>
+CONFIG_DVB_DUMMY_FE n note<expert use only>
 
 # ARM unsupported SOC
 CONFIG_FTGMAC100 n note<unsupported ARM device>
