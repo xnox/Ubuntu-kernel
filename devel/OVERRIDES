@@ -181,6 +181,7 @@ CONFIG_PATA_MACIO y note<boot essential for QEMU on powerpc>
 # Non-obvious filesystems.
 CONFIG_USB_FUNCTIONFS m note<filesystems are opt-in>
 CONFIG_USB_GADGETFS m note<filesystems are opt-in>
+CONFIG_LOGFS n note<highly discouraged for use>
 
 # ARM omap3
 CONFIG_PANEL_DVI - note<required for omap3 video>
