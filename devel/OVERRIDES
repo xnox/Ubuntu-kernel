@@ -102,6 +102,7 @@ CONFIG_BLK_DEV_MD - note<dependancy of boot essential>
 CONFIG_BLK_DEV_RAM - note<dependancy of boot essential>
 CONFIG_BLK_DEV_SD - note<dependancy of boot essential>
 CONFIG_BLK_DEV_SR - note<dependancy of boot essential>
+CONFIG_DNS_RESOLVER - note<dependancy of boot essential>
 #  CONFIG_ECRYPTFS or CONFIG_DM
 CONFIG_CRYPTO_CRC32C y note<dependancy of boot essential>
 CONFIG_CRYPTO_CRC32C_INTEL y note<dependancy of boot essential>
