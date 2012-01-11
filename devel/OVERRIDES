@@ -188,8 +188,7 @@ CONFIG_DM_RAID45 - note<PC BIOS specific>
 # EFI_VARS is required for EFI boot
 CONFIG_EFI_VARS y note<EFI boot requirement (d-i)>
 
-# IDE is derecated on i386/amd64.
-CONFIG_IDE - note<IDE is deprecated>
+# DEPRECATED things
 CONFIG_IA32_AOUT n note<IDE is deprecated>
 
 # Debugging options are off by default, we want those below.
