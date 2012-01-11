@@ -106,6 +106,7 @@ CONFIG_BLK_DEV_RAM - note<dependancy of boot essential>
 CONFIG_BLK_DEV_SD - note<dependancy of boot essential>
 CONFIG_BLK_DEV_SR - note<dependancy of boot essential>
 CONFIG_DNS_RESOLVER - note<dependancy of boot essential>
+CONFIG_CRC_T10DIF y note<dependancy of boot essential>
 #  CONFIG_ECRYPTFS or CONFIG_DM
 CONFIG_CRYPTO_CRC32C y note<dependancy of boot essential>
 CONFIG_CRYPTO_CRC32C_INTEL y note<dependancy of boot essential>
@@ -125,6 +126,8 @@ CONFIG_ENCRYPTED_KEYS y note<dependancy of boot essential>
 CONFIG_TRUSTED_KEYS y note<dependancy of boot essential>
 # DRM
 CONFIG_BACKLIGHT_CLASS_DEVICE y note<dependancy of boot essential>
+# cpu freq
+CONFIG_CPU_FREQ_STAT y note<dependancy of boot essential>
 
 # EXPERIMENTAL Network protocols are generally enabled to allow testing.
 CONFIG_ECONET m note<network protocol -- opt-in>
@@ -234,3 +237,7 @@ CONFIG_CS5535_MFGPT n note<should be disabled by default>
 
 # DVB_DUMMY_FE only recommended for experts
 CONFGI_DVB_DUMMY_FE n note<expert use only>
+
+# ARM unsupported SOC
+CONFIG_FTGMAC100 n note<unsupported ARM device>
+CONFIG_FTMAC100 n note<unsupported ARM device>
