@@ -75,6 +75,9 @@ CONFIG_IOSCHED_CFQ y note<core disk support>
 CONFIG_IOSCHED_DEADLINE y note<core disk support>
 CONFIG_EDD y note<core disk support>
 
+# Core devices
+CONFIG_KEYBOARD_ATKBD y note<core driver>
+
 # Core CPU drivers
 CONFIG_FW_LOADER y note<core CPU firmware updater>
 
