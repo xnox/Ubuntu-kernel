@@ -78,6 +78,13 @@ CONFIG_EDD y note<core disk support>
 
 # Core devices
 CONFIG_KEYBOARD_ATKBD y note<core driver>
+CONFIG_SERIAL_8250 y note<core driver>
+CONFIG_SERIAL_8250_PCI y note<core driver>
+CONFIG_SERIAL_8250_PNP y note<core driver>
+CONFIG_SERIO y note<core driver>
+CONFIG_SERIO_I8042 y note<core driver>
+CONFIG_SERIO_LIBPS2 y note<core driver>
+CONFIG_SERIAL_OMAP y note<core driver>
 
 # Core CPU drivers
 CONFIG_FW_LOADER y note<core CPU firmware updater>
