@@ -15,13 +15,13 @@ sub emit()
 {
 	return if (!$option || !$prompt);
 
-	if ($prompt =~ s/\(DEPRECATED\)//) {
+	if ($prompt =~ s/DEPRECATED//) {
 		$flags{'DEPRECATED'} = 1;
 	}
-	if ($prompt =~ s/\(DANGEROUS\)//) {
+	if ($prompt =~ s/DANGEROUS//) {
 		$flags{'DANGEROUS'} = 1;
 	}
-	if ($prompt =~ s/\(EXPERIMENTAL\)//) {
+	if ($prompt =~ s/EXPERIMENTAL//) {
 		$flags{'EXPERIMENTAL'} = 1;
 	}
 	$prompt =~ s/\s*$//;
@@ -63,6 +63,11 @@ sub emit()
 
 	# DEPRECATED: clearly we do not want these enabled by default.
 	if ($flags{'DEPRECATED'}) {
+		$default = 'n';
+	}
+
+	# DEBUG: clearly we do not want these enabled by default.
+	if ($flags{'DEBUG'}) {
 		$default = 'n';
 	}
 
@@ -121,6 +126,9 @@ while (<DUMP>) {
 		if ($cond =~ /\bEXPERIMENTAL\b/) {
 			$flags{'EXPERIMENTAL'} = 1;
 		}
+		if ($cond =~ /\bDEBUG_KERNEL\b/) {
+			$flags{'DEBUG'} = 1;
+		}
 
 	# Dependancies ...           Defaults ...
 	} elsif (/^\s\sdepends\s/ || /^\s\sdefault\s/) {
@@ -129,6 +137,9 @@ while (<DUMP>) {
 		}
 		if (/\bEXPERIMENTAL\b/) {
 			$flags{'EXPERIMENTAL'} = 1;
+		}
+		if (/\bDEBUG_KERNEL\b/) {
+			$flags{'DEBUG'} = 1;
 		}
 	}
 
