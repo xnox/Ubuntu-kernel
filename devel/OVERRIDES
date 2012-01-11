@@ -132,6 +132,7 @@ CONFIG_SATA_AHCI y note<boot essential on i386/amd64>
 CONFIG_FAT_FS m/y note<installation essential on arm>
 CONFIG_VFAT_FS m/y note<installation essential on arm>
 CONFIG_NLS_CODEPAGE_437 m/y note<installation essential on arm>
+CONFIG_NLS y <dependancy of boot essential>
 
 # ARM boot essential devices
 CONFIG_MTD m/y note<boot essential on arm module otherwise>
