@@ -172,6 +172,9 @@ CONFIG_MMC_TEST n note<test only option>
 CONFIG_MMIOTRACE_TEST n note<test only option>
 CONFIG_RCU_TORTURE_TEST n note<test only option>
 
+# DEBUGGING option
+CONFIG_BRCMDBG n note<debugging only>
+
 # ARM commonly use sd cards as root disks.
 CONFIG_MMC_SDHCI - note<installation essential on arm>
 
