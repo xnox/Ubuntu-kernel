@@ -39,7 +39,7 @@ CONFIG_RFKILL y note<core subsystem>
 CONFIG_NFC y note<core subsystem>
 CONFIG_INPUT y note<core subsystem>
 CONFIG_SCSI y note<core subsystem>
-CONFIG_LLC y note<core subsystem>
+CONFIG_LLC m/y note<core subsystem other than arm>
 CONFIG_HOTPLUG_PCI y note<core subsystem>
 CONFIG_HOTPLUG_PCI_PCIE y note<core subsystem>
 CONFIG_HWMON y note<core subsystem>
