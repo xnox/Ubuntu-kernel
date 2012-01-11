@@ -116,6 +116,7 @@ CONFIG_CRYPTO_SHA256 y note<dependancy of boot essential>
 CONFIG_CRC16 y note<dependancy of boot essential>
 CONFIG_CRC32 y note<dependancy of boot essential>
 CONFIG_ENCRYPTED_KEYS y note<dependancy of boot essential>
+CONFIG_TRUSTED_KEYS y note<dependancy of boot essential>
 # DRM
 CONFIG_BACKLIGHT_CLASS_DEVICE y note<dependancy of boot essential>
 
