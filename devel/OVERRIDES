@@ -165,15 +165,15 @@ CONFIG_FB_PS3 y note<boot essential no powerpc>
 CONFIG_FRAMEBUFFER_CONSOLE y note<boot essential for grub2 console>
 
 # TESTING options
-CONFIG_DMATEST n note<test only option>
-CONFIG_DEBUG_NX_TEST n note<test only option>
-CONFIG_BACKTRACE_SELF_TEST n note<test only option>
-CONFIG_FB_VIRTUAL n note<test only option>
-CONFIG_MMC_TEST n note<test only option>
-CONFIG_MMIOTRACE_TEST n note<test only option>
-CONFIG_RCU_TORTURE_TEST n note<test only option>
-CONFIG_IEEE802154_FAKEHARD n note<test only option>
-CONFIG_LKDTM n note<test only option>
+CONFIG_DMATEST n note<testing only>
+CONFIG_DEBUG_NX_TEST n note<testing only>
+CONFIG_BACKTRACE_SELF_TEST n note<testing only>
+CONFIG_FB_VIRTUAL n note<testing only>
+CONFIG_MMC_TEST n note<testing only>
+CONFIG_MMIOTRACE_TEST n note<testing only>
+CONFIG_RCU_TORTURE_TEST n note<testing only>
+CONFIG_IEEE802154_FAKEHARD n note<testing only>
+CONFIG_LKDTM n note<testing only>
 
 # DEBUGGING option
 CONFIG_BRCMDBG n note<debugging only>
