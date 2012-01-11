@@ -162,6 +162,7 @@ CONFIG_BACKTRACE_SELF_TEST n note<test only option>
 CONFIG_FB_VIRTUAL n note<test only option>
 CONFIG_MMC_TEST n note<test only option>
 CONFIG_MMIOTRACE_TEST n note<test only option>
+CONFIG_RCU_TORTURE_TEST n note<test only option>
 
 # ARM commonly use sd cards as root disks.
 CONFIG_MMC_SDHCI - note<installation essential on arm>
