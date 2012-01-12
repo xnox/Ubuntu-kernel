@@ -60,6 +60,7 @@ CONFIG_POWER_SUPPLY y note<core subsystem>
 CONFIG_INET_LRO y note<core networking>
 CONFIG_MII y note<core networking>
 CONFIG_TUN y note<core networking>
+CONFIG_TCP_CONG_CUBIC y note<core networking>
 #  network protocols:
 CONFIG_UNIX y note<core protocol>
 CONFIG_PACKET y note<core protocol>
