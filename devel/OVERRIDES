@@ -243,7 +243,7 @@ CONFIG_USB_OTG - note<ARM specific feature>
 CONFIG_ATA_NONSTANDARD n/y note<required for powerpc64-smp dep of CONFIG_MAPLE>
 
 # APM Emulation is deliberately off on ARM to prevent new use.
-CONFIG_APM_EMULATION - note<deliberatly forced off for ARM>
+CONFIG_APM_EMULATION m/n note<deliberatly forced off for ARM>
 
 # BLK_DEV_XD -- ancient drives
 CONFIG_BLK_DEV_XD n note<ancient drives from pre-history>
