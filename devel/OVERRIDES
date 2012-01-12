@@ -260,3 +260,4 @@ CONFIG_FTMAC100 n note<unsupported ARM device>
 
 # Options which really should not have an option at all.
 CONFIG_SIGMA n note<unused common driver infrastructure>
+CONFIG_SENSORS_SCH56XX_COMMON m/n note<unused common driver infrastructure>
