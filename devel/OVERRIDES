@@ -171,7 +171,7 @@ CONFIG_PANEL_GENERIC_DPI y <boot essential on arm>
 CONFIG_FB_VOODOO1 - note<boot essential no powerpc>
 CONFIG_FB_3DFX - note<boot essential no powerpc>
 CONFIG_FB_PS3 y note<boot essential no powerpc>
-CONFIG_I2C_POWERMAC y note<boot essential on arm>
+CONFIG_I2C_POWERMAC y note<boot essential on powerpc>
 CONFIG_HW_RANDOM_PASEMI y note<dependancy HW_RANDOM>
 
 # GRUB2 boot requirement
