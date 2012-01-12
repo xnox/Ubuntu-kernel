@@ -283,6 +283,11 @@ CONFIG_DVB_DUMMY_FE n note<expert use only>
 # ARM unsupported SOC
 CONFIG_FTGMAC100 n note<unsupported ARM device>
 CONFIG_FTMAC100 n note<unsupported ARM device>
+CONFIG_ARCH_EXYNOS n note<unsupported ARM arch>
+CONFIG_ARCH_HIGHBANK n note<unsupported ARM arch>
+CONFIG_ARCH_PICOXCELL n note<unsupported ARM arch>
+CONFIG_ARCH_PRIMA2 n note<unsupported ARM arch>
+CONFIG_ARCH_ZYNQ n note<unsupported ARM arch>
 
 # Options which really should not have an option at all.
 CONFIG_SIGMA n note<unused common driver infrastructure>
