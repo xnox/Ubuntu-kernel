@@ -63,6 +63,7 @@ CONFIG_TUN y note<core networking>
 CONFIG_UNIX y note<core protocol>
 CONFIG_PACKET y note<core protocol>
 CONFIG_FDDI y note<core protocol>
+CONFIG_PPP y note<core protocol>
 # IPv6 packets trigger auto-loading of this module and it is easy to trigger
 # a DOS unless this is builtin.  It is also a critical protocol going forward
 # and will become boot essential.
