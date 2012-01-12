@@ -150,7 +150,8 @@ CONFIG_BACKLIGHT_CLASS_DEVICE y note<dependancy of boot essential>
 CONFIG_CPU_FREQ_STAT m/y note<dependancy of boot essential>
 
 # Interesting new subsystems
-CONFIG_NFC m note<core subsystem -- opt-in>
+CONFIG_NFC m note<experimental subsystem -- opt-in>
+CONFIG_NFC_NCI m note<experimental protocol -- opt-in>
 
 # EXPERIMENTAL Network protocols are generally enabled to allow testing.
 CONFIG_ECONET m note<network protocol -- opt-in>
