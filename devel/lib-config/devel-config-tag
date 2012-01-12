@@ -78,7 +78,7 @@ sub emit()
 	$desc{$option} = $prompt;
 
 	# Reset for the next option ...
-	($maybe, $default, $prompt) = ('', '', '');
+	($maybe, $default, $prompt) = ('-', '-', '');
 	undef %flags;
 }
 my ($note, $mode);
