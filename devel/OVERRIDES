@@ -31,7 +31,7 @@ CONFIG_X86_SPEEDSTEP_ICH y note<not autoloadable>
 CONFIG_X86_GX_SUSPMOD y note<not autoloadable>
 CONFIG_X86_SPEEDSTEP_SMI y note<not autoloadable>
 #  devices:
-CONFIG_DEV_SG y note<not autoloadable>
+CONFIG_CHR_DEV_SG y note<not autoloadable>
 
 # Boot essential items are always =y
 #  subsystems:
