@@ -194,6 +194,7 @@ CONFIG_MMIOTRACE_TEST n note<testing only>
 CONFIG_RCU_TORTURE_TEST n note<testing only>
 CONFIG_IEEE802154_FAKEHARD n note<testing only>
 CONFIG_LKDTM n note<testing only>
+CONFIG_WL12XX_SDIO_TEST n note<testing only>
 
 # DEBUGGING option
 CONFIG_BRCMDBG n note<debugging only>
@@ -254,3 +255,6 @@ CONFIG_DVB_DUMMY_FE n note<expert use only>
 # ARM unsupported SOC
 CONFIG_FTGMAC100 n note<unsupported ARM device>
 CONFIG_FTMAC100 n note<unsupported ARM device>
+
+# Options which really should not have an option at all.
+CONFIG_SIGMA n note<unused common driver infrastructure>
