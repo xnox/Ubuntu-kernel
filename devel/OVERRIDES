@@ -180,8 +180,8 @@ CONFIG_MMC_BLOCK m/y note<boot essential on arm module otherwise>
 CONFIG_MMC_OMAP_HS y note<boot essential on arm>
 CONFIG_FB_OMAP2 y note<boot essential on arm>
 CONFIG_I2C_OMAP y note<boot essential on arm>
-CONFIG_NOOP_USB_XCEIV m/y <boot essential on arm module otherwise>
-CONFIG_PANEL_GENERIC_DPI y <boot essential on arm>
+CONFIG_NOOP_USB_XCEIV m/y note<boot essential on arm module otherwise>
+CONFIG_PANEL_GENERIC_DPI y note<boot essential on arm>
 
 # POWERPC boot essential devices
 CONFIG_FB_VOODOO1 m/y note<boot essential no powerpc>
@@ -240,7 +240,9 @@ CONFIG_USB_GADGETFS m note<filesystems are opt-in>
 CONFIG_LOGFS n note<highly discouraged for use>
 
 # ARM omap3
-CONFIG_PANEL_DVI - note<required for omap3 video>
+CONFIG_PANEL_DVI y note<required for omap3 video>
+CONFIG_PANEL_SHARP_LS037V7DW01 y note<required for omap3 video>
+CONFIG_PANEL_TPO_TD043MTEA1 y note<required for omap3 video>
 
 # ARM gadget mode
 CONFIG_USB_OTG - note<ARM specific feature>
