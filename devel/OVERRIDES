@@ -195,6 +195,9 @@ CONFIG_FB_PS3 y note<boot essential no powerpc>
 CONFIG_I2C_POWERMAC y note<boot essential on powerpc>
 CONFIG_HW_RANDOM_PASEMI y note<dependancy HW_RANDOM>
 
+# devices which make no sense on some platforms
+CONFIG_PCCARD m/n note<not a supported interface on arm>
+
 # GRUB2 boot requirement
 CONFIG_FRAMEBUFFER_CONSOLE y note<boot essential for grub2 console>
 
