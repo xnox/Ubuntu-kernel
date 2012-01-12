@@ -50,6 +50,9 @@ sub emit()
 
 		} elsif ($option =~ /^CONFIG_CRYPTO_/ && $default eq 'm') {
 			($mode, $note) = ('m', "CRYPTO drivers are opt-in");
+
+		} elsif ($option =~ /^CONFIG_VIDEO_/ && $default eq 'm') {
+			($mode, $note) = ('m', "VIDEO drivers are opt-in");
 		}
 		$note = "note<$note>" if ($note);
 		$modenote{$option} = [$mode, $note] if ($mode ne 'n');
