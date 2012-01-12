@@ -40,7 +40,6 @@ CONFIG_CHR_DEV_SG y note<not autoloadable>
 CONFIG_ATA y note<core subsystem>
 CONFIG_USB y note<core subsystem>
 CONFIG_RFKILL y note<core subsystem>
-#CONFIG_NFC y note<core subsystem>
 CONFIG_INPUT y note<core subsystem>
 CONFIG_SCSI y note<core subsystem>
 CONFIG_LLC m/y note<core subsystem other than arm>
@@ -149,6 +148,9 @@ CONFIG_TRUSTED_KEYS y note<dependancy of boot essential>
 CONFIG_BACKLIGHT_CLASS_DEVICE y note<dependancy of boot essential>
 # cpu freq
 CONFIG_CPU_FREQ_STAT m/y note<dependancy of boot essential>
+
+# Interesting new subsystems
+CONFIG_NFC m note<core subsystem -- opt-in>
 
 # EXPERIMENTAL Network protocols are generally enabled to allow testing.
 CONFIG_ECONET m note<network protocol -- opt-in>
