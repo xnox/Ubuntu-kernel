@@ -239,6 +239,9 @@ CONFIG_USB_FUNCTIONFS m note<filesystems are opt-in>
 CONFIG_USB_GADGETFS m note<filesystems are opt-in>
 CONFIG_LOGFS n note<highly discouraged for use>
 
+# AUFS
+CONFIG_AUFS_PROC_MAP n note<causes build failures>
+
 # ARM omap3
 CONFIG_PANEL_DVI y note<required for omap3 video>
 CONFIG_PANEL_SHARP_LS037V7DW01 y note<required for omap3 video>
