@@ -40,7 +40,7 @@ CONFIG_CHR_DEV_SG y note<not autoloadable>
 CONFIG_ATA y note<core subsystem>
 CONFIG_USB y note<core subsystem>
 CONFIG_RFKILL y note<core subsystem>
-CONFIG_NFC y note<core subsystem>
+#CONFIG_NFC y note<core subsystem>
 CONFIG_INPUT y note<core subsystem>
 CONFIG_SCSI y note<core subsystem>
 CONFIG_LLC m/y note<core subsystem other than arm>
