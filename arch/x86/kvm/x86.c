@@ -3790,6 +3790,27 @@ static void emulator_set_rflags(struct kvm_vcpu *vcpu, unsigned long rflags)
 	kvm_x86_ops->set_rflags(vcpu, rflags);
 }
 
+static bool emulator_get_cpuid(struct kvm_vcpu *vcpu,
+			       u32 *eax, u32 *ebx, u32 *ecx, u32 *edx)
+{
+	struct kvm_cpuid_entry2 *cpuid = NULL;
+
+	if (eax && ecx)
+		cpuid = kvm_find_cpuid_entry(vcpu, *eax, *ecx);
+
+	if (cpuid) {
+		*eax = cpuid->eax;
+		*ecx = cpuid->ecx;
+		if (ebx)
+			*ebx = cpuid->ebx;
+		if (edx)
+			*edx = cpuid->edx;
+		return true;
+	}
+
+	return false;
+}
+
 static struct x86_emulate_ops emulate_ops = {
 	.read_std            = kvm_read_guest_virt_system,
 	.write_std           = kvm_write_guest_virt_system,
@@ -3808,6 +3829,7 @@ static struct x86_emulate_ops emulate_ops = {
 	.set_cr              = emulator_set_cr,
 	.cpl                 = emulator_get_cpl,
 	.set_rflags          = emulator_set_rflags,
+	.get_cpuid           = emulator_get_cpuid,
 };
 
 static void cache_all_regs(struct kvm_vcpu *vcpu)
