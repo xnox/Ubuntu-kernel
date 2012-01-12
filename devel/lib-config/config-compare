@@ -55,6 +55,11 @@ if ($ARGV[0] eq '--info') {
 	$policy = 0;
 }
 
+my $sort = 0;
+if ($ARGV[0] eq '--sort') {
+	$sort = 1;
+	shift @ARGV;
+}
 my @columns = @ARGV;
 
 my $opt;
@@ -83,6 +88,8 @@ for my $column (@columns) {
 	}
 	close(CONFIG);
 }
+
+@options = sort(@options) if ($sort);
 
 push(@columns, "Policy") if ($policy);
 

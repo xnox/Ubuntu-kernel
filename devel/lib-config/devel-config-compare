@@ -42,7 +42,7 @@ function rebuild() {
 	done
 }
 function config-cmp() {
-	(cd tmp; "$here/config-compare" --info "../$info" *)
+	(cd tmp; "$here/config-compare" --info "../$info" $@ *)
 }
 function config-cmp-nopolicy() {
 	(cd tmp; "$here/config-compare" --no-policy --info "../$info" *)
@@ -164,5 +164,5 @@ what=`config-cmp-nopolicy $cmp | tee APW | \
 		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)[ =]/'`
 rm tmp/000-MODULES
 rebuild "$what"
-config-cmp $cmp | colourise
+config-cmp --sort $cmp | colourise
 echo ""
