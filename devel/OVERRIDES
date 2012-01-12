@@ -208,6 +208,7 @@ CONFIG_RCU_TORTURE_TEST n note<testing only>
 CONFIG_IEEE802154_FAKEHARD n note<testing only>
 CONFIG_LKDTM n note<testing only>
 CONFIG_WL12XX_SDIO_TEST n note<testing only>
+CONFIG_RING_BUFFER_BENCHMARK n note<testing only>
 
 # DEBUGGING option
 CONFIG_BRCMDBG n note<debugging only>
