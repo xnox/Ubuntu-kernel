@@ -54,6 +54,7 @@ CONFIG_FB y note<core subsystem>
 CONFIG_PHYLIB y note<core subsystem>
 CONFIG_I2C y note<core subsystem>
 CONFIG_CONNECTOR y note<core subsystem>
+CONFIG_THERMAL y note<core subsystem>
 #  networking:
 CONFIG_INET_LRO y note<core networking>
 CONFIG_MII y note<core networking>
