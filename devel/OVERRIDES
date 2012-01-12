@@ -98,14 +98,14 @@ CONFIG_FW_LOADER y note<core CPU firmware updater>
 CONFIG_KGDB_SERIAL_CONSOLE y note<early debugging support>
 
 # Boot essential dependancies
-CONFIG_BLK_CGROUP - note<dependancy of boot essential>
-CONFIG_BLK_DEV_DM - note<dependancy of boot essential>
-CONFIG_BLK_DEV_LOOP - note<dependancy of boot essential>
-CONFIG_BLK_DEV_MD - note<dependancy of boot essential>
-CONFIG_BLK_DEV_RAM - note<dependancy of boot essential>
-CONFIG_BLK_DEV_SD - note<dependancy of boot essential>
-CONFIG_BLK_DEV_SR - note<dependancy of boot essential>
-CONFIG_DNS_RESOLVER - note<dependancy of boot essential>
+CONFIG_BLK_CGROUP y note<dependancy of boot essential>
+CONFIG_BLK_DEV_DM y note<dependancy of boot essential>
+CONFIG_BLK_DEV_LOOP y note<dependancy of boot essential>
+CONFIG_BLK_DEV_MD y note<dependancy of boot essential>
+CONFIG_BLK_DEV_RAM y note<dependancy of boot essential>
+CONFIG_BLK_DEV_SD y note<dependancy of boot essential>
+CONFIG_BLK_DEV_SR y note<dependancy of boot essential>
+CONFIG_DNS_RESOLVER y note<dependancy of boot essential>
 CONFIG_CRC_T10DIF y note<dependancy of boot essential>
 #  CONFIG_ECRYPTFS or CONFIG_DM
 CONFIG_CRYPTO_CRC32C y note<dependancy of boot essential>
