@@ -298,4 +298,4 @@ CONFIG_SIGMA n note<unused common driver infrastructure>
 CONFIG_SENSORS_SCH56XX_COMMON m/n note<unused common driver infrastructure>
 
 # Items which are simply miss identified
-CONFIG_DEBUG_LL_UART_NONE - note<not actually debug>
+CONFIG_DEBUG_LL_UART_NONE y note<not actually debug>
