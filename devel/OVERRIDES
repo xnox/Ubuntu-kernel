@@ -97,6 +97,9 @@ CONFIG_FW_LOADER y note<core CPU firmware updater>
 # Core debugging support
 CONFIG_KGDB_SERIAL_CONSOLE y note<early debugging support>
 
+# Other boot essential
+CONFIG_XZ_DEC y note<boot essential -- initramfs decompressor>
+
 # Boot essential dependancies
 CONFIG_BLK_CGROUP y note<dependancy of boot essential>
 CONFIG_BLK_DEV_DM y note<dependancy of boot essential>
