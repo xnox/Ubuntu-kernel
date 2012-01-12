@@ -105,8 +105,13 @@ CONFIG_KGDB_SERIAL_CONSOLE y note<early debugging support>
 CONFIG_XZ_DEC y note<boot essential -- initramfs decompressor>
 
 # XEN
-CONFIG_XEN_BLKDEV_FRONTEND y note<not autoloadable -- paravirt support>
-CONFIG_XEN_NETDEV_FRONTEND y note<not autoloadable -- paravirt support>
+CONFIG_XEN_BLKDEV_FRONTEND y note<not autoloadable -- XEN paravirt support>
+CONFIG_XEN_NETDEV_FRONTEND y note<not autoloadable -- XEN paravirt support>
+
+# KVM
+CONFIG_VIRTIO_BLK n/y note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_XEN n/y note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_PCI n/y note<not autoloadable -- KVM paravirt support>
 
 # Boot essential dependancies
 CONFIG_BLK_CGROUP y note<dependancy of boot essential>
