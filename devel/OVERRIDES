@@ -100,6 +100,10 @@ CONFIG_KGDB_SERIAL_CONSOLE y note<early debugging support>
 # Other boot essential
 CONFIG_XZ_DEC y note<boot essential -- initramfs decompressor>
 
+# XEN
+CONFIG_XEN_BLKDEV_FRONTEND y note<not autoloadable -- paravirt support>
+CONFIG_XEN_NETDEV_FRONTEND y note<not autoloadable -- paravirt support>
+
 # Boot essential dependancies
 CONFIG_BLK_CGROUP y note<dependancy of boot essential>
 CONFIG_BLK_DEV_DM y note<dependancy of boot essential>
