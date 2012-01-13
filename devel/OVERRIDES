@@ -113,9 +113,10 @@ CONFIG_XEN_NETDEV_FRONTEND y note<not autoloadable -- XEN paravirt support>
 
 # KVM
 CONFIG_VIRTIO_BLK n/y note<not autoloadable -- KVM paravirt support>
-CONFIG_VIRTIO_XEN n/y note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_NET n/y note<not autoloadable -- KVM paravirt support>
 CONFIG_VIRTIO_PCI n/y note<not autoloadable -- KVM paravirt support>
 CONFIG_VIRTIO_MMIO m/n note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_BALLOON m/n note<not autoloadable -- KVM paravirt support>
 
 # Boot essential dependancies
 CONFIG_BLK_CGROUP y note<dependancy of boot essential>
