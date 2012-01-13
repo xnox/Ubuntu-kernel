@@ -43,6 +43,8 @@ if ($ARGV[0] eq '--info') {
 				$flags{$config} .= " '''$value'''";
 			} elsif ($option eq 'note') {
 				$flags{$config} .= " $2";
+			} elsif ($option eq 'choice') {
+				$flags{$config} .= " '''CHOICE'''";
 			}
 		}
 		$values{'Policy', $config} = $expected;
@@ -125,7 +127,7 @@ for my $option (@options) {
 
 	if ($all eq '') {
 		$cmt .= " '''GONE'''";
-	} elsif ($all ne $one) {
+	} elsif ($is ne 'c' && $all ne $one) {
 		$cmt .= " '''Inconsistent'''";
 	}
 	if ($flags{$option}) {
