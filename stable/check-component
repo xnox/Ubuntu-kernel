@@ -282,6 +282,8 @@ class CheckComponent(StdApp):
             return self.override_component
         if package.startswith('linux-restricted-modules-'):
             return self.linux_abi_component
+        if package.startswith('linux-ubuntu-modules-'):
+            return self.linux_abi_component
         return self.default_component
 
     # main
