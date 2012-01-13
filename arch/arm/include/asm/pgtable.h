@@ -446,6 +446,7 @@ extern pgd_t swapper_pg_dir[PTRS_PER_PGD];
  * We provide our own arch_get_unmapped_area to cope with VIPT caches.
  */
 #define HAVE_ARCH_UNMAPPED_AREA
+#define HAVE_ARCH_UNMAPPED_AREA_TOPDOWN
 
 /*
  * remap a physical page `pfn' of size `size' with page protection `prot'
