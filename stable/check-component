@@ -7,7 +7,7 @@ from ktl.utils                          import stdo, error
 from ktl.std_app                        import StdApp
 from lpltk.LaunchpadService             import LaunchpadService
 from ktl.ubuntu                         import Ubuntu
-import sys, os
+import sys, os, re
 common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
 common_lib = os.path.dirname(common_lib)
 common_lib = os.path.join(common_lib, "lib")
@@ -62,9 +62,6 @@ class Cmdline:
         stdo("        --staging                                                                            \n")
         stdo("                         Use the staging LP service instead of the production one.           \n")
         stdo("                                                                                             \n")
-        stdo("        --component=<component>                                                              \n")
-        stdo("                         Use the specified component instead of the default (main)           \n")
-        stdo("                                                                                             \n")
         stdo("        --pocket=<pocket>                                                                    \n")
         stdo("                         Use the specified pocket instead of the default (proposed)          \n")
         stdo("                                                                                             \n")
@@ -90,8 +87,8 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'staging', 'component=', 'pocket=',
-                         'package_version=', 'list']
+            optsLong  = ['help', 'staging', 'pocket=', 'package_version=',
+                         'list']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -100,9 +97,6 @@ class Cmdline:
 
                 elif (opt == '--staging'):
                     self.cfg['staging'] = True
-
-                elif opt in '--component':
-                    self.cfg['component'] = val
 
                 elif opt in '--pocket':
                     self.cfg['pocket'] = val
@@ -152,11 +146,145 @@ class CheckComponent(StdApp):
         self.defaults['launchpad_client_name'] = 'kernel-team-check-component'
         if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'qastaging'
-        self.defaults['component'] = 'main'
         self.defaults['pocket'] = 'proposed'
         self.lp = LaunchpadService(self.defaults)
         self.ubuntu = Ubuntu()
+        self.override_db = { 'hardy': {
+                               'linux-meta' : {
+                                 'linux-restricted-modules-server' : 'restricted'
+                               }
+                             },
+                             'lucid': {
+                               'linux-meta' : {
+                                 'linux-versatile' : 'main'
+                               }
+                             },
+                             'maverick': {
+                               'linux-meta' : {
+                                 'linux-versatile' : 'main'
+                               }
+                             },
+                             'natty': {
+                               'linux-meta' : {
+                                 'linux-versatile' : 'main'
+                               }
+                             }
+                           }
+        self.release_db = {}
+        self.abi_db = {}
         return
+
+    def load_release_components(self, series, package):
+        ubuntu = self.lp.launchpad.distributions["ubuntu"]
+        archive = ubuntu.main_archive
+        lp_series = ubuntu.getSeries(name_or_version=series)
+        rel_ver = GetUploadVersion(series, package, pocket="release")
+        if rel_ver:
+            pkg_rel = archive.getPublishedSources(exact_match=True,
+                        source_name=package,
+                        distro_series=lp_series,
+                        pocket='Release',
+                        version=rel_ver)
+            if pkg_rel:
+                src_pkg = pkg_rel[0]
+                self.release_db[package] = {}
+                self.release_db[package][None] = src_pkg.component_name
+                for bin_pkg in src_pkg.getPublishedBinaries():
+                    bname = bin_pkg.binary_package_name
+                    bcomponent = bin_pkg.component_name
+                    self.release_db[package][bname] = bcomponent
+        return
+
+    def default_component(self, dcomponent, series, package, bin_pkg):
+        if not self.release_db:
+            self.load_release_components(series, package)
+        if package in self.release_db:
+            if bin_pkg in self.release_db[package]:
+                return self.release_db[package][bin_pkg]
+        return dcomponent
+
+    def override_component(self, dcomponent, series, package, bin_pkg):
+        if series in self.override_db:
+            if package in self.override_db[series]:
+                if bin_pkg in self.override_db[series][package]:
+                    return self.override_db[series][package][bin_pkg]
+        if series != 'hardy' and package == 'linux-meta':
+            if (bin_pkg and bin_pkg.startswith('linux-backports-modules-') and
+                (not bin_pkg.endswith('-preempt'))):
+                return 'main'
+        if package.startswith('linux-backports-modules-'):
+            dcomponent = 'main'
+        return self.default_component(dcomponent, series, package, bin_pkg)
+
+    def main_component(self, dcomponent, series, package, bin_pkg):
+        return 'main'
+
+    def name_abi_transform(self, name):
+        if not name:
+            return name
+        abi = re.findall('([0-9]+\.[^ ]+)', name)
+        if abi:
+            abi = abi[0]
+            abi = abi.split('-')
+            if len(abi) >= 2:
+                abi = abi[1]
+            else:
+                abi = None
+            if abi:
+                version = re.findall('([0-9]+\.[^-]+)', name)
+                if version:
+                    version = version[0]
+                    name = name.replace('%s-%s' % (version, abi),
+                                        '%s-ABI' % version)
+        return name
+
+    def linux_abi_component(self, dcomponent, series, package, bpkg):
+        if package in self.abi_db:
+            mpkg = self.name_abi_transform(bpkg)
+            if mpkg in self.abi_db[package]:
+                return self.abi_db[package][mpkg]
+            else:
+                return 'universe'
+
+        ubuntu = self.lp.launchpad.distributions["ubuntu"]
+        archive = ubuntu.main_archive
+        lp_series = ubuntu.getSeries(name_or_version=series)
+        rel_ver = GetUploadVersion(series, package, pocket="release")
+        if rel_ver:
+            pkg_rel = archive.getPublishedSources(exact_match=True,
+                        source_name=package,
+                        distro_series=lp_series,
+                        pocket='Release',
+                        version=rel_ver)
+            if pkg_rel:
+                src_pkg = pkg_rel[0]
+                self.abi_db[package] = {}
+                self.abi_db[package][None] = src_pkg.component_name
+                for bin_pkg in src_pkg.getPublishedBinaries():
+                    bname = self.name_abi_transform(bin_pkg.binary_package_name)
+                    self.abi_db[package][bname] = bin_pkg.component_name
+            else:
+                self.abi_db[package] = {}
+        else:
+            self.abi_db[package] = {}
+        return self.linux_abi_component(dcomponent, series, package, bpkg)
+
+    def component_function(self, series, package):
+        if (package == 'linux'):
+            if series in [ 'hardy', 'lucid' ]:
+                return self.linux_abi_component
+            return self.main_component
+        if (package == 'linux-meta'):
+            return self.override_component
+        if package.startswith('linux-lts-backport-'):
+            return self.main_component
+        if package.startswith('linux-backports-modules-'):
+            return self.override_component
+        if package.startswith('linux-restricted-modules-'):
+            return self.linux_abi_component
+        if package.startswith('linux-ubuntu-modules-'):
+            return self.linux_abi_component
+        return self.default_component
 
     # main
     #
@@ -169,8 +297,15 @@ class CheckComponent(StdApp):
 
             series = self.cfg['series']
             package = self.cfg['package']
-            component = self.cfg['component']
             pocket = self.cfg['pocket']
+            ubuntu = self.lp.launchpad.distributions["ubuntu"]
+            archive = ubuntu.main_archive
+            lp_series = ubuntu.getSeries(name_or_version=series)
+
+            # Get the components where the packages were officially
+            # released, if we're checking components
+            get_component = self.component_function(series, package)
+
             if not 'package_version' in self.cfg:
                 pkg_ver = GetUploadVersion(series, package, pocket=pocket)
                 if pkg_ver == None:
@@ -179,9 +314,6 @@ class CheckComponent(StdApp):
                     sys.exit(1)
             else:
                 pkg_ver = self.cfg['package_version']
-            ubuntu = self.lp.launchpad.distributions["ubuntu"]
-            archive = ubuntu.main_archive
-            lp_series = ubuntu.getSeries(name_or_version=series)
             ps = archive.getPublishedSources(exact_match=True,
                                              source_name=package,
                                              distro_series=lp_series,
@@ -190,12 +322,18 @@ class CheckComponent(StdApp):
             if ps:
                 src_pkg = ps[0]
                 if not 'list' in self.cfg:
+                    component = 'universe'
+                    component = get_component('universe', series, package, None)
                     if src_pkg.component_name != component:
                         print("%s %s - is in %s instead of %s" % 
                               (src_pkg.source_package_name,
                                src_pkg.source_package_version,
                                src_pkg.component_name, component))
                     for bin_pkg in src_pkg.getPublishedBinaries():
+                        component = 'universe'
+                        pkg_name = bin_pkg.binary_package_name
+                        component = get_component('universe', series, package,
+                                                  pkg_name)
                         if bin_pkg.component_name != component:
                             print("%s %s - is in %s instead of %s" % 
                                   (bin_pkg.binary_package_name,
