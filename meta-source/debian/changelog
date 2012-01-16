@@ -1,3 +1,9 @@
+linux-meta (3.2.0.9.9) precise; urgency=low
+
+  * Bump ABI
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Sun, 15 Jan 2012 19:57:13 -0800
+
 linux-meta (3.2.0.8.8) precise; urgency=low
 
   * linux-image should point to the recommended kernel, move it to
