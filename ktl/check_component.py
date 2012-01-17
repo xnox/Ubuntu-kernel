@@ -176,9 +176,10 @@ class CheckComponent():
             error("No results returned by getPublishedSources")
         return ps
 
-    def components_list(self, series, package, version, pocket):
+    def components_list(self, series, package, version, pocket, ps = None):
         clist = []
-        ps = self.get_published_sources(series, package, version, pocket)
+        if not ps:
+            ps = self.get_published_sources(series, package, version, pocket)
         if ps:
             src_pkg = ps[0]
             clist.append([src_pkg.source_package_name,
@@ -190,10 +191,11 @@ class CheckComponent():
                               bin_pkg.component_name])
         return clist
 
-    def mismatches_list(self, series, package, version, pocket):
+    def mismatches_list(self, series, package, version, pocket, ps = None):
         mlist = []
         get_component = self.component_function(series, package)
-        ps = self.get_published_sources(series, package, version, pocket)
+        if not ps:
+            ps = self.get_published_sources(series, package, version, pocket)
         if ps:
             src_pkg = ps[0]
             component = get_component('universe', series, package, None)
