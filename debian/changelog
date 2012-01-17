@@ -1,3 +1,9 @@
+linux-backports-modules-3.2.0 (3.2.0-9.1) UNRELEASED; urgency=low
+
+  * Open Precise LBM
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 17 Jan 2012 07:14:57 -0800
+
 linux-backports-modules-3.0.0 (3.0.0-15.7) oneiric-proposed; urgency=low
 
   * Bump ABI - Oneiric ABI 15
