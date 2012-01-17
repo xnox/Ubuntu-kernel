@@ -6,6 +6,7 @@
 from sys                                import argv
 from os                                 import path
 from getopt                             import getopt, GetoptError
+from ktl.check_component                import CheckComponent
 from ktl.utils                          import stdo, date_to_string
 from ktl.ubuntu                         import Ubuntu
 from ktl.std_app                        import StdApp
@@ -940,6 +941,12 @@ class Shank(StdApp):
         """
         return self.prep_package_fix_released(taskobj)
 
+    def has_prep_task(self, taskname):
+        if taskname in self.taskbyname:
+            if self.taskbyname[taskname].status == "Fix Released":
+                return True
+        return False
+
     def promote_to_proposed_fix_released(self, taskobj):
         """
         When promote-to-proposed is set to Fix Released, we begin verification testing by setting
@@ -950,53 +957,79 @@ class Shank(StdApp):
         if task.status != 'New':
             return False
 
+        # Set promote-to-proposed timestamp first, used for checking below
+        self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-end')
+
+        # Check if packages were copied to the right pocket->component
         bug = taskobj.bug
         title = bug.title
         pkg_name = re.findall('linux[^:]*', title)[0]
         pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
         series_name = self.ubuntu.series_name(pkg_name, pkg_ver)
-
-        # Get the version which landed in archive, inside Proposed pocket
-        import sys, os
-        common_lib = os.path.dirname(os.path.abspath(sys.argv[0]))
-        common_lib = os.path.dirname(common_lib)
-        common_lib = os.path.join(common_lib, "lib")
-        sys.path.insert(0, common_lib)
-        from buildenv_lib import GetUploadVersion
-        proposed_ver = GetUploadVersion(series_name, pkg_name, pocket="proposed")
-
-        # Set promote-to-proposed timestamp first, used for checking below
-        self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-end')
-
-        # Check if packages were copied to the right pocket->component (main)
-        ubuntu = self.lp.launchpad.distributions["ubuntu"]
-        archive = ubuntu.main_archive
-        series = ubuntu.getSeries(name_or_version=series_name)
-        ps = archive.getPublishedSources(exact_match=True,
-                                         source_name=pkg_name,
-                                         distro_series=series,
-                                         pocket="Proposed",
-                                         version=pkg_ver)
-        if proposed_ver == pkg_ver and ps:
-            src_pkg = ps[0]
-            mis_lst = []
-            if src_pkg.component_name != 'main':
-                mis_lst.append('%s %s - in %s' %
-                               (src_pkg.source_package_name,
-                                src_pkg.source_package_version,
-                                src_pkg.component_name))
-            for bin_pkg in src_pkg.getPublishedBinaries():
-                if bin_pkg.component_name != 'main':
-                    mis_lst.append('%s %s - in %s' %
-                                   (bin_pkg.binary_package_name,
-                                    bin_pkg.binary_package_version,
-                                    bin_pkg.component_name))
+        check_component = CheckComponent(self.lp)
+        name_meta = 'linux-meta'
+        name_ports_meta = 'linux-ports-meta'
+        name_split = pkg_name.split('-', 1)
+        if len(name_split) > 1:
+            name_meta = '%s-meta-%s' % (name_split[0], name_split[1])
+            name_ports_meta = '%s-ports-meta-%s' % (name_split[0], name_split[1])
+        name_map = { 'prepare-package-lbm' : 'linux-backports-modules',
+                     'prepare-package-lrm' : 'linux-restricted-modules',
+                     'prepare-package-lum' : 'linux-ubuntu-modules',
+                     'prepare-package-meta' : name_meta,
+                     'prepare-package-ports-meta' : name_ports_meta }
+        ver_split = pkg_ver.split('-')
+        main_version = ver_split[0]
+        pkg_list = [ pkg_name ]
+        for name in iter(name_map):
+            if self.has_prep_task(name):
+                if ('lbm' in name) or ('lrm' in name) or ('lum' in name):
+                    pkg_list.append('%s-%s' % (name_map[name], main_version))
+                else:
+                    pkg_list.append(name_map[name])
+        missing_pkg = False
+        pkg_abi = ''
+        dep_ver1 = main_version
+        dep_ver2 = main_version
+        if len(ver_split) > 1:
+            pkg_abi = ver_split[1].split('.')[0]
+            dep_ver1 = '%s-%s' % (main_version, pkg_abi)
+            dep_ver2 = '%s.%s' % (main_version, pkg_abi)
+        mis_lst = []
+        for pkg in pkg_list:
+            if pkg == pkg_name:
+                check_ver = pkg_ver
+            else:
+                check_ver = None
+            ps = check_component.get_published_sources(series_name, pkg,
+                                                       check_ver, 'proposed')
+            if not ps:
+                missing_pkg = True
+                break
+            if not check_ver:
+                src_ver = ps[0].source_package_version
+                # special hardcoded case for lrm on hardy...
+                if pkg == 'linux-restricted-modules-2.6.24':
+                    src_split = src_ver.split('-')
+                    if src_split[0].startswith(main_version) and len(src_split) > 1:
+                        src_ver = '%s-%s' % (main_version, src_split[1])
+                if src_ver.startswith(dep_ver1) or src_ver.startswith(dep_ver2):
+                    mis_lst.extend(check_component.mismatches_list(series_name,
+                                   pkg, src_ver, 'proposed', ps))
+                else:
+                    missing_pkg = True
+                    break
+            else:
+                mis_lst.extend(check_component.mismatches_list(series_name,
+                               pkg, check_ver, 'proposed', ps))
+        if not missing_pkg:
             if mis_lst:
                 self.set_task_to_state('promote-to-proposed', 'Incomplete')
                 msgbody  = "The following packages ended up in the wrong"
                 msgbody += " component in the -proposed pocket:\n"
-                for ln in mis_lst:
-                    msgbody += '\n%s' % (ln)
+                for item in mis_lst:
+                    msgbody += '\n%s %s - is in %s instead of %s' % (item[0],
+                               item[1], item[2], item[3])
                 bugbody = msgbody
                 bugbody += "\n\nOnce this is fixed, set the "
                 bugbody += "promote-to-proposed to Fix Released again"
@@ -1018,7 +1051,7 @@ class Shank(StdApp):
                 if delta.days >= 1:
                     self.set_task_to_state('promote-to-proposed', 'Incomplete')
                     msgbody  = "Promote-to-proposed is Fix Released, but "
-                    msgbody += "packages for this update aren't published "
+                    msgbody += "some packages for this update aren't published "
                     msgbody += "in Launchpad, on -proposed pocket\n"
                     self.send_comment(task, 'Can\'t find packages published in -proposed', msgbody)
                     if not 'dryrun' in self.cfg:
