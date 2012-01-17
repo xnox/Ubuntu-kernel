@@ -52,7 +52,7 @@ no_compat_wireless_flavours="xen virtual"
 # Explicitly enable compat-wireless at release time.
 #
 do_compat_wireless := 3.1 
-do_net=true
+do_net=false
 
 #
 # Compat wireless versions for which packages are created.
