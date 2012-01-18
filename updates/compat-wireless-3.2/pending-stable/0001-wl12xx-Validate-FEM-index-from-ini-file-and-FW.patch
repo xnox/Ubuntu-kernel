@@ -1,0 +1,73 @@
+From 2131d3c2f99b081806fdae7662c92fe6acda52af Mon Sep 17 00:00:00 2001
+From: Pontus Fuchs <pontus.fuchs@gmail.com>
+Date: Tue, 18 Oct 2011 09:23:41 +0200
+Subject: [PATCH 1/5] wl12xx: Validate FEM index from ini file and FW
+
+Check for out of bound FEM index to prevent reading beyond ini
+memory end.
+
+Signed-off-by: Pontus Fuchs <pontus.fuchs@gmail.com>
+Cc: stable@kernel.org
+Reviewed-by: Luciano Coelho <coelho@ti.com>
+Signed-off-by: Luciano Coelho <coelho@ti.com>
+---
+ drivers/net/wireless/wl12xx/cmd.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/wireless/wl12xx/cmd.c b/drivers/net/wireless/wl12xx/cmd.c
+index afd5973..e0d2179 100644
+--- a/drivers/net/wireless/wl12xx/cmd.c
++++ b/drivers/net/wireless/wl12xx/cmd.c
+@@ -121,6 +121,11 @@ int wl1271_cmd_general_parms(struct wl1271 *wl)
+ 	if (!wl->nvs)
+ 		return -ENODEV;
+ 
++	if (gp->tx_bip_fem_manufacturer >= WL1271_INI_FEM_MODULE_COUNT) {
++		wl1271_warning("FEM index from INI out of bounds");
++		return -EINVAL;
++	}
++
+ 	gen_parms = kzalloc(sizeof(*gen_parms), GFP_KERNEL);
+ 	if (!gen_parms)
+ 		return -ENOMEM;
+@@ -144,6 +149,12 @@ int wl1271_cmd_general_parms(struct wl1271 *wl)
+ 	gp->tx_bip_fem_manufacturer =
+ 		gen_parms->general_params.tx_bip_fem_manufacturer;
+ 
++	if (gp->tx_bip_fem_manufacturer >= WL1271_INI_FEM_MODULE_COUNT) {
++		wl1271_warning("FEM index from FW out of bounds");
++		ret = -EINVAL;
++		goto out;
++	}
++
+ 	wl1271_debug(DEBUG_CMD, "FEM autodetect: %s, manufacturer: %d\n",
+ 		     answer ? "auto" : "manual", gp->tx_bip_fem_manufacturer);
+ 
+@@ -163,6 +174,11 @@ int wl128x_cmd_general_parms(struct wl1271 *wl)
+ 	if (!wl->nvs)
+ 		return -ENODEV;
+ 
++	if (gp->tx_bip_fem_manufacturer >= WL1271_INI_FEM_MODULE_COUNT) {
++		wl1271_warning("FEM index from ini out of bounds");
++		return -EINVAL;
++	}
++
+ 	gen_parms = kzalloc(sizeof(*gen_parms), GFP_KERNEL);
+ 	if (!gen_parms)
+ 		return -ENOMEM;
+@@ -187,6 +203,12 @@ int wl128x_cmd_general_parms(struct wl1271 *wl)
+ 	gp->tx_bip_fem_manufacturer =
+ 		gen_parms->general_params.tx_bip_fem_manufacturer;
+ 
++	if (gp->tx_bip_fem_manufacturer >= WL1271_INI_FEM_MODULE_COUNT) {
++		wl1271_warning("FEM index from FW out of bounds");
++		ret = -EINVAL;
++		goto out;
++	}
++
+ 	wl1271_debug(DEBUG_CMD, "FEM autodetect: %s, manufacturer: %d\n",
+ 		     answer ? "auto" : "manual", gp->tx_bip_fem_manufacturer);
+ 
+-- 
+1.7.4.15.g7811d
+
