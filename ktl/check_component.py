@@ -155,6 +155,8 @@ class CheckComponent():
             return self.linux_abi_component
         if package.startswith('linux-ubuntu-modules-'):
             return self.linux_abi_component
+        if (package == 'linux-ec2'):
+            return self.main_component
         return self.default_component
 
     def get_published_sources(self, series, package, version, pocket):
