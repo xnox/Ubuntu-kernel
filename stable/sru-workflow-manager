@@ -1015,7 +1015,8 @@ class Shank(StdApp):
                         src_ver = '%s-%s' % (main_version, src_split[1])
                 if src_ver.startswith(dep_ver1) or src_ver.startswith(dep_ver2):
                     mis_lst.extend(check_component.mismatches_list(series_name,
-                                   pkg, src_ver, 'proposed', ps))
+                                   pkg, ps[0].source_package_version,
+                                   'proposed', ps))
                 else:
                     missing_pkg = True
                     break
