@@ -987,7 +987,7 @@ class Shank(StdApp):
                     pkg_list.append('%s-%s' % (name_map[name], main_version))
                 else:
                     pkg_list.append(name_map[name])
-        missing_pkg = False
+        missing_pkg = []
         pkg_abi = ''
         dep_ver1 = main_version
         dep_ver2 = main_version
@@ -1004,7 +1004,10 @@ class Shank(StdApp):
             ps = check_component.get_published_sources(series_name, pkg,
                                                        check_ver, 'proposed')
             if not ps:
-                missing_pkg = True
+                if check_ver:
+                    missing_pkg = [ pkg, check_ver ]
+                else:
+                    missing_pkg = [ pkg, 'with ABI=%s' % (pkg_abi) ]
                 break
             if not check_ver:
                 src_ver = ps[0].source_package_version
@@ -1018,7 +1021,7 @@ class Shank(StdApp):
                                    pkg, ps[0].source_package_version,
                                    'proposed', ps))
                 else:
-                    missing_pkg = True
+                    missing_pkg = [ pkg, 'with ABI=%s' % (pkg_abi) ]
                     break
             else:
                 mis_lst.extend(check_component.mismatches_list(series_name,
@@ -1059,7 +1062,7 @@ class Shank(StdApp):
                         self.props.set({'kernel-stable-Promote-to-proposed-end':None})
                     return False
             self.verbose('Didn\'t found <%s> <%s> on -proposed yet, check on next run\n'
-                         % (pkg_name, pkg_ver))
+                         % (missing_pkg[0], missing_pkg[1]))
             return False
 
         # Update remaining time stamps and status
