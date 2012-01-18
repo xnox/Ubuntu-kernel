@@ -10,6 +10,8 @@
 #include <linux/fs.h>
 #include <linux/slab.h>
 #include <linux/xattr.h>
+#include <linux/device_cgroup.h>
+#include <linux/security.h>
 #include "overlayfs.h"
 
 int ovl_setattr(struct dentry *dentry, struct iattr *attr)
@@ -118,6 +120,11 @@ int ovl_permission(struct inode *inode, int mask, unsigned int flags)
 	else
 		err = generic_permission(realinode, mask, flags,
 					 realinode->i_op->check_acl);
+
+	if (!err)
+		err = devcgroup_inode_permission(realinode, mask);
+	if (!err)
+		err = security_inode_permission(realinode, mask);
 out_dput:
 	dput(alias);
 	return err;
