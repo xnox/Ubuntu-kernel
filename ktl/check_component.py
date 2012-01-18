@@ -193,6 +193,8 @@ class CheckComponent():
 
     def mismatches_list(self, series, package, version, pocket, ps = None):
         mlist = []
+        self.release_db = {}
+        self.abi_db = {}
         get_component = self.component_function(series, package)
         if not ps:
             ps = self.get_published_sources(series, package, version, pocket)
