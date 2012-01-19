@@ -139,9 +139,8 @@ then
 	DEBOOTSTRAP_VERSION=`dpkg-query --show debootstrap|cut -f 2`
 	if ! dpkg --compare-versions ${DEBOOTSTRAP_MINVERSION} ge ${DEBOOTSTRAP_VERSION}
 	then
-		echo debootstrap must be at a minimum version of ${DEBOOTSTRAP_MINVERSION} to support armel.
+		echo Warning: debootstrap must be at a minimum version of ${DEBOOTSTRAP_MINVERSION} to support armel.
 		echo Try enabling -backports and then update your packages.
-		exit 1
 	fi
 	DEBOOTSTRAP=qemu-debootstrap
 	#
@@ -156,9 +155,8 @@ then
 	QEMU_KVM_EXTRAS_STATIC_VERSION=`dpkg-query --show qemu-kvm-extras-static|cut -f 2`
 	if dpkg --compare-versions ${QEMU_KVM_EXTRAS_STATIC_VERSION} lt ${QEMU_KVM_EXTRAS_STATIC_MINVERSION}
 	then
-		echo qemu-kvm-extras-static must be at a minimum version of ${QEMU_KVM_EXTRAS_STATIC_MINVERSION} to support armel.
+		echo Warning: qemu-kvm-extras-static must be at a minimum version of ${QEMU_KVM_EXTRAS_STATIC_MINVERSION} to support armel.
 		echo Try 'echo deb http://ppa.launchpad.net/linaro-maintainers/tools/ubuntu lucid main | sudo tee /etc/apt/sources.list.d/linaro.list'
-		exit 1
 	fi
 fi
 
