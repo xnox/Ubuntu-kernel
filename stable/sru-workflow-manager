@@ -700,10 +700,19 @@ class Shank(StdApp):
         dep_ver2 = '%s.%s' % (pkg_kernel, pkg_abi)
         ckt = self.lp.launchpad.people['canonical-kernel-team']
         ppa = ckt.getPPAByName(name='ppa')
-        dep_matches = [ p for p in ppa.getPublishedSources(source_name=dep_name)
-                          if p.status.lower() == 'published' and
-                             (p.source_package_version.startswith(dep_ver1) or
-                              p.source_package_version.startswith(dep_ver2)) ]
+        dep_matches = []
+        for p in ppa.getPublishedSources(source_name=dep_name):
+            src_ver = p.source_package_version
+            # special case for hardy lrm version...
+            if (deptype == 'lrm') and (pkg_kernel == '2.6.24'):
+                if src_ver.startswith('2.6.24'):
+                    ver_split = src_ver.split('-', 1)
+                    if len(ver_split) > 1:
+                        src_ver = '2.6.24-%s' % (ver_split[1])
+            if ((p.status.lower() == 'published') and
+                (src_ver.startswith(dep_ver1) or
+                 src_ver.startswith(dep_ver2))):
+                dep_matches.append(p)
         if not dep_matches:
             self.verbose('Can\'t find <%s> (<%s> or <%s>) build on c-k-t ppa\n' %
                          (dep_name, dep_ver1, dep_ver2))
