@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (3.2.0.1404.4) precise; urgency=low
+
+  * linux-ti-omap4 ABI 3.2.0-1404
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 20 Jan 2012 05:53:17 -0700
+
 linux-meta-ti-omap4 (3.2.0.1403.3) precise; urgency=low
 
   * linux-ti-omap4 ABI 3.2.0-1403
