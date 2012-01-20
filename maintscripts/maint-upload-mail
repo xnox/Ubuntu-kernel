@@ -51,6 +51,9 @@ parser.add_option("--to", action="append", dest="sendto",
 		       "--to option is present, the program will try to " +
 		       "get it from the environment variable KERNEL_ANNOUNCE" +
 			" which should contain a comma separated list.")
+epilog = "Example: %s " % (parser.get_prog_name())
+epilog += "--pocket=proposed --to=kernel-announce natty linux"
+parser.epilog = epilog
 
 (opt, args) = parser.parse_args()
 
