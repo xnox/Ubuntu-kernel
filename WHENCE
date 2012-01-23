@@ -679,6 +679,15 @@ Info: v17.168.5.2
 File: iwlwifi-6050-4.ucode
 Info: v9.201.4.1
 
+File: iwlwifi-135-6.ucode
+Info: v18.168.6.1
+
+File: iwlwifi-100-5.ucode
+Info: v39.31.5.1
+
+File: iwlwifi-105-6.ucode
+Info: v18.168.6.1
+
 Licence: Redistributable. See LICENCE.iwlwifi_firmware for details
 
 Also available from http://intellinuxwireless.org/?n=Downloads
