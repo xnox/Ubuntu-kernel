@@ -1,3 +1,15 @@
+linux-firmware (1.60.1) oneiric-proposed; urgency=low
+
+  * Add new iwlwifi ucode files
+    iwlwifi: add new firmware for 6000g2b devices
+    iwlwifi: add new firmware for 2030 devices
+    iwlwifi: add new firmware for 2000 devices
+    iwlwifi: add new firmware for 135 devcies
+    iwlwifi: add new firmware for 105 devices
+    -LP: #918351
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 24 Jan 2012 10:44:51 -0700
+
 linux-firmware (1.60) oneiric; urgency=low
 
   * Rebase against git://git.kernel.org/pub/scm/linux/kernel/git/dwmw2/linux-firmware.git f8ddc05e13c4c6dd9d725bc376b287f307eb223a
