@@ -64,5 +64,6 @@ Thanks everyone
 ##
 
 /msg chanserv op #ubuntu-kernel
+/topic <new topic message>
 /msg chanserv deop #ubuntu-kernel
 
