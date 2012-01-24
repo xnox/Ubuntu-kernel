@@ -8785,7 +8785,6 @@ EXPORT_SYMBOL_GPL drivers/w1/wire 0x7c2f2afb	w1_calc_crc8
 EXPORT_SYMBOL_GPL drivers/w1/wire 0xe3d6617a	w1_read_8
 EXPORT_SYMBOL_GPL drivers/w1/wire 0xe926e12e	w1_next_pullup
 EXPORT_SYMBOL_GPL drivers/w1/wire 0xf5584d80	w1_touch_block
-EXPORT_SYMBOL_GPL drivers/xen/xenbus/xenbus_probe_frontend 0x376a3908	__xenbus_register_frontend
 EXPORT_SYMBOL_GPL fs/dlm/dlm 0x0864c4a4	dlm_new_lockspace
 EXPORT_SYMBOL_GPL fs/dlm/dlm 0x3826bc99	dlm_posix_unlock
 EXPORT_SYMBOL_GPL fs/dlm/dlm 0x9321df95	dlm_lock
@@ -10097,6 +10096,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x371477ed	power_supply_class
 EXPORT_SYMBOL_GPL vmlinux 0x373a254a	usb_autopm_get_interface_async
 EXPORT_SYMBOL_GPL vmlinux 0x37413d1a	register_net_sysctl_rotable
 EXPORT_SYMBOL_GPL vmlinux 0x375ae878	system_wq
+EXPORT_SYMBOL_GPL vmlinux 0x376a3908	__xenbus_register_frontend
 EXPORT_SYMBOL_GPL vmlinux 0x3771f15b	pci_disable_rom
 EXPORT_SYMBOL_GPL vmlinux 0x3773cf94	put_driver
 EXPORT_SYMBOL_GPL vmlinux 0x378d743e	ata_bmdma_status
