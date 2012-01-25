@@ -1,3 +1,12 @@
+linux-meta (2.6.32.38.45) lucid-proposed; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Add compat-wireless v3.2 meta package
+    - LP: #918351
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 25 Jan 2012 15:34:49 -0200
+
 linux-meta (2.6.32.38.44) lucid-proposed; urgency=low
 
   * Bump ABI
