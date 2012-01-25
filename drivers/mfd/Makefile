@@ -122,3 +122,4 @@ obj-$(CONFIG_MFD_ANATOP)	+= anatop-mfd.o
 obj-$(CONFIG_MFD_LM3533)	+= lm3533-core.o lm3533-ctrlbank.o
 obj-$(CONFIG_MFD_PALMAS)	+= palmas.o palmas-irq.o
 obj-$(CONFIG_MFD_PALMAS_GPADC)	+= palmas-gpadc.o
+obj-$(CONFIG_MFD_PALMAS_RESOURCE)	+= palmas-resource.o
