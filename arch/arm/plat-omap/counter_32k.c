@@ -12,6 +12,7 @@
  *
  * NOTE: This timer is not the same timer as the old OMAP1 MPU timer.
  */
+
 #include <linux/kernel.h>
 #include <linux/init.h>
 #include <linux/clk.h>
@@ -83,10 +84,14 @@ int __init omap_init_clocksource_32k(void __iomem *vbase)
 {
 	int ret;
 
-	/*
-	 * 32k sync Counter register offset is at 0x10
-	 */
-	sync32k_cnt_reg = vbase + OMAP2_32KSYNCNT_CR_OFF;
+	if (cpu_is_omap54xx()) {
+		sync32k_cnt_reg = vbase + 0x30;
+	} else {
+		/*
+		 * 32k sync Counter register offset is at 0x10
+		 */
+		sync32k_cnt_reg = vbase + OMAP2_32KSYNCNT_CR_OFF;
+	}
 
 	/*
 	 * 120000 rough estimate from the calculations in
