@@ -1,3 +1,12 @@
+linux-meta (3.0.0.16.19) oneiric-proposed; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Add compat-wireless v3.2 meta package
+    - LP: #918351
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 25 Jan 2012 15:46:43 -0200
+
 linux-meta (3.0.0.16.18) oneiric-proposed; urgency=low
 
   * Bump ABI
