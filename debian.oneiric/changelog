@@ -1,16 +1,26 @@
-linux-lts-backport-oneiric (3.0.0-15.25~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-15.26~lucid1) lucid-security; urgency=low
+
+  [ Upstream Kernel Changes ]
+
+  * Revert "proc: enable writing to /proc/pid/mem"
+    - LP: #919115
+    - CVE-2012-0056
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 20 Jan 2012 10:19:07 +0000
+
+linux (3.0.0-15.25) oneiric-proposed; urgency=low
 
   [Brad Figg]
 
   * Release Tracking Bug
-    - LP: #911103
+    - LP: #910894
 
   [ Upstream Kernel Changes ]
 
   * Revert "clockevents: Set noop handler in clockevents_exchange_device()"
     - LP: #904569
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 04 Jan 2012 17:01:07 -0200
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 02 Jan 2012 07:56:40 -0800
 
 linux (3.0.0-15.24) oneiric-proposed; urgency=low
 
