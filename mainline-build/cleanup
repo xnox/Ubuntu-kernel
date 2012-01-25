@@ -10,5 +10,6 @@ esac
 "$here/cleanup-daily-one" "$HOME/public_html/mainline/daily"
 "$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-next"
 "$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-intel-next"
+"$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-intel-fixes"
 
 exit 0
