@@ -1,9 +1,46 @@
-linux-lts-backport-natty (2.6.38-13.54~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-13.55~lucid1) lucid-proposed; urgency=low
+
+  [Brad Figg]
+
+  * Release Tracking Bug
+    - LP: #921726
+
+  [ Upstream Kernel Changes ]
+
+  * fuse: check size of FUSE_NOTIFY_INVAL_ENTRY message, CVE-2011-3353
+    - LP: #905058
+    - CVE-2011-3353
+  * KVM: x86: Prevent starting PIT timers in the absence of irqchip support
+    - LP: #911303
+    - CVE-2011-4622
+  * sched, x86: Avoid unnecessary overflow in sched_clock
+    - LP: #805341
+  * use cache type functions for arch_get_unmapped_area
+    - LP: #861296
+  * topdown mmap support
+    - LP: #861296
+  * xfs: validate acl count
+    - LP: #917706
+    - CVE-2012-0038
+  * xfs: fix acl count validation in xfs_acl_from_disk()
+    - LP: #917706
+    - CVE-2012-0038
+  * drm: integer overflow in drm_mode_dirtyfb_ioctl()
+    - LP: #917838
+    - CVE-2012-0044
+  * x86/PCI: amd: factor out MMCONFIG discovery
+    - LP: #647043
+  * PNP: work around Dell 1536/1546 BIOS MMCONFIG bug that
+    - LP: #647043
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 25 Jan 2012 18:19:35 -0200
+
+linux (2.6.38-13.54) natty-proposed; urgency=low
 
   [Herton R. Krzesinski]
 
   * Release Tracking Bug
-    - LP: #911710
+    - LP: #911195
 
   [ Alex Bligh ]
 
@@ -39,7 +76,7 @@ linux-lts-backport-natty (2.6.38-13.54~lucid1) lucid-proposed; urgency=low
   * Support for Terratec G1
     - LP: #821061
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 04 Jan 2012 09:47:24 -0200
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 03 Jan 2012 10:03:15 -0200
 
 linux (2.6.38-13.53) natty-proposed; urgency=low
 

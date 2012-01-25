@@ -2966,16 +2966,12 @@ x25_asy
 x38_edac
 xc5000
 xcbc
-xen-blkfront
-xenbus_probe_frontend
 xen-evtchn
 xen-fbfront
 xenfs
 xen-gntdev
 xen-kbdfront
-xen-netfront
 xen-pcifront
-xen-platform-pci
 xfrm4_mode_beet
 xfrm4_mode_transport
 xfrm4_mode_tunnel

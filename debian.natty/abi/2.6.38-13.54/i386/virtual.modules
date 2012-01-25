@@ -4,7 +4,6 @@
 8390
 9p
 acpi_ipmi
-acpi_memhotplug
 acpi_pad
 acpiphp
 act_csum
@@ -18,8 +17,8 @@ act_simple
 act_skbedit
 adfs
 aes_generic
+aes-i586
 aesni-intel
-aes-x86_64
 af_802154
 af_alg
 affs
@@ -32,6 +31,7 @@ algif_hash
 algif_skcipher
 ansi_cprng
 anubis
+apm
 appletalk
 arc4
 arptable_filter
@@ -49,6 +49,7 @@ autofs4
 ax25
 befs
 bfs
+binfmt_aout
 binfmt_misc
 blowfish
 bonding
@@ -141,6 +142,7 @@ em_meta
 em_nbyte
 em_text
 em_u32
+e_powersaver
 eql
 erst-dbg
 esp4
@@ -161,7 +163,6 @@ garp
 gcm
 gf128mul
 gfs2
-ghash-clmulni-intel
 ghash-generic
 ghes
 gre
@@ -414,7 +415,7 @@ romfs
 rose
 rxkad
 salsa20_generic
-salsa20-x86_64
+salsa20-i586
 sch_atm
 sch_cbq
 sch_drr
@@ -465,7 +466,6 @@ snd-seq-virmidi
 snd-timer
 softdog
 soundcore
-speedstep-lib
 squashfs
 stp
 sunrpc
@@ -498,7 +498,7 @@ tunnel4
 tunnel6
 twofish_common
 twofish_generic
-twofish-x86_64
+twofish-i586
 ubifs
 udf
 ufs
@@ -524,7 +524,6 @@ xen-fbfront
 xenfs
 xen-gntdev
 xen-kbdfront
-xen-platform-pci
 xfrm4_mode_beet
 xfrm4_mode_transport
 xfrm4_mode_tunnel
