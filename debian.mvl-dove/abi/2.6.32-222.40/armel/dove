@@ -6742,6 +6742,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x6ef286a9	cpufreq_unregister_driver
 EXPORT_SYMBOL_GPL vmlinux 0x6ef67bfa	ata_dev_pair
 EXPORT_SYMBOL_GPL vmlinux 0x6f09ba8a	ubi_register_volume_notifier
 EXPORT_SYMBOL_GPL vmlinux 0x6f5c80fd	crypto_drop_spawn
+EXPORT_SYMBOL_GPL vmlinux 0x6fcc736f	__get_user_pages_fast
 EXPORT_SYMBOL_GPL vmlinux 0x6ff607b6	crypto_get_default_rng
 EXPORT_SYMBOL_GPL vmlinux 0x7018b240	rtnl_link_unregister
 EXPORT_SYMBOL_GPL vmlinux 0x701ffc8c	ubi_open_volume
