@@ -3080,8 +3080,6 @@ x38_edac
 xc5000
 xcbc
 xen-blkback
-xen-blkfront
-xenbus_probe_frontend
 xen-evtchn
 xen-fbfront
 xenfs
@@ -3089,9 +3087,7 @@ xen-gntalloc
 xen-gntdev
 xen-kbdfront
 xen-netback
-xen-netfront
 xen-pcifront
-xen-platform-pci
 xen_wdt
 xfrm4_mode_beet
 xfrm4_mode_transport
