@@ -200,6 +200,10 @@ static int ehci_hcd_omap_probe(struct platform_device *pdev)
 		if (gpio_is_valid(pdata->reset_gpio_port[1]))
 			gpio_set_value_cansleep(pdata->reset_gpio_port[1], 0);
 
+                if (gpio_is_valid(pdata->reset_gpio_port[2]))
+                        gpio_request_one(pdata->reset_gpio_port[2],
+                                         GPIOF_OUT_INIT_LOW, "USB3 PHY reset"); 
+
 		/* Hold the PHY in RESET for enough time till DIR is high */
 		udelay(10);
 	}
@@ -257,6 +261,9 @@ static int ehci_hcd_omap_probe(struct platform_device *pdev)
 
 		if (gpio_is_valid(pdata->reset_gpio_port[1]))
 			gpio_set_value_cansleep(pdata->reset_gpio_port[1], 1);
+
+		if (gpio_is_valid(pdata->reset_gpio_port[2]))
+			gpio_set_value(pdata->reset_gpio_port[2], 1);
 	}
 
 	/* root ports should always stay powered */
@@ -267,6 +274,15 @@ static int ehci_hcd_omap_probe(struct platform_device *pdev)
 err_add_hcd:
 	disable_put_regulator(pdata);
 	pm_runtime_put_sync(dev);
+
+	if (pdata->phy_reset) {
+		if (gpio_is_valid(pdata->reset_gpio_port[0]))
+			gpio_free(pdata->reset_gpio_port[0]);
+		if (gpio_is_valid(pdata->reset_gpio_port[1]))
+			gpio_free(pdata->reset_gpio_port[1]);
+		if (gpio_is_valid(pdata->reset_gpio_port[2]))
+			gpio_free(pdata->reset_gpio_port[2]);
+	}
 
 err_io:
 	iounmap(regs);
