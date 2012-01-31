@@ -1,0 +1,225 @@
+#!/usr/bin/env python
+#
+# This application takes a list json file as input. That json file
+# contains a 'dictionary' of key value pairs where the key is a
+# LauncPad bug id and the value is the source package of interest.
+#
+
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+from os                                 import listdir
+from json                               import dumps
+
+from lib.core.utils                     import stdo, error, json_load
+from lib.core.dbg                       import Dbg
+
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [<options>] <modified-bug-file.json>                                              \n" % defaults['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("                         Recognized debug options:                                           \n")
+        stdo("                             enter                                                           \n")
+        stdo("                             leave                                                           \n")
+        stdo("                             verbose                                                         \n")
+        stdo("                             cfg                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("        --job-name=<string>  Filter data, only including files with the JOB_NAME equal to    \n")
+        stdo("                         the specified string.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --mute-metrics=<comma delimited list> Do not display the listed metrics              \n")
+        stdo("                                                                                             \n")
+        stdo("        --only-metrics=<comma delimited list> Only display the listed metrics                \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --debug=\"enter,leave,verbose\"                                                   \n" % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            cfg = defaults
+
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'debug=', 'job-name=', 'mute-metrics=', 'only-metrics=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    cfg['verbose'] = True
+                    if 'verbose' not in Dbg.levels:
+                        Dbg.levels.append('verbose')
+
+                elif (opt == '--job-name'):
+                    cfg['job-name'] = val
+
+                elif (opt == '--mute-metrics'):
+                    cfg['mute'] = val.split(',')
+
+                elif (opt == '--only-metrics'):
+                    if 'mute' in cfg:
+                        raise CmdlineError("You can't use both --mute-metrics and --only-metrics")
+                    cfg['only'] = val.split(',')
+
+                elif opt in ('--debug'):
+                    cfg['debug'] = val.split(',')
+                    for level in cfg['debug']:
+                        if level not in Dbg.levels:
+                            Dbg.levels.append(level)
+
+            if len(args) < 1:
+                raise CmdlineError('You must supply at least one benchmark data file to process')
+
+            cfg['datafiles'] = args
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+        return cfg
+
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# MergeBenchmarkData
+#
+class MergeBenchmarkData():
+    """
+
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("MergeBenchmarkData.__init__")
+        self.cfg    = cfg
+        self.tests = {}
+
+        Dbg.leave("MergeBenchmarkData.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        Dbg.enter("MergeBenchmarkData.initialize")
+
+        return
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("MergeBenchmarkData.main")
+
+        try:
+            self.initialize()
+            # Open each file on the command line and process it
+            for fname in self.cfg['datafiles']:
+                data = json_load(fname)
+                if 'job-name' in self.cfg:
+                    if self.cfg['job-name'] != data['meta']['JOB_NAME']:
+                        continue
+                print 'Processing file: ', fname
+                # filter metrics as requested
+                mkeys = data['metrics'].keys()
+                if 'only' in self.cfg:
+                    for metric in mkeys:
+                        if metric != self.cfg['only']:
+                            print 'deleting metric ', metric
+                            del data['metrics'][metric]
+                elif 'mute' in self.cfg:
+                    for metric in mkeys:
+                        if metric in self.cfg['mute']:
+                            print 'muting metric ', metric
+                            del data['metrics'][metric]
+
+                # Save this test, as the BUILD_ID string, which can be sorted chronologically
+                self.tests[data['meta']['BUILD_ID']] = data
+
+            # now that we're done
+            print dumps(self.tests, sort_keys=True, indent=4)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("MergeBenchmarkData.main")
+        return
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = MergeBenchmarkData(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+
