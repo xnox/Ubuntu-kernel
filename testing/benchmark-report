@@ -1,0 +1,315 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from os                                 import path, listdir
+from getopt                             import getopt, GetoptError
+from datetime                           import datetime
+import json
+
+from lib.core.utils                     import stdo, error, json_load, file_load, Exit, FileDoesntExist, dump, o2ascii
+from lib.core.dbg                       import Dbg
+from lib.core.cfg                       import Cfg, CfgError
+
+from mako.template                      import Template, exceptions
+
+# itemgetter
+#
+def itemgetter(*items):
+    if len(items) == 1:
+        item = items[0]
+        def g(obj):
+            return obj[item]
+    else:
+        def g(obj):
+            return tuple(obj[item] for item in items)
+    return g
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--debug=<dbg options>] [bug-id,bug-id,..]                            \n" % defaults['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("                         Recognized debug options:                                           \n")
+        stdo("                             enter                                                           \n")
+        stdo("                             leave                                                           \n")
+        stdo("                             verbose                                                         \n")
+        stdo("                             cfg                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("        --title=<string>                                                                     \n")
+        stdo("                                                                                             \n")
+        stdo("        --no-secondary                                                                       \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --debug=\"enter,leave,verbose\"                                                   \n" % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            cfg = defaults
+            cfg['title'] = 'Default Title'
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'debug=', 'title=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    cfg['verbose'] = True
+                    if 'verbose' not in Dbg.levels:
+                        Dbg.levels.append('verbose')
+
+                elif (opt == '--title'):
+                    cfg['title'] = val
+
+                elif opt in ('--debug'):
+                    cfg['debug'] = val.split(',')
+                    for level in cfg['debug']:
+                        if level not in Dbg.levels:
+                            Dbg.levels.append(level)
+
+            if result: # No errors yet
+
+                if len(args) > 0:
+                    cfg['analyst-files'] = args
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+        return cfg
+
+
+# AnalysisReport
+#
+class AnalysisReport():
+    """
+    This class/script builds a number of reports based on the data in a "report
+    configuration file" and the bug database.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("AnalysisReport.__init__")
+        self.cfg    = cfg
+        Dbg.leave("AnalysisReport.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        Dbg.enter("AnalysisReport.initialize")
+
+        try:
+            # Process the command line arguments, and any configuration file options. Make sure
+            # that any required parameters have been provided.
+            #
+            self.cfg = Cfg.merge_options(defaults, self.cfg)
+
+            #self.primary_template = file_load('%sbug-table-template.html' % argv[0].replace('analysis-report', ''))
+            self.chart_template   = file_load('%shighchart-template.html' % argv[0].replace('analysis-report', ''))
+
+
+        except KeyboardInterrupt:
+            Dbg.leave("AnalysisReport.initialize")
+            raise Exit()
+
+        except CfgError as e:
+            error(e)
+            Dbg.leave("AnalysisReport.initialize")
+            raise Exit()
+
+        Dbg.leave("AnalysisReport.initialize")
+        return
+
+    def highchart(self, data, title):
+
+        tests      = []
+        versions   = []
+        metrics    = {}
+
+        sortedTests = sorted(data.iteritems(), key=itemgetter(1), reverse=False)
+        # may need to display kernel versions and not test dates
+        for k in sortedTests:
+            tests.append("'%s'" % k[0])
+            testrecord = data[k[0]]
+            kvers = testrecord['meta']['sysinfo-uname'].split()[0]
+            versions.append(kvers)
+            for metricname in testrecord['metrics']:
+                if metricname not in metrics:
+                    metrics[metricname] = []
+                metrics[metricname].append(testrecord['metrics'][metricname])
+
+        sortedMetrics = sorted(metrics.keys())
+        chart_series  = '            series: [\n'
+        chart_series  += '              {\n'
+        for metricname in sortedMetrics[:-1]:
+            chart_series += '                name: \'%s\',\n' % metricname
+            chart_series += '                data: [%s]\n' % (', '.join(metrics[metricname]))
+            chart_series += '              },{\n'
+        metricname = sortedMetrics[-1]
+        chart_series += '                name: \'%s\',\n' % metricname
+        chart_series += '                data: [%s]\n' % (', '.join(metrics[metricname]))
+        chart_series += '              }\n'
+        chart_series += '            ]\n'
+
+        js  = ""
+        js += "$(function () {\n"
+        js += "        chart = new Highcharts.Chart({\n"
+        js += "            chart: {\n"
+        js += "                renderTo: 'highchart',\n"
+        js += "                defaultSeriesType: 'line'\n"
+        js += "            },\n"
+        js += "            title: {\n"
+        js += "                text: '%s'\n" % title
+        js += "            },\n"
+        #js += "            legend: {\n"
+        #js += "                enabled: false\n"
+        #js += "            },\n"
+        #js += "            legend: {\n"
+        #js += "                reversed: true\n"
+        #js += "            },\n"
+
+        js += "            xAxis: {\n"
+        js += "                categories: [%s]\n" % (', '.join(tests))
+        #js += "                title: {\n"
+        #js += "                    text: 'Test'\n"
+        #js += "                }\n"
+        js += "            },\n"
+        #js += "            yAxis: {\n"
+        #js += "                title: {\n"
+        #js += "                    text: 'Time (seconds)'\n"
+        #js += "                },\n"
+        #js += "                min: 0\n"
+        #js += "            },\n"
+        js += "            plotOptions: {\n"
+        js += "                series: {\n"
+        js += "                    stacking: 'normal'\n"
+        js += "                }\n"
+        js += "            },\n"
+        #js += "            tooltip: {\n"
+        #js += "                formatter: function() {\n"
+        #js += "                    return '<b>' + this.series.name + '</b> : ' + this.y + ' bugs';\n"
+        #js += "                }\n"
+        #js += "            },\n"
+        js += chart_series
+        js += "        });\n"
+        js += "        });\n"
+        #js += "});\n"
+        return js
+
+
+    # report
+    #
+    def report(self, data):
+        # Get the main keys, so we can sort them (which ends up chronological) 
+        #
+                    
+        # The primary key graph files.
+        #
+        if True:
+            # highchart(data, fid, title)
+            hc = self.highchart(data, self.cfg['title'])
+            #print hc
+            with open('index.html', 'w') as f:
+                f.write(self.chart_template % (self.cfg['title'], hc))
+
+        if False:
+            mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('analysis-report', '')))
+            with open('index.html', 'w') as f:
+                f.write(mako_template.render(template_data = data, report_title = self.cfg['title'], has_secondary_keys = self.cfg['secondary']))
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("AnalysisReport.main")
+
+        try:
+            self.initialize()
+
+            for fid in self.cfg['analyst-files']:
+                data = json_load(fid)
+                self.report(data)
+
+        except FileDoesntExist as e:
+            e.print_std_error()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("AnalysisReport.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    defaults['secondary'] = True
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = AnalysisReport(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
