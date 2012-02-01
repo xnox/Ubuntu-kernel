@@ -2,7 +2,13 @@
 
 set +e
 
-./merge_benchmark_data --job-name=bonnie-test --mute-metrics="size{perf}" sample-bench-data/* > ./bonnie.json
+./merge_benchmark_data --job-name=bonnie-test --mute-metrics="size{perf}" sample-bench-data/*.json > ./bonnie.json
 ./benchmark-report --title="Bonnie Benchmark" ./bonnie.json
+mv index.html bonnie.html
 
-scp index.html ai4qr.com:ai4qr.com/foo/
+./merge_benchmark_data --job-name=dbench-test sample-bench-data/*.json > ./dbench.json
+./benchmark-report --title="Dbench Benchmark" ./dbench.json
+mv index.html dbench.html
+
+
+scp dbench.html bonnie.html ai4qr.com:ai4qr.com/foo/
