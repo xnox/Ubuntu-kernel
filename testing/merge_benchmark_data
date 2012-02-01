@@ -176,18 +176,15 @@ class MergeBenchmarkData():
                 if 'job-name' in self.cfg:
                     if self.cfg['job-name'] != data['meta']['JOB_NAME']:
                         continue
-                print 'Processing file: ', fname
                 # filter metrics as requested
                 mkeys = data['metrics'].keys()
                 if 'only' in self.cfg:
                     for metric in mkeys:
                         if metric != self.cfg['only']:
-                            print 'deleting metric ', metric
                             del data['metrics'][metric]
                 elif 'mute' in self.cfg:
                     for metric in mkeys:
                         if metric in self.cfg['mute']:
-                            print 'muting metric ', metric
                             del data['metrics'][metric]
 
                 # Save this test, as the BUILD_ID string, which can be sorted chronologically
