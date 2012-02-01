@@ -1,0 +1,8 @@
+#!/bin/sh -x
+
+set +e
+
+./merge_benchmark_data --job-name=bonnie-test --mute-metrics="size{perf}" sample-bench-data/* > ./bonnie.json
+./benchmark-report --title="Bonnie Benchmark" ./bonnie.json
+
+scp index.html ai4qr.com:ai4qr.com/foo/
