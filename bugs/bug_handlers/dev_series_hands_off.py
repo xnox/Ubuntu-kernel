@@ -67,6 +67,14 @@ class DevSeriesHandsOff(BugHandler):
                 Dbg.why('bot-stop-nagging tag exists\n')
                 break
 
+            # This bugs issue has been identified and handed off to the graphics
+            # team.
+            #
+            if 'kernel-handoff-graphics' in bug.tags:
+                retval = False
+                Dbg.why('kernel-handoff-graphics tag exists\n')
+                break
+
             # As you'd expect, we shouldn't be touching private bugs.
             #
             if bug.private:
