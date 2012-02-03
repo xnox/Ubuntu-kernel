@@ -179,13 +179,13 @@ class AnalysisReport():
         versions   = []
         metrics    = {}
 
-        sortedTests = sorted(data.iteritems(), key=itemgetter(1), reverse=False)
+        sortedTests = sorted(data.iteritems(), key=itemgetter(0), reverse=False)
         # may need to display kernel versions and not test dates
         for k in sortedTests:
             testrecord = data[k[0]]
             kvers = testrecord['meta']['sysinfo-uname'].split()[0]
             testlabels.append("'%s'" % (kvers))
-            #testlabels.append("'%s<%s>'" % (k[0],kvers))
+            #testlabels.append("'%s'" % (k[0]))
             versions.append(kvers)
             for metricname in testrecord['metrics']:
                 if metricname not in metrics:
