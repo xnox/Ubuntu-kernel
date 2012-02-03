@@ -142,6 +142,7 @@ class CheckComponentCli(StdApp):
         if 'staging' in self.cfg:
             self.defaults['launchpad_services_root'] = 'qastaging'
         self.defaults['pocket'] = 'proposed'
+        self.defaults['read_only'] = True
         self.lp = LaunchpadService(self.defaults)
         return
 
