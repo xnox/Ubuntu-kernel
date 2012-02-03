@@ -127,9 +127,9 @@ class Cmdline:
         return cfg
 
 
-# AnalysisReport
+# BenchmarkReport
 #
-class AnalysisReport():
+class BenchmarkReport():
     """
     This class/script builds a number of reports based on the data in a "report
     configuration file" and the bug database.
@@ -138,9 +138,9 @@ class AnalysisReport():
     # __init__
     #
     def __init__(self, cfg):
-        Dbg.enter("AnalysisReport.__init__")
+        Dbg.enter("BenchmarkReport.__init__")
         self.cfg    = cfg
-        Dbg.leave("AnalysisReport.__init__")
+        Dbg.leave("BenchmarkReport.__init__")
 
     # initialize
     #
@@ -149,7 +149,7 @@ class AnalysisReport():
         A separate initialize that we can control when it gets called (not
         when the object is instantiated).
         """
-        Dbg.enter("AnalysisReport.initialize")
+        Dbg.enter("BenchmarkReport.initialize")
 
         try:
             # Process the command line arguments, and any configuration file options. Make sure
@@ -162,15 +162,15 @@ class AnalysisReport():
 
 
         except KeyboardInterrupt:
-            Dbg.leave("AnalysisReport.initialize")
+            Dbg.leave("BenchmarkReport.initialize")
             raise Exit()
 
         except CfgError as e:
             error(e)
-            Dbg.leave("AnalysisReport.initialize")
+            Dbg.leave("BenchmarkReport.initialize")
             raise Exit()
 
-        Dbg.leave("AnalysisReport.initialize")
+        Dbg.leave("BenchmarkReport.initialize")
         return
 
     def highchart(self, data, title):
@@ -282,7 +282,7 @@ class AnalysisReport():
     # main
     #
     def main(self):
-        Dbg.enter("AnalysisReport.main")
+        Dbg.enter("BenchmarkReport.main")
 
         try:
             self.initialize()
@@ -302,7 +302,7 @@ class AnalysisReport():
         except Exit:
             pass
 
-        Dbg.leave("AnalysisReport.main")
+        Dbg.leave("BenchmarkReport.main")
         return
 
 
@@ -316,7 +316,7 @@ if __name__ == '__main__':
     #
     cmdline = Cmdline()
     try:
-        app = AnalysisReport(cmdline.process(argv, defaults))
+        app = BenchmarkReport(cmdline.process(argv, defaults))
         app.main()
     except CmdlineError as e:
         cmdline.error(e.msg, defaults)
