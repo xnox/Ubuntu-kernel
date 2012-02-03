@@ -158,7 +158,7 @@ class AnalysisReport():
             self.cfg = Cfg.merge_options(defaults, self.cfg)
 
             #self.primary_template = file_load('%sbug-table-template.html' % argv[0].replace('analysis-report', ''))
-            self.chart_template   = file_load('%shighchart-template.html' % argv[0].replace('analysis-report', ''))
+            self.chart_template   = file_load('%shighchart-template.html' % argv[0].replace('benchmark-report', ''))
 
 
         except KeyboardInterrupt:
@@ -275,7 +275,7 @@ class AnalysisReport():
                 f.write(self.chart_template % (self.cfg['title'], hc))
 
         if False:
-            mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('analysis-report', '')))
+            mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('benchmark-report', '')))
             with open('index.html', 'w') as f:
                 f.write(mako_template.render(template_data = data, report_title = self.cfg['title'], has_secondary_keys = self.cfg['secondary']))
 
