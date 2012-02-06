@@ -86,22 +86,20 @@ chart_series += '                ]'
                    },
                    min: 0
                 },
-                plotOptions: {
-                    series: {
-                        stacking: 'normal'
-                    }
-                },
                 tooltip: {
                     formatter: function() {
                         return '<b>' + this.series.name + '</b> : ' + this.y;
                     }
                 },
-                ${chart_series},
                 plotOptions: {
-                    series: {
-                        stacking: 'normal'
+                    line: {
+                        dataLabels: {
+                           enabled: true
+                        },
+                        enableMouseTracking: false
                     }
                 },
+                ${chart_series}
             });
         });
 
