@@ -180,7 +180,7 @@ class MergeBenchmarkData():
                 mkeys = data['metrics'].keys()
                 if 'only' in self.cfg:
                     for metric in mkeys:
-                        if metric != self.cfg['only']:
+                        if metric not in self.cfg['only']:
                             del data['metrics'][metric]
                 elif 'mute' in self.cfg:
                     for metric in mkeys:
