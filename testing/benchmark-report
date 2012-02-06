@@ -255,7 +255,6 @@ class BenchmarkReport():
         js += chart_series
         js += "        });\n"
         js += "        });\n"
-        #js += "});\n"
         return js
 
 
@@ -267,17 +266,15 @@ class BenchmarkReport():
                     
         # The primary key graph files.
         #
-        if True:
-            # highchart(data, fid, title)
+        if False:
             hc = self.highchart(data, self.cfg['title'])
-            #print hc
             with open('index.html', 'w') as f:
                 f.write(self.chart_template % (self.cfg['title'], hc))
 
-        if False:
+        if True:
             mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('benchmark-report', '')))
             with open('index.html', 'w') as f:
-                f.write(mako_template.render(template_data = data, report_title = self.cfg['title'], has_secondary_keys = self.cfg['secondary']))
+                f.write(mako_template.render(template_data = data, report_title = self.cfg['title']))
 
     # main
     #
