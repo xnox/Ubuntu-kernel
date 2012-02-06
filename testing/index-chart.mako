@@ -12,7 +12,7 @@ for k in sortedTests:
     testrecord = template_data[k[0]]
     kvers = testrecord['meta']['sysinfo-uname'].split()[0]
     testlabels.append("%s" % (kvers.encode('ascii','ignore')))
-    #testlabels.append("'%s'" % (k[0]))
+    #testlabels.append("%s-%s" % (k[0].encode('ascii','ignore'),kvers.encode('ascii','ignore')))
     versions.append(kvers)
     for metricname in testrecord['metrics']:
         if metricname not in metrics:
@@ -88,15 +88,7 @@ chart_series += '                ]'
                 },
                 tooltip: {
                     formatter: function() {
-                        return '<b>' + this.series.name + '</b> : ' + this.y;
-                    }
-                },
-                plotOptions: {
-                    line: {
-                        dataLabels: {
-                           enabled: true
-                        },
-                        enableMouseTracking: false
+                        return this.x + '<br>' + '<b>' + this.series.name + '</b> : ' + this.y;
                     }
                 },
                 ${chart_series}
