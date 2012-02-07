@@ -5,6 +5,8 @@ import operator
 testlabels = []
 versions   = []
 metrics    = {}
+minY       = None
+maxY       = None
 
 sortedTests = sorted(template_data.iteritems(), key=operator.itemgetter(0), reverse=False)
 # may need to display kernel versions and not test dates
@@ -24,6 +26,16 @@ chart_series  = 'series: [\n'
 chart_series  += '                    {\n'
 
 for metricname in sortedMetrics[:-1]:
+    for mv in metrics[metricname]:
+        value = float(mv)
+        if minY is None:
+            minY = value
+        elif value < minY:
+            minY = value
+        if maxY is None:
+            maxY = value
+        elif value > maxY:
+            maxY = value
     if metricname.endswith("{perf}"):
         displayname = metricname[:-len("{perf}")]
     else:
@@ -33,6 +45,16 @@ for metricname in sortedMetrics[:-1]:
     chart_series += '                    },{\n'
 
 metricname = sortedMetrics[-1]
+for mv in metrics[metricname]:
+    value = float(mv)
+    if minY is None:
+        minY = value
+    elif value < minY:
+        minY = value
+    if maxY is None:
+        maxY = value
+    elif value > maxY:
+        maxY = value
 if metricname.endswith("{perf}"):
     displayname = metricname[:-len("{perf}")]
 else:
@@ -60,7 +82,7 @@ chart_series += '                ]'
         </style>
     </head>
     <body>
-    <div id="highchart" style="width: 1000px; height: 2400px;"></div>
+    <div id="highchart" style="width: 1000px; height: 1000px;"></div>
         <script type="text/javascript">
         $(function () {
             chart = new Highcharts.Chart({
@@ -83,8 +105,7 @@ chart_series += '                ]'
                 yAxis: {
                    title: {
                        text: 'Benchmark Result'
-                   },
-                   min: 0
+                   }
                 },
                 tooltip: {
                     formatter: function() {
