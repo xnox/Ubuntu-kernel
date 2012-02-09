@@ -2,6 +2,7 @@
 #
 # A script for processing all the "New" bugs.
 #
+import sys
 
 from core.bug_engine                    import BugEngine
 from core.dbg                           import Dbg
@@ -9,6 +10,7 @@ from core.dbg                           import Dbg
 import bug_handlers.dev_series  # This imports all the bug handler plugins that this script
                                 # will use.
 
+from ktl.debian                         import Debian
 from ktl.ubuntu                         import Ubuntu
 from ktl.utils                          import o2ascii
 
@@ -48,6 +50,25 @@ class ProcDevSeriesBugs(BugEngine):
         # release pocket.
         #
         release_kernel = self.cfg['sru_data']['releases'][dev_series]['linux']['Release']
+        release_kernel_meta = self.cfg['sru_data']['releases'][dev_series]['linux-meta']['Release']
+
+        m = Debian.version_rc.match(release_kernel)
+        if m != None:
+            kernel_abi = m.group(2)
+
+        m = Debian.version_rc.match(release_kernel_meta)
+        if m != None:
+            meta_abi = m.group(2)
+
+        # If the kernel-meta package abi is not the same as the kernel package abi
+        # we are somewhere in the middle of a new kernel upload/release. Lets just
+        # hold off until they match.
+        #
+        if kernel_abi != meta_abi:
+            Dbg.verbose("The kernel abi does not match the kernel-meta package abi.\n")
+            Dbg.verbose("       release_kernel: '%s'  abi: %s\n" % (release_kernel, kernel_abi))
+            Dbg.verbose("  release_kernel_meta: '%s'  abi: %s\n" % (release_kernel_meta, meta_abi))
+            sys.exit(1)
 
         try:
             search_tags = self.cfg['search_criteria_tags']
@@ -62,6 +83,7 @@ class ProcDevSeriesBugs(BugEngine):
 
         self.cfg['development_series'] = dev_series
         self.cfg['released_development_kernel'] = o2ascii(release_kernel)
+
 
 if __name__ == '__main__':
     Dbg.levels = ['verbose', 'what', 'why', 'vbi']
