@@ -199,6 +199,10 @@ class Reporter():
             Dbg.leave("Reporter.initialize")
             raise Exit()
 
+        except FileDoesntExist as e:
+            e.print_std_error()
+            raise Exit()
+
         Dbg.leave("Reporter.initialize")
         return
 
@@ -206,12 +210,14 @@ class Reporter():
     #
     def main(self):
         Dbg.enter("Reporter.main")
+        retval = -1
 
         try:
             self.initialize()
 
             try:
                 stdout.write(self.mako_template.render(report_title = self.cfg['title'], template_data = self.template_data, timestamp = datetime.utcnow()))
+                retval = 0
             except:
                 print exceptions.text_error_template().render()
 
@@ -224,7 +230,7 @@ class Reporter():
             pass
 
         Dbg.leave("Reporter.main")
-        return
+        return retval
 
 
 if __name__ == '__main__':
@@ -237,7 +243,7 @@ if __name__ == '__main__':
     cmdline = Cmdline()
     try:
         app = Reporter(cmdline.process(argv, defaults))
-        app.main()
+        exit(app.main())
     except CmdlineError as e:
         cmdline.error(e.msg, defaults)
 
