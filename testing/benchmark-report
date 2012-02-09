@@ -173,15 +173,29 @@ class BenchmarkReport():
         Dbg.leave("BenchmarkReport.initialize")
         return
 
+    def setMaxMinY(value):
+        if self.minY is None:
+            self.minY = value
+        elif value < self.minY:
+            self.minY = value
+        if self.maxY is None:
+            self.maxY = value
+        elif value > self.maxY:
+            self.maxY = value
+        return
+
     def highchart(self, data, title):
 
         testlabels = []
         versions   = []
         metrics    = {}
+        self.minY       = None
+        self.maxY       = None
 
         sortedTests = sorted(data.iteritems(), key=itemgetter(0), reverse=False)
         # may need to display kernel versions and not test dates
         for k in sortedTests:
+            # scan all metrics and make sure we have all metric names in a list
             testrecord = data[k[0]]
             kvers = testrecord['meta']['sysinfo-uname'].split()[0]
             testlabels.append("'%s'" % (kvers))
@@ -196,6 +210,7 @@ class BenchmarkReport():
         chart_series  = '            series: [\n'
         chart_series  += '              {\n'
         for metricname in sortedMetrics[:-1]:
+            setMaxMinY(float(metrics[metricname]))
             if metricname.endswith("{perf}"):
                 displayname = metricname[:-len("{perf}")]
             else:
@@ -204,6 +219,7 @@ class BenchmarkReport():
             chart_series += '                data: [%s]\n' % (', '.join(metrics[metricname]))
             chart_series += '              },{\n'
         metricname = sortedMetrics[-1]
+        setMaxMinY(float(metrics[metricname]))
         if metricname.endswith("{perf}"):
             displayname = metricname[:-len("{perf}")]
         else:
@@ -239,14 +255,13 @@ class BenchmarkReport():
         #js += "            yAxis: {\n"
         #js += "                title: {\n"
         #js += "                    text: 'Time (seconds)'\n"
-        #js += "                },\n"
-        #js += "                min: 0\n"
+        #js += "                }\n"
         #js += "            },\n"
-        js += "            plotOptions: {\n"
-        js += "                series: {\n"
-        js += "                    stacking: 'normal'\n"
-        js += "                }\n"
-        js += "            },\n"
+        #js += "            plotOptions: {\n"
+        #js += "                series: {\n"
+        #js += "                    stacking: 'normal'\n"
+        #js += "                }\n"
+        #js += "            },\n"
         #js += "            tooltip: {\n"
         #js += "                formatter: function() {\n"
         #js += "                    return '<b>' + this.series.name + '</b> : ' + this.y + ' bugs';\n"
@@ -255,7 +270,6 @@ class BenchmarkReport():
         js += chart_series
         js += "        });\n"
         js += "        });\n"
-        #js += "});\n"
         return js
 
 
@@ -267,17 +281,15 @@ class BenchmarkReport():
                     
         # The primary key graph files.
         #
-        if True:
-            # highchart(data, fid, title)
+        if False:
             hc = self.highchart(data, self.cfg['title'])
-            #print hc
             with open('index.html', 'w') as f:
                 f.write(self.chart_template % (self.cfg['title'], hc))
 
-        if False:
+        if True:
             mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('benchmark-report', '')))
             with open('index.html', 'w') as f:
-                f.write(mako_template.render(template_data = data, report_title = self.cfg['title'], has_secondary_keys = self.cfg['secondary']))
+                f.write(mako_template.render(template_data = data, report_title = self.cfg['title']))
 
     # main
     #
