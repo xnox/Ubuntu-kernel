@@ -49,6 +49,20 @@ clean: debian/control
 	# This gets rid of the d-i packages in control
 	cp -f debian/control.stub debian/control
 
+	# Prepare the mammoth patchsets for openvz and xen from
+	# their flattended sources.
+	for i in debian/binary-custom.d/*; do \
+		if [ -d $$i/src ] ; then \
+			mkdir -p $$i/patchset; \
+			if ! diff -r -u --new-file --exclude=.git --exclude=debian --exclude=.gitignore \
+				--from-file=. $$i/src > $$i/patchset/000.patch; then \
+				echo "Ignore this error. diff returns 1 if any files are different." > /dev/null; \
+			fi; \
+			rm -rf $$i/src; \
+		fi; \
+	done
+
+		
 # Builds the image, arch headers and debug packages
 include debian/rules.d/2-binary-arch.mk
 
