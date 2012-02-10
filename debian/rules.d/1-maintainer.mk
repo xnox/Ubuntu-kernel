@@ -70,6 +70,7 @@ printchanges:
 		perl -w -f debian/scripts/misc/git-ubuntu-log $(ubuntu_log_opts)
 
 insertchanges:
+	@perl -w -f debian/scripts/misc/validate-patch-range Ubuntu-$(release)-$(prev_revision) HEAD
 	@perl -w -f debian/scripts/misc/insert-changes.pl
 
 diffupstream:

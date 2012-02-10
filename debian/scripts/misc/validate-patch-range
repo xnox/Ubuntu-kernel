@@ -1,0 +1,70 @@
+#!/usr/bin/perl
+#
+# Check that all patches applied to the main sources have
+# also been applied to the binary-custom sources. This is
+# run at insertchanges time in order to ensure that
+# none of the bianry-custom flavours got missed. If a patch
+# simply isn't relevant to a binary-custom file, then just touch
+# that file and commit it so that it _looks_ like
+# it was patched.
+#
+
+use strict;
+
+my ($from, $to) = @ARGV;
+
+my $custom = "^debian/binary-custom.d/([^/]*)/src";
+
+my @ports = ('openvz', 'xen');
+
+my ($commit, $file, %where, $ignore);
+my $err = 0;
+
+sub report {
+	my $port;
+
+	# If this patch is affecting the source, then confirm it also is
+	# affecting all of the ports.
+	if ($ignore == 0 && $where{'main'}) {
+		for my $port (@ports) {
+			if (!exists $where{$port}) {
+				warn "$commit: not ported to $port\n";
+				$err++;
+			}
+		}
+	}
+}
+
+open(LOG, "git log --raw $from..$to|") ||
+	die "$0: git log failed - $!\n";
+while (<LOG>) {
+	chomp;
+	if ($_ =~ /^commit\s([0-9a-f]+)/) {
+		report() if ($commit);
+		$commit = $1;
+		#print "COMMIT: $commit\n";
+		%where = ();
+		$ignore = 0;
+
+	} elsif ($_ =~ /^    Ignore:\s+yes/) {
+		$ignore = 1;
+
+	} elsif ($_ =~ /^:/) {
+		$file = (split(' ', $_, 6))[5];
+		#print "FILE: $file\n";
+		if ($file =~ /$custom/) {
+			#print "CUSTOM: $1\n";
+			$where{$1}++;
+			
+		} elsif ($file =~ /^debian/) {
+			$where{'debian'}++;
+
+		} else {
+			$where{'main'}++;
+		}
+	}
+}
+close(LOG);
+report() if ($commit);
+
+exit($err);
