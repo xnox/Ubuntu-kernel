@@ -84,6 +84,8 @@ class CheckComponent():
                 (not bin_pkg.endswith('-preempt'))):
                 return 'main'
         if package.startswith('linux-backports-modules-'):
+            if (bin_pkg and bin_pkg.endswith('-preempt')):
+                return 'universe'
             dcomponent = 'main'
         return self.default_component(dcomponent, series, package, bin_pkg)
 
