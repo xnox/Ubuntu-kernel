@@ -1,9 +1,30 @@
-linux-lts-backport-natty (2.6.38-13.55~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-13.56~lucid1) lucid-proposed; urgency=low
 
   [Brad Figg]
 
   * Release Tracking Bug
-    - LP: #921726
+    - LP: #931806
+
+  [ Upstream Kernel Changes ]
+
+  * igmp: Avoid zero delay when receiving odd mixture of IGMP queries
+    - LP: #917848
+    - CVE-2012-0207
+  * TOMOYO: Fix oops in tomoyo_mount_acl().
+    - LP: #922377
+    - CVE-2011-2518
+  * oom: fix integer overflow of points in oom_badness
+    - LP: #922374
+    - CVE-2011-2498
+
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 13 Feb 2012 15:58:51 -0800
+
+linux (2.6.38-13.55) natty-proposed; urgency=low
+
+  [Brad Figg]
+
+  * Release Tracking Bug
+    - LP: #920790
 
   [ Upstream Kernel Changes ]
 
@@ -33,7 +54,7 @@ linux-lts-backport-natty (2.6.38-13.55~lucid1) lucid-proposed; urgency=low
   * PNP: work around Dell 1536/1546 BIOS MMCONFIG bug that
     - LP: #647043
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 25 Jan 2012 18:19:35 -0200
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 23 Jan 2012 18:31:33 -0800
 
 linux (2.6.38-13.54) natty-proposed; urgency=low
 
