@@ -1,9 +1,30 @@
-linux-lts-backport-maverick (2.6.35-32.65~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-maverick (2.6.35-32.66~lucid1) lucid-proposed; urgency=low
 
   [Brad Figg]
 
   * Release Tracking Bug
-    - LP: #921475
+    - LP: #931795
+
+  [ Upstream Kernel Changes ]
+
+  * net: ip_expire() must revalidate route
+    - LP: #922051
+    - CVE-2011-1927
+  * bridge: Fix mglist corruption that leads to memory corruption
+    - LP: #917813
+    - CVE-2011-0716
+  * AppArmor: fix oops in apparmor_setprocattr
+    - LP: #789409
+    - CVE-2011-3619
+
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 13 Feb 2012 16:04:52 -0800
+
+linux (2.6.35-32.65) maverick-proposed; urgency=low
+
+  [Brad Figg]
+
+  * Release Tracking Bug
+    - LP: #920677
 
   [ Upstream Kernel Changes ]
 
@@ -33,7 +54,7 @@ linux-lts-backport-maverick (2.6.35-32.65~lucid1) lucid-proposed; urgency=low
   * PNP: work around Dell 1536/1546 BIOS MMCONFIG bug that breaks USB
     - LP: #647043
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 25 Jan 2012 16:12:38 -0200
+ -- Brad Figg <brad.figg@canonical.com>  Mon, 23 Jan 2012 13:40:13 -0800
 
 linux (2.6.35-32.64) maverick-proposed; urgency=low
 
