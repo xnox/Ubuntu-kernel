@@ -279,6 +279,7 @@ IS_OMAP_TYPE(2422, 0x2422)
 IS_OMAP_TYPE(2423, 0x2423)
 IS_OMAP_TYPE(2430, 0x2430)
 IS_OMAP_TYPE(3430, 0x3430)
+IS_OMAP_TYPE(5432, 0x5432)
 
 #define cpu_is_omap310()		0
 #define cpu_is_omap730()		0
@@ -378,6 +379,7 @@ IS_OMAP_TYPE(3430, 0x3430)
 # undef cpu_is_omap543x
 # define cpu_is_omap54xx()		is_omap54xx()
 # define cpu_is_omap543x()		is_omap543x()
+# define cpu_is_omap5432()		is_omap5432()
 #endif
 
 /* Macros to detect if we have OMAP1 or OMAP2 */
@@ -435,6 +437,7 @@ IS_OMAP_TYPE(3430, 0x3430)
 #define OMAP4460_REV_ES1_1	(OMAP446X_CLASS | (0x11 << 8))
 #define OMAP543X_CLASS		0x54300054
 #define OMAP5430_REV_ES1_0	0x54300054
+#define OMAP5432_REV_ES1_0	0x54320054
 
 #define OMAP447X_CLASS		0x44700044
 #define OMAP4470_REV_ES1_0	(OMAP447X_CLASS | (0x10 << 8))
