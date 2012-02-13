@@ -1014,10 +1014,10 @@ class Shank(StdApp):
                                                        check_ver, 'proposed')
             if not ps:
                 if check_ver:
-                    missing_pkg = [ pkg, check_ver ]
+                    missing_pkg.append([pkg, check_ver])
                 else:
-                    missing_pkg = [ pkg, 'with ABI=%s' % (pkg_abi) ]
-                break
+                    missing_pkg.append([pkg, 'with ABI=%s' % (pkg_abi)])
+                continue
             if not check_ver:
                 src_ver = ps[0].source_package_version
                 # special hardcoded case for lrm on hardy...
@@ -1030,8 +1030,7 @@ class Shank(StdApp):
                                    pkg, ps[0].source_package_version,
                                    'proposed', ps))
                 else:
-                    missing_pkg = [ pkg, 'with ABI=%s' % (pkg_abi) ]
-                    break
+                    missing_pkg.append([pkg, 'with ABI=%s' % (pkg_abi)])
             else:
                 mis_lst.extend(check_component.mismatches_list(series_name,
                                pkg, check_ver, 'proposed', ps))
@@ -1065,13 +1064,16 @@ class Shank(StdApp):
                     self.set_task_to_state('promote-to-proposed', 'Incomplete')
                     msgbody  = "Promote-to-proposed is Fix Released, but "
                     msgbody += "some packages for this update aren't published "
-                    msgbody += "in Launchpad, on -proposed pocket\n"
+                    msgbody += "in Launchpad, on -proposed pocket:\n"
+                    for item in missing_pkg:
+                        msgbody += '\n%s %s' % (item[0], item[1])
                     self.send_comment(task, 'Can\'t find packages published in -proposed', msgbody)
                     if not 'dryrun' in self.cfg:
                         self.props.set({'kernel-stable-Promote-to-proposed-end':None})
                     return False
-            self.verbose('Didn\'t found <%s> <%s> on -proposed yet, check on next run\n'
-                         % (missing_pkg[0], missing_pkg[1]))
+            for item in missing_pkg:
+                self.verbose('Didn\'t found <%s> <%s> on -proposed yet, check on next run\n'
+                             % (item[0], item[1]))
             return False
 
         # Update remaining time stamps and status
