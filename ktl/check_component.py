@@ -24,21 +24,6 @@ class CheckComponent():
                                'linux-meta' : {
                                  'linux-restricted-modules-server' : 'restricted'
                                }
-                             },
-                             'lucid': {
-                               'linux-meta' : {
-                                 'linux-versatile' : 'main'
-                               }
-                             },
-                             'maverick': {
-                               'linux-meta' : {
-                                 'linux-versatile' : 'main'
-                               }
-                             },
-                             'natty': {
-                               'linux-meta' : {
-                                 'linux-versatile' : 'main'
-                               }
                              }
                            }
         self.release_db = {}
