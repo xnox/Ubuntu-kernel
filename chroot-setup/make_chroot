@@ -59,4 +59,4 @@ echo "## $0 $1 $2 ##"
 echo
 
 cd ${CDIR}/scripts
-sudo ./build-mkschroot --arch=${ARCH} ${RELEASE} ${CH_ROOT}/${RELEASE}-${ARCH} ${MIRROR}
+sudo -E ./build-mkschroot --arch=${ARCH} ${RELEASE} ${CH_ROOT}/${RELEASE}-${ARCH} ${MIRROR}

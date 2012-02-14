@@ -258,6 +258,14 @@ else
 	write_local_mirror ${SUITE} ${ARCH} $TARGET/etc/apt/sources.list ${CL_MIRROR}
 fi
 
+# If the user supplied an http_proxy when building this chroot, copy that
+# configuration over into the apt configuration for the chroot.
+if [ "$http_proxy" != '' ]
+then
+	echo "Acquire::http { Proxy \"$http_proxy\"; };" \
+		>$TARGET/etc/apt/apt.conf.d/01proxy-from-http_proxy
+fi
+
 ${SCHROOTCMD} -- apt-get -y --force-yes update
 ${SCHROOTCMD} -- apt-get -u -y --force-yes dist-upgrade
 
