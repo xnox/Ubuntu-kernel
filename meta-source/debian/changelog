@@ -1,3 +1,9 @@
+linux-meta (2.6.24.31.33) hardy-proposed; urgency=low
+
+  * ABI bump to -31 by proposed update
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 14 Feb 2012 10:46:03 -0200
+
 linux-meta (2.6.24.30.32) hardy-proposed; urgency=low
 
   * ABI bump to -30 by proposed update
