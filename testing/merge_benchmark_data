@@ -47,7 +47,7 @@ class Cmdline:
         Prints out the help text which explains the command line options.
         """
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [<options>] <modified-bug-file.json>                                              \n" % defaults['app_name'])
+        stdo("        %s [<options>] datafile1 datafile2 . . .                                             \n" % defaults['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
