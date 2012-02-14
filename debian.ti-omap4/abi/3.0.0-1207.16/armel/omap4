@@ -2667,7 +2667,6 @@ EXPORT_SYMBOL vmlinux 0x00000000	blk_get_backing_dev_info
 EXPORT_SYMBOL vmlinux 0x00000000	blk_get_queue
 EXPORT_SYMBOL vmlinux 0x00000000	blk_get_request
 EXPORT_SYMBOL vmlinux 0x00000000	blk_init_allocated_queue
-EXPORT_SYMBOL vmlinux 0x00000000	blk_init_allocated_queue_node
 EXPORT_SYMBOL vmlinux 0x00000000	blk_init_queue
 EXPORT_SYMBOL vmlinux 0x00000000	blk_init_queue_node
 EXPORT_SYMBOL vmlinux 0x00000000	blk_init_tags
