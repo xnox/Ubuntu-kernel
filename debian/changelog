@@ -1,8 +1,12 @@
-linux-backports-modules-3.2.0 (3.2.0-9.1) UNRELEASED; urgency=low
+linux-backports-modules-3.2.0 (3.2.0-18.1) precise; urgency=low
 
   * Open Precise LBM
+  * Add compat-wireless v3.3
+  * Consolidated amd64 server flavour into generic
+  * Remove lpia control file
+  * Update Vcs-Git to ubuntu-preicse-lbm
 
- -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 17 Jan 2012 07:14:57 -0800
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Wed, 15 Feb 2012 08:42:08 -0800
 
 linux-backports-modules-3.0.0 (3.0.0-15.7) oneiric-proposed; urgency=low
 
