@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (3.2.0.1406.6) precise; urgency=low
+
+  * linux-ti-omap4 ABI 3.2.0-1406
+
+ -- Andy Whitcroft <apw@canonical.com>  Wed, 15 Feb 2012 10:30:16 +0000
+
 linux-meta-ti-omap4 (3.2.0.1405.5) precise; urgency=low
 
   * linux-ti-omap4 ABI 3.2.0-1405
