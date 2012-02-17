@@ -198,7 +198,7 @@ class MarkUnsupportedWontFix():
                 retval = True
                 break
 
-            if task.status not in ['New', 'Confirmed', 'Triaged', 'In Progress', 'Incomplete']:
+            if task.status not in ['New', 'Confirmed', 'Triaged', 'In Progress', 'Incomplete (with response)', 'Incomplete (without response)']:
                 Dbg.verbose("Is not 'open', ")
                 retval = True
                 break
@@ -261,7 +261,7 @@ class MarkUnsupportedWontFix():
                 for bid in self.cfg['bug-ids']:
                     self.bug_operation(KernelBug(self.lp.get_bug(bid)))
             else:
-                search_status = ["New", "Confirmed", "Triaged", "Incomplete", "In Progress"] # A list of the bug statuses that we care about
+                search_status = ["New", "Confirmed", "Triaged", "Incomplete (with response)", "Incomplete (without response)", "In Progress"] # A list of the bug statuses that we care about
 
                 Dbg.verbose("Searching the package for matching tasks.")
                 tasks = self.linux_package.search_tasks(status=search_status)
