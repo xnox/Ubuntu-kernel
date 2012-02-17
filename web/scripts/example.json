@@ -1,6 +1,6 @@
 {
     "lp": {
-        "task-status": ["New","Incomplete","Confirmed","Triaged","In Progress"],
+        "task-status": ["New","Incomplete (with response)", "Incomplete (without response)","Confirmed","Triaged","In Progress"],
 	"bug-tags": [],
 	"bug-tags-combinator": "all",
 	"projects": ["hwe-sutton"]

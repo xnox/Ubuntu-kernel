@@ -287,7 +287,7 @@ class CollectRegressionsData(StdApp):
                 # we have that list, we eliminate any that have not been created within the time
                 # window we are interested in.
                 #
-                search_status          = ["New","Incomplete","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
+                search_status          = ["New","Incomplete (with response)", "Incomplete (without response)","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
 
                 try:
                     self.verbose(" . Searching ...")

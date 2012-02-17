@@ -281,7 +281,7 @@ class CollectRegressionsData(StdApp):
                 #                          status=self.cfg['task_search_status'], modified_since=search_since)
                 #
                 search_tags_combinator = "Any"
-                search_status          = ["New","Incomplete","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
+                search_status          = ["New","Incomplete (with response)", "Incomplete (without response)","Confirmed","Triaged","In Progress","Fix Committed"] # A list of the bug statuses that we care about
 
                 try:
                     self.verbose(" . Searching ...")
