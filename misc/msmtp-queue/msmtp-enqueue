@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# msmtp-enqueue <cmd>
+#
+# Enqueue the specified command for execution.
+#
+prefix="${0%-enqueue}"
+
+queue="$HOME/.msmtp-queue"
+mkdir -p "$queue"
+
+# Make a guarenteed unique name in the spool directory.
+time=`date +%s`
+entry="$time.$$"
+
+# $tmp must not be visible to shell * and must be renamable
+# to $live.
+tmp="$queue/.$entry"
+live="$queue/$entry"
+
+# Store the command line and the email text.
+echo "$@" >"$tmp.cmd"
+cat - >"$tmp.text"
+
+# Insert the new entry, insert the .cmd last as that gates detection.
+if ! mv "$tmp.text" "$live.text"; then
+	echo "$0: $entry.text -- enqueue failed" 1>&2
+	exit 1
+fi
+if ! mv "$tmp.cmd" "$live.cmd"; then
+	rm "$live.text"
+	echo "$0: $entry.cmd -- enqueue failed" 1>&2
+	exit 1
+fi
+
+echo "msmtp-enqueue: id=$entry"
+
+# Trigger a queue run ...
+"$prefix-queuectl" "NEW" &
+
+# Success ...
+exit 0

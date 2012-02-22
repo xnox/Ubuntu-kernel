@@ -1,0 +1,63 @@
+#!/bin/bash
+#
+# msmtp-execute -- pick up jobs from the queue and execute them sequentially
+#
+
+queue="$HOME/.msmtp-queue"
+mkdir -p "$queue"
+
+lock_tmp="$queue/.LOCK-$$"
+lock="$queue/.LOCK"
+block="$queue/.BLOCK"
+
+prev_todo=''
+
+while :
+do
+	# One at a time please...
+	echo "$$" >"$lock_tmp"
+	if ! ln "$lock_tmp" "$lock" 2>/dev/null; then
+		rm -f "$lock_tmp"
+		echo "$0: queue runner already running ... quiting"
+		exit 0
+	fi
+	rm -f "$lock_tmp"
+
+	# Check if we are blocked.
+	if [ -f "$block" ]; then
+		rm -f "$lock"
+		echo "$0: queue blocked ... quiting"
+		break
+	fi
+
+	# See what there is todo, if its unchanged, we are done.
+	todo=`cd "$queue" && ls -1 *.cmd 2>/dev/null | tr '\n' ' '`
+	#echo "TODO<$todo> PREV<$prev_todo>"
+	if [ "$todo" = "$prev_todo" ]; then
+		rm -f "$lock"
+		break
+	fi
+
+	# Run things in the queue.
+	prev_todo=''
+	for job in $todo
+	do
+		jobf="$queue/$job"
+		jobt="$queue/`basename "$job" .cmd`.text"
+
+		echo "$0: executing $job ..."
+		msmtp -X - `cat "$jobf"` <"$jobt"
+		ret="$?"
+		echo "$0: complete $job (rc=$ret)"
+
+		if [ "$ret" -eq 0 ]; then
+			rm -f "$jobf" "$jobt"
+		else
+			prev_todo="$prev_todo$job "
+		fi
+	done
+
+	# We are done and out of here, let the next player have a turn.
+	echo "$0: queue run complete"
+	rm -f "$lock"
+done

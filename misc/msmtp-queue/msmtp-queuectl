@@ -1,0 +1,67 @@
+#!/bin/bash
+#
+# msmtp-queuectl -- queue control interface
+#
+prefix="${0%-queuectl}"
+
+queue="$HOME/.msmtp-queue"
+block="$queue/.BLOCK"
+mkdir -p "$queue"
+
+case "$1" in
+list)
+	for i in "$queue"/*.text
+	do
+		case "$i" in
+		"$queue/*.text")
+			echo "Queue empty" ;;
+		*)
+			egrep -s --colour -h '(^From:|^To:|^Subject:)' "$i"
+			echo ""
+			;;	
+		esac
+	done
+	;;
+watch)
+	exec tail -f "$queue/.log"
+	;;
+status)
+	count=`(cd ~/.msmtp-queue/ && ls -1 *.text 2>/dev/null) | wc -l`
+	blocked='No'
+	[ -f "$block" ] && blocked='Yes'
+
+	echo "Queue Blocked: $blocked"
+	echo "Queue Depth:   $count"
+	;;
+history)
+	exec grep 'host=' "$queue/.log"
+	;;
+push)
+	exec "$prefix-execute" 2>&1 | tee -a "$queue/.log"
+	;;
+NEW)
+	exec "$prefix-execute" >>"$queue/.log" 2>&1
+	;;
+block)
+	touch "$block"
+	;;
+unblock)
+	rm -f "$block"
+	;;
+*)
+	cat - 1>&2 <<EOM
+Usage: $0 <command> [<args>]
+Commands:
+    list      -- list queue contents
+    watch     -- monitor queue activity
+    status    -- overall queue statistics
+    history   -- list of all sent emails
+
+    push      -- attempt to deliver pending entries
+
+    block     -- disable outgoing delivery attempts
+    unblock   -- enable outgoing delivery attempts
+EOM
+	exit 1
+	;;
+esac
