@@ -97,13 +97,13 @@ endif
 obj-y					+= prm_common.o
 obj-$(CONFIG_ARCH_OMAP2)		+= prcm.o cm2xxx_3xxx.o prm2xxx_3xxx.o
 obj-$(CONFIG_ARCH_OMAP3)		+= prcm.o cm2xxx_3xxx.o prm2xxx_3xxx.o
-obj-$(CONFIG_ARCH_OMAP3)		+= vc3xxx_data.o vp3xxx_data.o
+obj-$(CONFIG_ARCH_OMAP3)		+= vc3xxx_data.o vp3xxx_data.o dvfs.o
 obj-$(CONFIG_ARCH_OMAP4)		+= prcm.o cminst44xx.o cm44xx.o
 obj-$(CONFIG_ARCH_OMAP4)		+= prcm_mpu44xx.o prminst44xx.o
-obj-$(CONFIG_ARCH_OMAP4)		+= vc44xx_data.o vp44xx_data.o prm44xx.o
+obj-$(CONFIG_ARCH_OMAP4)		+= vc44xx_data.o vp44xx_data.o prm44xx.o dvfs.o
 obj-$(CONFIG_ARCH_OMAP5)		+= prcm.o cm2xxx_3xxx.o cminst44xx.o
 obj-$(CONFIG_ARCH_OMAP5)		+= cm44xx.o prcm_mpu44xx.o
-obj-$(CONFIG_ARCH_OMAP5)		+= prminst44xx.o vc44xx_data.o vp44xx_data.o
+obj-$(CONFIG_ARCH_OMAP5)		+= prminst44xx.o vc44xx_data.o vp44xx_data.o dvfs.o
 
 # OMAP voltage domains
 voltagedomain-common			:= voltage.o vc.o vp.o
