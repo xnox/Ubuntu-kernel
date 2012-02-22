@@ -179,6 +179,8 @@ static int next_valid_state(struct cpuidle_device *dev,
 	u32 core_deepest_state = PWRDM_POWER_RET;
 	int idx;
 	int next_index = -1;
+	u32 mpu_pm_qos_next_state = mpu_pd->wkup_lat_next_state;
+	u32 core_pm_qos_next_state = core_pd->wkup_lat_next_state;
 
 	if (enable_off_mode) {
 		mpu_deepest_state = PWRDM_POWER_OFF;
@@ -193,7 +195,9 @@ static int next_valid_state(struct cpuidle_device *dev,
 
 	/* Check if current state is valid */
 	if ((cx->mpu_state >= mpu_deepest_state) &&
-	    (cx->core_state >= core_deepest_state))
+	    (cx->core_state >= core_deepest_state) &&
+		(cx->mpu_state >= mpu_pm_qos_next_state) &&
+		(cx->core_state >= core_pm_qos_next_state))
 		return index;
 
 	/*
@@ -203,7 +207,9 @@ static int next_valid_state(struct cpuidle_device *dev,
 	for (idx = index - 1; idx >= 0; idx--) {
 		cx =  &omap3_idle_data[idx];
 		if ((cx->mpu_state >= mpu_deepest_state) &&
-		    (cx->core_state >= core_deepest_state)) {
+		    (cx->core_state >= core_deepest_state) &&
+			(cx->mpu_state >= mpu_pm_qos_next_state) &&
+			(cx->core_state >= core_pm_qos_next_state)) {
 			next_index = idx;
 			break;
 		}
@@ -224,8 +230,12 @@ static int next_valid_state(struct cpuidle_device *dev,
  * @drv: cpuidle driver
  * @index: array index of target state to be programmed
  *
- * This function checks for any pending activity and then programs
- * the device to the specified or a safer state.
+ * Called from the CPUidle framework to program the device to the
+ * specified target state selected by the governor.
+ *
+ * This function checks for any pending activity or dependency between
+ * power domains states and then programs the device to the specified
+ * or a safer state.
  */
 static int omap3_enter_idle_bm(struct cpuidle_device *dev,
 				struct cpuidle_driver *drv,
@@ -246,13 +256,7 @@ static int omap3_enter_idle_bm(struct cpuidle_device *dev,
 		goto select_state;
 	}
 
-	/*
-	 * FIXME: we currently manage device-specific idle states
-	 *        for PER and CORE in combination with CPU-specific
-	 *        idle states.  This is wrong, and device-specific
-	 *        idle management needs to be separated out into
-	 *        its own code.
-	 */
+	new_state = next_valid_state(dev, state);
 
 	/*
 	 * Prevent PER off if CORE is not in retention or off as this
