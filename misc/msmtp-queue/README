@@ -1,17 +1,36 @@
 = MSMTP QUEUE SUPPORT =
 
-Scripting to allow you to queue msmtp outgoing transactions when offline.
+Scripting to allow you to queue msmtp outgoing transactions when offline
+for later sending.  It also disconnects local email sender from the first
+delivery attempt helpful if your first hop is slow.  This support consists
+of three components:
 
 msmtp-enqueue   -- sendmail (and msmtp) compatible client interface
 msmtp-execute   -- msmtp queue runner (internal use only)
 msmtp-queuectl  -- user interface to monitor and push pending entries
 
-Emails are injected into the queue using msmtp-enqueue in place of the
-regular msmtp binary.  This will attempt immediate delivery retaining
-any failed emails for later sending.  Pending emails MUST be pushed later
-when connected via 'msmtp-queuectl push'.  Pending emails are also retried
-when new emails enter the queue.  The current status of the queue may be
-monitored via the 'msmtp-queuectl' commands 'list' and 'status'.
+In theory msmtp-enqueue is sendmail compatible (as it is msmtp compatible)
+and could be used directly to replace /usr/lib/sendmail.
+
+Emails are injected into the queue using msmtp-enqueue in the same manner
+as the regular msmtp binary (supporting the identicle command lines).
+This will attempt immediate delivery retaining any failed emails for
+later sending.  Pending emails must be pushed later either via the
+msmtp-queuectl command, or via further email activity.
+
+Pending emails are retained in the pending queue indefinatly.  The queue can
+be inspected via the msmtp-queuectl command.  This has a number of sub-commands:
+
+    list      -- list queue contents
+    watch     -- monitor queue activity
+    status    -- overall queue statistics
+    history   -- list of all sent emails
+
+    push      -- attempt to deliver pending entries
+
+    block     -- disable outgoing delivery attempts
+    unblock   -- enable outgoing delivery attempts
+
 
 == configuring git send-email ==
 
@@ -21,6 +40,7 @@ send-email to use your queue:
 [sendemail]
         smtpserver = /home/apw/kteam-tools/misc/msmtp-queue/msmtp-enqueue
         envelopesender = auto
+
 
 == configuring mutt ==
 
