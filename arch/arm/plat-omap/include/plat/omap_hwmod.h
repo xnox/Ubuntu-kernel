@@ -667,6 +667,8 @@ extern int omap3xxx_hwmod_init(void);
 extern int omap44xx_hwmod_init(void);
 extern int omap54xx_hwmod_init(void);
 
+extern struct device *omap_hwmod_name_get_dev(const char *oh_name);
+
 extern int __init omap_hwmod_register_links(struct omap_hwmod_ocp_if **ois);
 
 #endif
