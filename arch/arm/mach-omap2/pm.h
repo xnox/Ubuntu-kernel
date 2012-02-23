@@ -33,6 +33,7 @@ extern void omap4_device_set_state_off(u8 enable);
 extern bool omap4_device_prev_state_off(void);
 extern bool omap4_device_next_state_off(void);
 extern void omap4_device_clear_prev_off_state(void);
+int omap4_pm_cold_reset(char *reason);
 #else
 static inline void omap4_device_set_state_off(u8 enable)
 {
@@ -44,6 +45,10 @@ static inline bool omap4_device_prev_state_off(void)
 static inline bool omap4_device_next_state_off(void)
 {
 	return false;
+}
+int omap4_pm_cold_reset(char *reason)
+{
+	return -EINVAL;
 }
 #endif
 void omap_trigger_wuclk_ctrl(void);
