@@ -72,9 +72,6 @@ static inline char *hex_byte_pack(char *buf, u8 byte)
 	return buf;
 }
 
-static inline void olpc_ec_wakeup_set(u16 value) { }
-static inline void olpc_ec_wakeup_clear(u16 value) { }
-
 #endif /* (LINUX_VERSION_CODE < KERNEL_VERSION(3,2,0)) */
 
 #endif /* LINUX_3_2_COMPAT_H */
