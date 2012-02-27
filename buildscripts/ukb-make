@@ -106,6 +106,10 @@ fi
 # Check for the build directory. If its not there, then attempt to create it
 #
 BDIR="$UKB_DEF_BUILD_DIR_BASE/$RELEASE/$ARCH/$BRANCH"
+if [ ! -z "$CLEAN" ]
+then
+	rm -rf $BDIR
+fi
 if ! mkdir -p $BDIR
 then
 	echo Could not make build directory $BDIR
@@ -123,14 +127,6 @@ then
 fi
 
 RDIR=$BDIR/ubuntu-$RELEASE
-
-#
-# Do a pre-clean
-#
-if [ ! -z "$CLEAN" ] && [ -f $RDIR/Makefile ]
-then
-	rm -rf $RDIR
-fi
 
 #
 # If the repo has not been checked out, then attempt to get it.
