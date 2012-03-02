@@ -25,13 +25,13 @@ Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
-#Package: linux-backports-modules-headers-RELEASE_NAME-server
-#Architecture: amd64
-#Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-generic
-#Description: Backported driver headers for server kernel image
-# This empty package allows people to keep their backported module
-# headers up-to-date when upgrading their Linux kernel.
-#
+Package: linux-backports-modules-headers-RELEASE_NAME-server
+Architecture: amd64
+Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-generic
+Description: Backported driver headers for server kernel image
+ This empty package allows people to keep their backported module
+ headers up-to-date when upgrading their Linux kernel.
+
 #Package: linux-backports-modules-alsa-RELEASE_NAME-server
 #Architecture: amd64
 #Depends: ${misc:Depends}, linux-backports-modules-alsa-${kernel-abi-version}-generic
