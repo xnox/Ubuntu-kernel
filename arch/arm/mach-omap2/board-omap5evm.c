@@ -1174,6 +1174,7 @@ static void __init omap_5430evm_init(void)
 	omap_serial_board_init(NULL, 2);
 	omap_serial_board_init(NULL, 4);
 	platform_device_register(&dummy_sd_regulator_device);
+	omap_serial_init();
 
 	omap5_sdp5430_wifi_init();
 
