@@ -1,3 +1,11 @@
+linux-meta (3.2.0.18.18) precise; urgency=low
+
+  * Add compat-wireless v3.3 meta package
+  * Re-enable linux-backports-modules for Precise
+  * Bump ABI
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Fri, 02 Mar 2012 09:29:55 -0800
+
 linux-meta (3.2.0.17.17) precise; urgency=low
 
   * Bump ABI
