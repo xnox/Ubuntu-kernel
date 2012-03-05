@@ -14,7 +14,8 @@ Priority: optional
 Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-virtual, linux-firmware
 Description: Linux kernel image for virtual machines
  This package will always depend on the latest kernel image available
- for virtual machines.
+ for virtual machines. Install linux-image-extra-virtual to get all
+ available kernel modules.
 
 Package: linux-virtual
 Architecture: i386 amd64
@@ -23,13 +24,14 @@ Priority: optional
 Depends: ${misc:Depends}, linux-image-virtual (= ${binary:Version})
 Description: Complete Linux kernel for virtual machines
  This package will always depend on the latest complete Linux kernel available
- for virtual machines.
+ for virtual machines. Install linux-image-extra-virtual to get all
+ available kernel modules.
 
 Package: linux-image-extra-virtual
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-extra-${kernel-abi-version}-virtual
+Depends: ${misc:Depends}, linux-image-virtual (= ${binary:Version}), linux-image-extra-${kernel-abi-version}-virtual
 Description: Linux kernel extra modules for virtual machines
  This package will always depend on the latest kernel extra modules available
  for virtual machines.
