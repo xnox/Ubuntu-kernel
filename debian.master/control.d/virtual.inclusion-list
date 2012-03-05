@@ -19,7 +19,7 @@ drivers/input/serio/serport.ko
 drivers/input/joydev.ko
 drivers/input/misc/uinput.ko
 drivers/input/touchscreen/usbtouchscreen.ko
-drivers/input/xen-kbdfront.ko
+drivers/input/misc/xen-kbdfront.ko
 drivers/md/*
 drivers/message/fusion*
 drivers/misc/vmw_balloon.ko
