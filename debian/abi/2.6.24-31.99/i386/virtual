@@ -1321,14 +1321,14 @@ EXPORT_SYMBOL sound/oss/sound 0x80ef52f0	mixer_devs
 EXPORT_SYMBOL sound/oss/sound 0x892093e0	midi_synth_controller
 EXPORT_SYMBOL sound/oss/sound 0x90bd9714	sequencer_timer
 EXPORT_SYMBOL sound/oss/sound 0x987bcf12	DMAbuf_outputintr
+EXPORT_SYMBOL sound/oss/sound 0x98d67394	midi_devs
 EXPORT_SYMBOL sound/oss/sound 0x9a95733f	sound_alloc_dma
 EXPORT_SYMBOL sound/oss/sound 0x9bdaf24d	midi_synth_start_note
+EXPORT_SYMBOL sound/oss/sound 0x9d34a456	synth_devs
 EXPORT_SYMBOL sound/oss/sound 0x9d845b18	num_mixers
 EXPORT_SYMBOL sound/oss/sound 0xa1d5f04f	load_mixer_volumes
 EXPORT_SYMBOL sound/oss/sound 0xa1eae7cf	num_midis
-EXPORT_SYMBOL sound/oss/sound 0xa30a4a5f	midi_devs
 EXPORT_SYMBOL sound/oss/sound 0xa41ead5f	sound_unload_timerdev
-EXPORT_SYMBOL sound/oss/sound 0xa4675222	synth_devs
 EXPORT_SYMBOL sound/oss/sound 0xa51c913b	sound_unload_mixerdev
 EXPORT_SYMBOL sound/oss/sound 0xa6bb414c	sound_unload_mididev
 EXPORT_SYMBOL sound/oss/sound 0xa948751e	sound_unload_audiodev
@@ -1339,6 +1339,7 @@ EXPORT_SYMBOL sound/oss/sound 0xb51587f6	do_midi_msg
 EXPORT_SYMBOL sound/oss/sound 0xba413f87	sound_alloc_mididev
 EXPORT_SYMBOL sound/oss/sound 0xba7dd041	midi_synth_bender
 EXPORT_SYMBOL sound/oss/sound 0xc748d109	sound_alloc_synthdev
+EXPORT_SYMBOL sound/oss/sound 0xcab4d5bf	midi_synth_load_patch
 EXPORT_SYMBOL sound/oss/sound 0xcc4b8797	sound_open_dma
 EXPORT_SYMBOL sound/oss/sound 0xd85be938	midi_synth_set_instr
 EXPORT_SYMBOL sound/oss/sound 0xdb400afa	midi_synth_panning
@@ -1347,7 +1348,6 @@ EXPORT_SYMBOL sound/oss/sound 0xe2675a79	sound_timer_interrupt
 EXPORT_SYMBOL sound/oss/sound 0xeb315d99	DMAbuf_inputintr
 EXPORT_SYMBOL sound/oss/sound 0xf1ea8a20	midi_synth_aftertouch
 EXPORT_SYMBOL sound/oss/sound 0xf6b3a2fb	midi_synth_open
-EXPORT_SYMBOL sound/oss/sound 0xf7426da3	midi_synth_load_patch
 EXPORT_SYMBOL sound/oss/sound 0xf78f6363	sequencer_init
 EXPORT_SYMBOL sound/oss/sound 0xfa6871be	sound_timer_syncinterval
 EXPORT_SYMBOL sound/oss/sound 0xfddcbfb3	midi_synth_send_sysex

@@ -2951,7 +2951,6 @@ EXPORT_SYMBOL vmlinux 0x4cd080b9	skb_gso_segment
 EXPORT_SYMBOL vmlinux 0x4cd62e14	vm_insert_page
 EXPORT_SYMBOL vmlinux 0x4cee2e8c	devm_request_irq
 EXPORT_SYMBOL vmlinux 0x4d199660	find_get_page
-EXPORT_SYMBOL vmlinux 0x4d5fc833	put_files_struct
 EXPORT_SYMBOL vmlinux 0x4d61f8e2	qdisc_watchdog_schedule
 EXPORT_SYMBOL vmlinux 0x4d64a7f7	sn_dma_sync_single_for_device
 EXPORT_SYMBOL vmlinux 0x4d6d2809	dev_alloc_name
@@ -3461,6 +3460,7 @@ EXPORT_SYMBOL vmlinux 0x80671888	sleep_on_timeout
 EXPORT_SYMBOL vmlinux 0x809dbdbf	sn_dma_sync_single_for_cpu
 EXPORT_SYMBOL vmlinux 0x81036527	cancel_dirty_page
 EXPORT_SYMBOL vmlinux 0x81485932	sk_stream_write_space
+EXPORT_SYMBOL vmlinux 0x815a8b23	free_task
 EXPORT_SYMBOL vmlinux 0x815b5dd4	match_octal
 EXPORT_SYMBOL vmlinux 0x81686932	mark_buffer_dirty_inode
 EXPORT_SYMBOL vmlinux 0x81e6b37f	dmi_get_system_info
@@ -3618,7 +3618,6 @@ EXPORT_SYMBOL vmlinux 0x918bfbf8	textsearch_destroy
 EXPORT_SYMBOL vmlinux 0x918db58a	ethtool_op_get_tx_csum
 EXPORT_SYMBOL vmlinux 0x919e0a08	inet_shutdown
 EXPORT_SYMBOL vmlinux 0x91a6968e	d_move
-EXPORT_SYMBOL vmlinux 0x91fdfb29	reset_files_struct
 EXPORT_SYMBOL vmlinux 0x923d7148	permission
 EXPORT_SYMBOL vmlinux 0x9257331b	blk_queue_softirq_done
 EXPORT_SYMBOL vmlinux 0x9269d4b5	___pskb_trim
@@ -3681,7 +3680,6 @@ EXPORT_SYMBOL vmlinux 0x978d9db3	lease_modify
 EXPORT_SYMBOL vmlinux 0x97a56aab	gen_pool_add
 EXPORT_SYMBOL vmlinux 0x97a97a01	neigh_changeaddr
 EXPORT_SYMBOL vmlinux 0x986d3cd3	__find_get_block
-EXPORT_SYMBOL vmlinux 0x98a6ce42	free_task
 EXPORT_SYMBOL vmlinux 0x98adfde2	request_module
 EXPORT_SYMBOL vmlinux 0x98ccd6e0	posix_unblock_lock
 EXPORT_SYMBOL vmlinux 0x99142589	swiotlb_sync_single_for_device
@@ -3940,6 +3938,7 @@ EXPORT_SYMBOL vmlinux 0xb1f975aa	unlock_kernel
 EXPORT_SYMBOL vmlinux 0xb21fd99e	acpi_os_read_pci_configuration
 EXPORT_SYMBOL vmlinux 0xb2345f67	pci_get_device
 EXPORT_SYMBOL vmlinux 0xb2716fe5	pci_find_device
+EXPORT_SYMBOL vmlinux 0xb283444c	reset_files_struct
 EXPORT_SYMBOL vmlinux 0xb28927ba	__netdev_alloc_skb
 EXPORT_SYMBOL vmlinux 0xb2a9020b	pci_enable_wake
 EXPORT_SYMBOL vmlinux 0xb2c1cb91	rtnetlink_put_metrics
@@ -4519,6 +4518,7 @@ EXPORT_SYMBOL vmlinux 0xeff9de5f	netif_device_attach
 EXPORT_SYMBOL vmlinux 0xf0009fee	put_pages_list
 EXPORT_SYMBOL vmlinux 0xf065f629	ioread16be
 EXPORT_SYMBOL vmlinux 0xf070f837	lock_rename
+EXPORT_SYMBOL vmlinux 0xf095df51	put_files_struct
 EXPORT_SYMBOL vmlinux 0xf0b57c68	param_set_long
 EXPORT_SYMBOL vmlinux 0xf0d3520d	bio_put
 EXPORT_SYMBOL vmlinux 0xf0deb897	alloc_disk_node
@@ -5852,6 +5852,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x01a4ea6d	unregister_die_notifier
 EXPORT_SYMBOL_GPL vmlinux 0x01c631a9	pci_find_next_ht_capability
 EXPORT_SYMBOL_GPL vmlinux 0x01d25625	__audit_inode_child
 EXPORT_SYMBOL_GPL vmlinux 0x02ccea56	lock_policy_rwsem_write
+EXPORT_SYMBOL_GPL vmlinux 0x030cbf27	mmput
 EXPORT_SYMBOL_GPL vmlinux 0x0343bdf1	__i2c_board_list
 EXPORT_SYMBOL_GPL vmlinux 0x04486e88	rcu_batches_completed
 EXPORT_SYMBOL_GPL vmlinux 0x048429a5	cpufreq_register_driver
@@ -5946,6 +5947,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x24efd244	pci_find_ext_capability
 EXPORT_SYMBOL_GPL vmlinux 0x2510c2a2	free_vm_area
 EXPORT_SYMBOL_GPL vmlinux 0x2519a0df	queue_work
 EXPORT_SYMBOL_GPL vmlinux 0x25511135	class_device_create_file
+EXPORT_SYMBOL_GPL vmlinux 0x255a6315	exit_fs
 EXPORT_SYMBOL_GPL vmlinux 0x26562e3a	snmp_mib_init
 EXPORT_SYMBOL_GPL vmlinux 0x28024765	input_ff_destroy
 EXPORT_SYMBOL_GPL vmlinux 0x2853d58d	inotify_init_watch
@@ -6035,6 +6037,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x4458f5df	class_device_get
 EXPORT_SYMBOL_GPL vmlinux 0x44a65d5c	lock_policy_rwsem_read
 EXPORT_SYMBOL_GPL vmlinux 0x455d7e13	get_dcookie
 EXPORT_SYMBOL_GPL vmlinux 0x457594fa	crypto_alg_list
+EXPORT_SYMBOL_GPL vmlinux 0x45760968	copy_fs_struct
 EXPORT_SYMBOL_GPL vmlinux 0x4648a1c4	crypto_free_tfm
 EXPORT_SYMBOL_GPL vmlinux 0x46a0b0fa	percpu_populate
 EXPORT_SYMBOL_GPL vmlinux 0x46ae3beb	tcp_reno_cong_avoid
@@ -6163,7 +6166,6 @@ EXPORT_SYMBOL_GPL vmlinux 0x6f28c3e1	blocking_notifier_call_chain
 EXPORT_SYMBOL_GPL vmlinux 0x6f9f221e	find_pid
 EXPORT_SYMBOL_GPL vmlinux 0x6fba9ec7	pfm_remove_alt_pmu_interrupt
 EXPORT_SYMBOL_GPL vmlinux 0x6fe034e9	genhd_media_change_notify
-EXPORT_SYMBOL_GPL vmlinux 0x6fe306d0	mmput
 EXPORT_SYMBOL_GPL vmlinux 0x70f367de	xfrm_aalg_get_byid
 EXPORT_SYMBOL_GPL vmlinux 0x711bf3e6	rt_mutex_lock
 EXPORT_SYMBOL_GPL vmlinux 0x7186426a	fsstack_copy_attr_all
@@ -6188,7 +6190,6 @@ EXPORT_SYMBOL_GPL vmlinux 0x78a17834	selinux_relabel_packet_permission
 EXPORT_SYMBOL_GPL vmlinux 0x78a4cc29	register_jprobe
 EXPORT_SYMBOL_GPL vmlinux 0x79ce84e6	vfs_listxattr
 EXPORT_SYMBOL_GPL vmlinux 0x7a81665a	inotify_dentry_parent_queue_event
-EXPORT_SYMBOL_GPL vmlinux 0x7b21f37a	get_task_mm
 EXPORT_SYMBOL_GPL vmlinux 0x7ba987f4	crypto_register_instance
 EXPORT_SYMBOL_GPL vmlinux 0x7baffd47	blk_execute_rq_nowait
 EXPORT_SYMBOL_GPL vmlinux 0x7c524dbd	synchronize_acceptable_latency
@@ -6327,7 +6328,6 @@ EXPORT_SYMBOL_GPL vmlinux 0xaf3954dd	device_create_file
 EXPORT_SYMBOL_GPL vmlinux 0xb0c8f228	sysfs_remove_file_from_group
 EXPORT_SYMBOL_GPL vmlinux 0xb1068ff5	srcu_read_unlock
 EXPORT_SYMBOL_GPL vmlinux 0xb165adb6	inet6_lookup_listener
-EXPORT_SYMBOL_GPL vmlinux 0xb1677cfa	__mmdrop
 EXPORT_SYMBOL_GPL vmlinux 0xb17a451d	inet_csk_get_port
 EXPORT_SYMBOL_GPL vmlinux 0xb27345bd	devres_add
 EXPORT_SYMBOL_GPL vmlinux 0xb3323d65	unregister_jprobe
@@ -6392,10 +6392,10 @@ EXPORT_SYMBOL_GPL vmlinux 0xcddbfb70	set_cpus_allowed
 EXPORT_SYMBOL_GPL vmlinux 0xcdfd664e	sysfs_create_bin_file
 EXPORT_SYMBOL_GPL vmlinux 0xce033996	disk_round_stats
 EXPORT_SYMBOL_GPL vmlinux 0xce28b821	xfrm_aalg_get_byname
+EXPORT_SYMBOL_GPL vmlinux 0xce757efb	__mmdrop
 EXPORT_SYMBOL_GPL vmlinux 0xcf02a710	platform_add_devices
 EXPORT_SYMBOL_GPL vmlinux 0xcfac1fdb	__inet_lookup_listener
 EXPORT_SYMBOL_GPL vmlinux 0xcfcc83ad	register_vt_notifier
-EXPORT_SYMBOL_GPL vmlinux 0xd0043662	copy_fs_struct
 EXPORT_SYMBOL_GPL vmlinux 0xd0c05159	emergency_restart
 EXPORT_SYMBOL_GPL vmlinux 0xd0dfc4c6	class_device_del
 EXPORT_SYMBOL_GPL vmlinux 0xd262c5c9	inet_csk_compat_setsockopt
@@ -6411,6 +6411,7 @@ EXPORT_SYMBOL_GPL vmlinux 0xd6cc0f4f	input_ff_erase
 EXPORT_SYMBOL_GPL vmlinux 0xd6ec63b1	sysdev_unregister
 EXPORT_SYMBOL_GPL vmlinux 0xd7446737	key_type_user
 EXPORT_SYMBOL_GPL vmlinux 0xd74d736d	inotify_find_watch
+EXPORT_SYMBOL_GPL vmlinux 0xd76f9536	get_task_mm
 EXPORT_SYMBOL_GPL vmlinux 0xd78031b0	hwrng_unregister
 EXPORT_SYMBOL_GPL vmlinux 0xd84737a9	debugfs_create_u32
 EXPORT_SYMBOL_GPL vmlinux 0xd848a597	dequeue_signal
@@ -6427,7 +6428,6 @@ EXPORT_SYMBOL_GPL vmlinux 0xdc28ded5	spi_unregister_master
 EXPORT_SYMBOL_GPL vmlinux 0xdc45de81	firmware_register
 EXPORT_SYMBOL_GPL vmlinux 0xdc89980a	inet6_lookup
 EXPORT_SYMBOL_GPL vmlinux 0xdcc7faad	pci_block_user_cfg_access
-EXPORT_SYMBOL_GPL vmlinux 0xddca21eb	exit_fs
 EXPORT_SYMBOL_GPL vmlinux 0xde1eeed5	blocking_notifier_chain_unregister
 EXPORT_SYMBOL_GPL vmlinux 0xde2a3fc2	klist_node_attached
 EXPORT_SYMBOL_GPL vmlinux 0xdebb05ef	skb_pull_rcsum
