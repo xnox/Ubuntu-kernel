@@ -1,9 +1,24 @@
-linux-lts-backport-maverick (2.6.35-32.66~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-maverick (2.6.35-32.67~lucid1) lucid-proposed; urgency=low
 
-  [Brad Figg]
+  [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #931795
+    - LP: #947898
+
+  [ Upstream Kernel Changes ]
+
+  * KVM: Device assignment permission checks
+    - LP: #897812
+    - CVE-2011-4347
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 06 Mar 2012 15:51:10 +0000
+
+linux (2.6.35-32.66) maverick-proposed; urgency=low
+
+  [Herton R. Krzesinski]
+
+  * Release Tracking Bug
+    - LP: #931600
 
   [ Upstream Kernel Changes ]
 
@@ -17,7 +32,7 @@ linux-lts-backport-maverick (2.6.35-32.66~lucid1) lucid-proposed; urgency=low
     - LP: #789409
     - CVE-2011-3619
 
- -- Brad Figg <brad.figg@canonical.com>  Mon, 13 Feb 2012 16:04:52 -0800
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 13 Feb 2012 16:46:42 -0200
 
 linux (2.6.35-32.65) maverick-proposed; urgency=low
 
