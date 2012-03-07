@@ -1,0 +1,289 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+from os                                 import path
+from urllib                             import urlretrieve
+
+from lpltk.LaunchpadService             import LaunchpadService
+
+from ktl.utils                          import stdo, error, dump, json_load, FileDoesntExist
+from ktl.dbg                            import Dbg
+from ktl.cfg                            import Cfg, CfgError
+from ktl.debian                         import Debian
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    def __init__(self, error): self.msg = error
+    def __str__(self): return self.msg
+
+# Cmdline
+#
+class Cmdline:
+
+    """
+    Handle all the command line processing for the application.
+    """
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error("%s\n" % e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--verbose] [--debug=<dbg options>] [bug-id,bug-id,..]                            \n" % defaults['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("                         Recognized debug options:                                           \n")
+        stdo("                             enter                                                           \n")
+        stdo("                             leave                                                           \n")
+        stdo("                             verbose                                                         \n")
+        stdo("                             cfg                                                             \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --debug=\"enter,leave,verbose\"                                                   \n" % defaults['app_name'])
+
+    # process
+    #
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        result = True
+        try:
+            cfg = defaults
+            optsShort = ''
+            optsLong  = ['help', 'verbose', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--verbose'):
+                    cfg['verbose'] = True
+                    if 'verbose' not in Dbg.levels:
+                        Dbg.levels.append('verbose')
+
+                elif opt in ('--debug'):
+                    cfg['debug'] = val.split(',')
+                    for level in cfg['debug']:
+                        if level not in Dbg.levels:
+                            Dbg.levels.append(level)
+
+            if result: # No errors yet
+                if len(args) > 0:
+                    cfg['json_file'] = args
+
+        except GetoptError, error:
+            raise CmdlineError(error)
+
+        # Verify we have all the command line options that are required.
+        #
+        if 'json_file' not in cfg:
+            raise CmdlineError("A single json data file must be specified.\n")
+
+        if len(cfg['json_file']) > 1:
+            raise CmdlineError("A single json data file must be specified.\n")
+
+        cfg['json_file'] = cfg['json_file'][0]
+
+        return cfg
+
+
+# Exit
+#
+class Exit():
+    """
+    If an error message has already been displayed and we want to just exit the app, this
+    exception is raised.
+    """
+    pass
+
+# PPA
+#
+class PPA():
+    """
+    This class/script examines all 'open' bugs. If a given bug was filed against a
+    version of Ubuntu that is no longer supported, change the status of that bug
+    to "Won't Fix" and add a comment explaining why it was marked as such.
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("PPA.__init__")
+
+        self.cfg      = cfg
+
+        Dbg.leave("PPA.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        Dbg.enter("PPA.initialize")
+
+        try:
+            # Process the command line arguments, and any configuration file options. Make sure
+            # that any required parameters have been provided.
+            #
+            self.cfg = Cfg.merge_options(defaults, self.cfg)
+
+
+            Dbg.verbose("Connecting to LaunchPad...")
+            self.lp = LaunchpadService(self.cfg)
+            Dbg.verbose("  connected.\n")
+
+            self.ckt     = self.lp.launchpad.people['canonical-kernel-team']
+            Dbg.verbose("canonical-kernel-team team found\n")
+            self.ckt_ppa = self.ckt.getPPAByName(name='ppa')
+            Dbg.verbose("canonical-kernel-team ppa found\n")
+
+        except CfgError as e:
+            error(e)
+            Dbg.leave("PPA.initialize")
+            raise Exit()
+
+        except FileDoesntExist as e:
+            e.print_std_error()
+            Dbg.leave("PPA.initialize")
+            raise Exit()
+
+        Dbg.leave("PPA.initialize")
+        return
+
+    # update_symlink
+    #
+    def update_symlink(self, p, v, b):
+        stdo("%s-%s-%s.current linked to: ??\n" % (p, v, b['arch_tag']))
+
+    # diff
+    #
+    def diff(self, ppa_before, ppa_now):
+        # Find the differences between the ppa-info file that was specified on the command line and
+        # the ppa builds that are in the ppa right now.
+        #
+        ppa_diff = {}
+
+        for id in ppa_now:
+            if id not in ppa_before:
+                ppa_diff[id] = ppa_now[id]
+
+        return ppa_diff
+
+    # ppa_build_summaries
+    #
+    def ppa_build_summaries(self):
+        retval = {}
+
+        for pb in self.ckt_ppa.getPublishedBinaries(pocket='Release', status='Published', binary_name='linux-image'):
+            pkg = {}
+
+            (p, v, x, s, a) = pb.display_name.split(' ')
+            m = Debian.version_rc.match(v)
+            lkv = m.group(1)
+            abi = m.group(2)
+            bld = m.group(3)
+            pkg['version'] = v
+
+            url = ""
+            for binary in pb.binaryFileUrls():
+                url = binary
+            pkg['binary'] = url
+
+            p = p.replace('-%s-%s' % (lkv, abi), '')
+            id = '%s:%s:%s:%s' % (p, lkv, s, a)
+            retval['%s' % (id)] = pkg
+
+            #stdo("--------------------------------------------------\n")
+            #stdo("                 id: %s\n" % id)
+            #stdo("Binary Package Name: %s\n" % pb.binary_package_name)
+            #stdo("     Component Name: %s\n" % pb.component_name)
+            #stdo("       Display Name: %s\n" % pb.display_name)
+            #stdo("       Date Created: %s\n" % pb.date_created)
+            #stdo("  Date Made Pending: %s\n" % pb.date_made_pending)
+            #stdo("     Date Published: %s\n" % pb.date_published)
+            #stdo("             Pocket: %s\n" % pb.pocket)
+            #stdo("             Status: %s\n" % pb.status)
+            #stdo("               URLS: ")
+            #for binary in pb.binaryFileUrls():
+            #    stdo("                     %s\n" % binary)
+            #stdo("\n")
+        return retval
+
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("PPA.main")
+
+        try:
+            self.initialize()
+
+            ppa_now = self.ppa_build_summaries()
+            ppa_diff = self.diff(json_load(self.cfg['json_file']), self.ppa_build_summaries())
+
+            for id in ppa_diff:
+                (p, v, s, a) = id.split(':')
+                urlretrieve(ppa_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
+
+            dump(ppa_now)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("PPA.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+    defaults['launchpad_client_name']   = 'kernel-team-lp-find-updated-bugs'
+    defaults['configuration_file'] = path.join(path.expanduser('~'), '.kteam-bugs')
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = PPA(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+
