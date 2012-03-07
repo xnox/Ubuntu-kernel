@@ -3448,6 +3448,7 @@ EXPORT_SYMBOL vmlinux 0x90aa2796	freeze_bdev
 EXPORT_SYMBOL vmlinux 0x90b75d36	create_empty_buffers
 EXPORT_SYMBOL vmlinux 0x90b7da6d	iget_locked
 EXPORT_SYMBOL vmlinux 0x90deddf9	__blockdev_direct_IO
+EXPORT_SYMBOL vmlinux 0x90f83305	scsi_cmd_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x90f9dda7	generic_file_mmap
 EXPORT_SYMBOL vmlinux 0x91009452	schedule_delayed_work
 EXPORT_SYMBOL vmlinux 0x911b93e7	pcix_get_max_mmrbc
@@ -3757,6 +3758,7 @@ EXPORT_SYMBOL vmlinux 0xa8dbf4e4	kernel_getsockopt
 EXPORT_SYMBOL vmlinux 0xa8fef7bb	security_unix_may_send
 EXPORT_SYMBOL vmlinux 0xa910c266	d_splice_alias
 EXPORT_SYMBOL vmlinux 0xa91c284c	jbd2_journal_file_inode
+EXPORT_SYMBOL vmlinux 0xa9696cad	scsi_verify_blk_ioctl
 EXPORT_SYMBOL vmlinux 0xa98f21e1	scsi_register
 EXPORT_SYMBOL vmlinux 0xa99b52e9	revert_creds
 EXPORT_SYMBOL vmlinux 0xa99cd3a1	nand_default_bbt
