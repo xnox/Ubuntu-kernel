@@ -1,3 +1,10 @@
+linux-meta (3.2.0.18.20) precise; urgency=low
+
+  * linux-image-virtual-extras should depend on linux-virtual
+    LP: #947357 
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 07 Mar 2012 11:32:59 -0700
+
 linux-meta (3.2.0.18.19) precise; urgency=low
 
   * amd64 -server no longer exists, no linux-backports-modules there.
