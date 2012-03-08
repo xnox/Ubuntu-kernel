@@ -27,6 +27,9 @@ IgnorePatterns = dict()
 IgnorePatterns["dapper" ] = [ ".*_xen.deb", ".*iseries-smp.*" ]
 IgnorePatterns["karmic" ] = [ ".*dove-z0.*" ]
 IgnorePatterns["lucid"] = [ ".*_lpia.deb" ]
+IgnorePatterns["natty"] = [ ".*_ppc64.deb" ]
+IgnorePatterns["oneiric"] = [ ".*_ppc64.deb" ]
+IgnorePatterns["precise"] = [ ".*_ppc64.deb" ]
 
 #------------------------------------------------------------------------------
 # Setup the command line parser and run it.
