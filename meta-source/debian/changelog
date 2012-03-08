@@ -1,3 +1,16 @@
+linux-meta (3.0.0.17.20) oneiric-proposed; urgency=low
+
+  [ Luis Henriques ]
+
+  * Bump ABI
+
+  [ Tim Gardner ]
+
+  * linux-image-virtual-extras must depend on linux-virtual
+    - LP: #947357
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 08 Mar 2012 16:26:20 +0000
+
 linux-meta (3.0.0.16.19) oneiric-proposed; urgency=low
 
   [ Leann Ogasawara ]
