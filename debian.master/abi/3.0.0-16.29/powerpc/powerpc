@@ -6549,6 +6549,7 @@ EXPORT_SYMBOL vmlinux 0x3680d2de	inet_csk_accept
 EXPORT_SYMBOL vmlinux 0x3684a4c7	jbd2_journal_unlock_updates
 EXPORT_SYMBOL vmlinux 0x36852d67	pci_fixup_device
 EXPORT_SYMBOL vmlinux 0x3696fb27	of_platform_device_create
+EXPORT_SYMBOL vmlinux 0x36a77433	scsi_verify_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x36c01334	serio_interrupt
 EXPORT_SYMBOL vmlinux 0x36e360e3	__hw_addr_add_multiple
 EXPORT_SYMBOL vmlinux 0x36edbb34	ip_options_compile
@@ -8445,6 +8446,7 @@ EXPORT_SYMBOL vmlinux 0xbfa49138	sock_register
 EXPORT_SYMBOL vmlinux 0xbfb87297	of_i2c_register_devices
 EXPORT_SYMBOL vmlinux 0xbfc177bc	iowrite32_rep
 EXPORT_SYMBOL vmlinux 0xbfc3a884	pci_scan_slot
+EXPORT_SYMBOL vmlinux 0xbfcf7fc1	scsi_cmd_blk_ioctl
 EXPORT_SYMBOL vmlinux 0xbfdff814	of_get_address
 EXPORT_SYMBOL vmlinux 0xbfee3ad5	loop_unregister_transfer
 EXPORT_SYMBOL vmlinux 0xc005a0f5	dquot_get_dqinfo

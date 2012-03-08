@@ -7056,6 +7056,7 @@ EXPORT_SYMBOL vmlinux 0x40d04664	console_trylock
 EXPORT_SYMBOL vmlinux 0x40d723a5	max8998_bulk_write
 EXPORT_SYMBOL vmlinux 0x40d8f6ad	mca_device_read_stored_pos
 EXPORT_SYMBOL vmlinux 0x40d92457	pnp_is_active
+EXPORT_SYMBOL vmlinux 0x40eed6e1	scsi_verify_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x40f3213d	ps2_end_command
 EXPORT_SYMBOL vmlinux 0x4108e69a	fb_match_mode
 EXPORT_SYMBOL vmlinux 0x410b7096	__scsi_device_lookup
@@ -9138,6 +9139,7 @@ EXPORT_SYMBOL vmlinux 0xc79bcd36	dm_vcalloc
 EXPORT_SYMBOL vmlinux 0xc7a1792d	pci_bus_read_config_dword
 EXPORT_SYMBOL vmlinux 0xc7a4fbed	rtnl_lock
 EXPORT_SYMBOL vmlinux 0xc7cc6b22	xfrm_state_check_expire
+EXPORT_SYMBOL vmlinux 0xc7dd963f	scsi_cmd_blk_ioctl
 EXPORT_SYMBOL vmlinux 0xc7dfa2f7	ip_generic_getfrag
 EXPORT_SYMBOL vmlinux 0xc7ec6c27	strspn
 EXPORT_SYMBOL vmlinux 0xc8033012	proc_dointvec_jiffies

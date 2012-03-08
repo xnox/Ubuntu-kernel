@@ -7773,6 +7773,7 @@ EXPORT_SYMBOL vmlinux 0x9168c033	rtas_get_sensor
 EXPORT_SYMBOL vmlinux 0x91737774	padata_remove_cpu
 EXPORT_SYMBOL vmlinux 0x9174b785	of_device_is_available
 EXPORT_SYMBOL vmlinux 0x917b13b0	genl_register_family
+EXPORT_SYMBOL vmlinux 0x918cece6	scsi_verify_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x919141f4	macio_unregister_driver
 EXPORT_SYMBOL vmlinux 0x919d1163	tty_termios_baud_rate
 EXPORT_SYMBOL vmlinux 0x91b910e4	blk_recount_segments
@@ -9173,6 +9174,7 @@ EXPORT_SYMBOL vmlinux 0xf389fe60	__hw_addr_init
 EXPORT_SYMBOL vmlinux 0xf3916987	global_cursor_default
 EXPORT_SYMBOL vmlinux 0xf3938233	inet_peer_xrlim_allow
 EXPORT_SYMBOL vmlinux 0xf39bf4d9	put_cmsg
+EXPORT_SYMBOL vmlinux 0xf39c8e00	scsi_cmd_blk_ioctl
 EXPORT_SYMBOL vmlinux 0xf3bf0bce	__bitmap_complement
 EXPORT_SYMBOL vmlinux 0xf3cc2794	max8998_update_reg
 EXPORT_SYMBOL vmlinux 0xf3eabcc3	sync_mapping_buffers

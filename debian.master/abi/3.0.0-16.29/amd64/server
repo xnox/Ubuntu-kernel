@@ -7413,6 +7413,7 @@ EXPORT_SYMBOL vmlinux 0x60e00e55	neigh_table_init
 EXPORT_SYMBOL vmlinux 0x60e5d64a	follow_up
 EXPORT_SYMBOL vmlinux 0x61150125	set_pages_x
 EXPORT_SYMBOL vmlinux 0x612390ad	netpoll_set_trap
+EXPORT_SYMBOL vmlinux 0x6124b9df	scsi_cmd_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x6128b5fc	__printk_ratelimit
 EXPORT_SYMBOL vmlinux 0x61446bba	acpi_get_physical_device
 EXPORT_SYMBOL vmlinux 0x6174a9f6	key_validate
@@ -9248,6 +9249,7 @@ EXPORT_SYMBOL vmlinux 0xdb760f52	__kfifo_free
 EXPORT_SYMBOL vmlinux 0xdbcd416e	sysctl_ip_nonlocal_bind
 EXPORT_SYMBOL vmlinux 0xdbea9cac	completion_done
 EXPORT_SYMBOL vmlinux 0xdc047fc4	scsi_dev_info_list_add_keyed
+EXPORT_SYMBOL vmlinux 0xdc05ef30	scsi_verify_blk_ioctl
 EXPORT_SYMBOL vmlinux 0xdc14eda7	pci_pci_problems
 EXPORT_SYMBOL vmlinux 0xdc2519e0	param_set_ulong
 EXPORT_SYMBOL vmlinux 0xdc2adb35	add_taint

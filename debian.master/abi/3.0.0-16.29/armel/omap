@@ -5221,6 +5221,7 @@ EXPORT_SYMBOL vmlinux 0x6bfb8d67	may_umount_tree
 EXPORT_SYMBOL vmlinux 0x6c1ce5ce	strcspn
 EXPORT_SYMBOL vmlinux 0x6c61ce70	num_registered_fb
 EXPORT_SYMBOL vmlinux 0x6c66128f	rfkill_unregister
+EXPORT_SYMBOL vmlinux 0x6c6c6fae	scsi_verify_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x6c702af7	sysctl_udp_rmem_min
 EXPORT_SYMBOL vmlinux 0x6c9a6418	__neigh_event_send
 EXPORT_SYMBOL vmlinux 0x6cbfb930	netif_stacked_transfer_operstate
@@ -7102,6 +7103,7 @@ EXPORT_SYMBOL vmlinux 0xf02af200	cdrom_release
 EXPORT_SYMBOL vmlinux 0xf05afb65	insert_inode_locked
 EXPORT_SYMBOL vmlinux 0xf05b5288	stop_tty
 EXPORT_SYMBOL vmlinux 0xf05d5bea	_dev_info
+EXPORT_SYMBOL vmlinux 0xf06601d6	scsi_cmd_blk_ioctl
 EXPORT_SYMBOL vmlinux 0xf08810dc	create_mnt_ns
 EXPORT_SYMBOL vmlinux 0xf0ac5843	scsi_allocate_command
 EXPORT_SYMBOL vmlinux 0xf0b04805	tty_port_init
