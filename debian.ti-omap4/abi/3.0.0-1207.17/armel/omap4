@@ -5404,6 +5404,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	scsi_block_requests
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_block_when_processing_errors
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_build_sense_buffer
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_calculate_bounce_limit
+EXPORT_SYMBOL vmlinux 0x00000000	scsi_cmd_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_cmd_get_serial
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_cmd_ioctl
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_cmd_print_sense_hdr
@@ -5489,6 +5490,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	scsi_test_unit_ready
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_track_queue_full
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_unblock_requests
 EXPORT_SYMBOL vmlinux 0x00000000	scsi_unregister
+EXPORT_SYMBOL vmlinux 0x00000000	scsi_verify_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x00000000	scsicam_bios_param
 EXPORT_SYMBOL vmlinux 0x00000000	scsilun_to_int
 EXPORT_SYMBOL vmlinux 0x00000000	search_binary_handler

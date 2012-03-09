@@ -463,6 +463,7 @@ ieee802154
 ifb
 iforce
 ili9320
+imon
 inexio
 inftl
 int51x1
@@ -602,6 +603,14 @@ libiscsi
 libiscsi_tcp
 lightning
 linear
+lirc_igorplugusb
+lirc_imon
+lirc_parallel
+lirc_sasem
+lirc_serial
+lirc_sir
+lirc_ttusbir
+lirc_zilog
 lis3lv02d
 lis3lv02d_i2c
 lis3lv02d_spi
@@ -655,6 +664,7 @@ max7359_keypad
 max8660
 mb86a20s
 mc44s803
+mceusb
 mcp2120-sir
 mcp251x
 mcs5000_ts
@@ -926,6 +936,7 @@ rc-kworld-plus-tv-analog
 rc-leadtek-y04g0051
 rc-lirc
 rc-lme2510
+rc-loopback
 rc-manli
 rc-msi-digivox-ii
 rc-msi-digivox-iii
@@ -968,6 +979,7 @@ rc-winfast
 rc-winfast-usbii-deluxe
 realtek
 redboot
+redrat3
 reed_solomon
 reiserfs
 rfd_ftl
@@ -1198,6 +1210,7 @@ stir4200
 stkwebcam
 stowaway
 stp
+streamzap
 stv0288
 stv0297
 stv0299
