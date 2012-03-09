@@ -7436,6 +7436,7 @@ EXPORT_SYMBOL vmlinux 0x590d7b09	simple_transaction_get
 EXPORT_SYMBOL vmlinux 0x591bf6ec	mii_ethtool_sset
 EXPORT_SYMBOL vmlinux 0x591d0d29	rtnl_unicast
 EXPORT_SYMBOL vmlinux 0x592b59af	acpi_evaluate_object_typed
+EXPORT_SYMBOL vmlinux 0x59308a5d	scsi_verify_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x5934392b	fb_register_client
 EXPORT_SYMBOL vmlinux 0x59361f91	tcp_v4_md5_hash_skb
 EXPORT_SYMBOL vmlinux 0x594bf15b	ioport_map
@@ -8071,6 +8072,7 @@ EXPORT_SYMBOL vmlinux 0x7e9bf973	unbind_con_driver
 EXPORT_SYMBOL vmlinux 0x7e9ebb05	kernel_thread
 EXPORT_SYMBOL vmlinux 0x7eba5dbd	sock_common_setsockopt
 EXPORT_SYMBOL vmlinux 0x7ebbc8f2	alloc_hippi_dev
+EXPORT_SYMBOL vmlinux 0x7ec25a31	scsi_cmd_blk_ioctl
 EXPORT_SYMBOL vmlinux 0x7ecb001b	__per_cpu_offset
 EXPORT_SYMBOL vmlinux 0x7eeeaab7	skb_copy_datagram_iovec
 EXPORT_SYMBOL vmlinux 0x7f107b83	scsi_get_device_flags_keyed
