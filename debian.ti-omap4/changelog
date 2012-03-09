@@ -4,6 +4,189 @@ linux-ti-omap4 (3.0.0-1207.18) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.0.0-17.30 ]
+
+  * Release Tracking Bug
+    - LP: #949882
+  * [Config] restore build-% shortcut
+  * (config) Fix virtual flavour inclusion of xen-kbdfront
+    - LP: #944582
+  * readahead: fix pipeline break caused by block plug
+    - LP: #931719
+  * ALSA: HDA: Fix duplicated output to more than one codec
+    - LP: #924320, #931719
+  * ASoC: wm_hubs: Enable line out VMID buffer for single ended line
+    outputs
+    - LP: #931719
+  * ASoC: wm_hubs: fix wrong bits for LINEOUT2 N/P mixer
+    - LP: #931719
+  * ARM: 7306/1: vfp: flush thread hwstate before restoring context from
+    sigframe
+    - LP: #931719
+  * ARM: 7307/1: vfp: fix ptrace regset modification race
+    - LP: #931719
+  * ARM: 7308/1: vfp: flush thread hwstate before copying ptrace registers
+    - LP: #931719
+  * ARM: OMAP2+: GPMC: fix device size setup
+    - LP: #931719
+  * drivers/tty/vt/vt_ioctl.c: fix KDFONTOP 32bit compatibility layer
+    - LP: #931719
+  * proc: mem_release() should check mm != NULL
+    - LP: #931719
+  * proc: unify mem_read() and mem_write()
+    - LP: #931719
+  * proc: make sure mem_open() doesn't pin the target's memory
+    - LP: #931719
+  * firewire: ohci: add reset packet quirk for SB Audigy
+    - LP: #931719
+  * firewire: ohci: disable MSI on Ricoh controllers
+    - LP: #931719
+  * IB/mlx4: pass SMP vendor-specific attribute MADs to firmware
+    - LP: #931719
+  * kprobes: fix a memory leak in function pre_handler_kretprobe()
+    - LP: #931719
+  * at_hdmac: bugfix for enabling channel irq
+    - LP: #931719
+  * mm/filemap_xip.c: fix race condition in xip_file_fault()
+    - LP: #931719
+  * mm: compaction: check pfn_valid when entering a new MAX_ORDER_NR_PAGES
+    block during isolation for migration
+    - LP: #931719
+  * drm/radeon: Set DESKTOP_HEIGHT register to the framebuffer (not mode)
+    height.
+    - LP: #931719
+  * drm/nouveau/gem: fix fence_sync race / oops
+    - LP: #931719
+  * drm/radeon/kms: disable output polling when suspended
+    - LP: #931719
+  * sched/rt: Fix task stack corruption under
+    __ARCH_WANT_INTERRUPTS_ON_CTXSW
+    - LP: #931719
+  * ASoC: Ensure we generate a driver name
+    - LP: #931719
+  * udf: Mark LVID buffer as uptodate before marking it dirty
+    - LP: #931719
+  * drm/i915: HDMI hot remove notification to audio driver
+    - LP: #931719
+  * drm/i915: DisplayPort hot remove notification to audio driver
+    - LP: #931719
+  * drm/i915: check ACTHD of all rings
+    - LP: #931719
+  * drm/i915: Fix TV Out refresh rate.
+    - LP: #931719
+  * drm/i915: handle 3rd pipe
+    - LP: #931719
+  * eCryptfs: Infinite loop due to overflow in ecryptfs_write()
+    - LP: #931719
+  * cifs: Fix oops in session setup code for null user mounts
+    - LP: #931719
+  * atmel_lcdfb: fix usage of CONTRAST_CTR in suspend/resume
+    - LP: #931719
+  * lockdep, bug: Exclude TAINT_FIRMWARE_WORKAROUND from disabling lockdep
+    - LP: #931719
+  * hwmon: (w83627ehf) Fix number of fans for NCT6776F
+    - LP: #931719
+  * ASoC: wm_hubs: Fix routing of input PGAs to line output mixer
+    - LP: #931719
+  * ASoC: wm_hubs: Correct line input to line output 2 paths
+    - LP: #931719
+  * ASoC: wm8962: Fix word length configuration
+    - LP: #931719
+  * pcmcia: fix socket refcount decrementing on each resume
+    - LP: #931719
+  * mm: compaction: check for overlapping nodes during isolation for
+    migration
+    - LP: #931719
+  * mm: fix UP THP spin_is_locked BUGs
+    - LP: #931719
+  * target: Use correct preempted registration sense code
+    - LP: #931719
+  * target: Allow PERSISTENT RESERVE IN for non-reservation holder
+    - LP: #931719
+  * target: Correct sense key for INVALID FIELD IN {PARAMETER LIST,CDB}
+    - LP: #931719
+  * Staging: asus_oled: fix image processing
+    - LP: #931719
+  * Staging: asus_oled: fix NULL-ptr crash on unloading
+    - LP: #931719
+  * staging: r8712u: Add new Sitecom UsB ID
+    - LP: #931719
+  * usb: gadget: zero: fix bug in loopback autoresume handling
+    - LP: #931719
+  * usb: Skip PCI USB quirk handling for Netlogic XLP
+    - LP: #931719
+  * USB: usbserial: add new PID number (0xa951) to the ftdi driver
+    - LP: #931719
+  * USB: add new zte 3g-dongle's pid to option.c
+    - LP: #931719
+  * mmc: cb710 core: Add missing spin_lock_init for irq_lock of struct
+    cb710_chip
+    - LP: #931719
+  * powernow-k8: Avoid Pstate MSR accesses on systems supporting CPB
+    - LP: #931719
+  * powernow-k8: Fix indexing issue
+    - LP: #931719
+  * net: fix NULL dereferences in check_peer_redir()
+    - LP: #931719
+  * Linux 3.0.21
+    - LP: #931719
+  * hp_accel: Add a new PNP id
+    - LP: #910040
+  * be2net: move to new vlan model
+    - LP: #880893
+    - CVE-2011-3347
+  * be2net: non-member vlan pkts not received in promiscous mode
+    - LP: #880893
+    - CVE-2011-3347
+  * drm/radeon/kms: fix dp_detect handling for DP bridge chips
+    - LP: #825777
+  * drm/radeon/kms: fix TRAVIS panel setup
+    - LP: #825777
+  * perf evsel: Fix an issue where perf report fails to show the proper
+    percentage
+    - LP: #937915
+  * perf tools: Fix perf stack to non executable on x86_64
+    - LP: #937915
+  * drm/i915: no lvds quirk for AOpen MP45
+    - LP: #937915
+  * hwmon: (f75375s) Fix bit shifting in f75375_write16
+    - LP: #937915
+  * lib: proportion: lower PROP_MAX_SHIFT to 32 on 64-bit kernel
+    - LP: #937915
+  * relay: prevent integer overflow in relay_open()
+    - LP: #937915
+  * mac80211: timeout a single frame in the rx reorder buffer
+    - LP: #937915
+  * writeback: fix dereferencing NULL bdi->dev on trace_writeback_queue
+    - LP: #937915
+  * gpio/pca953x: Fix warning of enabled interrupts in handler
+    - LP: #937915
+  * hwmon: (f75375s) Fix automatic pwm mode setting for F75373 & F75375
+    - LP: #937915
+  * crypto: sha512 - Use binary and instead of modulus
+    - LP: #937915
+  * crypto: sha512 - Avoid stack bloat on i386
+    - LP: #937915
+  * ALSA: intel8x0: Fix default inaudible sound on Gateway M520
+    - LP: #930842, #937915
+  * xen pvhvm: do not remap pirqs onto evtchns if !xen_have_vector_callback
+    - LP: #937915
+  * slub: fix a possible memleak in __slab_alloc()
+    - LP: #937915
+  * crypto: sha512 - use standard ror64()
+    - LP: #937915
+  * Linux 3.0.22
+    - LP: #937915
+  * KVM: Device assignment permission checks
+    - LP: #897812
+    - CVE-2011-4347
+  * ACPI / PM: Do not save/restore NVS on Asus K54C/K54HR
+    - LP: #898503
+  * bsg: fix sysfs link remove warning
+    - LP: #946928
+  * eCryptfs: Copy up lower inode attrs after setting lower xattr
+    - LP: #926292
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Fri, 09 Mar 2012 10:45:50 +0100
 
 linux-ti-omap4 (3.0.0-1207.17) oneiric-proposed; urgency=low
