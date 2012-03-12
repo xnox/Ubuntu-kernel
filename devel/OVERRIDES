@@ -314,3 +314,6 @@ CONFIG_B43_PHY_HT y note<experimental PHY support -- opt-in>
 
 # Optional scheduling control
 CONFIG_CFS_BANDWIDTH y note<optional scheduling control -- opt-in>
+
+# Hardware specific experimental options.
+CONFIG_EDAC_SBRIDGE m note<h/w specific experimental option -- opt-in>
