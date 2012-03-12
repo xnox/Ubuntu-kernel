@@ -243,6 +243,7 @@ git clean -x -f -d
 
 build_common()
 {
+	:
 #	cat - <<EOM
 #	ccache="$CCACHE_DIR"
 #EOM
