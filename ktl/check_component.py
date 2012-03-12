@@ -149,8 +149,6 @@ class CheckComponent():
             return self.main_component
         if (package == 'linux-ti-omap4'):
             return self.main_component
-        if (package == 'linux-meta-ti-omap4'):
-            return self.main_component
         if (package == 'linux-mvl-dove'):
             return self.main_component
         return self.default_component
