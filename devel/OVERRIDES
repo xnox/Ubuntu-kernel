@@ -311,3 +311,6 @@ CONFIG_RTL8192DE m note<experimental wireless driver -- opt-in>
 
 # PHY device with non-standard naming.
 CONFIG_B43_PHY_HT y note<experimental PHY support -- opt-in>
+
+# Optional scheduling control
+CONFIG_CFS_BANDWIDTH y note<optional scheduling control -- opt-in>
