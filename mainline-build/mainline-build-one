@@ -243,18 +243,18 @@ git clean -x -f -d
 
 build_common()
 {
-	cat - <<EOM
-	ccache="$CCACHE_DIR"
-EOM
-	cat - <<'EOM'
-	if [ "$ccache" != "" -a -d /usr/lib/ccache ]; then
-		export PATH=/usr/lib/ccache:$PATH
-		export CCACHE_DIR="$ccache"
-
-		echo "Using ccache in $CCACHE_DIR"
-		test -d $CCACHE_DIR || mkdir -p $CCACHE_DIR
-	fi
-EOM
+#	cat - <<EOM
+#	ccache="$CCACHE_DIR"
+#EOM
+#	cat - <<'EOM'
+#	if [ "$ccache" != "" -a -d /usr/lib/ccache ]; then
+#		export PATH=/usr/lib/ccache:$PATH
+#		export CCACHE_DIR="$ccache"
+#
+#		echo "Using ccache in $CCACHE_DIR"
+#		test -d $CCACHE_DIR || mkdir -p $CCACHE_DIR
+#	fi
+#EOM
 }
 
 #
@@ -271,6 +271,7 @@ do_chroot "$build_release-amd64" \
 {
 	build_common
 	cat - <<'EOM'
+	debian/rules do_tools=0 no_dumpfile=1 build-generic
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
 EOM
 } | do_chroot "$build_release-amd64" "/bin/bash"
@@ -279,6 +280,7 @@ do_chroot "$build_release-i386" \
 {
 	build_common
 	cat - <<'EOM'
+	debian/rules do_tools=0 no_dumpfile=1 build-generic
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic
 EOM
 } | do_chroot "$build_release-i386" "/bin/bash"
@@ -287,6 +289,7 @@ do_chroot "$build_release-i386" \
 {
 	build_common
 	cat - <<'EOM'
+	debian/rules do_tools=0 no_dumpfile=1 build-generic-pae
 	fakeroot debian/rules do_tools=0 no_dumpfile=1 binary-generic-pae
 EOM
 } | do_chroot "$build_release-i386" "/bin/bash"
