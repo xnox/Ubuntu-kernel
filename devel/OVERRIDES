@@ -321,3 +321,7 @@ CONFIG_EDAC_SBRIDGE m note<h/w specific experimental option -- opt-in>
 # Dummy drivers
 CONFIG_IIO_SIMPLE_DUMMY_BUFFER n note<dummy driver>
 CONFIG_IIO_SIMPLE_DUMMY_EVENTS n note<dummy driver>
+
+# Options where the default is simply too broad:
+#  INPUT_KXTJ9_POLLED_MODE -- polling is bad generally
+CONFIG_INPUT_KXTJ9_POLLED_MODE n
