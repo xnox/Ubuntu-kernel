@@ -750,17 +750,6 @@ static int __must_check __sta_info_destroy(struct sta_info *sta)
 
 	sta->dead = true;
 
-	if (test_sta_flag(sta, WLAN_STA_PS_STA) ||
-	    test_sta_flag(sta, WLAN_STA_PS_DRIVER)) {
-		BUG_ON(!sdata->bss);
-
-		clear_sta_flag(sta, WLAN_STA_PS_STA);
-		clear_sta_flag(sta, WLAN_STA_PS_DRIVER);
-
-		atomic_dec(&sdata->bss->num_sta_ps);
-		sta_info_recalc_tim(sta);
-	}
-
 	local->num_sta--;
 	local->sta_generation++;
 
@@ -786,6 +775,15 @@ static int __must_check __sta_info_destroy(struct sta_info *sta)
 	 * associated with this station that we clean up below.
 	 */
 	synchronize_rcu();
+
+	if (test_sta_flag(sta, WLAN_STA_PS_STA)) {
+		BUG_ON(!sdata->bss);
+
+		clear_sta_flag(sta, WLAN_STA_PS_STA);
+
+		atomic_dec(&sdata->bss->num_sta_ps);
+		sta_info_recalc_tim(sta);
+	}
 
 	for (ac = 0; ac < IEEE80211_NUM_ACS; ac++) {
 		local->total_ps_buffered -= skb_queue_len(&sta->ps_tx_buf[ac]);
@@ -1009,9 +1007,11 @@ EXPORT_SYMBOL(ieee80211_find_sta);
 static void clear_sta_ps_flags(void *_sta)
 {
 	struct sta_info *sta = _sta;
+	struct ieee80211_sub_if_data *sdata = sta->sdata;
 
 	clear_sta_flag(sta, WLAN_STA_PS_DRIVER);
-	clear_sta_flag(sta, WLAN_STA_PS_STA);
+	if (test_and_clear_sta_flag(sta, WLAN_STA_PS_STA))
+		atomic_dec(&sdata->bss->num_sta_ps);
 }
 
 /* powersave support code */
@@ -1113,7 +1113,7 @@ static void ieee80211_send_null_response(struct ieee80211_sub_if_data *sdata,
 	 * exchange. Also set EOSP to indicate this packet
 	 * ends the poll/service period.
 	 */
-	info->flags |= IEEE80211_TX_CTL_POLL_RESPONSE |
+	info->flags |= IEEE80211_TX_CTL_NO_PS_BUFFER |
 		       IEEE80211_TX_STATUS_EOSP |
 		       IEEE80211_TX_CTL_REQ_TX_STATUS;
 
@@ -1240,7 +1240,7 @@ ieee80211_sta_ps_deliver_response(struct sta_info *sta,
 			 * STA may still remain is PS mode after this frame
 			 * exchange.
 			 */
-			info->flags |= IEEE80211_TX_CTL_POLL_RESPONSE;
+			info->flags |= IEEE80211_TX_CTL_NO_PS_BUFFER;
 
 			/*
 			 * Use MoreData flag to indicate whether there are

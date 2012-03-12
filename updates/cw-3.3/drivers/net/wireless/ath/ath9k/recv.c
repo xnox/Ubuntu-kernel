@@ -822,6 +822,14 @@ static bool ath9k_rx_accept(struct ath_common *common,
 		(ATH9K_RXERR_DECRYPT | ATH9K_RXERR_CRC | ATH9K_RXERR_MIC |
 		 ATH9K_RXERR_KEYMISS));
 
+	/*
+	 * Key miss events are only relevant for pairwise keys where the
+	 * descriptor does contain a valid key index. This has been observed
+	 * mostly with CCMP encryption.
+	 */
+	if (rx_stats->rs_keyix == ATH9K_RXKEYIX_INVALID)
+		rx_stats->rs_status &= ~ATH9K_RXERR_KEYMISS;
+
 	if (!rx_stats->rs_datalen)
 		return false;
         /*
@@ -946,6 +954,7 @@ static void ath9k_process_rssi(struct ath_common *common,
 	struct ath_softc *sc = hw->priv;
 	struct ath_hw *ah = common->ah;
 	int last_rssi;
+	int rssi = rx_stats->rs_rssi;
 
 	if (!rx_stats->is_mybeacon ||
 	    ((ah->opmode != NL80211_IFTYPE_STATION) &&
@@ -957,13 +966,12 @@ static void ath9k_process_rssi(struct ath_common *common,
 
 	last_rssi = sc->last_rssi;
 	if (likely(last_rssi != ATH_RSSI_DUMMY_MARKER))
-		rx_stats->rs_rssi = ATH_EP_RND(last_rssi,
-					      ATH_RSSI_EP_MULTIPLIER);
-	if (rx_stats->rs_rssi < 0)
-		rx_stats->rs_rssi = 0;
+		rssi = ATH_EP_RND(last_rssi, ATH_RSSI_EP_MULTIPLIER);
+	if (rssi < 0)
+		rssi = 0;
 
 	/* Update Beacon RSSI, this is used by ANI. */
-	ah->stats.avgbrssi = rx_stats->rs_rssi;
+	ah->stats.avgbrssi = rssi;
 }
 
 /*
@@ -1003,6 +1011,8 @@ static int ath9k_rx_skb_preprocess(struct ath_common *common,
 	rx_status->signal = ah->noise + rx_stats->rs_rssi;
 	rx_status->antenna = rx_stats->rs_antenna;
 	rx_status->flag |= RX_FLAG_MACTIME_MPDU;
+	if (rx_stats->rs_moreaggr)
+		rx_status->flag |= RX_FLAG_NO_SIGNAL_VAL;
 
 	return 0;
 }

@@ -176,7 +176,8 @@ ieee80211_add_rx_radiotap_header(struct ieee80211_local *local,
 	pos += 2;
 
 	/* IEEE80211_RADIOTAP_DBM_ANTSIGNAL */
-	if (local->hw.flags & IEEE80211_HW_SIGNAL_DBM) {
+	if (local->hw.flags & IEEE80211_HW_SIGNAL_DBM &&
+	    !(status->flag & RX_FLAG_NO_SIGNAL_VAL)) {
 		*pos = status->signal;
 		rthdr->it_present |=
 			cpu_to_le32(1 << IEEE80211_RADIOTAP_DBM_ANTSIGNAL);
@@ -611,7 +612,7 @@ static void ieee80211_sta_reorder_release(struct ieee80211_hw *hw,
 	index = seq_sub(tid_agg_rx->head_seq_num, tid_agg_rx->ssn) %
 						tid_agg_rx->buf_size;
 	if (!tid_agg_rx->reorder_buf[index] &&
-	    tid_agg_rx->stored_mpdu_num > 1) {
+	    tid_agg_rx->stored_mpdu_num) {
 		/*
 		 * No buffers ready to be released, but check whether any
 		 * frames in the reorder buffer have timed out.
@@ -1145,19 +1146,15 @@ static void ap_sta_ps_start(struct sta_info *sta)
 
 static void ap_sta_ps_end(struct sta_info *sta)
 {
-	struct ieee80211_sub_if_data *sdata = sta->sdata;
-
-	atomic_dec(&sdata->bss->num_sta_ps);
-
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
 	printk(KERN_DEBUG "%s: STA %pM aid %d exits power save mode\n",
-	       sdata->name, sta->sta.addr, sta->sta.aid);
+	       sta->sdata->name, sta->sta.addr, sta->sta.aid);
 #endif /* CONFIG_MAC80211_VERBOSE_PS_DEBUG */
 
 	if (test_sta_flag(sta, WLAN_STA_PS_DRIVER)) {
 #ifdef CONFIG_MAC80211_VERBOSE_PS_DEBUG
 		printk(KERN_DEBUG "%s: STA %pM aid %d driver-ps-blocked\n",
-		       sdata->name, sta->sta.addr, sta->sta.aid);
+		       sta->sdata->name, sta->sta.addr, sta->sta.aid);
 #endif /* CONFIG_MAC80211_VERBOSE_PS_DEBUG */
 		return;
 	}
@@ -1307,8 +1304,10 @@ ieee80211_rx_h_sta_process(struct ieee80211_rx_data *rx)
 
 	sta->rx_fragments++;
 	sta->rx_bytes += rx->skb->len;
-	sta->last_signal = status->signal;
-	ewma_add(&sta->avg_signal, -status->signal);
+	if (!(status->flag & RX_FLAG_NO_SIGNAL_VAL)) {
+		sta->last_signal = status->signal;
+		ewma_add(&sta->avg_signal, -status->signal);
+	}
 
 	/*
 	 * Change STA power saving mode only at the end of a frame

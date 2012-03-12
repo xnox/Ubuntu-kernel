@@ -28,11 +28,14 @@ ar9003_set_txdesc(struct ath_hw *ah, void *ds, struct ath_tx_info *i)
 	struct ar9003_txc *ads = ds;
 	int checksum = 0;
 	u32 val, ctl12, ctl17;
+	u8 desc_len;
+
+	desc_len = (AR_SREV_9462(ah) ? 0x18 : 0x17);
 
 	val = (ATHEROS_VENDOR_ID << AR_DescId_S) |
 	      (1 << AR_TxRxDesc_S) |
 	      (1 << AR_CtrlStat_S) |
-	      (i->qcu << AR_TxQcuNum_S) | 0x17;
+	      (i->qcu << AR_TxQcuNum_S) | desc_len;
 
 	checksum += val;
 	ACCESS_ONCE(ads->info) = val;
@@ -81,6 +84,7 @@ ar9003_set_txdesc(struct ath_hw *ah, void *ds, struct ath_tx_info *i)
 	ads->ctl20 = 0;
 	ads->ctl21 = 0;
 	ads->ctl22 = 0;
+	ads->ctl23 = 0;
 
 	ctl17 = SM(i->keytype, AR_EncrType);
 	if (!i->is_first) {
@@ -346,7 +350,6 @@ static bool ar9003_hw_get_isr(struct ath_hw *ah, enum ath9k_int *masked)
 static int ar9003_hw_proc_txdesc(struct ath_hw *ah, void *ds,
 				 struct ath_tx_status *ts)
 {
-	struct ar9003_txc *txc = (struct ar9003_txc *) ds;
 	struct ar9003_txs *ads;
 	u32 status;
 
@@ -356,11 +359,7 @@ static int ar9003_hw_proc_txdesc(struct ath_hw *ah, void *ds,
 	if ((status & AR_TxDone) == 0)
 		return -EINPROGRESS;
 
-	ts->qid = MS(ads->ds_info, AR_TxQcuNum);
-	if (!txc || (MS(txc->info, AR_TxQcuNum) == ts->qid))
-		ah->ts_tail = (ah->ts_tail + 1) % ah->ts_size;
-	else
-		return -ENOENT;
+	ah->ts_tail = (ah->ts_tail + 1) % ah->ts_size;
 
 	if ((MS(ads->ds_info, AR_DescId) != ATHEROS_VENDOR_ID) ||
 	    (MS(ads->ds_info, AR_TxRxDesc) != 1)) {
@@ -374,6 +373,7 @@ static int ar9003_hw_proc_txdesc(struct ath_hw *ah, void *ds,
 	ts->ts_seqnum = MS(status, AR_SeqNum);
 	ts->tid = MS(status, AR_TxTid);
 
+	ts->qid = MS(ads->ds_info, AR_TxQcuNum);
 	ts->desc_id = MS(ads->status1, AR_TxDescId);
 	ts->ts_tstamp = ads->status4;
 	ts->ts_status = 0;
