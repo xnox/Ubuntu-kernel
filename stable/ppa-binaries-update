@@ -212,6 +212,7 @@ class PPA():
             lkv = m.group(1)
             abi = m.group(2)
             bld = m.group(3)
+            deriv = m.group(4)
             pkg['version'] = v
 
             url = ""
@@ -220,7 +221,11 @@ class PPA():
             pkg['binary'] = url
 
             p = p.replace('-%s-%s' % (lkv, abi), '')
-            id = '%s:%s:%s:%s' % (p, lkv, s, a)
+            if deriv == '':
+                id = '%s:%s:%s:%s' % (p, lkv, s, a)
+            else:
+                id = '%s:%s%s:%s:%s' % (p, lkv, deriv, s, a)
+
             retval['%s' % (id)] = pkg
 
             #stdo("--------------------------------------------------\n")
@@ -254,6 +259,7 @@ class PPA():
             for id in ppa_diff:
                 (p, v, s, a) = id.split(':')
                 urlretrieve(ppa_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
+                Dbg.verbose("retrieving: %s -> %s-%s-%s.deb\n" % (ppa_diff[id]['binary'], p,v,a))
 
             dump(ppa_now)
 
