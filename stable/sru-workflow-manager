@@ -969,8 +969,25 @@ class Shank(StdApp):
         # Set promote-to-proposed timestamp first, used for checking below
         self.set_tagged_timestamp(taskobj, 'kernel-stable-Promote-to-proposed-end')
 
-        # Check if packages were copied to the right pocket->component
+        # Wait publishing tasks to complete. Usually archive admin sets
+        # the promote-to-proposed task to Fix Released right away after
+        # doing the copy, but actual publishing takes more time. It's
+        # said that the publishing should take at most 1 hour to
+        # complete, but could be a bit more in some cases, or could
+        # vary. Anyway, just wait arbitrarily 1 hour before we do the
+        # actual processing, to avoid sru-workflow-manager to complain
+        # about packages in wrong component while real copying/publishing
+        # still didn't finish, in the case the packages were previously
+        # in the wrong component and are now moved to the right ones.
         bug = taskobj.bug
+        date_str = bug.properties['kernel-stable-Promote-to-proposed-end']
+        timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
+        delta = DeltaTime(timestamp, datetime.utcnow())
+        if delta.hours < 1:
+            self.verbose('Waiting 1 hour after promote-to-proposed was Fix Released\n')
+            return False
+
+        # Check if packages were copied to the right pocket->component
         title = bug.title
         pkg_name = re.findall('linux[^:]*', title)[0]
         pkg_ver = re.findall('([0-9]+\.[^ ]+)', title)[0]
@@ -1052,25 +1069,22 @@ class Shank(StdApp):
                                 % (task.bug.id), msgbody)
                 return False
         else:
-            # We wait for ~1 day before complaining if we don't find the
-            # packages published to -proposed, this gives some time in
-            # the case copy/publishing take some minutes or hours after
-            # promote-to-proposed is set to Fix Released
-            if 'kernel-stable-Promote-to-proposed-end' in bug.properties:
-                date_str = bug.properties['kernel-stable-Promote-to-proposed-end']
-                timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
-                delta = DeltaTime(timestamp, datetime.utcnow())
-                if delta.days >= 1:
-                    self.set_task_to_state('promote-to-proposed', 'Incomplete')
-                    msgbody  = "Promote-to-proposed is Fix Released, but "
-                    msgbody += "some packages for this update aren't published "
-                    msgbody += "in Launchpad, on -proposed pocket:\n"
-                    for item in missing_pkg:
-                        msgbody += '\n%s %s' % (item[0], item[1])
-                    self.send_comment(task, 'Can\'t find packages published in -proposed', msgbody)
-                    if not 'dryrun' in self.cfg:
-                        self.props.set({'kernel-stable-Promote-to-proposed-end':None})
-                    return False
+            # Even if we already waited 1 hour, wait more (1 day) before
+            # complaining if we don't find the packages published to
+            # -proposed, in case the copy/publishing take more hours
+            # after promote-to-proposed is set to Fix Released the first
+            # time
+            if delta.days >= 1:
+                self.set_task_to_state('promote-to-proposed', 'Incomplete')
+                msgbody  = "Promote-to-proposed is Fix Released, but "
+                msgbody += "some packages for this update aren't published "
+                msgbody += "in Launchpad, on -proposed pocket:\n"
+                for item in missing_pkg:
+                    msgbody += '\n%s %s' % (item[0], item[1])
+                self.send_comment(task, 'Can\'t find packages published in -proposed', msgbody)
+                if not 'dryrun' in self.cfg:
+                    self.props.set({'kernel-stable-Promote-to-proposed-end':None})
+                return False
             for item in missing_pkg:
                 self.verbose('Didn\'t found <%s> <%s> on -proposed yet, check on next run\n'
                              % (item[0], item[1]))
