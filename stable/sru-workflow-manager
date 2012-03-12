@@ -980,11 +980,14 @@ class Shank(StdApp):
         # still didn't finish, in the case the packages were previously
         # in the wrong component and are now moved to the right ones.
         bug = taskobj.bug
-        date_str = bug.properties['kernel-stable-Promote-to-proposed-end']
-        timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
-        delta = DeltaTime(timestamp, datetime.utcnow())
-        if delta.hours < 1:
-            self.verbose('Waiting 1 hour after promote-to-proposed was Fix Released\n')
+        if 'kernel-stable-Promote-to-proposed-end' in bug.properties:
+            date_str = bug.properties['kernel-stable-Promote-to-proposed-end']
+            timestamp = datetime.strptime(date_str, '%A, %d. %B %Y %H:%M UTC')
+            delta = DeltaTime(timestamp, datetime.utcnow())
+            if delta.hours < 1:
+                self.verbose('Waiting 1 hour after promote-to-proposed was Fix Released\n')
+                return False
+        else:
             return False
 
         # Check if packages were copied to the right pocket->component
