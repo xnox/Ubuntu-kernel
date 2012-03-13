@@ -8,7 +8,7 @@ from urllib                             import urlretrieve
 
 from lpltk.LaunchpadService             import LaunchpadService
 
-from ktl.utils                          import stdo, error, dump, json_load, FileDoesntExist
+from ktl.utils                          import stdo, error, dump, json_load, FileDoesntExist, date_to_string, string_to_date
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
 from ktl.debian                         import Debian
@@ -207,7 +207,27 @@ class PPA():
         for pb in self.ckt_ppa.getPublishedBinaries(pocket='Release', status='Published', binary_name='linux-image'):
             pkg = {}
 
+            #stdo("--------------------------------------------------\n")
+            #stdo("Binary Package Name: %s\n" % pb.binary_package_name)
+            #stdo("     Component Name: %s\n" % pb.component_name)
+            #stdo("       Display Name: %s\n" % pb.display_name)
+            #stdo("       Date Created: %s\n" % pb.date_created)
+            #stdo("  Date Made Pending: %s\n" % pb.date_made_pending)
+            #stdo("     Date Published: %s\n" % pb.date_published)
+            #stdo("             Pocket: %s\n" % pb.pocket)
+            #stdo("             Status: %s\n" % pb.status)
+            #stdo("               URLS: ")
+            #for binary in pb.binaryFileUrls():
+            #    stdo("                     %s\n" % binary)
+
             (p, v, x, s, a) = pb.display_name.split(' ')
+
+            # We can detect meta packages by looking for a '-' in the version string. Meta packages
+            # don't have a '-'.
+            #
+            if '-' not in v:
+                continue
+
             m = Debian.version_rc.match(v)
             lkv = m.group(1)
             abi = m.group(2)
@@ -225,22 +245,20 @@ class PPA():
                 id = '%s:%s:%s:%s' % (p, lkv, s, a)
             else:
                 id = '%s:%s%s:%s:%s' % (p, lkv, deriv, s, a)
-
-            retval['%s' % (id)] = pkg
-
-            #stdo("--------------------------------------------------\n")
             #stdo("                 id: %s\n" % id)
-            #stdo("Binary Package Name: %s\n" % pb.binary_package_name)
-            #stdo("     Component Name: %s\n" % pb.component_name)
-            #stdo("       Display Name: %s\n" % pb.display_name)
-            #stdo("       Date Created: %s\n" % pb.date_created)
-            #stdo("  Date Made Pending: %s\n" % pb.date_made_pending)
-            #stdo("     Date Published: %s\n" % pb.date_published)
-            #stdo("             Pocket: %s\n" % pb.pocket)
-            #stdo("             Status: %s\n" % pb.status)
-            #stdo("               URLS: ")
-            #for binary in pb.binaryFileUrls():
-            #    stdo("                     %s\n" % binary)
+
+            pkg['date_published'] = date_to_string(pb.date_published)
+
+            if id in retval:
+                # See if the date of the one already in retval is newer than this one.
+                #
+                prev_date = string_to_date(retval[id]['date_published'])
+                this_date = pb.date_published.replace(tzinfo=None)
+                if this_date > prev_date:
+                    retval['%s' % (id)] = pkg
+            else:
+                retval['%s' % (id)] = pkg
+
             #stdo("\n")
         return retval
 
