@@ -383,7 +383,7 @@ class Ubuntu:
         Returns True if the series passed in is the current series under development.
         '''
         try:
-            retval = self.db['series']['development']
+            retval = self.index_by_series_name[series]['development']
         except KeyError:
             retval = False
         return retval
