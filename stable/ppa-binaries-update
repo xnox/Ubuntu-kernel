@@ -12,6 +12,7 @@ from ktl.utils                          import stdo, error, dump, json_load, Fil
 from ktl.dbg                            import Dbg
 from ktl.cfg                            import Cfg, CfgError
 from ktl.debian                         import Debian
+from ktl.ubuntu                         import Ubuntu
 
 # CmdlineError
 #
@@ -199,6 +200,87 @@ class PPA():
 
         return ppa_diff
 
+    def dev_series_kernel_version(self):
+        u = Ubuntu()
+
+        retval = '0.0.0'
+        for series in u.index_by_series_name:
+            if u.is_development_series(series):
+                retval = u.lookup(series)['kernel']
+                break
+
+        return retval
+
+    # archive_build_summaries
+    #
+    def archive_build_summaries(self):
+        retval = {}
+
+        dev_kernel_version = self.dev_series_kernel_version()
+
+        archive = self.lp.launchpad.distributions['ubuntu'].getArchive(name='primary')
+
+        for pb in archive.getPublishedBinaries(pocket='Release', status='Published', binary_name='linux-image-%s' % dev_kernel_version):
+            if pb.status != 'Published': continue
+
+            stdo("--------------------------------------------------\n")
+            stdo("Binary Package Name: %s\n" % pb.binary_package_name)
+            stdo("     Component Name: %s\n" % pb.component_name)
+            stdo("       Display Name: %s\n" % pb.display_name)
+            stdo("       Date Created: %s\n" % pb.date_created)
+            stdo("  Date Made Pending: %s\n" % pb.date_made_pending)
+            stdo("     Date Published: %s\n" % pb.date_published)
+            stdo("             Pocket: %s\n" % pb.pocket)
+            stdo("             Status: %s\n" % pb.status)
+            stdo("               URLS: ")
+            for binary in pb.binaryFileUrls():
+                stdo("                     %s\n" % binary)
+            stdo("\n")
+
+            pkg = {}
+
+            (p, v, x, s, a) = pb.display_name.split(' ')
+
+            # We can detect meta packages by looking for a '-' in the version string. Meta packages
+            # don't have a '-'.
+            #
+            if '-' not in v:
+                continue
+
+            m = Debian.version_rc.match(v)
+            lkv = m.group(1)
+            abi = m.group(2)
+            bld = m.group(3)
+            deriv = m.group(4)
+            pkg['version'] = v
+
+            url = ""
+            for binary in pb.binaryFileUrls():
+                url = binary
+            pkg['binary'] = url
+
+            p = p.replace('-%s-%s' % (lkv, abi), '')
+            if deriv == '':
+                id = '%s:%s:%s:%s' % (p, lkv, s, a)
+            else:
+                id = '%s:%s%s:%s:%s' % (p, lkv, deriv, s, a)
+            stdo("                 id: %s\n" % id)
+
+            pkg['date_published'] = date_to_string(pb.date_published)
+
+            if id in retval:
+                # See if the date of the one already in retval is newer than this one.
+                #
+                prev_date = string_to_date(retval[id]['date_published'])
+                this_date = pb.date_published.replace(tzinfo=None)
+                if this_date > prev_date:
+                    retval['%s' % (id)] = pkg
+            else:
+                retval['%s' % (id)] = pkg
+
+            stdo("\n")
+        return retval
+
     # ppa_build_summaries
     #
     def ppa_build_summaries(self):
@@ -271,15 +353,37 @@ class PPA():
         try:
             self.initialize()
 
-            ppa_now = self.ppa_build_summaries()
-            ppa_diff = self.diff(json_load(self.cfg['json_file']), self.ppa_build_summaries())
+            previous_build_summaries = json_load(self.cfg['json_file'])
+
+            archive_now = self.archive_build_summaries()
+            ppa_now     = self.ppa_build_summaries()
+
+            try:
+                archive_before = previous_build_summaries['archive']
+            except KeyError:
+                archive_before = {}
+
+            try:
+                ppa_before = previous_build_summaries['ppa']
+            except KeyError:
+                ppa_before = {}
+
+            ppa_diff     = self.diff(ppa_before, self.ppa_build_summaries())
+            archive_diff = self.diff(ppa_before, self.ppa_build_summaries())
 
             for id in ppa_diff:
                 (p, v, s, a) = id.split(':')
                 urlretrieve(ppa_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
                 Dbg.verbose("retrieving: %s -> %s-%s-%s.deb\n" % (ppa_diff[id]['binary'], p,v,a))
 
-            dump(ppa_now)
+            for id in archive_diff:
+                (p, v, s, a) = id.split(':')
+                urlretrieve(archive_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
+                Dbg.verbose("retrieving: %s -> %s-%s-%s.deb\n" % (archive_diff[id]['binary'], p,v,a))
+
+            build_summaries = { 'archive' : archive_now, 'ppa' : ppa_now }
+
+            dump(build_summaries)
 
         # Handle the user presses <ctrl-C>.
         #
