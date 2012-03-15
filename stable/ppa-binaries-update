@@ -369,7 +369,7 @@ class PPA():
                 ppa_before = {}
 
             ppa_diff     = self.diff(ppa_before, self.ppa_build_summaries())
-            archive_diff = self.diff(ppa_before, self.ppa_build_summaries())
+            archive_diff = self.diff(archive_before, self.archive_build_summaries())
 
             for id in ppa_diff:
                 (p, v, s, a) = id.split(':')
