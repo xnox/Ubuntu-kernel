@@ -790,7 +790,11 @@ static int truncate_upper(struct dentry *dentry, struct iattr *ia,
 		lower_ia->ia_valid &= ~ATTR_SIZE;
 		goto out;
 	}
+
 	crypt_stat = &ecryptfs_inode_to_private(dentry->d_inode)->crypt_stat;
+	if (crypt_stat->flags & ECRYPTFS_NEW_FILE)
+		crypt_stat->flags &= ~(ECRYPTFS_NEW_FILE);
+
 	/* Switch on growing or shrinking file */
 	if (ia->ia_size > i_size) {
 		char zero[] = { 0x00 };
