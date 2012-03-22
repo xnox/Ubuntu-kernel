@@ -586,9 +586,6 @@ static int palmas_ldo_init(struct palmas *palmas, int id,
 	unsigned int addr;
 	int ret;
 
-	if (id == PALMAS_REG_LDO2 || id == PALMAS_REG_LDO8)
-		return 0;
-
 	addr = palmas_regs_info[id].ctrl_addr;
 
 	ret = palmas_smps_read(palmas, addr, &reg);
