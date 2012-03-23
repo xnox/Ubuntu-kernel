@@ -47,12 +47,9 @@ static inline int request_module_nowait(const char *name, ...) { return -ENOSYS;
 struct key;
 struct file;
 
-enum umh_wait {
-	UMH_NO_WAIT = -1,	/* don't wait at all */
-	UMH_WAIT_EXEC = 0,	/* wait for the exec, but not the process */
-	UMH_WAIT_PROC = 1,	/* wait for the process to complete */
-};
-
+#define UMH_NO_WAIT	0	/* don't wait at all */
+#define UMH_WAIT_EXEC	1	/* wait for the exec, but not the process */
+#define UMH_WAIT_PROC	2	/* wait for the process to complete */
 #define UMH_KILLABLE	4	/* wait for EXEC/PROC killable */
 
 struct subprocess_info {
@@ -61,7 +58,7 @@ struct subprocess_info {
 	char *path;
 	char **argv;
 	char **envp;
-	enum umh_wait wait;
+	int wait;
 	int retval;
 	int (*init)(struct subprocess_info *info);
 	void (*cleanup)(struct subprocess_info *info);
@@ -79,7 +76,7 @@ void call_usermodehelper_setfns(struct subprocess_info *info,
 		    void *data);
 
 /* Actually execute the sub-process */
-int call_usermodehelper_exec(struct subprocess_info *info, enum umh_wait wait);
+int call_usermodehelper_exec(struct subprocess_info *info, int wait);
 
 /* Free the subprocess_info. This is only needed if you're not going
    to call call_usermodehelper_exec */
@@ -89,7 +86,7 @@ extern void populate_rootfs_wait(void);
 
 static inline int
 call_usermodehelper_fns(char *path, char **argv, char **envp,
-			enum umh_wait wait,
+			int wait,
 			int (*init)(struct subprocess_info *info),
 			void (*cleanup)(struct subprocess_info *), void *data)
 {
@@ -109,7 +106,7 @@ call_usermodehelper_fns(char *path, char **argv, char **envp,
 }
 
 static inline int
-call_usermodehelper(char *path, char **argv, char **envp, enum umh_wait wait)
+call_usermodehelper(char *path, char **argv, char **envp, int wait)
 {
 	return call_usermodehelper_fns(path, argv, envp, wait,
 				       NULL, NULL, NULL);
