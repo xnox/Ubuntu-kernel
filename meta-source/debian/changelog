@@ -1,3 +1,9 @@
+linux-meta (3.0.0.18.21) oneiric-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 26 Mar 2012 10:54:23 +0100
+
 linux-meta (3.0.0.17.20) oneiric-proposed; urgency=low
 
   [ Luis Henriques ]
