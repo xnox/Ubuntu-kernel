@@ -257,7 +257,7 @@ void dm_check_ac_dc_power(struct net_device *dev)
 	if(priv->ieee80211->state != IEEE80211_LINKED) {
 		return;
 	}
-	call_usermodehelper(ac_dc_check_script_path,argv,envp,1);
+	call_usermodehelper(ac_dc_check_script_path,argv,envp,UMH_WAIT_PROC);
 }
 
 void hal_dm_watchdog(struct net_device *dev)
