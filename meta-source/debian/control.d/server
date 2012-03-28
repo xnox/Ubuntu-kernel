@@ -59,3 +59,10 @@ Depends: ${misc:Depends}, linux-backports-modules-cw-3.2-${kernel-abi-version}-s
 Description: Backported wireless drivers for server kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-cw-3.3-RELEASE_NAME-server
+Architecture: amd64
+Depends: ${misc:Depends}, linux-backports-modules-cw-3.3-${kernel-abi-version}-server
+Description: Backported wireless drivers for server kernel image
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
