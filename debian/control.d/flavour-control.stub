@@ -24,7 +24,7 @@ Architecture: ARCH
 Section: SECTION_IMAGE
 Priority: optional
 Provides: =PROVIDES=
-Conflicts: linux-backports-modules-cw-3.2-PKGVER-ABINUM-FLAVOUR
+Conflicts: linux-backports-modules-cw-3.2-PKGVER-ABINUM-FLAVOUR,linux-backports-modules-cw-3.3-PKGVER-ABINUM-FLAVOUR
 Depends: linux-image-PKGVER-ABINUM-FLAVOUR
 Pre-Depends: dpkg (>= 1.10.24)
 Description: compat-wireless Linux modules for version PKGVER on DESC
@@ -40,7 +40,7 @@ Architecture: ARCH
 Section: SECTION_IMAGE
 Priority: optional
 Provides: =PROVIDES=
-Conflicts: linux-backports-modules-cw-3.1-PKGVER-ABINUM-FLAVOUR
+Conflicts: linux-backports-modules-cw-3.1-PKGVER-ABINUM-FLAVOUR,linux-backports-modules-cw-3.3-PKGVER-ABINUM-FLAVOUR
 Depends: linux-image-PKGVER-ABINUM-FLAVOUR
 Pre-Depends: dpkg (>= 1.10.24)
 Description: compat-wireless Linux modules for version PKGVER on DESC
@@ -48,7 +48,23 @@ Description: compat-wireless Linux modules for version PKGVER on DESC
  kernel PKGVER on DESC.
  .
  You likely do not want to install this package directly. Instead, install
- the linux-backports-modules-cw-3.1-FLAVOUR meta-package, which will ensure
+ the linux-backports-modules-cw-3.2-FLAVOUR meta-package, which will ensure
+ that upgrades work correctly, and that supporting packages are also installed.
+
+Package: linux-backports-modules-cw-3.3-PKGVER-ABINUM-FLAVOUR
+Architecture: ARCH
+Section: SECTION_IMAGE
+Priority: optional
+Provides: =PROVIDES=
+Conflicts: linux-backports-modules-cw-3.1-PKGVER-ABINUM-FLAVOUR,linux-backports-modules-cw-3.2-PKGVER-ABINUM-FLAVOUR
+Depends: linux-image-PKGVER-ABINUM-FLAVOUR
+Pre-Depends: dpkg (>= 1.10.24)
+Description: compat-wireless Linux modules for version PKGVER on DESC
+ This package contains compat-wireless modules supplied by Ubuntu for Linux
+ kernel PKGVER on DESC.
+ .
+ You likely do not want to install this package directly. Instead, install
+ the linux-backports-modules-cw-3.3-FLAVOUR meta-package, which will ensure
  that upgrades work correctly, and that supporting packages are also installed.
 
 Package: linux-backports-modules-net-PKGVER-ABINUM-FLAVOUR
