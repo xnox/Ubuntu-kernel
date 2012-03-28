@@ -1,5 +1,5 @@
 WIRELESS:
-http://www.orbit-lab.org/kernel/compat-wireless-3-stable/v3.3/compat-wireless-3.3-rc6-1-n.tar.bz2
+http://www.orbit-lab.org/kernel/compat-wireless-3-stable/v3.3/compat-wireless-3.3-2-n.tar.bz2
 
 Remember to remove the .gitignore file lest you not get all of the files committed that you thought.
 
