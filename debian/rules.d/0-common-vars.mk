@@ -38,6 +38,7 @@ do_compat_wireless_2.6.39=true
 do_compat_wireless_3.0.0=true
 do_compat_wireless_3.1=true
 do_compat_wireless_3.2=true
+do_compat_wireless_3.3=true
 
 ifeq ($(do_compat_wireless_2.6.34),true)
 	CWDIRS += compat-wireless-2.6.34
@@ -65,6 +66,9 @@ CWDIRS += compat-wireless-3.1
 endif
 ifeq ($(do_compat_wireless_3.2),true)
 CWDIRS += compat-wireless-3.2
+endif
+ifeq ($(do_compat_wireless_3.3),true)
+CWDIRS += compat-wireless-3.3
 endif
 
 # package selectors

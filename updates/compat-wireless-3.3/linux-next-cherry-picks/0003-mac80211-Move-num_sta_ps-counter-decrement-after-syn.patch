@@ -1,0 +1,49 @@
+From 4f3eb0ba4817e55e1b5b2f63fcf3f266c328fc1a Mon Sep 17 00:00:00 2001
+From: Helmut Schaa <helmut.schaa@googlemail.com>
+Date: Fri, 27 Jan 2012 11:02:53 +0100
+Subject: [PATCH] mac80211: Move num_sta_ps counter decrement after synchronize_rcu
+
+Unted the assumption that the sta struct is still accessible before the
+synchronize_rcu call we should move the num_sta_ps counter decrement
+after synchronize_rcu to avoid incorrect decrements if num_sta_ps.
+
+Signed-off-by: Helmut Schaa <helmut.schaa@googlemail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+---
+ net/mac80211/sta_info.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
+
+--- a/net/mac80211/sta_info.c
++++ b/net/mac80211/sta_info.c
+@@ -750,15 +750,6 @@ static int __must_check __sta_info_destr
+ 
+ 	sta->dead = true;
+ 
+-	if (test_sta_flag(sta, WLAN_STA_PS_STA)) {
+-		BUG_ON(!sdata->bss);
+-
+-		clear_sta_flag(sta, WLAN_STA_PS_STA);
+-
+-		atomic_dec(&sdata->bss->num_sta_ps);
+-		sta_info_recalc_tim(sta);
+-	}
+-
+ 	local->num_sta--;
+ 	local->sta_generation++;
+ 
+@@ -785,6 +776,15 @@ static int __must_check __sta_info_destr
+ 	 */
+ 	synchronize_rcu();
+ 
++	if (test_sta_flag(sta, WLAN_STA_PS_STA)) {
++		BUG_ON(!sdata->bss);
++
++		clear_sta_flag(sta, WLAN_STA_PS_STA);
++
++		atomic_dec(&sdata->bss->num_sta_ps);
++		sta_info_recalc_tim(sta);
++	}
++
+ 	for (ac = 0; ac < IEEE80211_NUM_ACS; ac++) {
+ 		local->total_ps_buffered -= skb_queue_len(&sta->ps_tx_buf[ac]);
+ 		__skb_queue_purge(&sta->ps_tx_buf[ac]);

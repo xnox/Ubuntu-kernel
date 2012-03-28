@@ -136,7 +136,7 @@ install-%: build-modules-%
 		install --mode=0644 $${cwblddir}/udev/ubuntu/50-compat_firmware_$(abinum)_$(target_flavour).rules $${cwpkgdir}/lib/udev/rules.d; \
 \
 		install -d $${firmdir}; \
-		cp firmware/iwlwifi/*/*.ucode $${firmdir}/; \
+		cp firmware/iwlwifi/*.ucode $${firmdir}/; \
 		cp firmware/rt28x0/rt2870.bin $${firmdir}/; \
 	done
 
