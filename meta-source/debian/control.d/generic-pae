@@ -98,6 +98,13 @@ Description: Backported wireless drivers for generic-pae kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
+Package: linux-backports-modules-wireless-3.3-RELEASE_NAME-generic-pae
+Architecture: i386
+Depends: ${misc:Depends}, linux-backports-modules-compat-wireless-3.3-${kernel-abi-version}-generic-pae
+Description: Backported wireless drivers for generic-pae kernel image
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
+
 Package: linux-backports-modules-alsa-RELEASE_NAME-generic-pae
 Architecture: i386
 Depends: ${misc:Depends}, linux-backports-modules-alsa-${kernel-abi-version}-generic-pae
