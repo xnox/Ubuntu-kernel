@@ -1,9 +1,47 @@
-linux-lts-backport-maverick (2.6.35-32.67~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-maverick (2.6.35-32.68~lucid1) lucid-proposed; urgency=low
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #967068
+
+  [ Andy Whitcroft ]
+
+  * [Config] restore build-% shortcut
+
+  [ Upstream Kernel Changes ]
+
+  * bsg: fix sysfs link remove warning
+    - LP: #946928
+  * regset: Prevent null pointer reference on readonly regsets
+    - LP: #949905
+    - CVE-2012-1097
+  * regset: Return -EFAULT, not -EIO, on host-side memory fault
+    - LP: #949905
+    - CVE-2012-1097
+  * mm: memcg: Correct unregistring of events attached to the same eventfd
+    - LP: #952828
+    - CVE-2012-1146
+  * KVM: Remove ability to assign a device without iommu support
+    - LP: #897812
+    - CVE-2011-4347
+  * KVM: x86: extend "struct x86_emulate_ops" with "get_cpuid"
+    - LP: #917842
+    - CVE-2012-0045
+  * KVM: x86: fix missing checks in syscall emulation
+    - LP: #917842
+    - CVE-2012-0045
+  * eCryptfs: Clear ECRYPTFS_NEW_FILE flag during truncate
+    - LP: #745836
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Wed, 28 Mar 2012 16:24:53 +0100
+
+linux (2.6.35-32.67) maverick-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #947898
+    - LP: #947206
 
   [ Upstream Kernel Changes ]
 
@@ -11,7 +49,7 @@ linux-lts-backport-maverick (2.6.35-32.67~lucid1) lucid-proposed; urgency=low
     - LP: #897812
     - CVE-2011-4347
 
- -- Luis Henriques <luis.henriques@canonical.com>  Tue, 06 Mar 2012 15:51:10 +0000
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 05 Mar 2012 14:29:22 +0000
 
 linux (2.6.35-32.66) maverick-proposed; urgency=low
 
