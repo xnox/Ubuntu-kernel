@@ -1,3 +1,12 @@
+linux-meta (3.0.0.18.22) oneiric-proposed; urgency=low
+
+  [ Tim Gardner ]
+
+  * Add compat-wireless v3.3 meta package
+    - LP: #967139
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 29 Mar 2012 14:16:57 +0100
+
 linux-meta (3.0.0.18.21) oneiric-proposed; urgency=low
 
   * Bump ABI
