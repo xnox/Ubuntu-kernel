@@ -1,3 +1,10 @@
+linux-backports-modules-3.2.0 (3.2.0-21.4) precise; urgency=low
+
+  * Update to compat-wireless-3.3-2-n 
+  * Bump ABI for Precise 3.2.0-21.34 
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 29 Mar 2012 09:17:55 -0700
+
 linux-backports-modules-3.2.0 (3.2.0-20.3) precise; urgency=low
 
   * Bump ABI for Precise 3.2.0-20.32
