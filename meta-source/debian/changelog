@@ -1,3 +1,16 @@
+linux-meta (2.6.32.41.48) lucid-proposed; urgency=low
+
+  [ Tim Gardner ]
+
+  * Add compat-wireless v3.3 meta package
+    - LP: #967273
+
+  [ Luis Henriques ]
+
+  * Bump ABI
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 29 Mar 2012 10:13:57 +0100
+
 linux-meta (2.6.32.40.47) lucid-proposed; urgency=low
 
   * Bump ABI
