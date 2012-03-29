@@ -1,9 +1,52 @@
-linux-lts-backport-natty (2.6.38-13.57~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-14.58~lucid1) lucid-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #967823
+
+  [ Andy Whitcroft ]
+
+  * [Config] restore build-% shortcut
+
+  [ Upstream Kernel Changes ]
+
+  * eCryptfs: Make truncate path killable
+    - LP: #947270
+  * bsg: fix sysfs link remove warning
+    - LP: #946928
+  * regset: Prevent null pointer reference on readonly regsets
+    - LP: #949905
+    - CVE-2012-1097
+  * regset: Return -EFAULT, not -EIO, on host-side memory fault
+    - LP: #949905
+    - CVE-2012-1097
+  * mm: memcg: Correct unregistring of events attached to the same eventfd
+    - LP: #952828
+    - CVE-2012-1146
+  * KVM: Remove ability to assign a device without iommu support
+    - LP: #897812
+    - CVE-2011-4347
+  * eCryptfs: Copy up lower inode attrs after setting lower xattr
+  * eCryptfs: Handle failed metadata read in lookup
+    - LP: #509180
+  * eCryptfs: Improve statfs reporting
+    - LP: #885744
+  * KVM: x86: extend "struct x86_emulate_ops" with "get_cpuid"
+    - LP: #917842
+    - CVE-2012-0045
+  * KVM: x86: fix missing checks in syscall emulation
+    - LP: #917842
+    - CVE-2012-0045
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 29 Mar 2012 12:04:36 +0100
+
+linux (2.6.38-13.57) natty-proposed; urgency=low
 
   [Herton R. Krzesinski]
 
   * Release Tracking Bug
-    - LP: #947707
+    - LP: #947254
 
   [ Upstream Kernel Changes ]
 
@@ -25,7 +68,7 @@ linux-lts-backport-natty (2.6.38-13.57~lucid1) lucid-proposed; urgency=low
   * eCryptfs: Infinite loop due to overflow in ecryptfs_write()
     - LP: #947143
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Tue, 06 Mar 2012 16:13:01 -0300
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 05 Mar 2012 13:28:11 -0300
 
 linux (2.6.38-13.56) natty-proposed; urgency=low
 
