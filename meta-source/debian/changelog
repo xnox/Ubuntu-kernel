@@ -1,8 +1,9 @@
-linux-meta (3.2.0.20.23) UNRELEASED; urgency=low
+linux-meta (3.2.0.21.23) precise; urgency=low
 
-  * 
+  * Point powerpc meta to powerpc-smp meta
+  * Bump ABI
 
- -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 26 Mar 2012 09:02:53 -0700
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 29 Mar 2012 10:53:59 -0700
 
 linux-meta (3.2.0.20.22) precise; urgency=low
 
