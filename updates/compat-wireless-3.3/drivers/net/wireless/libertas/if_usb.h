@@ -4,6 +4,8 @@
 #include <linux/wait.h>
 #include <linux/timer.h>
 
+#undef CONFIG_OLPC
+
 struct lbs_private;
 
 /*
