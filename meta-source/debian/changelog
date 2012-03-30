@@ -1,3 +1,9 @@
+linux-meta-lts-backport-oneiric (3.0.0.18.6) lucid-proposed; urgency=low
+
+  * linux-oneiric 3.0.0-18.31
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 30 Mar 2012 10:24:51 +0100
+
 linux-meta-lts-backport-oneiric (3.0.0.17.5) lucid-proposed; urgency=low
 
   * linux-oneiric 3.0.0-17.30
