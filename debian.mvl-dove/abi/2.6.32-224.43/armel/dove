@@ -1869,6 +1869,7 @@ EXPORT_SYMBOL vmlinux 0x176a9a20	snd_timer_close
 EXPORT_SYMBOL vmlinux 0x176befe1	pci_get_class
 EXPORT_SYMBOL vmlinux 0x178fe6d3	generic_unplug_device
 EXPORT_SYMBOL vmlinux 0x1790d7bd	lookup_hash
+EXPORT_SYMBOL vmlinux 0x179a6442	sock_queue_err_skb
 EXPORT_SYMBOL vmlinux 0x17df17bc	sysctl_tcp_ecn
 EXPORT_SYMBOL vmlinux 0x17f5550c	vfs_readv
 EXPORT_SYMBOL vmlinux 0x1812d2cb	pci_prepare_to_sleep
