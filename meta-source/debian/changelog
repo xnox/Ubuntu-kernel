@@ -1,3 +1,9 @@
+linux-meta-ec2 (2.6.32.345.26) lucid-proposed; urgency=low
+
+  * Bump linux-ec2 ABI to 345 for proposed release
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Fri, 30 Mar 2012 10:51:23 -0300
+
 linux-meta-ec2 (2.6.32.344.25) lucid-proposed; urgency=low
 
   * Bump linux-ec2 ABI to 344 for proposed release
