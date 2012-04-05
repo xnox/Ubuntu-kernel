@@ -307,6 +307,9 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
 
 	fpu = switch_fpu_prepare(prev_p, next_p);
 
+	if (next_p->mm)
+		load_user_cs_desc(cpu, next_p->mm);
+
 	/*
 	 * Reload esp0.
 	 */
