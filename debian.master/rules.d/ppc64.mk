@@ -1,6 +1,5 @@
 build_arch	= powerpc
 header_arch	= $(build_arch)
-asm_link	= $(build_arch)
 defconfig	= ppc64_defconfig
 flavours	= powerpc64-smp
 build_image	= vmlinux
