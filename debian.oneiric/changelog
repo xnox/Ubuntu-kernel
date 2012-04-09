@@ -1,9 +1,288 @@
-linux-lts-backport-oneiric (3.0.0-18.31~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-19.32~lucid1) lucid-proposed; urgency=low
 
-  [ Luis Henriques ]
+  [ Herton R. Krzesinski ]
 
   * Release Tracking Bug
-    - LP: #968717
+    - LP: #975062
+
+  [ Brad Figg ]
+
+  * SAUCE (no-up) Provide a param for allowing the BIOS to handle changing
+    the brightness on AC/battery status changes.
+    - LP: #949311
+  * SAUCE (no-up) Quirk for enabling backlight hotkeys on Samsung N150P
+    - LP: #875893
+
+  [ Daniel Vetter ]
+
+  * SAUCE: (drop after 3.5) drm/i915: reinstate GM45 TV detection fix
+    - LP: #638939
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * SAUCE: (no-up) Reinstate missing hunk from nx emulation
+    - LP: #972821
+
+  [ Tim Gardner ]
+
+  * SAUCE: ubuntu drivers: use UMH_WAIT_PROC consistently
+    - LP: #963685
+  * SAUCE: disable_nx should not be in __cpuinitdata section for X86_32
+    - LP: #968233
+  * SAUCE: (no-up) remove __initdata from vesafb_fix
+    - LP: #969309
+
+  [ Upstream Kernel Changes ]
+
+  * usermodehelper: use UMH_WAIT_PROC consistently
+    - LP: #963685
+  * usermodehelper: introduce umh_complete(sub_info)
+    - LP: #963685
+  * usermodehelper: implement UMH_KILLABLE
+    - LP: #963685
+  * usermodehelper: kill umh_wait, renumber UMH_* constants
+    - LP: #963685
+  * usermodehelper: ____call_usermodehelper() doesn't need do_exit()
+    - LP: #963685
+  * kmod: introduce call_modprobe() helper
+    - LP: #963685
+  * kmod: make __request_module() killable
+    - LP: #963685
+  * x86, tsc: Fix SMI induced variation in quick_pit_calibrate()
+    - LP: #965586
+  * ata_piix: Add Toshiba Satellite Pro A120 to the quirks list due to
+    broken suspend functionality.
+    - LP: #886850
+  * ACPICA: Fix regression in FADT revision checks
+    - LP: #883441
+  * ASPM: Fix pcie devices with non-pcie children
+    - LP: #961482
+  * USB: option: Add MediaTek MT6276M modem&app interfaces
+    - LP: #971808
+  * USB: option driver: adding support for Telit CC864-SINGLE, CC864-DUAL
+    and DE910-DUAL modems
+    - LP: #971808
+  * USB: option: make interface blacklist work again
+    - LP: #971808
+  * USB: option: add ZTE MF820D
+    - LP: #971808
+  * USB: ftdi_sio: fix problem when the manufacture is a NULL string
+    - LP: #971808
+  * USB: ftdi_sio: add support for BeagleBone rev A5+
+    - LP: #971808
+  * USB: Microchip VID mislabeled as Hornby VID in ftdi_sio.
+    - LP: #971808
+  * USB: ftdi_sio: new PID: Distortec JTAG-lock-pick
+    - LP: #971808
+  * USB: ftdi_sio: add support for FT-X series devices
+    - LP: #971808
+  * USB: ftdi_sio: new PID: LUMEL PD12
+    - LP: #971808
+  * powerpc/usb: fix bug of kernel hang when initializing usb
+    - LP: #971808
+  * usb: musb: Reselect index reg in interrupt context
+    - LP: #971808
+  * usb: gadgetfs: return number of bytes on ep0 read request
+    - LP: #971808
+  * USB: gadget: Make g_hid device class conform to spec.
+    - LP: #971808
+  * futex: Cover all PI opcodes with cmpxchg enabled check
+    - LP: #971808
+  * sysfs: Fix memory leak in sysfs_sd_setsecdata().
+    - LP: #971808
+  * tty: moxa: fix bit test in moxa_start()
+    - LP: #971808
+  * TTY: Wrong unicode value copied in con_set_unimap()
+    - LP: #971808
+  * USB: serial: fix console error reporting
+    - LP: #971808
+  * cdc-wdm: Fix more races on the read path
+    - LP: #971808
+  * cdc-wdm: Don't clear WDM_READ unless entire read buffer is emptied
+    - LP: #971808
+  * usb: fsl_udc_core: Fix scheduling while atomic dump message
+    - LP: #971808
+  * usb: Fix build error due to dma_mask is not at pdev_archdata at ARM
+    - LP: #971808
+  * USB: qcserial: add several new serial devices
+    - LP: #971808
+  * USB: qcserial: don't grab QMI port on Gobi 1000 devices
+    - LP: #971808
+  * usb-serial: Add support for the Sealevel SeaLINK+8 2038-ROHS device
+    - LP: #971808
+  * usb: cp210x: Update to support CP2105 and multiple interface devices
+    - LP: #971808
+  * USB: serial: mos7840: Fixed MCS7820 device attach problem
+    - LP: #971808
+  * rt2x00: Add support for D-Link DWA-127 to rt2800usb.
+    - LP: #971808
+  * rtlwifi: Handle previous allocation failures when freeing device memory
+    - LP: #971808
+  * rtlwifi: rtl8192c: Prevent sleeping from invalid context in rtl8192cu
+    - LP: #971808
+  * rtlwifi: rtl8192ce: Fix loss of receive performance
+    - LP: #971808
+  * math: Introduce div64_long
+    - LP: #971808
+  * ntp: Fix integer overflow when setting time
+    - LP: #971808
+  * uevent: send events in correct order according to seqnum (v3)
+    - LP: #971808
+  * genirq: Fix long-term regression in genirq irq_set_irq_type() handling
+    - LP: #971808
+  * genirq: Fix incorrect check for forced IRQ thread handler
+    - LP: #971808
+  * rtc: Disable the alarm in the hardware (v2)
+    - LP: #971808
+  * p54spi: Release GPIO lines and IRQ on error in p54spi_probe
+    - LP: #971808
+  * IB/iser: Post initial receive buffers before sending the final login
+    request
+    - LP: #971808
+  * x86/ioapic: Add register level checks to detect bogus io-apic entries
+    - LP: #971808
+  * mm: thp: fix pmd_bad() triggering in code paths holding mmap_sem read
+    mode
+    - LP: #971808
+  * bootmem/sparsemem: remove limit constraint in alloc_bootmem_section
+    - LP: #971808
+  * hugetlbfs: avoid taking i_mutex from hugetlbfs_read()
+    - LP: #971808
+  * ASoC: pxa-ssp: atomically set stream active masks
+    - LP: #971808
+  * tcm_loop: Set residual field for SCSI commands
+    - LP: #971808
+  * udlfb: remove sysfs framebuffer device with USB .disconnect()
+    - LP: #971808
+  * tcm_fc: Fix fc_exch memory leak in ft_send_resp_status
+    - LP: #971808
+  * md/bitmap: ensure to load bitmap when creating via sysfs.
+    - LP: #971808
+  * md/raid1,raid10: avoid deadlock during resync/recovery.
+    - LP: #971808
+  * drm/radeon: Restrict offset for legacy hardware cursor.
+    - LP: #971808
+  * drm/radeon/kms: fix analog load detection on DVI-I connectors
+    - LP: #971808
+  * drm/radeon/kms: add connector quirk for Fujitsu D3003-S2 board
+    - LP: #971808
+  * target: Don't set WBUS16 or SYNC bits in INQUIRY response
+    - LP: #971808
+  * target: Fix 16-bit target ports for SET TARGET PORT GROUPS emulation
+    - LP: #971808
+  * Bluetooth: Add AR30XX device ID on Asus laptops
+    - LP: #971808
+  * HID: add extra hotkeys in Asus AIO keyboards
+    - LP: #971808
+  * HID: add more hotkeys in Asus AIO keyboards
+    - LP: #971808
+  * pata_legacy: correctly mask recovery field for HT6560B
+    - LP: #971808
+  * firewire: ohci: fix too-early completion of IR multichannel buffers
+    - LP: #971808
+  * NFS: Properly handle the case where the delegation is revoked
+    - LP: #971808
+  * NFSv4: Return the delegation if the server returns NFS4ERR_OPENMODE
+    - LP: #971808
+  * xfs: fix inode lookup race
+    - LP: #971808
+  * cifs: fix issue mounting of DFS ROOT when redirecting from one domain
+    controller to the next
+    - LP: #971808
+  * UBI: fix error handling in ubi_scan()
+    - LP: #971808
+  * UBI: fix eraseblock picking criteria
+    - LP: #971808
+  * SUNRPC: We must not use list_for_each_entry_safe() in rpc_wake_up()
+    - LP: #971808
+  * usbnet: increase URB reference count before usb_unlink_urb
+    - LP: #971808
+  * usbnet: don't clear urb->dev in tx_complete
+    - LP: #971808
+  * x86-32: Fix endless loop when processing signals for kernel tasks
+    - LP: #971808
+  * proc-ns: use d_set_d_op() API to set dentry ops in
+    proc_ns_instantiate().
+    - LP: #971808
+  * hwmon: (fam15h_power) Correct sign extension of running_avg_capture
+    - LP: #971808
+  * lgdt330x: fix signedness error in i2c_read_demod_bytes()
+    - LP: #971808
+  * pvrusb2: fix 7MHz & 8MHz DVB-T tuner support for HVR1900 rev D1F5
+    - LP: #971808
+  * e1000e: Avoid wrong check on TX hang
+    - LP: #971808
+  * PM / Hibernate: Enable usermodehelpers in hibernate() error path
+    - LP: #971808
+  * ext4: flush any pending end_io requests before DIO reads
+    w/dioread_nolock
+    - LP: #971808
+  * jbd2: clear BH_Delay & BH_Unwritten in journal_unmap_buffer
+    - LP: #971808
+  * ext4: ignore EXT4_INODE_JOURNAL_DATA flag with delalloc
+    - LP: #971808
+  * ext4: check for zero length extent
+    - LP: #971808
+  * vfs: fix d_ancestor() case in d_materialize_unique
+    - LP: #971808
+  * udf: Fix deadlock in udf_release_file()
+    - LP: #971808
+  * dm crypt: fix mempool deadlock
+    - LP: #971808
+  * dm crypt: add missing error handling
+    - LP: #971808
+  * dm exception store: fix init error path
+    - LP: #971808
+  * backlight: fix typo in tosa_lcd.c
+    - LP: #971808
+  * xfs: Fix oops on IO error during xlog_recover_process_iunlinks()
+    - LP: #971808
+  * slub: Do not hold slub_lock when calling sysfs_slab_add()
+    - LP: #971808
+  * module: Remove module size limit
+    - LP: #971808
+  * Bluetooth: btusb: fix bInterval for high/super speed isochronous
+    endpoints
+    - LP: #971808
+  * drm/i915: suspend fbdev device around suspend/hibernate
+    - LP: #971808
+  * Fix pppol2tp getsockname()
+    - LP: #971808
+  * net: bpf_jit: fix BPF_S_LDX_B_MSH compilation
+    - LP: #971808
+  * net: fix a potential rcu_read_lock() imbalance in rt6_fill_node()
+    - LP: #971808
+  * net: fix napi_reuse_skb() skb reserve
+    - LP: #971808
+  * Remove printk from rds_sendmsg
+    - LP: #971808
+  * sky2: override for PCI legacy power management
+    - LP: #971808
+  * xfrm: Access the replay notify functions via the registered callbacks
+    - LP: #971808
+  * lockd: fix arg parsing for grace_period and timeout.
+    - LP: #971808
+  * x86, tsc: Skip refined tsc calibration on systems with reliable TSC
+    - LP: #971808
+  * x86, tls: Off by one limit check
+    - LP: #971808
+  * compat: use sys_sendfile64() implementation for sendfile syscall
+    - LP: #971808
+  * nfsd: don't allow zero length strings in cache_parse()
+    - LP: #971808
+  * serial: sh-sci: fix a race of DMA submit_tx on transfer
+    - LP: #971808
+  * Linux 3.0.27
+    - LP: #971808
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 09 Apr 2012 14:16:08 -0300
+
+linux (3.0.0-18.31) oneiric-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #965090
 
   [ Upstream Kernel Changes ]
 
@@ -415,7 +694,7 @@ linux-lts-backport-oneiric (3.0.0-18.31~lucid1) lucid-proposed; urgency=low
   * Linux 3.0.26
     - LP: #963823
 
- -- Luis Henriques <luis.henriques@canonical.com>  Fri, 30 Mar 2012 14:09:12 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 26 Mar 2012 10:07:43 +0100
 
 linux (3.0.0-17.30) oneiric-proposed; urgency=low
 
