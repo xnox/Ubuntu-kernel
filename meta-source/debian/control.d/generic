@@ -39,6 +39,13 @@ Description: Backported wireless drivers for generic kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
+Package: linux-backports-modules-net-RELEASE_NAME-generic
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-generic
+Description: Backported ethernet drivers for generic kernel image.
+ This empty package allows people to keep their backported ethernet modules
+ up-to-date when upgrading their Linux kernel.
+
 #Package: linux-backports-modules-alsa-RELEASE_NAME-generic
 #Architecture: amd64 i386
 #Depends: ${misc:Depends}, linux-backports-modules-alsa-${kernel-abi-version}-generic

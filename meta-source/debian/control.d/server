@@ -25,6 +25,13 @@ Description: Complete Linux kernel on Server Equipment.
  This package will always depend on the latest complete Linux kernel available
  for Server Equipment.
 
+Package: linux-backports-modules-net-RELEASE_NAME-server
+Architecture: amd64 i386
+Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-generic [amd64], linux-backports-modules-net-${kernel-abi-version}-generic-pae [i386]
+Description: Backported ethernet drivers for generic kernel image.
+ This empty package allows people to keep their backported ethernet modules
+ up-to-date when upgrading their Linux kernel.
+
 #Package: linux-backports-modules-headers-RELEASE_NAME-server
 #Architecture: amd64
 #Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-generic
