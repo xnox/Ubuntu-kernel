@@ -152,4 +152,6 @@ source "drivers/vme/Kconfig"
 
 source "drivers/gator/Kconfig"
 
+source "drivers/stm/Kconfig"
+
 endmenu
