@@ -8304,6 +8304,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x00000000	sysfs_unmerge_group
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	sysfs_update_group
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	system_freezable_wq
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	system_long_wq
+EXPORT_SYMBOL_GPL vmlinux 0x00000000	system_nrt_freezable_wq
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	system_nrt_wq
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	system_unbound_wq
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	system_wq
