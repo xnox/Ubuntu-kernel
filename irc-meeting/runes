@@ -1,4 +1,3 @@
-Roll Call for Ubuntu Kernel Weekly Status Meeting
 #startmeeting
 ##
 ## This is the Ubuntu Kernel Team weekly status meeting.
@@ -11,6 +10,8 @@ Roll Call for Ubuntu Kernel Weekly Status Meeting
 # NOTE: '..' indicates that you are finished with your input.
 #       'o/' indicates you have something to add (please wait until you are recognized)
 
+Roll Call for Ubuntu Kernel Weekly Status Meeting
+
 [TOPIC] ARM Status (ppisati)
 
 [TOPIC] Release Metrics and Incoming Bugs (jsalisbury)
@@ -19,8 +20,6 @@ Release metrics and incoming bug data can be reviewed at the following link:
 [LINK] http://people.canonical.com/~kernel/reports/kt-meeting.txt
 
 [TOPIC] Milestone Targeted Work Items (ogasawara)
-
-[TOPIC] Blueprint: hardware-p-kernel-power-management (cking)
 
 [TOPIC] Status: Precise Development Kernel (ogasawara)
 
@@ -61,6 +60,10 @@ Thanks everyone
 ##
 ## Ubuntu Kernel Team Meeting - Today @ 17:00 UTC - #ubuntu-meeting
 ##      agenda: https://wiki.ubuntu.com/KernelTeam/Meeting
+##
+
+## 
+## search/replace in .moin file: :1,$s%^(\S\+)%%g
 ##
 
 /msg chanserv op #ubuntu-kernel
