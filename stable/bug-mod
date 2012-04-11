@@ -81,6 +81,9 @@ class Cmdline:
         stdo("                         Text is read from the indicated file and added to each bug as a     \n")
         stdo("                         new comment.                                                        \n")
         stdo("                                                                                             \n")
+        stdo("        --bugs=<bug list>                                                                    \n")
+        stdo("                         A list of the bugs that are to be modified.                         \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --status=Incomplete --tags=\"-verification-needed\" --verification-check          \n" % self.cfg['app_name'])
 
@@ -96,7 +99,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'staging', 'config=', 'debug=', 'status=', 'tags=', 'comment=', 'verification-check']
+            optsLong  = ['help', 'staging', 'config=', 'debug=', 'status=', 'tags=', 'comment=', 'verification-check', 'bugs=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -123,6 +126,11 @@ class Cmdline:
                     self.cfg['tags'] = []
                     for v in val.split(','):
                         self.cfg['tags'].append(v.strip())
+
+                elif opt in ('--bugs'):
+                    self.cfg['bugs_targetted'] = []
+                    for v in val.split(','):
+                        self.cfg['bugs_targetted'].append(v.strip())
 
                 elif opt in ('--comment'):
                     self.cfg['comment'] = val
@@ -243,8 +251,13 @@ class BugMod(StdApp):
 
             self.initialize()
 
-            for line in stdin:
-                bug_id = line.strip()
+            if 'bugs_targetted' not in self.cfg:
+                self.cfg['bugs_targetted'] = []
+                for line in stdin:
+                    bug_id = line.strip()
+                    self.cfg['bugs_targetted'].append(bug_id)
+
+            for bug_id in self.cfg['bugs_targetted']:
                 lp_bug = self.service.get_bug(bug_id)
 
                 print("%s: %25s: %s" % (bug_id, lp_bug.title, lp_bug.owner.display_name))
