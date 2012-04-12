@@ -158,8 +158,8 @@ class Workflow:
                 'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'ubuntu-armel-kernel',
-                #'certification-testing    ' : 'ubuntu-armel-qa',
-                'regression-testing'         : 'ubuntu-armel-qa',
+                #'certification-testing    ' : '',
+                'regression-testing'         : 'canonical-platform-qa',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security'
@@ -167,7 +167,7 @@ class Workflow:
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armel'],
             'subscribers' :
-                ["sru-verification", "ubuntu-sru", "ubuntu-armel-qa"]
+                ["sru-verification", "ubuntu-sru"]
             },
         'linux-fsl-imx51' :  {
             'task_assignment' : {
@@ -180,8 +180,8 @@ class Workflow:
                 'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'ubuntu-armel-kernel',
-                #'certification-testing'     : 'ubuntu-armel-qa',
-                'regression-testing'         : 'ubuntu-armel-qa',
+                #'certification-testing'     : '',
+                'regression-testing'         : 'canonical-platform-qa',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security'
@@ -189,7 +189,7 @@ class Workflow:
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armel'],
             'subscribers' :
-                ["sru-verification", "ubuntu-sru", "ubuntu-armel-qa"]
+                ["sru-verification", "ubuntu-sru"]
             },
         'linux-ti-omap4' :  {
             'task_assignment' : {
@@ -202,8 +202,8 @@ class Workflow:
                 'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
                 'verification-testing'       : 'ubuntu-armel-kernel',
-                #'certification-testing'     : 'ubuntu-armel-qa',
-                'regression-testing'         : 'ubuntu-armel-qa',
+                #'certification-testing'     : '',
+                'regression-testing'         : 'canonical-platform-qa',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
                 'security-signoff'           : 'canonical-security'
@@ -211,7 +211,7 @@ class Workflow:
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armel'],
             'subscribers' :
-                ["sru-verification", "ubuntu-sru", "ubuntu-armel-qa"]
+                ["sru-verification", "ubuntu-sru"]
             },
         'linux-lts-backport-oneiric' :  {
             'task_assignment' : {
