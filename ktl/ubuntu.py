@@ -110,7 +110,7 @@ class Ubuntu:
             'series_version' : '10.10',
             'kernel' : '2.6.35',
             'name' : 'maverick',
-            'supported' : True,
+            'supported' : False,
             'packages' :
             [
                 'linux',
