@@ -424,7 +424,7 @@ class ApplyStablePatches(StdApp):
                     print("failed")
                     status, result = run_command('git am --abort')
                     continue
-                if not path.exists(patch_file):
+                if patch_file == filename:
                     move(filename, applied_dir)
                 print("success")
 
