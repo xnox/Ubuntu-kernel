@@ -1,0 +1,198 @@
+#!/usr/bin/env python
+
+from os                     import system, getenv, path
+from sys                    import exit
+from subprocess             import Popen, PIPE
+from optparse               import OptionParser, OptParseError
+from tempfile               import NamedTemporaryFile
+
+#
+# The mail will be sent to this list of receipients.
+#
+tolist = [
+            "linux-kernel@vger.kernel.org",
+            "stable@vger.kernel.org",
+            "kernel-team@lists.ubuntu.com"
+         ]
+cclist = [
+         ]
+
+#
+# Try to get the default name and email address to make up the sender from
+# the environment.
+DefaultName  = getenv("DEBFULLNAME")
+DefaultEmail = getenv("DEBEMAIL")
+
+if DefaultEmail != "":
+    if DefaultName != "":
+        DefaultFrom = DefaultName + " <" + DefaultEmail + ">"
+    else:
+        DefaultFrom = DefaultEmail
+else:
+    DefaultFrom = ""
+
+#
+# Setup the command line parser and run it.
+#
+OptParser = OptionParser(
+    "Usage: %prog [options]",
+    epilog = "This command is intended to be run after a stable "
+             "update has been released. It will send out a mail that "
+             "announces that it is available now."
+)
+OptParser.add_option(
+    "--dry-run", dest="dryrun", action="store_true", default=False,
+    help="run it test mode and do not really send out any mail. This will "
+         "also cause the mail body be written to stdout."
+)
+OptParser.add_option(
+    "--from", dest="sender", action="store", default=DefaultFrom,
+    help="sets the sender of the announcement email. "
+         "Without this option, try to get this info from DEBFULLNAME and "
+         "DEBEMAIL (%default)."
+)
+(opts, args) = OptParser.parse_args()
+
+#
+# Has the sender been set correctly?
+#
+if opts.sender == "":
+    print "EE: No mail sender was set!"
+    exit(1)
+
+#
+# Prevent me from calling this from anywhere.
+#
+if not path.isdir(".git") and not (path.isdir("hooks") and path.isdir("refs")):
+    print "EE: Need to be called from git top-level directory!"
+    exit(1)
+
+#
+# Look at the topmost commit message and make sure this looks like a release
+# commit.
+#
+cmd = "git log --pretty='%s' -1"
+tag = Popen(cmd, shell=True, stdout=PIPE).stdout.readline().rstrip()
+
+if not tag.startswith("Linux "):
+    print "EE: Latest commit does not seem to be a release!"
+    exit(1)
+
+#
+# Get version number from Makefile, calculate previous version
+#
+tmp = tag.split(" ")[1]
+for line in open("Makefile", "r").readlines():
+    line = line.strip()
+    if line.startswith("VERSION"):
+        v1 = line.split()[-1]
+        continue
+    if line.startswith("PATCHLEVEL"):
+        v2 = line.split()[-1]
+        continue
+    if line.startswith("SUBLEVEL"):
+        v3 = line.split()[-1]
+        continue
+    if line.startswith("EXTRAVERSION"):
+        v4 = line.split()[-1]
+        break
+if v4 != '=':
+    rangeend   = "%s.%s.%s.%s" % (v1, v2, v3, v4) 
+    rangestart = "%s.%s.%s.%s" % (v1, v2, v3, str(int(v4) - 1))
+    vstable    = "%s.%s.%s" % (v1, v2, v3)
+else:
+    rangeend   = "%s.%s.%s" % (v1, v2, v3)
+    rangestart = "%s.%s.%s" % (v1, v2, str(int(v3) - 1))
+    vstable    = "%s.%s"  % (v1, v2)
+
+#
+# Pre-contruct the contents of the mail
+#
+mailbody = []
+for entry in tolist:
+    mailbody.append("To: " + entry)
+for entry in cclist:
+    mailbody.append("Cc: " + entry)
+mailbody.extend([
+    "From: " + opts.sender,
+    "Subject: [%s extended stable] Linux %s" % (vstable, rangeend),
+    "",
+    "I am announcing the release of the %s tree of stable patches." %
+    (rangeend),
+    "",
+    "This tree picks up the latest %s stable release upstream, and add patches"
+    % (vstable),
+    "on top that were later marked for stable but can't be added to %s anymore,"
+    % (vstable),
+    "as it is not anymore an stable series maintained upstream.",
+    "",
+    "The patches are only added if they are valid for this stable release",
+    "series and conform to the stable upstream update rules (available at",
+    "Documentation/stable_kernel_rules.txt inside kernel sources).",
+    "",
+    "The tree is maintained by the Ubuntu Kernel Team, with the intention",
+    "to continue to provide support for the %s series. Anyone is welcomed"
+    % (vstable),
+    "on using it or contributing to this effort.",
+    "",
+    "For more info, see https://wiki.ubuntu.com/Kernel/Dev/StableUpstream",
+    "",
+    "The updated %s.y tree can be found at: " % (vstable),
+    "",
+    "  git://kernel.ubuntu.com/ubuntu/linux-stable.git linux-%s.y"
+    % (vstable),
+    "",
+    "The diffstat and shortlog with changes since previous %s release are"
+    % (rangestart),
+    "shown below.",
+    "",
+    "-" + opts.sender.split()[0],
+    "",
+    "-- ",
+])
+
+#
+# Add a list of included patches and the diff between this and the last
+# release.
+#
+
+cmd = "git diff --stat v" + rangestart + "..v" + rangeend
+for line in Popen(cmd, shell=True, stdout=PIPE).stdout.readlines():
+    mailbody.append(line.rstrip())
+mailbody.append("")
+cmd = "git shortlog v" + rangestart + "..v" + rangeend
+for line in Popen(cmd, shell=True, stdout=PIPE).stdout.readlines():
+    mailbody.append(line.rstrip())
+
+#
+# Now create a temporary file and fill it with the mailbody.
+#
+try:
+    fp = NamedTemporaryFile(prefix="mail-")
+except:
+    raise
+
+for line in mailbody:
+    fp.write(line + "\n")
+fp.flush()
+
+#
+# Construct the call to git send-email
+#
+cmd = "git send-email --suppress-cc=all --from \"" + opts.sender + "\""
+for line in tolist:
+    cmd += " --to \"" + line + "\""
+for line in cclist:
+    cmd += " --cc \"" + line + "\""
+if opts.dryrun:
+    cmd += " --dry-run"
+cmd += " " + fp.name
+
+system(cmd)
+
+if opts.dryrun:
+    system("cat " + fp.name)
+
+fp.close()
+
+# vi:set ts=4 sw=4 expandtab:
