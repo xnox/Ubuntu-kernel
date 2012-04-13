@@ -666,6 +666,7 @@
 			};
 
 			ocotp@021bc000 {
+				compatible = "fsl,imx6q-ocotp";
 				reg = <0x021bc000 0x4000>;
 			};
 
