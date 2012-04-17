@@ -1,0 +1,451 @@
+#!/usr/bin/env python
+#
+
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+from ktl.utils                          import stdo, error, run_command, eout
+from ktl.std_app                        import StdApp
+from ktl.git                            import Git, GitError
+from re                                 import compile, IGNORECASE, MULTILINE
+from commands                           import getstatusoutput
+from ktl.kernel                         import Kernel
+from os                                 import path, mkdir, remove, rename
+from shutil                             import move
+from tempfile                           import NamedTemporaryFile
+
+# *** You may remove this comment block from your application
+#
+# This script is a template for applications which provides common
+# functionality, command line, processing, and use of configuration
+# files. In order to create a new script, run:
+#
+# init-script <class-name> <script-name>
+#
+# using the name of the script you'd like to create and the name
+# for the main class wrapper inside it.
+#
+# *** You may remove this comment block from your application
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error(e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s --range=<git rev> --sob=<sob> [--verbose] [--config=<cfg file>] [--debug=<dbg options>]\n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --range=<git rev>                                                                    \n")
+        stdo("                         Git base revision or range of commits to check for stable commits   \n")
+        stdo("                         to apply                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --sob=<sob>      Signed-off-by: line to be added to the applied patches              \n")
+        stdo("                                                                                             \n")
+        stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --config=<cfg file>                                                                  \n")
+        stdo("                         The full path to the configuration file to use instead of           \n")
+        stdo("                         the default location.                                               \n")
+        stdo("                                                                                             \n")
+        stdo("        --debug=<debug options>                                                              \n")
+        stdo("                         Performs additional output related to the option enabled and        \n")
+        stdo("                         the application defined support for the option.                     \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --verbose                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'range=', 'sob=', 'verbose', 'config=', 'debug=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif opt in ('--range'):
+                    self.cfg['range'] = val
+
+                elif opt in ('--sob'):
+                    self.cfg['sob'] = val
+
+                elif (opt == '--verbose'):
+                    self.cfg['verbose'] = True
+
+                elif opt in ('--config'):
+                    self.cfg['configuration_file'] = val
+
+                elif opt in ('--debug'):
+                    self.cfg['debug'] = val.split(',')
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        """
+        Used to verify that all required parameters are present and correct.
+        """
+        return
+
+class KernelVersion:
+    version = None
+    patchlevel = None
+    sublevel = None
+    plus = False
+
+    # __init__
+    #
+    def __init__(self, kver, plus):
+        if isinstance(kver, basestring):
+            kver = kver.split('.')
+            if len(kver) > 1:
+                try:
+                    self.version = int(kver[0])
+                except ValueError:
+                    self.version = None
+                try:
+                    self.patchlevel = int(kver[1])
+                except ValueError:
+                    self.patchlevel = None
+            if len(kver) > 2:
+                try:
+                    self.sublevel = int(kver[2])
+                except ValueError:
+                    self.sublevel = None
+        self.plus = plus
+
+    # compare against current kernel version
+    # returns:
+    # -1 if version is less than given parameter
+    #  0 if version is equal to given parameter
+    #  1 if version is greater than given paramter
+    def compare(self, kver):
+        if self.version < kver.version:
+            return -1
+        if self.version > kver.version:
+            return 1
+        if self.patchlevel < kver.patchlevel:
+            return -1
+        if self.patchlevel > kver.patchlevel:
+            return 1
+        if self.sublevel < kver.sublevel:
+            return -1
+        if self.sublevel > kver.sublevel:
+            return 1
+        return 0
+
+# ApplyStablePatches
+#
+class ApplyStablePatches(StdApp):
+    debug_run = False
+
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = { 'git_repo_upstream' : 'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git' }
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        return
+
+    # function to add sob and "commit <hash> upstream" line to the patch
+    #
+    def modify_patch(self, patch, uhash, sob):
+        commit_line = 'commit %s upstream.' % (uhash)
+        subject = False
+        hash_add = False
+        hash_added = False
+        sob_added = False
+        with open(patch, 'r') as src:
+            with NamedTemporaryFile(dir='./', delete=False) as dst:
+                for line in src:
+                    if sob_added:
+                        dst.write(line)
+                        continue
+
+                    if not subject:
+                        if 'Subject:' in line:
+                            subject = True
+
+                    if subject and not hash_add:
+                        if line.strip() == '':
+                            hash_add = True
+                            continue
+
+                    if hash_add and not hash_added:
+                        if not commit_line in line:
+                            dst.write('\n')
+                            dst.write(commit_line)
+                            dst.write('\n\n')
+                        hash_added = True
+
+                    if hash_added and 'Signed-off-by:' in line:
+                        if line.strip() == sob:
+                            continue
+
+                    if hash_added and line.strip() == '---':
+                        dst.write(sob)
+                        dst.write('\n')
+                        sob_added = True
+
+                    dst.write(line)
+                temp = dst.name
+        rename(temp, patch)
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.initialize()
+
+            # Check: Are we currently in a git repository?
+            if not Git.is_repo():
+                raise GitError('This script can only be run from within a git repository.')
+
+            if 'range' not in self.cfg:
+                raise CmdlineError('No range given, use --range option to specify range of commits to process')
+
+            if 'sob' not in self.cfg:
+                raise CmdlineError('No "Signed-off-by:" given, you must specify --sob=<sob> option')
+
+            # Fetch latest upstream changes
+            stdo("Fetching upstream commits from linux master repository...")
+            status, result = run_command("git fetch -q %s master" %
+                                         self.defaults['git_repo_upstream'],
+                                         self.debug_run)
+            if status != 0:
+                raise GitError("\n".join(result))
+
+            # Find commits marked for stable in the provided range, and
+            # save hints added for which versions the commit should be
+            # backported or cherry-picked
+            stdo("\r%s" % (' ' * 80))
+            stdo("\rLooking for stable commits inside provided range...")
+            status, result = run_command('git log --reverse --format=%%H %s'
+                                         % (self.cfg['range']))
+            if status != 0:
+                raise GitError("\n".join(result))
+            cc = 1
+            ccstable = compile(r'^\s*Cc:.*\b(stable)\b.*', IGNORECASE | MULTILINE)
+            cchint = compile(r'((?P<for>\b(for)\b)|(?P<ge>\s*>=\s*)|(\s*))(?P<v>[v]*)(?P<kver>[0-9]\.[0-9][^\s+,\]]*)(?P<plus>[+]*)[,\]]*((?P<only>[\s]+only)|(?P<later>[\s]+and later)|(\s*))')
+            forstable = []
+            for c in result:
+                stdo("\rLooking for stable commits inside provided range (%d/%d)..."
+                     % (cc, len(result)))
+                status, body = getstatusoutput('git log -n 1 --format=%%B %s' % (c))
+                if status != 0:
+                    eout(body)
+                    continue
+                s = ccstable.search(body)
+                if s:
+                    forvers = []
+                    sline = s.group(0)
+                    s2 = cchint.search(sline)
+                    while s2:
+                        plus = False
+                        if (s2.group('ge') or s2.group('ge') or s2.group('plus')
+                            or s2.group('later')):
+                            plus = True
+                        forvers.append(KernelVersion(s2.group('kver'), plus))
+                        sline = sline[s2.end():]
+                        s2 = cchint.search(sline)
+                    forstable.append([c, forvers])
+                cc += 1
+
+            #stdo("\n")
+            #for c in forstable:
+            #    print c[0]
+            #    if c[1]:
+            #        for d in c[1]:
+            #            print d.version, d.patchlevel, d.sublevel, d.plus
+            #    else:
+            #        print "None"
+            #return 0
+
+            # Try to apply the stable patches to the current branch. The
+            # patch is created with git format-patch, and applied with
+            # git am.
+            #
+            # Before applying patches, 5 directories are created if they
+            # don't exist:
+            # * Applied: patches which succesfuly apply to the current
+            #            branch are copied to this directory
+            # * Ignored: patches which are marked for a different stable
+            #            version from the kernel version in the current
+            #            branch, are ignored (not applied) and copied to
+            #            this directory. In case there the patch must be
+            #            applied, it should be moved to the Fixed
+            #            directory, to be applied on a next run
+            # * Failed: patches which fail to apply are copied to this
+            #           directory, to be fixed
+            # * Fixed: after fixing a patch which failed, the user
+            #          removes the patch from Failed directory, and
+            #          copies the fixed patch with same name to this
+            #          directory. This scripts sees the patch in Fixed,
+            #          and applies it instead of taking the original
+            #          broken patch obtained with git format-patch
+            # * Discarded: after seeing that a patch which failed, or
+            #              was applied, shouldn't be applied to the
+            #              current branch, the user moves the patch
+            #              from Failed or Applied to the Discarded
+            #              directory. This scripts sees it and
+            #              doesn't try to apply it again on a second
+            #              run. This keeps the workflow sane, eg.
+            #              in the end the Failed directory shouldn't
+            #              have no patches, all patches which failed
+            #              should have a fixed version in Fixed
+            #              directory, or discarded.
+            stdo("\r%s" % (' ' * 80))
+            stdo("\rApplying stable changes found in the current branch...\n")
+            applied_dir = 'Applied'
+            ignored_dir = 'Ignored'
+            failed_dir = 'Failed'
+            fixed_dir = 'Fixed'
+            discarded_dir = 'Discarded'
+            if not path.exists(applied_dir):
+                mkdir(applied_dir)
+            if not path.exists(ignored_dir):
+                mkdir(ignored_dir)
+            if not path.exists(failed_dir):
+                mkdir(failed_dir)
+            if not path.exists(fixed_dir):
+                mkdir(fixed_dir)
+            if not path.exists(discarded_dir):
+                mkdir(discarded_dir)
+            kernel = KernelVersion(Kernel().version(), False)
+            for change in forstable:
+                status, title = run_command('git log -n 1 --format=%%s %s' % (change[0]))
+                if status != 0:
+                    eout(result)
+                    continue
+                stdo('Applying "%s"... ' % (title[0]))
+                status, result = run_command('git format-patch %s^..%s'
+                                             % (change[0], change[0]))
+                if status != 0:
+                    eout(result)
+                    continue
+                filename = result[0]
+                self.modify_patch(filename, change[0], self.cfg['sob'])
+                applied_file = '%s/%s' % (applied_dir, filename)
+                if path.exists(applied_file):
+                    remove(applied_file)
+                discarded_file = '%s/%s' % (discarded_dir, filename)
+                if path.exists(discarded_file):
+                    print("discarded")
+                    continue
+                patch_file = '%s/%s' % (fixed_dir, filename)
+                if not path.exists(patch_file):
+                    patch_file = filename
+                    if change[1]:
+                        ignore = True
+                        for kver in change[1]:
+                            if kver.plus:
+                                if kernel.compare(kver) >= 0:
+                                    ignore = False
+                                    break
+                            else:
+                                if kernel.compare(kver) == 0:
+                                    ignore = False
+                                    break
+                        if ignore:
+                            ignored_file = '%s/%s' % (ignored_dir, filename)
+                            if path.exists(ignored_file):
+                                remove(ignored_file)
+                            move(filename, ignored_dir)
+                            print("ignored")
+                            continue
+                else:
+                    remove(filename)
+                status, result = run_command('git am %s' % patch_file)
+                if status != 0:
+                    failed_file = '%s/%s' % (failed_dir, filename)
+                    if path.exists(failed_file):
+                        remove(failed_file)
+                    move(filename, failed_dir)
+                    print("failed")
+                    status, result = run_command('git am --abort')
+                    continue
+                if patch_file == filename:
+                    move(filename, applied_dir)
+                print("success")
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        except GitError as e:
+            eout(e.msg)
+
+        return
+
+if __name__ == '__main__':
+    app = ApplyStablePatches()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+

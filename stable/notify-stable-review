@@ -1,0 +1,299 @@
+#!/usr/bin/env python
+#
+
+from os                                 import getenv, system
+from sys                                import argv
+from getopt                             import getopt, GetoptError
+from commands                           import getstatusoutput
+from tempfile                           import NamedTemporaryFile
+from ktl.utils                          import stdo, error, eout, run_command
+from ktl.std_app                        import StdApp
+from ktl.git                            import Git, GitError
+from ktl.kernel                         import Kernel
+
+# *** You may remove this comment block from your application
+#
+# This script is a template for applications which provides common
+# functionality, command line, processing, and use of configuration
+# files. In order to create a new script, run:
+#
+# init-script <class-name> <script-name>
+#
+# using the name of the script you'd like to create and the name
+# for the main class wrapper inside it.
+#
+# *** You may remove this comment block from your application
+
+# CmdlineError
+#
+# The type of exception that will be raised by Cmdline.process() if there
+# are command line processing errors.
+#
+class CmdlineError(Exception):
+    # __init__
+    #
+    def __init__(self, error):
+        self.msg = error
+
+# Cmdline
+#
+class Cmdline:
+    """
+    Handle all the command line processing for the application.
+    """
+    # __init__
+    #
+    def __init__(self):
+        self.cfg = {}
+
+    # error
+    #
+    def error(self, e, defaults):
+        """
+        Simple helper which prints out an error message and then prints out the usage.
+        """
+        if e != '': error(e)
+        self.usage(defaults)
+
+    # usage
+    #
+    def usage(self, defaults):
+        """
+        Prints out the help text which explains the command line options.
+        """
+        stdo("  This utility is intended to be run after a set of stable patches are ready for review      \n")
+        stdo("  inside an stable upstream kernel process. It looks at a git branch with patches for        \n")
+        stdo("  review, and sends a notification email. For more information, see:                         \n")
+        stdo("  http://wiki.ubuntu.com/Kernel/Dev/StableUpstream/Maintenance                               \n")
+        stdo("                                                                                             \n")
+        stdo("    Usage:                                                                                   \n")
+        stdo("        %s [--dry-run] [--from=<email address>]                                              \n" % self.cfg['app_name'])
+        stdo("                                                                                             \n")
+        stdo("    Options:                                                                                 \n")
+        stdo("        --help           Prints this text.                                                   \n")
+        stdo("                                                                                             \n")
+        stdo("        --dry-run        Run in test mode and do not really send out any mail. This will     \n")
+        stdo("                         also cause the mail body be written to stdout.                      \n")
+        stdo("                                                                                             \n")
+        stdo("        --from=<email address>                                                               \n")
+        stdo("                         Sets the sender of the notification email. Without this option,     \n")
+        stdo("                         the script tries to get this info from DEBFULLNAME and DEBEMAIL     \n")
+        stdo("                         environment variables by default.                                   \n")
+        stdo("                                                                                             \n")
+        stdo("    Examples:                                                                                \n")
+        stdo("        %s --dry-run                                                                         \n" % self.cfg['app_name'])
+
+    # process
+    #
+    def process(self, argv, defaults):
+        """
+        This method is responsible for calling the getopt function to process the command
+        line. All parameters are processed into class variables for use by other methods.
+        """
+        self.cfg['app_name'] = argv[0]
+        result = True
+        try:
+            optsShort = ''
+            optsLong  = ['help', 'dry-run', 'from=']
+            opts, args = getopt(argv[1:], optsShort, optsLong)
+
+            for opt, val in opts:
+                if (opt == '--help'):
+                    raise CmdlineError('')
+
+                elif (opt == '--dry-run'):
+                    self.cfg['dry-run'] = True
+
+                elif opt in ('--from'):
+                    self.cfg['from'] = val
+
+        except GetoptError, error:
+            print(error, defaults)
+            raise CmdlineError('')
+
+        return self.cfg
+
+    # verify_options
+    #
+    def verify_options(self, cfg):
+        """
+        Used to verify that all required parameters are present and correct.
+        """
+        return
+
+mail_message = ("\n"
+"I am announcing the review cycle for the %s release of stable patches.\n"
+"This new release contains %s patches. To review the contents, check the\n"
+"following repository:\n"
+"\n"
+"git://kernel.ubuntu.com/ubuntu/linux-stable.git linux-%s.y-review\n"
+"\n"
+"If there are any problems, or if anything is missing, please answer to\n"
+"this email. Note that any answer should be made at maximum in 3 days,\n"
+"after that the final release of %s will be made.\n"
+"\n"
+"See below the diffstat and shortlog for this release.\n"
+"\n"
+"-%s\n"
+"\n"
+"-- \n")
+
+# AppTemplate
+#
+class AppTemplate(StdApp):
+    # __init__
+    #
+    def __init__(self):
+        StdApp.__init__(self)
+        self.defaults = {}
+
+    # initialize
+    #
+    def initialize(self):
+        """
+        A separate initialize that we can control when it gets called (not
+        when the object is instantiated).
+        """
+        self.debug_run = False
+        self.tolist = [
+            "linux-kernel@vger.kernel.org",
+            "stable@vger.kernel.org",
+            "kernel-team@lists.ubuntu.com"
+        ]
+        return
+
+    # main
+    #
+    def main(self):
+        cmdline = Cmdline()
+        try:
+            self.merge_config_options(self.defaults, cmdline.process(argv, self.defaults))
+            cmdline.verify_options(self.cfg)
+
+            self.initialize()
+
+            # Check: Are we currently in a git repository?
+            if not Git.is_repo():
+                raise GitError('This script can only be run from within a git repository.')
+
+            # Try to get the default name and email address to make up the sender
+            # from the environment.
+            sender = ""
+            if not 'from' in self.cfg:
+                sender_name  = getenv("DEBFULLNAME")
+                sender_email = getenv("DEBEMAIL")
+                if sender_email:
+                    if sender_name:
+                        sender = "%s <%s>" % (sender_name, sender_email)
+                    else:
+                        sender = sender_email
+                else:
+                    raise CmdlineError("Unable to determine the sender for the "
+                                       "email (From: address). Set your "
+                                       "DEBFULLNAME/DEBEMAIL properly or use "
+                                       "the --from option")
+            else:
+                sender = self.cfg['from']
+
+            # Get kernel version
+            status, result = run_command("make kernelversion", self.debug_run)
+            if status != 0:
+                raise Exception("\n".join(result))
+            kver = []
+            next_minor = None
+            sver = result[0].split('.')
+            if len(sver) > 1:
+                version = int(sver[0])
+                patchlevel = int(sver[1])
+                kver = [ version, patchlevel ]
+                if len(sver) > 2:
+                    sublevel = int(sver[2])
+                    kver.append(sublevel)
+                else:
+                    raise Exception("Invalid kernel version in Makefile (missing SUBLEVEL)")
+                if version > 2:
+                    next_minor = sublevel + 1
+                else:
+                    if len(sver) > 3:
+                        extraversion = int(sver[3])
+                        kver.append(extraversion)
+                        next_minor = extraversion + 1
+                    else:
+                        next_minor = 1
+            else:
+                raise Exception("Unable to get kernel version from Makefile")
+
+            # Build the kernel version strings
+            new_kver = ""
+            pos = 0
+            for v in kver[:-1]:
+                new_kver += str(v) + "."
+            main_kver = new_kver[:-1]
+            old_kver = new_kver + str(kver[-1])
+            new_kver += str(next_minor)
+
+            # Get the number of patches, diffstat and shortlog from
+            # previous release
+            status, result = run_command("git log --no-merges "
+                                         "--format=%%h v%s.. | wc -l" %
+                                        (old_kver), self.debug_run)
+            if status != 0:
+                raise GitError("\n".join(result))
+            patch_cnt = result[0]
+            status, diffstat = getstatusoutput("git diff --stat v%s.." %
+                                               (old_kver))
+            if status != 0:
+                raise GitError(diffstat)
+            status, shortlog = getstatusoutput("git shortlog v%s.." %
+                                               (old_kver))
+            if status != 0:
+                raise GitError(shortlog)
+
+            # Build the email body
+            mailbody = "From: " + sender + '\n'
+            for entry in self.tolist:
+                mailbody += "To: " + entry + '\n'
+            mailbody += ("Subject: [%s extended stable] Linux %s stable review"
+                         % (main_kver, new_kver) + "\n")
+            mailbody += mail_message % (new_kver, patch_cnt, main_kver,
+                                        main_kver, sender.split()[0])
+            mailbody += diffstat + '\n\n'
+            mailbody += shortlog
+
+            # Copy message to file and use git send-email to send, or
+            tf = NamedTemporaryFile(prefix="mail-")
+            tf.write(mailbody)
+            tf.flush()
+            cmd = "git send-email --suppress-cc=all --from \"" + sender + "\""
+            for line in self.tolist:
+                cmd += " --to \"" + line + "\""
+            if 'dry-run' in self.cfg:
+                cmd += " --dry-run"
+            cmd += " --8bit-encoding UTF-8"
+            cmd += " " + tf.name
+            system(cmd)
+            if 'dry-run' in self.cfg:
+                print "\n\n" + mailbody
+            tf.close()
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        # Handle command line errors.
+        #
+        except CmdlineError as e:
+            cmdline.error(e.msg, self.defaults)
+
+        except GitError as e:
+            eout(e.msg)
+
+        return
+
+if __name__ == '__main__':
+    app = AppTemplate()
+    app.main()
+
+# vi:set ts=4 sw=4 expandtab:
+

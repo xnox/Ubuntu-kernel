@@ -110,7 +110,7 @@ class Ubuntu:
             'series_version' : '10.10',
             'kernel' : '2.6.35',
             'name' : 'maverick',
-            'supported' : True,
+            'supported' : False,
             'packages' :
             [
                 'linux',
@@ -171,7 +171,6 @@ class Ubuntu:
                     'ports-meta' : 'linux-ports-meta',
                     'lbm' : 'linux-backports-modules-2.6.32'
                 },
-                'linux-fsl-imx51' : { 'meta' : 'linux-meta-fsl-imx51' },
                 'linux-ec2' : { 'meta' : 'linux-meta-ec2' },
                 'linux-lts-backport-oneiric' : {
                     'meta' : 'linux-meta-lts-backport-oneiric'
@@ -185,7 +184,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-fsl-imx51', 'linux-ec2' ]
+                'linux' : [ 'linux-ec2' ]
             },
             'backport-packages' :
             {
