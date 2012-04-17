@@ -31,6 +31,8 @@ refresh=1
 date="`date +%F`"
 while read current branch abi base
 do
+	[ "$current" = '-' ] && current="$base"
+
 	curr="$master_tags/$current"
 	# Check for upstream crack of the day.
 	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
@@ -52,9 +54,9 @@ do
 	fi
 done <<EOL
 LINUS		linus/master			999	daily
-DRM-INTEL-NEXT	drm-intel/drm-intel-next	997	drm-intel-next
 DRM-NEXT	drm-2.6/drm-next		996	drm-next
-DRM-INTEL-FIXES	drm-intel/drm-intel-fixes	994	drm-intel-fixes
+-	drm-intel-danvet/drm-intel-next		997	drm-intel-next
+-	drm-intel-danvet/drm-intel-queued	994	drm-intel-experimental
 DEBLOAT-TESTING	debloat-testing/master		993	debloat-testing
 EOL
 # Also allocated
