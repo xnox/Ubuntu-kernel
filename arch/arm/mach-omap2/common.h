@@ -124,7 +124,7 @@ static inline int omap_mux_late_init(void)
 #endif
 
 #ifdef CONFIG_ARCH_OMAP5
-extern void omap54xx_map_common_io(void);
+extern void __init omap54xx_map_common_io(void);
 #else
 static inline void omap54xx_map_common_io(void)
 {
