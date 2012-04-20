@@ -1,9 +1,23 @@
-linux-lts-backport-oneiric (3.0.0-19.32~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-19.33~lucid1) lucid-proposed; urgency=low
 
-  [ Herton R. Krzesinski ]
+  [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #975062
+    - LP: #986000
+
+  [ Luis Henriques ]
+
+  * SAUCE: ite-cir: postpone ISR registration
+    - LP: #984387
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 20 Apr 2012 09:40:29 +0100
+
+linux (3.0.0-19.32) oneiric-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #974368
 
   [ Brad Figg ]
 
@@ -275,7 +289,7 @@ linux-lts-backport-oneiric (3.0.0-19.32~lucid1) lucid-proposed; urgency=low
   * Linux 3.0.27
     - LP: #971808
 
- -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 09 Apr 2012 14:16:08 -0300
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 05 Apr 2012 16:01:47 +0100
 
 linux (3.0.0-18.31) oneiric-proposed; urgency=low
 
