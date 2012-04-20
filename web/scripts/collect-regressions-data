@@ -344,7 +344,7 @@ class CollectRegressionsData(StdApp):
                     if package_name in bugs_db_packages and 'bugs' in bugs_db_packages[package_name]:
                         for bug_id in bugs_db_packages[package_name]['bugs']:
                             bug = KernelBug(self.lp.get_bug(bug_id))
-                            bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = bug.gravity
+                            bugs_db_packages[package_name]['bugs'][bug_id]['kernel_gravity'] = bug.kernel_gravity
 
                 except:
                     error("Exception caught processing the tasks, building the bugs database.\n")

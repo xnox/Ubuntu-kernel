@@ -372,7 +372,7 @@ class BugTrackerReport():
                     retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[t['status']], t['status'])             # Status
                     retval += '                                    <td >%s</td>\n' % t['assignee']                                                       # Assignee
                     retval += '                                    <td class="%s">%s</td>\n' % (when_style, when)                                        # Last comment
-                    retval += '                                    <td >%d</td>\n' % bug['gravity']                                                      # Gravity
+                    retval += '                                    <td >%d</td>\n' % bug['kernel_gravity']                                               # Gravity
                     retval += '                                </tr>\n'
         else:
             for t in self.db['bugs'][bug_id]['tasks']:
@@ -384,7 +384,7 @@ class BugTrackerReport():
                 retval += '                                    <td class="%s">%s</td>\n' % (self.status_color[t['status']], t['status'])                 # Status
                 retval += '                                    <td >%s</td>\n' % t['assignee']                                                           # Assignee
                 retval += '                                    <td class="%s">%s</td>\n' % (when_style, when)                                            # Last comment
-                retval += '                                    <td >%d</td>\n' % bug['gravity']                                                          # Gravity
+                retval += '                                    <td >%d</td>\n' % bug['kernel_gravity']                                                   # Gravity
                 retval += '                                </tr>\n'
         return retval
 

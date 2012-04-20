@@ -150,10 +150,10 @@ class KernelBug(Bug):
 
         return retval
 
-    # gravity
+    # kernel_gravity
     #
     @property
-    def gravity(self):
+    def kernel_gravity(self):
         """
         Try to come up with an integer value that represents the need of this
         bug to be addressed. The higher the number, the more attention it deserves.

@@ -335,7 +335,7 @@ class CollectRegressionsData(StdApp):
                                 bugs_db_packages[package_name]['bugs'][bug_id] = Bugs.bug_info(bug, now, task)
                                 ago = DeltaTime(self.string_to_date(bugs_db_packages[package_name]['bugs'][bug_id]['date created']), now)
                                 if ago.days < bug_creation_window:
-                                    bugs_db_packages[package_name]['bugs'][bug_id]['gravity'] = bug.gravity
+                                    bugs_db_packages[package_name]['bugs'][bug_id]['kernel_gravity'] = bug.kernel_gravity
                                 else:
                                     deletion_list.append(bug_id)
 
