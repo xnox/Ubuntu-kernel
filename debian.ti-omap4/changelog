@@ -4,6 +4,13 @@ linux-ti-omap4 (3.0.0-1209.21) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.0.0-19.33 ]
+
+  * Release Tracking Bug
+    - LP: #985736
+  * SAUCE: ite-cir: postpone ISR registration
+    - LP: #984387
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Mon, 23 Apr 2012 11:02:57 +0200
 
 linux-ti-omap4 (3.0.0-1209.20) oneiric-proposed; urgency=low
