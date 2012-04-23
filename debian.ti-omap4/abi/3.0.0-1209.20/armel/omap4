@@ -6238,6 +6238,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	udp_table
 EXPORT_SYMBOL vmlinux 0x00000000	udplite_prot
 EXPORT_SYMBOL vmlinux 0x00000000	udplite_table
 EXPORT_SYMBOL vmlinux 0x00000000	unblock_all_signals
+EXPORT_SYMBOL vmlinux 0x00000000	unlink_framebuffer
 EXPORT_SYMBOL vmlinux 0x00000000	unload_nls
 EXPORT_SYMBOL vmlinux 0x00000000	unlock_buffer
 EXPORT_SYMBOL vmlinux 0x00000000	unlock_new_inode
