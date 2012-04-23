@@ -96,8 +96,12 @@ if sender == "":
 	print "EE: The senders email address needs to be defined in " \
 	      + "DEBEMAIL"
 	sys.exit(1)
-if os.getenv("DEBFULLNAME") != "":
-	sender = os.getenv("DEBFULLNAME") + " <" + sender + ">"
+fullname = os.getenv("DEBFULLNAME")
+if fullname != "":
+	sender = fullname + " <" + sender + ">"
+	signer = fullname.split()[0]
+else:
+	signer = "The Ubuntu Kernel Team"
 
 #------------------------------------------------------------------------------
 # First get the version which is currently in the target pocket. If there is
@@ -149,7 +153,7 @@ msg += "\nThe full changelog about all bug fixes contained in this upload can "
 msg += "be found at:\n\n"
 msg += "https://launchpad.net/ubuntu/" + series + "/+source/" + package + "/"
 msg += target_version + "\n\n"
-msg += "-" + os.getenv("DEBFULLNAME", default="The Ubuntu kernel team")
+msg += "-" + signer
 
 if opt.dryrun:
 	print msg
