@@ -17,6 +17,7 @@ printenv:
 	@echo "flavours          = $(flavours)"
 
 COMPAT_KDIR=/lib/modules/$(release)-$(abinum)-$(target_flavour)
+NET_BUILD_KERNEL=$(release)-$(abinum)-$(target_flavour)
 make_compat = make $(conc_level)
 make_compat += KLIB=$(COMPAT_KDIR) KLIB_BUILD=$(COMPAT_KDIR)/build
 make_compat += MADWIFI=
@@ -68,7 +69,7 @@ $(stampdir)/stamp-build-%: prepare-%
 		cd $(builddir)/build-$*/$$i && $(make_compat); \
 	done
 ifeq ($(do_net),true)
-	$(kmake) $(conc_level) obj=net modules
+	BUILD_KERNEL=$(NET_BUILD_KERNEL) $(kmake) $(conc_level) obj=net modules
 endif
 	touch $@
 
