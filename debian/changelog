@@ -1,3 +1,9 @@
+linux-backports-modules-3.2.0 (3.2.0-24.8) precise-proposed; urgency=low
+
+  * Pass version information to net build 
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Wed, 25 Apr 2012 13:09:40 -0700
+
 linux-backports-modules-3.2.0 (3.2.0-24.7) precise-proposed; urgency=low
 
   * Bump ABI for Precise 3.2.0-24.37
