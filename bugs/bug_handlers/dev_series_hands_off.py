@@ -28,6 +28,13 @@ class DevSeriesHandsOff(BugHandler):
 
         while True:
 
+            # Bugs with a 'ProblemType' of 'Package' can't be fixed by a new kernel.
+            #
+            if bug.properties['ProblemType'] == 'Package':
+                retval = False
+                Dbg.why('ProblemType == Package\n')
+                break
+
             # A bug that is filed for a particular CVE. This is part of the CVE/SRU
             # process.
             #
