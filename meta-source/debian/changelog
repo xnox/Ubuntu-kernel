@@ -1,3 +1,15 @@
+linux-meta-lts-backport-natty (2.6.38.15.25) lucid-proposed; urgency=low
+
+  [ Luis Henriques ]
+
+  * linux-natty 2.6.38-15.59
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * UBUNTU: try to automatically get version to give for dpkg-genchanges
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 30 Apr 2012 11:08:03 +0100
+
 linux-meta-lts-backport-natty (2.6.38.14.24) lucid-proposed; urgency=low
 
   * linux-natty 2.6.38-14.58
