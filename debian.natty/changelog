@@ -1,9 +1,61 @@
-linux-lts-backport-natty (2.6.38-14.58~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-15.59~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #967823
+    - LP: #990208
+
+  [ Brad Figg ]
+
+  * SAUCE (no-up) Provide a param for allowing the BIOS to handle changing
+    the brightness on AC/battery status changes.
+    - LP: #949311
+
+  [ Tim Gardner ]
+
+  * SAUCE: ubuntu drivers: use UMH_WAIT_PROC consistently
+    - LP: #963685
+  * SAUCE: disable_nx should not be in __cpuinitdata section for X86_32
+    - LP: #968233
+  * SAUCE: (no-up) remove __initdata from vesafb_fix
+    - LP: #969309
+
+  [ Upstream Kernel Changes ]
+
+  * usermodehelper: use UMH_WAIT_PROC consistently
+    - LP: #963685
+  * usermodehelper: introduce umh_complete(sub_info)
+    - LP: #963685
+  * usermodehelper: implement UMH_KILLABLE
+    - LP: #963685
+  * usermodehelper: kill umh_wait, renumber UMH_* constants
+    - LP: #963685
+  * usermodehelper: ____call_usermodehelper() doesn't need do_exit()
+    - LP: #963685
+  * kmod: introduce call_modprobe() helper
+    - LP: #963685
+  * kmod: make __request_module() killable
+    - LP: #963685
+  * drm/i915: Fixes distorted external screen image on HP 2730p
+    - LP: #796030
+  * ext4: fix undefined behavior in ext4_fill_flex_info()
+    - LP: #984757
+    - CVE-2012-2100
+  * jbd2: clear BH_Delay & BH_Unwritten in journal_unmap_buffer
+    - LP: #929781
+    - CVE-2011-4086
+  * cifs: fix dentry refcount leak when opening a FIFO on lookup
+    - LP: #947997
+    - CVE-2012-1090
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 30 Apr 2012 09:52:55 +0100
+
+linux (2.6.38-14.58) natty-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #965346
 
   [ Andy Whitcroft ]
 
@@ -39,7 +91,7 @@ linux-lts-backport-natty (2.6.38-14.58~lucid1) lucid-proposed; urgency=low
     - LP: #917842
     - CVE-2012-0045
 
- -- Luis Henriques <luis.henriques@canonical.com>  Thu, 29 Mar 2012 12:04:36 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 26 Mar 2012 15:28:22 +0100
 
 linux (2.6.38-13.57) natty-proposed; urgency=low
 
