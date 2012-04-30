@@ -213,6 +213,23 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
             },
+        'linux-armadaxp' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'ubuntu-armel-kernel',
+                'prepare-package-meta'       : 'canonical-kernel-team',
+                'upload-to-ppa'              : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'ubuntu-sru',
+                'verification-testing'       : 'ubuntu-armel-kernel',
+                'regression-testing'         : 'canonical-platform-qa',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                'security-signoff'           : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug', 'armel'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"]
+            },
         'linux-lts-backport-oneiric' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',

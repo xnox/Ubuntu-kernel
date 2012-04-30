@@ -71,7 +71,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-ti-omap4' ]
+                'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
             },
             'sha1' : '',
             'md5' : ''
