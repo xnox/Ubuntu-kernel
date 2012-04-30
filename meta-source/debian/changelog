@@ -1,3 +1,9 @@
+linux-meta (3.4.0.1.1) UNRELEASED; urgency=low
+
+  * Open Quantal Quetzal 12.10
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 30 Apr 2012 13:11:19 -0700
+
 linux-meta (3.2.0.24.26) precise-proposed; urgency=low
 
   * Bump ABI
