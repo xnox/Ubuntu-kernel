@@ -1,9 +1,10 @@
-linux-meta (3.4.0.1.1) UNRELEASED; urgency=low
+linux-meta (3.4.0.1.1) quantal; urgency=low
 
   * Open Quantal Quetzal 12.10
   * Temporarily disable LBM
+  * Remove non-PAE i386 references
 
- -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 30 Apr 2012 13:11:19 -0700
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Wed, 02 May 2012 06:21:45 -0700
 
 linux-meta (3.2.0.24.26) precise-proposed; urgency=low
 
