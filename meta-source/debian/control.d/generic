@@ -1,5 +1,5 @@
 Package: linux-headers-generic
-Architecture: i386 amd64
+Architecture: amd64
 Section: devel
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-generic
@@ -8,7 +8,7 @@ Description: Generic Linux kernel headers
  available.
 
 Package: linux-image-generic
-Architecture: i386 amd64
+Architecture: amd64
 Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-generic, linux-firmware
@@ -17,7 +17,7 @@ Description: Generic Linux kernel image
  available.
 
 Package: linux-generic
-Architecture: i386 amd64
+Architecture: amd64
 Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-image-generic (= ${binary:Version})
@@ -26,28 +26,28 @@ Description: Complete Generic Linux kernel
  available.
 
 #Package: linux-backports-modules-headers-RELEASE_NAME-generic
-#Architecture: amd64 i386
+#Architecture: amd64
 #Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-generic
 #Description: Backported driver headers for generic kernel image
 # This empty package allows people to keep their backported module
 # headers up-to-date when upgrading their Linux kernel.
 #
 #Package: linux-backports-modules-cw-3.3-RELEASE_NAME-generic
-#Architecture: amd64 i386
+#Architecture: amd64
 #Depends: ${misc:Depends}, linux-backports-modules-cw-3.3-${kernel-abi-version}-generic
 #Description: Backported wireless drivers for generic kernel image
 # This empty package allows people to keep their backported wireless modules
 # up-to-date when upgrading their Linux kernel.
 #
 #Package: linux-backports-modules-net-RELEASE_NAME-generic
-#Architecture: amd64 i386
+#Architecture: amd64
 #Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-generic
 #Description: Backported ethernet drivers for generic kernel image.
 # This empty package allows people to keep their backported ethernet modules
 # up-to-date when upgrading their Linux kernel.
 #
 #Package: linux-backports-modules-alsa-RELEASE_NAME-generic
-#Architecture: amd64 i386
+#Architecture: amd64
 #Depends: ${misc:Depends}, linux-backports-modules-alsa-${kernel-abi-version}-generic
 #Description: Backported drivers for alsa-driver snapshot.
 # This empty package allows people to keep their alsa-driver snapshot
