@@ -1,16 +1,417 @@
-linux-lts-backport-oneiric (3.0.0-19.33~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-20.34~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #986000
+    - LP: #993170
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * linux: add Build-Depends for libnewt-dev, to enable perf TUI support
+    - LP: #981717
+
+  [ Manoj Iyer ]
+
+  * SAUCE: Bluetooth: btusb: Add vendor specific ID (0489 e042) for
+    BCM20702A0
+    - LP: #980965
+
+  [ Tim Gardner ]
+
+  * [Config] Fix invalid linux-headers link
+    - LP: #974403
+  * Remove headers asm symlink entirely
+    - LP: #974403
+
+  [ Upstream Kernel Changes ]
+
+  * Revert "x86/ioapic: Add register level checks to detect bogus io-apic
+    entries"
+    - LP: #983326
+  * drm/i915: Fixes distorted external screen image on HP 2730p
+    - LP: #796030
+  * x86 bpf_jit: fix a bug in emitting the 16-bit immediate operand of AND
+    - LP: #983326
+  * rose_dev: fix memcpy-bug in rose_set_mac_address
+    - LP: #983326
+  * net: usb: cdc_eem: fix mtu
+    - LP: #983326
+  * mtd: sst25l: initialize writebufsize
+    - LP: #983326
+  * mtd: block2mtd: initialize writebufsize
+    - LP: #983326
+  * mtd: lart: initialize writebufsize
+    - LP: #983326
+  * mtd: m25p80: set writebufsize
+    - LP: #983326
+  * ACPI: Do cpufreq clamping for throttling per package v2
+    - LP: #983326
+  * PNPACPI: Fix device ref leaking in acpi_pnp_match
+    - LP: #983326
+  * modpost: fix ALL_INIT_DATA_SECTIONS
+    - LP: #983326
+  * genirq: Adjust irq thread affinity on IRQ_SET_MASK_OK_NOCOPY return
+    value
+    - LP: #983326
+  * tracing: Fix ftrace stack trace entries
+    - LP: #983326
+  * m68k/mac: Add missing platform check before registering platform
+    devices
+    - LP: #983326
+  * mac80211: fix possible tid_rx->reorder_timer use after free
+    - LP: #983326
+  * drm: Validate requested virtual size against allocated fb size
+    - LP: #983326
+  * drm/radeon/kms: fix fans after resume
+    - LP: #983326
+  * drm/i915: no-lvds quirk on MSI DC500
+    - LP: #983326
+  * drm/i915: Sanitize BIOS debugging bits from PIPECONF
+    - LP: #983326
+  * drm/i915: Add lock on drm_helper_resume_force_mode
+    - LP: #983326
+  * drm/i915: quirk away broken OpRegion VBT
+    - LP: #983326
+  * kgdb,debug_core: pass the breakpoint struct instead of address and
+    memory
+    - LP: #983326
+  * kgdbts: Fix kernel oops with CONFIG_DEBUG_RODATA
+    - LP: #983326
+  * kgdbts: (1 of 2) fix single step awareness to work correctly with SMP
+    - LP: #983326
+  * kgdbts: (2 of 2) fix single step awareness to work correctly with SMP
+    - LP: #983326
+  * x86,kgdb: Fix DEBUG_RODATA limitation using text_poke()
+    - LP: #983326
+  * mmc: atmel-mci: correct data timeout computation
+    - LP: #983326
+  * sysctl: fix write access to dmesg_restrict/kptr_restrict
+    - LP: #983326
+  * modpost: Fix modpost's license checking V3
+    - LP: #983326
+  * modpost: Fix modpost license checking of vmlinux.o
+    - LP: #983326
+  * x86/PCI: use host bridge _CRS info on MSI MS-7253
+    - LP: #983326
+  * x86/PCI: do not tie MSI MS-7253 use_crs quirk to BIOS version
+    - LP: #983326
+  * acer-wmi: No wifi rfkill on Sony machines
+    - LP: #983326
+  * sched/x86: Fix overflow in cyc2ns_offset
+    - LP: #983326
+  * mfd: Clear twl6030 IRQ status register only once
+    - LP: #983326
+  * USB: Add Motorola Rokr E6 Id to the USBNet driver "zaurus"
+    - LP: #983326
+  * ASoC: ak4642: fixup: mute needs +1 step
+    - LP: #983326
+  * cred: copy_process() should clear child->replacement_session_keyring
+    - LP: #983326
+  * iommu/amd: Make sure IOMMU interrupts are re-enabled on resume
+    - LP: #983326
+  * TOMOYO: Fix mount flags checking order.
+    - LP: #983326
+  * Linux 3.0.28
+    - LP: #983326
+  * drm/i915/ringbuffer: Exclude last 2 cachlines of ring on 845g
+    - LP: #987283
+  * drm/radeon: only add the mm i2c bus if the hw_i2c module param is set
+    - LP: #987283
+  * rtlwifi: Add missing DMA buffer unmapping for PCI drivers
+    - LP: #987283
+  * ARM: 7384/1: ThumbEE: Disable userspace TEEHBR access for
+    !CONFIG_ARM_THUMBEE
+    - LP: #987283
+  * Bluetooth: uart-ldisc: Fix memory leak
+    - LP: #987283
+  * Bluetooth: hci_ldisc: fix NULL-pointer dereference on tty_close
+    - LP: #987283
+  * ia64: fix futex_atomic_cmpxchg_inatomic()
+    - LP: #987283
+  * drivers/rtc/rtc-pl031.c: enable clock on all ST variants
+    - LP: #987283
+  * hugetlb: fix race condition in hugetlb_fault()
+    - LP: #987283
+  * staging: iio: hmc5843: Fix crash in probe function.
+    - LP: #987283
+  * tty: serial: altera_uart: Check for NULL platform_data in probe.
+    - LP: #987283
+  * sparc64: Eliminate obsolete __handle_softirq() function
+    - LP: #987283
+  * sparc64: Fix bootup crash on sun4v.
+    - LP: #987283
+  * cciss: Initialize scsi host max_sectors for tape drive support
+    - LP: #987283
+  * cciss: Fix scsi tape io with more than 255 scatter gather elements
+    - LP: #987283
+  * perf hists: Catch and handle out-of-date hist entry maps.
+    - LP: #987283
+  * video:uvesafb: Fix oops that uvesafb try to execute NX-protected page
+    - LP: #987283
+  * nohz: Fix stale jiffies update in tick_nohz_restart()
+    - LP: #987283
+  * USB: serial: fix race between probe and open
+    - LP: #987283
+  * USB: pl2303: fix DTR/RTS being raised on baud rate change
+    - LP: #987283
+  * USB: option: re-add NOVATELWIRELESS_PRODUCT_HSPA_HIGHSPEED to option_id
+    array
+    - LP: #987283
+  * USB: sierra: add support for Sierra Wireless MC7710
+    - LP: #987283
+  * USB: don't clear urb->dev in scatter-gather library
+    - LP: #987283
+  * xhci: don't re-enable IE constantly
+    - LP: #987283
+  * xhci: Don't write zeroed pointers to xHC registers.
+    - LP: #987283
+  * xhci: Restore event ring dequeue pointer on resume.
+    - LP: #987283
+  * xHCI: Correct the #define XHCI_LEGACY_DISABLE_SMI
+    - LP: #987283
+  * xHCI: add XHCI_RESET_ON_RESUME quirk for VIA xHCI host
+    - LP: #987283
+  * serial: PL011: clear pending interrupts
+    - LP: #987283
+  * serial: PL011: move interrupt clearing
+    - LP: #987283
+  * fcaps: clear the same personality flags as suid when fcaps are used
+    - LP: #987283
+  * ath9k: fix max noise floor threshold
+    - LP: #987283
+  * xhci: Fix register save/restore order.
+    - LP: #987283
+  * Bluetooth: hci_core: fix NULL-pointer dereference at unregister
+    - LP: #987283
+  * pch_phub: Fix register miss-setting issue
+    - LP: #987283
+  * pch_phub: Care FUNCSEL register in PM
+    - LP: #987283
+  * pch_phub: Improve ADE(Address Decode Enable) control
+    - LP: #987283
+  * usb: gadget: pch_udc: Fix disconnect issue
+    - LP: #987283
+  * usb: gadget: pch_udc: Fix wrong return value
+    - LP: #987283
+  * usb: gadget: pch_udc: Fix USB suspend issue
+    - LP: #987283
+  * usb: gadget: pch_udc: Fix usb/gadget/pch_udc: Fix ether gadget
+    connect/disconnect issue
+    - LP: #987283
+  * usb: gadget: pch_udc: Reduce redundant interrupt
+    - LP: #987283
+  * USB: pch_udc: Support new device LAPIS Semiconductor ML7831 IOH
+    - LP: #987283
+  * ACPICA: Fix to allow region arguments to reference other scopes
+    - LP: #987283
+  * security: fix compile error in commoncap.c
+    - LP: #987283
+  * pch_uart: Set PCIe bus number using probe parameter
+    - LP: #987283
+  * 8250_pci: Fix kernel panic when pch_uart is disabled
+    - LP: #987283
+  * pch_dma: fix DMA issue(ch8-ch11)
+    - LP: #987283
+  * pch_dma: Fix channel locking
+    - LP: #987283
+  * pch_dma: Fix CTL register access issue
+    - LP: #987283
+  * pch_dma: Fix suspend issue
+    - LP: #987283
+  * pch_dma: Support new device LAPIS Semiconductor ML7831 IOH
+    - LP: #987283
+  * md/bitmap: prevent bitmap_daemon_work running while initialising bitmap
+    - LP: #987283
+  * Bluetooth: Adding USB device 13d3:3375 as an Atheros AR3012.
+    - LP: #987283
+  * Bluetooth: Add Atheros maryann PIDVID support
+    - LP: #987283
+  * futex: Do not leak robust list to unprivileged process
+    - LP: #987283
+  * drm/radeon/kms: fix the regression of DVI connector check
+    - LP: #987283
+  * drm/radeon: disable MSI on RV515
+    - LP: #987283
+  * drm/radeon: fix load detect on rn50 with hardcoded EDIDs.
+    - LP: #987283
+  * S390: fix tlb flushing for page table pages
+    - LP: #987283
+  * Linux 3.0.29
+    - LP: #987283
+  * KVM: Clean up error handling during VCPU creation
+    - LP: #971685
+    - CVE-2012-1601
+  * KVM: Ensure all vcpus are consistent with in-kernel irqchip settings
+    - LP: #971685
+    - CVE-2012-1601
+  * UAS: Re-add workqueue items if submission fails.
+    - LP: #901215
+  * UAS: Use unique tags on non-streams devices.
+    - LP: #901215
+  * UAS: Free status URB when we can't find the SCSI tag.
+    - LP: #901215
+  * usb/uas: use unique tags for all LUNs
+    - LP: #901215
+  * usb/uas: use scsi_host_find_tag() to find command from a tag
+    - LP: #901215
+  * usb/uas: one only one status URB/host on stream-less connection
+    - LP: #901215
+  * usb/uas: only bind if the hcd supports SG
+    - LP: #901215
+  * usb/uas: move UAS structs / defines into a header file
+    - LP: #901215
+  * usb/uas: add usb_pipe_usage_descriptor
+    - LP: #901215
+  * usb/uas: make sure data urb is gone if we receive status before that
+    - LP: #901215
+  * crypto: sha512 - Fix byte counter overflow in SHA-512
+    - LP: #990544
+  * ALSA: hda/conexant - Don't set HP pin-control bit unconditionally
+    - LP: #990544
+  * ARM: clps711x: serial driver hungs are a result of call disable_irq
+    within ISR
+    - LP: #990544
+  * xen/gntdev: do not set VM_PFNMAP
+    - LP: #990544
+  * xen/xenbus: Add quirk to deal with misconfigured backends.
+    - LP: #990544
+  * USB: yurex: Remove allocation of coherent buffer for setup-packet
+    buffer
+    - LP: #990544
+  * USB: yurex: Fix missing URB_NO_TRANSFER_DMA_MAP flag in urb
+    - LP: #990544
+  * uwb: fix use of del_timer_sync() in interrupt
+    - LP: #990544
+  * uwb: fix error handling
+    - LP: #990544
+  * davinci_mdio: Fix MDIO timeout check
+    - LP: #990544
+  * media: rc-core: set mode for winbond-cir
+    - LP: #990544
+  * cfg80211: fix interface combinations check.
+    - LP: #990544
+  * mm: fix s390 BUG by __set_page_dirty_no_writeback on swap
+    - LP: #990544
+  * jbd2: use GFP_NOFS for blkdev_issue_flush
+    - LP: #990544
+  * USB: serial: cp210x: Fixed usb_control_msg timeout values
+    - LP: #990544
+  * pch_uart: Fix dma channel unallocated issue
+    - LP: #990544
+  * drivers/tty/amiserial.c: add missing tty_unlock
+    - LP: #990544
+  * USB: sierra: avoid QMI/wwan interface on MC77xx
+    - LP: #990544
+  * EHCI: always clear the STS_FLR status bit
+    - LP: #990544
+  * USB: fix deadlock in bConfigurationValue attribute method
+    - LP: #990544
+  * usb: gadget: eliminate NULL pointer dereference (bugfix)
+    - LP: #990544
+  * usb: musb: omap: fix crash when musb glue (omap) gets initialized
+    - LP: #990544
+  * usb: musb: omap: fix the error check for pm_runtime_get_sync
+    - LP: #990544
+  * PCI: Add quirk for still enabled interrupts on Intel Sandy Bridge GPUs
+    - LP: #990544
+  * ext4: fix endianness breakage in ext4_split_extent_at()
+    - LP: #990544
+  * Bluetooth: Add support for Atheros [04ca:3005]
+    - LP: #990544
+  * Don't limit non-nested epoll paths
+    - LP: #990544
+  * spi: Fix device unregistration when unregistering the bus master
+    - LP: #990544
+  * rt2x00: Properly identify rt2800usb devices.
+    - LP: #990544
+  * rt2800usb: Add new device ID for Belkin
+    - LP: #990544
+  * rt2x00: Add USB device ID of Buffalo WLI-UC-GNHP.
+    - LP: #990544
+  * rt2800: Add support for the Fujitsu Stylistic Q550
+    - LP: #990544
+  * rt2x00: Identify rt2800usb chipsets.
+    - LP: #990544
+  * nfsd: fix compose_entry_fh() failure exits
+    - LP: #990544
+  * btrfs: btrfs_root_readonly() broken on big-endian
+    - LP: #990544
+  * ocfs2: ->l_next_free_req breakage on big-endian
+    - LP: #990544
+  * ocfs: ->rl_used breakage on big-endian
+    - LP: #990544
+  * ocfs2: ->rl_count endianness breakage
+    - LP: #990544
+  * ocfs2: ->e_leaf_clusters endianness breakage
+    - LP: #990544
+  * lockd: fix the endianness bug
+    - LP: #990544
+  * ppp: Don't stop and restart queue on every TX packet
+    - LP: #990544
+  * tcp: allow splice() to build full TSO packets
+    - LP: #990544
+  * sctp: Allow struct sctp_event_subscribe to grow without breaking
+    binaries
+    - LP: #990544
+  * bridge: Do not send queries on multicast group leaves
+    - LP: #990544
+  * ipv6: fix array index in ip6_mc_add_src()
+    - LP: #990544
+  * phonet: Check input from user before allocating
+    - LP: #990544
+  * bonding: properly unset current_arp_slave on slave link up
+    - LP: #990544
+  * wimax: i2400m - prevent a possible kernel bug due to missing fw_name
+    string
+    - LP: #990544
+  * netlink: fix races after skb queueing
+    - LP: #990544
+  * net: fix a race in sock_queue_err_skb()
+    - LP: #990544
+  * tcp: fix tcp_rcv_rtt_update() use of an unscaled RTT sample
+    - LP: #990544
+  * atl1: fix kernel panic in case of DMA errors
+    - LP: #990544
+  * 8139cp: set intr mask after its handler is registered
+    - LP: #990544
+  * net: smsc911x: fix skb handling in receive path
+    - LP: #990544
+  * net/ethernet: ks8851_mll fix rx frame buffer overflow
+    - LP: #990544
+  * net_sched: gred: Fix oops in gred_dump() in WRED mode
+    - LP: #990544
+  * net: usb: smsc75xx: fix mtu
+    - LP: #990544
+  * dummy: Add ndo_uninit().
+    - LP: #990544
+  * tcp: fix tcp_grow_window() for large incoming frames
+    - LP: #990544
+  * netns: do not leak net_generic data on failed init
+    - LP: #990544
+  * ksz884x: don't copy too much in netdev_set_mac_address()
+    - LP: #990544
+  * net ax25: Reorder ax25_exit to remove races.
+    - LP: #990544
+  * tcp: fix TCP_MAXSEG for established IPv6 passive sockets
+    - LP: #990544
+  * Linux 3.0.30
+    - LP: #990544
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Wed, 02 May 2012 11:45:34 +0100
+
+linux (3.0.0-19.33) oneiric-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #985736
 
   [ Luis Henriques ]
 
   * SAUCE: ite-cir: postpone ISR registration
     - LP: #984387
 
- -- Luis Henriques <luis.henriques@canonical.com>  Fri, 20 Apr 2012 09:40:29 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 19 Apr 2012 18:25:37 +0100
 
 linux (3.0.0-19.32) oneiric-proposed; urgency=low
 
