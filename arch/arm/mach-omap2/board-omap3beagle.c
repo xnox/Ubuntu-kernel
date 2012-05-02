@@ -515,8 +515,6 @@ static void __init omap3_beagle_init(void)
 	omap_serial_board_init(NULL, 0);
 	omap_serial_board_init(NULL, 2);
 	omap_serial_board_init(NULL, 3);
-	omap_sdrc_init(mt46h32m32lf6_sdrc_params,
-				  mt46h32m32lf6_sdrc_params);
 
 	usb_musb_init(NULL);
 	usbhs_init(&usbhs_bdata);
