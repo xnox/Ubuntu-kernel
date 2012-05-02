@@ -1,3 +1,12 @@
+linux-meta-ti-omap4 (3.2.0.1413.13) precise-proposed; urgency=low
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * try to automatically get version to give for dpkg-genchanges
+  * Bump ABI
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 02 May 2012 17:21:43 -0300
+
 linux-meta-ti-omap4 (3.2.0.1412.12) precise-proposed; urgency=low
 
   * linux-ti-omap4 ABI 3.2.0-1412
