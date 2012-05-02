@@ -139,6 +139,13 @@ case $SUITE in
 	*)
 		;;
 esac
+case $SUITE in
+	quantal)
+		ADDPKG="$ADDPKG flex bison";
+	;;
+	*)
+		;;
+esac
 
 #
 # armel/armhf is only supported if the lsb-release is Lucid or higher.
