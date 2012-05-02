@@ -128,6 +128,7 @@ static void __init omap3_beagle_init_rev(void)
 		beagle_config.mmc1_gpio_wp = 29;
 		beagle_config.dvi_pd_gpio = 170;
 		beagle_config.usr_button_gpio = 7;
+		omap_serial_board_init(NULL, 1);
 		break;
 	case 6:
 		printk(KERN_INFO "OMAP3 Beagle Rev: C1/C2/C3\n");
@@ -511,7 +512,9 @@ static void __init omap3_beagle_init(void)
 	if (gpio_is_valid(beagle_config.dvi_pd_gpio))
 		omap_mux_init_gpio(beagle_config.dvi_pd_gpio, OMAP_PIN_OUTPUT);
 	omap_display_init(&beagle_dss_data);
-	omap_serial_init();
+	omap_serial_board_init(NULL, 0);
+	omap_serial_board_init(NULL, 2);
+	omap_serial_board_init(NULL, 3);
 	omap_sdrc_init(mt46h32m32lf6_sdrc_params,
 				  mt46h32m32lf6_sdrc_params);
 
