@@ -1,3 +1,15 @@
+linux-meta-lts-backport-oneiric (3.0.0.20.8) lucid-proposed; urgency=low
+
+  [ Luis Henriques ]
+
+  * linux-oneiric 3.0.0-20.34
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * UBUNTU: try to automatically get version to give for dpkg-genchanges
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Wed, 02 May 2012 12:40:57 +0100
+
 linux-meta-lts-backport-oneiric (3.0.0.19.7) lucid-proposed; urgency=low
 
   * linux-oneiric 3.0.0-19.32
