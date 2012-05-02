@@ -80,6 +80,7 @@ include debian/rules.d/6-binary-custom.mk \
 	$(patsubst %,debian/binary-custom.d/%/rules,$(custom_flavours))
 
 # Misc stuff
+.PHONY: debian/control.stub
 debian/control.stub: debian/d-i/kernel-versions.in	\
 		debian/scripts/control-create		\
 		debian/control.stub.in			\
