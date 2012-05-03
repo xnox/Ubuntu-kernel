@@ -66,7 +66,9 @@ static int omap4_enter_idle(struct cpuidle_device *dev,
 			int index)
 {
 	struct omap4_idle_statedata *cx = &omap4_idle_data[index];
+	struct timespec ts_preidle, ts_postidle, ts_idle;
 	u32 cpu1_state;
+	int idle_time;
 	int cpu_id = smp_processor_id();
 
 	local_fiq_disable();
@@ -127,6 +129,12 @@ static int omap4_enter_idle(struct cpuidle_device *dev,
 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu_id);
 
 	local_fiq_enable();
+
+	idle_time = ts_idle.tv_nsec / NSEC_PER_USEC + ts_idle.tv_sec * \
+								USEC_PER_SEC;
+
+	/* Update cpuidle counters */
+	dev->last_residency = idle_time;
 
 	return index;
 }
