@@ -19,11 +19,11 @@ Roll Call for Ubuntu Kernel Weekly Status Meeting
 Release metrics and incoming bug data can be reviewed at the following link:
 [LINK] http://people.canonical.com/~kernel/reports/kt-meeting.txt
 
-[TOPIC] Status: Precise Development Kernel (ogasawara)
+[TOPIC] Status: Quantal Development Kernel (ogasawara)
 
 [TOPIC] Status: CVE's (apw)
 
-[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Oneiric/Natty/Maverick/Lucid/Hardy (bjf/herton)
+[TOPIC] Status: Stable, Security, and Bugfix Kernel Updates - Precise/Oneiric/Natty/Lucid/Hardy (bjf/herton/henrix)
 
 [TOPIC] Open Discussion or Questions? Raise your hand to be recognized (o/)
 
