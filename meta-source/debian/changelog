@@ -1,3 +1,11 @@
+linux-meta (3.4.0.2.2) quantal; urgency=low
+
+  * Bump ABI
+  * Fix Vcs-Git in linux-quantal-meta
+    - LP: #999726
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Thu, 17 May 2012 09:12:11 -0700
+
 linux-meta (3.4.0.1.1) quantal; urgency=low
 
   * Open Quantal Quetzal 12.10
