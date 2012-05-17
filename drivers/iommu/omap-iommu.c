@@ -172,7 +172,7 @@ static inline struct cr_regs *iotlb_alloc_cr(struct omap_iommu *obj,
 					     struct iotlb_entry *e)
 {
 	if (!e)
-		return NULL;
+		return ERR_PTR(-EINVAL);
 
 	return arch_iommu->alloc_cr(obj, e);
 }
@@ -831,7 +831,7 @@ static struct omap_iommu *omap_iommu_attach(const char *name, u32 *iopgd)
 				(void *)name,
 				device_match_by_alias);
 	if (!dev)
-		return NULL;
+		return ERR_PTR(-ENODEV);
 
 	obj = to_iommu(dev);
 
