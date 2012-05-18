@@ -22,7 +22,7 @@ Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-image-server, linux-headers-server
 Description: Complete Linux kernel on Server Equipment.
- This package will always depend on the latest complete Linux kernel available
+ This package will always depend on the latest complete Linux kernel and headers
  for Server Equipment.
 
 #Package: linux-backports-modules-net-RELEASE_NAME-server

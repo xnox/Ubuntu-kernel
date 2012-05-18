@@ -20,7 +20,7 @@ Package: linux-omap
 Architecture: armel armhf
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-omap (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-omap, linux-headers-omap
 Description: Complete Linux kernel for the OMAP3 architecture.
- This package will always depend on the latest complete Linux kernel available
+ This package will always depend on the latest complete Linux kernel and headers
  for ARM TI OMAP3 systems.

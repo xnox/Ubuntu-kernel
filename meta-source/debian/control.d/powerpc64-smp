@@ -1,13 +1,10 @@
-#
-# PowerPC64-SMP
-#
-Package: linux-powerpc64-smp
+Package: linux-headers-powerpc64-smp
 Architecture: powerpc
-Section: restricted/metapackages
+Section: devel
 Priority: optional
-Depends: linux-image-powerpc64-smp (= ${binary:Version})
-Description: Complete Linux kernel on PowerPC64 SMP.
- This package will always depend on the latest complete Linux kernel available
+Depends: linux-headers-${kernel-abi-version}-powerpc64-smp
+Description: Linux kernel headers on PowerPC64 SMP
+ This package will always depend on the latest kernel headers available
  for PowerPC64 with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
@@ -21,13 +18,13 @@ Description: Linux kernel image on PowerPC64 SMP.
  for PowerPC64 with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
-Package: linux-headers-powerpc64-smp
+Package: linux-powerpc64-smp
 Architecture: powerpc
-Section: devel
+Section: restricted/metapackages
 Priority: optional
-Depends: linux-headers-${kernel-abi-version}-powerpc64-smp
-Description: Linux kernel headers on PowerPC64 SMP
- This package will always depend on the latest kernel headers available
+Depends: linux-image-powerpc64-smp, linux-headers-powerpc64-smp
+Description: Complete Linux kernel on PowerPC64 SMP.
+ This package will always depend on the latest complete Linux kernel and headers
  for PowerPC64 with SMP support.
  SMP (symmetric multi-processing) is needed if you have multiple processors.
 
