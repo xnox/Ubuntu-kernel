@@ -2,7 +2,7 @@ Package: linux-headers-virtual
 Architecture: i386 amd64
 Section: devel
 Priority: optional
-Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-virtual
+Depends: ${misc:Depends}, linux-headers-generic
 Description: Linux kernel headers for virtual machines
  This package will always depend on the latest kernel headers available
  for virtual machines.
@@ -11,7 +11,7 @@ Package: linux-image-virtual
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-virtual, linux-firmware
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-generic, linux-firmware
 Description: Linux kernel image for virtual machines
  This package will always depend on the latest kernel image available
  for virtual machines. Install linux-image-extra-virtual to get all
@@ -21,7 +21,7 @@ Package: linux-virtual
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-virtual (= ${binary:Version})
+Depends: ${misc:Depends}, linux-image-virtual, linux-headers-virtual
 Description: Complete Linux kernel for virtual machines
  This package will always depend on the latest complete Linux kernel available
  for virtual machines. Install linux-image-extra-virtual to get all
@@ -31,7 +31,7 @@ Package: linux-image-extra-virtual
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-virtual (= ${binary:Version}), linux-image-extra-${kernel-abi-version}-virtual
+Depends: ${misc:Depends}, linux-image-virtual, linux-image-extra-${kernel-abi-version}-generic
 Description: Linux kernel extra modules for virtual machines
  This package will always depend on the latest kernel extra modules available
  for virtual machines.
