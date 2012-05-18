@@ -1,3 +1,9 @@
+linux-meta (3.4.0.3.3) quantal; urgency=low
+
+  * Bump ABI
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Fri, 18 May 2012 08:02:12 -0600
+
 linux-meta (3.4.0.2.2) quantal; urgency=low
 
   * Bump ABI
