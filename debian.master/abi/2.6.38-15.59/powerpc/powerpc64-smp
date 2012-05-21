@@ -3233,6 +3233,7 @@ EXPORT_SYMBOL sound/usb/snd-usbmidi-lib 0xbefcc1c7	snd_usbmidi_create
 EXPORT_SYMBOL sound/usb/snd-usbmidi-lib 0xd9d2bb03	snd_usbmidi_disconnect
 EXPORT_SYMBOL vmlinux 0x00000000	softirq_work_list
 EXPORT_SYMBOL vmlinux 0x00111e1b	agp_backend_acquire
+EXPORT_SYMBOL vmlinux 0x00191293	call_usermodehelper_exec
 EXPORT_SYMBOL vmlinux 0x002de09c	vfsmount_lock_global_unlock_online
 EXPORT_SYMBOL vmlinux 0x005a4975	cpu_possible_mask
 EXPORT_SYMBOL vmlinux 0x005d011d	sk_release_kernel
@@ -3396,7 +3397,6 @@ EXPORT_SYMBOL vmlinux 0x09d94e56	__skb_recv_datagram
 EXPORT_SYMBOL vmlinux 0x09f9be8d	load_nls
 EXPORT_SYMBOL vmlinux 0x09fb3996	napi_gro_flush
 EXPORT_SYMBOL vmlinux 0x0a2487e0	unblock_all_signals
-EXPORT_SYMBOL vmlinux 0x0a2a840f	call_usermodehelper_setfns
 EXPORT_SYMBOL vmlinux 0x0a3419ad	neigh_parms_alloc
 EXPORT_SYMBOL vmlinux 0x0a3d0644	cpu_online_mask
 EXPORT_SYMBOL vmlinux 0x0a5155ec	set_binfmt
@@ -3795,7 +3795,6 @@ EXPORT_SYMBOL vmlinux 0x24f8e092	ps2_command
 EXPORT_SYMBOL vmlinux 0x24fdac79	wake_bit_function
 EXPORT_SYMBOL vmlinux 0x24fea858	path_lookup
 EXPORT_SYMBOL vmlinux 0x25027a8c	blk_queue_bounce
-EXPORT_SYMBOL vmlinux 0x2517c2a9	call_usermodehelper_freeinfo
 EXPORT_SYMBOL vmlinux 0x251a7f5e	inode_get_bytes
 EXPORT_SYMBOL vmlinux 0x253c530e	bmap
 EXPORT_SYMBOL vmlinux 0x2553afc8	mapping_tagged
@@ -3904,6 +3903,7 @@ EXPORT_SYMBOL vmlinux 0x2c7766ca	bdget_disk
 EXPORT_SYMBOL vmlinux 0x2c8282a3	agp_unbind_memory
 EXPORT_SYMBOL vmlinux 0x2c919c63	gen_new_estimator
 EXPORT_SYMBOL vmlinux 0x2c9285ac	neigh_create
+EXPORT_SYMBOL vmlinux 0x2cc9414d	call_usermodehelper_setup
 EXPORT_SYMBOL vmlinux 0x2cf9db12	percpu_counter_set
 EXPORT_SYMBOL vmlinux 0x2cfaa4e7	vm_insert_pfn
 EXPORT_SYMBOL vmlinux 0x2d140a58	genl_unlock
@@ -4346,6 +4346,7 @@ EXPORT_SYMBOL vmlinux 0x4c215da2	seq_open_private
 EXPORT_SYMBOL vmlinux 0x4c25a2fa	bd_set_size
 EXPORT_SYMBOL vmlinux 0x4c3e8ae5	udp_lib_unhash
 EXPORT_SYMBOL vmlinux 0x4c4c956e	nla_memcmp
+EXPORT_SYMBOL vmlinux 0x4c66a9bd	call_usermodehelper_freeinfo
 EXPORT_SYMBOL vmlinux 0x4c6a16a0	macio_request_resources
 EXPORT_SYMBOL vmlinux 0x4c844daf	remove_proc_entry
 EXPORT_SYMBOL vmlinux 0x4cb13d3f	skb_store_bits
@@ -5557,6 +5558,7 @@ EXPORT_SYMBOL vmlinux 0xa1e35297	proto_unregister
 EXPORT_SYMBOL vmlinux 0xa1ec8f1c	__kfifo_to_user_r
 EXPORT_SYMBOL vmlinux 0xa1f1bb34	pmac_suspend_agp_for_card
 EXPORT_SYMBOL vmlinux 0xa1f8fe75	wait_for_completion_killable_timeout
+EXPORT_SYMBOL vmlinux 0xa1f968ae	call_usermodehelper_setfns
 EXPORT_SYMBOL vmlinux 0xa20bcaeb	skb_set_dev
 EXPORT_SYMBOL vmlinux 0xa20ce1b8	net_msg_warn
 EXPORT_SYMBOL vmlinux 0xa2127cdc	pasemi_dma_alloc_flag
@@ -5686,7 +5688,6 @@ EXPORT_SYMBOL vmlinux 0xab1bff7f	padata_free
 EXPORT_SYMBOL vmlinux 0xab1c3bf1	padata_register_cpumask_notifier
 EXPORT_SYMBOL vmlinux 0xab2bd8bb	of_get_next_child
 EXPORT_SYMBOL vmlinux 0xab464f63	agp_alloc_page_array
-EXPORT_SYMBOL vmlinux 0xab4fbd01	call_usermodehelper_setup
 EXPORT_SYMBOL vmlinux 0xab61ef3e	set_create_files_as
 EXPORT_SYMBOL vmlinux 0xab66f611	_lv1_set_lpm_trigger_control
 EXPORT_SYMBOL vmlinux 0xab697ec6	nf_log_bind_pf
@@ -6250,7 +6251,6 @@ EXPORT_SYMBOL vmlinux 0xd32031a5	put_page
 EXPORT_SYMBOL vmlinux 0xd33bc69d	bdput
 EXPORT_SYMBOL vmlinux 0xd3434c3f	kref_sub
 EXPORT_SYMBOL vmlinux 0xd34db81d	audit_log_format
-EXPORT_SYMBOL vmlinux 0xd3729050	call_usermodehelper_exec
 EXPORT_SYMBOL vmlinux 0xd376d56e	sk_send_sigurg
 EXPORT_SYMBOL vmlinux 0xd38480a0	rb_augment_erase_end
 EXPORT_SYMBOL vmlinux 0xd38c492d	__napi_schedule

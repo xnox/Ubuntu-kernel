@@ -3526,7 +3526,6 @@ EXPORT_SYMBOL vmlinux 0x12e5ef0c	rtas_set_power_level
 EXPORT_SYMBOL vmlinux 0x12e7ec1a	elevator_exit
 EXPORT_SYMBOL vmlinux 0x12e8ed66	adb_client_list
 EXPORT_SYMBOL vmlinux 0x12e97253	ps2_begin_command
-EXPORT_SYMBOL vmlinux 0x12f225be	call_usermodehelper_freeinfo
 EXPORT_SYMBOL vmlinux 0x12f99022	inet_frags_init_net
 EXPORT_SYMBOL vmlinux 0x13095525	param_ops_uint
 EXPORT_SYMBOL vmlinux 0x1328430b	mdiobus_write
@@ -3770,6 +3769,7 @@ EXPORT_SYMBOL vmlinux 0x264c1573	genl_unregister_ops
 EXPORT_SYMBOL vmlinux 0x268882aa	contig_page_data
 EXPORT_SYMBOL vmlinux 0x26ae7e8d	lock_sock_nested
 EXPORT_SYMBOL vmlinux 0x26bb950b	__kfifo_from_user_r
+EXPORT_SYMBOL vmlinux 0x26d137d5	call_usermodehelper_setup
 EXPORT_SYMBOL vmlinux 0x26d74646	bio_copy_user
 EXPORT_SYMBOL vmlinux 0x26dbb7c0	genphy_config_aneg
 EXPORT_SYMBOL vmlinux 0x26e0915e	macio_release_resources
@@ -4151,7 +4151,6 @@ EXPORT_SYMBOL vmlinux 0x424bdccd	blk_alloc_queue_node
 EXPORT_SYMBOL vmlinux 0x42595e58	vgacon_text_force
 EXPORT_SYMBOL vmlinux 0x42977ad4	__hw_addr_del_multiple
 EXPORT_SYMBOL vmlinux 0x42c7beea	sock_wmalloc
-EXPORT_SYMBOL vmlinux 0x42f66ea6	call_usermodehelper_setup
 EXPORT_SYMBOL vmlinux 0x4302d0eb	free_pages
 EXPORT_SYMBOL vmlinux 0x4306ccb9	rfkill_blocked
 EXPORT_SYMBOL vmlinux 0x431f7ff6	blkdev_get_by_path
@@ -4190,6 +4189,7 @@ EXPORT_SYMBOL vmlinux 0x4578f528	__kfifo_to_user
 EXPORT_SYMBOL vmlinux 0x4591b523	generic_writepages
 EXPORT_SYMBOL vmlinux 0x4596db6a	sys_sigreturn
 EXPORT_SYMBOL vmlinux 0x45993db9	vm_event_states
+EXPORT_SYMBOL vmlinux 0x45adbceb	call_usermodehelper_setfns
 EXPORT_SYMBOL vmlinux 0x45bd80c1	netif_skb_features
 EXPORT_SYMBOL vmlinux 0x45d216b9	tcp_put_md5sig_pool
 EXPORT_SYMBOL vmlinux 0x461ebfa0	__copy_tofrom_user
@@ -4245,6 +4245,7 @@ EXPORT_SYMBOL vmlinux 0x491ae479	bio_kmalloc
 EXPORT_SYMBOL vmlinux 0x49301b9d	mpage_readpage
 EXPORT_SYMBOL vmlinux 0x49366e9b	pci_enable_device
 EXPORT_SYMBOL vmlinux 0x494dfecc	dev_mc_del
+EXPORT_SYMBOL vmlinux 0x4959fe66	call_usermodehelper_exec
 EXPORT_SYMBOL vmlinux 0x49603fb8	security_sb_copy_data
 EXPORT_SYMBOL vmlinux 0x4971b4f5	blk_put_request
 EXPORT_SYMBOL vmlinux 0x499868f9	bio_add_pc_page
@@ -4850,6 +4851,7 @@ EXPORT_SYMBOL vmlinux 0x73a903c4	vfsmount_lock_local_lock
 EXPORT_SYMBOL vmlinux 0x73bb6a3e	set_irq_chip
 EXPORT_SYMBOL vmlinux 0x73c81481	neigh_table_init_no_netlink
 EXPORT_SYMBOL vmlinux 0x73e20c1c	strlcpy
+EXPORT_SYMBOL vmlinux 0x73f7a183	call_usermodehelper_freeinfo
 EXPORT_SYMBOL vmlinux 0x74484809	param_set_ulong
 EXPORT_SYMBOL vmlinux 0x744e9d16	dma_async_device_unregister
 EXPORT_SYMBOL vmlinux 0x7472842c	powerpc_debugfs_root
@@ -5043,7 +5045,6 @@ EXPORT_SYMBOL vmlinux 0x82259d3e	dev_trans_start
 EXPORT_SYMBOL vmlinux 0x822de354	tty_name
 EXPORT_SYMBOL vmlinux 0x82422f88	pci_assign_resource
 EXPORT_SYMBOL vmlinux 0x8246c0d7	simple_pin_fs
-EXPORT_SYMBOL vmlinux 0x824bee81	call_usermodehelper_exec
 EXPORT_SYMBOL vmlinux 0x8251bcc3	bitmap_release_region
 EXPORT_SYMBOL vmlinux 0x82569530	find_lock_page
 EXPORT_SYMBOL vmlinux 0x8260686f	bitmap_find_next_zero_area
@@ -5571,7 +5572,6 @@ EXPORT_SYMBOL vmlinux 0xa77e7a37	bio_sector_offset
 EXPORT_SYMBOL vmlinux 0xa78d498f	__page_symlink
 EXPORT_SYMBOL vmlinux 0xa7aa008f	da903x_query_status
 EXPORT_SYMBOL vmlinux 0xa7bd7d2c	scsi_dma_unmap
-EXPORT_SYMBOL vmlinux 0xa81da28a	call_usermodehelper_setfns
 EXPORT_SYMBOL vmlinux 0xa8223905	blk_limits_io_opt
 EXPORT_SYMBOL vmlinux 0xa83e1897	of_scan_pci_bridge
 EXPORT_SYMBOL vmlinux 0xa861ab6e	__ioremap

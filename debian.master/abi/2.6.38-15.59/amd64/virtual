@@ -5425,7 +5425,6 @@ EXPORT_SYMBOL vmlinux 0x8c73bdeb	iget_failed
 EXPORT_SYMBOL vmlinux 0x8c7887a0	inode_claim_rsv_space
 EXPORT_SYMBOL vmlinux 0x8cbb42e7	gen_pool_add
 EXPORT_SYMBOL vmlinux 0x8cc79cab	iowrite16_rep
-EXPORT_SYMBOL vmlinux 0x8cce1ba3	call_usermodehelper_setup
 EXPORT_SYMBOL vmlinux 0x8cda8029	xen_clear_irq_pending
 EXPORT_SYMBOL vmlinux 0x8d0a55c8	dev_add_pack
 EXPORT_SYMBOL vmlinux 0x8d17a87b	unlock_rename
@@ -5536,6 +5535,7 @@ EXPORT_SYMBOL vmlinux 0x93fca811	__get_free_pages
 EXPORT_SYMBOL vmlinux 0x946f1534	vmtruncate
 EXPORT_SYMBOL vmlinux 0x94961283	vunmap
 EXPORT_SYMBOL vmlinux 0x949ee776	phy_driver_unregister
+EXPORT_SYMBOL vmlinux 0x94a71207	call_usermodehelper_setup
 EXPORT_SYMBOL vmlinux 0x94a7e32f	jbd2_journal_restart
 EXPORT_SYMBOL vmlinux 0x94d32a88	__tracepoint_module_get
 EXPORT_SYMBOL vmlinux 0x94e8a074	journal_get_undo_access
@@ -5788,6 +5788,7 @@ EXPORT_SYMBOL vmlinux 0xa3a5be95	memmove
 EXPORT_SYMBOL vmlinux 0xa3e439eb	block_is_partially_uptodate
 EXPORT_SYMBOL vmlinux 0xa3e5aaad	generic_cont_expand_simple
 EXPORT_SYMBOL vmlinux 0xa3f76bbf	acpi_lock_ac_dir
+EXPORT_SYMBOL vmlinux 0xa3f8f2b6	call_usermodehelper_setfns
 EXPORT_SYMBOL vmlinux 0xa3fed86b	tty_driver_kref_put
 EXPORT_SYMBOL vmlinux 0xa44072fc	posix_acl_alloc
 EXPORT_SYMBOL vmlinux 0xa448b3c1	phy_print_status
@@ -5863,6 +5864,7 @@ EXPORT_SYMBOL vmlinux 0xa8ea9661	cdrom_get_media_event
 EXPORT_SYMBOL vmlinux 0xa8fef7bb	security_unix_may_send
 EXPORT_SYMBOL vmlinux 0xa90c928a	param_ops_int
 EXPORT_SYMBOL vmlinux 0xa91b5561	acpi_video_backlight_support
+EXPORT_SYMBOL vmlinux 0xa930480b	call_usermodehelper_freeinfo
 EXPORT_SYMBOL vmlinux 0xa950c8b7	swiotlb_unmap_sg_attrs
 EXPORT_SYMBOL vmlinux 0xa9530f84	file_permission
 EXPORT_SYMBOL vmlinux 0xa966034c	vfs_read
@@ -6017,7 +6019,6 @@ EXPORT_SYMBOL vmlinux 0xb398fa1e	bio_integrity_advance
 EXPORT_SYMBOL vmlinux 0xb39ae089	i2c_smbus_xfer
 EXPORT_SYMBOL vmlinux 0xb3a307c6	si_meminfo
 EXPORT_SYMBOL vmlinux 0xb3b3c184	module_refcount
-EXPORT_SYMBOL vmlinux 0xb3c357e3	call_usermodehelper_freeinfo
 EXPORT_SYMBOL vmlinux 0xb3cd2346	skb_append
 EXPORT_SYMBOL vmlinux 0xb3ff1f69	free_pages_exact
 EXPORT_SYMBOL vmlinux 0xb416c4b4	udp_poll
@@ -6280,6 +6281,7 @@ EXPORT_SYMBOL vmlinux 0xc558530d	profile_pc
 EXPORT_SYMBOL vmlinux 0xc5844fb8	__per_cpu_offset
 EXPORT_SYMBOL vmlinux 0xc5c2f32e	thaw_super
 EXPORT_SYMBOL vmlinux 0xc5d9c46c	agp_try_unsupported_boot
+EXPORT_SYMBOL vmlinux 0xc5f00c26	call_usermodehelper_exec
 EXPORT_SYMBOL vmlinux 0xc5f46566	rb_augment_insert
 EXPORT_SYMBOL vmlinux 0xc6263196	proc_dointvec_jiffies
 EXPORT_SYMBOL vmlinux 0xc631580a	console_unlock
@@ -7119,10 +7121,8 @@ EXPORT_SYMBOL vmlinux 0xff4a932a	skb_find_text
 EXPORT_SYMBOL vmlinux 0xff6878cf	fb_default_cmap
 EXPORT_SYMBOL vmlinux 0xff7559e4	ioport_resource
 EXPORT_SYMBOL vmlinux 0xff86a320	wireless_spy_update
-EXPORT_SYMBOL vmlinux 0xff984224	call_usermodehelper_setfns
 EXPORT_SYMBOL vmlinux 0xff9c687b	dev_alloc_name
 EXPORT_SYMBOL vmlinux 0xff9ca065	fb_edid_to_monspecs
-EXPORT_SYMBOL vmlinux 0xffa0373b	call_usermodehelper_exec
 EXPORT_SYMBOL vmlinux 0xffaa886b	dev_printk
 EXPORT_SYMBOL vmlinux 0xffb4924d	bio_integrity_clone
 EXPORT_SYMBOL vmlinux 0xffd04333	seq_path
