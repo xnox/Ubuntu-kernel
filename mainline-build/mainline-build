@@ -30,7 +30,8 @@ v2.6.32*)			master_release="lucid" ;;
 v2.6.33*|v2.6.34*|v2.6.35*)	master_release="maverick" ;;
 v2.6.36*|v2.6.37*|v2.6.38*)	master_release="natty" ;;
 v2.6.39*|v3.0*)			master_release="oneiric" ;;
-*)				master_release="precise" ;;
+v3.1*|v3.2*)			master_release="precise" ;;
+*)				master_release="quantal" ;;
 esac
 
 master_tree_select
