@@ -21,7 +21,7 @@ source: clean
 binary: clean
 	ln -s meta-source $(META_NAME)-$(META_VERSION)
 	cd $(META_NAME)-$(META_VERSION); \
-	debuild -b -aarmel
+	debuild -b -aarmhf
 
 clean:
 	cd meta-source && fakeroot debian/rules clean
