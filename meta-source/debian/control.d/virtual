@@ -3,35 +3,30 @@ Architecture: i386 amd64
 Section: devel
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-generic
-Description: Linux kernel headers for virtual machines
- This package will always depend on the latest kernel headers available
- for virtual machines.
+Description: Transitional package.
+ This package will always depend on linux-headers-generic.
 
 Package: linux-image-virtual
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-generic, linux-firmware
-Description: Linux kernel image for virtual machines
- This package will always depend on the latest kernel image available
- for virtual machines. Install linux-image-extra-virtual to get all
- available kernel modules.
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-generic
+Description: This package will always depend on the latest generic kernel image.
+ This package will always depend on the latest minimal generic kernel image
+ used for virtual instances.
 
 Package: linux-virtual
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-virtual, linux-headers-virtual
-Description: Complete Linux kernel for virtual machines
- This package will always depend on the latest complete Linux kernel and headers
- for virtual machines. Install linux-image-extra-virtual to get all
- available kernel modules.
+Depends: ${misc:Depends}, linux-generic
+Description: Complete Generic Linux kernel and headers
+ This package will always depend on linux-generic.
 
 Package: linux-image-extra-virtual
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-virtual, linux-image-extra-${kernel-abi-version}-generic
-Description: Linux kernel extra modules for virtual machines
- This package will always depend on the latest kernel extra modules available
- for virtual machines.
+Depends: ${misc:Depends}, linux-image-generic
+Description: Transitional package.
+ This package will always depend on linux-image-generic.

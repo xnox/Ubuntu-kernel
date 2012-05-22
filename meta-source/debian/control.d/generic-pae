@@ -1,0 +1,23 @@
+Package: linux-headers-generic-pae
+Architecture: i386
+Section: devel
+Priority: optional
+Depends: ${misc:Depends}, linux-headers-generic
+Description: Transitional package
+ This package will always depend on linux-headers-generic
+
+Package: linux-image-generic-pae
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-generic
+Description: Transitional package
+ This package will always depend on linux-image-generic
+
+Package: linux-generic-pae
+Architecture: i386
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-generic
+Description: Transitional package.
+ This package will always depend on linux-generic.

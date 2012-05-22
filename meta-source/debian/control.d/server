@@ -3,53 +3,21 @@ Architecture: amd64 i386
 Section: devel
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-generic
-Description: Linux kernel headers on Server Equipment.
- This package will always depend on the latest kernel headers available
- for Server Equipment.
+Description: Transitional package.
+ This package will always depend on linux-headers-generic.
 
 Package: linux-image-server
 Architecture: amd64 i386
 Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-image-generic
-Description: Linux kernel image on Server Equipment.
- This package will always depend on the latest kernel image available
- for Server Equipment.
+Description: Transitional package.
+ This package will always depend on linux-image-generic.
 
 Package: linux-server
 Architecture: amd64 i386
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-image-server, linux-headers-server
-Description: Complete Linux kernel on Server Equipment.
- This package will always depend on the latest complete Linux kernel and headers
- for Server Equipment.
-
-#Package: linux-backports-modules-net-RELEASE_NAME-server
-#Architecture: amd64 i386
-#Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-generic [amd64], linux-backports-modules-net-${kernel-abi-version}-generic-pae [i386]
-#Description: Backported ethernet drivers for generic kernel image.
-# This empty package allows people to keep their backported ethernet modules
-# up-to-date when upgrading their Linux kernel.
-#
-#Package: linux-backports-modules-headers-RELEASE_NAME-server
-#Architecture: amd64
-#Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-generic
-#Description: Backported driver headers for server kernel image
-# This empty package allows people to keep their backported module
-# headers up-to-date when upgrading their Linux kernel.
-
-#Package: linux-backports-modules-cw-3.3-RELEASE_NAME-server
-#Architecture: amd64
-#Depends: ${misc:Depends}, linux-backports-modules-cw-3.3-${kernel-abi-version}-server
-#Description: Backported wireless drivers for server kernel image
-# This empty package allows people to keep their backported wireless modules
-# up-to-date when upgrading their Linux kernel.
-#
-#Package: linux-backports-modules-alsa-RELEASE_NAME-server
-#Architecture: amd64
-#Depends: ${misc:Depends}, linux-backports-modules-alsa-${kernel-abi-version}-generic
-#Description: Backported drivers for alsa-driver snapshot.
-# This empty package allows people to keep their alsa-driver snapshot
-# up-to-date when upgrading their Linux kernel.
-#
+Depends: ${misc:Depends}, linux-generic
+Description: Transitional package.
+ This package will always depend on linux-generic.
