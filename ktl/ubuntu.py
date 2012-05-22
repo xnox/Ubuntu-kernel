@@ -67,7 +67,8 @@ class Ubuntu:
                     'meta' : 'linux-meta',
                     'lbm'  : 'linux-backports-modules-3.2.0'
                 },
-                'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' }
+                'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
+                'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' }
             },
             'derivative-packages' :
             {

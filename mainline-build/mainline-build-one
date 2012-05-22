@@ -21,7 +21,7 @@ abinum="$3"
 case "$series" in
 hardy)					build_release="hardy" ;;
 lucid|maverick|natty|oneiric) 		build_release="lucid" ;;
-*)					build_release="lucid" ;;
+precise|*)				build_release="precise" ;;
 esac
 
 {
