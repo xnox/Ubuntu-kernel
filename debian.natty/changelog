@@ -1,9 +1,56 @@
-linux-lts-backport-natty (2.6.38-15.59~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-15.60~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #990208
+    - LP: #1003079
+
+  [ Andy Whitcroft ]
+
+  * [Config] control.stub is an intermediate product not a dependancy
+    - LP: #992414
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * linux: add Build-Depends for libnewt-dev, to enable perf TUI support
+    - LP: #981717
+
+  [ Tim Gardner ]
+
+  * [Config] perarch and indep tools builds need separate build directories
+
+  [ Upstream Kernel Changes ]
+
+  * fcaps: clear the same personality flags as suid when fcaps are used
+    - LP: #987571
+    - CVE-2012-2123
+  * natty security: fix compile error in commoncap.c
+    - LP: #987571
+    - CVE-2012-2123
+  * KVM: Clean up error handling during VCPU creation
+    - LP: #971685
+    - CVE-2012-1601
+  * KVM: Ensure all vcpus are consistent with in-kernel irqchip settings
+    - LP: #971685
+    - CVE-2012-1601
+  * KVM: unmap pages from the iommu when slots are removed
+    - LP: #987569
+    - CVE-2012-2121
+  * NFSv4: include bitmap in nfsv4 get acl data
+    - LP: #893147
+    - CVE-2011-4131
+  * hugepages: fix use after free bug in "quota" handling
+    - LP: #990368
+    - CVE-2012-2133
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Wed, 23 May 2012 09:43:28 +0100
+
+linux (2.6.38-15.59) natty-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #987281
 
   [ Brad Figg ]
 
@@ -48,7 +95,7 @@ linux-lts-backport-natty (2.6.38-15.59~lucid1) lucid-proposed; urgency=low
     - LP: #947997
     - CVE-2012-1090
 
- -- Luis Henriques <luis.henriques@canonical.com>  Mon, 30 Apr 2012 09:52:55 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 23 Apr 2012 14:02:53 +0100
 
 linux (2.6.38-14.58) natty-proposed; urgency=low
 
