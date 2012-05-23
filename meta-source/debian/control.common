@@ -7,7 +7,7 @@ Build-Depends: dpkg (>= 1.13.19), debhelper (>= 5), gawk
 Vcs-Git: http://kernel.ubuntu.com/git-repos/ubuntu/ubuntu-precise-meta.git ti-omap4
 
 Package: linux-tools-omap4
-Architecture: armel armhf
+Architecture: armhf
 Section: metapackages
 Depends: ${misc:Depends}, linux-ti-omap4-tools-${kernel-abi-version}
 Description: Linux kernel versioned Tools
