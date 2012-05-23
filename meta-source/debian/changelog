@@ -1,10 +1,18 @@
 linux-meta (3.2.0.25.27) precise-proposed; urgency=low
 
-  * Bump ABI
+  [ Luis Henriques ]
+
+  * UBUNTU: Fix Vcs-Git in linux-precise-meta
+    - LP: #999726
+
+  [ Tim Gardner ]
+
+  * UBUNTU: Added -hwe- and -current- meta packages
   * Added Calxeda highbank flavour
     - LP: #1000831
+  * Bump ABI
 
- -- Tim Gardner <tim.gardner@canonical.com>  Fri, 18 May 2012 11:03:30 -0600
+ -- Luis Henriques <luis.henriques@canonical.com>  Wed, 23 May 2012 18:51:56 +0100
 
 linux-meta (3.2.0.24.26) precise-proposed; urgency=low
 
