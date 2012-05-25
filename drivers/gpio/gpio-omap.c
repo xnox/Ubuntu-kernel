@@ -1252,6 +1252,11 @@ static int omap_gpio_runtime_resume(struct device *dev)
 	__raw_writel(bank->context.risingdetect,
 		     bank->base + bank->regs->risingdetect);
 
+	if (!bank->workaround_enabled) {
+		spin_unlock_irqrestore(&bank->lock, flags);
+		return 0;
+	}
+
 	if (bank->get_context_loss_count) {
 		context_lost_cnt_after =
 			bank->get_context_loss_count(bank->dev);
