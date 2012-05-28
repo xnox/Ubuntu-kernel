@@ -35,6 +35,13 @@ fi
 let index=0
 for i in ${kdev[@]}
 do
+	if [ ! -z "${kdev_obsolete[${index}]}" ]
+	then
+		echo "${kdev_name[${index}]} is obsolete"
+		let index=${index}+1
+		continue
+	fi
+
 	if ! grep $i /etc/passwd || [ ! -d ${HOME}/${i} ]
 	then
 		echo $i
