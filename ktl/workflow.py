@@ -215,11 +215,11 @@ class Workflow:
             },
         'linux-armadaxp' :  {
             'task_assignment' : {
-                'prepare-package'            : 'ubuntu-armel-kernel',
+                'prepare-package'            : 'canonical-hwe-armel-kernel',
                 'prepare-package-meta'       : 'canonical-kernel-team',
                 'upload-to-ppa'              : 'canonical-kernel-team',
                 'promote-to-proposed'        : 'ubuntu-sru',
-                'verification-testing'       : 'ubuntu-armel-kernel',
+                'verification-testing'       : 'canonical-hwe-armel-kernel',
                 'regression-testing'         : 'canonical-platform-qa',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
