@@ -1,0 +1,8 @@
+== 2012-05-29 (weekly) ==
+Currently we have 88 CVEs on our radar, with 2 new CVEs added this week.
+See the CVE matrix for the current list:
+[LINK] http://people.canonical.com/~kernel/cve/pkg/ALL-linux.html
+Overall the backlog has increased slightly slightly this week:
+[LINK] http://people.canonical.com/~kernel/status/cve-metrics.txt
+[LINK] http://people.canonical.com/~kernel/cve/pkg/CVE-linux.txt
+[17:04] <sconklin> ..
