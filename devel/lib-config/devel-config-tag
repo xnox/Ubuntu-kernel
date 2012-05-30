@@ -231,7 +231,7 @@ foreach my $key (sort keys %options) {
 
 		@oa = split(' ', $options{$key});
 		if ($mode && $mode ne '-') {
-			if ($oa[2] ne $mode && $note) {
+			if ($mode ne 'p' && $oa[2] ne $mode && $note) {
 				push(@oa, "flag<policy=$mode>");
 			}
 			$oa[2] = $mode;
