@@ -329,3 +329,6 @@ CONFIG_INPUT_KXTJ9_POLLED_MODE n
 # The intel IOMMU being on by default causes a slew of issues with
 # machines.  We therefore enable its use, but default it off.
 CONFIG_INTEL_IOMMU_DEFAULT_ON n note<the IOMMU can trigger boot failures>
+
+# H/W specific options
+CONFIG_PATA_HPT3X3_DMA n note<DMA mode is documented problematic>
