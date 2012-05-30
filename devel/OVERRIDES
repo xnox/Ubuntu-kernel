@@ -42,7 +42,7 @@ CONFIG_USB y note<core subsystem>
 CONFIG_RFKILL y note<core subsystem>
 CONFIG_INPUT y note<core subsystem>
 CONFIG_SCSI y note<core subsystem>
-CONFIG_LLC m/y note<core subsystem other than arm>
+CONFIG_LLC p policy<(arch armel armhf & value m) | value y> note<core subsystem other than arm>
 CONFIG_HOTPLUG_PCI y note<core subsystem>
 CONFIG_HOTPLUG_PCI_PCIE y note<core subsystem>
 CONFIG_HWMON y note<core subsystem>
@@ -112,11 +112,11 @@ CONFIG_XEN_BLKDEV_FRONTEND y note<not autoloadable -- XEN paravirt support>
 CONFIG_XEN_NETDEV_FRONTEND y note<not autoloadable -- XEN paravirt support>
 
 # KVM
-CONFIG_VIRTIO_BLK n/y note<not autoloadable -- KVM paravirt support>
-CONFIG_VIRTIO_NET n/y note<not autoloadable -- KVM paravirt support>
-CONFIG_VIRTIO_PCI n/y note<not autoloadable -- KVM paravirt support>
-CONFIG_VIRTIO_MMIO m/n note<not autoloadable -- KVM paravirt support>
-CONFIG_VIRTIO_BALLOON m/n note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_BLK y note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_NET y note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_PCI y note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_MMIO m note<not autoloadable -- KVM paravirt support>
+CONFIG_VIRTIO_BALLOON m note<not autoloadable -- KVM paravirt support>
 
 # Boot essential dependancies
 CONFIG_BLK_CGROUP y note<dependancy of boot essential>
@@ -148,7 +148,7 @@ CONFIG_TRUSTED_KEYS y note<dependancy of boot essential>
 # DRM
 CONFIG_BACKLIGHT_CLASS_DEVICE y note<dependancy of boot essential>
 # cpu freq
-CONFIG_CPU_FREQ_STAT m/y note<dependancy of boot essential>
+CONFIG_CPU_FREQ_STAT p policy<(arch i386 amd64 & value y) | value m> note<dependancy of boot essential>
 
 # Interesting new subsystems
 CONFIG_NFC m note<experimental subsystem -- opt-in>
@@ -164,12 +164,12 @@ CONFIG_TIPC m note<network protocol -- opt-in>
 CONFIG_X25 m note<network protocol -- opt-in>
 
 # ATA controolers: some are boot essential on specific architectures
-CONFIG_ATA_GENERIC m/y note<boot essential on i386/amd64>
-CONFIG_ATA_PIIX m/y note<boot essential on i386/amd64>
-CONFIG_PATA_ACPI y note<boot essential on i386/amd64>
-CONFIG_PATA_SIS m/y note<boot essential on i386/amd64>
-CONFIG_SATA_SVW m/y note<boot essential on powerpc>
-CONFIG_SATA_AHCI y note<boot essential on i386/amd64>
+CONFIG_ATA_GENERIC p policy<(arch i386 amd64 & value y) | value m> note<boot essential on i386/amd64>
+CONFIG_ATA_PIIX p policy<(arch i386 amd64 & value y) | value m> note<boot essential on i386/amd64>
+CONFIG_PATA_ACPI p policy<(arch i386 amd64 & value y) | value m> note<boot essential on i386/amd64>
+CONFIG_PATA_SIS p policy<(arch i386 amd64 & value y) | value m> note<boot essential on i386/amd64>
+CONFIG_SATA_SVW p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
+CONFIG_SATA_AHCI p policy<(arch i386 amd64 & value y) | value m> note<boot essential on i386/amd64>
 
 # ARM requires FAT for kernel installation.
 CONFIG_FAT_FS m/y note<installation essential on arm>
@@ -178,29 +178,29 @@ CONFIG_NLS_CODEPAGE_437 m/y note<installation essential on arm>
 CONFIG_NLS y <dependancy of boot essential>
 
 # ARM boot essential devices
-CONFIG_MTD m/y note<boot essential on arm module otherwise>
-CONFIG_MTD_BLKDEVS m/y note<boot essential on arm module otherwise>
-CONFIG_MTD_BLOCK m/y note<boot essential on arm module otherwise>
-CONFIG_MTD_CHAR m/y note<boot essential on arm module otherwise>
-CONFIG_MTD_NAND m/y note<boot essential on arm module otherwise>
-CONFIG_MTD_NAND_OMAP2 y note<boot essential on arm>
-CONFIG_MTD_OF_PARTS m/y note<boot essential on arm module otherwise>
-CONFIG_MMC_BLOCK m/y note<boot essential on arm module otherwise>
-CONFIG_MMC_OMAP_HS y note<boot essential on arm>
-CONFIG_FB_OMAP2 y note<boot essential on arm>
-CONFIG_I2C_OMAP y note<boot essential on arm>
-CONFIG_NOOP_USB_XCEIV m/y note<boot essential on arm module otherwise>
-CONFIG_PANEL_GENERIC_DPI y note<boot essential on arm>
+CONFIG_MTD p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_MTD_BLKDEVS p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_MTD_BLOCK p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_MTD_CHAR p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_MTD_NAND p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_MTD_NAND_OMAP2 p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_MTD_OF_PARTS p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_MMC_BLOCK p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_MMC_OMAP_HS p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_FB_OMAP2 p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_I2C_OMAP p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_NOOP_USB_XCEIV p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_PANEL_GENERIC_DPI p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 
 # POWERPC boot essential devices
-CONFIG_FB_VOODOO1 m/y note<boot essential no powerpc>
-CONFIG_FB_3DFX m/y note<boot essential no powerpc>
-CONFIG_FB_PS3 y note<boot essential no powerpc>
-CONFIG_I2C_POWERMAC y note<boot essential on powerpc>
-CONFIG_HW_RANDOM_PASEMI y note<dependancy HW_RANDOM>
+CONFIG_FB_VOODOO1 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
+CONFIG_FB_3DFX p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
+CONFIG_FB_PS3 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
+CONFIG_I2C_POWERMAC p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
+CONFIG_HW_RANDOM_PASEMI p policy<(arch powerpc & value y) | value m> note<dependancy HW_RANDOM>
 
 # devices which make no sense on some platforms
-CONFIG_PCCARD m/n note<not a supported interface on arm>
+CONFIG_PCCARD p policy<(arch armel armhf & value n) | value m> note<not a supported interface on arm>
 
 # GRUB2 boot requirement
 CONFIG_FRAMEBUFFER_CONSOLE y note<boot essential for grub2 console>
@@ -231,13 +231,13 @@ CONFIG_USB_XHCI_HCD y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_BRCMDBG n note<debugging only>
 
 # ARM commonly use sd cards as root disks.
-CONFIG_MMC_SDHCI m/y note<installation essential on arm>
+CONFIG_MMC_SDHCI p policy<(arch armel armhf & value y) | value m> note<installation essential on arm>
 
 # Security risk.
 CONFIG_ACPI_CUSTOM_METHOD n note<Security: allows arbitrary execution>
 
 # DM_RAID45 only appears in PC BIOS based systems
-CONFIG_DM_RAID45 m/n note<PC BIOS specific>
+CONFIG_DM_RAID45 p policy<(arch i386 amd64 & value m) | value n>  note<PC BIOS specific>
 
 # EFI_VARS is required for EFI boot
 CONFIG_EFI_VARS y note<EFI boot requirement (d-i)>
@@ -254,7 +254,7 @@ CONFIG_IKCONFIG n note<not required as configs in /boot>
 
 # POWERPC
 CONFIG_PATA_MACIO y note<boot essential for QEMU on powerpc>
-CONFIG_I2C_ALGOBIT m/y note<boot essential dependancy on powerpc>
+CONFIG_I2C_ALGOBIT p policy<(arch powerpc & value y) | value m>  note<boot essential dependancy on powerpc>
 
 # Non-obvious filesystems.
 CONFIG_USB_FUNCTIONFS m note<filesystems are opt-in>
@@ -274,10 +274,10 @@ CONFIG_PANEL_TPO_TD043MTEA1 y note<required for omap3 video>
 CONFIG_USB_OTG - note<ARM specific feature>
 
 # powerpc64-smp requires this as CONFIG_MAPLE is enabled
-CONFIG_ATA_NONSTANDARD n/y note<required for powerpc64-smp dep of CONFIG_MAPLE>
+CONFIG_ATA_NONSTANDARD p policy<(flavour powerpc64-smp & value y) | value n> note<required for powerpc64-smp dep of CONFIG_MAPLE>
 
 # APM Emulation is deliberately off on ARM to prevent new use.
-CONFIG_APM_EMULATION m/n note<deliberatly forced off for ARM>
+CONFIG_APM_EMULATION p policy<(arch armel armhf & value n) | value m> note<deliberatly forced off for ARM>
 
 # BLK_DEV_XD -- ancient drives
 CONFIG_BLK_DEV_XD n note<ancient drives from pre-history>
@@ -300,7 +300,7 @@ CONFIG_ARCH_ZYNQ n note<unsupported ARM arch>
 
 # Options which really should not have an option at all.
 CONFIG_SIGMA n note<unused common driver infrastructure>
-CONFIG_SENSORS_SCH56XX_COMMON m/n note<unused common driver infrastructure>
+CONFIG_SENSORS_SCH56XX_COMMON p policy<(arch i386 amd64 & value m) | value n>  note<unused common driver infrastructure>
 
 # Items which are simply miss identified
 CONFIG_DEBUG_LL_UART_NONE y note<not actually debug>
