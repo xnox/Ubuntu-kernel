@@ -90,9 +90,6 @@ CONFIG_EDD y note<core disk support>
 
 # Core devices
 CONFIG_KEYBOARD_ATKBD y note<core driver>
-CONFIG_SERIAL_8250 y note<core driver>
-CONFIG_SERIAL_8250_PCI y note<core driver>
-CONFIG_SERIAL_8250_PNP y note<core driver>
 CONFIG_SERIO y note<core driver>
 CONFIG_SERIO_I8042 y note<core driver>
 CONFIG_SERIO_LIBPS2 y note<core driver>
@@ -106,6 +103,9 @@ CONFIG_FW_LOADER y note<core CPU firmware updater>
 CONFIG_KGDB_SERIAL_CONSOLE y note<early debugging support>
 
 # Other boot essential
+CONFIG_SERIAL_8250 p policy<(arch i386 amd64 armel armhf & value y) | value m> note<boot essential -- serial consoles>
+CONFIG_SERIAL_8250_PCI p policy<(arch i386 amd64 armel armhf & value y) | value m> note<boot essential -- serial consoles>
+CONFIG_SERIAL_8250_PNP p policy<(arch i386 amd64 armel armhf & value y) | value m> note<boot essential -- serial consoles>
 CONFIG_XZ_DEC y note<boot essential -- initramfs decompressor>
 
 # XEN
