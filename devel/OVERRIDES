@@ -201,6 +201,7 @@ CONFIG_SERIAL_OMAP p policy<(arch armel armhf & value y) | value m> note<boot es
 CONFIG_USB_GADGET p policy<(arch armel armhf & value y) | value m> note<not autoprobable -- only present commonly on arm>
 CONFIG_GPIO_TWL4030 p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFGI_NOP_USB_XCEIV p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_OMAP2_DSS p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 
 # POWERPC boot essential devices
 CONFIG_FB_VOODOO1 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
