@@ -197,6 +197,8 @@ CONFIG_PANEL_GENERIC_DPI p policy<(arch armel armhf & value y) | value m> note<b
 CONFIG_FB_VOODOO1 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
 CONFIG_FB_3DFX p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
 CONFIG_FB_PS3 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
+CONFIG_FB_ATY128 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
+CONFIG_FB_RADEON p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
 CONFIG_I2C_POWERMAC p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
 CONFIG_HW_RANDOM_PASEMI p policy<(arch powerpc & value y) | value m> note<dependancy HW_RANDOM>
 
