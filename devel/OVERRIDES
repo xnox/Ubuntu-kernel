@@ -240,6 +240,7 @@ CONFIG_RING_BUFFER_BENCHMARK n note<testing only>
 CONFIG_RTC_DRV_TEST n note<testing only>
 CONFIG_USB_DUMMY_HCD n note<testing only>
 CONFIG_PCIEAER_INJECT n note<testing only>
+CONFIG_PPS_CLIENT_KTIMER n note<testing only>
 
 # USB
 CONFIG_USB_EHCI_HCD y note<ensures USB 2.0/1.1 probe ordering>
