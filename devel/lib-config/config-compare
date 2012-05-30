@@ -254,12 +254,25 @@ for my $option (@options) {
 	$all = '';
 	$cmt = '';
 	$one = '';
+	$ok = 1;
 	print "|| $option";
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
-		print " || $is";
-		next if ($policy && $column eq 'Policy' && $policy{$option});
+		if ($policy && $policy{$option}) {
+			
+			if ($column eq 'Policy' ||
+			    !defined $values{$column, $option} ||
+			    policy_check($column, $option, $policy{$option})) {
+				print " || $is";
+			} else {
+				print " || '''$is'''";
+				$ok = 0;
+			}
+			next if ($column eq 'Policy')
+		} else {
+			print " || $is";
+		}
 		if ($is !~ m@/@ && $is ne '-') {
 			$all .= $is . '/' if ($all !~ /$is/);
 		}
@@ -273,19 +286,12 @@ for my $option (@options) {
 	if ($all eq '') {
 		$cmt .= " '''GONE'''";
 	}
-	if ($policy && $policy{$option}) {
-		$ok = 1;
-		for my $column (@columns) {
-			next if ($column eq 'Policy');
-			next if (!defined $values{$column, $option});
-			if (!policy_check($column, $option, $policy{$option})) {
-				$ok = 0;
-			}
-		}
-		if (!$ok) {
-			$cmt .= " '''Inconsistent'''";
-		}
-	} elsif ($is ne 'c' && $all ne $one) {
+	# If we have a predicate policy we already worked out if this is ok,
+	# otherwise if its not compatible ding it.
+	if (!($policy && $policy{$option}) && $is ne 'c' && $all ne $one) {
+		$ok = 0;
+	}
+	if (!$ok) {
 		$cmt .= " '''Inconsistent'''";
 	}
 	if ($flags{$option}) {
