@@ -349,6 +349,7 @@ CONFIG_INTEL_IOMMU_DEFAULT_ON n note<the IOMMU can trigger boot failures>
 
 # H/W specific options
 CONFIG_PATA_HPT3X3_DMA n note<DMA mode is documented problematic>
+CONFIG_B43_BCMA_EXTRA n note<BRCMSMAC is enabled disable to avoid ID overlaps>
 
 # XXX: temporarily disabled options -- build failures.
 CONFIG_AX88796 - flag<BUILD FAILURE>
