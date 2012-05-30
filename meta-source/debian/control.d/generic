@@ -1,4 +1,4 @@
-Package: linux-headers-generic-lts-backport-quantal
+Package: linux-headers-generic-lts-quantal
 Architecture: i386 amd64
 Section: devel
 Priority: optional
@@ -7,7 +7,7 @@ Description: Generic Linux kernel headers
  This package will always depend on the latest generic kernel headers
  available.
 
-Package: linux-image-generic-lts-backport-quantal
+Package: linux-image-generic-lts-quantal
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional

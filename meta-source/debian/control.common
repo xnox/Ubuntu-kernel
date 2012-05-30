@@ -1,4 +1,4 @@
-Source: linux-meta-lts-backport-quantal
+Source: linux-meta-lts-quantal
 Section: devel
 Priority: optional
 Maintainer: Ubuntu Kernel Team <kernel-team@lists.ubuntu.com>
