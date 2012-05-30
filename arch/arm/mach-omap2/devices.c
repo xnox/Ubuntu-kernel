@@ -436,6 +436,7 @@ static void __init omap_init_dmic(void)
 
 #if defined(CONFIG_SND_OMAP_SOC_ABE_DSP) || \
 	defined(CONFIG_SND_OMAP_SOC_ABE) || \
+	defined(CONFIG_SND_OMAP_SOC_ABE_MODULE) || \
 	defined(CONFIG_SND_OMAP_SOC_ABE_DSP_MODULE) || \
 	defined(CONFIG_SND_OMAP_SOC_OMAP_ABE_TWL6040)
 
