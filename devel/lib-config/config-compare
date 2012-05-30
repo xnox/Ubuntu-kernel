@@ -186,7 +186,8 @@ if ($ARGV[0] eq '--info') {
 				$flags{$config} .= " '''CHOICE'''";
 			} elsif ($option eq 'policy') {
 				$policy{$config} = $value;
-				$flags{$config} .= " '''policy=$value'''";
+				#$flags{$config} .= " '''policy=$value'''";
+				$expected = $value;
 			}
 		}
 		$values{'Policy', $config} = $expected;
@@ -255,10 +256,10 @@ for my $option (@options) {
 	$one = '';
 	print "|| $option";
 	for my $column (@columns) {
-		next if ($policy && $column eq 'Policy' && $policy{$option});
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
 		print " || $is";
+		next if ($policy && $column eq 'Policy' && $policy{$option});
 		if ($is !~ m@/@ && $is ne '-') {
 			$all .= $is . '/' if ($all !~ /$is/);
 		}
