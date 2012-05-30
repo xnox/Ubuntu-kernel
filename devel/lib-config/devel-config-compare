@@ -144,13 +144,21 @@ function what_flag()
 	typeset flag="$1"
 
 	what=`awk '/flag<'"$flag"'>/ { print $1 }' <"$info" |
-		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)/'`
+		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)[ =]/'`
 }
 what_flag 'DANGEROUS'
 rebuild "$what"
 
 echo ""
 echo "$level DANGEROUS Options $level"
+config-cmp-interesting $cmp | colourise
+echo ""
+
+what_flag 'BUILD FAILURE'
+rebuild "$what"
+
+echo ""
+echo "$level BUILD FAILURES $level"
 config-cmp-interesting $cmp | colourise
 echo ""
 
