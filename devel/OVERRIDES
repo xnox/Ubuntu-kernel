@@ -196,6 +196,7 @@ CONFIG_FB_OMAP2 p policy<(arch armel armhf & value y) | value m> note<boot essen
 CONFIG_I2C_OMAP p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_NOOP_USB_XCEIV p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_PANEL_GENERIC_DPI p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_REGULATOR_FIXED_VOLTAGE p policy<(arch armel armhf & value y) | value m>
 
 # POWERPC boot essential devices
 CONFIG_FB_VOODOO1 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
