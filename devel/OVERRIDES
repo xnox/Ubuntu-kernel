@@ -97,6 +97,7 @@ CONFIG_SERIO y note<core driver>
 CONFIG_SERIO_I8042 y note<core driver>
 CONFIG_SERIO_LIBPS2 y note<core driver>
 CONFIG_SERIAL_OMAP y note<core driver>
+CONFIG_LEDS_CLASS y note<core driver>
 
 # Core CPU drivers
 CONFIG_FW_LOADER y note<core CPU firmware updater>
