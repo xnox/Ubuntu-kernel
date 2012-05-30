@@ -89,11 +89,6 @@ CONFIG_IOSCHED_DEADLINE y note<core disk support>
 CONFIG_EDD y note<core disk support>
 
 # Core devices
-CONFIG_KEYBOARD_ATKBD y note<core driver>
-CONFIG_SERIO y note<core driver>
-CONFIG_SERIO_I8042 y note<core driver>
-CONFIG_SERIO_LIBPS2 y note<core driver>
-CONFIG_SERIAL_OMAP y note<core driver>
 CONFIG_LEDS_CLASS y note<core driver>
 
 # Core CPU drivers
@@ -102,11 +97,15 @@ CONFIG_FW_LOADER y note<core CPU firmware updater>
 # Core debugging support
 CONFIG_KGDB_SERIAL_CONSOLE y note<early debugging support>
 
-# Other boot essential
+# Common boot essential
 CONFIG_SERIAL_8250 p policy<(arch i386 amd64 armel armhf & value y) | value m> note<boot essential -- serial consoles>
 CONFIG_SERIAL_8250_PCI p policy<(arch i386 amd64 armel armhf & value y) | value m> note<boot essential -- serial consoles>
 CONFIG_SERIAL_8250_PNP p policy<(arch i386 amd64 armel armhf & value y) | value m> note<boot essential -- serial consoles>
 CONFIG_XZ_DEC y note<boot essential -- initramfs decompressor>
+CONFIG_KEYBOARD_ATKBD y note<boot essential -- input device>
+CONFIG_SERIO y note<boot essential -- input devices>
+CONFIG_SERIO_I8042 y note<boot essential -- input devices>
+CONFIG_SERIO_LIBPS2 y note<boot essential -- input devices> 
 
 # XEN
 CONFIG_XEN_BLKDEV_FRONTEND y note<not autoloadable -- XEN paravirt support>
@@ -198,6 +197,7 @@ CONFIG_I2C_OMAP p policy<(arch armel armhf & value y) | value m> note<boot essen
 CONFIG_NOOP_USB_XCEIV p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_PANEL_GENERIC_DPI p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_REGULATOR_FIXED_VOLTAGE p policy<(arch armel armhf & value y) | value m>
+CONFIG_SERIAL_OMAP p policy<(arch armel armhf & value y) | value m>
 
 # POWERPC boot essential devices
 CONFIG_FB_VOODOO1 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
@@ -210,6 +210,7 @@ CONFIG_NVRAM p policy<(arch powerpc & value y) | value m> note<boot essential on
 CONFIG_HW_RANDOM_PASEMI p policy<(arch powerpc & value y) | value m> note<dependancy HW_RANDOM>
 CONFIG_PS3_PS3AV p policy<(arch powerpc & value y) | value m> note<dependancy HW_RANDOM>
 CONFIG_PS3_SYS_MANAGER p policy<(arch powerpc & value y) | value m> note<dependancy HW_RANDOM>
+CONFIG_SERIAL_PMACZILOG p policy<(arch powerpc & value y) | value m> note<boot essential -- serial consoles>
 
 # XEN host boot essential
 CONFIG_XEN_ACPI_PROCESSOR p policy<(arch i386 amd64 & value y) | value m> <boot essential on XEN host>
