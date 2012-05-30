@@ -206,6 +206,8 @@ CONFIG_FB_RADEON p policy<(arch powerpc & value y) | value m> note<boot essentia
 CONFIG_I2C_POWERMAC p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
 CONFIG_NVRAM p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
 CONFIG_HW_RANDOM_PASEMI p policy<(arch powerpc & value y) | value m> note<dependancy HW_RANDOM>
+CONFIG_PS3_PS3AV p policy<(arch powerpc & value y) | value m> note<dependancy HW_RANDOM>
+CONFIG_PS3_SYS_MANAGER p policy<(arch powerpc & value y) | value m> note<dependancy HW_RANDOM>
 
 # devices which make no sense on some platforms
 CONFIG_PCCARD p policy<(arch armel armhf & value n) | value m> note<not a supported interface on arm>
