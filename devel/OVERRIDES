@@ -129,6 +129,7 @@ CONFIG_BLK_DEV_SD y note<dependancy of boot essential>
 CONFIG_BLK_DEV_SR y note<dependancy of boot essential>
 CONFIG_DNS_RESOLVER y note<dependancy of boot essential>
 CONFIG_CRC_T10DIF y note<dependancy of boot essential>
+CONFIG_ZSMALLOC y note<dependancy of boot essential>
 #  CONFIG_ECRYPTFS or CONFIG_DM
 CONFIG_CRYPTO_CRC32C y note<dependancy of boot essential>
 CONFIG_CRYPTO_CRC32C_INTEL y note<dependancy of boot essential>
