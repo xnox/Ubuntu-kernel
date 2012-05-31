@@ -4,6 +4,240 @@ linux-ti-omap4 (3.0.0-1210.23) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.0.0-21.35 ]
+
+  * Release Tracking Bug
+    - LP: #1004571
+  * [Config] control.stub is an intermediate product not a dependancy
+    - LP: #992414
+  * SAUCE: async_populate_rootfs: fix build warnings
+    - LP: #1003417
+  * Revert "SAUCE: ite-cir: postpone ISR registration"
+    - LP: #1002880
+  * [Config] perarch and indep tools builds need separate build directories
+  * Revert "autofs: work around unhappy compat problem on x86-64"
+    - LP: #996109
+  * Revert "usb: Fix build error due to dma_mask is not at pdev_archdata at
+    ARM"
+    - LP: #996109
+  * KVM: unmap pages from the iommu when slots are removed
+    - LP: #987569
+    - CVE-2012-2121
+  * NFSv4: include bitmap in nfsv4 get acl data
+    - LP: #893147
+    - CVE-2011-4131
+  * hugepages: fix use after free bug in "quota" handling
+    - LP: #990368
+    - CVE-2012-2133
+  * nfs: Enclose hostname in brackets when needed in nfs_do_root_mount
+    - LP: #996109
+  * NFSv4: Ensure that the LOCK code sets exception->inode
+    - LP: #996109
+  * NFSv4: Ensure that we check lock exclusive/shared type against open
+    modes
+    - LP: #996109
+  * x86, apic: APIC code touches invalid MSR on P5 class machines
+    - LP: #996109
+  * xen: correctly check for pending events when restoring irq flags
+    - LP: #996109
+  * xen/smp: Fix crash when booting with ACPI hotplug CPUs.
+    - LP: #996109
+  * ASoC: dapm: Ensure power gets managed for line widgets
+    - LP: #996109
+  * dmaengine: at_hdmac: remove clear-on-read in atc_dostart()
+    - LP: #996109
+  * hwmon: fam15h_power: fix bogus values with current BIOSes
+    - LP: #996109
+  * hwmon: (fam15h_power) Fix pci_device_id array
+    - LP: #996109
+  * drm/i915: handle input/output sdvo timings separately in mode_set
+    - LP: #996109
+  * drm/i915: fix integer overflow in i915_gem_execbuffer2()
+    - LP: #996109
+  * drm/i915: fix integer overflow in i915_gem_do_execbuffer()
+    - LP: #996109
+  * nl80211: ensure interface is up in various APIs
+    - LP: #996109
+  * EHCI: fix criterion for resuming the root hub
+    - LP: #996109
+  * brcm80211: smac: resume transmit fifo upon receiving frames
+    - LP: #996109
+  * Fix modpost failures in fedora 17
+    - LP: #996109
+  * mmc: unbreak sdhci-esdhc-imx on i.MX25
+    - LP: #996109
+  * nfsd: fix b0rken error value for setattr on read-only mount
+    - LP: #996109
+  * nfsd: fix error values returned by nfsd4_lockt() when nfsd_open() fails
+    - LP: #996109
+  * USB: cdc-wdm: fix race leading leading to memory corruption
+    - LP: #996109
+  * USB: EHCI: fix crash during suspend on ASUS computers
+    - LP: #996109
+  * USB: gadget: storage gadgets send wrong error code for unknown commands
+    - LP: #996109
+  * usb gadget: uvc: uvc_request_data::length field must be signed
+    - LP: #996109
+  * pipes: add a "packetized pipe" mode for writing
+    - LP: #996109
+  * autofs: make the autofsv5 packet file descriptor use a packetized pipe
+    - LP: #996109
+  * ARM: 7403/1: tls: remove covert channel via TPIDRURW
+    - LP: #996109
+  * SCSI: libsas: fix sas_find_bcast_phy() in the presence of 'vacant' phys
+    - LP: #996109
+  * SCSI: libsas: fix false positive 'device attached' conditions
+    - LP: #996109
+  * efi: Add new variable attributes
+    - LP: #996109
+  * efivars: String functions
+    - LP: #996109
+  * efivars: fix warnings when CONFIG_PSTORE=n
+    - LP: #996109
+  * efi: Validate UEFI boot variables
+    - LP: #996109
+  * efivars: Improve variable validation
+    - LP: #996109
+  * hwmon: (coretemp) Increase CPU core limit
+    - LP: #996109
+  * hwmon: (coretemp) fix oops on cpu unplug
+    - LP: #996109
+  * libata: skip old error history when counting probe trials
+    - LP: #996109
+  * i2c: pnx: Disable clk in suspend
+    - LP: #996109
+  * ipw2200: Fix race condition in the command completion acknowledge
+    - LP: #996109
+  * mac80211: fix AP mode EAP tx for VLAN stations
+    - LP: #996109
+  * rtlwifi: Fix oops on unload
+    - LP: #996109
+  * wl1251: fix crash on remove due to premature kfree
+    - LP: #996109
+  * wl1251: fix crash on remove due to leftover work item
+    - LP: #996109
+  * sched: Fix nohz load accounting -- again!
+    - LP: #996109
+  * hfsplus: Fix potential buffer overflows
+    - LP: #996109
+  * Linux 3.0.31
+    - LP: #996109
+  * smsc95xx: mark link down on startup and let PHY interrupt deal with
+    carrier changes
+    - LP: #1002880
+  * xen/pte: Fix crashes when trying to see non-existent PGD/PMD/PUD/PTEs
+    - LP: #1002880
+  * xen/pci: don't use PCI BIOS service for configuration space accesses
+    - LP: #1002880
+  * percpu, x86: don't use PMD_SIZE as embedded atom_size on 32bit
+    - LP: #1002880
+  * asm-generic: Use __BITS_PER_LONG in statfs.h
+    - LP: #1002880
+  * Fix __read_seqcount_begin() to use ACCESS_ONCE for sequence value read
+    - LP: #1002880
+  * ARM: 7410/1: Add extra clobber registers for assembly in kernel_execve
+    - LP: #1002880
+  * ARM: 7414/1: SMP: prevent use of the console when using idmap_pgd
+    - LP: #1002880
+  * regulator: Fix the logic to ensure new voltage setting in valid range
+    - LP: #1002880
+  * ARM: orion5x: Fix GPIO enable bits for MPP9
+    - LP: #1002880
+  * asix: Fix tx transfer padding for full-speed USB
+    - LP: #1002880
+  * netem: fix possible skb leak
+    - LP: #1002880
+  * net: In unregister_netdevice_notifier unregister the netdevices.
+    - LP: #1002880
+  * net: l2tp: unlock socket lock before returning from l2tp_ip_sendmsg
+    - LP: #1002880
+  * sky2: propogate rx hash when packet is copied
+    - LP: #1002880
+  * sky2: fix receive length error in mixed non-VLAN/VLAN traffic
+    - LP: #1002880
+  * tg3: Avoid panic from reserved statblk field access
+    - LP: #1002880
+  * sungem: Fix WakeOnLan
+    - LP: #1002880
+  * tcp: change tcp_adv_win_scale and tcp_rmem[2]
+    - LP: #1002880
+  * sony-laptop: Enable keyboard backlight by default
+    - LP: #1002880
+  * ALSA: echoaudio: Remove incorrect part of assertion
+    - LP: #1002880
+  * ALSA: HDA: Lessen CPU usage when waiting for chip to respond
+    - LP: #1002880
+  * usbnet: fix skb traversing races during unlink(v2)
+    - LP: #1002880
+  * namespaces, pid_ns: fix leakage on fork() failure
+    - LP: #1002880
+  * sparc64: Do not clobber %g2 in xcall_fetch_glob_regs().
+    - LP: #1002880
+  * ARM: prevent VM_GROWSDOWN mmaps extending below FIRST_USER_ADDRESS
+    - LP: #1002880
+  * media: rc: Postpone ISR registration
+    - LP: #1002880
+  * cdc_ether: Ignore bogus union descriptor for RNDIS devices
+    - LP: #1002880
+  * cdc_ether: add Novatel USB551L device IDs for FLAG_WWAN
+    - LP: #1002880
+  * percpu: pcpu_embed_first_chunk() should free unused parts after all
+    allocs are complete
+    - LP: #1002880
+  * hugetlb: prevent BUG_ON in hugetlb_fault() -> hugetlb_cow()
+    - LP: #1002880
+  * mm: nobootmem: fix sign extend problem in __free_pages_memory()
+    - LP: #1002880
+  * jffs2: Fix lock acquisition order bug in gc path
+    - LP: #1002880
+  * arch/tile: apply commit 74fca9da0 to the compat signal handling as well
+    - LP: #1002880
+  * crypto: mv_cesa requires on CRYPTO_HASH to build
+    - LP: #1002880
+  * MD: Add del_timer_sync to mddev_suspend (fix nasty panic)
+    - LP: #1002880
+  * tcp: do_tcp_sendpages() must try to push data out on oom conditions
+    - LP: #1002880
+  * init: don't try mounting device as nfs root unless type fully matches
+    - LP: #1002880
+  * ext4: avoid deadlock on sync-mounted FS w/o journal
+    - LP: #1002880
+  * NFSv4: Revalidate uid/gid after open
+    - LP: #1002880
+  * memcg: free spare array to avoid memory leak
+    - LP: #1002880
+  * compat: Fix RT signal mask corruption via sigprocmask
+    - LP: #1002880
+  * ext3: Fix error handling on inode bitmap corruption
+    - LP: #1002880
+  * ext4: fix error handling on inode bitmap corruption
+    - LP: #1002880
+  * ACPI / PM: Add Sony Vaio VPCCW29FX to nonvs blacklist.
+    - LP: #1002880
+  * SCSI: hpsa: Add IRQF_SHARED back in for the non-MSI(X) interrupt
+    handler
+    - LP: #1002880
+  * wake up s_wait_unfrozen when ->freeze_fs fails
+    - LP: #1002880
+  * pch_gpio: Support new device LAPIS Semiconductor ML7831 IOH
+    - LP: #1002880
+  * pch_gbe: fixed the issue which receives an unnecessary packet.
+    - LP: #1002880
+  * pch_gbe: support ML7831 IOH
+    - LP: #1002880
+  * pch_gbe: Fixed the issue on which PC was frozen when link was downed.
+    - LP: #1002880
+  * pch_gbe: Do not abort probe on bad MAC
+    - LP: #1002880
+  * pch_gbe: memory corruption calling pch_gbe_validate_option()
+    - LP: #1002880
+  * ia64: Add accept4() syscall
+    - LP: #1002880
+  * Linux 3.0.32
+    - LP: #1002880
+  * dl2k: Clean up rio_ioctl
+    - CVE-2012-2313
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Mon, 28 May 2012 12:19:28 +0200
 
 linux-ti-omap4 (3.0.0-1210.22) oneiric-proposed; urgency=low
