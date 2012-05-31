@@ -369,3 +369,6 @@ CONFIG_TOUCHSCREEN_EETI - flag<BUILD FAILURE>
 
 # Valid y/n options which are in a sensible position.
 CONFIG_CONFIG_PPC_ICSWX_USE_SIGILL n note<reviewed 05/2012>
+
+# Old/Deprecated
+CONFIG_SCSI_AIC7XXX_OLD n note<deprecated in favour of aic7xxx>
