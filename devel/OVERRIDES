@@ -348,6 +348,7 @@ CONFIG_CFS_BANDWIDTH y note<optional scheduling control -- opt-in>
 CONFIG_EDAC_SBRIDGE m note<h/w specific experimental option -- opt-in>
 CONFIG_SM_FTL m note<h/w specific experimental option -- opt-in>
 CONFIG_SPI_SPIDEV m note<h/w specific experimental option -- opt-in>
+CONFIG_ATH6KL_USB m note<h/w specific experimental option -- opt-in>
 
 # Dummy drivers
 CONFIG_IIO_SIMPLE_DUMMY_BUFFER n note<dummy driver>
