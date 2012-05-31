@@ -207,6 +207,9 @@ CONFGI_NOP_USB_XCEIV p policy<(arch armel armhf & value y) | value m> note<boot 
 CONFIG_OMAP2_DSS p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_RTC_DRV_TWL4030 p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 
+# highbank boot essential
+CONFIG_SATA_AHCI_PLATFORM p policy<(flavour highbank & value y) | value m> note<boot essential on highbank>
+
 # POWERPC boot essential devices
 CONFIG_FB_VOODOO1 p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
 CONFIG_FB_3DFX p policy<(arch powerpc & value y) | value m> note<boot essential on powerpc>
@@ -375,6 +378,9 @@ CONFIG_MFD_OMAP_USB_HOST - flag<BUILD FAILURE>
 CONFIG_EZX_PCAP - flag<BUILD FAILURE>
 CONFIG_TOUCHSCREEN_EGALAX - flag<BUILD FAILURE>
 CONFIG_TOUCHSCREEN_EETI - flag<BUILD FAILURE>
+CONFIG_CAN - flag<BUILD FAILURE>
+CONFIG_RFKILL - flag<BUILD FAILURE>
+CONFIG_TOUCHSCREEN_W90X900 - flag<BUILD FAILURE>
 
 # Valid y/n options which are in a sensible position.
 CONFIG_CONFIG_PPC_ICSWX_USE_SIGILL n note<reviewed 05/2012>
