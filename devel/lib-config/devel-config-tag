@@ -66,6 +66,9 @@ sub emit()
 
 		} elsif ($option =~ /^CONFIG_DRM_/ && $default eq 'm') {
 			($mode, $note) = ('m', "DRM drivers are opt-in");
+
+		} elsif ($option =~ /^CONFIG_DVB_/ && $default eq 'm') {
+			($mode, $note) = ('m', "DVB drivers are opt-in");
 		}
 		$note = "note<$note>" if ($note);
 		$modenote{$option} = [$mode, $note] if ($mode ne 'n');
