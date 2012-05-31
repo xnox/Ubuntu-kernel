@@ -383,3 +383,6 @@ CONFIG_SCSI_AIC7XXX_OLD n note<deprecated in favour of aic7xxx>
 
 # OSS is handled via pulseaudio
 CONFIG_SND_PCM_OSS n note<deprecated in favour of pulseaudio emulation>
+
+# Poulsbo is handled by DRM_GMA500
+CONFIG_STUB_POULSBO n note<deprecated in favour of CONFIG_DRM_GMA500>
