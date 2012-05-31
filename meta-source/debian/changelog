@@ -1,3 +1,16 @@
+linux-meta-ti-omap4 (3.2.0.1414.14) precise-proposed; urgency=low
+
+  [ Tim Gardner ]
+
+  * Fix Vcs-Git in linux-precise-meta
+    - LP: #999726
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * Bump ABI
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Thu, 31 May 2012 11:53:13 -0300
+
 linux-meta-ti-omap4 (3.2.0.1413.13) precise-proposed; urgency=low
 
   [ Herton Ronaldo Krzesinski ]
