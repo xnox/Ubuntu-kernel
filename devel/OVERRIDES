@@ -390,3 +390,6 @@ CONFIG_STUB_POULSBO n note<deprecated in favour of CONFIG_DRM_GMA500>
 
 # Risky
 CONFIG_RTAS_FLASH n note<potentially risky allowing flash updates>
+
+# Only valid on fully certified platforms
+CONFIG_ATH9K_DFS_CERTIFIED n note<only valid for kernels for certified platforms only>
