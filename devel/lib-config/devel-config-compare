@@ -91,6 +91,14 @@ echo "$level Network Protocols $level"
 config-cmp-interesting $cmp | colourise
 echo ""
 
+what='CONFIG_INET6?_'
+rebuild "$what"
+
+echo ""
+echo "$level INET/INET6 Networking $level"
+config-cmp-interesting $cmp | colourise
+echo ""
+
 what='CONFIG_(ATA|SATA|PATA)_'
 rebuild "$what"
 
