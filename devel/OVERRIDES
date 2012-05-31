@@ -344,6 +344,7 @@ CONFIG_CFS_BANDWIDTH y note<optional scheduling control -- opt-in>
 # Hardware specific experimental options.
 CONFIG_EDAC_SBRIDGE m note<h/w specific experimental option -- opt-in>
 CONFIG_SM_FTL m note<h/w specific experimental option -- opt-in>
+CONFIG_SPI_SPIDEV m note<h/w specific experimental option -- opt-in>
 
 # Dummy drivers
 CONFIG_IIO_SIMPLE_DUMMY_BUFFER n note<dummy driver>
@@ -376,3 +377,6 @@ CONFIG_CONFIG_PPC_ICSWX_USE_SIGILL n note<reviewed 05/2012>
 
 # Old/Deprecated
 CONFIG_SCSI_AIC7XXX_OLD n note<deprecated in favour of aic7xxx>
+
+# OSS is handled via pulseaudio
+CONFIG_SND_PCM_OSS n note<deprecated in favour of pulseaudio emulation>
