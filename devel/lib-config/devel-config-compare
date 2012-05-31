@@ -154,6 +154,14 @@ echo "$level DANGEROUS Options $level"
 config-cmp-interesting $cmp | colourise
 echo ""
 
+what_flag 'DEPRECATED'
+rebuild "$what"
+
+echo ""
+echo "$level DEPRECATED Options $level"
+config-cmp-interesting $cmp | colourise
+echo ""
+
 what_flag 'BUILD FAILURE'
 rebuild "$what"
 
