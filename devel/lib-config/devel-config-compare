@@ -139,6 +139,14 @@ echo "$level Netfilter Match/Targets $level"
 config-cmp-interesting $cmp | colourise
 echo ""
 
+what='CONFIG_(BLK|CHR)_DEV_'
+rebuild "$what"
+
+echo ""
+echo "$level Block and Character devices $level"
+config-cmp-interesting $cmp | colourise
+echo ""
+
 function what_flag()
 {
 	typeset flag="$1"
