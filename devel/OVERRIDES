@@ -386,3 +386,6 @@ CONFIG_SND_PCM_OSS n note<deprecated in favour of pulseaudio emulation>
 
 # Poulsbo is handled by DRM_GMA500
 CONFIG_STUB_POULSBO n note<deprecated in favour of CONFIG_DRM_GMA500>
+
+# Risky
+CONFIG_RTAS_FLASH n note<potentially risky allowing flash updates>
