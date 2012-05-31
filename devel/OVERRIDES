@@ -226,30 +226,31 @@ CONFIG_PCCARD p policy<(arch armel armhf & value n) | value m> note<not a suppor
 CONFIG_FRAMEBUFFER_CONSOLE y note<boot essential for grub2 console>
 
 # TESTING options
-CONFIG_DMATEST n note<testing only>
-CONFIG_DEBUG_NX_TEST n note<testing only>
-CONFIG_BACKTRACE_SELF_TEST n note<testing only>
-CONFIG_FB_VIRTUAL n note<testing only>
-CONFIG_MMC_TEST n note<testing only>
-CONFIG_MMIOTRACE_TEST n note<testing only>
-CONFIG_RCU_TORTURE_TEST n note<testing only>
-CONFIG_IEEE802154_FAKEHARD n note<testing only>
-CONFIG_LKDTM n note<testing only>
-CONFIG_WL12XX_SDIO_TEST n note<testing only>
-CONFIG_RING_BUFFER_BENCHMARK n note<testing only>
-CONFIG_RTC_DRV_TEST n note<testing only>
-CONFIG_USB_DUMMY_HCD n note<testing only>
-CONFIG_PCIEAER_INJECT n note<testing only>
-CONFIG_PPS_CLIENT_KTIMER n note<testing only>
+CONFIG_DMATEST n flag<TESTING>
+CONFIG_DEBUG_NX_TEST n flag<TESTING>
+CONFIG_BACKTRACE_SELF_TEST n flag<TESTING>
+CONFIG_FB_VIRTUAL n flag<TESTING>
+CONFIG_MMC_TEST n flag<TESTING>
+CONFIG_MMIOTRACE_TEST n flag<TESTING>
+CONFIG_RCU_TORTURE_TEST n flag<TESTING>
+CONFIG_IEEE802154_FAKEHARD n flag<TESTING>
+CONFIG_LKDTM n flag<TESTING>
+CONFIG_WL12XX_SDIO_TEST n flag<TESTING>
+CONFIG_RING_BUFFER_BENCHMARK n flag<TESTING>
+CONFIG_RTC_DRV_TEST n flag<TESTING>
+CONFIG_USB_DUMMY_HCD n flag<TESTING>
+CONFIG_PCIEAER_INJECT n flag<TESTING>
+CONFIG_PPS_CLIENT_KTIMER n flag<TESTING>
+CONFIG_CRC32_SELFTEST n flag<TESTING>
+
+# DEBUGGING option
+CONFIG_BRCMDBG - flag<DEBUG>
 
 # USB
 CONFIG_USB_EHCI_HCD y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_OHCI_HCD y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_UHCI_HCD y note<ensures USB 2.0/1.1 probe ordering>
 CONFIG_USB_XHCI_HCD y note<ensures USB 2.0/1.1 probe ordering>
-
-# DEBUGGING option
-CONFIG_BRCMDBG n note<debugging only>
 
 # ARM commonly use sd cards as root disks.
 CONFIG_MMC_SDHCI p policy<(arch armel armhf & value y) | value m> note<installation essential on arm>
