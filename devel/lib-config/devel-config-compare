@@ -144,6 +144,13 @@ echo "$level Block and Character devices $level"
 config-cmp-interesting $cmp | colourise
 echo ""
 
+what='CONFIG_(.*_PHY|PHYLIB)[_ =]'
+rebuild "$what"
+echo ""
+echo "$level PHY support $level"
+config-cmp-interesting $cmp | colourise
+echo ""
+
 function what_flag()
 {
 	typeset flag="$1"
