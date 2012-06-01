@@ -72,6 +72,12 @@ sub emit()
 
 		} elsif ($option =~ /^CONFIG_FB_/ && $default eq 'm') {
 			($mode, $note) = ('m', "framebuffer drivers are opt-in");
+
+		} elsif ($option =~ /^CONFIG_USB_/ && $default eq 'm') {
+			($mode, $note) = ('m', "USB devices are opt-in");
+
+		} elsif ($option =~ /^CONFIG_I2C/ && $default eq 'm') {
+			($mode, $note) = ('m', "I2C devices are opt-in");
 		}
 		$note = "note<$note>" if ($note);
 		$modenote{$option} = [$mode, $note] if ($mode ne 'n');
