@@ -169,7 +169,11 @@ list "RTC Drivers" "CONFIG_RTC_DRV_" ""
 
 list "Keyboard/Mouse Drivers" "CONFIG_(KEYBOARD|MOUSE)_" ""
 
-list "USB suport" "CONFIG_USB_" ""
+list "USB support" "CONFIG_USB_" ""
+
+list "GPIO support" "CONFIG_GPIO_" ""
+
+list "I2C support" "CONFIG_I2C_" ""
 
 function what_flag()
 {
