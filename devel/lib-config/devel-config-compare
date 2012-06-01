@@ -59,12 +59,19 @@ function colourise_inverse() {
 	awk '/\|\|  *\('"'''\(EXPERIMENTAL|STAGING|DEBUG\)'''"'\)* \|\|/ { gsub("\\|\\| ", "||<#ffbac8> ")} { print }'
 }
 
-what='FS[ =]'
-rebuild "$what" "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
-echo ""
-echo "$level Filesystems $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list() {
+	local title="$1"
+	local what="$2"
+	local not="$3"
+
+	rebuild "$what" "$not"
+	echo ""
+	echo "$level $title $level"
+	config-cmp-interesting $cmp | colourise
+	echo ""
+}
+
+list "Filesystems" 'FS[ =]' "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
 
 ##what='CONFIG_(LSM_MMAP_MIN_ADDR|DEFAULT_MMAP_MIN_ADDR|APPARMOR|SELINUX|TOMOYO|COMPAT_BRK|DEVKMEM|SYN_COOKIES|SECURITY|SECCOMP|COMPAT_VDSO|DEBUG_RODATA|STRICT_DEVMEM|SECURITY_FILE_CAPABILITIES|SECURITY_SMACK|CC_STACKPROTECTOR)[ =]'
 ##rebuild "$what"
@@ -123,10 +130,10 @@ echo "$level Sensor Drivers $level"
 config-cmp-interesting $cmp | colourise
 echo ""
 
-what='CONFIG_CRYPTO_'
+what='CONFIG_(CRYPTO_|CRC_|CRC[0-9]+)'
 rebuild "$what"
 echo ""
-echo "$level Crypto $level"
+echo "$level Crypto/CRC $level"
 config-cmp-interesting $cmp | colourise
 echo ""
 
@@ -150,6 +157,19 @@ echo ""
 echo "$level PHY support $level"
 config-cmp-interesting $cmp | colourise
 echo ""
+
+what='CONFIG_DM[_ =]'
+rebuild "$what"
+echo ""
+echo "$level Device Mapper $level"
+config-cmp-interesting $cmp | colourise
+echo ""
+
+list "RTC Drivers" "CONFIG_RTC_DRV_" ""
+
+list "Keyboard/Mouse Drivers" "CONFIG_(KEYBOARD|MOUSE)_" ""
+
+list "USB suport" "CONFIG_USB_" ""
 
 function what_flag()
 {
