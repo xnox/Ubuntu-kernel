@@ -61,7 +61,6 @@ function colourise_inverse() {
 
 what='FS[ =]'
 rebuild "$what" "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
-
 echo ""
 echo "$level Filesystems $level"
 config-cmp-interesting $cmp | colourise
@@ -77,7 +76,6 @@ echo ""
 
 what='CONFIG_(PCI|USB|BT|SCSI|APM|ACPI|NET|NETFILTER|ATA|INPUT|HID)[ =]'
 rebuild "$what"
-
 echo ""
 echo "$level Subsystems $level"
 config-cmp-interesting $cmp | colourise
@@ -85,7 +83,6 @@ echo ""
 
 what="(CONFIG_NET_9P|CONFIG_ATM|CONFIG_AX25|CONFIG_BRIDGE|CONFIG_CAIF|CONFIG_CAN|CONFIG_DCB|CONFIG_DECNET|CONFIG_DNS_RESOLVER|CONFIG_NET_DSA|CONFIG_ECONET|CONFIG_NET_ETHERNET|CONFIG_IEEE802154|CONFIG_IPV6|CONFIG_IPX|CONFIG_IRDA|CONFIG_NET_KEY|CONFIG_L2TP|CONFIG_LAPB|CONFIG_LLC|CONFIG_MAC80211|CONFIG_NETFILTER|CONFIG_NETLABEL|CONFIG_NETROM|CONFIG_PACKET|CONFIG_PHONET|CONFIG_RDS|CONFIG_RFKILL|CONFIG_ROSE|CONFIG_NET_SCHED|CONFIG_SUNRPC|CONFIG_TIPC|CONFIG_UNIX|CONFIG_WIMAX|CONFIG_WIRELESS|CONFIG_X25|CONFIG_XFRM)[ =]"
 rebuild "$what"
-
 echo ""
 echo "$level Network Protocols $level"
 config-cmp-interesting $cmp | colourise
@@ -93,7 +90,6 @@ echo ""
 
 what='CONFIG_INET6?_'
 rebuild "$what"
-
 echo ""
 echo "$level INET/INET6 Networking $level"
 config-cmp-interesting $cmp | colourise
@@ -101,7 +97,6 @@ echo ""
 
 what='CONFIG_(ATA|SATA|PATA)_'
 rebuild "$what"
-
 echo ""
 echo "$level {,S,P}ATA Drivers $level"
 config-cmp-interesting $cmp | colourise
@@ -109,7 +104,6 @@ echo ""
 
 what='CONFIG_INPUT_'
 rebuild "$what" "CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]"
-
 echo ""
 echo "$level Input Drivers $level"
 config-cmp-interesting $cmp | colourise
@@ -117,7 +111,6 @@ echo ""
 
 what='CONFIG_HID_'
 rebuild "$what"
-
 echo ""
 echo "$level HID Drivers $level"
 config-cmp-interesting $cmp | colourise
@@ -125,7 +118,6 @@ echo ""
 
 what='CONFIG_SENSORS_'
 rebuild "$what"
-
 echo ""
 echo "$level Sensor Drivers $level"
 config-cmp-interesting $cmp | colourise
@@ -133,7 +125,6 @@ echo ""
 
 what='CONFIG_CRYPTO_'
 rebuild "$what"
-
 echo ""
 echo "$level Crypto $level"
 config-cmp-interesting $cmp | colourise
@@ -141,7 +132,6 @@ echo ""
 
 what='CONFIG_NETFILTER_XT_'
 rebuild "$what"
-
 echo ""
 echo "$level Netfilter Match/Targets $level"
 config-cmp-interesting $cmp | colourise
@@ -149,7 +139,6 @@ echo ""
 
 what='CONFIG_(BLK|CHR)_DEV_'
 rebuild "$what"
-
 echo ""
 echo "$level Block and Character devices $level"
 config-cmp-interesting $cmp | colourise
@@ -162,9 +151,9 @@ function what_flag()
 	what=`awk '/flag<'"$flag"'>/ { print $1 }' <"$info" |
 		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)[ =]/'`
 }
+
 what_flag 'DANGEROUS'
 rebuild "$what"
-
 echo ""
 echo "$level DANGEROUS Options $level"
 config-cmp-interesting $cmp | colourise
@@ -172,7 +161,6 @@ echo ""
 
 what_flag 'DEPRECATED'
 rebuild "$what"
-
 echo ""
 echo "$level DEPRECATED Options $level"
 config-cmp-interesting $cmp | colourise
@@ -180,7 +168,6 @@ echo ""
 
 what_flag 'BUILD FAILURE'
 rebuild "$what"
-
 echo ""
 echo "$level BUILD FAILURES $level"
 config-cmp-interesting $cmp | colourise
@@ -188,7 +175,6 @@ echo ""
 
 rebuild ""
 awk '($2 ~ /[Mm]/) { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
-
 echo ""
 echo "$level Non-modular modules $level"
 what=`config-cmp-nopolicy $cmp | tee APW | \
