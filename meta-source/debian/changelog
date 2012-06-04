@@ -1,3 +1,9 @@
+linux-meta-lts-quantal (3.4.0.4.4) precise; urgency=low
+
+  * Ubuntu-lts-3.4.0-4.9
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 04 Jun 2012 14:04:42 -0600
+
 linux-meta-lts-quantal (3.4.0.3.3) precise-proposed; urgency=low
 
   * Dropped -backport from all names, including this source package.
