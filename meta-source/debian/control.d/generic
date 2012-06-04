@@ -1,6 +1,6 @@
 Package: linux-headers-generic
 Architecture: i386 amd64
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-generic
 Description: Generic Linux kernel headers

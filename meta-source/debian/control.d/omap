@@ -1,6 +1,6 @@
 Package: linux-headers-omap
 Architecture: armel armhf
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-omap 
 Description: Linux kernel headers for the OMAP3 architecture.

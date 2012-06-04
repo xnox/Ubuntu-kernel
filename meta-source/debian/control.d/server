@@ -1,6 +1,6 @@
 Package: linux-headers-server
 Architecture: amd64 i386
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-generic
 Description: Transitional package.

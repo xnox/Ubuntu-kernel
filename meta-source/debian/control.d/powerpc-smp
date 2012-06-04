@@ -1,6 +1,6 @@
 Package: linux-headers-powerpc-smp
 Architecture: powerpc
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: linux-headers-${kernel-abi-version}-powerpc-smp
 Description: Linux kernel headers on PowerPC SMP
