@@ -63,6 +63,21 @@ sub emit()
 
 		} elsif ($option =~ /^CONFIG_VIDEO_/ && $default eq 'm') {
 			($mode, $note) = ('m', "VIDEO drivers are opt-in");
+
+		} elsif ($option =~ /^CONFIG_DRM_/ && $default eq 'm') {
+			($mode, $note) = ('m', "DRM drivers are opt-in");
+
+		} elsif ($option =~ /^CONFIG_DVB_/ && $default eq 'm') {
+			($mode, $note) = ('m', "DVB drivers are opt-in");
+
+		} elsif ($option =~ /^CONFIG_FB_/ && $default eq 'm') {
+			($mode, $note) = ('m', "framebuffer drivers are opt-in");
+
+		} elsif ($option =~ /^CONFIG_USB_/ && $default eq 'm') {
+			($mode, $note) = ('m', "USB devices are opt-in");
+
+		} elsif ($option =~ /^CONFIG_I2C/ && $default eq 'm') {
+			($mode, $note) = ('m', "I2C devices are opt-in");
 		}
 		$note = "note<$note>" if ($note);
 		$modenote{$option} = [$mode, $note] if ($mode ne 'n');
@@ -231,7 +246,7 @@ foreach my $key (sort keys %options) {
 
 		@oa = split(' ', $options{$key});
 		if ($mode && $mode ne '-') {
-			if ($oa[2] ne $mode && $note) {
+			if ($mode ne 'p' && $oa[2] ne $mode && $note) {
 				push(@oa, "flag<policy=$mode>");
 			}
 			$oa[2] = $mode;
