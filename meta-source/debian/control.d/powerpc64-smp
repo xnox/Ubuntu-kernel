@@ -20,7 +20,7 @@ Description: Linux kernel image on PowerPC64 SMP.
 
 Package: linux-powerpc64-smp
 Architecture: powerpc
-Section: restricted/metapackages
+Section: metapackages
 Priority: optional
 Depends: linux-image-powerpc64-smp, linux-headers-powerpc64-smp
 Description: Complete Linux kernel on PowerPC64 SMP.
