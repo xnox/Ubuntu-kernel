@@ -1,0 +1,26 @@
+Package: linux-headers-highbank
+Architecture: armhf
+Section: devel
+Priority: optional
+Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-highbank 
+Description: Linux kernel headers for the highbank architecture.
+ This package will always depend on the latest kernel headers available
+ for ARM Calxeda highbank systems.
+
+Package: linux-image-highbank
+Architecture: armhf
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-highbank, linux-firmware
+Description: Linux kernel image for the highbank architecture.
+ This package will always depend on the latest kernel image available
+ for ARM Calxeda highbank systems.
+
+Package: linux-highbank
+Architecture: armhf
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-highbank, linux-headers-highbank
+Description: Complete Linux kernel for the highbank architecture.
+ This package will always depend on the latest complete Linux kernel and headers
+ for ARM Calxeda highbank systems.
