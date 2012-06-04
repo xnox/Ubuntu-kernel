@@ -1,3 +1,12 @@
+linux-meta (3.4.0.4.5) quantal; urgency=low
+
+  * Bump ABI
+  * Added highbank flavour
+  * All headers packages are in the metapackage section
+  * Put powerpc* binaries in the metapackages section
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 04 Jun 2012 07:31:42 -0700
+
 linux-meta (3.4.0.3.4) quantal; urgency=low
 
   * Restore transitional packages
