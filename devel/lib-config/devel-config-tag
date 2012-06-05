@@ -155,7 +155,7 @@ while (<DUMP>) {
 		$default = '-';
 
 	# Description ...
-	} elsif (/^\s\s(?:prompt|menu)\s"([^"]*)"\s*(.*)/) {
+	} elsif (/^\s\s(?:prompt|menu)\s"(.*)"\s*([^"]*)/) {
 		my ($cond) = ($2);
 		$prompt = $1;
 		if ($cond =~ /\bSTAGING\b/) {
