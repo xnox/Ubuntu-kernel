@@ -1,3 +1,14 @@
+== (PART I) Daily - Simple case ==
+bzr update
+(or bzr branch the first time)
+bzr pull http://people.canonical.com/~kernel/cve-tracker
+bzr vis (in bzr-gtk package) sanity check
+bzr push lp:~canonical-kernel-team/ubuntu-cve-tracker/kernel-team/
+
+Quick triage
+Are there any SHA1s to add to the break-fix line
+from the matrix - after the next run after the above happens
+
 ========= Weekly update (meeting) ============
 
 Template is in kteam-tools/irc-meeting/cve/template
@@ -55,17 +66,6 @@ apw> assuming you are starting from a _branch_ from the kernel team branch of th
 <apw> bzr pull http://people.canonical.com/~kernel/cve-tracker
 
 
-== (PART I) Daily - Simple case ==
-bzr update
-(or bzr branch the first time)
-bzr pull http://people.canonical.com/~kernel/cve-tracker
-bzr vis (in bzr-gtk package) sanity check
-bzr push lp:~canonical-kernel-team/ubuntu-cve-tracker/kernel-team/
-
 ==================
-
-Quick triage
-Are there any SHA1s to add to the break-fix line
-from the matrix - after the next run after the above happens
 
 
