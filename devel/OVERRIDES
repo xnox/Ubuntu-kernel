@@ -200,13 +200,12 @@ CONFIG_MMC_BLOCK p policy<(arch armel armhf & value y) | value m> note<boot esse
 CONFIG_MMC_OMAP_HS p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_FB_OMAP2 p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_I2C_OMAP p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
-CONFIG_NOOP_USB_XCEIV p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
+CONFIG_NOP_USB_XCEIV p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_PANEL_GENERIC_DPI p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_REGULATOR_FIXED_VOLTAGE p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_SERIAL_OMAP p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_USB_GADGET p policy<(arch armel armhf & value y) | value m> note<not autoprobable -- only present commonly on arm>
 CONFIG_GPIO_TWL4030 p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
-CONFGI_NOP_USB_XCEIV p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_OMAP2_DSS p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 CONFIG_RTC_DRV_TWL4030 p policy<(arch armel armhf & value y) | value m> note<boot essential on arm>
 
