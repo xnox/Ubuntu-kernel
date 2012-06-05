@@ -68,6 +68,8 @@ class Cmdline:
         stdo("        --job-name=<string>  Filter data, only including files with the JOB_NAME equal to    \n")
         stdo("                         the specified string.                                               \n")
         stdo("                                                                                             \n")
+        stdo("        --baseline=<json file name>  Normalize all results to the values in this file        \n")
+        stdo("                                                                                             \n")
         stdo("        --mute-metrics=<comma delimited list> Do not display the listed metrics              \n")
         stdo("                                                                                             \n")
         stdo("        --only-metrics=<comma delimited list> Only display the listed metrics                \n")
@@ -87,7 +89,7 @@ class Cmdline:
             cfg = defaults
 
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'debug=', 'job-name=', 'mute-metrics=', 'only-metrics=']
+            optsLong  = ['help', 'verbose', 'debug=', 'job-name=', 'baseline=', 'mute-metrics=', 'only-metrics=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -101,6 +103,9 @@ class Cmdline:
 
                 elif (opt == '--job-name'):
                     cfg['job-name'] = val
+
+                elif (opt == '--baseline'):
+                    cfg['baseline'] = val
 
                 elif (opt == '--mute-metrics'):
                     cfg['mute'] = val.split(',')
@@ -170,6 +175,36 @@ class MergeBenchmarkData():
 
         try:
             self.initialize()
+
+            if 'baseline' in self.cfg:
+                # we load the baseline numbers, and scale all results to that
+                baseline = json_load(self.cfg['baseline'])
+                if 'job-name' in self.cfg:
+                    if self.cfg['job-name'] != baseline['meta']['JOB_NAME']:
+                        print "ERROR: The job name in the baseline file does not match the specified job name"
+                        raise ValueError
+
+                # apply the same filtering that we will for the metrics
+                mkeys = baseline['metrics'].keys()
+                if 'only' in self.cfg:
+                    for metric in mkeys:
+                        if metric not in self.cfg['only']:
+                            del baseline['metrics'][metric]
+                elif 'mute' in self.cfg:
+                    for metric in mkeys:
+                        if metric in self.cfg['mute']:
+                            del baseline['metrics'][metric]
+
+                # Now, find the highest value among all the request metrics so we can scale to that
+                norm_val = None
+                mkeys = baseline['metrics'].keys()
+                for metric in mkeys:
+                    #print('%s : %s' % (metric, baseline['metrics'][metric]))
+                    if norm_val is None:
+                        norm_val =  float(baseline['metrics'][metric])
+                    elif  (float(baseline['metrics'][metric]) > norm_val):
+                        norm_val =  float(baseline['metrics'][metric])
+
             # Open each file on the command line and process it
             for fname in self.cfg['datafiles']:
                 data = json_load(fname)
@@ -186,6 +221,13 @@ class MergeBenchmarkData():
                     for metric in mkeys:
                         if metric in self.cfg['mute']:
                             del data['metrics'][metric]
+
+                # if we're scaling to a baseline, do it
+                if 'baseline' in self.cfg:
+                    mkeys = data['metrics'].keys()
+                    for metric in mkeys:
+                        mval = float(data['metrics'][metric])/norm_val
+                        data['metrics'][metric] = '%s' % mval
 
                 # Save this test, as the BUILD_ID string, which can be sorted chronologically
                 self.tests[data['meta']['BUILD_ID']] = data
