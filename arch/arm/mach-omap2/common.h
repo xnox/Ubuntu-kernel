@@ -30,6 +30,14 @@
 #include <linux/i2c/twl.h>
 #include <plat/common.h>
 #include <asm/proc-fns.h>
+#include <linux/emif.h>
+
+extern void __init omap_emif_set_device_details(u32 emif_nr,
+	struct ddr_device_info *device_info,
+	struct lpddr2_timings *timings,
+	u32 timings_arr_size,
+	struct ddr_min_tck *min_tck,
+	struct emif_custom_configs *custom_configs);
 
 #ifdef CONFIG_SOC_OMAP2420
 extern void omap242x_map_common_io(void);
@@ -131,6 +139,7 @@ void omap3_init_early(void);	/* Do not use this one */
 void am35xx_init_early(void);
 void ti81xx_init_early(void);
 void omap4430_init_early(void);
+void omap54xx_init_early(void);
 void omap3_init_late(void);	/* Do not use this one */
 void omap4430_init_late(void);
 void omap2420_init_late(void);

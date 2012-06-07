@@ -1775,8 +1775,8 @@ static int _enable(struct omap_hwmod *oh)
 	 * state at init.  Now that someone is really trying to enable
 	 * them, just ensure that the hwmod mux is set.
 	 */
-	if (oh->_int_flags & _HWMOD_SKIP_ENABLE) ||
-		(oh->_state == _HWMOD_STATE_ENABLED_AT_INIT) {
+	if ((oh->_int_flags & _HWMOD_SKIP_ENABLE) ||
+		(oh->_state == _HWMOD_STATE_ENABLED_AT_INIT)) {
 		/*
 		 * If the caller has mux data populated, do the mux'ing
 		 * which wouldn't have been done as part of the _enable()
@@ -2571,11 +2571,8 @@ int omap_hwmod_for_each(int (*fn)(struct omap_hwmod *oh, void *data),
 	if (!fn)
 		return -EINVAL;
 
-	list_for_each_entry(temp_oh, &omap_hwmod_list, node) {
-		ret = (*fn)(temp_oh, data);
-		if (ret)
-			break;
-	}
+	list_for_each_entry(temp_oh, &omap_hwmod_list, node)
+		(*fn)(temp_oh, data);
 
 	return ret;
 }
