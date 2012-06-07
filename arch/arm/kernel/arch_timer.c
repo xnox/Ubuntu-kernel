@@ -25,6 +25,7 @@
 #include <asm/arch_timer.h>
 #include <asm/system_info.h>
 #include <asm/sched_clock.h>
+#include <asm/system_info.h>
 
 static unsigned long arch_timer_rate;
 static int arch_timer_ppi;

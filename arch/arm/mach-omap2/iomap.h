@@ -255,4 +255,3 @@ extern void __init omap_init_consistent_dma_size(void);
 
 #endif
 
-#endif
