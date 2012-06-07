@@ -132,11 +132,6 @@ void gic_dist_enable(void)
 	__raw_writel(0x1, gic_dist_base_addr + GIC_DIST_CTRL);
 }
 
-u32 gic_readl(u32 offset, u8 idx)
-{
-	return __raw_readl(gic_dist_base_addr + offset + 4 * idx);
-}
-
 #ifdef CONFIG_CACHE_L2X0
 
 void __iomem *omap4_get_l2cache_base(void)
@@ -211,6 +206,7 @@ static int __init omap_l2_cache_init(void)
 early_initcall(omap_l2_cache_init);
 #endif
 
+#if 0
 void __iomem *omap4_get_sar_ram_base(void)
 {
 	return sar_ram_base;
@@ -239,6 +235,7 @@ static int __init omap4_sar_ram_init(void)
 	return 0;
 }
 early_initcall(omap4_sar_ram_init);
+#endif
 
 #if defined(CONFIG_MMC_OMAP_HS) || defined(CONFIG_MMC_OMAP_HS_MODULE)
 static int omap4_twl6030_hsmmc_late_init(struct device *dev)
