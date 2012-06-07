@@ -4498,6 +4498,15 @@ static struct omap_hwmod_ocp_if omap44xx_l4_abe__dmic_dma = {
 	.user		= OCP_USER_SDMA,
 };
 
+static struct omap_hwmod_addr_space omap44xx_dsp_addrs[] = {
+	{
+		.pa_start	= 0x4A066000,
+		.pa_end		= 0x4A0660ff,
+		.flags		= ADDR_TYPE_RT
+	},
+	{ }
+};
+
 /* dsp -> iva */
 static struct omap_hwmod_ocp_if omap44xx_dsp__iva = {
 	.master		= &omap44xx_dsp_hwmod,
@@ -4519,6 +4528,8 @@ static struct omap_hwmod_ocp_if omap44xx_l4_cfg__dsp = {
 	.master		= &omap44xx_l4_cfg_hwmod,
 	.slave		= &omap44xx_dsp_hwmod,
 	.clk		= "l4_div_ck",
+	.addr		= omap44xx_dsp_addrs,
+	.addr_cnt	= ARRAY_SIZE(omap44xx_dsp_addrs),
 	.user		= OCP_USER_MPU | OCP_USER_SDMA,
 };
 
@@ -5098,11 +5109,22 @@ static struct omap_hwmod_ocp_if omap44xx_l4_per__i2c4 = {
 	.user		= OCP_USER_MPU | OCP_USER_SDMA,
 };
 
+static struct omap_hwmod_addr_space omap44xx_ipu_addrs[] = {
+	{
+		.pa_start	= 0x55082000,
+		.pa_end		= 0x550820ff,
+		.flags		= ADDR_TYPE_RT
+	},
+	{ }
+};
+
 /* l3_main_2 -> ipu */
 static struct omap_hwmod_ocp_if omap44xx_l3_main_2__ipu = {
 	.master		= &omap44xx_l3_main_2_hwmod,
 	.slave		= &omap44xx_ipu_hwmod,
 	.clk		= "l3_div_ck",
+	.addr		= omap44xx_ipu_addrs,
+	.addr_cnt	= ARRAY_SIZE(omap44xx_ipu_addrs),
 	.user		= OCP_USER_MPU | OCP_USER_SDMA,
 };
 
