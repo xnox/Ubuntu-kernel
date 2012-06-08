@@ -2,67 +2,79 @@
 <%
 import operator
 
-testlabels = []
-versions   = []
-metrics    = {}
-minY       = None
-maxY       = None
+# TODO testlabels will be wrong
+chart_series_map = {}
+testlabels_map = {}
 
-sortedTests = sorted(template_data.iteritems(), key=operator.itemgetter(0), reverse=False)
-# may need to display kernel versions and not test dates
-for k in sortedTests:
-    testrecord = template_data[k[0]]
-    kvers = testrecord['meta']['sysinfo-uname'].split()[0]
-    testlabels.append("%s" % (kvers.encode('ascii','ignore')))
-    #testlabels.append("%s-%s" % (k[0].encode('ascii','ignore'),kvers.encode('ascii','ignore')))
-    versions.append(kvers)
-    for metricname in testrecord['metrics']:
-        if metricname not in metrics:
-            metrics[metricname] = []
-        metrics[metricname].append(testrecord['metrics'][metricname])
+for template_data in template_data_list:
+    chart_series_list = []
+    metrics    = {}
+    testlabels = []
+    minY       = None
+    maxY       = None
 
-sortedMetrics = sorted(metrics.keys())
-chart_series  = 'series: [\n'
-chart_series  += '                    {\n'
+    sortedTests = sorted(template_data.iteritems(), key=operator.itemgetter(0), reverse=False)
 
-for metricname in sortedMetrics[:-1]:
+    for k in sortedTests:
+	testrecord = template_data[k[0]]
+	kvers = testrecord['meta']['sysinfo-uname'].split()[0]
+
+	# Chart_title needs to be one per chart
+	ctitle = testrecord['meta']['chart-title']
+
+        # display the kernel version 
+	testlabels.append("%s" % (kvers.encode('ascii','ignore')))
+
+	for metricname in testrecord['metrics']:
+	    if metricname not in metrics:
+		metrics[metricname] = []
+	    metrics[metricname].append(testrecord['metrics'][metricname])
+
+    testlabels_map[ctitle] = testlabels
+
+    sortedMetrics = sorted(metrics.keys())
+    chart_series  = 'series: [\n'
+    chart_series  += '                    {\n'
+
+    for metricname in sortedMetrics[:-1]:
+	for mv in metrics[metricname]:
+	    value = float(mv)
+	    if minY is None:
+		minY = value
+	    elif value < minY:
+		minY = value
+	    if maxY is None:
+		maxY = value
+	    elif value > maxY:
+		maxY = value
+	if metricname.endswith("{perf}"):
+	    displayname = metricname[:-len("{perf}")]
+	else:
+	    displayname = metricname
+	chart_series += '                      name: \'%s\',\n' % displayname
+	chart_series += '                      data: [%s]\n' % (', '.join(metrics[metricname]))
+	chart_series += '                    },{\n'
+
+    metricname = sortedMetrics[-1]
     for mv in metrics[metricname]:
-        value = float(mv)
-        if minY is None:
-            minY = value
-        elif value < minY:
-            minY = value
-        if maxY is None:
-            maxY = value
-        elif value > maxY:
-            maxY = value
+	value = float(mv)
+	if minY is None:
+	    minY = value
+	elif value < minY:
+	    minY = value
+	if maxY is None:
+	    maxY = value
+	elif value > maxY:
+	    maxY = value
     if metricname.endswith("{perf}"):
-        displayname = metricname[:-len("{perf}")]
+	displayname = metricname[:-len("{perf}")]
     else:
-        displayname = metricname
+	displayname = metricname
     chart_series += '                      name: \'%s\',\n' % displayname
     chart_series += '                      data: [%s]\n' % (', '.join(metrics[metricname]))
-    chart_series += '                    },{\n'
-
-metricname = sortedMetrics[-1]
-for mv in metrics[metricname]:
-    value = float(mv)
-    if minY is None:
-        minY = value
-    elif value < minY:
-        minY = value
-    if maxY is None:
-        maxY = value
-    elif value > maxY:
-        maxY = value
-if metricname.endswith("{perf}"):
-    displayname = metricname[:-len("{perf}")]
-else:
-    displayname = metricname
-chart_series += '                      name: \'%s\',\n' % displayname
-chart_series += '                      data: [%s]\n' % (', '.join(metrics[metricname]))
-chart_series += '                    }\n'
-chart_series += '                ]'
+    chart_series += '                    }\n'
+    chart_series += '                ]'
+    chart_series_map[ctitle] = chart_series
 
 %>
 <html>
@@ -82,41 +94,43 @@ chart_series += '                ]'
         </style>
     </head>
     <body>
-    <div id="highchart" style="width: 1000px; height: 1000px;"></div>
-        <script type="text/javascript">
-        $(function () {
-            chart = new Highcharts.Chart({
-                chart: {
-                    renderTo: 'highchart',
-                    defaultSeriesType: 'line'
-                },
-                title: {
-                    text: '${report_title}'
-                },
-                legend: {
-                    enabled: false
-                },
-                 legend: {
-                     reversed: true
-                 },
-                xAxis: {
-                    categories: ${testlabels}
-                },
-                yAxis: {
-                   title: {
-                       text: 'Benchmark Result'
-                   }
-                },
-                tooltip: {
-                    formatter: function() {
-                        return this.x + '<br>' + '<b>' + this.series.name + '</b> : ' + this.y;
-                    }
-                },
-                ${chart_series}
-            });
-        });
-
-        </script>
+    <center><h1>${report_title}</h1></center>
+      % for chartname in chart_series_map:
+        <div id="highchart-${chartname}" style="width: 1000px; height: 1000px;"></div><hr />
+	    <script type="text/javascript">
+	    $(function () {
+		chart = new Highcharts.Chart({
+		    chart: {
+			renderTo: 'highchart-${chartname}',
+			defaultSeriesType: 'line'
+		    },
+		    title: {
+			text: '${chartname}'
+		    },
+		    legend: {
+			enabled: false
+		    },
+		     legend: {
+			 reversed: true
+		     },
+		    xAxis: {
+			categories: ${testlabels_map[chartname]}
+		    },
+		    yAxis: {
+		       title: {
+			   text: 'Benchmark Result'
+		       }
+		    },
+		    tooltip: {
+			formatter: function() {
+			    return this.x + '<br>' + '<b>' + this.series.name + '</b> : ' + this.y;
+			}
+		    },
+		    ${chart_series_map[chartname]}
+		});
+	    });
+	    </script>
+    % endfor
     </body>
 </html>
 <!-- vi:set ts=4 sw=4 expandtab syntax=mako: -->

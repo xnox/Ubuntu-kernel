@@ -58,12 +58,15 @@ class Cmdline:
         Prints out the help text which explains the command line options.
         """
         stdo("    Usage:                                                                                   \n")
-        stdo("        %s [--verbose] [--debug=<dbg options>] [bug-id,bug-id,..]                            \n" % defaults['app_name'])
+        stdo("        %s [--verbose] [--debug=<dbg options>] [data_file data_file ...]                            \n" % defaults['app_name'])
         stdo("                                                                                             \n")
         stdo("    Options:                                                                                 \n")
         stdo("        --help           Prints this text.                                                   \n")
         stdo("                                                                                             \n")
         stdo("        --verbose        Give some feedback of what is happening while the script is         \n")
+        stdo("                         running.                                                            \n")
+        stdo("                                                                                             \n")
+        stdo("        --onepage        Create one html page with multiple charts, one for each data file   \n")
         stdo("                         running.                                                            \n")
         stdo("                                                                                             \n")
         stdo("        --debug=<debug options>                                                              \n")
@@ -77,8 +80,7 @@ class Cmdline:
         stdo("                             cfg                                                             \n")
         stdo("                                                                                             \n")
         stdo("        --title=<string>                                                                     \n")
-        stdo("                                                                                             \n")
-        stdo("        --no-secondary                                                                       \n")
+        stdo("                         Use the specified page title                                        \n")
         stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --debug=\"enter,leave,verbose\"                                                   \n" % defaults['app_name'])
@@ -95,7 +97,7 @@ class Cmdline:
             cfg = defaults
             cfg['title'] = 'Default Title'
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'debug=', 'title=']
+            optsLong  = ['help', 'verbose', 'onepage', 'debug=', 'title=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -106,6 +108,9 @@ class Cmdline:
                     cfg['verbose'] = True
                     if 'verbose' not in Dbg.levels:
                         Dbg.levels.append('verbose')
+
+                elif (opt == '--onepage'):
+                    cfg['onepage'] = True
 
                 elif (opt == '--title'):
                     cfg['title'] = val
@@ -120,6 +125,9 @@ class Cmdline:
 
                 if len(args) > 0:
                     cfg['analyst-files'] = args
+                if len(args) > 1 and "onepage" not in cfg:
+                    print "WARNING: you specified more than one data file but not --onepage"
+
 
         except GetoptError, error:
             raise CmdlineError(error)
@@ -287,10 +295,17 @@ class BenchmarkReport():
                 f.write(self.chart_template % (self.cfg['title'], hc))
 
         if True:
-            mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('benchmark-report', '')))
-            with open('index.html', 'w') as f:
-                f.write(mako_template.render(template_data = data, report_title = self.cfg['title']))
-
+            try:
+                mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('benchmark-report', '')))
+                with open('index.html', 'w') as f:
+                    f.write(mako_template.render(template_data_list = data, report_title = self.cfg['title']))
+            except:
+                print "==== EXCEPTION while rendering template ====="
+                traceback = RichTraceback()
+                for (filename, lineno, function, line) in traceback.traceback:
+                    print("File %s, line %s, in %s" % (filename, lineno, function))
+                    print(line, "\n")
+                print("%s: %s" % (str(traceback.error.__class__.__name__), traceback.error))
     # main
     #
     def main(self):
@@ -299,9 +314,22 @@ class BenchmarkReport():
         try:
             self.initialize()
 
-            for fid in self.cfg['analyst-files']:
-                data = json_load(fid)
-                self.report(data)
+            if 'onepage' in self.cfg:
+                data_list = []
+                for fid in self.cfg['analyst-files']:
+                    # Only one chart per report
+                    chartdata = json_load(fid)
+                    data_list.append(chartdata)
+                self.report(data_list)
+                # Put all files into one page
+            else:
+                for fid in self.cfg['analyst-files']:
+                    # Only one chart per report
+                    # TODO generate multiple output file names somehow
+                    data_list = []
+                    chartdata = json_load(fid)
+                    data_list.append(chartdata)
+                    self.report(data_list)
 
         except FileDoesntExist as e:
             e.print_std_error()
