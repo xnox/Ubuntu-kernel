@@ -12,6 +12,7 @@ from lib.core.dbg                       import Dbg
 from lib.core.cfg                       import Cfg, CfgError
 
 from mako.template                      import Template, exceptions
+from mako.exceptions                    import RichTraceback
 
 # itemgetter
 #

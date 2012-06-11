@@ -75,7 +75,6 @@ for template_data in template_data_list:
     chart_series += '                    }\n'
     chart_series += '                ]'
     chart_series_map[ctitle] = chart_series
-
 %>
 <html>
     <head>
@@ -130,7 +129,7 @@ for template_data in template_data_list:
 		});
 	    });
 	    </script>
-    % endfor
+       % endfor
     </body>
 </html>
 <!-- vi:set ts=4 sw=4 expandtab syntax=mako: -->
