@@ -168,6 +168,11 @@ class PPA():
             self.ckt_ppa = self.ckt.getPPAByName(name='ppa')
             Dbg.verbose("canonical-kernel-team ppa found\n")
 
+            self.xswat   = self.lp.launchpad.people['ubuntu-x-swat']
+            Dbg.verbose("Ubuntu-X team found\n")
+            self.lts_ppa = self.xswat.getPPAByName(name='q-lts-backport')
+            Dbg.verbose("Quantal LTS ppa found\n")
+
         except CfgError as e:
             error(e)
             Dbg.leave("PPA.initialize")
@@ -283,10 +288,10 @@ class PPA():
 
     # ppa_build_summaries
     #
-    def ppa_build_summaries(self):
+    def ppa_build_summaries(self, ppa):
         retval = {}
 
-        for pb in self.ckt_ppa.getPublishedBinaries(pocket='Release', status='Published', binary_name='linux-image'):
+        for pb in ppa.getPublishedBinaries(pocket='Release', status='Published', binary_name='linux-image'):
             pkg = {}
 
             #stdo("--------------------------------------------------\n")
@@ -356,7 +361,8 @@ class PPA():
             previous_build_summaries = json_load(self.cfg['json_file'])
 
             archive_now = self.archive_build_summaries()
-            ppa_now     = self.ppa_build_summaries()
+            ckt_ppa_now = self.ppa_build_summaries(self.ckt_ppa)
+            lts_ppa_now = self.ppa_build_summaries(self.lts_ppa)
 
             try:
                 archive_before = previous_build_summaries['archive']
@@ -364,24 +370,50 @@ class PPA():
                 archive_before = {}
 
             try:
-                ppa_before = previous_build_summaries['ppa']
+                ckt_ppa_before = previous_build_summaries['ckt_ppa']
             except KeyError:
-                ppa_before = {}
+                ckt_ppa_before = {}
 
-            ppa_diff     = self.diff(ppa_before, self.ppa_build_summaries())
+            try:
+                lts_ppa_before = previous_build_summaries['lts_ppa']
+            except KeyError:
+                lts_ppa_before = {}
+
+            ckt_ppa_diff = self.diff(ckt_ppa_before, self.ppa_build_summaries(self.ckt_ppa))
+            lts_ppa_diff = self.diff(lts_ppa_before, self.ppa_build_summaries(self.lts_ppa))
             archive_diff = self.diff(archive_before, self.archive_build_summaries())
 
-            for id in ppa_diff:
+            for id in lts_ppa_diff:
                 (p, v, s, a) = id.split(':')
-                urlretrieve(ppa_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
-                Dbg.verbose("retrieving: %s -> %s-%s-%s.deb\n" % (ppa_diff[id]['binary'], p,v,a))
+                try:
+                    urlretrieve(lts_ppa_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
+                    Dbg.verbose("retrieving: %s -> %s-%s-%s.deb\n" % (lts_ppa_diff[id]['binary'], p,v,a))
+                except:
+                    # Ignore the error and move on
+                    Dbg.verbose("retrieving: %s FAILED (exception thrown)\n" % (lts_ppa_diff[id]['binary']))
+                    pass
+
+            for id in ckt_ppa_diff:
+                (p, v, s, a) = id.split(':')
+                try:
+                    urlretrieve(ckt_ppa_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
+                    Dbg.verbose("retrieving: %s -> %s-%s-%s.deb\n" % (ckt_ppa_diff[id]['binary'], p,v,a))
+                except:
+                    # Ignore the error and move on
+                    Dbg.verbose("retrieving: %s FAILED (exception thrown)\n" % (ckt_ppa_diff[id]['binary']))
+                    pass
 
             for id in archive_diff:
                 (p, v, s, a) = id.split(':')
-                urlretrieve(archive_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
-                Dbg.verbose("retrieving: %s -> %s-%s-%s.deb\n" % (archive_diff[id]['binary'], p,v,a))
+                try:
+                    urlretrieve(archive_diff[id]['binary'], './%s-%s-%s.deb' % (p, v, a))
+                    Dbg.verbose("retrieving: %s -> %s-%s-%s.deb\n" % (archive_diff[id]['binary'], p,v,a))
+                except:
+                    # Ignore the error and move on
+                    Dbg.verbose("retrieving: %s FAILED (exception thrown)\n" % (archive_diff[id]['binary']))
+                    pass
 
-            build_summaries = { 'archive' : archive_now, 'ppa' : ppa_now }
+            build_summaries = { 'archive' : archive_now, 'ckt_ppa' : ckt_ppa_now, 'lts_ppa' : lts_ppa_now }
 
             dump(build_summaries)
 
