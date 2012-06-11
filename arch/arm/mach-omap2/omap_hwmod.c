@@ -2149,8 +2149,10 @@ static int __init _setup_reset(struct omap_hwmod *oh)
 		}
 	}
 
-	if (!(oh->flags & HWMOD_INIT_NO_RESET))
+	if (!(oh->flags & HWMOD_INIT_NO_RESET)) {
 		r = _reset(oh);
+		_setup_preprogram(oh);
+	}
 
 	return r;
 }
@@ -2222,6 +2224,23 @@ static void __init _setup_postsetup(struct omap_hwmod *oh)
 		     oh->name, postsetup_state);
 
 	return;
+}
+
+/**
+ * _setup_preprogram - Pre-program an IP block during the _setup() process
+ * @oh: struct omap_hwmod *
+ *
+ * Some IP blocks (such as AESS) require some additional programming
+ * after reset before they can enter idle.  If a function pointer to
+ * do so is present in the hwmod data, then call it and pass along the
+ * return value; otherwise, return 0.
+ */
+static int __init _setup_preprogram(struct omap_hwmod *oh)
+{
+	if (!oh->class->setup_preprogram)
+		return 0;
+
+	return oh->class->setup_preprogram(oh);
 }
 
 /**
