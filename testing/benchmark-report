@@ -193,95 +193,6 @@ class BenchmarkReport():
             self.maxY = value
         return
 
-    def highchart(self, data, title):
-
-        testlabels = []
-        versions   = []
-        metrics    = {}
-        self.minY       = None
-        self.maxY       = None
-
-        sortedTests = sorted(data.iteritems(), key=itemgetter(0), reverse=False)
-        # may need to display kernel versions and not test dates
-        for k in sortedTests:
-            # scan all metrics and make sure we have all metric names in a list
-            testrecord = data[k[0]]
-            kvers = testrecord['meta']['sysinfo-uname'].split()[0]
-            testlabels.append("'%s'" % (kvers))
-            #testlabels.append("'%s'" % (k[0]))
-            versions.append(kvers)
-            for metricname in testrecord['metrics']:
-                if metricname not in metrics:
-                    metrics[metricname] = []
-                metrics[metricname].append(testrecord['metrics'][metricname])
-
-        sortedMetrics = sorted(metrics.keys())
-        chart_series  = '            series: [\n'
-        chart_series  += '              {\n'
-        for metricname in sortedMetrics[:-1]:
-            setMaxMinY(float(metrics[metricname]))
-            if metricname.endswith("{perf}"):
-                displayname = metricname[:-len("{perf}")]
-            else:
-                displayname = metricname
-            chart_series += '                name: \'%s\',\n' % displayname
-            chart_series += '                data: [%s]\n' % (', '.join(metrics[metricname]))
-            chart_series += '              },{\n'
-        metricname = sortedMetrics[-1]
-        setMaxMinY(float(metrics[metricname]))
-        if metricname.endswith("{perf}"):
-            displayname = metricname[:-len("{perf}")]
-        else:
-            displayname = metricname
-        chart_series += '                name: \'%s\',\n' % displayname
-        chart_series += '                data: [%s]\n' % (', '.join(metrics[metricname]))
-        chart_series += '              }\n'
-        chart_series += '            ]\n'
-
-        js  = ""
-        js += "$(function () {\n"
-        js += "        chart = new Highcharts.Chart({\n"
-        js += "            chart: {\n"
-        js += "                renderTo: 'highchart',\n"
-        js += "                defaultSeriesType: 'line'\n"
-        js += "            },\n"
-        js += "            title: {\n"
-        js += "                text: '%s'\n" % title
-        js += "            },\n"
-        #js += "            legend: {\n"
-        #js += "                enabled: false\n"
-        #js += "            },\n"
-        #js += "            legend: {\n"
-        #js += "                reversed: true\n"
-        #js += "            },\n"
-
-        js += "            xAxis: {\n"
-        js += "                categories: [%s]\n" % (', '.join(testlabels))
-        #js += "                title: {\n"
-        #js += "                    text: 'Test'\n"
-        #js += "                }\n"
-        js += "            },\n"
-        #js += "            yAxis: {\n"
-        #js += "                title: {\n"
-        #js += "                    text: 'Time (seconds)'\n"
-        #js += "                }\n"
-        #js += "            },\n"
-        #js += "            plotOptions: {\n"
-        #js += "                series: {\n"
-        #js += "                    stacking: 'normal'\n"
-        #js += "                }\n"
-        #js += "            },\n"
-        #js += "            tooltip: {\n"
-        #js += "                formatter: function() {\n"
-        #js += "                    return '<b>' + this.series.name + '</b> : ' + this.y + ' bugs';\n"
-        #js += "                }\n"
-        #js += "            },\n"
-        js += chart_series
-        js += "        });\n"
-        js += "        });\n"
-        return js
-
-
     # report
     #
     def report(self, data):
@@ -290,23 +201,17 @@ class BenchmarkReport():
                     
         # The primary key graph files.
         #
-        if False:
-            hc = self.highchart(data, self.cfg['title'])
+        try:
+            mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('benchmark-report', '')))
             with open('index.html', 'w') as f:
-                f.write(self.chart_template % (self.cfg['title'], hc))
-
-        if True:
-            try:
-                mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('benchmark-report', '')))
-                with open('index.html', 'w') as f:
-                    f.write(mako_template.render(template_data_list = data, report_title = self.cfg['title']))
-            except:
-                print "==== EXCEPTION while rendering template ====="
-                traceback = RichTraceback()
-                for (filename, lineno, function, line) in traceback.traceback:
-                    print("File %s, line %s, in %s" % (filename, lineno, function))
-                    print(line, "\n")
-                print("%s: %s" % (str(traceback.error.__class__.__name__), traceback.error))
+                f.write(mako_template.render(template_data_list = data, report_title = self.cfg['title']))
+        except:
+            print "==== EXCEPTION while rendering template ====="
+            traceback = RichTraceback()
+            for (filename, lineno, function, line) in traceback.traceback:
+                print("File %s, line %s, in %s" % (filename, lineno, function))
+                print(line, "\n")
+            print("%s: %s" % (str(traceback.error.__class__.__name__), traceback.error))
     # main
     #
     def main(self):
