@@ -1,3 +1,10 @@
+linux-meta (3.4.0.5.7) quantal; urgency=low
+
+  * Fix linux-virtual package dependencies.
+    -LP: #1009553
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 12 Jun 2012 13:16:55 -0600
+
 linux-meta (3.4.0.5.6) quantal-proposed; urgency=low
 
   * Bump ABI
