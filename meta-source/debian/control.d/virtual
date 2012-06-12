@@ -11,7 +11,7 @@ Architecture: i386 amd64
 Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-generic
-Description: This package will always depend on the latest generic kernel image.
+Description: This package will always depend on the latest minimal generic kernel image.
  This package will always depend on the latest minimal generic kernel image
  used for virtual instances.
 
@@ -19,9 +19,10 @@ Package: linux-virtual
 Architecture: i386 amd64
 Section: metapackages
 Priority: optional
-Depends: ${misc:Depends}, linux-generic
-Description: Complete Generic Linux kernel and headers
- This package will always depend on linux-generic.
+Depends: ${misc:Depends}, linux-image-virtual, linux-headers-virtual
+Description: Minimal Generic Linux kernel and headers
+ This package will always depend on linux-image-virtual and
+ linux-headers-virtual.
 
 Package: linux-image-extra-virtual
 Architecture: i386 amd64
