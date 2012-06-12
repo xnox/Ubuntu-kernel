@@ -107,9 +107,11 @@ for template_data in template_data_list:
 			text: '${chartname}'
 		    },
 		    legend: {
-	                align: 'right',
-                        verticalAlign: 'middle'
+			enabled: false
 		    },
+		     legend: {
+			 reversed: true
+		     },
 		    xAxis: {
 			categories: ${testlabels_map[chartname]}
 		    },
