@@ -9163,6 +9163,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc8e96dea	qword_addhex
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xcb60ff1b	sunrpc_cache_unregister_pipefs
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xcdd063dc	rpc_get_mount
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xcee467f3	xprt_load_transport
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xd009eeac	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xd0514690	xdr_buf_from_iov
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xd5059974	cache_check
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xd6285709	rpc_wake_up_status

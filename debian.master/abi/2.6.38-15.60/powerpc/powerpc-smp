@@ -4725,6 +4725,7 @@ EXPORT_SYMBOL vmlinux 0x6a61f874	to_tm
 EXPORT_SYMBOL vmlinux 0x6a76f3ac	blk_iopoll_enable
 EXPORT_SYMBOL vmlinux 0x6a82d33a	get_unmapped_area_prot
 EXPORT_SYMBOL vmlinux 0x6a841deb	vfs_statfs
+EXPORT_SYMBOL vmlinux 0x6a9e9d1a	cap_file_mmap
 EXPORT_SYMBOL vmlinux 0x6acb973d	iowrite32be
 EXPORT_SYMBOL vmlinux 0x6adf276a	sock_release
 EXPORT_SYMBOL vmlinux 0x6b1b67d3	__bdevname
@@ -5056,7 +5057,6 @@ EXPORT_SYMBOL vmlinux 0x82ba8cb1	flock_lock_file_wait
 EXPORT_SYMBOL vmlinux 0x82bb44f6	tcp_poll
 EXPORT_SYMBOL vmlinux 0x82bf3d19	blkdev_issue_discard
 EXPORT_SYMBOL vmlinux 0x82e5a238	vm_get_page_prot
-EXPORT_SYMBOL vmlinux 0x82e8f4dd	cap_file_mmap
 EXPORT_SYMBOL vmlinux 0x832179fe	elv_rb_add
 EXPORT_SYMBOL vmlinux 0x8325bac3	jbd2_journal_begin_ordered_truncate
 EXPORT_SYMBOL vmlinux 0x8344eb6f	shrink_dcache_sb
@@ -8665,6 +8665,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xdbecba35	svc_recv
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xdd2ff5b0	rpc_max_payload
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xdeb8483d	rpc_restart_call_prepare
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xdfae3f9a	xdr_init_decode
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xe121b273	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xe2008bb1	rpcauth_register
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xe4a3b787	xdr_decode_word
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xe5919cb1	xdr_encode_opaque

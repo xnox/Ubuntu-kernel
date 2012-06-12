@@ -7238,6 +7238,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xeb6be9fc	rpc_print_iostats
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xedcf6be4	qword_add
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xeeacab69	rpc_update_rtt
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf4be4787	rpc_proc_register
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf66ca70c	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf6fc9433	svc_reg_xprt_class
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf8080a19	svc_create
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf9d1164c	rpc_free

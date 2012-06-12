@@ -8611,6 +8611,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xa9089307	rpc_sleep_on
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xad7d1f4b	rpc_init_priority_wait_queue
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xaf27a192	rpc_init_wait_queue
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xaf5bf6ef	nfs_debug
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xb1c2fea5	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xb3883c1b	rpc_put_task
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xbaf6b2d9	xdr_set_scratch_buffer
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xbcf7a72e	cache_purge

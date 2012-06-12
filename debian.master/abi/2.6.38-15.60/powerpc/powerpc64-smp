@@ -4553,6 +4553,7 @@ EXPORT_SYMBOL vmlinux 0x5c44dd25	sock_queue_rcv_skb
 EXPORT_SYMBOL vmlinux 0x5c46b6fa	posix_acl_chmod_masq
 EXPORT_SYMBOL vmlinux 0x5c4f89ff	block_write_full_page_endio
 EXPORT_SYMBOL vmlinux 0x5c505a91	prepare_binprm
+EXPORT_SYMBOL vmlinux 0x5c52680f	cap_file_mmap
 EXPORT_SYMBOL vmlinux 0x5c6cfa3e	scsi_print_result
 EXPORT_SYMBOL vmlinux 0x5c8702e0	__neigh_event_send
 EXPORT_SYMBOL vmlinux 0x5ca394df	tty_shutdown
@@ -6595,7 +6596,6 @@ EXPORT_SYMBOL vmlinux 0xecbdafe6	scsi_is_target_device
 EXPORT_SYMBOL vmlinux 0xecc94729	scsi_eh_finish_cmd
 EXPORT_SYMBOL vmlinux 0xecc9f005	do_munmap
 EXPORT_SYMBOL vmlinux 0xeccb148f	scsi_finish_command
-EXPORT_SYMBOL vmlinux 0xecd5a7a9	cap_file_mmap
 EXPORT_SYMBOL vmlinux 0xed1bf6bf	elv_rb_latter_request
 EXPORT_SYMBOL vmlinux 0xed1c90bc	scsi_add_device
 EXPORT_SYMBOL vmlinux 0xed302f0f	tty_lock
@@ -8760,6 +8760,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x4d39e25d	rpc_call_async
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x4d3d7c07	rpc_free_iostats
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x4f7dcd0b	rpc_peeraddr2str
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x5150deba	auth_unix_forget_old
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x51b2366d	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x53445f68	nlm_debug
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x56ec47aa	rpc_wake_up_queued_task
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x5b14ec1a	rpc_put_mount

@@ -9388,6 +9388,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xee2684ed	rpc_put_task
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xeeacab69	rpc_update_rtt
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf05a37ab	rpc_destroy_wait_queue
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf17beea5	rpc_sleep_on
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf286486a	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf298a0be	rpc_malloc
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf30189f4	rpc_mkpipe
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xf809149b	rpc_wake_up

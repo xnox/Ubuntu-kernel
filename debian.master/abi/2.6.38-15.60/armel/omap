@@ -6880,6 +6880,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc3d5bc82	svc_destroy
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc6d3c5d6	xdr_encode_array2
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc85cfe24	svc_xprt_names
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc8e96dea	qword_addhex
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc9cf4da5	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xcbfb3c6a	auth_unix_forget_old
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xccc2372e	rpc_pton
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xcecfef10	xdr_process_buf
