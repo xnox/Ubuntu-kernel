@@ -44,7 +44,11 @@ function config-cmp() {
 	(cd tmp; "$here/config-compare" --info "../$info" $call "$@")
 }
 function colourise() {
-	awk '/Inconsistent/ { gsub("\\|\\| ", "||<#ffbac8> "); } {print }' 
+	awk '
+		/BUILD FAILURE/ { gsub("\\|\\| ", "||<#baffc8> "); }
+		/Inconsistent/ { gsub("\\|\\| ", "||<#ffbac8> "); }
+		{print }
+	'
 }
 
 pattern=`

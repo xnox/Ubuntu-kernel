@@ -53,7 +53,11 @@ function config-cmp-interesting() {
 }
 
 function colourise() {
-	awk '/Inconsistent/ { gsub("\\|\\| ", "||<#ffbac8> "); } {print }'
+	awk '
+		/BUILD FAILURE/ { gsub("\\|\\| ", "||<#baffc8> "); }
+		/Inconsistent/ { gsub("\\|\\| ", "||<#ffbac8> "); }
+		{print }
+	'
 }
 function colourise_inverse() {
 	awk '/\|\|  *\('"'''\(EXPERIMENTAL|STAGING|DEBUG\)'''"'\)* \|\|/ { gsub("\\|\\| ", "||<#ffbac8> ")} { print }'

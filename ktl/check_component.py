@@ -143,13 +143,8 @@ class CheckComponent():
         if (package.startswith('linux-lts-backport-') or
             package.startswith('linux-meta-lts-backport-')):
             return self.main_component
-        if (package == 'linux-ec2'):
-            return self.main_component
-        if (package == 'linux-fsl-imx51'):
-            return self.main_component
-        if (package == 'linux-ti-omap4'):
-            return self.main_component
-        if (package == 'linux-mvl-dove'):
+
+        if package in ['linux-ec2', 'linux-fsl-imx51', 'linux-ti-omap4', 'linux-mvl-dove', 'linux-armadaxp']:
             return self.main_component
         return self.default_component
 
