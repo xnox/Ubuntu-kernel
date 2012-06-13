@@ -6647,6 +6647,7 @@ EXPORT_SYMBOL_GPL vmlinux 0x00000000	__wake_up_locked
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	__wake_up_locked_key
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	__wake_up_sync
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	__wake_up_sync_key
+EXPORT_SYMBOL_GPL vmlinux 0x00000000	_copy_from_pages
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	abe_dsp_pm_get
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	abe_dsp_pm_put
 EXPORT_SYMBOL_GPL vmlinux 0x00000000	abe_dsp_shutdown
