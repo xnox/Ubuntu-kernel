@@ -9299,6 +9299,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xbf3c279a	rpcauth_destroy_credcache
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xbf9d1b96	nfsd_debug
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc051ff87	svc_set_num_threads
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc12435e3	rpc_calc_rto
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc15d5a3c	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc1c18624	svc_create
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc36002d2	svc_close_xprt
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0xc3880471	xdr_decode_netobj

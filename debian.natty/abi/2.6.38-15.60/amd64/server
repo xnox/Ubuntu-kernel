@@ -9041,6 +9041,7 @@ EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x1108d49b	xdr_buf_from_iov
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x12e280e3	svc_proc_unregister
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x132bf1e7	rpc_unlink
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x17948581	rpc_mkpipe
+EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x18d9250d	_copy_from_pages
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x1e9d4e8d	rpc_alloc_iostats
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x23dcf0be	cache_unregister
 EXPORT_SYMBOL_GPL net/sunrpc/sunrpc 0x25790809	rpc_lookup_cred

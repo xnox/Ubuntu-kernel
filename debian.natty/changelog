@@ -1,9 +1,39 @@
-linux-lts-backport-natty (2.6.38-15.60~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-15.61~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1003079
+    - LP: #1012532
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * SAUCE: async_populate_rootfs: fix build warnings
+    - LP: #1003417
+
+  [ Upstream Kernel Changes ]
+
+  * dl2k: Clean up rio_ioctl
+    - CVE-2012-2313
+  * hfsplus: Fix potential buffer overflows
+    - CVE-2012-2319
+  * Avoid reading past buffer when calling GETACL
+    - LP: #1002505
+    - CVE-2012-2375
+  * Avoid beyond bounds copy while caching ACL
+    - LP: #1002505
+    - CVE-2012-2375
+  * Fix length of buffer copied in __nfs4_get_acl_uncached
+    - LP: #1002505
+    - CVE-2012-2375
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Wed, 13 Jun 2012 10:55:37 +0100
+
+linux (2.6.38-15.60) natty-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1002384
 
   [ Andy Whitcroft ]
 
@@ -43,7 +73,7 @@ linux-lts-backport-natty (2.6.38-15.60~lucid1) lucid-proposed; urgency=low
     - LP: #990368
     - CVE-2012-2133
 
- -- Luis Henriques <luis.henriques@canonical.com>  Wed, 23 May 2012 09:43:28 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 21 May 2012 17:56:07 +0100
 
 linux (2.6.38-15.59) natty-proposed; urgency=low
 
