@@ -47,12 +47,42 @@
                         <div id="dash-timestamp">
                             <a href="http://ubuntu.com" title="Home" rel="home"><img src="media/ubuntu-logo.png" alt="Home" /></a>
                         </div>
-                        <h1>Kernel Testing</h1>
+                        <h1>Kernel Testing &amp; Benchmarks</h1>
                     </div> <!-- header -->
 
                     <br />
 
                     <div class="dash-section">
+                        <table width="100%"> <!-- The section is one big table -->
+                            <tr>
+                                <td width="100%" valign="top"> <!-- LEFT -->
+                                    <table width="100%" style="font-size: 0.8em"> <!-- SRU Data -->
+                                        <tr>
+                                            <td style="background: #e9e7e5;">quantal</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="100%">
+                                                <table width="100%">
+                                                    <thead>
+                                                        <tr>
+                                                            <th align="right" width="15%">&nbsp; Version &nbsp;</th>
+                                                            <th align="left" width="15%">&nbsp; Arch &nbsp;</th>
+                                                            <th align="center" width="15%">Date</th>
+                                                            <th align="center">Benchmarks</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td align="right" width="15%">3.4.0-5.11   </td> <td width="15%">amd64   </td> <td align="center" width="15%">2012-06-06 12:00</td> <td><a href="benchmarks/statler-bonnie-norm-all.html">bonnie (all)</a> &nbsp; <a href="benchmarks/statler-bonnie-norm.html">bonnie (block-io &amp; char-io)</a></td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
                     </div> <!-- dash-section -->
 
                     <div class="index-bottom-section">
