@@ -97,8 +97,9 @@ class Cmdline:
         try:
             cfg = defaults
             cfg['title'] = 'Default Title'
+            cfg['doing_2up'] = False
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'onepage', 'debug=', 'title=']
+            optsLong  = ['help', 'verbose', 'onepage', '2up', 'debug=', 'title=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -112,6 +113,9 @@ class Cmdline:
 
                 elif (opt == '--onepage'):
                     cfg['onepage'] = True
+
+                elif (opt == '--2up'):
+                    cfg['doing_2up'] = True
 
                 elif (opt == '--title'):
                     cfg['title'] = val
@@ -204,7 +208,7 @@ class BenchmarkReport():
         try:
             mako_template = Template(file_load('%sindex-chart.mako' % argv[0].replace('benchmark-report', '')))
             with open('index.html', 'w') as f:
-                f.write(mako_template.render(template_data_list = data, report_title = self.cfg['title']))
+                f.write(mako_template.render(template_data_list = data, report_title = self.cfg['title'], doing_2up = self.cfg['doing_2up']))
         except:
             print "==== EXCEPTION while rendering template ====="
             traceback = RichTraceback()
