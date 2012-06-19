@@ -1,3 +1,9 @@
+linux-meta (3.5.0.1.1) quantal-proposed; urgency=low
+
+  * Bump meta package version for v3.5 based kernels
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 19 Jun 2012 06:20:23 -0700
+
 linux-meta (3.4.0.5.7) quantal; urgency=low
 
   * Fix linux-virtual package dependencies.
