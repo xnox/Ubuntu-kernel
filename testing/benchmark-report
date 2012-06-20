@@ -70,6 +70,8 @@ class Cmdline:
         stdo("        --onepage        Create one html page with multiple charts, one for each data file   \n")
         stdo("                         running.                                                            \n")
         stdo("                                                                                             \n")
+        stdo("        --2up            Present charts smaller and two across                               \n")
+        stdo("                                                                                             \n")
         stdo("        --debug=<debug options>                                                              \n")
         stdo("                         Performs additional output related to the option enabled and        \n")
         stdo("                         the application defined support for the option.                     \n")
