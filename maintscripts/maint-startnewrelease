@@ -49,12 +49,16 @@ parser.epilog = epilog
 
 
 #
-# Make sure the DEBEMAIL is a canonical address
+# Make sure the DEBEMAIL is the right domain (default @canonical.com)
 #
+mailenforce = os.getenv("MAINT_STARTNEWRELEASE_MAILENFORCE")
+if not mailenforce:
+	mailenforce = "@canonical.com"
+
 debem = os.getenv("DEBEMAIL")
 if debem is not None:
-	if 'canonical' not in debem:
-		print 'DEBEMAIL is set to non-canonical address'
+	if mailenforce not in debem:
+		print 'DEBEMAIL does not contain', mailenforce
 		sys.exit(1)
 
 #------------------------------------------------------------------------------
