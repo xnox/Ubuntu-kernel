@@ -110,14 +110,14 @@ for template_data in template_data_list:
                         % if doing_2up:
                             <% i = 0 %>
                             % for chartname in chart_series_map:
-                                % if i % 2:
+                                % if not i % 2:
                                 <tr>
                                 % endif
                                     <td width="50%"><div id="highchart-${chartname}" style="width: 450px; height: 300px;"></div></td>
-                                % if not i % 2:
+                                % if i % 2:
                                 </tr>
-                                <% i += 1 %>
                                 % endif
+                                <% i += 1 %>
                             % endfor
                         % else:
                             % for chartname in chart_series_map:
