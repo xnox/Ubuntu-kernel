@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set +e
+
+#
+# Do public Charts
+#
+echo "==============="
+unset PRIVATE
+./charts-statler
+
+#
+# Do private Charts
+#
+
+echo "==============="
+export PRIVATE=True
+./charts-statler
+
+echo "==============="
+#
+# Eventually, trigger the rsync here
+#
+
