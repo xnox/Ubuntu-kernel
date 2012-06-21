@@ -258,7 +258,7 @@ class BugInfo(StdApp):
         print("        Attachments:")
         print("        -----------------------------------------------------------------------------------")
         for attachment in bug.attachments:
-            print("            %-40s  %s" % (attachment.title, "None" if attachment.owner is None else attachment.owner.display_name))
+            print("            %-40s  %-11s  %s" % (attachment.title, attachment.kind, "None" if attachment.owner is None else attachment.owner.display_name))
 
 
         print(" ")
