@@ -5,7 +5,7 @@
 # LauncPad bug id and the value is the source package of interest.
 #
 
-from sys                                import argv
+from sys                                import argv, stderr
 from getopt                             import getopt, GetoptError
 from os                                 import listdir
 from json                               import dumps
@@ -68,6 +68,9 @@ class Cmdline:
         stdo("        --job-name=<string>  Filter data, only including files with the JOB_NAME equal to    \n")
         stdo("                         the specified string.                                               \n")
         stdo("                                                                                             \n")
+        stdo("        --kernel-version=<string>  Filter data, only including files with the kernel version \n")
+        stdo("                         equal to the specified string.                  \n")
+        stdo("                                                                                             \n")
         stdo("        --chart-title=<string>  REQUIRED Use this title for the graphical chart from this    \n")
         stdo("                         data                                                                \n")
         stdo("                                                                                             \n")
@@ -92,7 +95,7 @@ class Cmdline:
             cfg = defaults
 
             optsShort = ''
-            optsLong  = ['help', 'verbose', 'debug=', 'job-name=', 'baseline=', 'mute-metrics=', 'only-metrics=', 'chart-title=']
+            optsLong  = ['help', 'verbose', 'debug=', 'job-name=', 'kernel-version=', 'baseline=', 'mute-metrics=', 'only-metrics=', 'chart-title=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -106,6 +109,9 @@ class Cmdline:
 
                 elif (opt == '--job-name'):
                     cfg['job-name'] = val
+
+                elif (opt == '--kernel-version'):
+                    cfg['kernel-version'] = val
 
                 elif (opt == '--baseline'):
                     cfg['baseline'] = val
@@ -190,7 +196,7 @@ class MergeBenchmarkData():
                 baseline = json_load(self.cfg['baseline'])
                 if 'job-name' in self.cfg:
                     if self.cfg['job-name'] != baseline['meta']['JOB_NAME']:
-                        print "ERROR: The job name in the baseline file does not match the specified job name"
+                        print >>stderr,"ERROR: The job name in the baseline file does not match the specified job name"
                         raise ValueError
 
                 # apply the same filtering that we will for the metrics
@@ -218,6 +224,15 @@ class MergeBenchmarkData():
             for fname in self.cfg['datafiles']:
                 data = json_load(fname)
 
+                # use only the kernel name specified
+                if 'kernel-version' in self.cfg:
+                    #print >>stderr, "Filtering on kverl %s" % self.cfg['kernel-version']
+                    kver =  data['meta']['sysinfo-uname'].split()[0]
+                    #print >>stderr, "KVER = %s" % kver
+                    if self.cfg['kernel-version'] not in kver:
+                        continue
+
+                # use only the job name specified
                 if 'job-name' in self.cfg:
                     if self.cfg['job-name'] != data['meta']['JOB_NAME']:
                         continue
@@ -247,6 +262,8 @@ class MergeBenchmarkData():
                 self.tests[data['meta']['BUILD_ID']] = data
 
             # now that we're done
+            if len(self.tests) == 0:
+                raise ValueError("There are no data records to write to the output file")
             print dumps(self.tests, sort_keys=True, indent=4)
 
         # Handle the user presses <ctrl-C>.

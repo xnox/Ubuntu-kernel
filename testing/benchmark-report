@@ -70,6 +70,8 @@ class Cmdline:
         stdo("        --onepage        Create one html page with multiple charts, one for each data file   \n")
         stdo("                         running.                                                            \n")
         stdo("                                                                                             \n")
+        stdo("        --2up            Present charts smaller and two across                               \n")
+        stdo("                                                                                             \n")
         stdo("        --debug=<debug options>                                                              \n")
         stdo("                         Performs additional output related to the option enabled and        \n")
         stdo("                         the application defined support for the option.                     \n")
@@ -171,7 +173,7 @@ class BenchmarkReport():
             self.cfg = Cfg.merge_options(defaults, self.cfg)
 
             #self.primary_template = file_load('%sbug-table-template.html' % argv[0].replace('analysis-report', ''))
-            self.chart_template   = file_load('%shighchart-template.html' % argv[0].replace('benchmark-report', ''))
+            #self.chart_template   = file_load('%shighchart-template.html' % argv[0].replace('benchmark-report', ''))
 
 
         except KeyboardInterrupt:
@@ -229,6 +231,8 @@ class BenchmarkReport():
                 for fid in self.cfg['analyst-files']:
                     # Only one chart per report
                     chartdata = json_load(fid)
+                    if len(chartdata) == 0:
+                        raise ValueError("There are no data records in the input file <%s>" % fid)
                     data_list.append(chartdata)
                 self.report(data_list)
                 # Put all files into one page
@@ -238,6 +242,8 @@ class BenchmarkReport():
                     # TODO generate multiple output file names somehow
                     data_list = []
                     chartdata = json_load(fid)
+                    if len(chartdata) == 0:
+                        raise ValueError("There are no data records in the input file <%s>" % fid)
                     data_list.append(chartdata)
                     self.report(data_list)
 
