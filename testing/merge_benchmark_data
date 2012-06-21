@@ -262,6 +262,8 @@ class MergeBenchmarkData():
                 self.tests[data['meta']['BUILD_ID']] = data
 
             # now that we're done
+            if len(self.tests) == 0:
+                raise ValueError("There are no data records to write to the output file")
             print dumps(self.tests, sort_keys=True, indent=4)
 
         # Handle the user presses <ctrl-C>.
