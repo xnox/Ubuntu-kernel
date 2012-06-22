@@ -1,6 +1,6 @@
 Package: linux-headers-highbank
 Architecture: armhf
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-highbank 
 Description: Linux kernel headers for the Calxeda Highbank flavour.

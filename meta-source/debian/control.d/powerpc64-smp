@@ -23,7 +23,7 @@ Description: Linux kernel image on PowerPC64 SMP.
 
 Package: linux-headers-powerpc64-smp
 Architecture: powerpc
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: linux-headers-${kernel-abi-version}-powerpc64-smp
 Description: Linux kernel headers on PowerPC64 SMP

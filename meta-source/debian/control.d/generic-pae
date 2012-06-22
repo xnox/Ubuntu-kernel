@@ -1,6 +1,6 @@
 Package: linux-headers-generic-pae
 Architecture: i386
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-generic-pae
 Description: Generic Linux kernel headers
