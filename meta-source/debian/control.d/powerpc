@@ -3,7 +3,7 @@
 #
 Package: linux-powerpc
 Architecture: powerpc
-Section: restricted/metapackages
+Section: metapackages
 Priority: optional
 Depends: linux-image-powerpc (= ${binary:Version})
 Description: Complete Linux kernel on PowerPC.
