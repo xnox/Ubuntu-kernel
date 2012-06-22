@@ -3,7 +3,7 @@
 #
 Package: linux-powerpc
 Architecture: powerpc
-Section: restricted/metapackages
+Section: metapackages
 Priority: optional
 Depends: linux-powerpc-smp (= ${binary:Version})
 Description: Complete Linux kernel on PowerPC.
