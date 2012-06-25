@@ -1,6 +1,6 @@
 Package: linux-headers-omap4
 Architecture: armel
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-omap4 
 Description: Linux kernel headers for the OMAP4 architecture.
