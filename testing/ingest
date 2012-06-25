@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+#
+# Take a Jenkins test archive tree and process it into the long-term storage
+# format that we want. This long-term storage format will be added to the
+# results from other test runs. Other scripts run over this "database" of
+# test results runs to generate the kernel test results web pages/reports.
+#
+
+from sys                                import argv
+
+from grinder                            import Cmdline, CmdlineError, Exit, TestResultsRepository, TestResultsRepositoryError, JenkinsTestResultsTree, JenkinsTestResultsTreeError
+from lib.core.dbg                       import Dbg
+from lib.core.utils                     import error
+
+# Ingest
+#
+class Ingest():
+    """
+    """
+
+    # __init__
+    #
+    def __init__(self, cfg):
+        Dbg.enter("Ingest.__init__")
+
+        self.cfg = cfg
+
+        Dbg.leave("Ingest.__init__")
+
+    # initialize
+    #
+    def initialize(self):
+        Dbg.enter("Ingest.initialize")
+
+        try:
+            self.trr = TestResultsRepository()
+            self.jtr = JenkinsTestResultsTree(self.cfg['root'])
+
+        except TestResultsRepositoryError as e:
+            error(e.msg)
+            Dbg.leave("Ingest.initialize")
+            raise Exit()
+
+        except JenkinsTestResultsTreeError as e:
+            error(e.msg)
+            raise Exit()
+
+        Dbg.leave("Ingest.initialize")
+
+    # main
+    #
+    def main(self):
+        Dbg.enter("Ingest.main")
+
+        try:
+            self.initialize()
+            self.trr.ingest(self.jtr)
+
+        # Handle the user presses <ctrl-C>.
+        #
+        except KeyboardInterrupt:
+            pass
+
+        except Exit:
+            pass
+
+        Dbg.leave("Ingest.main")
+        return
+
+
+if __name__ == '__main__':
+    defaults = {}
+    defaults['app_name'] = argv[0]
+
+    # The cmdline processing is done here partially so the debug options
+    # can be processed right away.
+    #
+    cmdline = Cmdline()
+    try:
+        app = Ingest(cmdline.process(argv, defaults))
+        app.main()
+    except CmdlineError as e:
+        cmdline.error(e.msg, defaults)
+
+# vi:set ts=4 sw=4 expandtab:
+
