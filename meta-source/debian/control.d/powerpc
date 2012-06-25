@@ -21,7 +21,7 @@ Description: Linux kernel image on PowerPC
 
 Package: linux-headers-powerpc
 Architecture: powerpc
-Section: devel
+Section: metapackages
 Priority: optional
 Depends: linux-headers-${kernel-abi-version}-powerpc
 Description: Linux kernel headers on PowerPC
