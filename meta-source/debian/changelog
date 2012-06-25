@@ -1,3 +1,9 @@
+linux-meta (3.0.0.22.27) UNRELEASED; urgency=low
+
+  * 
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Mon, 25 Jun 2012 10:44:02 +0200
+
 linux-meta (3.0.0.22.26) oneiric-proposed; urgency=low
 
   * Bump ABI
