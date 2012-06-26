@@ -23,11 +23,14 @@ class FileDoesntExist():
     def __init__(self, file_name=''):
         self.file_name = file_name
 
+    def __str__(self):
+        return 'The file (%s) does not exist.\n' % self.file_name
+
     def print_std_error(self):
-        error('The file (%s) does not exist.\n' % self.file_name)
+        error("%s" % self)
 
     def print_std_warning(self):
-        stde('** Warning: The file (%s) does not exist.\n' % self.file_name)
+        stde('** Warning: %s.\n' % self)
 
 # o2ascii
 #
