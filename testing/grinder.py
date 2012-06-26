@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 #
 
-from getopt                             import getopt, GetoptError
 from os                                 import path, makedirs, listdir
 from shutil                             import rmtree, copytree
 import json
 
-from lib.core.utils                     import stdo, error, json_load, file_load, FileDoesntExist
+from lib.core.utils                     import json_load, file_load, FileDoesntExist
 from lib.core.dbg                       import Dbg
 
 # CmdlineError
@@ -19,89 +18,6 @@ class CmdlineError(Exception):
     #
     def __init__(self, error):
         self.msg = error
-
-# Cmdline
-#
-class Cmdline:
-    """
-    Handle all the command line processing for the application.
-    """
-    # error
-    #
-    def error(self, e, defaults):
-        """
-        Simple helper which prints out an error message and then prints out the usage.
-        """
-        if e != '': error("%s\n" % e)
-        self.usage(defaults)
-
-    # usage
-    #
-    def usage(self, defaults):
-        """
-        Prints out the help text which explains the command line options.
-        """
-        stdo("    Usage:                                                                                   \n")
-        stdo("        %s [<options>] <test-results-root>                                                   \n" % defaults['app_name'])
-        stdo("                                                                                             \n")
-        stdo("    Options:                                                                                 \n")
-        stdo("        --help           Prints this text.                                                   \n")
-        stdo("                                                                                             \n")
-        stdo("        --debug=<debug options>                                                              \n")
-        stdo("                         Performs additional output related to the option enabled and        \n")
-        stdo("                         the application defined support for the option.                     \n")
-        stdo("                                                                                             \n")
-        stdo("                         Recognized debug options:                                           \n")
-        stdo("                             enter                                                           \n")
-        stdo("                             leave                                                           \n")
-        stdo("                             verbose                                                         \n")
-        stdo("                             cfg                                                             \n")
-        stdo("                                                                                             \n")
-        stdo("    Examples:                                                                                \n")
-        stdo("        %s --debug=\"enter,leave,verbose\"                                                   \n" % defaults['app_name'])
-        stdo("        %s /var/lib/jenkins/jobs/foo/builds/01                                               \n" % defaults['app_name'])
-
-    # process
-    #
-    def process(self, argv, defaults):
-        """
-        This method is responsible for calling the getopt function to process the command
-        line. All parameters are processed into class variables for use by other methods.
-        """
-        result = True
-        try:
-            cfg = defaults
-
-            optsShort = ''
-            optsLong  = ['help', 'debug=']
-            opts, args = getopt(argv[1:], optsShort, optsLong)
-
-            for opt, val in opts:
-                if (opt == '--help'):
-                    raise CmdlineError('')
-
-                elif opt in ('--debug'):
-                    cfg['debug'] = val.split(',')
-                    for level in cfg['debug']:
-                        if level not in Dbg.levels:
-                            Dbg.levels.append(level)
-
-            if result: # No errors yet
-                # There might be some bugs listed on the command line.
-                #
-                if len(args) > 0:
-                    cfg['root'] = args[0]
-
-
-            # Required options:
-            #
-            if 'root' not in cfg:
-                raise CmdlineError("You must specify the root directory of the test results that you wish to incorporate into the test-results repository.")
-
-        except GetoptError, error:
-            raise CmdlineError(error)
-
-        return cfg
 
 # Exit
 #
@@ -212,7 +128,54 @@ class JenkinsTestResultsTree():
         retval = None
         try:
             content = file_load(path.join(self.root, 'junitResult.xml'))
-            retval = x2dict(content)
+            d = x2dict(content)
+
+            # Convert to a more reasonable dictionary.
+            #
+            results = d['result'][0]
+
+            r = {}
+            r['duration'] = self.duration(results)
+            r['keepLongStdio'] = self.text0(results['keepLongStdio'])
+            r['suites'] = []
+
+            for xx in results['suites'][0]['suite']:
+                s = {}
+                s['name'] = self.text0(xx['name'])
+                s['duration'] = self.duration(xx)
+                s['timestamp'] = self.text0(xx['timestamp'])
+                s['file'] = self.text0(xx['file'])
+                s['cases'] = []
+                s['tests run'] = 0
+                s['tests failed'] = 0
+                s['tests skipped'] = 0
+
+                for yy in xx['cases'][0]['case']:
+                    c = {}
+
+                    s['name'] = self.text0(yy['className'])
+                    s['tests run'] += 1
+
+                    c['name'] = self.text0(yy['testName'])
+                    c['duration'] = self.duration(yy)
+                    c['skipped'] = True if self.text0(yy['skipped']) == 'true' else False
+                    if c['skipped']:
+                        s['tests skipped'] += 1
+                    c['failedSince'] = int(self.text0(yy['failedSince']))
+
+                    try:
+                        c['errorDetails'] = self.text(yy['errorDetails'])
+                        s['tests failed'] += 1
+                        c['errorStackTrace'] = self.text(yy['errorStackTrace'])
+
+                    except KeyError:
+                        pass
+
+                    s['cases'].append(c)
+
+                r['suites'].append(s)
+
+            retval = r
 
         except FileDoesntExist as e:
             raise JenkinsTestResultsTreeError('The Jenkins test results tree (%s) specified on the command line does\n           not appear to be a valid results tree, the file (%s)\n           does not exist.\n' % (self.root, e.file_name))
@@ -242,6 +205,18 @@ class JenkinsTestResultsTree():
         retval = path.join(self.root, 'archive')
         Dbg.leave("JenkinsTestResultsTree.archive")
         return retval
+
+    # duration
+    #
+    def duration(self, d):
+        retval = int(float(d['duration'][0]['text'][0]))
+        return retval
+
+    def text0(self, l):
+        return l[0]['text'][0]
+
+    def text(self, l):
+        return l[0]['text']
 
 # TestResultsRepository
 #
@@ -312,6 +287,23 @@ class TestResultsRepository():
         self.store_results(data)
 
         Dbg.leave("TestResultsRepository.ingest")
+
+    @property
+    def test_runs(self):
+        Dbg.enter("TestResultsRepository.test_runs")
+        retval = listdir(self.cfg['repository_root'])
+        Dbg.leave("TestResultsRepository.test_runs")
+        return retval
+
+    def results(self, test_run):
+        Dbg.enter("TestResultsRepository.results")
+        try:
+            retval = json_load(path.join(self.cfg['repository_root'], test_run, 'results.json'))
+        except FileDoesntExist as e:
+            raise TestResultsRepositoryError('The file (%s) does not exist.\n' % e.file_name)
+            Dbg.leave("TestResultsRepository.__init__")
+        Dbg.leave("TestResultsRepository.results")
+        return retval
 
 # vi:set ts=4 sw=4 expandtab:
 
