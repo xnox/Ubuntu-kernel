@@ -7,13 +7,14 @@
 from sys                                import argv
 from getopt                             import getopt, GetoptError
 from datetime                           import datetime
+from os                                 import path
 
 from mako.template                      import Template
 from mako.exceptions                    import RichTraceback
 
 from grinder                            import CmdlineError, Exit, TestResultsRepository, TestResultsRepositoryError
 from lib.core.dbg                       import Dbg
-from lib.core.utils                     import error, stdo, dump, file_load, FileDoesntExist, string_to_date
+from lib.core.utils                     import error, stdo, dump, file_load, string_to_date
 
 from ktl.ubuntu                         import Ubuntu
 from ktl.debian                         import Debian
@@ -201,7 +202,8 @@ class Digest():
             #
             try:
                 template = self.mako_template.render(data = data, timestamp = datetime.utcnow())
-                with open('index.html', 'w') as f:
+                dest = path.join(self.trr.cfg['repository_root'], 'index.html')
+                with open(dest, 'w') as f:
                     f.write(template)
             except:
                 traceback = RichTraceback()

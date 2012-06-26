@@ -291,7 +291,10 @@ class TestResultsRepository():
     @property
     def test_runs(self):
         Dbg.enter("TestResultsRepository.test_runs")
-        retval = listdir(self.cfg['repository_root'])
+        retval = []
+        for x in listdir(self.cfg['repository_root']):
+            if path.isdir(x):
+                retval.append(x)
         Dbg.leave("TestResultsRepository.test_runs")
         return retval
 
