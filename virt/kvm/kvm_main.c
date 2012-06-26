@@ -238,6 +238,7 @@ static void kvm_destroy_vm(struct kvm *kvm)
 	spin_unlock(&kvm_lock);
 	kvm_io_bus_destroy(&kvm->pio_bus);
 	kvm_io_bus_destroy(&kvm->mmio_bus);
+	kvm_arch_flush_shadow(kvm);
 	kvm_arch_destroy_vm(kvm);
 	mmdrop(mm);
 }
