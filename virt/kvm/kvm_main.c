@@ -802,11 +802,16 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
 		return r;
 
 	mutex_lock(&kvm->lock);
+	if (!kvm_vcpu_compatible(vcpu)) {
+		r = -EINVAL;
+		goto vcpu_destroy;
+	}
 	if (kvm->vcpus[n]) {
 		r = -EEXIST;
 		goto vcpu_destroy;
 	}
 	kvm->vcpus[n] = vcpu;
+	atomic_inc(&kvm->online_vcpus);
 	mutex_unlock(&kvm->lock);
 
 	/* Now it's all set up, let userspace reach it */

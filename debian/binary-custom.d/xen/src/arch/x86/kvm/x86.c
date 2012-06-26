@@ -1582,6 +1582,9 @@ long kvm_arch_vm_ioctl(struct file *filp,
 		break;
 	}
 	case KVM_CREATE_IRQCHIP:
+		r = -EINVAL;
+		if (atomic_read(&kvm->online_vcpus))
+			goto out;
 		r = -ENOMEM;
 		kvm->arch.vpic = kvm_create_pic(kvm);
 		if (kvm->arch.vpic) {
@@ -3350,6 +3353,11 @@ void kvm_arch_check_processor_compat(void *rtn)
 	kvm_x86_ops->check_processor_compatibility(rtn);
 }
 
+bool kvm_vcpu_compatible(struct kvm_vcpu *vcpu)
+{
+	return irqchip_in_kernel(vcpu->kvm) == (vcpu->arch.apic != NULL);
+}
+
 int kvm_arch_vcpu_init(struct kvm_vcpu *vcpu)
 {
 	struct page *page;
@@ -3435,6 +3443,7 @@ static void kvm_free_vcpus(struct kvm *kvm)
 		}
 	}
 
+	atomic_set(&kvm->online_vcpus, 0);
 }
 
 void kvm_arch_destroy_vm(struct kvm *kvm)

@@ -121,6 +121,7 @@ struct kvm {
 	struct kvm_memory_slot memslots[KVM_MEMORY_SLOTS +
 					KVM_PRIVATE_MEM_SLOTS];
 	struct kvm_vcpu *vcpus[KVM_MAX_VCPUS];
+	atomic_t online_vcpus;
 	struct list_head vm_list;
 	struct file *filp;
 	struct kvm_io_bus mmio_bus;
@@ -307,5 +308,6 @@ struct kvm_stats_debugfs_item {
 	struct dentry *dentry;
 };
 extern struct kvm_stats_debugfs_item debugfs_entries[];
+bool kvm_vcpu_compatible(struct kvm_vcpu *vcpu);
 
 #endif
