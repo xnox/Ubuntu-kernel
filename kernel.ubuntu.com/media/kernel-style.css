@@ -13,7 +13,7 @@ Base is set to 0.75em or 12px (if browser default is 16px).
 
 .dash-body {
         /*background: #eceae8 url('bg_dotted.png') repeat top left;*/
-        background: white url('home-bkg.gif') 8px 0 repeat-x;
+        background: white url('home-bkg.gif') 8px 0 repeat;
            padding: 0;
        font-family: "Ubuntu Beta", UbuntuBeta, Ubuntu, "Bitstream Vera Sans", "DejaVu Sans", Tahoma, sans-serif;
          font-size: 0.75em;
