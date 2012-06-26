@@ -200,6 +200,9 @@ if ($ARGV[0] eq '--info') {
 			}
 		}
 		$values{'Policy', $config} = $expected;
+		if (!defined $policy{$config} && $expected ne 'c') {
+			$policy{$config} = "value $expected";
+		}
 	}
 	close(INFO);
 	shift @ARGV;
@@ -254,22 +257,26 @@ for my $column (@columns) {
 print " || '''Comments''' ||\n";
 my $val;
 my $cmt;
-my $all;
-my $one;
+my $seen;
 
 my $ok;
-$all = '';
+
+if (!$policy) {
+	%policy = ();
+}
 for my $option (@options) {
-	$all = '';
+	$seen = '';
 	$cmt = '';
-	$one = '';
 	$ok = 1;
 	print "|| $option";
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
-		if ($policy && $policy{$option}) {
-			
+		# If we have no policy at all then pick the first valid entry.
+		if (!defined $policy{$option} && $is ne '-') {
+			$policy{$option} = "value $is";
+		}
+		if ($policy{$option}) {
 			if ($column eq 'Policy' ||
 			    !defined $values{$column, $option} ||
 			    policy_check($column, $option, $policy{$option})) {
@@ -278,27 +285,13 @@ for my $option (@options) {
 				print " || '''$is'''";
 				$ok = 0;
 			}
-			next if ($column eq 'Policy')
 		} else {
 			print " || $is";
 		}
-		if ($is !~ m@/@ && $is ne '-') {
-			$all .= $is . '/' if ($all !~ /$is/);
-		}
-		if ($is ne '-') {
-			$one = $is;
-		}
+		$seen++ if ($is ne '-' && $column ne 'Policy');
 	}
-	chop($all);
-	$all = join('/', sort(split(m@/@, $all)));
-
-	if ($all eq '') {
+	if ($seen == 0) {
 		$cmt .= " '''GONE'''";
-	}
-	# If we have a predicate policy we already worked out if this is ok,
-	# otherwise if its not compatible ding it.
-	if (!($policy && $policy{$option}) && $is ne 'c' && $all ne $one) {
-		$ok = 0;
 	}
 	if (!$ok) {
 		$cmt .= " '''Inconsistent'''";
