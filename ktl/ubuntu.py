@@ -26,7 +26,7 @@ class Ubuntu:
         {
             'development' : True,        # This is the version that is currently under development
             'series_version' : '12.10',
-            'kernel'    : '3.4.0',
+            'kernel'    : '3.5.0',
             'name'      : 'quantal',
             'supported' : False,
             # adjust packages when this goes live
@@ -326,7 +326,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
-        '3.4.0'    : db['12.10'],
+        '3.5.0'    : db['12.10'],
         '3.2.0'    : db['12.04'],
         '3.0.0'    : db['11.10'],
         '2.6.38'   : db['11.04'],
