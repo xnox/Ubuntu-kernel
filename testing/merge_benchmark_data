@@ -227,7 +227,14 @@ class MergeBenchmarkData():
                 # use only the kernel name specified
                 if 'kernel-version' in self.cfg:
                     #print >>stderr, "Filtering on kverl %s" % self.cfg['kernel-version']
-                    kver =  data['meta']['sysinfo-uname'].split()[0]
+                    # a hack to deal with older style data files
+                    if 'kernel' in data['meta']:
+                        kver = data['meta']['kernel']
+                    elif 'sysinfo-uname' in data['meta']:
+                        # older style
+                        kver =  data['meta']['sysinfo-uname'].split()[0]
+                    else:
+                        raise ValueError("Could not find kernel version in metadata")
                     #print >>stderr, "KVER = %s" % kver
                     if self.cfg['kernel-version'] not in kver:
                         continue
