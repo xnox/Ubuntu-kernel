@@ -77,6 +77,7 @@ sub pred_first {
 sub pred_exec {
 	my ($rest) = @_;
 	my $pred;
+	my $cut = 0;
 	my $res;
 	my $sep;
 
@@ -87,12 +88,18 @@ sub pred_exec {
 	# Leading ! implies inversion.
 	if ($pred =~ /^\s*!\s*(.*)$/) {
 		#print " invert<$1>\n";
-		$res = !pred_exec($1);
+		($cut, $res) = !pred_exec($1);
+
+	# Leading / implies a CUT operation.
+	} elsif ($pred =~ /^\s*\/\s*(.*)$/) {
+		#print " cut<$1>\n";
+		($cut, $res) = pred_exec($1);
+		$cut = 1;
 
 	# Recurse left for complex expressions.
 	} elsif ($pred =~ /^\s*\((.*)\)\s*$/) {
 		#print " left<$1>\n";
-		$res = pred_exec($1);
+		($cut, $res) = pred_exec($1);
 
 	# Check for common syntax issues.
 	} elsif ($pred eq '') {
@@ -118,16 +125,16 @@ sub pred_exec {
 		if ($rest =~ /^\s*($|\||\&)/) {
 			die "$P: $pred$rest: malformed binary operator\n";
 		}
-		if (($res && $sep eq '&') || (!$res && $sep eq '|')) {
+		if ($cut == 0 && (($res && $sep eq '&') || (!$res && $sep eq '|'))) {
 			#print " right<$rest>\n";
-			$res = pred_exec($rest);
+			($cut, $res) = pred_exec($rest);
 		}
 
 	} else {
 		die "$P: $pred$rest: malformed predicate\n";
 	}
-	#warn " return res<$res> sep<$sep>\n";
-	return $res;
+	#warn " return cut<$cut> res<$res> sep<$sep>\n";
+	return ($cut, $res);
 }
 sub policy_check {
 	my ($column, $option, $policy) = @_;
@@ -138,7 +145,9 @@ sub policy_check {
 	$pred_attr{'column'} = $column;
 	$pred_attr{'option'} = $option;
 
-	return pred_exec($policy);
+	my ($cut, $res) = pred_exec($policy);
+	#print "CUT<$cut> RES<$res>\n";
+	return $res;
 }
 
 my %options;
@@ -191,6 +200,9 @@ if ($ARGV[0] eq '--info') {
 			}
 		}
 		$values{'Policy', $config} = $expected;
+		if (!defined $policy{$config} && $expected ne 'c') {
+			$policy{$config} = "value $expected";
+		}
 	}
 	close(INFO);
 	shift @ARGV;
@@ -245,22 +257,26 @@ for my $column (@columns) {
 print " || '''Comments''' ||\n";
 my $val;
 my $cmt;
-my $all;
-my $one;
+my $seen;
 
 my $ok;
-$all = '';
+
+if (!$policy) {
+	%policy = ();
+}
 for my $option (@options) {
-	$all = '';
+	$seen = '';
 	$cmt = '';
-	$one = '';
 	$ok = 1;
 	print "|| $option";
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
-		if ($policy && $policy{$option}) {
-			
+		# If we have no policy at all then pick the first valid entry.
+		if (!defined $policy{$option} && $is ne '-') {
+			$policy{$option} = "value $is";
+		}
+		if ($policy{$option}) {
 			if ($column eq 'Policy' ||
 			    !defined $values{$column, $option} ||
 			    policy_check($column, $option, $policy{$option})) {
@@ -269,27 +285,13 @@ for my $option (@options) {
 				print " || '''$is'''";
 				$ok = 0;
 			}
-			next if ($column eq 'Policy')
 		} else {
 			print " || $is";
 		}
-		if ($is !~ m@/@ && $is ne '-') {
-			$all .= $is . '/' if ($all !~ /$is/);
-		}
-		if ($is ne '-') {
-			$one = $is;
-		}
+		$seen++ if ($is ne '-' && $column ne 'Policy');
 	}
-	chop($all);
-	$all = join('/', sort(split(m@/@, $all)));
-
-	if ($all eq '') {
+	if ($seen == 0) {
 		$cmt .= " '''GONE'''";
-	}
-	# If we have a predicate policy we already worked out if this is ok,
-	# otherwise if its not compatible ding it.
-	if (!($policy && $policy{$option}) && $is ne 'c' && $all ne $one) {
-		$ok = 0;
 	}
 	if (!$ok) {
 		$cmt .= " '''Inconsistent'''";

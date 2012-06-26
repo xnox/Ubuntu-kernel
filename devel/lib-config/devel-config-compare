@@ -213,7 +213,7 @@ awk '($2 ~ /[Mm]/) { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
 echo ""
 echo "$level Non-modular modules $level"
 what=`config-cmp-nopolicy $cmp | tee APW | \
-	awk '($4 == "m" && /'"'''Inconsistent'''"'/) { print $2 }' | tee APW2 | \
+	awk '($4 ~ /m/ && /'"'''Inconsistent'''"'/) { print $2 }' | tee APW2 | \
 		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)[ =]/'`
 rm tmp/000-MODULES
 rebuild "$what"
