@@ -318,7 +318,7 @@ CONFIG_BLK_DEV_XD n note<ancient drives from pre-history>
 
 # Geode specific, should be enabled by drivers that need it not manually.
 CONFIG_CS5535_MFGPT n note<should be disabled by default>
-CONFIG_GPIO_CS5535 m/y note<dependancy OLPC_X01_SCI=y>
+CONFIG_GPIO_CS5535 p policy<(value CONFIG_OLPC_X01_SCI y &/ value y) | value m> note<dependancy OLPC_X01_SCI=y>
 
 # DVB_DUMMY_FE only recommended for experts
 CONFIG_DVB_DUMMY_FE n note<expert use only>
