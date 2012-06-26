@@ -1,3 +1,9 @@
+linux-meta (3.5.0.2.2) quantal-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 26 Jun 2012 06:30:50 -0700
+
 linux-meta (3.5.0.1.1) quantal-proposed; urgency=low
 
   * Bump meta package version for v3.5 based kernels
