@@ -77,6 +77,7 @@ sub pred_first {
 sub pred_exec {
 	my ($rest) = @_;
 	my $pred;
+	my $cut = 0;
 	my $res;
 	my $sep;
 
@@ -87,12 +88,18 @@ sub pred_exec {
 	# Leading ! implies inversion.
 	if ($pred =~ /^\s*!\s*(.*)$/) {
 		#print " invert<$1>\n";
-		$res = !pred_exec($1);
+		($cut, $res) = !pred_exec($1);
+
+	# Leading / implies a CUT operation.
+	} elsif ($pred =~ /^\s*\/\s*(.*)$/) {
+		#print " cut<$1>\n";
+		($cut, $res) = pred_exec($1);
+		$cut = 1;
 
 	# Recurse left for complex expressions.
 	} elsif ($pred =~ /^\s*\((.*)\)\s*$/) {
 		#print " left<$1>\n";
-		$res = pred_exec($1);
+		($cut, $res) = pred_exec($1);
 
 	# Check for common syntax issues.
 	} elsif ($pred eq '') {
@@ -118,16 +125,16 @@ sub pred_exec {
 		if ($rest =~ /^\s*($|\||\&)/) {
 			die "$P: $pred$rest: malformed binary operator\n";
 		}
-		if (($res && $sep eq '&') || (!$res && $sep eq '|')) {
+		if ($cut == 0 && (($res && $sep eq '&') || (!$res && $sep eq '|'))) {
 			#print " right<$rest>\n";
-			$res = pred_exec($rest);
+			($cut, $res) = pred_exec($rest);
 		}
 
 	} else {
 		die "$P: $pred$rest: malformed predicate\n";
 	}
-	#warn " return res<$res> sep<$sep>\n";
-	return $res;
+	#warn " return cut<$cut> res<$res> sep<$sep>\n";
+	return ($cut, $res);
 }
 sub policy_check {
 	my ($column, $option, $policy) = @_;
@@ -138,7 +145,9 @@ sub policy_check {
 	$pred_attr{'column'} = $column;
 	$pred_attr{'option'} = $option;
 
-	return pred_exec($policy);
+	my ($cut, $res) = pred_exec($policy);
+	#print "CUT<$cut> RES<$res>\n";
+	return $res;
 }
 
 my %options;
