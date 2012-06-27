@@ -7,7 +7,12 @@ set +e
 #
 echo "==============="
 unset PRIVATE
-./charts-statler
+export SYSNAME="statler"
+export TITLENAME="Statler"
+./chart-system
+export SYSNAME="waldorf"
+export TITLENAME="Waldorf"
+./chart-system
 
 #
 # Do private Charts
@@ -15,7 +20,12 @@ unset PRIVATE
 
 echo "==============="
 export PRIVATE=True
-./charts-statler
+export SYSNAME="statler"
+export TITLENAME="Statler"
+./chart-system
+export SYSNAME="waldorf"
+export TITLENAME="Waldorf"
+./chart-system
 
 echo "==============="
 #
