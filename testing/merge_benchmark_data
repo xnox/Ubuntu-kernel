@@ -278,7 +278,8 @@ class MergeBenchmarkData():
                 data['meta']['chart-title'] = self.cfg['chart-title']
 
                 # Save this test, as the BUILD_ID string, which can be sorted chronologically
-                self.tests[data['meta']['BUILD_ID']] = data
+                buildid = self.get_from_meta(baseline['meta'], 'BUILD_ID')
+                self.tests[buildid] = data
 
             # now that we're done
             if len(self.tests) == 0:
