@@ -171,3 +171,21 @@ if [ $? -eq 0 ]
         ./benchmark-report --title="$DISTNAME compilebench" /tmp/compilebench.json
         cp index.html $PUBLISH_TO/$REPORTNAME.html
 fi
+
+#
+# Charts for compilebench Precise
+#
+JOBNAME=$SYSNAME-compilebench
+KERNVERS="--kernel-version=3.2.0"
+DISTNAME="Quantal"
+REPORTNAME="$SYSNAME-compilebench-3.2.0"
+
+echo "Preparing $REPORTNAME"
+rm -f /tmp/compilebench.json
+./merge_benchmark_data --job-name=$JOBNAME  $KERNVERS $COMPILEBENCH_BASELINE --chart-title="$DISTNAME compilebench on $TITLENAME" \
+    --mute-metrics="procs{perf}" $DATALOC/*.json > /tmp/compilebench.json
+if [ $? -eq 0 ]
+    then
+        ./benchmark-report --title="$DISTNAME compilebench" /tmp/compilebench.json
+        cp index.html $PUBLISH_TO/$REPORTNAME.html
+fi
