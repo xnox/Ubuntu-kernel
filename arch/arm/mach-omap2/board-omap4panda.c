@@ -67,6 +67,18 @@
 #define HDMI_GPIO_HPD  63 /* Hotplug detect */
 #define TPS62361_GPIO	7
 
+static int
+panda_kim_suspend(struct platform_device *pdev, pm_message_t msg)
+{
+	return 0;
+}
+
+static int
+panda_kim_resume(struct platform_device *pdev)
+{
+	return 0;
+}
+
 /* wl127x BT, FM, GPS connectivity chip */
 static struct ti_st_plat_data wilink_platform_data = {
 	.nshutdown_gpio	= 46,
@@ -74,8 +86,8 @@ static struct ti_st_plat_data wilink_platform_data = {
 	.flow_cntrl	= 1,
 	.baud_rate	= 3000000,
 	.chip_enable	= NULL,
-	.suspend	= NULL,
-	.resume		= NULL,
+	.suspend	= panda_kim_suspend,
+	.resume		= panda_kim_resume,
 };
 
 static struct platform_device wl1271_device = {
