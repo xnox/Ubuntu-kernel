@@ -183,6 +183,16 @@ class MergeBenchmarkData():
 
         return
 
+    # get_from_meta
+    # This is needed to deal with both old and new data file formats
+    def get_from_meta(self, metadict, key):
+        if key in metadict:
+            return metadict[key]
+        elif key in metadict['environ']:
+            return metadict['environ'][key]
+        else:
+            raise KeyError("Can't find metadata key %s in data file" % key)
+
     # main
     #
     def main(self):
@@ -195,7 +205,8 @@ class MergeBenchmarkData():
                 # we load the baseline numbers, and scale all results to that
                 baseline = json_load(self.cfg['baseline'])
                 if 'job-name' in self.cfg:
-                    if self.cfg['job-name'] != baseline['meta']['JOB_NAME']:
+                    jobname = self.get_from_meta(baseline['meta'], 'JOB_NAME')
+                    if self.cfg['job-name'] != jobname:
                         print >>stderr,"ERROR: The job name in the baseline file does not match the specified job name"
                         raise ValueError
 
@@ -241,7 +252,8 @@ class MergeBenchmarkData():
 
                 # use only the job name specified
                 if 'job-name' in self.cfg:
-                    if self.cfg['job-name'] != data['meta']['JOB_NAME']:
+                    jobname = self.get_from_meta(data['meta'], 'JOB_NAME')
+                    if self.cfg['job-name'] != jobname:
                         continue
                 # filter metrics as requested
                 mkeys = data['metrics'].keys()
