@@ -39,7 +39,7 @@ fi
 # Pick filters to decide which test result files are included
 JOBNAME=$SYSNAME-bonnie
 KERNVERS="--kernel-version=3.2.0"
-DISTNAME="Precise"
+DISTNAME="Precise 3.2"
 REPORTNAME="$SYSNAME-bonnie-3.2.0"
 
 # Charts for Bonnie Precise - Block and Char
@@ -81,8 +81,47 @@ rm -f $REPORTNAME.html $REPORTNAME-all.html
 
 JOBNAME=$SYSNAME-bonnie
 KERNVERS="--kernel-version=3.4.0"
-DISTNAME="Quantal"
+DISTNAME="Quantal 3.4"
 REPORTNAME="$SYSNAME-bonnie-3.4.0"
+
+# Charts for Bonnie Precise - Block and Char
+
+echo "Preparing $REPORTNAME"
+rm -f /tmp/block.json /tmp/char.json
+./merge_benchmark_data --job-name=$JOBNAME $KERNVERS $BONNIE_BASELINE --chart-title="Block I/O" \
+    --only-metrics="seqin_perblk_ksec{perf},seqout_perblk_ksec{perf}" $DATALOC/*.json > /tmp/block.json
+if [ $? -eq 0 ]
+    then
+    ./merge_benchmark_data --job-name=$JOBNAME $KERNVERS $BONNIE_BASELINE --chart-title="Char I/O" \
+	--only-metrics="seqin_perchr_ksec{perf},seqout_perchr_ksec{perf}" $DATALOC/*.json > /tmp/char.json
+    if [ $? -eq 0 ]
+        then
+	./benchmark-report --onepage --2up --title="$DISTNAME Bonnie Results" /tmp/block.json /tmp/char.json
+	mv index.html $REPORTNAME.html
+	cp $REPORTNAME.html $PUBLISH_TO
+    fi
+fi
+
+#
+# Charts for Bonnie Precise - ALL
+#
+
+rm -f /tmp/bonnie.json
+./merge_benchmark_data --job-name=$JOBNAME $KERNVERS $BONNIE_BASELINE --chart-title="All Metrics" \
+    --mute-metrics="size{perf}" $DATALOC/*.json > /tmp/bonnie.json
+if [ $? -eq 0 ]
+    then
+    ./benchmark-report --title="$DISTNAME Bonnie - All" /tmp/bonnie.json
+    mv index.html $REPORTNAME-all.html
+    cp $REPORTNAME-all.html $PUBLISH_TO
+fi
+
+rm -f $REPORTNAME.html $REPORTNAME-all.html
+
+JOBNAME=$SYSNAME-bonnie
+KERNVERS="--kernel-version=3.5.0"
+DISTNAME="Quantal 3.5"
+REPORTNAME="$SYSNAME-bonnie-3.5.0"
 
 # Charts for Bonnie Precise - Block and Char
 
@@ -123,7 +162,7 @@ rm -f $REPORTNAME.html $REPORTNAME-all.html
 #
 JOBNAME=$SYSNAME-dbench
 KERNVERS="--kernel-version=3.2.0"
-DISTNAME="Precise"
+DISTNAME="Precise 3.2"
 REPORTNAME="$SYSNAME-dbench-3.2.0"
 
 echo "Preparing $REPORTNAME"
@@ -141,7 +180,7 @@ fi
 #
 JOBNAME=$SYSNAME-dbench
 KERNVERS="--kernel-version=3.4.0"
-DISTNAME="Quantal"
+DISTNAME="Quantal 3.4"
 REPORTNAME="$SYSNAME-dbench-3.4.0"
 
 echo "Preparing $REPORTNAME"
@@ -155,11 +194,47 @@ if [ $? -eq 0 ]
 fi
 
 #
+# Charts for dbench Quantal 3.5
+#
+JOBNAME=$SYSNAME-dbench
+KERNVERS="--kernel-version=3.5.0"
+DISTNAME="Quantal 3.5"
+REPORTNAME="$SYSNAME-dbench-3.5.0"
+
+echo "Preparing $REPORTNAME"
+rm -f /tmp/dbench.json
+./merge_benchmark_data --job-name=$JOBNAME  $KERNVERS $DBENCH_BASELINE --chart-title="$DISTNAME dbench on $TITLENAME" \
+    --mute-metrics="procs{perf}" $DATALOC/*.json > /tmp/dbench.json
+if [ $? -eq 0 ]
+    then
+        ./benchmark-report --title="$DISTNAME Dbench" /tmp/dbench.json
+        cp index.html $PUBLISH_TO/$REPORTNAME.html
+fi
+
+#
+# Charts for compilebench Precise
+#
+JOBNAME=$SYSNAME-compilebench
+KERNVERS="--kernel-version=3.2.0"
+DISTNAME="Quantal 3.2"
+REPORTNAME="$SYSNAME-compilebench-3.2.0"
+
+echo "Preparing $REPORTNAME"
+rm -f /tmp/compilebench.json
+./merge_benchmark_data --job-name=$JOBNAME  $KERNVERS $COMPILEBENCH_BASELINE --chart-title="$DISTNAME compilebench on $TITLENAME" \
+    --mute-metrics="procs{perf}" $DATALOC/*.json > /tmp/compilebench.json
+if [ $? -eq 0 ]
+    then
+        ./benchmark-report --title="$DISTNAME compilebench" /tmp/compilebench.json
+        cp index.html $PUBLISH_TO/$REPORTNAME.html
+fi
+
+#
 # Charts for compilebench Quantal
 #
 JOBNAME=$SYSNAME-compilebench
 KERNVERS="--kernel-version=3.4.0"
-DISTNAME="Quantal"
+DISTNAME="Quantal 3.4"
 REPORTNAME="$SYSNAME-compilebench-3.4.0"
 
 echo "Preparing $REPORTNAME"
@@ -168,6 +243,24 @@ rm -f /tmp/compilebench.json
     --mute-metrics="procs{perf}" $DATALOC/*.json > /tmp/compilebench.json
 if [ $? -eq 0 ]
     then
-        ./benchmark-report --title="$DISTNAME Dbench" /tmp/compilebench.json
+        ./benchmark-report --title="$DISTNAME compilebench" /tmp/compilebench.json
+        cp index.html $PUBLISH_TO/$REPORTNAME.html
+fi
+
+#
+# Charts for compilebench Precise 3.5
+#
+JOBNAME=$SYSNAME-compilebench
+KERNVERS="--kernel-version=3.5.0"
+DISTNAME="Quantal 3.5"
+REPORTNAME="$SYSNAME-compilebench-3.5.0"
+
+echo "Preparing $REPORTNAME"
+rm -f /tmp/compilebench.json
+./merge_benchmark_data --job-name=$JOBNAME  $KERNVERS $COMPILEBENCH_BASELINE --chart-title="$DISTNAME compilebench on $TITLENAME" \
+    --mute-metrics="procs{perf}" $DATALOC/*.json > /tmp/compilebench.json
+if [ $? -eq 0 ]
+    then
+        ./benchmark-report --title="$DISTNAME compilebench" /tmp/compilebench.json
         cp index.html $PUBLISH_TO/$REPORTNAME.html
 fi
