@@ -8,6 +8,7 @@ set +e
 echo "==============="
 unset PRIVATE
 ./charts-statler
+./charts-waldorf
 
 #
 # Do private Charts
@@ -16,6 +17,7 @@ unset PRIVATE
 echo "==============="
 export PRIVATE=True
 ./charts-statler
+./charts-waldorf
 
 echo "==============="
 #
