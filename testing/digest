@@ -14,7 +14,7 @@ from mako.exceptions                    import RichTraceback
 
 from grinder                            import CmdlineError, Exit, TestResultsRepository, TestResultsRepositoryError
 from lib.core.dbg                       import Dbg
-from lib.core.utils                     import error, stdo, dump, file_load, string_to_date
+from lib.core.utils                     import error, stdo, dump, file_load, string_to_date, json_load
 
 from ktl.ubuntu                         import Ubuntu
 from ktl.debian                         import Debian
@@ -114,7 +114,10 @@ class Digest():
             self.trr = TestResultsRepository()
             self.ubuntu = Ubuntu()
 
-            self.mako_template = Template(file_load(self.cfg['template']))
+            self.index_template = Template(file_load(self.cfg['template']))
+            self.host_template = Template(file_load('host.mako'))
+
+            self.hosts_info = json_load('hosts.json')
 
         except TestResultsRepositoryError as e:
             error(e.msg)
@@ -201,10 +204,17 @@ class Digest():
             # Generate the testing, index page.
             #
             try:
-                template = self.mako_template.render(data = data, timestamp = datetime.utcnow())
+                template = self.index_template.render(data = data, timestamp = datetime.utcnow())
                 dest = path.join(self.trr.cfg['repository_root'], 'index.html')
                 with open(dest, 'w') as f:
                     f.write(template)
+
+                for host in self.hosts_info:
+                    template = self.host_template.render(data = self.hosts_info[host], title = host, timestamp = datetime.utcnow())
+                    dest = path.join(self.trr.cfg['repository_root'], '%s.html' % host)
+                    with open(dest, 'w') as f:
+                        f.write(template)
+
             except:
                 traceback = RichTraceback()
                 for (filename, lineno, function, line) in traceback.traceback:
