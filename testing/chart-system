@@ -168,6 +168,6 @@ rm -f /tmp/compilebench.json
     --mute-metrics="procs{perf}" $DATALOC/*.json > /tmp/compilebench.json
 if [ $? -eq 0 ]
     then
-        ./benchmark-report --title="$DISTNAME Dbench" /tmp/compilebench.json
+        ./benchmark-report --title="$DISTNAME compilebench" /tmp/compilebench.json
         cp index.html $PUBLISH_TO/$REPORTNAME.html
 fi
