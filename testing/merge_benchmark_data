@@ -68,8 +68,8 @@ class Cmdline:
         stdo("        --job-name=<string>  Filter data, only including files with the JOB_NAME equal to    \n")
         stdo("                         the specified string.                                               \n")
         stdo("                                                                                             \n")
-        stdo("        --kernel-version=<string>  Filter data, only including files with the kernel version \n")
-        stdo("                         equal to the specified string.                  \n")
+        stdo("        --kernel-version=<list>  Filter data, only including files with the kernel versions  \n")
+        stdo("                         equal to the specified strings (comma-delimited).                   \n")
         stdo("                                                                                             \n")
         stdo("        --chart-title=<string>  REQUIRED Use this title for the graphical chart from this    \n")
         stdo("                         data                                                                \n")
@@ -111,7 +111,7 @@ class Cmdline:
                     cfg['job-name'] = val
 
                 elif (opt == '--kernel-version'):
-                    cfg['kernel-version'] = val
+                    cfg['kernel-versions'] = val.split(",")
 
                 elif (opt == '--baseline'):
                     cfg['baseline'] = val
@@ -236,8 +236,7 @@ class MergeBenchmarkData():
                 data = json_load(fname)
 
                 # use only the kernel name specified
-                if 'kernel-version' in self.cfg:
-                    #print >>stderr, "Filtering on kverl %s" % self.cfg['kernel-version']
+                if 'kernel-versions' in self.cfg:
                     # a hack to deal with older style data files
                     if 'kernel' in data['meta']:
                         kver = data['meta']['kernel']
@@ -247,7 +246,14 @@ class MergeBenchmarkData():
                     else:
                         raise ValueError("Could not find kernel version in metadata")
                     #print >>stderr, "KVER = %s" % kver
-                    if self.cfg['kernel-version'] not in kver:
+                    # we take this data file if the kernel is in our list
+                    kernelmatch = False
+                    for wanted_version in self.cfg['kernel-versions']:
+                        #print >>stderr,"COMPARING kernel version %s" % wanted_version
+                        if wanted_version in kver:
+                            kernelmatch = True
+
+                    if not kernelmatch:
                         continue
 
                 # use only the job name specified
