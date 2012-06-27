@@ -17,7 +17,12 @@ for template_data in template_data_list:
 
     for k in sortedTests:
         testrecord = template_data[k[0]]
-        kvers = testrecord['meta']['sysinfo-uname'].split()[0]
+	if 'kernel' in testrecord['meta']:
+	    kvers = testrecord['meta']['kernel']
+	elif 'sysinfo-uname' in testrecord['meta']:
+	    kvers = testrecord['meta']['sysinfo-uname'].split()[0]
+	else:
+	    raise ValueError("Could not find kernel version in metadata")
 
         # Chart_title needs to be one per chart
         ctitle = testrecord['meta']['chart-title']
