@@ -88,7 +88,8 @@ sub pred_exec {
 	# Leading ! implies inversion.
 	if ($pred =~ /^\s*!\s*(.*)$/) {
 		#print " invert<$1>\n";
-		($cut, $res) = !pred_exec($1);
+		($cut, $res) = pred_exec($1);
+		$res = !$res;
 
 	# Leading / implies a CUT operation.
 	} elsif ($pred =~ /^\s*\/\s*(.*)$/) {
