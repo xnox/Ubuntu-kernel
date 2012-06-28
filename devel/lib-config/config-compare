@@ -154,11 +154,19 @@ sub policy_check {
 sub f_em {
 	"'''" . $_[0] . "'''";
 }
+my $f__row_colour;
+sub f_table_row_colour {
+	if ($_[0]) {
+		$f__row_colour = "<#" . $_[0] . ">";
+	} else {
+		$f__row_colour = '';
+	}
+}
 sub f_table_row_start {
 	"||";
 }
 sub f_table_cell {
-	" " . $_[0] . " ||";
+	$f__row_colour . " " . $_[0] . " ||";
 }
 sub f_table_row_end {
 	"\n";
@@ -175,6 +183,8 @@ my %expected;
 my %policy;
 
 my $sort = 0;
+
+my $colour = 0;
 while (1) {
 	if ($ARGV[0] eq '--required') {
 		open(RQRD, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
@@ -227,6 +237,10 @@ while (1) {
 
 	} elsif ($ARGV[0] eq '--sort') {
 		$sort = 1;
+		shift @ARGV;
+
+	} elsif ($ARGV[0] eq '--colour') {
+		$colour = 1;
 		shift @ARGV;
 
 	} else {
@@ -284,6 +298,7 @@ my $cmt;
 my $seen;
 
 my $ok;
+my %ok;
 
 if (!$policy) {
 	%policy = ();
@@ -292,8 +307,7 @@ for my $option (@options) {
 	$seen = '';
 	$cmt = '';
 	$ok = 1;
-	print f_table_row_start();
-	print f_table_cell($option);
+	%ok = ();
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
@@ -301,19 +315,38 @@ for my $option (@options) {
 		if (!defined $policy{$option} && $is ne '-') {
 			$policy{$option} = "value $is";
 		}
-		if ($policy{$option}) {
-			if ($column eq 'Policy' ||
-			    !defined $values{$column, $option} ||
-			    policy_check($column, $option, $policy{$option})) {
-				print f_table_cell($is);
-			} else {
-				print f_table_cell(f_em($is));
-				$ok = 0;
-			}
+		if ($policy{$option} && $column ne 'Policy' &&
+		    defined $values{$column, $option} &&
+		    !policy_check($column, $option, $policy{$option})) {
+			$ok = 0;
+			$ok{$column} = 0;
 		} else {
-			print f_table_cell($is);
+			$ok{$column} = 1;
 		}
 		$seen++ if ($is ne '-' && $column ne 'Policy');
+	}
+
+	if ($colour) {
+		if ($flags{$option} =~ /BUILD FAILURE/) {
+			f_table_row_colour('baffc8');
+
+		} elsif (!$ok) {
+			f_table_row_colour('ffbac8');
+
+		} else {
+			f_table_row_colour(undef);
+		}
+	}
+	print f_table_row_start();
+	print f_table_cell($option);
+	for my $column (@columns) {
+		$is = (defined $values{$column, $option})?
+				$values{$column, $option} : '-';
+		if ($ok{$column}) {
+			print f_table_cell($is);
+		} else {
+			print f_table_cell(f_em($is));
+		}
 	}
 	if ($seen == 0) {
 		$cmt .= " ". f_em('GONE');

@@ -34,5 +34,5 @@ pattern=`
 rebuild "$pattern"
 
 output_header "New Options"
-config-cmp | colourise
+config-cmp --colour
 output_footer

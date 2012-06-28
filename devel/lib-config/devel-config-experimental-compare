@@ -51,7 +51,7 @@ diff -u "$from" "$to" | \
 	sed -e 's/^-//' >tmp/.required
 
 output_header "No longer $which"
-config-cmp --required .required | colourise
+config-cmp --colour --required .required
 output_footer
 
 rm -f "$from" "$to"

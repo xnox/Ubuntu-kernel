@@ -29,24 +29,13 @@ function config-cmp() {
 	(cd tmp; "$here/config-compare" --info "../$out__info" $@ *)
 }
 function config-cmp-nopolicy() {
-	(cd tmp; "$here/config-compare" --no-policy --info "../$out__info" *)
+	(cd tmp; "$here/config-compare" --no-policy --info "../$out__info" $@ *)
 }
 function config-cmp-interesting() {
-	(cd tmp; "$here/config-compare" --info "../$out__info" *) | \
+	(cd tmp; "$here/config-compare" --info "../$out__info" $@ *) | \
 		grep -v '||  ||$'
-	(cd tmp; "$here/config-compare" --info "../$out__info" *) | \
+	(cd tmp; "$here/config-compare" --info "../$out__info" $@ *) | \
 		grep '||  ||$'
-}
-
-function colourise() {
-	awk '
-		/BUILD FAILURE/ { gsub("\\|\\| ", "||<#baffc8> "); }
-		/Inconsistent/ { gsub("\\|\\| ", "||<#ffbac8> "); }
-		{print }
-	'
-}
-function colourise_inverse() {
-	awk '/\|\|  *\('"'''\(EXPERIMENTAL|STAGING|DEBUG\)'''"'\)* \|\|/ { gsub("\\|\\| ", "||<#ffbac8> ")} { print }'
 }
 
 level='===='
@@ -69,7 +58,7 @@ list_core() {
 
 	rebuild "$what" "$not"
 	output_header "$title"
-	config-cmp$variant $flags $cmp | colourise
+	config-cmp$variant --colour $flags $cmp
 	output_footer "$title"
 }
 list_interesting() {
