@@ -1,0 +1,83 @@
+#!/bin/bash
+
+out__configs=''
+output_configs() {
+	out__configs="$1"
+}
+out__info=''
+output_info() {
+	out__info="$1"
+}
+
+function rebuild() {
+	local what="$1"
+	local not="$2"
+	local out
+	rm -f "tmp/*" "tmp/.required"
+
+	[ "$not" = "" ] && not="^NOT_VALID"
+
+	for i in `ls -1 "$configs"`
+
+	do
+		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
+		egrep -h "$what" "$configs/$i" | egrep -h -v "$not" | \
+			sort >"tmp/$out"
+	done
+}
+function config-cmp() {
+	(cd tmp; "$here/config-compare" --info "../$out__info" $@ *)
+}
+function config-cmp-nopolicy() {
+	(cd tmp; "$here/config-compare" --no-policy --info "../$out__info" *)
+}
+function config-cmp-interesting() {
+	(cd tmp; "$here/config-compare" --info "../$out__info" *) | \
+		grep -v '||  ||$'
+	(cd tmp; "$here/config-compare" --info "../$out__info" *) | \
+		grep '||  ||$'
+}
+
+function colourise() {
+	awk '
+		/BUILD FAILURE/ { gsub("\\|\\| ", "||<#baffc8> "); }
+		/Inconsistent/ { gsub("\\|\\| ", "||<#ffbac8> "); }
+		{print }
+	'
+}
+function colourise_inverse() {
+	awk '/\|\|  *\('"'''\(EXPERIMENTAL|STAGING|DEBUG\)'''"'\)* \|\|/ { gsub("\\|\\| ", "||<#ffbac8> ")} { print }'
+}
+
+level='===='
+output_header() {
+	local header="$1"
+
+	echo ""
+	echo "$level $header $level"
+}
+output_footer() {
+	echo ""
+}
+
+list_core() {
+	local variant="$1"
+	local flags="$2"
+	local title="$3"
+	local what="$4"
+	local not="$5"
+
+	rebuild "$what" "$not"
+	output_header "$title"
+	config-cmp$variant $flags $cmp | colourise
+	output_footer "$title"
+}
+list_interesting() {
+	list_core "-interesting" "" "$@"
+}
+list_sort() {
+	list_core "" "--sort" "$@"
+}
+list() {
+	list_core "" "" "$@"
+}

@@ -12,44 +12,13 @@ experimental="$3"
 info="$4"
 configs="$5"
 
-all=`ls -1 "$configs"`
-#cmp=''
-#for i in $all
-#do
-#	cmp="$cmp `echo "$i" | sed -e 's/config\.flavour\.//'`"
-#done
-#echo "cmp<$cmp>"
+. "$here/lib-output"
+
+output_info "$info"
+output_configs "$configs"
 
 rm -rf tmp
 mkdir -p tmp
-
-level='===='
-
-function rebuild() {
-	local what="$1"
-	local out
-	for i in $all
-	do
-		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
-		egrep -h "$what" "$configs/$i" | sort >"tmp/$out"
-	done
-}
-function config-cmp() {
-	call=""
-	for i in $all
-	do
-		out=`echo "$i" | sed -e 's/config\.flavour\.//'`
-		call="$call $out"
-	done
-	(cd tmp; "$here/config-compare" --info "../$info" $call "$@")
-}
-function colourise() {
-	awk '
-		/BUILD FAILURE/ { gsub("\\|\\| ", "||<#baffc8> "); }
-		/Inconsistent/ { gsub("\\|\\| ", "||<#ffbac8> "); }
-		{print }
-	'
-}
 
 pattern=`
 	diff -u "$from" "$to" | \
@@ -64,6 +33,6 @@ pattern=`
 `
 rebuild "$pattern"
 
-echo "$level New Options $level"
+output_header "New Options"
 config-cmp | colourise
-echo ""
+output_footer
