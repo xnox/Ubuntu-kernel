@@ -308,10 +308,8 @@ if ($format eq 'wiki') {
 <table>\n";
 	}
 	my $f__row_class;
-	my $f__row_number = 6;
 	sub html_table_row_colour {
-		#$f__row_number++;
-		$f__row_class = " class=\"" . $_[0] . int(($f__row_number % 6) / 3) . "\"";
+		$f__row_class = " class=\"" . $_[0] . "%R%\"";
 	}
 	sub html_table_row_start {
 		"<tr$f__row_class>";
@@ -500,6 +498,13 @@ for my $option (@options) {
 	}
 }
 
-print @interesting;
-print @normal;
+my $cnt = 0;
+my $which;
+my $row;
+for $row (@interesting, @normal) {
+	$which = int(($cnt++ % 6) / 3);
+	$row =~ s/%R%/$which/g;
+
+	print $row;
+}
 print f_table_end();
