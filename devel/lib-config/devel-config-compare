@@ -78,8 +78,8 @@ list_interesting 'BUILD FAILURES' "$what" ''
 
 rebuild ""
 awk '($2 ~ /[Mm]/) { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
-what=`config-cmp-nopolicy $cmp | tee APW | \
-	awk '($4 ~ /m/ && /'"'''Inconsistent'''"'/) { print $2 }' | tee APW2 | \
+what=`config-cmp-nopolicy --format text | tee APW | \
+	awk -F'	' '($2 ~ "m" && /Inconsistent/) { print $1 }' | tee APW2 | \
 		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)[ =]/'`
 rm tmp/000-MODULES
 list_sort 'Non-modular modules' "$what" ''

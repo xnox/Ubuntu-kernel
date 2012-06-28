@@ -239,6 +239,33 @@ if ($format eq 'wiki') {
 	*f_table_cell		= \&wiki_table_cell;
 	*f_table_row_end	= \&wiki_table_row_end;
 
+} elsif ($format eq 'text') {
+	my $f__cell_separator;
+	sub text_em {
+		$_[0];
+	}
+	sub text_table_row_colour {
+	}
+	sub text_table_row_start {
+		$f__cell_separator = '';
+	}
+	sub text_table_cell {
+		my $res = $f__cell_separator . $_[0];
+		$f__cell_separator = "\t";
+		$res;
+	}
+	sub text_table_row_end {
+		"\n";
+	}
+
+	no strict;
+
+	*f_em			= \&text_em;
+	*f_table_row_colour	= \&text_table_row_colour;
+	*f_table_row_start	= \&text_table_row_start;
+	*f_table_cell		= \&text_table_cell;
+	*f_table_row_end	= \&text_table_row_end;
+
 } else {
 	die "$P: $format: invalid output format\n";
 }
