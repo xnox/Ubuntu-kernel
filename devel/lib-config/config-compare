@@ -154,71 +154,79 @@ sub policy_check {
 my %options;
 my @options;
 
-if ($ARGV[0] eq '--required') {
-	open(RQRD, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
-	while (<RQRD>) {
-		chomp;
-
-		if (!defined $options{$_}) {
-			$options{$_} = 1;
-			push(@options, $_);
-		}
-	}
-	close(RQRD);
-	shift @ARGV;
-	shift @ARGV;
-}
-
 my $policy = 1;
-if ($ARGV[0] eq '--no-policy') {
-	$policy = 0;
-	shift @ARGV;
-}
 
+my $info = 0;
 my %flags;
 my %expected;
-my @a;
-
 my %policy;
-if ($ARGV[0] eq '--info') {
-	my ($config, $maybe, $default, $expected, $options, $option, $value);
-	open(INFO, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
-	while (<INFO>) {
-		chomp;
-		($config, $maybe, $default, $expected, $options) = split(' ', $_, 5);
-		while ($options =~ /\s*(\S+)<(.*?)?>/g) {
-			($option, $value) = ($1, $2);
-			if ($option eq 'flag') {
-				$flags{$config} .= " '''$value'''";
-			} elsif ($option eq 'note') {
-				$flags{$config} .= " $2";
-			} elsif ($option eq 'choice') {
-				$flags{$config} .= " '''CHOICE'''";
-			} elsif ($option eq 'policy') {
-				$policy{$config} = $value;
-				#$flags{$config} .= " '''policy=$value'''";
-				$expected = $value;
+
+my $sort = 0;
+
+while (1) {
+	if ($ARGV[0] eq '--required') {
+		open(RQRD, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
+		while (<RQRD>) {
+			chomp;
+
+			if (!defined $options{$_}) {
+				$options{$_} = 1;
+				push(@options, $_);
 			}
 		}
-		$values{'Policy', $config} = $expected;
-		if (!defined $policy{$config} &&
-		    $expected ne 'c' && $expected ne '-') {
-			$policy{$config} = "value $expected";
-		}
-	}
-	close(INFO);
-	shift @ARGV;
-	shift @ARGV;
+		close(RQRD);
+		shift @ARGV;
+		shift @ARGV;
 
-} else {
+	}  elsif ($ARGV[0] eq '--no-policy') {
+		$policy = 0;
+		shift @ARGV;
+
+	} elsif ($ARGV[0] eq '--info') {
+		my ($config, $maybe, $default, $expected, $options, $option, $value);
+		$info = 1;
+		open(INFO, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
+		while (<INFO>) {
+			chomp;
+			($config, $maybe, $default, $expected, $options) = split(' ', $_, 5);
+			while ($options =~ /\s*(\S+)<(.*?)?>/g) {
+				($option, $value) = ($1, $2);
+				if ($option eq 'flag') {
+					$flags{$config} .= " '''$value'''";
+				} elsif ($option eq 'note') {
+					$flags{$config} .= " $2";
+				} elsif ($option eq 'choice') {
+					$flags{$config} .= " '''CHOICE'''";
+				} elsif ($option eq 'policy') {
+					$policy{$config} = $value;
+					#$flags{$config} .= " '''policy=$value'''";
+					$expected = $value;
+				}
+			}
+			$values{'Policy', $config} = $expected;
+			if (!defined $policy{$config} &&
+			    $expected ne 'c' && $expected ne '-') {
+				$policy{$config} = "value $expected";
+			}
+		}
+		close(INFO);
+		shift @ARGV;
+		shift @ARGV;
+
+	} elsif ($ARGV[0] eq '--sort') {
+		$sort = 1;
+		shift @ARGV;
+
+	} else {
+		last;
+	}
+}
+
+# No info, no policy checks...
+if ($info == 0) {
 	$policy = 0;
 }
 
-my $sort = 0;
-if ($ARGV[0] eq '--sort') {
-	$sort = 1;
-	shift @ARGV;
-}
 my @columns = @ARGV;
 
 my $opt;
