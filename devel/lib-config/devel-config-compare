@@ -63,121 +63,66 @@ function colourise_inverse() {
 	awk '/\|\|  *\('"'''\(EXPERIMENTAL|STAGING|DEBUG\)'''"'\)* \|\|/ { gsub("\\|\\| ", "||<#ffbac8> ")} { print }'
 }
 
-list() {
-	local title="$1"
-	local what="$2"
-	local not="$3"
+list_core() {
+	local variant="$1"
+	local flags="$2"
+	local title="$3"
+	local what="$4"
+	local not="$5"
 
 	rebuild "$what" "$not"
 	echo ""
 	echo "$level $title $level"
-	config-cmp-interesting $cmp | colourise
+	config-cmp$variant $flags $cmp | colourise
 	echo ""
 }
+list_interesting() {
+	list_core "-interesting" "" "$@"
+}
+list_sort() {
+	list_core "" "--sort" "$@"
+}
+list() {
+	list_core "" "" "$@"
+}
 
-list "Filesystems" 'FS[ =]' "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
+list_interesting "Filesystems" 'FS[ =]' "CONFIG_.*(_DEBUG_FS|_PROC_FS|_DEBUGFS|_PROCFS|_SYSFS|_PARTITION_.*)[ =]"
 
-##what='CONFIG_(LSM_MMAP_MIN_ADDR|DEFAULT_MMAP_MIN_ADDR|APPARMOR|SELINUX|TOMOYO|COMPAT_BRK|DEVKMEM|SYN_COOKIES|SECURITY|SECCOMP|COMPAT_VDSO|DEBUG_RODATA|STRICT_DEVMEM|SECURITY_FILE_CAPABILITIES|SECURITY_SMACK|CC_STACKPROTECTOR)[ =]'
-##rebuild "$what"
-##
-##echo ""
-##echo "$level Security $level"
-##config-cmp $cmp
-##echo ""
+#list 'Security' 'CONFIG_(LSM_MMAP_MIN_ADDR|DEFAULT_MMAP_MIN_ADDR|APPARMOR|SELINUX|TOMOYO|COMPAT_BRK|DEVKMEM|SYN_COOKIES|SECURITY|SECCOMP|COMPAT_VDSO|DEBUG_RODATA|STRICT_DEVMEM|SECURITY_FILE_CAPABILITIES|SECURITY_SMACK|CC_STACKPROTECTOR)[ =]' ''
 
-what='CONFIG_(PCI|USB|BT|SCSI|APM|ACPI|NET|NETFILTER|ATA|INPUT|HID)[ =]'
-rebuild "$what"
-echo ""
-echo "$level Subsystems $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'Subsystems' 'CONFIG_(PCI|USB|BT|SCSI|APM|ACPI|NET|NETFILTER|ATA|INPUT|HID)[ =]' ''
 
-what="(CONFIG_NET_9P|CONFIG_ATM|CONFIG_AX25|CONFIG_BRIDGE|CONFIG_CAIF|CONFIG_CAN|CONFIG_DCB|CONFIG_DECNET|CONFIG_DNS_RESOLVER|CONFIG_NET_DSA|CONFIG_ECONET|CONFIG_NET_ETHERNET|CONFIG_IEEE802154|CONFIG_IPV6|CONFIG_IPX|CONFIG_IRDA|CONFIG_NET_KEY|CONFIG_L2TP|CONFIG_LAPB|CONFIG_LLC|CONFIG_MAC80211|CONFIG_NETFILTER|CONFIG_NETLABEL|CONFIG_NETROM|CONFIG_PACKET|CONFIG_PHONET|CONFIG_RDS|CONFIG_RFKILL|CONFIG_ROSE|CONFIG_NET_SCHED|CONFIG_SUNRPC|CONFIG_TIPC|CONFIG_UNIX|CONFIG_WIMAX|CONFIG_WIRELESS|CONFIG_X25|CONFIG_XFRM)[ =]"
-rebuild "$what"
-echo ""
-echo "$level Network Protocols $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'Network Protocols' '(CONFIG_NET_9P|CONFIG_ATM|CONFIG_AX25|CONFIG_BRIDGE|CONFIG_CAIF|CONFIG_CAN|CONFIG_DCB|CONFIG_DECNET|CONFIG_DNS_RESOLVER|CONFIG_NET_DSA|CONFIG_ECONET|CONFIG_NET_ETHERNET|CONFIG_IEEE802154|CONFIG_IPV6|CONFIG_IPX|CONFIG_IRDA|CONFIG_NET_KEY|CONFIG_L2TP|CONFIG_LAPB|CONFIG_LLC|CONFIG_MAC80211|CONFIG_NETFILTER|CONFIG_NETLABEL|CONFIG_NETROM|CONFIG_PACKET|CONFIG_PHONET|CONFIG_RDS|CONFIG_RFKILL|CONFIG_ROSE|CONFIG_NET_SCHED|CONFIG_SUNRPC|CONFIG_TIPC|CONFIG_UNIX|CONFIG_WIMAX|CONFIG_WIRELESS|CONFIG_X25|CONFIG_XFRM)[ =]' ''
 
-what='CONFIG_INET6?_'
-rebuild "$what"
-echo ""
-echo "$level INET/INET6 Networking $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'INET/INET6 Networking' 'CONFIG_INET6?_' ''
 
-what='CONFIG_(ATA|SATA|PATA)_'
-rebuild "$what"
-echo ""
-echo "$level {,S,P}ATA Drivers $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting '{,S,P}ATA Drivers' 'CONFIG_(ATA|SATA|PATA)_' ''
 
-what='CONFIG_INPUT_'
-rebuild "$what" "CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]"
-echo ""
-echo "$level Input Drivers $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'Input Drivers' 'CONFIG_INPUT_' 'CONFIG_INPUT_(KXTJ9_POLLED_MODE)[ =]'
 
-what='CONFIG_HID_'
-rebuild "$what"
-echo ""
-echo "$level HID Drivers $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'HID Drivers' 'CONFIG_HID_' ''
 
-what='CONFIG_SENSORS_'
-rebuild "$what"
-echo ""
-echo "$level Sensor Drivers $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'Sensor Drivers' 'CONFIG_SENSORS_' ''
 
-what='CONFIG_(CRYPTO_|CRC_|CRC[0-9]+)'
-rebuild "$what"
-echo ""
-echo "$level Crypto/CRC $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'Crypto/CRC' 'CONFIG_(CRYPTO_|CRC_|CRC[0-9]+)' ''
 
-what='CONFIG_NETFILTER_XT_'
-rebuild "$what"
-echo ""
-echo "$level Netfilter Match/Targets $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'Netfilter Match/Targets' 'CONFIG_NETFILTER_XT_' ''
 
-what='CONFIG_(BLK|CHR)_DEV_'
-rebuild "$what"
-echo ""
-echo "$level Block and Character devices $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'Block and Character devices' 'CONFIG_(BLK|CHR)_DEV_' ''
 
-what='CONFIG_(.*_PHY|PHYLIB)[_ =]'
-rebuild "$what"
-echo ""
-echo "$level PHY support $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'PHY support' 'CONFIG_(.*_PHY|PHYLIB)[_ =]' ''
 
-what='CONFIG_DM[_ =]'
-rebuild "$what"
-echo ""
-echo "$level Device Mapper $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'Device Mapper' 'CONFIG_DM[_ =]' ''
 
-list "RTC Drivers" "CONFIG_RTC_DRV_" ""
+list_interesting "RTC Drivers" "CONFIG_RTC_DRV_" ""
 
-list "Keyboard/Mouse Drivers" "CONFIG_(KEYBOARD|MOUSE)_" ""
+list_interesting "Keyboard/Mouse Drivers" "CONFIG_(KEYBOARD|MOUSE)_" ""
 
-list "USB support" "CONFIG_USB_" ""
+list_interesting "USB support" "CONFIG_USB_" ""
 
-list "GPIO support" "CONFIG_GPIO_" ""
+list_interesting "GPIO support" "CONFIG_GPIO_" ""
 
-list "I2C support" "CONFIG_I2C_" ""
+list_interesting "I2C support" "CONFIG_I2C_" ""
 
 function what_flag()
 {
@@ -188,34 +133,18 @@ function what_flag()
 }
 
 what_flag 'DANGEROUS'
-rebuild "$what"
-echo ""
-echo "$level DANGEROUS Options $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'DANGEROUS Options' "$what" ''
 
 what_flag 'DEPRECATED'
-rebuild "$what"
-echo ""
-echo "$level DEPRECATED Options $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'DEPRECATED Options' "$what" ''
 
 what_flag 'BUILD FAILURE'
-rebuild "$what"
-echo ""
-echo "$level BUILD FAILURES $level"
-config-cmp-interesting $cmp | colourise
-echo ""
+list_interesting 'BUILD FAILURES' "$what" ''
 
 rebuild ""
 awk '($2 ~ /[Mm]/) { print $1 "=m" }' <"$info" >"tmp/000-MODULES"
-echo ""
-echo "$level Non-modular modules $level"
 what=`config-cmp-nopolicy $cmp | tee APW | \
 	awk '($4 ~ /m/ && /'"'''Inconsistent'''"'/) { print $2 }' | tee APW2 | \
 		tr '\n' '|' | sed -e 's/^/(/' -e 's/|$/)[ =]/'`
 rm tmp/000-MODULES
-rebuild "$what"
-config-cmp --sort $cmp | colourise
-echo ""
+list_sort 'Non-modular modules' "$what" ''
