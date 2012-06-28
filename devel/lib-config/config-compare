@@ -310,7 +310,7 @@ if ($format eq 'wiki') {
 	my $f__row_class;
 	my $f__row_number = 6;
 	sub html_table_row_colour {
-		$f__row_number++;
+		#$f__row_number++;
 		$f__row_class = " class=\"" . $_[0] . int(($f__row_number % 6) / 3) . "\"";
 	}
 	sub html_table_row_start {
