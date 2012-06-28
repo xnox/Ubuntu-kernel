@@ -25,13 +25,13 @@ sub emit()
 
 	$expected = $default;
 
-	if ($prompt =~ s/DEPRECATED//) {
+	if ($prompt =~ /DEPRECATED/ || $prompt =~ /OBSOLETE/) {
 		$flags{'DEPRECATED'} = 1;
 	}
-	if ($prompt =~ s/DANGEROUS//) {
+	if ($prompt =~ /DANGEROUS/) {
 		$flags{'DANGEROUS'} = 1;
 	}
-	if ($prompt =~ s/EXPERIMENTAL//) {
+	if ($prompt =~ /EXPERIMENTAL/) {
 		$flags{'EXPERIMENTAL'} = 1;
 	}
 	$prompt =~ s/\s*$//;
