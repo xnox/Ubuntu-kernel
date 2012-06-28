@@ -209,17 +209,22 @@ while (1) {
 	}
 }
 
+sub all_noop {
+	'';
+}
+
 if ($format eq 'wiki') {
+	my %f__row_map = (
+		'normal'	=> '',
+		'build'		=> '<#baffc8>',
+		'inconsistent'	=> '<#ffbac8>',
+	);
 	my $f__row_colour;
 	sub wiki_em {
 		"'''" . $_[0] . "'''";
 	}
 	sub wiki_table_row_colour {
-		if ($_[0]) {
-			$f__row_colour = "<#" . $_[0] . ">";
-		} else {
-			$f__row_colour = '';
-		}
+		$f__row_colour = $f__row_map{$_[0]};
 	}
 	sub wiki_table_row_start {
 		"||";
@@ -234,17 +239,17 @@ if ($format eq 'wiki') {
 	no strict;
 
 	*f_em			= \&wiki_em;
+	*f_table_start		= \&all_noop;
 	*f_table_row_colour	= \&wiki_table_row_colour;
 	*f_table_row_start	= \&wiki_table_row_start;
 	*f_table_cell		= \&wiki_table_cell;
 	*f_table_row_end	= \&wiki_table_row_end;
+	*f_table_end		= \&all_noop;
 
 } elsif ($format eq 'text') {
 	my $f__cell_separator;
 	sub text_em {
 		$_[0];
-	}
-	sub text_table_row_colour {
 	}
 	sub text_table_row_start {
 		$f__cell_separator = '';
@@ -261,10 +266,63 @@ if ($format eq 'wiki') {
 	no strict;
 
 	*f_em			= \&text_em;
-	*f_table_row_colour	= \&text_table_row_colour;
+	*f_table_start		= \&all_noop;
+	*f_table_row_colour	= \&all_noop;
 	*f_table_row_start	= \&text_table_row_start;
 	*f_table_cell		= \&text_table_cell;
 	*f_table_row_end	= \&text_table_row_end;
+	*f_table_end		= \&all_noop;
+
+} elsif ($format eq 'html') {
+	my $id = int(rand(1000000));
+	sub html_em {
+		"<b>" . $_[0] . "</b>";
+	}
+	sub html_table_start {
+"<style>
+.configtable$id table {
+	border-collapse: collapse;
+	border: 1px solid gray;
+}
+.configtable$id td {
+	border: 1px solid gray;
+}
+.configtable$id .build {
+	background-color: #baffc8;
+}
+.configtable$id .inconsistent {
+	background-color: #ffbac8;
+}
+</style>
+<div class=\"configtable$id\">
+<table>\n";
+	}
+	my $f__row_class;
+	sub html_table_row_colour {
+		$f__row_class = " class=\"" . $_[0] . "\"";
+	}
+	sub html_table_row_start {
+		"<tr$f__row_class>";
+	}
+	sub html_table_cell {
+		"<td>" . $_[0];
+	}
+	sub html_table_row_end {
+		"</tr>\n";
+	}
+	sub html_table_end {
+		"</table>\n</div>\n";
+	}
+
+	no strict;
+
+	*f_em			= \&html_em;
+	*f_table_start		= \&html_table_start;
+	*f_table_row_colour	= \&html_table_row_colour;
+	*f_table_row_start	= \&html_table_row_start;
+	*f_table_cell		= \&html_table_cell;
+	*f_table_row_end	= \&html_table_row_end;
+	*f_table_end		= \&html_table_end;
 
 } else {
 	die "$P: $format: invalid output format\n";
@@ -337,6 +395,8 @@ for my $column (@columns) {
 
 push(@columns, "Policy") if ($policy);
 
+print f_table_start();
+
 print f_table_row_start();
 print f_table_cell(f_em('Option'));
 for my $column (@columns) {
@@ -379,13 +439,13 @@ for my $option (@options) {
 
 	if ($colour) {
 		if ($flags{$option} =~ /BUILD FAILURE/) {
-			f_table_row_colour('baffc8');
+			f_table_row_colour('build');
 
 		} elsif (!$ok) {
-			f_table_row_colour('ffbac8');
+			f_table_row_colour('inconsistent');
 
 		} else {
-			f_table_row_colour(undef);
+			f_table_row_colour('normal');
 		}
 	}
 	print f_table_row_start();
@@ -411,3 +471,5 @@ for my $option (@options) {
 	print f_table_cell($cmt);
 	print f_table_row_end();
 }
+
+print f_table_end();
