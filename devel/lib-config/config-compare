@@ -287,19 +287,24 @@ if ($format eq 'wiki') {
 .configtable$id td {
 	border: 1px solid gray;
 }
-.configtable$id .build {
+.configtable$id .build0, .configtable$id .build1 {
 	background-color: #baffc8;
 }
-.configtable$id .inconsistent {
+.configtable$id .inconsistent0, .configtable$id .inconsistent1 {
 	background-color: #ffbac8;
+}
+.configtable$id .normal1 {
+	background-color: #dddddd;
 }
 </style>
 <div class=\"configtable$id\">
 <table>\n";
 	}
 	my $f__row_class;
+	my $f__row_number = 6;
 	sub html_table_row_colour {
-		$f__row_class = " class=\"" . $_[0] . "\"";
+		$f__row_number++;
+		$f__row_class = " class=\"" . $_[0] . int(($f__row_number % 6) / 3) . "\"";
 	}
 	sub html_table_row_start {
 		"<tr$f__row_class>";
