@@ -151,6 +151,19 @@ sub policy_check {
 	return $res;
 }
 
+sub f_em {
+	"'''" . $_[0] . "'''";
+}
+sub f_table_row_start {
+	"||";
+}
+sub f_table_cell {
+	" " . $_[0] . " ||";
+}
+sub f_table_row_end {
+	"\n";
+}
+
 my %options;
 my @options;
 
@@ -162,7 +175,6 @@ my %expected;
 my %policy;
 
 my $sort = 0;
-
 while (1) {
 	if ($ARGV[0] eq '--required') {
 		open(RQRD, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
@@ -192,14 +204,14 @@ while (1) {
 			while ($options =~ /\s*(\S+)<(.*?)?>/g) {
 				($option, $value) = ($1, $2);
 				if ($option eq 'flag') {
-					$flags{$config} .= " '''$value'''";
+					$flags{$config} .= " " . f_em($value);
 				} elsif ($option eq 'note') {
 					$flags{$config} .= " $2";
 				} elsif ($option eq 'choice') {
-					$flags{$config} .= " '''CHOICE'''";
+					$flags{$config} .= " " . f_em('CHOICE');
 				} elsif ($option eq 'policy') {
 					$policy{$config} = $value;
-					#$flags{$config} .= " '''policy=$value'''";
+					#$flags{$config} .= " " . f_em("policy=$value");
 					$expected = $value;
 				}
 			}
@@ -260,11 +272,13 @@ for my $column (@columns) {
 
 push(@columns, "Policy") if ($policy);
 
-print "|| '''Option'''";
+print f_table_row_start();
+print f_table_cell(f_em('Option'));
 for my $column (@columns) {
-	print " || '''$column'''";
+	print f_table_cell(f_em($column));
 }
-print " || '''Comments''' ||\n";
+print f_table_cell(f_em('Comments'));
+print f_table_row_end();
 my $val;
 my $cmt;
 my $seen;
@@ -278,7 +292,8 @@ for my $option (@options) {
 	$seen = '';
 	$cmt = '';
 	$ok = 1;
-	print "|| $option";
+	print f_table_row_start();
+	print f_table_cell($option);
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
@@ -290,24 +305,25 @@ for my $option (@options) {
 			if ($column eq 'Policy' ||
 			    !defined $values{$column, $option} ||
 			    policy_check($column, $option, $policy{$option})) {
-				print " || $is";
+				print f_table_cell($is);
 			} else {
-				print " || '''$is'''";
+				print f_table_cell(f_em($is));
 				$ok = 0;
 			}
 		} else {
-			print " || $is";
+			print f_table_cell($is);
 		}
 		$seen++ if ($is ne '-' && $column ne 'Policy');
 	}
 	if ($seen == 0) {
-		$cmt .= " '''GONE'''";
+		$cmt .= " ". f_em('GONE');
 	}
 	if (!$ok) {
-		$cmt .= " '''Inconsistent'''";
+		$cmt .= " " . f_em('Inconsistent');
 	}
 	if ($flags{$option}) {
 		$cmt .= $flags{$option};
 	}
-	print " || $cmt ||\n";
+	print f_table_cell($cmt);
+	print f_table_row_end();
 }
