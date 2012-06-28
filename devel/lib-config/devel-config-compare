@@ -6,15 +6,17 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-if [ "$#" -ne 2 ]; then
-	echo "Usage: $0 <info> <config directory>" 1>&2
+if [ "$#" -ne 3 ]; then
+	echo "Usage: $0 <format> <info> <config directory>" 1>&2
 	exit 1
 fi
-info="$1"
-configs="$2"
+format="$1"
+info="$2"
+configs="$3"
 
 . "$here/lib-output"
 
+output_format "$format"
 output_info "$info"
 output_configs "$configs"
 

@@ -10,6 +10,11 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
+format="wiki"
+case "$1" in
+--html)		format="html"; shift ;;
+esac
+
 if [ "$#" -ne 2 ]; then
 	echo "Usage: $P <current series> <next series>" 1>&2
 	exit 1
@@ -30,4 +35,4 @@ next="$2"
 	rm -f CONFIGS/ppc64-*
 )
 
-"$here/devel-config-summary-report" "$current" "$next"
+"$here/devel-config-summary-report" "$format" "$current" "$next"

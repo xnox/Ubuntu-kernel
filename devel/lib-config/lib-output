@@ -1,5 +1,9 @@
 #!/bin/bash
 
+out__format='wiki'
+output_format() {
+	out__format="$1"
+}
 out__configs=''
 output_configs() {
 	out__configs="$1"
@@ -26,27 +30,38 @@ function rebuild() {
 	done
 }
 function config-cmp() {
-	(cd tmp; "$here/config-compare" --info "../$out__info" $@ *)
+	(cd tmp; "$here/config-compare" --format "$out__format" --info "../$out__info" $@ *)
 }
 function config-cmp-nopolicy() {
-	(cd tmp; "$here/config-compare" --no-policy --info "../$out__info" $@ *)
+	(cd tmp; "$here/config-compare" --format "$out__format" --no-policy --info "../$out__info" $@ *)
 }
 function config-cmp-interesting() {
-	(cd tmp; "$here/config-compare" --info "../$out__info" $@ *) | \
-		grep -v '||  ||$'
-	(cd tmp; "$here/config-compare" --info "../$out__info" $@ *) | \
-		grep '||  ||$'
+	(cd tmp; "$here/config-compare" --format "$out_format" \
+		--info "../$out__info" $@ *) | grep -v '||  ||$'
+	(cd tmp; "$here/config-compare" --format "$out_format" \
+		--info "../$out__info" $@ *) | grep '||  ||$'
 }
 
 level='===='
 output_header() {
 	local header="$1"
 
-	echo ""
-	echo "$level $header $level"
+	case "$out__format" in
+	wiki|text)	
+		echo ""
+		echo "$level $header $level"
+		;;
+	html)
+		echo "<h2>$header</h2>"
+		;;
+	esac
 }
 output_footer() {
-	echo ""
+	case "$out__format" in
+	wiki|text)	
+		echo ""
+		;;
+	esac
 }
 
 list_core() {

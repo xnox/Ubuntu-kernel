@@ -6,14 +6,16 @@ case "$here" in
 *)  here="`pwd`/$here" ;;
 esac
 
-from="$1"
-to="$2"
-experimental="$3"
-info="$4"
-configs="$5"
+format="$1"
+from="$2"
+to="$3"
+experimental="$4"
+info="$5"
+configs="$6"
 
 . "$here/lib-output"
 
+output_format "$format"
 output_info "$info"
 output_configs "$configs"
 
