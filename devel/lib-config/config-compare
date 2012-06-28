@@ -168,6 +168,8 @@ my $colour = 0;
 
 my $format = 'wiki';
 
+my $interesting = 0;
+
 while (1) {
 	if ($ARGV[0] eq '--required') {
 		open(RQRD, "<$ARGV[1]") || die "$0: $ARGV[1]: open failed - $!\n";
@@ -203,6 +205,10 @@ while (1) {
 	} elsif ($ARGV[0] eq '--format') {
 		$format = $ARGV[1];
 		shift @ARGV;
+		shift @ARGV;
+
+	} elsif ($ARGV[0] eq '--interesting') {
+		$interesting = 1;
 		shift @ARGV;
 
 	} else {
@@ -416,12 +422,16 @@ for my $column (@columns) {
 }
 print f_table_cell(f_em('Comments'));
 print f_table_row_end();
-my $val;
+my $entry;
 my $cmt;
 my $seen;
 
 my $ok;
 my %ok;
+
+
+my @interesting = ();
+my @normal = ();
 
 if (!$policy) {
 	%policy = ();
@@ -460,15 +470,15 @@ for my $option (@options) {
 			f_table_row_colour('normal');
 		}
 	}
-	print f_table_row_start();
-	print f_table_cell($option, $desc{$option});
+	$entry  = f_table_row_start();
+	$entry .= f_table_cell($option, $desc{$option});
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
 		if ($ok{$column}) {
-			print f_table_cell($is);
+			$entry .= f_table_cell($is);
 		} else {
-			print f_table_cell(f_em($is));
+			$entry .= f_table_cell(f_em($is));
 		}
 	}
 	if ($seen == 0) {
@@ -480,8 +490,16 @@ for my $option (@options) {
 	if ($flags{$option}) {
 		$cmt .= $flags{$option};
 	}
-	print f_table_cell($cmt);
-	print f_table_row_end();
+	$entry .= f_table_cell($cmt);
+	$entry .= f_table_row_end();
+
+	if ($interesting && $cmt ne '') {
+		push(@interesting, $entry);
+	} else {
+		push(@normal, $entry);
+	}
 }
 
+print @interesting;
+print @normal;
 print f_table_end();

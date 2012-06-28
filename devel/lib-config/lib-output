@@ -36,10 +36,7 @@ function config-cmp-nopolicy() {
 	(cd tmp; "$here/config-compare" --format "$out__format" --no-policy --info "../$out__info" $@ *)
 }
 function config-cmp-interesting() {
-	(cd tmp; "$here/config-compare" --format "$out_format" \
-		--info "../$out__info" $@ *) | grep -v '||  ||$'
-	(cd tmp; "$here/config-compare" --format "$out_format" \
-		--info "../$out__info" $@ *) | grep '||  ||$'
+	(cd tmp; "$here/config-compare" --format "$out__format" --interesting --info "../$out__info" $@ *) 
 }
 
 level='===='
