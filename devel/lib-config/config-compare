@@ -160,6 +160,7 @@ my $info;
 my %flags;
 my %expected;
 my %policy;
+my %desc;
 
 my $sort = 0;
 
@@ -282,10 +283,10 @@ if ($format eq 'wiki') {
 "<style>
 .configtable$id table {
 	border-collapse: collapse;
-	border: 1px solid gray;
+	border: 1px solid #bbbbbb;
 }
 .configtable$id td {
-	border: 1px solid gray;
+	border: 1px solid #bbbbbb;
 }
 .configtable$id .build0, .configtable$id .build1 {
 	background-color: #baffc8;
@@ -294,7 +295,7 @@ if ($format eq 'wiki') {
 	background-color: #ffbac8;
 }
 .configtable$id .normal1 {
-	background-color: #dddddd;
+	background-color: #eeeeee;
 }
 </style>
 <div class=\"configtable$id\">
@@ -310,7 +311,11 @@ if ($format eq 'wiki') {
 		"<tr$f__row_class>";
 	}
 	sub html_table_cell {
-		"<td>" . $_[0];
+		if ($_[1]) {
+			"<td title=\"" . $_[1] . "\">" . $_[0];
+		} else {
+			"<td>" . $_[0];
+		}
 	}
 	sub html_table_row_end {
 		"</tr>\n";
@@ -344,13 +349,15 @@ if ($info) {
 			if ($option eq 'flag') {
 				$flags{$config} .= " " . f_em($value);
 			} elsif ($option eq 'note') {
-				$flags{$config} .= " $2";
+				$flags{$config} .= " $value";
 			} elsif ($option eq 'choice') {
 				$flags{$config} .= " " . f_em('CHOICE');
 			} elsif ($option eq 'policy') {
 				$policy{$config} = $value;
 				#$flags{$config} .= " " . f_em("policy=$value");
 				$expected = $value;
+			} elsif ($option eq 'desc') {
+				$desc{$config} .= $value;
 			}
 		}
 		$values{'Policy', $config} = $expected;
@@ -454,7 +461,7 @@ for my $option (@options) {
 		}
 	}
 	print f_table_row_start();
-	print f_table_cell($option);
+	print f_table_cell($option, $desc{$option});
 	for my $column (@columns) {
 		$is = (defined $values{$column, $option})?
 				$values{$column, $option} : '-';
