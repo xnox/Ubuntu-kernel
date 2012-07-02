@@ -1,8 +1,17 @@
-linux-meta (3.2.0.26.29) UNRELEASED; urgency=low
+linux-meta (3.2.0.27.29) precise-proposed; urgency=low
 
-  * 
+  [ Luis Henriques ]
 
- -- Stefan Bader <stefan.bader@canonical.com>  Mon, 25 Jun 2012 10:31:03 +0200
+  * Bump ABI
+
+  [ Tim Gardner ]
+
+  * UBUNTU: No meta packages belong in the restricted component
+    - LP: #1016702
+  * UBUNTU: Move all header meta packages into Section: metapackages
+    - LP: #988447
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 02 Jul 2012 11:04:51 +0100
 
 linux-meta (3.2.0.26.28) precise-proposed; urgency=low
 
