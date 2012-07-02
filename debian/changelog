@@ -1,3 +1,9 @@
+linux-ubuntu-modules-2.6.24 (2.6.24-32.52) hardy-proposed; urgency=low
+
+  * Bump ABI to -32
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 02 Jul 2012 16:45:20 +0100
+
 linux-ubuntu-modules-2.6.24 (2.6.24-31.51) hardy-proposed; urgency=low
 
   * Bump ABI to -31
