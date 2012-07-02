@@ -1,3 +1,9 @@
+linux-meta (2.6.24.32.34) hardy-proposed; urgency=low
+
+  * ABI bump to -32 by proposed update
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 02 Jul 2012 14:53:22 +0100
+
 linux-meta (2.6.24.31.33) hardy-proposed; urgency=low
 
   * ABI bump to -31 by proposed update
