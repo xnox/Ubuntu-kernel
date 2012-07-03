@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (3.4.0.203.4) quantal-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 03 Jul 2012 13:19:21 -0700
+
 linux-meta-ti-omap4 (3.4.0.202.3) quantal-proposed; urgency=low
 
   * Bump ABI
