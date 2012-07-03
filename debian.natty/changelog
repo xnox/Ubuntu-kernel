@@ -1,9 +1,25 @@
-linux-lts-backport-natty (2.6.38-15.61~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-15.62~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1012532
+    - LP: #1020422
+
+  [ Upstream Kernel Changes ]
+
+  * tun: reserves space for network in skb
+    - LP: #905219
+  * KVM: VMX: do not overwrite uptodate vcpu->arch.cr3 on KVM_SET_SREGS
+    - LP: #1018440
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 03 Jul 2012 16:14:42 +0100
+
+linux (2.6.38-15.61) natty-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1012033
 
   [ Herton Ronaldo Krzesinski ]
 
@@ -26,7 +42,7 @@ linux-lts-backport-natty (2.6.38-15.61~lucid1) lucid-proposed; urgency=low
     - LP: #1002505
     - CVE-2012-2375
 
- -- Luis Henriques <luis.henriques@canonical.com>  Wed, 13 Jun 2012 10:55:37 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 12 Jun 2012 10:42:47 +0100
 
 linux (2.6.38-15.60) natty-proposed; urgency=low
 
