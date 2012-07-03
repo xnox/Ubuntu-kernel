@@ -1,3 +1,9 @@
+linux-meta-lts-quantal (3.5.0.3.8) precise; urgency=low
+
+  * Ubuntu-lts-3.5.0-3.3
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Tue, 03 Jul 2012 08:58:47 -0700
+
 linux-meta-lts-quantal (3.5.0.2.7) precise; urgency=low
 
   * Upload to the correct release.
