@@ -1,8 +1,17 @@
-linux-meta (3.0.0.22.27) UNRELEASED; urgency=low
+linux-meta (3.0.0.23.27) oneiric-proposed; urgency=low
 
-  * 
+  [ Luis Henriques ]
 
- -- Stefan Bader <stefan.bader@canonical.com>  Mon, 25 Jun 2012 10:44:02 +0200
+  * Bump ABI
+
+  [ Tim Gardner ]
+
+  * UBUNTU: No meta packages belong in the restricted component
+    - LP: #1016702
+  * UBUNTU: Move all header meta packages into Section: metapackages
+    - LP: #988447
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 03 Jul 2012 19:25:38 +0100
 
 linux-meta (3.0.0.22.26) oneiric-proposed; urgency=low
 
