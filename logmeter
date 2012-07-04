@@ -9,13 +9,9 @@ from ilib.std_app                       import StdApp
 from threading                          import Lock, Thread
 from time                               import sleep, time
 from datetime                           import datetime
-
-from socket                             import inet_aton
 from instrument                         import Instrument
 
-
-import SocketServer
-
+import socket
 
 # CmdlineError
 #
@@ -206,7 +202,7 @@ class Cmdline:
             raise ValueError
         else:
             try:
-                inet_aton(cfg['addr'])
+                socket.inet_aton(cfg['addr'])
             except socket.error:
                 raise ValueError('Invalid IP address specified')
 
@@ -232,24 +228,6 @@ class MetaData():
     """
     outputLock = None
     meterOutHandler = None
-
-# ThreadedMeterUDPHandler
-#
-class ThreadedMeterUDPHandler(SocketServer.BaseRequestHandler, MetaData):
-    """
-    This class implements a UDP handler which listens for
-    messages which will be inserted into the log. It it called
-    in a separate thread, and we lock to make sure we don't
-    interleave lines of output.
-    """
-
-    def handle(self):
-        data = 'TAG: ' + self.request[0].strip()
-        MetaData.meterOutHandler(data)
-
-# ThreadingUDPServer
-# See SocketServer man page
-class ThreadingUDPServer(SocketServer.ThreadingMixIn, SocketServer.UDPServer): pass
 
 # LogMeter
 #
@@ -280,6 +258,22 @@ class LogMeter(StdApp, MetaData):
         when the object is instantiated).
         """
         return
+
+    def UDPhandler(self, port):
+	#
+	#  Using IP 0.0.0.0 rather than localhost means we
+	#  can listen for all incoming hosts, ideal for remote
+	#  client on test and a host logger.
+	#
+        UDP_IP="0.0.0.0"
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind( (UDP_IP, port) )
+
+        while True:
+            data, addr = sock.recvfrom(1500)
+	    data = "TAG: " + data
+            MetaData.meterOutHandler(data)
+            print data.strip("\n")
 
     # openlog
     #
@@ -355,9 +349,7 @@ class LogMeter(StdApp, MetaData):
 
         if 'tagport' in self.cfg:
             portno = int(self.cfg['tagport'])
-            self.udpserver = ThreadingUDPServer(('localhost', portno), ThreadedMeterUDPHandler)
-
-            server_thread = Thread(target=self.udpserver.serve_forever)
+            server_thread = Thread(target=self.UDPhandler, args=(portno,))
             # Exit the server thread when the main thread terminates
             server_thread.daemon = True
             server_thread.start()
