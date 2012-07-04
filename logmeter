@@ -345,6 +345,16 @@ class LogMeter(StdApp, MetaData):
         t = md.getTime()
         self.writeOutput('INFO: meter time = %s' % t)
 
+        #
+        # For reasons that I cannot fathom when doing
+        # repeated current measurements and breaking
+        # before doing a reading can mess up the
+        # multimeter readigs.  Forcing a measureVoltage()
+        # seems to workaround this.  It is a major ugly
+        # hack. 
+        #
+        md.measureVoltage('DC', 'Max')
+
         MetaData.meterOutHandler = self.writeOutput
 
         if 'tagport' in self.cfg:
