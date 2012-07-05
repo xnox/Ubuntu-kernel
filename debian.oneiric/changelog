@@ -1,9 +1,208 @@
-linux-lts-backport-oneiric (3.0.0-22.36~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-23.37~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1012483
+    - LP: #1021336
+
+  [ Luis Henriques ]
+
+  * SAUCE: (upstreamed) [media] ene_ir: Fix driver initialisation
+    - LP: #1014800
+
+  [ Upstream Kernel Changes ]
+
+  * Revert "net: maintain namespace isolation between vlan and real device"
+    - LP: #1013748
+  * hwmon: (k10temp) Add support for AMD Trinity CPUs
+    - LP: #1009086
+  * hwmon: (fam15h_power) Increase output resolution
+    - LP: #1009086
+  * x86/amd: Re-enable CPU topology extensions in case BIOS has disabled it
+    - LP: #1009087
+  * SCSI: fix scsi_wait_scan
+    - LP: #1013748
+  * SCSI: Fix dm-multipath starvation when scsi host is busy
+    - LP: #1013748
+  * mm: consider all swapped back pages in used-once logic
+    - LP: #1013748
+  * mm: pmd_read_atomic: fix 32bit PAE pmd walk vs pmd_populate SMP race
+    condition
+    - LP: #1013748
+  * iwlwifi: update BT traffic load states correctly
+    - LP: #1013748
+  * cifs: fix oops while traversing open file list (try #4)
+    - LP: #1013748
+  * PARISC: fix boot failure on 32-bit systems caused by branch stubs
+    placed before .text
+    - LP: #1013748
+  * PARISC: fix TLB fault path on PA2.0 narrow systems
+    - LP: #1013748
+  * solos-pci: Fix DMA support
+    - LP: #1013748
+  * mac80211: fix ADDBA declined after suspend with wowlan
+    - LP: #1013748
+  * NFSv4: Map NFS4ERR_SHARE_DENIED into an EACCES error instead of EIO
+    - LP: #1013748
+  * drm/radeon: fix XFX quirk
+    - LP: #1013748
+  * drm/i915: properly handle interlaced bit for sdvo dtd conversion
+    - LP: #1013748
+  * drm/i915: wait for a vblank to pass after tv detect
+    - LP: #1013748
+  * Bluetooth: btusb: Add USB device ID "0a5c 21e8"
+    - LP: #1013748
+  * Bluetooth: btusb: typo in Broadcom SoftSailing id
+    - LP: #1013748
+  * Add Foxconn / Hon Hai IDs for btusb module
+    - LP: #1013748
+  * Bluetooth: Add support for Foxconn/Hon Hai AR5BBU22 0489:E03C
+    - LP: #1013748
+  * ALSA: usb-audio: fix rate_list memory leak
+    - LP: #1013748
+  * vfs: umount_tree() might be called on subtree that had never made it
+    - LP: #1013748
+  * mtd: nand: fix scan_read_raw_oob
+    - LP: #1013748
+  * drm/radeon: properly program gart on rv740, juniper, cypress, barts,
+    hemlock
+    - LP: #1013748
+  * drm/radeon: fix HD6790, HD6570 backend programming
+    - LP: #1013748
+  * drm/ttm: Fix spinlock imbalance
+    - LP: #1013748
+  * ipv4: Do not use dead fib_info entries.
+    - LP: #1013748
+  * ipv4: fix the rcu race between free_fib_info and ip_route_output_slow
+    - LP: #1013748
+  * ipv6: fix incorrect ipsec fragment
+    - LP: #1013748
+  * l2tp: fix oops in L2TP IP sockets for connect() AF_UNSPEC case
+    - LP: #1013748
+  * pktgen: fix crash at module unload
+    - LP: #1013748
+  * pktgen: fix module unload for good
+    - LP: #1013748
+  * sctp: check cached dst before using it
+    - LP: #1013748
+  * skb: avoid unnecessary reallocations in __skb_cow
+    - LP: #1013748
+  * xfrm: take net hdr len into account for esp payload size calculation
+    - LP: #1013748
+  * ext4: force ro mount if ext4_setup_super() fails
+    - LP: #1013748
+  * ext4: add missing save_error_info() to ext4_error()
+    - LP: #1013748
+  * ext4: don't trash state flags in EXT4_IOC_SETFLAGS
+    - LP: #1013748
+  * ext4: add ext4_mb_unload_buddy in the error path
+    - LP: #1013748
+  * ext4: remove mb_groups before tearing down the buddy_cache
+    - LP: #1013748
+  * drm/radeon/kms: add new BTC PCI ids
+    - LP: #1013748
+  * ACPI battery: only refresh the sysfs files when pertinent information
+    changes
+    - LP: #1013748
+  * wl1251: fix oops on early interrupt
+    - LP: #1013748
+  * ext4: don't set i_flags in EXT4_IOC_SETFLAGS
+    - LP: #1013748
+  * Linux 3.0.34
+    - LP: #1013748
+  * char/agp: add another Ironlake host bridge
+    - LP: #1014712
+  * btree: fix tree corruption in btree_get_prev()
+    - LP: #1014712
+  * powerpc: Fix kernel panic during kernel module load
+    - LP: #1014712
+  * crypto: aesni-intel - fix unaligned cbc decrypt for x86-32
+    - LP: #1014712
+  * mac80211: clean up remain-on-channel on interface stop
+    - LP: #1014712
+  * cfg80211: fix interface combinations check
+    - LP: #1014712
+  * net: sierra_net: device IDs for Aircard 320U++
+    - LP: #1014712
+  * can: c_can: fix "BUG! echo_skb is occupied!" during transmit
+    - LP: #1014712
+  * can: c_can: fix an interrupt thrash issue with c_can driver
+    - LP: #1014712
+  * can: c_can: fix race condition in c_can_open()
+    - LP: #1014712
+  * acpi_video: fix leaking PCI references
+    - LP: #1014712
+  * sched: Fix the relax_domain_level boot parameter
+    - LP: #1014712
+  * iwlwifi: don't mess up the SCD when removing a key
+    - LP: #1014712
+  * x86, MCE, AMD: Make APIC LVT thresholding interrupt optional
+    - LP: #1014712
+  * fuse: fix stat call on 32 bit platforms
+    - LP: #1014712
+  * e1000: save skb counts in TX to avoid cache misses
+    - LP: #1014712
+  * mm/vmalloc.c: change void* into explict vm_struct*
+    - LP: #1014712
+  * mm: fix faulty initialization in vmalloc_init()
+    - LP: #1014712
+  * hugetlb: fix resv_map leak in error path
+    - LP: #1014712
+  * Linux 3.0.35
+    - LP: #1014712
+  * ARM i.MX imx21ads: Fix overlapping static i/o mappings
+    - LP: #1016720
+  * xen/setup: filter APERFMPERF cpuid feature out
+    - LP: #1016720
+  * NFSv4.1: Fix a request leak on the back channel
+    - LP: #1016720
+  * USB: option: Add Vodafone/Huawei K5005 support
+    - LP: #1016720
+  * USB: option: Updated Huawei K4605 has better id
+    - LP: #1016720
+  * USB: option: add more YUGA device ids
+    - LP: #1016720
+  * USB: option: fix memory leak
+    - LP: #1016720
+  * USB: option: fix port-data abuse
+    - LP: #1016720
+  * hfsplus: fix overflow in sector calculations in hfsplus_submit_bio
+    - LP: #1016720
+  * xHCI: Increase the timeout for controller save/restore state operation
+    - LP: #1016720
+  * USB: mos7840: Fix compilation of usb serial driver
+    - LP: #1016720
+  * USB: qcserial: Add Sierra Wireless device IDs
+    - LP: #1016720
+  * USB: mct_u232: Fix incorrect TIOCMSET return
+    - LP: #1016720
+  * USB: serial: cp210x: add Optris MS Pro usb id
+    - LP: #1016720
+  * USB: ftdi-sio: Add support for RT Systems USB-RTS01 serial adapter
+    - LP: #1016720
+  * USB: add NO_D3_DURING_SLEEP flag and revert 151b61284776be2
+    - LP: #1016720
+  * usb: cdc-acm: fix devices not unthrottled on open
+    - LP: #1016720
+  * USB: serial: sierra: Add support for Sierra Wireless AirCard 320U modem
+    - LP: #1016720
+  * USB: serial: Enforce USB driver and USB serial driver match
+    - LP: #1016720
+  * USB: fix gathering of interface associations
+    - LP: #1016720
+  * Linux 3.0.36
+    - LP: #1016720
+  * tun: reserves space for network in skb
+    - LP: #905219
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 05 Jul 2012 16:04:35 +0100
+
+linux (3.0.0-22.36) oneiric-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1012040
 
   [ Herton Ronaldo Krzesinski ]
 
@@ -139,7 +338,7 @@ linux-lts-backport-oneiric (3.0.0-22.36~lucid1) lucid-proposed; urgency=low
   * Linux 3.0.33
     - LP: #1008697
 
- -- Luis Henriques <luis.henriques@canonical.com>  Wed, 13 Jun 2012 09:59:23 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 12 Jun 2012 10:56:49 +0100
 
 linux (3.0.0-21.35) oneiric-proposed; urgency=low
 
