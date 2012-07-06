@@ -1,3 +1,16 @@
+linux (2.6.38-15.63) natty-proposed; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * No change upload to fix .ddeb generation in the PPA.
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #1019992
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 06 Jul 2012 10:44:55 +0100
+
 linux (2.6.38-15.62) natty-proposed; urgency=low
 
   [Luis Henriques]
