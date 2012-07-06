@@ -1,9 +1,22 @@
-linux-lts-backport-oneiric (3.0.0-23.37~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-23.38~lucid1) lucid-proposed; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * No change upload to fix .ddeb generation in the PPA.
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #1021336
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 06 Jul 2012 11:00:38 +0100
+
+linux (3.0.0-23.37) oneiric-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1021336
+    - LP: #1020623
 
   [ Luis Henriques ]
 
@@ -195,7 +208,7 @@ linux-lts-backport-oneiric (3.0.0-23.37~lucid1) lucid-proposed; urgency=low
   * tun: reserves space for network in skb
     - LP: #905219
 
- -- Luis Henriques <luis.henriques@canonical.com>  Thu, 05 Jul 2012 16:04:35 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 03 Jul 2012 16:16:15 +0100
 
 linux (3.0.0-22.36) oneiric-proposed; urgency=low
 
