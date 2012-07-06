@@ -1,9 +1,22 @@
-linux-lts-backport-natty (2.6.38-15.62~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-15.63~lucid1) lucid-proposed; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * No change upload to fix .ddeb generation in the PPA.
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #1020422
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 06 Jul 2012 10:44:55 +0100
+
+linux (2.6.38-15.62) natty-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1020422
+    - LP: #1019992
 
   [ Upstream Kernel Changes ]
 
@@ -12,7 +25,7 @@ linux-lts-backport-natty (2.6.38-15.62~lucid1) lucid-proposed; urgency=low
   * KVM: VMX: do not overwrite uptodate vcpu->arch.cr3 on KVM_SET_SREGS
     - LP: #1018440
 
- -- Luis Henriques <luis.henriques@canonical.com>  Tue, 03 Jul 2012 16:14:42 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 02 Jul 2012 09:45:48 +0100
 
 linux (2.6.38-15.61) natty-proposed; urgency=low
 
