@@ -226,7 +226,7 @@ class Workflow:
                 'security-signoff'           : 'canonical-security'
                 },
             'initial_bug_tags' :
-                ['kernel-release-tracking-bug', 'armel'],
+                ['kernel-release-tracking-bug', 'armhf'],
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
             },
