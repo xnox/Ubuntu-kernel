@@ -1,3 +1,16 @@
+linux (3.0.0-23.38) oneiric-proposed; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * No change upload to fix .ddeb generation in the PPA.
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #1020623
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 06 Jul 2012 11:00:38 +0100
+
 linux (3.0.0-23.37) oneiric-proposed; urgency=low
 
   [Luis Henriques]
