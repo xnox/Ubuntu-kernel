@@ -20,9 +20,14 @@ class CheckComponent():
 
     def __init__(self, lp):
         self.lp = lp
+        # note: for package names with ABI in the name, replace the
+        # number with the string 'ABI'
         self.override_db = { 'hardy': {
                                'linux-meta' : {
                                  'linux-restricted-modules-server' : 'restricted'
+                               },
+                               'linux-backports-modules-2.6.24' : {
+                                 'updates-modules-2.6.24-ABI-lpia-di' : 'main'
                                }
                              }
                            }
@@ -51,6 +56,13 @@ class CheckComponent():
                     self.release_db[package][bname] = bcomponent
         return
 
+    def entry_override_db(self, series, package, bin_pkg, default):
+        if series in self.override_db:
+            if package in self.override_db[series]:
+                if bin_pkg in self.override_db[series][package]:
+                    return self.override_db[series][package][bin_pkg]
+        return default
+
     def default_component(self, dcomponent, series, package, bin_pkg):
         if not self.release_db:
             self.load_release_components(series, package)
@@ -60,10 +72,9 @@ class CheckComponent():
         return dcomponent
 
     def override_component(self, dcomponent, series, package, bin_pkg):
-        if series in self.override_db:
-            if package in self.override_db[series]:
-                if bin_pkg in self.override_db[series][package]:
-                    return self.override_db[series][package][bin_pkg]
+        comp = self.entry_override_db(series, package, bin_pkg, None)
+        if comp:
+            return comp
         if series != 'hardy' and package == 'linux-meta':
             if (bin_pkg and bin_pkg.startswith('linux-backports-modules-') and
                 (not bin_pkg.endswith('-preempt'))):
@@ -96,7 +107,8 @@ class CheckComponent():
         if package in self.abi_db:
             mpkg = self.name_abi_transform(bpkg)
             if mpkg in self.abi_db[package]:
-                return self.abi_db[package][mpkg]
+                return self.entry_override_db(series, package, mpkg,
+                                              self.abi_db[package][mpkg])
             else:
                 if package.startswith('linux-backports-modules-'):
                     if not bpkg.endswith('-preempt'):
