@@ -1,3 +1,16 @@
+linux-meta-ti-omap4 (3.0.0.1213.12) oneiric-proposed; urgency=low
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * bump ABI
+
+  [ Tim Gardner ]
+
+  * Move all header meta packages into Section: metapackages
+    - LP: #988447
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Mon, 09 Jul 2012 16:41:54 -0300
+
 linux-meta-ti-omap4 (3.0.0.1212.11) oneiric-proposed; urgency=low
 
   * linux-ti-omap4 3.0.0-1212.24
