@@ -129,13 +129,23 @@ class CheckComponent():
 
     def component_function(self, series, package):
         if (package == 'linux'):
+            # Everything on linux package should be on 'main'. Except
+            # for hardy and lucid, where we had some things on universe
+            # etc., so we use the linux_abi_component that will check
+            # also where packages were on 'release' pocket
             if series in [ 'hardy', 'lucid' ]:
                 return self.linux_abi_component
             return self.main_component
         if (package == 'linux-meta'):
+            # Some precise meta packages were new and never released
+            # originally, so they will default to 'universe' in the
+            # checker. All of them should be on main anyway, so always
+            # return 'main'
+            if series in [ 'precise' ]:
+                return self.main_component
             return self.override_component
         if package.startswith('linux-backports-modules-'):
-            return self.override_component
+            return self.linux_abi_component
         if package.startswith('linux-restricted-modules-'):
             return self.linux_abi_component
         if package.startswith('linux-ubuntu-modules-'):
@@ -143,8 +153,8 @@ class CheckComponent():
         if (package.startswith('linux-lts-backport-') or
             package.startswith('linux-meta-lts-backport-')):
             return self.main_component
-
-        if package in ['linux-ec2', 'linux-fsl-imx51', 'linux-ti-omap4', 'linux-mvl-dove', 'linux-armadaxp']:
+        if package in ['linux-ec2', 'linux-fsl-imx51', 'linux-ti-omap4',
+                       'linux-mvl-dove', 'linux-armadaxp']:
             return self.main_component
         return self.default_component
 
