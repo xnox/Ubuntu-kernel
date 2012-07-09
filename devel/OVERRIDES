@@ -425,3 +425,6 @@ CONFIG_ATH9K_DFS_CERTIFIED n note<only valid for kernels for certified platforms
 
 # CONFIG_AUDIT_LOGINUID_IMMUTABLE is not compatible with upstart
 CONFIG_AUDIT_LOGINUID_IMMUTABLE n note<incompatible with upstart>
+
+# Machine specific on systems we cannot encounter.
+CONFIG_GPIO_EM n note<h/w not encounted>
