@@ -68,10 +68,6 @@ class CheckComponent():
             if (bin_pkg and bin_pkg.startswith('linux-backports-modules-') and
                 (not bin_pkg.endswith('-preempt'))):
                 return 'main'
-        if package.startswith('linux-backports-modules-'):
-            if (bin_pkg and bin_pkg.endswith('-preempt')):
-                return 'universe'
-            dcomponent = 'main'
         return self.default_component(dcomponent, series, package, bin_pkg)
 
     def main_component(self, dcomponent, series, package, bin_pkg):
@@ -102,6 +98,9 @@ class CheckComponent():
             if mpkg in self.abi_db[package]:
                 return self.abi_db[package][mpkg]
             else:
+                if package.startswith('linux-backports-modules-'):
+                    if not bpkg.endswith('-preempt'):
+                        return 'main'
                 return 'universe'
 
         ubuntu = self.lp.launchpad.distributions["ubuntu"]
