@@ -823,6 +823,7 @@ static int kvm_vm_ioctl_create_vcpu(struct kvm *kvm, int n)
 unlink:
 	mutex_lock(&kvm->lock);
 	kvm->vcpus[n] = NULL;
+	atomic_dec(&kvm->online_vcpus);
 vcpu_destroy:
 	mutex_unlock(&kvm->lock);
 	kvm_arch_vcpu_destroy(vcpu);
