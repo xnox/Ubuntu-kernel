@@ -413,13 +413,16 @@ push(@columns, "Policy") if ($policy);
 
 print f_table_start();
 
-print f_table_row_start();
-print f_table_cell(f_em('Option'));
+my $titles;
+
+f_table_row_colour('normal');
+$titles  = f_table_row_start();
+$titles .= f_table_cell(f_em('Option'));
 for my $column (@columns) {
-	print f_table_cell(f_em($column));
+	$titles .= f_table_cell(f_em($column));
 }
-print f_table_cell(f_em('Comments'));
-print f_table_row_end();
+$titles .= f_table_cell(f_em('Comments'));
+$titles .= f_table_row_end();
 my $entry;
 my $cmt;
 my $seen;
@@ -501,7 +504,14 @@ for my $option (@options) {
 my $cnt = 0;
 my $which;
 my $row;
+my $trow;
 for $row (@interesting, @normal) {
+	if (($cnt % 35) == 0) {
+		$which = int(($cnt++ % 6) / 3);
+		$trow = $titles;
+		$trow =~ s/%R%/$which/g;
+		print $trow;
+	}
 	$which = int(($cnt++ % 6) / 3);
 	$row =~ s/%R%/$which/g;
 
