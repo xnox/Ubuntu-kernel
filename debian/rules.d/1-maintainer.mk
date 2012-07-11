@@ -8,8 +8,6 @@ insertchanges:
 startnewrelease:
 	dh_testdir
 	@nextminor=$(shell expr `echo $(revision) | awk -F. '{print $$2}'` + 1); \
-	user=$(shell whoami); \
-	memyselfandirene="$$(getent passwd $$user | cut -d ":" -f 5 | cut -d "," -f 1)"; \
 	now="$(shell date -R)"; \
 	echo "Creating new changelog set for $(release)-$(abinum).$$nextminor..."; \
 	echo -e "linux-ubuntu-modules-$(release) ($(release)-$(abinum).$$nextminor) UNRELEASED; urgency=low\n" > debian/changelog.new; \
@@ -19,8 +17,7 @@ startnewrelease:
 		>> debian/changelog.new; \
 	echo "  CHANGELOG: Use the insertchanges target to create the final log." \
 		>> debian/changelog.new; \
-	echo -e "\n -- $$memyselfandirene <$$user@ubuntu.com>  $$now\n" >> \
-		debian/changelog.new ; \
+	echo -e "\n -- $$DEBFULLNAME <$$DEBEMAIL>  $$now\n" >>debian/changelog.new; \
 	cat debian/changelog >> debian/changelog.new; \
 	mv debian/changelog.new debian/changelog
 
