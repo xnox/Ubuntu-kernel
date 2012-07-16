@@ -5,6 +5,9 @@ LLREPO=linux-2.6.git
 LREPO=linux.git
 UBUNTU=git://kernel.ubuntu.com/ubuntu
 RELEASES="hardy lucid natty oneiric precise quantal"
+EXTRAS="ubuntu-hardy-lbm ubuntu-hardy-lrm ubuntu-hardy-lum ubuntu-lucid-lbm ubuntu-natty-lbm ubuntu-oneiric-lbm ubuntu-precise-lbm"
+EXTRAS="$EXTRAS linux-firmware wireless-crda kernel-testing autotest instrument-lib"
+METAS="hardy lucid natty oneiric precise quantal"
 
 if [ ! -d ${LREPO} ]
 then
@@ -23,6 +26,26 @@ do
 		git clone --reference ${LREPO} ${UBUNTU}/ubuntu-${i}.git ubuntu-${i}.git
 	else
 		(cd ubuntu-${i}.git;git fetch origin;git fetch origin master;git reset --hard FETCH_HEAD)
+	fi
+done
+
+for i in ${METAS}
+do
+	if [ ! -d ubuntu-${i}-meta.git ]
+	then
+		git clone ${UBUNTU}/ubuntu-${i}-meta.git ubuntu-${i}-meta.git
+	else
+		(cd ubuntu-${i}-meta.git;git fetch origin;git fetch origin master;git reset --hard FETCH_HEAD)
+	fi
+done
+
+for i in ${EXTRAS}
+do
+	if [ ! -d ${i}.git ]
+	then
+		git clone ${UBUNTU}/${i}.git ${i}.git
+	else
+		(cd ${i}.git;git fetch origin;git fetch origin master;git reset --hard FETCH_HEAD)
 	fi
 done
 
