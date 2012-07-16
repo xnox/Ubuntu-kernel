@@ -22,9 +22,16 @@ fi
 current="$1"
 next="$2"
 
+there="$next"
+case "$there" in
+/*) ;;
+*)  there="`pwd`/$there" ;;
+esac
 
-"$here/lib-config/devel-info-dump" "$here/OVERRIDES" "$current"
-"$here/lib-config/devel-info-dump" "$here/OVERRIDES" "$next"
+
+# XXX: in theory at least this should be tree specific.
+"$here/lib-config/devel-info-dump" "$there/debian.master/config/annotations" "$current"
+"$here/lib-config/devel-info-dump" "$there/debian.master/config/annotations" "$next"
 
 (
 	cd "$next" || exit 1
