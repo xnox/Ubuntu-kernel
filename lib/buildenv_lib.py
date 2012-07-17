@@ -203,15 +203,21 @@ def GetPackageName():
 	Returns triple (<returncode>, <stdout>, <stderr>)
 		stdout and stderr are strings
 '''
-def RunScript(script, host=None, interpreter=None, timeout=60):
+def RunScript(script, host=None, interpreter=None, timeout=60,
+		getoutput=True):
 	if not interpreter:
 		interpreter = "/bin/sh"
 	cmd = []
 	if host:
 		cmd.extend([ "ssh", "-oConnectTimeout=" + str(timeout), host ])
 	cmd.append(interpreter)
-	p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
-	(pout, perr) = p.communicate(input=script)
+
+	if getoutput:
+		p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+		(pout, perr) = p.communicate(input=script)
+	else:
+		p = Popen(cmd, stdin=PIPE)
+		(pout, perr) = p.communicate(input=script)
 	
 	return (p.returncode, pout, perr)
 

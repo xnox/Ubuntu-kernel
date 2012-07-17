@@ -24,12 +24,12 @@ from buildenv_lib import *
 # Built-in quirk list
 #------------------------------------------------------------------------------
 IgnorePatterns = dict()
-IgnorePatterns["dapper" ] = [ ".*_xen.deb", ".*iseries-smp.*" ]
 IgnorePatterns["karmic" ] = [ ".*dove-z0.*" ]
 IgnorePatterns["lucid"] = [ ".*_lpia.deb" ]
 IgnorePatterns["natty"] = [ ".*_ppc64.deb" ]
 IgnorePatterns["oneiric"] = [ ".*_ppc64.deb" ]
 IgnorePatterns["precise"] = [ ".*_ppc64.deb" ]
+IgnorePatterns["quantal"] = [ ".*_ppc64.deb" ]
 
 #------------------------------------------------------------------------------
 # Setup the command line parser and run it.
@@ -47,6 +47,9 @@ parser.add_option("--host", action="store", dest="tgthost",
 			" (%default)")
 parser.add_option("--ckt-ppa", action="store_true", dest="cktppa",
 		default=False, help="add c-k-t ppa as an abi source")
+parser.add_option("--no-tree-script", action="store_true", dest="forcemethod",
+		default=False, help="Use the external retrieving method " +
+			"even if there is a in-tree getabis.")
 (opts, args) = parser.parse_args()
 
 #------------------------------------------------------------------------------
@@ -77,6 +80,15 @@ debian_dir = GetDebianDir(sha1=release_tag)
 if not os.path.isdir(os.path.join(debian_dir, "abi")):
 	print "EE: No abi directory found in", debian_dir
 	sys.exit(1)
+
+#------------------------------------------------------------------------------
+# Print either ok or failed based on return code
+#------------------------------------------------------------------------------
+def PrintResult(rc):
+	if rc:
+		print "FAILED!"
+	else:
+		print "ok"
 
 #------------------------------------------------------------------------------
 # Look into flavour-control.stub to find out how the linux package is called
@@ -136,33 +148,12 @@ def GetArchFlavourList(sha1):
 	return afl
 
 #------------------------------------------------------------------------------
-# FIXME: Naturally Dapper is "different"
-#------------------------------------------------------------------------------
-def GetArchFlavourListDapper(sha1):
-	filename = os.path.join(debian_dir, "config", "archmap")
-
-	afl = []
-	for line1 in GitCatFile(filename, sha1=sha1):
-		if line1.startswith("#") or line1 == "\n":
-			continue
-		if line1.startswith("th-") or line1.startswith("headers-"):
-			continue
-		(flavour, arch) = line1.rstrip().split()[0:2]
-		if arch == "powerpc64":
-			arch = "powerpc"
-		afl.append([ arch, flavour ])
-	return afl
-
-#------------------------------------------------------------------------------
 # Set up some variables.
 #------------------------------------------------------------------------------
 series   = pocket.split("-")[0]
 kversion = version.split("-")[0]
 kabi     = version.split("-")[1].split(".")[0]
-if series == "dapper":
-	pkgname  = "linux-image-" + kversion + "-" + kabi
-else:
-	pkgname  = GetPkgName(release_tag) + "-" + kversion + "-" + kabi
+pkgname  = GetPkgName(release_tag) + "-" + kversion + "-" + kabi
 
 #------------------------------------------------------------------------------
 # This runs a prepared script which downloads the package file.
@@ -291,11 +282,7 @@ def RetrieveABI(tmpdir, abi_arch_dir, flavour):
 	rc = 0
 	if not opts.dryrun:
 		rc = os.system(cmd)
-
-	if rc:
-		print "FAILED!"
-	else:
-		print "done"
+	PrintResult(rc)
 
 	return not rc
 
@@ -306,92 +293,179 @@ abi_dir = os.path.join(debian_dir, "abi", version)
 if not opts.dryrun and not os.path.isdir(abi_dir):
 	os.mkdir(abi_dir)
 
-#------------------------------------------------------------------------------
-# Process all flavours for all architectures defined.
-#------------------------------------------------------------------------------
-errors = False
 tmpdir = "abi-tmp-" + series + "-" + str(os.getpid())
-if series == "dapper":
-	archflavourlist = GetArchFlavourListDapper(release_tag)
-else:
+
+def ExternalGetAbis():
+	#----------------------------------------------------------------------
+	# Process all flavours for all architectures defined.
+	#----------------------------------------------------------------------
+	errors = False
 	archflavourlist = GetArchFlavourList(release_tag)
 
-for (arch, flavour) in archflavourlist:
-	pkg = pkgname + "-" + flavour + "_" + version + "_" + arch + ".deb"
+	for (arch, flavour) in archflavourlist:
+		pkg = pkgname + "-" + flavour + "_" + version
+		pkg = pkg + "_" + arch + ".deb"
 
-	#----------------------------------------------------------------------
-	# There are some exceptions in which packages are really build and
-	# have ABI definitions.
-	#----------------------------------------------------------------------
-	ignore = False
-	if IgnorePatterns.has_key(series):
-		for pattern in IgnorePatterns[series]:
-			if re.match(pattern, pkg):
-				print "WW:", pkg, "(ignored)"
-				ignore = True
-				break
-	if ignore:
-		continue
+		#--------------------------------------------------------------
+		# There are some exceptions in which packages are really build
+		# and have ABI definitions.
+		#--------------------------------------------------------------
+		ignore = False
+		if IgnorePatterns.has_key(series):
+			for pattern in IgnorePatterns[series]:
+				if re.match(pattern, pkg):
+					print "WW:", pkg, "(ignored)"
+					ignore = True
+					break
+		if ignore:
+			continue
 
-	#----------------------------------------------------------------------
-	# When not running in test mode, make sure the abi directory for the
-	# specific architecture exists.
-	#----------------------------------------------------------------------
-	abi_arch_dir = os.path.join(abi_dir, arch)
-	if not opts.dryrun and not os.path.isdir(abi_arch_dir):
-		os.mkdir(abi_arch_dir)
+		#--------------------------------------------------------------
+		# When not running in test mode, make sure the abi directory
+		# for the specific architecture exists.
+		#--------------------------------------------------------------
+		aa_dir = os.path.join(abi_dir, arch)
+		if not opts.dryrun and not os.path.isdir(aa_dir):
+			os.mkdir(aa_dir)
 
-	#----------------------------------------------------------------------
-	# If a file named like the flavour exists in the architectur specific
-	# ABI directory, assume it was already fetched in a previous run.
-	#----------------------------------------------------------------------
-	if os.path.isfile(os.path.join(abi_arch_dir, flavour)):
-		print "II:", arch + "/" + flavour, "exists (skipping)"
-		continue
+		#--------------------------------------------------------------
+		# If a file named like the flavour exists in the architecture
+		# specific ABI directory, assume it was already fetched in a
+		# previous run.
+		#--------------------------------------------------------------
+		if os.path.isfile(os.path.join(aa_dir, flavour)):
+			print "II:", arch + "/" + flavour, "exists (skipping)"
+			continue
 
-	#----------------------------------------------------------------------
-	# Download, extaction (and potentially copy to local)
-	#----------------------------------------------------------------------
-	print "II:", pkg
-	if DownloadPackage(pkg, srcpkgname):
-		abiversion = kversion + "-" + kabi + "-" + flavour
-		if ExtractPackage(pkg, tmpdir, abiversion, flavour):
-			if not RetrieveABI(tmpdir, abi_arch_dir, flavour):
+		#--------------------------------------------------------------
+		# Download, extaction (and potentially copy to local)
+		#--------------------------------------------------------------
+		print "II:", pkg
+		if DownloadPackage(pkg, srcpkgname):
+			abiversion = kversion + "-" + kabi + "-" + flavour
+			if ExtractPackage(pkg, tmpdir, abiversion, flavour):
+				if not RetrieveABI(tmpdir, aa_dir, flavour):
+					errors = True
+			else:
 				errors = True
 		else:
 			errors = True
-	else:
-		errors = True
 
-#------------------------------------------------------------------------------
-# Try to clean up the temporary directory. But do not bother too much if this
-# fails.
-#------------------------------------------------------------------------------
-cmd = "rm -rf " + tmpdir
-print "II: Cleaning up",
-if not opts.local:
-	print "on", opts.tgthost,
-print "...",
-sys.stdout.flush()
-
-rc = 0
-if not opts.dryrun:
+	#----------------------------------------------------------------------
+	# Try to clean up the temporary directory. But do not bother too much
+	# if this fails.
+	#----------------------------------------------------------------------
+	cmd = "rm -rf " + tmpdir
+	print "II: Cleaning up",
 	if not opts.local:
+		print "on", opts.tgthost,
+	print "...",
+	sys.stdout.flush()
+
+	rc = 0
+	if not opts.dryrun:
+		if not opts.local:
+			rc = RunScript(cmd, host=opts.tgthost)[0]
+		else:
+			rc = RunScript(cmd)[0]
+
+	PrintResult(rc)
+
+	if not opts.dryrun:
+		try:
+			abifile = open(os.path.join(abi_dir, "abiname"), "w")
+			abifile.write(kabi + "\n")
+			abifile.close()
+		except:
+			print "EE: Failed to create \"abiname\" file!"
+			errors = True
+
+	return errors
+
+#------------------------------------------------------------------------------
+# Run the getabis script from the kernel tree on a remote machine
+#------------------------------------------------------------------------------
+def TreeGetAbisRemote():
+	revision = version.split("-")[1]
+
+	cmd  = "mkdir -p " + os.path.join(tmpdir, "etc") + "\n"
+	rc = RunScript(cmd, host=opts.tgthost)[0]
+
+	#----------------------------------------------------------------------
+	# The two components required are the script and the config. The
+	# script goes into the top-level dir, and the config into etc there.
+	#----------------------------------------------------------------------
+	cmd  = "scp -q debian/scripts/misc/getabis " + opts.tgthost
+	cmd += ":" + tmpdir + "\n"
+	cmd += "scp -q " + debian_dir + "/etc/getabis " + opts.tgthost
+	cmd += ":" + tmpdir +"/etc"
+	print "II: Sending getabi scripts to", opts.tgthost, "...",
+	sys.stdout.flush()
+	if not opts.dryrun:
+		rc = RunScript(cmd)[0]
+	else:
+		rc = 0
+	PrintResult(rc)
+
+	#----------------------------------------------------------------------
+	# Run the script with stdout and stderr going to the screen
+	#----------------------------------------------------------------------
+	cmd  = "cd " + tmpdir + "\n"
+	cmd += "DEBIAN=. ./getabis " + kversion + " " + revision
+	print "II: Running getabis on", opts.tgthost, "..."
+	sys.stdout.flush()
+	if not opts.dryrun:
+		rc = RunScript(cmd, host=opts.tgthost, getoutput=False)[0]
+	else:
+		rc = 0
+	PrintResult(rc)
+
+	#----------------------------------------------------------------------
+	# Copy the abi directory from remote to local
+	#----------------------------------------------------------------------
+	if not rc:
+		cmd  = "scp -r " + opts.tgthost + ":" + tmpdir + "/abi/. "
+		cmd += debian_dir + "/abi/"
+		print "II: Retrieving files from", opts.tgthost, "...",
+		sys.stdout.flush()
+		if not opts.dryrun:
+			(rc, out, err) = RunScript(cmd)
+		else:
+			rc = 0
+		PrintResult(rc)
+
+	cmd = "rm -rf " + tmpdir
+	print "II: Cleaning up on", opts.tgthost, "...",
+	sys.stdout.flush()
+	if not opts.dryrun:
 		rc = RunScript(cmd, host=opts.tgthost)[0]
 	else:
-		rc = RunScript(cmd)[0]
+		rc = 0
+	PrintResult(rc)
 
-if rc:
-	print "FAILED!"
+	return True
+
+def TreeGetAbis():
+	if opts.local:
+		revision = version.split("-")[1]
+		cmd  = "./debian/scripts/misc/getabis " + kversion + " "
+		cmd += revision
+		if not opts.dryrun:
+			rc = RunScript(cmd, getoutput=False)[0]
+		else:
+			rc = 0
+		PrintResult(rc)
+		if rc:
+			errors = True
+		else:
+			errors = False
+	else:
+		errors = TreeGetAbisRemote()
+
+if debian_dir == "debian" or opts.forcemethod:
+	errors = ExternalGetAbis()
 else:
-	print "done"
-	
-if not opts.dryrun:
-	try:
-		open(os.path.join(abi_dir, "abiname"), "w").write(kabi + "\n")
-	except:
-		print "EE: Failed to create \"abiname\" file!"
-		errors = True
+	errors = TreeGetAbis()
 
 if errors:
 	print "EE: Some operations failed!"
