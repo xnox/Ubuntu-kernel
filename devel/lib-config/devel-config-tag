@@ -104,11 +104,14 @@ sub emit()
 		($default, $expected) = ('n', 'n');
 	}
 
-	$options{$option} = join(' ', ($maybe, $default, $expected));
-	for my $flag (sort keys %flags) {
-		$options{$option} .= " flag<$flag>";
+	# IGNORE: things which should not be listed at all.
+	if (!$flags{'IGNORE'}) {
+		$options{$option} = join(' ', ($maybe, $default, $expected));
+		for my $flag (sort keys %flags) {
+			$options{$option} .= " flag<$flag>";
+		}
+		$desc{$option} = $prompt;
 	}
-	$desc{$option} = $prompt;
 
 	# Reset for the next option ...
 	($maybe, $default, $prompt, $choice) = ('-', '-', '', 0);
