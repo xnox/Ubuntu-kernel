@@ -55,7 +55,7 @@ list_interesting "RTC Drivers" "CONFIG_RTC_DRV_" ""
 
 list_interesting "Keyboard/Mouse Drivers" "CONFIG_(KEYBOARD|MOUSE)_" ""
 
-list_interesting "USB support" "CONFIG_USB_" ""
+list_interesting "USB support" "CONFIG_USB_" "(CONFIG_USB_ARCH_HAS_|USB_OHCI_BIG_ENDIAN_.*)"
 
 list_interesting "GPIO support" "CONFIG_GPIO_" ""
 
