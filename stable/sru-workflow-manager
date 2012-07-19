@@ -1232,6 +1232,28 @@ class Shank(StdApp):
             # stop further processing by this bot
             self.set_task_to_state(self.projectname, 'Incomplete')
 
+    def hold_updates_security_copy(self):
+        """
+        The security team wants to avoid updates being copied to
+        security/updates on Friday before the weekend. If there is some
+        last minute crisis/regression on the kernel copied to
+        -updates/-security, there are little resources to deal with this
+        on the weekend. Also USN processing may be affected the by time
+        of the kernel release. It was agreed that we should delay kernel
+        copying to -updates/-security if we are between 1800UTC Fri -
+        2100UTC Sun, this function is used to check that so we delay
+        setting the promote to -updates/-security tasks to Confirmed.
+        """
+        now = datetime.utcnow()
+        wday = now.weekday()
+        if wday == 5:
+            return True
+        if wday == 4 and now.hour >= 18:
+            return True
+        if wday == 6 and now.hour < 21:
+            return True
+        return False
+
     #
     # This is not performed during processing for a specific task but only if several tasks are
     # in the correct state
@@ -1279,24 +1301,29 @@ class Shank(StdApp):
             # one last check for test results
             if 'qa-testing-passed' in self.bugtags and \
                     ('certification-testing-passed' in self.bugtags or self.taskbyname['certification-testing'].status == 'Invalid'):
-                task = self.taskbyname[self.projectname]
-                # we're all good
-                if self.security_publishing_required:
-                    self.verbose('Requires publishing to the -security pocket\n')
-                    if self.taskbyname['promote-to-security'].status == 'New':
-                        self.set_task_to_state('promote-to-security', 'Confirmed')
-                else:
-                    if self.taskbyname['promote-to-security'].status == 'New':
-                        self.set_task_to_state('promote-to-security', 'Invalid')
 
-                if self.taskbyname['promote-to-updates'].status == 'New':
-                    self.set_task_to_state('promote-to-updates', 'Confirmed')
-                    self.set_tagged_timestamp(task, 'kernel-stable-Promote-to-updates-start')
-                    self.set_stable_phase(task, 'CopyToUpdates')
-                # Now send a happy email 
-                msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
-                #self.send_email(task, 'Package is ready for publication', msgbody)
-                #self.send_status_update(task, 'available for publication.')
+                # No publication on Fri/Sat/Sun (see function)
+                if not self.hold_updates_security_copy():
+                    task = self.taskbyname[self.projectname]
+                    # we're all good
+                    if self.security_publishing_required:
+                        self.verbose('Requires publishing to the -security pocket\n')
+                        if self.taskbyname['promote-to-security'].status == 'New':
+                            self.set_task_to_state('promote-to-security', 'Confirmed')
+                    else:
+                        if self.taskbyname['promote-to-security'].status == 'New':
+                            self.set_task_to_state('promote-to-security', 'Invalid')
+
+                    if self.taskbyname['promote-to-updates'].status == 'New':
+                        self.set_task_to_state('promote-to-updates', 'Confirmed')
+                        self.set_tagged_timestamp(task, 'kernel-stable-Promote-to-updates-start')
+                        self.set_stable_phase(task, 'CopyToUpdates')
+                    # Now send a happy email 
+                    msgbody = 'All tests are complete and the publishing tasks have been set to Confirmed\n'
+                    #self.send_email(task, 'Package is ready for publication', msgbody)
+                    #self.send_status_update(task, 'available for publication.')
+                else:
+                    self.verbose('Avoiding to touch publishing tasks on Fri/Sat/Sun\n')
                 
             else:
                 # don't have required testing signoffs
