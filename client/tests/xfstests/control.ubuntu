@@ -193,7 +193,7 @@ TEST_MATRIX = {
 	    '065' : ['xfs'],
 	    '066' : ['xfs'],
 	    '067' : ['xfs'],
-	    '068' : ['xfs'],
+	    #'068' : ['xfs'], # hangs sometimes
 	    '069' : ['generic'],
 	    '070' : ['generic'],
 	    #'071' : ['xfs'], # TODO has errors, could be revisited
