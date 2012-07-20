@@ -1,4 +1,18 @@
-linux-lts-backport-oneiric (3.0.0-23.38~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-23.39~lucid1) lucid-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1026884
+
+  [ Upstream Kernel Changes ]
+
+  * thp: avoid atomic64_read in pmd_read_atomic for 32bit PAE
+    - LP: #1026690
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 20 Jul 2012 08:51:26 -0700
+
+linux (3.0.0-23.38) oneiric-proposed; urgency=low
 
   [ Andy Whitcroft ]
 
@@ -7,7 +21,7 @@ linux-lts-backport-oneiric (3.0.0-23.38~lucid1) lucid-proposed; urgency=low
   [ Luis Henriques ]
 
   * Release Tracking Bug
-    - LP: #1021336
+    - LP: #1020623
 
  -- Andy Whitcroft <apw@canonical.com>  Fri, 06 Jul 2012 11:00:38 +0100
 
