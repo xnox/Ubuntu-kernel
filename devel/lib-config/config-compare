@@ -352,6 +352,7 @@ if ($info) {
 			($option, $value) = ($1, $2);
 			if ($option eq 'flag') {
 				$flags{$config} .= " " . f_em($value);
+				$flags{$config, $value} = 1;
 			} elsif ($option eq 'note') {
 				$flags{$config} .= " $value";
 			} elsif ($option eq 'choice') {
@@ -438,6 +439,7 @@ if (!$policy) {
 	%policy = ();
 }
 for my $option (@options) {
+	next if ($flags{$option, 'IGNORE'});
 	$seen = '';
 	$cmt = '';
 	$ok = 1;
