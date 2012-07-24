@@ -14,6 +14,7 @@ TEST_TYPE = 'client'
 BLACKLIST = [
     'lp-1009207.sh',   # Fails consistently
     'enospc.sh',       # Hangs forever on rizzo, amd64, quantal
+    'lp-994247.sh',    # Causes an oops on Precise. A fix is inbound and this should be enabled on 7/30/12.
 ]
 
 result = job.run_test_detail('ecryptfs', test_name='setup', fs_type=None, tag='setup.all')
