@@ -9,6 +9,10 @@ TEST_CLASS = 'kernel'
 TEST_CATEGORY = 'Functional'
 TEST_TYPE = 'client'
 
+# BLACKLIST is a list of ecryptfs tests that we know we don't want to run
+#
+BLACKLIST = ['lp-1009207.sh']
+
 result = job.run_test_detail('ecryptfs', test_name='setup', fs_type=None, tag='setup.all')
 
 for dir in ['/mnt/upper', '/mnt/lower', '/mnt/image']:
@@ -28,6 +32,9 @@ if os.path.exists(tests_rc):
         (category, t) = line.split('=')
         t = t.replace('"', '')
         for test in t.split(' '):
+            if test in BLACKLIST:
+                print("BLACKLISTED: '%s'" % (test))
+                continue
             tests.append(test)
 
     for fs_type in FS_TYPES:
