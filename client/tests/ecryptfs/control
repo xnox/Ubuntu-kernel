@@ -11,7 +11,10 @@ TEST_TYPE = 'client'
 
 # BLACKLIST is a list of ecryptfs tests that we know we don't want to run
 #
-BLACKLIST = ['lp-1009207.sh']
+BLACKLIST = [
+    'lp-1009207.sh',   # Fails consistently
+    'enospc.sh',       # Hangs forever on rizzo, amd64, quantal
+]
 
 result = job.run_test_detail('ecryptfs', test_name='setup', fs_type=None, tag='setup.all')
 
