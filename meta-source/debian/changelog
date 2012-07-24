@@ -1,3 +1,17 @@
+linux-meta (2.6.32.42.49) lucid-proposed; urgency=low
+
+  [ Luis Henriques ]
+
+  * UBUNTU: Fix Vcs-Git in linux-lucid-meta
+    - LP: #999726
+  * Bump ABI
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * UBUNTU: try to automatically get version to give for dpkg-genchanges
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 24 Jul 2012 17:19:17 +0100
+
 linux-meta (2.6.32.41.48) lucid-proposed; urgency=low
 
   [ Tim Gardner ]
