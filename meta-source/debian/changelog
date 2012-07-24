@@ -1,3 +1,15 @@
+linux-ports-meta (2.6.32.42.34) lucid-proposed; urgency=low
+
+  [ Luis Henriques ]
+
+  * Bump ABI
+
+  [ Herton Ronaldo Krzesinski ]
+
+  * UBUNTU: try to automatically get version to give for dpkg-genchanges
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 24 Jul 2012 17:40:12 +0100
+
 linux-ports-meta (2.6.32.41.33) lucid-proposed; urgency=low
 
   * Bump ABI
