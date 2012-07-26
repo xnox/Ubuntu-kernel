@@ -1,4 +1,14 @@
+linux-meta (3.2.0.29.31) precise-proposed; urgency=low
+
+  [ Luis Henriques ]
+
+  * Bump ABI
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 26 Jul 2012 16:52:11 +0100
+
 linux-meta (3.2.0.28.30) precise-proposed; urgency=low
+
+  ## Note 3.2.0.28.30 was never uploaded and superceded by 3.2.0.29.31 ##
 
   [ Luis Henriques ]
 
