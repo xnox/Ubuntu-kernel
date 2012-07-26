@@ -44,7 +44,7 @@ static inline void twd_local_timer_of_register(void)
 {
 }
 #endif
-void twd_timer_setup(struct clock_event_device *);
+int __cpuinit twd_timer_setup(struct clock_event_device *);
 void twd_timer_stop(struct clock_event_device *);
 struct resource;
 
