@@ -4,7 +4,7 @@ Section: devel
 Priority: optional
 Depends: ${misc:Depends}, linux-headers-${kernel-abi-version}-generic
 Description: Generic Linux kernel headers
- This package will always depend on the latest generic kernel headers
+ This package will always depend on the latest generic 12.10 kernel headers
  available.
 
 Package: linux-image-generic-lts-quantal
@@ -13,6 +13,15 @@ Section: metapackages
 Priority: optional
 Depends: ${misc:Depends}, linux-image-${kernel-abi-version}-generic, linux-firmware
 Description: Generic Linux kernel image
- This package will always depend on the latest generic kernel image
+ This package will always depend on the latest generic 12.10 kernel image
  available.
+
+Package: linux-generic-lts-quantal
+Architecture: i386 amd64
+Section: metapackages
+Priority: optional
+Depends: ${misc:Depends}, linux-image-generic-lts-quantal, linux-headers-generic-lts-quantal
+Description: Generic Linux kernel image and headers
+ This package will always depend on the latest generic 12.10 kernel image
+ and headers packages available.
 
