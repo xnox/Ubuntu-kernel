@@ -1,3 +1,10 @@
+linux-meta-lts-quantal (3.5.0.6.12) precise; urgency=low
+
+  * Added linux-generic-lts-quantal 
+    Depends on both image and headers packages.
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 26 Jul 2012 08:00:25 -0600
+
 linux-meta-lts-quantal (3.5.0.6.11) precise; urgency=low
 
   * Ubuntu-lts-3.5.0-6.6
