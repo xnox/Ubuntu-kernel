@@ -30,6 +30,7 @@
 #include <linux/slab.h>
 
 #include <linux/i2c/twl-rtc.h>
+#include <linux/i2c/twl.h>
 
 /*
  * RTC block register offsets (use TWL_MODULE_RTC)
@@ -271,7 +272,7 @@ static int twl_rtc_read_time(struct device *dev, struct rtc_time *tm)
 	u8 save_control;
 	u8 rtc_control;
 
-	ret = twl_rtc_read_u8(&save_control, REG_RTC_CTRL_REG);
+	ret = twl_rtc_read_u8(twl_rtc, &save_control, REG_RTC_CTRL_REG);
 	if (ret < 0) {
 		dev_err(dev, "%s: reading CTRL_REG, error %d\n", __func__, ret);
 		return ret;
@@ -434,7 +435,6 @@ out:
 
 static irqreturn_t twl_rtc_interrupt(int irq, void *_twl_rtc)
 {
-	unsigned long events;
 	struct twl_rtc_device *twl_rtc = _twl_rtc;
 	unsigned long events = 0;
 	int ret = IRQ_NONE;
@@ -540,7 +540,7 @@ static int __devinit twl_rtc_probe(struct platform_device *pdev)
 		twl_rtc->rdata->unmask_irq(twl_rtc->rdata->mfd);
 
 	dev_info(&pdev->dev, "Enabling TWL-RTC\n");
-	tet = twl_rtc_write_u8(twl_rtc, BIT_RTC_CTRL_REG_STOP_RTC_M, REG_RTC_CTRL_REG);
+	ret = twl_rtc_write_u8(twl_rtc, BIT_RTC_CTRL_REG_STOP_RTC_M, REG_RTC_CTRL_REG);
 	/* Check RTC module status, Enable if it is off */
 	ret = twl_rtc_read_u8(twl_rtc, &rd_reg, REG_RTC_CTRL_REG);
 	if (ret < 0)
