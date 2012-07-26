@@ -21,30 +21,23 @@
 #include <linux/clockchips.h>
 #include <linux/interrupt.h>
 #include <linux/io.h>
-<<<<<<< current
 #include <linux/of_irq.h>
 #include <linux/of_address.h>
-=======
 #include <linux/interrupt.h>
->>>>>>> patched
+#include <linux/cpu.h>
 
 #include <asm/smp_twd.h>
+#include <asm/localtimer.h>
 
-<<<<<<< current
 /* set up by the platform code */
-=======
->>>>>>> patched
 static void __iomem *twd_base;
 
 static struct clk *twd_clk;
 static unsigned long twd_timer_rate;
 
-<<<<<<< current
 static struct clock_event_device __percpu **twd_evt;
 static int twd_ppi;
 
-=======
->>>>>>> patched
 static void twd_set_mode(enum clock_event_mode mode,
 			struct clock_event_device *clk)
 {
@@ -99,7 +92,7 @@ static int twd_timer_ack(void)
 	return 0;
 }
 
-static void twd_timer_stop(struct clock_event_device *clk)
+ void twd_timer_stop(struct clock_event_device *clk)
 {
 	twd_set_mode(CLOCK_EVT_MODE_UNUSED, clk);
 	disable_percpu_irq(clk->irq);
@@ -238,11 +231,7 @@ static struct clock_event_device __percpu **twd_evt;
 /*
  * Setup the local clock events for a CPU.
  */
-<<<<<<< current
-static int __cpuinit twd_timer_setup(struct clock_event_device *clk)
-=======
-static void __cpuinit twd_timer_setup(struct clock_event_device *clk)
->>>>>>> patched
+int __cpuinit twd_timer_setup(struct clock_event_device *clk)
 {
 	struct clock_event_device **this_cpu_clk;
 
@@ -364,6 +353,7 @@ out:
 }
 
 static struct clock_event_device __percpu *twd_clock_event;
+#endif
 static int twd_ppi;
 
 static void __cpuinit twd_setup(void *data)
