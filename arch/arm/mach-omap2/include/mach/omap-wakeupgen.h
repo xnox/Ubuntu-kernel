@@ -11,6 +11,9 @@
 #ifndef OMAP_ARCH_WAKEUPGEN_H
 #define OMAP_ARCH_WAKEUPGEN_H
 
+/* OMAP4 and OMAP5 has same base address */
+#define OMAP_WKUPGEN_BASE           0x48281000
+
 #define OMAP_WKG_CONTROL_0			0x00
 #define OMAP_WKG_ENB_A_0			0x10
 #define OMAP_WKG_ENB_B_0			0x14
