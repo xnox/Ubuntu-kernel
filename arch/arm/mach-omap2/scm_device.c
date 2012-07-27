@@ -29,6 +29,8 @@
 #include "pm.h"
 #include <plat/scm.h>
 
+#define DEBUG
+
 static DEFINE_IDR(scm_device_idr);
 
 static int scm_dev_init(struct omap_hwmod *oh, void *user)
@@ -47,27 +49,31 @@ static int scm_dev_init(struct omap_hwmod *oh, void *user)
 		return -ENOMEM;
 	}
 
+	printk("%s::%d\n", __FUNCTION__, __LINE__);
 	ret = idr_pre_get(&scm_device_idr, GFP_KERNEL);
 	if (ret < 0)
 		goto fail_id;
+	printk("%s::%d\n", __FUNCTION__, __LINE__);
 	ret = idr_get_new(&scm_device_idr, scm_pdata, &num);
 	if (ret < 0)
 		goto fail_id;
+	printk("%s::%d\n", __FUNCTION__, __LINE__);
 	scm_dev_attr = oh->dev_attr;
 	scm_pdata->cnt = scm_dev_attr->cnt;
 	scm_pdata->rev = scm_dev_attr->rev;
+	printk("%s::%d\n", __FUNCTION__, __LINE__);
 	if (cpu_is_omap446x())
 		scm_pdata->accurate = 1;
-
+	printk("%s::%d\n", __FUNCTION__, __LINE__);
 	pd = omap_device_build("omap4plus_scm", num,
 		oh, scm_pdata, sizeof(*scm_pdata), NULL, 0, false);
-
+	printk("%s::%d\n", __FUNCTION__, __LINE__);
 	if (IS_ERR(pd)) {
 		dev_warn(&oh->od->pdev->dev,
 			"Could not build omap_device for %s\n", oh->name);
 		ret = PTR_ERR(pd);
 	}
-
+	printk("%s::%d\n", __FUNCTION__, __LINE__);
 fail_id:
 	kfree(scm_pdata);
 
