@@ -1,4 +1,45 @@
-linux-lts-backport-natty (2.6.38-15.63~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-15.65~lucid1) lucid-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1029786
+
+  [ Andy Whitcroft ]
+
+  * SAUCE: rds_ib_send() -- prevent local pings triggering BUG_ON()
+    - LP: #1016299
+    - CVE-2012-2372
+
+  [ Upstream Kernel Changes ]
+
+  * hugetlb: fix resv_map leak in error path
+    - LP: #1004621
+    - CVE-2012-2390
+  * mm: fix vma_resv_map() NULL pointer
+    - LP: #1004621
+    - CVE-2012-2390
+  * net: sock: validate data_len before allocating skb in
+    sock_alloc_send_pskb()
+    - LP: #1006622
+    - CVE-2012-2136
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 27 Jul 2012 14:13:12 +0100
+
+linux (2.6.38-15.64) natty-proposed; urgency=low
+
+  [ Andy Whitcroft ]
+
+  * fix ABI directory naming
+
+  [ Luis Henriques ]
+
+  * Release Tracking Bug
+    - LP: #1019992
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 06 Jul 2012 15:49:42 +0100
+
+linux (2.6.38-15.63) natty-proposed; urgency=low
 
   [ Andy Whitcroft ]
 
@@ -7,7 +48,7 @@ linux-lts-backport-natty (2.6.38-15.63~lucid1) lucid-proposed; urgency=low
   [ Luis Henriques ]
 
   * Release Tracking Bug
-    - LP: #1020422
+    - LP: #1019992
 
  -- Andy Whitcroft <apw@canonical.com>  Fri, 06 Jul 2012 10:44:55 +0100
 
