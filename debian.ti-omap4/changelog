@@ -4,6 +4,228 @@ linux-ti-omap4 (3.0.0-1213.26) UNRELEASED; urgency=low
   CHANGELOG: Use the printchanges target to see the curent changes.
   CHANGELOG: Use the insertchanges target to create the final log.
 
+  [ Ubuntu: 3.0.0-24.40 ]
+
+  * Release Tracking Bug
+    - LP: #1027841
+  * [Packaging] getabis should be extracting all packages
+    - LP: #1021174
+  * [Config] getabis -- series uses linux-image-extra
+    - LP: #1021174
+  * SAUCE: sched: Fix race in task_group()
+    - LP: #999755
+  * Extract firmware module info during getabi
+    - LP: #1021174
+  * net: sock: validate data_len before allocating skb in
+    sock_alloc_send_pskb()
+    - LP: #1006622
+    - CVE-2012-2136
+  * epoll: clear the tfile_check_list on -ELOOP
+    - LP: #1021811
+    - CVE-2012-3375
+  * ALSA: hda - Add Realtek ALC280 codec support
+    - LP: #1017017, #1025406
+  * powerpc/xmon: Use cpumask iterator to avoid warning
+    - LP: #1025406
+  * media: smsusb: add autodetection support for USB ID 2040:f5a0
+    - LP: #1025406
+  * ARM: fix rcu stalls on SMP platforms
+    - LP: #1025406
+  * cipso: handle CIPSO options correctly when NetLabel is disabled
+    - LP: #1025406
+  * net: l2tp_eth: fix kernel panic on rmmod l2tp_eth
+    - LP: #1025406
+  * dummy: fix rcu_sched self-detected stalls
+    - LP: #1025406
+  * ethtool: allow ETHTOOL_GSSET_INFO for users
+    - LP: #1025406
+  * bridge: Assign rtnl_link_ops to bridge devices created via ioctl (v2)
+    - LP: #1025406
+  * bonding: Fix corrupted queue_mapping
+    - LP: #1025406
+  * ipv6: Move ipv6 proc file registration to end of init order
+    - LP: #1025406
+  * sky2: fix checksum bit management on some chips
+    - LP: #1025406
+  * be2net: fix a race in be_xmit()
+    - LP: #1025406
+  * netpoll: fix netpoll_send_udp() bugs
+    - LP: #1025406
+  * hwmon: (applesmc) Limit key length in warning messages
+    - LP: #1025406
+  * nilfs2: ensure proper cache clearing for gc-inodes
+    - LP: #1025406
+  * udf: Use 'ret' instead of abusing 'i' in udf_load_logicalvol()
+    - LP: #1025406
+  * udf: Avoid run away loop when partition table length is corrupted
+    - LP: #1025406
+  * udf: Fortify loading of sparing table
+    - LP: #1025406
+  * ath9k: Fix softlockup in AR9485
+    - LP: #1025406
+  * ath9k_hw: avoid possible infinite loop in ar9003_get_pll_sqsum_dvc
+    - LP: #1025406
+  * ath9k: enable serialize_regmode for non-PCIE AR9287
+    - LP: #1025406
+  * ASoC: tlv320aic3x: Fix codec pll configure bug
+    - LP: #1025406
+  * Btrfs: run delayed directory updates during log replay
+    - LP: #1025406
+  * drm/edid: don't return stack garbage from supports_rb
+    - LP: #1025406
+  * drm/nouveau/fbcon: using nv_two_heads is not a good idea
+    - LP: #1025406
+  * drm/i915: Fix eDP blank screen after S3 resume on HP desktops
+    - LP: #1025406
+  * acpi_pad: fix power_saving thread deadlock
+    - LP: #1025406
+  * ACPI: Add a quirk for "AMILO PRO V2030" to ignore the timer overriding
+    - LP: #1025406
+  * ACPI, x86: fix Dell M6600 ACPI reboot regression via DMI
+    - LP: #1025406
+  * ACPI sysfs.c strlen fix
+    - LP: #1025406
+  * stable: Allow merging of backports for serious user-visible performance
+    issues
+    - LP: #1025406
+  * USB: option: add id for Cellient MEN-200
+    - LP: #1025406
+  * USB: option: Add USB ID for Novatel Ovation MC551
+    - LP: #1025406
+  * USB: CP210x Add 10 Device IDs
+    - LP: #1025406
+  * cfg80211: fix potential deadlock in regulatory
+    - LP: #1025406
+  * can: c_can: precedence error in c_can_chip_config()
+    - LP: #1025406
+  * oprofile: perf: use NR_CPUS instead or nr_cpumask_bits for static array
+    - LP: #1025406
+  * mac80211: correct behaviour on unrecognised action frames
+    - LP: #1025406
+  * mwifiex: fix 11n rx packet drop issue
+    - LP: #1025406
+  * vfs: make O_PATH file descriptors usable for 'fchdir()'
+    - LP: #1025406
+  * mtd: cafe_nand: fix an & vs | mistake
+    - LP: #1025406
+  * tcm_fc: Resolve suspicious RCU usage warnings
+    - LP: #1025406
+  * eCryptfs: Gracefully refuse miscdev file ops on inherited/passed files
+    - LP: #1025406
+  * eCryptfs: Fix lockdep warning in miscdev operations
+    - LP: #1025406
+  * eCryptfs: Properly check for O_RDONLY flag before doing privileged open
+    - LP: #1025406
+  * USB: cdc-wdm: fix lockup on error in wdm_read
+    - LP: #1025406
+  * USB: option: add ZTE MF60
+    - LP: #1025406
+  * USB: option: Add MEDIATEK product ids
+    - LP: #1025406
+  * PCI: EHCI: fix crash during suspend on ASUS computers
+    - LP: #1025406
+  * xhci: Avoid dead ports when CONFIG_USB_XHCI_HCD=n
+    - LP: #1025406
+  * ipheth: add support for iPad
+    - LP: #1025406
+  * tracing: change CPU ring buffer state from tracing_cpumask
+    - LP: #1025406
+  * vhost: don't forget to schedule()
+    - LP: #1025406
+  * raid5: delayed stripe fix
+    - LP: #1025406
+  * rtl8187: ->brightness_set can not sleep
+    - LP: #1025406
+  * umem: fix up unplugging
+    - LP: #1025406
+  * x86, cpufeature: Rename X86_FEATURE_DTS to X86_FEATURE_DTHERM
+    - LP: #1025406
+  * md/raid5: Do not add data_offset before call to is_badblock
+    - LP: #1025406
+  * md/raid10: Don't try to recovery unmatched (and unused) chunks.
+    - LP: #1025406
+  * memory hotplug: fix invalid memory access caused by stale kswapd
+    pointer
+    - LP: #1025406
+  * drivers/rtc/rtc-mxc.c: fix irq enabled interrupts warning
+    - LP: #1025406
+  * mm, thp: abort compaction if migration page cannot be charged to memcg
+    - LP: #1025406
+  * fs: ramfs: file-nommu: add SetPageUptodate()
+    - LP: #1025406
+  * mm: Hold a file reference in madvise_remove
+    - LP: #1025406
+  * ACPI: Make acpi_skip_timer_override cover all source_irq==0 cases
+    - LP: #1025406
+  * ACPI: Remove one board specific WARN when ignoring timer overriding
+    - LP: #1025406
+  * Linux 3.0.37
+    - LP: #1025406
+  * x86, mce, therm_throt: Don't report power limit and package level
+    thermal throttle events in mcelog
+    - LP: #930288
+  * hwmon: (it87) Preserve configuration register bits on init
+    - LP: #1026850
+  * block: fix infinite loop in __getblk_slow
+    - LP: #1026850
+  * media: dvb-core: Release semaphore on error path dvb_register_device()
+    - LP: #1026850
+  * mtd: nandsim: don't open code a do_div helper
+    - LP: #1026850
+  * ARM: SAMSUNG: fix race in s3c_adc_start for ADC
+    - LP: #1026850
+  * intel_ips: blacklist HP ProBook laptops
+    - LP: #1026850
+  * fifo: Do not restart open() if it already found a partner
+    - LP: #1026850
+  * rt2x00usb: fix indexes ordering on RX queue kick
+    - LP: #1026850
+  * e1000e: Correct link check logic for 82571 serdes
+    - LP: #1026850
+  * Input: xpad - add Andamiro Pump It Up pad
+    - LP: #1026850
+  * tcp: drop SYN+FIN messages
+    - LP: #1026850
+  * cfg80211: check iface combinations only when iface is running
+    - LP: #1026850
+  * ntp: Fix leap-second hrtimer livelock
+    - LP: #1026850
+  * ntp: Correct TAI offset during leap second
+    - LP: #1026850
+  * timekeeping: Fix CLOCK_MONOTONIC inconsistency during leapsecond
+    - LP: #1026850
+  * time: Move common updates to a function
+    - LP: #1026850
+  * hrtimer: Provide clock_was_set_delayed()
+    - LP: #1026850
+  * timekeeping: Fix leapsecond triggered load spike issue
+    - LP: #1026850
+  * timekeeping: Maintain ktime_t based offsets for hrtimers
+    - LP: #1026850
+  * hrtimers: Move lock held region in hrtimer_interrupt()
+    - LP: #1026850
+  * timekeeping: Provide hrtimer update function
+    - LP: #1026850
+  * hrtimer: Update hrtimer base offsets each hrtimer_interrupt
+    - LP: #1026850
+  * timekeeping: Add missing update call in timekeeping_resume()
+    - LP: #1026850
+  * Linux 3.0.38
+    - LP: #1026850
+
+  [ Ubuntu: 3.0.0-23.39 ]
+
+  * Release Tracking Bug
+    - LP: #1026730
+  * thp: avoid atomic64_read in pmd_read_atomic for 32bit PAE
+    - LP: #1026690
+
+  [ Ubuntu: 3.0.0-23.38 ]
+
+  * No change upload to fix .ddeb generation in the PPA.
+  * Release Tracking Bug
+    - LP: #1020623
+
  -- Paolo Pisati <paolo.pisati@canonical.com>  Fri, 27 Jul 2012 16:13:00 +0200
 
 linux-ti-omap4 (3.0.0-1213.25) oneiric-proposed; urgency=low
