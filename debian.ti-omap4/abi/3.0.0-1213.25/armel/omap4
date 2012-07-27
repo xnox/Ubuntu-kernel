@@ -4581,7 +4581,6 @@ EXPORT_SYMBOL vmlinux 0x00000000	skb_realloc_headroom
 EXPORT_SYMBOL vmlinux 0x00000000	skb_recv_datagram
 EXPORT_SYMBOL vmlinux 0x00000000	skb_recycle_check
 EXPORT_SYMBOL vmlinux 0x00000000	skb_seq_read
-EXPORT_SYMBOL vmlinux 0x00000000	skb_set_dev
 EXPORT_SYMBOL vmlinux 0x00000000	skb_split
 EXPORT_SYMBOL vmlinux 0x00000000	skb_store_bits
 EXPORT_SYMBOL vmlinux 0x00000000	skb_trim
