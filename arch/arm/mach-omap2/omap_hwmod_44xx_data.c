@@ -30,6 +30,7 @@
 #include <plat/mmc.h>
 #include <plat/dmtimer.h>
 #include <plat/common.h>
+#include <plat/scm.h>
 
 #include "omap_hwmod_common_data.h"
 
@@ -439,15 +440,23 @@ static struct omap_hwmod_class omap44xx_ctrl_module_hwmod_class = {
 
 /* ctrl_module_core */
 static struct omap_hwmod_irq_info omap44xx_ctrl_module_core_irqs[] = {
-	{ .irq = 8 + OMAP44XX_IRQ_GIC_START },
-	{ .irq = -1 }
+	{ .name = "sec_evts", .irq = 8 + OMAP44XX_IRQ_GIC_START },
+	{ .name = "thermal_alert", .irq = 126 + OMAP44XX_IRQ_GIC_START },
 };
 
+static struct omap_hwmod_ocp_if *omap44xx_ctrl_module_core_slaves[];
+static struct omap4plus_scm_dev_attr scm_dev_attr;
 static struct omap_hwmod omap44xx_ctrl_module_core_hwmod = {
 	.name		= "ctrl_module_core",
 	.class		= &omap44xx_ctrl_module_hwmod_class,
-	.clkdm_name	= "l4_cfg_clkdm",
 	.mpu_irqs	= omap44xx_ctrl_module_core_irqs,
+	.main_clk	= "l4_div_ck",
+/*
+	.slaves		= omap44xx_ctrl_module_core_slaves,
+	.slaves_cnt	= ARRAY_SIZE(omap44xx_ctrl_module_core_slaves),
+*/
+	.dev_attr	= &scm_dev_attr,
+	.clkdm_name	= "l4_wkup_clkdm",
 };
 
 /* ctrl_module_pad_core */
@@ -4123,6 +4132,17 @@ static struct omap_hwmod_ocp_if omap44xx_l4_cfg__ctrl_module_core = {
 	.clk		= "l4_div_ck",
 	.addr		= omap44xx_ctrl_module_core_addrs,
 	.user		= OCP_USER_MPU | OCP_USER_SDMA,
+};
+
+/* ctrl_module_core slave ports */
+static struct omap_hwmod_ocp_if *omap44xx_ctrl_module_core_slaves[] = {
+	&omap44xx_l4_cfg__ctrl_module_core,
+};
+
+/* scm dev_attr */
+static struct omap4plus_scm_dev_attr scm_dev_attr = {
+	.rev		= 1,
+	.cnt		= 1,
 };
 
 static struct omap_hwmod_addr_space omap44xx_ctrl_module_pad_core_addrs[] = {
