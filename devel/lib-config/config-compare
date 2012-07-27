@@ -2,7 +2,8 @@
 
 use strict;
 
-my $P = 'config-compare';
+my $P0 = 'config-compare';
+my $P = $P0;
 
 my %values;
 
@@ -139,6 +140,8 @@ sub pred_exec {
 }
 sub policy_check {
 	my ($column, $option, $policy) = @_;
+
+	$P = $P0 . ": " . $option;
 
 	# Pull out the arch and flavour from the column name.
 	($pred_attr{'arch'}, $pred_attr{'flavour'}) = split(/-/, $column, 2);
