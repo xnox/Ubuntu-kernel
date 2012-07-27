@@ -36,6 +36,7 @@ static struct clk *twd_clk;
 static unsigned long twd_timer_rate;
 
 static struct clock_event_device __percpu **twd_evt;
+extern struct clock_event_device percpu_clockevent;
 static int twd_ppi;
 
 static void twd_set_mode(enum clock_event_mode mode,
@@ -185,7 +186,7 @@ static void __cpuinit twd_calibrate_rate(void)
 
 static irqreturn_t twd_handler(int irq, void *dev_id)
 {
-	struct clock_event_device *evt = dev_id;
+	struct clock_event_device *evt = *(struct clock_event_device **)dev_id;
 
 	if (twd_timer_ack()) {
 		evt->event_handler(evt);
@@ -374,7 +375,7 @@ static int __cpuinit twd_cpu_notify(struct notifier_block *self,
 				    unsigned long action, void *data)
 {
 	int cpu = (int)data;
-	struct clock_event_device *clk = per_cpu_ptr(twd_clock_event, cpu);
+	struct clock_event_device *clk = &__get_cpu_var(percpu_clockevent);
 
 	switch (action) {
 	case CPU_STARTING:
@@ -408,7 +409,7 @@ int __init twd_timer_register(struct resource *res, int res_nr)
 
 	twd_ppi		= res[1].start;
 	twd_base	= ioremap(res[0].start, resource_size(&res[0]));
-	twd_clock_event	= alloc_percpu(struct clock_event_device);
+	twd_clock_event	= alloc_percpu(struct clock_event_device *);
 	if (!twd_base || !twd_clock_event) {
 		err = -ENOMEM;
 		goto out_free;
@@ -422,7 +423,7 @@ int __init twd_timer_register(struct resource *res, int res_nr)
 	}
 
 	/* Immediately configure the timer on the boot CPU */
-	clk = per_cpu_ptr(twd_clock_event, smp_processor_id());
+	clk = &__get_cpu_var(percpu_clockevent);
 	twd_setup(clk);
 
 	register_cpu_notifier(&twd_cpu_nb);
