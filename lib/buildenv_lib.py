@@ -7,7 +7,7 @@
 # Public License, Version 3 or later. See http://www.gnu.org/copyleft/gpl.html
 # for details.
 #==============================================================================
-import sys, os, re
+import sys, os, re, signal
 from subprocess import *
 from git_lib import *
 
@@ -212,11 +212,22 @@ def RunScript(script, host=None, interpreter=None, timeout=60,
 		cmd.extend([ "ssh", "-oConnectTimeout=" + str(timeout), host ])
 	cmd.append(interpreter)
 
+	# Python installs a SIGPIPE handler by default. This is usually
+	# not what non-Python subprocesses expect. From:
+	# http://www.chiark.greenend.org.uk/ucgi/~cjwatson/blosxom/2009-07-02-python-sigpipe.html
+	# Since we are running an shell script, we must switch back, and
+	# restore SIGPIPE back to default, so we avoid any spurious
+	# "stdout: Broken pipe" errors, with any side effects it may
+	# cause on shell commands using pipes
+	def sp_setup():
+		signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
 	if getoutput:
-		p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+		p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE,
+			  preexec_fn=sp_setup)
 		(pout, perr) = p.communicate(input=script)
 	else:
-		p = Popen(cmd, stdin=PIPE)
+		p = Popen(cmd, stdin=PIPE, preexec_fn=sp_setup)
 		(pout, perr) = p.communicate(input=script)
 	
 	return (p.returncode, pout, perr)
