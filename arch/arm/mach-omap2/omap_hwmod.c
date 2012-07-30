@@ -2124,6 +2124,7 @@ static void __init _setup_iclk_autoidle(struct omap_hwmod *oh)
 	return;
 }
 
+static int __init _setup_preprogram(struct omap_hwmod *oh);
 /**
  * _setup_reset - reset an IP block during the setup process
  * @oh: struct omap_hwmod *
