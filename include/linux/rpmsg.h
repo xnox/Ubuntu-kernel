@@ -41,6 +41,7 @@
 #include <linux/kref.h>
 #include <linux/mutex.h>
 #include <linux/idr.h>
+#include <linux/kref.h>
 
 /* The feature bitmap for virtio rpmsg */
 #define VIRTIO_RPMSG_F_NS	0 /* RP supports name service notifications */
