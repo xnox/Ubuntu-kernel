@@ -829,6 +829,10 @@ static void rpmsg_recv_done(struct virtqueue *rvq)
 	} else
 		dev_warn(dev, "msg received with no recepient\n");
 
+	/* farewell, ept, we don't need you anymore */
+	if (ept)
+		kref_put(&ept->refcount, __ept_release);
+
 	/* publish the real size of the buffer */
 	sg_init_one(&sg, msg, RPMSG_BUF_SIZE);
 
