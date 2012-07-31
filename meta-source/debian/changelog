@@ -1,3 +1,9 @@
+linux-meta-lts-quantal (3.5.0.7.13) precise; urgency=low
+
+  * Ubuntu-lts-3.5.0-7.7
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Tue, 31 Jul 2012 16:52:00 -0600
+
 linux-meta-lts-quantal (3.5.0.6.12) precise; urgency=low
 
   * Added linux-generic-lts-quantal 
