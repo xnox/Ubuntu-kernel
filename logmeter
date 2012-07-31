@@ -2,7 +2,8 @@
 #
 
 from sys                                import argv
-from os                                 import path
+from os                                 import path, pipe, read, write
+from select				import select
 from getopt                             import getopt, GetoptError
 from ilib.utils                         import stdo
 from ilib.std_app                       import StdApp
@@ -239,6 +240,8 @@ class LogMeter(StdApp, MetaData):
         self.defaults = {} # default configs
         self.logfile = None
         self.udpserver = None
+	self.pipein = None
+	self.pipeout = None
         self.meter = None
         self.outputLock = Lock()
 
@@ -259,7 +262,7 @@ class LogMeter(StdApp, MetaData):
         """
         return
 
-    def UDPhandler(self, port):
+    def UDPhandler(self, port, pipeout):
 	#
 	#  Using IP 0.0.0.0 rather than localhost means we
 	#  can listen for all incoming hosts, ideal for remote
@@ -271,6 +274,9 @@ class LogMeter(StdApp, MetaData):
 
         while True:
             data, addr = sock.recvfrom(1500)
+            if data[0:9] == "TEST_QUIT":
+	         write(pipeout, "QUIT")
+
 	    data = "TAG: " + data
             MetaData.meterOutHandler(data)
             print data.strip("\n")
@@ -358,8 +364,9 @@ class LogMeter(StdApp, MetaData):
         MetaData.meterOutHandler = self.writeOutput
 
         if 'tagport' in self.cfg:
+	    self.pipein, self.pipeout = pipe()
             portno = int(self.cfg['tagport'])
-            server_thread = Thread(target=self.UDPhandler, args=(portno,))
+            server_thread = Thread(target=self.UDPhandler, args=(portno,self.pipeout))
             # Exit the server thread when the main thread terminates
             server_thread.daemon = True
             server_thread.start()
@@ -401,6 +408,15 @@ class LogMeter(StdApp, MetaData):
             print 'Sample:', datetime.utcnow().isoformat(), st.strip()
             self.writeOutput('SAMPLE: %s' % st)
             num = num - 1
+
+            if 'tagport' in self.cfg:
+                readable, writeable, execeptional = select([self.pipein], [], [], 0)
+                for s in readable:
+                    if s == self.pipein:
+                         data = read(self.pipein, 4)
+                         if data == "QUIT":
+                              num = 0
+
             if idelay and (num > 1):
                 sleep_delay = wake_time - time()
 		if sleep_delay > 0:
