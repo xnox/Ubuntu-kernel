@@ -60,7 +60,7 @@ static int twl_get_voltage(void *data)
 	struct voltagedomain *voltdm = (struct voltagedomain *)data;
 	struct omap_volt_data *tmp;
 
-	tmp = voltdm_get_voltage(voltdm);
+	tmp = omap_voltage_get_curr_vdata(voltdm);
 	if (tmp == NULL)
 		return -ENODATA;
 	return tmp->volt_nominal;
