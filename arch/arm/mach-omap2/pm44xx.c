@@ -515,7 +515,7 @@ static void __init prcm_setup_regs(void)
  * Initializes all powerdomain and clockdomain target states
  * and all PRCM settings.
  */
-static int __init omap_pm_init(void)
+int omap_pm_init(void)
 {
 	int ret, i;
 	struct voltagedomain *mpu_voltdm;
