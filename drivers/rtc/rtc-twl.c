@@ -281,7 +281,7 @@ static int twl_rtc_read_time(struct device *dev, struct rtc_time *tm)
 	if (twl_class_is_6030()) {
 		if (save_control & BIT_RTC_CTRL_REG_GET_TIME_M) {
 			save_control &= ~BIT_RTC_CTRL_REG_GET_TIME_M;
-			ret = twl_rtc_write_u8(save_control, REG_RTC_CTRL_REG);
+			ret = twl_rtc_write_u8(twl_rtc, save_control, REG_RTC_CTRL_REG);
 			if (ret < 0) {
 				dev_err(dev, "%s clr GET_TIME, error %d\n",
 					__func__, ret);
@@ -297,7 +297,7 @@ static int twl_rtc_read_time(struct device *dev, struct rtc_time *tm)
 	if (twl_class_is_6030())
 		rtc_control |= BIT_RTC_CTRL_REG_RTC_V_OPT;
 
-	ret = twl_rtc_write_u8(rtc_control, REG_RTC_CTRL_REG);
+	ret = twl_rtc_write_u8(twl_rtc, rtc_control, REG_RTC_CTRL_REG);
 	if (ret < 0) {
 		dev_err(dev, "%s: writing CTRL_REG, error %d\n", __func__, ret);
 		return ret;
@@ -313,7 +313,7 @@ static int twl_rtc_read_time(struct device *dev, struct rtc_time *tm)
 
 	/* for twl6030 restore original state of rtc control register */
 	if (twl_class_is_6030()) {
-		ret = twl_rtc_write_u8(save_control, REG_RTC_CTRL_REG);
+		ret = twl_rtc_write_u8(twl_rtc, save_control, REG_RTC_CTRL_REG);
 		if (ret < 0) {
 			dev_err(dev, "%s: restore CTRL_REG, error %d\n",
 				__func__, ret);
@@ -455,7 +455,7 @@ static irqreturn_t twl_rtc_interrupt(int irq, void *_twl_rtc)
 	else
 		events = RTC_IRQF | RTC_PF;
 
-	res = twl_rtc_write_u8(BIT_RTC_STATUS_REG_ALARM_M,
+	res = twl_rtc_write_u8(twl_rtc, BIT_RTC_STATUS_REG_ALARM_M,
 				   REG_RTC_STATUS_REG);
 	if (res)
 		goto out;
