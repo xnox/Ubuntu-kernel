@@ -518,7 +518,7 @@ static struct omap_hwmod omap44xx_smartreflex_mpu_hwmod = {
 	.slaves_cnt	= ARRAY_SIZE(omap44xx_smartreflex_mpu_slaves),
 	.dev_attr       = &smartreflex_mpu_dev_attr,
 };
-
+#endif
 /*
  * 'aess' class
  * audio engine sub system
@@ -538,7 +538,7 @@ static struct omap_hwmod_class omap44xx_aess_hwmod_class = {
 	.name	= "aess",
 	.sysc	= &omap44xx_aess_sysc,
 };
-#endif
+
 /* aess */
 static struct omap_hwmod_irq_info omap44xx_aess_irqs[] = {
 	{ .irq = 99 + OMAP44XX_IRQ_GIC_START },
