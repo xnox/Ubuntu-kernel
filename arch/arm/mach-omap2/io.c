@@ -581,12 +581,13 @@ void __init omap4430_init_early(void)
 	omap4xxx_clk_init();
 }
 
+extern int omap_pm_init(void);
 void __init omap4430_init_late(void)
 {
 	omap_mux_late_init();
 	omap2_common_pm_late_init();
-#error "omap_pm_init() initcall here?!?!?"
-	//omap4_pm_init();
+//#error "omap_pm_init() initcall here?!?!?"
+	omap_pm_init();
 }
 #endif
 
