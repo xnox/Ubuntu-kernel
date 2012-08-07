@@ -60,6 +60,23 @@ class Debian:
 
         return debdirs
 
+    # master_changelog
+    #
+    @classmethod
+    def master_changelog(cls):
+        '''
+        The 'changelog' method returns the changelog related to the current branch. This
+        method always returns the changelog from the debian.master directory.
+        '''
+        fid = 'debian.master/changelog'
+        if path.exists(fid):
+            with open(fid, 'r') as f:
+                changelog_contents = f.read()
+
+            retval = cls.changelog_as_list(changelog_contents.split('\n'))
+        else:
+            raise DebianError('Failed to find the master changelog.')
+        return retval
 
     # raw_changelog
     #
@@ -89,9 +106,14 @@ class Debian:
     #
     @classmethod
     def changelog(cls):
-        retval = []
-
         changelog_contents, changelog_path = cls.raw_changelog()
+        return cls.changelog_as_list(changelog_contents)
+
+    # changelog_as_list
+    #
+    @classmethod
+    def changelog_as_list(cls, changelog_contents):
+        retval = []
 
         # The first line of the changelog should always be a version line.
         #

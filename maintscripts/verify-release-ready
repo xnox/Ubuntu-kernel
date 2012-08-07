@@ -192,7 +192,6 @@ class VerifyReleaseReady(StdApp):
             if not Git.is_repo():
                 raise AppError('This script can only be run from within a git repository.')
             self.status('is valid git repo', True)
-            branch = Git.current_branch()
 
             changelog = Debian.changelog()
 
@@ -318,9 +317,35 @@ class VerifyReleaseReady(StdApp):
             #
             found_tracker = False
             for line in changelog[1]['content']:
+                if found_tracker:
+                    (junk, tracker_id) = line.split('#')
+                    break
                 if 'Tracking Bug' in line:
                     found_tracker = True
             self.status('release tracking bug', found_tracker)
+
+            # If we are on a topic branch make sure we are not re-using the same tracking
+            # bug from as the master branch.
+            #
+            if found_tracker:
+                branch = Git.current_branch()
+                if branch != 'master':
+                    master_changelog = Debian.master_changelog()
+                    found_tracker = False
+                    for line in master_changelog[1]['content']:
+                        if found_tracker:
+                            (junk, master_tracker_id) = line.split('#')
+                            break
+                        if 'Tracking Bug' in line:
+                            found_tracker = True
+
+                    unique_tracker = False
+                    if found_tracker:
+                        if tracker_id != master_tracker_id:
+                            unique_tracker = True
+                        else:
+                            print('%s != %s' % (tracker_id, master_tracker_id))
+                    self.status('unique release tracking bug', unique_tracker)
 
             # It's important that there be a single blank line at the beginning of
             # the content. (after the package/version/pocket line)
