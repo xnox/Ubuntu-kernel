@@ -248,7 +248,6 @@
 #define snd_soc_get_enum_text(soc_enum, idx) \
 	(soc_enum->texts ? soc_enum->texts[idx] : soc_enum->dtexts[idx])
 
-
 /*
  * Component probe and remove ordering levels for components with runtime
  * dependencies.
