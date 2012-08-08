@@ -194,7 +194,8 @@ static int omap5_dsi_mux_pads(int dsi_id, unsigned lanes)
 	reg = __raw_readl(ctrl_pad_base + CONTROL_DSIPHY);
 	reg &= ~enable_mask;
 	reg |= (lanes << enable_shift) & enable_mask;
-	reg = __raw_writel(reg, ctrl_pad_base + CONTROL_DSIPHY);
+	//reg = __raw_writel(reg, ctrl_pad_base + CONTROL_DSIPHY);
+	__raw_writel(reg, ctrl_pad_base + CONTROL_DSIPHY);
 
 	return 0;
 }
@@ -208,7 +209,8 @@ int __init omap_hdmi_init(enum omap_hdmi_flags flags)
 		omap4_hdmi_mux_pads(flags);
 	if (cpu_is_omap54xx()) {
 		ctrl_pad_base = ioremap(CONTROL_PAD_BASE, SZ_4K);
-		reg = __raw_writel(0x1060100, ctrl_pad_base + CONTROL_HDMI_HPD);
+		//reg = __raw_writel(0x1060100, ctrl_pad_base + CONTROL_HDMI_HPD);
+		__raw_writel(0x1060100, ctrl_pad_base + CONTROL_HDMI_HPD);
 	}
 	return 0;
 }
