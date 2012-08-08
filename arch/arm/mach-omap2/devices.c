@@ -433,6 +433,7 @@ static void __init omap_init_dmic(void)
 	WARN(IS_ERR(pdev), "Can't build omap_device for omap-dmic.\n");
 }
 #else
+static void __init omap_init_dmic(void) {}
 #endif
 
 #if defined(CONFIG_SND_OMAP_SOC_ABE_DSP) || \
