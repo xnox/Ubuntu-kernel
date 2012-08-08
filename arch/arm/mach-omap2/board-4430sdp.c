@@ -506,7 +506,6 @@ static struct platform_device omap_vwlan_device = {
 	},
 };
 
-#ifndef CONFIG_OMAP4460_SEVM_PALMAS
 static struct regulator_init_data sdp4430_vaux1 = {
 	.constraints = {
 		.min_uV			= 1000000,
