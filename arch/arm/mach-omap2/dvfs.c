@@ -580,6 +580,8 @@ static int _dvfs_scale(struct device *req_dev, struct device *target_dev,
 	node = plist_last(&tdvfs_info->vdd_user_list);
 	new_volt = node->prio;
 
+	printk("%s::%d voltdm: %s\n", __FUNCTION__, __LINE__,
+		voltdm->name);
 	volt_data = voltdm_get_voltage(voltdm);
 	if (IS_ERR_OR_NULL(volt_data)) {
 		pr_warning("%s: No voltage/domain?\n", __func__);

@@ -93,6 +93,7 @@ int voltdm_scale(struct voltagedomain *voltdm,
 	/* Adjust voltage to the exact voltage from the OPP table */
 	for (i = 0; voltdm->volt_data[i].volt_nominal != 0; i++) {
 		if (voltdm->volt_data[i].volt_nominal >= target_volt) {
+			printk("i: %d volt_nominal: %lu\n", i, voltdm->volt_data[i].volt_nominal);
 			volt = voltdm->volt_data[i].volt_nominal;
 			break;
 		}
@@ -101,6 +102,7 @@ int voltdm_scale(struct voltagedomain *voltdm,
 	if (!volt) {
 		pr_warning("%s: not scaling. OPP voltage for %lu, not found.\n",
 			   __func__, target_volt);
+		pr_warning("voltdm->name: %s\n", voltdm->name);
 		return -EINVAL;
 	}
 
