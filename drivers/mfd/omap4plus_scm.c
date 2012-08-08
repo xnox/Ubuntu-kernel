@@ -245,7 +245,7 @@ static int __devinit omap4plus_scm_probe(struct platform_device *pdev)
 
 			ret = request_threaded_irq(gpio_to_irq(scm_ptr->gpio_tshut), NULL,
 						   omap4460_tshut_irq_handler,
-						   IRQF_TRIGGER_RISING, "tshut",
+						   IRQF_TRIGGER_RISING | IRQF_ONESHOT, "tshut",
 						   NULL);
 			if (ret) {
 				dev_err(&pdev->dev, "Failed to request IRQ %d for tshut\n",
