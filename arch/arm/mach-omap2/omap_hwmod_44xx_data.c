@@ -685,6 +685,7 @@ static struct omap_hwmod omap44xx_ctrl_module_core_hwmod = {
 	.clkdm_name	= "l4_wkup_clkdm",
 };
 
+#if 0
 /* ctrl_module_pad_core */
 static struct omap_hwmod omap44xx_ctrl_module_pad_core_hwmod = {
 	.name		= "ctrl_module_pad_core",
@@ -705,6 +706,7 @@ static struct omap_hwmod omap44xx_ctrl_module_pad_wkup_hwmod = {
 	.class		= &omap44xx_ctrl_module_hwmod_class,
 	.clkdm_name	= "l4_wkup_clkdm",
 };
+#endif
 
 /*
  * 'debugss' class
@@ -866,9 +868,11 @@ static struct omap_mmu_dev_attr omap44xx_dsp_mmu_dev_attr = {
 	.nr_tlb_entries = 32,
 };
 
+#if 0
 static struct omap_hwmod_class omap44xx_dsp_hwmod_class = {
 	.name	= "dsp",
 };
+#endif
 
 /* dsp */
 static struct omap_hwmod_irq_info omap44xx_dsp_irqs[] = {
@@ -1896,9 +1900,11 @@ static struct omap_mmu_dev_attr omap44xx_ipu_mmu_dev_attr = {
 	.nr_tlb_entries = 32,
 };
 
+#if 0
 static struct omap_hwmod_class omap44xx_ipu_hwmod_class = {
 	.name	= "ipu",
 };
+#endif
 
 /* ipu */
 static struct omap_hwmod_irq_info omap44xx_ipu_irqs[] = {
@@ -4402,10 +4408,12 @@ static struct omap_hwmod_ocp_if omap44xx_l4_cfg__ctrl_module_core = {
 	.user		= OCP_USER_MPU | OCP_USER_SDMA,
 };
 
+#if 0
 /* ctrl_module_core slave ports */
 static struct omap_hwmod_ocp_if *omap44xx_ctrl_module_core_slaves[] = {
 	&omap44xx_l4_cfg__ctrl_module_core,
 };
+#endif
 
 /* scm dev_attr */
 static struct omap4plus_scm_dev_attr scm_dev_attr = {
@@ -4413,6 +4421,7 @@ static struct omap4plus_scm_dev_attr scm_dev_attr = {
 	.cnt		= 1,
 };
 
+#if 0
 static struct omap_hwmod_addr_space omap44xx_ctrl_module_pad_core_addrs[] = {
 	{
 		.pa_start	= 0x4a100000,
@@ -4466,6 +4475,7 @@ static struct omap_hwmod_ocp_if omap44xx_l4_wkup__ctrl_module_pad_wkup = {
 	.addr		= omap44xx_ctrl_module_pad_wkup_addrs,
 	.user		= OCP_USER_MPU | OCP_USER_SDMA,
 };
+#endif
 
 static struct omap_hwmod_addr_space omap44xx_debugss_addrs[] = {
 	{
