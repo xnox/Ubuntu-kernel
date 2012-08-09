@@ -203,7 +203,6 @@ static int omap5_dsi_mux_pads(int dsi_id, unsigned lanes)
 int __init omap_hdmi_init(enum omap_hdmi_flags flags)
 {
 	void __iomem *ctrl_pad_base = NULL;
-	u32 reg;
 
 	if (cpu_is_omap44xx())
 		omap4_hdmi_mux_pads(flags);
