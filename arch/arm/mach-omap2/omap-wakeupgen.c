@@ -402,6 +402,8 @@ static void irq_sar_clear(void)
 
 	if (cpu_is_omap54xx())
 		offset = OMAP5_SAR_BACKUP_STATUS_OFFSET;
+
+	val = __raw_readl(sar_base + offset);
 	val &= ~SAR_BACKUP_STATUS_WAKEUPGEN;
 	__raw_writel(val, sar_base + offset);
 }
