@@ -75,8 +75,7 @@ struct omap_volt_data *voltdm_get_voltage(struct voltagedomain *voltdm)
 int voltdm_scale(struct voltagedomain *voltdm,
 		 struct omap_volt_data *target_volt)
 {
-	int ret, i;
-	unsigned long volt = 0;
+	int ret;
 	struct omap_voltage_notifier notify;
 
 	if (IS_ERR_OR_NULL(voltdm)) {
@@ -88,22 +87,6 @@ int voltdm_scale(struct voltagedomain *voltdm,
 		pr_err("%s: No voltage scale API registered for vdd_%s\n",
 			__func__, voltdm->name);
 		return -ENODATA;
-	}
-
-	/* Adjust voltage to the exact voltage from the OPP table */
-	for (i = 0; voltdm->volt_data[i].volt_nominal != 0; i++) {
-		if (voltdm->volt_data[i].volt_nominal >= target_volt) {
-			printk("i: %d volt_nominal: %lu\n", i, voltdm->volt_data[i].volt_nominal);
-			volt = voltdm->volt_data[i].volt_nominal;
-			break;
-		}
-	}
-
-	if (!volt) {
-		pr_warning("%s: not scaling. OPP voltage for %lu, not found.\n",
-			   __func__, target_volt);
-		pr_warning("voltdm->name: %s\n", voltdm->name);
-		return -EINVAL;
 	}
 
 	if (voltdm->abb) {
@@ -120,7 +103,7 @@ int voltdm_scale(struct voltagedomain *voltdm,
 	srcu_notifier_call_chain(&voltdm->change_notify_list,
 		OMAP_VOLTAGE_PRECHANGE, (void *)&notify);
 
-	ret = voltdm->scale(voltdm, volt);
+	ret = voltdm->scale(voltdm, target_volt);
 	if (ret) {
 		pr_err("%s: vdd_%s failed to scale: %d\n",
 			__func__, voltdm->name, ret);
@@ -226,6 +209,11 @@ struct omap_volt_data *omap_voltage_get_voltdata(struct voltagedomain *voltdm,
 		return ERR_PTR(-ENODATA);
 	}
 
+	/*
+	 * XXX in voltdm_scale() there was a loop to find the closest
+	 * voltage_data using a >= comparison, shouldn't we do the 
+	 * same here?
+	 */
 	for (i = 0; voltdm->volt_data[i].volt_nominal != 0; i++) {
 		if (voltdm->volt_data[i].volt_nominal == volt)
 			return &voltdm->volt_data[i];
