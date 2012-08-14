@@ -1,9 +1,237 @@
-linux-lts-backport-oneiric (3.0.0-24.40~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-25.41~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1028834
+    - LP: #1036577
+
+  [ Andy Whitcroft ]
+
+  * SAUCE: rds_ib_send() -- prevent local pings triggering BUG_ON()
+    - LP: #1016299
+    - CVE-2012-2372
+
+  [ Douglas Bagnall ]
+
+  * SAUCE: Unlock the rc_dev lock when the raw device is missing
+    - LP: #1015836
+
+  [ Upstream Kernel Changes ]
+
+  * cifs: always update the inode cache with the results from a FIND_*
+    - LP: #1031926
+  * ntp: Fix STA_INS/DEL clearing bug
+    - LP: #1031926
+  * mm: fix lost kswapd wakeup in kswapd_stop()
+    - LP: #1031926
+  * MIPS: Properly align the .data..init_task section.
+    - LP: #1031926
+  * UBIFS: fix a bug in empty space fix-up
+    - LP: #1031926
+  * dm raid1: fix crash with mirror recovery and discard
+    - LP: #1031926
+  * mm/vmstat.c: cache align vm_stat
+    - LP: #1031926
+  * mm: memory hotplug: Check if pages are correctly reserved on a
+    per-section basis
+    - LP: #1031926
+  * mm: reduce the amount of work done when updating min_free_kbytes
+    - LP: #1031926
+  * mm: vmscan: fix force-scanning small targets without swap
+    - LP: #1031926
+  * vmscan: clear ZONE_CONGESTED for zone with good watermark
+    - LP: #1031926
+  * vmscan: add shrink_slab tracepoints
+    - LP: #1031926
+  * vmscan: shrinker->nr updates race and go wrong
+    - LP: #1031926
+  * vmscan: reduce wind up shrinker->nr when shrinker can't do work
+    - LP: #1031926
+  * vmscan: limit direct reclaim for higher order allocations
+    - LP: #1031926
+  * vmscan: abort reclaim/compaction if compaction can proceed
+    - LP: #1031926
+  * mm: compaction: trivial clean up in acct_isolated()
+    - LP: #1031926
+  * mm: change isolate mode from #define to bitwise type
+    - LP: #1031926
+  * mm: compaction: make isolate_lru_page() filter-aware
+    - LP: #1031926
+  * mm: zone_reclaim: make isolate_lru_page() filter-aware
+    - LP: #1031926
+  * mm: migration: clean up unmap_and_move()
+    - LP: #1031926
+  * mm: compaction: allow compaction to isolate dirty pages
+    - LP: #1031926
+  * mm: compaction: determine if dirty pages can be migrated without
+    blocking within ->migratepage
+    - LP: #1031926
+  * mm: page allocator: do not call direct reclaim for THP allocations
+    while compaction is deferred
+    - LP: #1031926
+  * mm: compaction: make isolate_lru_page() filter-aware again
+    - LP: #1031926
+  * kswapd: avoid unnecessary rebalance after an unsuccessful balancing
+    - LP: #1031926
+  * kswapd: assign new_order and new_classzone_idx after wakeup in sleeping
+    - LP: #1031926
+  * mm: compaction: introduce sync-light migration for use by compaction
+    - LP: #1031926
+  * mm: vmscan: when reclaiming for compaction, ensure there are sufficient
+    free pages available
+    - LP: #1031926
+  * mm: vmscan: do not OOM if aborting reclaim to start compaction
+    - LP: #1031926
+  * mm: vmscan: check if reclaim should really abort even if
+    compaction_ready() is true for one zone
+    - LP: #1031926
+  * vmscan: promote shared file mapped pages
+    - LP: #1031926
+  * vmscan: activate executable pages after first usage
+    - LP: #1031926
+  * mm/vmscan.c: consider swap space when deciding whether to continue
+    reclaim
+    - LP: #1031926
+  * mm: test PageSwapBacked in lumpy reclaim
+    - LP: #1031926
+  * mm: vmscan: convert global reclaim to per-memcg LRU lists
+    - LP: #1031926
+  * cpusets: avoid looping when storing to mems_allowed if one node remains
+    set
+    - LP: #1031926
+  * cpusets: stall when updating mems_allowed for mempolicy or disjoint
+    nodemask
+    - LP: #1031926
+  * cpuset: mm: reduce large amounts of memory barrier related damage v3
+    - LP: #1031926
+  * mm/hugetlb: fix warning in alloc_huge_page/dequeue_huge_page_vma
+    - LP: #1031926
+  * vmscan: fix initial shrinker size handling
+    - LP: #1031926
+  * Linux 3.0.39
+    - LP: #1031926
+  * rt2x00: Add support for BUFFALO WLI-UC-GNM2 to rt2800usb.
+    - LP: #871904
+  * Avoid sysfs oops when an rc_dev's raw device is absent
+    - LP: #1015836
+  * eCryptfs: Copy up POSIX ACL and read-only flags from lower mount
+    - LP: #1009207
+  * eCryptfs: Initialize empty lower files when opening them
+    - LP: #911507
+  * mmc: sdhci-pci: CaFe has broken card detection
+    - LP: #1034988
+  * powerpc/ftrace: Fix assembly trampoline register usage
+    - LP: #1034988
+  * powerpc: Add "memory" attribute for mfmsr()
+    - LP: #1034988
+  * powerpc: Fix wrong divisor in usecs_to_cputime
+    - LP: #1034988
+  * SCSI: libsas: continue revalidation
+    - LP: #1034988
+  * SCSI: libsas: fix sas_discover_devices return code handling
+    - LP: #1034988
+  * SCSI: fix eh wakeup (scsi_schedule_eh vs scsi_restart_operations)
+    - LP: #1034988
+  * SCSI: fix hot unplug vs async scan race
+    - LP: #1034988
+  * SCSI: Avoid dangling pointer in scsi_requeue_command()
+    - LP: #1034988
+  * ARM: OMAP2+: OPP: Fix to ensure check of right oppdef after bad one
+    - LP: #1034988
+  * ALSA: hda - Add support for Realtek ALC282
+    - LP: #1025377, #1034988
+  * usbdevfs: Correct amount of data copied to user in processcompl_compat
+    - LP: #1034988
+  * usb: gadget: Fix g_ether interface link status
+    - LP: #1034988
+  * locks: fix checking of fcntl_setlease argument
+    - LP: #1034988
+  * ftrace: Disable function tracing during suspend/resume and hibernation,
+    again
+    - LP: #1034988
+  * stable: update references to older 2.6 versions for 3.x
+    - LP: #1034988
+  * workqueue: perform cpu down operations from low priority cpu_notifier()
+    - LP: #1034988
+  * ACPI/AC: prevent OOPS on some boxes due to missing check
+    power_supply_register() return value check
+    - LP: #1034988
+  * Btrfs: call the ordered free operation without any locks held
+    - LP: #1034988
+  * drm/radeon: Try harder to avoid HW cursor ending on a multiple of 128
+    columns.
+    - LP: #1034988
+  * drm/radeon: fix non revealent error message
+    - LP: #1034988
+  * drm/radeon: fix hotplug of DP to DVI|HDMI passive adapters (v2)
+    - LP: #1034988
+  * drm/radeon: on hotplug force link training to happen (v2)
+    - LP: #1034988
+  * nfsd4: our filesystems are normally case sensitive
+    - LP: #1034988
+  * nfs: skip commit in releasepage if we're freeing memory for fs-related
+    reasons
+    - LP: #1034988
+  * ext4: pass a char * to ext4_count_free() instead of a buffer_head ptr
+    - LP: #1034988
+  * ext4: don't let i_reserved_meta_blocks go negative
+    - LP: #1034988
+  * bnx2: Fix bug in bnx2_free_tx_skbs().
+    - LP: #1034988
+  * sch_sfb: Fix missing NULL check
+    - LP: #1034988
+  * sctp: Fix list corruption resulting from freeing an association on a
+    list
+    - LP: #1034988
+  * caif: Fix access to freed pernet memory
+    - LP: #1034988
+  * cipso: don't follow a NULL pointer when setsockopt() is called
+    - LP: #1034988
+  * caif: fix NULL pointer check
+    - LP: #1034988
+  * wanmain: comparing array with NULL
+    - LP: #1034988
+  * tcp: Add TCP_USER_TIMEOUT negative value check
+    - LP: #1034988
+  * USB: kaweth.c: use GFP_ATOMIC under spin_lock
+    - LP: #1034988
+  * net: fix rtnetlink IFF_PROMISC and IFF_ALLMULTI handling
+    - LP: #1034988
+  * tcp: perform DMA to userspace only if there is a task waiting for it
+    - LP: #1034988
+  * net/tun: fix ioctl() based info leaks
+    - LP: #1034988
+  * USB: echi-dbgp: increase the controller wait time to come out of halt.
+    - LP: #1034988
+  * ALSA: snd-usb: fix clock source validity index
+    - LP: #1034988
+  * ALSA: mpu401: Fix missing initialization of irq field
+    - LP: #1034988
+  * ASoC: wm8962: Allow VMID time to fully ramp
+    - LP: #1034988
+  * ASoC: wm8994: Ensure there are enough BCLKs for four channels
+    - LP: #1034988
+  * m68k: Make sys_atomic_cmpxchg_32 work on classic m68k
+    - LP: #1034988
+  * m68k: Correct the Atari ALLOWINT definition
+    - LP: #1034988
+  * futex: Test for pi_mutex on fault in futex_wait_requeue_pi()
+    - LP: #1034988
+  * futex: Fix bug in WARN_ON for NULL q.pi_state
+    - LP: #1034988
+  * futex: Forbid uaddr == uaddr2 in futex_wait_requeue_pi()
+    - LP: #1034988
+  * Linux 3.0.40
+    - LP: #1034988
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 14 Aug 2012 11:57:19 +0100
+
+linux (3.0.0-24.40) oneiric-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1027841
 
   [ Andy Whitcroft ]
 
@@ -221,7 +449,7 @@ linux-lts-backport-oneiric (3.0.0-24.40~lucid1) lucid-proposed; urgency=low
   * Linux 3.0.38
     - LP: #1026850
 
- -- Luis Henriques <luis.henriques@canonical.com>  Wed, 25 Jul 2012 11:19:47 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 23 Jul 2012 10:46:46 +0100
 
 linux (3.0.0-23.39) oneiric-proposed; urgency=low
 
