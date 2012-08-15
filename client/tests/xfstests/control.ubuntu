@@ -399,12 +399,12 @@ TEST_MATRIX = {
 	    #'266' : ['xfs'], # requires xfsdump -D
 	    #'267' : ['xfs'], # requires dump tape
 	    #'268' : ['xfs'], # requires dump tape
-	    '269' : ['generic'],
+	    #'269' : ['generic'],                       # FIXME bjf - This is causing an oops on Natty
 	    '270' : ['ext3', 'ext4', 'xfs'],
 	    '271' : ['ext4'],
 	    '272' : ['ext4'],
 	    #'273' : ['generic'], # ext4 fails
-	    '274' : ['ext4', 'xfs'],
+	    #'274' : ['ext4', 'xfs'],                   # FIXME bjf - This is hanging on Lucid
 	    #'275' : ['generic'] # ext4 fails
 }
 
