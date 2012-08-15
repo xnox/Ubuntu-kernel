@@ -609,11 +609,21 @@ static void unmute_fe_port(struct snd_pcm_substream *substream,
 		mute_fe_port_capture(fe, dai, 0);
 }
 
+/* trigger platform driver only */
+static inline int
+snd_soc_dpcm_platform_trigger(struct snd_pcm_substream *substream,
+    int cmd, struct snd_soc_platform *platform)
+{   
+    if (platform->driver->ops->trigger)
+        return platform->driver->ops->trigger(substream, cmd);
+    return 0;
+}
+
 static void capture_trigger(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai, int cmd)
 {
 	struct snd_soc_pcm_runtime *fe = substream->private_data;
-	struct snd_soc_dpcm_params *dpcm_params;
+	struct snd_soc_dpcm *dpcm;
 	struct snd_pcm_substream *be_substream;
 	int stream = substream->stream;
 	enum snd_soc_dpcm_state state;
@@ -624,8 +634,8 @@ static void capture_trigger(struct snd_pcm_substream *substream,
 	case SNDRV_PCM_TRIGGER_START:
 
 		/* mute and enable BE ports */
-		list_for_each_entry(dpcm_params, &fe->dpcm[stream].be_clients, list_be) {
-			struct snd_soc_pcm_runtime *be = dpcm_params->be;
+		list_for_each_entry(dpcm, &fe->dpcm[stream].be_clients, list_be) {
+			struct snd_soc_pcm_runtime *be = dpcm->be;
 
 			/* does this trigger() apply to this BE and stream ? */
 			if (!snd_soc_dpcm_be_can_update(fe, be, stream))
@@ -664,8 +674,8 @@ static void capture_trigger(struct snd_pcm_substream *substream,
 		}
 
 		/* Restore ABE GAINS AMIC */
-		list_for_each_entry(dpcm_params, &fe->dpcm[stream].be_clients, list_be) {
-			struct snd_soc_pcm_runtime *be = dpcm_params->be;
+		list_for_each_entry(dpcm, &fe->dpcm[stream].be_clients, list_be) {
+			struct snd_soc_pcm_runtime *be = dpcm->be;
 
 			/* does this trigger() apply to this BE and stream ? */
 			if (!snd_soc_dpcm_be_can_update(fe, be, stream))
@@ -697,8 +707,8 @@ static void capture_trigger(struct snd_pcm_substream *substream,
 		}
 
 		/* disable BE ports */
-		list_for_each_entry(dpcm_params, &fe->dpcm[stream].be_clients, list_be) {
-			struct snd_soc_pcm_runtime *be = dpcm_params->be;
+		list_for_each_entry(dpcm, &fe->dpcm[stream].be_clients, list_be) {
+			struct snd_soc_pcm_runtime *be = dpcm->be;
 
 			/* does this trigger() apply to this BE and stream ? */
 			if (!snd_soc_dpcm_be_can_update(fe, be, stream))
@@ -739,7 +749,7 @@ static void playback_trigger(struct snd_pcm_substream *substream,
 		struct snd_soc_dai *dai, int cmd)
 {
 	struct snd_soc_pcm_runtime *fe = substream->private_data;
-	struct snd_soc_dpcm_params *dpcm_params;
+	struct snd_soc_dpcm *dpcm;
 	struct snd_pcm_substream *be_substream;
 	int stream = substream->stream;
 	enum snd_soc_dpcm_state state;
@@ -751,8 +761,8 @@ static void playback_trigger(struct snd_pcm_substream *substream,
 	case SNDRV_PCM_TRIGGER_RESUME:
 
 		/* mute and enable ports */
-		list_for_each_entry(dpcm_params, &fe->dpcm[stream].be_clients, list_be) {
-			struct snd_soc_pcm_runtime *be = dpcm_params->be;
+		list_for_each_entry(dpcm, &fe->dpcm[stream].be_clients, list_be) {
+			struct snd_soc_pcm_runtime *be = dpcm->be;
 
 			/* does this trigger() apply to the FE ? */
 			if (!snd_soc_dpcm_be_can_update(fe, be, stream))
@@ -824,8 +834,8 @@ static void playback_trigger(struct snd_pcm_substream *substream,
 		}
 
 		/* disable BE ports */
-		list_for_each_entry(dpcm_params, &fe->dpcm[stream].be_clients, list_be) {
-			struct snd_soc_pcm_runtime *be = dpcm_params->be;
+		list_for_each_entry(dpcm, &fe->dpcm[stream].be_clients, list_be) {
+			struct snd_soc_pcm_runtime *be = dpcm->be;
 
 			/* does this trigger() apply to this BE and stream ? */
 			if (!snd_soc_dpcm_be_can_update(fe, be, stream))
