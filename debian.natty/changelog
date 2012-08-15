@@ -1,9 +1,30 @@
-linux-lts-backport-natty (2.6.38-15.65~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-15.66~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1029786
+    - LP: #1036914
+
+  [ Upstream Kernel Changes ]
+
+  * udf: Fortify loading of sparing table
+    - LP: #1024497
+    - CVE-2012-3400
+  * udf: Avoid run away loop when partition table length is corrupted
+    - LP: #1024497
+    - CVE-2012-3400
+  * eCryptfs: Gracefully refuse miscdev file ops on inherited/passed files
+  * eCryptfs: Copy up POSIX ACL and read-only flags from lower mount
+    - LP: #1009207
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Wed, 15 Aug 2012 09:46:38 +0100
+
+linux (2.6.38-15.65) natty-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1027821
 
   [ Andy Whitcroft ]
 
@@ -24,7 +45,7 @@ linux-lts-backport-natty (2.6.38-15.65~lucid1) lucid-proposed; urgency=low
     - LP: #1006622
     - CVE-2012-2136
 
- -- Luis Henriques <luis.henriques@canonical.com>  Fri, 27 Jul 2012 14:13:12 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Thu, 26 Jul 2012 14:37:28 +0100
 
 linux (2.6.38-15.64) natty-proposed; urgency=low
 
