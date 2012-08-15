@@ -415,7 +415,7 @@ static int omap_abe_twl6040_init(struct snd_soc_pcm_runtime *rtd)
 	struct snd_soc_dapm_context *dapm = &codec->dapm;
 	struct omap_abe_twl6040_data *pdata = dev_get_platdata(card->dev);
 	struct abe_twl6040 *priv = snd_soc_card_get_drvdata(card);
-	int hs_trim, left_offset, right_offset, step_mV;
+	int hsotrim, left_offset, right_offset, step_mV;
 	int ret = 0;
 
 	/* Disable not connected paths if not used */
@@ -462,7 +462,7 @@ static int omap_abe_twl6040_init(struct snd_soc_pcm_runtime *rtd)
 		twl6040_hs_jack_detect(codec, &hs_jack, SND_JACK_HEADSET);
 	else
 		snd_soc_jack_report(&hs_jack, SND_JACK_HEADSET, SND_JACK_HEADSET);
-
+#if 0
 	/* Only configure the TPS6130x on SDP4430 */
 	if (machine_is_omap_4430sdp()) {
 		card_data->adapter = i2c_get_adapter(1);
@@ -481,6 +481,7 @@ static int omap_abe_twl6040_init(struct snd_soc_pcm_runtime *rtd)
 
 		omap_abe_tps6130x_configure(card_data);
 	}
+#endif
 
 	return ret;
 }
@@ -623,7 +624,7 @@ static struct snd_soc_dai_link omapabe_dai[] = {
 
 		.dynamic = 1, /* BE is dynamic */
 		.trigger = {SND_SOC_DPCM_TRIGGER_BESPOKE, SND_SOC_DPCM_TRIGGER_BESPOKE},
-		.no_host_mode = SND_SOC_DAI_LINK_OPT_HOST,
+		//.no_host_mode = SND_SOC_DAI_LINK_OPT_HOST,
 	},
 	{
 		.name = "OMAP ABE Tones Playback",
@@ -666,7 +667,7 @@ static struct snd_soc_dai_link omapabe_dai[] = {
 		.init = omap_abe_twl6040_fe_init,
 		.trigger = {SND_SOC_DPCM_TRIGGER_BESPOKE, SND_SOC_DPCM_TRIGGER_BESPOKE},
 		.ops = &omap_abe_modem_ops,
-		.no_host_mode = SND_SOC_DAI_LINK_NO_HOST,
+		//.no_host_mode = SND_SOC_DAI_LINK_NO_HOST,
 		.ignore_suspend = 1,
 	},
 	{
