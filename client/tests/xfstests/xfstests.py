@@ -73,6 +73,7 @@ class xfstests(test.test):
         utils.system('patch < ../xfstests_103_text.patch')
         utils.system('patch < ../xfstests_228_text.patch')
         utils.system('patch < ../xfstests_change_e4defrag_location.patch')
+        utils.system('patch < ../common_rc.patch')
         utils.make()
 
         logging.debug("Available tests in srcdir: %s" %
