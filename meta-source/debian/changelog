@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (3.5.0.208.7) quantal-proposed; urgency=low
+
+  * Ubuntu-3.5.0-208.14
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Mon, 20 Aug 2012 11:50:41 -0600
+
 linux-meta-ti-omap4 (3.5.0.207.6) quantal-proposed; urgency=low
 
   * Ubuntu-3.5.0-207.13
