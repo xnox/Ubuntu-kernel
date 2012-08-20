@@ -1762,7 +1762,6 @@ snd-soc-tlv320aic3x
 snd-soc-tlv320dac33
 snd-soc-tpa6130a2
 snd-soc-twl4030
-snd-soc-twl6040
 snd-soc-uda134x
 snd-soc-uda1380
 snd-soc-wl1273
