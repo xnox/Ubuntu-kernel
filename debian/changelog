@@ -1,3 +1,11 @@
+linux-firmware (1.79.1) precise-proposed; urgency=low
+
+  * iwlwifi: update firmware for 6205
+    added iwlwifi-6000g2a-6.ucode
+    -LP: #1039856
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Wed, 22 Aug 2012 07:52:46 -0600
+
 linux-firmware (1.79) precise; urgency=low
 
   * Remove obsolete firmware files.
