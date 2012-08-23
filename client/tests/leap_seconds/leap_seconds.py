@@ -10,7 +10,7 @@ class leap_seconds(test.test):
         os.chdir(self.bindir)
         utils.system('cp leap_seconds.c src/')
         os.chdir(self.srcdir)
-        utils.system(utils.get_cc() + ' leap_seconds.c -D_POSIX_C_SOURCE=200112 -o leap_seconds')
+        utils.system(utils.get_cc() + ' leap_seconds.c -D_POSIX_C_SOURCE=200112 -o leap_seconds -lrt')
 
 
     def initialize(self):
