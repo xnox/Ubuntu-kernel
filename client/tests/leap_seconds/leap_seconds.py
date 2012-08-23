@@ -12,35 +12,19 @@ class leap_seconds(test.test):
         os.chdir(self.srcdir)
         utils.system(utils.get_cc() + ' leap_seconds.c -D_POSIX_C_SOURCE=200112 -o leap_seconds -lrt')
 
-
     def initialize(self):
         self.job.require_gcc()
 
-
-    def run_the_test(self, iterations):
-        utils.write_one_line('/proc/sys/vm/dirty_ratio', '4')
-        utils.write_one_line('/proc/sys/vm/dirty_background_ratio', '2')
-
+    def run_once(self, test_time=10, exit_on_error=True, set_time=True):
         cmd = os.path.join(self.srcdir, 'leap_seconds')
-        args = "%d" % (utils.memtotal() / 32)
 
-        profilers = self.job.profilers
-        if profilers.present():
-            profilers.start(self)
+        args = ''
+        if set_time:
+            args += ' -s'
 
-        for i in range(iterations):
-            utils.system(cmd + ' ' + args)
+        if exit_on_error:
+            args += ' -x'
 
-        if profilers.present():
-            profilers.stop(self)
-            profilers.report(self)
+        args += ' -t %d' % test_time
+        utils.system(cmd + ' ' + args)
 
-
-    def execute(self, iterations = 1):
-        dirty_ratio = utils.read_one_line('/proc/sys/vm/dirty_ratio')
-        dirty_background_ratio = utils.read_one_line('/proc/sys/vm/dirty_background_ratio')
-        try:
-            self.run_the_test(iterations)
-        finally:
-            utils.write_one_line('/proc/sys/vm/dirty_ratio', dirty_ratio)
-            utils.write_one_line('/proc/sys/vm/dirty_background_ratio', dirty_background_ratio)
