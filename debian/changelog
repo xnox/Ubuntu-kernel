@@ -1,0 +1,13 @@
+ubuntu-autotest (0.0.2-1) unstable; urgency=low
+
+  * Start new release
+
+ -- Steve Conklin <sconklin@canonical.com>  Mon, 27 Aug 2012 10:51:45 -0600
+
+ubuntu-autotest (0.0.1-1) unstable; urgency=low
+
+  * Initial internal versioning release for Ubuntu
+  * Switch to debian release versioning
+  * Add changelog
+
+ -- Steve Conklin <sconklin@canonical.com>  Mon, 27 Aug 2012 10:15:16 -0600
