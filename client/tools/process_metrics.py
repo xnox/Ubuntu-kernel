@@ -25,6 +25,10 @@ def main(path):
         jobname = os.environ["JOB_NAME"]
     except KeyError:
         raise KeyError("Env variable JOB_NAME is not set, are you running this inside a jenkins job?")
+    try:
+        testname = os.environ["TEST_NAME"]
+    except KeyError:
+        raise KeyError("Env variable TEST_NAME is not set, are you running this inside the kernel test scripts?")
 
     if path is None:
         path = "autotest/client"
@@ -40,6 +44,7 @@ def main(path):
 
     # Save a processing timestamp
     meta['results_processed'] = datetime.utcnow().strftime("%A, %d. %B %Y %H:%M UTC")
+    meta['metrics_testname'] = testname
 
     # Gather results
     resultsdir = os.path.join(path, "results/default")
