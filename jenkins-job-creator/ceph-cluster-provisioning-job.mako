@@ -34,7 +34,8 @@ sudo sed -ie 's/^\(libvirtd.*\)/\1jenkins/' /etc/group
 # Setup the bridged network for the VMs. This allows us to get to them from anywhere
 # on the network.
 #
-echo &quot;\n\nauto br0\niface br0 inet dhcp\n        bridge_ports     eth0\n        bridge_stp         off\n        bridge_fd            0\n        bridge_maxwait 0\n&quot; | sudo tee -a /etc/network/interfaces
+export NIC=`grep 'inet dhcp' /etc/network/interfaces | sed 's/iface \(.*\) inet dhcp/\1/'`
+echo &quot;\n\nauto br0\niface br0 inet dhcp\n        bridge_ports     $NIC\n        bridge_stp         off\n        bridge_fd            0\n        bridge_maxwait 0\n&quot; | sudo tee -a /etc/network/interfaces
 sudo ifup br0
 
 kernel-testing/jenkins-job-creator/ceph-configurator --metadata-servers=3 --objectstore-servers=3 --monitor-servers=3

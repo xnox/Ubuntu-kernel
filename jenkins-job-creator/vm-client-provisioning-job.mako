@@ -22,7 +22,8 @@ scp -o StrictHostKeyChecking=no -r ${data.hw['jenkins server']}:kernel-testing .
 sudo apt-get install -y qemu-kvm koan virt-manager
 sudo sed -ie 's/^\(libvirtd.*\)/\1jenkins/' /etc/group
 
-echo &quot;\n\nauto br0\niface br0 inet dhcp\n        bridge_ports     eth0\n        bridge_stp         off\n        bridge_fd            0\n        bridge_maxwait 0\n&quot; | sudo tee -a /etc/network/interfaces
+export NIC=`grep 'inet dhcp' /etc/network/interfaces | sed 's/iface \(.*\) inet dhcp/\1/'`
+echo &quot;\n\nauto br0\niface br0 inet dhcp\n        bridge_ports     $NIC\n        bridge_stp         off\n        bridge_fd            0\n        bridge_maxwait 0\n&quot; | sudo tee -a /etc/network/interfaces
 sudo ifup br0
 
 sudo koan --virt --server=${data.hw['orchestra server']} --profile=${data.sut_name} --virt-name=${data.sut_name} --virt-bridge=br0 --vm-poll
