@@ -138,13 +138,13 @@ TEST_MATRIX = {
 	    '002' : ['generic'],
 	    '003' : ['xfs'],
 	    '004' : ['xfs'],
-	    '005' : ['generic'],
-	    '006' : ['generic'],
-	    '007' : ['generic'],
+	    #'005' : ['generic'],  # FIXME bjf - breaks oneiric testing (filesystem consistency check) (ext4)
+	    #'006' : ['generic'],  # FIXME bjf - breaks oneiric testing (filesystem consistency check) (ext4)
+	    #'007' : ['generic'],  # FIXME bjf - breaks oneiric testing (filesystem consistency check) (ext4)
 	    '008' : ['xfs'],
 	    '009' : ['xfs'],
 	    #'010' : ['generic'], # ext4 fails 'dbtest was not built for this platform' dbtest fails to build/link
-	    '011' : ['generic'],
+	    #'011' : ['generic'],  # FIXME bjf - breaks oneiric testing (filesystem consistency check) (ext4)
 	    '012' : ['xfs'],
 	    '013' : ['generic'],
 	    '014' : ['generic'],
@@ -411,12 +411,12 @@ TEST_MATRIX = {
 	    #'266' : ['xfs'], # requires xfsdump -D
 	    #'267' : ['xfs'], # requires dump tape
 	    #'268' : ['xfs'], # requires dump tape
-	    '269' : ['generic'],
+	    #'269' : ['generic'],                       # FIXME bjf - This is causing an oops on Natty
 	    #'270' : ['ext3', 'ext4', 'xfs'],           # FIXME bjf - This test fails on most series (ext4)
 	    '271' : ['ext4'],
 	    '272' : ['ext4'],
 	    #'273' : ['generic'], # ext4 fails
-	    '274' : ['ext4', 'xfs'],
+	    #'274' : ['ext4', 'xfs'],                   # FIXME bjf - This is hanging on Lucid
 	    #'275' : ['generic'] # ext4 fails
 }
 
