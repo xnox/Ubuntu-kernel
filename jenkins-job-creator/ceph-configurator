@@ -110,6 +110,8 @@ class CephFactory():
                 with open(fid, 'w') as f:
                     f.write(interfaces)
 
+            retval = 0
+
         # Handle the user presses <ctrl-C>.
         #
         except KeyboardInterrupt:
