@@ -61,7 +61,7 @@ for NODE in *; do
     # reboot it and wait for the new name.
     #
     ./wait-for-system ${data.sut_name}
-    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo sed -i -e "s/${data.sut_name/$NODE/"
+    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo sed -i -e "s/${data.sut_name}/$NODE/"
     ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo reboot
     ./wait-for-system $NODE
 
