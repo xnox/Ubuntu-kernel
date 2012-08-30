@@ -20,7 +20,7 @@
 #
 cd /var/lib/jenkins
 rm -rf kernel-testing
-rsync -ar --exclude '.git' -e "ssh -o StrictHostKeyChecking=no" ${data.hw['jenkins server']}:kernel-testing/ ./kernel-testing/
+rsync -ar --exclude '.git' -e "ssh -o StrictHostKeyChecking=no" ${data.hw['jenkins server']}:kt.bjf/ ./kernel-testing/
 
 # Instll the packages we require for creating VMs
 #
@@ -61,8 +61,8 @@ for NODE in *; do
     # reboot it and wait for the new name.
     #
     ./wait-for-system ${data.sut_name}
-    ssh -o StrictHostKeyChecking=no ${data.sut_name} 'echo $NODE  | sudo tee /etc/hostname'
-    ssh -o StrictHostKeyChecking=no ${data.sut_name} reboot
+    ssh -o StrictHostKeyChecking=no ${data.sut_name} "echo $NODE  | sudo tee /etc/hostname"
+    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo reboot
     ./wait-for-system $NODE
 
     # Fix .ssh config on slave so it can copy from kernel-jenkins
