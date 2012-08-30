@@ -56,12 +56,18 @@ for NODE in *; do
     ssh-keygen -f &quot;/var/lib/jenkins/.ssh/known_hosts&quot; -R $NODE
 
     cd /var/lib/jenkins/kernel-testing
+
+    # It's first going to come up with the sut_name. We then need to change the name and
+    # reboot it and wait for the new name.
+    #
+    ./wait-for-system ${data.sut_name}
+    ssh -o StrictHostKeyChecking=no ${data.sut_name} 'echo $NODE  | sudo tee /etc/hostname'
+    ssh -o StrictHostKeyChecking=no ${data.sut_name} reboot
     ./wait-for-system $NODE
-    ./create-slave-node $NODE $NODE &quot;$NODE&quot;
 
     # Fix .ssh config on slave so it can copy from kernel-jenkins
     #
-    scp -o StrictHostKeyChecking=no -r /var/lib/jenkins/.ssh $TARGET_HOST:
+    scp -o StrictHostKeyChecking=no -r /var/lib/jenkins/.ssh $NODE:
 done
             </command>
         </hudson.tasks.Shell>
