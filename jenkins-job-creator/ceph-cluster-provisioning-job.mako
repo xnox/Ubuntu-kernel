@@ -46,7 +46,7 @@ cd ceph-config
 for NODE in *; do
     # Provision a new VM
     #
-    sudo koan --virt --server=${data.hw['orchestra server']} --profile=${data.sut_name} --virt-name=$NODE --virt-bridge=br0 --virt-path=/opt/$NODE-a,/opt/$NODE-b --vm-poll
+    sudo koan --virt --server=${data.hw['orchestra server']} --profile=${data.sut_name} --virt-name=$NODE --virt-bridge=br0 --virt-path=/opt/$NODE-a --vm-poll
 
     # Wait for the new VM to come up and configure it's ssh so that we can do anything
     # we want with it.
