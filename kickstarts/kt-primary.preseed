@@ -41,7 +41,6 @@ d-i     partman/default_filesystem              string      ext4
 
 # Use generic kernel
 d-i     base-installer/kernel/image             string      linux-server
-#d-i     base-installer/kernel/image             string      linux-generic
 
 # User setup
 d-i     passwd/root-login                       boolean     false
@@ -49,9 +48,6 @@ d-i     passwd/make-user                        boolean     true
 d-i     passwd/user-fullname                    string      ubuntu
 d-i     passwd/username                         string      ubuntu
 d-i     passwd/user-password-crypted            password    $6$.1eHH0iY$ArGzKX2YeQ3G6U.mlOO3A.NaL22Ewgz8Fi4qqz.Ns7EMKjEJRIW2Pm/TikDptZpuu7I92frytmk5YeL.9fRY4.
-#d-i     passwd/user-fullname                    string      jenkins
-#d-i     passwd/username                         string      jenkins
-#d-i     passwd/user-password-crypted            password    $6$OR5rfBfN$ffTGCOIQusLBkKqjCCtdOdrEdd1Y0Onsx0XaAHK46DxMX6d44RdgPn51r3kckQ4qG9MHg8IoVEwQWwBNNiIT50
 d-i     passwd/user-uid                         string
 d-i     user-setup/allow-password-weak          boolean     false
 d-i     user-setup/encrypt-home boolean         false
@@ -81,7 +77,6 @@ d-i     debian-installer/exit/halt              boolean     false
 d-i     debian-installer/exit/poweroff          boolean     false
 
 # Packages
-#d-i     pkgsel/include                          string      openssh-server build-essential libcap2-bin gcc-multilib gdb gawk execstack exim4 jenkins-slave python-software-properties
 d-i     pkgsel/include                          string      openssh-server vim build-essential jenkins-slave htop
 
 # Post scripts. Executes late command and disables PXE
