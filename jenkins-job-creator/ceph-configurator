@@ -31,7 +31,7 @@ class CephFactory():
         self.current_ip = 1
 
     def mknode(self, dictionary, name_prefix, index):
-        name = '%s.%d' % (name_prefix, index)
+        name = '%s-%d' % (name_prefix, index)
         n = {}
         n['ip'] = '%s.%d' % (self.subnet, self.current_ip)
         n['name'] = '%s-%d' % (name_prefix, index)
@@ -50,11 +50,26 @@ class CephFactory():
         retval += '    osd journal size = 1000\n'
         retval += '    filestore xattr use omap = true\n'
         retval += '\n'
-        for k in sorted(dictionary):
-            retval += '[%s]\n' % k
-            retval += '    host = %s\n' % dictionary[k]['name']
-            if 'mon' in dictionary[k]['name']:
-                retval += '    mon addr = %s:6789\n' % dictionary[k]['ip']
+
+        servers = sorted(dictionary.keys())
+
+        # Mon
+        for i in range(0, len(servers)):
+            retval += '[mon.%c]\n' % chr(ord('a') + i)
+            retval += '    host = %s\n' % servers[i]
+            retval += '    mon addr = %s:6789\n' % dictionary[servers[i]]['ip']
+            retval += '\n'
+
+        # Osd
+        for i in range(0, len(servers)):
+            retval += '[osd.%d]\n' % i
+            retval += '    host = %s\n' % servers[i]
+            retval += '\n'
+
+        # Mds
+        for i in range(0, len(servers)):
+            retval += '[mds.%c]\n' % chr(ord('a') + i)
+            retval += '    host = %s\n' % servers[i]
             retval += '\n'
 
         return retval
@@ -81,14 +96,8 @@ class CephFactory():
             # Create a dictionary of all the configuration information
             #
             nodes = {}
-            for x in range(0, self.cfg.metadata_servers):
-                self.mknode(nodes, 'mds', x)
-
-            for x in range(0, self.cfg.objectstore_servers):
-                self.mknode(nodes, 'osd', x)
-
-            for x in range(0, self.cfg.monitor_servers):
-                self.mknode(nodes, 'mon', x)
+            for x in range(0, self.cfg.servers):
+                self.mknode(nodes, 'fs', x)
 
             hosts = self.mkhosts(nodes)
             ceph_config = self.mkceph_config(nodes)
@@ -133,9 +142,10 @@ if __name__ == '__main__':
 
     parser = ArgumentParser()
 
-    parser.add_argument('--metadata-servers',    required=False, default=1, type=int, help='Number of metadata servers to instantiate and configure.')
-    parser.add_argument('--objectstore-servers', required=False, default=1, type=int, help='Number of object-store servers to instantiate and configure.')
-    parser.add_argument('--monitor-servers',     required=False, default=1, type=int, help='Number of monitor servers to instantiate and configure.')
+    parser.add_argument('--servers', required=False, default=3, type=int, help="The number of actual, VMs to instantiate.")
+    parser.add_argument('--mds',     required=False, default=1, type=int, help='Number of metadata server daemons per server.')
+    parser.add_argument('--obs',     required=False, default=1, type=int, help='Number of object-store server daemons per server.')
+    parser.add_argument('--mon',     required=False, default=1, type=int, help='Number of monitor daemons per server')
 
     args = parser.parse_args()
 
