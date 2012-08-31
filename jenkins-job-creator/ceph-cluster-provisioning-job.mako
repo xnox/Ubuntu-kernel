@@ -53,15 +53,13 @@ for NODE in *; do
     #
     set +e
 
-    ssh-keygen -f &quot;/var/lib/jenkins/.ssh/known_hosts&quot; -R $NODE
-
     cd /var/lib/jenkins/kernel-testing
 
     # It's first going to come up with the sut_name. We then need to change the name and
     # reboot it and wait for the new name.
     #
     ./wait-for-system ${data.sut_name}
-    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo sed -i -e "s/${data.sut_name}/$NODE/"
+    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo sed -i -e "s/${data.sut_name}/$NODE/" /etc/hostname
     ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo reboot
     ./wait-for-system $NODE
 
