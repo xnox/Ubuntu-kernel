@@ -28,7 +28,7 @@ class CephFactory():
     def __init__(self, args):
         self.cfg = args
         self.subnet = '192.168.122'
-        self.current_ip = 1
+        self.current_ip = 100
 
     def mknode(self, dictionary, name_prefix, index):
         name = '%s-%d' % (name_prefix, index)
