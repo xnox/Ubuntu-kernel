@@ -41,7 +41,6 @@ sudo ifup br0
 ifconfig -a
 
 export CEPH_NODE_LIST="fs-0 fs-1 fs-2"
-cd ceph-config
 for NODE in $CEPH_NODE_LIST; do
     # Provision a new VM
     #
