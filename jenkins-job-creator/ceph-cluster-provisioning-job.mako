@@ -40,10 +40,9 @@ cat /etc/network/interfaces
 sudo ifup br0
 ifconfig -a
 
-kernel-testing/jenkins-job-creator/ceph-configurator --metadata-servers=3 --objectstore-servers=3 --monitor-servers=3
-
+export CEPH_NODE_LIST="fs-0 fs-1 fs-2"
 cd ceph-config
-for NODE in *; do
+for NODE in $CEPH_NODE_LIST; do
     # Provision a new VM
     #
     sudo koan --virt --server=${data.hw['orchestra server']} --profile=${data.sut_name} --virt-name=$NODE --virt-bridge=br0 --virt-path=/opt/$NODE-a --vm-poll
@@ -60,6 +59,7 @@ for NODE in *; do
     #
     ./wait-for-system ${data.sut_name}
     ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo sed -i -e "s/${data.sut_name}/$NODE/" /etc/hostname
+    ssh -o StrictHostKeyChecking=no $NODE sudo apt-get --yes install ceph ceph-mds ceph-common
     ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo reboot
     ./wait-for-system $NODE
 
