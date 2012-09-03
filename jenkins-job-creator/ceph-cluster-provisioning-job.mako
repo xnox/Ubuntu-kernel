@@ -40,7 +40,7 @@ cat /etc/network/interfaces
 sudo ifup br0
 ifconfig -a
 
-export CEPH_NODE_LIST="fs-0 fs-1 fs-2"
+export CEPH_NODE_LIST="ceph-node-0 ceph-node-1 ceph-node-2"
 for NODE in $CEPH_NODE_LIST; do
     # Provision a new VM
     #
@@ -66,6 +66,37 @@ for NODE in $CEPH_NODE_LIST; do
     #
     scp -o StrictHostKeyChecking=no -r /var/lib/jenkins/.ssh $NODE:
 done
+
+# -------------------------------------------------------------------------------------
+# This needs to be generalized
+#
+ssh -o StrictHostKeyChecking=no ceph-node-0 mkdir -p /var/lib/ceph/osd/ceph-0
+ssh -o StrictHostKeyChecking=no ceph-node-0 mkdir -p /var/lib/ceph/mon/ceph-a
+ssh -o StrictHostKeyChecking=no ceph-node-0 mkdir -p /var/lib/ceph/mds/ceph-a
+
+ssh -o StrictHostKeyChecking=no ceph-node-1 mkdir -p /var/lib/ceph/osd/ceph-1
+ssh -o StrictHostKeyChecking=no ceph-node-1 mkdir -p /var/lib/ceph/mon/ceph-b
+ssh -o StrictHostKeyChecking=no ceph-node-1 mkdir -p /var/lib/ceph/mds/ceph-b
+
+ssh -o StrictHostKeyChecking=no ceph-node-2 mkdir -p /var/lib/ceph/osd/ceph-2
+ssh -o StrictHostKeyChecking=no ceph-node-2 mkdir -p /var/lib/ceph/mon/ceph-c
+ssh -o StrictHostKeyChecking=no ceph-node-2 mkdir -p /var/lib/ceph/mds/ceph-c
+
+kernel-testing/jenkins-job-creator/cc $CEPH_NODE_LIST > ceph.conf
+
+for NODE in $CEPH_NODE_LIST; do
+    scp -o StrictHostKeyChecking=no ceph.conf $NODE:
+    ssh -o StrictHostKeyChecking=no $NODE sudo mv ceph.conf /etc/ceph/ceph.conf
+done
+
+ssh -o StrictHostKeyChecking=no ceph-node-0 sudo mkcephfs -a -c /etc/ceph/ceph.conf -k ceph.keyring
+
+for NODE in $CEPH_NODE_LIST; do
+    ssh -o StrictHostKeyChecking=no $NODE sudo service ceph start
+done
+
+ssh -o StrictHostKeyChecking=no ceph-node-0 sudo ceph health
+
             </command>
         </hudson.tasks.Shell>
     </builders>
