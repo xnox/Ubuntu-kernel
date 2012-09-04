@@ -45,7 +45,7 @@ export CEPH_NODE_LIST="ceph-node-0 ceph-node-1 ceph-node-2"
 # Fixup the .ssh/config so that the nodes can ssh to teach other without
 # passwords.
 #
-for NODE in #CEPH_NODE_LIST; do
+for NODE in $CEPH_NODE_LIST; do
     echo "\nHost $NODE\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null\n\n" >> .ssh/config
 done
 
