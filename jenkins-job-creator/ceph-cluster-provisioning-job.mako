@@ -82,7 +82,7 @@ ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/osd/ceph
 ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/mon/ceph-c
 ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/mds/ceph-c
 
-kernel-testing/jenkins-job-creator/cc $CEPH_NODE_LIST > ceph.conf
+/var/lib/jenkins/kernel-testing/jenkins-job-creator/cc $CEPH_NODE_LIST > ceph.conf
 
 for NODE in $CEPH_NODE_LIST; do
     scp -o StrictHostKeyChecking=no ceph.conf $NODE:
