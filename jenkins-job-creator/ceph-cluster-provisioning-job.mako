@@ -58,7 +58,7 @@ for NODE in $CEPH_NODE_LIST; do
     #
     ./wait-for-system ${data.sut_name}
     ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo sed -i -e "s/${data.sut_name}/$NODE/" /etc/hostname
-    ssh -o StrictHostKeyChecking=no $NODE sudo apt-get --yes install ceph ceph-mds ceph-common
+    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo apt-get --yes install ceph ceph-mds ceph-common
     ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo reboot
     ./wait-for-system $NODE
 
@@ -70,17 +70,17 @@ done
 # -------------------------------------------------------------------------------------
 # This needs to be generalized
 #
-ssh -o StrictHostKeyChecking=no ceph-node-0 mkdir -p /var/lib/ceph/osd/ceph-0
-ssh -o StrictHostKeyChecking=no ceph-node-0 mkdir -p /var/lib/ceph/mon/ceph-a
-ssh -o StrictHostKeyChecking=no ceph-node-0 mkdir -p /var/lib/ceph/mds/ceph-a
+ssh -o StrictHostKeyChecking=no ceph-node-0 sudo mkdir -p /var/lib/ceph/osd/ceph-0
+ssh -o StrictHostKeyChecking=no ceph-node-0 sudo mkdir -p /var/lib/ceph/mon/ceph-a
+ssh -o StrictHostKeyChecking=no ceph-node-0 sudo mkdir -p /var/lib/ceph/mds/ceph-a
 
-ssh -o StrictHostKeyChecking=no ceph-node-1 mkdir -p /var/lib/ceph/osd/ceph-1
-ssh -o StrictHostKeyChecking=no ceph-node-1 mkdir -p /var/lib/ceph/mon/ceph-b
-ssh -o StrictHostKeyChecking=no ceph-node-1 mkdir -p /var/lib/ceph/mds/ceph-b
+ssh -o StrictHostKeyChecking=no ceph-node-1 sudo mkdir -p /var/lib/ceph/osd/ceph-1
+ssh -o StrictHostKeyChecking=no ceph-node-1 sudo mkdir -p /var/lib/ceph/mon/ceph-b
+ssh -o StrictHostKeyChecking=no ceph-node-1 sudo mkdir -p /var/lib/ceph/mds/ceph-b
 
-ssh -o StrictHostKeyChecking=no ceph-node-2 mkdir -p /var/lib/ceph/osd/ceph-2
-ssh -o StrictHostKeyChecking=no ceph-node-2 mkdir -p /var/lib/ceph/mon/ceph-c
-ssh -o StrictHostKeyChecking=no ceph-node-2 mkdir -p /var/lib/ceph/mds/ceph-c
+ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/osd/ceph-2
+ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/mon/ceph-c
+ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/mds/ceph-c
 
 kernel-testing/jenkins-job-creator/cc $CEPH_NODE_LIST > ceph.conf
 
