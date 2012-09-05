@@ -538,11 +538,13 @@ int omapdss_hdmi_display_3d_enable(struct omap_dss_device *dssdev,
 
 	mutex_lock(&hdmi.lock);
 
+#ifdef CONFIG_OMAP2_DSS_HL
 	if (dssdev->manager == NULL) {
 		DSSERR("failed to enable display: no manager\n");
 		r = -ENODEV;
 		goto err0;
 	}
+#endif
 
 	r = omap_dss_start_device(dssdev);
 	if (r) {
