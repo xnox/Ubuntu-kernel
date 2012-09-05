@@ -65,45 +65,46 @@ for NODE in $CEPH_NODE_LIST; do
     # reboot it and wait for the new name.
     #
     ./wait-for-system ${data.sut_name}
-    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo sed -i -e "s/${data.sut_name}/$NODE/" /etc/hostname
-    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo apt-get --yes install ceph ceph-mds ceph-common
-    ssh -o StrictHostKeyChecking=no ${data.sut_name} sudo reboot
+    ssh ${data.sut_name} sudo sed -i -e "s/${data.sut_name}/$NODE/" /etc/hostname
+    ssh ${data.sut_name} sudo apt-get --yes install ceph ceph-mds ceph-common
+    ssh ${data.sut_name} sudo reboot
     ./wait-for-system $NODE
 
     # Fix .ssh config on slave so it can copy from kernel-jenkins
     #
-    scp -o StrictHostKeyChecking=no -r /var/lib/jenkins/.ssh $NODE:
+    scp -r /var/lib/jenkins/.ssh $NODE:
+    ssh $NODE sudo scp -r .ssh /root/
 done
 
 # -------------------------------------------------------------------------------------
 # This needs to be generalized
 #
-ssh -o StrictHostKeyChecking=no ceph-node-0 sudo mkdir -p /var/lib/ceph/osd/ceph-0
-ssh -o StrictHostKeyChecking=no ceph-node-0 sudo mkdir -p /var/lib/ceph/mon/ceph-a
-ssh -o StrictHostKeyChecking=no ceph-node-0 sudo mkdir -p /var/lib/ceph/mds/ceph-a
+ssh ceph-node-0 sudo mkdir -p /var/lib/ceph/osd/ceph-0
+ssh ceph-node-0 sudo mkdir -p /var/lib/ceph/mon/ceph-a
+ssh ceph-node-0 sudo mkdir -p /var/lib/ceph/mds/ceph-a
 
-ssh -o StrictHostKeyChecking=no ceph-node-1 sudo mkdir -p /var/lib/ceph/osd/ceph-1
-ssh -o StrictHostKeyChecking=no ceph-node-1 sudo mkdir -p /var/lib/ceph/mon/ceph-b
-ssh -o StrictHostKeyChecking=no ceph-node-1 sudo mkdir -p /var/lib/ceph/mds/ceph-b
+ssh ceph-node-1 sudo mkdir -p /var/lib/ceph/osd/ceph-1
+ssh ceph-node-1 sudo mkdir -p /var/lib/ceph/mon/ceph-b
+ssh ceph-node-1 sudo mkdir -p /var/lib/ceph/mds/ceph-b
 
-ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/osd/ceph-2
-ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/mon/ceph-c
-ssh -o StrictHostKeyChecking=no ceph-node-2 sudo mkdir -p /var/lib/ceph/mds/ceph-c
+ssh ceph-node-2 sudo mkdir -p /var/lib/ceph/osd/ceph-2
+ssh ceph-node-2 sudo mkdir -p /var/lib/ceph/mon/ceph-c
+ssh ceph-node-2 sudo mkdir -p /var/lib/ceph/mds/ceph-c
 
 /var/lib/jenkins/kernel-testing/jenkins-job-creator/cc $CEPH_NODE_LIST > ceph.conf
 
 for NODE in $CEPH_NODE_LIST; do
-    scp -o StrictHostKeyChecking=no ceph.conf $NODE:
-    ssh -o StrictHostKeyChecking=no $NODE sudo mv ceph.conf /etc/ceph/ceph.conf
+    scp ceph.conf $NODE:
+    ssh $NODE sudo mv ceph.conf /etc/ceph/ceph.conf
 done
 
-ssh -o StrictHostKeyChecking=no ceph-node-0 sudo mkcephfs -a -c /etc/ceph/ceph.conf -k ceph.keyring
+ssh ceph-node-0 sudo mkcephfs -a -c /etc/ceph/ceph.conf -k ceph.keyring
 
 for NODE in $CEPH_NODE_LIST; do
-    ssh -o StrictHostKeyChecking=no $NODE sudo service ceph start
+    ssh $NODE sudo service ceph start
 done
 
-ssh -o StrictHostKeyChecking=no ceph-node-0 sudo ceph health
+ssh ceph-node-0 sudo ceph health
 
             </command>
         </hudson.tasks.Shell>
