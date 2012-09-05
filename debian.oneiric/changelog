@@ -1,9 +1,163 @@
-linux-lts-backport-oneiric (3.0.0-25.41~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-26.42~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1036577
+    - LP: #1046423
+
+  [ Upstream Kernel Changes ]
+
+  * rds: set correct msg_namelen
+    - LP: #1031112
+    - CVE-2012-3430
+  * x86: Simplify code by removing a !SMP #ifdefs from 'struct cpuinfo_x86'
+    - LP: #1037281
+  * Redefine ATOMIC_INIT and ATOMIC64_INIT to drop the casts
+    - LP: #1037281
+  * SUNRPC: return negative value in case rpcbind client creation error
+    - LP: #1037281
+  * nilfs2: fix deadlock issue between chcp and thaw ioctls
+    - LP: #1037281
+  * pcdp: use early_ioremap/early_iounmap to access pcdp table
+    - LP: #1037281
+  * mm: fix wrong argument of migrate_huge_pages() in
+    soft_offline_huge_page()
+    - LP: #1037281
+  * ARM: 7478/1: errata: extend workaround for erratum #720789
+    - LP: #1037281
+  * ARM: 7479/1: mm: avoid NULL dereference when flushing gate_vma with
+    VIVT caches
+    - LP: #1037281
+  * mm: mmu_notifier: fix freed page still mapped in secondary MMU
+    - LP: #1037281
+  * mac80211: cancel mesh path timer
+    - LP: #1037281
+  * x86, nops: Missing break resulting in incorrect selection on Intel
+    - LP: #1037281
+  * random: Add support for architectural random hooks
+    - LP: #1037281
+  * fix typo/thinko in get_random_bytes()
+    - LP: #1037281
+  * random: Use arch_get_random_int instead of cycle counter if avail
+    - LP: #1037281
+  * random: Use arch-specific RNG to initialize the entropy store
+    - LP: #1037281
+  * random: Adjust the number of loops when initializing
+    - LP: #1037281
+  * drivers/char/random.c: fix boot id uniqueness race
+    - LP: #1037281
+  * random: make 'add_interrupt_randomness()' do something sane
+    - LP: #1037281
+  * random: use lockless techniques in the interrupt path
+    - LP: #1037281
+  * random: create add_device_randomness() interface
+    - LP: #1037281
+  * usb: feed USB device information to the /dev/random driver
+    - LP: #1037281
+  * net: feed /dev/random with the MAC address when registering a device
+    - LP: #1037281
+  * random: use the arch-specific rng in xfer_secondary_pool
+    - LP: #1037281
+  * random: add new get_random_bytes_arch() function
+    - LP: #1037281
+  * random: add tracepoints for easier debugging and verification
+    - LP: #1037281
+  * MAINTAINERS: Theodore Ts'o is taking over the random driver
+    - LP: #1037281
+  * rtc: wm831x: Feed the write counter into device_add_randomness()
+    - LP: #1037281
+  * mfd: wm831x: Feed the device UUID into device_add_randomness()
+    - LP: #1037281
+  * random: remove rand_initialize_irq()
+    - LP: #1037281
+  * random: Add comment to random_initialize()
+    - LP: #1037281
+  * dmi: Feed DMI table to /dev/random driver
+    - LP: #1037281
+  * random: mix in architectural randomness in extract_buf()
+    - LP: #1037281
+  * x86, microcode: microcode_core.c simple_strtoul cleanup
+    - LP: #1037281
+  * x86, microcode: Sanitize per-cpu microcode reloading interface
+    - LP: #1037281
+  * mm: hugetlbfs: close race during teardown of hugetlbfs shared page
+    tables
+    - LP: #1037281
+  * ARM: mxs: Remove MMAP_MIN_ADDR setting from mxs_defconfig
+    - LP: #1037281
+  * ARM: pxa: remove irq_to_gpio from ezx-pcap driver
+    - LP: #1037281
+  * cfg80211: process pending events when unregistering net device
+    - LP: #1037281
+  * cfg80211: fix interface combinations check for ADHOC(IBSS)
+    - LP: #1037281
+  * e1000e: NIC goes up and immediately goes down
+    - LP: #1037281
+  * Input: wacom - Bamboo One 1024 pressure fix
+    - LP: #1037281
+  * rt61pci: fix NULL pointer dereference in config_lna_gain
+    - LP: #1037281
+  * Linux 3.0.41
+    - LP: #1037281
+  * eCryptfs: Revert to a writethrough cache model
+    - LP: #1034012
+  * net: Allow driver to limit number of GSO segments per skb
+    - LP: #1037456
+    - CVE-2012-3412
+  * tcp: do not scale TSO segment size with reordering degree
+    - LP: #1037456
+    - CVE-2012-3412
+  * tcp: Apply device TSO segment limit earlier
+    - LP: #1037456
+    - CVE-2012-3412
+  * sfc: Replace some literal constants with EFX_PAGE_SIZE/EFX_BUF_SIZE
+    - LP: #1037456
+    - CVE-2012-3412
+  * sfc: Fix maximum number of TSO segments and minimum TX queue size
+    - LP: #1037456
+    - CVE-2012-3412
+  * s390/compat: fix mmap compat system calls
+    - LP: #1042241
+  * fuse: verify all ioctl retry iov elements
+    - LP: #1042241
+  * xen: mark local pages as FOREIGN in the m2p_override
+    - LP: #1042241
+  * drm/i915: correctly order the ring init sequence
+    - LP: #1042241
+  * drm/radeon: do not reenable crtc after moving vram start address
+    - LP: #1042241
+  * ext4: avoid kmemcheck complaint from reading uninitialized memory
+    - LP: #1042241
+  * xhci: Add Etron XHCI_TRUST_TX_LENGTH quirk.
+    - LP: #1042241
+  * xhci: Increase reset timeout for Renesas 720201 host.
+    - LP: #1042241
+  * xhci: Switch PPT ports to EHCI on shutdown.
+    - LP: #1042241
+  * USB: add USB_VENDOR_AND_INTERFACE_INFO() macro
+    - LP: #1042241
+  * USB: support the new interfaces of Huawei Data Card devices in option
+    driver
+    - LP: #1042241
+  * USB: option: add ZTE K5006-Z
+    - LP: #1042241
+  * USB: ftdi_sio: Add VID/PID for Kondo Serial USB
+    - LP: #1042241
+  * usb: serial: mos7840: Fixup mos7840_chars_in_buffer()
+    - LP: #1042241
+  * IB/srp: Fix a race condition
+    - LP: #1042241
+  * Linux 3.0.42
+    - LP: #1042241
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Wed, 05 Sep 2012 17:54:34 +0100
+
+linux (3.0.0-25.41) oneiric-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1036178
 
   [ Andy Whitcroft ]
 
@@ -224,7 +378,7 @@ linux-lts-backport-oneiric (3.0.0-25.41~lucid1) lucid-proposed; urgency=low
   * Linux 3.0.40
     - LP: #1034988
 
- -- Luis Henriques <luis.henriques@canonical.com>  Tue, 14 Aug 2012 11:57:19 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 13 Aug 2012 14:05:37 +0100
 
 linux (3.0.0-24.40) oneiric-proposed; urgency=low
 
