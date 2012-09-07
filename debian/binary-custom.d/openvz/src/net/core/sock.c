@@ -1267,6 +1267,11 @@ struct sk_buff *sock_alloc_send_skb2(struct sock *sk, unsigned long size,
 	gfp_t gfp_mask;
 	long timeo;
 	int err;
+	int npages = (size + (PAGE_SIZE - 1)) >> PAGE_SHIFT;
+
+	err = -EMSGSIZE;
+	if (npages > MAX_SKB_FRAGS)
+		goto failure;
 
 	gfp_mask = sk->sk_allocation;
 	if (gfp_mask & __GFP_WAIT)
