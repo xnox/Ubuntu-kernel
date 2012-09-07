@@ -1,3 +1,12 @@
+linux-meta (3.2.0.31.34) precise-proposed; urgency=low
+
+  [ Leann Ogasawara ]
+
+  * Add compat-wireless v3.4 meta package
+    - LP: #1023566
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 07 Sep 2012 16:31:29 +0100
+
 linux-meta (3.2.0.31.33) precise-proposed; urgency=low
 
   [ Luis Henriques ]
