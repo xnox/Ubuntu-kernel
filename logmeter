@@ -394,18 +394,18 @@ class LogMeter(StdApp, MetaData):
         print 'Requested %d samples' % int(self.cfg['samples'])
         num = int(self.cfg['samples'])
         idelay = float(self.cfg['interval'])
-	start_time = time()
-	wake_time = start_time
+        wake_time = time()
 
         while num:
             wake_time = wake_time + idelay
+            read_time = datetime.utcnow().isoformat()
             st = md.read()
             if st == '':
                 ss = md.checkStatus()
                 for ln in ss:
                     stdo('%s\n' % ln)
             dt = 'datetime'
-            print 'Sample:', datetime.utcnow().isoformat(), st.strip()
+            print 'Sample:', read_time, st.strip()
             self.writeOutput('SAMPLE: %s' % st)
             num = num - 1
 
