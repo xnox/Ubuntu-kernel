@@ -1,3 +1,9 @@
+linux-meta-ec2 (2.6.32.348.29) lucid-proposed; urgency=low
+
+  * Bump linux-ec2 ABI to 348 for proposed release
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 07 Sep 2012 11:31:03 +0100
+
 linux-meta-ec2 (2.6.32.347.28) lucid-proposed; urgency=low
 
   * Bump linux-ec2 ABI to 347 for proposed release
