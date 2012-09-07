@@ -37,7 +37,9 @@
 #define DATA_STATS_DURATION		(1)
 #define DATA_STATS_AVERAGE_CURRENT	(2)
 #define DATA_STATS_STD_DEV		(3)
-#define DATA_STATS_MAX			(4)
+#define DATA_STATS_MAX_VAL		(4)
+#define DATA_STATS_MIN_VAL		(5)
+#define DATA_STATS_ITEMS		(6)
 
 #define OPTS_EXTRACT_RESULTS	(0x0000001)
 #define OPTS_TABBED_COLUMNS	(0x0000002)
@@ -64,7 +66,7 @@ typedef struct {
 	point_t *head;		/* Point data list head */
 	point_t *tail;		/* Point data list tail */
 
-	double stats[DATA_STATS_MAX];
+	double stats[DATA_STATS_ITEMS];
 
 	int samples;		/* Number of samples */
 } data_t;
@@ -122,7 +124,7 @@ static void calc_average_stddev(const data_t *data, const int n,
 	int j;
 	double total;
 
-	for (j = 0; j < DATA_STATS_MAX; j++) {
+	for (j = 0; j < DATA_STATS_ITEMS; j++) {
 		total = 0.0;
 		for (i = 0; i < n; i++)
 			total += data[i].stats[j];
@@ -141,25 +143,27 @@ static void calc_average_stddev(const data_t *data, const int n,
 static void data_analyse(FILE *fp, data_t *data, const int n)
 {
 	int i;
-	double average[DATA_STATS_MAX];
-	double stddev[DATA_STATS_MAX];
+	double average[DATA_STATS_ITEMS];
+	double stddev[DATA_STATS_ITEMS];
 	double total;
 	int    samples;
 
 	if (!(opts & OPTS_TAGGED_OUTPUT)  &&
 	    (opts & (OPTS_STATS_PER_TEST | OPTS_STATS_SUMMARY))) {
 		if (opts & OPTS_TABBED_COLUMNS) {
-			fprintf(fp, "\tIntegral\tDuration\tAverage\tStd.Dev\n");
-			fprintf(fp, "\t\t(Secs)\t(mA)\t(mA)\n");
+			fprintf(fp, "\tIntegral\tDuration\tAverage\tStd.Dev\tMinimum\tMaximum\n");
+			fprintf(fp, "\t\t(Secs)\t(mA)\t(mA)\t(mA)\t(mA)\n");
 		} else {
-			fprintf(fp, "                Integral  Duration   Average   Std.Dev.\n");
-			fprintf(fp, "                           (Secs)     (mA)       (mA)\n");
+			fprintf(fp, "                Integral  Duration   Average   Std.Dev.  Minimum   Maximum\n");
+			fprintf(fp, "                           (Secs)     (mA)      (mA)      (mA)      (mA)\n");
 		}
 	}
 
 	for (i = 0; i < n; i++) {
 		point_t *p = data[i].head;
 		data[i].stats[DATA_STATS_INTEGRAL] = 0.0;
+		data[i].stats[DATA_STATS_MAX_VAL]  = data[i].y_max;
+		data[i].stats[DATA_STATS_MIN_VAL]  = data[i].y_min;
 
 		while (p) {
 			if (p->next) {
@@ -199,16 +203,23 @@ static void data_analyse(FILE *fp, data_t *data, const int n)
 					1000.0 * data[i].stats[DATA_STATS_AVERAGE_CURRENT]);
 				fprintf(fp, "metric:current_drawn_mA_stddev:%f\n",
 					1000.0 * data[i].stats[DATA_STATS_STD_DEV]);
+				fprintf(fp, "metric:current_drawn_mA_maximum:%f\n",
+					1000.0 * data[i].stats[DATA_STATS_MAX_VAL]);
+				fprintf(fp, "metric:current_drawn_mA_minimum:%f\n",
+					1000.0 * data[i].stats[DATA_STATS_MIN_VAL]);
+					
 			} else {
 				fprintf(fp,
 					opts & OPTS_TABBED_COLUMNS ?
-					"Test run %2d\t%8.4f\t%7.3f\t%8.4f\n\t%8.4f\n" :
-					"Test run %2d     %8.4f    %7.3f  %8.4f  %8.4f\n",
+					"Test run %2d\t%8.4f\t%7.3f\t%8.4f\t%8.4f\t%8.4f\t%8.4f\n" :
+					"Test run %2d     %8.4f    %7.3f  %8.4f  %8.4f  %8.4f  %8.4f\n",
 					i + 1,
 					data[i].stats[DATA_STATS_INTEGRAL],
 					data[i].stats[DATA_STATS_DURATION],
 					1000.0 * data[i].stats[DATA_STATS_AVERAGE_CURRENT],
-					1000.0 * data[i].stats[DATA_STATS_STD_DEV]);
+					1000.0 * data[i].stats[DATA_STATS_STD_DEV],
+					1000.0 * data[i].stats[DATA_STATS_MIN_VAL],
+					1000.0 * data[i].stats[DATA_STATS_MAX_VAL]);
 			}
 		}
 	}
