@@ -53,6 +53,12 @@ testDependencies = {
         'packages' : {
             'common' : ['sysstat'],
             },
+        },
+
+    'ltp' : {
+        'packages' : {
+            'common' : [],
+            },
         }
 }
 
