@@ -1,9 +1,47 @@
-linux-lts-backport-natty (2.6.38-15.66~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-natty (2.6.38-16.67~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1036914
+    - LP: #1047350
+
+  [ Upstream Kernel Changes ]
+
+  * rds: set correct msg_namelen
+    - LP: #1031112
+    - CVE-2012-3430
+  * eCryptfs: Initialize empty lower files when opening them
+    - LP: #911507
+  * net: Allow driver to limit number of GSO segments per skb
+    - LP: #1037456
+    - CVE-2012-3412
+  * tcp: do not scale TSO segment size with reordering degree
+    - LP: #1037456
+    - CVE-2012-3412
+  * tcp: Apply device TSO segment limit earlier
+    - LP: #1037456
+    - CVE-2012-3412
+  * sfc: Replace some literal constants with EFX_PAGE_SIZE/EFX_BUF_SIZE
+    - LP: #1037456
+    - CVE-2012-3412
+  * sfc: Fix maximum number of TSO segments and minimum TX queue size
+    - LP: #1037456
+    - CVE-2012-3412
+  * mm: Hold a file reference in madvise_remove
+    - LP: #1042447
+    - CVE-2012-3511
+  * cred: copy_process() should clear child->replacement_session_keyring
+    - LP: #1023535
+    - CVE-2012-2745
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 07 Sep 2012 14:15:51 +0100
+
+linux (2.6.38-15.66) natty-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1036250
 
   [ Upstream Kernel Changes ]
 
@@ -17,7 +55,7 @@ linux-lts-backport-natty (2.6.38-15.66~lucid1) lucid-proposed; urgency=low
   * eCryptfs: Copy up POSIX ACL and read-only flags from lower mount
     - LP: #1009207
 
- -- Luis Henriques <luis.henriques@canonical.com>  Wed, 15 Aug 2012 09:46:38 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 13 Aug 2012 16:23:51 +0100
 
 linux (2.6.38-15.65) natty-proposed; urgency=low
 
