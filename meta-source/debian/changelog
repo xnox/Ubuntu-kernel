@@ -1,3 +1,9 @@
+linux-meta-lts-backport-natty (2.6.38.16.26) lucid-proposed; urgency=low
+
+  * linux-natty 2.6.38-16.67
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 07 Sep 2012 14:20:00 +0100
+
 linux-meta-lts-backport-natty (2.6.38.15.25) lucid-proposed; urgency=low
 
   [ Luis Henriques ]
