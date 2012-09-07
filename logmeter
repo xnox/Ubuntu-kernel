@@ -292,15 +292,22 @@ class LogMeter(StdApp, MetaData):
             self.logfile = open(logpath, 'w', 0)
         return
 
-    # writeOutput
+    # writeOutputWithDateTime
     #
-    def writeOutput(self, output):
-        dt = datetime.utcnow().isoformat()
+    def writeOutputWithDateTime(self, dt, output):
         self.outputLock.acquire()
         out = dt + ' ' + output.rstrip() + '\n'
         self.logfile.write(out)
         self.outputLock.release()
         return
+
+    # main
+    #
+    # writeOutput
+    #
+    def writeOutput(self, output):
+        dt = datetime.utcnow().isoformat()
+	self.writeOutputWithDateTime(dt, output)
 
     # main
     #
@@ -405,8 +412,8 @@ class LogMeter(StdApp, MetaData):
                 for ln in ss:
                     stdo('%s\n' % ln)
             dt = 'datetime'
+            self.writeOutputWithDateTime(read_time, 'SAMPLE: %s' % st)
             print 'Sample:', read_time, st.strip()
-            self.writeOutput('SAMPLE: %s' % st)
             num = num - 1
 
             if 'tagport' in self.cfg:
@@ -417,7 +424,7 @@ class LogMeter(StdApp, MetaData):
                          if data == "QUIT":
                               num = 0
 
-            if idelay and (num > 1):
+            if idelay and (num > 0):
                 sleep_delay = wake_time - time()
 		if sleep_delay > 0:
                 	sleep(sleep_delay)
