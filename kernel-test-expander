@@ -57,7 +57,7 @@ testDependencies = {
 
     'ltp' : {
         'packages' : {
-            'common' : [],
+            'common' : ['flex'],
             },
         }
 }
