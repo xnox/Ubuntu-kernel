@@ -1,3 +1,9 @@
+linux-meta-ti-omap4 (3.0.0.1216.15) oneiric-proposed; urgency=low
+
+  * linux-ti-omap4 3.0.0-1216.28
+
+ -- Herton Ronaldo Krzesinski <herton.krzesinski@canonical.com>  Wed, 12 Sep 2012 14:17:41 -0300
+
 linux-meta-ti-omap4 (3.0.0.1215.14) oneiric-proposed; urgency=low
 
   * linux-ti-omap4 3.0.0-1215.27
