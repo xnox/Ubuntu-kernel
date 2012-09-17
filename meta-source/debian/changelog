@@ -1,3 +1,9 @@
+linux-meta (3.5.0.15.15) quantal-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Leann Ogasawara <leann.ogasawara@canonical.com>  Mon, 17 Sep 2012 13:34:54 -0700
+
 linux-meta (3.5.0.14.14) quantal-proposed; urgency=low
 
   * Bump ABI
