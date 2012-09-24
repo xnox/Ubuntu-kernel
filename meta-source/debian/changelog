@@ -1,3 +1,9 @@
+linux-ports-meta (2.6.32.44.36) lucid-proposed; urgency=low
+
+  * Bump ABI
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 24 Sep 2012 13:01:09 +0100
+
 linux-ports-meta (2.6.32.43.35) lucid-proposed; urgency=low
 
   * Bump ABI
