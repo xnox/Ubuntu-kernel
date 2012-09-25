@@ -1,3 +1,9 @@
+linux-backports-modules-3.2.0 (3.2.0-32.17) precise-proposed; urgency=low
+
+  * Bump ABI for Precise 3.2.0-32.51
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 25 Sep 2012 10:38:33 +0100
+
 linux-backports-modules-3.2.0 (3.2.0-31.16) precise-proposed; urgency=low
 
   * Bump ABI for Precise 3.2.0-31.49
