@@ -1,3 +1,9 @@
+linux-meta-lts-quantal (3.5.0.16.22) precise; urgency=low
+
+  * Ubuntu-lts-3.5.0-16.24
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Sat, 29 Sep 2012 07:13:25 -0600
+
 linux-meta-lts-quantal (3.5.0.15.21) precise; urgency=low
 
   * Ubuntu-lts-3.5.0-15.20
