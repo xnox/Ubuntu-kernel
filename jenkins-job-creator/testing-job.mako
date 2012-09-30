@@ -26,8 +26,9 @@ sudo rm -rf *
 
 # Fetch the relevant test scripts from the jenkins server
 #
-rsync -ar --exclude '.git' -e "ssh -o StrictHostKeyChecking=no" ${data.hw['jenkins server']}:autotest/ ./autotest/
-rsync -ar --exclude '.git' -e "ssh -o StrictHostKeyChecking=no" ${data.hw['jenkins server']}:kernel-testing/ ./kernel-testing/
+rsync -ar --exclude '.git' -e "ssh -o StrictHostKeyChecking=no" ${data.hw['jenkins server']}:autotest-bjf/ ./autotest/
+rsync -ar --exclude '.git' -e "ssh -o StrictHostKeyChecking=no" ${data.hw['jenkins server']}:autotest-client-tests-bjf/ ./autotest/client/tests/
+rsync -ar --exclude '.git' -e "ssh -o StrictHostKeyChecking=no" ${data.hw['jenkins server']}:kernel-testing-bjf/ ./kernel-testing/
 
 # This variable is unique to the jobs that the kernel team runs on their
 # jenkins server.
