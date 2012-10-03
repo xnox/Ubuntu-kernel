@@ -6,6 +6,11 @@ linux (3.7.0-0.1) UNRELEASED; urgency=low
 
   [ Upstream Kernel Changes ]
 
+  * rebase to 56d92aa5cf7c96c70f81d0350c94faf46a9fb76d
+    - LP: #1046512
+
+  [ Upstream Kernel Changes ]
+
   * rebase to 974a847e00cf3ff1695e62b276892137893706ab
     - LP: #1049623
 
