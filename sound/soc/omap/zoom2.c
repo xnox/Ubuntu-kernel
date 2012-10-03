@@ -27,9 +27,10 @@
 
 #include <asm/mach-types.h>
 #include <mach/hardware.h>
-#include <mach/gpio.h>
+#include <linux/gpio.h>
 #include <mach/board-zoom.h>
 #include <linux/platform_data/asoc-ti-mcbsp.h>
+#include <linux/platform_data/gpio-omap.h>
 
 /* Register descriptions for twl4030 codec part */
 #include <linux/mfd/twl4030-audio.h>
