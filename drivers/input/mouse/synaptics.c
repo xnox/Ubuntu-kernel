@@ -756,6 +756,7 @@ static int synaptics_reconnect(struct psmouse *psmouse)
 {
 	struct synaptics_data *priv = psmouse->private;
 	struct synaptics_data old_priv = *priv;
+	unsigned char param[2];
 	int retry = 0;
 	int error;
 
@@ -771,6 +772,7 @@ static int synaptics_reconnect(struct psmouse *psmouse)
 			 */
 			ssleep(1);
 		}
+		ps2_command(&psmouse->ps2dev, param, PSMOUSE_CMD_GETID);
 		error = synaptics_detect(psmouse, 0);
 	} while (error && ++retry < 3);
 
