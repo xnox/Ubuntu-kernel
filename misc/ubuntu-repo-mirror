@@ -24,16 +24,11 @@ REPOS += ubuntu-hardy-meta
 REPOS += ubuntu-lucid
 REPOS += ubuntu-lucid-lbm
 REPOS += ubuntu-lucid-meta
-REPOS += ubuntu-maverick
-REPOS += ubuntu-maverick-lbm
-REPOS += ubuntu-maverick-meta
-REPOS += ubuntu-natty
-REPOS += ubuntu-natty-lbm
-REPOS += ubuntu-natty-meta
 REPOS += ubuntu-oneiric
 REPOS += ubuntu-oneiric-lbm
 REPOS += ubuntu-oneiric-meta
 REPOS += ubuntu-precise
+REPOS += ubuntu-r
 REPOS += wireless-crda
 
 all: repo
