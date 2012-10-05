@@ -1,3 +1,9 @@
+ubuntu-kernel-tests (0.0.8-1) unstable; urgency=low
+
+ * Start new release
+
+ -- Steve Conklin <sconklin@canonical.com>  Fri, 05 Oct 2012 13:04:45 -0600
+
 ubuntu-kernel-tests (0.0.7-1) unstable; urgency=low
 
  * Add tasks for improving the reporting of busted jobs
