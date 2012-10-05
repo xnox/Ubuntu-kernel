@@ -1,0 +1,13 @@
+#!/bin/sh
+
+case "$0-$1" in
+*.postinst-configure|*.postrm-remove)
+	if which update-grub >/dev/null 2>&1; then
+		update-grub
+	fi
+	;;
+esac
+
+#DEBHELPER#
+
+exit 0

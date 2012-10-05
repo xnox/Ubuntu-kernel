@@ -30,7 +30,10 @@ pre-clean:
 		-e "s/ABI/$(src_abi)/g"					\
 		-e "s/BINARIES/$(binaries)/g" 				\
 		-e "s/VERSION/$(src_version)/g"
-	rm -f version flavours *.signed debian/linux-signed-image-*.install
+	rm -f version flavours *.signed					\
+		debian/linux-signed-image-*.install			\
+		debian/linux-signed-image-*.postinst 			\
+		debian/linux-signed-image-*.postrm
 
 pre-binary: download-signed
 	./download-signed "linux-image-$(src_abi)-$(flavour_first)" \
@@ -51,3 +54,10 @@ override_dh_auto_install:
 			 >"debian/linux-signed-image-$(src_abi)-$$flavour.install"; \
 	done
 	dh_install
+
+override_dh_installdeb:
+	for flavour in $(flavours); do					\
+		cp debian/control-scripts.stub debian/linux-signed-image-$(src_abi)-$$flavour.postinst; \
+		cp debian/control-scripts.stub debian/linux-signed-image-$(src_abi)-$$flavour.postrm; \
+	done
+	dh_installdeb

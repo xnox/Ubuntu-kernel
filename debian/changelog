@@ -1,3 +1,10 @@
+linux-signed (3.5.0-17.27+signed1) UNRELEASED; urgency=low
+
+  * Add initial postinst and postrm support.  Simply calls out to
+    update-grub.
+
+ -- Andy Whitcroft <apw@canonical.com>  Fri, 05 Oct 2012 15:21:39 +0100
+
 linux-signed (3.5.0-17.27) quantal-proposed; urgency=low
 
   * Version 3.5.0-17.27
