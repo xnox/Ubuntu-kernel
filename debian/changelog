@@ -2,6 +2,8 @@ linux-signed (3.5.0-17.27+signed1) UNRELEASED; urgency=low
 
   * Add initial postinst and postrm support.  Simply calls out to
     update-grub.
+  * Add versioned dependancies to the main linux-image binaries as we
+    need the approriate modules and initramfs.
 
  -- Andy Whitcroft <apw@canonical.com>  Fri, 05 Oct 2012 15:21:39 +0100
 
