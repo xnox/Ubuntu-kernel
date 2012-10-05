@@ -1,0 +1,53 @@
+#! /usr/bin/make -f
+
+export DH_VERBOSE := 1
+
+#VERSION := $(shell LC_ALL=C dpkg-parsechangelog | grep ^Version: | cut -d ' ' -f 2)
+
+# Work out the source package name and version.  We assume the source package
+# is the name of this package with -signed stripped.  The version is identical
+# to this package less any rebuild suffic (+signedN).
+src_package := $(shell LC_ALL=C dpkg-parsechangelog | grep ^Source: | cut -d ' ' -f 2 | sed -e 's/-signed//')
+src_version = $(shell LC_ALL=C dpkg-parsechangelog | grep ^Version: | cut -d ' ' -f 2 | sed -e 's/+signed[0-9]*//')
+src_abi = $(shell echo "$(src_version)" | sed -ne 's/\([0-9]*\.[0-9]*\.[0-9]*\-[0-9]*\)\..*/\1/p')
+
+# Flavours in the master package.
+flavours = generic
+
+flavour_first = $(firstword $(flavours))
+binaries = $(foreach flavour,$(flavours),linux-image-$(src_abi)-$(flavour) \(>= $(src_version)\))
+
+# We build our control file.  This has to be done before dh runs otherwise
+# we have no binary files and we will not run the appropriate targets.
+pre-clean:
+	{								\
+		cat debian/control.stub;				\
+		for flavour in $(flavours); do				\
+			sed <debian/flavour.stub			\
+				-e "s/FLAVOUR/$$flavour/g";		\
+		done;							\
+	} | sed >debian/control						\
+		-e "s/ABI/$(src_abi)/g"					\
+		-e "s/BINARIES/$(binaries)/g" 				\
+		-e "s/VERSION/$(src_version)/g"
+	rm -f version flavours *.signed debian/linux-signed-image-*.install
+
+pre-binary: download-signed
+	./download-signed "linux-image-$(src_abi)-$(flavour_first)" \
+		"$(src_version)" "$(src_package)"
+
+PHONY: pre-clean pre-binary
+
+clean:: pre-clean
+binary:: pre-binary
+binary-arch:: pre-binary
+
+%:
+	dh $@
+
+override_dh_auto_install:
+	for flavour in $(flavours); do					\
+		echo "vmlinuz-$(src_abi)-$$flavour.efi.signed boot"	\
+			 >"debian/linux-signed-image-$(src_abi)-$$flavour.install"; \
+	done
+	dh_install

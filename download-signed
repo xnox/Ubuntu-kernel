@@ -1,0 +1,54 @@
+#! /usr/bin/python3
+
+import sys
+import re
+import shutil
+from urllib.parse import urlparse, urlunparse
+from urllib.request import urlopen
+
+import apt
+from aptsources.distro import get_distro
+
+(package_name, package_version, src_package) = sys.argv[1:]
+
+# Find the package in the available archive repositories.  Use a _binary_
+# package name and version to locate the appropriate archive.  Then use the
+# URI there to look for and find the appropriate binary.
+cache = apt.Cache()
+
+package = None
+for version in cache[package_name].versions:
+    if version.version == package_version:
+        package = version
+        break
+
+if not package:
+    raise KeyError("{0}: package version not found".format(package_name))
+
+
+pool_parsed = urlparse(package.uri)
+distro = get_distro().codename
+#distro = 'quantal'
+dists_dir = "/dists/%s/main/uefi/%s-%s/%s/" % (
+    distro, src_package, package.architecture, package_version)
+
+
+def download(base):
+    dists_parsed = list(pool_parsed)
+    dists_parsed[2] = re.sub(r"/pool/.*", dists_dir + base, dists_parsed[2])
+    #dists_parsed[1] = 'ppa.launchpad.net'
+    #dists_parsed[2] = '/apw/signing' + dists_parsed[2]
+    dists_uri = urlunparse(dists_parsed)
+    print("Downloading %s ..." % dists_uri)
+    with urlopen(dists_uri) as dists, open(base, "wb") as out:
+        shutil.copyfileobj(dists, out)
+    
+
+for base in "flavours", "version":
+    download(base)
+
+with open("flavours") as fd:
+    for line in fd:
+        filename = line.rstrip()
+        filename += '.signed'
+        download(filename)

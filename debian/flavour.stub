@@ -1,0 +1,7 @@
+
+Package: linux-signed-image-ABI-FLAVOUR
+Architecture: linux-amd64
+Depends: ${misc:Depends}
+Description: Signed kernel image FLAVOUR
+ A kernel image for FLAVOUR.  This version of it is signed with
+ Canonical's UEFI signing key.

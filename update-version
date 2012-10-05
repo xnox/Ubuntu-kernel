@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [ "$#" -ne 1 ]; then
+	echo "Usage: $0 <linux-source-directory>" 1>&2
+	exit 1
+fi
+master_dir="$1"
+
+here_version=`LC_ALL=C dpkg-parsechangelog | grep ^Version: | cut -d ' ' -f 2`
+here_series=`LC_ALL=C dpkg-parsechangelog | grep ^Distribution: | cut -d ' ' -f 2`
+
+if [ -f "$master_dir/debian/debian.env" ]; then
+	branch=`sed -ne 's/DEBIAN=//p' <"$master_dir/debian/debian.env"`
+	changelog="-l$branch/changelog"
+else
+	changelog=""
+fi
+master_version=`(cd "$master_dir" && LC_ALL=C dpkg-parsechangelog $changelog | grep ^Version: | cut -d ' ' -f 2)`
+
+#echo "here_version: <$here_version>"
+#echo "master_version: <$master_version>"
+
+if dpkg --compare-versions "$here_version" lt "$master_version"; then
+	dch --newversion "$master_version" "Version $master_version"
+	dch --distribution "$here_series" --release ""
+	echo "Updated to version: $master_version"
+fi
