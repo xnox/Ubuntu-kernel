@@ -11,7 +11,6 @@
 MIRROR_REPO_NAME=Ubuntu-kernel
 MIRROR_REPO_HOST=git@github.com:Canonical-kernel
 SOURCE_REPO_HOST=git://kernel.ubuntu.com/ubuntu
-RELEASES="hardy lucid maverick natty oneiric precise"
 REMOTE=ubuntu
 
 REPOS += linux-firmware
@@ -28,6 +27,8 @@ REPOS += ubuntu-oneiric
 REPOS += ubuntu-oneiric-lbm
 REPOS += ubuntu-oneiric-meta
 REPOS += ubuntu-precise
+REPOS += ubuntu-quantal
+REPOS += ubuntu-quantal-signed
 REPOS += ubuntu-r
 REPOS += wireless-crda
 
