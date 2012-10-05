@@ -1,6 +1,16 @@
 ubuntu-kernel-tests (0.0.7-1) unstable; urgency=low
 
- -- Brad Figg <brad.figg@canonical.com>  Wed, 26 Sep 2012 10:28:02 -0700
+ * Add tasks for improving the reporting of busted jobs
+ * kernel-test-expander: Add ltp to the list of 'kernel' tests
+ * kernel-test-expander: Adjust the path to the autotest executable due to the changes in the new autotest
+ * testing-job.mako: Use the new autotest-client-tests tree
+ * kernel-test-expander: several tests were renamed
+ * kernel-test-expander: more dependencies
+ * kernel-test-expander: Make sure the presetup does an apt-get update before trying to install packages.
+ * kernel-test-expander: python_libapparmor is necessary for quantal series
+ * Start new release
+
+ -- Steve Conklin <sconklin@canonical.com>  Fri, 05 Oct 2012 13:03:03 -0600
 
 ubuntu-kernel-tests (0.0.6-1) unstable; urgency=low
 
