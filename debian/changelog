@@ -1,4 +1,4 @@
-linux-signed (3.5.0-17.27+signed1) UNRELEASED; urgency=low
+linux-signed (3.5.0-17.27+signed1) quantal-proposed; urgency=low
 
   * Add initial postinst and postrm support.  Simply calls out to
     update-grub.
