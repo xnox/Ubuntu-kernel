@@ -111,7 +111,7 @@ case $SUITE in
 			;;
 		esac
 		;;
-	natty|oneiric|precise|quantal)
+	natty|oneiric|precise|quantal|android)
 		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
 		ADDPKGDEP="$ADDPKGDEP linux xorg-server";
 		case ${ARCH} in
@@ -129,7 +129,7 @@ case $SUITE in
 esac
 
 case $SUITE in
-	precise|quantal)
+	precise|quantal|android)
 	case ${ARCH} in
 		i386|amd64)
 			ADDPKG="$ADDPKG gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf";
@@ -143,10 +143,23 @@ case $SUITE in
 	quantal)
 		ADDPKG="$ADDPKG flex bison";
 	;;
+	android)
+		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
+		ADDPKG="$ADDPKG sudo ssh apt-transport-https devscripts gcc-4.4 gcc-4.4-multilib g++-4.4"
+		ADDPKG="$ADDPKG g++-4.4-multilib bison xsltproc flex gperf lib32ncurses5-dev git wget curl lsb-release vim zip"
+		ADDPKG="$ADDPKG gcc-arm-linux-gnueabi g++-arm-linux-gnueabi";
+		;;
 	*)
 		;;
 esac
 
+case $SUITE in
+	android) _SUITE=precise
+		;;
+	*) _SUITE=$SUITE
+		;;
+	esac
+	
 #
 # armel/armhf is only supported if the lsb-release is Lucid or higher.
 # Furthermore you must have a minimum version of debootstrap
@@ -222,7 +235,7 @@ if $DOINSTALL; then
 	#
 	if [ "$CL_MIRROR" = "" ]
 	then
-		get_suite_mirror ${SUITE}
+		get_suite_mirror ${_SUITE}
 	fi
 
 	#
@@ -234,8 +247,8 @@ if $DOINSTALL; then
 	if [ "$(pwd)" = "$(dirname $TARGET)" ]; then
 		cd /tmp
 	fi
-	echo $DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR
-	$DEBOOTSTRAP $OPTIONS $SUITE "$TARGET" $MIRROR || exit 1
+	echo $DEBOOTSTRAP $OPTIONS $_SUITE "$TARGET" $MIRROR
+	$DEBOOTSTRAP $OPTIONS $_SUITE "$TARGET" $MIRROR || exit 1
 fi
 
 function UpdateConfig()
@@ -272,9 +285,9 @@ SCHROOTCMD="schroot -q --directory=/ --chroot=$NAME"
 
 if [ "$CL_MIRROR" = "" ]
 then
-	write_mirror ${SUITE} ${ARCH} $TARGET/etc/apt/sources.list
+	write_mirror ${_SUITE} ${ARCH} $TARGET/etc/apt/sources.list
 else
-	write_local_mirror ${SUITE} ${ARCH} $TARGET/etc/apt/sources.list ${CL_MIRROR}
+	write_local_mirror ${_SUITE} ${ARCH} $TARGET/etc/apt/sources.list ${CL_MIRROR}
 fi
 
 # If the user supplied an http_proxy when building this chroot, copy that
