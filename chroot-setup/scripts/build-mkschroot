@@ -314,7 +314,7 @@ if $DOINSTALL; then
 			# https://wiki.canonical.com/PES/Engineering/Premium/UDS-R/Android/BuildingAOSP
 			echo Installing android Java packages
 			${SCHROOTCMD} -- apt-get -y --force-yes install wget
-			${SCHROOTCMD} -- wget http://github.com/flexiondotorg/oab-java6/raw/master/oab-java.sh -O /root/oab-java6.sh
+			${SCHROOTCMD} -- wget --no-check-certificate https://github.com/flexiondotorg/oab-java6/raw/master/oab-java.sh -O /root/oab-java6.sh
 			${SCHROOTCMD} -- chmod +x /root/oab-java6.sh
 			${SCHROOTCMD} -- bash /root/oab-java6.sh
 			${SCHROOTCMD} -- apt-get -y --force-yes install sun-java6-jdk
