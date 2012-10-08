@@ -313,11 +313,23 @@ if $DOINSTALL; then
 		android)
 			# https://wiki.canonical.com/PES/Engineering/Premium/UDS-R/Android/BuildingAOSP
 			echo Installing android Java packages
-			${SCHROOTCMD} -- apt-get -y --force-yes install wget
-			${SCHROOTCMD} -- wget --no-check-certificate https://github.com/flexiondotorg/oab-java6/raw/master/oab-java.sh -O /root/oab-java6.sh
-			${SCHROOTCMD} -- chmod +x /root/oab-java6.sh
-			${SCHROOTCMD} -- bash /root/oab-java6.sh
-			${SCHROOTCMD} -- apt-get -y --force-yes install sun-java6-jdk
+			if [ -d /var/local/oab ]
+			then
+				cp -v /var/local/oab/*.deb $TARGET/root
+				JF=
+				for i in /var/local/oab/*.deb; do
+					JF="$JF /root/`basename $i`"
+				done
+				${SCHROOTCMD} -- dpkg -i $JF
+				${SCHROOTCMD} -- apt-get -f -y --force-yes install
+				${SCHROOTCMD} -- apt-get install sun-java6-jdk
+			else
+				${SCHROOTCMD} -- apt-get -y --force-yes install wget
+				${SCHROOTCMD} -- wget --no-check-certificate https://github.com/flexiondotorg/oab-java6/raw/master/oab-java.sh -O /root/oab-java6.sh
+				${SCHROOTCMD} -- chmod +x /root/oab-java6.sh
+				${SCHROOTCMD} -- bash /root/oab-java6.sh
+				${SCHROOTCMD} -- apt-get -y --force-yes install sun-java6-jdk
+			fi
 			;;
 		*)
 			;;
