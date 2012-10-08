@@ -144,10 +144,13 @@ case $SUITE in
 		ADDPKG="$ADDPKG flex bison";
 	;;
 	android)
-		ADDPKG="$ADDPKG makedumpfile libdw-dev binutils-dev asciidoc ncurses-dev u-boot-tools libnewt-dev"
 		ADDPKG="$ADDPKG sudo ssh apt-transport-https devscripts gcc-4.4 gcc-4.4-multilib g++-4.4"
-		ADDPKG="$ADDPKG g++-4.4-multilib bison xsltproc flex gperf lib32ncurses5-dev git wget curl lsb-release vim zip"
-		ADDPKG="$ADDPKG gcc-arm-linux-gnueabi g++-arm-linux-gnueabi";
+		ADDPKG="$ADDPKG g++-4.4-multilib bison xsltproc flex gperf lib32ncurses5-dev git curl lsb-release vim zip"
+		ADDPKG="$ADDPKG git-core gnupg flex bison gperf build-essential"
+		ADDPKG="$ADDPKG zip curl libc6-dev libncurses5-dev:i386 x11proto-core-dev"
+		ADDPKG="$ADDPKG libx11-dev:i386 libreadline6-dev:i386 libgl1-mesa-glx:i386"
+		ADDPKG="$ADDPKG libgl1-mesa-dev g++-multilib mingw32 openjdk-6-jdk tofrodos"
+		ADDPKG="$ADDPKG python-markdown libxml2-utils xsltproc zlib1g-dev:i386"
 		;;
 	*)
 		;;
@@ -306,6 +309,19 @@ if $DOINSTALL; then
 	# Add some extra packages
 	#
 	echo SET debconf/frontend Noninteractive | ${SCHROOTCMD} -- /usr/bin/debconf-communicate debconf
+	case $SUITE in
+		android)
+			# https://wiki.canonical.com/PES/Engineering/Premium/UDS-R/Android/BuildingAOSP
+			echo Installing android Java packages
+			${SCHROOTCMD} -- apt-get -y --force-yes install wget
+			${SCHROOTCMD} -- wget http://github.com/flexiondotorg/oab-java6/raw/master/oab-java.sh -O /root/oab-java6.sh
+			${SCHROOTCMD} -- chmod +x /root/oab-java6.sh
+			${SCHROOTCMD} -- bash /root/oab-java6.sh
+			${SCHROOTCMD} -- apt-get -y --force-yes install sun-java6-jdk
+			;;
+		*)
+			;;
+	esac
 fi
 
 echo ADDPKG=${ADDPKG}
