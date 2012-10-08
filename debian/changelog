@@ -1,3 +1,10 @@
+linux-signed (3.5.0-17.27+signed2) UNRELEASED; urgency=low
+
+  * Add linux-image-extra to dependancies to pull in full set of kernel
+    modules.
+
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 08 Oct 2012 13:07:30 +0100
+
 linux-signed (3.5.0-17.27+signed1) quantal-proposed; urgency=low
 
   * Add initial postinst and postrm support.  Simply calls out to
