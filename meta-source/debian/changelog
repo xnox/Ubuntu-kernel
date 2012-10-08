@@ -1,3 +1,9 @@
+linux-meta (3.5.0.17.18) quantal-proposed; urgency=low
+
+  * Add new meta-packages for linux-signed-* images.
+
+ -- Andy Whitcroft <apw@canonical.com>  Mon, 08 Oct 2012 13:11:40 +0100
+
 linux-meta (3.5.0.17.17) quantal-proposed; urgency=low
 
   * Bump ABI
