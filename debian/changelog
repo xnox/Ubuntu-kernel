@@ -1,4 +1,4 @@
-linux-signed (3.5.0-17.27+signed2) UNRELEASED; urgency=low
+linux-signed (3.5.0-17.27+signed2) quantal-proposed; urgency=low
 
   * Add linux-image-extra to dependancies to pull in full set of kernel
     modules.
