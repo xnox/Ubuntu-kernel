@@ -1,8 +1,9 @@
 ubuntu-kernel-tests (0.0.8-1) unstable; urgency=low
 
+ * kernel-test-expander: Be a *little* smarter about determining the scratch device (based on the root device)
  * Start new release
 
- -- Steve Conklin <sconklin@canonical.com>  Fri, 05 Oct 2012 13:04:45 -0600
+ -- Brad Figg <brad.figg@canonical.com>  Tue, 09 Oct 2012 15:35:03 -0700
 
 ubuntu-kernel-tests (0.0.7-1) unstable; urgency=low
 
