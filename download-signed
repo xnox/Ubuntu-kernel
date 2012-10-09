@@ -5,6 +5,7 @@ import re
 import shutil
 from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
+from urllib.error import HTTPError
 
 import apt
 from aptsources.distro import get_distro
@@ -29,26 +30,39 @@ if not package:
 pool_parsed = urlparse(package.uri)
 distro = get_distro().codename
 #distro = 'quantal'
-dists_dir = "/dists/%s/main/uefi/%s-%s/%s/" % (
-    distro, src_package, package.architecture, package_version)
-
+package_dir = "/main/uefi/%s-%s/%s/" % (
+    src_package, package.architecture, package_version)
 
 def download(base):
-    dists_parsed = list(pool_parsed)
-    dists_parsed[2] = re.sub(r"/pool/.*", dists_dir + base, dists_parsed[2])
-    #dists_parsed[1] = 'ppa.launchpad.net'
-    #dists_parsed[2] = '/apw/signing' + dists_parsed[2]
-    dists_uri = urlunparse(dists_parsed)
-    print("Downloading %s ..." % dists_uri)
-    with urlopen(dists_uri) as dists, open(base, "wb") as out:
-        shutil.copyfileobj(dists, out)
-    
+    for pocket in ('-proposed', '-updates', '', '-backports'):
+        dists_parsed = list(pool_parsed)
+        dists_parsed[2] = re.sub(r"/pool/.*", "/dists/" + distro + \
+            pocket + package_dir + base, dists_parsed[2])
+        dists_uri = urlunparse(dists_parsed)
 
+        print("Downloading %s ... " % dists_uri, end='')
+        try:
+            with urlopen(dists_uri) as dists, open(base, "wb") as out:
+                shutil.copyfileobj(dists, out)
+        except HTTPError as e:
+            if e.code == 404:
+                print("not found")
+                continue
+            raise
+        else:
+            print("found")
+            return True
+    return False
+    
 for base in "flavours", "version":
-    download(base)
+    if not download(base):
+        print('download-signed: {0}: not found'.format(base))
+        sys.exit(1)
 
 with open("flavours") as fd:
     for line in fd:
         filename = line.rstrip()
         filename += '.signed'
-        download(filename)
+        if not download(filename):
+            print('download-signed: {0}: not found'.format(filename))
+            sys.exit(1)
