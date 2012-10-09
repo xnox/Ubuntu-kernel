@@ -36,7 +36,7 @@ Description: Generic Linux kernel image.
 Package: linux-crashdump
 Architecture: i386 amd64
 Section: devel
-Depends: ${misc:Depends}, kexec-tools, makedumpfile, grub-pc (>= 1.96+20090611-1ubuntu2) | grub (>= 0.97-29ubuntu24)
+Depends: ${misc:Depends}, kexec-tools, makedumpfile, grub-pc (>= 1.96+20090611-1ubuntu2) | grub-efi-ia32 | grub-efi-amd64 | grub (>= 0.97-29ubuntu24)
 Recommends: apport
 Suggests: crash
 Description: Linux kernel crashdump setup for the latest generic kernel
