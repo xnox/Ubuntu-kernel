@@ -1,3 +1,10 @@
+linux-meta (3.5.0.17.19) quantal-proposed; urgency=low
+
+  * Make linux-crashdump alternatively depend on grub-efi-ia32 | grub-efi-amd64
+    LP: #1064259
+
+ -- Stefan Bader <stefan.bader@canonical.com>  Tue, 09 Oct 2012 11:28:08 +0200
+
 linux-meta (3.5.0.17.18) quantal-proposed; urgency=low
 
   * Add new meta-packages for linux-signed-* images.
