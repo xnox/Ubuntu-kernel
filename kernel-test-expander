@@ -292,7 +292,6 @@ class ExpandTests():
                 # spare drive is. Look at the device the root device is and assume that the scratch
                 # drive is the 'b' device with that same device root.
                 #
-                dev = self.drive_device_root()
                 testDependencies['xfstests']['atargs']['UBUNTU_SCRATCH_DEVICE'] = '/dev/%sb' % self.root_dev()
 
             # write the setup script
