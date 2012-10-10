@@ -76,3 +76,16 @@ Re-work?
     the kernel-tests-runner script seem like a hack (though I
     don't have a better solution)
 
+  * The entire multiple, jenkins jobs process is a mess. I'd like
+    to see this changed considerably.
+
+    - A single, simple script that gets copied to the SUT via
+      scp and then executed via ssh.
+
+      1. No dependencies on Jenkins environment varieables.
+      2. No post processing of test results or copying the
+         results back to the server. The server can pull these
+         results back if desired.
+
+    - A single jenkins job that does the provisioning, pushes
+      the test script to the sut and collects the results.
