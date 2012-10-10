@@ -8,6 +8,9 @@ master_dir="$1"
 
 here_version=`LC_ALL=C dpkg-parsechangelog | grep ^Version: | cut -d ' ' -f 2`
 here_series=`LC_ALL=C dpkg-parsechangelog | grep ^Distribution: | cut -d ' ' -f 2`
+if [ "$here_series" = "UNRELEASED" ]; then
+	here_series=`LC_ALL=C dpkg-parsechangelog --until "$here_version" | grep ^Distribution: | cut -d ' ' -f 2`
+fi
 
 if [ -f "$master_dir/debian/debian.env" ]; then
 	branch=`sed -ne 's/DEBIAN=//p' <"$master_dir/debian/debian.env"`
