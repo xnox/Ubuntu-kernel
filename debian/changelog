@@ -1,3 +1,9 @@
+ubuntu-kernel-tests (0.0.10-1) unstable; urgency=low
+
+ * Start new release
+
+ -- Brad Figg <brad.figg@canonical.com>  Wed, 10 Oct 2012 08:11:08 -0700
+
 ubuntu-kernel-tests (0.0.9-1) unstable; urgency=low
 
  * kernel-test-expander: Remove call to non-existant method
