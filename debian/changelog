@@ -2,6 +2,7 @@ linux-signed (3.5.0-17.28+signed2) UNRELEASED; urgency=low
 
   * download-signed: add the -security pocket to the search list.
   * update-version: handle an UNRELEASED version stanza.
+  * update-version: dump proposed commit and tag commands.
 
  -- Andy Whitcroft <apw@canonical.com>  Wed, 10 Oct 2012 01:53:37 +0100
 

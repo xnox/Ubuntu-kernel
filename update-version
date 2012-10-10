@@ -27,4 +27,7 @@ if dpkg --compare-versions "$here_version" lt "$master_version"; then
 	dch --newversion "$master_version" "Version $master_version"
 	dch --distribution "$here_series" --release ""
 	echo "Updated to version: $master_version"
+
+	echo "git commit -s -m 'UBUNTU: Ubuntu-$master_version'"
+	echo "git tag -s -m 'Ubuntu-$master_version' 'Ubuntu-$master_version'"
 fi
