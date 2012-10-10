@@ -34,7 +34,7 @@ package_dir = "/main/uefi/%s-%s/%s/" % (
     src_package, package.architecture, package_version)
 
 def download(base):
-    for pocket in ('-proposed', '-updates', '', '-backports'):
+    for pocket in ('-proposed', '-updates', '-security', '', '-backports'):
         dists_parsed = list(pool_parsed)
         dists_parsed[2] = re.sub(r"/pool/.*", "/dists/" + distro + \
             pocket + package_dir + base, dists_parsed[2])
