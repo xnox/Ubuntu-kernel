@@ -5,3 +5,14 @@ Depends: ${misc:Depends}, linux-image-ABI-FLAVOUR (>= VERSION), linux-image-extr
 Description: Signed kernel image FLAVOUR
  A kernel image for FLAVOUR.  This version of it is signed with
  Canonical's UEFI signing key.
+
+Package: kernel-signed-image-ABI-FLAVOUR-di
+Package-Type: udeb
+Section: debian-installer
+Priority: extra
+Provides: kernel-signed-image
+Architecture: linux-amd64
+Description: Signed kernel image FLAVOUR for the Debian installer
+ A kernel image for FLAVOUR.  This version of it is signed with
+ Canonical's UEFI signing key.  It is intended for the Debian installer,
+ it does _not_ provide a usable kernel for your full Debian system.

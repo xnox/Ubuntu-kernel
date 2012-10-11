@@ -52,6 +52,8 @@ override_dh_auto_install:
 	for flavour in $(flavours); do					\
 		echo "vmlinuz-$(src_abi)-$$flavour.efi.signed boot"	\
 			 >"debian/linux-signed-image-$(src_abi)-$$flavour.install"; \
+		echo "vmlinuz-$(src_abi)-$$flavour.efi.signed boot"	\
+			 >"debian/kernel-signed-image-$(src_abi)-$$flavour-di.install"; \
 	done
 	dh_install
 
