@@ -1,4 +1,4 @@
-linux-signed (3.5.0-17.28+signed2) UNRELEASED; urgency=low
+linux-signed (3.5.0-17.28+signed2) quantal-proposed; urgency=low
 
   * download-signed: add the -security pocket to the search list.
   * update-version: handle an UNRELEASED version stanza.
