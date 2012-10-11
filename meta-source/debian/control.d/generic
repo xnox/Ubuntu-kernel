@@ -25,20 +25,20 @@ Description: Complete Generic Linux kernel and headers
  This package will always depend on the latest complete generic Linux kernel
  and headers.
 
-#Package: linux-backports-modules-headers-RELEASE_NAME-generic
-#Architecture: amd64
-#Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-generic
-#Description: Backported driver headers for generic kernel image
-# This empty package allows people to keep their backported module
-# headers up-to-date when upgrading their Linux kernel.
-#
-#Package: linux-backports-modules-cw-3.3-RELEASE_NAME-generic
-#Architecture: amd64
-#Depends: ${misc:Depends}, linux-backports-modules-cw-3.3-${kernel-abi-version}-generic
-#Description: Backported wireless drivers for generic kernel image
-# This empty package allows people to keep their backported wireless modules
-# up-to-date when upgrading their Linux kernel.
-#
+Package: linux-backports-modules-headers-RELEASE_NAME-generic
+Architecture: i386 amd64
+Depends: ${misc:Depends}, linux-headers-lbm-${kernel-abi-version}-generic
+Description: Backported driver headers for generic kernel image
+ This empty package allows people to keep their backported module
+ headers up-to-date when upgrading their Linux kernel.
+
+Package: linux-backports-modules-cw-3.6-RELEASE_NAME-generic
+Architecture: i386 amd64
+Depends: ${misc:Depends}, linux-backports-modules-cw-3.6-${kernel-abi-version}-generic
+Description: Backported wireless drivers for generic kernel image
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
+
 #Package: linux-backports-modules-net-RELEASE_NAME-generic
 #Architecture: amd64
 #Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-generic
