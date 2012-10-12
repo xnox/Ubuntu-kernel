@@ -53,6 +53,13 @@ Description: Backported wireless drivers for generic-pae kernel image
  This empty package allows people to keep their backported wireless modules
  up-to-date when upgrading their Linux kernel.
 
+Package: linux-backports-modules-cw-3.6-RELEASE_NAME-generic-pae
+Architecture: i386
+Depends: ${misc:Depends}, linux-backports-modules-cw-3.6-${kernel-abi-version}-generic-pae
+Description: Backported wireless drivers for generic-pae kernel image
+ This empty package allows people to keep their backported wireless modules
+ up-to-date when upgrading their Linux kernel.
+
 Package: linux-backports-modules-net-RELEASE_NAME-generic-pae
 Architecture: i386
 Depends: ${misc:Depends}, linux-backports-modules-net-${kernel-abi-version}-generic-pae
