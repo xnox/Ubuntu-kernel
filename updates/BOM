@@ -2,6 +2,7 @@ WIRELESS:
 cw-3.3: http://www.orbit-lab.org/kernel/compat-wireless-3-stable/v3.3/compat-wireless-3.3-2-n.tar.bz2
 cw-3.4: Followed http://linuxwireless.org/en/users/Download/hacking#Generating_stable_releases using v3.4.4
 cw-3.5: http://www.orbit-lab.org/kernel/compat-wireless-3-stable/v3.5/compat-wireless-3.5.4-1.tar.bz2
+cw-3.6: http://www.orbit-lab.org/kernel/compat-wireless-3-stable/v3.6/compat-wireless-3.6-rc7-1.tar.bz2
 
 Remember to remove the .gitignore file lest you not get all of the files committed that you thought.
 
