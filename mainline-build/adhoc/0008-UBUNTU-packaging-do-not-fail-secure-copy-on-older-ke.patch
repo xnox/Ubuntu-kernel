@@ -1,0 +1,32 @@
+From a9df1c0e2d21dcee66903955d75e7871f96468ae Mon Sep 17 00:00:00 2001
+From: Andy Whitcroft <apw@canonical.com>
+Date: Wed, 10 Oct 2012 17:58:24 +0100
+Subject: [PATCH] UBUNTU: [packaging] do not fail secure copy on older kernels
+
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ debian/rules.d/2-binary-arch.mk |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+TRIGGER 647c141b53e037781844f0c04234526e  debian/rules.d/2-binary-arch.mk
+
+diff --git a/debian/rules.d/2-binary-arch.mk b/debian/rules.d/2-binary-arch.mk
+index 9b79903..07584ad 100644
+--- a/debian/rules.d/2-binary-arch.mk
++++ b/debian/rules.d/2-binary-arch.mk
+@@ -81,9 +81,10 @@ ifeq ($(uefi_signed),true)
+ 	# Check to see if this supports handoff, if not do not sign it.
+ 	# Check the identification area magic and version >= 0x020b
+ 	handoff=`dd if="$(pkgdir)/boot/$(install_file)-$(abi_release)-$*" bs=1 skip=514 count=6 2>/dev/null | od -s | awk '($$1 == 0 && $$2 == 25672 && $$3 == 21362 && $$4 >= 523) { print "GOOD" }'`; \
+-	[ "$$handoff" = "GOOD" ] && \
++	if [ "$$handoff" = "GOOD" ]; then \
+ 		cp -p $(pkgdir)/boot/$(install_file)-$(abi_release)-$* \
+-			$(signed)/$(release)-$(revision)/$(install_file)-$(abi_release)-$*.efi
++			$(signed)/$(release)-$(revision)/$(install_file)-$(abi_release)-$*.efi; \
++	fi
+ endif
+ endif
+ 
+-- 
+1.7.10.4
+
