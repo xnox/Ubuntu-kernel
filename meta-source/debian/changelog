@@ -3,6 +3,12 @@ linux-meta (3.2.0.32.36) UNRELEASED; urgency=low
   * Make linux-crashdump alternatively depend on EFI grub
     LP: #1064259
 
+  * UBUNTU: Add compat-wireless v3.6 meta package
+    LP: #1066123
+
+  * UBUNTU: Add compat-wireless v3.5 meta package
+    LP: #1066122
+
  -- Stefan Bader <stefan.bader@canonical.com>  Tue, 09 Oct 2012 19:35:55 +0200
 
 linux-meta (3.2.0.32.35) precise-proposed; urgency=low
