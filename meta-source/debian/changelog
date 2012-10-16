@@ -1,9 +1,15 @@
-linux-meta (2.6.32.44.52) lucid-proposed; urgency=low
+linux-meta (2.6.32.45.52) lucid-proposed; urgency=low
+
+  [ Luis Henriques ]
+
+  * Bump ABI
+
+  [ Stefan Bader ]
 
   * Make linux-crashdump alternatively depend on EFI grub
     LP: #1064259
 
- -- Stefan Bader <stefan.bader@canonical.com>  Tue, 09 Oct 2012 17:32:26 +0000
+ -- Luis Henriques <luis.henriques@canonical.com>  Tue, 16 Oct 2012 13:57:22 +0100
 
 linux-meta (2.6.32.44.51) lucid-proposed; urgency=low
 
