@@ -6617,6 +6617,7 @@ EXPORT_SYMBOL vmlinux 0xd9fd010f	__mod_zone_page_state
 EXPORT_SYMBOL vmlinux 0xda1a7335	kasprintf
 EXPORT_SYMBOL vmlinux 0xda21f0ed	padata_remove_cpu
 EXPORT_SYMBOL vmlinux 0xda3b984f	agp_generic_destroy_page
+EXPORT_SYMBOL vmlinux 0xda592962	kern_unmount
 EXPORT_SYMBOL vmlinux 0xda6bbb21	register_netdev
 EXPORT_SYMBOL vmlinux 0xda79f702	set_groups
 EXPORT_SYMBOL vmlinux 0xda7ca6cb	fb_mode_is_equal

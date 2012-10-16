@@ -6655,6 +6655,7 @@ EXPORT_SYMBOL vmlinux 0xead756ef	flush_delayed_work_sync
 EXPORT_SYMBOL vmlinux 0xeb119501	generic_file_aio_read
 EXPORT_SYMBOL vmlinux 0xeb19c6f9	blk_end_request_all
 EXPORT_SYMBOL vmlinux 0xeb19eead	dmam_pool_destroy
+EXPORT_SYMBOL vmlinux 0xeb1bf2eb	kern_unmount
 EXPORT_SYMBOL vmlinux 0xeb1dae08	kernel_sendpage
 EXPORT_SYMBOL vmlinux 0xeb228272	posix_acl_create_masq
 EXPORT_SYMBOL vmlinux 0xeb2bfa3a	__xfrm_decode_session

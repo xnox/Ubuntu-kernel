@@ -4625,6 +4625,7 @@ EXPORT_SYMBOL vmlinux 0x56a10763	csum_tcpudp_magic
 EXPORT_SYMBOL vmlinux 0x56abeeac	pci_enable_device
 EXPORT_SYMBOL vmlinux 0x56c2b95b	rtas_progress
 EXPORT_SYMBOL vmlinux 0x56c8799d	scsi_kunmap_atomic_sg
+EXPORT_SYMBOL vmlinux 0x56cfbc26	kern_unmount
 EXPORT_SYMBOL vmlinux 0x56d9efa7	ihold
 EXPORT_SYMBOL vmlinux 0x570ed1d8	inet_csk_destroy_sock
 EXPORT_SYMBOL vmlinux 0x572e85d4	blk_lookup_devt

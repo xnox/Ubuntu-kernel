@@ -5285,6 +5285,7 @@ EXPORT_SYMBOL vmlinux 0xe7a5137e	of_get_mac_address
 EXPORT_SYMBOL vmlinux 0xe7a664c4	nf_hooks
 EXPORT_SYMBOL vmlinux 0xe7aa9c16	rawv6_mh_filter_unregister
 EXPORT_SYMBOL vmlinux 0xe7b57270	dma_release_from_coherent
+EXPORT_SYMBOL vmlinux 0xe7bba726	kern_unmount
 EXPORT_SYMBOL vmlinux 0xe7d4daac	seq_list_next
 EXPORT_SYMBOL vmlinux 0xe7ec901d	udplite_prot
 EXPORT_SYMBOL vmlinux 0xe7ee7ee0	block_is_partially_uptodate
