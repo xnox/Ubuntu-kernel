@@ -1,6 +1,7 @@
-linux-meta (3.5.0.18.20) UNRELEASED; urgency=low
+linux-meta (3.5.0.17.20) quantal-proposed; urgency=low
 
-  * Bump ABI 
+  * Added compat-wireless-3.6 meta packages
+    -LP: #1066123
 
  -- Leann Ogasawara <leann.ogasawara@canonical.com>  Wed, 10 Oct 2012 23:58:11 -0700
 
