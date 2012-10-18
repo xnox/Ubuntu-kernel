@@ -230,7 +230,7 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"]
             },
-        'linux-lts-backport-oneiric' :  {
+        'linux-lts-quantal' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
                 #'prepare-package-lbm'        : 'canonical-kernel-team',
