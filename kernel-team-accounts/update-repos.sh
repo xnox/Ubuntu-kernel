@@ -4,10 +4,10 @@ LINUX=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 LLREPO=linux-2.6.git
 LREPO=linux.git
 UBUNTU=git://kernel.ubuntu.com/ubuntu
-RELEASES="hardy lucid natty oneiric precise quantal"
-EXTRAS="ubuntu-hardy-lbm ubuntu-hardy-lrm ubuntu-hardy-lum ubuntu-lucid-lbm ubuntu-natty-lbm ubuntu-oneiric-lbm ubuntu-precise-lbm"
+RELEASES="hardy lucid oneiric precise quantal"
+EXTRAS="ubuntu-hardy-lbm ubuntu-hardy-lrm ubuntu-hardy-lum ubuntu-lucid-lbm ubuntu-oneiric-lbm ubuntu-precise-lbm"
 EXTRAS="$EXTRAS linux-firmware wireless-crda kernel-testing autotest instrument-lib"
-METAS="hardy lucid natty oneiric precise quantal"
+METAS="hardy lucid oneiric precise quantal"
 
 if [ ! -d ${LREPO} ]
 then
