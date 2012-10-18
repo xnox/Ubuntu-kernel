@@ -514,7 +514,8 @@ class Ubuntu:
 
         if (package == 'linux' or
             package == 'linux-ti-omap4' or
-            package == 'linux-ec2'):
+            package == 'linux-ec2' or
+            package == 'linux-armadaxp'):
             Dbg.verbose('package condition 1\n')
             for entry in self.db.itervalues():
                 if version.startswith(entry['kernel']):
@@ -526,7 +527,7 @@ class Ubuntu:
                 if entry['name'] in version:
                     retval = entry['name']
 
-        if package == 'linux-mvl-dove' or package == 'linux-fsl-imx51' or package == 'linux-armadaxp':
+        if package == 'linux-mvl-dove' or package == 'linux-fsl-imx51':
             Dbg.verbose('package condition 3\n')
             version, release = version.split('-')
             Dbg.verbose('version: %s   release: %s\n' % (version, release))
@@ -548,9 +549,6 @@ class Ubuntu:
                             retval = 'karmic'
                         else:
                             retval = 'lucid'
-                    elif package == 'linux-armadaxp':
-                        if abi_n > 1600:
-                            retval = 'precise'
 
         Dbg.leave('series_name (%s)' % retval)
         return retval
