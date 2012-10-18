@@ -395,6 +395,7 @@ class Ubuntu:
     kernel_source_packages = [
         'linux',
         'linux-ti-omap4', # maverick, natty
+        'linux-armadaxp', # precise, quantal
         'linux-mvl-dove', # maverick, karmic, lucid
         'linux-fsl-imx51', # karmic, lucid
         'linux-ec2',
@@ -402,6 +403,7 @@ class Ubuntu:
         'linux-meta-ec2',
         'linux-meta-mvl-dove', # maverick, karmic, lucid
         'linux-meta-ti-omap4', # maverick, natty
+        'linux-meta-armadaxp', # precise, quantal
         'linux-meta-fsl-imx51', # karmic, lucid ?
         'linux-ports-meta',
         'linux-source-2.6.15',
