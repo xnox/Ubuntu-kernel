@@ -92,6 +92,8 @@ class Ubuntu:
             [
                 'linux',
                 'linux-meta',
+                #'linux-lts-quantal',
+                #'linux-meta-lts-quantal',
                 'linux-ti-omap4',
                 'linux-meta-ti-omap4',
                 'linux-armadaxp',
@@ -103,12 +105,17 @@ class Ubuntu:
                     'meta' : 'linux-meta',
                     'lbm'  : 'linux-backports-modules-3.2.0'
                 },
+                'linux-lts-quantal' : { 'meta' : 'linux-meta-lts-quantal' },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
                 'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' }
             },
             'derivative-packages' :
             {
                 'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
+            },
+            'backport-packages' :
+            {
+                'linux-lts-quantal' : [ 'linux', '12.10' ],
             },
             'sha1' : '',
             'md5' : ''
@@ -425,9 +432,11 @@ class Ubuntu:
         'linux-lts-backport-maverick',
         'linux-lts-backport-natty',
         'linux-lts-backport-oneiric',
+        #'linux-lts-quantal',
         'linux-meta-lts-backport-maverick',
         'linux-meta-lts-backport-natty',
         'linux-meta-lts-backport-oneiric',
+        #'linux-meta-lts-quantal',
     ]
 
     # lookup
@@ -523,7 +532,7 @@ class Ubuntu:
                 if version.startswith(entry['kernel']):
                     retval = entry['name']
 
-        if package.startswith('linux-lts-backport'):
+        if package.startswith('linux-lts-'):
             Dbg.verbose('package condition 2\n')
             for entry in self.db.itervalues():
                 if entry['name'] in version:
