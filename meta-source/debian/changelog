@@ -1,3 +1,11 @@
+linux-meta-lts-quantal (3.5.0.17.23) precise-proposed; urgency=low
+
+  * First upload pursuant to
+    https://blueprints.launchpad.net/ubuntu/+spec/desktop-q-xorg-lts-updates
+    -LP: #1068281
+
+ -- Tim Gardner <tim.gardner@canonical.com>  Thu, 18 Oct 2012 13:08:17 -0600
+
 linux-meta-lts-quantal (3.5.0.16.22) precise; urgency=low
 
   * Ubuntu-lts-3.5.0-16.24
