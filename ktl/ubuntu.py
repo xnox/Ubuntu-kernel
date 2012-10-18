@@ -22,12 +22,12 @@ class UbuntuError(Exception):
 class Ubuntu:
 
     db = {
-        '12.10' :
+        '13.04' :
         {
             'development' : True,        # This is the version that is currently under development
-            'series_version' : '12.10',
-            'kernel'    : '3.5.0',
-            'name'      : 'quantal',
+            'series_version' : '13.04',
+            'kernel'    : '3.6.0',
+            'name'      : 'raring',
             'supported' : False,
             # adjust packages when this goes live
             'packages'  :
@@ -45,6 +45,37 @@ class Ubuntu:
             'derivative-packages' :
             {
                 'linux' : [ 'linux-ti-omap4' ]
+            },
+            'sha1' : '',
+            'md5' : ''
+        },
+        '12.10' :
+        {
+            'series_version' : '12.10',
+            'kernel'    : '3.5.0',
+            'name'      : 'quantal',
+            'supported' : True,
+            # adjust packages when this goes live
+            'packages'  :
+            [
+                'linux',
+                'linux-meta',
+                'linux-ti-omap4',
+                'linux-meta-ti-omap4',
+                'linux-armadaxp'
+            ],
+            'dependent-packages' :
+            {
+                'linux' : { 
+                    'meta' : 'linux-meta',
+                    'lbm'  : 'linux-backports-modules-3.5.0'
+                },
+                'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
+                'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' }
+            },
+            'derivative-packages' :
+            {
+                'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
             },
             'sha1' : '',
             'md5' : ''
@@ -114,7 +145,7 @@ class Ubuntu:
             'series_version' : '11.04',
             'kernel'    : '2.6.38',
             'name'      : 'natty',
-            'supported' : True,
+            'supported' : False,
             'packages'  :
             [
                 'linux',
@@ -326,6 +357,7 @@ class Ubuntu:
     }
 
     index_by_kernel_version = {
+        '3.6.0'    : db['13.04'],
         '3.5.0'    : db['12.10'],
         '3.2.0'    : db['12.04'],
         '3.0.0'    : db['11.10'],
@@ -342,6 +374,7 @@ class Ubuntu:
     }
 
     index_by_series_name = {
+        'raring'   : db['13.04'],
         'quantal'  : db['12.10'],
         'precise'  : db['12.04'],
         'oneiric'  : db['11.10'],
@@ -378,6 +411,7 @@ class Ubuntu:
         'linux-backports-modules-2.6.35',
         'linux-backports-modules-2.6.38',
         'linux-backports-modules-3.0.0',
+        'linux-backports-modules-3.2.0',
 
         'linux-restricted-modules-2.6.15',
         'linux-restricted-modules-2.6.24',
@@ -386,10 +420,10 @@ class Ubuntu:
 
         'linux-lts-backport-maverick',
         'linux-lts-backport-natty',
-        #'linux-lts-backport-oneiric',
+        'linux-lts-backport-oneiric',
         'linux-meta-lts-backport-maverick',
         'linux-meta-lts-backport-natty',
-        #'linux-meta-lts-backport-oneiric',
+        'linux-meta-lts-backport-oneiric',
     ]
 
     # lookup
