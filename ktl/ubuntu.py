@@ -62,7 +62,8 @@ class Ubuntu:
                 'linux-meta',
                 'linux-ti-omap4',
                 'linux-meta-ti-omap4',
-                'linux-armadaxp'
+                'linux-armadaxp',
+                'linux-meta-armadaxp'
             ],
             'dependent-packages' :
             {
@@ -93,7 +94,8 @@ class Ubuntu:
                 'linux-meta',
                 'linux-ti-omap4',
                 'linux-meta-ti-omap4',
-                'linux-armadaxp'
+                'linux-armadaxp',
+                'linux-meta-armadaxp'
             ],
             'dependent-packages' :
             {
