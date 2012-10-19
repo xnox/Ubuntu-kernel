@@ -37,7 +37,7 @@ REPOS += ubuntu-precise-meta
 REPOS += ubuntu-quantal
 REPOS += ubuntu-quantal-meta
 REPOS += ubuntu-quantal-signed
-REPOS += ubuntu-r
+REPOS += ubuntu-raring
 REPOS += wireless-crda
 
 all: repo
@@ -49,6 +49,7 @@ CMRN += cd $(MIRROR_REPO_NAME)
 
 $(REPOS): $(MIRROR_REPO_NAME)/Makefile
 	($(CMRN); git checkout -f master)
+	($(CMRN); git fetch git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git master; git reset --hard FETCH_HEAD; git push origin +master)
 	#
 	# Clean out all remotes so that fetches get all new branches.
 	#
