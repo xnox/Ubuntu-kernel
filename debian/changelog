@@ -1,3 +1,9 @@
+linux-signed (3.5.0-18.29) quantal-proposed; urgency=low
+
+  * Version 3.5.0-18.29
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 19 Oct 2012 10:08:19 +0100
+
 linux-signed (3.5.0-17.28+signed2) quantal-proposed; urgency=low
 
   * download-signed: add the -security pocket to the search list.
