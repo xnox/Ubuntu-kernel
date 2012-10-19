@@ -3098,6 +3098,7 @@ EXPORT_SYMBOL vmlinux 0x00000000	kblockd_schedule_work
 EXPORT_SYMBOL vmlinux 0x00000000	kd_mksound
 EXPORT_SYMBOL vmlinux 0x00000000	kern_path
 EXPORT_SYMBOL vmlinux 0x00000000	kern_path_parent
+EXPORT_SYMBOL vmlinux 0x00000000	kern_unmount
 EXPORT_SYMBOL vmlinux 0x00000000	kernel_accept
 EXPORT_SYMBOL vmlinux 0x00000000	kernel_bind
 EXPORT_SYMBOL vmlinux 0x00000000	kernel_connect
