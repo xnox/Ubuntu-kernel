@@ -118,6 +118,7 @@ class TrackingBug:
         has_lum = False
         has_meta = False
         has_ports_meta = False
+        has_signed = False
         try:
             found = ub.lookup(series)
         except KeyError:
@@ -131,6 +132,7 @@ class TrackingBug:
                         has_lum = 'lum' in found['dependent-packages'][dep]
                         has_meta = 'meta' in found['dependent-packages'][dep]
                         has_ports_meta = 'ports-meta' in found['dependent-packages'][dep]
+                        has_signed = 'signed' in found['dependent-packages'][dep]
                         break
 
         sc = proj.series_collection
@@ -147,6 +149,8 @@ class TrackingBug:
                 if s.name == 'prepare-package-meta' and not has_meta:
                     continue
                 if s.name == 'prepare-package-ports-meta' and not has_ports_meta:
+                    continue
+                if s.name == 'prepare-package-signed' and not has_signed:
                     continue
                 nomination = bug.lpbug.addNomination(target=s)
                 if nomination.canApprove():

@@ -39,7 +39,10 @@ class Ubuntu:
             ],
             'dependent-packages' :
             {
-                'linux' : { 'meta' : 'linux-meta' },
+                'linux' : {
+                    'meta'   : 'linux-meta',
+                    'signed' : 'linux-signed'
+                },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' }
             },
             'derivative-packages' :
@@ -68,8 +71,9 @@ class Ubuntu:
             'dependent-packages' :
             {
                 'linux' : { 
-                    'meta' : 'linux-meta',
-                    'lbm'  : 'linux-backports-modules-3.5.0'
+                    'meta'   : 'linux-meta',
+                    'lbm'    : 'linux-backports-modules-3.5.0',
+                    'signed' : 'linux-signed'
                 },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
                 'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' }
