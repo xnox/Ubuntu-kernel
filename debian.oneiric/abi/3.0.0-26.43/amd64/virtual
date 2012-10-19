@@ -3622,6 +3622,7 @@ EXPORT_SYMBOL vmlinux 0x05edbd3b	scsi_register
 EXPORT_SYMBOL vmlinux 0x0604af6e	max8998_bulk_read
 EXPORT_SYMBOL vmlinux 0x0609895e	__module_put_and_exit
 EXPORT_SYMBOL vmlinux 0x061651be	strcat
+EXPORT_SYMBOL vmlinux 0x061f4039	acpi_get_table_with_size
 EXPORT_SYMBOL vmlinux 0x0634100a	bitmap_parselist_user
 EXPORT_SYMBOL vmlinux 0x06377a28	page_put_link
 EXPORT_SYMBOL vmlinux 0x065017cf	mb_cache_entry_find_first
@@ -6874,6 +6875,7 @@ EXPORT_SYMBOL vmlinux 0xe19414e1	kernel_sock_ioctl
 EXPORT_SYMBOL vmlinux 0xe1b84be5	scsi_register_interface
 EXPORT_SYMBOL vmlinux 0xe1bc7ede	del_timer_sync
 EXPORT_SYMBOL vmlinux 0xe1c1ca79	d_instantiate_unique
+EXPORT_SYMBOL vmlinux 0xe1df7137	kern_unmount
 EXPORT_SYMBOL vmlinux 0xe1ed031b	tty_port_block_til_ready
 EXPORT_SYMBOL vmlinux 0xe200f872	secure_dccpv6_sequence_number
 EXPORT_SYMBOL vmlinux 0xe2399b42	__nla_reserve_nohdr

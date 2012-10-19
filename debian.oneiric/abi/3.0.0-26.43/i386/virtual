@@ -5862,6 +5862,7 @@ EXPORT_SYMBOL vmlinux 0x91f8ca76	security_inode_getsecctx
 EXPORT_SYMBOL vmlinux 0x922de731	fail_migrate_page
 EXPORT_SYMBOL vmlinux 0x923b1276	dmaengine_get
 EXPORT_SYMBOL vmlinux 0x924c1bba	netdev_class_create_file
+EXPORT_SYMBOL vmlinux 0x927bdad8	kern_unmount
 EXPORT_SYMBOL vmlinux 0x92897e3d	default_idle
 EXPORT_SYMBOL vmlinux 0x92991cc8	ps2_handle_response
 EXPORT_SYMBOL vmlinux 0x92b565e9	scsi_device_put
@@ -6189,6 +6190,7 @@ EXPORT_SYMBOL vmlinux 0xa5da0abd	acpi_enter_sleep_state_s4bios
 EXPORT_SYMBOL vmlinux 0xa5dd2c5c	cdrom_media_changed
 EXPORT_SYMBOL vmlinux 0xa5f049f6	dentry_open
 EXPORT_SYMBOL vmlinux 0xa61460fa	vfs_follow_link
+EXPORT_SYMBOL vmlinux 0xa62e6e4f	acpi_get_table_with_size
 EXPORT_SYMBOL vmlinux 0xa62f491a	pci_find_capability
 EXPORT_SYMBOL vmlinux 0xa6305517	vfs_getattr
 EXPORT_SYMBOL vmlinux 0xa63d85ab	slhc_remember

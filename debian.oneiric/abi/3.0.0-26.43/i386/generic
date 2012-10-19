@@ -4211,6 +4211,7 @@ EXPORT_SYMBOL vmlinux 0x2526a8b5	ppp_output_wakeup
 EXPORT_SYMBOL vmlinux 0x2548a371	of_find_i2c_device_by_node
 EXPORT_SYMBOL vmlinux 0x254938a4	simple_transaction_get
 EXPORT_SYMBOL vmlinux 0x2570db93	generic_pipe_buf_release
+EXPORT_SYMBOL vmlinux 0x2576ee0b	kern_unmount
 EXPORT_SYMBOL vmlinux 0x2576f15c	jbd2_journal_forget
 EXPORT_SYMBOL vmlinux 0x2578dacd	agp_generic_alloc_pages
 EXPORT_SYMBOL vmlinux 0x25820c64	fs_overflowuid
@@ -6185,6 +6186,7 @@ EXPORT_SYMBOL vmlinux 0xa5c94507	skb_append
 EXPORT_SYMBOL vmlinux 0xa5cef8ad	release_resource
 EXPORT_SYMBOL vmlinux 0xa5da0abd	acpi_enter_sleep_state_s4bios
 EXPORT_SYMBOL vmlinux 0xa5f52ebb	iw_handler_set_spy
+EXPORT_SYMBOL vmlinux 0xa62e6e4f	acpi_get_table_with_size
 EXPORT_SYMBOL vmlinux 0xa6344c2b	sock_create_lite
 EXPORT_SYMBOL vmlinux 0xa638ed97	acpi_bus_unregister_driver
 EXPORT_SYMBOL vmlinux 0xa63d85ab	slhc_remember

@@ -1,9 +1,346 @@
-linux-lts-backport-oneiric (3.0.0-26.43~lucid1) lucid-proposed; urgency=low
+linux-lts-backport-oneiric (3.0.0-27.44~lucid1) lucid-proposed; urgency=low
 
   [Luis Henriques]
 
   * Release Tracking Bug
-    - LP: #1056607
+    - LP: #1068230
+
+  [ James M Leddy ]
+
+  * SAUCE: input: fix weird issue of synaptics psmouse sync lost after
+    resume
+    - LP: #717970
+
+  [ Upstream Kernel Changes ]
+
+  * UBUNTU SAUCE: apparmor: fix IRQ stack overflow
+    - LP: #1056078
+  * net_sched: gact: Fix potential panic in tcf_gact().
+    - LP: #1060430
+  * isdnloop: fix and simplify isdnloop_init()
+    - LP: #1060430
+  * net/core: Fix potential memory leak in dev_set_alias()
+    - LP: #1060430
+  * af_packet: remove BUG statement in tpacket_destruct_skb
+    - LP: #1060430
+  * ipv6: addrconf: Avoid calling netdevice notifiers with RCU read-side
+    lock
+    - LP: #1060430
+  * atm: fix info leak in getsockopt(SO_ATMPVC)
+    - LP: #1060430
+  * atm: fix info leak via getsockname()
+    - LP: #1060430
+  * Bluetooth: HCI - Fix info leak in getsockopt(HCI_FILTER)
+    - LP: #1060430
+  * Bluetooth: HCI - Fix info leak via getsockname()
+    - LP: #1060430
+  * Bluetooth: RFCOMM - Fix info leak in ioctl(RFCOMMGETDEVLIST)
+    - LP: #1060430
+  * Bluetooth: RFCOMM - Fix info leak via getsockname()
+    - LP: #1060430
+  * Bluetooth: L2CAP - Fix info leak via getsockname()
+    - LP: #1060430
+  * llc: fix info leak via getsockname()
+    - LP: #1060430
+  * dccp: fix info leak via getsockopt(DCCP_SOCKOPT_CCID_TX_INFO)
+    - LP: #1060430
+  * ipvs: fix info leak in getsockopt(IP_VS_SO_GET_TIMEOUT)
+    - LP: #1060430
+  * net: fix info leak in compat dev_ifconf()
+    - LP: #1060430
+  * netlink: fix possible spoofing from non-root processes
+    - LP: #1060430
+  * l2tp: avoid to use synchronize_rcu in tunnel free function
+    - LP: #1060430
+  * net: ipv4: ipmr_expire_timer causes crash when removing net namespace
+    - LP: #1060430
+  * workqueue: reimplement work_on_cpu() using system_wq
+    - LP: #1060430
+  * cpufreq/powernow-k8: workqueue user shouldn't migrate the kworker to
+    another CPU
+    - LP: #1060430
+  * cciss: fix handling of protocol error
+    - LP: #1060430
+  * vfs: make O_PATH file descriptors usable for 'fstat()'
+    - LP: #1060430
+  * vfs: dcache: use DCACHE_DENTRY_KILLED instead of DCACHE_DISCONNECTED in
+    d_kill()
+    - LP: #1060430
+  * netconsole: remove a redundant netconsole_target_put()
+    - LP: #1060430
+  * target: Fix ->data_length re-assignment bug with SCSI overflow
+    - LP: #1060430
+  * ALSA: ice1724: Use linear scale for AK4396 volume control.
+    - LP: #1060430
+  * Staging: speakup: fix an improperly-declared variable.
+    - LP: #1060430
+  * staging: vt6656: [BUG] - Failed connection, incorrect endian.
+    - LP: #1060430
+  * staging: r8712u: fix bug in r8712_recv_indicatepkt()
+    - LP: #1060430
+  * staging: comedi: das08: Correct AO output for das08jr-16-ao
+    - LP: #1060430
+  * USB: option: replace ZTE K5006-Z entry with vendor class rule
+    - LP: #1060430
+  * perf_event: Switch to internal refcount, fix race with close()
+    - LP: #1060430
+  * mmc: mxs-mmc: fix deadlock in SDIO IRQ case
+    - LP: #1060430
+  * mmc: sdhci-esdhc: break out early if clock is 0
+    - LP: #1060430
+  * ahci: Add alternate identifier for the 88SE9172
+    - LP: #1060430
+  * kobject: fix oops with "input0: bad kobj_uevent_env content in
+    show_uevent()"
+    - LP: #1060430
+  * Redefine ATOMIC_INIT and ATOMIC64_INIT to drop the casts
+    - LP: #1060430
+  * md: Don't truncate size at 4TB for RAID0 and Linear
+    - LP: #1060430
+  * mm/page_alloc: fix the page address of higher page's buddy calculation
+    - LP: #1060430
+  * drivers/rtc/rtc-twl.c: ensure all interrupts are disabled during probe
+    - LP: #1060430
+  * hwmon: (twl4030-madc-hwmon) Initialize uninitialized structure elements
+    - LP: #1060430
+  * can: mcp251x: avoid repeated frame bug
+    - LP: #1060430
+  * mm/ia64: fix a memory block size bug
+    - LP: #1060430
+  * memory hotplug: fix section info double registration bug
+    - LP: #1060430
+  * xen/boot: Disable NUMA for PV guests.
+    - LP: #1060430
+  * hwmon: (fam15h_power) Tweak runavg_range on resume
+    - LP: #1060430
+  * hwmon: (ads7871) Add 'name' sysfs attribute
+    - LP: #1060430
+  * SCSI: mpt2sas: Fix for issue - Unable to boot from the drive connected
+    to HBA
+    - LP: #1060430
+  * SCSI: bnx2i: Fixed NULL ptr deference for 1G bnx2 Linux iSCSI offload
+    - LP: #1060430
+  * SCSI: hpsa: fix handling of protocol error
+    - LP: #1060430
+  * hpwdt: Fix kdump issue in hpwdt
+    - LP: #1060430
+  * ARM: fix bad applied patch for arch/arm/Kconfig of stable 3.0.y tree.
+    - LP: #1060430
+  * ARM: 7532/1: decompressor: reset SCTLR.TRE for VMSA ARMv7 cores
+    - LP: #1060430
+  * tracing: Don't call page_to_pfn() if page is NULL
+    - LP: #1060430
+  * Input: i8042 - disable mux on Toshiba C850D
+    - LP: #1060430
+  * asix: Support DLink DUB-E100 H/W Ver C1
+    - LP: #1060430
+  * can: ti_hecc: fix oops during rmmod
+    - LP: #1060430
+  * can: janz-ican3: fix support for older hardware revisions
+    - LP: #1060430
+  * cfg80211: fix possible circular lock on reg_regdb_search()
+    - LP: #1060430
+  * dmaengine: at_hdmac: fix comment in atc_prep_slave_sg()
+    - LP: #1060430
+  * dmaengine: at_hdmac: check that each sg data length is non-null
+    - LP: #1060430
+  * rt2x00: Fix word size of rt2500usb MAC_CSR19 register.
+    - LP: #1060430
+  * rt2x00: Fix rfkill polling prior to interface start.
+    - LP: #1060430
+  * NFS: Fix the initialisation of the readdir 'cookieverf' array
+    - LP: #1060430
+  * NFS: Fix a problem with the legacy binary mount code
+    - LP: #1060430
+  * NFS: return error from decode_getfh in decode open
+    - LP: #1060430
+  * EHCI: Update qTD next pointer in QH overlay region during unlink
+    - LP: #1060430
+  * USB: ftdi_sio: PID for NZR SEM 16+ USB
+    - LP: #1060430
+  * USB: ftdi_sio: do not claim CDC ACM function
+    - LP: #1060430
+  * USB: ftdi-sio: add support for more Physik Instrumente devices
+    - LP: #1060430
+  * USB: add device quirk for Joss Optical touchboard
+    - LP: #1060430
+  * Intel xhci: Only switch the switchable ports
+    - LP: #1060430
+  * xhci: Fix a logical vs bitwise AND bug
+    - LP: #1060430
+  * xhci: Make handover code more robust
+    - LP: #1060430
+  * xhci: Recognize USB 3.0 devices as superspeed at powerup
+    - LP: #1000424, #1060430
+  * usb: host: xhci: fix compilation error for non-PCI based stacks
+    - LP: #1060430
+  * xhci: Fix bug after deq ptr set to link TRB.
+    - LP: #1060430
+  * mutex: Place lock in contended state after fastpath_lock failure
+    - LP: #1060430
+  * drivers/rtc/rtc-rs5c348.c: fix hour decoding in 12-hour mode
+    - LP: #1060430
+  * PM / Runtime: Fix rpm_resume() return value for power.no_callbacks set
+    - LP: #1060430
+  * PM / Runtime: Clear power.deferred_resume on success in rpm_suspend()
+    - LP: #1060430
+  * drivers/misc/sgi-xp/xpc_uv.c: SGI XPC fails to load when cpu 0 is out
+    of IRQ resources
+    - LP: #1060430
+  * fbcon: fix race condition between console lock and cursor timer (v1.1)
+    - LP: #1060430
+  * drm/radeon/kms: extend the Fujitsu D3003-S2 board connector quirk to
+    cover later silicon stepping
+    - LP: #1060430
+  * asus-laptop: HRWS/HWRS typo
+    - LP: #1060430
+  * asus-nb-wmi: add some video toggle keys
+    - LP: #1060430
+  * drm/i915: HDMI - Clear Audio Enable bit for Hot Plug
+    - LP: #1060430
+  * workqueue: UNBOUND -> REBIND morphing in rebind_workers() should be
+    atomic
+    - LP: #1060430
+  * x86: Fix boot on Twinhead H12Y
+    - LP: #1060430
+  * Bluetooth: btusb: Add vendor specific ID (0a5c:21f4) BCM20702A0
+    - LP: #1060430
+  * Bluetooth: Use USB_VENDOR_AND_INTERFACE() for Broadcom devices
+    - LP: #1060430
+  * Bluetooth: Add support for Apple vendor-specific devices
+    - LP: #1060430
+  * net: Statically initialize init_net.dev_base_head
+    - LP: #1060430
+  * Fix a dead loop in async_synchronize_full()
+    - LP: #1060430
+  * libata: Prevent interface errors with Seagate FreeAgent GoFlex
+    - LP: #1060430
+  * cpufreq / ACPI: Fix not loading acpi-cpufreq driver regression
+    - LP: #1060430
+  * media: lirc_sir: make device registration work
+    - LP: #1060430
+  * drop_monitor: fix sleeping in invalid context warning
+    - LP: #1060430
+  * drop_monitor: Make updating data->skb smp safe
+    - LP: #1060430
+  * drop_monitor: prevent init path from scheduling on the wrong cpu
+    - LP: #1060430
+  * drop_monitor: dont sleep in atomic context
+    - LP: #1060430
+  * time: Improve sanity checking of timekeeping inputs
+    - LP: #1060430
+  * time: Avoid making adjustments if we haven't accumulated anything
+    - LP: #1060430
+  * time: Move ktime_t overflow checking into timespec_valid_strict
+    - LP: #1060430
+  * pch_uart: Fix missing break for 16 byte fifo
+    - LP: #1060430
+  * pch_uart: Fix rx error interrupt setting issue
+    - LP: #1060430
+  * pch_uart: Fix parity setting issue
+    - LP: #1060430
+  * Squashfs: fix mount time sanity check for corrupted superblock
+    - LP: #1060430
+  * mmc: sd: Handle SD3.0 cards not supporting UHS-I bus speed mode
+    - LP: #1060430
+  * mmc: Prevent 1.8V switch for SD hosts that don't support UHS modes.
+    - LP: #1060430
+  * e1000e: Disable ASPM L1 on 82574
+    - LP: #1060430
+  * UBI: fix a horrible memory deallocation bug
+    - LP: #1060430
+  * spi/mpc83xx: fix NULL pdata dereference bug
+    - LP: #1060430
+  * spi/spi-fsl-spi: reference correct pdata in fsl_spi_cs_control
+    - LP: #1060430
+  * sched: Fix ancient race in do_exit()
+    - LP: #1060430
+  * MCE: Fix vm86 handling for 32bit mce handler
+    - LP: #1060430
+  * USB: Fix race condition when removing host controllers
+    - LP: #1060430
+  * ARM: 7467/1: mutex: use generic xchg-based implementation for ARMv6+
+    - LP: #1060430
+  * Linux 3.0.44
+    - LP: #1060430
+  * vfs: dcache: fix deadlock in tree traversal
+    - LP: #1063828
+  * dm: handle requests beyond end of device instead of using BUG_ON
+    - LP: #1063828
+  * USB: option: blacklist QMI interface on ZTE MF683
+    - LP: #1063828
+  * USB: ftdi_sio: add TIAO USB Multi-Protocol Adapter (TUMPA) support
+    - LP: #1063828
+  * USB: qcaux: add Pantech vendor class match
+    - LP: #1063828
+  * staging: speakup_soft: Fix reading of init string
+    - LP: #1063828
+  * staging: comedi: s626: don't dereference insn->data
+    - LP: #1063828
+  * staging: comedi: jr3_pci: fix iomem dereference
+    - LP: #1063828
+  * staging: comedi: don't dereference user memory for INSN_INTTRIG
+    - LP: #1063828
+  * staging: comedi: fix memory leak for saved channel list
+    - LP: #1063828
+  * Remove BUG_ON from n_tty_read()
+    - LP: #1063828
+  * TTY: ttyprintk, don't touch behind tty->write_buf
+    - LP: #1063828
+  * serial: pl011: handle corruption at high clock speeds
+    - LP: #1063828
+  * serial: set correct baud_base for EXSYS EX-41092 Dual 16950
+    - LP: #1063828
+  * b43legacy: Fix crash on unload when firmware not available
+    - LP: #1063828
+  * firmware: Add missing attributes to EFI variable attribute print out
+    from sysfs
+    - LP: #1063828
+  * xhci: Intel Panther Point BEI quirk.
+    - LP: #1063828
+  * n_gsm: added interlocking for gsm_data_lock for certain code paths
+    - LP: #1063828
+  * coredump: prevent double-free on an error path in core dumper
+    - LP: #1063828
+  * Increase XHCI suspend timeout to 16ms
+    - LP: #1063828
+  * n_gsm: memory leak in uplink error path
+    - LP: #1063828
+  * UBI: fix autoresize handling in R/O mode
+    - LP: #1063828
+  * SCSI: ibmvscsi: Fix host config length field overflow
+    - LP: #1063828
+  * SCSI: hpsa: Use LUN reset instead of target reset
+    - LP: #1063828
+  * can: mscan-mpc5xxx: fix return value check in mpc512x_can_get_clock()
+    - LP: #1063828
+  * IPoIB: Fix use-after-free of multicast object
+    - LP: #1063828
+  * IB/srp: Fix use-after-free in srp_reset_req()
+    - LP: #1063828
+  * IB/srp: Avoid having aborted requests hang
+    - LP: #1063828
+  * isci: fix isci_pci_probe() generates warning on efi failure path
+    - LP: #1063828
+  * x86/alternatives: Fix p6 nops on non-modular kernels
+    - LP: #1063828
+  * PCI: honor child buses add_size in hot plug configuration
+    - LP: #1063828
+  * SCSI: scsi_remove_target: fix softlockup regression on hot remove
+    - LP: #1063828
+  * SCSI: scsi_dh_alua: Enable STPG for unavailable ports
+    - LP: #1063828
+  * Linux 3.0.45
+    - LP: #1063828
+
+ -- Luis Henriques <luis.henriques@canonical.com>  Fri, 19 Oct 2012 11:17:08 +0100
+
+linux (3.0.0-26.43) oneiric-proposed; urgency=low
+
+  [Luis Henriques]
+
+  * Release Tracking Bug
+    - LP: #1055532
 
   [ Dave Airlie ]
 
@@ -128,7 +465,7 @@ linux-lts-backport-oneiric (3.0.0-26.43~lucid1) lucid-proposed; urgency=low
   * Linux 3.0.43
     - LP: #1052005
 
- -- Luis Henriques <luis.henriques@canonical.com>  Wed, 26 Sep 2012 09:40:01 +0100
+ -- Luis Henriques <luis.henriques@canonical.com>  Mon, 24 Sep 2012 18:28:41 +0100
 
 linux (3.0.0-26.42) oneiric-proposed; urgency=low
 
