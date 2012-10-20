@@ -530,7 +530,8 @@ class Ubuntu:
         if (package == 'linux' or
             package == 'linux-ti-omap4' or
             package == 'linux-ec2' or
-            package == 'linux-armadaxp'):
+            package == 'linux-armadaxp' or
+            package == 'linux-lowlatency'):
             Dbg.verbose('package condition 1\n')
             for entry in self.db.itervalues():
                 if version.startswith(entry['kernel']):
