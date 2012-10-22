@@ -31,7 +31,8 @@ v2.6.33*|v2.6.34*|v2.6.35*)	master_release="maverick" ;;
 v2.6.36*|v2.6.37*|v2.6.38*)	master_release="natty" ;;
 v2.6.39*|v3.0*)			master_release="oneiric" ;;
 v3.1*|v3.2*)			master_release="precise" ;;
-*)				master_release="quantal" ;;
+v3.3*|v3.4*|v3.5*)		master_release="quantal" ;;
+*)				master_release="raring" ;;
 esac
 
 master_tree_select
