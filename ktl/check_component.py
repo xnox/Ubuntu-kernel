@@ -111,7 +111,7 @@ class CheckComponent():
                                               self.abi_db[package][mpkg])
             else:
                 if package.startswith('linux-backports-modules-'):
-                    if not bpkg.endswith('-preempt'):
+                    if not bpkg or not bpkg.endswith('-preempt'):
                         return 'main'
                 return 'universe'
 
