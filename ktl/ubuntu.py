@@ -21,6 +21,114 @@ class UbuntuError(Exception):
 #
 class Ubuntu:
 
+    # db: dictionary of Ubuntu releases, with its kernel package, version
+    # and miscelaneous information used by scripts throughout the tree
+    #
+    # Format:
+    # db = {
+    #   <release number string> : {
+    #      'field 1' : <value 1>,
+    #      'field 2' : <value 2>,
+    #      ...
+    #      'field n' : <value n>
+    #   }
+    # }
+    #
+    # release number string is the number of the release, '10.10', '12.04', etc.
+    # For each release, we have a dictionary assigned to it which consists of a
+    # set of fields with values assigned, relevant to that release. The possible
+    # fields are:
+    # * development (bool) - indicates if this release
+    #   represents the current Ubuntu development release
+    # * series_verson (string) - same as release number string. XXX: remove this?
+    # * kernel (string) - the main kernel version used in this release (from
+    #   linux package), eg. '3.2.0'
+    # * name (string) - first name of this release, eg. 'precise'
+    # * supported (bool) - indicates if this is an stable supported
+    #   release (not a development release, and not EOL - end of life)
+    # * packages (list) - list of source package names supported in this
+    #   release.
+    # * dependent-packages (dictionary) - dictionary mapping a package
+    #   to its dependent packages. Format:
+    #   'dependent-packages' : {
+    #     <source package name> : {
+    #       'task name 1' : <source package name 1 linked to this task>,
+    #       'task name 2' : <source package name 2 linked to this task>,
+    #       ...
+    #       'task name n' : <source package name n linked to this task>
+    #     }
+    #   }
+    #   - source package name is the name of the source package uploaded.
+    #   - task name can be one of the following: 'meta', 'lbm', 'lrm',
+    #     'lum', 'ports-meta', 'signed'
+    #   The information on this dictionary is solely used as an way to
+    #   process and create tracking bugs. Using this information the
+    #   scripts can know which packages needs extra 'prepare-package-*'
+    #   tasks in tracking bugs, and which package name relates to its
+    #   respective 'prepare-package-*' task:
+    #   - For 'meta', 'lbm', 'lrm', 'lum', 'ports-meta' and 'signed',
+    #     they are used when opening a tracking bug to know if that
+    #     tracking bug needs respectively the tasks
+    #     'prepare-package-meta', 'prepare-package-lbm', etc.
+    #   - For 'meta', 'lbm', 'lrm', 'lum' and 'ports-meta', shank bot
+    #     (stable/sru-workflow-manager) uses the dictionary to know
+    #     what's the package name for that task, to check if the package
+    #     is built on the ppa with the needed ABI. For 'signed', it uses
+    #     the dictionary to know what's the package name for the
+    #     prepare-package-signed task, and to check if the package with
+    #     same ABI-VERSION is built on the ppa.
+    # * derivative-packages (dictionary) - dictionary solely used by
+    #   shank bot to know which tracking bugs it needs to open for
+    #   rebasable branches, when the master linux packages are built on
+    #   the ppa. Format:
+    #   'derivative-packages' : {
+    #     <source package name A> : [
+    #          <source package name 1>,
+    #          <source package name 2>,
+    #          ...
+    #          <source package name n>
+    #       ],
+    #     <source package name B> : [ ... ],
+    #     ...
+    #     <source package name n> : [ ... ]
+    #   }
+    #   Example:
+    #   'derivative-packages' : {
+    #     'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
+    #   }
+    #   This example means for shank bot that when 'linux' package is
+    #   built on the c-k-t PPA, open automatically tracking bugs for
+    #   'linux-ti-omap4' and 'linux-armadaxp' packages so they can be
+    #   rebased on top of linux master branch and worked on.
+    # * backport-packages (dictionary) - if the release is an LTS
+    #   (Long Term Support), this will provide a mapping of available
+    #   backport packages on it, so shank bot can properly open new
+    #   tracking bugs for them. It's different from derivative-packages
+    #   field, because the tracking bug is opened when a linux master
+    #   branch is built on another release, so this field serves as a
+    #   reverse map. But the purpose is the same, and also is solely
+    #   used to open new tracking bugs for backport packages.
+    #   Format:
+    #   'backport-packages' : {
+    #     <backport source package name 1> : [
+    #       <original source package name of backported package>,
+    #       <release number from where it's being backported>
+    #     ],
+    #     ...
+    #     <backport source package name N> : [ ... ]
+    #   }
+    #   Consider this backports-package entry for '10.04' (Lucid) for
+    #   example:
+    #   'backport-packages' : {
+    #     'linux-lts-backport-oneiric' : [ 'linux', '11.10' ],
+    #     'linux-lts-backport-natty' : [ 'linux', '11.04' ],
+    #     'linux-lts-backport-maverick' : [ 'linux', '10.10' ],
+    #    }
+    #   Above we have listed the three backports it can have. Taking
+    #   oneiric backport, the list means, we are backporting from
+    #   'linux' package present on '11.10'.
+    # * sha1 XXX: doesn't seem to be used anymore
+    # * md5 XXX: doesn't seem to be used anymore
     db = {
         '13.04' :
         {
