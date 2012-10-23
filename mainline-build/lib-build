@@ -46,6 +46,7 @@ repo_remote_url()
 linus		git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 2.6.32.y.33.z	git://kernel.ubuntu.com/smb/linux-2.6.32.y-drm33.z.git
 linux-stable	git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+ubuntu-stable	git://kernel.ubuntu.com/herton/linux-stable.git
 drm-2.6		git://git.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6
 drm-intel-danvet 	git://people.freedesktop.org/~danvet/drm-intel
 debloat-testing	git://git.infradead.org/debloat-testing.git
