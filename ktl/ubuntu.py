@@ -184,7 +184,8 @@ class Ubuntu:
                     'signed' : 'linux-signed'
                 },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
-                'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' }
+                'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' },
+                'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' }
             },
             'derivative-packages' :
             {
@@ -219,7 +220,8 @@ class Ubuntu:
                 },
                 'linux-lts-quantal' : { 'meta' : 'linux-meta-lts-quantal' },
                 'linux-ti-omap4' : { 'meta' : 'linux-meta-ti-omap4' },
-                'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' }
+                'linux-armadaxp' : { 'meta' : 'linux-meta-armadaxp' },
+                'linux-lowlatency' : { 'meta' : 'linux-meta-lowlatency' }
             },
             'derivative-packages' :
             {
