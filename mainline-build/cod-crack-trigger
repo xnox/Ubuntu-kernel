@@ -29,11 +29,9 @@ repo_remote_update_list linus drm-2.6 drm-intel-danvet debloat-testing
 
 refresh=1
 date="`date +%F`"
-while read current branch abi base
+while read branch abi base
 do
-	[ "$current" = '-' ] && current="$base"
-
-	curr="$master_tags/$current"
+	curr="$master_tags/$base"
 	# Check for upstream crack of the day.
 	tip=`git log --pretty=format:%H $branch^..$branch | head -1`
 	prev=`cat "$curr" 2>/dev/null || true`
@@ -53,11 +51,11 @@ do
 			"$here/mainline-build" "$tip" "$abi" "$base" "$date"
 	fi
 done <<EOL
-LINUS		linus/master			999	daily
-DRM-NEXT	drm-2.6/drm-next		996	drm-next
--	drm-intel-danvet/drm-intel-next		997	drm-intel-next
--	drm-intel-danvet/drm-intel-next-queued	994	drm-intel-experimental
-DEBLOAT-TESTING	debloat-testing/master		993	debloat-testing
+linus/master					999	daily
+drm-2.6/drm-next				996	drm-next
+drm-intel-danvet/drm-intel-next			997	drm-intel-next
+drm-intel-danvet/drm-intel-next-queued		994	drm-intel-experimental
+debloat-testing/master				993	debloat-testing
 EOL
 # Also allocated
 # 995: sconklin -- wayland
