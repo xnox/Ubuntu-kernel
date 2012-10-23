@@ -7,9 +7,14 @@ case "$here" in
 esac
 
 # Cleanup the daily build
-"$here/cleanup-daily-one" "$HOME/public_html/mainline/daily"
-"$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-next"
-"$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-intel-next"
-"$here/cleanup-daily-one" "$HOME/public_html/mainline/drm-intel-fixes"
-
+for which in \
+	"$HOME/public_html/mainline/daily" \
+	"$HOME/public_html/mainline/drm-next" \
+	"$HOME/public_html/mainline/drm-intel-next" \
+	"$HOME/public_html/mainline/drm-intel-fixes" \
+	"$HOME/public_html/mainline/prestable"/*
+do
+	"$here/cleanup-daily-one" "$which"
+done
+	
 exit 0
