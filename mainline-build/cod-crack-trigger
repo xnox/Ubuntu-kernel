@@ -54,7 +54,7 @@ done <<EOL
 linus/master					999	daily
 drm-2.6/drm-next				996	drm-next
 drm-intel-danvet/drm-intel-next			997	drm-intel-next
-drm-intel-danvet/drm-intel-next-queued		994	drm-intel-experimental
+drm-intel-danvet/drm-intel-nightly		994	drm-intel-nightly
 debloat-testing/master				993	debloat-testing
 EOL
 # Also allocated
