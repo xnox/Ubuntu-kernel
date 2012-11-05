@@ -35,6 +35,8 @@ class RequiredLogs(BugHandler):
 
         self.comment = "This bug is missing log files that will aid in diagnosing the problem. From a terminal window please run:\n\napport-collect %s\n\nand then change the status of the bug to 'Confirmed'.\n\nIf, due to the nature of the issue you have encountered, you are unable to run this command, please add a comment stating that fact and change the bug status to 'Confirmed'.\n\nThis change has been made by an automated script, maintained by the Ubuntu Kernel Team."
         self.comment_subject = "Missing required logs."
+        self.confirm_subject = "Status changed to Confirmed"
+        self.confirm_body = "This change was made by a bot."
 
     # change_status
     #
@@ -116,6 +118,7 @@ class RequiredLogs(BugHandler):
                 if self.show_buff == '':
                     self.show_buff += 'Bug: %s  ' % bug.id
                 if bug.has_required_logs:
+                    bug.add_comment(self.confirm_body % (bug.id), self.confirm_subject)
                     self.change_status(bug, task, package_name, "Confirmed")
                 else:
                     bug.add_comment(self.comment % (bug.id), self.comment_subject)
