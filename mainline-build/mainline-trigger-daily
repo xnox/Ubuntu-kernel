@@ -15,6 +15,11 @@ esac
 "$here/cod-preproposed-trigger"
 
 #
+# MAINLINE CRACK: tips of herton's prestable branches.
+#
+"$here/cod-prestable-trigger"
+
+#
 # MAINLINE CRACK: tips of various mainline trees.
 #
 "$here/cod-crack-trigger"

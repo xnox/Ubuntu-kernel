@@ -41,6 +41,7 @@ do
 		rm -rf "$outgoing/$build"
 	fi
 	announce=0
+	mkdir -p "$outgoing/`dirname "$build"`"
 	mv "$incoming/mainline/$build" "$outgoing/$build" && \
 	{
 		case "$build" in

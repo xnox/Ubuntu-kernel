@@ -162,8 +162,10 @@ echo "^^^ - build head"
 #
 # Pull in the packaging from the head of our tree.
 #
-git checkout "$series/master" -- debian
-git checkout "$series/master" -- debian.master
+git checkout "$series/master" -- debian || \
+	git checkout "$series/master-next" -- debian
+git checkout "$series/master" -- debian.master || \
+	git checkout "$series/master-next" -- debian.master
 
 # Disable the ABI, module, and aliases checks.
 for i in debian/scripts/*-check debian.master/scripts/*-check
