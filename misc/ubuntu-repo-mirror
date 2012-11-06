@@ -35,9 +35,12 @@ REPOS += ubuntu-precise
 REPOS += ubuntu-precise-lbm
 REPOS += ubuntu-precise-meta
 REPOS += ubuntu-quantal
+REPOS += ubuntu-quantal-lbm
 REPOS += ubuntu-quantal-meta
 REPOS += ubuntu-quantal-signed
 REPOS += ubuntu-raring
+REPOS += ubuntu-raring-meta
+REPOS += ubuntu-raring-signed
 REPOS += wireless-crda
 
 all: repo
