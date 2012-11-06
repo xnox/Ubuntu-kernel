@@ -4,13 +4,13 @@
        | bzr pull http://people.canonical.com/~kernel/cve-tracker
        | bzr vis (in bzr-gtk package) sanity check
 
-(cve2) | bzr push lp:~canonical-kernel-team/ubuntu-cve-tracker/kernel-team/
-
-The above is bundled into the cve1 and cve2 scripts
-
 Quick triage
 Are there any SHA1s to add to the break-fix line
 from the matrix - after the next run after the above happens
+
+(cve2) | bzr push lp:~canonical-kernel-team/ubuntu-cve-tracker/kernel-team/
+
+The above is bundled into the cve1 and cve2 scripts
 
 ========= Weekly update (meeting) ============
 
