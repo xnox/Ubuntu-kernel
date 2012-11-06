@@ -857,6 +857,36 @@ class Shank(StdApp):
                 self.set_task_to_state('upload-to-ppa', 'Fix Released')
         return False
 
+    def check_master_task(self, bug, tname):
+        """
+        check if the task with name tname is in the state Fix Released
+        on the master bug, when bug is a derivative tracking bug,
+        otherwise just return True
+        """
+        props = bug.properties
+        if 'kernel-stable-master-bug' in props:
+            try:
+                mbug = self.lp.get_bug(props['kernel-stable-master-bug'])
+                for t in mbug.tasks:
+                    task_name = t.bug_target_name
+                    if (not task_name.startswith(self.projectname) or
+                        task_name == self.projectname):
+                        continue
+                    short_name = task_name[len(self.projectname)+1:].strip()
+                    if short_name.lower() == tname:
+                        if t.status == 'Fix Released':
+                            return True
+                        else:
+                            break
+                self.verbose("%s isn't Fix Released on bug %s, waiting on master bug\n"
+                             % (tname, mbug.id))
+                return False
+            except:
+                traceback.print_exc()
+                print("ERROR: unable to get master bug\n")
+                return False
+        return True
+
     def prep_package_fix_released(self, taskobj):
         """
         when the prep-package task is set to Fix Released and there is
@@ -873,6 +903,13 @@ class Shank(StdApp):
             return False
 
         if self.taskbyname['promote-to-proposed'].status == 'New':
+            # if this is a derivative tracking bug, wait the packages on
+            # the master tracking bug to be promote-to-proposed first,
+            # before setting the task here. A derivative package may
+            # have dependencies on master packages.
+            if not self.check_master_task(taskobj.bug, 'promote-to-proposed'):
+                return False
+
             # open new tracking bugs for derivative packages if needed
             title = taskobj.bug.title
             pkg_name = re.findall('linux[^:]*', title)[0]
@@ -1345,8 +1382,14 @@ class Shank(StdApp):
             if 'qa-testing-passed' in self.bugtags and \
                     ('certification-testing-passed' in self.bugtags or self.taskbyname['certification-testing'].status == 'Invalid'):
 
-                # No publication on Fri/Sat/Sun (see function)
-                if not self.hold_updates_security_copy():
+                # We don't publish on Fri/Sat/Sun (see comment on function
+                # hold_updates_security_copy). Also, only allow the
+                # promote-to-{updates,security} on derivative packages
+                # if the master packages are already promoted to the
+                # updates pocket.
+                tbug = self.taskbyname[self.projectname].bug
+                if (not self.hold_updates_security_copy() and
+                    self.check_master_task(tbug, 'promote-to-updates')):
                     task = self.taskbyname[self.projectname]
                     # we're all good
                     if self.security_publishing_required:
@@ -1366,8 +1409,11 @@ class Shank(StdApp):
                     #self.send_email(task, 'Package is ready for publication', msgbody)
                     #self.send_status_update(task, 'available for publication.')
                 else:
-                    self.verbose('Avoiding to touch publishing tasks on Fri/Sat/Sun\n')
-                
+                    self.verbose('Unable to set promote-to-{updates,security} ')
+                    self.verbose('tasks. We are either near\nthe weekend, when ')
+                    self.verbose('no publising is done, or this is a derivative ')
+                    self.verbose('bug\nwhere the master bug isn\'t released yet\n')
+
             else:
                 # don't have required testing signoffs
                 self.verbose('ERROR: test completion tags not found during release test!\n')
