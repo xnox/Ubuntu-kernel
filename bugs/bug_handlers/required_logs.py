@@ -118,7 +118,7 @@ class RequiredLogs(BugHandler):
                 if self.show_buff == '':
                     self.show_buff += 'Bug: %s  ' % bug.id
                 if bug.has_required_logs:
-                    bug.add_comment(self.confirm_body % (bug.id), self.confirm_subject)
+                    bug.add_comment(self.confirm_body, self.confirm_subject)
                     self.change_status(bug, task, package_name, "Confirmed")
                 else:
                     bug.add_comment(self.comment % (bug.id), self.comment_subject)
