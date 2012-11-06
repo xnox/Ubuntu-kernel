@@ -189,7 +189,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
+                'linux' : [ 'linux-ti-omap4', 'linux-armadaxp', 'linux-lowlatency' ]
             },
             'sha1' : '',
             'md5' : ''
@@ -225,7 +225,7 @@ class Ubuntu:
             },
             'derivative-packages' :
             {
-                'linux' : [ 'linux-ti-omap4', 'linux-armadaxp' ]
+                'linux' : [ 'linux-ti-omap4', 'linux-armadaxp', 'linux-lowlatency' ]
             },
             'backport-packages' :
             {
