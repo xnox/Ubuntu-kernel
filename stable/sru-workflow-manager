@@ -631,7 +631,7 @@ class Shank(StdApp):
     """
     def set_tagged_timestamp(self, taskobj, keyvalue):
         bug = taskobj.bug
-        if keyvalue in  bug.properties:
+        if keyvalue in bug.properties:
             self.verbose('tagged timestamp <%s> already in the tracking bug, not replacing\n' % keyvalue)
             return
         if 'dryrun' in self.cfg:
@@ -913,6 +913,12 @@ class Shank(StdApp):
                     traceback.print_exc()
                     bug = None
                 if bug:
+                    # Add a property so we can easily track later from which bug this derives
+                    props = Properties(bug)
+                    prop = {'kernel-stable-master-bug':taskobj.bug.id}
+                    props.set(prop)
+                    props.flush()
+                    # Friendly comment on the bug stating that this is a derivative
                     bug.add_comment(msgder, subder)
                     print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
                     der_bug_list.append([der_pkg, bug.id])
