@@ -327,6 +327,29 @@ class Workflow:
             'subscribers' :
                 ["sru-verification", "ubuntu-sru"],
             },
+        'linux-lowlatency' :  {
+            'task_assignment' : {
+                'prepare-package'            : 'ubuntustudio-kernel-team',
+                #'prepare-package-lbm'        : 'canonical-kernel-team',
+                #'prepare-package-lrm'        : 'canonical-kernel-team',
+                #'prepare-package-lum'        : 'canonical-kernel-team',
+                'prepare-package-meta'       : 'ubuntustudio-kernel-team',
+                #'prepare-package-ports-meta' : 'canonical-kernel-team',
+                #'prepare-package-signed'     : 'canonical-kernel-team',
+                'upload-to-ppa'              : 'canonical-kernel-team',
+                'promote-to-proposed'        : 'canonical-kernel-team',
+                'verification-testing'       : 'ubuntustudio-kernel-team',
+                #'certification-testing'     : 'canonical-hw-cert',
+                'regression-testing'         : 'ubuntustudio-kernel-team',
+                'promote-to-updates'         : 'ubuntu-sru',
+                'promote-to-security'        : 'ubuntu-sru',
+                #'security-signoff'           : 'canonical-security'
+                },
+            'initial_bug_tags' :
+                ['kernel-release-tracking-bug'],
+            'subscribers' :
+                ["sru-verification", "ubuntu-sru"],
+            },
         'default' :  {
             'task_assignment' : {
                 'prepare-package'            : 'canonical-kernel-team',
