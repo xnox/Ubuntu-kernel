@@ -13,7 +13,7 @@ class TrackingBug:
         self.lp = lp
         self.staging = staging
 
-    def open(self, package, version, new_abi, der_series = None):
+    def open(self, package, version, new_abi, master_bug, der_series = None):
         wf = Workflow()
         ub = Ubuntu()
 
@@ -58,6 +58,8 @@ class TrackingBug:
         ourprops['kernel-stable-Prepare-package-start'] = tstamp
         ourprops['kernel-stable-phase'] = 'Prepare'
         ourprops['kernel-stable-phase-changed'] = tstamp
+        if master_bug:
+            ourprops['kernel-stable-master-bug'] = master_bug
         for k in ourprops:
             description = description + '%s:%s\n' % (k, ourprops[k])
 

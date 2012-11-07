@@ -860,7 +860,7 @@ class Shank(StdApp):
     def check_master_task(self, bug, tname):
         """
         check if the task with name tname is in the state Fix Released
-        on the master bug, when bug is a derivative tracking bug,
+        on the master bug, when bug is a derivative/backport tracking bug,
         otherwise just return True
         """
         props = bug.properties
@@ -945,16 +945,12 @@ class Shank(StdApp):
                                  % (der_pkg))
                     continue
                 try:
-                    bug = tb.open(der_pkg, '<version to be filled>', True, series)
+                    bug = tb.open(der_pkg, '<version to be filled>', True,
+                                  taskobj.bug.id, series)
                 except:
                     traceback.print_exc()
                     bug = None
                 if bug:
-                    # Add a property so we can easily track later from which bug this derives
-                    props = Properties(bug)
-                    prop = {'kernel-stable-master-bug':taskobj.bug.id}
-                    props.set(prop)
-                    props.flush()
                     # Friendly comment on the bug stating that this is a derivative
                     bug.add_comment(msgder, subder)
                     print 'Opened tracking bug %s for derivative package %s\n' % (bug.id, der_pkg)
@@ -973,7 +969,8 @@ class Shank(StdApp):
                            self.is_prep_pkg_released('prepare-package-meta') and
                            self.is_prep_pkg_released('prepare-package-ports-meta'))
                 try:
-                    bug = tb.open(bp_pkg[0], '%s~%s1' % (pkg_ver, bp_pkg[1]), new_abi)
+                    bug = tb.open(bp_pkg[0], '%s~%s1' % (pkg_ver, bp_pkg[1]),
+                                  new_abi, taskobj.bug.id)
                 except:
                     traceback.print_exc()
                     bug = None

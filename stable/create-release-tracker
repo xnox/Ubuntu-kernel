@@ -142,7 +142,8 @@ class CreateTrackingBug(StdApp):
             tb = TrackingBug(self.lp, 'staging' in self.cfg)
             bug = tb.open(changelog[0]['package'],
                           changelog[0]['version'],
-                          changelog[0]['ABI'] != changelog[1]['ABI'])
+                          changelog[0]['ABI'] != changelog[1]['ABI'],
+                          None)
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
