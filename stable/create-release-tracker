@@ -51,6 +51,11 @@ class Cmdline:
         stdo("        --staging        Use the staging LP server to create the bug. This is just for       \n")
         stdo("                         testing and will go away when the database is reset.                \n")
         stdo("                                                                                             \n")
+        stdo("        --master_bug=<bug number>                                                            \n")
+        stdo("                         If you are running this from a derivative or backport branch, you   \n")
+        stdo("                         should use this option to specify the number of the tracking bug for\n")
+        stdo("                         the master branch release where this was rebased on                 \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
         stdo("        %s --staging                                                                         \n" % self.cfg['app_name'])
 
@@ -66,7 +71,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'staging']
+            optsLong  = ['help', 'staging', 'master_bug=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -75,6 +80,9 @@ class Cmdline:
 
                 elif (opt == '--staging'):
                     self.cfg['staging'] = True
+
+                elif opt in ('--master_bug'):
+                    self.cfg['master_bug'] = val
 
         except GetoptError, error:
             print(error, defaults)
@@ -136,6 +144,11 @@ class CreateTrackingBug(StdApp):
 
             changelog = Debian.changelog()
 
+            if 'master_bug' in self.cfg:
+                master_bug = self.cfg['master_bug']
+            else:
+                master_bug = None
+
             #-------------------------------------------------------------------------------------
             # B U G   W O R K
 
@@ -143,7 +156,7 @@ class CreateTrackingBug(StdApp):
             bug = tb.open(changelog[0]['package'],
                           changelog[0]['version'],
                           changelog[0]['ABI'] != changelog[1]['ABI'],
-                          None)
+                          master_bug)
 
             #-------------------------------------------------------------------------------------
             # C H A N G E L O G   W O R K
