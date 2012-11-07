@@ -228,7 +228,7 @@ class Workflow:
                 'regression-testing'         : 'canonical-platform-qa',
                 'promote-to-updates'         : 'ubuntu-sru',
                 'promote-to-security'        : 'ubuntu-sru',
-                'security-signoff'           : 'canonical-security'
+                #'security-signoff'           : 'canonical-security'
                 },
             'initial_bug_tags' :
                 ['kernel-release-tracking-bug', 'armhf'],
