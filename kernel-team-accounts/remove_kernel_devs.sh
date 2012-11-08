@@ -1,24 +1,21 @@
 #!/bin/bash
 #
-# Add kernel developer accountsaaccording to the information in
-# kernel_devs.conf
+# Remove obsolete kernel developers.
+#
 #
 
 . kernel_devs.conf
 
-HOME=/home
-
 let index=0
 for i in ${kdev[@]}
 do
-	if who | grep $i > /dev/null
+	if [ ! -z "${kdev_obsolete[${index}]}" ]
 	then
-		echo Cannot remove a user that is logged in.
-	elif grep $i /etc/passwd
-	then
-		echo $i
-		deluser --remove-home $i
+		echo "Obsoleting ${kdev_name[${index}]}"
+		deluser ${kdev[${index}]} sbuild
+		deluser --remove-home ${kdev[${index}]}
 	fi
+
 	let index=${index}+1
 done
 
