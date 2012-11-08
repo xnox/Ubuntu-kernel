@@ -35,6 +35,19 @@ def dump(obj):
     stderr.write(json.dumps(obj, sort_keys=True, indent=4))
     stderr.write('\n')
 
+# text_clean
+#
+def text_clean(text):
+   '''
+   This always seems like such a hack, however, there are some characters that we can't
+   deal with properly so this function just removes them from the text passed in.
+   '''
+   retval = text
+   retval = retval.replace('\xe2\x80\x98', "'")
+   retval = retval.replace('\xe2\x80\x99', "'")
+   retval = retval.replace('\xe2', "")
+   return retval
+
 # file_load
 #
 def file_load(file_name):
@@ -133,7 +146,11 @@ def main(basedir, resfiles):
             properties.add_property(tp)
 
     f = os.path.join(basedir, "status")
-    text = open(f).read()
+    raw_text = open(f).read()
+
+    text = text_clean(raw_text)
+    raw_text = None
+
     results = parse_results(text)
     name_width = max([name_width] + [len(r[0]) for r in results])
 
@@ -171,13 +188,13 @@ def main(basedir, resfiles):
             elif r[1] == 'TEST_NA':
                 failures = failures+1
                 fid = os.path.join(basedir, tname, 'debug', '%s.DEBUG' % tname)
-                contents = file_load(fid)
+                contents = text_clean(file_load(fid))
                 tcfailure = api.failureType(message='Test %s is Not Applicable: %s' % (tname, r[3]), type_ = 'Failure', valueOf_ = "\n<![CDATA[\n%s\n]]>\n" % contents)
                 tc.failure = tcfailure
             elif r[1] == 'ERROR':
                 failures = failures+1
                 fid = os.path.join(basedir, tname, 'debug', '%s.DEBUG' % tname)
-                contents = file_load(fid)
+                contents = text_clean(file_load(fid))
                 tcfailure = api.failureType(message='Test %s has failed' % tname, type_ = 'Failure', valueOf_ = "\n<![CDATA[\n%s\n]]>\n" % contents)
                 tc.failure = tcfailure
             else:
