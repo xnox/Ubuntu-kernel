@@ -1,0 +1,182 @@
+#!/usr/bin/env python
+
+from optparse                           import OptionParser, OptParseError
+from sys                                import exit
+from re                                 import compile, sub, match, IGNORECASE
+from tempfile                           import NamedTemporaryFile
+from os                                 import system, getenv
+
+SendMailCmd  = "git send-email"
+
+#
+# Try to get the default name and email address to make up the sender from
+# the environment.
+#
+DefaultName  = getenv("DEBFULLNAME")
+DefaultEmail = getenv("DEBEMAIL")
+
+#
+# Additional Cc targets which should get added
+#
+DefaultCc    = [
+                    "linux-kernel@vger.kernel.org",
+                    "stable@vger.kernel.org"
+               ]
+#
+# Some people may not want to get notified even when they are part of the
+# SOB chain.
+#
+SobBlacklist = [
+                    "Greg Kroah-Hartman",
+                    "Greg KH",
+                    "Andi Kleen <ak@linux.intel.com>"
+               ]
+
+if DefaultEmail != "":
+    if DefaultName != "":
+        DefaultFrom = DefaultName + " <" + DefaultEmail + ">"
+    else:
+        DefaultFrom = DefaultEmail
+else:
+    DefaultFrom = ""
+
+OptParser = OptionParser(
+    "Usage: %prog [options] <filename> [<filename> ...]",
+    epilog= "This command is intended to be used whenever a patch or a batch "
+            "of patches is added to a tree. The patch files are parsed and "
+            "short notification mails get sent out to the author and s-o-b "
+            "email addresses."
+)
+OptParser.add_option(
+    "--from", dest="sender", action="store", default=DefaultFrom,
+    help="sets the sender of the notification emails. "
+         "Without this option, try to get this info from DEBFULLNAME and "
+         "DEBEMAIL (%default)."
+)
+OptParser.add_option(
+    "--version", dest="version", action="store", default="3.5.y-ext.z",
+    help="sets the kernel version displayed in the subject of of the "
+         "notification emails, default is %default")
+OptParser.add_option(
+    "--dry-run", dest="dryrun", action="store_true", default=False,
+    help="run in test mode and do not send out mails (default: %default)"
+)
+(opts, args) = OptParser.parse_args()
+
+#
+# At least one argument is required.
+#
+if len(args) == 0:
+    print "EE: No filename given."
+    OptParser.print_usage()
+    exit(1)
+
+if opts.sender == "":
+    print "EE: No mail sender was set!"
+    exit(1)
+
+def AssembleMailBody(version, subject, patchlines):
+    # strip the real version used in our branch for the email
+    bversion = version.split('y')[0]
+    mailbody = [
+        "Subject: [ " + version + " extended stable] Patch \"" + subject +
+        "\" has been added to staging queue",
+        "",
+        "This is a note to let you know that I have just added a patch titled",
+        "",
+        "    " + subject,
+        "",
+        "to the linux-" + bversion + "y-queue branch of the " + version +
+        " extended stable tree ",
+        "which can be found at:",
+        "",
+        " http://kernel.ubuntu.com/git?p=ubuntu/" +
+        " linux-stable.git;a=shortlog;h=refs/heads/linux-" + bversion + "y",
+        "",
+        "If you, or anyone else, feels it should not be added to the " +
+        version,
+        "extended stable tree, or for any feedback related to it, please reply to",
+        "this email.",
+        "",
+        "Thanks.",
+        "-" + opts.sender.split()[0],
+        "",
+        "------",
+        ""
+    ]
+    for line in patchlines:
+        mailbody.append(line)
+
+    return mailbody
+    
+def ParsePatch(filename):
+    try:
+        fp = open(filename, "r")
+    except:
+        raise
+
+    author = ""
+    slist = []
+    subject = ""
+    patchlines = []
+    pat = [ compile("^Signed-off-by:\s*", IGNORECASE),
+            compile("^Reported-by:\s*", IGNORECASE),
+            compile("^Reviewed-by:\s*", IGNORECASE),
+            compile("^Cc:\s*", IGNORECASE),
+            compile("^Acked-by:\s*", IGNORECASE) ]
+    for line in fp.readlines():
+        if line.startswith("From: "):
+            author = line[6:].rstrip()
+        if line.startswith("Subject: "):
+            subject = sub("Subject: (\[PATCH[^\]]*\] )?", "", line.rstrip())
+
+        mailtgt = None
+        for cp in pat:
+            if cp.search(line):
+                mailtgt = cp.sub("", line.rstrip())
+                break
+        if mailtgt:
+            if (mailtgt != author):
+                for entry in SobBlacklist:
+                    if match(entry, mailtgt):
+                        break
+                else:
+                    slist.append(mailtgt)
+
+        patchlines.append(line.rstrip())
+
+    fp.close()
+
+    try:
+        fp = NamedTemporaryFile(prefix="mail-")
+    except:
+        raise
+
+    cmd = SendMailCmd + " --suppress-cc=all --from \"" + opts.sender + "\""
+    #fp.write("To: " + author + "\n")
+    cmd += " --to \"" + author + "\""
+    for line in slist:
+        #fp.write("Cc: " + line + "\n")
+        cmd += " --cc \"" + line + "\""
+    for line in DefaultCc:
+        #fp.write("Cc: " + line + "\n")
+        cmd += " --cc \"" + line + "\""
+    for line in AssembleMailBody(opts.version, subject, patchlines):
+        fp.write(line + "\n")
+    fp.flush()
+
+    if opts.dryrun:
+        cmd += " --dry-run"
+
+    cmd += " " + fp.name
+    system(cmd)
+
+    if opts.dryrun:
+        system("cat " + fp.name)
+    fp.close()
+
+for filename in args:
+    print "Processing", filename, "..."
+    ParsePatch(filename)
+
+# vi:set ts=4 sw=4 expandtab:
