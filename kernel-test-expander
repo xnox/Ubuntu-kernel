@@ -120,7 +120,7 @@ testDependencies = {
 
     'power_consumption' : {
         'packages' : {
-           'common' : ['stress'],
+           'common' : ['stress', 'chromium-browser'],
             },
         'atargs' : {'METER_ADDR':'10.97.8.2', 'METER_PORT':'3490', 'METER_TAGPORT':'9999'},
         },
