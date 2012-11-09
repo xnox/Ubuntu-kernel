@@ -140,8 +140,11 @@ case $SUITE in
 		;;
 esac
 case $SUITE in
-	quantal|raring)
+	quantal)
 		ADDPKG="$ADDPKG flex bison";
+	;;
+	raring)
+		ADDPKG="$ADDPKG flex bison libunwind-dev libaudit-dev";
 	;;
 	android)
 		ADDPKG="$ADDPKG sudo ssh apt-transport-https devscripts gcc-4.4 gcc-4.4-multilib g++-4.4"
