@@ -1,3 +1,8 @@
+ubuntu-kernel-tests (0.0.11-1) unstable; urgency=low
+ * Start new release
+
+ -- Brad Figg <brad.figg@canonical.com>  Fri, 09 Nov 2012 07:51:33 -0800
+
 ubuntu-kernel-tests (0.0.10-1) unstable; urgency=low
 
  * kernel-test-expander: remove the xfstests from the default group and add it to the kernel group
