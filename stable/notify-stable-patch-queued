@@ -20,7 +20,8 @@ DefaultEmail = getenv("DEBEMAIL")
 #
 DefaultCc    = [
                     "linux-kernel@vger.kernel.org",
-                    "stable@vger.kernel.org"
+                    "stable@vger.kernel.org",
+                    "kernel-team@lists.ubuntu.com"
                ]
 #
 # Some people may not want to get notified even when they are part of the
