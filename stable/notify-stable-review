@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 #
 
-from os                                 import getenv, system
+from os                                 import getenv, listdir, system
 from sys                                import argv
 from getopt                             import getopt, GetoptError
 from commands                           import getstatusoutput
-from tempfile                           import NamedTemporaryFile
+from tempfile                           import NamedTemporaryFile, mkdtemp
+from shutil                             import move, rmtree
+from string                             import whitespace, digits
 from ktl.utils                          import stdo, error, eout, run_command
 from ktl.std_app                        import StdApp
 from ktl.git                            import Git, GitError
@@ -63,8 +65,9 @@ class Cmdline:
         """
         stdo("  This utility is intended to be run after a set of stable patches are ready for review      \n")
         stdo("  inside an stable upstream kernel process. It looks at a git branch with patches for        \n")
-        stdo("  review, and sends a notification email. For more information, see:                         \n")
-        stdo("  http://wiki.ubuntu.com/Kernel/Dev/StableUpstream/Maintenance                               \n")
+        stdo("  review, and sends a notification email for the start of the review, plus all the patches as\n")
+        stdo("  a response to the notification email. For more information, see:                           \n")
+        stdo("  http://wiki.ubuntu.com/Kernel/Dev/ExtendedStable/Maintenance                               \n")
         stdo("                                                                                             \n")
         stdo("    Usage:                                                                                   \n")
         stdo("        %s [--dry-run] [--from=<email address>]                                              \n" % self.cfg['app_name'])
@@ -73,15 +76,24 @@ class Cmdline:
         stdo("        --help           Prints this text.                                                   \n")
         stdo("                                                                                             \n")
         stdo("        --dry-run        Run in test mode and do not really send out any mail. This will     \n")
-        stdo("                         also cause the mail body be written to stdout.                      \n")
+        stdo("                         also cause the mail bodies to be written to stdout.                 \n")
         stdo("                                                                                             \n")
         stdo("        --from=<email address>                                                               \n")
         stdo("                         Sets the sender of the notification email. Without this option,     \n")
         stdo("                         the script tries to get this info from DEBFULLNAME and DEBEMAIL     \n")
         stdo("                         environment variables by default.                                   \n")
         stdo("                                                                                             \n")
+        stdo("        --previous_release=<version tag or commit>                                           \n")
+        stdo("                         The tag or commit of the top of the previous stable release, eg.    \n")
+        stdo("                         v3.5.7, we will get the stable patches from that up to HEAD.        \n")
+        stdo("                                                                                             \n")
+        stdo("        --new_version=<version string>                                                       \n")
+        stdo("                         The version for the set of stable patches in review to be released. \n")
+        stdo("                         It's the new version to be displayed in subject/body of the email   \n")
+        stdo("                         announcement sent out, eg. 3.6.6                                    \n")
+        stdo("                                                                                             \n")
         stdo("    Examples:                                                                                \n")
-        stdo("        %s --dry-run                                                                         \n" % self.cfg['app_name'])
+        stdo("        %s --dry-run --previous_release=v3.5.7 --new_version=3.5.7-ext.1                     \n" % self.cfg['app_name'])
 
     # process
     #
@@ -94,7 +106,7 @@ class Cmdline:
         result = True
         try:
             optsShort = ''
-            optsLong  = ['help', 'dry-run', 'from=']
+            optsLong  = ['help', 'dry-run', 'from=', 'previous_release=', 'new_version=']
             opts, args = getopt(argv[1:], optsShort, optsLong)
 
             for opt, val in opts:
@@ -106,6 +118,12 @@ class Cmdline:
 
                 elif opt in ('--from'):
                     self.cfg['from'] = val
+
+                elif opt in ('--previous_release'):
+                    self.cfg['previous_release'] = val
+
+                elif opt in ('--new_version'):
+                    self.cfg['new_version'] = val
 
         except GetoptError, error:
             print(error, defaults)
@@ -119,18 +137,24 @@ class Cmdline:
         """
         Used to verify that all required parameters are present and correct.
         """
+        if 'previous_release' not in self.cfg:
+            raise CmdlineError('--previous_release=<ref> must be specified.')
+        if 'new_version' not in self.cfg:
+            raise CmdlineError('--new_release=<str> must be specified.')
         return
 
 mail_message = ("\n"
 "I am announcing the review cycle for the %s release of stable patches.\n"
-"This new release contains %s patches. To review the contents, check the\n"
+"This new release contains %s patches. Proposed patches are posted as a\n"
+"response to this message. The same patches are also available at the\n"
 "following repository:\n"
 "\n"
-"git://kernel.ubuntu.com/ubuntu/linux-stable.git linux-%s.y-review\n"
+"git://kernel.ubuntu.com/ubuntu/linux.git linux-%s.y-review\n"
 "\n"
 "If there are any problems, or if anything is missing, please answer to\n"
-"this email. Note that any answer should be made at maximum in 3 days,\n"
-"after that the final release of %s will be made.\n"
+"this or to any of the followup patches. Note that any answer should be\n"
+"made at maximum in 3 days, after that the final release of %s will be\n"
+"made.\n"
 "\n"
 "See below the diffstat and shortlog for this release.\n"
 "\n"
@@ -161,6 +185,52 @@ class AppTemplate(StdApp):
             "kernel-team@lists.ubuntu.com"
         ]
         return
+
+    # function to add headers to the patches
+    #
+    def modify_patch(self, patch, version):
+        header_line = "%s -stable review patch.  If anyone has any objections, please let me know." % (version)
+        from_line = None
+        subject = False
+        header_add = False
+        header_added = False
+        with open(patch, 'r') as src:
+            with NamedTemporaryFile(dir='./', delete=False) as dst:
+                for line in src:
+                    if header_added:
+                        dst.write(line)
+                        continue
+
+                    # save to move from_line after header
+                    if line.startswith("From:"):
+                        from_line = line
+                        continue
+
+                    # strip out date
+                    if line.startswith("Date:"):
+                        continue
+
+                    if not subject:
+                        if 'Subject:' in line:
+                            subject = True
+
+                    if subject and not header_add:
+                        if line.strip() == '':
+                            header_add = True
+                            continue
+
+                    if header_add:
+                        dst.write('\n')
+                        dst.write(header_line)
+                        dst.write('\n\n------------------\n\n')
+                        if from_line:
+                            dst.write(from_line)
+                            dst.write('\n')
+                        header_added = True
+
+                    dst.write(line)
+                temp = dst.name
+        move(temp, patch)
 
     # main
     #
@@ -195,86 +265,105 @@ class AppTemplate(StdApp):
             else:
                 sender = self.cfg['from']
 
-            # Get kernel version
-            status, result = run_command("make kernelversion", self.debug_run)
-            if status != 0:
-                raise Exception("\n".join(result))
-            kver = []
-            next_minor = None
-            sver = result[0].split('.')
-            if len(sver) > 1:
-                version = int(sver[0])
-                patchlevel = int(sver[1])
-                kver = [ version, patchlevel ]
-                if len(sver) > 2:
-                    sublevel = int(sver[2])
-                    kver.append(sublevel)
-                else:
-                    raise Exception("Invalid kernel version in Makefile (missing SUBLEVEL)")
-                if version > 2:
-                    next_minor = sublevel + 1
-                else:
-                    if len(sver) > 3:
-                        extraversion = int(sver[3])
-                        kver.append(extraversion)
-                        next_minor = extraversion + 1
-                    else:
-                        next_minor = 1
+            # Get and validate kernel version
+            kver = [ "", "", "", "" ]
+            with open('Makefile', 'r') as mf:
+                for line in iter(mf):
+                    val = None
+                    idx = -1
+                    tot = 0
+                    t = line.translate(None, whitespace)
+                    if t.startswith("VERSION="):
+                        idx = 0
+                    elif t.startswith("PATCHLEVEL="):
+                        idx = 1
+                    elif t.startswith("SUBLEVEL="):
+                        idx = 2
+                    elif t.startswith("EXTRAVERSION="):
+                        idx = 3
+                    if idx >= 0:
+                        val = line.split('=', 1)[-1]
+                        kver[idx] = val.strip()
+                        tot += 1
+                        if tot > 3:
+                            break
+            if not (kver[0] and kver[1] and kver[2]):
+                raise Exception("Invalid kernel version in Makefile")
+            # Increment release number
+            # XXX: disabled, uneeded...
+            #if kver[3]:
+            #    d = 1
+            #    while kver[3][-d] in digits:
+            #        d += 1
+            #    if d > 1:
+            #        d -= 1
+            #        prx = kver[3][0:len(kver[3])-d]
+            #        num = int(kver[3][-d:]) + 1
+            #        kver[3] = prx + str(num)
+            #else:
+            #    kver[2] = str(int(kver[2])+1)
+            # Get the base version
+            if kver[0] == "1" or kver[1] == "2":
+                base_ver = "%s.%s.%s.y" % (kver[0], kver[1], kver[2])
             else:
-                raise Exception("Unable to get kernel version from Makefile")
+                base_ver = "%s.%s.y" % (kver[0], kver[1])
+            ann_ver = "%s-ext.z" % base_ver
 
-            # Build the kernel version strings
-            new_kver = ""
-            pos = 0
-            for v in kver[:-1]:
-                new_kver += str(v) + "."
-            main_kver = new_kver[:-1]
-            old_kver = new_kver + str(kver[-1])
-            new_kver += str(next_minor)
+            old_head = self.cfg['previous_release']
+            new_ver = self.cfg['new_version']
 
             # Get the number of patches, diffstat and shortlog from
             # previous release
             status, result = run_command("git log --no-merges "
-                                         "--format=%%h v%s.. | wc -l" %
-                                        (old_kver), self.debug_run)
+                                         "--format=%%h %s.. | wc -l" %
+                                        (old_head), self.debug_run)
             if status != 0:
                 raise GitError("\n".join(result))
             patch_cnt = result[0]
-            status, diffstat = getstatusoutput("git diff --stat v%s.." %
-                                               (old_kver))
+            status, diffstat = getstatusoutput("git diff --stat %s.." %
+                                               (old_head))
             if status != 0:
                 raise GitError(diffstat)
-            status, shortlog = getstatusoutput("git shortlog v%s.." %
-                                               (old_kver))
+            status, shortlog = getstatusoutput("git shortlog %s.." %
+                                               (old_head))
             if status != 0:
                 raise GitError(shortlog)
 
-            # Build the email body
+            # Create emails and send them
+            tmpdir = mkdtemp()
+            status, result = run_command("git format-patch -o %s %s.." %
+                                         (tmpdir, old_head))
+            if status != 0:
+                rmtree(tmpdir)
+                raise GitError("\n".join(result))
+            patches = listdir(tmpdir)
+            for patch in patches:
+                self.modify_patch(tmpdir + "/" + patch, new_ver)
             mailbody = "From: " + sender + '\n'
             for entry in self.tolist:
                 mailbody += "To: " + entry + '\n'
             mailbody += ("Subject: [%s extended stable] Linux %s stable review"
-                         % (main_kver, new_kver) + "\n")
-            mailbody += mail_message % (new_kver, patch_cnt, main_kver,
-                                        main_kver, sender.split()[0])
+                         % (ann_ver, new_ver) + "\n")
+            mailbody += mail_message % (new_ver, patch_cnt, base_ver,
+                                        new_ver, sender.split()[0])
             mailbody += diffstat + '\n\n'
             mailbody += shortlog
-
-            # Copy message to file and use git send-email to send, or
             tf = NamedTemporaryFile(prefix="mail-")
             tf.write(mailbody)
             tf.flush()
-            cmd = "git send-email --suppress-cc=all --from \"" + sender + "\""
+            cmd = "git send-email --no-chain-reply-to --thread "
+            cmd += "--from \"" + sender + "\""
             for line in self.tolist:
                 cmd += " --to \"" + line + "\""
             if 'dry-run' in self.cfg:
                 cmd += " --dry-run"
             cmd += " --8bit-encoding UTF-8"
-            cmd += " " + tf.name
+            cmd += " " + tf.name + " " + tmpdir + "/*.patch"
             system(cmd)
             if 'dry-run' in self.cfg:
                 print "\n\n" + mailbody
             tf.close()
+            rmtree(tmpdir)
 
         # Handle the user presses <ctrl-C>.
         #
