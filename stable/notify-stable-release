@@ -51,6 +51,17 @@ OptParser.add_option(
          "Without this option, try to get this info from DEBFULLNAME and "
          "DEBEMAIL (%default)."
 )
+OptParser.add_option(
+    "--previous_release", dest="previous_release", action="store", default="",
+    help="The tag or commit of the top of the previous stable release, eg."
+         "v3.5.7, we will consider stable patches from that up to HEAD."
+)
+OptParser.add_option(
+    "--new_version", dest="new_version", action="store", default="",
+    help="The version for the set of stable patches to be released. "
+         "It's the new version to be displayed in subject/body of the email"
+         "announcement sent out, eg. 3.6.6"
+)
 (opts, args) = OptParser.parse_args()
 
 #
@@ -58,6 +69,16 @@ OptParser.add_option(
 #
 if opts.sender == "":
     print "EE: No mail sender was set!"
+    exit(1)
+
+#
+# Check the required parameters
+#
+if opts.previous_release == "":
+    print "EE: No --previous_release given!"
+    exit(1)
+if opts.new_version == "":
+    print "EE: No --new_version given!"
     exit(1)
 
 #
@@ -79,7 +100,7 @@ if not tag.startswith("Linux "):
     exit(1)
 
 #
-# Get version number from Makefile, calculate previous version
+# Versions/range to use on emails
 #
 tmp = tag.split(" ")[1]
 for line in open("Makefile", "r").readlines():
@@ -96,14 +117,14 @@ for line in open("Makefile", "r").readlines():
     if line.startswith("EXTRAVERSION"):
         v4 = line.split()[-1]
         break
-if v4 != '=':
-    rangeend   = "%s.%s.%s.%s" % (v1, v2, v3, v4) 
-    rangestart = "%s.%s.%s.%s" % (v1, v2, v3, str(int(v4) - 1))
-    vstable    = "%s.%s.%s" % (v1, v2, v3)
+if v1 == "1" or v2 == "2":
+    basever = "%s.%s.%s" % (v1, v2, v3)
 else:
-    rangeend   = "%s.%s.%s" % (v1, v2, v3)
-    rangestart = "%s.%s.%s" % (v1, v2, str(int(v3) - 1))
-    vstable    = "%s.%s"  % (v1, v2)
+    basever = "%s.%s"  % (v1, v2)
+ann_ver = "%s.yuz" % basever
+vstable = opts.new_version
+rangestart = opts.previous_release
+rangeend = "v%s" % vstable
 
 #
 # Pre-contruct the contents of the mail
@@ -115,15 +136,15 @@ for entry in cclist:
     mailbody.append("Cc: " + entry)
 mailbody.extend([
     "From: " + opts.sender,
-    "Subject: [%s extended stable] Linux %s" % (vstable, rangeend),
+    "Subject: [%s extended stable] Linux %s" % (ann_ver, vstable),
     "",
     "I am announcing the release of the %s tree of stable patches." %
-    (rangeend),
+    (vstable),
     "",
     "This tree picks up the latest %s stable release upstream, and add patches"
-    % (vstable),
+    % (basever),
     "on top that were later marked for stable but can't be added to %s anymore,"
-    % (vstable),
+    % (basever),
     "as it is not anymore an stable series maintained upstream.",
     "",
     "The patches are only added if they are valid for this stable release",
@@ -132,15 +153,15 @@ mailbody.extend([
     "",
     "The tree is maintained by the Ubuntu Kernel Team, with the intention",
     "to continue to provide support for the %s series. Anyone is welcomed"
-    % (vstable),
+    % (basever),
     "on using it or contributing to this effort.",
     "",
-    "For more info, see https://wiki.ubuntu.com/Kernel/Dev/StableUpstream",
+    "For more info, see https://wiki.ubuntu.com/Kernel/Dev/ExtendedStable",
     "",
-    "The updated %s.y tree can be found at: " % (vstable),
+    "The updated %s.y tree can be found at: " % (basever),
     "",
-    "  git://kernel.ubuntu.com/ubuntu/linux-stable.git linux-%s.y"
-    % (vstable),
+    "  git://kernel.ubuntu.com/ubuntu/linux.git linux-%s.y"
+    % (basever),
     "",
     "The diffstat and shortlog with changes since previous %s release are"
     % (rangestart),
@@ -156,11 +177,11 @@ mailbody.extend([
 # release.
 #
 
-cmd = "git diff --stat v" + rangestart + "..v" + rangeend
+cmd = "git diff --stat " + rangestart + ".." + rangeend
 for line in Popen(cmd, shell=True, stdout=PIPE).stdout.readlines():
     mailbody.append(line.rstrip())
 mailbody.append("")
-cmd = "git shortlog v" + rangestart + "..v" + rangeend
+cmd = "git shortlog " + rangestart + ".." + rangeend
 for line in Popen(cmd, shell=True, stdout=PIPE).stdout.readlines():
     mailbody.append(line.rstrip())
 
@@ -169,30 +190,39 @@ for line in Popen(cmd, shell=True, stdout=PIPE).stdout.readlines():
 #
 try:
     fp = NamedTemporaryFile(prefix="mail-")
+    dp = NamedTemporaryFile(prefix="mail-")
 except:
     raise
 
 for line in mailbody:
     fp.write(line + "\n")
 fp.flush()
+dp.write("From: " + opts.sender + "\n")
+dp.write("Subject: Re: [%s extended stable] Linux %s\n\n" % (ann_ver, vstable))
+dp.flush()
+cmd = "git diff " + rangestart + ".." + rangeend + " >> " + dp.name
+system(cmd)
 
 #
 # Construct the call to git send-email
 #
-cmd = "git send-email --suppress-cc=all --from \"" + opts.sender + "\""
+cmd = "git send-email --suppress-cc all --8bit-encoding=UTF-8 --from \""
+cmd += opts.sender + "\""
 for line in tolist:
     cmd += " --to \"" + line + "\""
 for line in cclist:
     cmd += " --cc \"" + line + "\""
 if opts.dryrun:
     cmd += " --dry-run"
-cmd += " " + fp.name
+cmd += " " + fp.name + " " + dp.name
 
 system(cmd)
 
 if opts.dryrun:
     system("cat " + fp.name)
+    system("cat " + dp.name)
 
 fp.close()
+dp.close()
 
 # vi:set ts=4 sw=4 expandtab:
