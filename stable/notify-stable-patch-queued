@@ -77,7 +77,7 @@ def AssembleMailBody(version, subject, patchlines):
     # strip the real version used in our branch for the email
     bversion = version.split('y')[0]
     mailbody = [
-        "Subject: [ " + version + " extended stable] Patch \"" + subject +
+        "Subject: [ " + version + " extended stable ] Patch \"" + subject +
         "\" has been added to staging queue",
         "",
         "This is a note to let you know that I have just added a patch titled",
